@@ -1,5 +1,7 @@
 import type { Signal, ComputedSignal } from '../core/signal';
 
+export type SliderDirection = 'horizontal' | 'vertical';
+
 export type AnimatedValue = {
   value: number;
   duration: number;
@@ -11,7 +13,7 @@ export type RangeExtractor = (current: number, count: number, loop: boolean) => 
 export interface SliderConfig {
   count: number;
   initialIndex?: number;
-  direction?: 'horizontal' | 'vertical';
+  direction?: SliderDirection;
   loop?: boolean;
   transitionDuration?: number;
   swipeDistanceFactor?: number;

@@ -60,4 +60,5 @@ export type {
   SliderEvents,
   SliderState,
   SliderController,
+  SliderDirection,
 } from './lib/slider/types';

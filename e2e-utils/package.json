@@ -1,0 +1,8 @@
+{
+  "name": "e2e-utils",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  }
+}

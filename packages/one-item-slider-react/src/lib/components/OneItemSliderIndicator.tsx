@@ -10,6 +10,7 @@ export interface OneItemSliderIndicatorProps {
   visible?: number;
   className?: string;
   style?: React.CSSProperties;
+  onDotClick?: (index: number) => void;
   renderDot?: (props: {
     index: number;
     isActive: boolean;
@@ -18,7 +19,7 @@ export interface OneItemSliderIndicatorProps {
 }
 
 const Element: React.FC<OneItemSliderIndicatorProps> = (props) => {
-  const { count, active, visible = 3, radius = 3, className, style, renderDot } = props;
+  const { count, active, visible = 3, radius = 3, className, style, onDotClick, renderDot } = props;
   const activeRef = React.useRef(active);
   const itemSize = React.useMemo(() => radius * 2 + 6, [radius]);
   const [axisValue, setAxisValue] = useRafState(() =>
@@ -76,6 +77,7 @@ const Element: React.FC<OneItemSliderIndicatorProps> = (props) => {
         transition: 'transform 0.3s ease',
         transform: isBounded ? 'scale(0.7)' : 'scale(1)',
         margin: isActive ? '0 1px' : '0 3px',
+        cursor: onDotClick ? 'pointer' : 'default',
       };
 
       const wrapperStyle: React.CSSProperties = isActive
@@ -90,20 +92,23 @@ const Element: React.FC<OneItemSliderIndicatorProps> = (props) => {
             alignItems: 'center',
             flexShrink: 0,
             margin: '0 1px',
+            cursor: onDotClick ? 'pointer' : 'default',
           }
         : {};
 
+      const handleClick = onDotClick ? () => onDotClick(index) : undefined;
+
       if (isActive) {
         return (
-          <span key={index} style={wrapperStyle}>
+          <span key={index} style={wrapperStyle} onClick={handleClick}>
             <span data-testid={index} style={{ ...dotStyle, margin: 0 }} />
           </span>
         );
       }
 
-      return <span key={index} data-testid={index} style={dotStyle} />;
+      return <span key={index} data-testid={index} style={dotStyle} onClick={handleClick} />;
     },
-    [radius],
+    [radius, onDotClick],
   );
 
   const renderDotFn = renderDot ?? defaultRenderDot;

@@ -30,6 +30,7 @@ export const animate = (options: AnimationOptions): (() => void) => {
   if (duration <= 0) {
     onUpdate(to);
     onComplete?.();
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     return () => {};
   }
 

@@ -25,6 +25,9 @@
       ],
       "@kdevsoft/one-item-slider-react": [
         "packages/one-item-slider-react/src/index.ts"
+      ],
+      "@kdevsoft/one-item-slider-vue": [
+        "packages/one-item-slider-vue/src/index.ts"
       ]
     }
   },

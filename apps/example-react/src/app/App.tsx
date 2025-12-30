@@ -31,6 +31,7 @@ function App() {
         size={size}
         direction="vertical"
         loop={false}
+        useNavKeys={true}
         apiRef={sliderRef}
         afterChange={(index) => setActiveIndex(index)}
         itemBuilder={(index, _indexInRange, itemSize) => (
@@ -66,6 +67,7 @@ function App() {
             active={activeIndex}
             radius={4}
             visible={5}
+            onDotClick={(index) => sliderRef.current?.goTo(index)}
           />
         </div>
 
