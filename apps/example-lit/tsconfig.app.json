@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "types": ["vite/client"]
+  },
+  "include": ["src/**/*.ts"],
+  "references": [
+    {
+      "path": "../../packages/reelkit-core"
+    },
+    {
+      "path": "../../packages/reelkit-lit"
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /**
- * Playwright E2E test configuration for one-item-slider
+ * Playwright E2E test configuration for Reelkit
  * Tests rendering, navigation, and animations across browsers and devices
  */
 export default defineConfig({
@@ -91,6 +91,18 @@ export default defineConfig({
     {
       command: 'npx nx serve example-vue',
       url: 'http://localhost:4201',
+      reuseExistingServer: !process.env.CI,
+      timeout: 120000,
+    },
+    {
+      command: 'npx nx serve example-dom',
+      url: 'http://localhost:4202',
+      reuseExistingServer: !process.env.CI,
+      timeout: 120000,
+    },
+    {
+      command: 'npx nx serve example-lit',
+      url: 'http://localhost:4203',
       reuseExistingServer: !process.env.CI,
       timeout: 120000,
     },

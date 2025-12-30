@@ -1,0 +1,10 @@
+{
+  "name": "example-lit",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@reelkit/lit": "0.0.1",
+    "lit": "^3.0.0"
+  }
+}

@@ -25,6 +25,9 @@ Thumbs.db
 # Testing
 coverage
 test-output
+test-results
+playwright-report
+playwright/.cache
 
 # Misc
 *.log

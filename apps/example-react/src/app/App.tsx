@@ -1,5 +1,5 @@
 import React from 'react';
-import { OneItemSlider, type OneItemSliderPublicApi } from '@kdevsoft/one-item-slider-react';
+import { Reel, ReelIndicator, type ReelApi } from '@reelkit/react';
 
 const TOTAL_SLIDES = 10000;
 
@@ -12,15 +12,19 @@ const getSlideColor = (index: number): string => {
 // Generate slide content from index
 const getSlideContent = (index: number) => ({
   title: `Slide ${index + 1}`,
-  description: index === 0
-    ? 'Swipe up or down to navigate'
-    : `Item #${index + 1} of ${TOTAL_SLIDES.toLocaleString()}`,
+  description:
+    index === 0
+      ? 'Swipe up or down to navigate'
+      : `Item #${index + 1} of ${TOTAL_SLIDES.toLocaleString()}`,
 });
 
 function App() {
   const [activeIndex, setActiveIndex] = React.useState(0);
-  const sliderRef = React.useRef<OneItemSliderPublicApi>(null);
-  const [size, setSize] = React.useState<[number, number]>([window.innerWidth, window.innerHeight]);
+  const sliderRef = React.useRef<ReelApi>(null);
+  const [size, setSize] = React.useState<[number, number]>([
+    window.innerWidth,
+    window.innerHeight,
+  ]);
   const [goToValue, setGoToValue] = React.useState('');
 
   React.useEffect(() => {
@@ -35,7 +39,7 @@ function App() {
 
   return (
     <div style={{ width: '100vw', height: '100vh', overflow: 'hidden' }}>
-      <OneItemSlider
+      <Reel
         count={TOTAL_SLIDES}
         size={size}
         direction="vertical"
@@ -58,8 +62,12 @@ function App() {
                 color: '#000',
               }}
             >
-              <h1 style={{ fontSize: '3rem', marginBottom: '1rem' }}>{slide.title}</h1>
-              <p style={{ fontSize: '1.5rem', opacity: 0.7 }}>{slide.description}</p>
+              <h1 style={{ fontSize: '3rem', marginBottom: '1rem' }}>
+                {slide.title}
+              </h1>
+              <p style={{ fontSize: '1.5rem', opacity: 0.7 }}>
+                {slide.description}
+              </p>
             </div>
           );
         }}
@@ -182,7 +190,28 @@ function App() {
             Go
           </button>
         </div>
-      </OneItemSlider>
+
+        {/* Indicator */}
+        <div
+          style={{
+            position: 'absolute',
+            right: 20,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            zIndex: 10,
+          }}
+        >
+          <ReelIndicator
+            count={TOTAL_SLIDES}
+            active={activeIndex}
+            direction="vertical"
+            visible={4}
+            radius={4}
+            gap={6}
+            onDotClick={(index) => sliderRef.current?.goTo(index, true)}
+          />
+        </div>
+      </Reel>
     </div>
   );
 }

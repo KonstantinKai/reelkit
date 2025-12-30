@@ -22,8 +22,8 @@ export class SliderPage {
     this.container = page.locator('[style*="overflow: hidden"]').first();
     this.nextButton = page.locator('button', { hasText: 'Next' });
     this.prevButton = page.locator('button', { hasText: 'Previous' });
-    // Use data-testid for indicators (each dot has data-testid={index})
-    this.indicators = page.locator('span[data-testid]');
+    // Use data-reel-indicator for indicators (works across React/Lit/DOM)
+    this.indicators = page.locator('[data-reel-indicator]');
     this.slideContainer = page.locator('[style*="translateY"], [style*="translateX"]').first();
   }
 
@@ -44,29 +44,106 @@ export class SliderPage {
   }
 
   /**
-   * Get the index of the active indicator (0-based)
+   * Get the index of the active indicator from data-reel-indicator attribute
+   * The dot element may be the indicator itself or a child span
    */
   async getActiveIndicatorIndex(): Promise<number> {
     const indicators = await this.indicators.all();
-    for (let i = 0; i < indicators.length; i++) {
-      const isActive = await indicators[i].evaluate((el) => {
-        const style = window.getComputedStyle(el);
-        const bgColor = style.backgroundColor;
-        // Active indicator has full opacity (white with alpha=1)
-        // React uses rgba(255, 255, 255, 1), Vue uses rgba(255, 255, 255, 1)
-        // Inactive uses lower alpha (0.44 or 0.4)
+    for (const indicator of indicators) {
+      const isActive = await indicator.evaluate((el) => {
+        // Check if element itself has the background color
+        let targetEl: Element | null = el;
+        let style = window.getComputedStyle(el);
+        let bgColor = style.backgroundColor;
+
+        // If transparent or not set, check first child (nested dot structure)
+        if (bgColor === 'rgba(0, 0, 0, 0)' || bgColor === 'transparent') {
+          targetEl = el.querySelector('span') || el.firstElementChild;
+          if (targetEl) {
+            style = window.getComputedStyle(targetEl);
+            bgColor = style.backgroundColor;
+          }
+        }
+
+        // Active indicator has full opacity (white with alpha=1 or rgb(255, 255, 255))
+        // Inactive uses lower alpha (0.5)
         if (bgColor.includes('rgb')) {
           const match = bgColor.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
           if (match) {
             const alpha = match[4] ? parseFloat(match[4]) : 1;
-            return alpha >= 0.9; // Active has alpha=1, inactive has ~0.4
+            return alpha >= 0.9; // Active has alpha=1, inactive has ~0.5
           }
         }
         return false;
       });
-      if (isActive) return i;
+      if (isActive) {
+        const indexAttr = await indicator.getAttribute('data-reel-indicator');
+        return indexAttr ? parseInt(indexAttr, 10) : 0;
+      }
     }
     return 0;
+  }
+
+  /**
+   * Get visible indicator indices (from data-reel-indicator attributes)
+   */
+  async getVisibleIndicatorIndices(): Promise<number[]> {
+    const indicators = await this.indicators.all();
+    const indices: number[] = [];
+    for (const indicator of indicators) {
+      const indexAttr = await indicator.getAttribute('data-reel-indicator');
+      if (indexAttr !== null) {
+        indices.push(parseInt(indexAttr, 10));
+      }
+    }
+    return indices.sort((a, b) => a - b);
+  }
+
+  /**
+   * Get the scale of an indicator dot by its index
+   * The scale may be on the indicator element itself or a child span
+   */
+  async getIndicatorScale(index: number): Promise<number> {
+    const indicator = this.page.locator(`[data-reel-indicator="${index}"]`);
+    const scale = await indicator.evaluate((el) => {
+      // Check element itself first
+      let transform = window.getComputedStyle(el).transform;
+
+      // Parse scale from matrix
+      const parseScale = (t: string): number | null => {
+        const matrixMatch = t.match(/matrix\(([^,]+)/);
+        if (matrixMatch) {
+          return parseFloat(matrixMatch[1]);
+        }
+        return null;
+      };
+
+      let result = parseScale(transform);
+
+      // If no transform or scale is 1, check child elements
+      if (result === null || result === 1) {
+        const child = el.querySelector('span') || el.firstElementChild;
+        if (child) {
+          transform = window.getComputedStyle(child).transform;
+          const childScale = parseScale(transform);
+          if (childScale !== null) {
+            result = childScale;
+          }
+        }
+      }
+
+      return result ?? 1;
+    });
+
+    return scale;
+  }
+
+  /**
+   * Click an indicator by its data-reel-indicator index value
+   */
+  async clickIndicatorByIndex(index: number): Promise<void> {
+    // Use JS click to avoid viewport issues with absolutely positioned elements
+    await this.page.locator(`[data-reel-indicator="${index}"]`).evaluate((el: HTMLElement) => el.click());
   }
 
   /**

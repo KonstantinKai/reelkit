@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { SliderPage } from '../../../e2e-utils/slider-page';
 
-test.describe('OneItemSlider React - Rendering', () => {
+test.describe('Reel React - Rendering', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('http://localhost:4200');
   });
@@ -19,7 +19,7 @@ test.describe('OneItemSlider React - Rendering', () => {
   });
 });
 
-test.describe('OneItemSlider React - Button Navigation', () => {
+test.describe('Reel React - Button Navigation', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('http://localhost:4200');
   });
@@ -78,7 +78,7 @@ test.describe('OneItemSlider React - Button Navigation', () => {
   });
 });
 
-test.describe('OneItemSlider React - Keyboard Navigation', () => {
+test.describe('Reel React - Keyboard Navigation', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('http://localhost:4200');
   });
@@ -111,7 +111,11 @@ test.describe('OneItemSlider React - Keyboard Navigation', () => {
   });
 });
 
-test.describe('OneItemSlider React - Touch Gestures', () => {
+test.describe('Reel React - Touch Gestures', () => {
+  // Touch constructor is only available in Chromium-based browsers on desktop
+  // Skip these tests on Firefox, WebKit, and mobile browsers
+  test.skip(({ browserName }) => browserName !== 'chromium', 'Touch API not supported');
+
   test.beforeEach(async ({ page }) => {
     await page.goto('http://localhost:4200');
   });
@@ -142,7 +146,7 @@ test.describe('OneItemSlider React - Touch Gestures', () => {
   });
 });
 
-test.describe('OneItemSlider React - Animation', () => {
+test.describe('Reel React - Animation', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('http://localhost:4200');
   });
@@ -169,7 +173,100 @@ test.describe('OneItemSlider React - Animation', () => {
   });
 });
 
-test.describe('OneItemSlider React - Infinite List', () => {
+test.describe('Reel React - Indicator', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('http://localhost:4200');
+  });
+
+  test('shows indicator with visible dots plus edge dots', async ({ page }) => {
+    const slider = new SliderPage(page);
+
+    // At index 0, should show dots 0-4 (visible=4 plus trailing edge)
+    const indices = await slider.getVisibleIndicatorIndices();
+    expect(indices.length).toBe(5); // 4 visible + 1 trailing edge
+    expect(indices[0]).toBe(0);
+    expect(indices[4]).toBe(4);
+  });
+
+  test('active indicator matches current slide', async ({ page }) => {
+    const slider = new SliderPage(page);
+
+    // Initially at index 0
+    const activeIndex = await slider.getActiveIndicatorIndex();
+    expect(activeIndex).toBe(0);
+
+    // Navigate to slide 2
+    await slider.clickNext();
+    await slider.waitForAnimation();
+    await slider.clickNext();
+    await slider.waitForAnimation();
+
+    const newActiveIndex = await slider.getActiveIndicatorIndex();
+    expect(newActiveIndex).toBe(2);
+  });
+
+  test('clicking indicator navigates to slide', async ({ page }) => {
+    const slider = new SliderPage(page);
+
+    await slider.expectSlideTitle('Slide 1');
+
+    // Click on indicator 3
+    await slider.clickIndicatorByIndex(3);
+    await slider.waitForAnimation();
+
+    await slider.expectSlideTitle('Slide 4');
+    await expect(page.locator('text=4 / 10,000')).toBeVisible();
+  });
+
+  test('trailing edge dot has smaller scale', async ({ page }) => {
+    const slider = new SliderPage(page);
+
+    // At index 0, dot 4 should be the trailing edge with scale 0.5
+    const scale = await slider.getIndicatorScale(4);
+    expect(scale).toBeLessThan(1);
+    expect(scale).toBeCloseTo(0.5, 1);
+  });
+
+  test('indicator slides when navigating beyond visible window', async ({ page }) => {
+    const slider = new SliderPage(page);
+
+    // Navigate forward 5 times to go beyond visible=4
+    for (let i = 0; i < 5; i++) {
+      await slider.clickNext();
+      await slider.waitForAnimation();
+    }
+
+    // At index 5, visible window should include dots around index 5
+    const indices = await slider.getVisibleIndicatorIndices();
+    expect(indices).toContain(5);
+
+    // Should now have leading edge dot (smaller scale)
+    const leadingIndex = indices[0];
+    const leadingScale = await slider.getIndicatorScale(leadingIndex);
+    expect(leadingScale).toBeLessThan(1);
+  });
+
+  test('clicking edge dot updates indicator window', async ({ page }) => {
+    const slider = new SliderPage(page);
+
+    // Navigate forward to have both leading and trailing edges
+    for (let i = 0; i < 5; i++) {
+      await slider.clickNext();
+      await slider.waitForAnimation();
+    }
+
+    // Click on a trailing edge dot if visible
+    const indices = await slider.getVisibleIndicatorIndices();
+    const trailingIndex = indices[indices.length - 1];
+    await slider.clickIndicatorByIndex(trailingIndex);
+    await slider.waitForAnimation();
+
+    // Should navigate to that slide
+    await slider.expectSlideTitle(`Slide ${trailingIndex + 1}`);
+  });
+});
+
+test.describe('Reel React - Infinite List', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('http://localhost:4200');
   });

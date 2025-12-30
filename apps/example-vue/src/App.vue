@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
 import {
-  OneItemSlider,
-  type OneItemSliderExpose,
-} from '@kdevsoft/one-item-slider-vue';
+  Reel,
+  ReelIndicator,
+  type ReelExpose,
+} from '@reelkit/vue';
 
 const TOTAL_SLIDES = 10000;
 
@@ -22,7 +23,7 @@ const getSlideContent = (index: number) => ({
 });
 
 const activeIndex = ref(0);
-const sliderRef = ref<OneItemSliderExpose | null>(null);
+const sliderRef = ref<ReelExpose | null>(null);
 const size = ref<[number, number]>([window.innerWidth, window.innerHeight]);
 const goToValue = ref('');
 
@@ -63,11 +64,15 @@ const handleGoToKeydown = (e: KeyboardEvent) => {
     handleGoTo();
   }
 };
+
+const handleIndicatorClick = (index: number) => {
+  sliderRef.value?.goTo(index, true);
+};
 </script>
 
 <template>
   <div :style="{ width: '100vw', height: '100vh', overflow: 'hidden' }">
-    <OneItemSlider
+    <Reel
       ref="sliderRef"
       :count="TOTAL_SLIDES"
       :size="size"
@@ -112,7 +117,7 @@ const handleGoToKeydown = (e: KeyboardEvent) => {
           </div>
         </div>
       </template>
-    </OneItemSlider>
+    </Reel>
 
     <!-- Current position indicator -->
     <div
@@ -216,6 +221,27 @@ const handleGoToKeydown = (e: KeyboardEvent) => {
       >
         Next ↓
       </button>
+    </div>
+
+    <!-- Indicator -->
+    <div
+      :style="{
+        position: 'fixed',
+        right: '20px',
+        top: '50%',
+        transform: 'translateY(-50%)',
+        zIndex: 10,
+      }"
+    >
+      <ReelIndicator
+        :count="TOTAL_SLIDES"
+        :activeIndex="activeIndex"
+        direction="vertical"
+        :visible="4"
+        :radius="4"
+        :gap="6"
+        @click="handleIndicatorClick"
+      />
     </div>
   </div>
 </template>

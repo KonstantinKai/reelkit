@@ -1,0 +1,9 @@
+{
+  "name": "example-dom",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@reelkit/dom": "0.0.1"
+  }
+}

@@ -1,28 +1,47 @@
-# @kdevsoft/one-item-slider
+# Reelkit
 
-A headless, TikTok-style vertical slider component for React. Supports touch gestures, keyboard navigation, and smooth animations.
+A headless, virtualized, TikTok-style vertical slider component library. Supports touch gestures, keyboard navigation, smooth animations, and **virtualizing rendering for massive lists**.
 
 ## Features
 
-- Headless design - bring your own styles
-- Touch gestures (swipe up/down or left/right)
-- Keyboard navigation (arrow keys)
-- Smooth bezier-eased animations
-- Loop mode support
-- Indicator component included
-- TypeScript support
-- No MUI or other UI framework dependencies
+- 🎯 **Virtualized rendering** - efficiently handles 10,000+ items
+- 🎨 **Headless design** - bring your own styles
+- 👆 **Touch gestures** - swipe up/down or left/right
+- ⌨️ **Keyboard navigation** - arrow keys support
+- 🎬 **Smooth animations** - bezier-eased transitions
+- 🔄 **Loop mode** - infinite scrolling support
+- 📍 **Indicator component** - visual position feedback
+- 📦 **Framework bindings** - React and Vue 3 support
+- 💪 **TypeScript** - full type safety
+- 🪶 **Zero dependencies** - lightweight core
+
+## Packages
+
+| Package | Description |
+|---------|-------------|
+| `@reelkit/core` | Framework-agnostic core with gesture and slider controllers |
+| `@reelkit/react` | React bindings with hooks and components |
+| `@reelkit/vue` | Vue 3 bindings with composables and components |
 
 ## Installation
 
 ```bash
-npm install @kdevsoft/one-item-slider
+# React
+npm install @reelkit/react
+
+# Vue 3
+npm install @reelkit/vue
+
+# Core only (framework-agnostic)
+npm install @reelkit/core
 ```
 
 ## Usage
 
+### React
+
 ```tsx
-import { OneItemSlider, OneItemSliderIndicator } from '@kdevsoft/one-item-slider';
+import { OneItemSlider, OneItemSliderIndicator } from '@reelkit/react';
 
 function App() {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -89,17 +108,56 @@ interface OneItemSliderPublicApi {
 }
 ```
 
+### Vue 3
+
+```vue
+<script setup lang="ts">
+import { ref } from 'vue';
+import { OneItemSlider, type OneItemSliderExpose } from '@reelkit/vue';
+
+const activeIndex = ref(0);
+const sliderRef = ref<OneItemSliderExpose | null>(null);
+</script>
+
+<template>
+  <OneItemSlider
+    ref="sliderRef"
+    :count="100"
+    :size="[400, 600]"
+    direction="vertical"
+    @index-change="(index) => activeIndex = index"
+  >
+    <template #default="{ indexes, axisValue }">
+      <div :style="{ transform: `translateY(${axisValue}px)` }">
+        <div v-for="index in indexes" :key="index">
+          Slide {{ index + 1 }}
+        </div>
+      </div>
+    </template>
+  </OneItemSlider>
+</template>
+```
+
 ## Development
 
 ```bash
 # Install dependencies
 npm install
 
-# Build the library
-npx nx build one-item-slider
+# Build all libraries
+npx nx run-many -t build -p @reelkit/core @reelkit/react @reelkit/vue
 
-# Run the example app
-npx nx serve example
+# Run React example
+npx nx serve example-react
+
+# Run Vue example
+npx nx serve example-vue
+
+# Run tests
+npx nx run-many -t test
+
+# Run E2E tests
+npx nx e2e example-react
 ```
 
 ## License
