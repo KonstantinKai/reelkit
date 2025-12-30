@@ -1,5 +1,5 @@
 import React from 'react';
-import { OneItemSlider, OneItemSliderIndicator, type OneItemSliderPublicApi } from '@kdevsoft/one-item-slider';
+import { OneItemSlider, OneItemSliderIndicator, type OneItemSliderPublicApi } from '@kdevsoft/one-item-slider-react';
 
 const SLIDES = [
   { id: 1, color: '#FF6B6B', title: 'Slide 1', description: 'Swipe up or down to navigate' },

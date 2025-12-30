@@ -8,7 +8,10 @@
   "exclude": ["src/**/*.spec.ts", "src/**/*.spec.tsx"],
   "references": [
     {
-      "path": "../../packages/one-item-slider/tsconfig.lib.json"
+      "path": "../../packages/one-item-slider-core/tsconfig.lib.json"
+    },
+    {
+      "path": "../../packages/one-item-slider-react/tsconfig.lib.json"
     }
   ]
 }

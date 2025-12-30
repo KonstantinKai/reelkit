@@ -18,7 +18,15 @@
     "noPropertyAccessFromIndexSignature": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "baseUrl": "."
+    "baseUrl": ".",
+    "paths": {
+      "@kdevsoft/one-item-slider-core": [
+        "packages/one-item-slider-core/src/index.ts"
+      ],
+      "@kdevsoft/one-item-slider-react": [
+        "packages/one-item-slider-react/src/index.ts"
+      ]
+    }
   },
   "exclude": ["node_modules", "tmp"]
 }
