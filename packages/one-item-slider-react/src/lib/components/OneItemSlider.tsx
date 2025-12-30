@@ -104,7 +104,7 @@ export const createDefaultKeyExtractorForLoop =
 export interface OneItemSliderPublicApi {
   next: () => void;
   prev: () => void;
-  goTo: (index: number) => Promise<void>;
+  goTo: (index: number, animate?: boolean) => Promise<void>;
   adjust: () => void;
   observe: () => void;
   unobserve: () => void;
@@ -215,7 +215,7 @@ const Element = ({
       const publicApi: OneItemSliderPublicApi = {
         next: () => controller.next(),
         prev: () => controller.prev(),
-        goTo: (index: number) => controller.goTo(index),
+        goTo: (index: number, animate?: boolean) => controller.goTo(index, animate),
         adjust: () => controller.adjust(),
         observe: () => controller.observe(),
         unobserve: () => controller.unobserve(),

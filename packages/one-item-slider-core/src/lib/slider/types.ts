@@ -47,8 +47,8 @@ export interface SliderController {
   /** Navigate to previous item */
   prev(): Promise<void>;
 
-  /** Navigate to specific index */
-  goTo(index: number): Promise<void>;
+  /** Navigate to specific index (instant or animated) */
+  goTo(index: number, animate?: boolean): Promise<void>;
 
   /** Update axis value to match current range index */
   adjust(duration?: number): void;

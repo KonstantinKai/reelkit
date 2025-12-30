@@ -1,18 +1,27 @@
 import React from 'react';
-import { OneItemSlider, OneItemSliderIndicator, type OneItemSliderPublicApi } from '@kdevsoft/one-item-slider-react';
+import { OneItemSlider, type OneItemSliderPublicApi } from '@kdevsoft/one-item-slider-react';
 
-const SLIDES = [
-  { id: 1, color: '#FF6B6B', title: 'Slide 1', description: 'Swipe up or down to navigate' },
-  { id: 2, color: '#4ECDC4', title: 'Slide 2', description: 'Like TikTok!' },
-  { id: 3, color: '#45B7D1', title: 'Slide 3', description: 'Smooth animations' },
-  { id: 4, color: '#96CEB4', title: 'Slide 4', description: 'Touch or keyboard' },
-  { id: 5, color: '#FFEAA7', title: 'Slide 5', description: 'Use arrow keys ↑↓' },
-];
+const TOTAL_SLIDES = 10000;
+
+// Generate color from index using HSL for nice variety
+const getSlideColor = (index: number): string => {
+  const hue = (index * 37) % 360; // Golden angle for good distribution
+  return `hsl(${hue}, 70%, 65%)`;
+};
+
+// Generate slide content from index
+const getSlideContent = (index: number) => ({
+  title: `Slide ${index + 1}`,
+  description: index === 0
+    ? 'Swipe up or down to navigate'
+    : `Item #${index + 1} of ${TOTAL_SLIDES.toLocaleString()}`,
+});
 
 function App() {
   const [activeIndex, setActiveIndex] = React.useState(0);
   const sliderRef = React.useRef<OneItemSliderPublicApi>(null);
   const [size, setSize] = React.useState<[number, number]>([window.innerWidth, window.innerHeight]);
+  const [goToValue, setGoToValue] = React.useState('');
 
   React.useEffect(() => {
     const handleResize = () => {
@@ -27,48 +36,50 @@ function App() {
   return (
     <div style={{ width: '100vw', height: '100vh', overflow: 'hidden' }}>
       <OneItemSlider
-        count={SLIDES.length}
+        count={TOTAL_SLIDES}
         size={size}
         direction="vertical"
         loop={false}
         useNavKeys={true}
         apiRef={sliderRef}
         afterChange={(index) => setActiveIndex(index)}
-        itemBuilder={(index, _indexInRange, itemSize) => (
-          <div
-            style={{
-              width: itemSize[0],
-              height: itemSize[1],
-              backgroundColor: SLIDES[index].color,
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              alignItems: 'center',
-              color: '#000',
-            }}
-          >
-            <h1 style={{ fontSize: '3rem', marginBottom: '1rem' }}>{SLIDES[index].title}</h1>
-            <p style={{ fontSize: '1.5rem', opacity: 0.7 }}>{SLIDES[index].description}</p>
-          </div>
-        )}
+        itemBuilder={(index, _indexInRange, itemSize) => {
+          const slide = getSlideContent(index);
+          return (
+            <div
+              style={{
+                width: itemSize[0],
+                height: itemSize[1],
+                backgroundColor: getSlideColor(index),
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
+                color: '#000',
+              }}
+            >
+              <h1 style={{ fontSize: '3rem', marginBottom: '1rem' }}>{slide.title}</h1>
+              <p style={{ fontSize: '1.5rem', opacity: 0.7 }}>{slide.description}</p>
+            </div>
+          );
+        }}
       >
-        {/* Indicator overlay */}
+        {/* Current position indicator */}
         <div
           style={{
             position: 'absolute',
-            right: 16,
-            top: '50%',
-            transform: 'translateY(-50%) rotate(90deg)',
+            top: 16,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            padding: '8px 16px',
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            color: '#fff',
+            borderRadius: 20,
+            fontSize: '0.9rem',
             zIndex: 10,
           }}
         >
-          <OneItemSliderIndicator
-            count={SLIDES.length}
-            active={activeIndex}
-            radius={4}
-            visible={5}
-            onDotClick={(index) => sliderRef.current?.goTo(index)}
-          />
+          {(activeIndex + 1).toLocaleString()} / {TOTAL_SLIDES.toLocaleString()}
         </div>
 
         {/* Navigation buttons */}
@@ -110,6 +121,65 @@ function App() {
             }}
           >
             Next ↓
+          </button>
+        </div>
+
+        {/* Go to index control */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 100,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            display: 'flex',
+            gap: 8,
+            zIndex: 10,
+          }}
+        >
+          <input
+            type="number"
+            min={1}
+            max={TOTAL_SLIDES}
+            value={goToValue}
+            onChange={(e) => setGoToValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                const index = parseInt(goToValue, 10) - 1;
+                if (index >= 0 && index < TOTAL_SLIDES) {
+                  sliderRef.current?.goTo(index, true);
+                }
+              }
+            }}
+            placeholder="Slide #"
+            style={{
+              padding: '12px 16px',
+              fontSize: '1rem',
+              backgroundColor: 'rgba(0,0,0,0.5)',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 8,
+              width: 100,
+              outline: 'none',
+            }}
+          />
+          <button
+            onClick={() => {
+              const index = parseInt(goToValue, 10) - 1;
+              if (index >= 0 && index < TOTAL_SLIDES) {
+                sliderRef.current?.goTo(index, true);
+              }
+            }}
+            style={{
+              padding: '12px 24px',
+              fontSize: '1rem',
+              backgroundColor: 'rgba(0,0,0,0.7)',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 8,
+              cursor: 'pointer',
+            }}
+          >
+            Go
           </button>
         </div>
       </OneItemSlider>

@@ -15,17 +15,9 @@ test.describe('OneItemSlider Vue - Rendering', () => {
     await expect(page.locator('p').first()).toContainText('Swipe');
   });
 
-  test('renders correct number of indicators', async ({ page }) => {
-    const slider = new SliderPage(page);
-
-    const count = await slider.getIndicatorCount();
-    expect(count).toBe(5);
-  });
-
-  test('first indicator is active initially', async ({ page }) => {
-    const slider = new SliderPage(page);
-
-    await slider.expectActiveIndicator(0);
+  test('displays position counter', async ({ page }) => {
+    // Check for "1 / 10,000" counter
+    await expect(page.locator('text=1 / 10,000')).toBeVisible();
   });
 });
 
@@ -42,7 +34,7 @@ test.describe('OneItemSlider Vue - Button Navigation', () => {
     await slider.waitForAnimation();
 
     await slider.expectSlideTitle('Slide 2');
-    await slider.expectActiveIndicator(1);
+    await expect(page.locator('text=2 / 10,000')).toBeVisible();
   });
 
   test('navigates to previous slide with Previous button', async ({ page }) => {
@@ -58,42 +50,20 @@ test.describe('OneItemSlider Vue - Button Navigation', () => {
     await slider.waitForAnimation();
 
     await slider.expectSlideTitle('Slide 1');
-    await slider.expectActiveIndicator(0);
+    await expect(page.locator('text=1 / 10,000')).toBeVisible();
   });
 
-  test('navigates through all slides', async ({ page }) => {
-    const slider = new SliderPage(page);
-    const expectedTitles = ['Slide 1', 'Slide 2', 'Slide 3', 'Slide 4', 'Slide 5'];
-
-    for (let i = 0; i < expectedTitles.length; i++) {
-      await slider.expectSlideTitle(expectedTitles[i]);
-      await slider.expectActiveIndicator(i);
-
-      if (i < expectedTitles.length - 1) {
-        await slider.clickNext();
-        await slider.waitForAnimation();
-      }
-    }
-  });
-
-  test('cannot navigate past last slide', async ({ page }) => {
+  test('navigates through multiple slides', async ({ page }) => {
     const slider = new SliderPage(page);
 
-    // Navigate to last slide
-    for (let i = 0; i < 4; i++) {
+    // Navigate forward 5 times
+    for (let i = 1; i <= 5; i++) {
+      await slider.expectSlideTitle(`Slide ${i}`);
       await slider.clickNext();
       await slider.waitForAnimation();
     }
 
-    await slider.expectSlideTitle('Slide 5');
-
-    // Try to go past last slide
-    await slider.clickNext();
-    await slider.waitForAnimation();
-
-    // Should still be on slide 5
-    await slider.expectSlideTitle('Slide 5');
-    await slider.expectActiveIndicator(4);
+    await slider.expectSlideTitle('Slide 6');
   });
 
   test('cannot navigate before first slide', async ({ page }) => {
@@ -107,7 +77,6 @@ test.describe('OneItemSlider Vue - Button Navigation', () => {
 
     // Should still be on slide 1
     await slider.expectSlideTitle('Slide 1');
-    await slider.expectActiveIndicator(0);
   });
 });
 
@@ -141,38 +110,6 @@ test.describe('OneItemSlider Vue - Keyboard Navigation', () => {
     await slider.waitForAnimation();
 
     await slider.expectSlideTitle('Slide 1');
-  });
-});
-
-test.describe('OneItemSlider Vue - Indicator Navigation', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto(BASE_URL);
-  });
-
-  test('navigates by clicking indicator', async ({ page }) => {
-    const slider = new SliderPage(page);
-
-    await slider.expectSlideTitle('Slide 1');
-
-    // Click third indicator (index 2)
-    await slider.clickIndicator(2);
-    await slider.waitForAnimation();
-    await slider.waitForAnimation(); // goTo may need multiple animations
-
-    await slider.expectSlideTitle('Slide 3');
-    await slider.expectActiveIndicator(2);
-  });
-
-  test('navigates to last slide via indicator', async ({ page }) => {
-    const slider = new SliderPage(page);
-
-    await slider.clickIndicator(4);
-    // Wait for multiple animations (goTo steps through each slide)
-    for (let i = 0; i < 4; i++) {
-      await slider.waitForAnimation();
-    }
-
-    await slider.expectSlideTitle('Slide 5');
   });
 });
 
@@ -231,5 +168,85 @@ test.describe('OneItemSlider Vue - Animation', () => {
     // After animation, should be at final position
     const finalTransform = await slider.getTransformValue();
     expect(finalTransform).not.toBe(initialTransform);
+  });
+});
+
+test.describe('OneItemSlider Vue - Infinite List', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto(BASE_URL);
+  });
+
+  test('can navigate to high index slides', async ({ page }) => {
+    const slider = new SliderPage(page);
+
+    // Navigate forward 20 times rapidly
+    for (let i = 0; i < 20; i++) {
+      await slider.clickNext();
+      await slider.waitForAnimation();
+    }
+
+    await slider.expectSlideTitle('Slide 21');
+    await expect(page.locator('text=21 / 10,000')).toBeVisible();
+  });
+
+  test('renders dynamically generated titles', async ({ page }) => {
+    const slider = new SliderPage(page);
+
+    // Navigate to various slides and verify dynamic title generation
+    await slider.expectSlideTitle('Slide 1');
+
+    await slider.clickNext();
+    await slider.waitForAnimation();
+    await slider.expectSlideTitle('Slide 2');
+
+    // Navigate to slide 10
+    for (let i = 0; i < 8; i++) {
+      await slider.clickNext();
+      await slider.waitForAnimation();
+    }
+    await slider.expectSlideTitle('Slide 10');
+  });
+
+  test('goTo with animation shows smooth transition', async ({ page }) => {
+    const slider = new SliderPage(page);
+
+    await slider.expectSlideTitle('Slide 1');
+
+    // Get initial transform value
+    const initialTransform = await slider.getTransformValue();
+
+    // Type target slide number and trigger goTo with animation
+    await page.locator('input[type="number"]').fill('100');
+    await page.locator('button', { hasText: 'Go' }).click();
+
+    // Check that animation is happening (transform should be changing)
+    await page.waitForTimeout(100);
+    const midTransform = await slider.getTransformValue();
+    expect(midTransform).not.toBe(initialTransform);
+
+    // Wait for animation to complete
+    await slider.waitForAnimation();
+
+    // Verify we landed on the correct slide
+    await slider.expectSlideTitle('Slide 100');
+    await expect(page.locator('text=100 / 10,000')).toBeVisible();
+  });
+
+  test('goTo backwards with animation works correctly', async ({ page }) => {
+    const slider = new SliderPage(page);
+
+    // First navigate to slide 50
+    await page.locator('input[type="number"]').fill('50');
+    await page.locator('button', { hasText: 'Go' }).click();
+    await slider.waitForAnimation();
+    await slider.expectSlideTitle('Slide 50');
+
+    // Now go backwards to slide 10
+    await page.locator('input[type="number"]').fill('10');
+    await page.locator('button', { hasText: 'Go' }).click();
+    await slider.waitForAnimation();
+
+    await slider.expectSlideTitle('Slide 10');
+    await expect(page.locator('text=10 / 10,000')).toBeVisible();
   });
 });

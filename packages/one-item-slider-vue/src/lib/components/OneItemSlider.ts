@@ -25,7 +25,7 @@ export type OneItemSliderSlotProps = {
 export type OneItemSliderExpose = {
   next: () => Promise<void>;
   prev: () => Promise<void>;
-  goTo: (index: number) => Promise<void>;
+  goTo: (index: number, animate?: boolean) => Promise<void>;
   adjust: () => void;
 };
 
@@ -208,8 +208,8 @@ export const OneItemSlider = defineComponent({
       await controllerRef.value?.prev();
     };
 
-    const goTo = async (targetIndex: number) => {
-      await controllerRef.value?.goTo(targetIndex);
+    const goTo = async (targetIndex: number, animate = false) => {
+      await controllerRef.value?.goTo(targetIndex, animate);
     };
 
     const adjust = () => {

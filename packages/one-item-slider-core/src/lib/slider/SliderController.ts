@@ -55,9 +55,21 @@ export const createSliderController = (
   // Create state signals
   const index = createSignal(config.initialIndex);
   const axisValue = createSignal<AnimatedValue>({ value: 0, duration: 0 });
+
+  // Override for animated goTo - temporarily replaces adjacent slide with target
+  const goToOverride = createSignal<number | null>(null);
+
   const indexes = createComputed(
-    () => config.rangeExtractor(index.value, config.count, config.loop),
-    () => [index]
+    () => {
+      const override = goToOverride.value;
+      if (override !== null) {
+        const current = index.value;
+        // Show [current, target] for forward, [target, current] for backward
+        return override > current ? [current, override] : [override, current];
+      }
+      return config.rangeExtractor(index.value, config.count, config.loop);
+    },
+    () => [index, goToOverride]
   );
 
   const state: SliderState = { index, axisValue, indexes };
@@ -237,16 +249,58 @@ export const createSliderController = (
       }
     },
 
-    async goTo(targetIndex: number) {
-      const currentIndex = index.value;
-      if (targetIndex === currentIndex) return;
+    async goTo(targetIndex: number, animate = false) {
+      const clampedIndex = clamp(targetIndex, 0, config.count - 1);
+      if (clampedIndex === index.value) return;
 
-      const increment = targetIndex > currentIndex ? 1 : -1;
-      const steps = abs(targetIndex - currentIndex);
+      gestureController.unobserve();
 
-      for (let i = 0; i < steps; i++) {
-        await changeIndex(increment);
+      if (!animate) {
+        // Instant jump
+        safeCall(events.onBeforeChange, index.value, clampedIndex, getRangeIndex());
+        index.value = clampedIndex;
+        setAxisValueForCurrentRangeIndex(0);
+        safeCall(events.onAfterChange, index.value, getRangeIndex());
+        gestureController.observe();
+        return;
       }
+
+      // Animated jump: replace adjacent slide with target and animate one step
+      const goingForward = clampedIndex > index.value;
+
+      safeCall(events.onBeforeChange, index.value, clampedIndex, getRangeIndex());
+
+      // Set override - indexes will become [current, target] or [target, current]
+      goToOverride.value = clampedIndex;
+
+      // Position at current slide in the new 2-element range
+      // Forward: current is at index 0, backward: current is at index 1
+      const currentRangeIdx = goingForward ? 0 : 1;
+      axisValue.value = {
+        value: currentRangeIdx * primarySize * -1,
+        duration: 0,
+      };
+
+      // Animate to target position
+      const targetRangeIdx = goingForward ? 1 : 0;
+      await runTransition(() => {
+        const deferred = createDeferred<void>();
+        axisValue.value = {
+          value: targetRangeIdx * primarySize * -1,
+          duration: config.transitionDuration,
+          done: () => deferred.resolve(),
+        };
+        return deferred;
+      });
+
+      // Clear override and set final state
+      goToOverride.value = null;
+      index.value = clampedIndex;
+      setAxisValueForCurrentRangeIndex(0);
+
+      safeCall(events.onAfterChange, index.value, getRangeIndex());
+
+      gestureController.observe();
     },
 
     adjust(duration = 0) {

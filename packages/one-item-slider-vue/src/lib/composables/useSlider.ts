@@ -16,7 +16,7 @@ export type UseSliderReturn = {
   indexes: Ref<number[]>;
   next: () => Promise<void>;
   prev: () => Promise<void>;
-  goTo: (index: number) => Promise<void>;
+  goTo: (index: number, animate?: boolean) => Promise<void>;
   adjust: () => void;
   setPrimarySize: (size: number) => void;
   attach: (element: HTMLElement) => void;
@@ -97,8 +97,8 @@ export const useSlider = (options: UseSliderOptions): UseSliderReturn => {
     await controllerRef.value?.prev();
   };
 
-  const goTo = async (targetIndex: number) => {
-    await controllerRef.value?.goTo(targetIndex);
+  const goTo = async (targetIndex: number, animate = false) => {
+    await controllerRef.value?.goTo(targetIndex, animate);
   };
 
   const adjust = () => {
