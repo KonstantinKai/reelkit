@@ -21,6 +21,25 @@ let sharedVideo: HTMLVideoElement | null = null;
 // Store playback positions per slideKey to restore when returning to a slide
 const playbackPositions = new Map<string, number>();
 
+// Store captured video frames per slideKey to use as poster when returning
+const capturedFrames = new Map<string, string>();
+
+// Capture current video frame as data URL
+const captureFrame = (video: HTMLVideoElement): string | null => {
+  try {
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    if (!ctx || video.videoWidth === 0) return null;
+    ctx.drawImage(video, 0, 0);
+    return canvas.toDataURL('image/jpeg', 0.8);
+  } catch {
+    // Cross-origin or other error
+    return null;
+  }
+};
+
 const getSharedVideo = (): HTMLVideoElement => {
   if (!sharedVideo) {
     sharedVideo = document.createElement('video');
@@ -31,6 +50,7 @@ const getSharedVideo = (): HTMLVideoElement => {
     sharedVideo.autoplay = true;
     sharedVideo.disableRemotePlayback = true;
     sharedVideo.disablePictureInPicture = true;
+    sharedVideo.crossOrigin = 'anonymous';
     sharedVideo.className = 'video-slide-element';
   }
   return sharedVideo;
@@ -54,6 +74,7 @@ const VideoSlide: React.FC<VideoSlideProps> = ({
   const shouldPlay = isActive && isInnerActive;
   const isVertical = aspectRatio < 1;
   const [isLoading, setIsLoading] = useState(false);
+  const [showPoster, setShowPoster] = useState(true);
 
   // Mount shared video element to this container when active
   useIsomorphicLayoutEffect(() => {
@@ -62,13 +83,17 @@ const VideoSlide: React.FC<VideoSlideProps> = ({
     const video = getSharedVideo();
     const container = containerRef.current;
 
-    // Show loader initially
+    // Show loader and poster initially
     setIsLoading(true);
+    setShowPoster(true);
 
     // Video event handlers for loading state
     const handleCanPlay = () => setIsLoading(false);
     const handleWaiting = () => setIsLoading(true);
-    const handlePlaying = () => setIsLoading(false);
+    const handlePlaying = () => {
+      setIsLoading(false);
+      setShowPoster(false);
+    };
 
     video.addEventListener('canplay', handleCanPlay);
     video.addEventListener('waiting', handleWaiting);
@@ -76,7 +101,6 @@ const VideoSlide: React.FC<VideoSlideProps> = ({
 
     // Update video properties
     video.src = src;
-    video.poster = poster || '';
     video.muted = soundState.muted;
 
     // Restore saved playback position or start from beginning
@@ -108,6 +132,12 @@ const VideoSlide: React.FC<VideoSlideProps> = ({
       // Save current playback position before removing
       playbackPositions.set(slideKey, video.currentTime);
 
+      // Capture current frame to use as poster when returning
+      const frame = captureFrame(video);
+      if (frame) {
+        capturedFrames.set(slideKey, frame);
+      }
+
       // Remove from this container when unmounting or becoming inactive
       if (video.parentNode === container) {
         container.removeChild(video);
@@ -118,7 +148,7 @@ const VideoSlide: React.FC<VideoSlideProps> = ({
 
       setIsLoading(false);
     };
-  }, [shouldPlay, src, poster, isVertical, slideKey, onVideoRef]);
+  }, [shouldPlay, src, isVertical, slideKey, onVideoRef]);
 
   // Sync muted state with sound context
   useEffect(() => {
@@ -136,12 +166,13 @@ const VideoSlide: React.FC<VideoSlideProps> = ({
         height: size[1],
       }}
     >
-      {/* Poster image shown when video is not active */}
-      {!shouldPlay && poster && (
+      {/* Poster image with fade out transition */}
+      {/* Use captured frame if available, otherwise fall back to original poster */}
+      {(capturedFrames.get(slideKey) ?? poster) && (
         <img
-          src={poster}
+          src={capturedFrames.get(slideKey) ?? poster}
           alt=""
-          className="video-slide-poster"
+          className={`video-slide-poster ${!shouldPlay || showPoster ? 'visible' : ''}`}
           style={{
             objectFit: isVertical ? 'cover' : 'contain',
           }}
