@@ -1,0 +1,10 @@
+{
+  "name": "@reelkit/example-svelte",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@reelkit/svelte": "0.0.1",
+    "svelte": "^5.0.0"
+  }
+}

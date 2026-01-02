@@ -1,0 +1,28 @@
+{
+  "name": "@reelkit/svelte",
+  "version": "0.0.1",
+  "type": "module",
+  "svelte": "./dist/index.js",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "svelte": "./dist/index.js",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "!**/*.tsbuildinfo"
+  ],
+  "dependencies": {
+    "@reelkit/core": "*"
+  },
+  "peerDependencies": {
+    "svelte": ">=5.0.0"
+  }
+}
