@@ -1,0 +1,8 @@
+{
+  "name": "example-lit-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/example-lit-e2e/src",
+  "tags": [],
+  "implicitDependencies": ["example-lit"]
+}
