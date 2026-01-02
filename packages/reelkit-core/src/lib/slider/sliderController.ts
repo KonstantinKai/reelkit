@@ -12,8 +12,13 @@ import {
 } from '../utils';
 import { createGestureController } from '../gestures';
 import { createKeyboardController } from '../keyboard';
-import type { GestureAxisDragUpdateEvent, GestureDragEndEvent } from '../gestures';
+import { createWheelController } from '../wheel';
+import type {
+  GestureAxisDragUpdateEvent,
+  GestureDragEndEvent,
+} from '../gestures';
 import type { NavKey } from '../keyboard';
+import type { WheelDirection } from '../wheel';
 import type {
   AnimatedValue,
   RangeExtractor,
@@ -25,14 +30,15 @@ import type {
 
 const DEFAULT_TRANSITION_DURATION = 300;
 const DEFAULT_SWIPE_DISTANCE_FACTOR = 0.12;
-const KEYBOARD_THROTTLE_MS = 1000;
+const KEYBOARD_THROTTLE_MS = DEFAULT_TRANSITION_DURATION + 100;
+const DEFAULT_WHEEL_DEBOUNCE_MS = 200;
 
 const defaultRangeExtractor: RangeExtractor = (current, count, loop) =>
   extractRange(count, current, current, 1, loop);
 
 export const createSliderController = (
   initialConfig: SliderConfig,
-  initialEvents: SliderEvents = {}
+  initialEvents: SliderEvents = {},
 ): SliderController => {
   // Merge with defaults
   let config: Required<SliderConfig> = {
@@ -40,9 +46,13 @@ export const createSliderController = (
     initialIndex: initialConfig.initialIndex ?? 0,
     direction: initialConfig.direction ?? 'vertical',
     loop: initialConfig.loop ?? false,
-    transitionDuration: initialConfig.transitionDuration ?? DEFAULT_TRANSITION_DURATION,
-    swipeDistanceFactor: initialConfig.swipeDistanceFactor ?? DEFAULT_SWIPE_DISTANCE_FACTOR,
+    transitionDuration:
+      initialConfig.transitionDuration ?? DEFAULT_TRANSITION_DURATION,
+    swipeDistanceFactor:
+      initialConfig.swipeDistanceFactor ?? DEFAULT_SWIPE_DISTANCE_FACTOR,
     rangeExtractor: initialConfig.rangeExtractor ?? defaultRangeExtractor,
+    enableWheel: initialConfig.enableWheel ?? false,
+    wheelDebounceMs: initialConfig.wheelDebounceMs ?? DEFAULT_WHEEL_DEBOUNCE_MS,
   };
 
   let events = { ...initialEvents };
@@ -67,7 +77,7 @@ export const createSliderController = (
       }
       return config.rangeExtractor(index.value, config.count, config.loop);
     },
-    () => [index, goToOverride]
+    () => [index, goToOverride],
   );
 
   const state: SliderState = { index, axisValue, indexes };
@@ -75,7 +85,10 @@ export const createSliderController = (
   // Local helpers
   const getRangeIndex = () => indexes.value.indexOf(index.value);
 
-  const setAxisValueForCurrentRangeIndex = (duration = 0, done?: () => void) => {
+  const setAxisValueForCurrentRangeIndex = (
+    duration = 0,
+    done?: () => void,
+  ) => {
     axisValue.value = {
       value: getRangeIndex() * primarySize * -1,
       duration,
@@ -83,7 +96,9 @@ export const createSliderController = (
     };
   };
 
-  const runTransition = async (before: () => { promise: Promise<void>; resolve: (value?: void) => void }) => {
+  const runTransition = async (
+    before: () => { promise: Promise<void>; resolve: (value?: void) => void },
+  ) => {
     const { promise } = before();
     await promise;
   };
@@ -101,7 +116,11 @@ export const createSliderController = (
     gestureController.unobserve();
 
     const inds = indexes.value;
-    const nextRangeIndex = clamp(getRangeIndex() + increment, 0, inds.length - 1);
+    const nextRangeIndex = clamp(
+      getRangeIndex() + increment,
+      0,
+      inds.length - 1,
+    );
     const nextIndex = inds[nextRangeIndex];
 
     safeCall(events.onBeforeChange, index.value, nextIndex, getRangeIndex());
@@ -144,8 +163,10 @@ export const createSliderController = (
     const isHorizontal = config.direction === 'horizontal';
     const key = isHorizontal ? 0 : 1;
     const necessaryDistance = primarySize * config.swipeDistanceFactor;
-    const distanceValue = key === 0 ? first(event.distance) : last(event.distance);
-    const velocityValue = key === 0 ? first(event.velocity) : last(event.velocity);
+    const distanceValue =
+      key === 0 ? first(event.distance) : last(event.distance);
+    const velocityValue =
+      key === 0 ? first(event.velocity) : last(event.velocity);
     const increment = isNegative(distanceValue) ? 1 : -1;
     const isFirstOrLast = getIsFirstOrLast(indexes.value, increment);
 
@@ -168,7 +189,9 @@ export const createSliderController = (
     if (cancelTransition) {
       await runTransition(() => {
         const deferred = createDeferred<void>();
-        setAxisValueForCurrentRangeIndex(config.transitionDuration, () => deferred.resolve());
+        setAxisValueForCurrentRangeIndex(config.transitionDuration, () =>
+          deferred.resolve(),
+        );
         return deferred;
       });
 
@@ -193,7 +216,7 @@ export const createSliderController = (
       onVerticalDragStart: !isHorizontal() ? onMainAxisDragStart : undefined,
       onVerticalDragUpdate: !isHorizontal() ? onDragUpdate : undefined,
       onDragEnd: onAxisAwareDragEnd,
-    }
+    },
   );
 
   // Create keyboard controller
@@ -218,8 +241,35 @@ export const createSliderController = (
           }
         }
       },
-    }
+    },
   );
+
+  // Create wheel controller (only if enabled)
+  const wheelController = config.enableWheel
+    ? createWheelController(
+        { debounceMs: config.wheelDebounceMs },
+        {
+          onWheel: (direction: WheelDirection) => {
+            let increment: -1 | 1 | null = null;
+
+            if (isHorizontal()) {
+              if (direction === 'left') increment = -1;
+              if (direction === 'right') increment = 1;
+            } else {
+              if (direction === 'up') increment = -1;
+              if (direction === 'down') increment = 1;
+            }
+
+            if (increment !== null) {
+              const isFirstOrLast = getIsFirstOrLast(indexes.value, increment);
+              if (!isFirstOrLast) {
+                changeIndex(increment);
+              }
+            }
+          },
+        },
+      )
+    : null;
 
   // After change observer
   let afterChangeDispose: (() => void) | null = null;
@@ -255,7 +305,12 @@ export const createSliderController = (
 
       if (!animate) {
         // Instant jump
-        safeCall(events.onBeforeChange, index.value, clampedIndex, getRangeIndex());
+        safeCall(
+          events.onBeforeChange,
+          index.value,
+          clampedIndex,
+          getRangeIndex(),
+        );
         index.value = clampedIndex;
         setAxisValueForCurrentRangeIndex(0);
         safeCall(events.onAfterChange, index.value, getRangeIndex());
@@ -266,7 +321,12 @@ export const createSliderController = (
       // Animated jump: replace adjacent slide with target and animate one step
       const goingForward = clampedIndex > index.value;
 
-      safeCall(events.onBeforeChange, index.value, clampedIndex, getRangeIndex());
+      safeCall(
+        events.onBeforeChange,
+        index.value,
+        clampedIndex,
+        getRangeIndex(),
+      );
 
       // Set override - indexes will become [current, target] or [target, current]
       goToOverride.value = clampedIndex;
@@ -344,11 +404,13 @@ export const createSliderController = (
     observe() {
       gestureController.observe();
       keyboardController.attach();
+      wheelController?.attach();
     },
 
     unobserve() {
       gestureController.unobserve();
       keyboardController.detach();
+      wheelController?.detach();
     },
 
     attach(element: HTMLElement) {
@@ -358,11 +420,13 @@ export const createSliderController = (
     detach() {
       gestureController.detach();
       keyboardController.detach();
+      wheelController?.detach();
     },
 
     dispose() {
       gestureController.detach();
       keyboardController.detach();
+      wheelController?.detach();
       if (afterChangeDispose) {
         afterChangeDispose();
       }

@@ -1,0 +1,207 @@
+import React, { useState, useMemo } from 'react';
+import { Play } from 'lucide-react';
+import { generateContent, getThumbnail } from '../components/reel-player/mockContent';
+import ReelPlayerOverlay from '../components/reel-player/ReelPlayerOverlay';
+
+const CONTENT_COUNT = 50;
+
+function ReelPlayerPage() {
+  const [isPlayerOpen, setIsPlayerOpen] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
+  const content = useMemo(() => generateContent(CONTENT_COUNT), []);
+
+  const openPlayer = (index: number) => {
+    setSelectedIndex(index);
+    setIsPlayerOpen(true);
+  };
+
+  const closePlayer = () => {
+    setIsPlayerOpen(false);
+  };
+
+  return (
+    <div
+      style={{
+        minHeight: '100vh',
+        backgroundColor: '#111',
+        padding: '80px 16px 16px',
+      }}
+    >
+      <div
+        style={{
+          maxWidth: 1200,
+          margin: '0 auto',
+        }}
+      >
+        <h1
+          style={{
+            color: '#fff',
+            fontSize: '1.5rem',
+            marginBottom: 24,
+            fontWeight: 500,
+          }}
+        >
+          Reel Player Demo
+        </h1>
+        <p
+          style={{
+            color: 'rgba(255,255,255,0.6)',
+            fontSize: '0.9rem',
+            marginBottom: 32,
+          }}
+        >
+          Click on any thumbnail to open the player. Swipe up/down or use arrow keys to navigate.
+          Supports images, videos, and multi-media posts with horizontal sliders.
+        </p>
+
+        {/* Thumbnail grid */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
+            gap: 8,
+          }}
+        >
+          {content.map((item, index) => {
+            const hasVideo = item.media.some((m) => m.type === 'video');
+            const isMulti = item.media.length > 1;
+
+            return (
+              <div
+                key={item.id}
+                onClick={() => openPlayer(index)}
+                style={{
+                  position: 'relative',
+                  aspectRatio: '9 / 16',
+                  borderRadius: 8,
+                  overflow: 'hidden',
+                  cursor: 'pointer',
+                  backgroundColor: '#222',
+                }}
+              >
+                <img
+                  src={getThumbnail(item)}
+                  alt=""
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                  }}
+                  loading="lazy"
+                />
+
+                {/* Video indicator */}
+                {hasVideo && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: 8,
+                      right: 8,
+                      width: 28,
+                      height: 28,
+                      borderRadius: '50%',
+                      backgroundColor: 'rgba(0,0,0,0.6)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <Play size={14} fill="#fff" color="#fff" />
+                  </div>
+                )}
+
+                {/* Multi-media indicator */}
+                {isMulti && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: 8,
+                      left: 8,
+                      padding: '4px 8px',
+                      borderRadius: 4,
+                      backgroundColor: 'rgba(0,0,0,0.6)',
+                      color: '#fff',
+                      fontSize: '0.7rem',
+                      fontWeight: 500,
+                    }}
+                  >
+                    {item.media.length}
+                  </div>
+                )}
+
+                {/* Hover overlay */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    backgroundColor: 'rgba(0,0,0,0)',
+                    transition: 'background-color 0.2s',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.3)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0)';
+                  }}
+                />
+
+                {/* Author info */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    padding: '32px 8px 8px',
+                    background: 'linear-gradient(transparent, rgba(0,0,0,0.8))',
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                    }}
+                  >
+                    <img
+                      src={item.author.avatar}
+                      alt=""
+                      style={{
+                        width: 20,
+                        height: 20,
+                        borderRadius: '50%',
+                        objectFit: 'cover',
+                      }}
+                    />
+                    <span
+                      style={{
+                        color: '#fff',
+                        fontSize: '0.7rem',
+                        fontWeight: 500,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {item.author.name}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <ReelPlayerOverlay
+        isOpen={isPlayerOpen}
+        onClose={closePlayer}
+        content={content}
+        initialIndex={selectedIndex}
+      />
+    </div>
+  );
+}
+
+export default ReelPlayerPage;

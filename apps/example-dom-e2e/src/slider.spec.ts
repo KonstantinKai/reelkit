@@ -90,6 +90,53 @@ test.describe('Reel DOM - Keyboard Navigation', () => {
   });
 });
 
+test.describe('Reel DOM - Wheel Navigation', () => {
+  // Mouse wheel not supported in mobile WebKit
+  test.skip(({ browserName, isMobile }) => isMobile && browserName === 'webkit', 'Wheel not supported in mobile WebKit');
+
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/');
+  });
+
+  test('wheel down navigates to next slide', async ({ page }) => {
+    const slider = new SliderPage(page);
+    await slider.expectSlideTitle('Slide 1');
+    await slider.wheelDown();
+    await slider.waitForAnimation();
+    await slider.expectSlideTitle('Slide 2');
+  });
+
+  test('wheel up navigates to previous slide', async ({ page }) => {
+    const slider = new SliderPage(page);
+    await slider.wheelDown();
+    await slider.waitForAnimation();
+    await slider.waitForWheelDebounce();
+    await slider.wheelUp();
+    await slider.waitForAnimation();
+    await slider.expectSlideTitle('Slide 1');
+  });
+
+  test('wheel navigation respects debounce', async ({ page }) => {
+    const slider = new SliderPage(page);
+    await slider.expectSlideTitle('Slide 1');
+    await slider.wheelDown();
+    await page.waitForTimeout(50);
+    await slider.wheelDown();
+    await page.waitForTimeout(50);
+    await slider.wheelDown();
+    await slider.waitForAnimation();
+    await slider.expectSlideTitle('Slide 2');
+  });
+
+  test('cannot wheel before first slide', async ({ page }) => {
+    const slider = new SliderPage(page);
+    await slider.expectSlideTitle('Slide 1');
+    await slider.wheelUp();
+    await slider.waitForAnimation();
+    await slider.expectSlideTitle('Slide 1');
+  });
+});
+
 test.describe('Reel DOM - Touch Gestures', () => {
   test.skip(({ browserName }) => browserName !== 'chromium', 'Touch API not supported');
 

@@ -305,6 +305,42 @@ export class SliderPage {
   }
 
   /**
+   * Scroll wheel down (navigates to next slide)
+   */
+  async wheelDown(): Promise<void> {
+    const box = await this.container.boundingBox();
+    if (!box) throw new Error('Container not found');
+
+    const centerX = box.x + box.width / 2;
+    const centerY = box.y + box.height / 2;
+
+    await this.page.mouse.move(centerX, centerY);
+    await this.page.mouse.wheel(0, 100);
+  }
+
+  /**
+   * Scroll wheel up (navigates to previous slide)
+   */
+  async wheelUp(): Promise<void> {
+    const box = await this.container.boundingBox();
+    if (!box) throw new Error('Container not found');
+
+    const centerX = box.x + box.width / 2;
+    const centerY = box.y + box.height / 2;
+
+    await this.page.mouse.move(centerX, centerY);
+    await this.page.mouse.wheel(0, -100);
+  }
+
+  /**
+   * Wait for wheel debounce to reset (required between consecutive wheel events)
+   * Default wheel debounce is 200ms
+   */
+  async waitForWheelDebounce(): Promise<void> {
+    await this.page.waitForTimeout(300);
+  }
+
+  /**
    * Wait for slide animation to complete
    */
   async waitForAnimation(): Promise<void> {

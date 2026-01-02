@@ -32,6 +32,8 @@ export class Reel {
       swipeDistanceFactor: config.swipeDistanceFactor ?? 0.12,
       enableGestures: config.enableGestures ?? true,
       enableKeyboard: config.enableKeyboard ?? true,
+      enableWheel: config.enableWheel ?? false,
+      wheelDebounceMs: config.wheelDebounceMs ?? 200,
       rangeExtractor: config.rangeExtractor,
     };
 
@@ -53,6 +55,8 @@ export class Reel {
         transitionDuration: this.config.transitionDuration,
         swipeDistanceFactor: this.config.swipeDistanceFactor,
         rangeExtractor: this.config.rangeExtractor,
+        enableWheel: this.config.enableWheel,
+        wheelDebounceMs: this.config.wheelDebounceMs,
       },
       {
         onBeforeChange: (index, nextIndex) => {

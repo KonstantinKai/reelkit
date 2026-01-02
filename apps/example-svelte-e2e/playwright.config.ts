@@ -41,7 +41,7 @@ export default defineConfig({
   webServer: {
     command: 'npx nx serve example-svelte',
     url: baseURL,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: !process.env['CI'],
     cwd: workspaceRoot,
     timeout: 120000,
   },

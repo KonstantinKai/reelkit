@@ -18,6 +18,8 @@
     swipeDistanceFactor?: number;
     enableGestures?: boolean;
     enableKeyboard?: boolean;
+    enableWheel?: boolean;
+    wheelDebounceMs?: number;
     rangeExtractor?: RangeExtractor;
     onIndexChange?: (index: number) => void;
     children: Snippet<[{ index: number; axisValue: number; indexes: number[] }]>;
@@ -33,6 +35,8 @@
     swipeDistanceFactor = 0.15,
     enableGestures = true,
     enableKeyboard = true,
+    enableWheel = false,
+    wheelDebounceMs = 200,
     rangeExtractor,
     onIndexChange,
     children,
@@ -79,6 +83,8 @@
         transitionDuration,
         swipeDistanceFactor,
         rangeExtractor,
+        enableWheel,
+        wheelDebounceMs,
       },
       {
         onAfterChange: (newIndex: number) => {

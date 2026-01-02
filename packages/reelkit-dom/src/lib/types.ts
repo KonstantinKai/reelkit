@@ -52,6 +52,18 @@ export interface ReelConfig {
    */
   enableKeyboard?: boolean;
 
+  /**
+   * Enable mouse wheel navigation
+   * @default false
+   */
+  enableWheel?: boolean;
+
+  /**
+   * Debounce duration for wheel events in ms
+   * @default 200
+   */
+  wheelDebounceMs?: number;
+
   /** Custom range extractor for virtualization */
   rangeExtractor?: RangeExtractor;
 }

@@ -77,6 +77,7 @@ const handleIndicatorClick = (index: number) => {
       :count="TOTAL_SLIDES"
       :size="size"
       direction="vertical"
+      :enable-wheel="true"
       @index-change="handleIndexChange"
     >
       <template #default="{ indexes, axisValue }">

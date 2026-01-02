@@ -51,6 +51,18 @@ export interface ReelProps {
 
   useNavKeys?: boolean;
 
+  /**
+   * Enable mouse wheel navigation
+   * @default false
+   */
+  enableWheel?: boolean;
+
+  /**
+   * Debounce duration for wheel events in ms
+   * @default 200
+   */
+  wheelDebounceMs?: number;
+
   afterChange?: (index: number, indexInRange: number) => void;
   beforeChange?: (
     index: number,
@@ -119,6 +131,8 @@ const Element = ({
   keyExtractor = defaultKeyExtractor,
   useNavKeys = true,
   transitionDuration = 300,
+  enableWheel = false,
+  wheelDebounceMs = 200,
   ...props
 }: ReelProps) => {
   const { size, apiRef: forwardedRef } = props;
@@ -133,6 +147,8 @@ const Element = ({
     keyExtractor,
     useNavKeys,
     transitionDuration,
+    enableWheel,
+    wheelDebounceMs,
   };
 
   const isHorizontal = direction === 'horizontal';
@@ -150,6 +166,8 @@ const Element = ({
         transitionDuration,
         swipeDistanceFactor,
         rangeExtractor,
+        enableWheel,
+        wheelDebounceMs,
       },
       {
         onBeforeChange: (index, nextIndex, rangeIndex) => {
@@ -281,7 +299,8 @@ export const Reel = React.memo(
     prev.afterChange === next.afterChange &&
     prev.onSlideDragStart === next.onSlideDragStart &&
     prev.onSlideDragCanceled === next.onSlideDragCanceled &&
-    prev.useNavKeys === next.useNavKeys
+    prev.useNavKeys === next.useNavKeys &&
+    prev.enableWheel === next.enableWheel
 );
 
 const Content = React.memo(

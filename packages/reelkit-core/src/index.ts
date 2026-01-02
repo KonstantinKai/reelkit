@@ -61,6 +61,15 @@ export type {
   KeyboardController,
 } from './lib/keyboard/types';
 
+// Wheel
+export { createWheelController } from './lib/wheel/wheelController';
+export type {
+  WheelDirection,
+  WheelControllerConfig,
+  WheelControllerEvents,
+  WheelController,
+} from './lib/wheel/types';
+
 // Slider
 export { createSliderController, defaultRangeExtractor } from './lib/slider/sliderController';
 export { animate, type AnimationOptions } from './lib/slider/animate';

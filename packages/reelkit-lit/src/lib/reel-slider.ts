@@ -85,6 +85,14 @@ export class ReelSlider extends LitElement {
   @property({ type: Boolean, attribute: 'enable-keyboard' })
   enableKeyboard = true;
 
+  /** Enable mouse wheel navigation */
+  @property({ type: Boolean, attribute: 'enable-wheel' })
+  enableWheel = false;
+
+  /** Debounce duration for wheel events in ms */
+  @property({ type: Number, attribute: 'wheel-debounce-ms' })
+  wheelDebounceMs = 200;
+
   /** Custom range extractor for virtualization */
   @property({ attribute: false })
   rangeExtractor?: RangeExtractor;
@@ -198,6 +206,8 @@ export class ReelSlider extends LitElement {
         transitionDuration: this.transitionDuration,
         swipeDistanceFactor: this.swipeDistanceFactor,
         rangeExtractor: this.rangeExtractor,
+        enableWheel: this.enableWheel,
+        wheelDebounceMs: this.wheelDebounceMs,
       },
       {
         onBeforeChange: (index, nextIndex) => {

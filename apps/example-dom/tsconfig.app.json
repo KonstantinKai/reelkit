@@ -8,10 +8,7 @@
   "exclude": ["src/**/*.spec.ts"],
   "references": [
     {
-      "path": "../../packages/reelkit-core/tsconfig.lib.json"
-    },
-    {
-      "path": "../../packages/reelkit-dom/tsconfig.lib.json"
+      "path": "../../packages/reelkit-dom"
     }
   ]
 }

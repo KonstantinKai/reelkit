@@ -72,6 +72,14 @@ export const Reel = defineComponent({
       type: Boolean,
       default: true,
     },
+    enableWheel: {
+      type: Boolean,
+      default: false,
+    },
+    wheelDebounceMs: {
+      type: Number,
+      default: 200,
+    },
   },
   emits: ['update:index', 'indexChange'],
   slots: Object as SlotsType<{
@@ -101,6 +109,8 @@ export const Reel = defineComponent({
           transitionDuration: props.transitionDuration,
           swipeDistanceFactor: props.swipeDistanceFactor,
           rangeExtractor: props.rangeExtractor,
+          enableWheel: props.enableWheel,
+          wheelDebounceMs: props.wheelDebounceMs,
         },
         {
           onAfterChange: (newIndex: number) => {

@@ -138,6 +138,7 @@ function createApp() {
       element: container,
       count: TOTAL_SLIDES,
       direction: 'vertical',
+      enableWheel: true,
       itemBuilder: (index) => {
         const slide = getSlideContent(index);
         const div = document.createElement('div');

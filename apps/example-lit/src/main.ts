@@ -102,6 +102,7 @@ function createApp() {
         count=${TOTAL_SLIDES}
         direction="vertical"
         transition-duration="300"
+        enable-wheel
         .itemBuilder=${itemBuilder}
         @reel-change=${handleSlideChange}
         style="width: 100vw; height: 100vh; overflow: hidden;"

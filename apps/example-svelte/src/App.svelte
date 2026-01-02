@@ -88,6 +88,7 @@
     count={TOTAL_SLIDES}
     {size}
     direction="vertical"
+    enableWheel={true}
     onIndexChange={handleIndexChange}
   >
     {#snippet children({ indexes, axisValue })}

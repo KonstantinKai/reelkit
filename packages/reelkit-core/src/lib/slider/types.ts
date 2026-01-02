@@ -18,6 +18,10 @@ export interface SliderConfig {
   transitionDuration?: number;
   swipeDistanceFactor?: number;
   rangeExtractor?: RangeExtractor;
+  /** Enable mouse wheel navigation. Default: false */
+  enableWheel?: boolean;
+  /** Debounce duration for wheel events in ms. Default: 200 */
+  wheelDebounceMs?: number;
 }
 
 export interface SliderEvents {
