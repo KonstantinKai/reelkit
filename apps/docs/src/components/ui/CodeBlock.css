@@ -1,0 +1,42 @@
+.code-block {
+  background-color: var(--color-code-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  margin: 16px 0;
+  overflow: hidden;
+}
+
+.code-block-header {
+  padding: 8px 16px;
+  background-color: var(--color-code-header);
+  border-bottom: 1px solid var(--color-border);
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  font-weight: 500;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+.code-block-content {
+  padding: 16px;
+  margin: 0;
+  overflow-x: auto;
+}
+
+.code-block-content pre {
+  margin: 0;
+  padding: 0;
+  background: transparent !important;
+}
+
+.code-block-content code {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+/* Shiki styling */
+.code-block-content .shiki {
+  background: transparent !important;
+  margin: 0;
+  padding: 0;
+}

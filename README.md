@@ -1,19 +1,20 @@
 # Reelkit
 
-A headless, virtualized, TikTok-style vertical slider component library. Supports touch gestures, keyboard navigation, smooth animations, and **virtualizing rendering for massive lists**.
+A headless, virtualized, TikTok-style vertical slider component library. Supports touch gestures, keyboard navigation, smooth animations, and **virtualized rendering for massive lists**.
 
 ## Features
 
-- 🎯 **Virtualized rendering** - efficiently handles 10,000+ items
-- 🎨 **Headless design** - bring your own styles
-- 👆 **Touch gestures** - swipe up/down or left/right
-- ⌨️ **Keyboard navigation** - arrow keys support
-- 🎬 **Smooth animations** - bezier-eased transitions
-- 🔄 **Loop mode** - infinite scrolling support
-- 📍 **Indicator component** - visual position feedback
-- 📦 **Framework bindings** - React and Vue 3 support
-- 💪 **TypeScript** - full type safety
-- 🪶 **Zero dependencies** - lightweight core
+- **Virtualized rendering** - efficiently handles 10,000+ items
+- **Headless design** - bring your own styles
+- **Touch gestures** - swipe up/down or left/right
+- **Keyboard navigation** - arrow keys support
+- **Mouse wheel** - scroll to navigate
+- **Smooth animations** - bezier-eased transitions
+- **Loop mode** - infinite scrolling support
+- **Indicator component** - Instagram-style position dots
+- **Framework bindings** - React (Vue, Svelte coming soon)
+- **TypeScript** - full type safety
+- **Zero dependencies** - lightweight core
 
 ## Packages
 
@@ -21,72 +22,162 @@ A headless, virtualized, TikTok-style vertical slider component library. Support
 |---------|-------------|
 | `@reelkit/core` | Framework-agnostic core with gesture and slider controllers |
 | `@reelkit/react` | React bindings with hooks and components |
-| `@reelkit/vue` | Vue 3 bindings with composables and components |
+| `@reelkit/react-reel-player` | Full-screen Instagram/TikTok-style video player |
+| `@reelkit/react-lightbox` | Full-screen image gallery lightbox |
+
+## Bundle Sizes
+
+| Package | JS | JS (gzip) | CSS | CSS (gzip) |
+|---------|---:|----------:|----:|-----------:|
+| `@reelkit/core` | 14.9 kB | 4.9 kB | - | - |
+| `@reelkit/react` | 9.1 kB | 3.1 kB | - | - |
+| `@reelkit/react-reel-player` | 13.5 kB | 3.9 kB | 1.8 kB | 0.7 kB |
+| `@reelkit/react-lightbox` | 8.9 kB | 2.8 kB | 3.1 kB | 0.8 kB |
+
+### Comparison with Other Libraries
+
+| Library | JS (gzip) | CSS (gzip) | Virtualization | Notes |
+|---------|----------:|-----------:|:--------------:|-------|
+| **ReelKit** (core + react) | 8.0 kB | - | ✅ | Zero dependencies |
+| [Swiper](https://swiperjs.com/) | ~25 kB | ~5 kB | ❌ | Full bundle; tree-shakeable |
+| [Embla Carousel](https://www.embla-carousel.com/) | ~7 kB | - | ❌ | Lightweight, plugin-based |
+| [keen-slider](https://keen-slider.io/) | ~6 kB | - | ❌ | Zero dependencies |
+
+ReelKit renders only **3 slides to DOM** at any time (current, previous, next), efficiently handling 10,000+ items without performance degradation. Most other carousel libraries render all slides in the DOM, which can cause performance issues with large lists.
 
 ## Installation
 
 ```bash
-# React
-npm install @reelkit/react
+# Core React components
+npm install @reelkit/core @reelkit/react
 
-# Vue 3
-npm install @reelkit/vue
+# Reel Player (Instagram/TikTok style)
+npm install @reelkit/react-reel-player
 
-# Core only (framework-agnostic)
-npm install @reelkit/core
+# Image Lightbox
+npm install @reelkit/react-lightbox
 ```
 
 ## Usage
 
-### React
+### Basic Reel Component
 
 ```tsx
-import { OneItemSlider, OneItemSliderIndicator } from '@reelkit/react';
+import { useState } from 'react';
+import { Reel, ReelIndicator } from '@reelkit/react';
 
 function App() {
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [index, setIndex] = useState(0);
 
   return (
-    <OneItemSlider
-      count={5}
-      size={[window.innerWidth, window.innerHeight]}
+    <Reel
+      count={100}
       direction="vertical"
-      afterChange={(index) => setActiveIndex(index)}
-      itemBuilder={(index) => (
+      afterChange={setIndex}
+      itemBuilder={(i) => (
         <div style={{ width: '100%', height: '100%' }}>
-          Slide {index + 1}
+          Slide {i + 1}
         </div>
       )}
     >
-      <OneItemSliderIndicator
-        count={5}
-        active={activeIndex}
+      <ReelIndicator count={100} active={index} />
+    </Reel>
+  );
+}
+```
+
+### Reel Player (Instagram/TikTok style)
+
+```tsx
+import { useState } from 'react';
+import { ReelPlayerOverlay, type ContentItem } from '@reelkit/react-reel-player';
+import '@reelkit/react-reel-player/styles.css';
+
+const content: ContentItem[] = [
+  {
+    id: '1',
+    media: [{
+      id: 'v1',
+      type: 'video',
+      src: 'https://example.com/video.mp4',
+      poster: 'https://example.com/poster.jpg',
+      aspectRatio: 9 / 16,
+    }],
+    author: { name: 'Creator', avatar: '...' },
+    likes: 1234,
+    description: 'Amazing video!',
+  },
+];
+
+function App() {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <>
+      <button onClick={() => setIsOpen(true)}>Open Player</button>
+      <ReelPlayerOverlay
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        content={content}
       />
-    </OneItemSlider>
+    </>
+  );
+}
+```
+
+### Image Lightbox
+
+```tsx
+import { useState } from 'react';
+import { LightboxOverlay, type LightboxItem } from '@reelkit/react-lightbox';
+import '@reelkit/react-lightbox/styles.css';
+
+const images: LightboxItem[] = [
+  { src: 'https://example.com/1.jpg', title: 'Sunset' },
+  { src: 'https://example.com/2.jpg', title: 'Mountains' },
+];
+
+function App() {
+  const [index, setIndex] = useState<number | null>(null);
+
+  return (
+    <>
+      {images.map((img, i) => (
+        <img key={i} src={img.src} onClick={() => setIndex(i)} />
+      ))}
+      <LightboxOverlay
+        isOpen={index !== null}
+        images={images}
+        initialIndex={index ?? 0}
+        onClose={() => setIndex(null)}
+        transition="slide"
+      />
+    </>
   );
 }
 ```
 
 ## API
 
-### OneItemSlider Props
+### Reel Props
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | count | number | required | Number of slides |
-| size | [width, height] | required | Container dimensions |
-| itemBuilder | (index, indexInRange, size) => ReactElement | required | Render function for slides |
+| itemBuilder | (index) => ReactElement | required | Render function for slides |
 | direction | 'horizontal' \| 'vertical' | 'vertical' | Slide direction |
 | initialIndex | number | 0 | Starting slide index |
 | loop | boolean | false | Enable infinite loop |
 | swipeDistanceFactor | number | 0.12 | Swipe threshold (0-1) |
 | transitionDuration | number | 300 | Animation duration in ms |
 | useNavKeys | boolean | true | Enable keyboard navigation |
+| enableWheel | boolean | false | Enable mouse wheel navigation |
+| wheelDebounceMs | number | 200 | Wheel debounce duration |
 | apiRef | ref | - | Ref to access public API |
 | afterChange | (index) => void | - | Callback after slide change |
 | beforeChange | (index, nextIndex) => void | - | Callback before slide change |
 
-### OneItemSliderIndicator Props
+### ReelIndicator Props
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
@@ -94,49 +185,48 @@ function App() {
 | active | number | required | Currently active slide index |
 | radius | number | 3 | Dot radius in pixels |
 | visible | number | 3 | Number of visible dots |
-| renderDot | (props) => ReactElement | - | Custom dot renderer |
+| onDotClick | (index) => void | - | Callback when dot is clicked |
 
 ### Public API (via apiRef)
 
 ```typescript
-interface OneItemSliderPublicApi {
-  next: () => void;      // Go to next slide
-  prev: () => void;      // Go to previous slide
-  adjust: () => void;    // Recalculate positions (call on resize)
-  observe: () => void;   // Start observing gestures
-  unobserve: () => void; // Stop observing gestures
+interface ReelApi {
+  next: () => void;           // Go to next slide
+  prev: () => void;           // Go to previous slide
+  goTo: (index) => void;      // Go to specific slide
+  adjust: () => void;         // Recalculate positions
+  observe: () => void;        // Start observing gestures
+  unobserve: () => void;      // Stop observing gestures
 }
 ```
 
-### Vue 3
+## CSS Customization
 
-```vue
-<script setup lang="ts">
-import { ref } from 'vue';
-import { OneItemSlider, type OneItemSliderExpose } from '@reelkit/vue';
+All UI components use CSS classes that can be overridden for custom styling.
 
-const activeIndex = ref(0);
-const sliderRef = ref<OneItemSliderExpose | null>(null);
-</script>
+### Lightbox Classes
 
-<template>
-  <OneItemSlider
-    ref="sliderRef"
-    :count="100"
-    :size="[400, 600]"
-    direction="vertical"
-    @index-change="(index) => activeIndex = index"
-  >
-    <template #default="{ indexes, axisValue }">
-      <div :style="{ transform: `translateY(${axisValue}px)` }">
-        <div v-for="index in indexes" :key="index">
-          Slide {{ index + 1 }}
-        </div>
-      </div>
-    </template>
-  </OneItemSlider>
-</template>
-```
+| Class | Description |
+|-------|-------------|
+| `.lightbox-container` | Root container |
+| `.lightbox-close` | Close button |
+| `.lightbox-nav` | Navigation arrows |
+| `.lightbox-nav-prev` | Previous arrow |
+| `.lightbox-nav-next` | Next arrow |
+| `.lightbox-counter` | Image counter |
+| `.lightbox-btn` | Control buttons |
+| `.lightbox-info` | Title/description container |
+| `.lightbox-title` | Image title |
+| `.lightbox-description` | Image description |
+| `.lightbox-swipe-hint` | Mobile swipe hint |
+
+### Reel Player Classes
+
+| Class | Description |
+|-------|-------------|
+| `.reel-overlay` | Root overlay container |
+| `.reel-container` | Player container |
+| `.player-nav-arrows` | Navigation arrows container |
 
 ## Development
 
@@ -145,19 +235,16 @@ const sliderRef = ref<OneItemSliderExpose | null>(null);
 npm install
 
 # Build all libraries
-npx nx run-many -t build -p @reelkit/core @reelkit/react @reelkit/vue
+npx nx run-many -t build
 
 # Run React example
 npx nx serve example-react
-
-# Run Vue example
-npx nx serve example-vue
 
 # Run tests
 npx nx run-many -t test
 
 # Run E2E tests
-npx nx e2e example-react
+npx nx e2e example-react-e2e
 ```
 
 ## License

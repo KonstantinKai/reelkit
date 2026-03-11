@@ -1,4 +1,4 @@
-import type { ContentItem, MediaItem } from './types';
+import type { ContentItem, MediaItem } from '@reelkit/react-reel-player';
 
 // Sample videos from Google's sample video bucket with matching thumbnails
 const SAMPLE_VIDEOS = [

@@ -24,3 +24,5 @@ export {
 export { timeout, type TimeoutFn } from './timeout';
 
 export { safeCall } from './safeCall';
+
+export { noop } from './noop';

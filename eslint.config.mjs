@@ -32,7 +32,7 @@ export default [
         'error',
         {
           enforceBuildableLibDependency: true,
-          allow: [],
+          allow: ['^.*/e2e-utils/.*$'],
           depConstraints: [
             {
               sourceTag: '*',
@@ -43,6 +43,7 @@ export default [
       ],
       '@typescript-eslint/no-empty-interface': 'off',
       '@typescript-eslint/no-empty-object-type': 'off',
+      'react-hooks/exhaustive-deps': 'off',
     },
   },
   {

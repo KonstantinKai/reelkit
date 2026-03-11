@@ -1,5 +1,5 @@
 {
-  "name": "@reelkit/example-svelte",
+  "name": "example-svelte",
   "version": "0.0.0",
   "private": true,
   "type": "module",

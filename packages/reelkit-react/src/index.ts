@@ -29,28 +29,19 @@ export {
   createDefaultKeyExtractorForLoop,
   type ReelProps,
   type ReelApi,
-} from './lib/components/Reel';
+} from './lib/Reel';
 
 export {
   ReelIndicator,
   type ReelIndicatorProps,
-} from './lib/components/ReelIndicator';
+} from './lib/ReelIndicator';
 
 export {
   ValueNotifierObserver,
   AnimatedValueNotifierObserver,
   type AnimatedValue,
-} from './lib/components/ValueNotifierObserver';
+} from './lib/ValueNotifierObserver';
 
 // Hooks
-export {
-  default as useGestures,
-  type UseGesturesProps,
-  type UseGesturesResult,
-} from './lib/hooks/useGestures';
+export { useBodyLock } from './lib/useBodyLock';
 
-export { default as useNavKeyboardKeys, type NavKey } from './lib/hooks/useNavKeyboardKeys';
-export { default as useRafState } from './lib/hooks/useRafState';
-export { default as useMountedRef } from './lib/hooks/useMountedRef';
-export { default as useEffectOnce } from './lib/hooks/useEffectOnce';
-export { default as useDepsDidChangeEffect } from './lib/hooks/useDepsDidChangeEffect';

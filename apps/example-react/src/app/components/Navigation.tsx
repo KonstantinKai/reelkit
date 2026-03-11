@@ -42,6 +42,12 @@ function Navigation() {
       >
         Reel Player
       </Link>
+      <Link
+        to="/image-preview"
+        style={location.pathname === '/image-preview' ? activeLinkStyle : linkStyle}
+      >
+        Image Gallery
+      </Link>
     </nav>
   );
 }

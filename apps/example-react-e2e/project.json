@@ -4,5 +4,5 @@
   "projectType": "application",
   "sourceRoot": "apps/example-react-e2e/src",
   "tags": [],
-  "implicitDependencies": ["@reelkit/example-react"]
+  "implicitDependencies": ["example-react"]
 }

@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { Play } from 'lucide-react';
+import { ReelPlayerOverlay } from '@reelkit/react-reel-player';
+import '@reelkit/react-reel-player/styles.css';
 import { generateContent, getThumbnail } from '../components/reel-player/mockContent';
-import ReelPlayerOverlay from '../components/reel-player/ReelPlayerOverlay';
 
 const CONTENT_COUNT = 50;
 

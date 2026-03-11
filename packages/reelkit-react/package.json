@@ -17,10 +17,8 @@
     "dist",
     "!**/*.tsbuildinfo"
   ],
-  "dependencies": {
-    "@reelkit/core": "*"
-  },
   "peerDependencies": {
+    "@reelkit/core": "*",
     "react": ">=17.0.0",
     "react-dom": ">=17.0.0"
   }

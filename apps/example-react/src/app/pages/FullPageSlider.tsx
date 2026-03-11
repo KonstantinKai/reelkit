@@ -1,5 +1,5 @@
 import React from 'react';
-import { Reel, ReelIndicator, type ReelApi } from '@reelkit/react';
+import { Reel, ReelIndicator, useBodyLock, type ReelApi } from '@reelkit/react';
 
 const TOTAL_SLIDES = 10000;
 
@@ -26,6 +26,9 @@ function FullPageSlider() {
     window.innerHeight,
   ]);
   const [goToValue, setGoToValue] = React.useState('');
+
+  // Lock body scroll to prevent browser chrome movement on mobile
+  useBodyLock(true);
 
   React.useEffect(() => {
     const handleResize = () => {

@@ -39,9 +39,9 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npx nx serve @reelkit/example-react',
+    command: 'npx nx serve example-react',
     url: baseURL,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: !process.env['CI'],
     cwd: workspaceRoot,
     timeout: 120000,
   },

@@ -363,4 +363,31 @@ test.describe('Reel React - Infinite List', () => {
     await slider.expectSlideTitle('Slide 10');
     await expect(page.locator('text=10 / 10,000')).toBeVisible();
   });
+
+  test('goTo current index stays at same slide', async ({ page }) => {
+    const slider = new SliderPage(page);
+
+    await slider.expectSlideTitle('Slide 1');
+
+    await page.locator('input[type="number"]').fill('1');
+    await page.locator('button', { hasText: 'Go' }).click();
+    await slider.waitForAnimation();
+
+    await slider.expectSlideTitle('Slide 1');
+    await expect(page.locator('text=1 / 10,000')).toBeVisible();
+  });
+
+  test('goTo beyond max is handled gracefully', async ({ page }) => {
+    const slider = new SliderPage(page);
+
+    await slider.expectSlideTitle('Slide 1');
+
+    await page.locator('input[type="number"]').fill('99999');
+    await page.locator('button', { hasText: 'Go' }).click();
+    await slider.waitForAnimation();
+
+    // Guard: index >= 0 && index < 10000 — input is ignored
+    await slider.expectSlideTitle('Slide 1');
+    await expect(page.locator('text=1 / 10,000')).toBeVisible();
+  });
 });

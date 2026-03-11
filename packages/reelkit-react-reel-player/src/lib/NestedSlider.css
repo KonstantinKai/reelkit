@@ -1,0 +1,39 @@
+/* Nested slider navigation arrows - desktop only */
+.nested-nav {
+  display: none;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  border-radius: 50%;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+  transition: opacity 0.2s, background-color 0.2s;
+  backdrop-filter: blur(8px);
+}
+
+.nested-nav:hover {
+  background: rgba(255, 255, 255, 0.2);
+  opacity: 1;
+}
+
+.nested-nav-prev {
+  left: 12px;
+}
+
+.nested-nav-next {
+  right: 12px;
+}
+
+@media (min-width: 768px) {
+  .nested-nav {
+    display: flex;
+  }
+}

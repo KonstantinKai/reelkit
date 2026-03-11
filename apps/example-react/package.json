@@ -1,10 +1,13 @@
 {
-  "name": "@reelkit/example-react",
+  "name": "example-react",
   "version": "0.0.0",
   "private": true,
   "type": "module",
   "dependencies": {
     "@reelkit/react": "0.0.1",
+    "@reelkit/react-lightbox": "0.0.1",
+    "@reelkit/react-reel-player": "0.0.1",
+    "lucide-react": "^0.468.0",
     "react": "18.3.1",
     "react-dom": "18.3.1"
   }

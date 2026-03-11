@@ -34,6 +34,8 @@ export {
   type TimeoutFn,
   // Safe call
   safeCall,
+  // Noop
+  noop,
 } from './lib/utils';
 
 // Gestures
