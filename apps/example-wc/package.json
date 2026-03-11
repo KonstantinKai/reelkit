@@ -1,9 +1,0 @@
-{
-  "name": "example-wc",
-  "version": "0.0.0",
-  "private": true,
-  "type": "module",
-  "dependencies": {
-    "@reelkit/wc": "0.0.1"
-  }
-}
