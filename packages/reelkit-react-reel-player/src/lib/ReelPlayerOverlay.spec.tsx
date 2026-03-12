@@ -153,7 +153,7 @@ describe('ReelPlayerOverlay', () => {
         />,
       );
 
-      expect(document.querySelector('.reel-overlay')).toBeTruthy();
+      expect(document.querySelector('.rk-reel-overlay')).toBeTruthy();
     });
 
     it('closes on ESC key', () => {

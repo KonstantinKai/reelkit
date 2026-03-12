@@ -21,7 +21,7 @@ const buttonStyle: React.CSSProperties = {
 export interface CloseButtonProps {
   /** Callback fired when the button is clicked. */
   onClick: () => void;
-  /** CSS class name. Defaults to `"player-close-btn"`. */
+  /** CSS class name. Defaults to `"rk-player-close-btn"`. */
   className?: string;
   /** Additional inline styles merged on top of the default button styles. */
   style?: React.CSSProperties;
@@ -41,7 +41,7 @@ export interface CloseButtonProps {
  */
 export const CloseButton: React.FC<CloseButtonProps> = ({
   onClick,
-  className = 'player-close-btn',
+  className = 'rk-player-close-btn',
   style,
 }) => (
   <button
@@ -69,7 +69,7 @@ export interface SoundButtonProps {
    * Defaults to `false`.
    */
   disabled?: boolean;
-  /** CSS class name. Defaults to `"player-sound-btn"`. */
+  /** CSS class name. Defaults to `"rk-player-sound-btn"`. */
   className?: string;
   /** Additional inline styles merged on top of the default button styles. */
   style?: React.CSSProperties;
@@ -100,7 +100,7 @@ export interface SoundButtonProps {
  */
 export const SoundButton: React.FC<SoundButtonProps> = ({
   disabled = false,
-  className = 'player-sound-btn',
+  className = 'rk-player-sound-btn',
   style,
 }) => {
   const soundState = useSoundState();

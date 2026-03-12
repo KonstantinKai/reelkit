@@ -138,15 +138,15 @@ interface ContentItem {
 
 ### CSS Classes
 
-- `.reel-overlay` - Full-screen overlay container
-- `.reel-container` - Centered content area
-- `.video-slide-container` - Video slide wrapper
-- `.video-slide-element` - Video element
-- `.video-slide-poster` - Poster image with fade transition
-- `.video-slide-loader` - Wave loading animation
-- `.player-close-btn` - Close button
-- `.player-sound-btn` - Sound toggle button
-- `.player-nav-arrows` - Navigation arrows container
+- `.rk-reel-overlay` - Full-screen overlay container
+- `.rk-reel-container` - Centered content area
+- `.rk-video-slide-container` - Video slide wrapper
+- `.rk-video-slide-element` - Video element
+- `.rk-video-slide-poster` - Poster image with fade transition
+- `.rk-video-slide-loader` - Wave loading animation
+- `.rk-player-close-btn` - Close button
+- `.rk-player-sound-btn` - Sound toggle button
+- `.rk-player-nav-arrows` - Navigation arrows container
 
 ### Aspect Ratio
 

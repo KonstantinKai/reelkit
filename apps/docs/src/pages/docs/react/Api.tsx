@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom';
 import { CodeBlock } from '../../../components/ui/CodeBlock';
 
 const reelProps = [
@@ -69,10 +68,34 @@ const reelProps = [
     description: 'Swipe threshold (0-1)',
   },
   {
+    prop: 'rangeExtractor',
+    type: '(index: number, count: number) => number[]',
+    default: 'defaultRangeExtractor',
+    description: 'Custom function to determine which indexes are rendered',
+  },
+  {
+    prop: 'keyExtractor',
+    type: '(index: number) => string',
+    default: '-',
+    description: 'Custom key function for React reconciliation (useful with loop)',
+  },
+  {
     prop: 'apiRef',
     type: 'RefObject<ReelApi>',
     default: '-',
     description: 'Ref to access API methods',
+  },
+  {
+    prop: 'className',
+    type: 'string',
+    default: '-',
+    description: 'CSS class for the container element',
+  },
+  {
+    prop: 'style',
+    type: 'CSSProperties',
+    default: '-',
+    description: 'Inline styles for the container element',
   },
 ];
 
@@ -130,52 +153,36 @@ const apiMethods = [
 ];
 
 const indicatorProps = [
-  { prop: 'count', type: 'number', description: 'Total number of items' },
-  { prop: 'className', type: 'string', description: 'Custom CSS class' },
-  { prop: 'style', type: 'CSSProperties', description: 'Custom inline styles' },
+  { prop: 'count', type: 'number', default: 'required', description: 'Total number of items' },
+  { prop: 'active', type: 'number', default: '0', description: 'Current active index' },
+  { prop: 'direction', type: "'vertical' | 'horizontal'", default: "'vertical'", description: 'Indicator orientation' },
+  { prop: 'radius', type: 'number', default: '3', description: 'Dot size in pixels' },
+  { prop: 'visible', type: 'number', default: '5', description: 'Max normal-sized dots visible' },
+  { prop: 'gap', type: 'number', default: '4', description: 'Space between dots in pixels' },
+  { prop: 'activeColor', type: 'string', default: "'#fff'", description: 'Active dot color' },
+  { prop: 'inactiveColor', type: 'string', default: "'rgba(255,255,255,0.5)'", description: 'Inactive dot color' },
+  { prop: 'edgeScale', type: 'number', default: '0.5', description: 'Scale for overflow edge dots' },
+  { prop: 'onDotClick', type: '(index: number) => void', default: '-', description: 'Callback when a dot is clicked' },
+  { prop: 'className', type: 'string', default: '-', description: 'Custom CSS class' },
+  { prop: 'style', type: 'CSSProperties', default: '-', description: 'Custom inline styles' },
 ];
 
 export default function ReactApi() {
   return (
     <div className="max-w-4xl mx-auto px-6 py-12">
       <div className="mb-12">
-        <h1 className="text-4xl font-bold mb-4">React API</h1>
+        <h1 className="text-4xl font-bold mb-4">React API Reference</h1>
         <p className="text-xl text-slate-600 dark:text-slate-400">
-          The{' '}
+          Complete reference for{' '}
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
             @reelkit/react
           </code>{' '}
-          package provides React components for building sliders.
+          components, props, and methods.
         </p>
       </div>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Reel</h2>
-        <p className="text-slate-600 dark:text-slate-400 mb-4">
-          The main container component that handles all slider logic, gestures,
-          and animations.
-        </p>
-        <CodeBlock
-          code={`import { Reel } from '@reelkit/react';
-
-<Reel
-  count={items.length}
-  size={[width, height]}
-  direction="vertical"
-  enableWheel
-  afterChange={(index) => console.log('Current:', index)}
-  itemBuilder={(index, indexInRange, size) => (
-    <div style={{ width: size[0], height: size[1] }}>
-      Slide {index}
-    </div>
-  )}
->
-  {/* Optional children like ReelIndicator */}
-</Reel>`}
-          language="tsx"
-        />
-
-        <h3 className="text-xl font-semibold mt-8 mb-4">Props</h3>
+        <h2 className="text-2xl font-bold mb-4">Reel Props</h2>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -211,8 +218,10 @@ export default function ReactApi() {
             </tbody>
           </table>
         </div>
+      </section>
 
-        <h3 className="text-xl font-semibold mt-8 mb-4">Callbacks</h3>
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">Callbacks</h2>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -247,7 +256,7 @@ export default function ReactApi() {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">ReelApi</h2>
+        <h2 className="text-2xl font-bold mb-4">ReelApi Methods</h2>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Access slider methods via{' '}
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
@@ -305,25 +314,14 @@ apiRef.current?.unobserve();       // stop observing keyboard`}
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">ReelIndicator</h2>
-        <p className="text-slate-600 dark:text-slate-400 mb-4">
-          Instagram-style progress indicators:
-        </p>
-        <CodeBlock
-          code={`import { Reel, ReelIndicator } from '@reelkit/react';
-
-<Reel count={10} size={[400, 600]} itemBuilder={...}>
-  <ReelIndicator count={10} />
-</Reel>`}
-          language="tsx"
-        />
-
-        <div className="overflow-x-auto mt-6">
+        <h2 className="text-2xl font-bold mb-4">ReelIndicator Props</h2>
+        <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b border-slate-200 dark:border-slate-700">
                 <th className="text-left py-3 px-4 font-semibold">Prop</th>
                 <th className="text-left py-3 px-4 font-semibold">Type</th>
+                <th className="text-left py-3 px-4 font-semibold">Default</th>
                 <th className="text-left py-3 px-4 font-semibold">
                   Description
                 </th>
@@ -341,6 +339,9 @@ apiRef.current?.unobserve();       // stop observing keyboard`}
                   <td className="py-3 px-4 font-mono text-xs text-slate-500">
                     {p.type}
                   </td>
+                  <td className="py-3 px-4 text-slate-500 text-sm">
+                    {p.default}
+                  </td>
                   <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
                     {p.description}
                   </td>
@@ -351,34 +352,87 @@ apiRef.current?.unobserve();       // stop observing keyboard`}
         </div>
       </section>
 
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">Observer Components</h2>
+
+        <h3 className="text-lg font-semibold mb-2">ValueNotifierObserver</h3>
+        <p className="text-slate-600 dark:text-slate-400 mb-2">
+          Bridges core signals to React rendering without causing parent
+          re-renders. Only the children function re-executes when subscribed
+          signals change.
+        </p>
+        <CodeBlock
+          code={`import { ValueNotifierObserver } from '@reelkit/react';
+
+<ValueNotifierObserver deps={[controller.state.index]}>
+  {() => <span>Current: {controller.state.index.value}</span>}
+</ValueNotifierObserver>`}
+          language="tsx"
+        />
+
+        <h3 className="text-lg font-semibold mt-6 mb-2">
+          AnimatedValueNotifierObserver
+        </h3>
+        <p className="text-slate-600 dark:text-slate-400 mb-2">
+          Subscribes to animated value signals and smoothly interpolates using{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            requestAnimationFrame
+          </code>
+          .
+        </p>
+        <CodeBlock
+          code={`import { AnimatedValueNotifierObserver } from '@reelkit/react';
+
+<AnimatedValueNotifierObserver valueNotifier={controller.state.axisValue}>
+  {(value) => (
+    <div style={{ transform: \`translateY(\${value}px)\` }} />
+  )}
+</AnimatedValueNotifierObserver>`}
+          language="tsx"
+        />
+      </section>
+
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">Hooks</h2>
+
+        <h3 className="text-lg font-semibold mb-2">useBodyLock</h3>
+        <p className="text-slate-600 dark:text-slate-400 mb-2">
+          Locks body scroll and compensates for scrollbar width shift.
+        </p>
+        <CodeBlock
+          code={`import { useBodyLock } from '@reelkit/react';
+
+// Lock body scroll when overlay is open
+useBodyLock(isOpen);`}
+          language="typescript"
+        />
+      </section>
+
       <section>
-        <h2 className="text-2xl font-bold mb-4">Examples</h2>
-        <ul className="space-y-3">
-          <li>
-            <Link
-              to="/docs/examples/basic"
-              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
-            >
-              Basic Slider
-            </Link>
-            <span className="text-slate-500">
-              {' '}
-              — full working example with navigation
-            </span>
-          </li>
-          <li>
-            <Link
-              to="/docs/examples/infinite"
-              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
-            >
-              Infinite List
-            </Link>
-            <span className="text-slate-500">
-              {' '}
-              — virtualization with 10,000+ items
-            </span>
-          </li>
-        </ul>
+        <h2 className="text-2xl font-bold mb-4">Utilities</h2>
+
+        <h3 className="text-lg font-semibold mb-2">
+          createDefaultKeyExtractorForLoop
+        </h3>
+        <p className="text-slate-600 dark:text-slate-400 mb-2">
+          Creates a key extractor that handles duplicate indexes when{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            loop
+          </code>{' '}
+          is enabled.
+        </p>
+        <CodeBlock
+          code={`import { createDefaultKeyExtractorForLoop } from '@reelkit/react';
+
+<Reel
+  count={items.length}
+  size={size}
+  loop
+  keyExtractor={createDefaultKeyExtractorForLoop(items.length)}
+  itemBuilder={...}
+/>`}
+          language="tsx"
+        />
       </section>
     </div>
   );

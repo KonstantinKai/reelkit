@@ -14,24 +14,6 @@ export default function GettingStarted() {
       </div>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Installation</h2>
-        <p className="text-slate-600 dark:text-slate-400 mb-4">
-          Install reelkit using your preferred package manager:
-        </p>
-        <CodeBlock
-          code={`# React components
-npm install @reelkit/react
-
-# React Reel Player (Instagram/TikTok style player)
-npm install @reelkit/react-reel-player
-
-# Framework-agnostic core (for custom integrations)
-npm install @reelkit/core`}
-          language="bash"
-        />
-      </section>
-
-      <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Quick Start</h2>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Here's a minimal example to create a vertical slider with React:
@@ -157,7 +139,7 @@ function App() {
           <li className="flex items-start gap-3">
             <span className="w-2 h-2 rounded-full bg-primary-500 mt-2" />
             <span>
-              <strong>Keyboard:</strong> Arrow keys, Home, End, Page Up/Down
+              <strong>Keyboard:</strong> Arrow keys and Escape
             </span>
           </li>
           <li className="flex items-start gap-3">
@@ -226,7 +208,7 @@ function App() {
         <ul className="space-y-3">
           <li>
             <Link
-              to="/docs/api/react"
+              to="/docs/react/api"
               className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
             >
               API Reference
@@ -235,16 +217,19 @@ function App() {
           </li>
           <li>
             <Link
-              to="/docs/examples/infinite"
+              to="/docs/react/guide"
               className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
             >
-              Infinite Lists
+              React Guide
             </Link>
-            <span className="text-slate-500"> - with virtualization</span>
+            <span className="text-slate-500">
+              {' '}
+              - live demos and virtualization
+            </span>
           </li>
           <li>
             <Link
-              to="/docs/examples/reel-player"
+              to="/docs/reel-player"
               className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
             >
               Reel Player

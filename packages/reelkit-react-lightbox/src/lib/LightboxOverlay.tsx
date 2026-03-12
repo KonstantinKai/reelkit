@@ -280,7 +280,7 @@ const LightboxContent: FC<LightboxOverlayProps> = ({
         if (custom !== null) {
           return (
             <div
-              className="lightbox-slide"
+              className="rk-lightbox-slide"
               style={{ width: slideSize[0], height: slideSize[1] }}
             >
               {custom}
@@ -290,18 +290,18 @@ const LightboxContent: FC<LightboxOverlayProps> = ({
       }
 
       const transitionClass =
-        transition !== 'slide' ? `transition-${transition}` : '';
-      const activeClass = isActive ? 'active' : '';
+        transition !== 'slide' ? `rk-transition-${transition}` : '';
+      const activeClass = isActive ? 'rk-active' : '';
 
       return (
         <div
-          className={`lightbox-slide ${transitionClass} ${activeClass}`.trim()}
+          className={`rk-lightbox-slide ${transitionClass} ${activeClass}`.trim()}
           style={{ width: slideSize[0], height: slideSize[1] }}
         >
           <img
             src={image.src}
             alt={image.title || `Image ${index + 1}`}
-            className="lightbox-img"
+            className="rk-lightbox-img"
             draggable={false}
           />
         </div>
@@ -311,7 +311,7 @@ const LightboxContent: FC<LightboxOverlayProps> = ({
   );
 
   const overlay = (
-    <div ref={containerRef} className="lightbox-container">
+    <div ref={containerRef} className="rk-lightbox-container">
       {/* Controls (close, counter, fullscreen) */}
       {renderControls ? (
         renderControls({
@@ -363,7 +363,7 @@ const LightboxContent: FC<LightboxOverlayProps> = ({
             <>
               {currentIndex > 0 && (
                 <button
-                  className="lightbox-nav lightbox-nav-prev"
+                  className="rk-lightbox-nav rk-lightbox-nav-prev"
                   onClick={handlePrev}
                   title="Previous"
                 >
@@ -372,7 +372,7 @@ const LightboxContent: FC<LightboxOverlayProps> = ({
               )}
               {currentIndex < images.length - 1 && (
                 <button
-                  className="lightbox-nav lightbox-nav-next"
+                  className="rk-lightbox-nav rk-lightbox-nav-next"
                   onClick={handleNext}
                   title="Next"
                 >
@@ -386,12 +386,12 @@ const LightboxContent: FC<LightboxOverlayProps> = ({
       {renderInfo
         ? renderInfo({ item: currentImage, index: currentIndex })
         : (currentImage?.title || currentImage?.description) && (
-            <div className="lightbox-info">
+            <div className="rk-lightbox-info">
               {currentImage.title && (
-                <h3 className="lightbox-title">{currentImage.title}</h3>
+                <h3 className="rk-lightbox-title">{currentImage.title}</h3>
               )}
               {currentImage.description && (
-                <p className="lightbox-description">
+                <p className="rk-lightbox-description">
                   {currentImage.description}
                 </p>
               )}
@@ -399,7 +399,7 @@ const LightboxContent: FC<LightboxOverlayProps> = ({
           )}
 
       {/* Mobile swipe hint */}
-      {isMobile && <div className="lightbox-swipe-hint">Swipe up to close</div>}
+      {isMobile && <div className="rk-lightbox-swipe-hint">Swipe up to close</div>}
     </div>
   );
 

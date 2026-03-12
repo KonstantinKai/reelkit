@@ -9,7 +9,7 @@ class ReelPlayerPage {
 
   // Selectors
   get overlay() {
-    return this.page.locator('.reel-overlay');
+    return this.page.locator('.rk-reel-overlay');
   }
 
   get closeButton() {
@@ -23,15 +23,15 @@ class ReelPlayerPage {
   }
 
   get prevButton() {
-    // Main player navigation (in .player-nav-arrows), not nested slider nav
+    // Main player navigation (in .rk-player-nav-arrows), not nested slider nav
     return this.page.locator(
-      '.player-nav-arrows button[aria-label="Previous"]',
+      '.rk-player-nav-arrows button[aria-label="Previous"]',
     );
   }
 
   get nextButton() {
-    // Main player navigation (in .player-nav-arrows), not nested slider nav
-    return this.page.locator('.player-nav-arrows button[aria-label="Next"]');
+    // Main player navigation (in .rk-player-nav-arrows), not nested slider nav
+    return this.page.locator('.rk-player-nav-arrows button[aria-label="Next"]');
   }
 
   get thumbnails() {
@@ -48,11 +48,11 @@ class ReelPlayerPage {
   }
 
   get nestedPrevButton() {
-    return this.page.locator('.nested-nav-prev');
+    return this.page.locator('.rk-nested-nav-prev');
   }
 
   get nestedNextButton() {
-    return this.page.locator('.nested-nav-next');
+    return this.page.locator('.rk-nested-nav-next');
   }
 
   // Actions
@@ -317,7 +317,7 @@ test.describe('Reel Player - Slide Overlay', () => {
     const player = new ReelPlayerPage(page);
     await player.openPlayerAt(0);
 
-    const overlay = page.locator('.reel-slide-overlay');
+    const overlay = page.locator('.rk-reel-slide-overlay');
     await expect(overlay.first()).toBeVisible();
   });
 
@@ -325,7 +325,7 @@ test.describe('Reel Player - Slide Overlay', () => {
     const player = new ReelPlayerPage(page);
     await player.openPlayerAt(0);
 
-    const name = page.locator('.reel-slide-overlay-name');
+    const name = page.locator('.rk-reel-slide-overlay-name');
     await expect(name.first()).toBeVisible();
     const text = await name.first().textContent();
     expect(text).toBeTruthy();
@@ -335,7 +335,7 @@ test.describe('Reel Player - Slide Overlay', () => {
     const player = new ReelPlayerPage(page);
     await player.openPlayerAt(0);
 
-    const desc = page.locator('.reel-slide-overlay-description');
+    const desc = page.locator('.rk-reel-slide-overlay-description');
     await expect(desc.first()).toBeVisible();
     const text = await desc.first().textContent();
     expect(text).toBeTruthy();
@@ -345,7 +345,7 @@ test.describe('Reel Player - Slide Overlay', () => {
     const player = new ReelPlayerPage(page);
     await player.openPlayerAt(0);
 
-    const likes = page.locator('.reel-slide-overlay-likes');
+    const likes = page.locator('.rk-reel-slide-overlay-likes');
     await expect(likes.first()).toBeVisible();
     const text = await likes.first().textContent();
     expect(text).toBeTruthy();
@@ -358,7 +358,7 @@ test.describe('Reel Player - Slide Overlay', () => {
     await player.pressArrowDown();
     await player.waitForAnimation();
 
-    const overlay = page.locator('.reel-slide-overlay');
+    const overlay = page.locator('.rk-reel-slide-overlay');
     await expect(overlay.first()).toBeVisible();
   });
 });
@@ -1073,7 +1073,7 @@ test.describe('Reel Player - Viewport Sizing', () => {
     await player.openPlayerAt(0);
 
     // Get the reel container dimensions
-    const container = player.locator('.reel-container');
+    const container = player.locator('.rk-reel-container');
     const box = await container.boundingBox();
     if (!box) throw new Error('Container not found');
 
@@ -1096,7 +1096,7 @@ test.describe('Reel Player - Viewport Sizing', () => {
     await player.openPlayerAt(0);
 
     // Get the reel container dimensions
-    const container = player.locator('.reel-container');
+    const container = player.locator('.rk-reel-container');
     const box = await container.boundingBox();
     if (!box) throw new Error('Container not found');
 
@@ -1121,7 +1121,7 @@ test.describe('Reel Player - Viewport Sizing', () => {
     const player = new ReelPlayerPage(page);
     await player.openPlayerAt(0);
 
-    const container = player.locator('.reel-container');
+    const container = player.locator('.rk-reel-container');
     const box = await container.boundingBox();
     if (!box) throw new Error('Container not found');
 
@@ -1183,7 +1183,7 @@ test.describe('Reel Player - Rapid Interactions', () => {
     // Fire 5 synchronous clicks to ensure they all land within animation window
     await page.evaluate(() => {
       const btn = document.querySelector(
-        '.player-nav-arrows button[aria-label="Next"]',
+        '.rk-player-nav-arrows button[aria-label="Next"]',
       );
       if (btn) for (let i = 0; i < 5; i++) (btn as HTMLElement).click();
     });
@@ -1231,10 +1231,10 @@ test.describe('Reel Player - Rapid Interactions', () => {
     // Fire alternating clicks synchronously
     await page.evaluate(() => {
       const nextBtn = document.querySelector(
-        '.player-nav-arrows button[aria-label="Next"]',
+        '.rk-player-nav-arrows button[aria-label="Next"]',
       ) as HTMLElement;
       const prevBtn = document.querySelector(
-        '.player-nav-arrows button[aria-label="Previous"]',
+        '.rk-player-nav-arrows button[aria-label="Previous"]',
       ) as HTMLElement;
       if (nextBtn && prevBtn) {
         nextBtn.click();
@@ -1270,7 +1270,7 @@ test.describe('Reel Player - Window Resize', () => {
 
     await player.openPlayerAt(0);
 
-    const container = player.locator('.reel-container');
+    const container = player.locator('.rk-reel-container');
     const boxBefore = await container.boundingBox();
     if (!boxBefore) throw new Error('Container not found');
 
@@ -1389,7 +1389,7 @@ test.describe('Reel Player - Video Frame Capture', () => {
     await player.waitForAnimation();
 
     // Poster element should be visible with a truthy src
-    const poster = player.locator('.video-slide-poster');
+    const poster = player.locator('.rk-video-slide-poster');
     const posterCount = await poster.count();
     if (posterCount > 0) {
       await expect(poster.first()).toBeVisible();

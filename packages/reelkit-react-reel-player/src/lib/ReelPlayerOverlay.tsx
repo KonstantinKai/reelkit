@@ -321,8 +321,8 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>({
   };
 
   const overlay = (
-    <div className="reel-overlay">
-      <div className="reel-container">
+    <div className="rk-reel-overlay">
+      <div className="rk-reel-container">
         <Reel
           count={content.length}
           size={size}
@@ -350,7 +350,7 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>({
               if (custom !== null) {
                 return (
                   <div
-                    className="reel-slide-wrapper"
+                    className="rk-reel-slide-wrapper"
                     style={{
                       width: itemSize[0],
                       height: itemSize[1],
@@ -411,7 +411,7 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>({
           count: content.length,
         })
       ) : (
-        <div className="player-nav-arrows">
+        <div className="rk-player-nav-arrows">
           <button
             onClick={handlePrev}
             style={{

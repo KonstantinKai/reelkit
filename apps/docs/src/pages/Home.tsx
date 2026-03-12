@@ -42,7 +42,7 @@ const features = [
     icon: <Keyboard className="w-6 h-6" />,
     title: 'Keyboard Navigation',
     description:
-      'Full keyboard support with Arrow keys, Home, End, and Page Up/Down.',
+      'Full keyboard support with Arrow keys and Escape to close overlays.',
   },
   {
     icon: <MousePointer className="w-6 h-6" />,
@@ -120,7 +120,7 @@ export default function Home() {
                 <ArrowRight size={20} />
               </Link>
               <Link
-                to="/docs/examples/basic"
+                to="/docs/react/guide"
                 className="btn-secondary inline-flex items-center gap-2"
               >
                 <Play size={18} />

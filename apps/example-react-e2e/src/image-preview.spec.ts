@@ -5,27 +5,27 @@ class ImagePreviewPage {
 
   // Selectors
   get container() {
-    return this.page.locator('.lightbox-container');
+    return this.page.locator('.rk-lightbox-container');
   }
 
   get closeButton() {
-    return this.page.locator('.lightbox-close');
+    return this.page.locator('.rk-lightbox-close');
   }
 
   get fullscreenButton() {
-    return this.page.locator('.lightbox-btn');
+    return this.page.locator('.rk-lightbox-btn');
   }
 
   get counter() {
-    return this.page.locator('.lightbox-counter');
+    return this.page.locator('.rk-lightbox-counter');
   }
 
   get prevButton() {
-    return this.page.locator('.lightbox-nav-prev');
+    return this.page.locator('.rk-lightbox-nav-prev');
   }
 
   get nextButton() {
-    return this.page.locator('.lightbox-nav-next');
+    return this.page.locator('.rk-lightbox-nav-next');
   }
 
   get galleryItems() {
@@ -33,19 +33,19 @@ class ImagePreviewPage {
   }
 
   get currentImage() {
-    return this.page.locator('.lightbox-slide.active img, .lightbox-slide img').first();
+    return this.page.locator('.rk-lightbox-slide.rk-active img, .rk-lightbox-slide img').first();
   }
 
   get title() {
-    return this.page.locator('.lightbox-title');
+    return this.page.locator('.rk-lightbox-title');
   }
 
   get description() {
-    return this.page.locator('.lightbox-description');
+    return this.page.locator('.rk-lightbox-description');
   }
 
   get swipeHint() {
-    return this.page.locator('.lightbox-swipe-hint');
+    return this.page.locator('.rk-lightbox-swipe-hint');
   }
 
   get transitionButtons() {

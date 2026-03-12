@@ -4,23 +4,23 @@ class CustomLightboxPage {
   constructor(private readonly page: Page) {}
 
   get container() {
-    return this.page.locator('.lightbox-container');
+    return this.page.locator('.rk-lightbox-container');
   }
 
   get closeButton() {
-    return this.page.locator('.lightbox-close');
+    return this.page.locator('.rk-lightbox-close');
   }
 
   get counter() {
-    return this.page.locator('.lightbox-counter');
+    return this.page.locator('.rk-lightbox-counter');
   }
 
   get nextButton() {
-    return this.page.locator('.lightbox-nav-next');
+    return this.page.locator('.rk-lightbox-nav-next');
   }
 
   get prevButton() {
-    return this.page.locator('.lightbox-nav-prev');
+    return this.page.locator('.rk-lightbox-nav-prev');
   }
 
   demoButton(id: string) {
@@ -70,8 +70,8 @@ test.describe('Custom Lightbox - Default Info', () => {
     const player = new CustomLightboxPage(page);
     await player.openDemo('default-info');
 
-    await expect(page.locator('.lightbox-title').first()).toBeVisible();
-    await expect(page.locator('.lightbox-description').first()).toBeVisible();
+    await expect(page.locator('.rk-lightbox-title').first()).toBeVisible();
+    await expect(page.locator('.rk-lightbox-description').first()).toBeVisible();
   });
 
   test('closes with close button', async ({ page }) => {
@@ -98,7 +98,7 @@ test.describe('Custom Lightbox - Custom Info (renderInfo)', () => {
     const player = new CustomLightboxPage(page);
     await player.openDemo('custom-info');
 
-    const defaultInfo = page.locator('.lightbox-info');
+    const defaultInfo = page.locator('.rk-lightbox-info');
     await expect(defaultInfo).toHaveCount(0);
   });
 
@@ -144,7 +144,7 @@ test.describe('Custom Lightbox - Custom Controls (renderControls)', () => {
     const player = new CustomLightboxPage(page);
     await player.openDemo('custom-controls');
 
-    const defaultInfo = page.locator('.lightbox-info');
+    const defaultInfo = page.locator('.rk-lightbox-info');
     await expect(defaultInfo).toHaveCount(0);
   });
 
@@ -187,7 +187,7 @@ test.describe('Custom Lightbox - Custom Slide (renderSlide)', () => {
     await expect(ctaSlide).toHaveCount(0);
 
     // Default image should be visible
-    const img = page.locator('.lightbox-img');
+    const img = page.locator('.rk-lightbox-img');
     const count = await img.count();
     expect(count).toBeGreaterThan(0);
   });
@@ -224,7 +224,7 @@ test.describe('Custom Lightbox - Custom Slide (renderSlide)', () => {
     await player.waitForAnimation();
 
     // Image content should be present
-    const img = page.locator('.lightbox-img');
+    const img = page.locator('.rk-lightbox-img');
     const count = await img.count();
     expect(count).toBeGreaterThan(0);
   });
@@ -256,7 +256,7 @@ test.describe('Custom Lightbox - Custom Navigation (renderNavigation)', () => {
     const player = new CustomLightboxPage(page);
     await player.openDemo('custom-navigation');
 
-    const defaultNav = page.locator('.lightbox-nav');
+    const defaultNav = page.locator('.rk-lightbox-nav');
     await expect(defaultNav).toHaveCount(0);
   });
 

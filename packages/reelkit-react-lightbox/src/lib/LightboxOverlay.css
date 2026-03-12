@@ -1,4 +1,4 @@
-.lightbox-container {
+.rk-lightbox-container {
   position: fixed;
   top: 0;
   left: 0;
@@ -11,7 +11,7 @@
   justify-content: center;
 }
 
-.lightbox-slide {
+.rk-lightbox-slide {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -19,28 +19,28 @@
 }
 
 /* Fade transition */
-.lightbox-slide.transition-fade {
+.rk-lightbox-slide.rk-transition-fade {
   opacity: 0.3;
   transition: opacity 300ms ease-out;
 }
 
-.lightbox-slide.transition-fade.active {
+.rk-lightbox-slide.rk-transition-fade.rk-active {
   opacity: 1;
 }
 
 /* Zoom-in transition (smaller to normal) */
-.lightbox-slide.transition-zoom-in {
+.rk-lightbox-slide.rk-transition-zoom-in {
   transform: scale(0.8);
   opacity: 0.5;
   transition: transform 300ms ease-out, opacity 300ms ease-out;
 }
 
-.lightbox-slide.transition-zoom-in.active {
+.rk-lightbox-slide.rk-transition-zoom-in.rk-active {
   transform: scale(1);
   opacity: 1;
 }
 
-.lightbox-img {
+.rk-lightbox-img {
   width: 100%;
   height: 100%;
   object-fit: contain;
@@ -49,7 +49,7 @@
 }
 
 /* Top-left controls */
-.lightbox-controls-left {
+.rk-lightbox-controls-left {
   position: absolute;
   top: 16px;
   left: 16px;
@@ -59,7 +59,7 @@
   gap: 12px;
 }
 
-.lightbox-counter {
+.rk-lightbox-counter {
   color: #fff;
   font-size: 14px;
   font-weight: 500;
@@ -69,7 +69,7 @@
   backdrop-filter: blur(8px);
 }
 
-.lightbox-btn {
+.rk-lightbox-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -84,17 +84,17 @@
   backdrop-filter: blur(8px);
 }
 
-.lightbox-btn:hover {
+.rk-lightbox-btn:hover {
   background: rgba(255, 255, 255, 0.2);
   transform: scale(1.05);
 }
 
-.lightbox-btn:active {
+.rk-lightbox-btn:active {
   transform: scale(0.95);
 }
 
 /* Close button */
-.lightbox-close {
+.rk-lightbox-close {
   position: absolute;
   top: 16px;
   right: 16px;
@@ -113,17 +113,17 @@
   backdrop-filter: blur(8px);
 }
 
-.lightbox-close:hover {
+.rk-lightbox-close:hover {
   background: rgba(255, 255, 255, 0.2);
   transform: scale(1.05);
 }
 
-.lightbox-close:active {
+.rk-lightbox-close:active {
   transform: scale(0.95);
 }
 
 /* Navigation buttons */
-.lightbox-nav {
+.rk-lightbox-nav {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
@@ -143,26 +143,26 @@
   opacity: 0.7;
 }
 
-.lightbox-nav:hover {
+.rk-lightbox-nav:hover {
   background: rgba(255, 255, 255, 0.2);
   opacity: 1;
   transform: translateY(-50%) scale(1.05);
 }
 
-.lightbox-nav:active {
+.rk-lightbox-nav:active {
   transform: translateY(-50%) scale(0.95);
 }
 
-.lightbox-nav-prev {
+.rk-lightbox-nav-prev {
   left: 16px;
 }
 
-.lightbox-nav-next {
+.rk-lightbox-nav-next {
   right: 16px;
 }
 
 /* Image info */
-.lightbox-info {
+.rk-lightbox-info {
   position: absolute;
   bottom: 0;
   left: 0;
@@ -173,13 +173,13 @@
   pointer-events: none;
 }
 
-.lightbox-title {
+.rk-lightbox-title {
   margin: 0 0 8px 0;
   font-size: 18px;
   font-weight: 600;
 }
 
-.lightbox-description {
+.rk-lightbox-description {
   margin: 0;
   font-size: 14px;
   opacity: 0.8;
@@ -187,7 +187,7 @@
 }
 
 /* Swipe hint (mobile) */
-.lightbox-swipe-hint {
+.rk-lightbox-swipe-hint {
   position: absolute;
   bottom: 24px;
   left: 50%;
@@ -199,10 +199,10 @@
   border-radius: 20px;
   backdrop-filter: blur(8px);
   pointer-events: none;
-  animation: lightboxFadeInOut 3s ease-in-out forwards;
+  animation: rk-lightboxFadeInOut 3s ease-in-out forwards;
 }
 
-@keyframes lightboxFadeInOut {
+@keyframes rk-lightboxFadeInOut {
   0% {
     opacity: 0;
   }
@@ -218,6 +218,6 @@
 }
 
 /* Adjust info position when swipe hint is visible */
-.lightbox-container:has(.lightbox-swipe-hint) .lightbox-info {
+.rk-lightbox-container:has(.rk-lightbox-swipe-hint) .rk-lightbox-info {
   padding-bottom: 64px;
 }

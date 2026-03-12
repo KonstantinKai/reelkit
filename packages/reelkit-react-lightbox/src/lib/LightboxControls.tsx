@@ -7,7 +7,7 @@ import { X, Maximize, Minimize } from 'lucide-react';
 export interface CloseButtonProps {
   /** Callback to close the lightbox. */
   onClick: () => void;
-  /** Optional CSS class. Defaults to `"lightbox-close"`. */
+  /** Optional CSS class. Defaults to `"rk-lightbox-close"`. */
   className?: string;
   /** Optional inline styles. */
   style?: React.CSSProperties;
@@ -30,7 +30,7 @@ export interface CloseButtonProps {
  */
 export const CloseButton: React.FC<CloseButtonProps> = ({
   onClick,
-  className = 'lightbox-close',
+  className = 'rk-lightbox-close',
   style,
 }) => (
   <button
@@ -51,7 +51,7 @@ export interface CounterProps {
   currentIndex: number;
   /** Total number of images. */
   count: number;
-  /** Optional CSS class. Defaults to `"lightbox-counter"`. */
+  /** Optional CSS class. Defaults to `"rk-lightbox-counter"`. */
   className?: string;
   /** Optional inline styles. */
   style?: React.CSSProperties;
@@ -64,7 +64,7 @@ export interface CounterProps {
 export const Counter: React.FC<CounterProps> = ({
   currentIndex,
   count,
-  className = 'lightbox-counter',
+  className = 'rk-lightbox-counter',
   style,
 }) => (
   <span className={className} style={style}>
@@ -80,7 +80,7 @@ export interface FullscreenButtonProps {
   isFullscreen: boolean;
   /** Toggle fullscreen mode. */
   onToggle: () => void;
-  /** Optional CSS class. Defaults to `"lightbox-btn"`. */
+  /** Optional CSS class. Defaults to `"rk-lightbox-btn"`. */
   className?: string;
   /** Optional inline styles. */
   style?: React.CSSProperties;
@@ -94,7 +94,7 @@ export interface FullscreenButtonProps {
 export const FullscreenButton: React.FC<FullscreenButtonProps> = ({
   isFullscreen,
   onToggle,
-  className = 'lightbox-btn',
+  className = 'rk-lightbox-btn',
   style,
 }) => (
   <button
@@ -129,7 +129,7 @@ const LightboxControls: React.FC<LightboxControlsProps> = ({
   onToggleFullscreen,
 }) => (
   <>
-    <div className="lightbox-controls-left">
+    <div className="rk-lightbox-controls-left">
       <Counter currentIndex={currentIndex} count={count} />
       <FullscreenButton
         isFullscreen={isFullscreen}

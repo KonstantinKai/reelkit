@@ -68,7 +68,7 @@ const getSharedVideo = (): HTMLVideoElement => {
     sharedVideo.disableRemotePlayback = true;
     sharedVideo.disablePictureInPicture = true;
     sharedVideo.crossOrigin = 'anonymous';
-    sharedVideo.className = 'video-slide-element';
+    sharedVideo.className = 'rk-video-slide-element';
   }
   return sharedVideo;
 };
@@ -189,7 +189,7 @@ const VideoSlide: React.FC<VideoSlideProps> = ({
   return (
     <div
       ref={containerRef}
-      className="video-slide-container"
+      className="rk-video-slide-container"
       style={{
         width: size[0],
         height: size[1],
@@ -201,7 +201,7 @@ const VideoSlide: React.FC<VideoSlideProps> = ({
         <img
           src={capturedFrames.get(slideKey) ?? poster}
           alt=""
-          className={`video-slide-poster ${!shouldPlay || showPoster ? 'visible' : ''}`}
+          className={`rk-video-slide-poster ${!shouldPlay || showPoster ? 'rk-visible' : ''}`}
           style={{
             objectFit: isVertical ? 'cover' : 'contain',
           }}
@@ -209,7 +209,7 @@ const VideoSlide: React.FC<VideoSlideProps> = ({
       )}
 
       {/* Wave loader for buffering/loading state */}
-      <div className={`video-slide-loader ${isLoading ? 'visible' : ''}`} />
+      <div className={`rk-video-slide-loader ${isLoading ? 'rk-visible' : ''}`} />
     </div>
   );
 };

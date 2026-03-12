@@ -183,7 +183,7 @@ const NestedSlider: React.FC<NestedSliderProps> = ({
           <>
             {innerActiveIndex > 0 && (
               <button
-                className="nested-nav nested-nav-prev"
+                className="rk-nested-nav rk-nested-nav-prev"
                 onClick={handlePrev}
                 aria-label="Previous"
               >
@@ -192,7 +192,7 @@ const NestedSlider: React.FC<NestedSliderProps> = ({
             )}
             {innerActiveIndex < media.length - 1 && (
               <button
-                className="nested-nav nested-nav-next"
+                className="rk-nested-nav rk-nested-nav-next"
                 onClick={handleNext}
                 aria-label="Next"
               >

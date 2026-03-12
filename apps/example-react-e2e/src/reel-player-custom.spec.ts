@@ -4,7 +4,7 @@ class CustomPlayerPage {
   constructor(private readonly page: Page) {}
 
   get overlay() {
-    return this.page.locator('.reel-overlay');
+    return this.page.locator('.rk-reel-overlay');
   }
 
   get closeButton() {
@@ -18,7 +18,7 @@ class CustomPlayerPage {
   }
 
   get nextButton() {
-    return this.page.locator('.player-nav-arrows button[aria-label="Next"]');
+    return this.page.locator('.rk-player-nav-arrows button[aria-label="Next"]');
   }
 
   demoButton(id: string) {
@@ -70,15 +70,15 @@ test.describe('Custom Player - Default Slide Overlay', () => {
     const player = new CustomPlayerPage(page);
     await player.openDemo('default-overlay');
 
-    await expect(page.locator('.reel-slide-overlay').first()).toBeVisible();
+    await expect(page.locator('.rk-reel-slide-overlay').first()).toBeVisible();
     await expect(
-      page.locator('.reel-slide-overlay-name').first(),
+      page.locator('.rk-reel-slide-overlay-name').first(),
     ).toBeVisible();
     await expect(
-      page.locator('.reel-slide-overlay-description').first(),
+      page.locator('.rk-reel-slide-overlay-description').first(),
     ).toBeVisible();
     await expect(
-      page.locator('.reel-slide-overlay-likes').first(),
+      page.locator('.rk-reel-slide-overlay-likes').first(),
     ).toBeVisible();
   });
 
@@ -106,7 +106,7 @@ test.describe('Custom Player - Custom Slide Overlay', () => {
     const player = new CustomPlayerPage(page);
     await player.openDemo('custom-overlay');
 
-    const defaultOverlay = page.locator('.reel-slide-overlay');
+    const defaultOverlay = page.locator('.rk-reel-slide-overlay');
     await expect(defaultOverlay).toHaveCount(0);
   });
 
@@ -153,7 +153,7 @@ test.describe('Custom Player - Custom Controls', () => {
     const player = new CustomPlayerPage(page);
     await player.openDemo('custom-controls');
 
-    const defaultOverlay = page.locator('.reel-slide-overlay');
+    const defaultOverlay = page.locator('.rk-reel-slide-overlay');
     await expect(defaultOverlay).toHaveCount(0);
   });
 
@@ -203,7 +203,7 @@ test.describe('Custom Player - Custom Slide (renderSlide)', () => {
 
     // But media content should be visible (either img or video)
     const mediaContent = page.locator(
-      '.reel-slide-wrapper img, .reel-slide-wrapper video',
+      '.rk-reel-slide-wrapper img, .rk-reel-slide-wrapper video',
     );
     const count = await mediaContent.count();
     expect(count).toBeGreaterThan(0);
@@ -238,7 +238,7 @@ test.describe('Custom Player - Custom Slide (renderSlide)', () => {
 
     // Navigate back
     const prevButton = page.locator(
-      '.player-nav-arrows button[aria-label="Previous"]',
+      '.rk-player-nav-arrows button[aria-label="Previous"]',
     );
     await prevButton.click();
     await player.waitForAnimation();
@@ -246,7 +246,7 @@ test.describe('Custom Player - Custom Slide (renderSlide)', () => {
     // CTA may still be in DOM (virtualization keeps adjacent slides) but
     // the current slide should have media content, not be the CTA
     const mediaContent = page.locator(
-      '.reel-slide-wrapper img, .reel-slide-wrapper video',
+      '.rk-reel-slide-wrapper img, .rk-reel-slide-wrapper video',
     );
     const count = await mediaContent.count();
     expect(count).toBeGreaterThan(0);
@@ -283,8 +283,8 @@ test.describe('Custom Player - Custom Nested Navigation', () => {
     const player = new CustomPlayerPage(page);
     await player.openDemo('custom-nested-nav');
 
-    // Default nested-nav arrows should be replaced
-    const defaultArrows = page.locator('.nested-nav');
+    // Default rk-nested-nav arrows should be replaced
+    const defaultArrows = page.locator('.rk-nested-nav');
     await expect(defaultArrows).toHaveCount(0);
   });
 

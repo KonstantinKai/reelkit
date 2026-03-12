@@ -1,5 +1,89 @@
 import { Link } from 'react-router-dom';
-import { CodeBlock } from '../../../components/ui/CodeBlock';
+import { Callout } from '../../components/ui/Callout';
+import { CodeBlock } from '../../components/ui/CodeBlock';
+import { Sandbox } from '../../components/ui/Sandbox';
+import { ReelPlayerDemo } from '../../components/demos/ReelPlayerDemo';
+import {
+  Zap,
+  Play,
+  Volume2,
+  Layout,
+  Clock,
+  Image,
+  Monitor,
+  Settings,
+  Ratio,
+  Code,
+  Layers,
+} from 'lucide-react';
+
+const fullCode = `import { useState } from 'react';
+import { ReelPlayerOverlay, type ContentItem } from '@reelkit/react-reel-player';
+import '@reelkit/react-reel-player/styles.css';
+
+const content: ContentItem[] = [
+  {
+    id: '1',
+    media: [{
+      id: 'v1',
+      type: 'video',
+      src: 'https://example.com/video.mp4',
+      poster: 'https://example.com/poster.jpg',
+      aspectRatio: 16 / 9,
+    }],
+    author: { name: 'Alex Johnson', avatar: 'https://example.com/avatar.jpg' },
+    likes: 1234,
+    description: 'Amazing video!',
+  },
+  {
+    id: '2',
+    media: [{
+      id: 'img1',
+      type: 'image',
+      src: 'https://example.com/photo.jpg',
+      aspectRatio: 2 / 3,
+    }],
+    author: { name: 'Sarah Miller', avatar: 'https://example.com/avatar2.jpg' },
+    likes: 5678,
+    description: 'Beautiful sunset',
+  },
+  {
+    id: '3',
+    media: [
+      { id: 'img2', type: 'image', src: 'https://example.com/a.jpg', aspectRatio: 2 / 3 },
+      { id: 'img3', type: 'image', src: 'https://example.com/b.jpg', aspectRatio: 3 / 4 },
+    ],
+    author: { name: 'Emma Davis', avatar: 'https://example.com/avatar3.jpg' },
+    likes: 8901,
+    description: 'Multi-media carousel',
+  },
+];
+
+function App() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [initialIndex, setInitialIndex] = useState(0);
+
+  return (
+    <>
+      {/* Thumbnail grid */}
+      {content.map((item, i) => (
+        <button key={item.id} onClick={() => {
+          setInitialIndex(i);
+          setIsOpen(true);
+        }}>
+          <img src={item.media[0].poster || item.media[0].src} />
+        </button>
+      ))}
+
+      <ReelPlayerOverlay
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        content={content}
+        initialIndex={initialIndex}
+      />
+    </>
+  );
+}`;
 
 const reelPlayerProps = [
   {
@@ -129,107 +213,169 @@ const keyboardShortcuts = [
 
 const cssClasses = [
   {
-    className: '.reel-overlay',
+    className: '.rk-reel-overlay',
     component: 'Overlay',
     description: 'Fixed full-screen backdrop (background, z-index)',
   },
   {
-    className: '.reel-container',
+    className: '.rk-reel-container',
     component: 'Overlay',
     description: 'Player container (position, overflow)',
   },
   {
-    className: '.player-nav-arrows',
+    className: '.rk-player-nav-arrows',
     component: 'Navigation',
     description: 'Desktop-only arrow container (hidden below 768px)',
   },
   {
-    className: '.player-close-btn',
+    className: '.rk-player-close-btn',
     component: 'Controls',
     description: 'Close button',
   },
   {
-    className: '.player-sound-btn',
+    className: '.rk-player-sound-btn',
     component: 'Controls',
     description: 'Sound toggle button',
   },
   {
-    className: '.reel-slide-wrapper',
+    className: '.rk-reel-slide-wrapper',
     component: 'Slide',
     description: 'Wrapper around media + overlay',
   },
   {
-    className: '.reel-slide-overlay',
+    className: '.rk-reel-slide-overlay',
     component: 'SlideOverlay',
     description: 'Gradient overlay container',
   },
   {
-    className: '.reel-slide-overlay-author',
+    className: '.rk-reel-slide-overlay-author',
     component: 'SlideOverlay',
     description: 'Author row (avatar + name)',
   },
   {
-    className: '.reel-slide-overlay-avatar',
+    className: '.rk-reel-slide-overlay-avatar',
     component: 'SlideOverlay',
     description: 'Author avatar image',
   },
   {
-    className: '.reel-slide-overlay-name',
+    className: '.rk-reel-slide-overlay-name',
     component: 'SlideOverlay',
     description: 'Author name text',
   },
   {
-    className: '.reel-slide-overlay-description',
+    className: '.rk-reel-slide-overlay-description',
     component: 'SlideOverlay',
     description: 'Description text',
   },
   {
-    className: '.reel-slide-overlay-likes',
+    className: '.rk-reel-slide-overlay-likes',
     component: 'SlideOverlay',
     description: 'Likes row (heart + count)',
   },
   {
-    className: '.video-slide-container',
+    className: '.rk-video-slide-container',
     component: 'VideoSlide',
     description: 'Video wrapper (background, overflow)',
   },
   {
-    className: '.video-slide-element',
+    className: '.rk-video-slide-element',
     component: 'VideoSlide',
     description: 'The <video> element',
   },
   {
-    className: '.video-slide-poster',
+    className: '.rk-video-slide-poster',
     component: 'VideoSlide',
     description: 'Poster image (fades out on play)',
   },
   {
-    className: '.video-slide-loader',
+    className: '.rk-video-slide-loader',
     component: 'VideoSlide',
     description: 'Wave loading animation',
   },
   {
-    className: '.nested-nav',
+    className: '.rk-nested-nav',
     component: 'NestedSlider',
     description: 'Horizontal carousel arrows (hidden below 768px)',
   },
 ];
 
-export default function ReactReelPlayerApi() {
+export default function ReelPlayer() {
   return (
     <div className="max-w-4xl mx-auto px-6 py-12">
       <div className="mb-12">
-        <h1 className="text-4xl font-bold mb-4">React Reel Player API</h1>
+        <h1 className="text-4xl font-bold mb-4">Reel Player</h1>
         <p className="text-xl text-slate-600 dark:text-slate-400">
-          The{' '}
+          A full-screen Instagram/TikTok-style video player component using{' '}
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
             @reelkit/react-reel-player
-          </code>{' '}
-          package provides a full-screen vertical reel player component, similar
-          to Instagram Reels or TikTok.
+          </code>
+          .
         </p>
       </div>
 
+      {/* Features */}
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">Features</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            {
+              icon: Zap,
+              label: 'Vertical Swipe',
+              desc: 'Touch, drag, keyboard, wheel',
+            },
+            { icon: Play, label: 'Video Autoplay', desc: 'Plays when visible' },
+            { icon: Volume2, label: 'Sound Toggle', desc: 'iOS continuity' },
+            {
+              icon: Layout,
+              label: 'Multi-Media',
+              desc: 'Horizontal nested carousels',
+            },
+            {
+              icon: Clock,
+              label: 'Position Memory',
+              desc: 'Resumes where left off',
+            },
+            { icon: Image, label: 'Frame Capture', desc: 'Seamless poster transitions' },
+            {
+              icon: Layers,
+              label: 'Virtualized',
+              desc: 'Only 3 slides in DOM',
+            },
+            {
+              icon: Ratio,
+              label: 'Aspect Ratio',
+              desc: '9:16 desktop, full mobile',
+            },
+            { icon: Monitor, label: 'Desktop Nav', desc: 'Arrow buttons' },
+            {
+              icon: Code,
+              label: 'Generic Types',
+              desc: 'Custom content data models',
+            },
+            {
+              icon: Settings,
+              label: 'Customizable',
+              desc: 'Render props for everything',
+            },
+            {
+              icon: Zap,
+              label: 'Slide Overlay',
+              desc: 'Author, likes, description',
+            },
+          ].map((item) => (
+            <div
+              key={item.label}
+              className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 text-center"
+            >
+              <item.icon className="w-6 h-6 mx-auto mb-2 text-primary-500" />
+              <div className="font-semibold text-sm">{item.label}</div>
+              <div className="text-xs text-slate-500">{item.desc}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Installation */}
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Installation</h2>
         <CodeBlock
@@ -243,13 +389,40 @@ export default function ReactReelPlayerApi() {
           code={`import '@reelkit/react-reel-player/styles.css';`}
           language="typescript"
         />
+        <Callout type="info" title="Icons" className="mt-4">
+          The default controls use{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            lucide-react
+          </code>{' '}
+          for icons. If you prefer a different icon library, use{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            renderControls
+          </code>{' '}
+          and{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            renderNavigation
+          </code>{' '}
+          to provide your own.
+        </Callout>
       </section>
 
+      {/* Quick Start */}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">ReelPlayerOverlay</h2>
+        <h2 className="text-2xl font-bold mb-4">Quick Start</h2>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
-          The main component that renders a full-screen player overlay with
-          video/image support, sound controls, and navigation.
+          The{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            ReelPlayerOverlay
+          </code>{' '}
+          component renders a full-screen player overlay. Pass an array of{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            ContentItem
+          </code>{' '}
+          objects and control visibility with{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            isOpen
+          </code>
+          .
         </p>
         <CodeBlock
           code={`import { useState } from 'react';
@@ -288,249 +461,21 @@ function App() {
 }`}
           language="tsx"
         />
-
-        <h3 className="text-xl font-semibold mt-8 mb-4">Props</h3>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-slate-200 dark:border-slate-700">
-                <th className="text-left py-3 px-4 font-semibold">Prop</th>
-                <th className="text-left py-3 px-4 font-semibold">Type</th>
-                <th className="text-left py-3 px-4 font-semibold">Default</th>
-                <th className="text-left py-3 px-4 font-semibold">
-                  Description
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {reelPlayerProps.map((p) => (
-                <tr
-                  key={p.prop}
-                  className="border-b border-slate-100 dark:border-slate-800"
-                >
-                  <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
-                    {p.prop}
-                  </td>
-                  <td className="py-3 px-4 font-mono text-xs text-slate-500">
-                    {p.type}
-                  </td>
-                  <td className="py-3 px-4 text-slate-500 text-sm">
-                    {p.default}
-                  </td>
-                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
-                    {p.description}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <h3 className="text-xl font-semibold mt-8 mb-4">Callbacks</h3>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-slate-200 dark:border-slate-700">
-                <th className="text-left py-3 px-4 font-semibold">Prop</th>
-                <th className="text-left py-3 px-4 font-semibold">Type</th>
-                <th className="text-left py-3 px-4 font-semibold">
-                  Description
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {reelPlayerCallbacks.map((p) => (
-                <tr
-                  key={p.prop}
-                  className="border-b border-slate-100 dark:border-slate-800"
-                >
-                  <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
-                    {p.prop}
-                  </td>
-                  <td className="py-3 px-4 font-mono text-xs text-slate-500">
-                    {p.type}
-                  </td>
-                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
-                    {p.description}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <h3 className="text-xl font-semibold mt-8 mb-4">
-          Reel Props (proxied)
-        </h3>
-        <p className="text-slate-600 dark:text-slate-400 mb-4">
-          These props are forwarded to the underlying{' '}
-          <Link
-            to="/docs/api/react"
-            className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
-          >
-            Reel
-          </Link>{' '}
-          component.
-        </p>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-slate-200 dark:border-slate-700">
-                <th className="text-left py-3 px-4 font-semibold">Prop</th>
-                <th className="text-left py-3 px-4 font-semibold">Type</th>
-                <th className="text-left py-3 px-4 font-semibold">Default</th>
-                <th className="text-left py-3 px-4 font-semibold">
-                  Description
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {reelProps.map((p) => (
-                <tr
-                  key={p.prop}
-                  className="border-b border-slate-100 dark:border-slate-800"
-                >
-                  <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
-                    {p.prop}
-                  </td>
-                  <td className="py-3 px-4 font-mono text-xs text-slate-500">
-                    {p.type}
-                  </td>
-                  <td className="py-3 px-4 text-slate-500 text-sm">
-                    {p.default}
-                  </td>
-                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
-                    {p.description}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
       </section>
 
+      {/* Live Demo */}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Types</h2>
-
-        <h3 className="text-lg font-semibold mb-2">BaseContentItem</h3>
-        <p className="text-slate-600 dark:text-slate-400 mb-2">
-          The generic constraint type. Extend this to use custom data types with
-          ReelPlayerOverlay.
+        <h2 className="text-2xl font-bold mb-4">Live Demo</h2>
+        <Sandbox code={fullCode} title="ReelPlayerPage.tsx" height={500}>
+          <ReelPlayerDemo />
+        </Sandbox>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-3">
+          Click a thumbnail to open the full-screen player. Press Escape or the
+          close button to return.
         </p>
-        <CodeBlock
-          code={`interface BaseContentItem {
-  id: string;
-  media: MediaItem[];
-}`}
-          language="typescript"
-        />
-
-        <h3 className="text-lg font-semibold mt-6 mb-2">ContentItem</h3>
-        <CodeBlock
-          code={`interface ContentItem extends BaseContentItem {
-  author: {
-    name: string;
-    avatar: string;
-  };
-  likes: number;
-  description: string;
-}`}
-          language="typescript"
-        />
-
-        <h3 className="text-lg font-semibold mt-6 mb-2">MediaItem</h3>
-        <CodeBlock
-          code={`interface MediaItem {
-  id: string;
-  type: 'image' | 'video';
-  src: string;
-  poster?: string;
-  aspectRatio: number;
-}`}
-          language="typescript"
-        />
-
-        <h3 className="text-lg font-semibold mt-6 mb-2">MediaType</h3>
-        <CodeBlock
-          code={`type MediaType = 'image' | 'video';`}
-          language="typescript"
-        />
-
-        <h3 className="text-lg font-semibold mt-6 mb-2">
-          ControlsRenderProps{'<T>'}
-        </h3>
-        <CodeBlock
-          code={`interface ControlsRenderProps<T extends BaseContentItem> {
-  onClose: () => void;
-  soundState: SoundState;
-  activeIndex: number;
-  content: T[];
-}`}
-          language="typescript"
-        />
-
-        <h3 className="text-lg font-semibold mt-6 mb-2">
-          NavigationRenderProps
-        </h3>
-        <CodeBlock
-          code={`interface NavigationRenderProps {
-  onPrev: () => void;
-  onNext: () => void;
-  activeIndex: number;
-  count: number;
-}`}
-          language="typescript"
-        />
-
-        <h3 className="text-lg font-semibold mt-6 mb-2">SlideOverlayProps</h3>
-        <CodeBlock
-          code={`interface SlideOverlayProps {
-  author?: { name: string; avatar: string };
-  description?: string;
-  likes?: number;
-}`}
-          language="typescript"
-        />
-
-        <h3 className="text-lg font-semibold mt-6 mb-2">CloseButtonProps</h3>
-        <CodeBlock
-          code={`interface CloseButtonProps {
-  onClick: () => void;
-  className?: string;
-  style?: React.CSSProperties;
-}`}
-          language="typescript"
-        />
-
-        <h3 className="text-lg font-semibold mt-6 mb-2">SoundButtonProps</h3>
-        <CodeBlock
-          code={`interface SoundButtonProps {
-  disabled?: boolean;
-  className?: string;
-  style?: React.CSSProperties;
-}`}
-          language="typescript"
-        />
       </section>
 
-      <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Sound Context</h2>
-        <p className="text-slate-600 dark:text-slate-400 mb-4">
-          For custom implementations, you can access the sound state:
-        </p>
-        <CodeBlock
-          code={`import { SoundProvider, useSoundState } from '@reelkit/react-reel-player';
-import type { Signal } from '@reelkit/core';
-
-interface SoundState {
-  muted: Signal<boolean>;
-  disabled: Signal<boolean>;
-  toggle: () => void;
-}`}
-          language="typescript"
-        />
-      </section>
-
+      {/* Customization */}
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Customization</h2>
 
@@ -735,6 +680,236 @@ const items: MyItem[] = [
         />
       </section>
 
+      {/* API Reference */}
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">API Reference</h2>
+
+        <h3 className="text-xl font-semibold mt-6 mb-4">Props</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left py-3 px-4 font-semibold">Prop</th>
+                <th className="text-left py-3 px-4 font-semibold">Type</th>
+                <th className="text-left py-3 px-4 font-semibold">Default</th>
+                <th className="text-left py-3 px-4 font-semibold">
+                  Description
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {reelPlayerProps.map((p) => (
+                <tr
+                  key={p.prop}
+                  className="border-b border-slate-100 dark:border-slate-800"
+                >
+                  <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                    {p.prop}
+                  </td>
+                  <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                    {p.type}
+                  </td>
+                  <td className="py-3 px-4 text-slate-500 text-sm">
+                    {p.default}
+                  </td>
+                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                    {p.description}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <h3 className="text-xl font-semibold mt-8 mb-4">Callbacks</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left py-3 px-4 font-semibold">Prop</th>
+                <th className="text-left py-3 px-4 font-semibold">Type</th>
+                <th className="text-left py-3 px-4 font-semibold">
+                  Description
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {reelPlayerCallbacks.map((p) => (
+                <tr
+                  key={p.prop}
+                  className="border-b border-slate-100 dark:border-slate-800"
+                >
+                  <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                    {p.prop}
+                  </td>
+                  <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                    {p.type}
+                  </td>
+                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                    {p.description}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <h3 className="text-xl font-semibold mt-8 mb-4">
+          Reel Props (proxied)
+        </h3>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          These props are forwarded to the underlying{' '}
+          <Link
+            to="/docs/react/api"
+            className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
+          >
+            Reel
+          </Link>{' '}
+          component.
+        </p>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left py-3 px-4 font-semibold">Prop</th>
+                <th className="text-left py-3 px-4 font-semibold">Type</th>
+                <th className="text-left py-3 px-4 font-semibold">Default</th>
+                <th className="text-left py-3 px-4 font-semibold">
+                  Description
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {reelProps.map((p) => (
+                <tr
+                  key={p.prop}
+                  className="border-b border-slate-100 dark:border-slate-800"
+                >
+                  <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                    {p.prop}
+                  </td>
+                  <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                    {p.type}
+                  </td>
+                  <td className="py-3 px-4 text-slate-500 text-sm">
+                    {p.default}
+                  </td>
+                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                    {p.description}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      {/* Types */}
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">Types</h2>
+
+        <h3 className="text-lg font-semibold mb-2">BaseContentItem</h3>
+        <p className="text-slate-600 dark:text-slate-400 mb-2">
+          The generic constraint type. Extend this to use custom data types with
+          ReelPlayerOverlay.
+        </p>
+        <CodeBlock
+          code={`interface BaseContentItem {
+  id: string;
+  media: MediaItem[];
+}`}
+          language="typescript"
+        />
+
+        <h3 className="text-lg font-semibold mt-6 mb-2">ContentItem</h3>
+        <CodeBlock
+          code={`interface ContentItem extends BaseContentItem {
+  author: {
+    name: string;
+    avatar: string;
+  };
+  likes: number;
+  description: string;
+}`}
+          language="typescript"
+        />
+
+        <h3 className="text-lg font-semibold mt-6 mb-2">MediaItem</h3>
+        <CodeBlock
+          code={`interface MediaItem {
+  id: string;
+  type: 'image' | 'video';
+  src: string;
+  poster?: string;
+  aspectRatio: number;
+}`}
+          language="typescript"
+        />
+
+        <h3 className="text-lg font-semibold mt-6 mb-2">MediaType</h3>
+        <CodeBlock
+          code={`type MediaType = 'image' | 'video';`}
+          language="typescript"
+        />
+
+        <h3 className="text-lg font-semibold mt-6 mb-2">
+          ControlsRenderProps{'<T>'}
+        </h3>
+        <CodeBlock
+          code={`interface ControlsRenderProps<T extends BaseContentItem> {
+  onClose: () => void;
+  soundState: SoundState;
+  activeIndex: number;
+  content: T[];
+}`}
+          language="typescript"
+        />
+
+        <h3 className="text-lg font-semibold mt-6 mb-2">
+          NavigationRenderProps
+        </h3>
+        <CodeBlock
+          code={`interface NavigationRenderProps {
+  onPrev: () => void;
+  onNext: () => void;
+  activeIndex: number;
+  count: number;
+}`}
+          language="typescript"
+        />
+
+        <h3 className="text-lg font-semibold mt-6 mb-2">SlideOverlayProps</h3>
+        <CodeBlock
+          code={`interface SlideOverlayProps {
+  author?: { name: string; avatar: string };
+  description?: string;
+  likes?: number;
+}`}
+          language="typescript"
+        />
+
+        <h3 className="text-lg font-semibold mt-6 mb-2">CloseButtonProps</h3>
+        <CodeBlock
+          code={`interface CloseButtonProps {
+  onClick: () => void;
+  className?: string;
+  style?: React.CSSProperties;
+}`}
+          language="typescript"
+        />
+
+        <h3 className="text-lg font-semibold mt-6 mb-2">SoundButtonProps</h3>
+        <CodeBlock
+          code={`interface SoundButtonProps {
+  disabled?: boolean;
+  className?: string;
+  style?: React.CSSProperties;
+}`}
+          language="typescript"
+        />
+      </section>
+
+      {/* Sub-Components */}
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Sub-Components</h2>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
@@ -795,8 +970,28 @@ const items: MyItem[] = [
         />
       </section>
 
+      {/* Sound Context */}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">CSS Customization</h2>
+        <h2 className="text-2xl font-bold mb-4">Sound Context</h2>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          For custom implementations, you can access the sound state:
+        </p>
+        <CodeBlock
+          code={`import { SoundProvider, useSoundState } from '@reelkit/react-reel-player';
+import type { Signal } from '@reelkit/core';
+
+interface SoundState {
+  muted: Signal<boolean>;
+  disabled: Signal<boolean>;
+  toggle: () => void;
+}`}
+          language="typescript"
+        />
+      </section>
+
+      {/* CSS Customization */}
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">CSS Classes</h2>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           All CSS classes are plain (not CSS modules), so they can be overridden
           with higher-specificity selectors or in a custom stylesheet loaded
@@ -841,17 +1036,17 @@ const items: MyItem[] = [
 
         <CodeBlock
           code={`/* Override overlay background */
-.reel-overlay {
+.rk-reel-overlay {
   background: rgba(0, 0, 0, 0.9);
 }
 
 /* Custom slide overlay gradient */
-.reel-slide-overlay {
+.rk-reel-slide-overlay {
   background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
 }
 
 /* Larger navigation arrows */
-.player-nav-arrows button {
+.rk-player-nav-arrows button {
   width: 56px;
   height: 56px;
 }`}
@@ -859,7 +1054,8 @@ const items: MyItem[] = [
         />
       </section>
 
-      <section className="mb-12">
+      {/* Keyboard Shortcuts */}
+      <section>
         <h2 className="text-2xl font-bold mb-4">Keyboard Shortcuts</h2>
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -886,24 +1082,6 @@ const items: MyItem[] = [
             </tbody>
           </table>
         </div>
-      </section>
-
-      <section>
-        <h2 className="text-2xl font-bold mb-4">Examples</h2>
-        <ul className="space-y-3">
-          <li>
-            <Link
-              to="/docs/examples/reel-player"
-              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
-            >
-              Reel Player
-            </Link>
-            <span className="text-slate-500">
-              {' '}
-              — live demo with customization patterns
-            </span>
-          </li>
-        </ul>
       </section>
     </div>
   );

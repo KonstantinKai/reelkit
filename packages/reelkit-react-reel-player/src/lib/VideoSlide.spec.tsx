@@ -46,7 +46,7 @@ describe('VideoSlide', () => {
         />,
       );
 
-      const wrapper = container.querySelector('.video-slide-container') as HTMLElement;
+      const wrapper = container.querySelector('.rk-video-slide-container') as HTMLElement;
       expect(wrapper.style.width).toBe('400px');
       expect(wrapper.style.height).toBe('700px');
     });
@@ -63,7 +63,7 @@ describe('VideoSlide', () => {
         />,
       );
 
-      const poster = container.querySelector('.video-slide-poster') as HTMLElement;
+      const poster = container.querySelector('.rk-video-slide-poster') as HTMLElement;
       expect(poster).toBeTruthy();
       expect(poster.getAttribute('src')).toBe('poster.jpg');
     });
@@ -79,7 +79,7 @@ describe('VideoSlide', () => {
         />,
       );
 
-      const poster = container.querySelector('.video-slide-poster');
+      const poster = container.querySelector('.rk-video-slide-poster');
       expect(poster).toBeNull();
     });
   });
@@ -96,7 +96,7 @@ describe('VideoSlide', () => {
         />,
       );
 
-      const videoContainer = container.querySelector('.video-slide-container')!;
+      const videoContainer = container.querySelector('.rk-video-slide-container')!;
       const video = videoContainer.querySelector('video');
       expect(video).toBeTruthy();
     });
@@ -112,7 +112,7 @@ describe('VideoSlide', () => {
         />,
       );
 
-      const videoContainer = container.querySelector('.video-slide-container')!;
+      const videoContainer = container.querySelector('.rk-video-slide-container')!;
       const video = videoContainer.querySelector('video');
       expect(video).toBeNull();
     });
@@ -142,7 +142,7 @@ describe('VideoSlide', () => {
         />,
       );
 
-      const videoContainer = container.querySelector('.video-slide-container')!;
+      const videoContainer = container.querySelector('.rk-video-slide-container')!;
       expect(videoContainer.querySelector('video')).toBeTruthy();
 
       unmount();

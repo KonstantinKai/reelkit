@@ -213,14 +213,14 @@ function Gallery() {
 ## CSS Classes
 
 ```css
-.reel-overlay { }        /* Overlay background */
-.reel-container { }      /* Player container */
-.player-nav-arrows { }   /* Desktop nav arrows */
-.player-close-btn { }    /* Close button */
-.player-sound-btn { }    /* Sound toggle */
-.video-slide-container { }
-.video-slide-loader { }
-.video-slide-poster { }
+.rk-reel-overlay { }        /* Overlay background */
+.rk-reel-container { }      /* Player container */
+.rk-player-nav-arrows { }   /* Desktop nav arrows */
+.rk-player-close-btn { }    /* Close button */
+.rk-player-sound-btn { }    /* Sound toggle */
+.rk-video-slide-container { }
+.rk-video-slide-loader { }
+.rk-video-slide-poster { }
 ```
 
 ## License

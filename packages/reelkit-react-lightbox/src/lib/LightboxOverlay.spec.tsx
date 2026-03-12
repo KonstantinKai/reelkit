@@ -126,7 +126,7 @@ describe('LightboxOverlay', () => {
         <LightboxOverlay isOpen={true} images={mockImages} onClose={vi.fn()} />,
       );
 
-      expect(document.querySelector('.lightbox-container')).toBeTruthy();
+      expect(document.querySelector('.rk-lightbox-container')).toBeTruthy();
     });
 
     it('closes on close button click', () => {
@@ -174,7 +174,7 @@ describe('LightboxOverlay', () => {
         <LightboxOverlay isOpen={true} images={mockImages} onClose={vi.fn()} />,
       );
 
-      const counter = document.querySelector('.lightbox-counter');
+      const counter = document.querySelector('.rk-lightbox-counter');
       expect(counter).toBeTruthy();
       expect(counter!.textContent).toBe('1 / 3');
     });
@@ -187,7 +187,7 @@ describe('LightboxOverlay', () => {
       const afterChange = lastReelProps.afterChange as (index: number) => void;
       act(() => afterChange(2));
 
-      const counter = document.querySelector('.lightbox-counter');
+      const counter = document.querySelector('.rk-lightbox-counter');
       expect(counter!.textContent).toBe('3 / 3');
     });
   });
@@ -296,7 +296,7 @@ describe('LightboxOverlay', () => {
         <LightboxOverlay isOpen={true} images={mockImages} onClose={vi.fn()} />,
       );
 
-      const title = document.querySelector('.lightbox-title');
+      const title = document.querySelector('.rk-lightbox-title');
       expect(title).toBeTruthy();
       expect(title!.textContent).toBe('Image 1');
     });
@@ -306,7 +306,7 @@ describe('LightboxOverlay', () => {
         <LightboxOverlay isOpen={true} images={mockImages} onClose={vi.fn()} />,
       );
 
-      const desc = document.querySelector('.lightbox-description');
+      const desc = document.querySelector('.rk-lightbox-description');
       expect(desc).toBeTruthy();
       expect(desc!.textContent).toBe('First image');
     });
@@ -320,7 +320,7 @@ describe('LightboxOverlay', () => {
       const afterChange = lastReelProps.afterChange as (index: number) => void;
       act(() => afterChange(2));
 
-      expect(document.querySelector('.lightbox-info')).toBeNull();
+      expect(document.querySelector('.rk-lightbox-info')).toBeNull();
     });
   });
 
@@ -336,7 +336,7 @@ describe('LightboxOverlay', () => {
         <LightboxOverlay isOpen={true} images={mockImages} onClose={vi.fn()} />,
       );
 
-      expect(document.querySelector('.lightbox-swipe-hint')).toBeTruthy();
+      expect(document.querySelector('.rk-lightbox-swipe-hint')).toBeTruthy();
     });
 
     it('wraps Reel in SwipeToClose on mobile', () => {
@@ -429,7 +429,7 @@ describe('LightboxOverlay', () => {
         />,
       );
 
-      expect(document.querySelector('.lightbox-counter')).toBeNull();
+      expect(document.querySelector('.rk-lightbox-counter')).toBeNull();
       expect(screen.queryByTitle('Close (Esc)')).toBeNull();
       expect(screen.queryByTitle('Enter Fullscreen')).toBeNull();
     });
@@ -532,7 +532,7 @@ describe('LightboxOverlay', () => {
         />,
       );
 
-      expect(document.querySelector('.lightbox-info')).toBeNull();
+      expect(document.querySelector('.rk-lightbox-info')).toBeNull();
     });
 
     it('passes correct props to renderInfo', () => {
@@ -582,7 +582,7 @@ describe('LightboxOverlay', () => {
       );
 
       // Default image should render
-      const img = document.querySelector('.lightbox-img');
+      const img = document.querySelector('.rk-lightbox-img');
       expect(img).toBeTruthy();
     });
 
@@ -596,7 +596,7 @@ describe('LightboxOverlay', () => {
         />,
       );
 
-      expect(document.querySelector('.lightbox-img')).toBeNull();
+      expect(document.querySelector('.rk-lightbox-img')).toBeNull();
     });
   });
 });

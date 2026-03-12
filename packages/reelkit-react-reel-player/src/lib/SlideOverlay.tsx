@@ -69,22 +69,22 @@ const SlideOverlay: React.FC<SlideOverlayProps> = ({
   if (!author && !description && likes == null) return null;
 
   return (
-    <div className="reel-slide-overlay">
+    <div className="rk-reel-slide-overlay">
       {author && (
-        <div className="reel-slide-overlay-author">
+        <div className="rk-reel-slide-overlay-author">
           <img
-            className="reel-slide-overlay-avatar"
+            className="rk-reel-slide-overlay-avatar"
             src={author.avatar}
             alt={author.name}
           />
-          <span className="reel-slide-overlay-name">{author.name}</span>
+          <span className="rk-reel-slide-overlay-name">{author.name}</span>
         </div>
       )}
       {description && (
-        <p className="reel-slide-overlay-description">{description}</p>
+        <p className="rk-reel-slide-overlay-description">{description}</p>
       )}
       {likes != null && (
-        <div className="reel-slide-overlay-likes">
+        <div className="rk-reel-slide-overlay-likes">
           <Heart size={16} />
           <span>{formatLikes(likes)}</span>
         </div>

@@ -1,4 +1,4 @@
-.reel-overlay {
+.rk-reel-overlay {
   position: fixed;
   inset: 0;
   background: #000;
@@ -9,14 +9,14 @@
   touch-action: none;
 }
 
-.reel-container {
+.rk-reel-container {
   position: relative;
   overflow: hidden;
   touch-action: none;
 }
 
 /* Navigation arrows - positioned outside player, desktop only */
-.player-nav-arrows {
+.rk-player-nav-arrows {
   display: none;
   position: absolute;
   right: 16px;
@@ -28,12 +28,12 @@
 }
 
 @media (min-width: 768px) {
-  .player-nav-arrows {
+  .rk-player-nav-arrows {
     display: flex;
   }
 }
 
-.reel-slide-wrapper {
+.rk-reel-slide-wrapper {
   position: relative;
   overflow: hidden;
 }

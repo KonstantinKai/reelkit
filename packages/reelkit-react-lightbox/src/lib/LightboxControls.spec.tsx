@@ -20,10 +20,10 @@ describe('CloseButton', () => {
     expect(onClick).toHaveBeenCalledOnce();
   });
 
-  it('uses default lightbox-close class', () => {
+  it('uses default rk-lightbox-close class', () => {
     const { container } = render(<CloseButton onClick={vi.fn()} />);
 
-    expect(container.querySelector('.lightbox-close')).toBeTruthy();
+    expect(container.querySelector('.rk-lightbox-close')).toBeTruthy();
   });
 
   it('accepts custom className', () => {
@@ -32,7 +32,7 @@ describe('CloseButton', () => {
     );
 
     expect(container.querySelector('.my-close')).toBeTruthy();
-    expect(container.querySelector('.lightbox-close')).toBeNull();
+    expect(container.querySelector('.rk-lightbox-close')).toBeNull();
   });
 });
 
@@ -49,10 +49,10 @@ describe('Counter', () => {
     expect(screen.getByText('4 / 10')).toBeTruthy();
   });
 
-  it('uses default lightbox-counter class', () => {
+  it('uses default rk-lightbox-counter class', () => {
     const { container } = render(<Counter currentIndex={0} count={3} />);
 
-    expect(container.querySelector('.lightbox-counter')).toBeTruthy();
+    expect(container.querySelector('.rk-lightbox-counter')).toBeTruthy();
   });
 
   it('accepts custom className', () => {
@@ -61,7 +61,7 @@ describe('Counter', () => {
     );
 
     expect(container.querySelector('.my-counter')).toBeTruthy();
-    expect(container.querySelector('.lightbox-counter')).toBeNull();
+    expect(container.querySelector('.rk-lightbox-counter')).toBeNull();
   });
 });
 
@@ -89,12 +89,12 @@ describe('FullscreenButton', () => {
     expect(onToggle).toHaveBeenCalledOnce();
   });
 
-  it('uses default lightbox-btn class', () => {
+  it('uses default rk-lightbox-btn class', () => {
     const { container } = render(
       <FullscreenButton isFullscreen={false} onToggle={vi.fn()} />,
     );
 
-    expect(container.querySelector('.lightbox-btn')).toBeTruthy();
+    expect(container.querySelector('.rk-lightbox-btn')).toBeTruthy();
   });
 
   it('accepts custom className', () => {
@@ -107,6 +107,6 @@ describe('FullscreenButton', () => {
     );
 
     expect(container.querySelector('.my-fs-btn')).toBeTruthy();
-    expect(container.querySelector('.lightbox-btn')).toBeNull();
+    expect(container.querySelector('.rk-lightbox-btn')).toBeNull();
   });
 });

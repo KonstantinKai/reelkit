@@ -1,5 +1,64 @@
 import { Link } from 'react-router-dom';
-import { CodeBlock } from '../../../components/ui/CodeBlock';
+import { Callout } from '../../components/ui/Callout';
+import { CodeBlock } from '../../components/ui/CodeBlock';
+import { Sandbox } from '../../components/ui/Sandbox';
+import { LightboxDemo } from '../../components/demos/LightboxDemo';
+import {
+  Image,
+  Maximize2,
+  Keyboard,
+  Zap,
+  MousePointer,
+  X,
+  Hash,
+  Layers,
+} from 'lucide-react';
+
+const fullCode = `import { useState } from 'react';
+import { LightboxOverlay, type LightboxItem } from '@reelkit/react-lightbox';
+import '@reelkit/react-lightbox/styles.css';
+
+const images: LightboxItem[] = [
+  {
+    src: 'https://example.com/image1.jpg',
+    title: 'Sunset',
+    description: 'Beautiful sunset over the ocean',
+  },
+  {
+    src: 'https://example.com/image2.jpg',
+    title: 'Mountains',
+  },
+  {
+    src: 'https://example.com/image3.jpg',
+    title: 'City',
+  },
+];
+
+function App() {
+  const [index, setIndex] = useState<number | null>(null);
+
+  return (
+    <>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+        {images.map((img, i) => (
+          <img
+            key={i}
+            src={img.src}
+            alt={img.title}
+            onClick={() => setIndex(i)}
+            style={{ cursor: 'pointer', width: '100%' }}
+          />
+        ))}
+      </div>
+      <LightboxOverlay
+        isOpen={index !== null}
+        images={images}
+        initialIndex={index ?? 0}
+        onClose={() => setIndex(null)}
+      />
+    </>
+  );
+}`;
 
 const lightboxProps = [
   {
@@ -92,6 +151,24 @@ const reelProps = [
     default: 'true',
     description: 'Enable mouse wheel navigation',
   },
+  {
+    prop: 'wheelDebounceMs',
+    type: 'number',
+    default: '200',
+    description: 'Wheel debounce duration (ms)',
+  },
+  {
+    prop: 'transitionDuration',
+    type: 'number',
+    default: '300',
+    description: 'Transition animation duration (ms)',
+  },
+  {
+    prop: 'swipeDistanceFactor',
+    type: 'number',
+    default: '0.12',
+    description: 'Swipe threshold (0-1)',
+  },
 ];
 
 const keyboardShortcuts = [
@@ -101,40 +178,83 @@ const keyboardShortcuts = [
 ];
 
 const cssClasses = [
-  { class: '.lightbox-container', description: 'Root container' },
-  { class: '.lightbox-close', description: 'Close button' },
-  { class: '.lightbox-nav', description: 'Navigation arrows (both)' },
-  { class: '.lightbox-nav-prev', description: 'Previous arrow' },
-  { class: '.lightbox-nav-next', description: 'Next arrow' },
-  { class: '.lightbox-counter', description: 'Image counter' },
+  { class: '.rk-lightbox-container', description: 'Root container' },
+  { class: '.rk-lightbox-close', description: 'Close button' },
+  { class: '.rk-lightbox-nav', description: 'Navigation arrows (both)' },
+  { class: '.rk-lightbox-nav-prev', description: 'Previous arrow' },
+  { class: '.rk-lightbox-nav-next', description: 'Next arrow' },
+  { class: '.rk-lightbox-counter', description: 'Image counter' },
   {
-    class: '.lightbox-controls-left',
+    class: '.rk-lightbox-controls-left',
     description: 'Top-left controls container',
   },
-  { class: '.lightbox-btn', description: 'Control buttons (fullscreen)' },
-  { class: '.lightbox-info', description: 'Title/description container' },
-  { class: '.lightbox-title', description: 'Image title' },
-  { class: '.lightbox-description', description: 'Image description' },
-  { class: '.lightbox-swipe-hint', description: 'Mobile swipe hint' },
-  { class: '.lightbox-slide', description: 'Slide container' },
-  { class: '.lightbox-img', description: 'Image element' },
+  { class: '.rk-lightbox-btn', description: 'Control buttons (fullscreen)' },
+  { class: '.rk-lightbox-info', description: 'Title/description container' },
+  { class: '.rk-lightbox-title', description: 'Image title' },
+  { class: '.rk-lightbox-description', description: 'Image description' },
+  { class: '.rk-lightbox-swipe-hint', description: 'Mobile swipe hint' },
+  { class: '.rk-lightbox-slide', description: 'Slide container' },
+  { class: '.rk-lightbox-img', description: 'Image element' },
 ];
 
-export default function ReactLightboxApi() {
+export default function Lightbox() {
   return (
     <div className="max-w-4xl mx-auto px-6 py-12">
       <div className="mb-12">
-        <h1 className="text-4xl font-bold mb-4">React Lightbox API</h1>
+        <h1 className="text-4xl font-bold mb-4">Lightbox</h1>
         <p className="text-xl text-slate-600 dark:text-slate-400">
-          The{' '}
+          A full-screen image gallery lightbox component using{' '}
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
             @reelkit/react-lightbox
-          </code>{' '}
-          package provides a full-screen image gallery lightbox component with
-          touch gestures, keyboard navigation, and multiple transition effects.
+          </code>
+          .
         </p>
       </div>
 
+      {/* Features */}
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">Features</h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          {[
+            {
+              icon: MousePointer,
+              label: 'Touch Gestures',
+              desc: 'Swipe to navigate',
+            },
+            {
+              icon: X,
+              label: 'Swipe to Close',
+              desc: 'Swipe up to dismiss',
+            },
+            {
+              icon: Keyboard,
+              label: 'Keyboard Nav',
+              desc: 'Arrow keys, Escape',
+            },
+            {
+              icon: Maximize2,
+              label: 'Fullscreen',
+              desc: 'Cross-browser API',
+            },
+            { icon: Image, label: 'Transitions', desc: 'Slide, fade, zoom-in' },
+            { icon: Zap, label: 'Preloading', desc: 'Adjacent images prefetched' },
+            { icon: Hash, label: 'Counter', desc: '"1 / 10" indicator' },
+            { icon: Layers, label: 'Info Overlay', desc: 'Title + description' },
+            { icon: Zap, label: 'Customizable', desc: 'Render props for everything' },
+          ].map((item) => (
+            <div
+              key={item.label}
+              className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 text-center"
+            >
+              <item.icon className="w-6 h-6 mx-auto mb-2 text-primary-500" />
+              <div className="font-semibold text-sm">{item.label}</div>
+              <div className="text-xs text-slate-500">{item.desc}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Installation */}
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Installation</h2>
         <CodeBlock
@@ -148,13 +268,36 @@ export default function ReactLightboxApi() {
           code={`import '@reelkit/react-lightbox/styles.css';`}
           language="typescript"
         />
+        <Callout type="info" title="Icons" className="mt-4">
+          The default controls use{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            lucide-react
+          </code>{' '}
+          for icons. If you prefer a different icon library, use{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            renderControls
+          </code>{' '}
+          and{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            renderNavigation
+          </code>{' '}
+          to provide your own.
+        </Callout>
       </section>
 
+      {/* Quick Start */}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">LightboxOverlay</h2>
+        <h2 className="text-2xl font-bold mb-4">Quick Start</h2>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
-          The main component that renders a full-screen image lightbox with
-          navigation, fullscreen support, and swipe-to-close on mobile.
+          The{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            LightboxOverlay
+          </code>{' '}
+          component displays images in fullscreen. Pass an array of{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            LightboxItem
+          </code>{' '}
+          objects and control visibility with a nullable index.
         </p>
         <CodeBlock
           code={`import { useState } from 'react';
@@ -196,229 +339,21 @@ function App() {
 }`}
           language="tsx"
         />
-
-        <h3 className="text-xl font-semibold mt-8 mb-4">Props</h3>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-slate-200 dark:border-slate-700">
-                <th className="text-left py-3 px-4 font-semibold">Prop</th>
-                <th className="text-left py-3 px-4 font-semibold">Type</th>
-                <th className="text-left py-3 px-4 font-semibold">Default</th>
-                <th className="text-left py-3 px-4 font-semibold">
-                  Description
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {lightboxProps.map((p) => (
-                <tr
-                  key={p.prop}
-                  className="border-b border-slate-100 dark:border-slate-800"
-                >
-                  <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
-                    {p.prop}
-                  </td>
-                  <td className="py-3 px-4 font-mono text-xs text-slate-500">
-                    {p.type}
-                  </td>
-                  <td className="py-3 px-4 text-slate-500 text-sm">
-                    {p.default}
-                  </td>
-                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
-                    {p.description}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <h3 className="text-xl font-semibold mt-8 mb-4">Callbacks</h3>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-slate-200 dark:border-slate-700">
-                <th className="text-left py-3 px-4 font-semibold">Prop</th>
-                <th className="text-left py-3 px-4 font-semibold">Type</th>
-                <th className="text-left py-3 px-4 font-semibold">
-                  Description
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {lightboxCallbacks.map((p) => (
-                <tr
-                  key={p.prop}
-                  className="border-b border-slate-100 dark:border-slate-800"
-                >
-                  <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
-                    {p.prop}
-                  </td>
-                  <td className="py-3 px-4 font-mono text-xs text-slate-500">
-                    {p.type}
-                  </td>
-                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
-                    {p.description}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <h3 className="text-xl font-semibold mt-8 mb-4">
-          Reel Props (proxied)
-        </h3>
-        <p className="text-slate-600 dark:text-slate-400 mb-4">
-          These props are forwarded to the underlying{' '}
-          <Link
-            to="/docs/api/react"
-            className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
-          >
-            Reel
-          </Link>{' '}
-          component.
-        </p>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-slate-200 dark:border-slate-700">
-                <th className="text-left py-3 px-4 font-semibold">Prop</th>
-                <th className="text-left py-3 px-4 font-semibold">Type</th>
-                <th className="text-left py-3 px-4 font-semibold">Default</th>
-                <th className="text-left py-3 px-4 font-semibold">
-                  Description
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {reelProps.map((p) => (
-                <tr
-                  key={p.prop}
-                  className="border-b border-slate-100 dark:border-slate-800"
-                >
-                  <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
-                    {p.prop}
-                  </td>
-                  <td className="py-3 px-4 font-mono text-xs text-slate-500">
-                    {p.type}
-                  </td>
-                  <td className="py-3 px-4 text-slate-500 text-sm">
-                    {p.default}
-                  </td>
-                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
-                    {p.description}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
       </section>
 
+      {/* Live Demo */}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Types</h2>
-
-        <h3 className="text-lg font-semibold mb-2">LightboxItem</h3>
-        <CodeBlock
-          code={`interface LightboxItem {
-  src: string;
-  title?: string;
-  description?: string;
-  width?: number;
-  height?: number;
-}`}
-          language="typescript"
-        />
-
-        <h3 className="text-lg font-semibold mt-6 mb-2">TransitionType</h3>
-        <CodeBlock
-          code={`type TransitionType = 'slide' | 'fade' | 'zoom-in';`}
-          language="typescript"
-        />
-
-        <h3 className="text-lg font-semibold mt-6 mb-2">
-          LightboxControlsRenderProps
-        </h3>
-        <CodeBlock
-          code={`interface LightboxControlsRenderProps {
-  onClose: () => void;
-  currentIndex: number;
-  count: number;
-  isFullscreen: boolean;
-  onToggleFullscreen: () => void;
-}`}
-          language="typescript"
-        />
-
-        <h3 className="text-lg font-semibold mt-6 mb-2">
-          NavigationRenderProps
-        </h3>
-        <CodeBlock
-          code={`interface NavigationRenderProps {
-  onPrev: () => void;
-  onNext: () => void;
-  activeIndex: number;
-  count: number;
-}`}
-          language="typescript"
-        />
-
-        <h3 className="text-lg font-semibold mt-6 mb-2">InfoRenderProps</h3>
-        <CodeBlock
-          code={`interface InfoRenderProps {
-  item: LightboxItem;
-  index: number;
-}`}
-          language="typescript"
-        />
+        <h2 className="text-2xl font-bold mb-4">Live Demo</h2>
+        <Sandbox code={fullCode} title="LightboxPage.tsx" height={500}>
+          <LightboxDemo />
+        </Sandbox>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-3">
+          Click a thumbnail to open the lightbox. Use arrow keys or swipe to
+          navigate.
+        </p>
       </section>
 
-      <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Sub-Components</h2>
-        <p className="text-slate-600 dark:text-slate-400 mb-4">
-          Reusable sub-components for composing custom controls via{' '}
-          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
-            renderControls
-          </code>
-          .
-        </p>
-
-        <h3 className="text-lg font-semibold mt-4 mb-2">CloseButton</h3>
-        <p className="text-slate-600 dark:text-slate-400 mb-2">
-          Default X close button.
-        </p>
-        <CodeBlock
-          code={`import { CloseButton } from '@reelkit/react-lightbox';
-
-<CloseButton onClick={onClose} />`}
-          language="tsx"
-        />
-
-        <h3 className="text-lg font-semibold mt-6 mb-2">Counter</h3>
-        <p className="text-slate-600 dark:text-slate-400 mb-2">
-          Image counter pill showing "1 / 3".
-        </p>
-        <CodeBlock
-          code={`import { Counter } from '@reelkit/react-lightbox';
-
-<Counter currentIndex={currentIndex} count={count} />`}
-          language="tsx"
-        />
-
-        <h3 className="text-lg font-semibold mt-6 mb-2">FullscreenButton</h3>
-        <p className="text-slate-600 dark:text-slate-400 mb-2">
-          Fullscreen toggle button (Maximize/Minimize icon).
-        </p>
-        <CodeBlock
-          code={`import { FullscreenButton } from '@reelkit/react-lightbox';
-
-<FullscreenButton isFullscreen={isFullscreen} onToggle={onToggleFullscreen} />`}
-          language="tsx"
-        />
-      </section>
-
+      {/* Customization */}
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Customization</h2>
 
@@ -540,11 +475,237 @@ function App() {
         />
       </section>
 
+      {/* API Reference */}
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">API Reference</h2>
+
+        <h3 className="text-xl font-semibold mt-6 mb-4">Props</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left py-3 px-4 font-semibold">Prop</th>
+                <th className="text-left py-3 px-4 font-semibold">Type</th>
+                <th className="text-left py-3 px-4 font-semibold">Default</th>
+                <th className="text-left py-3 px-4 font-semibold">
+                  Description
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {lightboxProps.map((p) => (
+                <tr
+                  key={p.prop}
+                  className="border-b border-slate-100 dark:border-slate-800"
+                >
+                  <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                    {p.prop}
+                  </td>
+                  <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                    {p.type}
+                  </td>
+                  <td className="py-3 px-4 text-slate-500 text-sm">
+                    {p.default}
+                  </td>
+                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                    {p.description}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <h3 className="text-xl font-semibold mt-8 mb-4">Callbacks</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left py-3 px-4 font-semibold">Prop</th>
+                <th className="text-left py-3 px-4 font-semibold">Type</th>
+                <th className="text-left py-3 px-4 font-semibold">
+                  Description
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {lightboxCallbacks.map((p) => (
+                <tr
+                  key={p.prop}
+                  className="border-b border-slate-100 dark:border-slate-800"
+                >
+                  <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                    {p.prop}
+                  </td>
+                  <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                    {p.type}
+                  </td>
+                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                    {p.description}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <h3 className="text-xl font-semibold mt-8 mb-4">
+          Reel Props (proxied)
+        </h3>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          These props are forwarded to the underlying{' '}
+          <Link
+            to="/docs/react/api"
+            className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
+          >
+            Reel
+          </Link>{' '}
+          component.
+        </p>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left py-3 px-4 font-semibold">Prop</th>
+                <th className="text-left py-3 px-4 font-semibold">Type</th>
+                <th className="text-left py-3 px-4 font-semibold">Default</th>
+                <th className="text-left py-3 px-4 font-semibold">
+                  Description
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {reelProps.map((p) => (
+                <tr
+                  key={p.prop}
+                  className="border-b border-slate-100 dark:border-slate-800"
+                >
+                  <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                    {p.prop}
+                  </td>
+                  <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                    {p.type}
+                  </td>
+                  <td className="py-3 px-4 text-slate-500 text-sm">
+                    {p.default}
+                  </td>
+                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                    {p.description}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      {/* Types */}
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">Types</h2>
+
+        <h3 className="text-lg font-semibold mb-2">LightboxItem</h3>
+        <CodeBlock
+          code={`interface LightboxItem {
+  src: string;
+  title?: string;
+  description?: string;
+  width?: number;
+  height?: number;
+}`}
+          language="typescript"
+        />
+
+        <h3 className="text-lg font-semibold mt-6 mb-2">TransitionType</h3>
+        <CodeBlock
+          code={`type TransitionType = 'slide' | 'fade' | 'zoom-in';`}
+          language="typescript"
+        />
+
+        <h3 className="text-lg font-semibold mt-6 mb-2">
+          LightboxControlsRenderProps
+        </h3>
+        <CodeBlock
+          code={`interface LightboxControlsRenderProps {
+  onClose: () => void;
+  currentIndex: number;
+  count: number;
+  isFullscreen: boolean;
+  onToggleFullscreen: () => void;
+}`}
+          language="typescript"
+        />
+
+        <h3 className="text-lg font-semibold mt-6 mb-2">
+          NavigationRenderProps
+        </h3>
+        <CodeBlock
+          code={`interface NavigationRenderProps {
+  onPrev: () => void;
+  onNext: () => void;
+  activeIndex: number;
+  count: number;
+}`}
+          language="typescript"
+        />
+
+        <h3 className="text-lg font-semibold mt-6 mb-2">InfoRenderProps</h3>
+        <CodeBlock
+          code={`interface InfoRenderProps {
+  item: LightboxItem;
+  index: number;
+}`}
+          language="typescript"
+        />
+      </section>
+
+      {/* Sub-Components */}
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">Sub-Components</h2>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Reusable sub-components for composing custom controls via{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            renderControls
+          </code>
+          .
+        </p>
+
+        <h3 className="text-lg font-semibold mt-4 mb-2">CloseButton</h3>
+        <p className="text-slate-600 dark:text-slate-400 mb-2">
+          Default X close button.
+        </p>
+        <CodeBlock
+          code={`import { CloseButton } from '@reelkit/react-lightbox';
+
+<CloseButton onClick={onClose} />`}
+          language="tsx"
+        />
+
+        <h3 className="text-lg font-semibold mt-6 mb-2">Counter</h3>
+        <p className="text-slate-600 dark:text-slate-400 mb-2">
+          Image counter pill showing "1 / 3".
+        </p>
+        <CodeBlock
+          code={`import { Counter } from '@reelkit/react-lightbox';
+
+<Counter currentIndex={currentIndex} count={count} />`}
+          language="tsx"
+        />
+
+        <h3 className="text-lg font-semibold mt-6 mb-2">FullscreenButton</h3>
+        <p className="text-slate-600 dark:text-slate-400 mb-2">
+          Fullscreen toggle button (Maximize/Minimize icon).
+        </p>
+        <CodeBlock
+          code={`import { FullscreenButton } from '@reelkit/react-lightbox';
+
+<FullscreenButton isFullscreen={isFullscreen} onToggle={onToggleFullscreen} />`}
+          language="tsx"
+        />
+      </section>
+
+      {/* Hooks */}
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Hooks</h2>
-        <p className="text-slate-600 dark:text-slate-400 mb-4">
-          For custom implementations, the package exports utility hooks:
-        </p>
 
         <h3 className="text-lg font-semibold mb-2">useFullscreen</h3>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
@@ -572,6 +733,7 @@ function CustomLightbox() {
         />
       </section>
 
+      {/* Transitions */}
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Transitions</h2>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
@@ -631,8 +793,9 @@ function CustomLightbox() {
         />
       </section>
 
+      {/* CSS Classes */}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">CSS Customization</h2>
+        <h2 className="text-2xl font-bold mb-4">CSS Classes</h2>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           All UI elements use CSS classes that can be overridden for custom
           styling.
@@ -669,27 +832,28 @@ function CustomLightbox() {
         <CodeBlock
           language="css"
           code={`/* Custom close button */
-.lightbox-close {
+.rk-lightbox-close {
   background: rgba(255, 0, 0, 0.5);
   border-radius: 8px;
 }
 
 /* Custom navigation arrows */
-.lightbox-nav {
+.rk-lightbox-nav {
   background: rgba(255, 255, 255, 0.3);
   width: 60px;
   height: 60px;
 }
 
 /* Custom counter style */
-.lightbox-counter {
+.rk-lightbox-counter {
   font-size: 16px;
   background: transparent;
 }`}
         />
       </section>
 
-      <section className="mb-12">
+      {/* Keyboard Shortcuts */}
+      <section>
         <h2 className="text-2xl font-bold mb-4">Keyboard Shortcuts</h2>
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -716,24 +880,6 @@ function CustomLightbox() {
             </tbody>
           </table>
         </div>
-      </section>
-
-      <section>
-        <h2 className="text-2xl font-bold mb-4">Examples</h2>
-        <ul className="space-y-3">
-          <li>
-            <Link
-              to="/docs/examples/lightbox"
-              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
-            >
-              Lightbox
-            </Link>
-            <span className="text-slate-500">
-              {' '}
-              — live demo with transition effects
-            </span>
-          </li>
-        </ul>
       </section>
     </div>
   );

@@ -15,11 +15,11 @@ describe('SlideOverlay', () => {
       />,
     );
 
-    const name = container.querySelector('.reel-slide-overlay-name')!;
+    const name = container.querySelector('.rk-reel-slide-overlay-name')!;
     expect(name.textContent).toBe('John Doe');
 
     const avatar = container.querySelector(
-      '.reel-slide-overlay-avatar',
+      '.rk-reel-slide-overlay-avatar',
     ) as HTMLImageElement;
     expect(avatar.src).toBe('https://example.com/avatar.jpg');
     expect(avatar.alt).toBe('John Doe');
@@ -27,43 +27,43 @@ describe('SlideOverlay', () => {
 
   it('renders description', () => {
     const { container } = render(<SlideOverlay description="A cool video" />);
-    const desc = container.querySelector('.reel-slide-overlay-description')!;
+    const desc = container.querySelector('.rk-reel-slide-overlay-description')!;
     expect(desc.textContent).toBe('A cool video');
   });
 
   it('renders likes count', () => {
     const { container } = render(<SlideOverlay likes={42} />);
-    const likes = container.querySelector('.reel-slide-overlay-likes')!;
+    const likes = container.querySelector('.rk-reel-slide-overlay-likes')!;
     expect(likes.textContent).toContain('42');
   });
 
   it('formats likes in thousands', () => {
     const { container } = render(<SlideOverlay likes={1500} />);
-    const likes = container.querySelector('.reel-slide-overlay-likes')!;
+    const likes = container.querySelector('.rk-reel-slide-overlay-likes')!;
     expect(likes.textContent).toContain('1.5K');
   });
 
   it('formats likes in millions', () => {
     const { container } = render(<SlideOverlay likes={2300000} />);
-    const likes = container.querySelector('.reel-slide-overlay-likes')!;
+    const likes = container.querySelector('.rk-reel-slide-overlay-likes')!;
     expect(likes.textContent).toContain('2.3M');
   });
 
   it('formats round thousands without decimal', () => {
     const { container } = render(<SlideOverlay likes={1000} />);
-    const likes = container.querySelector('.reel-slide-overlay-likes')!;
+    const likes = container.querySelector('.rk-reel-slide-overlay-likes')!;
     expect(likes.textContent).toContain('1K');
   });
 
   it('formats round millions without decimal', () => {
     const { container } = render(<SlideOverlay likes={1000000} />);
-    const likes = container.querySelector('.reel-slide-overlay-likes')!;
+    const likes = container.querySelector('.rk-reel-slide-overlay-likes')!;
     expect(likes.textContent).toContain('1M');
   });
 
   it('renders likes=0', () => {
     const { container } = render(<SlideOverlay likes={0} />);
-    const likes = container.querySelector('.reel-slide-overlay-likes')!;
+    const likes = container.querySelector('.rk-reel-slide-overlay-likes')!;
     expect(likes.textContent).toContain('0');
   });
 
@@ -77,13 +77,13 @@ describe('SlideOverlay', () => {
     );
 
     expect(
-      container.querySelector('.reel-slide-overlay-name')!.textContent,
+      container.querySelector('.rk-reel-slide-overlay-name')!.textContent,
     ).toBe('Jane');
     expect(
-      container.querySelector('.reel-slide-overlay-description')!.textContent,
+      container.querySelector('.rk-reel-slide-overlay-description')!.textContent,
     ).toBe('Amazing content');
     expect(
-      container.querySelector('.reel-slide-overlay-likes')!.textContent,
+      container.querySelector('.rk-reel-slide-overlay-likes')!.textContent,
     ).toContain('12.5K');
   });
 
@@ -96,29 +96,29 @@ describe('SlideOverlay', () => {
       />,
     );
 
-    expect(container.querySelector('.reel-slide-overlay')).not.toBeNull();
+    expect(container.querySelector('.rk-reel-slide-overlay')).not.toBeNull();
     expect(
-      container.querySelector('.reel-slide-overlay-author'),
+      container.querySelector('.rk-reel-slide-overlay-author'),
     ).not.toBeNull();
     expect(
-      container.querySelector('.reel-slide-overlay-avatar'),
+      container.querySelector('.rk-reel-slide-overlay-avatar'),
     ).not.toBeNull();
-    expect(container.querySelector('.reel-slide-overlay-name')).not.toBeNull();
+    expect(container.querySelector('.rk-reel-slide-overlay-name')).not.toBeNull();
     expect(
-      container.querySelector('.reel-slide-overlay-description'),
+      container.querySelector('.rk-reel-slide-overlay-description'),
     ).not.toBeNull();
-    expect(container.querySelector('.reel-slide-overlay-likes')).not.toBeNull();
+    expect(container.querySelector('.rk-reel-slide-overlay-likes')).not.toBeNull();
   });
 
   it('omits author section when not provided', () => {
     const { container } = render(<SlideOverlay description="Just text" />);
-    expect(container.querySelector('.reel-slide-overlay-author')).toBeNull();
+    expect(container.querySelector('.rk-reel-slide-overlay-author')).toBeNull();
   });
 
   it('omits description section when not provided', () => {
     const { container } = render(<SlideOverlay likes={100} />);
     expect(
-      container.querySelector('.reel-slide-overlay-description'),
+      container.querySelector('.rk-reel-slide-overlay-description'),
     ).toBeNull();
   });
 
@@ -128,6 +128,6 @@ describe('SlideOverlay', () => {
         author={{ name: 'User', avatar: 'https://example.com/a.jpg' }}
       />,
     );
-    expect(container.querySelector('.reel-slide-overlay-likes')).toBeNull();
+    expect(container.querySelector('.rk-reel-slide-overlay-likes')).toBeNull();
   });
 });

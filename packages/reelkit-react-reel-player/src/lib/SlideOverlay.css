@@ -1,4 +1,4 @@
-.reel-slide-overlay {
+.rk-reel-slide-overlay {
   position: absolute;
   bottom: 0;
   left: 0;
@@ -12,26 +12,26 @@
   gap: 8px;
 }
 
-.reel-slide-overlay-author {
+.rk-reel-slide-overlay-author {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.reel-slide-overlay-avatar {
+.rk-reel-slide-overlay-avatar {
   width: 32px;
   height: 32px;
   border-radius: 50%;
   object-fit: cover;
 }
 
-.reel-slide-overlay-name {
+.rk-reel-slide-overlay-name {
   color: #fff;
   font-size: 14px;
   font-weight: 600;
 }
 
-.reel-slide-overlay-description {
+.rk-reel-slide-overlay-description {
   color: rgba(255, 255, 255, 0.9);
   font-size: 13px;
   line-height: 1.4;
@@ -42,7 +42,7 @@
   overflow: hidden;
 }
 
-.reel-slide-overlay-likes {
+.rk-reel-slide-overlay-likes {
   display: flex;
   align-items: center;
   gap: 6px;

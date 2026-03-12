@@ -4,6 +4,7 @@ import { Info, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
 interface CalloutProps {
   type?: 'info' | 'warning' | 'success' | 'error';
   title?: string;
+  className?: string;
   children: ReactNode;
 }
 
@@ -41,13 +42,13 @@ const icons = {
   error: XCircle,
 };
 
-export function Callout({ type = 'info', title, children }: CalloutProps) {
+export function Callout({ type = 'info', title, className, children }: CalloutProps) {
   const style = styles[type];
   const Icon = icons[type];
 
   return (
     <div
-      className={`flex gap-3 p-4 rounded-xl border ${style.bg} ${style.border}`}
+      className={`flex gap-3 p-4 rounded-xl border ${style.bg} ${style.border}${className ? ` ${className}` : ''}`}
     >
       <Icon className={`w-5 h-5 flex-shrink-0 mt-0.5 ${style.icon}`} />
       <div className="flex-1 min-w-0">
