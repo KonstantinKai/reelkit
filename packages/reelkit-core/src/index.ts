@@ -1,3 +1,20 @@
+/**
+ * @module @reelkit/core
+ *
+ * Framework-agnostic core of the Reelkit slider library. Zero runtime
+ * dependencies.
+ *
+ * Provides the slider engine ({@link createSliderController}), input
+ * controllers ({@link createGestureController},
+ * {@link createKeyboardController}, {@link createWheelController}),
+ * and a lightweight reactive system ({@link createSignal},
+ * {@link createComputed}, {@link reaction}).
+ *
+ * All public APIs follow a **factory-function** pattern — no classes.
+ * Each factory returns a plain object with methods and signal-based
+ * state, making it easy to integrate with any UI framework.
+ */
+
 // Utils
 export {
   // Array
@@ -17,6 +34,7 @@ export {
   createSignal,
   createComputed,
   reaction,
+  batch,
   type Signal,
   type ComputedSignal,
   type Subscribable,
@@ -32,8 +50,6 @@ export {
   // Timeout
   timeout,
   type TimeoutFn,
-  // Safe call
-  safeCall,
   // Noop
   noop,
 } from './lib/utils';
@@ -73,7 +89,10 @@ export type {
 } from './lib/wheel/types';
 
 // Slider
-export { createSliderController, defaultRangeExtractor } from './lib/slider/sliderController';
+export {
+  createSliderController,
+  defaultRangeExtractor,
+} from './lib/slider/sliderController';
 export { animate, type AnimationOptions } from './lib/slider/animate';
 export type {
   AnimatedValue,

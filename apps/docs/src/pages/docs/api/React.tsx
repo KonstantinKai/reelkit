@@ -1,19 +1,159 @@
+import { Link } from 'react-router-dom';
 import { CodeBlock } from '../../../components/ui/CodeBlock';
-import '../docs.css';
+
+const reelProps = [
+  {
+    prop: 'count',
+    type: 'number',
+    default: 'required',
+    description: 'Total number of items',
+  },
+  {
+    prop: 'size',
+    type: '[number, number]',
+    default: 'required',
+    description: 'Width and height as [width, height]',
+  },
+  {
+    prop: 'itemBuilder',
+    type: '(index, indexInRange, size) => ReactElement',
+    default: 'required',
+    description: 'Function to render each slide',
+  },
+  {
+    prop: 'direction',
+    type: "'vertical' | 'horizontal'",
+    default: "'vertical'",
+    description: 'Scroll direction',
+  },
+  {
+    prop: 'initialIndex',
+    type: 'number',
+    default: '0',
+    description: 'Starting index',
+  },
+  {
+    prop: 'loop',
+    type: 'boolean',
+    default: 'false',
+    description: 'Enable infinite loop',
+  },
+  {
+    prop: 'enableWheel',
+    type: 'boolean',
+    default: 'false',
+    description: 'Enable mouse wheel navigation',
+  },
+  {
+    prop: 'wheelDebounceMs',
+    type: 'number',
+    default: '200',
+    description: 'Wheel event debounce in ms',
+  },
+  {
+    prop: 'useNavKeys',
+    type: 'boolean',
+    default: 'true',
+    description: 'Enable keyboard navigation',
+  },
+  {
+    prop: 'transitionDuration',
+    type: 'number',
+    default: '300',
+    description: 'Animation duration in ms',
+  },
+  {
+    prop: 'swipeDistanceFactor',
+    type: 'number',
+    default: '0.12',
+    description: 'Swipe threshold (0-1)',
+  },
+  {
+    prop: 'apiRef',
+    type: 'RefObject<ReelApi>',
+    default: '-',
+    description: 'Ref to access API methods',
+  },
+];
+
+const callbacks = [
+  {
+    prop: 'afterChange',
+    type: '(index, indexInRange) => void',
+    description: 'Called after slide change completes',
+  },
+  {
+    prop: 'beforeChange',
+    type: '(index, nextIndex, indexInRange) => void',
+    description: 'Called before slide change starts',
+  },
+  {
+    prop: 'onSlideDragStart',
+    type: '(index) => void',
+    description: 'Called when drag gesture starts',
+  },
+  {
+    prop: 'onSlideDragEnd',
+    type: '(index) => void',
+    description: 'Called when drag gesture ends',
+  },
+  {
+    prop: 'onSlideDragCanceled',
+    type: '(index) => void',
+    description: 'Called when drag is canceled',
+  },
+];
+
+const apiMethods = [
+  { method: 'next()', type: '() => void', description: 'Go to next slide' },
+  { method: 'prev()', type: '() => void', description: 'Go to previous slide' },
+  {
+    method: 'goTo(index, animate?)',
+    type: '(number, boolean?) => Promise',
+    description: 'Go to specific slide',
+  },
+  {
+    method: 'adjust()',
+    type: '() => void',
+    description: 'Recalculate slide positions',
+  },
+  {
+    method: 'observe()',
+    type: '() => void',
+    description: 'Start keyboard observation',
+  },
+  {
+    method: 'unobserve()',
+    type: '() => void',
+    description: 'Stop keyboard observation',
+  },
+];
+
+const indicatorProps = [
+  { prop: 'count', type: 'number', description: 'Total number of items' },
+  { prop: 'className', type: 'string', description: 'Custom CSS class' },
+  { prop: 'style', type: 'CSSProperties', description: 'Custom inline styles' },
+];
 
 export default function ReactApi() {
   return (
-    <div className="docs-page">
-      <h1 className="docs-title">React API</h1>
-      <p className="docs-description">
-        The <code>@reelkit/react</code> package provides React components
-        for building sliders.
-      </p>
+    <div className="max-w-4xl mx-auto px-6 py-12">
+      <div className="mb-12">
+        <h1 className="text-4xl font-bold mb-4">React API</h1>
+        <p className="text-xl text-slate-600 dark:text-slate-400">
+          The{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            @reelkit/react
+          </code>{' '}
+          package provides React components for building sliders.
+        </p>
+      </div>
 
-      <section className="docs-section">
-        <h2>Reel</h2>
-        <p>
-          The main container component that handles all slider logic, gestures, and animations.
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">Reel</h2>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          The main container component that handles all slider logic, gestures,
+          and animations.
         </p>
         <CodeBlock
           code={`import { Reel } from '@reelkit/react';
@@ -32,137 +172,88 @@ export default function ReactApi() {
 >
   {/* Optional children like ReelIndicator */}
 </Reel>`}
+          language="tsx"
         />
 
-        <h3>Props</h3>
-        <table className="api-table">
-          <thead>
-            <tr>
-              <th>Prop</th>
-              <th>Type</th>
-              <th>Default</th>
-              <th>Description</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><code>count</code></td>
-              <td><code>number</code></td>
-              <td>required</td>
-              <td>Total number of items</td>
-            </tr>
-            <tr>
-              <td><code>size</code></td>
-              <td><code>[number, number]</code></td>
-              <td>required</td>
-              <td>Width and height as [width, height]</td>
-            </tr>
-            <tr>
-              <td><code>itemBuilder</code></td>
-              <td><code>(index, indexInRange, size) =&gt; ReactElement</code></td>
-              <td>required</td>
-              <td>Function to render each slide</td>
-            </tr>
-            <tr>
-              <td><code>direction</code></td>
-              <td><code>'vertical' | 'horizontal'</code></td>
-              <td><code>'vertical'</code></td>
-              <td>Scroll direction</td>
-            </tr>
-            <tr>
-              <td><code>initialIndex</code></td>
-              <td><code>number</code></td>
-              <td><code>0</code></td>
-              <td>Starting index</td>
-            </tr>
-            <tr>
-              <td><code>loop</code></td>
-              <td><code>boolean</code></td>
-              <td><code>false</code></td>
-              <td>Enable infinite loop</td>
-            </tr>
-            <tr>
-              <td><code>enableWheel</code></td>
-              <td><code>boolean</code></td>
-              <td><code>false</code></td>
-              <td>Enable mouse wheel navigation</td>
-            </tr>
-            <tr>
-              <td><code>wheelDebounceMs</code></td>
-              <td><code>number</code></td>
-              <td><code>200</code></td>
-              <td>Wheel event debounce in ms</td>
-            </tr>
-            <tr>
-              <td><code>useNavKeys</code></td>
-              <td><code>boolean</code></td>
-              <td><code>true</code></td>
-              <td>Enable keyboard navigation</td>
-            </tr>
-            <tr>
-              <td><code>transitionDuration</code></td>
-              <td><code>number</code></td>
-              <td><code>300</code></td>
-              <td>Animation duration in ms</td>
-            </tr>
-            <tr>
-              <td><code>swipeDistanceFactor</code></td>
-              <td><code>number</code></td>
-              <td><code>0.12</code></td>
-              <td>Swipe threshold (0-1)</td>
-            </tr>
-            <tr>
-              <td><code>apiRef</code></td>
-              <td><code>RefObject&lt;ReelApi&gt;</code></td>
-              <td>-</td>
-              <td>Ref to access API methods</td>
-            </tr>
-          </tbody>
-        </table>
+        <h3 className="text-xl font-semibold mt-8 mb-4">Props</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left py-3 px-4 font-semibold">Prop</th>
+                <th className="text-left py-3 px-4 font-semibold">Type</th>
+                <th className="text-left py-3 px-4 font-semibold">Default</th>
+                <th className="text-left py-3 px-4 font-semibold">
+                  Description
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {reelProps.map((p) => (
+                <tr
+                  key={p.prop}
+                  className="border-b border-slate-100 dark:border-slate-800"
+                >
+                  <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                    {p.prop}
+                  </td>
+                  <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                    {p.type}
+                  </td>
+                  <td className="py-3 px-4 text-slate-500 text-sm">
+                    {p.default}
+                  </td>
+                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                    {p.description}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
-        <h3>Callbacks</h3>
-        <table className="api-table">
-          <thead>
-            <tr>
-              <th>Prop</th>
-              <th>Type</th>
-              <th>Description</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><code>afterChange</code></td>
-              <td><code>(index, indexInRange) =&gt; void</code></td>
-              <td>Called after slide change completes</td>
-            </tr>
-            <tr>
-              <td><code>beforeChange</code></td>
-              <td><code>(index, nextIndex, indexInRange) =&gt; void</code></td>
-              <td>Called before slide change starts</td>
-            </tr>
-            <tr>
-              <td><code>onSlideDragStart</code></td>
-              <td><code>(index) =&gt; void</code></td>
-              <td>Called when drag gesture starts</td>
-            </tr>
-            <tr>
-              <td><code>onSlideDragEnd</code></td>
-              <td><code>() =&gt; void</code></td>
-              <td>Called when drag gesture ends</td>
-            </tr>
-            <tr>
-              <td><code>onSlideDragCanceled</code></td>
-              <td><code>(index) =&gt; void</code></td>
-              <td>Called when drag is canceled</td>
-            </tr>
-          </tbody>
-        </table>
+        <h3 className="text-xl font-semibold mt-8 mb-4">Callbacks</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left py-3 px-4 font-semibold">Prop</th>
+                <th className="text-left py-3 px-4 font-semibold">Type</th>
+                <th className="text-left py-3 px-4 font-semibold">
+                  Description
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {callbacks.map((p) => (
+                <tr
+                  key={p.prop}
+                  className="border-b border-slate-100 dark:border-slate-800"
+                >
+                  <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                    {p.prop}
+                  </td>
+                  <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                    {p.type}
+                  </td>
+                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                    {p.description}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </section>
 
-      <section className="docs-section">
-        <h2>ReelApi</h2>
-        <p>
-          Access slider methods via <code>apiRef</code>:
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">ReelApi</h2>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Access slider methods via{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            apiRef
+          </code>
+          :
         </p>
         <CodeBlock
           code={`const apiRef = useRef<ReelApi>(null);
@@ -177,54 +268,45 @@ apiRef.current?.goTo(5, true);     // animated
 apiRef.current?.adjust();          // recalculate positions
 apiRef.current?.observe();         // start observing keyboard
 apiRef.current?.unobserve();       // stop observing keyboard`}
+          language="typescript"
         />
 
-        <table className="api-table">
-          <thead>
-            <tr>
-              <th>Method</th>
-              <th>Type</th>
-              <th>Description</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><code>next()</code></td>
-              <td><code>() =&gt; void</code></td>
-              <td>Go to next slide</td>
-            </tr>
-            <tr>
-              <td><code>prev()</code></td>
-              <td><code>() =&gt; void</code></td>
-              <td>Go to previous slide</td>
-            </tr>
-            <tr>
-              <td><code>goTo(index, animate?)</code></td>
-              <td><code>(number, boolean?) =&gt; Promise</code></td>
-              <td>Go to specific slide</td>
-            </tr>
-            <tr>
-              <td><code>adjust()</code></td>
-              <td><code>() =&gt; void</code></td>
-              <td>Recalculate slide positions</td>
-            </tr>
-            <tr>
-              <td><code>observe()</code></td>
-              <td><code>() =&gt; void</code></td>
-              <td>Start keyboard observation</td>
-            </tr>
-            <tr>
-              <td><code>unobserve()</code></td>
-              <td><code>() =&gt; void</code></td>
-              <td>Stop keyboard observation</td>
-            </tr>
-          </tbody>
-        </table>
+        <div className="overflow-x-auto mt-6">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left py-3 px-4 font-semibold">Method</th>
+                <th className="text-left py-3 px-4 font-semibold">Type</th>
+                <th className="text-left py-3 px-4 font-semibold">
+                  Description
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {apiMethods.map((p) => (
+                <tr
+                  key={p.method}
+                  className="border-b border-slate-100 dark:border-slate-800"
+                >
+                  <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                    {p.method}
+                  </td>
+                  <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                    {p.type}
+                  </td>
+                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                    {p.description}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </section>
 
-      <section className="docs-section">
-        <h2>ReelIndicator</h2>
-        <p>
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">ReelIndicator</h2>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
           Instagram-style progress indicators:
         </p>
         <CodeBlock
@@ -233,101 +315,70 @@ apiRef.current?.unobserve();       // stop observing keyboard`}
 <Reel count={10} size={[400, 600]} itemBuilder={...}>
   <ReelIndicator count={10} />
 </Reel>`}
+          language="tsx"
         />
 
-        <table className="api-table">
-          <thead>
-            <tr>
-              <th>Prop</th>
-              <th>Type</th>
-              <th>Description</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><code>count</code></td>
-              <td><code>number</code></td>
-              <td>Total number of items</td>
-            </tr>
-            <tr>
-              <td><code>className</code></td>
-              <td><code>string</code></td>
-              <td>Custom CSS class</td>
-            </tr>
-            <tr>
-              <td><code>style</code></td>
-              <td><code>CSSProperties</code></td>
-              <td>Custom inline styles</td>
-            </tr>
-          </tbody>
-        </table>
+        <div className="overflow-x-auto mt-6">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left py-3 px-4 font-semibold">Prop</th>
+                <th className="text-left py-3 px-4 font-semibold">Type</th>
+                <th className="text-left py-3 px-4 font-semibold">
+                  Description
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {indicatorProps.map((p) => (
+                <tr
+                  key={p.prop}
+                  className="border-b border-slate-100 dark:border-slate-800"
+                >
+                  <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                    {p.prop}
+                  </td>
+                  <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                    {p.type}
+                  </td>
+                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                    {p.description}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </section>
 
-      <section className="docs-section">
-        <h2>Full Example</h2>
-        <CodeBlock
-          code={`import { useRef, useState } from 'react';
-import { Reel, ReelIndicator, type ReelApi } from '@reelkit/react';
-import { ChevronUp, ChevronDown } from 'lucide-react';
-
-const slides = [
-  { id: 1, title: 'Welcome', color: '#6366f1' },
-  { id: 2, title: 'Features', color: '#8b5cf6' },
-  { id: 3, title: 'Pricing', color: '#ec4899' },
-];
-
-export function Slider() {
-  const apiRef = useRef<ReelApi>(null);
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  return (
-    <div style={{ position: 'relative' }}>
-      <Reel
-        count={slides.length}
-        size={[400, 600]}
-        direction="vertical"
-        enableWheel
-        apiRef={apiRef}
-        afterChange={(index) => setCurrentIndex(index)}
-        itemBuilder={(index) => (
-          <div
-            style={{
-              width: '100%',
-              height: '100%',
-              background: slides[index].color,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'white',
-              fontSize: '2rem',
-            }}
-          >
-            {slides[index].title}
-          </div>
-        )}
-      >
-        <ReelIndicator count={slides.length} />
-      </Reel>
-
-      {/* Navigation buttons */}
-      <div style={{ position: 'absolute', right: 20, top: '50%' }}>
-        <button
-          onClick={() => apiRef.current?.prev()}
-          disabled={currentIndex === 0}
-        >
-          <ChevronUp />
-        </button>
-        <button
-          onClick={() => apiRef.current?.next()}
-          disabled={currentIndex === slides.length - 1}
-        >
-          <ChevronDown />
-        </button>
-      </div>
-    </div>
-  );
-}`}
-        />
+      <section>
+        <h2 className="text-2xl font-bold mb-4">Examples</h2>
+        <ul className="space-y-3">
+          <li>
+            <Link
+              to="/docs/examples/basic"
+              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
+            >
+              Basic Slider
+            </Link>
+            <span className="text-slate-500">
+              {' '}
+              — full working example with navigation
+            </span>
+          </li>
+          <li>
+            <Link
+              to="/docs/examples/infinite"
+              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
+            >
+              Infinite List
+            </Link>
+            <span className="text-slate-500">
+              {' '}
+              — virtualization with 10,000+ items
+            </span>
+          </li>
+        </ul>
       </section>
     </div>
   );

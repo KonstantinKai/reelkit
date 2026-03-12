@@ -1,29 +1,69 @@
-import * as React from 'react';
+import {
+  type CSSProperties,
+  type FC,
+  type ReactNode,
+  useState,
+  useEffect,
+  useMemo,
+  memo,
+} from 'react';
 import { clamp } from '@reelkit/core';
 
+/** Axis along which indicator dots are arranged. */
 export type ReelIndicatorDirection = 'horizontal' | 'vertical';
 
+/**
+ * Props for the {@link ReelIndicator} scrolling dot indicator component.
+ */
 export interface ReelIndicatorProps {
-  /** Total number of items */
+  /** Total number of items in the slider. */
   count: number;
-  /** Current active index */
+  /** Index of the currently active item. */
   active: number;
-  /** Direction of the indicator */
+  /**
+   * Axis along which dots are arranged.
+   * @default 'vertical'
+   */
   direction?: ReelIndicatorDirection;
-  /** Dot radius in pixels */
+  /**
+   * Dot radius in pixels.
+   * @default 3
+   */
   radius?: number;
-  /** Number of normal-sized visible dots */
+  /**
+   * Maximum number of normal-sized dots visible at once. Additional
+   * dots at the edges are rendered at a smaller scale.
+   * @default 5
+   */
   visible?: number;
-  /** Gap between dots */
+  /**
+   * Space between dots in pixels.
+   * @default 4
+   */
   gap?: number;
-  /** Active dot color */
+  /**
+   * CSS color for the active dot.
+   * @default '#fff'
+   */
   activeColor?: string;
-  /** Inactive dot color */
+  /**
+   * CSS color for inactive dots.
+   * @default 'rgba(255, 255, 255, 0.5)'
+   */
   inactiveColor?: string;
-  /** Scale for edge dots (0-1) */
+  /**
+   * Scale factor (0–1) applied to edge dots that overflow the visible window.
+   * @default 0.5
+   */
   edgeScale?: number;
+  /** Optional CSS class name for the indicator container. */
   className?: string;
-  style?: React.CSSProperties;
+  /** Optional inline styles for the indicator container. */
+  style?: CSSProperties;
+  /**
+   * Called when a dot is clicked.
+   * @param index - The index of the clicked dot.
+   */
   onDotClick?: (index: number) => void;
 }
 
@@ -34,7 +74,7 @@ export interface ReelIndicatorProps {
  * - Adds 1 small dot at end if there are more items after
  * - Slides when navigating to edge dots with smooth animation
  */
-const Element: React.FC<ReelIndicatorProps> = (props) => {
+const Element: FC<ReelIndicatorProps> = (props) => {
   const {
     count,
     active,
@@ -55,14 +95,14 @@ const Element: React.FC<ReelIndicatorProps> = (props) => {
   const itemSize = dotSize + gap;
 
   // Window start index - the first normal-sized dot
-  const [windowStart, setWindowStart] = React.useState(() => {
+  const [windowStart, setWindowStart] = useState(() => {
     if (count <= visible) return 0;
     // Initially position so active is visible
     return clamp(active - Math.floor(visible / 2), 0, count - visible);
   });
 
   // Update window when active changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (count <= visible) {
       setWindowStart(0);
       return;
@@ -95,8 +135,8 @@ const Element: React.FC<ReelIndicatorProps> = (props) => {
   }
 
   // Build the dots array with absolute positioning for smooth sliding
-  const dots = React.useMemo(() => {
-    const result: React.ReactNode[] = [];
+  const dots = useMemo(() => {
+    const result: ReactNode[] = [];
 
     // Render from (windowStart - 1) to (windowEnd + 1) to ensure smooth transitions
     const renderStart = Math.max(0, windowStart - 1);
@@ -199,4 +239,9 @@ const Element: React.FC<ReelIndicatorProps> = (props) => {
   );
 };
 
-export const ReelIndicator = React.memo(Element);
+/**
+ * Instagram-style scrolling dot indicator. Shows a sliding window of
+ * normal-sized dots with smaller edge dots indicating overflow.
+ * The window slides smoothly as the active index changes.
+ */
+export const ReelIndicator = memo(Element);

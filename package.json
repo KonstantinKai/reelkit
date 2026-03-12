@@ -2,13 +2,20 @@
   "name": "@reelkit/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "lint": "npx nx run-many -t lint",
+    "format:check": "npx nx format:check",
+    "format": "npx nx format"
+  },
   "private": true,
   "dependencies": {
+    "@reelkit/react": "^0.0.1",
     "lucide-react": "^0.562.0",
+    "next": "~16.0.1",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "react-router-dom": "^7.11.0"
+    "react-router-dom": "^7.13.1",
+    "shiki": "^4.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.14.5",
@@ -17,7 +24,8 @@
     "@nx/devkit": "22.3.3",
     "@nx/eslint": "22.3.3",
     "@nx/eslint-plugin": "22.3.3",
-    "@nx/js": "22.3.3",
+    "@nx/js": "22.5.4",
+    "@nx/next": "^22.5.4",
     "@nx/playwright": "22.3.3",
     "@nx/react": "22.3.3",
     "@nx/vite": "22.3.3",
@@ -25,10 +33,10 @@
     "@nx/web": "22.3.3",
     "@playwright/test": "^1.36.0",
     "@sveltejs/vite-plugin-svelte": "^6.2.1",
-    "@swc-node/register": "~1.9.1",
+    "@swc-node/register": "~1.11.1",
     "@swc/cli": "0.6.0",
-    "@swc/core": "~1.5.7",
-    "@swc/helpers": "~0.5.11",
+    "@swc/core": "~1.15.5",
+    "@swc/helpers": "~0.5.18",
     "@testing-library/dom": "10.4.0",
     "@testing-library/react": "16.3.0",
     "@types/node": "^25.0.0",

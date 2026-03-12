@@ -6,6 +6,7 @@ export {
   createSignal,
   createComputed,
   reaction,
+  batch,
   type Signal,
   type ComputedSignal,
   type Subscribable,
@@ -22,7 +23,5 @@ export {
 } from './disposable';
 
 export { timeout, type TimeoutFn } from './timeout';
-
-export { safeCall } from './safeCall';
 
 export { noop } from './noop';

@@ -1,24 +1,59 @@
-import * as React from 'react';
+import {
+  type MutableRefObject,
+  type ReactNode,
+  type FC,
+  useRef,
+  useState,
+  useEffect,
+  useCallback,
+} from 'react';
 import { createPortal } from 'react-dom';
 import { Reel, type ReelApi, type ReelProps } from '@reelkit/react';
-import { X, Maximize, Minimize, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import useFullscreen from './useFullscreen';
 import { useBodyLock } from '@reelkit/react';
 import { SwipeToClose } from './SwipeToClose';
+import LightboxControls from './LightboxControls';
+import type {
+  LightboxControlsRenderProps,
+  NavigationRenderProps,
+  InfoRenderProps,
+} from './types';
 import './LightboxOverlay.css';
 
+/**
+ * Data for a single lightbox image.
+ *
+ * At minimum, provide `src`. Optional `title` and `description` are
+ * rendered in the built-in info overlay (unless overridden via `renderInfo`).
+ */
 export interface LightboxItem {
+  /** URL of the image. */
   src: string;
+  /** Title displayed in the info overlay. */
   title?: string;
+  /** Description displayed below the title in the info overlay. */
   description?: string;
+  /** Intrinsic width of the image in pixels. Currently unused by the lightbox. */
   width?: number;
+  /** Intrinsic height of the image in pixels. Currently unused by the lightbox. */
   height?: number;
 }
 
+/**
+ * Available CSS transition effects applied when navigating between slides.
+ *
+ * - `'slide'` — standard horizontal slide (default)
+ * - `'fade'` — crossfade between images
+ * - `'zoom-in'` — zoom in from smaller to normal size
+ */
 export type TransitionType = 'slide' | 'fade' | 'zoom-in';
 
 /**
- * Props that are proxied to the underlying Reel component
+ * Subset of {@link ReelProps} forwarded to the underlying `Reel` component.
+ *
+ * Allows controlling transition duration, swipe sensitivity, looping,
+ * keyboard navigation, and wheel behaviour without accessing `Reel` directly.
  */
 export type ReelProxyProps = Pick<
   ReelProps,
@@ -30,10 +65,45 @@ export type ReelProxyProps = Pick<
   | 'wheelDebounceMs'
 >;
 
+/**
+ * Props for the {@link LightboxOverlay} component.
+ *
+ * @example
+ * ```tsx
+ * // Basic usage
+ * <LightboxOverlay
+ *   isOpen={index !== null}
+ *   images={images}
+ *   initialIndex={index ?? 0}
+ *   onClose={() => setIndex(null)}
+ * />
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // With custom controls and info
+ * <LightboxOverlay
+ *   isOpen={isOpen}
+ *   images={images}
+ *   onClose={handleClose}
+ *   renderControls={({ onClose, currentIndex, count }) => (
+ *     <div>
+ *       <Counter currentIndex={currentIndex} count={count} />
+ *       <CloseButton onClick={onClose} />
+ *     </div>
+ *   )}
+ *   renderInfo={({ item }) => <p>{item.title}</p>}
+ * />
+ * ```
+ */
 export interface LightboxOverlayProps extends ReelProxyProps {
+  /** When `true`, the lightbox is rendered and body scroll is locked. */
   isOpen: boolean;
+  /** Array of images to display as horizontal slides. */
   images: LightboxItem[];
+  /** Zero-based index of the initially visible image. @default 0 */
   initialIndex?: number;
+  /** Callback to close the lightbox. Triggered by close button or Escape key. */
   onClose: () => void;
   /**
    * Transition animation type
@@ -47,9 +117,36 @@ export interface LightboxOverlayProps extends ReelProxyProps {
   /**
    * Ref to access the Reel API
    */
-  apiRef?: React.MutableRefObject<ReelApi | null>;
+  apiRef?: MutableRefObject<ReelApi | null>;
+
+  /**
+   * Custom controls. Replaces default close button, counter, and fullscreen toggle.
+   */
+  renderControls?: (props: LightboxControlsRenderProps) => ReactNode;
+
+  /**
+   * Custom navigation arrows. Replaces default prev/next buttons.
+   */
+  renderNavigation?: (props: NavigationRenderProps) => ReactNode;
+
+  /**
+   * Custom info overlay. Replaces default title + description gradient.
+   * Return `null` to hide the info overlay entirely.
+   */
+  renderInfo?: (props: InfoRenderProps) => ReactNode;
+
+  /**
+   * Custom slide rendering. Return null to fall back to default image slide.
+   */
+  renderSlide?: (
+    item: LightboxItem,
+    index: number,
+    size: [number, number],
+    isActive: boolean,
+  ) => ReactNode | null;
 }
 
+/** Number of images to preload before and after the current index. */
 const PRELOAD_RANGE = 2;
 
 const preloadedImages = new Set<string>();
@@ -61,13 +158,24 @@ const preloadImage = (src: string): void => {
   img.src = src;
 };
 
-const LightboxContent: React.FC<LightboxOverlayProps> = ({
+/**
+ * Inner content of the lightbox overlay. Manages slider, controls,
+ * navigation, info overlay, fullscreen, resize, and image preloading.
+ *
+ * Rendered only when `isOpen` is `true` (gated by {@link LightboxOverlay}).
+ * @internal
+ */
+const LightboxContent: FC<LightboxOverlayProps> = ({
   images,
   initialIndex = 0,
   onClose,
   transition = 'slide',
   onSlideChange,
   apiRef,
+  renderControls,
+  renderNavigation,
+  renderInfo,
+  renderSlide,
   // Reel proxy props with defaults
   transitionDuration,
   swipeDistanceFactor,
@@ -76,31 +184,32 @@ const LightboxContent: React.FC<LightboxOverlayProps> = ({
   enableWheel = true,
   wheelDebounceMs,
 }) => {
-  const containerRef = React.useRef<HTMLDivElement>(null);
-  const internalApiRef = React.useRef<ReelApi>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const internalApiRef = useRef<ReelApi>(null);
   const sliderRef = apiRef ?? internalApiRef;
-  const [currentIndex, setCurrentIndex] = React.useState(initialIndex);
-  const [size, setSize] = React.useState<[number, number]>([
-    window.innerWidth,
-    window.innerHeight,
-  ]);
+  const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const [size, setSize] = useState<[number, number]>(() =>
+    typeof window !== 'undefined'
+      ? [window.innerWidth, window.innerHeight]
+      : [0, 0],
+  );
   const [isFullscreen, requestFullscreen, exitFullscreen] = useFullscreen({
     ref: containerRef,
   });
-  const [isMobile, setIsMobile] = React.useState(
-    () => 'ontouchstart' in window || navigator.maxTouchPoints > 0
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== 'undefined'
+      ? 'ontouchstart' in window || navigator.maxTouchPoints > 0
+      : false,
   );
 
   // Lock body scroll
   useBodyLock(true);
 
   // Update size on resize
-  React.useEffect(() => {
+  useEffect(() => {
     const handleResize = () => {
       setSize([window.innerWidth, window.innerHeight]);
-      setIsMobile(
-        'ontouchstart' in window || navigator.maxTouchPoints > 0
-      );
+      setIsMobile('ontouchstart' in window || navigator.maxTouchPoints > 0);
     };
 
     window.addEventListener('resize', handleResize);
@@ -108,7 +217,7 @@ const LightboxContent: React.FC<LightboxOverlayProps> = ({
   }, []);
 
   // Preload images in range
-  React.useEffect(() => {
+  useEffect(() => {
     const start = Math.max(0, currentIndex - PRELOAD_RANGE);
     const end = Math.min(images.length - 1, currentIndex + PRELOAD_RANGE);
 
@@ -120,7 +229,7 @@ const LightboxContent: React.FC<LightboxOverlayProps> = ({
   }, [currentIndex, images]);
 
   // Handle keyboard navigation
-  React.useEffect(() => {
+  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         if (isFullscreen) {
@@ -135,20 +244,23 @@ const LightboxContent: React.FC<LightboxOverlayProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isFullscreen, exitFullscreen, onClose]);
 
-  const handleAfterChange = React.useCallback((index: number) => {
-    setCurrentIndex(index);
-    onSlideChange?.(index);
-  }, [onSlideChange]);
+  const handleAfterChange = useCallback(
+    (index: number) => {
+      setCurrentIndex(index);
+      onSlideChange?.(index);
+    },
+    [onSlideChange],
+  );
 
-  const handlePrev = React.useCallback(() => {
+  const handlePrev = useCallback(() => {
     sliderRef.current?.prev();
   }, [sliderRef]);
 
-  const handleNext = React.useCallback(() => {
+  const handleNext = useCallback(() => {
     sliderRef.current?.next();
   }, [sliderRef]);
 
-  const handleFullscreenToggle = React.useCallback(() => {
+  const handleFullscreenToggle = useCallback(() => {
     if (isFullscreen) {
       exitFullscreen();
     } else {
@@ -158,11 +270,27 @@ const LightboxContent: React.FC<LightboxOverlayProps> = ({
 
   const currentImage = images[currentIndex];
 
-  const itemBuilder = React.useCallback(
+  const itemBuilder = useCallback(
     (index: number, _indexInRange: number, slideSize: [number, number]) => {
       const image = images[index];
       const isActive = index === currentIndex;
-      const transitionClass = transition !== 'slide' ? `transition-${transition}` : '';
+
+      if (renderSlide) {
+        const custom = renderSlide(image, index, slideSize, isActive);
+        if (custom !== null) {
+          return (
+            <div
+              className="lightbox-slide"
+              style={{ width: slideSize[0], height: slideSize[1] }}
+            >
+              {custom}
+            </div>
+          );
+        }
+      }
+
+      const transitionClass =
+        transition !== 'slide' ? `transition-${transition}` : '';
       const activeClass = isActive ? 'active' : '';
 
       return (
@@ -179,33 +307,29 @@ const LightboxContent: React.FC<LightboxOverlayProps> = ({
         </div>
       );
     },
-    [images, currentIndex, transition]
+    [images, currentIndex, transition, renderSlide],
   );
 
   const overlay = (
     <div ref={containerRef} className="lightbox-container">
-      {/* Top-left controls */}
-      <div className="lightbox-controls-left">
-        <span className="lightbox-counter">
-          {currentIndex + 1} / {images.length}
-        </span>
-        <button
-          className="lightbox-btn"
-          onClick={handleFullscreenToggle}
-          title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
-        >
-          {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
-        </button>
-      </div>
-
-      {/* Top-right close button */}
-      <button
-        className="lightbox-close"
-        onClick={onClose}
-        title="Close (Esc)"
-      >
-        <X size={24} />
-      </button>
+      {/* Controls (close, counter, fullscreen) */}
+      {renderControls ? (
+        renderControls({
+          onClose,
+          currentIndex,
+          count: images.length,
+          isFullscreen,
+          onToggleFullscreen: handleFullscreenToggle,
+        })
+      ) : (
+        <LightboxControls
+          onClose={onClose}
+          currentIndex={currentIndex}
+          count={images.length}
+          isFullscreen={isFullscreen}
+          onToggleFullscreen={handleFullscreenToggle}
+        />
+      )}
 
       {/* Reel slider - wrapped in SwipeToClose so only image moves */}
       <SwipeToClose enabled={isMobile} onClose={onClose}>
@@ -226,55 +350,77 @@ const LightboxContent: React.FC<LightboxOverlayProps> = ({
         />
       </SwipeToClose>
 
-      {/* Navigation buttons (desktop only) */}
-      {!isMobile && images.length > 1 && (
-        <>
-          {currentIndex > 0 && (
-            <button
-              className="lightbox-nav lightbox-nav-prev"
-              onClick={handlePrev}
-              title="Previous"
-            >
-              <ChevronLeft size={32} />
-            </button>
+      {/* Navigation buttons */}
+      {renderNavigation
+        ? renderNavigation({
+            onPrev: handlePrev,
+            onNext: handleNext,
+            activeIndex: currentIndex,
+            count: images.length,
+          })
+        : !isMobile &&
+          images.length > 1 && (
+            <>
+              {currentIndex > 0 && (
+                <button
+                  className="lightbox-nav lightbox-nav-prev"
+                  onClick={handlePrev}
+                  title="Previous"
+                >
+                  <ChevronLeft size={32} />
+                </button>
+              )}
+              {currentIndex < images.length - 1 && (
+                <button
+                  className="lightbox-nav lightbox-nav-next"
+                  onClick={handleNext}
+                  title="Next"
+                >
+                  <ChevronRight size={32} />
+                </button>
+              )}
+            </>
           )}
-          {currentIndex < images.length - 1 && (
-            <button
-              className="lightbox-nav lightbox-nav-next"
-              onClick={handleNext}
-              title="Next"
-            >
-              <ChevronRight size={32} />
-            </button>
-          )}
-        </>
-      )}
 
-      {/* Title and description */}
-      {(currentImage?.title || currentImage?.description) && (
-        <div className="lightbox-info">
-          {currentImage.title && (
-            <h3 className="lightbox-title">{currentImage.title}</h3>
+      {/* Info overlay (title + description) */}
+      {renderInfo
+        ? renderInfo({ item: currentImage, index: currentIndex })
+        : (currentImage?.title || currentImage?.description) && (
+            <div className="lightbox-info">
+              {currentImage.title && (
+                <h3 className="lightbox-title">{currentImage.title}</h3>
+              )}
+              {currentImage.description && (
+                <p className="lightbox-description">
+                  {currentImage.description}
+                </p>
+              )}
+            </div>
           )}
-          {currentImage.description && (
-            <p className="lightbox-description">
-              {currentImage.description}
-            </p>
-          )}
-        </div>
-      )}
 
       {/* Mobile swipe hint */}
-      {isMobile && (
-        <div className="lightbox-swipe-hint">Swipe up to close</div>
-      )}
+      {isMobile && <div className="lightbox-swipe-hint">Swipe up to close</div>}
     </div>
   );
 
+  if (typeof document === 'undefined') return overlay;
   return createPortal(overlay, document.body);
 };
 
-export const LightboxOverlay: React.FC<LightboxOverlayProps> = (props) => {
+/**
+ * Full-screen image lightbox overlay with gesture, keyboard, and wheel
+ * navigation.
+ *
+ * Renders into a portal on `document.body`. When `isOpen` is `false` the
+ * component returns `null` — no DOM nodes are created.
+ *
+ * Customise controls, navigation, info overlay, and individual slides
+ * via the `renderControls`, `renderNavigation`, `renderInfo`, and
+ * `renderSlide` props. Reusable sub-components ({@link CloseButton},
+ * {@link Counter}, {@link FullscreenButton}) are available for
+ * composition inside `renderControls`.
+ */
+export const LightboxOverlay: FC<LightboxOverlayProps> = (props) => {
   if (!props.isOpen) return null;
 
   return <LightboxContent {...props} />;

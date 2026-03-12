@@ -1,18 +1,33 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, {
+  type ReactNode,
+  useState,
+  useRef,
+  useCallback,
+  useEffect,
+} from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 import { noop } from '@reelkit/core';
 import { Reel, type ReelApi, type ReelProps } from '@reelkit/react';
 import { useBodyLock } from '@reelkit/react';
-import type { ContentItem } from './types';
-import { SoundProvider, useSoundState } from './SoundState';
+import type {
+  BaseContentItem,
+  ContentItem,
+  ControlsRenderProps,
+  NavigationRenderProps,
+} from './types';
+import { SoundProvider } from './SoundState';
+import { useSoundState } from './useSoundState';
 import MediaSlide from './MediaSlide';
 import PlayerControls from './PlayerControls';
+import SlideOverlay from './SlideOverlay';
 import './ReelPlayerOverlay.css';
 
 /**
- * Props that are proxied to the underlying Reel component
+ * Subset of {@link ReelProps} that are forwarded to the underlying `Reel`
+ * component. These control the slider's transition, gesture, and
+ * navigation behavior.
  */
 export type ReelProxyProps = Pick<
   ReelProps,
@@ -24,30 +39,110 @@ export type ReelProxyProps = Pick<
   | 'wheelDebounceMs'
 >;
 
-export interface ReelPlayerOverlayProps extends ReelProxyProps {
+/**
+ * Props for the {@link ReelPlayerOverlay} component.
+ *
+ * Generic over `T` — pass any type extending {@link BaseContentItem} to use
+ * custom data. Defaults to {@link ContentItem} for backward compatibility.
+ *
+ * @typeParam T - Content item type. Must have `id` and `media` fields at minimum.
+ */
+export interface ReelPlayerOverlayProps<T extends BaseContentItem = ContentItem>
+  extends ReelProxyProps {
+  /**
+   * Aspect ratio (width / height) for the player container on desktop.
+   * On mobile (< 768px viewport), the player always uses full viewport.
+   *
+   * @default 0.5625 (9:16)
+   * @example
+   * ```tsx
+   * // Standard 9:16 (default)
+   * <ReelPlayerOverlay aspectRatio={9 / 16} ... />
+   *
+   * // Wider 3:4
+   * <ReelPlayerOverlay aspectRatio={3 / 4} ... />
+   * ```
+   */
+  aspectRatio?: number;
+
+  /** When `true`, the overlay is rendered and body scroll is locked. */
   isOpen: boolean;
+
+  /** Callback to close the overlay. Triggered by close button or Escape key. */
   onClose: () => void;
-  content: ContentItem[];
+
+  /** Array of content items to display as vertical slides. */
+  content: T[];
+
+  /** Zero-based index of the initially visible slide. Defaults to `0`. */
   initialIndex?: number;
+
   /**
    * Callback fired after slide change
    */
   onSlideChange?: (index: number) => void;
+
   /**
    * Ref to access the Reel API
    */
   apiRef?: React.MutableRefObject<ReelApi | null>;
+
+  /**
+   * Custom overlay on top of each slide. Replaces default SlideOverlay.
+   * Return `null` to hide the overlay entirely.
+   */
+  renderSlideOverlay?: (item: T, index: number, isActive: boolean) => ReactNode;
+
+  /**
+   * Custom full slide. Return null to fall back to default MediaSlide + overlay.
+   */
+  renderSlide?: (
+    item: T,
+    index: number,
+    size: [number, number],
+    isActive: boolean,
+  ) => ReactNode | null;
+
+  /**
+   * Custom controls. Replaces default PlayerControls.
+   */
+  renderControls?: (props: ControlsRenderProps<T>) => ReactNode;
+
+  /**
+   * Custom navigation arrows. Replaces default ChevronUp/Down.
+   */
+  renderNavigation?: (props: NavigationRenderProps) => ReactNode;
+
+  /**
+   * Custom navigation for the nested horizontal slider (multi-media posts).
+   * Replaces default ChevronLeft/Right arrows inside nested slides.
+   */
+  renderNestedNavigation?: (props: NavigationRenderProps) => ReactNode;
 }
 
-const ASPECT_RATIO = 0.5369683357879234;
+/** Default aspect ratio: 9:16 portrait. */
+const DEFAULT_ASPECT_RATIO = 9 / 16;
 const MOBILE_BREAKPOINT = 768;
 
-const ReelPlayerContent: React.FC<ReelPlayerOverlayProps> = ({
+/**
+ * Inner content of the player overlay. Renders the `Reel` slider, controls,
+ * navigation arrows, and manages video/sound/resize lifecycle.
+ *
+ * Must be rendered inside a {@link SoundProvider}.
+ * @internal
+ */
+function ReelPlayerContent<T extends BaseContentItem = ContentItem>({
   onClose,
   content,
   initialIndex = 0,
   onSlideChange,
   apiRef,
+  renderSlideOverlay,
+  renderSlide,
+  renderControls,
+  renderNavigation,
+  renderNestedNavigation,
+  aspectRatio = DEFAULT_ASPECT_RATIO,
   // Reel proxy props with defaults
   transitionDuration,
   swipeDistanceFactor,
@@ -55,7 +150,7 @@ const ReelPlayerContent: React.FC<ReelPlayerOverlayProps> = ({
   useNavKeys = true,
   enableWheel = true,
   wheelDebounceMs,
-}) => {
+}: ReelPlayerOverlayProps<T>) {
   const [activeIndex, setActiveIndex] = useState(initialIndex);
   const [innerActiveMediaType, setInnerActiveMediaType] = useState<
     'image' | 'video' | null
@@ -69,6 +164,7 @@ const ReelPlayerContent: React.FC<ReelPlayerOverlayProps> = ({
 
   // Calculate size based on viewport and aspect ratio
   const getSize = useCallback((): [number, number] => {
+    if (typeof window === 'undefined') return [0, 0];
     const windowWidth = window.innerWidth;
     const windowHeight = window.innerHeight;
 
@@ -78,17 +174,17 @@ const ReelPlayerContent: React.FC<ReelPlayerOverlayProps> = ({
     }
 
     // On desktop, maintain aspect ratio
-    let width = windowHeight * ASPECT_RATIO;
+    let width = windowHeight * aspectRatio;
     let height = windowHeight;
 
     // If calculated width exceeds window width, fit to width instead
     if (width > windowWidth) {
       width = windowWidth;
-      height = windowWidth / ASPECT_RATIO;
+      height = windowWidth / aspectRatio;
     }
 
     return [width, height];
-  }, []);
+  }, [aspectRatio]);
 
   const [size, setSize] = useState<[number, number]>(getSize);
 
@@ -137,8 +233,8 @@ const ReelPlayerContent: React.FC<ReelPlayerOverlayProps> = ({
 
   // Before slide change - pause video
   const handleBeforeChange = useCallback(() => {
-    soundState.setDisabled(true);
-  }, [soundState]);
+    soundState.disabled.value = true;
+  }, []);
 
   // After slide change - update active index
   const handleAfterChange = useCallback(
@@ -146,11 +242,11 @@ const ReelPlayerContent: React.FC<ReelPlayerOverlayProps> = ({
       setActiveIndex(index);
       setInnerActiveMediaType(null); // Reset inner media type
       if (hasVideoContent(index)) {
-        soundState.setDisabled(false);
+        soundState.disabled.value = false;
       }
       onSlideChange?.(index);
     },
-    [hasVideoContent, soundState, onSlideChange],
+    [hasVideoContent, onSlideChange],
   );
 
   // Handle inner slider media type change (for nested sliders)
@@ -203,6 +299,27 @@ const ReelPlayerContent: React.FC<ReelPlayerOverlayProps> = ({
     sliderRef.current?.next();
   }, []);
 
+  // Resolve overlay node for a slide
+  const overlayNode = (item: T, index: number, isActive: boolean) => {
+    if (renderSlideOverlay) {
+      return renderSlideOverlay(item, index, isActive);
+    }
+    const record = item as Record<string, unknown>;
+    const author =
+      'author' in item
+        ? (record['author'] as { name: string; avatar: string } | undefined)
+        : undefined;
+    const description =
+      'description' in item
+        ? (record['description'] as string | undefined)
+        : undefined;
+    const likes =
+      'likes' in item ? (record['likes'] as number | undefined) : undefined;
+    return (
+      <SlideOverlay author={author} description={description} likes={likes} />
+    );
+  };
+
   const overlay = (
     <div className="reel-overlay">
       <div className="reel-container">
@@ -227,75 +344,173 @@ const ReelPlayerContent: React.FC<ReelPlayerOverlayProps> = ({
             const item = content[index];
             const isActive = activeIndex === index;
 
+            // Try renderSlide first
+            if (renderSlide) {
+              const custom = renderSlide(item, index, itemSize, isActive);
+              if (custom !== null) {
+                return (
+                  <div
+                    className="reel-slide-wrapper"
+                    style={{
+                      width: itemSize[0],
+                      height: itemSize[1],
+                      position: 'relative',
+                    }}
+                  >
+                    {custom}
+                  </div>
+                );
+              }
+            }
+
+            // Default: MediaSlide + overlay
             return (
-              <MediaSlide
-                content={item}
-                isActive={isActive}
-                size={itemSize}
-                innerSliderRef={innerSliderRef}
-                enableWheel={enableWheel}
-                onVideoRef={isActive ? handleVideoRef : undefined}
-                onActiveMediaTypeChange={
-                  isActive ? handleActiveMediaTypeChange : undefined
-                }
-              />
+              <div
+                className="reel-slide-wrapper"
+                style={{
+                  width: itemSize[0],
+                  height: itemSize[1],
+                  position: 'relative',
+                }}
+              >
+                <MediaSlide
+                  content={item}
+                  isActive={isActive}
+                  size={itemSize}
+                  innerSliderRef={innerSliderRef}
+                  enableWheel={enableWheel}
+                  onVideoRef={isActive ? handleVideoRef : undefined}
+                  onActiveMediaTypeChange={
+                    isActive ? handleActiveMediaTypeChange : undefined
+                  }
+                  renderNestedNavigation={renderNestedNavigation}
+                />
+                {overlayNode(item, index, isActive)}
+              </div>
             );
           }}
         />
 
-        <PlayerControls
-          onClose={onClose}
-          showSound={hasVideoContent(activeIndex)}
-          soundDisabled={isSoundDisabled}
-        />
+        {renderControls ? (
+          renderControls({ onClose, soundState, activeIndex, content })
+        ) : (
+          <PlayerControls
+            onClose={onClose}
+            showSound={hasVideoContent(activeIndex)}
+            soundDisabled={isSoundDisabled}
+          />
+        )}
       </div>
 
       {/* Navigation arrows - outside player container, desktop only */}
-      <div className="player-nav-arrows">
-        <button
-          onClick={handlePrev}
-          style={{
-            width: 44,
-            height: 44,
-            borderRadius: '50%',
-            backgroundColor: 'rgba(255,255,255,0.1)',
-            border: 'none',
-            color: '#fff',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-          aria-label="Previous"
-        >
-          <ChevronUp size={28} />
-        </button>
-        <button
-          onClick={handleNext}
-          style={{
-            width: 44,
-            height: 44,
-            borderRadius: '50%',
-            backgroundColor: 'rgba(255,255,255,0.1)',
-            border: 'none',
-            color: '#fff',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-          aria-label="Next"
-        >
-          <ChevronDown size={28} />
-        </button>
-      </div>
+      {renderNavigation ? (
+        renderNavigation({
+          onPrev: handlePrev,
+          onNext: handleNext,
+          activeIndex,
+          count: content.length,
+        })
+      ) : (
+        <div className="player-nav-arrows">
+          <button
+            onClick={handlePrev}
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: '50%',
+              backgroundColor: 'rgba(255,255,255,0.1)',
+              border: 'none',
+              color: '#fff',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            aria-label="Previous"
+          >
+            <ChevronUp size={28} />
+          </button>
+          <button
+            onClick={handleNext}
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: '50%',
+              backgroundColor: 'rgba(255,255,255,0.1)',
+              border: 'none',
+              color: '#fff',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            aria-label="Next"
+          >
+            <ChevronDown size={28} />
+          </button>
+        </div>
+      )}
     </div>
   );
 
+  if (typeof document === 'undefined') return overlay;
   return createPortal(overlay, document.body);
-};
+}
 
-export const ReelPlayerOverlay: React.FC<ReelPlayerOverlayProps> = (props) => {
+/**
+ * Full-screen, Instagram/TikTok-style vertical reel player overlay.
+ *
+ * Renders a portal containing a virtualized vertical slider with media
+ * playback, gesture/keyboard/wheel navigation, and optional sound controls.
+ * Supports full customization via render props for overlays, slides,
+ * controls, and navigation.
+ *
+ * Wraps content in a {@link SoundProvider} for shared mute/unmute state.
+ * Locks body scroll while open. Closes on Escape key.
+ *
+ * @typeParam T - Content item type. Defaults to {@link ContentItem}.
+ *
+ * @example Basic usage with default ContentItem
+ * ```tsx
+ * <ReelPlayerOverlay
+ *   isOpen={isOpen}
+ *   onClose={() => setOpen(false)}
+ *   content={items}
+ * />
+ * ```
+ *
+ * @example Custom data type
+ * ```tsx
+ * interface MyItem extends BaseContentItem {
+ *   title: string;
+ * }
+ *
+ * <ReelPlayerOverlay<MyItem>
+ *   isOpen={isOpen}
+ *   onClose={close}
+ *   content={myItems}
+ *   renderSlideOverlay={() => null}
+ * />
+ * ```
+ *
+ * @example Custom controls with sub-components
+ * ```tsx
+ * <ReelPlayerOverlay
+ *   isOpen={isOpen}
+ *   onClose={close}
+ *   content={items}
+ *   renderControls={({ onClose }) => (
+ *     <>
+ *       <CloseButton onClick={onClose} />
+ *       <SoundButton />
+ *     </>
+ *   )}
+ * />
+ * ```
+ */
+export function ReelPlayerOverlay<T extends BaseContentItem = ContentItem>(
+  props: ReelPlayerOverlayProps<T>,
+): React.ReactElement | null {
   if (!props.isOpen) return null;
 
   return (
@@ -303,4 +518,4 @@ export const ReelPlayerOverlay: React.FC<ReelPlayerOverlayProps> = (props) => {
       <ReelPlayerContent {...props} />
     </SoundProvider>
   );
-};
+}

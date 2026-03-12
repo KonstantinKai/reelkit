@@ -1,5 +1,14 @@
 import { useEffect } from 'react';
 
+/**
+ * Locks the document body scroll when `locked` is `true`. Adds
+ * `overflow: hidden` to `document.body` and compensates for the
+ * disappearing scrollbar by adding equivalent `padding-right`,
+ * preventing layout shift. Original styles are restored on cleanup
+ * or when `locked` becomes `false`.
+ *
+ * @param locked - Whether body scroll should be locked.
+ */
 export const useBodyLock = (locked: boolean) => {
   useEffect(() => {
     if (!locked) return;

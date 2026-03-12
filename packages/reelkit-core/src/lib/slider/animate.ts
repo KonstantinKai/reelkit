@@ -85,11 +85,7 @@ const createBezierEasing = (
     } else if (initialSlope === 0.0) {
       return guessForT;
     }
-    return binarySubdivide(
-      x,
-      intervalStart,
-      intervalStart + SAMPLE_STEP,
-    );
+    return binarySubdivide(x, intervalStart, intervalStart + SAMPLE_STEP);
   };
 
   return (x: number) => {
@@ -107,17 +103,33 @@ const getEasing = (): EasingFn => {
   return easingInstance;
 };
 
+/** Configuration for a numeric value animation driven by `requestAnimationFrame`. */
 export type AnimationOptions = {
+  /** The starting value of the animation. */
   from: number;
+  /** The target value the animation transitions to. */
   to: number;
+  /** Duration of the animation in milliseconds. */
   duration: number;
+  /**
+   * Called on each animation frame with the interpolated value.
+   * @param value - Current value between `from` and `to`.
+   */
   onUpdate: (value: number) => void;
+  /** Called once when the animation reaches the target value. */
   onComplete?: () => void;
 };
 
 /**
- * Animate a value from start to end using easeInOut curve.
- * Returns a cancel function.
+ * Animates a numeric value from `from` to `to` over the specified duration
+ * using a Material Design easeInOut cubic bezier curve (0.4, 0, 0.2, 1).
+ *
+ * Uses `requestAnimationFrame` for smooth, frame-synced updates. If `duration`
+ * is zero or negative, the target value is applied immediately and `onComplete`
+ * is called synchronously.
+ *
+ * @param options - The animation configuration.
+ * @returns A cancel function that stops the in-progress animation.
  */
 export const animate = (options: AnimationOptions): (() => void) => {
   const { from, to, duration, onUpdate, onComplete } = options;

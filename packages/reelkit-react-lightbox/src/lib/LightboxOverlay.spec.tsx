@@ -19,7 +19,19 @@ vi.mock('@reelkit/react', () => ({
         unobserve: vi.fn(),
       };
     }
-    return <div data-testid="mock-reel" />;
+    // Invoke itemBuilder for index 0 so renderSlide gets exercised
+    const itemBuilder = props.itemBuilder as
+      | ((
+          index: number,
+          key: number,
+          size: [number, number],
+        ) => React.ReactNode)
+      | undefined;
+    return (
+      <div data-testid="mock-reel">
+        {itemBuilder && itemBuilder(0, 0, [1024, 768])}
+      </div>
+    );
   },
   useBodyLock: vi.fn(),
 }));
@@ -71,13 +83,25 @@ describe('LightboxOverlay', () => {
     mockRequestFullscreen.mockClear();
     mockExitFullscreen.mockClear();
 
-    Object.defineProperty(window, 'innerWidth', { value: 1024, writable: true, configurable: true });
-    Object.defineProperty(window, 'innerHeight', { value: 768, writable: true, configurable: true });
+    Object.defineProperty(window, 'innerWidth', {
+      value: 1024,
+      writable: true,
+      configurable: true,
+    });
+    Object.defineProperty(window, 'innerHeight', {
+      value: 768,
+      writable: true,
+      configurable: true,
+    });
 
     // Desktop by default (no touch)
     // NOTE: do NOT define 'ontouchstart' - its mere existence on window makes isMobile true
     delete (window as Record<string, unknown>)['ontouchstart'];
-    Object.defineProperty(navigator, 'maxTouchPoints', { value: 0, writable: true, configurable: true });
+    Object.defineProperty(navigator, 'maxTouchPoints', {
+      value: 0,
+      writable: true,
+      configurable: true,
+    });
   });
 
   afterEach(() => {
@@ -87,7 +111,11 @@ describe('LightboxOverlay', () => {
   describe('open/close', () => {
     it('renders nothing when closed', () => {
       const { container } = render(
-        <LightboxOverlay isOpen={false} images={mockImages} onClose={vi.fn()} />,
+        <LightboxOverlay
+          isOpen={false}
+          images={mockImages}
+          onClose={vi.fn()}
+        />,
       );
 
       expect(container.innerHTML).toBe('');
@@ -177,7 +205,12 @@ describe('LightboxOverlay', () => {
 
     it('shows prev button when not at first index', () => {
       render(
-        <LightboxOverlay isOpen={true} images={mockImages} onClose={vi.fn()} initialIndex={1} />,
+        <LightboxOverlay
+          isOpen={true}
+          images={mockImages}
+          onClose={vi.fn()}
+          initialIndex={1}
+        />,
       );
 
       // Simulate afterChange to update internal currentIndex state
@@ -210,7 +243,9 @@ describe('LightboxOverlay', () => {
 
       fireEvent.click(screen.getByTitle('Previous'));
 
-      const ref = lastReelProps.apiRef as { current: { prev: ReturnType<typeof vi.fn> } };
+      const ref = lastReelProps.apiRef as {
+        current: { prev: ReturnType<typeof vi.fn> };
+      };
       expect(ref.current.prev).toHaveBeenCalled();
     });
   });
@@ -291,7 +326,11 @@ describe('LightboxOverlay', () => {
 
   describe('mobile', () => {
     it('shows swipe hint on mobile', () => {
-      Object.defineProperty(navigator, 'maxTouchPoints', { value: 2, writable: true, configurable: true });
+      Object.defineProperty(navigator, 'maxTouchPoints', {
+        value: 2,
+        writable: true,
+        configurable: true,
+      });
 
       render(
         <LightboxOverlay isOpen={true} images={mockImages} onClose={vi.fn()} />,
@@ -301,7 +340,11 @@ describe('LightboxOverlay', () => {
     });
 
     it('wraps Reel in SwipeToClose on mobile', () => {
-      Object.defineProperty(navigator, 'maxTouchPoints', { value: 2, writable: true, configurable: true });
+      Object.defineProperty(navigator, 'maxTouchPoints', {
+        value: 2,
+        writable: true,
+        configurable: true,
+      });
 
       render(
         <LightboxOverlay isOpen={true} images={mockImages} onClose={vi.fn()} />,
@@ -312,7 +355,11 @@ describe('LightboxOverlay', () => {
     });
 
     it('hides navigation buttons on mobile', () => {
-      Object.defineProperty(navigator, 'maxTouchPoints', { value: 2, writable: true, configurable: true });
+      Object.defineProperty(navigator, 'maxTouchPoints', {
+        value: 2,
+        writable: true,
+        configurable: true,
+      });
 
       render(
         <LightboxOverlay isOpen={true} images={mockImages} onClose={vi.fn()} />,
@@ -355,6 +402,201 @@ describe('LightboxOverlay', () => {
       );
 
       expect(apiRef.current).toBeTruthy();
+    });
+  });
+
+  describe('renderControls', () => {
+    it('renders custom controls when provided', () => {
+      render(
+        <LightboxOverlay
+          isOpen={true}
+          images={mockImages}
+          onClose={vi.fn()}
+          renderControls={() => <div data-testid="custom-controls">Custom</div>}
+        />,
+      );
+
+      expect(screen.getByTestId('custom-controls')).toBeTruthy();
+    });
+
+    it('hides default controls when renderControls is provided', () => {
+      render(
+        <LightboxOverlay
+          isOpen={true}
+          images={mockImages}
+          onClose={vi.fn()}
+          renderControls={() => <div data-testid="custom-controls" />}
+        />,
+      );
+
+      expect(document.querySelector('.lightbox-counter')).toBeNull();
+      expect(screen.queryByTitle('Close (Esc)')).toBeNull();
+      expect(screen.queryByTitle('Enter Fullscreen')).toBeNull();
+    });
+
+    it('passes correct props to renderControls', () => {
+      const renderControls = vi.fn(() => <div />);
+
+      render(
+        <LightboxOverlay
+          isOpen={true}
+          images={mockImages}
+          onClose={vi.fn()}
+          renderControls={renderControls}
+        />,
+      );
+
+      expect(renderControls).toHaveBeenCalledWith({
+        onClose: expect.any(Function),
+        currentIndex: 0,
+        count: 3,
+        isFullscreen: false,
+        onToggleFullscreen: expect.any(Function),
+      });
+    });
+  });
+
+  describe('renderNavigation', () => {
+    it('renders custom navigation when provided', () => {
+      render(
+        <LightboxOverlay
+          isOpen={true}
+          images={mockImages}
+          onClose={vi.fn()}
+          renderNavigation={() => <div data-testid="custom-nav">Nav</div>}
+        />,
+      );
+
+      expect(screen.getByTestId('custom-nav')).toBeTruthy();
+    });
+
+    it('hides default navigation when renderNavigation is provided', () => {
+      render(
+        <LightboxOverlay
+          isOpen={true}
+          images={mockImages}
+          onClose={vi.fn()}
+          renderNavigation={() => <div data-testid="custom-nav" />}
+        />,
+      );
+
+      expect(screen.queryByTitle('Previous')).toBeNull();
+      expect(screen.queryByTitle('Next')).toBeNull();
+    });
+
+    it('passes correct props to renderNavigation', () => {
+      const renderNavigation = vi.fn(() => <div />);
+
+      render(
+        <LightboxOverlay
+          isOpen={true}
+          images={mockImages}
+          onClose={vi.fn()}
+          renderNavigation={renderNavigation}
+        />,
+      );
+
+      expect(renderNavigation).toHaveBeenCalledWith({
+        onPrev: expect.any(Function),
+        onNext: expect.any(Function),
+        activeIndex: 0,
+        count: 3,
+      });
+    });
+  });
+
+  describe('renderInfo', () => {
+    it('renders custom info when provided', () => {
+      render(
+        <LightboxOverlay
+          isOpen={true}
+          images={mockImages}
+          onClose={vi.fn()}
+          renderInfo={({ item }) => (
+            <div data-testid="custom-info">{item.title}</div>
+          )}
+        />,
+      );
+
+      expect(screen.getByTestId('custom-info')).toBeTruthy();
+      expect(screen.getByTestId('custom-info').textContent).toBe('Image 1');
+    });
+
+    it('hides default info when renderInfo is provided', () => {
+      render(
+        <LightboxOverlay
+          isOpen={true}
+          images={mockImages}
+          onClose={vi.fn()}
+          renderInfo={() => <div data-testid="custom-info" />}
+        />,
+      );
+
+      expect(document.querySelector('.lightbox-info')).toBeNull();
+    });
+
+    it('passes correct props to renderInfo', () => {
+      const renderInfo = vi.fn(() => <div />);
+
+      render(
+        <LightboxOverlay
+          isOpen={true}
+          images={mockImages}
+          onClose={vi.fn()}
+          renderInfo={renderInfo}
+        />,
+      );
+
+      expect(renderInfo).toHaveBeenCalledWith({
+        item: mockImages[0],
+        index: 0,
+      });
+    });
+  });
+
+  describe('renderSlide', () => {
+    it('renders custom slide when returning non-null', () => {
+      render(
+        <LightboxOverlay
+          isOpen={true}
+          images={mockImages}
+          onClose={vi.fn()}
+          renderSlide={(item) => (
+            <div data-testid="custom-slide">{item.title}</div>
+          )}
+        />,
+      );
+
+      expect(screen.getByTestId('custom-slide')).toBeTruthy();
+      expect(screen.getByTestId('custom-slide').textContent).toBe('Image 1');
+    });
+
+    it('falls back to default when renderSlide returns null', () => {
+      render(
+        <LightboxOverlay
+          isOpen={true}
+          images={mockImages}
+          onClose={vi.fn()}
+          renderSlide={() => null}
+        />,
+      );
+
+      // Default image should render
+      const img = document.querySelector('.lightbox-img');
+      expect(img).toBeTruthy();
+    });
+
+    it('hides default image when custom slide is rendered', () => {
+      render(
+        <LightboxOverlay
+          isOpen={true}
+          images={mockImages}
+          onClose={vi.fn()}
+          renderSlide={() => <div data-testid="custom-slide">Custom</div>}
+        />,
+      );
+
+      expect(document.querySelector('.lightbox-img')).toBeNull();
     });
   });
 });

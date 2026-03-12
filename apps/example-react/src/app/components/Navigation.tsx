@@ -38,15 +38,39 @@ function Navigation() {
       </Link>
       <Link
         to="/reel-player"
-        style={location.pathname === '/reel-player' ? activeLinkStyle : linkStyle}
+        style={
+          location.pathname === '/reel-player' ? activeLinkStyle : linkStyle
+        }
       >
         Reel Player
       </Link>
       <Link
+        to="/reel-player-custom"
+        style={
+          location.pathname === '/reel-player-custom'
+            ? activeLinkStyle
+            : linkStyle
+        }
+      >
+        Custom Player
+      </Link>
+      <Link
         to="/image-preview"
-        style={location.pathname === '/image-preview' ? activeLinkStyle : linkStyle}
+        style={
+          location.pathname === '/image-preview' ? activeLinkStyle : linkStyle
+        }
       >
         Image Gallery
+      </Link>
+      <Link
+        to="/image-preview-custom"
+        style={
+          location.pathname === '/image-preview-custom'
+            ? activeLinkStyle
+            : linkStyle
+        }
+      >
+        Custom Gallery
       </Link>
     </nav>
   );

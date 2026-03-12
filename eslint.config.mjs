@@ -43,6 +43,7 @@ export default [
       ],
       '@typescript-eslint/no-empty-interface': 'off',
       '@typescript-eslint/no-empty-object-type': 'off',
+      '@typescript-eslint/no-non-null-assertion': 'off',
       'react-hooks/exhaustive-deps': 'off',
     },
   },

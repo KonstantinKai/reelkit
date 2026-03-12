@@ -30,11 +30,31 @@ const getPrimaryValue = (offset: Offset, axis: DragAxis): number =>
 const isTouchEvent = (event: unknown): event is TouchEvent =>
   event !== null && typeof event === 'object' && 'changedTouches' in event;
 
+/**
+ * Creates a touch and mouse gesture detector that tracks drag interactions
+ * along horizontal and vertical axes. Returns a {@link GestureController}
+ * following the factory-function pattern.
+ *
+ * The controller determines the dominant drag axis (horizontal vs vertical)
+ * from the initial movement delta and routes all subsequent updates to the
+ * matching axis-specific callbacks. It computes per-update deltas, cumulative
+ * distance from the drag origin, and end-of-drag velocity for swipe detection.
+ *
+ * Long press detection is also supported: if the pointer stays stationary for
+ * the configured duration (default 800 ms), the `onLongPress` callback fires.
+ *
+ * @param config - Optional configuration (touch-only mode, long press duration).
+ * @param events - Optional axis-aware drag callbacks and tap/long-press handlers.
+ * @returns A {@link GestureController} with attach/detach and observe/unobserve lifecycle methods.
+ */
 export const createGestureController = (
   config: GestureControllerConfig = {},
-  events: GestureControllerEvents = {}
+  events: GestureControllerEvents = {},
 ): GestureController => {
-  const { useTouchEventsOnly = false, longPressDurationMs = DEFAULT_LONG_PRESS_DURATION_MS } = config;
+  const {
+    useTouchEventsOnly = false,
+    longPressDurationMs = DEFAULT_LONG_PRESS_DURATION_MS,
+  } = config;
   const disposables = createDisposableList();
 
   let element: HTMLElement | null = null;
@@ -188,7 +208,8 @@ export const createGestureController = (
     if (lastUpdateEvent !== null && savedInitialEvent !== null) {
       const delta = lastUpdateEvent.delta;
       const timeDiffInSeconds =
-        (commonEvent.sourceTimestamp - savedInitialEvent.sourceTimestamp) / 1000;
+        (commonEvent.sourceTimestamp - savedInitialEvent.sourceTimestamp) /
+        1000;
       const velocity: Offset = [
         abs(first(lastUpdateEvent.distance)) / timeDiffInSeconds,
         abs(last(lastUpdateEvent.distance)) / timeDiffInSeconds,
@@ -226,14 +247,14 @@ export const createGestureController = (
     disposables.push(
       observeDomEvent(element, 'touchstart', onStart),
       observeDomEvent(element, 'touchmove', onUpdate),
-      observeDomEvent(element, 'touchend', onEnd)
+      observeDomEvent(element, 'touchend', onEnd),
     );
 
     if (!useTouchEventsOnly) {
       disposables.push(
         observeDomEvent(element, 'mousedown', onStart),
         observeDomEvent(element, 'mousemove', onUpdate),
-        observeDomEvent(element, 'mouseup', onEnd)
+        observeDomEvent(element, 'mouseup', onEnd),
       );
     }
   };

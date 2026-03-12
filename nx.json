@@ -47,6 +47,14 @@
       }
     },
     {
+      "plugin": "@nx/next/plugin",
+      "options": {
+        "buildTargetName": "build",
+        "devTargetName": "dev",
+        "startTargetName": "start"
+      }
+    },
+    {
       "plugin": "@nx/vitest",
       "options": {
         "testTargetName": "test"
@@ -91,6 +99,12 @@
       "linter": "none",
       "unitTestRunner": "none",
       "e2eTestRunner": "playwright"
+    },
+    "@nx/next": {
+      "application": {
+        "style": "css",
+        "linter": "none"
+      }
     }
   }
 }

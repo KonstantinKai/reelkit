@@ -33,3 +33,7 @@
   }
 }
 
+.reel-slide-wrapper {
+  position: relative;
+  overflow: hidden;
+}

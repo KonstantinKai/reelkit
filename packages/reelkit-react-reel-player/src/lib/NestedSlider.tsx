@@ -1,11 +1,18 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, {
+  type ReactNode,
+  useState,
+  useRef,
+  useCallback,
+  useEffect,
+} from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Reel, ReelIndicator, type ReelApi } from '@reelkit/react';
-import type { MediaItem } from './types';
+import type { MediaItem, NavigationRenderProps } from './types';
 import ImageSlide from './ImageSlide';
 import VideoSlide from './VideoSlide';
 import './NestedSlider.css';
 
+/** @internal */
 interface NestedSliderProps {
   media: MediaItem[];
   isParentActive: boolean;
@@ -15,8 +22,19 @@ interface NestedSliderProps {
   enableWheel?: boolean;
   onVideoRef?: (ref: HTMLVideoElement | null) => void;
   onActiveMediaTypeChange?: (type: 'image' | 'video') => void;
+  renderNavigation?: (props: NavigationRenderProps) => ReactNode;
 }
 
+/**
+ * Horizontal nested slider for multi-media content items (e.g. an Instagram
+ * carousel post with both images and videos).
+ *
+ * Renders a horizontal `Reel` inside a vertical slide, with indicator dots
+ * and left/right navigation arrows. Syncs its active ref with the parent
+ * player for coordinated drag/unobserve behavior.
+ *
+ * @internal Used by {@link MediaSlide} when a content item has multiple media assets.
+ */
 const NestedSlider: React.FC<NestedSliderProps> = ({
   media,
   isParentActive,
@@ -26,6 +44,7 @@ const NestedSlider: React.FC<NestedSliderProps> = ({
   enableWheel,
   onVideoRef,
   onActiveMediaTypeChange,
+  renderNavigation,
 }) => {
   const [innerActiveIndex, setInnerActiveIndex] = useState(0);
   const localSliderRef = useRef<ReelApi>(null);
@@ -54,7 +73,7 @@ const NestedSlider: React.FC<NestedSliderProps> = ({
         onVideoRef(ref);
       }
     },
-    [onVideoRef]
+    [onVideoRef],
   );
 
   // Pause video on before change
@@ -65,12 +84,15 @@ const NestedSlider: React.FC<NestedSliderProps> = ({
   }, []);
 
   // Update inner active index on after change
-  const handleAfterChange = useCallback((index: number) => {
-    setInnerActiveIndex(index);
-    if (onActiveMediaTypeChange) {
-      onActiveMediaTypeChange(media[index].type);
-    }
-  }, [media, onActiveMediaTypeChange]);
+  const handleAfterChange = useCallback(
+    (index: number) => {
+      setInnerActiveIndex(index);
+      if (onActiveMediaTypeChange) {
+        onActiveMediaTypeChange(media[index].type);
+      }
+    },
+    [media, onActiveMediaTypeChange],
+  );
 
   // Navigation handlers
   const handlePrev = useCallback(() => {
@@ -149,24 +171,36 @@ const NestedSlider: React.FC<NestedSliderProps> = ({
       )}
 
       {/* Navigation arrows - desktop only */}
-      {media.length > 1 && innerActiveIndex > 0 && (
-        <button
-          className="nested-nav nested-nav-prev"
-          onClick={handlePrev}
-          aria-label="Previous"
-        >
-          <ChevronLeft size={24} />
-        </button>
-      )}
-      {media.length > 1 && innerActiveIndex < media.length - 1 && (
-        <button
-          className="nested-nav nested-nav-next"
-          onClick={handleNext}
-          aria-label="Next"
-        >
-          <ChevronRight size={24} />
-        </button>
-      )}
+      {media.length > 1 &&
+        (renderNavigation ? (
+          renderNavigation({
+            onPrev: handlePrev,
+            onNext: handleNext,
+            activeIndex: innerActiveIndex,
+            count: media.length,
+          })
+        ) : (
+          <>
+            {innerActiveIndex > 0 && (
+              <button
+                className="nested-nav nested-nav-prev"
+                onClick={handlePrev}
+                aria-label="Previous"
+              >
+                <ChevronLeft size={24} />
+              </button>
+            )}
+            {innerActiveIndex < media.length - 1 && (
+              <button
+                className="nested-nav nested-nav-next"
+                onClick={handleNext}
+                aria-label="Next"
+              >
+                <ChevronRight size={24} />
+              </button>
+            )}
+          </>
+        ))}
     </div>
   );
 };

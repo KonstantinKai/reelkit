@@ -45,7 +45,9 @@ vi.mock('@reelkit/react', () => ({
 }));
 
 vi.mock('./ImageSlide', () => ({
-  default: ({ src }: { src: string }) => <div data-testid="image-slide" data-src={src} />,
+  default: ({ src }: { src: string }) => (
+    <div data-testid="image-slide" data-src={src} />
+  ),
 }));
 
 vi.mock('./VideoSlide', () => ({
@@ -65,7 +67,13 @@ const imageMedia: MediaItem[] = [
 
 const mixedMedia: MediaItem[] = [
   { id: 'm1', type: 'image', src: 'photo1.jpg', aspectRatio: 1.5 },
-  { id: 'm2', type: 'video', src: 'video.mp4', poster: 'poster.jpg', aspectRatio: 0.56 },
+  {
+    id: 'm2',
+    type: 'video',
+    src: 'video.mp4',
+    poster: 'poster.jpg',
+    aspectRatio: 0.56,
+  },
 ];
 
 const size: [number, number] = [400, 700];
@@ -207,6 +215,128 @@ describe('NestedSlider', () => {
 
     // Initial index is 0, which is an image
     expect(onActiveMediaTypeChange).toHaveBeenCalledWith('image');
+  });
+
+  it('renders custom navigation when renderNavigation is provided', () => {
+    const renderNavigation = vi.fn(({ onPrev, onNext, activeIndex, count }) => (
+      <div data-testid="custom-nav">
+        <button onClick={onPrev} data-testid="custom-prev">
+          Prev
+        </button>
+        <span data-testid="custom-counter">
+          {activeIndex + 1}/{count}
+        </span>
+        <button onClick={onNext} data-testid="custom-next">
+          Next
+        </button>
+      </div>
+    ));
+
+    render(
+      <NestedSlider
+        media={imageMedia}
+        isParentActive={true}
+        size={size}
+        contentId="c1"
+        innerSliderRef={innerSliderRef}
+        renderNavigation={renderNavigation}
+      />,
+    );
+
+    // Custom nav should be rendered
+    expect(screen.getByTestId('custom-nav')).toBeTruthy();
+    // Default arrows should NOT be rendered
+    expect(screen.queryByLabelText('Previous')).toBeNull();
+    expect(screen.queryByLabelText('Next')).toBeNull();
+  });
+
+  it('passes correct props to renderNavigation', () => {
+    const renderNavigation = vi.fn(() => <div data-testid="custom-nav" />);
+
+    render(
+      <NestedSlider
+        media={imageMedia}
+        isParentActive={true}
+        size={size}
+        contentId="c1"
+        innerSliderRef={innerSliderRef}
+        renderNavigation={renderNavigation}
+      />,
+    );
+
+    expect(renderNavigation).toHaveBeenCalledWith({
+      onPrev: expect.any(Function),
+      onNext: expect.any(Function),
+      activeIndex: 0,
+      count: 3,
+    });
+  });
+
+  it('custom navigation next calls slider next', () => {
+    const renderNavigation = vi.fn(({ onNext }) => (
+      <button onClick={onNext} data-testid="custom-next">
+        Next
+      </button>
+    ));
+
+    render(
+      <NestedSlider
+        media={imageMedia}
+        isParentActive={true}
+        size={size}
+        contentId="c1"
+        innerSliderRef={innerSliderRef}
+        renderNavigation={renderNavigation}
+      />,
+    );
+
+    fireEvent.click(screen.getByTestId('custom-next'));
+
+    expect(lastReelApiRef!.current!.next).toHaveBeenCalled();
+  });
+
+  it('custom navigation prev calls slider prev', () => {
+    const renderNavigation = vi.fn(({ onPrev }) => (
+      <button onClick={onPrev} data-testid="custom-prev">
+        Prev
+      </button>
+    ));
+
+    render(
+      <NestedSlider
+        media={imageMedia}
+        isParentActive={true}
+        size={size}
+        contentId="c1"
+        innerSliderRef={innerSliderRef}
+        renderNavigation={renderNavigation}
+      />,
+    );
+
+    fireEvent.click(screen.getByTestId('custom-prev'));
+
+    expect(lastReelApiRef!.current!.prev).toHaveBeenCalled();
+  });
+
+  it('does not render custom navigation for single media item', () => {
+    const singleMedia: MediaItem[] = [
+      { id: 'm1', type: 'image', src: 'photo1.jpg', aspectRatio: 1.5 },
+    ];
+    const renderNavigation = vi.fn(() => <div data-testid="custom-nav" />);
+
+    render(
+      <NestedSlider
+        media={singleMedia}
+        isParentActive={true}
+        size={size}
+        contentId="c1"
+        innerSliderRef={innerSliderRef}
+        renderNavigation={renderNavigation}
+      />,
+    );
+
+    expect(screen.queryByTestId('custom-nav')).toBeNull();
+    expect(renderNavigation).not.toHaveBeenCalled();
   });
 
   it('has black background on container', () => {

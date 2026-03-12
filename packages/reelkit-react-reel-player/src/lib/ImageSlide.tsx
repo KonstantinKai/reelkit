@@ -1,10 +1,17 @@
 import React from 'react';
 
+/** @internal */
 interface ImageSlideProps {
+  /** URL of the image to display. */
   src: string;
+  /** [width, height] in pixels. */
   size: [number, number];
 }
 
+/**
+ * Renders a single image slide with `object-fit: cover` and lazy loading.
+ * @internal Used by {@link MediaSlide} and {@link NestedSlider}.
+ */
 const ImageSlide: React.FC<ImageSlideProps> = ({ src, size }) => {
   return (
     <div

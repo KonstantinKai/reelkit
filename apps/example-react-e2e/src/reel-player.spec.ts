@@ -17,12 +17,16 @@ class ReelPlayerPage {
   }
 
   get soundButton() {
-    return this.page.locator('button[aria-label="Mute"], button[aria-label="Unmute"]');
+    return this.page.locator(
+      'button[aria-label="Mute"], button[aria-label="Unmute"]',
+    );
   }
 
   get prevButton() {
     // Main player navigation (in .player-nav-arrows), not nested slider nav
-    return this.page.locator('.player-nav-arrows button[aria-label="Previous"]');
+    return this.page.locator(
+      '.player-nav-arrows button[aria-label="Previous"]',
+    );
   }
 
   get nextButton() {
@@ -116,7 +120,11 @@ class ReelPlayerPage {
         const element = document.elementFromPoint(x, startY);
         if (!element) return;
 
-        const createTouchEvent = (type: string, clientX: number, clientY: number) => {
+        const createTouchEvent = (
+          type: string,
+          clientX: number,
+          clientY: number,
+        ) => {
           const touch = new Touch({
             identifier: Date.now(),
             target: element,
@@ -139,12 +147,14 @@ class ReelPlayerPage {
         const steps = 10;
         const deltaY = (endY - startY) / steps;
         for (let i = 1; i <= steps; i++) {
-          element.dispatchEvent(createTouchEvent('touchmove', x, startY + deltaY * i));
+          element.dispatchEvent(
+            createTouchEvent('touchmove', x, startY + deltaY * i),
+          );
         }
 
         element.dispatchEvent(createTouchEvent('touchend', x, endY));
       },
-      { x: centerX, startY, endY }
+      { x: centerX, startY, endY },
     );
   }
 
@@ -161,7 +171,11 @@ class ReelPlayerPage {
         const element = document.elementFromPoint(x, startY);
         if (!element) return;
 
-        const createTouchEvent = (type: string, clientX: number, clientY: number) => {
+        const createTouchEvent = (
+          type: string,
+          clientX: number,
+          clientY: number,
+        ) => {
           const touch = new Touch({
             identifier: Date.now(),
             target: element,
@@ -184,19 +198,23 @@ class ReelPlayerPage {
         const steps = 10;
         const deltaY = (endY - startY) / steps;
         for (let i = 1; i <= steps; i++) {
-          element.dispatchEvent(createTouchEvent('touchmove', x, startY + deltaY * i));
+          element.dispatchEvent(
+            createTouchEvent('touchmove', x, startY + deltaY * i),
+          );
         }
 
         element.dispatchEvent(createTouchEvent('touchend', x, endY));
       },
-      { x: centerX, startY, endY }
+      { x: centerX, startY, endY },
     );
   }
 
   async getFirstVideoThumbnailIndex(): Promise<number> {
-    const videoThumbnails = this.page.locator('[style*="aspect-ratio: 9 / 16"]').filter({
-      has: this.page.locator('svg.lucide-play'),
-    });
+    const videoThumbnails = this.page
+      .locator('[style*="aspect-ratio: 9 / 16"]')
+      .filter({
+        has: this.page.locator('svg.lucide-play'),
+      });
 
     return await videoThumbnails.first().evaluate((el) => {
       const parent = el.parentElement;
@@ -206,11 +224,14 @@ class ReelPlayerPage {
   }
 
   async getFirstImageOnlyThumbnailIndex(): Promise<number> {
-    const imageThumbnails = this.page.locator('[style*="aspect-ratio: 9 / 16"]').filter({
-      hasNot: this.page.locator('svg.lucide-play'),
-    }).filter({
-      hasNot: this.page.locator('text=/^[2-9]$/'),
-    });
+    const imageThumbnails = this.page
+      .locator('[style*="aspect-ratio: 9 / 16"]')
+      .filter({
+        hasNot: this.page.locator('svg.lucide-play'),
+      })
+      .filter({
+        hasNot: this.page.locator('text=/^[2-9]$/'),
+      });
 
     return await imageThumbnails.first().evaluate((el) => {
       const parent = el.parentElement;
@@ -270,7 +291,9 @@ test.describe('Reel Player - Page Rendering', () => {
     expect(count).toBeGreaterThan(0);
   });
 
-  test('thumbnails show video indicator for video content', async ({ page }) => {
+  test('thumbnails show video indicator for video content', async ({
+    page,
+  }) => {
     // Video items should have a play icon indicator
     const playIcons = page.locator('svg.lucide-play');
     const count = await playIcons.count();
@@ -282,6 +305,61 @@ test.describe('Reel Player - Page Rendering', () => {
     const badges = page.locator('text=/^[2-9]$/');
     const count = await badges.count();
     expect(count).toBeGreaterThan(0);
+  });
+});
+
+test.describe('Reel Player - Slide Overlay', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/reel-player');
+  });
+
+  test('slide overlay visible on active slide', async ({ page }) => {
+    const player = new ReelPlayerPage(page);
+    await player.openPlayerAt(0);
+
+    const overlay = page.locator('.reel-slide-overlay');
+    await expect(overlay.first()).toBeVisible();
+  });
+
+  test('slide overlay shows author name', async ({ page }) => {
+    const player = new ReelPlayerPage(page);
+    await player.openPlayerAt(0);
+
+    const name = page.locator('.reel-slide-overlay-name');
+    await expect(name.first()).toBeVisible();
+    const text = await name.first().textContent();
+    expect(text).toBeTruthy();
+  });
+
+  test('slide overlay shows description', async ({ page }) => {
+    const player = new ReelPlayerPage(page);
+    await player.openPlayerAt(0);
+
+    const desc = page.locator('.reel-slide-overlay-description');
+    await expect(desc.first()).toBeVisible();
+    const text = await desc.first().textContent();
+    expect(text).toBeTruthy();
+  });
+
+  test('slide overlay shows likes', async ({ page }) => {
+    const player = new ReelPlayerPage(page);
+    await player.openPlayerAt(0);
+
+    const likes = page.locator('.reel-slide-overlay-likes');
+    await expect(likes.first()).toBeVisible();
+    const text = await likes.first().textContent();
+    expect(text).toBeTruthy();
+  });
+
+  test('slide overlay persists through navigation', async ({ page }) => {
+    const player = new ReelPlayerPage(page);
+    await player.openPlayerAt(0);
+
+    await player.pressArrowDown();
+    await player.waitForAnimation();
+
+    const overlay = page.locator('.reel-slide-overlay');
+    await expect(overlay.first()).toBeVisible();
   });
 });
 
@@ -385,7 +463,10 @@ test.describe('Reel Player - Keyboard Navigation', () => {
 
 test.describe('Reel Player - Video Playback', () => {
   // Video tests only run on chromium due to autoplay policies
-  test.skip(({ browserName }) => browserName !== 'chromium', 'Video autoplay varies by browser');
+  test.skip(
+    ({ browserName }) => browserName !== 'chromium',
+    'Video autoplay varies by browser',
+  );
 
   test.beforeEach(async ({ page }) => {
     await page.goto('/reel-player');
@@ -395,9 +476,11 @@ test.describe('Reel Player - Video Playback', () => {
     const player = new ReelPlayerPage(page);
 
     // Find a video item (has play icon in thumbnail)
-    const videoThumbnails = page.locator('[style*="aspect-ratio: 9 / 16"]').filter({
-      has: page.locator('svg.lucide-play'),
-    });
+    const videoThumbnails = page
+      .locator('[style*="aspect-ratio: 9 / 16"]')
+      .filter({
+        has: page.locator('svg.lucide-play'),
+      });
 
     const firstVideoIndex = await videoThumbnails.first().evaluate((el) => {
       const parent = el.parentElement;
@@ -416,9 +499,11 @@ test.describe('Reel Player - Video Playback', () => {
     const player = new ReelPlayerPage(page);
 
     // Find first video thumbnail
-    const videoThumbnails = page.locator('[style*="aspect-ratio: 9 / 16"]').filter({
-      has: page.locator('svg.lucide-play'),
-    });
+    const videoThumbnails = page
+      .locator('[style*="aspect-ratio: 9 / 16"]')
+      .filter({
+        has: page.locator('svg.lucide-play'),
+      });
 
     const firstVideoIndex = await videoThumbnails.first().evaluate((el) => {
       const parent = el.parentElement;
@@ -437,9 +522,11 @@ test.describe('Reel Player - Video Playback', () => {
     const player = new ReelPlayerPage(page);
 
     // Find first video thumbnail
-    const videoThumbnails = page.locator('[style*="aspect-ratio: 9 / 16"]').filter({
-      has: page.locator('svg.lucide-play'),
-    });
+    const videoThumbnails = page
+      .locator('[style*="aspect-ratio: 9 / 16"]')
+      .filter({
+        has: page.locator('svg.lucide-play'),
+      });
 
     const firstVideoIndex = await videoThumbnails.first().evaluate((el) => {
       const parent = el.parentElement;
@@ -469,7 +556,10 @@ test.describe('Reel Player - Video Playback', () => {
 
 test.describe('Reel Player - Touch Gestures', () => {
   // Touch simulation requires specific setup
-  test.skip(({ browserName }) => browserName !== 'chromium', 'Touch API varies by browser');
+  test.skip(
+    ({ browserName }) => browserName !== 'chromium',
+    'Touch API varies by browser',
+  );
   test.skip(({ isMobile }) => !isMobile, 'Touch tests only on mobile devices');
 
   test.beforeEach(async ({ page }) => {
@@ -507,9 +597,11 @@ test.describe('Reel Player - Nested Slider', () => {
     const player = new ReelPlayerPage(page);
 
     // Find multi-media thumbnail (has count badge with number 2-9)
-    const multiThumbnails = page.locator('[style*="aspect-ratio: 9 / 16"]').filter({
-      has: page.locator('div').filter({ hasText: /^[2-9]$/ }),
-    });
+    const multiThumbnails = page
+      .locator('[style*="aspect-ratio: 9 / 16"]')
+      .filter({
+        has: page.locator('div').filter({ hasText: /^[2-9]$/ }),
+      });
 
     const count = await multiThumbnails.count();
     if (count === 0) {
@@ -541,7 +633,9 @@ test.describe('Reel Player - Nested Slider', () => {
 
     // Should show indicator dots for nested slider inside the overlay
     // Multi-media posts have multiple dots rendered as divs with border-radius
-    const indicatorDots = player.overlay.locator('[style*="border-radius: 50%"]');
+    const indicatorDots = player.overlay.locator(
+      '[style*="border-radius: 50%"]',
+    );
     const dotCount = await indicatorDots.count();
     // Multi-media posts should have at least 2 dots
     expect(dotCount).toBeGreaterThanOrEqual(2);
@@ -585,7 +679,10 @@ test.describe('Reel Player - Nested Slider', () => {
     await expect(player.overlay).toBeVisible();
   });
 
-  test('horizontal wheel navigates nested slider', async ({ page, isMobile }) => {
+  test('horizontal wheel navigates nested slider', async ({
+    page,
+    isMobile,
+  }) => {
     // Mouse wheel not supported on mobile
     test.skip(isMobile, 'Mouse wheel not supported on mobile devices');
 
@@ -636,7 +733,10 @@ test.describe('Reel Player - Nested Slider', () => {
     await expect(player.overlay).toBeVisible();
   });
 
-  test('vertical wheel on multi-media post does not navigate nested slider', async ({ page, isMobile }) => {
+  test('vertical wheel on multi-media post does not navigate nested slider', async ({
+    page,
+    isMobile,
+  }) => {
     test.skip(isMobile, 'Mouse wheel not supported on mobile devices');
 
     const player = new ReelPlayerPage(page);
@@ -678,7 +778,10 @@ test.describe('Reel Player - Nested Slider', () => {
     }
   });
 
-  test('horizontal wheel on nested slider does not affect main vertical slider', async ({ page, isMobile }) => {
+  test('horizontal wheel on nested slider does not affect main vertical slider', async ({
+    page,
+    isMobile,
+  }) => {
     // Mouse wheel not supported on mobile
     test.skip(isMobile, 'Mouse wheel not supported on mobile devices');
 
@@ -726,13 +829,18 @@ test.describe('Reel Player - Nested Slider', () => {
 
 test.describe('Reel Player - Nested Slider Navigation Buttons', () => {
   // Navigation arrows are hidden on mobile (desktop only)
-  test.skip(({ isMobile }) => isMobile, 'Nested navigation arrows hidden on mobile');
+  test.skip(
+    ({ isMobile }) => isMobile,
+    'Nested navigation arrows hidden on mobile',
+  );
 
   test.beforeEach(async ({ page }) => {
     await page.goto('/reel-player');
   });
 
-  test('shows next button on first media item of multi-media post', async ({ page }) => {
+  test('shows next button on first media item of multi-media post', async ({
+    page,
+  }) => {
     const player = new ReelPlayerPage(page);
 
     // Find multi-media thumbnail
@@ -762,7 +870,9 @@ test.describe('Reel Player - Nested Slider Navigation Buttons', () => {
     await expect(player.nestedPrevButton).not.toBeVisible();
   });
 
-  test('shows prev button after navigating to second item', async ({ page }) => {
+  test('shows prev button after navigating to second item', async ({
+    page,
+  }) => {
     const player = new ReelPlayerPage(page);
 
     // Find multi-media thumbnail
@@ -871,7 +981,10 @@ test.describe('Reel Player - Nested Slider Navigation Buttons', () => {
 });
 
 test.describe('Reel Player - Sound Button State', () => {
-  test.skip(({ browserName }) => browserName !== 'chromium', 'Video features vary by browser');
+  test.skip(
+    ({ browserName }) => browserName !== 'chromium',
+    'Video features vary by browser',
+  );
 
   test.beforeEach(async ({ page }) => {
     await page.goto('/reel-player');
@@ -881,9 +994,11 @@ test.describe('Reel Player - Sound Button State', () => {
     const player = new ReelPlayerPage(page);
 
     // Find first video thumbnail
-    const videoThumbnails = page.locator('[style*="aspect-ratio: 9 / 16"]').filter({
-      has: page.locator('svg.lucide-play'),
-    });
+    const videoThumbnails = page
+      .locator('[style*="aspect-ratio: 9 / 16"]')
+      .filter({
+        has: page.locator('svg.lucide-play'),
+      });
 
     const count = await videoThumbnails.count();
     if (count === 0) {
@@ -903,15 +1018,20 @@ test.describe('Reel Player - Sound Button State', () => {
     await expect(player.soundButton).toBeVisible();
   });
 
-  test('sound button is not visible for image-only slides', async ({ page }) => {
+  test('sound button is not visible for image-only slides', async ({
+    page,
+  }) => {
     const player = new ReelPlayerPage(page);
 
     // Find image-only thumbnail (no play icon, no multi count)
-    const imageThumbnails = page.locator('[style*="aspect-ratio: 9 / 16"]').filter({
-      hasNot: page.locator('svg.lucide-play'),
-    }).filter({
-      hasNot: page.locator('text=/^[2-9]$/'),
-    });
+    const imageThumbnails = page
+      .locator('[style*="aspect-ratio: 9 / 16"]')
+      .filter({
+        hasNot: page.locator('svg.lucide-play'),
+      })
+      .filter({
+        hasNot: page.locator('text=/^[2-9]$/'),
+      });
 
     const count = await imageThumbnails.count();
     if (count === 0) {
@@ -944,7 +1064,10 @@ test.describe('Reel Player - Viewport Sizing', () => {
     if (!viewport) throw new Error('No viewport');
 
     // Skip if viewport is at or above mobile breakpoint
-    test.skip(viewport.width >= MOBILE_BREAKPOINT, 'Mobile-only test (< 768px)');
+    test.skip(
+      viewport.width >= MOBILE_BREAKPOINT,
+      'Mobile-only test (< 768px)',
+    );
 
     const player = new ReelPlayerPage(page);
     await player.openPlayerAt(0);
@@ -964,7 +1087,10 @@ test.describe('Reel Player - Viewport Sizing', () => {
     if (!viewport) throw new Error('No viewport');
 
     // Skip if viewport is below mobile breakpoint
-    test.skip(viewport.width < MOBILE_BREAKPOINT, 'Desktop-only test (>= 768px)');
+    test.skip(
+      viewport.width < MOBILE_BREAKPOINT,
+      'Desktop-only test (>= 768px)',
+    );
 
     const player = new ReelPlayerPage(page);
     await player.openPlayerAt(0);
@@ -987,7 +1113,10 @@ test.describe('Reel Player - Viewport Sizing', () => {
     if (!viewport) throw new Error('No viewport');
 
     // Skip if viewport is below mobile breakpoint
-    test.skip(viewport.width < MOBILE_BREAKPOINT, 'Desktop-only test (>= 768px)');
+    test.skip(
+      viewport.width < MOBILE_BREAKPOINT,
+      'Desktop-only test (>= 768px)',
+    );
 
     const player = new ReelPlayerPage(page);
     await player.openPlayerAt(0);
@@ -1006,7 +1135,10 @@ test.describe('Reel Player - Viewport Sizing', () => {
 });
 
 test.describe('Reel Player - Swipe Gestures', () => {
-  test.skip(({ browserName }) => browserName !== 'chromium', 'Touch API varies by browser');
+  test.skip(
+    ({ browserName }) => browserName !== 'chromium',
+    'Touch API varies by browser',
+  );
   test.skip(({ isMobile }) => !isMobile, 'Swipe tests only on mobile devices');
 
   test.beforeEach(async ({ page }) => {
@@ -1039,16 +1171,22 @@ test.describe('Reel Player - Rapid Interactions', () => {
     await page.goto('/reel-player');
   });
 
-  test('rapid next button clicks do not break player', async ({ page, isMobile }) => {
+  test('rapid next button clicks do not break player', async ({
+    page,
+    isMobile,
+  }) => {
     test.skip(isMobile, 'Navigation arrows hidden on mobile');
 
     const player = new ReelPlayerPage(page);
     await player.openPlayerAt(0);
 
-    for (let i = 0; i < 5; i++) {
-      await player.navigateNext();
-      await page.waitForTimeout(50);
-    }
+    // Fire 5 synchronous clicks to ensure they all land within animation window
+    await page.evaluate(() => {
+      const btn = document.querySelector(
+        '.player-nav-arrows button[aria-label="Next"]',
+      );
+      if (btn) for (let i = 0; i < 5; i++) (btn as HTMLElement).click();
+    });
 
     await player.waitForAnimation();
     await expect(player.overlay).toBeVisible();
@@ -1063,16 +1201,56 @@ test.describe('Reel Player - Rapid Interactions', () => {
     const player = new ReelPlayerPage(page);
     await player.openPlayerAt(0);
 
-    for (let i = 0; i < 5; i++) {
-      await player.pressArrowDown();
-      await page.waitForTimeout(50);
-    }
+    // Fire 5 rapid ArrowDown key events synchronously
+    await page.evaluate(() => {
+      for (let i = 0; i < 5; i++) {
+        document.dispatchEvent(
+          new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }),
+        );
+      }
+    });
 
     await player.waitForAnimation();
     await expect(player.overlay).toBeVisible();
 
     // Navigation still works after rapid key presses
     await player.pressArrowUp();
+    await player.waitForAnimation();
+    await expect(player.overlay).toBeVisible();
+  });
+
+  test('rapid alternating next/prev clicks do not cause twitching', async ({
+    page,
+    isMobile,
+  }) => {
+    test.skip(isMobile, 'Navigation arrows hidden on mobile');
+
+    const player = new ReelPlayerPage(page);
+    await player.openPlayerAt(0);
+
+    // Fire alternating clicks synchronously
+    await page.evaluate(() => {
+      const nextBtn = document.querySelector(
+        '.player-nav-arrows button[aria-label="Next"]',
+      ) as HTMLElement;
+      const prevBtn = document.querySelector(
+        '.player-nav-arrows button[aria-label="Previous"]',
+      ) as HTMLElement;
+      if (nextBtn && prevBtn) {
+        nextBtn.click();
+        prevBtn.click();
+        nextBtn.click();
+        prevBtn.click();
+      }
+    });
+
+    await player.waitForAnimation();
+
+    // Player should be stable — no twitching or broken state
+    await expect(player.overlay).toBeVisible();
+
+    // Navigation still works after alternating rapid clicks
+    await player.navigateNext();
     await player.waitForAnimation();
     await expect(player.overlay).toBeVisible();
   });
@@ -1115,13 +1293,18 @@ test.describe('Reel Player - Window Resize', () => {
 });
 
 test.describe('Reel Player - Media Type Transitions', () => {
-  test.skip(({ browserName }) => browserName !== 'chromium', 'Video autoplay varies by browser');
+  test.skip(
+    ({ browserName }) => browserName !== 'chromium',
+    'Video autoplay varies by browser',
+  );
 
   test.beforeEach(async ({ page }) => {
     await page.goto('/reel-player');
   });
 
-  test('navigating from video to image removes video element', async ({ page }) => {
+  test('navigating from video to image removes video element', async ({
+    page,
+  }) => {
     const player = new ReelPlayerPage(page);
 
     const videoIndex = await player.getFirstVideoThumbnailIndex();
@@ -1178,7 +1361,10 @@ test.describe('Reel Player - Media Type Transitions', () => {
 });
 
 test.describe('Reel Player - Video Frame Capture', () => {
-  test.skip(({ browserName }) => browserName !== 'chromium', 'Video autoplay varies by browser');
+  test.skip(
+    ({ browserName }) => browserName !== 'chromium',
+    'Video autoplay varies by browser',
+  );
 
   test.beforeEach(async ({ page }) => {
     await page.goto('/reel-player');

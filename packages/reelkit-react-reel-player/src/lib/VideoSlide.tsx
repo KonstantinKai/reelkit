@@ -1,31 +1,47 @@
 import React, { useRef, useEffect, useLayoutEffect, useState } from 'react';
 import { noop } from '@reelkit/core';
-import { useSoundState } from './SoundState';
+import { useSoundState } from './useSoundState';
 import './VideoSlide.css';
 
+/** @internal */
 interface VideoSlideProps {
+  /** URL of the video source. */
   src: string;
+  /** Optional poster image shown while video loads. */
   poster?: string;
+  /** Width / height ratio. Values < 1 use `cover`, >= 1 use `contain`. */
   aspectRatio: number;
+  /** [width, height] in pixels. */
   size: [number, number];
+  /** Whether this slide is the active (visible) slide in the parent reel. */
   isActive: boolean;
+  /** Whether this slide is the active item in a nested horizontal slider. Defaults to `true`. */
   isInnerActive?: boolean;
-  slideKey: string; // Unique key for storing playback position (e.g., "content-5" or "content-5:media-2")
+  /** Unique key for persisting playback position and captured frames (e.g. "content-5" or "content-5:media-2"). */
+  slideKey: string;
+  /** Callback to report the shared video element ref to the parent for drag pause/resume. */
   onVideoRef?: (ref: HTMLVideoElement | null) => void;
 }
 
-// Shared video element for iOS sound continuity
-// iOS only allows autoplay with sound if user has interacted with the video element
-// By reusing the same element, the unmuted state persists across slide changes
+/**
+ * Shared video element for iOS sound continuity.
+ *
+ * iOS only allows autoplay with sound if the user has interacted with the
+ * video element. By reusing the same element across slides, the unmuted
+ * state persists through slide changes.
+ */
 let sharedVideo: HTMLVideoElement | null = null;
 
-// Store playback positions per slideKey to restore when returning to a slide
+/** Playback positions per slideKey, restored when returning to a slide. */
 const playbackPositions = new Map<string, number>();
 
-// Store captured video frames per slideKey to use as poster when returning
+/** Captured video frames per slideKey, used as poster when returning. */
 const capturedFrames = new Map<string, string>();
 
-// Capture current video frame as data URL
+/**
+ * Captures the current video frame as a JPEG data URL.
+ * Returns `null` on cross-origin errors or if the video has no dimensions.
+ */
 const captureFrame = (video: HTMLVideoElement): string | null => {
   try {
     const canvas = document.createElement('canvas');
@@ -60,6 +76,16 @@ const getSharedVideo = (): HTMLVideoElement => {
 const useIsomorphicLayoutEffect =
   typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
+/**
+ * Renders a single video slide using a shared `<video>` element for iOS
+ * sound continuity. Manages playback lifecycle (play/pause on
+ * active state), persists playback position, and captures poster frames
+ * on deactivation for seamless visual transitions.
+ *
+ * Shows a poster image and a wave loader while the video is buffering.
+ *
+ * @internal Used by {@link MediaSlide} and {@link NestedSlider}.
+ */
 const VideoSlide: React.FC<VideoSlideProps> = ({
   src,
   poster,
@@ -102,7 +128,7 @@ const VideoSlide: React.FC<VideoSlideProps> = ({
 
     // Update video properties
     video.src = src;
-    video.muted = soundState.muted;
+    video.muted = soundState.muted.value;
 
     // Restore saved playback position or start from beginning
     const savedPosition = playbackPositions.get(slideKey);
@@ -152,10 +178,13 @@ const VideoSlide: React.FC<VideoSlideProps> = ({
 
   // Sync muted state with sound context
   useEffect(() => {
-    if (shouldPlay && sharedVideo) {
-      sharedVideo.muted = soundState.muted;
-    }
-  }, [soundState.muted, shouldPlay]);
+    if (!shouldPlay) return;
+    const video = sharedVideo;
+    if (video) video.muted = soundState.muted.value;
+    return soundState.muted.observe(() => {
+      if (video) video.muted = soundState.muted.value;
+    });
+  }, [shouldPlay]);
 
   return (
     <div

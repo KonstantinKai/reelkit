@@ -1,5 +1,15 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import * as React from 'react';
+import {
+  type ReactElement,
+  type MutableRefObject,
+  type CSSProperties,
+  type ReactNode,
+  useRef,
+  useState,
+  useEffect,
+  useCallback,
+  memo,
+} from 'react';
 import {
   createSliderController,
   defaultRangeExtractor,
@@ -15,82 +25,161 @@ import {
   ValueNotifierObserver,
 } from './ValueNotifierObserver';
 
+/**
+ * Props for the {@link Reel} virtualized one-item slider component.
+ */
 export interface ReelProps {
+  /** Total number of slides. */
   count: number;
+  /**
+   * Render function called for each visible slide.
+   *
+   * @param index - The absolute slide index (0-based).
+   * @param indexInRange - Position within the current visible range.
+   * @param size - The `[width, height]` dimensions of the slider.
+   * @returns A React element representing the slide content.
+   */
   itemBuilder: (
     index: number,
     indexInRange: number,
     size: [number, number],
-  ) => React.ReactElement;
-  apiRef?: React.MutableRefObject<ReelApi | null> | ((api: ReelApi) => void);
+  ) => ReactElement;
 
   /**
+   * Ref or callback to access the imperative {@link ReelApi}. Accepts either
+   * a `MutableRefObject` or a callback function.
+   */
+  apiRef?: MutableRefObject<ReelApi | null> | ((api: ReelApi) => void);
+
+  /**
+   * Index of the initially visible slide.
    * @default 0
    */
   initialIndex?: number;
+
+  /** Slider dimensions as `[width, height]` in pixels. */
   size: [number, number];
+
+  /**
+   * Axis along which slides transition.
+   * @default 'vertical'
+   */
   direction?: 'horizontal' | 'vertical';
 
   /**
-   * Transition duration in milliseconds
+   * Duration of slide transition animations in milliseconds.
    * @default 300
    */
   transitionDuration?: number;
 
   /**
-   * A value between 0 and 1, a distance which finger should be slides
-   *
+   * Minimum swipe distance as a fraction (0–1) of the slide's primary
+   * dimension required to trigger a slide change.
    * @default 0.12
    */
   swipeDistanceFactor?: number;
 
+  /**
+   * Whether the slider wraps around from the last slide back to the first
+   * (and vice versa).
+   * @default false
+   */
   loop?: boolean;
 
+  /**
+   * Enable keyboard arrow key navigation.
+   * @default true
+   */
   useNavKeys?: boolean;
 
   /**
-   * Enable mouse wheel navigation
+   * Enable mouse wheel navigation.
    * @default false
    */
   enableWheel?: boolean;
 
   /**
-   * Debounce duration for wheel events in ms
+   * Debounce duration for wheel events in milliseconds.
    * @default 200
    */
   wheelDebounceMs?: number;
 
+  /**
+   * Called after a slide transition completes and the index is updated.
+   * @param index - The new active slide index.
+   * @param indexInRange - Position within the visible range.
+   */
   afterChange?: (index: number, indexInRange: number) => void;
+
+  /**
+   * Called before a slide transition begins.
+   * @param index - Current slide index.
+   * @param nextIndex - The index the slider is transitioning to.
+   * @param indexInRange - Position of the current index within the visible range.
+   */
   beforeChange?: (
     index: number,
     nextIndex: number,
     indexInRange: number,
   ) => void;
+
+  /**
+   * Custom key extractor for React reconciliation. Useful when `loop` is
+   * enabled to avoid duplicate key warnings.
+   *
+   * @param index - The absolute slide index.
+   * @param indexInRange - Position within the visible range.
+   * @returns A unique string key for the slide element.
+   */
   keyExtractor?: (index: number, indexInRange: number) => string;
+
+  /**
+   * Called when the user begins dragging a slide.
+   * @param index - The slide index being dragged.
+   */
   onSlideDragStart?: (index: number) => void;
+
+  /**
+   * Called when a drag gesture is canceled (snap-back to original slide).
+   * @param index - The slide index that remains active.
+   */
   onSlideDragCanceled?: (index: number) => void;
-  onSlideDragEnd?: () => void;
+
+  /**
+   * Called when the user releases a drag gesture.
+   * @param index - The slide index at the time of release.
+   */
+  onSlideDragEnd?: (index: number) => void;
+
+  /**
+   * Custom function to determine which slide indices are rendered.
+   * Defaults to the built-in extractor that returns current ± 1 overscan.
+   */
   rangeExtractor?: RangeExtractor;
 
-  /**
-   * Optional className for the root element
-   */
+  /** Optional CSS class name for the root container element. */
   className?: string;
 
-  /**
-   * Optional style for the root element
-   */
-  style?: React.CSSProperties;
+  /** Optional inline styles for the root container element. */
+  style?: CSSProperties;
 
-  /**
-   * Optional children to render after the slider content
-   */
-  children?: React.ReactNode;
+  /** Optional children rendered after the slider content (e.g. indicators, overlays). */
+  children?: ReactNode;
 }
 
 const defaultKeyExtractor: NonNullable<ReelProps['keyExtractor']> = (index) =>
   index.toString();
 
+/**
+ * Creates a key extractor function that handles duplicate keys when loop
+ * mode is active with small item counts (e.g. 2 items). In loop mode,
+ * the same index can appear multiple times in the visible range; this
+ * extractor appends a `_cloned` suffix to disambiguate.
+ *
+ * @param count - Total number of slides.
+ * @param keyPrefix - Optional prefix prepended to each key.
+ * @returns A key extractor compatible with {@link ReelProps.keyExtractor}.
+ */
 export const createDefaultKeyExtractorForLoop =
   (count: number, keyPrefix?: string): NonNullable<ReelProps['keyExtractor']> =>
   (index: number, indexInRange: number) => {
@@ -106,12 +195,26 @@ export const createDefaultKeyExtractorForLoop =
     return key;
   };
 
+/**
+ * Imperative API exposed by the {@link Reel} component via `apiRef`.
+ * Provides programmatic control over slider navigation and lifecycle.
+ */
 export interface ReelApi {
+  /** Animate to the next slide. */
   next: () => void;
+  /** Animate to the previous slide. */
   prev: () => void;
+  /**
+   * Navigate to a specific slide index.
+   * @param index - Target slide index.
+   * @param animate - When `true`, animates the transition.
+   */
   goTo: (index: number, animate?: boolean) => Promise<void>;
+  /** Recalculate positions (useful after resize or layout change). */
   adjust: () => void;
+  /** Start listening to gesture, keyboard, and wheel events. */
   observe: () => void;
+  /** Stop listening to gesture, keyboard, and wheel events. */
   unobserve: () => void;
 }
 
@@ -129,7 +232,7 @@ const Element = ({
   ...props
 }: ReelProps) => {
   const { size, apiRef: forwardedRef } = props;
-  const propsRef = React.useRef<ReelProps>(null as unknown as ReelProps);
+  const propsRef = useRef<ReelProps>(null as unknown as ReelProps);
   propsRef.current = {
     ...props,
     rangeExtractor,
@@ -146,44 +249,55 @@ const Element = ({
 
   const isHorizontal = direction === 'horizontal';
   const primarySize = isHorizontal ? first(size) : last(size);
-  const ref = React.useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLDivElement>(null);
 
-  // Create controller once
-  const [controller] = React.useState<SliderController>(() =>
-    createSliderController(
-      {
-        count: props.count,
-        initialIndex,
-        direction,
-        loop,
-        transitionDuration,
-        swipeDistanceFactor,
-        rangeExtractor,
-        enableWheel,
-        wheelDebounceMs,
-      },
-      {
-        onBeforeChange: (index, nextIndex, rangeIndex) => {
-          propsRef.current.beforeChange?.(index, nextIndex, rangeIndex);
+  // Create stable state once
+  const [controller, itemBuilder] = useState(
+    () =>
+      [
+        createSliderController(
+          {
+            count: props.count,
+            initialIndex,
+            direction,
+            loop,
+            transitionDuration,
+            swipeDistanceFactor,
+            rangeExtractor,
+            enableWheel,
+            wheelDebounceMs,
+          },
+          {
+            onBeforeChange: (index, nextIndex, rangeIndex) => {
+              propsRef.current.beforeChange?.(index, nextIndex, rangeIndex);
+            },
+            onAfterChange: (index, rangeIndex) => {
+              propsRef.current.afterChange?.(index, rangeIndex);
+            },
+            onDragStart: (index) => {
+              propsRef.current.onSlideDragStart?.(index);
+            },
+            onDragEnd: (index) => {
+              propsRef.current.onSlideDragEnd?.(index);
+            },
+            onDragCanceled: (index) => {
+              propsRef.current.onSlideDragCanceled?.(index);
+            },
+          },
+        ),
+        (i: number, indexInRange: number) => {
+          const { keyExtractor, itemBuilder, size } = propsRef.current;
+          return (
+            <div key={keyExtractor!(i, indexInRange)} data-index={i}>
+              {itemBuilder(i, indexInRange, size)}
+            </div>
+          );
         },
-        onAfterChange: (index, rangeIndex) => {
-          propsRef.current.afterChange?.(index, rangeIndex);
-        },
-        onDragStart: (index) => {
-          propsRef.current.onSlideDragStart?.(index);
-        },
-        onDragEnd: () => {
-          propsRef.current.onSlideDragEnd?.();
-        },
-        onDragCanceled: (index) => {
-          propsRef.current.onSlideDragCanceled?.(index);
-        },
-      },
-    ),
-  );
+      ] as const,
+  )[0];
 
   // Update controller with new props
-  React.useEffect(() => {
+  useEffect(() => {
     controller.updateConfig({
       count: props.count,
       direction,
@@ -202,24 +316,12 @@ const Element = ({
   ]);
 
   // Update primary size
-  React.useEffect(() => {
+  useEffect(() => {
     controller.setPrimarySize(primarySize);
   }, [primarySize]);
 
-  // Attach/detach controller to element
-  React.useEffect(() => {
-    if (ref.current) {
-      controller.attach(ref.current);
-      controller.observe();
-    }
-
-    return () => {
-      controller.detach();
-    };
-  }, []);
-
   // Handle keyboard navigation
-  React.useEffect(() => {
+  useEffect(() => {
     if (useNavKeys) {
       controller.observe();
     } else {
@@ -227,8 +329,13 @@ const Element = ({
     }
   }, [useNavKeys]);
 
-  // Expose public API
-  React.useEffect(() => {
+  // Attach/detach controller and expose public API
+  useEffect(() => {
+    if (ref.current) {
+      controller.attach(ref.current);
+      controller.observe();
+    }
+
     if (forwardedRef !== undefined && forwardedRef !== null) {
       const publicApi: ReelApi = {
         next: () => controller.next(),
@@ -246,18 +353,13 @@ const Element = ({
         forwardedRef.current = publicApi;
       }
     }
-  }, [forwardedRef]);
 
-  const itemBuilder = React.useCallback(
-    (i: number, indexInRange: number) => (
-      <div key={keyExtractor(i, indexInRange)} data-index={i}>
-        {props.itemBuilder(i, indexInRange, size)}
-      </div>
-    ),
-    [keyExtractor, props.itemBuilder, size],
-  );
+    return () => {
+      controller.detach();
+    };
+  }, []);
 
-  const rootStyle: React.CSSProperties = {
+  const rootStyle: CSSProperties = {
     userSelect: 'none',
     WebkitUserSelect: 'none',
     position: 'relative',
@@ -288,23 +390,36 @@ const Element = ({
   );
 };
 
-export const Reel = React.memo(
+/**
+ * Virtualized one-item slider component. Renders only the visible slides
+ * (typically 3: previous, current, next) to the DOM at any time, enabling
+ * efficient handling of large lists (10,000+ items).
+ *
+ * Supports touch/mouse gestures, keyboard navigation, and optional mouse
+ * wheel scrolling. Use `apiRef` for imperative control.
+ */
+export const Reel = memo(
   Element,
   (prev, next) =>
+    // useEffect deps (controller config sync)
     prev.count === next.count &&
-    prev.itemBuilder === next.itemBuilder &&
-    prev.keyExtractor === next.keyExtractor &&
+    prev.direction === next.direction &&
+    prev.loop === next.loop &&
+    prev.transitionDuration === next.transitionDuration &&
+    prev.swipeDistanceFactor === next.swipeDistanceFactor &&
+    prev.rangeExtractor === next.rangeExtractor &&
+    prev.useNavKeys === next.useNavKeys &&
+    prev.enableWheel === next.enableWheel &&
+    prev.wheelDebounceMs === next.wheelDebounceMs &&
+    // JSX/render output
     first(prev.size) === first(next.size) &&
     last(prev.size) === last(next.size) &&
-    prev.beforeChange === next.beforeChange &&
-    prev.afterChange === next.afterChange &&
-    prev.onSlideDragStart === next.onSlideDragStart &&
-    prev.onSlideDragCanceled === next.onSlideDragCanceled &&
-    prev.useNavKeys === next.useNavKeys &&
-    prev.enableWheel === next.enableWheel,
+    prev.className === next.className &&
+    prev.style === next.style &&
+    prev.children === next.children,
 );
 
-const Content = React.memo(
+const Content = memo(
   ({
     children,
     isHorizontal,
@@ -312,7 +427,7 @@ const Content = React.memo(
     axisValue,
     length,
   }: {
-    children: React.ReactNode;
+    children: ReactNode;
     isHorizontal: boolean;
     primarySize: number;
     axisValue: Signal<AnimatedValue>;

@@ -2,13 +2,13 @@ import {
   createSignal,
   createComputed,
   createDeferred,
+  batch,
   clamp,
   extractRange,
   abs,
   isNegative,
   first,
   last,
-  safeCall,
 } from '../utils';
 import { createGestureController } from '../gestures';
 import { createKeyboardController } from '../keyboard';
@@ -33,9 +33,38 @@ const DEFAULT_SWIPE_DISTANCE_FACTOR = 0.12;
 const KEYBOARD_THROTTLE_MS = DEFAULT_TRANSITION_DURATION + 100;
 const DEFAULT_WHEEL_DEBOUNCE_MS = 200;
 
+/**
+ * Default range extractor that computes the visible slide indices with an
+ * overscan of 1. This means up to 3 indices are returned: the current slide,
+ * plus one before and one after (when they exist), enabling smooth transitions
+ * without rendering the entire list.
+ *
+ * @param current - The current slide index.
+ * @param count - Total number of slides.
+ * @param loop - Whether the slider wraps around at boundaries.
+ * @returns An array of visible slide indices.
+ */
 const defaultRangeExtractor: RangeExtractor = (current, count, loop) =>
   extractRange(count, current, current, 1, loop);
 
+/**
+ * Creates a centralized slider controller that manages slide navigation,
+ * animated transitions, and input coordination. Returns a {@link SliderController}
+ * object following the factory-function pattern (closure-based, no classes).
+ *
+ * The controller orchestrates three sub-controllers:
+ * - **GestureController** — handles touch/mouse drag interactions.
+ * - **KeyboardController** — maps arrow keys to prev/next navigation (throttled).
+ * - **WheelController** — translates mouse wheel scrolls into navigation (optional, debounced).
+ *
+ * An internal animation guard prevents concurrent transitions: calls to
+ * `next()`, `prev()`, and `goTo()` are silently ignored while an animation
+ * is already in progress, ensuring only one slide change runs at a time.
+ *
+ * @param initialConfig - Slider configuration (count, direction, loop, durations, etc.).
+ * @param initialEvents - Optional event callbacks (onBeforeChange, onAfterChange, onDragStart, etc.).
+ * @returns A {@link SliderController} with methods for navigation, lifecycle, and config updates.
+ */
 export const createSliderController = (
   initialConfig: SliderConfig,
   initialEvents: SliderEvents = {},
@@ -59,6 +88,7 @@ export const createSliderController = (
   let primarySize = 0;
   let cancelTransition = true;
   let primarySizeDidChange = false;
+  let animating = false;
 
   // Create state signals
   const index = createSignal(config.initialIndex);
@@ -113,6 +143,7 @@ export const createSliderController = (
   };
 
   const changeIndex = async (increment: -1 | 1): Promise<void> => {
+    animating = true;
     gestureController.unobserve();
 
     const inds = indexes.value;
@@ -123,7 +154,7 @@ export const createSliderController = (
     );
     const nextIndex = inds[nextRangeIndex];
 
-    safeCall(events.onBeforeChange, index.value, nextIndex, getRangeIndex());
+    events.onBeforeChange?.(index.value, nextIndex, getRangeIndex());
 
     await runTransition(() => {
       const deferred = createDeferred<void>();
@@ -135,16 +166,17 @@ export const createSliderController = (
       return deferred;
     });
 
-    // Update state
-    [
-      index.changeWithManualNotifier(nextIndex),
-      axisValue.changeWithManualNotifier({
+    // Update state atomically — observers see both changes at once
+    batch(() => {
+      index.value = nextIndex;
+      axisValue.value = {
         value: getRangeIndex() * primarySize * -1,
         duration: 0,
-      }),
-    ].forEach((notify) => notify());
+      };
+    });
 
     gestureController.observe();
+    animating = false;
   };
 
   // Gesture handlers
@@ -156,7 +188,7 @@ export const createSliderController = (
   };
 
   const onMainAxisDragStart = () => {
-    safeCall(events.onDragStart, index.value);
+    events.onDragStart?.(index.value);
   };
 
   const onAxisAwareDragEnd = async (event: GestureDragEndEvent) => {
@@ -184,7 +216,7 @@ export const createSliderController = (
       cancelTransition = false;
     }
 
-    safeCall(events.onDragEnd);
+    events.onDragEnd?.(index.value);
 
     if (cancelTransition) {
       await runTransition(() => {
@@ -199,7 +231,7 @@ export const createSliderController = (
         setAxisValueForCurrentRangeIndex();
       }
 
-      safeCall(events.onDragCanceled, index.value);
+      events.onDragCanceled?.(index.value);
     }
 
     cancelTransition = true;
@@ -275,7 +307,7 @@ export const createSliderController = (
   let afterChangeDispose: (() => void) | null = null;
   if (events.onAfterChange) {
     afterChangeDispose = index.observe(() => {
-      safeCall(events.onAfterChange, index.value, getRangeIndex());
+      events.onAfterChange?.(index.value, getRangeIndex());
     });
   }
 
@@ -286,18 +318,21 @@ export const createSliderController = (
     getRangeIndex,
 
     async next() {
+      if (animating) return;
       if (!getIsFirstOrLast(indexes.value, 1)) {
         await changeIndex(1);
       }
     },
 
     async prev() {
+      if (animating) return;
       if (!getIsFirstOrLast(indexes.value, -1)) {
         await changeIndex(-1);
       }
     },
 
     async goTo(targetIndex: number, animate = false) {
+      if (animating) return;
       const clampedIndex = clamp(targetIndex, 0, config.count - 1);
       if (clampedIndex === index.value) return;
 
@@ -305,28 +340,19 @@ export const createSliderController = (
 
       if (!animate) {
         // Instant jump
-        safeCall(
-          events.onBeforeChange,
-          index.value,
-          clampedIndex,
-          getRangeIndex(),
-        );
+        events.onBeforeChange?.(index.value, clampedIndex, getRangeIndex());
         index.value = clampedIndex;
         setAxisValueForCurrentRangeIndex(0);
-        safeCall(events.onAfterChange, index.value, getRangeIndex());
+        events.onAfterChange?.(index.value, getRangeIndex());
         gestureController.observe();
         return;
       }
 
       // Animated jump: replace adjacent slide with target and animate one step
+      animating = true;
       const goingForward = clampedIndex > index.value;
 
-      safeCall(
-        events.onBeforeChange,
-        index.value,
-        clampedIndex,
-        getRangeIndex(),
-      );
+      events.onBeforeChange?.(index.value, clampedIndex, getRangeIndex());
 
       // Set override - indexes will become [current, target] or [target, current]
       goToOverride.value = clampedIndex;
@@ -356,9 +382,10 @@ export const createSliderController = (
       index.value = clampedIndex;
       setAxisValueForCurrentRangeIndex(0);
 
-      safeCall(events.onAfterChange, index.value, getRangeIndex());
+      events.onAfterChange?.(index.value, getRangeIndex());
 
       gestureController.observe();
+      animating = false;
     },
 
     adjust(duration = 0) {
@@ -396,7 +423,7 @@ export const createSliderController = (
       }
       if (events.onAfterChange) {
         afterChangeDispose = index.observe(() => {
-          safeCall(events.onAfterChange, index.value, getRangeIndex());
+          events.onAfterChange?.(index.value, getRangeIndex());
         });
       }
     },

@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import * as React from 'react';
+import { type ReactElement, useReducer, useEffect, useRef } from 'react';
 import { flushSync } from 'react-dom';
 import {
   reaction,
@@ -9,40 +9,59 @@ import {
   type AnimatedValue,
 } from '@reelkit/core';
 
+/**
+ * Subscribes to one or more reactive signals and re-renders its children
+ * whenever any dependency notifies. This bridges the core signal system
+ * with React's rendering cycle without causing unnecessary re-renders
+ * of parent components.
+ *
+ * @param props.deps - Array of subscribable signals to observe.
+ * @param props.children - Render function called on each signal change.
+ */
 export const ValueNotifierObserver = ({
   deps,
   children,
 }: {
   deps: Subscribable[];
-  children: () => React.ReactElement;
+  children: () => ReactElement;
 }) => {
-  const rerender = React.useReducer(() => ({}), {})[1];
+  const rerender = useReducer(() => ({}), {})[1];
 
-  React.useEffect(() => reaction(() => deps, rerender), []);
+  useEffect(() => reaction(() => deps, rerender), []);
 
   return children();
 };
 
+/**
+ * Observes an {@link AnimatedValue} signal and drives smooth transitions
+ * between values using `requestAnimationFrame`. When the signal emits a
+ * value with `duration > 0`, the component interpolates from the current
+ * value to the target using the core `animate` utility, calling
+ * `flushSync` on each frame for immediate DOM updates.
+ *
+ * @param props.valueNotifier - Signal emitting animated value descriptors.
+ * @param props.children - Render function receiving the current interpolated numeric value.
+ */
 export const AnimatedValueNotifierObserver = ({
   valueNotifier,
   children,
 }: {
   valueNotifier: Signal<AnimatedValue>;
-  children: (value: number) => React.ReactElement;
+  children: (value: number) => ReactElement;
 }) => {
-  const valueRef = React.useRef(valueNotifier.value.value);
-  const rerender = React.useReducer(() => ({}), {})[1];
-  const mountedRef = React.useRef(false);
-  const cancelRef = React.useRef<(() => void) | null>(null);
+  const valueRef = useRef(valueNotifier.value.value);
+  const rerender = useReducer(() => ({}), {})[1];
+  const mountedRef = useRef(false);
+  const cancelRef = useRef<(() => void) | null>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     mountedRef.current = true;
     return () => {
       mountedRef.current = false;
     };
   }, []);
 
-  React.useEffect(
+  useEffect(
     () =>
       reaction(
         () => [valueNotifier],

@@ -1,0 +1,9 @@
+{
+  "name": "example-next",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "@reelkit/core": "0.0.1",
+    "@reelkit/react": "0.0.1"
+  }
+}

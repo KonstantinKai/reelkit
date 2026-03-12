@@ -1,19 +1,20 @@
 import { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
+import * as ReactDOM from 'react-dom/client';
 import { ThemeProvider } from './context/ThemeContext';
-import App from './App';
-import './index.css';
+import App from './app/app';
+import './styles.css';
 
-// Use Vite's BASE_URL which is '/' in dev and '/reelkit/' in production
-const basename = import.meta.env.BASE_URL.replace(/\/$/, '');
+const root = ReactDOM.createRoot(
+  document.getElementById('root') as HTMLElement,
+);
 
-createRoot(document.getElementById('root')!).render(
+root.render(
   <StrictMode>
-    <ThemeProvider>
-      <BrowserRouter basename={basename}>
+    <BrowserRouter>
+      <ThemeProvider>
         <App />
-      </BrowserRouter>
-    </ThemeProvider>
-  </StrictMode>
+      </ThemeProvider>
+    </BrowserRouter>
+  </StrictMode>,
 );

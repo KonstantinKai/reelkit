@@ -1,34 +1,255 @@
+import { Link } from 'react-router-dom';
 import { CodeBlock } from '../../../components/ui/CodeBlock';
-import '../docs.css';
+
+const reelPlayerProps = [
+  {
+    prop: 'isOpen',
+    type: 'boolean',
+    default: 'required',
+    description: 'Controls overlay visibility',
+  },
+  {
+    prop: 'content',
+    type: 'T[]',
+    default: 'required',
+    description: 'Array of content items (generic, defaults to ContentItem)',
+  },
+  {
+    prop: 'initialIndex',
+    type: 'number',
+    default: '0',
+    description: 'Starting slide index',
+  },
+  {
+    prop: 'apiRef',
+    type: 'MutableRefObject<ReelApi>',
+    default: '-',
+    description: 'Ref to access Reel API',
+  },
+  {
+    prop: 'renderSlideOverlay',
+    type: '(item, index, isActive) => ReactNode',
+    default: '-',
+    description:
+      'Custom overlay per slide, replaces default SlideOverlay. Return null to hide.',
+  },
+  {
+    prop: 'renderSlide',
+    type: '(item, index, size, isActive) => ReactNode | null',
+    default: '-',
+    description: 'Custom slide rendering. Return null to fall back to default',
+  },
+  {
+    prop: 'renderControls',
+    type: '(props: ControlsRenderProps) => ReactNode',
+    default: '-',
+    description: 'Custom controls, replaces default close + sound buttons',
+  },
+  {
+    prop: 'renderNavigation',
+    type: '(props: NavigationRenderProps) => ReactNode',
+    default: '-',
+    description: 'Custom navigation, replaces default vertical arrows',
+  },
+  {
+    prop: 'renderNestedNavigation',
+    type: '(props: NavigationRenderProps) => ReactNode',
+    default: '-',
+    description:
+      'Custom navigation for nested horizontal slider (multi-media posts), replaces default left/right arrows',
+  },
+  {
+    prop: 'aspectRatio',
+    type: 'number',
+    default: '9/16 (0.5625)',
+    description:
+      'Width/height ratio for the player container on desktop. On mobile the player always uses full viewport.',
+  },
+];
+
+const reelPlayerCallbacks = [
+  {
+    prop: 'onClose',
+    type: '() => void',
+    description: 'Called when player closes',
+  },
+  {
+    prop: 'onSlideChange',
+    type: '(index: number) => void',
+    description: 'Called after slide change',
+  },
+];
+
+const reelProps = [
+  {
+    prop: 'loop',
+    type: 'boolean',
+    default: 'false',
+    description: 'Enable infinite loop',
+  },
+  {
+    prop: 'useNavKeys',
+    type: 'boolean',
+    default: 'true',
+    description: 'Enable keyboard navigation',
+  },
+  {
+    prop: 'enableWheel',
+    type: 'boolean',
+    default: 'true',
+    description: 'Enable mouse wheel navigation',
+  },
+  {
+    prop: 'wheelDebounceMs',
+    type: 'number',
+    default: '200',
+    description: 'Wheel debounce duration (ms)',
+  },
+  {
+    prop: 'transitionDuration',
+    type: 'number',
+    default: '300',
+    description: 'Transition animation duration (ms)',
+  },
+  {
+    prop: 'swipeDistanceFactor',
+    type: 'number',
+    default: '0.12',
+    description: 'Swipe threshold (0-1)',
+  },
+];
+
+const keyboardShortcuts = [
+  { key: 'ArrowUp', action: 'Previous slide' },
+  { key: 'ArrowDown', action: 'Next slide' },
+  { key: 'ArrowLeft', action: 'Previous media (in nested slider)' },
+  { key: 'ArrowRight', action: 'Next media (in nested slider)' },
+  { key: 'Escape', action: 'Close player' },
+];
+
+const cssClasses = [
+  {
+    className: '.reel-overlay',
+    component: 'Overlay',
+    description: 'Fixed full-screen backdrop (background, z-index)',
+  },
+  {
+    className: '.reel-container',
+    component: 'Overlay',
+    description: 'Player container (position, overflow)',
+  },
+  {
+    className: '.player-nav-arrows',
+    component: 'Navigation',
+    description: 'Desktop-only arrow container (hidden below 768px)',
+  },
+  {
+    className: '.player-close-btn',
+    component: 'Controls',
+    description: 'Close button',
+  },
+  {
+    className: '.player-sound-btn',
+    component: 'Controls',
+    description: 'Sound toggle button',
+  },
+  {
+    className: '.reel-slide-wrapper',
+    component: 'Slide',
+    description: 'Wrapper around media + overlay',
+  },
+  {
+    className: '.reel-slide-overlay',
+    component: 'SlideOverlay',
+    description: 'Gradient overlay container',
+  },
+  {
+    className: '.reel-slide-overlay-author',
+    component: 'SlideOverlay',
+    description: 'Author row (avatar + name)',
+  },
+  {
+    className: '.reel-slide-overlay-avatar',
+    component: 'SlideOverlay',
+    description: 'Author avatar image',
+  },
+  {
+    className: '.reel-slide-overlay-name',
+    component: 'SlideOverlay',
+    description: 'Author name text',
+  },
+  {
+    className: '.reel-slide-overlay-description',
+    component: 'SlideOverlay',
+    description: 'Description text',
+  },
+  {
+    className: '.reel-slide-overlay-likes',
+    component: 'SlideOverlay',
+    description: 'Likes row (heart + count)',
+  },
+  {
+    className: '.video-slide-container',
+    component: 'VideoSlide',
+    description: 'Video wrapper (background, overflow)',
+  },
+  {
+    className: '.video-slide-element',
+    component: 'VideoSlide',
+    description: 'The <video> element',
+  },
+  {
+    className: '.video-slide-poster',
+    component: 'VideoSlide',
+    description: 'Poster image (fades out on play)',
+  },
+  {
+    className: '.video-slide-loader',
+    component: 'VideoSlide',
+    description: 'Wave loading animation',
+  },
+  {
+    className: '.nested-nav',
+    component: 'NestedSlider',
+    description: 'Horizontal carousel arrows (hidden below 768px)',
+  },
+];
 
 export default function ReactReelPlayerApi() {
   return (
-    <div className="docs-page">
-      <h1 className="docs-title">React Reel Player API</h1>
-      <p className="docs-description">
-        The <code>@reelkit/react-reel-player</code> package provides a full-screen
-        vertical reel player component, similar to Instagram Reels or TikTok.
-      </p>
+    <div className="max-w-4xl mx-auto px-6 py-12">
+      <div className="mb-12">
+        <h1 className="text-4xl font-bold mb-4">React Reel Player API</h1>
+        <p className="text-xl text-slate-600 dark:text-slate-400">
+          The{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            @reelkit/react-reel-player
+          </code>{' '}
+          package provides a full-screen vertical reel player component, similar
+          to Instagram Reels or TikTok.
+        </p>
+      </div>
 
-      <section className="docs-section">
-        <h2>Installation</h2>
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">Installation</h2>
         <CodeBlock
-          lang="bash"
-          code="npm install @reelkit/react-reel-player"
+          code="npm install @reelkit/react-reel-player @reelkit/react lucide-react"
+          language="bash"
         />
-        <p>
+        <p className="text-slate-600 dark:text-slate-400 mt-4 mb-2">
           Don't forget to import the styles:
         </p>
         <CodeBlock
           code={`import '@reelkit/react-reel-player/styles.css';`}
+          language="typescript"
         />
       </section>
 
-      <section className="docs-section">
-        <h2>ReelPlayerOverlay</h2>
-        <p>
-          The main component that renders a full-screen player overlay with video/image support,
-          sound controls, and navigation.
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">ReelPlayerOverlay</h2>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          The main component that renders a full-screen player overlay with
+          video/image support, sound controls, and navigation.
         </p>
         <CodeBlock
           code={`import { useState } from 'react';
@@ -65,103 +286,148 @@ function App() {
     </>
   );
 }`}
+          language="tsx"
         />
 
-        <h3>Props</h3>
-        <table className="api-table">
-          <thead>
-            <tr>
-              <th>Prop</th>
-              <th>Type</th>
-              <th>Default</th>
-              <th>Description</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><code>isOpen</code></td>
-              <td><code>boolean</code></td>
-              <td>required</td>
-              <td>Controls overlay visibility</td>
-            </tr>
-            <tr>
-              <td><code>onClose</code></td>
-              <td><code>() =&gt; void</code></td>
-              <td>required</td>
-              <td>Called when player closes</td>
-            </tr>
-            <tr>
-              <td><code>content</code></td>
-              <td><code>ContentItem[]</code></td>
-              <td>required</td>
-              <td>Array of content items to display</td>
-            </tr>
-            <tr>
-              <td><code>initialIndex</code></td>
-              <td><code>number</code></td>
-              <td><code>0</code></td>
-              <td>Starting slide index</td>
-            </tr>
-            <tr>
-              <td><code>onSlideChange</code></td>
-              <td><code>(index: number) =&gt; void</code></td>
-              <td>-</td>
-              <td>Callback fired after slide change</td>
-            </tr>
-            <tr>
-              <td><code>apiRef</code></td>
-              <td><code>MutableRefObject&lt;ReelApi&gt;</code></td>
-              <td>-</td>
-              <td>Ref to access Reel API</td>
-            </tr>
-            <tr>
-              <td><code>loop</code></td>
-              <td><code>boolean</code></td>
-              <td><code>false</code></td>
-              <td>Enable infinite loop</td>
-            </tr>
-            <tr>
-              <td><code>useNavKeys</code></td>
-              <td><code>boolean</code></td>
-              <td><code>true</code></td>
-              <td>Enable keyboard navigation</td>
-            </tr>
-            <tr>
-              <td><code>enableWheel</code></td>
-              <td><code>boolean</code></td>
-              <td><code>true</code></td>
-              <td>Enable mouse wheel navigation</td>
-            </tr>
-            <tr>
-              <td><code>wheelDebounceMs</code></td>
-              <td><code>number</code></td>
-              <td><code>200</code></td>
-              <td>Wheel debounce duration (ms)</td>
-            </tr>
-            <tr>
-              <td><code>transitionDuration</code></td>
-              <td><code>number</code></td>
-              <td><code>300</code></td>
-              <td>Transition animation duration (ms)</td>
-            </tr>
-            <tr>
-              <td><code>swipeDistanceFactor</code></td>
-              <td><code>number</code></td>
-              <td><code>0.12</code></td>
-              <td>Swipe threshold (0-1)</td>
-            </tr>
-          </tbody>
-        </table>
+        <h3 className="text-xl font-semibold mt-8 mb-4">Props</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left py-3 px-4 font-semibold">Prop</th>
+                <th className="text-left py-3 px-4 font-semibold">Type</th>
+                <th className="text-left py-3 px-4 font-semibold">Default</th>
+                <th className="text-left py-3 px-4 font-semibold">
+                  Description
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {reelPlayerProps.map((p) => (
+                <tr
+                  key={p.prop}
+                  className="border-b border-slate-100 dark:border-slate-800"
+                >
+                  <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                    {p.prop}
+                  </td>
+                  <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                    {p.type}
+                  </td>
+                  <td className="py-3 px-4 text-slate-500 text-sm">
+                    {p.default}
+                  </td>
+                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                    {p.description}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <h3 className="text-xl font-semibold mt-8 mb-4">Callbacks</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left py-3 px-4 font-semibold">Prop</th>
+                <th className="text-left py-3 px-4 font-semibold">Type</th>
+                <th className="text-left py-3 px-4 font-semibold">
+                  Description
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {reelPlayerCallbacks.map((p) => (
+                <tr
+                  key={p.prop}
+                  className="border-b border-slate-100 dark:border-slate-800"
+                >
+                  <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                    {p.prop}
+                  </td>
+                  <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                    {p.type}
+                  </td>
+                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                    {p.description}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <h3 className="text-xl font-semibold mt-8 mb-4">
+          Reel Props (proxied)
+        </h3>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          These props are forwarded to the underlying{' '}
+          <Link
+            to="/docs/api/react"
+            className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
+          >
+            Reel
+          </Link>{' '}
+          component.
+        </p>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left py-3 px-4 font-semibold">Prop</th>
+                <th className="text-left py-3 px-4 font-semibold">Type</th>
+                <th className="text-left py-3 px-4 font-semibold">Default</th>
+                <th className="text-left py-3 px-4 font-semibold">
+                  Description
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {reelProps.map((p) => (
+                <tr
+                  key={p.prop}
+                  className="border-b border-slate-100 dark:border-slate-800"
+                >
+                  <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                    {p.prop}
+                  </td>
+                  <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                    {p.type}
+                  </td>
+                  <td className="py-3 px-4 text-slate-500 text-sm">
+                    {p.default}
+                  </td>
+                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                    {p.description}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </section>
 
-      <section className="docs-section">
-        <h2>Types</h2>
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">Types</h2>
 
-        <h3>ContentItem</h3>
+        <h3 className="text-lg font-semibold mb-2">BaseContentItem</h3>
+        <p className="text-slate-600 dark:text-slate-400 mb-2">
+          The generic constraint type. Extend this to use custom data types with
+          ReelPlayerOverlay.
+        </p>
         <CodeBlock
-          code={`interface ContentItem {
+          code={`interface BaseContentItem {
   id: string;
   media: MediaItem[];
+}`}
+          language="typescript"
+        />
+
+        <h3 className="text-lg font-semibold mt-6 mb-2">ContentItem</h3>
+        <CodeBlock
+          code={`interface ContentItem extends BaseContentItem {
   author: {
     name: string;
     avatar: string;
@@ -169,143 +435,476 @@ function App() {
   likes: number;
   description: string;
 }`}
+          language="typescript"
         />
 
-        <h3>MediaItem</h3>
+        <h3 className="text-lg font-semibold mt-6 mb-2">MediaItem</h3>
         <CodeBlock
           code={`interface MediaItem {
   id: string;
   type: 'image' | 'video';
   src: string;
-  poster?: string;       // Video thumbnail
-  aspectRatio: number;   // width / height
+  poster?: string;
+  aspectRatio: number;
 }`}
+          language="typescript"
         />
 
-        <h3>MediaType</h3>
-        <CodeBlock code={`type MediaType = 'image' | 'video';`} />
+        <h3 className="text-lg font-semibold mt-6 mb-2">MediaType</h3>
+        <CodeBlock
+          code={`type MediaType = 'image' | 'video';`}
+          language="typescript"
+        />
+
+        <h3 className="text-lg font-semibold mt-6 mb-2">
+          ControlsRenderProps{'<T>'}
+        </h3>
+        <CodeBlock
+          code={`interface ControlsRenderProps<T extends BaseContentItem> {
+  onClose: () => void;
+  soundState: SoundState;
+  activeIndex: number;
+  content: T[];
+}`}
+          language="typescript"
+        />
+
+        <h3 className="text-lg font-semibold mt-6 mb-2">
+          NavigationRenderProps
+        </h3>
+        <CodeBlock
+          code={`interface NavigationRenderProps {
+  onPrev: () => void;
+  onNext: () => void;
+  activeIndex: number;
+  count: number;
+}`}
+          language="typescript"
+        />
+
+        <h3 className="text-lg font-semibold mt-6 mb-2">SlideOverlayProps</h3>
+        <CodeBlock
+          code={`interface SlideOverlayProps {
+  author?: { name: string; avatar: string };
+  description?: string;
+  likes?: number;
+}`}
+          language="typescript"
+        />
+
+        <h3 className="text-lg font-semibold mt-6 mb-2">CloseButtonProps</h3>
+        <CodeBlock
+          code={`interface CloseButtonProps {
+  onClick: () => void;
+  className?: string;
+  style?: React.CSSProperties;
+}`}
+          language="typescript"
+        />
+
+        <h3 className="text-lg font-semibold mt-6 mb-2">SoundButtonProps</h3>
+        <CodeBlock
+          code={`interface SoundButtonProps {
+  disabled?: boolean;
+  className?: string;
+  style?: React.CSSProperties;
+}`}
+          language="typescript"
+        />
       </section>
 
-      <section className="docs-section">
-        <h2>Sound Context</h2>
-        <p>
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">Sound Context</h2>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
           For custom implementations, you can access the sound state:
         </p>
         <CodeBlock
           code={`import { SoundProvider, useSoundState } from '@reelkit/react-reel-player';
+import type { Signal } from '@reelkit/core';
 
 interface SoundState {
-  muted: boolean;
-  disabled: boolean;
+  muted: Signal<boolean>;
+  disabled: Signal<boolean>;
   toggle: () => void;
-  setMuted: (value: boolean) => void;
-  setDisabled: (value: boolean) => void;
 }`}
+          language="typescript"
         />
       </section>
 
-      <section className="docs-section">
-        <h2>Examples</h2>
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">Customization</h2>
 
-        <h3>Single Video</h3>
-        <CodeBlock
-          code={`{
-  id: '1',
-  media: [{
-    id: 'v1',
-    type: 'video',
-    src: 'https://example.com/video.mp4',
-    poster: 'https://example.com/thumb.jpg',
-    aspectRatio: 9 / 16,
-  }],
-  author: { name: 'Creator', avatar: '...' },
-  likes: 5000,
-  description: 'Check this out!',
-}`}
-        />
-
-        <h3>Multi-Media Post</h3>
-        <p>
-          Posts with multiple media items display a horizontal nested slider:
+        <h3 className="text-xl font-semibold mt-6 mb-4">
+          Generic Content Type
+        </h3>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Use custom data types by extending{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            BaseContentItem
+          </code>
+          :
         </p>
         <CodeBlock
-          code={`{
-  id: '2',
-  media: [
-    { id: 'img1', type: 'image', src: '...', aspectRatio: 4 / 5 },
-    { id: 'v1', type: 'video', src: '...', poster: '...', aspectRatio: 9 / 16 },
-    { id: 'img2', type: 'image', src: '...', aspectRatio: 1 },
-  ],
-  author: { name: 'Blogger', avatar: '...' },
-  likes: 10000,
-  description: 'My trip',
-}`}
+          code={`import { ReelPlayerOverlay, type BaseContentItem } from '@reelkit/react-reel-player';
+
+interface MyItem extends BaseContentItem {
+  title: string;
+  username: string;
+}
+
+const items: MyItem[] = [
+  {
+    id: '1',
+    media: [{ id: 'v1', type: 'video', src: '/video.mp4', aspectRatio: 9/16 }],
+    title: 'My Video',
+    username: '@user',
+  },
+];
+
+<ReelPlayerOverlay<MyItem>
+  isOpen={isOpen}
+  onClose={handleClose}
+  content={items}
+  renderSlideOverlay={(item) => (
+    <div style={{ position: 'absolute', bottom: 16, left: 16, color: '#fff' }}>
+      <strong>{item.username}</strong>
+      <p>{item.title}</p>
+    </div>
+  )}
+/>`}
+          language="tsx"
         />
 
-        <h3>Gallery with Index</h3>
+        <h3 className="text-xl font-semibold mt-8 mb-4">
+          Custom Slide Overlay
+        </h3>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Replace the built-in slide overlay with custom content per slide:
+        </p>
         <CodeBlock
-          code={`function Gallery() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [index, setIndex] = useState(0);
+          code={`<ReelPlayerOverlay
+  isOpen={isOpen}
+  onClose={handleClose}
+  content={content}
+  renderSlideOverlay={(item, index, isActive) => (
+    <div style={{
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      padding: 16,
+      background: 'linear-gradient(transparent, rgba(0,0,0,0.8))',
+      color: '#fff',
+    }}>
+      <h3>{item.author.name}</h3>
+      <p>{item.description}</p>
+      <span>Slide {index + 1} {isActive ? '(active)' : ''}</span>
+    </div>
+  )}
+/>`}
+          language="tsx"
+        />
 
-  const open = (i: number) => {
-    setIndex(i);
-    setIsOpen(true);
-  };
-
-  return (
-    <>
-      {content.map((item, i) => (
-        <div key={item.id} onClick={() => open(i)}>
-          <img src={item.media[0].poster || item.media[0].src} />
+        <h3 className="text-xl font-semibold mt-8 mb-4">Non-Media Slides</h3>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Use{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            renderSlide
+          </code>{' '}
+          to inject custom content (e.g., CTA cards). Return{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            null
+          </code>{' '}
+          to fall back to default:
+        </p>
+        <CodeBlock
+          code={`<ReelPlayerOverlay
+  isOpen={isOpen}
+  onClose={handleClose}
+  content={content}
+  renderSlide={(item, index, size, isActive) => {
+    // CTA card on last slide
+    if (index === content.length - 1) {
+      return (
+        <div style={{
+          width: size[0],
+          height: size[1],
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'linear-gradient(135deg, #667eea, #764ba2)',
+          color: '#fff',
+        }}>
+          <div style={{ textAlign: 'center' }}>
+            <h2>Follow for more!</h2>
+            <button>Subscribe</button>
+          </div>
         </div>
-      ))}
-      <ReelPlayerOverlay
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-        content={content}
-        initialIndex={index}
-      />
+      );
+    }
+    // Fall back to default MediaSlide + overlay
+    return null;
+  }}
+/>`}
+          language="tsx"
+        />
+
+        <h3 className="text-xl font-semibold mt-8 mb-4">Custom Controls</h3>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Compose reusable sub-components with your own additions:
+        </p>
+        <CodeBlock
+          code={`import {
+  ReelPlayerOverlay,
+  CloseButton,
+  SoundButton,
+} from '@reelkit/react-reel-player';
+
+<ReelPlayerOverlay
+  isOpen={isOpen}
+  onClose={handleClose}
+  content={content}
+  renderControls={({ onClose, content, activeIndex }) => (
+    <>
+      <CloseButton onClick={onClose} />
+      <SoundButton />
+      <button
+        onClick={() => share(content[activeIndex])}
+        style={{
+          position: 'absolute',
+          bottom: 60,
+          right: 16,
+          zIndex: 10,
+        }}
+      >
+        Share
+      </button>
     </>
-  );
-}`}
+  )}
+/>`}
+          language="tsx"
+        />
+
+        <h3 className="text-xl font-semibold mt-8 mb-4">Custom Navigation</h3>
+        <CodeBlock
+          code={`<ReelPlayerOverlay
+  isOpen={isOpen}
+  onClose={handleClose}
+  content={content}
+  renderNavigation={({ onPrev, onNext, activeIndex, count }) => (
+    <div style={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)' }}>
+      <button onClick={onPrev} disabled={activeIndex === 0}>Up</button>
+      <span>{activeIndex + 1}/{count}</span>
+      <button onClick={onNext} disabled={activeIndex === count - 1}>Down</button>
+    </div>
+  )}
+/>`}
+          language="tsx"
+        />
+
+        <h3 className="text-xl font-semibold mt-8 mb-4">
+          Custom Nested Navigation
+        </h3>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Replace the left/right arrows inside multi-media slides (horizontal
+          carousel) with custom navigation:
+        </p>
+        <CodeBlock
+          code={`<ReelPlayerOverlay
+  isOpen={isOpen}
+  onClose={handleClose}
+  content={content}
+  renderNestedNavigation={({ onPrev, onNext, activeIndex, count }) => (
+    <div style={{
+      position: 'absolute',
+      bottom: 48,
+      left: 0,
+      right: 0,
+      display: 'flex',
+      justifyContent: 'center',
+      gap: 8,
+      zIndex: 10,
+    }}>
+      <button onClick={onPrev} disabled={activeIndex === 0}>Prev</button>
+      <span>{activeIndex + 1} / {count}</span>
+      <button onClick={onNext} disabled={activeIndex === count - 1}>Next</button>
+    </div>
+  )}
+/>`}
+          language="tsx"
         />
       </section>
 
-      <section className="docs-section">
-        <h2>Keyboard Shortcuts</h2>
-        <table className="api-table">
-          <thead>
-            <tr>
-              <th>Key</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><code>ArrowUp</code></td>
-              <td>Previous slide</td>
-            </tr>
-            <tr>
-              <td><code>ArrowDown</code></td>
-              <td>Next slide</td>
-            </tr>
-            <tr>
-              <td><code>ArrowLeft</code></td>
-              <td>Previous media (in nested slider)</td>
-            </tr>
-            <tr>
-              <td><code>ArrowRight</code></td>
-              <td>Next media (in nested slider)</td>
-            </tr>
-            <tr>
-              <td><code>Escape</code></td>
-              <td>Close player</td>
-            </tr>
-          </tbody>
-        </table>
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">Sub-Components</h2>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Reusable building blocks exported for composition in custom render
+          props:
+        </p>
+
+        <h3 className="text-lg font-semibold mt-6 mb-2">CloseButton</h3>
+        <p className="text-slate-600 dark:text-slate-400 mb-2">
+          Standalone close button with default reel-player styling. Use inside{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            renderControls
+          </code>
+          .
+        </p>
+        <CodeBlock
+          code={`import { CloseButton } from '@reelkit/react-reel-player';
+
+<CloseButton onClick={onClose} />
+<CloseButton onClick={onClose} className="my-close-btn" style={{ top: 24, right: 24 }} />`}
+          language="tsx"
+        />
+
+        <h3 className="text-lg font-semibold mt-6 mb-2">SoundButton</h3>
+        <p className="text-slate-600 dark:text-slate-400 mb-2">
+          Standalone sound toggle. Must be inside a{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            SoundProvider
+          </code>{' '}
+          (automatically provided by ReelPlayerOverlay).
+        </p>
+        <CodeBlock
+          code={`import { SoundButton } from '@reelkit/react-reel-player';
+
+<SoundButton />
+<SoundButton disabled className="my-sound-btn" />`}
+          language="tsx"
+        />
+
+        <h3 className="text-lg font-semibold mt-6 mb-2">SlideOverlay</h3>
+        <p className="text-slate-600 dark:text-slate-400 mb-2">
+          The default gradient overlay showing author, description, and likes.
+          Rendered automatically when content has the required fields. Use{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            renderSlideOverlay
+          </code>{' '}
+          to replace or hide it.
+        </p>
+        <CodeBlock
+          code={`import { SlideOverlay } from '@reelkit/react-reel-player';
+
+<SlideOverlay
+  author={{ name: 'John', avatar: '/avatar.jpg' }}
+  description="Amazing content"
+  likes={12500}
+/>`}
+          language="tsx"
+        />
       </section>
 
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">CSS Customization</h2>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          All CSS classes are plain (not CSS modules), so they can be overridden
+          with higher-specificity selectors or in a custom stylesheet loaded
+          after{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            @reelkit/react-reel-player/styles.css
+          </code>
+          .
+        </p>
+
+        <div className="overflow-x-auto mb-6">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left py-3 px-4 font-semibold">Class</th>
+                <th className="text-left py-3 px-4 font-semibold">Component</th>
+                <th className="text-left py-3 px-4 font-semibold">
+                  Description
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {cssClasses.map((c) => (
+                <tr
+                  key={c.className}
+                  className="border-b border-slate-100 dark:border-slate-800"
+                >
+                  <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                    {c.className}
+                  </td>
+                  <td className="py-3 px-4 text-slate-500 text-sm">
+                    {c.component}
+                  </td>
+                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                    {c.description}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <CodeBlock
+          code={`/* Override overlay background */
+.reel-overlay {
+  background: rgba(0, 0, 0, 0.9);
+}
+
+/* Custom slide overlay gradient */
+.reel-slide-overlay {
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
+}
+
+/* Larger navigation arrows */
+.player-nav-arrows button {
+  width: 56px;
+  height: 56px;
+}`}
+          language="css"
+        />
+      </section>
+
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">Keyboard Shortcuts</h2>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left py-3 px-4 font-semibold">Key</th>
+                <th className="text-left py-3 px-4 font-semibold">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {keyboardShortcuts.map((s) => (
+                <tr
+                  key={s.key}
+                  className="border-b border-slate-100 dark:border-slate-800"
+                >
+                  <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                    {s.key}
+                  </td>
+                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
+                    {s.action}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section>
+        <h2 className="text-2xl font-bold mb-4">Examples</h2>
+        <ul className="space-y-3">
+          <li>
+            <Link
+              to="/docs/examples/reel-player"
+              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
+            >
+              Reel Player
+            </Link>
+            <span className="text-slate-500">
+              {' '}
+              — live demo with customization patterns
+            </span>
+          </li>
+        </ul>
+      </section>
     </div>
   );
 }

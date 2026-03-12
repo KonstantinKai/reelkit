@@ -1,15 +1,39 @@
-import { MutableRefObject, useCallback, useEffect, useRef, useState } from 'react';
+import {
+  MutableRefObject,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 
+/**
+ * Options for the {@link useFullscreen} hook.
+ *
+ * @typeParam E - The HTML element type that will be toggled into fullscreen mode.
+ */
 export interface UseFullscreenProps<E extends HTMLElement> {
+  /** Ref to the DOM element that should enter fullscreen. */
   ref: MutableRefObject<E | null>;
 }
 
+/**
+ * Tuple returned by {@link useFullscreen}.
+ *
+ * - `[0]` — `boolean` indicating whether the element is currently fullscreen.
+ * - `[1]` — Function to request fullscreen on the referenced element.
+ * - `[2]` — Function to exit fullscreen.
+ */
 export type UseFullscreenResult = [
   fullscreen: boolean,
   requestFullscreen: () => void,
-  exitFullscreen: () => void
+  exitFullscreen: () => void,
 ];
 
+/**
+ * Checks whether any element is currently in fullscreen mode,
+ * accounting for vendor-prefixed properties.
+ * @internal
+ */
 const isFullscreen = (): boolean => {
   const doc = document as Document & {
     webkitFullscreenElement?: Element;
@@ -26,6 +50,11 @@ const isFullscreen = (): boolean => {
   return element != null;
 };
 
+/**
+ * Exits fullscreen mode via the standard or vendor-prefixed API.
+ * Resolves immediately if no API is available.
+ * @internal
+ */
 const exitFullscreenFn = (): Promise<void> => {
   const doc = document as Document & {
     mozCancelFullScreen?: () => Promise<void>;
@@ -46,6 +75,11 @@ const exitFullscreenFn = (): Promise<void> => {
   return Promise.resolve();
 };
 
+/**
+ * Requests fullscreen mode on the given element via the standard or
+ * vendor-prefixed API. Resolves immediately if no API is available.
+ * @internal
+ */
 const requestFullscreenFn = (element: HTMLElement): Promise<void> => {
   const el = element as HTMLElement & {
     webkitRequestFullscreen?: () => Promise<void>;
@@ -69,8 +103,24 @@ const requestFullscreenFn = (element: HTMLElement): Promise<void> => {
   return Promise.resolve();
 };
 
+/**
+ * React hook for managing the Fullscreen API with cross-browser support.
+ *
+ * Wraps the standard `requestFullscreen` / `exitFullscreen` methods
+ * together with their WebKit, Mozilla, and MS vendor-prefixed
+ * variants. Automatically listens for `fullscreenchange` events
+ * (all prefixes) and exits fullscreen when the component unmounts.
+ *
+ * @typeParam E - The HTML element type (inferred from `props.ref`).
+ *
+ * @example
+ * ```tsx
+ * const ref = useRef<HTMLDivElement>(null);
+ * const [isFs, requestFs, exitFs] = useFullscreen({ ref });
+ * ```
+ */
 const useFullscreen = <E extends HTMLElement>(
-  props: UseFullscreenProps<E>
+  props: UseFullscreenProps<E>,
 ): UseFullscreenResult => {
   const [fullscreen, setFullscreen] = useState(false);
   const mountedRef = useRef(true);
@@ -96,7 +146,7 @@ const useFullscreen = <E extends HTMLElement>(
         })
         .catch((err) => {
           console.log(
-            `Error attempting to enable full-screen mode: ${err.message} (${err.name})`
+            `Error attempting to enable full-screen mode: ${err.message} (${err.name})`,
           );
         });
     }
@@ -111,7 +161,7 @@ const useFullscreen = <E extends HTMLElement>(
       })
       .catch((err) => {
         console.log(
-          `Error attempting to exit full-screen mode: ${err.message} (${err.name})`
+          `Error attempting to exit full-screen mode: ${err.message} (${err.name})`,
         );
       });
   }, []);
@@ -133,15 +183,15 @@ const useFullscreen = <E extends HTMLElement>(
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
       document.removeEventListener(
         'webkitfullscreenchange',
-        handleFullscreenChange
+        handleFullscreenChange,
       );
       document.removeEventListener(
         'mozfullscreenchange',
-        handleFullscreenChange
+        handleFullscreenChange,
       );
       document.removeEventListener(
         'MSFullscreenChange',
-        handleFullscreenChange
+        handleFullscreenChange,
       );
     };
   }, []);

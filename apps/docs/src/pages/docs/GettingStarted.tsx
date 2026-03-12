@@ -1,23 +1,24 @@
+import { Link } from 'react-router-dom';
 import { CodeBlock } from '../../components/ui/CodeBlock';
-import './docs.css';
 
 export default function GettingStarted() {
   return (
-    <div className="docs-page">
-      <h1 className="docs-title">Getting Started</h1>
-      <p className="docs-description">
-        reelkit is a <strong>single-item slider</strong> — one item visible at a time,
-        like TikTok, Instagram Reels, or Stories. Perfect for vertical video feeds,
-        fullscreen galleries, and swipeable content.
-      </p>
+    <div className="max-w-4xl mx-auto px-6 py-12">
+      <div className="mb-12">
+        <h1 className="text-4xl font-bold mb-4">Getting Started</h1>
+        <p className="text-xl text-slate-600 dark:text-slate-400">
+          reelkit is a <strong>single-item slider</strong> — one item visible at
+          a time, like TikTok, Instagram Reels, or Stories. Perfect for vertical
+          video feeds, fullscreen galleries, and swipeable content.
+        </p>
+      </div>
 
-      <section className="docs-section">
-        <h2>Installation</h2>
-        <p>
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">Installation</h2>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
           Install reelkit using your preferred package manager:
         </p>
         <CodeBlock
-          lang="bash"
           code={`# React components
 npm install @reelkit/react
 
@@ -26,19 +27,16 @@ npm install @reelkit/react-reel-player
 
 # Framework-agnostic core (for custom integrations)
 npm install @reelkit/core`}
+          language="bash"
         />
-        <p style={{ marginTop: '1rem', color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>
-          Vue and Svelte bindings are coming soon.
-        </p>
       </section>
 
-      <section className="docs-section">
-        <h2>Quick Start</h2>
-        <p>
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">Quick Start</h2>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
           Here's a minimal example to create a vertical slider with React:
         </p>
         <CodeBlock
-          title="App.tsx"
           code={`import { Reel, ReelIndicator } from '@reelkit/react';
 
 const items = [
@@ -46,6 +44,8 @@ const items = [
   { id: 2, title: 'Slide 2', color: '#8b5cf6' },
   { id: 3, title: 'Slide 3', color: '#ec4899' },
 ];
+
+};
 
 function App() {
   return (
@@ -75,34 +75,54 @@ function App() {
     </Reel>
   );
 }`}
+          language="typescript"
         />
       </section>
 
-      <section className="docs-section">
-        <h2>Key Concepts</h2>
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">Key Concepts</h2>
 
-        <h3>Reel</h3>
-        <p>
-          The <code>Reel</code> component is the main container that manages slider state,
-          handles touch gestures, keyboard navigation, and animations. It uses a render
-          prop pattern via <code>itemBuilder</code> for rendering slides.
-        </p>
+        <div className="space-y-6">
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Reel</h3>
+            <p className="text-slate-600 dark:text-slate-400">
+              The{' '}
+              <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+                Reel
+              </code>{' '}
+              component is the main container that manages slider state, handles
+              touch gestures, keyboard navigation, and animations. It uses a
+              render prop pattern via{' '}
+              <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+                itemBuilder
+              </code>{' '}
+              for rendering slides.
+            </p>
+          </div>
 
-        <h3>itemBuilder</h3>
-        <p>
-          The <code>itemBuilder</code> prop is a function that receives the index and
-          returns the content for each slide. This pattern enables virtualization -
-          only visible items are rendered.
-        </p>
+          <div>
+            <h3 className="text-lg font-semibold mb-2">itemBuilder</h3>
+            <p className="text-slate-600 dark:text-slate-400">
+              The{' '}
+              <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+                itemBuilder
+              </code>{' '}
+              prop is a function that receives the index and returns the content
+              for each slide. This pattern enables virtualization — only visible
+              items are rendered.
+            </p>
+          </div>
 
-        <h3>ReelIndicator</h3>
-        <p>
-          Optional component that displays Instagram-style progress indicators showing
-          the current position in the slider.
-        </p>
+          <div>
+            <h3 className="text-lg font-semibold mb-2">ReelIndicator</h3>
+            <p className="text-slate-600 dark:text-slate-400">
+              Optional component that displays Instagram-style progress
+              indicators showing the current position in the slider.
+            </p>
+          </div>
 
-        <CodeBlock
-          code={`import { Reel, ReelIndicator } from '@reelkit/react';
+          <CodeBlock
+            code={`import { Reel, ReelIndicator } from '@reelkit/react';
 
 function App() {
   return (
@@ -115,19 +135,62 @@ function App() {
     </Reel>
   );
 }`}
-        />
+            language="typescript"
+          />
+        </div>
       </section>
 
-      <section className="docs-section">
-        <h2>Navigation</h2>
-        <p>
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">Navigation</h2>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
           reelkit supports multiple navigation methods out of the box:
         </p>
-        <ul>
-          <li><strong>Touch/Swipe:</strong> Drag to navigate with momentum and snap</li>
-          <li><strong>Keyboard:</strong> Arrow keys, Home, End, Page Up/Down</li>
-          <li><strong>Mouse Wheel:</strong> Enable with <code>enableWheel</code> prop</li>
-          <li><strong>Programmatic:</strong> Use <code>apiRef</code> for <code>next()</code>, <code>prev()</code>, <code>goTo()</code></li>
+
+        <ul className="space-y-3 mb-6">
+          <li className="flex items-start gap-3">
+            <span className="w-2 h-2 rounded-full bg-primary-500 mt-2" />
+            <span>
+              <strong>Touch/Swipe:</strong> Drag to navigate with momentum and
+              snap
+            </span>
+          </li>
+          <li className="flex items-start gap-3">
+            <span className="w-2 h-2 rounded-full bg-primary-500 mt-2" />
+            <span>
+              <strong>Keyboard:</strong> Arrow keys, Home, End, Page Up/Down
+            </span>
+          </li>
+          <li className="flex items-start gap-3">
+            <span className="w-2 h-2 rounded-full bg-primary-500 mt-2" />
+            <span>
+              <strong>Mouse Wheel:</strong> Enable with{' '}
+              <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+                enableWheel
+              </code>{' '}
+              prop
+            </span>
+          </li>
+          <li className="flex items-start gap-3">
+            <span className="w-2 h-2 rounded-full bg-primary-500 mt-2" />
+            <span>
+              <strong>Programmatic:</strong> Use{' '}
+              <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+                apiRef
+              </code>{' '}
+              for{' '}
+              <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+                next()
+              </code>
+              ,{' '}
+              <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+                prev()
+              </code>
+              ,{' '}
+              <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+                goTo()
+              </code>
+            </span>
+          </li>
         </ul>
 
         <CodeBlock
@@ -151,18 +214,43 @@ function App() {
     </>
   );
 }`}
+          language="typescript"
         />
       </section>
 
-      <section className="docs-section">
-        <h2>Next Steps</h2>
-        <p>
+      <section>
+        <h2 className="text-2xl font-bold mb-4">Next Steps</h2>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
           Now that you have the basics, explore these topics:
         </p>
-        <ul>
-          <li>Check out the <a href="/docs/api/react">API Reference</a> for all available props</li>
-          <li>Learn about <a href="/docs/examples/infinite">infinite lists</a> with virtualization</li>
-          <li>See the <a href="/docs/examples/reel-player">Reel Player</a> example for a complete implementation</li>
+        <ul className="space-y-3">
+          <li>
+            <Link
+              to="/docs/api/react"
+              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
+            >
+              API Reference
+            </Link>
+            <span className="text-slate-500"> - for all available props</span>
+          </li>
+          <li>
+            <Link
+              to="/docs/examples/infinite"
+              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
+            >
+              Infinite Lists
+            </Link>
+            <span className="text-slate-500"> - with virtualization</span>
+          </li>
+          <li>
+            <Link
+              to="/docs/examples/reel-player"
+              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
+            >
+              Reel Player
+            </Link>
+            <span className="text-slate-500"> - complete implementation</span>
+          </li>
         </ul>
       </section>
     </div>

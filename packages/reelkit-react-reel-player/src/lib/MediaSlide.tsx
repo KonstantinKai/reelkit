@@ -1,20 +1,31 @@
-import React from 'react';
+import React, { type ReactNode } from 'react';
 import type { ReelApi } from '@reelkit/react';
-import type { ContentItem } from './types';
+import type { BaseContentItem, NavigationRenderProps } from './types';
 import ImageSlide from './ImageSlide';
 import VideoSlide from './VideoSlide';
 import NestedSlider from './NestedSlider';
 
+/** @internal */
 interface MediaSlideProps {
-  content: ContentItem;
+  content: BaseContentItem;
   isActive: boolean;
   size: [number, number];
   innerSliderRef: React.MutableRefObject<ReelApi | null>;
   enableWheel?: boolean;
   onVideoRef?: (ref: HTMLVideoElement | null) => void;
   onActiveMediaTypeChange?: (type: 'image' | 'video') => void;
+  renderNestedNavigation?: (props: NavigationRenderProps) => ReactNode;
 }
 
+/**
+ * Renders the appropriate media component based on the content item's media array.
+ *
+ * - Single image → {@link ImageSlide}
+ * - Single video → {@link VideoSlide}
+ * - Multiple items → {@link NestedSlider} (horizontal carousel within the vertical slide)
+ *
+ * @internal Used by `ReelPlayerContent` as the default slide renderer.
+ */
 const MediaSlide: React.FC<MediaSlideProps> = ({
   content,
   isActive,
@@ -23,6 +34,7 @@ const MediaSlide: React.FC<MediaSlideProps> = ({
   enableWheel,
   onVideoRef,
   onActiveMediaTypeChange,
+  renderNestedNavigation,
 }) => {
   const { media } = content;
 
@@ -57,6 +69,7 @@ const MediaSlide: React.FC<MediaSlideProps> = ({
       enableWheel={enableWheel}
       onVideoRef={onVideoRef}
       onActiveMediaTypeChange={onActiveMediaTypeChange}
+      renderNavigation={renderNestedNavigation}
     />
   );
 };

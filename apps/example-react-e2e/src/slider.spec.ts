@@ -102,7 +102,10 @@ test.describe('Reel React - Keyboard Navigation', () => {
 
 test.describe('Reel React - Wheel Navigation', () => {
   // Mouse wheel not supported in mobile WebKit
-  test.skip(({ browserName, isMobile }) => isMobile && browserName === 'webkit', 'Wheel not supported in mobile WebKit');
+  test.skip(
+    ({ browserName, isMobile }) => isMobile && browserName === 'webkit',
+    'Wheel not supported in mobile WebKit',
+  );
 
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
@@ -160,7 +163,10 @@ test.describe('Reel React - Wheel Navigation', () => {
 });
 
 test.describe('Reel React - Touch Gestures', () => {
-  test.skip(({ browserName }) => browserName !== 'chromium', 'Touch API not supported');
+  test.skip(
+    ({ browserName }) => browserName !== 'chromium',
+    'Touch API not supported',
+  );
 
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
@@ -262,7 +268,9 @@ test.describe('Reel React - Indicator', () => {
     expect(scale).toBeCloseTo(0.5, 1);
   });
 
-  test('indicator slides when navigating beyond visible window', async ({ page }) => {
+  test('indicator slides when navigating beyond visible window', async ({
+    page,
+  }) => {
     const slider = new SliderPage(page);
 
     for (let i = 0; i < 5; i++) {
@@ -292,6 +300,117 @@ test.describe('Reel React - Indicator', () => {
     await slider.waitForAnimation();
 
     await slider.expectSlideTitle(`Slide ${trailingIndex + 1}`);
+  });
+});
+
+test.describe('Reel React - Rapid Interactions', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/');
+  });
+
+  test('rapid next button clicks advance only one slide', async ({ page }) => {
+    const slider = new SliderPage(page);
+
+    await slider.expectSlideTitle('Slide 1');
+
+    // Fire 5 synchronous clicks in the browser to ensure they all land
+    // within the same animation window (300ms transition)
+    await page.evaluate(() => {
+      const btn = Array.from(document.querySelectorAll('button')).find((b) =>
+        b.textContent?.includes('Next'),
+      );
+      if (btn) for (let i = 0; i < 5; i++) btn.click();
+    });
+
+    await slider.waitForAnimation();
+
+    // Only the first click should go through due to animation guard
+    await slider.expectSlideTitle('Slide 2');
+    await expect(page.locator('text=2 / 10,000')).toBeVisible();
+  });
+
+  test('rapid prev button clicks go back only one slide', async ({ page }) => {
+    const slider = new SliderPage(page);
+
+    // Navigate to slide 3 first
+    await slider.clickNext();
+    await slider.waitForAnimation();
+    await slider.clickNext();
+    await slider.waitForAnimation();
+    await slider.expectSlideTitle('Slide 3');
+
+    // Fire 5 synchronous prev clicks
+    await page.evaluate(() => {
+      const btn = Array.from(document.querySelectorAll('button')).find((b) =>
+        b.textContent?.includes('Previous'),
+      );
+      if (btn) for (let i = 0; i < 5; i++) btn.click();
+    });
+
+    await slider.waitForAnimation();
+
+    // Only the first click should go through
+    await slider.expectSlideTitle('Slide 2');
+    await expect(page.locator('text=2 / 10,000')).toBeVisible();
+  });
+
+  test('rapid alternating next/prev clicks do not cause twitching', async ({
+    page,
+  }) => {
+    const slider = new SliderPage(page);
+
+    await slider.expectSlideTitle('Slide 1');
+
+    // Fire alternating next/prev clicks synchronously
+    await page.evaluate(() => {
+      const buttons = document.querySelectorAll('button');
+      const nextBtn = Array.from(buttons).find((b) =>
+        b.textContent?.includes('Next'),
+      );
+      const prevBtn = Array.from(buttons).find((b) =>
+        b.textContent?.includes('Previous'),
+      );
+      if (nextBtn && prevBtn) {
+        nextBtn.click();
+        prevBtn.click();
+        nextBtn.click();
+        prevBtn.click();
+      }
+    });
+
+    await slider.waitForAnimation();
+
+    // First click (next) wins, rest ignored during animation
+    await slider.expectSlideTitle('Slide 2');
+    await expect(page.locator('text=2 / 10,000')).toBeVisible();
+  });
+
+  test('navigation works normally after rapid clicks settle', async ({
+    page,
+  }) => {
+    const slider = new SliderPage(page);
+
+    await slider.expectSlideTitle('Slide 1');
+
+    // Rapid synchronous clicks
+    await page.evaluate(() => {
+      const btn = Array.from(document.querySelectorAll('button')).find((b) =>
+        b.textContent?.includes('Next'),
+      );
+      if (btn) for (let i = 0; i < 5; i++) btn.click();
+    });
+
+    await slider.waitForAnimation();
+    await slider.expectSlideTitle('Slide 2');
+
+    // Normal navigation should work fine after rapid burst
+    await slider.clickNext();
+    await slider.waitForAnimation();
+    await slider.expectSlideTitle('Slide 3');
+
+    await slider.clickPrev();
+    await slider.waitForAnimation();
+    await slider.expectSlideTitle('Slide 2');
   });
 });
 

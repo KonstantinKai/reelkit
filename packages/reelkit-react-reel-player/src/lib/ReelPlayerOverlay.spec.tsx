@@ -20,13 +20,30 @@ vi.mock('@reelkit/react', () => ({
         unobserve: vi.fn(),
       };
     }
-    return <div data-testid="mock-reel" />;
+    // Invoke itemBuilder for index 0 so MediaSlide gets rendered
+    const itemBuilder = props.itemBuilder as
+      | ((
+          index: number,
+          key: string,
+          size: [number, number],
+        ) => React.ReactNode)
+      | undefined;
+    return (
+      <div data-testid="mock-reel">
+        {itemBuilder && itemBuilder(0, '0', [400, 700])}
+      </div>
+    );
   },
   useBodyLock: vi.fn(),
 }));
 
+let lastMediaSlideProps: Record<string, unknown> = {};
+
 vi.mock('./MediaSlide', () => ({
-  default: () => <div data-testid="mock-media-slide" />,
+  default: (props: Record<string, unknown>) => {
+    lastMediaSlideProps = props;
+    return <div data-testid="mock-media-slide" />;
+  },
 }));
 
 vi.mock('./PlayerControls', () => ({
@@ -52,6 +69,7 @@ vi.mock('lucide-react', () => ({
   X: () => <span>X</span>,
   Volume2: () => <span>V2</span>,
   VolumeX: () => <span>VX</span>,
+  Heart: () => <span>Heart</span>,
 }));
 
 // eslint-disable-next-line import/first
@@ -60,7 +78,15 @@ import { ReelPlayerOverlay } from './ReelPlayerOverlay';
 const mockContent: ContentItem[] = [
   {
     id: 'c1',
-    media: [{ id: 'm1', type: 'video', src: 'v1.mp4', aspectRatio: 0.56, poster: 'p1.jpg' }],
+    media: [
+      {
+        id: 'm1',
+        type: 'video',
+        src: 'v1.mp4',
+        aspectRatio: 0.56,
+        poster: 'p1.jpg',
+      },
+    ],
     author: { name: 'User1', avatar: '' },
     likes: 100,
     description: 'Test content 1',
@@ -87,9 +113,18 @@ const mockContent: ContentItem[] = [
 describe('ReelPlayerOverlay', () => {
   beforeEach(() => {
     lastReelProps = {};
+    lastMediaSlideProps = {};
     // Mock window dimensions
-    Object.defineProperty(window, 'innerWidth', { value: 1024, writable: true, configurable: true });
-    Object.defineProperty(window, 'innerHeight', { value: 768, writable: true, configurable: true });
+    Object.defineProperty(window, 'innerWidth', {
+      value: 1024,
+      writable: true,
+      configurable: true,
+    });
+    Object.defineProperty(window, 'innerHeight', {
+      value: 768,
+      writable: true,
+      configurable: true,
+    });
   });
 
   afterEach(() => {
@@ -179,7 +214,9 @@ describe('ReelPlayerOverlay', () => {
 
       fireEvent.click(screen.getByLabelText('Previous'));
 
-      const ref = lastReelProps.apiRef as { current: { prev: ReturnType<typeof vi.fn> } };
+      const ref = lastReelProps.apiRef as {
+        current: { prev: ReturnType<typeof vi.fn> };
+      };
       expect(ref.current.prev).toHaveBeenCalled();
     });
 
@@ -194,7 +231,9 @@ describe('ReelPlayerOverlay', () => {
 
       fireEvent.click(screen.getByLabelText('Next'));
 
-      const ref = lastReelProps.apiRef as { current: { next: ReturnType<typeof vi.fn> } };
+      const ref = lastReelProps.apiRef as {
+        current: { next: ReturnType<typeof vi.fn> };
+      };
       expect(ref.current.next).toHaveBeenCalled();
     });
   });
@@ -315,6 +354,76 @@ describe('ReelPlayerOverlay', () => {
     });
   });
 
+  describe('renderNestedNavigation', () => {
+    it('forwards renderNestedNavigation to MediaSlide', () => {
+      const renderNestedNavigation = vi.fn(() => <div />);
+
+      render(
+        <ReelPlayerOverlay
+          isOpen={true}
+          onClose={vi.fn()}
+          content={mockContent}
+          renderNestedNavigation={renderNestedNavigation}
+        />,
+      );
+
+      // itemBuilder is invoked by the Reel mock, which renders MediaSlide
+      expect(lastMediaSlideProps.renderNestedNavigation).toBe(
+        renderNestedNavigation,
+      );
+    });
+  });
+
+  describe('aspectRatio', () => {
+    it('uses default 9:16 aspect ratio on desktop', () => {
+      render(
+        <ReelPlayerOverlay
+          isOpen={true}
+          onClose={vi.fn()}
+          content={mockContent}
+        />,
+      );
+
+      const size = lastReelProps.size as [number, number];
+      // Desktop: 1024x768. Height-based: width = 768 * 9/16 = 432
+      expect(size[0]).toBeCloseTo(432, 0);
+      expect(size[1]).toBe(768);
+    });
+
+    it('applies custom aspect ratio', () => {
+      render(
+        <ReelPlayerOverlay
+          isOpen={true}
+          onClose={vi.fn()}
+          content={mockContent}
+          aspectRatio={3 / 4}
+        />,
+      );
+
+      const size = lastReelProps.size as [number, number];
+      // Desktop: 1024x768. Height-based: width = 768 * 0.75 = 576
+      expect(size[0]).toBeCloseTo(576, 0);
+      expect(size[1]).toBe(768);
+    });
+
+    it('constrains to window width when aspect ratio is wide', () => {
+      render(
+        <ReelPlayerOverlay
+          isOpen={true}
+          onClose={vi.fn()}
+          content={mockContent}
+          aspectRatio={16 / 9}
+        />,
+      );
+
+      const size = lastReelProps.size as [number, number];
+      // Desktop: 1024x768. Height-based: width = 768 * 16/9 ≈ 1365 > 1024
+      // Constrained: width = 1024, height = 1024 / (16/9) = 576
+      expect(size[0]).toBe(1024);
+      expect(size[1]).toBeCloseTo(576, 0);
+    });
+  });
+
   describe('resize handling', () => {
     it('updates size on window resize', () => {
       render(
@@ -328,8 +437,16 @@ describe('ReelPlayerOverlay', () => {
       const initialSize = lastReelProps.size;
 
       // Change window dimensions
-      Object.defineProperty(window, 'innerWidth', { value: 500, writable: true, configurable: true });
-      Object.defineProperty(window, 'innerHeight', { value: 900, writable: true, configurable: true });
+      Object.defineProperty(window, 'innerWidth', {
+        value: 500,
+        writable: true,
+        configurable: true,
+      });
+      Object.defineProperty(window, 'innerHeight', {
+        value: 900,
+        writable: true,
+        configurable: true,
+      });
 
       act(() => {
         window.dispatchEvent(new Event('resize'));
