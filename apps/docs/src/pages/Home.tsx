@@ -6,19 +6,21 @@ import {
   Smartphone,
   Keyboard,
   Infinity,
-  MousePointer,
+  Package,
+  Code2,
+  Paintbrush,
+  Blocks,
   ArrowRight,
-  Play,
 } from 'lucide-react';
 import { CodeBlock } from '../components/ui/CodeBlock';
 import logoSvg from '../assets/logo.svg';
 
 const features = [
   {
-    icon: <Layers className="w-6 h-6" />,
-    title: 'Framework Agnostic',
+    icon: <Package className="w-6 h-6" />,
+    title: 'Zero Dependencies',
     description:
-      'Core logic works with any framework. Official React bindings available.',
+      'Core has no runtime dependencies. Tiny bundle size for production.',
   },
   {
     icon: <Smartphone className="w-6 h-6" />,
@@ -45,9 +47,28 @@ const features = [
       'Full keyboard support with Arrow keys and Escape to close overlays.',
   },
   {
-    icon: <MousePointer className="w-6 h-6" />,
-    title: 'Wheel Scroll',
-    description: 'Optional mouse wheel scrolling with configurable debounce.',
+    icon: <Layers className="w-6 h-6" />,
+    title: 'Framework Agnostic',
+    description:
+      'Core logic works with any framework. Official React bindings available.',
+  },
+  {
+    icon: <Code2 className="w-6 h-6" />,
+    title: 'TypeScript First',
+    description:
+      'Full type safety with generics. Extend base types for custom data models.',
+  },
+  {
+    icon: <Paintbrush className="w-6 h-6" />,
+    title: 'Customizable',
+    description:
+      'Render props for controls, slides, overlays, and navigation. Make it yours.',
+  },
+  {
+    icon: <Blocks className="w-6 h-6" />,
+    title: 'Ready-made Components',
+    description:
+      'ReelPlayer and Lightbox included. Drop-in full-screen experiences.',
   },
 ];
 
@@ -118,13 +139,6 @@ export default function Home() {
               >
                 Get Started
                 <ArrowRight size={20} />
-              </Link>
-              <Link
-                to="/docs/react/guide"
-                className="btn-secondary inline-flex items-center gap-2"
-              >
-                <Play size={18} />
-                View Examples
               </Link>
             </div>
           </div>
