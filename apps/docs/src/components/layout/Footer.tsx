@@ -12,7 +12,9 @@ export default function Footer() {
               <img src={logoSvg} alt="reelkit" className="w-8 h-8 rounded-lg" />
               <span className="text-lg font-bold">
                 <span className="text-white">Reel</span>
-                <span className="bg-gradient-to-r from-primary-500 to-accent-500 bg-clip-text text-transparent">Kit</span>
+                <span className="bg-gradient-to-r from-primary-500 to-accent-500 bg-clip-text text-transparent">
+                  Kit
+                </span>
               </span>
             </div>
             <p className="text-slate-400 text-sm max-w-md">

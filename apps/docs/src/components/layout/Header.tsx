@@ -55,7 +55,9 @@ export default function Header({
                 />
                 <span className="text-xl font-bold">
                   <span className="text-slate-900 dark:text-white">Reel</span>
-                  <span className="bg-gradient-to-r from-primary-500 to-accent-500 bg-clip-text text-transparent">Kit</span>
+                  <span className="bg-gradient-to-r from-primary-500 to-accent-500 bg-clip-text text-transparent">
+                    Kit
+                  </span>
                 </span>
               </Link>
             </div>

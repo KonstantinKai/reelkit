@@ -101,7 +101,9 @@ export default function Home() {
                 <AnimatedLogo className="w-12 h-12 md:w-14 md:h-14" />
                 <span>
                   <span className="text-slate-900 dark:text-white">Reel</span>
-                  <span className="bg-gradient-to-r from-primary-500 to-accent-500 bg-clip-text text-transparent">Kit</span>
+                  <span className="bg-gradient-to-r from-primary-500 to-accent-500 bg-clip-text text-transparent">
+                    Kit
+                  </span>
                 </span>
               </h1>
 
