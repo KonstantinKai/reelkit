@@ -1,0 +1,22 @@
+## 0.1.0 (2026-03-13)
+
+### 🚀 Features
+
+- video lightbox hook, animated logo, CI/lint/typecheck fixes, funding, and docs overhaul ([29238e5](https://github.com/KonstantinKai/reelkit/commit/29238e5))
+- add auto-size mode, signal-based resize, lightbox fixes, and docs updates ([55a75e0](https://github.com/KonstantinKai/reelkit/commit/55a75e0))
+- restructure docs site and add rk- CSS class prefix ([162d9b8](https://github.com/KonstantinKai/reelkit/commit/162d9b8))
+- add lightbox customization, reel player improvements, docs overhaul, and JSDoc ([4c464d3](https://github.com/KonstantinKai/reelkit/commit/4c464d3))
+- add lightbox, reel player packages, e2e tests, and docs ([ef5c939](https://github.com/KonstantinKai/reelkit/commit/ef5c939))
+
+### 🩹 Fixes
+
+- correct release manifest paths and docs deploy trigger ([d402dea](https://github.com/KonstantinKai/reelkit/commit/d402dea))
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/react to 0.1.0
+- Updated @reelkit/core to 0.1.0
+
+### ❤️ Thank You
+
+- KonstantinKai @KonstantinKai
