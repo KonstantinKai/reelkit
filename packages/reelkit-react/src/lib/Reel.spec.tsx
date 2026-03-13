@@ -197,6 +197,111 @@ describe('Reel', () => {
       expect(result).toBeInstanceOf(Promise);
       await result;
     });
+
+    it('animated goTo completes when size changes mid-animation', async () => {
+      vi.useFakeTimers();
+      const afterChange = vi.fn();
+      const apiRef =
+        React.createRef<ReelApi>() as React.MutableRefObject<ReelApi | null>;
+
+      const { rerender } = render(
+        <Reel
+          count={10000}
+          size={[400, 600]}
+          apiRef={apiRef}
+          afterChange={afterChange}
+          itemBuilder={defaultItemBuilder}
+        />,
+      );
+
+      // Start animated goTo
+      const goToPromise = apiRef.current!.goTo(8555, true);
+
+      // Simulate resize mid-animation (e.g. mobile keyboard dismiss)
+      await act(async () => {
+        vi.advanceTimersByTime(50);
+      });
+
+      rerender(
+        <Reel
+          count={10000}
+          size={[400, 700]}
+          apiRef={apiRef}
+          afterChange={afterChange}
+          itemBuilder={defaultItemBuilder}
+        />,
+      );
+
+      // Advance past animation duration
+      await act(async () => {
+        vi.advanceTimersByTime(500);
+      });
+
+      await act(async () => {
+        vi.runAllTimers();
+      });
+
+      await goToPromise;
+
+      // Should not be stuck — afterChange fires and further nav works
+      expect(afterChange).toHaveBeenCalled();
+
+      vi.useRealTimers();
+    });
+
+    it('navigation works after animated goTo with resize', async () => {
+      vi.useFakeTimers();
+      const afterChange = vi.fn();
+      const apiRef =
+        React.createRef<ReelApi>() as React.MutableRefObject<ReelApi | null>;
+
+      const { rerender } = render(
+        <Reel
+          count={100}
+          size={[400, 600]}
+          apiRef={apiRef}
+          afterChange={afterChange}
+          itemBuilder={defaultItemBuilder}
+        />,
+      );
+
+      // Animated goTo
+      const goToPromise = apiRef.current!.goTo(50, true);
+
+      // Resize during animation
+      rerender(
+        <Reel
+          count={100}
+          size={[400, 700]}
+          apiRef={apiRef}
+          afterChange={afterChange}
+          itemBuilder={defaultItemBuilder}
+        />,
+      );
+
+      await act(async () => {
+        vi.advanceTimersByTime(500);
+      });
+      await act(async () => {
+        vi.runAllTimers();
+      });
+      await goToPromise;
+
+      afterChange.mockClear();
+
+      // Next should still work (animating flag was reset)
+      const nextPromise = apiRef.current!.next();
+      await act(async () => {
+        vi.advanceTimersByTime(500);
+      });
+      await act(async () => {
+        vi.runAllTimers();
+      });
+      await nextPromise;
+
+      expect(afterChange).toHaveBeenCalled();
+      vi.useRealTimers();
+    });
   });
 
   describe('controller lifecycle', () => {

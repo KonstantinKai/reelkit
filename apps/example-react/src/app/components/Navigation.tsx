@@ -2,21 +2,32 @@ import { Link, useLocation } from 'react-router-dom';
 
 const navStyle: React.CSSProperties = {
   position: 'fixed',
-  top: 16,
-  left: 16,
+  top: 0,
+  left: 0,
+  right: 0,
   zIndex: 1000,
   display: 'flex',
-  gap: 8,
+  gap: 6,
+  padding: '8px 12px',
+  overflowX: 'auto',
+  WebkitOverflowScrolling: 'touch',
+  scrollbarWidth: 'none',
+  background:
+    'linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 100%)',
 };
 
 const linkStyle: React.CSSProperties = {
-  padding: '8px 16px',
-  backgroundColor: 'rgba(0,0,0,0.6)',
+  padding: '6px 12px',
+  backgroundColor: 'rgba(0,0,0,0.5)',
   color: '#fff',
   textDecoration: 'none',
   borderRadius: 8,
-  fontSize: '0.85rem',
+  fontSize: '0.8rem',
   transition: 'background-color 0.2s',
+  whiteSpace: 'nowrap',
+  flexShrink: 0,
+  backdropFilter: 'blur(8px)',
+  WebkitBackdropFilter: 'blur(8px)',
 };
 
 const activeLinkStyle: React.CSSProperties = {
@@ -25,53 +36,29 @@ const activeLinkStyle: React.CSSProperties = {
   color: '#000',
 };
 
+const links = [
+  { to: '/', label: 'Full Page Slider' },
+  { to: '/reel-player', label: 'Reel Player' },
+  { to: '/reel-player-custom', label: 'Custom Player' },
+  { to: '/image-preview', label: 'Image Gallery' },
+  { to: '/image-preview-custom', label: 'Custom Gallery' },
+  { to: '/image-preview-video', label: 'Video Gallery' },
+];
+
 function Navigation() {
   const location = useLocation();
 
   return (
     <nav style={navStyle}>
-      <Link
-        to="/"
-        style={location.pathname === '/' ? activeLinkStyle : linkStyle}
-      >
-        Full Page Slider
-      </Link>
-      <Link
-        to="/reel-player"
-        style={
-          location.pathname === '/reel-player' ? activeLinkStyle : linkStyle
-        }
-      >
-        Reel Player
-      </Link>
-      <Link
-        to="/reel-player-custom"
-        style={
-          location.pathname === '/reel-player-custom'
-            ? activeLinkStyle
-            : linkStyle
-        }
-      >
-        Custom Player
-      </Link>
-      <Link
-        to="/image-preview"
-        style={
-          location.pathname === '/image-preview' ? activeLinkStyle : linkStyle
-        }
-      >
-        Image Gallery
-      </Link>
-      <Link
-        to="/image-preview-custom"
-        style={
-          location.pathname === '/image-preview-custom'
-            ? activeLinkStyle
-            : linkStyle
-        }
-      >
-        Custom Gallery
-      </Link>
+      {links.map(({ to, label }) => (
+        <Link
+          key={to}
+          to={to}
+          style={location.pathname === to ? activeLinkStyle : linkStyle}
+        >
+          {label}
+        </Link>
+      ))}
     </nav>
   );
 }

@@ -55,6 +55,7 @@ vi.mock('./SwipeToClose', () => ({
     enabled,
   }: {
     children: React.ReactNode;
+
     enabled: boolean;
   }) => (
     <div data-testid="mock-swipe-to-close" data-enabled={enabled}>
@@ -69,6 +70,8 @@ vi.mock('lucide-react', () => ({
   Minimize: () => <span>Minimize</span>,
   ChevronLeft: () => <span>Left</span>,
   ChevronRight: () => <span>Right</span>,
+  Volume2: () => <span>Volume2</span>,
+  VolumeX: () => <span>VolumeX</span>,
 }));
 
 // eslint-disable-next-line import/first
@@ -558,6 +561,118 @@ describe('LightboxOverlay', () => {
     });
   });
 
+  describe('video item preloading', () => {
+    // NOTE: preloadedImages is a module-level Set that persists across tests.
+    // Use unique URLs per test to avoid cache hits from previous tests.
+
+    it('preloads poster for video items instead of src', () => {
+      const srcs: string[] = [];
+      const origImage = window.Image;
+
+      vi.stubGlobal(
+        'Image',
+        class MockImage {
+          _src = '';
+          set src(val: string) {
+            this._src = val;
+            srcs.push(val);
+          }
+          get src() {
+            return this._src;
+          }
+        },
+      );
+
+      const mixedItems: LightboxItem[] = [
+        { src: 'preload-test-1-img.jpg', title: 'Image' },
+        {
+          src: 'preload-test-1-video.mp4',
+          type: 'video',
+          poster: 'preload-test-1-poster.jpg',
+          title: 'Video',
+        },
+        { src: 'preload-test-1-img2.jpg', title: 'Image 2' },
+      ];
+
+      render(
+        <LightboxOverlay isOpen={true} images={mixedItems} onClose={vi.fn()} />,
+      );
+
+      // At index 0 with PRELOAD_RANGE=2, items 1 and 2 should be preloaded
+      // Item 1 is video with poster → should preload poster
+      // Item 2 is image → should preload src
+      expect(srcs).toContain('preload-test-1-poster.jpg');
+      expect(srcs).toContain('preload-test-1-img2.jpg');
+      expect(srcs).not.toContain('preload-test-1-video.mp4');
+
+      vi.stubGlobal('Image', origImage);
+    });
+
+    it('skips preloading for video items without poster', () => {
+      const srcs: string[] = [];
+      const origImage = window.Image;
+
+      vi.stubGlobal(
+        'Image',
+        class MockImage {
+          _src = '';
+          set src(val: string) {
+            this._src = val;
+            srcs.push(val);
+          }
+          get src() {
+            return this._src;
+          }
+        },
+      );
+
+      const items: LightboxItem[] = [
+        { src: 'preload-test-2-img.jpg' },
+        { src: 'preload-test-2-video.mp4', type: 'video' },
+      ];
+
+      render(
+        <LightboxOverlay isOpen={true} images={items} onClose={vi.fn()} />,
+      );
+
+      expect(srcs).not.toContain('preload-test-2-video.mp4');
+
+      vi.stubGlobal('Image', origImage);
+    });
+
+    it('treats items without type field as images (backward compat)', () => {
+      const srcs: string[] = [];
+      const origImage = window.Image;
+
+      vi.stubGlobal(
+        'Image',
+        class MockImage {
+          _src = '';
+          set src(val: string) {
+            this._src = val;
+            srcs.push(val);
+          }
+          get src() {
+            return this._src;
+          }
+        },
+      );
+
+      const items: LightboxItem[] = [
+        { src: 'preload-test-3-img1.jpg' },
+        { src: 'preload-test-3-img2.jpg' },
+      ];
+
+      render(
+        <LightboxOverlay isOpen={true} images={items} onClose={vi.fn()} />,
+      );
+
+      expect(srcs).toContain('preload-test-3-img2.jpg');
+
+      vi.stubGlobal('Image', origImage);
+    });
+  });
+
   describe('renderSlide', () => {
     it('renders custom slide when returning non-null', () => {
       render(
@@ -601,6 +716,193 @@ describe('LightboxOverlay', () => {
       );
 
       expect(document.querySelector('.rk-lightbox-img')).toBeNull();
+    });
+
+    it('applies transition class to custom slide wrapper (fade)', () => {
+      render(
+        <LightboxOverlay
+          isOpen={true}
+          images={mockImages}
+          onClose={vi.fn()}
+          transition="fade"
+          renderSlide={() => <div data-testid="custom-slide">Custom</div>}
+        />,
+      );
+
+      const slide = document.querySelector('.rk-lightbox-slide');
+      expect(slide).toBeTruthy();
+      expect(slide!.classList.contains('rk-transition-fade')).toBe(true);
+    });
+
+    it('applies transition class to custom slide wrapper (zoom-in)', () => {
+      render(
+        <LightboxOverlay
+          isOpen={true}
+          images={mockImages}
+          onClose={vi.fn()}
+          transition="zoom-in"
+          renderSlide={() => <div data-testid="custom-slide">Custom</div>}
+        />,
+      );
+
+      const slide = document.querySelector('.rk-lightbox-slide');
+      expect(slide!.classList.contains('rk-transition-zoom-in')).toBe(true);
+    });
+
+    it('applies rk-active class to active custom slide', () => {
+      render(
+        <LightboxOverlay
+          isOpen={true}
+          images={mockImages}
+          onClose={vi.fn()}
+          transition="fade"
+          renderSlide={() => <div data-testid="custom-slide">Custom</div>}
+        />,
+      );
+
+      // Mock Reel calls itemBuilder(0, 0, size) and index 0 is active
+      const slide = document.querySelector('.rk-lightbox-slide');
+      expect(slide!.classList.contains('rk-active')).toBe(true);
+    });
+
+    it('does not apply rk-active class to inactive custom slide', () => {
+      render(
+        <LightboxOverlay
+          isOpen={true}
+          images={mockImages}
+          onClose={vi.fn()}
+          transition="fade"
+          renderSlide={() => <div data-testid="custom-slide">Custom</div>}
+        />,
+      );
+
+      // Navigate to index 1, then invoke itemBuilder for index 0 (now inactive)
+      const afterChange = lastReelProps.afterChange as (index: number) => void;
+      act(() => afterChange(1));
+
+      const itemBuilder = lastReelProps.itemBuilder as (
+        index: number,
+        indexInRange: number,
+        size: [number, number],
+      ) => React.ReactNode;
+      const result = itemBuilder(0, 0, [1024, 768]);
+
+      // Render the result to inspect classes
+      const { container } = render(result as React.ReactElement);
+      const slide = container.querySelector('.rk-lightbox-slide');
+      expect(slide!.classList.contains('rk-transition-fade')).toBe(true);
+      expect(slide!.classList.contains('rk-active')).toBe(false);
+    });
+
+    it('does not add transition class for default slide transition', () => {
+      render(
+        <LightboxOverlay
+          isOpen={true}
+          images={mockImages}
+          onClose={vi.fn()}
+          renderSlide={() => <div data-testid="custom-slide">Custom</div>}
+        />,
+      );
+
+      const slide = document.querySelector('.rk-lightbox-slide');
+      expect(slide!.className).not.toContain('rk-transition-');
+    });
+
+    it('keeps itemBuilder reference stable on slide change so video slides are not remounted', () => {
+      const mixedItems: LightboxItem[] = [
+        { src: 'stable-img.jpg', title: 'Image' },
+        {
+          src: 'stable-video.mp4',
+          type: 'video',
+          poster: 'poster.jpg',
+          title: 'Video',
+        },
+      ];
+
+      render(
+        <LightboxOverlay
+          isOpen={true}
+          images={mixedItems}
+          onClose={vi.fn()}
+          renderSlide={() => <div>custom</div>}
+        />,
+      );
+
+      const firstItemBuilder = lastReelProps.itemBuilder;
+      expect(firstItemBuilder).toBeTruthy();
+
+      // Simulate slide change — this updates currentIndex state
+      const afterChange = lastReelProps.afterChange as (index: number) => void;
+      act(() => afterChange(1));
+
+      // itemBuilder must be the same reference — otherwise Reel remounts
+      // slides and destroys the shared video element mid-transition
+      expect(lastReelProps.itemBuilder).toBe(firstItemBuilder);
+    });
+
+    it('passes correct isActive to renderSlide after navigating to a video slide', () => {
+      const mixedItems: LightboxItem[] = [
+        { src: 'nav-img.jpg', title: 'Image' },
+        {
+          src: 'nav-video.mp4',
+          type: 'video',
+          poster: 'poster.jpg',
+          title: 'Video',
+        },
+        { src: 'nav-img2.jpg', title: 'Image 2' },
+      ];
+
+      const renderSlide = vi.fn(() => null);
+
+      render(
+        <LightboxOverlay
+          isOpen={true}
+          images={mixedItems}
+          onClose={vi.fn()}
+          renderSlide={renderSlide}
+        />,
+      );
+
+      // Initially at index 0, itemBuilder is called for index 0
+      // renderSlide should receive isActive=true for index 0
+      expect(renderSlide).toHaveBeenCalledWith(
+        mixedItems[0],
+        0,
+        [1024, 768],
+        true,
+      );
+
+      renderSlide.mockClear();
+
+      // Navigate to video slide (index 1)
+      const afterChange = lastReelProps.afterChange as (index: number) => void;
+      act(() => afterChange(1));
+
+      // Manually invoke itemBuilder for index 1 (simulates what Reel does)
+      const itemBuilder = lastReelProps.itemBuilder as (
+        index: number,
+        indexInRange: number,
+        size: [number, number],
+      ) => React.ReactNode;
+      itemBuilder(1, 1, [1024, 768]);
+
+      // renderSlide should receive isActive=true for the video slide
+      expect(renderSlide).toHaveBeenCalledWith(
+        mixedItems[1],
+        1,
+        [1024, 768],
+        true,
+      );
+
+      // And isActive=false for the image slide
+      renderSlide.mockClear();
+      itemBuilder(0, 0, [1024, 768]);
+      expect(renderSlide).toHaveBeenCalledWith(
+        mixedItems[0],
+        0,
+        [1024, 768],
+        false,
+      );
     });
   });
 });

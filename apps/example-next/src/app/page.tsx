@@ -2,7 +2,9 @@ import { Feed } from './feed';
 
 export interface FeedItem {
   id: number;
+
   title: string;
+
   color: string;
 }
 

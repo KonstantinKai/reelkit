@@ -11,8 +11,10 @@ export type DragAxis = 'horizontal' | 'vertical' | null;
 export interface GestureEvent {
   /** Pointer position relative to the viewport. */
   globalPosition: Offset;
+
   /** Pointer position relative to the attached element. */
   localPosition: Offset;
+
   /** Timestamp (ms) when the event occurred. */
   sourceTimestamp: number;
 }
@@ -27,12 +29,16 @@ export interface GestureCommonEvent extends GestureEvent {
 export interface GestureAxisDragUpdateEvent extends GestureEvent {
   /** Movement since the previous update event. */
   delta: Offset;
+
   /** Cumulative distance from the drag origin. */
   distance: Offset;
+
   /** Delta along the dominant axis only. */
   primaryDelta: number;
+
   /** Cumulative distance along the dominant axis only. */
   primaryDistance: number;
+
   /** Cancels the current drag gesture (triggers snap-back). */
   cancel: () => void;
 }
@@ -42,6 +48,7 @@ export interface GestureAxisDragEndEvent
   extends Omit<GestureAxisDragUpdateEvent, 'cancel'> {
   /** End-of-drag velocity in pixels/second for each axis. */
   velocity: Offset;
+
   /** Velocity along the dominant drag axis in pixels/second. */
   primaryVelocity: number;
 }
@@ -63,6 +70,7 @@ export interface GestureControllerConfig {
    * @default false
    */
   useTouchEventsOnly?: boolean;
+
   /**
    * Duration in milliseconds the pointer must remain stationary to
    * trigger a long-press callback.
@@ -79,24 +87,34 @@ export interface GestureControllerConfig {
 export interface GestureControllerEvents {
   /** Fired when a long press is detected. */
   onLongPress?: (event: GestureCommonEvent) => void;
+
   /** Fired when the pointer is released after a long press. */
   onLongPressEnd?: (event: GestureEvent) => void;
+
   /** Fired on pointer down. */
   onTapDown?: (event: GestureCommonEvent) => void;
+
   /** Fired on pointer up. */
   onTapUp?: (event: GestureCommonEvent) => void;
+
   /** Fired when a horizontal drag begins. */
   onHorizontalDragStart?: (event: GestureCommonEvent) => void;
+
   /** Fired on each pointer move during a horizontal drag. */
   onHorizontalDragUpdate?: (event: GestureAxisDragUpdateEvent) => void;
+
   /** Fired when a horizontal drag ends. */
   onHorizontalDragEnd?: (event: GestureAxisDragEndEvent) => void;
+
   /** Fired when a vertical drag begins. */
   onVerticalDragStart?: (event: GestureCommonEvent) => void;
+
   /** Fired on each pointer move during a vertical drag. */
   onVerticalDragUpdate?: (event: GestureAxisDragUpdateEvent) => void;
+
   /** Fired when a vertical drag ends. */
   onVerticalDragEnd?: (event: GestureAxisDragEndEvent) => void;
+
   /** Fired on any drag end, regardless of axis. */
   onDragEnd?: (event: GestureDragEndEvent) => void;
 }
@@ -111,12 +129,16 @@ export interface GestureController {
    * @param element - The target element to listen on.
    */
   attach(element: HTMLElement): void;
+
   /** Removes all event listeners and unbinds the element. */
   detach(): void;
+
   /** Starts listening for touch/mouse events on the attached element. */
   observe(): void;
+
   /** Stops listening for touch/mouse events (preserves the attachment). */
   unobserve(): void;
+
   /**
    * Merges new event handlers into the current set.
    * @param events - Partial event handlers to merge.

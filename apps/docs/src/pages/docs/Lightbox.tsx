@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Callout } from '../../components/ui/Callout';
 import { CodeBlock } from '../../components/ui/CodeBlock';
+import { FeatureCardGrid } from '../../components/ui/FeatureCard';
 import { Sandbox } from '../../components/ui/Sandbox';
 import { LightboxDemo } from '../../components/demos/LightboxDemo';
 import {
@@ -20,17 +21,46 @@ import '@reelkit/react-lightbox/styles.css';
 
 const images: LightboxItem[] = [
   {
-    src: 'https://example.com/image1.jpg',
-    title: 'Sunset',
-    description: 'Beautiful sunset over the ocean',
+    src: 'https://example.com/mountain-river.jpg',
+    title: 'Mountain River',
+    description: 'A beautiful mountain river flowing through the forest',
+    width: 1600,
+    height: 1000,
   },
   {
-    src: 'https://example.com/image2.jpg',
-    title: 'Mountains',
+    src: 'https://example.com/snowy-peaks.jpg',
+    title: 'Snowy Peaks',
+    description: 'Majestic snow-capped mountains reaching for the sky',
+    width: 1000,
+    height: 1600,
   },
   {
-    src: 'https://example.com/image3.jpg',
-    title: 'City',
+    src: 'https://example.com/foggy-forest.jpg',
+    title: 'Foggy Forest',
+    description: 'Misty morning in the dense forest',
+    width: 1600,
+    height: 900,
+  },
+  {
+    src: 'https://example.com/ocean-waves.jpg',
+    title: 'Ocean Waves',
+    description: 'Powerful ocean waves crashing against the rocky shore',
+    width: 900,
+    height: 1400,
+  },
+  {
+    src: 'https://example.com/autumn-path.jpg',
+    title: 'Autumn Path',
+    description: 'A winding path through the autumn forest',
+    width: 1600,
+    height: 1067,
+  },
+  {
+    src: 'https://example.com/coastal-cliffs.jpg',
+    title: 'Coastal Cliffs',
+    description: 'Dramatic coastal cliffs overlooking the deep blue sea',
+    width: 1600,
+    height: 1067,
   },
 ];
 
@@ -115,7 +145,7 @@ const lightboxProps = [
     prop: 'renderSlide',
     type: '(item, index, size, isActive) => ReactNode | null',
     default: '-',
-    description: 'Custom slide rendering. Return null to fall back to default',
+    description: 'Custom slide rendering. Return null to fall back to default.',
   },
 ];
 
@@ -195,6 +225,22 @@ const cssClasses = [
   { class: '.rk-lightbox-swipe-hint', description: 'Mobile swipe hint' },
   { class: '.rk-lightbox-slide', description: 'Slide container' },
   { class: '.rk-lightbox-img', description: 'Image element' },
+  {
+    class: '.rk-lightbox-video-container',
+    description: 'Video slide container (opt-in)',
+  },
+  {
+    class: '.rk-lightbox-video-element',
+    description: 'Video element (opt-in)',
+  },
+  {
+    class: '.rk-lightbox-video-poster',
+    description: 'Video poster image (opt-in)',
+  },
+  {
+    class: '.rk-lightbox-video-loader',
+    description: 'Video loading shimmer (opt-in)',
+  },
 ];
 
 export default function Lightbox() {
@@ -203,7 +249,7 @@ export default function Lightbox() {
       <div className="mb-12">
         <h1 className="text-4xl font-bold mb-4">Lightbox</h1>
         <p className="text-xl text-slate-600 dark:text-slate-400">
-          A full-screen image gallery lightbox component using{' '}
+          A full-screen image and video gallery lightbox component using{' '}
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
             @reelkit/react-lightbox
           </code>
@@ -215,42 +261,51 @@ export default function Lightbox() {
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Features</h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {[
-            {
-              icon: MousePointer,
-              label: 'Touch Gestures',
-              desc: 'Swipe to navigate',
-            },
-            {
-              icon: X,
-              label: 'Swipe to Close',
-              desc: 'Swipe up to dismiss',
-            },
-            {
-              icon: Keyboard,
-              label: 'Keyboard Nav',
-              desc: 'Arrow keys, Escape',
-            },
-            {
-              icon: Maximize2,
-              label: 'Fullscreen',
-              desc: 'Cross-browser API',
-            },
-            { icon: Image, label: 'Transitions', desc: 'Slide, fade, zoom-in' },
-            { icon: Zap, label: 'Preloading', desc: 'Adjacent images prefetched' },
-            { icon: Hash, label: 'Counter', desc: '"1 / 10" indicator' },
-            { icon: Layers, label: 'Info Overlay', desc: 'Title + description' },
-            { icon: Zap, label: 'Customizable', desc: 'Render props for everything' },
-          ].map((item) => (
-            <div
-              key={item.label}
-              className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 text-center"
-            >
-              <item.icon className="w-6 h-6 mx-auto mb-2 text-primary-500" />
-              <div className="font-semibold text-sm">{item.label}</div>
-              <div className="text-xs text-slate-500">{item.desc}</div>
-            </div>
-          ))}
+          <FeatureCardGrid
+            items={[
+              {
+                icon: MousePointer,
+                label: 'Touch Gestures',
+                desc: 'Swipe to navigate',
+              },
+              {
+                icon: X,
+                label: 'Swipe to Close',
+                desc: 'Swipe up to dismiss',
+              },
+              {
+                icon: Keyboard,
+                label: 'Keyboard Nav',
+                desc: 'Arrow keys, Escape',
+              },
+              {
+                icon: Maximize2,
+                label: 'Fullscreen',
+                desc: 'Cross-browser API',
+              },
+              {
+                icon: Image,
+                label: 'Transitions',
+                desc: 'Slide, fade, zoom-in',
+              },
+              {
+                icon: Zap,
+                label: 'Preloading',
+                desc: 'Adjacent images prefetched',
+              },
+              { icon: Hash, label: 'Counter', desc: '"1 / 10" indicator' },
+              {
+                icon: Layers,
+                label: 'Info Overlay',
+                desc: 'Title + description',
+              },
+              {
+                icon: Zap,
+                label: 'Customizable',
+                desc: 'Render props for everything',
+              },
+            ]}
+          />
         </div>
       </section>
 
@@ -351,6 +406,87 @@ function App() {
           Click a thumbnail to open the lightbox. Use arrow keys or swipe to
           navigate.
         </p>
+      </section>
+
+      {/* Video Slides (Opt-in) */}
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">Video Slides (Opt-in)</h2>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Video support is fully opt-in and tree-shakeable — image-only usage
+          pays zero extra bundle cost. Import{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            useVideoSlideRenderer
+          </code>{' '}
+          and wire its return values into{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            LightboxOverlay
+          </code>
+          .
+        </p>
+
+        <CodeBlock
+          code={`import {
+  LightboxOverlay,
+  useVideoSlideRenderer,
+  type LightboxItem,
+} from '@reelkit/react-lightbox';
+import '@reelkit/react-lightbox/styles.css';
+
+const items: LightboxItem[] = [
+  { src: '/photo.jpg', title: 'Photo' },
+  {
+    src: '/clip.mp4',
+    type: 'video',
+    poster: '/clip-thumb.jpg',
+    title: 'Video Clip',
+  },
+];
+
+function Gallery() {
+  const [index, setIndex] = useState<number | null>(null);
+  const isOpen = index !== null;
+  const { renderSlide, renderControls } =
+    useVideoSlideRenderer(items, isOpen);
+
+  return (
+    <>
+      {/* thumbnails… */}
+      <LightboxOverlay
+        isOpen={isOpen}
+        images={items}
+        initialIndex={index ?? 0}
+        onClose={() => setIndex(null)}
+        renderSlide={renderSlide}
+        renderControls={renderControls}
+      />
+    </>
+  );
+}`}
+          language="tsx"
+        />
+
+        <Callout type="info" title="How it works" className="mt-4">
+          <ul className="list-disc ml-4 space-y-1">
+            <li>
+              Videos autoplay (muted by default) when the slide becomes active
+            </li>
+            <li>
+              A shared video element is reused across slides for iOS sound
+              continuity
+            </li>
+            <li>
+              Playback position is persisted when navigating away and restored
+              on return
+            </li>
+            <li>
+              Items without{' '}
+              <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+                type: 'video'
+              </code>{' '}
+              render as images (backward compatible)
+            </li>
+          </ul>
+        </Callout>
       </section>
 
       {/* Customization */}
@@ -607,6 +743,8 @@ function App() {
         <CodeBlock
           code={`interface LightboxItem {
   src: string;
+  type?: 'image' | 'video';  // defaults to 'image'
+  poster?: string;            // thumbnail for video items
   title?: string;
   description?: string;
   width?: number;
@@ -701,13 +839,61 @@ function App() {
 <FullscreenButton isFullscreen={isFullscreen} onToggle={onToggleFullscreen} />`}
           language="tsx"
         />
+
+        <h3 className="text-lg font-semibold mt-6 mb-2">SoundButton</h3>
+        <p className="text-slate-600 dark:text-slate-400 mb-2">
+          Mute/unmute toggle button for video slides (Volume2/VolumeX icon). Use
+          with{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            useVideoSlideRenderer
+          </code>
+          .
+        </p>
+        <CodeBlock
+          code={`import { SoundButton, useVideoSlideRenderer } from '@reelkit/react-lightbox';
+
+// SoundButton is included in renderControls automatically,
+// but you can also use it standalone:
+const { isMuted, onToggleMute } = useVideoSlideRenderer(items, isOpen);
+
+<SoundButton isMuted={isMuted} onToggle={onToggleMute} />`}
+          language="tsx"
+        />
       </section>
 
       {/* Hooks */}
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Hooks</h2>
 
-        <h3 className="text-lg font-semibold mb-2">useFullscreen</h3>
+        <h3 className="text-lg font-semibold mb-2">useVideoSlideRenderer</h3>
+        <p className="text-slate-600 dark:text-slate-400 mb-2">
+          Hook for opt-in video support. Returns{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            renderSlide
+          </code>{' '}
+          and{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            renderControls
+          </code>{' '}
+          — pass both directly to LightboxOverlay.
+        </p>
+        <CodeBlock
+          code={`import { useVideoSlideRenderer } from '@reelkit/react-lightbox';
+
+const { renderSlide, renderControls, isMuted, onToggleMute, hasVideo } =
+  useVideoSlideRenderer(items, isOpen);
+
+// renderSlide    — pass to LightboxOverlay's renderSlide prop
+// renderControls — pass to LightboxOverlay's renderControls prop
+//                  (includes Counter, FullscreenButton, SoundButton, CloseButton)
+// isMuted        — current mute state (default: true)
+// onToggleMute   — toggle mute
+// hasVideo       — true if items contain at least one video
+// isOpen param   — resets mute to true on close (enables autoplay on reopen)`}
+          language="typescript"
+        />
+
+        <h3 className="text-lg font-semibold mt-6 mb-2">useFullscreen</h3>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
           Hook for managing fullscreen state with cross-browser support.
         </p>

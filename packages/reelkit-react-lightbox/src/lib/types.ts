@@ -6,12 +6,16 @@ import type { LightboxItem } from './LightboxOverlay';
 export interface LightboxControlsRenderProps {
   /** Callback to close the lightbox. */
   onClose: () => void;
+
   /** Zero-based index of the currently active slide. */
   currentIndex: number;
+
   /** Total number of images. */
   count: number;
+
   /** Whether the lightbox is currently in fullscreen mode. */
   isFullscreen: boolean;
+
   /** Toggle fullscreen mode. */
   onToggleFullscreen: () => void;
 }
@@ -22,10 +26,13 @@ export interface LightboxControlsRenderProps {
 export interface NavigationRenderProps {
   /** Navigate to the previous slide. */
   onPrev: () => void;
+
   /** Navigate to the next slide. */
   onNext: () => void;
+
   /** Zero-based index of the currently active slide. */
   activeIndex: number;
+
   /** Total number of slides. */
   count: number;
 }
@@ -36,6 +43,7 @@ export interface NavigationRenderProps {
 export interface InfoRenderProps {
   /** The current lightbox item data. */
   item: LightboxItem;
+
   /** Zero-based index of the current item. */
   index: number;
 }

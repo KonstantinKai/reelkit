@@ -1,4 +1,4 @@
-import { Github, Twitter } from 'lucide-react';
+import { Github } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import logoSvg from '../../assets/logo.svg';
 
@@ -39,7 +39,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  to="/docs/examples/basic"
+                  to="/docs/react/guide"
                   className="text-slate-400 hover:text-white transition-colors text-sm"
                 >
                   Examples
@@ -52,20 +52,12 @@ export default function Footer() {
             <h4 className="font-semibold mb-4">Community</h4>
             <div className="flex gap-3">
               <a
-                href="https://github.com"
+                href="https://github.com/KonstantinKai/reelkit"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors"
               >
                 <Github size={20} />
-              </a>
-              <a
-                href="#"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors"
-              >
-                <Twitter size={20} />
               </a>
             </div>
           </div>
@@ -76,18 +68,18 @@ export default function Footer() {
             &copy; {new Date().getFullYear()} ReelKit. All rights reserved.
           </p>
           <div className="flex gap-6 text-sm">
-            <a
-              href="#"
+            <Link
+              to="/privacy"
               className="text-slate-400 hover:text-white transition-colors"
             >
               Privacy
-            </a>
-            <a
-              href="#"
+            </Link>
+            <Link
+              to="/terms"
               className="text-slate-400 hover:text-white transition-colors"
             >
               Terms
-            </a>
+            </Link>
           </div>
         </div>
       </div>

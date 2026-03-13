@@ -5,10 +5,17 @@ vi.mock('lucide-react', () => ({
   X: () => <span>X</span>,
   Maximize: () => <span>Maximize</span>,
   Minimize: () => <span>Minimize</span>,
+  Volume2: () => <span>Volume2</span>,
+  VolumeX: () => <span>VolumeX</span>,
 }));
 
 // eslint-disable-next-line import/first
-import { CloseButton, Counter, FullscreenButton } from './LightboxControls';
+import {
+  CloseButton,
+  Counter,
+  FullscreenButton,
+  SoundButton,
+} from './LightboxControls';
 
 describe('CloseButton', () => {
   it('calls onClick when clicked', () => {
@@ -107,6 +114,48 @@ describe('FullscreenButton', () => {
     );
 
     expect(container.querySelector('.my-fs-btn')).toBeTruthy();
+    expect(container.querySelector('.rk-lightbox-btn')).toBeNull();
+  });
+});
+
+describe('SoundButton', () => {
+  it('shows VolumeX icon when muted', () => {
+    render(<SoundButton isMuted={true} onToggle={vi.fn()} />);
+
+    expect(screen.getByTitle('Unmute')).toBeTruthy();
+    expect(screen.getByText('VolumeX')).toBeTruthy();
+  });
+
+  it('shows Volume2 icon when unmuted', () => {
+    render(<SoundButton isMuted={false} onToggle={vi.fn()} />);
+
+    expect(screen.getByTitle('Mute')).toBeTruthy();
+    expect(screen.getByText('Volume2')).toBeTruthy();
+  });
+
+  it('calls onToggle when clicked', () => {
+    const onToggle = vi.fn();
+    render(<SoundButton isMuted={true} onToggle={onToggle} />);
+
+    fireEvent.click(screen.getByTitle('Unmute'));
+
+    expect(onToggle).toHaveBeenCalledOnce();
+  });
+
+  it('uses default rk-lightbox-btn class', () => {
+    const { container } = render(
+      <SoundButton isMuted={true} onToggle={vi.fn()} />,
+    );
+
+    expect(container.querySelector('.rk-lightbox-btn')).toBeTruthy();
+  });
+
+  it('accepts custom className', () => {
+    const { container } = render(
+      <SoundButton isMuted={true} onToggle={vi.fn()} className="my-sound" />,
+    );
+
+    expect(container.querySelector('.my-sound')).toBeTruthy();
     expect(container.querySelector('.rk-lightbox-btn')).toBeNull();
   });
 });

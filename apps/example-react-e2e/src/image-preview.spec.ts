@@ -33,7 +33,9 @@ class ImagePreviewPage {
   }
 
   get currentImage() {
-    return this.page.locator('.rk-lightbox-slide.rk-active img, .rk-lightbox-slide img').first();
+    return this.page
+      .locator('.rk-lightbox-slide.rk-active img, .rk-lightbox-slide img')
+      .first();
   }
 
   get title() {
@@ -132,7 +134,9 @@ test.describe('Image Preview - Page Rendering', () => {
     const transitions = ['slide', 'fade', 'zoom-in'];
 
     for (const transition of transitions) {
-      await expect(preview.transitionButtons.filter({ hasText: transition })).toBeVisible();
+      await expect(
+        preview.transitionButtons.filter({ hasText: transition }),
+      ).toBeVisible();
     }
   });
 
@@ -346,14 +350,18 @@ test.describe('Image Preview - Transition Animations', () => {
 
   test('applies slide transition by default', async ({ page }) => {
     const preview = new ImagePreviewPage(page);
-    await expect(preview.transitionButtons.filter({ hasText: 'slide' })).toHaveClass(/active/);
+    await expect(
+      preview.transitionButtons.filter({ hasText: 'slide' }),
+    ).toHaveClass(/active/);
   });
 
   test('can switch to fade transition', async ({ page }) => {
     const preview = new ImagePreviewPage(page);
     await preview.selectTransition('fade');
 
-    await expect(preview.transitionButtons.filter({ hasText: 'fade' })).toHaveClass(/active/);
+    await expect(
+      preview.transitionButtons.filter({ hasText: 'fade' }),
+    ).toHaveClass(/active/);
 
     await preview.openPreviewAt(0);
     await preview.pressArrowRight();
@@ -367,7 +375,9 @@ test.describe('Image Preview - Transition Animations', () => {
     const preview = new ImagePreviewPage(page);
     await preview.selectTransition('zoom-in');
 
-    await expect(preview.transitionButtons.filter({ hasText: 'zoom-in' })).toHaveClass(/active/);
+    await expect(
+      preview.transitionButtons.filter({ hasText: 'zoom-in' }),
+    ).toHaveClass(/active/);
 
     await preview.openPreviewAt(0);
     await preview.pressArrowRight();
@@ -375,7 +385,6 @@ test.describe('Image Preview - Transition Animations', () => {
 
     await expect(preview.container).toBeVisible();
   });
-
 });
 
 test.describe('Image Preview - Image Loading', () => {
@@ -404,7 +413,10 @@ test.describe('Image Preview - Image Loading', () => {
     const preview = new ImagePreviewPage(page);
     await preview.openPreviewAt(0);
 
-    await expect(preview.container).toHaveCSS('background-color', 'rgb(0, 0, 0)');
+    await expect(preview.container).toHaveCSS(
+      'background-color',
+      'rgb(0, 0, 0)',
+    );
   });
 });
 
@@ -433,7 +445,10 @@ test.describe('Image Preview - Mobile Features', () => {
 });
 
 test.describe('Image Preview - Touch Gestures', () => {
-  test.skip(({ browserName }) => browserName !== 'chromium', 'Touch API varies by browser');
+  test.skip(
+    ({ browserName }) => browserName !== 'chromium',
+    'Touch API varies by browser',
+  );
   test.skip(({ isMobile }) => !isMobile, 'Touch tests only on mobile devices');
 
   test.beforeEach(async ({ page }) => {
@@ -446,7 +461,7 @@ test.describe('Image Preview - Touch Gestures', () => {
 
     // Get initial opacity
     const initialOpacity = await preview.container.evaluate(
-      (el) => window.getComputedStyle(el).opacity
+      (el) => window.getComputedStyle(el).opacity,
     );
     expect(initialOpacity).toBe('1');
 
@@ -463,7 +478,10 @@ test.describe('Image Preview - Touch Gestures', () => {
 });
 
 test.describe('Image Preview - Swipe to Close', () => {
-  test.skip(({ browserName }) => browserName !== 'chromium', 'Touch API varies by browser');
+  test.skip(
+    ({ browserName }) => browserName !== 'chromium',
+    'Touch API varies by browser',
+  );
   test.skip(({ isMobile }) => !isMobile, 'Touch tests only on mobile devices');
 
   test.beforeEach(async ({ page }) => {
@@ -477,7 +495,7 @@ test.describe('Image Preview - Swipe to Close', () => {
     startY: number,
     endX: number,
     endY: number,
-    steps = 10
+    steps = 10,
   ) {
     // Dispatch touch events via JavaScript for reliable mobile simulation
     await page.evaluate(
@@ -505,7 +523,7 @@ test.describe('Image Preview - Swipe to Close', () => {
             cancelable: true,
             touches: [createTouch(startX, startY)],
             changedTouches: [createTouch(startX, startY)],
-          })
+          }),
         );
 
         // Touch move (multiple steps)
@@ -520,7 +538,7 @@ test.describe('Image Preview - Swipe to Close', () => {
               cancelable: true,
               touches: [createTouch(x, y)],
               changedTouches: [createTouch(x, y)],
-            })
+            }),
           );
         }
 
@@ -531,14 +549,16 @@ test.describe('Image Preview - Swipe to Close', () => {
             cancelable: true,
             touches: [],
             changedTouches: [createTouch(endX, endY)],
-          })
+          }),
         );
       },
-      { startX, startY, endX, endY, steps }
+      { startX, startY, endX, endY, steps },
     );
   }
 
-  test('swipe up below threshold returns to original position', async ({ page }) => {
+  test('swipe up below threshold returns to original position', async ({
+    page,
+  }) => {
     const preview = new ImagePreviewPage(page);
     await preview.openPreviewAt(0);
 
@@ -550,7 +570,14 @@ test.describe('Image Preview - Swipe to Close', () => {
     // Swipe only 10% of screen height (below 20% threshold)
     const swipeDistance = box.height * 0.1;
 
-    await performTouchSwipe(page, centerX, startY, centerX, startY - swipeDistance, 5);
+    await performTouchSwipe(
+      page,
+      centerX,
+      startY,
+      centerX,
+      startY - swipeDistance,
+      5,
+    );
 
     // Wait for transition
     await page.waitForTimeout(400);
@@ -559,7 +586,9 @@ test.describe('Image Preview - Swipe to Close', () => {
     await expect(preview.container).toBeVisible();
   });
 
-  test('swipe up then horizontal movement returns to original position', async ({ page }) => {
+  test('swipe up then horizontal movement returns to original position', async ({
+    page,
+  }) => {
     const preview = new ImagePreviewPage(page);
     await preview.openPreviewAt(0);
 
@@ -596,7 +625,7 @@ test.describe('Image Preview - Swipe to Close', () => {
             cancelable: true,
             touches: [createTouch(centerX, startY)],
             changedTouches: [createTouch(centerX, startY)],
-          })
+          }),
         );
 
         // Move up
@@ -609,7 +638,7 @@ test.describe('Image Preview - Swipe to Close', () => {
               cancelable: true,
               touches: [createTouch(centerX, y)],
               changedTouches: [createTouch(centerX, y)],
-            })
+            }),
           );
         }
 
@@ -622,7 +651,7 @@ test.describe('Image Preview - Swipe to Close', () => {
               cancelable: true,
               touches: [createTouch(x, midY)],
               changedTouches: [createTouch(x, midY)],
-            })
+            }),
           );
         }
 
@@ -633,10 +662,10 @@ test.describe('Image Preview - Swipe to Close', () => {
             cancelable: true,
             touches: [],
             changedTouches: [createTouch(centerX + 50, midY)],
-          })
+          }),
         );
       },
-      { centerX, startY, verticalDistance }
+      { centerX, startY, verticalDistance },
     );
 
     // Wait for transition
@@ -646,7 +675,9 @@ test.describe('Image Preview - Swipe to Close', () => {
     await expect(preview.container).toBeVisible();
   });
 
-  test('swipe up then stop before release returns to original position', async ({ page }) => {
+  test('swipe up then stop before release returns to original position', async ({
+    page,
+  }) => {
     const preview = new ImagePreviewPage(page);
     await preview.openPreviewAt(0);
 
@@ -657,7 +688,14 @@ test.describe('Image Preview - Swipe to Close', () => {
     const startY = box.y + box.height / 2;
     const verticalDistance = box.height * 0.15; // Below threshold
 
-    await performTouchSwipe(page, centerX, startY, centerX, startY - verticalDistance, 5);
+    await performTouchSwipe(
+      page,
+      centerX,
+      startY,
+      centerX,
+      startY - verticalDistance,
+      5,
+    );
 
     // Wait for transition
     await page.waitForTimeout(400);
@@ -678,7 +716,14 @@ test.describe('Image Preview - Swipe to Close', () => {
     // Swipe DOWN (endY > startY) — 25% of screen height
     const swipeDistance = box.height * 0.25;
 
-    await performTouchSwipe(page, centerX, startY, centerX, startY + swipeDistance, 10);
+    await performTouchSwipe(
+      page,
+      centerX,
+      startY,
+      centerX,
+      startY + swipeDistance,
+      10,
+    );
 
     await page.waitForTimeout(400);
 
@@ -698,7 +743,14 @@ test.describe('Image Preview - Swipe to Close', () => {
     // Swipe 25% of screen height (above 20% threshold)
     const swipeDistance = box.height * 0.25;
 
-    await performTouchSwipe(page, centerX, startY, centerX, startY - swipeDistance, 10);
+    await performTouchSwipe(
+      page,
+      centerX,
+      startY,
+      centerX,
+      startY - swipeDistance,
+      10,
+    );
 
     // Wait for close animation
     await page.waitForTimeout(400);
@@ -707,7 +759,6 @@ test.describe('Image Preview - Swipe to Close', () => {
     await expect(preview.container).not.toBeVisible();
   });
 });
-
 
 test.describe('Image Preview - Accessibility', () => {
   test.beforeEach(async ({ page }) => {
@@ -760,7 +811,10 @@ test.describe('Image Preview - Accessibility', () => {
     await preview.openPreviewAt(0);
 
     await expect(preview.closeButton).toHaveAttribute('title', /Close/);
-    await expect(preview.fullscreenButton).toHaveAttribute('title', /Fullscreen/);
+    await expect(preview.fullscreenButton).toHaveAttribute(
+      'title',
+      /Fullscreen/,
+    );
   });
 });
 
@@ -790,16 +844,11 @@ test.describe('Image Preview - Body Scroll Lock', () => {
   test('locks body scroll when preview is open', async ({ page }) => {
     const preview = new ImagePreviewPage(page);
 
-    // Check body is scrollable before opening
-    const beforeOverflow = await page.evaluate(() =>
-      window.getComputedStyle(document.body).overflow
-    );
-
     await preview.openPreviewAt(0);
 
     // Body should have overflow hidden
-    const afterOverflow = await page.evaluate(() =>
-      window.getComputedStyle(document.body).overflow
+    const afterOverflow = await page.evaluate(
+      () => window.getComputedStyle(document.body).overflow,
     );
     expect(afterOverflow).toBe('hidden');
   });
@@ -811,8 +860,8 @@ test.describe('Image Preview - Body Scroll Lock', () => {
     await preview.closePreview();
 
     // Body should be scrollable again
-    const overflow = await page.evaluate(() =>
-      window.getComputedStyle(document.body).overflow
+    const overflow = await page.evaluate(
+      () => window.getComputedStyle(document.body).overflow,
     );
     expect(overflow).not.toBe('hidden');
   });

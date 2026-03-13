@@ -1,4 +1,5 @@
 import { CodeBlock } from '../../../components/ui/CodeBlock';
+import { FeatureCardGrid } from '../../../components/ui/FeatureCard';
 import { Sandbox } from '../../../components/ui/Sandbox';
 import { BasicSliderDemo } from '../../../components/demos/BasicSliderDemo';
 import { InfiniteListDemo } from '../../../components/demos/InfiniteListDemo';
@@ -10,12 +11,12 @@ import {
   Navigation,
   Zap,
   MousePointer,
-  Infinity,
+  Infinity as InfinityIcon,
   Radio,
   Code,
 } from 'lucide-react';
 
-const basicFullCode = `import { useRef, useState, useCallback, useEffect } from 'react';
+const basicFullCode = `import { useRef, useState } from 'react';
 import { Reel, ReelIndicator, type ReelApi } from '@reelkit/react';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 
@@ -27,66 +28,47 @@ const slides = [
 ];
 
 export default function BasicSlider() {
-  const containerRef = useRef<HTMLDivElement>(null);
   const apiRef = useRef<ReelApi>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [size, setSize] = useState<[number, number]>([0, 0]);
-
-  const updateSize = useCallback(() => {
-    if (containerRef.current) {
-      const rect = containerRef.current.getBoundingClientRect();
-      setSize([rect.width, rect.height]);
-      apiRef.current?.adjust();
-    }
-  }, []);
-
-  useEffect(() => {
-    updateSize();
-    const observer = new ResizeObserver(updateSize);
-    if (containerRef.current) observer.observe(containerRef.current);
-    return () => observer.disconnect();
-  }, [updateSize]);
 
   return (
-    <div ref={containerRef} style={{ width: '100%', height: '100vh' }}>
-      <Reel
+    <Reel
+      count={slides.length}
+      style={{ width: '100%', height: '100dvh' }}
+      direction="vertical"
+      enableWheel
+      useNavKeys
+      apiRef={apiRef}
+      afterChange={(index) => setCurrentIndex(index)}
+      itemBuilder={(index, _indexInRange, itemSize) => (
+        <div
+          style={{
+            width: itemSize[0],
+            height: itemSize[1],
+            background: slides[index].color,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'white',
+          }}
+        >
+          <h2 style={{ fontSize: '2.5rem', fontWeight: 700 }}>
+            {slides[index].title}
+          </h2>
+          <p style={{ fontSize: '1.1rem', opacity: 0.7 }}>
+            {slides[index].subtitle}
+          </p>
+        </div>
+      )}
+    >
+      <ReelIndicator
         count={slides.length}
-        size={size}
+        active={currentIndex}
         direction="vertical"
-        enableWheel
-        useNavKeys
-        apiRef={apiRef}
-        afterChange={(index) => setCurrentIndex(index)}
-        itemBuilder={(index, _indexInRange, itemSize) => (
-          <div
-            style={{
-              width: itemSize[0],
-              height: itemSize[1],
-              background: slides[index].color,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'white',
-            }}
-          >
-            <h2 style={{ fontSize: '2.5rem', fontWeight: 700 }}>
-              {slides[index].title}
-            </h2>
-            <p style={{ fontSize: '1.1rem', opacity: 0.7 }}>
-              {slides[index].subtitle}
-            </p>
-          </div>
-        )}
-      >
-        <ReelIndicator
-          count={slides.length}
-          active={currentIndex}
-          direction="vertical"
-          radius={3}
-          gap={4}
-        />
-      </Reel>
+        radius={3}
+        gap={4}
+      />
 
       {/* Navigation buttons */}
       <div style={{ position: 'absolute', bottom: 16, left: '50%',
@@ -100,11 +82,11 @@ export default function BasicSlider() {
           <ChevronDown />
         </button>
       </div>
-    </div>
+    </Reel>
   );
 }`;
 
-const infiniteFullCode = `import { useRef, useMemo, useState, useCallback, useEffect } from 'react';
+const infiniteFullCode = `import { useRef, useMemo, useState } from 'react';
 import { Reel, ReelIndicator, type ReelApi } from '@reelkit/react';
 
 const TOTAL_ITEMS = 10000;
@@ -116,63 +98,44 @@ const generateItems = (count: number) =>
   }));
 
 export default function InfiniteList() {
-  const containerRef = useRef<HTMLDivElement>(null);
   const apiRef = useRef<ReelApi>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [size, setSize] = useState<[number, number]>([0, 0]);
 
   const items = useMemo(() => generateItems(TOTAL_ITEMS), []);
 
-  const updateSize = useCallback(() => {
-    if (containerRef.current) {
-      const rect = containerRef.current.getBoundingClientRect();
-      setSize([rect.width, rect.height]);
-      apiRef.current?.adjust();
-    }
-  }, []);
-
-  useEffect(() => {
-    updateSize();
-    const observer = new ResizeObserver(updateSize);
-    if (containerRef.current) observer.observe(containerRef.current);
-    return () => observer.disconnect();
-  }, [updateSize]);
-
   return (
-    <div ref={containerRef} style={{ width: '100%', height: '100vh' }}>
-      <Reel
+    <Reel
+      count={items.length}
+      style={{ width: '100%', height: '100dvh' }}
+      direction="vertical"
+      enableWheel
+      apiRef={apiRef}
+      afterChange={(index) => setCurrentIndex(index)}
+      itemBuilder={(index, indexInRange, itemSize) => (
+        <div
+          style={{
+            width: itemSize[0],
+            height: itemSize[1],
+            background: items[index].color,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'white',
+          }}
+        >
+          <h2>{items[index].title}</h2>
+          <p>index: {index} | range: {indexInRange}</p>
+        </div>
+      )}
+    >
+      <ReelIndicator
         count={items.length}
-        size={size}
+        active={currentIndex}
         direction="vertical"
-        enableWheel
-        apiRef={apiRef}
-        afterChange={(index) => setCurrentIndex(index)}
-        itemBuilder={(index, indexInRange, itemSize) => (
-          <div
-            style={{
-              width: itemSize[0],
-              height: itemSize[1],
-              background: items[index].color,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'white',
-            }}
-          >
-            <h2>{items[index].title}</h2>
-            <p>index: {index} | range: {indexInRange}</p>
-          </div>
-        )}
-      >
-        <ReelIndicator
-          count={items.length}
-          active={currentIndex}
-          direction="vertical"
-          visible={4}
-        />
-      </Reel>
-    </div>
+        visible={4}
+      />
+    </Reel>
   );
 }`;
 
@@ -192,62 +155,55 @@ export default function ReactGuide() {
 
       <section className="mb-12">
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {[
-            {
-              icon: Hand,
-              label: 'Touch First',
-              desc: 'Swipe with momentum and snap',
-            },
-            {
-              icon: Keyboard,
-              label: 'Keyboard Nav',
-              desc: 'Arrow keys + Escape',
-            },
-            {
-              icon: MousePointer,
-              label: 'Wheel Scroll',
-              desc: 'Optional with debounce',
-            },
-            {
-              icon: Infinity,
-              label: 'Virtualized',
-              desc: '10,000+ items, 3 in DOM',
-            },
-            {
-              icon: Radio,
-              label: 'Indicators',
-              desc: 'Instagram-style dot scrolling',
-            },
-            {
-              icon: Navigation,
-              label: 'Programmatic API',
-              desc: 'next(), prev(), goTo() via ref',
-            },
-            {
-              icon: Zap,
-              label: 'Loop Mode',
-              desc: 'Infinite circular navigation',
-            },
-            {
-              icon: Layers,
-              label: 'Directional',
-              desc: 'Vertical or horizontal',
-            },
-            {
-              icon: Code,
-              label: 'Zero Re-renders',
-              desc: 'Signal-based state updates',
-            },
-          ].map((item) => (
-            <div
-              key={item.label}
-              className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 text-center"
-            >
-              <item.icon className="w-6 h-6 mx-auto mb-2 text-primary-500" />
-              <div className="font-semibold text-sm">{item.label}</div>
-              <div className="text-xs text-slate-500">{item.desc}</div>
-            </div>
-          ))}
+          <FeatureCardGrid
+            items={[
+              {
+                icon: Hand,
+                label: 'Touch First',
+                desc: 'Swipe with momentum and snap',
+              },
+              {
+                icon: Keyboard,
+                label: 'Keyboard Nav',
+                desc: 'Arrow keys + Escape',
+              },
+              {
+                icon: MousePointer,
+                label: 'Wheel Scroll',
+                desc: 'Optional with debounce',
+              },
+              {
+                icon: InfinityIcon,
+                label: 'Virtualized',
+                desc: '10,000+ items, 3 in DOM',
+              },
+              {
+                icon: Radio,
+                label: 'Indicators',
+                desc: 'Instagram-style dot scrolling',
+              },
+              {
+                icon: Navigation,
+                label: 'Programmatic API',
+                desc: 'next(), prev(), goTo() via ref',
+              },
+              {
+                icon: Zap,
+                label: 'Loop Mode',
+                desc: 'Infinite circular navigation',
+              },
+              {
+                icon: Layers,
+                label: 'Directional',
+                desc: 'Vertical or horizontal',
+              },
+              {
+                icon: Code,
+                label: 'Zero Re-renders',
+                desc: 'Signal-based state updates',
+              },
+            ]}
+          />
         </div>
       </section>
 
@@ -300,10 +256,8 @@ export default function ReactGuide() {
           code={`// Explicit size (fixed)
 <Reel count={items.length} size={[400, 600]} itemBuilder={...} />
 
-// Auto-size (responsive — sized by parent CSS)
-<div style={{ width: '100%', height: '100vh' }}>
-  <Reel count={items.length} itemBuilder={...} />
-</div>`}
+// Auto-size (responsive — sized by CSS)
+<Reel count={items.length} style={{ width: '100%', height: '100dvh' }} itemBuilder={...} />`}
           language="tsx"
         />
       </section>
@@ -428,25 +382,18 @@ function App() {
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Live Demo: Basic Slider</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          {[
-            { icon: Hand, label: 'Touch/Swipe', desc: 'With momentum' },
-            {
-              icon: Keyboard,
-              label: 'Keyboard',
-              desc: 'Arrow keys + Escape',
-            },
-            { icon: Layers, label: 'Indicators', desc: 'Instagram-style' },
-            { icon: Navigation, label: 'Navigation', desc: 'Via apiRef' },
-          ].map((item) => (
-            <div
-              key={item.label}
-              className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 text-center"
-            >
-              <item.icon className="w-6 h-6 mx-auto mb-2 text-primary-500" />
-              <div className="font-semibold text-sm">{item.label}</div>
-              <div className="text-xs text-slate-500">{item.desc}</div>
-            </div>
-          ))}
+          <FeatureCardGrid
+            items={[
+              { icon: Hand, label: 'Touch/Swipe', desc: 'With momentum' },
+              {
+                icon: Keyboard,
+                label: 'Keyboard',
+                desc: 'Arrow keys + Escape',
+              },
+              { icon: Layers, label: 'Indicators', desc: 'Instagram-style' },
+              { icon: Navigation, label: 'Navigation', desc: 'Via apiRef' },
+            ]}
+          />
         </div>
         <Sandbox code={basicFullCode} title="BasicSlider.tsx" height={500}>
           <BasicSliderDemo />
@@ -466,7 +413,7 @@ function App() {
                 size prop
               </strong>
               <p className="text-sm">
-                Must specify [width, height] for the slider container
+                Optional [width, height] tuple, or omit for auto-sizing via CSS
               </p>
             </div>
           </li>
@@ -506,38 +453,31 @@ function App() {
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Live Demo: Infinite List</h2>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
-          reelkit renders only <strong>3 slides to DOM</strong> at any time
+          reelkit renders only <strong>3 slides in the DOM</strong> at any time
           (current, previous, next). This allows smooth scrolling for lists with
           10,000+ items.
         </p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          {[
-            {
-              icon: Zap,
-              label: '3 Items in DOM',
-              desc: 'Only visible slides rendered',
-            },
-            { icon: Zap, label: '10,000+ Items', desc: 'Smooth performance' },
-            {
-              icon: Zap,
-              label: 'Memory Efficient',
-              desc: 'Low memory footprint',
-            },
-            {
-              icon: Zap,
-              label: 'Snap Behavior',
-              desc: 'Maintains smooth snapping',
-            },
-          ].map((item) => (
-            <div
-              key={item.label}
-              className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 text-center"
-            >
-              <item.icon className="w-6 h-6 mx-auto mb-2 text-primary-500" />
-              <div className="font-semibold text-sm">{item.label}</div>
-              <div className="text-xs text-slate-500">{item.desc}</div>
-            </div>
-          ))}
+          <FeatureCardGrid
+            items={[
+              {
+                icon: Zap,
+                label: '3 Items in DOM',
+                desc: 'Only visible slides rendered',
+              },
+              { icon: Zap, label: '10,000+ Items', desc: 'Smooth performance' },
+              {
+                icon: Zap,
+                label: 'Memory Efficient',
+                desc: 'Low memory footprint',
+              },
+              {
+                icon: Zap,
+                label: 'Snap Behavior',
+                desc: 'Maintains smooth snapping',
+              },
+            ]}
+          />
         </div>
         <Sandbox code={infiniteFullCode} title="InfiniteList.tsx" height={500}>
           <InfiniteListDemo />

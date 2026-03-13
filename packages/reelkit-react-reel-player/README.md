@@ -1,22 +1,26 @@
 # @reelkit/react-reel-player
 
+<p>
+  <a href="https://www.npmjs.com/package/@reelkit/react-reel-player"><img src="https://img.shields.io/npm/v/@reelkit/react-reel-player?color=6366f1&label=npm" alt="npm" /></a>
+  <img src="https://img.shields.io/bundlephobia/minzip/@reelkit/react-reel-player?color=6366f1" alt="Bundle size" />
+  <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
+</p>
+
 Full-screen vertical-swipe video/image player for React. Inspired by Instagram Reels and TikTok.
 
 ## Installation
 
 ```bash
-npm install @reelkit/react-reel-player
-```
-
-**Peer dependencies:**
-```bash
-npm install react react-dom lucide-react
+npm install @reelkit/react-reel-player @reelkit/react lucide-react
 ```
 
 ## Quick Start
 
 ```tsx
-import { ReelPlayerOverlay, type ContentItem } from '@reelkit/react-reel-player';
+import {
+  ReelPlayerOverlay,
+  type ContentItem,
+} from '@reelkit/react-reel-player';
 import '@reelkit/react-reel-player/styles.css';
 
 const content: ContentItem[] = [
@@ -68,20 +72,20 @@ function App() {
 
 ### ReelPlayerOverlay
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `isOpen` | `boolean` | required | Controls overlay visibility |
-| `onClose` | `() => void` | required | Called when player closes |
-| `content` | `ContentItem[]` | required | Content items to display |
-| `initialIndex` | `number` | `0` | Starting slide index |
-| `onSlideChange` | `(index: number) => void` | - | Callback after slide change |
-| `apiRef` | `MutableRefObject<ReelApi>` | - | Ref to access Reel API |
-| `loop` | `boolean` | `false` | Enable infinite loop |
-| `useNavKeys` | `boolean` | `true` | Enable keyboard navigation |
-| `enableWheel` | `boolean` | `true` | Enable mouse wheel navigation |
-| `wheelDebounceMs` | `number` | `200` | Wheel debounce duration (ms) |
-| `transitionDuration` | `number` | `300` | Transition duration (ms) |
-| `swipeDistanceFactor` | `number` | `0.12` | Swipe threshold (0-1) |
+| Prop                  | Type                        | Default  | Description                   |
+| --------------------- | --------------------------- | -------- | ----------------------------- |
+| `isOpen`              | `boolean`                   | required | Controls overlay visibility   |
+| `onClose`             | `() => void`                | required | Called when player closes     |
+| `content`             | `ContentItem[]`             | required | Content items to display      |
+| `initialIndex`        | `number`                    | `0`      | Starting slide index          |
+| `onSlideChange`       | `(index: number) => void`   | -        | Callback after slide change   |
+| `apiRef`              | `MutableRefObject<ReelApi>` | -        | Ref to access Reel API        |
+| `loop`                | `boolean`                   | `false`  | Enable infinite loop          |
+| `useNavKeys`          | `boolean`                   | `true`   | Enable keyboard navigation    |
+| `enableWheel`         | `boolean`                   | `true`   | Enable mouse wheel navigation |
+| `wheelDebounceMs`     | `number`                    | `200`    | Wheel debounce duration (ms)  |
+| `transitionDuration`  | `number`                    | `300`    | Transition duration (ms)      |
+| `swipeDistanceFactor` | `number`                    | `0.12`   | Swipe threshold (0-1)         |
 
 ### Types
 
@@ -202,27 +206,39 @@ function Gallery() {
 
 ## Keyboard Shortcuts
 
-| Key | Action |
-|-----|--------|
-| `ArrowUp` | Previous slide |
-| `ArrowDown` | Next slide |
-| `ArrowLeft` | Previous media (nested) |
-| `ArrowRight` | Next media (nested) |
-| `Escape` | Close player |
+| Key          | Action                  |
+| ------------ | ----------------------- |
+| `ArrowUp`    | Previous slide          |
+| `ArrowDown`  | Next slide              |
+| `ArrowLeft`  | Previous media (nested) |
+| `ArrowRight` | Next media (nested)     |
+| `Escape`     | Close player            |
 
 ## CSS Classes
 
 ```css
-.rk-reel-overlay { }        /* Overlay background */
-.rk-reel-container { }      /* Player container */
-.rk-player-nav-arrows { }   /* Desktop nav arrows */
-.rk-player-close-btn { }    /* Close button */
-.rk-player-sound-btn { }    /* Sound toggle */
-.rk-video-slide-container { }
-.rk-video-slide-loader { }
-.rk-video-slide-poster { }
+.rk-reel-overlay {
+} /* Overlay background */
+.rk-reel-container {
+} /* Player container */
+.rk-player-nav-arrows {
+} /* Desktop nav arrows */
+.rk-player-close-btn {
+} /* Close button */
+.rk-player-sound-btn {
+} /* Sound toggle */
+.rk-video-slide-container {
+}
+.rk-video-slide-loader {
+}
+.rk-video-slide-poster {
+}
 ```
+
+## Documentation
+
+Full documentation, interactive demos, and customization examples at **[reelkit.dev/docs/reel-player](https://reelkit.dev/docs/reel-player)**.
 
 ## License
 
-MIT
+[MIT](LICENSE)

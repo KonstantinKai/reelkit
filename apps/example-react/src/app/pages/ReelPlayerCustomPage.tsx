@@ -19,7 +19,9 @@ type DemoType =
 
 const DEMOS: {
   id: DemoType & string;
+
   title: string;
+
   description: string;
 }[] = [
   {
@@ -79,7 +81,7 @@ function ReelPlayerCustomPage() {
       style={{
         minHeight: '100vh',
         backgroundColor: '#111',
-        padding: '80px 16px 16px',
+        padding: '56px 16px 16px',
       }}
     >
       <div style={{ maxWidth: 900, margin: '0 auto' }}>
@@ -260,7 +262,7 @@ function ReelPlayerCustomPage() {
           onClose={closePlayer}
           content={content}
           initialIndex={0}
-          renderSlide={(item, index, size) => {
+          renderSlide={({ index, size }) => {
             if (index === content.length - 1) {
               return (
                 <div

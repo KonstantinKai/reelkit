@@ -1,6 +1,5 @@
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { ValueNotifierObserver } from '@reelkit/react';
 import type { ContentItem } from './types';
 
 // Track Reel props
@@ -58,7 +57,9 @@ vi.mock('./PlayerControls', () => ({
     soundDisabled,
   }: {
     onClose: () => void;
+
     showSound: boolean;
+
     soundDisabled: boolean;
   }) => (
     <div data-testid="mock-player-controls">

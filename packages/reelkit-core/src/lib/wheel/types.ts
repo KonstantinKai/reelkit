@@ -12,6 +12,7 @@ export interface WheelControllerConfig {
    * @default 200
    */
   debounceMs?: number;
+
   /**
    * Minimum absolute delta (in pixels) required before a wheel event
    * triggers navigation. Filters out accidental micro-scrolls.
@@ -41,6 +42,7 @@ export interface WheelController {
    * @param target - The event target. Defaults to `window`.
    */
   attach(target?: Window | HTMLElement): void;
+
   /** Removes the `wheel` listener, clears pending debounce, and detaches. */
   detach(): void;
 }

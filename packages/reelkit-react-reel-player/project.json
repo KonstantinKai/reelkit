@@ -1,5 +1,5 @@
 {
-  "name": "reelkit-react-reel-player",
+  "name": "@reelkit/react-reel-player",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/reelkit-react-reel-player/src",
   "projectType": "library",

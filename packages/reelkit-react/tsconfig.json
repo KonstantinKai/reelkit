@@ -5,6 +5,7 @@
     "esModuleInterop": false,
     "allowSyntheticDefaultImports": true,
     "strict": true,
+    "composite": true,
     "types": ["vite/client", "vitest"]
   },
   "files": [],

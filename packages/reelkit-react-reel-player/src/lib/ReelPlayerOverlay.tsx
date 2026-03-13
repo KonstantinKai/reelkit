@@ -9,18 +9,15 @@ import React, {
 import { createPortal } from 'react-dom';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 import { noop, createSignal } from '@reelkit/core';
-import {
-  Reel,
-  ValueNotifierObserver,
-  type ReelApi,
-  type ReelProps,
-} from '@reelkit/react';
+import { Reel, Observe, type ReelApi, type ReelProps } from '@reelkit/react';
 import { useBodyLock } from '@reelkit/react';
 import type {
   BaseContentItem,
   ContentItem,
   ControlsRenderProps,
   NavigationRenderProps,
+  NestedSlideRenderProps,
+  SlideRenderProps,
 } from './types';
 import { SoundProvider } from './SoundState';
 import { useSoundState } from './useSoundState';
@@ -99,14 +96,15 @@ export interface ReelPlayerOverlayProps<T extends BaseContentItem = ContentItem>
   renderSlideOverlay?: (item: T, index: number, isActive: boolean) => ReactNode;
 
   /**
-   * Custom full slide. Return null to fall back to default MediaSlide + overlay.
+   * Custom full slide renderer. Receives all props needed to render
+   * `VideoSlide`, `ImageSlide`, or `NestedSlider` (multi-media) with
+   * proper playback and drag coordination.
+   *
+   * Return `null` to fall back to the default MediaSlide + overlay.
+   * Use `props.defaultContent` to wrap the default rendering with your
+   * own additions.
    */
-  renderSlide?: (
-    item: T,
-    index: number,
-    size: [number, number],
-    isActive: boolean,
-  ) => ReactNode | null;
+  renderSlide?: (props: SlideRenderProps<T>) => ReactNode | null;
 
   /**
    * Custom controls. Replaces default PlayerControls.
@@ -123,6 +121,12 @@ export interface ReelPlayerOverlayProps<T extends BaseContentItem = ContentItem>
    * Replaces default ChevronLeft/Right arrows inside nested slides.
    */
   renderNestedNavigation?: (props: NavigationRenderProps) => ReactNode;
+
+  /**
+   * Custom slide renderer for nested horizontal slider items (multi-media posts).
+   * Use `props.defaultContent` to wrap the default ImageSlide/VideoSlide with your own styles.
+   */
+  renderNestedSlide?: (props: NestedSlideRenderProps) => ReactNode;
 }
 
 /** Default aspect ratio: 9:16 portrait. */
@@ -147,6 +151,7 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>({
   renderControls,
   renderNavigation,
   renderNestedNavigation,
+  renderNestedSlide,
   aspectRatio = DEFAULT_ASPECT_RATIO,
   // Reel proxy props with defaults
   transitionDuration,
@@ -157,6 +162,8 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>({
   wheelDebounceMs,
 }: ReelPlayerOverlayProps<T>) {
   const [activeIndex, setActiveIndex] = useState(initialIndex);
+  const activeIndexRef = useRef(activeIndex);
+  activeIndexRef.current = activeIndex;
   const [innerActiveMediaType, setInnerActiveMediaType] = useState<
     'image' | 'video' | null
   >(null);
@@ -330,7 +337,7 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>({
   const overlay = (
     <div className="rk-reel-overlay">
       <div className="rk-reel-container">
-        <ValueNotifierObserver deps={[sizeSignal]}>
+        <Observe signals={[sizeSignal]}>
           {() => (
             <Reel
               count={content.length}
@@ -351,11 +358,44 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>({
               onSlideDragCanceled={handleSlideDragCanceled}
               itemBuilder={(index, _, itemSize) => {
                 const item = content[index];
-                const isActive = activeIndex === index;
+                const isActive = activeIndexRef.current === index;
+
+                const defaultContent = (
+                  <>
+                    <MediaSlide
+                      content={item}
+                      isActive={isActive}
+                      size={itemSize}
+                      innerSliderRef={innerSliderRef}
+                      enableWheel={enableWheel}
+                      onVideoRef={isActive ? handleVideoRef : undefined}
+                      onActiveMediaTypeChange={
+                        isActive ? handleActiveMediaTypeChange : undefined
+                      }
+                      renderNestedNavigation={renderNestedNavigation}
+                      renderNestedSlide={renderNestedSlide}
+                    />
+                    {overlayNode(item, index, isActive)}
+                  </>
+                );
 
                 // Try renderSlide first
                 if (renderSlide) {
-                  const custom = renderSlide(item, index, itemSize, isActive);
+                  const custom = renderSlide({
+                    item,
+                    index,
+                    size: itemSize,
+                    isActive,
+                    slideKey: item.id,
+                    onVideoRef: isActive ? handleVideoRef : undefined,
+                    innerSliderRef,
+                    onActiveMediaTypeChange: isActive
+                      ? handleActiveMediaTypeChange
+                      : undefined,
+                    renderNestedNavigation,
+                    enableWheel,
+                    defaultContent,
+                  });
                   if (custom !== null) {
                     return (
                       <div
@@ -382,25 +422,13 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>({
                       position: 'relative',
                     }}
                   >
-                    <MediaSlide
-                      content={item}
-                      isActive={isActive}
-                      size={itemSize}
-                      innerSliderRef={innerSliderRef}
-                      enableWheel={enableWheel}
-                      onVideoRef={isActive ? handleVideoRef : undefined}
-                      onActiveMediaTypeChange={
-                        isActive ? handleActiveMediaTypeChange : undefined
-                      }
-                      renderNestedNavigation={renderNestedNavigation}
-                    />
-                    {overlayNode(item, index, isActive)}
+                    {defaultContent}
                   </div>
                 );
               }}
             />
           )}
-        </ValueNotifierObserver>
+        </Observe>
 
         {renderControls ? (
           renderControls({ onClose, soundState, activeIndex, content })

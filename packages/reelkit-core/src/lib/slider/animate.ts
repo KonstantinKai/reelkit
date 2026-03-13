@@ -107,15 +107,19 @@ const getEasing = (): EasingFn => {
 export type AnimationOptions = {
   /** The starting value of the animation. */
   from: number;
+
   /** The target value the animation transitions to. */
   to: number;
+
   /** Duration of the animation in milliseconds. */
   duration: number;
+
   /**
    * Called on each animation frame with the interpolated value.
    * @param value - Current value between `from` and `to`.
    */
   onUpdate: (value: number) => void;
+
   /** Called once when the animation reaches the target value. */
   onComplete?: () => void;
 };

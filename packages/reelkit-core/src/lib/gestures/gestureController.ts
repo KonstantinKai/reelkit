@@ -245,9 +245,9 @@ export const createGestureController = (
     if (!element) return;
 
     disposables.push(
-      observeDomEvent(element, 'touchstart', onStart),
-      observeDomEvent(element, 'touchmove', onUpdate),
-      observeDomEvent(element, 'touchend', onEnd),
+      observeDomEvent(element, 'touchstart', onStart, { passive: true }),
+      observeDomEvent(element, 'touchmove', onUpdate, { passive: true }),
+      observeDomEvent(element, 'touchend', onEnd, { passive: true }),
     );
 
     if (!useTouchEventsOnly) {

@@ -4,9 +4,13 @@ import { Eye, Code2, Maximize2, Minimize2 } from 'lucide-react';
 
 interface SandboxProps {
   code: string;
+
   language?: string;
+
   children: ReactNode;
+
   title?: string;
+
   height?: number;
 }
 

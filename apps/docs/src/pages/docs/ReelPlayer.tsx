@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Callout } from '../../components/ui/Callout';
 import { CodeBlock } from '../../components/ui/CodeBlock';
+import { FeatureCardGrid } from '../../components/ui/FeatureCard';
 import { Sandbox } from '../../components/ui/Sandbox';
 import { ReelPlayerDemo } from '../../components/demos/ReelPlayerDemo';
 import {
@@ -33,7 +34,7 @@ const content: ContentItem[] = [
     }],
     author: { name: 'Alex Johnson', avatar: 'https://example.com/avatar.jpg' },
     likes: 1234,
-    description: 'Amazing video!',
+    description: 'Amazing sunset vibes',
   },
   {
     id: '2',
@@ -45,17 +46,55 @@ const content: ContentItem[] = [
     }],
     author: { name: 'Sarah Miller', avatar: 'https://example.com/avatar2.jpg' },
     likes: 5678,
-    description: 'Beautiful sunset',
+    description: 'Nature at its finest',
   },
   {
     id: '3',
+    media: [{
+      id: 'v2',
+      type: 'video',
+      src: 'https://example.com/video2.mp4',
+      poster: 'https://example.com/poster2.jpg',
+      aspectRatio: 16 / 9,
+    }],
+    author: { name: 'James Wilson', avatar: 'https://example.com/avatar3.jpg' },
+    likes: 3456,
+    description: 'City life adventures',
+  },
+  {
+    id: '4',
     media: [
       { id: 'img2', type: 'image', src: 'https://example.com/a.jpg', aspectRatio: 2 / 3 },
       { id: 'img3', type: 'image', src: 'https://example.com/b.jpg', aspectRatio: 3 / 4 },
     ],
-    author: { name: 'Emma Davis', avatar: 'https://example.com/avatar3.jpg' },
+    author: { name: 'Emma Davis', avatar: 'https://example.com/avatar4.jpg' },
     likes: 8901,
-    description: 'Multi-media carousel',
+    description: 'Travel moments',
+  },
+  {
+    id: '5',
+    media: [{
+      id: 'img4',
+      type: 'image',
+      src: 'https://example.com/photo3.jpg',
+      aspectRatio: 2 / 3,
+    }],
+    author: { name: 'Michael Brown', avatar: 'https://example.com/avatar5.jpg' },
+    likes: 2345,
+    description: 'Golden hour magic',
+  },
+  {
+    id: '6',
+    media: [{
+      id: 'v3',
+      type: 'video',
+      src: 'https://example.com/video3.mp4',
+      poster: 'https://example.com/poster3.jpg',
+      aspectRatio: 16 / 9,
+    }],
+    author: { name: 'Alex Johnson', avatar: 'https://example.com/avatar.jpg' },
+    likes: 7890,
+    description: 'Living the moment',
   },
 ];
 
@@ -119,9 +158,10 @@ const reelPlayerProps = [
   },
   {
     prop: 'renderSlide',
-    type: '(item, index, size, isActive) => ReactNode | null',
+    type: '(props: SlideRenderProps) => ReactNode | null',
     default: '-',
-    description: 'Custom slide rendering. Return null to fall back to default',
+    description:
+      'Custom slide rendering. Return null to fall back to default. Use props.defaultContent to wrap or embed the default slide.',
   },
   {
     prop: 'renderControls',
@@ -141,6 +181,13 @@ const reelPlayerProps = [
     default: '-',
     description:
       'Custom navigation for nested horizontal slider (multi-media posts), replaces default left/right arrows',
+  },
+  {
+    prop: 'renderNestedSlide',
+    type: '(props: NestedSlideRenderProps) => ReactNode',
+    default: '-',
+    description:
+      'Custom slide renderer for nested horizontal slider items. Use props.defaultContent to wrap or embed the default ImageSlide/VideoSlide. Unlike renderSlide, null is not treated as a fallback.',
   },
   {
     prop: 'aspectRatio',
@@ -305,7 +352,7 @@ export default function ReelPlayer() {
       <div className="mb-12">
         <h1 className="text-4xl font-bold mb-4">Reel Player</h1>
         <p className="text-xl text-slate-600 dark:text-slate-400">
-          A full-screen Instagram/TikTok-style video player component using{' '}
+          A full-screen Instagram-Reel/TikTok-style video player component using{' '}
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
             @reelkit/react-reel-player
           </code>
@@ -317,61 +364,62 @@ export default function ReelPlayer() {
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Features</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[
-            {
-              icon: Zap,
-              label: 'Vertical Swipe',
-              desc: 'Touch, drag, keyboard, wheel',
-            },
-            { icon: Play, label: 'Video Autoplay', desc: 'Plays when visible' },
-            { icon: Volume2, label: 'Sound Toggle', desc: 'iOS continuity' },
-            {
-              icon: Layout,
-              label: 'Multi-Media',
-              desc: 'Horizontal nested carousels',
-            },
-            {
-              icon: Clock,
-              label: 'Position Memory',
-              desc: 'Resumes where left off',
-            },
-            { icon: Image, label: 'Frame Capture', desc: 'Seamless poster transitions' },
-            {
-              icon: Layers,
-              label: 'Virtualized',
-              desc: 'Only 3 slides in DOM',
-            },
-            {
-              icon: Ratio,
-              label: 'Aspect Ratio',
-              desc: '9:16 desktop, full mobile',
-            },
-            { icon: Monitor, label: 'Desktop Nav', desc: 'Arrow buttons' },
-            {
-              icon: Code,
-              label: 'Generic Types',
-              desc: 'Custom content data models',
-            },
-            {
-              icon: Settings,
-              label: 'Customizable',
-              desc: 'Render props for everything',
-            },
-            {
-              icon: Zap,
-              label: 'Slide Overlay',
-              desc: 'Author, likes, description',
-            },
-          ].map((item) => (
-            <div
-              key={item.label}
-              className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 text-center"
-            >
-              <item.icon className="w-6 h-6 mx-auto mb-2 text-primary-500" />
-              <div className="font-semibold text-sm">{item.label}</div>
-              <div className="text-xs text-slate-500">{item.desc}</div>
-            </div>
-          ))}
+          <FeatureCardGrid
+            items={[
+              {
+                icon: Zap,
+                label: 'Vertical Swipe',
+                desc: 'Touch, drag, keyboard, wheel',
+              },
+              {
+                icon: Play,
+                label: 'Video Autoplay',
+                desc: 'Plays when visible',
+              },
+              { icon: Volume2, label: 'Sound Toggle', desc: 'iOS continuity' },
+              {
+                icon: Layout,
+                label: 'Multi-Media',
+                desc: 'Horizontal nested carousels',
+              },
+              {
+                icon: Clock,
+                label: 'Position Memory',
+                desc: 'Resumes where left off',
+              },
+              {
+                icon: Image,
+                label: 'Frame Capture',
+                desc: 'Seamless poster transitions',
+              },
+              {
+                icon: Layers,
+                label: 'Virtualized',
+                desc: 'Only 3 slides in DOM',
+              },
+              {
+                icon: Ratio,
+                label: 'Aspect Ratio',
+                desc: '9:16 desktop, full mobile',
+              },
+              { icon: Monitor, label: 'Desktop Nav', desc: 'Arrow buttons' },
+              {
+                icon: Code,
+                label: 'Generic Types',
+                desc: 'Custom content data models',
+              },
+              {
+                icon: Settings,
+                label: 'Customizable',
+                desc: 'Render props for everything',
+              },
+              {
+                icon: Zap,
+                label: 'Slide Overlay',
+                desc: 'Author, likes, description',
+              },
+            ]}
+          />
         </div>
       </section>
 
@@ -567,7 +615,7 @@ const items: MyItem[] = [
   isOpen={isOpen}
   onClose={handleClose}
   content={content}
-  renderSlide={(item, index, size, isActive) => {
+  renderSlide={({ index, size }) => {
     // CTA card on last slide
     if (index === content.length - 1) {
       return (
@@ -675,6 +723,53 @@ const items: MyItem[] = [
       <button onClick={onNext} disabled={activeIndex === count - 1}>Next</button>
     </div>
   )}
+/>`}
+          language="tsx"
+        />
+
+        <h3 className="text-xl font-semibold mt-8 mb-4">
+          Custom Nested Slides
+        </h3>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Customise individual slides inside multi-media carousels with{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            renderNestedSlide
+          </code>
+          . Use{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            props.defaultContent
+          </code>{' '}
+          to wrap the default ImageSlide/VideoSlide, or replace it entirely:
+        </p>
+        <CodeBlock
+          code={`// Wrap default slides with rounded corners
+<ReelPlayerOverlay
+  isOpen={isOpen}
+  onClose={handleClose}
+  content={content}
+  renderNestedSlide={({ defaultContent }) => (
+    <div style={{ borderRadius: 16, overflow: 'hidden' }}>
+      {defaultContent}
+    </div>
+  )}
+/>
+
+// Fully custom nested slide for images
+<ReelPlayerOverlay
+  isOpen={isOpen}
+  onClose={handleClose}
+  content={content}
+  renderNestedSlide={({ item, size, isActive, slideKey, onVideoRef, defaultContent }) => {
+    if (item.type === 'video') return defaultContent; // keep default video
+    return (
+      <ImageSlide
+        src={item.src}
+        size={size}
+        imgStyle={{ objectFit: 'contain' }}
+        style={{ backgroundColor: '#111' }}
+      />
+    );
+  }}
 />`}
           language="tsx"
         />
@@ -878,12 +973,79 @@ const items: MyItem[] = [
           language="typescript"
         />
 
+        <h3 className="text-lg font-semibold mt-6 mb-2">
+          SlideRenderProps{'<T>'}
+        </h3>
+        <CodeBlock
+          code={`interface SlideRenderProps<T extends BaseContentItem> {
+  item: T;
+  index: number;
+  size: [number, number];
+  isActive: boolean;
+  slideKey: string;
+  onVideoRef?: (ref: HTMLVideoElement | null) => void;
+  innerSliderRef: MutableRefObject<ReelApi | null>;
+  onActiveMediaTypeChange?: (type: 'image' | 'video') => void;
+  renderNestedNavigation?: (props: NavigationRenderProps) => ReactNode;
+  enableWheel?: boolean;
+  defaultContent: ReactNode;
+}`}
+          language="typescript"
+        />
+
+        <h3 className="text-lg font-semibold mt-6 mb-2">
+          NestedSlideRenderProps
+        </h3>
+        <CodeBlock
+          code={`interface NestedSlideRenderProps {
+  item: MediaItem;
+  index: number;
+  size: [number, number];
+  isActive: boolean;
+  isInnerActive: boolean;
+  slideKey: string;
+  onVideoRef?: (ref: HTMLVideoElement | null) => void;
+  defaultContent: ReactNode;
+}`}
+          language="typescript"
+        />
+
         <h3 className="text-lg font-semibold mt-6 mb-2">SlideOverlayProps</h3>
         <CodeBlock
           code={`interface SlideOverlayProps {
   author?: { name: string; avatar: string };
   description?: string;
   likes?: number;
+}`}
+          language="typescript"
+        />
+
+        <h3 className="text-lg font-semibold mt-6 mb-2">ImageSlideProps</h3>
+        <CodeBlock
+          code={`interface ImageSlideProps {
+  src: string;
+  size: [number, number];
+  className?: string;
+  style?: CSSProperties;
+  imgClassName?: string;
+  imgStyle?: CSSProperties;
+}`}
+          language="typescript"
+        />
+
+        <h3 className="text-lg font-semibold mt-6 mb-2">VideoSlideProps</h3>
+        <CodeBlock
+          code={`interface VideoSlideProps {
+  src: string;
+  poster?: string;
+  aspectRatio: number;
+  size: [number, number];
+  isActive: boolean;
+  isInnerActive?: boolean;   // default: true
+  slideKey: string;
+  onVideoRef?: (ref: HTMLVideoElement | null) => void;
+  className?: string;
+  style?: CSSProperties;
 }`}
           language="typescript"
         />
@@ -965,6 +1127,126 @@ const items: MyItem[] = [
   author={{ name: 'John', avatar: '/avatar.jpg' }}
   description="Amazing content"
   likes={12500}
+/>`}
+          language="tsx"
+        />
+
+        <h3 className="text-lg font-semibold mt-6 mb-2">ImageSlide</h3>
+        <p className="text-slate-600 dark:text-slate-400 mb-2">
+          Image slide with lazy loading and{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            object-fit: cover
+          </code>{' '}
+          by default. Use inside{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            renderSlide
+          </code>{' '}
+          to compose custom image slides with your own styles.
+        </p>
+        <CodeBlock
+          code={`import { ImageSlide } from '@reelkit/react-reel-player';
+
+// Default usage
+<ImageSlide src="/photo.jpg" size={[400, 700]} />
+
+// Custom styles
+<ImageSlide
+  src="/photo.jpg"
+  size={[400, 700]}
+  className="my-image-slide"
+  style={{ backgroundColor: '#1a1a1a', borderRadius: 12 }}
+  imgStyle={{ objectFit: 'contain' }}
+/>`}
+          language="tsx"
+        />
+
+        <h3 className="text-lg font-semibold mt-6 mb-2">VideoSlide</h3>
+        <p className="text-slate-600 dark:text-slate-400 mb-2">
+          Video slide with shared{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            {'<video>'}
+          </code>{' '}
+          element for iOS sound continuity, poster frames, position memory, and
+          loading indicator. Must be inside a{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            SoundProvider
+          </code>{' '}
+          (automatically provided by ReelPlayerOverlay).
+        </p>
+        <CodeBlock
+          code={`import { VideoSlide } from '@reelkit/react-reel-player';
+
+<VideoSlide
+  src="/video.mp4"
+  poster="/thumb.jpg"
+  aspectRatio={9 / 16}
+  size={[400, 700]}
+  isActive={true}
+  slideKey="slide-1"
+  style={{ borderRadius: 12 }}
+/>`}
+          language="tsx"
+        />
+
+        <Callout
+          type="info"
+          title="Composing custom slides"
+          className="mt-4 mb-4"
+        >
+          Use{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            renderSlide
+          </code>{' '}
+          with{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            ImageSlide
+          </code>{' '}
+          /{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            VideoSlide
+          </code>{' '}
+          to customize media rendering while keeping all built-in behavior
+          (autoplay, poster capture, sound sync).
+        </Callout>
+        <CodeBlock
+          code={`import {
+  ReelPlayerOverlay,
+  ImageSlide,
+  VideoSlide,
+} from '@reelkit/react-reel-player';
+
+<ReelPlayerOverlay
+  isOpen={isOpen}
+  onClose={handleClose}
+  content={content}
+  renderSlide={({ item, size, isActive, slideKey, onVideoRef }) => {
+    const media = item.media[0];
+    if (media.type === 'image') {
+      return (
+        <ImageSlide
+          src={media.src}
+          size={size}
+          imgStyle={{ objectFit: 'contain' }}
+          style={{ backgroundColor: '#111' }}
+        />
+      );
+    }
+    if (media.type === 'video') {
+      return (
+        <VideoSlide
+          src={media.src}
+          poster={media.poster}
+          aspectRatio={media.aspectRatio}
+          size={size}
+          isActive={isActive}
+          slideKey={slideKey}
+          onVideoRef={onVideoRef}
+          style={{ borderRadius: 16 }}
+        />
+      );
+    }
+    return null; // fallback to default
+  }}
 />`}
           language="tsx"
         />

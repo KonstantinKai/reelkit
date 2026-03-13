@@ -1,7 +1,21 @@
 import { CodeBlock } from '../../components/ui/CodeBlock';
+import { Callout } from '../../components/ui/Callout';
 import { Check } from 'lucide-react';
 
-const packages = [
+const packages: {
+  name: string;
+
+  desc: string;
+
+  useCase: string;
+
+  comingSoon?: boolean;
+}[] = [
+  {
+    name: '@reelkit/core',
+    desc: 'Framework-agnostic core',
+    useCase: 'Custom integrations',
+  },
   {
     name: '@reelkit/react',
     desc: 'React components',
@@ -17,54 +31,43 @@ const packages = [
     desc: 'Image gallery lightbox',
     useCase: 'Full-screen image preview',
   },
-  {
-    name: '@reelkit/core',
-    desc: 'Framework-agnostic core',
-    useCase: 'Custom integrations',
-  },
-  {
-    name: '@reelkit/vue',
-    desc: 'Vue composables and components',
-    useCase: 'Vue 3 applications',
-    comingSoon: true,
-  },
 ];
 
 const bundleSizes = [
   {
     name: '@reelkit/core',
-    js: '13.8 kB',
-    gzip: '4.5 kB',
+    js: '14.5 kB',
+    gzip: '4.7 kB',
     css: '-',
     cssGzip: '-',
   },
   {
     name: '@reelkit/react',
-    js: '9.4 kB',
-    gzip: '3.3 kB',
+    js: '9.9 kB',
+    gzip: '3.4 kB',
     css: '-',
     cssGzip: '-',
   },
   {
     name: '@reelkit/react-reel-player',
-    js: '16.5 kB',
-    gzip: '4.6 kB',
-    css: '2.5 kB',
-    cssGzip: '0.8 kB',
+    js: '18.1 kB',
+    gzip: '5.0 kB',
+    css: '2.6 kB',
+    cssGzip: '0.9 kB',
   },
   {
     name: '@reelkit/react-lightbox',
-    js: '10.1 kB',
-    gzip: '3.1 kB',
-    css: '3.1 kB',
-    cssGzip: '0.8 kB',
+    js: '13.7 kB',
+    gzip: '4.2 kB',
+    css: '4.2 kB',
+    cssGzip: '1.1 kB',
   },
 ];
 
 const comparison = [
   {
     name: 'ReelKit (core + react)',
-    gzip: '7.8 kB',
+    gzip: '8.1 kB',
     virtualization: true,
     notes: 'Zero dependencies',
   },
@@ -101,8 +104,7 @@ export default function Installation() {
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Package Options</h2>
         <p className="text-slate-600 dark:text-slate-400 mb-6">
-          reelkit is available as multiple packages. Choose based on your
-          framework:
+          reelkit is available as multiple packages. Choose based on your needs:
         </p>
 
         <div className="overflow-x-auto">
@@ -117,7 +119,7 @@ export default function Installation() {
               </tr>
             </thead>
             <tbody>
-              {packages.map((pkg, i) => (
+              {packages.map((pkg) => (
                 <tr
                   key={pkg.name}
                   className="border-b border-slate-100 dark:border-slate-800"
@@ -267,9 +269,6 @@ export default function Installation() {
             <h3 className="text-lg font-semibold mb-2">@reelkit/react</h3>
             <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
               <li>
-                <code className="text-sm font-mono">@reelkit/core</code>
-              </li>
-              <li>
                 <code className="text-sm font-mono">react</code> {'>= 17.0.0'}
               </li>
               <li>
@@ -285,17 +284,14 @@ export default function Installation() {
             </h3>
             <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
               <li>
+                <code className="text-sm font-mono">@reelkit/react</code>
+              </li>
+              <li>
                 <code className="text-sm font-mono">react</code> {'>= 18.0.0'}
               </li>
               <li>
                 <code className="text-sm font-mono">react-dom</code>{' '}
                 {'>= 18.0.0'}
-              </li>
-              <li>
-                <code className="text-sm font-mono">@reelkit/core</code>
-              </li>
-              <li>
-                <code className="text-sm font-mono">@reelkit/react</code>
               </li>
               <li>
                 <code className="text-sm font-mono">lucide-react</code>{' '}
@@ -310,17 +306,14 @@ export default function Installation() {
             </h3>
             <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
               <li>
+                <code className="text-sm font-mono">@reelkit/react</code>
+              </li>
+              <li>
                 <code className="text-sm font-mono">react</code> {'>= 18.0.0'}
               </li>
               <li>
                 <code className="text-sm font-mono">react-dom</code>{' '}
                 {'>= 18.0.0'}
-              </li>
-              <li>
-                <code className="text-sm font-mono">@reelkit/core</code>
-              </li>
-              <li>
-                <code className="text-sm font-mono">@reelkit/react</code>
               </li>
               <li>
                 <code className="text-sm font-mono">lucide-react</code>{' '}
@@ -329,6 +322,13 @@ export default function Installation() {
             </ul>
           </div>
         </div>
+
+        <Callout type="info" className="mt-4">
+          <code className="text-sm font-mono">lucide-react</code> is only needed
+          for the default control icons. If you provide your own controls via{' '}
+          <code className="text-sm font-mono">renderControls</code>, you can
+          skip installing it.
+        </Callout>
       </section>
 
       <section className="mb-12">

@@ -5,7 +5,8 @@
     "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true,
     "outDir": "../../dist/out-tsc",
-    "sourceMap": false
+    "sourceMap": false,
+    "declaration": true
   },
   "include": ["src/**/*.ts", "playwright.config.ts"]
 }

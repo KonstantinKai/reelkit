@@ -510,3 +510,109 @@ test.describe('Reel React - Infinite List', () => {
     await expect(page.locator('text=1 / 10,000')).toBeVisible();
   });
 });
+
+test.describe('Reel React - GoTo with Resize', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/');
+  });
+
+  test('animated goTo completes after viewport resize mid-animation', async ({
+    page,
+  }) => {
+    const slider = new SliderPage(page);
+    const originalViewport = page.viewportSize();
+    if (!originalViewport) throw new Error('No viewport');
+
+    await slider.expectSlideTitle('Slide 1');
+
+    // Start animated goTo
+    await page.locator('input[type="number"]').fill('8555');
+    await page.locator('button', { hasText: 'Go' }).click();
+
+    // Resize viewport immediately during animation (simulates keyboard dismiss)
+    await page.setViewportSize({
+      width: originalViewport.width,
+      height: originalViewport.height - 200,
+    });
+
+    await slider.waitForAnimation();
+
+    // Should arrive at the target slide
+    await slider.expectSlideTitle('Slide 8555');
+    await expect(page.locator('text=8,555 / 10,000')).toBeVisible();
+
+    // Restore viewport
+    await page.setViewportSize(originalViewport);
+  });
+
+  test('navigation works after goTo + resize', async ({ page }) => {
+    const slider = new SliderPage(page);
+    const originalViewport = page.viewportSize();
+    if (!originalViewport) throw new Error('No viewport');
+
+    // Animated goTo with resize
+    await page.locator('input[type="number"]').fill('500');
+    await page.locator('button', { hasText: 'Go' }).click();
+
+    await page.setViewportSize({
+      width: originalViewport.width,
+      height: originalViewport.height - 150,
+    });
+
+    await slider.waitForAnimation();
+    await slider.expectSlideTitle('Slide 500');
+
+    // Restore viewport
+    await page.setViewportSize(originalViewport);
+    await slider.waitForAnimation();
+
+    // Navigation should still work — slider must not be frozen
+    await slider.clickNext();
+    await slider.waitForAnimation();
+    await slider.expectSlideTitle('Slide 501');
+
+    await slider.clickPrev();
+    await slider.waitForAnimation();
+    await slider.expectSlideTitle('Slide 500');
+  });
+
+  test('multiple goTo + resize cycles do not freeze slider', async ({
+    page,
+  }) => {
+    const slider = new SliderPage(page);
+    const originalViewport = page.viewportSize();
+    if (!originalViewport) throw new Error('No viewport');
+
+    // Cycle 1: goTo + resize
+    await page.locator('input[type="number"]').fill('100');
+    await page.locator('button', { hasText: 'Go' }).click();
+    await page.setViewportSize({
+      width: originalViewport.width,
+      height: originalViewport.height - 100,
+    });
+    await slider.waitForAnimation();
+    await slider.expectSlideTitle('Slide 100');
+
+    // Restore viewport
+    await page.setViewportSize(originalViewport);
+    await slider.waitForAnimation();
+
+    // Cycle 2: goTo + resize
+    await page.locator('input[type="number"]').fill('5000');
+    await page.locator('button', { hasText: 'Go' }).click();
+    await page.setViewportSize({
+      width: originalViewport.width,
+      height: originalViewport.height - 200,
+    });
+    await slider.waitForAnimation();
+    await slider.expectSlideTitle('Slide 5000');
+
+    // Restore and verify navigation
+    await page.setViewportSize(originalViewport);
+    await slider.waitForAnimation();
+
+    await slider.clickNext();
+    await slider.waitForAnimation();
+    await slider.expectSlideTitle('Slide 5001');
+  });
+});

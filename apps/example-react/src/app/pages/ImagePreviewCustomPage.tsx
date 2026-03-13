@@ -4,7 +4,6 @@ import {
   CloseButton,
   Counter,
   FullscreenButton,
-  useFullscreen,
   type LightboxItem,
   type NavigationRenderProps,
 } from '@reelkit/react-lightbox';
@@ -161,7 +160,7 @@ function ImagePreviewCustomPage() {
       style={{
         minHeight: '100vh',
         backgroundColor: '#111',
-        padding: '80px 16px 16px',
+        padding: '56px 16px 16px',
       }}
     >
       <div style={{ maxWidth: 900, margin: '0 auto' }}>
@@ -328,10 +327,7 @@ function ImagePreviewCustomPage() {
               >
                 Download
               </button>
-              <CloseButton
-                onClick={onClose}
-                style={{ position: 'static' }}
-              />
+              <CloseButton onClick={onClose} style={{ position: 'static' }} />
             </div>
           </div>
         )}
@@ -405,10 +401,7 @@ function ImagePreviewCustomPage() {
               isFullscreen={isFullscreen}
               onToggle={onToggleFullscreen}
             />
-            <CloseButton
-              onClick={onClose}
-              style={{ position: 'static' }}
-            />
+            <CloseButton onClick={onClose} style={{ position: 'static' }} />
           </div>
         )}
       />

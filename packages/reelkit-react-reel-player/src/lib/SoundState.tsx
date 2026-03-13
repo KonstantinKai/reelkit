@@ -13,11 +13,13 @@ import { createSignal, type Signal } from '@reelkit/core';
 export interface SoundState {
   /** Whether audio is muted. Defaults to `true` (muted). */
   muted: Signal<boolean>;
+
   /**
    * Whether sound controls should be hidden/disabled.
    * Set to `true` when the active slide has no video content.
    */
   disabled: Signal<boolean>;
+
   /** Toggles the muted state. */
   toggle: () => void;
 }

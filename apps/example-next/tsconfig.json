@@ -35,5 +35,10 @@
     "jest.config.cts",
     "**/*.spec.ts",
     "**/*.test.ts"
+  ],
+  "references": [
+    {
+      "path": "../../packages/reelkit-react"
+    }
   ]
 }

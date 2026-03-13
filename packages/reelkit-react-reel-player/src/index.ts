@@ -33,13 +33,21 @@ export type {
   ContentItem,
   ControlsRenderProps,
   NavigationRenderProps,
+  SlideRenderProps,
+  NestedSlideRenderProps,
 } from './lib/types';
 
 // Sub-components for composition
 export { CloseButton, SoundButton } from './lib/PlayerControls';
 export type { CloseButtonProps, SoundButtonProps } from './lib/PlayerControls';
 
-// Slide overlay
+// Slide components
+export { default as ImageSlide } from './lib/ImageSlide';
+export type { ImageSlideProps } from './lib/ImageSlide';
+
+export { default as VideoSlide } from './lib/VideoSlide';
+export type { VideoSlideProps } from './lib/VideoSlide';
+
 export { default as SlideOverlay } from './lib/SlideOverlay';
 export type { SlideOverlayProps } from './lib/SlideOverlay';
 

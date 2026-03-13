@@ -2,6 +2,7 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "../../dist/out-tsc",
+    "declaration": true,
     "types": [
       "node",
       "@nx/react/typings/cssmodule.d.ts",
@@ -31,5 +32,10 @@
     "src/**/*.test.jsx",
     "src/**/*.spec.jsx"
   ],
-  "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"]
+  "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"],
+  "references": [
+    {
+      "path": "../reelkit-react/tsconfig.lib.json"
+    }
+  ]
 }

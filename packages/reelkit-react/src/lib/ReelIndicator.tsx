@@ -18,48 +18,59 @@ export type ReelIndicatorDirection = 'horizontal' | 'vertical';
 export interface ReelIndicatorProps {
   /** Total number of items in the slider. */
   count: number;
+
   /** Index of the currently active item. */
   active: number;
+
   /**
    * Axis along which dots are arranged.
    * @default 'vertical'
    */
   direction?: ReelIndicatorDirection;
+
   /**
    * Dot radius in pixels.
    * @default 3
    */
   radius?: number;
+
   /**
    * Maximum number of normal-sized dots visible at once. Additional
    * dots at the edges are rendered at a smaller scale.
    * @default 5
    */
   visible?: number;
+
   /**
    * Space between dots in pixels.
    * @default 4
    */
   gap?: number;
+
   /**
    * CSS color for the active dot.
    * @default '#fff'
    */
   activeColor?: string;
+
   /**
    * CSS color for inactive dots.
    * @default 'rgba(255, 255, 255, 0.5)'
    */
   inactiveColor?: string;
+
   /**
    * Scale factor (0–1) applied to edge dots that overflow the visible window.
    * @default 0.5
    */
   edgeScale?: number;
+
   /** Optional CSS class name for the indicator container. */
   className?: string;
+
   /** Optional inline styles for the indicator container. */
   style?: CSSProperties;
+
   /**
    * Called when a dot is clicked.
    * @param index - The index of the clicked dot.

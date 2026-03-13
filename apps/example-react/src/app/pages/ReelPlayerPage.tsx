@@ -2,7 +2,10 @@ import React, { useState, useMemo } from 'react';
 import { Play } from 'lucide-react';
 import { ReelPlayerOverlay } from '@reelkit/react-reel-player';
 import '@reelkit/react-reel-player/styles.css';
-import { generateContent, getThumbnail } from '../components/reel-player/mockContent';
+import {
+  generateContent,
+  getThumbnail,
+} from '../components/reel-player/mockContent';
 
 const CONTENT_COUNT = 50;
 
@@ -26,7 +29,7 @@ function ReelPlayerPage() {
       style={{
         minHeight: '100vh',
         backgroundColor: '#111',
-        padding: '80px 16px 16px',
+        padding: '56px 16px 16px',
       }}
     >
       <div
@@ -52,8 +55,9 @@ function ReelPlayerPage() {
             marginBottom: 32,
           }}
         >
-          Click on any thumbnail to open the player. Swipe up/down or use arrow keys to navigate.
-          Supports images, videos, and multi-media posts with horizontal sliders.
+          Click on any thumbnail to open the player. Swipe up/down or use arrow
+          keys to navigate. Supports images, videos, and multi-media posts with
+          horizontal sliders.
         </p>
 
         {/* Thumbnail grid */}

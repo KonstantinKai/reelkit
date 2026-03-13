@@ -1,0 +1,67 @@
+.rk-lightbox-video-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #000;
+  overflow: hidden;
+}
+
+.rk-lightbox-video-element {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+}
+
+/* Disable native cast button */
+.rk-lightbox-video-element::-internal-media-controls-overlay-cast-button {
+  display: none;
+}
+
+.rk-lightbox-video-poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-position: center;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.rk-lightbox-video-poster.rk-visible {
+  opacity: 1;
+}
+
+/* Wave loader animation */
+.rk-lightbox-video-loader {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.15) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: rk-lightbox-video-wave 1.5s ease-in-out infinite;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.rk-lightbox-video-loader.rk-visible {
+  opacity: 1;
+}
+
+@keyframes rk-lightbox-video-wave {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}

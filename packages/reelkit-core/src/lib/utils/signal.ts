@@ -13,6 +13,7 @@ export type Dispose = () => void;
 export interface Subscribable<T = unknown> {
   /** The current value. */
   get value(): T;
+
   /**
    * Registers a listener that is called whenever the value changes.
    *

@@ -8,7 +8,6 @@ import {
   useState,
   useEffect,
   useLayoutEffect,
-  useCallback,
   memo,
 } from 'react';
 import {
@@ -16,15 +15,11 @@ import {
   defaultRangeExtractor,
   first,
   last,
-  type SliderController,
   type RangeExtractor,
   type AnimatedValue,
   type Signal,
 } from '@reelkit/core';
-import {
-  AnimatedValueNotifierObserver,
-  ValueNotifierObserver,
-} from './ValueNotifierObserver';
+import { AnimatedObserve, Observe } from './Observe';
 
 /**
  * Props for the {@link Reel} virtualized one-item slider component.
@@ -32,6 +27,7 @@ import {
 export interface ReelProps {
   /** Total number of slides. */
   count: number;
+
   /**
    * Render function called for each visible slide.
    *
@@ -44,7 +40,7 @@ export interface ReelProps {
     index: number,
     indexInRange: number,
     size: [number, number],
-  ) => ReactElement;
+  ) => ReactNode;
 
   /**
    * Ref or callback to access the imperative {@link ReelApi}. Accepts either
@@ -210,18 +206,23 @@ export const createDefaultKeyExtractorForLoop =
 export interface ReelApi {
   /** Animate to the next slide. */
   next: () => void;
+
   /** Animate to the previous slide. */
   prev: () => void;
+
   /**
    * Navigate to a specific slide index.
    * @param index - Target slide index.
    * @param animate - When `true`, animates the transition.
    */
   goTo: (index: number, animate?: boolean) => Promise<void>;
+
   /** Recalculate positions (useful after resize or layout change). */
   adjust: () => void;
+
   /** Start listening to gesture, keyboard, and wheel events. */
   observe: () => void;
+
   /** Stop listening to gesture, keyboard, and wheel events. */
   unobserve: () => void;
 }
@@ -411,7 +412,7 @@ const Element = ({
   return (
     <div ref={ref} className={props.className} style={rootStyle}>
       {hasMeasured && (
-        <ValueNotifierObserver deps={[indexes]}>
+        <Observe signals={[indexes]}>
           {() => (
             <Content
               primarySize={primarySize}
@@ -422,7 +423,7 @@ const Element = ({
               {indexes.value.map(itemBuilder)}
             </Content>
           )}
-        </ValueNotifierObserver>
+        </Observe>
       )}
       {props.children}
     </div>
@@ -467,12 +468,16 @@ const Content = memo(
     length,
   }: {
     children: ReactNode;
+
     isHorizontal: boolean;
+
     primarySize: number;
+
     axisValue: Signal<AnimatedValue>;
+
     length: number;
   }) => (
-    <AnimatedValueNotifierObserver valueNotifier={axisValue}>
+    <AnimatedObserve signal={axisValue}>
       {(value) => (
         <div
           style={{
@@ -489,7 +494,7 @@ const Content = memo(
           {children}
         </div>
       )}
-    </AnimatedValueNotifierObserver>
+    </AnimatedObserve>
   ),
 );
 

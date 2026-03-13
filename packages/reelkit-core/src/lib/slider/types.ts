@@ -10,8 +10,10 @@ export type SliderDirection = 'horizontal' | 'vertical';
 export type AnimatedValue = {
   /** Current pixel offset along the primary axis. */
   value: number;
+
   /** Transition duration in milliseconds. `0` means instant. */
   duration: number;
+
   /** Called when the animated transition completes. */
   done?: () => void;
 };
@@ -37,43 +39,51 @@ export type RangeExtractor = (
 export interface SliderConfig {
   /** Total number of slides. */
   count: number;
+
   /**
    * Index of the initially visible slide.
    * @default 0
    */
   initialIndex?: number;
+
   /**
    * Axis along which the slider moves.
    * @default 'vertical'
    */
   direction?: SliderDirection;
+
   /**
    * Whether the slider wraps around from the last slide back to the first
    * (and vice versa).
    * @default false
    */
   loop?: boolean;
+
   /**
    * Duration of the slide transition animation in milliseconds.
    * @default 300
    */
   transitionDuration?: number;
+
   /**
    * Minimum swipe distance as a fraction of the slide's primary dimension
    * (0–1) required to trigger a slide change.
    * @default 0.12
    */
   swipeDistanceFactor?: number;
+
   /**
    * Custom function that determines which slide indices are rendered.
    * Defaults to the built-in extractor that returns current ± 1 overscan.
    */
   rangeExtractor?: RangeExtractor;
+
   /**
    * Enable mouse wheel navigation.
    * @default false
    */
   enableWheel?: boolean;
+
   /**
    * Debounce duration for wheel events in milliseconds.
    * @default 200
@@ -96,22 +106,26 @@ export interface SliderEvents {
     nextIndex: number,
     rangeIndex: number,
   ) => void;
+
   /**
    * Fired after a slide transition completes and the index has been updated.
    * @param index - The new active slide index.
    * @param rangeIndex - Position of the new index within the visible range.
    */
   onAfterChange?: (index: number, rangeIndex: number) => void;
+
   /**
    * Fired when the user begins dragging a slide.
    * @param index - The slide index being dragged.
    */
   onDragStart?: (index: number) => void;
+
   /**
    * Fired when the user releases a drag gesture.
    * @param index - The slide index at the time of release.
    */
   onDragEnd?: (index: number) => void;
+
   /**
    * Fired when a drag gesture is canceled (snap-back to the original slide).
    * @param index - The slide index that remains active.
@@ -126,8 +140,10 @@ export interface SliderEvents {
 export interface SliderState {
   /** The currently active slide index. */
   index: Signal<number>;
+
   /** The current translation value along the primary axis (animated). */
   axisValue: Signal<AnimatedValue>;
+
   /** Computed array of slide indices currently rendered in the DOM. */
   indexes: ComputedSignal<number[]>;
 }
@@ -140,6 +156,7 @@ export interface SliderState {
 export interface SliderController {
   /** Reactive slider state (index, axisValue, indexes). */
   readonly state: SliderState;
+
   /** Current resolved configuration. */
   readonly config: SliderConfig;
 

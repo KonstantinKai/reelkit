@@ -1,5 +1,11 @@
 import { useState } from 'react';
-import { LightboxOverlay, type LightboxItem } from '@reelkit/react-lightbox';
+import {
+  LightboxOverlay,
+  Counter,
+  CloseButton,
+  FullscreenButton,
+  type LightboxItem,
+} from '@reelkit/react-lightbox';
 import '@reelkit/react-lightbox/styles.css';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -51,7 +57,6 @@ const SAMPLE_IMAGES: LightboxItem[] = [
 export function LightboxDemo() {
   const [index, setIndex] = useState<number | null>(null);
   const { theme } = useTheme();
-
   const isDark = theme === 'dark';
 
   return (
@@ -118,6 +123,24 @@ export function LightboxDemo() {
         images={SAMPLE_IMAGES}
         initialIndex={index ?? 0}
         onClose={() => setIndex(null)}
+        renderControls={({
+          onClose,
+          currentIndex,
+          count,
+          isFullscreen,
+          onToggleFullscreen,
+        }) => (
+          <>
+            <div className="rk-lightbox-controls-left">
+              <Counter currentIndex={currentIndex} count={count} />
+              <FullscreenButton
+                isFullscreen={isFullscreen}
+                onToggle={onToggleFullscreen}
+              />
+            </div>
+            <CloseButton onClick={onClose} />
+          </>
+        )}
       />
     </div>
   );

@@ -9,12 +9,7 @@ import {
 } from 'react';
 import { createPortal } from 'react-dom';
 import { createSignal } from '@reelkit/core';
-import {
-  Reel,
-  ValueNotifierObserver,
-  type ReelApi,
-  type ReelProps,
-} from '@reelkit/react';
+import { Reel, Observe, type ReelApi, type ReelProps } from '@reelkit/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import useFullscreen from './useFullscreen';
 import { useBodyLock } from '@reelkit/react';
@@ -28,20 +23,36 @@ import type {
 import './LightboxOverlay.css';
 
 /**
- * Data for a single lightbox image.
+ * Data for a single lightbox item (image or video).
  *
  * At minimum, provide `src`. Optional `title` and `description` are
  * rendered in the built-in info overlay (unless overridden via `renderInfo`).
+ *
+ * For video items, set `type: 'video'` and optionally provide a `poster`
+ * thumbnail. Video rendering requires opting in via `useVideoSlideRenderer`.
  */
 export interface LightboxItem {
-  /** URL of the image. */
+  /** URL of the image or video. */
   src: string;
+
+  /**
+   * Item type. Defaults to `'image'` when omitted.
+   * Video items require opting in via `useVideoSlideRenderer` and `renderSlide`.
+   */
+  type?: 'image' | 'video';
+
+  /** Poster/thumbnail image for video items. Used for preloading and as placeholder. */
+  poster?: string;
+
   /** Title displayed in the info overlay. */
   title?: string;
+
   /** Description displayed below the title in the info overlay. */
   description?: string;
+
   /** Intrinsic width of the image in pixels. Currently unused by the lightbox. */
   width?: number;
+
   /** Intrinsic height of the image in pixels. Currently unused by the lightbox. */
   height?: number;
 }
@@ -105,21 +116,27 @@ export type ReelProxyProps = Pick<
 export interface LightboxOverlayProps extends ReelProxyProps {
   /** When `true`, the lightbox is rendered and body scroll is locked. */
   isOpen: boolean;
+
   /** Array of images to display as horizontal slides. */
   images: LightboxItem[];
+
   /** Zero-based index of the initially visible image. @default 0 */
   initialIndex?: number;
+
   /** Callback to close the lightbox. Triggered by close button or Escape key. */
   onClose: () => void;
+
   /**
    * Transition animation type
    * @default 'slide'
    */
   transition?: TransitionType;
+
   /**
    * Callback fired after slide change
    */
   onSlideChange?: (index: number) => void;
+
   /**
    * Ref to access the Reel API
    */
@@ -194,6 +211,8 @@ const LightboxContent: FC<LightboxOverlayProps> = ({
   const internalApiRef = useRef<ReelApi>(null);
   const sliderRef = apiRef ?? internalApiRef;
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const currentIndexRef = useRef(currentIndex);
+  currentIndexRef.current = currentIndex;
   const [sizeSignal] = useState(() =>
     createSignal<[number, number]>(
       typeof window !== 'undefined'
@@ -231,7 +250,12 @@ const LightboxContent: FC<LightboxOverlayProps> = ({
 
     for (let i = start; i <= end; i++) {
       if (i !== currentIndex) {
-        preloadImage(images[i].src);
+        const item = images[i];
+        if ((item.type ?? 'image') === 'video') {
+          if (item.poster) preloadImage(item.poster);
+        } else {
+          preloadImage(item.src);
+        }
       }
     }
   }, [currentIndex, images]);
@@ -281,14 +305,19 @@ const LightboxContent: FC<LightboxOverlayProps> = ({
   const itemBuilder = useCallback(
     (index: number, _indexInRange: number, slideSize: [number, number]) => {
       const image = images[index];
-      const isActive = index === currentIndex;
+      const isActive = index === currentIndexRef.current;
+      const transitionClass =
+        transition !== 'slide' ? `rk-transition-${transition}` : '';
+      const activeClass = isActive ? 'rk-active' : '';
+      const slideClassName =
+        `rk-lightbox-slide ${transitionClass} ${activeClass}`.trim();
 
       if (renderSlide) {
         const custom = renderSlide(image, index, slideSize, isActive);
         if (custom !== null) {
           return (
             <div
-              className="rk-lightbox-slide"
+              className={slideClassName}
               style={{ width: slideSize[0], height: slideSize[1] }}
             >
               {custom}
@@ -297,13 +326,9 @@ const LightboxContent: FC<LightboxOverlayProps> = ({
         }
       }
 
-      const transitionClass =
-        transition !== 'slide' ? `rk-transition-${transition}` : '';
-      const activeClass = isActive ? 'rk-active' : '';
-
       return (
         <div
-          className={`rk-lightbox-slide ${transitionClass} ${activeClass}`.trim()}
+          className={slideClassName}
           style={{ width: slideSize[0], height: slideSize[1] }}
         >
           <img
@@ -315,7 +340,7 @@ const LightboxContent: FC<LightboxOverlayProps> = ({
         </div>
       );
     },
-    [images, currentIndex, transition, renderSlide],
+    [images, transition, renderSlide],
   );
 
   const overlay = (
@@ -341,7 +366,7 @@ const LightboxContent: FC<LightboxOverlayProps> = ({
 
       {/* Reel slider - wrapped in SwipeToClose so only image moves */}
       <SwipeToClose enabled={isMobile} onClose={onClose}>
-        <ValueNotifierObserver deps={[sizeSignal]}>
+        <Observe signals={[sizeSignal]}>
           {() => (
             <Reel
               count={images.length}
@@ -359,7 +384,7 @@ const LightboxContent: FC<LightboxOverlayProps> = ({
               itemBuilder={itemBuilder}
             />
           )}
-        </ValueNotifierObserver>
+        </Observe>
       </SwipeToClose>
 
       {/* Navigation buttons */}

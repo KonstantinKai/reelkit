@@ -1,26 +1,47 @@
-import React, { useRef, useEffect, useLayoutEffect, useState } from 'react';
+import React, {
+  type CSSProperties,
+  useRef,
+  useEffect,
+  useLayoutEffect,
+  useState,
+} from 'react';
 import { noop } from '@reelkit/core';
 import { useSoundState } from './useSoundState';
 import './VideoSlide.css';
 
-/** @internal */
-interface VideoSlideProps {
+/**
+ * Props for the {@link VideoSlide} component.
+ */
+export interface VideoSlideProps {
   /** URL of the video source. */
   src: string;
+
   /** Optional poster image shown while video loads. */
   poster?: string;
+
   /** Width / height ratio. Values < 1 use `cover`, >= 1 use `contain`. */
   aspectRatio: number;
+
   /** [width, height] in pixels. */
   size: [number, number];
+
   /** Whether this slide is the active (visible) slide in the parent reel. */
   isActive: boolean;
+
   /** Whether this slide is the active item in a nested horizontal slider. Defaults to `true`. */
   isInnerActive?: boolean;
+
   /** Unique key for persisting playback position and captured frames (e.g. "content-5" or "content-5:media-2"). */
   slideKey: string;
+
   /** Callback to report the shared video element ref to the parent for drag pause/resume. */
   onVideoRef?: (ref: HTMLVideoElement | null) => void;
+
+  /** Additional CSS class for the root container. */
+  className?: string;
+
+  /** Additional inline styles merged onto the root container. */
+  style?: CSSProperties;
 }
 
 /**
@@ -84,7 +105,20 @@ const useIsomorphicLayoutEffect =
  *
  * Shows a poster image and a wave loader while the video is buffering.
  *
- * @internal Used by {@link MediaSlide} and {@link NestedSlider}.
+ * Must be rendered inside a {@link SoundProvider}.
+ *
+ * @example
+ * ```tsx
+ * <VideoSlide
+ *   src="/video.mp4"
+ *   poster="/thumb.jpg"
+ *   aspectRatio={9 / 16}
+ *   size={[400, 700]}
+ *   isActive={true}
+ *   slideKey="slide-1"
+ *   style={{ borderRadius: 12 }}
+ * />
+ * ```
  */
 const VideoSlide: React.FC<VideoSlideProps> = ({
   src,
@@ -95,6 +129,8 @@ const VideoSlide: React.FC<VideoSlideProps> = ({
   isInnerActive = true,
   slideKey,
   onVideoRef,
+  className,
+  style,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const soundState = useSoundState();
@@ -189,10 +225,15 @@ const VideoSlide: React.FC<VideoSlideProps> = ({
   return (
     <div
       ref={containerRef}
-      className="rk-video-slide-container"
+      className={
+        className
+          ? `rk-video-slide-container ${className}`
+          : 'rk-video-slide-container'
+      }
       style={{
         width: size[0],
         height: size[1],
+        ...style,
       }}
     >
       {/* Poster image with fade out transition */}
@@ -209,7 +250,9 @@ const VideoSlide: React.FC<VideoSlideProps> = ({
       )}
 
       {/* Wave loader for buffering/loading state */}
-      <div className={`rk-video-slide-loader ${isLoading ? 'rk-visible' : ''}`} />
+      <div
+        className={`rk-video-slide-loader ${isLoading ? 'rk-visible' : ''}`}
+      />
     </div>
   );
 };

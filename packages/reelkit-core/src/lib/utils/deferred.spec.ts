@@ -44,6 +44,7 @@ describe('createDeferred', () => {
   it('should work with complex types', async () => {
     interface User {
       name: string;
+
       age: number;
     }
 

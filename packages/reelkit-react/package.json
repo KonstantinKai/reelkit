@@ -2,6 +2,7 @@
   "name": "@reelkit/react",
   "version": "0.0.1",
   "type": "module",
+  "sideEffects": false,
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -16,6 +17,34 @@
   "files": [
     "dist",
     "!**/*.tsbuildinfo"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KonstantinKai/reelkit.git",
+    "directory": "packages/reelkit-react"
+  },
+  "bugs": "https://github.com/KonstantinKai/reelkit/issues",
+  "homepage": "https://reelkit.dev",
+  "funding": {
+    "type": "buymeacoffee",
+    "url": "https://buymeacoffee.com/konstantinkai"
+  },
+  "description": "React components and hooks for building TikTok/Instagram Reels-style sliders",
+  "license": "MIT",
+  "keywords": [
+    "react",
+    "slider",
+    "carousel",
+    "swipe",
+    "virtualized",
+    "touch",
+    "gesture",
+    "mobile",
+    "tiktok",
+    "reels",
+    "vertical-slider",
+    "react-component",
+    "typescript"
   ],
   "peerDependencies": {
     "@reelkit/core": "*",

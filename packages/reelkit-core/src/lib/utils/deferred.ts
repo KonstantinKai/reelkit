@@ -7,6 +7,7 @@
 export interface Deferred<T = void> {
   /** The promise that will be resolved externally. */
   promise: Promise<T>;
+
   /** Resolves the deferred promise with the given value. */
   resolve: (value?: T) => void;
 }

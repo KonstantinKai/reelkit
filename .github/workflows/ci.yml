@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - run: npm ci
+
+      - run: npx nx format:check
+
+      - run: npx nx run-many -t lint typecheck test build
+
+      - name: Install Playwright browsers
+        if: github.event_name == 'pull_request'
+        run: npx playwright install --with-deps
+
+      - name: Run e2e tests
+        if: github.event_name == 'pull_request'
+        run: npx nx run-many -t e2e

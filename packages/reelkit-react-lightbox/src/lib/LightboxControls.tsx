@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Maximize, Minimize } from 'lucide-react';
+import { X, Maximize, Minimize, Volume2, VolumeX } from 'lucide-react';
 
 /**
  * Props for the {@link CloseButton} sub-component.
@@ -7,8 +7,10 @@ import { X, Maximize, Minimize } from 'lucide-react';
 export interface CloseButtonProps {
   /** Callback to close the lightbox. */
   onClick: () => void;
+
   /** Optional CSS class. Defaults to `"rk-lightbox-close"`. */
   className?: string;
+
   /** Optional inline styles. */
   style?: React.CSSProperties;
 }
@@ -49,10 +51,13 @@ export const CloseButton: React.FC<CloseButtonProps> = ({
 export interface CounterProps {
   /** Zero-based index of the current slide. */
   currentIndex: number;
+
   /** Total number of images. */
   count: number;
+
   /** Optional CSS class. Defaults to `"rk-lightbox-counter"`. */
   className?: string;
+
   /** Optional inline styles. */
   style?: React.CSSProperties;
 }
@@ -78,10 +83,13 @@ export const Counter: React.FC<CounterProps> = ({
 export interface FullscreenButtonProps {
   /** Whether the lightbox is currently in fullscreen mode. */
   isFullscreen: boolean;
+
   /** Toggle fullscreen mode. */
   onToggle: () => void;
+
   /** Optional CSS class. Defaults to `"rk-lightbox-btn"`. */
   className?: string;
+
   /** Optional inline styles. */
   style?: React.CSSProperties;
 }
@@ -107,12 +115,62 @@ export const FullscreenButton: React.FC<FullscreenButtonProps> = ({
   </button>
 );
 
+/**
+ * Props for the {@link SoundButton} sub-component.
+ */
+export interface SoundButtonProps {
+  /** Whether audio is currently muted. */
+  isMuted: boolean;
+
+  /** Callback to toggle the muted state. */
+  onToggle: () => void;
+
+  /** Optional CSS class. Defaults to `"rk-lightbox-btn"`. */
+  className?: string;
+
+  /** Optional inline styles. */
+  style?: React.CSSProperties;
+}
+
+/**
+ * Sound/mute toggle sub-component. Renders Volume2 (unmuted) or VolumeX
+ * (muted) icon. Import and compose in a custom `renderControls` callback
+ * when using video slides.
+ *
+ * @example
+ * ```tsx
+ * import { SoundButton, useVideoSlideRenderer } from '@reelkit/react-lightbox';
+ *
+ * const { isMuted, onToggleMute } = useVideoSlideRenderer(items);
+ * <SoundButton isMuted={isMuted} onToggle={onToggleMute} />
+ * ```
+ */
+export const SoundButton: React.FC<SoundButtonProps> = ({
+  isMuted,
+  onToggle,
+  className = 'rk-lightbox-btn',
+  style,
+}) => (
+  <button
+    className={className}
+    onClick={onToggle}
+    title={isMuted ? 'Unmute' : 'Mute'}
+    style={style}
+  >
+    {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+  </button>
+);
+
 /** @internal */
 interface LightboxControlsProps {
   onClose: () => void;
+
   currentIndex: number;
+
   count: number;
+
   isFullscreen: boolean;
+
   onToggleFullscreen: () => void;
 }
 

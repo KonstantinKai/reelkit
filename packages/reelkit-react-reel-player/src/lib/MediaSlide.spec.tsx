@@ -17,8 +17,11 @@ vi.mock('./VideoSlide', () => ({
     slideKey,
   }: {
     src: string;
+
     poster?: string;
+
     isActive: boolean;
+
     slideKey: string;
   }) => (
     <div
@@ -38,7 +41,9 @@ vi.mock('./NestedSlider', () => ({
     contentId,
   }: {
     media: unknown[];
+
     isParentActive: boolean;
+
     contentId: string;
   }) => (
     <div
@@ -139,7 +144,9 @@ describe('MediaSlide', () => {
       />,
     );
 
-    const nestedSlider = container.querySelector('[data-testid="nested-slider"]');
+    const nestedSlider = container.querySelector(
+      '[data-testid="nested-slider"]',
+    );
     expect(nestedSlider).toBeTruthy();
     expect(nestedSlider!.getAttribute('data-media-count')).toBe('2');
   });
@@ -147,9 +154,7 @@ describe('MediaSlide', () => {
   it('passes isActive to VideoSlide', () => {
     const content: ContentItem = {
       ...baseContent,
-      media: [
-        { id: 'v1', type: 'video', src: 'video.mp4', aspectRatio: 0.56 },
-      ],
+      media: [{ id: 'v1', type: 'video', src: 'video.mp4', aspectRatio: 0.56 }],
     };
 
     const { container } = render(
@@ -184,7 +189,9 @@ describe('MediaSlide', () => {
       />,
     );
 
-    const nestedSlider = container.querySelector('[data-testid="nested-slider"]');
+    const nestedSlider = container.querySelector(
+      '[data-testid="nested-slider"]',
+    );
     expect(nestedSlider!.getAttribute('data-content-id')).toBe('content-42');
   });
 
@@ -192,9 +199,7 @@ describe('MediaSlide', () => {
     const content: ContentItem = {
       ...baseContent,
       id: 'content-7',
-      media: [
-        { id: 'v1', type: 'video', src: 'video.mp4', aspectRatio: 0.56 },
-      ],
+      media: [{ id: 'v1', type: 'video', src: 'video.mp4', aspectRatio: 0.56 }],
     };
 
     const { container } = render(
@@ -230,6 +235,8 @@ describe('MediaSlide', () => {
 
     expect(container.querySelector('[data-testid="image-slide"]')).toBeNull();
     expect(container.querySelector('[data-testid="video-slide"]')).toBeNull();
-    expect(container.querySelector('[data-testid="nested-slider"]')).toBeTruthy();
+    expect(
+      container.querySelector('[data-testid="nested-slider"]'),
+    ).toBeTruthy();
   });
 });

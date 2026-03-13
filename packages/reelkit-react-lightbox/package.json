@@ -2,6 +2,9 @@
   "name": "@reelkit/react-lightbox",
   "version": "0.0.1",
   "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -17,6 +20,32 @@
   "files": [
     "dist",
     "!**/*.tsbuildinfo"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KonstantinKai/reelkit.git",
+    "directory": "packages/reelkit-react-lightbox"
+  },
+  "bugs": "https://github.com/KonstantinKai/reelkit/issues",
+  "homepage": "https://reelkit.dev/docs/lightbox",
+  "funding": {
+    "type": "buymeacoffee",
+    "url": "https://buymeacoffee.com/konstantinkai"
+  },
+  "description": "Full-screen image and video gallery lightbox for React with touch gestures, transitions, and render props",
+  "license": "MIT",
+  "keywords": [
+    "react",
+    "lightbox",
+    "image-gallery",
+    "fullscreen",
+    "swipe",
+    "touch",
+    "gallery",
+    "video-player",
+    "photo-viewer",
+    "react-component",
+    "typescript"
   ],
   "peerDependencies": {
     "@reelkit/core": "*",

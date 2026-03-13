@@ -37,7 +37,9 @@ export type UseFullscreenResult = [
 const isFullscreen = (): boolean => {
   const doc = document as Document & {
     webkitFullscreenElement?: Element;
+
     mozFullScreenElement?: Element;
+
     msFullscreenElement?: Element;
   };
 
@@ -58,7 +60,9 @@ const isFullscreen = (): boolean => {
 const exitFullscreenFn = (): Promise<void> => {
   const doc = document as Document & {
     mozCancelFullScreen?: () => Promise<void>;
+
     webkitExitFullscreen?: () => Promise<void>;
+
     msExitFullscreen?: () => Promise<void>;
   };
 
@@ -83,8 +87,11 @@ const exitFullscreenFn = (): Promise<void> => {
 const requestFullscreenFn = (element: HTMLElement): Promise<void> => {
   const el = element as HTMLElement & {
     webkitRequestFullscreen?: () => Promise<void>;
+
     webkitEnterFullscreen?: () => Promise<void>;
+
     mozRequestFullScreen?: () => Promise<void>;
+
     msRequestFullscreen?: () => Promise<void>;
   };
 

@@ -5,7 +5,9 @@ import { navItems } from '../../data/searchData';
 
 interface SidebarProps {
   isOpen?: boolean;
+
   showDesktop?: boolean;
+
   onClose?: () => void;
 }
 
@@ -14,6 +16,7 @@ function NavSection({
   items,
 }: {
   title: string;
+
   items: (typeof navItems)[number]['items'];
 }) {
   const [isExpanded, setIsExpanded] = useState(true);
@@ -48,12 +51,13 @@ function NavSection({
                 } ${'comingSoon' in item && item.comingSoon ? 'opacity-60 cursor-not-allowed' : ''}`
               }
             >
-              {'label' in item ? item.label : ''}
-              {'comingSoon' in item && item.comingSoon && (
-                <span className="text-xs px-1.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400 ml-2">
-                  Soon
-                </span>
-              )}
+              {item.label}
+              {'comingSoon' in item &&
+                (item as { comingSoon?: boolean }).comingSoon && (
+                  <span className="text-xs px-1.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400 ml-2">
+                    Soon
+                  </span>
+                )}
             </NavLink>
           </li>
         ))}

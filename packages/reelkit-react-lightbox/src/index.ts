@@ -59,12 +59,24 @@ export type {
 } from './lib/types';
 
 // Sub-components for composition
-export { CloseButton, Counter, FullscreenButton } from './lib/LightboxControls';
+export {
+  CloseButton,
+  Counter,
+  FullscreenButton,
+  SoundButton,
+} from './lib/LightboxControls';
 export type {
   CloseButtonProps,
   CounterProps,
   FullscreenButtonProps,
+  SoundButtonProps,
 } from './lib/LightboxControls';
+
+// Video support (opt-in, tree-shakeable)
+export { default as LightboxVideoSlide } from './lib/LightboxVideoSlide';
+export type { LightboxVideoSlideProps } from './lib/LightboxVideoSlide';
+export { useVideoSlideRenderer } from './lib/useVideoSlideRenderer';
+export type { UseVideoSlideRendererResult } from './lib/useVideoSlideRenderer';
 
 // Hooks (for custom implementations)
 export { default as useFullscreen } from './lib/useFullscreen';

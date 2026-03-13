@@ -1,6 +1,10 @@
 import React, { type ReactNode } from 'react';
 import type { ReelApi } from '@reelkit/react';
-import type { BaseContentItem, NavigationRenderProps } from './types';
+import type {
+  BaseContentItem,
+  NavigationRenderProps,
+  NestedSlideRenderProps,
+} from './types';
 import ImageSlide from './ImageSlide';
 import VideoSlide from './VideoSlide';
 import NestedSlider from './NestedSlider';
@@ -8,13 +12,22 @@ import NestedSlider from './NestedSlider';
 /** @internal */
 interface MediaSlideProps {
   content: BaseContentItem;
+
   isActive: boolean;
+
   size: [number, number];
+
   innerSliderRef: React.MutableRefObject<ReelApi | null>;
+
   enableWheel?: boolean;
+
   onVideoRef?: (ref: HTMLVideoElement | null) => void;
+
   onActiveMediaTypeChange?: (type: 'image' | 'video') => void;
+
   renderNestedNavigation?: (props: NavigationRenderProps) => ReactNode;
+
+  renderNestedSlide?: (props: NestedSlideRenderProps) => ReactNode;
 }
 
 /**
@@ -35,6 +48,7 @@ const MediaSlide: React.FC<MediaSlideProps> = ({
   onVideoRef,
   onActiveMediaTypeChange,
   renderNestedNavigation,
+  renderNestedSlide,
 }) => {
   const { media } = content;
 
@@ -70,6 +84,7 @@ const MediaSlide: React.FC<MediaSlideProps> = ({
       onVideoRef={onVideoRef}
       onActiveMediaTypeChange={onActiveMediaTypeChange}
       renderNavigation={renderNestedNavigation}
+      renderNestedSlide={renderNestedSlide}
     />
   );
 };

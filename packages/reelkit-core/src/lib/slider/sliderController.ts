@@ -156,27 +156,29 @@ export const createSliderController = (
 
     events.onBeforeChange?.(index.value, nextIndex, getRangeIndex());
 
-    await runTransition(() => {
-      const deferred = createDeferred<void>();
-      axisValue.value = {
-        value: nextRangeIndex * primarySize * -1,
-        duration: config.transitionDuration,
-        done: () => deferred.resolve(),
-      };
-      return deferred;
-    });
+    try {
+      await runTransition(() => {
+        const deferred = createDeferred<void>();
+        axisValue.value = {
+          value: nextRangeIndex * primarySize * -1,
+          duration: config.transitionDuration,
+          done: () => deferred.resolve(),
+        };
+        return deferred;
+      });
+    } finally {
+      // Update state atomically — observers see both changes at once
+      batch(() => {
+        index.value = nextIndex;
+        axisValue.value = {
+          value: getRangeIndex() * primarySize * -1,
+          duration: 0,
+        };
+      });
 
-    // Update state atomically — observers see both changes at once
-    batch(() => {
-      index.value = nextIndex;
-      axisValue.value = {
-        value: getRangeIndex() * primarySize * -1,
-        duration: 0,
-      };
-    });
-
-    gestureController.observe();
-    animating = false;
+      gestureController.observe();
+      animating = false;
+    }
   };
 
   // Gesture handlers
@@ -367,36 +369,45 @@ export const createSliderController = (
 
       // Animate to target position
       const targetRangeIdx = goingForward ? 1 : 0;
-      await runTransition(() => {
-        const deferred = createDeferred<void>();
-        axisValue.value = {
-          value: targetRangeIdx * primarySize * -1,
-          duration: config.transitionDuration,
-          done: () => deferred.resolve(),
-        };
-        return deferred;
-      });
+      try {
+        await runTransition(() => {
+          const deferred = createDeferred<void>();
+          axisValue.value = {
+            value: targetRangeIdx * primarySize * -1,
+            duration: config.transitionDuration,
+            done: () => deferred.resolve(),
+          };
+          return deferred;
+        });
+      } finally {
+        // Clear override and set final state atomically — observers see
+        // both changes at once, preventing an intermediate indexes flash
+        batch(() => {
+          goToOverride.value = null;
+          index.value = clampedIndex;
+          setAxisValueForCurrentRangeIndex(0);
+        });
 
-      // Clear override and set final state
-      goToOverride.value = null;
-      index.value = clampedIndex;
-      setAxisValueForCurrentRangeIndex(0);
+        events.onAfterChange?.(index.value, getRangeIndex());
 
-      events.onAfterChange?.(index.value, getRangeIndex());
-
-      gestureController.observe();
-      animating = false;
+        gestureController.observe();
+        animating = false;
+      }
     },
 
     adjust(duration = 0) {
-      setAxisValueForCurrentRangeIndex(duration);
+      if (!animating) {
+        setAxisValueForCurrentRangeIndex(duration);
+      }
     },
 
     setPrimarySize(size: number) {
       if (size !== primarySize) {
         primarySizeDidChange = true;
         primarySize = size;
-        setAxisValueForCurrentRangeIndex();
+        if (!animating) {
+          setAxisValueForCurrentRangeIndex();
+        }
       }
     },
 

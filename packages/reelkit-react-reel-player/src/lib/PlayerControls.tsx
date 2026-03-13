@@ -1,6 +1,6 @@
 import React from 'react';
 import { X, Volume2, VolumeX } from 'lucide-react';
-import { ValueNotifierObserver } from '@reelkit/react';
+import { Observe } from '@reelkit/react';
 import { useSoundState } from './useSoundState';
 
 const buttonStyle: React.CSSProperties = {
@@ -21,8 +21,10 @@ const buttonStyle: React.CSSProperties = {
 export interface CloseButtonProps {
   /** Callback fired when the button is clicked. */
   onClick: () => void;
+
   /** CSS class name. Defaults to `"rk-player-close-btn"`. */
   className?: string;
+
   /** Additional inline styles merged on top of the default button styles. */
   style?: React.CSSProperties;
 }
@@ -69,8 +71,10 @@ export interface SoundButtonProps {
    * Defaults to `false`.
    */
   disabled?: boolean;
+
   /** CSS class name. Defaults to `"rk-player-sound-btn"`. */
   className?: string;
+
   /** Additional inline styles merged on top of the default button styles. */
   style?: React.CSSProperties;
 }
@@ -106,9 +110,9 @@ export const SoundButton: React.FC<SoundButtonProps> = ({
   const soundState = useSoundState();
 
   return (
-    <ValueNotifierObserver deps={[soundState.muted, soundState.disabled]}>
+    <Observe signals={[soundState.muted, soundState.disabled]}>
       {() => {
-        if (soundState.disabled.value) return <></>;
+        if (soundState.disabled.value) return null;
         return (
           <button
             onClick={disabled ? undefined : soundState.toggle}
@@ -135,14 +139,16 @@ export const SoundButton: React.FC<SoundButtonProps> = ({
           </button>
         );
       }}
-    </ValueNotifierObserver>
+    </Observe>
   );
 };
 
 /** @internal Props for the default PlayerControls used by ReelPlayerOverlay. */
 interface PlayerControlsProps {
   onClose: () => void;
+
   showSound?: boolean;
+
   soundDisabled?: boolean;
 }
 

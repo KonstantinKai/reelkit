@@ -13,8 +13,10 @@ import './SlideOverlay.css';
 export interface SlideOverlayProps {
   /** Author info. When provided, renders an avatar image and display name. */
   author?: { name: string; avatar: string };
+
   /** Description text. Clamped to 2 lines via CSS. */
   description?: string;
+
   /** Like count. Formatted compactly (e.g. 1.2K, 3.5M). Shown with a heart icon. */
   likes?: number;
 }

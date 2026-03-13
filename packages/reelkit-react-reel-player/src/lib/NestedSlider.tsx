@@ -7,7 +7,11 @@ import React, {
 } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Reel, ReelIndicator, type ReelApi } from '@reelkit/react';
-import type { MediaItem, NavigationRenderProps } from './types';
+import type {
+  MediaItem,
+  NavigationRenderProps,
+  NestedSlideRenderProps,
+} from './types';
 import ImageSlide from './ImageSlide';
 import VideoSlide from './VideoSlide';
 import './NestedSlider.css';
@@ -15,14 +19,24 @@ import './NestedSlider.css';
 /** @internal */
 interface NestedSliderProps {
   media: MediaItem[];
+
   isParentActive: boolean;
+
   size: [number, number];
+
   contentId: string;
+
   innerSliderRef: React.MutableRefObject<ReelApi | null>;
+
   enableWheel?: boolean;
+
   onVideoRef?: (ref: HTMLVideoElement | null) => void;
+
   onActiveMediaTypeChange?: (type: 'image' | 'video') => void;
+
   renderNavigation?: (props: NavigationRenderProps) => ReactNode;
+
+  renderNestedSlide?: (props: NestedSlideRenderProps) => ReactNode;
 }
 
 /**
@@ -45,8 +59,11 @@ const NestedSlider: React.FC<NestedSliderProps> = ({
   onVideoRef,
   onActiveMediaTypeChange,
   renderNavigation,
+  renderNestedSlide,
 }) => {
   const [innerActiveIndex, setInnerActiveIndex] = useState(0);
+  const innerActiveIndexRef = useRef(innerActiveIndex);
+  innerActiveIndexRef.current = innerActiveIndex;
   const localSliderRef = useRef<ReelApi>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
@@ -122,12 +139,15 @@ const NestedSlider: React.FC<NestedSliderProps> = ({
         apiRef={localSliderRef}
         beforeChange={handleBeforeChange}
         afterChange={handleAfterChange}
+        className={isParentActive ? 'rk-nested-active' : undefined}
         itemBuilder={(index, _, itemSize) => {
           const item = media[index];
-          const isInnerActive = innerActiveIndex === index;
+          const isInnerActive = innerActiveIndexRef.current === index;
+          const slideKey = `${contentId}:${item.id}`;
+          const videoRefProp = isInnerActive ? handleVideoRef : undefined;
 
-          if (item.type === 'video') {
-            return (
+          const defaultContent =
+            item.type === 'video' ? (
               <VideoSlide
                 src={item.src}
                 poster={item.poster}
@@ -135,13 +155,27 @@ const NestedSlider: React.FC<NestedSliderProps> = ({
                 size={itemSize}
                 isActive={isParentActive}
                 isInnerActive={isInnerActive}
-                slideKey={`${contentId}:${item.id}`}
-                onVideoRef={isInnerActive ? handleVideoRef : undefined}
+                slideKey={slideKey}
+                onVideoRef={videoRefProp}
               />
+            ) : (
+              <ImageSlide src={item.src} size={itemSize} />
             );
+
+          if (renderNestedSlide) {
+            return renderNestedSlide({
+              item,
+              index,
+              size: itemSize,
+              isActive: isParentActive,
+              isInnerActive,
+              slideKey,
+              onVideoRef: videoRefProp,
+              defaultContent,
+            });
           }
 
-          return <ImageSlide src={item.src} size={itemSize} />;
+          return defaultContent;
         }}
       />
 

@@ -5,6 +5,7 @@ import { searchItems, SearchItem } from '../data/searchData';
 
 interface CommandPaletteProps {
   isOpen: boolean;
+
   onClose: () => void;
 }
 

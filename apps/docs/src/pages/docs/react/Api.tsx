@@ -417,24 +417,22 @@ apiRef.current?.unobserve();       // stop observing keyboard`}
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Observer Components</h2>
 
-        <h3 className="text-lg font-semibold mb-2">ValueNotifierObserver</h3>
+        <h3 className="text-lg font-semibold mb-2">Observe</h3>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
           Bridges core signals to React rendering without causing parent
           re-renders. Only the children function re-executes when subscribed
           signals change.
         </p>
         <CodeBlock
-          code={`import { ValueNotifierObserver } from '@reelkit/react';
+          code={`import { Observe } from '@reelkit/react';
 
-<ValueNotifierObserver deps={[controller.state.index]}>
+<Observe signals={[controller.state.index]}>
   {() => <span>Current: {controller.state.index.value}</span>}
-</ValueNotifierObserver>`}
+</Observe>`}
           language="tsx"
         />
 
-        <h3 className="text-lg font-semibold mt-6 mb-2">
-          AnimatedValueNotifierObserver
-        </h3>
+        <h3 className="text-lg font-semibold mt-6 mb-2">AnimatedObserve</h3>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
           Subscribes to animated value signals and smoothly interpolates using{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -443,13 +441,13 @@ apiRef.current?.unobserve();       // stop observing keyboard`}
           .
         </p>
         <CodeBlock
-          code={`import { AnimatedValueNotifierObserver } from '@reelkit/react';
+          code={`import { AnimatedObserve } from '@reelkit/react';
 
-<AnimatedValueNotifierObserver valueNotifier={controller.state.axisValue}>
+<AnimatedObserve signal={controller.state.axisValue}>
   {(value) => (
     <div style={{ transform: \`translateY(\${value}px)\` }} />
   )}
-</AnimatedValueNotifierObserver>`}
+</AnimatedObserve>`}
           language="tsx"
         />
       </section>

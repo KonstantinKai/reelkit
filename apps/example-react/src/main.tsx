@@ -7,6 +7,7 @@ import ReelPlayerPage from './app/pages/ReelPlayerPage';
 import ReelPlayerCustomPage from './app/pages/ReelPlayerCustomPage';
 import ImagePreviewPage from './app/pages/ImagePreviewPage';
 import ImagePreviewCustomPage from './app/pages/ImagePreviewCustomPage';
+import ImagePreviewVideoPage from './app/pages/ImagePreviewVideoPage';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement,
@@ -23,6 +24,10 @@ root.render(
           <Route
             path="image-preview-custom"
             element={<ImagePreviewCustomPage />}
+          />
+          <Route
+            path="image-preview-video"
+            element={<ImagePreviewVideoPage />}
           />
         </Route>
       </Routes>

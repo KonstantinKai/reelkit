@@ -1,7 +1,10 @@
 export interface SearchItem {
   title: string;
+
   path: string;
+
   category: string;
+
   keywords: string[];
 }
 
@@ -43,14 +46,7 @@ export const searchItems: SearchItem[] = [
     title: 'Core API Reference',
     path: '/docs/core/api',
     category: 'Core',
-    keywords: [
-      'config',
-      'callbacks',
-      'methods',
-      'state',
-      'range',
-      'extractor',
-    ],
+    keywords: ['config', 'callbacks', 'methods', 'state', 'range', 'extractor'],
   },
   {
     title: 'React Guide',
@@ -97,8 +93,10 @@ export const searchItems: SearchItem[] = [
       'preview',
       'lightbox',
       'photo',
-      'zoom',
       'fullscreen',
+      'video',
+      'sound',
+      'mute',
     ],
   },
 ];

@@ -12,6 +12,7 @@ export interface KeyboardControllerConfig {
    * @default []
    */
   filter?: NavKey[];
+
   /**
    * Minimum interval in milliseconds between consecutive key-press
    * callbacks. Prevents rapid-fire navigation from held-down keys.
@@ -42,6 +43,7 @@ export interface KeyboardController {
    * @param target - The event target. Defaults to `window`.
    */
   attach(target?: Window | HTMLElement): void;
+
   /** Removes the `keydown` listener and detaches from the target. */
   detach(): void;
 }

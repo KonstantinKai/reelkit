@@ -5,7 +5,9 @@ import PlayerControls from './PlayerControls';
 
 const renderWithSound = (props: {
   onClose: () => void;
+
   showSound?: boolean;
+
   soundDisabled?: boolean;
 }) =>
   render(
@@ -71,7 +73,11 @@ describe('PlayerControls', () => {
     });
 
     it('does not toggle when soundDisabled is true', () => {
-      renderWithSound({ onClose: vi.fn(), showSound: true, soundDisabled: true });
+      renderWithSound({
+        onClose: vi.fn(),
+        showSound: true,
+        soundDisabled: true,
+      });
 
       const soundBtn = screen.getByLabelText('Unmute');
       fireEvent.click(soundBtn);
@@ -81,28 +87,44 @@ describe('PlayerControls', () => {
     });
 
     it('applies reduced opacity when soundDisabled', () => {
-      renderWithSound({ onClose: vi.fn(), showSound: true, soundDisabled: true });
+      renderWithSound({
+        onClose: vi.fn(),
+        showSound: true,
+        soundDisabled: true,
+      });
 
       const soundBtn = screen.getByLabelText('Unmute');
       expect(soundBtn.style.opacity).toBe('0.4');
     });
 
     it('applies default cursor when soundDisabled', () => {
-      renderWithSound({ onClose: vi.fn(), showSound: true, soundDisabled: true });
+      renderWithSound({
+        onClose: vi.fn(),
+        showSound: true,
+        soundDisabled: true,
+      });
 
       const soundBtn = screen.getByLabelText('Unmute');
       expect(soundBtn.style.cursor).toBe('default');
     });
 
     it('applies pointer cursor when not disabled', () => {
-      renderWithSound({ onClose: vi.fn(), showSound: true, soundDisabled: false });
+      renderWithSound({
+        onClose: vi.fn(),
+        showSound: true,
+        soundDisabled: false,
+      });
 
       const soundBtn = screen.getByLabelText('Unmute');
       expect(soundBtn.style.cursor).toBe('pointer');
     });
 
     it('sets aria-disabled attribute when soundDisabled', () => {
-      renderWithSound({ onClose: vi.fn(), showSound: true, soundDisabled: true });
+      renderWithSound({
+        onClose: vi.fn(),
+        showSound: true,
+        soundDisabled: true,
+      });
 
       const soundBtn = screen.getByLabelText('Unmute');
       expect(soundBtn.getAttribute('aria-disabled')).toBe('true');

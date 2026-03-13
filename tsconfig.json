@@ -1,4 +1,14 @@
 {
   "extends": "./tsconfig.base.json",
-  "references": []
+  "references": [
+    {
+      "path": "./packages/reelkit-react-reel-player"
+    },
+    {
+      "path": "./packages/reelkit-react-lightbox"
+    },
+    {
+      "path": "./packages/reelkit-react"
+    }
+  ]
 }

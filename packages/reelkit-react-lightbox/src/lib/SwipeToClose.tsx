@@ -4,16 +4,19 @@ import {
   createGestureController,
   type GestureController,
 } from '@reelkit/core';
-import { ValueNotifierObserver } from '@reelkit/react';
+import { Observe } from '@reelkit/react';
 
 /** Props for the {@link SwipeToClose} wrapper component. */
 export interface SwipeToCloseProps {
   /** When `true`, vertical swipe-to-close gesture handling is active. Typically `true` on touch devices. */
   enabled: boolean;
+
   /** Callback invoked when the user completes a swipe-up gesture that exceeds the dismiss threshold. */
   onClose: () => void;
+
   /** Content to wrap — usually the `Reel` slider element. */
   children: ReactNode;
+
   /** Optional CSS class forwarded to the outer `<div>`. */
   className?: string;
 }
@@ -28,7 +31,7 @@ export interface SwipeToCloseProps {
  * viewport height the `onClose` callback fires; otherwise the
  * container animates back to its original position.
  *
- * Rendering is optimised via `Signal`-backed `ValueNotifierObserver`
+ * Rendering is optimised via `Signal`-backed `Observe`
  * so that only the inline styles re-render — not the entire subtree.
  *
  * @internal Used by {@link LightboxContent}. Not exported from the package.
@@ -118,7 +121,7 @@ export const SwipeToClose: FC<SwipeToCloseProps> = ({
   }, [enabled, onClose, dragOffset, opacity, isTransitioning]);
 
   return (
-    <ValueNotifierObserver deps={[dragOffset, opacity, isTransitioning]}>
+    <Observe signals={[dragOffset, opacity, isTransitioning]}>
       {() => (
         <div
           ref={containerRef}
@@ -134,6 +137,6 @@ export const SwipeToClose: FC<SwipeToCloseProps> = ({
           {children}
         </div>
       )}
-    </ValueNotifierObserver>
+    </Observe>
   );
 };

@@ -17,5 +17,18 @@
     "noFallthroughCasesInSwitch": true
   },
   "include": ["src"],
-  "references": [{ "path": "./tsconfig.app.json" }]
+  "references": [
+    {
+      "path": "../../packages/reelkit-react-reel-player"
+    },
+    {
+      "path": "../../packages/reelkit-react-lightbox"
+    },
+    {
+      "path": "../../packages/reelkit-react"
+    },
+    {
+      "path": "./tsconfig.app.json"
+    }
+  ]
 }

@@ -1,20 +1,55 @@
-import React from 'react';
+import React, { type CSSProperties } from 'react';
 
-/** @internal */
-interface ImageSlideProps {
+/**
+ * Props for the {@link ImageSlide} component.
+ */
+export interface ImageSlideProps {
   /** URL of the image to display. */
   src: string;
+
   /** [width, height] in pixels. */
   size: [number, number];
+
+  /** Additional CSS class for the root container. */
+  className?: string;
+
+  /** Additional inline styles merged onto the root container. */
+  style?: CSSProperties;
+
+  /** CSS class for the `<img>` element. */
+  imgClassName?: string;
+
+  /** Inline styles merged onto the `<img>` element. */
+  imgStyle?: CSSProperties;
 }
 
 /**
  * Renders a single image slide with `object-fit: cover` and lazy loading.
- * @internal Used by {@link MediaSlide} and {@link NestedSlider}.
+ *
+ * Can be used standalone inside a `renderSlide` callback for custom
+ * image slides with your own styles.
+ *
+ * @example
+ * ```tsx
+ * <ImageSlide
+ *   src="/photo.jpg"
+ *   size={[400, 700]}
+ *   style={{ backgroundColor: '#1a1a1a' }}
+ *   imgStyle={{ objectFit: 'contain' }}
+ * />
+ * ```
  */
-const ImageSlide: React.FC<ImageSlideProps> = ({ src, size }) => {
+const ImageSlide: React.FC<ImageSlideProps> = ({
+  src,
+  size,
+  className,
+  style,
+  imgClassName,
+  imgStyle,
+}) => {
   return (
     <div
+      className={className}
       style={{
         width: size[0],
         height: size[1],
@@ -23,16 +58,19 @@ const ImageSlide: React.FC<ImageSlideProps> = ({ src, size }) => {
         justifyContent: 'center',
         backgroundColor: '#000',
         overflow: 'hidden',
+        ...style,
       }}
     >
       <img
         src={src}
         alt=""
+        className={imgClassName}
         style={{
           width: '100%',
           height: '100%',
           objectFit: 'cover',
           objectPosition: 'center',
+          ...imgStyle,
         }}
         loading="lazy"
       />

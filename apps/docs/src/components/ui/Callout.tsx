@@ -3,8 +3,11 @@ import { Info, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
 
 interface CalloutProps {
   type?: 'info' | 'warning' | 'success' | 'error';
+
   title?: string;
+
   className?: string;
+
   children: ReactNode;
 }
 
@@ -42,7 +45,12 @@ const icons = {
   error: XCircle,
 };
 
-export function Callout({ type = 'info', title, className, children }: CalloutProps) {
+export function Callout({
+  type = 'info',
+  title,
+  className,
+  children,
+}: CalloutProps) {
   const style = styles[type];
   const Icon = icons[type];
 

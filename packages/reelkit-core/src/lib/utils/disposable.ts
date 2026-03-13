@@ -12,6 +12,7 @@ export interface DisposableList {
    * @param disposers - Cleanup functions to register.
    */
   push: (...disposers: Disposer[]) => void;
+
   /** Calls all registered disposers and clears the list. */
   dispose: () => void;
 }

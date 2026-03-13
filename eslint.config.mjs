@@ -21,6 +21,7 @@ export default [
     ignores: [
       '**/dist',
       '**/node_modules',
+      '**/.next',
       '**/vite.config.*.timestamp*',
       '**/vitest.config.*.timestamp*',
     ],
@@ -49,7 +50,9 @@ export default [
   },
   {
     files: ['**/*.ts', '**/*.tsx'],
-    rules: {},
+    rules: {
+      '@nx/workspace-lines-between-type-members': 'error',
+    },
   },
   {
     files: ['**/*.js', '**/*.jsx'],

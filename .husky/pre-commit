@@ -1,0 +1,1 @@
+npm run fmt:chk && npm run lint && npm run typecheck
