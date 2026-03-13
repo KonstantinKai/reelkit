@@ -93,14 +93,7 @@
         "skipLockFileUpdate": true
       }
     },
-    "changelog": {
-      "workspaceChangelog": false,
-      "projectChangelogs": {
-        "renderOptions": {
-          "applyUsernameToAuthors": true
-        }
-      }
-    },
+    "changelog": false,
     "git": {
       "commit": true,
       "tag": true

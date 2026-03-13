@@ -16,6 +16,8 @@
   },
   "files": [
     "dist",
+    "!dist/package.json",
+    "!dist/README.md",
     "!**/*.tsbuildinfo"
   ],
   "repository": {

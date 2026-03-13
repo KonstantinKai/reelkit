@@ -4,16 +4,9 @@
   "sourceRoot": "packages/reelkit-react-lightbox/src",
   "projectType": "library",
   "tags": [],
-  "targets": {
-    "nx-release-publish": {
-      "options": {
-        "packageRoot": "{projectRoot}/dist"
-      }
-    }
-  },
+  "targets": {},
   "release": {
     "version": {
-      "manifestRootsToUpdate": ["{projectRoot}", "{projectRoot}/dist"],
       "currentVersionResolver": "git-tag",
       "fallbackCurrentVersionResolver": "disk"
     }
