@@ -99,8 +99,9 @@ export default function Home() {
             <div className="flex-1 text-center lg:text-left">
               <h1 className="text-5xl md:text-6xl font-bold mb-6 flex items-center justify-center lg:justify-start gap-3">
                 <AnimatedLogo className="w-12 h-12 md:w-14 md:h-14" />
-                <span className="bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
-                  reelkit
+                <span>
+                  <span className="text-slate-900 dark:text-white">Reel</span>
+                  <span className="bg-gradient-to-r from-primary-500 to-accent-500 bg-clip-text text-transparent">Kit</span>
                 </span>
               </h1>
 

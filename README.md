@@ -2,7 +2,7 @@
   <img src="logo.svg" width="80" height="80" alt="reelkit" />
 </p>
 
-<h1 align="center">reelkit</h1>
+<h1 align="center">Reel<em>Kit</em></h1>
 
 <p align="center">
   Single-item slider for TikTok/Instagram Reels-style experiences.<br/>

@@ -53,8 +53,9 @@ export default function Header({
                   alt="reelkit"
                   className="w-9 h-9 rounded-xl shadow-lg shadow-primary-500/25 group-hover:shadow-primary-500/40 transition-shadow"
                 />
-                <span className="text-xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
-                  reelkit
+                <span className="text-xl font-bold">
+                  <span className="text-slate-900 dark:text-white">Reel</span>
+                  <span className="bg-gradient-to-r from-primary-500 to-accent-500 bg-clip-text text-transparent">Kit</span>
                 </span>
               </Link>
             </div>
