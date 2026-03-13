@@ -30,6 +30,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Build packages
+        run: npx nx run-many -t build
+
       - name: Publish packages
         run: npx nx release publish
         env:
