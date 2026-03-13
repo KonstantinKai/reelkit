@@ -29,6 +29,9 @@ test-results
 playwright-report
 playwright/.cache
 
+# Secrets
+.npmrc
+
 # Misc
 *.log
 npm-debug.log*
