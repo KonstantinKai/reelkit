@@ -10,11 +10,14 @@ export default function Footer() {
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center gap-2 mb-4">
               <img src={logoSvg} alt="reelkit" className="w-8 h-8 rounded-lg" />
-              <span className="text-lg font-bold">reelkit</span>
+              <span className="text-lg font-bold">
+                <span className="text-white">Reel</span>
+                <span className="bg-gradient-to-r from-primary-500 to-accent-500 bg-clip-text text-transparent">Kit</span>
+              </span>
             </div>
             <p className="text-slate-400 text-sm max-w-md">
-              A framework-agnostic one-item-at-a-time slider library. Perfect
-              for vertical video feeds, story viewers, and fullscreen galleries.
+              Headless, virtualized, zero-dependency slider engine. Build
+              TikTok/Reels-style feeds with 60fps gestures and only 3 DOM nodes.
             </p>
           </div>
 
