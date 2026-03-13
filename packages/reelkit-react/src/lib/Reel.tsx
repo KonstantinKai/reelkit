@@ -1,6 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import {
-  type ReactElement,
   type MutableRefObject,
   type CSSProperties,
   type ReactNode,
