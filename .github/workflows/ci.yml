@@ -24,7 +24,9 @@ jobs:
 
       - run: npx nx format:check
 
-      - run: npx nx run-many -t lint typecheck test build
+      - run: npx nx run-many -t build
+
+      - run: npx nx run-many -t lint typecheck test
 
       - name: Install Playwright browsers
         if: github.event_name == 'pull_request'
