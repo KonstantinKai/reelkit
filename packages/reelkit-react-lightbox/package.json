@@ -47,6 +47,9 @@
     "react-component",
     "typescript"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "peerDependencies": {
     "@reelkit/core": "*",
     "@reelkit/react": "*",

@@ -46,5 +46,8 @@
     "zero-dependencies",
     "typescript"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {}
 }
