@@ -1,3 +1,13 @@
+## 0.1.1 (2026-03-13)
+
+### 🩹 Fixes
+
+- add publishConfig and temporarily disable CI/docs workflows ([1b3c38c](https://github.com/KonstantinKai/reelkit/commit/1b3c38c))
+
+### ❤️ Thank You
+
+- KonstantinKai @KonstantinKai
+
 ## 0.1.0 (2026-03-13)
 
 ### 🚀 Features
