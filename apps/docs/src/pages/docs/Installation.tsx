@@ -33,29 +33,29 @@ const packages = [
 const bundleSizes = [
   {
     name: '@reelkit/core',
-    js: '14.9 kB',
-    gzip: '4.9 kB',
+    js: '13.8 kB',
+    gzip: '4.5 kB',
     css: '-',
     cssGzip: '-',
   },
   {
     name: '@reelkit/react',
-    js: '9.1 kB',
-    gzip: '3.1 kB',
+    js: '9.4 kB',
+    gzip: '3.3 kB',
     css: '-',
     cssGzip: '-',
   },
   {
     name: '@reelkit/react-reel-player',
-    js: '13.5 kB',
-    gzip: '3.9 kB',
-    css: '1.8 kB',
-    cssGzip: '0.7 kB',
+    js: '16.5 kB',
+    gzip: '4.6 kB',
+    css: '2.5 kB',
+    cssGzip: '0.8 kB',
   },
   {
     name: '@reelkit/react-lightbox',
-    js: '8.9 kB',
-    gzip: '2.8 kB',
+    js: '10.1 kB',
+    gzip: '3.1 kB',
     css: '3.1 kB',
     cssGzip: '0.8 kB',
   },
@@ -64,7 +64,7 @@ const bundleSizes = [
 const comparison = [
   {
     name: 'ReelKit (core + react)',
-    gzip: '8.0 kB',
+    gzip: '7.8 kB',
     virtualization: true,
     notes: 'Zero dependencies',
   },

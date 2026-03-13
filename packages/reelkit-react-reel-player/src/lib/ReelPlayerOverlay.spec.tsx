@@ -1,41 +1,46 @@
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { ValueNotifierObserver } from '@reelkit/react';
 import type { ContentItem } from './types';
 
 // Track Reel props
 let lastReelProps: Record<string, unknown> = {};
 
-vi.mock('@reelkit/react', () => ({
-  Reel: (props: Record<string, unknown>) => {
-    lastReelProps = props;
-    // Provide mock api ref
-    if (props.apiRef) {
-      const ref = props.apiRef as { current: unknown };
-      ref.current = {
-        next: vi.fn(),
-        prev: vi.fn(),
-        goTo: vi.fn().mockResolvedValue(undefined),
-        adjust: vi.fn(),
-        observe: vi.fn(),
-        unobserve: vi.fn(),
-      };
-    }
-    // Invoke itemBuilder for index 0 so MediaSlide gets rendered
-    const itemBuilder = props.itemBuilder as
-      | ((
-          index: number,
-          key: string,
-          size: [number, number],
-        ) => React.ReactNode)
-      | undefined;
-    return (
-      <div data-testid="mock-reel">
-        {itemBuilder && itemBuilder(0, '0', [400, 700])}
-      </div>
-    );
-  },
-  useBodyLock: vi.fn(),
-}));
+vi.mock('@reelkit/react', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@reelkit/react')>();
+  return {
+    ...actual,
+    Reel: (props: Record<string, unknown>) => {
+      lastReelProps = props;
+      // Provide mock api ref
+      if (props.apiRef) {
+        const ref = props.apiRef as { current: unknown };
+        ref.current = {
+          next: vi.fn(),
+          prev: vi.fn(),
+          goTo: vi.fn().mockResolvedValue(undefined),
+          adjust: vi.fn(),
+          observe: vi.fn(),
+          unobserve: vi.fn(),
+        };
+      }
+      // Invoke itemBuilder for index 0 so MediaSlide gets rendered
+      const itemBuilder = props.itemBuilder as
+        | ((
+            index: number,
+            key: string,
+            size: [number, number],
+          ) => React.ReactNode)
+        | undefined;
+      return (
+        <div data-testid="mock-reel">
+          {itemBuilder && itemBuilder(0, '0', [400, 700])}
+        </div>
+      );
+    },
+    useBodyLock: vi.fn(),
+  };
+});
 
 let lastMediaSlideProps: Record<string, unknown> = {};
 

@@ -154,6 +154,23 @@ test.describe('Custom Lightbox - Custom Controls (renderControls)', () => {
 
     await expect(player.counter).toContainText('1 / 6');
   });
+
+  test('close button does not overlap download button', async ({ page }) => {
+    const player = new CustomLightboxPage(page);
+    await player.openDemo('custom-controls');
+
+    const closeBtn = page.locator('.rk-lightbox-close');
+    const downloadBtn = page.locator('[data-testid="custom-download-btn"]');
+
+    const closeBox = await closeBtn.boundingBox();
+    const dlBox = await downloadBtn.boundingBox();
+
+    expect(closeBox).toBeTruthy();
+    expect(dlBox).toBeTruthy();
+
+    // Download button should be to the left of close button
+    expect(dlBox!.x + dlBox!.width).toBeLessThanOrEqual(closeBox!.x + 2);
+  });
 });
 
 test.describe('Custom Lightbox - Custom Slide (renderSlide)', () => {
@@ -286,6 +303,36 @@ test.describe('Custom Lightbox - Custom Navigation (renderNavigation)', () => {
 
     const prevBtn = page.locator('[data-testid="custom-nav-prev"]');
     await expect(prevBtn).toBeDisabled();
+  });
+
+  test('only one counter is visible', async ({ page }) => {
+    const player = new CustomLightboxPage(page);
+    await player.openDemo('custom-navigation');
+
+    // Default counter from LightboxControls should not be present
+    const defaultCounter = page.locator('.rk-lightbox-counter');
+    await expect(defaultCounter).toHaveCount(0);
+
+    // Only the custom nav counter should exist
+    const customCounter = page.locator('[data-testid="custom-nav-counter"]');
+    await expect(customCounter).toHaveCount(1);
+  });
+
+  test('close and fullscreen buttons do not overlap', async ({ page }) => {
+    const player = new CustomLightboxPage(page);
+    await player.openDemo('custom-navigation');
+
+    const closeBtn = page.locator('.rk-lightbox-close');
+    const fullscreenBtn = page.locator('.rk-lightbox-btn');
+
+    const closeBox = await closeBtn.boundingBox();
+    const fsBox = await fullscreenBtn.boundingBox();
+
+    expect(closeBox).toBeTruthy();
+    expect(fsBox).toBeTruthy();
+
+    // Boxes should not overlap: close should be to the right of fullscreen
+    expect(fsBox!.x + fsBox!.width).toBeLessThanOrEqual(closeBox!.x + 2);
   });
 
   test('closes with close button', async ({ page }) => {

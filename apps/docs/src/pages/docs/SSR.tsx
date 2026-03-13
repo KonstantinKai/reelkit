@@ -191,16 +191,65 @@ export default function FeedPage({ items }: Props) {
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Responsive Size with SSR</h2>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
-          The{' '}
+          The simplest approach is to omit the{' '}
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
             size
           </code>{' '}
-          prop requires pixel values, but{' '}
+          prop entirely. When{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            size
+          </code>{' '}
+          is not provided, Reel auto-measures its container via{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            ResizeObserver
+          </code>{' '}
+          on the client. During SSR the slider renders an empty container; on
+          hydration it measures and renders slides immediately:
+        </p>
+        <CodeBlock
+          code={`'use client';
+
+import { Reel } from '@reelkit/react';
+
+export function FullScreenFeed({ items }: { items: FeedItem[] }) {
+  return (
+    <Reel
+      count={items.length}
+      style={{ width: '100%', height: '100vh' }}
+      itemBuilder={(index) => <Slide data={items[index]} />}
+    />
+  );
+}`}
+          language="typescript"
+        />
+        <div className="mt-4">
+          <Callout type="info" title="How auto-size works">
+            <p>
+              When{' '}
+              <code className="px-1 py-0.5 bg-blue-100 dark:bg-blue-900/30 rounded text-xs font-mono">
+                size
+              </code>{' '}
+              is omitted, the container must be sized by CSS (parent flex/grid,
+              explicit width/height, or percentages). The slider renders nothing
+              until the first measurement completes, then fills the measured
+              dimensions and responds to subsequent resizes automatically.
+            </p>
+          </Callout>
+        </div>
+
+        <h3 className="text-xl font-bold mt-8 mb-4">
+          Explicit size (manual approach)
+        </h3>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          If you need pixel-level control, pass an explicit{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            size
+          </code>{' '}
+          prop. Since{' '}
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
             window.innerWidth
           </code>{' '}
-          is not available during SSR. Use a default size for the server render
-          and update it on mount:
+          is not available during SSR, provide a default and update on mount:
         </p>
         <CodeBlock
           code={`'use client';
@@ -377,11 +426,15 @@ if (typeof window !== 'undefined') {
                 directive in Next.js App Router
               </li>
               <li>
-                Provide a default{' '}
+                Omit{' '}
                 <code className="px-1 py-0.5 bg-amber-100 dark:bg-amber-900/30 rounded text-xs font-mono">
                   size
                 </code>{' '}
-                for SSR when using viewport-based dimensions
+                for auto-measurement, or provide a default{' '}
+                <code className="px-1 py-0.5 bg-amber-100 dark:bg-amber-900/30 rounded text-xs font-mono">
+                  size
+                </code>{' '}
+                when using viewport-based dimensions
               </li>
               <li>
                 Don't call{' '}

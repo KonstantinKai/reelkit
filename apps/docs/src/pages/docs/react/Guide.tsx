@@ -283,6 +283,32 @@ export default function ReactGuide() {
       </section>
 
       <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">Auto-sizing</h2>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          The{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            size
+          </code>{' '}
+          prop is optional. When omitted, Reel auto-measures its container via{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            ResizeObserver
+          </code>{' '}
+          and adapts to CSS-driven layout. The container must be sized by its
+          parent (e.g. flex, grid, or explicit CSS dimensions).
+        </p>
+        <CodeBlock
+          code={`// Explicit size (fixed)
+<Reel count={items.length} size={[400, 600]} itemBuilder={...} />
+
+// Auto-size (responsive — sized by parent CSS)
+<div style={{ width: '100%', height: '100vh' }}>
+  <Reel count={items.length} itemBuilder={...} />
+</div>`}
+          language="tsx"
+        />
+      </section>
+
+      <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">itemBuilder Pattern</h2>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           The{' '}

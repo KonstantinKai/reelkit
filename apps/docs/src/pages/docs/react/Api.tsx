@@ -10,8 +10,9 @@ const reelProps = [
   {
     prop: 'size',
     type: '[number, number]',
-    default: 'required',
-    description: 'Width and height as [width, height]',
+    default: '-',
+    description:
+      'Width and height as [width, height]. When omitted, auto-measures via ResizeObserver',
   },
   {
     prop: 'itemBuilder',
@@ -77,7 +78,8 @@ const reelProps = [
     prop: 'keyExtractor',
     type: '(index: number) => string',
     default: '-',
-    description: 'Custom key function for React reconciliation (useful with loop)',
+    description:
+      'Custom key function for React reconciliation (useful with loop)',
   },
   {
     prop: 'apiRef',
@@ -153,18 +155,78 @@ const apiMethods = [
 ];
 
 const indicatorProps = [
-  { prop: 'count', type: 'number', default: 'required', description: 'Total number of items' },
-  { prop: 'active', type: 'number', default: '0', description: 'Current active index' },
-  { prop: 'direction', type: "'vertical' | 'horizontal'", default: "'vertical'", description: 'Indicator orientation' },
-  { prop: 'radius', type: 'number', default: '3', description: 'Dot size in pixels' },
-  { prop: 'visible', type: 'number', default: '5', description: 'Max normal-sized dots visible' },
-  { prop: 'gap', type: 'number', default: '4', description: 'Space between dots in pixels' },
-  { prop: 'activeColor', type: 'string', default: "'#fff'", description: 'Active dot color' },
-  { prop: 'inactiveColor', type: 'string', default: "'rgba(255,255,255,0.5)'", description: 'Inactive dot color' },
-  { prop: 'edgeScale', type: 'number', default: '0.5', description: 'Scale for overflow edge dots' },
-  { prop: 'onDotClick', type: '(index: number) => void', default: '-', description: 'Callback when a dot is clicked' },
-  { prop: 'className', type: 'string', default: '-', description: 'Custom CSS class' },
-  { prop: 'style', type: 'CSSProperties', default: '-', description: 'Custom inline styles' },
+  {
+    prop: 'count',
+    type: 'number',
+    default: 'required',
+    description: 'Total number of items',
+  },
+  {
+    prop: 'active',
+    type: 'number',
+    default: '0',
+    description: 'Current active index',
+  },
+  {
+    prop: 'direction',
+    type: "'vertical' | 'horizontal'",
+    default: "'vertical'",
+    description: 'Indicator orientation',
+  },
+  {
+    prop: 'radius',
+    type: 'number',
+    default: '3',
+    description: 'Dot size in pixels',
+  },
+  {
+    prop: 'visible',
+    type: 'number',
+    default: '5',
+    description: 'Max normal-sized dots visible',
+  },
+  {
+    prop: 'gap',
+    type: 'number',
+    default: '4',
+    description: 'Space between dots in pixels',
+  },
+  {
+    prop: 'activeColor',
+    type: 'string',
+    default: "'#fff'",
+    description: 'Active dot color',
+  },
+  {
+    prop: 'inactiveColor',
+    type: 'string',
+    default: "'rgba(255,255,255,0.5)'",
+    description: 'Inactive dot color',
+  },
+  {
+    prop: 'edgeScale',
+    type: 'number',
+    default: '0.5',
+    description: 'Scale for overflow edge dots',
+  },
+  {
+    prop: 'onDotClick',
+    type: '(index: number) => void',
+    default: '-',
+    description: 'Callback when a dot is clicked',
+  },
+  {
+    prop: 'className',
+    type: 'string',
+    default: '-',
+    description: 'Custom CSS class',
+  },
+  {
+    prop: 'style',
+    type: 'CSSProperties',
+    default: '-',
+    description: 'Custom inline styles',
+  },
 ];
 
 export default function ReactApi() {

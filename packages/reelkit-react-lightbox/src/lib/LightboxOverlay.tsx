@@ -8,7 +8,13 @@ import {
   useCallback,
 } from 'react';
 import { createPortal } from 'react-dom';
-import { Reel, type ReelApi, type ReelProps } from '@reelkit/react';
+import { createSignal } from '@reelkit/core';
+import {
+  Reel,
+  ValueNotifierObserver,
+  type ReelApi,
+  type ReelProps,
+} from '@reelkit/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import useFullscreen from './useFullscreen';
 import { useBodyLock } from '@reelkit/react';
@@ -188,10 +194,12 @@ const LightboxContent: FC<LightboxOverlayProps> = ({
   const internalApiRef = useRef<ReelApi>(null);
   const sliderRef = apiRef ?? internalApiRef;
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
-  const [size, setSize] = useState<[number, number]>(() =>
-    typeof window !== 'undefined'
-      ? [window.innerWidth, window.innerHeight]
-      : [0, 0],
+  const [sizeSignal] = useState(() =>
+    createSignal<[number, number]>(
+      typeof window !== 'undefined'
+        ? [window.innerWidth, window.innerHeight]
+        : [0, 0],
+    ),
   );
   const [isFullscreen, requestFullscreen, exitFullscreen] = useFullscreen({
     ref: containerRef,
@@ -208,7 +216,7 @@ const LightboxContent: FC<LightboxOverlayProps> = ({
   // Update size on resize
   useEffect(() => {
     const handleResize = () => {
-      setSize([window.innerWidth, window.innerHeight]);
+      sizeSignal.value = [window.innerWidth, window.innerHeight];
       setIsMobile('ontouchstart' in window || navigator.maxTouchPoints > 0);
     };
 
@@ -333,21 +341,25 @@ const LightboxContent: FC<LightboxOverlayProps> = ({
 
       {/* Reel slider - wrapped in SwipeToClose so only image moves */}
       <SwipeToClose enabled={isMobile} onClose={onClose}>
-        <Reel
-          count={images.length}
-          size={size}
-          direction="horizontal"
-          initialIndex={initialIndex}
-          apiRef={sliderRef}
-          afterChange={handleAfterChange}
-          transitionDuration={transitionDuration}
-          swipeDistanceFactor={swipeDistanceFactor}
-          loop={loop}
-          useNavKeys={useNavKeys}
-          enableWheel={enableWheel}
-          wheelDebounceMs={wheelDebounceMs}
-          itemBuilder={itemBuilder}
-        />
+        <ValueNotifierObserver deps={[sizeSignal]}>
+          {() => (
+            <Reel
+              count={images.length}
+              size={sizeSignal.value}
+              direction="horizontal"
+              initialIndex={initialIndex}
+              apiRef={sliderRef}
+              afterChange={handleAfterChange}
+              transitionDuration={transitionDuration}
+              swipeDistanceFactor={swipeDistanceFactor}
+              loop={loop}
+              useNavKeys={useNavKeys}
+              enableWheel={enableWheel}
+              wheelDebounceMs={wheelDebounceMs}
+              itemBuilder={itemBuilder}
+            />
+          )}
+        </ValueNotifierObserver>
       </SwipeToClose>
 
       {/* Navigation buttons */}
@@ -399,7 +411,9 @@ const LightboxContent: FC<LightboxOverlayProps> = ({
           )}
 
       {/* Mobile swipe hint */}
-      {isMobile && <div className="rk-lightbox-swipe-hint">Swipe up to close</div>}
+      {isMobile && (
+        <div className="rk-lightbox-swipe-hint">Swipe up to close</div>
+      )}
     </div>
   );
 

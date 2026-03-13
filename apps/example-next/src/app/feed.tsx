@@ -1,30 +1,17 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { Reel, ReelIndicator, type ReelApi } from '@reelkit/react';
 import type { FeedItem } from './page';
 
-// Default size for SSR — matches common mobile viewport.
-// Updated to actual viewport on client mount.
-const DEFAULT_SIZE: [number, number] = [390, 844];
-
 export function Feed({ items }: { items: FeedItem[] }) {
-  const [size, setSize] = useState<[number, number]>(DEFAULT_SIZE);
   const [activeIndex, setActiveIndex] = useState(0);
   const apiRef = useRef<ReelApi>(null);
-
-  useEffect(() => {
-    const update = () => setSize([window.innerWidth, window.innerHeight]);
-
-    update();
-    window.addEventListener('resize', update);
-    return () => window.removeEventListener('resize', update);
-  }, []);
 
   return (
     <Reel
       count={items.length}
-      size={size}
+      style={{ width: '100vw', height: '100vh' }}
       direction="vertical"
       enableWheel
       apiRef={apiRef}

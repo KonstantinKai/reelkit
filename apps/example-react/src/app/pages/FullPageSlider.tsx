@@ -2,6 +2,7 @@ import React from 'react';
 import { Reel, ReelIndicator, useBodyLock, type ReelApi } from '@reelkit/react';
 
 const TOTAL_SLIDES = 10000;
+const SIZE_MODE_KEY = 'reelkit-fullpage-size-mode';
 
 // Generate color from index using HSL for nice variety
 const getSlideColor = (index: number): string => {
@@ -18,9 +19,14 @@ const getSlideContent = (index: number) => ({
       : `Item #${index + 1} of ${TOTAL_SLIDES.toLocaleString()}`,
 });
 
+type SizeMode = 'explicit' | 'auto';
+
 function FullPageSlider() {
   const [activeIndex, setActiveIndex] = React.useState(0);
   const sliderRef = React.useRef<ReelApi>(null);
+  const [sizeMode, setSizeMode] = React.useState<SizeMode>(
+    () => (localStorage.getItem(SIZE_MODE_KEY) as SizeMode) || 'explicit',
+  );
   const [size, setSize] = React.useState<[number, number]>([
     window.innerWidth,
     window.innerHeight,
@@ -30,7 +36,15 @@ function FullPageSlider() {
   // Lock body scroll to prevent browser chrome movement on mobile
   useBodyLock(true);
 
+  const toggleSizeMode = () => {
+    const next = sizeMode === 'explicit' ? 'auto' : 'explicit';
+    localStorage.setItem(SIZE_MODE_KEY, next);
+    setSizeMode(next);
+  };
+
   React.useEffect(() => {
+    if (sizeMode !== 'explicit') return;
+
     const handleResize = () => {
       setSize([window.innerWidth, window.innerHeight]);
       sliderRef.current?.adjust();
@@ -38,19 +52,22 @@ function FullPageSlider() {
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [sizeMode]);
 
   return (
     <div style={{ width: '100vw', height: '100vh', overflow: 'hidden' }}>
       <Reel
         count={TOTAL_SLIDES}
-        size={size}
+        {...(sizeMode === 'explicit' ? { size } : {})}
         direction="vertical"
         loop={false}
         useNavKeys={true}
         enableWheel={true}
         apiRef={sliderRef}
         afterChange={(index) => setActiveIndex(index)}
+        style={
+          sizeMode === 'auto' ? { width: '100%', height: '100%' } : undefined
+        }
         itemBuilder={(index, _indexInRange, itemSize) => {
           const slide = getSlideContent(index);
           return (
@@ -93,6 +110,26 @@ function FullPageSlider() {
         >
           {(activeIndex + 1).toLocaleString()} / {TOTAL_SLIDES.toLocaleString()}
         </div>
+
+        {/* Size mode toggle */}
+        <button
+          onClick={toggleSizeMode}
+          style={{
+            position: 'absolute',
+            top: 16,
+            right: 60,
+            padding: '8px 16px',
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 20,
+            fontSize: '0.8rem',
+            cursor: 'pointer',
+            zIndex: 10,
+          }}
+        >
+          size: {sizeMode === 'explicit' ? `[${size[0]}, ${size[1]}]` : 'auto'}
+        </button>
 
         {/* Navigation buttons */}
         <div

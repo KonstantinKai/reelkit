@@ -5,36 +5,40 @@ import type { LightboxItem } from './LightboxOverlay';
 // Track Reel props
 let lastReelProps: Record<string, unknown> = {};
 
-vi.mock('@reelkit/react', () => ({
-  Reel: (props: Record<string, unknown>) => {
-    lastReelProps = props;
-    if (props.apiRef) {
-      const ref = props.apiRef as { current: unknown };
-      ref.current = {
-        next: vi.fn(),
-        prev: vi.fn(),
-        goTo: vi.fn().mockResolvedValue(undefined),
-        adjust: vi.fn(),
-        observe: vi.fn(),
-        unobserve: vi.fn(),
-      };
-    }
-    // Invoke itemBuilder for index 0 so renderSlide gets exercised
-    const itemBuilder = props.itemBuilder as
-      | ((
-          index: number,
-          key: number,
-          size: [number, number],
-        ) => React.ReactNode)
-      | undefined;
-    return (
-      <div data-testid="mock-reel">
-        {itemBuilder && itemBuilder(0, 0, [1024, 768])}
-      </div>
-    );
-  },
-  useBodyLock: vi.fn(),
-}));
+vi.mock('@reelkit/react', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@reelkit/react')>();
+  return {
+    ...actual,
+    Reel: (props: Record<string, unknown>) => {
+      lastReelProps = props;
+      if (props.apiRef) {
+        const ref = props.apiRef as { current: unknown };
+        ref.current = {
+          next: vi.fn(),
+          prev: vi.fn(),
+          goTo: vi.fn().mockResolvedValue(undefined),
+          adjust: vi.fn(),
+          observe: vi.fn(),
+          unobserve: vi.fn(),
+        };
+      }
+      // Invoke itemBuilder for index 0 so renderSlide gets exercised
+      const itemBuilder = props.itemBuilder as
+        | ((
+            index: number,
+            key: number,
+            size: [number, number],
+          ) => React.ReactNode)
+        | undefined;
+      return (
+        <div data-testid="mock-reel">
+          {itemBuilder && itemBuilder(0, 0, [1024, 768])}
+        </div>
+      );
+    },
+    useBodyLock: vi.fn(),
+  };
+});
 
 // Mock useFullscreen
 const mockRequestFullscreen = vi.fn();

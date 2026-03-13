@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
   useEffect,
+  useLayoutEffect,
   useCallback,
   memo,
 } from 'react';
@@ -57,8 +58,15 @@ export interface ReelProps {
    */
   initialIndex?: number;
 
-  /** Slider dimensions as `[width, height]` in pixels. */
-  size: [number, number];
+  /**
+   * Slider dimensions as `[width, height]` in pixels.
+   *
+   * When omitted, the component auto-measures its container using
+   * `ResizeObserver`. In that case the container must be sized by CSS
+   * (e.g. via a parent flex/grid, explicit width/height, or percentage).
+   * The slider renders nothing until the first measurement completes.
+   */
+  size?: [number, number];
 
   /**
    * Axis along which slides transition.
@@ -231,10 +239,15 @@ const Element = ({
   wheelDebounceMs = 200,
   ...props
 }: ReelProps) => {
-  const { size, apiRef: forwardedRef } = props;
+  const { size: sizeProp, apiRef: forwardedRef } = props;
+  const autoSize = sizeProp === undefined;
+  const [measuredSize, setMeasuredSize] = useState<[number, number]>([0, 0]);
+  const size: [number, number] = autoSize ? measuredSize : sizeProp;
+
   const propsRef = useRef<ReelProps>(null as unknown as ReelProps);
   propsRef.current = {
     ...props,
+    size,
     rangeExtractor,
     initialIndex,
     direction,
@@ -289,7 +302,7 @@ const Element = ({
           const { keyExtractor, itemBuilder, size } = propsRef.current;
           return (
             <div key={keyExtractor!(i, indexInRange)} data-index={i}>
-              {itemBuilder(i, indexInRange, size)}
+              {itemBuilder(i, indexInRange, size!)}
             </div>
           );
         },
@@ -359,32 +372,58 @@ const Element = ({
     };
   }, []);
 
+  // Auto-measure container size via ResizeObserver when size prop is omitted.
+  // useLayoutEffect ensures the observer is attached before paint, so the
+  // first measurement callback arrives as early as possible.
+  useLayoutEffect(() => {
+    if (!autoSize || !ref.current) return;
+
+    const el = ref.current;
+    const measure = () => {
+      const w = el.clientWidth;
+      const h = el.clientHeight;
+      if (w > 0 && h > 0) {
+        setMeasuredSize((prev) =>
+          prev[0] === w && prev[1] === h ? prev : [w, h],
+        );
+      }
+    };
+
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+
+    return () => observer.disconnect();
+  }, [autoSize]);
+
   const rootStyle: CSSProperties = {
     userSelect: 'none',
     WebkitUserSelect: 'none',
     position: 'relative',
     overflow: 'hidden',
-    width: first(size),
-    height: last(size),
+    ...(autoSize ? {} : { width: first(size), height: last(size) }),
     ...props.style,
   };
 
   const { axisValue, indexes } = controller.state;
 
+  const hasMeasured = !autoSize || primarySize > 0;
+
   return (
     <div ref={ref} className={props.className} style={rootStyle}>
-      <ValueNotifierObserver deps={[indexes]}>
-        {() => (
-          <Content
-            primarySize={primarySize}
-            isHorizontal={isHorizontal}
-            axisValue={axisValue}
-            length={indexes.value.length}
-          >
-            {indexes.value.map(itemBuilder)}
-          </Content>
-        )}
-      </ValueNotifierObserver>
+      {hasMeasured && (
+        <ValueNotifierObserver deps={[indexes]}>
+          {() => (
+            <Content
+              primarySize={primarySize}
+              isHorizontal={isHorizontal}
+              axisValue={axisValue}
+              length={indexes.value.length}
+            >
+              {indexes.value.map(itemBuilder)}
+            </Content>
+          )}
+        </ValueNotifierObserver>
+      )}
       {props.children}
     </div>
   );
@@ -412,8 +451,8 @@ export const Reel = memo(
     prev.enableWheel === next.enableWheel &&
     prev.wheelDebounceMs === next.wheelDebounceMs &&
     // JSX/render output
-    first(prev.size) === first(next.size) &&
-    last(prev.size) === last(next.size) &&
+    prev.size?.[0] === next.size?.[0] &&
+    prev.size?.[1] === next.size?.[1] &&
     prev.className === next.className &&
     prev.style === next.style &&
     prev.children === next.children,

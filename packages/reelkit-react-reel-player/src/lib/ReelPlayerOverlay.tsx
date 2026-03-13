@@ -8,8 +8,13 @@ import React, {
 } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronUp, ChevronDown } from 'lucide-react';
-import { noop } from '@reelkit/core';
-import { Reel, type ReelApi, type ReelProps } from '@reelkit/react';
+import { noop, createSignal } from '@reelkit/core';
+import {
+  Reel,
+  ValueNotifierObserver,
+  type ReelApi,
+  type ReelProps,
+} from '@reelkit/react';
 import { useBodyLock } from '@reelkit/react';
 import type {
   BaseContentItem,
@@ -186,12 +191,14 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>({
     return [width, height];
   }, [aspectRatio]);
 
-  const [size, setSize] = useState<[number, number]>(getSize);
+  const [sizeSignal] = useState(() =>
+    createSignal<[number, number]>(getSize()),
+  );
 
   // Handle window resize
   useEffect(() => {
     const handleResize = () => {
-      setSize(getSize());
+      sizeSignal.value = getSize();
       sliderRef.current?.adjust();
     };
 
@@ -323,31 +330,49 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>({
   const overlay = (
     <div className="rk-reel-overlay">
       <div className="rk-reel-container">
-        <Reel
-          count={content.length}
-          size={size}
-          direction="vertical"
-          loop={loop}
-          useNavKeys={useNavKeys}
-          enableWheel={enableWheel}
-          wheelDebounceMs={wheelDebounceMs}
-          transitionDuration={transitionDuration}
-          swipeDistanceFactor={swipeDistanceFactor}
-          initialIndex={initialIndex}
-          apiRef={sliderRef}
-          beforeChange={handleBeforeChange}
-          afterChange={handleAfterChange}
-          onSlideDragStart={handleSlideDragStart}
-          onSlideDragEnd={handleSlideDragEnd}
-          onSlideDragCanceled={handleSlideDragCanceled}
-          itemBuilder={(index, _, itemSize) => {
-            const item = content[index];
-            const isActive = activeIndex === index;
+        <ValueNotifierObserver deps={[sizeSignal]}>
+          {() => (
+            <Reel
+              count={content.length}
+              size={sizeSignal.value}
+              direction="vertical"
+              loop={loop}
+              useNavKeys={useNavKeys}
+              enableWheel={enableWheel}
+              wheelDebounceMs={wheelDebounceMs}
+              transitionDuration={transitionDuration}
+              swipeDistanceFactor={swipeDistanceFactor}
+              initialIndex={initialIndex}
+              apiRef={sliderRef}
+              beforeChange={handleBeforeChange}
+              afterChange={handleAfterChange}
+              onSlideDragStart={handleSlideDragStart}
+              onSlideDragEnd={handleSlideDragEnd}
+              onSlideDragCanceled={handleSlideDragCanceled}
+              itemBuilder={(index, _, itemSize) => {
+                const item = content[index];
+                const isActive = activeIndex === index;
 
-            // Try renderSlide first
-            if (renderSlide) {
-              const custom = renderSlide(item, index, itemSize, isActive);
-              if (custom !== null) {
+                // Try renderSlide first
+                if (renderSlide) {
+                  const custom = renderSlide(item, index, itemSize, isActive);
+                  if (custom !== null) {
+                    return (
+                      <div
+                        className="rk-reel-slide-wrapper"
+                        style={{
+                          width: itemSize[0],
+                          height: itemSize[1],
+                          position: 'relative',
+                        }}
+                      >
+                        {custom}
+                      </div>
+                    );
+                  }
+                }
+
+                // Default: MediaSlide + overlay
                 return (
                   <div
                     className="rk-reel-slide-wrapper"
@@ -357,39 +382,25 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>({
                       position: 'relative',
                     }}
                   >
-                    {custom}
+                    <MediaSlide
+                      content={item}
+                      isActive={isActive}
+                      size={itemSize}
+                      innerSliderRef={innerSliderRef}
+                      enableWheel={enableWheel}
+                      onVideoRef={isActive ? handleVideoRef : undefined}
+                      onActiveMediaTypeChange={
+                        isActive ? handleActiveMediaTypeChange : undefined
+                      }
+                      renderNestedNavigation={renderNestedNavigation}
+                    />
+                    {overlayNode(item, index, isActive)}
                   </div>
                 );
-              }
-            }
-
-            // Default: MediaSlide + overlay
-            return (
-              <div
-                className="reel-slide-wrapper"
-                style={{
-                  width: itemSize[0],
-                  height: itemSize[1],
-                  position: 'relative',
-                }}
-              >
-                <MediaSlide
-                  content={item}
-                  isActive={isActive}
-                  size={itemSize}
-                  innerSliderRef={innerSliderRef}
-                  enableWheel={enableWheel}
-                  onVideoRef={isActive ? handleVideoRef : undefined}
-                  onActiveMediaTypeChange={
-                    isActive ? handleActiveMediaTypeChange : undefined
-                  }
-                  renderNestedNavigation={renderNestedNavigation}
-                />
-                {overlayNode(item, index, isActive)}
-              </div>
-            );
-          }}
-        />
+              }}
+            />
+          )}
+        </ValueNotifierObserver>
 
         {renderControls ? (
           renderControls({ onClose, soundState, activeIndex, content })

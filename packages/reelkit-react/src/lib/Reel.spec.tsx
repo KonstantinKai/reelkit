@@ -1,5 +1,5 @@
-import { render } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { render, act } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { Reel, type ReelApi } from './Reel';
 import React from 'react';
 
@@ -7,6 +7,44 @@ import React from 'react';
 // its bundled reaction() breaks when the module is mocked via vi.mock.
 
 const defaultItemBuilder = (i: number) => <div key={i}>Slide {i}</div>;
+
+// ResizeObserver mock for auto-size tests
+type ResizeCallback = (
+  entries: { contentRect: { width: number; height: number } }[],
+) => void;
+let resizeObserverCallback: ResizeCallback | null = null;
+let observedElements: Element[] = [];
+
+class MockResizeObserver {
+  constructor(callback: ResizeCallback) {
+    resizeObserverCallback = callback;
+  }
+  observe(el: Element) {
+    observedElements.push(el);
+  }
+  unobserve() {
+    /* noop */
+  }
+  disconnect() {
+    observedElements = [];
+    resizeObserverCallback = null;
+  }
+}
+
+const triggerResize = (width: number, height: number) => {
+  // Stub clientWidth/clientHeight on observed elements
+  for (const el of observedElements) {
+    Object.defineProperty(el, 'clientWidth', {
+      value: width,
+      configurable: true,
+    });
+    Object.defineProperty(el, 'clientHeight', {
+      value: height,
+      configurable: true,
+    });
+  }
+  resizeObserverCallback?.([{ contentRect: { width, height } }]);
+};
 
 describe('Reel', () => {
   describe('rendering', () => {
@@ -101,7 +139,8 @@ describe('Reel', () => {
 
   describe('apiRef', () => {
     it('exposes ReelApi via ref object', () => {
-      const apiRef = React.createRef<ReelApi>() as React.MutableRefObject<ReelApi | null>;
+      const apiRef =
+        React.createRef<ReelApi>() as React.MutableRefObject<ReelApi | null>;
 
       render(
         <Reel
@@ -142,7 +181,8 @@ describe('Reel', () => {
     });
 
     it('goTo returns a promise', async () => {
-      const apiRef = React.createRef<ReelApi>() as React.MutableRefObject<ReelApi | null>;
+      const apiRef =
+        React.createRef<ReelApi>() as React.MutableRefObject<ReelApi | null>;
 
       render(
         <Reel
@@ -163,9 +203,7 @@ describe('Reel', () => {
     it('renders virtualized slides (not all items at once)', () => {
       const itemBuilder = vi.fn((i: number) => <div key={i}>Slide {i}</div>);
 
-      render(
-        <Reel count={10} size={[400, 600]} itemBuilder={itemBuilder} />,
-      );
+      render(<Reel count={10} size={[400, 600]} itemBuilder={itemBuilder} />);
 
       // defaultRangeExtractor shows 3 items (prev, current, next)
       // With initial index 0, it should show fewer than 10
@@ -186,7 +224,11 @@ describe('Reel', () => {
         <Reel
           count={3}
           size={[400, 600]}
-          itemBuilder={(i) => <div key={i} data-slide={i}>Slide {i}</div>}
+          itemBuilder={(i) => (
+            <div key={i} data-slide={i}>
+              Slide {i}
+            </div>
+          )}
         />,
       );
 
@@ -194,7 +236,11 @@ describe('Reel', () => {
         <Reel
           count={5}
           size={[400, 600]}
-          itemBuilder={(i) => <div key={i} data-slide={i}>Slide {i}</div>}
+          itemBuilder={(i) => (
+            <div key={i} data-slide={i}>
+              Slide {i}
+            </div>
+          )}
         />,
       );
 
@@ -264,7 +310,9 @@ describe('Reel', () => {
       );
 
       // The inner content div should have flexDirection column
-      const innerDiv = container.querySelector('[style*="flex-direction"]') as HTMLElement;
+      const innerDiv = container.querySelector(
+        '[style*="flex-direction"]',
+      ) as HTMLElement;
       expect(innerDiv).toBeTruthy();
       expect(innerDiv.style.flexDirection).toBe('column');
     });
@@ -279,7 +327,9 @@ describe('Reel', () => {
         />,
       );
 
-      const innerDiv = container.querySelector('[style*="flex-direction"]') as HTMLElement;
+      const innerDiv = container.querySelector(
+        '[style*="flex-direction"]',
+      ) as HTMLElement;
       expect(innerDiv).toBeTruthy();
       expect(innerDiv.style.flexDirection).toBe('row');
     });
@@ -295,9 +345,7 @@ describe('Reel', () => {
 
       const callsAfterFirst = itemBuilder.mock.calls.length;
 
-      rerender(
-        <Reel count={3} size={[400, 600]} itemBuilder={itemBuilder} />,
-      );
+      rerender(<Reel count={3} size={[400, 600]} itemBuilder={itemBuilder} />);
 
       expect(itemBuilder.mock.calls.length).toBe(callsAfterFirst);
     });
@@ -311,9 +359,7 @@ describe('Reel', () => {
 
       const callsAfterFirst = itemBuilder.mock.calls.length;
 
-      rerender(
-        <Reel count={5} size={[400, 600]} itemBuilder={itemBuilder} />,
-      );
+      rerender(<Reel count={5} size={[400, 600]} itemBuilder={itemBuilder} />);
 
       expect(itemBuilder.mock.calls.length).toBeGreaterThan(callsAfterFirst);
     });
@@ -327,6 +373,130 @@ describe('Reel', () => {
 
       const slideWrapper = container.querySelector('[data-index="0"]');
       expect(slideWrapper).toBeTruthy();
+    });
+  });
+
+  describe('auto-size (no size prop)', () => {
+    let originalResizeObserver: typeof ResizeObserver;
+
+    beforeEach(() => {
+      originalResizeObserver = globalThis.ResizeObserver;
+      globalThis.ResizeObserver =
+        MockResizeObserver as unknown as typeof ResizeObserver;
+      observedElements = [];
+      resizeObserverCallback = null;
+    });
+
+    afterEach(() => {
+      globalThis.ResizeObserver = originalResizeObserver;
+    });
+
+    it('does not set inline width/height when size is omitted', () => {
+      const { container } = render(
+        <Reel count={3} itemBuilder={defaultItemBuilder} />,
+      );
+
+      const root = container.firstElementChild as HTMLElement;
+      expect(root.style.width).toBe('');
+      expect(root.style.height).toBe('');
+    });
+
+    it('does not render slides before measurement', () => {
+      const itemBuilder = vi.fn((i: number) => <div key={i}>Slide {i}</div>);
+
+      const { container } = render(
+        <Reel count={3} itemBuilder={itemBuilder} />,
+      );
+
+      expect(itemBuilder).not.toHaveBeenCalled();
+      expect(container.querySelector('[data-index]')).toBeNull();
+    });
+
+    it('renders slides after ResizeObserver measures', () => {
+      const itemBuilder = vi.fn((i: number) => <div key={i}>Slide {i}</div>);
+
+      const { container } = render(
+        <Reel count={3} itemBuilder={itemBuilder} />,
+      );
+
+      act(() => {
+        triggerResize(400, 600);
+      });
+
+      expect(itemBuilder).toHaveBeenCalled();
+      expect(container.querySelector('[data-index="0"]')).toBeTruthy();
+    });
+
+    it('passes measured size to itemBuilder', () => {
+      const itemBuilder = vi.fn(
+        (i: number, _ir: number, size: [number, number]) => (
+          <div key={i}>
+            {size[0]}x{size[1]}
+          </div>
+        ),
+      );
+
+      const { container } = render(
+        <Reel count={3} itemBuilder={itemBuilder} />,
+      );
+
+      act(() => {
+        triggerResize(320, 480);
+      });
+
+      expect(itemBuilder).toHaveBeenCalledWith(
+        expect.any(Number),
+        expect.any(Number),
+        [320, 480],
+      );
+      expect(container.textContent).toContain('320x480');
+    });
+
+    it('observes the container element', () => {
+      render(<Reel count={3} itemBuilder={defaultItemBuilder} />);
+
+      expect(observedElements).toHaveLength(1);
+    });
+
+    it('disconnects on unmount', () => {
+      const { unmount } = render(
+        <Reel count={3} itemBuilder={defaultItemBuilder} />,
+      );
+
+      expect(observedElements).toHaveLength(1);
+      unmount();
+      expect(observedElements).toHaveLength(0);
+    });
+
+    it('still renders children before measurement', () => {
+      const { container } = render(
+        <Reel count={3} itemBuilder={defaultItemBuilder}>
+          <div data-testid="overlay">Overlay</div>
+        </Reel>,
+      );
+
+      expect(container.querySelector('[data-testid="overlay"]')).toBeTruthy();
+    });
+
+    it('preserves other root styles without size', () => {
+      const { container } = render(
+        <Reel count={3} itemBuilder={defaultItemBuilder} />,
+      );
+
+      const root = container.firstElementChild as HTMLElement;
+      expect(root.style.overflow).toBe('hidden');
+      expect(root.style.position).toBe('relative');
+      expect(root.style.userSelect).toBe('none');
+    });
+
+    it('sets explicit size when size prop is provided', () => {
+      const { container } = render(
+        <Reel count={3} size={[400, 600]} itemBuilder={defaultItemBuilder} />,
+      );
+
+      const root = container.firstElementChild as HTMLElement;
+      expect(root.style.width).toBe('400px');
+      expect(root.style.height).toBe('600px');
     });
   });
 });

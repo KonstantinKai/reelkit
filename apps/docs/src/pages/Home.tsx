@@ -117,7 +117,7 @@ export default function Home() {
             <p className="text-xl md:text-2xl text-slate-600 dark:text-slate-300 mb-8 max-w-3xl mx-auto">
               Single-item slider for{' '}
               <span className="text-primary-600 dark:text-primary-400 font-semibold">
-                TikTok/Instagram-style
+                TikTok/Instagram Reels-style
               </span>{' '}
               experiences
             </p>

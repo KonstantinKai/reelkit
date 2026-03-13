@@ -328,7 +328,10 @@ function ImagePreviewCustomPage() {
               >
                 Download
               </button>
-              <CloseButton onClick={onClose} />
+              <CloseButton
+                onClick={onClose}
+                style={{ position: 'static' }}
+              />
             </div>
           </div>
         )}
@@ -385,6 +388,29 @@ function ImagePreviewCustomPage() {
         initialIndex={initialIndex}
         onClose={closePlayer}
         renderNavigation={(props) => <CustomNavigationDemo {...props} />}
+        renderControls={({ onClose, isFullscreen, onToggleFullscreen }) => (
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '12px 16px',
+              zIndex: 10,
+            }}
+          >
+            <FullscreenButton
+              isFullscreen={isFullscreen}
+              onToggle={onToggleFullscreen}
+            />
+            <CloseButton
+              onClick={onClose}
+              style={{ position: 'static' }}
+            />
+          </div>
+        )}
       />
     </div>
   );
