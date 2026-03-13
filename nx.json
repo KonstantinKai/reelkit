@@ -88,7 +88,10 @@
     "projectsRelationship": "independent",
     "version": {
       "preVersionCommand": "npx nx run-many -t build",
-      "conventionalCommits": true
+      "conventionalCommits": true,
+      "versionActionsOptions": {
+        "skipLockFileUpdate": true
+      }
     },
     "changelog": {
       "workspaceChangelog": false,
