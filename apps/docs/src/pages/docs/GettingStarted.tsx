@@ -14,6 +14,24 @@ export default function GettingStarted() {
       </div>
 
       <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">Try It Online</h2>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Jump straight into a working example — no local setup needed:
+        </p>
+        <a
+          href="https://stackblitz.com/github/KonstantinKai/reelkit-react-starter"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary-500 to-accent-500 text-white font-medium text-sm hover:shadow-lg hover:shadow-primary-500/25 transition-all duration-200"
+        >
+          <svg width="16" height="16" viewBox="0 0 28 28" fill="currentColor">
+            <path d="M12.747 16.273h-7.46L18.925 1.5l-3.671 10.227h7.46L9.075 26.5l3.672-10.227z" />
+          </svg>
+          Open in StackBlitz
+        </a>
+      </section>
+
+      <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Quick Start</h2>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Here's a minimal example to create a vertical slider with React:

@@ -1,6 +1,7 @@
-import { useState, type ReactNode } from 'react';
+import { useState, useCallback, type ReactNode } from 'react';
 import { CodeBlock } from './CodeBlock';
-import { Eye, Code2, Maximize2, Minimize2 } from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext';
+import { Eye, Code2, Maximize2, Minimize2, ExternalLink } from 'lucide-react';
 
 interface SandboxProps {
   code: string;
@@ -12,6 +13,8 @@ interface SandboxProps {
   title?: string;
 
   height?: number;
+
+  stackblitzDeps?: Record<string, string>;
 }
 
 type Tab = 'preview' | 'code';
@@ -22,11 +25,32 @@ export function Sandbox({
   children,
   title,
   height = 500,
+  stackblitzDeps,
 }: SandboxProps) {
   const [activeTab, setActiveTab] = useState<Tab>('preview');
   const [expanded, setExpanded] = useState(false);
+  const { theme } = useTheme();
 
   const previewHeight = expanded ? 700 : height;
+
+  const openInStackBlitz = useCallback(async () => {
+    const [sdk, { createStackBlitzProject }] = await Promise.all([
+      import('@stackblitz/sdk'),
+      import('../../utils/stackblitz'),
+    ]);
+
+    const project = createStackBlitzProject({
+      title: title ?? 'ReelkitSandbox',
+      code,
+      dependencies: stackblitzDeps!,
+    });
+
+    sdk.default.openProject(project, {
+      openFile: 'src/App.tsx',
+      newWindow: true,
+      theme: theme === 'dark' ? 'dark' : 'light',
+    });
+  }, [code, title, stackblitzDeps, theme]);
 
   return (
     <div className="rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden bg-white dark:bg-slate-900 shadow-sm">
@@ -59,6 +83,16 @@ export function Sandbox({
         <div className="flex items-center gap-2">
           {title && (
             <span className="text-xs text-slate-400 font-medium">{title}</span>
+          )}
+          {stackblitzDeps && (
+            <button
+              onClick={openInStackBlitz}
+              className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+              title="Open in StackBlitz"
+            >
+              <ExternalLink size={12} />
+              StackBlitz
+            </button>
           )}
           {activeTab === 'preview' && (
             <button

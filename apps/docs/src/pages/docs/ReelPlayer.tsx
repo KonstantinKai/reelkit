@@ -28,11 +28,11 @@ const content: ContentItem[] = [
     media: [{
       id: 'v1',
       type: 'video',
-      src: 'https://example.com/video.mp4',
-      poster: 'https://example.com/poster.jpg',
+      src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+      poster: 'https://storage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerBlazes.jpg',
       aspectRatio: 16 / 9,
     }],
-    author: { name: 'Alex Johnson', avatar: 'https://example.com/avatar.jpg' },
+    author: { name: 'Alex Johnson', avatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100' },
     likes: 1234,
     description: 'Amazing sunset vibes',
   },
@@ -41,10 +41,10 @@ const content: ContentItem[] = [
     media: [{
       id: 'img1',
       type: 'image',
-      src: 'https://example.com/photo.jpg',
+      src: 'https://images.pexels.com/photos/1770809/pexels-photo-1770809.jpeg?auto=compress&cs=tinysrgb&w=800',
       aspectRatio: 2 / 3,
     }],
-    author: { name: 'Sarah Miller', avatar: 'https://example.com/avatar2.jpg' },
+    author: { name: 'Sarah Miller', avatar: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=100' },
     likes: 5678,
     description: 'Nature at its finest',
   },
@@ -53,21 +53,21 @@ const content: ContentItem[] = [
     media: [{
       id: 'v2',
       type: 'video',
-      src: 'https://example.com/video2.mp4',
-      poster: 'https://example.com/poster2.jpg',
+      src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
+      poster: 'https://storage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerFun.jpg',
       aspectRatio: 16 / 9,
     }],
-    author: { name: 'James Wilson', avatar: 'https://example.com/avatar3.jpg' },
+    author: { name: 'James Wilson', avatar: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=100' },
     likes: 3456,
     description: 'City life adventures',
   },
   {
     id: '4',
     media: [
-      { id: 'img2', type: 'image', src: 'https://example.com/a.jpg', aspectRatio: 2 / 3 },
-      { id: 'img3', type: 'image', src: 'https://example.com/b.jpg', aspectRatio: 3 / 4 },
+      { id: 'img2', type: 'image', src: 'https://images.pexels.com/photos/2387873/pexels-photo-2387873.jpeg?auto=compress&cs=tinysrgb&w=800', aspectRatio: 2 / 3 },
+      { id: 'img3', type: 'image', src: 'https://images.pexels.com/photos/3225517/pexels-photo-3225517.jpeg?auto=compress&cs=tinysrgb&w=800', aspectRatio: 3 / 4 },
     ],
-    author: { name: 'Emma Davis', avatar: 'https://example.com/avatar4.jpg' },
+    author: { name: 'Emma Davis', avatar: 'https://images.pexels.com/photos/697509/pexels-photo-697509.jpeg?auto=compress&cs=tinysrgb&w=100' },
     likes: 8901,
     description: 'Travel moments',
   },
@@ -76,10 +76,10 @@ const content: ContentItem[] = [
     media: [{
       id: 'img4',
       type: 'image',
-      src: 'https://example.com/photo3.jpg',
+      src: 'https://images.pexels.com/photos/1287145/pexels-photo-1287145.jpeg?auto=compress&cs=tinysrgb&w=800',
       aspectRatio: 2 / 3,
     }],
-    author: { name: 'Michael Brown', avatar: 'https://example.com/avatar5.jpg' },
+    author: { name: 'Michael Brown', avatar: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=100' },
     likes: 2345,
     description: 'Golden hour magic',
   },
@@ -88,31 +88,40 @@ const content: ContentItem[] = [
     media: [{
       id: 'v3',
       type: 'video',
-      src: 'https://example.com/video3.mp4',
-      poster: 'https://example.com/poster3.jpg',
+      src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
+      poster: 'https://storage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerJoyrides.jpg',
       aspectRatio: 16 / 9,
     }],
-    author: { name: 'Alex Johnson', avatar: 'https://example.com/avatar.jpg' },
+    author: { name: 'Alex Johnson', avatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100' },
     likes: 7890,
     description: 'Living the moment',
   },
 ];
 
-function App() {
+export default function App() {
   const [isOpen, setIsOpen] = useState(false);
   const [initialIndex, setInitialIndex] = useState(0);
 
   return (
-    <>
-      {/* Thumbnail grid */}
-      {content.map((item, i) => (
-        <button key={item.id} onClick={() => {
-          setInitialIndex(i);
-          setIsOpen(true);
-        }}>
-          <img src={item.media[0].poster || item.media[0].src} />
-        </button>
-      ))}
+    <div style={{ padding: 16, background: '#0f172a', minHeight: '100vh' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
+        {content.map((item, i) => (
+          <button
+            key={item.id}
+            onClick={() => { setInitialIndex(i); setIsOpen(true); }}
+            style={{
+              position: 'relative', aspectRatio: '9 / 16', borderRadius: 8,
+              overflow: 'hidden', border: 'none', padding: 0, cursor: 'pointer',
+              background: '#1e293b',
+            }}
+          >
+            <img
+              src={item.media[0].poster || item.media[0].src}
+              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+            />
+          </button>
+        ))}
+      </div>
 
       <ReelPlayerOverlay
         isOpen={isOpen}
@@ -120,7 +129,7 @@ function App() {
         content={content}
         initialIndex={initialIndex}
       />
-    </>
+    </div>
   );
 }`;
 
@@ -514,7 +523,15 @@ function App() {
       {/* Live Demo */}
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Live Demo</h2>
-        <Sandbox code={fullCode} title="ReelPlayerPage.tsx" height={500}>
+        <Sandbox
+          code={fullCode}
+          title="ReelPlayerPage.tsx"
+          height={500}
+          stackblitzDeps={{
+            '@reelkit/react-reel-player': '0.1.3',
+            'lucide-react': '^0.562.0',
+          }}
+        >
           <ReelPlayerDemo />
         </Sandbox>
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-3">

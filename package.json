@@ -11,7 +11,8 @@
     "lint": "npx nx run-many -t lint",
     "fmt:chk": "npx nx format:check",
     "fmt": "npx nx format",
-    "prepare": "husky"
+    "prepare": "husky",
+    "check": "npm run fmt:chk && npm run lint && npm run typecheck"
   },
   "repository": {
     "type": "git",
@@ -22,6 +23,7 @@
   "private": true,
   "dependencies": {
     "@reelkit/react": "*",
+    "@stackblitz/sdk": "^1.11.0",
     "lucide-react": "^0.562.0",
     "next": "~16.0.1",
     "react": "18.3.1",

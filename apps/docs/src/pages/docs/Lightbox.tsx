@@ -21,42 +21,42 @@ import '@reelkit/react-lightbox/styles.css';
 
 const images: LightboxItem[] = [
   {
-    src: 'https://example.com/mountain-river.jpg',
+    src: 'https://picsum.photos/id/1015/1600/1000',
     title: 'Mountain River',
     description: 'A beautiful mountain river flowing through the forest',
     width: 1600,
     height: 1000,
   },
   {
-    src: 'https://example.com/snowy-peaks.jpg',
+    src: 'https://picsum.photos/id/1016/1000/1600',
     title: 'Snowy Peaks',
     description: 'Majestic snow-capped mountains reaching for the sky',
     width: 1000,
     height: 1600,
   },
   {
-    src: 'https://example.com/foggy-forest.jpg',
+    src: 'https://picsum.photos/id/1018/1600/900',
     title: 'Foggy Forest',
     description: 'Misty morning in the dense forest',
     width: 1600,
     height: 900,
   },
   {
-    src: 'https://example.com/ocean-waves.jpg',
+    src: 'https://picsum.photos/id/1019/900/1400',
     title: 'Ocean Waves',
     description: 'Powerful ocean waves crashing against the rocky shore',
     width: 900,
     height: 1400,
   },
   {
-    src: 'https://example.com/autumn-path.jpg',
+    src: 'https://picsum.photos/id/1020/1600/1067',
     title: 'Autumn Path',
     description: 'A winding path through the autumn forest',
     width: 1600,
     height: 1067,
   },
   {
-    src: 'https://example.com/coastal-cliffs.jpg',
+    src: 'https://picsum.photos/id/1022/1600/1067',
     title: 'Coastal Cliffs',
     description: 'Dramatic coastal cliffs overlooking the deep blue sea',
     width: 1600,
@@ -64,20 +64,48 @@ const images: LightboxItem[] = [
   },
 ];
 
-function App() {
+const transitions = ['slide', 'fade', 'zoom-in'] as const;
+
+export default function App() {
   const [index, setIndex] = useState<number | null>(null);
+  const [transition, setTransition] = useState<'slide' | 'fade' | 'zoom-in'>('slide');
 
   return (
-    <>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+    <div style={{ padding: 16, background: '#f8fafc', minHeight: '100vh' }}>
+      {/* Transition picker */}
+      <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+        {transitions.map((t) => (
+          <button
+            key={t}
+            onClick={() => setTransition(t)}
+            style={{
+              padding: '6px 14px', borderRadius: 8, border: 'none', cursor: 'pointer',
+              fontSize: 13, fontWeight: 500,
+              background: transition === t ? '#6366f1' : '#e2e8f0',
+              color: transition === t ? '#fff' : '#334155',
+            }}
+          >
+            {t}
+          </button>
+        ))}
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
         {images.map((img, i) => (
-          <img
+          <button
             key={i}
-            src={img.src}
-            alt={img.title}
             onClick={() => setIndex(i)}
-            style={{ cursor: 'pointer', width: '100%' }}
-          />
+            style={{
+              position: 'relative', aspectRatio: '4 / 3', borderRadius: 8,
+              overflow: 'hidden', border: 'none', padding: 0, cursor: 'pointer',
+              background: '#e2e8f0',
+            }}
+          >
+            <img
+              src={img.src}
+              alt={img.title}
+              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+            />
+          </button>
         ))}
       </div>
       <LightboxOverlay
@@ -85,8 +113,9 @@ function App() {
         images={images}
         initialIndex={index ?? 0}
         onClose={() => setIndex(null)}
+        transition={transition}
       />
-    </>
+    </div>
   );
 }`;
 
@@ -399,7 +428,15 @@ function App() {
       {/* Live Demo */}
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Live Demo</h2>
-        <Sandbox code={fullCode} title="LightboxPage.tsx" height={500}>
+        <Sandbox
+          code={fullCode}
+          title="LightboxPage.tsx"
+          height={500}
+          stackblitzDeps={{
+            '@reelkit/react-lightbox': '0.1.3',
+            'lucide-react': '^0.562.0',
+          }}
+        >
           <LightboxDemo />
         </Sandbox>
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-3">

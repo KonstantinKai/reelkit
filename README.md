@@ -38,6 +38,10 @@
 | [@reelkit/react-reel-player](packages/reelkit-react-reel-player) | Full-screen video reel player    | 3.8 kB    |
 | [@reelkit/react-lightbox](packages/reelkit-react-lightbox)       | Image & video gallery lightbox   | 3.4 kB    |
 
+## Try It
+
+[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/KonstantinKai/reelkit-react-starter)
+
 ## Quick Start
 
 ```bash
