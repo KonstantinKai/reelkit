@@ -96,9 +96,13 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide.
 
 ## Support
 
-If you find ReelKit useful, give it a star on GitHub — it helps others discover the project and keeps development going.
+If you find ReelKit useful, give it a star on GitHub — it helps others discover the project.
 
-[![Star on GitHub](https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social)](https://github.com/KonstantinKai/reelkit)
+<p>
+  <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
+  &nbsp;
+  <a href="https://buymeacoffee.com/konstantinkai"><img src="assets/bmc-button.svg" alt="Support ReelKit" height="32" /></a>
+</p>
 
 ## License
 
