@@ -41,7 +41,7 @@ slider.currentIndex.subscribe((index) => {
 ## Features
 
 - **Virtualized** — renders only 3 slides at a time, handles 10,000+ items
-- **Zero dependencies** — ~4.7 kB gzip
+- **Zero dependencies** — ~3.7 kB gzip
 - **Controller pattern** — factory functions (`createSliderController`, `createGestureController`, `createKeyboardController`, `createWheelController`)
 - **Signal-based reactivity** — lightweight `Signal`, `ComputedSignal`, and `reaction` primitives
 - **Touch gestures** — swipe with momentum, configurable thresholds
@@ -53,6 +53,12 @@ slider.currentIndex.subscribe((index) => {
 ## Documentation
 
 Full API reference and guides at **[reelkit.dev](https://reelkit.dev)**.
+
+## Support
+
+If you find ReelKit useful, give it a star on GitHub — it helps others discover the project and keeps development going.
+
+[![Star on GitHub](https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social)](https://github.com/KonstantinKai/reelkit)
 
 ## License
 

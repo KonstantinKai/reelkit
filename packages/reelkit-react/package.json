@@ -51,8 +51,10 @@
   "publishConfig": {
     "access": "public"
   },
+  "dependencies": {
+    "@reelkit/core": "^0.1.2"
+  },
   "peerDependencies": {
-    "@reelkit/core": "*",
     "react": ">=17.0.0",
     "react-dom": ">=17.0.0"
   }

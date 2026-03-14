@@ -6,7 +6,7 @@
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
 
-React components and hooks for building TikTok/Instagram Reels-style sliders. Virtualized rendering, touch gestures, keyboard/wheel navigation — all in ~3.4 kB gzip.
+React components and hooks for building TikTok/Instagram Reels-style sliders. Virtualized rendering, touch gestures, keyboard/wheel navigation — all in ~2.6 kB gzip.
 
 ## Installation
 
@@ -82,6 +82,12 @@ function App() {
 ## Documentation
 
 Full API reference, interactive demos, and guides at **[reelkit.dev](https://reelkit.dev)**.
+
+## Support
+
+If you find ReelKit useful, give it a star on GitHub — it helps others discover the project and keeps development going.
+
+[![Star on GitHub](https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social)](https://github.com/KonstantinKai/reelkit)
 
 ## License
 

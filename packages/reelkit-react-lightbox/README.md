@@ -6,7 +6,7 @@
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
 
-Full-screen image gallery lightbox for React. Touch gestures, keyboard navigation, fullscreen API, transition effects, and render props for full customization.
+Full-screen image gallery lightbox for React. Touch gestures, keyboard navigation, fullscreen API, transition effects, and render props for full customization. ~3.4 kB gzip.
 
 ## Installation
 
@@ -231,6 +231,12 @@ All UI elements use CSS classes prefixed with `rk-lightbox-` that can be overrid
 ## Documentation
 
 Full documentation, interactive demos, and customization examples at **[reelkit.dev/docs/lightbox](https://reelkit.dev/docs/lightbox)**.
+
+## Support
+
+If you find ReelKit useful, give it a star on GitHub — it helps others discover the project and keeps development going.
+
+[![Star on GitHub](https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social)](https://github.com/KonstantinKai/reelkit)
 
 ## License
 

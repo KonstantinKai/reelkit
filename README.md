@@ -22,7 +22,7 @@
 
 - **Virtualized** — only 3 slides in DOM, handles 10,000+ items
 - **Touch first** — native swipe with momentum and snap
-- **Zero dependencies** — tiny bundle (~4.7 kB gzip core)
+- **Zero dependencies** — tiny bundle (~3.7 kB gzip core)
 - **Keyboard & wheel** — full navigation support
 - **Loop mode** — infinite circular scrolling
 - **SSR ready** — works with Next.js, Remix, and any SSR setup
@@ -33,10 +33,10 @@
 
 | Package                                                          | Description                      | JS (gzip) |
 | ---------------------------------------------------------------- | -------------------------------- | --------- |
-| [@reelkit/core](packages/reelkit-core)                           | Framework-agnostic slider engine | 4.7 kB    |
-| [@reelkit/react](packages/reelkit-react)                         | React components and hooks       | 3.4 kB    |
-| [@reelkit/react-reel-player](packages/reelkit-react-reel-player) | Full-screen video reel player    | 5.0 kB    |
-| [@reelkit/react-lightbox](packages/reelkit-react-lightbox)       | Image & video gallery lightbox   | 4.2 kB    |
+| [@reelkit/core](packages/reelkit-core)                           | Framework-agnostic slider engine | 3.7 kB    |
+| [@reelkit/react](packages/reelkit-react)                         | React components and hooks       | 2.6 kB    |
+| [@reelkit/react-reel-player](packages/reelkit-react-reel-player) | Full-screen video reel player    | 3.8 kB    |
+| [@reelkit/react-lightbox](packages/reelkit-react-lightbox)       | Image & video gallery lightbox   | 3.4 kB    |
 
 ## Quick Start
 
@@ -93,6 +93,12 @@ npm run fmt          # fix formatting
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide.
+
+## Support
+
+If you find ReelKit useful, give it a star on GitHub — it helps others discover the project and keeps development going.
+
+[![Star on GitHub](https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social)](https://github.com/KonstantinKai/reelkit)
 
 ## License
 
