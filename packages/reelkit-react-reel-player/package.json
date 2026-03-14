@@ -53,7 +53,6 @@
     "access": "public"
   },
   "peerDependencies": {
-    "@reelkit/core": "*",
     "@reelkit/react": "*",
     "react": ">=18",
     "react-dom": ">=18",
