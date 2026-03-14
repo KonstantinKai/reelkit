@@ -1,8 +1,8 @@
-<p align="center">
-  <img src="logo.svg" width="80" height="80" alt="reelkit" />
-</p>
-
-<h1 align="center">Reel<em>Kit</em></h1>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/banner-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="assets/banner-light.svg">
+  <img alt="ReelKit — Headless virtualized slider engine" src="assets/banner-dark.svg" width="100%">
+</picture>
 
 <p align="center">
   Single-item slider for TikTok/Instagram Reels-style experiences.<br/>
