@@ -2,7 +2,7 @@
 
 <p>
   <a href="https://www.npmjs.com/package/@reelkit/core"><img src="https://img.shields.io/npm/v/@reelkit/core?color=6366f1&label=npm" alt="npm" /></a>
-  <img src="https://img.shields.io/bundlephobia/minzip/@reelkit/core?color=6366f1" alt="Bundle size" />
+  <img src="https://img.shields.io/badge/gzip-3.7%20kB-6366f1" alt="Bundle size" />
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
 
