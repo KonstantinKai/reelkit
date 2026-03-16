@@ -100,7 +100,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide.
 
 ## Support
 
-If you find ReelKit useful, give it a star on GitHub — it helps others discover the project.
+If ReelKit saved you some time, a star on GitHub would mean a lot — it's a small thing, but it really helps the project get noticed.
 
 <p>
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>

@@ -85,7 +85,7 @@ Full API reference, interactive demos, and guides at **[reelkit.dev](https://ree
 
 ## Support
 
-If you find ReelKit useful, give it a star on GitHub — it helps others discover the project and keeps development going.
+If ReelKit saved you some time, a star on GitHub would mean a lot — it's a small thing, but it really helps the project get noticed.
 
 [![Star on GitHub](https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social)](https://github.com/KonstantinKai/reelkit)
 
