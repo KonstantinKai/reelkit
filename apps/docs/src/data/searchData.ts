@@ -105,7 +105,7 @@ export const navItems = [
   {
     title: 'Overview',
     items: [
-      { label: 'Introduction', path: '/docs/getting-started' },
+      { label: 'Getting Started', path: '/docs/getting-started' },
       { label: 'Installation', path: '/docs/installation' },
       { label: 'SSR', path: '/docs/ssr' },
     ],

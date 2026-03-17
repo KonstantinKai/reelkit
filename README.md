@@ -90,9 +90,7 @@ Full documentation, interactive demos, and API reference at **[reelkit.dev](http
 npm install          # install dependencies
 npm run build        # build all packages
 npm test             # run all tests
-npm run typecheck    # typecheck all projects
-npm run lint         # lint all projects
-npm run fmt:chk      # check formatting
+npm run check        # format + lint + typecheck
 npm run fmt          # fix formatting
 ```
 

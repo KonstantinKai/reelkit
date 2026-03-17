@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { CodeBlock } from '../../components/ui/CodeBlock';
 import { Callout } from '../../components/ui/Callout';
 import { Check } from 'lucide-react';
@@ -339,7 +340,7 @@ export default function Installation() {
         </p>
       </section>
 
-      <section>
+      <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Browser Support</h2>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           reelkit supports all modern browsers:
@@ -359,6 +360,54 @@ export default function Installation() {
           </li>
           <li className="flex items-center gap-2">
             <Check className="w-4 h-4 text-green-500" /> Android Chrome 88+
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 className="text-2xl font-bold mb-4">Next Steps</h2>
+        <ul className="space-y-3">
+          <li>
+            <Link
+              to="/docs/core/guide"
+              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
+            >
+              Core Guide
+            </Link>
+            <span className="text-slate-500"> - framework-agnostic engine</span>
+          </li>
+          <li>
+            <Link
+              to="/docs/react/guide"
+              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
+            >
+              React Guide
+            </Link>
+            <span className="text-slate-500">
+              {' '}
+              - live demos and virtualization
+            </span>
+          </li>
+          <li>
+            <Link
+              to="/docs/reel-player"
+              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
+            >
+              Reel Player
+            </Link>
+            <span className="text-slate-500">
+              {' '}
+              - TikTok/Reels-style video player
+            </span>
+          </li>
+          <li>
+            <Link
+              to="/docs/lightbox"
+              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
+            >
+              Lightbox
+            </Link>
+            <span className="text-slate-500"> - image & video gallery</span>
           </li>
         </ul>
       </section>

@@ -226,12 +226,24 @@ function App() {
         <ul className="space-y-3">
           <li>
             <Link
-              to="/docs/react/api"
+              to="/docs/installation"
               className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
             >
-              API Reference
+              Installation
             </Link>
-            <span className="text-slate-500"> - for all available props</span>
+            <span className="text-slate-500">
+              {' '}
+              - all packages and setup options
+            </span>
+          </li>
+          <li>
+            <Link
+              to="/docs/core/guide"
+              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
+            >
+              Core Guide
+            </Link>
+            <span className="text-slate-500"> - framework-agnostic engine</span>
           </li>
           <li>
             <Link
@@ -252,7 +264,19 @@ function App() {
             >
               Reel Player
             </Link>
-            <span className="text-slate-500"> - complete implementation</span>
+            <span className="text-slate-500">
+              {' '}
+              - TikTok/Reels-style video player
+            </span>
+          </li>
+          <li>
+            <Link
+              to="/docs/lightbox"
+              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
+            >
+              Lightbox
+            </Link>
+            <span className="text-slate-500"> - image & video gallery</span>
           </li>
         </ul>
       </section>

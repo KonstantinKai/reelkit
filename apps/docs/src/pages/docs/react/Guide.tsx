@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { CodeBlock } from '../../../components/ui/CodeBlock';
 import { FeatureCardGrid } from '../../../components/ui/FeatureCard';
 import { Sandbox } from '../../../components/ui/Sandbox';
@@ -557,7 +558,7 @@ function App() {
         </p>
       </section>
 
-      <section>
+      <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Performance Tips</h2>
         <ul className="space-y-3 text-slate-600 dark:text-slate-400">
           <li className="flex items-start gap-3">
@@ -611,6 +612,42 @@ function App() {
                 Show skeleton loaders for items still loading
               </p>
             </div>
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 className="text-2xl font-bold mb-4">Next Steps</h2>
+        <ul className="space-y-3">
+          <li>
+            <Link
+              to="/docs/react/api"
+              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
+            >
+              API Reference
+            </Link>
+            <span className="text-slate-500"> - all available props</span>
+          </li>
+          <li>
+            <Link
+              to="/docs/reel-player"
+              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
+            >
+              Reel Player
+            </Link>
+            <span className="text-slate-500">
+              {' '}
+              - TikTok/Reels-style video player
+            </span>
+          </li>
+          <li>
+            <Link
+              to="/docs/lightbox"
+              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
+            >
+              Lightbox
+            </Link>
+            <span className="text-slate-500"> - image & video gallery</span>
           </li>
         </ul>
       </section>

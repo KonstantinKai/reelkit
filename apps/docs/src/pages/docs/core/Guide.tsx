@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { CodeBlock } from '../../../components/ui/CodeBlock';
 
 export default function CoreGuide() {
@@ -188,7 +189,7 @@ dispose();`}
         />
       </section>
 
-      <section>
+      <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Controller State</h2>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Access reactive state through{' '}
@@ -211,6 +212,54 @@ indexes.subscribe((visibleIndexes) => {
 });`}
           language="typescript"
         />
+      </section>
+
+      <section>
+        <h2 className="text-2xl font-bold mb-4">Next Steps</h2>
+        <ul className="space-y-3">
+          <li>
+            <Link
+              to="/docs/core/api"
+              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
+            >
+              Core API Reference
+            </Link>
+            <span className="text-slate-500"> - all available props</span>
+          </li>
+          <li>
+            <Link
+              to="/docs/react/guide"
+              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
+            >
+              React Guide
+            </Link>
+            <span className="text-slate-500">
+              {' '}
+              - live demos and virtualization
+            </span>
+          </li>
+          <li>
+            <Link
+              to="/docs/reel-player"
+              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
+            >
+              Reel Player
+            </Link>
+            <span className="text-slate-500">
+              {' '}
+              - TikTok/Reels-style video player
+            </span>
+          </li>
+          <li>
+            <Link
+              to="/docs/lightbox"
+              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
+            >
+              Lightbox
+            </Link>
+            <span className="text-slate-500"> - image & video gallery</span>
+          </li>
+        </ul>
       </section>
     </div>
   );

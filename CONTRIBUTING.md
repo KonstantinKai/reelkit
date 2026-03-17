@@ -29,14 +29,8 @@ npm test
 npx nx test @reelkit/core
 npx nx test @reelkit/react
 
-# Typecheck
-npm run typecheck
-
-# Lint
-npm run lint
-
-# Format check
-npm run fmt:chk
+# Format + lint + typecheck
+npm run check
 
 # Format (auto-fix)
 npm run fmt
@@ -69,7 +63,7 @@ This is an Nx monorepo with the following packages:
 2. Make your changes and ensure they pass:
 
    ```bash
-   npm run fmt:chk && npm run lint && npm test && npm run typecheck && npm run build
+   npm run check && npm test && npm run build
    ```
 
 3. Commit using clear, descriptive messages (we follow [Conventional Commits](https://www.conventionalcommits.org/)):
