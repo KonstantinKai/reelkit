@@ -3,11 +3,8 @@ import { Info, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
 
 interface CalloutProps {
   type?: 'info' | 'warning' | 'success' | 'error';
-
   title?: string;
-
   className?: string;
-
   children: ReactNode;
 }
 

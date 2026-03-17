@@ -1,4 +1,4 @@
-import React, { createContext, useMemo } from 'react';
+import React, { createContext, useState } from 'react';
 import { createSignal, type Signal } from '@reelkit/core';
 
 /**
@@ -41,7 +41,7 @@ interface SoundProviderProps {
  * `disabled: false` as initial values.
  */
 export const SoundProvider: React.FC<SoundProviderProps> = ({ children }) => {
-  const value = useMemo<SoundState>(() => {
+  const value = useState<SoundState>(() => {
     const muted = createSignal(true);
     const disabled = createSignal(false);
     return {
@@ -51,7 +51,7 @@ export const SoundProvider: React.FC<SoundProviderProps> = ({ children }) => {
         muted.value = !muted.value;
       },
     };
-  }, []);
+  })[0];
 
   return (
     <SoundContext.Provider value={value}>{children}</SoundContext.Provider>

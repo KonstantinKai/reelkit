@@ -5,15 +5,10 @@ import { Eye, Code2, Maximize2, Minimize2, ExternalLink } from 'lucide-react';
 
 interface SandboxProps {
   code: string;
-
   language?: string;
-
   children: ReactNode;
-
   title?: string;
-
   height?: number;
-
   stackblitzDeps?: Record<string, string>;
 }
 
@@ -40,7 +35,7 @@ export function Sandbox({
     ]);
 
     const project = createStackBlitzProject({
-      title: title ?? 'ReelkitSandbox',
+      title: title ?? 'ReelKitSandbox',
       code,
       dependencies: stackblitzDeps!,
     });

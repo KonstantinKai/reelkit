@@ -1,7 +1,7 @@
 import './global.css';
 
 export const metadata = {
-  title: 'Reelkit Next.js SSR Example',
+  title: 'ReelKit Next.js SSR Example',
   description: '@reelkit/react with Next.js server-side rendering',
 };
 

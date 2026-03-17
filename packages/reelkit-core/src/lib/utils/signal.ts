@@ -93,6 +93,22 @@ export const batch = (fn: () => void): void => {
   }
 };
 
+/**
+ * Creates a writable reactive signal. Notifies observers when the value
+ * changes (by reference equality). Updates inside a {@link batch} are
+ * deferred until the outermost batch completes.
+ *
+ * @typeParam T - The type of the stored value.
+ * @param initial - The initial value.
+ * @returns A {@link Signal} instance.
+ *
+ * @example
+ * ```ts
+ * const count = createSignal(0);
+ * count.observe(() => console.log(count.value));
+ * count.value = 1; // logs: 1
+ * ```
+ */
 export const createSignal = <T>(initial: T): Signal<T> => {
   let value = initial;
   const listeners = new Set<Listener>();

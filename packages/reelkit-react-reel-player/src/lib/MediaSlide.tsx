@@ -12,21 +12,13 @@ import NestedSlider from './NestedSlider';
 /** @internal */
 interface MediaSlideProps {
   content: BaseContentItem;
-
   isActive: boolean;
-
   size: [number, number];
-
   innerSliderRef: React.MutableRefObject<ReelApi | null>;
-
   enableWheel?: boolean;
-
   onVideoRef?: (ref: HTMLVideoElement | null) => void;
-
   onActiveMediaTypeChange?: (type: 'image' | 'video') => void;
-
   renderNestedNavigation?: (props: NavigationRenderProps) => ReactNode;
-
   renderNestedSlide?: (props: NestedSlideRenderProps) => ReactNode;
 }
 

@@ -466,14 +466,19 @@ const Content = memo(
     axisValue,
     length,
   }: {
+    /** Rendered slide elements. */
     children: ReactNode;
 
+    /** Whether the slider is in horizontal mode. */
     isHorizontal: boolean;
 
+    /** Width (horizontal) or height (vertical) of a single slide in pixels. */
     primarySize: number;
 
+    /** Animated translate value driven by the slider controller. */
     axisValue: Signal<AnimatedValue>;
 
+    /** Number of currently visible slides (determines container size). */
     length: number;
   }) => (
     <AnimatedObserve signal={axisValue}>

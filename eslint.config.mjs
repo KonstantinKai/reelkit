@@ -51,7 +51,10 @@ export default [
   {
     files: ['**/*.ts', '**/*.tsx'],
     rules: {
-      '@nx/workspace-lines-between-type-members': 'error',
+      '@nx/workspace-lines-between-type-members': [
+        'error',
+        { exceptAfterCommentlessMembers: true },
+      ],
     },
   },
   {

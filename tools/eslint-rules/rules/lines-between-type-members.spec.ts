@@ -73,6 +73,60 @@ const items: { id: string; name: string }[] = [];`,
       code: `
 function foo(opts: { a: number; b: string }) {}`,
     },
+    // exceptAfterCommentlessMembers: commentless members don't need blank line
+    {
+      code: `
+interface Foo {
+  a: string;
+  b: number;
+}`,
+      options: [{ exceptAfterCommentlessMembers: true }],
+    },
+    // exceptAfterCommentlessMembers: mixed — commentless OK, commented has blank line
+    {
+      code: `
+interface Foo {
+  a: string;
+  b: number;
+
+  /** Third prop */
+  c: boolean;
+}`,
+      options: [{ exceptAfterCommentlessMembers: true }],
+    },
+    // exceptAfterCommentlessMembers: all commented with blank lines
+    {
+      code: `
+interface Foo {
+  /** First */
+  a: string;
+
+  /** Second */
+  b: number;
+}`,
+      options: [{ exceptAfterCommentlessMembers: true }],
+    },
+    // exceptAfterCommentlessMembers: type literal
+    {
+      code: `
+type Foo = {
+  a: string;
+  b: number;
+  c: boolean;
+};`,
+      options: [{ exceptAfterCommentlessMembers: true }],
+    },
+    // exceptAfterCommentlessMembers: single-line comment also counts
+    {
+      code: `
+interface Foo {
+  a: string;
+
+  // Second prop
+  b: number;
+}`,
+      options: [{ exceptAfterCommentlessMembers: true }],
+    },
   ],
 
   invalid: [
@@ -161,6 +215,80 @@ interface Foo {
 
   c: boolean;
 }`,
+      errors: [{ messageId: 'missingBlankLine' as const }],
+    },
+    // exceptAfterCommentlessMembers: commented member still needs blank line
+    {
+      code: `
+interface Foo {
+  a: string;
+  /** Second prop */
+  b: number;
+}`,
+      output: `
+interface Foo {
+  a: string;
+
+  /** Second prop */
+  b: number;
+}`,
+      options: [{ exceptAfterCommentlessMembers: true }],
+      errors: [{ messageId: 'missingBlankLine' as const }],
+    },
+    // exceptAfterCommentlessMembers: single-line comment also needs blank line
+    {
+      code: `
+interface Foo {
+  a: string;
+  // Second prop
+  b: number;
+}`,
+      output: `
+interface Foo {
+  a: string;
+
+  // Second prop
+  b: number;
+}`,
+      options: [{ exceptAfterCommentlessMembers: true }],
+      errors: [{ messageId: 'missingBlankLine' as const }],
+    },
+    // exceptAfterCommentlessMembers: mixed — only commented member errors
+    {
+      code: `
+interface Foo {
+  a: string;
+  b: number;
+  /** Third */
+  c: boolean;
+}`,
+      output: `
+interface Foo {
+  a: string;
+  b: number;
+
+  /** Third */
+  c: boolean;
+}`,
+      options: [{ exceptAfterCommentlessMembers: true }],
+      errors: [{ messageId: 'missingBlankLine' as const }],
+    },
+    // exceptAfterCommentlessMembers: type literal with comment
+    {
+      code: `
+type Foo = {
+  a: string;
+  /** Second */
+  b: number;
+};`,
+      output: `
+type Foo = {
+  a: string;
+
+  /** Second */
+  b: number;
+};`,
+      options: [{ exceptAfterCommentlessMembers: true }],
       errors: [{ messageId: 'missingBlankLine' as const }],
     },
   ],

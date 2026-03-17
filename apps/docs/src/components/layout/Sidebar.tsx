@@ -5,9 +5,7 @@ import { navItems } from '../../data/searchData';
 
 interface SidebarProps {
   isOpen?: boolean;
-
   showDesktop?: boolean;
-
   onClose?: () => void;
 }
 
@@ -16,7 +14,6 @@ function NavSection({
   items,
 }: {
   title: string;
-
   items: (typeof navItems)[number]['items'];
 }) {
   const [isExpanded, setIsExpanded] = useState(true);

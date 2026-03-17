@@ -1,7 +1,7 @@
 /**
  * @module @reelkit/react
  *
- * React bindings for the Reelkit slider library.
+ * React bindings for the ReelKit slider library.
  *
  * The main component is {@link Reel} — a virtualized, gesture-driven
  * slider that renders only the visible slides to the DOM. It wraps

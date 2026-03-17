@@ -87,11 +87,8 @@ const exitFullscreenFn = (): Promise<void> => {
 const requestFullscreenFn = (element: HTMLElement): Promise<void> => {
   const el = element as HTMLElement & {
     webkitRequestFullscreen?: () => Promise<void>;
-
     webkitEnterFullscreen?: () => Promise<void>;
-
     mozRequestFullScreen?: () => Promise<void>;
-
     msRequestFullscreen?: () => Promise<void>;
   };
 

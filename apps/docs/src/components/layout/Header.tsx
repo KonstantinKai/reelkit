@@ -7,9 +7,7 @@ import CommandPalette from '../CommandPalette';
 
 interface HeaderProps {
   onMenuToggle?: () => void;
-
   isMenuOpen?: boolean;
-
   showNav?: boolean;
 }
 

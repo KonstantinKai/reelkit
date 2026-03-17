@@ -1,7 +1,7 @@
 /**
  * @module @reelkit/core
  *
- * Framework-agnostic core of the Reelkit slider library. Zero runtime
+ * Framework-agnostic core of the ReelKit slider library. Zero runtime
  * dependencies.
  *
  * Provides the slider engine ({@link createSliderController}), input

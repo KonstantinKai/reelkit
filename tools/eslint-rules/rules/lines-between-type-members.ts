@@ -13,14 +13,28 @@ export const rule = ESLintUtils.RuleCreator(() => __filename)({
         'Require a blank line between properties in interfaces and type literals',
     },
     fixable: 'whitespace',
-    schema: [],
+    schema: [
+      {
+        type: 'object',
+        properties: {
+          exceptAfterCommentlessMembers: {
+            type: 'boolean',
+            description:
+              'When true, a blank line is not required before a member that has no leading comment or JSDoc.',
+          },
+        },
+        additionalProperties: false,
+      },
+    ],
     messages: {
       missingBlankLine: 'Expected a blank line between type/interface members.',
     },
   },
-  defaultOptions: [],
-  create(context) {
+  defaultOptions: [{ exceptAfterCommentlessMembers: false }],
+  create(context, [options]) {
     const sourceCode = context.sourceCode;
+    const exceptAfterCommentlessMembers =
+      options.exceptAfterCommentlessMembers ?? false;
 
     function checkMembers(members: TSESTree.TypeElement[]) {
       for (let i = 1; i < members.length; i++) {
@@ -37,6 +51,11 @@ export const rule = ESLintUtils.RuleCreator(() => __filename)({
             : current.loc.start.line;
 
         const linesBetween = currentStartLine - prevEndLine - 1;
+
+        // Skip if the current member has no comment and the option is enabled
+        if (exceptAfterCommentlessMembers && commentsBefore.length === 0) {
+          continue;
+        }
 
         if (linesBetween < 1) {
           context.report({

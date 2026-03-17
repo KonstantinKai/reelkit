@@ -5,7 +5,8 @@ import React, {
   useLayoutEffect,
   useState,
 } from 'react';
-import { noop } from '@reelkit/core';
+import { createSignal, noop } from '@reelkit/core';
+import { Observe } from '@reelkit/react';
 import { useSoundState } from './useSoundState';
 import './VideoSlide.css';
 
@@ -136,8 +137,9 @@ const VideoSlide: React.FC<VideoSlideProps> = ({
   const soundState = useSoundState();
   const shouldPlay = isActive && isInnerActive;
   const isVertical = aspectRatio < 1;
-  const [isLoading, setIsLoading] = useState(false);
-  const [showPoster, setShowPoster] = useState(true);
+  const [isLoading, showPoster] = useState(
+    () => [createSignal(false), createSignal(true)] as const,
+  )[0];
 
   // Mount shared video element to this container when active
   useIsomorphicLayoutEffect(() => {
@@ -147,15 +149,15 @@ const VideoSlide: React.FC<VideoSlideProps> = ({
     const container = containerRef.current;
 
     // Show loader and poster initially
-    setIsLoading(true);
-    setShowPoster(true);
+    isLoading.value = true;
+    showPoster.value = true;
 
     // Video event handlers for loading state
-    const handleCanPlay = () => setIsLoading(false);
-    const handleWaiting = () => setIsLoading(true);
+    const handleCanPlay = () => (isLoading.value = false);
+    const handleWaiting = () => (isLoading.value = true);
     const handlePlaying = () => {
-      setIsLoading(false);
-      setShowPoster(false);
+      isLoading.value = false;
+      showPoster.value = false;
     };
 
     video.addEventListener('canplay', handleCanPlay);
@@ -208,7 +210,7 @@ const VideoSlide: React.FC<VideoSlideProps> = ({
         onVideoRef(null);
       }
 
-      setIsLoading(false);
+      isLoading.value = false;
     };
   }, [shouldPlay, src, isVertical, slideKey, onVideoRef]);
 
@@ -220,6 +222,7 @@ const VideoSlide: React.FC<VideoSlideProps> = ({
     return soundState.muted.observe(() => {
       if (video) video.muted = soundState.muted.value;
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shouldPlay]);
 
   return (
@@ -238,21 +241,31 @@ const VideoSlide: React.FC<VideoSlideProps> = ({
     >
       {/* Poster image with fade out transition */}
       {/* Use captured frame if available, otherwise fall back to original poster */}
-      {(capturedFrames.get(slideKey) ?? poster) && (
-        <img
-          src={capturedFrames.get(slideKey) ?? poster}
-          alt=""
-          className={`rk-video-slide-poster ${!shouldPlay || showPoster ? 'rk-visible' : ''}`}
-          style={{
-            objectFit: isVertical ? 'cover' : 'contain',
-          }}
-        />
-      )}
+      <Observe signals={[showPoster]}>
+        {() => {
+          const posterSrc = capturedFrames.get(slideKey) ?? poster;
+          if (!posterSrc) return null;
+          return (
+            <img
+              src={posterSrc}
+              alt=""
+              className={`rk-video-slide-poster ${!shouldPlay || showPoster.value ? 'rk-visible' : ''}`}
+              style={{
+                objectFit: isVertical ? 'cover' : 'contain',
+              }}
+            />
+          );
+        }}
+      </Observe>
 
       {/* Wave loader for buffering/loading state */}
-      <div
-        className={`rk-video-slide-loader ${isLoading ? 'rk-visible' : ''}`}
-      />
+      <Observe signals={[isLoading]}>
+        {() => (
+          <div
+            className={`rk-video-slide-loader ${isLoading.value ? 'rk-visible' : ''}`}
+          />
+        )}
+      </Observe>
     </div>
   );
 };

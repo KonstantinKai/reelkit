@@ -1,5 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+/**
+ * A function enhanced with a {@link cancel} method that clears the
+ * pending timeout scheduled by {@link timeout}.
+ *
+ * @typeParam F - The original callback signature.
+ */
 export type TimeoutFn<F extends (...args: any[]) => any> = F & {
   cancel: () => void;
 };
@@ -11,7 +17,7 @@ export type TimeoutFn<F extends (...args: any[]) => any> = F & {
  */
 export const timeout = <F extends (...args: any[]) => any>(
   callback: F,
-  timeoutMs = 0
+  timeoutMs = 0,
 ): TimeoutFn<F> => {
   let id = -1;
 

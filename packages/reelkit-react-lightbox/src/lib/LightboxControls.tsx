@@ -164,13 +164,9 @@ export const SoundButton: React.FC<SoundButtonProps> = ({
 /** @internal */
 interface LightboxControlsProps {
   onClose: () => void;
-
   currentIndex: number;
-
   count: number;
-
   isFullscreen: boolean;
-
   onToggleFullscreen: () => void;
 }
 

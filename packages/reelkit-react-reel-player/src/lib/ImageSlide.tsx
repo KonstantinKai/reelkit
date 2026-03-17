@@ -21,6 +21,9 @@ export interface ImageSlideProps {
 
   /** Inline styles merged onto the `<img>` element. */
   imgStyle?: CSSProperties;
+
+  /** Additional props spread onto the `<img>` element (e.g. `alt`, `loading`, `onLoad`). */
+  imageProps?: React.ImgHTMLAttributes<HTMLImageElement>;
 }
 
 /**
@@ -46,6 +49,7 @@ const ImageSlide: React.FC<ImageSlideProps> = ({
   style,
   imgClassName,
   imgStyle,
+  imageProps,
 }) => {
   return (
     <div
@@ -62,8 +66,10 @@ const ImageSlide: React.FC<ImageSlideProps> = ({
       }}
     >
       <img
-        src={src}
         alt=""
+        loading="lazy"
+        {...imageProps}
+        src={src}
         className={imgClassName}
         style={{
           width: '100%',
@@ -72,7 +78,6 @@ const ImageSlide: React.FC<ImageSlideProps> = ({
           objectPosition: 'center',
           ...imgStyle,
         }}
-        loading="lazy"
       />
     </div>
   );

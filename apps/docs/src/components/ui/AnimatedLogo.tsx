@@ -1,6 +1,5 @@
 interface AnimatedLogoProps {
   className?: string;
-
   style?: React.CSSProperties;
 }
 

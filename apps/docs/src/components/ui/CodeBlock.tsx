@@ -5,7 +5,6 @@ import { useTheme } from '../../context/ThemeContext';
 
 interface CodeBlockProps {
   code: string;
-
   language?: string;
 
   /** Strip outer border/radius/header for embedding inside another container */

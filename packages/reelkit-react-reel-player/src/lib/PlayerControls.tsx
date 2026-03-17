@@ -146,9 +146,7 @@ export const SoundButton: React.FC<SoundButtonProps> = ({
 /** @internal Props for the default PlayerControls used by ReelPlayerOverlay. */
 interface PlayerControlsProps {
   onClose: () => void;
-
   showSound?: boolean;
-
   soundDisabled?: boolean;
 }
 
