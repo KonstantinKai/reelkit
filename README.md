@@ -53,8 +53,6 @@ import { useState } from 'react';
 import { Reel, ReelIndicator } from '@reelkit/react';
 
 function App() {
-  const [index, setIndex] = useState(0);
-
   return (
     <Reel
       className="my-reel"
