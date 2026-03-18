@@ -740,14 +740,47 @@ function App() {
             <ArrowRight className="w-5 h-5 text-primary-500 flex-shrink-0 mt-0.5" />
             <div>
               <strong className="text-slate-900 dark:text-white">
-                Memoize items array
+                Memoize data arrays
+              </strong>
+              <p className="text-sm">
+                Wrap your items array with{' '}
+                <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+                  useMemo
+                </code>
+                . A new array reference on every render triggers a{' '}
+                <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+                  count
+                </code>{' '}
+                update and re-computation of visible ranges.
+              </p>
+            </div>
+          </li>
+          <li className="flex items-start gap-3">
+            <ArrowRight className="w-5 h-5 text-primary-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <strong className="text-slate-900 dark:text-white">
+                Keep itemBuilder lightweight
+              </strong>
+              <p className="text-sm">
+                It runs on every visible range change (typically 3 slides).
+                Avoid heavy computation or side effects inside it.
+              </p>
+            </div>
+          </li>
+          <li className="flex items-start gap-3">
+            <ArrowRight className="w-5 h-5 text-primary-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <strong className="text-slate-900 dark:text-white">
+                Load data near the edge
               </strong>
               <p className="text-sm">
                 Use{' '}
                 <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
-                  useMemo
+                  afterChange
                 </code>{' '}
-                to prevent regenerating on every render
+                to detect when the user approaches the end and fetch the next
+                batch before they run out of slides (see Growable List demo
+                above).
               </p>
             </div>
           </li>
@@ -755,36 +788,15 @@ function App() {
             <ArrowRight className="w-5 h-5 text-primary-500 flex-shrink-0 mt-0.5" />
             <div>
               <strong className="text-slate-900 dark:text-white">
-                Memoize itemBuilder
+                Disable wheel in scrollable pages
               </strong>
               <p className="text-sm">
-                Wrap with{' '}
+                Set{' '}
                 <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
-                  useCallback
+                  enableWheel={'{false}'}
                 </code>{' '}
-                if it has dependencies
-              </p>
-            </div>
-          </li>
-          <li className="flex items-start gap-3">
-            <ArrowRight className="w-5 h-5 text-primary-500 flex-shrink-0 mt-0.5" />
-            <div>
-              <strong className="text-slate-900 dark:text-white">
-                Lazy load content
-              </strong>
-              <p className="text-sm">
-                Fetch data for items only when they enter the visible range
-              </p>
-            </div>
-          </li>
-          <li className="flex items-start gap-3">
-            <ArrowRight className="w-5 h-5 text-primary-500 flex-shrink-0 mt-0.5" />
-            <div>
-              <strong className="text-slate-900 dark:text-white">
-                Use placeholder content
-              </strong>
-              <p className="text-sm">
-                Show skeleton loaders for items still loading
+                when the slider is embedded in a scrollable layout to avoid
+                capturing the page scroll.
               </p>
             </div>
           </li>
