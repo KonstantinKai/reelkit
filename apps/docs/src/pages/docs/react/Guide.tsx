@@ -578,7 +578,7 @@ function App() {
           title="BasicSlider.tsx"
           height={500}
           stackblitzDeps={{
-            '@reelkit/react': '0.1.3',
+            '@reelkit/react': '0.2.0',
             'lucide-react': '^0.562.0',
           }}
         >
@@ -670,7 +670,7 @@ function App() {
           title="InfiniteList.tsx"
           height={500}
           stackblitzDeps={{
-            '@reelkit/react': '0.1.3',
+            '@reelkit/react': '0.2.0',
             'lucide-react': '^0.562.0',
           }}
         >
@@ -721,7 +721,7 @@ function App() {
           title="GrowableList.tsx"
           height={500}
           stackblitzDeps={{
-            '@reelkit/react': '0.1.3',
+            '@reelkit/react': '0.2.0',
             'lucide-react': '^0.562.0',
           }}
         >
