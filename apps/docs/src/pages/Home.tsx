@@ -83,7 +83,7 @@ function App() {
         <div className="slide">{items[index]}</div>
       )}
     >
-      <ReelIndicator count={items.length} />
+      <ReelIndicator />
     </Reel>
   );
 }`;

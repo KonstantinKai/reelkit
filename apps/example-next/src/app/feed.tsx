@@ -1,11 +1,10 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useRef } from 'react';
 import { Reel, ReelIndicator, type ReelApi } from '@reelkit/react';
 import type { FeedItem } from './page';
 
 export function Feed({ items }: { items: FeedItem[] }) {
-  const [activeIndex, setActiveIndex] = useState(0);
   const apiRef = useRef<ReelApi>(null);
 
   return (
@@ -15,7 +14,6 @@ export function Feed({ items }: { items: FeedItem[] }) {
       direction="vertical"
       enableWheel
       apiRef={apiRef}
-      afterChange={(index) => setActiveIndex(index)}
       itemBuilder={(index, _indexInRange, itemSize) => (
         <div
           style={{
@@ -47,8 +45,6 @@ export function Feed({ items }: { items: FeedItem[] }) {
         }}
       >
         <ReelIndicator
-          count={items.length}
-          active={activeIndex}
           direction="vertical"
           visible={5}
           radius={4}

@@ -130,7 +130,7 @@ export function Feed({ items }: { items: FeedItem[] }) {
         </div>
       )}
     >
-      <ReelIndicator count={items.length} />
+      <ReelIndicator />
     </Reel>
   );
 }`}

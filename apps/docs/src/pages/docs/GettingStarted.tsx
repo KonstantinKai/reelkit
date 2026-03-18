@@ -71,7 +71,7 @@ function App() {
         </div>
       )}
     >
-      <ReelIndicator count={items.length} />
+      <ReelIndicator />
     </Reel>
   );
 }`}
@@ -131,7 +131,7 @@ function App() {
       size={[400, 600]}
       itemBuilder={(index) => <Slide data={items[index]} />}
     >
-      <ReelIndicator count={items.length} />
+      <ReelIndicator />
     </Reel>
   );
 }`}

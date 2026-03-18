@@ -303,6 +303,93 @@ test.describe('Reel React - Indicator', () => {
   });
 });
 
+test.describe('Reel React - Indicator Mode Toggle', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/');
+    // Clear persisted mode
+    await page.evaluate(() =>
+      localStorage.removeItem('reelkit-fullpage-indicator-mode'),
+    );
+  });
+
+  test('defaults to auto-connect mode', async ({ page }) => {
+    const toggle = page.getByTestId('indicator-mode-toggle');
+    await expect(toggle).toContainText('indicator: auto');
+  });
+
+  test('auto-connect indicator tracks active slide', async ({ page }) => {
+    const slider = new SliderPage(page);
+
+    const activeIndex = await slider.getActiveIndicatorIndex();
+    expect(activeIndex).toBe(0);
+
+    await slider.clickNext();
+    await slider.waitForAnimation();
+
+    const newActiveIndex = await slider.getActiveIndicatorIndex();
+    expect(newActiveIndex).toBe(1);
+  });
+
+  test('auto-connect indicator supports dot click navigation', async ({
+    page,
+  }) => {
+    const slider = new SliderPage(page);
+
+    await slider.expectSlideTitle('Slide 1');
+
+    await slider.clickIndicatorByIndex(3);
+    await slider.waitForAnimation();
+
+    await slider.expectSlideTitle('Slide 4');
+  });
+
+  test('switches to controlled mode', async ({ page }) => {
+    const toggle = page.getByTestId('indicator-mode-toggle');
+    await toggle.click();
+
+    await expect(toggle).toContainText('indicator: controlled');
+  });
+
+  test('controlled indicator tracks active slide', async ({ page }) => {
+    const slider = new SliderPage(page);
+    const toggle = page.getByTestId('indicator-mode-toggle');
+    await toggle.click();
+
+    const activeIndex = await slider.getActiveIndicatorIndex();
+    expect(activeIndex).toBe(0);
+
+    await slider.clickNext();
+    await slider.waitForAnimation();
+
+    const newActiveIndex = await slider.getActiveIndicatorIndex();
+    expect(newActiveIndex).toBe(1);
+  });
+
+  test('controlled indicator supports dot click navigation', async ({
+    page,
+  }) => {
+    const slider = new SliderPage(page);
+    const toggle = page.getByTestId('indicator-mode-toggle');
+    await toggle.click();
+
+    await slider.expectSlideTitle('Slide 1');
+
+    await slider.clickIndicatorByIndex(3);
+    await slider.waitForAnimation();
+
+    await slider.expectSlideTitle('Slide 4');
+  });
+
+  test('indicator persists mode after toggle', async ({ page }) => {
+    const toggle = page.getByTestId('indicator-mode-toggle');
+    await toggle.click();
+    await expect(toggle).toContainText('indicator: controlled');
+
+    await toggle.click();
+    await expect(toggle).toContainText('indicator: auto');
+  });
+});
+
 test.describe('Reel React - Rapid Interactions', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');

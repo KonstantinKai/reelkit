@@ -66,8 +66,6 @@ export default function BasicSlider() {
       <div style={{ position: 'absolute', right: 12, top: '50%',
         transform: 'translateY(-50%)', zIndex: 10 }}>
         <ReelIndicator
-          count={slides.length}
-          active={currentIndex}
           direction="vertical"
           radius={3}
           gap={4}
@@ -155,8 +153,6 @@ export default function InfiniteList() {
         <div style={{ position: 'absolute', right: 12, top: '50%',
           transform: 'translateY(-50%)', zIndex: 10 }}>
           <ReelIndicator
-            count={items.length}
-            active={currentIndex}
             direction="vertical"
             visible={4}
           />
@@ -420,14 +416,30 @@ function App() {
         <h2 className="text-2xl font-bold mb-4">ReelIndicator</h2>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Optional component that displays Instagram-style progress indicators
-          showing the current position in the slider.
+          showing the current position in the slider. When placed inside a{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            Reel
+          </code>
+          , it auto-connects to the parent's{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            count
+          </code>{' '}
+          and{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            active
+          </code>{' '}
+          values via context — no manual state wiring needed.
         </p>
         <CodeBlock
           code={`import { Reel, ReelIndicator } from '@reelkit/react';
 
+{/* Auto-connect: count and active are inherited from parent Reel */}
 <Reel count={10} size={[400, 600]} itemBuilder={...}>
-  <ReelIndicator count={10} />
-</Reel>`}
+  <ReelIndicator />
+</Reel>
+
+{/* Manual usage: pass count and active explicitly (e.g. outside a Reel) */}
+<ReelIndicator count={10} active={currentIndex} />`}
           language="tsx"
         />
       </section>

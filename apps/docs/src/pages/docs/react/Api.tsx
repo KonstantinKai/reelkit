@@ -158,14 +158,16 @@ const indicatorProps = [
   {
     prop: 'count',
     type: 'number',
-    default: 'required',
-    description: 'Total number of items',
+    default: 'auto',
+    description:
+      'Total number of items. Auto-connected from parent Reel when nested inside one; pass explicitly when used standalone',
   },
   {
     prop: 'active',
     type: 'number',
-    default: '0',
-    description: 'Current active index',
+    default: 'auto',
+    description:
+      'Current active index. Auto-connected from parent Reel when nested inside one; pass explicitly when used standalone',
   },
   {
     prop: 'direction',

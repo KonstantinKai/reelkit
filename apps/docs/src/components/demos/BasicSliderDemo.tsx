@@ -166,13 +166,7 @@ export function BasicSliderDemo() {
             zIndex: 10,
           }}
         >
-          <ReelIndicator
-            count={slides.length}
-            active={currentIndex}
-            direction="vertical"
-            radius={3}
-            gap={4}
-          />
+          <ReelIndicator direction="vertical" radius={3} gap={4} />
         </div>
       </Reel>
 

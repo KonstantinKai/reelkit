@@ -20,12 +20,18 @@ const getSlideContent = (index: number) => ({
 });
 
 type SizeMode = 'explicit' | 'auto';
+type IndicatorMode = 'auto' | 'controlled';
+
+const INDICATOR_MODE_KEY = 'reelkit-fullpage-indicator-mode';
 
 function FullPageSlider() {
   const [activeIndex, setActiveIndex] = React.useState(0);
   const sliderRef = React.useRef<ReelApi>(null);
   const [sizeMode, setSizeMode] = React.useState<SizeMode>(
     () => (localStorage.getItem(SIZE_MODE_KEY) as SizeMode) || 'explicit',
+  );
+  const [indicatorMode, setIndicatorMode] = React.useState<IndicatorMode>(
+    () => (localStorage.getItem(INDICATOR_MODE_KEY) as IndicatorMode) || 'auto',
   );
   const [size, setSize] = React.useState<[number, number]>([
     window.innerWidth,
@@ -40,6 +46,12 @@ function FullPageSlider() {
     const next = sizeMode === 'explicit' ? 'auto' : 'explicit';
     localStorage.setItem(SIZE_MODE_KEY, next);
     setSizeMode(next);
+  };
+
+  const toggleIndicatorMode = () => {
+    const next = indicatorMode === 'auto' ? 'controlled' : 'auto';
+    localStorage.setItem(INDICATOR_MODE_KEY, next);
+    setIndicatorMode(next);
   };
 
   React.useEffect(() => {
@@ -133,6 +145,30 @@ function FullPageSlider() {
           }}
         >
           size: {sizeMode === 'explicit' ? `[${size[0]}, ${size[1]}]` : 'auto'}
+        </button>
+
+        {/* Indicator mode toggle */}
+        <button
+          onClick={toggleIndicatorMode}
+          data-testid="indicator-mode-toggle"
+          style={{
+            position: 'absolute',
+            top: 48,
+            right: 40,
+            marginTop: 36,
+            padding: '6px 12px',
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 20,
+            fontSize: '0.75rem',
+            cursor: 'pointer',
+            zIndex: 10,
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+          }}
+        >
+          indicator: {indicatorMode}
         </button>
 
         {/* Bottom controls */}
@@ -250,13 +286,14 @@ function FullPageSlider() {
           }}
         >
           <ReelIndicator
-            count={TOTAL_SLIDES}
-            active={activeIndex}
             direction="vertical"
             visible={4}
             radius={4}
             gap={6}
             onDotClick={(index) => sliderRef.current?.goTo(index, true)}
+            {...(indicatorMode === 'controlled'
+              ? { count: TOTAL_SLIDES, active: activeIndex }
+              : {})}
           />
         </div>
       </Reel>

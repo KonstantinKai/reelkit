@@ -117,14 +117,7 @@ export function InfiniteListDemo() {
             zIndex: 10,
           }}
         >
-          <ReelIndicator
-            count={items.length}
-            active={currentIndex}
-            direction="vertical"
-            visible={4}
-            radius={3}
-            gap={4}
-          />
+          <ReelIndicator direction="vertical" visible={4} radius={3} gap={4} />
         </div>
       </Reel>
 
