@@ -34,7 +34,7 @@
 | Package                                                          | Description                      | JS (gzip) |
 | ---------------------------------------------------------------- | -------------------------------- | --------- |
 | [@reelkit/core](packages/reelkit-core)                           | Framework-agnostic slider engine | 3.7 kB    |
-| [@reelkit/react](packages/reelkit-react)                         | React components and hooks       | 2.6 kB    |
+| [@reelkit/react](packages/reelkit-react)                         | React components and hooks       | 2.9 kB    |
 | [@reelkit/react-reel-player](packages/reelkit-react-reel-player) | Full-screen video reel player    | 3.8 kB    |
 | [@reelkit/react-lightbox](packages/reelkit-react-lightbox)       | Image & video gallery lightbox   | 3.4 kB    |
 

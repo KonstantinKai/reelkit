@@ -2,11 +2,11 @@
 
 <p>
   <a href="https://www.npmjs.com/package/@reelkit/react"><img src="https://img.shields.io/npm/v/@reelkit/react?color=6366f1&label=npm" alt="npm" /></a>
-  <img src="https://img.shields.io/badge/gzip-2.6%20kB-6366f1" alt="Bundle size" />
+  <img src="https://img.shields.io/badge/gzip-2.9%20kB-6366f1" alt="Bundle size" />
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
 
-React components and hooks for building TikTok/Instagram Reels-style sliders. Virtualized rendering, touch gestures, keyboard/wheel navigation — all in ~2.6 kB gzip.
+React components and hooks for building TikTok/Instagram Reels-style sliders. Virtualized rendering, touch gestures, keyboard/wheel navigation — all in ~2.9 kB gzip.
 
 ## Installation
 

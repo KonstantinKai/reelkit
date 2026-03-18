@@ -12,7 +12,8 @@
     "fmt:chk": "npx nx format:check",
     "fmt": "npx nx format",
     "prepare": "husky",
-    "check": "npm run fmt:chk && npm run lint && npm run typecheck"
+    "check": "npm run fmt:chk && npm run lint && npm run typecheck",
+    "update-sizes": "node scripts/update-sizes.mjs"
   },
   "repository": {
     "type": "git",
@@ -80,6 +81,7 @@
     "jsdom": "~22.1.0",
     "jsonc-eslint-parser": "^2.1.0",
     "nx": "22.5.4",
+    "package-build-stats": "^8.2.5",
     "postcss": "8.4.38",
     "prettier": "~3.6.2",
     "svelte": "^5.46.1",
