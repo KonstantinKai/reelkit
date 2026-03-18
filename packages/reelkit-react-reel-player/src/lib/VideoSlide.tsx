@@ -5,8 +5,13 @@ import React, {
   useLayoutEffect,
   useState,
 } from 'react';
-import { createSignal, noop } from '@reelkit/core';
-import { Observe } from '@reelkit/react';
+import {
+  createSignal,
+  createSharedVideo,
+  captureFrame,
+  noop,
+  Observe,
+} from '@reelkit/react';
 import { useSoundState } from './useSoundState';
 import './VideoSlide.css';
 
@@ -45,55 +50,11 @@ export interface VideoSlideProps {
   style?: CSSProperties;
 }
 
-/**
- * Shared video element for iOS sound continuity.
- *
- * iOS only allows autoplay with sound if the user has interacted with the
- * video element. By reusing the same element across slides, the unmuted
- * state persists through slide changes.
- */
-let sharedVideo: HTMLVideoElement | null = null;
-
-/** Playback positions per slideKey, restored when returning to a slide. */
-const playbackPositions = new Map<string, number>();
-
-/** Captured video frames per slideKey, used as poster when returning. */
-const capturedFrames = new Map<string, string>();
-
-/**
- * Captures the current video frame as a JPEG data URL.
- * Returns `null` on cross-origin errors or if the video has no dimensions.
- */
-const captureFrame = (video: HTMLVideoElement): string | null => {
-  try {
-    const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    const ctx = canvas.getContext('2d');
-    if (!ctx || video.videoWidth === 0) return null;
-    ctx.drawImage(video, 0, 0);
-    return canvas.toDataURL('image/jpeg', 0.8);
-  } catch {
-    // Cross-origin or other error
-    return null;
-  }
-};
-
-const getSharedVideo = (): HTMLVideoElement => {
-  if (!sharedVideo) {
-    sharedVideo = document.createElement('video');
-    sharedVideo.playsInline = true;
-    sharedVideo.loop = true;
-    sharedVideo.preload = 'auto';
-    sharedVideo.muted = true;
-    sharedVideo.autoplay = true;
-    sharedVideo.disableRemotePlayback = true;
-    sharedVideo.disablePictureInPicture = true;
-    sharedVideo.crossOrigin = 'anonymous';
-    sharedVideo.className = 'rk-video-slide-element';
-  }
-  return sharedVideo;
-};
+const shared = createSharedVideo({
+  className: 'rk-video-slide-element',
+  disableRemotePlayback: true,
+  disablePictureInPicture: true,
+});
 
 const useIsomorphicLayoutEffect =
   typeof window !== 'undefined' ? useLayoutEffect : useEffect;
@@ -145,7 +106,7 @@ const VideoSlide: React.FC<VideoSlideProps> = ({
   useIsomorphicLayoutEffect(() => {
     if (!shouldPlay || !containerRef.current) return;
 
-    const video = getSharedVideo();
+    const video = shared.getVideo();
     const container = containerRef.current;
 
     // Show loader and poster initially
@@ -169,7 +130,7 @@ const VideoSlide: React.FC<VideoSlideProps> = ({
     video.muted = soundState.muted.value;
 
     // Restore saved playback position or start from beginning
-    const savedPosition = playbackPositions.get(slideKey);
+    const savedPosition = shared.playbackPositions.get(slideKey);
     video.currentTime = savedPosition ?? 0;
 
     // Update object-fit based on aspect ratio
@@ -194,12 +155,12 @@ const VideoSlide: React.FC<VideoSlideProps> = ({
       video.removeEventListener('playing', handlePlaying);
 
       // Save current playback position before removing
-      playbackPositions.set(slideKey, video.currentTime);
+      shared.playbackPositions.set(slideKey, video.currentTime);
 
       // Capture current frame to use as poster when returning
       const frame = captureFrame(video);
       if (frame) {
-        capturedFrames.set(slideKey, frame);
+        shared.capturedFrames.set(slideKey, frame);
       }
 
       // Remove from this container when unmounting or becoming inactive
@@ -217,7 +178,7 @@ const VideoSlide: React.FC<VideoSlideProps> = ({
   // Sync muted state with sound context
   useEffect(() => {
     if (!shouldPlay) return;
-    const video = sharedVideo;
+    const video = shared.getVideo();
     if (video) video.muted = soundState.muted.value;
     return soundState.muted.observe(() => {
       if (video) video.muted = soundState.muted.value;
@@ -243,7 +204,7 @@ const VideoSlide: React.FC<VideoSlideProps> = ({
       {/* Use captured frame if available, otherwise fall back to original poster */}
       <Observe signals={[showPoster]}>
         {() => {
-          const posterSrc = capturedFrames.get(slideKey) ?? poster;
+          const posterSrc = shared.capturedFrames.get(slideKey) ?? poster;
           if (!posterSrc) return null;
           return (
             <img

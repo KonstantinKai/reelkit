@@ -6,7 +6,7 @@
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
 
-Framework-agnostic slider engine with zero dependencies. Provides virtualized rendering, gesture recognition, keyboard/wheel controllers, and a lightweight signal-based reactive system.
+The engine behind ReelKit — handles slider logic, gesture recognition, and transitions without depending on any UI framework. Ships its own signal-based reactive system so you don't need RxJS or similar.
 
 ## Installation
 
@@ -40,19 +40,19 @@ slider.currentIndex.subscribe((index) => {
 
 ## Features
 
-- **Virtualized** — renders only 3 slides at a time, handles 10,000+ items
-- **Zero dependencies** — ~3.7 kB gzip
-- **Controller pattern** — factory functions (`createSliderController`, `createGestureController`, `createKeyboardController`, `createWheelController`)
-- **Signal-based reactivity** — lightweight `Signal`, `ComputedSignal`, and `reaction` primitives
-- **Touch gestures** — swipe with momentum, configurable thresholds
-- **Keyboard & wheel** — full navigation support with debouncing
-- **Loop mode** — infinite circular scrolling
-- **Auto-size** — optional ResizeObserver-based sizing
-- **TypeScript** — full type safety
+- Renders only 3 slides at a time (virtualized), handles 10,000+ items
+- Zero dependencies, ~3.7 kB gzip
+- Factory functions over classes — `createSliderController`, `createGestureController`, `createKeyboardController`, `createWheelController`
+- Built-in `Signal`, `ComputedSignal`, and `reaction` primitives for reactive state
+- Touch gestures with momentum and configurable thresholds
+- Keyboard and wheel navigation with debouncing
+- Infinite loop mode
+- Optional ResizeObserver-based auto-sizing
+- Strict TypeScript throughout
 
 ## Documentation
 
-Full API reference and guides at **[reelkit.dev](https://reelkit.dev)**.
+API reference and guides at **[reelkit.dev](https://reelkit.dev)**.
 
 ## Support
 

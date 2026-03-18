@@ -6,7 +6,7 @@
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
 
-React components and hooks for building TikTok/Instagram Reels-style sliders. Virtualized rendering, touch gestures, keyboard/wheel navigation — all in ~2.9 kB gzip.
+React bindings for `@reelkit/core`. Drop in a `<Reel>` component, give it a slide count and a render function — it handles virtualization, gestures, and keyboard/wheel input. ~2.9 kB gzip.
 
 ## Installation
 
@@ -40,14 +40,13 @@ function App() {
 
 ## Features
 
-- **`<Reel>`** — virtualized slider component (only 3 slides in DOM)
-- **`<ReelIndicator>`** — Instagram-style position dots
-- **Auto-size** — measures container via ResizeObserver, no explicit size props needed
-- **Touch gestures** — swipe with momentum and snap
-- **Keyboard & wheel** — arrow keys and scroll navigation
-- **Loop mode** — infinite circular scrolling
-- **SSR ready** — works with Next.js, Remix, and any SSR setup
-- **TypeScript** — full type safety
+- `<Reel>` — virtualized slider, keeps only 3 slides in the DOM
+- `<ReelIndicator>` — dot indicators that auto-connect to the parent `<Reel>` via context
+- Measures its own size via ResizeObserver — no width/height props needed
+- Swipe with momentum and snap, keyboard arrows, mouse wheel
+- Loop mode for infinite circular scrolling
+- SSR compatible (Next.js, Remix, etc.)
+- Typed with TypeScript, no `@types` package needed
 
 ## API
 
@@ -81,7 +80,7 @@ function App() {
 
 ## Documentation
 
-Full API reference, interactive demos, and guides at **[reelkit.dev](https://reelkit.dev)**.
+API reference, demos, and guides at **[reelkit.dev](https://reelkit.dev)**.
 
 ## Support
 

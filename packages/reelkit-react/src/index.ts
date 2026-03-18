@@ -14,6 +14,30 @@
  * Core utilities (signals, math helpers, etc.) are re-exported for
  * convenience so consumers don't need a direct `@reelkit/core`
  * dependency.
+ *
+ * @example
+ * ```tsx
+ * import { useState } from 'react';
+ * import { Reel, ReelIndicator } from '@reelkit/react';
+ *
+ * function App() {
+ *   return (
+ *     <Reel
+ *       count={100}
+ *       style={{ width: '100%', height: '100dvh' }}
+ *       direction="vertical"
+ *       enableWheel
+ *       itemBuilder={(index, _inRange, size) => (
+ *         <div style={{ width: size[0], height: size[1] }}>
+ *           Slide {index + 1}
+ *         </div>
+ *       )}
+ *     >
+ *       <ReelIndicator />
+ *     </Reel>
+ *   );
+ * }
+ * ```
  */
 
 // Re-export from core
@@ -32,12 +56,20 @@ export {
   lerp,
   extractRange,
   observeDomEvent,
+  noop,
+  captureFrame,
+  createSharedVideo,
+  createGestureController,
   type Signal,
   type ComputedSignal,
   type Subscribable,
   type Listener,
   type Dispose,
   type Deferred,
+  type SharedVideoConfig,
+  type SharedVideoInstance,
+  type GestureController,
+  type GestureControllerEvents,
 } from '@reelkit/core';
 
 // Main components

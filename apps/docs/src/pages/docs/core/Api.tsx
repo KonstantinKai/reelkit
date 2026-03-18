@@ -338,7 +338,7 @@ export default function CoreApi() {
         </div>
       </section>
 
-      <section>
+      <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Signal API</h2>
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -396,6 +396,62 @@ export default function CoreApi() {
                 <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
                   Group multiple signal updates into a single notification pass;
                   supports nesting
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section>
+        <h2 className="text-2xl font-bold mb-4">Video Utilities</h2>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Framework-agnostic utilities for shared video playback across slides.
+          Used internally by{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            @reelkit/react-reel-player
+          </code>{' '}
+          and{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            @reelkit/react-lightbox
+          </code>
+          , available for custom framework bindings.
+        </p>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left py-3 px-4 font-semibold">Export</th>
+                <th className="text-left py-3 px-4 font-semibold">Type</th>
+                <th className="text-left py-3 px-4 font-semibold">
+                  Description
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  captureFrame
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {'(video: HTMLVideoElement) => string | null'}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Captures the current video frame as a JPEG data URL. Returns
+                  null on cross-origin errors.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  createSharedVideo
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {'(config: SharedVideoConfig) => SharedVideoInstance'}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Creates a scoped shared video singleton with playback position
+                  and frame capture maps. Each consumer gets an isolated
+                  instance for iOS sound continuity.
                 </td>
               </tr>
             </tbody>

@@ -22,11 +22,13 @@ export interface UseFullscreenProps<E extends HTMLElement> {
  * - `[0]` — `boolean` indicating whether the element is currently fullscreen.
  * - `[1]` — Function to request fullscreen on the referenced element.
  * - `[2]` — Function to exit fullscreen.
+ * - `[3]` — Toggle function that requests or exits fullscreen based on current state.
  */
 export type UseFullscreenResult = [
   fullscreen: boolean,
   requestFullscreen: () => void,
   exitFullscreen: () => void,
+  toggleFullscreen: () => void,
 ];
 
 /**
@@ -120,10 +122,10 @@ const requestFullscreenFn = (element: HTMLElement): Promise<void> => {
  * @example
  * ```tsx
  * const ref = useRef<HTMLDivElement>(null);
- * const [isFs, requestFs, exitFs] = useFullscreen({ ref });
+ * const [isFs, requestFs, exitFs, toggleFs] = useFullscreen({ ref });
  * ```
  */
-const useFullscreen = <E extends HTMLElement>(
+export const useFullscreen = <E extends HTMLElement>(
   props: UseFullscreenProps<E>,
 ): UseFullscreenResult => {
   const [fullscreen, setFullscreen] = useState(false);
@@ -154,7 +156,7 @@ const useFullscreen = <E extends HTMLElement>(
           );
         });
     }
-  }, [props.ref]);
+  }, []);
 
   const exit = useCallback(() => {
     exitFullscreenFn()
@@ -168,6 +170,14 @@ const useFullscreen = <E extends HTMLElement>(
           `Error attempting to exit full-screen mode: ${err.message} (${err.name})`,
         );
       });
+  }, []);
+
+  const toggle = useCallback(() => {
+    if (isFullscreen()) {
+      exit();
+    } else {
+      request();
+    }
   }, []);
 
   // Listen for fullscreen change events
@@ -209,7 +219,5 @@ const useFullscreen = <E extends HTMLElement>(
     };
   }, []);
 
-  return [fullscreen, request, exit];
+  return [fullscreen, request, exit, toggle];
 };
-
-export default useFullscreen;

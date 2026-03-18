@@ -8,10 +8,15 @@ import {
   useCallback,
 } from 'react';
 import { createPortal } from 'react-dom';
-import { createSignal } from '@reelkit/core';
-import { Reel, Observe, type ReelApi, type ReelProps } from '@reelkit/react';
+import {
+  createSignal,
+  Reel,
+  Observe,
+  type ReelApi,
+  type ReelProps,
+} from '@reelkit/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import useFullscreen from './useFullscreen';
+import { useFullscreen } from './useFullscreen';
 import { useBodyLock } from '@reelkit/react';
 import { SwipeToClose } from './SwipeToClose';
 import LightboxControls from './LightboxControls';
@@ -120,7 +125,10 @@ export interface LightboxOverlayProps extends ReelProxyProps {
   /** Array of images to display as horizontal slides. */
   images: LightboxItem[];
 
-  /** Zero-based index of the initially visible image. @default 0 */
+  /**
+   * Zero-based index of the initially visible image.
+   * @default 0
+   */
   initialIndex?: number;
 
   /** Callback to close the lightbox. Triggered by close button or Escape key. */
@@ -220,7 +228,7 @@ const LightboxContent: FC<LightboxOverlayProps> = ({
         : [0, 0],
     ),
   );
-  const [isFullscreen, requestFullscreen, exitFullscreen] = useFullscreen({
+  const [isFullscreen, _, exitFullscreen, toggleFullscreen] = useFullscreen({
     ref: containerRef,
   });
   const [isMobile, setIsMobile] = useState(() =>
@@ -293,14 +301,6 @@ const LightboxContent: FC<LightboxOverlayProps> = ({
     sliderRef.current?.next();
   }, [sliderRef]);
 
-  const handleFullscreenToggle = useCallback(() => {
-    if (isFullscreen) {
-      exitFullscreen();
-    } else {
-      requestFullscreen();
-    }
-  }, [isFullscreen, requestFullscreen, exitFullscreen]);
-
   const currentImage = images[currentIndex];
 
   const itemBuilder = useCallback(
@@ -337,6 +337,7 @@ const LightboxContent: FC<LightboxOverlayProps> = ({
             alt={image.title || `Image ${index + 1}`}
             className="rk-lightbox-img"
             draggable={false}
+            loading="lazy"
           />
         </div>
       );
@@ -353,7 +354,7 @@ const LightboxContent: FC<LightboxOverlayProps> = ({
           currentIndex,
           count: images.length,
           isFullscreen,
-          onToggleFullscreen: handleFullscreenToggle,
+          onToggleFullscreen: toggleFullscreen,
         })
       ) : (
         <LightboxControls
@@ -361,7 +362,7 @@ const LightboxContent: FC<LightboxOverlayProps> = ({
           currentIndex={currentIndex}
           count={images.length}
           isFullscreen={isFullscreen}
-          onToggleFullscreen={handleFullscreenToggle}
+          onToggleFullscreen={toggleFullscreen}
         />
       )}
 

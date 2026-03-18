@@ -25,3 +25,10 @@ export {
 export { timeout, type TimeoutFn } from './timeout';
 
 export { noop } from './noop';
+
+export {
+  captureFrame,
+  createSharedVideo,
+  type SharedVideoConfig,
+  type SharedVideoInstance,
+} from './video';

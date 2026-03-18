@@ -6,7 +6,7 @@
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
 
-Full-screen vertical-swipe video/image player for React. Inspired by Instagram Reels and TikTok. ~3.8 kB gzip.
+Drop-in Instagram Reels / TikTok-style video player for React. Opens as a full-screen overlay with vertical swipe navigation. Handles video autoplay, sound continuity on iOS, and multi-media posts out of the box. ~3.8 kB gzip.
 
 ## Installation
 
@@ -237,7 +237,7 @@ function Gallery() {
 
 ## Documentation
 
-Full documentation, interactive demos, and customization examples at **[reelkit.dev/docs/reel-player](https://reelkit.dev/docs/reel-player)**.
+Docs and interactive demos at **[reelkit.dev/docs/reel-player](https://reelkit.dev/docs/reel-player)**.
 
 ## Support
 

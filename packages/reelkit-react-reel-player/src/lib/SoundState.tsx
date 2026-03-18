@@ -1,5 +1,5 @@
 import React, { createContext, useState } from 'react';
-import { createSignal, type Signal } from '@reelkit/core';
+import { createSignal, type Signal } from '@reelkit/react';
 
 /**
  * Reactive sound state shared across the reel player.

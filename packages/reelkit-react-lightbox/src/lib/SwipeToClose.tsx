@@ -2,9 +2,9 @@ import { type ReactNode, type FC, useRef, useState, useEffect } from 'react';
 import {
   createSignal,
   createGestureController,
+  Observe,
   type GestureController,
-} from '@reelkit/core';
-import { Observe } from '@reelkit/react';
+} from '@reelkit/react';
 
 /** Props for the {@link SwipeToClose} wrapper component. */
 export interface SwipeToCloseProps {

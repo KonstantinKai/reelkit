@@ -1,4 +1,5 @@
 import React, { useRef, useLayoutEffect, useEffect, useState } from 'react';
+import { createSharedVideo, captureFrame, noop } from '@reelkit/react';
 import './LightboxVideoSlide.css';
 
 /**
@@ -21,52 +22,9 @@ export interface LightboxVideoSlideProps {
   slideKey: string;
 }
 
-/**
- * Shared video element for iOS sound continuity.
- *
- * iOS only allows autoplay with sound if the user has interacted with the
- * video element. By reusing the same element across slides, the unmuted
- * state persists through slide changes.
- */
-let sharedVideo: HTMLVideoElement | null = null;
-
-/** Playback positions per slideKey, restored when returning to a slide. */
-const playbackPositions = new Map<string, number>();
-
-/** Captured video frames per slideKey, used as poster when returning. */
-const capturedFrames = new Map<string, string>();
-
-/**
- * Captures the current video frame as a JPEG data URL.
- * Returns `null` on cross-origin errors or if the video has no dimensions.
- */
-const captureFrame = (video: HTMLVideoElement): string | null => {
-  try {
-    const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    const ctx = canvas.getContext('2d');
-    if (!ctx || video.videoWidth === 0) return null;
-    ctx.drawImage(video, 0, 0);
-    return canvas.toDataURL('image/jpeg', 0.8);
-  } catch {
-    return null;
-  }
-};
-
-const getSharedVideo = (): HTMLVideoElement => {
-  if (!sharedVideo) {
-    sharedVideo = document.createElement('video');
-    sharedVideo.playsInline = true;
-    sharedVideo.loop = true;
-    sharedVideo.preload = 'auto';
-    sharedVideo.muted = true;
-    sharedVideo.autoplay = true;
-    sharedVideo.crossOrigin = 'anonymous';
-    sharedVideo.className = 'rk-lightbox-video-element';
-  }
-  return sharedVideo;
-};
+const shared = createSharedVideo({
+  className: 'rk-lightbox-video-element',
+});
 
 /** Current muted state, kept in sync by `useVideoSlideRenderer`. */
 let currentMuted = true;
@@ -78,15 +36,12 @@ let currentMuted = true;
  */
 export const setLightboxVideoMuted = (muted: boolean): void => {
   currentMuted = muted;
-  if (sharedVideo) sharedVideo.muted = muted;
+  const video = shared.getVideo();
+  video.muted = muted;
 };
 
 const useIsomorphicLayoutEffect =
   typeof window !== 'undefined' ? useLayoutEffect : useEffect;
-
-const noop = () => {
-  /* intentionally empty */
-};
 
 /**
  * Lightweight video slide component for the lightbox.
@@ -113,7 +68,7 @@ const LightboxVideoSlide: React.FC<LightboxVideoSlideProps> = ({
   useIsomorphicLayoutEffect(() => {
     if (!isActive || !containerRef.current) return;
 
-    const video = getSharedVideo();
+    const video = shared.getVideo();
     const container = containerRef.current;
 
     setIsLoading(true);
@@ -135,7 +90,7 @@ const LightboxVideoSlide: React.FC<LightboxVideoSlideProps> = ({
     video.style.objectFit = 'contain';
 
     // Restore saved playback position or start from beginning
-    const savedPosition = playbackPositions.get(slideKey);
+    const savedPosition = shared.playbackPositions.get(slideKey);
     video.currentTime = savedPosition ?? 0;
 
     container.appendChild(video);
@@ -147,12 +102,12 @@ const LightboxVideoSlide: React.FC<LightboxVideoSlideProps> = ({
       video.removeEventListener('playing', handlePlaying);
 
       // Save current playback position before removing
-      playbackPositions.set(slideKey, video.currentTime);
+      shared.playbackPositions.set(slideKey, video.currentTime);
 
       // Capture current frame to use as poster when returning
       const frame = captureFrame(video);
       if (frame) {
-        capturedFrames.set(slideKey, frame);
+        shared.capturedFrames.set(slideKey, frame);
       }
 
       if (video.parentNode === container) {
@@ -172,9 +127,9 @@ const LightboxVideoSlide: React.FC<LightboxVideoSlideProps> = ({
         height: size[1],
       }}
     >
-      {(capturedFrames.get(slideKey) ?? poster) && (
+      {(shared.capturedFrames.get(slideKey) ?? poster) && (
         <img
-          src={capturedFrames.get(slideKey) ?? poster}
+          src={shared.capturedFrames.get(slideKey) ?? poster}
           alt=""
           className={`rk-lightbox-video-poster ${!isActive || showPoster ? 'rk-visible' : ''}`}
           style={{ objectFit: 'contain' }}

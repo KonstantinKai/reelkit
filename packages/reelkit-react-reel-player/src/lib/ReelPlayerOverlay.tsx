@@ -8,8 +8,14 @@ import React, {
 } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronUp, ChevronDown } from 'lucide-react';
-import { noop, createSignal } from '@reelkit/core';
-import { Reel, Observe, type ReelApi, type ReelProps } from '@reelkit/react';
+import {
+  noop,
+  createSignal,
+  Reel,
+  Observe,
+  type ReelApi,
+  type ReelProps,
+} from '@reelkit/react';
 import { useBodyLock } from '@reelkit/react';
 import type {
   BaseContentItem,

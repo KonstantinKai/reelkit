@@ -16,6 +16,37 @@
  *
  * For custom data types, extend {@link BaseContentItem} and pass as a
  * type parameter: `<ReelPlayerOverlay<MyItem> />`.
+ *
+ * @example
+ * ```tsx
+ * import { useState } from 'react';
+ * import { ReelPlayerOverlay, type ContentItem } from '@reelkit/react-reel-player';
+ * import '@reelkit/react-reel-player/styles.css';
+ *
+ * const content: ContentItem[] = [
+ *   {
+ *     id: '1',
+ *     media: [{ id: 'v1', type: 'video', src: '/video.mp4', aspectRatio: 9 / 16 }],
+ *     author: { name: 'John', avatar: '/avatar.jpg' },
+ *     likes: 1234,
+ *     description: 'Amazing video!',
+ *   },
+ * ];
+ *
+ * function App() {
+ *   const [isOpen, setIsOpen] = useState(false);
+ *   return (
+ *     <>
+ *       <button onClick={() => setIsOpen(true)}>Open Player</button>
+ *       <ReelPlayerOverlay
+ *         isOpen={isOpen}
+ *         onClose={() => setIsOpen(false)}
+ *         content={content}
+ *       />
+ *     </>
+ *   );
+ * }
+ * ```
  */
 
 // Main component

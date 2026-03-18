@@ -43,10 +43,16 @@ vi.mock('@reelkit/react', async (importOriginal) => {
 // Mock useFullscreen
 const mockRequestFullscreen = vi.fn();
 const mockExitFullscreen = vi.fn();
+const mockToggleFullscreen = vi.fn();
 let mockIsFullscreen = false;
 
 vi.mock('./useFullscreen', () => ({
-  default: () => [mockIsFullscreen, mockRequestFullscreen, mockExitFullscreen],
+  useFullscreen: () => [
+    mockIsFullscreen,
+    mockRequestFullscreen,
+    mockExitFullscreen,
+    mockToggleFullscreen,
+  ],
 }));
 
 vi.mock('./SwipeToClose', () => ({
@@ -276,14 +282,14 @@ describe('LightboxOverlay', () => {
       expect(screen.getByTitle('Exit Fullscreen')).toBeTruthy();
     });
 
-    it('calls requestFullscreen on toggle when not fullscreen', () => {
+    it('calls toggleFullscreen on button click', () => {
       render(
         <LightboxOverlay isOpen={true} images={mockImages} onClose={vi.fn()} />,
       );
 
       fireEvent.click(screen.getByTitle('Enter Fullscreen'));
 
-      expect(mockRequestFullscreen).toHaveBeenCalled();
+      expect(mockToggleFullscreen).toHaveBeenCalled();
     });
   });
 

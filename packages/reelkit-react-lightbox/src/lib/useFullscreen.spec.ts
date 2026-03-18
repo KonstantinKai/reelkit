@@ -1,6 +1,6 @@
 import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import useFullscreen from './useFullscreen';
+import { useFullscreen } from './useFullscreen';
 
 describe('useFullscreen', () => {
   let mockElement: HTMLDivElement;
@@ -122,9 +122,9 @@ describe('useFullscreen', () => {
   it('handles requestFullscreen error gracefully', async () => {
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
-    mockElement.requestFullscreen = vi.fn().mockRejectedValue(
-      new Error('Not allowed'),
-    );
+    mockElement.requestFullscreen = vi
+      .fn()
+      .mockRejectedValue(new Error('Not allowed'));
 
     const { result } = renderHook(() => useFullscreen({ ref }));
 
@@ -166,5 +166,31 @@ describe('useFullscreen', () => {
 
     expect(document.exitFullscreen).toHaveBeenCalled();
     expect(mockElement.requestFullscreen).toHaveBeenCalled();
+  });
+
+  it('toggle requests fullscreen when not fullscreen', async () => {
+    const { result } = renderHook(() => useFullscreen({ ref }));
+
+    await act(async () => {
+      result.current[3](); // toggle
+    });
+
+    expect(mockElement.requestFullscreen).toHaveBeenCalled();
+  });
+
+  it('toggle exits fullscreen when fullscreen', async () => {
+    Object.defineProperty(document, 'fullscreenElement', {
+      value: mockElement,
+      writable: true,
+      configurable: true,
+    });
+
+    const { result } = renderHook(() => useFullscreen({ ref }));
+
+    await act(async () => {
+      result.current[3](); // toggle
+    });
+
+    expect(document.exitFullscreen).toHaveBeenCalled();
   });
 });

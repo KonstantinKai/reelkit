@@ -79,7 +79,7 @@ export { useVideoSlideRenderer } from './lib/useVideoSlideRenderer';
 export type { UseVideoSlideRendererResult } from './lib/useVideoSlideRenderer';
 
 // Hooks (for custom implementations)
-export { default as useFullscreen } from './lib/useFullscreen';
+export { useFullscreen } from './lib/useFullscreen';
 export type {
   UseFullscreenProps,
   UseFullscreenResult,

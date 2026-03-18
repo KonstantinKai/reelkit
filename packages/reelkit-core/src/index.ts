@@ -52,6 +52,11 @@ export {
   type TimeoutFn,
   // Noop
   noop,
+  // Video
+  captureFrame,
+  createSharedVideo,
+  type SharedVideoConfig,
+  type SharedVideoInstance,
 } from './lib/utils';
 
 // Gestures

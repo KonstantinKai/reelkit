@@ -1,6 +1,9 @@
 import { render } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import type { GestureController, GestureControllerEvents } from '@reelkit/core';
+import type {
+  GestureController,
+  GestureControllerEvents,
+} from '@reelkit/react';
 
 let capturedEvents: GestureControllerEvents | undefined;
 const mockAttach = vi.fn();
@@ -12,7 +15,10 @@ vi.mock('@reelkit/core', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@reelkit/core')>();
   return {
     ...actual,
-    createGestureController: (_config: unknown, events: GestureControllerEvents) => {
+    createGestureController: (
+      _config: unknown,
+      events: GestureControllerEvents,
+    ) => {
       capturedEvents = events;
       return {
         attach: mockAttach,

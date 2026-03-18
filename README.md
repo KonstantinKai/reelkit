@@ -22,12 +22,12 @@
 
 - **Virtualized** — only 3 slides in DOM, handles 10,000+ items
 - **Touch first** — native swipe with momentum and snap
-- **Zero dependencies** — tiny bundle (~3.7 kB gzip core)
-- **Keyboard & wheel** — full navigation support
+- **Zero dependencies** — ~3.7 kB gzip core
+- **Keyboard & wheel** — arrow keys, scroll, and swipe all work out of the box
 - **Loop mode** — infinite circular scrolling
 - **SSR ready** — works with Next.js, Remix, and any SSR setup
 - **Auto-size** — omit size prop, uses CSS + ResizeObserver
-- **TypeScript** — full type safety, no `@types` needed
+- **TypeScript** — strict types, no `@types` needed
 
 ## Packages
 
