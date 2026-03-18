@@ -58,7 +58,6 @@ function App() {
       className="my-reel"
       count={100}
       direction="vertical"
-      afterChange={setIndex}
       itemBuilder={(i) => (
         <div style={{ width: '100%', height: '100%' }}>Slide {i + 1}</div>
       )}
