@@ -75,7 +75,7 @@ const comparison = [
   {
     name: 'Swiper',
     gzip: '~25 kB',
-    virtualization: false,
+    virtualization: 'plugin',
     notes: 'Full bundle; tree-shakeable',
   },
   {
@@ -227,8 +227,12 @@ export default function Installation() {
                     {lib.gzip}
                   </td>
                   <td className="py-3 px-4">
-                    {lib.virtualization ? (
+                    {lib.virtualization === true ? (
                       <Check className="w-5 h-5 text-green-500" />
+                    ) : lib.virtualization === 'plugin' ? (
+                      <span className="text-yellow-600 dark:text-yellow-400 text-sm">
+                        Plugin
+                      </span>
                     ) : (
                       <span className="text-red-500">✗</span>
                     )}
