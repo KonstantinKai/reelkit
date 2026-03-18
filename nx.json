@@ -84,10 +84,11 @@
     }
   },
   "release": {
+    "versionPlans": true,
     "projects": ["packages/*"],
     "projectsRelationship": "independent",
     "version": {
-      "preVersionCommand": "npx nx run-many -t build",
+      "preVersionCommand": "npx nx run-many -t build --projects='packages/*'",
       "conventionalCommits": true,
       "versionActionsOptions": {
         "skipLockFileUpdate": true

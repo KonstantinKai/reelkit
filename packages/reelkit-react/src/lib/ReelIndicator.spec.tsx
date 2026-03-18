@@ -1,6 +1,8 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
+import { createSignal } from '@reelkit/core';
 import { ReelIndicator } from './ReelIndicator';
+import { ReelContext, type ReelContextValue } from './ReelContext';
 
 describe('ReelIndicator', () => {
   describe('rendering', () => {
@@ -26,8 +28,12 @@ describe('ReelIndicator', () => {
         />,
       );
 
-      const dot1Inner = screen.getByTestId('indicator-dot-1').querySelector('span')!;
-      const dot0Inner = screen.getByTestId('indicator-dot-0').querySelector('span')!;
+      const dot1Inner = screen
+        .getByTestId('indicator-dot-1')
+        .querySelector('span')!;
+      const dot0Inner = screen
+        .getByTestId('indicator-dot-0')
+        .querySelector('span')!;
 
       expect(dot1Inner.style.backgroundColor).toBe(activeColor);
       expect(dot0Inner.style.backgroundColor).toBe(inactiveColor);
@@ -36,7 +42,9 @@ describe('ReelIndicator', () => {
     it('uses default props', () => {
       render(<ReelIndicator count={3} active={0} />);
 
-      const dot0Inner = screen.getByTestId('indicator-dot-0').querySelector('span')!;
+      const dot0Inner = screen
+        .getByTestId('indicator-dot-0')
+        .querySelector('span')!;
       // Default activeColor is #fff (normalized to rgb by jsdom)
       expect(dot0Inner.style.backgroundColor).toBe('rgb(255, 255, 255)');
     });
@@ -105,19 +113,25 @@ describe('ReelIndicator', () => {
     });
 
     it('edge dots have reduced scale', () => {
-      render(<ReelIndicator count={10} active={3} visible={5} edgeScale={0.5} />);
+      render(
+        <ReelIndicator count={10} active={3} visible={5} edgeScale={0.5} />,
+      );
 
       // windowStart should be clamp(3 - 2, 0, 5) = 1
       // windowEnd = min(1+5, 10) = 6
       // renderStart = max(0, 1-1) = 0, so dot 0 is leading edge
-      const edgeDot = screen.getByTestId('indicator-dot-0').querySelector('span')!;
+      const edgeDot = screen
+        .getByTestId('indicator-dot-0')
+        .querySelector('span')!;
       expect(edgeDot.style.transform).toContain('scale(0.5)');
     });
 
     it('normal dots have scale 1', () => {
       render(<ReelIndicator count={10} active={3} visible={5} />);
 
-      const activeDot = screen.getByTestId('indicator-dot-3').querySelector('span')!;
+      const activeDot = screen
+        .getByTestId('indicator-dot-3')
+        .querySelector('span')!;
       expect(activeDot.style.transform).toContain('scale(1)');
     });
 
@@ -153,16 +167,18 @@ describe('ReelIndicator', () => {
         <ReelIndicator count={3} active={0} onDotClick={vi.fn()} />,
       );
 
-      const innerDot = container.querySelector('[data-reel-indicator="0"] span')!;
+      const innerDot = container.querySelector(
+        '[data-reel-indicator="0"] span',
+      )!;
       expect((innerDot as HTMLElement).style.cursor).toBe('pointer');
     });
 
     it('sets cursor to default when onDotClick is not provided', () => {
-      const { container } = render(
-        <ReelIndicator count={3} active={0} />,
-      );
+      const { container } = render(<ReelIndicator count={3} active={0} />);
 
-      const innerDot = container.querySelector('[data-reel-indicator="0"] span')!;
+      const innerDot = container.querySelector(
+        '[data-reel-indicator="0"] span',
+      )!;
       expect((innerDot as HTMLElement).style.cursor).toBe('default');
     });
   });
@@ -182,6 +198,125 @@ describe('ReelIndicator', () => {
       expect(container.querySelector('[data-reel-indicator="0"]')).toBeTruthy();
       expect(container.querySelector('[data-reel-indicator="1"]')).toBeTruthy();
       expect(container.querySelector('[data-reel-indicator="2"]')).toBeTruthy();
+    });
+  });
+
+  describe('context auto-connect', () => {
+    function createMockContext(
+      index = 0,
+      count = 3,
+    ): ReelContextValue & {
+      indexSignal: ReturnType<typeof createSignal<number>>;
+      countSignal: ReturnType<typeof createSignal<number>>;
+    } {
+      const indexSignal = createSignal(index);
+      const countSignal = createSignal(count);
+      return {
+        index: indexSignal,
+        count: countSignal,
+        goTo: vi.fn(() => Promise.resolve()),
+        indexSignal,
+        countSignal,
+      };
+    }
+
+    it('reads active and count from context when props omitted', () => {
+      const ctx = createMockContext(1, 4);
+
+      render(
+        <ReelContext.Provider value={ctx}>
+          <ReelIndicator />
+        </ReelContext.Provider>,
+      );
+
+      // Should render 4 dots with index 1 active
+      expect(screen.getByTestId('indicator-dot-0')).toBeTruthy();
+      expect(screen.getByTestId('indicator-dot-3')).toBeTruthy();
+      expect(screen.queryByTestId('indicator-dot-4')).toBeNull();
+    });
+
+    it('explicit props take precedence over context', () => {
+      const ctx = createMockContext(0, 10);
+
+      render(
+        <ReelContext.Provider value={ctx}>
+          <ReelIndicator count={2} active={1} />
+        </ReelContext.Provider>,
+      );
+
+      // Should render 2 dots, not 10
+      expect(screen.getByTestId('indicator-dot-0')).toBeTruthy();
+      expect(screen.getByTestId('indicator-dot-1')).toBeTruthy();
+      expect(screen.queryByTestId('indicator-dot-2')).toBeNull();
+    });
+
+    it('throws when rendered without context and without active prop', () => {
+      expect(() => {
+        render(<ReelIndicator count={3} />);
+      }).toThrow('ReelIndicator: "active" prop is required');
+    });
+
+    it('throws when rendered without context and without count prop', () => {
+      expect(() => {
+        render(<ReelIndicator active={0} />);
+      }).toThrow('ReelIndicator: "count" prop is required');
+    });
+
+    it('re-renders when context index signal changes', () => {
+      const ctx = createMockContext(0, 3);
+      const activeColor = 'rgb(255, 0, 0)';
+      const inactiveColor = 'rgb(0, 0, 255)';
+
+      render(
+        <ReelContext.Provider value={ctx}>
+          <ReelIndicator
+            activeColor={activeColor}
+            inactiveColor={inactiveColor}
+          />
+        </ReelContext.Provider>,
+      );
+
+      // Dot 0 should be active initially
+      const dot0 = screen.getByTestId('indicator-dot-0').querySelector('span')!;
+      expect(dot0.style.backgroundColor).toBe(activeColor);
+
+      // Update signal
+      act(() => {
+        ctx.indexSignal.value = 2;
+      });
+
+      // Dot 2 should now be active
+      const dot2 = screen.getByTestId('indicator-dot-2').querySelector('span')!;
+      expect(dot2.style.backgroundColor).toBe(activeColor);
+      expect(dot0.style.backgroundColor).toBe(inactiveColor);
+    });
+
+    it('auto-wires onDotClick to context goTo', () => {
+      const ctx = createMockContext(0, 3);
+
+      render(
+        <ReelContext.Provider value={ctx}>
+          <ReelIndicator />
+        </ReelContext.Provider>,
+      );
+
+      fireEvent.click(screen.getByTestId('indicator-dot-2'));
+      expect(ctx.goTo).toHaveBeenCalledWith(2, true);
+    });
+
+    it('explicit onDotClick overrides context goTo', () => {
+      const ctx = createMockContext(0, 3);
+      const customHandler = vi.fn();
+
+      render(
+        <ReelContext.Provider value={ctx}>
+          <ReelIndicator onDotClick={customHandler} />
+        </ReelContext.Provider>,
+      );
+
+      fireEvent.click(screen.getByTestId('indicator-dot-1'));
+      expect(customHandler).toHaveBeenCalledWith(1);
+      expect(ctx.goTo).not.toHaveBeenCalled();
     });
   });
 });

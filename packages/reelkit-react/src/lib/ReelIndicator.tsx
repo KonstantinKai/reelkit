@@ -2,12 +2,14 @@ import {
   type CSSProperties,
   type FC,
   type ReactNode,
+  useContext,
   useState,
   useEffect,
-  useMemo,
   memo,
 } from 'react';
-import { clamp } from '@reelkit/core';
+import { clamp, type Subscribable } from '@reelkit/core';
+import { Observe } from './Observe';
+import { ReelContext } from './ReelContext';
 
 /** Axis along which indicator dots are arranged. */
 export type ReelIndicatorDirection = 'horizontal' | 'vertical';
@@ -16,11 +18,18 @@ export type ReelIndicatorDirection = 'horizontal' | 'vertical';
  * Props for the {@link ReelIndicator} scrolling dot indicator component.
  */
 export interface ReelIndicatorProps {
-  /** Total number of items in the slider. */
-  count: number;
+  /**
+   * Total number of items in the slider.
+   * Auto-connected from parent Reel when omitted.
+   */
+  count?: number;
 
-  /** Index of the currently active item. */
-  active: number;
+  /**
+   * Index of the currently active item.
+   * Auto-connected from parent Reel when omitted.
+   * When provided, takes precedence over the context value.
+   */
+  active?: number;
 
   /**
    * Axis along which dots are arranged.
@@ -78,14 +87,14 @@ export interface ReelIndicatorProps {
   onDotClick?: (index: number) => void;
 }
 
-/**
- * Instagram-style indicator with scrolling dots.
- * - Shows `visible` normal-sized dots
- * - Adds 1 small dot at start if there are more items before
- * - Adds 1 small dot at end if there are more items after
- * - Slides when navigating to edge dots with smooth animation
- */
-const Element: FC<ReelIndicatorProps> = (props) => {
+/** Internal props with required active/count (resolved by the outer wrapper). */
+interface ReelIndicatorInnerProps
+  extends Omit<ReelIndicatorProps, 'active' | 'count'> {
+  count: number;
+  active: number;
+}
+
+const ReelIndicatorInner: FC<ReelIndicatorInnerProps> = (props) => {
   const {
     count,
     active,
@@ -146,93 +155,75 @@ const Element: FC<ReelIndicatorProps> = (props) => {
   }
 
   // Build the dots array with absolute positioning for smooth sliding
-  const dots = useMemo(() => {
-    const result: ReactNode[] = [];
+  const dots: ReactNode[] = [];
 
-    // Render from (windowStart - 1) to (windowEnd + 1) to ensure smooth transitions
-    const renderStart = Math.max(0, windowStart - 1);
-    const renderEnd = Math.min(count, windowEnd + 1);
+  // Render from (windowStart - 1) to (windowEnd + 1) to ensure smooth transitions
+  const renderStart = Math.max(0, windowStart - 1);
+  const renderEnd = Math.min(count, windowEnd + 1);
 
-    for (let i = renderStart; i < renderEnd; i++) {
-      const isActive = i === active;
+  for (let i = renderStart; i < renderEnd; i++) {
+    const isActiveDot = i === active;
 
-      // Determine dot scale based on position relative to window
-      let scale = 1;
-      if (i < windowStart) {
-        scale = edgeScale;
-      } else if (i >= windowEnd) {
-        scale = edgeScale;
-      }
-
-      // Calculate slot index for this dot
-      let slotIndex: number;
-      if (i < windowStart) {
-        // Leading edge dot - always slot 0
-        slotIndex = 0;
-      } else if (i >= windowEnd) {
-        // Trailing edge dot - last slot
-        slotIndex = visible + 1;
-      } else {
-        // Visible dot - slots 1 to visible
-        slotIndex = i - windowStart + 1;
-      }
-
-      // If no leading small, shift all visible and trailing left by 1
-      if (!hasLeadingSmall && slotIndex > 0) {
-        slotIndex -= 1;
-      }
-
-      const position = slotIndex * itemSize;
-
-      result.push(
-        <span
-          key={i}
-          data-reel-indicator={i}
-          style={{
-            position: 'absolute',
-            [isVertical ? 'top' : 'left']: position,
-            [isVertical ? 'left' : 'top']: 0,
-            width: itemSize,
-            height: itemSize,
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            transition: 'top 0.2s ease, left 0.2s ease',
-          }}
-          onClick={onDotClick ? () => onDotClick(i) : undefined}
-          data-testid={`indicator-dot-${i}`}
-        >
-          <span
-            style={{
-              width: dotSize,
-              height: dotSize,
-              borderRadius: '50%',
-              backgroundColor: isActive ? activeColor : inactiveColor,
-              transition: 'transform 0.2s ease, background-color 0.2s ease',
-              transform: `scale(${scale})`,
-              cursor: onDotClick ? 'pointer' : 'default',
-            }}
-          />
-        </span>,
-      );
+    // Determine dot scale based on position relative to window
+    let scale = 1;
+    if (i < windowStart) {
+      scale = edgeScale;
+    } else if (i >= windowEnd) {
+      scale = edgeScale;
     }
 
-    return result;
-  }, [
-    windowStart,
-    windowEnd,
-    hasLeadingSmall,
-    visible,
-    count,
-    active,
-    dotSize,
-    itemSize,
-    edgeScale,
-    activeColor,
-    inactiveColor,
-    isVertical,
-    onDotClick,
-  ]);
+    // Calculate slot index for this dot
+    let slotIndex: number;
+    if (i < windowStart) {
+      // Leading edge dot - always slot 0
+      slotIndex = 0;
+    } else if (i >= windowEnd) {
+      // Trailing edge dot - last slot
+      slotIndex = visible + 1;
+    } else {
+      // Visible dot - slots 1 to visible
+      slotIndex = i - windowStart + 1;
+    }
+
+    // If no leading small, shift all visible and trailing left by 1
+    if (!hasLeadingSmall && slotIndex > 0) {
+      slotIndex -= 1;
+    }
+
+    const position = slotIndex * itemSize;
+
+    dots.push(
+      <span
+        key={i}
+        data-reel-indicator={i}
+        style={{
+          position: 'absolute',
+          [isVertical ? 'top' : 'left']: position,
+          [isVertical ? 'left' : 'top']: 0,
+          width: itemSize,
+          height: itemSize,
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          transition: 'top 0.2s ease, left 0.2s ease',
+        }}
+        onClick={onDotClick ? () => onDotClick(i) : undefined}
+        data-testid={`indicator-dot-${i}`}
+      >
+        <span
+          style={{
+            width: dotSize,
+            height: dotSize,
+            borderRadius: '50%',
+            backgroundColor: isActiveDot ? activeColor : inactiveColor,
+            transition: 'transform 0.2s ease, background-color 0.2s ease',
+            transform: `scale(${scale})`,
+            cursor: onDotClick ? 'pointer' : 'default',
+          }}
+        />
+      </span>,
+    );
+  }
 
   return (
     <div
@@ -254,5 +245,62 @@ const Element: FC<ReelIndicatorProps> = (props) => {
  * Instagram-style scrolling dot indicator. Shows a sliding window of
  * normal-sized dots with smaller edge dots indicating overflow.
  * The window slides smoothly as the active index changes.
+ *
+ * When rendered inside a {@link Reel}, `active` and `count` are
+ * auto-connected from the parent slider's signals. Explicit props
+ * take precedence when provided.
  */
+const Element: FC<ReelIndicatorProps> = (props) => {
+  const reelContext = useContext(ReelContext);
+  const hasActive = props.active !== undefined;
+  const hasCount = props.count !== undefined;
+
+  if (!hasActive && !reelContext) {
+    throw new Error(
+      'ReelIndicator: "active" prop is required when rendered outside a <Reel> component.',
+    );
+  }
+  if (!hasCount && !reelContext) {
+    throw new Error(
+      'ReelIndicator: "count" prop is required when rendered outside a <Reel> component.',
+    );
+  }
+
+  // Pure controlled mode — skip context entirely
+  if (hasActive && hasCount) {
+    return (
+      <ReelIndicatorInner
+        {...props}
+        active={props.active!}
+        count={props.count!}
+      />
+    );
+  }
+
+  // Context mode — subscribe to signals
+  const signals = [
+    !hasActive && reelContext!.index,
+    !hasCount && reelContext!.count,
+  ].filter(Boolean) as Subscribable[];
+
+  const onDotClick =
+    props.onDotClick ??
+    ((i: number) => {
+      reelContext!.goTo(i, true);
+    });
+
+  return (
+    <Observe signals={signals}>
+      {() => (
+        <ReelIndicatorInner
+          {...props}
+          active={props.active ?? reelContext!.index.value}
+          count={props.count ?? reelContext!.count.value}
+          onDotClick={onDotClick}
+        />
+      )}
+    </Observe>
+  );
+};
+
 export const ReelIndicator = memo(Element);

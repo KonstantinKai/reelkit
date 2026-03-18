@@ -53,5 +53,12 @@ export { ReelIndicator, type ReelIndicatorProps } from './lib/ReelIndicator';
 
 export { Observe, AnimatedObserve, type AnimatedValue } from './lib/Observe';
 
+// Context
+export {
+  ReelContext,
+  useReelContext,
+  type ReelContextValue,
+} from './lib/ReelContext';
+
 // Hooks
 export { useBodyLock } from './lib/useBodyLock';

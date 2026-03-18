@@ -11,6 +11,7 @@ import {
 } from 'react';
 import {
   createSliderController,
+  createSignal,
   defaultRangeExtractor,
   first,
   last,
@@ -19,6 +20,7 @@ import {
   type Signal,
 } from '@reelkit/core';
 import { AnimatedObserve, Observe } from './Observe';
+import { ReelContext, type ReelContextValue } from './ReelContext';
 
 /**
  * Props for the {@link Reel} virtualized one-item slider component.
@@ -265,52 +267,59 @@ const Element = ({
   const ref = useRef<HTMLDivElement>(null);
 
   // Create stable state once
-  const [controller, itemBuilder] = useState(
-    () =>
-      [
-        createSliderController(
-          {
-            count: props.count,
-            initialIndex,
-            direction,
-            loop,
-            transitionDuration,
-            swipeDistanceFactor,
-            rangeExtractor,
-            enableWheel,
-            wheelDebounceMs,
-          },
-          {
-            onBeforeChange: (index, nextIndex, rangeIndex) => {
-              propsRef.current.beforeChange?.(index, nextIndex, rangeIndex);
-            },
-            onAfterChange: (index, rangeIndex) => {
-              propsRef.current.afterChange?.(index, rangeIndex);
-            },
-            onDragStart: (index) => {
-              propsRef.current.onSlideDragStart?.(index);
-            },
-            onDragEnd: (index) => {
-              propsRef.current.onSlideDragEnd?.(index);
-            },
-            onDragCanceled: (index) => {
-              propsRef.current.onSlideDragCanceled?.(index);
-            },
-          },
-        ),
-        (i: number, indexInRange: number) => {
-          const { keyExtractor, itemBuilder, size } = propsRef.current;
-          return (
-            <div key={keyExtractor!(i, indexInRange)} data-index={i}>
-              {itemBuilder(i, indexInRange, size!)}
-            </div>
-          );
+  const [controller, itemBuilder, reelContextValue] = useState(() => {
+    const ctrl = createSliderController(
+      {
+        count: props.count,
+        initialIndex,
+        direction,
+        loop,
+        transitionDuration,
+        swipeDistanceFactor,
+        rangeExtractor,
+        enableWheel,
+        wheelDebounceMs,
+      },
+      {
+        onBeforeChange: (index, nextIndex, rangeIndex) => {
+          propsRef.current.beforeChange?.(index, nextIndex, rangeIndex);
         },
-      ] as const,
-  )[0];
+        onAfterChange: (index, rangeIndex) => {
+          propsRef.current.afterChange?.(index, rangeIndex);
+        },
+        onDragStart: (index) => {
+          propsRef.current.onSlideDragStart?.(index);
+        },
+        onDragEnd: (index) => {
+          propsRef.current.onSlideDragEnd?.(index);
+        },
+        onDragCanceled: (index) => {
+          propsRef.current.onSlideDragCanceled?.(index);
+        },
+      },
+    );
+
+    const ctxValue: ReelContextValue = {
+      index: ctrl.state.index,
+      count: createSignal(props.count),
+      goTo: ctrl.goTo,
+    };
+
+    const builder = (i: number, indexInRange: number) => {
+      const { keyExtractor, itemBuilder, size } = propsRef.current;
+      return (
+        <div key={keyExtractor!(i, indexInRange)} data-index={i}>
+          {itemBuilder(i, indexInRange, size!)}
+        </div>
+      );
+    };
+
+    return [ctrl, builder, ctxValue] as const;
+  })[0];
 
   // Update controller with new props
   useEffect(() => {
+    reelContextValue.count.value = props.count;
     controller.updateConfig({
       count: props.count,
       direction,
@@ -409,23 +418,25 @@ const Element = ({
   const hasMeasured = !autoSize || primarySize > 0;
 
   return (
-    <div ref={ref} className={props.className} style={rootStyle}>
-      {hasMeasured && (
-        <Observe signals={[indexes]}>
-          {() => (
-            <Content
-              primarySize={primarySize}
-              isHorizontal={isHorizontal}
-              axisValue={axisValue}
-              length={indexes.value.length}
-            >
-              {indexes.value.map(itemBuilder)}
-            </Content>
-          )}
-        </Observe>
-      )}
-      {props.children}
-    </div>
+    <ReelContext.Provider value={reelContextValue}>
+      <div ref={ref} className={props.className} style={rootStyle}>
+        {hasMeasured && (
+          <Observe signals={[indexes]}>
+            {() => (
+              <Content
+                primarySize={primarySize}
+                isHorizontal={isHorizontal}
+                axisValue={axisValue}
+                length={indexes.value.length}
+              >
+                {indexes.value.map(itemBuilder)}
+              </Content>
+            )}
+          </Observe>
+        )}
+        {props.children}
+      </div>
+    </ReelContext.Provider>
   );
 };
 
