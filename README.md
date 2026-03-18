@@ -65,7 +65,7 @@ function App() {
         <div style={{ width: '100%', height: '100%' }}>Slide {i + 1}</div>
       )}
     >
-      <ReelIndicator count={100} active={index} />
+      <ReelIndicator />
     </Reel>
   );
 }
