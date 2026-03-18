@@ -99,6 +99,12 @@ export const searchItems: SearchItem[] = [
       'mute',
     ],
   },
+  {
+    title: 'Changelog',
+    path: '/docs/changelog',
+    category: 'Resources',
+    keywords: ['changelog', 'release', 'version', 'update', "what's new"],
+  },
 ];
 
 export const navItems = [
