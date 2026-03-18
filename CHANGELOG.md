@@ -1,3 +1,40 @@
+## @reelkit/core@0.2.0 (2026-03-18)
+
+### 🚀 Features
+
+- Add createSharedVideo factory and captureFrame utility for framework-agnostic video playback
+
+## @reelkit/react@0.2.0 (2026-03-18)
+
+### 🚀 Features
+
+- Auto-connect ReelIndicator to parent Reel via context — active and count props are now optional
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.2.0
+
+## @reelkit/react-lightbox@0.2.0 (2026-03-18)
+
+### 🚀 Features
+
+- Add toggle function to useFullscreen hook
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/react to 0.2.0
+- Updated @reelkit/core to 0.2.0
+
+## @reelkit/react-reel-player@0.2.0 (2026-03-18)
+
+### 🚀 Features
+
+- Add imageProps to ImageSlide, migrate VideoSlide internals to signal-based state
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/react to 0.2.0
+
 ## @reelkit/core@0.1.0 (2026-03-13)
 
 ### 🎉 Initial Release
