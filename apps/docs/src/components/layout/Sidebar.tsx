@@ -1,7 +1,42 @@
-import { NavLink } from 'react-router-dom';
-import { useState } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { navItems } from '../../data/searchData';
+
+// eslint-disable-next-line @nx/enforce-module-boundaries
+import changelogRaw from '../../../../../CHANGELOG.md?raw';
+
+const CHANGELOG_VERSION_KEY = 'reelkit-changelog-seen';
+
+function getLatestVersion(): string | null {
+  const match = changelogRaw.match(/^## .+@([\d.]+)/m);
+  return match ? match[1] : null;
+}
+
+function useChangelogBadge() {
+  const [showBadge, setShowBadge] = useState(false);
+  const location = useLocation();
+
+  useEffect(() => {
+    const latest = getLatestVersion();
+    if (!latest) return;
+    const seen = localStorage.getItem(CHANGELOG_VERSION_KEY);
+    setShowBadge(seen !== latest);
+  }, []);
+
+  // Clear badge when visiting changelog page
+  useEffect(() => {
+    if (location.pathname === '/docs/changelog') {
+      const latest = getLatestVersion();
+      if (latest) {
+        localStorage.setItem(CHANGELOG_VERSION_KEY, latest);
+        setShowBadge(false);
+      }
+    }
+  }, [location.pathname]);
+
+  return showBadge;
+}
 
 interface SidebarProps {
   isOpen?: boolean;
@@ -12,9 +47,11 @@ interface SidebarProps {
 function NavSection({
   title,
   items,
+  showChangelogBadge,
 }: {
   title: string;
   items: (typeof navItems)[number]['items'];
+  showChangelogBadge?: boolean;
 }) {
   const [isExpanded, setIsExpanded] = useState(true);
 
@@ -55,6 +92,9 @@ function NavSection({
                     Soon
                   </span>
                 )}
+              {showChangelogBadge && item.path === '/docs/changelog' && (
+                <span className="w-2 h-2 rounded-full bg-primary-500 animate-pulse" />
+              )}
             </NavLink>
           </li>
         ))}
@@ -68,6 +108,7 @@ export default function Sidebar({
   showDesktop = true,
   onClose,
 }: SidebarProps) {
+  const showChangelogBadge = useChangelogBadge();
   return (
     <>
       <div
@@ -87,6 +128,9 @@ export default function Sidebar({
               key={section.title}
               title={section.title}
               items={section.items}
+              showChangelogBadge={
+                section.title === 'Resources' ? showChangelogBadge : false
+              }
             />
           ))}
         </nav>

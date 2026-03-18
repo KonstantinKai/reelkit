@@ -131,4 +131,8 @@ export const navItems = [
       { label: 'Lightbox', path: '/docs/lightbox' },
     ],
   },
+  {
+    title: 'Resources',
+    items: [{ label: 'Changelog', path: '/docs/changelog' }],
+  },
 ] as const;

@@ -94,7 +94,18 @@
         "skipLockFileUpdate": true
       }
     },
-    "changelog": false,
+    "changelog": {
+      "workspaceChangelog": false,
+      "projectChangelogs": {
+        "file": "{workspaceRoot}/CHANGELOG.md",
+        "renderer": "{workspaceRoot}/tools/changelog-renderer.ts",
+        "renderOptions": {
+          "authors": false,
+          "commitReferences": true,
+          "versionTitleDate": true
+        }
+      }
+    },
     "git": {
       "commit": true,
       "tag": true

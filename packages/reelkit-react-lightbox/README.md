@@ -2,11 +2,11 @@
 
 <p>
   <a href="https://www.npmjs.com/package/@reelkit/react-lightbox"><img src="https://img.shields.io/npm/v/@reelkit/react-lightbox?color=6366f1&label=npm" alt="npm" /></a>
-  <img src="https://img.shields.io/badge/gzip-3.4%20kB-6366f1" alt="Bundle size" />
+  <img src="https://img.shields.io/badge/gzip-3.2%20kB-6366f1" alt="Bundle size" />
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
 
-Image gallery lightbox for React — opens full-screen with swipe navigation, keyboard controls, and transition effects. Everything is replaceable via render props if the defaults don't fit. ~3.4 kB gzip.
+Image gallery lightbox for React — opens full-screen with swipe navigation, keyboard controls, and transition effects. Everything is replaceable via render props if the defaults don't fit. ~3.2 kB gzip.
 
 ## Installation
 

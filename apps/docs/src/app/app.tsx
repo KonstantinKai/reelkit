@@ -11,6 +11,7 @@ import ReactGuide from '../pages/docs/react/Guide';
 import ReactApi from '../pages/docs/react/Api';
 import ReelPlayer from '../pages/docs/ReelPlayer';
 import Lightbox from '../pages/docs/Lightbox';
+import Changelog from '../pages/docs/Changelog';
 import Privacy from '../pages/Privacy';
 import Terms from '../pages/Terms';
 
@@ -30,6 +31,7 @@ export default function App() {
           <Route path="docs/react/api" element={<ReactApi />} />
           <Route path="docs/reel-player" element={<ReelPlayer />} />
           <Route path="docs/lightbox" element={<Lightbox />} />
+          <Route path="docs/changelog" element={<Changelog />} />
           <Route path="privacy" element={<Privacy />} />
           <Route path="terms" element={<Terms />} />
         </Route>
