@@ -72,9 +72,9 @@ const moreFeatures = [
 
 const codeExample = `import { Reel, ReelIndicator } from '@reelkit/react';
 
-function App() {
-  const items = ['Slide 1', 'Slide 2', 'Slide 3'];
+const items = ['Slide 1', 'Slide 2', 'Slide 3'];
 
+function App() {
   return (
     <Reel
       count={items.length}
