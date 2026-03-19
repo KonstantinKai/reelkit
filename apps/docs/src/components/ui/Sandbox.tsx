@@ -50,8 +50,8 @@ export function Sandbox({
   return (
     <div className="rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden bg-white dark:bg-slate-900 shadow-sm">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
-        <div className="flex items-center gap-1">
+      <div className="flex items-center justify-between gap-2 px-4 py-2.5 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 overflow-x-auto">
+        <div className="flex items-center gap-1 shrink-0">
           <button
             onClick={() => setActiveTab('preview')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
@@ -75,7 +75,7 @@ export function Sandbox({
             Code
           </button>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           {title && (
             <span className="text-xs text-slate-400 font-medium">{title}</span>
           )}
