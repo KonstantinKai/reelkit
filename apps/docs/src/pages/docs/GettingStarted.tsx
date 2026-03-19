@@ -45,8 +45,6 @@ const items = [
   { id: 3, title: 'Slide 3', color: '#ec4899' },
 ];
 
-};
-
 function App() {
   return (
     <Reel
