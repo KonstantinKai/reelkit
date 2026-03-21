@@ -132,24 +132,26 @@ controller.updateConfig({
         <h2 className="text-2xl font-bold mb-4">Virtualization</h2>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           The core renders only <strong>3 slides to DOM</strong> at any time
-          (current, previous, next). Range extractors control which items are
-          rendered:
+          (current, previous, next). The range extractor determines which
+          indices are included in the rendered window:
         </p>
         <CodeBlock
           code={`import { defaultRangeExtractor } from '@reelkit/core';
 
-// Default: renders 3 items around current
+// Default: renders current ± 1 (3 DOM nodes)
 const indexes = defaultRangeExtractor(currentIndex, count);
 
-// Custom: render 5 items around current
-const customExtractor = (currentIndex: number, count: number) => {
-  const range = 5;
-  const start = Math.max(0, currentIndex - range);
-  const end = Math.min(count - 1, currentIndex + range);
+// Custom: skip hidden slides by shifting to next valid index
+const hiddenSlides = new Set([2, 5]);
 
+const skipHiddenExtractor = (current: number, count: number) => {
   const result: number[] = [];
-  for (let i = start; i <= end; i++) {
-    result.push(i);
+  // Collect prev, current, next — skip hidden, shift forward
+  for (let i = current - 1, added = 0; added < 3 && i < count; i++) {
+    if (i >= 0 && !hiddenSlides.has(i)) {
+      result.push(i);
+      added++;
+    }
   }
   return result;
 };`}
