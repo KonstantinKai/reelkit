@@ -33,7 +33,7 @@ export default function GettingStarted() {
 
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Quick Start</h2>
-        <p className="text-slate-600 dark:text-slate-400 mb-4">
+        <p className="text-slate-600 dark:text-slate-400 mb-2">
           Here's a minimal example to create a vertical slider with React:
         </p>
         <CodeBlock
@@ -72,6 +72,54 @@ function App() {
       <ReelIndicator />
     </Reel>
   );
+}`}
+          language="typescript"
+        />
+      </section>
+
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">Quick Start — Angular</h2>
+        <p className="text-slate-600 dark:text-slate-400 mb-2">
+          The same slider in Angular using{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            @reelkit/angular
+          </code>
+          :
+        </p>
+        <CodeBlock
+          code={`import { Component } from '@angular/core';
+import {
+  ReelComponent,
+  ReelIndicatorComponent,
+  RkReelItemDirective,
+} from '@reelkit/angular';
+
+const items = [
+  { id: 1, title: 'Slide 1', color: '#6366f1' },
+  { id: 2, title: 'Slide 2', color: '#8b5cf6' },
+  { id: 3, title: 'Slide 3', color: '#ec4899' },
+];
+
+@Component({
+  standalone: true,
+  imports: [ReelComponent, ReelIndicatorComponent, RkReelItemDirective],
+  template: \`
+    <rk-reel [count]="items.length" [size]="[400, 600]"
+             direction="vertical" [enableWheel]="true">
+      <ng-template rkReelItem let-i let-size="size">
+        <div [style.width.px]="size[0]" [style.height.px]="size[1]"
+             [style.background]="items[i].color"
+             style="display:flex;align-items:center;justify-content:center;
+                    font-size:2rem;color:#fff">
+          {{ items[i].title }}
+        </div>
+      </ng-template>
+      <rk-reel-indicator />
+    </rk-reel>
+  \`,
+})
+export class AppComponent {
+  readonly items = items;
 }`}
           language="typescript"
         />
@@ -257,6 +305,18 @@ function App() {
           </li>
           <li>
             <Link
+              to="/docs/angular/guide"
+              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
+            >
+              Angular Guide
+            </Link>
+            <span className="text-slate-500">
+              {' '}
+              - signals-based Angular integration
+            </span>
+          </li>
+          <li>
+            <Link
               to="/docs/reel-player"
               className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
             >
@@ -274,7 +334,7 @@ function App() {
             >
               Lightbox
             </Link>
-            <span className="text-slate-500"> - image & video gallery</span>
+            <span className="text-slate-500"> - image &amp; video gallery</span>
           </li>
         </ul>
       </section>

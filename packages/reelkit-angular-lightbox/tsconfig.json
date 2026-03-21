@@ -1,0 +1,24 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "strict": true,
+    "useDefineForClassFields": false,
+    "forceConsistentCasingInFileNames": true,
+    "composite": true,
+    "declarationMap": true,
+    "paths": {
+      "@reelkit/angular": ["packages/reelkit-angular/src/index.ts"],
+      "@reelkit/core": ["packages/reelkit-core/src/index.ts"]
+    }
+  },
+  "files": [],
+  "include": [],
+  "references": [
+    {
+      "path": "./tsconfig.lib.json"
+    }
+  ]
+}
