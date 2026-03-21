@@ -75,6 +75,9 @@ export interface SliderConfig {
   /**
    * Custom function that determines which slide indices are rendered.
    * Defaults to the built-in extractor that returns current ± 1 overscan.
+   *
+   * NOTE: The result is clamped to a maximum of 3 indices. If more are
+   * returned, the controller keeps 3 centered around the current slide.
    */
   rangeExtractor?: RangeExtractor;
 

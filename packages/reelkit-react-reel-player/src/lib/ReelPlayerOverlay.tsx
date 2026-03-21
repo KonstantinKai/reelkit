@@ -159,7 +159,6 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>({
   renderNestedNavigation,
   renderNestedSlide,
   aspectRatio = DEFAULT_ASPECT_RATIO,
-  // Reel proxy props with defaults
   transitionDuration,
   swipeDistanceFactor,
   loop = false,
@@ -180,22 +179,18 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>({
   const videoPausedOnDragRef = useRef(false);
   const soundState = useSoundState();
 
-  // Calculate size based on viewport and aspect ratio
   const getSize = useCallback((): [number, number] => {
     if (typeof window === 'undefined') return [0, 0];
     const windowWidth = window.innerWidth;
     const windowHeight = window.innerHeight;
 
-    // On mobile, use full viewport
     if (windowWidth < MOBILE_BREAKPOINT) {
       return [windowWidth, windowHeight];
     }
 
-    // On desktop, maintain aspect ratio
     let width = windowHeight * aspectRatio;
     let height = windowHeight;
 
-    // If calculated width exceeds window width, fit to width instead
     if (width > windowWidth) {
       width = windowWidth;
       height = windowWidth / aspectRatio;
@@ -208,7 +203,6 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>({
     createSignal<[number, number]>(getSize()),
   );
 
-  // Handle window resize
   useEffect(() => {
     const handleResize = () => {
       sizeSignal.value = getSize();
@@ -222,7 +216,6 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>({
     };
   }, [getSize]);
 
-  // Handle ESC key to close
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -234,15 +227,12 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
 
-  // Lock body scroll when player is open
   useBodyLock(true);
 
-  // Handle video ref from active slide
   const handleVideoRef = useCallback((ref: HTMLVideoElement | null) => {
     videoRef.current = ref;
   }, []);
 
-  // Check if current content has video
   const hasVideoContent = useCallback(
     (index: number): boolean => {
       const item = content[index];
@@ -251,12 +241,10 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>({
     [content],
   );
 
-  // Before slide change - pause video
   const handleBeforeChange = useCallback(() => {
     soundState.disabled.value = true;
   }, []);
 
-  // After slide change - update active index
   const handleAfterChange = useCallback(
     (index: number) => {
       setActiveIndex(index);
@@ -269,12 +257,10 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>({
     [hasVideoContent, onSlideChange],
   );
 
-  // Handle inner slider media type change (for nested sliders)
   const handleActiveMediaTypeChange = useCallback((type: 'image' | 'video') => {
     setInnerActiveMediaType(type);
   }, []);
 
-  // Check if current content is a multi-media post
   const isMultiMedia = useCallback(
     (index: number): boolean => {
       return content[index]?.media.length > 1;
@@ -287,7 +273,6 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>({
   const isSoundDisabled =
     isMultiMedia(activeIndex) && innerActiveMediaType === 'image';
 
-  // On drag start - pause video and unobserve inner slider
   const handleSlideDragStart = useCallback(() => {
     innerSliderRef.current?.unobserve();
 
@@ -297,12 +282,10 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>({
     }
   }, []);
 
-  // On drag end - observe inner slider
   const handleSlideDragEnd = useCallback(() => {
     innerSliderRef.current?.observe();
   }, []);
 
-  // On drag canceled - resume video if it was playing
   const handleSlideDragCanceled = useCallback(() => {
     if (videoPausedOnDragRef.current && videoRef.current) {
       videoRef.current.play().catch(noop);
@@ -310,7 +293,6 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>({
     videoPausedOnDragRef.current = false;
   }, []);
 
-  // Navigation handlers
   const handlePrev = useCallback(() => {
     sliderRef.current?.prev();
   }, []);
@@ -319,7 +301,6 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>({
     sliderRef.current?.next();
   }, []);
 
-  // Resolve overlay node for a slide
   const overlayNode = (item: T, index: number, isActive: boolean) => {
     if (renderSlideOverlay) {
       return renderSlideOverlay(item, index, isActive);

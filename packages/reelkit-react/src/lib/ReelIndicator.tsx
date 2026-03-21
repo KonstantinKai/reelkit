@@ -114,14 +114,11 @@ const ReelIndicatorInner: FC<ReelIndicatorInnerProps> = (props) => {
   const dotSize = radius * 2;
   const itemSize = dotSize + gap;
 
-  // Window start index - the first normal-sized dot
   const [windowStart, setWindowStart] = useState(() => {
     if (count <= visible) return 0;
-    // Initially position so active is visible
     return clamp(active - Math.floor(visible / 2), 0, count - visible);
   });
 
-  // Update window when active changes
   useEffect(() => {
     if (count <= visible) {
       setWindowStart(0);
@@ -146,7 +143,6 @@ const ReelIndicatorInner: FC<ReelIndicatorInnerProps> = (props) => {
   const windowEnd = Math.min(windowStart + visible, count);
   const hasLeadingSmall = windowStart > 0;
 
-  // Calculate container size - fixed size with space for both edge dots
   const normalDotsCount = Math.min(visible, count);
   let containerSize = normalDotsCount * itemSize;
   if (count > visible) {
@@ -154,7 +150,6 @@ const ReelIndicatorInner: FC<ReelIndicatorInnerProps> = (props) => {
     containerSize += itemSize * 2;
   }
 
-  // Build the dots array with absolute positioning for smooth sliding
   const dots: ReactNode[] = [];
 
   // Render from (windowStart - 1) to (windowEnd + 1) to ensure smooth transitions
@@ -164,7 +159,6 @@ const ReelIndicatorInner: FC<ReelIndicatorInnerProps> = (props) => {
   for (let i = renderStart; i < renderEnd; i++) {
     const isActiveDot = i === active;
 
-    // Determine dot scale based on position relative to window
     let scale = 1;
     if (i < windowStart) {
       scale = edgeScale;
@@ -172,7 +166,6 @@ const ReelIndicatorInner: FC<ReelIndicatorInnerProps> = (props) => {
       scale = edgeScale;
     }
 
-    // Calculate slot index for this dot
     let slotIndex: number;
     if (i < windowStart) {
       // Leading edge dot - always slot 0
