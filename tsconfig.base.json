@@ -18,7 +18,16 @@
     "noPropertyAccessFromIndexSignature": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "baseUrl": "."
+    "baseUrl": ".",
+    "paths": {
+      "@reelkit/angular": ["packages/reelkit-angular/src/index.ts"],
+      "@reelkit/angular-lightbox": [
+        "packages/reelkit-angular-lightbox/src/index.ts"
+      ],
+      "@reelkit/angular-reel-player": [
+        "packages/reelkit-angular-reel-player/src/index.ts"
+      ]
+    }
   },
   "exclude": ["node_modules", "tmp"]
 }

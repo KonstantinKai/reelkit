@@ -1,0 +1,27 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../dist/out-tsc",
+    "declaration": true,
+    "types": []
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": [
+    "src/**/*.spec.ts",
+    "src/**/*.test.ts",
+    "jest.config.ts",
+    "jest.config.cts",
+    "src/test-setup.ts"
+  ],
+  "references": [
+    {
+      "path": "../../packages/reelkit-angular-lightbox/tsconfig.lib.json"
+    },
+    {
+      "path": "../../packages/reelkit-angular/tsconfig.lib.json"
+    },
+    {
+      "path": "../../packages/reelkit-angular-reel-player/tsconfig.lib.json"
+    }
+  ]
+}

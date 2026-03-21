@@ -1,0 +1,51 @@
+.rk-reel-slide-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 48px 16px 16px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+  pointer-events: none;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rk-reel-slide-overlay-author {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rk-reel-slide-overlay-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.rk-reel-slide-overlay-name {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.rk-reel-slide-overlay-description {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 13px;
+  line-height: 1.4;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.rk-reel-slide-overlay-likes {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 13px;
+}

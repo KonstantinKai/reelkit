@@ -263,7 +263,7 @@ export default function Home() {
               Available Packages
             </h2>
             <p className="text-lg text-slate-600 dark:text-slate-400">
-              Everything you need to build one-item sliders with React
+              Everything you need to build one-item sliders
             </p>
           </div>
 
@@ -276,11 +276,23 @@ export default function Home() {
               { name: '@reelkit/react', desc: 'React components and hooks' },
               {
                 name: '@reelkit/react-reel-player',
-                desc: 'Full-screen Instagram/TikTok-style player',
+                desc: 'Full-screen player (React)',
               },
               {
                 name: '@reelkit/react-lightbox',
-                desc: 'Full-screen image & video gallery lightbox',
+                desc: 'Image & video lightbox (React)',
+              },
+              {
+                name: '@reelkit/angular',
+                desc: 'Angular standalone components',
+              },
+              {
+                name: '@reelkit/angular-reel-player',
+                desc: 'Full-screen player (Angular)',
+              },
+              {
+                name: '@reelkit/angular-lightbox',
+                desc: 'Image & video lightbox (Angular)',
               },
             ].map((pkg) => (
               <div
