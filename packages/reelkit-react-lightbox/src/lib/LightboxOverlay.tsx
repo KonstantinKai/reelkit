@@ -207,7 +207,6 @@ const LightboxContent: FC<LightboxOverlayProps> = ({
   renderNavigation,
   renderInfo,
   renderSlide,
-  // Reel proxy props with defaults
   transitionDuration,
   swipeDistanceFactor,
   loop = false,
@@ -237,10 +236,8 @@ const LightboxContent: FC<LightboxOverlayProps> = ({
       : false,
   );
 
-  // Lock body scroll
   useBodyLock(true);
 
-  // Update size on resize
   useEffect(() => {
     const handleResize = () => {
       sizeSignal.value = [window.innerWidth, window.innerHeight];
@@ -252,7 +249,6 @@ const LightboxContent: FC<LightboxOverlayProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Preload images in range
   useEffect(() => {
     const start = Math.max(0, currentIndex - PRELOAD_RANGE);
     const end = Math.min(images.length - 1, currentIndex + PRELOAD_RANGE);
@@ -269,7 +265,6 @@ const LightboxContent: FC<LightboxOverlayProps> = ({
     }
   }, [currentIndex, images]);
 
-  // Handle keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {

@@ -45,10 +45,8 @@ export const createWheelController = (
   let lastEvent: WheelEvent | null = null;
 
   const handleWheel = (event: WheelEvent) => {
-    // Determine direction based on delta
     let direction: WheelDirection | null = null;
 
-    // Prefer vertical scroll
     if (Math.abs(event.deltaY) >= deltaThreshold) {
       direction = event.deltaY > 0 ? 'down' : 'up';
     } else if (Math.abs(event.deltaX) >= deltaThreshold) {
@@ -57,14 +55,11 @@ export const createWheelController = (
 
     if (direction === null) return;
 
-    // Prevent page scroll
     event.preventDefault();
 
-    // Store the direction and event for later
     pendingDirection = direction;
     lastEvent = event;
 
-    // Clear existing timer and start new one (trailing debounce)
     if (debounceTimer) {
       clearTimeout(debounceTimer);
     }

@@ -64,7 +64,6 @@ const LightboxVideoSlide: React.FC<LightboxVideoSlideProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [showPoster, setShowPoster] = useState(true);
 
-  // Mount shared video element to this container when active
   useIsomorphicLayoutEffect(() => {
     if (!isActive || !containerRef.current) return;
 
@@ -89,7 +88,6 @@ const LightboxVideoSlide: React.FC<LightboxVideoSlideProps> = ({
     video.muted = currentMuted;
     video.style.objectFit = 'contain';
 
-    // Restore saved playback position or start from beginning
     const savedPosition = shared.playbackPositions.get(slideKey);
     video.currentTime = savedPosition ?? 0;
 
@@ -101,10 +99,8 @@ const LightboxVideoSlide: React.FC<LightboxVideoSlideProps> = ({
       video.removeEventListener('waiting', handleWaiting);
       video.removeEventListener('playing', handlePlaying);
 
-      // Save current playback position before removing
       shared.playbackPositions.set(slideKey, video.currentTime);
 
-      // Capture current frame to use as poster when returning
       const frame = captureFrame(video);
       if (frame) {
         shared.capturedFrames.set(slideKey, frame);

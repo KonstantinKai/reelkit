@@ -58,7 +58,6 @@ const NestedSlider: React.FC<NestedSliderProps> = ({
   const localSliderRef = useRef<ReelApi>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
-  // Sync local ref with parent's innerSliderRef
   useEffect(() => {
     innerSliderRef.current = localSliderRef.current;
     return () => {
@@ -66,14 +65,12 @@ const NestedSlider: React.FC<NestedSliderProps> = ({
     };
   }, [innerSliderRef]);
 
-  // Report initial active media type when becoming active
   useEffect(() => {
     if (isParentActive && onActiveMediaTypeChange) {
       onActiveMediaTypeChange(media[innerActiveIndex].type);
     }
   }, [isParentActive, onActiveMediaTypeChange, media, innerActiveIndex]);
 
-  // Handle video ref from active video slide
   const handleVideoRef = useCallback(
     (ref: HTMLVideoElement | null) => {
       videoRef.current = ref;
@@ -84,14 +81,12 @@ const NestedSlider: React.FC<NestedSliderProps> = ({
     [onVideoRef],
   );
 
-  // Pause video on before change
   const handleBeforeChange = useCallback(() => {
     if (videoRef.current && !videoRef.current.paused) {
       videoRef.current.pause();
     }
   }, []);
 
-  // Update inner active index on after change
   const handleAfterChange = useCallback(
     (index: number) => {
       setInnerActiveIndex(index);
@@ -102,7 +97,6 @@ const NestedSlider: React.FC<NestedSliderProps> = ({
     [media, onActiveMediaTypeChange],
   );
 
-  // Navigation handlers
   const handlePrev = useCallback(() => {
     localSliderRef.current?.prev();
   }, []);

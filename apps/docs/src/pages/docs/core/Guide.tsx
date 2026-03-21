@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { Callout } from '../../../components/ui/Callout';
 import { CodeBlock } from '../../../components/ui/CodeBlock';
 
 export default function CoreGuide() {
@@ -157,6 +158,11 @@ const skipHiddenExtractor = (current: number, count: number) => {
 };`}
           language="typescript"
         />
+        <Callout type="info" className="mt-4">
+          The result is always clamped to a maximum of 3 indices. If your
+          extractor returns more, the core keeps 3 centered around the current
+          slide.
+        </Callout>
       </section>
 
       <section className="mb-12">

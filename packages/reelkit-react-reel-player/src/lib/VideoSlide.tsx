@@ -102,18 +102,15 @@ const VideoSlide: React.FC<VideoSlideProps> = ({
     () => [createSignal(false), createSignal(true)] as const,
   )[0];
 
-  // Mount shared video element to this container when active
   useIsomorphicLayoutEffect(() => {
     if (!shouldPlay || !containerRef.current) return;
 
     const video = shared.getVideo();
     const container = containerRef.current;
 
-    // Show loader and poster initially
     isLoading.value = true;
     showPoster.value = true;
 
-    // Video event handlers for loading state
     const handleCanPlay = () => (isLoading.value = false);
     const handleWaiting = () => (isLoading.value = true);
     const handlePlaying = () => {
@@ -125,45 +122,35 @@ const VideoSlide: React.FC<VideoSlideProps> = ({
     video.addEventListener('waiting', handleWaiting);
     video.addEventListener('playing', handlePlaying);
 
-    // Update video properties
     video.src = src;
     video.muted = soundState.muted.value;
 
-    // Restore saved playback position or start from beginning
     const savedPosition = shared.playbackPositions.get(slideKey);
     video.currentTime = savedPosition ?? 0;
 
-    // Update object-fit based on aspect ratio
     video.style.objectFit = isVertical ? 'cover' : 'contain';
 
-    // Append to this container
     container.appendChild(video);
 
-    // Report ref to parent
     if (onVideoRef) {
       onVideoRef(video);
     }
 
-    // Play
     // Autoplay may be prevented by the browser
     video.play().catch(noop);
 
     return () => {
-      // Remove event listeners
       video.removeEventListener('canplay', handleCanPlay);
       video.removeEventListener('waiting', handleWaiting);
       video.removeEventListener('playing', handlePlaying);
 
-      // Save current playback position before removing
       shared.playbackPositions.set(slideKey, video.currentTime);
 
-      // Capture current frame to use as poster when returning
       const frame = captureFrame(video);
       if (frame) {
         shared.capturedFrames.set(slideKey, frame);
       }
 
-      // Remove from this container when unmounting or becoming inactive
       if (video.parentNode === container) {
         container.removeChild(video);
       }

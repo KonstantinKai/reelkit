@@ -60,7 +60,6 @@ export const createGestureController = (
   let element: HTMLElement | null = null;
   let currentEvents = { ...events };
 
-  // State
   let canceled = false;
   let initialEvent: GestureEvent | null = null;
   let offset: Offset | null = null;
@@ -68,7 +67,6 @@ export const createGestureController = (
   let updateEvents: GestureAxisDragUpdateEvent[] = [];
   let longPressDetected = false;
 
-  // Long press timeout
   const longPressTimeout = timeout((event: GestureCommonEvent) => {
     if (
       offset &&
@@ -192,7 +190,6 @@ export const createGestureController = (
     const savedInitialEvent = initialEvent;
     const lastUpdateEvent = last(updateEvents) ?? null;
 
-    // Reset state
     updateEvents = [];
     initialEvent = null;
 

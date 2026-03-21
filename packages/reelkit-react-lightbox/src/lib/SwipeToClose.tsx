@@ -49,7 +49,6 @@ export const SwipeToClose: FC<SwipeToCloseProps> = ({
     () => [createSignal(0), createSignal(1), createSignal(false)] as const,
   )[0];
 
-  // Track if vertical drag end was handled
   const verticalDragEndHandledRef = useRef(false);
 
   useEffect(() => {
@@ -90,7 +89,6 @@ export const SwipeToClose: FC<SwipeToCloseProps> = ({
           const { primaryDistance } = event;
 
           if (primaryDistance < 0 && Math.abs(primaryDistance) > threshold) {
-            // Close with animation
             isTransitioning.value = true;
             dragOffset.value = -height;
             opacity.value = 0;
