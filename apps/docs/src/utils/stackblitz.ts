@@ -2,10 +2,10 @@ import type { Project } from '@stackblitz/sdk';
 
 // NOTE: Update these when publishing new versions
 const REELKIT_PACKAGES: Record<string, string> = {
-  '@reelkit/core': '0.2.0',
-  '@reelkit/react': '0.2.0',
-  '@reelkit/react-reel-player': '0.2.0',
-  '@reelkit/react-lightbox': '0.2.0',
+  '@reelkit/core': '0.2.1',
+  '@reelkit/react': '0.2.1',
+  '@reelkit/react-reel-player': '0.2.1',
+  '@reelkit/react-lightbox': '0.2.1',
 };
 
 const PACKAGES_REQUIRING_CORE = [
