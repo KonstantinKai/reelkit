@@ -1,3 +1,4 @@
+import { abs } from '../utils/number';
 import { observeDomEvent } from '../utils/observeDomEvent';
 import type {
   WheelDirection,
@@ -47,9 +48,9 @@ export const createWheelController = (
   const handleWheel = (event: WheelEvent) => {
     let direction: WheelDirection | null = null;
 
-    if (Math.abs(event.deltaY) >= deltaThreshold) {
+    if (abs(event.deltaY) >= deltaThreshold) {
       direction = event.deltaY > 0 ? 'down' : 'up';
-    } else if (Math.abs(event.deltaX) >= deltaThreshold) {
+    } else if (abs(event.deltaX) >= deltaThreshold) {
       direction = event.deltaX > 0 ? 'right' : 'left';
     }
 
