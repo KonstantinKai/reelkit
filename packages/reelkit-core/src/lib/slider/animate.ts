@@ -1,4 +1,4 @@
-import { clamp, lerp } from '../utils/number';
+import { abs, clamp, lerp } from '../utils/number';
 import { noop } from '../utils/noop';
 
 type EasingFn = (t: number) => number;
@@ -38,7 +38,7 @@ const createBezierEasing = (
       if (current > 0.0) hi = t;
       else lo = t;
     } while (
-      Math.abs(current) > SUBDIVISION_PRECISION &&
+      abs(current) > SUBDIVISION_PRECISION &&
       ++i < SUBDIVISION_MAX_ITERATIONS
     );
     return t;

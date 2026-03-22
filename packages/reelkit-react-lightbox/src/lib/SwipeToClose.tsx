@@ -4,6 +4,7 @@ import {
   createGestureController,
   Observe,
   type GestureController,
+  abs,
 } from '@reelkit/react';
 
 /** Props for the {@link SwipeToClose} wrapper component. */
@@ -77,10 +78,7 @@ export const SwipeToClose: FC<SwipeToCloseProps> = ({
           // Only handle upward swipes (negative distance)
           if (primaryDistance < 0) {
             dragOffset.value = primaryDistance;
-            const progress = Math.min(
-              Math.abs(primaryDistance) / (height * 0.3),
-              1,
-            );
+            const progress = Math.min(abs(primaryDistance) / (height * 0.3), 1);
             opacity.value = 1 - progress * 0.8;
           }
         },
@@ -88,7 +86,7 @@ export const SwipeToClose: FC<SwipeToCloseProps> = ({
           verticalDragEndHandledRef.current = true;
           const { primaryDistance } = event;
 
-          if (primaryDistance < 0 && Math.abs(primaryDistance) > threshold) {
+          if (primaryDistance < 0 && abs(primaryDistance) > threshold) {
             isTransitioning.value = true;
             dragOffset.value = -height;
             opacity.value = 0;
