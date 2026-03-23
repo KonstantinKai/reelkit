@@ -26,6 +26,8 @@ jobs:
 
       - run: npm ci
 
+      - run: npx nx run-many -t build --projects='packages/*'
+
       - name: Format, Lint, Typecheck
         run: npx nx format:check && npx nx run-many -t lint typecheck
 
