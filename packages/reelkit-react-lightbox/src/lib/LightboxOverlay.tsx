@@ -12,12 +12,12 @@ import {
   createSignal,
   Reel,
   Observe,
+  useBodyLock,
   type ReelApi,
   type ReelProps,
 } from '@reelkit/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useFullscreen } from './useFullscreen';
-import { useBodyLock } from '@reelkit/react';
 import { SwipeToClose } from './SwipeToClose';
 import LightboxControls from './LightboxControls';
 import type {
