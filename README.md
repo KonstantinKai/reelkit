@@ -84,6 +84,7 @@ Full documentation, interactive demos, and API reference at **[reelkit.dev](http
 ## Development
 
 ```bash
+proto use            # sync Node.js version (requires proto)
 npm install          # install dependencies
 npm run build        # build all packages
 npm test             # run all tests
