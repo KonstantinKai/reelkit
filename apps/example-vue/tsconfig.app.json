@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../dist/out-tsc",
+    "types": ["node", "vite/client"]
+  },
+  "exclude": ["src/**/*.spec.ts", "src/**/*.test.ts"],
+  "include": ["src/**/*.ts", "src/**/*.vue", "src/**/*.d.ts"],
+  "references": [
+    {
+      "path": "../../packages/reelkit-vue/tsconfig.lib.json"
+    }
+  ]
+}
