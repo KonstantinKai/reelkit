@@ -11,8 +11,8 @@ const mockObserve = vi.fn();
 const mockUnobserve = vi.fn();
 const mockDetach = vi.fn();
 
-vi.mock('@reelkit/core', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@reelkit/core')>();
+vi.mock('@reelkit/react', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@reelkit/react')>();
   return {
     ...actual,
     createGestureController: (
