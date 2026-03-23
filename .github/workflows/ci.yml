@@ -72,6 +72,6 @@ jobs:
           key: playwright-${{ hashFiles('**/package-lock.json') }}
 
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps
+        run: npx playwright install chromium --with-deps
 
       - run: npx nx run-many -t e2e --outputStyle=static
