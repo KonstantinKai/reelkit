@@ -29,8 +29,26 @@ export default class ChangelogRenderer extends DefaultChangelogRenderer {
   }
 
   override formatChange(change: ChangelogChange): string {
+    const lines = change.description.split('\n');
+
+    const thanks = lines
+      .filter((l) => l.trimStart().toLowerCase().startsWith('thanks to '))
+      .flatMap((l) =>
+        l
+          .trimStart()
+          .replace(/^thanks to /i, '')
+          .split(/[,&]/)
+          .map((name) => name.trim())
+          .filter(Boolean),
+      );
+
+    const appendThanks = (entry: string) =>
+      thanks.length > 0
+        ? `${entry}\n\n### ❤️ Thanks\n\n${thanks.map((t) => `- ${t}`).join('\n')}`
+        : entry;
+
     if (!this.project || !change.description.includes('\n')) {
-      return super.formatChange(change);
+      return appendThanks(super.formatChange(change));
     }
 
     // Extract only the current project's description from the version plan body.
@@ -40,7 +58,6 @@ export default class ChangelogRenderer extends DefaultChangelogRenderer {
     //
     //   @reelkit/react → minor
     //     Description text here
-    const lines = change.description.split('\n');
     const projectPrefix = `${this.project} `;
     let capturing = false;
     const projectLines: string[] = [];
@@ -52,7 +69,6 @@ export default class ChangelogRenderer extends DefaultChangelogRenderer {
         continue;
       }
       if (capturing) {
-        // Stop at next project header or empty line between sections
         if (
           trimmed.startsWith('@') ||
           (trimmed === '' && projectLines.length > 0)
@@ -75,6 +91,6 @@ export default class ChangelogRenderer extends DefaultChangelogRenderer {
         ? ` (${change.shortHash})`
         : '';
 
-    return `- ${description}${ref}`;
+    return appendThanks(`- ${description}${ref}`);
   }
 }
