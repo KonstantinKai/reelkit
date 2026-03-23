@@ -3,12 +3,17 @@ name: CI
 on:
   pull_request:
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   actions: read
   contents: read
 
 jobs:
-  main:
+  style:
+    name: Style Check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,16 +25,50 @@ jobs:
 
       - run: npm ci
 
-      - run: npx nx format:check
+      - name: Format, Lint, Typecheck
+        run: npx nx format:check && npx nx run-many -t lint typecheck
+
+  test:
+    name: Unit Tests
+    needs: style
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 25
+          cache: 'npm'
+
+      - run: npm ci
 
       - run: npx nx run-many -t build
 
-      - run: npx nx run-many -t lint typecheck test
+      - run: npx nx run-many -t test
+
+  e2e:
+    name: E2E Tests
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 25
+          cache: 'npm'
+
+      - run: npm ci
+
+      - run: npx nx run-many -t build
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ hashFiles('**/package-lock.json') }}
 
       - name: Install Playwright browsers
-        if: github.event_name == 'pull_request'
         run: npx playwright install --with-deps
 
-      - name: Run e2e tests
-        if: github.event_name == 'pull_request'
-        run: npx nx run-many -t e2e
+      - run: npx nx run-many -t e2e
