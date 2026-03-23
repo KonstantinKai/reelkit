@@ -8,6 +8,12 @@ import changelogRaw from '../../../../../CHANGELOG.md?raw';
  * Minimal markdown-to-HTML for changelog format.
  * Handles: ## h2, ### h3, - list items (wrapped in ul), empty lines.
  */
+const linkMentions = (text: string): string =>
+  text.replace(
+    /@([a-zA-Z\d](?:[a-zA-Z\d-]*[a-zA-Z\d])?)/g,
+    '<a href="https://github.com/$1" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline">@$1</a>',
+  );
+
 function renderChangelog(md: string): string {
   const lines = md.split('\n');
   const output: string[] = [];
@@ -39,10 +45,10 @@ function renderChangelog(md: string): string {
         `<h1 class="text-2xl font-bold mt-12 mb-4 text-slate-900 dark:text-white">${line.slice(2)}</h1>`,
       );
     } else if (isList) {
-      output.push(`<li>${line.slice(2)}</li>`);
+      output.push(`<li>${linkMentions(line.slice(2))}</li>`);
     } else if (line.trim() !== '') {
       output.push(
-        `<p class="text-sm text-slate-600 dark:text-slate-400 mb-2">${line}</p>`,
+        `<p class="text-sm text-slate-600 dark:text-slate-400 mb-2">${linkMentions(line)}</p>`,
       );
     }
   }
