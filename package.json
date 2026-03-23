@@ -13,7 +13,8 @@
     "fmt": "npx nx format",
     "prepare": "husky",
     "check": "npm run fmt:chk && npm run lint && npm run typecheck",
-    "update-sizes": "node scripts/update-sizes.mjs"
+    "update-sizes": "node scripts/update-sizes.mjs",
+    "release:npm": "which op > /dev/null 2>&1 && op run --env-file=.env.op -- npx nx release publish || echo '1Password CLI (op) is not installed. Install it from https://1password.com/downloads/command-line/'"
   },
   "repository": {
     "type": "git",
