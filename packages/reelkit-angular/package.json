@@ -1,0 +1,63 @@
+{
+  "name": "@reelkit/angular",
+  "version": "0.1.0",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./fesm2022/reelkit-angular.mjs",
+  "module": "./fesm2022/reelkit-angular.mjs",
+  "types": "./index.d.ts",
+  "exports": {
+    "./package.json": {
+      "default": "./package.json"
+    },
+    ".": {
+      "types": "./index.d.ts",
+      "esm2022": "./esm2022/reelkit-angular.mjs",
+      "esm": "./esm2022/reelkit-angular.mjs",
+      "default": "./fesm2022/reelkit-angular.mjs"
+    }
+  },
+  "files": [
+    "esm2022",
+    "fesm2022",
+    "*.d.ts",
+    "*.d.ts.map",
+    "!**/*.tsbuildinfo"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KonstantinKai/reelkit.git",
+    "directory": "packages/reelkit-angular"
+  },
+  "bugs": "https://github.com/KonstantinKai/reelkit/issues",
+  "homepage": "https://reelkit.dev",
+  "funding": {
+    "type": "buymeacoffee",
+    "url": "https://buymeacoffee.com/konstantinkai"
+  },
+  "description": "Angular adapter for ReelKit — virtualized one-item slider with gesture, keyboard, and wheel support.",
+  "license": "MIT",
+  "keywords": [
+    "angular",
+    "slider",
+    "carousel",
+    "swipe",
+    "virtualized",
+    "touch",
+    "gesture",
+    "mobile",
+    "tiktok",
+    "reels",
+    "vertical-slider",
+    "angular-component",
+    "typescript"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "@angular/common": ">=19.0.0",
+    "@angular/core": ">=19.0.0",
+    "@reelkit/core": ">=0.2.0"
+  }
+}

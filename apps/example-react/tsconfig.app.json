@@ -1,4 +1,5 @@
 {
+  "$schema": "https://json.schemastore.org/tsconfig",
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./dist",
@@ -7,6 +8,9 @@
   "include": ["src/**/*.ts", "src/**/*.tsx"],
   "exclude": ["src/**/*.spec.ts", "src/**/*.spec.tsx"],
   "references": [
+    {
+      "path": "../../packages/reelkit-example-data/tsconfig.lib.json"
+    },
     {
       "path": "../../packages/reelkit-react-reel-player/tsconfig.lib.json"
     },

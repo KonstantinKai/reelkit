@@ -248,10 +248,22 @@ indexes.subscribe((visibleIndexes) => {
           </li>
           <li>
             <Link
+              to="/docs/angular/guide"
+              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
+            >
+              Angular Guide
+            </Link>
+            <span className="text-slate-500">
+              {' '}
+              - standalone components and signals
+            </span>
+          </li>
+          <li>
+            <Link
               to="/docs/reel-player"
               className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
             >
-              Reel Player
+              React Reel Player
             </Link>
             <span className="text-slate-500">
               {' '}
@@ -263,7 +275,28 @@ indexes.subscribe((visibleIndexes) => {
               to="/docs/lightbox"
               className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
             >
-              Lightbox
+              React Lightbox
+            </Link>
+            <span className="text-slate-500"> - image & video gallery</span>
+          </li>
+          <li>
+            <Link
+              to="/docs/angular-reel-player"
+              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
+            >
+              Angular Reel Player
+            </Link>
+            <span className="text-slate-500">
+              {' '}
+              - TikTok/Reels-style video player
+            </span>
+          </li>
+          <li>
+            <Link
+              to="/docs/angular-lightbox"
+              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
+            >
+              Angular Lightbox
             </Link>
             <span className="text-slate-500"> - image & video gallery</span>
           </li>

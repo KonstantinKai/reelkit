@@ -1,41 +1,80 @@
-import { Routes, Route } from 'react-router-dom';
-import { ScrollToTop } from '../components/ScrollToTop';
+import { createBrowserRouter } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
 import Home from '../pages/Home';
-import GettingStarted from '../pages/docs/GettingStarted';
-import Installation from '../pages/docs/Installation';
-import SSR from '../pages/docs/SSR';
-import CoreGuide from '../pages/docs/core/Guide';
-import CoreApi from '../pages/docs/core/Api';
-import ReactGuide from '../pages/docs/react/Guide';
-import ReactApi from '../pages/docs/react/Api';
-import ReelPlayer from '../pages/docs/ReelPlayer';
-import Lightbox from '../pages/docs/Lightbox';
-import Changelog from '../pages/docs/Changelog';
-import Privacy from '../pages/Privacy';
-import Terms from '../pages/Terms';
 
-export default function App() {
-  return (
-    <>
-      <ScrollToTop />
-      <Routes>
-        <Route element={<Layout />}>
-          <Route index element={<Home />} />
-          <Route path="docs/getting-started" element={<GettingStarted />} />
-          <Route path="docs/installation" element={<Installation />} />
-          <Route path="docs/ssr" element={<SSR />} />
-          <Route path="docs/core/guide" element={<CoreGuide />} />
-          <Route path="docs/core/api" element={<CoreApi />} />
-          <Route path="docs/react/guide" element={<ReactGuide />} />
-          <Route path="docs/react/api" element={<ReactApi />} />
-          <Route path="docs/reel-player" element={<ReelPlayer />} />
-          <Route path="docs/lightbox" element={<Lightbox />} />
-          <Route path="docs/changelog" element={<Changelog />} />
-          <Route path="privacy" element={<Privacy />} />
-          <Route path="terms" element={<Terms />} />
-        </Route>
-      </Routes>
-    </>
-  );
-}
+const lazy =
+  (load: () => Promise<{ default: React.ComponentType }>) => async () => {
+    const { default: Component } = await load();
+    return { Component };
+  };
+
+export const router = createBrowserRouter(
+  [
+    {
+      element: <Layout />,
+      children: [
+        { index: true, element: <Home /> },
+        {
+          path: 'docs/getting-started',
+          lazy: lazy(() => import('../pages/docs/GettingStarted')),
+        },
+        {
+          path: 'docs/installation',
+          lazy: lazy(() => import('../pages/docs/Installation')),
+        },
+        { path: 'docs/ssr', lazy: lazy(() => import('../pages/docs/SSR')) },
+        {
+          path: 'docs/core/guide',
+          lazy: lazy(() => import('../pages/docs/core/Guide')),
+        },
+        {
+          path: 'docs/core/api',
+          lazy: lazy(() => import('../pages/docs/core/Api')),
+        },
+        {
+          path: 'docs/react/guide',
+          lazy: lazy(() => import('../pages/docs/react/Guide')),
+        },
+        {
+          path: 'docs/react/api',
+          lazy: lazy(() => import('../pages/docs/react/Api')),
+        },
+        {
+          path: 'docs/angular/guide',
+          lazy: lazy(() => import('../pages/docs/angular/Guide')),
+        },
+        {
+          path: 'docs/angular/api',
+          lazy: lazy(() => import('../pages/docs/angular/Api')),
+        },
+        {
+          path: 'docs/reel-player',
+          lazy: lazy(() => import('../pages/docs/ReelPlayer')),
+        },
+        {
+          path: 'docs/lightbox',
+          lazy: lazy(() => import('../pages/docs/Lightbox')),
+        },
+        {
+          path: 'docs/angular-reel-player',
+          lazy: lazy(() => import('../pages/docs/AngularReelPlayer')),
+        },
+        {
+          path: 'docs/angular-lightbox',
+          lazy: lazy(() => import('../pages/docs/AngularLightbox')),
+        },
+        {
+          path: 'docs/troubleshooting',
+          lazy: lazy(() => import('../pages/docs/Troubleshooting')),
+        },
+        {
+          path: 'docs/changelog',
+          lazy: lazy(() => import('../pages/docs/Changelog')),
+        },
+        { path: 'privacy', lazy: lazy(() => import('../pages/Privacy')) },
+        { path: 'terms', lazy: lazy(() => import('../pages/Terms')) },
+      ],
+    },
+  ],
+  { basename: import.meta.env.BASE_URL },
+);

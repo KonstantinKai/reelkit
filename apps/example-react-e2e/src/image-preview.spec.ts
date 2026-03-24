@@ -597,7 +597,7 @@ test.describe('Image Preview - Swipe to Close', () => {
 
     const centerX = box.x + box.width / 2;
     const startY = box.y + box.height / 2;
-    const verticalDistance = box.height * 0.3;
+    const verticalDistance = box.height * 0.1;
 
     // Swipe up then move horizontally - using JavaScript to control touch events
     await page.evaluate(

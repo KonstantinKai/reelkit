@@ -5,11 +5,12 @@
  * and updates all size references across README files.
  *
  * Usage:
- *   node scripts/update-sizes.mjs          # measure & update
- *   node scripts/update-sizes.mjs --check  # CI mode — fail if sizes are stale
+ *   node scripts/update-sizes.mjs            # measure & update
+ *   node scripts/update-sizes.mjs --check    # CI mode — fail if sizes are stale
+ *   node scripts/update-sizes.mjs --dry-run  # measure & print table only
  */
 
-import { readFileSync, writeFileSync, statSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -19,6 +20,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dirname, '..');
 
 const isCheck = process.argv.includes('--check');
+const isDryRun = process.argv.includes('--dry-run');
 
 // NOTE: `externalize` lists dependencies that should be treated as externals
 // (peer deps) during measurement so each package reports its own code size only.
@@ -39,9 +41,72 @@ const packages = [
     dir: 'reelkit-react-lightbox',
     externalize: ['@reelkit/core', '@reelkit/react', 'lucide-react'],
   },
+  {
+    name: '@reelkit/angular',
+    dir: 'reelkit-angular',
+    ngPackagr: true,
+  },
+  {
+    name: '@reelkit/angular-reel-player',
+    dir: 'reelkit-angular-reel-player',
+    ngPackagr: true,
+  },
+  {
+    name: '@reelkit/angular-lightbox',
+    dir: 'reelkit-angular-lightbox',
+    ngPackagr: true,
+  },
 ];
 
+/**
+ * Measures ng-packagr output directly from the fesm2022 bundle.
+ * package-build-stats cannot handle Angular's compiled output format.
+ */
+function measureNgPackagr(pkg) {
+  const distDir = resolve(root, 'dist', 'packages', pkg.dir);
+  const bundleName = pkg.dir.replace(/-/g, '-') + '.mjs';
+  const bundlePath = resolve(distDir, 'fesm2022', bundleName);
+
+  let jsBuf;
+  try {
+    jsBuf = readFileSync(bundlePath);
+  } catch {
+    console.error(
+      `  ✗ ${pkg.name}: fesm2022 bundle not found — run "npx nx run-many -t build" first`,
+    );
+    process.exit(1);
+  }
+
+  const gzipped = gzipSync(jsBuf);
+  const jsKB = (jsBuf.length / 1024).toFixed(1);
+  const gzipKB = (gzipped.length / 1024).toFixed(1);
+
+  // Measure CSS if present
+  const cssPath = resolve(distDir, 'index.css');
+  let cssKB = '-';
+  let cssGzipKB = '-';
+  try {
+    const cssBuf = readFileSync(cssPath);
+    cssKB = (cssBuf.length / 1024).toFixed(1);
+    cssGzipKB = (gzipSync(cssBuf).length / 1024).toFixed(1);
+  } catch {
+    // no CSS file
+  }
+
+  return {
+    name: pkg.name,
+    dir: pkg.dir,
+    bytes: gzipped.length,
+    kB: gzipKB,
+    jsKB,
+    cssKB,
+    cssGzipKB,
+  };
+}
+
 async function measure(pkg) {
+  if (pkg.ngPackagr) return measureNgPackagr(pkg);
+
   const pkgDir = resolve(root, 'packages', pkg.dir);
   const pkgJsonPath = resolve(pkgDir, 'package.json');
 
@@ -206,13 +271,23 @@ function updateDocs(filePath, results) {
     );
   }
 
-  // Update "ReelKit (core + react)" combined gzip in comparison table
+  // Update combined gzip sizes in comparison table
   const core = results.find((r) => r.name === '@reelkit/core');
   const react = results.find((r) => r.name === '@reelkit/react');
+  const angular = results.find((r) => r.name === '@reelkit/angular');
+
   if (core && react) {
     const combined = ((core.bytes + react.bytes) / 1024).toFixed(1);
     content = content.replace(
       /(name:\s*'ReelKit \(core \+ react\)'.*?gzip:\s*')\d+\.\d+ kB/s,
+      `$1${combined} kB`,
+    );
+  }
+
+  if (core && angular) {
+    const combined = ((core.bytes + angular.bytes) / 1024).toFixed(1);
+    content = content.replace(
+      /(name:\s*'ReelKit \(core \+ angular\)'.*?gzip:\s*')\d+\.\d+ kB/s,
       `$1${combined} kB`,
     );
   }
@@ -235,6 +310,32 @@ for (const pkg of packages) {
 }
 
 const maxName = Math.max(...results.map((r) => r.name.length));
+
+if (isDryRun) {
+  const maxJs = Math.max(...results.map((r) => r.jsKB.length));
+  const maxGzip = Math.max(...results.map((r) => r.kB.length));
+  const hasCss = results.some((r) => r.cssKB !== '-');
+
+  const header =
+    `  ${'Package'.padEnd(maxName)}  ${'JS'.padStart(maxJs + 3)}  ${'Gzip'.padStart(maxGzip + 3)}` +
+    (hasCss ? '  CSS (gzip)' : '');
+  const separator =
+    `  ${'─'.repeat(maxName)}  ${'─'.repeat(maxJs + 3)}  ${'─'.repeat(maxGzip + 3)}` +
+    (hasCss ? `  ${'─'.repeat(12)}` : '');
+
+  console.log(header);
+  console.log(separator);
+  for (const r of results) {
+    const css =
+      hasCss && r.cssKB !== '-' ? `  ${r.cssGzipKB.padStart(7)} kB` : '';
+    console.log(
+      `  ${r.name.padEnd(maxName)}  ${r.jsKB.padStart(maxJs)} kB  ${r.kB.padStart(maxGzip)} kB${css}`,
+    );
+  }
+  console.log();
+  process.exit(0);
+}
+
 for (const r of results) {
   const css = r.cssKB !== '-' ? `  css: ${r.cssGzipKB} kB` : '';
   console.log(

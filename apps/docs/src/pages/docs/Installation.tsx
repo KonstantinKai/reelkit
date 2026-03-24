@@ -25,12 +25,27 @@ const packages: {
   {
     name: '@reelkit/react-reel-player',
     desc: 'Full-screen vertical reel player',
-    useCase: 'Instagram/TikTok style player',
+    useCase: 'Instagram/TikTok style player (React)',
   },
   {
     name: '@reelkit/react-lightbox',
     desc: 'Image gallery lightbox',
-    useCase: 'Full-screen image preview',
+    useCase: 'Full-screen image preview (React)',
+  },
+  {
+    name: '@reelkit/angular',
+    desc: 'Angular standalone components',
+    useCase: 'Angular 17+ applications',
+  },
+  {
+    name: '@reelkit/angular-reel-player',
+    desc: 'Full-screen vertical reel player',
+    useCase: 'Instagram/TikTok style player (Angular)',
+  },
+  {
+    name: '@reelkit/angular-lightbox',
+    desc: 'Image gallery lightbox',
+    useCase: 'Full-screen image preview (Angular)',
   },
 ];
 
@@ -63,12 +78,39 @@ const bundleSizes = [
     css: '4.1 kB',
     cssGzip: '1.0 kB',
   },
+  {
+    name: '@reelkit/angular',
+    js: '55.4 kB',
+    gzip: '12.3 kB',
+    css: '-',
+    cssGzip: '-',
+  },
+  {
+    name: '@reelkit/angular-reel-player',
+    js: '93.5 kB',
+    gzip: '15.8 kB',
+    css: '-',
+    cssGzip: '-',
+  },
+  {
+    name: '@reelkit/angular-lightbox',
+    js: '96.2 kB',
+    gzip: '17.9 kB',
+    css: '-',
+    cssGzip: '-',
+  },
 ];
 
 const comparison = [
   {
     name: 'ReelKit (core + react)',
     gzip: '6.9 kB',
+    virtualization: true,
+    notes: 'Zero dependencies',
+  },
+  {
+    name: 'ReelKit (core + angular)',
+    gzip: '16.3 kB',
     virtualization: true,
     notes: 'Zero dependencies',
   },
@@ -105,7 +147,7 @@ export default function Installation() {
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Package Options</h2>
         <p className="text-slate-600 dark:text-slate-400 mb-6">
-          reelkit is available as multiple packages. Choose based on your needs:
+          Install only what you use:
         </p>
 
         <div className="overflow-x-auto">
@@ -249,17 +291,26 @@ export default function Installation() {
 
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">npm</h2>
+        <p className="text-slate-600 dark:text-slate-400 mb-2">React:</p>
         <CodeBlock code="npm install @reelkit/react" language="bash" />
+        <p className="text-slate-600 dark:text-slate-400 mb-2 mt-4">Angular:</p>
+        <CodeBlock code="npm install @reelkit/angular" language="bash" />
       </section>
 
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">yarn</h2>
+        <p className="text-slate-600 dark:text-slate-400 mb-2">React:</p>
         <CodeBlock code="yarn add @reelkit/react" language="bash" />
+        <p className="text-slate-600 dark:text-slate-400 mb-2 mt-4">Angular:</p>
+        <CodeBlock code="yarn add @reelkit/angular" language="bash" />
       </section>
 
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">pnpm</h2>
+        <p className="text-slate-600 dark:text-slate-400 mb-2">React:</p>
         <CodeBlock code="pnpm add @reelkit/react" language="bash" />
+        <p className="text-slate-600 dark:text-slate-400 mb-2 mt-4">Angular:</p>
+        <CodeBlock code="pnpm add @reelkit/angular" language="bash" />
       </section>
 
       <section className="mb-12">
@@ -326,6 +377,60 @@ export default function Installation() {
               </li>
             </ul>
           </div>
+
+          <div>
+            <h3 className="text-lg font-semibold mb-2">@reelkit/angular</h3>
+            <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
+              <li>
+                <code className="text-sm font-mono">@angular/core</code>{' '}
+                {'>= 17.0.0'}
+              </li>
+              <li>
+                <code className="text-sm font-mono">@angular/common</code>{' '}
+                {'>= 17.0.0'}
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="text-lg font-semibold mb-2">
+              @reelkit/angular-reel-player
+            </h3>
+            <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
+              <li>
+                <code className="text-sm font-mono">@reelkit/angular</code>
+              </li>
+              <li>
+                <code className="text-sm font-mono">@angular/core</code>{' '}
+                {'>= 17.0.0'}
+              </li>
+              <li>
+                <code className="text-sm font-mono">
+                  @angular/platform-browser
+                </code>{' '}
+                {'>= 17.0.0'}
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="text-lg font-semibold mb-2">
+              @reelkit/angular-lightbox
+            </h3>
+            <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
+              <li>
+                <code className="text-sm font-mono">@reelkit/angular</code>
+              </li>
+              <li>
+                <code className="text-sm font-mono">@angular/core</code>{' '}
+                {'>= 17.0.0'}
+              </li>
+              <li>
+                <code className="text-sm font-mono">lucide-angular</code>{' '}
+                {'>= 0.400.0'}
+              </li>
+            </ul>
+          </div>
         </div>
 
         <Callout type="info" className="mt-4">
@@ -339,8 +444,8 @@ export default function Installation() {
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">TypeScript</h2>
         <p className="text-slate-600 dark:text-slate-400">
-          All packages include TypeScript type definitions out of the box. No
-          additional {'@types'} packages are needed.
+          All packages ship with TypeScript type definitions. No additional{' '}
+          {'@types'} packages needed.
         </p>
       </section>
 
@@ -394,10 +499,22 @@ export default function Installation() {
           </li>
           <li>
             <Link
+              to="/docs/angular/guide"
+              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
+            >
+              Angular Guide
+            </Link>
+            <span className="text-slate-500">
+              {' '}
+              - signals-based Angular integration
+            </span>
+          </li>
+          <li>
+            <Link
               to="/docs/reel-player"
               className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
             >
-              Reel Player
+              React Reel Player
             </Link>
             <span className="text-slate-500">
               {' '}
@@ -409,9 +526,30 @@ export default function Installation() {
               to="/docs/lightbox"
               className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
             >
-              Lightbox
+              React Lightbox
             </Link>
-            <span className="text-slate-500"> - image & video gallery</span>
+            <span className="text-slate-500"> - image &amp; video gallery</span>
+          </li>
+          <li>
+            <Link
+              to="/docs/angular-reel-player"
+              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
+            >
+              Angular Reel Player
+            </Link>
+            <span className="text-slate-500">
+              {' '}
+              - TikTok/Reels-style video player
+            </span>
+          </li>
+          <li>
+            <Link
+              to="/docs/angular-lightbox"
+              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
+            >
+              Angular Lightbox
+            </Link>
+            <span className="text-slate-500"> - image &amp; video gallery</span>
           </li>
         </ul>
       </section>
