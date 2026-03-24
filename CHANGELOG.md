@@ -1,3 +1,15 @@
+## @reelkit/angular-lightbox@0.1.1 (2026-03-24)
+
+### 🩹 Fixes
+
+- Add missing lightbox-video-slide.css to package exports
+
+## @reelkit/angular-reel-player@0.1.1 (2026-03-24)
+
+### 🩹 Fixes
+
+- Fix CSS assets not included in published package
+
 ## @reelkit/angular@0.1.0 (2026-03-24)
 
 ### 🎉 Initial Release
