@@ -18,7 +18,8 @@
       "esm": "./esm2022/reelkit-angular-lightbox.mjs",
       "default": "./fesm2022/reelkit-angular-lightbox.mjs"
     },
-    "./styles.css": "./lightbox-overlay.css"
+    "./styles.css": "./lightbox-overlay.css",
+    "./lightbox-video-slide.css": "./lightbox-video-slide.css"
   },
   "files": [
     "esm2022",
