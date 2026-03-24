@@ -1,6 +1,5 @@
-import { Link } from 'react-router-dom';
-import { Callout } from '../../components/ui/Callout';
 import { CodeBlock } from '../../components/ui/CodeBlock';
+import { Sandbox } from '../../components/ui/Sandbox';
 import { FeatureCardGrid } from '../../components/ui/FeatureCard';
 import {
   Zap,
@@ -251,17 +250,9 @@ export default function AngularReelPlayer() {
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Installation</h2>
         <CodeBlock
-          code={`npm install @reelkit/angular-reel-player`}
+          code={`npm install @reelkit/angular-reel-player @reelkit/angular`}
           language="bash"
         />
-        <Callout type="info" className="mt-4">
-          <code className="text-sm font-mono">
-            @reelkit/angular-reel-player
-          </code>{' '}
-          depends on <code className="text-sm font-mono">@reelkit/angular</code>
-          . Install it if not already present:
-          <CodeBlock code={`npm install @reelkit/angular`} language="bash" />
-        </Callout>
       </section>
 
       <section className="mb-12">
@@ -277,7 +268,7 @@ export default function AngularReelPlayer() {
           </code>{' '}
           array.
         </p>
-        <CodeBlock
+        <Sandbox
           code={`import { Component, signal } from '@angular/core';
 import {
   RkReelPlayerOverlayComponent,
@@ -351,6 +342,12 @@ export class ReelFeedComponent {
   }
 }`}
           language="typescript"
+          title="reel-feed.component.ts"
+          framework="angular"
+          stackblitzDeps={{ '@reelkit/angular-reel-player': '0.1.0' }}
+          stackblitzStyles={[
+            'node_modules/@reelkit/angular-reel-player/styles.css',
+          ]}
         />
       </section>
 
@@ -773,42 +770,6 @@ export class MyFeedComponent {
             </tbody>
           </table>
         </div>
-      </section>
-
-      <section>
-        <h2 className="text-2xl font-bold mb-4">Next Steps</h2>
-        <ul className="space-y-3">
-          <li>
-            <Link
-              to="/docs/angular/guide"
-              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
-            >
-              Angular Guide
-            </Link>
-            <span className="text-slate-500"> - rk-reel basics</span>
-          </li>
-          <li>
-            <Link
-              to="/docs/angular-lightbox"
-              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
-            >
-              Angular Lightbox
-            </Link>
-            <span className="text-slate-500"> - image &amp; video gallery</span>
-          </li>
-          <li>
-            <Link
-              to="/docs/angular/api"
-              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
-            >
-              Angular API Reference
-            </Link>
-            <span className="text-slate-500">
-              {' '}
-              - full API docs for @reelkit/angular
-            </span>
-          </li>
-        </ul>
       </section>
     </div>
   );

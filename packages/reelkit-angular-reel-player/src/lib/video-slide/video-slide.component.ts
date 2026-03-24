@@ -4,6 +4,7 @@ import {
   ElementRef,
   NgZone,
   ViewEncapsulation,
+  afterRenderEffect,
   computed,
   effect,
   inject,
@@ -13,7 +14,7 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
-import { createSharedVideo, captureFrame } from '@reelkit/core';
+import { createSharedVideo, captureFrame } from '@reelkit/angular';
 import { SoundStateService } from '../sound-state/sound-state.service';
 
 /**
@@ -26,6 +27,8 @@ const shared = createSharedVideo({
   disableRemotePlayback: true,
   disablePictureInPicture: true,
 });
+
+let activeToken: symbol | null = null;
 
 /**
  * Renders a single video slide using a shared `<video>` element for iOS
@@ -125,7 +128,7 @@ export class RkVideoSlideComponent {
    * and cleans up on deactivation.
    */
   private _registerPlaybackEffect(): void {
-    effect((onCleanup) => {
+    afterRenderEffect((onCleanup) => {
       const shouldPlay = this.isActive() && this.isInnerActive();
       if (!shouldPlay) return;
 
@@ -154,10 +157,14 @@ export class RkVideoSlideComponent {
           this.showPoster.set(false);
         });
 
+      const token = Symbol();
+      activeToken = token;
+
       video.addEventListener('canplay', handleCanPlay);
       video.addEventListener('waiting', handleWaiting);
       video.addEventListener('playing', handlePlaying);
 
+      video.pause();
       video.src = src;
       video.muted = muted;
 
@@ -168,27 +175,26 @@ export class RkVideoSlideComponent {
       container.appendChild(video);
       this.videoRef.emit(video);
 
-      this._zone.runOutsideAngular(() => {
-        video.play().catch(() => {
-          /* autoplay may be blocked */
-        });
-      });
+      video
+        .play()
+        .catch(() => this._zone.run(() => this.hasPlayError.set(true)));
 
       onCleanup(() => {
         video.removeEventListener('canplay', handleCanPlay);
         video.removeEventListener('waiting', handleWaiting);
         video.removeEventListener('playing', handlePlaying);
 
-        // Pause before saving position and removing from DOM. Without this an
-        // in-flight play() promise resolves after detachment and resumes audio
-        // on a disconnected element — causing audio bleed on Safari / iOS.
-        video.pause();
-
         shared.playbackPositions.set(key, video.currentTime);
 
         const frame = captureFrame(video);
         if (frame) {
           shared.capturedFrames.set(key, frame);
+        }
+
+        // Only pause and remove if no new slide has taken ownership
+        if (activeToken === token) {
+          video.pause();
+          activeToken = null;
         }
 
         if (video.parentNode === container) {

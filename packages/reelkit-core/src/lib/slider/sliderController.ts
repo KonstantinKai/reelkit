@@ -196,11 +196,16 @@ export const createSliderController = (
     };
   };
 
+  let mainAxisDragActive = false;
+
   const onMainAxisDragStart = () => {
+    mainAxisDragActive = true;
     events.onDragStart?.(index.value);
   };
 
   const onAxisAwareDragEnd = async (event: GestureDragEndEvent) => {
+    if (!mainAxisDragActive) return;
+    mainAxisDragActive = false;
     const isHorizontal = config.direction === 'horizontal';
     const key = isHorizontal ? 0 : 1;
     const necessaryDistance = primarySize * config.swipeDistanceFactor;

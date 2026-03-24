@@ -399,7 +399,7 @@ export default function ReelPlayer() {
               {
                 icon: Image,
                 label: 'Frame Capture',
-                desc: 'Seamless poster transitions',
+                desc: 'Poster-to-video crossfade',
               },
               {
                 icon: Layers,

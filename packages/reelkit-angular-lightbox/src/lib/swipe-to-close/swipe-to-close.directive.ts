@@ -9,7 +9,10 @@ import {
   input,
   output,
 } from '@angular/core';
-import { createGestureController, type GestureController } from '@reelkit/core';
+import {
+  createGestureController,
+  type GestureController,
+} from '@reelkit/angular';
 
 const DISMISS_THRESHOLD_FRACTION = 0.2;
 const OPACITY_PROGRESS_NORMALISER = 0.3;

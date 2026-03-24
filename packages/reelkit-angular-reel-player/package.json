@@ -59,7 +59,6 @@
   },
   "peerDependencies": {
     "@reelkit/angular": "*",
-    "@reelkit/core": ">=0.2.0",
     "@angular/common": ">=19.0.0",
     "@angular/core": ">=19.0.0",
     "@angular/platform-browser": ">=19.0.0"

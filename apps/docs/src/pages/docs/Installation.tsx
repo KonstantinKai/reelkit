@@ -78,12 +78,39 @@ const bundleSizes = [
     css: '4.1 kB',
     cssGzip: '1.0 kB',
   },
+  {
+    name: '@reelkit/angular',
+    js: '55.4 kB',
+    gzip: '12.3 kB',
+    css: '-',
+    cssGzip: '-',
+  },
+  {
+    name: '@reelkit/angular-reel-player',
+    js: '93.5 kB',
+    gzip: '15.8 kB',
+    css: '-',
+    cssGzip: '-',
+  },
+  {
+    name: '@reelkit/angular-lightbox',
+    js: '96.2 kB',
+    gzip: '17.9 kB',
+    css: '-',
+    cssGzip: '-',
+  },
 ];
 
 const comparison = [
   {
     name: 'ReelKit (core + react)',
     gzip: '6.9 kB',
+    virtualization: true,
+    notes: 'Zero dependencies',
+  },
+  {
+    name: 'ReelKit (core + angular)',
+    gzip: '16.3 kB',
     virtualization: true,
     notes: 'Zero dependencies',
   },
@@ -120,7 +147,7 @@ export default function Installation() {
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Package Options</h2>
         <p className="text-slate-600 dark:text-slate-400 mb-6">
-          reelkit is available as multiple packages. Choose based on your needs:
+          Install only what you use:
         </p>
 
         <div className="overflow-x-auto">
@@ -417,8 +444,8 @@ export default function Installation() {
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">TypeScript</h2>
         <p className="text-slate-600 dark:text-slate-400">
-          All packages include TypeScript type definitions out of the box. No
-          additional {'@types'} packages are needed.
+          All packages ship with TypeScript type definitions. No additional{' '}
+          {'@types'} packages needed.
         </p>
       </section>
 
@@ -487,7 +514,7 @@ export default function Installation() {
               to="/docs/reel-player"
               className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
             >
-              Reel Player
+              React Reel Player
             </Link>
             <span className="text-slate-500">
               {' '}
@@ -499,7 +526,28 @@ export default function Installation() {
               to="/docs/lightbox"
               className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
             >
-              Lightbox
+              React Lightbox
+            </Link>
+            <span className="text-slate-500"> - image &amp; video gallery</span>
+          </li>
+          <li>
+            <Link
+              to="/docs/angular-reel-player"
+              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
+            >
+              Angular Reel Player
+            </Link>
+            <span className="text-slate-500">
+              {' '}
+              - TikTok/Reels-style video player
+            </span>
+          </li>
+          <li>
+            <Link
+              to="/docs/angular-lightbox"
+              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
+            >
+              Angular Lightbox
             </Link>
             <span className="text-slate-500"> - image &amp; video gallery</span>
           </li>

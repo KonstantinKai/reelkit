@@ -18,9 +18,6 @@
   "exclude": ["**/*.spec.ts", "**/*.test.ts", "src/test-setup.ts"],
   "references": [
     {
-      "path": "../reelkit-core/tsconfig.lib.json"
-    },
-    {
       "path": "../reelkit-angular/tsconfig.lib.json"
     }
   ]

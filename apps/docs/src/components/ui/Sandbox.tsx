@@ -6,10 +6,12 @@ import { Eye, Code2, Maximize2, Minimize2, ExternalLink } from 'lucide-react';
 interface SandboxProps {
   code: string;
   language?: string;
-  children: ReactNode;
+  children?: ReactNode;
   title?: string;
   height?: number;
   stackblitzDeps?: Record<string, string>;
+  stackblitzStyles?: string[];
+  framework?: 'react' | 'angular';
 }
 
 type Tab = 'preview' | 'code';
@@ -21,48 +23,64 @@ export function Sandbox({
   title,
   height = 500,
   stackblitzDeps,
+  stackblitzStyles,
+  framework = 'react',
 }: SandboxProps) {
-  const [activeTab, setActiveTab] = useState<Tab>('preview');
+  const hasPreview = !!children;
+  const [activeTab, setActiveTab] = useState<Tab>(
+    hasPreview ? 'preview' : 'code',
+  );
   const [expanded, setExpanded] = useState(false);
   const { theme } = useTheme();
 
   const previewHeight = expanded ? 700 : height;
 
   const openInStackBlitz = useCallback(async () => {
-    const [sdk, { createStackBlitzProject }] = await Promise.all([
+    const [sdk, stackblitzUtils] = await Promise.all([
       import('@stackblitz/sdk'),
       import('../../utils/stackblitz'),
     ]);
 
-    const project = createStackBlitzProject({
-      title: title ?? 'ReelKitSandbox',
-      code,
-      dependencies: stackblitzDeps!,
-    });
+    const project =
+      framework === 'angular'
+        ? stackblitzUtils.createAngularStackBlitzProject({
+            title: title ?? 'ReelKit Angular Sandbox',
+            code,
+            dependencies: stackblitzDeps!,
+            styles: stackblitzStyles,
+          })
+        : stackblitzUtils.createStackBlitzProject({
+            title: title ?? 'ReelKit Sandbox',
+            code,
+            dependencies: stackblitzDeps!,
+          });
 
     sdk.default.openProject(project, {
-      openFile: 'src/App.tsx',
+      openFile:
+        framework === 'angular' ? 'src/app/app.component.ts' : 'src/App.tsx',
       newWindow: true,
       theme: theme === 'dark' ? 'dark' : 'light',
     });
-  }, [code, title, stackblitzDeps, theme]);
+  }, [code, title, stackblitzDeps, stackblitzStyles, framework, theme]);
 
   return (
     <div className="rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden bg-white dark:bg-slate-900 shadow-sm">
       {/* Header */}
       <div className="flex items-center justify-between gap-2 px-4 py-2.5 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 overflow-x-auto">
         <div className="flex items-center gap-1 shrink-0">
-          <button
-            onClick={() => setActiveTab('preview')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-              activeTab === 'preview'
-                ? 'bg-primary-500/10 text-primary-600 dark:text-primary-400'
-                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
-            }`}
-          >
-            <Eye size={14} />
-            Preview
-          </button>
+          {hasPreview && (
+            <button
+              onClick={() => setActiveTab('preview')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                activeTab === 'preview'
+                  ? 'bg-primary-500/10 text-primary-600 dark:text-primary-400'
+                  : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+              }`}
+            >
+              <Eye size={14} />
+              Preview
+            </button>
+          )}
           <button
             onClick={() => setActiveTab('code')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
@@ -89,7 +107,7 @@ export function Sandbox({
               StackBlitz
             </button>
           )}
-          {activeTab === 'preview' && (
+          {activeTab === 'preview' && hasPreview && (
             <button
               onClick={() => setExpanded(!expanded)}
               className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
@@ -102,7 +120,7 @@ export function Sandbox({
       </div>
 
       {/* Content */}
-      {activeTab === 'preview' ? (
+      {activeTab === 'preview' && hasPreview ? (
         <div
           className="relative bg-[#1a1a2e] dark:bg-[#0d0d1a] overflow-hidden transition-[height] duration-300"
           style={{ height: previewHeight }}

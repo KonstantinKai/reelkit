@@ -1,8 +1,10 @@
 {
+  "$schema": "https://json.schemastore.org/tsconfig",
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "outDir": "../../dist/out-tsc",
     "declaration": true,
+    "composite": true,
+    "outDir": "../../dist/out-tsc",
     "types": []
   },
   "include": ["src/**/*.ts"],
@@ -15,13 +17,16 @@
   ],
   "references": [
     {
+      "path": "../../packages/reelkit-angular-reel-player/tsconfig.lib.json"
+    },
+    {
       "path": "../../packages/reelkit-angular-lightbox/tsconfig.lib.json"
     },
     {
       "path": "../../packages/reelkit-angular/tsconfig.lib.json"
     },
     {
-      "path": "../../packages/reelkit-angular-reel-player/tsconfig.lib.json"
+      "path": "../../packages/reelkit-example-data/tsconfig.lib.json"
     }
   ]
 }

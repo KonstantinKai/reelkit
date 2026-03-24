@@ -1,8 +1,8 @@
 import { StrictMode } from 'react';
-import { BrowserRouter } from 'react-router-dom';
+import { RouterProvider } from 'react-router-dom';
 import * as ReactDOM from 'react-dom/client';
 import { ThemeProvider } from './context/ThemeContext';
-import App from './app/app';
+import { router } from './app/app';
 import './styles.css';
 
 const root = ReactDOM.createRoot(
@@ -11,10 +11,8 @@ const root = ReactDOM.createRoot(
 
 root.render(
   <StrictMode>
-    <BrowserRouter basename={import.meta.env.BASE_URL}>
-      <ThemeProvider>
-        <App />
-      </ThemeProvider>
-    </BrowserRouter>
+    <ThemeProvider>
+      <RouterProvider router={router} />
+    </ThemeProvider>
   </StrictMode>,
 );

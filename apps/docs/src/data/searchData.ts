@@ -162,6 +162,25 @@ export const searchItems: SearchItem[] = [
     ],
   },
   {
+    title: 'Troubleshooting',
+    path: '/docs/troubleshooting',
+    category: 'Resources',
+    keywords: [
+      'ios',
+      'safari',
+      'mobile',
+      'viewport',
+      'keyboard',
+      'bounce',
+      'scroll',
+      'zoom',
+      'video',
+      'sound',
+      'bug',
+      'fix',
+    ],
+  },
+  {
     title: 'Changelog',
     path: '/docs/changelog',
     category: 'Resources',
@@ -210,6 +229,9 @@ export const navItems = [
   },
   {
     title: 'Resources',
-    items: [{ label: 'Changelog', path: '/docs/changelog' }],
+    items: [
+      { label: 'Troubleshooting', path: '/docs/troubleshooting' },
+      { label: 'Changelog', path: '/docs/changelog' },
+    ],
   },
 ] as const;

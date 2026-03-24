@@ -5,8 +5,8 @@
   "scripts": {
     "build": "npx nx run-many -t build",
     "test": "npx nx run-many -t test",
-    "e2e": "npx nx run example-react-e2e:e2e",
-    "e2e:report": "npx playwright show-report dist/.playwright/apps/example-react-e2e/playwright-report",
+    "e2e:react": "npx nx run example-react-e2e:e2e",
+    "e2e:react:report": "npx playwright show-report dist/.playwright/apps/example-react-e2e/playwright-report",
     "e2e:angular": "npx nx run example-angular-e2e:e2e",
     "e2e:angular:report": "npx playwright show-report dist/.playwright/apps/example-angular-e2e/playwright-report",
     "typecheck": "npx nx run-many -t typecheck --no-tui",

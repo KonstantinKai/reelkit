@@ -20,7 +20,7 @@ import {
 } from '@angular/core';
 import { DomSanitizer, type SafeHtml } from '@angular/platform-browser';
 import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
-import { noop } from '@reelkit/core';
+import { noop } from '@reelkit/angular';
 import {
   BodyLockService,
   ReelComponent,

@@ -23,6 +23,10 @@ class SliderPage {
     return this.page.locator('button', { hasText: 'Go' });
   }
 
+  get sizeModeToggle() {
+    return this.page.locator('button', { hasText: /size:/ });
+  }
+
   get indicatorModeToggle() {
     return this.page.locator('[data-testid="indicator-mode-toggle"]');
   }
@@ -259,5 +263,54 @@ test.describe('Full Page Slider - Indicator', () => {
 
     await slider.indicatorModeToggle.click();
     await expect(slider.indicatorModeToggle).toHaveText(initialText);
+  });
+});
+
+test.describe('Full Page Slider - Size Mode Toggle', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/');
+  });
+
+  test('switching from explicit to auto size keeps slide visible', async ({
+    page,
+  }) => {
+    const slider = new SliderPage(page);
+
+    await expect(slider.slideTitle).toContainText('Slide 1');
+    await expect(slider.sizeModeToggle).toContainText('size:');
+
+    await slider.sizeModeToggle.click();
+    await slider.waitForAnimation();
+
+    await expect(slider.slideTitle).toContainText('Slide 1');
+    await expect(slider.sizeModeToggle).toContainText('auto');
+  });
+
+  test('switching back to explicit size keeps slide visible', async ({
+    page,
+  }) => {
+    const slider = new SliderPage(page);
+
+    await slider.sizeModeToggle.click();
+    await slider.waitForAnimation();
+    await expect(slider.sizeModeToggle).toContainText('auto');
+
+    await slider.sizeModeToggle.click();
+    await slider.waitForAnimation();
+
+    await expect(slider.slideTitle).toContainText('Slide 1');
+    await expect(slider.sizeModeToggle).not.toContainText('auto');
+  });
+
+  test('navigation works after switching to auto size', async ({ page }) => {
+    const slider = new SliderPage(page);
+
+    await slider.sizeModeToggle.click();
+    await slider.waitForAnimation();
+
+    await slider.clickNext();
+    await slider.waitForAnimation();
+
+    await expect(slider.slideTitle).toContainText('Slide 2');
   });
 });

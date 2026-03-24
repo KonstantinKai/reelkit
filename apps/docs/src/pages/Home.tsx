@@ -8,6 +8,9 @@ import {
   Paintbrush,
   Blocks,
   ArrowRight,
+  Box,
+  Film,
+  Image,
 } from 'lucide-react';
 import { CodeBlock } from '../components/ui/CodeBlock';
 import { BasicSliderDemo } from '../components/demos/BasicSliderDemo';
@@ -25,7 +28,7 @@ const highlights = [
     stat: '0',
     unit: 'deps',
     title: 'Zero Dependencies',
-    description: 'No runtime dependencies. Tiny bundle for production.',
+    description: 'No runtime dependencies. Core is ~4 kB gzipped.',
     color: 'text-accent-500',
   },
   {
@@ -60,7 +63,7 @@ const moreFeatures = [
   },
   {
     icon: <Paintbrush className="w-4 h-4" />,
-    title: 'Customizable',
+    title: 'Headless + Styled',
     color: 'text-accent-500',
   },
   {
@@ -115,10 +118,45 @@ export default function Home() {
                 experiences
               </p>
 
-              <p className="text-base text-slate-500 dark:text-slate-400 mb-8 max-w-lg">
+              <p className="text-base text-slate-500 dark:text-slate-400 mb-6 max-w-lg">
                 Framework-agnostic, virtualized, touch-first. Built for vertical
                 video feeds, story viewers, and fullscreen galleries.
               </p>
+
+              <div className="flex items-center justify-center lg:justify-start gap-5 mb-8">
+                <div className="flex flex-col items-center gap-1.5">
+                  <div className="w-12 h-12 rounded-xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 flex items-center justify-center">
+                    <svg
+                      viewBox="-11.5 -10.232 23 20.463"
+                      className="w-7 h-7 text-sky-500"
+                    >
+                      <circle r="2.05" fill="currentColor" />
+                      <g stroke="currentColor" fill="none" strokeWidth="1">
+                        <ellipse rx="11" ry="4.2" />
+                        <ellipse rx="11" ry="4.2" transform="rotate(60)" />
+                        <ellipse rx="11" ry="4.2" transform="rotate(120)" />
+                      </g>
+                    </svg>
+                  </div>
+                  <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                    React
+                  </span>
+                </div>
+                <div className="flex flex-col items-center gap-1.5">
+                  <div className="w-12 h-12 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 flex items-center justify-center">
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="w-7 h-7 text-rose-500"
+                      fill="currentColor"
+                    >
+                      <path d="M9.931 12.645h4.138l-2.07-4.908m0-7.737L.68 3.982l1.726 14.771L12 24l9.596-5.242L23.32 3.984 11.999.001zm7.064 18.31h-2.638l-1.422-3.503H8.996l-1.422 3.504h-2.64L12 2.65z" />
+                    </svg>
+                  </div>
+                  <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                    Angular
+                  </span>
+                </div>
+              </div>
 
               <div className="flex flex-col sm:flex-row items-center lg:items-start gap-3">
                 <Link
@@ -132,7 +170,7 @@ export default function Home() {
                   <span className="text-primary-600 dark:text-primary-400">
                     npm install
                   </span>{' '}
-                  @reelkit/react
+                  @reelkit/core
                 </div>
               </div>
             </div>
@@ -168,7 +206,7 @@ export default function Home() {
               Built for performance
             </h2>
             <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-              Everything you need, nothing you don't
+              Virtualized rendering, zero dependencies, 60fps transitions
             </p>
           </div>
 
@@ -224,17 +262,16 @@ export default function Home() {
             <span className="font-semibold text-slate-800 dark:text-slate-200">
               Reel
             </span>{' '}
-            — like the vertical video feeds you scroll through on Instagram
-            Reels and TikTok. One piece of content at a time, swiped away with a
-            flick.
+            — vertical video feeds like Instagram Reels and TikTok. One piece of
+            content at a time, swipe to advance.
           </p>
           <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
             <span className="font-semibold text-slate-800 dark:text-slate-200">
               Kit
             </span>{' '}
-            — a toolkit, not a monolith. Pick the pieces you need: a headless
-            core for full control, React components for quick setup, or
-            ready-made overlays for video players and image galleries.
+            — a modular set of packages. Use the headless core for full control,
+            framework bindings for quick setup, or ready-made overlays for video
+            players and image galleries.
           </p>
         </div>
       </section>
@@ -258,53 +295,138 @@ export default function Home() {
       {/* Packages Section */}
       <section className="py-24 bg-slate-50 dark:bg-slate-800/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
+          <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
               Available Packages
             </h2>
             <p className="text-lg text-slate-600 dark:text-slate-400">
-              Everything you need to build one-item sliders
+              A modular ecosystem — pick what you need
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Core — the foundation */}
+          <div className="max-w-lg mx-auto mb-6">
+            <div className="relative p-6 rounded-2xl border-2 border-primary-400 dark:border-primary-500 bg-gradient-to-br from-primary-50 to-accent-50 dark:from-primary-950/40 dark:to-accent-950/30 shadow-lg shadow-primary-500/10">
+              <span className="absolute -top-3 left-6 px-3 py-0.5 text-[11px] font-semibold uppercase tracking-widest bg-primary-500 text-white rounded-full">
+                Core
+              </span>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary-500/10 dark:bg-primary-400/10">
+                  <Box className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+                </div>
+                <h3 className="font-mono text-sm font-semibold text-primary-700 dark:text-primary-300">
+                  @reelkit/core
+                </h3>
+              </div>
+              <p className="text-slate-600 dark:text-slate-400 text-sm ml-12">
+                Framework-agnostic slider engine — virtualization, gestures,
+                keyboard, wheel, signals. Zero dependencies.
+              </p>
+            </div>
+          </div>
+
+          {/* Connector line from core */}
+          <div className="flex justify-center mb-6">
+            <div className="w-px h-8 bg-gradient-to-b from-primary-300 to-slate-300 dark:from-primary-600 dark:to-slate-600" />
+          </div>
+
+          {/* Framework bindings — data-driven for easy extension */}
+          <div className="flex flex-wrap justify-center gap-8">
             {[
               {
-                name: '@reelkit/core',
-                desc: 'Framework-agnostic core with all slider logic',
-              },
-              { name: '@reelkit/react', desc: 'React components and hooks' },
-              {
-                name: '@reelkit/react-reel-player',
-                desc: 'Full-screen player (React)',
-              },
-              {
-                name: '@reelkit/react-lightbox',
-                desc: 'Image & video lightbox (React)',
-              },
-              {
-                name: '@reelkit/angular',
-                desc: 'Angular standalone components',
-              },
-              {
-                name: '@reelkit/angular-reel-player',
-                desc: 'Full-screen player (Angular)',
+                framework: 'React',
+                pkg: '@reelkit/react',
+                desc: 'Components, hooks, and signal bridges for React',
+                color: 'sky',
+                extensions: [
+                  {
+                    name: '@reelkit/react-reel-player',
+                    desc: 'Full-screen video player overlay',
+                  },
+                  {
+                    name: '@reelkit/react-lightbox',
+                    desc: 'Image & video gallery overlay',
+                  },
+                ],
               },
               {
-                name: '@reelkit/angular-lightbox',
-                desc: 'Image & video lightbox (Angular)',
+                framework: 'Angular',
+                pkg: '@reelkit/angular',
+                desc: 'Standalone components with signal-based reactivity',
+                color: 'rose',
+                extensions: [
+                  {
+                    name: '@reelkit/angular-reel-player',
+                    desc: 'Full-screen video player overlay',
+                  },
+                  {
+                    name: '@reelkit/angular-lightbox',
+                    desc: 'Image & video gallery overlay',
+                  },
+                ],
               },
-            ].map((pkg) => (
+            ].map(({ framework, pkg, desc, color, extensions }) => (
               <div
-                key={pkg.name}
-                className="p-6 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-primary-300 dark:hover:border-primary-700 transition-colors"
+                key={framework}
+                className="w-full md:w-[calc(50%-1rem)] min-w-[280px] max-w-[520px]"
               >
-                <h3 className="font-mono text-sm font-semibold text-primary-600 dark:text-primary-400 mb-2">
-                  {pkg.name}
-                </h3>
-                <p className="text-slate-600 dark:text-slate-400 text-sm">
-                  {pkg.desc}
-                </p>
+                <div
+                  className={`relative p-5 rounded-2xl border border-${color}-300 dark:border-${color}-700 bg-${color}-50/60 dark:bg-${color}-950/20 mb-4`}
+                >
+                  <span
+                    className={`absolute -top-3 left-5 px-3 py-0.5 text-[11px] font-semibold uppercase tracking-widest bg-${color}-500 text-white rounded-full`}
+                  >
+                    {framework}
+                  </span>
+                  <div className="flex items-center gap-3 mb-1">
+                    <div
+                      className={`flex items-center justify-center w-8 h-8 rounded-lg bg-${color}-500/10 dark:bg-${color}-400/10`}
+                    >
+                      <Blocks
+                        className={`w-4 h-4 text-${color}-600 dark:text-${color}-400`}
+                      />
+                    </div>
+                    <h3
+                      className={`font-mono text-sm font-semibold text-${color}-700 dark:text-${color}-300`}
+                    >
+                      {pkg}
+                    </h3>
+                  </div>
+                  <p className="text-slate-600 dark:text-slate-400 text-sm ml-11">
+                    {desc}
+                  </p>
+                </div>
+
+                <div className="flex justify-center mb-4">
+                  <div
+                    className={`w-px h-5 bg-${color}-300 dark:bg-${color}-700`}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 gap-3">
+                  {extensions.map((ext) => (
+                    <div
+                      key={ext.name}
+                      className={`p-4 rounded-xl border border-${color}-200 dark:border-${color}-800 bg-white dark:bg-slate-800/60 hover:border-${color}-400 dark:hover:border-${color}-600 transition-colors`}
+                    >
+                      <div className="flex items-center gap-2 mb-1.5">
+                        {ext.name.includes('player') ? (
+                          <Film className={`w-4 h-4 text-${color}-500`} />
+                        ) : (
+                          <Image className={`w-4 h-4 text-${color}-500`} />
+                        )}
+                        <h4
+                          className={`font-mono text-xs font-semibold text-${color}-700 dark:text-${color}-300`}
+                        >
+                          {ext.name}
+                        </h4>
+                      </div>
+                      <p className="text-slate-500 dark:text-slate-400 text-xs">
+                        {ext.desc}
+                      </p>
+                    </div>
+                  ))}
+                </div>
               </div>
             ))}
           </div>

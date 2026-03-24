@@ -108,7 +108,7 @@ const sampleImages: LightboxItem[] = [
   template: `
     <div
       style="
-        min-height: 100vh;
+        min-height: 100dvh;
         background-color: #111;
         padding: 56px 16px 16px;
       "

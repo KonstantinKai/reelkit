@@ -10,11 +10,11 @@ import { RkVideoSlideComponent } from './video-slide.component';
 import { SoundStateService } from '../sound-state/sound-state.service';
 
 // ---------------------------------------------------------------------------
-// Mock @reelkit/core — factory must not reference variables outside the
+// Mock @reelkit/angular — factory must not reference variables outside the
 // factory because jest.mock() is hoisted before variable declarations.
 // We keep a module-level reference object that the factory populates lazily.
 // ---------------------------------------------------------------------------
-jest.mock('@reelkit/core', () => {
+jest.mock('@reelkit/angular', () => {
   const mockVid = document.createElement('video');
   Object.assign(mockVid, {
     play: jest.fn().mockResolvedValue(undefined),
@@ -39,7 +39,7 @@ jest.mock('@reelkit/core', () => {
 
 // Retrieve the shared mock objects created inside the factory above.
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const coreModule = require('@reelkit/core') as {
+const coreModule = require('@reelkit/angular') as {
   __mockShared: {
     getVideo: jest.Mock;
     capturedFrames: Map<string, string>;

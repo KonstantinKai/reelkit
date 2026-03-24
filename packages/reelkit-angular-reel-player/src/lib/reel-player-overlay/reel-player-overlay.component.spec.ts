@@ -9,24 +9,6 @@ import { RkReelPlayerOverlayComponent } from './reel-player-overlay.component';
 import { SoundStateService } from '../sound-state/sound-state.service';
 import type { ContentItem } from '../types';
 
-jest.mock('@reelkit/core', () => ({
-  createSharedVideo: jest.fn(() => ({
-    getVideo: jest.fn().mockReturnValue(
-      Object.assign(document.createElement('video'), {
-        play: jest.fn().mockResolvedValue(undefined),
-        pause: jest.fn(),
-        muted: false,
-        src: '',
-        style: { objectFit: '' },
-      }),
-    ),
-    capturedFrames: new Map(),
-    playbackPositions: new Map(),
-  })),
-  captureFrame: jest.fn().mockReturnValue(null),
-  noop: jest.fn(),
-}));
-
 jest.mock('@reelkit/angular', () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { Component, Directive, EventEmitter, Injectable, Input, Output } =
@@ -81,6 +63,21 @@ jest.mock('@reelkit/angular', () => {
     ReelIndicatorComponent,
     RkReelItemDirective,
     BodyLockService,
+    createSharedVideo: jest.fn(() => ({
+      getVideo: jest.fn().mockReturnValue(
+        Object.assign(document.createElement('video'), {
+          play: jest.fn().mockResolvedValue(undefined),
+          pause: jest.fn(),
+          muted: false,
+          src: '',
+          style: { objectFit: '' },
+        }),
+      ),
+      capturedFrames: new Map(),
+      playbackPositions: new Map(),
+    })),
+    captureFrame: jest.fn().mockReturnValue(null),
+    noop: jest.fn(),
   };
 });
 
