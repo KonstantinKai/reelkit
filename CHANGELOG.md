@@ -1,3 +1,15 @@
+## @reelkit/angular-lightbox@0.1.2 (2026-03-24)
+
+### 🩹 Fixes
+
+- Reset muted state when overlay closes
+
+## @reelkit/angular-reel-player@0.1.2 (2026-03-24)
+
+### 🩹 Fixes
+
+- Reset muted state when overlay closes
+
 ## @reelkit/angular-lightbox@0.1.1 (2026-03-24)
 
 ### 🩹 Fixes
