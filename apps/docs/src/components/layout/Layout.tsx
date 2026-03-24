@@ -3,6 +3,8 @@ import { Outlet, useLocation } from 'react-router-dom';
 import Header from './Header';
 import Sidebar from './Sidebar';
 import Footer from './Footer';
+import { ScrollToTop } from '../ScrollToTop';
+import { RouteProgressBar } from '../ui/RouteProgressBar';
 
 export default function Layout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -10,12 +12,10 @@ export default function Layout() {
 
   const showSidebar = location.pathname.startsWith('/docs');
 
-  // Close mobile sidebar on navigation
   useEffect(() => {
     setIsSidebarOpen(false);
   }, [location.pathname]);
 
-  // Lock body scroll when mobile sidebar is open
   useEffect(() => {
     if (isSidebarOpen) {
       document.body.style.overflow = 'hidden';
@@ -29,6 +29,8 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <ScrollToTop />
+      <RouteProgressBar />
       <Header
         onMenuToggle={
           showSidebar ? () => setIsSidebarOpen(!isSidebarOpen) : undefined

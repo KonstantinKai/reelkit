@@ -5,14 +5,14 @@ import {
   NgZone,
   OnDestroy,
   ViewEncapsulation,
-  effect,
+  afterRenderEffect,
   inject,
   input,
   signal,
   untracked,
   viewChild,
 } from '@angular/core';
-import { createSharedVideo, captureFrame } from '@reelkit/core';
+import { createSharedVideo, captureFrame } from '@reelkit/angular';
 
 /**
  * Module-scoped shared video singleton. One per lightbox usage.
@@ -27,6 +27,7 @@ const shared = createSharedVideo({
  * Mutated exclusively through {@link setLightboxVideoMuted}.
  */
 let currentMuted = true;
+let activeToken: symbol | null = null;
 
 /**
  * Set the muted state on the shared video element directly.
@@ -133,8 +134,7 @@ export class RkLightboxVideoSlideComponent implements OnDestroy {
   private deactivate: (() => void) | null = null;
 
   constructor() {
-    effect(() => {
-      // Read reactive inputs to establish tracking dependencies first.
+    afterRenderEffect(() => {
       const active = this.isActive();
       const src = this.src();
       const slideKey = this.slideKey();
@@ -193,29 +193,30 @@ export class RkLightboxVideoSlideComponent implements OnDestroy {
       });
     };
 
-    this.ngZone.runOutsideAngular(() => {
-      video.addEventListener('canplay', onCanPlay);
-      video.addEventListener('waiting', onWaiting);
-      video.addEventListener('playing', onPlaying);
+    const token = Symbol();
+    activeToken = token;
 
-      video.src = src;
-      video.muted = currentMuted;
-      video.style.objectFit = 'contain';
-      video.currentTime = shared.playbackPositions.get(slideKey) ?? 0;
+    video.addEventListener('canplay', onCanPlay);
+    video.addEventListener('waiting', onWaiting);
+    video.addEventListener('playing', onPlaying);
 
-      container.appendChild(video);
-      video.play().catch(() => {
-        // Autoplay was blocked or the source is unplayable. Surface the error
-        // state so the poster remains visible and the loader is hidden.
-        this.ngZone.run(() => {
-          this.isLoading.set(false);
-          this.hasPlayError.set(true);
-        });
-      });
-    });
+    video.pause();
+    video.src = src;
+    video.muted = currentMuted;
+    video.style.objectFit = 'contain';
+    video.currentTime = shared.playbackPositions.get(slideKey) ?? 0;
+
+    container.appendChild(video);
+    video.play().catch(() =>
+      this.ngZone.run(() => {
+        this.isLoading.set(false);
+        this.hasPlayError.set(true);
+      }),
+    );
 
     this.deactivate = () =>
       this.deactivateVideo(
+        token,
         video,
         container,
         slideKey,
@@ -226,6 +227,7 @@ export class RkLightboxVideoSlideComponent implements OnDestroy {
   }
 
   private deactivateVideo(
+    token: symbol,
     video: HTMLVideoElement,
     container: HTMLDivElement,
     slideKey: string,
@@ -244,13 +246,15 @@ export class RkLightboxVideoSlideComponent implements OnDestroy {
       shared.capturedFrames.set(slideKey, frame);
     }
 
+    if (activeToken === token) {
+      video.pause();
+      activeToken = null;
+    }
+
     if (video.parentNode === container) {
       container.removeChild(video);
     }
 
-    // Reset loading/error state synchronously so that a rapid re-activation on
-    // the same slide does not observe a stale isLoading=true or hasPlayError=true
-    // blip caused by a previous ngZone.run() microtask completing after activate().
     this.ngZone.run(() => {
       this.isLoading.set(false);
       this.showPoster.set(true);

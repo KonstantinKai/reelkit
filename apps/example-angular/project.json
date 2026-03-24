@@ -64,6 +64,13 @@
       },
       "defaultConfiguration": "development"
     },
+    "dev": {
+      "continuous": true,
+      "executor": "@angular/build:dev-server",
+      "options": {
+        "buildTarget": "example-angular:build:development"
+      }
+    },
     "extract-i18n": {
       "executor": "@angular/build:extract-i18n",
       "options": {
@@ -75,6 +82,7 @@
     },
     "test": {
       "executor": "@nx/jest:jest",
+      "cache": true,
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
         "jestConfig": "apps/example-angular/jest.config.cts",

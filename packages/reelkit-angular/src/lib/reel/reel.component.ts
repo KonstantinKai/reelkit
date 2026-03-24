@@ -96,8 +96,8 @@ import type { ReelApi } from './reel.types';
       [attr.aria-busy]="!hasMeasured() ? 'true' : null"
       [class]="className()"
       style="user-select: none; -webkit-user-select: none; position: relative; overflow: hidden;"
-      [style.width]="size() ? size()![0] + 'px' : null"
-      [style.height]="size() ? size()![1] + 'px' : null"
+      [style.width]="size() ? size()![0] + 'px' : '100%'"
+      [style.height]="size() ? size()![1] + 'px' : '100%'"
     >
       @if (hasMeasured()) {
         <div
@@ -508,7 +508,7 @@ export class ReelComponent implements OnInit, AfterViewInit {
       this.controller.observe();
     }
     this.apiReady.emit(this.buildApi());
-    this.startAutoMeasureIfNeeded(hostElement);
+    this.registerAutoMeasureEffect(hostElement);
   }
 
   private buildApi(): ReelApi {
@@ -523,16 +523,21 @@ export class ReelComponent implements OnInit, AfterViewInit {
     };
   }
 
-  private startAutoMeasureIfNeeded(hostElement: HTMLElement): void {
-    if (this.size() !== undefined) return;
-    // ResizeObserver is a browser-only API — skip on the server to stay SSR-safe.
+  private registerAutoMeasureEffect(hostElement: HTMLElement): void {
     if (!this.isBrowser) return;
 
-    const observer = new ResizeObserver((entries) =>
-      this.measureAndUpdateSize(hostElement, entries),
-    );
-    observer.observe(hostElement);
-    this.destroyRef.onDestroy(() => observer.disconnect());
+    runInInjectionContext(this.injector, () => {
+      effect((onCleanup) => {
+        if (this.size() !== undefined) return;
+
+        const observer = new ResizeObserver((entries) =>
+          this.measureAndUpdateSize(hostElement, entries),
+        );
+        observer.observe(hostElement);
+
+        onCleanup(() => observer.disconnect());
+      });
+    });
   }
 
   private measureAndUpdateSize(

@@ -25,7 +25,7 @@ import {
   createSliderController,
   animate,
   type SliderController,
-} from '@reelkit/core';
+} from '@reelkit/angular';
 import {
   LucideAngularModule,
   LucideIconProvider,

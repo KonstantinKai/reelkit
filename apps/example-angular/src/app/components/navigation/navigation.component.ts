@@ -35,7 +35,8 @@ const links = [
         position: fixed;
         top: 0;
         left: 0;
-        right: 0;
+        width: 100%;
+        box-sizing: border-box;
         z-index: 1000;
         display: flex;
         gap: 6px;

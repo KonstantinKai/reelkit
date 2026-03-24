@@ -1,6 +1,6 @@
-import { Link } from 'react-router-dom';
 import { Callout } from '../../components/ui/Callout';
 import { CodeBlock } from '../../components/ui/CodeBlock';
+import { Sandbox } from '../../components/ui/Sandbox';
 import { FeatureCardGrid } from '../../components/ui/FeatureCard';
 import {
   Image,
@@ -272,18 +272,23 @@ export default function AngularLightbox() {
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Installation</h2>
         <CodeBlock
-          code={`npm install @reelkit/angular-lightbox`}
+          code={`npm install @reelkit/angular-lightbox @reelkit/angular lucide-angular`}
           language="bash"
         />
-        <Callout type="info" className="mt-4">
-          <code className="text-sm font-mono">@reelkit/angular-lightbox</code>{' '}
-          depends on <code className="text-sm font-mono">@reelkit/angular</code>{' '}
-          and <code className="text-sm font-mono">lucide-angular</code>. Install
-          them if not already present:
-          <CodeBlock
-            code={`npm install @reelkit/angular lucide-angular`}
-            language="bash"
-          />
+        <Callout type="info" title="Icons" className="mt-4">
+          The default controls use{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            lucide-angular
+          </code>{' '}
+          for icons. If you prefer a different icon library, use the{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            rkLightboxControls
+          </code>{' '}
+          and{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            rkLightboxNavigation
+          </code>{' '}
+          template slots to provide your own.
         </Callout>
       </section>
 
@@ -300,7 +305,7 @@ export default function AngularLightbox() {
           </code>{' '}
           array.
         </p>
-        <CodeBlock
+        <Sandbox
           code={`import { Component } from '@angular/core';
 import {
   RkLightboxOverlayComponent,
@@ -349,6 +354,15 @@ export class GalleryComponent {
   openIndex: number | null = null;
 }`}
           language="typescript"
+          title="gallery.component.ts"
+          framework="angular"
+          stackblitzDeps={{
+            '@reelkit/angular-lightbox': '0.1.0',
+            'lucide-angular': '>=0.460.0',
+          }}
+          stackblitzStyles={[
+            'node_modules/@reelkit/angular-lightbox/styles.css',
+          ]}
         />
       </section>
 
@@ -726,45 +740,6 @@ export class CustomControlsComponent {
             </tbody>
           </table>
         </div>
-      </section>
-
-      <section>
-        <h2 className="text-2xl font-bold mb-4">Next Steps</h2>
-        <ul className="space-y-3">
-          <li>
-            <Link
-              to="/docs/angular/guide"
-              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
-            >
-              Angular Guide
-            </Link>
-            <span className="text-slate-500"> - rk-reel basics</span>
-          </li>
-          <li>
-            <Link
-              to="/docs/angular-reel-player"
-              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
-            >
-              Angular Reel Player
-            </Link>
-            <span className="text-slate-500">
-              {' '}
-              - TikTok/Reels-style video player
-            </span>
-          </li>
-          <li>
-            <Link
-              to="/docs/angular/api"
-              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
-            >
-              Angular API Reference
-            </Link>
-            <span className="text-slate-500">
-              {' '}
-              - full API docs for @reelkit/angular
-            </span>
-          </li>
-        </ul>
       </section>
     </div>
   );

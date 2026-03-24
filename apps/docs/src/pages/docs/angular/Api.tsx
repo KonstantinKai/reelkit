@@ -778,6 +778,13 @@ import type {
   ReelApi,
   ReelContextValue,
   RkReelItemContext,
+  CoreSignal,
+  Subscribable,
+  AnimatedValue,
+  RangeExtractor,
+  SliderDirection,
+  GestureController,
+  SliderController,
 } from '@reelkit/angular';
 
 // Context
@@ -789,15 +796,24 @@ import { BodyLockService } from '@reelkit/angular';
 // Signal bridges
 import { toAngularSignal, animatedSignalBridge } from '@reelkit/angular';
 
-// Core re-exports (signal primitives, utilities)
+// Core re-exports (signal primitives, utilities, controllers)
 import {
   createSignal,
   createComputed,
   reaction,
   batch,
+  first,
+  last,
+  clamp,
+  extractRange,
+  noop,
+  animate,
   defaultRangeExtractor,
   captureFrame,
   createSharedVideo,
+  createGestureController,
+  createSliderController,
+  createDefaultKeyExtractorForLoop,
 } from '@reelkit/angular';`}
           language="typescript"
         />

@@ -63,17 +63,6 @@ const mockGestureController = {
   updateEvents: jest.fn(),
 };
 
-jest.mock('@reelkit/core', () => ({
-  createSliderController: jest.fn(() => mockSlider),
-  createGestureController: jest.fn(() => mockGestureController),
-  reaction: jest.fn(() => () => {
-    /* noop */
-  }),
-  animate: jest.fn(() => () => {
-    /* noop */
-  }),
-}));
-
 jest.mock('@reelkit/angular', () => {
   const { Injectable, signal: angSignal } = jest.requireActual(
     '@angular/core',
@@ -91,6 +80,14 @@ jest.mock('@reelkit/angular', () => {
       angSignal(source.value),
     ),
     animatedSignalBridge: jest.fn(() => angSignal(0)),
+    createSliderController: jest.fn(() => mockSlider),
+    createGestureController: jest.fn(() => mockGestureController),
+    reaction: jest.fn(() => () => {
+      /* noop */
+    }),
+    animate: jest.fn(() => () => {
+      /* noop */
+    }),
   };
 });
 

@@ -35,9 +35,6 @@
   "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"],
   "references": [
     {
-      "path": "../reelkit-core/tsconfig.lib.json"
-    },
-    {
       "path": "../reelkit-react/tsconfig.lib.json"
     }
   ]

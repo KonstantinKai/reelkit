@@ -17,7 +17,7 @@ npm run build
 npx nx dev example-react
 
 # Run the Angular example app (localhost:4200)
-npx nx serve example-angular
+npx nx dev example-angular
 
 # Run the Next.js example app (localhost:3000)
 npx nx dev example-next
@@ -31,9 +31,9 @@ npm test
 # Run tests for a specific package
 npx nx test @reelkit/core
 npx nx test @reelkit/react
-npx nx test reelkit-angular
+npx nx test @reelkit/angular
 npx nx test @reelkit/angular-lightbox
-npx nx test reelkit-angular-reel-player
+npx nx test @reelkit/angular-reel-player
 
 # Format + lint + typecheck
 npm run check

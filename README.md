@@ -23,7 +23,7 @@
 - **Virtualized** — only 3 slides in DOM, handles 10,000+ items
 - **Touch first** — native swipe with momentum and snap
 - **Zero dependencies** — ~4.0 kB gzip core
-- **Keyboard & wheel** — arrow keys, scroll, and swipe all work out of the box
+- **Keyboard & wheel** — arrow keys, scroll, and swipe navigation built in
 - **Loop mode** — infinite circular scrolling
 - **SSR ready** — works with Next.js, Remix, and any SSR setup
 - **Auto-size** — omit size prop, uses CSS + ResizeObserver
@@ -31,12 +31,15 @@
 
 ## Packages
 
-| Package                                                          | Description                      | JS (gzip) |
-| ---------------------------------------------------------------- | -------------------------------- | --------- |
-| [@reelkit/core](packages/reelkit-core)                           | Framework-agnostic slider engine | 4.0 kB    |
-| [@reelkit/react](packages/reelkit-react)                         | React components and hooks       | 2.9 kB    |
-| [@reelkit/react-reel-player](packages/reelkit-react-reel-player) | Full-screen video reel player    | 3.7 kB    |
-| [@reelkit/react-lightbox](packages/reelkit-react-lightbox)       | Image & video gallery lightbox   | 3.2 kB    |
+| Package                                                              | Description                      | JS (gzip) |
+| -------------------------------------------------------------------- | -------------------------------- | --------- |
+| [@reelkit/core](packages/reelkit-core)                               | Framework-agnostic slider engine | 4.0 kB    |
+| [@reelkit/react](packages/reelkit-react)                             | React components and hooks       | 2.9 kB    |
+| [@reelkit/react-reel-player](packages/reelkit-react-reel-player)     | Full-screen video reel player    | 3.7 kB    |
+| [@reelkit/react-lightbox](packages/reelkit-react-lightbox)           | Image & video gallery lightbox   | 3.2 kB    |
+| [@reelkit/angular](packages/reelkit-angular)                         | Angular standalone components    | 12.3 kB   |
+| [@reelkit/angular-reel-player](packages/reelkit-angular-reel-player) | Full-screen video reel player    | 15.8 kB   |
+| [@reelkit/angular-lightbox](packages/reelkit-angular-lightbox)       | Image & video gallery lightbox   | 17.9 kB   |
 
 ## Try It
 

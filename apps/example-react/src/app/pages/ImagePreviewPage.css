@@ -1,5 +1,5 @@
 .image-gallery-page {
-  min-height: 100vh;
+  min-height: 100dvh;
   padding: 56px 24px 24px;
   background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
 }

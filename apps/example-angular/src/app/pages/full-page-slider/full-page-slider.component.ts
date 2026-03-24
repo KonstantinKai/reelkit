@@ -49,7 +49,7 @@ const getSlideContent = (
     FormsModule,
   ],
   template: `
-    <div style="width: 100vw; height: 100dvh; overflow: hidden;">
+    <div style="width: 100%; height: 100dvh; overflow: hidden;">
       <rk-reel
         [count]="totalSlides"
         [size]="sizeMode() === 'explicit' ? explicitSize() : undefined"
@@ -165,7 +165,8 @@ const getSlideContent = (
               [min]="1"
               [max]="totalSlides"
               [(ngModel)]="goToValue"
-              (keydown.enter)="goToSlide()"
+              (keydown.enter)="goToSlide(); $event.target.blur()"
+              (blur)="onInputBlur()"
               placeholder="Slide #"
               style="
                 padding: 10px 14px;
@@ -321,5 +322,10 @@ export class FullPageSliderComponent implements OnInit, OnDestroy {
     if (index >= 0 && index < TOTAL_SLIDES) {
       this.reelApi?.goTo(index, true);
     }
+  }
+
+  protected onInputBlur(): void {
+    window.scrollTo(0, 0);
+    this.reelApi?.adjust();
   }
 }

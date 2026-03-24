@@ -16,11 +16,11 @@ const mockController = {
   updateEvents: jest.fn(),
 };
 
-jest.mock('@reelkit/core', () => ({
+jest.mock('@reelkit/angular', () => ({
   createGestureController: jest.fn(() => mockController),
 }));
 
-import { createGestureController } from '@reelkit/core';
+import { createGestureController } from '@reelkit/angular';
 
 @Component({
   template: `<div [rkSwipeToClose]="enabled()" (dismissed)="onDismissed()">

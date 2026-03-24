@@ -67,7 +67,7 @@ function FullPageSlider() {
   }, [sizeMode]);
 
   return (
-    <div style={{ width: '100vw', height: '100dvh', overflow: 'hidden' }}>
+    <div style={{ width: '100%', height: '100dvh', overflow: 'hidden' }}>
       <Reel
         count={TOTAL_SLIDES}
         {...(sizeMode === 'explicit' ? { size } : {})}
@@ -199,7 +199,12 @@ function FullPageSlider() {
                   if (index >= 0 && index < TOTAL_SLIDES) {
                     sliderRef.current?.goTo(index, true);
                   }
+                  (e.target as HTMLInputElement).blur();
                 }
+              }}
+              onBlur={() => {
+                window.scrollTo(0, 0);
+                sliderRef.current?.adjust();
               }}
               placeholder="Slide #"
               style={{

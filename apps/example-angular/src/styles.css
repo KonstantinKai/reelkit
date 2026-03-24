@@ -9,6 +9,8 @@
 html,
 body {
   height: 100%;
+  overflow-x: hidden;
+  overscroll-behavior: none;
   background-color: #111;
   color: #fff;
   font-family:

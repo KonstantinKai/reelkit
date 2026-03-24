@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { CodeBlock } from '../../../components/ui/CodeBlock';
+import { Sandbox } from '../../../components/ui/Sandbox';
 import { FeatureCardGrid } from '../../../components/ui/FeatureCard';
 import {
   ArrowRight,
@@ -94,15 +95,13 @@ export default function AngularGuide() {
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
             rk-reel
           </code>{' '}
-          component is the main container that manages slider state, handles
-          touch gestures, keyboard navigation, and animations. It is a
-          standalone component with{' '}
+          component wraps the core slider controller. Standalone, with{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
             ChangeDetectionStrategy.OnPush
           </code>
           .
         </p>
-        <CodeBlock
+        <Sandbox
           code={`import { Component } from '@angular/core';
 import { ReelComponent, ReelIndicatorComponent, RkReelItemDirective } from '@reelkit/angular';
 
@@ -120,8 +119,9 @@ import { ReelComponent, ReelIndicatorComponent, RkReelItemDirective } from '@ree
       <ng-template rkReelItem let-i let-size="size">
         <div [style.width.px]="size[0]" [style.height.px]="size[1]"
              [style.background]="items[i].color"
-             style="display:flex;align-items:center;justify-content:center;color:#fff">
-          {{ items[i].title }}
+             style="display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff">
+          <div style="font-size:1.5rem;font-weight:bold">{{ items[i].title }}</div>
+          <div style="font-size:0.875rem;opacity:0.8">{{ items[i].subtitle }}</div>
         </div>
       </ng-template>
 
@@ -131,10 +131,12 @@ import { ReelComponent, ReelIndicatorComponent, RkReelItemDirective } from '@ree
 })
 export class AppComponent {
   items = [
-    { title: 'Welcome', color: '#6366f1' },
-    { title: 'Features', color: '#8b5cf6' },
-    { title: 'Pricing',  color: '#ec4899' },
-    { title: 'Contact',  color: '#14b8a6' },
+    { title: 'Virtualized', subtitle: 'Only 3 slides in DOM', color: '#6366f1' },
+    { title: 'Touch First', subtitle: 'Native swipe gestures', color: '#8b5cf6' },
+    { title: 'Zero Deps', subtitle: 'Tiny bundle size', color: '#7c3aed' },
+    { title: 'Keyboard Nav', subtitle: 'Full a11y support', color: '#ec4899' },
+    { title: 'SSR Ready', subtitle: 'Works everywhere', color: '#14b8a6' },
+    { title: '60fps', subtitle: 'Smooth animations', color: '#f59e0b' },
   ];
 
   onAfterChange(event: { index: number; indexInRange: number }) {
@@ -142,6 +144,9 @@ export class AppComponent {
   }
 }`}
           language="typescript"
+          title="app.component.ts"
+          framework="angular"
+          stackblitzDeps={{ '@reelkit/angular': '0.1.0' }}
         />
       </section>
 
@@ -209,7 +214,7 @@ export class AppComponent {
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Navigation</h2>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
-          reelkit supports multiple navigation methods out of the box:
+          Built-in navigation methods:
         </p>
 
         <ul className="space-y-3 mb-6">
