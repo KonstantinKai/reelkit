@@ -358,7 +358,7 @@ export class GalleryComponent {
           title="gallery.component.ts"
           framework="angular"
           stackblitzDeps={{
-            '@reelkit/angular-lightbox': '0.1.0',
+            '@reelkit/angular-lightbox': '0.1.1',
             'lucide-angular': '>=0.460.0',
           }}
           stackblitzStyles={['@reelkit/angular-lightbox/styles.css']}

@@ -21,7 +21,7 @@
 
 ### ❤️ Thanks
 
-- @eurusik
+- [@eurusik](https://github.com/eurusik)
 
 ## @reelkit/angular-lightbox@0.1.0 (2026-03-24)
 
@@ -33,7 +33,7 @@
 
 ### ❤️ Thanks
 
-- @eurusik
+- [@eurusik](https://github.com/eurusik)
 
 ## @reelkit/angular-reel-player@0.1.0 (2026-03-24)
 
@@ -46,7 +46,7 @@
 
 ### ❤️ Thanks
 
-- @eurusik
+- [@eurusik](https://github.com/eurusik)
 
 ## @reelkit/core@0.2.2 (2026-03-24)
 
