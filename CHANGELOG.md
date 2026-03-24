@@ -1,8 +1,11 @@
 ## @reelkit/angular@0.1.0 (2026-03-24)
 
-### 🚀 Features
+### 🎉 Initial Release
 
-- Angular bindings for ReelKit — Reel and ReelIndicator components with signal bridge, context injection, and body scroll lock
+- Reel component with signal bridge and context injection
+- ReelIndicator with auto-connect via RK_REEL_CONTEXT
+- BodyLockService for scroll-locking overlays
+- Standalone components, OnPush, signal inputs/outputs
 
 ### ❤️ Thanks
 
@@ -10,31 +13,28 @@
 
 ## @reelkit/angular-lightbox@0.1.0 (2026-03-24)
 
-### 🚀 Features
+### 🎉 Initial Release
 
-- Full-screen image and video gallery lightbox for Angular with swipe-to-close, fullscreen toggle, and template slots
+- Full-screen image and video gallery lightbox overlay
+- Swipe-to-close, fullscreen toggle, keyboard navigation
+- Template slot directives for custom controls, navigation, and info overlays
 
 ### ❤️ Thanks
 
 - @eurusik
-
-### 🧱 Updated Dependencies
-
-- Updated @reelkit/angular to 0.1.0
 
 ## @reelkit/angular-reel-player@0.1.0 (2026-03-24)
 
-### 🚀 Features
+### 🎉 Initial Release
 
-- TikTok/Reels-style vertical video player for Angular with nested carousel, shared video element, and sound state management
+- TikTok/Reels-style vertical video player overlay
+- Nested horizontal carousel for multi-media posts
+- Shared video element for iOS sound continuity
+- SoundStateService for mute/unmute management
 
 ### ❤️ Thanks
 
 - @eurusik
-
-### 🧱 Updated Dependencies
-
-- Updated @reelkit/angular to 0.1.0
 
 ## @reelkit/core@0.2.2 (2026-03-24)
 
