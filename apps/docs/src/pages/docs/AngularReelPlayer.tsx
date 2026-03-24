@@ -305,6 +305,7 @@ const content: ContentItem[] = [
 ];
 
 @Component({
+  selector: 'app-root',
   standalone: true,
   imports: [RkReelPlayerOverlayComponent],
   template: \`
@@ -345,9 +346,7 @@ export class ReelFeedComponent {
           title="reel-feed.component.ts"
           framework="angular"
           stackblitzDeps={{ '@reelkit/angular-reel-player': '0.1.0' }}
-          stackblitzStyles={[
-            'node_modules/@reelkit/angular-reel-player/styles.css',
-          ]}
+          stackblitzStyles={['@reelkit/angular-reel-player/styles.css']}
         />
       </section>
 
@@ -409,6 +408,7 @@ export class ReelFeedComponent {
 } from '@reelkit/angular-reel-player';
 
 @Component({
+  selector: 'app-root',
   standalone: true,
   imports: [
     RkReelPlayerOverlayComponent,

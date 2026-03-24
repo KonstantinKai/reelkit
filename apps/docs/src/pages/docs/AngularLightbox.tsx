@@ -330,6 +330,7 @@ const images: LightboxItem[] = [
 ];
 
 @Component({
+  selector: 'app-root',
   standalone: true,
   imports: [RkLightboxOverlayComponent],
   template: \`
@@ -360,9 +361,7 @@ export class GalleryComponent {
             '@reelkit/angular-lightbox': '0.1.0',
             'lucide-angular': '>=0.460.0',
           }}
-          stackblitzStyles={[
-            'node_modules/@reelkit/angular-lightbox/styles.css',
-          ]}
+          stackblitzStyles={['@reelkit/angular-lightbox/styles.css']}
         />
       </section>
 
@@ -423,6 +422,7 @@ export class GalleryComponent {
 } from '@reelkit/angular-lightbox';
 
 @Component({
+  selector: 'app-root',
   standalone: true,
   imports: [
     RkLightboxOverlayComponent,
@@ -504,6 +504,7 @@ export class CustomLightboxComponent {
 } from '@reelkit/angular-lightbox';
 
 @Component({
+  selector: 'app-root',
   standalone: true,
   imports: [
     RkLightboxOverlayComponent,
