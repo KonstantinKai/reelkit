@@ -1,3 +1,28 @@
+## @reelkit/core@0.2.1 (2026-03-21)
+
+### 🩹 Fixes
+
+- Custom rangeExtractor output is now clamped to 3 slides to preserve virtualization
+
+## @reelkit/react@0.2.1 (2026-03-21)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.2.1
+
+## @reelkit/react-lightbox@0.2.1 (2026-03-21)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/react to 0.2.1
+- Updated @reelkit/core to 0.2.1
+
+## @reelkit/react-reel-player@0.2.1 (2026-03-21)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/react to 0.2.1
+
 ## @reelkit/core@0.2.0 (2026-03-18)
 
 ### 🚀 Features

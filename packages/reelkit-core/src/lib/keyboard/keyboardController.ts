@@ -44,7 +44,6 @@ export const createKeyboardController = (
     const key = NAV_KEY_CODES.get(event.key) ?? null;
     if (key === null) return;
 
-    // Apply throttling if configured
     if (throttleMs > 0) {
       const now = Date.now();
       if (now - lastKeyPressTime < throttleMs) {
@@ -59,7 +58,6 @@ export const createKeyboardController = (
       return;
     }
 
-    // Check filter
     if (filter.length === 0 || filter.includes(key)) {
       events.onKeyPress(key, event);
     }

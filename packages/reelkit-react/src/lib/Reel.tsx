@@ -266,7 +266,6 @@ const Element = ({
   const primarySize = isHorizontal ? first(size) : last(size);
   const ref = useRef<HTMLDivElement>(null);
 
-  // Create stable state once
   const [controller, itemBuilder, reelContextValue] = useState(() => {
     const ctrl = createSliderController(
       {
@@ -317,7 +316,6 @@ const Element = ({
     return [ctrl, builder, ctxValue] as const;
   })[0];
 
-  // Update controller with new props
   useEffect(() => {
     reelContextValue.count.value = props.count;
     controller.updateConfig({
@@ -337,12 +335,10 @@ const Element = ({
     rangeExtractor,
   ]);
 
-  // Update primary size
   useEffect(() => {
     controller.setPrimarySize(primarySize);
   }, [primarySize]);
 
-  // Handle keyboard navigation
   useEffect(() => {
     if (useNavKeys) {
       controller.observe();
@@ -351,7 +347,6 @@ const Element = ({
     }
   }, [useNavKeys]);
 
-  // Attach/detach controller and expose public API
   useEffect(() => {
     if (ref.current) {
       controller.attach(ref.current);
