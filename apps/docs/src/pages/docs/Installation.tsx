@@ -53,7 +53,7 @@ const bundleSizes = [
   {
     name: '@reelkit/core',
     js: '9.9 kB',
-    gzip: '4.0 kB',
+    gzip: '4.1 kB',
     css: '-',
     cssGzip: '-',
   },
@@ -80,8 +80,8 @@ const bundleSizes = [
   },
   {
     name: '@reelkit/angular',
-    js: '55.4 kB',
-    gzip: '12.3 kB',
+    js: '55.5 kB',
+    gzip: '12.2 kB',
     css: '-',
     cssGzip: '-',
   },
@@ -104,7 +104,7 @@ const bundleSizes = [
 const comparison = [
   {
     name: 'ReelKit (core + react)',
-    gzip: '6.9 kB',
+    gzip: '7.0 kB',
     virtualization: true,
     notes: 'Zero dependencies',
   },
