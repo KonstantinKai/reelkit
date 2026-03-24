@@ -44,6 +44,7 @@ import {
 } from '../template-slots/lightbox-template-slots';
 import { RkSwipeToCloseDirective } from '../swipe-to-close/swipe-to-close.directive';
 import { RkCloseButtonComponent } from '../lightbox-controls/close-button.component';
+import { setLightboxVideoMuted } from '../lightbox-video-slide/lightbox-video-slide.component';
 import { RkCounterComponent } from '../lightbox-controls/counter.component';
 import { RkFullscreenButtonComponent } from '../lightbox-controls/fullscreen-button.component';
 import type {
@@ -563,6 +564,7 @@ export class RkLightboxOverlayComponent {
     if (this.fullscreenService.isFullscreen()) {
       this.fullscreenService.exit();
     }
+    setLightboxVideoMuted(true);
     this.closed.emit();
   }
 
