@@ -55,6 +55,10 @@ export function Sandbox({
             dependencies: stackblitzDeps!,
           });
 
+    window.plausible?.('StackBlitz Open', {
+      props: { title: title ?? 'Untitled', framework },
+    });
+
     sdk.default.openProject(project, {
       openFile:
         framework === 'angular' ? 'src/app/app.component.ts' : 'src/App.tsx',
