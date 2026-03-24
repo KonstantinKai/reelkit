@@ -39,7 +39,7 @@
 | [@reelkit/react-lightbox](packages/reelkit-react-lightbox)           | Image & video gallery lightbox   | 3.2 kB    |
 | [@reelkit/angular](packages/reelkit-angular)                         | Angular standalone components    | 12.2 kB   |
 | [@reelkit/angular-reel-player](packages/reelkit-angular-reel-player) | Full-screen video reel player    | 15.8 kB   |
-| [@reelkit/angular-lightbox](packages/reelkit-angular-lightbox)       | Image & video gallery lightbox   | 17.9 kB   |
+| [@reelkit/angular-lightbox](packages/reelkit-angular-lightbox)       | Image & video gallery lightbox   | 18.0 kB   |
 
 ## Try It
 

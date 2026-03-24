@@ -6,7 +6,7 @@
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
 
-Image gallery lightbox for Angular — opens full-screen with swipe navigation, keyboard controls, and transition effects. Every part of the UI is replaceable via template slots. ~17.9 kB gzip.
+Image gallery lightbox for Angular — opens full-screen with swipe navigation, keyboard controls, and transition effects. Every part of the UI is replaceable via template slots. ~18.0 kB gzip.
 
 ## Installation
 
