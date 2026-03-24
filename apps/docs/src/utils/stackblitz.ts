@@ -7,8 +7,8 @@ const REELKIT_PACKAGES: Record<string, string> = {
   '@reelkit/react-reel-player': '0.2.1',
   '@reelkit/react-lightbox': '0.2.1',
   '@reelkit/angular': '0.1.0',
-  '@reelkit/angular-reel-player': '0.1.1',
-  '@reelkit/angular-lightbox': '0.1.1',
+  '@reelkit/angular-reel-player': '0.1.2',
+  '@reelkit/angular-lightbox': '0.1.2',
 };
 
 const PACKAGES_REQUIRING_CORE = [
