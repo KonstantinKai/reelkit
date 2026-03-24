@@ -332,7 +332,7 @@ const content: ContentItem[] = [
     />
   \`,
 })
-export class ReelFeedComponent {
+export class AppComponent {
   readonly content = content;
   readonly isOpen = signal(false);
   readonly startIndex = signal(0);
@@ -461,7 +461,7 @@ export class ReelFeedComponent {
     </rk-reel-player-overlay>
   \`,
 })
-export class CustomPlayerComponent {
+export class AppComponent {
   isOpen = false;
   content: ContentItem[] = [];
 }`}
@@ -521,7 +521,7 @@ export class CustomPlayerComponent {
 import { SoundStateService } from '@reelkit/angular-reel-player';
 
 @Component({ ... })
-export class CustomSoundControl {
+export class AppComponent {
   readonly soundState = inject(SoundStateService);
 
   // Use in template:
@@ -622,7 +622,7 @@ interface MyPost extends BaseContentItem {
     </rk-reel-player-overlay>
   \`,
 })
-export class MyFeedComponent {
+export class AppComponent {
   isOpen = false;
   posts: MyPost[] = [];
 }`}

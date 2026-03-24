@@ -9,10 +9,15 @@ import changelogRaw from '../../../../../CHANGELOG.md?raw';
  * Handles: ## h2, ### h3, - list items (wrapped in ul), empty lines.
  */
 const linkMentions = (text: string): string =>
-  text.replace(
-    /@([a-zA-Z\d](?:[a-zA-Z\d-]*[a-zA-Z\d])?)/g,
-    '<a href="https://github.com/$1" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline">@$1</a>',
-  );
+  text
+    .replace(
+      /\[(@[a-zA-Z\d](?:[a-zA-Z\d-]*[a-zA-Z\d])?)\]\((https?:\/\/[^)]+)\)/g,
+      '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline">$1</a>',
+    )
+    .replace(
+      /(?<!\[)@([a-zA-Z\d](?:[a-zA-Z\d-]*[a-zA-Z\d])?)(?!\])/g,
+      '<a href="https://github.com/$1" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline">@$1</a>',
+    );
 
 function renderChangelog(md: string): string {
   const lines = md.split('\n');
