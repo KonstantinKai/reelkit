@@ -282,11 +282,11 @@ const content: ContentItem[] = [
     media: [{
       id: 'v1',
       type: 'video',
-      src: 'https://example.com/video1.mp4',
-      poster: 'https://example.com/thumb1.jpg',
-      aspectRatio: 9 / 16,
+      src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+      poster: 'https://storage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerBlazes.jpg',
+      aspectRatio: 16 / 9,
     }],
-    author: { name: 'Alex Johnson', avatar: 'https://example.com/avatar1.jpg' },
+    author: { name: 'Alex Johnson', avatar: 'https://i.pravatar.cc/100?u=alex' },
     likes: 1234,
     description: 'Amazing content',
   },
@@ -295,12 +295,25 @@ const content: ContentItem[] = [
     media: [{
       id: 'img1',
       type: 'image',
-      src: 'https://example.com/photo1.jpg',
+      src: 'https://images.pexels.com/photos/1770809/pexels-photo-1770809.jpeg?auto=compress&cs=tinysrgb&w=800',
       aspectRatio: 2 / 3,
     }],
-    author: { name: 'Sarah Miller', avatar: 'https://example.com/avatar2.jpg' },
+    author: { name: 'Sarah Miller', avatar: 'https://i.pravatar.cc/100?u=sarah' },
     likes: 5678,
     description: 'Nature at its finest',
+  },
+  {
+    id: '3',
+    media: [{
+      id: 'v2',
+      type: 'video',
+      src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+      poster: 'https://storage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerEscapes.jpg',
+      aspectRatio: 16 / 9,
+    }],
+    author: { name: 'Mike Chen', avatar: 'https://i.pravatar.cc/100?u=mike' },
+    likes: 3456,
+    description: 'Adventure awaits',
   },
 ];
 
