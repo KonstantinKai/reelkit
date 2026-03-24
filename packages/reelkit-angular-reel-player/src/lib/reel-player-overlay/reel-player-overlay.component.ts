@@ -380,6 +380,7 @@ export class RkReelPlayerOverlayComponent<
   }
 
   close(): void {
+    this._soundState.reset();
     this.closed.emit();
   }
 

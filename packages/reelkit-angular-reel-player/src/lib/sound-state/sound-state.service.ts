@@ -31,4 +31,9 @@ export class SoundStateService {
   setDisabled(value: boolean): void {
     this._disabled.set(value);
   }
+
+  reset(): void {
+    this._muted.set(true);
+    this._disabled.set(false);
+  }
 }

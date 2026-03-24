@@ -63,6 +63,10 @@ const mockGestureController = {
   updateEvents: jest.fn(),
 };
 
+jest.mock('../lightbox-video-slide/lightbox-video-slide.component', () => ({
+  setLightboxVideoMuted: jest.fn(),
+}));
+
 jest.mock('@reelkit/angular', () => {
   const { Injectable, signal: angSignal } = jest.requireActual(
     '@angular/core',
@@ -336,6 +340,17 @@ describe('RkLightboxOverlayComponent', () => {
       (fixture.componentInstance as any).handleClose();
 
       expect(closedSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('resets video muted state on close', () => {
+      const {
+        setLightboxVideoMuted,
+      } = require('../lightbox-video-slide/lightbox-video-slide.component');
+      const fixture = createFixture(true, ITEMS, 0);
+
+      (fixture.componentInstance as any).handleClose();
+
+      expect(setLightboxVideoMuted).toHaveBeenCalledWith(true);
     });
 
     it('emits closed when Escape key is pressed', () => {

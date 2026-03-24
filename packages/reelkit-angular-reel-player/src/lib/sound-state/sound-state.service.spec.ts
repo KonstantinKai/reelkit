@@ -54,4 +54,15 @@ describe('SoundStateService', () => {
       'undefined',
     );
   });
+
+  it('reset() restores muted to true and disabled to false', () => {
+    service.toggle();
+    service.setDisabled(true);
+    expect(service.muted()).toBe(false);
+    expect(service.disabled()).toBe(true);
+
+    service.reset();
+    expect(service.muted()).toBe(true);
+    expect(service.disabled()).toBe(false);
+  });
 });
