@@ -318,14 +318,28 @@ const images: LightboxItem[] = [
     src: 'https://picsum.photos/id/1015/1600/1000',
     title: 'Mountain River',
     description: 'A beautiful mountain river',
-    width: 1600,
-    height: 1000,
   },
   {
     src: 'https://picsum.photos/id/1016/1000/1600',
     title: 'Snowy Peaks',
-    width: 1000,
-    height: 1600,
+  },
+  {
+    src: 'https://picsum.photos/id/1018/1600/900',
+    title: 'Misty Forest',
+    description: 'Morning fog over the forest canopy',
+  },
+  {
+    src: 'https://picsum.photos/id/1019/900/1400',
+    title: 'Autumn Trail',
+  },
+  {
+    src: 'https://picsum.photos/id/1020/1600/1067',
+    title: 'Ocean Cliff',
+    description: 'Dramatic cliffs above the Pacific',
+  },
+  {
+    src: 'https://picsum.photos/id/1022/1600/1067',
+    title: 'Desert Dunes',
   },
 ];
 
