@@ -126,7 +126,9 @@ import { ReelComponent, ReelIndicatorComponent, RkReelItemDirective } from '@ree
         </div>
       </ng-template>
 
-      <rk-reel-indicator direction="vertical" />
+      <div style="position:absolute;right:12px;top:50%;transform:translateY(-50%);z-index:10">
+        <rk-reel-indicator direction="vertical" />
+      </div>
     </rk-reel>
   \`,
 })
