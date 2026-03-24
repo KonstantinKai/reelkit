@@ -43,7 +43,7 @@
 
 ## Try It
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/KonstantinKai/reelkit-react-starter)
+[![React](https://img.shields.io/badge/React-Open_in_StackBlitz-1269D3?logo=stackblitz&logoColor=white)](https://stackblitz.com/github/KonstantinKai/reelkit-react-starter) &nbsp; [![Angular](https://img.shields.io/badge/Angular-Open_in_StackBlitz-1269D3?logo=stackblitz&logoColor=white)](https://stackblitz.com/github/KonstantinKai/reelkit-angular-starter)
 
 ## Quick Start
 
