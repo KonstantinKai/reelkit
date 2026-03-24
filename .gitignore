@@ -1,3 +1,6 @@
+# Secrets
+.env*
+
 # Dependencies
 node_modules
 
@@ -28,9 +31,6 @@ test-output
 test-results
 playwright-report
 playwright/.cache
-
-# Secrets
-.npmrc
 
 # Misc
 *.log

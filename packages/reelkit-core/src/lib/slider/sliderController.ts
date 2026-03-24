@@ -30,6 +30,7 @@ import type {
 
 const DEFAULT_TRANSITION_DURATION = 300;
 const DEFAULT_SWIPE_DISTANCE_FACTOR = 0.12;
+const MAX_VISIBLE_SLIDES = 3;
 const KEYBOARD_THROTTLE_MS = DEFAULT_TRANSITION_DURATION + 100;
 const DEFAULT_WHEEL_DEBOUNCE_MS = 200;
 
@@ -44,7 +45,7 @@ const DEFAULT_WHEEL_DEBOUNCE_MS = 200;
  * @param loop - Whether the slider wraps around at boundaries.
  * @returns An array of visible slide indices.
  */
-const defaultRangeExtractor: RangeExtractor = (current, count, loop) =>
+export const defaultRangeExtractor: RangeExtractor = (current, count, loop) =>
   extractRange(count, current, current, 1, loop);
 
 /**
@@ -69,7 +70,6 @@ export const createSliderController = (
   initialConfig: SliderConfig,
   initialEvents: SliderEvents = {},
 ): SliderController => {
-  // Merge with defaults
   let config: Required<SliderConfig> = {
     count: initialConfig.count,
     initialIndex: initialConfig.initialIndex ?? 0,
@@ -90,7 +90,6 @@ export const createSliderController = (
   let primarySizeDidChange = false;
   let animating = false;
 
-  // Create state signals
   const index = createSignal(config.initialIndex);
   const axisValue = createSignal<AnimatedValue>({ value: 0, duration: 0 });
 
@@ -105,14 +104,22 @@ export const createSliderController = (
         // Show [current, target] for forward, [target, current] for backward
         return override > current ? [current, override] : [override, current];
       }
-      return config.rangeExtractor(index.value, config.count, config.loop);
+      const range = config.rangeExtractor(
+        index.value,
+        config.count,
+        config.loop,
+      );
+      if (range.length <= MAX_VISIBLE_SLIDES) return range;
+
+      const pos = range.indexOf(index.value);
+      const start = clamp(pos - 1, 0, range.length - MAX_VISIBLE_SLIDES);
+      return range.slice(start, start + MAX_VISIBLE_SLIDES);
     },
     () => [index, goToOverride],
   );
 
   const state: SliderState = { index, axisValue, indexes };
 
-  // Local helpers
   const getRangeIndex = () => indexes.value.indexOf(index.value);
 
   const setAxisValueForCurrentRangeIndex = (
@@ -239,7 +246,6 @@ export const createSliderController = (
     cancelTransition = true;
   };
 
-  // Create gesture controller
   const isHorizontal = () => config.direction === 'horizontal';
 
   const gestureController = createGestureController(
@@ -253,7 +259,6 @@ export const createSliderController = (
     },
   );
 
-  // Create keyboard controller
   const keyboardController = createKeyboardController(
     { throttleMs: KEYBOARD_THROTTLE_MS },
     {
@@ -278,7 +283,6 @@ export const createSliderController = (
     },
   );
 
-  // Create wheel controller (only if enabled)
   const wheelController = config.enableWheel
     ? createWheelController(
         { debounceMs: config.wheelDebounceMs },
@@ -305,7 +309,6 @@ export const createSliderController = (
       )
     : null;
 
-  // After change observer
   let afterChangeDispose: (() => void) | null = null;
   if (events.onAfterChange) {
     afterChangeDispose = index.observe(() => {
@@ -471,5 +474,3 @@ export const createSliderController = (
     },
   };
 };
-
-export { defaultRangeExtractor };

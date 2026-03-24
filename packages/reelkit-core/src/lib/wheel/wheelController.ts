@@ -1,3 +1,4 @@
+import { abs } from '../utils/number';
 import { observeDomEvent } from '../utils/observeDomEvent';
 import type {
   WheelDirection,
@@ -45,26 +46,21 @@ export const createWheelController = (
   let lastEvent: WheelEvent | null = null;
 
   const handleWheel = (event: WheelEvent) => {
-    // Determine direction based on delta
     let direction: WheelDirection | null = null;
 
-    // Prefer vertical scroll
-    if (Math.abs(event.deltaY) >= deltaThreshold) {
+    if (abs(event.deltaY) >= deltaThreshold) {
       direction = event.deltaY > 0 ? 'down' : 'up';
-    } else if (Math.abs(event.deltaX) >= deltaThreshold) {
+    } else if (abs(event.deltaX) >= deltaThreshold) {
       direction = event.deltaX > 0 ? 'right' : 'left';
     }
 
     if (direction === null) return;
 
-    // Prevent page scroll
     event.preventDefault();
 
-    // Store the direction and event for later
     pendingDirection = direction;
     lastEvent = event;
 
-    // Clear existing timer and start new one (trailing debounce)
     if (debounceTimer) {
       clearTimeout(debounceTimer);
     }

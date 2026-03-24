@@ -52,7 +52,7 @@ const packages: {
 const bundleSizes = [
   {
     name: '@reelkit/core',
-    js: '9.8 kB',
+    js: '9.9 kB',
     gzip: '4.0 kB',
     css: '-',
     cssGzip: '-',

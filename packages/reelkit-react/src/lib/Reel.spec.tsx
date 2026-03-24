@@ -470,6 +470,40 @@ describe('Reel', () => {
     });
   });
 
+  describe('custom rangeExtractor', () => {
+    it('renders indices returned by rangeExtractor (up to 3)', () => {
+      const itemBuilder = vi.fn((i: number) => <div key={i}>Slide {i}</div>);
+
+      const { container } = render(
+        <Reel
+          count={10}
+          size={[400, 600]}
+          rangeExtractor={() => [3, 4]}
+          itemBuilder={itemBuilder}
+        />,
+      );
+
+      const slides = container.querySelectorAll('[data-index]');
+      expect(slides).toHaveLength(2);
+    });
+
+    it('clamps to 3 items even if rangeExtractor returns more', () => {
+      const itemBuilder = vi.fn((i: number) => <div key={i}>Slide {i}</div>);
+
+      const { container } = render(
+        <Reel
+          count={20}
+          size={[400, 600]}
+          rangeExtractor={() => [0, 1, 2, 3, 4, 5, 6]}
+          itemBuilder={itemBuilder}
+        />,
+      );
+
+      const slides = container.querySelectorAll('[data-index]');
+      expect(slides).toHaveLength(3);
+    });
+  });
+
   describe('data attributes', () => {
     it('wraps each slide in div with data-index', () => {
       const { container } = render(
