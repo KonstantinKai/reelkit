@@ -95,7 +95,7 @@
   },
   "release": {
     "versionPlans": true,
-    "projects": ["packages/*"],
+    "projects": ["packages/*", "!reelkit-example-data"],
     "projectsRelationship": "independent",
     "version": {
       "preVersionCommand": "npx nx run-many -t build --projects='packages/*' --skip-nx-cache && node scripts/update-sizes.mjs",

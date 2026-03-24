@@ -55,9 +55,11 @@
   "publishConfig": {
     "access": "public"
   },
+  "dependencies": {
+    "@reelkit/core": ">=0.2.0"
+  },
   "peerDependencies": {
     "@angular/common": ">=19.0.0",
-    "@angular/core": ">=19.0.0",
-    "@reelkit/core": ">=0.2.0"
+    "@angular/core": ">=19.0.0"
   }
 }
