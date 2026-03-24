@@ -262,6 +262,7 @@ export function createAngularStackBlitzProject(opts: {
               builder: '@angular/build:application',
               options: {
                 outputPath: 'dist',
+                index: 'src/index.html',
                 browser: 'src/main.ts',
                 polyfills: ['zone.js'],
                 tsConfig: 'tsconfig.json',
