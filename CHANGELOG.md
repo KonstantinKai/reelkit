@@ -1,3 +1,9 @@
+## @reelkit/core@0.2.2 (2026-03-24)
+
+### 🩹 Fixes
+
+- Gesture controller improvements and internal refactoring
+
 ## @reelkit/core@0.2.1 (2026-03-21)
 
 ### 🩹 Fixes
