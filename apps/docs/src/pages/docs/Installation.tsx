@@ -87,7 +87,7 @@ const bundleSizes = [
   },
   {
     name: '@reelkit/angular-reel-player',
-    js: '93.5 kB',
+    js: '93.6 kB',
     gzip: '15.8 kB',
     css: '-',
     cssGzip: '-',
@@ -95,7 +95,7 @@ const bundleSizes = [
   {
     name: '@reelkit/angular-lightbox',
     js: '96.2 kB',
-    gzip: '17.9 kB',
+    gzip: '18.0 kB',
     css: '-',
     cssGzip: '-',
   },
