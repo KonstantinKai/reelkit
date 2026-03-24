@@ -355,7 +355,7 @@ bootstrapApplication(AppComponent);
         experimentalDecorators: true,
         noEmit: true,
       },
-      include: ['src'],
+      include: ['src/**/*.ts'],
     },
     null,
     2,
