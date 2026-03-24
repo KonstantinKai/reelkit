@@ -265,7 +265,7 @@ export function createAngularStackBlitzProject(opts: {
                 index: 'src/index.html',
                 browser: 'src/main.ts',
                 polyfills: ['zone.js'],
-                tsConfig: 'tsconfig.json',
+                tsConfig: 'tsconfig.app.json',
                 styles: ['src/styles.css', ...(opts.styles ?? [])],
               },
             },
@@ -345,6 +345,7 @@ bootstrapApplication(AppComponent);
 
   const tsconfig = JSON.stringify(
     {
+      compileOnSave: false,
       compilerOptions: {
         target: 'ES2022',
         module: 'ES2022',
@@ -353,9 +354,30 @@ bootstrapApplication(AppComponent);
         strict: true,
         skipLibCheck: true,
         experimentalDecorators: true,
-        noEmit: true,
+        sourceMap: true,
+        declaration: false,
+        esModuleInterop: true,
       },
-      include: ['src/**/*.ts'],
+      angularCompilerOptions: {
+        enableI18nLegacyMessageIdFormat: false,
+        strictInjectionParameters: true,
+        strictInputAccessModifiers: true,
+        strictTemplates: true,
+      },
+    },
+    null,
+    2,
+  );
+
+  const tsconfigApp = JSON.stringify(
+    {
+      extends: './tsconfig.json',
+      compilerOptions: {
+        outDir: './out-tsc/app',
+        types: [],
+      },
+      files: ['src/main.ts'],
+      include: ['src/**/*.d.ts'],
     },
     null,
     2,
@@ -372,6 +394,7 @@ bootstrapApplication(AppComponent);
       'src/main.ts': mainTs,
       'src/app/app.component.ts': opts.code,
       'tsconfig.json': tsconfig,
+      'tsconfig.app.json': tsconfigApp,
       '.stackblitzrc': '{\n  "startCommand": "npx ng serve"\n}\n',
     },
   };
