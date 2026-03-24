@@ -350,7 +350,7 @@ const images: LightboxItem[] = [
     />
   \`,
 })
-export class GalleryComponent {
+export class AppComponent {
   images = images;
   openIndex: number | null = null;
 }`}
@@ -472,7 +472,7 @@ export class GalleryComponent {
     </rk-lightbox-overlay>
   \`,
 })
-export class CustomLightboxComponent {
+export class AppComponent {
   images: LightboxItem[] = [];
   isOpen = false;
 }`}
@@ -533,7 +533,7 @@ export class CustomLightboxComponent {
     </rk-lightbox-overlay>
   \`,
 })
-export class MixedGalleryComponent {
+export class AppComponent {
   isOpen = false;
   items: LightboxItem[] = [
     { src: '/photo.jpg', title: 'Photo' },
@@ -586,7 +586,7 @@ export class MixedGalleryComponent {
 import { FullscreenService } from '@reelkit/angular-lightbox';
 
 @Component({ ... })
-export class CustomControlsComponent {
+export class AppComponent {
   readonly fs = inject(FullscreenService);
 
   // Use in template:
