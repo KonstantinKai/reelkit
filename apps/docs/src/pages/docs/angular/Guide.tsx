@@ -106,6 +106,7 @@ export default function AngularGuide() {
 import { ReelComponent, ReelIndicatorComponent, RkReelItemDirective } from '@reelkit/angular';
 
 @Component({
+  selector: 'app-root',
   standalone: true,
   imports: [ReelComponent, ReelIndicatorComponent, RkReelItemDirective],
   template: \`
@@ -268,6 +269,7 @@ export class AppComponent {
 import { ReelComponent, RkReelItemDirective, type ReelApi } from '@reelkit/angular';
 
 @Component({
+  selector: 'app-root',
   standalone: true,
   imports: [ReelComponent, RkReelItemDirective],
   template: \`
@@ -354,6 +356,7 @@ export class AppComponent {
 import { ReelComponent, RkReelItemDirective, type ReelApi } from '@reelkit/angular';
 
 @Component({
+  selector: 'app-root',
   standalone: true,
   imports: [ReelComponent, RkReelItemDirective],
   template: \`

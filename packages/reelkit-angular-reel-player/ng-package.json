@@ -3,5 +3,12 @@
   "dest": "../../dist/packages/reelkit-angular-reel-player",
   "lib": {
     "entryFile": "src/index.ts"
-  }
+  },
+  "assets": [
+    {
+      "glob": "*.css",
+      "input": "src/lib/styles",
+      "output": "."
+    }
+  ]
 }
