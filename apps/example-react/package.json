@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "@reelkit/example-data": "*",
     "@reelkit/react": "*",
     "@reelkit/react-lightbox": "*",
     "@reelkit/react-reel-player": "*",

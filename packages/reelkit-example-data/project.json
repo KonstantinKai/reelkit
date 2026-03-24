@@ -1,0 +1,9 @@
+{
+  "name": "reelkit-example-data",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/reelkit-example-data/src",
+  "projectType": "library",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project reelkit-example-data --web",
+  "targets": {}
+}

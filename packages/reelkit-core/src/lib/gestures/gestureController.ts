@@ -65,6 +65,7 @@ export const createGestureController = (
   let offset: Offset | null = null;
   let elementTopLeft: Offset | null = null;
   let updateEvents: GestureAxisDragUpdateEvent[] = [];
+  let lockedAxis: DragAxis = null;
   let longPressDetected = false;
 
   const longPressTimeout = timeout((event: GestureCommonEvent) => {
@@ -151,15 +152,19 @@ export const createGestureController = (
     ];
 
     const commonEvent = getCommonEvent();
-    const axis = getDominantAxis(delta);
 
-    if (axis !== null) {
+    // Lock axis on first movement — all subsequent frames use the same axis.
+    if (lockedAxis === null) {
+      lockedAxis = getDominantAxis(delta);
+    }
+
+    if (lockedAxis !== null) {
       const onDragStart =
-        axis === 'horizontal'
+        lockedAxis === 'horizontal'
           ? currentEvents.onHorizontalDragStart
           : currentEvents.onVerticalDragStart;
       const onDragUpdate =
-        axis === 'horizontal'
+        lockedAxis === 'horizontal'
           ? currentEvents.onHorizontalDragUpdate
           : currentEvents.onVerticalDragUpdate;
 
@@ -170,9 +175,9 @@ export const createGestureController = (
       const updateEvent: GestureAxisDragUpdateEvent = {
         ...commonEvent,
         delta,
-        primaryDelta: getPrimaryValue(delta, axis),
+        primaryDelta: getPrimaryValue(delta, lockedAxis),
         distance,
-        primaryDistance: getPrimaryValue(distance, axis),
+        primaryDistance: getPrimaryValue(distance, lockedAxis),
         cancel: cancelEvent,
       };
 
@@ -219,10 +224,9 @@ export const createGestureController = (
         velocity,
       };
 
-      const axis = getDominantAxis(delta);
-      if (axis !== null) {
+      if (lockedAxis !== null) {
         const onDragEnd =
-          axis === 'horizontal'
+          lockedAxis === 'horizontal'
             ? currentEvents.onHorizontalDragEnd
             : currentEvents.onVerticalDragEnd;
 
@@ -230,12 +234,14 @@ export const createGestureController = (
           ...axisAwareCommonEvent,
           primaryDelta: lastUpdateEvent.primaryDelta,
           primaryDistance: lastUpdateEvent.primaryDistance,
-          primaryVelocity: getPrimaryValue(velocity, axis),
+          primaryVelocity: getPrimaryValue(velocity, lockedAxis),
         });
       }
 
       currentEvents.onDragEnd?.(axisAwareCommonEvent);
     }
+
+    lockedAxis = null;
   };
 
   const observe = () => {

@@ -6,7 +6,7 @@
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
 
-Drop-in Instagram Reels / TikTok-style video player for React. Opens as a full-screen overlay with vertical swipe navigation. Handles video autoplay, sound continuity on iOS, and multi-media posts out of the box. ~3.7 kB gzip.
+Drop-in Instagram Reels / TikTok-style video player for React. Opens as a full-screen overlay with vertical swipe navigation. Handles video autoplay, sound continuity on iOS, and multi-media posts. ~3.7 kB gzip.
 
 ## Installation
 
@@ -216,24 +216,28 @@ function Gallery() {
 
 ## CSS Classes
 
-```css
-.rk-reel-overlay {
-} /* Overlay background */
-.rk-reel-container {
-} /* Player container */
-.rk-player-nav-arrows {
-} /* Desktop nav arrows */
-.rk-player-close-btn {
-} /* Close button */
-.rk-player-sound-btn {
-} /* Sound toggle */
-.rk-video-slide-container {
-}
-.rk-video-slide-loader {
-}
-.rk-video-slide-poster {
-}
-```
+| Class                                | Description                       |
+| ------------------------------------ | --------------------------------- |
+| `.rk-reel-overlay`                   | Overlay background                |
+| `.rk-reel-container`                 | Player container                  |
+| `.rk-reel-slide-wrapper`             | Slide wrapper                     |
+| `.rk-player-nav-arrows`              | Desktop nav arrows container      |
+| `.rk-player-nav-btn`                 | Individual nav arrow button       |
+| `.rk-player-close-btn`               | Close button                      |
+| `.rk-player-sound-btn`               | Sound toggle                      |
+| `.rk-reel-slide-overlay`             | Per-slide overlay (author, likes) |
+| `.rk-reel-slide-overlay-author`      | Author row                        |
+| `.rk-reel-slide-overlay-avatar`      | Author avatar                     |
+| `.rk-reel-slide-overlay-name`        | Author name                       |
+| `.rk-reel-slide-overlay-description` | Slide description                 |
+| `.rk-reel-slide-overlay-likes`       | Like count                        |
+| `.rk-nested-slider-inner`            | Nested horizontal slider          |
+| `.rk-nested-nav`                     | Nested nav arrows                 |
+| `.rk-nested-indicator`               | Nested slider dot indicator       |
+| `.rk-video-slide-container`          | Video slide wrapper               |
+| `.rk-video-slide-element`            | Video element                     |
+| `.rk-video-slide-poster`             | Video poster image                |
+| `.rk-video-slide-loader`             | Video loading indicator           |
 
 ## Documentation
 

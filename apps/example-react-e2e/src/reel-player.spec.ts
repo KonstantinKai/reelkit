@@ -80,10 +80,12 @@ class ReelPlayerPage {
   }
 
   async pressArrowDown() {
+    await this.overlay.waitFor({ state: 'visible' });
     await this.page.keyboard.press('ArrowDown');
   }
 
   async pressArrowUp() {
+    await this.overlay.waitFor({ state: 'visible' });
     await this.page.keyboard.press('ArrowUp');
   }
 

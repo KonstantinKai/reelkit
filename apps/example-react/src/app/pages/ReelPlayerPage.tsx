@@ -27,7 +27,7 @@ function ReelPlayerPage() {
   return (
     <div
       style={{
-        minHeight: '100vh',
+        minHeight: '100dvh',
         backgroundColor: '#111',
         padding: '56px 16px 16px',
       }}
