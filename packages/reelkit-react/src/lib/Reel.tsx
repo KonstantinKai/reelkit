@@ -15,9 +15,14 @@ import {
   defaultRangeExtractor,
   first,
   last,
+  getTransitionFn,
+  prefersReducedMotion,
   type RangeExtractor,
   type AnimatedValue,
   type Signal,
+  type SliderDirection,
+  type TransitionTransformFn,
+  type TransitionType,
 } from '@reelkit/core';
 import { AnimatedObserve, Observe } from './Observe';
 import { ReelContext, type ReelContextValue } from './ReelContext';
@@ -168,6 +173,21 @@ export interface ReelProps {
   /** Optional inline styles for the root container element. */
   style?: CSSProperties;
 
+  /**
+   * Transition effect for slide animations.
+   * Pass a built-in name or a custom {@link TransitionTransformFn}.
+   * `'cube'` auto-falls back to `'slide'` when `prefers-reduced-motion` is active.
+   * @default 'slide'
+   */
+  transition?: TransitionType | TransitionTransformFn;
+
+  /**
+   * Whether gesture (touch/mouse drag) navigation is enabled.
+   * When `false`, navigation is only possible via the API (`next`, `prev`, `goTo`).
+   * @default true
+   */
+  enableGestures?: boolean;
+
   /** Optional children rendered after the slider content (e.g. indicators, overlays). */
   children?: ReactNode;
 }
@@ -239,6 +259,8 @@ const Element = ({
   transitionDuration = 300,
   enableWheel = false,
   wheelDebounceMs = 200,
+  transition: transitionProp = 'slide',
+  enableGestures = true,
   ...props
 }: ReelProps) => {
   const { size: sizeProp, apiRef: forwardedRef } = props;
@@ -266,6 +288,13 @@ const Element = ({
   const primarySize = isHorizontal ? first(size) : last(size);
   const ref = useRef<HTMLDivElement>(null);
 
+  const transitionFn: TransitionTransformFn | null =
+    typeof transitionProp === 'function'
+      ? transitionProp
+      : transitionProp === 'cube' && prefersReducedMotion()
+        ? null
+        : getTransitionFn(transitionProp);
+
   const [controller, itemBuilder, reelContextValue] = useState(() => {
     const ctrl = createSliderController(
       {
@@ -278,6 +307,7 @@ const Element = ({
         rangeExtractor,
         enableWheel,
         wheelDebounceMs,
+        enableGestures,
       },
       {
         onBeforeChange: (index, nextIndex, rangeIndex) => {
@@ -325,6 +355,7 @@ const Element = ({
       transitionDuration,
       swipeDistanceFactor,
       rangeExtractor,
+      enableGestures,
     });
   }, [
     props.count,
@@ -333,6 +364,7 @@ const Element = ({
     transitionDuration,
     swipeDistanceFactor,
     rangeExtractor,
+    enableGestures,
   ]);
 
   useEffect(() => {
@@ -415,20 +447,36 @@ const Element = ({
   return (
     <ReelContext.Provider value={reelContextValue}>
       <div ref={ref} className={props.className} style={rootStyle}>
-        {hasMeasured && (
-          <Observe signals={[indexes]}>
-            {() => (
-              <Content
-                primarySize={primarySize}
-                isHorizontal={isHorizontal}
-                axisValue={axisValue}
-                length={indexes.value.length}
-              >
-                {indexes.value.map(itemBuilder)}
-              </Content>
-            )}
-          </Observe>
-        )}
+        {hasMeasured &&
+          (transitionFn !== null ? (
+            <Observe signals={[indexes]}>
+              {() => (
+                <TransitionContent
+                  primarySize={primarySize}
+                  isHorizontal={isHorizontal}
+                  axisValue={axisValue}
+                  transitionFn={transitionFn}
+                  currentRangeIndex={controller.getRangeIndex()}
+                  direction={direction}
+                >
+                  {indexes.value.map(itemBuilder)}
+                </TransitionContent>
+              )}
+            </Observe>
+          ) : (
+            <Observe signals={[indexes]}>
+              {() => (
+                <Content
+                  primarySize={primarySize}
+                  isHorizontal={isHorizontal}
+                  axisValue={axisValue}
+                  length={indexes.value.length}
+                >
+                  {indexes.value.map(itemBuilder)}
+                </Content>
+              )}
+            </Observe>
+          ))}
         {props.children}
       </div>
     </ReelContext.Provider>
@@ -456,6 +504,8 @@ export const Reel = memo(
     prev.useNavKeys === next.useNavKeys &&
     prev.enableWheel === next.enableWheel &&
     prev.wheelDebounceMs === next.wheelDebounceMs &&
+    prev.transition === next.transition &&
+    prev.enableGestures === next.enableGestures &&
     // JSX/render output
     prev.size?.[0] === next.size?.[0] &&
     prev.size?.[1] === next.size?.[1] &&
@@ -506,6 +556,71 @@ const Content = memo(
       )}
     </AnimatedObserve>
   ),
+);
+
+const TransitionContent = memo(
+  ({
+    children,
+    isHorizontal,
+    primarySize,
+    axisValue,
+    transitionFn,
+    currentRangeIndex,
+    direction,
+  }: {
+    children: ReactNode;
+    isHorizontal: boolean;
+    primarySize: number;
+    axisValue: Signal<AnimatedValue>;
+    transitionFn: TransitionTransformFn;
+    currentRangeIndex: number;
+    direction: SliderDirection;
+  }) => {
+    const childArray = Array.isArray(children) ? children : [children];
+
+    return (
+      <AnimatedObserve signal={axisValue}>
+        {(value) => (
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+            }}
+          >
+            {childArray.map((child, i) => {
+              const styles = transitionFn(
+                value,
+                i,
+                currentRangeIndex,
+                primarySize,
+                direction,
+              );
+              return (
+                <div
+                  key={i}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    [isHorizontal ? 'width' : 'height']: primarySize,
+                    [isHorizontal ? 'height' : 'width']: '100%',
+                    transformStyle: 'preserve-3d',
+                    backfaceVisibility: 'hidden',
+                    ...styles,
+                  }}
+                >
+                  {child}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </AnimatedObserve>
+    );
+  },
 );
 
 export { defaultRangeExtractor };

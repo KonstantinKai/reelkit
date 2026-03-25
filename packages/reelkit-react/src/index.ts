@@ -70,6 +70,13 @@ export {
   type SharedVideoInstance,
   type GestureController,
   type GestureControllerEvents,
+  prefersReducedMotion,
+  getTransitionFn,
+  cubeTransition,
+  fadeTransition,
+  type TransitionType,
+  type TransitionTransformFn,
+  type SlideTransformStyle,
 } from '@reelkit/core';
 
 // Main components
