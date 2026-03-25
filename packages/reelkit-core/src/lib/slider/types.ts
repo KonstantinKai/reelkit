@@ -1,4 +1,5 @@
 import type { Signal, ComputedSignal } from '../utils/signal';
+import type { TransitionType } from './transitions/types';
 
 /** Axis along which the slider moves. */
 export type SliderDirection = 'horizontal' | 'vertical';
@@ -92,6 +93,20 @@ export interface SliderConfig {
    * @default 200
    */
   wheelDebounceMs?: number;
+
+  /**
+   * Transition effect used for slide animations.
+   * @default 'slide'
+   */
+  transition?: TransitionType;
+
+  /**
+   * Whether gesture (touch/mouse drag) navigation is enabled.
+   * When `false`, the gesture controller is not attached. Navigation
+   * is still possible via the API (`next`, `prev`, `goTo`).
+   * @default true
+   */
+  enableGestures?: boolean;
 }
 
 /**

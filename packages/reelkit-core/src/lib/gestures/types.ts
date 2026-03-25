@@ -77,6 +77,13 @@ export interface GestureControllerConfig {
    * @default 800
    */
   longPressDurationMs?: number;
+
+  /**
+   * Time window in milliseconds within which two consecutive taps
+   * are treated as a double-tap.
+   * @default 300
+   */
+  doubleTapWindowMs?: number;
 }
 
 /**
@@ -96,6 +103,19 @@ export interface GestureControllerEvents {
 
   /** Fired on pointer up. */
   onTapUp?: (event: GestureCommonEvent) => void;
+
+  /**
+   * Fired on a single tap (pointer up with no drag and no long press).
+   * Delayed by {@link GestureControllerConfig.doubleTapWindowMs} to
+   * distinguish from double-taps.
+   */
+  onTap?: (event: GestureCommonEvent) => void;
+
+  /**
+   * Fired when two taps occur within
+   * {@link GestureControllerConfig.doubleTapWindowMs}.
+   */
+  onDoubleTap?: (event: GestureCommonEvent) => void;
 
   /** Fired when a horizontal drag begins. */
   onHorizontalDragStart?: (event: GestureCommonEvent) => void;

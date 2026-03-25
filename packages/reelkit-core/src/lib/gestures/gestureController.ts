@@ -16,6 +16,7 @@ import type {
 } from './types';
 
 const DEFAULT_LONG_PRESS_DURATION_MS = 800;
+const DEFAULT_DOUBLE_TAP_WINDOW_MS = 300;
 
 const getDominantAxis = (delta: Offset): DragAxis => {
   const [dx, dy] = [abs(first(delta)), abs(last(delta))];
@@ -54,6 +55,7 @@ export const createGestureController = (
   const {
     useTouchEventsOnly = false,
     longPressDurationMs = DEFAULT_LONG_PRESS_DURATION_MS,
+    doubleTapWindowMs = DEFAULT_DOUBLE_TAP_WINDOW_MS,
   } = config;
   const disposables = createDisposableList();
 
@@ -67,6 +69,10 @@ export const createGestureController = (
   let updateEvents: GestureAxisDragUpdateEvent[] = [];
   let lockedAxis: DragAxis = null;
   let longPressDetected = false;
+
+  // Tap / double-tap state
+  let lastTapTimestamp = 0;
+  let pendingTapTimer: ReturnType<typeof setTimeout> | null = null;
 
   const longPressTimeout = timeout((event: GestureCommonEvent) => {
     if (
@@ -202,13 +208,40 @@ export const createGestureController = (
 
     currentEvents.onTapUp?.({ ...commonEvent, kind });
 
+    const wasLongPress = longPressDetected;
     if (longPressDetected) {
       longPressDetected = false;
       currentEvents.onLongPressEnd?.(commonEvent);
     }
 
+    // Tap / double-tap detection: only when no drag occurred and no long press
+    const wasDrag = lastUpdateEvent !== null;
+    if (!wasDrag && !wasLongPress && savedInitialEvent !== null) {
+      const tapEvent: GestureCommonEvent = { ...commonEvent, kind };
+      const now = Date.now();
+
+      if (
+        pendingTapTimer !== null &&
+        now - lastTapTimestamp < doubleTapWindowMs
+      ) {
+        // Second tap within window → double-tap
+        clearTimeout(pendingTapTimer);
+        pendingTapTimer = null;
+        currentEvents.onDoubleTap?.(tapEvent);
+      } else {
+        // First tap — wait for potential second tap
+        if (pendingTapTimer !== null) {
+          clearTimeout(pendingTapTimer);
+        }
+        lastTapTimestamp = now;
+        pendingTapTimer = setTimeout(() => {
+          pendingTapTimer = null;
+          currentEvents.onTap?.(tapEvent);
+        }, doubleTapWindowMs);
+      }
+    }
+
     if (lastUpdateEvent !== null && savedInitialEvent !== null) {
-      const delta = lastUpdateEvent.delta;
       const timeDiffInSeconds =
         (commonEvent.sourceTimestamp - savedInitialEvent.sourceTimestamp) /
         1000;

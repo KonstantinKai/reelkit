@@ -52,6 +52,8 @@ export {
   type TimeoutFn,
   // Noop
   noop,
+  // Reduced Motion
+  prefersReducedMotion,
   // Video
   captureFrame,
   createSharedVideo,
@@ -108,3 +110,15 @@ export type {
   SliderController,
   SliderDirection,
 } from './lib/slider/types';
+
+// Transitions
+export {
+  cubeTransition,
+  fadeTransition,
+  getTransitionFn,
+} from './lib/slider/transitions';
+export type {
+  SlideTransformStyle,
+  TransitionTransformFn,
+  TransitionType,
+} from './lib/slider/transitions';

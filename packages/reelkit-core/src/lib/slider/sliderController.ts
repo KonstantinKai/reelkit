@@ -82,6 +82,8 @@ export const createSliderController = (
     rangeExtractor: initialConfig.rangeExtractor ?? defaultRangeExtractor,
     enableWheel: initialConfig.enableWheel ?? false,
     wheelDebounceMs: initialConfig.wheelDebounceMs ?? DEFAULT_WHEEL_DEBOUNCE_MS,
+    transition: initialConfig.transition ?? 'slide',
+    enableGestures: initialConfig.enableGestures ?? true,
   };
 
   let events = { ...initialEvents };
@@ -448,7 +450,9 @@ export const createSliderController = (
     },
 
     observe() {
-      gestureController.observe();
+      if (config.enableGestures) {
+        gestureController.observe();
+      }
       keyboardController.attach();
       wheelController?.attach();
     },
@@ -460,7 +464,9 @@ export const createSliderController = (
     },
 
     attach(element: HTMLElement) {
-      gestureController.attach(element);
+      if (config.enableGestures) {
+        gestureController.attach(element);
+      }
     },
 
     detach() {

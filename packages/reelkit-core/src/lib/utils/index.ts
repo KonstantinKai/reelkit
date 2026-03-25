@@ -26,6 +26,8 @@ export { timeout, type TimeoutFn } from './timeout';
 
 export { noop } from './noop';
 
+export { prefersReducedMotion } from './reducedMotion';
+
 export {
   captureFrame,
   createSharedVideo,
