@@ -48,7 +48,6 @@ export {
   createDeferred,
   first,
   last,
-  isEmpty,
   generate,
   abs,
   isNegative,
@@ -56,6 +55,8 @@ export {
   lerp,
   extractRange,
   observeDomEvent,
+  createDisposableList,
+  type DisposableList,
   noop,
   captureFrame,
   createSharedVideo,
@@ -70,11 +71,23 @@ export {
   type SharedVideoInstance,
   type GestureController,
   type GestureControllerEvents,
-  prefersReducedMotion,
-  getTransitionFn,
+  type GestureCommonEvent,
+  type GestureEvent,
+  observeMediaLoading,
+  type MediaLoadingCallbacks,
+  createSoundController,
+  syncMutedToVideo,
+  type SoundController,
+  createContentLoadingController,
+  type ContentLoadingController,
+  createContentPreloader,
+  type ContentPreloader,
+  type ContentPreloaderConfig,
+  slideTransition,
+  flipTransition,
   cubeTransition,
   fadeTransition,
-  type TransitionType,
+  zoomTransition,
   type TransitionTransformFn,
   type SlideTransformStyle,
 } from '@reelkit/core';
@@ -98,6 +111,16 @@ export {
   useReelContext,
   type ReelContextValue,
 } from './lib/ReelContext';
+
+// Swipe to close
+export {
+  SwipeToClose,
+  type SwipeToCloseProps,
+  type SwipeToCloseDirection,
+} from './lib/SwipeToClose';
+
+// Sound
+export { SoundProvider, useSoundState } from './lib/SoundState';
 
 // Hooks
 export { useBodyLock } from './lib/useBodyLock';

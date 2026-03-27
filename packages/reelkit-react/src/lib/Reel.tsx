@@ -15,14 +15,14 @@ import {
   defaultRangeExtractor,
   first,
   last,
-  getTransitionFn,
-  prefersReducedMotion,
+  slideTransition,
   type RangeExtractor,
   type AnimatedValue,
   type Signal,
   type SliderDirection,
   type TransitionTransformFn,
-  type TransitionType,
+  type GestureCommonEvent,
+  type GestureEvent,
 } from '@reelkit/core';
 import { AnimatedObserve, Observe } from './Observe';
 import { ReelContext, type ReelContextValue } from './ReelContext';
@@ -33,20 +33,6 @@ import { ReelContext, type ReelContextValue } from './ReelContext';
 export interface ReelProps {
   /** Total number of slides. */
   count: number;
-
-  /**
-   * Render function called for each visible slide.
-   *
-   * @param index - The absolute slide index (0-based).
-   * @param indexInRange - Position within the current visible range.
-   * @param size - The `[width, height]` dimensions of the slider.
-   * @returns A React element representing the slide content.
-   */
-  itemBuilder: (
-    index: number,
-    indexInRange: number,
-    size: [number, number],
-  ) => ReactNode;
 
   /**
    * Ref or callback to access the imperative {@link ReelApi}. Accepts either
@@ -114,6 +100,52 @@ export interface ReelProps {
    */
   wheelDebounceMs?: number;
 
+  /** Optional CSS class name for the root container element. */
+  className?: string;
+
+  /** Optional inline styles for the root container element. */
+  style?: CSSProperties;
+
+  /**
+   * Whether gesture (touch/mouse drag) navigation is enabled.
+   * When `false`, navigation is only possible via the API (`next`, `prev`, `goTo`).
+   * @default true
+   */
+  enableGestures?: boolean;
+
+  /** Optional children rendered after the slider content (e.g. indicators, overlays). */
+  children?: ReactNode;
+
+  /**
+   * Transition effect for slide animations.
+   * Import a built-in transition (`slideTransition`, `cubeTransition`, etc.)
+   * or pass a custom {@link TransitionTransformFn}. Only the imported
+   * transition ships in the bundle (tree-shakeable).
+   *
+   * @default slideTransition
+   */
+  transition?: TransitionTransformFn;
+
+  /**
+   * Custom function to determine which slide indices are rendered.
+   * Defaults to the built-in extractor that returns current ± 1 overscan.
+   */
+  rangeExtractor?: RangeExtractor;
+
+  /**
+   * Render function called for each visible slide.
+   *
+   * @param index - The absolute slide index (0-based).
+   * @param indexInRange - Position within the current visible range.
+   * @param size - The `[width, height]` dimensions of the slider.
+   * @returns A React element representing the slide content.
+   */
+  itemBuilder: (
+    index: number,
+    indexInRange: number,
+    size: [number, number],
+  ) => ReactNode;
+
   /**
    * Called after a slide transition completes and the index is updated.
    * @param index - The new active slide index.
@@ -162,34 +194,28 @@ export interface ReelProps {
   onSlideDragEnd?: (index: number) => void;
 
   /**
-   * Custom function to determine which slide indices are rendered.
-   * Defaults to the built-in extractor that returns current ± 1 overscan.
+   * Fired on a single tap (no drag, no long press). Requires `enableGestures`.
+   * @param event - Gesture event with position and element info.
    */
-  rangeExtractor?: RangeExtractor;
-
-  /** Optional CSS class name for the root container element. */
-  className?: string;
-
-  /** Optional inline styles for the root container element. */
-  style?: CSSProperties;
+  onTap?: (event: GestureCommonEvent) => void;
 
   /**
-   * Transition effect for slide animations.
-   * Pass a built-in name or a custom {@link TransitionTransformFn}.
-   * `'cube'` auto-falls back to `'slide'` when `prefers-reduced-motion` is active.
-   * @default 'slide'
+   * Fired on double-tap. Requires `enableGestures`.
+   * @param event - Gesture event with position and element info.
    */
-  transition?: TransitionType | TransitionTransformFn;
+  onDoubleTap?: (event: GestureCommonEvent) => void;
 
   /**
-   * Whether gesture (touch/mouse drag) navigation is enabled.
-   * When `false`, navigation is only possible via the API (`next`, `prev`, `goTo`).
-   * @default true
+   * Fired when a long press is detected. Requires `enableGestures`.
+   * @param event - Gesture event with position and element info.
    */
-  enableGestures?: boolean;
+  onLongPress?: (event: GestureCommonEvent) => void;
 
-  /** Optional children rendered after the slider content (e.g. indicators, overlays). */
-  children?: ReactNode;
+  /**
+   * Fired when the pointer is released after a long press. Requires `enableGestures`.
+   * @param event - Gesture event with position, element, and drag info.
+   */
+  onLongPressEnd?: (event: GestureEvent) => void;
 }
 
 const defaultKeyExtractor: NonNullable<ReelProps['keyExtractor']> = (index) =>
@@ -210,9 +236,6 @@ export const createDefaultKeyExtractorForLoop =
   (index: number, indexInRange: number) => {
     const key = `${keyPrefix ?? ''}${index}`;
 
-    /**
-     * Handles case with duplicating keys
-     */
     if (count === 2 && [0, 1].includes(index) && indexInRange === 0) {
       return `${key}_cloned`;
     }
@@ -232,7 +255,8 @@ export interface ReelApi {
   prev: () => void;
 
   /**
-   * Navigate to a specific slide index.
+   * Navigate to a specific slide index. Returns a promise that
+   * resolves when the transition completes.
    * @param index - Target slide index.
    * @param animate - When `true`, animates the transition.
    */
@@ -259,7 +283,7 @@ const Element = ({
   transitionDuration = 300,
   enableWheel = false,
   wheelDebounceMs = 200,
-  transition: transitionProp = 'slide',
+  transition = slideTransition,
   enableGestures = true,
   ...props
 }: ReelProps) => {
@@ -287,13 +311,6 @@ const Element = ({
   const isHorizontal = direction === 'horizontal';
   const primarySize = isHorizontal ? first(size) : last(size);
   const ref = useRef<HTMLDivElement>(null);
-
-  const transitionFn: TransitionTransformFn | null =
-    typeof transitionProp === 'function'
-      ? transitionProp
-      : transitionProp === 'cube' && prefersReducedMotion()
-        ? null
-        : getTransitionFn(transitionProp);
 
   const [controller, itemBuilder, reelContextValue] = useState(() => {
     const ctrl = createSliderController(
@@ -325,6 +342,10 @@ const Element = ({
         onDragCanceled: (index) => {
           propsRef.current.onSlideDragCanceled?.(index);
         },
+        onTap: (e) => propsRef.current.onTap?.(e),
+        onDoubleTap: (e) => propsRef.current.onDoubleTap?.(e),
+        onLongPress: (e) => propsRef.current.onLongPress?.(e),
+        onLongPressEnd: (e) => propsRef.current.onLongPressEnd?.(e),
       },
     );
 
@@ -403,9 +424,7 @@ const Element = ({
       }
     }
 
-    return () => {
-      controller.detach();
-    };
+    return controller.detach;
   }, []);
 
   // Auto-measure container size via ResizeObserver when size prop is omitted.
@@ -447,36 +466,22 @@ const Element = ({
   return (
     <ReelContext.Provider value={reelContextValue}>
       <div ref={ref} className={props.className} style={rootStyle}>
-        {hasMeasured &&
-          (transitionFn !== null ? (
-            <Observe signals={[indexes]}>
-              {() => (
-                <TransitionContent
-                  primarySize={primarySize}
-                  isHorizontal={isHorizontal}
-                  axisValue={axisValue}
-                  transitionFn={transitionFn}
-                  currentRangeIndex={controller.getRangeIndex()}
-                  direction={direction}
-                >
-                  {indexes.value.map(itemBuilder)}
-                </TransitionContent>
-              )}
-            </Observe>
-          ) : (
-            <Observe signals={[indexes]}>
-              {() => (
-                <Content
-                  primarySize={primarySize}
-                  isHorizontal={isHorizontal}
-                  axisValue={axisValue}
-                  length={indexes.value.length}
-                >
-                  {indexes.value.map(itemBuilder)}
-                </Content>
-              )}
-            </Observe>
-          ))}
+        {hasMeasured && (
+          <Observe signals={[indexes]}>
+            {() => (
+              <TransitionContent
+                primarySize={primarySize}
+                isHorizontal={isHorizontal}
+                axisValue={axisValue}
+                transitionFn={transition}
+                currentRangeIndex={controller.getRangeIndex()}
+                direction={direction}
+              >
+                {indexes.value.map(itemBuilder)}
+              </TransitionContent>
+            )}
+          </Observe>
+        )}
         {props.children}
       </div>
     </ReelContext.Provider>
@@ -512,50 +517,6 @@ export const Reel = memo(
     prev.className === next.className &&
     prev.style === next.style &&
     prev.children === next.children,
-);
-
-const Content = memo(
-  ({
-    children,
-    isHorizontal,
-    primarySize,
-    axisValue,
-    length,
-  }: {
-    /** Rendered slide elements. */
-    children: ReactNode;
-
-    /** Whether the slider is in horizontal mode. */
-    isHorizontal: boolean;
-
-    /** Width (horizontal) or height (vertical) of a single slide in pixels. */
-    primarySize: number;
-
-    /** Animated translate value driven by the slider controller. */
-    axisValue: Signal<AnimatedValue>;
-
-    /** Number of currently visible slides (determines container size). */
-    length: number;
-  }) => (
-    <AnimatedObserve signal={axisValue}>
-      {(value) => (
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            display: 'flex',
-            transform: `translate${isHorizontal ? 'X' : 'Y'}(${value}px)`,
-            flexDirection: isHorizontal ? 'row' : 'column',
-            [isHorizontal ? 'width' : 'height']: length * primarySize,
-            [isHorizontal ? 'height' : 'width']: '100%',
-          }}
-        >
-          {children}
-        </div>
-      )}
-    </AnimatedObserve>
-  ),
 );
 
 const TransitionContent = memo(
@@ -598,16 +559,16 @@ const TransitionContent = memo(
                 primarySize,
                 direction,
               );
+              const childKey = (child as { key?: string })?.key ?? i;
               return (
                 <div
-                  key={i}
+                  key={childKey}
                   style={{
                     position: 'absolute',
                     top: 0,
                     left: 0,
                     [isHorizontal ? 'width' : 'height']: primarySize,
                     [isHorizontal ? 'height' : 'width']: '100%',
-                    transformStyle: 'preserve-3d',
                     backfaceVisibility: 'hidden',
                     ...styles,
                   }}

@@ -1,6 +1,7 @@
-import { render, act } from '@testing-library/react';
+import { render, renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { Reel, type ReelApi } from './Reel';
+import { useReelContext } from './ReelContext';
 import React from 'react';
 
 // Use real createSliderController - avoid mocking @reelkit/core since
@@ -290,15 +291,13 @@ describe('Reel', () => {
       afterChange.mockClear();
 
       // Next should still work (animating flag was reset)
-      const nextPromise = apiRef.current!.next();
+      apiRef.current!.next();
       await act(async () => {
         vi.advanceTimersByTime(500);
       });
       await act(async () => {
         vi.runAllTimers();
       });
-      await nextPromise;
-
       expect(afterChange).toHaveBeenCalled();
       vi.useRealTimers();
     });
@@ -409,20 +408,18 @@ describe('Reel', () => {
   });
 
   describe('direction', () => {
-    it('renders vertical flex layout by default', () => {
+    it('renders vertical layout by default', () => {
       const { container } = render(
         <Reel count={3} size={[400, 600]} itemBuilder={defaultItemBuilder} />,
       );
 
-      // The inner content div should have flexDirection column
-      const innerDiv = container.querySelector(
-        '[style*="flex-direction"]',
+      const slide = container.querySelector(
+        '[style*="translateY"]',
       ) as HTMLElement;
-      expect(innerDiv).toBeTruthy();
-      expect(innerDiv.style.flexDirection).toBe('column');
+      expect(slide).toBeTruthy();
     });
 
-    it('renders horizontal flex layout when direction=horizontal', () => {
+    it('renders horizontal layout when direction=horizontal', () => {
       const { container } = render(
         <Reel
           count={3}
@@ -432,11 +429,10 @@ describe('Reel', () => {
         />,
       );
 
-      const innerDiv = container.querySelector(
-        '[style*="flex-direction"]',
+      const slide = container.querySelector(
+        '[style*="translateX"]',
       ) as HTMLElement;
-      expect(innerDiv).toBeTruthy();
-      expect(innerDiv.style.flexDirection).toBe('row');
+      expect(slide).toBeTruthy();
     });
   });
 
@@ -501,6 +497,32 @@ describe('Reel', () => {
 
       const slides = container.querySelectorAll('[data-index]');
       expect(slides).toHaveLength(3);
+    });
+  });
+
+  describe('useReelContext', () => {
+    it('returns null outside of Reel', () => {
+      const { result } = renderHook(() => useReelContext());
+      expect(result.current).toBeNull();
+    });
+
+    it('returns context with index, count, goTo inside Reel', () => {
+      let ctx: ReturnType<typeof useReelContext> = null;
+      const Consumer = () => {
+        ctx = useReelContext();
+        return null;
+      };
+
+      render(
+        <Reel count={5} size={[400, 600]} itemBuilder={defaultItemBuilder}>
+          <Consumer />
+        </Reel>,
+      );
+
+      expect(ctx).not.toBeNull();
+      expect(ctx!.index.value).toBe(0);
+      expect(ctx!.count.value).toBe(5);
+      expect(typeof ctx!.goTo).toBe('function');
     });
   });
 
