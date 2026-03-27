@@ -91,6 +91,9 @@ export {
   zoomTransition,
   type TransitionTransformFn,
   type SlideTransformStyle,
+  fullscreenSignal,
+  requestFullscreen,
+  exitFullscreen,
 } from '@reelkit/core';
 
 // Main components
@@ -125,3 +128,8 @@ export { SoundProvider, useSoundState } from './lib/SoundState';
 
 // Hooks
 export { useBodyLock } from './lib/useBodyLock';
+export {
+  useFullscreen,
+  type UseFullscreenProps,
+  type UseFullscreenResult,
+} from './lib/useFullscreen';

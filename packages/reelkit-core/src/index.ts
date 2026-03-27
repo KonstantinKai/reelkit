@@ -138,3 +138,10 @@ export type {
   SlideTransformStyle,
   TransitionTransformFn,
 } from './lib/slider/transitions';
+
+// Fullscreen
+export {
+  fullscreenSignal,
+  requestFullscreen,
+  exitFullscreen,
+} from './lib/utils';

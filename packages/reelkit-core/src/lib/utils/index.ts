@@ -56,3 +56,9 @@ export {
   type SharedVideoConfig,
   type SharedVideoInstance,
 } from './video';
+
+export {
+  fullscreenSignal,
+  requestFullscreen,
+  exitFullscreen,
+} from './fullscreen';

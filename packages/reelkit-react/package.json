@@ -52,7 +52,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@reelkit/core": ">=0.1.2"
+    "@reelkit/core": ">=0.3.0"
   },
   "peerDependencies": {
     "react": ">=17.0.0",
