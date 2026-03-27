@@ -81,7 +81,7 @@ export interface GestureControllerConfig {
   /**
    * Time window in milliseconds within which two consecutive taps
    * are treated as a double-tap.
-   * @default 300
+   * @default 200
    */
   doubleTapWindowMs?: number;
 }

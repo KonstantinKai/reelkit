@@ -6,13 +6,13 @@ import type {
   KeyboardController,
 } from './types';
 
-const NAV_KEY_CODES = new Map<string, NavKey>([
-  ['ArrowUp', 'up'],
-  ['ArrowRight', 'right'],
-  ['ArrowDown', 'down'],
-  ['ArrowLeft', 'left'],
-  ['Escape', 'escape'],
-]);
+const _kNavKeyCodes: Record<string, NavKey | undefined> = {
+  ArrowUp: 'up',
+  ArrowRight: 'right',
+  ArrowDown: 'down',
+  ArrowLeft: 'left',
+  Escape: 'escape',
+};
 
 /**
  * Creates a keyboard navigation controller that listens for arrow key and
@@ -41,7 +41,7 @@ export const createKeyboardController = (
   let lastKeyPressTime = 0;
 
   const handleKeyDown = (event: KeyboardEvent) => {
-    const key = NAV_KEY_CODES.get(event.key) ?? null;
+    const key = _kNavKeyCodes[event.key] ?? null;
     if (key === null) return;
 
     if (throttleMs > 0) {

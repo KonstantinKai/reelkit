@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { first, last, isEmpty, generate } from './array';
+import { first, last, generate } from './array';
 
 describe('first', () => {
   it('should return the first element of an array', () => {
@@ -28,17 +28,6 @@ describe('last', () => {
 
   it('should work with single element array', () => {
     expect(last([42])).toBe(42);
-  });
-});
-
-describe('isEmpty', () => {
-  it('should return true for empty array', () => {
-    expect(isEmpty([])).toBe(true);
-  });
-
-  it('should return false for non-empty array', () => {
-    expect(isEmpty([1])).toBe(false);
-    expect(isEmpty([1, 2, 3])).toBe(false);
   });
 });
 

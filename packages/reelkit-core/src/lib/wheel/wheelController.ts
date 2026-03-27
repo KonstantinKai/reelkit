@@ -1,4 +1,6 @@
 import { abs } from '../utils/number';
+import { timeout } from '../utils/timeout';
+import { createDisposableList } from '../utils/disposable';
 import { observeDomEvent } from '../utils/observeDomEvent';
 import type {
   WheelDirection,
@@ -7,8 +9,8 @@ import type {
   WheelController,
 } from './types';
 
-const DEFAULT_DEBOUNCE_MS = 200;
-const DEFAULT_DELTA_THRESHOLD = 10;
+const _kDefaultDebounceMs = 200;
+const _kDefaultDeltaThreshold = 10;
 
 /**
  * Creates a mouse wheel navigation controller that translates scroll events
@@ -36,14 +38,21 @@ export const createWheelController = (
   events: WheelControllerEvents,
 ): WheelController => {
   const {
-    debounceMs = DEFAULT_DEBOUNCE_MS,
-    deltaThreshold = DEFAULT_DELTA_THRESHOLD,
+    debounceMs = _kDefaultDebounceMs,
+    deltaThreshold = _kDefaultDeltaThreshold,
   } = config;
 
-  let dispose: (() => void) | null = null;
-  let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+  const disposables = createDisposableList();
   let pendingDirection: WheelDirection | null = null;
   let lastEvent: WheelEvent | null = null;
+
+  const flush = timeout(() => {
+    if (pendingDirection && lastEvent) {
+      events.onWheel(pendingDirection, lastEvent);
+      pendingDirection = null;
+      lastEvent = null;
+    }
+  }, debounceMs);
 
   const handleWheel = (event: WheelEvent) => {
     let direction: WheelDirection | null = null;
@@ -60,42 +69,22 @@ export const createWheelController = (
 
     pendingDirection = direction;
     lastEvent = event;
-
-    if (debounceTimer) {
-      clearTimeout(debounceTimer);
-    }
-
-    debounceTimer = setTimeout(() => {
-      if (pendingDirection && lastEvent) {
-        events.onWheel(pendingDirection, lastEvent);
-        pendingDirection = null;
-        lastEvent = null;
-      }
-      debounceTimer = null;
-    }, debounceMs);
+    flush.cancel();
+    flush();
   };
 
   return {
     attach(target: Window | HTMLElement = window) {
-      if (dispose) {
-        dispose();
-      }
-      // Use passive: false to allow preventDefault
-      dispose = observeDomEvent(target, 'wheel', handleWheel, {
-        passive: false,
-      });
+      disposables.dispose();
+      disposables.push(
+        observeDomEvent(target, 'wheel', handleWheel, { passive: false }),
+        flush.cancel,
+        () => {
+          pendingDirection = null;
+          lastEvent = null;
+        },
+      );
     },
-    detach() {
-      if (dispose) {
-        dispose();
-        dispose = null;
-      }
-      if (debounceTimer) {
-        clearTimeout(debounceTimer);
-        debounceTimer = null;
-      }
-      pendingDirection = null;
-      lastEvent = null;
-    },
+    detach: disposables.dispose,
   };
 };

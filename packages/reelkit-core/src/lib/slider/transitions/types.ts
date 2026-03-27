@@ -3,6 +3,7 @@ import type { SliderDirection } from '../types';
 /** CSS-like style properties applied to an individual slide during a transition. */
 export type SlideTransformStyle = {
   transform?: string;
+  transformOrigin?: string;
   opacity?: number;
   zIndex?: number;
 };
@@ -15,6 +16,3 @@ export type TransitionTransformFn = (
   primarySize: number,
   direction: SliderDirection,
 ) => SlideTransformStyle;
-
-/** Built-in transition types. */
-export type TransitionType = 'slide' | 'cube' | 'fade';

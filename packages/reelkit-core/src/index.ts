@@ -20,7 +20,6 @@ export {
   // Array
   first,
   last,
-  isEmpty,
   generate,
   // Number
   abs,
@@ -52,13 +51,28 @@ export {
   type TimeoutFn,
   // Noop
   noop,
-  // Reduced Motion
-  prefersReducedMotion,
   // Video
   captureFrame,
   createSharedVideo,
   type SharedVideoConfig,
   type SharedVideoInstance,
+  // Media Loading
+  observeMediaLoading,
+  type MediaLoadingCallbacks,
+  // Sound
+  createSoundController,
+  syncMutedToVideo,
+  type SoundController,
+  // Content Loading
+  createContentLoadingController,
+  type ContentLoadingController,
+  // LRU Cache
+  createLruCache,
+  type LruCache,
+  // Content Preloader
+  createContentPreloader,
+  type ContentPreloader,
+  type ContentPreloaderConfig,
 } from './lib/utils';
 
 // Gestures
@@ -113,12 +127,13 @@ export type {
 
 // Transitions
 export {
+  slideTransition,
+  flipTransition,
   cubeTransition,
   fadeTransition,
-  getTransitionFn,
+  zoomTransition,
 } from './lib/slider/transitions';
 export type {
   SlideTransformStyle,
   TransitionTransformFn,
-  TransitionType,
 } from './lib/slider/transitions';

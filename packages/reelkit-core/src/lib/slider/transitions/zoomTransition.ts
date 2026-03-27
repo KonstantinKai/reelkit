@@ -1,15 +1,14 @@
-import { clamp } from '../../utils/number';
 import type { SliderDirection } from '../types';
 import type { SlideTransformStyle } from './types';
 
 /**
- * Computes per-slide opacity for a crossfade transition.
+ * Computes per-slide scale and opacity for a zoom transition.
  *
- * The current slide fades from opacity 1 → 0 while the incoming slide
- * fades from 0 → 1. All slides are stacked absolutely; the active slide
- * gets the highest z-index.
+ * The current slide is at full scale and opacity. Neighboring slides
+ * scale down to 0.8 and fade out, creating a zoom-in/zoom-out effect
+ * commonly used in image gallery lightboxes.
  */
-export const fadeTransition = (
+export const zoomTransition = (
   axisValue: number,
   slideIndex: number,
   currentRangeIndex: number,
@@ -22,9 +21,14 @@ export const fadeTransition = (
   const progress = (axisValue - baseOffset) / primarySize;
   const slideOffset = slideIndex - currentRangeIndex;
   const distance = Math.abs(slideOffset + progress);
-  const opacity = clamp(1 - distance, 0, 1);
+
+  if (distance >= 1) return { opacity: 0, zIndex: 0 };
+
+  const scale = 1 - distance * 0.2;
+  const opacity = 1 - distance;
 
   return {
+    transform: `scale(${scale})`,
     opacity,
     zIndex: slideIndex === currentRangeIndex ? 2 : 1,
   };

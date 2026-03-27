@@ -28,11 +28,11 @@ import type {
   SliderController,
 } from './types';
 
-const DEFAULT_TRANSITION_DURATION = 300;
-const DEFAULT_SWIPE_DISTANCE_FACTOR = 0.12;
-const MAX_VISIBLE_SLIDES = 3;
-const KEYBOARD_THROTTLE_MS = DEFAULT_TRANSITION_DURATION + 100;
-const DEFAULT_WHEEL_DEBOUNCE_MS = 200;
+const _kDefaultTransitionDuration = 300;
+const _kDefaultSwipeDistanceFactor = 0.12;
+const _kMaxVisibleSlides = 3;
+const _kKeyboardThrottleMs = _kDefaultTransitionDuration + 100;
+const _kDefaultWheelDebounceMs = 200;
 
 /**
  * Default range extractor that computes the visible slide indices with an
@@ -76,13 +76,12 @@ export const createSliderController = (
     direction: initialConfig.direction ?? 'vertical',
     loop: initialConfig.loop ?? false,
     transitionDuration:
-      initialConfig.transitionDuration ?? DEFAULT_TRANSITION_DURATION,
+      initialConfig.transitionDuration ?? _kDefaultTransitionDuration,
     swipeDistanceFactor:
-      initialConfig.swipeDistanceFactor ?? DEFAULT_SWIPE_DISTANCE_FACTOR,
+      initialConfig.swipeDistanceFactor ?? _kDefaultSwipeDistanceFactor,
     rangeExtractor: initialConfig.rangeExtractor ?? defaultRangeExtractor,
     enableWheel: initialConfig.enableWheel ?? false,
-    wheelDebounceMs: initialConfig.wheelDebounceMs ?? DEFAULT_WHEEL_DEBOUNCE_MS,
-    transition: initialConfig.transition ?? 'slide',
+    wheelDebounceMs: initialConfig.wheelDebounceMs ?? _kDefaultWheelDebounceMs,
     enableGestures: initialConfig.enableGestures ?? true,
   };
 
@@ -111,11 +110,11 @@ export const createSliderController = (
         config.count,
         config.loop,
       );
-      if (range.length <= MAX_VISIBLE_SLIDES) return range;
+      if (range.length <= _kMaxVisibleSlides) return range;
 
       const pos = range.indexOf(index.value);
-      const start = clamp(pos - 1, 0, range.length - MAX_VISIBLE_SLIDES);
-      return range.slice(start, start + MAX_VISIBLE_SLIDES);
+      const start = clamp(pos - 1, 0, range.length - _kMaxVisibleSlides);
+      return range.slice(start, start + _kMaxVisibleSlides);
     },
     () => [index, goToOverride],
   );
@@ -263,11 +262,15 @@ export const createSliderController = (
       onVerticalDragStart: !isHorizontal() ? onMainAxisDragStart : undefined,
       onVerticalDragUpdate: !isHorizontal() ? onDragUpdate : undefined,
       onDragEnd: onAxisAwareDragEnd,
+      onTap: (e) => events.onTap?.(e),
+      onDoubleTap: (e) => events.onDoubleTap?.(e),
+      onLongPress: (e) => events.onLongPress?.(e),
+      onLongPressEnd: (e) => events.onLongPressEnd?.(e),
     },
   );
 
   const keyboardController = createKeyboardController(
-    { throttleMs: KEYBOARD_THROTTLE_MS },
+    { throttleMs: _kKeyboardThrottleMs },
     {
       onKeyPress: (key: NavKey) => {
         let increment: -1 | 1 | null = null;

@@ -1,22 +1,19 @@
 import type { SliderDirection } from '../types';
 import type { SlideTransformStyle } from './types';
 
-const _kMaxAngle = 60;
-const _kPerspectivePx = 500;
+const _kMaxAngle = 20;
+const _kPerspectivePx = 1000;
+const _kScaleDip = 0.02;
 
 /**
- * Computes per-slide 3D cube rotation transforms.
+ * Computes per-slide flip transition transforms.
  *
- * Credits: [ohcubeview](https://github.com/oyvinddd/ohcubeview). Each
- * face slides via `translateX` and rotates up to 60° around its near edge.
- * A close `perspective(500px)` gives prominent 3D foreshortening. The
- * `transform-origin` toggles between left and right edges depending on
- * scroll direction, matching the physical hinge of a cube face.
- *
- * Unlike {@link flipTransition}, cube uses linear rotation proportional to
- * scroll position (not a bell curve), producing a more dramatic 3D effect.
+ * Combines horizontal/vertical translation with a small 3D rotation that
+ * peaks at the midpoint, creating an Instagram-style flip appearance.
+ * Uses per-element `perspective()` with `transform-origin` at the meeting
+ * edge — no `preserve-3d` required, works with `overflow: hidden`.
  */
-export const cubeTransition = (
+export const flipTransition = (
   axisValue: number,
   slideIndex: number,
   currentRangeIndex: number,
@@ -39,19 +36,22 @@ export const cubeTransition = (
   const rotateAxis = isHorizontal ? 'Y' : 'X';
   const translatePx = t * primarySize;
 
+  const bell = Math.sin(Math.abs(t) * Math.PI);
+  const rotSign = t >= 0 ? -1 : 1;
   const axisSign = isHorizontal ? 1 : -1;
-  const rotation = t * _kMaxAngle * axisSign;
+  const rotation = bell * _kMaxAngle * rotSign * axisSign;
+  const scale = 1 - bell * _kScaleDip;
 
   const origin = isHorizontal
-    ? t < 0
-      ? 'right center'
-      : 'left center'
-    : t < 0
+    ? t >= 0
+      ? 'center right'
+      : 'center left'
+    : t >= 0
       ? 'center bottom'
       : 'center top';
 
   return {
-    transform: `translate${translateAxis}(${translatePx}px) perspective(${_kPerspectivePx}px) rotate${rotateAxis}(${rotation}deg)`,
+    transform: `translate${translateAxis}(${translatePx}px) scale(${scale}) perspective(${_kPerspectivePx}px) rotate${rotateAxis}(${rotation}deg)`,
     transformOrigin: origin,
     opacity: 1,
     zIndex: slideIndex === currentRangeIndex ? 2 : 1,

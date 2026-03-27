@@ -15,8 +15,8 @@ import type {
   GestureController,
 } from './types';
 
-const DEFAULT_LONG_PRESS_DURATION_MS = 800;
-const DEFAULT_DOUBLE_TAP_WINDOW_MS = 300;
+const _kDefaultLongPressDurationMs = 800;
+const _kDefaultDoubleTapWindowMs = 200;
 
 const getDominantAxis = (delta: Offset): DragAxis => {
   const [dx, dy] = [abs(first(delta)), abs(last(delta))];
@@ -54,8 +54,8 @@ export const createGestureController = (
 ): GestureController => {
   const {
     useTouchEventsOnly = false,
-    longPressDurationMs = DEFAULT_LONG_PRESS_DURATION_MS,
-    doubleTapWindowMs = DEFAULT_DOUBLE_TAP_WINDOW_MS,
+    longPressDurationMs = _kDefaultLongPressDurationMs,
+    doubleTapWindowMs = _kDefaultDoubleTapWindowMs,
   } = config;
   const disposables = createDisposableList();
 
@@ -69,10 +69,19 @@ export const createGestureController = (
   let updateEvents: GestureAxisDragUpdateEvent[] = [];
   let lockedAxis: DragAxis = null;
   let longPressDetected = false;
+  let tapSuppressed = false;
 
-  // Tap / double-tap state
   let lastTapTimestamp = 0;
   let pendingTapTimer: ReturnType<typeof setTimeout> | null = null;
+
+  const isInteractiveTarget = (target: EventTarget | null): boolean => {
+    if (typeof HTMLElement === 'undefined' || !(target instanceof HTMLElement))
+      return false;
+    return (
+      target.closest('button, a, input, select, textarea, [role="button"]') !==
+      null
+    );
+  };
 
   const longPressTimeout = timeout((event: GestureCommonEvent) => {
     if (
@@ -106,6 +115,7 @@ export const createGestureController = (
     let kind: EventKind;
     const elementRect = element.getBoundingClientRect();
     elementTopLeft = [elementRect.x, elementRect.y];
+    tapSuppressed = isInteractiveTarget(event.target);
 
     if (isTouchEvent(event)) {
       kind = 'touch';
@@ -216,7 +226,12 @@ export const createGestureController = (
 
     // Tap / double-tap detection: only when no drag occurred and no long press
     const wasDrag = lastUpdateEvent !== null;
-    if (!wasDrag && !wasLongPress && savedInitialEvent !== null) {
+    if (
+      !wasDrag &&
+      !wasLongPress &&
+      !tapSuppressed &&
+      savedInitialEvent !== null
+    ) {
       const tapEvent: GestureCommonEvent = { ...commonEvent, kind };
       const now = Date.now();
 
@@ -295,20 +310,16 @@ export const createGestureController = (
     }
   };
 
-  const unobserve = () => {
-    disposables.dispose();
-  };
-
   return {
     attach(el: HTMLElement) {
       element = el;
     },
     detach() {
-      unobserve();
+      disposables.dispose();
       element = null;
     },
     observe,
-    unobserve,
+    unobserve: disposables.dispose,
     updateEvents(newEvents: Partial<GestureControllerEvents>) {
       currentEvents = { ...currentEvents, ...newEvents };
     },

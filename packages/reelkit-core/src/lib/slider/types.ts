@@ -1,5 +1,5 @@
 import type { Signal, ComputedSignal } from '../utils/signal';
-import type { TransitionType } from './transitions/types';
+import type { GestureCommonEvent, GestureEvent } from '../gestures/types';
 
 /** Axis along which the slider moves. */
 export type SliderDirection = 'horizontal' | 'vertical';
@@ -74,15 +74,6 @@ export interface SliderConfig {
   swipeDistanceFactor?: number;
 
   /**
-   * Custom function that determines which slide indices are rendered.
-   * Defaults to the built-in extractor that returns current ± 1 overscan.
-   *
-   * NOTE: The result is clamped to a maximum of 3 indices. If more are
-   * returned, the controller keeps 3 centered around the current slide.
-   */
-  rangeExtractor?: RangeExtractor;
-
-  /**
    * Enable mouse wheel navigation.
    * @default false
    */
@@ -95,18 +86,21 @@ export interface SliderConfig {
   wheelDebounceMs?: number;
 
   /**
-   * Transition effect used for slide animations.
-   * @default 'slide'
-   */
-  transition?: TransitionType;
-
-  /**
    * Whether gesture (touch/mouse drag) navigation is enabled.
    * When `false`, the gesture controller is not attached. Navigation
    * is still possible via the API (`next`, `prev`, `goTo`).
    * @default true
    */
   enableGestures?: boolean;
+
+  /**
+   * Custom function that determines which slide indices are rendered.
+   * Defaults to the built-in extractor that returns current ± 1 overscan.
+   *
+   * NOTE: The result is clamped to a maximum of 3 indices. If more are
+   * returned, the controller keeps 3 centered around the current slide.
+   */
+  rangeExtractor?: RangeExtractor;
 }
 
 /**
@@ -149,6 +143,21 @@ export interface SliderEvents {
    * @param index - The slide index that remains active.
    */
   onDragCanceled?: (index: number) => void;
+
+  /**
+   * Fired on a single tap (no drag, no long press).
+   * Delayed by the double-tap window to distinguish from double-taps.
+   */
+  onTap?: (event: GestureCommonEvent) => void;
+
+  /** Fired when two taps occur within the double-tap time window. */
+  onDoubleTap?: (event: GestureCommonEvent) => void;
+
+  /** Fired when a long press is detected. */
+  onLongPress?: (event: GestureCommonEvent) => void;
+
+  /** Fired when the pointer is released after a long press. */
+  onLongPressEnd?: (event: GestureEvent) => void;
 }
 
 /**
