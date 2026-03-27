@@ -1,5 +1,15 @@
 import React, { useRef, useLayoutEffect, useEffect, useState } from 'react';
-import { createSharedVideo, captureFrame, noop } from '@reelkit/react';
+import {
+  createSignal,
+  createSharedVideo,
+  createDisposableList,
+  observeMediaLoading,
+  syncMutedToVideo,
+  captureFrame,
+  noop,
+  Observe,
+  useSoundState,
+} from '@reelkit/react';
 import './LightboxVideoSlide.css';
 
 /**
@@ -20,25 +30,17 @@ export interface LightboxVideoSlideProps {
 
   /** Unique key for persisting playback position and captured frames. */
   slideKey: string;
+
+  /** Called when the video starts playing (buffering complete). */
+  onPlaying?: () => void;
+
+  /** Called when the video stalls (buffering mid-playback). */
+  onWaiting?: () => void;
 }
 
 const shared = createSharedVideo({
   className: 'rk-lightbox-video-element',
 });
-
-/** Current muted state, kept in sync by `useVideoSlideRenderer`. */
-let currentMuted = true;
-
-/**
- * Set the muted state on the shared video element directly.
- * Called by `useVideoSlideRenderer` — no re-render needed.
- * @internal
- */
-export const setLightboxVideoMuted = (muted: boolean): void => {
-  currentMuted = muted;
-  const video = shared.getVideo();
-  video.muted = muted;
-};
 
 const useIsomorphicLayoutEffect =
   typeof window !== 'undefined' ? useLayoutEffect : useEffect;
@@ -59,33 +61,41 @@ const LightboxVideoSlide: React.FC<LightboxVideoSlideProps> = ({
   isActive,
   size,
   slideKey,
+  onPlaying,
+  onWaiting,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [showPoster, setShowPoster] = useState(true);
+  const soundState = useSoundState();
+  const [showPoster] = useState(() => createSignal(true));
+  const callbacksRef = useRef({ onPlaying, onWaiting });
+  callbacksRef.current = { onPlaying, onWaiting };
 
   useIsomorphicLayoutEffect(() => {
     if (!isActive || !containerRef.current) return;
 
     const video = shared.getVideo();
     const container = containerRef.current;
+    const disposables = createDisposableList();
 
-    setIsLoading(true);
-    setShowPoster(true);
+    showPoster.value = true;
 
-    const handleCanPlay = () => setIsLoading(false);
-    const handleWaiting = () => setIsLoading(true);
-    const handlePlaying = () => {
-      setIsLoading(false);
-      setShowPoster(false);
-    };
-
-    video.addEventListener('canplay', handleCanPlay);
-    video.addEventListener('waiting', handleWaiting);
-    video.addEventListener('playing', handlePlaying);
+    disposables.push(
+      observeMediaLoading(video, {
+        onReady: () => {
+          callbacksRef.current.onPlaying?.();
+        },
+        onWaiting: () => {
+          callbacksRef.current.onWaiting?.();
+        },
+        onPlaying: () => {
+          showPoster.value = false;
+        },
+      }),
+    );
 
     video.src = src;
-    video.muted = currentMuted;
+    video.muted = soundState.muted.value;
+    disposables.push(syncMutedToVideo(soundState, video));
     video.style.objectFit = 'contain';
 
     const savedPosition = shared.playbackPositions.get(slideKey);
@@ -94,11 +104,7 @@ const LightboxVideoSlide: React.FC<LightboxVideoSlideProps> = ({
     container.appendChild(video);
     video.play().catch(noop);
 
-    return () => {
-      video.removeEventListener('canplay', handleCanPlay);
-      video.removeEventListener('waiting', handleWaiting);
-      video.removeEventListener('playing', handlePlaying);
-
+    disposables.push(() => {
       shared.playbackPositions.set(slideKey, video.currentTime);
 
       const frame = captureFrame(video);
@@ -109,9 +115,9 @@ const LightboxVideoSlide: React.FC<LightboxVideoSlideProps> = ({
       if (video.parentNode === container) {
         container.removeChild(video);
       }
+    });
 
-      setIsLoading(false);
-    };
+    return disposables.dispose;
   }, [isActive, src, slideKey]);
 
   return (
@@ -123,18 +129,20 @@ const LightboxVideoSlide: React.FC<LightboxVideoSlideProps> = ({
         height: size[1],
       }}
     >
-      {(shared.capturedFrames.get(slideKey) ?? poster) && (
-        <img
-          src={shared.capturedFrames.get(slideKey) ?? poster}
-          alt=""
-          className={`rk-lightbox-video-poster ${!isActive || showPoster ? 'rk-visible' : ''}`}
-          style={{ objectFit: 'contain' }}
-        />
-      )}
-
-      <div
-        className={`rk-lightbox-video-loader ${isLoading ? 'rk-visible' : ''}`}
-      />
+      <Observe signals={[showPoster]}>
+        {() => {
+          const posterSrc = shared.capturedFrames.get(slideKey) ?? poster;
+          if (!posterSrc) return null;
+          return (
+            <img
+              src={posterSrc}
+              alt=""
+              className={`rk-lightbox-video-poster ${!isActive || showPoster.value ? 'rk-visible' : ''}`}
+              style={{ objectFit: 'contain' }}
+            />
+          );
+        }}
+      </Observe>
     </div>
   );
 };

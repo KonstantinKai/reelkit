@@ -112,7 +112,7 @@ export const requestFullscreen = (element: HTMLElement): Promise<void> => {
 
 /** Exits fullscreen via the standard or vendor-prefixed API. */
 export const exitFullscreen = (): Promise<void> => {
-  if (_kIsSafari) return Promise.resolve();
+  if (_kIsSafari || !checkFullscreen()) return Promise.resolve();
 
   const doc = document as FullscreenDocument;
   const fn =

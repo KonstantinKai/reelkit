@@ -1,15 +1,14 @@
 import {
   type ReactNode,
-  useState,
+  type FC,
   useCallback,
   useEffect,
   useMemo,
 } from 'react';
+import { Observe, SoundProvider, useSoundState } from '@reelkit/react';
 import type { LightboxItem } from './LightboxOverlay';
 import type { LightboxControlsRenderProps } from './types';
-import LightboxVideoSlide, {
-  setLightboxVideoMuted,
-} from './LightboxVideoSlide';
+import LightboxVideoSlide from './LightboxVideoSlide';
 import {
   Counter,
   CloseButton,
@@ -22,6 +21,22 @@ import {
  */
 export interface UseVideoSlideRendererResult {
   /**
+   * Wrap `LightboxOverlay` in this to provide sound context.
+   * Required for video mute/unmute to work.
+   *
+   * @example
+   * ```tsx
+   * <SoundProvider>
+   *   <LightboxOverlay ... />
+   * </SoundProvider>
+   * ```
+   */
+  SoundProvider: FC<{ children: ReactNode }>;
+
+  /** `true` when at least one item has `type: 'video'`. */
+  hasVideo: boolean;
+
+  /**
    * Pass this to `LightboxOverlay`'s `renderSlide` prop.
    * Returns a `LightboxVideoSlide` for video items, or `null` to fall
    * back to the default image slide.
@@ -31,16 +46,9 @@ export interface UseVideoSlideRendererResult {
     index: number,
     size: [number, number],
     isActive: boolean,
+    onReady: () => void,
+    onWaiting: () => void,
   ) => ReactNode | null;
-
-  /** Whether audio is currently muted. Defaults to `true`. */
-  isMuted: boolean;
-
-  /** Toggle the muted state. */
-  onToggleMute: () => void;
-
-  /** `true` when at least one item has `type: 'video'`. */
-  hasVideo: boolean;
 
   /**
    * Ready-to-use `renderControls` callback with Counter, FullscreenButton,
@@ -62,43 +70,67 @@ export interface UseVideoSlideRendererResult {
  * ```tsx
  * import { LightboxOverlay, useVideoSlideRenderer } from '@reelkit/react-lightbox';
  *
- * const { renderSlide, renderControls } = useVideoSlideRenderer(items, isOpen);
+ * const { renderSlide, renderControls, SoundProvider } = useVideoSlideRenderer(items);
  *
- * <LightboxOverlay
- *   images={items}
- *   renderSlide={renderSlide}
- *   renderControls={renderControls}
- * />
+ * <SoundProvider>
+ *   <LightboxOverlay
+ *     images={items}
+ *     renderSlide={renderSlide}
+ *     renderControls={renderControls}
+ *   />
+ * </SoundProvider>
  * ```
  */
-export function useVideoSlideRenderer(
-  items: LightboxItem[],
-  isOpen?: boolean,
-): UseVideoSlideRendererResult {
-  const [isMuted, setIsMuted] = useState(true);
+const VideoLightboxControls: FC<
+  LightboxControlsRenderProps & { isVideoSlide: boolean }
+> = ({
+  onClose,
+  currentIndex,
+  count,
+  isFullscreen,
+  onToggleFullscreen,
+  isVideoSlide,
+}) => {
+  const soundState = useSoundState();
 
-  const onToggleMute = useCallback(() => {
-    setIsMuted((prev) => !prev);
+  useEffect(() => {
+    return () => {
+      soundState.muted.value = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  return (
+    <>
+      <div className="rk-lightbox-controls-left">
+        <Counter currentIndex={currentIndex} count={count} />
+        <FullscreenButton
+          isFullscreen={isFullscreen}
+          onToggle={onToggleFullscreen}
+        />
+        {isVideoSlide && (
+          <Observe signals={[soundState.muted]}>
+            {() => (
+              <SoundButton
+                isMuted={soundState.muted.value}
+                onToggle={soundState.toggle}
+              />
+            )}
+          </Observe>
+        )}
+      </div>
+      <CloseButton onClick={onClose} />
+    </>
+  );
+};
+
+export function useVideoSlideRenderer(
+  items: LightboxItem[],
+): UseVideoSlideRendererResult {
   const hasVideo = useMemo(
     () => items.some((item) => item.type === 'video'),
     [items],
   );
-
-  // Sync muted state to the shared video element directly —
-  // no re-render or renderSlide reference change needed.
-  useEffect(() => {
-    setLightboxVideoMuted(isMuted);
-  }, [isMuted]);
-
-  // Reset to muted when the lightbox closes so the next open can autoplay.
-  useEffect(() => {
-    if (isOpen === false) {
-      setIsMuted(true);
-      setLightboxVideoMuted(true);
-    }
-  }, [isOpen]);
 
   const renderSlide = useCallback(
     (
@@ -106,6 +138,8 @@ export function useVideoSlideRenderer(
       index: number,
       size: [number, number],
       isActive: boolean,
+      onReady: () => void,
+      onWaiting: () => void,
     ): ReactNode | null => {
       if ((item.type ?? 'image') !== 'video') return null;
 
@@ -116,6 +150,8 @@ export function useVideoSlideRenderer(
           isActive={isActive}
           size={size}
           slideKey={`lightbox-${index}`}
+          onPlaying={onReady}
+          onWaiting={onWaiting}
         />
       );
     },
@@ -123,29 +159,14 @@ export function useVideoSlideRenderer(
   );
 
   const renderControls = useCallback(
-    ({
-      onClose,
-      currentIndex,
-      count,
-      isFullscreen,
-      onToggleFullscreen,
-    }: LightboxControlsRenderProps): ReactNode => (
-      <>
-        <div className="rk-lightbox-controls-left">
-          <Counter currentIndex={currentIndex} count={count} />
-          <FullscreenButton
-            isFullscreen={isFullscreen}
-            onToggle={onToggleFullscreen}
-          />
-          {hasVideo && (
-            <SoundButton isMuted={isMuted} onToggle={onToggleMute} />
-          )}
-        </div>
-        <CloseButton onClick={onClose} />
-      </>
+    (props: LightboxControlsRenderProps): ReactNode => (
+      <VideoLightboxControls
+        {...props}
+        isVideoSlide={items[props.currentIndex]?.type === 'video'}
+      />
     ),
-    [hasVideo, isMuted, onToggleMute],
+    [items],
   );
 
-  return { renderSlide, isMuted, onToggleMute, hasVideo, renderControls };
+  return { renderSlide, SoundProvider, hasVideo, renderControls };
 }

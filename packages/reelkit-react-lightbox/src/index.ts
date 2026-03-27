@@ -44,6 +44,10 @@
 
 // Main component
 export { LightboxOverlay } from './lib/LightboxOverlay';
+
+// Transitions
+export { lightboxFadeTransition } from './lib/lightboxFadeTransition';
+export { lightboxZoomTransition } from './lib/lightboxZoomTransition';
 export type {
   LightboxOverlayProps,
   LightboxItem,
@@ -77,10 +81,3 @@ export { default as LightboxVideoSlide } from './lib/LightboxVideoSlide';
 export type { LightboxVideoSlideProps } from './lib/LightboxVideoSlide';
 export { useVideoSlideRenderer } from './lib/useVideoSlideRenderer';
 export type { UseVideoSlideRendererResult } from './lib/useVideoSlideRenderer';
-
-// Hooks (for custom implementations)
-export { useFullscreen } from './lib/useFullscreen';
-export type {
-  UseFullscreenProps,
-  UseFullscreenResult,
-} from './lib/useFullscreen';

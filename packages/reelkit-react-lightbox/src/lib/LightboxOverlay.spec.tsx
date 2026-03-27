@@ -1,15 +1,18 @@
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { slideTransition, type ReelProps } from '@reelkit/react';
 import type { LightboxItem } from './LightboxOverlay';
+import { lightboxFadeTransition } from './lightboxFadeTransition';
+import { lightboxZoomTransition } from './lightboxZoomTransition';
 
 // Track Reel props
-let lastReelProps: Record<string, unknown> = {};
+let lastReelProps: Partial<ReelProps> = {};
 
 vi.mock('@reelkit/react', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@reelkit/react')>();
   return {
     ...actual,
-    Reel: (props: Record<string, unknown>) => {
+    Reel: (props: ReelProps) => {
       lastReelProps = props;
       if (props.apiRef) {
         const ref = props.apiRef as { current: unknown };
@@ -23,20 +26,30 @@ vi.mock('@reelkit/react', async (importOriginal) => {
         };
       }
       // Invoke itemBuilder for index 0 so renderSlide gets exercised
-      const itemBuilder = props.itemBuilder as
-        | ((
-            index: number,
-            key: number,
-            size: [number, number],
-          ) => React.ReactNode)
-        | undefined;
       return (
         <div data-testid="mock-reel">
-          {itemBuilder && itemBuilder(0, 0, [1024, 768])}
+          {props.itemBuilder?.(0, 0, [1024, 768])}
         </div>
       );
     },
     useBodyLock: vi.fn(),
+    useFullscreen: () => [
+      mockFullscreenSignal,
+      mockRequestFullscreen,
+      mockExitFullscreen,
+      mockToggleFullscreen,
+    ],
+    SwipeToClose: ({
+      children,
+      enabled,
+    }: {
+      children: React.ReactNode;
+      enabled?: boolean;
+    }) => (
+      <div data-testid="mock-swipe-to-close" data-enabled={enabled}>
+        {children}
+      </div>
+    ),
   };
 });
 
@@ -44,31 +57,12 @@ vi.mock('@reelkit/react', async (importOriginal) => {
 const mockRequestFullscreen = vi.fn();
 const mockExitFullscreen = vi.fn();
 const mockToggleFullscreen = vi.fn();
-let mockIsFullscreen = false;
-
-vi.mock('./useFullscreen', () => ({
-  useFullscreen: () => [
-    mockIsFullscreen,
-    mockRequestFullscreen,
-    mockExitFullscreen,
-    mockToggleFullscreen,
-  ],
-}));
-
-vi.mock('./SwipeToClose', () => ({
-  SwipeToClose: ({
-    children,
-    enabled,
-  }: {
-    children: React.ReactNode;
-
-    enabled: boolean;
-  }) => (
-    <div data-testid="mock-swipe-to-close" data-enabled={enabled}>
-      {children}
-    </div>
-  ),
-}));
+const mockFullscreenSignal = {
+  _value: false,
+  get value() { return this._value; },
+  set value(v: boolean) { this._value = v; },
+  observe: () => vi.fn(),
+};
 
 vi.mock('lucide-react', () => ({
   X: () => <span>X</span>,
@@ -92,7 +86,7 @@ const mockImages: LightboxItem[] = [
 describe('LightboxOverlay', () => {
   beforeEach(() => {
     lastReelProps = {};
-    mockIsFullscreen = false;
+    mockFullscreenSignal._value = false;
     mockRequestFullscreen.mockClear();
     mockExitFullscreen.mockClear();
 
@@ -109,7 +103,7 @@ describe('LightboxOverlay', () => {
 
     // Desktop by default (no touch)
     // NOTE: do NOT define 'ontouchstart' - its mere existence on window makes isMobile true
-    delete (window as Record<string, unknown>)['ontouchstart'];
+    delete (window as unknown as Record<string, unknown>)['ontouchstart'];
     Object.defineProperty(navigator, 'maxTouchPoints', {
       value: 0,
       writable: true,
@@ -167,7 +161,7 @@ describe('LightboxOverlay', () => {
     });
 
     it('exits fullscreen on ESC when fullscreen is active', () => {
-      mockIsFullscreen = true;
+      mockFullscreenSignal._value = true;
       const onClose = vi.fn();
 
       render(
@@ -256,7 +250,7 @@ describe('LightboxOverlay', () => {
 
       fireEvent.click(screen.getByTitle('Previous'));
 
-      const ref = lastReelProps.apiRef as {
+      const ref = lastReelProps.apiRef as unknown as {
         current: { prev: ReturnType<typeof vi.fn> };
       };
       expect(ref.current.prev).toHaveBeenCalled();
@@ -273,7 +267,7 @@ describe('LightboxOverlay', () => {
     });
 
     it('shows minimize icon when fullscreen', () => {
-      mockIsFullscreen = true;
+      mockFullscreenSignal._value = true;
 
       render(
         <LightboxOverlay isOpen={true} images={mockImages} onClose={vi.fn()} />,
@@ -724,94 +718,53 @@ describe('LightboxOverlay', () => {
       expect(document.querySelector('.rk-lightbox-img')).toBeNull();
     });
 
-    it('applies transition class to custom slide wrapper (fade)', () => {
+    it('maps fade alias to lightboxFadeTransition', () => {
       render(
         <LightboxOverlay
           isOpen={true}
           images={mockImages}
           onClose={vi.fn()}
           transition="fade"
-          renderSlide={() => <div data-testid="custom-slide">Custom</div>}
         />,
       );
 
-      const slide = document.querySelector('.rk-lightbox-slide');
-      expect(slide).toBeTruthy();
-      expect(slide!.classList.contains('rk-transition-fade')).toBe(true);
+      expect(lastReelProps.transition).toBe(lightboxFadeTransition);
     });
 
-    it('applies transition class to custom slide wrapper (zoom-in)', () => {
+    it('maps zoom-in alias to lightboxZoomTransition', () => {
       render(
         <LightboxOverlay
           isOpen={true}
           images={mockImages}
           onClose={vi.fn()}
           transition="zoom-in"
-          renderSlide={() => <div data-testid="custom-slide">Custom</div>}
         />,
       );
 
-      const slide = document.querySelector('.rk-lightbox-slide');
-      expect(slide!.classList.contains('rk-transition-zoom-in')).toBe(true);
+      expect(lastReelProps.transition).toBe(lightboxZoomTransition);
     });
 
-    it('applies rk-active class to active custom slide', () => {
+    it('defaults to slideTransition', () => {
+      render(
+        <LightboxOverlay isOpen={true} images={mockImages} onClose={vi.fn()} />,
+      );
+
+      expect(lastReelProps.transition).toBe(slideTransition);
+    });
+
+    it('transitionFn takes priority over alias', () => {
+      const customFn = vi.fn();
       render(
         <LightboxOverlay
           isOpen={true}
           images={mockImages}
           onClose={vi.fn()}
           transition="fade"
-          renderSlide={() => <div data-testid="custom-slide">Custom</div>}
+          transitionFn={customFn}
         />,
       );
 
-      // Mock Reel calls itemBuilder(0, 0, size) and index 0 is active
-      const slide = document.querySelector('.rk-lightbox-slide');
-      expect(slide!.classList.contains('rk-active')).toBe(true);
-    });
-
-    it('does not apply rk-active class to inactive custom slide', () => {
-      render(
-        <LightboxOverlay
-          isOpen={true}
-          images={mockImages}
-          onClose={vi.fn()}
-          transition="fade"
-          renderSlide={() => <div data-testid="custom-slide">Custom</div>}
-        />,
-      );
-
-      // Navigate to index 1, then invoke itemBuilder for index 0 (now inactive)
-      const afterChange = lastReelProps.afterChange as (index: number) => void;
-      act(() => afterChange(1));
-
-      const itemBuilder = lastReelProps.itemBuilder as (
-        index: number,
-        indexInRange: number,
-        size: [number, number],
-      ) => React.ReactNode;
-      const result = itemBuilder(0, 0, [1024, 768]);
-
-      // Render the result to inspect classes
-      const { container } = render(result as React.ReactElement);
-      const slide = container.querySelector('.rk-lightbox-slide');
-      expect(slide!.classList.contains('rk-transition-fade')).toBe(true);
-      expect(slide!.classList.contains('rk-active')).toBe(false);
-    });
-
-    it('does not add transition class for default slide transition', () => {
-      render(
-        <LightboxOverlay
-          isOpen={true}
-          images={mockImages}
-          onClose={vi.fn()}
-          renderSlide={() => <div data-testid="custom-slide">Custom</div>}
-        />,
-      );
-
-      const slide = document.querySelector('.rk-lightbox-slide');
-      expect(slide!.className).not.toContain('rk-transition-');
+      expect(lastReelProps.transition).toBe(customFn);
     });
 
     it('keeps itemBuilder reference stable on slide change so video slides are not remounted', () => {
@@ -876,6 +829,8 @@ describe('LightboxOverlay', () => {
         0,
         [1024, 768],
         true,
+        expect.any(Function),
+        expect.any(Function),
       );
 
       renderSlide.mockClear();
@@ -898,6 +853,8 @@ describe('LightboxOverlay', () => {
         1,
         [1024, 768],
         true,
+        expect.any(Function),
+        expect.any(Function),
       );
 
       // And isActive=false for the image slide
@@ -908,6 +865,8 @@ describe('LightboxOverlay', () => {
         0,
         [1024, 768],
         false,
+        expect.any(Function),
+        expect.any(Function),
       );
     });
   });

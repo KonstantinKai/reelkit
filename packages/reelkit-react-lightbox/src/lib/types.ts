@@ -4,9 +4,6 @@ import type { LightboxItem } from './LightboxOverlay';
  * Props passed to the {@link LightboxOverlay} `renderControls` callback.
  */
 export interface LightboxControlsRenderProps {
-  /** Callback to close the lightbox. */
-  onClose: () => void;
-
   /** Zero-based index of the currently active slide. */
   currentIndex: number;
 
@@ -16,6 +13,9 @@ export interface LightboxControlsRenderProps {
   /** Whether the lightbox is currently in fullscreen mode. */
   isFullscreen: boolean;
 
+  /** Callback to close the lightbox. */
+  onClose: () => void;
+
   /** Toggle fullscreen mode. */
   onToggleFullscreen: () => void;
 }
@@ -24,17 +24,17 @@ export interface LightboxControlsRenderProps {
  * Props passed to the {@link LightboxOverlay} `renderNavigation` callback.
  */
 export interface NavigationRenderProps {
-  /** Navigate to the previous slide. */
-  onPrev: () => void;
-
-  /** Navigate to the next slide. */
-  onNext: () => void;
-
   /** Zero-based index of the currently active slide. */
   activeIndex: number;
 
   /** Total number of slides. */
   count: number;
+
+  /** Navigate to the previous slide. */
+  onPrev: () => void;
+
+  /** Navigate to the next slide. */
+  onNext: () => void;
 }
 
 /**

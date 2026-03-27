@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-useless-fragment */
 import {
   type MutableRefObject,
   type ReactNode,
@@ -5,20 +6,29 @@ import {
   useRef,
   useState,
   useEffect,
-  useCallback,
 } from 'react';
 import { createPortal } from 'react-dom';
 import {
   createSignal,
+  createContentLoadingController,
+  createContentPreloader,
+  createDisposableList,
+  reaction,
+  observeDomEvent,
+  slideTransition,
+  flipTransition,
   Reel,
   Observe,
   useBodyLock,
+  SwipeToClose,
   type ReelApi,
   type ReelProps,
+  type TransitionTransformFn,
 } from '@reelkit/react';
+import { lightboxFadeTransition } from './lightboxFadeTransition';
+import { lightboxZoomTransition } from './lightboxZoomTransition';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useFullscreen } from './useFullscreen';
-import { SwipeToClose } from './SwipeToClose';
+import { useFullscreen } from '@reelkit/react';
 import LightboxControls from './LightboxControls';
 import type {
   LightboxControlsRenderProps,
@@ -26,6 +36,19 @@ import type {
   InfoRenderProps,
 } from './types';
 import './LightboxOverlay.css';
+
+/**
+ * Built-in transition aliases for the lightbox.
+ * Use `transitionFn` for custom {@link TransitionTransformFn} instead.
+ */
+export type TransitionType = 'slide' | 'fade' | 'flip' | 'zoom-in';
+
+const _kTransitionMap: Record<TransitionType, TransitionTransformFn> = {
+  slide: slideTransition,
+  fade: lightboxFadeTransition,
+  flip: flipTransition,
+  'zoom-in': lightboxZoomTransition,
+};
 
 /**
  * Data for a single lightbox item (image or video).
@@ -61,15 +84,6 @@ export interface LightboxItem {
   /** Intrinsic height of the image in pixels. Currently unused by the lightbox. */
   height?: number;
 }
-
-/**
- * Available CSS transition effects applied when navigating between slides.
- *
- * - `'slide'` — standard horizontal slide (default)
- * - `'fade'` — crossfade between images
- * - `'zoom-in'` — zoom in from smaller to normal size
- */
-export type TransitionType = 'slide' | 'fade' | 'zoom-in';
 
 /**
  * Subset of {@link ReelProps} forwarded to the underlying `Reel` component.
@@ -131,24 +145,29 @@ export interface LightboxOverlayProps extends ReelProxyProps {
    */
   initialIndex?: number;
 
-  /** Callback to close the lightbox. Triggered by close button or Escape key. */
-  onClose: () => void;
+  /**
+   * Ref to access the Reel API
+   */
+  apiRef?: MutableRefObject<ReelApi | null>;
 
   /**
-   * Transition animation type
+   * Built-in transition alias.
    * @default 'slide'
    */
   transition?: TransitionType;
 
   /**
+   * Custom transition function. Takes priority over `transition` alias.
+   */
+  transitionFn?: TransitionTransformFn;
+
+  /** Callback to close the lightbox. Triggered by close button or Escape key. */
+  onClose: () => void;
+
+  /**
    * Callback fired after slide change
    */
   onSlideChange?: (index: number) => void;
-
-  /**
-   * Ref to access the Reel API
-   */
-  apiRef?: MutableRefObject<ReelApi | null>;
 
   /**
    * Custom controls. Replaces default close button, counter, and fullscreen toggle.
@@ -168,26 +187,24 @@ export interface LightboxOverlayProps extends ReelProxyProps {
 
   /**
    * Custom slide rendering. Return null to fall back to default image slide.
+   *
+   * The optional `onReady` / `onWaiting` callbacks let the custom slide
+   * report its loading state so the overlay can show/hide the spinner.
    */
   renderSlide?: (
     item: LightboxItem,
     index: number,
     size: [number, number],
     isActive: boolean,
+    onReady: () => void,
+    onWaiting: () => void,
   ) => ReactNode | null;
 }
 
 /** Number of images to preload before and after the current index. */
-const PRELOAD_RANGE = 2;
+const _kPreloadRange = 2;
 
-const preloadedImages = new Set<string>();
-
-const preloadImage = (src: string): void => {
-  if (preloadedImages.has(src)) return;
-  preloadedImages.add(src);
-  const img = new Image();
-  img.src = src;
-};
+const preloader = createContentPreloader();
 
 /**
  * Inner content of the lightbox overlay. Manages slider, controls,
@@ -196,175 +213,230 @@ const preloadImage = (src: string): void => {
  * Rendered only when `isOpen` is `true` (gated by {@link LightboxOverlay}).
  * @internal
  */
-const LightboxContent: FC<LightboxOverlayProps> = ({
-  images,
-  initialIndex = 0,
-  onClose,
-  transition = 'slide',
-  onSlideChange,
-  apiRef,
-  renderControls,
-  renderNavigation,
-  renderInfo,
-  renderSlide,
-  transitionDuration,
-  swipeDistanceFactor,
-  loop = false,
-  useNavKeys = true,
-  enableWheel = true,
-  wheelDebounceMs,
-}) => {
+const LightboxContent: FC<LightboxOverlayProps> = (props) => {
+  const {
+    images,
+    initialIndex = 0,
+    onClose,
+    transition = 'slide',
+    transitionFn,
+    apiRef,
+    loop = false,
+    useNavKeys = true,
+    enableWheel = true,
+    wheelDebounceMs,
+    transitionDuration,
+    swipeDistanceFactor,
+  } = props;
+
+  const propsRef = useRef(props);
+  propsRef.current = props;
+
   const containerRef = useRef<HTMLDivElement>(null);
   const internalApiRef = useRef<ReelApi>(null);
   const sliderRef = apiRef ?? internalApiRef;
-  const [currentIndex, setCurrentIndex] = useState(initialIndex);
-  const currentIndexRef = useRef(currentIndex);
-  currentIndexRef.current = currentIndex;
-  const [sizeSignal] = useState(() =>
-    createSignal<[number, number]>(
+
+  const [
+    {
+      sizeSignal,
+      loadingCtrl,
+      indexSignal,
+      isMobileSignal,
+      handleAfterChange,
+      handlePrev,
+      handleNext,
+      itemBuilder,
+    },
+  ] = useState(() => {
+    const sizeSignal = createSignal<[number, number]>(
       typeof window !== 'undefined'
         ? [window.innerWidth, window.innerHeight]
         : [0, 0],
-    ),
-  );
+    );
+    const loadingCtrl = createContentLoadingController(true, initialIndex);
+    const indexSignal = createSignal(initialIndex);
+    const isMobileSignal = createSignal(
+      typeof window !== 'undefined'
+        ? 'ontouchstart' in window || navigator.maxTouchPoints > 0
+        : false,
+    );
+
+    return {
+      sizeSignal,
+      loadingCtrl,
+      indexSignal,
+      isMobileSignal,
+      handleAfterChange: (index: number) => {
+        loadingCtrl.setActiveIndex(index);
+        const src = propsRef.current.images[index]?.src;
+        if (src && preloader.isLoaded(src)) {
+          loadingCtrl.onReady(index);
+        }
+        indexSignal.value = index;
+        propsRef.current.onSlideChange?.(index);
+      },
+      handlePrev: () => {
+        sliderRef.current?.prev();
+      },
+      handleNext: () => {
+        sliderRef.current?.next();
+      },
+      itemBuilder: (
+        index: number,
+        _indexInRange: number,
+        slideSize: [number, number],
+      ) => {
+        const { images: items, renderSlide: render } = propsRef.current;
+        const image = items[index];
+        const isActive = index === indexSignal.value;
+        const onReady = () => loadingCtrl.onReady(index);
+        const onWaiting = () => loadingCtrl.onWaiting(index);
+
+        if (render) {
+          const custom = render(
+            image,
+            index,
+            slideSize,
+            isActive,
+            onReady,
+            onWaiting,
+          );
+          if (custom !== null) {
+            return (
+              <div
+                className="rk-lightbox-slide"
+                style={{ width: slideSize[0], height: slideSize[1] }}
+              >
+                {custom}
+              </div>
+            );
+          }
+        }
+
+        return (
+          <div
+            className="rk-lightbox-slide"
+            style={{ width: slideSize[0], height: slideSize[1] }}
+          >
+            <img
+              src={image.src}
+              alt={image.title || `Image ${index + 1}`}
+              className="rk-lightbox-img"
+              draggable={false}
+              loading={isActive ? 'eager' : 'lazy'}
+              onLoad={() => {
+                preloader.markLoaded(image.src);
+                onReady();
+              }}
+            />
+          </div>
+        );
+      },
+    };
+  });
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isFullscreen, _, exitFullscreen, toggleFullscreen] = useFullscreen({
     ref: containerRef,
   });
-  const [isMobile, setIsMobile] = useState(() =>
-    typeof window !== 'undefined'
-      ? 'ontouchstart' in window || navigator.maxTouchPoints > 0
-      : false,
-  );
 
   useBodyLock(true);
 
   useEffect(() => {
-    const handleResize = () => {
-      sizeSignal.value = [window.innerWidth, window.innerHeight];
-      setIsMobile('ontouchstart' in window || navigator.maxTouchPoints > 0);
-    };
+    const disposables = createDisposableList();
 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    disposables.push(
+      observeDomEvent(window, 'resize', () => {
+        sizeSignal.value = [window.innerWidth, window.innerHeight];
+        isMobileSignal.value =
+          'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      }),
+      observeDomEvent(window, 'keydown', (e) => {
+        if (e.key === 'Escape') {
+          if (isFullscreen.value) {
+            exitFullscreen();
+          } else {
+            propsRef.current.onClose();
+          }
+        }
+      }),
+      reaction(
+        () => [indexSignal],
+        () => {
+          preloader.preloadRange(
+            propsRef.current.images,
+            indexSignal.value,
+            _kPreloadRange,
+          );
+        },
+      ),
+    );
+
+    preloader.preloadRange(
+      propsRef.current.images,
+      indexSignal.value,
+      _kPreloadRange,
+    );
+
+    const initialIdx = indexSignal.value;
+    const initialSrc = propsRef.current.images[initialIdx]?.src;
+    if (initialSrc) {
+      disposables.push(
+        preloader.onLoaded(initialSrc, () => loadingCtrl.onReady(initialIdx)),
+      );
+    }
+
+    return disposables.dispose;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    const start = Math.max(0, currentIndex - PRELOAD_RANGE);
-    const end = Math.min(images.length - 1, currentIndex + PRELOAD_RANGE);
-
-    for (let i = start; i <= end; i++) {
-      if (i !== currentIndex) {
-        const item = images[i];
-        if ((item.type ?? 'image') === 'video') {
-          if (item.poster) preloadImage(item.poster);
-        } else {
-          preloadImage(item.src);
-        }
-      }
-    }
-  }, [currentIndex, images]);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        if (isFullscreen) {
-          exitFullscreen();
-        } else {
-          onClose();
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isFullscreen, exitFullscreen, onClose]);
-
-  const handleAfterChange = useCallback(
-    (index: number) => {
-      setCurrentIndex(index);
-      onSlideChange?.(index);
-    },
-    [onSlideChange],
-  );
-
-  const handlePrev = useCallback(() => {
-    sliderRef.current?.prev();
-  }, [sliderRef]);
-
-  const handleNext = useCallback(() => {
-    sliderRef.current?.next();
-  }, [sliderRef]);
-
-  const currentImage = images[currentIndex];
-
-  const itemBuilder = useCallback(
-    (index: number, _indexInRange: number, slideSize: [number, number]) => {
-      const image = images[index];
-      const isActive = index === currentIndexRef.current;
-      const transitionClass =
-        transition !== 'slide' ? `rk-transition-${transition}` : '';
-      const activeClass = isActive ? 'rk-active' : '';
-      const slideClassName =
-        `rk-lightbox-slide ${transitionClass} ${activeClass}`.trim();
-
-      if (renderSlide) {
-        const custom = renderSlide(image, index, slideSize, isActive);
-        if (custom !== null) {
-          return (
-            <div
-              className={slideClassName}
-              style={{ width: slideSize[0], height: slideSize[1] }}
-            >
-              {custom}
-            </div>
-          );
-        }
-      }
-
-      return (
-        <div
-          className={slideClassName}
-          style={{ width: slideSize[0], height: slideSize[1] }}
-        >
-          <img
-            src={image.src}
-            alt={image.title || `Image ${index + 1}`}
-            className="rk-lightbox-img"
-            draggable={false}
-            loading="lazy"
-          />
-        </div>
-      );
-    },
-    [images, transition, renderSlide],
-  );
-
-  const overlay = (
+  return createPortal(
     <div ref={containerRef} className="rk-lightbox-container">
-      {/* Controls (close, counter, fullscreen) */}
-      {renderControls ? (
-        renderControls({
-          onClose,
-          currentIndex,
-          count: images.length,
-          isFullscreen,
-          onToggleFullscreen: toggleFullscreen,
-        })
-      ) : (
-        <LightboxControls
-          onClose={onClose}
-          currentIndex={currentIndex}
-          count={images.length}
-          isFullscreen={isFullscreen}
-          onToggleFullscreen={toggleFullscreen}
-        />
-      )}
-
-      {/* Reel slider - wrapped in SwipeToClose so only image moves */}
-      <SwipeToClose enabled={isMobile} onClose={onClose}>
-        <Observe signals={[sizeSignal]}>
-          {() => (
+      <Observe signals={[isFullscreen, indexSignal]}>
+        {() => {
+          const idx = indexSignal.value;
+          const {
+            renderControls: renderCtrl,
+            onClose: close,
+            images: items,
+          } = propsRef.current;
+          return (
+            <>
+              {renderCtrl ? (
+                renderCtrl({
+                  onClose: close,
+                  currentIndex: idx,
+                  count: items.length,
+                  isFullscreen: isFullscreen.value,
+                  onToggleFullscreen: toggleFullscreen,
+                })
+              ) : (
+                <LightboxControls
+                  onClose={close}
+                  currentIndex={idx}
+                  count={items.length}
+                  isFullscreen={isFullscreen.value}
+                  onToggleFullscreen={toggleFullscreen}
+                />
+              )}
+            </>
+          );
+        }}
+      </Observe>
+      <Observe signals={[loadingCtrl.isLoading]}>
+        {() =>
+          loadingCtrl.isLoading.value ? (
+            <div className="rk-lightbox-spinner" />
+          ) : null
+        }
+      </Observe>
+      <Observe signals={[sizeSignal, isMobileSignal]}>
+        {() => (
+          <SwipeToClose
+            direction="up"
+            enabled={isMobileSignal.value}
+            onClose={onClose}
+          >
             <Reel
               count={images.length}
               size={sizeSignal.value}
@@ -372,6 +444,7 @@ const LightboxContent: FC<LightboxOverlayProps> = ({
               initialIndex={initialIndex}
               apiRef={sliderRef}
               afterChange={handleAfterChange}
+              transition={transitionFn ?? _kTransitionMap[transition]}
               transitionDuration={transitionDuration}
               swipeDistanceFactor={swipeDistanceFactor}
               loop={loop}
@@ -380,22 +453,32 @@ const LightboxContent: FC<LightboxOverlayProps> = ({
               wheelDebounceMs={wheelDebounceMs}
               itemBuilder={itemBuilder}
             />
-          )}
-        </Observe>
-      </SwipeToClose>
+          </SwipeToClose>
+        )}
+      </Observe>
+      <Observe signals={[indexSignal, isMobileSignal]}>
+        {() => {
+          const idx = indexSignal.value;
+          const mobile = isMobileSignal.value;
+          const { renderNavigation: renderNav, images: items } =
+            propsRef.current;
 
-      {/* Navigation buttons */}
-      {renderNavigation
-        ? renderNavigation({
-            onPrev: handlePrev,
-            onNext: handleNext,
-            activeIndex: currentIndex,
-            count: images.length,
-          })
-        : !isMobile &&
-          images.length > 1 && (
+          if (renderNav) {
+            return (
+              <>
+                {renderNav({
+                  onPrev: handlePrev,
+                  onNext: handleNext,
+                  activeIndex: idx,
+                  count: items.length,
+                })}
+              </>
+            );
+          }
+          if (mobile || items.length <= 1) return null;
+          return (
             <>
-              {currentIndex > 0 && (
+              {idx > 0 && (
                 <button
                   className="rk-lightbox-nav rk-lightbox-nav-prev"
                   onClick={handlePrev}
@@ -404,7 +487,7 @@ const LightboxContent: FC<LightboxOverlayProps> = ({
                   <ChevronLeft size={32} />
                 </button>
               )}
-              {currentIndex < images.length - 1 && (
+              {idx < items.length - 1 && (
                 <button
                   className="rk-lightbox-nav rk-lightbox-nav-next"
                   onClick={handleNext}
@@ -414,12 +497,20 @@ const LightboxContent: FC<LightboxOverlayProps> = ({
                 </button>
               )}
             </>
-          )}
+          );
+        }}
+      </Observe>
+      <Observe signals={[indexSignal]}>
+        {() => {
+          const idx = indexSignal.value;
+          const { renderInfo: renderInf, images: items } = propsRef.current;
+          const currentImage = items[idx];
 
-      {/* Info overlay (title + description) */}
-      {renderInfo
-        ? renderInfo({ item: currentImage, index: currentIndex })
-        : (currentImage?.title || currentImage?.description) && (
+          if (renderInf) {
+            return <>{renderInf({ item: currentImage, index: idx })}</>;
+          }
+          if (!currentImage?.title && !currentImage?.description) return null;
+          return (
             <div className="rk-lightbox-info">
               {currentImage.title && (
                 <h3 className="rk-lightbox-title">{currentImage.title}</h3>
@@ -430,17 +521,19 @@ const LightboxContent: FC<LightboxOverlayProps> = ({
                 </p>
               )}
             </div>
-          )}
-
-      {/* Mobile swipe hint */}
-      {isMobile && (
-        <div className="rk-lightbox-swipe-hint">Swipe up to close</div>
-      )}
-    </div>
+          );
+        }}
+      </Observe>
+      <Observe signals={[isMobileSignal]}>
+        {() =>
+          isMobileSignal.value ? (
+            <div className="rk-lightbox-swipe-hint">Swipe up to close</div>
+          ) : null
+        }
+      </Observe>
+    </div>,
+    document.body,
   );
-
-  if (typeof document === 'undefined') return overlay;
-  return createPortal(overlay, document.body);
 };
 
 /**
