@@ -127,6 +127,7 @@ export type {
 
 // Transitions
 export {
+  getSlideProgress,
   slideTransition,
   flipTransition,
   cubeTransition,

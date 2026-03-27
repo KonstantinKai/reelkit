@@ -1,5 +1,6 @@
 import type { SliderDirection } from '../types';
 import type { SlideTransformStyle } from './types';
+import { getSlideProgress } from './getSlideProgress';
 
 const _kMaxAngle = 60;
 const _kPerspectivePx = 500;
@@ -25,10 +26,7 @@ export const cubeTransition = (
 ): SlideTransformStyle => {
   if (primarySize === 0) return {};
 
-  const baseOffset = currentRangeIndex * primarySize * -1;
-  const progress = (axisValue - baseOffset) / primarySize;
-  const slideOffset = slideIndex - currentRangeIndex;
-  const t = slideOffset + progress;
+  const t = getSlideProgress(axisValue, slideIndex, currentRangeIndex, primarySize);
 
   if (t <= -1 || t >= 1) {
     return { opacity: 0, zIndex: 0 };

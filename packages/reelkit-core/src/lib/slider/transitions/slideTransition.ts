@@ -1,5 +1,6 @@
 import type { SliderDirection } from '../types';
 import type { SlideTransformStyle } from './types';
+import { getSlideProgress } from './getSlideProgress';
 
 /**
  * Default slide transition — translates each slide along the primary axis.
@@ -13,13 +14,10 @@ export const slideTransition = (
 ): SlideTransformStyle => {
   if (primarySize === 0) return {};
 
-  const baseOffset = currentRangeIndex * primarySize * -1;
-  const progress = (axisValue - baseOffset) / primarySize;
-  const slideOffset = slideIndex - currentRangeIndex;
-  const translatePx = (slideOffset + progress) * primarySize;
+  const t = getSlideProgress(axisValue, slideIndex, currentRangeIndex, primarySize);
   const axis = direction === 'horizontal' ? 'X' : 'Y';
 
   return {
-    transform: `translate${axis}(${translatePx}px)`,
+    transform: `translate${axis}(${t * primarySize}px)`,
   };
 };

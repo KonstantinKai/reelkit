@@ -1,3 +1,4 @@
+export { getSlideProgress } from './getSlideProgress';
 export { slideTransition } from './slideTransition';
 export { flipTransition } from './flipTransition';
 export { cubeTransition } from './cubeTransition';

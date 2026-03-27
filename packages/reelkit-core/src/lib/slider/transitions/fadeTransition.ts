@@ -1,6 +1,8 @@
+import { abs } from '../../utils/number';
 import { clamp } from '../../utils/number';
 import type { SliderDirection } from '../types';
 import type { SlideTransformStyle } from './types';
+import { getSlideProgress } from './getSlideProgress';
 
 /**
  * Computes per-slide opacity for a crossfade transition.
@@ -18,10 +20,8 @@ export const fadeTransition = (
 ): SlideTransformStyle => {
   if (primarySize === 0) return { opacity: 0 };
 
-  const baseOffset = currentRangeIndex * primarySize * -1;
-  const progress = (axisValue - baseOffset) / primarySize;
-  const slideOffset = slideIndex - currentRangeIndex;
-  const distance = Math.abs(slideOffset + progress);
+  const t = getSlideProgress(axisValue, slideIndex, currentRangeIndex, primarySize);
+  const distance = abs(t);
   const opacity = clamp(1 - distance, 0, 1);
 
   return {

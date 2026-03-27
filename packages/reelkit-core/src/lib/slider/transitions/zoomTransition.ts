@@ -1,5 +1,7 @@
+import { abs } from '../../utils/number';
 import type { SliderDirection } from '../types';
 import type { SlideTransformStyle } from './types';
+import { getSlideProgress } from './getSlideProgress';
 
 /**
  * Computes per-slide scale and opacity for a zoom transition.
@@ -17,10 +19,8 @@ export const zoomTransition = (
 ): SlideTransformStyle => {
   if (primarySize === 0) return { opacity: 0 };
 
-  const baseOffset = currentRangeIndex * primarySize * -1;
-  const progress = (axisValue - baseOffset) / primarySize;
-  const slideOffset = slideIndex - currentRangeIndex;
-  const distance = Math.abs(slideOffset + progress);
+  const t = getSlideProgress(axisValue, slideIndex, currentRangeIndex, primarySize);
+  const distance = abs(t);
 
   if (distance >= 1) return { opacity: 0, zIndex: 0 };
 

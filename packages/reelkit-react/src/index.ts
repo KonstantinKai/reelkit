@@ -83,6 +83,7 @@ export {
   createContentPreloader,
   type ContentPreloader,
   type ContentPreloaderConfig,
+  getSlideProgress,
   slideTransition,
   flipTransition,
   cubeTransition,
