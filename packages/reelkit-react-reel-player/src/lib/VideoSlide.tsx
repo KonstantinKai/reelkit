@@ -8,11 +8,14 @@ import React, {
 import {
   createSignal,
   createSharedVideo,
+  createDisposableList,
+  observeMediaLoading,
+  syncMutedToVideo,
   captureFrame,
   noop,
   Observe,
+  useSoundState,
 } from '@reelkit/react';
-import { useSoundState } from './useSoundState';
 import './VideoSlide.css';
 
 /**
@@ -40,17 +43,24 @@ export interface VideoSlideProps {
   /** Unique key for persisting playback position and captured frames (e.g. "content-5" or "content-5:media-2"). */
   slideKey: string;
 
-  /** Callback to report the shared video element ref to the parent for drag pause/resume. */
-  onVideoRef?: (ref: HTMLVideoElement | null) => void;
-
   /** Additional CSS class for the root container. */
   className?: string;
 
   /** Additional inline styles merged onto the root container. */
   style?: CSSProperties;
+
+  /** Callback to report the shared video element ref to the parent for drag pause/resume. */
+  onVideoRef?: (ref: HTMLVideoElement | null) => void;
+
+  /** Called when the video is ready to play (buffering complete). */
+  onReady?: () => void;
+
+  /** Called when the video stalls (buffering mid-playback). */
+  onWaiting?: () => void;
 }
 
-const shared = createSharedVideo({
+/** @internal */
+export const shared = createSharedVideo({
   className: 'rk-video-slide-element',
   disableRemotePlayback: true,
   disablePictureInPicture: true,
@@ -91,6 +101,8 @@ const VideoSlide: React.FC<VideoSlideProps> = ({
   isInnerActive = true,
   slideKey,
   onVideoRef,
+  onReady,
+  onWaiting,
   className,
   style,
 }) => {
@@ -98,9 +110,9 @@ const VideoSlide: React.FC<VideoSlideProps> = ({
   const soundState = useSoundState();
   const shouldPlay = isActive && isInnerActive;
   const isVertical = aspectRatio < 1;
-  const [isLoading, showPoster] = useState(
-    () => [createSignal(false), createSignal(true)] as const,
-  )[0];
+  const [showPoster] = useState(() => createSignal(true));
+  const callbacksRef = useRef({ onReady, onWaiting });
+  callbacksRef.current = { onReady, onWaiting };
 
   useIsomorphicLayoutEffect(() => {
     if (!shouldPlay || !containerRef.current) return;
@@ -108,19 +120,23 @@ const VideoSlide: React.FC<VideoSlideProps> = ({
     const video = shared.getVideo();
     const container = containerRef.current;
 
-    isLoading.value = true;
+    const disposables = createDisposableList();
+
     showPoster.value = true;
 
-    const handleCanPlay = () => (isLoading.value = false);
-    const handleWaiting = () => (isLoading.value = true);
-    const handlePlaying = () => {
-      isLoading.value = false;
-      showPoster.value = false;
-    };
-
-    video.addEventListener('canplay', handleCanPlay);
-    video.addEventListener('waiting', handleWaiting);
-    video.addEventListener('playing', handlePlaying);
+    disposables.push(
+      observeMediaLoading(video, {
+        onReady: () => {
+          callbacksRef.current.onReady?.();
+        },
+        onWaiting: () => {
+          callbacksRef.current.onWaiting?.();
+        },
+        onPlaying: () => {
+          showPoster.value = false;
+        },
+      }),
+    );
 
     video.src = src;
     video.muted = soundState.muted.value;
@@ -129,6 +145,7 @@ const VideoSlide: React.FC<VideoSlideProps> = ({
     video.currentTime = savedPosition ?? 0;
 
     video.style.objectFit = isVertical ? 'cover' : 'contain';
+    video.dataset['slideKey'] = slideKey;
 
     container.appendChild(video);
 
@@ -139,11 +156,7 @@ const VideoSlide: React.FC<VideoSlideProps> = ({
     // Autoplay may be prevented by the browser
     video.play().catch(noop);
 
-    return () => {
-      video.removeEventListener('canplay', handleCanPlay);
-      video.removeEventListener('waiting', handleWaiting);
-      video.removeEventListener('playing', handlePlaying);
-
+    disposables.push(() => {
       shared.playbackPositions.set(slideKey, video.currentTime);
 
       const frame = captureFrame(video);
@@ -157,19 +170,14 @@ const VideoSlide: React.FC<VideoSlideProps> = ({
       if (onVideoRef) {
         onVideoRef(null);
       }
+    });
 
-      isLoading.value = false;
-    };
+    return disposables.dispose;
   }, [shouldPlay, src, isVertical, slideKey, onVideoRef]);
 
-  // Sync muted state with sound context
   useEffect(() => {
     if (!shouldPlay) return;
-    const video = shared.getVideo();
-    if (video) video.muted = soundState.muted.value;
-    return soundState.muted.observe(() => {
-      if (video) video.muted = soundState.muted.value;
-    });
+    return syncMutedToVideo(soundState, shared.getVideo());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shouldPlay]);
 
@@ -187,8 +195,6 @@ const VideoSlide: React.FC<VideoSlideProps> = ({
         ...style,
       }}
     >
-      {/* Poster image with fade out transition */}
-      {/* Use captured frame if available, otherwise fall back to original poster */}
       <Observe signals={[showPoster]}>
         {() => {
           const posterSrc = shared.capturedFrames.get(slideKey) ?? poster;
@@ -204,15 +210,6 @@ const VideoSlide: React.FC<VideoSlideProps> = ({
             />
           );
         }}
-      </Observe>
-
-      {/* Wave loader for buffering/loading state */}
-      <Observe signals={[isLoading]}>
-        {() => (
-          <div
-            className={`rk-video-slide-loader ${isLoading.value ? 'rk-visible' : ''}`}
-          />
-        )}
       </Observe>
     </div>
   );

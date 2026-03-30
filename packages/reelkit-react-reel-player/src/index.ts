@@ -83,6 +83,8 @@ export { default as SlideOverlay } from './lib/SlideOverlay';
 export type { SlideOverlayProps } from './lib/SlideOverlay';
 
 // Sound context (for custom control implementations)
-export { SoundProvider } from './lib/SoundState';
-export type { SoundState } from './lib/SoundState';
-export { useSoundState } from './lib/useSoundState';
+export {
+  SoundProvider,
+  useSoundState,
+  type SoundController,
+} from '@reelkit/react';

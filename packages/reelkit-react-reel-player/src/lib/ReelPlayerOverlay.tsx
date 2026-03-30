@@ -1,20 +1,21 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, {
-  type ReactNode,
-  useState,
-  useRef,
-  useCallback,
-  useEffect,
-} from 'react';
+import React, { type ReactNode, useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 import {
   noop,
   createSignal,
+  createContentLoadingController,
+  createContentPreloader,
+  createDisposableList,
+  reaction,
+  observeDomEvent,
   Reel,
   Observe,
   type ReelApi,
   type ReelProps,
+  SoundProvider,
+  useSoundState,
 } from '@reelkit/react';
 import { useBodyLock } from '@reelkit/react';
 import type {
@@ -25,11 +26,11 @@ import type {
   NestedSlideRenderProps,
   SlideRenderProps,
 } from './types';
-import { SoundProvider } from './SoundState';
-import { useSoundState } from './useSoundState';
 import MediaSlide from './MediaSlide';
+import { captureFrame } from '@reelkit/react';
 import PlayerControls from './PlayerControls';
 import SlideOverlay from './SlideOverlay';
+import { shared as sharedVideo } from './VideoSlide';
 import './ReelPlayerOverlay.css';
 
 /**
@@ -76,9 +77,6 @@ export interface ReelPlayerOverlayProps<T extends BaseContentItem = ContentItem>
   /** When `true`, the overlay is rendered and body scroll is locked. */
   isOpen: boolean;
 
-  /** Callback to close the overlay. Triggered by close button or Escape key. */
-  onClose: () => void;
-
   /** Array of content items to display as vertical slides. */
   content: T[];
 
@@ -86,14 +84,17 @@ export interface ReelPlayerOverlayProps<T extends BaseContentItem = ContentItem>
   initialIndex?: number;
 
   /**
+   * Ref to access the Reel API
+   */
+  apiRef?: React.MutableRefObject<ReelApi | null>;
+
+  /**
    * Callback fired after slide change
    */
   onSlideChange?: (index: number) => void;
 
-  /**
-   * Ref to access the Reel API
-   */
-  apiRef?: React.MutableRefObject<ReelApi | null>;
+  /** Callback to close the overlay. Triggered by close button or Escape key. */
+  onClose: () => void;
 
   /**
    * Custom overlay on top of each slide. Replaces default SlideOverlay.
@@ -135,9 +136,11 @@ export interface ReelPlayerOverlayProps<T extends BaseContentItem = ContentItem>
   renderNestedSlide?: (props: NestedSlideRenderProps) => ReactNode;
 }
 
-/** Default aspect ratio: 9:16 portrait. */
-const DEFAULT_ASPECT_RATIO = 9 / 16;
-const MOBILE_BREAKPOINT = 768;
+const _kDefaultAspectRatio = 9 / 16;
+const _kMobileBreakpoint = 768;
+const _kPreloadRange = 2;
+
+const preloader = createContentPreloader({ maxCacheSize: 1000 });
 
 /**
  * Inner content of the player overlay. Renders the `Reel` slider, controls,
@@ -146,32 +149,14 @@ const MOBILE_BREAKPOINT = 768;
  * Must be rendered inside a {@link SoundProvider}.
  * @internal
  */
-function ReelPlayerContent<T extends BaseContentItem = ContentItem>({
-  onClose,
-  content,
-  initialIndex = 0,
-  onSlideChange,
-  apiRef,
-  renderSlideOverlay,
-  renderSlide,
-  renderControls,
-  renderNavigation,
-  renderNestedNavigation,
-  renderNestedSlide,
-  aspectRatio = DEFAULT_ASPECT_RATIO,
-  transitionDuration,
-  swipeDistanceFactor,
-  loop = false,
-  useNavKeys = true,
-  enableWheel = true,
-  wheelDebounceMs,
-}: ReelPlayerOverlayProps<T>) {
-  const [activeIndex, setActiveIndex] = useState(initialIndex);
-  const activeIndexRef = useRef(activeIndex);
-  activeIndexRef.current = activeIndex;
-  const [innerActiveMediaType, setInnerActiveMediaType] = useState<
-    'image' | 'video' | null
-  >(null);
+function ReelPlayerContent<T extends BaseContentItem = ContentItem>(
+  props: ReelPlayerOverlayProps<T>,
+) {
+  const { initialIndex = 0, apiRef } = props;
+
+  const propsRef = useRef(props);
+  propsRef.current = props;
+
   const internalSliderRef = useRef<ReelApi>(null);
   const sliderRef = apiRef ?? internalSliderRef;
   const innerSliderRef = useRef<ReelApi>(null);
@@ -179,308 +164,427 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>({
   const videoPausedOnDragRef = useRef(false);
   const soundState = useSoundState();
 
-  const getSize = useCallback((): [number, number] => {
-    if (typeof window === 'undefined') return [0, 0];
-    const windowWidth = window.innerWidth;
-    const windowHeight = window.innerHeight;
+  const [
+    {
+      sizeSignal,
+      loadingCtrl,
+      indexSignal,
+      innerMediaTypeSignal,
+      getSize,
+      handleBeforeChange,
+      handleAfterChange,
+      handleSlideDragStart,
+      handleSlideDragEnd,
+      handleSlideDragCanceled,
+      handlePrev,
+      handleNext,
+      itemBuilder,
+    },
+  ] = useState(() => {
+    const getSize = (): [number, number] => {
+      if (typeof window === 'undefined') return [0, 0];
+      const ratio = propsRef.current.aspectRatio ?? _kDefaultAspectRatio;
+      const windowWidth = window.innerWidth;
+      const windowHeight = window.innerHeight;
 
-    if (windowWidth < MOBILE_BREAKPOINT) {
-      return [windowWidth, windowHeight];
-    }
-
-    let width = windowHeight * aspectRatio;
-    let height = windowHeight;
-
-    if (width > windowWidth) {
-      width = windowWidth;
-      height = windowWidth / aspectRatio;
-    }
-
-    return [width, height];
-  }, [aspectRatio]);
-
-  const [sizeSignal] = useState(() =>
-    createSignal<[number, number]>(getSize()),
-  );
-
-  useEffect(() => {
-    const handleResize = () => {
-      sizeSignal.value = getSize();
-      sliderRef.current?.adjust();
-    };
-
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, [getSize]);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
+      if (windowWidth < _kMobileBreakpoint) {
+        return [windowWidth, windowHeight];
       }
+
+      let width = windowHeight * ratio;
+      let height = windowHeight;
+
+      if (width > windowWidth) {
+        width = windowWidth;
+        height = windowWidth / ratio;
+      }
+
+      return [width, height];
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
+    const sizeSignal = createSignal<[number, number]>(getSize());
+    const loadingCtrl = createContentLoadingController(true, initialIndex);
+    const indexSignal = createSignal(initialIndex);
+    const innerMediaTypeSignal = createSignal<'image' | 'video' | null>(null);
+
+    const hasVideoContent = (index: number): boolean => {
+      const item = propsRef.current.content[index];
+      return item?.media.some((m) => m.type === 'video') ?? false;
+    };
+
+    const handleVideoRef = (ref: HTMLVideoElement | null) => {
+      videoRef.current = ref;
+    };
+
+    const handleActiveMediaTypeChange = (type: 'image' | 'video') => {
+      innerMediaTypeSignal.value = type;
+    };
+
+    const overlayNode = (item: T, index: number, isActive: boolean) => {
+      const { renderSlideOverlay } = propsRef.current;
+      if (renderSlideOverlay) {
+        return renderSlideOverlay(item, index, isActive);
+      }
+      const record = item as Record<string, unknown>;
+      const author =
+        'author' in item
+          ? (record['author'] as { name: string; avatar: string } | undefined)
+          : undefined;
+      const description =
+        'description' in item
+          ? (record['description'] as string | undefined)
+          : undefined;
+      const likes =
+        'likes' in item ? (record['likes'] as number | undefined) : undefined;
+      return (
+        <SlideOverlay author={author} description={description} likes={likes} />
+      );
+    };
+
+    return {
+      sizeSignal,
+      loadingCtrl,
+      indexSignal,
+      innerMediaTypeSignal,
+      getSize,
+      handleVideoRef,
+      handleActiveMediaTypeChange,
+      handleBeforeChange: () => {
+        soundState.disabled.value = true;
+        if (videoRef.current) {
+          videoRef.current.pause();
+          const key = videoRef.current.dataset['slideKey'];
+          const frame = captureFrame(videoRef.current);
+          if (key && frame) {
+            sharedVideo.capturedFrames.set(key, frame);
+          }
+        }
+      },
+      handleAfterChange: (index: number) => {
+        loadingCtrl.setActiveIndex(index);
+        const src = propsRef.current.content[index]?.media[0]?.src;
+        if (src && preloader.isLoaded(src)) {
+          loadingCtrl.onReady(index);
+        }
+        innerMediaTypeSignal.value = null;
+        if (hasVideoContent(index)) {
+          soundState.disabled.value = false;
+        }
+        indexSignal.value = index;
+        propsRef.current.onSlideChange?.(index);
+      },
+      handleSlideDragStart: () => {
+        innerSliderRef.current?.unobserve();
+        if (videoRef.current && !videoRef.current.paused) {
+          videoRef.current.pause();
+          videoPausedOnDragRef.current = true;
+        }
+      },
+      handleSlideDragEnd: () => {
+        innerSliderRef.current?.observe();
+      },
+      handleSlideDragCanceled: () => {
+        if (videoPausedOnDragRef.current && videoRef.current) {
+          videoRef.current.play().catch(noop);
+        }
+        videoPausedOnDragRef.current = false;
+      },
+      handlePrev: () => {
+        sliderRef.current?.prev();
+      },
+      handleNext: () => {
+        sliderRef.current?.next();
+      },
+      itemBuilder: (
+        index: number,
+        _indexInRange: number,
+        itemSize: [number, number],
+      ) => {
+        const {
+          content: items,
+          renderSlide: render,
+          renderNestedNavigation: nestedNav,
+          renderNestedSlide: nestedSlide,
+          enableWheel: wheel = true,
+        } = propsRef.current;
+        const item = items[index] as T;
+        const isActive = index === indexSignal.value;
+        const onReady = () => {
+          loadingCtrl.onReady(index);
+          const src = item.media[0]?.src;
+          if (src) preloader.markLoaded(src);
+        };
+        const onWaiting = () => loadingCtrl.onWaiting(index);
+
+        const defaultContent = (
+          <>
+            <MediaSlide
+              content={item}
+              isActive={isActive}
+              size={itemSize}
+              innerSliderRef={innerSliderRef}
+              enableWheel={wheel}
+              onVideoRef={isActive ? handleVideoRef : undefined}
+              onReady={onReady}
+              onWaiting={onWaiting}
+              onActiveMediaTypeChange={
+                isActive ? handleActiveMediaTypeChange : undefined
+              }
+              renderNestedNavigation={nestedNav}
+              renderNestedSlide={nestedSlide}
+            />
+            {overlayNode(item, index, isActive)}
+          </>
+        );
+
+        if (render) {
+          const custom = render({
+            item,
+            index,
+            size: itemSize,
+            isActive,
+            slideKey: item.id,
+            onVideoRef: isActive ? handleVideoRef : undefined,
+            innerSliderRef,
+            onActiveMediaTypeChange: isActive
+              ? handleActiveMediaTypeChange
+              : undefined,
+            renderNestedNavigation: nestedNav,
+            enableWheel: wheel,
+            defaultContent,
+            onReady,
+            onWaiting,
+          });
+          if (custom !== null) {
+            return (
+              <div
+                className="rk-reel-slide-wrapper"
+                style={{
+                  width: itemSize[0],
+                  height: itemSize[1],
+                  position: 'relative',
+                }}
+              >
+                {custom}
+              </div>
+            );
+          }
+        }
+
+        return (
+          <div
+            className="rk-reel-slide-wrapper"
+            style={{
+              width: itemSize[0],
+              height: itemSize[1],
+              position: 'relative',
+            }}
+          >
+            {defaultContent}
+          </div>
+        );
+      },
+    };
+  });
 
   useBodyLock(true);
 
-  const handleVideoRef = useCallback((ref: HTMLVideoElement | null) => {
-    videoRef.current = ref;
-  }, []);
+  useEffect(() => {
+    const disposables = createDisposableList();
 
-  const hasVideoContent = useCallback(
-    (index: number): boolean => {
-      const item = content[index];
-      return item?.media.some((m) => m.type === 'video') ?? false;
-    },
-    [content],
-  );
-
-  const handleBeforeChange = useCallback(() => {
-    soundState.disabled.value = true;
-  }, []);
-
-  const handleAfterChange = useCallback(
-    (index: number) => {
-      setActiveIndex(index);
-      setInnerActiveMediaType(null); // Reset inner media type
-      if (hasVideoContent(index)) {
-        soundState.disabled.value = false;
+    const preloadNeighbors = () => {
+      const items = propsRef.current.content;
+      const idx = indexSignal.value;
+      const start = idx - _kPreloadRange < 0 ? 0 : idx - _kPreloadRange;
+      const end =
+        idx + _kPreloadRange > items.length - 1
+          ? items.length - 1
+          : idx + _kPreloadRange;
+      for (let i = start; i <= end; i++) {
+        if (i === idx) continue;
+        for (const m of items[i].media) {
+          if (m.type === 'video') {
+            if (m.poster) preloader.preload(m.poster, 'image');
+          } else {
+            preloader.preload(m.src, 'image');
+          }
+        }
       }
-      onSlideChange?.(index);
-    },
-    [hasVideoContent, onSlideChange],
-  );
+    };
 
-  const handleActiveMediaTypeChange = useCallback((type: 'image' | 'video') => {
-    setInnerActiveMediaType(type);
-  }, []);
-
-  const isMultiMedia = useCallback(
-    (index: number): boolean => {
-      return content[index]?.media.length > 1;
-    },
-    [content],
-  );
-
-  // Determine if sound button should be disabled
-  // (disabled when viewing an image in a multi-media post that has videos)
-  const isSoundDisabled =
-    isMultiMedia(activeIndex) && innerActiveMediaType === 'image';
-
-  const handleSlideDragStart = useCallback(() => {
-    innerSliderRef.current?.unobserve();
-
-    if (videoRef.current && !videoRef.current.paused) {
-      videoRef.current.pause();
-      videoPausedOnDragRef.current = true;
-    }
-  }, []);
-
-  const handleSlideDragEnd = useCallback(() => {
-    innerSliderRef.current?.observe();
-  }, []);
-
-  const handleSlideDragCanceled = useCallback(() => {
-    if (videoPausedOnDragRef.current && videoRef.current) {
-      videoRef.current.play().catch(noop);
-    }
-    videoPausedOnDragRef.current = false;
-  }, []);
-
-  const handlePrev = useCallback(() => {
-    sliderRef.current?.prev();
-  }, []);
-
-  const handleNext = useCallback(() => {
-    sliderRef.current?.next();
-  }, []);
-
-  const overlayNode = (item: T, index: number, isActive: boolean) => {
-    if (renderSlideOverlay) {
-      return renderSlideOverlay(item, index, isActive);
-    }
-    const record = item as Record<string, unknown>;
-    const author =
-      'author' in item
-        ? (record['author'] as { name: string; avatar: string } | undefined)
-        : undefined;
-    const description =
-      'description' in item
-        ? (record['description'] as string | undefined)
-        : undefined;
-    const likes =
-      'likes' in item ? (record['likes'] as number | undefined) : undefined;
-    return (
-      <SlideOverlay author={author} description={description} likes={likes} />
+    disposables.push(
+      observeDomEvent(window, 'resize', () => {
+        sizeSignal.value = getSize();
+        sliderRef.current?.adjust();
+      }),
+      observeDomEvent(window, 'keydown', (e) => {
+        if (e.key === 'Escape') {
+          propsRef.current.onClose();
+        }
+      }),
+      reaction(() => [indexSignal], preloadNeighbors),
     );
-  };
 
-  const overlay = (
+    preloadNeighbors();
+
+    const initialIdx = indexSignal.value;
+    const initialSrc = propsRef.current.content[initialIdx]?.media[0]?.src;
+    if (initialSrc) {
+      disposables.push(
+        preloader.onLoaded(initialSrc, () => loadingCtrl.onReady(initialIdx)),
+      );
+    }
+
+    return disposables.dispose;
+  }, []);
+
+  return createPortal(
     <div className="rk-reel-overlay">
       <div className="rk-reel-container">
         <Observe signals={[sizeSignal]}>
-          {() => (
-            <Reel
-              count={content.length}
-              size={sizeSignal.value}
-              direction="vertical"
-              loop={loop}
-              useNavKeys={useNavKeys}
-              enableWheel={enableWheel}
-              wheelDebounceMs={wheelDebounceMs}
-              transitionDuration={transitionDuration}
-              swipeDistanceFactor={swipeDistanceFactor}
-              initialIndex={initialIndex}
-              apiRef={sliderRef}
-              beforeChange={handleBeforeChange}
-              afterChange={handleAfterChange}
-              onSlideDragStart={handleSlideDragStart}
-              onSlideDragEnd={handleSlideDragEnd}
-              onSlideDragCanceled={handleSlideDragCanceled}
-              itemBuilder={(index, _, itemSize) => {
-                const item = content[index];
-                const isActive = activeIndexRef.current === index;
-
-                const defaultContent = (
-                  <>
-                    <MediaSlide
-                      content={item}
-                      isActive={isActive}
-                      size={itemSize}
-                      innerSliderRef={innerSliderRef}
-                      enableWheel={enableWheel}
-                      onVideoRef={isActive ? handleVideoRef : undefined}
-                      onActiveMediaTypeChange={
-                        isActive ? handleActiveMediaTypeChange : undefined
-                      }
-                      renderNestedNavigation={renderNestedNavigation}
-                      renderNestedSlide={renderNestedSlide}
-                    />
-                    {overlayNode(item, index, isActive)}
-                  </>
-                );
-
-                // Try renderSlide first
-                if (renderSlide) {
-                  const custom = renderSlide({
-                    item,
-                    index,
-                    size: itemSize,
-                    isActive,
-                    slideKey: item.id,
-                    onVideoRef: isActive ? handleVideoRef : undefined,
-                    innerSliderRef,
-                    onActiveMediaTypeChange: isActive
-                      ? handleActiveMediaTypeChange
-                      : undefined,
-                    renderNestedNavigation,
-                    enableWheel,
-                    defaultContent,
-                  });
-                  if (custom !== null) {
-                    return (
-                      <div
-                        className="rk-reel-slide-wrapper"
-                        style={{
-                          width: itemSize[0],
-                          height: itemSize[1],
-                          position: 'relative',
-                        }}
-                      >
-                        {custom}
-                      </div>
-                    );
-                  }
-                }
-
-                // Default: MediaSlide + overlay
-                return (
-                  <div
-                    className="rk-reel-slide-wrapper"
-                    style={{
-                      width: itemSize[0],
-                      height: itemSize[1],
-                      position: 'relative',
-                    }}
-                  >
-                    {defaultContent}
-                  </div>
-                );
-              }}
-            />
-          )}
+          {() => {
+            const {
+              content: items,
+              loop: loopProp = false,
+              useNavKeys: navKeys = true,
+              enableWheel: wheel = true,
+              wheelDebounceMs: wheelMs,
+              transitionDuration: duration,
+              swipeDistanceFactor: swipeFactor,
+              initialIndex: startIndex = 0,
+            } = propsRef.current;
+            return (
+              <Reel
+                count={items.length}
+                size={sizeSignal.value}
+                direction="vertical"
+                loop={loopProp}
+                useNavKeys={navKeys}
+                enableWheel={wheel}
+                wheelDebounceMs={wheelMs}
+                transitionDuration={duration}
+                swipeDistanceFactor={swipeFactor}
+                initialIndex={startIndex}
+                apiRef={sliderRef}
+                beforeChange={handleBeforeChange}
+                afterChange={handleAfterChange}
+                onSlideDragStart={handleSlideDragStart}
+                onSlideDragEnd={handleSlideDragEnd}
+                onSlideDragCanceled={handleSlideDragCanceled}
+                itemBuilder={itemBuilder}
+              />
+            );
+          }}
         </Observe>
 
-        {renderControls ? (
-          renderControls({ onClose, soundState, activeIndex, content })
-        ) : (
-          <PlayerControls
-            onClose={onClose}
-            showSound={hasVideoContent(activeIndex)}
-            soundDisabled={isSoundDisabled}
-          />
-        )}
+        <Observe signals={[loadingCtrl.isLoading]}>
+          {() =>
+            loadingCtrl.isLoading.value ? (
+              <div className="rk-reel-loader" />
+            ) : null
+          }
+        </Observe>
+
+        <Observe signals={[indexSignal, innerMediaTypeSignal]}>
+          {() => {
+            const idx = indexSignal.value;
+            const innerType = innerMediaTypeSignal.value;
+            const {
+              renderControls: renderCtrl,
+              onClose: close,
+              content: items,
+            } = propsRef.current;
+            const hasVideo =
+              items[idx]?.media.some((m) => m.type === 'video') ?? false;
+            const multiMedia = items[idx]?.media.length > 1;
+            const soundDisabled = multiMedia && innerType === 'image';
+
+            if (renderCtrl) {
+              return (
+                <>
+                  {renderCtrl({
+                    onClose: close,
+                    soundState,
+                    activeIndex: idx,
+                    content: items,
+                  })}
+                </>
+              );
+            }
+            return (
+              <PlayerControls
+                onClose={close}
+                showSound={hasVideo}
+                soundDisabled={soundDisabled}
+              />
+            );
+          }}
+        </Observe>
       </div>
 
-      {/* Navigation arrows - outside player container, desktop only */}
-      {renderNavigation ? (
-        renderNavigation({
-          onPrev: handlePrev,
-          onNext: handleNext,
-          activeIndex,
-          count: content.length,
-        })
-      ) : (
-        <div className="rk-player-nav-arrows">
-          <button
-            onClick={handlePrev}
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: '50%',
-              backgroundColor: 'rgba(255,255,255,0.1)',
-              border: 'none',
-              color: '#fff',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-            aria-label="Previous"
-          >
-            <ChevronUp size={28} />
-          </button>
-          <button
-            onClick={handleNext}
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: '50%',
-              backgroundColor: 'rgba(255,255,255,0.1)',
-              border: 'none',
-              color: '#fff',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-            aria-label="Next"
-          >
-            <ChevronDown size={28} />
-          </button>
-        </div>
-      )}
-    </div>
-  );
+      <Observe signals={[indexSignal]}>
+        {() => {
+          const idx = indexSignal.value;
+          const { renderNavigation: renderNav, content: items } =
+            propsRef.current;
 
-  if (typeof document === 'undefined') return overlay;
-  return createPortal(overlay, document.body);
+          if (renderNav) {
+            return (
+              <>
+                {renderNav({
+                  onPrev: handlePrev,
+                  onNext: handleNext,
+                  activeIndex: idx,
+                  count: items.length,
+                })}
+              </>
+            );
+          }
+          return (
+            <div className="rk-player-nav-arrows">
+              <button
+                onClick={handlePrev}
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: '50%',
+                  backgroundColor: 'rgba(255,255,255,0.1)',
+                  border: 'none',
+                  color: '#fff',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+                aria-label="Previous"
+              >
+                <ChevronUp size={28} />
+              </button>
+              <button
+                onClick={handleNext}
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: '50%',
+                  backgroundColor: 'rgba(255,255,255,0.1)',
+                  border: 'none',
+                  color: '#fff',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+                aria-label="Next"
+              >
+                <ChevronDown size={28} />
+              </button>
+            </div>
+          );
+        }}
+      </Observe>
+    </div>,
+    document.body,
+  );
 }
 
 /**

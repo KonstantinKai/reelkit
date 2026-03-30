@@ -1,54 +1,69 @@
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { MediaItem } from './types';
-import type { ReelApi } from '@reelkit/react';
+import type { ReelApi, ReelProps } from '@reelkit/react';
 import React from 'react';
 
 // Track the most recent Reel props
-let lastReelProps: Record<string, unknown> = {};
+let lastReelProps: Partial<ReelProps> = {};
 let lastReelApiRef: React.MutableRefObject<ReelApi | null> | null = null;
 
-vi.mock('@reelkit/react', () => ({
-  Reel: (props: Record<string, unknown>) => {
-    lastReelProps = props;
-    // Capture the apiRef
-    if (props.apiRef) {
-      lastReelApiRef = props.apiRef as React.MutableRefObject<ReelApi | null>;
-      // Provide a mock API
-      lastReelApiRef.current = {
-        next: vi.fn(),
-        prev: vi.fn(),
-        goTo: vi.fn().mockResolvedValue(undefined),
-        adjust: vi.fn(),
-        observe: vi.fn(),
-        unobserve: vi.fn(),
-      };
-    }
-    return <div data-testid="mock-reel" data-direction={props.direction} />;
-  },
-  ReelIndicator: ({
-    count,
-    active,
-    direction,
-  }: {
-    count: number;
+vi.mock('@reelkit/react', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@reelkit/react')>();
+  return {
+    ...actual,
+    Reel: (props: ReelProps) => {
+      lastReelProps = props;
+      // Capture the apiRef
+      if (props.apiRef) {
+        lastReelApiRef = props.apiRef as React.MutableRefObject<ReelApi | null>;
+        // Provide a mock API
+        lastReelApiRef.current = {
+          next: vi.fn(),
+          prev: vi.fn(),
+          goTo: vi.fn().mockResolvedValue(undefined),
+          adjust: vi.fn(),
+          observe: vi.fn(),
+          unobserve: vi.fn(),
+        };
+      }
+      return <div data-testid="mock-reel" data-direction={props.direction} />;
+    },
+    ReelIndicator: ({
+      count,
+      active,
+      direction,
+    }: {
+      count: number;
 
-    active: number;
+      active: number;
 
-    direction: string;
-  }) => (
-    <div
-      data-testid="mock-indicator"
-      data-count={count}
-      data-active={active}
-      data-direction={direction}
-    />
-  ),
-}));
+      direction: string;
+    }) => (
+      <div
+        data-testid="mock-indicator"
+        data-count={count}
+        data-active={active}
+        data-direction={direction}
+      />
+    ),
+  };
+});
 
 vi.mock('./ImageSlide', () => ({
-  default: ({ src }: { src: string }) => (
-    <div data-testid="image-slide" data-src={src} />
+  default: ({
+    src,
+    imageProps,
+  }: {
+    src: string;
+    imageProps?: Record<string, unknown>;
+  }) => (
+    <div
+      data-testid="image-slide"
+      data-src={src}
+      data-has-onload={imageProps?.['onLoad'] != null}
+      onClick={() => (imageProps?.['onLoad'] as (() => void) | undefined)?.()}
+    />
   ),
 }));
 
@@ -57,18 +72,24 @@ vi.mock('./VideoSlide', () => ({
     src,
     isActive,
     isInnerActive,
+    onReady,
+    onWaiting,
   }: {
     src: string;
-
     isActive: boolean;
-
     isInnerActive?: boolean;
+    onReady?: () => void;
+    onWaiting?: () => void;
   }) => (
     <div
       data-testid="video-slide"
       data-src={src}
       data-active={isActive}
       data-inner-active={isInnerActive ?? true}
+      data-has-on-ready={onReady != null}
+      data-has-on-waiting={onWaiting != null}
+      onClick={() => onReady?.()}
+      onFocus={() => onWaiting?.()}
     />
   ),
 }));
@@ -110,7 +131,7 @@ const videoMedia: MediaItem[] = [
   },
 ];
 
-const size: [number, number] = [400, 700];
+const _kSize: [number, number] = [400, 700];
 
 describe('NestedSlider', () => {
   let innerSliderRef: React.MutableRefObject<ReelApi | null>;
@@ -126,7 +147,7 @@ describe('NestedSlider', () => {
       <NestedSlider
         media={imageMedia}
         isParentActive={true}
-        size={size}
+        size={_kSize}
         contentId="c1"
         innerSliderRef={innerSliderRef}
       />,
@@ -142,7 +163,7 @@ describe('NestedSlider', () => {
       <NestedSlider
         media={imageMedia}
         isParentActive={true}
-        size={size}
+        size={_kSize}
         contentId="c1"
         innerSliderRef={innerSliderRef}
       />,
@@ -156,7 +177,7 @@ describe('NestedSlider', () => {
       <NestedSlider
         media={imageMedia}
         isParentActive={true}
-        size={size}
+        size={_kSize}
         contentId="c1"
         innerSliderRef={innerSliderRef}
       />,
@@ -173,7 +194,7 @@ describe('NestedSlider', () => {
       <NestedSlider
         media={imageMedia}
         isParentActive={true}
-        size={size}
+        size={_kSize}
         contentId="c1"
         innerSliderRef={innerSliderRef}
       />,
@@ -189,7 +210,7 @@ describe('NestedSlider', () => {
       <NestedSlider
         media={imageMedia}
         isParentActive={true}
-        size={size}
+        size={_kSize}
         contentId="c1"
         innerSliderRef={innerSliderRef}
       />,
@@ -204,7 +225,7 @@ describe('NestedSlider', () => {
       <NestedSlider
         media={imageMedia}
         isParentActive={true}
-        size={size}
+        size={_kSize}
         contentId="c1"
         innerSliderRef={innerSliderRef}
       />,
@@ -222,7 +243,7 @@ describe('NestedSlider', () => {
       <NestedSlider
         media={imageMedia}
         isParentActive={true}
-        size={size}
+        size={_kSize}
         contentId="c1"
         innerSliderRef={innerSliderRef}
       />,
@@ -240,7 +261,7 @@ describe('NestedSlider', () => {
       <NestedSlider
         media={mixedMedia}
         isParentActive={true}
-        size={size}
+        size={_kSize}
         contentId="c1"
         innerSliderRef={innerSliderRef}
         onActiveMediaTypeChange={onActiveMediaTypeChange}
@@ -270,7 +291,7 @@ describe('NestedSlider', () => {
       <NestedSlider
         media={imageMedia}
         isParentActive={true}
-        size={size}
+        size={_kSize}
         contentId="c1"
         innerSliderRef={innerSliderRef}
         renderNavigation={renderNavigation}
@@ -291,7 +312,7 @@ describe('NestedSlider', () => {
       <NestedSlider
         media={imageMedia}
         isParentActive={true}
-        size={size}
+        size={_kSize}
         contentId="c1"
         innerSliderRef={innerSliderRef}
         renderNavigation={renderNavigation}
@@ -317,7 +338,7 @@ describe('NestedSlider', () => {
       <NestedSlider
         media={imageMedia}
         isParentActive={true}
-        size={size}
+        size={_kSize}
         contentId="c1"
         innerSliderRef={innerSliderRef}
         renderNavigation={renderNavigation}
@@ -340,7 +361,7 @@ describe('NestedSlider', () => {
       <NestedSlider
         media={imageMedia}
         isParentActive={true}
-        size={size}
+        size={_kSize}
         contentId="c1"
         innerSliderRef={innerSliderRef}
         renderNavigation={renderNavigation}
@@ -362,7 +383,7 @@ describe('NestedSlider', () => {
       <NestedSlider
         media={singleMedia}
         isParentActive={true}
-        size={size}
+        size={_kSize}
         contentId="c1"
         innerSliderRef={innerSliderRef}
         renderNavigation={renderNavigation}
@@ -379,7 +400,7 @@ describe('NestedSlider', () => {
         <NestedSlider
           media={mixedMedia}
           isParentActive={false}
-          size={size}
+          size={_kSize}
           contentId="c1"
           innerSliderRef={innerSliderRef}
         />,
@@ -393,7 +414,7 @@ describe('NestedSlider', () => {
         <NestedSlider
           media={mixedMedia}
           isParentActive={true}
-          size={size}
+          size={_kSize}
           contentId="c1"
           innerSliderRef={innerSliderRef}
         />,
@@ -407,7 +428,7 @@ describe('NestedSlider', () => {
         <NestedSlider
           media={mixedMedia}
           isParentActive={false}
-          size={size}
+          size={_kSize}
           contentId="c1"
           innerSliderRef={innerSliderRef}
         />,
@@ -419,7 +440,7 @@ describe('NestedSlider', () => {
         <NestedSlider
           media={mixedMedia}
           isParentActive={true}
-          size={size}
+          size={_kSize}
           contentId="c1"
           innerSliderRef={innerSliderRef}
         />,
@@ -433,7 +454,7 @@ describe('NestedSlider', () => {
         <NestedSlider
           media={mixedMedia}
           isParentActive={true}
-          size={size}
+          size={_kSize}
           contentId="c1"
           innerSliderRef={innerSliderRef}
         />,
@@ -445,7 +466,7 @@ describe('NestedSlider', () => {
         size: [number, number],
       ) => React.ReactElement;
 
-      const { container } = render(itemBuilder(1, 1, size));
+      const { container } = render(itemBuilder(1, 1, _kSize));
       const videoSlide = container.querySelector('[data-testid="video-slide"]');
       expect(videoSlide!.getAttribute('data-active')).toBe('true');
     });
@@ -455,7 +476,7 @@ describe('NestedSlider', () => {
         <NestedSlider
           media={mixedMedia}
           isParentActive={false}
-          size={size}
+          size={_kSize}
           contentId="c1"
           innerSliderRef={innerSliderRef}
         />,
@@ -467,7 +488,7 @@ describe('NestedSlider', () => {
         size: [number, number],
       ) => React.ReactElement;
 
-      const { container } = render(itemBuilder(1, 1, size));
+      const { container } = render(itemBuilder(1, 1, _kSize));
       const videoSlide = container.querySelector('[data-testid="video-slide"]');
       expect(videoSlide!.getAttribute('data-active')).toBe('false');
     });
@@ -479,7 +500,7 @@ describe('NestedSlider', () => {
         <NestedSlider
           media={videoMedia}
           isParentActive={true}
-          size={size}
+          size={_kSize}
           contentId="c1"
           innerSliderRef={innerSliderRef}
         />,
@@ -500,12 +521,12 @@ describe('NestedSlider', () => {
 
       // The stale itemBuilder should still report correct isInnerActive
       // via ref (innerActiveIndexRef.current is updated during re-render)
-      const { container: c1 } = render(staleItemBuilder(1, 1, size));
+      const { container: c1 } = render(staleItemBuilder(1, 1, _kSize));
       const videoSlide1 = c1.querySelector('[data-testid="video-slide"]');
       expect(videoSlide1!.getAttribute('data-inner-active')).toBe('true');
 
       // Index 0 should no longer be inner-active
-      const { container: c0 } = render(staleItemBuilder(0, 0, size));
+      const { container: c0 } = render(staleItemBuilder(0, 0, _kSize));
       const videoSlide0 = c0.querySelector('[data-testid="video-slide"]');
       expect(videoSlide0!.getAttribute('data-inner-active')).toBe('false');
     });
@@ -516,7 +537,7 @@ describe('NestedSlider', () => {
       <NestedSlider
         media={imageMedia}
         isParentActive={true}
-        size={size}
+        size={_kSize}
         contentId="c1"
         innerSliderRef={innerSliderRef}
       />,
@@ -531,7 +552,7 @@ describe('NestedSlider', () => {
       <NestedSlider
         media={imageMedia}
         isParentActive={true}
-        size={size}
+        size={_kSize}
         contentId="c1"
         innerSliderRef={innerSliderRef}
       />,
@@ -555,13 +576,13 @@ describe('NestedSlider', () => {
         <NestedSlider
           media={imageMedia}
           isParentActive={true}
-          size={size}
+          size={_kSize}
           contentId="c1"
           innerSliderRef={innerSliderRef}
         />,
       );
 
-      const { container } = render(getItemBuilder()(0, 0, size));
+      const { container } = render(getItemBuilder()(0, 0, _kSize));
       expect(
         container.querySelector('[data-testid="image-slide"]'),
       ).toBeTruthy();
@@ -576,14 +597,14 @@ describe('NestedSlider', () => {
         <NestedSlider
           media={imageMedia}
           isParentActive={true}
-          size={size}
+          size={_kSize}
           contentId="c1"
           innerSliderRef={innerSliderRef}
           renderNestedSlide={renderNestedSlide}
         />,
       );
 
-      const { container } = render(getItemBuilder()(0, 0, size));
+      const { container } = render(getItemBuilder()(0, 0, _kSize));
       expect(
         container.querySelector('[data-testid="custom-nested"]'),
       ).toBeTruthy();
@@ -601,14 +622,14 @@ describe('NestedSlider', () => {
         <NestedSlider
           media={mixedMedia}
           isParentActive={true}
-          size={size}
+          size={_kSize}
           contentId="c1"
           innerSliderRef={innerSliderRef}
           renderNestedSlide={renderNestedSlide}
         />,
       );
 
-      const { container } = render(getItemBuilder()(1, 1, size));
+      const { container } = render(getItemBuilder()(1, 1, _kSize));
       expect(
         container.querySelector('[data-testid="custom-nested"]'),
       ).toBeTruthy();
@@ -626,20 +647,20 @@ describe('NestedSlider', () => {
         <NestedSlider
           media={imageMedia}
           isParentActive={true}
-          size={size}
+          size={_kSize}
           contentId="c1"
           innerSliderRef={innerSliderRef}
           renderNestedSlide={renderNestedSlide}
         />,
       );
 
-      getItemBuilder()(0, 0, size);
+      getItemBuilder()(0, 0, _kSize);
 
       expect(renderNestedSlide).toHaveBeenCalledWith(
         expect.objectContaining({
           item: imageMedia[0],
           index: 0,
-          size,
+          size: _kSize,
           isActive: true,
           isInnerActive: true,
           slideKey: 'c1:m1',
@@ -657,20 +678,20 @@ describe('NestedSlider', () => {
         <NestedSlider
           media={mixedMedia}
           isParentActive={false}
-          size={size}
+          size={_kSize}
           contentId="c1"
           innerSliderRef={innerSliderRef}
           renderNestedSlide={renderNestedSlide}
         />,
       );
 
-      getItemBuilder()(1, 1, size);
+      getItemBuilder()(1, 1, _kSize);
 
       expect(renderNestedSlide).toHaveBeenCalledWith(
         expect.objectContaining({
           item: mixedMedia[1],
           index: 1,
-          size,
+          size: _kSize,
           isActive: false,
           isInnerActive: false,
           slideKey: 'c1:m2',
@@ -685,7 +706,7 @@ describe('NestedSlider', () => {
         <NestedSlider
           media={videoMedia}
           isParentActive={true}
-          size={size}
+          size={_kSize}
           contentId="c1"
           innerSliderRef={innerSliderRef}
           renderNestedSlide={renderNestedSlide}
@@ -693,7 +714,7 @@ describe('NestedSlider', () => {
       );
 
       // Index 0 is inner-active (initial state)
-      getItemBuilder()(0, 0, size);
+      getItemBuilder()(0, 0, _kSize);
       expect(renderNestedSlide).toHaveBeenLastCalledWith(
         expect.objectContaining({
           isInnerActive: true,
@@ -704,13 +725,77 @@ describe('NestedSlider', () => {
       renderNestedSlide.mockClear();
 
       // Index 1 is NOT inner-active
-      getItemBuilder()(1, 1, size);
+      getItemBuilder()(1, 1, _kSize);
       expect(renderNestedSlide).toHaveBeenLastCalledWith(
         expect.objectContaining({
           isInnerActive: false,
           onVideoRef: undefined,
         }),
       );
+    });
+
+    it('provides onReady/onWaiting only when isInnerActive is true', () => {
+      const renderNestedSlide = vi.fn(() => <div />);
+      const onReady = vi.fn();
+      const onWaiting = vi.fn();
+
+      render(
+        <NestedSlider
+          media={videoMedia}
+          isParentActive={true}
+          size={_kSize}
+          contentId="c1"
+          innerSliderRef={innerSliderRef}
+          onReady={onReady}
+          onWaiting={onWaiting}
+          renderNestedSlide={renderNestedSlide}
+        />,
+      );
+
+      getItemBuilder()(0, 0, _kSize);
+      expect(renderNestedSlide).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          isInnerActive: true,
+          onReady,
+          onWaiting,
+        }),
+      );
+
+      renderNestedSlide.mockClear();
+
+      getItemBuilder()(1, 1, _kSize);
+      expect(renderNestedSlide).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          isInnerActive: false,
+          onReady: undefined,
+          onWaiting: undefined,
+        }),
+      );
+    });
+
+    it('renderNestedSlide onReady clears parent loading state', () => {
+      let capturedOnReady: (() => void) | undefined;
+      const onReady = vi.fn();
+
+      render(
+        <NestedSlider
+          media={videoMedia}
+          isParentActive={true}
+          size={_kSize}
+          contentId="c1"
+          innerSliderRef={innerSliderRef}
+          onReady={onReady}
+          renderNestedSlide={(props) => {
+            capturedOnReady = props.onReady;
+            return <div />;
+          }}
+        />,
+      );
+
+      getItemBuilder()(0, 0, _kSize);
+      capturedOnReady!();
+
+      expect(onReady).toHaveBeenCalledOnce();
     });
 
     it('renderNestedSlide can fully replace default content', () => {
@@ -722,14 +807,14 @@ describe('NestedSlider', () => {
         <NestedSlider
           media={imageMedia}
           isParentActive={true}
-          size={size}
+          size={_kSize}
           contentId="c1"
           innerSliderRef={innerSliderRef}
           renderNestedSlide={renderNestedSlide}
         />,
       );
 
-      const { container } = render(getItemBuilder()(0, 0, size));
+      const { container } = render(getItemBuilder()(0, 0, _kSize));
       expect(
         container.querySelector('[data-testid="fully-custom"]'),
       ).toBeTruthy();
@@ -743,7 +828,7 @@ describe('NestedSlider', () => {
         <NestedSlider
           media={videoMedia}
           isParentActive={true}
-          size={size}
+          size={_kSize}
           contentId="c1"
           innerSliderRef={innerSliderRef}
           renderNestedSlide={renderNestedSlide}
@@ -759,17 +844,264 @@ describe('NestedSlider', () => {
       renderNestedSlide.mockClear();
 
       // Now index 1 should be inner-active, index 0 should not
-      getItemBuilder()(1, 1, size);
+      getItemBuilder()(1, 1, _kSize);
       expect(renderNestedSlide).toHaveBeenLastCalledWith(
         expect.objectContaining({ index: 1, isInnerActive: true }),
       );
 
       renderNestedSlide.mockClear();
 
-      getItemBuilder()(0, 0, size);
+      getItemBuilder()(0, 0, _kSize);
       expect(renderNestedSlide).toHaveBeenLastCalledWith(
         expect.objectContaining({ index: 0, isInnerActive: false }),
       );
+    });
+  });
+
+  describe('loading indicator flow', () => {
+    const getItemBuilder = () =>
+      lastReelProps.itemBuilder as (
+        index: number,
+        indexInRange: number,
+        size: [number, number],
+      ) => React.ReactElement;
+
+    const mixedMedia3: MediaItem[] = [
+      {
+        id: 'v1',
+        type: 'video',
+        src: 'video.mp4',
+        poster: 'poster.jpg',
+        aspectRatio: 0.56,
+      },
+      { id: 'm1', type: 'image', src: 'photo1.jpg', aspectRatio: 1.5 },
+      { id: 'm2', type: 'image', src: 'photo2.jpg', aspectRatio: 1.5 },
+    ];
+
+    it('forwards onReady to active inner image via imageProps.onLoad', () => {
+      const onReady = vi.fn();
+
+      render(
+        <NestedSlider
+          media={imageMedia}
+          isParentActive={true}
+          size={_kSize}
+          contentId="c1"
+          innerSliderRef={innerSliderRef}
+          onReady={onReady}
+        />,
+      );
+
+      const { container } = render(getItemBuilder()(0, 0, _kSize));
+      const img = container.querySelector('[data-testid="image-slide"]')!;
+      expect(img.getAttribute('data-has-onload')).toBe('true');
+
+      fireEvent.click(img);
+      expect(onReady).toHaveBeenCalledOnce();
+    });
+
+    it('does not forward onReady to inactive inner image', () => {
+      render(
+        <NestedSlider
+          media={imageMedia}
+          isParentActive={true}
+          size={_kSize}
+          contentId="c1"
+          innerSliderRef={innerSliderRef}
+          onReady={vi.fn()}
+        />,
+      );
+
+      const { container } = render(getItemBuilder()(1, 1, _kSize));
+      const img = container.querySelector('[data-testid="image-slide"]')!;
+      expect(img.getAttribute('data-has-onload')).toBe('false');
+    });
+
+    it('forwards onReady and onWaiting to active inner video', () => {
+      const onReady = vi.fn();
+      const onWaiting = vi.fn();
+
+      render(
+        <NestedSlider
+          media={mixedMedia3}
+          isParentActive={true}
+          size={_kSize}
+          contentId="c1"
+          innerSliderRef={innerSliderRef}
+          onReady={onReady}
+          onWaiting={onWaiting}
+        />,
+      );
+
+      const { container } = render(getItemBuilder()(0, 0, _kSize));
+      const video = container.querySelector('[data-testid="video-slide"]')!;
+      expect(video.getAttribute('data-has-on-ready')).toBe('true');
+      expect(video.getAttribute('data-has-on-waiting')).toBe('true');
+
+      fireEvent.click(video);
+      expect(onReady).toHaveBeenCalledOnce();
+
+      fireEvent.focus(video);
+      expect(onWaiting).toHaveBeenCalledOnce();
+    });
+
+    it('does not forward onReady/onWaiting to inactive inner video', () => {
+      render(
+        <NestedSlider
+          media={mixedMedia3}
+          isParentActive={true}
+          size={_kSize}
+          contentId="c1"
+          innerSliderRef={innerSliderRef}
+          onReady={vi.fn()}
+          onWaiting={vi.fn()}
+        />,
+      );
+
+      // Navigate to index 1 so index 0 (video) becomes inactive
+      const afterChange = lastReelProps.afterChange as (i: number) => void;
+      act(() => afterChange(1));
+
+      const { container } = render(getItemBuilder()(0, 0, _kSize));
+      const video = container.querySelector('[data-testid="video-slide"]')!;
+      expect(video.getAttribute('data-has-on-ready')).toBe('false');
+      expect(video.getAttribute('data-has-on-waiting')).toBe('false');
+    });
+
+    it('calls onReady when navigating from video to image slide', () => {
+      const onReady = vi.fn();
+
+      render(
+        <NestedSlider
+          media={mixedMedia3}
+          isParentActive={true}
+          size={_kSize}
+          contentId="c1"
+          innerSliderRef={innerSliderRef}
+          onReady={onReady}
+        />,
+      );
+
+      const afterChange = lastReelProps.afterChange as (i: number) => void;
+      act(() => afterChange(1));
+
+      expect(onReady).toHaveBeenCalledOnce();
+    });
+
+    it('calls onReady when navigating from image to another image', () => {
+      const onReady = vi.fn();
+
+      render(
+        <NestedSlider
+          media={mixedMedia3}
+          isParentActive={true}
+          size={_kSize}
+          contentId="c1"
+          innerSliderRef={innerSliderRef}
+          onReady={onReady}
+        />,
+      );
+
+      const afterChange = lastReelProps.afterChange as (i: number) => void;
+      act(() => afterChange(1));
+      act(() => afterChange(2));
+
+      expect(onReady).toHaveBeenCalledTimes(2);
+    });
+
+    it('does not call onReady when navigating to a video slide', () => {
+      const onReady = vi.fn();
+      const videoFirst: MediaItem[] = [
+        { id: 'm1', type: 'image', src: 'photo.jpg', aspectRatio: 1.5 },
+        {
+          id: 'v1',
+          type: 'video',
+          src: 'video.mp4',
+          poster: 'poster.jpg',
+          aspectRatio: 0.56,
+        },
+      ];
+
+      render(
+        <NestedSlider
+          media={videoFirst}
+          isParentActive={true}
+          size={_kSize}
+          contentId="c1"
+          innerSliderRef={innerSliderRef}
+          onReady={onReady}
+        />,
+      );
+
+      const afterChange = lastReelProps.afterChange as (i: number) => void;
+      act(() => afterChange(1));
+
+      expect(onReady).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('beforeChange', () => {
+    it('passes beforeChange to Reel', () => {
+      render(
+        <NestedSlider
+          media={videoMedia}
+          isParentActive={true}
+          size={_kSize}
+          contentId="c1"
+          innerSliderRef={innerSliderRef}
+        />,
+      );
+
+      expect(lastReelProps.beforeChange).toBeTypeOf('function');
+    });
+  });
+
+  describe('isParentActive media type reporting', () => {
+    it('reports media type when isParentActive becomes true', () => {
+      const onActiveMediaTypeChange = vi.fn();
+
+      const { rerender } = render(
+        <NestedSlider
+          media={mixedMedia}
+          isParentActive={false}
+          size={_kSize}
+          contentId="c1"
+          innerSliderRef={innerSliderRef}
+          onActiveMediaTypeChange={onActiveMediaTypeChange}
+        />,
+      );
+
+      expect(onActiveMediaTypeChange).not.toHaveBeenCalled();
+
+      rerender(
+        <NestedSlider
+          media={mixedMedia}
+          isParentActive={true}
+          size={_kSize}
+          contentId="c1"
+          innerSliderRef={innerSliderRef}
+          onActiveMediaTypeChange={onActiveMediaTypeChange}
+        />,
+      );
+
+      expect(onActiveMediaTypeChange).toHaveBeenCalledWith('image');
+    });
+
+    it('does not report media type when isParentActive is false', () => {
+      const onActiveMediaTypeChange = vi.fn();
+
+      render(
+        <NestedSlider
+          media={mixedMedia}
+          isParentActive={false}
+          size={_kSize}
+          contentId="c1"
+          innerSliderRef={innerSliderRef}
+          onActiveMediaTypeChange={onActiveMediaTypeChange}
+        />,
+      );
+
+      expect(onActiveMediaTypeChange).not.toHaveBeenCalled();
     });
   });
 });

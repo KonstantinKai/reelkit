@@ -1,6 +1,6 @@
-import { render } from '@testing-library/react';
+import { render, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { SoundProvider } from './SoundState';
+import { SoundProvider } from '@reelkit/react';
 import VideoSlide from './VideoSlide';
 
 // Mock play/pause on HTMLVideoElement
@@ -10,16 +10,34 @@ const mockPause = vi.fn();
 beforeEach(() => {
   // Mock createElement for video elements
   const origCreateElement = document.createElement.bind(document);
-  vi.spyOn(document, 'createElement').mockImplementation((tag: string, options?: ElementCreationOptions) => {
-    const el = origCreateElement(tag, options);
-    if (tag === 'video') {
-      Object.defineProperty(el, 'play', { value: mockPlay, writable: true, configurable: true });
-      Object.defineProperty(el, 'pause', { value: mockPause, writable: true, configurable: true });
-      Object.defineProperty(el, 'videoWidth', { value: 1920, writable: true, configurable: true });
-      Object.defineProperty(el, 'videoHeight', { value: 1080, writable: true, configurable: true });
-    }
-    return el;
-  });
+  vi.spyOn(document, 'createElement').mockImplementation(
+    (tag: string, options?: ElementCreationOptions) => {
+      const el = origCreateElement(tag, options);
+      if (tag === 'video') {
+        Object.defineProperty(el, 'play', {
+          value: mockPlay,
+          writable: true,
+          configurable: true,
+        });
+        Object.defineProperty(el, 'pause', {
+          value: mockPause,
+          writable: true,
+          configurable: true,
+        });
+        Object.defineProperty(el, 'videoWidth', {
+          value: 1920,
+          writable: true,
+          configurable: true,
+        });
+        Object.defineProperty(el, 'videoHeight', {
+          value: 1080,
+          writable: true,
+          configurable: true,
+        });
+      }
+      return el;
+    },
+  );
 
   mockPlay.mockClear();
   mockPause.mockClear();
@@ -46,7 +64,9 @@ describe('VideoSlide', () => {
         />,
       );
 
-      const wrapper = container.querySelector('.rk-video-slide-container') as HTMLElement;
+      const wrapper = container.querySelector(
+        '.rk-video-slide-container',
+      ) as HTMLElement;
       expect(wrapper.style.width).toBe('400px');
       expect(wrapper.style.height).toBe('700px');
     });
@@ -63,7 +83,9 @@ describe('VideoSlide', () => {
         />,
       );
 
-      const poster = container.querySelector('.rk-video-slide-poster') as HTMLElement;
+      const poster = container.querySelector(
+        '.rk-video-slide-poster',
+      ) as HTMLElement;
       expect(poster).toBeTruthy();
       expect(poster.getAttribute('src')).toBe('poster.jpg');
     });
@@ -96,7 +118,9 @@ describe('VideoSlide', () => {
         />,
       );
 
-      const videoContainer = container.querySelector('.rk-video-slide-container')!;
+      const videoContainer = container.querySelector(
+        '.rk-video-slide-container',
+      )!;
       const video = videoContainer.querySelector('video');
       expect(video).toBeTruthy();
     });
@@ -112,7 +136,9 @@ describe('VideoSlide', () => {
         />,
       );
 
-      const videoContainer = container.querySelector('.rk-video-slide-container')!;
+      const videoContainer = container.querySelector(
+        '.rk-video-slide-container',
+      )!;
       const video = videoContainer.querySelector('video');
       expect(video).toBeNull();
     });
@@ -142,7 +168,9 @@ describe('VideoSlide', () => {
         />,
       );
 
-      const videoContainer = container.querySelector('.rk-video-slide-container')!;
+      const videoContainer = container.querySelector(
+        '.rk-video-slide-container',
+      )!;
       expect(videoContainer.querySelector('video')).toBeTruthy();
 
       unmount();
@@ -186,6 +214,81 @@ describe('VideoSlide', () => {
       unmount();
 
       expect(onVideoRef).toHaveBeenCalledWith(null);
+    });
+  });
+
+  describe('loading callbacks', () => {
+    it('calls onReady when playing event fires', () => {
+      const onReady = vi.fn();
+      const { container } = renderWithSound(
+        <VideoSlide
+          src="video.mp4"
+          aspectRatio={0.56}
+          size={[400, 700]}
+          isActive={true}
+          slideKey="test-cb-1"
+          onReady={onReady}
+        />,
+      );
+
+      const video = container.querySelector('video')!;
+      act(() => video.dispatchEvent(new Event('playing')));
+      expect(onReady).toHaveBeenCalled();
+    });
+
+    it('calls onReady when canplay event fires', () => {
+      const onReady = vi.fn();
+      const { container } = renderWithSound(
+        <VideoSlide
+          src="video.mp4"
+          aspectRatio={0.56}
+          size={[400, 700]}
+          isActive={true}
+          slideKey="test-cb-2"
+          onReady={onReady}
+        />,
+      );
+
+      const video = container.querySelector('video')!;
+      video.dispatchEvent(new Event('canplay'));
+      expect(onReady).toHaveBeenCalled();
+    });
+
+    it('calls onWaiting when waiting event fires', () => {
+      const onWaiting = vi.fn();
+      const { container } = renderWithSound(
+        <VideoSlide
+          src="video.mp4"
+          aspectRatio={0.56}
+          size={[400, 700]}
+          isActive={true}
+          slideKey="test-cb-3"
+          onWaiting={onWaiting}
+        />,
+      );
+
+      const video = container.querySelector('video')!;
+      act(() => video.dispatchEvent(new Event('waiting')));
+      expect(onWaiting).toHaveBeenCalled();
+    });
+
+    it('does not call callbacks when inactive', () => {
+      const onReady = vi.fn();
+      const onWaiting = vi.fn();
+      renderWithSound(
+        <VideoSlide
+          src="video.mp4"
+          aspectRatio={0.56}
+          size={[400, 700]}
+          isActive={false}
+          slideKey="test-cb-4"
+          onReady={onReady}
+          onWaiting={onWaiting}
+        />,
+      );
+
+      expect(onReady).not.toHaveBeenCalled();
+      expect(onWaiting).not.toHaveBeenCalled();
     });
   });
 

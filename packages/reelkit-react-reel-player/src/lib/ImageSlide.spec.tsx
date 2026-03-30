@@ -55,7 +55,12 @@ describe('ImageSlide', () => {
         <ImageSlide
           src="https://example.com/photo.jpg"
           size={[400, 600]}
-          imageProps={{ 'data-testid': 'slide-img', draggable: false }}
+          imageProps={
+            {
+              'data-testid': 'slide-img',
+              draggable: false,
+            } as React.ImgHTMLAttributes<HTMLImageElement>
+          }
         />,
       );
 
