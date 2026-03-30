@@ -8,10 +8,44 @@ import { lightboxZoomTransition } from './lightboxZoomTransition';
 // Track Reel props
 let lastReelProps: Partial<ReelProps> = {};
 
+const {
+  mockPreloader,
+  mockPreloaderLoaded,
+  mockPreloaderOnLoadedCallbacks,
+} = vi.hoisted(() => {
+  const loaded = new Set<string>();
+  const onLoadedCallbacks = new Map<string, Set<() => void>>();
+  return {
+    mockPreloaderLoaded: loaded,
+    mockPreloaderOnLoadedCallbacks: onLoadedCallbacks,
+    mockPreloader: {
+      isLoaded: (src: string) => loaded.has(src),
+      isPending: () => false,
+      preload: vi.fn(),
+      markLoaded: vi.fn((src: string) => loaded.add(src)),
+      preloadRange: vi.fn(),
+      onLoaded: vi.fn((src: string, cb: () => void) => {
+        if (loaded.has(src)) {
+          cb();
+          return () => {};
+        }
+        let subs = onLoadedCallbacks.get(src);
+        if (!subs) {
+          subs = new Set();
+          onLoadedCallbacks.set(src, subs);
+        }
+        subs.add(cb);
+        return () => subs!.delete(cb);
+      }),
+    },
+  };
+});
+
 vi.mock('@reelkit/react', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@reelkit/react')>();
   return {
     ...actual,
+    createContentPreloader: () => mockPreloader,
     Reel: (props: ReelProps) => {
       lastReelProps = props;
       if (props.apiRef) {
@@ -89,6 +123,10 @@ describe('LightboxOverlay', () => {
     mockFullscreenSignal._value = false;
     mockRequestFullscreen.mockClear();
     mockExitFullscreen.mockClear();
+    mockPreloaderLoaded.clear();
+    mockPreloaderOnLoadedCallbacks.clear();
+    mockPreloader.markLoaded.mockClear();
+    mockPreloader.onLoaded.mockClear();
 
     Object.defineProperty(window, 'innerWidth', {
       value: 1024,
@@ -561,115 +599,34 @@ describe('LightboxOverlay', () => {
     });
   });
 
-  describe('video item preloading', () => {
-    // NOTE: preloadedImages is a module-level Set that persists across tests.
-    // Use unique URLs per test to avoid cache hits from previous tests.
-
-    it('preloads poster for video items instead of src', () => {
-      const srcs: string[] = [];
-      const origImage = window.Image;
-
-      vi.stubGlobal(
-        'Image',
-        class MockImage {
-          _src = '';
-          set src(val: string) {
-            this._src = val;
-            srcs.push(val);
-          }
-          get src() {
-            return this._src;
-          }
-        },
-      );
-
-      const mixedItems: LightboxItem[] = [
-        { src: 'preload-test-1-img.jpg', title: 'Image' },
-        {
-          src: 'preload-test-1-video.mp4',
-          type: 'video',
-          poster: 'preload-test-1-poster.jpg',
-          title: 'Video',
-        },
-        { src: 'preload-test-1-img2.jpg', title: 'Image 2' },
-      ];
-
+  describe('preloading', () => {
+    it('calls preloadRange on mount with current images and index', () => {
       render(
-        <LightboxOverlay isOpen={true} images={mixedItems} onClose={vi.fn()} />,
+        <LightboxOverlay isOpen={true} images={mockImages} onClose={vi.fn()} />,
       );
 
-      // At index 0 with PRELOAD_RANGE=2, items 1 and 2 should be preloaded
-      // Item 1 is video with poster → should preload poster
-      // Item 2 is image → should preload src
-      expect(srcs).toContain('preload-test-1-poster.jpg');
-      expect(srcs).toContain('preload-test-1-img2.jpg');
-      expect(srcs).not.toContain('preload-test-1-video.mp4');
-
-      vi.stubGlobal('Image', origImage);
+      expect(mockPreloader.preloadRange).toHaveBeenCalledWith(
+        mockImages,
+        0,
+        2,
+      );
     });
 
-    it('skips preloading for video items without poster', () => {
-      const srcs: string[] = [];
-      const origImage = window.Image;
-
-      vi.stubGlobal(
-        'Image',
-        class MockImage {
-          _src = '';
-          set src(val: string) {
-            this._src = val;
-            srcs.push(val);
-          }
-          get src() {
-            return this._src;
-          }
-        },
-      );
-
-      const items: LightboxItem[] = [
-        { src: 'preload-test-2-img.jpg' },
-        { src: 'preload-test-2-video.mp4', type: 'video' },
-      ];
-
+    it('calls preloadRange after slide change', () => {
       render(
-        <LightboxOverlay isOpen={true} images={items} onClose={vi.fn()} />,
+        <LightboxOverlay isOpen={true} images={mockImages} onClose={vi.fn()} />,
       );
 
-      expect(srcs).not.toContain('preload-test-2-video.mp4');
+      mockPreloader.preloadRange.mockClear();
 
-      vi.stubGlobal('Image', origImage);
-    });
+      const afterChange = lastReelProps.afterChange as (i: number) => void;
+      act(() => afterChange(1));
 
-    it('treats items without type field as images (backward compat)', () => {
-      const srcs: string[] = [];
-      const origImage = window.Image;
-
-      vi.stubGlobal(
-        'Image',
-        class MockImage {
-          _src = '';
-          set src(val: string) {
-            this._src = val;
-            srcs.push(val);
-          }
-          get src() {
-            return this._src;
-          }
-        },
+      expect(mockPreloader.preloadRange).toHaveBeenCalledWith(
+        mockImages,
+        1,
+        2,
       );
-
-      const items: LightboxItem[] = [
-        { src: 'preload-test-3-img1.jpg' },
-        { src: 'preload-test-3-img2.jpg' },
-      ];
-
-      render(
-        <LightboxOverlay isOpen={true} images={items} onClose={vi.fn()} />,
-      );
-
-      expect(srcs).toContain('preload-test-3-img2.jpg');
-
-      vi.stubGlobal('Image', origImage);
     });
   });
 
@@ -868,6 +825,129 @@ describe('LightboxOverlay', () => {
         expect.any(Function),
         expect.any(Function),
       );
+    });
+  });
+
+  describe('loading indicator flow', () => {
+    it('shows spinner on initial mount', () => {
+      render(
+        <LightboxOverlay isOpen={true} images={mockImages} onClose={vi.fn()} />,
+      );
+
+      expect(document.querySelector('.rk-lightbox-spinner')).toBeTruthy();
+    });
+
+    it('clears spinner via preloader.onLoaded for initially cached image', () => {
+      mockPreloaderLoaded.add('img1.jpg');
+
+      render(
+        <LightboxOverlay isOpen={true} images={mockImages} onClose={vi.fn()} />,
+      );
+
+      expect(document.querySelector('.rk-lightbox-spinner')).toBeNull();
+    });
+
+    it('clears spinner when preloader.onLoaded fires asynchronously', () => {
+      render(
+        <LightboxOverlay isOpen={true} images={mockImages} onClose={vi.fn()} />,
+      );
+
+      expect(document.querySelector('.rk-lightbox-spinner')).toBeTruthy();
+
+      act(() => {
+        mockPreloaderLoaded.add('img1.jpg');
+        mockPreloaderOnLoadedCallbacks.get('img1.jpg')?.forEach((cb) => cb());
+      });
+
+      expect(document.querySelector('.rk-lightbox-spinner')).toBeNull();
+    });
+
+    it('clears spinner when image onLoad fires', () => {
+      render(
+        <LightboxOverlay isOpen={true} images={mockImages} onClose={vi.fn()} />,
+      );
+
+      expect(document.querySelector('.rk-lightbox-spinner')).toBeTruthy();
+
+      const img = document.querySelector('.rk-lightbox-img') as HTMLImageElement;
+      act(() => {
+        fireEvent.load(img);
+      });
+
+      expect(document.querySelector('.rk-lightbox-spinner')).toBeNull();
+    });
+
+    it('marks image as loaded in preloader on onLoad', () => {
+      render(
+        <LightboxOverlay isOpen={true} images={mockImages} onClose={vi.fn()} />,
+      );
+
+      const img = document.querySelector('.rk-lightbox-img') as HTMLImageElement;
+      act(() => {
+        fireEvent.load(img);
+      });
+
+      expect(mockPreloader.markLoaded).toHaveBeenCalledWith('img1.jpg');
+    });
+
+    it('skips spinner on navigation when image is preloaded', () => {
+      render(
+        <LightboxOverlay isOpen={true} images={mockImages} onClose={vi.fn()} />,
+      );
+
+      // Clear initial spinner
+      act(() => {
+        mockPreloaderLoaded.add('img1.jpg');
+        mockPreloaderOnLoadedCallbacks.get('img1.jpg')?.forEach((cb) => cb());
+      });
+      expect(document.querySelector('.rk-lightbox-spinner')).toBeNull();
+
+      // Mark next image as preloaded
+      mockPreloaderLoaded.add('img2.jpg');
+
+      const afterChange = lastReelProps.afterChange as (i: number) => void;
+      act(() => afterChange(1));
+
+      expect(document.querySelector('.rk-lightbox-spinner')).toBeNull();
+    });
+
+    it('shows spinner on navigation when image is not preloaded', () => {
+      render(
+        <LightboxOverlay isOpen={true} images={mockImages} onClose={vi.fn()} />,
+      );
+
+      // Clear initial spinner
+      act(() => {
+        mockPreloaderLoaded.add('img1.jpg');
+        mockPreloaderOnLoadedCallbacks.get('img1.jpg')?.forEach((cb) => cb());
+      });
+
+      const afterChange = lastReelProps.afterChange as (i: number) => void;
+      act(() => afterChange(1));
+
+      expect(document.querySelector('.rk-lightbox-spinner')).toBeTruthy();
+    });
+
+    it('custom renderSlide receives onReady that clears spinner', () => {
+      let capturedOnReady: (() => void) | undefined;
+
+      render(
+        <LightboxOverlay
+          isOpen={true}
+          images={mockImages}
+          onClose={vi.fn()}
+          renderSlide={(_item, _index, _size, _isActive, onReady) => {
+            capturedOnReady = onReady;
+            return <div data-testid="custom-slide" />;
+          }}
+        />,
+      );
+
+      expect(document.querySelector('.rk-lightbox-spinner')).toBeTruthy();
+
+      act(() => capturedOnReady!());
+
+      expect(document.querySelector('.rk-lightbox-spinner')).toBeNull();
     });
   });
 });
