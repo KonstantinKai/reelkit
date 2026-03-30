@@ -8,38 +8,35 @@ import { lightboxZoomTransition } from './lightboxZoomTransition';
 // Track Reel props
 let lastReelProps: Partial<ReelProps> = {};
 
-const {
-  mockPreloader,
-  mockPreloaderLoaded,
-  mockPreloaderOnLoadedCallbacks,
-} = vi.hoisted(() => {
-  const loaded = new Set<string>();
-  const onLoadedCallbacks = new Map<string, Set<() => void>>();
-  return {
-    mockPreloaderLoaded: loaded,
-    mockPreloaderOnLoadedCallbacks: onLoadedCallbacks,
-    mockPreloader: {
-      isLoaded: (src: string) => loaded.has(src),
-      isPending: () => false,
-      preload: vi.fn(),
-      markLoaded: vi.fn((src: string) => loaded.add(src)),
-      preloadRange: vi.fn(),
-      onLoaded: vi.fn((src: string, cb: () => void) => {
-        if (loaded.has(src)) {
-          cb();
-          return () => {};
-        }
-        let subs = onLoadedCallbacks.get(src);
-        if (!subs) {
-          subs = new Set();
-          onLoadedCallbacks.set(src, subs);
-        }
-        subs.add(cb);
-        return () => subs!.delete(cb);
-      }),
-    },
-  };
-});
+const { mockPreloader, mockPreloaderLoaded, mockPreloaderOnLoadedCallbacks } =
+  vi.hoisted(() => {
+    const loaded = new Set<string>();
+    const onLoadedCallbacks = new Map<string, Set<() => void>>();
+    return {
+      mockPreloaderLoaded: loaded,
+      mockPreloaderOnLoadedCallbacks: onLoadedCallbacks,
+      mockPreloader: {
+        isLoaded: (src: string) => loaded.has(src),
+        isPending: () => false,
+        preload: vi.fn(),
+        markLoaded: vi.fn((src: string) => loaded.add(src)),
+        preloadRange: vi.fn(),
+        onLoaded: vi.fn((src: string, cb: () => void) => {
+          if (loaded.has(src)) {
+            cb();
+            return () => {};
+          }
+          let subs = onLoadedCallbacks.get(src);
+          if (!subs) {
+            subs = new Set();
+            onLoadedCallbacks.set(src, subs);
+          }
+          subs.add(cb);
+          return () => subs!.delete(cb);
+        }),
+      },
+    };
+  });
 
 vi.mock('@reelkit/react', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@reelkit/react')>();
@@ -93,8 +90,12 @@ const mockExitFullscreen = vi.fn();
 const mockToggleFullscreen = vi.fn();
 const mockFullscreenSignal = {
   _value: false,
-  get value() { return this._value; },
-  set value(v: boolean) { this._value = v; },
+  get value() {
+    return this._value;
+  },
+  set value(v: boolean) {
+    this._value = v;
+  },
   observe: () => vi.fn(),
 };
 
@@ -605,11 +606,7 @@ describe('LightboxOverlay', () => {
         <LightboxOverlay isOpen={true} images={mockImages} onClose={vi.fn()} />,
       );
 
-      expect(mockPreloader.preloadRange).toHaveBeenCalledWith(
-        mockImages,
-        0,
-        2,
-      );
+      expect(mockPreloader.preloadRange).toHaveBeenCalledWith(mockImages, 0, 2);
     });
 
     it('calls preloadRange after slide change', () => {
@@ -622,11 +619,7 @@ describe('LightboxOverlay', () => {
       const afterChange = lastReelProps.afterChange as (i: number) => void;
       act(() => afterChange(1));
 
-      expect(mockPreloader.preloadRange).toHaveBeenCalledWith(
-        mockImages,
-        1,
-        2,
-      );
+      expect(mockPreloader.preloadRange).toHaveBeenCalledWith(mockImages, 1, 2);
     });
   });
 
@@ -869,7 +862,9 @@ describe('LightboxOverlay', () => {
 
       expect(document.querySelector('.rk-lightbox-spinner')).toBeTruthy();
 
-      const img = document.querySelector('.rk-lightbox-img') as HTMLImageElement;
+      const img = document.querySelector(
+        '.rk-lightbox-img',
+      ) as HTMLImageElement;
       act(() => {
         fireEvent.load(img);
       });
@@ -882,7 +877,9 @@ describe('LightboxOverlay', () => {
         <LightboxOverlay isOpen={true} images={mockImages} onClose={vi.fn()} />,
       );
 
-      const img = document.querySelector('.rk-lightbox-img') as HTMLImageElement;
+      const img = document.querySelector(
+        '.rk-lightbox-img',
+      ) as HTMLImageElement;
       act(() => {
         fireEvent.load(img);
       });

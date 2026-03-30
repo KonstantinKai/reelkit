@@ -18,7 +18,12 @@ export const lightboxFadeTransition: TransitionTransformFn = (
   primarySize,
 ): SlideTransformStyle => {
   if (primarySize === 0) return { opacity: 0 };
-  const t = getSlideProgress(axisValue, slideIndex, currentRangeIndex, primarySize);
+  const t = getSlideProgress(
+    axisValue,
+    slideIndex,
+    currentRangeIndex,
+    primarySize,
+  );
   const distance = abs(t);
   const nudge = t * primarySize * 0.08;
   return {

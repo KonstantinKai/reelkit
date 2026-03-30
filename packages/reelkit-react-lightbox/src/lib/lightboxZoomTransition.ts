@@ -16,7 +16,12 @@ export const lightboxZoomTransition: TransitionTransformFn = (
   primarySize,
 ): SlideTransformStyle => {
   if (primarySize === 0) return { opacity: 0 };
-  const t = getSlideProgress(axisValue, slideIndex, currentRangeIndex, primarySize);
+  const t = getSlideProgress(
+    axisValue,
+    slideIndex,
+    currentRangeIndex,
+    primarySize,
+  );
   const distance = abs(t);
   if (distance >= 1) return { opacity: 0, zIndex: 0 };
   const scale = 0.7 + (1 - distance) * 0.3;

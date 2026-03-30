@@ -26,7 +26,12 @@ export const cubeTransition = (
 ): SlideTransformStyle => {
   if (primarySize === 0) return {};
 
-  const t = getSlideProgress(axisValue, slideIndex, currentRangeIndex, primarySize);
+  const t = getSlideProgress(
+    axisValue,
+    slideIndex,
+    currentRangeIndex,
+    primarySize,
+  );
 
   if (t <= -1 || t >= 1) {
     return { opacity: 0, zIndex: 0 };

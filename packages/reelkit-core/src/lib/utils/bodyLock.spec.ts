@@ -1,17 +1,15 @@
-import { renderHook } from '@testing-library/react';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { useBodyLock } from './useBodyLock';
+import { createBodyLock } from './bodyLock';
 
-describe('useBodyLock', () => {
-  const saved = {} as Pick<
-    CSSStyleDeclaration,
-    | 'overflow'
-    | 'paddingRight'
-    | 'overscrollBehavior'
-    | 'position'
-    | 'top'
-    | 'width'
-  >;
+describe('createBodyLock', () => {
+  const saved = {
+    overflow: '',
+    paddingRight: '',
+    overscrollBehavior: '',
+    position: '',
+    top: '',
+    width: '',
+  };
 
   beforeEach(() => {
     vi.spyOn(window, 'scrollTo').mockImplementation(vi.fn());
@@ -42,86 +40,99 @@ describe('useBodyLock', () => {
     style.width = saved.width;
   });
 
-  it('sets body overflow to hidden when locked', () => {
-    renderHook(() => useBodyLock(true));
+  it('applies lock styles on first lock', () => {
+    const bodyLock = createBodyLock();
+    bodyLock.lock();
+
     expect(document.body.style.overflow).toBe('hidden');
-  });
-
-  it('sets position fixed when locked', () => {
-    renderHook(() => useBodyLock(true));
     expect(document.body.style.position).toBe('fixed');
-  });
-
-  it('sets width 100% when locked', () => {
-    renderHook(() => useBodyLock(true));
     expect(document.body.style.width).toBe('100%');
-  });
-
-  it('sets overscrollBehavior none when locked', () => {
-    renderHook(() => useBodyLock(true));
     expect(document.body.style.overscrollBehavior).toBe('none');
+
+    bodyLock.unlock();
   });
 
-  it('does nothing when locked=false', () => {
-    document.body.style.overflow = 'auto';
-    renderHook(() => useBodyLock(false));
-    expect(document.body.style.overflow).toBe('auto');
+  it('reports locked state', () => {
+    const bodyLock = createBodyLock();
+
+    expect(bodyLock.locked).toBe(false);
+    bodyLock.lock();
+    expect(bodyLock.locked).toBe(true);
+    bodyLock.unlock();
+    expect(bodyLock.locked).toBe(false);
   });
 
-  it('restores all styles on unmount', () => {
+  it('restores original styles on unlock', () => {
     document.body.style.overflow = 'auto';
     document.body.style.position = 'relative';
     document.body.style.paddingRight = '10px';
 
-    const { unmount } = renderHook(() => useBodyLock(true));
+    const bodyLock = createBodyLock();
+    bodyLock.lock();
+
     expect(document.body.style.overflow).toBe('hidden');
 
-    unmount();
+    bodyLock.unlock();
 
     expect(document.body.style.overflow).toBe('auto');
     expect(document.body.style.position).toBe('relative');
     expect(document.body.style.paddingRight).toBe('10px');
   });
 
-  it('restores scroll position on unmount', () => {
+  it('restores scroll position on unlock', () => {
     const scrollToSpy = vi
       .spyOn(window, 'scrollTo')
       .mockImplementation(vi.fn());
 
-    const { unmount } = renderHook(() => useBodyLock(true));
-    unmount();
+    const bodyLock = createBodyLock();
+    bodyLock.lock();
+    bodyLock.unlock();
 
     expect(scrollToSpy).toHaveBeenCalledWith(0, expect.any(Number));
   });
 
-  it('toggles from locked to unlocked', () => {
-    const { rerender } = renderHook(({ locked }) => useBodyLock(locked), {
-      initialProps: { locked: true },
-    });
+  it('reference counts multiple locks', () => {
+    const bodyLock = createBodyLock();
 
+    bodyLock.lock();
+    bodyLock.lock();
+
+    expect(bodyLock.locked).toBe(true);
     expect(document.body.style.overflow).toBe('hidden');
 
-    rerender({ locked: false });
+    bodyLock.unlock();
+    expect(bodyLock.locked).toBe(true);
+    expect(document.body.style.overflow).toBe('hidden');
 
+    bodyLock.unlock();
+    expect(bodyLock.locked).toBe(false);
     expect(document.body.style.overflow).toBe('');
-    expect(document.body.style.position).toBe('');
   });
 
-  it('toggles from unlocked to locked', () => {
-    const { rerender } = renderHook(({ locked }) => useBodyLock(locked), {
-      initialProps: { locked: false },
-    });
+  it('lock returns a disposer that calls unlock', () => {
+    const bodyLock = createBodyLock();
+    const dispose = bodyLock.lock();
 
+    expect(bodyLock.locked).toBe(true);
+
+    dispose();
+
+    expect(bodyLock.locked).toBe(false);
     expect(document.body.style.overflow).toBe('');
+  });
 
-    rerender({ locked: true });
+  it('unlock is a no-op when not locked', () => {
+    document.body.style.overflow = 'auto';
 
-    expect(document.body.style.overflow).toBe('hidden');
-    expect(document.body.style.position).toBe('fixed');
+    const bodyLock = createBodyLock();
+    bodyLock.unlock();
+
+    expect(document.body.style.overflow).toBe('auto');
   });
 
   it('sets paddingRight based on scrollbar width', () => {
-    renderHook(() => useBodyLock(true));
+    const bodyLock = createBodyLock();
+    bodyLock.lock();
 
     const scrollbarWidth =
       window.innerWidth - document.documentElement.clientWidth;
@@ -130,5 +141,7 @@ describe('useBodyLock', () => {
     } else {
       expect(document.body.style.paddingRight).toBe('');
     }
+
+    bodyLock.unlock();
   });
 });

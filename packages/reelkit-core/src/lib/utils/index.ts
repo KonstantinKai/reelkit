@@ -62,3 +62,5 @@ export {
   requestFullscreen,
   exitFullscreen,
 } from './fullscreen';
+
+export { createBodyLock, type BodyLock } from './bodyLock';

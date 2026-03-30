@@ -94,6 +94,8 @@ export {
   fullscreenSignal,
   requestFullscreen,
   exitFullscreen,
+  createBodyLock,
+  type BodyLock,
 } from '@reelkit/core';
 
 // Main components

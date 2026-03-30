@@ -14,7 +14,12 @@ export const slideTransition = (
 ): SlideTransformStyle => {
   if (primarySize === 0) return {};
 
-  const t = getSlideProgress(axisValue, slideIndex, currentRangeIndex, primarySize);
+  const t = getSlideProgress(
+    axisValue,
+    slideIndex,
+    currentRangeIndex,
+    primarySize,
+  );
   const axis = direction === 'horizontal' ? 'X' : 'Y';
 
   return {

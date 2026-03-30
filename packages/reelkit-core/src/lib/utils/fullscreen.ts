@@ -40,9 +40,21 @@ const subscribeToFullscreenChange = (callback: () => void): Disposer => {
   const disposables = createDisposableList();
   disposables.push(
     observeDomEvent(document, 'fullscreenchange', callback),
-    observeDomEvent(document, 'webkitfullscreenchange' as 'fullscreenchange', callback),
-    observeDomEvent(document, 'mozfullscreenchange' as 'fullscreenchange', callback),
-    observeDomEvent(document, 'MSFullscreenChange' as 'fullscreenchange', callback),
+    observeDomEvent(
+      document,
+      'webkitfullscreenchange' as 'fullscreenchange',
+      callback,
+    ),
+    observeDomEvent(
+      document,
+      'mozfullscreenchange' as 'fullscreenchange',
+      callback,
+    ),
+    observeDomEvent(
+      document,
+      'MSFullscreenChange' as 'fullscreenchange',
+      callback,
+    ),
   );
   return disposables.dispose;
 };

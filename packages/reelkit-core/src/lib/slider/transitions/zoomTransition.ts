@@ -19,7 +19,12 @@ export const zoomTransition = (
 ): SlideTransformStyle => {
   if (primarySize === 0) return { opacity: 0 };
 
-  const t = getSlideProgress(axisValue, slideIndex, currentRangeIndex, primarySize);
+  const t = getSlideProgress(
+    axisValue,
+    slideIndex,
+    currentRangeIndex,
+    primarySize,
+  );
   const distance = abs(t);
 
   if (distance >= 1) return { opacity: 0, zIndex: 0 };

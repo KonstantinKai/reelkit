@@ -785,7 +785,9 @@ describe('ReelPlayerOverlay', () => {
           renderNavigation={({ onPrev, onNext, activeIndex, count }) => (
             <div data-testid="custom-nav">
               <button onClick={onPrev}>Prev</button>
-              <span>{activeIndex}/{count}</span>
+              <span>
+                {activeIndex}/{count}
+              </span>
               <button onClick={onNext}>Next</button>
             </div>
           )}

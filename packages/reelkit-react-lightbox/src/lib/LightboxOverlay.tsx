@@ -204,7 +204,7 @@ export interface LightboxOverlayProps extends ReelProxyProps {
 /** Number of images to preload before and after the current index. */
 const _kPreloadRange = 2;
 
-const preloader = createContentPreloader();
+const preloader = createContentPreloader({ maxCacheSize: 1000 });
 
 /**
  * Inner content of the lightbox overlay. Manages slider, controls,

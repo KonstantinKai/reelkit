@@ -47,6 +47,11 @@ describe('useFullscreen', () => {
   });
 
   it('exits fullscreen', async () => {
+    Object.defineProperty(document, 'fullscreenElement', {
+      value: mockElement,
+      configurable: true,
+    });
+
     const { result } = renderHook(() => useFullscreen({ ref }));
 
     await act(async () => {
@@ -54,6 +59,11 @@ describe('useFullscreen', () => {
     });
 
     expect(document.exitFullscreen).toHaveBeenCalled();
+
+    Object.defineProperty(document, 'fullscreenElement', {
+      value: null,
+      configurable: true,
+    });
   });
 
   it('does not request fullscreen when ref is null', async () => {
@@ -69,7 +79,9 @@ describe('useFullscreen', () => {
 
   it('handles requestFullscreen error gracefully', async () => {
     const consoleSpy = vi.spyOn(console, 'log').mockImplementation(vi.fn());
-    mockElement.requestFullscreen = vi.fn().mockRejectedValue(new Error('Not allowed'));
+    mockElement.requestFullscreen = vi
+      .fn()
+      .mockRejectedValue(new Error('Not allowed'));
 
     const { result } = renderHook(() => useFullscreen({ ref }));
 

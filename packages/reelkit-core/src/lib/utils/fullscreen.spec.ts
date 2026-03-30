@@ -74,7 +74,9 @@ describe('fullscreenSignal', () => {
     const dispose1 = fullscreenSignal.observe(vi.fn());
     const dispose2 = fullscreenSignal.observe(vi.fn());
 
-    const calls = addSpy.mock.calls.filter(([name]) => name === 'fullscreenchange');
+    const calls = addSpy.mock.calls.filter(
+      ([name]) => name === 'fullscreenchange',
+    );
     expect(calls).toHaveLength(1);
 
     dispose1();
@@ -118,20 +120,38 @@ describe('requestFullscreen', () => {
 
   it('resolves when no API is available', async () => {
     const el = document.createElement('div');
-    delete (el as Record<string, unknown>)['requestFullscreen'];
+    delete (el as unknown as Record<string, unknown>)['requestFullscreen'];
 
     await expect(requestFullscreen(el)).resolves.toBeUndefined();
   });
 });
 
 describe('exitFullscreen', () => {
-  it('calls document.exitFullscreen when available', async () => {
+  it('calls document.exitFullscreen when in fullscreen', async () => {
+    const original = document.exitFullscreen;
+    document.exitFullscreen = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(document, 'fullscreenElement', {
+      value: document.createElement('div'),
+      configurable: true,
+    });
+
+    await exitFullscreen();
+
+    expect(document.exitFullscreen).toHaveBeenCalled();
+    document.exitFullscreen = original;
+    Object.defineProperty(document, 'fullscreenElement', {
+      value: null,
+      configurable: true,
+    });
+  });
+
+  it('skips exitFullscreen when not in fullscreen', async () => {
     const original = document.exitFullscreen;
     document.exitFullscreen = vi.fn().mockResolvedValue(undefined);
 
     await exitFullscreen();
 
-    expect(document.exitFullscreen).toHaveBeenCalled();
+    expect(document.exitFullscreen).not.toHaveBeenCalled();
     document.exitFullscreen = original;
   });
 });

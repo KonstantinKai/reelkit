@@ -20,7 +20,12 @@ export const fadeTransition = (
 ): SlideTransformStyle => {
   if (primarySize === 0) return { opacity: 0 };
 
-  const t = getSlideProgress(axisValue, slideIndex, currentRangeIndex, primarySize);
+  const t = getSlideProgress(
+    axisValue,
+    slideIndex,
+    currentRangeIndex,
+    primarySize,
+  );
   const distance = abs(t);
   const opacity = clamp(1 - distance, 0, 1);
 
