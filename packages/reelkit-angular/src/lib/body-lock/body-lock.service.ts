@@ -1,5 +1,5 @@
-import { inject, Injectable, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { Injectable } from '@angular/core';
+import { createBodyLock, type BodyLock } from '@reelkit/core';
 
 /**
  * Locks/unlocks document body scroll, compensating for scrollbar width to
@@ -9,62 +9,21 @@ import { isPlatformBrowser } from '@angular/common';
  * and a modal both open at once) can each call lock()/unlock() independently:
  * the body is only restored once the last caller releases it.
  *
- * SSR-safe: all `document`/`window` access is guarded by `isPlatformBrowser`,
- * so the service can be instantiated on the server without throwing.
+ * Delegates to core's {@link createBodyLock} for the actual implementation.
  */
 @Injectable({ providedIn: 'root' })
 export class BodyLockService {
-  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
-
-  private originalOverflow = '';
-  private originalPaddingRight = '';
-  /**
-   * Number of active lock requests. Styles are applied on the first lock and
-   * restored only when this count returns to zero.
-   */
-  private lockCount = 0;
+  private readonly bodyLock: BodyLock = createBodyLock();
 
   get locked(): boolean {
-    return this.lockCount > 0;
+    return this.bodyLock.locked;
   }
 
   lock(): void {
-    if (!this.isBrowser) return;
-
-    if (this.lockCount === 0) {
-      // Capture original styles only on the very first lock.
-      this.captureOriginalStyles();
-      this.applyLockStyles();
-    }
-    this.lockCount++;
+    this.bodyLock.lock();
   }
 
   unlock(): void {
-    if (!this.isBrowser) return;
-    if (this.lockCount === 0) return;
-
-    this.lockCount--;
-    if (this.lockCount === 0) {
-      document.body.style.overflow = this.originalOverflow;
-      document.body.style.paddingRight = this.originalPaddingRight;
-    }
-  }
-
-  private captureOriginalStyles(): void {
-    this.originalOverflow = document.body.style.overflow;
-    this.originalPaddingRight = document.body.style.paddingRight;
-  }
-
-  private applyLockStyles(): void {
-    document.body.style.overflow = 'hidden';
-
-    const scrollbarWidth = this.measureScrollbarWidth();
-    if (scrollbarWidth > 0) {
-      document.body.style.paddingRight = `${scrollbarWidth}px`;
-    }
-  }
-
-  private measureScrollbarWidth(): number {
-    return window.innerWidth - document.documentElement.clientWidth;
+    this.bodyLock.unlock();
   }
 }

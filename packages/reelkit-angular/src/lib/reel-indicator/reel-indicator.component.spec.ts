@@ -7,7 +7,7 @@ import { RkReelItemDirective } from '../reel/reel-item.directive';
 import type { ReelApi } from '../reel/reel.types';
 
 function installResizeObserverMock(): void {
-  (globalThis as any).ResizeObserver = jest
+  (globalThis as unknown as Record<string, unknown>).ResizeObserver = jest
     .fn()
     .mockImplementation((cb: (entries: ResizeObserverEntry[]) => void) => ({
       observe: jest.fn().mockImplementation(() => {
@@ -595,7 +595,9 @@ describe('ReelIndicatorComponent', () => {
       ).componentInstance as ReelIndicatorComponent;
 
       // Forcibly put the component into the "navigating" state.
-      (component as any)._isNavigating.set(true);
+      (
+        component as unknown as Record<string, WritableSignal<boolean>>
+      )._isNavigating.set(true);
       fixture.detectChanges();
 
       const clicks: number[] = [];
@@ -629,13 +631,21 @@ describe('ReelIndicatorComponent', () => {
       const slowPromise = new Promise<void>((res) => {
         resolveGoTo = res;
       });
-      const origGoTo = (component as any).reelContext.goTo;
-      (component as any).reelContext.goTo = () => slowPromise;
+      const origGoTo = (
+        component as unknown as Record<string, Record<string, unknown>>
+      ).reelContext.goTo;
+      (
+        component as unknown as Record<string, Record<string, unknown>>
+      ).reelContext.goTo = () => slowPromise;
 
       // Click a dot to start navigation (sets _isNavigating = true).
       getDots(fixture)[1].click();
       fixture.detectChanges();
-      expect((component as any)._isNavigating()).toBe(true);
+      expect(
+        (
+          component as unknown as Record<string, WritableSignal<boolean>>
+        )._isNavigating(),
+      ).toBe(true);
 
       // Destroy the component BEFORE the Promise resolves.
       fixture.destroy();
@@ -644,7 +654,9 @@ describe('ReelIndicatorComponent', () => {
       expect(() => resolveGoTo()).not.toThrow();
 
       // Restore original goTo.
-      (component as any).reelContext.goTo = origGoTo;
+      (
+        component as unknown as Record<string, Record<string, unknown>>
+      ).reelContext.goTo = origGoTo;
     }));
   });
 });

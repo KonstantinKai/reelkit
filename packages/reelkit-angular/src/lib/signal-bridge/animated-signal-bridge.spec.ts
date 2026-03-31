@@ -92,7 +92,9 @@ describe('animatedSignalBridge', () => {
 
       const sig = animatedSignalBridge(source, zone, cdRef, destroyRef);
 
-      expect(typeof (sig as any)['set']).not.toBe('function');
+      expect(
+        typeof (sig as unknown as Record<string, unknown>)['set'],
+      ).not.toBe('function');
     });
   });
 
@@ -120,7 +122,7 @@ describe('animatedSignalBridge', () => {
       const { cdRef, detectChangesCalls } = makeCdRef();
       const zone = makeZone();
 
-      const sig = animatedSignalBridge(source, zone, cdRef, destroyRef);
+      animatedSignalBridge(source, zone, cdRef, destroyRef);
 
       // Mock rAF so multiple frames are simulated sequentially.
       let rafCbs: FrameRequestCallback[] = [];
