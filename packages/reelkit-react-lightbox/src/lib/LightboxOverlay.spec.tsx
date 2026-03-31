@@ -8,18 +8,22 @@ import { lightboxZoomTransition } from './lightboxZoomTransition';
 // Track Reel props
 let lastReelProps: Partial<ReelProps> = {};
 
-const { mockPreloader, mockPreloaderLoaded, mockPreloaderOnLoadedCallbacks } =
+const { mockPreloader, mockPreloaderLoaded, mockPreloaderErrored, mockPreloaderOnLoadedCallbacks } =
   vi.hoisted(() => {
     const loaded = new Set<string>();
+    const errored = new Set<string>();
     const onLoadedCallbacks = new Map<string, Set<() => void>>();
     return {
       mockPreloaderLoaded: loaded,
+      mockPreloaderErrored: errored,
       mockPreloaderOnLoadedCallbacks: onLoadedCallbacks,
       mockPreloader: {
         isLoaded: (src: string) => loaded.has(src),
+        isErrored: (src: string) => errored.has(src),
         isPending: () => false,
         preload: vi.fn(),
         markLoaded: vi.fn((src: string) => loaded.add(src)),
+        markErrored: vi.fn((src: string) => errored.add(src)),
         preloadRange: vi.fn(),
         onLoaded: vi.fn((src: string, cb: () => void) => {
           if (loaded.has(src)) {
@@ -107,6 +111,7 @@ vi.mock('lucide-react', () => ({
   ChevronRight: () => <span>Right</span>,
   Volume2: () => <span>Volume2</span>,
   VolumeX: () => <span>VolumeX</span>,
+  ImageOff: () => <span>ImageOff</span>,
 }));
 
 // eslint-disable-next-line import/first
@@ -781,6 +786,7 @@ describe('LightboxOverlay', () => {
         true,
         expect.any(Function),
         expect.any(Function),
+        expect.any(Function),
       );
 
       renderSlide.mockClear();
@@ -805,6 +811,7 @@ describe('LightboxOverlay', () => {
         true,
         expect.any(Function),
         expect.any(Function),
+        expect.any(Function),
       );
 
       // And isActive=false for the image slide
@@ -815,6 +822,7 @@ describe('LightboxOverlay', () => {
         0,
         [1024, 768],
         false,
+        expect.any(Function),
         expect.any(Function),
         expect.any(Function),
       );
@@ -945,6 +953,114 @@ describe('LightboxOverlay', () => {
       act(() => capturedOnReady!());
 
       expect(document.querySelector('.rk-lightbox-spinner')).toBeNull();
+    });
+
+    it('shows error icon when image onError fires', () => {
+      render(
+        <LightboxOverlay isOpen={true} images={mockImages} onClose={vi.fn()} />,
+      );
+
+      const itemBuilder = lastReelProps.itemBuilder as (
+        i: number,
+        ir: number,
+        s: [number, number],
+      ) => React.ReactNode;
+
+      const { container } = render(
+        <>{itemBuilder(0, 0, [1024, 768])}</>,
+      );
+
+      const img = container.querySelector('img');
+      act(() => {
+        img?.dispatchEvent(new Event('error', { bubbles: true }));
+      });
+
+      expect(document.querySelector('.rk-lightbox-img-error')).toBeTruthy();
+      expect(document.querySelector('.rk-lightbox-spinner')).toBeNull();
+    });
+
+    it('custom renderSlide receives onError callback', () => {
+      let capturedOnError: (() => void) | undefined;
+
+      render(
+        <LightboxOverlay
+          isOpen={true}
+          images={mockImages}
+          onClose={vi.fn()}
+          renderSlide={(_item, _index, _size, _isActive, _onReady, _onWaiting, onError) => {
+            capturedOnError = onError;
+            return <div />;
+          }}
+        />,
+      );
+
+      expect(capturedOnError).toBeDefined();
+      act(() => capturedOnError!());
+
+      expect(document.querySelector('.rk-lightbox-img-error')).toBeTruthy();
+    });
+
+    it('onAfterChange shows error icon for previously errored source', () => {
+      render(
+        <LightboxOverlay isOpen={true} images={mockImages} onClose={vi.fn()} />,
+      );
+
+      mockPreloaderErrored.add('img2.jpg');
+
+      const afterChange = lastReelProps.afterChange as (i: number) => void;
+      act(() => afterChange(1));
+
+      expect(document.querySelector('.rk-lightbox-img-error')).toBeTruthy();
+      expect(document.querySelector('.rk-lightbox-spinner')).toBeNull();
+
+      mockPreloaderErrored.clear();
+    });
+
+    it('renderLoading replaces default spinner', () => {
+      render(
+        <LightboxOverlay
+          isOpen={true}
+          images={mockImages}
+          onClose={vi.fn()}
+          renderLoading={({ activeIndex }) => (
+            <div data-testid="custom-loading">Loading {activeIndex}</div>
+          )}
+        />,
+      );
+
+      expect(document.querySelector('.rk-lightbox-spinner')).toBeNull();
+      expect(screen.getByTestId('custom-loading')).toBeTruthy();
+      expect(screen.getByTestId('custom-loading').textContent).toContain('0');
+    });
+
+    it('renderError replaces default error icon', () => {
+      render(
+        <LightboxOverlay
+          isOpen={true}
+          images={mockImages}
+          onClose={vi.fn()}
+          renderError={({ activeIndex }) => (
+            <div data-testid="custom-error">Error at {activeIndex}</div>
+          )}
+        />,
+      );
+
+      mockPreloaderErrored.add('img1.jpg');
+      const afterChange = lastReelProps.afterChange as (i: number) => void;
+      act(() => afterChange(0));
+
+      expect(document.querySelector('.rk-lightbox-img-error')).toBeNull();
+      expect(screen.getByTestId('custom-error')).toBeTruthy();
+
+      mockPreloaderErrored.clear();
+    });
+
+    it('default spinner renders when renderLoading is not provided', () => {
+      render(
+        <LightboxOverlay isOpen={true} images={mockImages} onClose={vi.fn()} />,
+      );
+
+      expect(document.querySelector('.rk-lightbox-spinner')).toBeTruthy();
     });
   });
 });

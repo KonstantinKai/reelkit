@@ -20,6 +20,7 @@ interface MediaSlideProps {
   onActiveMediaTypeChange?: (type: 'image' | 'video') => void;
   onReady?: () => void;
   onWaiting?: () => void;
+  onError?: () => void;
   renderNestedNavigation?: (props: NavigationRenderProps) => ReactNode;
   renderNestedSlide?: (props: NestedSlideRenderProps) => ReactNode;
 }
@@ -43,6 +44,7 @@ const MediaSlide: React.FC<MediaSlideProps> = ({
   onActiveMediaTypeChange,
   onReady,
   onWaiting,
+  onError,
   renderNestedNavigation,
   renderNestedSlide,
 }) => {
@@ -53,7 +55,7 @@ const MediaSlide: React.FC<MediaSlideProps> = ({
       <ImageSlide
         src={media[0].src}
         size={size}
-        imageProps={{ onLoad: onReady }}
+        imageProps={{ onLoad: onReady, onError }}
       />
     );
   }
@@ -70,6 +72,7 @@ const MediaSlide: React.FC<MediaSlideProps> = ({
         onVideoRef={onVideoRef}
         onReady={onReady}
         onWaiting={onWaiting}
+        onError={onError}
       />
     );
   }
@@ -86,6 +89,7 @@ const MediaSlide: React.FC<MediaSlideProps> = ({
       onActiveMediaTypeChange={onActiveMediaTypeChange}
       onReady={onReady}
       onWaiting={onWaiting}
+      onError={onError}
       renderNavigation={renderNestedNavigation}
       renderNestedSlide={renderNestedSlide}
     />

@@ -9,6 +9,7 @@ import {
   createSignal,
   createSharedVideo,
   createDisposableList,
+  observeDomEvent,
   observeMediaLoading,
   syncMutedToVideo,
   captureFrame,
@@ -57,6 +58,9 @@ export interface VideoSlideProps {
 
   /** Called when the video stalls (buffering mid-playback). */
   onWaiting?: () => void;
+
+  /** Called when the video fails to load or play. */
+  onError?: () => void;
 }
 
 /** @internal */
@@ -103,6 +107,7 @@ const VideoSlide: React.FC<VideoSlideProps> = ({
   onVideoRef,
   onReady,
   onWaiting,
+  onError,
   className,
   style,
 }) => {
@@ -111,8 +116,8 @@ const VideoSlide: React.FC<VideoSlideProps> = ({
   const shouldPlay = isActive && isInnerActive;
   const isVertical = aspectRatio < 1;
   const [showPoster] = useState(() => createSignal(true));
-  const callbacksRef = useRef({ onReady, onWaiting });
-  callbacksRef.current = { onReady, onWaiting };
+  const callbacksRef = useRef({ onReady, onWaiting, onError });
+  callbacksRef.current = { onReady, onWaiting, onError };
 
   useIsomorphicLayoutEffect(() => {
     if (!shouldPlay || !containerRef.current) return;
@@ -136,6 +141,9 @@ const VideoSlide: React.FC<VideoSlideProps> = ({
           showPoster.value = false;
         },
       }),
+      observeDomEvent(video, 'error', () => {
+        callbacksRef.current.onError?.();
+      }),
     );
 
     video.src = src;
@@ -153,8 +161,9 @@ const VideoSlide: React.FC<VideoSlideProps> = ({
       onVideoRef(video);
     }
 
-    // Autoplay may be prevented by the browser
-    video.play().catch(noop);
+    video.play().catch(() => {
+      callbacksRef.current.onError?.();
+    });
 
     disposables.push(() => {
       shared.playbackPositions.set(slideKey, video.currentTime);

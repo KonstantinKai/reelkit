@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { type ReactNode, useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronUp, ChevronDown } from 'lucide-react';
+import { ChevronUp, ChevronDown, ImageOff } from 'lucide-react';
 import {
   noop,
   createSignal,
@@ -134,6 +134,12 @@ export interface ReelPlayerOverlayProps<T extends BaseContentItem = ContentItem>
    * Use `props.defaultContent` to wrap the default ImageSlide/VideoSlide with your own styles.
    */
   renderNestedSlide?: (props: NestedSlideRenderProps) => ReactNode;
+
+  /** Custom loading indicator. Replaces default wave loader. */
+  renderLoading?: (props: { activeIndex: number }) => ReactNode;
+
+  /** Custom error indicator. Replaces default error icon. */
+  renderError?: (props: { activeIndex: number }) => ReactNode;
 }
 
 const _kDefaultAspectRatio = 9 / 16;
@@ -263,7 +269,9 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>(
       handleAfterChange: (index: number) => {
         loadingCtrl.setActiveIndex(index);
         const src = propsRef.current.content[index]?.media[0]?.src;
-        if (src && preloader.isLoaded(src)) {
+        if (src && preloader.isErrored(src)) {
+          loadingCtrl.onError(index);
+        } else if (src && preloader.isLoaded(src)) {
           loadingCtrl.onReady(index);
         }
         innerMediaTypeSignal.value = null;
@@ -315,6 +323,11 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>(
           if (src) preloader.markLoaded(src);
         };
         const onWaiting = () => loadingCtrl.onWaiting(index);
+        const onError = () => {
+          const src = item.media[0]?.src;
+          if (src) preloader.markErrored(src);
+          loadingCtrl.onError(index);
+        };
 
         const defaultContent = (
           <>
@@ -327,6 +340,7 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>(
               onVideoRef={isActive ? handleVideoRef : undefined}
               onReady={onReady}
               onWaiting={onWaiting}
+              onError={onError}
               onActiveMediaTypeChange={
                 isActive ? handleActiveMediaTypeChange : undefined
               }
@@ -354,6 +368,7 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>(
             defaultContent,
             onReady,
             onWaiting,
+            onError,
           });
           if (custom !== null) {
             return (
@@ -477,12 +492,26 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>(
           }}
         </Observe>
 
-        <Observe signals={[loadingCtrl.isLoading]}>
-          {() =>
-            loadingCtrl.isLoading.value ? (
-              <div className="rk-reel-loader" />
-            ) : null
-          }
+        <Observe signals={[loadingCtrl.isLoading, loadingCtrl.isError, indexSignal]}>
+          {() => {
+            const idx = indexSignal.value;
+            const { renderLoading, renderError } = propsRef.current;
+
+            if (loadingCtrl.isError.value) {
+              return renderError ? <>{renderError({ activeIndex: idx })}</> : (
+                <div className="rk-media-error" role="img" aria-label="Content unavailable">
+                  <ImageOff size={48} strokeWidth={1.5} aria-hidden="true" />
+                  <span className="rk-media-error-text">Content unavailable</span>
+                </div>
+              );
+            }
+            if (loadingCtrl.isLoading.value) {
+              return renderLoading ? <>{renderLoading({ activeIndex: idx })}</> : (
+                <div className="rk-reel-loader" />
+              );
+            }
+            return null;
+          }}
         </Observe>
 
         <Observe signals={[indexSignal, innerMediaTypeSignal]}>

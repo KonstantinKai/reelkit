@@ -27,7 +27,7 @@ import {
 } from '@reelkit/react';
 import { lightboxFadeTransition } from './lightboxFadeTransition';
 import { lightboxZoomTransition } from './lightboxZoomTransition';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ImageOff } from 'lucide-react';
 import { useFullscreen } from '@reelkit/react';
 import LightboxControls from './LightboxControls';
 import type {
@@ -198,7 +198,14 @@ export interface LightboxOverlayProps extends ReelProxyProps {
     isActive: boolean,
     onReady: () => void,
     onWaiting: () => void,
+    onError: () => void,
   ) => ReactNode | null;
+
+  /** Custom loading indicator. Replaces default spinner. */
+  renderLoading?: (props: { activeIndex: number }) => ReactNode;
+
+  /** Custom error indicator. Replaces default error icon. */
+  renderError?: (props: { activeIndex: number }) => ReactNode;
 }
 
 /** Number of images to preload before and after the current index. */
@@ -261,15 +268,22 @@ const LightboxContent: FC<LightboxOverlayProps> = (props) => {
         : false,
     );
 
+    const imageErrors = new Set<number>();
+    const errorVersion = createSignal(0);
+
     return {
       sizeSignal,
       loadingCtrl,
       indexSignal,
       isMobileSignal,
+      imageErrors,
+      errorVersion,
       handleAfterChange: (index: number) => {
         loadingCtrl.setActiveIndex(index);
         const src = propsRef.current.images[index]?.src;
-        if (src && preloader.isLoaded(src)) {
+        if (src && preloader.isErrored(src)) {
+          loadingCtrl.onError(index);
+        } else if (src && preloader.isLoaded(src)) {
           loadingCtrl.onReady(index);
         }
         indexSignal.value = index;
@@ -291,6 +305,10 @@ const LightboxContent: FC<LightboxOverlayProps> = (props) => {
         const isActive = index === indexSignal.value;
         const onReady = () => loadingCtrl.onReady(index);
         const onWaiting = () => loadingCtrl.onWaiting(index);
+        const onError = () => {
+          preloader.markErrored(image.src);
+          loadingCtrl.onError(index);
+        };
 
         if (render) {
           const custom = render(
@@ -300,6 +318,7 @@ const LightboxContent: FC<LightboxOverlayProps> = (props) => {
             isActive,
             onReady,
             onWaiting,
+            onError,
           );
           if (custom !== null) {
             return (
@@ -328,6 +347,7 @@ const LightboxContent: FC<LightboxOverlayProps> = (props) => {
                 preloader.markLoaded(image.src);
                 onReady();
               }}
+              onError={onError}
             />
           </div>
         );
@@ -423,12 +443,38 @@ const LightboxContent: FC<LightboxOverlayProps> = (props) => {
           );
         }}
       </Observe>
-      <Observe signals={[loadingCtrl.isLoading]}>
-        {() =>
-          loadingCtrl.isLoading.value ? (
-            <div className="rk-lightbox-spinner" />
-          ) : null
-        }
+      <Observe
+        signals={[loadingCtrl.isLoading, loadingCtrl.isError, indexSignal]}
+      >
+        {() => {
+          const idx = indexSignal.value;
+          const { renderLoading, renderError } = propsRef.current;
+
+          if (loadingCtrl.isError.value) {
+            return renderError ? (
+              <>{renderError({ activeIndex: idx })}</>
+            ) : (
+              <div
+                className="rk-lightbox-img-error"
+                role="img"
+                aria-label="Content unavailable"
+              >
+                <ImageOff size={48} strokeWidth={1.5} aria-hidden="true" />
+                <span className="rk-lightbox-img-error-text">
+                  Content unavailable
+                </span>
+              </div>
+            );
+          }
+          if (loadingCtrl.isLoading.value) {
+            return renderLoading ? (
+              <>{renderLoading({ activeIndex: idx })}</>
+            ) : (
+              <div className="rk-lightbox-spinner" />
+            );
+          }
+          return null;
+        }}
       </Observe>
       <Observe signals={[sizeSignal, isMobileSignal]}>
         {() => (

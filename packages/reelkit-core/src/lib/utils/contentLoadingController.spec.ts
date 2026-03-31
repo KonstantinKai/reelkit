@@ -100,4 +100,44 @@ describe('createContentLoadingController', () => {
 
     expect(listener).toHaveBeenCalled();
   });
+
+  it('defaults to isError=false', () => {
+    const ctrl = createContentLoadingController();
+    expect(ctrl.isError.value).toBe(false);
+  });
+
+  it('onError sets isError=true and isLoading=false', () => {
+    const ctrl = createContentLoadingController();
+    ctrl.setActiveIndex(0);
+    ctrl.onError(0);
+    expect(ctrl.isError.value).toBe(true);
+    expect(ctrl.isLoading.value).toBe(false);
+  });
+
+  it('onError ignores stale index', () => {
+    const ctrl = createContentLoadingController();
+    ctrl.setActiveIndex(1);
+    ctrl.onError(0);
+    expect(ctrl.isError.value).toBe(false);
+  });
+
+  it('setActiveIndex resets isError to false', () => {
+    const ctrl = createContentLoadingController();
+    ctrl.setActiveIndex(0);
+    ctrl.onError(0);
+    expect(ctrl.isError.value).toBe(true);
+
+    ctrl.setActiveIndex(1);
+    expect(ctrl.isError.value).toBe(false);
+    expect(ctrl.isLoading.value).toBe(true);
+  });
+
+  it('onReady does not affect isError', () => {
+    const ctrl = createContentLoadingController();
+    ctrl.setActiveIndex(0);
+    ctrl.onError(0);
+    ctrl.onReady(0);
+    expect(ctrl.isError.value).toBe(true);
+    expect(ctrl.isLoading.value).toBe(false);
+  });
 });

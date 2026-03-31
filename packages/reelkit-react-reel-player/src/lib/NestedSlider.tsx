@@ -28,6 +28,7 @@ interface NestedSliderProps {
   onActiveMediaTypeChange?: (type: 'image' | 'video') => void;
   onReady?: () => void;
   onWaiting?: () => void;
+  onError?: () => void;
   renderNavigation?: (props: NavigationRenderProps) => ReactNode;
   renderNestedSlide?: (props: NestedSlideRenderProps) => ReactNode;
 }
@@ -103,6 +104,7 @@ const NestedSlider: React.FC<NestedSliderProps> = (props) => {
           contentId: cId,
           onReady,
           onWaiting,
+          onError,
           renderNestedSlide,
         } = propsRef.current;
         const item = items[index];
@@ -123,12 +125,13 @@ const NestedSlider: React.FC<NestedSliderProps> = (props) => {
               onVideoRef={videoRefProp}
               onReady={isInnerActive ? onReady : undefined}
               onWaiting={isInnerActive ? onWaiting : undefined}
+              onError={isInnerActive ? onError : undefined}
             />
           ) : (
             <ImageSlide
               src={item.src}
               size={itemSize}
-              imageProps={isInnerActive ? { onLoad: onReady } : undefined}
+              imageProps={isInnerActive ? { onLoad: onReady, onError } : undefined}
             />
           );
 
@@ -143,6 +146,7 @@ const NestedSlider: React.FC<NestedSliderProps> = (props) => {
             onVideoRef: videoRefProp,
             onReady: isInnerActive ? onReady : undefined,
             onWaiting: isInnerActive ? onWaiting : undefined,
+            onError: isInnerActive ? onError : undefined,
             defaultContent,
           });
         }

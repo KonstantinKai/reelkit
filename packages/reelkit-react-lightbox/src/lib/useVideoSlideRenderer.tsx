@@ -48,6 +48,7 @@ export interface UseVideoSlideRendererResult {
     isActive: boolean,
     onReady: () => void,
     onWaiting: () => void,
+    onError: () => void,
   ) => ReactNode | null;
 
   /**
@@ -140,6 +141,7 @@ export function useVideoSlideRenderer(
       isActive: boolean,
       onReady: () => void,
       onWaiting: () => void,
+      onError: () => void,
     ): ReactNode | null => {
       if ((item.type ?? 'image') !== 'video') return null;
 
@@ -152,6 +154,7 @@ export function useVideoSlideRenderer(
           slideKey={`lightbox-${index}`}
           onPlaying={onReady}
           onWaiting={onWaiting}
+          onError={onError}
         />
       );
     },

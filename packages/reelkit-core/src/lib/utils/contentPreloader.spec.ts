@@ -291,4 +291,37 @@ describe('createContentPreloader', () => {
       expect(imageInstances).toHaveLength(0);
     });
   });
+
+  describe('error cache', () => {
+    it('isErrored returns false for unknown src', () => {
+      const preloader = createContentPreloader();
+      expect(preloader.isErrored('unknown.jpg')).toBe(false);
+    });
+
+    it('markErrored marks src as errored', () => {
+      const preloader = createContentPreloader();
+      preloader.markErrored('broken.jpg');
+      expect(preloader.isErrored('broken.jpg')).toBe(true);
+    });
+
+    it('error cache evicts oldest when full', () => {
+      const preloader = createContentPreloader({ maxErrorCacheSize: 2 });
+      preloader.markErrored('a.jpg');
+      preloader.markErrored('b.jpg');
+      preloader.markErrored('c.jpg');
+
+      expect(preloader.isErrored('a.jpg')).toBe(false);
+      expect(preloader.isErrored('b.jpg')).toBe(true);
+      expect(preloader.isErrored('c.jpg')).toBe(true);
+    });
+
+    it('markErrored does not affect loaded cache', () => {
+      const preloader = createContentPreloader();
+      preloader.markLoaded('img.jpg');
+      preloader.markErrored('broken.jpg');
+
+      expect(preloader.isLoaded('img.jpg')).toBe(true);
+      expect(preloader.isErrored('img.jpg')).toBe(false);
+    });
+  });
 });

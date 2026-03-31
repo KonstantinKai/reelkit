@@ -9,6 +9,13 @@ export interface ContentPreloaderConfig {
    * @default 200
    */
   maxCacheSize?: number;
+
+  /**
+   * Maximum number of entries in the error cache.
+   * Oldest entries are evicted when the limit is reached (LRU).
+   * @default 100
+   */
+  maxErrorCacheSize?: number;
 }
 
 export interface ContentPreloader {
@@ -48,6 +55,12 @@ export interface ContentPreloader {
    * Returns a disposer. No-op if the source is not pending.
    */
   onLoaded: (src: string, callback: () => void) => Disposer;
+
+  /** Whether the source previously failed to load. */
+  isErrored: (src: string) => boolean;
+
+  /** Mark a source as errored. Stored in an LRU cache. */
+  markErrored: (src: string) => void;
 }
 
 /**
@@ -57,10 +70,11 @@ export interface ContentPreloader {
 export const createContentPreloader = (
   config: ContentPreloaderConfig = {},
 ): ContentPreloader => {
-  const { maxCacheSize = 200 } = config;
+  const { maxCacheSize = 200, maxErrorCacheSize = 100 } = config;
 
   const pending = new Set<string>();
   const loaded = createLruCache<true>(maxCacheSize);
+  const errored = createLruCache<true>(maxErrorCacheSize);
   const listeners = new Map<string, Set<() => void>>();
 
   const markLoaded = (src: string) => {
@@ -145,6 +159,8 @@ export const createContentPreloader = (
     },
     isLoaded: (src) => loaded.has(src),
     isPending: (src) => pending.has(src),
+    isErrored: (src) => errored.has(src),
+    markErrored: (src) => errored.set(src, true),
     onLoaded,
     preloadRange,
   };

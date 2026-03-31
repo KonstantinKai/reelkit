@@ -7,18 +7,22 @@ let lastReelProps: Partial<ReelProps> = {};
 
 // Mock preloader with controllable state — vi.hoisted ensures
 // these are available when vi.mock factory runs (both are hoisted).
-const { mockPreloader, mockPreloaderLoaded, mockPreloaderOnLoadedCallbacks } =
+const { mockPreloader, mockPreloaderLoaded, mockPreloaderErrored, mockPreloaderOnLoadedCallbacks } =
   vi.hoisted(() => {
     const loaded = new Set<string>();
+    const errored = new Set<string>();
     const onLoadedCallbacks = new Map<string, Set<() => void>>();
     return {
       mockPreloaderLoaded: loaded,
+      mockPreloaderErrored: errored,
       mockPreloaderOnLoadedCallbacks: onLoadedCallbacks,
       mockPreloader: {
         isLoaded: (src: string) => loaded.has(src),
+        isErrored: (src: string) => errored.has(src),
         isPending: () => false,
         preload: vi.fn(),
         markLoaded: vi.fn((src: string) => loaded.add(src)),
+        markErrored: vi.fn((src: string) => errored.add(src)),
         preloadRange: vi.fn(),
         onLoaded: vi.fn((src: string, cb: () => void) => {
           if (loaded.has(src)) {
@@ -109,6 +113,7 @@ vi.mock('lucide-react', () => ({
   Volume2: () => <span>V2</span>,
   VolumeX: () => <span>VX</span>,
   Heart: () => <span>Heart</span>,
+  ImageOff: () => <span>ImageOff</span>,
 }));
 
 // eslint-disable-next-line import/first
@@ -906,6 +911,109 @@ describe('ReelPlayerOverlay', () => {
       );
 
       expect(lastReelProps.onSlideDragCanceled).toBeTypeOf('function');
+    });
+  });
+
+  describe('error handling', () => {
+    it('renderSlide receives onError callback', () => {
+      let capturedOnError: (() => void) | undefined;
+
+      render(
+        <ReelPlayerOverlay
+          isOpen={true}
+          onClose={vi.fn()}
+          content={mockContent}
+          renderSlide={(props) => {
+            capturedOnError = props.onError;
+            return <div />;
+          }}
+        />,
+      );
+
+      expect(capturedOnError).toBeDefined();
+    });
+
+    it('onError clears spinner and shows error icon', () => {
+      let capturedOnError: (() => void) | undefined;
+
+      render(
+        <ReelPlayerOverlay
+          isOpen={true}
+          onClose={vi.fn()}
+          content={mockContent}
+          renderSlide={(props) => {
+            capturedOnError = props.onError;
+            return <div />;
+          }}
+        />,
+      );
+
+      act(() => capturedOnError!());
+
+      expect(document.querySelector('.rk-media-error')).toBeTruthy();
+      expect(document.querySelector('.rk-reel-loader')).toBeNull();
+    });
+
+    it('onAfterChange shows error for previously errored source', () => {
+      render(
+        <ReelPlayerOverlay
+          isOpen={true}
+          onClose={vi.fn()}
+          content={mockContent}
+        />,
+      );
+
+      mockPreloaderErrored.add(mockContent[1].media[0].src);
+
+      const afterChange = lastReelProps.afterChange as (
+        i: number,
+        ir: number,
+      ) => void;
+      act(() => afterChange(1, 1));
+
+      expect(document.querySelector('.rk-media-error')).toBeTruthy();
+
+      mockPreloaderErrored.clear();
+    });
+
+    it('renderLoading replaces default wave loader', () => {
+      render(
+        <ReelPlayerOverlay
+          isOpen={true}
+          onClose={vi.fn()}
+          content={mockContent}
+          renderLoading={({ activeIndex }) => (
+            <div data-testid="custom-loading">Loading {activeIndex}</div>
+          )}
+        />,
+      );
+
+      expect(document.querySelector('.rk-reel-loader')).toBeNull();
+      expect(screen.getByTestId('custom-loading')).toBeTruthy();
+    });
+
+    it('renderError replaces default error icon', () => {
+      let capturedOnError: (() => void) | undefined;
+
+      render(
+        <ReelPlayerOverlay
+          isOpen={true}
+          onClose={vi.fn()}
+          content={mockContent}
+          renderSlide={(props) => {
+            capturedOnError = props.onError;
+            return <div />;
+          }}
+          renderError={({ activeIndex }) => (
+            <div data-testid="custom-error">Error {activeIndex}</div>
+          )}
+        />,
+      );
+
+      act(() => capturedOnError!());
+
+      expect(document.querySelector('.rk-media-error')).toBeNull();
+      expect(screen.getByTestId('custom-error')).toBeTruthy();
     });
   });
 });

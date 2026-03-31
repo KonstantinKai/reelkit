@@ -173,6 +173,9 @@ export interface SlideRenderProps<T extends BaseContentItem> {
 
   /** Signal that the slide content is buffering. Shows the wave loader. */
   onWaiting: () => void;
+
+  /** Signal that the slide content failed to load. */
+  onError: () => void;
 }
 
 /**
@@ -221,6 +224,9 @@ export interface NestedSlideRenderProps {
 
   /** Signal that the nested slide content is buffering. Only provided when `isInnerActive` is true. */
   onWaiting?: () => void;
+
+  /** Signal that the nested slide content failed to load. Only provided when `isInnerActive` is true. */
+  onError?: () => void;
 }
 
 /**

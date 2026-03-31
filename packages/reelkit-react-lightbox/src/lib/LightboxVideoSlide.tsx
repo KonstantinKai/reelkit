@@ -3,10 +3,10 @@ import {
   createSignal,
   createSharedVideo,
   createDisposableList,
+  observeDomEvent,
   observeMediaLoading,
   syncMutedToVideo,
   captureFrame,
-  noop,
   Observe,
   useSoundState,
 } from '@reelkit/react';
@@ -36,6 +36,9 @@ export interface LightboxVideoSlideProps {
 
   /** Called when the video stalls (buffering mid-playback). */
   onWaiting?: () => void;
+
+  /** Called when the video fails to load or play. */
+  onError?: () => void;
 }
 
 const shared = createSharedVideo({
@@ -63,12 +66,13 @@ const LightboxVideoSlide: React.FC<LightboxVideoSlideProps> = ({
   slideKey,
   onPlaying,
   onWaiting,
+  onError,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const soundState = useSoundState();
   const [showPoster] = useState(() => createSignal(true));
-  const callbacksRef = useRef({ onPlaying, onWaiting });
-  callbacksRef.current = { onPlaying, onWaiting };
+  const callbacksRef = useRef({ onPlaying, onWaiting, onError });
+  callbacksRef.current = { onPlaying, onWaiting, onError };
 
   useIsomorphicLayoutEffect(() => {
     if (!isActive || !containerRef.current) return;
@@ -91,6 +95,9 @@ const LightboxVideoSlide: React.FC<LightboxVideoSlideProps> = ({
           showPoster.value = false;
         },
       }),
+      observeDomEvent(video, 'error', () => {
+        callbacksRef.current.onError?.();
+      }),
     );
 
     video.src = src;
@@ -102,7 +109,9 @@ const LightboxVideoSlide: React.FC<LightboxVideoSlideProps> = ({
     video.currentTime = savedPosition ?? 0;
 
     container.appendChild(video);
-    video.play().catch(noop);
+    video.play().catch(() => {
+      callbacksRef.current.onError?.();
+    });
 
     disposables.push(() => {
       shared.playbackPositions.set(slideKey, video.currentTime);
