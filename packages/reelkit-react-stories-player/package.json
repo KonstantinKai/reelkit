@@ -1,0 +1,38 @@
+{
+  "name": "@reelkit/react-stories-player",
+  "version": "0.1.0",
+  "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./styles.css": "./dist/index.css"
+  },
+  "files": [
+    "dist",
+    "!dist/package.json",
+    "!dist/README.md",
+    "!**/*.tsbuildinfo"
+  ],
+  "description": "Instagram-style stories player overlay for React with flip transitions and auto-advance",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "@reelkit/react": "*",
+    "@reelkit/stories-core": "*",
+    "react": ">=18",
+    "react-dom": ">=18",
+    "lucide-react": ">=0.400.0"
+  }
+}
