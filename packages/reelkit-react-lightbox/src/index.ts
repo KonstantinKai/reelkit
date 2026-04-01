@@ -58,6 +58,7 @@ export type {
 // Types
 export type {
   LightboxControlsRenderProps,
+  LightboxSlideRenderProps,
   NavigationRenderProps,
   InfoRenderProps,
 } from './lib/types';

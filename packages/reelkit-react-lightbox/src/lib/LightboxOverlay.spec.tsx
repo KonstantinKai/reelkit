@@ -635,7 +635,7 @@ describe('LightboxOverlay', () => {
           isOpen={true}
           images={mockImages}
           onClose={vi.fn()}
-          renderSlide={(item) => (
+          renderSlide={({ item }) => (
             <div data-testid="custom-slide">{item.title}</div>
           )}
         />,
@@ -780,13 +780,11 @@ describe('LightboxOverlay', () => {
       // Initially at index 0, itemBuilder is called for index 0
       // renderSlide should receive isActive=true for index 0
       expect(renderSlide).toHaveBeenCalledWith(
-        mixedItems[0],
-        0,
-        [1024, 768],
-        true,
-        expect.any(Function),
-        expect.any(Function),
-        expect.any(Function),
+        expect.objectContaining({
+          item: mixedItems[0],
+          index: 0,
+          isActive: true,
+        }),
       );
 
       renderSlide.mockClear();
@@ -805,26 +803,22 @@ describe('LightboxOverlay', () => {
 
       // renderSlide should receive isActive=true for the video slide
       expect(renderSlide).toHaveBeenCalledWith(
-        mixedItems[1],
-        1,
-        [1024, 768],
-        true,
-        expect.any(Function),
-        expect.any(Function),
-        expect.any(Function),
+        expect.objectContaining({
+          item: mixedItems[1],
+          index: 1,
+          isActive: true,
+        }),
       );
 
       // And isActive=false for the image slide
       renderSlide.mockClear();
       itemBuilder(0, 0, [1024, 768]);
       expect(renderSlide).toHaveBeenCalledWith(
-        mixedItems[0],
-        0,
-        [1024, 768],
-        false,
-        expect.any(Function),
-        expect.any(Function),
-        expect.any(Function),
+        expect.objectContaining({
+          item: mixedItems[0],
+          index: 0,
+          isActive: false,
+        }),
       );
     });
   });
@@ -941,7 +935,7 @@ describe('LightboxOverlay', () => {
           isOpen={true}
           images={mockImages}
           onClose={vi.fn()}
-          renderSlide={(_item, _index, _size, _isActive, onReady) => {
+          renderSlide={({ onReady }) => {
             capturedOnReady = onReady;
             return <div data-testid="custom-slide" />;
           }}
@@ -987,7 +981,7 @@ describe('LightboxOverlay', () => {
           isOpen={true}
           images={mockImages}
           onClose={vi.fn()}
-          renderSlide={(_item, _index, _size, _isActive, _onReady, _onWaiting, onError) => {
+          renderSlide={({ onError }) => {
             capturedOnError = onError;
             return <div />;
           }}

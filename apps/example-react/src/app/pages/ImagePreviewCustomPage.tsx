@@ -10,7 +10,6 @@ import {
 import '@reelkit/react-lightbox/styles.css';
 
 type DemoType =
-  | 'default-info'
   | 'custom-info'
   | 'custom-controls'
   | 'custom-slide'
@@ -18,12 +17,6 @@ type DemoType =
   | null;
 
 const DEMOS: { id: DemoType & string; title: string; description: string }[] = [
-  {
-    id: 'default-info',
-    title: 'Default Info Overlay',
-    description:
-      'Built-in info overlay showing title and description. No extra props needed.',
-  },
   {
     id: 'custom-info',
     title: 'Custom Info Overlay',
@@ -240,15 +233,7 @@ function ImagePreviewCustomPage() {
         </div>
       </div>
 
-      {/* Demo 1: Default Info */}
-      <LightboxOverlay
-        isOpen={activeDemo === 'default-info'}
-        images={sampleImages}
-        initialIndex={initialIndex}
-        onClose={closePlayer}
-      />
-
-      {/* Demo 2: Custom Info */}
+      {/* Demo 1: Custom Info */}
       <LightboxOverlay
         isOpen={activeDemo === 'custom-info'}
         images={sampleImages}
@@ -339,9 +324,10 @@ function ImagePreviewCustomPage() {
         images={sampleImages}
         initialIndex={initialIndex}
         onClose={closePlayer}
-        renderSlide={(item, index, size) => {
+        renderSlide={({ index, size, onReady }) => {
           // Only customize the last slide
           if (index !== sampleImages.length - 1) return null;
+          onReady();
           return (
             <div
               data-testid="cta-slide"

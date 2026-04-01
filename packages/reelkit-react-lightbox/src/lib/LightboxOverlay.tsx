@@ -32,6 +32,7 @@ import { useFullscreen } from '@reelkit/react';
 import LightboxControls from './LightboxControls';
 import type {
   LightboxControlsRenderProps,
+  LightboxSlideRenderProps,
   NavigationRenderProps,
   InfoRenderProps,
 } from './types';
@@ -191,15 +192,7 @@ export interface LightboxOverlayProps extends ReelProxyProps {
    * The optional `onReady` / `onWaiting` callbacks let the custom slide
    * report its loading state so the overlay can show/hide the spinner.
    */
-  renderSlide?: (
-    item: LightboxItem,
-    index: number,
-    size: [number, number],
-    isActive: boolean,
-    onReady: () => void,
-    onWaiting: () => void,
-    onError: () => void,
-  ) => ReactNode | null;
+  renderSlide?: (props: LightboxSlideRenderProps) => ReactNode | null;
 
   /** Custom loading indicator. Replaces default spinner. */
   renderLoading?: (props: { activeIndex: number }) => ReactNode;
@@ -311,15 +304,15 @@ const LightboxContent: FC<LightboxOverlayProps> = (props) => {
         };
 
         if (render) {
-          const custom = render(
-            image,
+          const custom = render({
+            item: image,
             index,
-            slideSize,
+            size: slideSize,
             isActive,
             onReady,
             onWaiting,
             onError,
-          );
+          });
           if (custom !== null) {
             return (
               <div

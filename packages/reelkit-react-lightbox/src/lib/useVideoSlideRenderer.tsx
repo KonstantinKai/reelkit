@@ -7,7 +7,10 @@ import {
 } from 'react';
 import { Observe, SoundProvider, useSoundState } from '@reelkit/react';
 import type { LightboxItem } from './LightboxOverlay';
-import type { LightboxControlsRenderProps } from './types';
+import type {
+  LightboxControlsRenderProps,
+  LightboxSlideRenderProps,
+} from './types';
 import LightboxVideoSlide from './LightboxVideoSlide';
 import {
   Counter,
@@ -41,15 +44,7 @@ export interface UseVideoSlideRendererResult {
    * Returns a `LightboxVideoSlide` for video items, or `null` to fall
    * back to the default image slide.
    */
-  renderSlide: (
-    item: LightboxItem,
-    index: number,
-    size: [number, number],
-    isActive: boolean,
-    onReady: () => void,
-    onWaiting: () => void,
-    onError: () => void,
-  ) => ReactNode | null;
+  renderSlide: (props: LightboxSlideRenderProps) => ReactNode | null;
 
   /**
    * Ready-to-use `renderControls` callback with Counter, FullscreenButton,
@@ -134,15 +129,15 @@ export function useVideoSlideRenderer(
   );
 
   const renderSlide = useCallback(
-    (
-      item: LightboxItem,
-      index: number,
-      size: [number, number],
-      isActive: boolean,
-      onReady: () => void,
-      onWaiting: () => void,
-      onError: () => void,
-    ): ReactNode | null => {
+    ({
+      item,
+      index,
+      size,
+      isActive,
+      onReady,
+      onWaiting,
+      onError,
+    }: LightboxSlideRenderProps): ReactNode | null => {
       if ((item.type ?? 'image') !== 'video') return null;
 
       return (

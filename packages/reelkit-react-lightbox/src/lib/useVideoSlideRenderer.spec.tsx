@@ -125,14 +125,15 @@ describe('useVideoSlideRenderer', () => {
       const { result } = renderHook(() => useVideoSlideRenderer(mixedItems), {
         wrapper,
       });
-      const output = result.current.renderSlide(
-        mixedItems[0],
-        0,
-        [1024, 768],
-        true,
-        vi.fn(),
-        vi.fn(),
-      );
+      const output = result.current.renderSlide({
+        item: mixedItems[0],
+        index: 0,
+        size: [1024, 768],
+        isActive: true,
+        onReady: vi.fn(),
+        onWaiting: vi.fn(),
+        onError: vi.fn(),
+      });
       expect(output).toBeNull();
     });
 
@@ -140,14 +141,15 @@ describe('useVideoSlideRenderer', () => {
       const { result } = renderHook(() => useVideoSlideRenderer(mixedItems), {
         wrapper,
       });
-      const output = result.current.renderSlide(
-        mixedItems[1],
-        1,
-        [1024, 768],
-        true,
-        vi.fn(),
-        vi.fn(),
-      );
+      const output = result.current.renderSlide({
+        item: mixedItems[1],
+        index: 1,
+        size: [1024, 768],
+        isActive: true,
+        onReady: vi.fn(),
+        onWaiting: vi.fn(),
+        onError: vi.fn(),
+      });
       expect(output).not.toBeNull();
     });
   });
