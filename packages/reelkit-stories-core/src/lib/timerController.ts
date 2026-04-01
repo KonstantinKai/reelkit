@@ -1,4 +1,4 @@
-import { createSignal } from '@reelkit/core';
+import { createSignal, type Signal } from '@reelkit/core';
 
 /** Configuration for {@link createTimerController}. */
 export interface TimerControllerConfig {
@@ -12,10 +12,10 @@ export interface TimerControllerConfig {
 /** Timer that drives auto-advance and the progress bar signal. */
 export interface TimerController {
   /** Progress signal (0 → 1). */
-  readonly progress: ReturnType<typeof createSignal<number>>;
+  readonly progress: Signal<number>;
 
   /** Whether the timer is currently running. */
-  readonly isRunning: ReturnType<typeof createSignal<boolean>>;
+  readonly isRunning: Signal<boolean>;
 
   /** Start (or restart) the timer with an optional duration override. */
   start(duration?: number): void;

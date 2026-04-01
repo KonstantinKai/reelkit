@@ -1,3 +1,4 @@
+import { clamp } from '@reelkit/core';
 import type { SegmentState, VisibleWindow } from './types';
 
 /**
@@ -17,7 +18,7 @@ export const getSegments = (
     } else if (i === activeIndex) {
       segments.push({
         status: 'active',
-        fillPercentage: Math.max(0, Math.min(100, timerProgress * 100)),
+        fillPercentage: clamp(timerProgress * 100, 0, 100),
       });
     } else {
       segments.push({ status: 'upcoming', fillPercentage: 0 });
@@ -53,9 +54,11 @@ export const getVisibleWindow = (
     };
   }
 
-  // Center window on activeIndex with bias toward upcoming segments
-  const half = Math.floor(maxVisible / 2);
-  let startIndex = activeIndex - half;
+  // Keep active segment near the left (~20% from left edge) so most
+  // of the visible window shows upcoming segments. Completed segments
+  // slide off the left edge as the user advances.
+  const leftBias = Math.max(1, Math.floor(maxVisible * 0.2));
+  let startIndex = activeIndex - leftBias;
 
   if (startIndex < 0) {
     startIndex = 0;

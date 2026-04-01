@@ -5,8 +5,7 @@ import type {
   StoriesController,
 } from './types';
 
-const DEFAULT_IMAGE_DURATION = 5000;
-const DEFAULT_TAP_ZONE_SPLIT = 0.3;
+const _kDefaultImageDuration = 5000;
 
 /**
  * Creates the central stories state machine that manages two-axis
@@ -23,8 +22,7 @@ export const createStoriesController = (
     initialGroupIndex: initialConfig.initialGroupIndex ?? 0,
     initialStoryIndex: initialConfig.initialStoryIndex ?? 0,
     defaultImageDuration:
-      initialConfig.defaultImageDuration ?? DEFAULT_IMAGE_DURATION,
-    tapZoneSplit: initialConfig.tapZoneSplit ?? DEFAULT_TAP_ZONE_SPLIT,
+      initialConfig.defaultImageDuration ?? _kDefaultImageDuration,
   };
 
   let events = { ...initialEvents };
@@ -33,7 +31,12 @@ export const createStoriesController = (
   const activeStoryIndex = createSignal(config.initialStoryIndex);
   const isPaused = createSignal(false);
 
+  // Track last viewed story index per group for resume on return
+  const lastStoryPerGroup = new Map<number, number>();
+  lastStoryPerGroup.set(config.initialGroupIndex, config.initialStoryIndex);
+
   const fireStoryChange = () => {
+    lastStoryPerGroup.set(activeGroupIndex.value, activeStoryIndex.value);
     events.onStoryChange?.(activeGroupIndex.value, activeStoryIndex.value);
     events.onStoryViewed?.(activeGroupIndex.value, activeStoryIndex.value);
   };
@@ -47,6 +50,10 @@ export const createStoriesController = (
 
   return {
     state: { activeGroupIndex, activeStoryIndex, isPaused },
+
+    getLastStoryIndex(groupIndex: number): number {
+      return lastStoryPerGroup.get(groupIndex) ?? 0;
+    },
 
     nextStory() {
       const storyCount = getStoryCount(activeGroupIndex.value);
@@ -76,7 +83,7 @@ export const createStoriesController = (
 
       if (nextGroup < config.groupCount) {
         activeGroupIndex.value = nextGroup;
-        activeStoryIndex.value = 0;
+        activeStoryIndex.value = lastStoryPerGroup.get(nextGroup) ?? 0;
         fireGroupChange();
         fireStoryChange();
       } else {
@@ -90,7 +97,7 @@ export const createStoriesController = (
 
       if (prevGroup >= 0) {
         activeGroupIndex.value = prevGroup;
-        activeStoryIndex.value = 0;
+        activeStoryIndex.value = lastStoryPerGroup.get(prevGroup) ?? 0;
         fireGroupChange();
         fireStoryChange();
       }
@@ -99,7 +106,7 @@ export const createStoriesController = (
     goToGroup(index: number) {
       if (index < 0 || index >= config.groupCount) return;
       activeGroupIndex.value = index;
-      activeStoryIndex.value = 0;
+      activeStoryIndex.value = lastStoryPerGroup.get(index) ?? 0;
       fireGroupChange();
       fireStoryChange();
     },

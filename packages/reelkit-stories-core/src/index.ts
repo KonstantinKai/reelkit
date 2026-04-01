@@ -6,9 +6,10 @@
  *
  * Provides {@link createStoriesController} for two-axis navigation
  * (stories within a group and groups), {@link createTimerController}
- * for auto-advance timing, and pure functions for tap zone detection
- * ({@link getTapAction}) and progress bar computation
- * ({@link getSegments}, {@link getVisibleWindow}).
+ * for auto-advance timing, {@link createCanvasProgressRenderer} for
+ * framework-agnostic canvas progress bar rendering, and pure functions
+ * for tap zone detection ({@link getTapAction}) and progress bar
+ * computation ({@link getSegments}, {@link getVisibleWindow}).
  */
 
 export type {
@@ -35,3 +36,9 @@ export {
 
 export { getTapAction } from './lib/tapZone';
 export { getSegments, getVisibleWindow } from './lib/progress';
+
+export {
+  createCanvasProgressRenderer,
+  type CanvasProgressRendererConfig,
+  type CanvasProgressRenderer,
+} from './lib/canvasProgressRenderer';

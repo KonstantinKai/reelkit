@@ -74,12 +74,6 @@ export interface StoriesControllerConfig {
    * @default 5000
    */
   defaultImageDuration?: number;
-
-  /**
-   * Tap zone split ratio (0–1). Left portion triggers prev, right triggers next.
-   * @default 0.3
-   */
-  tapZoneSplit?: number;
 }
 
 export interface StoriesControllerEvents {
@@ -109,6 +103,9 @@ export interface StoriesController {
     activeStoryIndex: Signal<number>;
     isPaused: Signal<boolean>;
   };
+
+  /** Returns the last viewed story index for a group (0 if never visited). */
+  getLastStoryIndex(groupIndex: number): number;
 
   /** Advance to the next story, switching groups at boundary. */
   nextStory(): void;

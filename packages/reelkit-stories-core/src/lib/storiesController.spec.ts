@@ -127,5 +127,65 @@ describe('createStoriesController', () => {
       ctrl.goToGroup(5);
       expect(ctrl.state.activeGroupIndex.value).toBe(0);
     });
+
+    it('goToGroup with current index still fires callbacks', () => {
+      const onGroupChange = vi.fn();
+      const onStoryChange = vi.fn();
+      const ctrl = makeController({}, { onGroupChange, onStoryChange });
+
+      ctrl.goToGroup(0);
+
+      expect(onGroupChange).toHaveBeenCalledWith(0);
+      expect(onStoryChange).toHaveBeenCalledWith(0, 0);
+    });
+
+    it('resumes last viewed story index when returning to a group', () => {
+      const ctrl = makeController();
+
+      ctrl.nextStory();
+      ctrl.nextStory();
+      expect(ctrl.state.activeStoryIndex.value).toBe(2);
+
+      ctrl.goToGroup(1);
+      expect(ctrl.state.activeGroupIndex.value).toBe(1);
+
+      ctrl.goToGroup(0);
+      expect(ctrl.state.activeStoryIndex.value).toBe(2);
+    });
+  });
+
+  describe('video loading re-entry guard', () => {
+    it('goToGroup sets both group and story index atomically', () => {
+      const ctrl = makeController({ initialStoryIndex: 0 });
+
+      ctrl.nextStory();
+      ctrl.nextStory();
+      ctrl.goToGroup(1);
+
+      const gi = ctrl.state.activeGroupIndex.value;
+      const si = ctrl.state.activeStoryIndex.value;
+
+      expect(gi).toBe(1);
+      expect(si).toBe(0);
+
+      ctrl.goToGroup(0);
+      expect(ctrl.state.activeGroupIndex.value).toBe(0);
+      expect(ctrl.state.activeStoryIndex.value).toBe(2);
+    });
+
+    it('callers can guard re-entry by comparing activeGroupIndex before goToGroup', () => {
+      const onGroupChange = vi.fn();
+      const ctrl = makeController({}, { onGroupChange });
+
+      ctrl.goToGroup(2);
+      expect(onGroupChange).toHaveBeenCalledTimes(1);
+
+      // Simulates the re-entry guard: skip if already at target
+      if (ctrl.state.activeGroupIndex.value !== 2) {
+        ctrl.goToGroup(2);
+      }
+
+      expect(onGroupChange).toHaveBeenCalledTimes(1);
+    });
   });
 });
