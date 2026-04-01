@@ -1,5 +1,6 @@
 import { Directive, inject, TemplateRef } from '@angular/core';
 import type {
+  LightboxItem,
   LightboxControlsContext,
   LightboxNavContext,
   LightboxInfoContext,
@@ -119,6 +120,48 @@ export class RkLightboxInfoDirective {
  * </rk-lightbox-overlay>
  * ```
  */
+export interface LightboxLoadingContext {
+  /** Zero-based index of the currently active slide. */
+  $implicit: number;
+
+  /** The currently active lightbox item. */
+  item: LightboxItem;
+}
+
+@Directive({ selector: '[rkLightboxLoading]' })
+export class RkLightboxLoadingDirective {
+  readonly templateRef =
+    inject<TemplateRef<LightboxLoadingContext>>(TemplateRef);
+
+  static ngTemplateContextGuard(
+    _dir: RkLightboxLoadingDirective,
+    ctx: unknown,
+  ): ctx is LightboxLoadingContext {
+    return true;
+  }
+}
+
+export interface LightboxErrorContext {
+  /** Zero-based index of the currently active slide. */
+  $implicit: number;
+
+  /** The currently active lightbox item. */
+  item: LightboxItem;
+}
+
+@Directive({ selector: '[rkLightboxError]' })
+export class RkLightboxErrorDirective {
+  readonly templateRef =
+    inject<TemplateRef<LightboxErrorContext>>(TemplateRef);
+
+  static ngTemplateContextGuard(
+    _dir: RkLightboxErrorDirective,
+    ctx: unknown,
+  ): ctx is LightboxErrorContext {
+    return true;
+  }
+}
+
 @Directive({ selector: '[rkLightboxSlide]' })
 export class RkLightboxSlideDirective {
   readonly templateRef = inject<TemplateRef<LightboxSlideContext>>(TemplateRef);

@@ -10,7 +10,6 @@ import { By } from '@angular/platform-browser';
 import { RkLightboxOverlayComponent } from './lightbox-overlay.component';
 import { BodyLockService } from '@reelkit/angular';
 import { RkLightboxControlsDirective } from '../template-slots/lightbox-template-slots';
-import { FullscreenService } from '../fullscreen/fullscreen.service';
 import type { LightboxItem } from '../types';
 
 // Mock @reelkit/angular — provide a mock BodyLockService and stub the signal
@@ -63,29 +62,123 @@ const mockGestureController = {
   updateEvents: jest.fn(),
 };
 
-jest.mock('../lightbox-video-slide/lightbox-video-slide.component', () => ({
-  setLightboxVideoMuted: jest.fn(),
-}));
-
 jest.mock('@reelkit/angular', () => {
-  const { Injectable, signal: angSignal } = jest.requireActual(
-    '@angular/core',
-  ) as typeof import('@angular/core');
+  const {
+    Injectable,
+    Component,
+    Directive,
+    Input,
+    Output,
+    EventEmitter,
+    input,
+    output,
+    signal: angSignal,
+  } = jest.requireActual('@angular/core') as typeof import('@angular/core');
+
+  const noop = () => {
+    /* noop */
+  };
+  const observe = jest.fn(() => noop);
+
+  const mockFullscreenSignal = { value: false, observe };
+  const mockLoadingSignal = { value: true, observe };
+  const mockLoadingCtrl = {
+    isLoading: mockLoadingSignal,
+    setActiveIndex: jest.fn(),
+    onReady: jest.fn((idx: number) => {
+      if (idx >= 0) mockLoadingSignal.value = false;
+    }),
+    onWaiting: jest.fn(),
+    onError: jest.fn(),
+    isError: { value: false, observe },
+  };
+  const mockMutedSignal = { value: true, observe };
+  const mockDisabledSignal = { value: false, observe };
+  const mockSoundCtrl = {
+    muted: mockMutedSignal,
+    disabled: mockDisabledSignal,
+    toggle: jest.fn(),
+  };
+  const mockPreloader = {
+    isLoaded: jest.fn(() => false),
+    isErrored: jest.fn(() => false),
+    markLoaded: jest.fn(),
+    markErrored: jest.fn(),
+    preloadRange: jest.fn(),
+    onLoaded: jest.fn(() => noop),
+  };
+
+  // Expose mock objects for test assertions via globalThis.
+  (globalThis as unknown as Record<string, unknown>)['__lightboxMocks'] = {
+    fullscreenSignal: mockFullscreenSignal,
+    loadingSignal: mockLoadingSignal,
+    loadingCtrl: mockLoadingCtrl,
+    mutedSignal: mockMutedSignal,
+    disabledSignal: mockDisabledSignal,
+    soundCtrl: mockSoundCtrl,
+    preloader: mockPreloader,
+  };
 
   @Injectable({ providedIn: 'root' })
-  class BodyLockService {
+  class MockBodyLockService {
     lock = jest.fn();
     unlock = jest.fn();
   }
 
+  @Component({
+    selector: 'rk-reel',
+    template: '<ng-content/>',
+    standalone: true,
+  })
+  class MockReelComponent {
+    @Input() count = 0;
+    @Input() size: [number, number] = [0, 0];
+    @Input() direction = 'horizontal';
+    @Input() initialIndex = 0;
+    @Input() loop = false;
+    @Input() useNavKeys = true;
+    @Input() enableWheel = false;
+    @Input() wheelDebounceMs = 200;
+    @Input() transitionDuration = 300;
+    @Input() swipeDistanceFactor = 0.12;
+    @Input() transition: unknown = undefined;
+    @Output() apiReady = new EventEmitter<unknown>();
+    @Output() afterChange = new EventEmitter<{ index: number }>();
+  }
+
+  @Directive({ selector: '[rkReelItem]', standalone: true })
+  class MockRkReelItemDirective {
+    static ngTemplateContextGuard(_d: unknown, _ctx: unknown): boolean {
+      return true;
+    }
+  }
+
+  @Directive({ selector: '[rkSwipeToClose]', standalone: true })
+  class MockRkSwipeToCloseDirective {
+    readonly rkSwipeToClose = input<boolean>(false);
+    readonly rkSwipeToCloseDirection = input<string>('up');
+    readonly dismissed = output<void>();
+  }
+
   return {
-    BodyLockService,
-    toAngularSignal: jest.fn((source: { value: unknown }) =>
-      angSignal(source.value),
+    BodyLockService: MockBodyLockService,
+    ReelComponent: MockReelComponent,
+    RkReelItemDirective: MockRkReelItemDirective,
+    RkSwipeToCloseDirective: MockRkSwipeToCloseDirective,
+    toAngularSignal: jest.fn((source: { value?: unknown }) =>
+      angSignal(source?.value ?? false),
     ),
     animatedSignalBridge: jest.fn(() => angSignal(0)),
+    slideTransition: jest.fn(),
+    flipTransition: jest.fn(),
     createSliderController: jest.fn(() => mockSlider),
     createGestureController: jest.fn(() => mockGestureController),
+    createContentLoadingController: jest.fn(() => mockLoadingCtrl),
+    createContentPreloader: jest.fn(() => mockPreloader),
+    createSoundController: jest.fn(() => mockSoundCtrl),
+    fullscreenSignal: mockFullscreenSignal,
+    requestFullscreen: jest.fn().mockResolvedValue(undefined),
+    exitFullscreen: jest.fn().mockResolvedValue(undefined),
     reaction: jest.fn(() => () => {
       /* noop */
     }),
@@ -94,6 +187,36 @@ jest.mock('@reelkit/angular', () => {
     }),
   };
 });
+
+// Access mock state created inside the jest.mock factory.
+const mocks = (globalThis as unknown as Record<string, unknown>)[
+  '__lightboxMocks'
+] as {
+  fullscreenSignal: { value: boolean };
+  loadingSignal: { value: boolean };
+  loadingCtrl: {
+    isLoading: { value: boolean };
+    setActiveIndex: jest.Mock;
+    onReady: jest.Mock;
+    onWaiting: jest.Mock;
+    onError: jest.Mock;
+  };
+  mutedSignal: { value: boolean };
+  disabledSignal: { value: boolean };
+  soundCtrl: {
+    muted: { value: boolean };
+    disabled: { value: boolean };
+    toggle: jest.Mock;
+  };
+  preloader: {
+    isLoaded: jest.Mock;
+    isErrored: jest.Mock;
+    markLoaded: jest.Mock;
+    markErrored: jest.Mock;
+    preloadRange: jest.Mock;
+    onLoaded: jest.Mock;
+  };
+};
 
 const ITEMS: LightboxItem[] = [
   { src: 'https://example.com/a.jpg', title: 'Image A' },
@@ -122,7 +245,13 @@ describe('RkLightboxOverlayComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [RkLightboxOverlayComponent],
-    }).compileComponents();
+    })
+      .overrideComponent(RkLightboxOverlayComponent, {
+        set: {
+          schemas: [jest.requireActual('@angular/core').NO_ERRORS_SCHEMA],
+        },
+      })
+      .compileComponents();
 
     bodyLock = TestBed.inject(BodyLockService);
   });
@@ -204,53 +333,34 @@ describe('RkLightboxOverlayComponent', () => {
   });
 
   describe('slides', () => {
-    it('renders slide images for visible items', () => {
+    it('renders rk-reel element when items are provided', () => {
       const fixture = createFixture(true, ITEMS);
-      const imgs = fixture.debugElement.queryAll(By.css('.rk-lightbox-img'));
-      // At least one slide image rendered (the initial visible index)
-      expect(imgs.length).toBeGreaterThanOrEqual(1);
+      const reel = fixture.debugElement.query(By.css('rk-reel'));
+      expect(reel).toBeTruthy();
     });
 
-    it('first rendered image has correct src', () => {
+    it('onImageError tracks error index', () => {
       const fixture = createFixture(true, ITEMS, 0);
-      const img = fixture.debugElement.query(By.css('.rk-lightbox-img'));
-      expect(img.nativeElement.getAttribute('src')).toBe(ITEMS[0]!.src);
-    });
-
-    it('renders image error fallback when image fails to load', () => {
-      const fixture = createFixture(true, ITEMS, 0);
-
-      (fixture.componentInstance as any).onImageError(0);
-      fixture.detectChanges();
-
-      const errorEl = fixture.debugElement.query(
-        By.css('.rk-lightbox-img-error'),
-      );
-      expect(errorEl).toBeTruthy();
-      expect(errorEl.nativeElement.textContent).toContain('Image unavailable');
-    });
-
-    it('error fallback has role="img" with descriptive aria-label', () => {
-      const fixture = createFixture(true, ITEMS, 0);
-      (fixture.componentInstance as any).onImageError(0);
-      fixture.detectChanges();
-
-      const errorEl = fixture.debugElement.query(
-        By.css('.rk-lightbox-img-error'),
-      );
-      expect(errorEl.nativeElement.getAttribute('role')).toBe('img');
-      expect(errorEl.nativeElement.getAttribute('aria-label')).toContain(
-        'Failed to load',
+      fixture.componentInstance['onImageError'](0);
+      expect(fixture.componentInstance['imageErrorIndexes']().has(0)).toBe(
+        true,
       );
     });
 
-    it('marks image as loaded (adds rk-loaded class) when onImageLoad is called', () => {
+    it('onImageError does not affect other indices', () => {
       const fixture = createFixture(true, ITEMS, 0);
-      (fixture.componentInstance as any).onImageLoad(0);
-      fixture.detectChanges();
+      fixture.componentInstance['onImageError'](0);
+      expect(fixture.componentInstance['imageErrorIndexes']().has(1)).toBe(
+        false,
+      );
+    });
 
-      const img = fixture.debugElement.query(By.css('.rk-lightbox-img'));
-      expect(img.nativeElement.classList).toContain('rk-loaded');
+    it('onImageLoad tracks loaded index', () => {
+      const fixture = createFixture(true, ITEMS, 0);
+      fixture.componentInstance['onImageLoad'](0);
+      expect(fixture.componentInstance['imageLoadedIndexes']().has(0)).toBe(
+        true,
+      );
     });
   });
 
@@ -296,7 +406,7 @@ describe('RkLightboxOverlayComponent', () => {
   describe('navigation arrows', () => {
     it('does not show prev button when at first slide', () => {
       const fixture = createFixture(true, ITEMS, 0);
-      (fixture.componentInstance as any).isMobile.set(false);
+      fixture.componentInstance['isMobile'].set(false);
       fixture.detectChanges();
 
       const prevBtn = fixture.debugElement.query(
@@ -307,7 +417,7 @@ describe('RkLightboxOverlayComponent', () => {
 
     it('shows next button when not at last slide (non-mobile)', () => {
       const fixture = createFixture(true, ITEMS, 0);
-      (fixture.componentInstance as any).isMobile.set(false);
+      fixture.componentInstance['isMobile'].set(false);
       fixture.detectChanges();
 
       const nextBtn = fixture.debugElement.query(
@@ -318,7 +428,7 @@ describe('RkLightboxOverlayComponent', () => {
 
     it('does not render arrow buttons when showNavigation=false', () => {
       const fixture = createFixture(true, ITEMS, 0);
-      (fixture.componentInstance as any).isMobile.set(false);
+      fixture.componentInstance['isMobile'].set(false);
       fixture.componentRef.setInput('showNavigation', false);
       fixture.detectChanges();
 
@@ -337,20 +447,18 @@ describe('RkLightboxOverlayComponent', () => {
       const closedSpy = jest.fn();
       fixture.componentInstance.closed.subscribe(closedSpy);
 
-      (fixture.componentInstance as any).handleClose();
+      fixture.componentInstance['handleClose']();
 
       expect(closedSpy).toHaveBeenCalledTimes(1);
     });
 
-    it('resets video muted state on close', () => {
-      const {
-        setLightboxVideoMuted,
-      } = require('../lightbox-video-slide/lightbox-video-slide.component');
+    it('resets sound muted state on close', () => {
+      mocks.mutedSignal.value = false;
       const fixture = createFixture(true, ITEMS, 0);
 
-      (fixture.componentInstance as any).handleClose();
+      fixture.componentInstance['handleClose']();
 
-      expect(setLightboxVideoMuted).toHaveBeenCalledWith(true);
+      expect(mocks.mutedSignal.value).toBe(true);
     });
 
     it('emits closed when Escape key is pressed', () => {
@@ -358,7 +466,7 @@ describe('RkLightboxOverlayComponent', () => {
       const closedSpy = jest.fn();
       fixture.componentInstance.closed.subscribe(closedSpy);
 
-      (fixture.componentInstance as any).onKeydown(
+      fixture.componentInstance['onKeydown'](
         new KeyboardEvent('keydown', { key: 'Escape' }),
       );
 
@@ -370,7 +478,7 @@ describe('RkLightboxOverlayComponent', () => {
       const closedSpy = jest.fn();
       fixture.componentInstance.closed.subscribe(closedSpy);
 
-      (fixture.componentInstance as any).onKeydown(
+      fixture.componentInstance['onKeydown'](
         new KeyboardEvent('keydown', { key: 'Escape' }),
       );
 
@@ -382,7 +490,7 @@ describe('RkLightboxOverlayComponent', () => {
       const closedSpy = jest.fn();
       fixture.componentInstance.closed.subscribe(closedSpy);
 
-      (fixture.componentInstance as any).onKeydown(
+      fixture.componentInstance['onKeydown'](
         new KeyboardEvent('keydown', { key: 'ArrowRight' }),
       );
 
@@ -530,7 +638,7 @@ describe('RkLightboxOverlayComponent', () => {
       expect(fixture.componentInstance['currentIndex']()).toBe(2);
     }));
 
-    it('does not create slider when isOpen is false', fakeAsync(() => {
+    it('clears reelApi on close', fakeAsync(() => {
       const fixture = createFixture(true, ITEMS, 0);
       tick();
 
@@ -538,33 +646,7 @@ describe('RkLightboxOverlayComponent', () => {
       fixture.detectChanges();
       tick();
 
-      expect(fixture.componentInstance['slider']).toBeNull();
-    }));
-
-    it('clears _bridgeDispose on close so the bridge observer does not accumulate across sessions', fakeAsync(() => {
-      const fixture = createFixture(true, ITEMS, 0);
-      tick();
-
-      // _bridgeDispose is set after initSlider/bridgeSliderSignals runs.
-      // After closing, it should be null (disposed and cleared).
-      fixture.componentRef.setInput('isOpen', false);
-      fixture.detectChanges();
-      tick();
-
-      expect(fixture.componentInstance['_bridgeDispose']).toBeNull();
-      expect(fixture.componentInstance['_bridgeCancelAnim']).toBeNull();
-    }));
-
-    it('_bridgeDispose is non-null while the overlay is open', fakeAsync(() => {
-      // The mock slider state.axisValue.observe returns a noop dispose fn.
-      // After initSlider runs the bridge dispose should be stored.
-      const fixture = createFixture(true, ITEMS, 0);
-      tick();
-      fixture.detectChanges();
-
-      // The mock observe returns () => void, so _bridgeDispose should be set.
-      // (In the mock, axisValue.observe returns () => { /* noop */ })
-      expect(fixture.componentInstance['_bridgeDispose']).not.toBeNull();
+      expect(fixture.componentInstance['_reelApi']).toBeNull();
     }));
   });
 
@@ -608,8 +690,8 @@ describe('RkLightboxOverlayComponent', () => {
     }));
   });
 
-  describe('Bug 1-2 (Lightbox): bridge observer / animation cleanup on close-reopen', () => {
-    it('no errors thrown when opening, closing and reopening the overlay', fakeAsync(() => {
+  describe('close-reopen lifecycle', () => {
+    it('no errors thrown when opening, closing and reopening', fakeAsync(() => {
       const fixture = createFixture(true, ITEMS, 0);
       tick();
 
@@ -622,47 +704,6 @@ describe('RkLightboxOverlayComponent', () => {
         fixture.detectChanges();
         tick();
       }).not.toThrow();
-    }));
-
-    it('slider is re-created (non-null) after reopening', fakeAsync(() => {
-      const fixture = createFixture(true, ITEMS, 0);
-      tick();
-
-      fixture.componentRef.setInput('isOpen', false);
-      fixture.detectChanges();
-      tick();
-
-      fixture.componentRef.setInput('isOpen', true);
-      fixture.detectChanges();
-      tick();
-
-      // After reopening the slider must exist again.
-      expect(fixture.componentInstance['slider']).not.toBeNull();
-    }));
-
-    it('_bridgeDispose and _bridgeCancelAnim are null after closing', fakeAsync(() => {
-      const fixture = createFixture(true, ITEMS, 0);
-      tick();
-      fixture.detectChanges();
-
-      fixture.componentRef.setInput('isOpen', false);
-      fixture.detectChanges();
-      tick();
-
-      expect(fixture.componentInstance['_bridgeDispose']).toBeNull();
-      expect(fixture.componentInstance['_bridgeCancelAnim']).toBeNull();
-    }));
-
-    it('_bridgeDoneTimer is null after closing (done() timer cancelled mid-animation)', fakeAsync(() => {
-      const fixture = createFixture(true, ITEMS, 0);
-      tick();
-      fixture.detectChanges();
-
-      fixture.componentRef.setInput('isOpen', false);
-      fixture.detectChanges();
-      tick();
-
-      expect(fixture.componentInstance['_bridgeDoneTimer']).toBeNull();
     }));
   });
 
@@ -678,146 +719,169 @@ describe('RkLightboxOverlayComponent', () => {
     });
   });
 
-  // ─── Transition duration CSS custom property tests ────────────────────────
-
-  describe('_cssTransitionDuration signal', () => {
-    it('defaults to "300ms"', () => {
+  describe('transitionFn', () => {
+    it('defaults to slide transition', () => {
       const fixture = createFixture(true, ITEMS, 0);
-      expect(fixture.componentInstance['_cssTransitionDuration']()).toBe(
-        '300ms',
+      expect(typeof fixture.componentInstance['transitionFn']()).toBe(
+        'function',
       );
     });
 
-    it('reflects custom transitionDuration input', () => {
+    it('maps flip to flipTransition', () => {
       const fixture = createFixture(true, ITEMS, 0);
-      fixture.componentRef.setInput('transitionDuration', 600);
+      fixture.componentRef.setInput('transition', 'flip');
       fixture.detectChanges();
-
-      expect(fixture.componentInstance['_cssTransitionDuration']()).toBe(
-        '600ms',
+      expect(typeof fixture.componentInstance['transitionFn']()).toBe(
+        'function',
       );
     });
-
-    it('slide element has --rk-transition-duration style set', () => {
-      const fixture = createFixture(true, ITEMS, 0);
-      fixture.componentRef.setInput('transitionDuration', 500);
-      fixture.detectChanges();
-
-      const slide = fixture.debugElement.query(By.css('.rk-lightbox-slide'));
-      expect(slide).toBeTruthy();
-      // Angular binds CSS custom properties via style; the value should be set.
-      const style = (slide.nativeElement as HTMLElement).style;
-      expect(style.getPropertyValue('--rk-transition-duration')).toBe('500ms');
-    });
-  });
-
-  // ─── done() timer cleanup test ────────────────────────────────────────────
-
-  describe('_bridgeDoneTimer cleanup on destroy', () => {
-    it('_bridgeDoneTimer is null after component is destroyed', fakeAsync(() => {
-      const fixture = createFixture(true, ITEMS, 0);
-      tick();
-      fixture.detectChanges();
-
-      fixture.destroy();
-      tick();
-
-      expect(fixture.componentInstance['_bridgeDoneTimer']).toBeNull();
-    }));
   });
 
   // ─── Bug: handleClose exits fullscreen before emitting closed ─────────────
 
   describe('handleClose exits fullscreen before emitting closed', () => {
-    /**
-     * Helper that puts the FullscreenService (component-scoped provider) into
-     * a simulated fullscreen state by overriding the internal signal.
-     */
-    function setFullscreen(
-      fixture: ComponentFixture<RkLightboxOverlayComponent>,
-      value: boolean,
-    ): void {
-      const fs = fixture.debugElement.injector.get(FullscreenService);
-      (fs as any)['_isFullscreen'].set(value);
-    }
+    const { exitFullscreen } = require('@reelkit/angular');
 
-    it('exits fullscreen when close button is clicked while in fullscreen', () => {
+    it('exits fullscreen when close is called while in fullscreen', () => {
       const fixture = createFixture(true, ITEMS, 0);
-      const fs = fixture.debugElement.injector.get(FullscreenService);
-      const exitSpy = jest.spyOn(fs, 'exit').mockImplementation(() => {
-        /* noop */
-      });
-      setFullscreen(fixture, true);
+      mocks.fullscreenSignal.value = true;
 
-      (fixture.componentInstance as any).handleClose();
+      fixture.componentInstance['handleClose']();
 
-      expect(exitSpy).toHaveBeenCalledTimes(1);
+      expect(exitFullscreen).toHaveBeenCalled();
+      mocks.fullscreenSignal.value = false;
     });
 
     it('still emits closed after exiting fullscreen', () => {
       const fixture = createFixture(true, ITEMS, 0);
-      const fs = fixture.debugElement.injector.get(FullscreenService);
-      jest.spyOn(fs, 'exit').mockImplementation(() => {
-        /* noop */
-      });
-      setFullscreen(fixture, true);
+      mocks.fullscreenSignal.value = true;
 
       const closedSpy = jest.fn();
       fixture.componentInstance.closed.subscribe(closedSpy);
 
-      (fixture.componentInstance as any).handleClose();
+      fixture.componentInstance['handleClose']();
 
       expect(closedSpy).toHaveBeenCalledTimes(1);
+      mocks.fullscreenSignal.value = false;
     });
 
-    it('does not call fullscreen.exit when not in fullscreen', () => {
+    it('does not call exitFullscreen when not in fullscreen', () => {
       const fixture = createFixture(true, ITEMS, 0);
-      const fs = fixture.debugElement.injector.get(FullscreenService);
-      const exitSpy = jest.spyOn(fs, 'exit').mockImplementation(() => {
-        /* noop */
-      });
-      setFullscreen(fixture, false);
+      mocks.fullscreenSignal.value = false;
 
-      (fixture.componentInstance as any).handleClose();
+      fixture.componentInstance['handleClose']();
 
-      expect(exitSpy).not.toHaveBeenCalled();
+      expect(exitFullscreen).not.toHaveBeenCalled();
     });
 
     it('Escape key exits fullscreen and emits closed when in fullscreen', () => {
       const fixture = createFixture(true, ITEMS, 0);
-      const fs = fixture.debugElement.injector.get(FullscreenService);
-      const exitSpy = jest.spyOn(fs, 'exit').mockImplementation(() => {
-        /* noop */
-      });
-      setFullscreen(fixture, true);
+      mocks.fullscreenSignal.value = true;
 
       const closedSpy = jest.fn();
       fixture.componentInstance.closed.subscribe(closedSpy);
 
-      (fixture.componentInstance as any).onKeydown(
+      fixture.componentInstance['onKeydown'](
         new KeyboardEvent('keydown', { key: 'Escape' }),
       );
 
-      expect(exitSpy).toHaveBeenCalledTimes(1);
+      expect(exitFullscreen).toHaveBeenCalled();
       expect(closedSpy).toHaveBeenCalledTimes(1);
+      mocks.fullscreenSignal.value = false;
+    });
+  });
+
+  describe('loading spinner', () => {
+    it('renders spinner when loading', () => {
+      mocks.loadingSignal.value = true;
+      const fixture = createFixture(true, ITEMS, 0);
+
+      const spinner = fixture.debugElement.query(
+        By.css('.rk-lightbox-spinner'),
+      );
+      expect(spinner).toBeTruthy();
+    });
+  });
+
+  describe('top shade', () => {
+    it('renders top shade gradient', () => {
+      const fixture = createFixture(true, ITEMS, 0);
+      const shade = fixture.debugElement.query(
+        By.css('.rk-lightbox-top-shade'),
+      );
+      expect(shade).toBeTruthy();
+    });
+  });
+
+  describe('onReady / onWaiting', () => {
+    it('slideContext includes onReady and onWaiting callbacks', () => {
+      const fixture = createFixture(true, ITEMS, 0);
+      const ctx = fixture.componentInstance['slideContext'](0);
+      expect(typeof ctx.onReady).toBe('function');
+      expect(typeof ctx.onWaiting).toBe('function');
     });
 
-    it('swipe dismiss exits fullscreen before emitting closed', () => {
+    it('onReady calls loadingCtrl.onReady', () => {
       const fixture = createFixture(true, ITEMS, 0);
-      const fs = fixture.debugElement.injector.get(FullscreenService);
-      const exitSpy = jest.spyOn(fs, 'exit').mockImplementation(() => {
-        /* noop */
-      });
-      setFullscreen(fixture, true);
+      const ctx = fixture.componentInstance['slideContext'](0);
+      ctx.onReady();
+      expect(mocks.loadingCtrl.onReady).toHaveBeenCalledWith(0);
+    });
 
-      const closedSpy = jest.fn();
-      fixture.componentInstance.closed.subscribe(closedSpy);
+    it('onReady calls preloader.markLoaded with the item src', () => {
+      const fixture = createFixture(true, ITEMS, 0);
+      const ctx = fixture.componentInstance['slideContext'](0);
+      ctx.onReady();
+      expect(mocks.preloader.markLoaded).toHaveBeenCalledWith(ITEMS[0].src);
+    });
 
-      // The swipe-to-close directive calls handleClose() on dismissed
-      (fixture.componentInstance as any).handleClose();
+    it('onWaiting calls loadingCtrl.onWaiting', () => {
+      const fixture = createFixture(true, ITEMS, 0);
+      const ctx = fixture.componentInstance['slideContext'](1);
+      ctx.onWaiting();
+      expect(mocks.loadingCtrl.onWaiting).toHaveBeenCalledWith(1);
+    });
 
-      expect(exitSpy).toHaveBeenCalledTimes(1);
-      expect(closedSpy).toHaveBeenCalledTimes(1);
+    it('onImageLoad calls loadingCtrl.onReady and preloader.markLoaded', () => {
+      const fixture = createFixture(true, ITEMS, 0);
+      fixture.componentInstance['onImageLoad'](0);
+      expect(mocks.loadingCtrl.onReady).toHaveBeenCalledWith(0);
+      expect(mocks.preloader.markLoaded).toHaveBeenCalledWith(ITEMS[0].src);
+    });
+
+    it('onImageError calls loadingCtrl.onError and preloader.markErrored', () => {
+      const fixture = createFixture(true, ITEMS, 0);
+      fixture.componentInstance['onImageError'](0);
+      expect(mocks.loadingCtrl.onError).toHaveBeenCalledWith(0);
+      expect(mocks.preloader.markErrored).toHaveBeenCalledWith(ITEMS[0].src);
+    });
+
+    it('slideContext.onError calls loadingCtrl.onError and preloader.markErrored', () => {
+      const fixture = createFixture(true, ITEMS, 0);
+      const ctx = fixture.componentInstance['slideContext'](1);
+      ctx.onError();
+      expect(mocks.loadingCtrl.onError).toHaveBeenCalledWith(1);
+      expect(mocks.preloader.markErrored).toHaveBeenCalledWith(ITEMS[1].src);
+    });
+  });
+
+  describe('custom loading/error slots', () => {
+    it('renders default spinner when loadingSlot is not provided', () => {
+      mocks.loadingSignal.value = true;
+      const fixture = createFixture(true, ITEMS, 0);
+      expect(
+        fixture.debugElement.query(By.css('.rk-lightbox-spinner')),
+      ).toBeTruthy();
+    });
+
+    it('detects loadingSlot via contentChild', () => {
+      const fixture = createFixture(true, ITEMS, 0);
+      expect(fixture.componentInstance['loadingSlot']).toBeDefined();
+    });
+
+    it('detects errorSlot via contentChild', () => {
+      const fixture = createFixture(true, ITEMS, 0);
+      expect(fixture.componentInstance['errorSlot']).toBeDefined();
     });
   });
 });

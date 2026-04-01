@@ -38,9 +38,10 @@ export interface LightboxItem {
  *
  * - `'slide'` — standard horizontal slide (default)
  * - `'fade'` — crossfade between images
+ * - `'flip'` — 3D card flip
  * - `'zoom-in'` — zoom in from smaller to normal size
  */
-export type TransitionType = 'slide' | 'fade' | 'zoom-in';
+export type TransitionType = 'slide' | 'fade' | 'flip' | 'zoom-in';
 
 /**
  * Subset of reel configuration forwarded to the underlying slider.
@@ -74,17 +75,20 @@ export interface ReelProxyProps {
 export interface LightboxControlsContext {
   $implicit: void;
 
-  /** Close the lightbox. */
-  onClose: () => void;
+  /** The currently active lightbox item. */
+  item: LightboxItem;
 
   /** Zero-based index of the currently active slide. */
-  currentIndex: number;
+  activeIndex: number;
 
   /** Total number of items. */
   count: number;
 
   /** Whether the lightbox is currently in fullscreen mode. */
   isFullscreen: boolean;
+
+  /** Close the lightbox. */
+  onClose: () => void;
 
   /** Toggle fullscreen mode. */
   onToggleFullscreen: () => void;
@@ -96,17 +100,20 @@ export interface LightboxControlsContext {
 export interface LightboxNavContext {
   $implicit: void;
 
-  /** Navigate to the previous slide. */
-  onPrev: () => void;
-
-  /** Navigate to the next slide. */
-  onNext: () => void;
+  /** The currently active lightbox item. */
+  item: LightboxItem;
 
   /** Zero-based index of the currently active slide. */
   activeIndex: number;
 
   /** Total number of items. */
   count: number;
+
+  /** Navigate to the previous slide. */
+  onPrev: () => void;
+
+  /** Navigate to the next slide. */
+  onNext: () => void;
 }
 
 /**
@@ -135,4 +142,13 @@ export interface LightboxSlideContext {
 
   /** Whether this is the currently active slide. */
   isActive: boolean;
+
+  /** Notify that the slide content is ready (loaded). */
+  onReady: () => void;
+
+  /** Notify that the slide content is loading/waiting. */
+  onWaiting: () => void;
+
+  /** Notify that the slide content failed to load. */
+  onError: () => void;
 }

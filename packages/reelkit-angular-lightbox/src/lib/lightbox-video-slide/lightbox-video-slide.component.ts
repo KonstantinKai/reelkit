@@ -12,7 +12,13 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
-import { createSharedVideo, captureFrame } from '@reelkit/angular';
+import {
+  createSharedVideo,
+  captureFrame,
+  observeDomEvent,
+  createDisposableList,
+  type DisposableList,
+} from '@reelkit/angular';
 
 /**
  * Module-scoped shared video singleton. One per lightbox usage.
@@ -80,12 +86,30 @@ export const setLightboxVideoMuted = (muted: boolean): void => {
           style="object-fit: contain"
         />
       }
-      @if (!hasPlayError()) {
+      @if (hasPlayError()) {
         <div
-          class="rk-lightbox-video-loader"
-          [class.rk-visible]="isLoading()"
-          aria-hidden="true"
-        ></div>
+          class="rk-lightbox-video-error"
+          role="img"
+          aria-label="Video unavailable"
+        >
+          <svg
+            width="48"
+            height="48"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+            <circle cx="8.5" cy="8.5" r="1.5" />
+            <polyline points="21 15 16 10 5 21" />
+            <line x1="4" y1="4" x2="20" y2="20" />
+          </svg>
+          <span class="rk-lightbox-video-error-text">Video unavailable</span>
+        </div>
       }
       <span
         class="rk-sr-only"
@@ -125,13 +149,22 @@ export class RkLightboxVideoSlideComponent implements OnDestroy {
   /** Unique key for persisting playback position and captured frames. */
   readonly slideKey = input.required<string>();
 
+  /** Notify that the video content is ready (loaded). */
+  readonly onReady = input<(() => void) | undefined>(undefined);
+
+  /** Notify that the video content is loading/waiting. */
+  readonly onWaiting = input<(() => void) | undefined>(undefined);
+
+  /** Notify that the video content failed to load. */
+  readonly onError = input<(() => void) | undefined>(undefined);
+
   protected readonly isLoading = signal(false);
   protected readonly showPoster = signal(true);
   protected readonly posterSrc = signal<string | undefined>(undefined);
   /** Set when the browser blocks autoplay or the video source cannot be played. */
   protected readonly hasPlayError = signal(false);
 
-  private deactivate: (() => void) | null = null;
+  private _disposables: DisposableList | null = null;
 
   constructor() {
     afterRenderEffect(() => {
@@ -156,9 +189,9 @@ export class RkLightboxVideoSlideComponent implements OnDestroy {
   }
 
   private runDeactivation(): void {
-    if (this.deactivate) {
-      this.deactivate();
-      this.deactivate = null;
+    if (this._disposables) {
+      this._disposables.dispose();
+      this._disposables = null;
     }
   }
 
@@ -175,30 +208,54 @@ export class RkLightboxVideoSlideComponent implements OnDestroy {
     const container = containerEl.nativeElement;
     const video = shared.getVideo();
 
-    this.isLoading.set(true);
-    this.showPoster.set(true);
-    this.hasPlayError.set(false);
-    this.posterSrc.set(shared.capturedFrames.get(slideKey) ?? poster);
+    untracked(() => {
+      this.isLoading.set(true);
+      this.showPoster.set(true);
+      this.hasPlayError.set(false);
+      this.posterSrc.set(shared.capturedFrames.get(slideKey) ?? poster);
+    });
+
+    const readyFn = untracked(() => this.onReady());
+    const waitingFn = untracked(() => this.onWaiting());
+    const errorFn = untracked(() => this.onError());
 
     const onCanPlay = (): void => {
-      this.ngZone.run(() => this.isLoading.set(false));
+      this.ngZone.run(() => {
+        this.isLoading.set(false);
+        readyFn?.();
+      });
     };
     const onWaiting = (): void => {
-      this.ngZone.run(() => this.isLoading.set(true));
+      this.ngZone.run(() => {
+        this.isLoading.set(true);
+        waitingFn?.();
+      });
     };
     const onPlaying = (): void => {
       this.ngZone.run(() => {
         this.isLoading.set(false);
         this.showPoster.set(false);
+        readyFn?.();
       });
     };
 
     const token = Symbol();
     activeToken = token;
 
-    video.addEventListener('canplay', onCanPlay);
-    video.addEventListener('waiting', onWaiting);
-    video.addEventListener('playing', onPlaying);
+    const disposables = createDisposableList();
+
+    disposables.push(
+      observeDomEvent(video, 'canplay', onCanPlay),
+      observeDomEvent(video, 'waiting', onWaiting),
+      observeDomEvent(video, 'playing', onPlaying),
+      observeDomEvent(video, 'error', () => {
+        this.ngZone.run(() => {
+          this.isLoading.set(false);
+          this.hasPlayError.set(true);
+          errorFn?.();
+        });
+      }),
+    );
 
     video.pause();
     video.src = src;
@@ -211,54 +268,34 @@ export class RkLightboxVideoSlideComponent implements OnDestroy {
       this.ngZone.run(() => {
         this.isLoading.set(false);
         this.hasPlayError.set(true);
+        errorFn?.();
       }),
     );
 
-    this.deactivate = () =>
-      this.deactivateVideo(
-        token,
-        video,
-        container,
-        slideKey,
-        onCanPlay,
-        onWaiting,
-        onPlaying,
-      );
-  }
+    disposables.push(() => {
+      shared.playbackPositions.set(slideKey, video.currentTime);
 
-  private deactivateVideo(
-    token: symbol,
-    video: HTMLVideoElement,
-    container: HTMLDivElement,
-    slideKey: string,
-    onCanPlay: () => void,
-    onWaiting: () => void,
-    onPlaying: () => void,
-  ): void {
-    video.removeEventListener('canplay', onCanPlay);
-    video.removeEventListener('waiting', onWaiting);
-    video.removeEventListener('playing', onPlaying);
+      const frame = captureFrame(video);
+      if (frame) {
+        shared.capturedFrames.set(slideKey, frame);
+      }
 
-    shared.playbackPositions.set(slideKey, video.currentTime);
+      if (activeToken === token) {
+        video.pause();
+        activeToken = null;
+      }
 
-    const frame = captureFrame(video);
-    if (frame) {
-      shared.capturedFrames.set(slideKey, frame);
-    }
+      if (video.parentNode === container) {
+        container.removeChild(video);
+      }
 
-    if (activeToken === token) {
-      video.pause();
-      activeToken = null;
-    }
-
-    if (video.parentNode === container) {
-      container.removeChild(video);
-    }
-
-    this.ngZone.run(() => {
-      this.isLoading.set(false);
-      this.showPoster.set(true);
-      this.hasPlayError.set(false);
+      this.ngZone.run(() => {
+        this.isLoading.set(false);
+        this.showPoster.set(true);
+        this.hasPlayError.set(false);
+      });
     });
+
+    this._disposables = disposables;
   }
 }
