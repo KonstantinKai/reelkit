@@ -195,10 +195,16 @@ export interface LightboxOverlayProps extends ReelProxyProps {
   renderSlide?: (props: LightboxSlideRenderProps) => ReactNode | null;
 
   /** Custom loading indicator. Replaces default spinner. */
-  renderLoading?: (props: { item: LightboxItem; activeIndex: number }) => ReactNode;
+  renderLoading?: (props: {
+    item: LightboxItem;
+    activeIndex: number;
+  }) => ReactNode;
 
   /** Custom error indicator. Replaces default error icon. */
-  renderError?: (props: { item: LightboxItem; activeIndex: number }) => ReactNode;
+  renderError?: (props: {
+    item: LightboxItem;
+    activeIndex: number;
+  }) => ReactNode;
 }
 
 /** Number of images to preload before and after the current index. */
@@ -293,7 +299,7 @@ const LightboxContent: FC<LightboxOverlayProps> = (props) => {
         _indexInRange: number,
         slideSize: [number, number],
       ) => {
-        const { images: items, renderSlide: render } = propsRef.current;
+        const { images: items, renderSlide } = propsRef.current;
         const image = items[index];
         const isActive = index === indexSignal.value;
         const onReady = () => loadingCtrl.onReady(index);
@@ -303,8 +309,8 @@ const LightboxContent: FC<LightboxOverlayProps> = (props) => {
           loadingCtrl.onError(index);
         };
 
-        if (render) {
-          const custom = render({
+        if (renderSlide) {
+          const custom = renderSlide({
             item: image,
             index,
             size: slideSize,
@@ -501,13 +507,12 @@ const LightboxContent: FC<LightboxOverlayProps> = (props) => {
         {() => {
           const idx = indexSignal.value;
           const mobile = isMobileSignal.value;
-          const { renderNavigation: renderNav, images: items } =
-            propsRef.current;
+          const { renderNavigation, images: items } = propsRef.current;
 
-          if (renderNav) {
+          if (renderNavigation) {
             return (
               <>
-                {renderNav({
+                {renderNavigation({
                   item: items[idx],
                   onPrev: handlePrev,
                   onNext: handleNext,
@@ -545,11 +550,11 @@ const LightboxContent: FC<LightboxOverlayProps> = (props) => {
       <Observe signals={[indexSignal]}>
         {() => {
           const idx = indexSignal.value;
-          const { renderInfo: renderInf, images: items } = propsRef.current;
+          const { renderInfo, images: items } = propsRef.current;
           const currentImage = items[idx];
 
-          if (renderInf) {
-            return <>{renderInf({ item: currentImage, index: idx })}</>;
+          if (renderInfo) {
+            return <>{renderInfo({ item: currentImage, index: idx })}</>;
           }
           if (!currentImage?.title && !currentImage?.description) return null;
           return (
