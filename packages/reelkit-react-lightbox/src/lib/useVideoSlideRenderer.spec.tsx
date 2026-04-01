@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { SoundProvider } from '@reelkit/react';
 import { useVideoSlideRenderer } from './useVideoSlideRenderer';
 import type { LightboxItem } from './LightboxOverlay';
-import type { LightboxControlsRenderProps } from './types';
+import type { ControlsRenderProps } from './types';
 
 vi.mock('./LightboxVideoSlide', () => ({
   default: (props: Record<string, unknown>) => (
@@ -155,9 +155,10 @@ describe('useVideoSlideRenderer', () => {
   });
 
   describe('renderControls', () => {
-    const controlsProps: LightboxControlsRenderProps = {
+    const controlsProps: ControlsRenderProps = {
+      item: mixedItems[2],
       onClose: vi.fn(),
-      currentIndex: 2,
+      activeIndex: 2,
       count: 5,
       isFullscreen: false,
       onToggleFullscreen: vi.fn(),
@@ -182,7 +183,7 @@ describe('useVideoSlideRenderer', () => {
       });
       render(
         <SoundProvider>
-          {result.current.renderControls({ ...controlsProps, currentIndex: 1 })}
+          {result.current.renderControls({ ...controlsProps, activeIndex: 1 })}
         </SoundProvider>,
       );
 
@@ -209,7 +210,7 @@ describe('useVideoSlideRenderer', () => {
       });
       render(
         <SoundProvider>
-          {result.current.renderControls({ ...controlsProps, currentIndex: 0 })}
+          {result.current.renderControls({ ...controlsProps, activeIndex: 0 })}
         </SoundProvider>,
       );
 

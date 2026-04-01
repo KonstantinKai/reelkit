@@ -500,7 +500,7 @@ describe('LightboxOverlay', () => {
       expect(renderControls).toHaveBeenCalledWith(
         expect.objectContaining({
           item: mockImages[0],
-          currentIndex: 0,
+          activeIndex: 0,
           count: 3,
           isFullscreen: false,
           onClose: expect.any(Function),

@@ -8,8 +8,8 @@ import {
 import { Observe, SoundProvider, useSoundState } from '@reelkit/react';
 import type { LightboxItem } from './LightboxOverlay';
 import type {
-  LightboxControlsRenderProps,
-  LightboxSlideRenderProps,
+  ControlsRenderProps,
+  SlideRenderProps,
 } from './types';
 import LightboxVideoSlide from './LightboxVideoSlide';
 import {
@@ -44,14 +44,14 @@ export interface UseVideoSlideRendererResult {
    * Returns a `LightboxVideoSlide` for video items, or `null` to fall
    * back to the default image slide.
    */
-  renderSlide: (props: LightboxSlideRenderProps) => ReactNode | null;
+  renderSlide: (props: SlideRenderProps) => ReactNode | null;
 
   /**
    * Ready-to-use `renderControls` callback with Counter, FullscreenButton,
    * SoundButton (when videos exist), and CloseButton.
    * Pass directly to `LightboxOverlay`'s `renderControls` prop.
    */
-  renderControls: (props: LightboxControlsRenderProps) => ReactNode;
+  renderControls: (props: ControlsRenderProps) => ReactNode;
 }
 
 /**
@@ -78,10 +78,10 @@ export interface UseVideoSlideRendererResult {
  * ```
  */
 const VideoLightboxControls: FC<
-  LightboxControlsRenderProps & { isVideoSlide: boolean }
+  ControlsRenderProps & { isVideoSlide: boolean }
 > = ({
   onClose,
-  currentIndex,
+  activeIndex,
   count,
   isFullscreen,
   onToggleFullscreen,
@@ -99,7 +99,7 @@ const VideoLightboxControls: FC<
   return (
     <>
       <div className="rk-lightbox-controls-left">
-        <Counter currentIndex={currentIndex} count={count} />
+        <Counter currentIndex={activeIndex} count={count} />
         <FullscreenButton
           isFullscreen={isFullscreen}
           onToggle={onToggleFullscreen}
@@ -137,7 +137,7 @@ export function useVideoSlideRenderer(
       onReady,
       onWaiting,
       onError,
-    }: LightboxSlideRenderProps): ReactNode | null => {
+    }: SlideRenderProps): ReactNode | null => {
       if ((item.type ?? 'image') !== 'video') return null;
 
       return (
@@ -157,10 +157,10 @@ export function useVideoSlideRenderer(
   );
 
   const renderControls = useCallback(
-    (props: LightboxControlsRenderProps): ReactNode => (
+    (props: ControlsRenderProps): ReactNode => (
       <VideoLightboxControls
         {...props}
-        isVideoSlide={items[props.currentIndex]?.type === 'video'}
+        isVideoSlide={items[props.activeIndex]?.type === 'video'}
       />
     ),
     [items],

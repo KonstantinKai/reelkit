@@ -31,8 +31,8 @@ import { ChevronLeft, ChevronRight, ImageOff } from 'lucide-react';
 import { useFullscreen } from '@reelkit/react';
 import LightboxControls from './LightboxControls';
 import type {
-  LightboxControlsRenderProps,
-  LightboxSlideRenderProps,
+  ControlsRenderProps,
+  SlideRenderProps,
   NavigationRenderProps,
   InfoRenderProps,
 } from './types';
@@ -123,9 +123,9 @@ export type ReelProxyProps = Pick<
  *   isOpen={isOpen}
  *   images={images}
  *   onClose={handleClose}
- *   renderControls={({ onClose, currentIndex, count }) => (
+ *   renderControls={({ onClose, activeIndex, count }) => (
  *     <div>
- *       <Counter currentIndex={currentIndex} count={count} />
+ *       <Counter currentIndex={activeIndex} count={count} />
  *       <CloseButton onClick={onClose} />
  *     </div>
  *   )}
@@ -173,7 +173,7 @@ export interface LightboxOverlayProps extends ReelProxyProps {
   /**
    * Custom controls. Replaces default close button, counter, and fullscreen toggle.
    */
-  renderControls?: (props: LightboxControlsRenderProps) => ReactNode;
+  renderControls?: (props: ControlsRenderProps) => ReactNode;
 
   /**
    * Custom navigation arrows. Replaces default prev/next buttons.
@@ -192,7 +192,7 @@ export interface LightboxOverlayProps extends ReelProxyProps {
    * The optional `onReady` / `onWaiting` callbacks let the custom slide
    * report its loading state so the overlay can show/hide the spinner.
    */
-  renderSlide?: (props: LightboxSlideRenderProps) => ReactNode | null;
+  renderSlide?: (props: SlideRenderProps) => ReactNode | null;
 
   /** Custom loading indicator. Replaces default spinner. */
   renderLoading?: (props: {
@@ -425,7 +425,7 @@ const LightboxContent: FC<LightboxOverlayProps> = (props) => {
                 renderCtrl({
                   item: items[idx],
                   onClose: close,
-                  currentIndex: idx,
+                  activeIndex: idx,
                   count: items.length,
                   isFullscreen: isFullscreen.value,
                   onToggleFullscreen: toggleFullscreen,

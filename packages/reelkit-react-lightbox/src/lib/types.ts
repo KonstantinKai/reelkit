@@ -3,12 +3,12 @@ import type { LightboxItem } from './LightboxOverlay';
 /**
  * Props passed to the {@link LightboxOverlay} `renderControls` callback.
  */
-export interface LightboxControlsRenderProps {
+export interface ControlsRenderProps {
   /** The currently active lightbox item. */
   item: LightboxItem;
 
   /** Zero-based index of the currently active slide. */
-  currentIndex: number;
+  activeIndex: number;
 
   /** Total number of images. */
   count: number;
@@ -46,7 +46,7 @@ export interface NavigationRenderProps {
 /**
  * Props passed to the {@link LightboxOverlay} `renderSlide` callback.
  */
-export interface LightboxSlideRenderProps {
+export interface SlideRenderProps {
   /** The lightbox item for this slide. */
   item: LightboxItem;
 
@@ -73,7 +73,7 @@ export interface LightboxSlideRenderProps {
  * Props passed to the {@link LightboxOverlay} `renderInfo` callback.
  */
 export interface InfoRenderProps {
-  /** The current lightbox item data. */
+  /** The currently active lightbox item. */
   item: LightboxItem;
 
   /** Zero-based index of the current item. */
