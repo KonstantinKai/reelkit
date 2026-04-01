@@ -7,39 +7,43 @@ let lastReelProps: Partial<ReelProps> = {};
 
 // Mock preloader with controllable state — vi.hoisted ensures
 // these are available when vi.mock factory runs (both are hoisted).
-const { mockPreloader, mockPreloaderLoaded, mockPreloaderErrored, mockPreloaderOnLoadedCallbacks } =
-  vi.hoisted(() => {
-    const loaded = new Set<string>();
-    const errored = new Set<string>();
-    const onLoadedCallbacks = new Map<string, Set<() => void>>();
-    return {
-      mockPreloaderLoaded: loaded,
-      mockPreloaderErrored: errored,
-      mockPreloaderOnLoadedCallbacks: onLoadedCallbacks,
-      mockPreloader: {
-        isLoaded: (src: string) => loaded.has(src),
-        isErrored: (src: string) => errored.has(src),
-        isPending: () => false,
-        preload: vi.fn(),
-        markLoaded: vi.fn((src: string) => loaded.add(src)),
-        markErrored: vi.fn((src: string) => errored.add(src)),
-        preloadRange: vi.fn(),
-        onLoaded: vi.fn((src: string, cb: () => void) => {
-          if (loaded.has(src)) {
-            cb();
-            return vi.fn();
-          }
-          let subs = onLoadedCallbacks.get(src);
-          if (!subs) {
-            subs = new Set();
-            onLoadedCallbacks.set(src, subs);
-          }
-          subs.add(cb);
-          return () => subs!.delete(cb);
-        }),
-      },
-    };
-  });
+const {
+  mockPreloader,
+  mockPreloaderLoaded,
+  mockPreloaderErrored,
+  mockPreloaderOnLoadedCallbacks,
+} = vi.hoisted(() => {
+  const loaded = new Set<string>();
+  const errored = new Set<string>();
+  const onLoadedCallbacks = new Map<string, Set<() => void>>();
+  return {
+    mockPreloaderLoaded: loaded,
+    mockPreloaderErrored: errored,
+    mockPreloaderOnLoadedCallbacks: onLoadedCallbacks,
+    mockPreloader: {
+      isLoaded: (src: string) => loaded.has(src),
+      isErrored: (src: string) => errored.has(src),
+      isPending: () => false,
+      preload: vi.fn(),
+      markLoaded: vi.fn((src: string) => loaded.add(src)),
+      markErrored: vi.fn((src: string) => errored.add(src)),
+      preloadRange: vi.fn(),
+      onLoaded: vi.fn((src: string, cb: () => void) => {
+        if (loaded.has(src)) {
+          cb();
+          return vi.fn();
+        }
+        let subs = onLoadedCallbacks.get(src);
+        if (!subs) {
+          subs = new Set();
+          onLoadedCallbacks.set(src, subs);
+        }
+        subs.add(cb);
+        return () => subs!.delete(cb);
+      }),
+    },
+  };
+});
 
 vi.mock('@reelkit/react', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@reelkit/react')>();

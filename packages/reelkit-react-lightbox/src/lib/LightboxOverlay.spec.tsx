@@ -8,39 +8,43 @@ import { lightboxZoomTransition } from './lightboxZoomTransition';
 // Track Reel props
 let lastReelProps: Partial<ReelProps> = {};
 
-const { mockPreloader, mockPreloaderLoaded, mockPreloaderErrored, mockPreloaderOnLoadedCallbacks } =
-  vi.hoisted(() => {
-    const loaded = new Set<string>();
-    const errored = new Set<string>();
-    const onLoadedCallbacks = new Map<string, Set<() => void>>();
-    return {
-      mockPreloaderLoaded: loaded,
-      mockPreloaderErrored: errored,
-      mockPreloaderOnLoadedCallbacks: onLoadedCallbacks,
-      mockPreloader: {
-        isLoaded: (src: string) => loaded.has(src),
-        isErrored: (src: string) => errored.has(src),
-        isPending: () => false,
-        preload: vi.fn(),
-        markLoaded: vi.fn((src: string) => loaded.add(src)),
-        markErrored: vi.fn((src: string) => errored.add(src)),
-        preloadRange: vi.fn(),
-        onLoaded: vi.fn((src: string, cb: () => void) => {
-          if (loaded.has(src)) {
-            cb();
-            return () => {};
-          }
-          let subs = onLoadedCallbacks.get(src);
-          if (!subs) {
-            subs = new Set();
-            onLoadedCallbacks.set(src, subs);
-          }
-          subs.add(cb);
-          return () => subs!.delete(cb);
-        }),
-      },
-    };
-  });
+const {
+  mockPreloader,
+  mockPreloaderLoaded,
+  mockPreloaderErrored,
+  mockPreloaderOnLoadedCallbacks,
+} = vi.hoisted(() => {
+  const loaded = new Set<string>();
+  const errored = new Set<string>();
+  const onLoadedCallbacks = new Map<string, Set<() => void>>();
+  return {
+    mockPreloaderLoaded: loaded,
+    mockPreloaderErrored: errored,
+    mockPreloaderOnLoadedCallbacks: onLoadedCallbacks,
+    mockPreloader: {
+      isLoaded: (src: string) => loaded.has(src),
+      isErrored: (src: string) => errored.has(src),
+      isPending: () => false,
+      preload: vi.fn(),
+      markLoaded: vi.fn((src: string) => loaded.add(src)),
+      markErrored: vi.fn((src: string) => errored.add(src)),
+      preloadRange: vi.fn(),
+      onLoaded: vi.fn((src: string, cb: () => void) => {
+        if (loaded.has(src)) {
+          cb();
+          return () => {};
+        }
+        let subs = onLoadedCallbacks.get(src);
+        if (!subs) {
+          subs = new Set();
+          onLoadedCallbacks.set(src, subs);
+        }
+        subs.add(cb);
+        return () => subs!.delete(cb);
+      }),
+    },
+  };
+});
 
 vi.mock('@reelkit/react', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@reelkit/react')>();
@@ -966,9 +970,7 @@ describe('LightboxOverlay', () => {
         s: [number, number],
       ) => React.ReactNode;
 
-      const { container } = render(
-        <>{itemBuilder(0, 0, [1024, 768])}</>,
-      );
+      const { container } = render(<>{itemBuilder(0, 0, [1024, 768])}</>);
 
       const img = container.querySelector('img');
       act(() => {

@@ -151,8 +151,7 @@ export interface LightboxErrorContext {
 
 @Directive({ selector: '[rkLightboxError]' })
 export class RkLightboxErrorDirective {
-  readonly templateRef =
-    inject<TemplateRef<LightboxErrorContext>>(TemplateRef);
+  readonly templateRef = inject<TemplateRef<LightboxErrorContext>>(TemplateRef);
 
   static ngTemplateContextGuard(
     _dir: RkLightboxErrorDirective,

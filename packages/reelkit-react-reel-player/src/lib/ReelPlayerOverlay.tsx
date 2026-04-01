@@ -492,22 +492,38 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>(
           }}
         </Observe>
 
-        <Observe signals={[loadingCtrl.isLoading, loadingCtrl.isError, indexSignal]}>
+        <Observe
+          signals={[loadingCtrl.isLoading, loadingCtrl.isError, indexSignal]}
+        >
           {() => {
             const idx = indexSignal.value;
-            const { renderLoading, renderError, content: items } = propsRef.current;
+            const {
+              renderLoading,
+              renderError,
+              content: items,
+            } = propsRef.current;
             const currentItem = items[idx] as T;
 
             if (loadingCtrl.isError.value) {
-              return renderError ? <>{renderError({ item: currentItem, activeIndex: idx })}</> : (
-                <div className="rk-media-error" role="img" aria-label="Content unavailable">
+              return renderError ? (
+                <>{renderError({ item: currentItem, activeIndex: idx })}</>
+              ) : (
+                <div
+                  className="rk-media-error"
+                  role="img"
+                  aria-label="Content unavailable"
+                >
                   <ImageOff size={48} strokeWidth={1.5} aria-hidden="true" />
-                  <span className="rk-media-error-text">Content unavailable</span>
+                  <span className="rk-media-error-text">
+                    Content unavailable
+                  </span>
                 </div>
               );
             }
             if (loadingCtrl.isLoading.value) {
-              return renderLoading ? <>{renderLoading({ item: currentItem, activeIndex: idx })}</> : (
+              return renderLoading ? (
+                <>{renderLoading({ item: currentItem, activeIndex: idx })}</>
+              ) : (
                 <div className="rk-reel-loader" />
               );
             }

@@ -208,14 +208,12 @@ export class RkVideoSlideComponent {
       container.appendChild(video);
       this.videoRef.emit(video);
 
-      video
-        .play()
-        .catch(() =>
-          this._zone.run(() => {
-            this.hasPlayError.set(true);
-            errorFn?.();
-          }),
-        );
+      video.play().catch(() =>
+        this._zone.run(() => {
+          this.hasPlayError.set(true);
+          errorFn?.();
+        }),
+      );
 
       onCleanup(() => {
         disposables.dispose();

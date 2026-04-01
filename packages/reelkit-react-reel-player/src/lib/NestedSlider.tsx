@@ -133,7 +133,9 @@ const NestedSlider: React.FC<NestedSliderProps> = (props) => {
             <ImageSlide
               src={item.src}
               size={itemSize}
-              imageProps={isInnerActive ? { onLoad: onReady, onError } : undefined}
+              imageProps={
+                isInnerActive ? { onLoad: onReady, onError } : undefined
+              }
             />
           );
 

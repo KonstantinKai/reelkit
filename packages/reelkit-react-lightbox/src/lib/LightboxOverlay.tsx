@@ -346,7 +346,10 @@ const LightboxContent: FC<LightboxOverlayProps> = (props) => {
                 preloader.markLoaded(image.src);
                 onReady();
               }}
-              onError={onError}
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+                onError();
+              }}
             />
           </div>
         );

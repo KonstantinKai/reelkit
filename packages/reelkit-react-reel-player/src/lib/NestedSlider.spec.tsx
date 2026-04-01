@@ -421,7 +421,7 @@ describe('NestedSlider', () => {
           isParentActive={false}
           size={_kSize}
           contentItem={mockContentItem}
-        contentId="c1"
+          contentId="c1"
           innerSliderRef={innerSliderRef}
         />,
       );
@@ -436,7 +436,7 @@ describe('NestedSlider', () => {
           isParentActive={true}
           size={_kSize}
           contentItem={mockContentItem}
-        contentId="c1"
+          contentId="c1"
           innerSliderRef={innerSliderRef}
         />,
       );
@@ -451,7 +451,7 @@ describe('NestedSlider', () => {
           isParentActive={false}
           size={_kSize}
           contentItem={mockContentItem}
-        contentId="c1"
+          contentId="c1"
           innerSliderRef={innerSliderRef}
         />,
       );
@@ -464,7 +464,7 @@ describe('NestedSlider', () => {
           isParentActive={true}
           size={_kSize}
           contentItem={mockContentItem}
-        contentId="c1"
+          contentId="c1"
           innerSliderRef={innerSliderRef}
         />,
       );
@@ -479,7 +479,7 @@ describe('NestedSlider', () => {
           isParentActive={true}
           size={_kSize}
           contentItem={mockContentItem}
-        contentId="c1"
+          contentId="c1"
           innerSliderRef={innerSliderRef}
         />,
       );
@@ -502,7 +502,7 @@ describe('NestedSlider', () => {
           isParentActive={false}
           size={_kSize}
           contentItem={mockContentItem}
-        contentId="c1"
+          contentId="c1"
           innerSliderRef={innerSliderRef}
         />,
       );
@@ -527,7 +527,7 @@ describe('NestedSlider', () => {
           isParentActive={true}
           size={_kSize}
           contentItem={mockContentItem}
-        contentId="c1"
+          contentId="c1"
           innerSliderRef={innerSliderRef}
         />,
       );
@@ -606,7 +606,7 @@ describe('NestedSlider', () => {
           isParentActive={true}
           size={_kSize}
           contentItem={mockContentItem}
-        contentId="c1"
+          contentId="c1"
           innerSliderRef={innerSliderRef}
         />,
       );
@@ -628,7 +628,7 @@ describe('NestedSlider', () => {
           isParentActive={true}
           size={_kSize}
           contentItem={mockContentItem}
-        contentId="c1"
+          contentId="c1"
           innerSliderRef={innerSliderRef}
           renderNestedSlide={renderNestedSlide}
         />,
@@ -654,7 +654,7 @@ describe('NestedSlider', () => {
           isParentActive={true}
           size={_kSize}
           contentItem={mockContentItem}
-        contentId="c1"
+          contentId="c1"
           innerSliderRef={innerSliderRef}
           renderNestedSlide={renderNestedSlide}
         />,
@@ -680,7 +680,7 @@ describe('NestedSlider', () => {
           isParentActive={true}
           size={_kSize}
           contentItem={mockContentItem}
-        contentId="c1"
+          contentId="c1"
           innerSliderRef={innerSliderRef}
           renderNestedSlide={renderNestedSlide}
         />,
@@ -713,7 +713,7 @@ describe('NestedSlider', () => {
           isParentActive={false}
           size={_kSize}
           contentItem={mockContentItem}
-        contentId="c1"
+          contentId="c1"
           innerSliderRef={innerSliderRef}
           renderNestedSlide={renderNestedSlide}
         />,
@@ -743,7 +743,7 @@ describe('NestedSlider', () => {
           isParentActive={true}
           size={_kSize}
           contentItem={mockContentItem}
-        contentId="c1"
+          contentId="c1"
           innerSliderRef={innerSliderRef}
           renderNestedSlide={renderNestedSlide}
         />,
@@ -781,7 +781,7 @@ describe('NestedSlider', () => {
           isParentActive={true}
           size={_kSize}
           contentItem={mockContentItem}
-        contentId="c1"
+          contentId="c1"
           innerSliderRef={innerSliderRef}
           onReady={onReady}
           onWaiting={onWaiting}
@@ -820,7 +820,7 @@ describe('NestedSlider', () => {
           isParentActive={true}
           size={_kSize}
           contentItem={mockContentItem}
-        contentId="c1"
+          contentId="c1"
           innerSliderRef={innerSliderRef}
           onReady={onReady}
           renderNestedSlide={(props) => {
@@ -847,7 +847,7 @@ describe('NestedSlider', () => {
           isParentActive={true}
           size={_kSize}
           contentItem={mockContentItem}
-        contentId="c1"
+          contentId="c1"
           innerSliderRef={innerSliderRef}
           renderNestedSlide={renderNestedSlide}
         />,
@@ -869,7 +869,7 @@ describe('NestedSlider', () => {
           isParentActive={true}
           size={_kSize}
           contentItem={mockContentItem}
-        contentId="c1"
+          contentId="c1"
           innerSliderRef={innerSliderRef}
           renderNestedSlide={renderNestedSlide}
         />,
@@ -927,7 +927,7 @@ describe('NestedSlider', () => {
           isParentActive={true}
           size={_kSize}
           contentItem={mockContentItem}
-        contentId="c1"
+          contentId="c1"
           innerSliderRef={innerSliderRef}
           onReady={onReady}
         />,
@@ -948,7 +948,7 @@ describe('NestedSlider', () => {
           isParentActive={true}
           size={_kSize}
           contentItem={mockContentItem}
-        contentId="c1"
+          contentId="c1"
           innerSliderRef={innerSliderRef}
           onReady={vi.fn()}
         />,
@@ -969,7 +969,7 @@ describe('NestedSlider', () => {
           isParentActive={true}
           size={_kSize}
           contentItem={mockContentItem}
-        contentId="c1"
+          contentId="c1"
           innerSliderRef={innerSliderRef}
           onReady={onReady}
           onWaiting={onWaiting}
@@ -995,7 +995,7 @@ describe('NestedSlider', () => {
           isParentActive={true}
           size={_kSize}
           contentItem={mockContentItem}
-        contentId="c1"
+          contentId="c1"
           innerSliderRef={innerSliderRef}
           onReady={vi.fn()}
           onWaiting={vi.fn()}
@@ -1021,7 +1021,7 @@ describe('NestedSlider', () => {
           isParentActive={true}
           size={_kSize}
           contentItem={mockContentItem}
-        contentId="c1"
+          contentId="c1"
           innerSliderRef={innerSliderRef}
           onReady={onReady}
         />,
@@ -1042,7 +1042,7 @@ describe('NestedSlider', () => {
           isParentActive={true}
           size={_kSize}
           contentItem={mockContentItem}
-        contentId="c1"
+          contentId="c1"
           innerSliderRef={innerSliderRef}
           onReady={onReady}
         />,
@@ -1074,7 +1074,7 @@ describe('NestedSlider', () => {
           isParentActive={true}
           size={_kSize}
           contentItem={mockContentItem}
-        contentId="c1"
+          contentId="c1"
           innerSliderRef={innerSliderRef}
           onReady={onReady}
         />,
@@ -1095,7 +1095,7 @@ describe('NestedSlider', () => {
           isParentActive={true}
           size={_kSize}
           contentItem={mockContentItem}
-        contentId="c1"
+          contentId="c1"
           innerSliderRef={innerSliderRef}
         />,
       );
@@ -1114,7 +1114,7 @@ describe('NestedSlider', () => {
           isParentActive={false}
           size={_kSize}
           contentItem={mockContentItem}
-        contentId="c1"
+          contentId="c1"
           innerSliderRef={innerSliderRef}
           onActiveMediaTypeChange={onActiveMediaTypeChange}
         />,
@@ -1128,7 +1128,7 @@ describe('NestedSlider', () => {
           isParentActive={true}
           size={_kSize}
           contentItem={mockContentItem}
-        contentId="c1"
+          contentId="c1"
           innerSliderRef={innerSliderRef}
           onActiveMediaTypeChange={onActiveMediaTypeChange}
         />,
@@ -1146,7 +1146,7 @@ describe('NestedSlider', () => {
           isParentActive={false}
           size={_kSize}
           contentItem={mockContentItem}
-        contentId="c1"
+          contentId="c1"
           innerSliderRef={innerSliderRef}
           onActiveMediaTypeChange={onActiveMediaTypeChange}
         />,

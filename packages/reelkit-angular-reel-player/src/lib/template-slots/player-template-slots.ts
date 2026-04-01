@@ -162,8 +162,7 @@ export interface PlayerLoadingContext {
 
 @Directive({ selector: '[rkPlayerLoading]' })
 export class RkPlayerLoadingDirective {
-  readonly templateRef =
-    inject<TemplateRef<PlayerLoadingContext>>(TemplateRef);
+  readonly templateRef = inject<TemplateRef<PlayerLoadingContext>>(TemplateRef);
 
   static ngTemplateContextGuard(
     _dir: RkPlayerLoadingDirective,
@@ -186,8 +185,7 @@ export interface PlayerErrorContext {
 
 @Directive({ selector: '[rkPlayerError]' })
 export class RkPlayerErrorDirective {
-  readonly templateRef =
-    inject<TemplateRef<PlayerErrorContext>>(TemplateRef);
+  readonly templateRef = inject<TemplateRef<PlayerErrorContext>>(TemplateRef);
 
   static ngTemplateContextGuard(
     _dir: RkPlayerErrorDirective,

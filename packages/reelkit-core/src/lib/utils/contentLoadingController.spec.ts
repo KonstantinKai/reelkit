@@ -140,4 +140,49 @@ describe('createContentLoadingController', () => {
     expect(ctrl.isError.value).toBe(true);
     expect(ctrl.isLoading.value).toBe(false);
   });
+
+  it('onError at non-zero initialIndex requires setActiveIndex first', () => {
+    const ctrl = createContentLoadingController(true, 0);
+    // Without setActiveIndex, onError(3) is rejected by index guard
+    ctrl.onError(3);
+    expect(ctrl.isError.value).toBe(false);
+
+    // After setActiveIndex, onError matches
+    ctrl.setActiveIndex(3);
+    ctrl.onError(3);
+    expect(ctrl.isError.value).toBe(true);
+    expect(ctrl.isLoading.value).toBe(false);
+  });
+
+  it('setActiveIndex resets state for reopen cycle', () => {
+    const ctrl = createContentLoadingController(true, 0);
+    // First open — image loads
+    ctrl.setActiveIndex(0);
+    ctrl.onReady(0);
+    expect(ctrl.isLoading.value).toBe(false);
+
+    // Reopen — setActiveIndex resets loading
+    ctrl.setActiveIndex(0);
+    expect(ctrl.isLoading.value).toBe(true);
+    expect(ctrl.isError.value).toBe(false);
+
+    // Image loads again
+    ctrl.onReady(0);
+    expect(ctrl.isLoading.value).toBe(false);
+  });
+
+  it('setActiveIndex after error resets for next slide', () => {
+    const ctrl = createContentLoadingController(true, 0);
+    ctrl.setActiveIndex(2);
+    ctrl.onError(2);
+    expect(ctrl.isError.value).toBe(true);
+
+    // Navigate to next slide
+    ctrl.setActiveIndex(3);
+    expect(ctrl.isError.value).toBe(false);
+    expect(ctrl.isLoading.value).toBe(true);
+
+    ctrl.onReady(3);
+    expect(ctrl.isLoading.value).toBe(false);
+  });
 });
