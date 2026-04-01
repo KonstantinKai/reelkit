@@ -141,12 +141,16 @@ describe('Player template slot directives', () => {
     });
 
     it('ngTemplateContextGuard narrows type — context treated as PlayerSlideContext', () => {
+      const noop = (): void => {};
       const ctx: unknown = {
         $implicit: { id: 'x', media: [] } as ContentItem,
         index: 0,
         size: [375, 812] as [number, number],
         isActive: true,
         slideKey: 'x',
+        onReady: noop,
+        onWaiting: noop,
+        onError: noop,
       };
       const result = RkPlayerSlideDirective.ngTemplateContextGuard(
         {} as RkPlayerSlideDirective,
@@ -227,9 +231,13 @@ describe('Player template slot directives', () => {
         $implicit: () => {
           /* noop */
         },
+        item: { id: 'x', media: [] },
         activeIndex: 0,
         content: [],
         soundState,
+        onClose: () => {
+          /* noop */
+        },
       } satisfies PlayerControlsContext;
       expect(
         RkPlayerControlsDirective.ngTemplateContextGuard(
@@ -270,13 +278,14 @@ describe('Player template slot directives', () => {
     });
 
     it('ngTemplateContextGuard narrows to PlayerNavigationContext', () => {
+      const noop = () => {
+        /* noop */
+      };
       const ctx: unknown = {
-        $implicit: () => {
-          /* noop */
-        },
-        onNext: () => {
-          /* noop */
-        },
+        $implicit: noop,
+        item: { id: 'x', media: [] },
+        onPrev: noop,
+        onNext: noop,
         activeIndex: 1,
         count: 5,
       } satisfies PlayerNavigationContext;
@@ -371,13 +380,14 @@ describe('Player template slot directives', () => {
     });
 
     it('ngTemplateContextGuard narrows to PlayerNestedNavigationContext', () => {
+      const noop = () => {
+        /* noop */
+      };
       const ctx: unknown = {
-        $implicit: () => {
-          /* noop */
-        },
-        onNext: () => {
-          /* noop */
-        },
+        $implicit: noop,
+        media: { id: 'm1', type: 'image', src: 'img.jpg', aspectRatio: 1 },
+        onPrev: noop,
+        onNext: noop,
         activeIndex: 0,
         count: 3,
       } satisfies PlayerNestedNavigationContext;

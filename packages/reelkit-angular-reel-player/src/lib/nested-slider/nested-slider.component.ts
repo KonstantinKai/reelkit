@@ -5,13 +5,18 @@ import {
   ViewEncapsulation,
   computed,
   effect,
-  inject,
   input,
   linkedSignal,
   output,
 } from '@angular/core';
-import { DomSanitizer, type SafeHtml } from '@angular/platform-browser';
 import { NgTemplateOutlet } from '@angular/common';
+import {
+  LucideAngularModule,
+  LucideIconProvider,
+  LUCIDE_ICONS,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-angular';
 import {
   ReelComponent,
   ReelIndicatorComponent,
@@ -26,7 +31,6 @@ import type {
   PlayerNestedNavigationContext,
   PlayerNestedSlideContext,
 } from '../types';
-import { ICON_CHEVRON_LEFT, ICON_CHEVRON_RIGHT } from '../icons/icons';
 
 /**
  * Horizontal nested slider for multi-media content items (e.g. an Instagram
@@ -45,11 +49,19 @@ import { ICON_CHEVRON_LEFT, ICON_CHEVRON_RIGHT } from '../icons/icons';
   host: { style: 'display:block;width:100%;height:100%' },
   imports: [
     NgTemplateOutlet,
+    LucideAngularModule,
     ReelComponent,
     ReelIndicatorComponent,
     RkReelItemDirective,
     RkVideoSlideComponent,
     RkImageSlideComponent,
+  ],
+  providers: [
+    {
+      provide: LUCIDE_ICONS,
+      useValue: new LucideIconProvider({ ChevronLeft, ChevronRight }),
+      multi: true,
+    },
   ],
   template: `
     <div
@@ -99,6 +111,9 @@ import { ICON_CHEVRON_LEFT, ICON_CHEVRON_RIGHT } from '../icons/icons';
                 [isActive]="isActive()"
                 [isInnerActive]="isInnerActive"
                 [slideKey]="key"
+                [onReady]="isInnerActive ? onReady() : undefined"
+                [onWaiting]="isInnerActive ? onWaiting() : undefined"
+                [onError]="isInnerActive ? onError() : undefined"
                 (videoRef)="
                   isInnerActive || !$event ? onVideoRef($event) : null
                 "
@@ -108,6 +123,8 @@ import { ICON_CHEVRON_LEFT, ICON_CHEVRON_RIGHT } from '../icons/icons';
                 [src]="item.src"
                 [width]="size[0]"
                 [height]="size[1]"
+                [onReady]="isInnerActive ? onReady() : undefined"
+                [onError]="isInnerActive ? onError() : undefined"
               />
             }
           }
@@ -136,6 +153,8 @@ import { ICON_CHEVRON_LEFT, ICON_CHEVRON_RIGHT } from '../icons/icons';
             [ngTemplateOutlet]="nestedNavTemplate()!"
             [ngTemplateOutletContext]="{
               $implicit: onPrevFn,
+              media: media()[innerActiveIndex()],
+              onPrev: onPrevFn,
               onNext: onNextFn,
               activeIndex: innerActiveIndex(),
               count: media().length,
@@ -147,16 +166,18 @@ import { ICON_CHEVRON_LEFT, ICON_CHEVRON_RIGHT } from '../icons/icons';
               class="rk-nested-nav rk-nested-nav-prev"
               (click)="onPrev()"
               aria-label="Previous media"
-              [innerHTML]="iconChevronLeft"
-            ></button>
+            >
+              <lucide-angular [img]="ChevronLeftIcon" [size]="24" />
+            </button>
           }
           @if (innerActiveIndex() < media().length - 1) {
             <button
               class="rk-nested-nav rk-nested-nav-next"
               (click)="onNext()"
               aria-label="Next media"
-              [innerHTML]="iconChevronRight"
-            ></button>
+            >
+              <lucide-angular [img]="ChevronRightIcon" [size]="24" />
+            </button>
           }
         }
       }
@@ -170,6 +191,9 @@ export class RkNestedSliderComponent {
   readonly height = input<number>(0);
   readonly slideKey = input.required<string>();
   readonly enableWheel = input<boolean>(false);
+  readonly onReady = input<(() => void) | undefined>(undefined);
+  readonly onWaiting = input<(() => void) | undefined>(undefined);
+  readonly onError = input<(() => void) | undefined>(undefined);
   readonly nestedSlideTemplate =
     input<TemplateRef<PlayerNestedSlideContext> | null>(null);
   readonly nestedNavTemplate =
@@ -190,12 +214,8 @@ export class RkNestedSliderComponent {
     return 0;
   });
 
-  private readonly _sanitizer = inject(DomSanitizer);
-
-  protected readonly iconChevronLeft: SafeHtml =
-    this._sanitizer.bypassSecurityTrustHtml(ICON_CHEVRON_LEFT);
-  protected readonly iconChevronRight: SafeHtml =
-    this._sanitizer.bypassSecurityTrustHtml(ICON_CHEVRON_RIGHT);
+  protected readonly ChevronLeftIcon = ChevronLeft;
+  protected readonly ChevronRightIcon = ChevronRight;
 
   /**
    * Stable arrow-function references for template context objects.
@@ -240,8 +260,12 @@ export class RkNestedSliderComponent {
     this.innerActiveIndex.set(event.index);
     this.innerActiveIndexChange.emit(event.index);
     const items = this.media();
-    if (items[event.index]) {
-      this.innerMediaType.emit(items[event.index].type);
+    const item = items[event.index];
+    if (item) {
+      this.innerMediaType.emit(item.type);
+      if (item.type === 'image') {
+        this.onReady()?.();
+      }
     }
   }
 

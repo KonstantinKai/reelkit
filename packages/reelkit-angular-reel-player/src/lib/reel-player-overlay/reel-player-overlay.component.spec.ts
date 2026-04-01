@@ -78,6 +78,72 @@ jest.mock('@reelkit/angular', () => {
     })),
     captureFrame: jest.fn().mockReturnValue(null),
     noop: jest.fn(),
+    clamp: (v: number, min: number, max: number) =>
+      Math.max(min, Math.min(max, v)),
+    toAngularSignal: jest.fn(
+      (source: {
+        value?: unknown;
+        observe?: (fn: () => void) => () => void;
+      }) => {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { signal: angSignal } =
+          require('@angular/core') as typeof import('@angular/core');
+        const sig = angSignal(source?.value ?? false);
+        if (source?.observe) {
+          source.observe(() => sig.set(source.value as never));
+        }
+        return sig;
+      },
+    ),
+    createContentLoadingController: jest.fn(() => ({
+      isLoading: { value: true, observe: jest.fn(() => () => {}) },
+      isError: { value: false, observe: jest.fn(() => () => {}) },
+      setActiveIndex: jest.fn(),
+      onReady: jest.fn(),
+      onWaiting: jest.fn(),
+      onError: jest.fn(),
+    })),
+    createContentPreloader: jest.fn(() => ({
+      isLoaded: jest.fn(() => false),
+      isErrored: jest.fn(() => false),
+      markLoaded: jest.fn(),
+      markErrored: jest.fn(),
+      preloadRange: jest.fn(),
+      preload: jest.fn(),
+      onLoaded: jest.fn(() => () => {}),
+    })),
+    createSoundController: jest.fn(() => {
+      const makeSignal = (initial: boolean) => {
+        const listeners = new Set<() => void>();
+        const sig = {
+          value: initial,
+          observe: jest.fn((fn: () => void) => {
+            listeners.add(fn);
+            return () => listeners.delete(fn);
+          }),
+        };
+        return new Proxy(sig, {
+          set(target, prop, val) {
+            if (prop === 'value' && target.value !== val) {
+              target.value = val;
+              listeners.forEach((fn) => fn());
+            } else {
+              (target as Record<string, unknown>)[prop as string] = val;
+            }
+            return true;
+          },
+        });
+      };
+      const muted = makeSignal(true);
+      const disabled = makeSignal(false);
+      return {
+        muted,
+        disabled,
+        toggle: jest.fn(() => {
+          muted.value = !muted.value;
+        }),
+      };
+    }),
   };
 });
 
@@ -525,5 +591,103 @@ describe('RkReelPlayerOverlayComponent', () => {
     fixture.componentRef.setInput('isOpen', false);
     fixture.detectChanges();
     expect(fixture.componentInstance.activeIndex()).toBe(0);
+  });
+
+  describe('onReady / onWaiting', () => {
+    function getLoadingCtrl(
+      fixture: ComponentFixture<RkReelPlayerOverlayComponent>,
+    ) {
+      return fixture.componentInstance['_loadingCtrl'] as {
+        onReady: jest.Mock;
+        onWaiting: jest.Mock;
+        setActiveIndex: jest.Mock;
+      };
+    }
+
+    function getPreloader(
+      fixture: ComponentFixture<RkReelPlayerOverlayComponent>,
+    ) {
+      return fixture.componentInstance['_preloader'] as {
+        markLoaded: jest.Mock;
+      };
+    }
+
+    it('getOnReady returns a function that calls loadingCtrl.onReady', () => {
+      const fixture = createFixture({ isOpen: true, content: makeItems(3) });
+      const ctrl = getLoadingCtrl(fixture);
+      fixture.componentInstance.getOnReady(1)();
+      expect(ctrl.onReady).toHaveBeenCalledWith(1);
+    });
+
+    it('getOnReady calls preloader.markLoaded with the first media src', () => {
+      const fixture = createFixture({ isOpen: true, content: makeItems(3) });
+      const pre = getPreloader(fixture);
+      fixture.componentInstance.getOnReady(0)();
+      expect(pre.markLoaded).toHaveBeenCalledWith(
+        fixture.componentInstance.content()[0].media[0].src,
+      );
+    });
+
+    it('getOnWaiting returns a function that calls loadingCtrl.onWaiting', () => {
+      const fixture = createFixture({ isOpen: true, content: makeItems(3) });
+      const ctrl = getLoadingCtrl(fixture);
+      fixture.componentInstance.getOnWaiting(2)();
+      expect(ctrl.onWaiting).toHaveBeenCalledWith(2);
+    });
+
+    it('onAfterChange calls loadingCtrl.setActiveIndex', () => {
+      const fixture = createFixture({ isOpen: true, content: makeItems(3) });
+      const ctrl = getLoadingCtrl(fixture);
+      fixture.componentInstance.onAfterChange({ index: 2 });
+      expect(ctrl.setActiveIndex).toHaveBeenCalledWith(2);
+    });
+
+    it('getOnError calls loadingCtrl.onError', () => {
+      const fixture = createFixture({ isOpen: true, content: makeItems(3) });
+      const ctrl = getLoadingCtrl(fixture);
+      fixture.componentInstance.getOnError(1)();
+      expect(ctrl.onError).toHaveBeenCalledWith(1);
+    });
+
+    it('getOnError calls preloader.markErrored with the first media src', () => {
+      const fixture = createFixture({ isOpen: true, content: makeItems(3) });
+      const pre = getPreloader(fixture);
+      fixture.componentInstance.getOnError(0)();
+      expect(pre.markErrored).toHaveBeenCalledWith(
+        fixture.componentInstance.content()[0].media[0].src,
+      );
+    });
+
+    it('onAfterChange calls loadingCtrl.onError for errored sources', () => {
+      const fixture = createFixture({ isOpen: true, content: makeItems(3) });
+      const ctrl = getLoadingCtrl(fixture);
+      const pre = getPreloader(fixture);
+      pre.isErrored.mockReturnValue(true);
+
+      fixture.componentInstance.onAfterChange({ index: 1 });
+
+      expect(ctrl.onError).toHaveBeenCalledWith(1);
+      pre.isErrored.mockReturnValue(false);
+    });
+  });
+
+  describe('custom loading/error slots', () => {
+    it('detects loadingSlot via contentChild', () => {
+      const fixture = createFixture({ isOpen: true, content: makeItems(3) });
+      expect(fixture.componentInstance['loadingSlot']).toBeDefined();
+    });
+
+    it('detects errorSlot via contentChild', () => {
+      const fixture = createFixture({ isOpen: true, content: makeItems(3) });
+      expect(fixture.componentInstance['errorSlot']).toBeDefined();
+    });
+
+    it('renders default wave loader when loadingSlot is not provided', () => {
+      const fixture = createFixture({ isOpen: true, content: makeItems(3) });
+      fixture.detectChanges();
+
+      const loader = fixture.debugElement.query(By.css('.rk-reel-loader'));
+      expect(loader).toBeTruthy();
+    });
   });
 });

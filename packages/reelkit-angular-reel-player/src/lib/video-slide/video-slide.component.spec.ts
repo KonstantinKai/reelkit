@@ -32,6 +32,30 @@ jest.mock('@reelkit/angular', () => {
   return {
     createSharedVideo: jest.fn(() => shared),
     captureFrame: jest.fn().mockReturnValue(null),
+    observeDomEvent: jest.fn(
+      (el: EventTarget, event: string, handler: EventListener) => {
+        el.addEventListener(event, handler);
+        return () => el.removeEventListener(event, handler);
+      },
+    ),
+    createDisposableList: jest.fn(() => {
+      const fns: (() => void)[] = [];
+      return {
+        push: (...items: (() => void)[]) => fns.push(...items),
+        dispose: () => fns.forEach((fn) => fn()),
+      };
+    }),
+    toAngularSignal: jest.fn((source: { value?: unknown }) => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { signal: angSignal } =
+        require('@angular/core') as typeof import('@angular/core');
+      return angSignal(source?.value ?? false);
+    }),
+    createSoundController: jest.fn(() => ({
+      muted: { value: true, observe: jest.fn(() => () => {}) },
+      disabled: { value: false, observe: jest.fn(() => () => {}) },
+      toggle: jest.fn(),
+    })),
     __mockShared: shared,
     __mockVideo: mockVid,
   };

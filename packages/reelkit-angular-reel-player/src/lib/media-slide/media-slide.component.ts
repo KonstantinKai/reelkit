@@ -63,6 +63,9 @@ import type {
         [width]="width()"
         [height]="height()"
         [isActive]="isActive()"
+        [onReady]="onReady()"
+        [onWaiting]="onWaiting()"
+        [onError]="onError()"
       />
     } @else if (m.length === 1 && m[0].type === 'video') {
       <rk-video-slide
@@ -73,6 +76,9 @@ import type {
         [height]="height()"
         [isActive]="isActive()"
         [slideKey]="content().id"
+        [onReady]="onReady()"
+        [onWaiting]="onWaiting()"
+        [onError]="onError()"
         (videoRef)="videoRef.emit($event)"
       />
     } @else {
@@ -83,6 +89,9 @@ import type {
         [height]="height()"
         [slideKey]="content().id"
         [enableWheel]="enableWheel()"
+        [onReady]="onReady()"
+        [onWaiting]="onWaiting()"
+        [onError]="onError()"
         [nestedSlideTemplate]="nestedSlideTemplate()"
         [nestedNavTemplate]="nestedNavTemplate()"
         (videoRef)="videoRef.emit($event)"
@@ -98,6 +107,9 @@ export class RkMediaSlideComponent {
   readonly width = input<number>(0);
   readonly height = input<number>(0);
   readonly enableWheel = input<boolean>(false);
+  readonly onReady = input<(() => void) | undefined>(undefined);
+  readonly onWaiting = input<(() => void) | undefined>(undefined);
+  readonly onError = input<(() => void) | undefined>(undefined);
   readonly nestedSlideTemplate =
     input<TemplateRef<PlayerNestedSlideContext> | null>(null);
   readonly nestedNavTemplate =

@@ -46,7 +46,7 @@ import {
           class="rk-image-slide-img"
           [class.rk-visible]="!isLoading()"
           (load)="onLoad()"
-          (error)="onError()"
+          (error)="onImgError()"
         />
       }
     </div>
@@ -91,6 +91,23 @@ import {
       .rk-image-slide-img.rk-visible {
         opacity: 1;
       }
+
+      .rk-media-error {
+        position: absolute;
+        inset: 0;
+        z-index: 3;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        color: rgba(255, 255, 255, 0.4);
+      }
+
+      .rk-media-error-text {
+        font-size: 13px;
+        letter-spacing: 0.02em;
+      }
     `,
   ],
 })
@@ -102,6 +119,9 @@ export class RkImageSlideComponent {
   readonly isActive = input<boolean>(false);
   readonly width = input<number>(0);
   readonly height = input<number>(0);
+  readonly onReady = input<(() => void) | undefined>(undefined);
+  readonly onWaiting = input<(() => void) | undefined>(undefined);
+  readonly onError = input<(() => void) | undefined>(undefined);
 
   /**
    * Automatically resets to `true` whenever `src` changes, so the poster
@@ -125,10 +145,12 @@ export class RkImageSlideComponent {
   protected onLoad(): void {
     this.isLoading.set(false);
     this.hasError.set(false);
+    this.onReady()?.();
   }
 
-  protected onError(): void {
+  protected onImgError(): void {
     this.isLoading.set(false);
     this.hasError.set(true);
+    (this.onError() ?? this.onReady())?.();
   }
 }

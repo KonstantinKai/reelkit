@@ -76,6 +76,17 @@ jest.mock('@reelkit/angular', () => {
       playbackPositions: new Map(),
     })),
     captureFrame: jest.fn().mockReturnValue(null),
+    toAngularSignal: jest.fn((source: { value?: unknown }) => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { signal: angSignal } =
+        require('@angular/core') as typeof import('@angular/core');
+      return angSignal(source?.value ?? false);
+    }),
+    createSoundController: jest.fn(() => ({
+      muted: { value: true, observe: jest.fn(() => () => {}) },
+      disabled: { value: false, observe: jest.fn(() => () => {}) },
+      toggle: jest.fn(),
+    })),
   };
 });
 

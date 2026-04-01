@@ -64,3 +64,20 @@
     background-position: -200% 0;
   }
 }
+
+.rk-media-error {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.rk-media-error-text {
+  font-size: 13px;
+  letter-spacing: 0.02em;
+}
