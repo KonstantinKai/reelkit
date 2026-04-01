@@ -195,10 +195,10 @@ export interface LightboxOverlayProps extends ReelProxyProps {
   renderSlide?: (props: LightboxSlideRenderProps) => ReactNode | null;
 
   /** Custom loading indicator. Replaces default spinner. */
-  renderLoading?: (props: { activeIndex: number }) => ReactNode;
+  renderLoading?: (props: { item: LightboxItem; activeIndex: number }) => ReactNode;
 
   /** Custom error indicator. Replaces default error icon. */
-  renderError?: (props: { activeIndex: number }) => ReactNode;
+  renderError?: (props: { item: LightboxItem; activeIndex: number }) => ReactNode;
 }
 
 /** Number of images to preload before and after the current index. */
@@ -417,6 +417,7 @@ const LightboxContent: FC<LightboxOverlayProps> = (props) => {
             <>
               {renderCtrl ? (
                 renderCtrl({
+                  item: items[idx],
                   onClose: close,
                   currentIndex: idx,
                   count: items.length,
@@ -441,11 +442,12 @@ const LightboxContent: FC<LightboxOverlayProps> = (props) => {
       >
         {() => {
           const idx = indexSignal.value;
-          const { renderLoading, renderError } = propsRef.current;
+          const { renderLoading, renderError, images } = propsRef.current;
+          const currentItem = images[idx];
 
           if (loadingCtrl.isError.value) {
             return renderError ? (
-              <>{renderError({ activeIndex: idx })}</>
+              <>{renderError({ item: currentItem, activeIndex: idx })}</>
             ) : (
               <div
                 className="rk-lightbox-img-error"
@@ -461,7 +463,7 @@ const LightboxContent: FC<LightboxOverlayProps> = (props) => {
           }
           if (loadingCtrl.isLoading.value) {
             return renderLoading ? (
-              <>{renderLoading({ activeIndex: idx })}</>
+              <>{renderLoading({ item: currentItem, activeIndex: idx })}</>
             ) : (
               <div className="rk-lightbox-spinner" />
             );
@@ -506,6 +508,7 @@ const LightboxContent: FC<LightboxOverlayProps> = (props) => {
             return (
               <>
                 {renderNav({
+                  item: items[idx],
                   onPrev: handlePrev,
                   onNext: handleNext,
                   activeIndex: idx,

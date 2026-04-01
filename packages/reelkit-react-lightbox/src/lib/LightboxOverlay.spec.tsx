@@ -497,13 +497,16 @@ describe('LightboxOverlay', () => {
         />,
       );
 
-      expect(renderControls).toHaveBeenCalledWith({
-        onClose: expect.any(Function),
-        currentIndex: 0,
-        count: 3,
-        isFullscreen: false,
-        onToggleFullscreen: expect.any(Function),
-      });
+      expect(renderControls).toHaveBeenCalledWith(
+        expect.objectContaining({
+          item: mockImages[0],
+          currentIndex: 0,
+          count: 3,
+          isFullscreen: false,
+          onClose: expect.any(Function),
+          onToggleFullscreen: expect.any(Function),
+        }),
+      );
     });
   });
 
@@ -547,12 +550,15 @@ describe('LightboxOverlay', () => {
         />,
       );
 
-      expect(renderNavigation).toHaveBeenCalledWith({
-        onPrev: expect.any(Function),
-        onNext: expect.any(Function),
-        activeIndex: 0,
-        count: 3,
-      });
+      expect(renderNavigation).toHaveBeenCalledWith(
+        expect.objectContaining({
+          item: mockImages[0],
+          onPrev: expect.any(Function),
+          onNext: expect.any(Function),
+          activeIndex: 0,
+          count: 3,
+        }),
+      );
     });
   });
 
@@ -1010,21 +1016,25 @@ describe('LightboxOverlay', () => {
       mockPreloaderErrored.clear();
     });
 
-    it('renderLoading replaces default spinner', () => {
+    it('renderLoading replaces default spinner and receives item', () => {
       render(
         <LightboxOverlay
           isOpen={true}
           images={mockImages}
           onClose={vi.fn()}
-          renderLoading={({ activeIndex }) => (
-            <div data-testid="custom-loading">Loading {activeIndex}</div>
+          renderLoading={({ item, activeIndex }) => (
+            <div data-testid="custom-loading">
+              Loading {activeIndex} {item?.src}
+            </div>
           )}
         />,
       );
 
       expect(document.querySelector('.rk-lightbox-spinner')).toBeNull();
       expect(screen.getByTestId('custom-loading')).toBeTruthy();
-      expect(screen.getByTestId('custom-loading').textContent).toContain('0');
+      expect(screen.getByTestId('custom-loading').textContent).toContain(
+        mockImages[0].src,
+      );
     });
 
     it('renderError replaces default error icon', () => {

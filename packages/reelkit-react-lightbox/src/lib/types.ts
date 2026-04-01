@@ -4,6 +4,9 @@ import type { LightboxItem } from './LightboxOverlay';
  * Props passed to the {@link LightboxOverlay} `renderControls` callback.
  */
 export interface LightboxControlsRenderProps {
+  /** The currently active lightbox item. */
+  item: LightboxItem;
+
   /** Zero-based index of the currently active slide. */
   currentIndex: number;
 
@@ -24,6 +27,9 @@ export interface LightboxControlsRenderProps {
  * Props passed to the {@link LightboxOverlay} `renderNavigation` callback.
  */
 export interface NavigationRenderProps {
+  /** The currently active lightbox item. */
+  item: LightboxItem;
+
   /** Zero-based index of the currently active slide. */
   activeIndex: number;
 
