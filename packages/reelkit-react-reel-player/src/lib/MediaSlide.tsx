@@ -80,6 +80,7 @@ const MediaSlide: React.FC<MediaSlideProps> = ({
   return (
     <NestedSlider
       media={media}
+      contentItem={content}
       isParentActive={isActive}
       size={size}
       contentId={content.id}

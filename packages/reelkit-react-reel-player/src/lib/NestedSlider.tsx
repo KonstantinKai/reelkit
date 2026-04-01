@@ -8,6 +8,7 @@ import {
   type ReelApi,
 } from '@reelkit/react';
 import type {
+  BaseContentItem,
   MediaItem,
   NavigationRenderProps,
   NestedSlideRenderProps,
@@ -19,6 +20,7 @@ import './NestedSlider.css';
 /** @internal */
 interface NestedSliderProps {
   media: MediaItem[];
+  contentItem: BaseContentItem;
   isParentActive: boolean;
   size: [number, number];
   contentId: string;
@@ -137,7 +139,8 @@ const NestedSlider: React.FC<NestedSliderProps> = (props) => {
 
         if (renderNestedSlide) {
           return renderNestedSlide({
-            item,
+            item: propsRef.current.contentItem,
+            media: item,
             index,
             size: itemSize,
             isActive: parentActive,
@@ -228,6 +231,8 @@ const NestedSlider: React.FC<NestedSliderProps> = (props) => {
               {items.length > 1 &&
                 (renderNav ? (
                   renderNav({
+                    item: propsRef.current.contentItem as BaseContentItem,
+                    media: items[idx],
                     onPrev: handlePrev,
                     onNext: handleNext,
                     activeIndex: idx,

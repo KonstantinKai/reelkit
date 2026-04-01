@@ -131,6 +131,8 @@ const videoMedia: MediaItem[] = [
   },
 ];
 
+const mockContentItem = { id: 'c1', media: imageMedia };
+
 const _kSize: [number, number] = [400, 700];
 
 describe('NestedSlider', () => {
@@ -148,6 +150,7 @@ describe('NestedSlider', () => {
         media={imageMedia}
         isParentActive={true}
         size={_kSize}
+        contentItem={mockContentItem}
         contentId="c1"
         innerSliderRef={innerSliderRef}
       />,
@@ -164,6 +167,7 @@ describe('NestedSlider', () => {
         media={imageMedia}
         isParentActive={true}
         size={_kSize}
+        contentItem={mockContentItem}
         contentId="c1"
         innerSliderRef={innerSliderRef}
       />,
@@ -178,6 +182,7 @@ describe('NestedSlider', () => {
         media={imageMedia}
         isParentActive={true}
         size={_kSize}
+        contentItem={mockContentItem}
         contentId="c1"
         innerSliderRef={innerSliderRef}
       />,
@@ -195,6 +200,7 @@ describe('NestedSlider', () => {
         media={imageMedia}
         isParentActive={true}
         size={_kSize}
+        contentItem={mockContentItem}
         contentId="c1"
         innerSliderRef={innerSliderRef}
       />,
@@ -211,6 +217,7 @@ describe('NestedSlider', () => {
         media={imageMedia}
         isParentActive={true}
         size={_kSize}
+        contentItem={mockContentItem}
         contentId="c1"
         innerSliderRef={innerSliderRef}
       />,
@@ -226,6 +233,7 @@ describe('NestedSlider', () => {
         media={imageMedia}
         isParentActive={true}
         size={_kSize}
+        contentItem={mockContentItem}
         contentId="c1"
         innerSliderRef={innerSliderRef}
       />,
@@ -244,6 +252,7 @@ describe('NestedSlider', () => {
         media={imageMedia}
         isParentActive={true}
         size={_kSize}
+        contentItem={mockContentItem}
         contentId="c1"
         innerSliderRef={innerSliderRef}
       />,
@@ -262,6 +271,7 @@ describe('NestedSlider', () => {
         media={mixedMedia}
         isParentActive={true}
         size={_kSize}
+        contentItem={mockContentItem}
         contentId="c1"
         innerSliderRef={innerSliderRef}
         onActiveMediaTypeChange={onActiveMediaTypeChange}
@@ -292,6 +302,7 @@ describe('NestedSlider', () => {
         media={imageMedia}
         isParentActive={true}
         size={_kSize}
+        contentItem={mockContentItem}
         contentId="c1"
         innerSliderRef={innerSliderRef}
         renderNavigation={renderNavigation}
@@ -313,18 +324,23 @@ describe('NestedSlider', () => {
         media={imageMedia}
         isParentActive={true}
         size={_kSize}
+        contentItem={mockContentItem}
         contentId="c1"
         innerSliderRef={innerSliderRef}
         renderNavigation={renderNavigation}
       />,
     );
 
-    expect(renderNavigation).toHaveBeenCalledWith({
-      onPrev: expect.any(Function),
-      onNext: expect.any(Function),
-      activeIndex: 0,
-      count: 3,
-    });
+    expect(renderNavigation).toHaveBeenCalledWith(
+      expect.objectContaining({
+        item: mockContentItem,
+        media: imageMedia[0],
+        onPrev: expect.any(Function),
+        onNext: expect.any(Function),
+        activeIndex: 0,
+        count: 3,
+      }),
+    );
   });
 
   it('custom navigation next calls slider next', () => {
@@ -339,6 +355,7 @@ describe('NestedSlider', () => {
         media={imageMedia}
         isParentActive={true}
         size={_kSize}
+        contentItem={mockContentItem}
         contentId="c1"
         innerSliderRef={innerSliderRef}
         renderNavigation={renderNavigation}
@@ -362,6 +379,7 @@ describe('NestedSlider', () => {
         media={imageMedia}
         isParentActive={true}
         size={_kSize}
+        contentItem={mockContentItem}
         contentId="c1"
         innerSliderRef={innerSliderRef}
         renderNavigation={renderNavigation}
@@ -384,6 +402,7 @@ describe('NestedSlider', () => {
         media={singleMedia}
         isParentActive={true}
         size={_kSize}
+        contentItem={mockContentItem}
         contentId="c1"
         innerSliderRef={innerSliderRef}
         renderNavigation={renderNavigation}
@@ -401,7 +420,8 @@ describe('NestedSlider', () => {
           media={mixedMedia}
           isParentActive={false}
           size={_kSize}
-          contentId="c1"
+          contentItem={mockContentItem}
+        contentId="c1"
           innerSliderRef={innerSliderRef}
         />,
       );
@@ -415,7 +435,8 @@ describe('NestedSlider', () => {
           media={mixedMedia}
           isParentActive={true}
           size={_kSize}
-          contentId="c1"
+          contentItem={mockContentItem}
+        contentId="c1"
           innerSliderRef={innerSliderRef}
         />,
       );
@@ -429,7 +450,8 @@ describe('NestedSlider', () => {
           media={mixedMedia}
           isParentActive={false}
           size={_kSize}
-          contentId="c1"
+          contentItem={mockContentItem}
+        contentId="c1"
           innerSliderRef={innerSliderRef}
         />,
       );
@@ -441,7 +463,8 @@ describe('NestedSlider', () => {
           media={mixedMedia}
           isParentActive={true}
           size={_kSize}
-          contentId="c1"
+          contentItem={mockContentItem}
+        contentId="c1"
           innerSliderRef={innerSliderRef}
         />,
       );
@@ -455,7 +478,8 @@ describe('NestedSlider', () => {
           media={mixedMedia}
           isParentActive={true}
           size={_kSize}
-          contentId="c1"
+          contentItem={mockContentItem}
+        contentId="c1"
           innerSliderRef={innerSliderRef}
         />,
       );
@@ -477,7 +501,8 @@ describe('NestedSlider', () => {
           media={mixedMedia}
           isParentActive={false}
           size={_kSize}
-          contentId="c1"
+          contentItem={mockContentItem}
+        contentId="c1"
           innerSliderRef={innerSliderRef}
         />,
       );
@@ -501,7 +526,8 @@ describe('NestedSlider', () => {
           media={videoMedia}
           isParentActive={true}
           size={_kSize}
-          contentId="c1"
+          contentItem={mockContentItem}
+        contentId="c1"
           innerSliderRef={innerSliderRef}
         />,
       );
@@ -538,6 +564,7 @@ describe('NestedSlider', () => {
         media={imageMedia}
         isParentActive={true}
         size={_kSize}
+        contentItem={mockContentItem}
         contentId="c1"
         innerSliderRef={innerSliderRef}
       />,
@@ -553,6 +580,7 @@ describe('NestedSlider', () => {
         media={imageMedia}
         isParentActive={true}
         size={_kSize}
+        contentItem={mockContentItem}
         contentId="c1"
         innerSliderRef={innerSliderRef}
       />,
@@ -577,7 +605,8 @@ describe('NestedSlider', () => {
           media={imageMedia}
           isParentActive={true}
           size={_kSize}
-          contentId="c1"
+          contentItem={mockContentItem}
+        contentId="c1"
           innerSliderRef={innerSliderRef}
         />,
       );
@@ -598,7 +627,8 @@ describe('NestedSlider', () => {
           media={imageMedia}
           isParentActive={true}
           size={_kSize}
-          contentId="c1"
+          contentItem={mockContentItem}
+        contentId="c1"
           innerSliderRef={innerSliderRef}
           renderNestedSlide={renderNestedSlide}
         />,
@@ -623,7 +653,8 @@ describe('NestedSlider', () => {
           media={mixedMedia}
           isParentActive={true}
           size={_kSize}
-          contentId="c1"
+          contentItem={mockContentItem}
+        contentId="c1"
           innerSliderRef={innerSliderRef}
           renderNestedSlide={renderNestedSlide}
         />,
@@ -648,7 +679,8 @@ describe('NestedSlider', () => {
           media={imageMedia}
           isParentActive={true}
           size={_kSize}
-          contentId="c1"
+          contentItem={mockContentItem}
+        contentId="c1"
           innerSliderRef={innerSliderRef}
           renderNestedSlide={renderNestedSlide}
         />,
@@ -658,7 +690,8 @@ describe('NestedSlider', () => {
 
       expect(renderNestedSlide).toHaveBeenCalledWith(
         expect.objectContaining({
-          item: imageMedia[0],
+          item: mockContentItem,
+          media: imageMedia[0],
           index: 0,
           size: _kSize,
           isActive: true,
@@ -679,7 +712,8 @@ describe('NestedSlider', () => {
           media={mixedMedia}
           isParentActive={false}
           size={_kSize}
-          contentId="c1"
+          contentItem={mockContentItem}
+        contentId="c1"
           innerSliderRef={innerSliderRef}
           renderNestedSlide={renderNestedSlide}
         />,
@@ -689,7 +723,8 @@ describe('NestedSlider', () => {
 
       expect(renderNestedSlide).toHaveBeenCalledWith(
         expect.objectContaining({
-          item: mixedMedia[1],
+          item: mockContentItem,
+          media: mixedMedia[1],
           index: 1,
           size: _kSize,
           isActive: false,
@@ -707,7 +742,8 @@ describe('NestedSlider', () => {
           media={videoMedia}
           isParentActive={true}
           size={_kSize}
-          contentId="c1"
+          contentItem={mockContentItem}
+        contentId="c1"
           innerSliderRef={innerSliderRef}
           renderNestedSlide={renderNestedSlide}
         />,
@@ -744,7 +780,8 @@ describe('NestedSlider', () => {
           media={videoMedia}
           isParentActive={true}
           size={_kSize}
-          contentId="c1"
+          contentItem={mockContentItem}
+        contentId="c1"
           innerSliderRef={innerSliderRef}
           onReady={onReady}
           onWaiting={onWaiting}
@@ -782,7 +819,8 @@ describe('NestedSlider', () => {
           media={videoMedia}
           isParentActive={true}
           size={_kSize}
-          contentId="c1"
+          contentItem={mockContentItem}
+        contentId="c1"
           innerSliderRef={innerSliderRef}
           onReady={onReady}
           renderNestedSlide={(props) => {
@@ -808,7 +846,8 @@ describe('NestedSlider', () => {
           media={imageMedia}
           isParentActive={true}
           size={_kSize}
-          contentId="c1"
+          contentItem={mockContentItem}
+        contentId="c1"
           innerSliderRef={innerSliderRef}
           renderNestedSlide={renderNestedSlide}
         />,
@@ -829,7 +868,8 @@ describe('NestedSlider', () => {
           media={videoMedia}
           isParentActive={true}
           size={_kSize}
-          contentId="c1"
+          contentItem={mockContentItem}
+        contentId="c1"
           innerSliderRef={innerSliderRef}
           renderNestedSlide={renderNestedSlide}
         />,
@@ -886,7 +926,8 @@ describe('NestedSlider', () => {
           media={imageMedia}
           isParentActive={true}
           size={_kSize}
-          contentId="c1"
+          contentItem={mockContentItem}
+        contentId="c1"
           innerSliderRef={innerSliderRef}
           onReady={onReady}
         />,
@@ -906,7 +947,8 @@ describe('NestedSlider', () => {
           media={imageMedia}
           isParentActive={true}
           size={_kSize}
-          contentId="c1"
+          contentItem={mockContentItem}
+        contentId="c1"
           innerSliderRef={innerSliderRef}
           onReady={vi.fn()}
         />,
@@ -926,7 +968,8 @@ describe('NestedSlider', () => {
           media={mixedMedia3}
           isParentActive={true}
           size={_kSize}
-          contentId="c1"
+          contentItem={mockContentItem}
+        contentId="c1"
           innerSliderRef={innerSliderRef}
           onReady={onReady}
           onWaiting={onWaiting}
@@ -951,7 +994,8 @@ describe('NestedSlider', () => {
           media={mixedMedia3}
           isParentActive={true}
           size={_kSize}
-          contentId="c1"
+          contentItem={mockContentItem}
+        contentId="c1"
           innerSliderRef={innerSliderRef}
           onReady={vi.fn()}
           onWaiting={vi.fn()}
@@ -976,7 +1020,8 @@ describe('NestedSlider', () => {
           media={mixedMedia3}
           isParentActive={true}
           size={_kSize}
-          contentId="c1"
+          contentItem={mockContentItem}
+        contentId="c1"
           innerSliderRef={innerSliderRef}
           onReady={onReady}
         />,
@@ -996,7 +1041,8 @@ describe('NestedSlider', () => {
           media={mixedMedia3}
           isParentActive={true}
           size={_kSize}
-          contentId="c1"
+          contentItem={mockContentItem}
+        contentId="c1"
           innerSliderRef={innerSliderRef}
           onReady={onReady}
         />,
@@ -1027,7 +1073,8 @@ describe('NestedSlider', () => {
           media={videoFirst}
           isParentActive={true}
           size={_kSize}
-          contentId="c1"
+          contentItem={mockContentItem}
+        contentId="c1"
           innerSliderRef={innerSliderRef}
           onReady={onReady}
         />,
@@ -1047,7 +1094,8 @@ describe('NestedSlider', () => {
           media={videoMedia}
           isParentActive={true}
           size={_kSize}
-          contentId="c1"
+          contentItem={mockContentItem}
+        contentId="c1"
           innerSliderRef={innerSliderRef}
         />,
       );
@@ -1065,7 +1113,8 @@ describe('NestedSlider', () => {
           media={mixedMedia}
           isParentActive={false}
           size={_kSize}
-          contentId="c1"
+          contentItem={mockContentItem}
+        contentId="c1"
           innerSliderRef={innerSliderRef}
           onActiveMediaTypeChange={onActiveMediaTypeChange}
         />,
@@ -1078,7 +1127,8 @@ describe('NestedSlider', () => {
           media={mixedMedia}
           isParentActive={true}
           size={_kSize}
-          contentId="c1"
+          contentItem={mockContentItem}
+        contentId="c1"
           innerSliderRef={innerSliderRef}
           onActiveMediaTypeChange={onActiveMediaTypeChange}
         />,
@@ -1095,7 +1145,8 @@ describe('NestedSlider', () => {
           media={mixedMedia}
           isParentActive={false}
           size={_kSize}
-          contentId="c1"
+          contentItem={mockContentItem}
+        contentId="c1"
           innerSliderRef={innerSliderRef}
           onActiveMediaTypeChange={onActiveMediaTypeChange}
         />,

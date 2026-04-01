@@ -136,10 +136,10 @@ export interface ReelPlayerOverlayProps<T extends BaseContentItem = ContentItem>
   renderNestedSlide?: (props: NestedSlideRenderProps) => ReactNode;
 
   /** Custom loading indicator. Replaces default wave loader. */
-  renderLoading?: (props: { activeIndex: number }) => ReactNode;
+  renderLoading?: (props: { item: T; activeIndex: number }) => ReactNode;
 
   /** Custom error indicator. Replaces default error icon. */
-  renderError?: (props: { activeIndex: number }) => ReactNode;
+  renderError?: (props: { item: T; activeIndex: number }) => ReactNode;
 }
 
 const _kDefaultAspectRatio = 9 / 16;
@@ -495,10 +495,11 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>(
         <Observe signals={[loadingCtrl.isLoading, loadingCtrl.isError, indexSignal]}>
           {() => {
             const idx = indexSignal.value;
-            const { renderLoading, renderError } = propsRef.current;
+            const { renderLoading, renderError, content: items } = propsRef.current;
+            const currentItem = items[idx] as T;
 
             if (loadingCtrl.isError.value) {
-              return renderError ? <>{renderError({ activeIndex: idx })}</> : (
+              return renderError ? <>{renderError({ item: currentItem, activeIndex: idx })}</> : (
                 <div className="rk-media-error" role="img" aria-label="Content unavailable">
                   <ImageOff size={48} strokeWidth={1.5} aria-hidden="true" />
                   <span className="rk-media-error-text">Content unavailable</span>
@@ -506,7 +507,7 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>(
               );
             }
             if (loadingCtrl.isLoading.value) {
-              return renderLoading ? <>{renderLoading({ activeIndex: idx })}</> : (
+              return renderLoading ? <>{renderLoading({ item: currentItem, activeIndex: idx })}</> : (
                 <div className="rk-reel-loader" />
               );
             }
@@ -532,6 +533,7 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>(
               return (
                 <>
                   {renderCtrl({
+                    item: items[idx] as T,
                     onClose: close,
                     soundState,
                     activeIndex: idx,
@@ -561,6 +563,7 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>(
             return (
               <>
                 {renderNav({
+                  item: items[idx],
                   onPrev: handlePrev,
                   onNext: handleNext,
                   activeIndex: idx,

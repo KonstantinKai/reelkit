@@ -82,6 +82,9 @@ export interface ContentItem extends BaseContentItem {
  * @typeParam T - The content item type, defaults to {@link ContentItem}.
  */
 export interface ControlsRenderProps<T extends BaseContentItem> {
+  /** The currently active content item. */
+  item: T;
+
   /** Reactive sound state for mute/unmute control. */
   soundState: SoundController;
 
@@ -187,7 +190,7 @@ export interface SlideRenderProps<T extends BaseContentItem> {
  *
  * @example Custom rounded video slides
  * ```tsx
- * renderNestedSlide={({ item, defaultContent }) => (
+ * renderNestedSlide={({ media, defaultContent }) => (
  *   <div style={{ borderRadius: 16, overflow: 'hidden' }}>
  *     {defaultContent}
  *   </div>
@@ -195,8 +198,11 @@ export interface SlideRenderProps<T extends BaseContentItem> {
  * ```
  */
 export interface NestedSlideRenderProps {
+  /** The parent content item containing this nested slide. */
+  item: BaseContentItem;
+
   /** The media item for this nested slide. */
-  item: MediaItem;
+  media: MediaItem;
 
   /** Zero-based index within the nested slider. */
   index: number;
@@ -236,6 +242,12 @@ export interface NestedSlideRenderProps {
  * slide navigation actions and position info.
  */
 export interface NavigationRenderProps {
+  /** The currently active content item (main navigation). */
+  item: BaseContentItem;
+
+  /** The currently active media item (nested navigation only). */
+  media?: MediaItem;
+
   /** Zero-based index of the currently active slide. */
   activeIndex: number;
 
