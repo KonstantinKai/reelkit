@@ -375,7 +375,6 @@ export class ReelComponent implements OnInit, AfterViewInit {
     this.initializeReelContext();
     this.registerConfigSyncEffect();
     this.registerSizeSyncEffect();
-    this.registerNavKeysSyncEffect();
     this.registerReadyAnnouncementEffect();
     this.registerDestroyHandler();
   }
@@ -397,6 +396,7 @@ export class ReelComponent implements OnInit, AfterViewInit {
         enableWheel: this.enableWheel(),
         wheelDebounceMs: this.wheelDebounceMs(),
         enableGestures: this.enableGestures(),
+        enableNavKeys: this.enableNavKeys(),
       },
       {
         onBeforeChange: (index, nextIndex, rangeIndex) => {
@@ -467,6 +467,7 @@ export class ReelComponent implements OnInit, AfterViewInit {
         const enableWheel = this.enableWheel();
         const wheelDebounceMs = this.wheelDebounceMs();
         const enableGestures = this.enableGestures();
+        const enableNavKeys = this.enableNavKeys();
 
         // Keep countSignal in sync first so context consumers (e.g. indicator)
         // always see the new count before the controller config is updated.
@@ -482,6 +483,7 @@ export class ReelComponent implements OnInit, AfterViewInit {
           enableWheel,
           wheelDebounceMs,
           enableGestures,
+          enableNavKeys,
         });
       });
     });
@@ -495,17 +497,6 @@ export class ReelComponent implements OnInit, AfterViewInit {
     });
   }
 
-  private registerNavKeysSyncEffect(): void {
-    runInInjectionContext(this._injector, () => {
-      effect(() => {
-        if (this.enableNavKeys()) {
-          this._controller.observe();
-        } else {
-          this._controller.unobserve();
-        }
-      });
-    });
-  }
 
   /**
    * Marks `_hasAnnouncedReady` as `true` the first time the carousel becomes
@@ -533,14 +524,7 @@ export class ReelComponent implements OnInit, AfterViewInit {
   private performPostViewInitSetup(): void {
     const hostElement = this._elementRef.nativeElement;
     this._controller.attach(hostElement);
-    // Conditionally observe after attaching the DOM element. The effects
-    // registered in ngOnInit run synchronously before ngAfterViewInit, so we
-    // re-apply the current enableNavKeys value here now that the element is
-    // attached. This avoids unconditionally calling observe() when enableNavKeys
-    // is false.
-    if (untracked(() => this.enableNavKeys())) {
-      this._controller.observe();
-    }
+    this._controller.observe();
     this.apiReady.emit(this.buildApi());
     this.registerAutoMeasureEffect(hostElement);
   }

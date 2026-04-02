@@ -354,8 +354,12 @@ const Element = ({
         onDoubleTap: (e) => propsRef.current.onDoubleTap?.(e),
         onLongPress: (e) => propsRef.current.onLongPress?.(e),
         onLongPressEnd: (e) => propsRef.current.onLongPressEnd?.(e),
-        onNavKeyPress: (increment) =>
-          propsRef.current.onNavKeyPress?.(increment),
+        ...(props.onNavKeyPress
+          ? {
+              onNavKeyPress: (increment: -1 | 1) =>
+                propsRef.current.onNavKeyPress?.(increment),
+            }
+          : {}),
       },
     );
 

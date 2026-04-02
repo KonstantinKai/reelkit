@@ -1091,4 +1091,75 @@ describe('ReelComponent', () => {
       expect(reelComp.currentSize()).toEqual([800, 600]);
     }));
   });
+
+  describe('enableWheel / enableNavKeys config flow', () => {
+    @Component({
+      template: `
+        <rk-reel
+          [count]="3"
+          [direction]="'vertical'"
+          [enableWheel]="wheel()"
+          [enableNavKeys]="navKeys()"
+          [transitionDuration]="0"
+          (apiReady)="api = $event"
+        >
+          <ng-template rkReelItem let-index>
+            <div>{{ index }}</div>
+          </ng-template>
+        </rk-reel>
+      `,
+      imports: [ReelComponent, RkReelItemDirective],
+    })
+    class ToggleHost {
+      wheel = signal(true);
+      navKeys = signal(true);
+      api: ReelApi | null = null;
+    }
+
+    function createToggleFixture(): ComponentFixture<ToggleHost> {
+      mockResizeObserver(400, 700);
+      TestBed.configureTestingModule({ imports: [ToggleHost] });
+      const fixture = TestBed.createComponent(ToggleHost);
+      fixture.detectChanges();
+      return fixture;
+    }
+
+    it('accepts enableWheel input', () => {
+      const fixture = createToggleFixture();
+      const reel = fixture.debugElement.query(
+        By.directive(ReelComponent),
+      ).componentInstance as ReelComponent;
+      expect(reel.enableWheel()).toBe(true);
+    });
+
+    it('accepts enableNavKeys input', () => {
+      const fixture = createToggleFixture();
+      const reel = fixture.debugElement.query(
+        By.directive(ReelComponent),
+      ).componentInstance as ReelComponent;
+      expect(reel.enableNavKeys()).toBe(true);
+    });
+
+    it('toggling enableWheel updates controller config', () => {
+      const fixture = createToggleFixture();
+      fixture.componentInstance.wheel.set(false);
+      fixture.detectChanges();
+
+      const reel = fixture.debugElement.query(
+        By.directive(ReelComponent),
+      ).componentInstance as ReelComponent;
+      expect(reel.enableWheel()).toBe(false);
+    });
+
+    it('toggling enableNavKeys updates controller config', () => {
+      const fixture = createToggleFixture();
+      fixture.componentInstance.navKeys.set(false);
+      fixture.detectChanges();
+
+      const reel = fixture.debugElement.query(
+        By.directive(ReelComponent),
+      ).componentInstance as ReelComponent;
+      expect(reel.enableNavKeys()).toBe(false);
+    });
+  });
 });
