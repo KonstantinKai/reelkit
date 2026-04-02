@@ -1,16 +1,22 @@
 import { useState, useCallback } from 'react';
-import { LightboxOverlay, type LightboxItem, type TransitionType } from '@reelkit/react-lightbox';
+import { ImageOff } from 'lucide-react';
+import {
+  LightboxOverlay,
+  type LightboxItem,
+  type TransitionType,
+} from '@reelkit/react-lightbox';
 import '@reelkit/react-lightbox/styles.css';
 import './ImagePreviewPage.css';
 
-const transitions: TransitionType[] = ['slide', 'fade', 'zoom-in'];
+const _kTransitions: TransitionType[] = ['slide', 'fade', 'flip', 'zoom-in'];
 
 // Sample images from Unsplash (using Picsum for demo)
 const sampleImages: LightboxItem[] = [
   {
     src: 'https://picsum.photos/id/1015/1600/1000',
     title: 'Mountain River',
-    description: 'A beautiful mountain river flowing through the forest. The water is crystal clear and reflects the surrounding trees.',
+    description:
+      'A beautiful mountain river flowing through the forest. The water is crystal clear and reflects the surrounding trees.',
     width: 1600,
     height: 1000,
   },
@@ -24,7 +30,8 @@ const sampleImages: LightboxItem[] = [
   {
     src: 'https://picsum.photos/id/1018/1600/900',
     title: 'Foggy Forest',
-    description: 'Misty morning in the dense forest. The sun rays pierce through the fog creating a magical atmosphere.',
+    description:
+      'Misty morning in the dense forest. The sun rays pierce through the fog creating a magical atmosphere.',
     width: 1600,
     height: 900,
   },
@@ -36,9 +43,16 @@ const sampleImages: LightboxItem[] = [
     height: 1400,
   },
   {
+    src: 'https://broken.invalid/does-not-exist.jpg',
+    title: 'Broken Image',
+    description:
+      'This image intentionally fails to demonstrate error handling.',
+  },
+  {
     src: 'https://picsum.photos/id/1020/1600/1067',
     title: 'Autumn Path',
-    description: 'A winding path through the autumn forest covered in golden leaves.',
+    description:
+      'A winding path through the autumn forest covered in golden leaves.',
     width: 1600,
     height: 1067,
   },
@@ -58,7 +72,8 @@ const sampleImages: LightboxItem[] = [
   {
     src: 'https://picsum.photos/id/1024/1920/1280',
     title: 'Desert Dunes',
-    description: 'Rolling sand dunes stretching to the horizon under the scorching sun.',
+    description:
+      'Rolling sand dunes stretching to the horizon under the scorching sun.',
     width: 1920,
     height: 1280,
   },
@@ -92,6 +107,35 @@ const sampleImages: LightboxItem[] = [
   },
 ];
 
+const GalleryThumb: React.FC<{ src: string; alt: string }> = ({ src, alt }) => {
+  const [error, setError] = useState(false);
+
+  if (error) {
+    return (
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'rgba(255,255,255,0.3)',
+          gap: 4,
+          backgroundColor: '#1a1a1a',
+        }}
+      >
+        <ImageOff size={28} strokeWidth={1.5} />
+        <span style={{ fontSize: 10 }}>Error</span>
+      </div>
+    );
+  }
+
+  return (
+    <img src={src} alt={alt} loading="lazy" onError={() => setError(true)} />
+  );
+};
+
 function ImagePreviewPage() {
   const [previewIndex, setPreviewIndex] = useState<number | null>(null);
   const [transition, setTransition] = useState<TransitionType>('slide');
@@ -108,10 +152,13 @@ function ImagePreviewPage() {
     <div className="image-gallery-page">
       <div className="gallery-header">
         <h1>Image Gallery</h1>
-        <p>Click on any image to open the preview. Use arrow keys or swipe to navigate.</p>
+        <p>
+          Click on any image to open the preview. Use arrow keys or swipe to
+          navigate.
+        </p>
         <div className="transition-selector">
           <span>Transition:</span>
-          {transitions.map((t) => (
+          {_kTransitions.map((t) => (
             <button
               key={t}
               className={`transition-btn ${transition === t ? 'active' : ''}`}
@@ -138,13 +185,14 @@ function ImagePreviewPage() {
               }
             }}
           >
-            <img
+            <GalleryThumb
               src={image.src.replace(/\/\d+\/\d+$/, '/400/300')}
               alt={image.title || `Image ${index + 1}`}
-              loading="lazy"
             />
             <div className="gallery-item-overlay">
-              {image.title && <span className="gallery-item-title">{image.title}</span>}
+              {image.title && (
+                <span className="gallery-item-title">{image.title}</span>
+              )}
             </div>
           </div>
         ))}

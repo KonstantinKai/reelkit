@@ -51,16 +51,36 @@ const reelProps = [
     description: 'Wheel event debounce in ms',
   },
   {
-    prop: 'useNavKeys',
+    prop: 'enableNavKeys',
     type: 'boolean',
     default: 'true',
     description: 'Enable keyboard navigation',
+  },
+  {
+    prop: 'onNavKeyPress',
+    type: '(increment: -1 | 1) => void',
+    default: '-',
+    description:
+      'Custom handler for arrow key navigation. Replaces default prev/next behavior.',
+  },
+  {
+    prop: 'transition',
+    type: 'TransitionTransformFn',
+    default: 'slideTransition',
+    description:
+      'Transition effect function. Built-in: slideTransition, fadeTransition, flipTransition, cubeTransition, zoomTransition',
   },
   {
     prop: 'transitionDuration',
     type: 'number',
     default: '300',
     description: 'Animation duration in ms',
+  },
+  {
+    prop: 'enableGestures',
+    type: 'boolean',
+    default: 'true',
+    description: 'Enable touch/mouse drag navigation',
   },
   {
     prop: 'swipeDistanceFactor',

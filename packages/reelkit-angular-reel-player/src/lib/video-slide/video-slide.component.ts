@@ -19,7 +19,6 @@ import {
   captureFrame,
   observeDomEvent,
   createDisposableList,
-  type DisposableList,
 } from '@reelkit/angular';
 import { SoundStateService } from '../sound-state/sound-state.service';
 

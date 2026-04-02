@@ -18,6 +18,8 @@
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
 
+> **0.x.x** — ReelKit is under active development. APIs may change between minor versions until 1.0.
+
 ## Features
 
 - **Virtualized** — only 3 slides in DOM, handles 10,000+ items

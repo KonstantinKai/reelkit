@@ -125,14 +125,14 @@ export function LightboxDemo() {
         onClose={() => setIndex(null)}
         renderControls={({
           onClose,
-          currentIndex,
+          activeIndex,
           count,
           isFullscreen,
           onToggleFullscreen,
         }) => (
           <>
             <div className="rk-lightbox-controls-left">
-              <Counter currentIndex={currentIndex} count={count} />
+              <Counter currentIndex={activeIndex} count={count} />
               <FullscreenButton
                 isFullscreen={isFullscreen}
                 onToggle={onToggleFullscreen}

@@ -33,6 +33,7 @@ export const observeMediaLoading = (
   const disposables = createDisposableList();
 
   disposables.push(
+    observeDomEvent(video, 'canplay', callbacks.onReady),
     observeDomEvent(video, 'waiting', callbacks.onWaiting),
     observeDomEvent(video, 'playing', () => {
       callbacks.onReady();

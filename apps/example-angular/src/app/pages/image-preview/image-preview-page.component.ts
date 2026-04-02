@@ -5,7 +5,7 @@ import {
   type TransitionType,
 } from '@reelkit/angular-lightbox';
 
-const transitions: TransitionType[] = ['slide', 'fade', 'zoom-in'];
+const _kTransitions: TransitionType[] = ['slide', 'fade', 'flip', 'zoom-in'];
 
 const sampleImages: LightboxItem[] = [
   {
@@ -30,6 +30,12 @@ const sampleImages: LightboxItem[] = [
       'Misty morning in the dense forest. The sun rays pierce through the fog creating a magical atmosphere.',
     width: 1600,
     height: 900,
+  },
+  {
+    src: 'https://broken.invalid/does-not-exist.jpg',
+    title: 'Broken Image',
+    description:
+      'This image intentionally fails to demonstrate error handling.',
   },
   {
     src: 'https://picsum.photos/id/1019/900/1400',
@@ -134,11 +140,45 @@ const sampleImages: LightboxItem[] = [
             (keydown.enter)="previewIndex.set(index)"
             (keydown.space)="$event.preventDefault(); previewIndex.set(index)"
           >
-            <img
-              [src]="thumbnailSrc(image.src)"
-              [alt]="image.title ?? 'Image ' + (index + 1)"
-              loading="lazy"
-            />
+            @if (thumbErrors().has(index)) {
+              <div
+                style="
+                  width: 100%;
+                  height: 100%;
+                  display: flex;
+                  flex-direction: column;
+                  align-items: center;
+                  justify-content: center;
+                  color: rgba(255, 255, 255, 0.3);
+                  gap: 4px;
+                  background-color: #1a1a1a;
+                "
+              >
+                <svg
+                  width="28"
+                  height="28"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                  <circle cx="8.5" cy="8.5" r="1.5" />
+                  <polyline points="21 15 16 10 5 21" />
+                  <line x1="4" y1="4" x2="20" y2="20" />
+                </svg>
+                <span style="font-size: 10px">Error</span>
+              </div>
+            } @else {
+              <img
+                [src]="thumbnailSrc(image.src)"
+                [alt]="image.title ?? 'Image ' + (index + 1)"
+                loading="lazy"
+                (error)="onThumbError(index)"
+              />
+            }
             <div class="gallery-item-overlay">
               @if (image.title) {
                 <span class="gallery-item-title">{{ image.title }}</span>
@@ -160,9 +200,15 @@ const sampleImages: LightboxItem[] = [
 })
 export class ImagePreviewPageComponent {
   protected readonly images: LightboxItem[] = sampleImages;
-  protected readonly transitions: TransitionType[] = transitions;
+  protected readonly transitions: TransitionType[] = _kTransitions;
   protected readonly previewIndex = signal<number | null>(null);
   protected readonly transition = signal<TransitionType>('slide');
+
+  protected readonly thumbErrors = signal<Set<number>>(new Set());
+
+  protected onThumbError(index: number): void {
+    this.thumbErrors.update((prev) => new Set([...prev, index]));
+  }
 
   protected thumbnailSrc(src: string): string {
     return src.replace(/\/\d+\/\d+$/, '/400/300');

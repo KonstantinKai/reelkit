@@ -14,6 +14,7 @@ type DemoType =
   | 'custom-controls'
   | 'custom-slide'
   | 'custom-navigation'
+  | 'custom-loading-error'
   | null;
 
 const DEMOS: { id: DemoType & string; title: string; description: string }[] = [
@@ -40,6 +41,12 @@ const DEMOS: { id: DemoType & string; title: string; description: string }[] = [
     title: 'Custom Navigation',
     description:
       'Uses renderNavigation to replace the default prev/next arrows with pill-shaped buttons and a counter.',
+  },
+  {
+    id: 'custom-loading-error',
+    title: 'Custom Loading / Error',
+    description:
+      'Uses renderLoading and renderError to replace default spinner and error icon with custom UI. Includes a broken image to demonstrate error state.',
   },
 ];
 
@@ -274,7 +281,7 @@ function ImagePreviewCustomPage() {
         renderInfo={() => null}
         renderControls={({
           onClose,
-          currentIndex,
+          activeIndex,
           count,
           isFullscreen,
           onToggleFullscreen,
@@ -293,7 +300,7 @@ function ImagePreviewCustomPage() {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Counter currentIndex={currentIndex} count={count} />
+              <Counter currentIndex={activeIndex} count={count} />
               <FullscreenButton
                 isFullscreen={isFullscreen}
                 onToggle={onToggleFullscreen}
@@ -388,6 +395,57 @@ function ImagePreviewCustomPage() {
               onToggle={onToggleFullscreen}
             />
             <CloseButton onClick={onClose} style={{ position: 'static' }} />
+          </div>
+        )}
+      />
+
+      {/* Demo 6: Custom Loading / Error */}
+      <LightboxOverlay
+        isOpen={activeDemo === 'custom-loading-error'}
+        images={[
+          ...sampleImages.slice(0, 2),
+          {
+            src: 'https://broken.invalid/does-not-exist.jpg',
+            title: 'Broken Image',
+            description: 'This image fails to load — shows custom error UI.',
+          },
+          ...sampleImages.slice(2, 4),
+        ]}
+        initialIndex={initialIndex}
+        onClose={closePlayer}
+        renderLoading={({ activeIndex }) => (
+          <div
+            style={{
+              position: 'absolute',
+              top: 22,
+              right: 72,
+              zIndex: 10,
+              color: '#fff',
+              fontSize: 12,
+              background: 'rgba(0,0,0,0.6)',
+              padding: '4px 12px',
+              borderRadius: 12,
+            }}
+          >
+            Loading slide {activeIndex + 1}...
+          </div>
+        )}
+        renderError={({ activeIndex }) => (
+          <div
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              zIndex: 10,
+              color: '#ff6b6b',
+              textAlign: 'center',
+            }}
+          >
+            <div style={{ fontSize: 48, marginBottom: 8 }}>⚠️</div>
+            <div style={{ fontSize: 14 }}>
+              Slide {activeIndex + 1} failed to load
+            </div>
           </div>
         )}
       />

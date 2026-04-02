@@ -1126,17 +1126,15 @@ describe('ReelComponent', () => {
 
     it('accepts enableWheel input', () => {
       const fixture = createToggleFixture();
-      const reel = fixture.debugElement.query(
-        By.directive(ReelComponent),
-      ).componentInstance as ReelComponent;
+      const reel = fixture.debugElement.query(By.directive(ReelComponent))
+        .componentInstance as ReelComponent;
       expect(reel.enableWheel()).toBe(true);
     });
 
     it('accepts enableNavKeys input', () => {
       const fixture = createToggleFixture();
-      const reel = fixture.debugElement.query(
-        By.directive(ReelComponent),
-      ).componentInstance as ReelComponent;
+      const reel = fixture.debugElement.query(By.directive(ReelComponent))
+        .componentInstance as ReelComponent;
       expect(reel.enableNavKeys()).toBe(true);
     });
 
@@ -1145,9 +1143,8 @@ describe('ReelComponent', () => {
       fixture.componentInstance.wheel.set(false);
       fixture.detectChanges();
 
-      const reel = fixture.debugElement.query(
-        By.directive(ReelComponent),
-      ).componentInstance as ReelComponent;
+      const reel = fixture.debugElement.query(By.directive(ReelComponent))
+        .componentInstance as ReelComponent;
       expect(reel.enableWheel()).toBe(false);
     });
 
@@ -1156,9 +1153,8 @@ describe('ReelComponent', () => {
       fixture.componentInstance.navKeys.set(false);
       fixture.detectChanges();
 
-      const reel = fixture.debugElement.query(
-        By.directive(ReelComponent),
-      ).componentInstance as ReelComponent;
+      const reel = fixture.debugElement.query(By.directive(ReelComponent))
+        .componentInstance as ReelComponent;
       expect(reel.enableNavKeys()).toBe(false);
     });
   });

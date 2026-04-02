@@ -1,6 +1,9 @@
 import { RuleTester } from '@typescript-eslint/rule-tester';
 import type { RuleTesterConfig } from '@typescript-eslint/rule-tester';
-import { rule, RULE_NAME } from './lines-between-type-members';
+import {
+  linesBetweenTypeMembersRule,
+  linesBetweenTypeMembersRuleName,
+} from './lines-between-type-members';
 
 const ruleTester = new RuleTester({
   languageOptions: {
@@ -10,7 +13,7 @@ const ruleTester = new RuleTester({
 
 // NOTE: type assertion needed due to @typescript-eslint/utils vs rule-tester version mismatch
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-ruleTester.run(RULE_NAME, rule as any, {
+ruleTester.run(linesBetweenTypeMembersRuleName, linesBetweenTypeMembersRule as any, {
   valid: [
     // Single member — no blank line needed
     {

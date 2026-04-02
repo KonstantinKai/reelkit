@@ -20,6 +20,7 @@ import {
 
 const fullCode = `import { useState } from 'react';
 import { ReelPlayerOverlay, type ContentItem } from '@reelkit/react-reel-player';
+import { SAMPLE_VIDEOS } from '@reelkit/example-data';
 import '@reelkit/react-reel-player/styles.css';
 
 const content: ContentItem[] = [
@@ -28,9 +29,9 @@ const content: ContentItem[] = [
     media: [{
       id: 'v1',
       type: 'video',
-      src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-      poster: 'https://storage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerBlazes.jpg',
-      aspectRatio: 16 / 9,
+      src: SAMPLE_VIDEOS[0].src,
+      poster: SAMPLE_VIDEOS[0].poster,
+      aspectRatio: SAMPLE_VIDEOS[0].aspectRatio,
     }],
     author: { name: 'Alex Johnson', avatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100' },
     likes: 1234,
@@ -53,9 +54,9 @@ const content: ContentItem[] = [
     media: [{
       id: 'v2',
       type: 'video',
-      src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
-      poster: 'https://storage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerFun.jpg',
-      aspectRatio: 16 / 9,
+      src: SAMPLE_VIDEOS[3].src,
+      poster: SAMPLE_VIDEOS[3].poster,
+      aspectRatio: SAMPLE_VIDEOS[3].aspectRatio,
     }],
     author: { name: 'James Wilson', avatar: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=100' },
     likes: 3456,
@@ -88,9 +89,9 @@ const content: ContentItem[] = [
     media: [{
       id: 'v3',
       type: 'video',
-      src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
-      poster: 'https://storage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerJoyrides.jpg',
-      aspectRatio: 16 / 9,
+      src: SAMPLE_VIDEOS[4].src,
+      poster: SAMPLE_VIDEOS[4].poster,
+      aspectRatio: SAMPLE_VIDEOS[4].aspectRatio,
     }],
     author: { name: 'Alex Johnson', avatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100' },
     likes: 7890,
@@ -199,6 +200,20 @@ const reelPlayerProps = [
       'Custom slide renderer for nested horizontal slider items. Use props.defaultContent to wrap or embed the default ImageSlide/VideoSlide. Unlike renderSlide, null is not treated as a fallback.',
   },
   {
+    prop: 'renderLoading',
+    type: '(props: { item: T; activeIndex: number }) => ReactNode',
+    default: '-',
+    description:
+      'Custom loading indicator, replaces default wave loader',
+  },
+  {
+    prop: 'renderError',
+    type: '(props: { item: T; activeIndex: number }) => ReactNode',
+    default: '-',
+    description:
+      'Custom error indicator, replaces default error icon',
+  },
+  {
     prop: 'aspectRatio',
     type: 'number',
     default: '9/16 (0.5625)',
@@ -228,7 +243,7 @@ const reelProps = [
     description: 'Enable infinite loop',
   },
   {
-    prop: 'useNavKeys',
+    prop: 'enableNavKeys',
     type: 'boolean',
     default: 'true',
     description: 'Enable keyboard navigation',

@@ -78,7 +78,7 @@ const lightboxInputs = [
     description: 'Whether the slider wraps from the last slide back to first',
   },
   {
-    prop: 'useNavKeys',
+    prop: 'enableNavKeys',
     type: 'boolean',
     default: 'true',
     description: 'Enable keyboard arrow key navigation',
@@ -183,17 +183,27 @@ const templateSlots = [
     context: 'LightboxSlideContext',
     description: 'Replace individual slide content (required for video slides)',
   },
+  {
+    directive: 'rkLightboxLoading',
+    context: '{ $implicit: activeIndex, item }',
+    description: 'Custom loading indicator',
+  },
+  {
+    directive: 'rkLightboxError',
+    context: '{ $implicit: activeIndex, item }',
+    description: 'Custom error indicator',
+  },
 ];
 
 const contextTypes = [
   {
     name: 'LightboxControlsContext',
     fields:
-      '{ onClose, currentIndex, count, isFullscreen, onToggleFullscreen }',
+      '{ item, onClose, activeIndex, count, isFullscreen, onToggleFullscreen }',
   },
   {
     name: 'LightboxNavContext',
-    fields: '{ onPrev, onNext, activeIndex, count }',
+    fields: '{ item, onPrev, onNext, activeIndex, count }',
   },
   {
     name: 'LightboxInfoContext',
@@ -454,12 +464,12 @@ export class AppComponent {
       <ng-template rkLightboxControls
                    let-ctx
                    let-onClose="onClose"
-                   let-currentIndex="currentIndex"
+                   let-activeIndex="activeIndex"
                    let-count="count">
         <div style="position:absolute;top:0;left:0;right:0;padding:12px;
                     display:flex;align-items:center;justify-content:space-between">
           <rk-close-button (click)="onClose()" />
-          <rk-counter [current]="currentIndex + 1" [total]="count" />
+          <rk-counter [current]="activeIndex + 1" [total]="count" />
           <rk-fullscreen-button />
         </div>
       </ng-template>
@@ -586,26 +596,40 @@ export class AppComponent {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">FullscreenService</h2>
+        <h2 className="text-2xl font-bold mb-4">Fullscreen</h2>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
-          Provided at the{' '}
+          Use{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
-            RkLightboxOverlayComponent
+            fullscreenSignal
+          </code>
+          ,{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            requestFullscreen
+          </code>
+          , and{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            exitFullscreen
           </code>{' '}
-          level. Can be injected inside the overlay's template slot children to
-          observe or toggle fullscreen state directly.
+          from{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            @reelkit/angular
+          </code>{' '}
+          to observe or toggle fullscreen state.
         </p>
         <CodeBlock
-          code={`import { inject } from '@angular/core';
-import { FullscreenService } from '@reelkit/angular-lightbox';
+          code={`import { fullscreenSignal, requestFullscreen, exitFullscreen } from '@reelkit/angular';
 
 @Component({ ... })
 export class AppComponent {
-  readonly fs = inject(FullscreenService);
+  readonly isFullscreen = fullscreenSignal();
 
-  // Use in template:
-  // [class.active]="fs.isFullscreen()"
-  // (click)="fs.toggle(containerElement)"
+  toggle(container: HTMLElement): void {
+    if (this.isFullscreen()) {
+      exitFullscreen();
+    } else {
+      requestFullscreen(container);
+    }
+  }
 }`}
           language="typescript"
         />

@@ -1,17 +1,19 @@
-import { Link } from 'react-router-dom';
+import { Observe } from '@reelkit/react';
 import { CodeBlock } from '../../components/ui/CodeBlock';
 import { Callout } from '../../components/ui/Callout';
 import { Check } from 'lucide-react';
+import { NextSteps } from '../../components/NextSteps';
+import { frameworkSignal, type Framework } from '../../data/frameworkSignal';
 
-const packages: {
+interface PackageInfo {
   name: string;
-
   desc: string;
-
   useCase: string;
-
+  framework?: Framework;
   comingSoon?: boolean;
-}[] = [
+}
+
+const packages: PackageInfo[] = [
   {
     name: '@reelkit/core',
     desc: 'Framework-agnostic core',
@@ -21,35 +23,54 @@ const packages: {
     name: '@reelkit/react',
     desc: 'React components',
     useCase: 'React 18+ applications',
+    framework: 'react',
   },
   {
     name: '@reelkit/react-reel-player',
     desc: 'Full-screen vertical reel player',
-    useCase: 'Instagram/TikTok style player (React)',
+    useCase: 'Instagram/TikTok style player',
+    framework: 'react',
   },
   {
     name: '@reelkit/react-lightbox',
     desc: 'Image gallery lightbox',
-    useCase: 'Full-screen image preview (React)',
+    useCase: 'Full-screen image preview',
+    framework: 'react',
+  },
+  {
+    name: '@reelkit/react-stories-player',
+    desc: 'Instagram-style stories player',
+    useCase: 'Stories with auto-advance and gestures',
+    framework: 'react',
   },
   {
     name: '@reelkit/angular',
     desc: 'Angular standalone components',
     useCase: 'Angular 17+ applications',
+    framework: 'angular',
   },
   {
     name: '@reelkit/angular-reel-player',
     desc: 'Full-screen vertical reel player',
-    useCase: 'Instagram/TikTok style player (Angular)',
+    useCase: 'Instagram/TikTok style player',
+    framework: 'angular',
   },
   {
     name: '@reelkit/angular-lightbox',
     desc: 'Image gallery lightbox',
-    useCase: 'Full-screen image preview (Angular)',
+    useCase: 'Full-screen image preview',
+    framework: 'angular',
   },
 ];
 
-const bundleSizes = [
+const bundleSizes: {
+  name: string;
+  js: string;
+  gzip: string;
+  css: string;
+  cssGzip: string;
+  framework?: Framework;
+}[] = [
   {
     name: '@reelkit/core',
     js: '9.9 kB',
@@ -63,6 +84,7 @@ const bundleSizes = [
     gzip: '2.9 kB',
     css: '-',
     cssGzip: '-',
+    framework: 'react',
   },
   {
     name: '@reelkit/react-reel-player',
@@ -70,6 +92,7 @@ const bundleSizes = [
     gzip: '3.7 kB',
     css: '2.6 kB',
     cssGzip: '0.9 kB',
+    framework: 'react',
   },
   {
     name: '@reelkit/react-lightbox',
@@ -77,6 +100,15 @@ const bundleSizes = [
     gzip: '3.2 kB',
     css: '4.1 kB',
     cssGzip: '1.0 kB',
+    framework: 'react',
+  },
+  {
+    name: '@reelkit/react-stories-player',
+    js: '32.5 kB',
+    gzip: '7.9 kB',
+    css: '3.7 kB',
+    cssGzip: '1.1 kB',
+    framework: 'react',
   },
   {
     name: '@reelkit/angular',
@@ -84,6 +116,7 @@ const bundleSizes = [
     gzip: '12.2 kB',
     css: '-',
     cssGzip: '-',
+    framework: 'angular',
   },
   {
     name: '@reelkit/angular-reel-player',
@@ -91,6 +124,7 @@ const bundleSizes = [
     gzip: '15.8 kB',
     css: '-',
     cssGzip: '-',
+    framework: 'angular',
   },
   {
     name: '@reelkit/angular-lightbox',
@@ -98,6 +132,7 @@ const bundleSizes = [
     gzip: '18.0 kB',
     css: '-',
     cssGzip: '-',
+    framework: 'angular',
   },
 ];
 
@@ -161,31 +196,41 @@ export default function Installation() {
                 <th className="text-left py-3 px-4 font-semibold">Use Case</th>
               </tr>
             </thead>
-            <tbody>
-              {packages.map((pkg) => (
-                <tr
-                  key={pkg.name}
-                  className="border-b border-slate-100 dark:border-slate-800"
-                >
-                  <td className="py-3 px-4">
-                    <code className="text-sm font-mono text-primary-600 dark:text-primary-400">
-                      {pkg.name}
-                    </code>
-                    {pkg.comingSoon && (
-                      <span className="ml-2 text-xs px-1.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">
-                        Coming Soon
-                      </span>
-                    )}
-                  </td>
-                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
-                    {pkg.desc}
-                  </td>
-                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
-                    {pkg.useCase}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+            <Observe signals={[frameworkSignal]}>
+              {() => (
+                <tbody>
+                  {packages
+                    .filter(
+                      (pkg) =>
+                        !pkg.framework ||
+                        pkg.framework === frameworkSignal.value,
+                    )
+                    .map((pkg) => (
+                      <tr
+                        key={pkg.name}
+                        className="border-b border-slate-100 dark:border-slate-800"
+                      >
+                        <td className="py-3 px-4">
+                          <code className="text-sm font-mono text-primary-600 dark:text-primary-400">
+                            {pkg.name}
+                          </code>
+                          {pkg.comingSoon && (
+                            <span className="ml-2 text-xs px-1.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">
+                              Coming Soon
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
+                          {pkg.desc}
+                        </td>
+                        <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
+                          {pkg.useCase}
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              )}
+            </Observe>
           </table>
         </div>
       </section>
@@ -209,30 +254,40 @@ export default function Installation() {
                 </th>
               </tr>
             </thead>
-            <tbody>
-              {bundleSizes.map((pkg) => (
-                <tr
-                  key={pkg.name}
-                  className="border-b border-slate-100 dark:border-slate-800"
-                >
-                  <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
-                    {pkg.name}
-                  </td>
-                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
-                    {pkg.js}
-                  </td>
-                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
-                    {pkg.gzip}
-                  </td>
-                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
-                    {pkg.css}
-                  </td>
-                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
-                    {pkg.cssGzip}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+            <Observe signals={[frameworkSignal]}>
+              {() => (
+                <tbody>
+                  {bundleSizes
+                    .filter(
+                      (pkg) =>
+                        !pkg.framework ||
+                        pkg.framework === frameworkSignal.value,
+                    )
+                    .map((pkg) => (
+                      <tr
+                        key={pkg.name}
+                        className="border-b border-slate-100 dark:border-slate-800"
+                      >
+                        <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                          {pkg.name}
+                        </td>
+                        <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
+                          {pkg.js}
+                        </td>
+                        <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
+                          {pkg.gzip}
+                        </td>
+                        <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
+                          {pkg.css}
+                        </td>
+                        <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
+                          {pkg.cssGzip}
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              )}
+            </Observe>
           </table>
         </div>
 
@@ -289,29 +344,32 @@ export default function Installation() {
         </div>
       </section>
 
-      <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">npm</h2>
-        <p className="text-slate-600 dark:text-slate-400 mb-2">React:</p>
-        <CodeBlock code="npm install @reelkit/react" language="bash" />
-        <p className="text-slate-600 dark:text-slate-400 mb-2 mt-4">Angular:</p>
-        <CodeBlock code="npm install @reelkit/angular" language="bash" />
-      </section>
+      <Observe signals={[frameworkSignal]}>
+        {() => {
+          const pkg =
+            frameworkSignal.value === 'react'
+              ? '@reelkit/react'
+              : '@reelkit/angular';
+          return (
+            <>
+              <section className="mb-12">
+                <h2 className="text-2xl font-bold mb-4">npm</h2>
+                <CodeBlock code={`npm install ${pkg}`} language="bash" />
+              </section>
 
-      <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">yarn</h2>
-        <p className="text-slate-600 dark:text-slate-400 mb-2">React:</p>
-        <CodeBlock code="yarn add @reelkit/react" language="bash" />
-        <p className="text-slate-600 dark:text-slate-400 mb-2 mt-4">Angular:</p>
-        <CodeBlock code="yarn add @reelkit/angular" language="bash" />
-      </section>
+              <section className="mb-12">
+                <h2 className="text-2xl font-bold mb-4">yarn</h2>
+                <CodeBlock code={`yarn add ${pkg}`} language="bash" />
+              </section>
 
-      <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">pnpm</h2>
-        <p className="text-slate-600 dark:text-slate-400 mb-2">React:</p>
-        <CodeBlock code="pnpm add @reelkit/react" language="bash" />
-        <p className="text-slate-600 dark:text-slate-400 mb-2 mt-4">Angular:</p>
-        <CodeBlock code="pnpm add @reelkit/angular" language="bash" />
-      </section>
+              <section className="mb-12">
+                <h2 className="text-2xl font-bold mb-4">pnpm</h2>
+                <CodeBlock code={`pnpm add ${pkg}`} language="bash" />
+              </section>
+            </>
+          );
+        }}
+      </Observe>
 
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Peer Dependencies</h2>
@@ -320,125 +378,171 @@ export default function Installation() {
           your project:
         </p>
 
-        <div className="space-y-6">
-          <div>
-            <h3 className="text-lg font-semibold mb-2">@reelkit/react</h3>
-            <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
-              <li>
-                <code className="text-sm font-mono">react</code> {'>= 17.0.0'}
-              </li>
-              <li>
-                <code className="text-sm font-mono">react-dom</code>{' '}
-                {'>= 17.0.0'}
-              </li>
-            </ul>
-          </div>
+        <Observe signals={[frameworkSignal]}>
+          {() =>
+            frameworkSignal.value === 'react' ? (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">@reelkit/react</h3>
+                  <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
+                    <li>
+                      <code className="text-sm font-mono">react</code>{' '}
+                      {'>= 17.0.0'}
+                    </li>
+                    <li>
+                      <code className="text-sm font-mono">react-dom</code>{' '}
+                      {'>= 17.0.0'}
+                    </li>
+                  </ul>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">
+                    @reelkit/react-reel-player
+                  </h3>
+                  <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
+                    <li>
+                      <code className="text-sm font-mono">@reelkit/react</code>
+                    </li>
+                    <li>
+                      <code className="text-sm font-mono">react</code>{' '}
+                      {'>= 18.0.0'}
+                    </li>
+                    <li>
+                      <code className="text-sm font-mono">react-dom</code>{' '}
+                      {'>= 18.0.0'}
+                    </li>
+                    <li>
+                      <code className="text-sm font-mono">lucide-react</code>{' '}
+                      {'>= 0.400.0'}
+                    </li>
+                  </ul>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">
+                    @reelkit/react-lightbox
+                  </h3>
+                  <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
+                    <li>
+                      <code className="text-sm font-mono">@reelkit/react</code>
+                    </li>
+                    <li>
+                      <code className="text-sm font-mono">react</code>{' '}
+                      {'>= 18.0.0'}
+                    </li>
+                    <li>
+                      <code className="text-sm font-mono">react-dom</code>{' '}
+                      {'>= 18.0.0'}
+                    </li>
+                    <li>
+                      <code className="text-sm font-mono">lucide-react</code>{' '}
+                      {'>= 0.400.0'}
+                    </li>
+                  </ul>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">
+                    @reelkit/react-stories-player
+                  </h3>
+                  <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
+                    <li>
+                      <code className="text-sm font-mono">@reelkit/react</code>
+                    </li>
+                    <li>
+                      <code className="text-sm font-mono">react</code>{' '}
+                      {'>= 18.0.0'}
+                    </li>
+                    <li>
+                      <code className="text-sm font-mono">react-dom</code>{' '}
+                      {'>= 18.0.0'}
+                    </li>
+                    <li>
+                      <code className="text-sm font-mono">lucide-react</code>{' '}
+                      {'>= 0.400.0'}
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">
+                    @reelkit/angular
+                  </h3>
+                  <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
+                    <li>
+                      <code className="text-sm font-mono">@angular/core</code>{' '}
+                      {'>= 17.0.0'}
+                    </li>
+                    <li>
+                      <code className="text-sm font-mono">@angular/common</code>{' '}
+                      {'>= 17.0.0'}
+                    </li>
+                  </ul>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">
+                    @reelkit/angular-reel-player
+                  </h3>
+                  <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
+                    <li>
+                      <code className="text-sm font-mono">
+                        @reelkit/angular
+                      </code>
+                    </li>
+                    <li>
+                      <code className="text-sm font-mono">@angular/core</code>{' '}
+                      {'>= 19.0.0'}
+                    </li>
+                    <li>
+                      <code className="text-sm font-mono">lucide-angular</code>{' '}
+                      {'>= 0.460.0'}
+                    </li>
+                  </ul>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">
+                    @reelkit/angular-lightbox
+                  </h3>
+                  <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
+                    <li>
+                      <code className="text-sm font-mono">
+                        @reelkit/angular
+                      </code>
+                    </li>
+                    <li>
+                      <code className="text-sm font-mono">@angular/core</code>{' '}
+                      {'>= 17.0.0'}
+                    </li>
+                    <li>
+                      <code className="text-sm font-mono">lucide-angular</code>{' '}
+                      {'>= 0.400.0'}
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            )
+          }
+        </Observe>
 
-          <div>
-            <h3 className="text-lg font-semibold mb-2">
-              @reelkit/react-reel-player
-            </h3>
-            <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
-              <li>
-                <code className="text-sm font-mono">@reelkit/react</code>
-              </li>
-              <li>
-                <code className="text-sm font-mono">react</code> {'>= 18.0.0'}
-              </li>
-              <li>
-                <code className="text-sm font-mono">react-dom</code>{' '}
-                {'>= 18.0.0'}
-              </li>
-              <li>
-                <code className="text-sm font-mono">lucide-react</code>{' '}
-                {'>= 0.400.0'}
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="text-lg font-semibold mb-2">
-              @reelkit/react-lightbox
-            </h3>
-            <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
-              <li>
-                <code className="text-sm font-mono">@reelkit/react</code>
-              </li>
-              <li>
-                <code className="text-sm font-mono">react</code> {'>= 18.0.0'}
-              </li>
-              <li>
-                <code className="text-sm font-mono">react-dom</code>{' '}
-                {'>= 18.0.0'}
-              </li>
-              <li>
-                <code className="text-sm font-mono">lucide-react</code>{' '}
-                {'>= 0.400.0'}
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="text-lg font-semibold mb-2">@reelkit/angular</h3>
-            <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
-              <li>
-                <code className="text-sm font-mono">@angular/core</code>{' '}
-                {'>= 17.0.0'}
-              </li>
-              <li>
-                <code className="text-sm font-mono">@angular/common</code>{' '}
-                {'>= 17.0.0'}
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="text-lg font-semibold mb-2">
-              @reelkit/angular-reel-player
-            </h3>
-            <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
-              <li>
-                <code className="text-sm font-mono">@reelkit/angular</code>
-              </li>
-              <li>
-                <code className="text-sm font-mono">@angular/core</code>{' '}
-                {'>= 17.0.0'}
-              </li>
-              <li>
-                <code className="text-sm font-mono">
-                  @angular/platform-browser
-                </code>{' '}
-                {'>= 17.0.0'}
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="text-lg font-semibold mb-2">
-              @reelkit/angular-lightbox
-            </h3>
-            <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
-              <li>
-                <code className="text-sm font-mono">@reelkit/angular</code>
-              </li>
-              <li>
-                <code className="text-sm font-mono">@angular/core</code>{' '}
-                {'>= 17.0.0'}
-              </li>
-              <li>
-                <code className="text-sm font-mono">lucide-angular</code>{' '}
-                {'>= 0.400.0'}
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <Callout type="info" className="mt-4">
-          <code className="text-sm font-mono">lucide-react</code> is only needed
-          for the default control icons. If you provide your own controls via{' '}
-          <code className="text-sm font-mono">renderControls</code>, you can
-          skip installing it.
-        </Callout>
+        <Observe signals={[frameworkSignal]}>
+          {() => (
+            <Callout type="info" className="mt-4">
+              <code className="text-sm font-mono">
+                {frameworkSignal.value === 'react'
+                  ? 'lucide-react'
+                  : 'lucide-angular'}
+              </code>{' '}
+              is only needed for the default control icons. If you provide your
+              own controls via{' '}
+              <code className="text-sm font-mono">
+                {frameworkSignal.value === 'react'
+                  ? 'renderControls'
+                  : 'rkPlayerControls'}
+              </code>
+              , you can skip installing it.
+            </Callout>
+          )}
+        </Observe>
       </section>
 
       <section className="mb-12">
@@ -473,86 +577,39 @@ export default function Installation() {
         </ul>
       </section>
 
-      <section>
-        <h2 className="text-2xl font-bold mb-4">Next Steps</h2>
-        <ul className="space-y-3">
-          <li>
-            <Link
-              to="/docs/core/guide"
-              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
-            >
-              Core Guide
-            </Link>
-            <span className="text-slate-500"> - framework-agnostic engine</span>
-          </li>
-          <li>
-            <Link
-              to="/docs/react/guide"
-              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
-            >
-              React Guide
-            </Link>
-            <span className="text-slate-500">
-              {' '}
-              - live demos and virtualization
-            </span>
-          </li>
-          <li>
-            <Link
-              to="/docs/angular/guide"
-              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
-            >
-              Angular Guide
-            </Link>
-            <span className="text-slate-500">
-              {' '}
-              - signals-based Angular integration
-            </span>
-          </li>
-          <li>
-            <Link
-              to="/docs/reel-player"
-              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
-            >
-              React Reel Player
-            </Link>
-            <span className="text-slate-500">
-              {' '}
-              - TikTok/Reels-style video player
-            </span>
-          </li>
-          <li>
-            <Link
-              to="/docs/lightbox"
-              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
-            >
-              React Lightbox
-            </Link>
-            <span className="text-slate-500"> - image &amp; video gallery</span>
-          </li>
-          <li>
-            <Link
-              to="/docs/angular-reel-player"
-              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
-            >
-              Angular Reel Player
-            </Link>
-            <span className="text-slate-500">
-              {' '}
-              - TikTok/Reels-style video player
-            </span>
-          </li>
-          <li>
-            <Link
-              to="/docs/angular-lightbox"
-              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
-            >
-              Angular Lightbox
-            </Link>
-            <span className="text-slate-500"> - image &amp; video gallery</span>
-          </li>
-        </ul>
-      </section>
+      <NextSteps
+        items={[
+          {
+            label: 'Core Guide',
+            path: '/docs/core/guide',
+            description: 'framework-agnostic engine',
+          },
+          {
+            label: 'Framework Guide',
+            path: {
+              react: '/docs/react/guide',
+              angular: '/docs/angular/guide',
+            },
+            description: 'components, demos, and integration',
+          },
+          {
+            label: 'Reel Player',
+            path: {
+              react: '/docs/reel-player',
+              angular: '/docs/angular-reel-player',
+            },
+            description: 'TikTok/Reels-style video player',
+          },
+          {
+            label: 'Lightbox',
+            path: {
+              react: '/docs/lightbox',
+              angular: '/docs/angular-lightbox',
+            },
+            description: 'image & video gallery',
+          },
+        ]}
+      />
     </div>
   );
 }

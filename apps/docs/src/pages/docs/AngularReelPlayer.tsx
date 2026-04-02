@@ -64,7 +64,7 @@ const playerInputs = [
     description: 'Enable infinite loop between slides',
   },
   {
-    prop: 'useNavKeys',
+    prop: 'enableNavKeys',
     type: 'boolean',
     default: 'true',
     description: 'Enable keyboard arrow key navigation',
@@ -134,6 +134,16 @@ const templateSlots = [
     context: 'PlayerNestedNavigationContext',
     description: 'Custom navigation arrows for the inner horizontal slider',
   },
+  {
+    directive: 'rkPlayerLoading',
+    context: '{ $implicit: activeIndex, item, innerActiveIndex }',
+    description: 'Custom loading indicator template slot',
+  },
+  {
+    directive: 'rkPlayerError',
+    context: '{ $implicit: activeIndex, item, innerActiveIndex }',
+    description: 'Custom error indicator template slot',
+  },
 ];
 
 const mediaItemProps = [
@@ -161,7 +171,7 @@ const contextTypes = [
   {
     name: 'PlayerSlideContext<T>',
     fields:
-      '{ $implicit: T, index, size: [number,number], isActive, slideKey }',
+      '{ $implicit: T, index, size: [number,number], isActive, slideKey, onError }',
   },
   {
     name: 'PlayerSlideOverlayContext<T>',
@@ -250,7 +260,7 @@ export default function AngularReelPlayer() {
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Installation</h2>
         <CodeBlock
-          code={`npm install @reelkit/angular-reel-player @reelkit/angular`}
+          code={`npm install @reelkit/angular-reel-player @reelkit/angular lucide-angular`}
           language="bash"
         />
       </section>
@@ -274,6 +284,7 @@ import {
   RkReelPlayerOverlayComponent,
   type ContentItem,
 } from '@reelkit/angular-reel-player';
+import { SAMPLE_VIDEOS } from '@reelkit/example-data';
 import '@reelkit/angular-reel-player/styles.css';
 
 const content: ContentItem[] = [
@@ -282,9 +293,9 @@ const content: ContentItem[] = [
     media: [{
       id: 'v1',
       type: 'video',
-      src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-      poster: 'https://storage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerBlazes.jpg',
-      aspectRatio: 16 / 9,
+      src: SAMPLE_VIDEOS[0].src,
+      poster: SAMPLE_VIDEOS[0].poster,
+      aspectRatio: SAMPLE_VIDEOS[0].aspectRatio,
     }],
     author: { name: 'Alex Johnson', avatar: 'https://i.pravatar.cc/100?u=alex' },
     likes: 1234,
@@ -307,9 +318,9 @@ const content: ContentItem[] = [
     media: [{
       id: 'v2',
       type: 'video',
-      src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
-      poster: 'https://storage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerEscapes.jpg',
-      aspectRatio: 16 / 9,
+      src: SAMPLE_VIDEOS[1].src,
+      poster: SAMPLE_VIDEOS[1].poster,
+      aspectRatio: SAMPLE_VIDEOS[1].aspectRatio,
     }],
     author: { name: 'Mike Chen', avatar: 'https://i.pravatar.cc/100?u=mike' },
     likes: 3456,

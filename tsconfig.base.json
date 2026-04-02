@@ -27,8 +27,7 @@
       "@reelkit/angular-reel-player": [
         "packages/reelkit-angular-reel-player/src/index.ts"
       ],
-      "@reelkit/example-data": ["packages/reelkit-example-data/src/index.ts"],
-      "@reelkit/stories-core": ["packages/reelkit-stories-core/src/index.ts"]
+      "@reelkit/example-data": ["packages/reelkit-example-data/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

@@ -497,7 +497,6 @@ export class ReelComponent implements OnInit, AfterViewInit {
     });
   }
 
-
   /**
    * Marks `_hasAnnouncedReady` as `true` the first time the carousel becomes
    * measured, silencing the assertive live region after its one-time

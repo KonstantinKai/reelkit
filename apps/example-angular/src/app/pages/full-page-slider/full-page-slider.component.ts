@@ -17,8 +17,11 @@ import {
 } from '@reelkit/angular';
 
 const TOTAL_SLIDES = 10000;
+const NESTED_ITEM_COUNT = 10;
 const SIZE_MODE_KEY = 'reelkit-fullpage-size-mode';
 const INDICATOR_MODE_KEY = 'reelkit-fullpage-indicator-mode';
+const NAV_KEYS_KEY = 'reelkit-fullpage-nav-keys';
+const WHEEL_KEY = 'reelkit-fullpage-wheel';
 
 type SizeMode = 'explicit' | 'auto';
 type IndicatorMode = 'auto' | 'controlled';
@@ -55,27 +58,72 @@ const getSlideContent = (
         [size]="sizeMode() === 'explicit' ? explicitSize() : undefined"
         direction="vertical"
         [loop]="false"
-        [useNavKeys]="true"
-        [enableWheel]="true"
+        [enableNavKeys]="navKeys()"
+        [enableWheel]="wheel()"
         (apiReady)="onApiReady($event)"
         (afterChange)="onAfterChange($event)"
         [style.width]="sizeMode() === 'auto' ? '100%' : null"
         [style.height]="sizeMode() === 'auto' ? '100%' : null"
       >
         <ng-template rkReelItem let-index let-size="size">
-          <div
-            [style.width.px]="size[0]"
-            [style.height.px]="size[1]"
-            [style.background-color]="getSlideColor(index)"
-            style="display: flex; flex-direction: column; justify-content: center; align-items: center; color: #000;"
-          >
-            <h1 style="font-size: 3rem; margin-bottom: 1rem;">
-              {{ getSlideContent(index).title }}
-            </h1>
-            <p style="font-size: 1.5rem; opacity: 0.7;">
-              {{ getSlideContent(index).description }}
-            </p>
-          </div>
+          @if (index % 3 === 2) {
+            <rk-reel
+              [count]="nestedItemCount"
+              [size]="[size[0], size[1]]"
+              direction="horizontal"
+              [loop]="true"
+              [enableNavKeys]="navKeys()"
+              [enableWheel]="wheel()"
+            >
+              <ng-template rkReelItem let-nestedIndex let-nestedSize="size">
+                <div
+                  [style.width.px]="nestedSize[0]"
+                  [style.height.px]="nestedSize[1]"
+                  [style.background-color]="
+                    getSlideColor(index * nestedItemCount + nestedIndex)
+                  "
+                  style="display: flex; flex-direction: column; justify-content: center; align-items: center; color: #000;"
+                >
+                  <h1 style="font-size: 2.5rem; margin-bottom: 8px;">
+                    Slide {{ index + 1 }}.{{ nestedIndex + 1 }}
+                  </h1>
+                  <p style="font-size: 1.2rem; opacity: 0.7;">
+                    Swipe left or right
+                  </p>
+                </div>
+              </ng-template>
+              <div
+                style="
+                  position: absolute;
+                  bottom: 160px;
+                  left: 50%;
+                  transform: translateX(-50%);
+                  z-index: 10;
+                "
+              >
+                <rk-reel-indicator
+                  direction="horizontal"
+                  [visible]="4"
+                  [radius]="3"
+                  [gap]="5"
+                />
+              </div>
+            </rk-reel>
+          } @else {
+            <div
+              [style.width.px]="size[0]"
+              [style.height.px]="size[1]"
+              [style.background-color]="getSlideColor(index)"
+              style="display: flex; flex-direction: column; justify-content: center; align-items: center; color: #000;"
+            >
+              <h1 style="font-size: 3rem; margin-bottom: 1rem;">
+                {{ getSlideContent(index).title }}
+              </h1>
+              <p style="font-size: 1.5rem; opacity: 0.7;">
+                {{ getSlideContent(index).description }}
+              </p>
+            </div>
+          }
         </ng-template>
 
         <div
@@ -98,53 +146,92 @@ const getSlideContent = (
           {{ totalSlides.toLocaleString() }}
         </div>
 
-        <button
-          (click)="toggleSizeMode()"
+        <div
           style="
             position: absolute;
             top: 48px;
             right: 40px;
-            padding: 6px 12px;
-            background-color: rgba(0,0,0,0.5);
-            color: #fff;
-            border: none;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
             z-index: 10;
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
           "
         >
-          size:
-          {{
-            sizeMode() === 'explicit'
-              ? '[' + explicitSize()[0] + ', ' + explicitSize()[1] + ']'
-              : 'auto'
-          }}
-        </button>
-
-        <button
-          (click)="toggleIndicatorMode()"
-          data-testid="indicator-mode-toggle"
-          style="
-            position: absolute;
-            top: 84px;
-            right: 40px;
-            padding: 6px 12px;
-            background-color: rgba(0,0,0,0.5);
-            color: #fff;
-            border: none;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            cursor: pointer;
-            z-index: 10;
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-          "
-        >
-          indicator: {{ indicatorMode() }}
-        </button>
+          <button
+            (click)="toggleSizeMode()"
+            style="
+              padding: 6px 12px;
+              background-color: rgba(0,0,0,0.5);
+              color: #fff;
+              border: none;
+              border-radius: 20px;
+              font-size: 0.75rem;
+              cursor: pointer;
+              backdrop-filter: blur(8px);
+              -webkit-backdrop-filter: blur(8px);
+            "
+          >
+            size:
+            {{
+              sizeMode() === 'explicit'
+                ? '[' + explicitSize()[0] + ', ' + explicitSize()[1] + ']'
+                : 'auto'
+            }}
+          </button>
+          <button
+            (click)="toggleIndicatorMode()"
+            data-testid="indicator-mode-toggle"
+            style="
+              padding: 6px 12px;
+              background-color: rgba(0,0,0,0.5);
+              color: #fff;
+              border: none;
+              border-radius: 20px;
+              font-size: 0.75rem;
+              cursor: pointer;
+              backdrop-filter: blur(8px);
+              -webkit-backdrop-filter: blur(8px);
+            "
+          >
+            indicator: {{ indicatorMode() }}
+          </button>
+          <button
+            (click)="toggleNavKeys()"
+            [style.background-color]="
+              navKeys() ? 'rgba(0,0,0,0.5)' : 'rgba(255,0,0,0.4)'
+            "
+            style="
+              padding: 6px 12px;
+              color: #fff;
+              border: none;
+              border-radius: 20px;
+              font-size: 0.75rem;
+              cursor: pointer;
+              backdrop-filter: blur(8px);
+              -webkit-backdrop-filter: blur(8px);
+            "
+          >
+            navKeys: {{ navKeys() ? 'on' : 'off' }}
+          </button>
+          <button
+            (click)="toggleWheel()"
+            [style.background-color]="
+              wheel() ? 'rgba(0,0,0,0.5)' : 'rgba(255,0,0,0.4)'
+            "
+            style="
+              padding: 6px 12px;
+              color: #fff;
+              border: none;
+              border-radius: 20px;
+              font-size: 0.75rem;
+              cursor: pointer;
+              backdrop-filter: blur(8px);
+              -webkit-backdrop-filter: blur(8px);
+            "
+          >
+            wheel: {{ wheel() ? 'on' : 'off' }}
+          </button>
+        </div>
 
         <div
           style="
@@ -264,6 +351,7 @@ export class FullPageSliderComponent implements OnInit, OnDestroy {
   private readonly bodyLock = inject(BodyLockService);
 
   protected readonly totalSlides = TOTAL_SLIDES;
+  protected readonly nestedItemCount = NESTED_ITEM_COUNT;
   protected readonly activeIndex = signal(0);
   protected readonly sizeMode = signal<SizeMode>(
     (localStorage.getItem(SIZE_MODE_KEY) as SizeMode) ?? 'explicit',
@@ -275,6 +363,12 @@ export class FullPageSliderComponent implements OnInit, OnDestroy {
     window.innerWidth,
     window.innerHeight,
   ]);
+  protected readonly navKeys = signal(
+    localStorage.getItem(NAV_KEYS_KEY) !== 'false',
+  );
+  protected readonly wheel = signal(
+    localStorage.getItem(WHEEL_KEY) !== 'false',
+  );
   protected goToValue = '';
   protected reelApi: ReelApi | null = null;
 
@@ -315,6 +409,18 @@ export class FullPageSliderComponent implements OnInit, OnDestroy {
     const next = this.indicatorMode() === 'auto' ? 'controlled' : 'auto';
     localStorage.setItem(INDICATOR_MODE_KEY, next);
     this.indicatorMode.set(next);
+  }
+
+  protected toggleNavKeys(): void {
+    const next = !this.navKeys();
+    localStorage.setItem(NAV_KEYS_KEY, String(next));
+    this.navKeys.set(next);
+  }
+
+  protected toggleWheel(): void {
+    const next = !this.wheel();
+    localStorage.setItem(WHEEL_KEY, String(next));
+    this.wheel.set(next);
   }
 
   protected goToSlide(): void {

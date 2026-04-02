@@ -1,5 +1,5 @@
-import { Link } from 'react-router-dom';
 import { CodeBlock } from '../../../components/ui/CodeBlock';
+import { NextSteps } from '../../../components/NextSteps';
 import { Sandbox } from '../../../components/ui/Sandbox';
 import { FeatureCardGrid } from '../../../components/ui/FeatureCard';
 import {
@@ -81,11 +81,6 @@ export default function AngularGuide() {
             ]}
           />
         </div>
-      </section>
-
-      <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Installation</h2>
-        <CodeBlock code={`npm install @reelkit/angular`} language="bash" />
       </section>
 
       <section className="mb-12">
@@ -560,44 +555,30 @@ export class AppComponent {
         </ul>
       </section>
 
-      <section>
-        <h2 className="text-2xl font-bold mb-4">Next Steps</h2>
-        <ul className="space-y-3">
-          <li>
-            <Link
-              to="/docs/angular/api"
-              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
-            >
-              Angular API Reference
-            </Link>
-            <span className="text-slate-500">
-              {' '}
-              - all available inputs, outputs, and methods
-            </span>
-          </li>
-          <li>
-            <Link
-              to="/docs/angular-reel-player"
-              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
-            >
-              Angular Reel Player
-            </Link>
-            <span className="text-slate-500">
-              {' '}
-              - TikTok/Reels-style video player
-            </span>
-          </li>
-          <li>
-            <Link
-              to="/docs/angular-lightbox"
-              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
-            >
-              Angular Lightbox
-            </Link>
-            <span className="text-slate-500"> - image &amp; video gallery</span>
-          </li>
-        </ul>
-      </section>
+      <NextSteps
+        items={[
+          {
+            label: 'Angular API Reference',
+            path: '/docs/angular/api',
+            description: 'all available inputs, outputs, and methods',
+          },
+          {
+            label: 'Reel Player',
+            path: '/docs/angular-reel-player',
+            description: 'TikTok/Reels-style video player',
+          },
+          {
+            label: 'Lightbox',
+            path: '/docs/angular-lightbox',
+            description: 'image & video gallery',
+          },
+          {
+            label: 'Stories Player',
+            path: '/docs/angular-stories-player',
+            description: 'Instagram-style stories viewer (coming soon)',
+          },
+        ]}
+      />
     </div>
   );
 }

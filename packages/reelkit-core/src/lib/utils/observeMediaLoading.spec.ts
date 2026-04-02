@@ -4,14 +4,14 @@ import { observeMediaLoading } from './observeMediaLoading';
 const createVideo = () => document.createElement('video');
 
 describe('observeMediaLoading', () => {
-  it('does not call onReady on canplay', () => {
+  it('calls onReady on canplay', () => {
     const video = createVideo();
     const onReady = vi.fn();
 
     observeMediaLoading(video, { onReady, onWaiting: vi.fn() });
     video.dispatchEvent(new Event('canplay'));
 
-    expect(onReady).not.toHaveBeenCalled();
+    expect(onReady).toHaveBeenCalledTimes(1);
   });
 
   it('calls onReady on canplaythrough', () => {
@@ -70,7 +70,7 @@ describe('observeMediaLoading', () => {
     expect(onPlaying).not.toHaveBeenCalled();
   });
 
-  it('waiting → canplay sequence does not call onReady (prevents shallow buffer race)', () => {
+  it('waiting → canplay sequence calls onReady', () => {
     const video = createVideo();
     const onReady = vi.fn();
     const onWaiting = vi.fn();
@@ -81,7 +81,7 @@ describe('observeMediaLoading', () => {
     expect(onWaiting).toHaveBeenCalledTimes(1);
 
     video.dispatchEvent(new Event('canplay'));
-    expect(onReady).not.toHaveBeenCalled();
+    expect(onReady).toHaveBeenCalledTimes(1);
   });
 
   it('waiting → playing sequence calls onReady (playback actually resumed)', () => {
@@ -106,6 +106,7 @@ describe('observeMediaLoading', () => {
     const dispose = observeMediaLoading(video, { onReady, onWaiting });
     dispose();
 
+    video.dispatchEvent(new Event('canplay'));
     video.dispatchEvent(new Event('waiting'));
     video.dispatchEvent(new Event('playing'));
     video.dispatchEvent(new Event('canplaythrough'));

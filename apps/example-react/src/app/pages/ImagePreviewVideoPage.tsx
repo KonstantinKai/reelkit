@@ -5,10 +5,11 @@ import {
   type LightboxItem,
   type TransitionType,
 } from '@reelkit/react-lightbox';
+import { SAMPLE_VIDEOS } from '@reelkit/example-data';
 import '@reelkit/react-lightbox/styles.css';
 import './ImagePreviewPage.css';
 
-const transitions: TransitionType[] = ['slide', 'fade', 'zoom-in'];
+const _kTransitions: TransitionType[] = ['slide', 'fade', 'zoom-in'];
 
 const sampleItems: LightboxItem[] = [
   {
@@ -19,10 +20,9 @@ const sampleItems: LightboxItem[] = [
     height: 1000,
   },
   {
-    src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+    src: SAMPLE_VIDEOS[0].src,
     type: 'video',
-    poster:
-      'https://storage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerBlazes.jpg',
+    poster: SAMPLE_VIDEOS[0].poster,
     title: 'For Bigger Blazes',
     description: 'Sample video demonstrating video support in the lightbox.',
   },
@@ -34,10 +34,9 @@ const sampleItems: LightboxItem[] = [
     height: 900,
   },
   {
-    src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+    src: SAMPLE_VIDEOS[1].src,
     type: 'video',
-    poster:
-      'https://storage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerEscapes.jpg',
+    poster: SAMPLE_VIDEOS[1].poster,
     title: 'For Bigger Escapes',
     description: 'Another sample video showcasing the opt-in video feature.',
   },
@@ -62,10 +61,8 @@ function ImagePreviewVideoPage() {
   const [previewIndex, setPreviewIndex] = useState<number | null>(null);
   const [transition, setTransition] = useState<TransitionType>('slide');
 
-  const { renderSlide, renderControls } = useVideoSlideRenderer(
-    sampleItems,
-    previewIndex !== null,
-  );
+  const { renderSlide, renderControls, SoundProvider } =
+    useVideoSlideRenderer(sampleItems);
 
   const handleImageClick = useCallback((index: number) => {
     setPreviewIndex(index);
@@ -85,7 +82,7 @@ function ImagePreviewVideoPage() {
         </p>
         <div className="transition-selector">
           <span>Transition:</span>
-          {transitions.map((t) => (
+          {_kTransitions.map((t) => (
             <button
               key={t}
               className={`transition-btn ${transition === t ? 'active' : ''}`}
@@ -149,15 +146,17 @@ function ImagePreviewVideoPage() {
         ))}
       </div>
 
-      <LightboxOverlay
-        isOpen={previewIndex !== null}
-        images={sampleItems}
-        initialIndex={previewIndex ?? 0}
-        onClose={handleClose}
-        transition={transition}
-        renderSlide={renderSlide}
-        renderControls={renderControls}
-      />
+      <SoundProvider>
+        <LightboxOverlay
+          isOpen={previewIndex !== null}
+          images={sampleItems}
+          initialIndex={previewIndex ?? 0}
+          onClose={handleClose}
+          transition={transition}
+          renderSlide={renderSlide}
+          renderControls={renderControls}
+        />
+      </SoundProvider>
     </div>
   );
 }

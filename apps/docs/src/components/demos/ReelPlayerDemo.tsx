@@ -14,9 +14,8 @@ const SAMPLE_CONTENT: ContentItem[] = [
       {
         id: 'v1',
         type: 'video',
-        src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-        poster:
-          'https://storage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerBlazes.jpg',
+        src: 'https://videos.pexels.com/video-files/854228/854228-hd_1280_720_30fps.mp4',
+        poster: 'https://images.pexels.com/videos/854228/free-video-854228.jpg?auto=compress&w=640',
         aspectRatio: 16 / 9,
       },
     ],
@@ -52,9 +51,8 @@ const SAMPLE_CONTENT: ContentItem[] = [
       {
         id: 'v2',
         type: 'video',
-        src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
-        poster:
-          'https://storage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerFun.jpg',
+        src: 'https://videos.pexels.com/video-files/2519660/2519660-hd_1920_1080_24fps.mp4',
+        poster: 'https://images.pexels.com/videos/2519660/free-video-2519660.jpg?auto=compress&w=640',
         aspectRatio: 16 / 9,
       },
     ],
@@ -114,9 +112,8 @@ const SAMPLE_CONTENT: ContentItem[] = [
       {
         id: 'v3',
         type: 'video',
-        src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
-        poster:
-          'https://storage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerJoyrides.jpg',
+        src: 'https://videos.pexels.com/video-files/1409899/1409899-uhd_2560_1440_25fps.mp4',
+        poster: 'https://images.pexels.com/videos/1409899/free-video-1409899.jpg?auto=compress&w=640',
         aspectRatio: 16 / 9,
       },
     ],

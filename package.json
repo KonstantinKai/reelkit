@@ -88,6 +88,7 @@
     "ajv": "^8.0.0",
     "angular-eslint": "^20.3.0",
     "autoprefixer": "10.4.13",
+    "canvas": "^3.2.2",
     "eslint": "^9.8.0",
     "eslint-config-prettier": "10.1.8",
     "eslint-plugin-import": "2.31.0",

@@ -1,5 +1,7 @@
+import { Observe } from '@reelkit/react';
 import { CodeBlock } from '../../components/ui/CodeBlock';
 import { Callout } from '../../components/ui/Callout';
+import { frameworkSignal } from '../../data/frameworkSignal';
 
 export default function SSR() {
   return (
@@ -9,7 +11,7 @@ export default function SSR() {
         <p className="text-xl text-slate-600 dark:text-slate-400">
           reelkit is SSR-compatible out of the box. All components can be safely
           imported and rendered on the server with frameworks like Next.js,
-          Remix, or any React SSR setup.
+          Remix, Angular Universal, or any SSR setup.
         </p>
       </div>
 
@@ -18,11 +20,8 @@ export default function SSR() {
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           The core slider controller is pure logic — no DOM access at
           construction time. All browser APIs (gesture listeners, keyboard
-          events, animations) are deferred to{' '}
-          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
-            useEffect
-          </code>
-          , which only runs on the client.
+          events, animations) are deferred to lifecycle hooks that only run
+          on the client.
         </p>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           During SSR, the{' '}
@@ -44,60 +43,72 @@ export default function SSR() {
                 <th className="px-4 py-3 font-semibold">Notes</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-              <tr>
-                <td className="px-4 py-3 font-mono text-sm">@reelkit/core</td>
-                <td className="px-4 py-3 text-green-600 dark:text-green-400">
-                  Yes
-                </td>
-                <td className="px-4 py-3 text-slate-600 dark:text-slate-400">
-                  Pure logic, no browser APIs at import or construction
-                </td>
-              </tr>
-              <tr>
-                <td className="px-4 py-3 font-mono text-sm">@reelkit/react</td>
-                <td className="px-4 py-3 text-green-600 dark:text-green-400">
-                  Yes
-                </td>
-                <td className="px-4 py-3 text-slate-600 dark:text-slate-400">
-                  Reel and ReelIndicator render valid HTML on the server
-                </td>
-              </tr>
-              <tr>
-                <td className="px-4 py-3 font-mono text-sm">
-                  @reelkit/react-reel-player
-                </td>
-                <td className="px-4 py-3 text-green-600 dark:text-green-400">
-                  Yes
-                </td>
-                <td className="px-4 py-3 text-slate-600 dark:text-slate-400">
-                  Renders nothing when closed (
-                  <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
-                    isOpen=false
-                  </code>
-                  )
-                </td>
-              </tr>
-              <tr>
-                <td className="px-4 py-3 font-mono text-sm">
-                  @reelkit/react-lightbox
-                </td>
-                <td className="px-4 py-3 text-green-600 dark:text-green-400">
-                  Yes
-                </td>
-                <td className="px-4 py-3 text-slate-600 dark:text-slate-400">
-                  Renders nothing when closed (
-                  <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
-                    isOpen=false
-                  </code>
-                  )
-                </td>
-              </tr>
-            </tbody>
+            <Observe signals={[frameworkSignal]}>
+              {() => {
+                const isReact = frameworkSignal.value === 'react';
+                const fw = isReact ? 'react' : 'angular';
+                const fwBase = isReact ? '@reelkit/react' : '@reelkit/angular';
+                const fwBaseNote = isReact
+                  ? 'Reel and ReelIndicator render valid HTML on the server'
+                  : 'Standalone components, SSR compatible with Angular Universal';
+                return (
+                  <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                    <tr>
+                      <td className="px-4 py-3 font-mono text-sm">@reelkit/core</td>
+                      <td className="px-4 py-3 text-green-600 dark:text-green-400">Yes</td>
+                      <td className="px-4 py-3 text-slate-600 dark:text-slate-400">
+                        Pure logic, no browser APIs at import or construction
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-4 py-3 font-mono text-sm">{fwBase}</td>
+                      <td className="px-4 py-3 text-green-600 dark:text-green-400">Yes</td>
+                      <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{fwBaseNote}</td>
+                    </tr>
+                    {[`@reelkit/${fw}-reel-player`, `@reelkit/${fw}-lightbox`].map((pkg) => (
+                      <tr key={pkg}>
+                        <td className="px-4 py-3 font-mono text-sm">{pkg}</td>
+                        <td className="px-4 py-3 text-green-600 dark:text-green-400">Yes</td>
+                        <td className="px-4 py-3 text-slate-600 dark:text-slate-400">
+                          Renders nothing when closed (
+                          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+                            isOpen=false
+                          </code>
+                          )
+                        </td>
+                      </tr>
+                    ))}
+                    <tr>
+                      <td className="px-4 py-3 font-mono text-sm">@reelkit/stories-core</td>
+                      <td className="px-4 py-3 text-green-600 dark:text-green-400">Yes</td>
+                      <td className="px-4 py-3 text-slate-600 dark:text-slate-400">
+                        Framework-agnostic, no DOM access
+                      </td>
+                    </tr>
+                    {isReact && (
+                      <tr>
+                        <td className="px-4 py-3 font-mono text-sm">@reelkit/react-stories-player</td>
+                        <td className="px-4 py-3 text-green-600 dark:text-green-400">Yes</td>
+                        <td className="px-4 py-3 text-slate-600 dark:text-slate-400">
+                          Renders nothing when closed (
+                          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+                            isOpen=false
+                          </code>
+                          )
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                );
+              }}
+            </Observe>
           </table>
         </div>
       </section>
 
+      <Observe signals={[frameworkSignal]}>
+        {() => frameworkSignal.value === 'react' ? (
+      <>
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Next.js App Router</h2>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
@@ -345,6 +356,51 @@ export function VideoFeed({ content }: { content: ContentItem[] }) {
           language="typescript"
         />
       </section>
+      </>
+        ) : (
+      <>
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">Angular Universal / SSR</h2>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          All Angular components are SSR-safe. The slider controller defers
+          browser API access to{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            afterRenderEffect
+          </code>
+          . Overlay components render nothing when{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            isOpen=false
+          </code>
+          , so they produce no markup during server rendering.
+        </p>
+        <CodeBlock
+          code={`import { Component, signal } from '@angular/core';
+import {
+  RkReelPlayerOverlayComponent,
+} from '@reelkit/angular-reel-player';
+
+@Component({
+  selector: 'app-feed',
+  standalone: true,
+  imports: [RkReelPlayerOverlayComponent],
+  template: \`
+    <rk-reel-player-overlay
+      [isOpen]="isOpen()"
+      [content]="content"
+      (closed)="isOpen.set(false)"
+    />
+  \`,
+})
+export class FeedComponent {
+  isOpen = signal(false);
+  content = [/* ... */];
+}`}
+          language="typescript"
+        />
+      </section>
+      </>
+        )}
+      </Observe>
 
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Using Core Directly</h2>
@@ -388,28 +444,10 @@ if (typeof window !== 'undefined') {
           <Callout type="success" title="What works out of the box">
             <ul className="list-disc list-inside space-y-1 mt-1">
               <li>Importing any reelkit package on the server</li>
-              <li>
-                Rendering{' '}
-                <code className="px-1 py-0.5 bg-green-100 dark:bg-green-900/30 rounded text-xs font-mono">
-                  Reel
-                </code>{' '}
-                and{' '}
-                <code className="px-1 py-0.5 bg-green-100 dark:bg-green-900/30 rounded text-xs font-mono">
-                  ReelIndicator
-                </code>{' '}
-                during SSR (produces valid static HTML)
-              </li>
+              <li>Rendering slider components during SSR (produces valid static HTML)</li>
               <li>Creating controllers on the server</li>
               <li>
-                Overlay components (
-                <code className="px-1 py-0.5 bg-green-100 dark:bg-green-900/30 rounded text-xs font-mono">
-                  LightboxOverlay
-                </code>
-                ,{' '}
-                <code className="px-1 py-0.5 bg-green-100 dark:bg-green-900/30 rounded text-xs font-mono">
-                  ReelPlayerOverlay
-                </code>
-                ) when{' '}
+                Overlay components when{' '}
                 <code className="px-1 py-0.5 bg-green-100 dark:bg-green-900/30 rounded text-xs font-mono">
                   isOpen=false
                 </code>
@@ -419,22 +457,12 @@ if (typeof window !== 'undefined') {
           <Callout type="warning" title="What to keep in mind">
             <ul className="list-disc list-inside space-y-1 mt-1">
               <li>
-                Use{' '}
-                <code className="px-1 py-0.5 bg-amber-100 dark:bg-amber-900/30 rounded text-xs font-mono">
-                  "use client"
-                </code>{' '}
-                directive in Next.js App Router
-              </li>
-              <li>
                 Omit{' '}
                 <code className="px-1 py-0.5 bg-amber-100 dark:bg-amber-900/30 rounded text-xs font-mono">
                   size
                 </code>{' '}
-                for auto-measurement, or provide a default{' '}
-                <code className="px-1 py-0.5 bg-amber-100 dark:bg-amber-900/30 rounded text-xs font-mono">
-                  size
-                </code>{' '}
-                when using viewport-based dimensions
+                for auto-measurement, or provide a default when using
+                viewport-based dimensions
               </li>
               <li>
                 Don't call{' '}

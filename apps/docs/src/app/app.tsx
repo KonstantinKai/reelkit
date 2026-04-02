@@ -64,6 +64,14 @@ export const router = createBrowserRouter(
           lazy: lazy(() => import('../pages/docs/AngularLightbox')),
         },
         {
+          path: 'docs/stories-player',
+          lazy: lazy(() => import('../pages/docs/StoriesPlayer')),
+        },
+        {
+          path: 'docs/angular-stories-player',
+          lazy: lazy(() => import('../pages/docs/AngularStoriesPlayer')),
+        },
+        {
           path: 'docs/troubleshooting',
           lazy: lazy(() => import('../pages/docs/Troubleshooting')),
         },

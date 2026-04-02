@@ -32,7 +32,9 @@ const {
       onLoaded: vi.fn((src: string, cb: () => void) => {
         if (loaded.has(src)) {
           cb();
-          return () => {};
+          return () => {
+            /* noop */
+          };
         }
         let subs = onLoadedCallbacks.get(src);
         if (!subs) {

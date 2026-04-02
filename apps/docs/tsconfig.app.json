@@ -28,6 +28,9 @@
   "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"],
   "references": [
     {
+      "path": "../../packages/reelkit-core/tsconfig.lib.json"
+    },
+    {
       "path": "../../packages/reelkit-react-reel-player/tsconfig.lib.json"
     },
     {

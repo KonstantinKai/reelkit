@@ -152,7 +152,7 @@ const lightboxProps = [
   },
   {
     prop: 'renderControls',
-    type: '(props: LightboxControlsRenderProps) => ReactNode',
+    type: '(props: ControlsRenderProps) => ReactNode',
     default: '-',
     description:
       'Custom controls, replaces default close button, counter, and fullscreen toggle',
@@ -175,6 +175,20 @@ const lightboxProps = [
     type: '(item, index, size, isActive) => ReactNode | null',
     default: '-',
     description: 'Custom slide rendering. Return null to fall back to default.',
+  },
+  {
+    prop: 'renderLoading',
+    type: '(props: { item: LightboxItem; activeIndex: number }) => ReactNode',
+    default: '-',
+    description:
+      'Custom loading indicator, replaces default spinner',
+  },
+  {
+    prop: 'renderError',
+    type: '(props: { item: LightboxItem; activeIndex: number }) => ReactNode',
+    default: '-',
+    description:
+      'Custom error indicator, replaces default error icon',
   },
 ];
 
@@ -199,7 +213,7 @@ const reelProps = [
     description: 'Enable infinite loop',
   },
   {
-    prop: 'useNavKeys',
+    prop: 'enableNavKeys',
     type: 'boolean',
     default: 'true',
     description: 'Enable keyboard navigation',
@@ -551,9 +565,9 @@ function Gallery() {
   isOpen={isOpen}
   images={images}
   onClose={handleClose}
-  renderControls={({ onClose, currentIndex, count, isFullscreen, onToggleFullscreen }) => (
+  renderControls={({ onClose, activeIndex, count, isFullscreen, onToggleFullscreen }) => (
     <div style={{ position: 'absolute', top: 12, left: 16, right: 16, display: 'flex', justifyContent: 'space-between', zIndex: 10 }}>
-      <Counter currentIndex={currentIndex} count={count} />
+      <Counter activeIndex={activeIndex} count={count} />
       <div>
         <FullscreenButton isFullscreen={isFullscreen} onToggle={onToggleFullscreen} />
         <CloseButton onClick={onClose} />
@@ -796,15 +810,14 @@ function Gallery() {
           language="typescript"
         />
 
-        <h3 className="text-lg font-semibold mt-6 mb-2">
-          LightboxControlsRenderProps
-        </h3>
+        <h3 className="text-lg font-semibold mt-6 mb-2">ControlsRenderProps</h3>
         <CodeBlock
-          code={`interface LightboxControlsRenderProps {
-  onClose: () => void;
-  currentIndex: number;
+          code={`interface ControlsRenderProps {
+  item: LightboxItem;
+  activeIndex: number;
   count: number;
   isFullscreen: boolean;
+  onClose: () => void;
   onToggleFullscreen: () => void;
 }`}
           language="typescript"
@@ -815,10 +828,11 @@ function Gallery() {
         </h3>
         <CodeBlock
           code={`interface NavigationRenderProps {
-  onPrev: () => void;
-  onNext: () => void;
+  item: LightboxItem;
   activeIndex: number;
   count: number;
+  onPrev: () => void;
+  onNext: () => void;
 }`}
           language="typescript"
         />
@@ -862,7 +876,7 @@ function Gallery() {
         <CodeBlock
           code={`import { Counter } from '@reelkit/react-lightbox';
 
-<Counter currentIndex={currentIndex} count={count} />`}
+<Counter activeIndex={activeIndex} count={count} />`}
           language="tsx"
         />
 

@@ -347,6 +347,10 @@ export default function Home() {
                     name: '@reelkit/react-lightbox',
                     desc: 'Image & video gallery overlay',
                   },
+                  {
+                    name: '@reelkit/react-stories-player',
+                    desc: 'Instagram-style stories player',
+                  },
                 ],
               },
               {
@@ -362,6 +366,10 @@ export default function Home() {
                   {
                     name: '@reelkit/angular-lightbox',
                     desc: 'Image & video gallery overlay',
+                  },
+                  {
+                    name: '@reelkit/angular-stories-player',
+                    desc: 'Instagram-style stories player (coming soon)',
                   },
                 ],
               },

@@ -69,12 +69,45 @@ const CONTENT_COUNT = 50;
                 background-color: #222;
               "
             >
-              <img
-                [src]="getThumbnail(item)"
-                alt=""
-                style="width: 100%; height: 100%; object-fit: cover;"
-                loading="lazy"
-              />
+              @if (thumbErrors().has(index)) {
+                <div
+                  style="
+                    position: absolute;
+                    inset: 0;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    color: rgba(255, 255, 255, 0.3);
+                    gap: 4px;
+                  "
+                >
+                  <svg
+                    width="32"
+                    height="32"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                    <circle cx="8.5" cy="8.5" r="1.5" />
+                    <polyline points="21 15 16 10 5 21" />
+                    <line x1="4" y1="4" x2="20" y2="20" />
+                  </svg>
+                  <span style="font-size: 10px">Error</span>
+                </div>
+              } @else {
+                <img
+                  [src]="getThumbnail(item)"
+                  alt=""
+                  style="width: 100%; height: 100%; object-fit: cover;"
+                  loading="lazy"
+                  (error)="onThumbError(index)"
+                />
+              }
 
               @if (hasVideo(item)) {
                 <div
@@ -166,7 +199,29 @@ const CONTENT_COUNT = 50;
   `,
 })
 export class ReelPlayerPageComponent {
-  protected readonly content: ContentItem[] = generateContent(CONTENT_COUNT);
+  protected readonly content: ContentItem[] = (() => {
+    const items = generateContent(CONTENT_COUNT);
+    items.splice(3, 0, {
+      id: 'broken-content',
+      media: [
+        {
+          id: 'broken-img',
+          type: 'image',
+          src: 'https://broken.invalid/does-not-exist.jpg',
+          aspectRatio: 9 / 16,
+        },
+      ],
+      author: {
+        name: 'Error Demo',
+        avatar:
+          'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100',
+      },
+      likes: 0,
+      description:
+        'This slide has a broken image to demonstrate error handling.',
+    });
+    return items;
+  })();
   protected readonly isPlayerOpen = signal(false);
   protected readonly selectedIndex = signal(0);
 
@@ -183,6 +238,12 @@ export class ReelPlayerPageComponent {
   protected openPlayer(index: number): void {
     this.selectedIndex.set(index);
     this.isPlayerOpen.set(true);
+  }
+
+  protected readonly thumbErrors = signal<Set<number>>(new Set());
+
+  protected onThumbError(index: number): void {
+    this.thumbErrors.update((prev) => new Set([...prev, index]));
   }
 
   protected closePlayer(): void {

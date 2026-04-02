@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Play } from 'lucide-react';
+import { ImageOff, Play } from 'lucide-react';
 import { ReelPlayerOverlay } from '@reelkit/react-reel-player';
 import '@reelkit/react-reel-player/styles.css';
 import {
@@ -9,11 +9,68 @@ import {
 
 const CONTENT_COUNT = 50;
 
+const Thumbnail: React.FC<{ src: string }> = ({ src }) => {
+  const [error, setError] = useState(false);
+
+  if (error) {
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'rgba(255,255,255,0.3)',
+          gap: 4,
+        }}
+      >
+        <ImageOff size={32} strokeWidth={1.5} />
+        <span style={{ fontSize: 10 }}>Error</span>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt=""
+      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+      loading="lazy"
+      onError={() => setError(true)}
+    />
+  );
+};
+
 function ReelPlayerPage() {
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  const content = useMemo(() => generateContent(CONTENT_COUNT), []);
+  const content = useMemo(() => {
+    const items = generateContent(CONTENT_COUNT);
+    // Insert a broken image slide at index 3 to demonstrate error handling
+    items.splice(3, 0, {
+      id: 'broken-content',
+      media: [
+        {
+          id: 'broken-img',
+          type: 'image',
+          src: 'https://broken.invalid/does-not-exist.jpg',
+          aspectRatio: 9 / 16,
+        },
+      ],
+      author: {
+        name: 'Error Demo',
+        avatar:
+          'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100',
+      },
+      likes: 0,
+      description:
+        'This slide has a broken image to demonstrate error handling.',
+    });
+    return items;
+  }, []);
 
   const openPlayer = (index: number) => {
     setSelectedIndex(index);
@@ -85,16 +142,7 @@ function ReelPlayerPage() {
                   backgroundColor: '#222',
                 }}
               >
-                <img
-                  src={getThumbnail(item)}
-                  alt=""
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                  }}
-                  loading="lazy"
-                />
+                <Thumbnail src={getThumbnail(item)} />
 
                 {/* Video indicator */}
                 {hasVideo && (
