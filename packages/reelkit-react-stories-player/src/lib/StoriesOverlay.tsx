@@ -472,10 +472,10 @@ function StoriesContent<T extends StoryItem = StoryItem>({
 
     if (apiRef) {
       apiRef.current = {
-        nextStory: storiesCtrl.nextStory,
-        prevStory: storiesCtrl.prevStory,
-        nextGroup: storiesCtrl.nextGroup,
-        prevGroup: storiesCtrl.prevGroup,
+        nextStory: () => storiesCtrl.nextStory(),
+        prevStory: () => storiesCtrl.prevStory(),
+        nextGroup: () => storiesCtrl.nextGroup(),
+        prevGroup: () => storiesCtrl.prevGroup(),
         goToGroup: storiesCtrl.goToGroup,
         pause: storiesCtrl.pause,
         resume: storiesCtrl.resume,
@@ -503,15 +503,15 @@ function StoriesContent<T extends StoryItem = StoryItem>({
       >
         {renderNavigation ? (
           renderNavigation({
-            onPrevStory: storiesCtrl.prevStory,
-            onNextStory: storiesCtrl.nextStory,
-            onPrevGroup: storiesCtrl.prevGroup,
-            onNextGroup: storiesCtrl.nextGroup,
+            onPrevStory: () => storiesCtrl.prevStory(),
+            onNextStory: () => storiesCtrl.nextStory(),
+            onPrevGroup: () => storiesCtrl.prevGroup(),
+            onNextGroup: () => storiesCtrl.nextGroup(),
           })
         ) : (
           <NavButton
-            onClick={storiesCtrl.prevStory}
-            onLongPress={storiesCtrl.prevGroup}
+            onClick={() => storiesCtrl.prevStory()}
+            onLongPress={() => storiesCtrl.prevGroup()}
             aria-label="Previous story"
           >
             <ChevronLeft size={28} />
@@ -870,8 +870,8 @@ function StoriesContent<T extends StoryItem = StoryItem>({
 
         {renderNavigation ? null : (
           <NavButton
-            onClick={storiesCtrl.nextStory}
-            onLongPress={storiesCtrl.nextGroup}
+            onClick={() => storiesCtrl.nextStory()}
+            onLongPress={() => storiesCtrl.nextGroup()}
             aria-label="Next story"
           >
             <ChevronRight size={28} />
