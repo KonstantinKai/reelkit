@@ -82,7 +82,7 @@ function App() {
 | `onSlideChange`       | `(index: number) => void`   | -        | Callback after slide change   |
 | `apiRef`              | `MutableRefObject<ReelApi>` | -        | Ref to access Reel API        |
 | `loop`                | `boolean`                   | `false`  | Enable infinite loop          |
-| `useNavKeys`          | `boolean`                   | `true`   | Enable keyboard navigation    |
+| `enableNavKeys`       | `boolean`                   | `true`   | Enable keyboard navigation    |
 | `enableWheel`         | `boolean`                   | `true`   | Enable mouse wheel navigation |
 | `wheelDebounceMs`     | `number`                    | `200`    | Wheel debounce duration (ms)  |
 | `transitionDuration`  | `number`                    | `300`    | Transition duration (ms)      |

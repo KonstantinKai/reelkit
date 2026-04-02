@@ -43,7 +43,7 @@ export type ReelProxyProps = Pick<
   | 'transitionDuration'
   | 'swipeDistanceFactor'
   | 'loop'
-  | 'useNavKeys'
+  | 'enableNavKeys'
   | 'enableWheel'
   | 'wheelDebounceMs'
 >;
@@ -461,7 +461,7 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>(
             const {
               content: items,
               loop: loopProp = false,
-              useNavKeys: navKeys = true,
+              enableNavKeys: navKeys = true,
               enableWheel: wheel = true,
               wheelDebounceMs: wheelMs,
               transitionDuration: duration,
@@ -474,7 +474,7 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>(
                 size={sizeSignal.value}
                 direction="vertical"
                 loop={loopProp}
-                useNavKeys={navKeys}
+                enableNavKeys={navKeys}
                 enableWheel={wheel}
                 wheelDebounceMs={wheelMs}
                 transitionDuration={duration}

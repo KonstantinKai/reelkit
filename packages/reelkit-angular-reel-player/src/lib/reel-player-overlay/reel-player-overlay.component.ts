@@ -128,7 +128,7 @@ const _kMobileBreakpointPx = 768;
             [size]="size()"
             direction="vertical"
             [loop]="loop()"
-            [useNavKeys]="useNavKeys()"
+            [enableNavKeys]="enableNavKeys()"
             [enableWheel]="enableWheel()"
             [wheelDebounceMs]="wheelDebounceMs()"
             [transitionDuration]="transitionDuration()"
@@ -341,7 +341,7 @@ export class RkReelPlayerOverlayComponent<
   readonly transitionDuration = input<number>(300);
   readonly swipeDistanceFactor = input<number>(0.12);
   readonly loop = input<boolean>(false);
-  readonly useNavKeys = input<boolean>(true);
+  readonly enableNavKeys = input<boolean>(true);
   readonly enableWheel = input<boolean>(true);
   readonly wheelDebounceMs = input<number>(200);
 

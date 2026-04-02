@@ -94,7 +94,7 @@ function App() {
 | Prop                  | Type      | Default | Description                |
 | --------------------- | --------- | ------- | -------------------------- |
 | `loop`                | `boolean` | `false` | Enable infinite loop       |
-| `useNavKeys`          | `boolean` | `true`  | Enable keyboard navigation |
+| `enableNavKeys`       | `boolean` | `true`  | Enable keyboard navigation |
 | `enableWheel`         | `boolean` | `true`  | Enable mouse wheel         |
 | `wheelDebounceMs`     | `number`  | `200`   | Wheel debounce (ms)        |
 | `transitionDuration`  | `number`  | `300`   | Animation duration (ms)    |

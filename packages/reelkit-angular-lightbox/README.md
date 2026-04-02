@@ -92,7 +92,7 @@ export class GalleryComponent {
 | `transition`          | `TransitionType` | `'slide'` | Transition animation type    |
 | `showInfo`            | `boolean`        | `true`    | Show title/description       |
 | `loop`                | `boolean`        | `false`   | Enable infinite loop         |
-| `useNavKeys`          | `boolean`        | `true`    | Enable keyboard navigation   |
+| `enableNavKeys`       | `boolean`        | `true`    | Enable keyboard navigation   |
 | `enableWheel`         | `boolean`        | `true`    | Enable mouse wheel           |
 | `wheelDebounceMs`     | `number`         | `200`     | Wheel debounce (ms)          |
 | `transitionDuration`  | `number`         | `300`     | Animation duration (ms)      |

@@ -189,7 +189,7 @@ const NestedSlider: React.FC<NestedSliderProps> = (props) => {
         size={size}
         direction="horizontal"
         loop={false}
-        useNavKeys={true}
+        enableNavKeys={true}
         enableWheel={enableWheel}
         apiRef={localSliderRef}
         beforeChange={handleBeforeChange}

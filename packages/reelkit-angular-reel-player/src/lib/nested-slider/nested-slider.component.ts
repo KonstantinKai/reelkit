@@ -76,7 +76,7 @@ import type {
         [size]="size()"
         direction="horizontal"
         [loop]="false"
-        [useNavKeys]="true"
+        [enableNavKeys]="true"
         [enableWheel]="enableWheel()"
         [class.rk-nested-active]="isActive()"
         (apiReady)="onInnerApiReady($event)"

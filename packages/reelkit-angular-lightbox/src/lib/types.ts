@@ -60,7 +60,7 @@ export interface ReelProxyProps {
   loop?: boolean;
 
   /** Enable keyboard arrow key navigation. @default true */
-  useNavKeys?: boolean;
+  enableNavKeys?: boolean;
 
   /** Enable mouse wheel navigation. @default false */
   enableWheel?: boolean;

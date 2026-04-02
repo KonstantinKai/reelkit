@@ -1,76 +1,75 @@
+/* eslint-disable @nx/workspace-constant-naming */
 import type { ContentItem, MediaItem } from './types';
 
 const SAMPLE_VIDEOS = [
   {
-    src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+    src: 'https://videos.pexels.com/video-files/854228/854228-hd_1280_720_30fps.mp4',
     poster:
-      'https://storage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg',
+      'https://images.pexels.com/videos/854228/free-video-854228.jpg?auto=compress&w=640',
     aspectRatio: 16 / 9,
   },
   {
-    src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+    src: 'https://videos.pexels.com/video-files/1093662/1093662-hd_1920_1080_30fps.mp4',
     poster:
-      'https://storage.googleapis.com/gtv-videos-bucket/sample/images/ElephantsDream.jpg',
+      'https://images.pexels.com/videos/1093662/free-video-1093662.jpg?auto=compress&w=640',
     aspectRatio: 16 / 9,
   },
   {
-    src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+    src: 'https://videos.pexels.com/video-files/3015482/3015482-hd_1920_1080_24fps.mp4',
     poster:
-      'https://storage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerBlazes.jpg',
+      'https://images.pexels.com/videos/3015482/free-video-3015482.jpg?auto=compress&w=640',
     aspectRatio: 16 / 9,
   },
   {
-    src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+    src: 'https://videos.pexels.com/video-files/2519660/2519660-hd_1920_1080_24fps.mp4',
     poster:
-      'https://storage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerEscapes.jpg',
+      'https://images.pexels.com/videos/2519660/free-video-2519660.jpg?auto=compress&w=640',
     aspectRatio: 16 / 9,
   },
   {
-    src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
+    src: 'https://videos.pexels.com/video-files/1409899/1409899-uhd_2560_1440_25fps.mp4',
     poster:
-      'https://storage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerFun.jpg',
+      'https://images.pexels.com/videos/1409899/free-video-1409899.jpg?auto=compress&w=640',
     aspectRatio: 16 / 9,
   },
   {
-    src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
+    src: 'https://videos.pexels.com/video-files/2098989/2098989-hd_1920_1080_30fps.mp4',
     poster:
-      'https://storage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerJoyrides.jpg',
+      'https://images.pexels.com/videos/2098989/free-video-2098989.jpg?auto=compress&w=640',
     aspectRatio: 16 / 9,
   },
   {
-    src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
+    src: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
     poster:
-      'https://storage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerMeltdowns.jpg',
+      'https://images.pexels.com/videos/854228/free-video-854228.jpg?auto=compress&w=640',
     aspectRatio: 16 / 9,
   },
   {
-    src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4',
+    src: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4',
     poster:
-      'https://storage.googleapis.com/gtv-videos-bucket/sample/images/Sintel.jpg',
+      'https://images.pexels.com/videos/1093662/free-video-1093662.jpg?auto=compress&w=640',
     aspectRatio: 16 / 9,
   },
   {
-    src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4',
-    poster:
-      'https://storage.googleapis.com/gtv-videos-bucket/sample/images/SubaruOutbackOnStreetAndDirt.jpg',
+    src: 'https://media.w3.org/2010/05/sintel/trailer.mp4',
+    poster: 'https://media.w3.org/2010/05/sintel/poster.png',
     aspectRatio: 16 / 9,
   },
   {
-    src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4',
-    poster:
-      'https://storage.googleapis.com/gtv-videos-bucket/sample/images/TearsOfSteel.jpg',
+    src: 'https://media.w3.org/2010/05/bunny/trailer.mp4',
+    poster: 'https://media.w3.org/2010/05/bunny/poster.png',
     aspectRatio: 16 / 9,
   },
   {
-    src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/VolkswagenGTIReview.mp4',
+    src: 'https://videos.pexels.com/video-files/856029/856029-hd_1280_720_30fps.mp4',
     poster:
-      'https://storage.googleapis.com/gtv-videos-bucket/sample/images/VolkswagenGTIReview.jpg',
+      'https://images.pexels.com/videos/856029/free-video-856029.jpg?auto=compress&w=640',
     aspectRatio: 16 / 9,
   },
   {
-    src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4',
+    src: 'https://videos.pexels.com/video-files/857135/857135-hd_1280_720_25fps.mp4',
     poster:
-      'https://storage.googleapis.com/gtv-videos-bucket/sample/images/WeAreGoingOnBullrun.jpg',
+      'https://images.pexels.com/videos/857135/free-video-857135.jpg?auto=compress&w=640',
     aspectRatio: 16 / 9,
   },
 ];
@@ -349,3 +348,4 @@ export const getThumbnail = (item: ContentItem): string => {
 };
 
 export const SAMPLE_IMAGES = PEXELS_IMAGES;
+export { SAMPLE_VIDEOS };

@@ -256,7 +256,7 @@ const focusFirstFocusable = (container: HTMLElement): void => {
               direction="horizontal"
               [initialIndex]="safeInitialIndex()"
               [loop]="loop() ?? false"
-              [useNavKeys]="useNavKeys() ?? true"
+              [enableNavKeys]="enableNavKeys() ?? true"
               [enableWheel]="enableWheel() ?? true"
               [wheelDebounceMs]="wheelDebounceMs() ?? 200"
               [transitionDuration]="transitionDuration() ?? 300"
@@ -438,7 +438,7 @@ export class RkLightboxOverlayComponent {
   readonly loop = input<ReelProxyProps['loop']>(false);
 
   /** Enable keyboard arrow key navigation. @default true */
-  readonly useNavKeys = input<ReelProxyProps['useNavKeys']>(true);
+  readonly enableNavKeys = input<ReelProxyProps['enableNavKeys']>(true);
 
   /** Enable mouse wheel navigation. @default true */
   readonly enableWheel = input<ReelProxyProps['enableWheel']>(true);

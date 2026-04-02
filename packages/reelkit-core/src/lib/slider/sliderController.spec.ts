@@ -78,25 +78,25 @@ describe('createSliderController', () => {
     it('starts at initialIndex 0 by default', () => {
       const ctrl = createSliderController({ count: 5 });
       expect(ctrl.state.index.value).toBe(0);
-      ctrl.detach();
+      ctrl.dispose();
     });
 
     it('respects custom initialIndex', () => {
       const ctrl = createSliderController({ count: 5, initialIndex: 3 });
       expect(ctrl.state.index.value).toBe(3);
-      ctrl.detach();
+      ctrl.dispose();
     });
 
     it('computes default indexes with overscan', () => {
       const ctrl = createSliderController({ count: 5, initialIndex: 2 });
       expect(ctrl.state.indexes.value).toEqual([1, 2, 3]);
-      ctrl.detach();
+      ctrl.dispose();
     });
 
     it('getRangeIndex returns position within indexes', () => {
       const ctrl = createSliderController({ count: 5, initialIndex: 2 });
       expect(ctrl.getRangeIndex()).toBe(1);
-      ctrl.detach();
+      ctrl.dispose();
     });
   });
 
@@ -110,7 +110,7 @@ describe('createSliderController', () => {
 
       expect(ctrl.state.index.value).toBe(1);
       dispose();
-      ctrl.detach();
+      ctrl.dispose();
     });
 
     it('prev decrements index', async () => {
@@ -122,7 +122,7 @@ describe('createSliderController', () => {
 
       expect(ctrl.state.index.value).toBe(1);
       dispose();
-      ctrl.detach();
+      ctrl.dispose();
     });
 
     it('next does nothing at last slide (no loop)', async () => {
@@ -132,7 +132,7 @@ describe('createSliderController', () => {
       await ctrl.next();
 
       expect(ctrl.state.index.value).toBe(2);
-      ctrl.detach();
+      ctrl.dispose();
     });
 
     it('prev does nothing at first slide (no loop)', async () => {
@@ -142,7 +142,7 @@ describe('createSliderController', () => {
       await ctrl.prev();
 
       expect(ctrl.state.index.value).toBe(0);
-      ctrl.detach();
+      ctrl.dispose();
     });
 
     it('fires onBeforeChange and onAfterChange', async () => {
@@ -160,7 +160,7 @@ describe('createSliderController', () => {
       expect(onBeforeChange).toHaveBeenCalledWith(0, 1, expect.any(Number));
       expect(onAfterChange).toHaveBeenCalled();
       dispose();
-      ctrl.detach();
+      ctrl.dispose();
     });
 
     it('ignores next while animating', async () => {
@@ -174,7 +174,7 @@ describe('createSliderController', () => {
 
       expect(ctrl.state.index.value).toBe(1);
       dispose();
-      ctrl.detach();
+      ctrl.dispose();
     });
   });
 
@@ -186,7 +186,7 @@ describe('createSliderController', () => {
       ctrl.goTo(3);
 
       expect(ctrl.state.index.value).toBe(3);
-      ctrl.detach();
+      ctrl.dispose();
     });
 
     it('goTo clamps to valid range', () => {
@@ -198,7 +198,7 @@ describe('createSliderController', () => {
 
       ctrl.goTo(-5);
       expect(ctrl.state.index.value).toBe(0);
-      ctrl.detach();
+      ctrl.dispose();
     });
 
     it('goTo does nothing when already at target', () => {
@@ -209,7 +209,7 @@ describe('createSliderController', () => {
       ctrl.goTo(0);
 
       expect(onBeforeChange).not.toHaveBeenCalled();
-      ctrl.detach();
+      ctrl.dispose();
     });
 
     it('animated goTo transitions to target', async () => {
@@ -221,7 +221,7 @@ describe('createSliderController', () => {
 
       expect(ctrl.state.index.value).toBe(3);
       dispose();
-      ctrl.detach();
+      ctrl.dispose();
     });
   });
 
@@ -231,7 +231,7 @@ describe('createSliderController', () => {
       ctrl.setPrimarySize(400);
 
       expect(ctrl.state.axisValue.value.value).toBe(-400);
-      ctrl.detach();
+      ctrl.dispose();
     });
 
     it('no-ops when size unchanged', () => {
@@ -244,7 +244,7 @@ describe('createSliderController', () => {
 
       ctrl.setPrimarySize(400);
       expect(listener.mock.calls.length).toBe(calls);
-      ctrl.detach();
+      ctrl.dispose();
     });
   });
 
@@ -256,7 +256,7 @@ describe('createSliderController', () => {
       ctrl.adjust();
 
       expect(ctrl.state.axisValue.value.value).toBe(-400);
-      ctrl.detach();
+      ctrl.dispose();
     });
   });
 
@@ -267,7 +267,7 @@ describe('createSliderController', () => {
 
       expect(mockGesture.observe).toHaveBeenCalled();
       expect(mockKeyboard.attach).toHaveBeenCalled();
-      ctrl.detach();
+      ctrl.dispose();
     });
 
     it('observe does not attach gesture when enableGestures is false', () => {
@@ -277,7 +277,7 @@ describe('createSliderController', () => {
 
       expect(mockGesture.observe).not.toHaveBeenCalled();
       expect(mockKeyboard.attach).toHaveBeenCalled();
-      ctrl.detach();
+      ctrl.dispose();
     });
 
     it('unobserve detaches all controllers', () => {
@@ -287,7 +287,7 @@ describe('createSliderController', () => {
 
       expect(mockGesture.unobserve).toHaveBeenCalled();
       expect(mockKeyboard.detach).toHaveBeenCalled();
-      ctrl.detach();
+      ctrl.dispose();
     });
   });
 
@@ -297,7 +297,7 @@ describe('createSliderController', () => {
       ctrl.updateConfig({ direction: 'horizontal' });
 
       expect(mockGesture.updateEvents).toHaveBeenCalled();
-      ctrl.detach();
+      ctrl.dispose();
     });
   });
 
@@ -319,7 +319,7 @@ describe('createSliderController', () => {
       expect(onAfterChange1).not.toHaveBeenCalled();
       expect(onAfterChange2).toHaveBeenCalled();
       dispose();
-      ctrl.detach();
+      ctrl.dispose();
     });
   });
 
@@ -353,7 +353,7 @@ describe('createSliderController', () => {
       ctrl.attach(el);
 
       expect(mockGesture.attach).not.toHaveBeenCalled();
-      ctrl.detach();
+      ctrl.dispose();
     });
 
     it('attaches gesture when enableGestures is true', () => {
@@ -363,7 +363,7 @@ describe('createSliderController', () => {
       ctrl.attach(el);
 
       expect(mockGesture.attach).toHaveBeenCalledWith(el);
-      ctrl.detach();
+      ctrl.dispose();
     });
   });
 
@@ -378,7 +378,7 @@ describe('createSliderController', () => {
 
       expect(ctrl.state.index.value).toBe(1);
       done();
-      ctrl.detach();
+      ctrl.dispose();
     });
 
     it('navigates up on vertical slider', async () => {
@@ -395,7 +395,7 @@ describe('createSliderController', () => {
 
       expect(ctrl.state.index.value).toBe(1);
       done();
-      ctrl.detach();
+      ctrl.dispose();
     });
 
     it('navigates right on horizontal slider', async () => {
@@ -411,7 +411,7 @@ describe('createSliderController', () => {
 
       expect(ctrl.state.index.value).toBe(1);
       done();
-      ctrl.detach();
+      ctrl.dispose();
     });
 
     it('navigates left on horizontal slider', async () => {
@@ -428,7 +428,7 @@ describe('createSliderController', () => {
 
       expect(ctrl.state.index.value).toBe(1);
       done();
-      ctrl.detach();
+      ctrl.dispose();
     });
 
     it('ignores cross-axis keys', () => {
@@ -439,7 +439,7 @@ describe('createSliderController', () => {
       capturedKeyboardEvents?.onKeyPress('right', new KeyboardEvent('keydown'));
 
       expect(ctrl.state.index.value).toBe(0);
-      ctrl.detach();
+      ctrl.dispose();
     });
 
     it('does not navigate past boundaries', () => {
@@ -453,7 +453,7 @@ describe('createSliderController', () => {
       capturedKeyboardEvents?.onKeyPress('down', new KeyboardEvent('keydown'));
 
       expect(ctrl.state.index.value).toBe(2);
-      ctrl.detach();
+      ctrl.dispose();
     });
   });
 
@@ -472,7 +472,7 @@ describe('createSliderController', () => {
 
       expect(ctrl.state.index.value).toBe(1);
       done();
-      ctrl.detach();
+      ctrl.dispose();
     });
 
     it('navigates right on horizontal slider', async () => {
@@ -489,7 +489,7 @@ describe('createSliderController', () => {
 
       expect(ctrl.state.index.value).toBe(1);
       done();
-      ctrl.detach();
+      ctrl.dispose();
     });
 
     it('ignores cross-axis directions', () => {
@@ -503,7 +503,7 @@ describe('createSliderController', () => {
       capturedWheelEvents?.onWheel('left', new WheelEvent('wheel'));
 
       expect(ctrl.state.index.value).toBe(0);
-      ctrl.detach();
+      ctrl.dispose();
     });
   });
 
@@ -545,7 +545,7 @@ describe('createSliderController', () => {
       expect(ctrl.state.index.value).toBe(2);
       expect(onDragCanceled).toHaveBeenCalled();
       done();
-      ctrl.detach();
+      ctrl.dispose();
     });
 
     it('fires onDragStart on main axis drag', () => {
@@ -564,7 +564,7 @@ describe('createSliderController', () => {
       });
 
       expect(onDragStart).toHaveBeenCalledWith(0);
-      ctrl.detach();
+      ctrl.dispose();
     });
   });
 
@@ -575,7 +575,7 @@ describe('createSliderController', () => {
 
       ctrl.goTo(0);
       expect(ctrl.state.index.value).toBe(0);
-      ctrl.detach();
+      ctrl.dispose();
     });
   });
 
@@ -586,7 +586,7 @@ describe('createSliderController', () => {
         rangeExtractor: () => [4, 5],
       });
       expect(ctrl.state.indexes.value).toEqual([4, 5]);
-      ctrl.detach();
+      ctrl.dispose();
     });
 
     it('clamps rangeExtractor result to 3 items centered on current index', () => {
@@ -596,7 +596,7 @@ describe('createSliderController', () => {
         rangeExtractor: () => [1, 2, 3, 4, 5],
       });
       expect(ctrl.state.indexes.value).toEqual([2, 3, 4]);
-      ctrl.detach();
+      ctrl.dispose();
     });
   });
 
@@ -620,7 +620,7 @@ describe('createSliderController', () => {
       capturedGestureEvents.onDragEnd?.(makeDragEndEvent(0, -200));
 
       expect(onDragEnd).not.toHaveBeenCalled();
-      ctrl.detach();
+      ctrl.dispose();
     });
 
     it('horizontal slider processes main-axis drag end', () => {
@@ -645,7 +645,136 @@ describe('createSliderController', () => {
       capturedGestureEvents.onDragEnd?.(makeDragEndEvent(-200, 0));
 
       expect(onDragEnd).toHaveBeenCalled();
-      ctrl.detach();
+      ctrl.dispose();
+    });
+  });
+
+  describe('enableNavKeys', () => {
+    it('attaches keyboard on observe when enableNavKeys is true (default)', () => {
+      const ctrl = createSliderController(
+        { count: 3, direction: 'horizontal' },
+        {},
+      );
+      mockKeyboard.attach.mockClear();
+      ctrl.observe();
+      expect(mockKeyboard.attach).toHaveBeenCalled();
+      ctrl.dispose();
+    });
+
+    it('does not attach keyboard on observe when enableNavKeys is false', () => {
+      const ctrl = createSliderController(
+        { count: 3, direction: 'horizontal', enableNavKeys: false },
+        {},
+      );
+      mockKeyboard.attach.mockClear();
+      ctrl.observe();
+      expect(mockKeyboard.attach).not.toHaveBeenCalled();
+      ctrl.dispose();
+    });
+
+    it('detaches keyboard when enableNavKeys changes to false via updateConfig', () => {
+      const ctrl = createSliderController(
+        { count: 3, direction: 'horizontal', enableNavKeys: true },
+        {},
+      );
+      ctrl.observe();
+      mockKeyboard.detach.mockClear();
+      ctrl.updateConfig({ enableNavKeys: false });
+      expect(mockKeyboard.detach).toHaveBeenCalled();
+      ctrl.dispose();
+    });
+
+    it('attaches keyboard when enableNavKeys changes to true via updateConfig', () => {
+      const ctrl = createSliderController(
+        { count: 3, direction: 'horizontal', enableNavKeys: false },
+        {},
+      );
+      ctrl.observe();
+      mockKeyboard.attach.mockClear();
+      ctrl.updateConfig({ enableNavKeys: true });
+      expect(mockKeyboard.attach).toHaveBeenCalled();
+      ctrl.dispose();
+    });
+  });
+
+  describe('onNavKeyPress', () => {
+    it('calls onNavKeyPress instead of default navigation', () => {
+      const onNavKeyPress = vi.fn();
+      const ctrl = createSliderController(
+        { count: 5, initialIndex: 2, direction: 'horizontal' },
+        { onNavKeyPress },
+      );
+      ctrl.observe();
+
+      capturedKeyboardEvents!.onKeyPress('right', new KeyboardEvent('keydown'));
+      expect(onNavKeyPress).toHaveBeenCalledWith(1);
+
+      capturedKeyboardEvents!.onKeyPress('left', new KeyboardEvent('keydown'));
+      expect(onNavKeyPress).toHaveBeenCalledWith(-1);
+
+      ctrl.dispose();
+    });
+
+    it('uses default navigation when onNavKeyPress is not provided', () => {
+      const onAfterChange = vi.fn();
+      const ctrl = createSliderController(
+        { count: 5, direction: 'horizontal' },
+        { onAfterChange },
+      );
+      ctrl.observe();
+
+      capturedKeyboardEvents!.onKeyPress('right', new KeyboardEvent('keydown'));
+      // Default behavior triggers changeIndex which fires onAfterChange
+      // (after transition completes)
+      ctrl.dispose();
+    });
+  });
+
+  describe('enableWheel', () => {
+    it('does not attach wheel on observe when enableWheel is false (default)', () => {
+      const ctrl = createSliderController(
+        { count: 3, direction: 'horizontal' },
+        {},
+      );
+      mockWheel.attach.mockClear();
+      ctrl.observe();
+      expect(mockWheel.attach).not.toHaveBeenCalled();
+      ctrl.dispose();
+    });
+
+    it('attaches wheel on observe when enableWheel is true', () => {
+      const ctrl = createSliderController(
+        { count: 3, direction: 'horizontal', enableWheel: true },
+        {},
+      );
+      mockWheel.attach.mockClear();
+      ctrl.observe();
+      expect(mockWheel.attach).toHaveBeenCalled();
+      ctrl.dispose();
+    });
+
+    it('attaches wheel when enableWheel changes to true via updateConfig', () => {
+      const ctrl = createSliderController(
+        { count: 3, direction: 'horizontal', enableWheel: false },
+        {},
+      );
+      ctrl.observe();
+      mockWheel.attach.mockClear();
+      ctrl.updateConfig({ enableWheel: true });
+      expect(mockWheel.attach).toHaveBeenCalled();
+      ctrl.dispose();
+    });
+
+    it('detaches wheel when enableWheel changes to false via updateConfig', () => {
+      const ctrl = createSliderController(
+        { count: 3, direction: 'horizontal', enableWheel: true },
+        {},
+      );
+      ctrl.observe();
+      mockWheel.detach.mockClear();
+      ctrl.updateConfig({ enableWheel: false });
+      expect(mockWheel.detach).toHaveBeenCalled();
+      ctrl.dispose();
     });
   });
 });

@@ -183,7 +183,7 @@ export class ReelComponent implements OnInit, AfterViewInit {
   swipeDistanceFactor = input<number>(0.12);
 
   /** Enable keyboard arrow key navigation. */
-  useNavKeys = input<boolean>(true);
+  enableNavKeys = input<boolean>(true);
 
   /** Enable mouse wheel navigation. */
   enableWheel = input<boolean>(false);
@@ -498,7 +498,7 @@ export class ReelComponent implements OnInit, AfterViewInit {
   private registerNavKeysSyncEffect(): void {
     runInInjectionContext(this._injector, () => {
       effect(() => {
-        if (this.useNavKeys()) {
+        if (this.enableNavKeys()) {
           this._controller.observe();
         } else {
           this._controller.unobserve();
@@ -526,7 +526,6 @@ export class ReelComponent implements OnInit, AfterViewInit {
   private registerDestroyHandler(): void {
     this._destroyRef.onDestroy(() => {
       this._destroyed = true;
-      this._controller.detach();
       this._controller.dispose();
     });
   }
@@ -536,10 +535,10 @@ export class ReelComponent implements OnInit, AfterViewInit {
     this._controller.attach(hostElement);
     // Conditionally observe after attaching the DOM element. The effects
     // registered in ngOnInit run synchronously before ngAfterViewInit, so we
-    // re-apply the current useNavKeys value here now that the element is
-    // attached. This avoids unconditionally calling observe() when useNavKeys
+    // re-apply the current enableNavKeys value here now that the element is
+    // attached. This avoids unconditionally calling observe() when enableNavKeys
     // is false.
-    if (untracked(() => this.useNavKeys())) {
+    if (untracked(() => this.enableNavKeys())) {
       this._controller.observe();
     }
     this.apiReady.emit(this.buildApi());

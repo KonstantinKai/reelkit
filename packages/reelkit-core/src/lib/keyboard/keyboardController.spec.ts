@@ -60,22 +60,12 @@ describe('createKeyboardController', () => {
       ctrl.detach();
     });
 
-    it('maps Escape to escape', () => {
-      const ctrl = createKeyboardController({}, { onKeyPress });
-      ctrl.attach();
-      dispatch('Escape');
-      expect(onKeyPress).toHaveBeenCalledWith(
-        'escape',
-        expect.any(KeyboardEvent),
-      );
-      ctrl.detach();
-    });
-
-    it('ignores unmapped keys', () => {
+    it('ignores unmapped keys including Escape', () => {
       const ctrl = createKeyboardController({}, { onKeyPress });
       ctrl.attach();
       dispatch('Enter');
       dispatch('Space');
+      dispatch('Escape');
       dispatch('a');
       expect(onKeyPress).not.toHaveBeenCalled();
       ctrl.detach();
@@ -108,22 +98,18 @@ describe('createKeyboardController', () => {
       ctrl.detach();
     });
 
-    it('always allows escape regardless of filter', () => {
+    it('does not pass escape through filter', () => {
       const ctrl = createKeyboardController({ filter: ['up'] }, { onKeyPress });
       ctrl.attach();
 
       dispatch('Escape');
       dispatch('ArrowLeft');
 
-      expect(onKeyPress).toHaveBeenCalledTimes(1);
-      expect(onKeyPress).toHaveBeenCalledWith(
-        'escape',
-        expect.any(KeyboardEvent),
-      );
+      expect(onKeyPress).not.toHaveBeenCalled();
       ctrl.detach();
     });
 
-    it('allows all keys when filter is empty', () => {
+    it('allows all arrow keys when filter is empty', () => {
       const ctrl = createKeyboardController({ filter: [] }, { onKeyPress });
       ctrl.attach();
 
@@ -133,7 +119,7 @@ describe('createKeyboardController', () => {
       dispatch('ArrowLeft');
       dispatch('Escape');
 
-      expect(onKeyPress).toHaveBeenCalledTimes(5);
+      expect(onKeyPress).toHaveBeenCalledTimes(4);
       ctrl.detach();
     });
   });
@@ -159,7 +145,7 @@ describe('createKeyboardController', () => {
       ctrl.detach();
     });
 
-    it('escape is subject to throttle like other keys', () => {
+    it('throttles all arrow keys equally', () => {
       const ctrl = createKeyboardController(
         { throttleMs: 100 },
         { onKeyPress },
@@ -168,12 +154,12 @@ describe('createKeyboardController', () => {
 
       dispatch('ArrowUp'); // t=0, fires
       vi.advanceTimersByTime(10);
-      dispatch('Escape'); // t=10, throttled
+      dispatch('ArrowDown'); // t=10, throttled
 
       expect(onKeyPress).toHaveBeenCalledTimes(1);
 
       vi.advanceTimersByTime(100);
-      dispatch('Escape'); // t=110, fires
+      dispatch('ArrowDown'); // t=110, fires
 
       expect(onKeyPress).toHaveBeenCalledTimes(2);
       ctrl.detach();

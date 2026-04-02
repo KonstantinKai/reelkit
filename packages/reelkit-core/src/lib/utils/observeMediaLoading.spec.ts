@@ -4,12 +4,22 @@ import { observeMediaLoading } from './observeMediaLoading';
 const createVideo = () => document.createElement('video');
 
 describe('observeMediaLoading', () => {
-  it('calls onReady on canplay', () => {
+  it('does not call onReady on canplay', () => {
     const video = createVideo();
     const onReady = vi.fn();
 
     observeMediaLoading(video, { onReady, onWaiting: vi.fn() });
     video.dispatchEvent(new Event('canplay'));
+
+    expect(onReady).not.toHaveBeenCalled();
+  });
+
+  it('calls onReady on canplaythrough', () => {
+    const video = createVideo();
+    const onReady = vi.fn();
+
+    observeMediaLoading(video, { onReady, onWaiting: vi.fn() });
+    video.dispatchEvent(new Event('canplaythrough'));
 
     expect(onReady).toHaveBeenCalledTimes(1);
   });
@@ -60,6 +70,34 @@ describe('observeMediaLoading', () => {
     expect(onPlaying).not.toHaveBeenCalled();
   });
 
+  it('waiting → canplay sequence does not call onReady (prevents shallow buffer race)', () => {
+    const video = createVideo();
+    const onReady = vi.fn();
+    const onWaiting = vi.fn();
+
+    observeMediaLoading(video, { onReady, onWaiting });
+
+    video.dispatchEvent(new Event('waiting'));
+    expect(onWaiting).toHaveBeenCalledTimes(1);
+
+    video.dispatchEvent(new Event('canplay'));
+    expect(onReady).not.toHaveBeenCalled();
+  });
+
+  it('waiting → playing sequence calls onReady (playback actually resumed)', () => {
+    const video = createVideo();
+    const onReady = vi.fn();
+    const onWaiting = vi.fn();
+
+    observeMediaLoading(video, { onReady, onWaiting });
+
+    video.dispatchEvent(new Event('waiting'));
+    expect(onWaiting).toHaveBeenCalledTimes(1);
+
+    video.dispatchEvent(new Event('playing'));
+    expect(onReady).toHaveBeenCalledTimes(1);
+  });
+
   it('removes all listeners on dispose', () => {
     const video = createVideo();
     const onReady = vi.fn();
@@ -68,9 +106,9 @@ describe('observeMediaLoading', () => {
     const dispose = observeMediaLoading(video, { onReady, onWaiting });
     dispose();
 
-    video.dispatchEvent(new Event('canplay'));
     video.dispatchEvent(new Event('waiting'));
     video.dispatchEvent(new Event('playing'));
+    video.dispatchEvent(new Event('canplaythrough'));
 
     expect(onReady).not.toHaveBeenCalled();
     expect(onWaiting).not.toHaveBeenCalled();

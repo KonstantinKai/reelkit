@@ -250,7 +250,7 @@ describe('VideoSlide', () => {
       );
 
       const video = container.querySelector('video')!;
-      video.dispatchEvent(new Event('canplay'));
+      video.dispatchEvent(new Event('playing'));
       expect(onReady).toHaveBeenCalled();
     });
 

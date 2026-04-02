@@ -83,6 +83,7 @@ export const createSliderController = (
     enableWheel: initialConfig.enableWheel ?? false,
     wheelDebounceMs: initialConfig.wheelDebounceMs ?? _kDefaultWheelDebounceMs,
     enableGestures: initialConfig.enableGestures ?? true,
+    enableNavKeys: initialConfig.enableNavKeys ?? true,
   };
 
   let events = { ...initialEvents };
@@ -175,7 +176,6 @@ export const createSliderController = (
         return deferred;
       });
     } finally {
-      // Update state atomically — observers see both changes at once
       batch(() => {
         index.value = nextIndex;
         axisValue.value = {
@@ -189,7 +189,6 @@ export const createSliderController = (
     }
   };
 
-  // Gesture handlers
   const onDragUpdate = (event: GestureAxisDragUpdateEvent) => {
     axisValue.value = {
       value: axisValue.value.value + event.primaryDelta,
@@ -286,38 +285,40 @@ export const createSliderController = (
         if (increment !== null) {
           const isFirstOrLast = getIsFirstOrLast(indexes.value, increment);
           if (!isFirstOrLast) {
-            changeIndex(increment);
+            if (events.onNavKeyPress) {
+              events.onNavKeyPress(increment);
+            } else {
+              changeIndex(increment);
+            }
           }
         }
       },
     },
   );
 
-  const wheelController = config.enableWheel
-    ? createWheelController(
-        { debounceMs: config.wheelDebounceMs },
-        {
-          onWheel: (direction: WheelDirection) => {
-            let increment: -1 | 1 | null = null;
+  const wheelController = createWheelController(
+    { debounceMs: config.wheelDebounceMs },
+    {
+      onWheel: (direction: WheelDirection) => {
+        let increment: -1 | 1 | null = null;
 
-            if (isHorizontal()) {
-              if (direction === 'left') increment = -1;
-              if (direction === 'right') increment = 1;
-            } else {
-              if (direction === 'up') increment = -1;
-              if (direction === 'down') increment = 1;
-            }
+        if (isHorizontal()) {
+          if (direction === 'left') increment = -1;
+          if (direction === 'right') increment = 1;
+        } else {
+          if (direction === 'up') increment = -1;
+          if (direction === 'down') increment = 1;
+        }
 
-            if (increment !== null) {
-              const isFirstOrLast = getIsFirstOrLast(indexes.value, increment);
-              if (!isFirstOrLast) {
-                changeIndex(increment);
-              }
-            }
-          },
-        },
-      )
-    : null;
+        if (increment !== null) {
+          const isFirstOrLast = getIsFirstOrLast(indexes.value, increment);
+          if (!isFirstOrLast) {
+            changeIndex(increment);
+          }
+        }
+      },
+    },
+  );
 
   let afterChangeDispose: (() => void) | null = null;
   if (events.onAfterChange) {
@@ -393,8 +394,6 @@ export const createSliderController = (
           return deferred;
         });
       } finally {
-        // Clear override and set final state atomically — observers see
-        // both changes at once, preventing an intermediate indexes flash
         batch(() => {
           goToOverride.value = null;
           index.value = clampedIndex;
@@ -425,9 +424,10 @@ export const createSliderController = (
     },
 
     updateConfig(newConfig: Partial<SliderConfig>) {
+      const prevNavKeys = config.enableNavKeys;
+      const prevWheel = config.enableWheel;
       config = { ...config, ...newConfig };
 
-      // Update gesture controller direction
       const horizontal = config.direction === 'horizontal';
       gestureController.updateEvents({
         onHorizontalDragStart: horizontal ? onMainAxisDragStart : undefined,
@@ -435,16 +435,30 @@ export const createSliderController = (
         onVerticalDragStart: !horizontal ? onMainAxisDragStart : undefined,
         onVerticalDragUpdate: !horizontal ? onDragUpdate : undefined,
       });
+
+      if (prevNavKeys !== config.enableNavKeys) {
+        if (config.enableNavKeys) {
+          keyboardController.attach();
+        } else {
+          keyboardController.detach();
+        }
+      }
+
+      if (prevWheel !== config.enableWheel) {
+        if (config.enableWheel) {
+          wheelController.attach();
+        } else {
+          wheelController.detach();
+        }
+      }
     },
 
     updateEvents(newEvents: Partial<SliderEvents>) {
       events = { ...events, ...newEvents };
 
-      // Update afterChange observer
-      if (afterChangeDispose) {
-        afterChangeDispose();
-        afterChangeDispose = null;
-      }
+      afterChangeDispose?.();
+      afterChangeDispose = null;
+
       if (events.onAfterChange) {
         afterChangeDispose = index.observe(() => {
           events.onAfterChange?.(index.value, getRangeIndex());
@@ -456,14 +470,18 @@ export const createSliderController = (
       if (config.enableGestures) {
         gestureController.observe();
       }
-      keyboardController.attach();
-      wheelController?.attach();
+      if (config.enableNavKeys) {
+        keyboardController.attach();
+      }
+      if (config.enableWheel) {
+        wheelController.attach();
+      }
     },
 
     unobserve() {
       gestureController.unobserve();
       keyboardController.detach();
-      wheelController?.detach();
+      wheelController.detach();
     },
 
     attach(element: HTMLElement) {
@@ -472,19 +490,12 @@ export const createSliderController = (
       }
     },
 
-    detach() {
-      gestureController.detach();
-      keyboardController.detach();
-      wheelController?.detach();
-    },
-
     dispose() {
       gestureController.detach();
       keyboardController.detach();
-      wheelController?.detach();
-      if (afterChangeDispose) {
-        afterChangeDispose();
-      }
+      wheelController.detach();
+
+      afterChangeDispose?.();
     },
   };
 };

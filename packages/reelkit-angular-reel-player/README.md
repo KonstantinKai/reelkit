@@ -91,7 +91,7 @@ Customization via `@ContentChild` template directives:
 | `content`             | `ContentItem[]` | required | Content items to display      |
 | `initialIndex`        | `number`        | `0`      | Starting slide index          |
 | `loop`                | `boolean`       | `false`  | Enable infinite loop          |
-| `useNavKeys`          | `boolean`       | `true`   | Enable keyboard navigation    |
+| `enableNavKeys`       | `boolean`       | `true`   | Enable keyboard navigation    |
 | `enableWheel`         | `boolean`       | `true`   | Enable mouse wheel navigation |
 | `wheelDebounceMs`     | `number`        | `200`    | Wheel debounce duration (ms)  |
 | `transitionDuration`  | `number`        | `300`    | Transition duration (ms)      |

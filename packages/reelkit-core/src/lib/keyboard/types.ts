@@ -1,8 +1,8 @@
 /**
- * Navigation key identifiers mapped from physical arrow keys and Escape.
+ * Navigation key identifiers mapped from physical arrow keys.
  * Used by the keyboard controller to abstract away raw key codes.
  */
-export type NavKey = 'up' | 'right' | 'down' | 'left' | 'escape';
+export type NavKey = 'up' | 'right' | 'down' | 'left';
 
 /** Configuration for a {@link KeyboardController}. */
 export interface KeyboardControllerConfig {
@@ -34,7 +34,7 @@ export interface KeyboardControllerEvents {
 }
 
 /**
- * Keyboard navigation controller that listens for arrow and Escape keys.
+ * Keyboard navigation controller that listens for arrow keys.
  * Created via {@link createKeyboardController}.
  */
 export interface KeyboardController {

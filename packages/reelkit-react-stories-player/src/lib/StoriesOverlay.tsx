@@ -489,13 +489,10 @@ function StoriesContent<T extends StoryItem = StoryItem>({
   }, []);
 
   useEffect(() => {
-    if (!enableKeyboard) return;
     return observeDomEvent(window, 'keydown', (e) => {
       if (e.key === 'Escape') onClose();
-      else if (e.key === 'ArrowLeft') storiesCtrl.prevStory();
-      else if (e.key === 'ArrowRight') storiesCtrl.nextStory();
     });
-  }, [enableKeyboard, onClose]);
+  }, [onClose]);
 
   const overlay = (
     <div className="rk-stories-overlay">
@@ -532,7 +529,11 @@ function StoriesContent<T extends StoryItem = StoryItem>({
                 direction="horizontal"
                 transition={groupTransition}
                 enableGestures
-                useNavKeys={false}
+                enableNavKeys
+                onNavKeyPress={(increment) => {
+                  if (increment === -1) storiesCtrl.prevStory();
+                  else storiesCtrl.nextStory();
+                }}
                 initialIndex={initialGroupIndex}
                 apiRef={outerReelRef}
                 afterChange={handleOuterAfterChange}
@@ -563,7 +564,7 @@ function StoriesContent<T extends StoryItem = StoryItem>({
                         direction="horizontal"
                         transition={fadeTransition}
                         enableGestures={false}
-                        useNavKeys={false}
+                        enableNavKeys={false}
                         transitionDuration={innerTransitionDuration}
                         initialIndex={storiesCtrl.getLastStoryIndex(groupIndex)}
                         apiRef={(api) => {

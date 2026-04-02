@@ -86,7 +86,7 @@ export interface ReelProps {
    * Enable keyboard arrow key navigation.
    * @default true
    */
-  useNavKeys?: boolean;
+  enableNavKeys?: boolean;
 
   /**
    * Enable mouse wheel navigation.
@@ -216,6 +216,13 @@ export interface ReelProps {
    * @param event - Gesture event with position, element, and drag info.
    */
   onLongPressEnd?: (event: GestureEvent) => void;
+
+  /**
+   * Fired when a navigation key is pressed (arrow keys). When provided,
+   * replaces the default prev/next slide behavior.
+   * @param increment - Direction: `-1` for prev, `1` for next.
+   */
+  onNavKeyPress?: (increment: -1 | 1) => void;
 }
 
 const defaultKeyExtractor: NonNullable<ReelProps['keyExtractor']> = (index) =>
@@ -279,7 +286,7 @@ const Element = ({
   swipeDistanceFactor = 0.12,
   loop = false,
   keyExtractor = defaultKeyExtractor,
-  useNavKeys = true,
+  enableNavKeys = true,
   transitionDuration = 300,
   enableWheel = false,
   wheelDebounceMs = 200,
@@ -302,7 +309,7 @@ const Element = ({
     swipeDistanceFactor,
     loop,
     keyExtractor,
-    useNavKeys,
+    enableNavKeys,
     transitionDuration,
     enableWheel,
     wheelDebounceMs,
@@ -325,6 +332,7 @@ const Element = ({
         enableWheel,
         wheelDebounceMs,
         enableGestures,
+        enableNavKeys,
       },
       {
         onBeforeChange: (index, nextIndex, rangeIndex) => {
@@ -346,6 +354,8 @@ const Element = ({
         onDoubleTap: (e) => propsRef.current.onDoubleTap?.(e),
         onLongPress: (e) => propsRef.current.onLongPress?.(e),
         onLongPressEnd: (e) => propsRef.current.onLongPressEnd?.(e),
+        onNavKeyPress: (increment) =>
+          propsRef.current.onNavKeyPress?.(increment),
       },
     );
 
@@ -377,6 +387,8 @@ const Element = ({
       swipeDistanceFactor,
       rangeExtractor,
       enableGestures,
+      enableNavKeys,
+      enableWheel,
     });
   }, [
     props.count,
@@ -386,19 +398,13 @@ const Element = ({
     swipeDistanceFactor,
     rangeExtractor,
     enableGestures,
+    enableNavKeys,
+    enableWheel,
   ]);
 
   useEffect(() => {
     controller.setPrimarySize(primarySize);
   }, [primarySize]);
-
-  useEffect(() => {
-    if (useNavKeys) {
-      controller.observe();
-    } else {
-      controller.unobserve();
-    }
-  }, [useNavKeys]);
 
   useEffect(() => {
     if (ref.current) {
@@ -424,7 +430,7 @@ const Element = ({
       }
     }
 
-    return controller.detach;
+    return controller.dispose;
   }, []);
 
   // Auto-measure container size via ResizeObserver when size prop is omitted.
@@ -506,7 +512,7 @@ export const Reel = memo(
     prev.transitionDuration === next.transitionDuration &&
     prev.swipeDistanceFactor === next.swipeDistanceFactor &&
     prev.rangeExtractor === next.rangeExtractor &&
-    prev.useNavKeys === next.useNavKeys &&
+    prev.enableNavKeys === next.enableNavKeys &&
     prev.enableWheel === next.enableWheel &&
     prev.wheelDebounceMs === next.wheelDebounceMs &&
     prev.transition === next.transition &&

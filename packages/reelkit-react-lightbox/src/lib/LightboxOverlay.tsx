@@ -97,7 +97,7 @@ export type ReelProxyProps = Pick<
   | 'transitionDuration'
   | 'swipeDistanceFactor'
   | 'loop'
-  | 'useNavKeys'
+  | 'enableNavKeys'
   | 'enableWheel'
   | 'wheelDebounceMs'
 >;
@@ -228,7 +228,7 @@ const LightboxContent: FC<LightboxOverlayProps> = (props) => {
     transitionFn,
     apiRef,
     loop = false,
-    useNavKeys = true,
+    enableNavKeys = true,
     enableWheel = true,
     wheelDebounceMs,
     transitionDuration,
@@ -498,7 +498,7 @@ const LightboxContent: FC<LightboxOverlayProps> = (props) => {
               transitionDuration={transitionDuration}
               swipeDistanceFactor={swipeDistanceFactor}
               loop={loop}
-              useNavKeys={useNavKeys}
+              enableNavKeys={enableNavKeys}
               enableWheel={enableWheel}
               wheelDebounceMs={wheelDebounceMs}
               itemBuilder={itemBuilder}

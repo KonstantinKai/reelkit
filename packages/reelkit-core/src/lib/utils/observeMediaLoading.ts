@@ -3,10 +3,13 @@ import type { Disposer } from './disposable';
 import { observeDomEvent } from './observeDomEvent';
 
 export interface MediaLoadingCallbacks {
-  /** Called on `canplay` and `playing` events. */
+  /**
+   * Called on `playing` and `canplaythrough` events — the video has
+   * enough data buffered and is actively playing.
+   */
   onReady: () => void;
 
-  /** Called on `waiting` event. */
+  /** Called on `waiting` event (buffering mid-playback). */
   onWaiting: () => void;
 
   /**
@@ -17,9 +20,11 @@ export interface MediaLoadingCallbacks {
 }
 
 /**
- * Observes video loading events (`canplay`, `waiting`, `playing`) and
- * reports readiness via callbacks. Returns a disposer that removes
- * all listeners.
+ * Observes video loading events (`waiting`, `playing`, `canplaythrough`)
+ * and reports readiness via callbacks. Uses `playing` as the primary
+ * ready signal instead of `canplay`, because `canplay` can precede a
+ * `waiting` event when the buffer is shallow. Returns a disposer that
+ * removes all listeners.
  */
 export const observeMediaLoading = (
   video: HTMLVideoElement,
@@ -28,12 +33,12 @@ export const observeMediaLoading = (
   const disposables = createDisposableList();
 
   disposables.push(
-    observeDomEvent(video, 'canplay', callbacks.onReady),
     observeDomEvent(video, 'waiting', callbacks.onWaiting),
     observeDomEvent(video, 'playing', () => {
       callbacks.onReady();
       callbacks.onPlaying?.();
     }),
+    observeDomEvent(video, 'canplaythrough', callbacks.onReady),
   );
 
   return disposables.dispose;

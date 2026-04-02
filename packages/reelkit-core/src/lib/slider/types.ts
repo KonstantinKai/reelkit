@@ -94,6 +94,13 @@ export interface SliderConfig {
   enableGestures?: boolean;
 
   /**
+   * Whether keyboard (arrow keys) navigation is enabled.
+   * When `false`, the keyboard controller is not attached.
+   * @default true
+   */
+  enableNavKeys?: boolean;
+
+  /**
    * Custom function that determines which slide indices are rendered.
    * Defaults to the built-in extractor that returns current ± 1 overscan.
    *
@@ -158,6 +165,15 @@ export interface SliderEvents {
 
   /** Fired when the pointer is released after a long press. */
   onLongPressEnd?: (event: GestureEvent) => void;
+
+  /**
+   * Fired when a navigation key is pressed (arrow keys). When provided,
+   * replaces the default prev/next slide behavior — the consumer is
+   * responsible for calling `prev()`/`next()` or custom navigation.
+   *
+   * @param increment - Direction: `-1` for prev, `1` for next.
+   */
+  onNavKeyPress?: (increment: -1 | 1) => void;
 }
 
 /**
@@ -257,9 +273,6 @@ export interface SliderController {
    * @param element - The container element for touch/mouse events.
    */
   attach(element: HTMLElement): void;
-
-  /** Detaches from the DOM element and stops all input observers. */
-  detach(): void;
 
   /** Disposes all resources: detaches controllers and cleans up observers. */
   dispose(): void;

@@ -11,21 +11,17 @@ const _kNavKeyCodes: Record<string, NavKey | undefined> = {
   ArrowRight: 'right',
   ArrowDown: 'down',
   ArrowLeft: 'left',
-  Escape: 'escape',
 };
 
 /**
- * Creates a keyboard navigation controller that listens for arrow key and
- * Escape key presses and translates them into navigation callbacks. Returns
+ * Creates a keyboard navigation controller that listens for arrow key
+ * presses and translates them into navigation callbacks. Returns
  * a {@link KeyboardController} following the factory-function pattern.
  *
  * Arrow keys are mapped to directional nav keys (`up`, `down`, `left`, `right`).
  * An optional key filter restricts which directions are forwarded. When
  * `throttleMs` is set, repeated key presses within that interval are ignored,
  * preventing rapid-fire navigation during held-down keys.
- *
- * NOTE: The Escape key always passes through regardless of the configured
- * filter or throttle, so it can be used for closing overlays at any time.
  *
  * @param config - Optional configuration (key filter list, throttle interval in ms).
  * @param events - Event callbacks; `onKeyPress` is invoked with the mapped {@link NavKey} and the original `KeyboardEvent`.
@@ -52,12 +48,6 @@ export const createKeyboardController = (
       lastKeyPressTime = now;
     }
 
-    // Always allow escape
-    if (key === 'escape') {
-      events.onKeyPress(key, event);
-      return;
-    }
-
     if (filter.length === 0 || filter.includes(key)) {
       events.onKeyPress(key, event);
     }
@@ -65,16 +55,12 @@ export const createKeyboardController = (
 
   return {
     attach(target: Window | HTMLElement = window) {
-      if (dispose) {
-        dispose();
-      }
+      dispose?.();
       dispose = observeDomEvent(target, 'keydown', handleKeyDown);
     },
     detach() {
-      if (dispose) {
-        dispose();
-        dispose = null;
-      }
+      dispose?.();
+      dispose = null;
     },
   };
 };

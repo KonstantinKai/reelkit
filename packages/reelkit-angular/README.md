@@ -81,7 +81,7 @@ export class AppComponent {
 | `loop`                | `boolean`                    | `false`      | Enable infinite loop          |
 | `swipeDistanceFactor` | `number`                     | `0.12`       | Swipe threshold (0-1)         |
 | `transitionDuration`  | `number`                     | `300`        | Animation duration in ms      |
-| `useNavKeys`          | `boolean`                    | `true`       | Enable keyboard navigation    |
+| `enableNavKeys`       | `boolean`                    | `true`       | Enable keyboard navigation    |
 | `enableWheel`         | `boolean`                    | `false`      | Enable mouse wheel navigation |
 | `wheelDebounceMs`     | `number`                     | `200`        | Wheel debounce duration       |
 
