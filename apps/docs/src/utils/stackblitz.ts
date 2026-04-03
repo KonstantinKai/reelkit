@@ -2,19 +2,23 @@ import type { Project } from '@stackblitz/sdk';
 
 // NOTE: Update these when publishing new versions
 const REELKIT_PACKAGES: Record<string, string> = {
-  '@reelkit/core': '0.2.2',
-  '@reelkit/react': '0.2.1',
-  '@reelkit/react-reel-player': '0.2.1',
-  '@reelkit/react-lightbox': '0.2.1',
-  '@reelkit/angular': '0.1.0',
-  '@reelkit/angular-reel-player': '0.1.2',
-  '@reelkit/angular-lightbox': '0.1.2',
+  '@reelkit/core': '0.3.0',
+  '@reelkit/react': '0.3.0',
+  '@reelkit/react-reel-player': '0.3.0',
+  '@reelkit/react-lightbox': '0.3.0',
+  '@reelkit/react-stories-player': '0.1.0',
+  '@reelkit/stories-core': '0.1.0',
+  '@reelkit/angular': '0.2.0',
+  '@reelkit/angular-reel-player': '0.2.0',
+  '@reelkit/angular-lightbox': '0.2.0',
 };
 
 const PACKAGES_REQUIRING_CORE = [
   '@reelkit/react',
   '@reelkit/react-reel-player',
   '@reelkit/react-lightbox',
+  '@reelkit/react-stories-player',
+  '@reelkit/stories-core',
   '@reelkit/angular',
   '@reelkit/angular-reel-player',
   '@reelkit/angular-lightbox',
@@ -23,6 +27,7 @@ const PACKAGES_REQUIRING_CORE = [
 const PACKAGES_REQUIRING_REACT = [
   '@reelkit/react-reel-player',
   '@reelkit/react-lightbox',
+  '@reelkit/react-stories-player',
 ];
 
 const PACKAGES_REQUIRING_ANGULAR = [

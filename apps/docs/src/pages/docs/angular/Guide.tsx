@@ -144,7 +144,7 @@ export class AppComponent {
           language="typescript"
           title="app.component.ts"
           framework="angular"
-          stackblitzDeps={{ '@reelkit/angular': '0.1.0' }}
+          stackblitzDeps={{ '@reelkit/angular': '0.2.0' }}
         />
       </section>
 

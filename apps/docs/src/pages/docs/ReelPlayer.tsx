@@ -555,7 +555,7 @@ function App() {
           title="ReelPlayerPage.tsx"
           height={500}
           stackblitzDeps={{
-            '@reelkit/react-reel-player': '0.2.0',
+            '@reelkit/react-reel-player': '0.3.0',
             'lucide-react': '^0.562.0',
           }}
         >
