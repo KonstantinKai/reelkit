@@ -13,6 +13,7 @@ import {
   generateContent,
   getContentItem,
 } from '../components/reel-player/mockContent';
+import { cdnUrl } from '@reelkit/example-data';
 
 type DemoType =
   | 'custom-overlay'
@@ -535,8 +536,7 @@ function ReelPlayerCustomPage() {
               ],
               author: {
                 name: 'Error Demo',
-                avatar:
-                  'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100',
+                avatar: cdnUrl('samples/avatars/avatar-01.jpg'),
               },
               likes: 0,
               description: 'Broken image — shows custom error UI.',

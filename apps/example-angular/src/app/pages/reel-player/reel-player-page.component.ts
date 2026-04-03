@@ -5,6 +5,7 @@ import {
   computed,
 } from '@angular/core';
 import { RkReelPlayerOverlayComponent } from '@reelkit/angular-reel-player';
+import { cdnUrl } from '@reelkit/example-data';
 import { generateContent, getThumbnail } from '../../data/mock-content';
 import type { ContentItem } from '@reelkit/angular-reel-player';
 
@@ -213,8 +214,7 @@ export class ReelPlayerPageComponent {
       ],
       author: {
         name: 'Error Demo',
-        avatar:
-          'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100',
+        avatar: cdnUrl('samples/avatars/avatar-01.jpg'),
       },
       likes: 0,
       description:

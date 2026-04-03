@@ -54,6 +54,9 @@
     "serve": {
       "continuous": true,
       "executor": "@angular/build:dev-server",
+      "options": {
+        "proxyConfig": "apps/example-angular/proxy.conf.mjs"
+      },
       "configurations": {
         "production": {
           "buildTarget": "example-angular:build:production"
@@ -68,7 +71,8 @@
       "continuous": true,
       "executor": "@angular/build:dev-server",
       "options": {
-        "buildTarget": "example-angular:build:development"
+        "buildTarget": "example-angular:build:development",
+        "proxyConfig": "apps/example-angular/proxy.conf.mjs"
       }
     },
     "extract-i18n": {

@@ -7,6 +7,7 @@ import {
   type LightboxItem,
   type NavigationRenderProps,
 } from '@reelkit/react-lightbox';
+import { cdnUrl } from '@reelkit/example-data';
 import '@reelkit/react-lightbox/styles.css';
 
 type DemoType =
@@ -52,32 +53,32 @@ const DEMOS: { id: DemoType & string; title: string; description: string }[] = [
 
 const sampleImages: LightboxItem[] = [
   {
-    src: 'https://picsum.photos/id/1015/1600/1000',
+    src: cdnUrl('samples/images/image-01.jpg'),
     title: 'Mountain River',
     description: 'A beautiful mountain river flowing through the forest.',
   },
   {
-    src: 'https://picsum.photos/id/1016/1000/1600',
+    src: cdnUrl('samples/images/image-02.jpg'),
     title: 'Snowy Peaks',
     description: 'Majestic snow-capped mountains reaching for the sky.',
   },
   {
-    src: 'https://picsum.photos/id/1018/1600/900',
+    src: cdnUrl('samples/images/image-03.jpg'),
     title: 'Foggy Forest',
     description: 'Misty morning in the dense forest.',
   },
   {
-    src: 'https://picsum.photos/id/1019/900/1400',
+    src: cdnUrl('samples/images/image-04.jpg'),
     title: 'Ocean Waves',
     description: 'Powerful ocean waves crashing against the rocky shore.',
   },
   {
-    src: 'https://picsum.photos/id/1020/1600/1067',
+    src: cdnUrl('samples/images/image-05.jpg'),
     title: 'Autumn Path',
     description: 'A winding path through the autumn forest.',
   },
   {
-    src: 'https://picsum.photos/id/1022/1600/1067',
+    src: cdnUrl('samples/images/image-07.jpg'),
     title: 'Coastal Cliffs',
     description: 'Dramatic coastal cliffs overlooking the sea.',
   },

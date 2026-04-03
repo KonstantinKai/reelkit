@@ -6,14 +6,14 @@ import {
   type StoriesGroup,
   type StoryItem,
 } from '@reelkit/react-stories-player';
-import { Observe, type Signal } from '@reelkit/react';
-import { SAMPLE_IMAGES, SAMPLE_VIDEOS } from '@reelkit/example-data';
+import { Observe, generate, type Signal } from '@reelkit/react';
+import { cdnUrl } from '@reelkit/example-data';
 import '@reelkit/react-stories-player/styles.css';
 
 const AVATARS = [
-  'https://i.pravatar.cc/150?img=10',
-  'https://i.pravatar.cc/150?img=11',
-  'https://i.pravatar.cc/150?img=12',
+  cdnUrl('samples/avatars/avatar-13.jpg'),
+  cdnUrl('samples/avatars/avatar-14.jpg'),
+  cdnUrl('samples/avatars/avatar-15.jpg'),
 ];
 
 type DemoType =
@@ -76,20 +76,20 @@ function generateGroups(): StoriesGroup[] {
         {
           id: 'c1',
           mediaType: 'image',
-          src: SAMPLE_IMAGES[0].src,
+          src: cdnUrl('samples/images/image-01.jpg'),
           createdAt: new Date(Date.now() - 3600_000).toISOString(),
         },
         {
           id: 'c2',
           mediaType: 'image',
-          src: SAMPLE_IMAGES[1].src,
+          src: cdnUrl('samples/images/image-02.jpg'),
           createdAt: new Date(Date.now() - 7200_000).toISOString(),
         },
         {
           id: 'c3',
           mediaType: 'video',
-          src: SAMPLE_VIDEOS[0].src,
-          poster: SAMPLE_VIDEOS[0].poster,
+          src: cdnUrl('samples/videos/video-01.mp4'),
+          poster: cdnUrl('samples/videos/video-poster-01.jpg'),
           createdAt: new Date(Date.now() - 10800_000).toISOString(),
         },
       ],
@@ -100,7 +100,7 @@ function generateGroups(): StoriesGroup[] {
         {
           id: 'c4',
           mediaType: 'image',
-          src: SAMPLE_IMAGES[2].src,
+          src: cdnUrl('samples/images/image-03.jpg'),
           createdAt: new Date(Date.now() - 3600_000).toISOString(),
         },
         {
@@ -112,7 +112,7 @@ function generateGroups(): StoriesGroup[] {
         {
           id: 'c6',
           mediaType: 'image',
-          src: SAMPLE_IMAGES[3].src,
+          src: cdnUrl('samples/images/image-04.jpg'),
           createdAt: new Date(Date.now() - 10800_000).toISOString(),
         },
       ],
@@ -123,14 +123,14 @@ function generateGroups(): StoriesGroup[] {
         {
           id: 'c7',
           mediaType: 'video',
-          src: SAMPLE_VIDEOS[1].src,
-          poster: SAMPLE_VIDEOS[1].poster,
+          src: cdnUrl('samples/videos/video-02.mp4'),
+          poster: cdnUrl('samples/videos/video-poster-02.jpg'),
           createdAt: new Date(Date.now() - 3600_000).toISOString(),
         },
         {
           id: 'c8',
           mediaType: 'image',
-          src: SAMPLE_IMAGES[4].src,
+          src: cdnUrl('samples/images/image-05.jpg'),
           createdAt: new Date(Date.now() - 7200_000).toISOString(),
         },
       ],
@@ -161,38 +161,40 @@ function HtmlProgressBar({
       }}
     >
       <Observe signals={[activeIndex, progress]}>
-        {() =>
-          Array.from({ length: totalStories }, (_, i) => {
-            const ai = activeIndex.value;
-            const p = progress.value;
-            const fill = i < ai ? 100 : i === ai ? p * 100 : 0;
-            return (
-              <div
-                key={i}
-                style={{
-                  flex: 1,
-                  height: 3,
-                  borderRadius: 2,
-                  background: 'rgba(255,255,255,0.25)',
-                  overflow: 'hidden',
-                }}
-              >
+        {() => (
+          <>
+            {generate(totalStories, (i) => {
+              const ai = activeIndex.value;
+              const p = progress.value;
+              const fill = i < ai ? 100 : i === ai ? p * 100 : 0;
+              return (
                 <div
+                  key={i}
                   style={{
-                    width: `${fill}%`,
-                    height: '100%',
-                    background:
-                      i < ai
-                        ? '#6366f1'
-                        : 'linear-gradient(90deg, #6366f1, #a78bfa)',
+                    flex: 1,
+                    height: 3,
                     borderRadius: 2,
-                    transition: i === ai ? 'none' : 'width 200ms',
+                    background: 'rgba(255,255,255,0.25)',
+                    overflow: 'hidden',
                   }}
-                />
-              </div>
-            );
-          })
-        }
+                >
+                  <div
+                    style={{
+                      width: `${fill}%`,
+                      height: '100%',
+                      background:
+                        i < ai
+                          ? '#6366f1'
+                          : 'linear-gradient(90deg, #6366f1, #a78bfa)',
+                      borderRadius: 2,
+                      transition: i === ai ? 'none' : 'width 200ms',
+                    }}
+                  />
+                </div>
+              );
+            })}
+          </>
+        )}
       </Observe>
     </div>
   );

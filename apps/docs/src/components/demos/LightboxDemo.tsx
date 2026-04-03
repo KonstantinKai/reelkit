@@ -7,46 +7,47 @@ import {
   type LightboxItem,
 } from '@reelkit/react-lightbox';
 import '@reelkit/react-lightbox/styles.css';
+import { cdnUrl } from '@reelkit/example-data';
 import { useTheme } from '../../context/ThemeContext';
 
 const SAMPLE_IMAGES: LightboxItem[] = [
   {
-    src: 'https://picsum.photos/id/1015/1600/1000',
+    src: cdnUrl('samples/images/image-01.jpg'),
     title: 'Mountain River',
     description: 'A beautiful mountain river flowing through the forest',
     width: 1600,
     height: 1000,
   },
   {
-    src: 'https://picsum.photos/id/1016/1000/1600',
+    src: cdnUrl('samples/images/image-02.jpg'),
     title: 'Snowy Peaks',
     description: 'Majestic snow-capped mountains reaching for the sky',
     width: 1000,
     height: 1600,
   },
   {
-    src: 'https://picsum.photos/id/1018/1600/900',
+    src: cdnUrl('samples/images/image-03.jpg'),
     title: 'Foggy Forest',
     description: 'Misty morning in the dense forest',
     width: 1600,
     height: 900,
   },
   {
-    src: 'https://picsum.photos/id/1019/900/1400',
+    src: cdnUrl('samples/images/image-04.jpg'),
     title: 'Ocean Waves',
     description: 'Powerful ocean waves crashing against the rocky shore',
     width: 900,
     height: 1400,
   },
   {
-    src: 'https://picsum.photos/id/1020/1600/1067',
+    src: cdnUrl('samples/images/image-05.jpg'),
     title: 'Autumn Path',
     description: 'A winding path through the autumn forest',
     width: 1600,
     height: 1067,
   },
   {
-    src: 'https://picsum.photos/id/1022/1600/1067',
+    src: cdnUrl('samples/images/image-06.jpg'),
     title: 'Coastal Cliffs',
     description: 'Dramatic coastal cliffs overlooking the deep blue sea',
     width: 1600,

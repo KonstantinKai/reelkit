@@ -1,0 +1,25 @@
+{
+  "name": "cdn-guard",
+  "projectType": "application",
+  "sourceRoot": "apps/cdn-guard/src",
+  "targets": {
+    "typecheck": {
+      "command": "tsc --noEmit",
+      "options": {
+        "cwd": "apps/cdn-guard"
+      }
+    },
+    "deploy": {
+      "command": "wrangler deploy",
+      "options": {
+        "cwd": "apps/cdn-guard"
+      }
+    },
+    "dev": {
+      "command": "wrangler dev",
+      "options": {
+        "cwd": "apps/cdn-guard"
+      }
+    }
+  }
+}

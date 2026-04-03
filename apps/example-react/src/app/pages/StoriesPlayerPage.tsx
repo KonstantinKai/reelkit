@@ -16,16 +16,16 @@ import {
   slideTransition,
   type TransitionTransformFn,
 } from '@reelkit/react';
-import { SAMPLE_IMAGES, SAMPLE_VIDEOS } from '@reelkit/example-data';
+import { cdnUrl } from '@reelkit/example-data';
 import '@reelkit/react-stories-player/styles.css';
 
 const AVATARS = [
-  'https://i.pravatar.cc/150?img=1',
-  'https://i.pravatar.cc/150?img=2',
-  'https://i.pravatar.cc/150?img=3',
-  'https://i.pravatar.cc/150?img=4',
-  'https://i.pravatar.cc/150?img=5',
-  'https://i.pravatar.cc/150?img=6',
+  cdnUrl('samples/avatars/avatar-06.jpg'),
+  cdnUrl('samples/avatars/avatar-07.jpg'),
+  cdnUrl('samples/avatars/avatar-08.jpg'),
+  cdnUrl('samples/avatars/avatar-09.jpg'),
+  cdnUrl('samples/avatars/avatar-10.jpg'),
+  cdnUrl('samples/avatars/avatar-11.jpg'),
 ];
 
 const NAMES = ['Alice', 'Bob', 'Charlie', 'Diana', 'Eve'];
@@ -49,7 +49,7 @@ const PROMO_STORIES: CustomStory[] = [
   {
     id: 'promo-0',
     mediaType: 'image',
-    src: SAMPLE_IMAGES[0].src,
+    src: cdnUrl('samples/images/image-01.jpg'),
     createdAt: new Date(Date.now() - 3600_000).toISOString(),
     title: 'New Collection',
     subtitle: 'Spring 2026 is here',
@@ -69,8 +69,8 @@ const PROMO_STORIES: CustomStory[] = [
   {
     id: 'promo-2',
     mediaType: 'video',
-    src: SAMPLE_VIDEOS[0].src,
-    poster: SAMPLE_VIDEOS[0].poster,
+    src: cdnUrl('samples/videos/video-01.mp4'),
+    poster: cdnUrl('samples/videos/video-poster-01.jpg'),
     createdAt: new Date(Date.now() - 10800_000).toISOString(),
     title: 'Behind the Scenes',
     emoji: '🎬',
@@ -88,7 +88,7 @@ const PROMO_STORIES: CustomStory[] = [
   {
     id: 'promo-4',
     mediaType: 'image',
-    src: SAMPLE_IMAGES[2].src,
+    src: cdnUrl('samples/images/image-03.jpg'),
     createdAt: new Date(Date.now() - 18000_000).toISOString(),
     title: 'Explore Nature',
     subtitle: 'Best hiking trails of the season',
@@ -256,7 +256,9 @@ function generateGroups(): StoriesGroup<CustomStory>[] {
       ...Array.from({ length: 2 + (i % 3) }, (_, j) => ({
         id: `story-${i}-${j}`,
         mediaType: 'image' as const,
-        src: `https://picsum.photos/seed/${i * 10 + j}/1080/1920`,
+        src: cdnUrl(
+          `samples/images/stories/story-${String(((i * 10 + j) % 100) + 1).padStart(3, '0')}.jpg`,
+        ),
         createdAt: new Date(Date.now() - (i * 3 + j) * 3600_000).toISOString(),
       })),
       // Add a broken image to the first user's stories
@@ -290,8 +292,12 @@ function generateGroups(): StoriesGroup<CustomStory>[] {
             {
               id: `story-${i}-vid`,
               mediaType: 'video' as const,
-              src: SAMPLE_VIDEOS[i % SAMPLE_VIDEOS.length].src,
-              poster: SAMPLE_VIDEOS[i % SAMPLE_VIDEOS.length].poster,
+              src: cdnUrl(
+                `samples/videos/video-${String((i % 12) + 1).padStart(2, '0')}.mp4`,
+              ),
+              poster: cdnUrl(
+                `samples/videos/video-poster-${String((i % 12) + 1).padStart(2, '0')}.jpg`,
+              ),
               createdAt: new Date(Date.now() - i * 5 * 3600_000).toISOString(),
             },
           ]
@@ -313,13 +319,15 @@ function generateGroups(): StoriesGroup<CustomStory>[] {
     author: {
       id: 'perf-test',
       name: '100 Stories',
-      avatar: 'https://i.pravatar.cc/150?img=8',
+      avatar: cdnUrl('samples/avatars/avatar-12.jpg'),
       verified: false,
     },
     stories: Array.from({ length: 100 }, (_, i) => ({
       id: `perf-${i}`,
       mediaType: 'image' as const,
-      src: `https://picsum.photos/seed/perf${i}/1080/1920`,
+      src: cdnUrl(
+        `samples/images/stories/story-${String((i % 100) + 1).padStart(3, '0')}.jpg`,
+      ),
       duration: 3000,
       createdAt: new Date(Date.now() - i * 600_000).toISOString(),
     })),

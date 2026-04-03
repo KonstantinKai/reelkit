@@ -1,7 +1,8 @@
 import { Callout } from '../../components/ui/Callout';
 import { CodeBlock } from '../../components/ui/CodeBlock';
-import { FeatureCardGrid } from '../../components/ui/FeatureCard';
 import { Sandbox } from '../../components/ui/Sandbox';
+import { FeatureCardGrid } from '../../components/ui/FeatureCard';
+import { StoriesPlayerDemo } from '../../components/demos/StoriesPlayerDemo';
 import {
   Zap,
   Play,
@@ -30,24 +31,24 @@ const groups: StoriesGroup[] = [
     author: {
       id: 'user-1',
       name: 'Alice',
-      avatar: 'https://i.pravatar.cc/150?img=1',
+      avatar: '/cdn/samples/avatars/avatar-06.jpg',
       verified: true,
     },
     stories: [
       {
         id: 's1-1',
         mediaType: 'image',
-        src: 'https://picsum.photos/seed/alice1/1080/1920',
+        src: '/cdn/samples/images/stories/story-001.jpg',
       },
       {
         id: 's1-2',
         mediaType: 'image',
-        src: 'https://picsum.photos/seed/alice2/1080/1920',
+        src: '/cdn/samples/images/stories/story-002.jpg',
       },
       {
         id: 's1-3',
         mediaType: 'image',
-        src: 'https://picsum.photos/seed/alice3/1080/1920',
+        src: '/cdn/samples/images/stories/story-003.jpg',
       },
     ],
   },
@@ -55,18 +56,18 @@ const groups: StoriesGroup[] = [
     author: {
       id: 'user-2',
       name: 'Bob',
-      avatar: 'https://i.pravatar.cc/150?img=2',
+      avatar: '/cdn/samples/avatars/avatar-07.jpg',
     },
     stories: [
       {
         id: 's2-1',
         mediaType: 'image',
-        src: 'https://picsum.photos/seed/bob1/1080/1920',
+        src: '/cdn/samples/images/stories/story-004.jpg',
       },
       {
         id: 's2-2',
         mediaType: 'image',
-        src: 'https://picsum.photos/seed/bob2/1080/1920',
+        src: '/cdn/samples/images/stories/story-005.jpg',
       },
     ],
   },
@@ -74,14 +75,14 @@ const groups: StoriesGroup[] = [
     author: {
       id: 'user-3',
       name: 'Charlie',
-      avatar: 'https://i.pravatar.cc/150?img=3',
+      avatar: '/cdn/samples/avatars/avatar-08.jpg',
       verified: true,
     },
     stories: [
       {
         id: 's3-1',
         mediaType: 'image',
-        src: 'https://picsum.photos/seed/charlie1/1080/1920',
+        src: '/cdn/samples/images/stories/story-006.jpg',
       },
     ],
   },
@@ -125,7 +126,8 @@ const storiesOverlayProps = [
     prop: 'isOpen',
     type: 'boolean',
     default: 'required',
-    description: 'Controls overlay visibility. When true, body scroll is locked.',
+    description:
+      'Controls overlay visibility. When true, body scroll is locked.',
   },
   {
     prop: 'groups',
@@ -149,7 +151,8 @@ const storiesOverlayProps = [
     prop: 'initialStoryIndex',
     type: 'number',
     default: '0',
-    description: 'Zero-based index of the initially visible story within the group',
+    description:
+      'Zero-based index of the initially visible story within the group',
   },
   {
     prop: 'groupTransition',
@@ -161,7 +164,8 @@ const storiesOverlayProps = [
     prop: 'defaultImageDuration',
     type: 'number',
     default: '5000',
-    description: 'Default auto-advance duration for image stories in milliseconds',
+    description:
+      'Default auto-advance duration for image stories in milliseconds',
   },
   {
     prop: 'tapZoneSplit',
@@ -174,7 +178,8 @@ const storiesOverlayProps = [
     prop: 'hideUIOnPause',
     type: 'boolean',
     default: 'true',
-    description: 'Whether to hide story UI (header, footer) when paused via long press',
+    description:
+      'Whether to hide story UI (header, footer) when paused via long press',
   },
   {
     prop: 'enableKeyboard',
@@ -186,7 +191,8 @@ const storiesOverlayProps = [
     prop: 'innerTransitionDuration',
     type: 'number',
     default: '200',
-    description: 'Duration of the inner (story) transition animation in milliseconds',
+    description:
+      'Duration of the inner (story) transition animation in milliseconds',
   },
   {
     prop: 'minSegmentWidth',
@@ -204,7 +210,8 @@ const storiesOverlayProps = [
     prop: 'renderHeader',
     type: '(props: HeaderRenderProps<T>) => ReactNode',
     default: '-',
-    description: 'Custom header renderer. Receives author, story, pause/mute state.',
+    description:
+      'Custom header renderer. Receives author, story, pause/mute state.',
   },
   {
     prop: 'renderFooter',
@@ -223,7 +230,8 @@ const storiesOverlayProps = [
     prop: 'renderNavigation',
     type: '(props: NavigationRenderProps) => ReactNode',
     default: '-',
-    description: 'Custom desktop navigation. Replaces default prev/next chevron buttons.',
+    description:
+      'Custom desktop navigation. Replaces default prev/next chevron buttons.',
   },
   {
     prop: 'renderProgressBar',
@@ -381,8 +389,8 @@ export default function StoriesPlayerPage() {
             items={[
               {
                 icon: Zap,
-                label: 'Two-Axis Navigation',
-                desc: 'Tap left/right + swipe between groups',
+                label: 'Nested Navigation',
+                desc: 'Tap to advance stories, swipe to switch groups',
               },
               {
                 icon: Play,
@@ -466,25 +474,34 @@ export default function StoriesPlayerPage() {
           </code>
           .
         </p>
+        <CodeBlock code={fullCode} language="tsx" />
+      </section>
+
+      {/* Live Demo */}
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">Live Demo</h2>
         <Sandbox
           code={fullCode}
-          title="StoriesPlayerPage.tsx"
-          height={500}
+          title="StoriesPlayer.tsx"
+          height={200}
           stackblitzDeps={{
             '@reelkit/react-stories-player': '0.1.0',
-            'lucide-react': '^0.562.0',
+            '@reelkit/react': '0.2.1',
           }}
-          stackblitzStyles={['@reelkit/react-stories-player/styles.css']}
-        />
+        >
+          <StoriesPlayerDemo />
+        </Sandbox>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-3">
+          Click a story ring to open the player. Tap left/right sides to
+          navigate, swipe to switch users.
+        </p>
       </section>
 
       {/* Props Table */}
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">API Reference</h2>
 
-        <h3 className="text-xl font-semibold mt-6 mb-4">
-          StoriesOverlayProps
-        </h3>
+        <h3 className="text-xl font-semibold mt-6 mb-4">StoriesOverlayProps</h3>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -666,8 +683,8 @@ export default function StoriesPlayerPage() {
             VideoStorySlide
           </code>{' '}
           components preload the next story in the background. When a user
-          navigates to a preloaded story, the content appears instantly without a
-          loading spinner.
+          navigates to a preloaded story, the content appears instantly without
+          a loading spinner.
         </Callout>
       </section>
 
@@ -675,8 +692,8 @@ export default function StoriesPlayerPage() {
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Render Props</h2>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
-          Every UI element can be replaced via render props. Each receives
-          typed props with all necessary state and callbacks.
+          Every UI element can be replaced via render props. Each receives typed
+          props with all necessary state and callbacks.
         </p>
 
         <h3 className="text-xl font-semibold mt-6 mb-4">renderHeader</h3>
@@ -973,6 +990,89 @@ function App() {
         </div>
       </section>
 
+      {/* Double-Tap & Likes */}
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">Double-Tap & Likes</h2>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          A built-in heart animation plays on double-tap, giving instant visual
+          feedback. The{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            onDoubleTap
+          </code>{' '}
+          callback fires with the group and story index so you can persist the
+          like in your own state (API call, local storage, etc.). The player
+          does not manage like state internally.
+        </p>
+
+        <CodeBlock
+          code={`<StoriesOverlay
+  isOpen={isOpen}
+  onClose={() => setIsOpen(false)}
+  groups={groups}
+  onDoubleTap={(groupIndex, storyIndex) => {
+    // Built-in heart animation plays automatically.
+    // Handle the like in your own state:
+    const story = groups[groupIndex].stories[storyIndex];
+    toggleLike(story.id);
+  }}
+/>`}
+          language="tsx"
+        />
+
+        <h3 className="text-xl font-semibold mt-8 mb-4">
+          Customizing the Heart Animation
+        </h3>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          The heart animation uses CSS classes that you can override. The{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            HeartAnimation
+          </code>{' '}
+          component is also exported for standalone use.
+        </p>
+
+        <CodeBlock
+          code={`/* Override heart animation styles */
+.rk-stories-heart {
+  /* Change heart color */
+  color: #ff3b5c;
+  /* Adjust size */
+  font-size: 80px;
+  /* Custom animation duration */
+  animation-duration: 1s;
+}
+
+/* Hide built-in heart entirely */
+.rk-stories-heart {
+  display: none;
+}`}
+          language="css"
+        />
+
+        <Callout type="info" className="mt-4">
+          The built-in heart animation cannot be replaced via a render prop yet.
+          You can restyle it with CSS or hide it with{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            display: none
+          </code>{' '}
+          and handle your own animation in the{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            onDoubleTap
+          </code>{' '}
+          callback. If you need a{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            renderDoubleTap
+          </code>{' '}
+          render prop, let us know via{' '}
+          <a
+            href="https://github.com/KonstantinKai/reelkit/issues"
+            className="text-primary-600 dark:text-primary-400 underline"
+          >
+            GitHub Issues
+          </a>
+          .
+        </Callout>
+      </section>
+
       {/* Sub-Components */}
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Sub-Components</h2>
@@ -984,44 +1084,118 @@ function App() {
         <h3 className="text-lg font-semibold mt-6 mb-2">CanvasProgressBar</h3>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
           High-performance canvas-based segmented progress bar. Renders segments
-          for each story and animates the active segment fill in real time.
+          for each story and animates the active segment fill via{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            requestAnimationFrame
+          </code>
+          . Supports a sliding window for groups with many stories.
         </p>
+        <CodeBlock
+          code={`import { CanvasProgressBar } from '@reelkit/react-stories-player';
+
+<CanvasProgressBar
+  totalStories={group.stories.length}
+  activeIndex={activeIndexSignal}
+  progress={progressSignal}
+  minSegmentWidth={8}
+  gap={2}
+  barHeight={2}
+/>`}
+          language="tsx"
+        />
 
         <h3 className="text-lg font-semibold mt-6 mb-2">StoryHeader</h3>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
-          Default header component with author avatar, name, verified badge,
-          timestamp, pause/mute toggle, and close button.
+          Default header with author avatar, name, verified badge, relative
+          timestamp, pause/play toggle, mute/unmute toggle, loading spinner, and
+          close button. Used automatically when{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            renderHeader
+          </code>{' '}
+          is not provided.
         </p>
+        <CodeBlock
+          code={`import { StoryHeader } from '@reelkit/react-stories-player';
+
+<StoryHeader
+  author={{ id: '1', name: 'Alice', avatar: '/avatar.jpg', verified: true }}
+  createdAt={new Date(Date.now() - 3600_000)}
+  onClose={handleClose}
+  isPaused={false}
+  onTogglePause={togglePause}
+  isMuted={true}
+  onToggleSound={toggleSound}
+  isVideo={true}
+  isLoading={false}
+/>`}
+          language="tsx"
+        />
 
         <h3 className="text-lg font-semibold mt-6 mb-2">ImageStorySlide</h3>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
           Full-bleed image slide with{' '}
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
             object-fit: cover
-          </code>{' '}
-          and{' '}
-          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
-            onLoad
           </code>
-          /{' '}
-          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
-            onError
-          </code>{' '}
-          callbacks for lifecycle reporting.
+          . Reports load/error via callbacks for lifecycle tracking.
         </p>
+        <CodeBlock
+          code={`import { ImageStorySlide } from '@reelkit/react-stories-player';
+
+<ImageStorySlide
+  src="/photo.jpg"
+  aspectRatio={9 / 16}
+  onLoad={() => console.log('loaded')}
+  onError={() => console.log('failed')}
+/>`}
+          language="tsx"
+        />
 
         <h3 className="text-lg font-semibold mt-6 mb-2">VideoStorySlide</h3>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
-          Video story slide with autoplay, poster frame, sound sync, and loading
-          state management. Reports duration and playback lifecycle events.
+          Video slide using a shared{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            {'<video>'}
+          </code>{' '}
+          element for iOS sound continuity. Handles autoplay, poster frames,
+          sound sync, and reports duration and playback lifecycle events.
         </p>
+        <CodeBlock
+          code={`import { VideoStorySlide } from '@reelkit/react-stories-player';
+
+<VideoStorySlide
+  src="/clip.mp4"
+  poster="/clip-poster.jpg"
+  groupIndex={0}
+  storyIndex={2}
+  activeGroupIndex={activeGroupSignal}
+  activeStoryIndex={activeStorySignal}
+  onDurationReady={(ms) => console.log('duration:', ms)}
+  onPlaying={() => console.log('playing')}
+  onWaiting={() => console.log('buffering')}
+  onEnded={() => console.log('ended')}
+  onError={() => console.log('error')}
+/>`}
+          language="tsx"
+        />
 
         <h3 className="text-lg font-semibold mt-6 mb-2">StoriesRing</h3>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
-          Circular avatar with a gradient ring. Segments are colored based on
-          viewed/unviewed status. Instagram-style gradient for unviewed,
-          muted gray for viewed.
+          Circular avatar with an Instagram-style gradient ring. Segments
+          indicate viewed/unviewed stories — gradient for unviewed, muted gray
+          for viewed.
         </p>
+        <CodeBlock
+          code={`import { StoriesRing } from '@reelkit/react-stories-player';
+
+<StoriesRing
+  author={{ id: '1', name: 'Alice', avatar: '/avatar.jpg' }}
+  totalStories={5}
+  viewedCount={2}
+  onClick={() => openStories(0)}
+/>`}
+          language="tsx"
+        />
 
         <h3 className="text-lg font-semibold mt-6 mb-2">StoriesRingList</h3>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
@@ -1029,14 +1203,30 @@ function App() {
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
             StoriesRing
           </code>{' '}
-          components with author names. Renders one ring per group.
+          components with author names. One ring per group.
         </p>
+        <CodeBlock
+          code={`import { StoriesRingList } from '@reelkit/react-stories-player';
+
+<StoriesRingList
+  groups={groups}
+  viewedState={viewedMap}
+  onSelect={(groupIndex) => openStories(groupIndex)}
+/>`}
+          language="tsx"
+        />
 
         <h3 className="text-lg font-semibold mt-6 mb-2">HeartAnimation</h3>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
-          Animated heart overlay triggered on double-tap. Renders a scaling
-          heart icon that fades out after the animation completes.
+          Animated heart overlay triggered on double-tap. Scales up and fades
+          out over 800ms. Customize via CSS (see Double-Tap & Likes section).
         </p>
+        <CodeBlock
+          code={`import { HeartAnimation } from '@reelkit/react-stories-player';
+
+<HeartAnimation onComplete={() => console.log('animation done')} />`}
+          language="tsx"
+        />
       </section>
 
       {/* Types */}
@@ -1068,9 +1258,7 @@ function App() {
           language="typescript"
         />
 
-        <h3 className="text-lg font-semibold mt-6 mb-2">
-          StoriesGroup{'<T>'}
-        </h3>
+        <h3 className="text-lg font-semibold mt-6 mb-2">StoriesGroup{'<T>'}</h3>
         <CodeBlock
           code={`interface StoriesGroup<T extends StoryItem = StoryItem> {
   author: AuthorInfo;
@@ -1277,6 +1465,39 @@ function CustomSlide({ story, size, onReady, onError }: SlideRenderProps<PromoSt
 />`}
           language="tsx"
         />
+      </section>
+
+      <section>
+        <h2 className="text-2xl font-bold mb-4">Keyboard Shortcuts</h2>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left py-3 px-4 font-semibold">Key</th>
+                <th className="text-left py-3 px-4 font-semibold">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                { key: 'ArrowLeft', action: 'Previous story' },
+                { key: 'ArrowRight', action: 'Next story' },
+                { key: 'Escape', action: 'Close player' },
+              ].map((s) => (
+                <tr
+                  key={s.key}
+                  className="border-b border-slate-100 dark:border-slate-800"
+                >
+                  <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                    {s.key}
+                  </td>
+                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
+                    {s.action}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </section>
     </div>
   );

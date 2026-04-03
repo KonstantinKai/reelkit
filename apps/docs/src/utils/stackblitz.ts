@@ -166,11 +166,23 @@ createRoot(document.getElementById('root')!).render(
   </StrictMode>
 );`;
 
+  const sbToken = import.meta.env.VITE_STACKBLITZ_CDN_TOKEN || '';
+
   const viteConfig = `import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
+  server: {
+    proxy: {
+      '/cdn': {
+        target: 'https://cdn.reelkit.dev',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\\/cdn/, ''),
+        headers: { 'X-RK-Token': '${sbToken}' },
+      },
+    },
+  },
 });`;
 
   const tsconfig = JSON.stringify(
@@ -273,6 +285,7 @@ export function createAngularStackBlitzProject(opts: {
               builder: '@angular/build:dev-server',
               options: {
                 buildTarget: 'sandbox:build',
+                proxyConfig: 'proxy.conf.mjs',
               },
             },
           },
@@ -383,12 +396,26 @@ bootstrapApplication(AppComponent);
     2,
   );
 
+  const angularSbToken = import.meta.env.VITE_STACKBLITZ_CDN_TOKEN || '';
+
+  const proxyConf = `export default {
+  '/cdn': {
+    target: 'https://cdn.reelkit.dev',
+    secure: true,
+    changeOrigin: true,
+    pathRewrite: { '^/cdn': '' },
+    headers: { 'X-RK-Token': '${angularSbToken}' },
+  },
+};
+`;
+
   return {
     title: opts.title,
     template: 'node',
     files: {
       'package.json': packageJson,
       'angular.json': angularJson,
+      'proxy.conf.mjs': proxyConf,
       'src/index.html': indexHtml,
       'src/styles.css': stylesCss,
       'src/main.ts': mainTs,

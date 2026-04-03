@@ -30,6 +30,7 @@
   border-radius: 50%;
   object-fit: cover;
   display: block;
+  max-width: none;
 }
 
 @keyframes rk-stories-ring-spin {
