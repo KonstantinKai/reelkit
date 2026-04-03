@@ -1,20 +1,6 @@
-## @reelkit/react-stories-player@0.1.0 (2026-04-03)
-
-### 🚀 Features
-
-- Full-screen Instagram-style stories player overlay for React
-- 3D cube transition between users
-- Tap-to-advance navigation with segmented progress bar
-- Double-tap heart animation
-- Auto-advance timer with pause on hold
-
-### 🧱 Updated Dependencies
-
-- Updated @reelkit/stories-core to 0.1.0
-
 ## @reelkit/stories-core@0.1.0 (2026-04-03)
 
-### 🚀 Features
+### 🎉 Initial Release
 
 - Framework-agnostic stories state machine with story and group navigation
 - Auto-advance timer with pause/resume
@@ -23,17 +9,13 @@
 
 ## @reelkit/react-stories-player@0.1.0 (2026-04-03)
 
-### 🚀 Features
+### 🎉 Initial Release
 
 - Full-screen Instagram-style stories player overlay for React
 - 3D cube transition between users
 - Tap-to-advance navigation with segmented progress bar
 - Double-tap heart animation
 - Auto-advance timer with pause on hold
-
-### 🧱 Updated Dependencies
-
-- Updated @reelkit/stories-core to 0.1.0
 
 ## @reelkit/core@0.3.0 (2026-04-03)
 
@@ -52,7 +34,7 @@
 - `onNavKeyPress` event replaces default arrow-key navigation, receives `-1|1` increment
 - `observeMediaLoading` uses `playing` + `canplaythrough` instead of `canplay` as ready signals
 
-### ⚠️  Breaking Changes
+### ⚠️ Breaking Changes
 
 - `Escape` key removed from `NavKey` type and keyboard controller
 
@@ -69,7 +51,7 @@
 - `useFullscreen` hook bridges core fullscreen state to React with request/exit/toggle helpers
 - `useBodyLock` hook for declarative body scroll locking
 
-### ⚠️  Breaking Changes
+### ⚠️ Breaking Changes
 
 - `Reel` `transition` prop no longer accepts string names — pass a `TransitionTransformFn` directly (e.g. `slideTransition` instead of `'slide'`)
 - `useNavKeys` prop renamed to `enableNavKeys`
@@ -89,7 +71,7 @@
 - `BodyLockService` wraps core `createBodyLock`
 - `SwipeToClose` directive moved from lightbox with configurable up/down direction
 
-### ⚠️  Breaking Changes
+### ⚠️ Breaking Changes
 
 - `Reel` uses per-slide absolute positioning with `TransitionTransformFn` — custom CSS targeting `.rk-lightbox-slider-track` or `flex-direction` no longer applies
 - `enableNavKeys` input renamed from `useNavKeys`
@@ -112,7 +94,7 @@
 - All render callbacks include the current `LightboxItem`
 - Render props type names simplified: `ControlsRenderProps`, `SlideRenderProps`, `NavigationRenderProps`, `InfoRenderProps` (Lightbox prefix dropped)
 
-### ⚠️  Breaking Changes
+### ⚠️ Breaking Changes
 
 - `useFullscreen` hook removed — import from `@reelkit/react` instead
 - `renderSlide` accepts a single `SlideRenderProps` object instead of separate parameters
@@ -136,7 +118,7 @@
 - All template contexts include `item` (`LightboxItem`)
 - Top shade gradient improves control visibility
 
-### ⚠️  Breaking Changes
+### ⚠️ Breaking Changes
 
 - `FullscreenService` removed — use `fullscreenSignal`/`requestFullscreen`/`exitFullscreen` from `@reelkit/angular`
 - `LightboxControlsContext.currentIndex` renamed to `activeIndex`
@@ -160,7 +142,7 @@
 - All render callbacks include the active content item: `ControlsRenderProps`, `NavigationRenderProps`, `renderLoading`/`renderError` receive `item`
 - `NavigationRenderProps` also receives `media` (`MediaItem`) in nested context
 
-### ⚠️  Breaking Changes
+### ⚠️ Breaking Changes
 
 - `SoundState` removed — import `SoundProvider` and `useSoundState` from `@reelkit/react` instead
 - `NestedSlideRenderProps.item` renamed to `media` (`MediaItem`), new `item` field is the parent `BaseContentItem`
@@ -183,7 +165,7 @@
 - All template contexts include `item`: `PlayerControlsContext` adds `item` and `onClose`, `PlayerNavigationContext` adds `item` and `onPrev`, `PlayerNestedNavigationContext` adds `media` and `onPrev`
 - Inline SVG icons replaced with tree-shakeable `lucide-angular` components
 
-### ⚠️  Breaking Changes
+### ⚠️ Breaking Changes
 
 - `PlayerControlsContext` adds required `onClose` callback
 - `PlayerSlideContext` adds required `onError` callback

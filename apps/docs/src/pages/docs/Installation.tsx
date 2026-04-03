@@ -139,7 +139,7 @@ const bundleSizes: {
 const comparison = [
   {
     name: 'ReelKit (core + react)',
-    gzip: '9.8 kB',
+    gzip: '9.9 kB',
     virtualization: true,
     notes: 'Zero dependencies',
   },
