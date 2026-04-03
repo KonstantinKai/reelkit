@@ -27,6 +27,6 @@
   },
   "peerDependencies": {},
   "dependencies": {
-    "@reelkit/core": "^0.2.2"
+    "@reelkit/core": "^0.3.0"
   }
 }

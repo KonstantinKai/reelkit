@@ -4,16 +4,9 @@
   "sourceRoot": "packages/reelkit-react-stories-player/src",
   "projectType": "library",
   "tags": ["scope:react", "type:stories"],
-  "targets": {
-    "nx-release-publish": {
-      "options": {
-        "packageRoot": "dist/{projectRoot}"
-      }
-    }
-  },
+  "targets": {},
   "release": {
     "version": {
-      "manifestRootsToUpdate": ["dist/{projectRoot}"],
       "currentVersionResolver": "git-tag",
       "fallbackCurrentVersionResolver": "disk"
     }
