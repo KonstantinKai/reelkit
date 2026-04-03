@@ -13,6 +13,9 @@ import type { ChangelogChange } from 'nx/release/changelog-renderer';
  * - Version title includes project name (e.g. `## @reelkit/core@0.2.0`)
  * - formatChange extracts only the current project's description from
  *   multi-project version plan bodies
+ * - Multi-line descriptions are rendered as separate bullet points
+ * - Lines starting with `BREAKING:` are extracted into a dedicated
+ *   "⚠️ Breaking Changes" section
  */
 export default class ChangelogRenderer extends DefaultChangelogRenderer {
   override renderVersionTitle(): string {
@@ -29,9 +32,9 @@ export default class ChangelogRenderer extends DefaultChangelogRenderer {
   }
 
   override formatChange(change: ChangelogChange): string {
-    const lines = change.description.split('\n');
+    const rawLines = change.description.split('\n');
 
-    const thanks = lines
+    const thanks = rawLines
       .filter((l) => l.trimStart().toLowerCase().startsWith('thanks to '))
       .flatMap((l) =>
         l
@@ -50,50 +53,77 @@ export default class ChangelogRenderer extends DefaultChangelogRenderer {
           }).join('\n')}`
         : entry;
 
-    if (!this.project || !change.description.includes('\n')) {
-      return appendThanks(super.formatChange(change));
-    }
+    // For multi-project version plans, extract only the current project's lines
+    let descriptionLines: string[];
 
-    // Extract only the current project's description from the version plan body.
-    // Version plan body format:
-    //   @reelkit/core → minor
-    //     Description text here
-    //
-    //   @reelkit/react → minor
-    //     Description text here
-    const projectPrefix = `${this.project} `;
-    let capturing = false;
-    const projectLines: string[] = [];
+    if (this.project && change.description.includes('\n')) {
+      const projectPrefix = `${this.project} `;
+      let capturing = false;
+      const projectLines: string[] = [];
 
-    for (const line of lines) {
-      const trimmed = line.trimStart();
-      if (trimmed.startsWith(projectPrefix)) {
-        capturing = true;
-        continue;
-      }
-      if (capturing) {
-        if (
-          trimmed.startsWith('@') ||
-          (trimmed === '' && projectLines.length > 0)
-        ) {
-          break;
+      for (const line of rawLines) {
+        const trimmed = line.trimStart();
+        if (trimmed.startsWith(projectPrefix)) {
+          capturing = true;
+          continue;
         }
-        if (trimmed) {
-          projectLines.push(trimmed);
+        if (capturing) {
+          if (
+            trimmed.startsWith('@') ||
+            (trimmed === '' && projectLines.length > 0)
+          ) {
+            break;
+          }
+          if (trimmed) {
+            projectLines.push(trimmed);
+          }
         }
       }
+
+      descriptionLines =
+        projectLines.length > 0
+          ? projectLines
+          : [change.description.split('\n')[0]];
+    } else {
+      descriptionLines = rawLines.filter((l) => {
+        const t = l.trim();
+        return t && !t.toLowerCase().startsWith('thanks to ');
+      });
     }
 
-    const description =
-      projectLines.length > 0
-        ? projectLines.join(' ')
-        : change.description.split('\n')[0];
+    // Separate feature lines from breaking change lines
+    const featureLines: string[] = [];
+    const breakingLines: string[] = [];
+
+    for (const line of descriptionLines) {
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+
+      if (trimmed.startsWith('BREAKING:')) {
+        breakingLines.push(trimmed.replace(/^BREAKING:\s*/, ''));
+      } else {
+        featureLines.push(trimmed);
+      }
+    }
+
+    // Push breaking changes to the inherited breakingChanges array
+    // so they render under "⚠️ Breaking Changes"
+    for (const item of breakingLines) {
+      this.breakingChanges.push(`- ${item}`);
+    }
 
     const ref =
       this.changelogRenderOptions.commitReferences !== false && change.shortHash
         ? ` (${change.shortHash})`
         : '';
 
-    return appendThanks(`- ${description}${ref}`);
+    const bullets = featureLines.map((l) => `- ${l}`).join('\n');
+    const lastBulletIdx = bullets.lastIndexOf('- ');
+    const withRef =
+      ref && lastBulletIdx >= 0
+        ? bullets.slice(0, bullets.length) + ref
+        : bullets;
+
+    return appendThanks(withRef);
   }
 }

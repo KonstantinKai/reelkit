@@ -95,12 +95,13 @@
   },
   "release": {
     "versionPlans": true,
-    "projects": ["packages/*", "!@reelkit/example-data"],
+    "projects": ["packages/*", "!@reelkit/example-data", "!@reelkit/stories-core", "!@reelkit/react-stories-player"],
     "projectsRelationship": "independent",
     "version": {
       "preVersionCommand": "npx nx run-many -t build --projects='packages/*' --skip-nx-cache && node scripts/update-sizes.mjs",
       "conventionalCommits": true,
       "updateDependents": "auto",
+      "preserveMatchingDependencyRanges": false,
       "versionActionsOptions": {
         "skipLockFileUpdate": true
       }

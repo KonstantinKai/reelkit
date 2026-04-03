@@ -3,7 +3,6 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "composite": true,
-    "noEmit": true,
     "outDir": "../dist/out-tsc",
     "types": [
       "node",

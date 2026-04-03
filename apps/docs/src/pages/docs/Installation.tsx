@@ -89,7 +89,7 @@ const bundleSizes: {
   {
     name: '@reelkit/react-reel-player',
     js: '13.7 kB',
-    gzip: '4.4 kB',
+    gzip: '4.3 kB',
     css: '2.8 kB',
     cssGzip: '0.9 kB',
     framework: 'react',
@@ -106,7 +106,7 @@ const bundleSizes: {
     name: '@reelkit/react-stories-player',
     js: '17.7 kB',
     gzip: '5.6 kB',
-    css: '3.6 kB',
+    css: '3.7 kB',
     cssGzip: '1.1 kB',
     framework: 'react',
   },
@@ -139,7 +139,7 @@ const bundleSizes: {
 const comparison = [
   {
     name: 'ReelKit (core + react)',
-    gzip: '9.9 kB',
+    gzip: '9.8 kB',
     virtualization: true,
     notes: 'Zero dependencies',
   },
