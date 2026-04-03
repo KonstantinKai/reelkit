@@ -23,8 +23,32 @@
     "!dist/README.md",
     "!**/*.tsbuildinfo"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KonstantinKai/reelkit.git",
+    "directory": "packages/reelkit-react-stories-player"
+  },
+  "bugs": "https://github.com/KonstantinKai/reelkit/issues",
+  "homepage": "https://reelkit.dev/docs/stories-player",
+  "funding": {
+    "type": "buymeacoffee",
+    "url": "https://buymeacoffee.com/konstantinkai"
+  },
   "description": "Instagram-style stories player overlay for React with flip transitions and auto-advance",
   "license": "MIT",
+  "keywords": [
+    "react",
+    "stories",
+    "instagram-stories",
+    "stories-player",
+    "fullscreen",
+    "swipe",
+    "touch",
+    "auto-advance",
+    "flip-transition",
+    "react-component",
+    "typescript"
+  ],
   "publishConfig": {
     "access": "public"
   },
