@@ -184,7 +184,11 @@ export default defineConfig({
         target: 'https://cdn.reelkit.dev',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\\/cdn/, ''),
-        headers: { 'X-RK-Token': '${sbToken}' },
+        configure: (proxy) => {
+          proxy.on('proxyReq', (proxyReq) => {
+            proxyReq.setHeader('X-RK-Token', '${sbToken}');
+          });
+        },
       },
     },
   },
@@ -409,7 +413,9 @@ bootstrapApplication(AppComponent);
     secure: true,
     changeOrigin: true,
     pathRewrite: { '^/cdn': '' },
-    headers: { 'X-RK-Token': '${angularSbToken}' },
+    onProxyReq: (proxyReq) => {
+      proxyReq.setHeader('X-RK-Token', '${angularSbToken}');
+    },
   },
 };
 `;
