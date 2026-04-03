@@ -37,6 +37,8 @@ jobs:
 
       - name: Build docs
         run: npx nx build docs
+        env:
+          VITE_STACKBLITZ_CDN_TOKEN: ${{ secrets.STACKBLITZ_CDN_TOKEN }}
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
