@@ -1,4 +1,3 @@
-import { Callout } from '../../components/ui/Callout';
 import { CodeBlock } from '../../components/ui/CodeBlock';
 import { FeatureCardGrid } from '../../components/ui/FeatureCard';
 import {
@@ -564,8 +563,8 @@ export default function StoriesCorePage() {
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
             @reelkit/react-stories-player
           </code>
-          . Pure TypeScript, no framework deps. Use it to build stories
-          players for Angular, Vue, or vanilla JS.
+          . Pure TypeScript, no framework deps. Use it to build stories players
+          for Angular, Vue, or vanilla JS.
         </p>
       </div>
 
@@ -576,10 +575,7 @@ export default function StoriesCorePage() {
       {/* Installation */}
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Installation</h2>
-        <CodeBlock
-          code="npm i @reelkit/stories-core"
-          language="bash"
-        />
+        <CodeBlock code="npm i @reelkit/stories-core" language="bash" />
       </section>
 
       {/* Stories Controller */}

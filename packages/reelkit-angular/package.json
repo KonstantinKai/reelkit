@@ -56,7 +56,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@reelkit/core": ">=0.2.0"
+    "@reelkit/core": "^0.2.2"
   },
   "peerDependencies": {
     "@angular/common": ">=19.0.0",

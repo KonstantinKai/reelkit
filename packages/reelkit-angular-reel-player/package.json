@@ -59,7 +59,7 @@
     "access": "public"
   },
   "peerDependencies": {
-    "@reelkit/angular": "*",
+    "@reelkit/angular": "^0.1.0",
     "@angular/common": ">=19.0.0",
     "@angular/core": ">=19.0.0",
     "lucide-angular": ">=0.460.0"

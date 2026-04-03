@@ -32,6 +32,9 @@
       "path": "../../packages/reelkit-core/tsconfig.lib.json"
     },
     {
+      "path": "../../packages/reelkit-react-stories-player/tsconfig.lib.json"
+    },
+    {
       "path": "../../packages/reelkit-react-reel-player/tsconfig.lib.json"
     },
     {

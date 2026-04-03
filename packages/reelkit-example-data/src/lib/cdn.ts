@@ -1,6 +1,6 @@
-const CDN_PROD = 'https://cdn.reelkit.dev';
+const _kCdnProd = 'https://cdn.reelkit.dev';
 
-let base = CDN_PROD;
+let base = _kCdnProd;
 
 export function setCdnBase(url: string): void {
   base = url;

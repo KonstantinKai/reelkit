@@ -386,11 +386,11 @@ export default function Installation() {
                   <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
                     <li>
                       <code className="text-sm font-mono">react</code>{' '}
-                      {'>= 17.0.0'}
+                      {'>= 18.0.0'}
                     </li>
                     <li>
                       <code className="text-sm font-mono">react-dom</code>{' '}
-                      {'>= 17.0.0'}
+                      {'>= 18.0.0'}
                     </li>
                   </ul>
                 </div>
