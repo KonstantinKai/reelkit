@@ -1,0 +1,13 @@
+name = "cdn-guard"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "reelkit-cdn"
+
+[vars]
+ALLOWED_ORIGINS = "reelkit.dev"
+
+# Set via: wrangler secret put DEV_TOKEN
+# DEV_TOKEN = "<generate with: openssl rand -hex 32>"

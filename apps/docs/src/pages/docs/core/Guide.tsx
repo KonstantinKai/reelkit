@@ -1,6 +1,6 @@
-import { Link } from 'react-router-dom';
 import { Callout } from '../../../components/ui/Callout';
 import { CodeBlock } from '../../../components/ui/CodeBlock';
+import { NextSteps } from '../../../components/NextSteps';
 
 export default function CoreGuide() {
   return (
@@ -101,14 +101,17 @@ controller.prev();`}
           code={`// Connect to DOM element
 controller.attach(element);
 
-// Start keyboard observation
+// Start gesture, keyboard, and wheel observation
 controller.observe();
 
-// Stop keyboard observation
+// Stop gesture, keyboard, and wheel observation
 controller.unobserve();
 
-// Detach from DOM
+// Detach DOM listeners (reversible — use for React effect cleanup)
 controller.detach();
+
+// Permanent teardown (use for Angular onDestroy)
+controller.dispose();
 
 // Recalculate positions
 controller.adjust();
@@ -176,23 +179,24 @@ const skipHiddenExtractor = (current: number, count: number) => {
 // Create a signal
 const count = createSignal(0);
 
-// Subscribe to changes
-count.subscribe((value) => console.log(value));
+// Observe changes (returns a disposer function)
+const dispose = count.observe(() => console.log(count.value));
 
 // Update value
 count.value = 5;
 
-// Create computed signal
-const doubled = createComputed(() => count.value * 2);
+// Create computed signal (requires a deps factory)
+const doubled = createComputed(() => count.value * 2, () => [count]);
 
-// Run side effects
-const dispose = reaction(
-  () => count.value,
-  (value) => console.log('Count changed:', value)
+// Run side effects on signal changes
+const disposeReaction = reaction(
+  () => [count],
+  () => console.log('Count changed:', count.value)
 );
 
 // Cleanup
-dispose();`}
+dispose();
+disposeReaction();`}
           language="typescript"
         />
       </section>
@@ -209,99 +213,64 @@ dispose();`}
         <CodeBlock
           code={`const { index, axisValue, indexes } = controller.state;
 
-// Subscribe to index changes
-index.subscribe((currentIndex) => {
-  console.log('Current index:', currentIndex);
+// Observe index changes (returns a disposer function)
+const disposeIndex = index.observe(() => {
+  console.log('Current index:', index.value);
 });
 
-// Get visible indexes for virtualization
-indexes.subscribe((visibleIndexes) => {
-  console.log('Visible:', visibleIndexes);
-});`}
+// Observe visible indexes for virtualization
+const disposeIndexes = indexes.observe(() => {
+  console.log('Visible:', indexes.value);
+});
+
+// Cleanup when done
+disposeIndex();
+disposeIndexes();`}
           language="typescript"
         />
       </section>
 
-      <section>
-        <h2 className="text-2xl font-bold mb-4">Next Steps</h2>
-        <ul className="space-y-3">
-          <li>
-            <Link
-              to="/docs/core/api"
-              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
-            >
-              Core API Reference
-            </Link>
-            <span className="text-slate-500"> - all available props</span>
-          </li>
-          <li>
-            <Link
-              to="/docs/react/guide"
-              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
-            >
-              React Guide
-            </Link>
-            <span className="text-slate-500">
-              {' '}
-              - live demos and virtualization
-            </span>
-          </li>
-          <li>
-            <Link
-              to="/docs/angular/guide"
-              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
-            >
-              Angular Guide
-            </Link>
-            <span className="text-slate-500">
-              {' '}
-              - standalone components and signals
-            </span>
-          </li>
-          <li>
-            <Link
-              to="/docs/reel-player"
-              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
-            >
-              React Reel Player
-            </Link>
-            <span className="text-slate-500">
-              {' '}
-              - TikTok/Reels-style video player
-            </span>
-          </li>
-          <li>
-            <Link
-              to="/docs/lightbox"
-              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
-            >
-              React Lightbox
-            </Link>
-            <span className="text-slate-500"> - image & video gallery</span>
-          </li>
-          <li>
-            <Link
-              to="/docs/angular-reel-player"
-              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
-            >
-              Angular Reel Player
-            </Link>
-            <span className="text-slate-500">
-              {' '}
-              - TikTok/Reels-style video player
-            </span>
-          </li>
-          <li>
-            <Link
-              to="/docs/angular-lightbox"
-              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
-            >
-              Angular Lightbox
-            </Link>
-            <span className="text-slate-500"> - image & video gallery</span>
-          </li>
-        </ul>
-      </section>
+      <NextSteps
+        items={[
+          {
+            label: 'Core API Reference',
+            path: '/docs/core/api',
+            description: 'all available props',
+          },
+          {
+            label: 'Framework Guide',
+            path: {
+              react: '/docs/react/guide',
+              angular: '/docs/angular/guide',
+            },
+            description: 'components, demos, and integration',
+          },
+          {
+            label: 'Reel Player',
+            path: {
+              react: '/docs/reel-player',
+              angular: '/docs/angular-reel-player',
+            },
+            description: 'TikTok/Reels-style video player',
+          },
+          {
+            label: 'Lightbox',
+            path: {
+              react: '/docs/lightbox',
+              angular: '/docs/angular-lightbox',
+            },
+            description: 'image & video gallery',
+          },
+          {
+            label: 'Stories Player',
+            path: {
+              react: '/docs/stories-player',
+              angular: '/docs/angular-stories-player',
+            },
+            description: 'Instagram-style stories viewer',
+          },
+        ]}
+      />
     </div>
   );
 }

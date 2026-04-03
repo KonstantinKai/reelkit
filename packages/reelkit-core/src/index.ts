@@ -20,7 +20,6 @@ export {
   // Array
   first,
   last,
-  isEmpty,
   generate,
   // Number
   abs,
@@ -57,6 +56,23 @@ export {
   createSharedVideo,
   type SharedVideoConfig,
   type SharedVideoInstance,
+  // Media Loading
+  observeMediaLoading,
+  type MediaLoadingCallbacks,
+  // Sound
+  createSoundController,
+  syncMutedToVideo,
+  type SoundController,
+  // Content Loading
+  createContentLoadingController,
+  type ContentLoadingController,
+  // LRU Cache
+  createLruCache,
+  type LruCache,
+  // Content Preloader
+  createContentPreloader,
+  type ContentPreloader,
+  type ContentPreloaderConfig,
 } from './lib/utils';
 
 // Gestures
@@ -108,3 +124,27 @@ export type {
   SliderController,
   SliderDirection,
 } from './lib/slider/types';
+
+// Transitions
+export {
+  getSlideProgress,
+  slideTransition,
+  flipTransition,
+  cubeTransition,
+  fadeTransition,
+  zoomTransition,
+} from './lib/slider/transitions';
+export type {
+  SlideTransformStyle,
+  TransitionTransformFn,
+} from './lib/slider/transitions';
+
+// Fullscreen
+export {
+  fullscreenSignal,
+  requestFullscreen,
+  exitFullscreen,
+} from './lib/utils';
+
+// Body lock
+export { createBodyLock, type BodyLock } from './lib/utils';

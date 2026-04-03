@@ -5,8 +5,13 @@ import {
   inject,
   input,
 } from '@angular/core';
-import { DomSanitizer, type SafeHtml } from '@angular/platform-browser';
-import { ICON_VOLUME_2, ICON_VOLUME_X } from '../icons/icons';
+import {
+  LucideAngularModule,
+  LucideIconProvider,
+  LUCIDE_ICONS,
+  Volume2,
+  VolumeX,
+} from 'lucide-angular';
 import { SoundStateService } from '../sound-state/sound-state.service';
 
 /**
@@ -27,6 +32,14 @@ import { SoundStateService } from '../sound-state/sound-state.service';
   selector: 'rk-sound-button',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
+  imports: [LucideAngularModule],
+  providers: [
+    {
+      provide: LUCIDE_ICONS,
+      useValue: new LucideIconProvider({ Volume2, VolumeX }),
+      multi: true,
+    },
+  ],
   template: `
     @if (!soundState.disabled()) {
       <button
@@ -37,8 +50,13 @@ import { SoundStateService } from '../sound-state/sound-state.service';
         (click)="onToggle()"
         [attr.aria-label]="soundState.muted() ? 'Unmute' : 'Mute'"
         [attr.aria-disabled]="isDisabled()"
-        [innerHTML]="soundState.muted() ? iconVolumeX : iconVolume2"
-      ></button>
+      >
+        @if (soundState.muted()) {
+          <lucide-angular [img]="VolumeXIcon" [size]="22" />
+        } @else {
+          <lucide-angular [img]="Volume2Icon" [size]="22" />
+        }
+      </button>
     }
   `,
   styles: [
@@ -65,10 +83,6 @@ import { SoundStateService } from '../sound-state/sound-state.service';
       .rk-player-sound-btn:not(.rk-disabled):hover {
         background-color: rgba(0, 0, 0, 0.7);
       }
-
-      .rk-player-sound-btn svg {
-        pointer-events: none;
-      }
     `,
   ],
 })
@@ -81,12 +95,8 @@ export class RkSoundButtonComponent {
 
   protected readonly soundState = inject(SoundStateService);
 
-  private readonly _sanitizer = inject(DomSanitizer);
-
-  protected readonly iconVolume2: SafeHtml =
-    this._sanitizer.bypassSecurityTrustHtml(ICON_VOLUME_2);
-  protected readonly iconVolumeX: SafeHtml =
-    this._sanitizer.bypassSecurityTrustHtml(ICON_VOLUME_X);
+  protected readonly Volume2Icon = Volume2;
+  protected readonly VolumeXIcon = VolumeX;
 
   protected onToggle(): void {
     if (!this.isDisabled()) {

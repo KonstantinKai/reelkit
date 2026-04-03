@@ -7,6 +7,7 @@
   justify-content: center;
   align-items: center;
   touch-action: none;
+  overscroll-behavior: none;
 }
 
 .rk-reel-container {
@@ -36,4 +37,57 @@
 .rk-reel-slide-wrapper {
   position: relative;
   overflow: hidden;
+}
+
+/* Wave loader animation */
+.rk-reel-loader {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent 25%,
+    rgba(255, 255, 255, 0.12) 50%,
+    transparent 75%
+  );
+  background-size: 300% 100%;
+  animation: rk-reel-wave 1.8s ease-in-out infinite;
+}
+
+@keyframes rk-reel-wave {
+  0% {
+    background-position: 100% 0;
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    background-position: -100% 0;
+    opacity: 0;
+  }
+}
+
+/* Error state */
+.rk-media-error {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.rk-media-error-text {
+  font-size: 13px;
+  letter-spacing: 0.02em;
 }

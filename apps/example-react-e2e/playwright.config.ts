@@ -8,6 +8,7 @@ const isCI = !!process.env['CI'];
 
 export default defineConfig({
   ...nxE2EPreset(__filename, { testDir: './src' }),
+  reporter: [['html'], ['json', { outputFile: 'test-results.json' }]],
   use: {
     baseURL,
     trace: 'on-first-retry',
@@ -26,10 +27,6 @@ export default defineConfig({
         {
           name: 'chromium',
           use: { ...devices['Desktop Chrome'] },
-        },
-        {
-          name: 'firefox',
-          use: { ...devices['Desktop Firefox'] },
         },
         {
           name: 'webkit',

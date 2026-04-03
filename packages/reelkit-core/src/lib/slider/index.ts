@@ -1,4 +1,7 @@
-export { createSliderController, defaultRangeExtractor } from './sliderController';
+export {
+  createSliderController,
+  defaultRangeExtractor,
+} from './sliderController';
 export { animate, type AnimationOptions } from './animate';
 export type {
   AnimatedValue,

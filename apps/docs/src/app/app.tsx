@@ -64,6 +64,18 @@ export const router = createBrowserRouter(
           lazy: lazy(() => import('../pages/docs/AngularLightbox')),
         },
         {
+          path: 'docs/stories-core',
+          lazy: lazy(() => import('../pages/docs/StoriesCore')),
+        },
+        {
+          path: 'docs/stories-player',
+          lazy: lazy(() => import('../pages/docs/StoriesPlayer')),
+        },
+        {
+          path: 'docs/angular-stories-player',
+          lazy: lazy(() => import('../pages/docs/AngularStoriesPlayer')),
+        },
+        {
           path: 'docs/troubleshooting',
           lazy: lazy(() => import('../pages/docs/Troubleshooting')),
         },
@@ -73,6 +85,7 @@ export const router = createBrowserRouter(
         },
         { path: 'privacy', lazy: lazy(() => import('../pages/Privacy')) },
         { path: 'terms', lazy: lazy(() => import('../pages/Terms')) },
+        { path: '*', lazy: lazy(() => import('../pages/NotFound')) },
       ],
     },
   ],

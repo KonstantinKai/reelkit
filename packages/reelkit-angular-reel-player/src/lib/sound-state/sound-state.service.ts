@@ -1,39 +1,38 @@
-import { Injectable, signal } from '@angular/core';
+import { DestroyRef, Injectable, inject } from '@angular/core';
+import {
+  createSoundController,
+  toAngularSignal,
+  type SoundController,
+} from '@reelkit/angular';
 
 /**
- * Holds the reactive sound state for the reel player.
+ * Angular DI wrapper around core's {@link createSoundController}.
  *
  * Provided at the component level by `RkReelPlayerOverlayComponent` so that
  * each player instance has its own isolated sound state.
- *
- * Writable signals are kept private; consumers read via the public readonly
- * accessors. Mutations go through the dedicated mutator methods so that
- * write access is never leaked to arbitrary callers.
  */
 @Injectable()
 export class SoundStateService {
-  private readonly _muted = signal(true);
-  private readonly _disabled = signal(false);
+  private readonly _ctrl: SoundController = createSoundController();
+  private readonly _destroyRef = inject(DestroyRef);
 
-  /** Whether the player is currently muted. Read-only to external consumers. */
-  readonly muted = this._muted.asReadonly();
+  readonly muted = toAngularSignal(this._ctrl.muted, this._destroyRef);
+  readonly disabled = toAngularSignal(this._ctrl.disabled, this._destroyRef);
 
-  /**
-   * Set to `true` while transitioning or when the active slide has no video,
-   * to hide the sound control during those states. Read-only to external consumers.
-   */
-  readonly disabled = this._disabled.asReadonly();
+  get controller(): SoundController {
+    return this._ctrl;
+  }
 
   toggle(): void {
-    this._muted.update((v) => !v);
+    this._ctrl.toggle();
   }
 
   setDisabled(value: boolean): void {
-    this._disabled.set(value);
+    this._ctrl.disabled.value = value;
   }
 
   reset(): void {
-    this._muted.set(true);
-    this._disabled.set(false);
+    this._ctrl.muted.value = true;
+    this._ctrl.disabled.value = false;
   }
 }

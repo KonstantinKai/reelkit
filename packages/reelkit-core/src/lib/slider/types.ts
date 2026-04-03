@@ -1,4 +1,5 @@
 import type { Signal, ComputedSignal } from '../utils/signal';
+import type { GestureCommonEvent, GestureEvent } from '../gestures/types';
 
 /** Axis along which the slider moves. */
 export type SliderDirection = 'horizontal' | 'vertical';
@@ -73,15 +74,6 @@ export interface SliderConfig {
   swipeDistanceFactor?: number;
 
   /**
-   * Custom function that determines which slide indices are rendered.
-   * Defaults to the built-in extractor that returns current ± 1 overscan.
-   *
-   * NOTE: The result is clamped to a maximum of 3 indices. If more are
-   * returned, the controller keeps 3 centered around the current slide.
-   */
-  rangeExtractor?: RangeExtractor;
-
-  /**
    * Enable mouse wheel navigation.
    * @default false
    */
@@ -92,6 +84,30 @@ export interface SliderConfig {
    * @default 200
    */
   wheelDebounceMs?: number;
+
+  /**
+   * Whether gesture (touch/mouse drag) navigation is enabled.
+   * When `false`, the gesture controller is not attached. Navigation
+   * is still possible via the API (`next`, `prev`, `goTo`).
+   * @default true
+   */
+  enableGestures?: boolean;
+
+  /**
+   * Whether keyboard (arrow keys) navigation is enabled.
+   * When `false`, the keyboard controller is not attached.
+   * @default true
+   */
+  enableNavKeys?: boolean;
+
+  /**
+   * Custom function that determines which slide indices are rendered.
+   * Defaults to the built-in extractor that returns current ± 1 overscan.
+   *
+   * NOTE: The result is clamped to a maximum of 3 indices. If more are
+   * returned, the controller keeps 3 centered around the current slide.
+   */
+  rangeExtractor?: RangeExtractor;
 }
 
 /**
@@ -134,6 +150,30 @@ export interface SliderEvents {
    * @param index - The slide index that remains active.
    */
   onDragCanceled?: (index: number) => void;
+
+  /**
+   * Fired on a single tap (no drag, no long press).
+   * Delayed by the double-tap window to distinguish from double-taps.
+   */
+  onTap?: (event: GestureCommonEvent) => void;
+
+  /** Fired when two taps occur within the double-tap time window. */
+  onDoubleTap?: (event: GestureCommonEvent) => void;
+
+  /** Fired when a long press is detected. */
+  onLongPress?: (event: GestureCommonEvent) => void;
+
+  /** Fired when the pointer is released after a long press. */
+  onLongPressEnd?: (event: GestureEvent) => void;
+
+  /**
+   * Fired when a navigation key is pressed (arrow keys). When provided,
+   * replaces the default prev/next slide behavior — the consumer is
+   * responsible for calling `prev()`/`next()` or custom navigation.
+   *
+   * @param increment - Direction: `-1` for prev, `1` for next.
+   */
+  onNavKeyPress?: (increment: -1 | 1) => void;
 }
 
 /**
@@ -234,9 +274,9 @@ export interface SliderController {
    */
   attach(element: HTMLElement): void;
 
-  /** Detaches from the DOM element and stops all input observers. */
+  /** Detaches DOM listeners (gestures, keyboard, wheel). Safe for re-attach via observe(). */
   detach(): void;
 
-  /** Disposes all resources: detaches controllers and cleans up observers. */
+  /** Disposes all resources permanently: detaches controllers and cleans up signal observers. */
   dispose(): void;
 }

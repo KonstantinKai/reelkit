@@ -1,8 +1,8 @@
 import {
   Component,
   ChangeDetectionStrategy,
+  ViewEncapsulation,
   signal,
-  computed,
 } from '@angular/core';
 import {
   RkReelPlayerOverlayComponent,
@@ -13,17 +13,21 @@ import {
   RkCloseButtonComponent,
   RkSoundButtonComponent,
   RkMediaSlideComponent,
+  RkPlayerLoadingDirective,
+  RkPlayerErrorDirective,
   type ContentItem,
 } from '@reelkit/angular-reel-player';
 
-import { generateContent } from '../../data/mock-content';
+import { cdnUrl } from '@reelkit/example-data';
+import { generateContent, getContentItem } from '../../data/mock-content';
 
 type DemoType =
-  | 'default-overlay'
   | 'custom-overlay'
   | 'custom-controls'
   | 'custom-slide'
   | 'custom-nested-nav'
+  | 'infinity'
+  | 'custom-loading-error'
   | null;
 
 interface Demo {
@@ -33,12 +37,6 @@ interface Demo {
 }
 
 const DEMOS: Demo[] = [
-  {
-    id: 'default-overlay',
-    title: 'Default Slide Overlay',
-    description:
-      'Built-in overlay showing author, description, and likes. No extra props needed.',
-  },
   {
     id: 'custom-overlay',
     title: 'Custom Slide Overlay',
@@ -63,9 +61,37 @@ const DEMOS: Demo[] = [
     description:
       'Uses rkPlayerNestedNavigation to replace the default left/right arrows inside multi-media slides with custom pill-shaped buttons.',
   },
+  {
+    id: 'infinity',
+    title: 'Infinity (Lazy Load)',
+    description:
+      'Loads content in batches of 20 as you scroll. Uses slideChange to detect proximity to the end and appends more items, up to 1,000 total.',
+  },
+  {
+    id: 'custom-loading-error',
+    title: 'Custom Loading / Error',
+    description:
+      'Uses rkPlayerLoading and rkPlayerError to replace default wave loader and error icon. Includes a broken image slide.',
+  },
 ];
 
 const CONTENT_COUNT = 10;
+const INFINITY_BATCH = 20;
+const INFINITY_MAX = 1000;
+const INFINITY_THRESHOLD = 5;
+
+function generateInfinityBatch(start: number, count: number): ContentItem[] {
+  const batch: ContentItem[] = [];
+  for (let i = start; i < start + count && i < INFINITY_MAX; i++) {
+    const item = getContentItem(i);
+    batch.push({
+      ...item,
+      id: `infinity-${i}`,
+      media: item.media.map((m, mi) => ({ ...m, id: `infinity-${i}-${mi}` })),
+    });
+  }
+  return batch;
+}
 
 function getMultiMediaFirstContent(count: number): ContentItem[] {
   const all = generateContent(count + 20);
@@ -78,6 +104,7 @@ function getMultiMediaFirstContent(count: number): ContentItem[] {
   selector: 'app-reel-player-custom-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   imports: [
     RkReelPlayerOverlayComponent,
     RkPlayerSlideOverlayDirective,
@@ -87,6 +114,17 @@ function getMultiMediaFirstContent(count: number): ContentItem[] {
     RkCloseButtonComponent,
     RkSoundButtonComponent,
     RkMediaSlideComponent,
+    RkPlayerLoadingDirective,
+    RkPlayerErrorDirective,
+  ],
+  styles: [
+    `
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    `,
   ],
   template: `
     <div
@@ -171,13 +209,6 @@ function getMultiMediaFirstContent(count: number): ContentItem[] {
       </div>
 
       <rk-reel-player-overlay
-        [isOpen]="activeDemo() === 'default-overlay'"
-        [content]="content"
-        [initialIndex]="0"
-        (closed)="activeDemo.set(null)"
-      />
-
-      <rk-reel-player-overlay
         [isOpen]="activeDemo() === 'custom-overlay'"
         [content]="content"
         [initialIndex]="0"
@@ -259,8 +290,11 @@ function getMultiMediaFirstContent(count: number): ContentItem[] {
           let-index="index"
           let-size="size"
           let-isActive="isActive"
+          let-onReady="onReady"
+          let-onWaiting="onWaiting"
         >
           @if (index === content.length - 1) {
+            {{ callReady(onReady) }}
             <div
               data-testid="cta-slide"
               [style.width.px]="size[0]"
@@ -299,6 +333,8 @@ function getMultiMediaFirstContent(count: number): ContentItem[] {
               [isActive]="isActive"
               [width]="size[0]"
               [height]="size[1]"
+              [onReady]="onReady"
+              [onWaiting]="onWaiting"
             />
           }
         </ng-template>
@@ -390,13 +426,189 @@ function getMultiMediaFirstContent(count: number): ContentItem[] {
           </div>
         </ng-template>
       </rk-reel-player-overlay>
+
+      <rk-reel-player-overlay
+        [isOpen]="activeDemo() === 'infinity'"
+        [content]="infinityContent()"
+        [initialIndex]="0"
+        (closed)="closeInfinity()"
+        (slideChange)="onInfinitySlideChange($event)"
+      >
+        <ng-template rkPlayerSlideOverlay>
+          <!-- hidden -->
+        </ng-template>
+      </rk-reel-player-overlay>
+
+      @if (activeDemo() === 'infinity') {
+        <div
+          style="
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            z-index: 9999;
+            padding: 4px 10px;
+            border-radius: 8px;
+            background-color: rgba(0,0,0,0.5);
+            color: #fff;
+            font-size: 13px;
+            font-weight: 500;
+          "
+        >
+          {{ infinityIndex() + 1 }} / {{ infinityContent().length }}
+        </div>
+
+        @if (infinityLoading()) {
+          <div
+            style="
+              position: fixed;
+              bottom: 24px;
+              left: 50%;
+              transform: translateX(-50%);
+              z-index: 9999;
+              display: flex;
+              align-items: center;
+              gap: 10px;
+              padding: 8px 16px;
+              border-radius: 20px;
+              background-color: rgba(0,0,0,0.7);
+              color: #fff;
+              font-size: 13px;
+              font-weight: 500;
+            "
+          >
+            <div
+              style="
+                width: 18px;
+                height: 18px;
+                border: 2px solid rgba(255,255,255,0.3);
+                border-top-color: #fff;
+                border-radius: 50%;
+                animation: spin 0.8s linear infinite;
+              "
+            ></div>
+            Loading more…
+          </div>
+        }
+      }
+      <rk-reel-player-overlay
+        [isOpen]="activeDemo() === 'custom-loading-error'"
+        [content]="brokenContent"
+        [initialIndex]="0"
+        (closed)="activeDemo.set(null)"
+      >
+        <ng-template rkPlayerLoading let-index>
+          <div
+            style="
+              position: absolute;
+              inset: 0;
+              z-index: 5;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              color: rgba(255, 255, 255, 0.5);
+              font-size: 14px;
+              gap: 8px;
+            "
+          >
+            <div
+              style="
+                width: 20px;
+                height: 20px;
+                border: 2px solid rgba(255, 255, 255, 0.2);
+                border-top-color: #fff;
+                border-radius: 50%;
+                animation: spin 0.8s linear infinite;
+              "
+            ></div>
+            Loading slide {{ index + 1 }}...
+          </div>
+        </ng-template>
+        <ng-template rkPlayerError let-index>
+          <div
+            style="
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              z-index: 10;
+              color: #ff6b6b;
+              text-align: center;
+            "
+          >
+            <div style="font-size: 48px; margin-bottom: 8px">⚠️</div>
+            <div style="font-size: 14px">
+              Slide {{ index + 1 }} failed to load
+            </div>
+          </div>
+        </ng-template>
+      </rk-reel-player-overlay>
     </div>
   `,
 })
 export class ReelPlayerCustomPageComponent {
   protected readonly demos: Demo[] = DEMOS;
   protected readonly content: ContentItem[] = generateContent(CONTENT_COUNT);
+  protected readonly brokenContent: ContentItem[] = [
+    ...this.content.slice(0, 2),
+    {
+      id: 'broken-content',
+      media: [
+        {
+          id: 'broken-img',
+          type: 'image',
+          src: 'https://broken.invalid/does-not-exist.jpg',
+          aspectRatio: 9 / 16,
+        },
+      ],
+      author: {
+        name: 'Error Demo',
+        avatar: cdnUrl('samples/avatars/avatar-01.jpg'),
+      },
+      likes: 0,
+      description: 'Broken image — shows custom error UI.',
+    },
+    ...this.content.slice(2, 5),
+  ];
   protected readonly nestedNavContent: ContentItem[] =
     getMultiMediaFirstContent(CONTENT_COUNT);
   protected readonly activeDemo = signal<DemoType>(null);
+
+  protected readonly infinityContent = signal<ContentItem[]>(
+    generateInfinityBatch(0, INFINITY_BATCH),
+  );
+  protected readonly infinityLoading = signal(false);
+  protected readonly infinityIndex = signal(0);
+  private infinityLoaded = INFINITY_BATCH;
+
+  protected onInfinitySlideChange(index: number): void {
+    this.infinityIndex.set(index);
+
+    const loaded = this.infinityLoaded;
+    if (loaded >= INFINITY_MAX) return;
+    if (index < loaded - INFINITY_THRESHOLD) return;
+
+    this.infinityLoaded = loaded + INFINITY_BATCH;
+    this.infinityLoading.set(true);
+
+    setTimeout(() => {
+      const batch = generateInfinityBatch(loaded, INFINITY_BATCH);
+      this.infinityContent.update((prev) => [...prev, ...batch]);
+      this.infinityLoading.set(false);
+    }, 2000);
+  }
+
+  protected closeInfinity(): void {
+    this.activeDemo.set(null);
+    if (this.infinityLoaded !== INFINITY_BATCH) {
+      this.infinityContent.set(generateInfinityBatch(0, INFINITY_BATCH));
+      this.infinityLoaded = INFINITY_BATCH;
+      this.infinityLoading.set(false);
+      this.infinityIndex.set(0);
+    }
+  }
+
+  protected callReady(fn: () => void): '' {
+    fn();
+    return '';
+  }
 }

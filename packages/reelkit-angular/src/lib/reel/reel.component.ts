@@ -27,8 +27,11 @@ import {
   defaultRangeExtractor,
   first,
   last,
+  slideTransition,
   type RangeExtractor,
   type SliderController,
+  type TransitionTransformFn,
+  type SlideTransformStyle,
 } from '@reelkit/core';
 import { toAngularSignal } from '../signal-bridge/to-angular-signal';
 import { animatedSignalBridge } from '../signal-bridge/animated-signal-bridge';
@@ -101,30 +104,7 @@ import type { ReelApi } from './reel.types';
     >
       @if (hasMeasured()) {
         <div
-          [style.position]="'absolute'"
-          [style.top.px]="0"
-          [style.left.px]="0"
-          [style.display]="'flex'"
-          [style.flex-direction]="
-            direction() === 'horizontal' ? 'row' : 'column'
-          "
-          [style.transform]="
-            'translate' +
-            (direction() === 'horizontal' ? 'X' : 'Y') +
-            '(' +
-            animatedValue() +
-            'px)'
-          "
-          [style.width]="
-            direction() === 'horizontal'
-              ? visibleIndexes().length * primarySize() + 'px'
-              : '100%'
-          "
-          [style.height]="
-            direction() === 'horizontal'
-              ? '100%'
-              : visibleIndexes().length * primarySize() + 'px'
-          "
+          style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
         >
           @for (idx of visibleIndexes(); track trackByFn(idx, $index)) {
             <div
@@ -134,6 +114,18 @@ import type { ReelApi } from './reel.types';
               [attr.aria-hidden]="idx !== indexSignal() ? 'true' : null"
               [attr.tabindex]="idx === indexSignal() ? '0' : null"
               [attr.data-index]="idx"
+              [style.position]="'absolute'"
+              [style.top.px]="0"
+              [style.left.px]="0"
+              [style.width]="isHorizontal() ? primarySize() + 'px' : '100%'"
+              [style.height]="isHorizontal() ? '100%' : primarySize() + 'px'"
+              [style.backface-visibility]="'hidden'"
+              [style.transform]="slideStyles()[$index]?.transform ?? ''"
+              [style.transform-origin]="
+                slideStyles()[$index]?.transformOrigin ?? ''
+              "
+              [style.opacity]="slideStyles()[$index]?.opacity ?? ''"
+              [style.z-index]="slideStyles()[$index]?.zIndex ?? ''"
             >
               @if (itemTemplate()) {
                 <ng-container
@@ -191,7 +183,7 @@ export class ReelComponent implements OnInit, AfterViewInit {
   swipeDistanceFactor = input<number>(0.12);
 
   /** Enable keyboard arrow key navigation. */
-  useNavKeys = input<boolean>(true);
+  enableNavKeys = input<boolean>(true);
 
   /** Enable mouse wheel navigation. */
   enableWheel = input<boolean>(false);
@@ -208,7 +200,18 @@ export class ReelComponent implements OnInit, AfterViewInit {
    */
   keyExtractor = input<
     (index: number, indexInRange: number) => string | number
-  >((index: number, _indexInRange: number) => index);
+  >((index: number) => index);
+
+  /**
+   * Custom transition function applied to each slide.
+   * Import a built-in transition (`slideTransition`, `cubeTransition`, etc.)
+   * or provide your own `TransitionTransformFn`. Only the imported
+   * transition ships in the bundle (tree-shakeable).
+   */
+  transition = input<TransitionTransformFn>(slideTransition);
+
+  /** Enable touch/mouse gesture handling. */
+  enableGestures = input<boolean>(true);
 
   /** Optional CSS class applied to the root container element. */
   className = input<string>('');
@@ -243,7 +246,7 @@ export class ReelComponent implements OnInit, AfterViewInit {
 
   itemTemplate = contentChild(RkReelItemDirective);
 
-  private readonly measuredSize = signal<[number, number]>([0, 0]);
+  private readonly _measuredSize = signal<[number, number]>([0, 0]);
 
   /**
    * Becomes `true` after the first programmatic or gesture navigation so the
@@ -257,21 +260,22 @@ export class ReelComponent implements OnInit, AfterViewInit {
    */
   private readonly _hasAnnouncedReady = signal<boolean>(false);
 
-  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
-  private readonly zone = inject(NgZone);
-  private readonly cdRef = inject(ChangeDetectorRef);
-  private readonly destroyRef = inject(DestroyRef);
-  private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
-  private readonly injector = inject(Injector);
+  private readonly _isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+  private readonly _zone = inject(NgZone);
+  private readonly _cdRef = inject(ChangeDetectorRef);
+  private readonly _destroyRef = inject(DestroyRef);
+  private readonly _elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly _injector = inject(Injector);
 
-  private readonly countSignal = createSignal(0);
+  private readonly _countSignal = createSignal(0);
 
   /**
    * The slider controller is created lazily in `ngOnInit` so that the
    * `input.required` `count` value is available. All class members that
    * depend on it (signal bridges, context, etc.) are also set up there.
    */
-  private controller!: SliderController;
+  private _controller!: SliderController;
+  private _destroyed = false;
 
   // Initialized to safe placeholder values so computed signals that reference
   // them (e.g. liveAnnouncement) do not crash if Angular evaluates the template
@@ -292,11 +296,13 @@ export class ReelComponent implements OnInit, AfterViewInit {
     index: this._ctxIndex.asReadonly(),
     count: this._ctxCount.asReadonly(),
     goTo: (index: number, animate?: boolean) =>
-      this.controller?.goTo(index, animate) ?? Promise.resolve(),
+      this._controller?.goTo(index, animate) ?? Promise.resolve(),
   };
 
+  readonly isHorizontal = computed(() => this.direction() === 'horizontal');
+
   readonly currentSize = computed<[number, number]>(() => {
-    return this.size() ?? this.measuredSize();
+    return this.size() ?? this._measuredSize();
   });
 
   readonly hasMeasured = computed(() => {
@@ -312,6 +318,22 @@ export class ReelComponent implements OnInit, AfterViewInit {
     return this.direction() === 'horizontal'
       ? first(currentSize)
       : last(currentSize);
+  });
+
+  /**
+   * Per-slide CSS styles computed from the transition function on each
+   * animation frame. Each entry in the array corresponds to a slide in
+   * `visibleIndexes()` by position (indexInRange).
+   */
+  protected readonly slideStyles = computed<SlideTransformStyle[]>(() => {
+    const value = this.animatedValue();
+    const indexes = this.visibleIndexes();
+    const ps = this.primarySize();
+    const dir = this.direction();
+    const fn = this.transition();
+    const rangeIndex = this._controller?.getRangeIndex() ?? 1;
+
+    return indexes.map((_, i) => fn(value, i, rangeIndex, ps, dir));
   });
 
   /**
@@ -347,13 +369,12 @@ export class ReelComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
-    this.controller = this.createController();
-    this.countSignal.value = this.count();
+    this._controller = this.createController();
+    this._countSignal.value = this.count();
     this.initializeSignalBridges();
     this.initializeReelContext();
     this.registerConfigSyncEffect();
     this.registerSizeSyncEffect();
-    this.registerNavKeysSyncEffect();
     this.registerReadyAnnouncementEffect();
     this.registerDestroyHandler();
   }
@@ -374,57 +395,68 @@ export class ReelComponent implements OnInit, AfterViewInit {
         rangeExtractor: this.rangeExtractor(),
         enableWheel: this.enableWheel(),
         wheelDebounceMs: this.wheelDebounceMs(),
+        enableGestures: this.enableGestures(),
+        enableNavKeys: this.enableNavKeys(),
       },
       {
-        onBeforeChange: (index, nextIndex, rangeIndex) =>
+        onBeforeChange: (index, nextIndex, rangeIndex) => {
+          if (this._destroyed) return;
           this.beforeChange.emit({
             index,
             nextIndex,
             indexInRange: rangeIndex,
-          }),
+          });
+        },
         onAfterChange: (index, rangeIndex) => {
+          if (this._destroyed) return;
           this._hasNavigated.set(true);
           this.afterChange.emit({ index, indexInRange: rangeIndex });
         },
-        onDragStart: (index) => this.slideDragStart.emit(index),
-        onDragEnd: (index) => this.slideDragEnd.emit(index),
-        onDragCanceled: (index) => this.slideDragCanceled.emit(index),
+        onDragStart: (index) => {
+          if (!this._destroyed) this.slideDragStart.emit(index);
+        },
+        onDragEnd: (index) => {
+          if (!this._destroyed) this.slideDragEnd.emit(index);
+        },
+        onDragCanceled: (index) => {
+          if (!this._destroyed) this.slideDragCanceled.emit(index);
+        },
       },
     );
   }
 
   private initializeSignalBridges(): void {
     this.visibleIndexes = toAngularSignal(
-      this.controller.state.indexes,
-      this.destroyRef,
+      this._controller.state.indexes,
+      this._destroyRef,
     );
     this.animatedValue = animatedSignalBridge(
-      this.controller.state.axisValue,
-      this.zone,
-      this.cdRef,
-      this.destroyRef,
+      this._controller.state.axisValue,
+      this._zone,
+      this._cdRef,
+      this._destroyRef,
     );
     this.indexSignal = toAngularSignal(
-      this.controller.state.index,
-      this.destroyRef,
+      this._controller.state.index,
+      this._destroyRef,
     );
-    const disposeIndexBridge = this.controller.state.index.observe(() => {
-      this._ctxIndex.set(this.controller.state.index.value);
+    const disposeIndexBridge = this._controller.state.index.observe(() => {
+      this._ctxIndex.set(this._controller.state.index.value);
     });
-    this._ctxIndex.set(this.controller.state.index.value);
-    this.destroyRef.onDestroy(disposeIndexBridge);
+    this._ctxIndex.set(this._controller.state.index.value);
+    this._destroyRef.onDestroy(disposeIndexBridge);
   }
 
   private initializeReelContext(): void {
     this._ctxCount.set(this.count());
-    const disposeCountBridge = this.countSignal.observe(() => {
-      this._ctxCount.set(this.countSignal.value);
+    const disposeCountBridge = this._countSignal.observe(() => {
+      this._ctxCount.set(this._countSignal.value);
     });
-    this.destroyRef.onDestroy(disposeCountBridge);
+    this._destroyRef.onDestroy(disposeCountBridge);
   }
 
   private registerConfigSyncEffect(): void {
-    runInInjectionContext(this.injector, () => {
+    runInInjectionContext(this._injector, () => {
       effect(() => {
         const count = this.count();
         const direction = this.direction();
@@ -434,12 +466,14 @@ export class ReelComponent implements OnInit, AfterViewInit {
         const rangeExtractor = this.rangeExtractor();
         const enableWheel = this.enableWheel();
         const wheelDebounceMs = this.wheelDebounceMs();
+        const enableGestures = this.enableGestures();
+        const enableNavKeys = this.enableNavKeys();
 
         // Keep countSignal in sync first so context consumers (e.g. indicator)
         // always see the new count before the controller config is updated.
 
-        this.countSignal.value = count;
-        this.controller.updateConfig({
+        this._countSignal.value = count;
+        this._controller.updateConfig({
           count,
           direction,
           loop,
@@ -448,27 +482,17 @@ export class ReelComponent implements OnInit, AfterViewInit {
           rangeExtractor,
           enableWheel,
           wheelDebounceMs,
+          enableGestures,
+          enableNavKeys,
         });
       });
     });
   }
 
   private registerSizeSyncEffect(): void {
-    runInInjectionContext(this.injector, () => {
+    runInInjectionContext(this._injector, () => {
       effect(() => {
-        this.controller.setPrimarySize(this.primarySize());
-      });
-    });
-  }
-
-  private registerNavKeysSyncEffect(): void {
-    runInInjectionContext(this.injector, () => {
-      effect(() => {
-        if (this.useNavKeys()) {
-          this.controller.observe();
-        } else {
-          this.controller.unobserve();
-        }
+        this._controller.setPrimarySize(this.primarySize());
       });
     });
   }
@@ -480,7 +504,7 @@ export class ReelComponent implements OnInit, AfterViewInit {
    * computed with no side-effects.
    */
   private registerReadyAnnouncementEffect(): void {
-    runInInjectionContext(this.injector, () => {
+    runInInjectionContext(this._injector, () => {
       effect(() => {
         if (this.hasMeasured() && !this._hasAnnouncedReady()) {
           untracked(() => this._hasAnnouncedReady.set(true));
@@ -490,43 +514,36 @@ export class ReelComponent implements OnInit, AfterViewInit {
   }
 
   private registerDestroyHandler(): void {
-    this.destroyRef.onDestroy(() => {
-      this.controller.detach();
-      this.controller.dispose();
+    this._destroyRef.onDestroy(() => {
+      this._destroyed = true;
+      this._controller.dispose();
     });
   }
 
   private performPostViewInitSetup(): void {
-    const hostElement = this.elementRef.nativeElement;
-    this.controller.attach(hostElement);
-    // Conditionally observe after attaching the DOM element. The effects
-    // registered in ngOnInit run synchronously before ngAfterViewInit, so we
-    // re-apply the current useNavKeys value here now that the element is
-    // attached. This avoids unconditionally calling observe() when useNavKeys
-    // is false.
-    if (untracked(() => this.useNavKeys())) {
-      this.controller.observe();
-    }
+    const hostElement = this._elementRef.nativeElement;
+    this._controller.attach(hostElement);
+    this._controller.observe();
     this.apiReady.emit(this.buildApi());
     this.registerAutoMeasureEffect(hostElement);
   }
 
   private buildApi(): ReelApi {
     return {
-      next: () => this.controller.next(),
-      prev: () => this.controller.prev(),
+      next: () => this._controller.next(),
+      prev: () => this._controller.prev(),
       goTo: (index: number, animate?: boolean) =>
-        this.controller.goTo(index, animate),
-      adjust: () => this.controller.adjust(),
-      observe: () => this.controller.observe(),
-      unobserve: () => this.controller.unobserve(),
+        this._controller.goTo(index, animate),
+      adjust: () => this._controller.adjust(),
+      observe: () => this._controller.observe(),
+      unobserve: () => this._controller.unobserve(),
     };
   }
 
   private registerAutoMeasureEffect(hostElement: HTMLElement): void {
-    if (!this.isBrowser) return;
+    if (!this._isBrowser) return;
 
-    runInInjectionContext(this.injector, () => {
+    runInInjectionContext(this._injector, () => {
       effect((onCleanup) => {
         if (this.size() !== undefined) return;
 
@@ -556,8 +573,8 @@ export class ReelComponent implements OnInit, AfterViewInit {
     // schedules a new CD cycle. With OnPush, markForCheck() alone from
     // outside the zone marks the view dirty but never enqueues a tick,
     // so the component would never re-render until some other event causes CD.
-    this.zone.run(() => {
-      this.measuredSize.update(([prevW, prevH]) =>
+    this._zone.run(() => {
+      this._measuredSize.update(([prevW, prevH]) =>
         prevW !== width || prevH !== height ? [width, height] : [prevW, prevH],
       );
     });

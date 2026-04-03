@@ -21,42 +21,42 @@ import '@reelkit/react-lightbox/styles.css';
 
 const images: LightboxItem[] = [
   {
-    src: 'https://picsum.photos/id/1015/1600/1000',
+    src: '/cdn/samples/images/image-01.jpg',
     title: 'Mountain River',
     description: 'A beautiful mountain river flowing through the forest',
     width: 1600,
     height: 1000,
   },
   {
-    src: 'https://picsum.photos/id/1016/1000/1600',
+    src: '/cdn/samples/images/image-02.jpg',
     title: 'Snowy Peaks',
     description: 'Majestic snow-capped mountains reaching for the sky',
     width: 1000,
     height: 1600,
   },
   {
-    src: 'https://picsum.photos/id/1018/1600/900',
+    src: '/cdn/samples/images/image-03.jpg',
     title: 'Foggy Forest',
     description: 'Misty morning in the dense forest',
     width: 1600,
     height: 900,
   },
   {
-    src: 'https://picsum.photos/id/1019/900/1400',
+    src: '/cdn/samples/images/image-04.jpg',
     title: 'Ocean Waves',
     description: 'Powerful ocean waves crashing against the rocky shore',
     width: 900,
     height: 1400,
   },
   {
-    src: 'https://picsum.photos/id/1020/1600/1067',
+    src: '/cdn/samples/images/image-05.jpg',
     title: 'Autumn Path',
     description: 'A winding path through the autumn forest',
     width: 1600,
     height: 1067,
   },
   {
-    src: 'https://picsum.photos/id/1022/1600/1067',
+    src: '/cdn/samples/images/image-06.jpg',
     title: 'Coastal Cliffs',
     description: 'Dramatic coastal cliffs overlooking the deep blue sea',
     width: 1600,
@@ -64,11 +64,11 @@ const images: LightboxItem[] = [
   },
 ];
 
-const transitions = ['slide', 'fade', 'zoom-in'] as const;
+const transitions = ['slide', 'fade', 'flip', 'zoom-in'] as const;
 
 export default function App() {
   const [index, setIndex] = useState<number | null>(null);
-  const [transition, setTransition] = useState<'slide' | 'fade' | 'zoom-in'>('slide');
+  const [transition, setTransition] = useState<'slide' | 'fade' | 'flip' | 'zoom-in'>('slide');
 
   return (
     <div style={{ padding: 16, background: '#f8fafc', minHeight: '100vh' }}>
@@ -145,6 +145,13 @@ const lightboxProps = [
     description: 'Transition animation type',
   },
   {
+    prop: 'transitionFn',
+    type: 'TransitionTransformFn',
+    default: '-',
+    description:
+      'Custom transition function. Takes priority over the transition alias.',
+  },
+  {
     prop: 'apiRef',
     type: 'MutableRefObject<ReelApi>',
     default: '-',
@@ -152,7 +159,7 @@ const lightboxProps = [
   },
   {
     prop: 'renderControls',
-    type: '(props: LightboxControlsRenderProps) => ReactNode',
+    type: '(props: ControlsRenderProps) => ReactNode',
     default: '-',
     description:
       'Custom controls, replaces default close button, counter, and fullscreen toggle',
@@ -172,9 +179,22 @@ const lightboxProps = [
   },
   {
     prop: 'renderSlide',
-    type: '(item, index, size, isActive) => ReactNode | null',
+    type: '(props: SlideRenderProps) => ReactNode | null',
     default: '-',
-    description: 'Custom slide rendering. Return null to fall back to default.',
+    description:
+      'Custom slide rendering. Receives { item, index, size, isActive, onReady, onWaiting, onError }. Return null to fall back to default.',
+  },
+  {
+    prop: 'renderLoading',
+    type: '(props: { item: LightboxItem; activeIndex: number }) => ReactNode',
+    default: '-',
+    description: 'Custom loading indicator, replaces default spinner',
+  },
+  {
+    prop: 'renderError',
+    type: '(props: { item: LightboxItem; activeIndex: number }) => ReactNode',
+    default: '-',
+    description: 'Custom error indicator, replaces default error icon',
   },
 ];
 
@@ -199,7 +219,7 @@ const reelProps = [
     description: 'Enable infinite loop',
   },
   {
-    prop: 'useNavKeys',
+    prop: 'enableNavKeys',
     type: 'boolean',
     default: 'true',
     description: 'Enable keyboard navigation',
@@ -254,6 +274,15 @@ const cssClasses = [
   { class: '.rk-lightbox-swipe-hint', description: 'Mobile swipe hint' },
   { class: '.rk-lightbox-slide', description: 'Slide container' },
   { class: '.rk-lightbox-img', description: 'Image element' },
+  { class: '.rk-lightbox-spinner', description: 'Default loading spinner' },
+  {
+    class: '.rk-lightbox-img-error',
+    description: 'Error state container (broken image/video)',
+  },
+  {
+    class: '.rk-lightbox-img-error-text',
+    description: 'Error state text label',
+  },
   {
     class: '.rk-lightbox-video-container',
     description: 'Video slide container (opt-in)',
@@ -315,7 +344,7 @@ export default function Lightbox() {
               {
                 icon: Image,
                 label: 'Transitions',
-                desc: 'Slide, fade, zoom-in',
+                desc: 'Slide, fade, flip, zoom-in',
               },
               {
                 icon: Zap,
@@ -458,7 +487,8 @@ function App() {
           <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
             LightboxOverlay
           </code>
-          .
+          . The hook handles loading states, sound management, and video
+          lifecycle automatically.
         </p>
 
         <CodeBlock
@@ -482,11 +512,11 @@ const items: LightboxItem[] = [
 function Gallery() {
   const [index, setIndex] = useState<number | null>(null);
   const isOpen = index !== null;
-  const { renderSlide, renderControls } =
+  const { renderSlide, renderControls, SoundProvider } =
     useVideoSlideRenderer(items, isOpen);
 
   return (
-    <>
+    <SoundProvider>
       {/* thumbnails… */}
       <LightboxOverlay
         isOpen={isOpen}
@@ -496,7 +526,7 @@ function Gallery() {
         renderSlide={renderSlide}
         renderControls={renderControls}
       />
-    </>
+    </SoundProvider>
   );
 }`}
           language="tsx"
@@ -505,6 +535,13 @@ function Gallery() {
         <Callout type="info" title="How it works" className="mt-4">
           <ul className="list-disc ml-4 space-y-1">
             <li>
+              The hook returns{' '}
+              <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+                SoundProvider
+              </code>{' '}
+              — wrap your overlay in it for mute/unmute to work
+            </li>
+            <li>
               Videos autoplay (muted by default) when the slide becomes active
             </li>
             <li>
@@ -512,8 +549,8 @@ function Gallery() {
               continuity
             </li>
             <li>
-              Playback position is persisted when navigating away and restored
-              on return
+              Sound button appears automatically on video slides with a reactive
+              mute toggle
             </li>
             <li>
               Items without{' '}
@@ -551,9 +588,9 @@ function Gallery() {
   isOpen={isOpen}
   images={images}
   onClose={handleClose}
-  renderControls={({ onClose, currentIndex, count, isFullscreen, onToggleFullscreen }) => (
+  renderControls={({ onClose, activeIndex, count, isFullscreen, onToggleFullscreen }) => (
     <div style={{ position: 'absolute', top: 12, left: 16, right: 16, display: 'flex', justifyContent: 'space-between', zIndex: 10 }}>
-      <Counter currentIndex={currentIndex} count={count} />
+      <Counter currentIndex={activeIndex} count={count} />
       <div>
         <FullscreenButton isFullscreen={isFullscreen} onToggle={onToggleFullscreen} />
         <CloseButton onClick={onClose} />
@@ -632,7 +669,7 @@ function Gallery() {
   isOpen={isOpen}
   images={images}
   onClose={handleClose}
-  renderSlide={(item, index, size, isActive) => {
+  renderSlide={({ item, index, size, isActive, onReady, onError }) => {
     // Custom CTA on last slide
     if (index === images.length - 1) {
       return (
@@ -643,6 +680,132 @@ function Gallery() {
     }
     return null; // default image slide
   }}
+/>`}
+          language="tsx"
+        />
+      </section>
+
+      {/* Content Loading & Error Handling */}
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">
+          Content Loading & Error Handling
+        </h2>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          The lightbox tracks per-slide loading and error states. A spinner
+          shows while content loads; a broken-image icon shows for failed media.
+          Errored URLs are cached so revisiting shows the error instantly
+          without retrying.
+        </p>
+
+        <h3 className="text-xl font-semibold mt-6 mb-4">Lifecycle Callbacks</h3>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          When using{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            renderSlide
+          </code>
+          , call these callbacks to control the loading indicator:
+        </p>
+
+        <div className="overflow-x-auto mb-6">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left py-3 px-4 font-semibold">Callback</th>
+                <th className="text-left py-3 px-4 font-semibold">
+                  When to call
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  onReady
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Image loaded or video started playing. Clears loading and
+                  error states.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  onWaiting
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Video is buffering mid-playback. Shows the loading indicator.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  onError
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Content failed to load. Shows error overlay and caches the URL
+                  as broken.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <CodeBlock
+          code={`// Inside renderSlide — wire callbacks to your custom media
+renderSlide={({ item, index, size, isActive, onReady, onWaiting, onError }) => (
+  <div style={{ width: size[0], height: size[1] }}>
+    {item.type === 'video' ? (
+      <video
+        src={item.src}
+        poster={item.poster}
+        autoPlay={isActive}
+        onCanPlay={onReady}
+        onWaiting={onWaiting}
+        onError={onError}
+        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+      />
+    ) : (
+      <img
+        src={item.src}
+        onLoad={onReady}
+        onError={onError}
+        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+      />
+    )}
+  </div>
+)}`}
+          language="tsx"
+        />
+
+        <h3 className="text-xl font-semibold mt-8 mb-4">
+          Custom Loading & Error UI
+        </h3>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Replace the default spinner and error icon with custom components:
+        </p>
+
+        <CodeBlock
+          code={`<LightboxOverlay
+  isOpen={isOpen}
+  images={images}
+  onClose={() => setIsOpen(false)}
+  renderLoading={({ item, activeIndex }) => (
+    <div style={{
+      position: 'absolute', inset: 0, zIndex: 10,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      color: '#fff', fontSize: 14,
+    }}>
+      Loading image {activeIndex + 1}...
+    </div>
+  )}
+  renderError={({ item, activeIndex }) => (
+    <div style={{
+      position: 'absolute', inset: 0, zIndex: 10,
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center',
+      gap: 12, color: 'rgba(255,255,255,0.5)',
+    }}>
+      <span style={{ fontSize: 48 }}>!</span>
+      <span>Failed to load content</span>
+    </div>
+  )}
 />`}
           language="tsx"
         />
@@ -792,19 +955,18 @@ function Gallery() {
 
         <h3 className="text-lg font-semibold mt-6 mb-2">TransitionType</h3>
         <CodeBlock
-          code={`type TransitionType = 'slide' | 'fade' | 'zoom-in';`}
+          code={`type TransitionType = 'slide' | 'fade' | 'flip' | 'zoom-in';`}
           language="typescript"
         />
 
-        <h3 className="text-lg font-semibold mt-6 mb-2">
-          LightboxControlsRenderProps
-        </h3>
+        <h3 className="text-lg font-semibold mt-6 mb-2">ControlsRenderProps</h3>
         <CodeBlock
-          code={`interface LightboxControlsRenderProps {
-  onClose: () => void;
-  currentIndex: number;
+          code={`interface ControlsRenderProps {
+  item: LightboxItem;
+  activeIndex: number;
   count: number;
   isFullscreen: boolean;
+  onClose: () => void;
   onToggleFullscreen: () => void;
 }`}
           language="typescript"
@@ -815,10 +977,25 @@ function Gallery() {
         </h3>
         <CodeBlock
           code={`interface NavigationRenderProps {
-  onPrev: () => void;
-  onNext: () => void;
+  item: LightboxItem;
   activeIndex: number;
   count: number;
+  onPrev: () => void;
+  onNext: () => void;
+}`}
+          language="typescript"
+        />
+
+        <h3 className="text-lg font-semibold mt-6 mb-2">SlideRenderProps</h3>
+        <CodeBlock
+          code={`interface SlideRenderProps {
+  item: LightboxItem;
+  index: number;
+  size: [number, number];
+  isActive: boolean;
+  onReady: () => void;
+  onWaiting: () => void;
+  onError: () => void;
 }`}
           language="typescript"
         />
@@ -862,7 +1039,7 @@ function Gallery() {
         <CodeBlock
           code={`import { Counter } from '@reelkit/react-lightbox';
 
-<Counter currentIndex={currentIndex} count={count} />`}
+<Counter currentIndex={activeIndex} count={count} />`}
           language="tsx"
         />
 
@@ -879,21 +1056,39 @@ function Gallery() {
 
         <h3 className="text-lg font-semibold mt-6 mb-2">SoundButton</h3>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
-          Mute/unmute toggle button for video slides (Volume2/VolumeX icon). Use
-          with{' '}
+          Mute/unmute toggle button for video slides (Volume2/VolumeX icon).
+          Included automatically in{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            renderControls
+          </code>{' '}
+          from{' '}
           <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
             useVideoSlideRenderer
+          </code>
+          . For standalone use inside custom controls, access sound state via{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            useSoundState
           </code>
           .
         </p>
         <CodeBlock
-          code={`import { SoundButton, useVideoSlideRenderer } from '@reelkit/react-lightbox';
+          code={`import { SoundButton } from '@reelkit/react-lightbox';
+import { useSoundState } from '@reelkit/react';
 
-// SoundButton is included in renderControls automatically,
-// but you can also use it standalone:
-const { isMuted, onToggleMute } = useVideoSlideRenderer(items, isOpen);
+// Inside a component wrapped in SoundProvider:
+function CustomControls({ onClose }) {
+  const soundState = useSoundState();
 
-<SoundButton isMuted={isMuted} onToggle={onToggleMute} />`}
+  return (
+    <div>
+      <SoundButton
+        muted={soundState.muted.value}
+        onToggle={soundState.toggle}
+      />
+      <button onClick={onClose}>Close</button>
+    </div>
+  );
+}`}
           language="tsx"
         />
       </section>
@@ -907,47 +1102,63 @@ const { isMuted, onToggleMute } = useVideoSlideRenderer(items, isOpen);
           Hook for opt-in video support. Returns{' '}
           <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
             renderSlide
-          </code>{' '}
-          and{' '}
+          </code>
+          ,{' '}
           <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
             renderControls
+          </code>
+          , and{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            SoundProvider
           </code>{' '}
-          — pass both directly to LightboxOverlay.
+          — wrap the overlay in SoundProvider and pass the render functions.
         </p>
         <CodeBlock
           code={`import { useVideoSlideRenderer } from '@reelkit/react-lightbox';
 
-const { renderSlide, renderControls, isMuted, onToggleMute, hasVideo } =
+const { renderSlide, renderControls, SoundProvider, hasVideo } =
   useVideoSlideRenderer(items, isOpen);
 
+// SoundProvider  — wrap LightboxOverlay in this for mute/unmute support
 // renderSlide    — pass to LightboxOverlay's renderSlide prop
 // renderControls — pass to LightboxOverlay's renderControls prop
 //                  (includes Counter, FullscreenButton, SoundButton, CloseButton)
-// isMuted        — current mute state (default: true)
-// onToggleMute   — toggle mute
 // hasVideo       — true if items contain at least one video
 // isOpen param   — resets mute to true on close (enables autoplay on reopen)`}
           language="typescript"
         />
 
         <h3 className="text-lg font-semibold mt-6 mb-2">useFullscreen</h3>
+        <Callout type="warning" title="Moved" className="mb-4">
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            useFullscreen
+          </code>{' '}
+          was removed from{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            @reelkit/react-lightbox
+          </code>
+          . Import it from{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            @reelkit/react
+          </code>{' '}
+          instead.
+        </Callout>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
           Hook for managing fullscreen state with cross-browser support.
         </p>
         <CodeBlock
           code={`import { useRef } from 'react';
-import { useFullscreen } from '@reelkit/react-lightbox';
+import { useFullscreen } from '@reelkit/react';
 
 function CustomLightbox() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isFullscreen, requestFullscreen, exitFullscreen] = useFullscreen({
-    ref: containerRef,
-  });
+  const [isFullscreen, requestFullscreen, exitFullscreen, toggleFullscreen] =
+    useFullscreen({ ref: containerRef });
 
   return (
     <div ref={containerRef}>
-      <button onClick={isFullscreen ? exitFullscreen : requestFullscreen}>
-        {isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+      <button onClick={toggleFullscreen}>
+        {isFullscreen.value ? 'Exit Fullscreen' : 'Enter Fullscreen'}
       </button>
     </div>
   );
@@ -960,7 +1171,19 @@ function CustomLightbox() {
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Transitions</h2>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
-          Choose from three built-in transition effects:
+          Choose from four built-in transition aliases via the{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            transition
+          </code>{' '}
+          prop, or pass any{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            TransitionTransformFn
+          </code>{' '}
+          via{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            transitionFn
+          </code>
+          .
         </p>
 
         <div className="overflow-x-auto mb-4">
@@ -994,6 +1217,14 @@ function CustomLightbox() {
               </tr>
               <tr className="border-b border-slate-100 dark:border-slate-800">
                 <td className="py-3 px-4 font-mono text-sm text-primary-600">
+                  'flip'
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
+                  3D card flip effect
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600">
                   'zoom-in'
                 </td>
                 <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
@@ -1010,8 +1241,55 @@ function CustomLightbox() {
   images={images}
   initialIndex={0}
   onClose={handleClose}
-  transition="fade"
+  transition="flip"
 />`}
+          language="tsx"
+        />
+
+        <h3 className="text-xl font-semibold mt-8 mb-4">
+          Custom Transition Function
+        </h3>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Use{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            transitionFn
+          </code>{' '}
+          to pass any{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            TransitionTransformFn
+          </code>{' '}
+          directly. It takes priority over the{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            transition
+          </code>{' '}
+          alias. Built-in functions are available from{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            @reelkit/react
+          </code>{' '}
+          and lightbox-specific ones from{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            @reelkit/react-lightbox
+          </code>
+          .
+        </p>
+        <CodeBlock
+          code={`import { LightboxOverlay, lightboxFadeTransition } from '@reelkit/react-lightbox';
+import { flipTransition, cubeTransition } from '@reelkit/react';
+
+// Use a core transition directly
+<LightboxOverlay
+  isOpen={isOpen}
+  images={images}
+  transitionFn={flipTransition}
+  onClose={() => setIsOpen(false)}
+/>
+
+// Available from @reelkit/react:
+//   slideTransition, fadeTransition, flipTransition,
+//   cubeTransition, zoomTransition
+//
+// Available from @reelkit/react-lightbox:
+//   lightboxFadeTransition, lightboxZoomTransition`}
           language="tsx"
         />
       </section>

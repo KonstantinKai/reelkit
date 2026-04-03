@@ -43,4 +43,11 @@ export const appRoutes: Route[] = [
         './pages/image-preview-video/image-preview-video-page.component'
       ).then((m) => m.ImagePreviewVideoPageComponent),
   },
+  {
+    path: '**',
+    loadComponent: () =>
+      import('./pages/not-found/not-found.component').then(
+        (m) => m.NotFoundComponent,
+      ),
+  },
 ];

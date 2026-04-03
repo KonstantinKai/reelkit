@@ -28,11 +28,11 @@ const content: ContentItem[] = [
     media: [{
       id: 'v1',
       type: 'video',
-      src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-      poster: 'https://storage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerBlazes.jpg',
+      src: '/cdn/samples/videos/video-01.mp4',
+      poster: '/cdn/samples/videos/video-poster-01.jpg',
       aspectRatio: 16 / 9,
     }],
-    author: { name: 'Alex Johnson', avatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100' },
+    author: { name: 'Alex Johnson', avatar: '/cdn/samples/avatars/avatar-01.jpg' },
     likes: 1234,
     description: 'Amazing sunset vibes',
   },
@@ -41,10 +41,10 @@ const content: ContentItem[] = [
     media: [{
       id: 'img1',
       type: 'image',
-      src: 'https://images.pexels.com/photos/1770809/pexels-photo-1770809.jpeg?auto=compress&cs=tinysrgb&w=800',
+      src: '/cdn/samples/images/image-01.jpg',
       aspectRatio: 2 / 3,
     }],
-    author: { name: 'Sarah Miller', avatar: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=100' },
+    author: { name: 'Sarah Miller', avatar: '/cdn/samples/avatars/avatar-02.jpg' },
     likes: 5678,
     description: 'Nature at its finest',
   },
@@ -53,21 +53,21 @@ const content: ContentItem[] = [
     media: [{
       id: 'v2',
       type: 'video',
-      src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
-      poster: 'https://storage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerFun.jpg',
+      src: '/cdn/samples/videos/video-04.mp4',
+      poster: '/cdn/samples/videos/video-poster-04.jpg',
       aspectRatio: 16 / 9,
     }],
-    author: { name: 'James Wilson', avatar: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=100' },
+    author: { name: 'James Wilson', avatar: '/cdn/samples/avatars/avatar-03.jpg' },
     likes: 3456,
     description: 'City life adventures',
   },
   {
     id: '4',
     media: [
-      { id: 'img2', type: 'image', src: 'https://images.pexels.com/photos/2387873/pexels-photo-2387873.jpeg?auto=compress&cs=tinysrgb&w=800', aspectRatio: 2 / 3 },
-      { id: 'img3', type: 'image', src: 'https://images.pexels.com/photos/3225517/pexels-photo-3225517.jpeg?auto=compress&cs=tinysrgb&w=800', aspectRatio: 3 / 4 },
+      { id: 'img2', type: 'image', src: '/cdn/samples/images/image-02.jpg', aspectRatio: 2 / 3 },
+      { id: 'img3', type: 'image', src: '/cdn/samples/images/image-03.jpg', aspectRatio: 3 / 4 },
     ],
-    author: { name: 'Emma Davis', avatar: 'https://images.pexels.com/photos/697509/pexels-photo-697509.jpeg?auto=compress&cs=tinysrgb&w=100' },
+    author: { name: 'Emma Davis', avatar: '/cdn/samples/avatars/avatar-04.jpg' },
     likes: 8901,
     description: 'Travel moments',
   },
@@ -76,10 +76,10 @@ const content: ContentItem[] = [
     media: [{
       id: 'img4',
       type: 'image',
-      src: 'https://images.pexels.com/photos/1287145/pexels-photo-1287145.jpeg?auto=compress&cs=tinysrgb&w=800',
+      src: '/cdn/samples/images/image-04.jpg',
       aspectRatio: 2 / 3,
     }],
-    author: { name: 'Michael Brown', avatar: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=100' },
+    author: { name: 'Michael Brown', avatar: '/cdn/samples/avatars/avatar-05.jpg' },
     likes: 2345,
     description: 'Golden hour magic',
   },
@@ -88,11 +88,11 @@ const content: ContentItem[] = [
     media: [{
       id: 'v3',
       type: 'video',
-      src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
-      poster: 'https://storage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerJoyrides.jpg',
+      src: '/cdn/samples/videos/video-05.mp4',
+      poster: '/cdn/samples/videos/video-poster-05.jpg',
       aspectRatio: 16 / 9,
     }],
-    author: { name: 'Alex Johnson', avatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100' },
+    author: { name: 'Alex Johnson', avatar: '/cdn/samples/avatars/avatar-01.jpg' },
     likes: 7890,
     description: 'Living the moment',
   },
@@ -199,6 +199,18 @@ const reelPlayerProps = [
       'Custom slide renderer for nested horizontal slider items. Use props.defaultContent to wrap or embed the default ImageSlide/VideoSlide. Unlike renderSlide, null is not treated as a fallback.',
   },
   {
+    prop: 'renderLoading',
+    type: '(props: { item: T; activeIndex: number }) => ReactNode',
+    default: '-',
+    description: 'Custom loading indicator, replaces default wave loader',
+  },
+  {
+    prop: 'renderError',
+    type: '(props: { item: T; activeIndex: number }) => ReactNode',
+    default: '-',
+    description: 'Custom error indicator, replaces default error icon',
+  },
+  {
     prop: 'aspectRatio',
     type: 'number',
     default: '9/16 (0.5625)',
@@ -228,7 +240,7 @@ const reelProps = [
     description: 'Enable infinite loop',
   },
   {
-    prop: 'useNavKeys',
+    prop: 'enableNavKeys',
     type: 'boolean',
     default: 'true',
     description: 'Enable keyboard navigation',
@@ -352,6 +364,21 @@ const cssClasses = [
     className: '.rk-nested-nav',
     component: 'NestedSlider',
     description: 'Horizontal carousel arrows (hidden below 768px)',
+  },
+  {
+    className: '.rk-reel-loader',
+    component: 'Overlay',
+    description: 'Wave loading animation overlay',
+  },
+  {
+    className: '.rk-media-error',
+    component: 'Overlay',
+    description: 'Error state overlay (centered icon + text)',
+  },
+  {
+    className: '.rk-media-error-text',
+    component: 'Overlay',
+    description: 'Error message text',
   },
 ];
 
@@ -1269,6 +1296,131 @@ const items: MyItem[] = [
         />
       </section>
 
+      {/* Content Loading & Error Handling */}
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">
+          Content Loading & Error Handling
+        </h2>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          The player tracks per-slide loading and error states. A wave loader
+          shows while content loads; an error icon shows for broken media.
+          Errored URLs are cached so revisiting shows the error instantly
+          without retrying.
+        </p>
+
+        <h3 className="text-xl font-semibold mt-6 mb-4">Lifecycle Callbacks</h3>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          When using{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            renderSlide
+          </code>
+          , call these callbacks to control the loading indicator:
+        </p>
+
+        <div className="overflow-x-auto mb-6">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left py-3 px-4 font-semibold">Callback</th>
+                <th className="text-left py-3 px-4 font-semibold">
+                  When to call
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  onReady
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Image loaded or video started playing. Clears loading and
+                  error states.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  onWaiting
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Video is buffering mid-playback. Shows the loading indicator.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  onError
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Content failed to load. Shows error overlay and caches the URL
+                  as broken.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <CodeBlock
+          code={`// Inside renderSlide — wire callbacks to your custom media
+renderSlide={({ item, size, isActive, onReady, onWaiting, onError }) => (
+  <div style={{ width: size[0], height: size[1] }}>
+    {item.media[0].type === 'image' ? (
+      <img
+        src={item.media[0].src}
+        onLoad={onReady}
+        onError={onError}
+        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+      />
+    ) : (
+      <video
+        src={item.media[0].src}
+        autoPlay={isActive}
+        onCanPlay={onReady}
+        onWaiting={onWaiting}
+        onError={onError}
+        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+      />
+    )}
+  </div>
+)}`}
+          language="tsx"
+        />
+
+        <h3 className="text-xl font-semibold mt-8 mb-4">
+          Custom Loading & Error UI
+        </h3>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Replace the default wave loader and error icon with custom components:
+        </p>
+
+        <CodeBlock
+          code={`<ReelPlayerOverlay
+  isOpen={isOpen}
+  onClose={() => setIsOpen(false)}
+  content={content}
+  renderLoading={({ item, activeIndex }) => (
+    <div style={{
+      position: 'absolute', inset: 0, zIndex: 10,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      color: '#fff', fontSize: 14,
+    }}>
+      Loading slide {activeIndex + 1}...
+    </div>
+  )}
+  renderError={({ item, activeIndex }) => (
+    <div style={{
+      position: 'absolute', inset: 0, zIndex: 10,
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center',
+      gap: 12, color: 'rgba(255,255,255,0.5)',
+    }}>
+      <span style={{ fontSize: 48 }}>!</span>
+      <span>Failed to load media</span>
+    </div>
+  )}
+/>`}
+          language="tsx"
+        />
+      </section>
+
       {/* Sound Context */}
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Sound Context</h2>
@@ -1276,13 +1428,18 @@ const items: MyItem[] = [
           For custom implementations, you can access the sound state:
         </p>
         <CodeBlock
-          code={`import { SoundProvider, useSoundState } from '@reelkit/react-reel-player';
-import type { Signal } from '@reelkit/core';
+          code={`import { SoundProvider, useSoundState } from '@reelkit/react';
 
-interface SoundState {
-  muted: Signal<boolean>;
-  disabled: Signal<boolean>;
-  toggle: () => void;
+// ReelPlayerOverlay wraps itself in a SoundProvider.
+// Access sound state inside custom controls:
+function CustomControls() {
+  const soundState = useSoundState();
+
+  return (
+    <button onClick={soundState.toggle}>
+      {soundState.muted.value ? 'Unmute' : 'Mute'}
+    </button>
+  );
 }`}
           language="typescript"
         />

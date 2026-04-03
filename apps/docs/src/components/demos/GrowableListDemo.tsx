@@ -49,7 +49,7 @@ export function GrowableListDemo() {
         style={{ width: '100%', height: '100%' }}
         direction="vertical"
         enableWheel={false}
-        useNavKeys={false}
+        enableNavKeys={false}
         apiRef={apiRef}
         afterChange={handleAfterChange}
         itemBuilder={(index, _indexInRange, itemSize) => (

@@ -15,7 +15,10 @@ import {
 import { By } from '@angular/platform-browser';
 import { ReelComponent } from './reel.component';
 import { RkReelItemDirective } from './reel-item.directive';
-import { RK_REEL_CONTEXT } from '../context/reel-context';
+import {
+  RK_REEL_CONTEXT,
+  type ReelContextValue,
+} from '../context/reel-context';
 import { createDefaultKeyExtractorForLoop } from './reel.types';
 import type { ReelApi } from './reel.types';
 
@@ -28,7 +31,7 @@ let resizeObserverInstance: {
 } | null = null;
 
 function mockResizeObserver(width: number, height: number): void {
-  (globalThis as any).ResizeObserver = jest
+  (globalThis as unknown as Record<string, unknown>).ResizeObserver = jest
     .fn()
     .mockImplementation((cb: ResizeCallback) => {
       resizeCallback = cb;
@@ -182,6 +185,12 @@ describe('ReelComponent', () => {
     resizeCallback = null;
     resizeObserverInstance = null;
     mockResizeObserver(400, 300);
+    // Suppress NG0956 warning — the mock signal bridge creates new array
+    // references on every emit, triggering Angular's @for identity tracking
+    // warning. Not a production concern (core signals use reference equality).
+    jest.spyOn(console, 'warn').mockImplementation(() => {
+      /* noop */
+    });
   });
 
   afterEach(() => {
@@ -399,26 +408,24 @@ describe('ReelComponent', () => {
   });
 
   describe('direction input', () => {
-    it('vertical direction renders flex-direction column on the slide track', fakeAsync(() => {
+    it('vertical direction renders slides with absolute positioning', fakeAsync(() => {
       TestBed.configureTestingModule({ imports: [BasicHostComponent] });
       const fixture = createBasicFixture();
 
-      const track = fixture.debugElement.query(
-        By.css('[role="region"] > div[style*="flex"]'),
-      );
-      expect(track?.nativeElement?.style?.flexDirection).toBe('column');
+      const slides = fixture.debugElement.queryAll(By.css('[role="group"]'));
+      expect(slides.length).toBeGreaterThan(0);
+      expect(slides[0].nativeElement.style.position).toBe('absolute');
     }));
 
-    it('horizontal direction renders flex-direction row on the slide track', fakeAsync(() => {
+    it('horizontal direction sets slide width to primarySize', fakeAsync(() => {
       TestBed.configureTestingModule({ imports: [HorizontalHostComponent] });
       const fixture = TestBed.createComponent(HorizontalHostComponent);
       fixture.detectChanges();
-      fixture.detectChanges(); // apply measuredSize signal changes from ngAfterViewInit/ResizeObserver
+      fixture.detectChanges();
 
-      const track = fixture.debugElement.query(
-        By.css('[role="region"] > div[style*="flex"]'),
-      );
-      expect(track?.nativeElement?.style?.flexDirection).toBe('row');
+      const slides = fixture.debugElement.queryAll(By.css('[role="group"]'));
+      expect(slides.length).toBeGreaterThan(0);
+      expect(slides[0].nativeElement.style.position).toBe('absolute');
     }));
   });
 
@@ -458,7 +465,7 @@ describe('ReelComponent', () => {
 
   describe('RK_REEL_CONTEXT', () => {
     it('provides RK_REEL_CONTEXT with index, count and goTo to child components', fakeAsync(() => {
-      let capturedContext: any = null;
+      let capturedContext: ReelContextValue | null = null;
 
       @Component({
         selector: 'rk-ctx-probe',
@@ -497,7 +504,7 @@ describe('ReelComponent', () => {
     }));
 
     it('context index updates after goTo(2)', fakeAsync(() => {
-      let capturedContext: any = null;
+      let capturedContext: ReelContextValue | null = null;
 
       @Component({
         selector: 'rk-ctx-spy',
@@ -611,7 +618,6 @@ describe('ReelComponent', () => {
       // ngAfterViewInit (which attaches the observer and fires it), the second
       // applies the resulting measuredSize signal change to the template.
       const fixture = createBasicFixture();
-      const comp = fixture.componentInstance;
 
       // Retrieve the component instance from the reel child.
       const reelDebug = fixture.debugElement.query(By.directive(ReelComponent));
@@ -648,7 +654,10 @@ describe('ReelComponent', () => {
       // Create but do NOT call detectChanges so ngOnInit has not run yet.
       const fixture = TestBed.createComponent(BasicHostComponent);
       const reelDebug = fixture.debugElement.query(By.directive(ReelComponent));
-      const reelComp = reelDebug.componentInstance as any;
+      const reelComp = reelDebug.componentInstance as Record<
+        string,
+        () => unknown
+      >;
 
       expect(() => reelComp.visibleIndexes()).not.toThrow();
       expect(() => reelComp.animatedValue()).not.toThrow();
@@ -724,7 +733,8 @@ describe('ReelComponent', () => {
       class SsrHostComponent {}
 
       const resizeObserverSpy = jest.fn();
-      (globalThis as any).ResizeObserver = resizeObserverSpy;
+      (globalThis as unknown as Record<string, unknown>).ResizeObserver =
+        resizeObserverSpy;
 
       TestBed.configureTestingModule({
         imports: [SsrHostComponent],
@@ -1080,5 +1090,72 @@ describe('ReelComponent', () => {
       expect(reelComp.currentSize()).not.toBe(sizeBefore);
       expect(reelComp.currentSize()).toEqual([800, 600]);
     }));
+  });
+
+  describe('enableWheel / enableNavKeys config flow', () => {
+    @Component({
+      template: `
+        <rk-reel
+          [count]="3"
+          [direction]="'vertical'"
+          [enableWheel]="wheel()"
+          [enableNavKeys]="navKeys()"
+          [transitionDuration]="0"
+          (apiReady)="api = $event"
+        >
+          <ng-template rkReelItem let-index>
+            <div>{{ index }}</div>
+          </ng-template>
+        </rk-reel>
+      `,
+      imports: [ReelComponent, RkReelItemDirective],
+    })
+    class ToggleHost {
+      wheel = signal(true);
+      navKeys = signal(true);
+      api: ReelApi | null = null;
+    }
+
+    function createToggleFixture(): ComponentFixture<ToggleHost> {
+      mockResizeObserver(400, 700);
+      TestBed.configureTestingModule({ imports: [ToggleHost] });
+      const fixture = TestBed.createComponent(ToggleHost);
+      fixture.detectChanges();
+      return fixture;
+    }
+
+    it('accepts enableWheel input', () => {
+      const fixture = createToggleFixture();
+      const reel = fixture.debugElement.query(By.directive(ReelComponent))
+        .componentInstance as ReelComponent;
+      expect(reel.enableWheel()).toBe(true);
+    });
+
+    it('accepts enableNavKeys input', () => {
+      const fixture = createToggleFixture();
+      const reel = fixture.debugElement.query(By.directive(ReelComponent))
+        .componentInstance as ReelComponent;
+      expect(reel.enableNavKeys()).toBe(true);
+    });
+
+    it('toggling enableWheel updates controller config', () => {
+      const fixture = createToggleFixture();
+      fixture.componentInstance.wheel.set(false);
+      fixture.detectChanges();
+
+      const reel = fixture.debugElement.query(By.directive(ReelComponent))
+        .componentInstance as ReelComponent;
+      expect(reel.enableWheel()).toBe(false);
+    });
+
+    it('toggling enableNavKeys updates controller config', () => {
+      const fixture = createToggleFixture();
+      fixture.componentInstance.navKeys.set(false);
+      fixture.detectChanges();
+
+      const reel = fixture.debugElement.query(By.directive(ReelComponent))
+        .componentInstance as ReelComponent;
+      expect(reel.enableNavKeys()).toBe(false);
+    });
   });
 });

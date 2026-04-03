@@ -15,9 +15,14 @@ import {
   defaultRangeExtractor,
   first,
   last,
+  slideTransition,
   type RangeExtractor,
   type AnimatedValue,
   type Signal,
+  type SliderDirection,
+  type TransitionTransformFn,
+  type GestureCommonEvent,
+  type GestureEvent,
 } from '@reelkit/core';
 import { AnimatedObserve, Observe } from './Observe';
 import { ReelContext, type ReelContextValue } from './ReelContext';
@@ -28,20 +33,6 @@ import { ReelContext, type ReelContextValue } from './ReelContext';
 export interface ReelProps {
   /** Total number of slides. */
   count: number;
-
-  /**
-   * Render function called for each visible slide.
-   *
-   * @param index - The absolute slide index (0-based).
-   * @param indexInRange - Position within the current visible range.
-   * @param size - The `[width, height]` dimensions of the slider.
-   * @returns A React element representing the slide content.
-   */
-  itemBuilder: (
-    index: number,
-    indexInRange: number,
-    size: [number, number],
-  ) => ReactNode;
 
   /**
    * Ref or callback to access the imperative {@link ReelApi}. Accepts either
@@ -95,7 +86,7 @@ export interface ReelProps {
    * Enable keyboard arrow key navigation.
    * @default true
    */
-  useNavKeys?: boolean;
+  enableNavKeys?: boolean;
 
   /**
    * Enable mouse wheel navigation.
@@ -108,6 +99,52 @@ export interface ReelProps {
    * @default 200
    */
   wheelDebounceMs?: number;
+
+  /** Optional CSS class name for the root container element. */
+  className?: string;
+
+  /** Optional inline styles for the root container element. */
+  style?: CSSProperties;
+
+  /**
+   * Whether gesture (touch/mouse drag) navigation is enabled.
+   * When `false`, navigation is only possible via the API (`next`, `prev`, `goTo`).
+   * @default true
+   */
+  enableGestures?: boolean;
+
+  /** Optional children rendered after the slider content (e.g. indicators, overlays). */
+  children?: ReactNode;
+
+  /**
+   * Transition effect for slide animations.
+   * Import a built-in transition (`slideTransition`, `cubeTransition`, etc.)
+   * or pass a custom {@link TransitionTransformFn}. Only the imported
+   * transition ships in the bundle (tree-shakeable).
+   *
+   * @default slideTransition
+   */
+  transition?: TransitionTransformFn;
+
+  /**
+   * Custom function to determine which slide indices are rendered.
+   * Defaults to the built-in extractor that returns current ± 1 overscan.
+   */
+  rangeExtractor?: RangeExtractor;
+
+  /**
+   * Render function called for each visible slide.
+   *
+   * @param index - The absolute slide index (0-based).
+   * @param indexInRange - Position within the current visible range.
+   * @param size - The `[width, height]` dimensions of the slider.
+   * @returns A React element representing the slide content.
+   */
+  itemBuilder: (
+    index: number,
+    indexInRange: number,
+    size: [number, number],
+  ) => ReactNode;
 
   /**
    * Called after a slide transition completes and the index is updated.
@@ -157,19 +194,35 @@ export interface ReelProps {
   onSlideDragEnd?: (index: number) => void;
 
   /**
-   * Custom function to determine which slide indices are rendered.
-   * Defaults to the built-in extractor that returns current ± 1 overscan.
+   * Fired on a single tap (no drag, no long press). Requires `enableGestures`.
+   * @param event - Gesture event with position and element info.
    */
-  rangeExtractor?: RangeExtractor;
+  onTap?: (event: GestureCommonEvent) => void;
 
-  /** Optional CSS class name for the root container element. */
-  className?: string;
+  /**
+   * Fired on double-tap. Requires `enableGestures`.
+   * @param event - Gesture event with position and element info.
+   */
+  onDoubleTap?: (event: GestureCommonEvent) => void;
 
-  /** Optional inline styles for the root container element. */
-  style?: CSSProperties;
+  /**
+   * Fired when a long press is detected. Requires `enableGestures`.
+   * @param event - Gesture event with position and element info.
+   */
+  onLongPress?: (event: GestureCommonEvent) => void;
 
-  /** Optional children rendered after the slider content (e.g. indicators, overlays). */
-  children?: ReactNode;
+  /**
+   * Fired when the pointer is released after a long press. Requires `enableGestures`.
+   * @param event - Gesture event with position, element, and drag info.
+   */
+  onLongPressEnd?: (event: GestureEvent) => void;
+
+  /**
+   * Fired when a navigation key is pressed (arrow keys). When provided,
+   * replaces the default prev/next slide behavior.
+   * @param increment - Direction: `-1` for prev, `1` for next.
+   */
+  onNavKeyPress?: (increment: -1 | 1) => void;
 }
 
 const defaultKeyExtractor: NonNullable<ReelProps['keyExtractor']> = (index) =>
@@ -190,9 +243,6 @@ export const createDefaultKeyExtractorForLoop =
   (index: number, indexInRange: number) => {
     const key = `${keyPrefix ?? ''}${index}`;
 
-    /**
-     * Handles case with duplicating keys
-     */
     if (count === 2 && [0, 1].includes(index) && indexInRange === 0) {
       return `${key}_cloned`;
     }
@@ -212,7 +262,8 @@ export interface ReelApi {
   prev: () => void;
 
   /**
-   * Navigate to a specific slide index.
+   * Navigate to a specific slide index. Returns a promise that
+   * resolves when the transition completes.
    * @param index - Target slide index.
    * @param animate - When `true`, animates the transition.
    */
@@ -235,10 +286,12 @@ const Element = ({
   swipeDistanceFactor = 0.12,
   loop = false,
   keyExtractor = defaultKeyExtractor,
-  useNavKeys = true,
+  enableNavKeys = true,
   transitionDuration = 300,
   enableWheel = false,
   wheelDebounceMs = 200,
+  transition = slideTransition,
+  enableGestures = true,
   ...props
 }: ReelProps) => {
   const { size: sizeProp, apiRef: forwardedRef } = props;
@@ -256,7 +309,7 @@ const Element = ({
     swipeDistanceFactor,
     loop,
     keyExtractor,
-    useNavKeys,
+    enableNavKeys,
     transitionDuration,
     enableWheel,
     wheelDebounceMs,
@@ -278,6 +331,8 @@ const Element = ({
         rangeExtractor,
         enableWheel,
         wheelDebounceMs,
+        enableGestures,
+        enableNavKeys,
       },
       {
         onBeforeChange: (index, nextIndex, rangeIndex) => {
@@ -295,6 +350,16 @@ const Element = ({
         onDragCanceled: (index) => {
           propsRef.current.onSlideDragCanceled?.(index);
         },
+        onTap: (e) => propsRef.current.onTap?.(e),
+        onDoubleTap: (e) => propsRef.current.onDoubleTap?.(e),
+        onLongPress: (e) => propsRef.current.onLongPress?.(e),
+        onLongPressEnd: (e) => propsRef.current.onLongPressEnd?.(e),
+        ...(props.onNavKeyPress
+          ? {
+              onNavKeyPress: (increment: -1 | 1) =>
+                propsRef.current.onNavKeyPress?.(increment),
+            }
+          : {}),
       },
     );
 
@@ -316,7 +381,12 @@ const Element = ({
     return [ctrl, builder, ctxValue] as const;
   })[0];
 
+  const mountedRef = useRef(false);
   useEffect(() => {
+    if (!mountedRef.current) {
+      mountedRef.current = true;
+      return;
+    }
     reelContextValue.count.value = props.count;
     controller.updateConfig({
       count: props.count,
@@ -325,6 +395,9 @@ const Element = ({
       transitionDuration,
       swipeDistanceFactor,
       rangeExtractor,
+      enableGestures,
+      enableNavKeys,
+      enableWheel,
     });
   }, [
     props.count,
@@ -333,19 +406,14 @@ const Element = ({
     transitionDuration,
     swipeDistanceFactor,
     rangeExtractor,
+    enableGestures,
+    enableNavKeys,
+    enableWheel,
   ]);
 
   useEffect(() => {
     controller.setPrimarySize(primarySize);
   }, [primarySize]);
-
-  useEffect(() => {
-    if (useNavKeys) {
-      controller.observe();
-    } else {
-      controller.unobserve();
-    }
-  }, [useNavKeys]);
 
   useEffect(() => {
     if (ref.current) {
@@ -371,9 +439,7 @@ const Element = ({
       }
     }
 
-    return () => {
-      controller.detach();
-    };
+    return controller.detach;
   }, []);
 
   // Auto-measure container size via ResizeObserver when size prop is omitted.
@@ -418,14 +484,16 @@ const Element = ({
         {hasMeasured && (
           <Observe signals={[indexes]}>
             {() => (
-              <Content
+              <TransitionContent
                 primarySize={primarySize}
                 isHorizontal={isHorizontal}
                 axisValue={axisValue}
-                length={indexes.value.length}
+                transitionFn={transition}
+                currentRangeIndex={controller.getRangeIndex()}
+                direction={direction}
               >
                 {indexes.value.map(itemBuilder)}
-              </Content>
+              </TransitionContent>
             )}
           </Observe>
         )}
@@ -453,9 +521,11 @@ export const Reel = memo(
     prev.transitionDuration === next.transitionDuration &&
     prev.swipeDistanceFactor === next.swipeDistanceFactor &&
     prev.rangeExtractor === next.rangeExtractor &&
-    prev.useNavKeys === next.useNavKeys &&
+    prev.enableNavKeys === next.enableNavKeys &&
     prev.enableWheel === next.enableWheel &&
     prev.wheelDebounceMs === next.wheelDebounceMs &&
+    prev.transition === next.transition &&
+    prev.enableGestures === next.enableGestures &&
     // JSX/render output
     prev.size?.[0] === next.size?.[0] &&
     prev.size?.[1] === next.size?.[1] &&
@@ -464,48 +534,69 @@ export const Reel = memo(
     prev.children === next.children,
 );
 
-const Content = memo(
+const TransitionContent = memo(
   ({
     children,
     isHorizontal,
     primarySize,
     axisValue,
-    length,
+    transitionFn,
+    currentRangeIndex,
+    direction,
   }: {
-    /** Rendered slide elements. */
     children: ReactNode;
-
-    /** Whether the slider is in horizontal mode. */
     isHorizontal: boolean;
-
-    /** Width (horizontal) or height (vertical) of a single slide in pixels. */
     primarySize: number;
-
-    /** Animated translate value driven by the slider controller. */
     axisValue: Signal<AnimatedValue>;
+    transitionFn: TransitionTransformFn;
+    currentRangeIndex: number;
+    direction: SliderDirection;
+  }) => {
+    const childArray = Array.isArray(children) ? children : [children];
 
-    /** Number of currently visible slides (determines container size). */
-    length: number;
-  }) => (
-    <AnimatedObserve signal={axisValue}>
-      {(value) => (
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            display: 'flex',
-            transform: `translate${isHorizontal ? 'X' : 'Y'}(${value}px)`,
-            flexDirection: isHorizontal ? 'row' : 'column',
-            [isHorizontal ? 'width' : 'height']: length * primarySize,
-            [isHorizontal ? 'height' : 'width']: '100%',
-          }}
-        >
-          {children}
-        </div>
-      )}
-    </AnimatedObserve>
-  ),
+    return (
+      <AnimatedObserve signal={axisValue}>
+        {(value) => (
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+            }}
+          >
+            {childArray.map((child, i) => {
+              const styles = transitionFn(
+                value,
+                i,
+                currentRangeIndex,
+                primarySize,
+                direction,
+              );
+              const childKey = (child as { key?: string })?.key ?? i;
+              return (
+                <div
+                  key={childKey}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    [isHorizontal ? 'width' : 'height']: primarySize,
+                    [isHorizontal ? 'height' : 'width']: '100%',
+                    backfaceVisibility: 'hidden',
+                    ...styles,
+                  }}
+                >
+                  {child}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </AnimatedObserve>
+    );
+  },
 );
 
 export { defaultRangeExtractor };

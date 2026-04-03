@@ -149,6 +149,52 @@ export class RkPlayerNestedNavigationDirective {
   }
 }
 
+export interface PlayerLoadingContext {
+  /** Zero-based index of the currently active slide. */
+  $implicit: number;
+
+  /** The currently active content item. */
+  item: BaseContentItem;
+
+  /** Active index within nested slider, or null. */
+  innerActiveIndex: number | null;
+}
+
+@Directive({ selector: '[rkPlayerLoading]' })
+export class RkPlayerLoadingDirective {
+  readonly templateRef = inject<TemplateRef<PlayerLoadingContext>>(TemplateRef);
+
+  static ngTemplateContextGuard(
+    _dir: RkPlayerLoadingDirective,
+    ctx: unknown,
+  ): ctx is PlayerLoadingContext {
+    return true;
+  }
+}
+
+export interface PlayerErrorContext {
+  /** Zero-based index of the currently active slide. */
+  $implicit: number;
+
+  /** The currently active content item. */
+  item: BaseContentItem;
+
+  /** Active index within nested slider, or null. */
+  innerActiveIndex: number | null;
+}
+
+@Directive({ selector: '[rkPlayerError]' })
+export class RkPlayerErrorDirective {
+  readonly templateRef = inject<TemplateRef<PlayerErrorContext>>(TemplateRef);
+
+  static ngTemplateContextGuard(
+    _dir: RkPlayerErrorDirective,
+    ctx: unknown,
+  ): ctx is PlayerErrorContext {
+    return true;
+  }
+}
+
 export const PLAYER_TEMPLATE_SLOT_DIRECTIVES = [
   RkPlayerSlideDirective,
   RkPlayerSlideOverlayDirective,

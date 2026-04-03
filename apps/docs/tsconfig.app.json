@@ -1,8 +1,9 @@
 {
+  "$schema": "https://json.schemastore.org/tsconfig",
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "composite": true,
-    "noEmit": false,
+    "noEmit": true,
     "outDir": "../dist/out-tsc",
     "types": [
       "node",
@@ -28,7 +29,13 @@
   "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"],
   "references": [
     {
+      "path": "../../packages/reelkit-core/tsconfig.lib.json"
+    },
+    {
       "path": "../../packages/reelkit-react-reel-player/tsconfig.lib.json"
+    },
+    {
+      "path": "../../packages/reelkit-example-data/tsconfig.lib.json"
     },
     {
       "path": "../../packages/reelkit-react-lightbox/tsconfig.lib.json"

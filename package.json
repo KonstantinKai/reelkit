@@ -5,10 +5,6 @@
   "scripts": {
     "build": "npx nx run-many -t build",
     "test": "npx nx run-many -t test",
-    "e2e:react": "npx nx run example-react-e2e:e2e",
-    "e2e:react:report": "npx playwright show-report dist/.playwright/apps/example-react-e2e/playwright-report",
-    "e2e:angular": "npx nx run example-angular-e2e:e2e",
-    "e2e:angular:report": "npx playwright show-report dist/.playwright/apps/example-angular-e2e/playwright-report",
     "typecheck": "npx nx run-many -t typecheck --no-tui",
     "lint": "npx nx run-many -t lint --no-tui",
     "fmt:chk": "npx nx format:check",
@@ -88,6 +84,7 @@
     "ajv": "^8.0.0",
     "angular-eslint": "^20.3.0",
     "autoprefixer": "10.4.13",
+    "canvas": "^3.2.2",
     "eslint": "^9.8.0",
     "eslint-config-prettier": "10.1.8",
     "eslint-plugin-import": "2.31.0",

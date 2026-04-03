@@ -62,6 +62,6 @@
     "@reelkit/angular": "*",
     "@angular/common": ">=19.0.0",
     "@angular/core": ">=19.0.0",
-    "@angular/platform-browser": ">=19.0.0"
+    "lucide-angular": ">=0.460.0"
   }
 }

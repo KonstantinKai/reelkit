@@ -5,44 +5,43 @@ import {
   type LightboxItem,
   type TransitionType,
 } from '@reelkit/react-lightbox';
+import { cdnUrl } from '@reelkit/example-data';
 import '@reelkit/react-lightbox/styles.css';
 import './ImagePreviewPage.css';
 
-const transitions: TransitionType[] = ['slide', 'fade', 'zoom-in'];
+const _kTransitions: TransitionType[] = ['slide', 'fade', 'zoom-in'];
 
 const sampleItems: LightboxItem[] = [
   {
-    src: 'https://picsum.photos/id/1015/1600/1000',
+    src: cdnUrl('samples/images/image-01.jpg'),
     title: 'Mountain River',
     description: 'A beautiful mountain river flowing through the forest.',
     width: 1600,
     height: 1000,
   },
   {
-    src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+    src: cdnUrl('samples/videos/video-01.mp4'),
     type: 'video',
-    poster:
-      'https://storage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerBlazes.jpg',
+    poster: cdnUrl('samples/videos/video-poster-01.jpg'),
     title: 'For Bigger Blazes',
     description: 'Sample video demonstrating video support in the lightbox.',
   },
   {
-    src: 'https://picsum.photos/id/1018/1600/900',
+    src: cdnUrl('samples/images/image-03.jpg'),
     title: 'Foggy Forest',
     description: 'Misty morning in the dense forest.',
     width: 1600,
     height: 900,
   },
   {
-    src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+    src: cdnUrl('samples/videos/video-02.mp4'),
     type: 'video',
-    poster:
-      'https://storage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerEscapes.jpg',
+    poster: cdnUrl('samples/videos/video-poster-02.jpg'),
     title: 'For Bigger Escapes',
     description: 'Another sample video showcasing the opt-in video feature.',
   },
   {
-    src: 'https://picsum.photos/id/1020/1600/1067',
+    src: cdnUrl('samples/images/image-05.jpg'),
     title: 'Autumn Path',
     description:
       'A winding path through the autumn forest covered in golden leaves.',
@@ -50,7 +49,7 @@ const sampleItems: LightboxItem[] = [
     height: 1067,
   },
   {
-    src: 'https://picsum.photos/id/1025/900/1350',
+    src: cdnUrl('samples/images/image-09.jpg'),
     title: 'Puppy Portrait',
     description: 'An adorable puppy looking at the camera with curious eyes.',
     width: 900,
@@ -62,10 +61,8 @@ function ImagePreviewVideoPage() {
   const [previewIndex, setPreviewIndex] = useState<number | null>(null);
   const [transition, setTransition] = useState<TransitionType>('slide');
 
-  const { renderSlide, renderControls } = useVideoSlideRenderer(
-    sampleItems,
-    previewIndex !== null,
-  );
+  const { renderSlide, renderControls, SoundProvider } =
+    useVideoSlideRenderer(sampleItems);
 
   const handleImageClick = useCallback((index: number) => {
     setPreviewIndex(index);
@@ -85,7 +82,7 @@ function ImagePreviewVideoPage() {
         </p>
         <div className="transition-selector">
           <span>Transition:</span>
-          {transitions.map((t) => (
+          {_kTransitions.map((t) => (
             <button
               key={t}
               className={`transition-btn ${transition === t ? 'active' : ''}`}
@@ -113,11 +110,7 @@ function ImagePreviewVideoPage() {
             }}
           >
             <img
-              src={
-                item.type === 'video'
-                  ? item.poster
-                  : item.src.replace(/\/\d+\/\d+$/, '/400/300')
-              }
+              src={item.type === 'video' ? item.poster : item.src}
               alt={item.title || `Item ${index + 1}`}
               loading="lazy"
             />
@@ -149,15 +142,17 @@ function ImagePreviewVideoPage() {
         ))}
       </div>
 
-      <LightboxOverlay
-        isOpen={previewIndex !== null}
-        images={sampleItems}
-        initialIndex={previewIndex ?? 0}
-        onClose={handleClose}
-        transition={transition}
-        renderSlide={renderSlide}
-        renderControls={renderControls}
-      />
+      <SoundProvider>
+        <LightboxOverlay
+          isOpen={previewIndex !== null}
+          images={sampleItems}
+          initialIndex={previewIndex ?? 0}
+          onClose={handleClose}
+          transition={transition}
+          renderSlide={renderSlide}
+          renderControls={renderControls}
+        />
+      </SoundProvider>
     </div>
   );
 }

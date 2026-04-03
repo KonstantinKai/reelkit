@@ -6,7 +6,6 @@ import type { MediaItem } from '../types';
 import type { ReelApi } from '@reelkit/angular';
 
 jest.mock('@reelkit/angular', () => {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const core = require('@angular/core');
   const { Component, Directive, EventEmitter, Input, Output } =
     core as typeof import('@angular/core');
@@ -21,7 +20,7 @@ jest.mock('@reelkit/angular', () => {
     @Input() size: [number, number] = [0, 0];
     @Input() direction = 'horizontal';
     @Input() loop = false;
-    @Input() useNavKeys = false;
+    @Input() enableNavKeys = false;
     @Input() enableWheel = false;
     @Output() apiReady = new EventEmitter<unknown>();
     @Output() beforeChange = new EventEmitter<void>();
@@ -46,6 +45,7 @@ jest.mock('@reelkit/angular', () => {
 
   @Directive({ selector: '[rkReelItem]', standalone: true })
   class RkReelItemDirective {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     static ngTemplateContextGuard(_d: unknown, _ctx: unknown): boolean {
       return true;
     }

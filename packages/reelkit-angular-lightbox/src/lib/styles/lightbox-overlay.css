@@ -11,51 +11,11 @@
   justify-content: center;
 }
 
-.rk-lightbox-slider-viewport {
-  overflow: hidden;
-  position: relative;
-  /* Explicit LTR so RTL document direction does not reverse the flex order,
-     which would make slide 0 render on the right and break translateX math. */
-  direction: ltr;
-}
-
-.rk-lightbox-slider-track {
-  display: flex;
-  flex-direction: row;
-  will-change: transform;
-  /* Inherit the forced LTR so translateX values computed by the slider core
-     always correspond to left-to-right physical slide ordering. */
-  direction: ltr;
-}
-
 .rk-lightbox-slide {
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
   overflow: hidden;
-}
-
-.rk-lightbox-slide.rk-transition-fade {
-  opacity: 0.3;
-  transition: opacity var(--rk-transition-duration, 300ms) ease-out;
-}
-
-.rk-lightbox-slide.rk-transition-fade.rk-active {
-  opacity: 1;
-}
-
-.rk-lightbox-slide.rk-transition-zoom-in {
-  transform: scale(0.8);
-  opacity: 0.5;
-  transition:
-    transform var(--rk-transition-duration, 300ms) ease-out,
-    opacity var(--rk-transition-duration, 300ms) ease-out;
-}
-
-.rk-lightbox-slide.rk-transition-zoom-in.rk-active {
-  transform: scale(1);
-  opacity: 1;
 }
 
 .rk-lightbox-img {
@@ -97,6 +57,38 @@
 .rk-lightbox-btn {
   width: 36px;
   height: 36px;
+}
+
+/* Top shade behind controls */
+.rk-lightbox-top-shade {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: linear-gradient(rgba(0, 0, 0, 0.6), transparent);
+  pointer-events: none;
+  z-index: 9;
+}
+
+/* Loading spinner */
+.rk-lightbox-spinner {
+  position: absolute;
+  top: 22px;
+  right: 72px;
+  z-index: 10;
+  width: 28px;
+  height: 28px;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: rk-lightbox-spin 0.8s linear infinite;
+}
+
+@keyframes rk-lightbox-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .rk-lightbox-close {
@@ -175,6 +167,7 @@
   position: absolute;
   bottom: 0;
   left: 0;
+  z-index: 10;
   right: 0;
   padding: 24px;
   background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
@@ -200,6 +193,7 @@
   bottom: 24px;
   left: 50%;
   transform: translateX(-50%);
+  z-index: 10;
   color: rgba(255, 255, 255, 0.5);
   font-size: 12px;
   padding: 8px 16px;
@@ -237,41 +231,9 @@
   padding: 24px;
 }
 
-.rk-lightbox-img-placeholder {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.04) 0%,
-    rgba(255, 255, 255, 0.1) 50%,
-    rgba(255, 255, 255, 0.04) 100%
-  );
-  background-size: 200% 100%;
-  animation: rk-lightbox-shimmer 1.6s ease-in-out infinite;
-  transition: opacity 0.3s ease;
-  pointer-events: none;
-  z-index: 1;
-}
-
-.rk-lightbox-img-placeholder.rk-loaded {
-  opacity: 0;
-  animation: none;
-}
-
-@keyframes rk-lightbox-shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-
 .rk-lightbox-img {
   opacity: 0;
   transition: opacity 0.3s ease;
-  position: relative;
-  z-index: 2;
 }
 
 .rk-lightbox-img.rk-loaded {
@@ -279,13 +241,16 @@
 }
 
 .rk-lightbox-img-error {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 12px;
-  width: 100%;
-  height: 100%;
   color: rgba(255, 255, 255, 0.4);
 }
 

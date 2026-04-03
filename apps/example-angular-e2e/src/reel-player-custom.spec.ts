@@ -53,41 +53,12 @@ test.describe('Custom Player - Page Rendering', () => {
 
   test('renders all demo cards', async ({ page }) => {
     const player = new CustomPlayerPage(page);
-    await expect(player.demoButton('default-overlay')).toBeVisible();
     await expect(player.demoButton('custom-overlay')).toBeVisible();
     await expect(player.demoButton('custom-controls')).toBeVisible();
     await expect(player.demoButton('custom-slide')).toBeVisible();
     await expect(player.demoButton('custom-nested-nav')).toBeVisible();
-  });
-});
-
-test.describe('Custom Player - Default Slide Overlay', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/reel-player-custom');
-  });
-
-  test('default overlay shows author, description, and likes', async ({
-    page,
-  }) => {
-    const player = new CustomPlayerPage(page);
-    await player.openDemo('default-overlay');
-
-    await expect(page.locator('.rk-reel-slide-overlay').first()).toBeVisible();
-    await expect(
-      page.locator('.rk-reel-slide-overlay-name').first(),
-    ).toBeVisible();
-    await expect(
-      page.locator('.rk-reel-slide-overlay-description').first(),
-    ).toBeVisible();
-    await expect(
-      page.locator('.rk-reel-slide-overlay-likes').first(),
-    ).toBeVisible();
-  });
-
-  test('closes with close button', async ({ page }) => {
-    const player = new CustomPlayerPage(page);
-    await player.openDemo('default-overlay');
-    await player.closePlayer();
+    await expect(player.demoButton('infinity')).toBeVisible();
+    await expect(player.demoButton('custom-loading-error')).toBeVisible();
   });
 });
 
@@ -312,6 +283,44 @@ test.describe('Custom Player - Custom Nested Navigation', () => {
   test('closes with close button', async ({ page }) => {
     const player = new CustomPlayerPage(page);
     await player.openDemo('custom-nested-nav');
+    await player.closePlayer();
+  });
+});
+
+test.describe('Custom Player - Infinity (Lazy Load)', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/reel-player-custom');
+  });
+
+  test('opens and shows index indicator', async ({ page }) => {
+    const player = new CustomPlayerPage(page);
+    await player.openDemo('infinity');
+
+    await expect(page.locator('text=/1 \\/ \\d+/')).toBeVisible();
+  });
+
+  test('closes with close button', async ({ page }) => {
+    const player = new CustomPlayerPage(page);
+    await player.openDemo('infinity');
+    await player.closePlayer();
+  });
+});
+
+test.describe('Custom Player - Custom Loading / Error', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/reel-player-custom');
+  });
+
+  test('opens and shows player overlay', async ({ page }) => {
+    const player = new CustomPlayerPage(page);
+    await player.openDemo('custom-loading-error');
+
+    await expect(player.overlay).toBeVisible();
+  });
+
+  test('closes with close button', async ({ page }) => {
+    const player = new CustomPlayerPage(page);
+    await player.openDemo('custom-loading-error');
     await player.closePlayer();
   });
 });

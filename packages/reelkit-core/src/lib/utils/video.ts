@@ -1,3 +1,8 @@
+import { createLruCache, type LruCache } from './lruCache';
+
+const _kMaxCachedPositions = 200;
+const _kMaxCachedFrames = 50;
+
 /**
  * Captures the current video frame as a JPEG data URL.
  * Returns `null` on cross-origin errors or if the video has no dimensions.
@@ -40,14 +45,14 @@ export interface SharedVideoConfig {
  * Scoped shared video instance returned by {@link createSharedVideo}.
  */
 export interface SharedVideoInstance {
+  /** Playback positions per slideKey, restored when returning to a slide. LRU-evicted. */
+  playbackPositions: LruCache<number>;
+
+  /** Captured video frames per slideKey, used as poster when returning. LRU-evicted. */
+  capturedFrames: LruCache<string>;
+
   /** Get or create the shared video element. */
   getVideo: () => HTMLVideoElement;
-
-  /** Playback positions per slideKey, restored when returning to a slide. */
-  playbackPositions: Map<string, number>;
-
-  /** Captured video frames per slideKey, used as poster when returning. */
-  capturedFrames: Map<string, string>;
 }
 
 /**
@@ -91,7 +96,7 @@ export const createSharedVideo = (
 
   return {
     getVideo,
-    playbackPositions: new Map(),
-    capturedFrames: new Map(),
+    playbackPositions: createLruCache(_kMaxCachedPositions),
+    capturedFrames: createLruCache(_kMaxCachedFrames),
   };
 };

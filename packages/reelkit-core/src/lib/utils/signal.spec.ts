@@ -185,6 +185,63 @@ describe('createComputed', () => {
     expect(listener).toHaveBeenCalledTimes(1);
   });
 
+  it('should not re-subscribe to deps when adding second observer', () => {
+    const count = createSignal(5);
+    const doubled = createComputed(
+      () => count.value * 2,
+      () => [count],
+    );
+    const listener1 = vi.fn();
+    const listener2 = vi.fn();
+
+    doubled.observe(listener1);
+    doubled.observe(listener2);
+
+    count.value = 10;
+
+    expect(listener1).toHaveBeenCalledTimes(1);
+    expect(listener2).toHaveBeenCalledTimes(1);
+  });
+
+  it('should not unsubscribe from deps when one of multiple observers is removed', () => {
+    const count = createSignal(5);
+    const doubled = createComputed(
+      () => count.value * 2,
+      () => [count],
+    );
+    const listener1 = vi.fn();
+    const listener2 = vi.fn();
+
+    const dispose1 = doubled.observe(listener1);
+    doubled.observe(listener2);
+
+    dispose1();
+    count.value = 10;
+
+    expect(listener1).toHaveBeenCalledTimes(0);
+    expect(listener2).toHaveBeenCalledTimes(1);
+  });
+
+  it('should re-subscribe to deps after all observers removed and new one added', () => {
+    const count = createSignal(5);
+    const doubled = createComputed(
+      () => count.value * 2,
+      () => [count],
+    );
+
+    const dispose = doubled.observe(vi.fn());
+    dispose();
+
+    count.value = 10;
+
+    const listener = vi.fn();
+    doubled.observe(listener);
+    count.value = 20;
+
+    expect(doubled.value).toBe(40);
+    expect(listener).toHaveBeenCalledTimes(1);
+  });
+
   it('should work with multiple dependencies', () => {
     const a = createSignal(2);
     const b = createSignal(3);

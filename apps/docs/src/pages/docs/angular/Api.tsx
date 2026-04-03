@@ -33,6 +33,13 @@ const reelInputs = [
     description: 'Enable infinite loop',
   },
   {
+    prop: 'transition',
+    type: 'TransitionTransformFn',
+    default: 'slideTransition',
+    description:
+      'Transition effect function. Built-in: slideTransition, fadeTransition, flipTransition, cubeTransition, zoomTransition',
+  },
+  {
     prop: 'transitionDuration',
     type: 'number',
     default: '300',
@@ -45,7 +52,13 @@ const reelInputs = [
     description: 'Swipe threshold (0-1)',
   },
   {
-    prop: 'useNavKeys',
+    prop: 'enableGestures',
+    type: 'boolean',
+    default: 'true',
+    description: 'Enable touch/mouse drag navigation',
+  },
+  {
+    prop: 'enableNavKeys',
     type: 'boolean',
     default: 'true',
     description: 'Enable keyboard arrow key navigation',
@@ -633,8 +646,10 @@ export class MyCustomControl {
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">BodyLockService</h2>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
-          Locks and unlocks document body scroll, compensating for scrollbar
-          width to prevent layout shift. Provided at root — inject anywhere.
+          Reference-counted body scroll lock. Multiple concurrent callers (e.g.
+          a lightbox and a modal both open) can each call lock/unlock
+          independently — the body is only restored once the last caller
+          releases it. Provided at root — inject anywhere.
         </p>
         <CodeBlock
           code={`import { inject } from '@angular/core';
@@ -771,6 +786,7 @@ import {
   ReelComponent,
   ReelIndicatorComponent,
   RkReelItemDirective,
+  RkSwipeToCloseDirective,
 } from '@reelkit/angular';
 
 // Types
@@ -783,8 +799,18 @@ import type {
   AnimatedValue,
   RangeExtractor,
   SliderDirection,
+  Disposer,
+  DisposableList,
   GestureController,
   SliderController,
+  ContentLoadingController,
+  ContentPreloader,
+  ContentPreloaderConfig,
+  SoundController,
+  BodyLock,
+  TransitionTransformFn,
+  SlideTransformStyle,
+  SwipeToCloseDirection,
 } from '@reelkit/angular';
 
 // Context
@@ -796,24 +822,36 @@ import { BodyLockService } from '@reelkit/angular';
 // Signal bridges
 import { toAngularSignal, animatedSignalBridge } from '@reelkit/angular';
 
-// Core re-exports (signal primitives, utilities, controllers)
+// Core re-exports
 import {
-  createSignal,
-  createComputed,
-  reaction,
-  batch,
-  first,
-  last,
-  clamp,
-  extractRange,
-  noop,
-  animate,
-  defaultRangeExtractor,
-  captureFrame,
-  createSharedVideo,
-  createGestureController,
-  createSliderController,
-  createDefaultKeyExtractorForLoop,
+  // Signals & reactivity
+  createSignal, createComputed, reaction, batch,
+
+  // Transitions
+  slideTransition, fadeTransition, flipTransition,
+  cubeTransition, zoomTransition, getSlideProgress,
+
+  // Content loading & preloading
+  createContentLoadingController, createContentPreloader,
+
+  // Sound
+  createSoundController, syncMutedToVideo,
+
+  // Fullscreen
+  fullscreenSignal, requestFullscreen, exitFullscreen,
+
+  // DOM & cleanup
+  observeDomEvent, createDisposableList, createBodyLock,
+
+  // Slider & gestures
+  createSliderController, createGestureController,
+  defaultRangeExtractor, createDefaultKeyExtractorForLoop,
+
+  // Video
+  captureFrame, createSharedVideo,
+
+  // Utilities
+  animate, noop, clamp, abs, first, last, extractRange,
 } from '@reelkit/angular';`}
           language="typescript"
         />

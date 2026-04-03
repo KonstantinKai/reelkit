@@ -1,34 +1,22 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { createBodyLock } from '@reelkit/core';
 
 /**
- * Locks the document body scroll when `locked` is `true`. Adds
- * `overflow: hidden` to `document.body` and compensates for the
- * disappearing scrollbar by adding equivalent `padding-right`,
- * preventing layout shift. Original styles are restored on cleanup
- * or when `locked` becomes `false`.
+ * Locks the document body scroll when `locked` is `true`.
+ *
+ * Uses the core {@link createBodyLock} utility with reference counting,
+ * so multiple concurrent callers can each lock/unlock independently.
+ * Restores all original styles and scroll position on cleanup.
  *
  * @param locked - Whether body scroll should be locked.
  */
 export const useBodyLock = (locked: boolean) => {
+  const [bodyLock] = useState(createBodyLock);
+
   useEffect(() => {
     if (!locked) return;
-
-    const originalOverflow = document.body.style.overflow;
-    const originalPaddingRight = document.body.style.paddingRight;
-
-    // Calculate scrollbar width to prevent layout shift
-    const scrollbarWidth =
-      window.innerWidth - document.documentElement.clientWidth;
-
-    document.body.style.overflow = 'hidden';
-    if (scrollbarWidth > 0) {
-      document.body.style.paddingRight = `${scrollbarWidth}px`;
-    }
-
-    return () => {
-      document.body.style.overflow = originalOverflow;
-      document.body.style.paddingRight = originalPaddingRight;
-    };
+    return bodyLock.lock();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [locked]);
 };
 

@@ -14,7 +14,12 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
-import { createSharedVideo, captureFrame } from '@reelkit/angular';
+import {
+  createSharedVideo,
+  captureFrame,
+  observeDomEvent,
+  createDisposableList,
+} from '@reelkit/angular';
 import { SoundStateService } from '../sound-state/sound-state.service';
 
 /**
@@ -22,7 +27,7 @@ import { SoundStateService } from '../sound-state/sound-state.service';
  * Reused across all `RkVideoSlideComponent` instances so that iOS audio
  * context continuity is maintained when navigating between slides.
  */
-const shared = createSharedVideo({
+export const shared = createSharedVideo({
   className: 'rk-video-slide-element',
   disableRemotePlayback: true,
   disablePictureInPicture: true,
@@ -101,6 +106,9 @@ export class RkVideoSlideComponent {
   readonly isInnerActive = input<boolean>(true);
 
   readonly slideKey = input.required<string>();
+  readonly onReady = input<(() => void) | undefined>(undefined);
+  readonly onWaiting = input<(() => void) | undefined>(undefined);
+  readonly onError = input<(() => void) | undefined>(undefined);
 
   readonly videoRef = output<HTMLVideoElement | null>();
 
@@ -140,29 +148,52 @@ export class RkVideoSlideComponent {
       const muted = untracked(() => this._soundState.muted());
       const vertical = untracked(() => this.aspectRatio() < 1);
 
-      this.isLoading.set(true);
-      this.showPoster.set(true);
-      this.hasPlayError.set(false);
+      untracked(() => {
+        this.isLoading.set(true);
+        this.showPoster.set(true);
+        this.hasPlayError.set(false);
 
-      const captured = shared.capturedFrames.get(key);
-      this.posterSrc.set(captured ?? poster);
+        const captured = shared.capturedFrames.get(key);
+        this.posterSrc.set(captured ?? poster);
+      });
+
+      const readyFn = untracked(() => this.onReady());
+      const waitingFn = untracked(() => this.onWaiting());
+      const errorFn = untracked(() => this.onError());
 
       const handleCanPlay = (): void =>
-        this._zone.run(() => this.isLoading.set(false));
+        this._zone.run(() => {
+          this.isLoading.set(false);
+          readyFn?.();
+        });
       const handleWaiting = (): void =>
-        this._zone.run(() => this.isLoading.set(true));
+        this._zone.run(() => {
+          this.isLoading.set(true);
+          waitingFn?.();
+        });
       const handlePlaying = (): void =>
         this._zone.run(() => {
           this.isLoading.set(false);
           this.showPoster.set(false);
+          readyFn?.();
         });
 
       const token = Symbol();
       activeToken = token;
 
-      video.addEventListener('canplay', handleCanPlay);
-      video.addEventListener('waiting', handleWaiting);
-      video.addEventListener('playing', handlePlaying);
+      const disposables = createDisposableList();
+      disposables.push(
+        observeDomEvent(video, 'canplay', handleCanPlay),
+        observeDomEvent(video, 'waiting', handleWaiting),
+        observeDomEvent(video, 'playing', handlePlaying),
+        observeDomEvent(video, 'error', () => {
+          this._zone.run(() => {
+            this.isLoading.set(false);
+            this.hasPlayError.set(true);
+            errorFn?.();
+          });
+        }),
+      );
 
       video.pause();
       video.src = src;
@@ -172,17 +203,19 @@ export class RkVideoSlideComponent {
       video.currentTime = savedPosition ?? 0;
       video.style.objectFit = vertical ? 'cover' : 'contain';
 
+      video.dataset['slideKey'] = key;
       container.appendChild(video);
       this.videoRef.emit(video);
 
-      video
-        .play()
-        .catch(() => this._zone.run(() => this.hasPlayError.set(true)));
+      video.play().catch(() =>
+        this._zone.run(() => {
+          this.hasPlayError.set(true);
+          errorFn?.();
+        }),
+      );
 
       onCleanup(() => {
-        video.removeEventListener('canplay', handleCanPlay);
-        video.removeEventListener('waiting', handleWaiting);
-        video.removeEventListener('playing', handlePlaying);
+        disposables.dispose();
 
         shared.playbackPositions.set(key, video.currentTime);
 

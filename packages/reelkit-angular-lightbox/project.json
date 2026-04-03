@@ -4,7 +4,7 @@
   "sourceRoot": "packages/reelkit-angular-lightbox/src",
   "prefix": "rk",
   "projectType": "library",
-  "tags": [],
+  "tags": ["scope:angular", "type:lightbox"],
   "targets": {
     "build": {
       "executor": "@nx/angular:package",

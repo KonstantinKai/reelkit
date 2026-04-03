@@ -1,7 +1,12 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { navItems } from '../../data/searchData';
+import { Observe } from '@reelkit/react';
+import {
+  navItems,
+  type NavSection as NavSectionData,
+} from '../../data/searchData';
+import { frameworkSignal } from '../../data/frameworkSignal';
 
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import changelogRaw from '../../../../../CHANGELOG.md?raw';
@@ -50,7 +55,7 @@ function NavSection({
   showChangelogBadge,
 }: {
   title: string;
-  items: (typeof navItems)[number]['items'];
+  items: NavSectionData['items'];
   showChangelogBadge?: boolean;
 }) {
   const [isExpanded, setIsExpanded] = useState(true);
@@ -123,16 +128,35 @@ export default function Sidebar({
         } ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >
         <nav className="p-4">
-          {navItems.map((section) => (
-            <NavSection
-              key={section.title}
-              title={section.title}
-              items={section.items}
-              showChangelogBadge={
-                section.title === 'Resources' ? showChangelogBadge : false
-              }
-            />
-          ))}
+          <Observe signals={[frameworkSignal]}>
+            {() => {
+              const fw = frameworkSignal.value;
+              return (
+                <>
+                  {navItems
+                    .filter((s) => !s.framework || s.framework === fw)
+                    .map((section) => {
+                      const items = section.items.filter(
+                        (item) => !item.framework || item.framework === fw,
+                      );
+                      if (items.length === 0) return null;
+                      return (
+                        <NavSection
+                          key={section.title}
+                          title={section.title}
+                          items={items}
+                          showChangelogBadge={
+                            section.title === 'Resources'
+                              ? showChangelogBadge
+                              : false
+                          }
+                        />
+                      );
+                    })}
+                </>
+              );
+            }}
+          </Observe>
         </nav>
       </aside>
     </>

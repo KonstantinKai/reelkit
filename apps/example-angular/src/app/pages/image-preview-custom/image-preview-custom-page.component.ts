@@ -5,18 +5,21 @@ import {
   RkLightboxControlsDirective,
   RkLightboxSlideDirective,
   RkLightboxNavigationDirective,
+  RkLightboxLoadingDirective,
+  RkLightboxErrorDirective,
   RkCloseButtonComponent,
   RkCounterComponent,
   RkFullscreenButtonComponent,
   type LightboxItem,
 } from '@reelkit/angular-lightbox';
+import { cdnUrl } from '@reelkit/example-data';
 
 type DemoType =
-  | 'default-info'
   | 'custom-info'
   | 'custom-controls'
   | 'custom-slide'
   | 'custom-navigation'
+  | 'custom-loading-error'
   | null;
 
 interface Demo {
@@ -26,12 +29,6 @@ interface Demo {
 }
 
 const DEMOS: Demo[] = [
-  {
-    id: 'default-info',
-    title: 'Default Info Overlay',
-    description:
-      'Built-in info overlay showing title and description. No extra props needed.',
-  },
   {
     id: 'custom-info',
     title: 'Custom Info Overlay',
@@ -56,36 +53,42 @@ const DEMOS: Demo[] = [
     description:
       'Uses rkLightboxNavigation to replace the default prev/next arrows with pill-shaped buttons and a counter.',
   },
+  {
+    id: 'custom-loading-error',
+    title: 'Custom Loading / Error',
+    description:
+      'Uses rkLightboxLoading and rkLightboxError to replace default spinner and error icon. Includes a broken image.',
+  },
 ];
 
 const sampleImages: LightboxItem[] = [
   {
-    src: 'https://picsum.photos/id/1015/1600/1000',
+    src: cdnUrl('samples/images/image-01.jpg'),
     title: 'Mountain River',
     description: 'A beautiful mountain river flowing through the forest.',
   },
   {
-    src: 'https://picsum.photos/id/1016/1000/1600',
+    src: cdnUrl('samples/images/image-02.jpg'),
     title: 'Snowy Peaks',
     description: 'Majestic snow-capped mountains reaching for the sky.',
   },
   {
-    src: 'https://picsum.photos/id/1018/1600/900',
+    src: cdnUrl('samples/images/image-03.jpg'),
     title: 'Foggy Forest',
     description: 'Misty morning in the dense forest.',
   },
   {
-    src: 'https://picsum.photos/id/1019/900/1400',
+    src: cdnUrl('samples/images/image-04.jpg'),
     title: 'Ocean Waves',
     description: 'Powerful ocean waves crashing against the rocky shore.',
   },
   {
-    src: 'https://picsum.photos/id/1020/1600/1067',
+    src: cdnUrl('samples/images/image-05.jpg'),
     title: 'Autumn Path',
     description: 'A winding path through the autumn forest.',
   },
   {
-    src: 'https://picsum.photos/id/1022/1600/1067',
+    src: cdnUrl('samples/images/image-07.jpg'),
     title: 'Coastal Cliffs',
     description: 'Dramatic coastal cliffs overlooking the sea.',
   },
@@ -101,6 +104,8 @@ const sampleImages: LightboxItem[] = [
     RkLightboxControlsDirective,
     RkLightboxSlideDirective,
     RkLightboxNavigationDirective,
+    RkLightboxLoadingDirective,
+    RkLightboxErrorDirective,
     RkCloseButtonComponent,
     RkCounterComponent,
     RkFullscreenButtonComponent,
@@ -188,13 +193,6 @@ const sampleImages: LightboxItem[] = [
       </div>
 
       <rk-lightbox-overlay
-        [isOpen]="activeDemo() === 'default-info'"
-        [items]="images"
-        [initialIndex]="0"
-        (closed)="activeDemo.set(null)"
-      />
-
-      <rk-lightbox-overlay
         [isOpen]="activeDemo() === 'custom-info'"
         [items]="images"
         [initialIndex]="0"
@@ -236,7 +234,7 @@ const sampleImages: LightboxItem[] = [
         <ng-template
           rkLightboxControls
           let-onClose="onClose"
-          let-currentIndex="currentIndex"
+          let-activeIndex="activeIndex"
           let-count="count"
           let-isFullscreen="isFullscreen"
           let-onToggleFullscreen="onToggleFullscreen"
@@ -255,7 +253,7 @@ const sampleImages: LightboxItem[] = [
             "
           >
             <div style="display: flex; align-items: center; gap: 8px;">
-              <rk-counter [currentIndex]="currentIndex" [count]="count" />
+              <rk-counter [currentIndex]="activeIndex" [count]="count" />
               <rk-fullscreen-button
                 [isFullscreen]="isFullscreen"
                 (toggled)="onToggleFullscreen()"
@@ -292,8 +290,15 @@ const sampleImages: LightboxItem[] = [
         [initialIndex]="0"
         (closed)="activeDemo.set(null)"
       >
-        <ng-template rkLightboxSlide let-item let-index="index" let-size="size">
+        <ng-template
+          rkLightboxSlide
+          let-item
+          let-index="index"
+          let-size="size"
+          let-onReady="onReady"
+        >
           @if (index === images.length - 1) {
+            {{ callReady(onReady) }}
             <div
               data-testid="cta-slide"
               [style.width.px]="size[0]"
@@ -335,6 +340,7 @@ const sampleImages: LightboxItem[] = [
               [src]="item.src"
               [alt]="item.title ?? ''"
               class="rk-lightbox-img rk-loaded"
+              (load)="onReady()"
             />
           }
         </ng-template>
@@ -442,11 +448,70 @@ const sampleImages: LightboxItem[] = [
           </div>
         </ng-template>
       </rk-lightbox-overlay>
+
+      <rk-lightbox-overlay
+        [isOpen]="activeDemo() === 'custom-loading-error'"
+        [items]="brokenImages"
+        [initialIndex]="0"
+        (closed)="activeDemo.set(null)"
+      >
+        <ng-template rkLightboxLoading let-index>
+          <div
+            style="
+              position: absolute;
+              top: 22px;
+              right: 72px;
+              z-index: 10;
+              color: #fff;
+              font-size: 12px;
+              background: rgba(0, 0, 0, 0.6);
+              padding: 4px 12px;
+              border-radius: 12px;
+            "
+          >
+            Loading slide {{ index + 1 }}...
+          </div>
+        </ng-template>
+        <ng-template rkLightboxError let-index>
+          <div
+            style="
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              z-index: 10;
+              color: #ff6b6b;
+              text-align: center;
+            "
+          >
+            <div style="font-size: 48px; margin-bottom: 8px">⚠️</div>
+            <div style="font-size: 14px">
+              Slide {{ index + 1 }} failed to load
+            </div>
+          </div>
+        </ng-template>
+      </rk-lightbox-overlay>
     </div>
   `,
 })
 export class ImagePreviewCustomPageComponent {
   protected readonly demos: Demo[] = DEMOS;
   protected readonly images: LightboxItem[] = sampleImages;
+  protected readonly brokenImages: LightboxItem[] = [
+    sampleImages[0],
+    sampleImages[1],
+    {
+      src: 'https://broken.invalid/does-not-exist.jpg',
+      title: 'Broken Image',
+      description: 'This image fails to load — shows custom error UI.',
+    },
+    sampleImages[2],
+    sampleImages[3],
+  ];
   protected readonly activeDemo = signal<DemoType>(null);
+
+  protected callReady(fn: () => void): '' {
+    fn();
+    return '';
+  }
 }

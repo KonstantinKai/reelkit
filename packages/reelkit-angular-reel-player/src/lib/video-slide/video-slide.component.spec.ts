@@ -32,13 +32,45 @@ jest.mock('@reelkit/angular', () => {
   return {
     createSharedVideo: jest.fn(() => shared),
     captureFrame: jest.fn().mockReturnValue(null),
+    observeDomEvent: jest.fn(
+      (el: EventTarget, event: string, handler: EventListener) => {
+        el.addEventListener(event, handler);
+        return () => el.removeEventListener(event, handler);
+      },
+    ),
+    createDisposableList: jest.fn(() => {
+      const fns: (() => void)[] = [];
+      return {
+        push: (...items: (() => void)[]) => fns.push(...items),
+        dispose: () => fns.forEach((fn) => fn()),
+      };
+    }),
+    toAngularSignal: jest.fn((source: { value?: unknown }) => {
+      const { signal: angSignal } =
+        require('@angular/core') as typeof import('@angular/core');
+      return angSignal(source?.value ?? false);
+    }),
+    createSoundController: jest.fn(() => ({
+      muted: {
+        value: true,
+        observe: jest.fn(() => () => {
+          /* noop */
+        }),
+      },
+      disabled: {
+        value: false,
+        observe: jest.fn(() => () => {
+          /* noop */
+        }),
+      },
+      toggle: jest.fn(),
+    })),
     __mockShared: shared,
     __mockVideo: mockVid,
   };
 });
 
 // Retrieve the shared mock objects created inside the factory above.
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const coreModule = require('@reelkit/angular') as {
   __mockShared: {
     getVideo: jest.Mock;

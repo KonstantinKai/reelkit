@@ -74,7 +74,11 @@ export {
   RkPlayerNavigationDirective,
   RkPlayerNestedSlideDirective,
   RkPlayerNestedNavigationDirective,
+  RkPlayerLoadingDirective,
+  RkPlayerErrorDirective,
   PLAYER_TEMPLATE_SLOT_DIRECTIVES,
+  type PlayerLoadingContext,
+  type PlayerErrorContext,
 } from './lib/template-slots/player-template-slots';
 
 export { RkCloseButtonComponent } from './lib/player-controls/close-button.component';

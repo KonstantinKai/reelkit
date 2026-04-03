@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import type { ReelApi } from '@reelkit/react';
-import type { SoundState } from './SoundState';
+import type { SoundController } from '@reelkit/react';
 
 /** Supported media types for content items. */
 export type MediaType = 'image' | 'video';
@@ -82,17 +82,20 @@ export interface ContentItem extends BaseContentItem {
  * @typeParam T - The content item type, defaults to {@link ContentItem}.
  */
 export interface ControlsRenderProps<T extends BaseContentItem> {
-  /** Callback to close the player overlay. */
-  onClose: () => void;
+  /** The currently active content item. */
+  item: T;
 
   /** Reactive sound state for mute/unmute control. */
-  soundState: SoundState;
+  soundState: SoundController;
 
   /** Zero-based index of the currently active slide. */
   activeIndex: number;
 
   /** The full content array passed to the player. */
   content: T[];
+
+  /** Callback to close the player overlay. */
+  onClose: () => void;
 }
 
 /**
@@ -150,11 +153,14 @@ export interface SlideRenderProps<T extends BaseContentItem> {
   /** Unique key for {@link VideoSlide} playback position persistence. Derived from `content.id`. */
   slideKey: string;
 
-  /** Report the active video element to the player for drag pause/resume. Only provided when `isActive` is true. */
-  onVideoRef?: (ref: HTMLVideoElement | null) => void;
-
   /** Ref to the inner horizontal slider API, required for drag coordination in multi-media slides. */
   innerSliderRef: React.MutableRefObject<ReelApi | null>;
+
+  /** Whether wheel navigation is enabled (forwarded to nested sliders). */
+  enableWheel?: boolean;
+
+  /** The default slide content (MediaSlide + overlay). Render this to use default rendering inside your own wrapper. */
+  defaultContent: ReactNode;
 
   /** Report active media type changes in nested sliders (controls sound button visibility). Only provided when `isActive` is true. */
   onActiveMediaTypeChange?: (type: 'image' | 'video') => void;
@@ -162,11 +168,17 @@ export interface SlideRenderProps<T extends BaseContentItem> {
   /** Custom navigation renderer for nested horizontal sliders. Forwarded from `renderNestedNavigation`. */
   renderNestedNavigation?: (props: NavigationRenderProps) => ReactNode;
 
-  /** Whether wheel navigation is enabled (forwarded to nested sliders). */
-  enableWheel?: boolean;
+  /** Report the active video element to the player for drag pause/resume. Only provided when `isActive` is true. */
+  onVideoRef?: (ref: HTMLVideoElement | null) => void;
 
-  /** The default slide content (MediaSlide + overlay). Render this to use default rendering inside your own wrapper. */
-  defaultContent: ReactNode;
+  /** Signal that the slide content has finished loading. Clears the wave loader. */
+  onReady: () => void;
+
+  /** Signal that the slide content is buffering. Shows the wave loader. */
+  onWaiting: () => void;
+
+  /** Signal that the slide content failed to load. */
+  onError: () => void;
 }
 
 /**
@@ -178,7 +190,7 @@ export interface SlideRenderProps<T extends BaseContentItem> {
  *
  * @example Custom rounded video slides
  * ```tsx
- * renderNestedSlide={({ item, defaultContent }) => (
+ * renderNestedSlide={({ media, defaultContent }) => (
  *   <div style={{ borderRadius: 16, overflow: 'hidden' }}>
  *     {defaultContent}
  *   </div>
@@ -186,8 +198,11 @@ export interface SlideRenderProps<T extends BaseContentItem> {
  * ```
  */
 export interface NestedSlideRenderProps {
+  /** The parent content item containing this nested slide. */
+  item: BaseContentItem;
+
   /** The media item for this nested slide. */
-  item: MediaItem;
+  media: MediaItem;
 
   /** Zero-based index within the nested slider. */
   index: number;
@@ -204,11 +219,20 @@ export interface NestedSlideRenderProps {
   /** Unique key for {@link VideoSlide} playback position persistence. */
   slideKey: string;
 
+  /** The default slide content (ImageSlide or VideoSlide). Render this to wrap the default with your own styles. */
+  defaultContent: ReactNode;
+
   /** Report the active video element for drag pause/resume. Only provided when `isInnerActive` is true. */
   onVideoRef?: (ref: HTMLVideoElement | null) => void;
 
-  /** The default slide content (ImageSlide or VideoSlide). Render this to wrap the default with your own styles. */
-  defaultContent: ReactNode;
+  /** Signal that the nested slide content has finished loading. Only provided when `isInnerActive` is true. */
+  onReady?: () => void;
+
+  /** Signal that the nested slide content is buffering. Only provided when `isInnerActive` is true. */
+  onWaiting?: () => void;
+
+  /** Signal that the nested slide content failed to load. Only provided when `isInnerActive` is true. */
+  onError?: () => void;
 }
 
 /**
@@ -218,15 +242,21 @@ export interface NestedSlideRenderProps {
  * slide navigation actions and position info.
  */
 export interface NavigationRenderProps {
-  /** Navigate to the previous slide. */
-  onPrev: () => void;
+  /** The currently active content item (main navigation). */
+  item: BaseContentItem;
 
-  /** Navigate to the next slide. */
-  onNext: () => void;
+  /** The currently active media item (nested navigation only). */
+  media?: MediaItem;
 
   /** Zero-based index of the currently active slide. */
   activeIndex: number;
 
   /** Total number of slides. */
   count: number;
+
+  /** Navigate to the previous slide. */
+  onPrev: () => void;
+
+  /** Navigate to the next slide. */
+  onNext: () => void;
 }

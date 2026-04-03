@@ -1,5 +1,5 @@
-import { Link } from 'react-router-dom';
 import { CodeBlock } from '../../../components/ui/CodeBlock';
+import { NextSteps } from '../../../components/NextSteps';
 import { FeatureCardGrid } from '../../../components/ui/FeatureCard';
 import { Sandbox } from '../../../components/ui/Sandbox';
 import { BasicSliderDemo } from '../../../components/demos/BasicSliderDemo';
@@ -851,41 +851,30 @@ function App() {
         </ul>
       </section>
 
-      <section>
-        <h2 className="text-2xl font-bold mb-4">Next Steps</h2>
-        <ul className="space-y-3">
-          <li>
-            <Link
-              to="/docs/react/api"
-              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
-            >
-              API Reference
-            </Link>
-            <span className="text-slate-500"> - all available props</span>
-          </li>
-          <li>
-            <Link
-              to="/docs/reel-player"
-              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
-            >
-              Reel Player
-            </Link>
-            <span className="text-slate-500">
-              {' '}
-              - TikTok/Reels-style video player
-            </span>
-          </li>
-          <li>
-            <Link
-              to="/docs/lightbox"
-              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
-            >
-              Lightbox
-            </Link>
-            <span className="text-slate-500"> - image & video gallery</span>
-          </li>
-        </ul>
-      </section>
+      <NextSteps
+        items={[
+          {
+            label: 'API Reference',
+            path: '/docs/react/api',
+            description: 'all available props',
+          },
+          {
+            label: 'Reel Player',
+            path: '/docs/reel-player',
+            description: 'TikTok/Reels-style video player',
+          },
+          {
+            label: 'Lightbox',
+            path: '/docs/lightbox',
+            description: 'image & video gallery',
+          },
+          {
+            label: 'Stories Player',
+            path: '/docs/stories-player',
+            description: 'Instagram-style stories viewer',
+          },
+        ]}
+      />
     </div>
   );
 }

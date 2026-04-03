@@ -2,11 +2,14 @@ import {
   ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
-  inject,
   output,
 } from '@angular/core';
-import { DomSanitizer, type SafeHtml } from '@angular/platform-browser';
-import { ICON_X } from '../icons/icons';
+import {
+  LucideAngularModule,
+  LucideIconProvider,
+  LUCIDE_ICONS,
+  X,
+} from 'lucide-angular';
 
 /**
  * Reusable close button rendered as an absolutely-positioned circular icon
@@ -21,13 +24,22 @@ import { ICON_X } from '../icons/icons';
   selector: 'rk-close-button',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
+  imports: [LucideAngularModule],
+  providers: [
+    {
+      provide: LUCIDE_ICONS,
+      useValue: new LucideIconProvider({ X }),
+      multi: true,
+    },
+  ],
   template: `
     <button
       class="rk-player-close-btn"
       (click)="clicked.emit()"
       aria-label="Close player"
-      [innerHTML]="iconX"
-    ></button>
+    >
+      <lucide-angular [img]="XIcon" [size]="24" />
+    </button>
   `,
   styles: [
     `
@@ -52,18 +64,11 @@ import { ICON_X } from '../icons/icons';
       .rk-player-close-btn:hover {
         background-color: rgba(0, 0, 0, 0.7);
       }
-
-      .rk-player-close-btn svg {
-        pointer-events: none;
-      }
     `,
   ],
 })
 export class RkCloseButtonComponent {
   readonly clicked = output<void>();
 
-  private readonly _sanitizer = inject(DomSanitizer);
-
-  protected readonly iconX: SafeHtml =
-    this._sanitizer.bypassSecurityTrustHtml(ICON_X);
+  protected readonly XIcon = X;
 }

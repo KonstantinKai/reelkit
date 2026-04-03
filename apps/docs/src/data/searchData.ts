@@ -1,3 +1,5 @@
+import type { Framework } from './frameworkSignal';
+
 export interface SearchItem {
   title: string;
 
@@ -6,6 +8,8 @@ export interface SearchItem {
   category: string;
 
   keywords: string[];
+
+  framework?: Framework;
 }
 
 export const searchItems: SearchItem[] = [
@@ -25,7 +29,15 @@ export const searchItems: SearchItem[] = [
     title: 'SSR',
     path: '/docs/ssr',
     category: 'Overview',
-    keywords: ['ssr', 'server', 'rendering', 'nextjs', 'remix', 'hydration'],
+    keywords: [
+      'ssr',
+      'server',
+      'rendering',
+      'nextjs',
+      'remix',
+      'hydration',
+      'angular universal',
+    ],
   },
   {
     title: 'Core Guide',
@@ -46,12 +58,50 @@ export const searchItems: SearchItem[] = [
     title: 'Core API Reference',
     path: '/docs/core/api',
     category: 'Core',
-    keywords: ['config', 'callbacks', 'methods', 'state', 'range', 'extractor'],
+    keywords: [
+      'config',
+      'callbacks',
+      'methods',
+      'state',
+      'range',
+      'extractor',
+      'signal',
+      'computed',
+      'reaction',
+      'transition',
+      'loading',
+      'preloader',
+      'error',
+      'sound',
+      'fullscreen',
+      'bodyLock',
+      'dispose',
+      'observeDomEvent',
+      'enableNavKeys',
+      'onNavKeyPress',
+    ],
+  },
+  {
+    title: 'Stories Core',
+    path: '/docs/stories-core',
+    category: 'Core',
+    keywords: [
+      'stories',
+      'controller',
+      'timer',
+      'progress',
+      'canvas',
+      'tap',
+      'segment',
+      'auto-advance',
+      'framework-agnostic',
+    ],
   },
   {
     title: 'React Guide',
     path: '/docs/react/guide',
     category: 'React',
+    framework: 'react',
     keywords: [
       'reel',
       'component',
@@ -67,12 +117,29 @@ export const searchItems: SearchItem[] = [
     title: 'React API Reference',
     path: '/docs/react/api',
     category: 'React',
-    keywords: ['reel', 'props', 'hook', 'indicator', 'useRef', 'apiRef'],
+    framework: 'react',
+    keywords: [
+      'reel',
+      'props',
+      'hook',
+      'indicator',
+      'useRef',
+      'apiRef',
+      'enableNavKeys',
+      'enableWheel',
+      'onNavKeyPress',
+      'SoundProvider',
+      'useSoundState',
+      'useFullscreen',
+      'useBodyLock',
+      'transition',
+    ],
   },
   {
     title: 'Angular Guide',
     path: '/docs/angular/guide',
     category: 'Angular',
+    framework: 'angular',
     keywords: [
       'angular',
       'rk-reel',
@@ -88,6 +155,7 @@ export const searchItems: SearchItem[] = [
     title: 'Angular API Reference',
     path: '/docs/angular/api',
     category: 'Angular',
+    framework: 'angular',
     keywords: [
       'angular',
       'reel',
@@ -97,12 +165,17 @@ export const searchItems: SearchItem[] = [
       'apiReady',
       'RK_REEL_CONTEXT',
       'BodyLockService',
+      'enableNavKeys',
+      'enableWheel',
+      'SwipeToClose',
+      'transition',
     ],
   },
   {
     title: 'Reel Player',
     path: '/docs/reel-player',
     category: 'Components',
+    framework: 'react',
     keywords: [
       'video',
       'fullscreen',
@@ -111,12 +184,22 @@ export const searchItems: SearchItem[] = [
       'instagram',
       'reels',
       'player',
+      'renderSlide',
+      'renderControls',
+      'renderNavigation',
+      'renderLoading',
+      'renderError',
+      'sound',
+      'transition',
+      'error',
+      'loading',
     ],
   },
   {
     title: 'Lightbox',
     path: '/docs/lightbox',
     category: 'Components',
+    framework: 'react',
     keywords: [
       'image',
       'gallery',
@@ -127,12 +210,21 @@ export const searchItems: SearchItem[] = [
       'video',
       'sound',
       'mute',
+      'renderSlide',
+      'renderControls',
+      'renderNavigation',
+      'renderLoading',
+      'renderError',
+      'transition',
+      'flip',
+      'error',
     ],
   },
   {
-    title: 'Angular Reel Player',
+    title: 'Reel Player',
     path: '/docs/angular-reel-player',
     category: 'Components',
+    framework: 'angular',
     keywords: [
       'angular',
       'video',
@@ -143,12 +235,19 @@ export const searchItems: SearchItem[] = [
       'reels',
       'player',
       'SoundStateService',
+      'rkPlayerLoading',
+      'rkPlayerError',
+      'lucide-angular',
+      'transition',
+      'error',
+      'loading',
     ],
   },
   {
-    title: 'Angular Lightbox',
+    title: 'Lightbox',
     path: '/docs/angular-lightbox',
     category: 'Components',
+    framework: 'angular',
     keywords: [
       'angular',
       'image',
@@ -158,8 +257,48 @@ export const searchItems: SearchItem[] = [
       'photo',
       'fullscreen',
       'video',
-      'FullscreenService',
+      'rkLightboxLoading',
+      'rkLightboxError',
+      'transition',
+      'error',
     ],
+  },
+  {
+    title: 'Stories Player',
+    path: '/docs/stories-player',
+    category: 'Components',
+    framework: 'react',
+    keywords: [
+      'stories',
+      'instagram',
+      'tiktok',
+      'tap',
+      'swipe',
+      'progress',
+      'ring',
+      'avatar',
+      'auto-advance',
+      'timer',
+      'renderHeader',
+      'renderFooter',
+      'renderSlide',
+      'renderNavigation',
+      'renderProgressBar',
+      'renderLoading',
+      'renderError',
+      'StoriesApi',
+      'sound',
+      'transition',
+      'error',
+      'loading',
+    ],
+  },
+  {
+    title: 'Stories Player',
+    path: '/docs/angular-stories-player',
+    category: 'Components',
+    framework: 'angular',
+    keywords: ['angular', 'stories', 'instagram', 'tiktok', 'coming soon'],
   },
   {
     title: 'Troubleshooting',
@@ -188,7 +327,20 @@ export const searchItems: SearchItem[] = [
   },
 ];
 
-export const navItems = [
+export interface NavItem {
+  label: string;
+  path: string;
+  framework?: Framework;
+  comingSoon?: boolean;
+}
+
+export interface NavSection {
+  title: string;
+  items: NavItem[];
+  framework?: Framework;
+}
+
+export const navItems: NavSection[] = [
   {
     title: 'Overview',
     items: [
@@ -202,10 +354,12 @@ export const navItems = [
     items: [
       { label: 'Guide', path: '/docs/core/guide' },
       { label: 'API Reference', path: '/docs/core/api' },
+      { label: 'Stories Core', path: '/docs/stories-core' },
     ],
   },
   {
     title: 'React',
+    framework: 'react',
     items: [
       { label: 'Guide', path: '/docs/react/guide' },
       { label: 'API Reference', path: '/docs/react/api' },
@@ -213,6 +367,7 @@ export const navItems = [
   },
   {
     title: 'Angular',
+    framework: 'angular',
     items: [
       { label: 'Guide', path: '/docs/angular/guide' },
       { label: 'API Reference', path: '/docs/angular/api' },
@@ -221,17 +376,40 @@ export const navItems = [
   {
     title: 'Components',
     items: [
-      { label: 'Reel Player (React)', path: '/docs/reel-player' },
-      { label: 'Lightbox (React)', path: '/docs/lightbox' },
-      { label: 'Reel Player (Angular)', path: '/docs/angular-reel-player' },
-      { label: 'Lightbox (Angular)', path: '/docs/angular-lightbox' },
+      {
+        label: 'Reel Player',
+        path: '/docs/reel-player',
+        framework: 'react',
+      },
+      { label: 'Lightbox', path: '/docs/lightbox', framework: 'react' },
+      {
+        label: 'Reel Player',
+        path: '/docs/angular-reel-player',
+        framework: 'angular',
+      },
+      {
+        label: 'Lightbox',
+        path: '/docs/angular-lightbox',
+        framework: 'angular',
+      },
+      {
+        label: 'Stories Player',
+        path: '/docs/stories-player',
+        framework: 'react',
+      },
+      {
+        label: 'Stories Player',
+        path: '/docs/angular-stories-player',
+        framework: 'angular',
+        comingSoon: true,
+      },
     ],
   },
   {
     title: 'Resources',
     items: [
       { label: 'Troubleshooting', path: '/docs/troubleshooting' },
-      { label: 'Changelog', path: '/docs/changelog' },
+      { label: "What's New?", path: '/docs/changelog' },
     ],
   },
-] as const;
+];

@@ -3,15 +3,18 @@ import {
   Component,
   ViewEncapsulation,
   computed,
-  inject,
   input,
   linkedSignal,
 } from '@angular/core';
-import { DomSanitizer, type SafeHtml } from '@angular/platform-browser';
-import { ICON_HEART } from '../icons/icons';
+import {
+  LucideAngularModule,
+  LucideIconProvider,
+  LUCIDE_ICONS,
+  Heart,
+} from 'lucide-angular';
 
-const MILLION = 1_000_000;
-const THOUSAND = 1_000;
+const _kMillion = 1_000_000;
+const _kThousand = 1_000;
 
 /**
  * Instagram/TikTok-style gradient overlay displayed at the bottom of each slide.
@@ -23,6 +26,14 @@ const THOUSAND = 1_000;
   selector: 'rk-slide-overlay',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
+  imports: [LucideAngularModule],
+  providers: [
+    {
+      provide: LUCIDE_ICONS,
+      useValue: new LucideIconProvider({ Heart }),
+      multi: true,
+    },
+  ],
   template: `
     @if (hasContent()) {
       <div class="rk-reel-slide-overlay">
@@ -47,11 +58,9 @@ const THOUSAND = 1_000;
             class="rk-reel-slide-overlay-likes"
             [attr.aria-label]="likes()! + ' likes'"
           >
-            <span
-              [innerHTML]="iconHeart"
-              class="rk-slide-overlay-heart"
-              aria-hidden="true"
-            ></span>
+            <span class="rk-slide-overlay-heart" aria-hidden="true">
+              <lucide-angular [img]="HeartIcon" [size]="16" />
+            </span>
             <span aria-hidden="true">{{ formatLikes(likes()!) }}</span>
           </div>
         }
@@ -63,9 +72,6 @@ const THOUSAND = 1_000;
       .rk-slide-overlay-heart {
         display: flex;
         align-items: center;
-      }
-      .rk-slide-overlay-heart svg {
-        pointer-events: none;
       }
     `,
   ],
@@ -100,10 +106,7 @@ export class RkSlideOverlayComponent {
       this.likes() != null,
   );
 
-  private readonly _sanitizer = inject(DomSanitizer);
-
-  protected readonly iconHeart: SafeHtml =
-    this._sanitizer.bypassSecurityTrustHtml(ICON_HEART);
+  protected readonly HeartIcon = Heart;
 
   /**
    * Formats a like count into a compact human-readable string.
@@ -112,11 +115,11 @@ export class RkSlideOverlayComponent {
    * - < 1,000 → raw number as string
    */
   protected formatLikes(count: number): string {
-    if (count >= MILLION) {
-      return `${(count / MILLION).toFixed(1).replace(/\.0$/, '')}M`;
+    if (count >= _kMillion) {
+      return `${(count / _kMillion).toFixed(1).replace(/\.0$/, '')}M`;
     }
-    if (count >= THOUSAND) {
-      return `${(count / THOUSAND).toFixed(1).replace(/\.0$/, '')}K`;
+    if (count >= _kThousand) {
+      return `${(count / _kThousand).toFixed(1).replace(/\.0$/, '')}K`;
     }
     return String(count);
   }

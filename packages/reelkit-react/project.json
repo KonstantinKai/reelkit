@@ -3,7 +3,7 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/reelkit-react/src",
   "projectType": "library",
-  "tags": [],
+  "tags": ["scope:react", "type:bindings"],
   "targets": {},
   "release": {
     "version": {

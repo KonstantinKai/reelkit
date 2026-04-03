@@ -6,7 +6,7 @@
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
 
-Image gallery lightbox for Angular — opens full-screen with swipe navigation, keyboard controls, and transition effects. Every part of the UI is replaceable via template slots. ~18.0 kB gzip.
+Image gallery lightbox for Angular — opens full-screen with swipe navigation, keyboard controls, and transition effects. Every part of the UI is replaceable via template slots. ~14.0 kB gzip.
 
 ## Installation
 
@@ -92,7 +92,7 @@ export class GalleryComponent {
 | `transition`          | `TransitionType` | `'slide'` | Transition animation type    |
 | `showInfo`            | `boolean`        | `true`    | Show title/description       |
 | `loop`                | `boolean`        | `false`   | Enable infinite loop         |
-| `useNavKeys`          | `boolean`        | `true`    | Enable keyboard navigation   |
+| `enableNavKeys`       | `boolean`        | `true`    | Enable keyboard navigation   |
 | `enableWheel`         | `boolean`        | `true`    | Enable mouse wheel           |
 | `wheelDebounceMs`     | `number`         | `200`     | Wheel debounce (ms)          |
 | `transitionDuration`  | `number`         | `300`     | Animation duration (ms)      |

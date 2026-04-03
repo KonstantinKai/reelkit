@@ -5,14 +5,14 @@ import { X, Maximize, Minimize, Volume2, VolumeX } from 'lucide-react';
  * Props for the {@link CloseButton} sub-component.
  */
 export interface CloseButtonProps {
-  /** Callback to close the lightbox. */
-  onClick: () => void;
-
   /** Optional CSS class. Defaults to `"rk-lightbox-close"`. */
   className?: string;
 
   /** Optional inline styles. */
   style?: React.CSSProperties;
+
+  /** Callback to close the lightbox. */
+  onClick: () => void;
 }
 
 /**
@@ -84,14 +84,14 @@ export interface FullscreenButtonProps {
   /** Whether the lightbox is currently in fullscreen mode. */
   isFullscreen: boolean;
 
-  /** Toggle fullscreen mode. */
-  onToggle: () => void;
-
   /** Optional CSS class. Defaults to `"rk-lightbox-btn"`. */
   className?: string;
 
   /** Optional inline styles. */
   style?: React.CSSProperties;
+
+  /** Toggle fullscreen mode. */
+  onToggle: () => void;
 }
 
 /**
@@ -122,14 +122,14 @@ export interface SoundButtonProps {
   /** Whether audio is currently muted. */
   isMuted: boolean;
 
-  /** Callback to toggle the muted state. */
-  onToggle: () => void;
-
   /** Optional CSS class. Defaults to `"rk-lightbox-btn"`. */
   className?: string;
 
   /** Optional inline styles. */
   style?: React.CSSProperties;
+
+  /** Callback to toggle the muted state. */
+  onToggle: () => void;
 }
 
 /**
@@ -163,10 +163,10 @@ export const SoundButton: React.FC<SoundButtonProps> = ({
 
 /** @internal */
 interface LightboxControlsProps {
-  onClose: () => void;
   currentIndex: number;
   count: number;
   isFullscreen: boolean;
+  onClose: () => void;
   onToggleFullscreen: () => void;
 }
 

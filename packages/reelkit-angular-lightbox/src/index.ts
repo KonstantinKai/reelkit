@@ -62,6 +62,10 @@ export {
   RkLightboxNavigationDirective,
   RkLightboxInfoDirective,
   RkLightboxSlideDirective,
+  RkLightboxLoadingDirective,
+  RkLightboxErrorDirective,
+  type LightboxLoadingContext,
+  type LightboxErrorContext,
 } from './lib/template-slots/lightbox-template-slots';
 
 export { RkCloseButtonComponent } from './lib/lightbox-controls/close-button.component';
@@ -69,11 +73,12 @@ export { RkCounterComponent } from './lib/lightbox-controls/counter.component';
 export { RkFullscreenButtonComponent } from './lib/lightbox-controls/fullscreen-button.component';
 export { RkSoundButtonComponent } from './lib/lightbox-controls/sound-button.component';
 
-export { RkSwipeToCloseDirective } from './lib/swipe-to-close/swipe-to-close.directive';
+export { RkSwipeToCloseDirective } from '@reelkit/angular';
 
 export {
   RkLightboxVideoSlideComponent,
   setLightboxVideoMuted,
 } from './lib/lightbox-video-slide/lightbox-video-slide.component';
 
-export { FullscreenService } from './lib/fullscreen/fullscreen.service';
+export { lightboxFadeTransition } from './lib/lightboxFadeTransition';
+export { lightboxZoomTransition } from './lib/lightboxZoomTransition';

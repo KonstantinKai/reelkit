@@ -132,6 +132,7 @@ describe('RkLightboxNavigationDirective', () => {
   it('ngTemplateContextGuard returns true', () => {
     const ctx: unknown = {
       $implicit: undefined,
+      item: { src: 'img.jpg' },
       onPrev: () => {
         /* noop */
       },
@@ -211,11 +212,15 @@ describe('RkLightboxSlideDirective', () => {
   });
 
   it('ngTemplateContextGuard returns true', () => {
+    const noop = jest.fn();
     const ctx: unknown = {
       $implicit: { src: 'video.mp4', type: 'video' as const },
       index: 0,
       size: [800, 600] as [number, number],
       isActive: true,
+      onReady: noop,
+      onWaiting: noop,
+      onError: noop,
     } satisfies LightboxSlideContext;
 
     expect(

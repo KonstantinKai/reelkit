@@ -1,8 +1,7 @@
-import { render } from '@testing-library/react';
+import { render, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import LightboxVideoSlide, {
-  setLightboxVideoMuted,
-} from './LightboxVideoSlide';
+import { SoundProvider } from '@reelkit/react';
+import LightboxVideoSlide from './LightboxVideoSlide';
 
 const mockPlay = vi.fn().mockResolvedValue(undefined);
 const mockPause = vi.fn();
@@ -38,8 +37,6 @@ beforeEach(() => {
     },
   );
 
-  // Reset muted state to default before each test
-  setLightboxVideoMuted(true);
   mockPlay.mockClear();
   mockPause.mockClear();
 });
@@ -48,10 +45,13 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+const renderWithSound = (ui: React.ReactElement) =>
+  render(<SoundProvider>{ui}</SoundProvider>);
+
 describe('LightboxVideoSlide', () => {
   describe('rendering', () => {
     it('renders container with correct dimensions', () => {
-      const { container } = render(
+      const { container } = renderWithSound(
         <LightboxVideoSlide
           src="video.mp4"
           isActive={false}
@@ -68,7 +68,7 @@ describe('LightboxVideoSlide', () => {
     });
 
     it('shows poster image when provided', () => {
-      const { container } = render(
+      const { container } = renderWithSound(
         <LightboxVideoSlide
           src="video.mp4"
           poster="poster.jpg"
@@ -86,7 +86,7 @@ describe('LightboxVideoSlide', () => {
     });
 
     it('does not render poster when none provided', () => {
-      const { container } = render(
+      const { container } = renderWithSound(
         <LightboxVideoSlide
           src="video.mp4"
           isActive={false}
@@ -99,24 +99,44 @@ describe('LightboxVideoSlide', () => {
       expect(poster).toBeNull();
     });
 
-    it('shows wave loader element', () => {
-      const { container } = render(
+    it('calls onPlaying callback when playing event fires', () => {
+      const onPlaying = vi.fn();
+      const { container } = renderWithSound(
         <LightboxVideoSlide
           src="video.mp4"
-          isActive={false}
+          isActive={true}
           size={[1024, 768]}
           slideKey="test-4"
+          onPlaying={onPlaying}
         />,
       );
 
-      const loader = container.querySelector('.rk-lightbox-video-loader');
-      expect(loader).toBeTruthy();
+      const video = container.querySelector('video')!;
+      act(() => video.dispatchEvent(new Event('playing')));
+      expect(onPlaying).toHaveBeenCalled();
+    });
+
+    it('calls onWaiting callback when waiting event fires', () => {
+      const onWaiting = vi.fn();
+      const { container } = renderWithSound(
+        <LightboxVideoSlide
+          src="video.mp4"
+          isActive={true}
+          size={[1024, 768]}
+          slideKey="test-4b"
+          onWaiting={onWaiting}
+        />,
+      );
+
+      const video = container.querySelector('video')!;
+      video.dispatchEvent(new Event('waiting'));
+      expect(onWaiting).toHaveBeenCalled();
     });
   });
 
   describe('playback', () => {
     it('appends video element when active', () => {
-      const { container } = render(
+      const { container } = renderWithSound(
         <LightboxVideoSlide
           src="video.mp4"
           isActive={true}
@@ -133,7 +153,7 @@ describe('LightboxVideoSlide', () => {
     });
 
     it('does not append video element when inactive', () => {
-      const { container } = render(
+      const { container } = renderWithSound(
         <LightboxVideoSlide
           src="video.mp4"
           isActive={false}
@@ -150,7 +170,7 @@ describe('LightboxVideoSlide', () => {
     });
 
     it('calls play when becoming active', () => {
-      render(
+      renderWithSound(
         <LightboxVideoSlide
           src="video.mp4"
           isActive={true}
@@ -163,7 +183,7 @@ describe('LightboxVideoSlide', () => {
     });
 
     it('removes video element on unmount', () => {
-      const { container, unmount } = render(
+      const { container, unmount } = renderWithSound(
         <LightboxVideoSlide
           src="video.mp4"
           isActive={true}
@@ -183,48 +203,9 @@ describe('LightboxVideoSlide', () => {
     });
   });
 
-  describe('setLightboxVideoMuted', () => {
-    it('sets video.muted on the shared element immediately', () => {
-      const { container } = render(
-        <LightboxVideoSlide
-          src="video.mp4"
-          isActive={true}
-          size={[1024, 768]}
-          slideKey="test-mute-1"
-        />,
-      );
-
-      const video = container.querySelector('video')!;
-      expect(video.muted).toBe(true);
-
-      setLightboxVideoMuted(false);
-      expect(video.muted).toBe(false);
-
-      setLightboxVideoMuted(true);
-      expect(video.muted).toBe(true);
-    });
-
-    it('applies muted state when video becomes active after setLightboxVideoMuted', () => {
-      // Set unmuted before rendering
-      setLightboxVideoMuted(false);
-
-      const { container } = render(
-        <LightboxVideoSlide
-          src="video.mp4"
-          isActive={true}
-          size={[1024, 768]}
-          slideKey="test-mute-2"
-        />,
-      );
-
-      const video = container.querySelector('video')!;
-      expect(video.muted).toBe(false);
-    });
-  });
-
   describe('object-fit', () => {
     it('always uses contain for object-fit', () => {
-      const { container } = render(
+      const { container } = renderWithSound(
         <LightboxVideoSlide
           src="video.mp4"
           isActive={true}

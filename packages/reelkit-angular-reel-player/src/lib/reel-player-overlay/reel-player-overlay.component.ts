@@ -18,18 +18,31 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
-import { DomSanitizer, type SafeHtml } from '@angular/platform-browser';
 import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
-import { noop } from '@reelkit/angular';
 import {
+  LucideAngularModule,
+  LucideIconProvider,
+  LUCIDE_ICONS,
+  ChevronUp,
+  ChevronDown,
+} from 'lucide-angular';
+import {
+  noop,
+  clamp,
+  captureFrame,
   BodyLockService,
   ReelComponent,
   RkReelItemDirective,
+  toAngularSignal,
+  createContentLoadingController,
+  createContentPreloader,
   type ReelApi,
+  type ContentLoadingController,
+  type ContentPreloader,
 } from '@reelkit/angular';
-import { ICON_CHEVRON_UP, ICON_CHEVRON_DOWN } from '../icons/icons';
 import { SoundStateService } from '../sound-state/sound-state.service';
 import { RkMediaSlideComponent } from '../media-slide/media-slide.component';
+import { shared as sharedVideo } from '../video-slide/video-slide.component';
 import { RkSlideOverlayComponent } from '../slide-overlay/slide-overlay.component';
 import { RkCloseButtonComponent } from '../player-controls/close-button.component';
 import { RkSoundButtonComponent } from '../player-controls/sound-button.component';
@@ -40,6 +53,8 @@ import {
   RkPlayerNavigationDirective,
   RkPlayerNestedSlideDirective,
   RkPlayerNestedNavigationDirective,
+  RkPlayerLoadingDirective,
+  RkPlayerErrorDirective,
 } from '../template-slots/player-template-slots';
 import type {
   BaseContentItem,
@@ -48,8 +63,8 @@ import type {
   PlayerSoundState,
 } from '../types';
 
-const DEFAULT_ASPECT_RATIO = 9 / 16;
-const MOBILE_BREAKPOINT_PX = 768;
+const _kDefaultAspectRatio = 9 / 16;
+const _kMobileBreakpointPx = 768;
 
 /**
  * Full-screen, Instagram/TikTok-style vertical reel player overlay.
@@ -75,9 +90,17 @@ const MOBILE_BREAKPOINT_PX = 768;
   selector: 'rk-reel-player-overlay',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  providers: [SoundStateService],
+  providers: [
+    SoundStateService,
+    {
+      provide: LUCIDE_ICONS,
+      useValue: new LucideIconProvider({ ChevronUp, ChevronDown }),
+      multi: true,
+    },
+  ],
   imports: [
     NgTemplateOutlet,
+    LucideAngularModule,
     ReelComponent,
     RkReelItemDirective,
     RkMediaSlideComponent,
@@ -105,7 +128,7 @@ const MOBILE_BREAKPOINT_PX = 768;
             [size]="size()"
             direction="vertical"
             [loop]="loop()"
-            [useNavKeys]="useNavKeys()"
+            [enableNavKeys]="enableNavKeys()"
             [enableWheel]="enableWheel()"
             [wheelDebounceMs]="wheelDebounceMs()"
             [transitionDuration]="transitionDuration()"
@@ -141,6 +164,9 @@ const MOBILE_BREAKPOINT_PX = 768;
                       size: itemSize,
                       isActive: isActive,
                       slideKey: item.id,
+                      onReady: getOnReady(index),
+                      onWaiting: getOnWaiting(index),
+                      onError: getOnError(index),
                     }"
                   />
                 } @else {
@@ -150,6 +176,9 @@ const MOBILE_BREAKPOINT_PX = 768;
                     [width]="itemSize[0]"
                     [height]="itemSize[1]"
                     [enableWheel]="enableWheel()"
+                    [onReady]="getOnReady(index)"
+                    [onWaiting]="getOnWaiting(index)"
+                    [onError]="getOnError(index)"
                     [nestedSlideTemplate]="
                       nestedSlideTemplate()?.templateRef ?? null
                     "
@@ -183,14 +212,66 @@ const MOBILE_BREAKPOINT_PX = 768;
             </ng-template>
           </rk-reel>
 
+          @if (isError()) {
+            @if (errorSlot()) {
+              <ng-container
+                [ngTemplateOutlet]="errorSlot()!.templateRef"
+                [ngTemplateOutletContext]="{
+                  $implicit: activeIndex(),
+                  item: content()[activeIndex()],
+                  innerActiveIndex: null,
+                }"
+              />
+            } @else {
+              <div
+                class="rk-media-error"
+                role="img"
+                aria-label="Content unavailable"
+              >
+                <svg
+                  width="48"
+                  height="48"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                  <circle cx="8.5" cy="8.5" r="1.5" />
+                  <polyline points="21 15 16 10 5 21" />
+                  <line x1="4" y1="4" x2="20" y2="20" />
+                </svg>
+                <span class="rk-media-error-text">Content unavailable</span>
+              </div>
+            }
+          } @else if (isLoading()) {
+            @if (loadingSlot()) {
+              <ng-container
+                [ngTemplateOutlet]="loadingSlot()!.templateRef"
+                [ngTemplateOutletContext]="{
+                  $implicit: activeIndex(),
+                  item: content()[activeIndex()],
+                  innerActiveIndex: null,
+                }"
+              />
+            } @else {
+              <div class="rk-reel-loader"></div>
+            }
+          }
+
           @if (controlsTemplate()) {
             <ng-container
               [ngTemplateOutlet]="controlsTemplate()!.templateRef"
               [ngTemplateOutletContext]="{
                 $implicit: closeFn,
+                item: content()[activeIndex()],
                 activeIndex: activeIndex(),
                 content: content(),
                 soundState: soundStateFacade,
+                onClose: closeFn,
               }"
             />
           } @else {
@@ -206,9 +287,11 @@ const MOBILE_BREAKPOINT_PX = 768;
             [ngTemplateOutlet]="navigationTemplate()!.templateRef"
             [ngTemplateOutletContext]="{
               $implicit: onPrevFn,
-              onNext: onNextFn,
+              item: content()[activeIndex()],
               activeIndex: activeIndex(),
               count: content().length,
+              onPrev: onPrevFn,
+              onNext: onNextFn,
             }"
           />
         } @else {
@@ -219,8 +302,9 @@ const MOBILE_BREAKPOINT_PX = 768;
               aria-label="Previous slide"
               [disabled]="!loop() && activeIndex() === 0"
               [attr.aria-disabled]="!loop() && activeIndex() === 0"
-              [innerHTML]="iconChevronUp"
-            ></button>
+            >
+              <lucide-angular [img]="ChevronUpIcon" [size]="28" />
+            </button>
             <button
               class="rk-player-nav-btn"
               (click)="onNext()"
@@ -229,8 +313,9 @@ const MOBILE_BREAKPOINT_PX = 768;
               [attr.aria-disabled]="
                 !loop() && activeIndex() === content().length - 1
               "
-              [innerHTML]="iconChevronDown"
-            ></button>
+            >
+              <lucide-angular [img]="ChevronDownIcon" [size]="28" />
+            </button>
           </div>
         }
       </div>
@@ -256,7 +341,7 @@ export class RkReelPlayerOverlayComponent<
   readonly transitionDuration = input<number>(300);
   readonly swipeDistanceFactor = input<number>(0.12);
   readonly loop = input<boolean>(false);
-  readonly useNavKeys = input<boolean>(true);
+  readonly enableNavKeys = input<boolean>(true);
   readonly enableWheel = input<boolean>(true);
   readonly wheelDebounceMs = input<number>(200);
 
@@ -272,6 +357,8 @@ export class RkReelPlayerOverlayComponent<
   readonly navigationTemplate = contentChild(RkPlayerNavigationDirective);
   readonly nestedSlideTemplate = contentChild(RkPlayerNestedSlideDirective);
   readonly nestedNavTemplate = contentChild(RkPlayerNestedNavigationDirective);
+  protected readonly loadingSlot = contentChild(RkPlayerLoadingDirective);
+  protected readonly errorSlot = contentChild(RkPlayerErrorDirective);
 
   private readonly _activeIndex = linkedSignal(() =>
     this.isOpen() ? this.initialIndex() : 0,
@@ -285,12 +372,8 @@ export class RkReelPlayerOverlayComponent<
   private _videoEl: HTMLVideoElement | null = null;
   private _videoPausedOnDrag = false;
 
-  private readonly _sanitizer = inject(DomSanitizer);
-
-  protected readonly iconChevronUp: SafeHtml =
-    this._sanitizer.bypassSecurityTrustHtml(ICON_CHEVRON_UP);
-  protected readonly iconChevronDown: SafeHtml =
-    this._sanitizer.bypassSecurityTrustHtml(ICON_CHEVRON_DOWN);
+  protected readonly ChevronUpIcon = ChevronUp;
+  protected readonly ChevronDownIcon = ChevronDown;
 
   /**
    * Stable arrow-function references passed into template context objects.
@@ -336,6 +419,12 @@ export class RkReelPlayerOverlayComponent<
       ) ?? false,
   );
 
+  private readonly _preloader: ContentPreloader = createContentPreloader({
+    maxCacheSize: 1000,
+  });
+  private readonly _loadingCtrl: ContentLoadingController =
+    createContentLoadingController(true, 0);
+
   private readonly _sizeSignal = signal<[number, number]>([0, 0]);
   readonly size = this._sizeSignal.asReadonly();
 
@@ -349,6 +438,18 @@ export class RkReelPlayerOverlayComponent<
   private readonly _document = inject(DOCUMENT);
   private readonly _injector = inject(Injector);
 
+  protected readonly isLoading = toAngularSignal(
+    this._loadingCtrl.isLoading,
+    this._destroyRef,
+  );
+
+  protected readonly isError = toAngularSignal(
+    this._loadingCtrl.isError,
+    this._destroyRef,
+  );
+
+  private _preloaderDispose: (() => void) | null = null;
+
   constructor() {
     this._sizeSignal.set(this._getSize());
     this._listenToEscape();
@@ -357,8 +458,13 @@ export class RkReelPlayerOverlayComponent<
     this._destroyRef.onDestroy(() => this._bodyLock.unlock());
 
     effect(() => {
+      this._preloadNeighbors(this.activeIndex(), this.content());
+    });
+
+    effect(() => {
       if (this.isOpen()) {
         this._bodyLock.lock();
+        this._setupInitialPreload();
         // Defer focus until after the next render cycle so the overlay element
         // created by @if(isOpen()) is guaranteed to be in the DOM.
         // afterNextRender fires after Angular has flushed the view, avoiding
@@ -375,6 +481,10 @@ export class RkReelPlayerOverlayComponent<
         );
       } else {
         this._bodyLock.unlock();
+        if (this._preloaderDispose) {
+          this._preloaderDispose();
+          this._preloaderDispose = null;
+        }
       }
     });
   }
@@ -399,19 +509,53 @@ export class RkReelPlayerOverlayComponent<
 
   onBeforeChange(): void {
     this._soundState.setDisabled(true);
+
+    if (this._videoEl) {
+      this._videoEl.pause();
+      const key = this._videoEl.dataset['slideKey'];
+      const frame = captureFrame(this._videoEl);
+      if (key && frame) {
+        sharedVideo.capturedFrames.set(key, frame);
+      }
+    }
   }
 
   onAfterChange(event: { index: number }): void {
-    this._activeIndex.set(event.index);
-    this._innerActiveMediaType.set(null);
+    const index = event.index;
+    this._loadingCtrl.setActiveIndex(index);
 
-    // Always re-enable sound after a transition completes. For image-only
-    // slides the sound button is hidden by activeSlideHasVideo(), but leaving
-    // disabled=true would corrupt soundStateFacade.disabled() for consumers
-    // using custom control templates.
+    const src = this.content()[index]?.media[0]?.src;
+    if (src && this._preloader.isErrored(src)) {
+      this._loadingCtrl.onError(index);
+    } else if (src && this._preloader.isLoaded(src)) {
+      this._loadingCtrl.onReady(index);
+    }
+
+    this._activeIndex.set(index);
+    this._innerActiveMediaType.set(null);
     this._soundState.setDisabled(false);
 
-    this.slideChange.emit(event.index);
+    this.slideChange.emit(index);
+  }
+
+  getOnReady(index: number): () => void {
+    return () => {
+      this._loadingCtrl.onReady(index);
+      const src = this.content()[index]?.media[0]?.src;
+      if (src) this._preloader.markLoaded(src);
+    };
+  }
+
+  getOnWaiting(index: number): () => void {
+    return () => this._loadingCtrl.onWaiting(index);
+  }
+
+  getOnError(index: number): () => void {
+    return () => {
+      const src = this.content()[index]?.media[0]?.src;
+      if (src) this._preloader.markErrored(src);
+      this._loadingCtrl.onError(index);
+    };
   }
 
   onVideoRef(ref: HTMLVideoElement | null): void {
@@ -471,16 +615,16 @@ export class RkReelPlayerOverlayComponent<
     // Guard against degenerate aspect ratios (0, NaN, Infinity, negative).
     // Any such value would produce a zero-width or infinite-height container,
     // breaking layout entirely. Fall back to the default 9:16 ratio.
-    const rawRatio = this.aspectRatio() ?? DEFAULT_ASPECT_RATIO;
+    const rawRatio = this.aspectRatio() ?? _kDefaultAspectRatio;
     const ratio =
       Number.isFinite(rawRatio) && rawRatio > 0
         ? rawRatio
-        : DEFAULT_ASPECT_RATIO;
+        : _kDefaultAspectRatio;
 
     const windowWidth = win.innerWidth;
     const windowHeight = win.innerHeight;
 
-    if (windowWidth < MOBILE_BREAKPOINT_PX) {
+    if (windowWidth < _kMobileBreakpointPx) {
       return [windowWidth, windowHeight];
     }
 
@@ -521,11 +665,44 @@ export class RkReelPlayerOverlayComponent<
   }
 
   private readonly _onResize = (): void => {
-    // Running inside NgZone so signal writes schedule change detection
-    // correctly, even though the resize listener fires outside Angular.
     this._zone.run(() => {
       this._sizeSignal.set(this._getSize());
       this._reelApi?.adjust();
     });
   };
+
+  private _setupInitialPreload(): void {
+    const idx = this.initialIndex();
+    this._loadingCtrl.setActiveIndex(idx);
+
+    const src = this.content()[idx]?.media[0]?.src;
+    if (src && this._preloader.isErrored(src)) {
+      this._loadingCtrl.onError(idx);
+    } else if (src && this._preloader.isLoaded(src)) {
+      this._loadingCtrl.onReady(idx);
+    } else if (src) {
+      this._preloaderDispose = this._preloader.onLoaded(src, () =>
+        this._loadingCtrl.onReady(idx),
+      );
+    }
+  }
+
+  private _preloadNeighbors(idx: number, items: readonly T[]): void {
+    if (!this.isOpen() || items.length === 0) return;
+
+    const range = 2;
+    const start = clamp(idx - range, 0, items.length - 1);
+    const end = clamp(idx + range, 0, items.length - 1);
+
+    for (let i = start; i <= end; i++) {
+      if (i === idx) continue;
+      for (const m of items[i].media) {
+        if (m.type === 'video') {
+          if (m.poster) this._preloader.preload(m.poster, 'image');
+        } else {
+          this._preloader.preload(m.src, 'image');
+        }
+      }
+    }
+  }
 }

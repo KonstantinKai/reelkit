@@ -1,14 +1,14 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import { SoundProvider } from './SoundState';
+import { SoundProvider } from '@reelkit/react';
 import PlayerControls from './PlayerControls';
 
 const renderWithSound = (props: {
-  onClose: () => void;
-
   showSound?: boolean;
 
   soundDisabled?: boolean;
+
+  onClose: () => void;
 }) =>
   render(
     <SoundProvider>

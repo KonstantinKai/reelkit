@@ -59,3 +59,36 @@
   cursor: default;
   pointer-events: none;
 }
+
+/* Wave loader animation */
+.rk-reel-loader {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent 25%,
+    rgba(255, 255, 255, 0.12) 50%,
+    transparent 75%
+  );
+  background-size: 300% 100%;
+  animation: rk-reel-wave 1.8s ease-in-out infinite;
+}
+
+@keyframes rk-reel-wave {
+  0% {
+    background-position: 100% 0;
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    background-position: -100% 0;
+    opacity: 0;
+  }
+}

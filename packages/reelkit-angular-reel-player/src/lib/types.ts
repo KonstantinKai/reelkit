@@ -49,6 +49,15 @@ export interface PlayerSlideContext<T extends BaseContentItem = ContentItem> {
   size: [number, number];
   isActive: boolean;
   slideKey: string;
+
+  /** Notify that the slide content is ready (loaded). */
+  onReady: () => void;
+
+  /** Notify that the slide content is loading/waiting. */
+  onWaiting: () => void;
+
+  /** Notify that the slide content failed to load. */
+  onError: () => void;
 }
 
 /**
@@ -87,22 +96,46 @@ export interface PlayerSoundState {
 export interface PlayerControlsContext<
   T extends BaseContentItem = ContentItem,
 > {
-  $implicit: () => void;
+  /** The currently active content item. */
+  item: T;
+
+  /** Zero-based index of the currently active slide. */
   activeIndex: number;
+
+  /** The full content array passed to the player. */
   content: T[];
 
   /** Reactive sound state for mute/unmute control in custom controls. */
   soundState: PlayerSoundState;
+
+  /** Close the player overlay. */
+  $implicit: () => void;
+
+  /** Close the player overlay. */
+  onClose: () => void;
 }
 
 /**
  * Template context for the `rkPlayerNavigation` slot.
  */
 export interface PlayerNavigationContext {
-  $implicit: () => void;
-  onNext: () => void;
+  /** The currently active content item. */
+  item: BaseContentItem;
+
+  /** Zero-based index of the currently active slide. */
   activeIndex: number;
+
+  /** Total number of slides. */
   count: number;
+
+  /** Navigate to the previous slide. */
+  $implicit: () => void;
+
+  /** Navigate to the previous slide. */
+  onPrev: () => void;
+
+  /** Navigate to the next slide. */
+  onNext: () => void;
 }
 
 /**
@@ -121,8 +154,21 @@ export interface PlayerNestedSlideContext {
  * Template context for the `rkPlayerNestedNavigation` slot.
  */
 export interface PlayerNestedNavigationContext {
-  $implicit: () => void;
-  onNext: () => void;
+  /** The currently active media item. */
+  media: MediaItem;
+
+  /** Zero-based index of the currently active nested slide. */
   activeIndex: number;
+
+  /** Total number of nested slides. */
   count: number;
+
+  /** Navigate to the previous nested slide. */
+  $implicit: () => void;
+
+  /** Navigate to the previous nested slide. */
+  onPrev: () => void;
+
+  /** Navigate to the next nested slide. */
+  onNext: () => void;
 }

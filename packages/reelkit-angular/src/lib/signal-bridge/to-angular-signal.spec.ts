@@ -1,4 +1,4 @@
-import { DestroyRef, signal } from '@angular/core';
+import { DestroyRef } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { createSignal } from '@reelkit/core';
 import type { Subscribable } from '@reelkit/core';
@@ -87,7 +87,9 @@ describe('toAngularSignal', () => {
 
       const sig = toAngularSignal(source, destroyRef);
 
-      expect(typeof (sig as any)['set']).not.toBe('function');
+      expect(
+        typeof (sig as unknown as Record<string, unknown>)['set'],
+      ).not.toBe('function');
     });
   });
 

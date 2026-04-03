@@ -1,3 +1,4 @@
+import { Callout } from '../../components/ui/Callout';
 import { CodeBlock } from '../../components/ui/CodeBlock';
 import { Sandbox } from '../../components/ui/Sandbox';
 import { FeatureCardGrid } from '../../components/ui/FeatureCard';
@@ -6,8 +7,11 @@ import {
   Play,
   Volume2,
   Layout,
+  Clock,
   Image,
   Monitor,
+  Settings,
+  Ratio,
   Layers,
   Code,
 } from 'lucide-react';
@@ -64,7 +68,7 @@ const playerInputs = [
     description: 'Enable infinite loop between slides',
   },
   {
-    prop: 'useNavKeys',
+    prop: 'enableNavKeys',
     type: 'boolean',
     default: 'true',
     description: 'Enable keyboard arrow key navigation',
@@ -134,6 +138,16 @@ const templateSlots = [
     context: 'PlayerNestedNavigationContext',
     description: 'Custom navigation arrows for the inner horizontal slider',
   },
+  {
+    directive: 'rkPlayerLoading',
+    context: '{ $implicit: activeIndex, item, innerActiveIndex }',
+    description: 'Custom loading indicator template slot',
+  },
+  {
+    directive: 'rkPlayerError',
+    context: '{ $implicit: activeIndex, item, innerActiveIndex }',
+    description: 'Custom error indicator template slot',
+  },
 ];
 
 const mediaItemProps = [
@@ -161,7 +175,7 @@ const contextTypes = [
   {
     name: 'PlayerSlideContext<T>',
     fields:
-      '{ $implicit: T, index, size: [number,number], isActive, slideKey }',
+      '{ $implicit: T, index, size: [number,number], isActive, slideKey, onReady, onWaiting, onError }',
   },
   {
     name: 'PlayerSlideOverlayContext<T>',
@@ -187,6 +201,109 @@ const contextTypes = [
   },
 ];
 
+const cssClasses = [
+  {
+    className: '.rk-reel-overlay',
+    component: 'Overlay',
+    description: 'Fixed full-screen backdrop (background, z-index)',
+  },
+  {
+    className: '.rk-reel-container',
+    component: 'Overlay',
+    description: 'Player container (position, overflow)',
+  },
+  {
+    className: '.rk-player-nav-arrows',
+    component: 'Navigation',
+    description: 'Desktop-only arrow container (hidden below 768px)',
+  },
+  {
+    className: '.rk-player-close-btn',
+    component: 'Controls',
+    description: 'Close button',
+  },
+  {
+    className: '.rk-player-sound-btn',
+    component: 'Controls',
+    description: 'Sound toggle button',
+  },
+  {
+    className: '.rk-reel-slide-wrapper',
+    component: 'Slide',
+    description: 'Wrapper around media + overlay',
+  },
+  {
+    className: '.rk-reel-slide-overlay',
+    component: 'SlideOverlay',
+    description: 'Gradient overlay container',
+  },
+  {
+    className: '.rk-reel-slide-overlay-author',
+    component: 'SlideOverlay',
+    description: 'Author row (avatar + name)',
+  },
+  {
+    className: '.rk-reel-slide-overlay-avatar',
+    component: 'SlideOverlay',
+    description: 'Author avatar image',
+  },
+  {
+    className: '.rk-reel-slide-overlay-name',
+    component: 'SlideOverlay',
+    description: 'Author name text',
+  },
+  {
+    className: '.rk-reel-slide-overlay-description',
+    component: 'SlideOverlay',
+    description: 'Description text',
+  },
+  {
+    className: '.rk-reel-slide-overlay-likes',
+    component: 'SlideOverlay',
+    description: 'Likes row (heart + count)',
+  },
+  {
+    className: '.rk-video-slide-container',
+    component: 'VideoSlide',
+    description: 'Video wrapper (background, overflow)',
+  },
+  {
+    className: '.rk-video-slide-element',
+    component: 'VideoSlide',
+    description: 'The <video> element',
+  },
+  {
+    className: '.rk-video-slide-poster',
+    component: 'VideoSlide',
+    description: 'Poster image (fades out on play)',
+  },
+  {
+    className: '.rk-video-slide-loader',
+    component: 'VideoSlide',
+    description: 'Wave loading animation',
+  },
+  {
+    className: '.rk-nested-nav',
+    component: 'NestedSlider',
+    description: 'Horizontal carousel arrows (hidden below 768px)',
+  },
+  {
+    className: '.rk-reel-loader',
+    component: 'Overlay',
+    description: 'Wave loading animation overlay',
+  },
+  {
+    className: '.rk-media-error',
+    component: 'Overlay',
+    description: 'Error state overlay (centered icon + text)',
+  },
+  {
+    className: '.rk-media-error-text',
+    component: 'Overlay',
+    description: 'Error message text',
+  },
+];
+
 export default function AngularReelPlayer() {
   return (
     <div className="max-w-4xl mx-auto px-6 py-12">
@@ -207,40 +324,56 @@ export default function AngularReelPlayer() {
           <FeatureCardGrid
             items={[
               {
-                icon: Play,
-                label: 'Video + Images',
-                desc: 'Mixed media support',
+                icon: Zap,
+                label: 'Vertical Swipe',
+                desc: 'Touch, drag, keyboard, wheel',
               },
               {
-                icon: Volume2,
-                label: 'Sound Controls',
-                desc: 'Mute/unmute via SoundStateService',
+                icon: Play,
+                label: 'Video Autoplay',
+                desc: 'Plays when visible',
               },
+              { icon: Volume2, label: 'Sound Toggle', desc: 'iOS continuity' },
               {
                 icon: Layout,
-                label: '6 Template Slots',
-                desc: 'Full UI customization',
+                label: 'Multi-Media',
+                desc: 'Horizontal nested carousels',
+              },
+              {
+                icon: Clock,
+                label: 'Position Memory',
+                desc: 'Resumes where left off',
+              },
+              {
+                icon: Image,
+                label: 'Frame Capture',
+                desc: 'Poster-to-video crossfade',
               },
               {
                 icon: Layers,
-                label: 'Nested Slider',
-                desc: 'Horizontal inner slider for carousels',
-              },
-              { icon: Zap, label: 'Virtualized', desc: 'Only 3 slides in DOM' },
-              {
-                icon: Image,
-                label: 'Posters',
-                desc: 'Thumbnail placeholders while loading',
+                label: 'Virtualized',
+                desc: 'Only 3 slides in DOM',
               },
               {
-                icon: Monitor,
-                label: 'Responsive',
-                desc: 'Full viewport on mobile',
+                icon: Ratio,
+                label: 'Aspect Ratio',
+                desc: '9:16 desktop, full mobile',
               },
+              { icon: Monitor, label: 'Desktop Nav', desc: 'Arrow buttons' },
               {
                 icon: Code,
-                label: 'Generic API',
-                desc: 'Extend BaseContentItem for custom data',
+                label: 'Generic Types',
+                desc: 'Custom content data models',
+              },
+              {
+                icon: Settings,
+                label: 'Customizable',
+                desc: 'Template slots for everything',
+              },
+              {
+                icon: Zap,
+                label: 'Error Handling',
+                desc: 'Broken media detection with LRU cache',
               },
             ]}
           />
@@ -250,9 +383,25 @@ export default function AngularReelPlayer() {
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Installation</h2>
         <CodeBlock
-          code={`npm install @reelkit/angular-reel-player @reelkit/angular`}
+          code={`npm install @reelkit/angular-reel-player @reelkit/angular lucide-angular`}
           language="bash"
         />
+        <Callout type="info" title="Icons" className="mt-4">
+          The default controls use{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            lucide-angular
+          </code>{' '}
+          for icons (close, sound, navigation arrows). If you prefer a different
+          icon library, use the{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            rkPlayerControls
+          </code>{' '}
+          and{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            rkPlayerNavigation
+          </code>{' '}
+          template slots to provide your own.
+        </Callout>
       </section>
 
       <section className="mb-12">
@@ -282,11 +431,11 @@ const content: ContentItem[] = [
     media: [{
       id: 'v1',
       type: 'video',
-      src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-      poster: 'https://storage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerBlazes.jpg',
+      src: '/cdn/samples/videos/video-01.mp4',
+      poster: '/cdn/samples/videos/video-poster-01.jpg',
       aspectRatio: 16 / 9,
     }],
-    author: { name: 'Alex Johnson', avatar: 'https://i.pravatar.cc/100?u=alex' },
+    author: { name: 'Alex Johnson', avatar: '/cdn/samples/avatars/avatar-01.jpg' },
     likes: 1234,
     description: 'Amazing content',
   },
@@ -295,10 +444,10 @@ const content: ContentItem[] = [
     media: [{
       id: 'img1',
       type: 'image',
-      src: 'https://images.pexels.com/photos/1770809/pexels-photo-1770809.jpeg?auto=compress&cs=tinysrgb&w=800',
+      src: '/cdn/samples/images/image-01.jpg',
       aspectRatio: 2 / 3,
     }],
-    author: { name: 'Sarah Miller', avatar: 'https://i.pravatar.cc/100?u=sarah' },
+    author: { name: 'Sarah Miller', avatar: '/cdn/samples/avatars/avatar-02.jpg' },
     likes: 5678,
     description: 'Nature at its finest',
   },
@@ -307,11 +456,11 @@ const content: ContentItem[] = [
     media: [{
       id: 'v2',
       type: 'video',
-      src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
-      poster: 'https://storage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerEscapes.jpg',
+      src: '/cdn/samples/videos/video-02.mp4',
+      poster: '/cdn/samples/videos/video-poster-02.jpg',
       aspectRatio: 16 / 9,
     }],
-    author: { name: 'Mike Chen', avatar: 'https://i.pravatar.cc/100?u=mike' },
+    author: { name: 'Mike Chen', avatar: '/cdn/samples/avatars/avatar-03.jpg' },
     likes: 3456,
     description: 'Adventure awaits',
   },
@@ -515,6 +664,140 @@ export class AppComponent {
   description: 'Travel moments',
 };`}
           language="typescript"
+        />
+      </section>
+
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">
+          Content Loading & Error Handling
+        </h2>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          The player tracks per-slide loading and error states. A wave loader
+          shows while content loads; an error icon shows for broken media.
+          Errored URLs are cached so revisiting shows the error instantly
+          without retrying.
+        </p>
+
+        <h3 className="text-xl font-semibold mt-6 mb-4">Lifecycle Callbacks</h3>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          When using the{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            rkPlayerSlide
+          </code>{' '}
+          template slot, use the context callbacks to control the loading
+          indicator:
+        </p>
+
+        <div className="overflow-x-auto mb-6">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left py-3 px-4 font-semibold">Callback</th>
+                <th className="text-left py-3 px-4 font-semibold">
+                  When to call
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  onReady
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Image loaded or video started playing. Clears loading and
+                  error states.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  onWaiting
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Video is buffering mid-playback. Shows the loading indicator.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  onError
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Content failed to load. Shows error overlay and caches the URL
+                  as broken.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <CodeBlock
+          code={`<!-- Wire lifecycle callbacks in a custom slide template -->
+<rk-reel-player-overlay [isOpen]="isOpen" [content]="items" (closed)="isOpen = false">
+  <ng-template rkPlayerSlide
+    let-item
+    let-size="size"
+    let-isActive="isActive"
+    let-onReady="onReady"
+    let-onWaiting="onWaiting"
+    let-onError="onError"
+  >
+    @if (item.media[0].type === 'image') {
+      <img
+        [src]="item.media[0].src"
+        (load)="onReady()"
+        (error)="onError()"
+        [style.width.px]="size[0]"
+        [style.height.px]="size[1]"
+        style="object-fit: cover"
+      />
+    } @else {
+      <video
+        [src]="item.media[0].src"
+        [autoplay]="isActive"
+        (canplay)="onReady()"
+        (waiting)="onWaiting()"
+        (error)="onError()"
+        [style.width.px]="size[0]"
+        [style.height.px]="size[1]"
+        style="object-fit: cover"
+      />
+    }
+  </ng-template>
+</rk-reel-player-overlay>`}
+          language="html"
+        />
+
+        <h3 className="text-xl font-semibold mt-8 mb-4">
+          Custom Loading & Error UI
+        </h3>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Replace the default wave loader and error icon with custom templates:
+        </p>
+
+        <CodeBlock
+          code={`<rk-reel-player-overlay [isOpen]="isOpen" [content]="items" (closed)="isOpen = false">
+  <ng-template rkPlayerLoading let-index let-item="item">
+    <div style="
+      position: absolute; inset: 0; z-index: 10;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 14px;
+    ">
+      Loading slide {{ index + 1 }}...
+    </div>
+  </ng-template>
+
+  <ng-template rkPlayerError let-index let-item="item">
+    <div style="
+      position: absolute; inset: 0; z-index: 10;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 12px; color: rgba(255,255,255,0.5);
+    ">
+      <span style="font-size: 48px">!</span>
+      <span>Failed to load media</span>
+    </div>
+  </ng-template>
+</rk-reel-player-overlay>`}
+          language="html"
         />
       </section>
 
@@ -777,6 +1060,110 @@ export class AppComponent {
                   </td>
                   <td className="py-3 px-4 font-mono text-xs text-slate-500">
                     {t.fields}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">CSS Classes</h2>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          All CSS classes are plain (not CSS modules), so they can be overridden
+          with higher-specificity selectors or in a custom stylesheet loaded
+          after{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            @reelkit/angular-reel-player/styles.css
+          </code>
+          .
+        </p>
+
+        <div className="overflow-x-auto mb-6">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left py-3 px-4 font-semibold">Class</th>
+                <th className="text-left py-3 px-4 font-semibold">Component</th>
+                <th className="text-left py-3 px-4 font-semibold">
+                  Description
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {cssClasses.map((c) => (
+                <tr
+                  key={c.className}
+                  className="border-b border-slate-100 dark:border-slate-800"
+                >
+                  <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                    {c.className}
+                  </td>
+                  <td className="py-3 px-4 text-slate-500 text-sm">
+                    {c.component}
+                  </td>
+                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                    {c.description}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <CodeBlock
+          code={`/* Override overlay background */
+.rk-reel-overlay {
+  background: rgba(0, 0, 0, 0.9);
+}
+
+/* Custom slide overlay gradient */
+.rk-reel-slide-overlay {
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
+}
+
+/* Larger navigation arrows */
+.rk-player-nav-arrows button {
+  width: 56px;
+  height: 56px;
+}`}
+          language="css"
+        />
+      </section>
+
+      <section>
+        <h2 className="text-2xl font-bold mb-4">Keyboard Shortcuts</h2>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left py-3 px-4 font-semibold">Key</th>
+                <th className="text-left py-3 px-4 font-semibold">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                { key: 'ArrowUp', action: 'Previous slide' },
+                { key: 'ArrowDown', action: 'Next slide' },
+                {
+                  key: 'ArrowLeft',
+                  action: 'Previous media (in nested slider)',
+                },
+                { key: 'ArrowRight', action: 'Next media (in nested slider)' },
+                { key: 'Escape', action: 'Close player' },
+              ].map((s) => (
+                <tr
+                  key={s.key}
+                  className="border-b border-slate-100 dark:border-slate-800"
+                >
+                  <td className="py-3 px-4">
+                    <kbd className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+                      {s.key}
+                    </kbd>
+                  </td>
+                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
+                    {s.action}
                   </td>
                 </tr>
               ))}

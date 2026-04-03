@@ -94,7 +94,7 @@ export function BasicSliderDemo() {
         direction="vertical"
         loop
         enableWheel={false}
-        useNavKeys={false}
+        enableNavKeys={false}
         apiRef={apiRef}
         afterChange={(index) => setCurrentIndex(index)}
         style={{ pointerEvents: 'none' }}

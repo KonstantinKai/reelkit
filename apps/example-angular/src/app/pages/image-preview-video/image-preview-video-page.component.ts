@@ -17,54 +17,45 @@ import {
   type LightboxItem,
   type TransitionType,
 } from '@reelkit/angular-lightbox';
+import { cdnUrl } from '@reelkit/example-data';
 
-const transitions: TransitionType[] = ['slide', 'fade', 'zoom-in'];
+const _kTransitions: TransitionType[] = ['slide', 'fade', 'flip', 'zoom-in'];
 
 const sampleItems: LightboxItem[] = [
   {
-    src: 'https://picsum.photos/id/1015/1600/1000',
+    src: cdnUrl('samples/images/image-01.jpg'),
     title: 'Mountain River',
     description: 'A beautiful mountain river flowing through the forest.',
-    width: 1600,
-    height: 1000,
   },
   {
-    src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+    src: cdnUrl('samples/videos/video-01.mp4'),
     type: 'video',
-    poster:
-      'https://storage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerBlazes.jpg',
-    title: 'For Bigger Blazes',
+    poster: cdnUrl('samples/videos/video-poster-01.jpg'),
+    title: 'Ocean Waves',
     description: 'Sample video demonstrating video support in the lightbox.',
   },
   {
-    src: 'https://picsum.photos/id/1018/1600/900',
+    src: cdnUrl('samples/images/image-02.jpg'),
     title: 'Foggy Forest',
     description: 'Misty morning in the dense forest.',
-    width: 1600,
-    height: 900,
   },
   {
-    src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+    src: cdnUrl('samples/videos/video-02.mp4'),
     type: 'video',
-    poster:
-      'https://storage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerEscapes.jpg',
-    title: 'For Bigger Escapes',
+    poster: cdnUrl('samples/videos/video-poster-02.jpg'),
+    title: 'Nature Landscape',
     description: 'Another sample video showcasing the opt-in video feature.',
   },
   {
-    src: 'https://picsum.photos/id/1020/1600/1067',
+    src: cdnUrl('samples/images/image-03.jpg'),
     title: 'Autumn Path',
     description:
       'A winding path through the autumn forest covered in golden leaves.',
-    width: 1600,
-    height: 1067,
   },
   {
-    src: 'https://picsum.photos/id/1025/900/1350',
+    src: cdnUrl('samples/images/image-04.jpg'),
     title: 'Puppy Portrait',
     description: 'An adorable puppy looking at the camera with curious eyes.',
-    width: 900,
-    height: 1350,
   },
 ];
 
@@ -157,14 +148,14 @@ const sampleItems: LightboxItem[] = [
         <ng-template
           rkLightboxControls
           let-ctx="onClose"
-          let-currentIndex="currentIndex"
+          let-activeIndex="activeIndex"
           let-count="count"
           let-isFullscreen="isFullscreen"
           let-onToggleFullscreen="onToggleFullscreen"
           let-onClose="onClose"
         >
           <div class="rk-lightbox-controls-left">
-            <rk-counter [currentIndex]="currentIndex" [count]="count" />
+            <rk-counter [currentIndex]="activeIndex" [count]="count" />
             <rk-fullscreen-button
               [isFullscreen]="isFullscreen"
               (toggled)="onToggleFullscreen()"
@@ -179,6 +170,8 @@ const sampleItems: LightboxItem[] = [
           let-item
           let-size="size"
           let-isActive="isActive"
+          let-onReady="onReady"
+          let-onWaiting="onWaiting"
         >
           @if (item.type === 'video') {
             <rk-lightbox-video-slide
@@ -187,12 +180,15 @@ const sampleItems: LightboxItem[] = [
               [isActive]="isActive"
               [size]="size"
               [slideKey]="item.src"
+              [onReady]="onReady"
+              [onWaiting]="onWaiting"
             />
           } @else {
             <img
               [src]="item.src"
               [alt]="item.title ?? ''"
               class="rk-lightbox-img rk-loaded"
+              (load)="onReady()"
             />
           }
         </ng-template>
@@ -202,7 +198,7 @@ const sampleItems: LightboxItem[] = [
 })
 export class ImagePreviewVideoPageComponent implements OnDestroy {
   protected readonly items: LightboxItem[] = sampleItems;
-  protected readonly transitions: TransitionType[] = transitions;
+  protected readonly transitions: TransitionType[] = _kTransitions;
   protected readonly previewIndex = signal<number | null>(null);
   protected readonly transition = signal<TransitionType>('slide');
   protected readonly isMuted = signal(true);
