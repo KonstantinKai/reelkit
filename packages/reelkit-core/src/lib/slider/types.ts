@@ -274,6 +274,9 @@ export interface SliderController {
    */
   attach(element: HTMLElement): void;
 
-  /** Disposes all resources: detaches controllers and cleans up observers. */
+  /** Detaches DOM listeners (gestures, keyboard, wheel). Safe for re-attach via observe(). */
+  detach(): void;
+
+  /** Disposes all resources permanently: detaches controllers and cleans up signal observers. */
   dispose(): void;
 }

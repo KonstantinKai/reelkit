@@ -2,12 +2,12 @@
 
 <p>
   <a href="https://www.npmjs.com/package/@reelkit/react"><img src="https://img.shields.io/npm/v/@reelkit/react?color=6366f1&label=npm" alt="npm" /></a>
-  <img src="https://img.shields.io/badge/gzip-2.9%20kB-6366f1" alt="Bundle size" />
+  <img src="https://img.shields.io/badge/gzip-3.9%20kB-6366f1" alt="Bundle size" />
   <img src="https://img.shields.io/badge/coverage-96%25-brightgreen" alt="Coverage" />
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
 
-React bindings for `@reelkit/core`. Drop in a `<Reel>` component, give it a slide count and a render function — it handles virtualization, gestures, and keyboard/wheel input. ~2.9 kB gzip.
+React bindings for `@reelkit/core`. Drop in a `<Reel>` component, give it a slide count and a render function — it handles virtualization, gestures, and keyboard/wheel input. ~3.9 kB gzip.
 
 ## Installation
 

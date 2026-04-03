@@ -29,10 +29,12 @@
     "access": "public"
   },
   "peerDependencies": {
-    "@reelkit/react": "*",
-    "@reelkit/stories-core": "*",
+    "@reelkit/react": ">=0.3.0",
     "react": ">=18",
     "react-dom": ">=18",
     "lucide-react": ">=0.400.0"
+  },
+  "dependencies": {
+    "@reelkit/stories-core": ">=0.1.0"
   }
 }

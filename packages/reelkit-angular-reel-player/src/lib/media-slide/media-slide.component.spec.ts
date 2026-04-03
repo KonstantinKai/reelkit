@@ -8,7 +8,6 @@ import type { BaseContentItem } from '../types';
 // Mock @reelkit/angular
 // ---------------------------------------------------------------------------
 jest.mock('@reelkit/angular', () => {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { Component, Directive, EventEmitter, Input, Output } =
     require('@angular/core') as typeof import('@angular/core');
 
@@ -47,6 +46,7 @@ jest.mock('@reelkit/angular', () => {
 
   @Directive({ selector: '[rkReelItem]', standalone: true })
   class RkReelItemDirective {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     static ngTemplateContextGuard(_d: unknown, _ctx: unknown): boolean {
       return true;
     }
@@ -77,14 +77,23 @@ jest.mock('@reelkit/angular', () => {
     })),
     captureFrame: jest.fn().mockReturnValue(null),
     toAngularSignal: jest.fn((source: { value?: unknown }) => {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { signal: angSignal } =
         require('@angular/core') as typeof import('@angular/core');
       return angSignal(source?.value ?? false);
     }),
     createSoundController: jest.fn(() => ({
-      muted: { value: true, observe: jest.fn(() => () => {}) },
-      disabled: { value: false, observe: jest.fn(() => () => {}) },
+      muted: {
+        value: true,
+        observe: jest.fn(() => () => {
+          /* noop */
+        }),
+      },
+      disabled: {
+        value: false,
+        observe: jest.fn(() => () => {
+          /* noop */
+        }),
+      },
       toggle: jest.fn(),
     })),
   };

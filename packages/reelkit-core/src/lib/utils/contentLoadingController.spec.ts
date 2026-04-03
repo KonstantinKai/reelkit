@@ -132,12 +132,14 @@ describe('createContentLoadingController', () => {
     expect(ctrl.isLoading.value).toBe(true);
   });
 
-  it('onReady does not affect isError', () => {
+  it('onReady clears isError', () => {
     const ctrl = createContentLoadingController();
     ctrl.setActiveIndex(0);
     ctrl.onError(0);
-    ctrl.onReady(0);
     expect(ctrl.isError.value).toBe(true);
+
+    ctrl.onReady(0);
+    expect(ctrl.isError.value).toBe(false);
     expect(ctrl.isLoading.value).toBe(false);
   });
 

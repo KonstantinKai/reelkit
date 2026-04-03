@@ -83,6 +83,7 @@ describe('VideoStorySlide', () => {
     renderSlide({ onError });
 
     act(() => {
+      Object.defineProperty(mockVideo, 'error', { value: { code: 4 } });
       mockVideo.dispatchEvent(new Event('error'));
     });
 

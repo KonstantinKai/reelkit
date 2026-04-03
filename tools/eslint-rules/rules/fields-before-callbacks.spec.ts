@@ -2,7 +2,7 @@ import { RuleTester } from '@typescript-eslint/rule-tester';
 import type { RuleTesterConfig } from '@typescript-eslint/rule-tester';
 import {
   fieldsBeforeCallbacksRule,
-  fieldsBeforeCallbacksRuleName,
+  kFieldsBeforeCallbacksRuleName,
 } from './fields-before-callbacks';
 
 const ruleTester = new RuleTester({
@@ -11,68 +11,71 @@ const ruleTester = new RuleTester({
   },
 } as RuleTesterConfig);
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-ruleTester.run(fieldsBeforeCallbacksRuleName, fieldsBeforeCallbacksRule as any, {
-  valid: [
-    // Fields before callbacks
-    {
-      code: `
+ruleTester.run(
+  kFieldsBeforeCallbacksRuleName,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  fieldsBeforeCallbacksRule as any,
+  {
+    valid: [
+      // Fields before callbacks
+      {
+        code: `
 interface Foo {
   name: string;
   count: number;
   onClick: () => void;
   onHover: (x: number) => void;
 }`,
-    },
-    // Only fields
-    {
-      code: `
+      },
+      // Only fields
+      {
+        code: `
 interface Foo {
   name: string;
   count: number;
 }`,
-    },
-    // Only callbacks
-    {
-      code: `
+      },
+      // Only callbacks
+      {
+        code: `
 interface Foo {
   onClick: () => void;
   onHover: () => void;
 }`,
-    },
-    // Empty interface
-    {
-      code: `interface Foo {}`,
-    },
-    // Single field
-    {
-      code: `
+      },
+      // Empty interface
+      {
+        code: `interface Foo {}`,
+      },
+      // Single field
+      {
+        code: `
 interface Foo {
   name: string;
 }`,
-    },
-    // Single callback
-    {
-      code: `
+      },
+      // Single callback
+      {
+        code: `
 interface Foo {
   onClick: () => void;
 }`,
-    },
-    // Type literal — fields before callbacks
-    {
-      code: `
+      },
+      // Type literal — fields before callbacks
+      {
+        code: `
 type Foo = {
   name: string;
   onClick: () => void;
 };`,
-    },
-    // Single-line type literal — skipped
-    {
-      code: `const x: { onClick: () => void; name: string } = {} as any;`,
-    },
-    // Fields with JSDoc before callbacks with JSDoc
-    {
-      code: `
+      },
+      // Single-line type literal — skipped
+      {
+        code: `const x: { onClick: () => void; name: string } = {} as any;`,
+      },
+      // Fields with JSDoc before callbacks with JSDoc
+      {
+        code: `
 interface Foo {
   /** The name */
   name: string;
@@ -83,143 +86,143 @@ interface Foo {
   /** Click handler */
   onClick: () => void;
 }`,
-    },
-    // Method signatures are not considered callbacks
-    {
-      code: `
+      },
+      // Method signatures are not considered callbacks
+      {
+        code: `
 interface Foo {
   reset(): void;
   name: string;
 }`,
-    },
-    // Mixed method signatures and property callbacks
-    {
-      code: `
+      },
+      // Mixed method signatures and property callbacks
+      {
+        code: `
 interface Foo {
   name: string;
   reset(): void;
   onClick: () => void;
 }`,
-    },
-    // Optional fields before optional callbacks
-    {
-      code: `
+      },
+      // Optional fields before optional callbacks
+      {
+        code: `
 interface Foo {
   name?: string;
   onClick?: () => void;
 }`,
-    },
-    // Readonly fields before callbacks
-    {
-      code: `
+      },
+      // Readonly fields before callbacks
+      {
+        code: `
 interface Foo {
   readonly name: string;
   onClick: () => void;
 }`,
-    },
-    // Complex non-function types are treated as fields
-    {
-      code: `
+      },
+      // Complex non-function types are treated as fields
+      {
+        code: `
 interface Foo {
   items: Array<string>;
   map: Map<string, number>;
   nested: { a: string };
   onChange: () => void;
 }`,
-    },
-    // Index signatures are not fields — ignored by rule
-    {
-      code: `
+      },
+      // Index signatures are not fields — ignored by rule
+      {
+        code: `
 interface Foo {
   onClick: () => void;
   [key: string]: unknown;
 }`,
-    },
-    // Union type that is NOT all functions — treated as field
-    {
-      code: `
+      },
+      // Union type that is NOT all functions — treated as field
+      {
+        code: `
 interface Foo {
   value: string | number;
   onClick: () => void;
 }`,
-    },
-  ],
+      },
+    ],
 
-  invalid: [
-    // Field after callback in interface
-    {
-      code: `
+    invalid: [
+      // Field after callback in interface
+      {
+        code: `
 interface Foo {
   onClick: () => void;
   name: string;
 }`,
-      output: `
+        output: `
 interface Foo {
   name: string;
   onClick: () => void;
 }`,
-      errors: [
-        { messageId: 'fieldAfterCallback' as const, data: { name: 'name' } },
-      ],
-    },
-    // Field after callback in type literal
-    {
-      code: `
+        errors: [
+          { messageId: 'fieldAfterCallback' as const, data: { name: 'name' } },
+        ],
+      },
+      // Field after callback in type literal
+      {
+        code: `
 type Foo = {
   onClick: () => void;
   name: string;
 };`,
-      output: `
+        output: `
 type Foo = {
   name: string;
   onClick: () => void;
 };`,
-      errors: [
-        { messageId: 'fieldAfterCallback' as const, data: { name: 'name' } },
-      ],
-    },
-    // Multiple fields after callback
-    {
-      code: `
+        errors: [
+          { messageId: 'fieldAfterCallback' as const, data: { name: 'name' } },
+        ],
+      },
+      // Multiple fields after callback
+      {
+        code: `
 interface Foo {
   onClick: () => void;
   name: string;
   count: number;
 }`,
-      output: `
+        output: `
 interface Foo {
   name: string;
   count: number;
   onClick: () => void;
 }`,
-      errors: [
-        { messageId: 'fieldAfterCallback' as const, data: { name: 'name' } },
-        { messageId: 'fieldAfterCallback' as const, data: { name: 'count' } },
-      ],
-    },
-    // Interleaved fields and callbacks
-    {
-      code: `
+        errors: [
+          { messageId: 'fieldAfterCallback' as const, data: { name: 'name' } },
+          { messageId: 'fieldAfterCallback' as const, data: { name: 'count' } },
+        ],
+      },
+      // Interleaved fields and callbacks
+      {
+        code: `
 interface Foo {
   name: string;
   onClick: () => void;
   count: number;
   onHover: () => void;
 }`,
-      output: `
+        output: `
 interface Foo {
   name: string;
   count: number;
   onClick: () => void;
   onHover: () => void;
 }`,
-      errors: [
-        { messageId: 'fieldAfterCallback' as const, data: { name: 'count' } },
-      ],
-    },
-    // Field with JSDoc after callback with JSDoc
-    {
-      code: `
+        errors: [
+          { messageId: 'fieldAfterCallback' as const, data: { name: 'count' } },
+        ],
+      },
+      // Field with JSDoc after callback with JSDoc
+      {
+        code: `
 interface Foo {
   /** Click handler */
   onClick: () => void;
@@ -227,7 +230,7 @@ interface Foo {
   /** The name */
   name: string;
 }`,
-      output: `
+        output: `
 interface Foo {
   /** The name */
   name: string;
@@ -235,75 +238,76 @@ interface Foo {
   /** Click handler */
   onClick: () => void;
 }`,
-      errors: [
-        { messageId: 'fieldAfterCallback' as const, data: { name: 'name' } },
-      ],
-    },
-    // Field with inline comment after callback
-    {
-      code: `
+        errors: [
+          { messageId: 'fieldAfterCallback' as const, data: { name: 'name' } },
+        ],
+      },
+      // Field with inline comment after callback
+      {
+        code: `
 interface Foo {
   onClick: () => void;
   // The name
   name: string;
 }`,
-      output: `
+        output: `
 interface Foo {
   // The name
   name: string;
   onClick: () => void;
 }`,
-      errors: [
-        { messageId: 'fieldAfterCallback' as const, data: { name: 'name' } },
-      ],
-    },
-    // Optional field after optional callback
-    {
-      code: `
+        errors: [
+          { messageId: 'fieldAfterCallback' as const, data: { name: 'name' } },
+        ],
+      },
+      // Optional field after optional callback
+      {
+        code: `
 interface Foo {
   onClick?: () => void;
   name?: string;
 }`,
-      output: `
+        output: `
 interface Foo {
   name?: string;
   onClick?: () => void;
 }`,
-      errors: [
-        { messageId: 'fieldAfterCallback' as const, data: { name: 'name' } },
-      ],
-    },
-    // Readonly field after callback
-    {
-      code: `
+        errors: [
+          { messageId: 'fieldAfterCallback' as const, data: { name: 'name' } },
+        ],
+      },
+      // Readonly field after callback
+      {
+        code: `
 interface Foo {
   onClick: () => void;
   readonly name: string;
 }`,
-      output: `
+        output: `
 interface Foo {
   readonly name: string;
   onClick: () => void;
 }`,
-      errors: [
-        { messageId: 'fieldAfterCallback' as const, data: { name: 'name' } },
-      ],
-    },
-    // Union of all functions is still a callback
-    {
-      code: `
+        errors: [
+          { messageId: 'fieldAfterCallback' as const, data: { name: 'name' } },
+        ],
+      },
+      // Union of all functions is still a callback
+      {
+        code: `
 interface Foo {
   handler: (() => void) | ((x: number) => void);
   name: string;
 }`,
-      output: `
+        output: `
 interface Foo {
   name: string;
   handler: (() => void) | ((x: number) => void);
 }`,
-      errors: [
-        { messageId: 'fieldAfterCallback' as const, data: { name: 'name' } },
-      ],
-    },
-  ],
-});
+        errors: [
+          { messageId: 'fieldAfterCallback' as const, data: { name: 'name' } },
+        ],
+      },
+    ],
+  },
+);

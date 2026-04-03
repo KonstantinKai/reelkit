@@ -73,63 +73,63 @@ const bundleSizes: {
 }[] = [
   {
     name: '@reelkit/core',
-    js: '9.9 kB',
-    gzip: '4.1 kB',
+    js: '15.4 kB',
+    gzip: '6.0 kB',
     css: '-',
     cssGzip: '-',
   },
   {
     name: '@reelkit/react',
-    js: '7.3 kB',
-    gzip: '2.9 kB',
+    js: '10.7 kB',
+    gzip: '3.9 kB',
     css: '-',
     cssGzip: '-',
     framework: 'react',
   },
   {
     name: '@reelkit/react-reel-player',
-    js: '11.2 kB',
-    gzip: '3.7 kB',
-    css: '2.6 kB',
+    js: '13.7 kB',
+    gzip: '4.4 kB',
+    css: '2.8 kB',
     cssGzip: '0.9 kB',
     framework: 'react',
   },
   {
     name: '@reelkit/react-lightbox',
-    js: '9.4 kB',
-    gzip: '3.2 kB',
-    css: '4.1 kB',
-    cssGzip: '1.0 kB',
+    js: '9.2 kB',
+    gzip: '3.1 kB',
+    css: '4.0 kB',
+    cssGzip: '1.1 kB',
     framework: 'react',
   },
   {
     name: '@reelkit/react-stories-player',
-    js: '32.5 kB',
-    gzip: '7.9 kB',
-    css: '3.7 kB',
+    js: '17.7 kB',
+    gzip: '5.6 kB',
+    css: '3.6 kB',
     cssGzip: '1.1 kB',
     framework: 'react',
   },
   {
     name: '@reelkit/angular',
-    js: '55.5 kB',
-    gzip: '12.2 kB',
+    js: '63.2 kB',
+    gzip: '13.8 kB',
     css: '-',
     cssGzip: '-',
     framework: 'angular',
   },
   {
     name: '@reelkit/angular-reel-player',
-    js: '93.6 kB',
-    gzip: '15.8 kB',
+    js: '109.8 kB',
+    gzip: '17.3 kB',
     css: '-',
     cssGzip: '-',
     framework: 'angular',
   },
   {
     name: '@reelkit/angular-lightbox',
-    js: '96.2 kB',
-    gzip: '18.0 kB',
+    js: '82.8 kB',
+    gzip: '14.0 kB',
     css: '-',
     cssGzip: '-',
     framework: 'angular',
@@ -139,13 +139,13 @@ const bundleSizes: {
 const comparison = [
   {
     name: 'ReelKit (core + react)',
-    gzip: '7.0 kB',
+    gzip: '9.9 kB',
     virtualization: true,
     notes: 'Zero dependencies',
   },
   {
     name: 'ReelKit (core + angular)',
-    gzip: '16.3 kB',
+    gzip: '19.8 kB',
     virtualization: true,
     notes: 'Zero dependencies',
   },
@@ -295,10 +295,9 @@ export default function Installation() {
           Comparison with Other Libraries
         </h3>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
-          ReelKit renders only <strong>3 slides to DOM</strong> at any time,
-          efficiently handling 10,000+ items. Most other carousel libraries
-          render all slides, which can cause performance issues with large
-          lists.
+          ReelKit renders <strong>3 slides to DOM</strong> at any time and
+          handles 10,000+ items. Other carousel libraries render all slides,
+          which stalls on large lists.
         </p>
 
         <div className="overflow-x-auto">
@@ -607,6 +606,14 @@ export default function Installation() {
               angular: '/docs/angular-lightbox',
             },
             description: 'image & video gallery',
+          },
+          {
+            label: 'Stories Player',
+            path: {
+              react: '/docs/stories-player',
+              angular: '/docs/angular-stories-player',
+            },
+            description: 'Instagram-style stories viewer',
           },
         ]}
       />

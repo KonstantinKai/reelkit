@@ -381,7 +381,12 @@ const Element = ({
     return [ctrl, builder, ctxValue] as const;
   })[0];
 
+  const mountedRef = useRef(false);
   useEffect(() => {
+    if (!mountedRef.current) {
+      mountedRef.current = true;
+      return;
+    }
     reelContextValue.count.value = props.count;
     controller.updateConfig({
       count: props.count,
@@ -434,7 +439,7 @@ const Element = ({
       }
     }
 
-    return controller.dispose;
+    return controller.detach;
   }, []);
 
   // Auto-measure container size via ResizeObserver when size prop is omitted.

@@ -125,9 +125,16 @@ const methods = [
     description: 'Connect controller to DOM element for gesture detection',
   },
   {
+    method: 'detach()',
+    type: '() => void',
+    description:
+      'Detach DOM listeners (gestures, keyboard, wheel). Safe for re-attach via observe(). Use for React effect cleanup.',
+  },
+  {
     method: 'dispose()',
     type: '() => void',
-    description: 'Dispose the controller, detach from DOM and clean up resources',
+    description:
+      'Permanent teardown: detaches all controllers and cleans up signal observers. Use for Angular onDestroy.',
   },
   {
     method: 'observe()',
@@ -173,7 +180,8 @@ const methods = [
   {
     method: 'updateEvents(events)',
     type: '(Partial<SliderEvents>) => void',
-    description: 'Replace event handlers (existing handlers not included are preserved)',
+    description:
+      'Replace event handlers (existing handlers not included are preserved)',
   },
   {
     method: 'getRangeIndex()',
@@ -416,8 +424,8 @@ export default function CoreApi() {
                   T
                 </td>
                 <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
-                  Get or set the current value. Setting notifies observers if the
-                  value changed.
+                  Get or set the current value. Setting notifies observers if
+                  the value changed.
                 </td>
               </tr>
               <tr className="border-b border-slate-100 dark:border-slate-800">
@@ -465,11 +473,13 @@ export default function CoreApi() {
                   createComputed
                 </td>
                 <td className="py-3 px-4 font-mono text-xs text-slate-500">
-                  {'<T>(fn: () => T, deps: () => Subscribable[]) => ComputedSignal<T>'}
+                  {
+                    '<T>(fn: () => T, deps: () => Subscribable[]) => ComputedSignal<T>'
+                  }
                 </td>
                 <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
-                  Create a derived computed signal. The second argument is a deps
-                  factory that returns the signals to track.
+                  Create a derived computed signal. The second argument is a
+                  deps factory that returns the signals to track.
                 </td>
               </tr>
               <tr className="border-b border-slate-100 dark:border-slate-800">
@@ -477,11 +487,14 @@ export default function CoreApi() {
                   reaction
                 </td>
                 <td className="py-3 px-4 font-mono text-xs text-slate-500">
-                  {'(deps: () => Subscribable[], effect: () => void) => () => void'}
+                  {
+                    '(deps: () => Subscribable[], effect: () => void) => () => void'
+                  }
                 </td>
                 <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
                   Run side effect when any dependency signal changes; returns
-                  dispose function. Read signal values inside the effect callback.
+                  dispose function. Read signal values inside the effect
+                  callback.
                 </td>
               </tr>
               <tr className="border-b border-slate-100 dark:border-slate-800">
@@ -539,7 +552,9 @@ export default function CoreApi() {
                   getSlideProgress
                 </td>
                 <td className="py-3 px-4 font-mono text-xs text-slate-500">
-                  {'(axisValue: number, slideIndex: number, primarySize: number) => number'}
+                  {
+                    '(axisValue: number, slideIndex: number, primarySize: number) => number'
+                  }
                 </td>
                 <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
                   Returns a normalized offset (-1 to 1) for a slide relative to
@@ -654,57 +669,99 @@ export default function CoreApi() {
                   observeMediaLoading
                 </td>
                 <td className="py-3 px-4 font-mono text-xs text-slate-500">
-                  {'(video: HTMLVideoElement, callbacks: MediaLoadingCallbacks) => () => void'}
+                  {
+                    '(video: HTMLVideoElement, callbacks: MediaLoadingCallbacks) => () => void'
+                  }
                 </td>
                 <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
-                  Observes video loading state (playing, canplaythrough, waiting).
-                  Returns a disposer.
+                  Observes video loading state (playing, canplaythrough,
+                  waiting). Returns a disposer.
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        <h3 className="text-lg font-semibold mt-6 mb-3">ContentLoadingController</h3>
+        <h3 className="text-lg font-semibold mt-6 mb-3">
+          ContentLoadingController
+        </h3>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b border-slate-200 dark:border-slate-700">
                 <th className="text-left py-3 px-4 font-semibold">Export</th>
                 <th className="text-left py-3 px-4 font-semibold">Type</th>
-                <th className="text-left py-3 px-4 font-semibold">Description</th>
+                <th className="text-left py-3 px-4 font-semibold">
+                  Description
+                </th>
               </tr>
             </thead>
             <tbody>
               <tr className="border-b border-slate-100 dark:border-slate-800">
-                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">isLoading</td>
-                <td className="py-3 px-4 font-mono text-xs text-slate-500">{'Signal<boolean>'}</td>
-                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">Whether the active slide is loading</td>
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  isLoading
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {'Signal<boolean>'}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Whether the active slide is loading
+                </td>
               </tr>
               <tr className="border-b border-slate-100 dark:border-slate-800">
-                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">isError</td>
-                <td className="py-3 px-4 font-mono text-xs text-slate-500">{'Signal<boolean>'}</td>
-                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">Whether the active slide has errored</td>
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  isError
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {'Signal<boolean>'}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Whether the active slide has errored
+                </td>
               </tr>
               <tr className="border-b border-slate-100 dark:border-slate-800">
-                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">setActiveIndex</td>
-                <td className="py-3 px-4 font-mono text-xs text-slate-500">{'(index: number) => void'}</td>
-                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">Update active index, resets loading/error state</td>
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  setActiveIndex
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {'(index: number) => void'}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Update active index, resets loading/error state
+                </td>
               </tr>
               <tr className="border-b border-slate-100 dark:border-slate-800">
-                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">onReady</td>
-                <td className="py-3 px-4 font-mono text-xs text-slate-500">{'(index: number) => void'}</td>
-                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">Mark slide as ready (ignored if index doesn't match active)</td>
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  onReady
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {'(index: number) => void'}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Mark slide as ready (ignored if index doesn't match active)
+                </td>
               </tr>
               <tr className="border-b border-slate-100 dark:border-slate-800">
-                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">onWaiting</td>
-                <td className="py-3 px-4 font-mono text-xs text-slate-500">{'(index: number) => void'}</td>
-                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">Mark slide as loading (ignored if index doesn't match active)</td>
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  onWaiting
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {'(index: number) => void'}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Mark slide as loading (ignored if index doesn't match active)
+                </td>
               </tr>
               <tr className="border-b border-slate-100 dark:border-slate-800">
-                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">onError</td>
-                <td className="py-3 px-4 font-mono text-xs text-slate-500">{'(index: number) => void'}</td>
-                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">Mark slide as errored (ignored if index doesn't match active)</td>
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  onError
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {'(index: number) => void'}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Mark slide as errored (ignored if index doesn't match active)
+                </td>
               </tr>
             </tbody>
           </table>
@@ -717,39 +774,77 @@ export default function CoreApi() {
               <tr className="border-b border-slate-200 dark:border-slate-700">
                 <th className="text-left py-3 px-4 font-semibold">Export</th>
                 <th className="text-left py-3 px-4 font-semibold">Type</th>
-                <th className="text-left py-3 px-4 font-semibold">Description</th>
+                <th className="text-left py-3 px-4 font-semibold">
+                  Description
+                </th>
               </tr>
             </thead>
             <tbody>
               <tr className="border-b border-slate-100 dark:border-slate-800">
-                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">preload</td>
-                <td className="py-3 px-4 font-mono text-xs text-slate-500">{'(src: string, type?: "image" | "video") => void'}</td>
-                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">Start preloading a media URL</td>
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  preload
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {'(src: string, type?: "image" | "video") => void'}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Start preloading a media URL
+                </td>
               </tr>
               <tr className="border-b border-slate-100 dark:border-slate-800">
-                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">isLoaded</td>
-                <td className="py-3 px-4 font-mono text-xs text-slate-500">{'(src: string) => boolean'}</td>
-                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">Check if URL is in the loaded LRU cache (max 200)</td>
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  isLoaded
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {'(src: string) => boolean'}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Check if URL is in the loaded LRU cache (max 200)
+                </td>
               </tr>
               <tr className="border-b border-slate-100 dark:border-slate-800">
-                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">isErrored</td>
-                <td className="py-3 px-4 font-mono text-xs text-slate-500">{'(src: string) => boolean'}</td>
-                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">Check if URL is in the error LRU cache (max 100)</td>
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  isErrored
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {'(src: string) => boolean'}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Check if URL is in the error LRU cache (max 100)
+                </td>
               </tr>
               <tr className="border-b border-slate-100 dark:border-slate-800">
-                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">markLoaded</td>
-                <td className="py-3 px-4 font-mono text-xs text-slate-500">{'(src: string) => void'}</td>
-                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">Manually mark a URL as loaded</td>
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  markLoaded
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {'(src: string) => void'}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Manually mark a URL as loaded
+                </td>
               </tr>
               <tr className="border-b border-slate-100 dark:border-slate-800">
-                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">markErrored</td>
-                <td className="py-3 px-4 font-mono text-xs text-slate-500">{'(src: string) => void'}</td>
-                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">Manually mark a URL as errored</td>
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  markErrored
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {'(src: string) => void'}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Manually mark a URL as errored
+                </td>
               </tr>
               <tr className="border-b border-slate-100 dark:border-slate-800">
-                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">onLoaded</td>
-                <td className="py-3 px-4 font-mono text-xs text-slate-500">{'(src: string, cb: () => void) => () => void'}</td>
-                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">Subscribe to load completion; returns disposer</td>
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  onLoaded
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {'(src: string, cb: () => void) => () => void'}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Subscribe to load completion; returns disposer
+                </td>
               </tr>
             </tbody>
           </table>
@@ -791,7 +886,9 @@ export default function CoreApi() {
                   syncMutedToVideo
                 </td>
                 <td className="py-3 px-4 font-mono text-xs text-slate-500">
-                  {'(video: HTMLVideoElement, sound: SoundController) => () => void'}
+                  {
+                    '(video: HTMLVideoElement, sound: SoundController) => () => void'
+                  }
                 </td>
                 <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
                   Syncs the muted signal to a video element. Returns a disposer.
@@ -911,8 +1008,8 @@ export default function CoreApi() {
                   {'() => BodyLock'}
                 </td>
                 <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
-                  Reference-counted body scroll lock. Multiple consumers can lock
-                  simultaneously; scroll is restored when all unlock.
+                  Reference-counted body scroll lock. Multiple consumers can
+                  lock simultaneously; scroll is restored when all unlock.
                 </td>
               </tr>
             </tbody>

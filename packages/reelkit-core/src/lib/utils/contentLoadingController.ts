@@ -46,7 +46,10 @@ export const createContentLoadingController = (
       isError.value = false;
     },
     onReady: (index: number) => {
-      if (index === activeIndex) isLoading.value = false;
+      if (index === activeIndex) {
+        isLoading.value = false;
+        isError.value = false;
+      }
     },
     onWaiting: (index: number) => {
       if (index === activeIndex) isLoading.value = true;

@@ -2,7 +2,7 @@ import { ESLintUtils } from '@typescript-eslint/utils';
 import type { TSESTree } from '@typescript-eslint/utils';
 
 // NOTE: The rule will be available in ESLint configs as "@nx/workspace-fields-before-callbacks"
-export const fieldsBeforeCallbacksRuleName = 'fields-before-callbacks';
+export const kFieldsBeforeCallbacksRuleName = 'fields-before-callbacks';
 
 type TypeElement = TSESTree.TypeElement;
 
@@ -28,7 +28,7 @@ const isCallbackMember = (member: TypeElement): boolean => {
 export const fieldsBeforeCallbacksRule = ESLintUtils.RuleCreator(
   () => __filename,
 )({
-  name: fieldsBeforeCallbacksRuleName,
+  name: kFieldsBeforeCallbacksRuleName,
   meta: {
     type: 'suggestion',
     docs: {

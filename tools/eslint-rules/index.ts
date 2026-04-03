@@ -1,20 +1,20 @@
 import {
-  linesBetweenTypeMembersRuleName,
+  kLinesBetweenTypeMembersRuleName,
   linesBetweenTypeMembersRule,
 } from './rules/lines-between-type-members';
 import {
-  fieldsBeforeCallbacksRuleName,
+  kFieldsBeforeCallbacksRuleName,
   fieldsBeforeCallbacksRule,
 } from './rules/fields-before-callbacks';
 import {
-  constantNamingRuleName,
+  kConstantNamingRuleName,
   constantNamingRule,
 } from './rules/constant-naming';
 
 module.exports = {
   rules: {
-    [linesBetweenTypeMembersRuleName]: linesBetweenTypeMembersRule,
-    [fieldsBeforeCallbacksRuleName]: fieldsBeforeCallbacksRule,
-    [constantNamingRuleName]: constantNamingRule,
+    [kLinesBetweenTypeMembersRuleName]: linesBetweenTypeMembersRule,
+    [kFieldsBeforeCallbacksRuleName]: fieldsBeforeCallbacksRule,
+    [kConstantNamingRuleName]: constantNamingRule,
   },
 };

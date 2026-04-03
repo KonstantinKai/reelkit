@@ -1,6 +1,6 @@
 import { RuleTester } from '@typescript-eslint/rule-tester';
 import type { RuleTesterConfig } from '@typescript-eslint/rule-tester';
-import { constantNamingRule, constantNamingRuleName } from './constant-naming';
+import { constantNamingRule, kConstantNamingRuleName } from './constant-naming';
 
 const ruleTester = new RuleTester({
   languageOptions: {
@@ -10,7 +10,7 @@ const ruleTester = new RuleTester({
 } as RuleTesterConfig);
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-ruleTester.run(constantNamingRuleName, constantNamingRule as any, {
+ruleTester.run(kConstantNamingRuleName, constantNamingRule as any, {
   valid: [
     // Private constant with _k prefix
     { code: `const _kMaxRetry = 5;` },

@@ -46,14 +46,23 @@ jest.mock('@reelkit/angular', () => {
       };
     }),
     toAngularSignal: jest.fn((source: { value?: unknown }) => {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { signal: angSignal } =
         require('@angular/core') as typeof import('@angular/core');
       return angSignal(source?.value ?? false);
     }),
     createSoundController: jest.fn(() => ({
-      muted: { value: true, observe: jest.fn(() => () => {}) },
-      disabled: { value: false, observe: jest.fn(() => () => {}) },
+      muted: {
+        value: true,
+        observe: jest.fn(() => () => {
+          /* noop */
+        }),
+      },
+      disabled: {
+        value: false,
+        observe: jest.fn(() => () => {
+          /* noop */
+        }),
+      },
       toggle: jest.fn(),
     })),
     __mockShared: shared,
@@ -62,7 +71,6 @@ jest.mock('@reelkit/angular', () => {
 });
 
 // Retrieve the shared mock objects created inside the factory above.
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const coreModule = require('@reelkit/angular') as {
   __mockShared: {
     getVideo: jest.Mock;

@@ -10,7 +10,6 @@ import { SoundStateService } from '../sound-state/sound-state.service';
 import type { ContentItem } from '../types';
 
 jest.mock('@reelkit/angular', () => {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { Component, Directive, EventEmitter, Injectable, Input, Output } =
     require('@angular/core') as typeof import('@angular/core');
 
@@ -47,6 +46,7 @@ jest.mock('@reelkit/angular', () => {
 
   @Directive({ selector: '[rkReelItem]', standalone: true })
   class RkReelItemDirective {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     static ngTemplateContextGuard(_d: unknown, _ctx: unknown): boolean {
       return true;
     }
@@ -85,7 +85,6 @@ jest.mock('@reelkit/angular', () => {
         value?: unknown;
         observe?: (fn: () => void) => () => void;
       }) => {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
         const { signal: angSignal } =
           require('@angular/core') as typeof import('@angular/core');
         const sig = angSignal(source?.value ?? false);
@@ -96,8 +95,18 @@ jest.mock('@reelkit/angular', () => {
       },
     ),
     createContentLoadingController: jest.fn(() => ({
-      isLoading: { value: true, observe: jest.fn(() => () => {}) },
-      isError: { value: false, observe: jest.fn(() => () => {}) },
+      isLoading: {
+        value: true,
+        observe: jest.fn(() => () => {
+          /* noop */
+        }),
+      },
+      isError: {
+        value: false,
+        observe: jest.fn(() => () => {
+          /* noop */
+        }),
+      },
       setActiveIndex: jest.fn(),
       onReady: jest.fn(),
       onWaiting: jest.fn(),
@@ -110,7 +119,9 @@ jest.mock('@reelkit/angular', () => {
       markErrored: jest.fn(),
       preloadRange: jest.fn(),
       preload: jest.fn(),
-      onLoaded: jest.fn(() => () => {}),
+      onLoaded: jest.fn(() => () => {
+        /* noop */
+      }),
     })),
     createSoundController: jest.fn(() => {
       const makeSignal = (initial: boolean) => {
@@ -197,7 +208,6 @@ function createFixture(
   return fixture;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { BodyLockService } = require('@reelkit/angular') as {
   BodyLockService: new () => { lock: jest.Mock; unlock: jest.Mock };
 };

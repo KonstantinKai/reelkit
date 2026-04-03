@@ -4,13 +4,11 @@ import { Clock } from 'lucide-react';
 export default function AngularStoriesPlayerPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
-      <h1 className="text-3xl font-bold mb-4">
-        Angular Stories Player
-      </h1>
+      <h1 className="text-3xl font-bold mb-4">Angular Stories Player</h1>
 
       <p className="text-lg text-slate-600 dark:text-slate-400 mb-8">
         Full-screen, Instagram-style stories player overlay for Angular with
-        two-axis navigation, auto-advance timer, tap zones, and customizable
+        nested navigation, auto-advance timer, tap zones, and customizable
         template slots.
       </p>
 

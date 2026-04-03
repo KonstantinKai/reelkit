@@ -646,8 +646,8 @@ export class MyCustomControl {
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">BodyLockService</h2>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
-          Reference-counted body scroll lock. Multiple concurrent callers
-          (e.g. a lightbox and a modal both open) can each call lock/unlock
+          Reference-counted body scroll lock. Multiple concurrent callers (e.g.
+          a lightbox and a modal both open) can each call lock/unlock
           independently — the body is only restored once the last caller
           releases it. Provided at root — inject anywhere.
         </p>

@@ -2,12 +2,12 @@ import { ESLintUtils } from '@typescript-eslint/utils';
 import type { TSESTree } from '@typescript-eslint/utils';
 
 // NOTE: The rule will be available in ESLint configs as "@nx/workspace-lines-between-type-members"
-export const linesBetweenTypeMembersRuleName = 'lines-between-type-members';
+export const kLinesBetweenTypeMembersRuleName = 'lines-between-type-members';
 
 export const linesBetweenTypeMembersRule = ESLintUtils.RuleCreator(
   () => __filename,
 )({
-  name: linesBetweenTypeMembersRuleName,
+  name: kLinesBetweenTypeMembersRuleName,
   meta: {
     type: 'layout',
     docs: {

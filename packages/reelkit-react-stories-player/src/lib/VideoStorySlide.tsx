@@ -137,7 +137,7 @@ export const VideoStorySlide: FC<VideoStorySlideProps> = ({
           callbacksRef.current.onEnded?.();
         }),
         observeDomEvent(video, 'error', () => {
-          callbacksRef.current.onError?.();
+          if (video.error) callbacksRef.current.onError?.();
         }),
       );
 

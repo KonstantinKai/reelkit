@@ -142,7 +142,7 @@ const VideoSlide: React.FC<VideoSlideProps> = ({
         },
       }),
       observeDomEvent(video, 'error', () => {
-        callbacksRef.current.onError?.();
+        if (video.error) callbacksRef.current.onError?.();
       }),
     );
 
@@ -161,9 +161,7 @@ const VideoSlide: React.FC<VideoSlideProps> = ({
       onVideoRef(video);
     }
 
-    video.play().catch(() => {
-      callbacksRef.current.onError?.();
-    });
+    video.play().catch(noop);
 
     disposables.push(() => {
       shared.playbackPositions.set(slideKey, video.currentTime);
@@ -215,6 +213,9 @@ const VideoSlide: React.FC<VideoSlideProps> = ({
               className={`rk-video-slide-poster ${!shouldPlay || showPoster.value ? 'rk-visible' : ''}`}
               style={{
                 objectFit: isVertical ? 'cover' : 'contain',
+              }}
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
               }}
             />
           );

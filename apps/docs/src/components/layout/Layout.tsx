@@ -73,11 +73,13 @@ export default function Layout() {
       </Observe>
       {showSidebar && <FrameworkSwitcher />}
       <main
-        className={`flex-1 pt-16 transition-all duration-300 ${
+        className={`flex-1 pt-16 transition-all duration-300 flex flex-col ${
           showSidebar ? 'lg:pl-64' : ''
         }`}
       >
-        <Outlet />
+        <div className="flex-1">
+          <Outlet />
+        </div>
         <Footer />
       </main>
     </div>

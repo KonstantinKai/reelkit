@@ -10,8 +10,6 @@ import {
   PLAYER_TEMPLATE_SLOT_DIRECTIVES,
 } from './player-template-slots';
 import type {
-  PlayerSlideContext,
-  PlayerSlideOverlayContext,
   PlayerControlsContext,
   PlayerNavigationContext,
   PlayerNestedSlideContext,
@@ -141,7 +139,9 @@ describe('Player template slot directives', () => {
     });
 
     it('ngTemplateContextGuard narrows type — context treated as PlayerSlideContext', () => {
-      const noop = (): void => {};
+      const noop = (): void => {
+        /* noop */
+      };
       const ctx: unknown = {
         $implicit: { id: 'x', media: [] } as ContentItem,
         index: 0,

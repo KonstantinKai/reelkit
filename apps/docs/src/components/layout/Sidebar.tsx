@@ -2,7 +2,10 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { Observe } from '@reelkit/react';
-import { navItems, type NavSection } from '../../data/searchData';
+import {
+  navItems,
+  type NavSection as NavSectionData,
+} from '../../data/searchData';
 import { frameworkSignal } from '../../data/frameworkSignal';
 
 // eslint-disable-next-line @nx/enforce-module-boundaries
@@ -52,7 +55,7 @@ function NavSection({
   showChangelogBadge,
 }: {
   title: string;
-  items: NavSection['items'];
+  items: NavSectionData['items'];
   showChangelogBadge?: boolean;
 }) {
   const [isExpanded, setIsExpanded] = useState(true);

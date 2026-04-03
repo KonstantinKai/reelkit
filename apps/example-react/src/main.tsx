@@ -1,7 +1,10 @@
 import { StrictMode } from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
+import { setCdnBase } from '@reelkit/example-data';
 import App from './app/App';
+
+if (import.meta.env.DEV) setCdnBase('/cdn');
 
 const lazy =
   (load: () => Promise<{ default: React.ComponentType }>) => async () => {
@@ -41,6 +44,10 @@ const router = createBrowserRouter([
       {
         path: 'stories-player-custom',
         lazy: lazy(() => import('./app/pages/StoriesPlayerCustomPage')),
+      },
+      {
+        path: '*',
+        lazy: lazy(() => import('./app/pages/NotFound')),
       },
     ],
   },

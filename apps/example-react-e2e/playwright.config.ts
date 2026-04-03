@@ -8,6 +8,7 @@ const isCI = !!process.env['CI'];
 
 export default defineConfig({
   ...nxE2EPreset(__filename, { testDir: './src' }),
+  reporter: [['html'], ['json', { outputFile: 'test-results.json' }]],
   use: {
     baseURL,
     trace: 'on-first-retry',

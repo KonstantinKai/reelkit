@@ -1,7 +1,7 @@
 import { ESLintUtils, type TSESTree } from '@typescript-eslint/utils';
 
 // NOTE: The rule will be available in ESLint configs as "@nx/workspace-constant-naming"
-export const constantNamingRuleName = 'constant-naming';
+export const kConstantNamingRuleName = 'constant-naming';
 
 type Resolver = (node: TSESTree.Expression) => boolean;
 
@@ -53,7 +53,7 @@ const toSuggested = (name: string): string =>
     .join('');
 
 export const constantNamingRule = ESLintUtils.RuleCreator(() => __filename)({
-  name: constantNamingRuleName,
+  name: kConstantNamingRuleName,
   meta: {
     type: 'suggestion',
     docs: {

@@ -1,3 +1,5 @@
+import type { Framework } from './frameworkSignal';
+
 export interface SearchItem {
   title: string;
 
@@ -27,7 +29,15 @@ export const searchItems: SearchItem[] = [
     title: 'SSR',
     path: '/docs/ssr',
     category: 'Overview',
-    keywords: ['ssr', 'server', 'rendering', 'nextjs', 'remix', 'hydration', 'angular universal'],
+    keywords: [
+      'ssr',
+      'server',
+      'rendering',
+      'nextjs',
+      'remix',
+      'hydration',
+      'angular universal',
+    ],
   },
   {
     title: 'Core Guide',
@@ -69,6 +79,22 @@ export const searchItems: SearchItem[] = [
       'observeDomEvent',
       'enableNavKeys',
       'onNavKeyPress',
+    ],
+  },
+  {
+    title: 'Stories Core',
+    path: '/docs/stories-core',
+    category: 'Core',
+    keywords: [
+      'stories',
+      'controller',
+      'timer',
+      'progress',
+      'canvas',
+      'tap',
+      'segment',
+      'auto-advance',
+      'framework-agnostic',
     ],
   },
   {
@@ -272,13 +298,7 @@ export const searchItems: SearchItem[] = [
     path: '/docs/angular-stories-player',
     category: 'Components',
     framework: 'angular',
-    keywords: [
-      'angular',
-      'stories',
-      'instagram',
-      'tiktok',
-      'coming soon',
-    ],
+    keywords: ['angular', 'stories', 'instagram', 'tiktok', 'coming soon'],
   },
   {
     title: 'Troubleshooting',
@@ -307,8 +327,6 @@ export const searchItems: SearchItem[] = [
   },
 ];
 
-import type { Framework } from './frameworkSignal';
-
 export interface NavItem {
   label: string;
   path: string;
@@ -336,6 +354,7 @@ export const navItems: NavSection[] = [
     items: [
       { label: 'Guide', path: '/docs/core/guide' },
       { label: 'API Reference', path: '/docs/core/api' },
+      { label: 'Stories Core', path: '/docs/stories-core' },
     ],
   },
   {

@@ -96,7 +96,7 @@ const LightboxVideoSlide: React.FC<LightboxVideoSlideProps> = ({
         },
       }),
       observeDomEvent(video, 'error', () => {
-        callbacksRef.current.onError?.();
+        if (video.error) callbacksRef.current.onError?.();
       }),
     );
 

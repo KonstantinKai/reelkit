@@ -42,6 +42,16 @@ const packages = [
     externalize: ['@reelkit/core', '@reelkit/react', 'lucide-react'],
   },
   {
+    name: '@reelkit/stories-core',
+    dir: 'reelkit-stories-core',
+    externalize: ['@reelkit/core'],
+  },
+  {
+    name: '@reelkit/react-stories-player',
+    dir: 'reelkit-react-stories-player',
+    externalize: ['@reelkit/core', '@reelkit/react', '@reelkit/stories-core'],
+  },
+  {
     name: '@reelkit/angular',
     dir: 'reelkit-angular',
     ngPackagr: true,

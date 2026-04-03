@@ -25,8 +25,8 @@
   "publishConfig": {
     "access": "public"
   },
-  "peerDependencies": {
-    "@reelkit/core": ">=0.2.0"
-  },
-  "dependencies": {}
+  "peerDependencies": {},
+  "dependencies": {
+    "@reelkit/core": ">=0.3.0"
+  }
 }

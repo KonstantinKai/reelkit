@@ -19,12 +19,18 @@ export class SliderPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.container = page.locator('[style*="overflow: hidden"]').first();
+    // Target the main vertical Reel container (has user-select: none),
+    // not body lock or nested Reel elements
+    this.container = page
+      .locator('[style*="user-select: none"][style*="overflow: hidden"]')
+      .first();
     this.nextButton = page.locator('button', { hasText: 'Next' });
     this.prevButton = page.locator('button', { hasText: 'Previous' });
-    // Use data-reel-indicator for indicators (works across React/Lit/DOM)
-    this.indicators = page.locator('[data-reel-indicator]');
-    this.slideContainer = page.locator('[style*="translateY"], [style*="translateX"]').first();
+    // Scope indicators to the main vertical Reel only (not nested horizontal Reels)
+    this.indicators = this.container.locator(':scope > [data-reel-indicator]');
+    this.slideContainer = page
+      .locator('[style*="translateY"], [style*="translateX"]')
+      .first();
   }
 
   /**
@@ -68,7 +74,9 @@ export class SliderPage {
         // Active indicator has full opacity (white with alpha=1 or rgb(255, 255, 255))
         // Inactive uses lower alpha (0.5)
         if (bgColor.includes('rgb')) {
-          const match = bgColor.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+          const match = bgColor.match(
+            /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/,
+          );
           if (match) {
             const alpha = match[4] ? parseFloat(match[4]) : 1;
             return alpha >= 0.9; // Active has alpha=1, inactive has ~0.5
@@ -143,7 +151,9 @@ export class SliderPage {
    */
   async clickIndicatorByIndex(index: number): Promise<void> {
     // Use JS click to avoid viewport issues with absolutely positioned elements
-    await this.page.locator(`[data-reel-indicator="${index}"]`).evaluate((el: HTMLElement) => el.click());
+    await this.page
+      .locator(`[data-reel-indicator="${index}"]`)
+      .evaluate((el: HTMLElement) => el.click());
   }
 
   /**
@@ -220,7 +230,11 @@ export class SliderPage {
         const element = document.elementFromPoint(x, startY);
         if (!element) return;
 
-        const createTouchEvent = (type: string, clientX: number, clientY: number) => {
+        const createTouchEvent = (
+          type: string,
+          clientX: number,
+          clientY: number,
+        ) => {
           const touch = new Touch({
             identifier: Date.now(),
             target: element,
@@ -244,12 +258,14 @@ export class SliderPage {
         const steps = 10;
         const deltaY = (endY - startY) / steps;
         for (let i = 1; i <= steps; i++) {
-          element.dispatchEvent(createTouchEvent('touchmove', x, startY + deltaY * i));
+          element.dispatchEvent(
+            createTouchEvent('touchmove', x, startY + deltaY * i),
+          );
         }
 
         element.dispatchEvent(createTouchEvent('touchend', x, endY));
       },
-      { x: centerX, startY, endY }
+      { x: centerX, startY, endY },
     );
   }
 
@@ -271,7 +287,11 @@ export class SliderPage {
         const element = document.elementFromPoint(x, startY);
         if (!element) return;
 
-        const createTouchEvent = (type: string, clientX: number, clientY: number) => {
+        const createTouchEvent = (
+          type: string,
+          clientX: number,
+          clientY: number,
+        ) => {
           const touch = new Touch({
             identifier: Date.now(),
             target: element,
@@ -295,12 +315,14 @@ export class SliderPage {
         const steps = 10;
         const deltaY = (endY - startY) / steps;
         for (let i = 1; i <= steps; i++) {
-          element.dispatchEvent(createTouchEvent('touchmove', x, startY + deltaY * i));
+          element.dispatchEvent(
+            createTouchEvent('touchmove', x, startY + deltaY * i),
+          );
         }
 
         element.dispatchEvent(createTouchEvent('touchend', x, endY));
       },
-      { x: centerX, startY, endY }
+      { x: centerX, startY, endY },
     );
   }
 
@@ -357,7 +379,9 @@ export class SliderPage {
 
   /**
    * Assert current slide title
-   * NOTE: Slider renders multiple slides in DOM, so we find the one most centered in viewport
+   * NOTE: Slider renders multiple slides in DOM, so we find the one most centered in viewport.
+   * Nested slides (every 3rd) have titles like "Slide N.M" — we match the prefix "Slide N"
+   * using a starts-with check when the expected title doesn't contain a dot.
    */
   async expectSlideTitle(expected: string): Promise<void> {
     // Wait a bit for animation to settle
@@ -385,11 +409,21 @@ export class SliderPage {
         const distance = Math.abs(h1CenterY - viewportCenterY);
 
         // Only consider h1s that are somewhat visible
-        if (box.y + box.height > 0 && box.y < viewportSize.height && distance < bestDistance) {
+        if (
+          box.y + box.height > 0 &&
+          box.y < viewportSize.height &&
+          distance < bestDistance
+        ) {
           bestDistance = distance;
           bestH1 = h1;
         }
       }
+    }
+
+    // Nested slides have "Slide N.M" titles — match prefix for non-dotted expectations
+    const text = await bestH1.textContent({ timeout: 5000 });
+    if (!expected.includes('.') && text?.startsWith(expected + '.')) {
+      return; // "Slide 3.1" matches expected "Slide 3"
     }
 
     await expect(bestH1).toHaveText(expected, { timeout: 5000 });
@@ -412,7 +446,9 @@ export class SliderPage {
     });
 
     // Parse translateY or translateX value from matrix
-    const match = transform.match(/matrix\([^,]+,[^,]+,[^,]+,[^,]+,[^,]+,\s*([^)]+)\)/);
+    const match = transform.match(
+      /matrix\([^,]+,[^,]+,[^,]+,[^,]+,[^,]+,\s*([^)]+)\)/,
+    );
     if (match) {
       return parseFloat(match[1]);
     }

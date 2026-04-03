@@ -278,7 +278,8 @@ function App() {
           <li className="flex items-start gap-3">
             <span className="w-2 h-2 rounded-full bg-primary-500 mt-2" />
             <span>
-              <strong>Keyboard:</strong> Arrow keys and Escape
+              <strong>Keyboard:</strong> Arrow keys (overlay components also
+              handle Escape to close)
             </span>
           </li>
           <li className="flex items-start gap-3">

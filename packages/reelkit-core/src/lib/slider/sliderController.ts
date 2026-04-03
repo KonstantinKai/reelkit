@@ -490,11 +490,16 @@ export const createSliderController = (
       }
     },
 
+    detach() {
+      gestureController.detach();
+      keyboardController.detach();
+      wheelController.detach();
+    },
+
     dispose() {
       gestureController.detach();
       keyboardController.detach();
       wheelController.detach();
-
       afterChangeDispose?.();
     },
   };
