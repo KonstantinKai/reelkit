@@ -40,7 +40,8 @@ function isAllowed(request: Request, env: Env): boolean {
 
     if (
       hostname.endsWith('.stackblitz.io') ||
-      hostname.endsWith('.webcontainer.io')
+      hostname.endsWith('.webcontainer.io') ||
+      hostname.includes('staticblitz')
     ) {
       const token = request.headers.get('X-RK-Token');
       return token === env.STACKBLITZ_TOKEN;
