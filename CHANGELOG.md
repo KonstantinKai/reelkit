@@ -1,3 +1,40 @@
+## @reelkit/react-stories-player@0.1.0 (2026-04-03)
+
+### 🚀 Features
+
+- Full-screen Instagram-style stories player overlay for React
+- 3D cube transition between users
+- Tap-to-advance navigation with segmented progress bar
+- Double-tap heart animation
+- Auto-advance timer with pause on hold
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/stories-core to 0.1.0
+
+## @reelkit/stories-core@0.1.0 (2026-04-03)
+
+### 🚀 Features
+
+- Framework-agnostic stories state machine with story and group navigation
+- Auto-advance timer with pause/resume
+- Tap zone detection (left/center/right)
+- Segmented progress bar with sliding window for 50+ stories
+
+## @reelkit/react-stories-player@0.1.0 (2026-04-03)
+
+### 🚀 Features
+
+- Full-screen Instagram-style stories player overlay for React
+- 3D cube transition between users
+- Tap-to-advance navigation with segmented progress bar
+- Double-tap heart animation
+- Auto-advance timer with pause on hold
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/stories-core to 0.1.0
+
 ## @reelkit/core@0.3.0 (2026-04-03)
 
 ### 🚀 Features
