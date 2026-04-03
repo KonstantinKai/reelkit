@@ -54,7 +54,7 @@ export default class ChangelogRenderer extends DefaultChangelogRenderer {
         : entry;
 
     // For multi-project version plans, extract only the current project's lines
-    let descriptionLines: string[];
+    let descriptionLines: string[] = [];
 
     if (this.project && change.description.includes('\n')) {
       const projectPrefix = `${this.project} `;
@@ -80,11 +80,11 @@ export default class ChangelogRenderer extends DefaultChangelogRenderer {
         }
       }
 
-      descriptionLines =
-        projectLines.length > 0
-          ? projectLines
-          : [change.description.split('\n')[0]];
-    } else {
+      descriptionLines = projectLines.length > 0 ? projectLines : [];
+    }
+
+    // Fallback: use all non-empty, non-thanks lines
+    if (descriptionLines.length === 0) {
       descriptionLines = rawLines.filter((l) => {
         const t = l.trim();
         return t && !t.toLowerCase().startsWith('thanks to ');
@@ -118,12 +118,7 @@ export default class ChangelogRenderer extends DefaultChangelogRenderer {
         : '';
 
     const bullets = featureLines.map((l) => `- ${l}`).join('\n');
-    const lastBulletIdx = bullets.lastIndexOf('- ');
-    const withRef =
-      ref && lastBulletIdx >= 0
-        ? bullets.slice(0, bullets.length) + ref
-        : bullets;
 
-    return appendThanks(withRef);
+    return appendThanks(ref ? bullets + ref : bullets);
   }
 }
