@@ -8,6 +8,8 @@
 
 Angular bindings for `@reelkit/core`. Add a `<rk-reel>` component with a count and a template — it handles virtualization, gestures, and keyboard/wheel input. ~13.8 kB gzip.
 
+**[Live Demo](https://angular-demo.reelkit.dev)**
+
 ## Installation
 
 ```bash

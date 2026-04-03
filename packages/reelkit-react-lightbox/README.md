@@ -9,6 +9,8 @@
 
 Image gallery lightbox for React — opens full-screen with swipe navigation, keyboard controls, and transition effects. Everything is replaceable via render props if the defaults don't fit. ~3.1 kB gzip.
 
+**[Live Demo](https://react-demo.reelkit.dev/image-preview)**
+
 ## Installation
 
 ```bash

@@ -32,10 +32,26 @@ export default function GettingStarted() {
         </p>
         <div className="flex flex-wrap gap-3">
           <a
-            href="https://stackblitz.com/github/KonstantinKai/reelkit-react-starter"
+            href="https://react-demo.reelkit.dev"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary-500 to-accent-500 text-white font-medium text-sm hover:shadow-lg hover:shadow-primary-500/25 transition-all duration-200"
+          >
+            React Demo
+          </a>
+          <a
+            href="https://angular-demo.reelkit.dev"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary-500 to-accent-500 text-white font-medium text-sm hover:shadow-lg hover:shadow-primary-500/25 transition-all duration-200"
+          >
+            Angular Demo
+          </a>
+          <a
+            href="https://stackblitz.com/github/KonstantinKai/reelkit-react-starter"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-medium text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200"
           >
             <svg width="16" height="16" viewBox="0 0 28 28" fill="currentColor">
               <path d="M12.747 16.273h-7.46L18.925 1.5l-3.671 10.227h7.46L9.075 26.5l3.672-10.227z" />
@@ -46,7 +62,7 @@ export default function GettingStarted() {
             href="https://stackblitz.com/github/KonstantinKai/reelkit-angular-starter"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary-500 to-accent-500 text-white font-medium text-sm hover:shadow-lg hover:shadow-primary-500/25 transition-all duration-200"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-medium text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200"
           >
             <svg width="16" height="16" viewBox="0 0 28 28" fill="currentColor">
               <path d="M12.747 16.273h-7.46L18.925 1.5l-3.671 10.227h7.46L9.075 26.5l3.672-10.227z" />

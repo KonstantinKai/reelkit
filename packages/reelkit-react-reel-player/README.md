@@ -9,6 +9,8 @@
 
 Drop-in Instagram Reels / TikTok-style video player for React. Opens as a full-screen overlay with vertical swipe navigation. Handles video autoplay, sound continuity on iOS, and multi-media posts. ~4.3 kB gzip.
 
+**[Live Demo](https://react-demo.reelkit.dev/reel-player)**
+
 ## Installation
 
 ```bash

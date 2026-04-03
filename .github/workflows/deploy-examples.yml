@@ -4,9 +4,12 @@ on:
   push:
     branches: [main]
     paths:
-      - 'packages/**'
-      - 'apps/example-react/**'
-      - 'apps/example-angular/**'
+      - 'packages/*/src/**'
+      - 'packages/*/package.json'
+      - 'apps/example-react/src/**'
+      - 'apps/example-react/public/**'
+      - 'apps/example-angular/src/**'
+      - 'apps/example-angular/public/**'
   workflow_dispatch:
 
 jobs:

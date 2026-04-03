@@ -9,6 +9,8 @@
 
 React bindings for `@reelkit/core`. Drop in a `<Reel>` component, give it a slide count and a render function — it handles virtualization, gestures, and keyboard/wheel input. ~3.9 kB gzip.
 
+**[Live Demo](https://react-demo.reelkit.dev)**
+
 ## Installation
 
 ```bash

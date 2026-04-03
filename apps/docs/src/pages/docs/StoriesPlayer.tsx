@@ -348,6 +348,14 @@ export default function StoriesPlayerPage() {
           </code>
           .
         </p>
+        <a
+          href="https://react-demo.reelkit.dev/stories-player"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 mt-3 text-sm font-medium text-primary-500 hover:text-primary-600 transition-colors"
+        >
+          View live demo &rarr;
+        </a>
       </div>
 
       {/* Installation */}
