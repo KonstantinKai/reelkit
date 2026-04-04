@@ -850,7 +850,7 @@ export default function StoriesPlayerPage() {
           signal emits values from 0 to 1:
         </p>
         <CodeBlock
-          code={`import { ValueNotifierObserver } from '@reelkit/react';
+          code={`import { Observe } from '@reelkit/react';
 
 <StoriesOverlay
   isOpen={isOpen}
@@ -860,13 +860,12 @@ export default function StoriesPlayerPage() {
     <div style={{ display: 'flex', gap: 4, padding: '8px 16px' }}>
       {Array.from({ length: totalStories }, (_, i) => (
         <div key={i} style={{ flex: 1, height: 2, background: 'rgba(255,255,255,0.3)', borderRadius: 1, overflow: 'hidden' }}>
-          <ValueNotifierObserver
-            signal={i === activeIndex.value ? progress : activeIndex}
-            render={() => {
+          <Observe signals={[activeIndex, progress]}>
+            {() => {
               const fill = i < activeIndex.value ? 1 : i === activeIndex.value ? progress.value : 0;
               return <div style={{ width: \`\${fill * 100}%\`, height: '100%', background: '#fff' }} />;
             }}
-          />
+          </Observe>
         </div>
       ))}
     </div>
