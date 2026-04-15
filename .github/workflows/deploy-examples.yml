@@ -1,0 +1,48 @@
+name: Deploy Examples
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'packages/*/src/**'
+      - 'packages/*/package.json'
+      - 'apps/example-react/src/**'
+      - 'apps/example-react/public/**'
+      - 'apps/example-angular/src/**'
+      - 'apps/example-angular/public/**'
+  workflow_dispatch:
+
+jobs:
+  deploy-react:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 25
+          cache: 'npm'
+      - run: npm ci
+      - run: npx nx build example-react
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          wranglerVersion: '4'
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy apps/example-react/dist --project-name=reelkit-react-demo
+
+  deploy-angular:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 25
+          cache: 'npm'
+      - run: npm ci
+      - run: npx nx build example-angular --configuration=production
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          wranglerVersion: '4'
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist/apps/example-angular/browser --project-name=reelkit-angular-demo

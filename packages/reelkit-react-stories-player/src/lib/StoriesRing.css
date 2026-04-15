@@ -1,0 +1,40 @@
+.rk-stories-ring {
+  position: relative;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.rk-stories-ring:active {
+  transform: scale(0.95);
+}
+
+.rk-stories-ring::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: inherit;
+}
+
+.rk-stories-ring--active::before {
+  animation: rk-stories-ring-spin 4s linear infinite;
+}
+
+.rk-stories-ring-avatar {
+  position: relative;
+  z-index: 1;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  max-width: none;
+}
+
+@keyframes rk-stories-ring-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -1,0 +1,94 @@
+.rk-reel-overlay {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  touch-action: none;
+}
+
+.rk-reel-container {
+  position: relative;
+  overflow: hidden;
+  touch-action: none;
+}
+
+.rk-player-nav-arrows {
+  display: none;
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  flex-direction: column;
+  gap: 8px;
+  z-index: 10;
+}
+
+@media (min-width: 768px) {
+  .rk-player-nav-arrows {
+    display: flex;
+  }
+}
+
+.rk-reel-slide-wrapper {
+  position: relative;
+  overflow: hidden;
+}
+
+.rk-player-nav-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rk-player-nav-btn:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.rk-player-nav-btn:disabled {
+  opacity: 0.25;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* Wave loader animation */
+.rk-reel-loader {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent 25%,
+    rgba(255, 255, 255, 0.12) 50%,
+    transparent 75%
+  );
+  background-size: 300% 100%;
+  animation: rk-reel-wave 1.8s ease-in-out infinite;
+}
+
+@keyframes rk-reel-wave {
+  0% {
+    background-position: 100% 0;
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    background-position: -100% 0;
+    opacity: 0;
+  }
+}

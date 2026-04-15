@@ -1,36 +1,63 @@
 import { StrictMode } from 'react';
 import * as ReactDOM from 'react-dom/client';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { RouterProvider, createBrowserRouter } from 'react-router-dom';
+import { setCdnBase } from '@reelkit/example-data';
 import App from './app/App';
-import FullPageSlider from './app/pages/FullPageSlider';
-import ReelPlayerPage from './app/pages/ReelPlayerPage';
-import ReelPlayerCustomPage from './app/pages/ReelPlayerCustomPage';
-import ImagePreviewPage from './app/pages/ImagePreviewPage';
-import ImagePreviewCustomPage from './app/pages/ImagePreviewCustomPage';
-import ImagePreviewVideoPage from './app/pages/ImagePreviewVideoPage';
+
+if (import.meta.env.DEV) setCdnBase('/cdn');
+
+const lazy =
+  (load: () => Promise<{ default: React.ComponentType }>) => async () => {
+    const { default: Component } = await load();
+    return { Component };
+  };
+
+const router = createBrowserRouter([
+  {
+    element: <App />,
+    children: [
+      { index: true, lazy: lazy(() => import('./app/pages/FullPageSlider')) },
+      {
+        path: 'reel-player',
+        lazy: lazy(() => import('./app/pages/ReelPlayerPage')),
+      },
+      {
+        path: 'reel-player-custom',
+        lazy: lazy(() => import('./app/pages/ReelPlayerCustomPage')),
+      },
+      {
+        path: 'image-preview',
+        lazy: lazy(() => import('./app/pages/ImagePreviewPage')),
+      },
+      {
+        path: 'image-preview-custom',
+        lazy: lazy(() => import('./app/pages/ImagePreviewCustomPage')),
+      },
+      {
+        path: 'image-preview-video',
+        lazy: lazy(() => import('./app/pages/ImagePreviewVideoPage')),
+      },
+      {
+        path: 'stories-player',
+        lazy: lazy(() => import('./app/pages/StoriesPlayerPage')),
+      },
+      {
+        path: 'stories-player-custom',
+        lazy: lazy(() => import('./app/pages/StoriesPlayerCustomPage')),
+      },
+      {
+        path: '*',
+        lazy: lazy(() => import('./app/pages/NotFound')),
+      },
+    ],
+  },
+]);
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement,
 );
 root.render(
   <StrictMode>
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<App />}>
-          <Route index element={<FullPageSlider />} />
-          <Route path="reel-player" element={<ReelPlayerPage />} />
-          <Route path="reel-player-custom" element={<ReelPlayerCustomPage />} />
-          <Route path="image-preview" element={<ImagePreviewPage />} />
-          <Route
-            path="image-preview-custom"
-            element={<ImagePreviewCustomPage />}
-          />
-          <Route
-            path="image-preview-video"
-            element={<ImagePreviewVideoPage />}
-          />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <RouterProvider router={router} />
   </StrictMode>,
 );

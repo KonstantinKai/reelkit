@@ -1,0 +1,14 @@
+{
+  "name": "@reelkit/stories-core",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/reelkit-stories-core/src",
+  "projectType": "library",
+  "release": {
+    "version": {
+      "currentVersionResolver": "git-tag",
+      "fallbackCurrentVersionResolver": "disk"
+    }
+  },
+  "tags": ["scope:core", "type:stories"],
+  "targets": {}
+}

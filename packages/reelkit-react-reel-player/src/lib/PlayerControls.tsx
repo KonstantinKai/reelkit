@@ -1,7 +1,6 @@
 import React from 'react';
 import { X, Volume2, VolumeX } from 'lucide-react';
-import { Observe } from '@reelkit/react';
-import { useSoundState } from './useSoundState';
+import { Observe, useSoundState } from '@reelkit/react';
 
 const buttonStyle: React.CSSProperties = {
   width: 44,
@@ -19,14 +18,14 @@ const buttonStyle: React.CSSProperties = {
 
 /** Props for the {@link CloseButton} sub-component. */
 export interface CloseButtonProps {
-  /** Callback fired when the button is clicked. */
-  onClick: () => void;
-
   /** CSS class name. Defaults to `"rk-player-close-btn"`. */
   className?: string;
 
   /** Additional inline styles merged on top of the default button styles. */
   style?: React.CSSProperties;
+
+  /** Callback fired when the button is clicked. */
+  onClick: () => void;
 }
 
 /**
@@ -145,9 +144,9 @@ export const SoundButton: React.FC<SoundButtonProps> = ({
 
 /** @internal Props for the default PlayerControls used by ReelPlayerOverlay. */
 interface PlayerControlsProps {
-  onClose: () => void;
   showSound?: boolean;
   soundDisabled?: boolean;
+  onClose: () => void;
 }
 
 /**

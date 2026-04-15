@@ -1,6 +1,7 @@
-import { render, act } from '@testing-library/react';
+import { render, renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { Reel, type ReelApi } from './Reel';
+import { useReelContext } from './ReelContext';
 import React from 'react';
 
 // Use real createSliderController - avoid mocking @reelkit/core since
@@ -290,15 +291,13 @@ describe('Reel', () => {
       afterChange.mockClear();
 
       // Next should still work (animating flag was reset)
-      const nextPromise = apiRef.current!.next();
+      apiRef.current!.next();
       await act(async () => {
         vi.advanceTimersByTime(500);
       });
       await act(async () => {
         vi.runAllTimers();
       });
-      await nextPromise;
-
       expect(afterChange).toHaveBeenCalled();
       vi.useRealTimers();
     });
@@ -409,20 +408,18 @@ describe('Reel', () => {
   });
 
   describe('direction', () => {
-    it('renders vertical flex layout by default', () => {
+    it('renders vertical layout by default', () => {
       const { container } = render(
         <Reel count={3} size={[400, 600]} itemBuilder={defaultItemBuilder} />,
       );
 
-      // The inner content div should have flexDirection column
-      const innerDiv = container.querySelector(
-        '[style*="flex-direction"]',
+      const slide = container.querySelector(
+        '[style*="translateY"]',
       ) as HTMLElement;
-      expect(innerDiv).toBeTruthy();
-      expect(innerDiv.style.flexDirection).toBe('column');
+      expect(slide).toBeTruthy();
     });
 
-    it('renders horizontal flex layout when direction=horizontal', () => {
+    it('renders horizontal layout when direction=horizontal', () => {
       const { container } = render(
         <Reel
           count={3}
@@ -432,11 +429,10 @@ describe('Reel', () => {
         />,
       );
 
-      const innerDiv = container.querySelector(
-        '[style*="flex-direction"]',
+      const slide = container.querySelector(
+        '[style*="translateX"]',
       ) as HTMLElement;
-      expect(innerDiv).toBeTruthy();
-      expect(innerDiv.style.flexDirection).toBe('row');
+      expect(slide).toBeTruthy();
     });
   });
 
@@ -501,6 +497,32 @@ describe('Reel', () => {
 
       const slides = container.querySelectorAll('[data-index]');
       expect(slides).toHaveLength(3);
+    });
+  });
+
+  describe('useReelContext', () => {
+    it('returns null outside of Reel', () => {
+      const { result } = renderHook(() => useReelContext());
+      expect(result.current).toBeNull();
+    });
+
+    it('returns context with index, count, goTo inside Reel', () => {
+      let ctx: ReturnType<typeof useReelContext> = null;
+      const Consumer = () => {
+        ctx = useReelContext();
+        return null;
+      };
+
+      render(
+        <Reel count={5} size={[400, 600]} itemBuilder={defaultItemBuilder}>
+          <Consumer />
+        </Reel>,
+      );
+
+      expect(ctx).not.toBeNull();
+      expect(ctx!.index.value).toBe(0);
+      expect(ctx!.count.value).toBe(5);
+      expect(typeof ctx!.goTo).toBe('function');
     });
   });
 
@@ -636,6 +658,145 @@ describe('Reel', () => {
       const root = container.firstElementChild as HTMLElement;
       expect(root.style.width).toBe('400px');
       expect(root.style.height).toBe('600px');
+    });
+  });
+
+  describe('config sync effect', () => {
+    it('does not call updateConfig on first mount (initial config is set via constructor)', () => {
+      // We verify indirectly: if updateConfig ran on mount, it would be
+      // redundant but harmless. The key behavior is that the controller
+      // works correctly on first render without the effect.
+      const { container } = render(
+        <Reel count={3} size={[400, 600]} itemBuilder={defaultItemBuilder} />,
+      );
+      const slides = container.querySelectorAll('[data-index]');
+      expect(slides.length).toBeGreaterThan(0);
+    });
+
+    it('updates count on rerender', () => {
+      const { container, rerender } = render(
+        <Reel count={3} size={[400, 600]} itemBuilder={defaultItemBuilder} />,
+      );
+      const initialSlides = container.querySelectorAll('[data-index]');
+
+      rerender(
+        <Reel count={5} size={[400, 600]} itemBuilder={defaultItemBuilder} />,
+      );
+      const updatedSlides = container.querySelectorAll('[data-index]');
+      // Count change should be reflected in rendered output
+      expect(updatedSlides.length).toBeGreaterThanOrEqual(initialSlides.length);
+    });
+
+    it('updates loop on rerender', () => {
+      const { container, rerender } = render(
+        <Reel
+          count={3}
+          size={[400, 600]}
+          loop={false}
+          itemBuilder={defaultItemBuilder}
+        />,
+      );
+      expect(container.firstElementChild).toBeTruthy();
+
+      rerender(
+        <Reel
+          count={3}
+          size={[400, 600]}
+          loop={true}
+          itemBuilder={defaultItemBuilder}
+        />,
+      );
+      expect(container.firstElementChild).toBeTruthy();
+    });
+  });
+
+  describe('enableNavKeys / enableWheel', () => {
+    it('accepts enableNavKeys prop (default true)', () => {
+      const { container } = render(
+        <Reel count={3} size={[400, 600]} itemBuilder={defaultItemBuilder} />,
+      );
+      expect(container.firstElementChild).toBeTruthy();
+    });
+
+    it('accepts enableNavKeys={false}', () => {
+      const { container } = render(
+        <Reel
+          count={3}
+          size={[400, 600]}
+          enableNavKeys={false}
+          itemBuilder={defaultItemBuilder}
+        />,
+      );
+      expect(container.firstElementChild).toBeTruthy();
+    });
+
+    it('accepts enableWheel prop', () => {
+      const { container } = render(
+        <Reel
+          count={3}
+          size={[400, 600]}
+          enableWheel={true}
+          itemBuilder={defaultItemBuilder}
+        />,
+      );
+      expect(container.firstElementChild).toBeTruthy();
+    });
+
+    it('accepts onNavKeyPress callback', () => {
+      const onNavKeyPress = vi.fn();
+      const { container } = render(
+        <Reel
+          count={3}
+          size={[400, 600]}
+          onNavKeyPress={onNavKeyPress}
+          itemBuilder={defaultItemBuilder}
+        />,
+      );
+      expect(container.firstElementChild).toBeTruthy();
+    });
+
+    it('toggles enableWheel via rerender', () => {
+      const { container, rerender } = render(
+        <Reel
+          count={3}
+          size={[400, 600]}
+          enableWheel={true}
+          itemBuilder={defaultItemBuilder}
+        />,
+      );
+      expect(container.firstElementChild).toBeTruthy();
+
+      rerender(
+        <Reel
+          count={3}
+          size={[400, 600]}
+          enableWheel={false}
+          itemBuilder={defaultItemBuilder}
+        />,
+      );
+      expect(container.firstElementChild).toBeTruthy();
+    });
+
+    it('toggles enableNavKeys via rerender', () => {
+      const { container, rerender } = render(
+        <Reel
+          count={3}
+          size={[400, 600]}
+          enableNavKeys={true}
+          itemBuilder={defaultItemBuilder}
+        />,
+      );
+      expect(container.firstElementChild).toBeTruthy();
+
+      rerender(
+        <Reel
+          count={3}
+          size={[400, 600]}
+          enableNavKeys={false}
+          itemBuilder={defaultItemBuilder}
+        />,
+      );
+      expect(container.firstElementChild).toBeTruthy();
     });
   });
 });

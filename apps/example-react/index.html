@@ -2,13 +2,23 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
     <title>ReelKit React Demo</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
     <style>
       * {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
+      }
+      html,
+      body {
+        overflow-x: hidden;
       }
       body {
         font-family:
@@ -22,6 +32,24 @@
         display: none;
       }
     </style>
+    <!-- Privacy-friendly analytics by Plausible -->
+    <script
+      async
+      src="https://plausible.k-kai.dev/js/pa-dXpelN8pTUA1d-Osub6w1.js"
+    ></script>
+    <script>
+      ((window.plausible =
+        window.plausible ||
+        function () {
+          (plausible.q = plausible.q || []).push(arguments);
+        }),
+        (plausible.init =
+          plausible.init ||
+          function (i) {
+            plausible.o = i || {};
+          }));
+      plausible.init({ endpoint: 'https://plausible.k-kai.dev/api/event' });
+    </script>
   </head>
   <body>
     <div id="root"></div>

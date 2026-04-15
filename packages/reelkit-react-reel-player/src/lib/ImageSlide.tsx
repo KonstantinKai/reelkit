@@ -78,6 +78,10 @@ const ImageSlide: React.FC<ImageSlideProps> = ({
           objectPosition: 'center',
           ...imgStyle,
         }}
+        onError={(e) => {
+          (e.target as HTMLImageElement).style.display = 'none';
+          imageProps?.onError?.(e);
+        }}
       />
     </div>
   );

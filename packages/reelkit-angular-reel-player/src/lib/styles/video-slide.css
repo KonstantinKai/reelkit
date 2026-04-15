@@ -1,0 +1,83 @@
+.rk-video-slide-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #000;
+  overflow: hidden;
+}
+
+.rk-video-slide-element {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* Blink-only: hides the native cast overlay button on Chrome/Edge. */
+.rk-video-slide-element::-internal-media-controls-overlay-cast-button {
+  display: none;
+}
+
+.rk-video-slide-poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-position: center;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.rk-video-slide-poster.rk-visible {
+  opacity: 1;
+}
+
+.rk-video-slide-loader {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.15) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: rk-video-slide-wave 1.5s ease-in-out infinite;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.rk-video-slide-loader.rk-visible {
+  opacity: 1;
+}
+
+@keyframes rk-video-slide-wave {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.rk-media-error {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.rk-media-error-text {
+  font-size: 13px;
+  letter-spacing: 0.02em;
+}

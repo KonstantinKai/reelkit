@@ -2,11 +2,13 @@ import { defineConfig, devices } from '@playwright/test';
 import { nxE2EPreset } from '@nx/playwright/preset';
 import { workspaceRoot } from '@nx/devkit';
 
-const baseURL = 'http://localhost:4200';
+const baseURL = process.env['BASE_URL'] || 'http://localhost:4300';
+const port = new URL(baseURL).port;
 const isCI = !!process.env['CI'];
 
 export default defineConfig({
   ...nxE2EPreset(__filename, { testDir: './src' }),
+  reporter: [['html'], ['json', { outputFile: 'test-results.json' }]],
   use: {
     baseURL,
     trace: 'on-first-retry',
@@ -14,15 +16,17 @@ export default defineConfig({
     video: 'on-first-retry',
   },
   projects: isCI
-    ? [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }]
+    ? [
+        { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+        {
+          name: 'mobile-chrome',
+          use: { ...devices['Pixel 5'], hasTouch: true },
+        },
+      ]
     : [
         {
           name: 'chromium',
           use: { ...devices['Desktop Chrome'] },
-        },
-        {
-          name: 'firefox',
-          use: { ...devices['Desktop Firefox'] },
         },
         {
           name: 'webkit',
@@ -42,7 +46,7 @@ export default defineConfig({
         },
       ],
   webServer: {
-    command: 'npx nx serve example-react',
+    command: `npx nx serve example-react --port ${port}`,
     url: baseURL,
     reuseExistingServer: !process.env['CI'],
     cwd: workspaceRoot,

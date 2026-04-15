@@ -2,7 +2,8 @@
 
 <p>
   <a href="https://www.npmjs.com/package/@reelkit/core"><img src="https://img.shields.io/npm/v/@reelkit/core?color=6366f1&label=npm" alt="npm" /></a>
-  <img src="https://img.shields.io/badge/gzip-4.0%20kB-6366f1" alt="Bundle size" />
+  <img src="https://img.shields.io/badge/gzip-6.0%20kB-6366f1" alt="Bundle size" />
+  <img src="https://img.shields.io/badge/coverage-95%25-brightgreen" alt="Coverage" />
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
 
@@ -41,7 +42,7 @@ slider.currentIndex.subscribe((index) => {
 ## Features
 
 - Renders only 3 slides at a time (virtualized), handles 10,000+ items
-- Zero dependencies, ~4.0 kB gzip
+- Zero dependencies, ~6.0 kB gzip
 - Factory functions over classes — `createSliderController`, `createGestureController`, `createKeyboardController`, `createWheelController`
 - Built-in `Signal`, `ComputedSignal`, and `reaction` primitives for reactive state
 - Touch gestures with momentum and configurable thresholds

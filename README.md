@@ -13,17 +13,19 @@
   <a href="https://www.npmjs.com/package/@reelkit/core"><img src="https://img.shields.io/npm/v/@reelkit/core?color=6366f1&label=npm" alt="npm" /></a>
   <img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License" />
   <img src="https://img.shields.io/badge/types-TypeScript-blue?logo=typescript&logoColor=white" alt="TypeScript" />
-  <img src="https://img.shields.io/badge/core%20gzip-4.0%20kB-6366f1" alt="Bundle size" />
+  <img src="https://img.shields.io/badge/core%20gzip-6.0%20kB-6366f1" alt="Bundle size" />
   <br/>
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
+
+> **0.x.x** — ReelKit is under active development. APIs may change between minor versions until 1.0.
 
 ## Features
 
 - **Virtualized** — only 3 slides in DOM, handles 10,000+ items
 - **Touch first** — native swipe with momentum and snap
-- **Zero dependencies** — ~4.0 kB gzip core
-- **Keyboard & wheel** — arrow keys, scroll, and swipe all work out of the box
+- **Zero dependencies** — ~6.0 kB gzip core
+- **Keyboard & wheel** — arrow keys, scroll, and swipe navigation built in
 - **Loop mode** — infinite circular scrolling
 - **SSR ready** — works with Next.js, Remix, and any SSR setup
 - **Auto-size** — omit size prop, uses CSS + ResizeObserver
@@ -31,16 +33,21 @@
 
 ## Packages
 
-| Package                                                          | Description                      | JS (gzip) |
-| ---------------------------------------------------------------- | -------------------------------- | --------- |
-| [@reelkit/core](packages/reelkit-core)                           | Framework-agnostic slider engine | 4.0 kB    |
-| [@reelkit/react](packages/reelkit-react)                         | React components and hooks       | 2.9 kB    |
-| [@reelkit/react-reel-player](packages/reelkit-react-reel-player) | Full-screen video reel player    | 3.7 kB    |
-| [@reelkit/react-lightbox](packages/reelkit-react-lightbox)       | Image & video gallery lightbox   | 3.2 kB    |
+| Package                                                                | Description                       | JS (gzip) |
+| ---------------------------------------------------------------------- | --------------------------------- | --------- |
+| [@reelkit/core](packages/reelkit-core)                                 | Framework-agnostic slider engine  | 6.0 kB    |
+| [@reelkit/react](packages/reelkit-react)                               | React components and hooks        | 3.9 kB    |
+| [@reelkit/react-reel-player](packages/reelkit-react-reel-player)       | Full-screen video reel player     | 4.3 kB    |
+| [@reelkit/react-lightbox](packages/reelkit-react-lightbox)             | Image & video gallery lightbox    | 3.1 kB    |
+| [@reelkit/stories-core](packages/reelkit-stories-core)                 | Framework-agnostic stories engine | 1.7 kB    |
+| [@reelkit/react-stories-player](packages/reelkit-react-stories-player) | Instagram-style stories player    | 5.6 kB    |
+| [@reelkit/angular](packages/reelkit-angular)                           | Angular standalone components     | 13.8 kB   |
+| [@reelkit/angular-reel-player](packages/reelkit-angular-reel-player)   | Full-screen video reel player     | 17.3 kB   |
+| [@reelkit/angular-lightbox](packages/reelkit-angular-lightbox)         | Image & video gallery lightbox    | 14.0 kB   |
 
 ## Try It
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/KonstantinKai/reelkit-react-starter)
+[![React Demo](https://img.shields.io/badge/React-Live_Demo-6366f1?logo=react&logoColor=white)](https://react-demo.reelkit.dev) &nbsp; [![Angular Demo](https://img.shields.io/badge/Angular-Live_Demo-6366f1?logo=angular&logoColor=white)](https://angular-demo.reelkit.dev) &nbsp; [![React](https://img.shields.io/badge/React-Open_in_StackBlitz-1269D3?logo=stackblitz&logoColor=white)](https://stackblitz.com/github/KonstantinKai/reelkit-react-starter) &nbsp; [![Angular](https://img.shields.io/badge/Angular-Open_in_StackBlitz-1269D3?logo=stackblitz&logoColor=white)](https://stackblitz.com/github/KonstantinKai/reelkit-angular-starter)
 
 ## Quick Start
 

@@ -1,9 +1,12 @@
 import { StrictMode } from 'react';
-import { BrowserRouter } from 'react-router-dom';
+import { RouterProvider } from 'react-router-dom';
 import * as ReactDOM from 'react-dom/client';
+import { setCdnBase } from '@reelkit/example-data';
 import { ThemeProvider } from './context/ThemeContext';
-import App from './app/app';
+import { router } from './app/app';
 import './styles.css';
+
+if (import.meta.env.DEV) setCdnBase('/cdn');
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement,
@@ -11,10 +14,8 @@ const root = ReactDOM.createRoot(
 
 root.render(
   <StrictMode>
-    <BrowserRouter basename={import.meta.env.BASE_URL}>
-      <ThemeProvider>
-        <App />
-      </ThemeProvider>
-    </BrowserRouter>
+    <ThemeProvider>
+      <RouterProvider router={router} />
+    </ThemeProvider>
   </StrictMode>,
 );

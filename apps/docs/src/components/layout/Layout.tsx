@@ -1,52 +1,85 @@
-import { useState, useEffect } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useEffect, useState } from 'react';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { createSignal, reaction, Observe } from '@reelkit/react';
 import Header from './Header';
 import Sidebar from './Sidebar';
 import Footer from './Footer';
+import { ScrollToTop } from '../ScrollToTop';
+import { RouteProgressBar } from '../ui/RouteProgressBar';
+import FrameworkSwitcher from '../FrameworkSwitcher';
+import {
+  frameworkSignal,
+  frameworkRoutePairs,
+} from '../../data/frameworkSignal';
 
 export default function Layout() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [sidebarOpen] = useState(() => createSignal(false));
   const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    return reaction(
+      () => [frameworkSignal],
+      () => {
+        const fw = frameworkSignal.value;
+        const path = window.location.pathname;
+        const fromIdx = fw === 'angular' ? 0 : 1;
+        const toIdx = fw === 'angular' ? 1 : 0;
+        const pair = frameworkRoutePairs.find((p) => p[fromIdx] === path);
+        if (pair) navigate(pair[toIdx], { replace: true });
+      },
+    );
+  }, [navigate]);
 
   const showSidebar = location.pathname.startsWith('/docs');
 
-  // Close mobile sidebar on navigation
   useEffect(() => {
-    setIsSidebarOpen(false);
+    sidebarOpen.value = false;
   }, [location.pathname]);
 
-  // Lock body scroll when mobile sidebar is open
   useEffect(() => {
-    if (isSidebarOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isSidebarOpen]);
+    return reaction(
+      () => [sidebarOpen],
+      () => {
+        document.body.style.overflow = sidebarOpen.value ? 'hidden' : '';
+      },
+    );
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header
-        onMenuToggle={
-          showSidebar ? () => setIsSidebarOpen(!isSidebarOpen) : undefined
-        }
-        isMenuOpen={showSidebar ? isSidebarOpen : undefined}
-        showNav={true}
-      />
-      <Sidebar
-        isOpen={isSidebarOpen}
-        showDesktop={showSidebar}
-        onClose={() => setIsSidebarOpen(false)}
-      />
+      <ScrollToTop />
+      <RouteProgressBar />
+      <Observe signals={[sidebarOpen]}>
+        {() => (
+          <>
+            <Header
+              onMenuToggle={
+                showSidebar
+                  ? () => (sidebarOpen.value = !sidebarOpen.value)
+                  : undefined
+              }
+              isMenuOpen={showSidebar ? sidebarOpen.value : undefined}
+              showNav={true}
+            />
+            <Sidebar
+              isOpen={sidebarOpen.value}
+              showDesktop={showSidebar}
+              onClose={() => (sidebarOpen.value = false)}
+            />
+          </>
+        )}
+      </Observe>
+      {showSidebar && <FrameworkSwitcher />}
       <main
-        className={`flex-1 pt-16 transition-all duration-300 ${
+        className={`flex-1 pt-16 transition-all duration-300 flex flex-col ${
           showSidebar ? 'lg:pl-64' : ''
         }`}
       >
-        <Outlet />
+        <div className="flex-1">
+          <Outlet />
+        </div>
         <Footer />
       </main>
     </div>

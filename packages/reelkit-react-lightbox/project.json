@@ -3,7 +3,7 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/reelkit-react-lightbox/src",
   "projectType": "library",
-  "tags": [],
+  "tags": ["scope:react", "type:lightbox"],
   "targets": {},
   "release": {
     "version": {

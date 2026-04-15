@@ -4,7 +4,8 @@ const navStyle: React.CSSProperties = {
   position: 'fixed',
   top: 0,
   left: 0,
-  right: 0,
+  width: '100%',
+  boxSizing: 'border-box',
   zIndex: 1000,
   display: 'flex',
   gap: 6,
@@ -43,6 +44,8 @@ const links = [
   { to: '/image-preview', label: 'Image Gallery' },
   { to: '/image-preview-custom', label: 'Custom Gallery' },
   { to: '/image-preview-video', label: 'Video Gallery' },
+  { to: '/stories-player', label: 'Stories Player' },
+  { to: '/stories-player-custom', label: 'Custom Stories' },
 ];
 
 function Navigation() {

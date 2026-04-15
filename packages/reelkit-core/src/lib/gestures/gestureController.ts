@@ -15,7 +15,8 @@ import type {
   GestureController,
 } from './types';
 
-const DEFAULT_LONG_PRESS_DURATION_MS = 800;
+const _kDefaultLongPressDurationMs = 800;
+const _kDefaultDoubleTapWindowMs = 200;
 
 const getDominantAxis = (delta: Offset): DragAxis => {
   const [dx, dy] = [abs(first(delta)), abs(last(delta))];
@@ -53,7 +54,8 @@ export const createGestureController = (
 ): GestureController => {
   const {
     useTouchEventsOnly = false,
-    longPressDurationMs = DEFAULT_LONG_PRESS_DURATION_MS,
+    longPressDurationMs = _kDefaultLongPressDurationMs,
+    doubleTapWindowMs = _kDefaultDoubleTapWindowMs,
   } = config;
   const disposables = createDisposableList();
 
@@ -65,7 +67,21 @@ export const createGestureController = (
   let offset: Offset | null = null;
   let elementTopLeft: Offset | null = null;
   let updateEvents: GestureAxisDragUpdateEvent[] = [];
+  let lockedAxis: DragAxis = null;
   let longPressDetected = false;
+  let tapSuppressed = false;
+
+  let lastTapTimestamp = 0;
+  let pendingTapTimer: ReturnType<typeof setTimeout> | null = null;
+
+  const isInteractiveTarget = (target: EventTarget | null): boolean => {
+    if (typeof HTMLElement === 'undefined' || !(target instanceof HTMLElement))
+      return false;
+    return (
+      target.closest('button, a, input, select, textarea, [role="button"]') !==
+      null
+    );
+  };
 
   const longPressTimeout = timeout((event: GestureCommonEvent) => {
     if (
@@ -99,6 +115,7 @@ export const createGestureController = (
     let kind: EventKind;
     const elementRect = element.getBoundingClientRect();
     elementTopLeft = [elementRect.x, elementRect.y];
+    tapSuppressed = isInteractiveTarget(event.target);
 
     if (isTouchEvent(event)) {
       kind = 'touch';
@@ -151,15 +168,19 @@ export const createGestureController = (
     ];
 
     const commonEvent = getCommonEvent();
-    const axis = getDominantAxis(delta);
 
-    if (axis !== null) {
+    // Lock axis on first movement — all subsequent frames use the same axis.
+    if (lockedAxis === null) {
+      lockedAxis = getDominantAxis(delta);
+    }
+
+    if (lockedAxis !== null) {
       const onDragStart =
-        axis === 'horizontal'
+        lockedAxis === 'horizontal'
           ? currentEvents.onHorizontalDragStart
           : currentEvents.onVerticalDragStart;
       const onDragUpdate =
-        axis === 'horizontal'
+        lockedAxis === 'horizontal'
           ? currentEvents.onHorizontalDragUpdate
           : currentEvents.onVerticalDragUpdate;
 
@@ -170,9 +191,9 @@ export const createGestureController = (
       const updateEvent: GestureAxisDragUpdateEvent = {
         ...commonEvent,
         delta,
-        primaryDelta: getPrimaryValue(delta, axis),
+        primaryDelta: getPrimaryValue(delta, lockedAxis),
         distance,
-        primaryDistance: getPrimaryValue(distance, axis),
+        primaryDistance: getPrimaryValue(distance, lockedAxis),
         cancel: cancelEvent,
       };
 
@@ -197,13 +218,45 @@ export const createGestureController = (
 
     currentEvents.onTapUp?.({ ...commonEvent, kind });
 
+    const wasLongPress = longPressDetected;
     if (longPressDetected) {
       longPressDetected = false;
       currentEvents.onLongPressEnd?.(commonEvent);
     }
 
+    // Tap / double-tap detection: only when no drag occurred and no long press
+    const wasDrag = lastUpdateEvent !== null;
+    if (
+      !wasDrag &&
+      !wasLongPress &&
+      !tapSuppressed &&
+      savedInitialEvent !== null
+    ) {
+      const tapEvent: GestureCommonEvent = { ...commonEvent, kind };
+      const now = Date.now();
+
+      if (
+        pendingTapTimer !== null &&
+        now - lastTapTimestamp < doubleTapWindowMs
+      ) {
+        // Second tap within window → double-tap
+        clearTimeout(pendingTapTimer);
+        pendingTapTimer = null;
+        currentEvents.onDoubleTap?.(tapEvent);
+      } else {
+        // First tap — wait for potential second tap
+        if (pendingTapTimer !== null) {
+          clearTimeout(pendingTapTimer);
+        }
+        lastTapTimestamp = now;
+        pendingTapTimer = setTimeout(() => {
+          pendingTapTimer = null;
+          currentEvents.onTap?.(tapEvent);
+        }, doubleTapWindowMs);
+      }
+    }
+
     if (lastUpdateEvent !== null && savedInitialEvent !== null) {
-      const delta = lastUpdateEvent.delta;
       const timeDiffInSeconds =
         (commonEvent.sourceTimestamp - savedInitialEvent.sourceTimestamp) /
         1000;
@@ -219,10 +272,9 @@ export const createGestureController = (
         velocity,
       };
 
-      const axis = getDominantAxis(delta);
-      if (axis !== null) {
+      if (lockedAxis !== null) {
         const onDragEnd =
-          axis === 'horizontal'
+          lockedAxis === 'horizontal'
             ? currentEvents.onHorizontalDragEnd
             : currentEvents.onVerticalDragEnd;
 
@@ -230,12 +282,14 @@ export const createGestureController = (
           ...axisAwareCommonEvent,
           primaryDelta: lastUpdateEvent.primaryDelta,
           primaryDistance: lastUpdateEvent.primaryDistance,
-          primaryVelocity: getPrimaryValue(velocity, axis),
+          primaryVelocity: getPrimaryValue(velocity, lockedAxis),
         });
       }
 
       currentEvents.onDragEnd?.(axisAwareCommonEvent);
     }
+
+    lockedAxis = null;
   };
 
   const observe = () => {
@@ -256,20 +310,16 @@ export const createGestureController = (
     }
   };
 
-  const unobserve = () => {
-    disposables.dispose();
-  };
-
   return {
     attach(el: HTMLElement) {
       element = el;
     },
     detach() {
-      unobserve();
+      disposables.dispose();
       element = null;
     },
     observe,
-    unobserve,
+    unobserve: disposables.dispose,
     updateEvents(newEvents: Partial<GestureControllerEvents>) {
       currentEvents = { ...currentEvents, ...newEvents };
     },

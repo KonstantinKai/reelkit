@@ -1,0 +1,68 @@
+{
+  "name": "@reelkit/angular-lightbox",
+  "version": "0.2.0",
+  "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
+  "main": "./fesm2022/reelkit-angular-lightbox.mjs",
+  "module": "./fesm2022/reelkit-angular-lightbox.mjs",
+  "types": "./index.d.ts",
+  "exports": {
+    "./package.json": {
+      "default": "./package.json"
+    },
+    ".": {
+      "types": "./index.d.ts",
+      "esm2022": "./esm2022/reelkit-angular-lightbox.mjs",
+      "esm": "./esm2022/reelkit-angular-lightbox.mjs",
+      "default": "./fesm2022/reelkit-angular-lightbox.mjs"
+    },
+    "./styles.css": "./lightbox-overlay.css",
+    "./lightbox-video-slide.css": "./lightbox-video-slide.css"
+  },
+  "files": [
+    "esm2022",
+    "fesm2022",
+    "*.d.ts",
+    "*.d.ts.map",
+    "lightbox-overlay.css",
+    "lightbox-video-slide.css",
+    "!**/*.tsbuildinfo"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KonstantinKai/reelkit.git",
+    "directory": "packages/reelkit-angular-lightbox"
+  },
+  "bugs": "https://github.com/KonstantinKai/reelkit/issues",
+  "homepage": "https://reelkit.dev/docs/lightbox",
+  "funding": {
+    "type": "buymeacoffee",
+    "url": "https://buymeacoffee.com/konstantinkai"
+  },
+  "description": "Full-screen image and video gallery lightbox for Angular with touch gestures, transitions, and template customization",
+  "license": "MIT",
+  "keywords": [
+    "angular",
+    "lightbox",
+    "image-gallery",
+    "fullscreen",
+    "swipe",
+    "touch",
+    "gallery",
+    "video-player",
+    "photo-viewer",
+    "angular-component",
+    "typescript"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "@reelkit/angular": "^0.2.0",
+    "@angular/common": ">=19.0.0",
+    "@angular/core": ">=19.0.0",
+    "lucide-angular": ">=0.460.0"
+  }
+}

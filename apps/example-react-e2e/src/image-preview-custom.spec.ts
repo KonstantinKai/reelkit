@@ -53,31 +53,11 @@ test.describe('Custom Lightbox - Page Rendering', () => {
 
   test('renders all demo cards', async ({ page }) => {
     const player = new CustomLightboxPage(page);
-    await expect(player.demoButton('default-info')).toBeVisible();
     await expect(player.demoButton('custom-info')).toBeVisible();
     await expect(player.demoButton('custom-controls')).toBeVisible();
     await expect(player.demoButton('custom-slide')).toBeVisible();
     await expect(player.demoButton('custom-navigation')).toBeVisible();
-  });
-});
-
-test.describe('Custom Lightbox - Default Info', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/image-preview-custom');
-  });
-
-  test('default info overlay shows title and description', async ({ page }) => {
-    const player = new CustomLightboxPage(page);
-    await player.openDemo('default-info');
-
-    await expect(page.locator('.rk-lightbox-title').first()).toBeVisible();
-    await expect(page.locator('.rk-lightbox-description').first()).toBeVisible();
-  });
-
-  test('closes with close button', async ({ page }) => {
-    const player = new CustomLightboxPage(page);
-    await player.openDemo('default-info');
-    await player.closeLightbox();
+    await expect(player.demoButton('custom-loading-error')).toBeVisible();
   });
 });
 
@@ -338,6 +318,25 @@ test.describe('Custom Lightbox - Custom Navigation (renderNavigation)', () => {
   test('closes with close button', async ({ page }) => {
     const player = new CustomLightboxPage(page);
     await player.openDemo('custom-navigation');
+    await player.closeLightbox();
+  });
+});
+
+test.describe('Custom Lightbox - Custom Loading / Error', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/image-preview-custom');
+  });
+
+  test('opens and shows lightbox', async ({ page }) => {
+    const player = new CustomLightboxPage(page);
+    await player.openDemo('custom-loading-error');
+
+    await expect(player.container).toBeVisible();
+  });
+
+  test('closes with close button', async ({ page }) => {
+    const player = new CustomLightboxPage(page);
+    await player.openDemo('custom-loading-error');
     await player.closeLightbox();
   });
 });

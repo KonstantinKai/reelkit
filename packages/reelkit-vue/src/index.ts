@@ -6,7 +6,6 @@ export {
   createDeferred,
   first,
   last,
-  isEmpty,
   generate,
   abs,
   isNegative,

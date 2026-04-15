@@ -34,11 +34,30 @@ export default [
         {
           enforceBuildableLibDependency: true,
           allow: ['^.*/e2e-utils/.*$'],
+          checkDynamicDependenciesExceptions: ['@reelkit/*'],
           depConstraints: [
+            // Core has no framework dependencies
             {
-              sourceTag: '*',
-              onlyDependOnLibsWithTags: ['*'],
+              sourceTag: 'scope:core',
+              onlyDependOnLibsWithTags: ['scope:core'],
             },
+            // React packages cannot depend on Angular packages
+            {
+              sourceTag: 'scope:react',
+              notDependOnLibsWithTags: ['scope:angular'],
+            },
+            // Angular packages cannot depend on React packages
+            {
+              sourceTag: 'scope:angular',
+              notDependOnLibsWithTags: ['scope:react'],
+            },
+            // Shared data has no external dependencies
+            {
+              sourceTag: 'scope:shared',
+              onlyDependOnLibsWithTags: ['scope:shared'],
+            },
+            // Untagged projects (apps, tools) can depend on anything
+            { sourceTag: '*', onlyDependOnLibsWithTags: ['*'] },
           ],
         },
       ],
@@ -50,11 +69,14 @@ export default [
   },
   {
     files: ['**/*.ts', '**/*.tsx'],
+    ignores: ['apps/**'],
     rules: {
       '@nx/workspace-lines-between-type-members': [
         'error',
         { exceptAfterCommentlessMembers: true },
       ],
+      '@nx/workspace-fields-before-callbacks': 'error',
+      '@nx/workspace-constant-naming': 'error',
     },
   },
   {

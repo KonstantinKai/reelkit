@@ -1,13 +1,14 @@
-import React, {
-  type ReactNode,
-  useState,
-  useRef,
-  useCallback,
-  useEffect,
-} from 'react';
+import React, { type ReactNode, useState, useRef, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Reel, ReelIndicator, type ReelApi } from '@reelkit/react';
+import {
+  Reel,
+  ReelIndicator,
+  Observe,
+  createSignal,
+  type ReelApi,
+} from '@reelkit/react';
 import type {
+  BaseContentItem,
   MediaItem,
   NavigationRenderProps,
   NestedSlideRenderProps,
@@ -19,6 +20,7 @@ import './NestedSlider.css';
 /** @internal */
 interface NestedSliderProps {
   media: MediaItem[];
+  contentItem: BaseContentItem;
   isParentActive: boolean;
   size: [number, number];
   contentId: string;
@@ -26,6 +28,9 @@ interface NestedSliderProps {
   enableWheel?: boolean;
   onVideoRef?: (ref: HTMLVideoElement | null) => void;
   onActiveMediaTypeChange?: (type: 'image' | 'video') => void;
+  onReady?: () => void;
+  onWaiting?: () => void;
+  onError?: () => void;
   renderNavigation?: (props: NavigationRenderProps) => ReactNode;
   renderNestedSlide?: (props: NestedSlideRenderProps) => ReactNode;
 }
@@ -40,23 +45,121 @@ interface NestedSliderProps {
  *
  * @internal Used by {@link MediaSlide} when a content item has multiple media assets.
  */
-const NestedSlider: React.FC<NestedSliderProps> = ({
-  media,
-  isParentActive,
-  size,
-  contentId,
-  innerSliderRef,
-  enableWheel,
-  onVideoRef,
-  onActiveMediaTypeChange,
-  renderNavigation,
-  renderNestedSlide,
-}) => {
-  const [innerActiveIndex, setInnerActiveIndex] = useState(0);
-  const innerActiveIndexRef = useRef(innerActiveIndex);
-  innerActiveIndexRef.current = innerActiveIndex;
+const NestedSlider: React.FC<NestedSliderProps> = (props) => {
+  const { media, isParentActive, size, innerSliderRef, enableWheel } = props;
+
+  const propsRef = useRef(props);
+  propsRef.current = props;
   const localSliderRef = useRef<ReelApi>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  const [
+    {
+      indexSignal,
+      handleBeforeChange,
+      handleAfterChange,
+      handlePrev,
+      handleNext,
+      itemBuilder,
+    },
+  ] = useState(() => {
+    const indexSignal = createSignal(0);
+
+    const handleVideoRef = (ref: HTMLVideoElement | null) => {
+      videoRef.current = ref;
+      propsRef.current.onVideoRef?.(ref);
+    };
+
+    return {
+      indexSignal,
+      handleBeforeChange: () => {
+        if (videoRef.current && !videoRef.current.paused) {
+          videoRef.current.pause();
+        }
+      },
+      handleAfterChange: (index: number) => {
+        indexSignal.value = index;
+        const {
+          media: items,
+          onActiveMediaTypeChange,
+          onReady,
+        } = propsRef.current;
+        onActiveMediaTypeChange?.(items[index].type);
+        if (items[index].type === 'image') {
+          onReady?.();
+        }
+      },
+      handlePrev: () => {
+        localSliderRef.current?.prev();
+      },
+      handleNext: () => {
+        localSliderRef.current?.next();
+      },
+      itemBuilder: (
+        index: number,
+        _indexInRange: number,
+        itemSize: [number, number],
+      ) => {
+        const {
+          media: items,
+          isParentActive: parentActive,
+          contentId: cId,
+          onReady,
+          onWaiting,
+          onError,
+          renderNestedSlide,
+        } = propsRef.current;
+        const item = items[index];
+        const isInnerActive = index === indexSignal.value;
+        const slideKey = `${cId}:${item.id}`;
+        const videoRefProp = isInnerActive ? handleVideoRef : undefined;
+
+        const defaultContent =
+          item.type === 'video' ? (
+            <VideoSlide
+              src={item.src}
+              poster={item.poster}
+              aspectRatio={item.aspectRatio}
+              size={itemSize}
+              isActive={parentActive}
+              isInnerActive={isInnerActive}
+              slideKey={slideKey}
+              onVideoRef={videoRefProp}
+              onReady={isInnerActive ? onReady : undefined}
+              onWaiting={isInnerActive ? onWaiting : undefined}
+              onError={isInnerActive ? onError : undefined}
+            />
+          ) : (
+            <ImageSlide
+              src={item.src}
+              size={itemSize}
+              imageProps={
+                isInnerActive ? { onLoad: onReady, onError } : undefined
+              }
+            />
+          );
+
+        if (renderNestedSlide) {
+          return renderNestedSlide({
+            item: propsRef.current.contentItem,
+            media: item,
+            index,
+            size: itemSize,
+            isActive: parentActive,
+            isInnerActive,
+            slideKey,
+            onVideoRef: videoRefProp,
+            onReady: isInnerActive ? onReady : undefined,
+            onWaiting: isInnerActive ? onWaiting : undefined,
+            onError: isInnerActive ? onError : undefined,
+            defaultContent,
+          });
+        }
+
+        return defaultContent;
+      },
+    };
+  });
 
   useEffect(() => {
     innerSliderRef.current = localSliderRef.current;
@@ -66,44 +169,11 @@ const NestedSlider: React.FC<NestedSliderProps> = ({
   }, [innerSliderRef]);
 
   useEffect(() => {
-    if (isParentActive && onActiveMediaTypeChange) {
-      onActiveMediaTypeChange(media[innerActiveIndex].type);
+    if (isParentActive) {
+      propsRef.current.onActiveMediaTypeChange?.(media[indexSignal.value].type);
     }
-  }, [isParentActive, onActiveMediaTypeChange, media, innerActiveIndex]);
-
-  const handleVideoRef = useCallback(
-    (ref: HTMLVideoElement | null) => {
-      videoRef.current = ref;
-      if (onVideoRef) {
-        onVideoRef(ref);
-      }
-    },
-    [onVideoRef],
-  );
-
-  const handleBeforeChange = useCallback(() => {
-    if (videoRef.current && !videoRef.current.paused) {
-      videoRef.current.pause();
-    }
-  }, []);
-
-  const handleAfterChange = useCallback(
-    (index: number) => {
-      setInnerActiveIndex(index);
-      if (onActiveMediaTypeChange) {
-        onActiveMediaTypeChange(media[index].type);
-      }
-    },
-    [media, onActiveMediaTypeChange],
-  );
-
-  const handlePrev = useCallback(() => {
-    localSliderRef.current?.prev();
-  }, []);
-
-  const handleNext = useCallback(() => {
-    localSliderRef.current?.next();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isParentActive]);
 
   return (
     <div
@@ -119,107 +189,83 @@ const NestedSlider: React.FC<NestedSliderProps> = ({
         size={size}
         direction="horizontal"
         loop={false}
-        useNavKeys={true}
+        enableNavKeys={true}
         enableWheel={enableWheel}
         apiRef={localSliderRef}
         beforeChange={handleBeforeChange}
         afterChange={handleAfterChange}
         className={isParentActive ? 'rk-nested-active' : undefined}
-        itemBuilder={(index, _, itemSize) => {
-          const item = media[index];
-          const isInnerActive = innerActiveIndexRef.current === index;
-          const slideKey = `${contentId}:${item.id}`;
-          const videoRefProp = isInnerActive ? handleVideoRef : undefined;
-
-          const defaultContent =
-            item.type === 'video' ? (
-              <VideoSlide
-                src={item.src}
-                poster={item.poster}
-                aspectRatio={item.aspectRatio}
-                size={itemSize}
-                isActive={isParentActive}
-                isInnerActive={isInnerActive}
-                slideKey={slideKey}
-                onVideoRef={videoRefProp}
-              />
-            ) : (
-              <ImageSlide src={item.src} size={itemSize} />
-            );
-
-          if (renderNestedSlide) {
-            return renderNestedSlide({
-              item,
-              index,
-              size: itemSize,
-              isActive: isParentActive,
-              isInnerActive,
-              slideKey,
-              onVideoRef: videoRefProp,
-              defaultContent,
-            });
-          }
-
-          return defaultContent;
-        }}
+        itemBuilder={itemBuilder}
       />
 
-      {/* Indicator dots at bottom */}
-      {media.length > 1 && (
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 16,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            zIndex: 10,
-          }}
-        >
-          <ReelIndicator
-            count={media.length}
-            active={innerActiveIndex}
-            direction="horizontal"
-            visible={5}
-            radius={3}
-            gap={4}
-            activeColor="#fff"
-            inactiveColor="rgba(255,255,255,0.4)"
-            onDotClick={(index) => localSliderRef.current?.goTo(index, true)}
-          />
-        </div>
-      )}
+      <Observe signals={[indexSignal]}>
+        {() => {
+          const idx = indexSignal.value;
+          const { media: items, renderNavigation: renderNav } =
+            propsRef.current;
 
-      {/* Navigation arrows - desktop only */}
-      {media.length > 1 &&
-        (renderNavigation ? (
-          renderNavigation({
-            onPrev: handlePrev,
-            onNext: handleNext,
-            activeIndex: innerActiveIndex,
-            count: media.length,
-          })
-        ) : (
-          <>
-            {innerActiveIndex > 0 && (
-              <button
-                className="rk-nested-nav rk-nested-nav-prev"
-                onClick={handlePrev}
-                aria-label="Previous"
-              >
-                <ChevronLeft size={24} />
-              </button>
-            )}
-            {innerActiveIndex < media.length - 1 && (
-              <button
-                className="rk-nested-nav rk-nested-nav-next"
-                onClick={handleNext}
-                aria-label="Next"
-              >
-                <ChevronRight size={24} />
-              </button>
-            )}
-          </>
-        ))}
+          return (
+            <>
+              {items.length > 1 && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: 16,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    zIndex: 10,
+                  }}
+                >
+                  <ReelIndicator
+                    count={items.length}
+                    active={idx}
+                    direction="horizontal"
+                    visible={5}
+                    radius={3}
+                    gap={4}
+                    activeColor="#fff"
+                    inactiveColor="rgba(255,255,255,0.4)"
+                    onDotClick={(i) => localSliderRef.current?.goTo(i, true)}
+                  />
+                </div>
+              )}
+
+              {items.length > 1 &&
+                (renderNav ? (
+                  renderNav({
+                    item: propsRef.current.contentItem as BaseContentItem,
+                    media: items[idx],
+                    onPrev: handlePrev,
+                    onNext: handleNext,
+                    activeIndex: idx,
+                    count: items.length,
+                  })
+                ) : (
+                  <>
+                    {idx > 0 && (
+                      <button
+                        className="rk-nested-nav rk-nested-nav-prev"
+                        onClick={handlePrev}
+                        aria-label="Previous"
+                      >
+                        <ChevronLeft size={24} />
+                      </button>
+                    )}
+                    {idx < items.length - 1 && (
+                      <button
+                        className="rk-nested-nav rk-nested-nav-next"
+                        onClick={handleNext}
+                        aria-label="Next"
+                      >
+                        <ChevronRight size={24} />
+                      </button>
+                    )}
+                  </>
+                ))}
+            </>
+          );
+        }}
+      </Observe>
     </div>
   );
 };

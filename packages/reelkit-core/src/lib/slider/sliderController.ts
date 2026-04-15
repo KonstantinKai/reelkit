@@ -28,11 +28,11 @@ import type {
   SliderController,
 } from './types';
 
-const DEFAULT_TRANSITION_DURATION = 300;
-const DEFAULT_SWIPE_DISTANCE_FACTOR = 0.12;
-const MAX_VISIBLE_SLIDES = 3;
-const KEYBOARD_THROTTLE_MS = DEFAULT_TRANSITION_DURATION + 100;
-const DEFAULT_WHEEL_DEBOUNCE_MS = 200;
+const _kDefaultTransitionDuration = 300;
+const _kDefaultSwipeDistanceFactor = 0.12;
+const _kMaxVisibleSlides = 3;
+const _kKeyboardThrottleMs = _kDefaultTransitionDuration + 100;
+const _kDefaultWheelDebounceMs = 200;
 
 /**
  * Default range extractor that computes the visible slide indices with an
@@ -76,12 +76,14 @@ export const createSliderController = (
     direction: initialConfig.direction ?? 'vertical',
     loop: initialConfig.loop ?? false,
     transitionDuration:
-      initialConfig.transitionDuration ?? DEFAULT_TRANSITION_DURATION,
+      initialConfig.transitionDuration ?? _kDefaultTransitionDuration,
     swipeDistanceFactor:
-      initialConfig.swipeDistanceFactor ?? DEFAULT_SWIPE_DISTANCE_FACTOR,
+      initialConfig.swipeDistanceFactor ?? _kDefaultSwipeDistanceFactor,
     rangeExtractor: initialConfig.rangeExtractor ?? defaultRangeExtractor,
     enableWheel: initialConfig.enableWheel ?? false,
-    wheelDebounceMs: initialConfig.wheelDebounceMs ?? DEFAULT_WHEEL_DEBOUNCE_MS,
+    wheelDebounceMs: initialConfig.wheelDebounceMs ?? _kDefaultWheelDebounceMs,
+    enableGestures: initialConfig.enableGestures ?? true,
+    enableNavKeys: initialConfig.enableNavKeys ?? true,
   };
 
   let events = { ...initialEvents };
@@ -109,11 +111,11 @@ export const createSliderController = (
         config.count,
         config.loop,
       );
-      if (range.length <= MAX_VISIBLE_SLIDES) return range;
+      if (range.length <= _kMaxVisibleSlides) return range;
 
       const pos = range.indexOf(index.value);
-      const start = clamp(pos - 1, 0, range.length - MAX_VISIBLE_SLIDES);
-      return range.slice(start, start + MAX_VISIBLE_SLIDES);
+      const start = clamp(pos - 1, 0, range.length - _kMaxVisibleSlides);
+      return range.slice(start, start + _kMaxVisibleSlides);
     },
     () => [index, goToOverride],
   );
@@ -174,7 +176,6 @@ export const createSliderController = (
         return deferred;
       });
     } finally {
-      // Update state atomically — observers see both changes at once
       batch(() => {
         index.value = nextIndex;
         axisValue.value = {
@@ -188,7 +189,6 @@ export const createSliderController = (
     }
   };
 
-  // Gesture handlers
   const onDragUpdate = (event: GestureAxisDragUpdateEvent) => {
     axisValue.value = {
       value: axisValue.value.value + event.primaryDelta,
@@ -196,11 +196,16 @@ export const createSliderController = (
     };
   };
 
+  let mainAxisDragActive = false;
+
   const onMainAxisDragStart = () => {
+    mainAxisDragActive = true;
     events.onDragStart?.(index.value);
   };
 
   const onAxisAwareDragEnd = async (event: GestureDragEndEvent) => {
+    if (!mainAxisDragActive) return;
+    mainAxisDragActive = false;
     const isHorizontal = config.direction === 'horizontal';
     const key = isHorizontal ? 0 : 1;
     const necessaryDistance = primarySize * config.swipeDistanceFactor;
@@ -256,11 +261,15 @@ export const createSliderController = (
       onVerticalDragStart: !isHorizontal() ? onMainAxisDragStart : undefined,
       onVerticalDragUpdate: !isHorizontal() ? onDragUpdate : undefined,
       onDragEnd: onAxisAwareDragEnd,
+      onTap: (e) => events.onTap?.(e),
+      onDoubleTap: (e) => events.onDoubleTap?.(e),
+      onLongPress: (e) => events.onLongPress?.(e),
+      onLongPressEnd: (e) => events.onLongPressEnd?.(e),
     },
   );
 
   const keyboardController = createKeyboardController(
-    { throttleMs: KEYBOARD_THROTTLE_MS },
+    { throttleMs: _kKeyboardThrottleMs },
     {
       onKeyPress: (key: NavKey) => {
         let increment: -1 | 1 | null = null;
@@ -276,38 +285,40 @@ export const createSliderController = (
         if (increment !== null) {
           const isFirstOrLast = getIsFirstOrLast(indexes.value, increment);
           if (!isFirstOrLast) {
-            changeIndex(increment);
+            if (events.onNavKeyPress) {
+              events.onNavKeyPress(increment);
+            } else {
+              changeIndex(increment);
+            }
           }
         }
       },
     },
   );
 
-  const wheelController = config.enableWheel
-    ? createWheelController(
-        { debounceMs: config.wheelDebounceMs },
-        {
-          onWheel: (direction: WheelDirection) => {
-            let increment: -1 | 1 | null = null;
+  const wheelController = createWheelController(
+    { debounceMs: config.wheelDebounceMs },
+    {
+      onWheel: (direction: WheelDirection) => {
+        let increment: -1 | 1 | null = null;
 
-            if (isHorizontal()) {
-              if (direction === 'left') increment = -1;
-              if (direction === 'right') increment = 1;
-            } else {
-              if (direction === 'up') increment = -1;
-              if (direction === 'down') increment = 1;
-            }
+        if (isHorizontal()) {
+          if (direction === 'left') increment = -1;
+          if (direction === 'right') increment = 1;
+        } else {
+          if (direction === 'up') increment = -1;
+          if (direction === 'down') increment = 1;
+        }
 
-            if (increment !== null) {
-              const isFirstOrLast = getIsFirstOrLast(indexes.value, increment);
-              if (!isFirstOrLast) {
-                changeIndex(increment);
-              }
-            }
-          },
-        },
-      )
-    : null;
+        if (increment !== null) {
+          const isFirstOrLast = getIsFirstOrLast(indexes.value, increment);
+          if (!isFirstOrLast) {
+            changeIndex(increment);
+          }
+        }
+      },
+    },
+  );
 
   let afterChangeDispose: (() => void) | null = null;
   if (events.onAfterChange) {
@@ -383,8 +394,6 @@ export const createSliderController = (
           return deferred;
         });
       } finally {
-        // Clear override and set final state atomically — observers see
-        // both changes at once, preventing an intermediate indexes flash
         batch(() => {
           goToOverride.value = null;
           index.value = clampedIndex;
@@ -415,9 +424,10 @@ export const createSliderController = (
     },
 
     updateConfig(newConfig: Partial<SliderConfig>) {
+      const prevNavKeys = config.enableNavKeys;
+      const prevWheel = config.enableWheel;
       config = { ...config, ...newConfig };
 
-      // Update gesture controller direction
       const horizontal = config.direction === 'horizontal';
       gestureController.updateEvents({
         onHorizontalDragStart: horizontal ? onMainAxisDragStart : undefined,
@@ -425,16 +435,30 @@ export const createSliderController = (
         onVerticalDragStart: !horizontal ? onMainAxisDragStart : undefined,
         onVerticalDragUpdate: !horizontal ? onDragUpdate : undefined,
       });
+
+      if (prevNavKeys !== config.enableNavKeys) {
+        if (config.enableNavKeys) {
+          keyboardController.attach();
+        } else {
+          keyboardController.detach();
+        }
+      }
+
+      if (prevWheel !== config.enableWheel) {
+        if (config.enableWheel) {
+          wheelController.attach();
+        } else {
+          wheelController.detach();
+        }
+      }
     },
 
     updateEvents(newEvents: Partial<SliderEvents>) {
       events = { ...events, ...newEvents };
 
-      // Update afterChange observer
-      if (afterChangeDispose) {
-        afterChangeDispose();
-        afterChangeDispose = null;
-      }
+      afterChangeDispose?.();
+      afterChangeDispose = null;
+
       if (events.onAfterChange) {
         afterChangeDispose = index.observe(() => {
           events.onAfterChange?.(index.value, getRangeIndex());
@@ -443,34 +467,40 @@ export const createSliderController = (
     },
 
     observe() {
-      gestureController.observe();
-      keyboardController.attach();
-      wheelController?.attach();
+      if (config.enableGestures) {
+        gestureController.observe();
+      }
+      if (config.enableNavKeys) {
+        keyboardController.attach();
+      }
+      if (config.enableWheel) {
+        wheelController.attach();
+      }
     },
 
     unobserve() {
       gestureController.unobserve();
       keyboardController.detach();
-      wheelController?.detach();
+      wheelController.detach();
     },
 
     attach(element: HTMLElement) {
-      gestureController.attach(element);
+      if (config.enableGestures) {
+        gestureController.attach(element);
+      }
     },
 
     detach() {
       gestureController.detach();
       keyboardController.detach();
-      wheelController?.detach();
+      wheelController.detach();
     },
 
     dispose() {
       gestureController.detach();
       keyboardController.detach();
-      wheelController?.detach();
-      if (afterChangeDispose) {
-        afterChangeDispose();
-      }
+      wheelController.detach();
+      afterChangeDispose?.();
     },
   };
 };

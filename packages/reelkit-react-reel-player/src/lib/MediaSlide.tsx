@@ -18,6 +18,9 @@ interface MediaSlideProps {
   enableWheel?: boolean;
   onVideoRef?: (ref: HTMLVideoElement | null) => void;
   onActiveMediaTypeChange?: (type: 'image' | 'video') => void;
+  onReady?: () => void;
+  onWaiting?: () => void;
+  onError?: () => void;
   renderNestedNavigation?: (props: NavigationRenderProps) => ReactNode;
   renderNestedSlide?: (props: NestedSlideRenderProps) => ReactNode;
 }
@@ -39,17 +42,24 @@ const MediaSlide: React.FC<MediaSlideProps> = ({
   enableWheel,
   onVideoRef,
   onActiveMediaTypeChange,
+  onReady,
+  onWaiting,
+  onError,
   renderNestedNavigation,
   renderNestedSlide,
 }) => {
   const { media } = content;
 
-  // Single image
   if (media.length === 1 && media[0].type === 'image') {
-    return <ImageSlide src={media[0].src} size={size} />;
+    return (
+      <ImageSlide
+        src={media[0].src}
+        size={size}
+        imageProps={{ onLoad: onReady, onError }}
+      />
+    );
   }
 
-  // Single video
   if (media.length === 1 && media[0].type === 'video') {
     return (
       <VideoSlide
@@ -60,14 +70,17 @@ const MediaSlide: React.FC<MediaSlideProps> = ({
         isActive={isActive}
         slideKey={content.id}
         onVideoRef={onVideoRef}
+        onReady={onReady}
+        onWaiting={onWaiting}
+        onError={onError}
       />
     );
   }
 
-  // Multiple media items - use nested slider
   return (
     <NestedSlider
       media={media}
+      contentItem={content}
       isParentActive={isActive}
       size={size}
       contentId={content.id}
@@ -75,6 +88,9 @@ const MediaSlide: React.FC<MediaSlideProps> = ({
       enableWheel={enableWheel}
       onVideoRef={onVideoRef}
       onActiveMediaTypeChange={onActiveMediaTypeChange}
+      onReady={onReady}
+      onWaiting={onWaiting}
+      onError={onError}
       renderNavigation={renderNestedNavigation}
       renderNestedSlide={renderNestedSlide}
     />

@@ -54,7 +54,7 @@ export function InfiniteListDemo() {
         size={size}
         direction="vertical"
         enableWheel={false}
-        useNavKeys={false}
+        enableNavKeys={false}
         apiRef={apiRef}
         afterChange={(index) => setCurrentIndex(index)}
         itemBuilder={(index, indexInRange, itemSize) => (

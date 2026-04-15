@@ -1,0 +1,272 @@
+.rk-lightbox-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #000;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rk-lightbox-slide {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.rk-lightbox-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.rk-lightbox-btn,
+.rk-lightbox-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  border-radius: 50%;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    transform 0.2s;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.rk-lightbox-btn:hover,
+.rk-lightbox-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
+}
+
+.rk-lightbox-btn:active,
+.rk-lightbox-close:active {
+  transform: scale(0.95);
+}
+
+.rk-lightbox-btn {
+  width: 36px;
+  height: 36px;
+}
+
+/* Top shade behind controls */
+.rk-lightbox-top-shade {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: linear-gradient(rgba(0, 0, 0, 0.6), transparent);
+  pointer-events: none;
+  z-index: 9;
+}
+
+/* Loading spinner */
+.rk-lightbox-spinner {
+  position: absolute;
+  top: 22px;
+  right: 72px;
+  z-index: 10;
+  width: 28px;
+  height: 28px;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: rk-lightbox-spin 0.8s linear infinite;
+}
+
+@keyframes rk-lightbox-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.rk-lightbox-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 10;
+  width: 40px;
+  height: 40px;
+}
+
+.rk-lightbox-controls-left {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.rk-lightbox-counter {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 6px 12px;
+  border-radius: 20px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.rk-lightbox-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border: none;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  border-radius: 50%;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    transform 0.2s,
+    opacity 0.2s;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  opacity: 0.7;
+}
+
+.rk-lightbox-nav:hover {
+  background: rgba(255, 255, 255, 0.2);
+  opacity: 1;
+  transform: translateY(-50%) scale(1.05);
+}
+
+.rk-lightbox-nav:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.rk-lightbox-nav-prev {
+  left: 16px;
+}
+
+.rk-lightbox-nav-next {
+  right: 16px;
+}
+
+.rk-lightbox-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  z-index: 10;
+  right: 0;
+  padding: 24px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+  color: #fff;
+  pointer-events: none;
+}
+
+.rk-lightbox-title {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.rk-lightbox-description {
+  margin: 0;
+  font-size: 14px;
+  opacity: 0.8;
+  line-height: 1.5;
+}
+
+.rk-lightbox-swipe-hint {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 12px;
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 20px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  pointer-events: none;
+  animation: rk-lightboxFadeInOut 3s ease-in-out forwards;
+}
+
+@keyframes rk-lightboxFadeInOut {
+  0% {
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.rk-lightbox-container:has(.rk-lightbox-swipe-hint) .rk-lightbox-info {
+  padding-bottom: 64px;
+}
+
+.rk-lightbox-empty {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+  text-align: center;
+  padding: 24px;
+}
+
+.rk-lightbox-img {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.rk-lightbox-img.rk-loaded {
+  opacity: 1;
+}
+
+.rk-lightbox-img-error {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.rk-lightbox-img-error-text {
+  font-size: 13px;
+  letter-spacing: 0.02em;
+}
+
+.rk-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

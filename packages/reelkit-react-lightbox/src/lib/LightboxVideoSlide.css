@@ -34,34 +34,3 @@
 .rk-lightbox-video-poster.rk-visible {
   opacity: 1;
 }
-
-/* Wave loader animation */
-.rk-lightbox-video-loader {
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  pointer-events: none;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.15) 50%,
-    transparent 100%
-  );
-  background-size: 200% 100%;
-  animation: rk-lightbox-video-wave 1.5s ease-in-out infinite;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.rk-lightbox-video-loader.rk-visible {
-  opacity: 1;
-}
-
-@keyframes rk-lightbox-video-wave {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}

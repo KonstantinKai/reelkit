@@ -3,21 +3,24 @@ import { noop } from '../utils/noop';
 
 type EasingFn = (t: number) => number;
 
-// Cubic bezier easing (0.4, 0, 0.2, 1) — "easeInOut" material curve
-// Based on https://github.com/gre/bezier-easing (MIT)
+const _kNewtonIterations = 4;
+const _kNewtonMinSlope = 0.001;
+const _kSubdivisionPrecision = 0.0000001;
+const _kSubdivisionMaxIterations = 10;
+const _kTableSize = 11;
+const _kSampleStep = 1.0 / (_kTableSize - 1);
+
+/**
+ * Cubic bezier easing.
+ *
+ * Credits: [bezier-easing](https://github.com/gre/bezier-easing) (MIT)
+ */
 const createBezierEasing = (
   x1: number,
   y1: number,
   x2: number,
   y2: number,
 ): EasingFn => {
-  const NEWTON_ITERATIONS = 4;
-  const NEWTON_MIN_SLOPE = 0.001;
-  const SUBDIVISION_PRECISION = 0.0000001;
-  const SUBDIVISION_MAX_ITERATIONS = 10;
-  const TABLE_SIZE = 11;
-  const SAMPLE_STEP = 1.0 / (TABLE_SIZE - 1);
-
   const a = (a1: number, a2: number) => 1.0 - 3.0 * a2 + 3.0 * a1;
   const b = (a1: number, a2: number) => 3.0 * a2 - 6.0 * a1;
   const c = (a1: number) => 3.0 * a1;
@@ -38,14 +41,14 @@ const createBezierEasing = (
       if (current > 0.0) hi = t;
       else lo = t;
     } while (
-      abs(current) > SUBDIVISION_PRECISION &&
-      ++i < SUBDIVISION_MAX_ITERATIONS
+      abs(current) > _kSubdivisionPrecision &&
+      ++i < _kSubdivisionMaxIterations
     );
     return t;
   };
 
   const newtonRaphson = (x: number, guess: number) => {
-    for (let i = 0; i < NEWTON_ITERATIONS; ++i) {
+    for (let i = 0; i < _kNewtonIterations; ++i) {
       const currentSlope = slope(guess, x1, x2);
       if (currentSlope === 0.0) return guess;
       const currentX = calc(guess, x1, x2) - x;
@@ -55,37 +58,37 @@ const createBezierEasing = (
   };
 
   // Pre-compute sample table
-  const sampleValues = new Float32Array(TABLE_SIZE);
-  for (let i = 0; i < TABLE_SIZE; ++i) {
-    sampleValues[i] = calc(i * SAMPLE_STEP, x1, x2);
+  const sampleValues = new Float32Array(_kTableSize);
+  for (let i = 0; i < _kTableSize; ++i) {
+    sampleValues[i] = calc(i * _kSampleStep, x1, x2);
   }
 
   const getTForX = (x: number) => {
     let intervalStart = 0.0;
     let currentSample = 1;
-    const lastSample = TABLE_SIZE - 1;
+    const lastSample = _kTableSize - 1;
 
     for (
       ;
       currentSample !== lastSample && sampleValues[currentSample] <= x;
       ++currentSample
     ) {
-      intervalStart += SAMPLE_STEP;
+      intervalStart += _kSampleStep;
     }
     --currentSample;
 
     const dist =
       (x - sampleValues[currentSample]) /
       (sampleValues[currentSample + 1] - sampleValues[currentSample]);
-    const guessForT = intervalStart + dist * SAMPLE_STEP;
+    const guessForT = intervalStart + dist * _kSampleStep;
 
     const initialSlope = slope(guessForT, x1, x2);
-    if (initialSlope >= NEWTON_MIN_SLOPE) {
+    if (initialSlope >= _kNewtonMinSlope) {
       return newtonRaphson(x, guessForT);
     } else if (initialSlope === 0.0) {
       return guessForT;
     }
-    return binarySubdivide(x, intervalStart, intervalStart + SAMPLE_STEP);
+    return binarySubdivide(x, intervalStart, intervalStart + _kSampleStep);
   };
 
   return (x: number) => {

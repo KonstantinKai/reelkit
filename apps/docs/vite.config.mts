@@ -10,6 +10,19 @@ export default defineConfig(() => ({
   server: {
     port: 4200,
     host: 'localhost',
+    proxy: {
+      '/cdn': {
+        target: 'https://cdn.reelkit.dev',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/cdn/, ''),
+        configure: (proxy) => {
+          proxy.on('proxyReq', (proxyReq) => {
+            proxyReq.setHeader('X-RK-Token', process.env.VITE_CDN_TOKEN || '');
+            proxyReq.setHeader('Origin', 'http://localhost:4200');
+          });
+        },
+      },
+    },
   },
   preview: {
     port: 4200,

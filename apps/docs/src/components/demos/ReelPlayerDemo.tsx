@@ -5,6 +5,7 @@ import {
 } from '@reelkit/react-reel-player';
 import '@reelkit/react-reel-player/styles.css';
 import { Play } from 'lucide-react';
+import { cdnUrl } from '@reelkit/example-data';
 import { useTheme } from '../../context/ThemeContext';
 
 const SAMPLE_CONTENT: ContentItem[] = [
@@ -14,16 +15,14 @@ const SAMPLE_CONTENT: ContentItem[] = [
       {
         id: 'v1',
         type: 'video',
-        src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-        poster:
-          'https://storage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerBlazes.jpg',
+        src: cdnUrl('samples/videos/video-01.mp4'),
+        poster: cdnUrl('samples/videos/video-poster-01.jpg'),
         aspectRatio: 16 / 9,
       },
     ],
     author: {
       name: 'Alex Johnson',
-      avatar:
-        'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100',
+      avatar: cdnUrl('samples/avatars/avatar-01.jpg'),
     },
     likes: 1234,
     description: 'Amazing sunset vibes',
@@ -34,14 +33,13 @@ const SAMPLE_CONTENT: ContentItem[] = [
       {
         id: 'img1',
         type: 'image',
-        src: 'https://images.pexels.com/photos/1770809/pexels-photo-1770809.jpeg?auto=compress&cs=tinysrgb&w=800',
+        src: cdnUrl('samples/images/image-01.jpg'),
         aspectRatio: 2 / 3,
       },
     ],
     author: {
       name: 'Sarah Miller',
-      avatar:
-        'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=100',
+      avatar: cdnUrl('samples/avatars/avatar-02.jpg'),
     },
     likes: 5678,
     description: 'Nature at its finest',
@@ -52,16 +50,14 @@ const SAMPLE_CONTENT: ContentItem[] = [
       {
         id: 'v2',
         type: 'video',
-        src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
-        poster:
-          'https://storage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerFun.jpg',
+        src: cdnUrl('samples/videos/video-02.mp4'),
+        poster: cdnUrl('samples/videos/video-poster-02.jpg'),
         aspectRatio: 16 / 9,
       },
     ],
     author: {
       name: 'James Wilson',
-      avatar:
-        'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=100',
+      avatar: cdnUrl('samples/avatars/avatar-03.jpg'),
     },
     likes: 3456,
     description: 'City life adventures',
@@ -72,20 +68,19 @@ const SAMPLE_CONTENT: ContentItem[] = [
       {
         id: 'img2',
         type: 'image',
-        src: 'https://images.pexels.com/photos/2387873/pexels-photo-2387873.jpeg?auto=compress&cs=tinysrgb&w=800',
+        src: cdnUrl('samples/images/image-02.jpg'),
         aspectRatio: 2 / 3,
       },
       {
         id: 'img3',
         type: 'image',
-        src: 'https://images.pexels.com/photos/3225517/pexels-photo-3225517.jpeg?auto=compress&cs=tinysrgb&w=800',
+        src: cdnUrl('samples/images/image-03.jpg'),
         aspectRatio: 3 / 4,
       },
     ],
     author: {
       name: 'Emma Davis',
-      avatar:
-        'https://images.pexels.com/photos/697509/pexels-photo-697509.jpeg?auto=compress&cs=tinysrgb&w=100',
+      avatar: cdnUrl('samples/avatars/avatar-04.jpg'),
     },
     likes: 8901,
     description: 'Travel moments',
@@ -96,14 +91,13 @@ const SAMPLE_CONTENT: ContentItem[] = [
       {
         id: 'img4',
         type: 'image',
-        src: 'https://images.pexels.com/photos/1287145/pexels-photo-1287145.jpeg?auto=compress&cs=tinysrgb&w=800',
+        src: cdnUrl('samples/images/image-04.jpg'),
         aspectRatio: 2 / 3,
       },
     ],
     author: {
       name: 'Michael Brown',
-      avatar:
-        'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=100',
+      avatar: cdnUrl('samples/avatars/avatar-05.jpg'),
     },
     likes: 2345,
     description: 'Golden hour magic',
@@ -114,16 +108,14 @@ const SAMPLE_CONTENT: ContentItem[] = [
       {
         id: 'v3',
         type: 'video',
-        src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
-        poster:
-          'https://storage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerJoyrides.jpg',
+        src: cdnUrl('samples/videos/video-03.mp4'),
+        poster: cdnUrl('samples/videos/video-poster-03.jpg'),
         aspectRatio: 16 / 9,
       },
     ],
     author: {
       name: 'Alex Johnson',
-      avatar:
-        'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100',
+      avatar: cdnUrl('samples/avatars/avatar-01.jpg'),
     },
     likes: 7890,
     description: 'Living the moment',

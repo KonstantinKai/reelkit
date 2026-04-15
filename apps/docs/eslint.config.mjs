@@ -6,7 +6,10 @@ export default [
   ...nx.configs['flat/react'],
   {
     files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
-    // Override or add rules here
-    rules: {},
+    rules: {
+      '@nx/workspace-constant-naming': 'off',
+      '@nx/workspace-fields-before-callbacks': 'off',
+      '@nx/workspace-lines-between-type-members': 'off',
+    },
   },
 ];

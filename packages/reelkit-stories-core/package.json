@@ -1,0 +1,54 @@
+{
+  "name": "@reelkit/stories-core",
+  "version": "0.1.0",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "!dist/package.json",
+    "!dist/README.md",
+    "!**/*.tsbuildinfo"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KonstantinKai/reelkit.git",
+    "directory": "packages/reelkit-stories-core"
+  },
+  "bugs": "https://github.com/KonstantinKai/reelkit/issues",
+  "homepage": "https://reelkit.dev/docs/stories-core",
+  "funding": {
+    "type": "buymeacoffee",
+    "url": "https://buymeacoffee.com/konstantinkai"
+  },
+  "description": "Framework-agnostic stories state machine, timer, and utilities for ReelKit",
+  "license": "MIT",
+  "keywords": [
+    "stories",
+    "instagram-stories",
+    "state-machine",
+    "timer",
+    "tap-zone",
+    "progress-bar",
+    "framework-agnostic",
+    "zero-dependencies",
+    "typescript"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {},
+  "dependencies": {
+    "@reelkit/core": "^0.3.0"
+  }
+}

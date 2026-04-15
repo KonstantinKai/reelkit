@@ -11,6 +11,43 @@ module.exports = {
     ...createGlobPatternsForDependencies(__dirname),
   ],
   darkMode: 'class',
+  safelist: [
+    // Framework binding colors used in the data-driven packages section.
+    // Tailwind cannot detect dynamically-constructed class names like
+    // `bg-${color}-500`, so every variant must be listed explicitly.
+    ...[
+      'sky', // React
+      'rose', // Angular
+      'emerald', // Vue (upcoming)
+    ].flatMap((c) => [
+      `border-${c}-200`,
+      `border-${c}-300`,
+      `border-${c}-400`,
+      `border-${c}-600`,
+      `border-${c}-700`,
+      `border-${c}-800`,
+      `bg-${c}-50/60`,
+      `bg-${c}-500`,
+      `bg-${c}-500/10`,
+      `text-${c}-500`,
+      `text-${c}-600`,
+      `text-${c}-700`,
+      `text-${c}-300`,
+      `text-${c}-400`,
+      `dark:border-${c}-600`,
+      `dark:border-${c}-700`,
+      `dark:border-${c}-800`,
+      `dark:bg-${c}-950/20`,
+      `dark:bg-${c}-400/10`,
+      `dark:text-${c}-300`,
+      `dark:text-${c}-400`,
+      `hover:border-${c}-400`,
+      `dark:hover:border-${c}-600`,
+      `bg-${c}-300`,
+      `dark:bg-${c}-700`,
+      `w-px`,
+    ]),
+  ],
   theme: {
     extend: {
       colors: {
@@ -55,6 +92,7 @@ module.exports = {
         'fade-in': 'fadeIn 0.5s ease-out',
         'slide-up': 'slideUp 0.5s ease-out',
         'slide-in-left': 'slideInLeft 0.3s ease-out',
+        'route-progress': 'routeProgress 2.5s ease-out forwards',
       },
       keyframes: {
         gradient: {
@@ -76,6 +114,11 @@ module.exports = {
         slideInLeft: {
           '0%': { opacity: '0', transform: 'translateX(-20px)' },
           '100%': { opacity: '1', transform: 'translateX(0)' },
+        },
+        routeProgress: {
+          '0%': { width: '15%', opacity: '1' },
+          '50%': { width: '60%', opacity: '1' },
+          '100%': { width: '90%', opacity: '1' },
         },
       },
     },

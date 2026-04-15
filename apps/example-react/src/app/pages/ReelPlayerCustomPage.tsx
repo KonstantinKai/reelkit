@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback, useRef } from 'react';
 import {
   ReelPlayerOverlay,
   CloseButton,
@@ -7,14 +7,21 @@ import {
   type NavigationRenderProps,
 } from '@reelkit/react-reel-player';
 import '@reelkit/react-reel-player/styles.css';
-import { generateContent } from '../components/reel-player/mockContent';
+import { createSignal } from '@reelkit/core';
+import { Observe } from '@reelkit/react';
+import {
+  generateContent,
+  getContentItem,
+} from '../components/reel-player/mockContent';
+import { cdnUrl } from '@reelkit/example-data';
 
 type DemoType =
-  | 'default-overlay'
   | 'custom-overlay'
   | 'custom-controls'
   | 'custom-slide'
   | 'custom-nested-nav'
+  | 'infinity'
+  | 'custom-loading-error'
   | null;
 
 const DEMOS: {
@@ -24,12 +31,6 @@ const DEMOS: {
 
   description: string;
 }[] = [
-  {
-    id: 'default-overlay',
-    title: 'Default Slide Overlay',
-    description:
-      'Built-in overlay showing author, description, and likes. No extra props needed.',
-  },
   {
     id: 'custom-overlay',
     title: 'Custom Slide Overlay',
@@ -54,9 +55,37 @@ const DEMOS: {
     description:
       'Uses renderNestedNavigation to replace the default left/right arrows inside multi-media slides with custom pill-shaped buttons.',
   },
+  {
+    id: 'infinity',
+    title: 'Infinity (Lazy Load)',
+    description:
+      'Loads content in batches of 20 as you scroll. Uses onSlideChange to detect proximity to the end and appends more items, up to 1,000 total.',
+  },
+  {
+    id: 'custom-loading-error',
+    title: 'Custom Loading / Error',
+    description:
+      'Uses renderLoading and renderError to replace default wave loader and error icon. Includes a broken image slide.',
+  },
 ];
 
 const CONTENT_COUNT = 10;
+const INFINITY_BATCH = 20;
+const INFINITY_MAX = 1000;
+const INFINITY_THRESHOLD = 5;
+
+function generateInfinityBatch(start: number, count: number): ContentItem[] {
+  const batch: ContentItem[] = [];
+  for (let i = start; i < start + count && i < INFINITY_MAX; i++) {
+    const item = getContentItem(i);
+    batch.push({
+      ...item,
+      id: `infinity-${i}`,
+      media: item.media.map((m, mi) => ({ ...m, id: `infinity-${i}-${mi}` })),
+    });
+  }
+  return batch;
+}
 
 // Content sorted with multi-media items first (for nested nav demo)
 function getMultiMediaFirstContent(count: number): ContentItem[] {
@@ -74,12 +103,45 @@ function ReelPlayerCustomPage() {
     [],
   );
 
-  const closePlayer = () => setActiveDemo(null);
+  const [infinityContent, setInfinityContent] = useState<ContentItem[]>(() =>
+    generateInfinityBatch(0, INFINITY_BATCH),
+  );
+  const infinityLoadedRef = useRef(INFINITY_BATCH);
+  const [infinitySignals] = useState(() => ({
+    loading: createSignal(false),
+    index: createSignal(0),
+  }));
+
+  const handleInfinitySlideChange = useCallback((index: number) => {
+    infinitySignals.index.value = index;
+
+    const loaded = infinityLoadedRef.current;
+    if (loaded >= INFINITY_MAX) return;
+    if (index < loaded - INFINITY_THRESHOLD) return;
+
+    infinityLoadedRef.current = loaded + INFINITY_BATCH;
+    infinitySignals.loading.value = true;
+
+    setTimeout(() => {
+      const batch = generateInfinityBatch(loaded, INFINITY_BATCH);
+      setInfinityContent((prev) => [...prev, ...batch]);
+      infinitySignals.loading.value = false;
+    }, 2000);
+  }, []);
+
+  const closePlayer = () => {
+    setActiveDemo(null);
+    if (infinityLoadedRef.current !== INFINITY_BATCH) {
+      setInfinityContent(generateInfinityBatch(0, INFINITY_BATCH));
+      infinityLoadedRef.current = INFINITY_BATCH;
+      infinitySignals.loading.value = false;
+    }
+  };
 
   return (
     <div
       style={{
-        minHeight: '100vh',
+        minHeight: '100dvh',
         backgroundColor: '#111',
         padding: '56px 16px 16px',
       }}
@@ -161,17 +223,7 @@ function ReelPlayerCustomPage() {
         </div>
       </div>
 
-      {/* Demo 1: Default SlideOverlay */}
-      {activeDemo === 'default-overlay' && (
-        <ReelPlayerOverlay
-          isOpen
-          onClose={closePlayer}
-          content={content}
-          initialIndex={0}
-        />
-      )}
-
-      {/* Demo 2: Custom Slide Overlay */}
+      {/* Demo 1: Custom Slide Overlay */}
       {activeDemo === 'custom-overlay' && (
         <ReelPlayerOverlay
           isOpen
@@ -262,8 +314,9 @@ function ReelPlayerCustomPage() {
           onClose={closePlayer}
           content={content}
           initialIndex={0}
-          renderSlide={({ index, size }) => {
+          renderSlide={({ index, size, onReady }) => {
             if (index === content.length - 1) {
+              onReady();
               return (
                 <div
                   data-testid="cta-slide"
@@ -389,6 +442,150 @@ function ReelPlayerCustomPage() {
               >
                 Next
               </button>
+            </div>
+          )}
+        />
+      )}
+
+      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+
+      {/* Demo 6: Infinity (Lazy Load) */}
+      {activeDemo === 'infinity' && (
+        <>
+          <ReelPlayerOverlay
+            isOpen
+            onClose={closePlayer}
+            content={infinityContent}
+            initialIndex={0}
+            onSlideChange={handleInfinitySlideChange}
+            renderSlideOverlay={() => null}
+          />
+          <Observe signals={[infinitySignals.index]}>
+            {() => (
+              <div
+                style={{
+                  position: 'fixed',
+                  top: 16,
+                  left: 16,
+                  zIndex: 9999,
+                  padding: '4px 10px',
+                  borderRadius: 8,
+                  backgroundColor: 'rgba(0,0,0,0.5)',
+                  color: '#fff',
+                  fontSize: 13,
+                  fontWeight: 500,
+                }}
+              >
+                {infinitySignals.index.value + 1} / {infinityContent.length}
+              </div>
+            )}
+          </Observe>
+          <Observe signals={[infinitySignals.loading]}>
+            {() =>
+              infinitySignals.loading.value ? (
+                <div
+                  style={{
+                    position: 'fixed',
+                    bottom: 24,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    zIndex: 9999,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
+                    padding: '8px 16px',
+                    borderRadius: 20,
+                    backgroundColor: 'rgba(0,0,0,0.7)',
+                    color: '#fff',
+                    fontSize: 13,
+                    fontWeight: 500,
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 18,
+                      height: 18,
+                      border: '2px solid rgba(255,255,255,0.3)',
+                      borderTopColor: '#fff',
+                      borderRadius: '50%',
+                      animation: 'spin 0.8s linear infinite',
+                    }}
+                  />
+                  Loading more…
+                </div>
+              ) : null
+            }
+          </Observe>
+        </>
+      )}
+      {activeDemo === 'custom-loading-error' && (
+        <ReelPlayerOverlay
+          isOpen={true}
+          onClose={closePlayer}
+          content={[
+            ...content.slice(0, 2),
+            {
+              id: 'broken-content',
+              media: [
+                {
+                  id: 'broken-img',
+                  type: 'image' as const,
+                  src: 'https://broken.invalid/does-not-exist.jpg',
+                  aspectRatio: 9 / 16,
+                },
+              ],
+              author: {
+                name: 'Error Demo',
+                avatar: cdnUrl('samples/avatars/avatar-01.jpg'),
+              },
+              likes: 0,
+              description: 'Broken image — shows custom error UI.',
+            },
+            ...content.slice(2, 5),
+          ]}
+          renderLoading={({ activeIndex }) => (
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                zIndex: 5,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'rgba(255,255,255,0.5)',
+                fontSize: 14,
+                gap: 8,
+              }}
+            >
+              <div
+                style={{
+                  width: 20,
+                  height: 20,
+                  border: '2px solid rgba(255,255,255,0.2)',
+                  borderTopColor: '#fff',
+                  borderRadius: '50%',
+                  animation: 'spin 0.8s linear infinite',
+                }}
+              />
+              Loading slide {activeIndex + 1}...
+            </div>
+          )}
+          renderError={({ activeIndex }) => (
+            <div
+              style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                zIndex: 10,
+                color: '#ff6b6b',
+                textAlign: 'center',
+              }}
+            >
+              <div style={{ fontSize: 48, marginBottom: 8 }}>⚠️</div>
+              <div style={{ fontSize: 14 }}>
+                Slide {activeIndex + 1} failed to load
+              </div>
             </div>
           )}
         />
