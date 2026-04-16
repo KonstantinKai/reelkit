@@ -1,2 +1,7 @@
-export { useGestures, type UseGesturesOptions } from './useGestures';
-export { useKeyboardNav, type UseKeyboardNavOptions } from './useKeyboardNav';
+export { useBodyLock } from './useBodyLock';
+export {
+  useFullscreen,
+  type UseFullscreenOptions,
+  type UseFullscreenReturn,
+} from './useFullscreen';
+export { SoundProvider, RK_SOUND_KEY, useSoundState } from './useSoundState';

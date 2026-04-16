@@ -12,6 +12,14 @@ import {
 import { clamp, type SliderDirection } from '@reelkit/core';
 import { RK_REEL_KEY } from '../context/ReelContext';
 
+/**
+ * Instagram-style scrolling dot indicator. Shows a sliding window of
+ * normal-sized dots with smaller edge dots indicating overflow.
+ *
+ * When rendered inside a {@link Reel}, `active` and `count` are
+ * auto-connected from the parent slider's context. Explicit props
+ * take precedence when provided.
+ */
 export const ReelIndicator = defineComponent({
   name: 'ReelIndicator',
   props: {
@@ -212,15 +220,58 @@ export const ReelIndicator = defineComponent({
             {
               key: i,
               'data-reel-indicator': i,
+              role: 'tab',
+              'aria-selected': isActive ? 'true' : 'false',
+              'aria-label': `Slide ${i + 1}`,
+              tabindex: isActive ? 0 : -1,
               style: wrapperStyle,
               onClick: () => handleDotClick(i),
+              onKeydown: (e: KeyboardEvent) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleDotClick(i);
+                }
+              },
             },
             [h('span', { style: dotStyle })],
           ),
         );
       }
 
-      return h('div', { style: containerStyle.value }, dots);
+      return h(
+        'div',
+        {
+          role: 'tablist',
+          'aria-label': 'Slide navigation',
+          style: containerStyle.value,
+          onKeydown: (e: KeyboardEvent) => {
+            const isVert = isVertical.value;
+            const prevKey = isVert ? 'ArrowUp' : 'ArrowLeft';
+            const nextKey = isVert ? 'ArrowDown' : 'ArrowRight';
+            let targetIndex: number | null = null;
+
+            if (e.key === prevKey) {
+              targetIndex = Math.max(0, active - 1);
+            } else if (e.key === nextKey) {
+              targetIndex = Math.min(count - 1, active + 1);
+            } else if (e.key === 'Home') {
+              targetIndex = 0;
+            } else if (e.key === 'End') {
+              targetIndex = count - 1;
+            }
+
+            if (targetIndex !== null) {
+              e.preventDefault();
+              handleDotClick(targetIndex);
+              const target = (e.currentTarget as HTMLElement)?.querySelector(
+                `[data-reel-indicator="${targetIndex}"]`,
+              ) as HTMLElement | null;
+              target?.focus();
+            }
+          },
+        },
+        dots,
+      );
     };
   },
 });

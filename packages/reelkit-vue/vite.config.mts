@@ -37,7 +37,7 @@ export default defineConfig(() => ({
       formats: ['es' as const],
     },
     rollupOptions: {
-      external: ['vue'],
+      external: ['vue', '@reelkit/core'],
     },
   },
   test: {

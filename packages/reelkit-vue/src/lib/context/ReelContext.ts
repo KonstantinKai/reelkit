@@ -15,5 +15,9 @@ export interface ReelContextValue {
 export const RK_REEL_KEY: InjectionKey<ReelContextValue> =
   Symbol('RK_REEL_KEY');
 
+/**
+ * Returns the {@link ReelContextValue} from the nearest parent {@link Reel},
+ * or `null` if called outside a Reel.
+ */
 export const useReelContext = (): ReelContextValue | null =>
   inject(RK_REEL_KEY, null);
