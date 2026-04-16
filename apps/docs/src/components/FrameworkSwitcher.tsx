@@ -3,6 +3,7 @@ import { Observe } from '@reelkit/react';
 import {
   frameworkSignal,
   setFramework,
+  kFrameworks,
   type Framework,
 } from '../data/frameworkSignal';
 
@@ -27,15 +28,24 @@ function AngularIcon({ className }: { className?: string }) {
   );
 }
 
+function VueIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="currentColor">
+      <path d="M2 3h3.5L12 15l6.5-12H22L12 21 2 3zm4.5 0H10l2 3.6L14 3h3.5L12 13.2 6.5 3z" />
+    </svg>
+  );
+}
+
 const frameworkIcons: Record<
   Framework,
   { Icon: typeof ReactIcon; color: string; label: string }
 > = {
   react: { Icon: ReactIcon, color: 'text-sky-500', label: 'React' },
   angular: { Icon: AngularIcon, color: 'text-rose-500', label: 'Angular' },
+  vue: { Icon: VueIcon, color: 'text-emerald-500', label: 'Vue' },
 };
 
-export { ReactIcon, AngularIcon };
+export { ReactIcon, AngularIcon, VueIcon };
 
 export default function FrameworkSwitcher() {
   const [isOpen, setIsOpen] = useState(false);
@@ -48,7 +58,7 @@ export default function FrameworkSwitcher() {
           <Observe signals={[frameworkSignal]}>
             {() => (
               <div className="relative flex flex-col gap-2 mb-1">
-                {(['react', 'angular'] as const).map((fw) => {
+                {kFrameworks.map((fw) => {
                   if (frameworkSignal.value === fw) return null;
                   const { Icon, color, label } = frameworkIcons[fw];
                   return (

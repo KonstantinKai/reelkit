@@ -242,6 +242,7 @@ disposeIndexes();`}
             path: {
               react: '/docs/react/guide',
               angular: '/docs/angular/guide',
+              vue: '/docs/vue/guide',
             },
             description: 'components, demos, and integration',
           },
@@ -250,6 +251,7 @@ disposeIndexes();`}
             path: {
               react: '/docs/reel-player',
               angular: '/docs/angular-reel-player',
+              vue: '/docs/vue-reel-player',
             },
             description: 'TikTok/Reels-style video player',
           },
@@ -258,6 +260,7 @@ disposeIndexes();`}
             path: {
               react: '/docs/lightbox',
               angular: '/docs/angular-lightbox',
+              vue: '/docs/vue-lightbox',
             },
             description: 'image & video gallery',
           },
@@ -266,6 +269,7 @@ disposeIndexes();`}
             path: {
               react: '/docs/stories-player',
               angular: '/docs/angular-stories-player',
+              vue: '/docs/vue-stories-player',
             },
             description: 'Instagram-style stories viewer',
           },
