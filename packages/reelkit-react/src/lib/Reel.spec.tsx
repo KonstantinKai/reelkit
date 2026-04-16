@@ -799,4 +799,90 @@ describe('Reel', () => {
       expect(container.firstElementChild).toBeTruthy();
     });
   });
+
+  describe('accessibility', () => {
+    it('sets role=region on root', () => {
+      const { container } = render(
+        <Reel count={3} size={[400, 600]} itemBuilder={defaultItemBuilder} />,
+      );
+
+      expect(container.firstElementChild!.getAttribute('role')).toBe('region');
+    });
+
+    it('sets aria-roledescription=carousel on root', () => {
+      const { container } = render(
+        <Reel count={3} size={[400, 600]} itemBuilder={defaultItemBuilder} />,
+      );
+
+      expect(
+        container.firstElementChild!.getAttribute('aria-roledescription'),
+      ).toBe('carousel');
+    });
+
+    it('applies ariaLabel prop', () => {
+      const { container } = render(
+        <Reel
+          count={3}
+          size={[400, 600]}
+          ariaLabel="Photo gallery"
+          itemBuilder={defaultItemBuilder}
+        />,
+      );
+
+      expect(container.firstElementChild!.getAttribute('aria-label')).toBe(
+        'Photo gallery',
+      );
+    });
+
+    it('sets role=tabpanel on slides', () => {
+      const { container } = render(
+        <Reel count={3} size={[400, 600]} itemBuilder={defaultItemBuilder} />,
+      );
+
+      const slide = container.querySelector('[data-index="0"]');
+      expect(slide?.getAttribute('role')).toBe('tabpanel');
+    });
+
+    it('sets inert on non-active slides', () => {
+      const { container } = render(
+        <Reel count={3} size={[400, 600]} itemBuilder={defaultItemBuilder} />,
+      );
+
+      const active = container.querySelector('[data-index="0"]');
+      expect(active?.getAttribute('inert')).toBeNull();
+
+      const inactive = container.querySelector('[data-index="1"]');
+      expect(inactive?.getAttribute('inert')).toBe('');
+    });
+
+    it('has aria-live region', () => {
+      const { container } = render(
+        <Reel count={3} size={[400, 600]} itemBuilder={defaultItemBuilder} />,
+      );
+
+      const liveRegion = container.querySelector('[aria-live="polite"]');
+      expect(liveRegion).toBeTruthy();
+    });
+
+    it('announces slide change in aria-live region', async () => {
+      let api: ReelApi | null = null;
+      const { container } = render(
+        <Reel
+          count={3}
+          size={[400, 600]}
+          apiRef={(a) => {
+            api = a;
+          }}
+          itemBuilder={defaultItemBuilder}
+        />,
+      );
+
+      await act(async () => {
+        await api!.goTo(1, false);
+      });
+
+      const liveRegion = container.querySelector('[aria-live="polite"]');
+      expect(liveRegion?.textContent).toContain('Slide 2 of 3');
+    });
+  });
 });
