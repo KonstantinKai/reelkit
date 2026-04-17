@@ -1,5 +1,6 @@
 import { CodeBlock } from '../../../components/ui/CodeBlock';
 import { NextSteps } from '../../../components/NextSteps';
+import { Sandbox } from '../../../components/ui/Sandbox';
 import { FeatureCardGrid } from '../../../components/ui/FeatureCard';
 import {
   ArrowRight,
@@ -83,11 +84,6 @@ export default function VueGuide() {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Installation</h2>
-        <CodeBlock code={`npm install @reelkit/vue`} language="bash" />
-      </section>
-
-      <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Basic Slider</h2>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           The{' '}
@@ -101,9 +97,8 @@ export default function VueGuide() {
           slot to render each slide with virtualization — only visible slides
           are mounted.
         </p>
-        <CodeBlock
+        <Sandbox
           code={`<script setup lang="ts">
-import { ref } from 'vue';
 import { Reel, ReelIndicator } from '@reelkit/vue';
 
 const items = [
@@ -156,6 +151,9 @@ const onAfterChange = (index: number) => {
   </Reel>
 </template>`}
           language="vue"
+          title="App.vue"
+          framework="vue"
+          stackblitzDeps={{ '@reelkit/vue': '0.1.0' }}
         />
       </section>
 

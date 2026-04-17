@@ -35,6 +35,8 @@ export function setFramework(fw: Framework): void {
 
 export function renderFramework<T>(
   cases: Partial<Record<Framework, () => T>>,
+  framework?: Framework,
 ): T | null {
-  return cases[frameworkSignal.value]?.() ?? null;
+  const fw = framework ?? frameworkSignal.value;
+  return cases[fw]?.() ?? null;
 }

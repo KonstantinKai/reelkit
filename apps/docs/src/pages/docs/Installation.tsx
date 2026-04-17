@@ -90,8 +90,8 @@ const bundleSizes: {
   },
   {
     name: '@reelkit/react',
-    js: '10.7 kB',
-    gzip: '3.9 kB',
+    js: '11.7 kB',
+    gzip: '4.3 kB',
     css: '-',
     cssGzip: '-',
     framework: 'react',
@@ -99,7 +99,7 @@ const bundleSizes: {
   {
     name: '@reelkit/react-reel-player',
     js: '13.7 kB',
-    gzip: '4.3 kB',
+    gzip: '4.4 kB',
     css: '2.8 kB',
     cssGzip: '0.9 kB',
     framework: 'react',
@@ -146,8 +146,8 @@ const bundleSizes: {
   },
   {
     name: '@reelkit/vue',
-    js: '20.4 kB',
-    gzip: '5.9 kB',
+    js: '13.1 kB',
+    gzip: '4.5 kB',
     css: '-',
     cssGzip: '-',
     framework: 'vue',
@@ -157,7 +157,7 @@ const bundleSizes: {
 const comparison = [
   {
     name: 'ReelKit (core + react)',
-    gzip: '9.9 kB',
+    gzip: '10.3 kB',
     virtualization: true,
     notes: 'Zero dependencies',
   },
@@ -169,7 +169,7 @@ const comparison = [
   },
   {
     name: 'ReelKit (core + vue)',
-    gzip: '11.9 kB',
+    gzip: '10.5 kB',
     virtualization: true,
     notes: 'Zero dependencies',
   },

@@ -180,7 +180,7 @@ export function Feed({ items }: { items: FeedItem[] }) {
     </Reel>
   );
 }`}
-                    language="typescript"
+                    language="tsx"
                   />
 
                   <p className="text-slate-600 dark:text-slate-400 mt-6 mb-4">
@@ -195,7 +195,7 @@ export default async function FeedPage() {
 
   return <Feed items={items} />;
 }`}
-                    language="typescript"
+                    language="tsx"
                   />
                 </section>
 
@@ -230,7 +230,7 @@ export default function FeedPage({ items }: Props) {
     />
   );
 }`}
-                    language="typescript"
+                    language="tsx"
                   />
                 </section>
 
@@ -269,7 +269,7 @@ export function FullScreenFeed({ items }: { items: FeedItem[] }) {
     />
   );
 }`}
-                    language="typescript"
+                    language="tsx"
                   />
                   <div className="mt-4">
                     <Callout type="info" title="How auto-size works">
@@ -331,7 +331,7 @@ export function FullScreenFeed({ items }: { items: FeedItem[] }) {
     />
   );
 }`}
-                    language="typescript"
+                    language="tsx"
                   />
                   <div className="mt-4">
                     <Callout type="info" title="Tip">
@@ -396,7 +396,7 @@ export function VideoFeed({ content }: { content: ContentItem[] }) {
     </>
   );
 }`}
-                    language="typescript"
+                    language="tsx"
                   />
                 </section>
               </>

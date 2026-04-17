@@ -6,7 +6,6 @@ export default [
   ...baseConfig,
   {
     files: ['**/*.ts', '**/*.js'],
-    // Override or add rules here
     rules: {
       'playwright/expect-expect': 'off',
       'playwright/no-skipped-test': 'off',

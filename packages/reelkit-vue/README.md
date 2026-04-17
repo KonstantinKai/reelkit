@@ -2,13 +2,13 @@
 
 <p>
   <a href="https://www.npmjs.com/package/@reelkit/vue"><img src="https://img.shields.io/npm/v/@reelkit/vue?color=6366f1&label=npm" alt="npm" /></a>
-  <img src="https://img.shields.io/badge/gzip-5.9%20kB-6366f1" alt="Bundle size" />
+  <img src="https://img.shields.io/badge/gzip-4.5%20kB-6366f1" alt="Bundle size" />
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
 
-Vue 3 bindings for `@reelkit/core`. Drop in a `<Reel>` component, give it a slide count and an item slot — it handles virtualization, gestures, and keyboard/wheel input. ~5.9 kB gzip.
+Vue 3 bindings for `@reelkit/core`. Drop in a `<Reel>` component, give it a slide count and an item slot — it handles virtualization, gestures, and keyboard/wheel input. ~4.5 kB gzip.
 
-**[Live Demo](https://vue-demo.reelkit.dev)**
+**[Live Demo](https://vue-demo.reelkit.dev/?utm_source=npm)** · **[Open in StackBlitz](https://stackblitz.com/github/KonstantinKai/reelkit-vue-starter)**
 
 ## Installation
 

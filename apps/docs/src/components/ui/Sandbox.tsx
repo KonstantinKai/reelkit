@@ -2,6 +2,8 @@ import { useState, useCallback, type ReactNode } from 'react';
 import { CodeBlock } from './CodeBlock';
 import { useTheme } from '../../context/ThemeContext';
 import { Eye, Code2, Maximize2, Minimize2, ExternalLink } from 'lucide-react';
+import type { Project } from '@stackblitz/sdk';
+import { renderFramework, type Framework } from '../../data/frameworkSignal';
 
 interface SandboxProps {
   code: string;
@@ -11,7 +13,7 @@ interface SandboxProps {
   height?: number;
   stackblitzDeps?: Record<string, string>;
   stackblitzStyles?: string[];
-  framework?: 'react' | 'angular';
+  framework?: Framework;
 }
 
 type Tab = 'preview' | 'code';
@@ -41,27 +43,46 @@ export function Sandbox({
       import('../../utils/stackblitz'),
     ]);
 
-    const project =
-      framework === 'angular'
-        ? stackblitzUtils.createAngularStackBlitzProject({
+    const result = renderFramework<[Project, string]>(
+      {
+        react: () => [
+          stackblitzUtils.createStackBlitzProject({
+            title: title ?? 'ReelKit Sandbox',
+            code,
+            dependencies: stackblitzDeps!,
+          }),
+          'src/App.tsx',
+        ],
+        angular: () => [
+          stackblitzUtils.createAngularStackBlitzProject({
             title: title ?? 'ReelKit Angular Sandbox',
             code,
             dependencies: stackblitzDeps!,
             styles: stackblitzStyles,
-          })
-        : stackblitzUtils.createStackBlitzProject({
-            title: title ?? 'ReelKit Sandbox',
+          }),
+          'src/app/app.component.ts',
+        ],
+        vue: () => [
+          stackblitzUtils.createVueStackBlitzProject({
+            title: title ?? 'ReelKit Vue Sandbox',
             code,
             dependencies: stackblitzDeps!,
-          });
+          }),
+          'src/App.vue',
+        ],
+      },
+      framework,
+    );
+
+    if (!result) return;
+    const [project, openFile] = result;
 
     window.plausible?.('StackBlitz Open', {
       props: { title: title ?? 'Untitled', framework },
     });
 
     sdk.default.openProject(project, {
-      openFile:
-        framework === 'angular' ? 'src/app/app.component.ts' : 'src/App.tsx',
+      openFile,
       newWindow: true,
       theme: theme === 'dark' ? 'dark' : 'light',
     });

@@ -19,6 +19,9 @@ npx nx dev example-react
 # Run the Angular example app (localhost:4200)
 npx nx dev example-angular
 
+# Run the Vue example app (localhost:4200)
+npx nx dev example-vue
+
 # Run the Next.js example app (localhost:3000)
 npx nx dev example-next
 
@@ -34,6 +37,7 @@ npx nx test @reelkit/react
 npx nx test @reelkit/angular
 npx nx test @reelkit/angular-lightbox
 npx nx test @reelkit/angular-reel-player
+npx nx test @reelkit/vue
 
 # Format + lint + typecheck
 npm run check
@@ -58,6 +62,7 @@ This is an Nx monorepo with the following packages:
 | `@reelkit/angular`             | `packages/reelkit-angular`             | Angular components and directives       |
 | `@reelkit/angular-reel-player` | `packages/reelkit-angular-reel-player` | Full-screen video reel player (Angular) |
 | `@reelkit/angular-lightbox`    | `packages/reelkit-angular-lightbox`    | Image gallery lightbox (Angular)        |
+| `@reelkit/vue`                 | `packages/reelkit-vue`                 | Vue 3 components and composables        |
 
 ## Making Changes
 
@@ -102,6 +107,7 @@ This is an Nx monorepo with the following packages:
 - **ES modules only** — all packages build to ESM.
 - **Angular conventions** — standalone components, signal inputs/outputs, `inject()`, `OnPush`, no `standalone: true` (default in v20+).
 - **React conventions** — functional components, hooks, `memo` for performance.
+- **Vue conventions** — Composition API with `<script setup lang="ts">`, `defineProps`/`defineEmits`/`defineModel`, provide/inject for parent-child wiring.
 
 ## Reporting Issues
 

@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
 import {
-  Github,
   Zap,
   Layers,
   Keyboard,
@@ -15,6 +14,7 @@ import {
 import { CodeBlock } from '../components/ui/CodeBlock';
 import { BasicSliderDemo } from '../components/demos/BasicSliderDemo';
 import { AnimatedLogo } from '../components/ui/AnimatedLogo';
+import { GitHubStarButton } from '../components/ui/GitHubStarButton';
 
 const highlights = [
   {
@@ -180,6 +180,7 @@ export default function Home() {
                   Get Started
                   <ArrowRight size={18} />
                 </Link>
+                <GitHubStarButton />
               </div>
             </div>
 
@@ -295,7 +296,7 @@ export default function Home() {
           </div>
 
           <div className="max-w-2xl mx-auto">
-            <CodeBlock code={codeExample} language="typescript" />
+            <CodeBlock code={codeExample} language="tsx" />
           </div>
         </div>
       </section>
@@ -412,20 +413,23 @@ export default function Home() {
                     {framework}
                   </span>
 
-                  <div className="flex items-center gap-3 mb-1">
-                    <Blocks
-                      className={`w-4 h-4 text-${color}-600 dark:text-${color}-400`}
-                    />
-                    <a
-                      href={`https://www.npmjs.com/package/${pkg}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`font-mono text-sm font-semibold text-${color}-700 dark:text-${color}-300 hover:underline`}
-                    >
-                      {pkg}
-                    </a>
-                    <span className="text-slate-500 dark:text-slate-400 text-sm">
-                      — {desc}
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-x-3 gap-y-0.5 mb-1">
+                    <div className="flex items-center gap-3">
+                      <Blocks
+                        className={`w-4 h-4 text-${color}-600 dark:text-${color}-400 shrink-0`}
+                      />
+                      <a
+                        href={`https://www.npmjs.com/package/${pkg}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`font-mono text-sm font-semibold text-${color}-700 dark:text-${color}-300 hover:underline`}
+                      >
+                        {pkg}
+                      </a>
+                    </div>
+                    <span className="text-slate-500 dark:text-slate-400 text-sm ml-7 sm:ml-0">
+                      <span className="hidden sm:inline">— </span>
+                      {desc}
                     </span>
                   </div>
 
@@ -490,15 +494,7 @@ export default function Home() {
             >
               Read the Docs
             </Link>
-            <a
-              href="https://github.com/KonstantinKai/reelkit"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-8 py-4 bg-slate-800 text-slate-300 font-semibold rounded-xl border border-slate-700 hover:bg-slate-700 hover:text-white transition-colors"
-            >
-              <Github size={20} />
-              GitHub
-            </a>
+            <GitHubStarButton variant="on-dark" />
           </div>
         </div>
       </section>

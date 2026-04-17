@@ -3,8 +3,9 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "build": "npx nx run-many -t build",
-    "test": "npx nx run-many -t test",
+    "build": "npx nx run-many -t build --no-tui",
+    "test": "npx nx run-many -t test --no-tui",
+    "e2e": "npx nx run-many -t e2e --no-tui",
     "typecheck": "npx nx run-many -t typecheck --no-tui",
     "lint": "npx nx run-many -t lint --no-tui",
     "fmt:chk": "npx nx format:check",

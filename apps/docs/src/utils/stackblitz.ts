@@ -11,6 +11,7 @@ const REELKIT_PACKAGES: Record<string, string> = {
   '@reelkit/angular': '0.2.0',
   '@reelkit/angular-reel-player': '0.2.0',
   '@reelkit/angular-lightbox': '0.2.0',
+  '@reelkit/vue': '0.1.0',
 };
 
 const PACKAGES_REQUIRING_CORE = [
@@ -22,6 +23,7 @@ const PACKAGES_REQUIRING_CORE = [
   '@reelkit/angular',
   '@reelkit/angular-reel-player',
   '@reelkit/angular-lightbox',
+  '@reelkit/vue',
 ];
 
 const PACKAGES_REQUIRING_REACT = [
@@ -434,6 +436,174 @@ bootstrapApplication(AppComponent);
       'tsconfig.json': tsconfig,
       'tsconfig.app.json': tsconfigApp,
       '.stackblitzrc': '{\n  "startCommand": "npx ng serve"\n}\n',
+    },
+  };
+}
+
+export function createVueStackBlitzProject(opts: {
+  title: string;
+  code: string;
+  dependencies: Record<string, string>;
+}): Project {
+  const allDeps = resolveTransitiveDeps(opts.dependencies);
+
+  const packageJson = JSON.stringify(
+    {
+      name: 'reelkit-vue-sandbox',
+      private: true,
+      version: '0.0.0',
+      type: 'module',
+      scripts: {
+        dev: 'vite',
+        build: 'vue-tsc -b && vite build',
+      },
+      dependencies: {
+        vue: '^3.5.0',
+        ...allDeps,
+      },
+      devDependencies: {
+        '@vitejs/plugin-vue': '^5.2.0',
+        typescript: '~5.6.0',
+        'vue-tsc': '^2.1.0',
+        vite: '^6.0.0',
+      },
+    },
+    null,
+    2,
+  );
+
+  const indexHtml = `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>${opts.title}</title>
+    <link rel="stylesheet" href="/src/index.css" />
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>`;
+
+  const indexCss = `*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #app {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  backdrop-filter: blur(8px);
+  transition: background 0.2s, opacity 0.2s;
+}
+
+button:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+`;
+
+  const mainTs = `import { createApp } from 'vue';
+import './index.css';
+import App from './App.vue';
+
+createApp(App).mount('#app');
+`;
+
+  const shimsDts = `declare module '*.vue' {
+  import type { DefineComponent } from 'vue';
+  const component: DefineComponent<Record<string, never>, Record<string, never>, unknown>;
+  export default component;
+}
+`;
+
+  const sbToken = import.meta.env.VITE_STACKBLITZ_CDN_TOKEN || '';
+
+  const viteConfig = `import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
+
+export default defineConfig({
+  plugins: [vue()],
+  server: {
+    proxy: {
+      '/cdn': {
+        target: 'https://cdn.reelkit.dev',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\\/cdn/, ''),
+        configure: (proxy) => {
+          proxy.on('proxyReq', (proxyReq) => {
+            proxyReq.setHeader('X-RK-Token', '${sbToken}');
+          });
+        },
+      },
+    },
+  },
+});`;
+
+  const tsconfig = JSON.stringify(
+    {
+      compilerOptions: {
+        target: 'ES2020',
+        useDefineForClassFields: true,
+        lib: ['ES2020', 'DOM', 'DOM.Iterable'],
+        module: 'ESNext',
+        skipLibCheck: true,
+        moduleResolution: 'bundler',
+        allowImportingTsExtensions: true,
+        isolatedModules: true,
+        moduleDetection: 'force',
+        noEmit: true,
+        jsx: 'preserve',
+        strict: true,
+      },
+      include: ['src'],
+    },
+    null,
+    2,
+  );
+
+  return {
+    title: opts.title,
+    template: 'node',
+    files: {
+      'package.json': packageJson,
+      'index.html': indexHtml,
+      'src/index.css': indexCss,
+      'src/main.ts': mainTs,
+      'src/App.vue': opts.code,
+      'src/shims-vue.d.ts': shimsDts,
+      'vite.config.ts': viteConfig,
+      'tsconfig.json': tsconfig,
     },
   };
 }

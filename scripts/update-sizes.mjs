@@ -66,6 +66,11 @@ const packages = [
     dir: 'reelkit-angular-lightbox',
     ngPackagr: true,
   },
+  {
+    name: '@reelkit/vue',
+    dir: 'reelkit-vue',
+    externalize: ['@reelkit/core'],
+  },
 ];
 
 /**
@@ -285,6 +290,7 @@ function updateDocs(filePath, results) {
   const core = results.find((r) => r.name === '@reelkit/core');
   const react = results.find((r) => r.name === '@reelkit/react');
   const angular = results.find((r) => r.name === '@reelkit/angular');
+  const vue = results.find((r) => r.name === '@reelkit/vue');
 
   if (core && react) {
     const combined = ((core.bytes + react.bytes) / 1024).toFixed(1);
@@ -298,6 +304,14 @@ function updateDocs(filePath, results) {
     const combined = ((core.bytes + angular.bytes) / 1024).toFixed(1);
     content = content.replace(
       /(name:\s*'ReelKit \(core \+ angular\)'.*?gzip:\s*')\d+\.\d+ kB/s,
+      `$1${combined} kB`,
+    );
+  }
+
+  if (core && vue) {
+    const combined = ((core.bytes + vue.bytes) / 1024).toFixed(1);
+    content = content.replace(
+      /(name:\s*'ReelKit \(core \+ vue\)'.*?gzip:\s*')\d+\.\d+ kB/s,
       `$1${combined} kB`,
     );
   }

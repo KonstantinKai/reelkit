@@ -87,7 +87,7 @@ export default function GettingStarted() {
               react: () => (
                 <div className="flex flex-wrap gap-3">
                   <a
-                    href="https://react-demo.reelkit.dev"
+                    href="https://react-demo.reelkit.dev/?utm_source=docs"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary-500 to-accent-500 text-white font-medium text-sm hover:shadow-lg hover:shadow-primary-500/25 transition-all duration-200"
@@ -115,7 +115,7 @@ export default function GettingStarted() {
               angular: () => (
                 <div className="flex flex-wrap gap-3">
                   <a
-                    href="https://angular-demo.reelkit.dev"
+                    href="https://angular-demo.reelkit.dev/?utm_source=docs"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary-500 to-accent-500 text-white font-medium text-sm hover:shadow-lg hover:shadow-primary-500/25 transition-all duration-200"
@@ -143,7 +143,7 @@ export default function GettingStarted() {
               vue: () => (
                 <div className="flex flex-wrap gap-3">
                   <a
-                    href="https://vue-demo.reelkit.dev"
+                    href="https://vue-demo.reelkit.dev/?utm_source=docs"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary-500 to-accent-500 text-white font-medium text-sm hover:shadow-lg hover:shadow-primary-500/25 transition-all duration-200"
@@ -219,7 +219,7 @@ function App() {
     </Reel>
   );
 }`}
-                  language="typescript"
+                  language="tsx"
                 />
               </section>
             ),
@@ -380,7 +380,7 @@ function App() {
     </Reel>
   );
 }`}
-                    language="typescript"
+                    language="tsx"
                   />
                 ),
                 angular: () => (
@@ -490,7 +490,7 @@ function App() {
     </>
   );
 }`}
-                  language="typescript"
+                  language="tsx"
                 />
               ),
               angular: () => (
