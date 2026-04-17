@@ -1,6 +1,6 @@
 ## @reelkit/vue@0.1.0 (2026-04-17)
 
-### 🚀 Features
+### 🎉 Initial Release
 
 - Virtualized single-item slider — only 3 slides in the DOM at a time, handles 10,000+ items
 - Built-in transitions: slide, cube, fade, flip, zoom (tree-shakeable)

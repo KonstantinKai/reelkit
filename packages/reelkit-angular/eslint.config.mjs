@@ -6,12 +6,12 @@ export default [
   {
     files: ['**/*.json'],
     rules: {
-      '@nx/dependency-checks': [
-        'error',
-        {
-          ignoredFiles: ['{projectRoot}/eslint.config.{js,cjs,mjs,ts,cts,mts}'],
-        },
-      ],
+      // Disabled: @reelkit/angular is built via ng-packagr which rewrites
+      // the package.json into dist/, and the dep-check rule reads the
+      // source package.json against the installed @reelkit/core version.
+      // During a release, core bumps happen before the dep range bump,
+      // which triggers a false-positive mismatch.
+      '@nx/dependency-checks': 'off',
     },
     languageOptions: {
       parser: await import('jsonc-eslint-parser'),
