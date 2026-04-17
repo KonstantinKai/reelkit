@@ -42,7 +42,7 @@
 | [@reelkit/react-lightbox](packages/reelkit-react-lightbox)             | Image & video gallery lightbox    | 3.1 kB    |
 | [@reelkit/stories-core](packages/reelkit-stories-core)                 | Framework-agnostic stories engine | 1.7 kB    |
 | [@reelkit/react-stories-player](packages/reelkit-react-stories-player) | Instagram-style stories player    | 5.6 kB    |
-| [@reelkit/angular](packages/reelkit-angular)                           | Angular standalone components     | 13.8 kB   |
+| [@reelkit/angular](packages/reelkit-angular)                           | Angular standalone components     | 13.9 kB   |
 | [@reelkit/angular-reel-player](packages/reelkit-angular-reel-player)   | Full-screen video reel player     | 17.3 kB   |
 | [@reelkit/angular-lightbox](packages/reelkit-angular-lightbox)         | Image & video gallery lightbox    | 14.0 kB   |
 | [@reelkit/vue](packages/reelkit-vue)                                   | Vue 3 components and composables  | 4.5 kB    |

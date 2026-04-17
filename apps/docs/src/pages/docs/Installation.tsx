@@ -122,8 +122,8 @@ const bundleSizes: {
   },
   {
     name: '@reelkit/angular',
-    js: '63.2 kB',
-    gzip: '13.8 kB',
+    js: '63.3 kB',
+    gzip: '13.9 kB',
     css: '-',
     cssGzip: '-',
     framework: 'angular',
