@@ -6,22 +6,48 @@ import changelogRaw from '../../../../../CHANGELOG.md?raw';
 
 /**
  * Minimal markdown-to-HTML for changelog format.
- * Handles: ## h2, ### h3, - list items (wrapped in ul), empty lines.
+ * Handles: ## h2, ### h3, - list items (wrapped in ul), inline `code`,
+ * empty lines. Escapes raw HTML characters inside inline code so literal
+ * tags like `<Reel>` survive the render instead of being interpreted
+ * (and silently swallowed) by the browser.
  */
-const linkMentions = (text: string): string =>
-  text
+const escapeHtml = (s: string): string =>
+  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+const renderInlineCode = (inner: string): string =>
+  `<code class="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono text-slate-800 dark:text-slate-200">${escapeHtml(inner)}</code>`;
+
+// Processes a line in two phases so mention-linking doesn't accidentally
+// match content that lives inside inline `code`:
+//   1. extract backtick spans into placeholders (e.g. `@tap` → __CODE_0__)
+//   2. run mention-linking on the remainder
+//   3. swap placeholders back for their rendered <code>…</code> HTML
+const linkMentions = (text: string): string => {
+  const codeHtml: string[] = [];
+  const withPlaceholders = text.replace(/`([^`]+)`/g, (_, inner) => {
+    codeHtml.push(renderInlineCode(inner));
+    return `\u0000CODE${codeHtml.length - 1}\u0000`;
+  });
+
+  const linked = withPlaceholders
     .replace(
       /\[(@[a-zA-Z\d](?:[a-zA-Z\d-]*[a-zA-Z\d])?)\]\((https?:\/\/[^)]+)\)/g,
       '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline">$1</a>',
     )
     .replace(
       // Match @username GitHub mentions, but NOT npm scopes like @reelkit/pkg.
-      // The trailing negative lookahead forbids alphanumeric/hyphen (prevents
+      // Trailing negative lookahead forbids alphanumeric/hyphen (prevents
       // regex backtracking to a shorter username like @reelki for @reelkit/x)
       // AND `]` (avoid double-linking) AND `/` (npm scope separator).
       /(?<!\[)@([a-zA-Z\d](?:[a-zA-Z\d-]*[a-zA-Z\d])?)(?![a-zA-Z\d\-\]/])/g,
       '<a href="https://github.com/$1" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline">@$1</a>',
     );
+
+  return linked.replace(
+    /\u0000CODE(\d+)\u0000/g,
+    (_, i) => codeHtml[Number(i)],
+  );
+};
 
 function renderChangelog(md: string): string {
   const lines = md.split('\n');
