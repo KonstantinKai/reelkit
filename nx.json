@@ -165,5 +165,6 @@
       "style": "css",
       "unitTestRunner": "jest"
     }
-  }
+  },
+  "analytics": true
 }
