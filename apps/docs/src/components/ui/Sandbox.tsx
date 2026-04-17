@@ -11,7 +11,8 @@ interface SandboxProps {
   children?: ReactNode;
   title?: string;
   height?: number;
-  stackblitzDeps?: Record<string, string>;
+  stackblitzDeps?: readonly string[];
+  stackblitzExtraDeps?: Record<string, string>;
   stackblitzStyles?: string[];
   framework?: Framework;
 }
@@ -25,6 +26,7 @@ export function Sandbox({
   title,
   height = 500,
   stackblitzDeps,
+  stackblitzExtraDeps,
   stackblitzStyles,
   framework = 'react',
 }: SandboxProps) {
@@ -50,6 +52,7 @@ export function Sandbox({
             title: title ?? 'ReelKit Sandbox',
             code,
             dependencies: stackblitzDeps!,
+            extraDependencies: stackblitzExtraDeps,
           }),
           'src/App.tsx',
         ],
@@ -58,6 +61,7 @@ export function Sandbox({
             title: title ?? 'ReelKit Angular Sandbox',
             code,
             dependencies: stackblitzDeps!,
+            extraDependencies: stackblitzExtraDeps,
             styles: stackblitzStyles,
           }),
           'src/app/app.component.ts',
@@ -67,6 +71,7 @@ export function Sandbox({
             title: title ?? 'ReelKit Vue Sandbox',
             code,
             dependencies: stackblitzDeps!,
+            extraDependencies: stackblitzExtraDeps,
           }),
           'src/App.vue',
         ],
@@ -86,7 +91,15 @@ export function Sandbox({
       newWindow: true,
       theme: theme === 'dark' ? 'dark' : 'light',
     });
-  }, [code, title, stackblitzDeps, stackblitzStyles, framework, theme]);
+  }, [
+    code,
+    title,
+    stackblitzDeps,
+    stackblitzExtraDeps,
+    stackblitzStyles,
+    framework,
+    theme,
+  ]);
 
   return (
     <div className="rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden bg-white dark:bg-slate-900 shadow-sm">

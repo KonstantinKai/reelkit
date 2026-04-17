@@ -153,7 +153,7 @@ const onAfterChange = (index: number) => {
           language="vue"
           title="App.vue"
           framework="vue"
-          stackblitzDeps={{ '@reelkit/vue': '0.1.0' }}
+          stackblitzDeps={['@reelkit/vue']}
         />
       </section>
 

@@ -1,20 +1,7 @@
 import type { Project } from '@stackblitz/sdk';
+import { REELKIT_VERSIONS } from 'virtual:reelkit-versions';
 
-// NOTE: Update these when publishing new versions
-const REELKIT_PACKAGES: Record<string, string> = {
-  '@reelkit/core': '0.4.0',
-  '@reelkit/react': '0.4.0',
-  '@reelkit/react-reel-player': '0.3.1',
-  '@reelkit/react-lightbox': '0.3.1',
-  '@reelkit/react-stories-player': '0.1.1',
-  '@reelkit/stories-core': '0.1.1',
-  '@reelkit/angular': '0.2.1',
-  '@reelkit/angular-reel-player': '0.2.1',
-  '@reelkit/angular-lightbox': '0.2.1',
-  '@reelkit/vue': '0.1.0',
-};
-
-const PACKAGES_REQUIRING_CORE = [
+const PACKAGES_REQUIRING_CORE = new Set([
   '@reelkit/react',
   '@reelkit/react-reel-player',
   '@reelkit/react-lightbox',
@@ -24,50 +11,54 @@ const PACKAGES_REQUIRING_CORE = [
   '@reelkit/angular-reel-player',
   '@reelkit/angular-lightbox',
   '@reelkit/vue',
-];
+]);
 
-const PACKAGES_REQUIRING_REACT = [
+const PACKAGES_REQUIRING_REACT = new Set([
   '@reelkit/react-reel-player',
   '@reelkit/react-lightbox',
   '@reelkit/react-stories-player',
-];
+]);
 
-const PACKAGES_REQUIRING_ANGULAR = [
+const PACKAGES_REQUIRING_ANGULAR = new Set([
   '@reelkit/angular-reel-player',
   '@reelkit/angular-lightbox',
-];
+]);
 
-function resolveTransitiveDeps(
-  deps: Record<string, string>,
+export type ReelkitDeps = readonly string[];
+export type ExtraDeps = Readonly<Record<string, string>>;
+
+function resolveDeps(
+  packages: ReelkitDeps,
+  extra?: ExtraDeps,
 ): Record<string, string> {
-  const resolved = { ...deps };
+  const names = new Set<string>(packages);
 
-  for (const pkg of Object.keys(deps)) {
-    if (PACKAGES_REQUIRING_REACT.includes(pkg) && !resolved['@reelkit/react']) {
-      resolved['@reelkit/react'] = REELKIT_PACKAGES['@reelkit/react'];
-    }
-    if (PACKAGES_REQUIRING_CORE.includes(pkg) && !resolved['@reelkit/core']) {
-      resolved['@reelkit/core'] = REELKIT_PACKAGES['@reelkit/core'];
-    }
-    if (
-      PACKAGES_REQUIRING_ANGULAR.includes(pkg) &&
-      !resolved['@reelkit/angular']
-    ) {
-      resolved['@reelkit/angular'] = REELKIT_PACKAGES['@reelkit/angular'];
-    }
+  for (const pkg of packages) {
+    if (PACKAGES_REQUIRING_REACT.has(pkg)) names.add('@reelkit/react');
+    if (PACKAGES_REQUIRING_ANGULAR.has(pkg)) names.add('@reelkit/angular');
+    if (PACKAGES_REQUIRING_CORE.has(pkg)) names.add('@reelkit/core');
   }
 
-  return resolved;
+  const resolved: Record<string, string> = {};
+  for (const name of names) {
+    const version = REELKIT_VERSIONS[name];
+    if (!version) {
+      throw new Error(
+        `[stackblitz] unknown reelkit package "${name}" — add it to packages/ or check the name`,
+      );
+    }
+    resolved[name] = version;
+  }
+  return { ...resolved, ...(extra ?? {}) };
 }
 
 export function createStackBlitzProject(opts: {
   title: string;
-
   code: string;
-
-  dependencies: Record<string, string>;
+  dependencies: ReelkitDeps;
+  extraDependencies?: ExtraDeps;
 }): Project {
-  const allDeps = resolveTransitiveDeps(opts.dependencies);
+  const allDeps = resolveDeps(opts.dependencies, opts.extraDependencies);
 
   const packageJson = JSON.stringify(
     {
@@ -236,10 +227,11 @@ export default defineConfig({
 export function createAngularStackBlitzProject(opts: {
   title: string;
   code: string;
-  dependencies: Record<string, string>;
+  dependencies: ReelkitDeps;
+  extraDependencies?: ExtraDeps;
   styles?: string[];
 }): Project {
-  const allDeps = resolveTransitiveDeps(opts.dependencies);
+  const allDeps = resolveDeps(opts.dependencies, opts.extraDependencies);
 
   const packageJson = JSON.stringify(
     {
@@ -443,9 +435,10 @@ bootstrapApplication(AppComponent);
 export function createVueStackBlitzProject(opts: {
   title: string;
   code: string;
-  dependencies: Record<string, string>;
+  dependencies: ReelkitDeps;
+  extraDependencies?: ExtraDeps;
 }): Project {
-  const allDeps = resolveTransitiveDeps(opts.dependencies);
+  const allDeps = resolveDeps(opts.dependencies, opts.extraDependencies);
 
   const packageJson = JSON.stringify(
     {

@@ -515,7 +515,7 @@ export class AppComponent {
           language="typescript"
           title="reel-feed.component.ts"
           framework="angular"
-          stackblitzDeps={{ '@reelkit/angular-reel-player': '0.2.1' }}
+          stackblitzDeps={['@reelkit/angular-reel-player']}
           stackblitzStyles={['@reelkit/angular-reel-player/styles.css']}
         />
       </section>

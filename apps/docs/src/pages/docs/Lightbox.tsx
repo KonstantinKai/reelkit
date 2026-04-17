@@ -469,10 +469,8 @@ function App() {
           code={fullCode}
           title="LightboxPage.tsx"
           height={500}
-          stackblitzDeps={{
-            '@reelkit/react-lightbox': '0.3.1',
-            'lucide-react': '^0.562.0',
-          }}
+          stackblitzDeps={['@reelkit/react-lightbox']}
+          stackblitzExtraDeps={{ 'lucide-react': '^0.562.0' }}
         >
           <LightboxDemo />
         </Sandbox>

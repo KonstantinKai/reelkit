@@ -621,10 +621,8 @@ function App() {
           code={basicFullCode}
           title="BasicSlider.tsx"
           height={500}
-          stackblitzDeps={{
-            '@reelkit/react': '0.4.0',
-            'lucide-react': '^0.562.0',
-          }}
+          stackblitzDeps={['@reelkit/react']}
+          stackblitzExtraDeps={{ 'lucide-react': '^0.562.0' }}
         >
           <BasicSliderDemo />
         </Sandbox>
@@ -717,10 +715,8 @@ function App() {
           code={infiniteFullCode}
           title="InfiniteList.tsx"
           height={500}
-          stackblitzDeps={{
-            '@reelkit/react': '0.4.0',
-            'lucide-react': '^0.562.0',
-          }}
+          stackblitzDeps={['@reelkit/react']}
+          stackblitzExtraDeps={{ 'lucide-react': '^0.562.0' }}
         >
           <InfiniteListDemo />
         </Sandbox>
@@ -768,10 +764,8 @@ function App() {
           code={growableFullCode}
           title="GrowableList.tsx"
           height={500}
-          stackblitzDeps={{
-            '@reelkit/react': '0.4.0',
-            'lucide-react': '^0.562.0',
-          }}
+          stackblitzDeps={['@reelkit/react']}
+          stackblitzExtraDeps={{ 'lucide-react': '^0.562.0' }}
         >
           <GrowableListDemo />
         </Sandbox>

@@ -562,10 +562,8 @@ function App() {
           code={fullCode}
           title="ReelPlayerPage.tsx"
           height={500}
-          stackblitzDeps={{
-            '@reelkit/react-reel-player': '0.3.1',
-            'lucide-react': '^0.562.0',
-          }}
+          stackblitzDeps={['@reelkit/react-reel-player']}
+          stackblitzExtraDeps={{ 'lucide-react': '^0.562.0' }}
         >
           <ReelPlayerDemo />
         </Sandbox>

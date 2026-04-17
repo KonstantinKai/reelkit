@@ -492,10 +492,7 @@ export default function StoriesPlayerPage() {
           code={fullCode}
           title="StoriesPlayer.tsx"
           height={200}
-          stackblitzDeps={{
-            '@reelkit/react-stories-player': '0.1.1',
-            '@reelkit/react': '0.4.0',
-          }}
+          stackblitzDeps={['@reelkit/react-stories-player', '@reelkit/react']}
         >
           <StoriesPlayerDemo />
         </Sandbox>
