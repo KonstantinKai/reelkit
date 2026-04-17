@@ -1,28 +1,47 @@
 import {
   defineComponent,
   h,
-  shallowRef,
   ref,
   onMounted,
   onUnmounted,
   watch,
+  type ExtractPropTypes,
   type PropType,
 } from 'vue';
-import {
-  createSignal,
-  createGestureController,
-  createDisposableList,
-  abs,
-} from '@reelkit/core';
+import { createGestureController, abs } from '@reelkit/core';
 
-/** Swipe direction for the SwipeToClose gesture. */
+/** Swipe direction for the {@link SwipeToClose} gesture. */
 export type SwipeToCloseDirection = 'up' | 'down';
 
-export interface SwipeToCloseProps {
-  direction: SwipeToCloseDirection;
-  enabled?: boolean;
-  threshold?: number;
-}
+/** Props accepted by the {@link SwipeToClose} component. */
+const swipeToCloseProps = {
+  /**
+   * Swipe direction that triggers dismiss. `'down'` for stories-style
+   * overlays (pull down to close), `'up'` for lightbox-style (push up).
+   */
+  direction: {
+    type: String as PropType<SwipeToCloseDirection>,
+    required: true as const,
+  },
+
+  /**
+   * Toggle gesture handling on/off without unmounting the component.
+   *
+   * @default true
+   */
+  enabled: { type: Boolean, default: true },
+
+  /**
+   * Fraction of viewport height a swipe must exceed to dismiss. `0.2`
+   * means drag > 20 % of window height → emit `close`.
+   *
+   * @default 0.2
+   */
+  threshold: { type: Number, default: 0.2 },
+};
+
+/** Public props interface for the {@link SwipeToClose} component. */
+export type SwipeToCloseProps = ExtractPropTypes<typeof swipeToCloseProps>;
 
 /**
  * Wraps its default slot in a touch-aware container that can be swiped
@@ -31,29 +50,18 @@ export interface SwipeToCloseProps {
  */
 export const SwipeToClose = defineComponent({
   name: 'SwipeToClose',
-  props: {
-    direction: {
-      type: String as PropType<SwipeToCloseDirection>,
-      required: true,
-    },
-    enabled: { type: Boolean, default: true },
-    threshold: { type: Number, default: 0.2 },
-  },
+  props: swipeToCloseProps,
   emits: ['close'],
   setup(props, { slots, emit }) {
     const containerRef = ref<HTMLElement | null>(null);
     const isDown = props.direction === 'down';
     const sign = isDown ? 1 : -1;
 
-    const dragOffset = createSignal(0);
-    const opacity = createSignal(1);
-    const isTransitioning = createSignal(false);
+    const dragOffset = ref(0);
+    const opacity = ref(1);
+    const isTransitioning = ref(false);
 
-    const dragRef = shallowRef(0);
-    const opacityRef = shallowRef(1);
-    const transitioningRef = shallowRef(false);
-
-    const verticalDragEndHandled = { current: false };
+    let verticalDragEndHandled = false;
 
     const resetToOriginalPosition = () => {
       isTransitioning.value = true;
@@ -68,7 +76,7 @@ export const SwipeToClose = defineComponent({
       { useTouchEventsOnly: true },
       {
         onVerticalDragStart: () => {
-          verticalDragEndHandled.current = false;
+          verticalDragEndHandled = false;
         },
         onVerticalDragUpdate: (event) => {
           const matchesDirection = isDown
@@ -86,7 +94,7 @@ export const SwipeToClose = defineComponent({
           }
         },
         onVerticalDragEnd: (event) => {
-          verticalDragEndHandled.current = true;
+          verticalDragEndHandled = true;
           const height = window.innerHeight;
           const dismissThreshold = height * props.threshold;
           const matchesDirection = isDown
@@ -106,25 +114,11 @@ export const SwipeToClose = defineComponent({
           }
         },
         onDragEnd: () => {
-          if (!verticalDragEndHandled.current && dragOffset.value !== 0) {
+          if (!verticalDragEndHandled && dragOffset.value !== 0) {
             resetToOriginalPosition();
           }
         },
       },
-    );
-
-    const disposables = createDisposableList();
-
-    disposables.push(
-      dragOffset.observe(() => {
-        dragRef.value = dragOffset.value;
-      }),
-      opacity.observe(() => {
-        opacityRef.value = opacity.value;
-      }),
-      isTransitioning.observe(() => {
-        transitioningRef.value = isTransitioning.value;
-      }),
     );
 
     const attachController = () => {
@@ -149,10 +143,7 @@ export const SwipeToClose = defineComponent({
       },
     );
 
-    onUnmounted(() => {
-      detachController();
-      disposables.dispose();
-    });
+    onUnmounted(detachController);
 
     return () =>
       h(
@@ -160,9 +151,9 @@ export const SwipeToClose = defineComponent({
         {
           ref: containerRef,
           style: {
-            transform: `translateY(${dragRef.value}px)`,
-            opacity: opacityRef.value,
-            transition: transitioningRef.value
+            transform: `translateY(${dragOffset.value}px)`,
+            opacity: opacity.value,
+            transition: isTransitioning.value
               ? 'transform 300ms ease-out, opacity 300ms ease-out'
               : 'none',
             width: '100%',

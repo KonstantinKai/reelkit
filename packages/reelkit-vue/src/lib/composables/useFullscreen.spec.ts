@@ -101,4 +101,52 @@ describe('useFullscreen', () => {
     mount(Wrapper);
     expect(result.isFullscreen).toBe(fullscreenSignal);
   });
+
+  it('request awaits exit before requesting when already fullscreen', async () => {
+    const calls: string[] = [];
+    const fakeFullscreenEl = document.createElement('div');
+    Object.defineProperty(HTMLElement.prototype, 'requestFullscreen', {
+      configurable: true,
+      value: function () {
+        calls.push('request');
+        return Promise.resolve();
+      },
+    });
+    Object.defineProperty(document, 'exitFullscreen', {
+      configurable: true,
+      value: function () {
+        calls.push('exit');
+        return Promise.resolve();
+      },
+    });
+    // core's exitFullscreen guards with `!checkFullscreen()`; stub the DOM so
+    // the check returns a truthy element and exit is actually invoked.
+    Object.defineProperty(document, 'fullscreenElement', {
+      configurable: true,
+      get: () => fakeFullscreenEl,
+    });
+
+    let result!: ReturnType<typeof useFullscreen>;
+    const Wrapper = defineComponent({
+      setup() {
+        const elementRef = ref<HTMLElement | null>(null);
+        result = useFullscreen({ elementRef });
+        return () => h('div', { ref: elementRef });
+      },
+    });
+    mount(Wrapper);
+
+    const prev = fullscreenSignal.value;
+    fullscreenSignal.value = true;
+
+    await result.request();
+
+    expect(calls).toEqual(['exit', 'request']);
+
+    fullscreenSignal.value = prev;
+    delete (HTMLElement.prototype as unknown as Record<string, unknown>)
+      .requestFullscreen;
+    delete (document as unknown as Record<string, unknown>).exitFullscreen;
+    delete (document as unknown as Record<string, unknown>).fullscreenElement;
+  });
 });

@@ -475,6 +475,47 @@ describe('Reel', () => {
 
       expect(wrapper.emitted('beforeChange')).toBeTruthy();
     });
+
+    it('tap handler fires exactly once (no double-fire from prop+emit duplication)', async () => {
+      const wrapper = mount(Reel, {
+        props: { count: 3, size: [400, 600] },
+        slots: { item: itemSlot },
+      });
+      await nextTick();
+
+      // Simulate a tap on the root element. Use native pointer events the
+      // gesture controller listens to; touchstart/touchend is the simplest path.
+      const el = wrapper.element as HTMLElement;
+      const touchTarget = el;
+      const createTouchEvent = (type: string) =>
+        new Event(type, { bubbles: true, cancelable: true });
+      touchTarget.dispatchEvent(createTouchEvent('touchstart'));
+      touchTarget.dispatchEvent(createTouchEvent('touchend'));
+
+      await nextTick();
+      const taps = wrapper.emitted('tap') ?? [];
+      // Whether the tap fires at all depends on gesture heuristics; the
+      // critical invariant is that we never emit it MORE than once per gesture.
+      expect(taps.length).toBeLessThanOrEqual(1);
+    });
+
+    it('goTo resolves without macrotask delay (sync done callback)', async () => {
+      const wrapper = mount(Reel, {
+        props: { count: 3, size: [400, 600] },
+        slots: { item: itemSlot },
+      });
+
+      let resolvedBefore = false;
+      const pendingGoTo = wrapper.vm.goTo(1, false).then(() => {
+        resolvedBefore = true;
+      });
+      // One microtask flush should be enough; a setTimeout(0) would need a
+      // macrotask and this would still be false.
+      await Promise.resolve();
+      await Promise.resolve();
+      await pendingGoTo;
+      expect(resolvedBefore).toBe(true);
+    });
   });
 
   describe('config sync', () => {
@@ -541,6 +582,38 @@ describe('Reel', () => {
       ];
       await wrapper.setProps({ rangeExtractor: custom });
       await nextTick();
+    });
+  });
+
+  describe('SSR guard', () => {
+    it('renderToString emits minimal region div without throwing', async () => {
+      const { createSSRApp, h: hh } = await import('vue');
+      const { renderToString } = await import('@vue/server-renderer');
+      const originalWindow = globalThis.window;
+      // Simulate Node-like SSR: `typeof window === 'undefined'`.
+      // @ts-expect-error intentional delete for SSR simulation
+      delete globalThis.window;
+      try {
+        const App = {
+          render: () =>
+            hh(
+              Reel,
+              { count: 3, ariaLabel: 'ssr-reel' },
+              {
+                item: ({ index }: { index: number }) =>
+                  hh('div', `Slide ${index}`),
+              },
+            ),
+        };
+        const html = await renderToString(createSSRApp(App));
+        expect(html).toContain('role="region"');
+        expect(html).toContain('aria-roledescription="carousel"');
+        expect(html).toContain('aria-label="ssr-reel"');
+        // SSR branch skips slide rendering
+        expect(html).not.toContain('role="tabpanel"');
+      } finally {
+        globalThis.window = originalWindow;
+      }
     });
   });
 

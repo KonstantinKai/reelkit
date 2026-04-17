@@ -3,8 +3,9 @@ export {
   createDefaultKeyExtractorForLoop,
   defaultRangeExtractor,
   type ReelExpose,
+  type ReelProps,
 } from './Reel';
-export { ReelIndicator } from './ReelIndicator';
+export { ReelIndicator, type ReelIndicatorProps } from './ReelIndicator';
 export {
   SwipeToClose,
   type SwipeToCloseDirection,

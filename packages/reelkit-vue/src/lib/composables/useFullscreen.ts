@@ -6,23 +6,34 @@ import {
   noop,
 } from '@reelkit/core';
 
-export interface UseFullscreenOptions {
-  elementRef: Ref<HTMLElement | null>;
+export interface UseFullscreenOptions<E extends HTMLElement = HTMLElement> {
+  elementRef: Ref<E | null>;
 }
 
 export interface UseFullscreenReturn {
   /** The core fullscreen signal. Read `.value` for current state. */
   isFullscreen: typeof fullscreenSignal;
 
-  /** Request fullscreen on the referenced element. */
-  request: () => void;
+  /**
+   * Request fullscreen on the referenced element. If another element is
+   * already fullscreen, it is exited first (awaited) before requesting.
+   */
+  request: () => Promise<void>;
 
   /** Exit fullscreen. */
-  exit: () => void;
+  exit: () => Promise<void>;
 
   /** Toggle fullscreen state. */
-  toggle: () => void;
+  toggle: () => Promise<void>;
 }
+
+const logError =
+  (stage: 'enter' | 'exit') =>
+  (err: Error): void => {
+    console.log(
+      `Error attempting to ${stage === 'enter' ? 'enable' : 'exit'} full-screen mode: ${err.message} (${err.name})`,
+    );
+  };
 
 /**
  * Composable for managing the Fullscreen API with cross-browser support.
@@ -31,35 +42,30 @@ export interface UseFullscreenReturn {
  * `fullscreenchange` events only when observed.
  *
  * Exits fullscreen automatically on unmount.
+ *
+ * @typeParam E - The HTML element type that will be toggled into fullscreen mode.
  */
-export const useFullscreen = (
-  options: UseFullscreenOptions,
+export const useFullscreen = <E extends HTMLElement = HTMLElement>(
+  options: UseFullscreenOptions<E>,
 ): UseFullscreenReturn => {
   let dispose: (() => void) | null = null;
 
-  const request = (): void => {
-    if (options.elementRef.value !== null) {
-      if (fullscreenSignal.value) coreExitFullscreen();
-
-      coreRequestFullscreen(options.elementRef.value).catch((err) => {
-        console.log(
-          `Error attempting to enable full-screen mode: ${err.message} (${err.name})`,
-        );
-      });
+  const request = async (): Promise<void> => {
+    const el = options.elementRef.value;
+    if (!el) return;
+    if (fullscreenSignal.value) {
+      await coreExitFullscreen().catch(logError('exit'));
     }
+    await coreRequestFullscreen(el).catch(logError('enter'));
   };
 
-  const exit = (): void => {
-    coreExitFullscreen().catch((err) => {
-      console.log(
-        `Error attempting to exit full-screen mode: ${err.message} (${err.name})`,
-      );
-    });
+  const exit = async (): Promise<void> => {
+    await coreExitFullscreen().catch(logError('exit'));
   };
 
-  const toggle = (): void => {
-    if (fullscreenSignal.value) exit();
-    else request();
+  const toggle = async (): Promise<void> => {
+    if (fullscreenSignal.value) await exit();
+    else await request();
   };
 
   onMounted(() => {
@@ -68,7 +74,9 @@ export const useFullscreen = (
 
   onUnmounted(() => {
     dispose?.();
-    if (fullscreenSignal.value) coreExitFullscreen();
+    if (fullscreenSignal.value) {
+      coreExitFullscreen().catch(logError('exit'));
+    }
   });
 
   return { isFullscreen: fullscreenSignal, request, exit, toggle };

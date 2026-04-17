@@ -1,21 +1,10 @@
 import { mount, enableAutoUnmount } from '@vue/test-utils';
-import { describe, it, vi, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 import { defineComponent, ref, h } from 'vue';
+import { sharedBodyLock } from '@reelkit/core';
 import { useBodyLock } from './useBodyLock';
 
 enableAutoUnmount(afterEach);
-
-vi.mock('@reelkit/core', async () => {
-  const actual =
-    await vi.importActual<typeof import('@reelkit/core')>('@reelkit/core');
-  return {
-    ...actual,
-    createBodyLock: () => {
-      const lockFn = vi.fn(() => vi.fn());
-      return { lock: lockFn };
-    },
-  };
-});
 
 const createWrapper = (locked: boolean | ReturnType<typeof ref<boolean>>) => {
   return defineComponent({
@@ -27,14 +16,29 @@ const createWrapper = (locked: boolean | ReturnType<typeof ref<boolean>>) => {
 };
 
 describe('useBodyLock', () => {
+  beforeEach(() => {
+    vi.spyOn(window, 'scrollTo').mockImplementation(vi.fn());
+    document.body.style.overflow = '';
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.width = '';
+    document.body.style.paddingRight = '';
+    document.body.style.overscrollBehavior = '';
+  });
+
+  afterEach(() => {
+    while (sharedBodyLock.locked) sharedBodyLock.unlock();
+    vi.restoreAllMocks();
+  });
+
   it('locks when passed true', () => {
     mount(createWrapper(true));
-    // No error thrown = composable initialized correctly
+    expect(document.body.style.overflow).toBe('hidden');
   });
 
   it('does not lock when passed false', () => {
     mount(createWrapper(false));
-    // No error thrown = composable initialized correctly
+    expect(document.body.style.overflow).toBe('');
   });
 
   it('accepts a ref and reacts to changes', async () => {
@@ -43,16 +47,36 @@ describe('useBodyLock', () => {
 
     locked.value = true;
     await wrapper.vm.$nextTick();
+    expect(document.body.style.overflow).toBe('hidden');
 
     locked.value = false;
     await wrapper.vm.$nextTick();
-    // No error thrown = reactive composable works
+    expect(document.body.style.overflow).toBe('');
   });
 
   it('cleans up on unmount', () => {
     const locked = ref(true);
     const wrapper = mount(createWrapper(locked));
+    expect(document.body.style.overflow).toBe('hidden');
     wrapper.unmount();
-    // No error thrown = cleanup works
+    expect(document.body.style.overflow).toBe('');
+  });
+
+  it('shares the lock across concurrent component instances', () => {
+    const a = mount(createWrapper(true));
+    expect(sharedBodyLock.locked).toBe(true);
+
+    const b = mount(createWrapper(true));
+    expect(sharedBodyLock.locked).toBe(true);
+    expect(document.body.style.overflow).toBe('hidden');
+
+    a.unmount();
+    // b still holds — body must remain locked
+    expect(sharedBodyLock.locked).toBe(true);
+    expect(document.body.style.overflow).toBe('hidden');
+
+    b.unmount();
+    expect(sharedBodyLock.locked).toBe(false);
+    expect(document.body.style.overflow).toBe('');
   });
 });

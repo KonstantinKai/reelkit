@@ -79,6 +79,7 @@ export {
 
   // Body lock
   createBodyLock,
+  sharedBodyLock,
   type BodyLock,
 
   // Sound
@@ -110,8 +111,9 @@ export {
   createDefaultKeyExtractorForLoop,
   defaultRangeExtractor,
   type ReelExpose,
+  type ReelProps,
 } from './lib/components';
-export { ReelIndicator } from './lib/components';
+export { ReelIndicator, type ReelIndicatorProps } from './lib/components';
 export {
   SwipeToClose,
   type SwipeToCloseDirection,

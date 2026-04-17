@@ -2,6 +2,7 @@
   "name": "@reelkit/vue",
   "version": "0.0.1",
   "type": "module",
+  "sideEffects": false,
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -15,8 +16,42 @@
   },
   "files": [
     "dist",
+    "!dist/package.json",
+    "!dist/README.md",
     "!**/*.tsbuildinfo"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KonstantinKai/reelkit.git",
+    "directory": "packages/reelkit-vue"
+  },
+  "bugs": "https://github.com/KonstantinKai/reelkit/issues",
+  "homepage": "https://reelkit.dev",
+  "funding": {
+    "type": "buymeacoffee",
+    "url": "https://buymeacoffee.com/konstantinkai"
+  },
+  "description": "Vue 3 components and composables for building TikTok/Instagram Reels-style sliders",
+  "license": "MIT",
+  "keywords": [
+    "vue",
+    "vue3",
+    "slider",
+    "carousel",
+    "swipe",
+    "virtualized",
+    "touch",
+    "gesture",
+    "mobile",
+    "tiktok",
+    "reels",
+    "vertical-slider",
+    "vue-component",
+    "typescript"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "@reelkit/core": "^0.3.0"
   },

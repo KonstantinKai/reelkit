@@ -841,7 +841,7 @@ import {
   fullscreenSignal, requestFullscreen, exitFullscreen,
 
   // DOM & cleanup
-  observeDomEvent, createDisposableList, createBodyLock,
+  observeDomEvent, createDisposableList, createBodyLock, sharedBodyLock,
 
   // Slider & gestures
   createSliderController, createGestureController,

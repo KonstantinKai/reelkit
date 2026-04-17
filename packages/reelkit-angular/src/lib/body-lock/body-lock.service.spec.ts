@@ -19,6 +19,9 @@ describe('BodyLockService', () => {
   });
 
   afterEach(() => {
+    // Drain any leaked locks — the service now delegates to the shared
+    // module-level counter, so state survives across tests without this.
+    while (service.locked) service.unlock();
     document.body.style.overflow = '';
     document.body.style.paddingRight = '';
     document.body.style.overscrollBehavior = '';
@@ -191,5 +194,27 @@ describe('BodyLockService', () => {
     service.unlock();
 
     expect(window.scrollTo).toHaveBeenCalledWith(0, expect.any(Number));
+  });
+
+  it('shares the lock counter with other BodyLockService instances', () => {
+    // Second injector produces a fresh Service instance but the same
+    // module-level counter — typical micro-frontend / feature-module case.
+    const second = TestBed.inject(BodyLockService);
+    document.body.style.overflow = 'auto';
+
+    service.lock();
+    expect(document.body.style.overflow).toBe('hidden');
+
+    second.lock();
+    expect(document.body.style.overflow).toBe('hidden');
+
+    service.unlock();
+    // second still holds — body must remain locked
+    expect(document.body.style.overflow).toBe('hidden');
+    expect(second.locked).toBe(true);
+
+    second.unlock();
+    expect(document.body.style.overflow).toBe('auto');
+    expect(service.locked).toBe(false);
   });
 });

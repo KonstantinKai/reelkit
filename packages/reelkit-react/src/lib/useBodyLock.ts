@@ -1,22 +1,20 @@
-import { useEffect, useState } from 'react';
-import { createBodyLock } from '@reelkit/core';
+import { useEffect } from 'react';
+import { sharedBodyLock } from '@reelkit/core';
 
 /**
  * Locks the document body scroll when `locked` is `true`.
  *
- * Uses the core {@link createBodyLock} utility with reference counting,
- * so multiple concurrent callers can each lock/unlock independently.
- * Restores all original styles and scroll position on cleanup.
+ * Uses the shared `sharedBodyLock` singleton from core, so multiple
+ * concurrent callers across unrelated components share a single
+ * reference counter — nested modals/overlays interleave correctly
+ * and restore original styles only after the last caller releases.
  *
  * @param locked - Whether body scroll should be locked.
  */
 export const useBodyLock = (locked: boolean) => {
-  const [bodyLock] = useState(createBodyLock);
-
   useEffect(() => {
     if (!locked) return;
-    return bodyLock.lock();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return sharedBodyLock.lock();
   }, [locked]);
 };
 

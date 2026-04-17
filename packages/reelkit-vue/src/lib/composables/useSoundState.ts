@@ -1,6 +1,14 @@
 import { defineComponent, provide, inject, type InjectionKey } from 'vue';
 import { createSoundController, type SoundController } from '@reelkit/core';
 
+/**
+ * Injection key for the current `SoundController`.
+ *
+ * Nested `<SoundProvider>` components create independent controllers;
+ * `useSoundState()` always resolves to the nearest ancestor provider,
+ * shadowing any outer one. Provide explicitly if you need to share a
+ * single instance across nested overlays.
+ */
 export const RK_SOUND_KEY: InjectionKey<SoundController> =
   Symbol('RK_SOUND_KEY');
 
@@ -9,7 +17,8 @@ export const RK_SOUND_KEY: InjectionKey<SoundController> =
  *
  * Wraps overlay content in reel-player, stories-player, and lightbox.
  * Creates a single `SoundController` instance with `muted: true`
- * and `disabled: false` as initial values.
+ * and `disabled: false` as initial values. Nested providers each create
+ * their own controller (see `RK_SOUND_KEY` JSDoc).
  */
 export const SoundProvider = defineComponent({
   name: 'SoundProvider',

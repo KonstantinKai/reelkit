@@ -63,4 +63,4 @@ export {
   exitFullscreen,
 } from './fullscreen';
 
-export { createBodyLock, type BodyLock } from './bodyLock';
+export { createBodyLock, sharedBodyLock, type BodyLock } from './bodyLock';

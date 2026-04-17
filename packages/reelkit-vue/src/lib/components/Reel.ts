@@ -7,6 +7,7 @@ import {
   onMounted,
   onUnmounted,
   watch,
+  type ExtractPropTypes,
   type PropType,
   type VNode,
 } from 'vue';
@@ -17,13 +18,12 @@ import {
   animate,
   first,
   last,
+  noop,
   defaultRangeExtractor,
   slideTransition,
   type RangeExtractor,
   type SliderDirection,
   type TransitionTransformFn,
-  type GestureCommonEvent,
-  type GestureEvent,
 } from '@reelkit/core';
 import { RK_REEL_KEY, type ReelContextValue } from '../context/ReelContext';
 
@@ -56,6 +56,161 @@ export type ReelExpose = {
 
 const defaultKeyExtractor = (index: number) => index.toString();
 
+/** Props accepted by the {@link Reel} component. */
+const reelProps = {
+  /** Total number of slides. */
+  count: { type: Number, required: true as const },
+
+  /**
+   * Index of the initial active slide.
+   *
+   * @default 0
+   */
+  initialIndex: { type: Number, default: 0 },
+
+  /**
+   * Slide axis.
+   *
+   * @default 'vertical'
+   */
+  direction: {
+    type: String as PropType<SliderDirection>,
+    default: 'vertical',
+  },
+
+  /**
+   * Enable infinite circular navigation — the slider wraps past the last
+   * slide back to the first (and vice versa).
+   *
+   * @default false
+   */
+  loop: { type: Boolean, default: false },
+
+  /**
+   * Duration of slide transition animations, in milliseconds.
+   *
+   * @default 300
+   */
+  transitionDuration: { type: Number, default: 300 },
+
+  /**
+   * Fraction of container primary size a swipe must exceed to trigger
+   * a slide change. `0.12` means a 12 %-of-height swipe (vertical) or
+   * 12 %-of-width swipe (horizontal).
+   *
+   * @default 0.12
+   */
+  swipeDistanceFactor: { type: Number, default: 0.12 },
+
+  /**
+   * Custom function that selects which 3 indexes to render for a given
+   * active index. Core always keeps the visible range at 3 slides
+   * (previous, current, next) — this hook lets you override *which*
+   * three, e.g. for loop-mode edge cases with small item counts.
+   * Defaults to {@link defaultRangeExtractor}.
+   */
+  rangeExtractor: {
+    type: Function as PropType<RangeExtractor>,
+    default: undefined,
+  },
+
+  /**
+   * Explicit `[width, height]` of the slider container in pixels.
+   * Omit to auto-size from the element's CSS via `ResizeObserver`.
+   */
+  size: {
+    type: Array as unknown as PropType<[number, number]>,
+    default: undefined,
+  },
+
+  /**
+   * Enable keyboard arrow-key navigation. When enabled, ArrowUp/ArrowDown
+   * (vertical) or ArrowLeft/ArrowRight (horizontal) move the active slide.
+   *
+   * @default true
+   */
+  enableNavKeys: { type: Boolean, default: true },
+
+  /**
+   * Enable mouse-wheel navigation. Each debounced wheel tick moves one slide.
+   *
+   * @default false
+   */
+  enableWheel: { type: Boolean, default: false },
+
+  /**
+   * Debounce interval in milliseconds between consecutive wheel-driven
+   * slide changes.
+   *
+   * @default 200
+   */
+  wheelDebounceMs: { type: Number, default: 200 },
+
+  /**
+   * Enable touch/mouse drag navigation. When `false`, the gesture
+   * controller is not attached — slides change only via keyboard, wheel,
+   * or programmatic API.
+   *
+   * @default true
+   */
+  enableGestures: { type: Boolean, default: true },
+
+  /**
+   * Custom transform function applied per slide during transitions.
+   * Pass one of the built-in transitions (`slideTransition`,
+   * `cubeTransition`, `fadeTransition`, `flipTransition`, `zoomTransition`)
+   * or your own. Defaults to `slideTransition`.
+   */
+  transition: {
+    type: Function as PropType<TransitionTransformFn>,
+    default: undefined,
+  },
+
+  /**
+   * Custom key function for Vue's virtual DOM diffing. Defaults to the
+   * slide index. Override for loop mode with small item counts, where
+   * the same index can appear more than once in the visible range —
+   * see {@link createDefaultKeyExtractorForLoop}.
+   */
+  keyExtractor: {
+    type: Function as PropType<(index: number, indexInRange: number) => string>,
+    default: undefined,
+  },
+
+  /**
+   * Replaces the default keyboard navigation handler. When provided, core
+   * will NOT call its built-in `changeIndex` for ArrowUp/ArrowDown — the
+   * supplied callback is expected to implement navigation (or deliberately
+   * block it). Omit to use default navigation.
+   *
+   * This is a callback prop (not a Vue emit) because core treats its
+   * presence as an opt-in to override default behavior — an emit-style
+   * listener can't be reliably detected at setup time.
+   */
+  onNavKeyPress: {
+    type: Function as PropType<(increment: -1 | 1) => void>,
+    default: undefined,
+  },
+
+  /**
+   * Accessible label for the carousel region. Read by screen readers in
+   * place of the generic "carousel" role description.
+   */
+  ariaLabel: { type: String, default: undefined },
+
+  /** CSS class(es) applied to the root container element. */
+  reelClass: { type: [String, Array, Object], default: undefined },
+
+  /** Inline styles merged into the root container element. */
+  reelStyle: {
+    type: Object as PropType<Record<string, string | number>>,
+    default: undefined,
+  },
+};
+
+/** Public props interface for the {@link Reel} component. */
+export type ReelProps = ExtractPropTypes<typeof reelProps>;
+
 /**
  * Creates a key extractor that handles duplicate keys when loop mode is
  * active with small item counts (e.g. 2 items). In loop mode, the same
@@ -85,65 +240,7 @@ export const createDefaultKeyExtractorForLoop =
 export const Reel = defineComponent({
   name: 'Reel',
   inheritAttrs: false,
-  props: {
-    count: { type: Number, required: true },
-    initialIndex: { type: Number, default: 0 },
-    direction: {
-      type: String as PropType<SliderDirection>,
-      default: 'vertical',
-    },
-    loop: { type: Boolean, default: false },
-    transitionDuration: { type: Number, default: 300 },
-    swipeDistanceFactor: { type: Number, default: 0.12 },
-    rangeExtractor: {
-      type: Function as PropType<RangeExtractor>,
-      default: undefined,
-    },
-    size: {
-      type: Array as unknown as PropType<[number, number]>,
-      default: undefined,
-    },
-    enableNavKeys: { type: Boolean, default: true },
-    enableWheel: { type: Boolean, default: false },
-    wheelDebounceMs: { type: Number, default: 200 },
-    enableGestures: { type: Boolean, default: true },
-    transition: {
-      type: Function as PropType<TransitionTransformFn>,
-      default: undefined,
-    },
-    keyExtractor: {
-      type: Function as PropType<
-        (index: number, indexInRange: number) => string
-      >,
-      default: undefined,
-    },
-    onTap: {
-      type: Function as PropType<(event: GestureCommonEvent) => void>,
-      default: undefined,
-    },
-    onDoubleTap: {
-      type: Function as PropType<(event: GestureCommonEvent) => void>,
-      default: undefined,
-    },
-    onLongPress: {
-      type: Function as PropType<(event: GestureCommonEvent) => void>,
-      default: undefined,
-    },
-    onLongPressEnd: {
-      type: Function as PropType<(event: GestureEvent) => void>,
-      default: undefined,
-    },
-    onNavKeyPress: {
-      type: Function as PropType<(increment: -1 | 1) => void>,
-      default: undefined,
-    },
-    ariaLabel: { type: String, default: undefined },
-    reelClass: { type: [String, Array, Object], default: undefined },
-    reelStyle: {
-      type: Object as PropType<Record<string, string | number>>,
-      default: undefined,
-    },
-  },
+  props: reelProps,
   emits: [
     'beforeChange',
     'afterChange',
@@ -154,9 +251,27 @@ export const Reel = defineComponent({
     'doubleTap',
     'longPress',
     'longPressEnd',
-    'navKeyPress',
   ],
   setup(props, { emit, slots, expose }) {
+    if (typeof window === 'undefined') {
+      expose({
+        next: noop,
+        prev: noop,
+        goTo: () => Promise.resolve(),
+        adjust: noop,
+        observe: noop,
+        unobserve: noop,
+      } satisfies ReelExpose);
+      return () =>
+        h('div', {
+          class: props.reelClass,
+          style: props.reelStyle,
+          role: 'region',
+          'aria-roledescription': 'carousel',
+          'aria-label': props.ariaLabel,
+        });
+    }
+
     const containerRef = ref<HTMLElement | null>(null);
     const measuredSize = ref<[number, number]>([0, 0]);
 
@@ -171,7 +286,7 @@ export const Reel = defineComponent({
     const keyExtractorFn = () => props.keyExtractor ?? defaultKeyExtractor;
 
     const axisValue = shallowRef(0);
-    const visibleIndexes = ref<number[]>([]);
+    const visibleIndexes = shallowRef<number[]>([]);
 
     const controller = createSliderController(
       {
@@ -201,30 +316,13 @@ export const Reel = defineComponent({
         onDragStart: (index) => emit('slideDragStart', index),
         onDragEnd: (index) => emit('slideDragEnd', index),
         onDragCanceled: (index) => emit('slideDragCanceled', index),
-        onTap: (e) => {
-          props.onTap?.(e);
-          emit('tap', e);
-        },
-        onDoubleTap: (e) => {
-          props.onDoubleTap?.(e);
-          emit('doubleTap', e);
-        },
-        onLongPress: (e) => {
-          props.onLongPress?.(e);
-          emit('longPress', e);
-        },
-        onLongPressEnd: (e) => {
-          props.onLongPressEnd?.(e);
-          emit('longPressEnd', e);
-        },
-        ...(props.onNavKeyPress
-          ? {
-              onNavKeyPress: (increment: -1 | 1) => {
-                props.onNavKeyPress?.(increment);
-                emit('navKeyPress', increment);
-              },
-            }
-          : {}),
+        onTap: (e) => emit('tap', e),
+        onDoubleTap: (e) => emit('doubleTap', e),
+        onLongPress: (e) => emit('longPress', e),
+        onLongPressEnd: (e) => emit('longPressEnd', e),
+        // Only forward to controller when consumer provides a handler —
+        // core treats its presence as an override of default navigation.
+        ...(props.onNavKeyPress ? { onNavKeyPress: props.onNavKeyPress } : {}),
       },
     );
 
@@ -262,16 +360,14 @@ export const Reel = defineComponent({
             },
             onComplete: () => {
               cancelAnimation = null;
-              setTimeout(() => done?.(), 0);
+              done?.();
             },
           });
           return;
         }
 
         axisValue.value = value;
-        if (done) {
-          setTimeout(() => done(), 0);
-        }
+        done?.();
       }),
     );
 
@@ -312,6 +408,7 @@ export const Reel = defineComponent({
           props.direction === 'horizontal' ? first(newSize) : last(newSize);
         controller.setPrimarySize(primary);
       },
+      { flush: 'post' },
     );
 
     let resizeObserver: ResizeObserver | null = null;

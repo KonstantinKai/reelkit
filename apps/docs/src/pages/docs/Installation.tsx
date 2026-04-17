@@ -91,7 +91,7 @@ const bundleSizes: {
   {
     name: '@reelkit/react',
     js: '11.7 kB',
-    gzip: '4.3 kB',
+    gzip: '4.4 kB',
     css: '-',
     cssGzip: '-',
     framework: 'react',
@@ -146,7 +146,7 @@ const bundleSizes: {
   },
   {
     name: '@reelkit/vue',
-    js: '13.1 kB',
+    js: '13.0 kB',
     gzip: '4.5 kB',
     css: '-',
     cssGzip: '-',

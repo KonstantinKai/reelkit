@@ -253,6 +253,47 @@ describe('ReelIndicator', () => {
         expect(innerDot.element.style.transform).toContain('scale(0.5)');
       }
     });
+
+    it('re-clamps window when visible decreases and leaves active out of range', async () => {
+      const wrapper = mount(ReelIndicator, {
+        props: { count: 10, active: 6, visible: 7 },
+      });
+      // With visible=7 and active=6, the window is [0..7), active visible.
+      await nextTick();
+
+      // Shrink visible to 3. Window MUST slide so active=6 stays visible.
+      await wrapper.setProps({ visible: 3 });
+      await nextTick();
+
+      const activeDot = wrapper.find('[data-reel-indicator="6"]');
+      expect(activeDot.exists()).toBe(true);
+      // Active dot should render at scale 1 (inside window), not scale 0.5.
+      const innerDot = activeDot.find('span');
+      expect(innerDot.element.style.transform).toContain('scale(1)');
+    });
+  });
+
+  describe('class and style passthrough', () => {
+    it('applies indicatorClass to the tablist root', () => {
+      const wrapper = mount(ReelIndicator, {
+        props: { count: 5, active: 0, indicatorClass: 'my-custom-cls' },
+      });
+      const root = wrapper.element as HTMLElement;
+      expect(root.className).toContain('my-custom-cls');
+    });
+
+    it('merges indicatorStyle into the tablist root', () => {
+      const wrapper = mount(ReelIndicator, {
+        props: {
+          count: 5,
+          active: 0,
+          indicatorStyle: { padding: '4px', background: 'rgb(0, 0, 0)' },
+        },
+      });
+      const root = wrapper.element as HTMLElement;
+      expect(root.style.padding).toBe('4px');
+      expect(root.style.background).toBe('rgb(0, 0, 0)');
+    });
   });
 
   describe('direction', () => {

@@ -105,6 +105,13 @@ const reelProps = [
     default: 'undefined',
     description: 'CSS class(es) applied to the root container element',
   },
+  {
+    prop: 'onNavKeyPress',
+    type: '(increment: -1 | 1) => void',
+    default: 'undefined',
+    description:
+      'Callback prop that replaces the default ArrowUp/ArrowDown navigation. When provided, you implement your own navigation (e.g. call reelRef.value.next()). Omit for default behavior.',
+  },
 ];
 
 const reelEmits = [
@@ -152,11 +159,6 @@ const reelEmits = [
     event: 'longPressEnd',
     payload: '(event: GestureEvent)',
     description: 'Emitted when a long press gesture ends',
-  },
-  {
-    event: 'navKeyPress',
-    payload: '(increment: -1 | 1)',
-    description: 'Emitted when a navigation key is pressed',
   },
 ];
 
@@ -248,6 +250,18 @@ const indicatorProps = [
     default: 'undefined',
     description:
       'Custom click handler. When omitted inside a Reel, defaults to navigating to the clicked dot index',
+  },
+  {
+    prop: 'indicatorClass',
+    type: 'string | Array | Object',
+    default: 'undefined',
+    description: 'CSS class(es) applied to the tablist root element',
+  },
+  {
+    prop: 'indicatorStyle',
+    type: 'CSSProperties',
+    default: 'undefined',
+    description: 'Inline styles merged into the tablist root element',
   },
 ];
 
@@ -870,10 +884,11 @@ const { isFullscreen, request, exit, toggle } = useFullscreen({
                   request
                 </td>
                 <td className="py-3 px-4 font-mono text-xs text-slate-500">
-                  () =&gt; void
+                  {'() => Promise<void>'}
                 </td>
                 <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
-                  Request fullscreen on the referenced element
+                  Request fullscreen on the referenced element. If another
+                  element is already fullscreen, it is exited first (awaited).
                 </td>
               </tr>
               <tr className="border-b border-slate-100 dark:border-slate-800">
@@ -881,7 +896,7 @@ const { isFullscreen, request, exit, toggle } = useFullscreen({
                   exit
                 </td>
                 <td className="py-3 px-4 font-mono text-xs text-slate-500">
-                  () =&gt; void
+                  {'() => Promise<void>'}
                 </td>
                 <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
                   Exit fullscreen
@@ -892,7 +907,7 @@ const { isFullscreen, request, exit, toggle } = useFullscreen({
                   toggle
                 </td>
                 <td className="py-3 px-4 font-mono text-xs text-slate-500">
-                  () =&gt; void
+                  {'() => Promise<void>'}
                 </td>
                 <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
                   Toggle fullscreen state
@@ -1022,7 +1037,7 @@ import {
   fullscreenSignal, requestFullscreen, exitFullscreen,
 
   // DOM & cleanup
-  observeDomEvent, createDisposableList, createBodyLock,
+  observeDomEvent, createDisposableList, createBodyLock, sharedBodyLock,
 
   // Gestures
   createGestureController,
