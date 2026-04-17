@@ -319,4 +319,156 @@ describe('ReelIndicator', () => {
       expect(ctx.goTo).not.toHaveBeenCalled();
     });
   });
+
+  describe('accessibility', () => {
+    it('container has role=tablist', () => {
+      render(<ReelIndicator count={3} active={0} />);
+
+      expect(screen.getByRole('tablist')).toBeTruthy();
+    });
+
+    it('container has aria-label', () => {
+      render(<ReelIndicator count={3} active={0} />);
+
+      expect(screen.getByRole('tablist').getAttribute('aria-label')).toBe(
+        'Slide navigation',
+      );
+    });
+
+    it('dots have role=tab', () => {
+      render(<ReelIndicator count={3} active={0} />);
+
+      const tabs = screen.getAllByRole('tab');
+      expect(tabs.length).toBeGreaterThan(0);
+    });
+
+    it('active dot has aria-selected=true', () => {
+      render(<ReelIndicator count={3} active={1} />);
+
+      const dot1 = screen.getByTestId('indicator-dot-1');
+      expect(dot1.getAttribute('aria-selected')).toBe('true');
+
+      const dot0 = screen.getByTestId('indicator-dot-0');
+      expect(dot0.getAttribute('aria-selected')).toBe('false');
+    });
+
+    it('active dot has tabindex=0, others have -1', () => {
+      render(<ReelIndicator count={3} active={1} />);
+
+      const dot1 = screen.getByTestId('indicator-dot-1');
+      expect(dot1.getAttribute('tabindex')).toBe('0');
+
+      const dot0 = screen.getByTestId('indicator-dot-0');
+      expect(dot0.getAttribute('tabindex')).toBe('-1');
+    });
+
+    it('dots have aria-label', () => {
+      render(<ReelIndicator count={3} active={0} />);
+
+      const dot0 = screen.getByTestId('indicator-dot-0');
+      expect(dot0.getAttribute('aria-label')).toBe('Slide 1');
+    });
+
+    it('Enter key activates dot', () => {
+      const onDotClick = vi.fn();
+      render(<ReelIndicator count={3} active={0} onDotClick={onDotClick} />);
+
+      fireEvent.keyDown(screen.getByTestId('indicator-dot-1'), {
+        key: 'Enter',
+      });
+      expect(onDotClick).toHaveBeenCalledWith(1);
+    });
+
+    it('Space key activates dot', () => {
+      const onDotClick = vi.fn();
+      render(<ReelIndicator count={3} active={0} onDotClick={onDotClick} />);
+
+      fireEvent.keyDown(screen.getByTestId('indicator-dot-1'), { key: ' ' });
+      expect(onDotClick).toHaveBeenCalledWith(1);
+    });
+
+    it('ArrowDown navigates to next dot (vertical)', () => {
+      const onDotClick = vi.fn();
+      render(
+        <ReelIndicator
+          count={5}
+          active={1}
+          direction="vertical"
+          onDotClick={onDotClick}
+        />,
+      );
+
+      fireEvent.keyDown(screen.getByRole('tablist'), { key: 'ArrowDown' });
+      expect(onDotClick).toHaveBeenCalledWith(2);
+    });
+
+    it('ArrowUp navigates to previous dot (vertical)', () => {
+      const onDotClick = vi.fn();
+      render(
+        <ReelIndicator
+          count={5}
+          active={2}
+          direction="vertical"
+          onDotClick={onDotClick}
+        />,
+      );
+
+      fireEvent.keyDown(screen.getByRole('tablist'), { key: 'ArrowUp' });
+      expect(onDotClick).toHaveBeenCalledWith(1);
+    });
+
+    it('ArrowRight navigates to next dot (horizontal)', () => {
+      const onDotClick = vi.fn();
+      render(
+        <ReelIndicator
+          count={5}
+          active={1}
+          direction="horizontal"
+          onDotClick={onDotClick}
+        />,
+      );
+
+      fireEvent.keyDown(screen.getByRole('tablist'), { key: 'ArrowRight' });
+      expect(onDotClick).toHaveBeenCalledWith(2);
+    });
+
+    it('Home key navigates to first dot', () => {
+      const onDotClick = vi.fn();
+      render(<ReelIndicator count={5} active={3} onDotClick={onDotClick} />);
+
+      fireEvent.keyDown(screen.getByRole('tablist'), { key: 'Home' });
+      expect(onDotClick).toHaveBeenCalledWith(0);
+    });
+
+    it('End key navigates to last dot', () => {
+      const onDotClick = vi.fn();
+      render(<ReelIndicator count={5} active={1} onDotClick={onDotClick} />);
+
+      fireEvent.keyDown(screen.getByRole('tablist'), { key: 'End' });
+      expect(onDotClick).toHaveBeenCalledWith(4);
+    });
+
+    it('ArrowUp clamps at 0', () => {
+      const onDotClick = vi.fn();
+      render(
+        <ReelIndicator
+          count={5}
+          active={0}
+          direction="vertical"
+          onDotClick={onDotClick}
+        />,
+      );
+
+      fireEvent.keyDown(screen.getByRole('tablist'), { key: 'ArrowUp' });
+      expect(onDotClick).toHaveBeenCalledWith(0);
+    });
+
+    it('unrelated keys are ignored', () => {
+      const onDotClick = vi.fn();
+      render(<ReelIndicator count={5} active={1} onDotClick={onDotClick} />);
+
+      fireEvent.keyDown(screen.getByRole('tablist'), { key: 'a' });
+      expect(onDotClick).not.toHaveBeenCalled();
+    });
+  });
 });

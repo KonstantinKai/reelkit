@@ -76,6 +76,26 @@ export const router = createBrowserRouter(
           lazy: lazy(() => import('../pages/docs/AngularStoriesPlayer')),
         },
         {
+          path: 'docs/vue/guide',
+          lazy: lazy(() => import('../pages/docs/vue/Guide')),
+        },
+        {
+          path: 'docs/vue/api',
+          lazy: lazy(() => import('../pages/docs/vue/Api')),
+        },
+        {
+          path: 'docs/vue-reel-player',
+          lazy: lazy(() => import('../pages/docs/VueReelPlayer')),
+        },
+        {
+          path: 'docs/vue-lightbox',
+          lazy: lazy(() => import('../pages/docs/VueLightbox')),
+        },
+        {
+          path: 'docs/vue-stories-player',
+          lazy: lazy(() => import('../pages/docs/VueStoriesPlayer')),
+        },
+        {
           path: 'docs/troubleshooting',
           lazy: lazy(() => import('../pages/docs/Troubleshooting')),
         },

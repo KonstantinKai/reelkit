@@ -486,7 +486,7 @@ export default function ReactGuide() {
   // size: [width, height] of the container
   return <Slide index={index} />;
 }}`}
-          language="typescript"
+          language="tsx"
         />
       </section>
 
@@ -564,7 +564,7 @@ function App() {
     </>
   );
 }`}
-          language="typescript"
+          language="tsx"
         />
       </section>
 

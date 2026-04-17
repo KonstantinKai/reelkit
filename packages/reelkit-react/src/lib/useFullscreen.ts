@@ -20,15 +20,16 @@ export interface UseFullscreenProps<E extends HTMLElement> {
  * Tuple returned by {@link useFullscreen}.
  *
  * - `[0]` — The fullscreen signal. Read `.value` inside `Observe` for reactive updates.
- * - `[1]` — Function to request fullscreen on the referenced element.
+ * - `[1]` — Function to request fullscreen on the referenced element. If another
+ *   element is already fullscreen, it is exited first (awaited) before requesting.
  * - `[2]` — Function to exit fullscreen.
  * - `[3]` — Toggle function that requests or exits fullscreen based on current state.
  */
 export type UseFullscreenResult = [
   fullscreen: typeof fullscreenSignal,
-  requestFullscreen: () => void,
-  exitFullscreen: () => void,
-  toggleFullscreen: () => void,
+  requestFullscreen: () => Promise<void>,
+  exitFullscreen: () => Promise<void>,
+  toggleFullscreen: () => Promise<void>,
 ];
 
 /**
@@ -44,31 +45,34 @@ export const useFullscreen = <E extends HTMLElement>(
   props: UseFullscreenProps<E>,
 ): UseFullscreenResult => {
   const [actions] = useState<
-    [request: () => void, exit: () => void, toggle: () => void]
+    [
+      request: () => Promise<void>,
+      exit: () => Promise<void>,
+      toggle: () => Promise<void>,
+    ]
   >(() => {
-    const request = (): void => {
-      if (props.ref.current !== null) {
-        if (fullscreenSignal.value) exitFullscreen();
+    const logErr = (stage: 'enter' | 'exit') => (err: Error) => {
+      console.log(
+        `Error attempting to ${stage === 'enter' ? 'enable' : 'exit'} full-screen mode: ${err.message} (${err.name})`,
+      );
+    };
 
-        requestFullscreen(props.ref.current).catch((err) => {
-          console.log(
-            `Error attempting to enable full-screen mode: ${err.message} (${err.name})`,
-          );
-        });
+    const request = async (): Promise<void> => {
+      const el = props.ref.current;
+      if (!el) return;
+      if (fullscreenSignal.value) {
+        await exitFullscreen().catch(logErr('exit'));
       }
+      await requestFullscreen(el).catch(logErr('enter'));
     };
 
-    const exit = (): void => {
-      exitFullscreen().catch((err) => {
-        console.log(
-          `Error attempting to exit full-screen mode: ${err.message} (${err.name})`,
-        );
-      });
+    const exit = async (): Promise<void> => {
+      await exitFullscreen().catch(logErr('exit'));
     };
 
-    const toggle = (): void => {
-      if (fullscreenSignal.value) exit();
-      else request();
+    const toggle = async (): Promise<void> => {
+      if (fullscreenSignal.value) await exit();
+      else await request();
     };
 
     return [request, exit, toggle];

@@ -29,6 +29,7 @@ Thumbs.db
 coverage
 test-output
 test-results
+test-results.json
 playwright-report
 playwright/.cache
 

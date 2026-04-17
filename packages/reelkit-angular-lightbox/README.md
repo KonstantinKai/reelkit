@@ -8,7 +8,7 @@
 
 Image gallery lightbox for Angular — opens full-screen with swipe navigation, keyboard controls, and transition effects. Every part of the UI is replaceable via template slots. ~14.0 kB gzip.
 
-**[Live Demo](https://angular-demo.reelkit.dev/image-preview)**
+**[Live Demo](https://angular-demo.reelkit.dev/image-preview?utm_source=npm)**
 
 ## Installation
 

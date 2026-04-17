@@ -47,10 +47,12 @@ export default class ChangelogRenderer extends DefaultChangelogRenderer {
 
     const appendThanks = (entry: string) =>
       thanks.length > 0
-        ? `${entry}\n\n### ❤️ Thanks\n\n${thanks.map((t) => {
-            const name = t.startsWith('@') ? t : `@${t}`;
-            return `- [${name}](https://github.com/${name.slice(1)})`;
-          }).join('\n')}`
+        ? `${entry}\n\n### ❤️ Thanks\n\n${thanks
+            .map((t) => {
+              const name = t.startsWith('@') ? t : `@${t}`;
+              return `- [${name}](https://github.com/${name.slice(1)})`;
+            })
+            .join('\n')}`
         : entry;
 
     // For multi-project version plans, extract only the current project's lines

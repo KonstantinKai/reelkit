@@ -1,6 +1,6 @@
 {
   "name": "@reelkit/react-stories-player",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "sideEffects": [
     "*.css"
@@ -53,12 +53,12 @@
     "access": "public"
   },
   "peerDependencies": {
-    "@reelkit/react": "^0.3.0",
+    "@reelkit/react": "^0.4.0",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0",
     "lucide-react": ">=0.400.0"
   },
   "dependencies": {
-    "@reelkit/stories-core": "^0.1.0"
+    "@reelkit/stories-core": "^0.1.1"
   }
 }

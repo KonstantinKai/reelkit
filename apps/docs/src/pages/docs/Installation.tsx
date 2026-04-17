@@ -3,7 +3,11 @@ import { CodeBlock } from '../../components/ui/CodeBlock';
 import { Callout } from '../../components/ui/Callout';
 import { Check } from 'lucide-react';
 import { NextSteps } from '../../components/NextSteps';
-import { frameworkSignal, type Framework } from '../../data/frameworkSignal';
+import {
+  frameworkSignal,
+  renderFramework,
+  type Framework,
+} from '../../data/frameworkSignal';
 
 interface PackageInfo {
   name: string;
@@ -61,6 +65,12 @@ const packages: PackageInfo[] = [
     useCase: 'Full-screen image preview',
     framework: 'angular',
   },
+  {
+    name: '@reelkit/vue',
+    desc: 'Vue 3 components and composables',
+    useCase: 'Vue 3 applications',
+    framework: 'vue',
+  },
 ];
 
 const bundleSizes: {
@@ -80,8 +90,8 @@ const bundleSizes: {
   },
   {
     name: '@reelkit/react',
-    js: '10.7 kB',
-    gzip: '3.9 kB',
+    js: '11.7 kB',
+    gzip: '4.4 kB',
     css: '-',
     cssGzip: '-',
     framework: 'react',
@@ -89,7 +99,7 @@ const bundleSizes: {
   {
     name: '@reelkit/react-reel-player',
     js: '13.7 kB',
-    gzip: '4.3 kB',
+    gzip: '4.4 kB',
     css: '2.8 kB',
     cssGzip: '0.9 kB',
     framework: 'react',
@@ -112,8 +122,8 @@ const bundleSizes: {
   },
   {
     name: '@reelkit/angular',
-    js: '63.2 kB',
-    gzip: '13.8 kB',
+    js: '63.3 kB',
+    gzip: '13.9 kB',
     css: '-',
     cssGzip: '-',
     framework: 'angular',
@@ -134,18 +144,32 @@ const bundleSizes: {
     cssGzip: '-',
     framework: 'angular',
   },
+  {
+    name: '@reelkit/vue',
+    js: '13.0 kB',
+    gzip: '4.5 kB',
+    css: '-',
+    cssGzip: '-',
+    framework: 'vue',
+  },
 ];
 
 const comparison = [
   {
     name: 'ReelKit (core + react)',
-    gzip: '9.9 kB',
+    gzip: '10.3 kB',
     virtualization: true,
     notes: 'Zero dependencies',
   },
   {
     name: 'ReelKit (core + angular)',
     gzip: '19.8 kB',
+    virtualization: true,
+    notes: 'Zero dependencies',
+  },
+  {
+    name: 'ReelKit (core + vue)',
+    gzip: '10.5 kB',
     virtualization: true,
     notes: 'Zero dependencies',
   },
@@ -345,10 +369,13 @@ export default function Installation() {
 
       <Observe signals={[frameworkSignal]}>
         {() => {
+          const fw = frameworkSignal.value;
           const pkg =
-            frameworkSignal.value === 'react'
+            fw === 'react'
               ? '@reelkit/react'
-              : '@reelkit/angular';
+              : fw === 'angular'
+                ? '@reelkit/angular'
+                : '@reelkit/vue';
           return (
             <>
               <section className="mb-12">
@@ -379,168 +406,203 @@ export default function Installation() {
 
         <Observe signals={[frameworkSignal]}>
           {() =>
-            frameworkSignal.value === 'react' ? (
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">@reelkit/react</h3>
-                  <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
-                    <li>
-                      <code className="text-sm font-mono">react</code>{' '}
-                      {'>= 18.0.0'}
-                    </li>
-                    <li>
-                      <code className="text-sm font-mono">react-dom</code>{' '}
-                      {'>= 18.0.0'}
-                    </li>
-                  </ul>
+            renderFramework({
+              react: () => (
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">
+                      @reelkit/react
+                    </h3>
+                    <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
+                      <li>
+                        <code className="text-sm font-mono">react</code>{' '}
+                        {'>= 18.0.0'}
+                      </li>
+                      <li>
+                        <code className="text-sm font-mono">react-dom</code>{' '}
+                        {'>= 18.0.0'}
+                      </li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">
+                      @reelkit/react-reel-player
+                    </h3>
+                    <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
+                      <li>
+                        <code className="text-sm font-mono">
+                          @reelkit/react
+                        </code>
+                      </li>
+                      <li>
+                        <code className="text-sm font-mono">react</code>{' '}
+                        {'>= 18.0.0'}
+                      </li>
+                      <li>
+                        <code className="text-sm font-mono">react-dom</code>{' '}
+                        {'>= 18.0.0'}
+                      </li>
+                      <li>
+                        <code className="text-sm font-mono">lucide-react</code>{' '}
+                        {'>= 0.400.0'}
+                      </li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">
+                      @reelkit/react-lightbox
+                    </h3>
+                    <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
+                      <li>
+                        <code className="text-sm font-mono">
+                          @reelkit/react
+                        </code>
+                      </li>
+                      <li>
+                        <code className="text-sm font-mono">react</code>{' '}
+                        {'>= 18.0.0'}
+                      </li>
+                      <li>
+                        <code className="text-sm font-mono">react-dom</code>{' '}
+                        {'>= 18.0.0'}
+                      </li>
+                      <li>
+                        <code className="text-sm font-mono">lucide-react</code>{' '}
+                        {'>= 0.400.0'}
+                      </li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">
+                      @reelkit/react-stories-player
+                    </h3>
+                    <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
+                      <li>
+                        <code className="text-sm font-mono">
+                          @reelkit/react
+                        </code>
+                      </li>
+                      <li>
+                        <code className="text-sm font-mono">react</code>{' '}
+                        {'>= 18.0.0'}
+                      </li>
+                      <li>
+                        <code className="text-sm font-mono">react-dom</code>{' '}
+                        {'>= 18.0.0'}
+                      </li>
+                      <li>
+                        <code className="text-sm font-mono">lucide-react</code>{' '}
+                        {'>= 0.400.0'}
+                      </li>
+                    </ul>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">
-                    @reelkit/react-reel-player
-                  </h3>
-                  <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
-                    <li>
-                      <code className="text-sm font-mono">@reelkit/react</code>
-                    </li>
-                    <li>
-                      <code className="text-sm font-mono">react</code>{' '}
-                      {'>= 18.0.0'}
-                    </li>
-                    <li>
-                      <code className="text-sm font-mono">react-dom</code>{' '}
-                      {'>= 18.0.0'}
-                    </li>
-                    <li>
-                      <code className="text-sm font-mono">lucide-react</code>{' '}
-                      {'>= 0.400.0'}
-                    </li>
-                  </ul>
+              ),
+              angular: () => (
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">
+                      @reelkit/angular
+                    </h3>
+                    <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
+                      <li>
+                        <code className="text-sm font-mono">@angular/core</code>{' '}
+                        {'>= 17.0.0'}
+                      </li>
+                      <li>
+                        <code className="text-sm font-mono">
+                          @angular/common
+                        </code>{' '}
+                        {'>= 17.0.0'}
+                      </li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">
+                      @reelkit/angular-reel-player
+                    </h3>
+                    <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
+                      <li>
+                        <code className="text-sm font-mono">
+                          @reelkit/angular
+                        </code>
+                      </li>
+                      <li>
+                        <code className="text-sm font-mono">@angular/core</code>{' '}
+                        {'>= 19.0.0'}
+                      </li>
+                      <li>
+                        <code className="text-sm font-mono">
+                          lucide-angular
+                        </code>{' '}
+                        {'>= 0.460.0'}
+                      </li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">
+                      @reelkit/angular-lightbox
+                    </h3>
+                    <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
+                      <li>
+                        <code className="text-sm font-mono">
+                          @reelkit/angular
+                        </code>
+                      </li>
+                      <li>
+                        <code className="text-sm font-mono">@angular/core</code>{' '}
+                        {'>= 17.0.0'}
+                      </li>
+                      <li>
+                        <code className="text-sm font-mono">
+                          lucide-angular
+                        </code>{' '}
+                        {'>= 0.400.0'}
+                      </li>
+                    </ul>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">
-                    @reelkit/react-lightbox
-                  </h3>
-                  <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
-                    <li>
-                      <code className="text-sm font-mono">@reelkit/react</code>
-                    </li>
-                    <li>
-                      <code className="text-sm font-mono">react</code>{' '}
-                      {'>= 18.0.0'}
-                    </li>
-                    <li>
-                      <code className="text-sm font-mono">react-dom</code>{' '}
-                      {'>= 18.0.0'}
-                    </li>
-                    <li>
-                      <code className="text-sm font-mono">lucide-react</code>{' '}
-                      {'>= 0.400.0'}
-                    </li>
-                  </ul>
+              ),
+              vue: () => (
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">@reelkit/vue</h3>
+                    <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
+                      <li>
+                        <code className="text-sm font-mono">vue</code>{' '}
+                        {'>= 3.0.0'}
+                      </li>
+                    </ul>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">
-                    @reelkit/react-stories-player
-                  </h3>
-                  <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
-                    <li>
-                      <code className="text-sm font-mono">@reelkit/react</code>
-                    </li>
-                    <li>
-                      <code className="text-sm font-mono">react</code>{' '}
-                      {'>= 18.0.0'}
-                    </li>
-                    <li>
-                      <code className="text-sm font-mono">react-dom</code>{' '}
-                      {'>= 18.0.0'}
-                    </li>
-                    <li>
-                      <code className="text-sm font-mono">lucide-react</code>{' '}
-                      {'>= 0.400.0'}
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">
-                    @reelkit/angular
-                  </h3>
-                  <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
-                    <li>
-                      <code className="text-sm font-mono">@angular/core</code>{' '}
-                      {'>= 17.0.0'}
-                    </li>
-                    <li>
-                      <code className="text-sm font-mono">@angular/common</code>{' '}
-                      {'>= 17.0.0'}
-                    </li>
-                  </ul>
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">
-                    @reelkit/angular-reel-player
-                  </h3>
-                  <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
-                    <li>
-                      <code className="text-sm font-mono">
-                        @reelkit/angular
-                      </code>
-                    </li>
-                    <li>
-                      <code className="text-sm font-mono">@angular/core</code>{' '}
-                      {'>= 19.0.0'}
-                    </li>
-                    <li>
-                      <code className="text-sm font-mono">lucide-angular</code>{' '}
-                      {'>= 0.460.0'}
-                    </li>
-                  </ul>
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">
-                    @reelkit/angular-lightbox
-                  </h3>
-                  <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
-                    <li>
-                      <code className="text-sm font-mono">
-                        @reelkit/angular
-                      </code>
-                    </li>
-                    <li>
-                      <code className="text-sm font-mono">@angular/core</code>{' '}
-                      {'>= 17.0.0'}
-                    </li>
-                    <li>
-                      <code className="text-sm font-mono">lucide-angular</code>{' '}
-                      {'>= 0.400.0'}
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            )
+              ),
+            })
           }
         </Observe>
 
         <Observe signals={[frameworkSignal]}>
-          {() => (
-            <Callout type="info" className="mt-4">
-              <code className="text-sm font-mono">
-                {frameworkSignal.value === 'react'
-                  ? 'lucide-react'
-                  : 'lucide-angular'}
-              </code>{' '}
-              is only needed for the default control icons. If you provide your
-              own controls via{' '}
-              <code className="text-sm font-mono">
-                {frameworkSignal.value === 'react'
-                  ? 'renderControls'
-                  : 'rkPlayerControls'}
-              </code>
-              , you can skip installing it.
-            </Callout>
-          )}
+          {() =>
+            renderFramework({
+              react: () => (
+                <Callout type="info" className="mt-4">
+                  <code className="text-sm font-mono">lucide-react</code> is
+                  only needed for the default control icons. If you provide your
+                  own controls via{' '}
+                  <code className="text-sm font-mono">renderControls</code>, you
+                  can skip installing it.
+                </Callout>
+              ),
+              angular: () => (
+                <Callout type="info" className="mt-4">
+                  <code className="text-sm font-mono">lucide-angular</code> is
+                  only needed for the default control icons. If you provide your
+                  own controls via{' '}
+                  <code className="text-sm font-mono">rkPlayerControls</code>,
+                  you can skip installing it.
+                </Callout>
+              ),
+            })
+          }
         </Observe>
       </section>
 
@@ -588,6 +650,7 @@ export default function Installation() {
             path: {
               react: '/docs/react/guide',
               angular: '/docs/angular/guide',
+              vue: '/docs/vue/guide',
             },
             description: 'components, demos, and integration',
           },
@@ -596,6 +659,7 @@ export default function Installation() {
             path: {
               react: '/docs/reel-player',
               angular: '/docs/angular-reel-player',
+              vue: '/docs/vue-reel-player',
             },
             description: 'TikTok/Reels-style video player',
           },
@@ -604,6 +668,7 @@ export default function Installation() {
             path: {
               react: '/docs/lightbox',
               angular: '/docs/angular-lightbox',
+              vue: '/docs/vue-lightbox',
             },
             description: 'image & video gallery',
           },
@@ -612,6 +677,7 @@ export default function Installation() {
             path: {
               react: '/docs/stories-player',
               angular: '/docs/angular-stories-player',
+              vue: '/docs/vue-stories-player',
             },
             description: 'Instagram-style stories viewer',
           },

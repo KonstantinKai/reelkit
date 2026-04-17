@@ -1012,6 +1012,32 @@ export default function CoreApi() {
                   lock simultaneously; scroll is restored when all unlock.
                 </td>
               </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  sharedBodyLock
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  BodyLock
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Module-level singleton instance. Use when multiple components
+                  across your app should share a single reference counter so
+                  nested modals/overlays interleave correctly. Framework
+                  bindings (
+                  <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+                    @reelkit/react
+                  </code>
+                  ,{' '}
+                  <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+                    @reelkit/vue
+                  </code>
+                  ,{' '}
+                  <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+                    @reelkit/angular
+                  </code>
+                  ) use this under the hood.
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>

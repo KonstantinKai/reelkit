@@ -2,9 +2,11 @@ import {
   type CSSProperties,
   type FC,
   type ReactNode,
+  type KeyboardEvent,
   useContext,
   useState,
   useEffect,
+  useCallback,
   memo,
 } from 'react';
 import { clamp, type Subscribable } from '@reelkit/core';
@@ -189,6 +191,10 @@ const ReelIndicatorInner: FC<ReelIndicatorInnerProps> = (props) => {
       <span
         key={i}
         data-reel-indicator={i}
+        role="tab"
+        aria-selected={isActiveDot}
+        aria-label={`Slide ${i + 1}`}
+        tabIndex={isActiveDot ? 0 : -1}
         style={{
           position: 'absolute',
           [isVertical ? 'top' : 'left']: position,
@@ -201,6 +207,12 @@ const ReelIndicatorInner: FC<ReelIndicatorInnerProps> = (props) => {
           transition: 'top 0.2s ease, left 0.2s ease',
         }}
         onClick={onDotClick ? () => onDotClick(i) : undefined}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onDotClick?.(i);
+          }
+        }}
         data-testid={`indicator-dot-${i}`}
       >
         <span
@@ -218,8 +230,38 @@ const ReelIndicatorInner: FC<ReelIndicatorInnerProps> = (props) => {
     );
   }
 
+  const handleContainerKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      const prevKey = isVertical ? 'ArrowUp' : 'ArrowLeft';
+      const nextKey = isVertical ? 'ArrowDown' : 'ArrowRight';
+      let targetIndex: number | null = null;
+
+      if (e.key === prevKey) {
+        targetIndex = Math.max(0, active - 1);
+      } else if (e.key === nextKey) {
+        targetIndex = Math.min(count - 1, active + 1);
+      } else if (e.key === 'Home') {
+        targetIndex = 0;
+      } else if (e.key === 'End') {
+        targetIndex = count - 1;
+      }
+
+      if (targetIndex !== null) {
+        e.preventDefault();
+        onDotClick?.(targetIndex);
+        const target = (e.currentTarget as HTMLElement)?.querySelector(
+          `[data-reel-indicator="${targetIndex}"]`,
+        ) as HTMLElement | null;
+        target?.focus();
+      }
+    },
+    [active, count, isVertical, onDotClick],
+  );
+
   return (
     <div
+      role="tablist"
+      aria-label="Slide navigation"
       className={className}
       style={{
         position: 'relative',
@@ -228,6 +270,7 @@ const ReelIndicatorInner: FC<ReelIndicatorInnerProps> = (props) => {
         [isVertical ? 'width' : 'height']: itemSize,
         ...style,
       }}
+      onKeyDown={handleContainerKeyDown}
     >
       {dots}
     </div>

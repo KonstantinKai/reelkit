@@ -1,0 +1,14 @@
+{
+  "name": "@reelkit/vue",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/reelkit-vue/src",
+  "projectType": "library",
+  "tags": ["scope:vue", "type:bindings"],
+  "targets": {},
+  "release": {
+    "version": {
+      "currentVersionResolver": "git-tag",
+      "fallbackCurrentVersionResolver": "disk"
+    }
+  }
+}

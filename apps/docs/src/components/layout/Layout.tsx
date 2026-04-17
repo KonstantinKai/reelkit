@@ -24,10 +24,11 @@ export default function Layout() {
       () => {
         const fw = frameworkSignal.value;
         const path = window.location.pathname;
-        const fromIdx = fw === 'angular' ? 0 : 1;
-        const toIdx = fw === 'angular' ? 1 : 0;
-        const pair = frameworkRoutePairs.find((p) => p[fromIdx] === path);
-        if (pair) navigate(pair[toIdx], { replace: true });
+        const toIdx = fw === 'react' ? 0 : fw === 'angular' ? 1 : 2;
+        const pair = frameworkRoutePairs.find((p) => p.includes(path));
+        if (pair && pair[toIdx] !== path) {
+          navigate(pair[toIdx], { replace: true });
+        }
       },
     );
   }, [navigate]);

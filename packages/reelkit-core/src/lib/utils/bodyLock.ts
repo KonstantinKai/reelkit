@@ -98,3 +98,15 @@ export const createBodyLock = (): BodyLock => {
     unlock,
   };
 };
+
+/**
+ * Module-level shared body lock. Framework bindings (`@reelkit/react`,
+ * `@reelkit/vue`, etc.) use this so multiple concurrent callers across
+ * unrelated components share a single reference counter — nested modals
+ * and overlays interleave correctly without stepping on each other's
+ * saved body styles.
+ *
+ * If you need an isolated lock (e.g. for testing, or for an embedded
+ * iframe scenario), call `createBodyLock()` directly.
+ */
+export const sharedBodyLock: BodyLock = createBodyLock();

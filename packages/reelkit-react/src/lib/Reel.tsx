@@ -113,6 +113,9 @@ export interface ReelProps {
    */
   enableGestures?: boolean;
 
+  /** Accessible label for the carousel region. */
+  ariaLabel?: string;
+
   /** Optional children rendered after the slider content (e.g. indicators, overlays). */
   children?: ReactNode;
 
@@ -294,7 +297,7 @@ const Element = ({
   enableGestures = true,
   ...props
 }: ReelProps) => {
-  const { size: sizeProp, apiRef: forwardedRef } = props;
+  const { size: sizeProp, apiRef: forwardedRef, ariaLabel } = props;
   const autoSize = sizeProp === undefined;
   const [measuredSize, setMeasuredSize] = useState<[number, number]>([0, 0]);
   const size: [number, number] = autoSize ? measuredSize : sizeProp;
@@ -319,7 +322,10 @@ const Element = ({
   const primarySize = isHorizontal ? first(size) : last(size);
   const ref = useRef<HTMLDivElement>(null);
 
-  const [controller, itemBuilder, reelContextValue] = useState(() => {
+  const [controller, itemBuilder, reelContextValue, liveText] = useState(() => {
+    let isFirstChange = true;
+    const liveSignal = createSignal('');
+
     const ctrl = createSliderController(
       {
         count: props.count,
@@ -339,6 +345,10 @@ const Element = ({
           propsRef.current.beforeChange?.(index, nextIndex, rangeIndex);
         },
         onAfterChange: (index, rangeIndex) => {
+          if (!isFirstChange) {
+            liveSignal.value = `Slide ${index + 1} of ${propsRef.current.count}`;
+          }
+          isFirstChange = false;
           propsRef.current.afterChange?.(index, rangeIndex);
         },
         onDragStart: (index) => {
@@ -371,14 +381,20 @@ const Element = ({
 
     const builder = (i: number, indexInRange: number) => {
       const { keyExtractor, itemBuilder, size } = propsRef.current;
+      const isActive = i === ctrl.state.index.value;
       return (
-        <div key={keyExtractor!(i, indexInRange)} data-index={i}>
+        <div
+          key={keyExtractor!(i, indexInRange)}
+          data-index={i}
+          role="tabpanel"
+          {...(!isActive ? { inert: '' } : {})}
+        >
           {itemBuilder(i, indexInRange, size!)}
         </div>
       );
     };
 
-    return [ctrl, builder, ctxValue] as const;
+    return [ctrl, builder, ctxValue, liveSignal] as const;
   })[0];
 
   const mountedRef = useRef(false);
@@ -478,9 +494,28 @@ const Element = ({
 
   const hasMeasured = !autoSize || primarySize > 0;
 
+  const srOnlyStyle: CSSProperties = {
+    position: 'absolute',
+    width: 1,
+    height: 1,
+    padding: 0,
+    margin: -1,
+    overflow: 'hidden',
+    clip: 'rect(0, 0, 0, 0)',
+    whiteSpace: 'nowrap',
+    border: 0,
+  };
+
   return (
     <ReelContext.Provider value={reelContextValue}>
-      <div ref={ref} className={props.className} style={rootStyle}>
+      <div
+        ref={ref}
+        role="region"
+        aria-roledescription="carousel"
+        aria-label={ariaLabel}
+        className={props.className}
+        style={rootStyle}
+      >
         {hasMeasured && (
           <Observe signals={[indexes]}>
             {() => (
@@ -497,6 +532,13 @@ const Element = ({
             )}
           </Observe>
         )}
+        <Observe signals={[liveText]}>
+          {() => (
+            <div aria-live="polite" aria-atomic="true" style={srOnlyStyle}>
+              {liveText.value}
+            </div>
+          )}
+        </Observe>
         {props.children}
       </div>
     </ReelContext.Provider>
@@ -531,6 +573,7 @@ export const Reel = memo(
     prev.size?.[1] === next.size?.[1] &&
     prev.className === next.className &&
     prev.style === next.style &&
+    prev.ariaLabel === next.ariaLabel &&
     prev.children === next.children,
 );
 

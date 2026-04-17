@@ -18,6 +18,7 @@
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
 
+> [!WARNING]
 > **0.x.x** — ReelKit is under active development. APIs may change between minor versions until 1.0.
 
 ## Features
@@ -36,18 +37,23 @@
 | Package                                                                | Description                       | JS (gzip) |
 | ---------------------------------------------------------------------- | --------------------------------- | --------- |
 | [@reelkit/core](packages/reelkit-core)                                 | Framework-agnostic slider engine  | 6.0 kB    |
-| [@reelkit/react](packages/reelkit-react)                               | React components and hooks        | 3.9 kB    |
-| [@reelkit/react-reel-player](packages/reelkit-react-reel-player)       | Full-screen video reel player     | 4.3 kB    |
+| [@reelkit/react](packages/reelkit-react)                               | React components and hooks        | 4.4 kB    |
+| [@reelkit/react-reel-player](packages/reelkit-react-reel-player)       | Full-screen video reel player     | 4.4 kB    |
 | [@reelkit/react-lightbox](packages/reelkit-react-lightbox)             | Image & video gallery lightbox    | 3.1 kB    |
 | [@reelkit/stories-core](packages/reelkit-stories-core)                 | Framework-agnostic stories engine | 1.7 kB    |
 | [@reelkit/react-stories-player](packages/reelkit-react-stories-player) | Instagram-style stories player    | 5.6 kB    |
-| [@reelkit/angular](packages/reelkit-angular)                           | Angular standalone components     | 13.8 kB   |
+| [@reelkit/angular](packages/reelkit-angular)                           | Angular standalone components     | 13.9 kB   |
 | [@reelkit/angular-reel-player](packages/reelkit-angular-reel-player)   | Full-screen video reel player     | 17.3 kB   |
 | [@reelkit/angular-lightbox](packages/reelkit-angular-lightbox)         | Image & video gallery lightbox    | 14.0 kB   |
+| [@reelkit/vue](packages/reelkit-vue)                                   | Vue 3 components and composables  | 4.5 kB    |
 
 ## Try It
 
-[![React Demo](https://img.shields.io/badge/React-Live_Demo-6366f1?logo=react&logoColor=white)](https://react-demo.reelkit.dev) &nbsp; [![Angular Demo](https://img.shields.io/badge/Angular-Live_Demo-6366f1?logo=angular&logoColor=white)](https://angular-demo.reelkit.dev) &nbsp; [![React](https://img.shields.io/badge/React-Open_in_StackBlitz-1269D3?logo=stackblitz&logoColor=white)](https://stackblitz.com/github/KonstantinKai/reelkit-react-starter) &nbsp; [![Angular](https://img.shields.io/badge/Angular-Open_in_StackBlitz-1269D3?logo=stackblitz&logoColor=white)](https://stackblitz.com/github/KonstantinKai/reelkit-angular-starter)
+| Framework | Live Demo                                                                                                                                          | Playground                                                                                                                                                                           |
+| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| React     | [![React Demo](https://img.shields.io/badge/Live_Demo-6366f1?logo=react&logoColor=white)](https://react-demo.reelkit.dev/?utm_source=github)       | [![React StackBlitz](https://img.shields.io/badge/Open_in_StackBlitz-1269D3?logo=stackblitz&logoColor=white)](https://stackblitz.com/github/KonstantinKai/reelkit-react-starter)     |
+| Angular   | [![Angular Demo](https://img.shields.io/badge/Live_Demo-6366f1?logo=angular&logoColor=white)](https://angular-demo.reelkit.dev/?utm_source=github) | [![Angular StackBlitz](https://img.shields.io/badge/Open_in_StackBlitz-1269D3?logo=stackblitz&logoColor=white)](https://stackblitz.com/github/KonstantinKai/reelkit-angular-starter) |
+| Vue       | [![Vue Demo](https://img.shields.io/badge/Live_Demo-6366f1?logo=vuedotjs&logoColor=white)](https://vue-demo.reelkit.dev/?utm_source=github)        | [![Vue StackBlitz](https://img.shields.io/badge/Open_in_StackBlitz-1269D3?logo=stackblitz&logoColor=white)](https://stackblitz.com/github/KonstantinKai/reelkit-vue-starter)         |
 
 ## Quick Start
 
@@ -91,7 +97,6 @@ Full documentation, interactive demos, and API reference at **[reelkit.dev](http
 ## Development
 
 ```bash
-proto use            # sync Node.js version (requires proto)
 npm install          # install dependencies
 npm run build        # build all packages
 npm test             # run all tests

@@ -147,4 +147,33 @@ describe('useFullscreen', () => {
 
     expect(document.exitFullscreen).toHaveBeenCalled();
   });
+
+  it('request awaits exit before requesting when already fullscreen', async () => {
+    const calls: string[] = [];
+    mockElement.requestFullscreen = vi.fn(() => {
+      calls.push('request');
+      return Promise.resolve();
+    });
+    document.exitFullscreen = vi.fn(() => {
+      calls.push('exit');
+      return Promise.resolve();
+    });
+    Object.defineProperty(document, 'fullscreenElement', {
+      value: mockElement,
+      writable: true,
+      configurable: true,
+    });
+
+    const { result } = renderHook(() => useFullscreen({ ref }));
+
+    await act(async () => {
+      document.dispatchEvent(new Event('fullscreenchange'));
+    });
+
+    await act(async () => {
+      await result.current[1]();
+    });
+
+    expect(calls).toEqual(['exit', 'request']);
+  });
 });

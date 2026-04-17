@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
 import {
-  Github,
   Zap,
   Layers,
   Keyboard,
@@ -15,6 +14,7 @@ import {
 import { CodeBlock } from '../components/ui/CodeBlock';
 import { BasicSliderDemo } from '../components/demos/BasicSliderDemo';
 import { AnimatedLogo } from '../components/ui/AnimatedLogo';
+import { GitHubStarButton } from '../components/ui/GitHubStarButton';
 
 const highlights = [
   {
@@ -156,6 +156,20 @@ export default function Home() {
                     Angular
                   </span>
                 </div>
+                <div className="flex flex-col items-center gap-1.5">
+                  <div className="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center">
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="w-7 h-7 text-emerald-500"
+                      fill="currentColor"
+                    >
+                      <path d="M2 3h3.5L12 15l6.5-12H22L12 21 2 3zm4.5 0H10l2 3.6L14 3h3.5L12 13.2 6.5 3z" />
+                    </svg>
+                  </div>
+                  <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                    Vue
+                  </span>
+                </div>
               </div>
 
               <div className="flex flex-col sm:flex-row items-center lg:items-start gap-3">
@@ -166,12 +180,7 @@ export default function Home() {
                   Get Started
                   <ArrowRight size={18} />
                 </Link>
-                <div className="flex items-center gap-2 px-4 py-3 bg-slate-100 dark:bg-slate-800 rounded-xl font-mono text-sm text-slate-600 dark:text-slate-400">
-                  <span className="text-primary-600 dark:text-primary-400">
-                    npm install
-                  </span>{' '}
-                  @reelkit/core
-                </div>
+                <GitHubStarButton />
               </div>
             </div>
 
@@ -287,7 +296,7 @@ export default function Home() {
           </div>
 
           <div className="max-w-2xl mx-auto">
-            <CodeBlock code={codeExample} language="typescript" />
+            <CodeBlock code={codeExample} language="tsx" />
           </div>
         </div>
       </section>
@@ -314,9 +323,14 @@ export default function Home() {
                 <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary-500/10 dark:bg-primary-400/10">
                   <Box className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                 </div>
-                <h3 className="font-mono text-sm font-semibold text-primary-700 dark:text-primary-300">
+                <a
+                  href="https://www.npmjs.com/package/@reelkit/core"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-mono text-sm font-semibold text-primary-700 dark:text-primary-300 hover:underline"
+                >
                   @reelkit/core
-                </h3>
+                </a>
               </div>
               <p className="text-slate-600 dark:text-slate-400 text-sm ml-12">
                 Framework-agnostic slider engine — virtualization, gestures,
@@ -325,31 +339,20 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Connector line from core */}
-          <div className="flex justify-center mb-6">
-            <div className="w-px h-8 bg-gradient-to-b from-primary-300 to-slate-300 dark:from-primary-600 dark:to-slate-600" />
-          </div>
-
-          {/* Framework bindings — data-driven for easy extension */}
-          <div className="flex flex-wrap justify-center gap-8">
+          {/* Framework bindings — vertical stacked tree */}
+          <div className="max-w-3xl mx-auto space-y-0">
             {[
               {
                 framework: 'React',
                 pkg: '@reelkit/react',
-                desc: 'Components, hooks, and signal bridges for React',
+                desc: 'Components, hooks, and signal bridges',
                 color: 'sky',
                 extensions: [
-                  {
-                    name: '@reelkit/react-reel-player',
-                    desc: 'Full-screen video player overlay',
-                  },
-                  {
-                    name: '@reelkit/react-lightbox',
-                    desc: 'Image & video gallery overlay',
-                  },
+                  { name: '@reelkit/react-reel-player', label: 'Reel Player' },
+                  { name: '@reelkit/react-lightbox', label: 'Lightbox' },
                   {
                     name: '@reelkit/react-stories-player',
-                    desc: 'Instagram-style stories player',
+                    label: 'Stories Player',
                   },
                 ],
               },
@@ -361,80 +364,114 @@ export default function Home() {
                 extensions: [
                   {
                     name: '@reelkit/angular-reel-player',
-                    desc: 'Full-screen video player overlay',
+                    label: 'Reel Player',
                   },
-                  {
-                    name: '@reelkit/angular-lightbox',
-                    desc: 'Image & video gallery overlay',
-                  },
+                  { name: '@reelkit/angular-lightbox', label: 'Lightbox' },
                   {
                     name: '@reelkit/angular-stories-player',
-                    desc: 'Instagram-style stories player (coming soon)',
+                    label: 'Stories Player',
+                    comingSoon: true,
                   },
                 ],
               },
-            ].map(({ framework, pkg, desc, color, extensions }) => (
-              <div
-                key={framework}
-                className="w-full md:w-[calc(50%-1rem)] min-w-[280px] max-w-[520px]"
-              >
+              {
+                framework: 'Vue',
+                pkg: '@reelkit/vue',
+                desc: 'Components and composables for Vue 3',
+                color: 'emerald',
+                extensions: [
+                  {
+                    name: '@reelkit/vue-reel-player',
+                    label: 'Reel Player',
+                    comingSoon: true,
+                  },
+                  {
+                    name: '@reelkit/vue-lightbox',
+                    label: 'Lightbox',
+                    comingSoon: true,
+                  },
+                  {
+                    name: '@reelkit/vue-stories-player',
+                    label: 'Stories Player',
+                    comingSoon: true,
+                  },
+                ],
+              },
+            ].map(({ framework, pkg, desc, color, extensions }, i, arr) => (
+              <div key={framework}>
+                <div className="flex justify-center">
+                  <div className="w-px h-6 bg-slate-300 dark:bg-slate-600" />
+                </div>
+
+                {/* Binding card with inline extensions */}
                 <div
-                  className={`relative p-5 rounded-2xl border border-${color}-300 dark:border-${color}-700 bg-${color}-50/60 dark:bg-${color}-950/20 mb-4`}
+                  className={`relative rounded-2xl border border-${color}-300 dark:border-${color}-700 bg-${color}-50/60 dark:bg-${color}-950/20 p-5`}
                 >
                   <span
                     className={`absolute -top-3 left-5 px-3 py-0.5 text-[11px] font-semibold uppercase tracking-widest bg-${color}-500 text-white rounded-full`}
                   >
                     {framework}
                   </span>
-                  <div className="flex items-center gap-3 mb-1">
-                    <div
-                      className={`flex items-center justify-center w-8 h-8 rounded-lg bg-${color}-500/10 dark:bg-${color}-400/10`}
-                    >
+
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-x-3 gap-y-0.5 mb-1">
+                    <div className="flex items-center gap-3">
                       <Blocks
-                        className={`w-4 h-4 text-${color}-600 dark:text-${color}-400`}
+                        className={`w-4 h-4 text-${color}-600 dark:text-${color}-400 shrink-0`}
                       />
+                      <a
+                        href={`https://www.npmjs.com/package/${pkg}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`font-mono text-sm font-semibold text-${color}-700 dark:text-${color}-300 hover:underline`}
+                      >
+                        {pkg}
+                      </a>
                     </div>
-                    <h3
-                      className={`font-mono text-sm font-semibold text-${color}-700 dark:text-${color}-300`}
-                    >
-                      {pkg}
-                    </h3>
+                    <span className="text-slate-500 dark:text-slate-400 text-sm ml-7 sm:ml-0">
+                      <span className="hidden sm:inline">— </span>
+                      {desc}
+                    </span>
                   </div>
-                  <p className="text-slate-600 dark:text-slate-400 text-sm ml-11">
-                    {desc}
-                  </p>
-                </div>
 
-                <div className="flex justify-center mb-4">
-                  <div
-                    className={`w-px h-5 bg-${color}-300 dark:bg-${color}-700`}
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 gap-3">
-                  {extensions.map((ext) => (
-                    <div
-                      key={ext.name}
-                      className={`p-4 rounded-xl border border-${color}-200 dark:border-${color}-800 bg-white dark:bg-slate-800/60 hover:border-${color}-400 dark:hover:border-${color}-600 transition-colors`}
-                    >
-                      <div className="flex items-center gap-2 mb-1.5">
+                  {/* Extension packages as inline chips */}
+                  <div className="flex flex-wrap gap-2 mt-3 ml-7">
+                    {extensions.map((ext) => (
+                      <a
+                        key={ext.name}
+                        href={
+                          'comingSoon' in ext && ext.comingSoon
+                            ? undefined
+                            : `https://www.npmjs.com/package/${ext.name}`
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-${color}-200 dark:border-${color}-800 bg-white dark:bg-slate-800/60 text-xs ${!('comingSoon' in ext && ext.comingSoon) ? `hover:border-${color}-400 dark:hover:border-${color}-600 transition-colors` : ''}`}
+                      >
                         {ext.name.includes('player') ? (
-                          <Film className={`w-4 h-4 text-${color}-500`} />
+                          <Film className={`w-3 h-3 text-${color}-500`} />
                         ) : (
-                          <Image className={`w-4 h-4 text-${color}-500`} />
+                          <Image className={`w-3 h-3 text-${color}-500`} />
                         )}
-                        <h4
-                          className={`font-mono text-xs font-semibold text-${color}-700 dark:text-${color}-300`}
+                        <span
+                          className={`font-mono font-medium text-${color}-700 dark:text-${color}-300`}
                         >
-                          {ext.name}
-                        </h4>
-                      </div>
-                      <p className="text-slate-500 dark:text-slate-400 text-xs">
-                        {ext.desc}
-                      </p>
-                    </div>
-                  ))}
+                          {ext.label}
+                        </span>
+                        {'comingSoon' in ext && ext.comingSoon && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400">
+                            soon
+                          </span>
+                        )}
+                      </a>
+                    ))}
+                  </div>
                 </div>
+
+                {i < arr.length - 1 && (
+                  <div className="flex justify-center">
+                    <div className="w-px h-2 bg-slate-300 dark:bg-slate-600" />
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -457,15 +494,7 @@ export default function Home() {
             >
               Read the Docs
             </Link>
-            <a
-              href="https://github.com/KonstantinKai/reelkit"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-8 py-4 bg-slate-800 text-slate-300 font-semibold rounded-xl border border-slate-700 hover:bg-slate-700 hover:text-white transition-colors"
-            >
-              <Github size={20} />
-              GitHub
-            </a>
+            <GitHubStarButton variant="on-dark" />
           </div>
         </div>
       </section>

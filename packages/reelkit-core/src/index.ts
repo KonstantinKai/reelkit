@@ -147,4 +147,4 @@ export {
 } from './lib/utils';
 
 // Body lock
-export { createBodyLock, type BodyLock } from './lib/utils';
+export { createBodyLock, sharedBodyLock, type BodyLock } from './lib/utils';

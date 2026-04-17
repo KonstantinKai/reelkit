@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "declaration": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true,
+    "outDir": "../../dist/out-tsc",
+    "sourceMap": false
+  },
+  "include": ["src/**/*.ts", "playwright.config.ts"]
+}

@@ -9,7 +9,7 @@
 
 Instagram-style stories player for React. Full-screen overlay with tap-to-advance navigation, 3D cube transition between users, auto-advance timer, segmented progress bar, and double-tap heart animation. ~5.6 kB gzip.
 
-**[Live Demo](https://react-demo.reelkit.dev/stories-player)**
+**[Live Demo](https://react-demo.reelkit.dev/stories-player?utm_source=npm)**
 
 ## Installation
 

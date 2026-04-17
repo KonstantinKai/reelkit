@@ -24,7 +24,7 @@ export function CodeBlock({
     const highlight = async () => {
       const highlighted = await codeToHtml(code.trim(), {
         lang: language,
-        theme: theme === 'dark' ? 'nord' : 'github-light',
+        theme: theme === 'dark' ? 'catppuccin-macchiato' : 'github-light',
       });
       setHtml(highlighted);
     };
@@ -39,7 +39,7 @@ export function CodeBlock({
 
   return (
     <div
-      className={`relative group overflow-hidden ${bare ? (theme === 'dark' ? 'bg-[#2e3440]' : 'bg-white') : `rounded-2xl border ${theme === 'dark' ? 'border-slate-600 bg-[#2e3440]' : 'border-slate-200 bg-white'}`}`}
+      className={`relative group overflow-hidden ${bare ? (theme === 'dark' ? 'bg-[#24273a]' : 'bg-white') : `rounded-2xl border ${theme === 'dark' ? 'border-slate-600 bg-[#24273a]' : 'border-slate-200 bg-white'}`}`}
     >
       {!bare && (
         <div

@@ -62,40 +62,40 @@ const segments = getSegments(5, 2, 0.6);
 
 ### createStoriesController
 
-| Config                | Type       | Default | Description                    |
-| --------------------- | ---------- | ------- | ------------------------------ |
-| `groupCount`          | `number`   | required | Number of story groups        |
-| `storyCounts`         | `number[]` | required | Stories per group             |
-| `initialGroupIndex`   | `number`   | `0`      | Starting group index          |
-| `initialStoryIndex`   | `number`   | `0`      | Starting story index          |
-| `defaultImageDuration`| `number`   | `5000`   | Default auto-advance (ms)     |
-| `tapZoneSplit`        | `number`   | `0.3`    | Left zone ratio (0-1)         |
+| Config                 | Type       | Default  | Description               |
+| ---------------------- | ---------- | -------- | ------------------------- |
+| `groupCount`           | `number`   | required | Number of story groups    |
+| `storyCounts`          | `number[]` | required | Stories per group         |
+| `initialGroupIndex`    | `number`   | `0`      | Starting group index      |
+| `initialStoryIndex`    | `number`   | `0`      | Starting story index      |
+| `defaultImageDuration` | `number`   | `5000`   | Default auto-advance (ms) |
+| `tapZoneSplit`         | `number`   | `0.3`    | Left zone ratio (0-1)     |
 
 ### StoriesController
 
-| Method / Property            | Type              | Description                       |
-| ---------------------------- | ----------------- | --------------------------------- |
-| `state.activeGroupIndex`     | `Signal<number>`  | Current group index               |
-| `state.activeStoryIndex`     | `Signal<number>`  | Current story index               |
-| `state.isPaused`             | `Signal<boolean>` | Paused state                      |
-| `nextStory()`                | `void`            | Advance to next story             |
-| `prevStory()`                | `void`            | Go to previous story              |
-| `nextGroup()`                | `void`            | Switch to next user group         |
-| `prevGroup()`                | `void`            | Switch to previous user group     |
-| `goToGroup(index)`           | `void`            | Jump to specific group            |
-| `pause()`                    | `void`            | Pause timer and auto-advance      |
-| `resume()`                   | `void`            | Resume timer                      |
-| `dispose()`                  | `void`            | Clean up subscriptions            |
+| Method / Property        | Type              | Description                   |
+| ------------------------ | ----------------- | ----------------------------- |
+| `state.activeGroupIndex` | `Signal<number>`  | Current group index           |
+| `state.activeStoryIndex` | `Signal<number>`  | Current story index           |
+| `state.isPaused`         | `Signal<boolean>` | Paused state                  |
+| `nextStory()`            | `void`            | Advance to next story         |
+| `prevStory()`            | `void`            | Go to previous story          |
+| `nextGroup()`            | `void`            | Switch to next user group     |
+| `prevGroup()`            | `void`            | Switch to previous user group |
+| `goToGroup(index)`       | `void`            | Jump to specific group        |
+| `pause()`                | `void`            | Pause timer and auto-advance  |
+| `resume()`               | `void`            | Resume timer                  |
+| `dispose()`              | `void`            | Clean up subscriptions        |
 
 ### Events
 
-| Event           | Type                                          | Description                              |
-| --------------- | --------------------------------------------- | ---------------------------------------- |
-| `onStoryChange` | `(groupIndex, storyIndex) => void`            | Fired after story navigation             |
-| `onGroupChange` | `(groupIndex) => void`                        | Fired after group switch                 |
-| `onStoryViewed` | `(groupIndex, storyIndex) => void`            | Fired when a story is viewed             |
-| `onComplete`    | `() => void`                                  | Last story of last group finished        |
-| `onClose`       | `() => void`                                  | Close requested (boundary navigation)    |
+| Event           | Type                               | Description                           |
+| --------------- | ---------------------------------- | ------------------------------------- |
+| `onStoryChange` | `(groupIndex, storyIndex) => void` | Fired after story navigation          |
+| `onGroupChange` | `(groupIndex) => void`             | Fired after group switch              |
+| `onStoryViewed` | `(groupIndex, storyIndex) => void` | Fired when a story is viewed          |
+| `onComplete`    | `() => void`                       | Last story of last group finished     |
+| `onClose`       | `() => void`                       | Close requested (boundary navigation) |
 
 ### getTapAction
 

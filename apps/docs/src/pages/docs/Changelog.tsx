@@ -15,7 +15,11 @@ const linkMentions = (text: string): string =>
       '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline">$1</a>',
     )
     .replace(
-      /(?<!\[)@([a-zA-Z\d](?:[a-zA-Z\d-]*[a-zA-Z\d])?)(?!\])/g,
+      // Match @username GitHub mentions, but NOT npm scopes like @reelkit/pkg.
+      // The trailing negative lookahead forbids alphanumeric/hyphen (prevents
+      // regex backtracking to a shorter username like @reelki for @reelkit/x)
+      // AND `]` (avoid double-linking) AND `/` (npm scope separator).
+      /(?<!\[)@([a-zA-Z\d](?:[a-zA-Z\d-]*[a-zA-Z\d])?)(?![a-zA-Z\d\-\]/])/g,
       '<a href="https://github.com/$1" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline">@$1</a>',
     );
 

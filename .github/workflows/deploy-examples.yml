@@ -10,10 +10,49 @@ on:
       - 'apps/example-react/public/**'
       - 'apps/example-angular/src/**'
       - 'apps/example-angular/public/**'
+      - 'apps/example-vue/src/**'
+      - 'apps/example-vue/public/**'
   workflow_dispatch:
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      react: ${{ steps.filter.outputs.react }}
+      angular: ${{ steps.filter.outputs.angular }}
+      vue: ${{ steps.filter.outputs.vue }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            react:
+              - 'apps/example-react/src/**'
+              - 'apps/example-react/public/**'
+              - 'packages/reelkit-core/**'
+              - 'packages/reelkit-react/**'
+              - 'packages/reelkit-react-reel-player/**'
+              - 'packages/reelkit-react-lightbox/**'
+              - 'packages/reelkit-react-stories-player/**'
+              - 'packages/reelkit-stories-core/**'
+              - 'packages/reelkit-example-data/**'
+            angular:
+              - 'apps/example-angular/src/**'
+              - 'apps/example-angular/public/**'
+              - 'packages/reelkit-core/**'
+              - 'packages/reelkit-angular/**'
+              - 'packages/reelkit-angular-reel-player/**'
+              - 'packages/reelkit-angular-lightbox/**'
+            vue:
+              - 'apps/example-vue/src/**'
+              - 'apps/example-vue/public/**'
+              - 'packages/reelkit-core/**'
+              - 'packages/reelkit-vue/**'
+
   deploy-react:
+    needs: changes
+    if: ${{ needs.changes.outputs.react == 'true' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -31,6 +70,8 @@ jobs:
           command: pages deploy apps/example-react/dist --project-name=reelkit-react-demo
 
   deploy-angular:
+    needs: changes
+    if: ${{ needs.changes.outputs.angular == 'true' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -46,3 +87,22 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy dist/apps/example-angular/browser --project-name=reelkit-angular-demo
+
+  deploy-vue:
+    needs: changes
+    if: ${{ needs.changes.outputs.vue == 'true' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 25
+          cache: 'npm'
+      - run: npm ci
+      - run: npx nx build example-vue
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          wranglerVersion: '4'
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy apps/example-vue/dist --project-name=reelkit-vue-demo

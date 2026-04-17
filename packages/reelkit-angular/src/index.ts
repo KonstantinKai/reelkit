@@ -52,6 +52,7 @@ export {
   requestFullscreen,
   exitFullscreen,
   createBodyLock,
+  sharedBodyLock,
   getSlideProgress,
   slideTransition,
   fadeTransition,

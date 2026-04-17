@@ -172,6 +172,42 @@ export const searchItems: SearchItem[] = [
     ],
   },
   {
+    title: 'Vue Guide',
+    path: '/docs/vue/guide',
+    category: 'Vue',
+    framework: 'vue',
+    keywords: [
+      'vue',
+      'reel',
+      'script setup',
+      'composable',
+      'provide',
+      'inject',
+      'slot',
+      'indicator',
+      'tutorial',
+    ],
+  },
+  {
+    title: 'Vue API Reference',
+    path: '/docs/vue/api',
+    category: 'Vue',
+    framework: 'vue',
+    keywords: [
+      'vue',
+      'reel',
+      'props',
+      'emits',
+      'indicator',
+      'useReelContext',
+      'useBodyLock',
+      'useFullscreen',
+      'useSoundState',
+      'SwipeToClose',
+      'transition',
+    ],
+  },
+  {
     title: 'Reel Player',
     path: '/docs/reel-player',
     category: 'Components',
@@ -374,6 +410,14 @@ export const navItems: NavSection[] = [
     ],
   },
   {
+    title: 'Vue',
+    framework: 'vue',
+    items: [
+      { label: 'Guide', path: '/docs/vue/guide' },
+      { label: 'API Reference', path: '/docs/vue/api' },
+    ],
+  },
+  {
     title: 'Components',
     items: [
       {
@@ -401,6 +445,24 @@ export const navItems: NavSection[] = [
         label: 'Stories Player',
         path: '/docs/angular-stories-player',
         framework: 'angular',
+        comingSoon: true,
+      },
+      {
+        label: 'Reel Player',
+        path: '/docs/vue-reel-player',
+        framework: 'vue',
+        comingSoon: true,
+      },
+      {
+        label: 'Lightbox',
+        path: '/docs/vue-lightbox',
+        framework: 'vue',
+        comingSoon: true,
+      },
+      {
+        label: 'Stories Player',
+        path: '/docs/vue-stories-player',
+        framework: 'vue',
         comingSoon: true,
       },
     ],

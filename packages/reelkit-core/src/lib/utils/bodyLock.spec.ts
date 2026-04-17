@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { createBodyLock } from './bodyLock';
+import { createBodyLock, sharedBodyLock } from './bodyLock';
 
 describe('createBodyLock', () => {
   const saved = {
@@ -143,5 +143,45 @@ describe('createBodyLock', () => {
     }
 
     bodyLock.unlock();
+  });
+});
+
+describe('sharedBodyLock', () => {
+  beforeEach(() => {
+    vi.spyOn(window, 'scrollTo').mockImplementation(vi.fn());
+    document.body.style.overflow = '';
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.width = '';
+    document.body.style.paddingRight = '';
+    document.body.style.overscrollBehavior = '';
+  });
+
+  afterEach(() => {
+    while (sharedBodyLock.locked) sharedBodyLock.unlock();
+    vi.restoreAllMocks();
+  });
+
+  it('is a singleton — same reference across imports', async () => {
+    const again = (await import('./bodyLock')).sharedBodyLock;
+    expect(again).toBe(sharedBodyLock);
+  });
+
+  it('interleaves two concurrent locks — restores only after both unlock', () => {
+    const dispose1 = sharedBodyLock.lock();
+    expect(document.body.style.overflow).toBe('hidden');
+
+    const dispose2 = sharedBodyLock.lock();
+    expect(document.body.style.overflow).toBe('hidden');
+
+    dispose1();
+    // First unlock must NOT restore — the second lock still holds
+    expect(document.body.style.overflow).toBe('hidden');
+    expect(sharedBodyLock.locked).toBe(true);
+
+    dispose2();
+    // Both released — body restored
+    expect(document.body.style.overflow).toBe('');
+    expect(sharedBodyLock.locked).toBe(false);
   });
 });

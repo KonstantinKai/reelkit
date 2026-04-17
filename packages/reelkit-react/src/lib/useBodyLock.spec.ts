@@ -1,5 +1,6 @@
 import { renderHook } from '@testing-library/react';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { sharedBodyLock } from '@reelkit/core';
 import { useBodyLock } from './useBodyLock';
 
 describe('useBodyLock', () => {
@@ -32,6 +33,7 @@ describe('useBodyLock', () => {
   });
 
   afterEach(() => {
+    while (sharedBodyLock.locked) sharedBodyLock.unlock();
     vi.restoreAllMocks();
     const { style } = document.body;
     style.overflow = saved.overflow;
@@ -130,5 +132,23 @@ describe('useBodyLock', () => {
     } else {
       expect(document.body.style.paddingRight).toBe('');
     }
+  });
+
+  it('shares the lock across concurrent hook instances', () => {
+    const a = renderHook(() => useBodyLock(true));
+    expect(sharedBodyLock.locked).toBe(true);
+
+    const b = renderHook(() => useBodyLock(true));
+    expect(sharedBodyLock.locked).toBe(true);
+    expect(document.body.style.overflow).toBe('hidden');
+
+    a.unmount();
+    // b still holds — body must remain locked
+    expect(sharedBodyLock.locked).toBe(true);
+    expect(document.body.style.overflow).toBe('hidden');
+
+    b.unmount();
+    expect(sharedBodyLock.locked).toBe(false);
+    expect(document.body.style.overflow).toBe('');
   });
 });
