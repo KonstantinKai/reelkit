@@ -470,7 +470,7 @@ function App() {
           title="LightboxPage.tsx"
           height={500}
           stackblitzDeps={{
-            '@reelkit/react-lightbox': '0.3.0',
+            '@reelkit/react-lightbox': '0.3.1',
             'lucide-react': '^0.562.0',
           }}
         >

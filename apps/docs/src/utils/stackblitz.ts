@@ -2,15 +2,15 @@ import type { Project } from '@stackblitz/sdk';
 
 // NOTE: Update these when publishing new versions
 const REELKIT_PACKAGES: Record<string, string> = {
-  '@reelkit/core': '0.3.0',
-  '@reelkit/react': '0.3.0',
-  '@reelkit/react-reel-player': '0.3.0',
-  '@reelkit/react-lightbox': '0.3.0',
-  '@reelkit/react-stories-player': '0.1.0',
-  '@reelkit/stories-core': '0.1.0',
-  '@reelkit/angular': '0.2.0',
-  '@reelkit/angular-reel-player': '0.2.0',
-  '@reelkit/angular-lightbox': '0.2.0',
+  '@reelkit/core': '0.4.0',
+  '@reelkit/react': '0.4.0',
+  '@reelkit/react-reel-player': '0.3.1',
+  '@reelkit/react-lightbox': '0.3.1',
+  '@reelkit/react-stories-player': '0.1.1',
+  '@reelkit/stories-core': '0.1.1',
+  '@reelkit/angular': '0.2.1',
+  '@reelkit/angular-reel-player': '0.2.1',
+  '@reelkit/angular-lightbox': '0.2.1',
   '@reelkit/vue': '0.1.0',
 };
 

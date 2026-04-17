@@ -493,8 +493,8 @@ export default function StoriesPlayerPage() {
           title="StoriesPlayer.tsx"
           height={200}
           stackblitzDeps={{
-            '@reelkit/react-stories-player': '0.1.0',
-            '@reelkit/react': '0.3.0',
+            '@reelkit/react-stories-player': '0.1.1',
+            '@reelkit/react': '0.4.0',
           }}
         >
           <StoriesPlayerDemo />
