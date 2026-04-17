@@ -1,3 +1,102 @@
+## @reelkit/vue@0.0.2 (2026-04-17)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.4.0
+
+## @reelkit/react@0.4.0 (2026-04-17)
+
+### 🚀 Features
+
+- Full WAI-ARIA carousel accessibility on `<Reel>`: `role="region"`, `aria-roledescription="carousel"`, new `ariaLabel` prop, and an `aria-live` region that announces slide changes without re-rendering
+- Inactive slides get `inert` to keep keyboard focus and assistive tech on the active slide only
+- `<ReelIndicator>` is now a proper tablist: each dot is a `role="tab"` with `aria-selected` and roving `tabindex`; Arrow keys, Home, End move focus, Enter/Space activate
+- `useBodyLock` now shares a single reference counter across components — nested overlays (e.g. lightbox inside a modal) interleave correctly and body styles stay locked until the last caller releases
+- `useFullscreen.request()` safely exits any other fullscreen element before requesting; all methods (`request`, `exit`, `toggle`) now return `Promise<void>`
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.4.0
+
+## @reelkit/angular@0.2.1 (2026-04-17)
+
+### 🩹 Fixes
+
+- `BodyLockService` now shares a single body scroll lock counter across the entire app — nested modals and overlays interleave correctly and body styles stay locked until the last caller releases
+- Re-exports `sharedBodyLock` from core for components that want to bypass the service and work with the lock directly
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.4.0
+
+## @reelkit/stories-core@0.1.1 (2026-04-17)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.4.0
+
+## @reelkit/core@0.4.0 (2026-04-17)
+
+### 🚀 Features
+
+- New `sharedBodyLock` singleton export — a shared body scroll lock instance that multiple components can lock/unlock independently without stepping on each other. Use this instead of `createBodyLock()` when you want nested modals and overlays to interleave correctly
+
+## @reelkit/react-lightbox@0.3.1 (2026-04-17)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/react to 0.4.0
+
+## @reelkit/react-reel-player@0.3.1 (2026-04-17)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/react to 0.4.0
+
+## @reelkit/react-stories-player@0.1.1 (2026-04-17)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/stories-core to 0.1.1
+- Updated @reelkit/react to 0.4.0
+
+## @reelkit/react@0.4.0 (2026-04-17)
+
+### 🚀 Features
+
+- Full WAI-ARIA carousel accessibility on `<Reel>`: `role="region"`, `aria-roledescription="carousel"`, new `ariaLabel` prop, and an `aria-live` region that announces slide changes without re-rendering
+- Inactive slides get `inert` to keep keyboard focus and assistive tech on the active slide only
+- `<ReelIndicator>` is now a proper tablist: each dot is a `role="tab"` with `aria-selected` and roving `tabindex`; Arrow keys, Home, End move focus, Enter/Space activate
+- `useBodyLock` now shares a single reference counter across components — nested overlays (e.g. lightbox inside a modal) interleave correctly and body styles stay locked until the last caller releases
+- `useFullscreen.request()` safely exits any other fullscreen element before requesting; all methods (`request`, `exit`, `toggle`) now return `Promise<void>`
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.4.0
+
+## @reelkit/angular-lightbox@0.2.1 (2026-04-17)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/angular to 0.2.1
+
+## @reelkit/angular-reel-player@0.2.1 (2026-04-17)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/angular to 0.2.1
+
+## @reelkit/angular@0.2.1 (2026-04-17)
+
+### 🩹 Fixes
+
+- `BodyLockService` now shares a single body scroll lock counter across the entire app — nested modals and overlays interleave correctly and body styles stay locked until the last caller releases
+- Re-exports `sharedBodyLock` from core for components that want to bypass the service and work with the lock directly
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.4.0
+
 ## @reelkit/stories-core@0.1.0 (2026-04-03)
 
 ### 🎉 Initial Release
