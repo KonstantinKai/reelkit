@@ -1,0 +1,14 @@
+{
+  "name": "@reelkit/vue-reel-player",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/reelkit-vue-reel-player/src",
+  "projectType": "library",
+  "tags": ["scope:vue", "type:reel-player"],
+  "targets": {},
+  "release": {
+    "version": {
+      "currentVersionResolver": "git-tag",
+      "fallbackCurrentVersionResolver": "disk"
+    }
+  }
+}
