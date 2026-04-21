@@ -51,7 +51,9 @@ export {
   createDisposableList,
   type DisposableList,
   captureFrame,
+  createLruCache,
   createSharedVideo,
+  type LruCache,
   type SharedVideoConfig,
   type SharedVideoInstance,
 
@@ -136,4 +138,5 @@ export {
   SoundProvider,
   RK_SOUND_KEY,
   useSoundState,
+  toVueRef,
 } from './lib/composables';

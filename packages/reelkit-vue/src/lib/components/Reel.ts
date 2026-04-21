@@ -26,6 +26,7 @@ import {
   type TransitionTransformFn,
 } from '@reelkit/core';
 import { RK_REEL_KEY, type ReelContextValue } from '../context/ReelContext';
+import { toVueRef } from '../composables/toVueRef';
 
 /**
  * Imperative API exposed by the {@link Reel} component via template ref.
@@ -286,7 +287,6 @@ export const Reel = defineComponent({
     const keyExtractorFn = () => props.keyExtractor ?? defaultKeyExtractor;
 
     const axisValue = shallowRef(0);
-    const visibleIndexes = shallowRef<number[]>([]);
 
     const controller = createSliderController(
       {
@@ -334,14 +334,12 @@ export const Reel = defineComponent({
     };
     provide(RK_REEL_KEY, reelContextValue);
 
+    const visibleIndexes = toVueRef(controller.state.indexes);
+
     const disposables = createDisposableList();
     let cancelAnimation: (() => void) | null = null;
 
-    visibleIndexes.value = controller.state.indexes.value;
     disposables.push(
-      controller.state.indexes.observe(() => {
-        visibleIndexes.value = controller.state.indexes.value;
-      }),
       controller.state.axisValue.observe(() => {
         const { value, duration, done } = controller.state.axisValue.value;
 
