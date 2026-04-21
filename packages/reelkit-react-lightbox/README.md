@@ -229,7 +229,13 @@ All UI elements use CSS classes prefixed with `rk-lightbox-` that can be overrid
 | `.rk-lightbox-video-container` | Video slide wrapper         |
 | `.rk-lightbox-video-element`   | Video element               |
 | `.rk-lightbox-video-poster`    | Video poster image          |
-| `.rk-lightbox-video-loader`    | Video loading indicator     |
+| `.rk-lightbox-spinner`         | Default loading spinner     |
+| `.rk-lightbox-img-error`       | Error state container       |
+| `.rk-lightbox-swipe-hint`      | Mobile swipe hint chip      |
+
+### Theming via CSS custom properties
+
+Every visual value is exposed as a `--rk-lightbox-*` custom property with a sensible default. Override at `:root` (or any ancestor of `.rk-lightbox-container`) to retheme without touching component source — see the [Theming docs](https://reelkit.dev/docs/lightbox#theming) for the full token table.
 
 ## Documentation
 

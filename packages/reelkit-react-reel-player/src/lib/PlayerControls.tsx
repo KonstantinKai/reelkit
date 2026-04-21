@@ -2,23 +2,9 @@ import React from 'react';
 import { X, Volume2, VolumeX } from 'lucide-react';
 import { Observe, useSoundState } from '@reelkit/react';
 
-const buttonStyle: React.CSSProperties = {
-  width: 44,
-  height: 44,
-  borderRadius: '50%',
-  backgroundColor: 'rgba(0,0,0,0.5)',
-  border: 'none',
-  color: '#fff',
-  cursor: 'pointer',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  transition: 'background-color 0.2s',
-};
-
 /** Props for the {@link CloseButton} sub-component. */
 export interface CloseButtonProps {
-  /** CSS class name. Defaults to `"rk-player-close-btn"`. */
+  /** CSS class name. Defaults to `"rk-reel-close-btn"`. */
   className?: string;
 
   /** Additional inline styles merged on top of the default button styles. */
@@ -42,20 +28,13 @@ export interface CloseButtonProps {
  */
 export const CloseButton: React.FC<CloseButtonProps> = ({
   onClick,
-  className = 'rk-player-close-btn',
+  className = 'rk-reel-close-btn',
   style,
 }) => (
   <button
     onClick={onClick}
-    className={className}
-    style={{
-      ...buttonStyle,
-      position: 'absolute',
-      top: 16,
-      right: 16,
-      zIndex: 10,
-      ...style,
-    }}
+    className={`rk-reel-button ${className}`}
+    style={style}
     aria-label="Close"
   >
     <X size={24} />
@@ -71,7 +50,7 @@ export interface SoundButtonProps {
    */
   disabled?: boolean;
 
-  /** CSS class name. Defaults to `"rk-player-sound-btn"`. */
+  /** CSS class name. Defaults to `"rk-reel-sound-btn"`. */
   className?: string;
 
   /** Additional inline styles merged on top of the default button styles. */
@@ -103,7 +82,7 @@ export interface SoundButtonProps {
  */
 export const SoundButton: React.FC<SoundButtonProps> = ({
   disabled = false,
-  className = 'rk-player-sound-btn',
+  className = 'rk-reel-sound-btn',
   style,
 }) => {
   const soundState = useSoundState();
@@ -115,18 +94,8 @@ export const SoundButton: React.FC<SoundButtonProps> = ({
         return (
           <button
             onClick={disabled ? undefined : soundState.toggle}
-            className={className}
-            style={{
-              ...buttonStyle,
-              position: 'absolute',
-              bottom: 16,
-              right: 16,
-              zIndex: 10,
-              opacity: disabled ? 0.4 : 1,
-              cursor: disabled ? 'default' : 'pointer',
-              transition: 'opacity 0.2s, background-color 0.2s',
-              ...style,
-            }}
+            className={`rk-reel-button ${className}`}
+            style={style}
             aria-label={soundState.muted.value ? 'Unmute' : 'Mute'}
             aria-disabled={disabled}
           >

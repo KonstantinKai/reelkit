@@ -2,10 +2,11 @@
 
 <p>
   <a href="https://www.npmjs.com/package/@reelkit/vue-reel-player"><img src="https://img.shields.io/npm/v/@reelkit/vue-reel-player?color=6366f1&label=npm" alt="npm" /></a>
+  <img src="https://img.shields.io/badge/gzip-5.0%20kB-6366f1" alt="Bundle size" />
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
 
-Instagram Reels / TikTok-style video player for Vue 3. Opens as a full-screen overlay with vertical swipe navigation. Handles video autoplay, sound continuity on iOS, and multi-media posts.
+Instagram Reels / TikTok-style video player for Vue 3. Opens as a full-screen overlay with vertical swipe navigation. Handles video autoplay, sound continuity on iOS, and multi-media posts. ~5.0 kB gzip.
 
 **[Live Demo](https://vue-demo.reelkit.dev/reel-player?utm_source=npm)**
 

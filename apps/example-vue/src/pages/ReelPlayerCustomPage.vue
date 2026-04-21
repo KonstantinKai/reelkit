@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, shallowRef } from 'vue';
+import { computed, ref, shallowRef, watch, onUnmounted } from 'vue';
 import {
   ReelPlayerOverlay,
   CloseButton,
@@ -15,7 +15,8 @@ type DemoId =
   | 'custom-slide'
   | 'custom-nested-nav'
   | 'infinity'
-  | 'custom-loading-error';
+  | 'custom-loading-error'
+  | 'theming';
 
 const _kContentCount = 10;
 const _kInfinityBatch = 20;
@@ -58,6 +59,12 @@ const DEMOS: { id: DemoId; title: string; description: string }[] = [
     title: 'Custom Loading / Error',
     description:
       'Uses #loading and #error slots to replace the default wave loader and error icon. Includes a broken image slide.',
+  },
+  {
+    id: 'theming',
+    title: 'Themed via CSS Tokens',
+    description:
+      'Rebrands the overlay by overriding --rk-reel-* CSS custom properties in a stylesheet. No component code changes.',
   },
 ];
 
@@ -135,6 +142,38 @@ const lossErrorContent = computed<ContentItem[]>(() => {
     },
     ...items.slice(2, 5),
   ];
+});
+
+const _kThemingCss = `
+  .rk-reel-overlay {
+    --rk-reel-overlay-bg: #0f172a;
+    --rk-reel-button-bg: rgba(99, 102, 241, 0.55);
+    --rk-reel-button-bg-hover-strong: rgba(168, 85, 247, 0.85);
+    --rk-reel-button-size: 52px;
+    --rk-reel-edge-padding: 24px;
+    --rk-reel-slide-overlay-bg: linear-gradient(
+      transparent,
+      rgba(99, 102, 241, 0.55) 60%,
+      rgba(168, 85, 247, 0.85)
+    );
+    --rk-reel-slide-overlay-name-color: #fef3c7;
+  }
+`;
+
+let themingStyleEl: HTMLStyleElement | null = null;
+watch(activeDemo, (next) => {
+  if (next === 'theming' && !themingStyleEl) {
+    themingStyleEl = document.createElement('style');
+    themingStyleEl.textContent = _kThemingCss;
+    document.head.appendChild(themingStyleEl);
+  } else if (next !== 'theming' && themingStyleEl) {
+    themingStyleEl.remove();
+    themingStyleEl = null;
+  }
+});
+onUnmounted(() => {
+  themingStyleEl?.remove();
+  themingStyleEl = null;
 });
 
 const closePlayer = () => {
@@ -293,6 +332,15 @@ const closePlayer = () => {
         Loading more…
       </div>
     </template>
+
+    <!-- Demo 7: Themed via CSS Tokens -->
+    <ReelPlayerOverlay
+      v-if="activeDemo === 'theming'"
+      :is-open="true"
+      :content="content"
+      :initial-index="0"
+      @close="closePlayer"
+    />
 
     <!-- Demo 6: Custom Loading / Error -->
     <ReelPlayerOverlay

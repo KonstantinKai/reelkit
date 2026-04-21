@@ -954,7 +954,7 @@ describe('ReelPlayerOverlay', () => {
 
       act(() => capturedOnError!());
 
-      expect(document.querySelector('.rk-media-error')).toBeTruthy();
+      expect(document.querySelector('.rk-reel-media-error')).toBeTruthy();
       expect(document.querySelector('.rk-reel-loader')).toBeNull();
     });
 
@@ -975,7 +975,7 @@ describe('ReelPlayerOverlay', () => {
       ) => void;
       act(() => afterChange(1, 1));
 
-      expect(document.querySelector('.rk-media-error')).toBeTruthy();
+      expect(document.querySelector('.rk-reel-media-error')).toBeTruthy();
 
       mockPreloaderErrored.clear();
     });
@@ -1016,7 +1016,7 @@ describe('ReelPlayerOverlay', () => {
 
       act(() => capturedOnError!());
 
-      expect(document.querySelector('.rk-media-error')).toBeNull();
+      expect(document.querySelector('.rk-reel-media-error')).toBeNull();
       expect(screen.getByTestId('custom-error')).toBeTruthy();
     });
   });

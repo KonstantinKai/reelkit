@@ -1,8 +1,45 @@
+/*
+ * Theme tokens for the Vue reel-player overlay.
+ *
+ * Defaults live on `:root` so they inherit through the DOM. Override at
+ * `:root` (or any ancestor of `.rk-reel-overlay`) to retheme — direct-match
+ * declarations on `.rk-reel-overlay` would otherwise shadow inherited values.
+ *
+ * Token vocabulary mirrors @reelkit/react-reel-player — the same rename or
+ * addition applies to both packages.
+ */
+:root {
+  --rk-reel-overlay-bg: #000;
+  --rk-reel-overlay-z: 1000;
+
+  --rk-reel-button-bg: rgba(0, 0, 0, 0.5);
+  --rk-reel-button-bg-hover: rgba(255, 255, 255, 0.1);
+  --rk-reel-button-bg-hover-strong: rgba(255, 255, 255, 0.2);
+  --rk-reel-button-fg: #fff;
+  --rk-reel-button-size: 44px;
+  --rk-reel-button-radius: 50%;
+
+  --rk-reel-ui-z: 10;
+  --rk-reel-edge-padding: 16px;
+  --rk-reel-nav-gap: 8px;
+
+  --rk-reel-loader-z: 5;
+  --rk-reel-loader-color: rgba(255, 255, 255, 0.12);
+  --rk-reel-loader-duration: 1.8s;
+
+  --rk-reel-error-fg: rgba(255, 255, 255, 0.4);
+  --rk-reel-error-gap: 12px;
+  --rk-reel-error-text-size: 13px;
+
+  --rk-reel-transition: 0.2s;
+  --rk-reel-backdrop-blur: 8px;
+}
+
 .rk-reel-overlay {
   position: fixed;
   inset: 0;
-  background: #000;
-  z-index: 1000;
+  background: var(--rk-reel-overlay-bg);
+  z-index: var(--rk-reel-overlay-z);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -16,19 +53,19 @@
   touch-action: none;
 }
 
-.rk-player-nav-arrows {
+.rk-reel-nav-arrows {
   display: none;
   position: absolute;
-  right: 16px;
+  right: var(--rk-reel-edge-padding);
   top: 50%;
   transform: translateY(-50%);
   flex-direction: column;
-  gap: 8px;
-  z-index: 10;
+  gap: var(--rk-reel-nav-gap);
+  z-index: var(--rk-reel-ui-z);
 }
 
 @media (min-width: 768px) {
-  .rk-player-nav-arrows {
+  .rk-reel-nav-arrows {
     display: flex;
   }
 }
@@ -38,19 +75,83 @@
   overflow: hidden;
 }
 
+/* Shared circular icon button used by close, sound, and nav arrows. */
+.rk-reel-button {
+  width: var(--rk-reel-button-size);
+  height: var(--rk-reel-button-size);
+  border-radius: var(--rk-reel-button-radius);
+  border: none;
+  padding: 0;
+  color: var(--rk-reel-button-fg);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--rk-reel-button-bg);
+  transition:
+    background-color var(--rk-reel-transition),
+    opacity var(--rk-reel-transition);
+}
+
+/*
+ * Collapse any icon wrapper to its content so flex alignment centers the
+ * icon even when a custom element or slot renders around the SVG.
+ */
+.rk-reel-button > * {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Close + sound buttons: anchored to overlay corners. */
+.rk-reel-close-btn,
+.rk-reel-sound-btn {
+  position: absolute;
+  right: var(--rk-reel-edge-padding);
+  z-index: var(--rk-reel-ui-z);
+}
+
+.rk-reel-close-btn {
+  top: var(--rk-reel-edge-padding);
+}
+
+.rk-reel-sound-btn {
+  bottom: var(--rk-reel-edge-padding);
+}
+
+.rk-reel-sound-btn[aria-disabled='true'] {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* Nav arrow buttons: transparent over the slide. */
+.rk-reel-nav-button {
+  background-color: var(--rk-reel-button-bg-hover);
+}
+
+.rk-reel-nav-button:hover {
+  background-color: var(--rk-reel-button-bg-hover-strong);
+}
+
+.rk-reel-nav-button[aria-disabled='true'],
+.rk-reel-nav-button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
 .rk-reel-loader {
   position: absolute;
   inset: 0;
-  z-index: 5;
+  z-index: var(--rk-reel-loader-z);
   pointer-events: none;
   background: linear-gradient(
     90deg,
     transparent 25%,
-    rgba(255, 255, 255, 0.12) 50%,
+    var(--rk-reel-loader-color) 50%,
     transparent 75%
   );
   background-size: 300% 100%;
-  animation: rk-reel-wave 1.8s ease-in-out infinite;
+  animation: rk-reel-wave var(--rk-reel-loader-duration) ease-in-out infinite;
 }
 
 @keyframes rk-reel-wave {
@@ -70,45 +171,53 @@
   }
 }
 
-.rk-media-error {
+.rk-reel-media-error {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  z-index: 10;
+  z-index: var(--rk-reel-ui-z);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  color: rgba(255, 255, 255, 0.4);
+  gap: var(--rk-reel-error-gap);
+  color: var(--rk-reel-error-fg);
 }
 
-.rk-media-error-text {
-  font-size: 13px;
+.rk-reel-media-error-text {
+  font-size: var(--rk-reel-error-text-size);
   letter-spacing: 0.02em;
 }
 
-.rk-video-slide-container {
+/*
+ * Video slide
+ */
+:root {
+  --rk-reel-video-bg: #000;
+  --rk-reel-video-poster-transition: 0.3s;
+}
+
+.rk-reel-video-container {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #000;
+  background-color: var(--rk-reel-video-bg);
   overflow: hidden;
 }
 
-.rk-video-slide-element {
+.rk-reel-video-element {
   width: 100%;
   height: 100%;
   object-position: center;
 }
 
-.rk-video-slide-element::-internal-media-controls-overlay-cast-button {
+.rk-reel-video-element::-internal-media-controls-overlay-cast-button {
   display: none;
 }
 
-.rk-video-slide-poster {
+.rk-reel-video-poster {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -116,12 +225,34 @@
   object-position: center;
   z-index: 2;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity var(--rk-reel-video-poster-transition) ease;
   pointer-events: none;
 }
 
-.rk-video-slide-poster.rk-visible {
+.rk-reel-video-poster.rk-visible {
   opacity: 1;
+}
+
+/*
+ * Slide caption overlay
+ */
+:root {
+  --rk-reel-slide-overlay-padding: 48px 16px 16px;
+  --rk-reel-slide-overlay-bg: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+  --rk-reel-slide-overlay-z: 5;
+  --rk-reel-slide-overlay-gap: 8px;
+  --rk-reel-slide-overlay-author-gap: 8px;
+  --rk-reel-slide-overlay-avatar-size: 32px;
+  --rk-reel-slide-overlay-name-color: #fff;
+  --rk-reel-slide-overlay-name-size: 14px;
+  --rk-reel-slide-overlay-name-weight: 600;
+  --rk-reel-slide-overlay-description-color: rgba(255, 255, 255, 0.9);
+  --rk-reel-slide-overlay-description-size: 13px;
+  --rk-reel-slide-overlay-description-line-height: 1.4;
+  --rk-reel-slide-overlay-description-line-clamp: 2;
+  --rk-reel-slide-overlay-likes-color: rgba(255, 255, 255, 0.8);
+  --rk-reel-slide-overlay-likes-size: 13px;
+  --rk-reel-slide-overlay-likes-gap: 6px;
 }
 
 .rk-reel-slide-overlay {
@@ -129,41 +260,41 @@
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 48px 16px 16px;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+  padding: var(--rk-reel-slide-overlay-padding);
+  background: var(--rk-reel-slide-overlay-bg);
   pointer-events: none;
-  z-index: 5;
+  z-index: var(--rk-reel-slide-overlay-z);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--rk-reel-slide-overlay-gap);
 }
 
 .rk-reel-slide-overlay-author {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--rk-reel-slide-overlay-author-gap);
 }
 
 .rk-reel-slide-overlay-avatar {
-  width: 32px;
-  height: 32px;
+  width: var(--rk-reel-slide-overlay-avatar-size);
+  height: var(--rk-reel-slide-overlay-avatar-size);
   border-radius: 50%;
   object-fit: cover;
 }
 
 .rk-reel-slide-overlay-name {
-  color: #fff;
-  font-size: 14px;
-  font-weight: 600;
+  color: var(--rk-reel-slide-overlay-name-color);
+  font-size: var(--rk-reel-slide-overlay-name-size);
+  font-weight: var(--rk-reel-slide-overlay-name-weight);
 }
 
 .rk-reel-slide-overlay-description {
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 13px;
-  line-height: 1.4;
+  color: var(--rk-reel-slide-overlay-description-color);
+  font-size: var(--rk-reel-slide-overlay-description-size);
+  line-height: var(--rk-reel-slide-overlay-description-line-height);
   margin: 0;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: var(--rk-reel-slide-overlay-description-line-clamp);
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -171,48 +302,63 @@
 .rk-reel-slide-overlay-likes {
   display: flex;
   align-items: center;
-  gap: 6px;
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 13px;
+  gap: var(--rk-reel-slide-overlay-likes-gap);
+  color: var(--rk-reel-slide-overlay-likes-color);
+  font-size: var(--rk-reel-slide-overlay-likes-size);
 }
 
-.rk-nested-nav {
+/*
+ * Nested horizontal slider arrows
+ */
+:root {
+  --rk-reel-nested-z: 10;
+  --rk-reel-nested-button-size: 36px;
+  --rk-reel-nested-button-bg: rgba(0, 0, 0, 0.5);
+  --rk-reel-nested-button-bg-hover: rgba(255, 255, 255, 0.2);
+  --rk-reel-nested-button-fg: #fff;
+  --rk-reel-nested-button-opacity: 0.7;
+  --rk-reel-nested-edge-padding: 12px;
+  --rk-reel-nested-transition: 0.2s;
+  --rk-reel-nested-blur: 8px;
+}
+
+.rk-reel-nested-nav {
   display: none;
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  z-index: 10;
-  width: 36px;
-  height: 36px;
+  z-index: var(--rk-reel-nested-z);
+  width: var(--rk-reel-nested-button-size);
+  height: var(--rk-reel-nested-button-size);
   border: none;
-  background: rgba(0, 0, 0, 0.5);
-  color: #fff;
+  background: var(--rk-reel-nested-button-bg);
+  color: var(--rk-reel-nested-button-fg);
   border-radius: 50%;
   cursor: pointer;
   align-items: center;
   justify-content: center;
-  opacity: 0.7;
+  opacity: var(--rk-reel-nested-button-opacity);
   transition:
-    opacity 0.2s,
-    background-color 0.2s;
-  backdrop-filter: blur(8px);
+    opacity var(--rk-reel-nested-transition),
+    background-color var(--rk-reel-nested-transition);
+  backdrop-filter: blur(var(--rk-reel-nested-blur));
 }
 
-.rk-nested-nav:hover {
-  background: rgba(255, 255, 255, 0.2);
+.rk-reel-nested-nav:hover {
+  background: var(--rk-reel-nested-button-bg-hover);
   opacity: 1;
 }
 
-.rk-nested-nav-prev {
-  left: 12px;
+.rk-reel-nested-nav-prev {
+  left: var(--rk-reel-nested-edge-padding);
 }
 
-.rk-nested-nav-next {
-  right: 12px;
+.rk-reel-nested-nav-next {
+  right: var(--rk-reel-nested-edge-padding);
 }
 
 @media (min-width: 768px) {
-  .rk-nested-nav {
+  .rk-reel-nested-nav {
     display: flex;
   }
 }

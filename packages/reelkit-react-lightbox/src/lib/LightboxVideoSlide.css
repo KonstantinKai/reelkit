@@ -1,9 +1,18 @@
+/*
+ * Theme tokens for the lightbox video slide.
+ * Override at :root or any ancestor of `.rk-lightbox-video-container`.
+ */
+:root {
+  --rk-lightbox-video-bg: #000;
+  --rk-lightbox-video-poster-transition: 0.3s;
+}
+
 .rk-lightbox-video-container {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #000;
+  background-color: var(--rk-lightbox-video-bg);
   overflow: hidden;
 }
 
@@ -24,10 +33,11 @@
   inset: 0;
   width: 100%;
   height: 100%;
+  object-fit: contain;
   object-position: center;
   z-index: 2;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity var(--rk-lightbox-video-poster-transition) ease;
   pointer-events: none;
 }
 

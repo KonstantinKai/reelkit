@@ -19,9 +19,11 @@ import { SoundStateService } from '../sound-state/sound-state.service';
  * circular icon in the bottom-right corner of the player.
  *
  * Must be rendered inside a component that provides `SoundStateService`
- * (automatically provided by `RkReelPlayerOverlayComponent`).
+ * (automatically provided by `RkReelPlayerOverlayComponent`). Hidden
+ * automatically when `SoundStateService.disabled` is `true`.
  *
- * Hidden automatically when `SoundStateService.disabled` is `true`.
+ * Relies on shared styles from `@reelkit/angular-reel-player/styles.css`
+ * for the `.rk-reel-button` + `.rk-reel-sound-btn` classes.
  *
  * @example
  * ```html
@@ -43,10 +45,7 @@ import { SoundStateService } from '../sound-state/sound-state.service';
   template: `
     @if (!soundState.disabled()) {
       <button
-        class="rk-player-sound-btn"
-        [class.rk-disabled]="isDisabled()"
-        [style.opacity]="isDisabled() ? '0.4' : '1'"
-        [style.cursor]="isDisabled() ? 'default' : 'pointer'"
+        class="rk-reel-button rk-reel-sound-btn"
         (click)="onToggle()"
         [attr.aria-label]="soundState.muted() ? 'Unmute' : 'Mute'"
         [attr.aria-disabled]="isDisabled()"
@@ -59,32 +58,6 @@ import { SoundStateService } from '../sound-state/sound-state.service';
       </button>
     }
   `,
-  styles: [
-    `
-      .rk-player-sound-btn {
-        position: absolute;
-        bottom: 16px;
-        right: 16px;
-        z-index: 10;
-        width: 44px;
-        height: 44px;
-        border-radius: 50%;
-        background-color: rgba(0, 0, 0, 0.5);
-        border: none;
-        color: #fff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition:
-          opacity 0.2s,
-          background-color 0.2s;
-      }
-
-      .rk-player-sound-btn:not(.rk-disabled):hover {
-        background-color: rgba(0, 0, 0, 0.7);
-      }
-    `,
-  ],
 })
 export class RkSoundButtonComponent {
   /**

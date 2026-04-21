@@ -1,28 +1,63 @@
+/*
+ * Theme tokens for the story header (avatar, name, time, actions).
+ * Override at :root or any ancestor of `.rk-stories-header`.
+ */
+:root {
+  --rk-stories-header-z: 5;
+  --rk-stories-header-top: 18px;
+  --rk-stories-header-padding: 12px 16px;
+  --rk-stories-header-gap: 8px;
+  --rk-stories-header-transition: 200ms;
+
+  --rk-stories-header-avatar-size: 32px;
+
+  --rk-stories-header-name-fg: #fff;
+  --rk-stories-header-name-size: 14px;
+  --rk-stories-header-name-weight: 600;
+
+  --rk-stories-header-time-fg: rgba(255, 255, 255, 0.6);
+  --rk-stories-header-time-size: 12px;
+
+  --rk-stories-header-actions-gap: 8px;
+
+  --rk-stories-header-btn-fg: #fff;
+  --rk-stories-header-btn-padding: 4px;
+
+  --rk-stories-header-spinner-size: 20px;
+  --rk-stories-header-spinner-track: rgba(255, 255, 255, 0.3);
+  --rk-stories-header-spinner-fg: #fff;
+  --rk-stories-header-spinner-duration: 0.8s;
+}
+
 .rk-stories-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
+  gap: var(--rk-stories-header-gap);
+  padding: var(--rk-stories-header-padding);
   position: absolute;
-  top: 18px;
+  top: var(--rk-stories-header-top);
   left: 0;
   right: 0;
-  z-index: 5;
-  transition: opacity 200ms ease;
+  z-index: var(--rk-stories-header-z);
+  transition: opacity var(--rk-stories-header-transition) ease;
+}
+
+.rk-stories-header--hidden {
+  opacity: 0;
 }
 
 .rk-stories-header-avatar {
-  width: 32px;
-  height: 32px;
+  width: var(--rk-stories-header-avatar-size);
+  height: var(--rk-stories-header-avatar-size);
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
 }
 
 .rk-stories-header-name {
-  color: #fff;
-  font-weight: 600;
-  font-size: 14px;
+  color: var(--rk-stories-header-name-fg);
+  font-weight: var(--rk-stories-header-name-weight);
+  font-size: var(--rk-stories-header-name-size);
 }
 
 .rk-stories-header-verified {
@@ -31,14 +66,14 @@
 }
 
 .rk-stories-header-time {
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 12px;
+  color: var(--rk-stories-header-time-fg);
+  font-size: var(--rk-stories-header-time-size);
 }
 
 .rk-stories-header-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--rk-stories-header-actions-gap);
   margin-left: auto;
   pointer-events: auto;
 }
@@ -46,22 +81,23 @@
 .rk-stories-header-btn {
   background: none;
   border: none;
-  color: #fff;
+  color: var(--rk-stories-header-btn-fg);
   cursor: pointer;
-  padding: 4px;
+  padding: var(--rk-stories-header-btn-padding);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .rk-stories-header-spinner {
-  width: 20px;
-  height: 20px;
+  width: var(--rk-stories-header-spinner-size);
+  height: var(--rk-stories-header-spinner-size);
   margin-right: 4px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #fff;
+  border: 2px solid var(--rk-stories-header-spinner-track);
+  border-top-color: var(--rk-stories-header-spinner-fg);
   border-radius: 50%;
-  animation: rk-stories-header-spin 0.8s linear infinite;
+  animation: rk-stories-header-spin var(--rk-stories-header-spinner-duration)
+    linear infinite;
 }
 
 @keyframes rk-stories-header-spin {

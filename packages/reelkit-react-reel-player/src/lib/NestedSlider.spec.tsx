@@ -441,7 +441,7 @@ describe('NestedSlider', () => {
         />,
       );
 
-      expect(lastReelProps.className).toBe('rk-nested-active');
+      expect(lastReelProps.className).toBe('rk-reel-nested-active');
     });
 
     it('updates className when isParentActive transitions from false to true', () => {
@@ -469,7 +469,7 @@ describe('NestedSlider', () => {
         />,
       );
 
-      expect(lastReelProps.className).toBe('rk-nested-active');
+      expect(lastReelProps.className).toBe('rk-reel-nested-active');
     });
 
     it('itemBuilder passes isParentActive as isActive to VideoSlide', () => {

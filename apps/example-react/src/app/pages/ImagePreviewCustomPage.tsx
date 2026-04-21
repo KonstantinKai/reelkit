@@ -16,6 +16,7 @@ type DemoType =
   | 'custom-slide'
   | 'custom-navigation'
   | 'custom-loading-error'
+  | 'theming'
   | null;
 
 const DEMOS: { id: DemoType & string; title: string; description: string }[] = [
@@ -48,6 +49,12 @@ const DEMOS: { id: DemoType & string; title: string; description: string }[] = [
     title: 'Custom Loading / Error',
     description:
       'Uses renderLoading and renderError to replace default spinner and error icon with custom UI. Includes a broken image to demonstrate error state.',
+  },
+  {
+    id: 'theming',
+    title: 'Themed via CSS Tokens',
+    description:
+      'Rebrands the lightbox by overriding --rk-lightbox-* CSS custom properties in a stylesheet. No component code changes.',
   },
 ];
 
@@ -450,6 +457,32 @@ function ImagePreviewCustomPage() {
           </div>
         )}
       />
+
+      {/* Demo 7: Themed via CSS Tokens */}
+      {activeDemo === 'theming' && (
+        <>
+          <style>{`
+            .rk-lightbox-container {
+              --rk-lightbox-overlay-bg: #0f172a;
+              --rk-lightbox-btn-bg: rgba(99, 102, 241, 0.65);
+              --rk-lightbox-btn-bg-hover: rgba(168, 85, 247, 0.85);
+              --rk-lightbox-nav-size: 56px;
+              --rk-lightbox-counter-bg: rgba(99, 102, 241, 0.65);
+              --rk-lightbox-info-bg: linear-gradient(
+                transparent,
+                rgba(99, 102, 241, 0.55) 60%,
+                rgba(168, 85, 247, 0.85)
+              );
+            }
+          `}</style>
+          <LightboxOverlay
+            isOpen
+            images={sampleImages}
+            initialIndex={initialIndex}
+            onClose={closePlayer}
+          />
+        </>
+      )}
     </div>
   );
 }

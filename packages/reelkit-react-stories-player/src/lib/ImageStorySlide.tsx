@@ -28,16 +28,12 @@ export const ImageStorySlide: FC<ImageStorySlideProps> = ({
     src={src}
     alt=""
     draggable={false}
+    className="rk-stories-image"
     onLoad={onLoad}
     onError={(e) => {
       (e.target as HTMLImageElement).style.display = 'none';
       onError?.();
     }}
-    style={{
-      objectFit: 'cover',
-      width: '100%',
-      height: '100%',
-      aspectRatio: aspectRatio ? `${aspectRatio}` : undefined,
-    }}
+    style={aspectRatio ? { aspectRatio: `${aspectRatio}` } : undefined}
   />
 );

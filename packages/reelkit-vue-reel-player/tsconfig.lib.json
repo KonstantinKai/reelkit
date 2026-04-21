@@ -23,9 +23,6 @@
   ],
   "references": [
     {
-      "path": "../reelkit-core/tsconfig.lib.json"
-    },
-    {
       "path": "../reelkit-vue/tsconfig.lib.json"
     }
   ]

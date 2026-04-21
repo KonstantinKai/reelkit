@@ -194,7 +194,7 @@ const NestedSlider: React.FC<NestedSliderProps> = (props) => {
         apiRef={localSliderRef}
         beforeChange={handleBeforeChange}
         afterChange={handleAfterChange}
-        className={isParentActive ? 'rk-nested-active' : undefined}
+        className={isParentActive ? 'rk-reel-nested-active' : undefined}
         itemBuilder={itemBuilder}
       />
 
@@ -244,7 +244,7 @@ const NestedSlider: React.FC<NestedSliderProps> = (props) => {
                   <>
                     {idx > 0 && (
                       <button
-                        className="rk-nested-nav rk-nested-nav-prev"
+                        className="rk-reel-nested-nav rk-reel-nested-nav-prev"
                         onClick={handlePrev}
                         aria-label="Previous"
                       >
@@ -253,7 +253,7 @@ const NestedSlider: React.FC<NestedSliderProps> = (props) => {
                     )}
                     {idx < items.length - 1 && (
                       <button
-                        className="rk-nested-nav rk-nested-nav-next"
+                        className="rk-reel-nested-nav rk-reel-nested-nav-next"
                         onClick={handleNext}
                         aria-label="Next"
                       >

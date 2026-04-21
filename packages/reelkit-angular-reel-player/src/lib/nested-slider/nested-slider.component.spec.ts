@@ -188,21 +188,27 @@ describe('RkNestedSliderComponent', () => {
     const fixture = createFixture(makeMedia(3));
     fixture.componentInstance.onAfterChange({ index: 1 });
     fixture.detectChanges();
-    const prevBtn = fixture.debugElement.query(By.css('.rk-nested-nav-prev'));
+    const prevBtn = fixture.debugElement.query(
+      By.css('.rk-reel-nested-nav-prev'),
+    );
     expect(prevBtn).toBeTruthy();
   });
 
   it('hides prev button when at first slide (index 0)', () => {
     const fixture = createFixture(makeMedia(3));
     fixture.detectChanges();
-    const prevBtn = fixture.debugElement.query(By.css('.rk-nested-nav-prev'));
+    const prevBtn = fixture.debugElement.query(
+      By.css('.rk-reel-nested-nav-prev'),
+    );
     expect(prevBtn).toBeNull();
   });
 
   it('shows next button when not at last slide', () => {
     const fixture = createFixture(makeMedia(3));
     fixture.detectChanges();
-    const nextBtn = fixture.debugElement.query(By.css('.rk-nested-nav-next'));
+    const nextBtn = fixture.debugElement.query(
+      By.css('.rk-reel-nested-nav-next'),
+    );
     expect(nextBtn).toBeTruthy();
   });
 
@@ -210,7 +216,9 @@ describe('RkNestedSliderComponent', () => {
     const fixture = createFixture(makeMedia(3));
     fixture.componentInstance.onAfterChange({ index: 2 });
     fixture.detectChanges();
-    const nextBtn = fixture.debugElement.query(By.css('.rk-nested-nav-next'));
+    const nextBtn = fixture.debugElement.query(
+      By.css('.rk-reel-nested-nav-next'),
+    );
     expect(nextBtn).toBeNull();
   });
 
@@ -314,7 +322,9 @@ describe('RkNestedSliderComponent', () => {
     fixture.componentRef.setInput('width', 375);
     fixture.componentRef.setInput('height', 812);
     fixture.detectChanges();
-    const inner = fixture.debugElement.query(By.css('.rk-nested-slider-inner'));
+    const inner = fixture.debugElement.query(
+      By.css('.rk-reel-nested-slider-inner'),
+    );
     expect(inner.nativeElement.style.width).toBe('375px');
     expect(inner.nativeElement.style.height).toBe('812px');
   });

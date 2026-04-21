@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { Callout } from '../../components/ui/Callout';
 import { CodeBlock } from '../../components/ui/CodeBlock';
 import { Sandbox } from '../../components/ui/Sandbox';
@@ -202,6 +203,7 @@ const contextTypes = [
 ];
 
 const cssClasses = [
+  // Overlay
   {
     className: '.rk-reel-overlay',
     component: 'Overlay',
@@ -213,25 +215,58 @@ const cssClasses = [
     description: 'Player container (position, overflow)',
   },
   {
-    className: '.rk-player-nav-arrows',
-    component: 'Navigation',
-    description: 'Desktop-only arrow container (hidden below 768px)',
+    className: '.rk-reel-loader',
+    component: 'Overlay',
+    description: 'Wave loading animation overlay',
   },
   {
-    className: '.rk-player-close-btn',
+    className: '.rk-reel-media-error',
+    component: 'Overlay',
+    description: 'Error state overlay (centered icon + text)',
+  },
+  {
+    className: '.rk-reel-media-error-text',
+    component: 'Overlay',
+    description: 'Error message text',
+  },
+
+  // Controls
+  {
+    className: '.rk-reel-button',
+    component: 'Controls',
+    description: 'Shared circular icon button (close, sound, nav arrows)',
+  },
+  {
+    className: '.rk-reel-close-btn',
     component: 'Controls',
     description: 'Close button',
   },
   {
-    className: '.rk-player-sound-btn',
+    className: '.rk-reel-sound-btn',
     component: 'Controls',
     description: 'Sound toggle button',
   },
+
+  // Navigation
+  {
+    className: '.rk-reel-nav-arrows',
+    component: 'Navigation',
+    description: 'Desktop-only arrow container (hidden below 768px)',
+  },
+  {
+    className: '.rk-reel-nav-btn',
+    component: 'Navigation',
+    description: 'Individual prev/next nav arrow',
+  },
+
+  // Slide
   {
     className: '.rk-reel-slide-wrapper',
     component: 'Slide',
     description: 'Wrapper around media + overlay',
   },
+
+  // SlideOverlay
   {
     className: '.rk-reel-slide-overlay',
     component: 'SlideOverlay',
@@ -262,45 +297,187 @@ const cssClasses = [
     component: 'SlideOverlay',
     description: 'Likes row (heart + count)',
   },
+
+  // VideoSlide
   {
-    className: '.rk-video-slide-container',
+    className: '.rk-reel-video-container',
     component: 'VideoSlide',
     description: 'Video wrapper (background, overflow)',
   },
   {
-    className: '.rk-video-slide-element',
+    className: '.rk-reel-video-element',
     component: 'VideoSlide',
     description: 'The <video> element',
   },
   {
-    className: '.rk-video-slide-poster',
+    className: '.rk-reel-video-poster',
     component: 'VideoSlide',
     description: 'Poster image (fades out on play)',
   },
   {
-    className: '.rk-video-slide-loader',
+    className: '.rk-reel-video-loader',
     component: 'VideoSlide',
     description: 'Wave loading animation',
   },
+
+  // NestedSlider
   {
-    className: '.rk-nested-nav',
+    className: '.rk-reel-nested-slider-inner',
+    component: 'NestedSlider',
+    description: 'Nested horizontal slider root',
+  },
+  {
+    className: '.rk-reel-nested-nav',
     component: 'NestedSlider',
     description: 'Horizontal carousel arrows (hidden below 768px)',
   },
   {
-    className: '.rk-reel-loader',
-    component: 'Overlay',
-    description: 'Wave loading animation overlay',
+    className: '.rk-reel-nested-nav-prev',
+    component: 'NestedSlider',
+    description: 'Nested prev arrow position',
   },
   {
-    className: '.rk-media-error',
-    component: 'Overlay',
-    description: 'Error state overlay (centered icon + text)',
+    className: '.rk-reel-nested-nav-next',
+    component: 'NestedSlider',
+    description: 'Nested next arrow position',
   },
   {
-    className: '.rk-media-error-text',
-    component: 'Overlay',
-    description: 'Error message text',
+    className: '.rk-reel-nested-indicator',
+    component: 'NestedSlider',
+    description: 'Nested slider dot indicator',
+  },
+];
+
+const themeTokens = [
+  // Overlay
+  {
+    token: '--rk-reel-overlay-bg',
+    default: '#000',
+    controls: 'Full-screen backdrop color',
+  },
+  {
+    token: '--rk-reel-overlay-z',
+    default: '1000',
+    controls: 'Overlay z-index',
+  },
+
+  // Shared button
+  {
+    token: '--rk-reel-button-bg',
+    default: 'rgba(0, 0, 0, 0.5)',
+    controls: 'Default circular button background',
+  },
+  {
+    token: '--rk-reel-button-bg-hover',
+    default: 'rgba(255, 255, 255, 0.1)',
+    controls: 'Nav arrow background (and base hover state)',
+  },
+  {
+    token: '--rk-reel-button-bg-hover-strong',
+    default: 'rgba(255, 255, 255, 0.2)',
+    controls: 'Nav arrow hover background',
+  },
+  {
+    token: '--rk-reel-button-fg',
+    default: '#fff',
+    controls: 'Button icon color',
+  },
+  {
+    token: '--rk-reel-button-size',
+    default: '44px',
+    controls: 'Button width / height',
+  },
+  {
+    token: '--rk-reel-button-radius',
+    default: '50%',
+    controls: 'Button border-radius',
+  },
+
+  // UI layout
+  {
+    token: '--rk-reel-ui-z',
+    default: '10',
+    controls: 'Close / sound / nav z-index',
+  },
+  {
+    token: '--rk-reel-edge-padding',
+    default: '16px',
+    controls: 'Edge inset for close / sound / nav arrows',
+  },
+  {
+    token: '--rk-reel-nav-gap',
+    default: '8px',
+    controls: 'Spacing between stacked nav arrows',
+  },
+  {
+    token: '--rk-reel-transition',
+    default: '0.2s',
+    controls: 'Hover transition duration',
+  },
+
+  // Loader
+  {
+    token: '--rk-reel-loader-color',
+    default: 'rgba(255, 255, 255, 0.12)',
+    controls: 'Wave loader gradient color',
+  },
+  {
+    token: '--rk-reel-loader-duration',
+    default: '1.8s',
+    controls: 'Wave loader animation duration',
+  },
+
+  // Error state
+  {
+    token: '--rk-reel-error-fg',
+    default: 'rgba(255, 255, 255, 0.4)',
+    controls: 'Error icon and text color',
+  },
+
+  // Slide caption overlay
+  {
+    token: '--rk-reel-slide-overlay-bg',
+    default: 'linear-gradient(transparent, rgba(0, 0, 0, 0.7))',
+    controls: 'Caption scrim gradient',
+  },
+  {
+    token: '--rk-reel-slide-overlay-padding',
+    default: '48px 16px 16px',
+    controls: 'Caption inner padding',
+  },
+  {
+    token: '--rk-reel-slide-overlay-name-color',
+    default: '#fff',
+    controls: 'Author name color',
+  },
+
+  // Video slide
+  {
+    token: '--rk-reel-video-bg',
+    default: '#000',
+    controls: 'Letterbox background behind <video>',
+  },
+  {
+    token: '--rk-reel-video-loader-color',
+    default: 'rgba(255, 255, 255, 0.15)',
+    controls: 'Video buffering shimmer color',
+  },
+
+  // Nested horizontal slider
+  {
+    token: '--rk-reel-nested-button-bg',
+    default: 'rgba(0, 0, 0, 0.5)',
+    controls: 'Nested arrow background',
+  },
+  {
+    token: '--rk-reel-nested-button-size',
+    default: '36px',
+    controls: 'Nested arrow size',
+  },
+  {
+    token: '--rk-reel-nested-edge-padding',
+    default: '12px',
+    controls: 'Nested arrow edge inset',
   },
 ];
 
@@ -1079,13 +1256,20 @@ export class AppComponent {
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">CSS Classes</h2>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
-          All CSS classes are plain (not CSS modules), so they can be overridden
-          with higher-specificity selectors or in a custom stylesheet loaded
-          after{' '}
+          All CSS classes are plain (not scoped), so they can be targeted with
+          higher-specificity selectors in a stylesheet loaded after{' '}
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
             @reelkit/angular-reel-player/styles.css
           </code>
-          .
+          . For color, size, and z-index changes, prefer the CSS custom
+          properties documented in the{' '}
+          <Link
+            to={{ hash: '#theming' }}
+            className="text-primary-500 hover:text-primary-600 font-medium"
+          >
+            Theming
+          </Link>{' '}
+          section below — they're designed for exactly that.
         </p>
 
         <div className="overflow-x-auto mb-6">
@@ -1119,22 +1303,68 @@ export class AppComponent {
             </tbody>
           </table>
         </div>
+      </section>
+
+      {/* Theming */}
+      <section id="theming" className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">Theming</h2>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Every color, size, z-index, and transition lives in a CSS custom
+          property. Override one or many at{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            :root
+          </code>{' '}
+          (or any ancestor of the overlay) to retheme without touching component
+          source. The tokens match the React and Vue packages, so overrides port
+          between bindings.
+        </p>
+
+        <div className="overflow-x-auto mb-6">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left py-3 px-4 font-semibold">Token</th>
+                <th className="text-left py-3 px-4 font-semibold">Default</th>
+                <th className="text-left py-3 px-4 font-semibold">Controls</th>
+              </tr>
+            </thead>
+            <tbody>
+              {themeTokens.map((t) => (
+                <tr
+                  key={t.token}
+                  className="border-b border-slate-100 dark:border-slate-800"
+                >
+                  <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                    {t.token}
+                  </td>
+                  <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                    {t.default}
+                  </td>
+                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                    {t.controls}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <p className="text-slate-600 dark:text-slate-400 mb-3">
+          Drop the snippet below into a stylesheet loaded after{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            @reelkit/angular-reel-player/styles.css
+          </code>
+          .
+        </p>
 
         <CodeBlock
-          code={`/* Override overlay background */
-.rk-reel-overlay {
-  background: rgba(0, 0, 0, 0.9);
-}
-
-/* Custom slide overlay gradient */
-.rk-reel-slide-overlay {
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
-}
-
-/* Larger navigation arrows */
-.rk-player-nav-arrows button {
-  width: 56px;
-  height: 56px;
+          code={`/* Brand the reel-player overlay */
+:root {
+  --rk-reel-overlay-bg: #0f172a;
+  --rk-reel-button-bg: rgba(99, 102, 241, 0.65);
+  --rk-reel-button-bg-hover-strong: rgba(168, 85, 247, 0.85);
+  --rk-reel-edge-padding: 24px;
+  --rk-reel-button-size: 52px;
 }`}
           language="css"
         />

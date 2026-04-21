@@ -257,7 +257,7 @@ describe('RkReelPlayerOverlayComponent', () => {
 
   it('shows two navigation arrow buttons when open', () => {
     const fixture = createFixture({ isOpen: true, content: makeItems(3) });
-    const buttons = fixture.debugElement.queryAll(By.css('.rk-player-nav-btn'));
+    const buttons = fixture.debugElement.queryAll(By.css('.rk-reel-nav-btn'));
     expect(buttons.length).toBe(2);
   });
 

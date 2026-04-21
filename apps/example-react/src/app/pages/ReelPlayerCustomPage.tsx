@@ -22,6 +22,7 @@ type DemoType =
   | 'custom-nested-nav'
   | 'infinity'
   | 'custom-loading-error'
+  | 'theming'
   | null;
 
 const DEMOS: {
@@ -66,6 +67,12 @@ const DEMOS: {
     title: 'Custom Loading / Error',
     description:
       'Uses renderLoading and renderError to replace default wave loader and error icon. Includes a broken image slide.',
+  },
+  {
+    id: 'theming',
+    title: 'Themed via CSS Tokens',
+    description:
+      'Rebrands the overlay by overriding --rk-reel-* CSS custom properties in a stylesheet. No component code changes.',
   },
 ];
 
@@ -516,6 +523,31 @@ function ReelPlayerCustomPage() {
               ) : null
             }
           </Observe>
+        </>
+      )}
+      {activeDemo === 'theming' && (
+        <>
+          <style>{`
+            .rk-reel-overlay {
+              --rk-reel-overlay-bg: #0f172a;
+              --rk-reel-button-bg: rgba(99, 102, 241, 0.55);
+              --rk-reel-button-bg-hover-strong: rgba(168, 85, 247, 0.85);
+              --rk-reel-button-size: 52px;
+              --rk-reel-edge-padding: 24px;
+              --rk-reel-slide-overlay-bg: linear-gradient(
+                transparent,
+                rgba(99, 102, 241, 0.55) 60%,
+                rgba(168, 85, 247, 0.85)
+              );
+              --rk-reel-slide-overlay-name-color: #fef3c7;
+            }
+          `}</style>
+          <ReelPlayerOverlay
+            isOpen
+            onClose={closePlayer}
+            content={content}
+            initialIndex={0}
+          />
         </>
       )}
       {activeDemo === 'custom-loading-error' && (

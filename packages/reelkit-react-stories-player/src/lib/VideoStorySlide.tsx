@@ -212,31 +212,14 @@ export const VideoStorySlide: FC<VideoStorySlideProps> = ({
   useEffect(() => syncMutedToVideo(soundState, shared.getVideo()), []);
 
   return (
-    <div
-      ref={containerRef}
-      style={{
-        width: '100%',
-        height: '100%',
-        position: 'relative',
-        background: '#000',
-      }}
-    >
+    <div ref={containerRef} className="rk-stories-video">
       {resolvedPoster && (
         <Observe signals={[showPoster]}>
           {() => (
             <img
               src={resolvedPoster}
               alt=""
-              style={{
-                position: 'absolute',
-                inset: 0,
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                pointerEvents: 'none',
-                opacity: showPoster.value ? 1 : 0,
-                transition: 'opacity 200ms ease',
-              }}
+              className={`rk-stories-video-poster ${showPoster.value ? 'rk-stories-video-poster--visible' : ''}`}
             />
           )}
         </Observe>

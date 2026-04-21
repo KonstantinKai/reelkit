@@ -27,8 +27,13 @@ describe('RkCloseButtonComponent', () => {
     expect(btn.nativeElement.getAttribute('aria-label')).toBe('Close player');
   });
 
-  it('button has the rk-player-close-btn class', () => {
-    const btn = fixture.debugElement.query(By.css('.rk-player-close-btn'));
+  it('button has the rk-reel-close-btn class', () => {
+    const btn = fixture.debugElement.query(By.css('.rk-reel-close-btn'));
+    expect(btn).toBeTruthy();
+  });
+
+  it('button has the shared rk-reel-button class', () => {
+    const btn = fixture.debugElement.query(By.css('.rk-reel-button'));
     expect(btn).toBeTruthy();
   });
 

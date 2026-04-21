@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { Callout } from '../../components/ui/Callout';
 import { CodeBlock } from '../../components/ui/CodeBlock';
 import { Sandbox } from '../../components/ui/Sandbox';
@@ -336,6 +337,353 @@ const storiesApiMethods = [
   },
 ];
 
+const cssClasses = [
+  // Overlay
+  {
+    className: '.rk-stories-overlay',
+    component: 'Overlay',
+    description: 'Fixed full-screen backdrop (background, z-index)',
+  },
+  {
+    className: '.rk-stories-swipe-wrapper',
+    component: 'Overlay',
+    description: 'Swipe-to-close wrapper (hosts nav buttons + canvas)',
+  },
+  {
+    className: '.rk-stories-container',
+    component: 'Overlay',
+    description: 'Rounded story canvas (position, overflow)',
+  },
+  {
+    className: '.rk-stories-ui-layer',
+    component: 'Overlay',
+    description: 'UI overlay container (header, progress, navigation)',
+  },
+  {
+    className: '.rk-stories-ui-layer--hidden',
+    component: 'Overlay',
+    description: 'UI hidden state (toggled by hideUIOnPause)',
+  },
+  {
+    className: '.rk-stories-error',
+    component: 'Overlay',
+    description: 'Error state (centered icon + text)',
+  },
+  {
+    className: '.rk-stories-error-text',
+    component: 'Overlay',
+    description: 'Error message text',
+  },
+
+  // Navigation
+  {
+    className: '.rk-stories-nav-btn',
+    component: 'Navigation',
+    description: 'Desktop prev/next arrow',
+  },
+
+  // ProgressBar
+  {
+    className: '.rk-stories-progress-bar',
+    component: 'ProgressBar',
+    description: 'Canvas progress bar positioning wrapper',
+  },
+
+  // Group / Story
+  {
+    className: '.rk-stories-slide-wrapper',
+    component: 'Group',
+    description: 'One group of stories (outer slide)',
+  },
+  {
+    className: '.rk-stories-story',
+    component: 'Story',
+    description: 'A single story (inner slide root)',
+  },
+
+  // StoryHeader
+  {
+    className: '.rk-stories-header',
+    component: 'StoryHeader',
+    description: 'Header bar (avatar, name, actions)',
+  },
+  {
+    className: '.rk-stories-header--hidden',
+    component: 'StoryHeader',
+    description: 'Header hidden state (visible=false)',
+  },
+  {
+    className: '.rk-stories-header-avatar',
+    component: 'StoryHeader',
+    description: 'Author avatar image',
+  },
+  {
+    className: '.rk-stories-header-name',
+    component: 'StoryHeader',
+    description: 'Author name text',
+  },
+  {
+    className: '.rk-stories-header-verified',
+    component: 'StoryHeader',
+    description: 'Verified badge container',
+  },
+  {
+    className: '.rk-stories-header-time',
+    component: 'StoryHeader',
+    description: 'Time-ago text',
+  },
+  {
+    className: '.rk-stories-header-actions',
+    component: 'StoryHeader',
+    description: 'Right-side actions (close, mute, pause)',
+  },
+  {
+    className: '.rk-stories-header-btn',
+    component: 'StoryHeader',
+    description: 'Header action button',
+  },
+  {
+    className: '.rk-stories-header-spinner',
+    component: 'StoryHeader',
+    description: 'Video buffering spinner',
+  },
+
+  // ImageStorySlide
+  {
+    className: '.rk-stories-image',
+    component: 'ImageStorySlide',
+    description: 'Image story element',
+  },
+
+  // VideoStorySlide
+  {
+    className: '.rk-stories-video',
+    component: 'VideoStorySlide',
+    description: 'Video story container',
+  },
+  {
+    className: '.rk-stories-video-element',
+    component: 'VideoStorySlide',
+    description: 'The shared <video> element',
+  },
+  {
+    className: '.rk-stories-video-poster',
+    component: 'VideoStorySlide',
+    description: 'Video poster image (fades out on play)',
+  },
+  {
+    className: '.rk-stories-video-poster--visible',
+    component: 'VideoStorySlide',
+    description: 'Poster visible state (pre-playback)',
+  },
+
+  // HeartAnimation
+  {
+    className: '.rk-stories-heart',
+    component: 'HeartAnimation',
+    description: 'Double-tap heart pop animation',
+  },
+
+  // StoriesRing
+  {
+    className: '.rk-stories-ring',
+    component: 'StoriesRing',
+    description: 'Story ring (avatar with animated gradient border)',
+  },
+  {
+    className: '.rk-stories-ring--active',
+    component: 'StoriesRing',
+    description: 'Ring with unviewed stories (animates)',
+  },
+  {
+    className: '.rk-stories-ring-avatar',
+    component: 'StoriesRing',
+    description: 'Avatar image inside the ring',
+  },
+
+  // StoriesRingList
+  {
+    className: '.rk-stories-ring-list',
+    component: 'StoriesRingList',
+    description: 'Horizontal ring list container',
+  },
+  {
+    className: '.rk-stories-ring-list-item',
+    component: 'StoriesRingList',
+    description: 'Ring + name column',
+  },
+  {
+    className: '.rk-stories-ring-list-name',
+    component: 'StoriesRingList',
+    description: 'Author name below each ring',
+  },
+];
+
+const themeTokens = [
+  // Overlay
+  {
+    token: '--rk-stories-overlay-bg',
+    default: '#000',
+    controls: 'Full-screen backdrop color',
+  },
+  {
+    token: '--rk-stories-overlay-z',
+    default: '9999',
+    controls: 'Overlay z-index',
+  },
+  {
+    token: '--rk-stories-container-radius',
+    default: '12px',
+    controls: 'Rounded corners on the story canvas (desktop)',
+  },
+  {
+    token: '--rk-stories-swipe-gap',
+    default: '16px',
+    controls: 'Gap between nav buttons and the story canvas',
+  },
+
+  // UI layer + top shade
+  {
+    token: '--rk-stories-top-shade-height',
+    default: '120px',
+    controls: 'Top gradient scrim height behind the header',
+  },
+  {
+    token: '--rk-stories-top-shade-bg',
+    default: 'linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%)',
+    controls: 'Top gradient scrim color',
+  },
+  {
+    token: '--rk-stories-ui-transition',
+    default: '200ms',
+    controls: 'Fade duration when hideUIOnPause toggles',
+  },
+
+  // Nav buttons (desktop)
+  {
+    token: '--rk-stories-nav-size',
+    default: '44px',
+    controls: 'Desktop prev/next button size',
+  },
+  {
+    token: '--rk-stories-nav-bg',
+    default: 'rgba(255, 255, 255, 0.1)',
+    controls: 'Desktop nav button background',
+  },
+  {
+    token: '--rk-stories-nav-bg-hover',
+    default: 'rgba(255, 255, 255, 0.2)',
+    controls: 'Desktop nav button hover background',
+  },
+  {
+    token: '--rk-stories-nav-fg',
+    default: 'rgba(255, 255, 255, 0.7)',
+    controls: 'Desktop nav button icon color',
+  },
+  {
+    token: '--rk-stories-nav-fg-hover',
+    default: '#fff',
+    controls: 'Desktop nav button hover icon color',
+  },
+
+  // Error state
+  {
+    token: '--rk-stories-error-bg',
+    default: 'linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
+    controls: 'Error state background gradient',
+  },
+  {
+    token: '--rk-stories-error-fg',
+    default: 'rgba(255, 255, 255, 0.5)',
+    controls: 'Error icon and text color',
+  },
+  {
+    token: '--rk-stories-error-text-size',
+    default: '13px',
+    controls: 'Error message font size',
+  },
+
+  // Story media
+  {
+    token: '--rk-stories-video-bg',
+    default: '#000',
+    controls: 'Letterbox background behind <video>',
+  },
+  {
+    token: '--rk-stories-video-poster-transition',
+    default: '200ms',
+    controls: 'Poster fade duration when the video starts playing',
+  },
+
+  // Story header
+  {
+    token: '--rk-stories-header-top',
+    default: '18px',
+    controls: 'Vertical offset of the header from the top of the story',
+  },
+  {
+    token: '--rk-stories-header-padding',
+    default: '12px 16px',
+    controls: 'Inner padding of the header row',
+  },
+  {
+    token: '--rk-stories-header-avatar-size',
+    default: '32px',
+    controls: 'Avatar width/height',
+  },
+  {
+    token: '--rk-stories-header-name-fg',
+    default: '#fff',
+    controls: 'Author name color',
+  },
+  {
+    token: '--rk-stories-header-name-size',
+    default: '14px',
+    controls: 'Author name font size',
+  },
+  {
+    token: '--rk-stories-header-time-fg',
+    default: 'rgba(255, 255, 255, 0.6)',
+    controls: 'Time-ago text color',
+  },
+  {
+    token: '--rk-stories-header-btn-fg',
+    default: '#fff',
+    controls: 'Header action icon color (close, mute, pause)',
+  },
+
+  // Heart animation (double-tap like)
+  {
+    token: '--rk-stories-heart-duration',
+    default: '800ms',
+    controls: 'Pop-in/fade-out animation duration',
+  },
+
+  // Ring (avatar with animated border)
+  {
+    token: '--rk-stories-ring-spin-duration',
+    default: '4s',
+    controls: 'Active ring gradient rotation duration',
+  },
+
+  // Ring list (horizontal feed above the player)
+  {
+    token: '--rk-stories-ring-list-gap',
+    default: '12px',
+    controls: 'Spacing between rings in the list',
+  },
+  {
+    token: '--rk-stories-ring-list-padding',
+    default: '12px',
+    controls: 'Inner padding around the ring list',
+  },
+  {
+    token: '--rk-stories-ring-list-name-size',
+    default: '12px',
+    controls: 'Author name font size below each ring',
+  },
+];
+
 export default function StoriesPlayerPage() {
   return (
     <div className="max-w-4xl mx-auto px-6 py-12">
@@ -357,37 +705,6 @@ export default function StoriesPlayerPage() {
           View live demo &rarr;
         </a>
       </div>
-
-      {/* Installation */}
-      <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Installation</h2>
-        <CodeBlock
-          code="npm i @reelkit/react-stories-player @reelkit/react lucide-react"
-          language="bash"
-        />
-        <p className="text-slate-600 dark:text-slate-400 mt-4 mb-2">
-          Don't forget to import the styles:
-        </p>
-        <CodeBlock
-          code={`import '@reelkit/react-stories-player/styles.css';`}
-          language="typescript"
-        />
-        <Callout type="info" title="Icons" className="mt-4">
-          The default header uses{' '}
-          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
-            lucide-react
-          </code>{' '}
-          for icons. If you prefer a different icon library, use{' '}
-          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
-            renderHeader
-          </code>{' '}
-          and{' '}
-          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
-            renderNavigation
-          </code>{' '}
-          to provide your own.
-        </Callout>
-      </section>
 
       {/* Features */}
       <section className="mb-12">
@@ -458,6 +775,37 @@ export default function StoriesPlayerPage() {
             ]}
           />
         </div>
+      </section>
+
+      {/* Installation */}
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">Installation</h2>
+        <CodeBlock
+          code="npm i @reelkit/react-stories-player @reelkit/react lucide-react"
+          language="bash"
+        />
+        <p className="text-slate-600 dark:text-slate-400 mt-4 mb-2">
+          Don't forget to import the styles:
+        </p>
+        <CodeBlock
+          code={`import '@reelkit/react-stories-player/styles.css';`}
+          language="typescript"
+        />
+        <Callout type="info" title="Icons" className="mt-4">
+          The default header uses{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            lucide-react
+          </code>{' '}
+          for icons. If you prefer a different icon library, use{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            renderHeader
+          </code>{' '}
+          and{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            renderNavigation
+          </code>{' '}
+          to provide your own.
+        </Callout>
       </section>
 
       {/* Sandbox */}
@@ -1027,7 +1375,22 @@ function App() {
           Customizing the Heart Animation
         </h3>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
-          The heart animation uses CSS classes that you can override. The{' '}
+          Tweak the animation speed via the{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            --rk-stories-heart-duration
+          </code>{' '}
+          token (see{' '}
+          <Link
+            to={{ hash: '#theming' }}
+            className="text-primary-500 hover:text-primary-600 font-medium"
+          >
+            Theming
+          </Link>
+          ). For color, size, or hiding the heart entirely, target the{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            .rk-stories-heart
+          </code>{' '}
+          class directly. The{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
             HeartAnimation
           </code>{' '}
@@ -1035,17 +1398,18 @@ function App() {
         </p>
 
         <CodeBlock
-          code={`/* Override heart animation styles */
-.rk-stories-heart {
-  /* Change heart color */
-  color: #ff3b5c;
-  /* Adjust size */
-  font-size: 80px;
-  /* Custom animation duration */
-  animation-duration: 1s;
+          code={`/* Speed up the pop via the token */
+:root {
+  --rk-stories-heart-duration: 1s;
 }
 
-/* Hide built-in heart entirely */
+/* Restyle color and size via the class */
+.rk-stories-heart {
+  color: #ff3b5c;
+  font-size: 80px;
+}
+
+/* Or hide the built-in heart entirely */
 .rk-stories-heart {
   display: none;
 }`}
@@ -1468,6 +1832,128 @@ function CustomSlide({ story, size, onReady, onError }: SlideRenderProps<PromoSt
   renderSlide={(props) => <CustomSlide {...props} />}
 />`}
           language="tsx"
+        />
+      </section>
+
+      {/* CSS Classes */}
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">CSS Classes</h2>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          All CSS classes are plain (not CSS modules), so they can be targeted
+          with higher-specificity selectors in a stylesheet loaded after{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            @reelkit/react-stories-player/styles.css
+          </code>
+          . For color, size, and z-index changes, prefer the CSS custom
+          properties documented in the{' '}
+          <Link
+            to={{ hash: '#theming' }}
+            className="text-primary-500 hover:text-primary-600 font-medium"
+          >
+            Theming
+          </Link>{' '}
+          section below.
+        </p>
+
+        <div className="overflow-x-auto mb-6">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left py-3 px-4 font-semibold">Class</th>
+                <th className="text-left py-3 px-4 font-semibold">Component</th>
+                <th className="text-left py-3 px-4 font-semibold">
+                  Description
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {cssClasses.map((c) => (
+                <tr
+                  key={c.className}
+                  className="border-b border-slate-100 dark:border-slate-800"
+                >
+                  <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                    {c.className}
+                  </td>
+                  <td className="py-3 px-4 text-slate-500 text-sm">
+                    {c.component}
+                  </td>
+                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                    {c.description}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="theming" className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">Theming</h2>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Every color, size, z-index, and transition lives in a CSS custom
+          property. Override one or many at{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            :root
+          </code>{' '}
+          (or any ancestor of the overlay) to retheme without touching component
+          source.
+        </p>
+
+        <div className="overflow-x-auto mb-6">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left py-3 px-4 font-semibold">Token</th>
+                <th className="text-left py-3 px-4 font-semibold">Default</th>
+                <th className="text-left py-3 px-4 font-semibold">Controls</th>
+              </tr>
+            </thead>
+            <tbody>
+              {themeTokens.map((t) => (
+                <tr
+                  key={t.token}
+                  className="border-b border-slate-100 dark:border-slate-800"
+                >
+                  <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                    {t.token}
+                  </td>
+                  <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                    {t.default}
+                  </td>
+                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                    {t.controls}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <p className="text-slate-600 dark:text-slate-400 mb-3">
+          Drop the snippet below into a stylesheet loaded after{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            @reelkit/react-stories-player/styles.css
+          </code>
+          .
+        </p>
+
+        <CodeBlock
+          language="css"
+          code={`/* Brand the stories overlay */
+:root {
+  --rk-stories-overlay-bg: #0f172a;
+  --rk-stories-container-radius: 24px;
+  --rk-stories-nav-bg: rgba(99, 102, 241, 0.25);
+  --rk-stories-nav-bg-hover: rgba(168, 85, 247, 0.55);
+  --rk-stories-top-shade-bg: linear-gradient(
+    to bottom,
+    rgba(99, 102, 241, 0.5) 0%,
+    transparent 100%
+  );
+  --rk-stories-header-name-fg: #fef3c7;
+  --rk-stories-ring-spin-duration: 2s;
+}`}
         />
       </section>
 

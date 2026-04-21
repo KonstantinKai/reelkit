@@ -71,6 +71,11 @@ const packages = [
     dir: 'reelkit-vue',
     externalize: ['@reelkit/core'],
   },
+  {
+    name: '@reelkit/vue-reel-player',
+    dir: 'reelkit-vue-reel-player',
+    externalize: ['@reelkit/core', '@reelkit/vue', 'lucide-vue-next'],
+  },
 ];
 
 /**

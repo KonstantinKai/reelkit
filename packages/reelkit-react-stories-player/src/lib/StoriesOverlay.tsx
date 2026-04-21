@@ -579,10 +579,10 @@ function StoriesContent<T extends StoryItem = StoryItem>({
 
                           return (
                             <div
+                              className="rk-stories-story"
                               style={{
                                 width: storySize[0],
                                 height: storySize[1],
-                                position: 'relative',
                               }}
                             >
                               {propsRef.current.renderSlide ? (
@@ -760,8 +760,7 @@ function StoriesContent<T extends StoryItem = StoryItem>({
 
               return (
                 <div
-                  className="rk-stories-ui-layer"
-                  style={{ opacity: uiHidden ? 0 : 1 }}
+                  className={`rk-stories-ui-layer ${uiHidden ? 'rk-stories-ui-layer--hidden' : ''}`}
                 >
                   <Observe signals={[storiesCtrl.state.activeGroupIndex]}>
                     {() => {

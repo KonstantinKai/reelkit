@@ -97,18 +97,18 @@ describe('RkSoundButtonComponent', () => {
     expect(soundState.toggle).not.toHaveBeenCalled();
   });
 
-  it('button has rk-disabled class when isDisabled input is true', () => {
+  it('button sets aria-disabled="true" when isDisabled input is true', () => {
     const soundState = buildSoundState(true, false);
     const fixture = createFixture(soundState, true);
     const btn = fixture.debugElement.query(By.css('button'));
-    expect(btn.nativeElement.classList.contains('rk-disabled')).toBe(true);
+    expect(btn.nativeElement.getAttribute('aria-disabled')).toBe('true');
   });
 
-  it('button does not have rk-disabled class when isDisabled input is false', () => {
+  it('button sets aria-disabled="false" when isDisabled input is false', () => {
     const soundState = buildSoundState(true, false);
     const fixture = createFixture(soundState, false);
     const btn = fixture.debugElement.query(By.css('button'));
-    expect(btn.nativeElement.classList.contains('rk-disabled')).toBe(false);
+    expect(btn.nativeElement.getAttribute('aria-disabled')).toBe('false');
   });
 
   it('aria-label updates reactively when mute state changes', () => {

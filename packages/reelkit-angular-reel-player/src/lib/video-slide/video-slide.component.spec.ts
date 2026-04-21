@@ -244,7 +244,7 @@ describe('RkVideoSlideComponent', () => {
     tick();
     fixture.detectChanges();
     const posterEl = fixture.debugElement.query(
-      By.css('.rk-video-slide-poster'),
+      By.css('.rk-reel-video-poster'),
     );
     if (posterEl) {
       expect(posterEl.nativeElement.getAttribute('src')).toBe(
@@ -268,7 +268,7 @@ describe('RkVideoSlideComponent', () => {
   it('applies width and height styles on container', () => {
     const fixture = createFixture({ width: 375, height: 812 });
     const container = fixture.debugElement.query(
-      By.css('.rk-video-slide-container'),
+      By.css('.rk-reel-video-container'),
     );
     expect(container.nativeElement.style.width).toBe('375px');
     expect(container.nativeElement.style.height).toBe('812px');
@@ -278,14 +278,14 @@ describe('RkVideoSlideComponent', () => {
     const fixture = createFixture({ isActive: true });
     tick();
     fixture.detectChanges();
-    const loader = fixture.debugElement.query(By.css('.rk-video-slide-loader'));
+    const loader = fixture.debugElement.query(By.css('.rk-reel-video-loader'));
     expect(loader).toBeTruthy();
   }));
 
   it('renders the container element', () => {
     const fixture = createFixture();
     const container = fixture.debugElement.query(
-      By.css('.rk-video-slide-container'),
+      By.css('.rk-reel-video-container'),
     );
     expect(container).toBeTruthy();
   });

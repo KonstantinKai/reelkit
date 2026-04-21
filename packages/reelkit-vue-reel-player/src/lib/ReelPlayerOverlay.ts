@@ -445,26 +445,12 @@ const ReelPlayerContent = defineComponent({
         // Loop mode never sits at an edge — nav always navigates.
         const prevDisabled = !props.loop && idx === 0;
         const nextDisabled = !props.loop && idx === items.length - 1;
-        const btnStyle = (disabled: boolean) => ({
-          width: '44px',
-          height: '44px',
-          borderRadius: '50%',
-          backgroundColor: 'rgba(255,255,255,0.1)',
-          border: 'none',
-          color: '#fff',
-          cursor: disabled ? 'default' : 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          opacity: disabled ? 0.35 : 1,
-          transition: 'opacity 0.2s',
-        });
-        return h('div', { class: 'rk-player-nav-arrows' }, [
+        return h('div', { class: 'rk-reel-nav-arrows' }, [
           h(
             'button',
             {
               onClick: prevDisabled ? undefined : handlePrev,
-              style: btnStyle(prevDisabled),
+              class: 'rk-reel-button rk-reel-nav-button',
               'aria-label': 'Previous',
               'aria-disabled': prevDisabled,
               disabled: prevDisabled,
@@ -475,7 +461,7 @@ const ReelPlayerContent = defineComponent({
             'button',
             {
               onClick: nextDisabled ? undefined : handleNext,
-              style: btnStyle(nextDisabled),
+              class: 'rk-reel-button rk-reel-nav-button',
               'aria-label': 'Next',
               'aria-disabled': nextDisabled,
               disabled: nextDisabled,

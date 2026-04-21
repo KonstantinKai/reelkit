@@ -1,9 +1,21 @@
+/*
+ * Theme tokens for the Angular lightbox video slide.
+ * Defaults live on `:root` — see lightbox-overlay.css for rationale.
+ */
+:root {
+  --rk-lightbox-video-bg: #000;
+  --rk-lightbox-video-poster-transition: 0.3s;
+  --rk-lightbox-video-error-fg: rgba(255, 255, 255, 0.4);
+  --rk-lightbox-video-error-gap: 12px;
+  --rk-lightbox-video-error-text-size: 13px;
+}
+
 .rk-lightbox-video-container {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #000;
+  background-color: var(--rk-lightbox-video-bg);
   overflow: hidden;
 }
 
@@ -27,7 +39,7 @@
   object-position: center;
   z-index: 2;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity var(--rk-lightbox-video-poster-transition) ease;
   pointer-events: none;
 }
 
@@ -43,11 +55,11 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  color: rgba(255, 255, 255, 0.4);
+  gap: var(--rk-lightbox-video-error-gap);
+  color: var(--rk-lightbox-video-error-fg);
 }
 
 .rk-lightbox-video-error-text {
-  font-size: 13px;
+  font-size: var(--rk-lightbox-video-error-text-size);
   letter-spacing: 0.02em;
 }

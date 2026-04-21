@@ -1,3 +1,12 @@
+/*
+ * Theme tokens for the double-tap heart animation.
+ * Override at :root or any ancestor of `.rk-stories-heart`.
+ */
+:root {
+  --rk-stories-heart-z: 20;
+  --rk-stories-heart-duration: 800ms;
+}
+
 @keyframes heart-pop {
   0% {
     transform: translate(-50%, -50%) scale(0);
@@ -19,6 +28,6 @@
   top: 50%;
   transform: translate(-50%, -50%);
   pointer-events: none;
-  z-index: 20;
-  animation: heart-pop 800ms ease-out forwards;
+  z-index: var(--rk-stories-heart-z);
+  animation: heart-pop var(--rk-stories-heart-duration) ease-out forwards;
 }

@@ -14,7 +14,10 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/cdn/, ''),
         configure: (proxy) => {
           proxy.on('proxyReq', (proxyReq) => {
-            proxyReq.setHeader('X-RK-Token', process.env.VITE_CDN_TOKEN || '');
+            proxyReq.setHeader(
+              'X-RK-Token',
+              process.env['VITE_CDN_TOKEN'] || '',
+            );
             proxyReq.setHeader('Origin', 'http://localhost:4200');
           });
         },

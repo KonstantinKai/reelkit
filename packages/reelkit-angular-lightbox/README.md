@@ -6,7 +6,7 @@
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
 
-Image gallery lightbox for Angular — opens full-screen with swipe navigation, keyboard controls, and transition effects. Every part of the UI is replaceable via template slots. ~14.0 kB gzip.
+Image gallery lightbox for Angular — opens full-screen with swipe navigation, keyboard controls, and transition effects. Every part of the UI is replaceable via template slots. ~14.7 kB gzip.
 
 **[Live Demo](https://angular-demo.reelkit.dev/image-preview?utm_source=npm)**
 
@@ -163,7 +163,16 @@ All UI elements use CSS classes prefixed with `rk-lightbox-`:
 | `.rk-lightbox-video-container` | Video slide wrapper         |
 | `.rk-lightbox-video-element`   | Video element               |
 | `.rk-lightbox-video-poster`    | Video poster image          |
-| `.rk-lightbox-video-loader`    | Video loading indicator     |
+| `.rk-lightbox-video-error`     | Video error state container |
+| `.rk-lightbox-top-shade`       | Top gradient scrim          |
+| `.rk-lightbox-spinner`         | Default loading spinner     |
+| `.rk-lightbox-img-error`       | Image error state container |
+| `.rk-lightbox-swipe-hint`      | Mobile swipe hint chip      |
+| `.rk-lightbox-empty`           | Empty state text            |
+
+### Theming via CSS custom properties
+
+Every visual value is exposed as a `--rk-lightbox-*` custom property with a sensible default. Override at `:root` (or any ancestor of `.rk-lightbox-container`) to retheme without touching component source — see the [Theming docs](https://reelkit.dev/docs/angular-lightbox#theming) for the full token table.
 
 ## Documentation
 

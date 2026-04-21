@@ -230,7 +230,9 @@ export const NestedSlider = defineComponent({
               },
               onBeforeChange: handleBeforeChange,
               onAfterChange: handleAfterChange,
-              reelClass: props.isParentActive ? 'rk-nested-active' : undefined,
+              reelClass: props.isParentActive
+                ? 'rk-reel-nested-active'
+                : undefined,
             },
             {
               item: ({
@@ -342,7 +344,7 @@ export const NestedSlider = defineComponent({
                     ? h(
                         'button',
                         {
-                          class: 'rk-nested-nav rk-nested-nav-prev',
+                          class: 'rk-reel-nested-nav rk-reel-nested-nav-prev',
                           onClick: handlePrev,
                           'aria-label': 'Previous',
                         },
@@ -353,7 +355,7 @@ export const NestedSlider = defineComponent({
                     ? h(
                         'button',
                         {
-                          class: 'rk-nested-nav rk-nested-nav-next',
+                          class: 'rk-reel-nested-nav rk-reel-nested-nav-next',
                           onClick: handleNext,
                           'aria-label': 'Next',
                         },

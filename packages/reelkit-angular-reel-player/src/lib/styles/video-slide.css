@@ -1,13 +1,25 @@
-.rk-video-slide-container {
+/*
+ * Theme tokens for the video slide.
+ * Override at :root or any ancestor of `.rk-reel-video-container`.
+ */
+:root {
+  --rk-reel-video-bg: #000;
+  --rk-reel-video-poster-transition: 0.3s;
+  --rk-reel-video-loader-z: 3;
+  --rk-reel-video-loader-color: rgba(255, 255, 255, 0.15);
+  --rk-reel-video-loader-duration: 1.5s;
+}
+
+.rk-reel-video-container {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #000;
+  background-color: var(--rk-reel-video-bg);
   overflow: hidden;
 }
 
-.rk-video-slide-element {
+.rk-reel-video-element {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -15,11 +27,11 @@
 }
 
 /* Blink-only: hides the native cast overlay button on Chrome/Edge. */
-.rk-video-slide-element::-internal-media-controls-overlay-cast-button {
+.rk-reel-video-element::-internal-media-controls-overlay-cast-button {
   display: none;
 }
 
-.rk-video-slide-poster {
+.rk-reel-video-poster {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -27,57 +39,41 @@
   object-position: center;
   z-index: 2;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity var(--rk-reel-video-poster-transition) ease;
   pointer-events: none;
 }
 
-.rk-video-slide-poster.rk-visible {
+.rk-reel-video-poster.rk-visible {
   opacity: 1;
 }
 
-.rk-video-slide-loader {
+.rk-reel-video-loader {
   position: absolute;
   inset: 0;
-  z-index: 3;
+  z-index: var(--rk-reel-video-loader-z);
   pointer-events: none;
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(255, 255, 255, 0.15) 50%,
+    var(--rk-reel-video-loader-color) 50%,
     transparent 100%
   );
   background-size: 200% 100%;
-  animation: rk-video-slide-wave 1.5s ease-in-out infinite;
+  animation: rk-reel-video-wave var(--rk-reel-video-loader-duration) ease-in-out
+    infinite;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity var(--rk-reel-video-poster-transition) ease;
 }
 
-.rk-video-slide-loader.rk-visible {
+.rk-reel-video-loader.rk-visible {
   opacity: 1;
 }
 
-@keyframes rk-video-slide-wave {
+@keyframes rk-reel-video-wave {
   0% {
     background-position: 200% 0;
   }
   100% {
     background-position: -200% 0;
   }
-}
-
-.rk-media-error {
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  color: rgba(255, 255, 255, 0.4);
-}
-
-.rk-media-error-text {
-  font-size: 13px;
-  letter-spacing: 0.02em;
 }

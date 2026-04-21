@@ -6,7 +6,7 @@
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
 
-Instagram Reels / TikTok-style video player for Angular. Opens as a full-screen overlay with vertical swipe navigation. Handles video autoplay, sound continuity on iOS, and multi-media posts. ~17.3 kB gzip.
+Instagram Reels / TikTok-style video player for Angular. Opens as a full-screen overlay with vertical swipe navigation. Handles video autoplay, sound continuity on iOS, and multi-media posts. ~17.1 kB gzip.
 
 **[Live Demo](https://angular-demo.reelkit.dev/reel-player?utm_source=npm)**
 
@@ -146,23 +146,33 @@ interface MediaItem {
 | `.rk-reel-overlay`                   | Overlay background                |
 | `.rk-reel-container`                 | Player container                  |
 | `.rk-reel-slide-wrapper`             | Slide wrapper                     |
-| `.rk-player-nav-arrows`              | Desktop nav arrows container      |
-| `.rk-player-nav-btn`                 | Individual nav arrow button       |
-| `.rk-player-close-btn`               | Close button                      |
-| `.rk-player-sound-btn`               | Sound toggle                      |
+| `.rk-reel-button`                    | Shared circular icon button       |
+| `.rk-reel-nav-arrows`                | Desktop nav arrows container      |
+| `.rk-reel-nav-btn`                   | Individual nav arrow button       |
+| `.rk-reel-close-btn`                 | Close button                      |
+| `.rk-reel-sound-btn`                 | Sound toggle                      |
 | `.rk-reel-slide-overlay`             | Per-slide overlay (author, likes) |
 | `.rk-reel-slide-overlay-author`      | Author row                        |
 | `.rk-reel-slide-overlay-avatar`      | Author avatar                     |
 | `.rk-reel-slide-overlay-name`        | Author name                       |
 | `.rk-reel-slide-overlay-description` | Slide description                 |
 | `.rk-reel-slide-overlay-likes`       | Like count                        |
-| `.rk-nested-slider-inner`            | Nested horizontal slider          |
-| `.rk-nested-nav`                     | Nested nav arrows                 |
-| `.rk-nested-indicator`               | Nested slider dot indicator       |
-| `.rk-video-slide-container`          | Video slide wrapper               |
-| `.rk-video-slide-element`            | Video element                     |
-| `.rk-video-slide-poster`             | Video poster image                |
-| `.rk-video-slide-loader`             | Video loading indicator           |
+| `.rk-reel-nested-slider-inner`       | Nested horizontal slider          |
+| `.rk-reel-nested-nav`                | Nested nav arrows                 |
+| `.rk-reel-nested-nav-prev`           | Nested prev arrow                 |
+| `.rk-reel-nested-nav-next`           | Nested next arrow                 |
+| `.rk-reel-nested-indicator`          | Nested slider dot indicator       |
+| `.rk-reel-video-container`           | Video slide wrapper               |
+| `.rk-reel-video-element`             | Video element                     |
+| `.rk-reel-video-poster`              | Video poster image                |
+| `.rk-reel-video-loader`              | Video loading indicator           |
+| `.rk-reel-media-error`               | Error state overlay               |
+| `.rk-reel-media-error-text`          | Error message text                |
+| `.rk-reel-loader`                    | Wave loading overlay              |
+
+### Theming via CSS custom properties
+
+Every visual value is exposed as a `--rk-reel-*` custom property with a sensible default. Override at `:root` (or any ancestor of `.rk-reel-overlay`) to retheme without touching component source — see the [Theming docs](https://reelkit.dev/docs/angular-reel-player#theming) for the full token table.
 
 ## Documentation
 

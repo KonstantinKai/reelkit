@@ -8,28 +8,14 @@ import {
 import { X, Volume2, VolumeX } from 'lucide-vue-next';
 import { toVueRef, useSoundState } from '@reelkit/vue';
 
-const _kButtonStyle: CSSProperties = {
-  width: '44px',
-  height: '44px',
-  borderRadius: '50%',
-  backgroundColor: 'rgba(0,0,0,0.5)',
-  border: 'none',
-  color: '#fff',
-  cursor: 'pointer',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  transition: 'background-color 0.2s',
-};
-
 /** Props accepted by the {@link CloseButton} component. */
 const closeButtonProps = {
   /**
    * CSS class name.
    *
-   * @default 'rk-player-close-btn'
+   * @default 'rk-reel-close-btn'
    */
-  className: { type: String, default: 'rk-player-close-btn' },
+  className: { type: String, default: 'rk-reel-close-btn' },
 
   /** Additional inline styles merged on top of the default button styles. */
   style: {
@@ -60,15 +46,8 @@ export const CloseButton = defineComponent({
         'button',
         {
           onClick: () => props.onClick(),
-          class: props.className,
-          style: {
-            ..._kButtonStyle,
-            position: 'absolute',
-            top: '16px',
-            right: '16px',
-            zIndex: 10,
-            ...props.style,
-          },
+          class: ['rk-reel-button', props.className],
+          style: props.style,
           'aria-label': 'Close',
         },
         [h(X, { size: 24 })],
@@ -89,9 +68,9 @@ const soundButtonProps = {
   /**
    * CSS class name.
    *
-   * @default 'rk-player-sound-btn'
+   * @default 'rk-reel-sound-btn'
    */
-  className: { type: String, default: 'rk-player-sound-btn' },
+  className: { type: String, default: 'rk-reel-sound-btn' },
 
   /** Additional inline styles merged on top of the default button styles. */
   style: {
@@ -126,18 +105,8 @@ export const SoundButton = defineComponent({
         'button',
         {
           onClick: props.disabled ? undefined : soundState.toggle,
-          class: props.className,
-          style: {
-            ..._kButtonStyle,
-            position: 'absolute',
-            bottom: '16px',
-            right: '16px',
-            zIndex: 10,
-            opacity: props.disabled ? 0.4 : 1,
-            cursor: props.disabled ? 'default' : 'pointer',
-            transition: 'opacity 0.2s, background-color 0.2s',
-            ...props.style,
-          },
+          class: ['rk-reel-button', props.className],
+          style: props.style,
           'aria-label': muted.value ? 'Unmute' : 'Mute',
           'aria-disabled': props.disabled,
         },

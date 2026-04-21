@@ -105,7 +105,9 @@ export const StoryHeader: FC<StoryHeaderProps> = ({
   isError,
   visible = true,
 }) => (
-  <div className="rk-stories-header" style={{ opacity: visible ? 1 : 0 }}>
+  <div
+    className={`rk-stories-header ${visible ? '' : 'rk-stories-header--hidden'}`}
+  >
     <img
       className="rk-stories-header-avatar"
       src={author.avatar}

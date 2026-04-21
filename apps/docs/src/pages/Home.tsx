@@ -383,7 +383,6 @@ export default function Home() {
                   {
                     name: '@reelkit/vue-reel-player',
                     label: 'Reel Player',
-                    comingSoon: true,
                   },
                   {
                     name: '@reelkit/vue-lightbox',

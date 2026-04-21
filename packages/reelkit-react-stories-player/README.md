@@ -2,12 +2,12 @@
 
 <p>
   <a href="https://www.npmjs.com/package/@reelkit/react-stories-player"><img src="https://img.shields.io/npm/v/@reelkit/react-stories-player?color=6366f1&label=npm" alt="npm" /></a>
-  <img src="https://img.shields.io/badge/gzip-5.6%20kB-6366f1" alt="Bundle size" />
+  <img src="https://img.shields.io/badge/gzip-5.5%20kB-6366f1" alt="Bundle size" />
   <img src="https://img.shields.io/badge/coverage-90%25-brightgreen" alt="Coverage" />
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
 
-Instagram-style stories player for React. Full-screen overlay with tap-to-advance navigation, 3D cube transition between users, auto-advance timer, segmented progress bar, and double-tap heart animation. ~5.6 kB gzip.
+Instagram-style stories player for React. Full-screen overlay with tap-to-advance navigation, 3D cube transition between users, auto-advance timer, segmented progress bar, and double-tap heart animation. ~5.5 kB gzip.
 
 **[Live Demo](https://react-demo.reelkit.dev/stories-player?utm_source=npm)**
 
@@ -173,6 +173,7 @@ interface StoriesGroup<T extends StoryItem = StoryItem> {
 | `.rk-stories-overlay`        | Overlay background            |
 | `.rk-stories-container`      | Player container              |
 | `.rk-stories-slide-wrapper`  | Slide wrapper                 |
+| `.rk-stories-story`          | Single story root             |
 | `.rk-stories-ui-layer`       | UI overlay (header, progress) |
 | `.rk-stories-header`         | Header bar                    |
 | `.rk-stories-header-avatar`  | Author avatar                 |
@@ -183,7 +184,11 @@ interface StoriesGroup<T extends StoryItem = StoryItem> {
 | `.rk-stories-nav-btn`        | Desktop navigation arrow      |
 | `.rk-stories-heart`          | Double-tap heart animation    |
 | `.rk-stories-error`          | Error state                   |
+| `.rk-stories-image`          | Image story element           |
+| `.rk-stories-video`          | Video story container         |
+| `.rk-stories-video-poster`   | Video poster image            |
 | `.rk-stories-video-element`  | Video element                 |
+| `.rk-stories-progress-bar`   | Canvas progress bar wrapper   |
 | `.rk-stories-ring`           | Story ring                    |
 | `.rk-stories-ring--active`   | Ring with unviewed stories    |
 | `.rk-stories-ring-avatar`    | Ring avatar image             |
@@ -191,6 +196,10 @@ interface StoriesGroup<T extends StoryItem = StoryItem> {
 | `.rk-stories-ring-list-item` | Ring list item                |
 | `.rk-stories-ring-list-name` | Ring author name              |
 | `.rk-stories-swipe-wrapper`  | Swipe-to-close wrapper        |
+
+### Theming via CSS custom properties
+
+Every visual value is exposed as a `--rk-stories-*` custom property with a sensible default. Override at `:root` (or any ancestor of `.rk-stories-overlay`) to retheme without touching component source — see the [Theming docs](https://reelkit.dev/docs/stories-player#theming) for the full token table.
 
 ## Documentation
 

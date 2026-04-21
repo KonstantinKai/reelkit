@@ -139,7 +139,7 @@ describe('ReelPlayerOverlay', () => {
     mount(Host, { attachTo: document.body });
     await nextTick();
     const closeBtn = document.querySelector(
-      '.rk-player-close-btn',
+      '.rk-reel-close-btn',
     ) as HTMLButtonElement | null;
     expect(closeBtn).not.toBeNull();
     closeBtn?.click();
@@ -259,7 +259,7 @@ describe('ReelPlayerOverlay', () => {
     mount(Host, { attachTo: document.body });
     await nextTick();
     const buttons = document.querySelectorAll(
-      '.rk-player-nav-arrows button',
+      '.rk-reel-nav-arrows button',
     ) as NodeListOf<HTMLButtonElement>;
     expect(buttons.length).toBe(2);
     expect(buttons[0].hasAttribute('disabled')).toBe(true);
@@ -285,7 +285,7 @@ describe('ReelPlayerOverlay', () => {
     mount(Host, { attachTo: document.body });
     await nextTick();
     const buttons = document.querySelectorAll(
-      '.rk-player-nav-arrows button',
+      '.rk-reel-nav-arrows button',
     ) as NodeListOf<HTMLButtonElement>;
     expect(buttons[0].hasAttribute('disabled')).toBe(false);
     expect(buttons[1].hasAttribute('disabled')).toBe(false);

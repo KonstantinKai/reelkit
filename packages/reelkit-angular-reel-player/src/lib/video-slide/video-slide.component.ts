@@ -28,7 +28,7 @@ import { SoundStateService } from '../sound-state/sound-state.service';
  * context continuity is maintained when navigating between slides.
  */
 export const shared = createSharedVideo({
-  className: 'rk-video-slide-element',
+  className: 'rk-reel-video-element',
   disableRemotePlayback: true,
   disablePictureInPicture: true,
 });
@@ -64,7 +64,7 @@ let activeToken: symbol | null = null;
   template: `
     <div
       #container
-      class="rk-video-slide-container"
+      class="rk-reel-video-container"
       [attr.aria-label]="ariaLabel() || null"
       [attr.aria-hidden]="!isActive() || !isInnerActive() || null"
       [style.width.px]="width()"
@@ -75,7 +75,7 @@ let activeToken: symbol | null = null;
           [src]="posterSrc()"
           alt=""
           [class]="
-            'rk-video-slide-poster' +
+            'rk-reel-video-poster' +
             (showPoster() || hasPlayError() ? ' rk-visible' : '')
           "
           [style.object-fit]="isVertical() ? 'cover' : 'contain'"
@@ -83,7 +83,7 @@ let activeToken: symbol | null = null;
       }
       @if (!hasPlayError()) {
         <div
-          [class]="'rk-video-slide-loader' + (isLoading() ? ' rk-visible' : '')"
+          [class]="'rk-reel-video-loader' + (isLoading() ? ' rk-visible' : '')"
         ></div>
       }
     </div>

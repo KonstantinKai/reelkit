@@ -2,12 +2,12 @@
 
 <p>
   <a href="https://www.npmjs.com/package/@reelkit/react-reel-player"><img src="https://img.shields.io/npm/v/@reelkit/react-reel-player?color=6366f1&label=npm" alt="npm" /></a>
-  <img src="https://img.shields.io/badge/gzip-4.4%20kB-6366f1" alt="Bundle size" />
+  <img src="https://img.shields.io/badge/gzip-4.2%20kB-6366f1" alt="Bundle size" />
   <img src="https://img.shields.io/badge/coverage-90%25-brightgreen" alt="Coverage" />
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
 
-Drop-in Instagram Reels / TikTok-style video player for React. Opens as a full-screen overlay with vertical swipe navigation. Handles video autoplay, sound continuity on iOS, and multi-media posts. ~4.4 kB gzip.
+Drop-in Instagram Reels / TikTok-style video player for React. Opens as a full-screen overlay with vertical swipe navigation. Handles video autoplay, sound continuity on iOS, and multi-media posts. ~4.2 kB gzip.
 
 **[Live Demo](https://react-demo.reelkit.dev/reel-player?utm_source=npm)**
 
@@ -224,23 +224,26 @@ function Gallery() {
 | `.rk-reel-overlay`                   | Overlay background                |
 | `.rk-reel-container`                 | Player container                  |
 | `.rk-reel-slide-wrapper`             | Slide wrapper                     |
-| `.rk-player-nav-arrows`              | Desktop nav arrows container      |
-| `.rk-player-nav-btn`                 | Individual nav arrow button       |
-| `.rk-player-close-btn`               | Close button                      |
-| `.rk-player-sound-btn`               | Sound toggle                      |
+| `.rk-reel-button`                    | Shared circular icon button       |
+| `.rk-reel-nav-arrows`                | Desktop nav arrows container      |
+| `.rk-reel-nav-button`                | Individual nav arrow button       |
+| `.rk-reel-close-btn`                 | Close button                      |
+| `.rk-reel-sound-btn`                 | Sound toggle                      |
 | `.rk-reel-slide-overlay`             | Per-slide overlay (author, likes) |
 | `.rk-reel-slide-overlay-author`      | Author row                        |
 | `.rk-reel-slide-overlay-avatar`      | Author avatar                     |
 | `.rk-reel-slide-overlay-name`        | Author name                       |
 | `.rk-reel-slide-overlay-description` | Slide description                 |
 | `.rk-reel-slide-overlay-likes`       | Like count                        |
-| `.rk-nested-slider-inner`            | Nested horizontal slider          |
-| `.rk-nested-nav`                     | Nested nav arrows                 |
-| `.rk-nested-indicator`               | Nested slider dot indicator       |
-| `.rk-video-slide-container`          | Video slide wrapper               |
-| `.rk-video-slide-element`            | Video element                     |
-| `.rk-video-slide-poster`             | Video poster image                |
-| `.rk-video-slide-loader`             | Video loading indicator           |
+| `.rk-reel-nested-nav`                | Nested nav arrows                 |
+| `.rk-reel-nested-nav-prev`           | Nested prev arrow                 |
+| `.rk-reel-nested-nav-next`           | Nested next arrow                 |
+| `.rk-reel-video-container`           | Video slide wrapper               |
+| `.rk-reel-video-element`             | Video element                     |
+| `.rk-reel-video-poster`              | Video poster image                |
+| `.rk-reel-media-error`               | Error state container             |
+| `.rk-reel-media-error-text`          | Error message text                |
+| `.rk-reel-loader`                    | Wave loading overlay              |
 
 ## Documentation
 

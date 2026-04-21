@@ -15,6 +15,9 @@ import {
  * Reusable close button rendered as an absolutely-positioned circular icon
  * in the top-right corner of the player.
  *
+ * Relies on shared styles from `@reelkit/angular-reel-player/styles.css`
+ * for the `.rk-reel-button` + `.rk-reel-close-btn` classes.
+ *
  * @example
  * ```html
  * <rk-close-button (clicked)="onClose()" />
@@ -34,38 +37,13 @@ import {
   ],
   template: `
     <button
-      class="rk-player-close-btn"
+      class="rk-reel-button rk-reel-close-btn"
       (click)="clicked.emit()"
       aria-label="Close player"
     >
       <lucide-angular [img]="XIcon" [size]="24" />
     </button>
   `,
-  styles: [
-    `
-      .rk-player-close-btn {
-        position: absolute;
-        top: 16px;
-        right: 16px;
-        z-index: 10;
-        width: 44px;
-        height: 44px;
-        border-radius: 50%;
-        background-color: rgba(0, 0, 0, 0.5);
-        border: none;
-        color: #fff;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: background-color 0.2s;
-      }
-
-      .rk-player-close-btn:hover {
-        background-color: rgba(0, 0, 0, 0.7);
-      }
-    `,
-  ],
 })
 export class RkCloseButtonComponent {
   readonly clicked = output<void>();

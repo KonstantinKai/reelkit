@@ -86,39 +86,6 @@ describe('PlayerControls', () => {
       expect(screen.getByLabelText('Unmute')).toBeTruthy();
     });
 
-    it('applies reduced opacity when soundDisabled', () => {
-      renderWithSound({
-        onClose: vi.fn(),
-        showSound: true,
-        soundDisabled: true,
-      });
-
-      const soundBtn = screen.getByLabelText('Unmute');
-      expect(soundBtn.style.opacity).toBe('0.4');
-    });
-
-    it('applies default cursor when soundDisabled', () => {
-      renderWithSound({
-        onClose: vi.fn(),
-        showSound: true,
-        soundDisabled: true,
-      });
-
-      const soundBtn = screen.getByLabelText('Unmute');
-      expect(soundBtn.style.cursor).toBe('default');
-    });
-
-    it('applies pointer cursor when not disabled', () => {
-      renderWithSound({
-        onClose: vi.fn(),
-        showSound: true,
-        soundDisabled: false,
-      });
-
-      const soundBtn = screen.getByLabelText('Unmute');
-      expect(soundBtn.style.cursor).toBe('pointer');
-    });
-
     it('sets aria-disabled attribute when soundDisabled', () => {
       renderWithSound({
         onClose: vi.fn(),

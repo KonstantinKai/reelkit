@@ -92,7 +92,7 @@ import {
         opacity: 1;
       }
 
-      .rk-media-error {
+      .rk-reel-media-error {
         position: absolute;
         inset: 0;
         z-index: 3;
@@ -104,7 +104,7 @@ import {
         color: rgba(255, 255, 255, 0.4);
       }
 
-      .rk-media-error-text {
+      .rk-reel-media-error-text {
         font-size: 13px;
         letter-spacing: 0.02em;
       }

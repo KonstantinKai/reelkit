@@ -224,7 +224,7 @@ const _kMobileBreakpointPx = 768;
               />
             } @else {
               <div
-                class="rk-media-error"
+                class="rk-reel-media-error"
                 role="img"
                 aria-label="Content unavailable"
               >
@@ -244,7 +244,9 @@ const _kMobileBreakpointPx = 768;
                   <polyline points="21 15 16 10 5 21" />
                   <line x1="4" y1="4" x2="20" y2="20" />
                 </svg>
-                <span class="rk-media-error-text">Content unavailable</span>
+                <span class="rk-reel-media-error-text"
+                  >Content unavailable</span
+                >
               </div>
             }
           } @else if (isLoading()) {
@@ -295,9 +297,9 @@ const _kMobileBreakpointPx = 768;
             }"
           />
         } @else {
-          <div class="rk-player-nav-arrows">
+          <div class="rk-reel-nav-arrows">
             <button
-              class="rk-player-nav-btn"
+              class="rk-reel-button rk-reel-nav-btn"
               (click)="onPrev()"
               aria-label="Previous slide"
               [disabled]="!loop() && activeIndex() === 0"
@@ -306,7 +308,7 @@ const _kMobileBreakpointPx = 768;
               <lucide-angular [img]="ChevronUpIcon" [size]="28" />
             </button>
             <button
-              class="rk-player-nav-btn"
+              class="rk-reel-button rk-reel-nav-btn"
               (click)="onNext()"
               aria-label="Next slide"
               [disabled]="!loop() && activeIndex() === content().length - 1"

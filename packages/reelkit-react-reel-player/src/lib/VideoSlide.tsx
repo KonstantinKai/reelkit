@@ -65,7 +65,7 @@ export interface VideoSlideProps {
 
 /** @internal */
 export const shared = createSharedVideo({
-  className: 'rk-video-slide-element',
+  className: 'rk-reel-video-element',
   disableRemotePlayback: true,
   disablePictureInPicture: true,
 });
@@ -193,8 +193,8 @@ const VideoSlide: React.FC<VideoSlideProps> = ({
       ref={containerRef}
       className={
         className
-          ? `rk-video-slide-container ${className}`
-          : 'rk-video-slide-container'
+          ? `rk-reel-video-container ${className}`
+          : 'rk-reel-video-container'
       }
       style={{
         width: size[0],
@@ -210,7 +210,7 @@ const VideoSlide: React.FC<VideoSlideProps> = ({
             <img
               src={posterSrc}
               alt=""
-              className={`rk-video-slide-poster ${!shouldPlay || showPoster.value ? 'rk-visible' : ''}`}
+              className={`rk-reel-video-poster ${!shouldPlay || showPoster.value ? 'rk-visible' : ''}`}
               style={{
                 objectFit: isVertical ? 'cover' : 'contain',
               }}

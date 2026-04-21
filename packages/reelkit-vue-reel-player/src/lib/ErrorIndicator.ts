@@ -11,7 +11,7 @@ export const ErrorIndicator = defineComponent({
       h(
         'div',
         {
-          class: 'rk-media-error',
+          class: 'rk-reel-media-error',
           role: 'img',
           'aria-label': 'Content unavailable',
         },
@@ -21,7 +21,11 @@ export const ErrorIndicator = defineComponent({
             strokeWidth: 1.5,
             'aria-hidden': 'true',
           }),
-          h('span', { class: 'rk-media-error-text' }, 'Content unavailable'),
+          h(
+            'span',
+            { class: 'rk-reel-media-error-text' },
+            'Content unavailable',
+          ),
         ],
       );
   },

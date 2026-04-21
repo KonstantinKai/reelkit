@@ -11,6 +11,7 @@ const PACKAGES_REQUIRING_CORE = new Set([
   '@reelkit/angular-reel-player',
   '@reelkit/angular-lightbox',
   '@reelkit/vue',
+  '@reelkit/vue-reel-player',
 ]);
 
 const PACKAGES_REQUIRING_REACT = new Set([
@@ -24,6 +25,8 @@ const PACKAGES_REQUIRING_ANGULAR = new Set([
   '@reelkit/angular-lightbox',
 ]);
 
+const PACKAGES_REQUIRING_VUE = new Set(['@reelkit/vue-reel-player']);
+
 export type ReelkitDeps = readonly string[];
 export type ExtraDeps = Readonly<Record<string, string>>;
 
@@ -36,6 +39,7 @@ function resolveDeps(
   for (const pkg of packages) {
     if (PACKAGES_REQUIRING_REACT.has(pkg)) names.add('@reelkit/react');
     if (PACKAGES_REQUIRING_ANGULAR.has(pkg)) names.add('@reelkit/angular');
+    if (PACKAGES_REQUIRING_VUE.has(pkg)) names.add('@reelkit/vue');
     if (PACKAGES_REQUIRING_CORE.has(pkg)) names.add('@reelkit/core');
   }
 

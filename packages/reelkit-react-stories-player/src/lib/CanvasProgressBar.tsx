@@ -61,16 +61,7 @@ export const CanvasProgressBar: FC<CanvasProgressBarProps> = ({
   }, [totalStories]);
 
   return (
-    <div
-      style={{
-        padding: '8px 8px 0',
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 10,
-      }}
-    >
+    <div className="rk-stories-progress-bar">
       <canvas ref={canvasRef} />
     </div>
   );

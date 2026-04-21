@@ -22,6 +22,7 @@ type DemoType =
   | 'custom-navigation'
   | 'custom-progress'
   | 'custom-loading-error'
+  | 'theming'
   | null;
 
 interface Demo {
@@ -60,6 +61,12 @@ const DEMOS: Demo[] = [
     title: 'Custom Loading / Error',
     description:
       'Uses renderLoading and renderError to replace default spinner and error icon. Includes a broken image story.',
+  },
+  {
+    id: 'theming',
+    title: 'Themed via CSS Tokens',
+    description:
+      'Rebrands the stories overlay by overriding --rk-stories-* CSS custom properties in a stylesheet. No component code changes.',
   },
 ];
 
@@ -562,6 +569,32 @@ function StoriesPlayerCustomPage() {
           </div>
         )}
       />
+
+      {/* Themed via CSS Tokens */}
+      {activeDemo === 'theming' && (
+        <>
+          <style>{`
+            .rk-stories-overlay {
+              --rk-stories-overlay-bg: #0f172a;
+              --rk-stories-container-radius: 24px;
+              --rk-stories-nav-bg: rgba(99, 102, 241, 0.35);
+              --rk-stories-nav-bg-hover: rgba(168, 85, 247, 0.65);
+              --rk-stories-top-shade-bg: linear-gradient(
+                to bottom,
+                rgba(99, 102, 241, 0.5) 0%,
+                transparent 100%
+              );
+              --rk-stories-header-name-fg: #fef3c7;
+              --rk-stories-ring-spin-duration: 2s;
+            }
+          `}</style>
+          <StoriesOverlay
+            isOpen
+            onClose={() => setActiveDemo(null)}
+            groups={groups}
+          />
+        </>
+      )}
     </div>
   );
 }

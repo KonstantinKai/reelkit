@@ -509,12 +509,12 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>(
                 <>{renderError({ item: currentItem, activeIndex: idx })}</>
               ) : (
                 <div
-                  className="rk-media-error"
+                  className="rk-reel-media-error"
                   role="img"
                   aria-label="Content unavailable"
                 >
                   <ImageOff size={48} strokeWidth={1.5} aria-hidden="true" />
-                  <span className="rk-media-error-text">
+                  <span className="rk-reel-media-error-text">
                     Content unavailable
                   </span>
                 </div>
@@ -589,39 +589,17 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>(
             );
           }
           return (
-            <div className="rk-player-nav-arrows">
+            <div className="rk-reel-nav-arrows">
               <button
                 onClick={handlePrev}
-                style={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: '50%',
-                  backgroundColor: 'rgba(255,255,255,0.1)',
-                  border: 'none',
-                  color: '#fff',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
+                className="rk-reel-button rk-reel-nav-button"
                 aria-label="Previous"
               >
                 <ChevronUp size={28} />
               </button>
               <button
                 onClick={handleNext}
-                style={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: '50%',
-                  backgroundColor: 'rgba(255,255,255,0.1)',
-                  border: 'none',
-                  color: '#fff',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
+                className="rk-reel-button rk-reel-nav-button"
                 aria-label="Next"
               >
                 <ChevronDown size={28} />

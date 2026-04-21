@@ -180,11 +180,19 @@ describe('StoryHeader', () => {
     expect(container.querySelector('.rk-stories-header-spinner')).toBeNull();
   });
 
-  it('applies opacity 0 when visible is false', () => {
+  it('marks the header hidden when visible is false', () => {
     const { container } = render(
       <StoryHeader author={author} onClose={vi.fn()} visible={false} />,
     );
     const header = container.querySelector('.rk-stories-header') as HTMLElement;
-    expect(header?.style.opacity).toBe('0');
+    expect(header?.classList.contains('rk-stories-header--hidden')).toBe(true);
+  });
+
+  it('does not add the hidden class when visible is true', () => {
+    const { container } = render(
+      <StoryHeader author={author} onClose={vi.fn()} visible />,
+    );
+    const header = container.querySelector('.rk-stories-header') as HTMLElement;
+    expect(header?.classList.contains('rk-stories-header--hidden')).toBe(false);
   });
 });

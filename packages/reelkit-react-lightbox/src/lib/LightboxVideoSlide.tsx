@@ -147,7 +147,6 @@ const LightboxVideoSlide: React.FC<LightboxVideoSlideProps> = ({
               src={posterSrc}
               alt=""
               className={`rk-lightbox-video-poster ${!isActive || showPoster.value ? 'rk-visible' : ''}`}
-              style={{ objectFit: 'contain' }}
             />
           );
         }}

@@ -29,7 +29,7 @@ import {
  * @internal
  */
 export const shared = createSharedVideo({
-  className: 'rk-video-slide-element',
+  className: 'rk-reel-video-element',
   disableRemotePlayback: true,
   disablePictureInPicture: true,
 });
@@ -224,7 +224,7 @@ export const VideoSlide = defineComponent({
         'div',
         {
           ref: containerRef,
-          class: 'rk-video-slide-container',
+          class: 'rk-reel-video-container',
           style: {
             width: `${props.size[0]}px`,
             height: `${props.size[1]}px`,
@@ -236,7 +236,7 @@ export const VideoSlide = defineComponent({
               h('img', {
                 src: posterSrc,
                 alt: '',
-                class: `rk-video-slide-poster${posterVisible ? ' rk-visible' : ''}`,
+                class: `rk-reel-video-poster${posterVisible ? ' rk-visible' : ''}`,
                 style: { objectFit: isVertical() ? 'cover' : 'contain' },
                 onError: (e: Event) => {
                   (e.target as HTMLImageElement).style.display = 'none';

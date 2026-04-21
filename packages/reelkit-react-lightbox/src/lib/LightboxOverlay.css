@@ -1,11 +1,77 @@
+/*
+ * Theme tokens for the lightbox overlay.
+ *
+ * Defaults live on `:root` so they inherit through the DOM. Override at
+ * `:root` (or any ancestor of `.rk-lightbox-container`) to retheme —
+ * direct-match declarations on `.rk-lightbox-container` would otherwise
+ * shadow inherited values.
+ */
+:root {
+  --rk-lightbox-overlay-bg: #000;
+  --rk-lightbox-overlay-z: 9999;
+
+  --rk-lightbox-ui-z: 10;
+  --rk-lightbox-top-shade-z: 9;
+  --rk-lightbox-top-shade-height: 80px;
+  --rk-lightbox-top-shade-bg: linear-gradient(rgba(0, 0, 0, 0.6), transparent);
+
+  --rk-lightbox-edge-padding: 16px;
+  --rk-lightbox-controls-gap: 12px;
+  --rk-lightbox-transition: 0.2s;
+  --rk-lightbox-blur: 8px;
+
+  --rk-lightbox-btn-bg: rgba(0, 0, 0, 0.5);
+  --rk-lightbox-btn-bg-hover: rgba(255, 255, 255, 0.2);
+  --rk-lightbox-btn-fg: #fff;
+  --rk-lightbox-btn-size: 36px;
+  --rk-lightbox-close-size: 40px;
+  --rk-lightbox-nav-size: 48px;
+  --rk-lightbox-nav-opacity: 0.7;
+
+  --rk-lightbox-counter-fg: #fff;
+  --rk-lightbox-counter-bg: rgba(0, 0, 0, 0.5);
+  --rk-lightbox-counter-size: 14px;
+  --rk-lightbox-counter-weight: 500;
+  --rk-lightbox-counter-padding: 6px 12px;
+  --rk-lightbox-counter-radius: 20px;
+
+  --rk-lightbox-spinner-size: 28px;
+  --rk-lightbox-spinner-track: rgba(255, 255, 255, 0.2);
+  --rk-lightbox-spinner-fg: #fff;
+  --rk-lightbox-spinner-duration: 0.8s;
+  --rk-lightbox-spinner-offset: 72px;
+
+  --rk-lightbox-error-fg: rgba(255, 255, 255, 0.4);
+  --rk-lightbox-error-gap: 12px;
+  --rk-lightbox-error-text-size: 13px;
+
+  --rk-lightbox-info-bg: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+  --rk-lightbox-info-padding: 24px;
+  --rk-lightbox-info-padding-with-hint: 64px;
+  --rk-lightbox-info-fg: #fff;
+  --rk-lightbox-title-size: 18px;
+  --rk-lightbox-title-weight: 600;
+  --rk-lightbox-title-gap: 8px;
+  --rk-lightbox-description-size: 14px;
+  --rk-lightbox-description-opacity: 0.8;
+  --rk-lightbox-description-line-height: 1.5;
+
+  --rk-lightbox-hint-fg: rgba(255, 255, 255, 0.5);
+  --rk-lightbox-hint-bg: rgba(0, 0, 0, 0.3);
+  --rk-lightbox-hint-size: 12px;
+  --rk-lightbox-hint-padding: 8px 16px;
+  --rk-lightbox-hint-radius: 20px;
+  --rk-lightbox-hint-duration: 3s;
+}
+
 .rk-lightbox-container {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #000;
-  z-index: 9999;
+  background-color: var(--rk-lightbox-overlay-bg);
+  z-index: var(--rk-lightbox-overlay-z);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -34,52 +100,52 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 80px;
-  background: linear-gradient(rgba(0, 0, 0, 0.6), transparent);
+  height: var(--rk-lightbox-top-shade-height);
+  background: var(--rk-lightbox-top-shade-bg);
   pointer-events: none;
-  z-index: 9;
+  z-index: var(--rk-lightbox-top-shade-z);
 }
 
 /* Top-left controls */
 .rk-lightbox-controls-left {
   position: absolute;
-  top: 16px;
-  left: 16px;
-  z-index: 10;
+  top: var(--rk-lightbox-edge-padding);
+  left: var(--rk-lightbox-edge-padding);
+  z-index: var(--rk-lightbox-ui-z);
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--rk-lightbox-controls-gap);
 }
 
 .rk-lightbox-counter {
-  color: #fff;
-  font-size: 14px;
-  font-weight: 500;
-  background: rgba(0, 0, 0, 0.5);
-  padding: 6px 12px;
-  border-radius: 20px;
-  backdrop-filter: blur(8px);
+  color: var(--rk-lightbox-counter-fg);
+  font-size: var(--rk-lightbox-counter-size);
+  font-weight: var(--rk-lightbox-counter-weight);
+  background: var(--rk-lightbox-counter-bg);
+  padding: var(--rk-lightbox-counter-padding);
+  border-radius: var(--rk-lightbox-counter-radius);
+  backdrop-filter: blur(var(--rk-lightbox-blur));
 }
 
 .rk-lightbox-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: var(--rk-lightbox-btn-size);
+  height: var(--rk-lightbox-btn-size);
   border: none;
-  background: rgba(0, 0, 0, 0.5);
-  color: #fff;
+  background: var(--rk-lightbox-btn-bg);
+  color: var(--rk-lightbox-btn-fg);
   border-radius: 50%;
   cursor: pointer;
   transition:
-    background-color 0.2s,
-    transform 0.2s;
-  backdrop-filter: blur(8px);
+    background-color var(--rk-lightbox-transition),
+    transform var(--rk-lightbox-transition);
+  backdrop-filter: blur(var(--rk-lightbox-blur));
 }
 
 .rk-lightbox-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--rk-lightbox-btn-bg-hover);
   transform: scale(1.05);
 }
 
@@ -91,14 +157,15 @@
 .rk-lightbox-spinner {
   position: absolute;
   top: 22px;
-  right: 72px;
-  z-index: 10;
-  width: 28px;
-  height: 28px;
-  border: 3px solid rgba(255, 255, 255, 0.2);
-  border-top-color: #fff;
+  right: var(--rk-lightbox-spinner-offset);
+  z-index: var(--rk-lightbox-ui-z);
+  width: var(--rk-lightbox-spinner-size);
+  height: var(--rk-lightbox-spinner-size);
+  border: 3px solid var(--rk-lightbox-spinner-track);
+  border-top-color: var(--rk-lightbox-spinner-fg);
   border-radius: 50%;
-  animation: rk-lightbox-spin 0.8s linear infinite;
+  animation: rk-lightbox-spin var(--rk-lightbox-spinner-duration) linear
+    infinite;
 }
 
 @keyframes rk-lightbox-spin {
@@ -113,44 +180,44 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  z-index: 10;
+  z-index: var(--rk-lightbox-ui-z);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  color: rgba(255, 255, 255, 0.4);
+  gap: var(--rk-lightbox-error-gap);
+  color: var(--rk-lightbox-error-fg);
 }
 
 .rk-lightbox-img-error-text {
-  font-size: 13px;
+  font-size: var(--rk-lightbox-error-text-size);
   letter-spacing: 0.02em;
 }
 
 /* Close button */
 .rk-lightbox-close {
   position: absolute;
-  top: 16px;
-  right: 16px;
-  z-index: 10;
+  top: var(--rk-lightbox-edge-padding);
+  right: var(--rk-lightbox-edge-padding);
+  z-index: var(--rk-lightbox-ui-z);
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: var(--rk-lightbox-close-size);
+  height: var(--rk-lightbox-close-size);
   border: none;
-  background: rgba(0, 0, 0, 0.5);
-  color: #fff;
+  background: var(--rk-lightbox-btn-bg);
+  color: var(--rk-lightbox-btn-fg);
   border-radius: 50%;
   cursor: pointer;
   transition:
-    background-color 0.2s,
-    transform 0.2s;
-  backdrop-filter: blur(8px);
+    background-color var(--rk-lightbox-transition),
+    transform var(--rk-lightbox-transition);
+  backdrop-filter: blur(var(--rk-lightbox-blur));
 }
 
 .rk-lightbox-close:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--rk-lightbox-btn-bg-hover);
   transform: scale(1.05);
 }
 
@@ -163,27 +230,27 @@
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  z-index: 10;
+  z-index: var(--rk-lightbox-ui-z);
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
+  width: var(--rk-lightbox-nav-size);
+  height: var(--rk-lightbox-nav-size);
   border: none;
-  background: rgba(0, 0, 0, 0.5);
-  color: #fff;
+  background: var(--rk-lightbox-btn-bg);
+  color: var(--rk-lightbox-btn-fg);
   border-radius: 50%;
   cursor: pointer;
   transition:
-    background-color 0.2s,
-    transform 0.2s,
-    opacity 0.2s;
-  backdrop-filter: blur(8px);
-  opacity: 0.7;
+    background-color var(--rk-lightbox-transition),
+    transform var(--rk-lightbox-transition),
+    opacity var(--rk-lightbox-transition);
+  backdrop-filter: blur(var(--rk-lightbox-blur));
+  opacity: var(--rk-lightbox-nav-opacity);
 }
 
 .rk-lightbox-nav:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--rk-lightbox-btn-bg-hover);
   opacity: 1;
   transform: translateY(-50%) scale(1.05);
 }
@@ -193,11 +260,11 @@
 }
 
 .rk-lightbox-nav-prev {
-  left: 16px;
+  left: var(--rk-lightbox-edge-padding);
 }
 
 .rk-lightbox-nav-next {
-  right: 16px;
+  right: var(--rk-lightbox-edge-padding);
 }
 
 /* Image info */
@@ -206,23 +273,23 @@
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 24px;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
-  color: #fff;
+  padding: var(--rk-lightbox-info-padding);
+  background: var(--rk-lightbox-info-bg);
+  color: var(--rk-lightbox-info-fg);
   pointer-events: none;
 }
 
 .rk-lightbox-title {
-  margin: 0 0 8px 0;
-  font-size: 18px;
-  font-weight: 600;
+  margin: 0 0 var(--rk-lightbox-title-gap) 0;
+  font-size: var(--rk-lightbox-title-size);
+  font-weight: var(--rk-lightbox-title-weight);
 }
 
 .rk-lightbox-description {
   margin: 0;
-  font-size: 14px;
-  opacity: 0.8;
-  line-height: 1.5;
+  font-size: var(--rk-lightbox-description-size);
+  opacity: var(--rk-lightbox-description-opacity);
+  line-height: var(--rk-lightbox-description-line-height);
 }
 
 /* Swipe hint (mobile) */
@@ -231,14 +298,15 @@
   bottom: 24px;
   left: 50%;
   transform: translateX(-50%);
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 12px;
-  padding: 8px 16px;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 20px;
-  backdrop-filter: blur(8px);
+  color: var(--rk-lightbox-hint-fg);
+  font-size: var(--rk-lightbox-hint-size);
+  padding: var(--rk-lightbox-hint-padding);
+  background: var(--rk-lightbox-hint-bg);
+  border-radius: var(--rk-lightbox-hint-radius);
+  backdrop-filter: blur(var(--rk-lightbox-blur));
   pointer-events: none;
-  animation: rk-lightboxFadeInOut 3s ease-in-out forwards;
+  animation: rk-lightboxFadeInOut var(--rk-lightbox-hint-duration) ease-in-out
+    forwards;
 }
 
 @keyframes rk-lightboxFadeInOut {
@@ -258,5 +326,5 @@
 
 /* Adjust info position when swipe hint is visible */
 .rk-lightbox-container:has(.rk-lightbox-swipe-hint) .rk-lightbox-info {
-  padding-bottom: 64px;
+  padding-bottom: var(--rk-lightbox-info-padding-with-hint);
 }

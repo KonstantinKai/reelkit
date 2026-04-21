@@ -53,10 +53,10 @@ describe('ImageStorySlide', () => {
     expect(img.style.aspectRatio).toBe('0.75');
   });
 
-  it('sets object-fit to cover', () => {
+  it('applies the shared stories image class', () => {
     const { container } = render(<ImageStorySlide src="test.jpg" />);
     const img = container.querySelector('img')!;
-    expect(img.style.objectFit).toBe('cover');
+    expect(img.classList.contains('rk-stories-image')).toBe(true);
   });
 
   it('sets draggable to false', () => {

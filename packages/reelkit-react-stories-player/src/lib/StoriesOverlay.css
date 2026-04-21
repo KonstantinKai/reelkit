@@ -1,8 +1,59 @@
+/*
+ * Theme tokens for the stories-player overlay.
+ *
+ * Defaults live on `:root` so they inherit through the DOM. Override at
+ * `:root` (or any ancestor of `.rk-stories-overlay`) to retheme —
+ * direct-match declarations on `.rk-stories-overlay` would otherwise shadow
+ * inherited values.
+ */
+:root {
+  --rk-stories-overlay-bg: #000;
+  --rk-stories-overlay-z: 9999;
+
+  --rk-stories-swipe-gap: 16px;
+  --rk-stories-container-radius: 12px;
+  --rk-stories-container-radius-mobile: 0;
+
+  --rk-stories-ui-z: 15;
+  --rk-stories-ui-transition: 200ms;
+  --rk-stories-top-shade-height: 120px;
+  --rk-stories-top-shade-bg: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.5) 0%,
+    transparent 100%
+  );
+
+  --rk-stories-error-z: 5;
+  --rk-stories-error-bg: linear-gradient(
+    145deg,
+    #1a1a2e 0%,
+    #16213e 50%,
+    #0f3460 100%
+  );
+  --rk-stories-error-fg: rgba(255, 255, 255, 0.5);
+  --rk-stories-error-gap: 12px;
+  --rk-stories-error-text-size: 13px;
+
+  --rk-stories-nav-z: 20;
+  --rk-stories-nav-size: 44px;
+  --rk-stories-nav-bg: rgba(255, 255, 255, 0.1);
+  --rk-stories-nav-bg-hover: rgba(255, 255, 255, 0.2);
+  --rk-stories-nav-fg: rgba(255, 255, 255, 0.7);
+  --rk-stories-nav-fg-hover: #fff;
+  --rk-stories-nav-transition: 150ms;
+
+  --rk-stories-video-bg: #000;
+  --rk-stories-video-poster-transition: 200ms;
+
+  --rk-stories-progress-bar-z: 10;
+  --rk-stories-progress-bar-padding: 8px 8px 0;
+}
+
 .rk-stories-overlay {
   position: fixed;
   inset: 0;
-  background: #000;
-  z-index: 9999;
+  background: var(--rk-stories-overlay-bg);
+  z-index: var(--rk-stories-overlay-z);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -15,14 +66,14 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 16px;
+  gap: var(--rk-stories-swipe-gap);
 }
 
 .rk-stories-container {
   position: relative;
   overflow: hidden;
   touch-action: none;
-  border-radius: 12px;
+  border-radius: var(--rk-stories-container-radius);
 }
 
 .rk-stories-slide-wrapper {
@@ -30,12 +81,20 @@
   overflow: hidden;
 }
 
+.rk-stories-story {
+  position: relative;
+}
+
 .rk-stories-ui-layer {
   position: absolute;
   inset: 0;
-  z-index: 15;
+  z-index: var(--rk-stories-ui-z);
   pointer-events: none;
-  transition: opacity 200ms ease;
+  transition: opacity var(--rk-stories-ui-transition) ease;
+}
+
+.rk-stories-ui-layer--hidden {
+  opacity: 0;
 }
 
 .rk-stories-ui-layer::before {
@@ -44,12 +103,8 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 120px;
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.5) 0%,
-    transparent 100%
-  );
+  height: var(--rk-stories-top-shade-height);
+  background: var(--rk-stories-top-shade-bg);
   pointer-events: none;
   z-index: -1;
 }
@@ -57,43 +112,80 @@
 .rk-stories-error {
   position: absolute;
   inset: 0;
-  z-index: 5;
+  z-index: var(--rk-stories-error-z);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  color: rgba(255, 255, 255, 0.5);
-  background: linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  gap: var(--rk-stories-error-gap);
+  color: var(--rk-stories-error-fg);
+  background: var(--rk-stories-error-bg);
   pointer-events: none;
 }
 
 .rk-stories-error-text {
-  font-size: 13px;
+  font-size: var(--rk-stories-error-text-size);
   letter-spacing: 0.02em;
 }
 
 .rk-stories-nav-btn {
   display: none;
-  z-index: 20;
-  width: 44px;
-  height: 44px;
+  z-index: var(--rk-stories-nav-z);
+  width: var(--rk-stories-nav-size);
+  height: var(--rk-stories-nav-size);
   border-radius: 50%;
   border: none;
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.7);
+  background: var(--rk-stories-nav-bg);
+  color: var(--rk-stories-nav-fg);
   cursor: pointer;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   transition:
-    background 150ms,
-    color 150ms;
+    background var(--rk-stories-nav-transition),
+    color var(--rk-stories-nav-transition);
 }
 
 .rk-stories-nav-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  color: #fff;
+  background: var(--rk-stories-nav-bg-hover);
+  color: var(--rk-stories-nav-fg-hover);
+}
+
+.rk-stories-video {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background: var(--rk-stories-video-bg);
+}
+
+.rk-stories-video-poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--rk-stories-video-poster-transition) ease;
+}
+
+.rk-stories-video-poster--visible {
+  opacity: 1;
+}
+
+.rk-stories-image {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}
+
+.rk-stories-progress-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--rk-stories-progress-bar-z);
+  padding: var(--rk-stories-progress-bar-padding);
 }
 
 @media (min-width: 769px) {
@@ -104,6 +196,6 @@
 
 @media (max-width: 768px) {
   .rk-stories-container {
-    border-radius: 0;
+    border-radius: var(--rk-stories-container-radius-mobile);
   }
 }

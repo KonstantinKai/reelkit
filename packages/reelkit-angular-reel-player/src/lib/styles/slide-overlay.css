@@ -1,43 +1,66 @@
+/*
+ * Theme tokens for the slide caption overlay.
+ * Override at :root or any ancestor of `.rk-reel-slide-overlay`.
+ */
+:root {
+  --rk-reel-slide-overlay-padding: 48px 16px 16px;
+  --rk-reel-slide-overlay-bg: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+  --rk-reel-slide-overlay-z: 5;
+  --rk-reel-slide-overlay-gap: 8px;
+  --rk-reel-slide-overlay-author-gap: 8px;
+  --rk-reel-slide-overlay-avatar-size: 32px;
+  --rk-reel-slide-overlay-name-color: #fff;
+  --rk-reel-slide-overlay-name-size: 14px;
+  --rk-reel-slide-overlay-name-weight: 600;
+  --rk-reel-slide-overlay-description-color: rgba(255, 255, 255, 0.9);
+  --rk-reel-slide-overlay-description-size: 13px;
+  --rk-reel-slide-overlay-description-line-height: 1.4;
+  --rk-reel-slide-overlay-description-line-clamp: 2;
+  --rk-reel-slide-overlay-likes-color: rgba(255, 255, 255, 0.8);
+  --rk-reel-slide-overlay-likes-size: 13px;
+  --rk-reel-slide-overlay-likes-gap: 6px;
+}
+
 .rk-reel-slide-overlay {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 48px 16px 16px;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+  padding: var(--rk-reel-slide-overlay-padding);
+  background: var(--rk-reel-slide-overlay-bg);
   pointer-events: none;
-  z-index: 5;
+  z-index: var(--rk-reel-slide-overlay-z);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--rk-reel-slide-overlay-gap);
 }
 
 .rk-reel-slide-overlay-author {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--rk-reel-slide-overlay-author-gap);
 }
 
 .rk-reel-slide-overlay-avatar {
-  width: 32px;
-  height: 32px;
+  width: var(--rk-reel-slide-overlay-avatar-size);
+  height: var(--rk-reel-slide-overlay-avatar-size);
   border-radius: 50%;
   object-fit: cover;
 }
 
 .rk-reel-slide-overlay-name {
-  color: #fff;
-  font-size: 14px;
-  font-weight: 600;
+  color: var(--rk-reel-slide-overlay-name-color);
+  font-size: var(--rk-reel-slide-overlay-name-size);
+  font-weight: var(--rk-reel-slide-overlay-name-weight);
 }
 
 .rk-reel-slide-overlay-description {
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 13px;
-  line-height: 1.4;
+  color: var(--rk-reel-slide-overlay-description-color);
+  font-size: var(--rk-reel-slide-overlay-description-size);
+  line-height: var(--rk-reel-slide-overlay-description-line-height);
   margin: 0;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: var(--rk-reel-slide-overlay-description-line-clamp);
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -45,7 +68,7 @@
 .rk-reel-slide-overlay-likes {
   display: flex;
   align-items: center;
-  gap: 6px;
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 13px;
+  gap: var(--rk-reel-slide-overlay-likes-gap);
+  color: var(--rk-reel-slide-overlay-likes-color);
+  font-size: var(--rk-reel-slide-overlay-likes-size);
 }

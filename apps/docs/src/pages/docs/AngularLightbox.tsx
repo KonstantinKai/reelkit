@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { Callout } from '../../components/ui/Callout';
 import { CodeBlock } from '../../components/ui/CodeBlock';
 import { Sandbox } from '../../components/ui/Sandbox';
@@ -242,93 +243,305 @@ const lifecycleCallbacks = [
 ];
 
 const cssClasses = [
+  // Overlay
   {
     className: '.rk-lightbox-container',
-    description: 'Root container',
+    component: 'Overlay',
+    description: 'Root container (full-screen backdrop)',
   },
   {
-    className: '.rk-lightbox-close',
-    description: 'Close button',
+    className: '.rk-lightbox-top-shade',
+    component: 'Overlay',
+    description: 'Top gradient scrim behind controls',
   },
   {
-    className: '.rk-lightbox-nav',
-    description: 'Navigation arrows (both)',
+    className: '.rk-lightbox-spinner',
+    component: 'Overlay',
+    description: 'Default loading spinner',
   },
   {
-    className: '.rk-lightbox-nav-prev',
-    description: 'Previous arrow',
+    className: '.rk-lightbox-img-error',
+    component: 'Overlay',
+    description: 'Error state container (broken image)',
   },
   {
-    className: '.rk-lightbox-nav-next',
-    description: 'Next arrow',
+    className: '.rk-lightbox-img-error-text',
+    component: 'Overlay',
+    description: 'Error state text label',
   },
   {
-    className: '.rk-lightbox-counter',
-    description: 'Image counter',
+    className: '.rk-lightbox-swipe-hint',
+    component: 'Overlay',
+    description: 'Mobile swipe hint',
   },
+  {
+    className: '.rk-lightbox-empty',
+    component: 'Overlay',
+    description: 'Empty state text',
+  },
+
+  // Controls
   {
     className: '.rk-lightbox-controls-left',
+    component: 'Controls',
     description: 'Top-left controls container',
   },
   {
     className: '.rk-lightbox-btn',
-    description: 'Control buttons (fullscreen)',
+    component: 'Controls',
+    description: 'Control button (fullscreen, etc.)',
   },
   {
+    className: '.rk-lightbox-close',
+    component: 'Controls',
+    description: 'Close button',
+  },
+  {
+    className: '.rk-lightbox-counter',
+    component: 'Controls',
+    description: 'Image counter chip',
+  },
+
+  // Navigation
+  {
+    className: '.rk-lightbox-nav',
+    component: 'Navigation',
+    description: 'Navigation arrow (both prev and next)',
+  },
+  {
+    className: '.rk-lightbox-nav-prev',
+    component: 'Navigation',
+    description: 'Previous arrow',
+  },
+  {
+    className: '.rk-lightbox-nav-next',
+    component: 'Navigation',
+    description: 'Next arrow',
+  },
+
+  // Info
+  {
     className: '.rk-lightbox-info',
-    description: 'Title/description container',
+    component: 'Info',
+    description: 'Title / description container',
   },
   {
     className: '.rk-lightbox-title',
+    component: 'Info',
     description: 'Image title',
   },
   {
     className: '.rk-lightbox-description',
+    component: 'Info',
     description: 'Image description',
   },
-  {
-    className: '.rk-lightbox-swipe-hint',
-    description: 'Mobile swipe hint',
-  },
+
+  // Slide
   {
     className: '.rk-lightbox-slide',
+    component: 'Slide',
     description: 'Slide container',
   },
   {
     className: '.rk-lightbox-img',
+    component: 'Slide',
     description: 'Image element',
   },
-  {
-    className: '.rk-lightbox-spinner',
-    description: 'Loading spinner overlay',
-  },
-  {
-    className: '.rk-lightbox-img-error',
-    description: 'Error icon container',
-  },
-  {
-    className: '.rk-lightbox-img-error-text',
-    description: 'Error message text',
-  },
-  {
-    className: '.rk-lightbox-shade',
-    description: 'Top gradient shade for control visibility',
-  },
+
+  // VideoSlide
   {
     className: '.rk-lightbox-video-container',
+    component: 'VideoSlide',
     description: 'Video slide container (opt-in)',
   },
   {
     className: '.rk-lightbox-video-element',
+    component: 'VideoSlide',
     description: 'Video element (opt-in)',
   },
   {
     className: '.rk-lightbox-video-poster',
+    component: 'VideoSlide',
     description: 'Video poster image (opt-in)',
   },
   {
-    className: '.rk-lightbox-video-loader',
-    description: 'Video loading shimmer (opt-in)',
+    className: '.rk-lightbox-video-error',
+    component: 'VideoSlide',
+    description: 'Video error state container',
+  },
+];
+
+const themeTokens = [
+  // Overlay
+  {
+    token: '--rk-lightbox-overlay-bg',
+    default: '#000',
+    controls: 'Full-screen backdrop color',
+  },
+  {
+    token: '--rk-lightbox-overlay-z',
+    default: '9999',
+    controls: 'Overlay z-index',
+  },
+
+  // Top shade
+  {
+    token: '--rk-lightbox-top-shade-height',
+    default: '80px',
+    controls: 'Top gradient scrim height',
+  },
+  {
+    token: '--rk-lightbox-top-shade-bg',
+    default: 'linear-gradient(rgba(0,0,0,0.6), transparent)',
+    controls: 'Top gradient scrim color',
+  },
+
+  // Layout
+  {
+    token: '--rk-lightbox-edge-padding',
+    default: '16px',
+    controls: 'Edge inset for close / nav / top-left controls',
+  },
+  {
+    token: '--rk-lightbox-controls-gap',
+    default: '12px',
+    controls: 'Gap between top-left controls',
+  },
+  {
+    token: '--rk-lightbox-transition',
+    default: '0.2s',
+    controls: 'Button hover transition duration',
+  },
+  {
+    token: '--rk-lightbox-blur',
+    default: '8px',
+    controls: 'Backdrop blur radius for buttons / chips',
+  },
+
+  // Shared button colors
+  {
+    token: '--rk-lightbox-btn-bg',
+    default: 'rgba(0, 0, 0, 0.5)',
+    controls: 'Default background for close, nav, small buttons',
+  },
+  {
+    token: '--rk-lightbox-btn-bg-hover',
+    default: 'rgba(255, 255, 255, 0.2)',
+    controls: 'Hover background for close, nav, small buttons',
+  },
+  {
+    token: '--rk-lightbox-btn-fg',
+    default: '#fff',
+    controls: 'Icon color for close, nav, small buttons',
+  },
+
+  // Button sizes
+  {
+    token: '--rk-lightbox-btn-size',
+    default: '36px',
+    controls: 'Small button size (fullscreen toggle, etc.)',
+  },
+  {
+    token: '--rk-lightbox-close-size',
+    default: '40px',
+    controls: 'Close button size',
+  },
+  {
+    token: '--rk-lightbox-nav-size',
+    default: '48px',
+    controls: 'Prev/next arrow size',
+  },
+  {
+    token: '--rk-lightbox-nav-opacity',
+    default: '0.7',
+    controls: 'Idle opacity of prev/next arrows',
+  },
+
+  // Counter
+  {
+    token: '--rk-lightbox-counter-fg',
+    default: '#fff',
+    controls: 'Counter text color',
+  },
+  {
+    token: '--rk-lightbox-counter-bg',
+    default: 'rgba(0, 0, 0, 0.5)',
+    controls: 'Counter chip background',
+  },
+  {
+    token: '--rk-lightbox-counter-size',
+    default: '14px',
+    controls: 'Counter font size',
+  },
+  {
+    token: '--rk-lightbox-counter-padding',
+    default: '6px 12px',
+    controls: 'Counter chip padding',
+  },
+  {
+    token: '--rk-lightbox-counter-radius',
+    default: '20px',
+    controls: 'Counter chip border-radius',
+  },
+
+  // Spinner
+  {
+    token: '--rk-lightbox-spinner-size',
+    default: '28px',
+    controls: 'Default spinner width/height',
+  },
+  {
+    token: '--rk-lightbox-spinner-duration',
+    default: '0.8s',
+    controls: 'Spinner rotation duration',
+  },
+
+  // Error
+  {
+    token: '--rk-lightbox-error-fg',
+    default: 'rgba(255, 255, 255, 0.4)',
+    controls: 'Error icon + text color',
+  },
+
+  // Info (bottom caption)
+  {
+    token: '--rk-lightbox-info-bg',
+    default: 'linear-gradient(transparent, rgba(0,0,0,0.8))',
+    controls: 'Caption scrim gradient',
+  },
+  {
+    token: '--rk-lightbox-info-padding',
+    default: '24px',
+    controls: 'Caption inner padding',
+  },
+  {
+    token: '--rk-lightbox-title-size',
+    default: '18px',
+    controls: 'Title font size',
+  },
+  {
+    token: '--rk-lightbox-description-size',
+    default: '14px',
+    controls: 'Description font size',
+  },
+
+  // Swipe hint (mobile)
+  {
+    token: '--rk-lightbox-hint-fg',
+    default: 'rgba(255, 255, 255, 0.5)',
+    controls: 'Swipe hint text color',
+  },
+  {
+    token: '--rk-lightbox-hint-bg',
+    default: 'rgba(0, 0, 0, 0.3)',
+    controls: 'Swipe hint chip background',
+  },
+
+  // Video slide (opt-in)
+  {
+    token: '--rk-lightbox-video-bg',
+    default: '#000',
+    controls: 'Letterbox background behind <video>',
   },
 ];
 
@@ -1168,13 +1381,20 @@ export class AppComponent {
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">CSS Classes</h2>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
-          All CSS classes are plain (not CSS modules), so they can be overridden
-          with higher-specificity selectors or in a custom stylesheet loaded
-          after{' '}
+          All CSS classes are plain (not scoped), so they can be targeted with
+          higher-specificity selectors in a stylesheet loaded after{' '}
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
             @reelkit/angular-lightbox/styles.css
           </code>
-          .
+          . For color, size, and z-index changes, prefer the CSS custom
+          properties documented in the{' '}
+          <Link
+            to={{ hash: '#theming' }}
+            className="text-primary-500 hover:text-primary-600 font-medium"
+          >
+            Theming
+          </Link>{' '}
+          section below.
         </p>
 
         <div className="overflow-x-auto mb-6">
@@ -1182,6 +1402,7 @@ export class AppComponent {
             <thead>
               <tr className="border-b border-slate-200 dark:border-slate-700">
                 <th className="text-left py-3 px-4 font-semibold">Class</th>
+                <th className="text-left py-3 px-4 font-semibold">Component</th>
                 <th className="text-left py-3 px-4 font-semibold">
                   Description
                 </th>
@@ -1196,7 +1417,10 @@ export class AppComponent {
                   <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
                     {c.className}
                   </td>
-                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
+                  <td className="py-3 px-4 text-slate-500 text-sm">
+                    {c.component}
+                  </td>
+                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
                     {c.description}
                   </td>
                 </tr>
@@ -1204,25 +1428,73 @@ export class AppComponent {
             </tbody>
           </table>
         </div>
+      </section>
+
+      {/* Theming */}
+      <section id="theming" className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">Theming</h2>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Every color, size, z-index, and transition lives in a CSS custom
+          property. Override one or many at{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            :root
+          </code>{' '}
+          (or any ancestor of the lightbox) to retheme without touching
+          component source. The tokens match the React lightbox, so overrides
+          port between bindings.
+        </p>
+
+        <div className="overflow-x-auto mb-6">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left py-3 px-4 font-semibold">Token</th>
+                <th className="text-left py-3 px-4 font-semibold">Default</th>
+                <th className="text-left py-3 px-4 font-semibold">Controls</th>
+              </tr>
+            </thead>
+            <tbody>
+              {themeTokens.map((t) => (
+                <tr
+                  key={t.token}
+                  className="border-b border-slate-100 dark:border-slate-800"
+                >
+                  <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                    {t.token}
+                  </td>
+                  <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                    {t.default}
+                  </td>
+                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                    {t.controls}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <p className="text-slate-600 dark:text-slate-400 mb-3">
+          Drop the snippet below into a stylesheet loaded after{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            @reelkit/angular-lightbox/styles.css
+          </code>
+          .
+        </p>
 
         <CodeBlock
-          code={`/* Custom close button */
-.rk-lightbox-close {
-  background: rgba(255, 0, 0, 0.5);
-  border-radius: 8px;
-}
-
-/* Custom navigation arrows */
-.rk-lightbox-nav {
-  background: rgba(255, 255, 255, 0.3);
-  width: 60px;
-  height: 60px;
-}
-
-/* Custom spinner */
-.rk-lightbox-spinner {
-  border-color: rgba(255, 255, 255, 0.2);
-  border-top-color: #fff;
+          code={`/* Brand the lightbox */
+:root {
+  --rk-lightbox-overlay-bg: #0f172a;
+  --rk-lightbox-btn-bg: rgba(99, 102, 241, 0.65);
+  --rk-lightbox-btn-bg-hover: rgba(168, 85, 247, 0.85);
+  --rk-lightbox-nav-size: 56px;
+  --rk-lightbox-counter-bg: rgba(99, 102, 241, 0.65);
+  --rk-lightbox-info-bg: linear-gradient(
+    transparent,
+    rgba(99, 102, 241, 0.55) 60%,
+    rgba(168, 85, 247, 0.85)
+  );
 }`}
           language="css"
         />

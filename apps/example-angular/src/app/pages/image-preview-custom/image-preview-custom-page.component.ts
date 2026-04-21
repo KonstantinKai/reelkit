@@ -20,6 +20,7 @@ type DemoType =
   | 'custom-slide'
   | 'custom-navigation'
   | 'custom-loading-error'
+  | 'theming'
   | null;
 
 interface Demo {
@@ -58,6 +59,12 @@ const DEMOS: Demo[] = [
     title: 'Custom Loading / Error',
     description:
       'Uses rkLightboxLoading and rkLightboxError to replace default spinner and error icon. Includes a broken image.',
+  },
+  {
+    id: 'theming',
+    title: 'Themed via CSS Tokens',
+    description:
+      'Rebrands the lightbox by overriding --rk-lightbox-* CSS custom properties in a stylesheet. No component code changes.',
   },
 ];
 
@@ -109,6 +116,22 @@ const sampleImages: LightboxItem[] = [
     RkCloseButtonComponent,
     RkCounterComponent,
     RkFullscreenButtonComponent,
+  ],
+  styles: [
+    `
+      .themed-lightbox {
+        --rk-lightbox-overlay-bg: #0f172a;
+        --rk-lightbox-btn-bg: rgba(99, 102, 241, 0.65);
+        --rk-lightbox-btn-bg-hover: rgba(168, 85, 247, 0.85);
+        --rk-lightbox-nav-size: 56px;
+        --rk-lightbox-counter-bg: rgba(99, 102, 241, 0.65);
+        --rk-lightbox-info-bg: linear-gradient(
+          transparent,
+          rgba(99, 102, 241, 0.55) 60%,
+          rgba(168, 85, 247, 0.85)
+        );
+      }
+    `,
   ],
   template: `
     <div
@@ -448,6 +471,17 @@ const sampleImages: LightboxItem[] = [
           </div>
         </ng-template>
       </rk-lightbox-overlay>
+
+      @if (activeDemo() === 'theming') {
+        <div class="themed-lightbox">
+          <rk-lightbox-overlay
+            [isOpen]="true"
+            [items]="images"
+            [initialIndex]="0"
+            (closed)="activeDemo.set(null)"
+          />
+        </div>
+      }
 
       <rk-lightbox-overlay
         [isOpen]="activeDemo() === 'custom-loading-error'"

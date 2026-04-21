@@ -1,39 +1,57 @@
+/*
+ * Theme tokens for the nested horizontal slider arrows.
+ * Override at :root or any ancestor of `.rk-reel-nested-nav`.
+ */
+:root {
+  --rk-reel-nested-z: 10;
+  --rk-reel-nested-button-size: 36px;
+  --rk-reel-nested-button-bg: rgba(0, 0, 0, 0.5);
+  --rk-reel-nested-button-bg-hover: rgba(255, 255, 255, 0.2);
+  --rk-reel-nested-button-fg: #fff;
+  --rk-reel-nested-button-opacity: 0.7;
+  --rk-reel-nested-edge-padding: 12px;
+  --rk-reel-nested-transition: 0.2s;
+  --rk-reel-nested-blur: 8px;
+}
+
 /* Nested slider navigation arrows - desktop only */
-.rk-nested-nav {
+.rk-reel-nested-nav {
   display: none;
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  z-index: 10;
-  width: 36px;
-  height: 36px;
+  z-index: var(--rk-reel-nested-z);
+  width: var(--rk-reel-nested-button-size);
+  height: var(--rk-reel-nested-button-size);
   border: none;
-  background: rgba(0, 0, 0, 0.5);
-  color: #fff;
+  background: var(--rk-reel-nested-button-bg);
+  color: var(--rk-reel-nested-button-fg);
   border-radius: 50%;
   cursor: pointer;
   align-items: center;
   justify-content: center;
-  opacity: 0.7;
-  transition: opacity 0.2s, background-color 0.2s;
-  backdrop-filter: blur(8px);
+  opacity: var(--rk-reel-nested-button-opacity);
+  transition:
+    opacity var(--rk-reel-nested-transition),
+    background-color var(--rk-reel-nested-transition);
+  backdrop-filter: blur(var(--rk-reel-nested-blur));
 }
 
-.rk-nested-nav:hover {
-  background: rgba(255, 255, 255, 0.2);
+.rk-reel-nested-nav:hover {
+  background: var(--rk-reel-nested-button-bg-hover);
   opacity: 1;
 }
 
-.rk-nested-nav-prev {
-  left: 12px;
+.rk-reel-nested-nav-prev {
+  left: var(--rk-reel-nested-edge-padding);
 }
 
-.rk-nested-nav-next {
-  right: 12px;
+.rk-reel-nested-nav-next {
+  right: var(--rk-reel-nested-edge-padding);
 }
 
 @media (min-width: 768px) {
-  .rk-nested-nav {
+  .rk-reel-nested-nav {
     display: flex;
   }
 }

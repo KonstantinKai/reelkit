@@ -65,7 +65,7 @@ import type {
   ],
   template: `
     <div
-      class="rk-nested-slider-inner"
+      class="rk-reel-nested-slider-inner"
       role="region"
       aria-label="Media carousel"
       [style.width.px]="width()"
@@ -78,7 +78,7 @@ import type {
         [loop]="false"
         [enableNavKeys]="true"
         [enableWheel]="enableWheel()"
-        [class.rk-nested-active]="isActive()"
+        [class.rk-reel-nested-active]="isActive()"
         (apiReady)="onInnerApiReady($event)"
         (beforeChange)="onBeforeChange()"
         (afterChange)="onAfterChange($event)"
@@ -132,7 +132,7 @@ import type {
       </rk-reel>
 
       @if (media().length > 1) {
-        <div class="rk-nested-indicator">
+        <div class="rk-reel-nested-indicator">
           <rk-reel-indicator
             [count]="media().length"
             [active]="innerActiveIndex()"
@@ -163,7 +163,7 @@ import type {
         } @else {
           @if (innerActiveIndex() > 0) {
             <button
-              class="rk-nested-nav rk-nested-nav-prev"
+              class="rk-reel-nested-nav rk-reel-nested-nav-prev"
               (click)="onPrev()"
               aria-label="Previous media"
             >
@@ -172,7 +172,7 @@ import type {
           }
           @if (innerActiveIndex() < media().length - 1) {
             <button
-              class="rk-nested-nav rk-nested-nav-next"
+              class="rk-reel-nested-nav rk-reel-nested-nav-next"
               (click)="onNext()"
               aria-label="Next media"
             >

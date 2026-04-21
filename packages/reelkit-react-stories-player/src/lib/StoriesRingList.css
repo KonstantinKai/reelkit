@@ -1,8 +1,19 @@
+/*
+ * Theme tokens for the horizontal list of story rings.
+ * Override at :root or any ancestor of `.rk-stories-ring-list`.
+ */
+:root {
+  --rk-stories-ring-list-gap: 12px;
+  --rk-stories-ring-list-padding: 12px;
+  --rk-stories-ring-list-item-gap: 4px;
+  --rk-stories-ring-list-name-size: 12px;
+}
+
 .rk-stories-ring-list {
   display: flex;
-  gap: 12px;
+  gap: var(--rk-stories-ring-list-gap);
   overflow-x: auto;
-  padding: 12px;
+  padding: var(--rk-stories-ring-list-padding);
   scrollbar-width: none;
 }
 
@@ -14,12 +25,12 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: var(--rk-stories-ring-list-item-gap);
   flex-shrink: 0;
 }
 
 .rk-stories-ring-list-name {
-  font-size: 12px;
+  font-size: var(--rk-stories-ring-list-name-size);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
