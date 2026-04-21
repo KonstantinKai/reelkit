@@ -587,6 +587,10 @@ const reelContext = useReelContext();
 // reelContext?.index  — active slide index signal
 // reelContext?.count  — total slide count signal
 // reelContext?.goTo() — navigate programmatically
+
+// Bridge a core Subscribable into a reactive Vue ref
+import { toVueRef } from '@reelkit/vue';
+const index = toVueRef(reelContext!.index); // Ref<number> — re-renders on change
 </script>`}
           language="vue"
         />

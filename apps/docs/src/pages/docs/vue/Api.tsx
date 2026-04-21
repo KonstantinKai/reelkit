@@ -939,6 +939,58 @@ sound.muted;    // Signal<boolean>
 sound.toggle(); // Toggle muted state`}
           language="typescript"
         />
+
+        <h3 className="text-xl font-semibold mt-8 mb-3">toVueRef</h3>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Bridges a core{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            Subscribable
+          </code>{' '}
+          (any{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            Signal
+          </code>{' '}
+          from{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            @reelkit/core
+          </code>
+          ) into a read-only Vue{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            Ref
+          </code>
+          . Use it whenever you need a core signal value to drive a Vue
+          re-render — direct{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            signal.value
+          </code>{' '}
+          reads in render functions or templates are <strong>not</strong>{' '}
+          reactive on their own.
+        </p>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          The subscription is auto-disposed via{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            onScopeDispose
+          </code>
+          , so this must be called inside a Vue{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            setup()
+          </code>{' '}
+          or other effect-scope-aware context.
+        </p>
+        <CodeBlock
+          code={`import { defineComponent, h } from 'vue';
+import { toVueRef, useSoundState } from '@reelkit/vue';
+
+export const MuteIcon = defineComponent({
+  setup() {
+    const sound = useSoundState();
+    const muted = toVueRef(sound.muted); // Readonly<Ref<boolean>>
+
+    return () => h('span', muted.value ? '🔇' : '🔊');
+  },
+});`}
+          language="typescript"
+        />
       </section>
 
       <section className="mb-12">
@@ -1009,6 +1061,7 @@ import {
   useBodyLock,
   useFullscreen,
   useSoundState,
+  toVueRef,
 } from '@reelkit/vue';
 
 // Utilities (re-exported from @reelkit/core)
