@@ -148,3 +148,10 @@ export {
 
 // Body lock
 export { createBodyLock, sharedBodyLock, type BodyLock } from './lib/utils';
+
+// Focus management
+export {
+  captureFocusForReturn,
+  createFocusTrap,
+  getFocusableElements,
+} from './lib/utils';

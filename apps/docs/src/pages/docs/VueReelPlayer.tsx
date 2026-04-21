@@ -32,6 +32,13 @@ const playerProps = [
     description: 'Array of content items to display in the player',
   },
   {
+    prop: 'ariaLabel',
+    type: 'string',
+    default: "'Video player'",
+    description:
+      'Accessible label for the dialog region; announced by screen readers when the overlay opens',
+  },
+  {
     prop: 'initialIndex',
     type: 'number',
     default: '0',
@@ -1479,6 +1486,57 @@ const muted = toVueRef(soundState.muted);
 }`}
           language="css"
         />
+      </section>
+
+      {/* Accessibility */}
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">Accessibility</h2>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          The overlay root is a modal dialog (
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            role="dialog"
+          </code>
+          ,{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            aria-modal="true"
+          </code>
+          ). Set the{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            aria-label
+          </code>{' '}
+          prop to change the screen-reader announcement; it defaults to "Video
+          player". Each slide carries{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            role="group"
+          </code>
+          ,{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            aria-roledescription="slide"
+          </code>
+          , and{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            aria-label="Slide N of M"
+          </code>
+          .
+        </p>
+        <p className="text-slate-600 dark:text-slate-400">
+          The overlay captures focus on open and returns it to the trigger on
+          close. Tab and Shift+Tab cycle through focusable elements inside;
+          focus that escapes (click outside, programmatic focus) gets pulled
+          back. Implemented with{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            captureFocusForReturn
+          </code>{' '}
+          and{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            createFocusTrap
+          </code>{' '}
+          from{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            @reelkit/core
+          </code>
+          .
+        </p>
       </section>
 
       {/* Keyboard Shortcuts */}

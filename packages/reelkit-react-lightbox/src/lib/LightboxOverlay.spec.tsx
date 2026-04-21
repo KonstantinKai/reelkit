@@ -183,7 +183,7 @@ describe('LightboxOverlay', () => {
         <LightboxOverlay isOpen={true} images={mockImages} onClose={vi.fn()} />,
       );
 
-      expect(document.querySelector('.rk-lightbox-container')).toBeTruthy();
+      expect(document.querySelector('.rk-lightbox-overlay')).toBeTruthy();
     });
 
     it('closes on close button click', () => {

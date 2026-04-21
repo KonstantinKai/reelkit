@@ -44,6 +44,7 @@
   align-items: center;
   touch-action: none;
   overscroll-behavior: none;
+  outline: none;
 }
 
 .rk-reel-container {

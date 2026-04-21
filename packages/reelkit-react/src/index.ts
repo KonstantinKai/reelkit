@@ -96,6 +96,9 @@ export {
   exitFullscreen,
   createBodyLock,
   type BodyLock,
+  captureFocusForReturn,
+  createFocusTrap,
+  getFocusableElements,
 } from '@reelkit/core';
 
 // Main components

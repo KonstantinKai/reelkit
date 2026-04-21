@@ -148,7 +148,7 @@ All UI elements use CSS classes prefixed with `rk-lightbox-`:
 
 | Class                          | Description                 |
 | ------------------------------ | --------------------------- |
-| `.rk-lightbox-container`       | Root container              |
+| `.rk-lightbox-overlay`         | Root container              |
 | `.rk-lightbox-close`           | Close button                |
 | `.rk-lightbox-nav`             | Navigation arrows           |
 | `.rk-lightbox-nav-prev`        | Previous arrow              |
@@ -172,7 +172,7 @@ All UI elements use CSS classes prefixed with `rk-lightbox-`:
 
 ### Theming via CSS custom properties
 
-Every visual value is exposed as a `--rk-lightbox-*` custom property with a sensible default. Override at `:root` (or any ancestor of `.rk-lightbox-container`) to retheme without touching component source — see the [Theming docs](https://reelkit.dev/docs/angular-lightbox#theming) for the full token table.
+Every visual value is exposed as a `--rk-lightbox-*` custom property with a sensible default. Override at `:root` (or any ancestor of `.rk-lightbox-overlay`) to retheme without touching component source — see the [Theming docs](https://reelkit.dev/docs/angular-lightbox#theming) for the full token table.
 
 ## Documentation
 

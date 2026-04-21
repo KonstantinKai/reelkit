@@ -2,8 +2,8 @@
  * Theme tokens for the Angular lightbox overlay.
  *
  * Defaults live on `:root` so they inherit through the DOM. Override at
- * `:root` (or any ancestor of `.rk-lightbox-container`) to retheme —
- * direct-match declarations on `.rk-lightbox-container` would otherwise
+ * `:root` (or any ancestor of `.rk-lightbox-overlay`) to retheme —
+ * direct-match declarations on `.rk-lightbox-overlay` would otherwise
  * shadow inherited values.
  *
  * Token vocabulary mirrors @reelkit/react-lightbox — the same rename or
@@ -71,7 +71,7 @@
   --rk-lightbox-empty-padding: 24px;
 }
 
-.rk-lightbox-container {
+.rk-lightbox-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -82,6 +82,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  outline: none;
 }
 
 .rk-lightbox-slide {
@@ -302,7 +303,7 @@
   }
 }
 
-.rk-lightbox-container:has(.rk-lightbox-swipe-hint) .rk-lightbox-info {
+.rk-lightbox-overlay:has(.rk-lightbox-swipe-hint) .rk-lightbox-info {
   padding-bottom: var(--rk-lightbox-info-padding-with-hint);
 }
 

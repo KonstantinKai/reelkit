@@ -43,7 +43,13 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-angular';
-import { BodyLockService, toAngularSignal } from '@reelkit/angular';
+import {
+  BodyLockService,
+  toAngularSignal,
+  captureFocusForReturn,
+  createFocusTrap,
+  getFocusableElements,
+} from '@reelkit/angular';
 import {
   RkLightboxControlsDirective,
   RkLightboxNavigationDirective,
@@ -74,13 +80,6 @@ const _kDefaultTransitionDuration = 300;
 const _kDefaultSwipeDistanceFactor = 0.12;
 const _kDefaultWheelDebounceMs = 200;
 
-/**
- * CSS selector string that matches all standard keyboard-focusable elements,
- * excluding those explicitly removed from the tab order via `tabindex="-1"`.
- */
-const _kFocusableSelector =
-  'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
-
 const _kTransitionMap: Record<TransitionType, TransitionTransformFn> = {
   slide: slideTransition,
   fade: lightboxFadeTransition,
@@ -102,9 +101,8 @@ const isTouchDevice = (): boolean =>
  * `tabindex="-1"` in the template).
  */
 const focusFirstFocusable = (container: HTMLElement): void => {
-  const firstFocusable =
-    container.querySelector<HTMLElement>(_kFocusableSelector);
-  (firstFocusable ?? container).focus();
+  const [first] = getFocusableElements(container);
+  (first ?? container).focus();
 };
 
 /**
@@ -158,7 +156,7 @@ const focusFirstFocusable = (container: HTMLElement): void => {
     @if (isOpen()) {
       <div
         #container
-        class="rk-lightbox-container"
+        class="rk-lightbox-overlay"
         role="dialog"
         aria-modal="true"
         [attr.aria-label]="ariaLabel()"
@@ -521,7 +519,8 @@ export class RkLightboxOverlayComponent {
 
   private _reelApi: ReelApi | null = null;
   private _preloaderDispose: (() => void) | null = null;
-  private _previousFocus: Element | null = null;
+  private _restoreFocus: (() => void) | null = null;
+  private _releaseFocusTrap: (() => void) | null = null;
 
   constructor() {
     if (typeof window !== 'undefined') {
@@ -709,7 +708,7 @@ export class RkLightboxOverlayComponent {
 
   private onOverlayOpened(): void {
     this._bodyLock.lock();
-    this._previousFocus = document.activeElement;
+    this._restoreFocus = captureFocusForReturn();
 
     const initialIdx = this.safeInitialIndex();
     this.loadingCtrl.setActiveIndex(initialIdx);
@@ -730,6 +729,7 @@ export class RkLightboxOverlayComponent {
         const container = untracked(() => this._containerRef())?.nativeElement;
         if (container) {
           focusFirstFocusable(container);
+          this._releaseFocusTrap = createFocusTrap(container);
         }
       },
       { injector: this._injector },
@@ -749,10 +749,10 @@ export class RkLightboxOverlayComponent {
     if (fullscreenSignal.value) {
       exitFullscreen();
     }
-    if (this._previousFocus instanceof HTMLElement) {
-      this._previousFocus.focus();
-    }
-    this._previousFocus = null;
+    this._releaseFocusTrap?.();
+    this._releaseFocusTrap = null;
+    this._restoreFocus?.();
+    this._restoreFocus = null;
   }
 
   private preloadAdjacentSlides(

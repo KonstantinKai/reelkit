@@ -208,6 +208,14 @@ export interface StoriesOverlayProps<T extends StoryItem = StoryItem> {
   /** When `true`, the overlay is rendered and body scroll is locked. */
   isOpen: boolean;
 
+  /**
+   * Accessible label for the dialog region. Announced by screen readers
+   * when the overlay opens.
+   *
+   * @default 'Stories player'
+   */
+  ariaLabel?: string;
+
   /** Array of story groups to display. */
   groups: StoriesGroup<T>[];
 

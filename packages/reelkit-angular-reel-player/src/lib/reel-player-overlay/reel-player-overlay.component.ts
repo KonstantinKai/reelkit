@@ -30,6 +30,8 @@ import {
   noop,
   clamp,
   captureFrame,
+  captureFocusForReturn,
+  createFocusTrap,
   BodyLockService,
   ReelComponent,
   RkReelItemDirective,
@@ -451,13 +453,19 @@ export class RkReelPlayerOverlayComponent<
   );
 
   private _preloaderDispose: (() => void) | null = null;
+  private _restoreFocus: (() => void) | null = null;
+  private _releaseFocusTrap: (() => void) | null = null;
 
   constructor() {
     this._sizeSignal.set(this._getSize());
     this._listenToEscape();
     this._listenToResize();
 
-    this._destroyRef.onDestroy(() => this._bodyLock.unlock());
+    this._destroyRef.onDestroy(() => {
+      this._bodyLock.unlock();
+      this._releaseFocusTrap?.();
+      this._restoreFocus?.();
+    });
 
     effect(() => {
       this._preloadNeighbors(this.activeIndex(), this.content());
@@ -467,16 +475,19 @@ export class RkReelPlayerOverlayComponent<
       if (this.isOpen()) {
         this._bodyLock.lock();
         this._setupInitialPreload();
-        // Defer focus until after the next render cycle so the overlay element
-        // created by @if(isOpen()) is guaranteed to be in the DOM.
-        // afterNextRender fires after Angular has flushed the view, avoiding
-        // the race condition that Promise.resolve().then() has — microtasks
-        // can fire before Angular's change detection flushes the @if branch.
+        this._restoreFocus = captureFocusForReturn();
+        // Defer focus + trap activation until after the next render cycle
+        // so the overlay element created by @if(isOpen()) is in the DOM.
+        // afterNextRender fires after Angular has flushed the view,
+        // avoiding the race condition that Promise.resolve().then() has —
+        // microtasks can fire before Angular's change detection flushes
+        // the @if branch.
         afterNextRender(
           () => {
             const el = untracked(() => this._overlayEl())?.nativeElement;
             if (el) {
               el.focus();
+              this._releaseFocusTrap = createFocusTrap(el);
             }
           },
           { injector: this._injector },
@@ -487,6 +498,10 @@ export class RkReelPlayerOverlayComponent<
           this._preloaderDispose();
           this._preloaderDispose = null;
         }
+        this._releaseFocusTrap?.();
+        this._releaseFocusTrap = null;
+        this._restoreFocus?.();
+        this._restoreFocus = null;
       }
     });
   }

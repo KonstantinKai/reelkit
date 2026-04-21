@@ -60,6 +60,7 @@
   touch-action: none;
   overflow: hidden;
   overscroll-behavior: none;
+  outline: none;
 }
 
 .rk-stories-swipe-wrapper {

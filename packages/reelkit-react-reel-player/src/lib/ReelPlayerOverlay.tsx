@@ -10,6 +10,8 @@ import {
   createDisposableList,
   reaction,
   observeDomEvent,
+  captureFocusForReturn,
+  createFocusTrap,
   Reel,
   Observe,
   type ReelApi,
@@ -76,6 +78,14 @@ export interface ReelPlayerOverlayProps<T extends BaseContentItem = ContentItem>
 
   /** When `true`, the overlay is rendered and body scroll is locked. */
   isOpen: boolean;
+
+  /**
+   * Accessible label for the dialog region. Announced by screen readers
+   * when the overlay opens.
+   *
+   * @default 'Video player'
+   */
+  ariaLabel?: string;
 
   /** Array of content items to display as vertical slides. */
   content: T[];
@@ -168,6 +178,7 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>(
   const innerSliderRef = useRef<ReelApi>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const videoPausedOnDragRef = useRef(false);
+  const overlayRef = useRef<HTMLDivElement | null>(null);
   const soundState = useSoundState();
 
   const [
@@ -374,6 +385,9 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>(
             return (
               <div
                 className="rk-reel-slide-wrapper"
+                role="group"
+                aria-roledescription="slide"
+                aria-label={`Slide ${index + 1} of ${items.length}`}
                 style={{
                   width: itemSize[0],
                   height: itemSize[1],
@@ -389,6 +403,9 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>(
         return (
           <div
             className="rk-reel-slide-wrapper"
+            role="group"
+            aria-roledescription="slide"
+            aria-label={`Slide ${index + 1} of ${items.length}`}
             style={{
               width: itemSize[0],
               height: itemSize[1],
@@ -406,6 +423,13 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>(
 
   useEffect(() => {
     const disposables = createDisposableList();
+
+    disposables.push(captureFocusForReturn());
+    const overlayEl = overlayRef.current;
+    if (overlayEl) {
+      overlayEl.focus({ preventScroll: true });
+      disposables.push(createFocusTrap(overlayEl));
+    }
 
     const preloadNeighbors = () => {
       const items = propsRef.current.content;
@@ -454,7 +478,14 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>(
   }, []);
 
   return createPortal(
-    <div className="rk-reel-overlay">
+    <div
+      ref={overlayRef}
+      className="rk-reel-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label={props.ariaLabel ?? 'Video player'}
+      tabIndex={-1}
+    >
       <div className="rk-reel-container">
         <Observe signals={[sizeSignal]}>
           {() => {

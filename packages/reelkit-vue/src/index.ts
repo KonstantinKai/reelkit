@@ -84,6 +84,11 @@ export {
   sharedBodyLock,
   type BodyLock,
 
+  // Focus management
+  captureFocusForReturn,
+  createFocusTrap,
+  getFocusableElements,
+
   // Sound
   createSoundController,
   syncMutedToVideo,

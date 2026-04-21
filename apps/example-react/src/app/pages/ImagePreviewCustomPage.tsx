@@ -462,7 +462,7 @@ function ImagePreviewCustomPage() {
       {activeDemo === 'theming' && (
         <>
           <style>{`
-            .rk-lightbox-container {
+            .rk-lightbox-overlay {
               --rk-lightbox-overlay-bg: #0f172a;
               --rk-lightbox-btn-bg: rgba(99, 102, 241, 0.65);
               --rk-lightbox-btn-bg-hover: rgba(168, 85, 247, 0.85);

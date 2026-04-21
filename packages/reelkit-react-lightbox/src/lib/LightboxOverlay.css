@@ -2,8 +2,8 @@
  * Theme tokens for the lightbox overlay.
  *
  * Defaults live on `:root` so they inherit through the DOM. Override at
- * `:root` (or any ancestor of `.rk-lightbox-container`) to retheme —
- * direct-match declarations on `.rk-lightbox-container` would otherwise
+ * `:root` (or any ancestor of `.rk-lightbox-overlay`) to retheme —
+ * direct-match declarations on `.rk-lightbox-overlay` would otherwise
  * shadow inherited values.
  */
 :root {
@@ -64,7 +64,7 @@
   --rk-lightbox-hint-duration: 3s;
 }
 
-.rk-lightbox-container {
+.rk-lightbox-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -76,6 +76,7 @@
   align-items: center;
   justify-content: center;
   overscroll-behavior: none;
+  outline: none;
 }
 
 .rk-lightbox-slide {
@@ -94,7 +95,7 @@
 }
 
 /* Top shade behind controls */
-.rk-lightbox-container::before {
+.rk-lightbox-overlay::before {
   content: '';
   position: absolute;
   top: 0;
@@ -325,6 +326,6 @@
 }
 
 /* Adjust info position when swipe hint is visible */
-.rk-lightbox-container:has(.rk-lightbox-swipe-hint) .rk-lightbox-info {
+.rk-lightbox-overlay:has(.rk-lightbox-swipe-hint) .rk-lightbox-info {
   padding-bottom: var(--rk-lightbox-info-padding-with-hint);
 }

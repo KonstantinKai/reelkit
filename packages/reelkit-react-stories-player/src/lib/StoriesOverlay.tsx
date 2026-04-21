@@ -8,6 +8,8 @@ import {
   createContentLoadingController,
   reaction,
   observeDomEvent,
+  captureFocusForReturn,
+  createFocusTrap,
   Reel,
   Observe,
   noop,
@@ -112,6 +114,7 @@ const getSize = (): [number, number] => {
 
 function StoriesContent<T extends StoryItem = StoryItem>({
   onClose,
+  ariaLabel,
   groups,
   initialGroupIndex = 0,
   initialStoryIndex = 0,
@@ -386,11 +389,20 @@ function StoriesContent<T extends StoryItem = StoryItem>({
   })[0];
 
   const soundState = useSoundState();
+  const overlayRef = useRef<HTMLDivElement | null>(null);
 
   useBodyLock(true);
 
   useEffect(() => {
     const disposables = createDisposableList();
+
+    const restoreFocus = captureFocusForReturn();
+    disposables.push(restoreFocus);
+    const overlayEl = overlayRef.current;
+    if (overlayEl) {
+      overlayEl.focus({ preventScroll: true });
+      disposables.push(createFocusTrap(overlayEl));
+    }
 
     disposables.push(
       reaction(
@@ -495,7 +507,14 @@ function StoriesContent<T extends StoryItem = StoryItem>({
   }, [onClose]);
 
   const overlay = (
-    <div className="rk-stories-overlay">
+    <div
+      ref={overlayRef}
+      className="rk-stories-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label={ariaLabel ?? 'Stories player'}
+      tabIndex={-1}
+    >
       <SwipeToClose
         direction="down"
         onClose={onClose}

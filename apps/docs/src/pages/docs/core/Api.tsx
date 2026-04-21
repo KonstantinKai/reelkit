@@ -1,3 +1,5 @@
+import { CodeBlock } from '../../../components/ui/CodeBlock';
+
 const configOptions = [
   {
     property: 'count',
@@ -1041,6 +1043,90 @@ export default function CoreApi() {
             </tbody>
           </table>
         </div>
+      </section>
+
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">Focus Management</h2>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Framework-agnostic dialog a11y primitives. The overlay packages use
+          them to return focus to the trigger on close and trap Tab / Shift+Tab
+          inside the overlay while it's open. SSR-safe: each helper returns a
+          no-op disposer in non-browser environments.
+        </p>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left py-3 px-4 font-semibold">Export</th>
+                <th className="text-left py-3 px-4 font-semibold">Type</th>
+                <th className="text-left py-3 px-4 font-semibold">
+                  Description
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  captureFocusForReturn
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {'() => Disposer'}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Captures the currently focused element and returns a disposer
+                  that focuses it again. Best-effort: the disposer is a no-op if
+                  the captured element has since been removed from the DOM.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  createFocusTrap
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {'(container: HTMLElement) => Disposer'}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Traps Tab/Shift+Tab inside <code>container</code>. Tab at the
+                  last focusable wraps to the first; Shift+Tab at the first
+                  wraps to the last; focus that escapes the container (click
+                  outside, programmatic focus) is pulled back. Does not move
+                  focus into the container on activation — the caller decides.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  getFocusableElements
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {'(container: HTMLElement) => HTMLElement[]'}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Returns every keyboard-focusable descendant in DOM order,
+                  skipping disabled, hidden, and{' '}
+                  <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+                    tabindex="-1"
+                  </code>{' '}
+                  elements.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3 className="text-lg font-semibold mt-6 mb-2">Usage</h3>
+        <CodeBlock
+          language="typescript"
+          code={`import { captureFocusForReturn, createFocusTrap } from '@reelkit/core';
+
+// When your modal opens:
+const restoreFocus = captureFocusForReturn();
+container.focus({ preventScroll: true });
+const releaseTrap = createFocusTrap(container);
+
+// When the modal closes:
+releaseTrap();
+restoreFocus();`}
+        />
       </section>
 
       <section>

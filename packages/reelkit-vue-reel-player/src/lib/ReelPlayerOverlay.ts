@@ -18,9 +18,11 @@ import {
   Reel,
   SoundProvider,
   captureFrame,
+  captureFocusForReturn,
   createContentLoadingController,
   createContentPreloader,
   createDisposableList,
+  createFocusTrap,
   createLruCache,
   noop,
   observeDomEvent,
@@ -77,6 +79,14 @@ const reelPlayerSharedProps = {
     type: Array as PropType<BaseContentItem[]>,
     required: true as const,
   },
+
+  /**
+   * Accessible label for the dialog region. Announced by screen readers
+   * when the overlay opens.
+   *
+   * @default 'Video player'
+   */
+  ariaLabel: { type: String, default: 'Video player' },
 
   /**
    * Zero-based index of the initially visible slide.
@@ -173,6 +183,7 @@ const ReelPlayerContent = defineComponent({
   setup(props, { emit, slots, expose }) {
     const sliderRef = shallowRef<ReelExpose | null>(null);
     const innerSliderRef = shallowRef<ReelExpose | null>(null);
+    let overlayEl: HTMLDivElement | null = null;
     let videoEl: HTMLVideoElement | null = null;
     let videoPausedOnDrag = false;
     const soundState = useSoundState();
@@ -293,6 +304,12 @@ const ReelPlayerContent = defineComponent({
           if ((e as KeyboardEvent).key === 'Escape') emit('close');
         }),
       );
+
+      disposables.push(captureFocusForReturn());
+      if (overlayEl) {
+        overlayEl.focus({ preventScroll: true });
+        disposables.push(createFocusTrap(overlayEl));
+      }
 
       const initialSrc = props.content[activeIndex.value]?.media[0]?.src;
       if (initialSrc) {
@@ -471,147 +488,167 @@ const ReelPlayerContent = defineComponent({
         ]);
       };
 
-      return h('div', { class: 'rk-reel-overlay' }, [
-        h('div', { class: 'rk-reel-container' }, [
-          h(
-            Reel,
-            {
-              count: items.length,
-              size: [w, h0],
-              direction: 'vertical',
-              loop: props.loop,
-              enableNavKeys: props.enableNavKeys,
-              enableWheel: props.enableWheel,
-              wheelDebounceMs: props.wheelDebounceMs,
-              transitionDuration: props.transitionDuration,
-              swipeDistanceFactor: props.swipeDistanceFactor,
-              initialIndex: props.initialIndex,
-              ref: (el: unknown) => {
-                sliderRef.value = (el as ReelExpose | null) ?? null;
+      return h(
+        'div',
+        {
+          ref: (el: unknown) => {
+            overlayEl = (el as HTMLDivElement | null) ?? null;
+          },
+          class: 'rk-reel-overlay',
+          role: 'dialog',
+          'aria-modal': 'true',
+          'aria-label': props.ariaLabel,
+          tabindex: -1,
+        },
+        [
+          h('div', { class: 'rk-reel-container' }, [
+            h(
+              Reel,
+              {
+                count: items.length,
+                size: [w, h0],
+                direction: 'vertical',
+                loop: props.loop,
+                enableNavKeys: props.enableNavKeys,
+                enableWheel: props.enableWheel,
+                wheelDebounceMs: props.wheelDebounceMs,
+                transitionDuration: props.transitionDuration,
+                swipeDistanceFactor: props.swipeDistanceFactor,
+                initialIndex: props.initialIndex,
+                ref: (el: unknown) => {
+                  sliderRef.value = (el as ReelExpose | null) ?? null;
+                },
+                onBeforeChange: handleBeforeChange,
+                onAfterChange: handleAfterChange,
+                onSlideDragStart: handleSlideDragStart,
+                onSlideDragEnd: handleSlideDragEnd,
+                onSlideDragCanceled: handleSlideDragCanceled,
               },
-              onBeforeChange: handleBeforeChange,
-              onAfterChange: handleAfterChange,
-              onSlideDragStart: handleSlideDragStart,
-              onSlideDragEnd: handleSlideDragEnd,
-              onSlideDragCanceled: handleSlideDragCanceled,
-            },
-            {
-              item: ({
-                index,
-                size: itemSize,
-              }: {
-                index: number;
-                indexInRange: number;
-                size: [number, number];
-              }) => {
-                const item = items[index];
-                const isActive = index === activeIndex.value;
-                const onReady = () => {
-                  loadingCtrl.onReady(index);
-                  const src = item.media[0]?.src;
-                  if (src) preloader.markLoaded(src);
-                };
-                const onWaiting = () => loadingCtrl.onWaiting(index);
-                const onError = () => {
-                  const src = item.media[0]?.src;
-                  if (src) preloader.markErrored(src);
-                  loadingCtrl.onError(index);
-                };
-
-                const defaultMedia = h(MediaSlide, {
-                  content: item,
-                  isActive,
+              {
+                item: ({
+                  index,
                   size: itemSize,
-                  setInnerSlider: (api) => {
-                    innerSliderRef.value = api;
-                  },
-                  enableWheel: props.enableWheel,
-                  onVideoRef: isActive ? handleVideoRef : undefined,
-                  onReady,
-                  onWaiting,
-                  onError,
-                  onActiveMediaTypeChange: isActive
-                    ? handleActiveMediaTypeChange
-                    : undefined,
-                  renderNestedNavigation: slotAsRender<NavigationSlotScope>(
-                    slots['nestedNavigation'],
-                  ),
-                  renderNestedSlide: slotAsRender<NestedSlideSlotScope>(
-                    slots['nestedSlide'],
-                  ),
-                });
-                const overlayNode = renderSlideOverlay(item, index, isActive);
-                const defaultVNodes: VNode[] = [defaultMedia];
-                if (overlayNode) {
-                  defaultVNodes.push(
-                    ...(Array.isArray(overlayNode)
-                      ? overlayNode
-                      : [overlayNode]),
-                  );
-                }
-                defaultSlideVNodes.set(item.id, defaultVNodes);
-                let defaultContent = defaultSlideComps.get(item.id);
-                if (!defaultContent) {
-                  defaultContent = () => defaultSlideVNodes.get(item.id) ?? [];
-                  defaultSlideComps.set(item.id, defaultContent);
-                }
+                }: {
+                  index: number;
+                  indexInRange: number;
+                  size: [number, number];
+                }) => {
+                  const item = items[index];
+                  const isActive = index === activeIndex.value;
+                  const onReady = () => {
+                    loadingCtrl.onReady(index);
+                    const src = item.media[0]?.src;
+                    if (src) preloader.markLoaded(src);
+                  };
+                  const onWaiting = () => loadingCtrl.onWaiting(index);
+                  const onError = () => {
+                    const src = item.media[0]?.src;
+                    if (src) preloader.markErrored(src);
+                    loadingCtrl.onError(index);
+                  };
 
-                const slideSlot = slots['slide'];
-                if (slideSlot) {
-                  const scope: SlideSlotScope = {
-                    item,
-                    index,
-                    size: itemSize,
+                  const defaultMedia = h(MediaSlide, {
+                    content: item,
                     isActive,
-                    slideKey: item.id,
-                    innerSliderRef,
+                    size: itemSize,
+                    setInnerSlider: (api) => {
+                      innerSliderRef.value = api;
+                    },
                     enableWheel: props.enableWheel,
-                    defaultContent,
                     onVideoRef: isActive ? handleVideoRef : undefined,
-                    onActiveMediaTypeChange: isActive
-                      ? handleActiveMediaTypeChange
-                      : undefined,
                     onReady,
                     onWaiting,
                     onError,
-                  };
-                  const custom = slideSlot(scope);
-                  if (hasRenderedNodes(custom)) {
-                    return h(
-                      'div',
-                      {
-                        class: 'rk-reel-slide-wrapper',
-                        style: {
-                          width: `${itemSize[0]}px`,
-                          height: `${itemSize[1]}px`,
-                          position: 'relative',
-                        },
-                      },
-                      custom,
+                    onActiveMediaTypeChange: isActive
+                      ? handleActiveMediaTypeChange
+                      : undefined,
+                    renderNestedNavigation: slotAsRender<NavigationSlotScope>(
+                      slots['nestedNavigation'],
+                    ),
+                    renderNestedSlide: slotAsRender<NestedSlideSlotScope>(
+                      slots['nestedSlide'],
+                    ),
+                  });
+                  const overlayNode = renderSlideOverlay(item, index, isActive);
+                  const defaultVNodes: VNode[] = [defaultMedia];
+                  if (overlayNode) {
+                    defaultVNodes.push(
+                      ...(Array.isArray(overlayNode)
+                        ? overlayNode
+                        : [overlayNode]),
                     );
                   }
-                }
+                  defaultSlideVNodes.set(item.id, defaultVNodes);
+                  let defaultContent = defaultSlideComps.get(item.id);
+                  if (!defaultContent) {
+                    defaultContent = () =>
+                      defaultSlideVNodes.get(item.id) ?? [];
+                    defaultSlideComps.set(item.id, defaultContent);
+                  }
 
-                return h(
-                  'div',
-                  {
-                    class: 'rk-reel-slide-wrapper',
-                    style: {
-                      width: `${itemSize[0]}px`,
-                      height: `${itemSize[1]}px`,
-                      position: 'relative',
+                  const slideSlot = slots['slide'];
+                  if (slideSlot) {
+                    const scope: SlideSlotScope = {
+                      item,
+                      index,
+                      size: itemSize,
+                      isActive,
+                      slideKey: item.id,
+                      innerSliderRef,
+                      enableWheel: props.enableWheel,
+                      defaultContent,
+                      onVideoRef: isActive ? handleVideoRef : undefined,
+                      onActiveMediaTypeChange: isActive
+                        ? handleActiveMediaTypeChange
+                        : undefined,
+                      onReady,
+                      onWaiting,
+                      onError,
+                    };
+                    const custom = slideSlot(scope);
+                    if (hasRenderedNodes(custom)) {
+                      return h(
+                        'div',
+                        {
+                          class: 'rk-reel-slide-wrapper',
+                          role: 'group',
+                          'aria-roledescription': 'slide',
+                          'aria-label': `Slide ${index + 1} of ${props.content.length}`,
+                          style: {
+                            width: `${itemSize[0]}px`,
+                            height: `${itemSize[1]}px`,
+                            position: 'relative',
+                          },
+                        },
+                        custom,
+                      );
+                    }
+                  }
+
+                  return h(
+                    'div',
+                    {
+                      class: 'rk-reel-slide-wrapper',
+                      role: 'group',
+                      'aria-roledescription': 'slide',
+                      'aria-label': `Slide ${index + 1} of ${props.content.length}`,
+                      style: {
+                        width: `${itemSize[0]}px`,
+                        height: `${itemSize[1]}px`,
+                        position: 'relative',
+                      },
                     },
-                  },
-                  defaultVNodes,
-                );
+                    defaultVNodes,
+                  );
+                },
               },
-            },
-          ),
-          renderLoadingOverlay(),
-          renderControlsNode(),
-        ]),
-        renderNavigationNode(),
-      ]);
+            ),
+            renderLoadingOverlay(),
+            renderControlsNode(),
+          ]),
+          renderNavigationNode(),
+        ],
+      );
     };
   },
 });

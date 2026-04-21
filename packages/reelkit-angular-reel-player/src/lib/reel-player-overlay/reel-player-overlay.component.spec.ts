@@ -77,6 +77,12 @@ jest.mock('@reelkit/angular', () => {
       playbackPositions: new Map(),
     })),
     captureFrame: jest.fn().mockReturnValue(null),
+    captureFocusForReturn: jest.fn(() => () => {
+      /* noop */
+    }),
+    createFocusTrap: jest.fn(() => () => {
+      /* noop */
+    }),
     noop: jest.fn(),
     clamp: (v: number, min: number, max: number) =>
       Math.max(min, Math.min(max, v)),

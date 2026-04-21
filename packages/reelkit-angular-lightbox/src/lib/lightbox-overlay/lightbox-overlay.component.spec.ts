@@ -185,6 +185,13 @@ jest.mock('@reelkit/angular', () => {
     animate: jest.fn(() => () => {
       /* noop */
     }),
+    captureFocusForReturn: jest.fn(() => () => {
+      /* noop */
+    }),
+    createFocusTrap: jest.fn(() => () => {
+      /* noop */
+    }),
+    getFocusableElements: jest.fn(() => []),
   };
 });
 
@@ -265,7 +272,7 @@ describe('RkLightboxOverlayComponent', () => {
     it('renders the container dialog', () => {
       const fixture = createFixture(true);
       const container = fixture.debugElement.query(
-        By.css('.rk-lightbox-container'),
+        By.css('.rk-lightbox-overlay'),
       );
       expect(container).toBeTruthy();
     });
@@ -273,7 +280,7 @@ describe('RkLightboxOverlayComponent', () => {
     it('container has role="dialog"', () => {
       const fixture = createFixture(true);
       const container = fixture.debugElement.query(
-        By.css('.rk-lightbox-container'),
+        By.css('.rk-lightbox-overlay'),
       );
       expect(container.nativeElement.getAttribute('role')).toBe('dialog');
     });
@@ -281,7 +288,7 @@ describe('RkLightboxOverlayComponent', () => {
     it('container has aria-modal="true"', () => {
       const fixture = createFixture(true);
       const container = fixture.debugElement.query(
-        By.css('.rk-lightbox-container'),
+        By.css('.rk-lightbox-overlay'),
       );
       expect(container.nativeElement.getAttribute('aria-modal')).toBe('true');
     });
@@ -297,7 +304,7 @@ describe('RkLightboxOverlayComponent', () => {
     it('does not render the container dialog', () => {
       const fixture = createFixture(false);
       const container = fixture.debugElement.query(
-        By.css('.rk-lightbox-container'),
+        By.css('.rk-lightbox-overlay'),
       );
       expect(container).toBeNull();
     });
@@ -509,7 +516,7 @@ describe('RkLightboxOverlayComponent', () => {
     it('defaults to "Image gallery"', () => {
       const fixture = createFixture(true, ITEMS, 0);
       const container = fixture.debugElement.query(
-        By.css('.rk-lightbox-container'),
+        By.css('.rk-lightbox-overlay'),
       );
       expect(container.nativeElement.getAttribute('aria-label')).toBe(
         'Image gallery',
@@ -521,7 +528,7 @@ describe('RkLightboxOverlayComponent', () => {
       fixture.componentRef.setInput('ariaLabel', 'Product gallery');
       fixture.detectChanges();
       const container = fixture.debugElement.query(
-        By.css('.rk-lightbox-container'),
+        By.css('.rk-lightbox-overlay'),
       );
       expect(container.nativeElement.getAttribute('aria-label')).toBe(
         'Product gallery',
@@ -669,7 +676,7 @@ describe('RkLightboxOverlayComponent', () => {
       tick(); // flush Promise.resolve().then(() => el.focus())
 
       const container = fixture.debugElement.query(
-        By.css('.rk-lightbox-container'),
+        By.css('.rk-lightbox-overlay'),
       );
       // After opening, the overlay requests focus via a microtask. In jsdom the
       // active element should be the container or a descendant of it.
@@ -683,7 +690,7 @@ describe('RkLightboxOverlayComponent', () => {
       const fixture = createFixture(false, ITEMS, 0);
       tick();
       const container = fixture.debugElement.query(
-        By.css('.rk-lightbox-container'),
+        By.css('.rk-lightbox-overlay'),
       );
       // When closed no container is rendered, so focus can never fire.
       expect(container).toBeNull();

@@ -15,6 +15,8 @@ import {
   createDisposableList,
   reaction,
   observeDomEvent,
+  captureFocusForReturn,
+  createFocusTrap,
   slideTransition,
   flipTransition,
   Reel,
@@ -136,6 +138,14 @@ export type ReelProxyProps = Pick<
 export interface LightboxOverlayProps extends ReelProxyProps {
   /** When `true`, the lightbox is rendered and body scroll is locked. */
   isOpen: boolean;
+
+  /**
+   * Accessible label for the dialog region. Announced by screen readers
+   * when the lightbox opens.
+   *
+   * @default 'Image gallery'
+   */
+  ariaLabel?: string;
 
   /** Array of images to display as horizontal slides. */
   images: LightboxItem[];
@@ -323,6 +333,9 @@ const LightboxContent: FC<LightboxOverlayProps> = (props) => {
             return (
               <div
                 className="rk-lightbox-slide"
+                role="group"
+                aria-roledescription="slide"
+                aria-label={`Image ${index + 1} of ${items.length}`}
                 style={{ width: slideSize[0], height: slideSize[1] }}
               >
                 {custom}
@@ -334,6 +347,9 @@ const LightboxContent: FC<LightboxOverlayProps> = (props) => {
         return (
           <div
             className="rk-lightbox-slide"
+            role="group"
+            aria-roledescription="slide"
+            aria-label={`Image ${index + 1} of ${items.length}`}
             style={{ width: slideSize[0], height: slideSize[1] }}
           >
             <img
@@ -366,6 +382,13 @@ const LightboxContent: FC<LightboxOverlayProps> = (props) => {
 
   useEffect(() => {
     const disposables = createDisposableList();
+
+    disposables.push(captureFocusForReturn());
+    const containerEl = containerRef.current;
+    if (containerEl) {
+      containerEl.focus({ preventScroll: true });
+      disposables.push(createFocusTrap(containerEl));
+    }
 
     disposables.push(
       observeDomEvent(window, 'resize', () => {
@@ -413,7 +436,14 @@ const LightboxContent: FC<LightboxOverlayProps> = (props) => {
   }, []);
 
   return createPortal(
-    <div ref={containerRef} className="rk-lightbox-container">
+    <div
+      ref={containerRef}
+      className="rk-lightbox-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label={props.ariaLabel ?? 'Image gallery'}
+      tabIndex={-1}
+    >
       <Observe signals={[isFullscreen, indexSignal]}>
         {() => {
           const idx = indexSignal.value;
