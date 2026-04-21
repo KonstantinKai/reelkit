@@ -11,7 +11,13 @@
   "include": ["src/**/*.ts", "src/**/*.vue", "src/**/*.d.ts"],
   "references": [
     {
+      "path": "../../packages/reelkit-vue-reel-player/tsconfig.lib.json"
+    },
+    {
       "path": "../../packages/reelkit-vue/tsconfig.lib.json"
+    },
+    {
+      "path": "../../packages/reelkit-example-data/tsconfig.lib.json"
     }
   ]
 }
