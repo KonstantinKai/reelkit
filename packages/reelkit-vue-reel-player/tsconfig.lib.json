@@ -4,6 +4,7 @@
     "outDir": "../../dist/out-tsc",
     "composite": true,
     "declaration": true,
+    "stripInternal": true,
     "types": ["node", "vite/client"]
   },
   "include": ["src/**/*.ts"],

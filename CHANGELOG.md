@@ -1,6 +1,6 @@
 ## @reelkit/vue-reel-player@0.1.0 (2026-04-22)
 
-### 🚀 Features
+### 🎉 Initial Release
 
 - Full-screen TikTok/Instagram Reels-style vertical video player overlay for Vue 3
 - `v-model:is-open` two-way binding; Teleport to body; shared `<SoundProvider>` context
