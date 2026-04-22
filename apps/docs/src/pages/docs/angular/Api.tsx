@@ -771,6 +771,68 @@ const index = toAngularSignal(controller.state.index, destroyRef);`}
         />
       </section>
 
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">Accessibility</h2>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            &lt;rk-reel&gt;
+          </code>{' '}
+          renders as{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            role="region"
+          </code>{' '}
+          with{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            aria-roledescription="carousel"
+          </code>
+          . Set the{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            ariaLabel
+          </code>{' '}
+          input to give the region a screen-reader name. A polite live region
+          announces "Slide N of M" on every slide change. Inactive slides
+          receive the{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            inert
+          </code>{' '}
+          attribute so focus and AT navigation skip them.
+        </p>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            &lt;rk-reel-indicator&gt;
+          </code>{' '}
+          renders as{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            role="tablist"
+          </code>{' '}
+          with roving tabindex on the dots; arrow keys move focus and Enter or
+          Space activates the slide.
+        </p>
+        <p className="text-slate-600 dark:text-slate-400">
+          Building a custom modal around{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            &lt;rk-reel&gt;
+          </code>
+          ?{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            captureFocusForReturn
+          </code>
+          ,{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            createFocusTrap
+          </code>
+          , and{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            getFocusableElements
+          </code>{' '}
+          are re-exported from{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            @reelkit/angular
+          </code>{' '}
+          for focus return and trap.
+        </p>
+      </section>
+
       <section>
         <h2 className="text-2xl font-bold mb-4">Package Exports</h2>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
@@ -842,6 +904,9 @@ import {
 
   // DOM & cleanup
   observeDomEvent, createDisposableList, createBodyLock, sharedBodyLock,
+
+  // Focus management
+  captureFocusForReturn, createFocusTrap, getFocusableElements,
 
   // Slider & gestures
   createSliderController, createGestureController,

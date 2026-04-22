@@ -218,9 +218,10 @@ export class ReelComponent implements OnInit, AfterViewInit {
 
   /**
    * Accessible label for the carousel region, announced by screen readers.
-   * Defaults to "Carousel".
+   * When unset, no `aria-label` is rendered and the live-region "ready"
+   * announcement falls back to "Carousel".
    */
-  ariaLabel = input<string>('Carousel');
+  ariaLabel = input<string | undefined>(undefined);
 
   /** Emitted after a slide transition completes. */
   afterChange = output<{ index: number; indexInRange: number }>();
@@ -361,7 +362,7 @@ export class ReelComponent implements OnInit, AfterViewInit {
     if (!this.hasMeasured()) return '';
     if (this._hasAnnouncedReady()) return '';
     const total = untracked(() => this.count());
-    return `${this.ariaLabel()} ready, ${total} slide${total !== 1 ? 's' : ''}`;
+    return `${this.ariaLabel() ?? 'Carousel'} ready, ${total} slide${total !== 1 ? 's' : ''}`;
   });
 
   protected trackByFn(idx: number, indexInRange: number): string | number {
