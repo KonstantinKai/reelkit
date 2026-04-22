@@ -1,19 +1,6 @@
 import type { Project } from '@stackblitz/sdk';
 import { REELKIT_VERSIONS } from 'virtual:reelkit-versions';
 
-const PACKAGES_REQUIRING_CORE = new Set([
-  '@reelkit/react',
-  '@reelkit/react-reel-player',
-  '@reelkit/react-lightbox',
-  '@reelkit/react-stories-player',
-  '@reelkit/stories-core',
-  '@reelkit/angular',
-  '@reelkit/angular-reel-player',
-  '@reelkit/angular-lightbox',
-  '@reelkit/vue',
-  '@reelkit/vue-reel-player',
-]);
-
 const PACKAGES_REQUIRING_REACT = new Set([
   '@reelkit/react-reel-player',
   '@reelkit/react-lightbox',
@@ -40,7 +27,6 @@ function resolveDeps(
     if (PACKAGES_REQUIRING_REACT.has(pkg)) names.add('@reelkit/react');
     if (PACKAGES_REQUIRING_ANGULAR.has(pkg)) names.add('@reelkit/angular');
     if (PACKAGES_REQUIRING_VUE.has(pkg)) names.add('@reelkit/vue');
-    if (PACKAGES_REQUIRING_CORE.has(pkg)) names.add('@reelkit/core');
   }
 
   const resolved: Record<string, string> = {};
