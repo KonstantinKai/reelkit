@@ -1,9 +1,4 @@
-import {
-  Component,
-  ChangeDetectionStrategy,
-  signal,
-  computed,
-} from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal } from '@angular/core';
 import { RkReelPlayerOverlayComponent } from '@reelkit/angular-reel-player';
 import { cdnUrl } from '@reelkit/example-data';
 import { generateContent, getThumbnail } from '../../data/mock-content';

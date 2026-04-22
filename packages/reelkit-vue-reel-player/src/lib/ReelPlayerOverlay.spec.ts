@@ -411,4 +411,80 @@ describe('ReelPlayerOverlay', () => {
     // not that unlock restores the body to a non-hidden state.
     expect(document.body.style.overflow).toBe('hidden');
   });
+
+  describe('a11y', () => {
+    it('overlay root is a labelled modal dialog', async () => {
+      const Host = defineComponent({
+        setup() {
+          return () =>
+            h(ReelPlayerOverlay, {
+              isOpen: true,
+              content: sampleContent,
+              onClose: () => {
+                /* noop */
+              },
+            });
+        },
+      });
+
+      mount(Host, { attachTo: document.body });
+      await nextTick();
+
+      const overlay = document.querySelector('.rk-reel-overlay');
+      expect(overlay).not.toBeNull();
+      expect(overlay!.getAttribute('role')).toBe('dialog');
+      expect(overlay!.getAttribute('aria-modal')).toBe('true');
+      expect(overlay!.getAttribute('aria-label')).toBe('Video player');
+    });
+
+    it('ariaLabel prop overrides the default', async () => {
+      const Host = defineComponent({
+        setup() {
+          return () =>
+            h(ReelPlayerOverlay, {
+              isOpen: true,
+              content: sampleContent,
+              ariaLabel: 'Featured reels',
+              onClose: () => {
+                /* noop */
+              },
+            });
+        },
+      });
+
+      mount(Host, { attachTo: document.body });
+      await nextTick();
+
+      expect(
+        document.querySelector('.rk-reel-overlay')!.getAttribute('aria-label'),
+      ).toBe('Featured reels');
+    });
+
+    it('slide wrapper carries group role + slide position label', async () => {
+      const Host = defineComponent({
+        setup() {
+          return () =>
+            h(ReelPlayerOverlay, {
+              isOpen: true,
+              content: sampleContent,
+              onClose: () => {
+                /* noop */
+              },
+            });
+        },
+      });
+
+      mount(Host, { attachTo: document.body });
+      await nextTick();
+      await nextTick();
+
+      const wrapper = document.querySelector('.rk-reel-slide-wrapper');
+      expect(wrapper).not.toBeNull();
+      expect(wrapper!.getAttribute('role')).toBe('group');
+      expect(wrapper!.getAttribute('aria-roledescription')).toBe('slide');
+      expect(wrapper!.getAttribute('aria-label')).toBe(
+        `Slide 1 of ${sampleContent.length}`,
+      );
+    });
+  });
 });

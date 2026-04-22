@@ -32,6 +32,7 @@ export class RkReelItemDirective {
 
   static ngTemplateContextGuard(
     _directive: RkReelItemDirective,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     ctx: unknown,
   ): ctx is RkReelItemContext {
     return true;

@@ -33,8 +33,8 @@ vi.mock('@reelkit/react', async (importOriginal) => {
     ...actual,
     Reel: (props: Record<string, unknown>) => {
       lastReelProps.push(props);
-      if (props.apiRef) {
-        const ref = props.apiRef as { current: unknown };
+      if (props['apiRef']) {
+        const ref = props['apiRef'] as { current: unknown };
         ref.current = {
           next: vi.fn(),
           prev: vi.fn(),
@@ -101,8 +101,8 @@ describe('StoriesOverlay', () => {
     );
     const outerReel = lastReelProps[0];
     expect(outerReel).toBeDefined();
-    expect(outerReel.transition).toBeTypeOf('function');
-    expect(outerReel.direction).toBe('horizontal');
+    expect(outerReel['transition']).toBeTypeOf('function');
+    expect(outerReel['direction']).toBe('horizontal');
   });
 
   it('respects groupTransition prop', () => {
@@ -115,7 +115,7 @@ describe('StoriesOverlay', () => {
       />,
     );
     const outerReel = lastReelProps[0];
-    expect(outerReel.transition).toBe(slideTransition);
+    expect(outerReel['transition']).toBe(slideTransition);
   });
 
   it('renders custom loading UI via renderLoading', () => {
@@ -130,11 +130,6 @@ describe('StoriesOverlay', () => {
           </div>
         )}
       />,
-    );
-    // The loading state should be active initially for image stories
-    // (content hasn't loaded yet)
-    const customLoading = baseElement.querySelector(
-      '[data-testid="custom-loading"]',
     );
     // Custom loading may or may not render depending on whether the image
     // is "preloaded" — the key check is that the prop is accepted without error
@@ -163,14 +158,12 @@ describe('StoriesOverlay', () => {
   });
 
   it('passes onError callback in renderSlide props', () => {
-    let receivedProps: Record<string, unknown> | null = null;
     render(
       <StoriesOverlay
         isOpen={true}
         onClose={vi.fn()}
         groups={mockGroups}
-        renderSlide={(props) => {
-          receivedProps = props as unknown as Record<string, unknown>;
+        renderSlide={() => {
           return <div>Custom slide</div>;
         }}
       />,
@@ -219,10 +212,10 @@ describe('StoriesOverlay', () => {
           }}
         />,
       );
-      expect(navProps.onPrevStory).toBeTypeOf('function');
-      expect(navProps.onNextStory).toBeTypeOf('function');
-      expect(navProps.onPrevGroup).toBeTypeOf('function');
-      expect(navProps.onNextGroup).toBeTypeOf('function');
+      expect(navProps['onPrevStory']).toBeTypeOf('function');
+      expect(navProps['onNextStory']).toBeTypeOf('function');
+      expect(navProps['onPrevGroup']).toBeTypeOf('function');
+      expect(navProps['onNextGroup']).toBeTypeOf('function');
     });
   });
 
@@ -264,10 +257,39 @@ describe('StoriesOverlay', () => {
           }}
         />,
       );
-      expect(progressProps.totalStories).toBe(2);
-      expect(progressProps.activeIndex).toBeDefined();
-      expect(progressProps.progress).toBeDefined();
-      expect(progressProps.group).toBeDefined();
+      expect(progressProps['totalStories']).toBe(2);
+      expect(progressProps['activeIndex']).toBeDefined();
+      expect(progressProps['progress']).toBeDefined();
+      expect(progressProps['group']).toBeDefined();
+    });
+  });
+
+  describe('a11y', () => {
+    it('overlay root is a labelled modal dialog', () => {
+      render(<StoriesOverlay isOpen onClose={vi.fn()} groups={mockGroups} />);
+
+      const overlay = document.querySelector('.rk-stories-overlay');
+      expect(overlay).toBeTruthy();
+      expect(overlay!.getAttribute('role')).toBe('dialog');
+      expect(overlay!.getAttribute('aria-modal')).toBe('true');
+      expect(overlay!.getAttribute('aria-label')).toBe('Stories player');
+    });
+
+    it('ariaLabel prop overrides the default', () => {
+      render(
+        <StoriesOverlay
+          isOpen
+          onClose={vi.fn()}
+          groups={mockGroups}
+          ariaLabel="Friend stories"
+        />,
+      );
+
+      expect(
+        document
+          .querySelector('.rk-stories-overlay')!
+          .getAttribute('aria-label'),
+      ).toBe('Friend stories');
     });
   });
 });

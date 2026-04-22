@@ -8,6 +8,10 @@ import { By } from '@angular/platform-browser';
 import { RkReelPlayerOverlayComponent } from './reel-player-overlay.component';
 import { SoundStateService } from '../sound-state/sound-state.service';
 import type { ContentItem } from '../types';
+import {
+  captureFocusForReturn as mockedCaptureFocus,
+  createFocusTrap as mockedCreateFocusTrap,
+} from '@reelkit/angular';
 
 jest.mock('@reelkit/angular', () => {
   const { Component, Directive, EventEmitter, Injectable, Input, Output } =
@@ -77,12 +81,8 @@ jest.mock('@reelkit/angular', () => {
       playbackPositions: new Map(),
     })),
     captureFrame: jest.fn().mockReturnValue(null),
-    captureFocusForReturn: jest.fn(() => () => {
-      /* noop */
-    }),
-    createFocusTrap: jest.fn(() => () => {
-      /* noop */
-    }),
+    captureFocusForReturn: jest.fn(() => jest.fn()),
+    createFocusTrap: jest.fn(() => jest.fn()),
     noop: jest.fn(),
     clamp: (v: number, min: number, max: number) =>
       Math.max(min, Math.min(max, v)),
@@ -223,6 +223,8 @@ describe('RkReelPlayerOverlayComponent', () => {
     TestBed.configureTestingModule({
       imports: [RkReelPlayerOverlayComponent],
     });
+    (mockedCaptureFocus as jest.Mock).mockClear();
+    (mockedCreateFocusTrap as jest.Mock).mockClear();
   });
 
   afterEach(() => {
@@ -260,6 +262,39 @@ describe('RkReelPlayerOverlayComponent', () => {
       'Video player',
     );
   });
+
+  it('overlay aria-label reflects custom ariaLabel input', () => {
+    const fixture = createFixture({ isOpen: true });
+    fixture.componentRef.setInput('ariaLabel', 'Featured reels');
+    fixture.detectChanges();
+    const overlay = fixture.debugElement.query(By.css('.rk-reel-overlay'));
+    expect(overlay.nativeElement.getAttribute('aria-label')).toBe(
+      'Featured reels',
+    );
+  });
+
+  it('captures focus and installs focus trap when overlay opens', fakeAsync(() => {
+    createFixture({ isOpen: true });
+    tick();
+    expect(mockedCaptureFocus).toHaveBeenCalledTimes(1);
+    expect(mockedCreateFocusTrap).toHaveBeenCalledTimes(1);
+  }));
+
+  it('disposes focus trap and restores focus when overlay closes', fakeAsync(() => {
+    const fixture = createFixture({ isOpen: true });
+    tick();
+    const restoreFocus = (mockedCaptureFocus as jest.Mock).mock.results[0]
+      .value as jest.Mock;
+    const releaseTrap = (mockedCreateFocusTrap as jest.Mock).mock.results[0]
+      .value as jest.Mock;
+
+    fixture.componentRef.setInput('isOpen', false);
+    fixture.detectChanges();
+    tick();
+
+    expect(releaseTrap).toHaveBeenCalled();
+    expect(restoreFocus).toHaveBeenCalled();
+  }));
 
   it('shows two navigation arrow buttons when open', () => {
     const fixture = createFixture({ isOpen: true, content: makeItems(3) });

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Component } from '@angular/core';
 import {
   ComponentFixture,
@@ -8,7 +9,11 @@ import {
 import { By } from '@angular/platform-browser';
 
 import { RkLightboxOverlayComponent } from './lightbox-overlay.component';
-import { BodyLockService } from '@reelkit/angular';
+import {
+  BodyLockService,
+  captureFocusForReturn as mockedCaptureFocus,
+  createFocusTrap as mockedCreateFocusTrap,
+} from '@reelkit/angular';
 import { RkLightboxControlsDirective } from '../template-slots/lightbox-template-slots';
 import type { LightboxItem } from '../types';
 
@@ -185,12 +190,8 @@ jest.mock('@reelkit/angular', () => {
     animate: jest.fn(() => () => {
       /* noop */
     }),
-    captureFocusForReturn: jest.fn(() => () => {
-      /* noop */
-    }),
-    createFocusTrap: jest.fn(() => () => {
-      /* noop */
-    }),
+    captureFocusForReturn: jest.fn(() => jest.fn()),
+    createFocusTrap: jest.fn(() => jest.fn()),
     getFocusableElements: jest.fn(() => []),
   };
 });
@@ -533,6 +534,33 @@ describe('RkLightboxOverlayComponent', () => {
       expect(container.nativeElement.getAttribute('aria-label')).toBe(
         'Product gallery',
       );
+    });
+  });
+
+  describe('focus management', () => {
+    beforeEach(() => {
+      (mockedCaptureFocus as jest.Mock).mockClear();
+      (mockedCreateFocusTrap as jest.Mock).mockClear();
+    });
+
+    it('captures focus and installs focus trap when overlay opens', () => {
+      createFixture(true, ITEMS, 0);
+      expect(mockedCaptureFocus).toHaveBeenCalledTimes(1);
+      expect(mockedCreateFocusTrap).toHaveBeenCalledTimes(1);
+    });
+
+    it('disposes focus trap and restores focus when overlay closes', () => {
+      const fixture = createFixture(true, ITEMS, 0);
+      const restoreFocus = (mockedCaptureFocus as jest.Mock).mock.results[0]
+        .value as jest.Mock;
+      const releaseTrap = (mockedCreateFocusTrap as jest.Mock).mock.results[0]
+        .value as jest.Mock;
+
+      fixture.componentRef.setInput('isOpen', false);
+      fixture.detectChanges();
+
+      expect(releaseTrap).toHaveBeenCalled();
+      expect(restoreFocus).toHaveBeenCalled();
     });
   });
 

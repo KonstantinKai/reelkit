@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Directive, TemplateRef, inject } from '@angular/core';
 import type {
   BaseContentItem,

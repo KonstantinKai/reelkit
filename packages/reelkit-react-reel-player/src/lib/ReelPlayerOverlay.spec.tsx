@@ -1020,4 +1020,47 @@ describe('ReelPlayerOverlay', () => {
       expect(screen.getByTestId('custom-error')).toBeTruthy();
     });
   });
+
+  describe('a11y', () => {
+    it('overlay root is a labelled modal dialog', () => {
+      render(
+        <ReelPlayerOverlay isOpen onClose={vi.fn()} content={mockContent} />,
+      );
+
+      const overlay = document.querySelector('.rk-reel-overlay');
+      expect(overlay).toBeTruthy();
+      expect(overlay!.getAttribute('role')).toBe('dialog');
+      expect(overlay!.getAttribute('aria-modal')).toBe('true');
+      expect(overlay!.getAttribute('aria-label')).toBe('Video player');
+    });
+
+    it('ariaLabel prop overrides the default', () => {
+      render(
+        <ReelPlayerOverlay
+          isOpen
+          onClose={vi.fn()}
+          content={mockContent}
+          ariaLabel="Featured reels"
+        />,
+      );
+
+      expect(
+        document.querySelector('.rk-reel-overlay')!.getAttribute('aria-label'),
+      ).toBe('Featured reels');
+    });
+
+    it('slide wrapper carries group role + slide position label', () => {
+      render(
+        <ReelPlayerOverlay isOpen onClose={vi.fn()} content={mockContent} />,
+      );
+
+      const wrapper = document.querySelector('.rk-reel-slide-wrapper');
+      expect(wrapper).toBeTruthy();
+      expect(wrapper!.getAttribute('role')).toBe('group');
+      expect(wrapper!.getAttribute('aria-roledescription')).toBe('slide');
+      expect(wrapper!.getAttribute('aria-label')).toBe(
+        `Slide 1 of ${mockContent.length}`,
+      );
+    });
+  });
 });

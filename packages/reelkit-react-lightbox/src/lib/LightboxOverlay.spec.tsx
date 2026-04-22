@@ -1071,4 +1071,45 @@ describe('LightboxOverlay', () => {
       expect(document.querySelector('.rk-lightbox-spinner')).toBeTruthy();
     });
   });
+
+  describe('a11y', () => {
+    it('overlay root is a labelled modal dialog', () => {
+      render(<LightboxOverlay isOpen images={mockImages} onClose={vi.fn()} />);
+
+      const overlay = document.querySelector('.rk-lightbox-overlay');
+      expect(overlay).toBeTruthy();
+      expect(overlay!.getAttribute('role')).toBe('dialog');
+      expect(overlay!.getAttribute('aria-modal')).toBe('true');
+      expect(overlay!.getAttribute('aria-label')).toBe('Image gallery');
+    });
+
+    it('ariaLabel prop overrides the default', () => {
+      render(
+        <LightboxOverlay
+          isOpen
+          images={mockImages}
+          onClose={vi.fn()}
+          ariaLabel="Product photos"
+        />,
+      );
+
+      expect(
+        document
+          .querySelector('.rk-lightbox-overlay')!
+          .getAttribute('aria-label'),
+      ).toBe('Product photos');
+    });
+
+    it('slide wrapper carries group role + image position label', () => {
+      render(<LightboxOverlay isOpen images={mockImages} onClose={vi.fn()} />);
+
+      const wrapper = document.querySelector('.rk-lightbox-slide');
+      expect(wrapper).toBeTruthy();
+      expect(wrapper!.getAttribute('role')).toBe('group');
+      expect(wrapper!.getAttribute('aria-roledescription')).toBe('slide');
+      expect(wrapper!.getAttribute('aria-label')).toBe(
+        `Image 1 of ${mockImages.length}`,
+      );
+    });
+  });
 });

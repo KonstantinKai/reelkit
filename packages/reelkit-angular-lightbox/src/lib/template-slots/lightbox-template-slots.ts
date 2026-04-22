@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Directive, inject, TemplateRef } from '@angular/core';
 import type {
   LightboxItem,

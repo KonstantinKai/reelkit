@@ -1,10 +1,7 @@
 import { useState, useMemo } from 'react';
 import {
   StoriesOverlay,
-  StoriesRingList,
-  CanvasProgressBar,
   type StoriesGroup,
-  type StoryItem,
 } from '@reelkit/react-stories-player';
 import { Observe, generate, type Signal } from '@reelkit/react';
 import { cdnUrl } from '@reelkit/example-data';
@@ -389,7 +386,7 @@ function StoriesPlayerCustomPage() {
         isOpen={activeDemo === 'custom-footer'}
         onClose={() => setActiveDemo(null)}
         groups={groups}
-        renderFooter={({ author, story }) => (
+        renderFooter={({ author }) => (
           <div
             style={{
               position: 'absolute',

@@ -44,6 +44,7 @@ const linkMentions = (text: string): string => {
     );
 
   return linked.replace(
+    // eslint-disable-next-line no-control-regex
     /\u0000CODE(\d+)\u0000/g,
     (_, i) => codeHtml[Number(i)],
   );
