@@ -2,11 +2,11 @@
 
 <p>
   <a href="https://www.npmjs.com/package/@reelkit/angular"><img src="https://img.shields.io/npm/v/@reelkit/angular?color=6366f1&label=npm" alt="npm" /></a>
-  <img src="https://img.shields.io/badge/angular%20gzip-13.9%20kB-6366f1" alt="Bundle size" />
+  <img src="https://img.shields.io/badge/angular%20gzip-14.0%20kB-6366f1" alt="Bundle size" />
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
 
-Angular bindings for `@reelkit/core`. Add a `<rk-reel>` component with a count and a template — it handles virtualization, gestures, and keyboard/wheel input. ~13.9 kB gzip.
+Angular bindings for `@reelkit/core`. Add a `<rk-reel>` component with a count and a template — it handles virtualization, gestures, and keyboard/wheel input. ~14.0 kB gzip.
 
 **[Live Demo](https://angular-demo.reelkit.dev/?utm_source=npm)** · **[Open in StackBlitz](https://stackblitz.com/github/KonstantinKai/reelkit-angular-starter)**
 
