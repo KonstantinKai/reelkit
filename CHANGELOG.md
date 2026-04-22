@@ -1,3 +1,15 @@
+## @reelkit/vue-reel-player@0.1.0 (2026-04-22)
+
+### 🚀 Features
+
+- Full-screen TikTok/Instagram Reels-style vertical video player overlay for Vue 3
+- `v-model:is-open` two-way binding; Teleport to body; shared `<SoundProvider>` context
+- Full slot customization: slide, slide overlay, controls, navigation, nested slide, nested navigation, loading, error
+- Imperative API via template ref or `apiReady` emit
+- Generic content types via `BaseContentItem`
+- Themeable via `--rk-reel-*` CSS custom properties
+- Dialog a11y: `role="dialog"`, `aria-modal`, focus trap, focus return on close
+
 ## @reelkit/vue@0.2.0 (2026-04-22)
 
 ### 🚀 Features
