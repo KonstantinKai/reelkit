@@ -13,8 +13,8 @@ import changelogRaw from '../../../../../CHANGELOG.md?raw';
 
 const CHANGELOG_VERSION_KEY = 'reelkit-changelog-seen';
 
-function getLatestVersion(): string | null {
-  const match = changelogRaw.match(/^## .+@([\d.]+)/m);
+function getLatestEntry(): string | null {
+  const match = changelogRaw.match(/^## (.+@[\d.]+)/m);
   return match ? match[1] : null;
 }
 
@@ -23,7 +23,7 @@ function useChangelogBadge() {
   const location = useLocation();
 
   useEffect(() => {
-    const latest = getLatestVersion();
+    const latest = getLatestEntry();
     if (!latest) return;
     const seen = localStorage.getItem(CHANGELOG_VERSION_KEY);
     setShowBadge(seen !== latest);
@@ -32,7 +32,7 @@ function useChangelogBadge() {
   // Clear badge when visiting changelog page
   useEffect(() => {
     if (location.pathname === '/docs/changelog') {
-      const latest = getLatestVersion();
+      const latest = getLatestEntry();
       if (latest) {
         localStorage.setItem(CHANGELOG_VERSION_KEY, latest);
         setShowBadge(false);

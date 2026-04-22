@@ -292,7 +292,7 @@ export function createAngularStackBlitzProject(opts: {
               builder: '@angular/build:dev-server',
               options: {
                 buildTarget: 'sandbox:build',
-                proxyConfig: 'proxy.conf.mjs',
+                proxyConfig: 'proxy.conf.js',
               },
             },
           },
@@ -405,7 +405,7 @@ bootstrapApplication(AppComponent);
 
   const angularSbToken = import.meta.env.VITE_STACKBLITZ_CDN_TOKEN || '';
 
-  const proxyConf = `export default {
+  const proxyConf = `module.exports = {
   '/cdn': {
     target: 'https://cdn.reelkit.dev',
     secure: true,
@@ -424,7 +424,7 @@ bootstrapApplication(AppComponent);
     files: {
       'package.json': packageJson,
       'angular.json': angularJson,
-      'proxy.conf.mjs': proxyConf,
+      'proxy.conf.js': proxyConf,
       'src/index.html': indexHtml,
       'src/styles.css': stylesCss,
       'src/main.ts': mainTs,
