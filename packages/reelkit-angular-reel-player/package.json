@@ -26,7 +26,6 @@
     "*.d.ts",
     "*.d.ts.map",
     "*.css",
-    "reel-player.css",
     "!**/*.tsbuildinfo"
   ],
   "repository": {

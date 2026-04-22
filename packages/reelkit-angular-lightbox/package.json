@@ -18,16 +18,14 @@
       "esm": "./esm2022/reelkit-angular-lightbox.mjs",
       "default": "./fesm2022/reelkit-angular-lightbox.mjs"
     },
-    "./styles.css": "./lightbox-overlay.css",
-    "./lightbox-video-slide.css": "./lightbox-video-slide.css"
+    "./styles.css": "./styles.css"
   },
   "files": [
     "esm2022",
     "fesm2022",
     "*.d.ts",
     "*.d.ts.map",
-    "lightbox-overlay.css",
-    "lightbox-video-slide.css",
+    "*.css",
     "!**/*.tsbuildinfo"
   ],
   "repository": {

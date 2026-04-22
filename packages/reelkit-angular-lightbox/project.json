@@ -4,6 +4,13 @@
   "sourceRoot": "packages/reelkit-angular-lightbox/src",
   "prefix": "rk",
   "projectType": "library",
+  "release": {
+    "version": {
+      "manifestRootsToUpdate": ["{projectRoot}", "dist/{projectRoot}"],
+      "currentVersionResolver": "git-tag",
+      "fallbackCurrentVersionResolver": "disk"
+    }
+  },
   "tags": ["scope:angular", "type:lightbox"],
   "targets": {
     "build": {

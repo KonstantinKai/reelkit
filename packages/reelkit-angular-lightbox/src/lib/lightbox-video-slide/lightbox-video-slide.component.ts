@@ -69,7 +69,6 @@ export const setLightboxVideoMuted = (muted: boolean): void => {
   selector: 'rk-lightbox-video-slide',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  styleUrls: ['../styles/lightbox-video-slide.css'],
   template: `
     <div
       #container

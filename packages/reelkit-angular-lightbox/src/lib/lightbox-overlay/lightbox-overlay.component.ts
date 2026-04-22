@@ -133,7 +133,6 @@ const focusFirstFocusable = (container: HTMLElement): void => {
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   host: { '(document:keydown)': 'onKeydown($event)' },
-  styleUrls: ['../styles/lightbox-overlay.css'],
   providers: [
     {
       provide: LUCIDE_ICONS,
