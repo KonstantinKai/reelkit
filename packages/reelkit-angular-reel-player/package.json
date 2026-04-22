@@ -1,6 +1,6 @@
 {
   "name": "@reelkit/angular-reel-player",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "type": "module",
   "sideEffects": [
     "*.css"
@@ -58,7 +58,7 @@
     "access": "public"
   },
   "peerDependencies": {
-    "@reelkit/angular": "^0.2.1",
+    "@reelkit/angular": "^0.3.0",
     "@angular/common": ">=19.0.0",
     "@angular/core": ">=19.0.0",
     "lucide-angular": ">=0.460.0"

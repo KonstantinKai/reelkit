@@ -1,6 +1,6 @@
 {
   "name": "@reelkit/angular",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "type": "module",
   "sideEffects": false,
   "main": "./fesm2022/reelkit-angular.mjs",
@@ -56,7 +56,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@reelkit/core": "^0.4.0"
+    "@reelkit/core": "^0.5.0"
   },
   "peerDependencies": {
     "@angular/common": ">=19.0.0",

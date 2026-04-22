@@ -1,3 +1,118 @@
+## @reelkit/vue@0.2.0 (2026-04-22)
+
+### 🚀 Features
+
+- Add `toVueRef(source)` composable that bridges core Subscribables into a read-only Vue ref with auto-disposal via `onScopeDispose`
+- Re-export core focus management utilities (`captureFocusForReturn`, `createFocusTrap`, `getFocusableElements`)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.5.0
+
+## @reelkit/core@0.5.0 (2026-04-22)
+
+### 🚀 Features
+
+- Add focus management utilities: `captureFocusForReturn`, `createFocusTrap`, `getFocusableElements` for building accessible modal overlays
+
+## @reelkit/react@0.5.0 (2026-04-22)
+
+### 🚀 Features
+
+- Re-export core focus management utilities (`captureFocusForReturn`, `createFocusTrap`, `getFocusableElements`)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.5.0
+
+## @reelkit/angular@0.3.0 (2026-04-22)
+
+### 🚀 Features
+
+- Re-export core focus management utilities (`captureFocusForReturn`, `createFocusTrap`, `getFocusableElements`)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.5.0
+
+## @reelkit/stories-core@0.1.2 (2026-04-22)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.5.0
+
+## @reelkit/react-lightbox@0.4.0 (2026-04-22)
+
+### 🚀 Features
+
+- Themeable via `--rk-lightbox-*` CSS custom properties
+- Dialog a11y: `role="dialog"`, `aria-modal`, focus trap, focus return on close
+
+### ⚠️  Breaking Changes
+
+- overlay root class `rk-lightbox-container` → `rk-lightbox-overlay`
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/react to 0.5.0
+
+## @reelkit/angular-lightbox@0.3.0 (2026-04-22)
+
+### 🚀 Features
+
+- Themeable via `--rk-lightbox-*` CSS custom properties
+- Dialog a11y: `role="dialog"`, `aria-modal`, focus trap, focus return on close
+
+### ⚠️  Breaking Changes
+
+- overlay root class `rk-lightbox-container` → `rk-lightbox-overlay`
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/angular to 0.3.0
+
+## @reelkit/react-reel-player@0.4.0 (2026-04-22)
+
+### 🚀 Features
+
+- Themeable via `--rk-reel-*` CSS custom properties
+- Dialog a11y: `role="dialog"`, `aria-modal`, focus trap, focus return on close
+
+### ⚠️  Breaking Changes
+
+- class renames `rk-player-*` / `rk-video-slide-*` / `rk-nested-*` / `rk-media-error` → `rk-reel-*` — retarget custom CSS overrides
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/react to 0.5.0
+
+## @reelkit/angular-reel-player@0.3.0 (2026-04-22)
+
+### 🚀 Features
+
+- Themeable via `--rk-reel-*` CSS custom properties
+- Dialog a11y: `role="dialog"`, `aria-modal`, focus trap, focus return on close
+
+### ⚠️  Breaking Changes
+
+- class renames `rk-player-*` / `rk-video-slide-*` / `rk-nested-*` / `rk-media-error` → `rk-reel-*` — retarget custom CSS overrides
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/angular to 0.3.0
+
+## @reelkit/react-stories-player@0.2.0 (2026-04-22)
+
+### 🚀 Features
+
+- Themeable via `--rk-stories-*` CSS custom properties
+- Dialog a11y: `role="dialog"`, `aria-modal`, focus trap, focus return on close
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/stories-core to 0.1.2
+- Updated @reelkit/react to 0.5.0
+
 ## @reelkit/vue@0.1.0 (2026-04-17)
 
 ### 🎉 Initial Release
