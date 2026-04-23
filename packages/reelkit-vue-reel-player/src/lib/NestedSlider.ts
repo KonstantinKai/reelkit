@@ -24,6 +24,7 @@ import type {
 } from './types';
 import ImageSlide from './ImageSlide';
 import VideoSlide from './VideoSlide';
+import './NestedSlider.css';
 
 /**
  * Cap on cached `defaultContent` components per nested slider instance.
@@ -134,7 +135,7 @@ export const NestedSlider = defineComponent({
     const innerIndex = ref(0);
 
     /**
-     * See identical comment in ReelPlayerOverlay — `defaultContent` for
+     * See identical comment in ReelPlayerOverlay: `defaultContent` for
      * each nested slide must be a stable component reference so that
      * `<component :is="defaultContent" />` patches in place. LRU-bounded
      * so the cache can't grow forever when `media` is swapped (e.g. an
@@ -303,31 +304,19 @@ export const NestedSlider = defineComponent({
             },
           ),
           items.length > 1
-            ? h(
-                'div',
-                {
-                  style: {
-                    position: 'absolute',
-                    bottom: '16px',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    zIndex: 10,
-                  },
-                },
-                [
-                  h(ReelIndicator, {
-                    count: items.length,
-                    active: innerIndex.value,
-                    direction: 'horizontal',
-                    visible: 5,
-                    radius: 3,
-                    gap: 4,
-                    activeColor: '#fff',
-                    inactiveColor: 'rgba(255,255,255,0.4)',
-                    onDotClick: (i: number) => localSlider?.goTo(i, true),
-                  }),
-                ],
-              )
+            ? h('div', { class: 'rk-reel-nested-indicator' }, [
+                h(ReelIndicator, {
+                  count: items.length,
+                  active: innerIndex.value,
+                  direction: 'horizontal',
+                  visible: 5,
+                  radius: 3,
+                  gap: 4,
+                  activeColor: '#fff',
+                  inactiveColor: 'rgba(255,255,255,0.4)',
+                  onDotClick: (i: number) => localSlider?.goTo(i, true),
+                }),
+              ])
             : null,
           items.length > 1 && props.renderNavigation
             ? props.renderNavigation({

@@ -1,0 +1,196 @@
+/*
+ * Theme tokens for the Vue reel-player overlay.
+ *
+ * Defaults live on `:root` so they inherit through the DOM. Override at
+ * `:root` (or any ancestor of `.rk-reel-overlay`) to retheme. Direct-match
+ * declarations on `.rk-reel-overlay` would otherwise shadow inherited values.
+ *
+ * Token vocabulary mirrors @reelkit/react-reel-player: the same rename or
+ * addition applies to both packages.
+ */
+:root {
+  --rk-reel-overlay-bg: #000;
+  --rk-reel-overlay-z: 1000;
+
+  --rk-reel-button-bg: rgba(0, 0, 0, 0.5);
+  --rk-reel-button-bg-hover: rgba(255, 255, 255, 0.1);
+  --rk-reel-button-bg-hover-strong: rgba(255, 255, 255, 0.2);
+  --rk-reel-button-fg: #fff;
+  --rk-reel-button-size: 44px;
+  --rk-reel-button-radius: 50%;
+
+  --rk-reel-ui-z: 10;
+  --rk-reel-edge-padding: 16px;
+  --rk-reel-nav-gap: 8px;
+
+  --rk-reel-loader-z: 5;
+  --rk-reel-loader-color: rgba(255, 255, 255, 0.12);
+  --rk-reel-loader-duration: 1.8s;
+
+  --rk-reel-error-fg: rgba(255, 255, 255, 0.4);
+  --rk-reel-error-gap: 12px;
+  --rk-reel-error-text-size: 13px;
+
+  --rk-reel-transition: 0.2s;
+  --rk-reel-backdrop-blur: 8px;
+}
+
+.rk-reel-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--rk-reel-overlay-bg);
+  z-index: var(--rk-reel-overlay-z);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  touch-action: none;
+  overscroll-behavior: none;
+  outline: none;
+}
+
+.rk-reel-container {
+  position: relative;
+  overflow: hidden;
+  touch-action: none;
+}
+
+.rk-reel-nav-arrows {
+  display: none;
+  position: absolute;
+  right: var(--rk-reel-edge-padding);
+  top: 50%;
+  transform: translateY(-50%);
+  flex-direction: column;
+  gap: var(--rk-reel-nav-gap);
+  z-index: var(--rk-reel-ui-z);
+}
+
+@media (min-width: 768px) {
+  .rk-reel-nav-arrows {
+    display: flex;
+  }
+}
+
+.rk-reel-slide-wrapper {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Shared circular icon button used by close, sound, and nav arrows. */
+.rk-reel-button {
+  width: var(--rk-reel-button-size);
+  height: var(--rk-reel-button-size);
+  border-radius: var(--rk-reel-button-radius);
+  border: none;
+  padding: 0;
+  color: var(--rk-reel-button-fg);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--rk-reel-button-bg);
+  transition:
+    background-color var(--rk-reel-transition),
+    opacity var(--rk-reel-transition);
+}
+
+/*
+ * Collapse any icon wrapper to its content so flex alignment centers the
+ * icon even when a custom element or slot renders around the SVG.
+ */
+.rk-reel-button > * {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Close + sound buttons: anchored to overlay corners. */
+.rk-reel-close-btn,
+.rk-reel-sound-btn {
+  position: absolute;
+  right: var(--rk-reel-edge-padding);
+  z-index: var(--rk-reel-ui-z);
+}
+
+.rk-reel-close-btn {
+  top: var(--rk-reel-edge-padding);
+}
+
+/* Sound button stacks under the close button, top-right. */
+.rk-reel-sound-btn {
+  top: calc(
+    var(--rk-reel-edge-padding) + var(--rk-reel-button-size) +
+      var(--rk-reel-nav-gap)
+  );
+}
+
+.rk-reel-sound-btn[aria-disabled='true'] {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* Nav arrow buttons: transparent over the slide. */
+.rk-reel-nav-button {
+  background-color: var(--rk-reel-button-bg-hover);
+}
+
+.rk-reel-nav-button:hover {
+  background-color: var(--rk-reel-button-bg-hover-strong);
+}
+
+.rk-reel-nav-button[aria-disabled='true'],
+.rk-reel-nav-button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.rk-reel-loader {
+  position: absolute;
+  inset: 0;
+  z-index: var(--rk-reel-loader-z);
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent 25%,
+    var(--rk-reel-loader-color) 50%,
+    transparent 75%
+  );
+  background-size: 300% 100%;
+  animation: rk-reel-wave var(--rk-reel-loader-duration) ease-in-out infinite;
+}
+
+@keyframes rk-reel-wave {
+  0% {
+    background-position: 100% 0;
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    background-position: -100% 0;
+    opacity: 0;
+  }
+}
+
+.rk-reel-media-error {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: var(--rk-reel-ui-z);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--rk-reel-error-gap);
+  color: var(--rk-reel-error-fg);
+}
+
+.rk-reel-media-error-text {
+  font-size: var(--rk-reel-error-text-size);
+  letter-spacing: 0.02em;
+}

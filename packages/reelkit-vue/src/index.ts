@@ -3,7 +3,7 @@
  *
  * Vue bindings for the ReelKit slider library.
  *
- * The main component is {@link Reel} — a virtualized, gesture-driven
+ * The main component is {@link Reel}: a virtualized, gesture-driven
  * slider that renders only the visible slides to the DOM. It wraps
  * `@reelkit/core`'s `createSliderController` and bridges its
  * signal-based state into Vue's reactivity system.
@@ -50,9 +50,11 @@ export {
   observeDomEvent,
   createDisposableList,
   type DisposableList,
+  type Disposer,
   captureFrame,
   createLruCache,
   createSharedVideo,
+  syncVideoObjectFit,
   type LruCache,
   type SharedVideoConfig,
   type SharedVideoInstance,
@@ -93,6 +95,12 @@ export {
   createSoundController,
   syncMutedToVideo,
   type SoundController,
+
+  // Timeline
+  createTimelineController,
+  type TimelineController,
+  type TimelineControllerConfig,
+  type BufferedRange,
 
   // Content loading & preloading
   observeMediaLoading,

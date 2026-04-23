@@ -1,5 +1,6 @@
 import { defineComponent, h, type ExtractPropTypes, type PropType } from 'vue';
 import { Heart } from 'lucide-vue-next';
+import './SlideOverlay.css';
 
 /**
  * Formats a like count into a compact human-readable string.

@@ -18,8 +18,11 @@ import {
   observeDomEvent,
   observeMediaLoading,
   syncMutedToVideo,
+  syncVideoObjectFit,
   useSoundState,
 } from '@reelkit/vue';
+import { useTimelineStateOptional } from './useTimelineState';
+import './VideoSlide.css';
 
 /**
  * Singleton shared `<video>` element + per-slide playback-position and
@@ -37,7 +40,7 @@ export const shared = createSharedVideo({
 /**
  * Module-scoped ownership token tracking which `VideoSlide` instance
  * currently owns the shared `<video>` element. Vue `watch` callbacks for
- * sibling slides can fire in any order — when slide A reactivates and
+ * sibling slides can fire in any order: when slide A reactivates and
  * slide B deactivates in the same flush, an instance-local token would
  * always match its own `myToken`, causing slide B's cleanup to call
  * `pause()` and interrupt slide A's `play()`. A shared token lets the
@@ -115,6 +118,7 @@ export const VideoSlide = defineComponent({
     const containerRef = shallowRef<HTMLDivElement | null>(null);
     const showPoster = ref(true);
     const soundState = useSoundState();
+    const timelineController = useTimelineStateOptional();
 
     const shouldPlay = () => props.isActive && props.isInnerActive;
 
@@ -138,11 +142,11 @@ export const VideoSlide = defineComponent({
       // after listeners + muteSync have already been disposed.
       disposables.push(
         () => {
-          // Shared video token lost — another VideoSlide already activated
+          // Shared video token lost: another VideoSlide already activated
           // (Vue may run sibling watchers in either order during the same
           // flush). Listeners + muteSync were already torn down above; we
-          // just skip pause/remove/onVideoRef so we don't clobber the new
-          // owner's setup.
+          // just skip pause/detach/remove/onVideoRef so we don't clobber
+          // the new owner's setup.
           if (activeToken !== myToken) return;
 
           shared.playbackPositions.set(props.slideKey, video.currentTime);
@@ -150,6 +154,9 @@ export const VideoSlide = defineComponent({
           if (frame) {
             shared.capturedFrames.set(props.slideKey, frame);
           }
+          // Detach timeline only when we're still the active owner,
+          // otherwise we'd unhook the new slide's freshly-attached state.
+          timelineController?.detach();
           if (!video.paused) video.pause();
           if (video.parentNode === container) {
             container.removeChild(video);
@@ -175,11 +182,16 @@ export const VideoSlide = defineComponent({
       const savedPosition = shared.playbackPositions.get(props.slideKey);
       video.currentTime = savedPosition ?? 0;
 
-      video.style.objectFit = isVertical() ? 'cover' : 'contain';
+      disposables.push(syncVideoObjectFit(video, isVertical()));
       video.dataset['slideKey'] = props.slideKey;
 
       container.appendChild(video);
       props.onVideoRef?.(video);
+
+      // Detach happens inside the token-guarded lifecycle disposer above.
+      // Don't push it as a standalone disposer or cleanup will clobber the
+      // next slide's fresh attachment when both run in the same flush.
+      timelineController?.attach(video);
 
       video.play().catch(noop);
 

@@ -40,6 +40,8 @@ import type {
   NestedSlideSlotScope,
   SlideOverlaySlotScope,
   SlideSlotScope,
+  TimelineMode,
+  TimelineSlotScope,
 } from './types';
 import MediaSlide from './MediaSlide';
 import PlayerControls from './PlayerControls';
@@ -47,13 +49,16 @@ import SlideOverlay from './SlideOverlay';
 import LoadingIndicator from './LoadingIndicator';
 import ErrorIndicator from './ErrorIndicator';
 import { shared as sharedVideo } from './VideoSlide';
+import { TimelineProvider, useTimelineState } from './useTimelineState';
+import TimelineBar from './TimelineBar';
 import { useViewportSize } from './useViewportSize';
-import './styles.css';
+import './ReelPlayerOverlay.css';
 
 /** Imperative API exposed by `ReelPlayerOverlay` via template ref. */
 export type ReelPlayerApi = ReelExpose & { close: () => void };
 
 const _kPreloadRange = 2;
+const _kDefaultTimelineMinDurationSeconds = 30;
 
 /**
  * Cap on cached `defaultContent` components per overlay instance. Three
@@ -120,7 +125,7 @@ const reelPlayerSharedProps = {
   swipeDistanceFactor: { type: Number, default: 0.12 },
 
   /**
-   * Enable infinite circular navigation — the slider wraps past the last
+   * Enable infinite circular navigation. The slider wraps past the last
    * slide back to the first (and vice versa).
    *
    * @default false
@@ -149,6 +154,27 @@ const reelPlayerSharedProps = {
    * @default 200
    */
   wheelDebounceMs: { type: Number, default: 200 },
+
+  /**
+   * Whether the built-in playback timeline bar renders over the active video.
+   *
+   * @default 'auto'
+   */
+  timeline: {
+    type: String as PropType<TimelineMode>,
+    default: 'auto' as TimelineMode,
+  },
+
+  /**
+   * Minimum video duration (seconds) for `timeline='auto'` to render the
+   * built-in bar. Short looping clips below this threshold are suppressed.
+   *
+   * @default 30
+   */
+  timelineMinDurationSeconds: {
+    type: Number,
+    default: _kDefaultTimelineMinDurationSeconds,
+  },
 };
 
 /** Props accepted by the public {@link ReelPlayerOverlay} component. */
@@ -187,6 +213,8 @@ const ReelPlayerContent = defineComponent({
     let videoEl: HTMLVideoElement | null = null;
     let videoPausedOnDrag = false;
     const soundState = useSoundState();
+    const timelineState = useTimelineState();
+    const timelineDuration = toVueRef(timelineState.duration);
 
     const aspectRatio = toRef(props, 'aspectRatio');
     const size = useViewportSize(aspectRatio);
@@ -446,6 +474,43 @@ const ReelPlayerContent = defineComponent({
         });
       };
 
+      const renderTimelineNode = () => {
+        const mode = props.timeline;
+        if (mode === 'never') return null;
+        const idx = activeIndex.value;
+        const item = items[idx];
+        if (!item) return null;
+
+        const anyVideo = item.media.some((m) => m.type === 'video');
+        const isSingle = item.media.length === 1;
+        const activeMediaIsVideo = isSingle
+          ? item.media[0]?.type === 'video'
+          : innerMediaType.value === 'video';
+
+        if (mode === 'always') {
+          if (!anyVideo) return null;
+        } else {
+          if (!activeMediaIsVideo) return null;
+          if (timelineDuration.value < props.timelineMinDurationSeconds) {
+            return null;
+          }
+        }
+
+        const defaultContent = h(TimelineBar);
+
+        const timelineSlot = slots['timeline'];
+        if (timelineSlot) {
+          const scope: TimelineSlotScope = {
+            item,
+            activeIndex: idx,
+            timelineState,
+            defaultContent: () => [defaultContent],
+          };
+          return timelineSlot(scope);
+        }
+        return defaultContent;
+      };
+
       const renderNavigationNode = () => {
         const idx = activeIndex.value;
         const navSlot = slots['navigation'];
@@ -459,7 +524,7 @@ const ReelPlayerContent = defineComponent({
           };
           return navSlot(scope);
         }
-        // Loop mode never sits at an edge — nav always navigates.
+        // Loop mode never sits at an edge; nav always navigates.
         const prevDisabled = !props.loop && idx === 0;
         const nextDisabled = !props.loop && idx === items.length - 1;
         return h('div', { class: 'rk-reel-nav-arrows' }, [
@@ -645,6 +710,7 @@ const ReelPlayerContent = defineComponent({
             ),
             renderLoadingOverlay(),
             renderControlsNode(),
+            renderTimelineNode(),
           ]),
           renderNavigationNode(),
         ],
@@ -713,16 +779,20 @@ export const ReelPlayerOverlay = defineComponent({
       return h(Teleport, { to: 'body' }, [
         h(SoundProvider, null, {
           default: () => [
-            h(
-              ReelPlayerContent,
-              {
-                ...props,
-                onClose: requestClose,
-                onSlideChange: (i: number) => emit('slideChange', i),
-                onApiReady: handleApiReady,
-              },
-              slots,
-            ),
+            h(TimelineProvider, null, {
+              default: () => [
+                h(
+                  ReelPlayerContent,
+                  {
+                    ...props,
+                    onClose: requestClose,
+                    onSlideChange: (i: number) => emit('slideChange', i),
+                    onApiReady: handleApiReady,
+                  },
+                  slots,
+                ),
+              ],
+            }),
           ],
         }),
       ]);

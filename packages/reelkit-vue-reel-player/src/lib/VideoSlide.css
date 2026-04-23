@@ -1,0 +1,42 @@
+/*
+ * Video slide
+ */
+:root {
+  --rk-reel-video-bg: #000;
+  --rk-reel-video-poster-transition: 0.3s;
+}
+
+.rk-reel-video-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--rk-reel-video-bg);
+  overflow: hidden;
+}
+
+.rk-reel-video-element {
+  width: 100%;
+  height: 100%;
+  object-position: center;
+}
+
+.rk-reel-video-element::-internal-media-controls-overlay-cast-button {
+  display: none;
+}
+
+.rk-reel-video-poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-position: center;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity var(--rk-reel-video-poster-transition) ease;
+  pointer-events: none;
+}
+
+.rk-reel-video-poster.rk-visible {
+  opacity: 1;
+}

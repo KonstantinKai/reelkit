@@ -1,5 +1,9 @@
 import type { Ref, VNode } from 'vue';
-import type { ReelExpose, SoundController } from '@reelkit/vue';
+import type {
+  ReelExpose,
+  SoundController,
+  TimelineController,
+} from '@reelkit/vue';
 
 /** Supported media types for content items. */
 export type MediaType = 'image' | 'video';
@@ -62,6 +66,18 @@ export interface ContentItem extends BaseContentItem {
   description: string;
 }
 
+/**
+ * Gating strategy for the built-in playback timeline bar.
+ *
+ * - `'auto'`: render whenever the active media is a video whose duration
+ *   exceeds `timelineMinDurationSeconds`. Works for single-video slides
+ *   and multi-media carousels (follows the active nested item).
+ * - `'always'`: render whenever the active slide contains a video.
+ * - `'never'`: never render the bar. For a fully custom replacement, use
+ *   the `#timeline` slot instead; it still respects the same gating logic.
+ */
+export type TimelineMode = 'auto' | 'always' | 'never';
+
 /** Scope passed to the `controls` slot. */
 export interface ControlsSlotScope<
   T extends BaseContentItem = BaseContentItem,
@@ -80,6 +96,34 @@ export interface ControlsSlotScope<
 
   /** Callback to close the player overlay. */
   onClose: () => void;
+}
+
+/**
+ * Scope passed to the `timeline` slot.
+ *
+ * Only passed when the overlay's gating rules would render the default bar
+ * (same `timeline='auto'|'always'|'never'` + `timelineMinDurationSeconds`
+ * logic), so consumers don't re-implement it. Use `defaultContent` to wrap
+ * the built-in bar, or render a fully custom element from `timelineState`
+ * signals.
+ */
+export interface TimelineSlotScope<
+  T extends BaseContentItem = BaseContentItem,
+> {
+  /** The currently active content item. */
+  item: T;
+
+  /** Zero-based index of the currently active slide. */
+  activeIndex: number;
+
+  /** Reactive timeline controller: signals plus `bindInteractions` for scrubbing. */
+  timelineState: TimelineController;
+
+  /**
+   * Default `<TimelineBar />` content as a render function. Call it to
+   * include the built-in bar inside a wrapper, or omit to replace entirely.
+   */
+  defaultContent: () => VNode | VNode[];
 }
 
 /** Scope passed to the `navigation` slot. */
@@ -132,13 +176,13 @@ export interface SlideSlotScope<T extends BaseContentItem = BaseContentItem> {
    * Default slide content as a render function. Use it to wrap the
    * built-in MediaSlide + overlay inside your own container.
    *
-   * - **Render-fn consumers:** call directly — `h('div', defaultContent())`.
+   * - **Render-fn consumers:** call directly, e.g. `h('div', defaultContent())`.
    * - **Template consumers:** render via `<component :is="defaultContent" />`.
    *   Backed by a per-slide stable component cache so the wrapper patches
    *   in place across renders (no remount of the active video).
    *
    * To selectively customize while letting other slides use the default,
-   * **omit the slot for those slides** — return nothing from the slot
+   * **omit the slot for those slides**: return nothing from the slot
    * (e.g. `<template #slide="..."><Cta v-if="..." /></template>`) and
    * the parent will fall back to its built-in rendering automatically.
    */
@@ -196,7 +240,7 @@ export interface NestedSlideSlotScope<
 
   /**
    * Default slide content as a render function (ImageSlide or
-   * VideoSlide). See {@link SlideSlotScope.defaultContent} for usage —
+   * VideoSlide). See {@link SlideSlotScope.defaultContent} for usage;
    * same template/render-fn patterns apply.
    */
   defaultContent: () => VNode | VNode[];

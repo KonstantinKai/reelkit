@@ -1,0 +1,139 @@
+/*
+ * Theme tokens for the Vue reel-player timeline bar.
+ *
+ * Defaults live on `:root` so they inherit through the DOM. Override at
+ * `:root` or any ancestor of `.rk-reel-timeline` to retheme.
+ */
+:root {
+  --rk-reel-timeline-height: 3px;
+  --rk-reel-timeline-height-active: 6px;
+  --rk-reel-timeline-track: rgba(255, 255, 255, 0.22);
+  --rk-reel-timeline-buffered: rgba(255, 255, 255, 0.4);
+  --rk-reel-timeline-fill: #fff;
+  --rk-reel-timeline-cursor: #fff;
+  --rk-reel-timeline-cursor-width: 10px;
+  --rk-reel-timeline-cursor-width-active: 14px;
+  --rk-reel-timeline-cursor-height: 24px;
+  --rk-reel-timeline-cursor-height-active: 32px;
+  --rk-reel-timeline-z: 11;
+  --rk-reel-timeline-hitbox: 16px;
+  --rk-reel-timeline-transition: 0.15s ease-out;
+}
+
+.rk-reel-timeline {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  z-index: var(--rk-reel-timeline-z);
+  touch-action: none;
+}
+
+/*
+ * On touch devices, clear the system gesture area AND reserve enough
+ * bottom padding in the slide overlay so the active pill doesn't cut
+ * across the description / likes row during scrubbing. Desktop stays
+ * flush and compact because those pointer precision + hover states aren't
+ * available on touch.
+ */
+@media (hover: none) and (pointer: coarse) {
+  .rk-reel-timeline {
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 12px);
+  }
+
+  :root {
+    /*
+     * Description sits a fixed distance above the track, regardless of
+     * safe-area size. iOS home-indicator (~34px) therefore doesn't stack
+     * extra whitespace below the text. The active pill will briefly cross
+     * the description during scrub: accepted as a transient state.
+     */
+    --rk-reel-slide-overlay-padding: 48px 16px
+      calc(
+        max(env(safe-area-inset-bottom, 0px), 12px) +
+          var(--rk-reel-timeline-height) + 12px
+      );
+  }
+}
+
+.rk-reel-timeline-track {
+  position: relative;
+  width: 100%;
+  height: var(--rk-reel-timeline-height);
+  background-color: var(--rk-reel-timeline-track);
+  cursor: pointer;
+  outline: none;
+  transition: height var(--rk-reel-timeline-transition);
+}
+
+/* Enlarge the touch/pointer hit area without growing the visual track. */
+.rk-reel-timeline-track::before {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  top: calc(var(--rk-reel-timeline-hitbox) * -1);
+  bottom: 0;
+}
+
+.rk-reel-timeline-track:hover,
+.rk-reel-timeline-track:focus-visible,
+.rk-reel-timeline-track[data-scrubbing] {
+  height: var(--rk-reel-timeline-height-active);
+}
+
+.rk-reel-timeline-track:focus-visible {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.6);
+}
+
+.rk-reel-timeline-buffered {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background-color: var(--rk-reel-timeline-buffered);
+  pointer-events: none;
+}
+
+.rk-reel-timeline-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  background-color: var(--rk-reel-timeline-fill);
+  pointer-events: none;
+}
+
+/*
+ * Cursor is a vertical pill that grows upward from the top of the track.
+ * Anchored at `bottom: 100%` so the pill sits entirely above the track:
+ * avoids clipping on a bottom-pinned bar.
+ */
+.rk-reel-timeline-cursor {
+  position: absolute;
+  bottom: 100%;
+  width: var(--rk-reel-timeline-cursor-width);
+  height: var(--rk-reel-timeline-cursor-height);
+  margin-left: calc(var(--rk-reel-timeline-cursor-width) * -0.5);
+  border-radius: var(--rk-reel-timeline-cursor-width);
+  background-color: var(--rk-reel-timeline-cursor);
+  transform: scaleY(0);
+  transform-origin: bottom center;
+  transition:
+    transform var(--rk-reel-timeline-transition),
+    width var(--rk-reel-timeline-transition),
+    height var(--rk-reel-timeline-transition),
+    margin-left var(--rk-reel-timeline-transition);
+  pointer-events: none;
+}
+
+.rk-reel-timeline-track:hover .rk-reel-timeline-cursor,
+.rk-reel-timeline-track:focus-visible .rk-reel-timeline-cursor,
+.rk-reel-timeline-cursor[data-scrubbing] {
+  transform: scaleY(1);
+}
+
+.rk-reel-timeline-cursor[data-scrubbing] {
+  width: var(--rk-reel-timeline-cursor-width-active);
+  height: var(--rk-reel-timeline-cursor-height-active);
+  margin-left: calc(var(--rk-reel-timeline-cursor-width-active) * -0.5);
+  border-radius: var(--rk-reel-timeline-cursor-width-active);
+}
