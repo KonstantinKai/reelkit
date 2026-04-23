@@ -81,7 +81,7 @@ export interface PlayerSoundState {
   readonly muted: () => boolean;
 
   /**
-   * Whether sound controls should be hidden — `true` while the active slide
+   * Whether sound controls should be hidden. `true` while the active slide
    * has no video or is transitioning.
    */
   readonly disabled: () => boolean;
@@ -89,6 +89,57 @@ export interface PlayerSoundState {
   /** Toggles the muted state. */
   toggle: () => void;
 }
+
+/** A single contiguous buffered region, expressed as a 0–1 fraction of total duration. */
+export interface PlayerBufferedRange {
+  readonly start: number;
+
+  readonly end: number;
+}
+
+/**
+ * Minimal timeline-state shape exposed to the `rkPlayerControls` template
+ * slot. Matches `TimelineStateService`'s public API so custom controls can
+ * render a scrub bar, timecode, or progress indicator.
+ */
+export interface PlayerTimelineState {
+  /** Total duration in seconds. `0` before metadata loads. */
+  readonly duration: () => number;
+
+  /** Current playback position in seconds. rAF-throttled while playing. */
+  readonly currentTime: () => number;
+
+  /** 0–1 fraction derived from `currentTime / duration`. */
+  readonly progress: () => number;
+
+  /** Normalised, sorted, non-overlapping buffered ranges. */
+  readonly bufferedRanges: () => readonly PlayerBufferedRange[];
+
+  /** `true` while the user is actively dragging the scrub handle. */
+  readonly isScrubbing: () => boolean;
+
+  /** Programmatic seek. */
+  seek: (seconds: number) => void;
+
+  /**
+   * Wire pointer + keyboard scrub interactions onto a DOM element (your
+   * custom track). Returns a disposer that removes the listeners.
+   */
+  bindInteractions: (target: HTMLElement) => () => void;
+}
+
+/**
+ * Gating strategy for the built-in playback timeline bar.
+ *
+ * - `'auto'`: render whenever the active media is a video whose duration
+ *   exceeds `timelineMinDurationSeconds`. Works for single-video slides
+ *   and multi-media carousels (follows the active nested item).
+ * - `'always'`: render whenever the active slide contains a video.
+ * - `'never'`: never render the bar. For a fully custom replacement, use
+ *   the `rkPlayerTimeline` template slot instead; it still respects the
+ *   same gating logic.
+ */
+export type TimelineMode = 'auto' | 'always' | 'never';
 
 /**
  * Template context for the `rkPlayerControls` slot.
@@ -113,6 +164,27 @@ export interface PlayerControlsContext<
 
   /** Close the player overlay. */
   onClose: () => void;
+}
+
+/**
+ * Template context for the `rkPlayerTimeline` slot.
+ *
+ * Only passed when the overlay's gating rules would render the default bar
+ * (same `timeline='auto'|'always'|'never'` + `timelineMinDurationSeconds`
+ * logic), so consumers don't re-implement it. Use the default rk-timeline-bar
+ * via the token-less slot to augment rather than replace.
+ */
+export interface PlayerTimelineContext<
+  T extends BaseContentItem = ContentItem,
+> {
+  /** The currently active content item. */
+  $implicit: T;
+
+  /** Zero-based index of the currently active slide. */
+  activeIndex: number;
+
+  /** Reactive timeline state: signals for custom scrub bars, cursors, or timecodes. */
+  timelineState: PlayerTimelineState;
 }
 
 /**

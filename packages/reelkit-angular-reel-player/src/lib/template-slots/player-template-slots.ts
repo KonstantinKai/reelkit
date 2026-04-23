@@ -10,6 +10,7 @@ import type {
   PlayerNestedSlideContext,
   PlayerSlideContext,
   PlayerSlideOverlayContext,
+  PlayerTimelineContext,
 } from '../types';
 
 /**
@@ -135,6 +136,35 @@ export class RkPlayerNestedSlideDirective {
 }
 
 /**
+ * Template slot for a custom playback timeline bar.
+ *
+ * Only rendered when the overlay's gating rules would render the default
+ * bar (same `timeline='auto'|'always'|'never'` +
+ * `timelineMinDurationSeconds` logic), so consumers don't re-implement it.
+ *
+ * @example
+ * ```html
+ * <ng-template rkPlayerTimeline let-item let-state="timelineState">
+ *   <my-scrub-bar [state]="state" />
+ * </ng-template>
+ * ```
+ */
+@Directive({ selector: '[rkPlayerTimeline]', standalone: true })
+export class RkPlayerTimelineDirective<
+  T extends BaseContentItem = ContentItem,
+> {
+  readonly templateRef =
+    inject<TemplateRef<PlayerTimelineContext<T>>>(TemplateRef);
+
+  static ngTemplateContextGuard<T extends BaseContentItem>(
+    _dir: RkPlayerTimelineDirective<T>,
+    ctx: unknown,
+  ): ctx is PlayerTimelineContext<T> {
+    return true;
+  }
+}
+
+/**
  * Template slot for custom navigation arrows inside the nested horizontal slider.
  */
 @Directive({ selector: '[rkPlayerNestedNavigation]', standalone: true })
@@ -200,6 +230,7 @@ export const PLAYER_TEMPLATE_SLOT_DIRECTIVES = [
   RkPlayerSlideDirective,
   RkPlayerSlideOverlayDirective,
   RkPlayerControlsDirective,
+  RkPlayerTimelineDirective,
   RkPlayerNavigationDirective,
   RkPlayerNestedSlideDirective,
   RkPlayerNestedNavigationDirective,

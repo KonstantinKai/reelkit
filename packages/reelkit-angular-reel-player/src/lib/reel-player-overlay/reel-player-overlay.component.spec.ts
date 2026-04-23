@@ -161,6 +161,45 @@ jest.mock('@reelkit/angular', () => {
         }),
       };
     }),
+    createTimelineController: jest.fn(() => {
+      const makeSignal = <T,>(initial: T) => ({
+        value: initial,
+        observe: jest.fn(() => () => {
+          /* noop */
+        }),
+      });
+      return {
+        duration: makeSignal(0),
+        currentTime: makeSignal(0),
+        progress: makeSignal(0),
+        bufferedRanges: makeSignal([] as { start: number; end: number }[]),
+        isScrubbing: makeSignal(false),
+        seek: jest.fn(),
+        bindInteractions: jest.fn(() => () => {
+          /* noop */
+        }),
+        attach: jest.fn(() => () => {
+          /* noop */
+        }),
+        detach: jest.fn(),
+      };
+    }),
+    syncVideoObjectFit: jest.fn(() => () => {
+      /* noop */
+    }),
+    createDisposableList: jest.fn(() => {
+      const fns: (() => void)[] = [];
+      return {
+        push: (...items: (() => void)[]) => fns.push(...items),
+        dispose: () => fns.forEach((fn) => fn()),
+      };
+    }),
+    observeDomEvent: jest.fn(
+      (el: EventTarget, event: string, handler: EventListener) => {
+        el.addEventListener(event, handler);
+        return () => el.removeEventListener(event, handler);
+      },
+    ),
   };
 });
 

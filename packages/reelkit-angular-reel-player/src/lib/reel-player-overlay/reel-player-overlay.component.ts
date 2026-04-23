@@ -43,6 +43,8 @@ import {
   type ContentPreloader,
 } from '@reelkit/angular';
 import { SoundStateService } from '../sound-state/sound-state.service';
+import { TimelineStateService } from '../timeline-state/timeline-state.service';
+import { RkTimelineBarComponent } from '../timeline-bar/timeline-bar.component';
 import { RkMediaSlideComponent } from '../media-slide/media-slide.component';
 import { shared as sharedVideo } from '../video-slide/video-slide.component';
 import { RkSlideOverlayComponent } from '../slide-overlay/slide-overlay.component';
@@ -52,6 +54,7 @@ import {
   RkPlayerSlideDirective,
   RkPlayerSlideOverlayDirective,
   RkPlayerControlsDirective,
+  RkPlayerTimelineDirective,
   RkPlayerNavigationDirective,
   RkPlayerNestedSlideDirective,
   RkPlayerNestedNavigationDirective,
@@ -63,10 +66,13 @@ import type {
   ContentItem,
   MediaType,
   PlayerSoundState,
+  PlayerTimelineState,
+  TimelineMode,
 } from '../types';
 
 const _kDefaultAspectRatio = 9 / 16;
 const _kMobileBreakpointPx = 768;
+const _kDefaultTimelineMinDurationSeconds = 30;
 
 /**
  * Full-screen, Instagram/TikTok-style vertical reel player overlay.
@@ -94,6 +100,7 @@ const _kMobileBreakpointPx = 768;
   encapsulation: ViewEncapsulation.None,
   providers: [
     SoundStateService,
+    TimelineStateService,
     {
       provide: LUCIDE_ICONS,
       useValue: new LucideIconProvider({ ChevronUp, ChevronDown }),
@@ -109,6 +116,7 @@ const _kMobileBreakpointPx = 768;
     RkSlideOverlayComponent,
     RkCloseButtonComponent,
     RkSoundButtonComponent,
+    RkTimelineBarComponent,
   ],
   template: `
     @if (isOpen()) {
@@ -284,6 +292,21 @@ const _kMobileBreakpointPx = 768;
               <rk-sound-button [isDisabled]="isSoundDisabled()" />
             }
           }
+
+          @if (shouldRenderTimeline()) {
+            @if (timelineTemplate()) {
+              <ng-container
+                [ngTemplateOutlet]="timelineTemplate()!.templateRef"
+                [ngTemplateOutletContext]="{
+                  $implicit: content()[activeIndex()],
+                  activeIndex: activeIndex(),
+                  timelineState: timelineStateFacade,
+                }"
+              />
+            } @else {
+              <rk-timeline-bar />
+            }
+          }
         </div>
 
         @if (navigationTemplate()) {
@@ -349,6 +372,23 @@ export class RkReelPlayerOverlayComponent<
   readonly enableWheel = input<boolean>(true);
   readonly wheelDebounceMs = input<number>(200);
 
+  /**
+   * Whether the built-in playback timeline bar renders over the active video.
+   *
+   * @default 'auto'
+   */
+  readonly timeline = input<TimelineMode>('auto');
+
+  /**
+   * Minimum video duration (seconds) for `timeline='auto'` to render the
+   * built-in bar. Short looping clips below this threshold are suppressed.
+   *
+   * @default 30
+   */
+  readonly timelineMinDurationSeconds = input<number>(
+    _kDefaultTimelineMinDurationSeconds,
+  );
+
   readonly closed = output<void>();
   readonly slideChange = output<number>();
   readonly apiReady = output<ReelApi>();
@@ -358,6 +398,7 @@ export class RkReelPlayerOverlayComponent<
     RkPlayerSlideOverlayDirective<T>,
   );
   readonly controlsTemplate = contentChild(RkPlayerControlsDirective<T>);
+  readonly timelineTemplate = contentChild(RkPlayerTimelineDirective<T>);
   readonly navigationTemplate = contentChild(RkPlayerNavigationDirective);
   readonly nestedSlideTemplate = contentChild(RkPlayerNestedSlideDirective);
   readonly nestedNavTemplate = contentChild(RkPlayerNestedNavigationDirective);
@@ -403,6 +444,22 @@ export class RkReelPlayerOverlayComponent<
     toggle: () => this._soundState.toggle(),
   };
 
+  /**
+   * Template-safe facade over `TimelineStateService`. Arrow functions bind
+   * `this` correctly when consumers read signals from the `rkPlayerControls`
+   * template context.
+   */
+  readonly timelineStateFacade: PlayerTimelineState = {
+    duration: () => this._timelineState.duration(),
+    currentTime: () => this._timelineState.currentTime(),
+    progress: () => this._timelineState.progress(),
+    bufferedRanges: () => this._timelineState.bufferedRanges(),
+    isScrubbing: () => this._timelineState.isScrubbing(),
+    seek: (seconds) => this._timelineState.seek(seconds),
+    bindInteractions: (target) =>
+      this._timelineState.controller.bindInteractions(target),
+  };
+
   protected readonly isSoundDisabled = computed(() => {
     const idx = this.activeIndex();
     return (
@@ -423,6 +480,26 @@ export class RkReelPlayerOverlayComponent<
       ) ?? false,
   );
 
+  /**
+   * Decides whether the built-in timeline bar renders for the active slide.
+   * Reacts to the `timeline` mode, the active slide's media shape, and the
+   * controller's live duration signal.
+   */
+  protected readonly shouldRenderTimeline = computed(() => {
+    const mode = this.timeline();
+    if (mode === 'never') return false;
+    const item = this.content()[this.activeIndex()];
+    if (!item) return false;
+    const anyVideo = item.media.some((m) => m.type === 'video');
+    if (mode === 'always') return anyVideo;
+    const isSingle = item.media.length === 1;
+    const activeMediaIsVideo = isSingle
+      ? item.media[0]?.type === 'video'
+      : this._innerActiveMediaType() === 'video';
+    if (!activeMediaIsVideo) return false;
+    return this._timelineState.duration() >= this.timelineMinDurationSeconds();
+  });
+
   private readonly _preloader: ContentPreloader = createContentPreloader({
     maxCacheSize: 1000,
   });
@@ -437,6 +514,7 @@ export class RkReelPlayerOverlayComponent<
 
   private readonly _bodyLock = inject(BodyLockService);
   private readonly _soundState = inject(SoundStateService);
+  private readonly _timelineState = inject(TimelineStateService);
   private readonly _zone = inject(NgZone);
   private readonly _destroyRef = inject(DestroyRef);
   private readonly _document = inject(DOCUMENT);
@@ -479,7 +557,7 @@ export class RkReelPlayerOverlayComponent<
         // Defer focus + trap activation until after the next render cycle
         // so the overlay element created by @if(isOpen()) is in the DOM.
         // afterNextRender fires after Angular has flushed the view,
-        // avoiding the race condition that Promise.resolve().then() has —
+        // avoiding the race condition that Promise.resolve().then() has:
         // microtasks can fire before Angular's change detection flushes
         // the @if branch.
         afterNextRender(

@@ -19,7 +19,7 @@ import type {
 } from '../types';
 
 // ---------------------------------------------------------------------------
-// Host components — one per directive, expose directive via viewChild
+// Host components: one per directive, expose directive via viewChild
 // ---------------------------------------------------------------------------
 
 @Component({
@@ -86,7 +86,7 @@ function getDirectiveFromHost<T>(
   const dir = (fixture.componentInstance as { dir: () => T | undefined }).dir();
   if (dir === undefined) {
     throw new Error(
-      'Directive not found via viewChild query — did you forget to call detectChanges()?',
+      'Directive not found via viewChild query. Did you forget to call detectChanges()?',
     );
   }
   return dir;
@@ -138,7 +138,7 @@ describe('Player template slot directives', () => {
       expect(result).toBe(true);
     });
 
-    it('ngTemplateContextGuard narrows type — context treated as PlayerSlideContext', () => {
+    it('ngTemplateContextGuard narrows type (context treated as PlayerSlideContext)', () => {
       const noop = (): void => {
         /* noop */
       };
@@ -404,8 +404,8 @@ describe('Player template slot directives', () => {
   // PLAYER_TEMPLATE_SLOT_DIRECTIVES barrel
   // ---------------------------------------------------------------------------
   describe('PLAYER_TEMPLATE_SLOT_DIRECTIVES', () => {
-    it('exports all 6 slot directives', () => {
-      expect(PLAYER_TEMPLATE_SLOT_DIRECTIVES).toHaveLength(6);
+    it('exports all 7 slot directives', () => {
+      expect(PLAYER_TEMPLATE_SLOT_DIRECTIVES).toHaveLength(7);
     });
 
     it('contains RkPlayerSlideDirective', () => {

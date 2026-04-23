@@ -19,11 +19,13 @@ import {
   captureFrame,
   observeDomEvent,
   createDisposableList,
+  syncVideoObjectFit,
 } from '@reelkit/angular';
 import { SoundStateService } from '../sound-state/sound-state.service';
+import { TimelineStateService } from '../timeline-state/timeline-state.service';
 
 /**
- * Shared video element instance — one per application, not per component.
+ * Shared video element instance: one per application, not per component.
  * Reused across all `RkVideoSlideComponent` instances so that iOS audio
  * context continuity is maintained when navigating between slides.
  */
@@ -123,6 +125,9 @@ export class RkVideoSlideComponent {
     viewChild.required<ElementRef<HTMLDivElement>>('container');
 
   private readonly _soundState = inject(SoundStateService);
+  private readonly _timelineState = inject(TimelineStateService, {
+    optional: true,
+  });
   private readonly _zone = inject(NgZone);
 
   constructor() {
@@ -201,11 +206,14 @@ export class RkVideoSlideComponent {
 
       const savedPosition = shared.playbackPositions.get(key);
       video.currentTime = savedPosition ?? 0;
-      video.style.objectFit = vertical ? 'cover' : 'contain';
+
+      disposables.push(syncVideoObjectFit(video, vertical));
 
       video.dataset['slideKey'] = key;
       container.appendChild(video);
       this.videoRef.emit(video);
+
+      this._timelineState?.attach(video);
 
       video.play().catch(() =>
         this._zone.run(() => {
@@ -224,8 +232,12 @@ export class RkVideoSlideComponent {
           shared.capturedFrames.set(key, frame);
         }
 
-        // Only pause and remove if no new slide has taken ownership
+        // Only pause, detach timeline, and remove if no new slide has taken
+        // ownership. Detaching unconditionally would clobber the next slide's
+        // freshly-attached timeline state (cleanup of the old slide can fire
+        // AFTER the new slide's activation effect).
         if (activeToken === token) {
+          this._timelineState?.detach();
           video.pause();
           activeToken = null;
         }
@@ -244,7 +256,7 @@ export class RkVideoSlideComponent {
   /**
    * Syncs the shared video element's muted state with `SoundStateService`.
    * Only `muted` is a reactive dependency here. The active check is a guard,
-   * not a trigger — wrapped in `untracked()` so toggling isActive/isInnerActive
+   * not a trigger, wrapped in `untracked()` so toggling isActive/isInnerActive
    * does not re-run this effect.
    */
   private _registerMuteEffect(): void {

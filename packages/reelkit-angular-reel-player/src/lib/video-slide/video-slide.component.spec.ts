@@ -45,6 +45,12 @@ jest.mock('@reelkit/angular', () => {
         dispose: () => fns.forEach((fn) => fn()),
       };
     }),
+    syncVideoObjectFit: jest.fn((video: HTMLVideoElement, fallback: boolean) => {
+      video.style.objectFit = fallback ? 'cover' : 'contain';
+      return () => {
+        /* noop disposer */
+      };
+    }),
     toAngularSignal: jest.fn((source: { value?: unknown }) => {
       const { signal: angSignal } =
         require('@angular/core') as typeof import('@angular/core');

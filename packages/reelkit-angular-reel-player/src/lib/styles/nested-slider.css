@@ -73,3 +73,16 @@
   transform: translateX(-50%);
   z-index: var(--rk-reel-nested-z);
 }
+
+/*
+ * Lift the indicator dots on touch devices so they clear the timeline
+ * track + system gesture area. Desktop keeps the compact default bottom.
+ */
+@media (hover: none) and (pointer: coarse) {
+  .rk-reel-nested-indicator {
+    bottom: calc(
+      max(env(safe-area-inset-bottom, 0px), 12px) +
+        var(--rk-reel-timeline-height, 3px) + 8px
+    );
+  }
+}
