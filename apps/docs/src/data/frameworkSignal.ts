@@ -18,19 +18,61 @@ export const frameworkRoutePairs: [string, string, string][] = [
   ],
 ];
 
+const _kUrlParam = 'framework';
+
 function readStored(): Framework {
   if (typeof window === 'undefined') return 'react';
-  const stored = localStorage.getItem(_kStorageKey);
-  return kFrameworks.includes(stored as Framework)
-    ? (stored as Framework)
-    : 'react';
+  try {
+    const stored = window.localStorage.getItem(_kStorageKey);
+    return kFrameworks.includes(stored as Framework)
+      ? (stored as Framework)
+      : 'react';
+  } catch {
+    // opaque-origin docs pages + sandboxed iframes throw here
+    return 'react';
+  }
 }
 
-export const frameworkSignal = createSignal<Framework>(readStored());
+/**
+ * Read `?framework=<fw>` from the current URL. Returns `null` when no param,
+ * invalid value, or non-browser environment (SSR-safe).
+ */
+export function readFrameworkFromUrl(): Framework | null {
+  if (typeof window === 'undefined') return null;
+  const raw = new URLSearchParams(window.location.search).get(_kUrlParam);
+  return kFrameworks.includes(raw as Framework) ? (raw as Framework) : null;
+}
+
+function initialFramework(): Framework {
+  return readFrameworkFromUrl() ?? readStored();
+}
+
+export const frameworkSignal = createSignal<Framework>(initialFramework());
 
 export function setFramework(fw: Framework): void {
   frameworkSignal.value = fw;
-  localStorage.setItem(_kStorageKey, fw);
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(_kStorageKey, fw);
+  } catch {
+    // opaque-origin docs pages + sandboxed iframes throw here
+  }
+}
+
+/**
+ * Remove `?framework=` from the current URL via `history.replaceState`.
+ * Safe no-op in non-browser environments.
+ */
+export function stripFrameworkFromUrl(): void {
+  if (typeof window === 'undefined') return;
+  const url = new URL(window.location.href);
+  if (!url.searchParams.has(_kUrlParam)) return;
+  url.searchParams.delete(_kUrlParam);
+  window.history.replaceState(
+    window.history.state,
+    '',
+    `${url.pathname}${url.search}${url.hash}`,
+  );
 }
 
 export function renderFramework<T>(

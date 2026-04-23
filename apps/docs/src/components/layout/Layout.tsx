@@ -11,12 +11,23 @@ import FrameworkSwitcher from '../FrameworkSwitcher';
 import {
   frameworkSignal,
   frameworkRoutePairs,
+  readFrameworkFromUrl,
+  setFramework,
+  stripFrameworkFromUrl,
 } from '../../data/frameworkSignal';
 
 export default function Layout() {
   const [sidebarOpen] = useState(() => createSignal(false));
   const location = useLocation();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fw = readFrameworkFromUrl();
+    if (fw) {
+      setFramework(fw);
+      stripFrameworkFromUrl();
+    }
+  }, []);
 
   useEffect(() => {
     return reaction(
