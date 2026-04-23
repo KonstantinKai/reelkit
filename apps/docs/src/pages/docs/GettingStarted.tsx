@@ -12,6 +12,7 @@ import {
   AngularIcon,
   VueIcon,
 } from '../../components/FrameworkSwitcher';
+import { Heading } from '../../components/ui/Heading';
 
 export default function GettingStarted() {
   return (
@@ -34,7 +35,7 @@ export default function GettingStarted() {
       </Callout>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Select Your Framework</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Select Your Framework</Heading>
         <Observe signals={[frameworkSignal]}>
           {() => (
             <div className="flex gap-3">
@@ -77,7 +78,7 @@ export default function GettingStarted() {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Try It Online</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Try It Online</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Try it in the browser, no install required:
         </p>
@@ -178,7 +179,7 @@ export default function GettingStarted() {
           renderFramework({
             react: () => (
               <section className="mb-12">
-                <h2 className="text-2xl font-bold mb-4">Quick Start</h2>
+                <Heading level={2} className="text-2xl font-bold mb-4">Quick Start</Heading>
                 <p className="text-slate-600 dark:text-slate-400 mb-2">
                   Minimal vertical slider with React:
                 </p>
@@ -225,7 +226,7 @@ function App() {
             ),
             angular: () => (
               <section className="mb-12">
-                <h2 className="text-2xl font-bold mb-4">Quick Start</h2>
+                <Heading level={2} className="text-2xl font-bold mb-4">Quick Start</Heading>
                 <p className="text-slate-600 dark:text-slate-400 mb-2">
                   Minimal vertical slider with Angular:
                 </p>
@@ -270,7 +271,7 @@ export class AppComponent {
             ),
             vue: () => (
               <section className="mb-12">
-                <h2 className="text-2xl font-bold mb-4">Quick Start</h2>
+                <Heading level={2} className="text-2xl font-bold mb-4">Quick Start</Heading>
                 <p className="text-slate-600 dark:text-slate-400 mb-2">
                   Minimal vertical slider with Vue:
                 </p>
@@ -321,11 +322,11 @@ const items = [
       </Observe>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Key Concepts</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Key Concepts</Heading>
 
         <div className="space-y-6">
           <div>
-            <h3 className="text-lg font-semibold mb-2">Reel</h3>
+            <Heading level={3} className="text-lg font-semibold mb-2">Reel</Heading>
             <p className="text-slate-600 dark:text-slate-400">
               The{' '}
               <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
@@ -342,7 +343,7 @@ const items = [
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold mb-2">itemBuilder</h3>
+            <Heading level={3} className="text-lg font-semibold mb-2">itemBuilder</Heading>
             <p className="text-slate-600 dark:text-slate-400">
               The{' '}
               <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
@@ -355,7 +356,7 @@ const items = [
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold mb-2">ReelIndicator</h3>
+            <Heading level={3} className="text-lg font-semibold mb-2">ReelIndicator</Heading>
             <p className="text-slate-600 dark:text-slate-400">
               Optional component that displays Instagram-style progress
               indicators showing the current position in the slider.
@@ -412,7 +413,7 @@ function App() {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Navigation</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Navigation</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Built-in navigation methods:
         </p>

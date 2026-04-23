@@ -8,6 +8,7 @@ import {
   renderFramework,
   type Framework,
 } from '../../data/frameworkSignal';
+import { Heading } from '../../components/ui/Heading';
 
 interface PackageInfo {
   name: string;
@@ -218,7 +219,7 @@ export default function Installation() {
       </div>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Package Options</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Package Options</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-6">
           Install only what you use:
         </p>
@@ -274,7 +275,7 @@ export default function Installation() {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Bundle Sizes</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Bundle Sizes</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-6">
           All packages are optimized for minimal bundle impact:
         </p>
@@ -329,9 +330,9 @@ export default function Installation() {
           </table>
         </div>
 
-        <h3 className="text-lg font-semibold mb-3">
+        <Heading level={3} className="text-lg font-semibold mb-3">
           Comparison with Other Libraries
-        </h3>
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           ReelKit renders <strong>3 slides to DOM</strong> at any time and
           handles 10,000+ items. Other carousel libraries render all slides,
@@ -393,17 +394,17 @@ export default function Installation() {
           return (
             <>
               <section className="mb-12">
-                <h2 className="text-2xl font-bold mb-4">npm</h2>
+                <Heading level={2} className="text-2xl font-bold mb-4">npm</Heading>
                 <CodeBlock code={`npm install ${pkg}`} language="bash" />
               </section>
 
               <section className="mb-12">
-                <h2 className="text-2xl font-bold mb-4">yarn</h2>
+                <Heading level={2} className="text-2xl font-bold mb-4">yarn</Heading>
                 <CodeBlock code={`yarn add ${pkg}`} language="bash" />
               </section>
 
               <section className="mb-12">
-                <h2 className="text-2xl font-bold mb-4">pnpm</h2>
+                <Heading level={2} className="text-2xl font-bold mb-4">pnpm</Heading>
                 <CodeBlock code={`pnpm add ${pkg}`} language="bash" />
               </section>
             </>
@@ -412,7 +413,7 @@ export default function Installation() {
       </Observe>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Peer Dependencies</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Peer Dependencies</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Framework packages have peer dependencies that should already be in
           your project:
@@ -424,9 +425,9 @@ export default function Installation() {
               react: () => (
                 <div className="space-y-6">
                   <div>
-                    <h3 className="text-lg font-semibold mb-2">
+                    <Heading level={3} className="text-lg font-semibold mb-2">
                       @reelkit/react
-                    </h3>
+                    </Heading>
                     <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
                       <li>
                         <code className="text-sm font-mono">react</code>{' '}
@@ -439,9 +440,9 @@ export default function Installation() {
                     </ul>
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold mb-2">
+                    <Heading level={3} className="text-lg font-semibold mb-2">
                       @reelkit/react-reel-player
-                    </h3>
+                    </Heading>
                     <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
                       <li>
                         <code className="text-sm font-mono">
@@ -463,9 +464,9 @@ export default function Installation() {
                     </ul>
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold mb-2">
+                    <Heading level={3} className="text-lg font-semibold mb-2">
                       @reelkit/react-lightbox
-                    </h3>
+                    </Heading>
                     <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
                       <li>
                         <code className="text-sm font-mono">
@@ -487,9 +488,9 @@ export default function Installation() {
                     </ul>
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold mb-2">
+                    <Heading level={3} className="text-lg font-semibold mb-2">
                       @reelkit/react-stories-player
-                    </h3>
+                    </Heading>
                     <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
                       <li>
                         <code className="text-sm font-mono">
@@ -515,9 +516,9 @@ export default function Installation() {
               angular: () => (
                 <div className="space-y-6">
                   <div>
-                    <h3 className="text-lg font-semibold mb-2">
+                    <Heading level={3} className="text-lg font-semibold mb-2">
                       @reelkit/angular
-                    </h3>
+                    </Heading>
                     <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
                       <li>
                         <code className="text-sm font-mono">@angular/core</code>{' '}
@@ -532,9 +533,9 @@ export default function Installation() {
                     </ul>
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold mb-2">
+                    <Heading level={3} className="text-lg font-semibold mb-2">
                       @reelkit/angular-reel-player
-                    </h3>
+                    </Heading>
                     <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
                       <li>
                         <code className="text-sm font-mono">
@@ -554,9 +555,9 @@ export default function Installation() {
                     </ul>
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold mb-2">
+                    <Heading level={3} className="text-lg font-semibold mb-2">
                       @reelkit/angular-lightbox
-                    </h3>
+                    </Heading>
                     <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
                       <li>
                         <code className="text-sm font-mono">
@@ -580,7 +581,7 @@ export default function Installation() {
               vue: () => (
                 <div className="space-y-6">
                   <div>
-                    <h3 className="text-lg font-semibold mb-2">@reelkit/vue</h3>
+                    <Heading level={3} className="text-lg font-semibold mb-2">@reelkit/vue</Heading>
                     <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
                       <li>
                         <code className="text-sm font-mono">vue</code>{' '}
@@ -621,7 +622,7 @@ export default function Installation() {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">TypeScript</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">TypeScript</Heading>
         <p className="text-slate-600 dark:text-slate-400">
           All packages ship with TypeScript type definitions. No additional{' '}
           {'@types'} packages needed.
@@ -629,7 +630,7 @@ export default function Installation() {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Browser Support</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Browser Support</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           reelkit supports all modern browsers:
         </p>

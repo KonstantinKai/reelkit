@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, FileText, ArrowRight } from 'lucide-react';
+import { Search, FileText, Hash, ArrowRight } from 'lucide-react';
 import {
   createSignal,
   createComputed,
@@ -18,16 +18,31 @@ interface CommandPaletteProps {
   onClose: () => void;
 }
 
-function groupByCategory(items: SearchItem[]): Map<string, SearchItem[]> {
+/**
+ * Group results into ordered buckets:
+ * `Pages · <category>` holds every page-level hit, then
+ * `<page title> · Sections` holds that page's section hits.
+ *
+ * Pages for a category appear above their sections so the user sees the
+ * parent page first, followed by deeper matches within it.
+ */
+function groupResults(items: SearchItem[]): Map<string, SearchItem[]> {
   const groups = new Map<string, SearchItem[]>();
-  for (const item of items) {
-    const group = groups.get(item.category);
-    if (group) {
-      group.push(item);
-    } else {
-      groups.set(item.category, [item]);
-    }
-  }
+  const push = (key: string, item: SearchItem) => {
+    const g = groups.get(key);
+    if (g) g.push(item);
+    else groups.set(key, [item]);
+  };
+
+  const pageItems = items.filter((i) => !i.sectionAnchor);
+  const sectionItems = items.filter((i) => !!i.sectionAnchor);
+
+  // Pages grouped by category, preserving insertion order.
+  for (const item of pageItems) push(`Pages · ${item.category}`, item);
+
+  // Sections grouped by their parent page title (`item.title`).
+  for (const item of sectionItems) push(`${item.title} · Sections`, item);
+
   return groups;
 }
 
@@ -55,6 +70,7 @@ export default function CommandPalette({
           (item) =>
             item.title.toLowerCase().includes(q) ||
             item.category.toLowerCase().includes(q) ||
+            item.sectionTitle?.toLowerCase().includes(q) ||
             item.keywords.some((kw) => kw.includes(q)),
         );
       },
@@ -62,7 +78,7 @@ export default function CommandPalette({
     );
 
     const grouped = createComputed(
-      () => groupByCategory(filtered.value),
+      () => groupResults(filtered.value),
       () => [filtered],
     );
 
@@ -115,7 +131,11 @@ export default function CommandPalette({
           case 'Enter':
             ke.preventDefault();
             if (items[activeIndex.value]) {
-              propsRef.current.navigate(items[activeIndex.value].path);
+              const it = items[activeIndex.value];
+              const href = it.sectionAnchor
+                ? `${it.path}#${it.sectionAnchor}`
+                : it.path;
+              propsRef.current.navigate(href);
               propsRef.current.onClose();
             }
             break;
@@ -191,9 +211,14 @@ export default function CommandPalette({
                         {catItems.map((item) => {
                           const idx = flatIndex++;
                           const isActive = idx === activeIndex.value;
+                          const isSection = Boolean(item.sectionAnchor);
+                          const href = isSection
+                            ? `${item.path}#${item.sectionAnchor}`
+                            : item.path;
+                          const Icon = isSection ? Hash : FileText;
                           return (
                             <button
-                              key={item.path}
+                              key={`${item.path}#${item.sectionAnchor ?? ''}`}
                               data-active={isActive}
                               className={`w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors ${
                                 isActive
@@ -201,12 +226,12 @@ export default function CommandPalette({
                                   : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50'
                               }`}
                               onClick={() => {
-                                navigate(item.path);
+                                navigate(href);
                                 onClose();
                               }}
                               onMouseEnter={() => (activeIndex.value = idx)}
                             >
-                              <FileText
+                              <Icon
                                 size={16}
                                 className={
                                   isActive
@@ -214,7 +239,9 @@ export default function CommandPalette({
                                     : 'text-slate-400'
                                 }
                               />
-                              <span className="flex-1">{item.title}</span>
+                              <span className="flex-1 truncate">
+                                {isSection ? item.sectionTitle : item.title}
+                              </span>
                               {isActive && (
                                 <ArrowRight
                                   size={14}

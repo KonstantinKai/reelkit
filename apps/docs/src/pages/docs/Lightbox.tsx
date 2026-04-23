@@ -14,6 +14,7 @@ import {
   Hash,
   Layers,
 } from 'lucide-react';
+import { Heading } from '../../components/ui/Heading';
 
 const fullCode = `import { useState } from 'react';
 import { LightboxOverlay, type LightboxItem } from '@reelkit/react-lightbox';
@@ -600,7 +601,7 @@ export default function Lightbox() {
 
       {/* Features */}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Features</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Features</Heading>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <FeatureCardGrid
             items={[
@@ -652,7 +653,7 @@ export default function Lightbox() {
 
       {/* Installation */}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Installation</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Installation</Heading>
         <CodeBlock
           code="npm install @reelkit/react-lightbox @reelkit/react lucide-react"
           language="bash"
@@ -683,7 +684,7 @@ export default function Lightbox() {
 
       {/* Quick Start */}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Quick Start</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Quick Start</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           The{' '}
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
@@ -739,7 +740,7 @@ function App() {
 
       {/* Live Demo */}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Live Demo</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Live Demo</Heading>
         <Sandbox
           code={fullCode}
           title="LightboxPage.tsx"
@@ -757,7 +758,7 @@ function App() {
 
       {/* Video Slides (Opt-in) */}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Video Slides (Opt-in)</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Video Slides (Opt-in)</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Video support is fully opt-in and tree-shakeable — image-only usage
           pays zero extra bundle cost. Import{' '}
@@ -846,9 +847,9 @@ function Gallery() {
 
       {/* Customization */}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Customization</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Customization</Heading>
 
-        <h3 className="text-xl font-semibold mt-4 mb-4">Custom Controls</h3>
+        <Heading level={3} className="text-xl font-semibold mt-4 mb-4">Custom Controls</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Use{' '}
           <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
@@ -882,7 +883,7 @@ function Gallery() {
           language="tsx"
         />
 
-        <h3 className="text-xl font-semibold mt-8 mb-4">Custom Info Overlay</h3>
+        <Heading level={3} className="text-xl font-semibold mt-8 mb-4">Custom Info Overlay</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Use{' '}
           <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
@@ -909,7 +910,7 @@ function Gallery() {
           language="tsx"
         />
 
-        <h3 className="text-xl font-semibold mt-8 mb-4">Custom Navigation</h3>
+        <Heading level={3} className="text-xl font-semibold mt-8 mb-4">Custom Navigation</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Use{' '}
           <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
@@ -933,7 +934,7 @@ function Gallery() {
           language="tsx"
         />
 
-        <h3 className="text-xl font-semibold mt-8 mb-4">Custom Slide</h3>
+        <Heading level={3} className="text-xl font-semibold mt-8 mb-4">Custom Slide</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Use{' '}
           <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
@@ -968,9 +969,9 @@ function Gallery() {
 
       {/* Content Loading & Error Handling */}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">
+        <Heading level={2} className="text-2xl font-bold mb-4">
           Content Loading & Error Handling
-        </h2>
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           The lightbox tracks per-slide loading and error states. A spinner
           shows while content loads; a broken-image icon shows for failed media.
@@ -978,7 +979,7 @@ function Gallery() {
           without retrying.
         </p>
 
-        <h3 className="text-xl font-semibold mt-6 mb-4">Lifecycle Callbacks</h3>
+        <Heading level={3} className="text-xl font-semibold mt-6 mb-4">Lifecycle Callbacks</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           When using{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -1055,9 +1056,9 @@ renderSlide={({ item, index, size, isActive, onReady, onWaiting, onError }) => (
           language="tsx"
         />
 
-        <h3 className="text-xl font-semibold mt-8 mb-4">
+        <Heading level={3} className="text-xl font-semibold mt-8 mb-4">
           Custom Loading & Error UI
-        </h3>
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Replace the default spinner and error icon with custom components:
         </p>
@@ -1094,9 +1095,9 @@ renderSlide={({ item, index, size, isActive, onReady, onWaiting, onError }) => (
 
       {/* API Reference */}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">API Reference</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">API Reference</Heading>
 
-        <h3 className="text-xl font-semibold mt-6 mb-4">Props</h3>
+        <Heading level={3} className="text-xl font-semibold mt-6 mb-4">Props</Heading>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -1133,7 +1134,7 @@ renderSlide={({ item, index, size, isActive, onReady, onWaiting, onError }) => (
           </table>
         </div>
 
-        <h3 className="text-xl font-semibold mt-8 mb-4">Callbacks</h3>
+        <Heading level={3} className="text-xl font-semibold mt-8 mb-4">Callbacks</Heading>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -1166,9 +1167,9 @@ renderSlide={({ item, index, size, isActive, onReady, onWaiting, onError }) => (
           </table>
         </div>
 
-        <h3 className="text-xl font-semibold mt-8 mb-4">
+        <Heading level={3} className="text-xl font-semibold mt-8 mb-4">
           Reel Props (proxied)
-        </h3>
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           These props are forwarded to the underlying{' '}
           <Link
@@ -1218,9 +1219,9 @@ renderSlide={({ item, index, size, isActive, onReady, onWaiting, onError }) => (
 
       {/* Types */}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Types</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Types</Heading>
 
-        <h3 className="text-lg font-semibold mb-2">LightboxItem</h3>
+        <Heading level={3} className="text-lg font-semibold mb-2">LightboxItem</Heading>
         <CodeBlock
           code={`interface LightboxItem {
   src: string;
@@ -1234,13 +1235,13 @@ renderSlide={({ item, index, size, isActive, onReady, onWaiting, onError }) => (
           language="typescript"
         />
 
-        <h3 className="text-lg font-semibold mt-6 mb-2">TransitionType</h3>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">TransitionType</Heading>
         <CodeBlock
           code={`type TransitionType = 'slide' | 'fade' | 'flip' | 'zoom-in';`}
           language="typescript"
         />
 
-        <h3 className="text-lg font-semibold mt-6 mb-2">ControlsRenderProps</h3>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">ControlsRenderProps</Heading>
         <CodeBlock
           code={`interface ControlsRenderProps {
   item: LightboxItem;
@@ -1253,9 +1254,9 @@ renderSlide={({ item, index, size, isActive, onReady, onWaiting, onError }) => (
           language="typescript"
         />
 
-        <h3 className="text-lg font-semibold mt-6 mb-2">
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">
           NavigationRenderProps
-        </h3>
+        </Heading>
         <CodeBlock
           code={`interface NavigationRenderProps {
   item: LightboxItem;
@@ -1267,7 +1268,7 @@ renderSlide={({ item, index, size, isActive, onReady, onWaiting, onError }) => (
           language="typescript"
         />
 
-        <h3 className="text-lg font-semibold mt-6 mb-2">SlideRenderProps</h3>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">SlideRenderProps</Heading>
         <CodeBlock
           code={`interface SlideRenderProps {
   item: LightboxItem;
@@ -1281,7 +1282,7 @@ renderSlide={({ item, index, size, isActive, onReady, onWaiting, onError }) => (
           language="typescript"
         />
 
-        <h3 className="text-lg font-semibold mt-6 mb-2">InfoRenderProps</h3>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">InfoRenderProps</Heading>
         <CodeBlock
           code={`interface InfoRenderProps {
   item: LightboxItem;
@@ -1293,7 +1294,7 @@ renderSlide={({ item, index, size, isActive, onReady, onWaiting, onError }) => (
 
       {/* Sub-Components */}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Sub-Components</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Sub-Components</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Reusable sub-components for composing custom controls via{' '}
           <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
@@ -1302,7 +1303,7 @@ renderSlide={({ item, index, size, isActive, onReady, onWaiting, onError }) => (
           .
         </p>
 
-        <h3 className="text-lg font-semibold mt-4 mb-2">CloseButton</h3>
+        <Heading level={3} className="text-lg font-semibold mt-4 mb-2">CloseButton</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
           Default X close button.
         </p>
@@ -1313,7 +1314,7 @@ renderSlide={({ item, index, size, isActive, onReady, onWaiting, onError }) => (
           language="tsx"
         />
 
-        <h3 className="text-lg font-semibold mt-6 mb-2">Counter</h3>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">Counter</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
           Image counter pill showing "1 / 3".
         </p>
@@ -1324,7 +1325,7 @@ renderSlide={({ item, index, size, isActive, onReady, onWaiting, onError }) => (
           language="tsx"
         />
 
-        <h3 className="text-lg font-semibold mt-6 mb-2">FullscreenButton</h3>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">FullscreenButton</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
           Fullscreen toggle button (Maximize/Minimize icon).
         </p>
@@ -1335,7 +1336,7 @@ renderSlide={({ item, index, size, isActive, onReady, onWaiting, onError }) => (
           language="tsx"
         />
 
-        <h3 className="text-lg font-semibold mt-6 mb-2">SoundButton</h3>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">SoundButton</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
           Mute/unmute toggle button for video slides (Volume2/VolumeX icon).
           Included automatically in{' '}
@@ -1376,9 +1377,9 @@ function CustomControls({ onClose }) {
 
       {/* Hooks */}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Hooks</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Hooks</Heading>
 
-        <h3 className="text-lg font-semibold mb-2">useVideoSlideRenderer</h3>
+        <Heading level={3} className="text-lg font-semibold mb-2">useVideoSlideRenderer</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
           Hook for opt-in video support. Returns{' '}
           <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
@@ -1409,7 +1410,7 @@ const { renderSlide, renderControls, SoundProvider, hasVideo } =
           language="typescript"
         />
 
-        <h3 className="text-lg font-semibold mt-6 mb-2">useFullscreen</h3>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">useFullscreen</Heading>
         <Callout type="warning" title="Moved" className="mb-4">
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
             useFullscreen
@@ -1450,7 +1451,7 @@ function CustomLightbox() {
 
       {/* Transitions */}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Transitions</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Transitions</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Choose from four built-in transition aliases via the{' '}
           <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
@@ -1527,9 +1528,9 @@ function CustomLightbox() {
           language="tsx"
         />
 
-        <h3 className="text-xl font-semibold mt-8 mb-4">
+        <Heading level={3} className="text-xl font-semibold mt-8 mb-4">
           Custom Transition Function
-        </h3>
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Use{' '}
           <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
@@ -1577,7 +1578,7 @@ import { flipTransition, cubeTransition } from '@reelkit/react';
 
       {/* CSS Classes */}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">CSS Classes</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">CSS Classes</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           All UI elements use plain CSS classes (not CSS modules) that can be
           targeted with higher-specificity selectors in a stylesheet loaded
@@ -1631,7 +1632,7 @@ import { flipTransition, cubeTransition } from '@reelkit/react';
 
       {/* Theming */}
       <section id="theming" className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Theming</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Theming</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Every color, size, z-index, and transition lives in a CSS custom
           property. Override one or many at{' '}
@@ -1700,7 +1701,7 @@ import { flipTransition, cubeTransition } from '@reelkit/react';
 
       {/* Accessibility */}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Accessibility</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Accessibility</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           The overlay root is a modal dialog (
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -1751,7 +1752,7 @@ import { flipTransition, cubeTransition } from '@reelkit/react';
 
       {/* Keyboard Shortcuts */}
       <section>
-        <h2 className="text-2xl font-bold mb-4">Keyboard Shortcuts</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Keyboard Shortcuts</Heading>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>

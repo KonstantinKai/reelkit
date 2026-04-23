@@ -1,4 +1,5 @@
 import { CodeBlock } from '../../../components/ui/CodeBlock';
+import { Heading } from '../../../components/ui/Heading';
 
 const configOptions = [
   {
@@ -226,7 +227,7 @@ export default function CoreApi() {
       </div>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Config Options</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Config Options</Heading>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -265,7 +266,7 @@ export default function CoreApi() {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Callbacks</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Callbacks</Heading>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -300,7 +301,7 @@ export default function CoreApi() {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Methods</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Methods</Heading>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -335,7 +336,7 @@ export default function CoreApi() {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">State Properties</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">State Properties</Heading>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -370,7 +371,7 @@ export default function CoreApi() {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Range Extractor</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Range Extractor</Heading>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -400,12 +401,12 @@ export default function CoreApi() {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Signal API</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Signal API</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Lightweight reactive primitives used throughout the core.
         </p>
 
-        <h3 className="text-lg font-semibold mb-3">Signal Interface</h3>
+        <Heading level={3} className="text-lg font-semibold mb-3">Signal Interface</Heading>
         <div className="overflow-x-auto mb-6">
           <table className="w-full">
             <thead>
@@ -446,7 +447,7 @@ export default function CoreApi() {
           </table>
         </div>
 
-        <h3 className="text-lg font-semibold mb-3">Factory Functions</h3>
+        <Heading level={3} className="text-lg font-semibold mb-3">Factory Functions</Heading>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -517,7 +518,7 @@ export default function CoreApi() {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Transitions</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Transitions</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Built-in transition functions that compute per-slide CSS transforms
           during animated navigation. Pass one as the{' '}
@@ -624,7 +625,7 @@ export default function CoreApi() {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Content Loading</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Content Loading</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Utilities for tracking per-slide loading/error states and preloading
           media. The loading controller uses an index guard to reject stale
@@ -684,9 +685,9 @@ export default function CoreApi() {
           </table>
         </div>
 
-        <h3 className="text-lg font-semibold mt-6 mb-3">
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-3">
           ContentLoadingController
-        </h3>
+        </Heading>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -769,7 +770,7 @@ export default function CoreApi() {
           </table>
         </div>
 
-        <h3 className="text-lg font-semibold mt-6 mb-3">ContentPreloader</h3>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-3">ContentPreloader</Heading>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -854,7 +855,7 @@ export default function CoreApi() {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Sound</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Sound</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Shared mute/unmute state for media playback. The sound controller
           provides a reactive muted signal that can be synced to video elements
@@ -902,7 +903,7 @@ export default function CoreApi() {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Timeline</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Timeline</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Playback timeline controller for video scrubbing. Tracks duration,
           current time, buffered ranges, and user scrubbing state as reactive
@@ -981,7 +982,7 @@ export default function CoreApi() {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Fullscreen</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Fullscreen</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Cross-browser fullscreen utilities with Safari vendor-prefix guards.
           The fullscreen signal is a lazy singleton that tracks fullscreen state
@@ -1039,7 +1040,7 @@ export default function CoreApi() {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">DOM & Cleanup Utilities</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">DOM & Cleanup Utilities</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Low-level helpers for DOM event management and deterministic cleanup.
           Used internally by all controllers and available for custom
@@ -1125,7 +1126,7 @@ export default function CoreApi() {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Focus Management</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Focus Management</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Framework-agnostic dialog a11y primitives. The overlay packages use
           them to return focus to the trigger on close and trap Tab / Shift+Tab
@@ -1192,7 +1193,7 @@ export default function CoreApi() {
           </table>
         </div>
 
-        <h3 className="text-lg font-semibold mt-6 mb-2">Usage</h3>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">Usage</Heading>
         <CodeBlock
           language="typescript"
           code={`import { captureFocusForReturn, createFocusTrap } from '@reelkit/core';
@@ -1209,7 +1210,7 @@ restoreFocus();`}
       </section>
 
       <section>
-        <h2 className="text-2xl font-bold mb-4">Video Utilities</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Video Utilities</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Framework-agnostic utilities for shared video playback across slides.
           Used internally by{' '}

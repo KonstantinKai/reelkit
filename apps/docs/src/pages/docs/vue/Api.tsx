@@ -1,4 +1,5 @@
 import { CodeBlock } from '../../../components/ui/CodeBlock';
+import { Heading } from '../../../components/ui/Heading';
 
 const reelProps = [
   {
@@ -337,14 +338,14 @@ export default function VueApi() {
       </div>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-2">Reel</h2>
+        <Heading level={2} className="text-2xl font-bold mb-2">Reel</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Tag:{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
             {'<Reel>'}
           </code>
         </p>
-        <h3 className="text-lg font-semibold mb-3">Props</h3>
+        <Heading level={3} className="text-lg font-semibold mb-3">Props</Heading>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -383,7 +384,7 @@ export default function VueApi() {
       </section>
 
       <section className="mb-12">
-        <h3 className="text-lg font-semibold mb-3">Events</h3>
+        <Heading level={3} className="text-lg font-semibold mb-3">Events</Heading>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -418,7 +419,7 @@ export default function VueApi() {
       </section>
 
       <section className="mb-12">
-        <h3 className="text-lg font-semibold mb-3">Slots</h3>
+        <Heading level={3} className="text-lg font-semibold mb-3">Slots</Heading>
         <CodeBlock
           code={`<Reel :count="items.length">
   <template #item="{ index, indexInRange, size }">
@@ -479,7 +480,7 @@ export default function VueApi() {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">ReelExpose</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">ReelExpose</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Imperative API exposed via template ref:
         </p>
@@ -538,14 +539,14 @@ function jump(i: number) { reelRef.value?.goTo(i, true); }
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-2">ReelIndicator</h2>
+        <Heading level={2} className="text-2xl font-bold mb-2">ReelIndicator</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Tag:{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
             {'<ReelIndicator>'}
           </code>
         </p>
-        <h3 className="text-lg font-semibold mb-3">Props</h3>
+        <Heading level={3} className="text-lg font-semibold mb-3">Props</Heading>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -581,7 +582,7 @@ function jump(i: number) { reelRef.value?.goTo(i, true); }
             </tbody>
           </table>
         </div>
-        <h3 className="text-lg font-semibold mt-6 mb-3">Events</h3>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-3">Events</Heading>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -616,7 +617,7 @@ function jump(i: number) { reelRef.value?.goTo(i, true); }
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-2">SwipeToClose</h2>
+        <Heading level={2} className="text-2xl font-bold mb-2">SwipeToClose</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Tag:{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -625,7 +626,7 @@ function jump(i: number) { reelRef.value?.goTo(i, true); }
           — Wraps its default slot in a touch-aware container that can be swiped
           to dismiss.
         </p>
-        <h3 className="text-lg font-semibold mb-3">Props</h3>
+        <Heading level={3} className="text-lg font-semibold mb-3">Props</Heading>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -661,7 +662,7 @@ function jump(i: number) { reelRef.value?.goTo(i, true); }
             </tbody>
           </table>
         </div>
-        <h3 className="text-lg font-semibold mt-6 mb-3">Events</h3>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-3">Events</Heading>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -693,7 +694,7 @@ function jump(i: number) { reelRef.value?.goTo(i, true); }
             </tbody>
           </table>
         </div>
-        <h3 className="text-lg font-semibold mt-6 mb-3">Slots</h3>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-3">Slots</Heading>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -719,9 +720,9 @@ function jump(i: number) { reelRef.value?.goTo(i, true); }
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">
+        <Heading level={2} className="text-2xl font-bold mb-4">
           RK_REEL_KEY &amp; useReelContext
-        </h2>
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           An{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -787,9 +788,9 @@ function jump(index: number) {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Composables</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Composables</Heading>
 
-        <h3 className="text-xl font-semibold mb-3">useBodyLock</h3>
+        <Heading level={3} className="text-xl font-semibold mb-3">useBodyLock</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Locks the document body scroll when the provided value is{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -837,7 +838,7 @@ useBodyLock(true);`}
           </table>
         </div>
 
-        <h3 className="text-xl font-semibold mt-8 mb-3">useFullscreen</h3>
+        <Heading level={3} className="text-xl font-semibold mt-8 mb-3">useFullscreen</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Composable for managing the Fullscreen API with cross-browser support.
           Exits fullscreen automatically on unmount.
@@ -917,7 +918,7 @@ const { isFullscreen, request, exit, toggle } = useFullscreen({
           </table>
         </div>
 
-        <h3 className="text-xl font-semibold mt-8 mb-3">useSoundState</h3>
+        <Heading level={3} className="text-xl font-semibold mt-8 mb-3">useSoundState</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Access the current{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -940,7 +941,7 @@ sound.toggle(); // Toggle muted state`}
           language="typescript"
         />
 
-        <h3 className="text-xl font-semibold mt-8 mb-3">toVueRef</h3>
+        <Heading level={3} className="text-xl font-semibold mt-8 mb-3">toVueRef</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Bridges a core{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -994,7 +995,7 @@ export const MuteIcon = defineComponent({
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">SoundProvider</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">SoundProvider</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Tag:{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -1026,7 +1027,7 @@ export const MuteIcon = defineComponent({
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Accessibility</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Accessibility</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
             &lt;Reel&gt;
@@ -1092,7 +1093,7 @@ export const MuteIcon = defineComponent({
       </section>
 
       <section>
-        <h2 className="text-2xl font-bold mb-4">Package Exports</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Package Exports</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           All public exports from{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">

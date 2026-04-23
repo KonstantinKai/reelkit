@@ -1,4 +1,5 @@
 import { CodeBlock } from '../../components/ui/CodeBlock';
+import { Heading } from '../../components/ui/Heading';
 
 export default function Troubleshooting() {
   return (
@@ -12,13 +13,13 @@ export default function Troubleshooting() {
       </div>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">iOS Safari</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">iOS Safari</Heading>
 
         <div className="space-y-8">
           <div>
-            <h3 className="text-lg font-semibold mb-2">
+            <Heading level={3} className="text-lg font-semibold mb-2">
               Viewport doesn't fill screen / bottom black space
-            </h3>
+            </Heading>
             <p className="text-slate-600 dark:text-slate-400 mb-3">
               Safari's collapsible address bar makes{' '}
               <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -39,9 +40,9 @@ export default function Troubleshooting() {
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold mb-2">
+            <Heading level={3} className="text-lg font-semibold mb-2">
               Horizontal scroll / content overflow
-            </h3>
+            </Heading>
             <p className="text-slate-600 dark:text-slate-400 mb-3">
               <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
                 100vw
@@ -66,9 +67,9 @@ export default function Troubleshooting() {
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold mb-2">
+            <Heading level={3} className="text-lg font-semibold mb-2">
               Pull-to-refresh / rubber-band bounce
-            </h3>
+            </Heading>
             <p className="text-slate-600 dark:text-slate-400 mb-3">
               Safari's pull-to-refresh and elastic bounce fight vertical swipe
               gestures. Do <strong>not</strong> put{' '}
@@ -92,9 +93,9 @@ export default function Troubleshooting() {
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold mb-2">
+            <Heading level={3} className="text-lg font-semibold mb-2">
               Pinch-to-zoom interferes with gestures
-            </h3>
+            </Heading>
             <p className="text-slate-600 dark:text-slate-400 mb-3">
               Disable zoom to stop pinch and double-tap from firing during
               swipes:
@@ -112,9 +113,9 @@ export default function Troubleshooting() {
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold mb-2">
+            <Heading level={3} className="text-lg font-semibold mb-2">
               Layout broken after keyboard dismisses
-            </h3>
+            </Heading>
             <p className="text-slate-600 dark:text-slate-400 mb-3">
               Safari sometimes leaves the viewport compressed after the keyboard
               closes. Force a reset on blur:
@@ -142,13 +143,13 @@ onInputBlur() {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">General</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">General</Heading>
 
         <div className="space-y-8">
           <div>
-            <h3 className="text-lg font-semibold mb-2">
+            <Heading level={3} className="text-lg font-semibold mb-2">
               Slides render at 0×0 size
-            </h3>
+            </Heading>
             <p className="text-slate-600 dark:text-slate-400 mb-3">
               Without a{' '}
               <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -178,13 +179,13 @@ onInputBlur() {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Video</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Video</Heading>
 
         <div className="space-y-8">
           <div>
-            <h3 className="text-lg font-semibold mb-2">
+            <Heading level={3} className="text-lg font-semibold mb-2">
               Video doesn't autoplay
-            </h3>
+            </Heading>
             <p className="text-slate-600 dark:text-slate-400 mb-3">
               Browsers block unmuted autoplay. ReelKit sets{' '}
               <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -201,9 +202,9 @@ onInputBlur() {
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold mb-2">
+            <Heading level={3} className="text-lg font-semibold mb-2">
               Video thumbnail / frame capture is blank
-            </h3>
+            </Heading>
             <p className="text-slate-600 dark:text-slate-400 mb-3">
               Frame capture draws the video onto a{' '}
               <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -228,13 +229,13 @@ onInputBlur() {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Fullscreen</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Fullscreen</Heading>
 
         <div className="space-y-8">
           <div>
-            <h3 className="text-lg font-semibold mb-2">
+            <Heading level={3} className="text-lg font-semibold mb-2">
               Fullscreen button does nothing on Safari
-            </h3>
+            </Heading>
             <p className="text-slate-600 dark:text-slate-400 mb-3">
               ReelKit disables the Fullscreen API on Safari. iOS Safari
               restricts fullscreen to{' '}
@@ -256,13 +257,13 @@ onInputBlur() {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Keyboard Navigation</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Keyboard Navigation</Heading>
 
         <div className="space-y-8">
           <div>
-            <h3 className="text-lg font-semibold mb-2">
+            <Heading level={3} className="text-lg font-semibold mb-2">
               Arrow keys don't navigate after providing onNavKeyPress
-            </h3>
+            </Heading>
             <p className="text-slate-600 dark:text-slate-400 mb-3">
               <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
                 onNavKeyPress
@@ -292,9 +293,9 @@ onInputBlur() {
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold mb-2">
+            <Heading level={3} className="text-lg font-semibold mb-2">
               Escape key doesn't close the overlay
-            </h3>
+            </Heading>
             <p className="text-slate-600 dark:text-slate-400 mb-3">
               The keyboard controller handles arrow keys only. ReelPlayerOverlay
               and LightboxOverlay listen for Escape separately. If you build a

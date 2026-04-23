@@ -2,6 +2,7 @@ import { Observe } from '@reelkit/react';
 import { CodeBlock } from '../../components/ui/CodeBlock';
 import { Callout } from '../../components/ui/Callout';
 import { frameworkSignal, renderFramework } from '../../data/frameworkSignal';
+import { Heading } from '../../components/ui/Heading';
 
 export default function SSR() {
   return (
@@ -15,7 +16,7 @@ export default function SSR() {
       </div>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">How It Works</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">How It Works</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           The core slider controller is pure logic with no DOM access at
           construction. Gesture listeners, keyboard events, and animations
@@ -143,9 +144,9 @@ export default function SSR() {
             react: () => (
               <>
                 <section className="mb-12">
-                  <h2 className="text-2xl font-bold mb-4">
+                  <Heading level={2} className="text-2xl font-bold mb-4">
                     Next.js App Router
-                  </h2>
+                  </Heading>
                   <p className="text-slate-600 dark:text-slate-400 mb-4">
                     Reel uses browser events and refs, so it runs as a Client
                     Component. Add the{' '}
@@ -200,9 +201,9 @@ export default async function FeedPage() {
                 </section>
 
                 <section className="mb-12">
-                  <h2 className="text-2xl font-bold mb-4">
+                  <Heading level={2} className="text-2xl font-bold mb-4">
                     Next.js Pages Router
-                  </h2>
+                  </Heading>
                   <p className="text-slate-600 dark:text-slate-400 mb-4">
                     Pages Router works without extra configuration. The
                     component renders during SSR and hydrates on the client:
@@ -235,9 +236,9 @@ export default function FeedPage({ items }: Props) {
                 </section>
 
                 <section className="mb-12">
-                  <h2 className="text-2xl font-bold mb-4">
+                  <Heading level={2} className="text-2xl font-bold mb-4">
                     Responsive Size with SSR
-                  </h2>
+                  </Heading>
                   <p className="text-slate-600 dark:text-slate-400 mb-4">
                     Omit the{' '}
                     <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
@@ -287,9 +288,9 @@ export function FullScreenFeed({ items }: { items: FeedItem[] }) {
                     </Callout>
                   </div>
 
-                  <h3 className="text-xl font-bold mt-8 mb-4">
+                  <Heading level={3} className="text-xl font-bold mt-8 mb-4">
                     Explicit size (manual approach)
-                  </h3>
+                  </Heading>
                   <p className="text-slate-600 dark:text-slate-400 mb-4">
                     For pixel-level control, pass an explicit{' '}
                     <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
@@ -345,9 +346,9 @@ export function FullScreenFeed({ items }: { items: FeedItem[] }) {
                 </section>
 
                 <section className="mb-12">
-                  <h2 className="text-2xl font-bold mb-4">
+                  <Heading level={2} className="text-2xl font-bold mb-4">
                     Overlay Components
-                  </h2>
+                  </Heading>
                   <p className="text-slate-600 dark:text-slate-400 mb-4">
                     <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
                       ReelPlayerOverlay
@@ -403,9 +404,9 @@ export function VideoFeed({ content }: { content: ContentItem[] }) {
             ),
             angular: () => (
               <section className="mb-12">
-                <h2 className="text-2xl font-bold mb-4">
+                <Heading level={2} className="text-2xl font-bold mb-4">
                   Angular Universal / SSR
-                </h2>
+                </Heading>
                 <p className="text-slate-600 dark:text-slate-400 mb-4">
                   All Angular components are SSR-safe. The slider controller
                   defers browser API access to{' '}
@@ -447,7 +448,7 @@ export class FeedComponent {
             vue: () => (
               <>
                 <section className="mb-12">
-                  <h2 className="text-2xl font-bold mb-4">Nuxt 3</h2>
+                  <Heading level={2} className="text-2xl font-bold mb-4">Nuxt 3</Heading>
                   <p className="text-slate-600 dark:text-slate-400 mb-4">
                     ReelKit Vue components work with Nuxt 3 out of the box.
                     Since Reel uses browser APIs (touch events, ResizeObserver),
@@ -501,9 +502,9 @@ defineProps<{ items: FeedItem[] }>();
                 </section>
 
                 <section className="mb-12">
-                  <h2 className="text-2xl font-bold mb-4">
+                  <Heading level={2} className="text-2xl font-bold mb-4">
                     Responsive Size with SSR
-                  </h2>
+                  </Heading>
                   <p className="text-slate-600 dark:text-slate-400 mb-4">
                     Omit the{' '}
                     <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
@@ -535,7 +536,7 @@ defineProps<{ items: FeedItem[] }>();
       </Observe>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Using Core Directly</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Using Core Directly</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           When using{' '}
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
@@ -571,7 +572,7 @@ if (typeof window !== 'undefined') {
       </section>
 
       <section>
-        <h2 className="text-2xl font-bold mb-4">Summary</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Summary</Heading>
         <div className="space-y-4">
           <Callout type="success" title="What works out of the box">
             <ul className="list-disc list-inside space-y-1 mt-1">

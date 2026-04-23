@@ -14,6 +14,7 @@ import {
   Radio,
   Code,
 } from 'lucide-react';
+import { Heading } from '../../../components/ui/Heading';
 
 export default function VueGuide() {
   return (
@@ -84,7 +85,7 @@ export default function VueGuide() {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Basic Slider</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Basic Slider</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           The{' '}
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
@@ -158,7 +159,7 @@ const onAfterChange = (index: number) => {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">ReelIndicator</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">ReelIndicator</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Optional component that displays Instagram-style progress indicators
           showing the current position in the slider. When placed inside a{' '}
@@ -193,9 +194,9 @@ const onAfterChange = (index: number) => {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">
+        <Heading level={2} className="text-2xl font-bold mb-4">
           Imperative API — Template Ref
-        </h2>
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           The{' '}
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
@@ -284,7 +285,7 @@ const onAfterChange = (index: number) => {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Horizontal Direction</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Horizontal Direction</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Set{' '}
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
@@ -311,7 +312,7 @@ const onAfterChange = (index: number) => {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Auto-sizing</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Auto-sizing</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           The{' '}
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
@@ -343,7 +344,7 @@ const onAfterChange = (index: number) => {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Transitions</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Transitions</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Pass a{' '}
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
@@ -391,7 +392,7 @@ import { Reel, cubeTransition } from '@reelkit/vue';
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Loop Mode</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Loop Mode</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Enable infinite circular navigation with the{' '}
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
@@ -413,7 +414,7 @@ import { Reel, cubeTransition } from '@reelkit/vue';
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Event Callbacks</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Event Callbacks</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           The{' '}
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
@@ -459,7 +460,7 @@ const onSlideDragEnd = (index: number) => {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Navigation</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Navigation</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Built-in navigation methods:
         </p>
@@ -536,7 +537,7 @@ const sliderRef = ref<ReelExpose | null>(null);
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">#item Slot Pattern</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">#item Slot Pattern</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Instead of React's render prop, Vue uses the{' '}
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
@@ -562,7 +563,7 @@ const sliderRef = ref<ReelExpose | null>(null);
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Composables</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Composables</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
             @reelkit/vue
@@ -597,7 +598,7 @@ const index = toVueRef(reelContext!.index); // Ref<number> — re-renders on cha
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Key Points</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Key Points</Heading>
         <ul className="space-y-3 text-slate-600 dark:text-slate-400">
           <li className="flex items-start gap-3">
             <ArrowRight className="w-5 h-5 text-primary-500 flex-shrink-0 mt-0.5" />
@@ -689,7 +690,7 @@ const index = toVueRef(reelContext!.index); // Ref<number> — re-renders on cha
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Performance Tips</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Performance Tips</Heading>
         <ul className="space-y-3 text-slate-600 dark:text-slate-400">
           <li className="flex items-start gap-3">
             <ArrowRight className="w-5 h-5 text-primary-500 flex-shrink-0 mt-0.5" />

@@ -16,6 +16,7 @@ import {
   AlertTriangle,
   Loader,
 } from 'lucide-react';
+import { Heading } from '../../components/ui/Heading';
 
 const lightboxInputs = [
   {
@@ -643,7 +644,7 @@ export default function AngularLightbox() {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Installation</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Installation</Heading>
         <CodeBlock
           code={`npm install @reelkit/angular-lightbox @reelkit/angular lucide-angular`}
           language="bash"
@@ -666,7 +667,7 @@ export default function AngularLightbox() {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Basic Usage</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Basic Usage</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Import the styles and the{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -748,7 +749,7 @@ export class AppComponent {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Template Slots</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Template Slots</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Four template slot directives allow full customization of the overlay
           UI without forking the component. Each slot receives a strongly-typed
@@ -863,7 +864,7 @@ export class AppComponent {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Video Support</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Video Support</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Video slides require opting in via the{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -927,7 +928,7 @@ export class AppComponent {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">SwipeToClose Directive</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">SwipeToClose Directive</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           The{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -964,7 +965,7 @@ export class AppComponent {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Fullscreen</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Fullscreen</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Use{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -1004,9 +1005,9 @@ export class AppComponent {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">
+        <Heading level={2} className="text-2xl font-bold mb-4">
           RkLightboxOverlayComponent Inputs
-        </h2>
+        </Heading>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -1045,9 +1046,9 @@ export class AppComponent {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">
+        <Heading level={2} className="text-2xl font-bold mb-4">
           RkLightboxOverlayComponent Outputs
-        </h2>
+        </Heading>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -1082,7 +1083,7 @@ export class AppComponent {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">LightboxItem Interface</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">LightboxItem Interface</Heading>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -1121,7 +1122,7 @@ export class AppComponent {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Template Slot Context Types</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Template Slot Context Types</Heading>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -1150,7 +1151,7 @@ export class AppComponent {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Transitions</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Transitions</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           The lightbox supports four built-in transition animations via the{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -1252,9 +1253,9 @@ export class AppComponent {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">
+        <Heading level={2} className="text-2xl font-bold mb-4">
           Content Loading & Error Handling
-        </h2>
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           When using the{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -1266,7 +1267,7 @@ export class AppComponent {
           URLs so revisiting a failed slide skips the retry.
         </p>
 
-        <h3 className="text-xl font-semibold mt-6 mb-4">Lifecycle Callbacks</h3>
+        <Heading level={3} className="text-xl font-semibold mt-6 mb-4">Lifecycle Callbacks</Heading>
         <div className="overflow-x-auto mb-6">
           <table className="w-full">
             <thead>
@@ -1299,9 +1300,9 @@ export class AppComponent {
           </table>
         </div>
 
-        <h3 className="text-xl font-semibold mt-6 mb-4">
+        <Heading level={3} className="text-xl font-semibold mt-6 mb-4">
           Wiring Callbacks in rkLightboxSlide
-        </h3>
+        </Heading>
         <CodeBlock
           code={`<rk-lightbox-overlay [isOpen]="isOpen" [items]="items" (closed)="isOpen = false">
   <ng-template rkLightboxSlide
@@ -1330,9 +1331,9 @@ export class AppComponent {
           language="html"
         />
 
-        <h3 className="text-xl font-semibold mt-8 mb-4">
+        <Heading level={3} className="text-xl font-semibold mt-8 mb-4">
           Custom Loading Template
-        </h3>
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Use the{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -1352,9 +1353,9 @@ export class AppComponent {
           language="html"
         />
 
-        <h3 className="text-xl font-semibold mt-8 mb-4">
+        <Heading level={3} className="text-xl font-semibold mt-8 mb-4">
           Custom Error Template
-        </h3>
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Use the{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -1376,7 +1377,7 @@ export class AppComponent {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">CSS Classes</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">CSS Classes</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           All CSS classes are plain (not scoped), so they can be targeted with
           higher-specificity selectors in a stylesheet loaded after{' '}
@@ -1429,7 +1430,7 @@ export class AppComponent {
 
       {/* Theming */}
       <section id="theming" className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Theming</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Theming</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Every color, size, z-index, and transition lives in a CSS custom
           property. Override one or many at{' '}
@@ -1499,7 +1500,7 @@ export class AppComponent {
 
       {/* Accessibility */}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Accessibility</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Accessibility</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           The overlay root is a modal dialog (
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -1549,7 +1550,7 @@ export class AppComponent {
       </section>
 
       <section>
-        <h2 className="text-2xl font-bold mb-4">Keyboard Shortcuts</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Keyboard Shortcuts</Heading>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>

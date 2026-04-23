@@ -1,4 +1,5 @@
 import { CodeBlock } from '../../../components/ui/CodeBlock';
+import { Heading } from '../../../components/ui/Heading';
 
 const reelInputs = [
   {
@@ -287,14 +288,14 @@ export default function AngularApi() {
       </div>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-2">ReelComponent</h2>
+        <Heading level={2} className="text-2xl font-bold mb-2">ReelComponent</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Selector:{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
             rk-reel
           </code>
         </p>
-        <h3 className="text-lg font-semibold mb-3">Inputs</h3>
+        <Heading level={3} className="text-lg font-semibold mb-3">Inputs</Heading>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -333,7 +334,7 @@ export default function AngularApi() {
       </section>
 
       <section className="mb-12">
-        <h3 className="text-lg font-semibold mb-3">Outputs</h3>
+        <Heading level={3} className="text-lg font-semibold mb-3">Outputs</Heading>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -368,7 +369,7 @@ export default function AngularApi() {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">ReelApi Interface</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">ReelApi Interface</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Obtained via the{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -425,7 +426,7 @@ export class AppComponent {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-2">RkReelItemDirective</h2>
+        <Heading level={2} className="text-2xl font-bold mb-2">RkReelItemDirective</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Selector:{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -441,7 +442,7 @@ export class AppComponent {
           </code>
           .
         </p>
-        <h3 className="text-lg font-semibold mb-3">Template Context</h3>
+        <Heading level={3} className="text-lg font-semibold mb-3">Template Context</Heading>
         <CodeBlock
           code={`<ng-template rkReelItem let-i let-indexInRange="indexInRange" let-size="size">
   <!-- $implicit (let-i)  : number         — absolute slide index -->
@@ -501,14 +502,14 @@ export class AppComponent {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-2">ReelIndicatorComponent</h2>
+        <Heading level={2} className="text-2xl font-bold mb-2">ReelIndicatorComponent</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Selector:{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
             rk-reel-indicator
           </code>
         </p>
-        <h3 className="text-lg font-semibold mb-3">Inputs</h3>
+        <Heading level={3} className="text-lg font-semibold mb-3">Inputs</Heading>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -544,7 +545,7 @@ export class AppComponent {
             </tbody>
           </table>
         </div>
-        <h3 className="text-lg font-semibold mt-6 mb-3">Outputs</h3>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-3">Outputs</Heading>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -579,7 +580,7 @@ export class AppComponent {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">RK_REEL_CONTEXT</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">RK_REEL_CONTEXT</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           An{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -644,7 +645,7 @@ export class MyCustomControl {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">BodyLockService</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">BodyLockService</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Reference-counted body scroll lock. Multiple concurrent callers (e.g.
           a lightbox and a modal both open) can each call lock/unlock
@@ -715,7 +716,7 @@ export class OverlayComponent {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Signal Bridge Utilities</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Signal Bridge Utilities</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Utility functions that bridge the core signal system (
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -772,7 +773,7 @@ const index = toAngularSignal(controller.state.index, destroyRef);`}
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Accessibility</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Accessibility</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
             &lt;rk-reel&gt;
@@ -834,7 +835,7 @@ const index = toAngularSignal(controller.state.index, destroyRef);`}
       </section>
 
       <section>
-        <h2 className="text-2xl font-bold mb-4">Package Exports</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Package Exports</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           All public exports from{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">

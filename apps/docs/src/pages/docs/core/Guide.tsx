@@ -1,6 +1,7 @@
 import { Callout } from '../../../components/ui/Callout';
 import { CodeBlock } from '../../../components/ui/CodeBlock';
 import { NextSteps } from '../../../components/NextSteps';
+import { Heading } from '../../../components/ui/Heading';
 
 export default function CoreGuide() {
   return (
@@ -18,7 +19,7 @@ export default function CoreGuide() {
       </div>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Architecture Overview</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Architecture Overview</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           The core uses a <strong>controller pattern</strong> with factory
           functions. No classes — all plain objects returned from closures. Zero
@@ -54,7 +55,7 @@ export default function CoreGuide() {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">createSliderController</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">createSliderController</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Creates a new slider controller instance that manages all slider state
           and behavior.
@@ -82,9 +83,9 @@ controller.observe();`}
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Controller Methods</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Controller Methods</Heading>
 
-        <h3 className="text-lg font-semibold mb-3">Navigation</h3>
+        <Heading level={3} className="text-lg font-semibold mb-3">Navigation</Heading>
         <CodeBlock
           code={`// Go to specific index
 controller.goTo(5);           // instant
@@ -96,7 +97,7 @@ controller.prev();`}
           language="typescript"
         />
 
-        <h3 className="text-lg font-semibold mt-6 mb-3">Lifecycle</h3>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-3">Lifecycle</Heading>
         <CodeBlock
           code={`// Connect to DOM element
 controller.attach(element);
@@ -121,7 +122,7 @@ controller.setPrimarySize(600);`}
           language="typescript"
         />
 
-        <h3 className="text-lg font-semibold mt-6 mb-3">State Updates</h3>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-3">State Updates</Heading>
         <CodeBlock
           code={`// Update configuration
 controller.updateConfig({
@@ -133,7 +134,7 @@ controller.updateConfig({
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Virtualization</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Virtualization</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           The core renders only <strong>3 slides to DOM</strong> at any time
           (current, previous, next). The range extractor determines which
@@ -169,7 +170,7 @@ const skipHiddenExtractor = (current: number, count: number) => {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Signals</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Signals</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           The core uses a lightweight signal system for reactivity:
         </p>
@@ -202,7 +203,7 @@ disposeReaction();`}
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Controller State</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Controller State</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Access reactive state through{' '}
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
@@ -231,7 +232,7 @@ disposeIndexes();`}
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Timeline Controller</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Timeline Controller</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Build a custom scrub bar for any{' '}
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">{`<video>`}</code>{' '}

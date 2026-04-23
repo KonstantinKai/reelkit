@@ -8,6 +8,7 @@ import {
   Cog,
   Cpu,
 } from 'lucide-react';
+import { Heading } from '../../components/ui/Heading';
 
 const features = [
   {
@@ -574,13 +575,13 @@ export default function StoriesCorePage() {
 
       {/* Installation */}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Installation</h2>
+        <Heading level={2} className="text-2xl font-bold mb-4">Installation</Heading>
         <CodeBlock code="npm i @reelkit/stories-core" language="bash" />
       </section>
 
       {/* Stories Controller */}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-6">Stories Controller</h2>
+        <Heading level={2} className="text-2xl font-bold mb-6">Stories Controller</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
             createStoriesController(config, events?)
@@ -590,40 +591,40 @@ export default function StoriesCorePage() {
           on each transition.
         </p>
 
-        <h3 className="text-lg font-semibold mb-3">
+        <Heading level={3} className="text-lg font-semibold mb-3">
           Config (StoriesControllerConfig)
-        </h3>
+        </Heading>
         <Table4Col rows={configRows} />
 
-        <h3 className="text-lg font-semibold mt-8 mb-3">
+        <Heading level={3} className="text-lg font-semibold mt-8 mb-3">
           Events (StoriesControllerEvents)
-        </h3>
+        </Heading>
         <Table3Col
           headers={['Event', 'Type', 'Description']}
           rows={eventsRows}
         />
 
-        <h3 className="text-lg font-semibold mt-8 mb-3">
+        <Heading level={3} className="text-lg font-semibold mt-8 mb-3">
           State (reactive signals)
-        </h3>
+        </Heading>
         <Table3Col
           headers={['Signal', 'Type', 'Description']}
           rows={stateRows}
         />
 
-        <h3 className="text-lg font-semibold mt-8 mb-3">Methods</h3>
+        <Heading level={3} className="text-lg font-semibold mt-8 mb-3">Methods</Heading>
         <Table3Col
           headers={['Method', 'Type', 'Description']}
           rows={methodsRows}
         />
 
-        <h3 className="text-lg font-semibold mt-8 mb-3">Example</h3>
+        <Heading level={3} className="text-lg font-semibold mt-8 mb-3">Example</Heading>
         <CodeBlock code={controllerExample} />
       </section>
 
       {/* Timer Controller */}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-6">Timer Controller</h2>
+        <Heading level={2} className="text-2xl font-bold mb-6">Timer Controller</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
             createTimerController(config)
@@ -636,30 +637,30 @@ export default function StoriesCorePage() {
           resume preserve the exact position.
         </p>
 
-        <h3 className="text-lg font-semibold mb-3">
+        <Heading level={3} className="text-lg font-semibold mb-3">
           Config (TimerControllerConfig)
-        </h3>
+        </Heading>
         <Table4Col rows={timerConfigRows} />
 
-        <h3 className="text-lg font-semibold mt-8 mb-3">State</h3>
+        <Heading level={3} className="text-lg font-semibold mt-8 mb-3">State</Heading>
         <Table3Col
           headers={['Signal', 'Type', 'Description']}
           rows={timerStateRows}
         />
 
-        <h3 className="text-lg font-semibold mt-8 mb-3">Methods</h3>
+        <Heading level={3} className="text-lg font-semibold mt-8 mb-3">Methods</Heading>
         <Table3Col
           headers={['Method', 'Type', 'Description']}
           rows={timerMethodsRows}
         />
 
-        <h3 className="text-lg font-semibold mt-8 mb-3">Example</h3>
+        <Heading level={3} className="text-lg font-semibold mt-8 mb-3">Example</Heading>
         <CodeBlock code={timerExample} />
       </section>
 
       {/* Canvas Progress Renderer */}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-6">Canvas Progress Renderer</h2>
+        <Heading level={2} className="text-2xl font-bold mb-6">Canvas Progress Renderer</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
             createCanvasProgressRenderer(config?)
@@ -669,24 +670,24 @@ export default function StoriesCorePage() {
           when segments don't fit.
         </p>
 
-        <h3 className="text-lg font-semibold mb-3">
+        <Heading level={3} className="text-lg font-semibold mb-3">
           Config (CanvasProgressRendererConfig)
-        </h3>
+        </Heading>
         <Table4Col rows={canvasConfigRows} />
 
-        <h3 className="text-lg font-semibold mt-8 mb-3">Methods</h3>
+        <Heading level={3} className="text-lg font-semibold mt-8 mb-3">Methods</Heading>
         <Table3Col
           headers={['Member', 'Type', 'Description']}
           rows={canvasMethodsRows}
         />
 
-        <h3 className="text-lg font-semibold mt-8 mb-3">Example</h3>
+        <Heading level={3} className="text-lg font-semibold mt-8 mb-3">Example</Heading>
         <CodeBlock code={canvasExample} />
       </section>
 
       {/* Utility Functions */}
       <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-6">Utility Functions</h2>
+        <Heading level={2} className="text-2xl font-bold mb-6">Utility Functions</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Pure functions for tap zone detection and progress bar math.
         </p>
@@ -698,7 +699,7 @@ export default function StoriesCorePage() {
 
       {/* Types */}
       <section>
-        <h2 className="text-2xl font-bold mb-6">Types</h2>
+        <Heading level={2} className="text-2xl font-bold mb-6">Types</Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           All type definitions exported from{' '}
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
