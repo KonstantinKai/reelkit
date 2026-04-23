@@ -19,25 +19,6 @@ import {
 
 const playerInputs = [
   {
-    prop: 'isOpen',
-    type: 'boolean',
-    default: 'required',
-    description:
-      'Controls overlay visibility; when false the overlay is removed from the DOM',
-  },
-  {
-    prop: 'content',
-    type: 'T[] (extends BaseContentItem)',
-    default: 'required',
-    description: 'Array of content items to display in the player',
-  },
-  {
-    prop: 'initialIndex',
-    type: 'number',
-    default: '0',
-    description: 'Zero-based index of the initially visible item',
-  },
-  {
     prop: 'ariaLabel',
     type: 'string',
     default: "'Video player'",
@@ -51,22 +32,10 @@ const playerInputs = [
       'Width/height ratio for desktop container. Defaults to 9/16. On mobile the player uses full viewport.',
   },
   {
-    prop: 'transitionDuration',
-    type: 'number',
-    default: '300',
-    description: 'Slide animation duration in ms',
-  },
-  {
-    prop: 'swipeDistanceFactor',
-    type: 'number',
-    default: '0.12',
-    description: 'Minimum swipe distance fraction to trigger slide change',
-  },
-  {
-    prop: 'loop',
-    type: 'boolean',
-    default: 'false',
-    description: 'Enable infinite loop between slides',
+    prop: 'content',
+    type: 'T[] (extends BaseContentItem)',
+    default: 'required',
+    description: 'Array of content items to display in the player',
   },
   {
     prop: 'enableNavKeys',
@@ -81,6 +50,51 @@ const playerInputs = [
     description: 'Enable mouse wheel navigation',
   },
   {
+    prop: 'initialIndex',
+    type: 'number',
+    default: '0',
+    description: 'Zero-based index of the initially visible item',
+  },
+  {
+    prop: 'isOpen',
+    type: 'boolean',
+    default: 'required',
+    description:
+      'Controls overlay visibility; when false the overlay is removed from the DOM',
+  },
+  {
+    prop: 'loop',
+    type: 'boolean',
+    default: 'false',
+    description: 'Enable infinite loop between slides',
+  },
+  {
+    prop: 'swipeDistanceFactor',
+    type: 'number',
+    default: '0.12',
+    description: 'Minimum swipe distance fraction to trigger slide change',
+  },
+  {
+    prop: 'timeline',
+    type: "'auto' | 'always' | 'never'",
+    default: "'auto'",
+    description:
+      "Gating strategy for the built-in playback timeline bar. 'auto' renders only for videos longer than timelineMinDurationSeconds; 'always' renders whenever the active slide has a video; 'never' disables the built-in bar (use rkPlayerTimeline template slot for a fully custom replacement).",
+  },
+  {
+    prop: 'timelineMinDurationSeconds',
+    type: 'number',
+    default: '30',
+    description:
+      "Minimum video duration (seconds) for timeline='auto' to render the built-in bar. Short looping clips below this threshold are suppressed.",
+  },
+  {
+    prop: 'transitionDuration',
+    type: 'number',
+    default: '300',
+    description: 'Slide animation duration in ms',
+  },
+  {
     prop: 'wheelDebounceMs',
     type: 'number',
     default: '200',
@@ -89,6 +103,12 @@ const playerInputs = [
 ];
 
 const playerOutputs = [
+  {
+    prop: 'apiReady',
+    type: 'EventEmitter<ReelApi>',
+    description:
+      'Emitted once the slider is ready, exposing the imperative API',
+  },
   {
     prop: 'closed',
     type: 'EventEmitter<void>',
@@ -99,15 +119,40 @@ const playerOutputs = [
     type: 'EventEmitter<number>',
     description: 'Emitted when the active slide index changes',
   },
-  {
-    prop: 'apiReady',
-    type: 'EventEmitter<ReelApi>',
-    description:
-      'Emitted once the slider is ready, exposing the imperative API',
-  },
 ];
 
 const templateSlots = [
+  {
+    directive: 'rkPlayerControls',
+    context: 'PlayerControlsContext<T>',
+    description: 'Custom global controls bar (close, sound toggle, etc.)',
+  },
+  {
+    directive: 'rkPlayerError',
+    context: '{ $implicit: activeIndex, item, innerActiveIndex }',
+    description: 'Custom error indicator template slot',
+  },
+  {
+    directive: 'rkPlayerLoading',
+    context: '{ $implicit: activeIndex, item, innerActiveIndex }',
+    description: 'Custom loading indicator template slot',
+  },
+  {
+    directive: 'rkPlayerNavigation',
+    context: 'PlayerNavigationContext',
+    description: 'Custom prev/next navigation arrows',
+  },
+  {
+    directive: 'rkPlayerNestedNavigation',
+    context: 'PlayerNestedNavigationContext',
+    description: 'Custom navigation arrows for the inner horizontal slider',
+  },
+  {
+    directive: 'rkPlayerNestedSlide',
+    context: 'PlayerNestedSlideContext',
+    description:
+      'Custom content for each slide inside the inner horizontal slider',
+  },
   {
     directive: 'rkPlayerSlide',
     context: 'PlayerSlideContext<T>',
@@ -119,35 +164,10 @@ const templateSlots = [
     description: 'Per-slide overlay (author info, likes, description, etc.)',
   },
   {
-    directive: 'rkPlayerControls',
-    context: 'PlayerControlsContext<T>',
-    description: 'Custom global controls bar (close, sound toggle, etc.)',
-  },
-  {
-    directive: 'rkPlayerNavigation',
-    context: 'PlayerNavigationContext',
-    description: 'Custom prev/next navigation arrows',
-  },
-  {
-    directive: 'rkPlayerNestedSlide',
-    context: 'PlayerNestedSlideContext',
+    directive: 'rkPlayerTimeline',
+    context: 'PlayerTimelineContext<T>',
     description:
-      'Custom content for each slide inside the inner horizontal slider',
-  },
-  {
-    directive: 'rkPlayerNestedNavigation',
-    context: 'PlayerNestedNavigationContext',
-    description: 'Custom navigation arrows for the inner horizontal slider',
-  },
-  {
-    directive: 'rkPlayerLoading',
-    context: '{ $implicit: activeIndex, item, innerActiveIndex }',
-    description: 'Custom loading indicator template slot',
-  },
-  {
-    directive: 'rkPlayerError',
-    context: '{ $implicit: activeIndex, item, innerActiveIndex }',
-    description: 'Custom error indicator template slot',
+      'Custom playback timeline bar. Rendered only when the gate (timeline mode + min duration) would render the default bar (same auto/always/never logic).',
   },
 ];
 
@@ -174,15 +194,6 @@ const mediaItemProps = [
 
 const contextTypes = [
   {
-    name: 'PlayerSlideContext<T>',
-    fields:
-      '{ $implicit: T, index, size: [number,number], isActive, slideKey, onReady, onWaiting, onError }',
-  },
-  {
-    name: 'PlayerSlideOverlayContext<T>',
-    fields: '{ $implicit: T, index, isActive }',
-  },
-  {
     name: 'PlayerControlsContext<T>',
     fields:
       '{ $implicit: onClose, activeIndex, content: T[], soundState: PlayerSoundState }',
@@ -192,13 +203,31 @@ const contextTypes = [
     fields: '{ $implicit: onPrev, onNext, activeIndex, count }',
   },
   {
+    name: 'PlayerNestedNavigationContext',
+    fields: '{ $implicit: onPrev, onNext, activeIndex, count }',
+  },
+  {
     name: 'PlayerNestedSlideContext',
     fields:
       '{ $implicit: MediaItem, index, size, isActive, isInnerActive, slideKey }',
   },
   {
-    name: 'PlayerNestedNavigationContext',
-    fields: '{ $implicit: onPrev, onNext, activeIndex, count }',
+    name: 'PlayerSlideContext<T>',
+    fields:
+      '{ $implicit: T, index, size: [number,number], isActive, slideKey, onReady, onWaiting, onError }',
+  },
+  {
+    name: 'PlayerSlideOverlayContext<T>',
+    fields: '{ $implicit: T, index, isActive }',
+  },
+  {
+    name: 'PlayerTimelineContext<T>',
+    fields: '{ $implicit: T, activeIndex, timelineState: PlayerTimelineState }',
+  },
+  {
+    name: 'PlayerTimelineState',
+    fields:
+      '{ duration(), currentTime(), progress(), bufferedRanges(), isScrubbing(), seek(t), bindInteractions(el) }',
   },
 ];
 
@@ -319,12 +348,19 @@ const cssClasses = [
     component: 'VideoSlide',
     description: 'Wave loading animation',
   },
+  {
+    className: '.rk-reel-video-poster.rk-visible',
+    component: 'VideoSlide',
+    description:
+      'State modifier applied to the poster while the video is paused/loading',
+  },
 
   // NestedSlider
   {
-    className: '.rk-reel-nested-slider-inner',
+    className: '.rk-reel-nested-indicator',
     component: 'NestedSlider',
-    description: 'Nested horizontal slider root',
+    description:
+      'Dot pagination under multi-media slides (position varies desktop vs. touch)',
   },
   {
     className: '.rk-reel-nested-nav',
@@ -332,19 +368,47 @@ const cssClasses = [
     description: 'Horizontal carousel arrows (hidden below 768px)',
   },
   {
-    className: '.rk-reel-nested-nav-prev',
-    component: 'NestedSlider',
-    description: 'Nested prev arrow position',
-  },
-  {
     className: '.rk-reel-nested-nav-next',
     component: 'NestedSlider',
     description: 'Nested next arrow position',
   },
   {
-    className: '.rk-reel-nested-indicator',
+    className: '.rk-reel-nested-nav-prev',
     component: 'NestedSlider',
-    description: 'Nested slider dot indicator',
+    description: 'Nested prev arrow position',
+  },
+  {
+    className: '.rk-reel-nested-slider-inner',
+    component: 'NestedSlider',
+    description: 'Nested horizontal slider root',
+  },
+
+  // Timeline
+  {
+    className: '.rk-reel-timeline',
+    component: 'TimelineBar',
+    description:
+      'Scrub-bar wrapper. Reuse on custom `rkPlayerTimeline` template roots to inherit flush-bottom positioning, safe-area padding, and touch-device slide-overlay clearance.',
+  },
+  {
+    className: '.rk-reel-timeline-track',
+    component: 'TimelineBar',
+    description: 'Track (unplayed region)',
+  },
+  {
+    className: '.rk-reel-timeline-buffered',
+    component: 'TimelineBar',
+    description: 'Buffered segments layer',
+  },
+  {
+    className: '.rk-reel-timeline-fill',
+    component: 'TimelineBar',
+    description: 'Played-progress fill',
+  },
+  {
+    className: '.rk-reel-timeline-cursor',
+    component: 'TimelineBar',
+    description: 'Scrub-handle pill (floats above the track)',
   },
 ];
 
@@ -478,6 +542,63 @@ const themeTokens = [
     token: '--rk-reel-nested-edge-padding',
     default: '12px',
     controls: 'Nested arrow edge inset',
+  },
+
+  // Playback timeline bar
+  {
+    token: '--rk-reel-timeline-track',
+    default: 'rgba(255, 255, 255, 0.22)',
+    controls: 'Track background (unplayed region)',
+  },
+  {
+    token: '--rk-reel-timeline-buffered',
+    default: 'rgba(255, 255, 255, 0.4)',
+    controls: 'Buffered segments color',
+  },
+  {
+    token: '--rk-reel-timeline-fill',
+    default: '#fff',
+    controls: 'Played-progress fill color',
+  },
+  {
+    token: '--rk-reel-timeline-cursor',
+    default: '#fff',
+    controls: 'Scrub-handle pill color',
+  },
+  {
+    token: '--rk-reel-timeline-height',
+    default: '3px',
+    controls: 'Track height at rest',
+  },
+  {
+    token: '--rk-reel-timeline-height-active',
+    default: '6px',
+    controls: 'Track height on hover / focus / scrub',
+  },
+  {
+    token: '--rk-reel-timeline-cursor-width',
+    default: '10px',
+    controls: 'Scrub-pill width at rest',
+  },
+  {
+    token: '--rk-reel-timeline-cursor-width-active',
+    default: '14px',
+    controls: 'Scrub-pill width while scrubbing',
+  },
+  {
+    token: '--rk-reel-timeline-cursor-height',
+    default: '24px',
+    controls: 'Scrub-pill height at rest',
+  },
+  {
+    token: '--rk-reel-timeline-cursor-height-active',
+    default: '32px',
+    controls: 'Scrub-pill height while scrubbing',
+  },
+  {
+    token: '--rk-reel-timeline-transition',
+    default: '0.15s ease-out',
+    controls: 'Track + pill grow/shrink animation',
   },
 ];
 
@@ -803,15 +924,57 @@ export class AppComponent {
           <button (click)="onNext()" [disabled]="activeIndex === count - 1">&#9660;</button>
         </div>
       </ng-template>
+
+      <!-- Custom playback timeline -->
+      <ng-template rkPlayerTimeline let-state="timelineState">
+        <div class="rk-reel-timeline" style="padding:0 16px"
+             (pointerdown)="bindTrack(track, state); track.focus()">
+          <div #track
+               role="slider"
+               [attr.aria-valuenow]="state.currentTime()"
+               style="height:6px;background:rgba(255,255,255,0.2);border-radius:999px">
+            <div [style.width.%]="state.progress() * 100"
+                 style="height:100%;background:linear-gradient(90deg,#6366f1,#ec4899);border-radius:999px"></div>
+          </div>
+        </div>
+      </ng-template>
     </rk-reel-player-overlay>
   \`,
 })
 export class AppComponent {
   isOpen = false;
   content: ContentItem[] = [];
+
+  private _trackDispose: (() => void) | null = null;
+  /** Wire pointer + keyboard scrub onto your custom track element. */
+  bindTrack(el: HTMLElement, state: PlayerTimelineState) {
+    this._trackDispose?.();
+    this._trackDispose = state.bindInteractions(el);
+  }
 }`}
           language="typescript"
         />
+      </section>
+
+      {/* Custom Timeline subsection */}
+      <section className="mb-12">
+        <h3 className="text-xl font-semibold mt-8 mb-4">Custom Timeline</h3>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          The{' '}
+          <code className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            rkPlayerTimeline
+          </code>{' '}
+          template slot is invoked only when the overlay's gating rules would
+          render the default bar (same{' '}
+          <code className="font-mono text-xs">timeline</code> mode +{' '}
+          <code className="font-mono text-xs">timelineMinDurationSeconds</code>
+          ), so you don't re-implement it. Reuse the{' '}
+          <code className="font-mono text-xs">.rk-reel-timeline</code> class on
+          your root to inherit flush-bottom positioning, safe-area padding, and
+          touch-device clearance. Call{' '}
+          <code className="font-mono text-xs">state.bindInteractions(el)</code>{' '}
+          on your scrub track to wire pointer + keyboard scrubbing.
+        </p>
       </section>
 
       <section className="mb-12">
@@ -981,6 +1144,88 @@ export class AppComponent {
   </ng-template>
 </rk-reel-player-overlay>`}
           language="html"
+        />
+      </section>
+
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">Timeline</h2>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          The overlay renders a built-in playback timeline bar over the active
+          video. Gate it via the{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            timeline
+          </code>{' '}
+          input: <code className="font-mono text-xs">'auto'</code> (default)
+          renders whenever the active media is a video longer than{' '}
+          <code className="font-mono text-xs">timelineMinDurationSeconds</code>{' '}
+          (default 30), <code className="font-mono text-xs">'always'</code>{' '}
+          whenever a video is active,{' '}
+          <code className="font-mono text-xs">'never'</code> to disable. For a
+          fully custom scrub bar, use the{' '}
+          <code className="font-mono text-xs">rkPlayerTimeline</code> template
+          directive; its context exposes a{' '}
+          <code className="font-mono text-xs">timelineState</code> backed by the
+          underlying{' '}
+          <code className="font-mono text-xs">TimelineController</code>.
+        </p>
+        <CodeBlock
+          code={`<rk-reel-player-overlay
+  [isOpen]="isOpen()"
+  [content]="items"
+  timeline="auto"
+  [timelineMinDurationSeconds]="30"
+  (closed)="isOpen.set(false)"
+/>`}
+          language="html"
+        />
+        <p className="text-slate-600 dark:text-slate-400 mt-4">
+          Theme via the{' '}
+          <code className="font-mono text-xs">--rk-reel-timeline-*</code> CSS
+          custom properties. For direct control in custom consumer components,
+          inject <code className="font-mono text-xs">TimelineStateService</code>
+          .
+        </p>
+
+        <h3 className="text-xl font-semibold mt-8 mb-3">
+          RkTimelineBarComponent
+        </h3>
+        <p className="text-slate-600 dark:text-slate-400 mb-2">
+          Default playback scrub bar component. Consumes{' '}
+          <code className="font-mono text-xs">TimelineStateService</code>{' '}
+          (provided by{' '}
+          <code className="font-mono text-xs">
+            RkReelPlayerOverlayComponent
+          </code>
+          ) and renders the track, buffered ranges, progress fill, and scrub
+          pill. Selector:{' '}
+          <code className="font-mono text-xs">rk-timeline-bar</code>. Inputs:{' '}
+          <code className="font-mono text-xs">class?: string</code>,{' '}
+          <code className="font-mono text-xs">
+            style?: Record&lt;string, string&gt;
+          </code>
+          . Use inside an{' '}
+          <code className="font-mono text-xs">rkPlayerTimeline</code> template
+          to wrap or augment the default bar; use standalone only inside a
+          consumer that provides the service.
+        </p>
+        <CodeBlock
+          code={`import { RkTimelineBarComponent } from '@reelkit/angular-reel-player';
+
+@Component({
+  standalone: true,
+  imports: [RkReelPlayerOverlayComponent, RkTimelineBarComponent],
+  template: \`
+    <rk-reel-player-overlay [isOpen]="isOpen()" [content]="items">
+      <!-- Wrap or augment the default bar: -->
+      <ng-template rkPlayerTimeline>
+        <my-timecode />
+        <rk-timeline-bar />
+      </ng-template>
+    </rk-reel-player-overlay>
+  \`,
+})
+export class AppComponent {}`}
+          language="typescript"
         />
       </section>
 
@@ -1363,6 +1608,16 @@ export class AppComponent {
   --rk-reel-button-bg-hover-strong: rgba(168, 85, 247, 0.85);
   --rk-reel-edge-padding: 24px;
   --rk-reel-button-size: 52px;
+
+  /* Timeline bar: brand-matched, beefier on desktop */
+  --rk-reel-timeline-track: rgba(99, 102, 241, 0.25);
+  --rk-reel-timeline-buffered: rgba(168, 85, 247, 0.45);
+  --rk-reel-timeline-fill: #a855f7;
+  --rk-reel-timeline-cursor: #a855f7;
+  --rk-reel-timeline-height: 4px;
+  --rk-reel-timeline-height-active: 8px;
+  --rk-reel-timeline-cursor-width-active: 18px;
+  --rk-reel-timeline-transition: 0.2s ease-out;
 }`}
           language="css"
         />

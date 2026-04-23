@@ -10,6 +10,7 @@ import {
   RkPlayerControlsDirective,
   RkPlayerSlideDirective,
   RkPlayerNestedNavigationDirective,
+  RkPlayerTimelineDirective,
   RkCloseButtonComponent,
   RkSoundButtonComponent,
   RkMediaSlideComponent,
@@ -26,6 +27,7 @@ type DemoType =
   | 'custom-controls'
   | 'custom-slide'
   | 'custom-nested-nav'
+  | 'custom-timeline'
   | 'infinity'
   | 'custom-loading-error'
   | 'theming'
@@ -61,6 +63,12 @@ const DEMOS: Demo[] = [
     title: 'Custom Nested Navigation',
     description:
       'Uses rkPlayerNestedNavigation to replace the default left/right arrows inside multi-media slides with custom pill-shaped buttons.',
+  },
+  {
+    id: 'custom-timeline',
+    title: 'Custom Timeline (rkPlayerTimeline)',
+    description:
+      'Replaces the built-in playback bar with a custom scrub + timecode via the dedicated rkPlayerTimeline slot. Gating (auto/always/never + min duration) still applies. Reuses the built-in .rk-reel-timeline slot class for safe-area handling and scopes a CSS override to reserve room for the taller bar.',
   },
   {
     id: 'infinity',
@@ -118,6 +126,7 @@ function getMultiMediaFirstContent(count: number): ContentItem[] {
     RkPlayerControlsDirective,
     RkPlayerSlideDirective,
     RkPlayerNestedNavigationDirective,
+    RkPlayerTimelineDirective,
     RkCloseButtonComponent,
     RkSoundButtonComponent,
     RkMediaSlideComponent,
@@ -144,6 +153,40 @@ function getMultiMediaFirstContent(count: number): ContentItem[] {
           rgba(168, 85, 247, 0.85)
         );
         --rk-reel-slide-overlay-name-color: #fef3c7;
+
+        /* Timeline bar: warm orange sits outside the purple/indigo
+           gradient so the fill + cursor stay readable. Dark-slate track
+           grounds it. */
+        --rk-reel-timeline-track: rgba(15, 23, 42, 0.55);
+        --rk-reel-timeline-buffered: rgba(251, 146, 60, 0.4);
+        --rk-reel-timeline-fill: #fb923c;
+        --rk-reel-timeline-cursor: #fb923c;
+        --rk-reel-timeline-height: 4px;
+        --rk-reel-timeline-height-active: 8px;
+        --rk-reel-timeline-cursor-width-active: 18px;
+        --rk-reel-timeline-transition: 0.2s ease-out;
+      }
+
+      /* The custom timeline is taller than the built-in track, so reserve
+         extra bottom space in the slide caption and lift the multi-media
+         indicator above it. Scoped to this overlay demo. */
+      .custom-timeline-overlay {
+        --rk-reel-slide-overlay-padding: 48px 16px 64px;
+      }
+      .custom-timeline-overlay .rk-reel-nested-indicator {
+        bottom: 56px;
+      }
+      /* Desktop gets 8px of breathing room below the track. Touch devices
+         stack that onto the built-in safe-area + 12px floor. */
+      .rk-custom-timeline {
+        padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 8px);
+      }
+      @media (hover: none) and (pointer: coarse) {
+        .rk-custom-timeline {
+          padding-bottom: calc(
+            max(env(safe-area-inset-bottom, 0px), 12px) + 8px
+          );
+        }
       }
     `,
   ],
@@ -268,7 +311,7 @@ function getMultiMediaFirstContent(count: number): ContentItem[] {
         (closed)="activeDemo.set(null)"
       >
         <ng-template rkPlayerSlideOverlay>
-          <!-- empty — hides default overlay -->
+          <!-- empty: hides default overlay -->
         </ng-template>
         <ng-template rkPlayerControls let-onClose>
           <rk-close-button (clicked)="onClose()" />
@@ -517,8 +560,88 @@ function getMultiMediaFirstContent(count: number): ContentItem[] {
             [isOpen]="true"
             [content]="content"
             [initialIndex]="0"
+            timeline="always"
             (closed)="activeDemo.set(null)"
           />
+        </div>
+      }
+
+      @if (activeDemo() === 'custom-timeline') {
+        <div class="custom-timeline-overlay">
+          <rk-reel-player-overlay
+            [isOpen]="true"
+            [content]="content"
+            [initialIndex]="0"
+            timeline="always"
+            (closed)="activeDemo.set(null)"
+          >
+            <ng-template rkPlayerTimeline let-state="timelineState">
+              <div
+                class="rk-reel-timeline rk-custom-timeline"
+                style="
+                  display: flex;
+                  flex-direction: column;
+                  gap: 6px;
+                  padding-left: 16px;
+                  padding-right: 16px;
+                  color: #fff;
+                  font-family: ui-monospace, SFMono-Regular, monospace;
+                "
+              >
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    font-size: 12px;
+                    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+                  "
+                >
+                  <span>{{ fmtTime(state.currentTime()) }}</span>
+                  <span style="opacity: 0.7">
+                    {{ fmtTime(state.duration()) }}
+                  </span>
+                </div>
+                <div
+                  #customTrack
+                  role="slider"
+                  aria-label="Seek"
+                  [attr.aria-valuemin]="0"
+                  [attr.aria-valuemax]="
+                    isFinite(state.duration()) ? state.duration() : 0
+                  "
+                  [attr.aria-valuenow]="state.currentTime()"
+                  tabindex="0"
+                  [style.height.px]="state.isScrubbing() ? 10 : 6"
+                  style="
+                    position: relative;
+                    border-radius: 999px;
+                    background-color: rgba(255, 255, 255, 0.2);
+                    cursor: pointer;
+                    transition: height 0.15s ease-out;
+                  "
+                  (pointerdown)="
+                    bindCustomTrack(customTrack, state); customTrack.focus()
+                  "
+                >
+                  <div
+                    [style.width.%]="state.progress() * 100"
+                    style="
+                      position: absolute;
+                      inset: 0;
+                      border-radius: 999px;
+                      background: linear-gradient(
+                        90deg,
+                        #6366f1,
+                        #a855f7,
+                        #ec4899
+                      );
+                      pointer-events: none;
+                    "
+                  ></div>
+                </div>
+              </div>
+            </ng-template>
+          </rk-reel-player-overlay>
         </div>
       }
 
@@ -597,13 +720,37 @@ export class ReelPlayerCustomPageComponent {
         avatar: cdnUrl('samples/avatars/avatar-01.jpg'),
       },
       likes: 0,
-      description: 'Broken image — shows custom error UI.',
+      description: 'Broken image: shows custom error UI.',
     },
     ...this.content.slice(2, 5),
   ];
   protected readonly nestedNavContent: ContentItem[] =
     getMultiMediaFirstContent(CONTENT_COUNT);
   protected readonly activeDemo = signal<DemoType>(null);
+
+  // `isFinite` reference for the custom-timeline template.
+  protected readonly isFinite = Number.isFinite;
+
+  protected fmtTime(seconds: number): string {
+    if (!Number.isFinite(seconds) || seconds < 0) return '0:00';
+    const m = Math.floor(seconds / 60);
+    const sec = Math.floor(seconds % 60)
+      .toString()
+      .padStart(2, '0');
+    return `${m}:${sec}`;
+  }
+
+  private _customTrackDisposer: (() => void) | null = null;
+  private _customTrackEl: HTMLElement | null = null;
+  protected bindCustomTrack(
+    el: HTMLElement,
+    state: { bindInteractions: (el: HTMLElement) => () => void },
+  ): void {
+    if (this._customTrackEl === el) return;
+    this._customTrackDisposer?.();
+    this._customTrackEl = el;
+    this._customTrackDisposer = state.bindInteractions(el);
+  }
 
   protected readonly infinityContent = signal<ContentItem[]>(
     generateInfinityBatch(0, INFINITY_BATCH),

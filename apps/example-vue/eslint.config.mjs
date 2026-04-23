@@ -16,6 +16,9 @@ export default [
     files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx', '**/*.vue'],
     rules: {
       'vue/multi-word-component-names': 'off',
+      '@nx/workspace-constant-naming': 'off',
+      '@nx/workspace-fields-before-callbacks': 'off',
+      '@nx/workspace-lines-between-type-members': 'off',
     },
   },
 ];

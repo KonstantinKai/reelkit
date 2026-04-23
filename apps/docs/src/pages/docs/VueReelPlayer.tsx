@@ -19,30 +19,11 @@ import {
 
 const playerProps = [
   {
-    prop: 'isOpen',
-    type: 'boolean',
-    default: 'required',
-    description:
-      'Controls overlay visibility; when false the overlay is removed from the DOM',
-  },
-  {
-    prop: 'content',
-    type: 'T[] (extends BaseContentItem)',
-    default: 'required',
-    description: 'Array of content items to display in the player',
-  },
-  {
     prop: 'ariaLabel',
     type: 'string',
     default: "'Video player'",
     description:
       'Accessible label for the dialog region; announced by screen readers when the overlay opens',
-  },
-  {
-    prop: 'initialIndex',
-    type: 'number',
-    default: '0',
-    description: 'Zero-based index of the initially visible item',
   },
   {
     prop: 'aspectRatio',
@@ -52,22 +33,10 @@ const playerProps = [
       'Width/height ratio for the desktop container. Mobile uses the full viewport.',
   },
   {
-    prop: 'transitionDuration',
-    type: 'number',
-    default: '300',
-    description: 'Slide animation duration in ms',
-  },
-  {
-    prop: 'swipeDistanceFactor',
-    type: 'number',
-    default: '0.12',
-    description: 'Minimum swipe distance fraction to trigger a slide change',
-  },
-  {
-    prop: 'loop',
-    type: 'boolean',
-    default: 'false',
-    description: 'Enable infinite loop between slides',
+    prop: 'content',
+    type: 'T[] (extends BaseContentItem)',
+    default: 'required',
+    description: 'Array of content items to display in the player',
   },
   {
     prop: 'enableNavKeys',
@@ -82,6 +51,51 @@ const playerProps = [
     description: 'Enable mouse-wheel navigation',
   },
   {
+    prop: 'initialIndex',
+    type: 'number',
+    default: '0',
+    description: 'Zero-based index of the initially visible item',
+  },
+  {
+    prop: 'isOpen',
+    type: 'boolean',
+    default: 'required',
+    description:
+      'Controls overlay visibility; when false the overlay is removed from the DOM',
+  },
+  {
+    prop: 'loop',
+    type: 'boolean',
+    default: 'false',
+    description: 'Enable infinite loop between slides',
+  },
+  {
+    prop: 'swipeDistanceFactor',
+    type: 'number',
+    default: '0.12',
+    description: 'Minimum swipe distance fraction to trigger a slide change',
+  },
+  {
+    prop: 'timeline',
+    type: "'auto' | 'always' | 'never'",
+    default: "'auto'",
+    description:
+      "Gating strategy for the built-in playback timeline bar. 'auto' renders only for videos longer than timelineMinDurationSeconds; 'always' renders whenever the active slide has a video; 'never' disables the built-in bar (use the #timeline slot for a fully custom replacement).",
+  },
+  {
+    prop: 'timelineMinDurationSeconds',
+    type: 'number',
+    default: '30',
+    description:
+      "Minimum video duration (seconds) for timeline='auto' to render the built-in bar. Short looping clips below this threshold are suppressed.",
+  },
+  {
+    prop: 'transitionDuration',
+    type: 'number',
+    default: '300',
+    description: 'Slide animation duration in ms',
+  },
+  {
     prop: 'wheelDebounceMs',
     type: 'number',
     default: '200',
@@ -91,14 +105,15 @@ const playerProps = [
 
 const playerEvents = [
   {
+    name: 'api-ready',
+    payload: 'ReelApi',
+    description:
+      'Emitted once the slider is ready, exposing the imperative API',
+  },
+  {
     name: 'close',
     payload: 'void',
     description: 'Emitted when the player closes',
-  },
-  {
-    name: 'update:is-open',
-    payload: 'boolean',
-    description: 'Emitted on close — enables `v-model:is-open`',
   },
   {
     name: 'slide-change',
@@ -106,14 +121,44 @@ const playerEvents = [
     description: 'Emitted with the new active slide index after a change',
   },
   {
-    name: 'api-ready',
-    payload: 'ReelApi',
-    description:
-      'Emitted once the slider is ready, exposing the imperative API',
+    name: 'update:is-open',
+    payload: 'boolean',
+    description: 'Emitted on close; enables `v-model:is-open`',
   },
 ];
 
 const scopedSlots = [
+  {
+    slot: 'controls',
+    scope: '{ item, soundState, activeIndex, content, onClose }',
+    description: 'Custom global controls bar (close, sound, share, etc.)',
+  },
+  {
+    slot: 'error',
+    scope: '{ item, activeIndex, innerActiveIndex }',
+    description: 'Custom error indicator (replaces the default icon)',
+  },
+  {
+    slot: 'loading',
+    scope: '{ item, activeIndex, innerActiveIndex }',
+    description: 'Custom loading indicator (replaces the default wave loader)',
+  },
+  {
+    slot: 'navigation',
+    scope: '{ item, activeIndex, count, onPrev, onNext }',
+    description: 'Custom prev/next navigation arrows (desktop)',
+  },
+  {
+    slot: 'nestedNavigation',
+    scope: '{ media, activeIndex, count, onPrev, onNext }',
+    description: 'Custom arrows for the inner horizontal slider',
+  },
+  {
+    slot: 'nestedSlide',
+    scope:
+      '{ item, media, index, size, isActive, isInnerActive, slideKey, defaultContent, onReady, onWaiting, onError }',
+    description: 'Custom slide content inside the inner horizontal slider',
+  },
   {
     slot: 'slide',
     scope:
@@ -127,35 +172,10 @@ const scopedSlots = [
     description: 'Per-slide overlay (author info, likes, description, etc.)',
   },
   {
-    slot: 'controls',
-    scope: '{ item, soundState, activeIndex, content, onClose }',
-    description: 'Custom global controls bar (close, sound, share, etc.)',
-  },
-  {
-    slot: 'navigation',
-    scope: '{ item, activeIndex, count, onPrev, onNext }',
-    description: 'Custom prev/next navigation arrows (desktop)',
-  },
-  {
-    slot: 'nestedSlide',
-    scope:
-      '{ item, media, index, size, isActive, isInnerActive, slideKey, defaultContent, onReady, onWaiting, onError }',
-    description: 'Custom slide content inside the inner horizontal slider',
-  },
-  {
-    slot: 'nestedNavigation',
-    scope: '{ media, activeIndex, count, onPrev, onNext }',
-    description: 'Custom arrows for the inner horizontal slider',
-  },
-  {
-    slot: 'loading',
-    scope: '{ item, activeIndex, innerActiveIndex }',
-    description: 'Custom loading indicator (replaces the default wave loader)',
-  },
-  {
-    slot: 'error',
-    scope: '{ item, activeIndex, innerActiveIndex }',
-    description: 'Custom error indicator (replaces the default icon)',
+    slot: 'timeline',
+    scope: '{ item, activeIndex, timelineState, defaultContent }',
+    description:
+      'Custom playback timeline bar. Only invoked when the built-in gate (timeline mode + min duration) would render the default bar; reuses the same auto/always/never logic. Use defaultContent() to wrap the built-in <TimelineBar />.',
   },
 ];
 
@@ -305,21 +325,62 @@ const cssClasses = [
     description: 'Poster image (fades out on play)',
   },
 
+  {
+    className: '.rk-reel-video-poster.rk-visible',
+    component: 'VideoSlide',
+    description:
+      'State modifier applied to the poster while the video is paused/loading',
+  },
+
   // NestedSlider
+  {
+    className: '.rk-reel-nested-indicator',
+    component: 'NestedSlider',
+    description:
+      'Dot pagination under multi-media slides (position varies desktop vs. touch)',
+  },
   {
     className: '.rk-reel-nested-nav',
     component: 'NestedSlider',
     description: 'Horizontal carousel arrows (hidden below 768px)',
   },
   {
+    className: '.rk-reel-nested-nav-next',
+    component: 'NestedSlider',
+    description: 'Nested next arrow position',
+  },
+  {
     className: '.rk-reel-nested-nav-prev',
     component: 'NestedSlider',
     description: 'Nested prev arrow position',
   },
+
+  // Timeline
   {
-    className: '.rk-reel-nested-nav-next',
-    component: 'NestedSlider',
-    description: 'Nested next arrow position',
+    className: '.rk-reel-timeline',
+    component: 'TimelineBar',
+    description:
+      'Scrub-bar wrapper. Reuse on custom `#timeline` slot roots to inherit flush-bottom positioning, safe-area padding, and touch-device slide-overlay clearance.',
+  },
+  {
+    className: '.rk-reel-timeline-track',
+    component: 'TimelineBar',
+    description: 'Track (unplayed region)',
+  },
+  {
+    className: '.rk-reel-timeline-buffered',
+    component: 'TimelineBar',
+    description: 'Buffered segments layer',
+  },
+  {
+    className: '.rk-reel-timeline-fill',
+    component: 'TimelineBar',
+    description: 'Played-progress fill',
+  },
+  {
+    className: '.rk-reel-timeline-cursor',
+    component: 'TimelineBar',
+    description: 'Scrub-handle pill (floats above the track)',
   },
 ];
 
@@ -443,6 +504,63 @@ const themeTokens = [
     token: '--rk-reel-nested-button-size',
     default: '36px',
     controls: 'Nested arrow size',
+  },
+
+  // Playback timeline bar
+  {
+    token: '--rk-reel-timeline-track',
+    default: 'rgba(255, 255, 255, 0.22)',
+    controls: 'Track background (unplayed region)',
+  },
+  {
+    token: '--rk-reel-timeline-buffered',
+    default: 'rgba(255, 255, 255, 0.4)',
+    controls: 'Buffered segments color',
+  },
+  {
+    token: '--rk-reel-timeline-fill',
+    default: '#fff',
+    controls: 'Played-progress fill color',
+  },
+  {
+    token: '--rk-reel-timeline-cursor',
+    default: '#fff',
+    controls: 'Scrub-handle pill color',
+  },
+  {
+    token: '--rk-reel-timeline-height',
+    default: '3px',
+    controls: 'Track height at rest',
+  },
+  {
+    token: '--rk-reel-timeline-height-active',
+    default: '6px',
+    controls: 'Track height on hover / focus / scrub',
+  },
+  {
+    token: '--rk-reel-timeline-cursor-width',
+    default: '10px',
+    controls: 'Scrub-pill width at rest',
+  },
+  {
+    token: '--rk-reel-timeline-cursor-width-active',
+    default: '14px',
+    controls: 'Scrub-pill width while scrubbing',
+  },
+  {
+    token: '--rk-reel-timeline-cursor-height',
+    default: '24px',
+    controls: 'Scrub-pill height at rest',
+  },
+  {
+    token: '--rk-reel-timeline-cursor-height-active',
+    default: '32px',
+    controls: 'Scrub-pill height while scrubbing',
+  },
+  {
+    token: '--rk-reel-timeline-transition',
+    default: '0.15s ease-out',
+    controls: 'Track + pill grow/shrink animation',
   },
 ];
 
@@ -844,6 +962,64 @@ const content = ref<ContentItem[]>([/* ... */]);
         <CloseButton :on-click="onClose" />
       </div>
     </template>
+
+    <!-- Custom playback timeline -->
+    <template #timeline="{ timelineState }: TimelineSlotScope">
+      <CustomTimelineBar :state="timelineState" />
+    </template>
+  </ReelPlayerOverlay>
+</template>`}
+          language="vue"
+        />
+      </section>
+
+      {/* Custom Timeline slot */}
+      <section className="mb-12">
+        <h3 className="text-xl font-semibold mt-8 mb-4">Custom Timeline</h3>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Replace the built-in playback bar with your own scrub UI via the{' '}
+          <code className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            #timeline
+          </code>{' '}
+          slot. The slot fires only when the overlay's gating rules would render
+          the default bar (same{' '}
+          <code className="font-mono text-xs">timeline</code> mode +{' '}
+          <code className="font-mono text-xs">timelineMinDurationSeconds</code>
+          ), so you don't re-implement it. Reuse the{' '}
+          <code className="font-mono text-xs">.rk-reel-timeline</code> class on
+          your root to inherit flush-bottom positioning, safe-area padding, and
+          touch-device clearance.
+        </p>
+        <CodeBlock
+          code={`<script setup lang="ts">
+import { shallowRef, onMounted, onBeforeUnmount } from 'vue';
+import {
+  ReelPlayerOverlay,
+  type TimelineSlotScope,
+} from '@reelkit/vue-reel-player';
+import { toVueRef, type TimelineController } from '@reelkit/vue';
+
+const trackRef = shallowRef<HTMLDivElement | null>(null);
+let dispose: (() => void) | null = null;
+const bind = (state: TimelineController) => {
+  if (trackRef.value) dispose = state.bindInteractions(trackRef.value);
+};
+onBeforeUnmount(() => dispose?.());
+</script>
+
+<template>
+  <ReelPlayerOverlay :is-open="open" :content="items" timeline="always">
+    <template #timeline="{ timelineState }: TimelineSlotScope">
+      <div class="rk-reel-timeline" style="padding: 0 16px" @vue:mounted="bind(timelineState)">
+        <div ref="trackRef" role="slider" style="height:6px;background:rgba(255,255,255,0.2)">
+          <div :style="{
+            width: (timelineState.progress.value * 100) + '%',
+            height: '100%',
+            background: 'linear-gradient(90deg, #6366f1, #ec4899)',
+          }" />
+        </div>
+      </div>
+    </template>
   </ReelPlayerOverlay>
 </template>`}
           language="vue"
@@ -957,7 +1133,29 @@ const items: MyItem[] = [/* ... */];
           </table>
         </div>
 
-        <h3 className="text-xl font-semibold mb-3">MediaItem</h3>
+        <h3 className="text-xl font-semibold mb-3">TimelineBarProps</h3>
+        <CodeBlock
+          code={`interface TimelineBarProps {
+  class?: string;
+  style?: CSSProperties;
+}`}
+          language="typescript"
+        />
+
+        <h3 className="text-xl font-semibold mt-6 mb-3">
+          TimelineSlotScope&lt;T&gt;
+        </h3>
+        <CodeBlock
+          code={`interface TimelineSlotScope<T extends BaseContentItem> {
+  item: T;
+  activeIndex: number;
+  timelineState: TimelineController;
+  defaultContent: () => VNode | VNode[];
+}`}
+          language="typescript"
+        />
+
+        <h3 className="text-xl font-semibold mt-6 mb-3">MediaItem</h3>
         <div className="overflow-x-auto mb-6">
           <table className="w-full">
             <thead>
@@ -1045,6 +1243,39 @@ const items: MyItem[] = [/* ... */];
 
 <SoundButton />
 <SoundButton disabled class-name="my-sound-btn" />`}
+          language="vue"
+        />
+
+        <h3 className="text-lg font-semibold mt-6 mb-2">TimelineBar</h3>
+        <p className="text-slate-600 dark:text-slate-400 mb-2">
+          Default playback scrub bar. Reads from the nearest{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            TimelineProvider
+          </code>{' '}
+          (automatically mounted inside{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            ReelPlayerOverlay
+          </code>
+          ) and renders the track, buffered ranges, progress fill, and scrub
+          pill. Theme via the{' '}
+          <code className="font-mono text-xs">--rk-reel-timeline-*</code> custom
+          properties, or replace via the{' '}
+          <code className="font-mono text-xs">#timeline</code> slot.
+        </p>
+        <CodeBlock
+          code={`<script setup lang="ts">
+import type { TimelineSlotScope } from '@reelkit/vue-reel-player';
+</script>
+
+<template>
+  <!-- Wrap or augment the default bar from #timeline: -->
+  <ReelPlayerOverlay>
+    <template #timeline="{ defaultContent }: TimelineSlotScope">
+      <MyTimecode />
+      <component :is="defaultContent" />
+    </template>
+  </ReelPlayerOverlay>
+</template>`}
           language="vue"
         />
 
@@ -1311,6 +1542,44 @@ import {
         />
       </section>
 
+      {/* Timeline */}
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">Timeline</h2>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          The overlay renders a built-in playback timeline bar over the active
+          video. Gate it via the{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            timeline
+          </code>{' '}
+          prop: <code className="font-mono text-xs">'auto'</code> (default)
+          renders whenever the active media is a video longer than{' '}
+          <code className="font-mono text-xs">timelineMinDurationSeconds</code>{' '}
+          (default 30), <code className="font-mono text-xs">'always'</code>{' '}
+          whenever a video is active,{' '}
+          <code className="font-mono text-xs">'never'</code> to disable. For a
+          fully custom scrub bar, use the{' '}
+          <code className="font-mono text-xs">#timeline</code> slot; its scope
+          exposes a <code className="font-mono text-xs">timelineState</code>{' '}
+          backed by the underlying{' '}
+          <code className="font-mono text-xs">TimelineController</code>.
+        </p>
+        <CodeBlock
+          code={`<ReelPlayerOverlay
+  :is-open="isOpen"
+  :content="items"
+  timeline="auto"
+  :timeline-min-duration-seconds="30"
+  @close="isOpen = false"
+/>`}
+          language="vue"
+        />
+        <p className="text-slate-600 dark:text-slate-400 mt-4">
+          Theme via the{' '}
+          <code className="font-mono text-xs">--rk-reel-timeline-*</code> CSS
+          custom properties.
+        </p>
+      </section>
+
       {/* Sound Context */}
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Sound Context</h2>
@@ -1339,8 +1608,7 @@ import {
         </p>
         <CodeBlock
           code={`<script setup lang="ts">
-import { useSoundState } from '@reelkit/vue-reel-player';
-import { toVueRef } from '@reelkit/vue';
+import { useSoundState, toVueRef } from '@reelkit/vue';
 
 // Inside a custom control rendered from the #controls slot:
 const soundState = useSoundState();
@@ -1483,6 +1751,16 @@ const muted = toVueRef(soundState.muted);
   --rk-reel-button-bg-hover-strong: rgba(168, 85, 247, 0.85);
   --rk-reel-edge-padding: 24px;
   --rk-reel-button-size: 52px;
+
+  /* Timeline bar: brand-matched, beefier on desktop */
+  --rk-reel-timeline-track: rgba(99, 102, 241, 0.25);
+  --rk-reel-timeline-buffered: rgba(168, 85, 247, 0.45);
+  --rk-reel-timeline-fill: #a855f7;
+  --rk-reel-timeline-cursor: #a855f7;
+  --rk-reel-timeline-height: 4px;
+  --rk-reel-timeline-height-active: 8px;
+  --rk-reel-timeline-cursor-width-active: 18px;
+  --rk-reel-timeline-transition: 0.2s ease-out;
 }`}
           language="css"
         />

@@ -50,6 +50,26 @@ function ReelPlayerPage() {
 
   const content = useMemo(() => {
     const items = generateContent(CONTENT_COUNT);
+    // Insert a long video at index 1 so the built-in timeline bar is easy to find
+    items.splice(1, 0, {
+      id: 'long-video-content',
+      media: [
+        {
+          id: 'long-video',
+          type: 'video',
+          src: cdnUrl('samples/videos/video-06.mp4'),
+          poster: cdnUrl('samples/videos/video-poster-06.jpg'),
+          aspectRatio: 16 / 9,
+        },
+      ],
+      author: {
+        name: 'Timeline Demo',
+        avatar: cdnUrl('samples/avatars/avatar-02.jpg'),
+      },
+      likes: 4200,
+      description:
+        'Long video: the playback timeline bar should render automatically.',
+    });
     // Insert a broken image slide at index 3 to demonstrate error handling
     items.splice(3, 0, {
       id: 'broken-content',
@@ -252,6 +272,7 @@ function ReelPlayerPage() {
         onClose={closePlayer}
         content={content}
         initialIndex={selectedIndex}
+        timelineMinDurationSeconds={10}
       />
     </div>
   );

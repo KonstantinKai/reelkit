@@ -1,4 +1,10 @@
-import React, { useState, useMemo, useCallback, useRef } from 'react';
+import React, {
+  useState,
+  useMemo,
+  useCallback,
+  useEffect,
+  useRef,
+} from 'react';
 import {
   ReelPlayerOverlay,
   CloseButton,
@@ -8,18 +14,123 @@ import {
 } from '@reelkit/react-reel-player';
 import '@reelkit/react-reel-player/styles.css';
 import { createSignal } from '@reelkit/core';
-import { Observe } from '@reelkit/react';
+import { Observe, type TimelineController } from '@reelkit/react';
 import {
   generateContent,
   getContentItem,
 } from '../components/reel-player/mockContent';
 import { cdnUrl } from '@reelkit/example-data';
 
+/**
+ * Custom scrub bar built from `timelineState` signals. Replaces the
+ * built-in `<TimelineBar />` with bespoke UI (timecode label, custom pill,
+ * different placement) while reusing the timeline controller's scrub +
+ * keyboard interactions.
+ */
+const CustomTimelineBar: React.FC<{ timelineState: TimelineController }> = ({
+  timelineState,
+}) => {
+  const trackRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!trackRef.current) return;
+    return timelineState.bindInteractions(trackRef.current);
+  }, [timelineState]);
+
+  const fmt = (s: number): string => {
+    if (!Number.isFinite(s) || s < 0) return '0:00';
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60)
+      .toString()
+      .padStart(2, '0');
+    return `${m}:${sec}`;
+  };
+
+  return (
+    // Reusing the built-in `.rk-reel-timeline` class gives us flush-bottom
+    // positioning, iOS safe-area padding, and the touch-device slide-overlay
+    // clearance automatically. No manual absolute positioning needed.
+    <div
+      className="rk-reel-timeline rk-custom-timeline"
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 6,
+        paddingLeft: 16,
+        paddingRight: 16,
+        color: '#fff',
+        fontFamily: 'ui-monospace, SFMono-Regular, monospace',
+      }}
+    >
+      <Observe
+        signals={[
+          timelineState.duration,
+          timelineState.currentTime,
+          timelineState.progress,
+          timelineState.isScrubbing,
+        ]}
+      >
+        {() => {
+          const duration = timelineState.duration.value;
+          const currentTime = timelineState.currentTime.value;
+          const progress = timelineState.progress.value;
+          const scrubbing = timelineState.isScrubbing.value;
+          return (
+            <>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  fontSize: 12,
+                  textShadow: '0 1px 2px rgba(0,0,0,0.6)',
+                }}
+              >
+                <span>{fmt(currentTime)}</span>
+                <span style={{ opacity: 0.7 }}>{fmt(duration)}</span>
+              </div>
+              <div
+                ref={trackRef}
+                role="slider"
+                aria-label="Seek"
+                aria-valuemin={0}
+                aria-valuemax={Number.isFinite(duration) ? duration : 0}
+                aria-valuenow={currentTime}
+                tabIndex={0}
+                style={{
+                  position: 'relative',
+                  height: scrubbing ? 10 : 6,
+                  borderRadius: 999,
+                  backgroundColor: 'rgba(255,255,255,0.2)',
+                  cursor: 'pointer',
+                  transition: 'height 0.15s ease-out',
+                }}
+              >
+                <div
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    width: `${progress * 100}%`,
+                    borderRadius: 999,
+                    background:
+                      'linear-gradient(90deg, #6366f1, #a855f7, #ec4899)',
+                    pointerEvents: 'none',
+                  }}
+                />
+              </div>
+            </>
+          );
+        }}
+      </Observe>
+    </div>
+  );
+};
+
 type DemoType =
   | 'custom-overlay'
   | 'custom-controls'
   | 'custom-slide'
   | 'custom-nested-nav'
+  | 'custom-timeline'
   | 'infinity'
   | 'custom-loading-error'
   | 'theming'
@@ -55,6 +166,12 @@ const DEMOS: {
     title: 'Custom Nested Navigation',
     description:
       'Uses renderNestedNavigation to replace the default left/right arrows inside multi-media slides with custom pill-shaped buttons.',
+  },
+  {
+    id: 'custom-timeline',
+    title: 'Custom Timeline (renderTimeline)',
+    description:
+      'Replaces the built-in playback bar with a custom scrub + timecode via the dedicated renderTimeline prop. Gating (auto/always/never + min duration) still applies. The demo reuses the built-in .rk-reel-timeline slot class for safe-area handling and scopes a CSS override to reserve room for the taller bar.',
   },
   {
     id: 'infinity',
@@ -454,6 +571,46 @@ function ReelPlayerCustomPage() {
         />
       )}
 
+      {activeDemo === 'custom-timeline' && (
+        <>
+          <style>{`
+            /* The custom timeline is taller than the built-in track, so
+               reserve extra bottom space in the slide caption and lift the
+               multi-media indicator above it. Scoped to this overlay demo. */
+            .rk-reel-overlay {
+              --rk-reel-slide-overlay-padding: 48px 16px 64px;
+            }
+            .rk-reel-overlay .rk-reel-nested-indicator {
+              bottom: 56px;
+            }
+            /* Desktop gets 8px of breathing room below the track. On touch
+               devices, the built-in .rk-reel-timeline class already supplies
+               max(safe-area, 12px) as padding-bottom, so we stack the 8px on
+               top of that via a media-qualified calc. */
+            .rk-custom-timeline {
+              padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 8px);
+            }
+            @media (hover: none) and (pointer: coarse) {
+              .rk-custom-timeline {
+                padding-bottom: calc(
+                  max(env(safe-area-inset-bottom, 0px), 12px) + 8px
+                );
+              }
+            }
+          `}</style>
+          <ReelPlayerOverlay
+            isOpen
+            onClose={closePlayer}
+            content={content}
+            initialIndex={0}
+            timeline="always"
+            renderTimeline={({ timelineState }) => (
+              <CustomTimelineBar timelineState={timelineState} />
+            )}
+          />
+        </>
+      )}
+
       <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
 
       {/* Demo 6: Infinity (Lazy Load) */}
@@ -540,6 +697,19 @@ function ReelPlayerCustomPage() {
                 rgba(168, 85, 247, 0.85)
               );
               --rk-reel-slide-overlay-name-color: #fef3c7;
+
+              /* Timeline bar: branded, beefier track, wider pill on scrub.
+                 Warm orange sits outside the purple/indigo gradient so the
+                 fill + cursor stay readable regardless of where on the
+                 gradient the bar sits. Dark-slate track grounds it. */
+              --rk-reel-timeline-track: rgba(15, 23, 42, 0.55);
+              --rk-reel-timeline-buffered: rgba(251, 146, 60, 0.4);
+              --rk-reel-timeline-fill: #fb923c;
+              --rk-reel-timeline-cursor: #fb923c;
+              --rk-reel-timeline-height: 4px;
+              --rk-reel-timeline-height-active: 8px;
+              --rk-reel-timeline-cursor-width-active: 18px;
+              --rk-reel-timeline-transition: 0.2s ease-out;
             }
           `}</style>
           <ReelPlayerOverlay
@@ -547,6 +717,7 @@ function ReelPlayerCustomPage() {
             onClose={closePlayer}
             content={content}
             initialIndex={0}
+            timeline="always"
           />
         </>
       )}
@@ -571,7 +742,7 @@ function ReelPlayerCustomPage() {
                 avatar: cdnUrl('samples/avatars/avatar-01.jpg'),
               },
               likes: 0,
-              description: 'Broken image — shows custom error UI.',
+              description: 'Broken image: shows custom error UI.',
             },
             ...content.slice(2, 5),
           ]}

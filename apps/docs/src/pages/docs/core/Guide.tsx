@@ -230,6 +230,38 @@ disposeIndexes();`}
         />
       </section>
 
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">Timeline Controller</h2>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Build a custom scrub bar for any{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">{`<video>`}</code>{' '}
+          element. The controller exposes reactive signals for duration, current
+          time, buffered ranges, and scrubbing state, and wires pointer plus
+          keyboard interactions onto any DOM element in one call.
+        </p>
+        <CodeBlock
+          code={`import { createTimelineController } from '@reelkit/core';
+
+const timeline = createTimelineController({
+  onScrubStart: () => video.pause(),
+  onScrubEnd: () => video.play(),
+});
+
+timeline.attach(video);
+const dispose = timeline.bindInteractions(trackEl);
+
+// Render: read signals and update DOM
+timeline.progress.observe(() => {
+  fillEl.style.width = \`\${timeline.progress.value * 100}%\`;
+});
+
+// Cleanup
+dispose();
+timeline.detach();`}
+          language="typescript"
+        />
+      </section>
+
       <NextSteps
         items={[
           {

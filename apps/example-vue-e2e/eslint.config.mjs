@@ -9,6 +9,9 @@ export default [
     rules: {
       'playwright/expect-expect': 'off',
       'playwright/no-skipped-test': 'off',
+      '@nx/workspace-constant-naming': 'off',
+      '@nx/workspace-fields-before-callbacks': 'off',
+      '@nx/workspace-lines-between-type-members': 'off',
     },
   },
 ];

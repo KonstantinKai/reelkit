@@ -162,7 +162,7 @@ jest.mock('@reelkit/angular', () => {
       };
     }),
     createTimelineController: jest.fn(() => {
-      const makeSignal = <T,>(initial: T) => ({
+      const makeSignal = <T>(initial: T) => ({
         value: initial,
         observe: jest.fn(() => () => {
           /* noop */

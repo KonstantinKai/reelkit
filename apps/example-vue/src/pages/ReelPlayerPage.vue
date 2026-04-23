@@ -16,6 +16,25 @@ const selectedIndex = ref(0);
 
 const content = computed<ContentItem[]>(() => {
   const items = generateContent(_kContentCount);
+  items.splice(1, 0, {
+    id: 'long-video-content',
+    media: [
+      {
+        id: 'long-video',
+        type: 'video',
+        src: cdnUrl('samples/videos/video-06.mp4'),
+        poster: cdnUrl('samples/videos/video-poster-06.jpg'),
+        aspectRatio: 16 / 9,
+      },
+    ],
+    author: {
+      name: 'Timeline Demo',
+      avatar: cdnUrl('samples/avatars/avatar-02.jpg'),
+    },
+    likes: 4200,
+    description:
+      'Long video: the playback timeline bar should render automatically.',
+  });
   items.splice(3, 0, {
     id: 'broken-content',
     media: [
@@ -73,6 +92,10 @@ const closePlayer = () => {
           <div v-if="item.media.length > 1" class="multi-badge">
             {{ item.media.length }}
           </div>
+          <div class="author">
+            <img :src="item.author.avatar" alt="" class="avatar" />
+            <span class="author-name">{{ item.author.name }}</span>
+          </div>
         </div>
       </div>
     </div>
@@ -81,6 +104,7 @@ const closePlayer = () => {
       :is-open="isPlayerOpen"
       :content="content"
       :initial-index="selectedIndex"
+      :timeline-min-duration-seconds="10"
       @close="closePlayer"
     />
   </div>
@@ -93,25 +117,30 @@ const closePlayer = () => {
   padding: 56px 16px 16px;
   color: #fff;
 }
+
 .container {
   max-width: 1200px;
   margin: 0 auto;
 }
+
 h1 {
   font-size: 1.5rem;
   margin-bottom: 24px;
   font-weight: 500;
 }
+
 .subtitle {
   color: rgba(255, 255, 255, 0.6);
   font-size: 0.9rem;
   margin-bottom: 32px;
 }
+
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 8px;
 }
+
 .thumb {
   position: relative;
   aspect-ratio: 9 / 16;
@@ -121,9 +150,11 @@ h1 {
   background-color: #222;
   transition: transform 0.2s;
 }
+
 .thumb:hover {
   transform: scale(1.02);
 }
+
 .video-badge {
   position: absolute;
   top: 8px;
@@ -137,6 +168,7 @@ h1 {
   justify-content: center;
   font-size: 12px;
 }
+
 .multi-badge {
   position: absolute;
   top: 8px;
@@ -146,5 +178,33 @@ h1 {
   background-color: rgba(0, 0, 0, 0.6);
   font-size: 0.7rem;
   font-weight: 500;
+}
+
+.author {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 32px 8px 8px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.author-name {
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>

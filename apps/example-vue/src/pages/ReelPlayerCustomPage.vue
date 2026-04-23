@@ -1,5 +1,16 @@
 <script setup lang="ts">
-import { computed, ref, shallowRef, watch, onUnmounted } from 'vue';
+import {
+  computed,
+  defineComponent,
+  h,
+  onBeforeUnmount,
+  onMounted,
+  onUnmounted,
+  ref,
+  shallowRef,
+  watch,
+  type PropType,
+} from 'vue';
 import {
   ReelPlayerOverlay,
   CloseButton,
@@ -8,12 +19,14 @@ import {
 } from '@reelkit/vue-reel-player';
 import '@reelkit/vue-reel-player/styles.css';
 import { cdnUrl, generateContent, getContentItem } from '@reelkit/example-data';
+import { toVueRef, type Disposer, type TimelineController } from '@reelkit/vue';
 
 type DemoId =
   | 'custom-overlay'
   | 'custom-controls'
   | 'custom-slide'
   | 'custom-nested-nav'
+  | 'custom-timeline'
   | 'infinity'
   | 'custom-loading-error'
   | 'theming';
@@ -47,6 +60,12 @@ const DEMOS: { id: DemoId; title: string; description: string }[] = [
     title: 'Custom Nested Navigation',
     description:
       'Uses #nestedNavigation to replace the default left/right arrows inside multi-media slides with custom pill-shaped buttons.',
+  },
+  {
+    id: 'custom-timeline',
+    title: 'Custom Timeline (#timeline)',
+    description:
+      'Replaces the built-in playback bar with a custom scrub + timecode via the dedicated #timeline slot. Gating (auto/always/never + min duration) still applies. Reuses the built-in .rk-reel-timeline slot class for safe-area handling and scopes a CSS override to reserve room for the taller bar.',
   },
   {
     id: 'infinity',
@@ -138,7 +157,7 @@ const lossErrorContent = computed<ContentItem[]>(() => {
         avatar: cdnUrl('samples/avatars/avatar-01.jpg'),
       },
       likes: 0,
-      description: 'Broken image — shows custom error UI.',
+      description: 'Broken image: shows custom error UI.',
     },
     ...items.slice(2, 5),
   ];
@@ -157,23 +176,184 @@ const _kThemingCss = `
       rgba(168, 85, 247, 0.85)
     );
     --rk-reel-slide-overlay-name-color: #fef3c7;
+
+    /* Timeline bar: warm orange sits outside the purple/indigo gradient
+       so the fill + cursor stay readable. Dark-slate track grounds it. */
+    --rk-reel-timeline-track: rgba(15, 23, 42, 0.55);
+    --rk-reel-timeline-buffered: rgba(251, 146, 60, 0.4);
+    --rk-reel-timeline-fill: #fb923c;
+    --rk-reel-timeline-cursor: #fb923c;
+    --rk-reel-timeline-height: 4px;
+    --rk-reel-timeline-height-active: 8px;
+    --rk-reel-timeline-cursor-width-active: 18px;
+    --rk-reel-timeline-transition: 0.2s ease-out;
+  }
+`;
+
+const _kCustomTimelineCss = `
+  /* The custom timeline is taller than the built-in track, so reserve
+     extra bottom space in the slide caption and lift the multi-media
+     indicator above it. Scoped to this overlay demo. */
+  .rk-reel-overlay {
+    --rk-reel-slide-overlay-padding: 48px 16px 64px;
+  }
+  .rk-reel-overlay .rk-reel-nested-indicator {
+    bottom: 56px;
+  }
+  /* Desktop gets 8px of breathing room below the track. Touch devices
+     stack that onto the built-in safe-area + 12px floor. */
+  .rk-custom-timeline {
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 8px);
+  }
+  @media (hover: none) and (pointer: coarse) {
+    .rk-custom-timeline {
+      padding-bottom: calc(max(env(safe-area-inset-bottom, 0px), 12px) + 8px);
+    }
   }
 `;
 
 let themingStyleEl: HTMLStyleElement | null = null;
+let customTimelineStyleEl: HTMLStyleElement | null = null;
+const mountStyle = (css: string): HTMLStyleElement => {
+  const el = document.createElement('style');
+  el.textContent = css;
+  document.head.appendChild(el);
+  return el;
+};
 watch(activeDemo, (next) => {
   if (next === 'theming' && !themingStyleEl) {
-    themingStyleEl = document.createElement('style');
-    themingStyleEl.textContent = _kThemingCss;
-    document.head.appendChild(themingStyleEl);
+    themingStyleEl = mountStyle(_kThemingCss);
   } else if (next !== 'theming' && themingStyleEl) {
     themingStyleEl.remove();
     themingStyleEl = null;
+  }
+  if (next === 'custom-timeline' && !customTimelineStyleEl) {
+    customTimelineStyleEl = mountStyle(_kCustomTimelineCss);
+  } else if (next !== 'custom-timeline' && customTimelineStyleEl) {
+    customTimelineStyleEl.remove();
+    customTimelineStyleEl = null;
   }
 });
 onUnmounted(() => {
   themingStyleEl?.remove();
   themingStyleEl = null;
+  customTimelineStyleEl?.remove();
+  customTimelineStyleEl = null;
+});
+
+const fmtTime = (s: number): string => {
+  if (!Number.isFinite(s) || s < 0) return '0:00';
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60)
+    .toString()
+    .padStart(2, '0');
+  return `${m}:${sec}`;
+};
+
+/**
+ * Inline demo component: a custom scrub bar driven by the `timelineState`
+ * signals exposed through the overlay's `#timeline` slot.
+ */
+const CustomTimelineBar = defineComponent({
+  name: 'CustomTimelineBar',
+  props: {
+    timelineState: {
+      type: Object as PropType<TimelineController>,
+      required: true as const,
+    },
+  },
+  setup(props) {
+    const trackRef = shallowRef<HTMLDivElement | null>(null);
+    let disposeInteractions: Disposer | null = null;
+
+    const duration = toVueRef(props.timelineState.duration);
+    const currentTime = toVueRef(props.timelineState.currentTime);
+    const progress = toVueRef(props.timelineState.progress);
+    const scrubbing = toVueRef(props.timelineState.isScrubbing);
+
+    onMounted(() => {
+      if (trackRef.value) {
+        disposeInteractions = props.timelineState.bindInteractions(
+          trackRef.value,
+        );
+      }
+    });
+    onBeforeUnmount(() => {
+      disposeInteractions?.();
+      disposeInteractions = null;
+    });
+
+    return () =>
+      h(
+        'div',
+        {
+          class: 'rk-reel-timeline rk-custom-timeline',
+          style: {
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '6px',
+            paddingLeft: '16px',
+            paddingRight: '16px',
+            color: '#fff',
+            fontFamily: 'ui-monospace, SFMono-Regular, monospace',
+          },
+        },
+        [
+          h(
+            'div',
+            {
+              style: {
+                display: 'flex',
+                justifyContent: 'space-between',
+                fontSize: '12px',
+                textShadow: '0 1px 2px rgba(0,0,0,0.6)',
+              },
+            },
+            [
+              h('span', {}, fmtTime(currentTime.value)),
+              h('span', { style: { opacity: 0.7 } }, fmtTime(duration.value)),
+            ],
+          ),
+          h(
+            'div',
+            {
+              ref: (el: unknown) => {
+                trackRef.value = (el as HTMLDivElement | null) ?? null;
+              },
+              role: 'slider',
+              'aria-label': 'Seek',
+              'aria-valuemin': 0,
+              'aria-valuemax': Number.isFinite(duration.value)
+                ? duration.value
+                : 0,
+              'aria-valuenow': currentTime.value,
+              tabindex: 0,
+              style: {
+                position: 'relative',
+                height: scrubbing.value ? '10px' : '6px',
+                borderRadius: '999px',
+                backgroundColor: 'rgba(255,255,255,0.2)',
+                cursor: 'pointer',
+                transition: 'height 0.15s ease-out',
+              },
+            },
+            [
+              h('div', {
+                style: {
+                  position: 'absolute',
+                  inset: 0,
+                  width: `${progress.value * 100}%`,
+                  borderRadius: '999px',
+                  background:
+                    'linear-gradient(90deg, #6366f1, #a855f7, #ec4899)',
+                  pointerEvents: 'none',
+                },
+              }),
+            ],
+          ),
+        ],
+      );
+  },
 });
 
 const closePlayer = () => {
@@ -333,12 +513,27 @@ const closePlayer = () => {
       </div>
     </template>
 
+    <!-- Demo: Custom Timeline via #timeline slot -->
+    <ReelPlayerOverlay
+      v-if="activeDemo === 'custom-timeline'"
+      :is-open="true"
+      :content="content"
+      :initial-index="0"
+      timeline="always"
+      @close="closePlayer"
+    >
+      <template #timeline="{ timelineState }">
+        <CustomTimelineBar :timeline-state="timelineState" />
+      </template>
+    </ReelPlayerOverlay>
+
     <!-- Demo 7: Themed via CSS Tokens -->
     <ReelPlayerOverlay
       v-if="activeDemo === 'theming'"
       :is-open="true"
       :content="content"
       :initial-index="0"
+      timeline="always"
       @close="closePlayer"
     />
 

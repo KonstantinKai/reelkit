@@ -33,4 +33,12 @@ export default [
       '@typescript-eslint/adjacent-overload-signatures': 'off',
     },
   },
+  {
+    files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
+    rules: {
+      '@nx/workspace-constant-naming': 'off',
+      '@nx/workspace-fields-before-callbacks': 'off',
+      '@nx/workspace-lines-between-type-members': 'off',
+    },
+  },
 ];

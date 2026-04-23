@@ -135,16 +135,10 @@ export default function App() {
 
 const reelPlayerProps = [
   {
-    prop: 'isOpen',
-    type: 'boolean',
-    default: 'required',
-    description: 'Controls overlay visibility',
-  },
-  {
-    prop: 'content',
-    type: 'T[]',
-    default: 'required',
-    description: 'Array of content items (generic, defaults to ContentItem)',
+    prop: 'apiRef',
+    type: 'MutableRefObject<ReelApi>',
+    default: '-',
+    description: 'Ref to access Reel API',
   },
   {
     prop: 'ariaLabel',
@@ -154,36 +148,61 @@ const reelPlayerProps = [
       'Accessible label for the dialog region; announced by screen readers when the overlay opens',
   },
   {
+    prop: 'aspectRatio',
+    type: 'number',
+    default: '9/16 (0.5625)',
+    description:
+      'Width/height ratio for the player container on desktop. On mobile the player always uses full viewport.',
+  },
+  {
+    prop: 'content',
+    type: 'T[]',
+    default: 'required',
+    description: 'Array of content items (generic, defaults to ContentItem)',
+  },
+  {
     prop: 'initialIndex',
     type: 'number',
     default: '0',
     description: 'Starting slide index',
   },
   {
-    prop: 'apiRef',
-    type: 'MutableRefObject<ReelApi>',
-    default: '-',
-    description: 'Ref to access Reel API',
+    prop: 'isOpen',
+    type: 'boolean',
+    default: 'required',
+    description: 'Controls overlay visibility',
   },
   {
-    prop: 'renderSlideOverlay',
-    type: '(item, index, isActive) => ReactNode',
-    default: '-',
+    prop: 'timeline',
+    type: "'auto' | 'always' | 'never'",
+    default: "'auto'",
     description:
-      'Custom overlay per slide, replaces default SlideOverlay. Return null to hide.',
+      "Gating strategy for the built-in playback timeline bar. 'auto' renders only for videos longer than timelineMinDurationSeconds; 'always' renders whenever the active slide has a video; 'never' disables the built-in bar (use renderTimeline for a fully custom replacement).",
   },
   {
-    prop: 'renderSlide',
-    type: '(props: SlideRenderProps) => ReactNode | null',
-    default: '-',
+    prop: 'timelineMinDurationSeconds',
+    type: 'number',
+    default: '30',
     description:
-      'Custom slide rendering. Return null to fall back to default. Use props.defaultContent to wrap or embed the default slide.',
+      "Minimum video duration (seconds) for timeline='auto' to render the built-in bar. Short looping clips below this threshold are suppressed.",
   },
   {
     prop: 'renderControls',
     type: '(props: ControlsRenderProps) => ReactNode',
     default: '-',
     description: 'Custom controls, replaces default close + sound buttons',
+  },
+  {
+    prop: 'renderError',
+    type: '(props: { item: T; activeIndex: number }) => ReactNode',
+    default: '-',
+    description: 'Custom error indicator, replaces default error icon',
+  },
+  {
+    prop: 'renderLoading',
+    type: '(props: { item: T; activeIndex: number }) => ReactNode',
+    default: '-',
+    description: 'Custom loading indicator, replaces default wave loader',
   },
   {
     prop: 'renderNavigation',
@@ -206,23 +225,25 @@ const reelPlayerProps = [
       'Custom slide renderer for nested horizontal slider items. Use props.defaultContent to wrap or embed the default ImageSlide/VideoSlide. Unlike renderSlide, null is not treated as a fallback.',
   },
   {
-    prop: 'renderLoading',
-    type: '(props: { item: T; activeIndex: number }) => ReactNode',
+    prop: 'renderSlide',
+    type: '(props: SlideRenderProps) => ReactNode | null',
     default: '-',
-    description: 'Custom loading indicator, replaces default wave loader',
-  },
-  {
-    prop: 'renderError',
-    type: '(props: { item: T; activeIndex: number }) => ReactNode',
-    default: '-',
-    description: 'Custom error indicator, replaces default error icon',
-  },
-  {
-    prop: 'aspectRatio',
-    type: 'number',
-    default: '9/16 (0.5625)',
     description:
-      'Width/height ratio for the player container on desktop. On mobile the player always uses full viewport.',
+      'Custom slide rendering. Return null to fall back to default. Use props.defaultContent to wrap or embed the default slide.',
+  },
+  {
+    prop: 'renderSlideOverlay',
+    type: '(item, index, isActive) => ReactNode',
+    default: '-',
+    description:
+      'Custom overlay per slide, replaces default SlideOverlay. Return null to hide.',
+  },
+  {
+    prop: 'renderTimeline',
+    type: '(props: TimelineRenderProps) => ReactNode',
+    default: '-',
+    description:
+      'Custom playback timeline bar. Invoked only when gating rules would render the default bar (same auto/always/never + timelineMinDurationSeconds logic). Use props.defaultContent to wrap the built-in <TimelineBar />; return null to hide.',
   },
 ];
 
@@ -241,12 +262,6 @@ const reelPlayerCallbacks = [
 
 const reelProps = [
   {
-    prop: 'loop',
-    type: 'boolean',
-    default: 'false',
-    description: 'Enable infinite loop',
-  },
-  {
     prop: 'enableNavKeys',
     type: 'boolean',
     default: 'true',
@@ -259,10 +274,16 @@ const reelProps = [
     description: 'Enable mouse wheel navigation',
   },
   {
-    prop: 'wheelDebounceMs',
+    prop: 'loop',
+    type: 'boolean',
+    default: 'false',
+    description: 'Enable infinite loop',
+  },
+  {
+    prop: 'swipeDistanceFactor',
     type: 'number',
-    default: '200',
-    description: 'Wheel debounce duration (ms)',
+    default: '0.12',
+    description: 'Swipe threshold (0-1)',
   },
   {
     prop: 'transitionDuration',
@@ -271,10 +292,10 @@ const reelProps = [
     description: 'Transition animation duration (ms)',
   },
   {
-    prop: 'swipeDistanceFactor',
+    prop: 'wheelDebounceMs',
     type: 'number',
-    default: '0.12',
-    description: 'Swipe threshold (0-1)',
+    default: '200',
+    description: 'Wheel debounce duration (ms)',
   },
 ];
 
@@ -432,6 +453,73 @@ const themeTokens = [
     default: '12px',
     controls: 'Nested arrow edge inset',
   },
+
+  // Playback timeline bar
+  {
+    token: '--rk-reel-timeline-track',
+    default: 'rgba(255, 255, 255, 0.22)',
+    controls: 'Track background (unplayed region)',
+  },
+  {
+    token: '--rk-reel-timeline-buffered',
+    default: 'rgba(255, 255, 255, 0.4)',
+    controls: 'Buffered segments color',
+  },
+  {
+    token: '--rk-reel-timeline-fill',
+    default: '#fff',
+    controls: 'Played-progress fill color',
+  },
+  {
+    token: '--rk-reel-timeline-cursor',
+    default: '#fff',
+    controls: 'Scrub-handle pill color',
+  },
+  {
+    token: '--rk-reel-timeline-height',
+    default: '3px',
+    controls: 'Track height at rest',
+  },
+  {
+    token: '--rk-reel-timeline-height-active',
+    default: '6px',
+    controls: 'Track height on hover / focus / scrub',
+  },
+  {
+    token: '--rk-reel-timeline-cursor-width',
+    default: '10px',
+    controls: 'Scrub-pill width at rest',
+  },
+  {
+    token: '--rk-reel-timeline-cursor-width-active',
+    default: '14px',
+    controls: 'Scrub-pill width while scrubbing',
+  },
+  {
+    token: '--rk-reel-timeline-cursor-height',
+    default: '24px',
+    controls: 'Scrub-pill height at rest',
+  },
+  {
+    token: '--rk-reel-timeline-cursor-height-active',
+    default: '32px',
+    controls: 'Scrub-pill height while scrubbing',
+  },
+  {
+    token: '--rk-reel-timeline-hitbox',
+    default: '16px',
+    controls: 'Extra pointer hit-area above the track',
+  },
+  {
+    token: '--rk-reel-timeline-transition',
+    default: '0.15s ease-out',
+    controls: 'Track + pill grow/shrink animation',
+  },
+  {
+    token: '--rk-reel-timeline-z',
+    default: '11',
+    controls: 'Timeline z-index (above the default UI layer)',
+  },
 ];
 
 const cssClasses = [
@@ -547,21 +635,62 @@ const cssClasses = [
     description: 'Poster image (fades out on play)',
   },
 
+  {
+    className: '.rk-reel-video-poster.rk-visible',
+    component: 'VideoSlide',
+    description:
+      'State modifier applied to the poster while the video is paused/loading',
+  },
+
   // NestedSlider
+  {
+    className: '.rk-reel-nested-indicator',
+    component: 'NestedSlider',
+    description:
+      'Dot pagination under multi-media slides (position varies desktop vs. touch)',
+  },
   {
     className: '.rk-reel-nested-nav',
     component: 'NestedSlider',
     description: 'Horizontal carousel arrows (hidden below 768px)',
   },
   {
+    className: '.rk-reel-nested-nav-next',
+    component: 'NestedSlider',
+    description: 'Nested next arrow position',
+  },
+  {
     className: '.rk-reel-nested-nav-prev',
     component: 'NestedSlider',
     description: 'Nested prev arrow position',
   },
+
+  // Timeline
   {
-    className: '.rk-reel-nested-nav-next',
-    component: 'NestedSlider',
-    description: 'Nested next arrow position',
+    className: '.rk-reel-timeline',
+    component: 'TimelineBar',
+    description:
+      'Scrub-bar wrapper. Reuse on custom `renderTimeline` roots to inherit flush-bottom positioning, safe-area padding, and touch-device slide-overlay clearance.',
+  },
+  {
+    className: '.rk-reel-timeline-track',
+    component: 'TimelineBar',
+    description: 'Track (unplayed region)',
+  },
+  {
+    className: '.rk-reel-timeline-buffered',
+    component: 'TimelineBar',
+    description: 'Buffered segments layer',
+  },
+  {
+    className: '.rk-reel-timeline-fill',
+    component: 'TimelineBar',
+    description: 'Played-progress fill',
+  },
+  {
+    className: '.rk-reel-timeline-cursor',
+    component: 'TimelineBar',
+    description: 'Scrub-handle pill (floats above the track)',
   },
 ];
 
@@ -906,6 +1035,68 @@ const items: MyItem[] = [
         Share
       </button>
     </>
+  )}
+/>`}
+          language="tsx"
+        />
+
+        <h3 className="text-xl font-semibold mt-8 mb-4">Custom Timeline</h3>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Replace the built-in playback bar with your own scrub UI via{' '}
+          <code className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            renderTimeline
+          </code>
+          . The callback only fires when the overlay's gating rules would render
+          the default bar (same{' '}
+          <code className="font-mono text-xs">timeline</code> mode +{' '}
+          <code className="font-mono text-xs">timelineMinDurationSeconds</code>{' '}
+          logic), so you don't re-implement it. Reuse the{' '}
+          <code className="font-mono text-xs">.rk-reel-timeline</code> class on
+          your root to inherit flush-bottom positioning, safe-area padding, and
+          touch-device slide-overlay clearance.
+        </p>
+        <CodeBlock
+          code={`import { useRef, useEffect } from 'react';
+import { ReelPlayerOverlay } from '@reelkit/react-reel-player';
+import { Observe } from '@reelkit/react';
+
+function CustomTimelineBar({ timelineState }) {
+  const trackRef = useRef(null);
+  useEffect(() => {
+    if (!trackRef.current) return;
+    // Pointer + keyboard scrub wiring, same as the built-in bar.
+    return timelineState.bindInteractions(trackRef.current);
+  }, [timelineState]);
+
+  return (
+    <div className="rk-reel-timeline" style={{ padding: '0 16px' }}>
+      <Observe signals={[timelineState.progress, timelineState.currentTime]}>
+        {() => (
+          <div
+            ref={trackRef}
+            role="slider"
+            aria-valuenow={timelineState.currentTime.value}
+            style={{ height: 6, background: 'rgba(255,255,255,0.2)' }}
+          >
+            <div style={{
+              width: \`\${timelineState.progress.value * 100}%\`,
+              height: '100%',
+              background: 'linear-gradient(90deg, #6366f1, #ec4899)',
+            }} />
+          </div>
+        )}
+      </Observe>
+    </div>
+  );
+}
+
+<ReelPlayerOverlay
+  isOpen={isOpen}
+  onClose={handleClose}
+  content={content}
+  timeline="always"
+  renderTimeline={({ timelineState }) => (
+    <CustomTimelineBar timelineState={timelineState} />
   )}
 />`}
           language="tsx"
@@ -1302,6 +1493,28 @@ const items: MyItem[] = [
 }`}
           language="typescript"
         />
+
+        <h3 className="text-lg font-semibold mt-6 mb-2">TimelineBarProps</h3>
+        <CodeBlock
+          code={`interface TimelineBarProps {
+  className?: string;
+  style?: React.CSSProperties;
+}`}
+          language="typescript"
+        />
+
+        <h3 className="text-lg font-semibold mt-6 mb-2">
+          TimelineRenderProps&lt;T&gt;
+        </h3>
+        <CodeBlock
+          code={`interface TimelineRenderProps<T extends BaseContentItem> {
+  item: T;
+  activeIndex: number;
+  timelineState: TimelineController;
+  defaultContent: ReactNode;
+}`}
+          language="typescript"
+        />
       </section>
 
       {/* Sub-Components */}
@@ -1341,6 +1554,40 @@ const items: MyItem[] = [
 
 <SoundButton />
 <SoundButton disabled className="my-sound-btn" />`}
+          language="tsx"
+        />
+
+        <h3 className="text-lg font-semibold mt-6 mb-2">TimelineBar</h3>
+        <p className="text-slate-600 dark:text-slate-400 mb-2">
+          Default playback scrub bar. Reads from the nearest{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            TimelineProvider
+          </code>{' '}
+          (automatically mounted inside{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            ReelPlayerOverlay
+          </code>
+          ) and renders the track, buffered ranges, progress fill, and scrub
+          pill. Theme via the{' '}
+          <code className="font-mono text-xs">--rk-reel-timeline-*</code> custom
+          properties, or replace via{' '}
+          <code className="font-mono text-xs">renderTimeline</code>.
+        </p>
+        <CodeBlock
+          code={`import { TimelineBar } from '@reelkit/react-reel-player';
+
+// Inside renderTimeline — wrap or augment the default bar:
+<ReelPlayerOverlay
+  renderTimeline={({ defaultContent }) => (
+    <>
+      <MyTimecode />
+      {defaultContent}
+    </>
+  )}
+/>
+
+// Or render standalone inside a custom TimelineProvider tree:
+<TimelineBar className="my-timeline" />`}
           language="tsx"
         />
 
@@ -1610,6 +1857,71 @@ renderSlide={({ item, size, isActive, onReady, onWaiting, onError }) => (
         />
       </section>
 
+      {/* Timeline */}
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">Timeline</h2>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          The overlay renders a built-in playback timeline bar over the active
+          video. The{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            timeline
+          </code>{' '}
+          prop gates rendering:
+        </p>
+        <ul className="list-disc pl-6 mb-4 text-slate-600 dark:text-slate-400 space-y-1">
+          <li>
+            <code className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+              'auto'
+            </code>{' '}
+            (default): renders when the active media is a video whose duration
+            exceeds{' '}
+            <code className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+              timelineMinDurationSeconds
+            </code>{' '}
+            (default 30). Works for single-video slides and multi-media
+            carousels; the bar follows the active nested item and hides on
+            images.
+          </li>
+          <li>
+            <code className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+              'always'
+            </code>
+            : renders whenever the active slide has a video.
+          </li>
+          <li>
+            <code className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+              'never'
+            </code>
+            : never renders. Build a custom bar via{' '}
+            <code className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+              renderTimeline
+            </code>
+            .
+          </li>
+        </ul>
+        <CodeBlock
+          code={`<ReelPlayerOverlay
+  isOpen={isOpen}
+  onClose={close}
+  content={items}
+  timeline="auto"
+  timelineMinDurationSeconds={30}
+/>`}
+          language="tsx"
+        />
+        <p className="text-slate-600 dark:text-slate-400 mt-4 mb-2">
+          Theme via the{' '}
+          <code className="font-mono text-xs">--rk-reel-timeline-*</code> CSS
+          custom properties (height, colors, cursor size). For a fully custom
+          scrub bar, timecode, or progress indicator, use{' '}
+          <code className="font-mono text-xs">renderTimeline</code>; the
+          callback receives a{' '}
+          <code className="font-mono text-xs">timelineState</code> backed by the
+          underlying{' '}
+          <code className="font-mono text-xs">TimelineController</code>.
+        </p>
+      </section>
+
       {/* Sound Context */}
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Sound Context</h2>
@@ -1746,6 +2058,16 @@ function CustomControls() {
   --rk-reel-button-bg-hover-strong: rgba(168, 85, 247, 0.85);
   --rk-reel-edge-padding: 24px;
   --rk-reel-button-size: 52px;
+
+  /* Timeline bar: brand-matched, beefier on desktop */
+  --rk-reel-timeline-track: rgba(99, 102, 241, 0.25);
+  --rk-reel-timeline-buffered: rgba(168, 85, 247, 0.45);
+  --rk-reel-timeline-fill: #a855f7;
+  --rk-reel-timeline-cursor: #a855f7;
+  --rk-reel-timeline-height: 4px;
+  --rk-reel-timeline-height-active: 8px;
+  --rk-reel-timeline-cursor-width-active: 18px;
+  --rk-reel-timeline-transition: 0.2s ease-out;
 }`}
           language="css"
         />

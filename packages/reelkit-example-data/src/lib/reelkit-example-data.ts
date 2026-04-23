@@ -48,11 +48,29 @@ function lazy<T>(factory: () => T): () => T {
   return () => (value ??= factory());
 }
 
+// Natural aspect ratios of the 12 sample videos (verified against poster
+// dimensions). Videos 09, 10, 12 are shot portrait (9:16); the rest are
+// landscape (16:9).
+const _kSampleVideoAspectRatios: readonly number[] = [
+  16 / 9,
+  16 / 9,
+  16 / 9,
+  16 / 9,
+  16 / 9,
+  16 / 9,
+  16 / 9,
+  16 / 9,
+  9 / 16,
+  9 / 16,
+  16 / 9,
+  9 / 16,
+];
+
 const getSampleVideos = lazy(() =>
   generate(12, (i) => ({
     src: cdnUrl(`samples/videos/video-${pad(i + 1)}.mp4`),
     poster: cdnUrl(`samples/videos/video-poster-${pad(i + 1)}.jpg`),
-    aspectRatio: 16 / 9,
+    aspectRatio: _kSampleVideoAspectRatios[i],
   })),
 );
 

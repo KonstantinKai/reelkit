@@ -902,6 +902,85 @@ export default function CoreApi() {
       </section>
 
       <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">Timeline</h2>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Playback timeline controller for video scrubbing. Tracks duration,
+          current time, buffered ranges, and user scrubbing state as reactive
+          signals. A single call wires pointer and keyboard interactions onto
+          any DOM element so it behaves as a native-feeling scrub bar, with
+          pointer capture, live seeking, and full keyboard support (arrows,
+          Home/End, PageUp/PageDown).
+        </p>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left py-3 px-4 font-semibold">Export</th>
+                <th className="text-left py-3 px-4 font-semibold">Type</th>
+                <th className="text-left py-3 px-4 font-semibold">
+                  Description
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  createTimelineController
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {'(config?: TimelineControllerConfig) => TimelineController'}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Factory returning a controller with{' '}
+                  <span className="font-mono text-xs">duration</span>,{' '}
+                  <span className="font-mono text-xs">currentTime</span>,{' '}
+                  <span className="font-mono text-xs">progress</span>,{' '}
+                  <span className="font-mono text-xs">bufferedRanges</span>, and{' '}
+                  <span className="font-mono text-xs">isScrubbing</span> signals
+                  plus <span className="font-mono text-xs">attach</span>,{' '}
+                  <span className="font-mono text-xs">detach</span>,{' '}
+                  <span className="font-mono text-xs">bindInteractions</span>,
+                  and <span className="font-mono text-xs">seek</span> methods.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  TimelineControllerConfig
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  interface
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  <span className="font-mono text-xs">keyboardStepSeconds</span>{' '}
+                  (default 5),{' '}
+                  <span className="font-mono text-xs">
+                    keyboardPageFraction
+                  </span>{' '}
+                  (default 0.1), and{' '}
+                  <span className="font-mono text-xs">onSeek</span>,{' '}
+                  <span className="font-mono text-xs">onScrubStart</span>,{' '}
+                  <span className="font-mono text-xs">onScrubEnd</span>{' '}
+                  callbacks.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  BufferedRange
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {'{ start: number; end: number }'}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  A single contiguous buffered region expressed as 0–1 fractions
+                  of total duration. Emitted sorted and non-overlapping.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Fullscreen</h2>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Cross-browser fullscreen utilities with Safari vendor-prefix guards.
@@ -1178,6 +1257,32 @@ restoreFocus();`}
                   Creates a scoped shared video singleton with playback position
                   and frame capture maps. Each consumer gets an isolated
                   instance for iOS sound continuity.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  syncVideoObjectFit
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {
+                    '(video: HTMLVideoElement, fallbackIsVertical: boolean) => Disposer'
+                  }
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Keeps{' '}
+                  <span className="font-mono text-xs">
+                    video.style.objectFit
+                  </span>{' '}
+                  in sync with the video's real orientation. Applies the
+                  fallback (from the declared aspect ratio) immediately, then on{' '}
+                  <span className="font-mono text-xs">loadedmetadata</span>{' '}
+                  reads actual{' '}
+                  <span className="font-mono text-xs">videoWidth</span> /{' '}
+                  <span className="font-mono text-xs">videoHeight</span> and
+                  switches to <span className="font-mono text-xs">'cover'</span>{' '}
+                  for portrait,{' '}
+                  <span className="font-mono text-xs">'contain'</span> for
+                  landscape. Resilient to wrong declared metadata.
                 </td>
               </tr>
             </tbody>
