@@ -8,6 +8,7 @@ import Footer from './Footer';
 import { ScrollToTop } from '../ScrollToTop';
 import { RouteProgressBar } from '../ui/RouteProgressBar';
 import FrameworkSwitcher from '../FrameworkSwitcher';
+import WhatsNewDialog from '../WhatsNewDialog';
 import {
   frameworkSignal,
   frameworkRoutePairs,
@@ -84,6 +85,7 @@ export default function Layout() {
         )}
       </Observe>
       {showSidebar && <FrameworkSwitcher />}
+      <WhatsNewDialog />
       <main
         className={`flex-1 pt-16 transition-all duration-300 flex flex-col ${
           showSidebar ? 'lg:pl-64' : ''

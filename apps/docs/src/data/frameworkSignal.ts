@@ -1,6 +1,7 @@
 import { createSignal } from '@reelkit/core';
 
-const _kStorageKey = 'reelkit-docs-framework';
+const _kStorageKey = 'rk-docs:framework';
+const _kLegacyStorageKey = 'reelkit-docs-framework';
 
 export const kFrameworks = ['react', 'angular', 'vue'] as const;
 export type Framework = (typeof kFrameworks)[number];
@@ -23,7 +24,15 @@ const _kUrlParam = 'framework';
 function readStored(): Framework {
   if (typeof window === 'undefined') return 'react';
   try {
-    const stored = window.localStorage.getItem(_kStorageKey);
+    let stored = window.localStorage.getItem(_kStorageKey);
+    if (stored === null) {
+      const legacy = window.localStorage.getItem(_kLegacyStorageKey);
+      if (legacy !== null) {
+        window.localStorage.setItem(_kStorageKey, legacy);
+        window.localStorage.removeItem(_kLegacyStorageKey);
+        stored = legacy;
+      }
+    }
     return kFrameworks.includes(stored as Framework)
       ? (stored as Framework)
       : 'react';

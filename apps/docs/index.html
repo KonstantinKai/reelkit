@@ -110,8 +110,12 @@
       })(window.location);
     </script>
     <script>
+      // Must match `_kStorageKey` in apps/docs/src/context/ThemeContext.tsx —
+      // divergence causes a dark flash on reload when the user has `light`
+      // stored under one key but this script reads the other.
       (function () {
         const theme =
+          localStorage.getItem('rk-docs:theme') ||
           localStorage.getItem('theme') ||
           (window.matchMedia('(prefers-color-scheme: dark)').matches
             ? 'dark'

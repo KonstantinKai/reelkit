@@ -11,7 +11,20 @@ import { frameworkSignal } from '../../data/frameworkSignal';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import changelogRaw from '../../../../../CHANGELOG.md?raw';
 
-const CHANGELOG_VERSION_KEY = 'reelkit-changelog-seen';
+const _kStorageKey = 'rk-docs:changelog:last-seen';
+const _kLegacyStorageKey = 'reelkit-changelog-seen';
+
+function readSeen(): string | null {
+  const stored = localStorage.getItem(_kStorageKey);
+  if (stored !== null) return stored;
+  const legacy = localStorage.getItem(_kLegacyStorageKey);
+  if (legacy !== null) {
+    localStorage.setItem(_kStorageKey, legacy);
+    localStorage.removeItem(_kLegacyStorageKey);
+    return legacy;
+  }
+  return null;
+}
 
 function getLatestEntry(): string | null {
   const match = changelogRaw.match(/^## (.+@[\d.]+)/m);
@@ -25,8 +38,7 @@ function useChangelogBadge() {
   useEffect(() => {
     const latest = getLatestEntry();
     if (!latest) return;
-    const seen = localStorage.getItem(CHANGELOG_VERSION_KEY);
-    setShowBadge(seen !== latest);
+    setShowBadge(readSeen() !== latest);
   }, []);
 
   // Clear badge when visiting changelog page
@@ -34,7 +46,7 @@ function useChangelogBadge() {
     if (location.pathname === '/docs/changelog') {
       const latest = getLatestEntry();
       if (latest) {
-        localStorage.setItem(CHANGELOG_VERSION_KEY, latest);
+        localStorage.setItem(_kStorageKey, latest);
         setShowBadge(false);
       }
     }

@@ -70,6 +70,6 @@ describe('framework precedence (V5)', () => {
     localStorage.clear();
     setFramework('vue');
     expect(frameworkSignal.value).toBe('vue');
-    expect(localStorage.getItem('reelkit-docs-framework')).toBe('vue');
+    expect(localStorage.getItem('rk-docs:framework')).toBe('vue');
   });
 });

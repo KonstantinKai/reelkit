@@ -15,10 +15,21 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+const _kStorageKey = 'rk-docs:theme';
+const _kLegacyStorageKey = 'theme';
+
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('theme') as Theme;
+      let stored = localStorage.getItem(_kStorageKey) as Theme | null;
+      if (!stored) {
+        const legacy = localStorage.getItem(_kLegacyStorageKey) as Theme | null;
+        if (legacy) {
+          localStorage.setItem(_kStorageKey, legacy);
+          localStorage.removeItem(_kLegacyStorageKey);
+          stored = legacy;
+        }
+      }
       if (stored) return stored;
       return window.matchMedia('(prefers-color-scheme: dark)').matches
         ? 'dark'
@@ -34,7 +45,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     } else {
       root.classList.remove('dark');
     }
-    localStorage.setItem('theme', theme);
+    localStorage.setItem(_kStorageKey, theme);
   }, [theme]);
 
   const toggleTheme = () => {
