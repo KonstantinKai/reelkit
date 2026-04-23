@@ -660,7 +660,9 @@ export default function VueReelPlayer() {
 
       {/* Installation */}
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Installation</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Installation
+        </Heading>
         <CodeBlock
           code="npm install @reelkit/vue-reel-player @reelkit/vue lucide-vue-next"
           language="bash"
@@ -692,7 +694,9 @@ export default function VueReelPlayer() {
 
       {/* Quick Start */}
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Quick Start</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Quick Start
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Render a grid of thumbnails and open the overlay at the clicked index.
           Binding{' '}
@@ -789,9 +793,13 @@ function openAt(i: number) {
 
       {/* API Reference */}
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">API Reference</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          API Reference
+        </Heading>
 
-        <Heading level={3} className="text-xl font-semibold mb-3">Props</Heading>
+        <Heading level={3} className="text-xl font-semibold mb-3">
+          Props
+        </Heading>
         <div className="overflow-x-auto mb-6">
           <table className="w-full">
             <thead>
@@ -828,7 +836,9 @@ function openAt(i: number) {
           </table>
         </div>
 
-        <Heading level={3} className="text-xl font-semibold mb-3">Events</Heading>
+        <Heading level={3} className="text-xl font-semibold mb-3">
+          Events
+        </Heading>
         <div className="overflow-x-auto mb-6">
           <table className="w-full">
             <thead>
@@ -861,7 +871,9 @@ function openAt(i: number) {
           </table>
         </div>
 
-        <Heading level={3} className="text-xl font-semibold mb-3">v-model:is-open</Heading>
+        <Heading level={3} className="text-xl font-semibold mb-3">
+          v-model:is-open
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Use{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -888,7 +900,9 @@ function openAt(i: number) {
 
       {/* Scoped Slots */}
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Scoped Slots</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Scoped Slots
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Eight scoped slots let you replace any part of the player UI. Each
           receives a strongly-typed scope object. Slots you don't pass fall back
@@ -976,7 +990,9 @@ const content = ref<ContentItem[]>([/* ... */]);
 
       {/* Custom Timeline slot */}
       <section className="mb-12">
-        <Heading level={3} className="text-xl font-semibold mt-8 mb-4">Custom Timeline</Heading>
+        <Heading level={3} className="text-xl font-semibold mt-8 mb-4">
+          Custom Timeline
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Replace the built-in playback bar with your own scrub UI via the{' '}
           <code className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -1029,7 +1045,9 @@ onBeforeUnmount(() => dispose?.());
 
       {/* Custom Content Types */}
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Custom Content Types</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Custom Content Types
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
             ReelPlayerOverlay
@@ -1099,9 +1117,13 @@ const items: MyItem[] = [/* ... */];
 
       {/* Types */}
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Types</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Types
+        </Heading>
 
-        <Heading level={3} className="text-xl font-semibold mb-3">ContentItem</Heading>
+        <Heading level={3} className="text-xl font-semibold mb-3">
+          ContentItem
+        </Heading>
         <div className="overflow-x-auto mb-6">
           <table className="w-full">
             <thead>
@@ -1134,7 +1156,9 @@ const items: MyItem[] = [/* ... */];
           </table>
         </div>
 
-        <Heading level={3} className="text-xl font-semibold mb-3">TimelineBarProps</Heading>
+        <Heading level={3} className="text-xl font-semibold mb-3">
+          TimelineBarProps
+        </Heading>
         <CodeBlock
           code={`interface TimelineBarProps {
   class?: string;
@@ -1156,7 +1180,9 @@ const items: MyItem[] = [/* ... */];
           language="typescript"
         />
 
-        <Heading level={3} className="text-xl font-semibold mt-6 mb-3">MediaItem</Heading>
+        <Heading level={3} className="text-xl font-semibold mt-6 mb-3">
+          MediaItem
+        </Heading>
         <div className="overflow-x-auto mb-6">
           <table className="w-full">
             <thead>
@@ -1192,7 +1218,9 @@ const items: MyItem[] = [/* ... */];
 
       {/* Sub-Components */}
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Sub-Components</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Sub-Components
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Drop these into your custom{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -1210,7 +1238,9 @@ const items: MyItem[] = [/* ... */];
           scope so autoplay, poster capture, and sound sync keep working.
         </p>
 
-        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">CloseButton</Heading>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">
+          CloseButton
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
           Standalone circular close button with default reel-player styling. Use
           inside{' '}
@@ -1227,7 +1257,9 @@ const items: MyItem[] = [/* ... */];
           language="vue"
         />
 
-        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">SoundButton</Heading>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">
+          SoundButton
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
           Mute/unmute toggle. Render it inside a{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -1247,7 +1279,9 @@ const items: MyItem[] = [/* ... */];
           language="vue"
         />
 
-        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">TimelineBar</Heading>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">
+          TimelineBar
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
           Default playback scrub bar. Reads from the nearest{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -1280,7 +1314,9 @@ import type { TimelineSlotScope } from '@reelkit/vue-reel-player';
           language="vue"
         />
 
-        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">SlideOverlay</Heading>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">
+          SlideOverlay
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
           The default gradient overlay showing author, description, and likes.
           Renders when content carries those fields. Replace or hide it via the{' '}
@@ -1300,7 +1336,9 @@ import type { TimelineSlotScope } from '@reelkit/vue-reel-player';
           language="vue"
         />
 
-        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">ImageSlide</Heading>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">
+          ImageSlide
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
           Image slide with lazy loading and{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -1327,7 +1365,9 @@ import type { TimelineSlotScope } from '@reelkit/vue-reel-player';
           language="vue"
         />
 
-        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">VideoSlide</Heading>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">
+          VideoSlide
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
           Video slide backed by a shared{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -1427,7 +1467,9 @@ import {
           retry.
         </p>
 
-        <Heading level={3} className="text-xl font-semibold mt-6 mb-4">Lifecycle Callbacks</Heading>
+        <Heading level={3} className="text-xl font-semibold mt-6 mb-4">
+          Lifecycle Callbacks
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           When using the{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -1545,7 +1587,9 @@ import {
 
       {/* Timeline */}
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Timeline</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Timeline
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           The overlay renders a built-in playback timeline bar over the active
           video. Gate it via the{' '}
@@ -1583,7 +1627,9 @@ import {
 
       {/* Sound Context */}
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Sound Context</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Sound Context
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
             ReelPlayerOverlay
@@ -1639,7 +1685,9 @@ const muted = toVueRef(soundState.muted);
 
       {/* CSS Classes */}
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">CSS Classes</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          CSS Classes
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           CSS classes are plain (not scoped). A stylesheet loaded after{' '}
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
@@ -1691,7 +1739,9 @@ const muted = toVueRef(soundState.muted);
 
       {/* Theming */}
       <section id="theming" className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Theming</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Theming
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Every color, size, z-index, and transition lives in a CSS custom
           property. Override one or many at{' '}
@@ -1769,7 +1819,9 @@ const muted = toVueRef(soundState.muted);
 
       {/* Accessibility */}
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Accessibility</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Accessibility
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           The overlay root is a modal dialog (
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -1820,7 +1872,9 @@ const muted = toVueRef(soundState.muted);
 
       {/* Keyboard Shortcuts */}
       <section>
-        <Heading level={2} className="text-2xl font-bold mb-4">Keyboard Shortcuts</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Keyboard Shortcuts
+        </Heading>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>

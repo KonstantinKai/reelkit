@@ -719,7 +719,9 @@ export default function ReelPlayer() {
 
       {/* Features */}
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Features</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Features
+        </Heading>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <FeatureCardGrid
             items={[
@@ -782,7 +784,9 @@ export default function ReelPlayer() {
 
       {/* Installation */}
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Installation</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Installation
+        </Heading>
         <CodeBlock
           code="npm install @reelkit/react-reel-player @reelkit/react lucide-react"
           language="bash"
@@ -813,7 +817,9 @@ export default function ReelPlayer() {
 
       {/* Quick Start */}
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Quick Start</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Quick Start
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           The{' '}
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
@@ -870,7 +876,9 @@ function App() {
 
       {/* Live Demo */}
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Live Demo</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Live Demo
+        </Heading>
         <Sandbox
           code={fullCode}
           title="ReelPlayerPage.tsx"
@@ -888,7 +896,9 @@ function App() {
 
       {/* Customization */}
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Customization</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Customization
+        </Heading>
 
         <Heading level={3} className="text-xl font-semibold mt-6 mb-4">
           Generic Content Type
@@ -961,7 +971,9 @@ const items: MyItem[] = [
           language="tsx"
         />
 
-        <Heading level={3} className="text-xl font-semibold mt-8 mb-4">Non-Media Slides</Heading>
+        <Heading level={3} className="text-xl font-semibold mt-8 mb-4">
+          Non-Media Slides
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Use{' '}
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
@@ -1005,7 +1017,9 @@ const items: MyItem[] = [
           language="tsx"
         />
 
-        <Heading level={3} className="text-xl font-semibold mt-8 mb-4">Custom Controls</Heading>
+        <Heading level={3} className="text-xl font-semibold mt-8 mb-4">
+          Custom Controls
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Compose reusable sub-components with your own additions:
         </p>
@@ -1041,7 +1055,9 @@ const items: MyItem[] = [
           language="tsx"
         />
 
-        <Heading level={3} className="text-xl font-semibold mt-8 mb-4">Custom Timeline</Heading>
+        <Heading level={3} className="text-xl font-semibold mt-8 mb-4">
+          Custom Timeline
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Replace the built-in playback bar with your own scrub UI via{' '}
           <code className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -1103,7 +1119,9 @@ function CustomTimelineBar({ timelineState }) {
           language="tsx"
         />
 
-        <Heading level={3} className="text-xl font-semibold mt-8 mb-4">Custom Navigation</Heading>
+        <Heading level={3} className="text-xl font-semibold mt-8 mb-4">
+          Custom Navigation
+        </Heading>
         <CodeBlock
           code={`<ReelPlayerOverlay
   isOpen={isOpen}
@@ -1202,9 +1220,13 @@ function CustomTimelineBar({ timelineState }) {
 
       {/* API Reference */}
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">API Reference</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          API Reference
+        </Heading>
 
-        <Heading level={3} className="text-xl font-semibold mt-6 mb-4">Props</Heading>
+        <Heading level={3} className="text-xl font-semibold mt-6 mb-4">
+          Props
+        </Heading>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -1241,7 +1263,9 @@ function CustomTimelineBar({ timelineState }) {
           </table>
         </div>
 
-        <Heading level={3} className="text-xl font-semibold mt-8 mb-4">Callbacks</Heading>
+        <Heading level={3} className="text-xl font-semibold mt-8 mb-4">
+          Callbacks
+        </Heading>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -1326,9 +1350,13 @@ function CustomTimelineBar({ timelineState }) {
 
       {/* Types */}
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Types</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Types
+        </Heading>
 
-        <Heading level={3} className="text-lg font-semibold mb-2">BaseContentItem</Heading>
+        <Heading level={3} className="text-lg font-semibold mb-2">
+          BaseContentItem
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
           The generic constraint type. Extend this to use custom data types with
           ReelPlayerOverlay.
@@ -1341,7 +1369,9 @@ function CustomTimelineBar({ timelineState }) {
           language="typescript"
         />
 
-        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">ContentItem</Heading>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">
+          ContentItem
+        </Heading>
         <CodeBlock
           code={`interface ContentItem extends BaseContentItem {
   author: {
@@ -1354,7 +1384,9 @@ function CustomTimelineBar({ timelineState }) {
           language="typescript"
         />
 
-        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">MediaItem</Heading>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">
+          MediaItem
+        </Heading>
         <CodeBlock
           code={`interface MediaItem {
   id: string;
@@ -1366,7 +1398,9 @@ function CustomTimelineBar({ timelineState }) {
           language="typescript"
         />
 
-        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">MediaType</Heading>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">
+          MediaType
+        </Heading>
         <CodeBlock
           code={`type MediaType = 'image' | 'video';`}
           language="typescript"
@@ -1435,7 +1469,9 @@ function CustomTimelineBar({ timelineState }) {
           language="typescript"
         />
 
-        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">SlideOverlayProps</Heading>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">
+          SlideOverlayProps
+        </Heading>
         <CodeBlock
           code={`interface SlideOverlayProps {
   author?: { name: string; avatar: string };
@@ -1445,7 +1481,9 @@ function CustomTimelineBar({ timelineState }) {
           language="typescript"
         />
 
-        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">ImageSlideProps</Heading>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">
+          ImageSlideProps
+        </Heading>
         <CodeBlock
           code={`interface ImageSlideProps {
   src: string;
@@ -1458,7 +1496,9 @@ function CustomTimelineBar({ timelineState }) {
           language="typescript"
         />
 
-        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">VideoSlideProps</Heading>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">
+          VideoSlideProps
+        </Heading>
         <CodeBlock
           code={`interface VideoSlideProps {
   src: string;
@@ -1475,7 +1515,9 @@ function CustomTimelineBar({ timelineState }) {
           language="typescript"
         />
 
-        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">CloseButtonProps</Heading>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">
+          CloseButtonProps
+        </Heading>
         <CodeBlock
           code={`interface CloseButtonProps {
   onClick: () => void;
@@ -1485,7 +1527,9 @@ function CustomTimelineBar({ timelineState }) {
           language="typescript"
         />
 
-        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">SoundButtonProps</Heading>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">
+          SoundButtonProps
+        </Heading>
         <CodeBlock
           code={`interface SoundButtonProps {
   disabled?: boolean;
@@ -1495,7 +1539,9 @@ function CustomTimelineBar({ timelineState }) {
           language="typescript"
         />
 
-        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">TimelineBarProps</Heading>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">
+          TimelineBarProps
+        </Heading>
         <CodeBlock
           code={`interface TimelineBarProps {
   className?: string;
@@ -1520,13 +1566,17 @@ function CustomTimelineBar({ timelineState }) {
 
       {/* Sub-Components */}
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Sub-Components</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Sub-Components
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Reusable building blocks exported for composition in custom render
           props:
         </p>
 
-        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">CloseButton</Heading>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">
+          CloseButton
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
           Standalone close button with default reel-player styling. Use inside{' '}
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
@@ -1542,7 +1592,9 @@ function CustomTimelineBar({ timelineState }) {
           language="tsx"
         />
 
-        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">SoundButton</Heading>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">
+          SoundButton
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
           Standalone sound toggle. Must be inside a{' '}
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
@@ -1558,7 +1610,9 @@ function CustomTimelineBar({ timelineState }) {
           language="tsx"
         />
 
-        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">TimelineBar</Heading>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">
+          TimelineBar
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
           Default playback scrub bar. Reads from the nearest{' '}
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
@@ -1592,7 +1646,9 @@ function CustomTimelineBar({ timelineState }) {
           language="tsx"
         />
 
-        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">SlideOverlay</Heading>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">
+          SlideOverlay
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
           The default gradient overlay showing author, description, and likes.
           Rendered automatically when content has the required fields. Use{' '}
@@ -1612,7 +1668,9 @@ function CustomTimelineBar({ timelineState }) {
           language="tsx"
         />
 
-        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">ImageSlide</Heading>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">
+          ImageSlide
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
           Image slide with lazy loading and{' '}
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
@@ -1641,7 +1699,9 @@ function CustomTimelineBar({ timelineState }) {
           language="tsx"
         />
 
-        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">VideoSlide</Heading>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">
+          VideoSlide
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
           Video slide with shared{' '}
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
@@ -1745,7 +1805,9 @@ function CustomTimelineBar({ timelineState }) {
           without retrying.
         </p>
 
-        <Heading level={3} className="text-xl font-semibold mt-6 mb-4">Lifecycle Callbacks</Heading>
+        <Heading level={3} className="text-xl font-semibold mt-6 mb-4">
+          Lifecycle Callbacks
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           When using{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -1860,7 +1922,9 @@ renderSlide={({ item, size, isActive, onReady, onWaiting, onError }) => (
 
       {/* Timeline */}
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Timeline</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Timeline
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           The overlay renders a built-in playback timeline bar over the active
           video. The{' '}
@@ -1925,7 +1989,9 @@ renderSlide={({ item, size, isActive, onReady, onWaiting, onError }) => (
 
       {/* Sound Context */}
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Sound Context</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Sound Context
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           For custom implementations, you can access the sound state:
         </p>
@@ -1949,7 +2015,9 @@ function CustomControls() {
 
       {/* CSS Customization */}
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">CSS Classes</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          CSS Classes
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           All CSS classes are plain (not CSS modules), so they can be targeted
           with higher-specificity selectors in a stylesheet loaded after{' '}
@@ -2002,7 +2070,9 @@ function CustomControls() {
 
       {/* Theming */}
       <section id="theming" className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Theming</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Theming
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Every color, size, z-index, and transition lives in a CSS custom
           property. Override one or many at{' '}
@@ -2076,7 +2146,9 @@ function CustomControls() {
 
       {/* Accessibility */}
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Accessibility</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Accessibility
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           The overlay root is a modal dialog (
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -2127,7 +2199,9 @@ function CustomControls() {
 
       {/* Keyboard Shortcuts */}
       <section>
-        <Heading level={2} className="text-2xl font-bold mb-4">Keyboard Shortcuts</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Keyboard Shortcuts
+        </Heading>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>

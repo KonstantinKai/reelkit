@@ -13,7 +13,9 @@ export default function Troubleshooting() {
       </div>
 
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">iOS Safari</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          iOS Safari
+        </Heading>
 
         <div className="space-y-8">
           <div>
@@ -143,7 +145,9 @@ onInputBlur() {
       </section>
 
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">General</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          General
+        </Heading>
 
         <div className="space-y-8">
           <div>
@@ -179,7 +183,9 @@ onInputBlur() {
       </section>
 
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Video</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Video
+        </Heading>
 
         <div className="space-y-8">
           <div>
@@ -229,7 +235,9 @@ onInputBlur() {
       </section>
 
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Fullscreen</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Fullscreen
+        </Heading>
 
         <div className="space-y-8">
           <div>
@@ -257,7 +265,9 @@ onInputBlur() {
       </section>
 
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Keyboard Navigation</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Keyboard Navigation
+        </Heading>
 
         <div className="space-y-8">
           <div>

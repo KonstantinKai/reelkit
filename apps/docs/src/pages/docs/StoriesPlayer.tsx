@@ -716,7 +716,9 @@ export default function StoriesPlayerPage() {
 
       {/* Features */}
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Features</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Features
+        </Heading>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <FeatureCardGrid
             items={[
@@ -787,7 +789,9 @@ export default function StoriesPlayerPage() {
 
       {/* Installation */}
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Installation</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Installation
+        </Heading>
         <CodeBlock
           code="npm i @reelkit/react-stories-player @reelkit/react lucide-react"
           language="bash"
@@ -818,7 +822,9 @@ export default function StoriesPlayerPage() {
 
       {/* Sandbox */}
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Quick Start</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Quick Start
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           The{' '}
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
@@ -843,7 +849,9 @@ export default function StoriesPlayerPage() {
 
       {/* Live Demo */}
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Live Demo</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Live Demo
+        </Heading>
         <Sandbox
           code={fullCode}
           title="StoriesPlayer.tsx"
@@ -860,9 +868,13 @@ export default function StoriesPlayerPage() {
 
       {/* Props Table */}
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">API Reference</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          API Reference
+        </Heading>
 
-        <Heading level={3} className="text-xl font-semibold mt-6 mb-4">StoriesOverlayProps</Heading>
+        <Heading level={3} className="text-xl font-semibold mt-6 mb-4">
+          StoriesOverlayProps
+        </Heading>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -899,7 +911,9 @@ export default function StoriesPlayerPage() {
           </table>
         </div>
 
-        <Heading level={3} className="text-xl font-semibold mt-8 mb-4">Callbacks</Heading>
+        <Heading level={3} className="text-xl font-semibold mt-8 mb-4">
+          Callbacks
+        </Heading>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -935,7 +949,9 @@ export default function StoriesPlayerPage() {
 
       {/* Transitions */}
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Transitions</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Transitions
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           The{' '}
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
@@ -969,7 +985,9 @@ export default function StoriesPlayerPage() {
 
       {/* Content Loading Lifecycle */}
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Content Loading Lifecycle</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Content Loading Lifecycle
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Each story slide communicates its loading state via callbacks provided
           through{' '}
@@ -1051,13 +1069,17 @@ export default function StoriesPlayerPage() {
 
       {/* Render Props */}
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Render Props</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Render Props
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Every UI element can be replaced via render props. Each receives typed
           props with all necessary state and callbacks.
         </p>
 
-        <Heading level={3} className="text-xl font-semibold mt-6 mb-4">renderHeader</Heading>
+        <Heading level={3} className="text-xl font-semibold mt-6 mb-4">
+          renderHeader
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Replace the default header (author info, pause/mute buttons, close
           button):
@@ -1089,7 +1111,9 @@ export default function StoriesPlayerPage() {
           language="tsx"
         />
 
-        <Heading level={3} className="text-xl font-semibold mt-8 mb-4">renderFooter</Heading>
+        <Heading level={3} className="text-xl font-semibold mt-8 mb-4">
+          renderFooter
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Add a footer below the story content:
         </p>
@@ -1116,7 +1140,9 @@ export default function StoriesPlayerPage() {
           language="tsx"
         />
 
-        <Heading level={3} className="text-xl font-semibold mt-8 mb-4">renderSlide</Heading>
+        <Heading level={3} className="text-xl font-semibold mt-8 mb-4">
+          renderSlide
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Fully replace the default image/video slides. Use{' '}
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
@@ -1172,7 +1198,9 @@ export default function StoriesPlayerPage() {
           language="tsx"
         />
 
-        <Heading level={3} className="text-xl font-semibold mt-8 mb-4">renderNavigation</Heading>
+        <Heading level={3} className="text-xl font-semibold mt-8 mb-4">
+          renderNavigation
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Replace the default desktop chevron buttons:
         </p>
@@ -1193,7 +1221,9 @@ export default function StoriesPlayerPage() {
           language="tsx"
         />
 
-        <Heading level={3} className="text-xl font-semibold mt-8 mb-4">renderProgressBar</Heading>
+        <Heading level={3} className="text-xl font-semibold mt-8 mb-4">
+          renderProgressBar
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Replace the default canvas progress bar with a custom implementation.
           The{' '}
@@ -1227,7 +1257,9 @@ export default function StoriesPlayerPage() {
           language="tsx"
         />
 
-        <Heading level={3} className="text-xl font-semibold mt-8 mb-4">renderLoading</Heading>
+        <Heading level={3} className="text-xl font-semibold mt-8 mb-4">
+          renderLoading
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Custom loading indicator while content is being fetched:
         </p>
@@ -1252,7 +1284,9 @@ export default function StoriesPlayerPage() {
           language="tsx"
         />
 
-        <Heading level={3} className="text-xl font-semibold mt-8 mb-4">renderError</Heading>
+        <Heading level={3} className="text-xl font-semibold mt-8 mb-4">
+          renderError
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Custom error overlay when content fails to load:
         </p>
@@ -1283,7 +1317,9 @@ export default function StoriesPlayerPage() {
 
       {/* StoriesApi */}
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">StoriesApi</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          StoriesApi
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Use the{' '}
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
@@ -1316,7 +1352,9 @@ function App() {
           language="tsx"
         />
 
-        <Heading level={3} className="text-xl font-semibold mt-8 mb-4">Methods</Heading>
+        <Heading level={3} className="text-xl font-semibold mt-8 mb-4">
+          Methods
+        </Heading>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -1352,7 +1390,9 @@ function App() {
 
       {/* Double-Tap & Likes */}
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Double-Tap & Likes</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Double-Tap & Likes
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           A built-in heart animation plays on double-tap, giving instant visual
           feedback. The{' '}
@@ -1451,13 +1491,17 @@ function App() {
 
       {/* Sub-Components */}
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Sub-Components</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Sub-Components
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Reusable building blocks exported for composition in custom render
           props:
         </p>
 
-        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">CanvasProgressBar</Heading>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">
+          CanvasProgressBar
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
           High-performance canvas-based segmented progress bar. Renders segments
           for each story and animates the active segment fill via{' '}
@@ -1480,7 +1524,9 @@ function App() {
           language="tsx"
         />
 
-        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">StoryHeader</Heading>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">
+          StoryHeader
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
           Default header with author avatar, name, verified badge, relative
           timestamp, pause/play toggle, mute/unmute toggle, loading spinner, and
@@ -1507,7 +1553,9 @@ function App() {
           language="tsx"
         />
 
-        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">ImageStorySlide</Heading>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">
+          ImageStorySlide
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
           Full-bleed image slide with{' '}
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
@@ -1527,7 +1575,9 @@ function App() {
           language="tsx"
         />
 
-        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">VideoStorySlide</Heading>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">
+          VideoStorySlide
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
           Video slide using a shared{' '}
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
@@ -1555,7 +1605,9 @@ function App() {
           language="tsx"
         />
 
-        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">StoriesRing</Heading>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">
+          StoriesRing
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
           Circular avatar with an Instagram-style gradient ring. Segments
           indicate viewed/unviewed stories — gradient for unviewed, muted gray
@@ -1573,7 +1625,9 @@ function App() {
           language="tsx"
         />
 
-        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">StoriesRingList</Heading>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">
+          StoriesRingList
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
           Horizontal scrollable row of{' '}
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
@@ -1592,7 +1646,9 @@ function App() {
           language="tsx"
         />
 
-        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">HeartAnimation</Heading>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">
+          HeartAnimation
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
           Animated heart overlay triggered on double-tap. Scales up and fades
           out over 800ms. Customize via CSS (see Double-Tap & Likes section).
@@ -1607,9 +1663,13 @@ function App() {
 
       {/* Types */}
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Types</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Types
+        </Heading>
 
-        <Heading level={3} className="text-lg font-semibold mb-2">StoryItem</Heading>
+        <Heading level={3} className="text-lg font-semibold mb-2">
+          StoryItem
+        </Heading>
         <CodeBlock
           code={`interface StoryItem {
   id: string;
@@ -1623,7 +1683,9 @@ function App() {
           language="typescript"
         />
 
-        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">AuthorInfo</Heading>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">
+          AuthorInfo
+        </Heading>
         <CodeBlock
           code={`interface AuthorInfo {
   id: string;
@@ -1634,7 +1696,9 @@ function App() {
           language="typescript"
         />
 
-        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">StoriesGroup{'<T>'}</Heading>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">
+          StoriesGroup{'<T>'}
+        </Heading>
         <CodeBlock
           code={`interface StoriesGroup<T extends StoryItem = StoryItem> {
   author: AuthorInfo;
@@ -1744,7 +1808,9 @@ function App() {
           language="typescript"
         />
 
-        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">StoriesApi</Heading>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">
+          StoriesApi
+        </Heading>
         <CodeBlock
           code={`interface StoriesApi {
   nextStory(): void;
@@ -1761,7 +1827,9 @@ function App() {
 
       {/* Custom Story Types */}
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Custom Story Types</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Custom Story Types
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Extend{' '}
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
@@ -1845,7 +1913,9 @@ function CustomSlide({ story, size, onReady, onError }: SlideRenderProps<PromoSt
 
       {/* CSS Classes */}
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">CSS Classes</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          CSS Classes
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           All CSS classes are plain (not CSS modules), so they can be targeted
           with higher-specificity selectors in a stylesheet loaded after{' '}
@@ -1897,7 +1967,9 @@ function CustomSlide({ story, size, onReady, onError }: SlideRenderProps<PromoSt
       </section>
 
       <section id="theming" className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Theming</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Theming
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Every color, size, z-index, and transition lives in a CSS custom
           property. Override one or many at{' '}
@@ -1967,7 +2039,9 @@ function CustomSlide({ story, size, onReady, onError }: SlideRenderProps<PromoSt
 
       {/* Accessibility */}
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Accessibility</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Accessibility
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           The overlay root is a modal dialog (
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -2005,7 +2079,9 @@ function CustomSlide({ story, size, onReady, onError }: SlideRenderProps<PromoSt
       </section>
 
       <section>
-        <Heading level={2} className="text-2xl font-bold mb-4">Keyboard Shortcuts</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Keyboard Shortcuts
+        </Heading>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>

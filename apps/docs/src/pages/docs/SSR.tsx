@@ -16,7 +16,9 @@ export default function SSR() {
       </div>
 
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">How It Works</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          How It Works
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           The core slider controller is pure logic with no DOM access at
           construction. Gesture listeners, keyboard events, and animations
@@ -448,7 +450,9 @@ export class FeedComponent {
             vue: () => (
               <>
                 <section className="mb-12">
-                  <Heading level={2} className="text-2xl font-bold mb-4">Nuxt 3</Heading>
+                  <Heading level={2} className="text-2xl font-bold mb-4">
+                    Nuxt 3
+                  </Heading>
                   <p className="text-slate-600 dark:text-slate-400 mb-4">
                     ReelKit Vue components work with Nuxt 3 out of the box.
                     Since Reel uses browser APIs (touch events, ResizeObserver),
@@ -536,7 +540,9 @@ defineProps<{ items: FeedItem[] }>();
       </Observe>
 
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Using Core Directly</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Using Core Directly
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           When using{' '}
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
@@ -572,7 +578,9 @@ if (typeof window !== 'undefined') {
       </section>
 
       <section>
-        <Heading level={2} className="text-2xl font-bold mb-4">Summary</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Summary
+        </Heading>
         <div className="space-y-4">
           <Callout type="success" title="What works out of the box">
             <ul className="list-disc list-inside space-y-1 mt-1">

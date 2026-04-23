@@ -575,13 +575,17 @@ export default function StoriesCorePage() {
 
       {/* Installation */}
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Installation</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Installation
+        </Heading>
         <CodeBlock code="npm i @reelkit/stories-core" language="bash" />
       </section>
 
       {/* Stories Controller */}
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-6">Stories Controller</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-6">
+          Stories Controller
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
             createStoriesController(config, events?)
@@ -612,19 +616,25 @@ export default function StoriesCorePage() {
           rows={stateRows}
         />
 
-        <Heading level={3} className="text-lg font-semibold mt-8 mb-3">Methods</Heading>
+        <Heading level={3} className="text-lg font-semibold mt-8 mb-3">
+          Methods
+        </Heading>
         <Table3Col
           headers={['Method', 'Type', 'Description']}
           rows={methodsRows}
         />
 
-        <Heading level={3} className="text-lg font-semibold mt-8 mb-3">Example</Heading>
+        <Heading level={3} className="text-lg font-semibold mt-8 mb-3">
+          Example
+        </Heading>
         <CodeBlock code={controllerExample} />
       </section>
 
       {/* Timer Controller */}
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-6">Timer Controller</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-6">
+          Timer Controller
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
             createTimerController(config)
@@ -642,25 +652,33 @@ export default function StoriesCorePage() {
         </Heading>
         <Table4Col rows={timerConfigRows} />
 
-        <Heading level={3} className="text-lg font-semibold mt-8 mb-3">State</Heading>
+        <Heading level={3} className="text-lg font-semibold mt-8 mb-3">
+          State
+        </Heading>
         <Table3Col
           headers={['Signal', 'Type', 'Description']}
           rows={timerStateRows}
         />
 
-        <Heading level={3} className="text-lg font-semibold mt-8 mb-3">Methods</Heading>
+        <Heading level={3} className="text-lg font-semibold mt-8 mb-3">
+          Methods
+        </Heading>
         <Table3Col
           headers={['Method', 'Type', 'Description']}
           rows={timerMethodsRows}
         />
 
-        <Heading level={3} className="text-lg font-semibold mt-8 mb-3">Example</Heading>
+        <Heading level={3} className="text-lg font-semibold mt-8 mb-3">
+          Example
+        </Heading>
         <CodeBlock code={timerExample} />
       </section>
 
       {/* Canvas Progress Renderer */}
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-6">Canvas Progress Renderer</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-6">
+          Canvas Progress Renderer
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
             createCanvasProgressRenderer(config?)
@@ -675,19 +693,25 @@ export default function StoriesCorePage() {
         </Heading>
         <Table4Col rows={canvasConfigRows} />
 
-        <Heading level={3} className="text-lg font-semibold mt-8 mb-3">Methods</Heading>
+        <Heading level={3} className="text-lg font-semibold mt-8 mb-3">
+          Methods
+        </Heading>
         <Table3Col
           headers={['Member', 'Type', 'Description']}
           rows={canvasMethodsRows}
         />
 
-        <Heading level={3} className="text-lg font-semibold mt-8 mb-3">Example</Heading>
+        <Heading level={3} className="text-lg font-semibold mt-8 mb-3">
+          Example
+        </Heading>
         <CodeBlock code={canvasExample} />
       </section>
 
       {/* Utility Functions */}
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-6">Utility Functions</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-6">
+          Utility Functions
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Pure functions for tap zone detection and progress bar math.
         </p>
@@ -699,7 +723,9 @@ export default function StoriesCorePage() {
 
       {/* Types */}
       <section>
-        <Heading level={2} className="text-2xl font-bold mb-6">Types</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-6">
+          Types
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           All type definitions exported from{' '}
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">

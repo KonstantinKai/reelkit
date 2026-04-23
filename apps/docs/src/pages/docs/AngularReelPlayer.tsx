@@ -688,7 +688,9 @@ export default function AngularReelPlayer() {
       </section>
 
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Installation</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Installation
+        </Heading>
         <CodeBlock
           code={`npm install @reelkit/angular-reel-player @reelkit/angular lucide-angular`}
           language="bash"
@@ -712,7 +714,9 @@ export default function AngularReelPlayer() {
       </section>
 
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Basic Usage</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Basic Usage
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Import the stylesheet and the standalone{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -818,7 +822,9 @@ export class AppComponent {
       </section>
 
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Template Slots</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Template Slots
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Six template slot directives let you customize every aspect of the
           player's UI. Each receives a strongly-typed context object. Only
@@ -959,7 +965,9 @@ export class AppComponent {
 
       {/* Custom Timeline subsection */}
       <section className="mb-12">
-        <Heading level={3} className="text-xl font-semibold mt-8 mb-4">Custom Timeline</Heading>
+        <Heading level={3} className="text-xl font-semibold mt-8 mb-4">
+          Custom Timeline
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           The{' '}
           <code className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -1025,7 +1033,9 @@ export class AppComponent {
           without retrying.
         </p>
 
-        <Heading level={3} className="text-xl font-semibold mt-6 mb-4">Lifecycle Callbacks</Heading>
+        <Heading level={3} className="text-xl font-semibold mt-6 mb-4">
+          Lifecycle Callbacks
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           When using the{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -1149,7 +1159,9 @@ export class AppComponent {
       </section>
 
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Timeline</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Timeline
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           The overlay renders a built-in playback timeline bar over the active
           video. Gate it via the{' '}
@@ -1231,7 +1243,9 @@ export class AppComponent {}`}
       </section>
 
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">SoundStateService</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          SoundStateService
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Provided at the{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -1307,7 +1321,9 @@ export class AppComponent {
       </section>
 
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Custom Data Types</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Custom Data Types
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Extend{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -1434,7 +1450,9 @@ export class AppComponent {
       </section>
 
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">MediaItem Interface</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          MediaItem Interface
+        </Heading>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -1469,7 +1487,9 @@ export class AppComponent {
       </section>
 
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Template Slot Context Types</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Template Slot Context Types
+        </Heading>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -1498,7 +1518,9 @@ export class AppComponent {
       </section>
 
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">CSS Classes</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          CSS Classes
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           All CSS classes are plain (not scoped), so they can be targeted with
           higher-specificity selectors in a stylesheet loaded after{' '}
@@ -1551,7 +1573,9 @@ export class AppComponent {
 
       {/* Theming */}
       <section id="theming" className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Theming</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Theming
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Every color, size, z-index, and transition lives in a CSS custom
           property. Override one or many at{' '}
@@ -1626,7 +1650,9 @@ export class AppComponent {
 
       {/* Accessibility */}
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Accessibility</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Accessibility
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           The overlay root is a modal dialog (
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -1676,7 +1702,9 @@ export class AppComponent {
       </section>
 
       <section>
-        <Heading level={2} className="text-2xl font-bold mb-4">Keyboard Shortcuts</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Keyboard Shortcuts
+        </Heading>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>

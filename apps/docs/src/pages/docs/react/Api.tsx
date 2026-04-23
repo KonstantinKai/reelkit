@@ -274,7 +274,9 @@ export default function ReactApi() {
       </div>
 
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Reel Props</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Reel Props
+        </Heading>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -313,7 +315,9 @@ export default function ReactApi() {
       </section>
 
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Callbacks</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Callbacks
+        </Heading>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -348,7 +352,9 @@ export default function ReactApi() {
       </section>
 
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">ReelApi Methods</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          ReelApi Methods
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Access slider methods via{' '}
           <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
@@ -406,7 +412,9 @@ apiRef.current?.unobserve();       // stop observing keyboard`}
       </section>
 
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">ReelIndicator Props</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          ReelIndicator Props
+        </Heading>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -445,9 +453,13 @@ apiRef.current?.unobserve();       // stop observing keyboard`}
       </section>
 
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Observer Components</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Observer Components
+        </Heading>
 
-        <Heading level={3} className="text-lg font-semibold mb-2">Observe</Heading>
+        <Heading level={3} className="text-lg font-semibold mb-2">
+          Observe
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
           Bridges core signals to React rendering without causing parent
           re-renders. Only the children function re-executes when subscribed
@@ -462,7 +474,9 @@ apiRef.current?.unobserve();       // stop observing keyboard`}
           language="tsx"
         />
 
-        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">AnimatedObserve</Heading>
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">
+          AnimatedObserve
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
           Subscribes to animated value signals and smoothly interpolates using{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -483,9 +497,13 @@ apiRef.current?.unobserve();       // stop observing keyboard`}
       </section>
 
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Hooks</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Hooks
+        </Heading>
 
-        <Heading level={3} className="text-lg font-semibold mb-2">useBodyLock</Heading>
+        <Heading level={3} className="text-lg font-semibold mb-2">
+          useBodyLock
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
           Locks body scroll and compensates for scrollbar width shift.
         </p>
@@ -499,7 +517,9 @@ useBodyLock(isOpen);`}
       </section>
 
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Accessibility</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Accessibility
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
             &lt;Reel&gt;
@@ -561,7 +581,9 @@ useBodyLock(isOpen);`}
       </section>
 
       <section>
-        <Heading level={2} className="text-2xl font-bold mb-4">Utilities</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Utilities
+        </Heading>
 
         <Heading level={3} className="text-lg font-semibold mb-2">
           createDefaultKeyExtractorForLoop

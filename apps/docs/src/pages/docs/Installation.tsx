@@ -219,7 +219,9 @@ export default function Installation() {
       </div>
 
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Package Options</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Package Options
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-6">
           Install only what you use:
         </p>
@@ -275,7 +277,9 @@ export default function Installation() {
       </section>
 
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Bundle Sizes</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Bundle Sizes
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-6">
           All packages are optimized for minimal bundle impact:
         </p>
@@ -394,17 +398,23 @@ export default function Installation() {
           return (
             <>
               <section className="mb-12">
-                <Heading level={2} className="text-2xl font-bold mb-4">npm</Heading>
+                <Heading level={2} className="text-2xl font-bold mb-4">
+                  npm
+                </Heading>
                 <CodeBlock code={`npm install ${pkg}`} language="bash" />
               </section>
 
               <section className="mb-12">
-                <Heading level={2} className="text-2xl font-bold mb-4">yarn</Heading>
+                <Heading level={2} className="text-2xl font-bold mb-4">
+                  yarn
+                </Heading>
                 <CodeBlock code={`yarn add ${pkg}`} language="bash" />
               </section>
 
               <section className="mb-12">
-                <Heading level={2} className="text-2xl font-bold mb-4">pnpm</Heading>
+                <Heading level={2} className="text-2xl font-bold mb-4">
+                  pnpm
+                </Heading>
                 <CodeBlock code={`pnpm add ${pkg}`} language="bash" />
               </section>
             </>
@@ -413,7 +423,9 @@ export default function Installation() {
       </Observe>
 
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Peer Dependencies</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Peer Dependencies
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Framework packages have peer dependencies that should already be in
           your project:
@@ -581,7 +593,9 @@ export default function Installation() {
               vue: () => (
                 <div className="space-y-6">
                   <div>
-                    <Heading level={3} className="text-lg font-semibold mb-2">@reelkit/vue</Heading>
+                    <Heading level={3} className="text-lg font-semibold mb-2">
+                      @reelkit/vue
+                    </Heading>
                     <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
                       <li>
                         <code className="text-sm font-mono">vue</code>{' '}
@@ -622,7 +636,9 @@ export default function Installation() {
       </section>
 
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">TypeScript</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          TypeScript
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400">
           All packages ship with TypeScript type definitions. No additional{' '}
           {'@types'} packages needed.
@@ -630,7 +646,9 @@ export default function Installation() {
       </section>
 
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">Browser Support</Heading>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Browser Support
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           reelkit supports all modern browsers:
         </p>
