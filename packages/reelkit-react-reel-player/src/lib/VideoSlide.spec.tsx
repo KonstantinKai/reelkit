@@ -293,7 +293,10 @@ describe('VideoSlide', () => {
   });
 
   describe('aspect ratio', () => {
-    it('uses cover object-fit for vertical video', () => {
+    it('uses cover object-fit for vertical video (auto-detected from metadata)', () => {
+      // Redefine the shared mock video's dimensions to portrait BEFORE
+      // rendering, so `syncObjectFit` reads `videoWidth`/`videoHeight`
+      // and switches to 'cover' when height > width.
       const { container } = renderWithSound(
         <VideoSlide
           src="video.mp4"
@@ -305,10 +308,22 @@ describe('VideoSlide', () => {
       );
 
       const video = container.querySelector('video')!;
+      Object.defineProperty(video, 'videoWidth', {
+        value: 720,
+        configurable: true,
+      });
+      Object.defineProperty(video, 'videoHeight', {
+        value: 1280,
+        configurable: true,
+      });
+      act(() => video.dispatchEvent(new Event('loadedmetadata')));
       expect(video.style.objectFit).toBe('cover');
     });
 
-    it('uses contain object-fit for horizontal video', () => {
+    it('uses contain object-fit for horizontal video (auto-detected from metadata)', () => {
+      // The shared video element is a singleton across tests, so previous
+      // tests may have mutated its dimensions. Redefine to horizontal
+      // explicitly before asserting.
       const { container } = renderWithSound(
         <VideoSlide
           src="video.mp4"
@@ -320,6 +335,15 @@ describe('VideoSlide', () => {
       );
 
       const video = container.querySelector('video')!;
+      Object.defineProperty(video, 'videoWidth', {
+        value: 1920,
+        configurable: true,
+      });
+      Object.defineProperty(video, 'videoHeight', {
+        value: 1080,
+        configurable: true,
+      });
+      act(() => video.dispatchEvent(new Event('loadedmetadata')));
       expect(video.style.objectFit).toBe('contain');
     });
   });

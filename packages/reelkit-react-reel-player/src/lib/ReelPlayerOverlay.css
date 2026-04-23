@@ -2,7 +2,7 @@
  * Theme tokens for the reel-player overlay.
  *
  * Defaults live on `:root` so they inherit through the DOM. Override at
- * `:root` (or any ancestor of `.rk-reel-overlay`) to retheme — direct-match
+ * `:root` (or any ancestor of `.rk-reel-overlay`) to retheme. Direct-match
  * declarations on `.rk-reel-overlay` would otherwise shadow inherited values.
  */
 :root {
@@ -116,8 +116,12 @@
   top: var(--rk-reel-edge-padding);
 }
 
+/* Sound button stacks under the close button, top-right. */
 .rk-reel-sound-btn {
-  bottom: var(--rk-reel-edge-padding);
+  top: calc(
+    var(--rk-reel-edge-padding) + var(--rk-reel-button-size) +
+      var(--rk-reel-nav-gap)
+  );
 }
 
 .rk-reel-sound-btn[aria-disabled='true'] {

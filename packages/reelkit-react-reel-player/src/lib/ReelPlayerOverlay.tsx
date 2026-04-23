@@ -27,12 +27,16 @@ import type {
   NavigationRenderProps,
   NestedSlideRenderProps,
   SlideRenderProps,
+  TimelineMode,
+  TimelineRenderProps,
 } from './types';
 import MediaSlide from './MediaSlide';
 import { captureFrame } from '@reelkit/react';
 import PlayerControls from './PlayerControls';
 import SlideOverlay from './SlideOverlay';
 import { shared as sharedVideo } from './VideoSlide';
+import { TimelineProvider, useTimelineState } from './TimelineState';
+import TimelineBar from './TimelineBar';
 import './ReelPlayerOverlay.css';
 
 /**
@@ -53,7 +57,7 @@ export type ReelProxyProps = Pick<
 /**
  * Props for the {@link ReelPlayerOverlay} component.
  *
- * Generic over `T` — pass any type extending {@link BaseContentItem} to use
+ * Generic over `T`: pass any type extending {@link BaseContentItem} to use
  * custom data. Defaults to {@link ContentItem} for backward compatibility.
  *
  * @typeParam T - Content item type. Must have `id` and `media` fields at minimum.
@@ -94,6 +98,21 @@ export interface ReelPlayerOverlayProps<T extends BaseContentItem = ContentItem>
   initialIndex?: number;
 
   /**
+   * Whether the built-in playback timeline bar renders over the active video.
+   *
+   * @default 'auto'
+   */
+  timeline?: TimelineMode;
+
+  /**
+   * Minimum video duration (seconds) for `timeline='auto'` to render the
+   * built-in bar. Short looping clips below this threshold are suppressed.
+   *
+   * @default 30
+   */
+  timelineMinDurationSeconds?: number;
+
+  /**
    * Ref to access the Reel API
    */
   apiRef?: React.MutableRefObject<ReelApi | null>;
@@ -129,6 +148,15 @@ export interface ReelPlayerOverlayProps<T extends BaseContentItem = ContentItem>
   renderControls?: (props: ControlsRenderProps<T>) => ReactNode;
 
   /**
+   * Custom playback timeline bar. Invoked only when the gating rules would
+   * render the default bar. Return `null` to hide it for that slide.
+   *
+   * Use `props.defaultContent` to wrap the built-in {@link TimelineBar}, or
+   * return a fully custom element driven by `props.timelineState` signals.
+   */
+  renderTimeline?: (props: TimelineRenderProps<T>) => ReactNode;
+
+  /**
    * Custom navigation arrows. Replaces default ChevronUp/Down.
    */
   renderNavigation?: (props: NavigationRenderProps) => ReactNode;
@@ -155,6 +183,7 @@ export interface ReelPlayerOverlayProps<T extends BaseContentItem = ContentItem>
 const _kDefaultAspectRatio = 9 / 16;
 const _kMobileBreakpoint = 768;
 const _kPreloadRange = 2;
+const _kDefaultTimelineMinDurationSeconds = 30;
 
 const preloader = createContentPreloader({ maxCacheSize: 1000 });
 
@@ -180,6 +209,7 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>(
   const videoPausedOnDragRef = useRef(false);
   const overlayRef = useRef<HTMLDivElement | null>(null);
   const soundState = useSoundState();
+  const timelineState = useTimelineState();
 
   const [
     {
@@ -564,38 +594,80 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>(
 
         <Observe signals={[indexSignal, innerMediaTypeSignal]}>
           {() => {
-            const idx = indexSignal.value;
+            const activeIndex = indexSignal.value;
             const innerType = innerMediaTypeSignal.value;
-            const {
-              renderControls: renderCtrl,
-              onClose: close,
-              content: items,
-            } = propsRef.current;
+            const { renderControls, onClose, content } = propsRef.current;
             const hasVideo =
-              items[idx]?.media.some((m) => m.type === 'video') ?? false;
-            const multiMedia = items[idx]?.media.length > 1;
+              content[activeIndex]?.media.some((m) => m.type === 'video') ??
+              false;
+            const multiMedia = content[activeIndex]?.media.length > 1;
             const soundDisabled = multiMedia && innerType === 'image';
 
-            if (renderCtrl) {
+            if (renderControls) {
               return (
                 <>
-                  {renderCtrl({
-                    item: items[idx] as T,
-                    onClose: close,
+                  {renderControls({
+                    item: content[activeIndex] as T,
+                    onClose,
                     soundState,
-                    activeIndex: idx,
-                    content: items,
+                    activeIndex,
+                    content,
                   })}
                 </>
               );
             }
             return (
               <PlayerControls
-                onClose={close}
+                onClose={onClose}
                 showSound={hasVideo}
                 soundDisabled={soundDisabled}
               />
             );
+          }}
+        </Observe>
+
+        <Observe
+          signals={[indexSignal, innerMediaTypeSignal, timelineState.duration]}
+        >
+          {() => {
+            const idx = indexSignal.value;
+            const item = propsRef.current.content[idx];
+            const mode: TimelineMode = propsRef.current.timeline ?? 'auto';
+            const minDuration =
+              propsRef.current.timelineMinDurationSeconds ??
+              _kDefaultTimelineMinDurationSeconds;
+            if (!item) return null;
+            if (mode === 'never') return null;
+
+            const anyVideo = item.media.some((m) => m.type === 'video');
+            const isSingle = item.media.length === 1;
+            const activeMediaIsVideo = isSingle
+              ? item.media[0]?.type === 'video'
+              : innerMediaTypeSignal.value === 'video';
+
+            if (mode === 'always') {
+              if (!anyVideo) return null;
+            } else {
+              if (!activeMediaIsVideo) return null;
+              if (timelineState.duration.value < minDuration) return null;
+            }
+
+            const defaultContent = <TimelineBar />;
+
+            const renderTl = propsRef.current.renderTimeline;
+            if (renderTl) {
+              return (
+                <>
+                  {renderTl({
+                    item: item as T,
+                    activeIndex: idx,
+                    timelineState,
+                    defaultContent,
+                  })}
+                </>
+              );
+            }
+            return defaultContent;
           }}
         </Observe>
       </div>
@@ -702,7 +774,9 @@ export function ReelPlayerOverlay<T extends BaseContentItem = ContentItem>(
 
   return (
     <SoundProvider>
-      <ReelPlayerContent {...props} />
+      <TimelineProvider>
+        <ReelPlayerContent {...props} />
+      </TimelineProvider>
     </SoundProvider>
   );
 }

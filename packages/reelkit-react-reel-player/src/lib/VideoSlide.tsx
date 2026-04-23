@@ -12,11 +12,13 @@ import {
   observeDomEvent,
   observeMediaLoading,
   syncMutedToVideo,
+  syncVideoObjectFit,
   captureFrame,
   noop,
   Observe,
   useSoundState,
 } from '@reelkit/react';
+import { useTimelineStateOptional } from './TimelineState';
 import './VideoSlide.css';
 
 /**
@@ -113,6 +115,7 @@ const VideoSlide: React.FC<VideoSlideProps> = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const soundState = useSoundState();
+  const timelineController = useTimelineStateOptional();
   const shouldPlay = isActive && isInnerActive;
   const isVertical = aspectRatio < 1;
   const [showPoster] = useState(() => createSignal(true));
@@ -152,13 +155,18 @@ const VideoSlide: React.FC<VideoSlideProps> = ({
     const savedPosition = shared.playbackPositions.get(slideKey);
     video.currentTime = savedPosition ?? 0;
 
-    video.style.objectFit = isVertical ? 'cover' : 'contain';
+    disposables.push(syncVideoObjectFit(video, isVertical));
     video.dataset['slideKey'] = slideKey;
 
     container.appendChild(video);
 
     if (onVideoRef) {
       onVideoRef(video);
+    }
+
+    if (timelineController) {
+      timelineController.attach(video);
+      disposables.push(timelineController.detach);
     }
 
     video.play().catch(noop);

@@ -3,7 +3,7 @@
  *
  * React bindings for the ReelKit slider library.
  *
- * The main component is {@link Reel} — a virtualized, gesture-driven
+ * The main component is {@link Reel}: a virtualized, gesture-driven
  * slider that renders only the visible slides to the DOM. It wraps
  * `@reelkit/core`'s {@link createSliderController} and bridges its
  * signal-based state into React via {@link Observe}.
@@ -60,6 +60,7 @@ export {
   noop,
   captureFrame,
   createSharedVideo,
+  syncVideoObjectFit,
   createGestureController,
   type Signal,
   type ComputedSignal,
@@ -78,6 +79,10 @@ export {
   createSoundController,
   syncMutedToVideo,
   type SoundController,
+  createTimelineController,
+  type TimelineController,
+  type TimelineControllerConfig,
+  type BufferedRange,
   createContentLoadingController,
   type ContentLoadingController,
   createContentPreloader,

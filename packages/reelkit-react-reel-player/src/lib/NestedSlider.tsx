@@ -207,15 +207,7 @@ const NestedSlider: React.FC<NestedSliderProps> = (props) => {
           return (
             <>
               {items.length > 1 && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    bottom: 16,
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    zIndex: 10,
-                  }}
-                >
+                <div className="rk-reel-nested-indicator">
                   <ReelIndicator
                     count={items.length}
                     active={idx}

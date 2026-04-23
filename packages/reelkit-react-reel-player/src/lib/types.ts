@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import type { ReelApi } from '@reelkit/react';
-import type { SoundController } from '@reelkit/react';
+import type { SoundController, TimelineController } from '@reelkit/react';
 
 /** Supported media types for content items. */
 export type MediaType = 'image' | 'video';
@@ -72,6 +72,18 @@ export interface ContentItem extends BaseContentItem {
   /** Short description text shown in the slide overlay (max 2 lines). */
   description: string;
 }
+
+/**
+ * Gating strategy for the built-in playback timeline bar.
+ *
+ * - `'auto'`: render whenever the active media is a video whose duration
+ *   exceeds `timelineMinDurationSeconds`. Works for single-video slides
+ *   and multi-media carousels (follows the active nested item).
+ * - `'always'`: render whenever the active slide contains a video.
+ * - `'never'`: never render the bar. For a fully custom replacement, use
+ *   `renderTimeline` instead; it still respects the same gating logic.
+ */
+export type TimelineMode = 'auto' | 'always' | 'never';
 
 /**
  * Props passed to the `renderControls` callback.
@@ -233,6 +245,46 @@ export interface NestedSlideRenderProps {
 
   /** Signal that the nested slide content failed to load. Only provided when `isInnerActive` is true. */
   onError?: () => void;
+}
+
+/**
+ * Props passed to the `renderTimeline` callback.
+ *
+ * Use these to build a custom playback timeline bar (a branded pill, a
+ * timecode overlay, thumbnail previews) while retaining the built-in scrub
+ * + keyboard interactions via `timelineState.bindInteractions`.
+ *
+ * Only invoked when the overlay's gating rules would render the default bar
+ * (same `timeline='auto'|'always'|'never'` + `timelineMinDurationSeconds`
+ * logic), so consumers don't re-implement it. Return `null` to hide the bar
+ * for that frame.
+ *
+ * @typeParam T - The content item type.
+ *
+ * @example Wrap the default bar with a timecode
+ * ```tsx
+ * renderTimeline={({ timelineState, defaultContent }) => (
+ *   <>
+ *     <Observe signals={[timelineState.currentTime, timelineState.duration]}>
+ *       {() => <div>{format(timelineState.currentTime.value)}</div>}
+ *     </Observe>
+ *     {defaultContent}
+ *   </>
+ * )}
+ * ```
+ */
+export interface TimelineRenderProps<T extends BaseContentItem> {
+  /** The currently active content item. */
+  item: T;
+
+  /** Zero-based index of the currently active slide. */
+  activeIndex: number;
+
+  /** Reactive timeline controller: signals plus `bindInteractions` for scrubbing. */
+  timelineState: TimelineController;
+
+  /** The default `<TimelineBar />`. Render this to wrap or augment the built-in bar. */
+  defaultContent: ReactNode;
 }
 
 /**

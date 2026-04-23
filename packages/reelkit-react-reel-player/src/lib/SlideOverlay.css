@@ -3,7 +3,7 @@
  * Override at :root or any ancestor of `.rk-reel-slide-overlay`.
  */
 :root {
-  --rk-reel-slide-overlay-padding: 48px 16px 16px;
+  --rk-reel-slide-overlay-padding: 48px 16px 24px;
   --rk-reel-slide-overlay-bg: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
   --rk-reel-slide-overlay-z: 5;
   --rk-reel-slide-overlay-gap: 8px;
