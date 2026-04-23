@@ -10,7 +10,7 @@
  * and a lightweight reactive system ({@link createSignal},
  * {@link createComputed}, {@link reaction}).
  *
- * All public APIs follow a **factory-function** pattern — no classes.
+ * All public APIs follow a **factory-function** pattern: no classes.
  * Each factory returns a plain object with methods and signal-based
  * state, making it easy to integrate with any UI framework.
  */
@@ -54,6 +54,7 @@ export {
   // Video
   captureFrame,
   createSharedVideo,
+  syncVideoObjectFit,
   type SharedVideoConfig,
   type SharedVideoInstance,
   // Media Loading
@@ -63,6 +64,11 @@ export {
   createSoundController,
   syncMutedToVideo,
   type SoundController,
+  // Timeline
+  createTimelineController,
+  type TimelineController,
+  type TimelineControllerConfig,
+  type BufferedRange,
   // Content Loading
   createContentLoadingController,
   type ContentLoadingController,

@@ -1,4 +1,6 @@
 import { createLruCache, type LruCache } from './lruCache';
+import { observeDomEvent } from './observeDomEvent';
+import type { Disposer } from './disposable';
 
 const _kMaxCachedPositions = 200;
 const _kMaxCachedFrames = 50;
@@ -19,6 +21,35 @@ export const captureFrame = (video: HTMLVideoElement): string | null => {
   } catch {
     return null;
   }
+};
+
+/**
+ * Keeps `video.style.objectFit` in sync with the video's real orientation.
+ *
+ * Applies `fallbackIsVertical` immediately (based on the consumer's
+ * declared aspect ratio), then on `loadedmetadata` reads the actual
+ * `videoWidth / videoHeight` and switches to `cover` for portrait content
+ * or `contain` for landscape. Resilient to consumers declaring a wrong
+ * aspect ratio in metadata.
+ *
+ * @returns A {@link Disposer} that removes the `loadedmetadata` listener.
+ */
+export const syncVideoObjectFit = (
+  video: HTMLVideoElement,
+  fallbackIsVertical: boolean,
+): Disposer => {
+  const apply = (isVertical: boolean) =>
+    (video.style.objectFit = isVertical ? 'cover' : 'contain');
+
+  apply(fallbackIsVertical);
+  const syncFromMetadata = () => {
+    if (video.videoWidth && video.videoHeight) {
+      apply(video.videoWidth < video.videoHeight);
+    }
+  };
+  // Metadata may already be loaded if the same `<video>` was reused.
+  syncFromMetadata();
+  return observeDomEvent(video, 'loadedmetadata', syncFromMetadata);
 };
 
 /**

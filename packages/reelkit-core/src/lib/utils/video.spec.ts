@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { captureFrame, createSharedVideo } from './video';
+import { captureFrame, createSharedVideo, syncVideoObjectFit } from './video';
 
 describe('captureFrame', () => {
   it('returns null when getContext returns null (jsdom default)', () => {
@@ -135,5 +135,89 @@ describe('createSharedVideo', () => {
     expect(a.getVideo()).not.toBe(b.getVideo());
     a.playbackPositions.set('key', 5);
     expect(b.playbackPositions.get('key')).toBeUndefined();
+  });
+});
+
+describe('syncVideoObjectFit', () => {
+  const createVideo = (width: number, height: number) => {
+    const video = document.createElement('video');
+    Object.defineProperty(video, 'videoWidth', {
+      value: width,
+      configurable: true,
+    });
+    Object.defineProperty(video, 'videoHeight', {
+      value: height,
+      configurable: true,
+    });
+    return video;
+  };
+
+  it('applies the fallback immediately when metadata has not loaded yet', () => {
+    const video = createVideo(0, 0);
+    syncVideoObjectFit(video, true);
+    expect(video.style.objectFit).toBe('cover');
+  });
+
+  it('respects the horizontal fallback when metadata has not loaded yet', () => {
+    const video = createVideo(0, 0);
+    syncVideoObjectFit(video, false);
+    expect(video.style.objectFit).toBe('contain');
+  });
+
+  it('corrects to cover when already-loaded metadata shows a portrait video', () => {
+    const video = createVideo(720, 1280);
+    // Fallback says horizontal, but metadata is already available and
+    // portrait, so sync should pick cover immediately.
+    syncVideoObjectFit(video, false);
+    expect(video.style.objectFit).toBe('cover');
+  });
+
+  it('corrects to contain when already-loaded metadata shows a landscape video', () => {
+    const video = createVideo(1920, 1080);
+    syncVideoObjectFit(video, true);
+    expect(video.style.objectFit).toBe('contain');
+  });
+
+  it('updates when loadedmetadata fires later with real dimensions', () => {
+    const video = createVideo(0, 0);
+    syncVideoObjectFit(video, true);
+    expect(video.style.objectFit).toBe('cover');
+
+    Object.defineProperty(video, 'videoWidth', {
+      value: 1920,
+      configurable: true,
+    });
+    Object.defineProperty(video, 'videoHeight', {
+      value: 1080,
+      configurable: true,
+    });
+    video.dispatchEvent(new Event('loadedmetadata'));
+    expect(video.style.objectFit).toBe('contain');
+  });
+
+  it('handles square videos by treating width == height as landscape (contain)', () => {
+    const video = createVideo(500, 500);
+    syncVideoObjectFit(video, true);
+    expect(video.style.objectFit).toBe('contain');
+  });
+
+  it('disposer removes the loadedmetadata listener', () => {
+    const video = createVideo(0, 0);
+    const dispose = syncVideoObjectFit(video, false);
+    expect(video.style.objectFit).toBe('contain');
+
+    dispose();
+
+    // After disposal, a late metadata event must not overwrite object-fit.
+    Object.defineProperty(video, 'videoWidth', {
+      value: 720,
+      configurable: true,
+    });
+    Object.defineProperty(video, 'videoHeight', {
+      value: 1280,
+      configurable: true,
+    });
+    video.dispatchEvent(new Event('loadedmetadata'));
+    expect(video.style.objectFit).toBe('contain');
   });
 });

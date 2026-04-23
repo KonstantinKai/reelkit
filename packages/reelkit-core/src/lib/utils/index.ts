@@ -38,6 +38,13 @@ export {
 } from './soundController';
 
 export {
+  createTimelineController,
+  type TimelineController,
+  type TimelineControllerConfig,
+  type BufferedRange,
+} from './timelineController';
+
+export {
   createContentLoadingController,
   type ContentLoadingController,
 } from './contentLoadingController';
@@ -53,6 +60,7 @@ export {
 export {
   captureFrame,
   createSharedVideo,
+  syncVideoObjectFit,
   type SharedVideoConfig,
   type SharedVideoInstance,
 } from './video';
