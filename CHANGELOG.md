@@ -1,3 +1,55 @@
+## @reelkit/vue-reel-player@0.2.0 (2026-04-24)
+
+### 🚀 Features
+
+- Built-in playback timeline bar over the active video with track, buffered segments, progress fill, and draggable pill cursor
+- New `timeline` prop (`'auto' | 'always' | 'never'`, default `'auto'`) with `timeline-min-duration-seconds` (default 30) to gate when the bar renders; on multi-media carousels the bar follows the active nested video
+- `#timeline` scoped slot for fully custom scrub UI
+- `TimelineBar`, `TimelineProvider`, `useTimelineState` exports for composition
+- Pointer + keyboard scrubbing on the track (pointer capture, arrows, Home/End, PageUp/PageDown)
+- Sound button relocated under the close button for more consistent top-right stacking
+- Auto-detect vertical video orientation via `syncVideoObjectFit` so portrait clips with stale declared aspect ratios still render with the correct `object-fit`
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/vue to 0.3.0
+
+## @reelkit/react-reel-player@0.5.0 (2026-04-24)
+
+### 🚀 Features
+
+- Built-in playback timeline bar over the active video with track, buffered segments, progress fill, and draggable pill cursor
+- New `timeline` prop (`'auto' | 'always' | 'never'`, default `'auto'`) with `timelineMinDurationSeconds` (default 30) to gate when the bar renders; on multi-media carousels the bar follows the active nested video
+- `renderTimeline` render prop for fully custom scrub UI
+- `TimelineBar`, `TimelineProvider`, `useTimelineState` exports for composition
+- Pointer + keyboard scrubbing on the track (pointer capture, arrows, Home/End, PageUp/PageDown)
+- Sound button relocated under the close button for more consistent top-right stacking
+- Auto-detect vertical video orientation via `syncVideoObjectFit` so portrait clips with stale declared aspect ratios still render with the correct `object-fit`
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/react to 0.6.0
+
+## @reelkit/angular-reel-player@0.4.0 (2026-04-24)
+
+### 🚀 Features
+
+- Built-in playback timeline bar over the active video with track, buffered segments, progress fill, and draggable pill cursor
+- New `timeline` input (`'auto' | 'always' | 'never'`, default `'auto'`) with `timelineMinDurationSeconds` (default 30) to gate when the bar renders; on multi-media carousels the bar follows the active nested video
+- `rkPlayerTimeline` template slot directive for fully custom scrub UI
+- `RkTimelineBarComponent` and `TimelineStateService` exports for composition
+- Pointer + keyboard scrubbing on the track (pointer capture, arrows, Home/End, PageUp/PageDown)
+- Sound button relocated under the close button for more consistent top-right stacking
+- Auto-detect vertical video orientation via `syncVideoObjectFit` so portrait clips with stale declared aspect ratios still render with the correct `object-fit`
+
+### 🩹 Fixes
+
+- Draggable error slides: the error-state overlay no longer swallows pointer events, so broken slides can be swiped away
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/angular to 0.4.0
+
 ## @reelkit/vue@0.3.0 (2026-04-24)
 
 ### 🚀 Features
@@ -47,56 +99,7 @@
 
 - Updated @reelkit/react to 0.6.0
 
-## @reelkit/vue-reel-player@0.2.0 (2026-04-24)
-
-### 🚀 Features
-
-- Built-in playback timeline bar over the active video with track, buffered segments, progress fill, and draggable pill cursor
-- New `timeline` prop (`'auto' | 'always' | 'never'`, default `'auto'`) with `timeline-min-duration-seconds` (default 30) to gate when the bar renders; on multi-media carousels the bar follows the active nested video
-- `#timeline` scoped slot for fully custom scrub UI
-- `TimelineBar`, `TimelineProvider`, `useTimelineState` exports for composition
-- Pointer + keyboard scrubbing on the track (pointer capture, arrows, Home/End, PageUp/PageDown)
-- Sound button relocated under the close button for more consistent top-right stacking
-- Auto-detect vertical video orientation via `syncVideoObjectFit` so portrait clips with stale declared aspect ratios still render with the correct `object-fit`
-
-### 🧱 Updated Dependencies
-
-- Updated @reelkit/vue to 0.3.0
-
 ## @reelkit/angular-lightbox@0.3.1 (2026-04-24)
-
-### 🧱 Updated Dependencies
-
-- Updated @reelkit/angular to 0.4.0
-
-## @reelkit/react-reel-player@0.5.0 (2026-04-24)
-
-### 🚀 Features
-
-- Built-in playback timeline bar over the active video with track, buffered segments, progress fill, and draggable pill cursor
-- New `timeline` prop (`'auto' | 'always' | 'never'`, default `'auto'`) with `timelineMinDurationSeconds` (default 30) to gate when the bar renders; on multi-media carousels the bar follows the active nested video
-- `renderTimeline` render prop for fully custom scrub UI
-- `TimelineBar`, `TimelineProvider`, `useTimelineState` exports for composition
-- Pointer + keyboard scrubbing on the track (pointer capture, arrows, Home/End, PageUp/PageDown)
-- Sound button relocated under the close button for more consistent top-right stacking
-- Auto-detect vertical video orientation via `syncVideoObjectFit` so portrait clips with stale declared aspect ratios still render with the correct `object-fit`
-
-### 🧱 Updated Dependencies
-
-- Updated @reelkit/react to 0.6.0
-
-## @reelkit/angular-reel-player@0.4.0 (2026-04-24)
-
-### 🚀 Features
-
-- Built-in playback timeline bar over the active video with track, buffered segments, progress fill, and draggable pill cursor
-- New `timeline` input (`'auto' | 'always' | 'never'`, default `'auto'`) with `timelineMinDurationSeconds` (default 30) to gate when the bar renders; on multi-media carousels the bar follows the active nested video
-- `rkPlayerTimeline` template slot directive for fully custom scrub UI
-- `RkTimelineBarComponent` and `TimelineStateService` exports for composition
-- Pointer + keyboard scrubbing on the track (pointer capture, arrows, Home/End, PageUp/PageDown)
-- Sound button relocated under the close button for more consistent top-right stacking
-- Auto-detect vertical video orientation via `syncVideoObjectFit` so portrait clips with stale declared aspect ratios still render with the correct `object-fit`
-- Draggable error slides: the error-state overlay no longer swallows pointer events, so broken slides can be swiped away
 
 ### 🧱 Updated Dependencies
 
@@ -171,7 +174,7 @@
 - Themeable via `--rk-lightbox-*` CSS custom properties
 - Dialog a11y: `role="dialog"`, `aria-modal`, focus trap, focus return on close
 
-### ⚠️  Breaking Changes
+### ⚠️ Breaking Changes
 
 - overlay root class `rk-lightbox-container` → `rk-lightbox-overlay`
 
@@ -186,7 +189,7 @@
 - Themeable via `--rk-lightbox-*` CSS custom properties
 - Dialog a11y: `role="dialog"`, `aria-modal`, focus trap, focus return on close
 
-### ⚠️  Breaking Changes
+### ⚠️ Breaking Changes
 
 - overlay root class `rk-lightbox-container` → `rk-lightbox-overlay`
 
@@ -201,7 +204,7 @@
 - Themeable via `--rk-reel-*` CSS custom properties
 - Dialog a11y: `role="dialog"`, `aria-modal`, focus trap, focus return on close
 
-### ⚠️  Breaking Changes
+### ⚠️ Breaking Changes
 
 - class renames `rk-player-*` / `rk-video-slide-*` / `rk-nested-*` / `rk-media-error` → `rk-reel-*` — retarget custom CSS overrides
 
@@ -216,7 +219,7 @@
 - Themeable via `--rk-reel-*` CSS custom properties
 - Dialog a11y: `role="dialog"`, `aria-modal`, focus trap, focus return on close
 
-### ⚠️  Breaking Changes
+### ⚠️ Breaking Changes
 
 - class renames `rk-player-*` / `rk-video-slide-*` / `rk-nested-*` / `rk-media-error` → `rk-reel-*` — retarget custom CSS overrides
 
