@@ -31,6 +31,7 @@ img {
   align-items: center;
   justify-content: center;
   gap: 4px;
+  background-color: #1a1a1a;
   color: rgba(255, 255, 255, 0.3);
 }
 .error span {

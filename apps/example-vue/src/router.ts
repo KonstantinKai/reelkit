@@ -18,6 +18,18 @@ const routes: RouteRecordRaw[] = [
     component: () => import('./pages/ReelPlayerCustomPage.vue'),
   },
   {
+    path: '/image-preview',
+    component: () => import('./pages/ImagePreviewPage.vue'),
+  },
+  {
+    path: '/image-preview-custom',
+    component: () => import('./pages/ImagePreviewCustomPage.vue'),
+  },
+  {
+    path: '/image-preview-video',
+    component: () => import('./pages/ImagePreviewVideoPage.vue'),
+  },
+  {
     path: '/:pathMatch(.*)*',
     component: () => import('./pages/NotFoundPage.vue'),
   },

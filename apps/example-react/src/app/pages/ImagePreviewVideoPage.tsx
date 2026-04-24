@@ -34,11 +34,11 @@ const sampleItems: LightboxItem[] = [
     height: 900,
   },
   {
-    src: cdnUrl('samples/videos/video-02.mp4'),
+    src: cdnUrl('samples/videos/video-12.mp4'),
     type: 'video',
-    poster: cdnUrl('samples/videos/video-poster-02.jpg'),
-    title: 'For Bigger Escapes',
-    description: 'Another sample video showcasing the opt-in video feature.',
+    poster: cdnUrl('samples/videos/video-poster-12.jpg'),
+    title: 'With Sound',
+    description: 'Video with audio — unmute via the sound toggle to hear it.',
   },
   {
     src: cdnUrl('samples/images/image-05.jpg'),

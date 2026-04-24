@@ -396,7 +396,6 @@ export default function Home() {
                   {
                     name: '@reelkit/vue-lightbox',
                     label: 'Lightbox',
-                    comingSoon: true,
                   },
                   {
                     name: '@reelkit/vue-stories-player',

@@ -598,6 +598,9 @@ export default function VueReelPlayer() {
 
       {/* Features */}
       <section className="mb-12">
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Features
+        </Heading>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <FeatureCardGrid
             items={[

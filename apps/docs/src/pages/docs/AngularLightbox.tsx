@@ -575,6 +575,9 @@ export default function AngularLightbox() {
       </div>
 
       <section className="mb-12">
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Features
+        </Heading>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <FeatureCardGrid
             items={[
@@ -931,45 +934,6 @@ export class AppComponent {
     { src: '/clip.mp4', type: 'video', poster: '/clip-thumb.jpg', title: 'Video' },
   ];
 }`}
-          language="typescript"
-        />
-      </section>
-
-      <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">
-          SwipeToClose Directive
-        </Heading>
-        <p className="text-slate-600 dark:text-slate-400 mb-4">
-          The{' '}
-          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
-            RkSwipeToCloseDirective
-          </code>{' '}
-          adds a vertical swipe-to-dismiss gesture to any element. Supports
-          configurable direction (up or down). Moved to{' '}
-          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
-            @reelkit/angular
-          </code>{' '}
-          (re-exported from lightbox for backward compatibility).
-        </p>
-        <CodeBlock
-          code={`import { RkSwipeToCloseDirective } from '@reelkit/angular';
-
-@Component({
-  imports: [RkSwipeToCloseDirective],
-  template: \`
-    <!-- Swipe up to close (default) -->
-    <div [rkSwipeToClose]="true" (swiped)="close()">
-      <!-- overlay content -->
-    </div>
-
-    <!-- Swipe down to close -->
-    <div [rkSwipeToClose]="true"
-         rkSwipeToCloseDirection="down"
-         (swiped)="close()">
-      <!-- overlay content -->
-    </div>
-  \`,
-})`}
           language="typescript"
         />
       </section>

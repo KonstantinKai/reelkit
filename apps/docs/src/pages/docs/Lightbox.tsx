@@ -13,6 +13,9 @@ import {
   X,
   Hash,
   Layers,
+  Volume2,
+  Loader,
+  AlertTriangle,
 } from 'lucide-react';
 import { Heading } from '../../components/ui/Heading';
 
@@ -604,9 +607,14 @@ export default function Lightbox() {
         <Heading level={2} className="text-2xl font-bold mb-4">
           Features
         </Heading>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <FeatureCardGrid
             items={[
+              {
+                icon: Image,
+                label: 'Images & Video',
+                desc: 'Built-in video slide support',
+              },
               {
                 icon: MousePointer,
                 label: 'Touch Gestures',
@@ -620,7 +628,7 @@ export default function Lightbox() {
               {
                 icon: Keyboard,
                 label: 'Keyboard Nav',
-                desc: 'Arrow keys, Escape',
+                desc: 'Arrow keys + Escape',
               },
               {
                 icon: Maximize2,
@@ -628,7 +636,7 @@ export default function Lightbox() {
                 desc: 'Cross-browser API',
               },
               {
-                icon: Image,
+                icon: Hash,
                 label: 'Transitions',
                 desc: 'Slide, fade, flip, zoom-in',
               },
@@ -637,16 +645,30 @@ export default function Lightbox() {
                 label: 'Preloading',
                 desc: 'Adjacent images prefetched',
               },
-              { icon: Hash, label: 'Counter', desc: '"1 / 10" indicator' },
               {
-                icon: Layers,
-                label: 'Info Overlay',
-                desc: 'Title + description',
+                icon: Volume2,
+                label: 'Sound Toggle',
+                desc: 'Per-slide mute/unmute',
               },
               {
-                icon: Zap,
-                label: 'Customizable',
-                desc: 'Render props for everything',
+                icon: Loader,
+                label: 'Loading States',
+                desc: 'Spinner + custom render',
+              },
+              {
+                icon: AlertTriangle,
+                label: 'Error Handling',
+                desc: 'Error icon + custom render',
+              },
+              {
+                icon: Layers,
+                label: 'Render Props',
+                desc: '6 customizable render zones',
+              },
+              {
+                icon: Layers,
+                label: 'Hooks',
+                desc: 'useVideoSlideRenderer + useFullscreen',
               },
             ]}
           />

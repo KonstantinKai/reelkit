@@ -12,7 +12,10 @@ const PACKAGES_REQUIRING_ANGULAR = new Set([
   '@reelkit/angular-lightbox',
 ]);
 
-const PACKAGES_REQUIRING_VUE = new Set(['@reelkit/vue-reel-player']);
+const PACKAGES_REQUIRING_VUE = new Set([
+  '@reelkit/vue-reel-player',
+  '@reelkit/vue-lightbox',
+]);
 
 export type ReelkitDeps = readonly string[];
 export type ExtraDeps = Readonly<Record<string, string>>;
