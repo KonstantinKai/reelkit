@@ -95,8 +95,17 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       {/* Hero Section — two columns: text + live demo */}
-      <section className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20">
+      <section className="relative overflow-hidden border-b border-slate-200 dark:border-slate-800 bg-gradient-to-br from-primary-50 via-white to-accent-50 dark:from-primary-950/30 dark:via-slate-900 dark:to-accent-950/30">
+        {/* Decorative blur blobs — soft corner accents, static */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -top-24 -left-24 h-96 w-96 rounded-full bg-primary-300/25 dark:bg-primary-500/15 blur-3xl"
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -bottom-24 -right-24 h-96 w-96 rounded-full bg-accent-300/25 dark:bg-accent-500/15 blur-3xl"
+        />
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20">
           <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
             {/* Left: Text */}
             <div className="flex-1 text-center lg:text-left">
