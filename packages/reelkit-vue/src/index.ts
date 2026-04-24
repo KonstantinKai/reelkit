@@ -153,3 +153,5 @@ export {
   useSoundState,
   toVueRef,
 } from './lib/composables';
+
+export { hasRenderedNodes } from './lib/utils/slots';
