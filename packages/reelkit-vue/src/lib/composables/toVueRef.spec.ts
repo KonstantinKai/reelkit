@@ -60,4 +60,45 @@ describe('toVueRef', () => {
     await new Promise((r) => setTimeout(r, 0));
     expect(renderCount).toBe(beforeUnmountCount);
   });
+
+  it('picks up a resync that fires while the first observer subscribes', () => {
+    // A lazy signal (e.g. core `fullscreenSignal`) may refresh its `.value`
+    // inside `observe()` when the observer count transitions from 0 → 1.
+    // `toVueRef` must surface that post-subscribe value, not the
+    // pre-subscribe snapshot.
+    const source = createSignal(true);
+    let observers = 0;
+    const lazy = {
+      get value() {
+        return source.value;
+      },
+      set value(v: boolean) {
+        source.value = v;
+      },
+      observe(listener: () => void) {
+        observers++;
+        if (observers === 1) {
+          // Simulates DOM state that diverged during the lazy window.
+          source.value = false;
+        }
+        const dispose = source.observe(listener);
+        return () => {
+          dispose();
+          observers--;
+        };
+      },
+    };
+
+    let captured: boolean | undefined;
+    const Host = defineComponent({
+      setup() {
+        const mirrored = toVueRef(lazy);
+        captured = mirrored.value;
+        return () => h('span', String(mirrored.value));
+      },
+    });
+
+    mount(Host);
+    expect(captured).toBe(false);
+  });
 });

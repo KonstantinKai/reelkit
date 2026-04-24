@@ -30,9 +30,12 @@ import type { Subscribable } from '@reelkit/core';
  */
 export function toVueRef<T>(source: Subscribable<T>): Readonly<Ref<T>> {
   const ref = shallowRef<T>(source.value);
-  const dispose = source.observe(() => {
-    ref.value = source.value;
-  });
+  const dispose = source.observe(() => (ref.value = source.value));
+  // Lazy signals may refresh their `.value` inside `observe()` when the
+  // first observer attaches (e.g. core `fullscreenSignal` resyncs from
+  // the live DOM). Re-read so the ref picks up that post-subscribe
+  // value instead of the pre-subscribe snapshot captured above.
+  ref.value = source.value;
   onScopeDispose(dispose);
   return readonly(ref) as Readonly<Ref<T>>;
 }
