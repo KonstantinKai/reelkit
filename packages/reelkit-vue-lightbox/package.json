@@ -1,0 +1,61 @@
+{
+  "name": "@reelkit/vue-lightbox",
+  "version": "0.0.1",
+  "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./styles.css": "./dist/index.css"
+  },
+  "files": [
+    "dist",
+    "!dist/package.json",
+    "!dist/README.md",
+    "!**/*.tsbuildinfo"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KonstantinKai/reelkit.git",
+    "directory": "packages/reelkit-vue-lightbox"
+  },
+  "bugs": "https://github.com/KonstantinKai/reelkit/issues",
+  "homepage": "https://reelkit.dev/docs/vue-lightbox",
+  "funding": {
+    "type": "buymeacoffee",
+    "url": "https://buymeacoffee.com/konstantinkai"
+  },
+  "description": "Full-screen image and video gallery lightbox for Vue 3 with touch gestures, transitions, and slot customization",
+  "license": "MIT",
+  "keywords": [
+    "vue",
+    "vue3",
+    "lightbox",
+    "image-gallery",
+    "fullscreen",
+    "swipe",
+    "touch",
+    "gallery",
+    "video-player",
+    "photo-viewer",
+    "vue-component",
+    "typescript"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "@reelkit/vue": "^0.3.0",
+    "vue": ">=3.0.0",
+    "lucide-vue-next": ">=0.400.0"
+  }
+}

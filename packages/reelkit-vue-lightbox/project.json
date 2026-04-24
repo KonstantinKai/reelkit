@@ -1,0 +1,14 @@
+{
+  "name": "@reelkit/vue-lightbox",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/reelkit-vue-lightbox/src",
+  "projectType": "library",
+  "tags": ["scope:vue", "type:lightbox"],
+  "targets": {},
+  "release": {
+    "version": {
+      "currentVersionResolver": "git-tag",
+      "fallbackCurrentVersionResolver": "disk"
+    }
+  }
+}

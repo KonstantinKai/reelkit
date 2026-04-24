@@ -1,0 +1,285 @@
+/*
+ * Theme tokens for the lightbox overlay.
+ *
+ * Defaults live on `:root` so they inherit through the DOM. Override at
+ * `:root` (or any ancestor of `.rk-lightbox-overlay`) to retheme —
+ * direct-match declarations on `.rk-lightbox-overlay` would otherwise
+ * shadow inherited values.
+ */
+:root {
+  --rk-lightbox-overlay-bg: #000;
+  --rk-lightbox-overlay-z: 9999;
+
+  --rk-lightbox-ui-z: 10;
+  --rk-lightbox-top-shade-z: 9;
+  --rk-lightbox-top-shade-height: 80px;
+  --rk-lightbox-top-shade-bg: linear-gradient(rgba(0, 0, 0, 0.6), transparent);
+
+  --rk-lightbox-edge-padding: 16px;
+  --rk-lightbox-controls-gap: 12px;
+  --rk-lightbox-transition: 0.2s;
+  --rk-lightbox-blur: 8px;
+
+  --rk-lightbox-btn-bg: rgba(0, 0, 0, 0.5);
+  --rk-lightbox-btn-bg-hover: rgba(255, 255, 255, 0.2);
+  --rk-lightbox-btn-fg: #fff;
+  --rk-lightbox-btn-size: 36px;
+  --rk-lightbox-close-size: 40px;
+  --rk-lightbox-nav-size: 48px;
+  --rk-lightbox-nav-opacity: 0.7;
+
+  --rk-lightbox-counter-fg: #fff;
+  --rk-lightbox-counter-bg: rgba(0, 0, 0, 0.5);
+  --rk-lightbox-counter-size: 14px;
+  --rk-lightbox-counter-weight: 500;
+  --rk-lightbox-counter-padding: 6px 12px;
+  --rk-lightbox-counter-radius: 20px;
+
+  --rk-lightbox-spinner-size: 28px;
+  --rk-lightbox-spinner-track: rgba(255, 255, 255, 0.2);
+  --rk-lightbox-spinner-fg: #fff;
+  --rk-lightbox-spinner-duration: 0.8s;
+  --rk-lightbox-spinner-offset: 72px;
+
+  --rk-lightbox-error-fg: rgba(255, 255, 255, 0.4);
+  --rk-lightbox-error-gap: 12px;
+  --rk-lightbox-error-text-size: 13px;
+
+  --rk-lightbox-info-bg: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+  --rk-lightbox-info-padding: 24px;
+  --rk-lightbox-info-fg: #fff;
+  --rk-lightbox-title-size: 18px;
+  --rk-lightbox-title-weight: 600;
+  --rk-lightbox-title-gap: 8px;
+  --rk-lightbox-description-size: 14px;
+  --rk-lightbox-description-opacity: 0.8;
+  --rk-lightbox-description-line-height: 1.5;
+}
+
+.rk-lightbox-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--rk-lightbox-overlay-bg);
+  z-index: var(--rk-lightbox-overlay-z);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overscroll-behavior: none;
+  outline: none;
+}
+
+.rk-lightbox-slide {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.rk-lightbox-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Top shade behind controls */
+.rk-lightbox-top-shade {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--rk-lightbox-top-shade-height);
+  background: var(--rk-lightbox-top-shade-bg);
+  pointer-events: none;
+  z-index: var(--rk-lightbox-top-shade-z);
+}
+
+.rk-lightbox-controls-left {
+  position: absolute;
+  top: var(--rk-lightbox-edge-padding);
+  left: var(--rk-lightbox-edge-padding);
+  z-index: var(--rk-lightbox-ui-z);
+  display: flex;
+  align-items: center;
+  gap: var(--rk-lightbox-controls-gap);
+}
+
+.rk-lightbox-counter {
+  color: var(--rk-lightbox-counter-fg);
+  font-size: var(--rk-lightbox-counter-size);
+  font-weight: var(--rk-lightbox-counter-weight);
+  background: var(--rk-lightbox-counter-bg);
+  padding: var(--rk-lightbox-counter-padding);
+  border-radius: var(--rk-lightbox-counter-radius);
+  backdrop-filter: blur(var(--rk-lightbox-blur));
+}
+
+.rk-lightbox-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--rk-lightbox-btn-size);
+  height: var(--rk-lightbox-btn-size);
+  border: none;
+  background: var(--rk-lightbox-btn-bg);
+  color: var(--rk-lightbox-btn-fg);
+  border-radius: 50%;
+  cursor: pointer;
+  transition:
+    background-color var(--rk-lightbox-transition),
+    transform var(--rk-lightbox-transition);
+  backdrop-filter: blur(var(--rk-lightbox-blur));
+}
+
+.rk-lightbox-btn:hover {
+  background: var(--rk-lightbox-btn-bg-hover);
+  transform: scale(1.05);
+}
+
+.rk-lightbox-btn:active {
+  transform: scale(0.95);
+}
+
+/* Loading spinner (to the left of close button) */
+.rk-lightbox-spinner {
+  position: absolute;
+  top: 22px;
+  right: var(--rk-lightbox-spinner-offset);
+  z-index: var(--rk-lightbox-ui-z);
+  width: var(--rk-lightbox-spinner-size);
+  height: var(--rk-lightbox-spinner-size);
+  border: 3px solid var(--rk-lightbox-spinner-track);
+  border-top-color: var(--rk-lightbox-spinner-fg);
+  border-radius: 50%;
+  animation: rk-lightbox-spin var(--rk-lightbox-spinner-duration) linear
+    infinite;
+}
+
+@keyframes rk-lightbox-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Error state */
+.rk-lightbox-error {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: var(--rk-lightbox-ui-z);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--rk-lightbox-error-gap);
+  color: var(--rk-lightbox-error-fg);
+}
+
+.rk-lightbox-error-text {
+  font-size: var(--rk-lightbox-error-text-size);
+  letter-spacing: 0.02em;
+}
+
+/* Close button */
+.rk-lightbox-close {
+  position: absolute;
+  top: var(--rk-lightbox-edge-padding);
+  right: var(--rk-lightbox-edge-padding);
+  z-index: var(--rk-lightbox-ui-z);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--rk-lightbox-close-size);
+  height: var(--rk-lightbox-close-size);
+  border: none;
+  background: var(--rk-lightbox-btn-bg);
+  color: var(--rk-lightbox-btn-fg);
+  border-radius: 50%;
+  cursor: pointer;
+  transition:
+    background-color var(--rk-lightbox-transition),
+    transform var(--rk-lightbox-transition);
+  backdrop-filter: blur(var(--rk-lightbox-blur));
+}
+
+.rk-lightbox-close:hover {
+  background: var(--rk-lightbox-btn-bg-hover);
+  transform: scale(1.05);
+}
+
+.rk-lightbox-close:active {
+  transform: scale(0.95);
+}
+
+/* Navigation buttons */
+.rk-lightbox-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: var(--rk-lightbox-ui-z);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--rk-lightbox-nav-size);
+  height: var(--rk-lightbox-nav-size);
+  border: none;
+  background: var(--rk-lightbox-btn-bg);
+  color: var(--rk-lightbox-btn-fg);
+  border-radius: 50%;
+  cursor: pointer;
+  transition:
+    background-color var(--rk-lightbox-transition),
+    transform var(--rk-lightbox-transition),
+    opacity var(--rk-lightbox-transition);
+  backdrop-filter: blur(var(--rk-lightbox-blur));
+  opacity: var(--rk-lightbox-nav-opacity);
+}
+
+.rk-lightbox-nav:hover {
+  background: var(--rk-lightbox-btn-bg-hover);
+  opacity: 1;
+  transform: translateY(-50%) scale(1.05);
+}
+
+.rk-lightbox-nav:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.rk-lightbox-nav-prev {
+  left: var(--rk-lightbox-edge-padding);
+}
+
+.rk-lightbox-nav-next {
+  right: var(--rk-lightbox-edge-padding);
+}
+
+/* Info overlay */
+.rk-lightbox-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: var(--rk-lightbox-info-padding);
+  background: var(--rk-lightbox-info-bg);
+  color: var(--rk-lightbox-info-fg);
+  pointer-events: none;
+  z-index: var(--rk-lightbox-ui-z);
+}
+
+.rk-lightbox-info-title {
+  margin: 0 0 var(--rk-lightbox-title-gap) 0;
+  font-size: var(--rk-lightbox-title-size);
+  font-weight: var(--rk-lightbox-title-weight);
+}
+
+.rk-lightbox-info-description {
+  margin: 0;
+  font-size: var(--rk-lightbox-description-size);
+  opacity: var(--rk-lightbox-description-opacity);
+  line-height: var(--rk-lightbox-description-line-height);
+}
