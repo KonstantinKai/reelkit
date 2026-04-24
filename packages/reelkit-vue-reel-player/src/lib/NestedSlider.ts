@@ -13,9 +13,9 @@ import {
   Reel,
   ReelIndicator,
   createLruCache,
+  hasRenderedNodes,
   type ReelExpose,
 } from '@reelkit/vue';
-import { hasRenderedNodes } from './utils';
 import type {
   BaseContentItem,
   MediaItem,

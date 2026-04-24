@@ -12,7 +12,7 @@ import {
   type PropType,
   type VNode,
 } from 'vue';
-import { hasRenderedNodes, slotAsRender } from './utils';
+import { slotAsRender } from './utils';
 import { ChevronUp, ChevronDown } from 'lucide-vue-next';
 import {
   Reel,
@@ -24,6 +24,7 @@ import {
   createDisposableList,
   createFocusTrap,
   createLruCache,
+  hasRenderedNodes,
   noop,
   observeDomEvent,
   toVueRef,
