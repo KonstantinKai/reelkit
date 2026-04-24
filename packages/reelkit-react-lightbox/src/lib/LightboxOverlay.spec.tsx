@@ -423,7 +423,9 @@ describe('LightboxOverlay', () => {
       );
 
       expect(
-        screen.getByTestId('mock-swipe-to-close').getAttribute('data-direction'),
+        screen
+          .getByTestId('mock-swipe-to-close')
+          .getAttribute('data-direction'),
       ).toBe('up');
     });
 
@@ -438,7 +440,9 @@ describe('LightboxOverlay', () => {
       );
 
       expect(
-        screen.getByTestId('mock-swipe-to-close').getAttribute('data-direction'),
+        screen
+          .getByTestId('mock-swipe-to-close')
+          .getAttribute('data-direction'),
       ).toBe('down');
     });
 

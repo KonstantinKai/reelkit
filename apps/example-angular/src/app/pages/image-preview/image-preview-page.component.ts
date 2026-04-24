@@ -218,7 +218,8 @@ const sampleImages: LightboxItem[] = [
 export class ImagePreviewPageComponent {
   protected readonly images: LightboxItem[] = sampleImages;
   protected readonly transitions: TransitionType[] = _kTransitions;
-  protected readonly swipeDirections: SwipeToCloseDirection[] = _kSwipeDirections;
+  protected readonly swipeDirections: SwipeToCloseDirection[] =
+    _kSwipeDirections;
   protected readonly previewIndex = signal<number | null>(null);
   protected readonly transition = signal<TransitionType>('slide');
   protected readonly swipeDirection = signal<SwipeToCloseDirection>('up');
