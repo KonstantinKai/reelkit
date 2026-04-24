@@ -72,6 +72,11 @@ export const fullscreenSignal: Signal<boolean> = (() => {
 
   const startListening = () => {
     if (domDispose) return;
+    // Resync before attaching: while the signal had no observers, the
+    // DOM may have changed (e.g. browser auto-exited fullscreen after
+    // the element that requested it was removed). The next subscriber
+    // should see the live state, not the value frozen at dispose time.
+    signal.value = checkFullscreen();
     domDispose = subscribeToFullscreenChange(() => {
       signal.value = checkFullscreen();
     });

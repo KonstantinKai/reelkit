@@ -154,4 +154,36 @@ describe('exitFullscreen', () => {
     expect(document.exitFullscreen).not.toHaveBeenCalled();
     document.exitFullscreen = original;
   });
+
+  it('resyncs value from DOM when the first observer subscribes', () => {
+    // Simulate the lazy-unsubscribe window: the DOM state changed while no
+    // observer was attached (fullscreen exited by browser during a dead
+    // window). The next subscription must see the live value, not the
+    // frozen pre-disposal value.
+    //
+    // 1. Subscribe + enter fullscreen so the signal caches true.
+    const firstListener = vi.fn();
+    const firstDispose = fullscreenSignal.observe(firstListener);
+    Object.defineProperty(document, 'fullscreenElement', {
+      value: document.createElement('div'),
+      configurable: true,
+    });
+    document.dispatchEvent(new Event('fullscreenchange'));
+    expect(fullscreenSignal.value).toBe(true);
+
+    // 2. Unsubscribe — the signal stops listening, value stays `true`.
+    firstDispose();
+
+    // 3. External state changes while no observer is attached.
+    Object.defineProperty(document, 'fullscreenElement', {
+      value: null,
+      configurable: true,
+    });
+
+    // 4. A later mount resubscribes. The signal must pick up the live
+    //    DOM state instead of surfacing the stale `true`.
+    const dispose = fullscreenSignal.observe(vi.fn());
+    expect(fullscreenSignal.value).toBe(false);
+    dispose();
+  });
 });
