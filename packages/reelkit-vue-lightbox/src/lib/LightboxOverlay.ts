@@ -28,6 +28,7 @@ import {
   useBodyLock,
   useFullscreen,
   type ReelExpose,
+  type SwipeToCloseDirection,
   type TransitionTransformFn,
 } from '@reelkit/vue';
 import type {
@@ -129,6 +130,15 @@ const lightboxSharedProps = {
    * @default 0.12
    */
   swipeDistanceFactor: { type: Number, default: 0.12 },
+  /**
+   * Direction of the swipe-to-close gesture on mobile.
+   *
+   * @default 'up'
+   */
+  swipeToCloseDirection: {
+    type: String as PropType<SwipeToCloseDirection>,
+    default: 'up' as SwipeToCloseDirection,
+  },
   /**
    * Enable infinite loop navigation.
    *
@@ -533,7 +543,7 @@ const LightboxContent = defineComponent({
           h(
             SwipeToClose,
             {
-              direction: 'up',
+              direction: props.swipeToCloseDirection,
               enabled: isMobile.value,
               onClose: handleClose,
             },
@@ -656,6 +666,7 @@ export const LightboxOverlay = defineComponent({
             transitionFn: props.transitionFn,
             transitionDuration: props.transitionDuration,
             swipeDistanceFactor: props.swipeDistanceFactor,
+            swipeToCloseDirection: props.swipeToCloseDirection,
             loop: props.loop,
             enableNavKeys: props.enableNavKeys,
             enableWheel: props.enableWheel,

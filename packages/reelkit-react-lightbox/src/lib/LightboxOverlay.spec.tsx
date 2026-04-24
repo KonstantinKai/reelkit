@@ -83,11 +83,17 @@ vi.mock('@reelkit/react', async (importOriginal) => {
     SwipeToClose: ({
       children,
       enabled,
+      direction,
     }: {
       children: React.ReactNode;
       enabled?: boolean;
+      direction?: string;
     }) => (
-      <div data-testid="mock-swipe-to-close" data-enabled={enabled}>
+      <div
+        data-testid="mock-swipe-to-close"
+        data-enabled={enabled}
+        data-direction={direction}
+      >
         {children}
       </div>
     ),
@@ -409,6 +415,31 @@ describe('LightboxOverlay', () => {
 
       const swipeToClose = screen.getByTestId('mock-swipe-to-close');
       expect(swipeToClose.getAttribute('data-enabled')).toBe('true');
+    });
+
+    it("defaults SwipeToClose direction to 'up'", () => {
+      render(
+        <LightboxOverlay isOpen={true} images={mockImages} onClose={vi.fn()} />,
+      );
+
+      expect(
+        screen.getByTestId('mock-swipe-to-close').getAttribute('data-direction'),
+      ).toBe('up');
+    });
+
+    it('forwards swipeToCloseDirection="down" to SwipeToClose', () => {
+      render(
+        <LightboxOverlay
+          isOpen={true}
+          images={mockImages}
+          onClose={vi.fn()}
+          swipeToCloseDirection="down"
+        />,
+      );
+
+      expect(
+        screen.getByTestId('mock-swipe-to-close').getAttribute('data-direction'),
+      ).toBe('down');
     });
 
     it('hides navigation buttons on mobile', () => {

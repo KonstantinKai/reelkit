@@ -1,6 +1,7 @@
 import { mount } from '@vue/test-utils';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { defineComponent, h, nextTick, ref } from 'vue';
+import { SwipeToClose } from '@reelkit/vue';
 import { LightboxOverlay } from './LightboxOverlay';
 import type { LightboxItem } from './types';
 
@@ -206,6 +207,45 @@ describe('LightboxOverlay', () => {
     const description = document.querySelector('.rk-lightbox-info-description');
     expect(title?.textContent).toBe('Alpha');
     expect(description?.textContent).toBe('first');
+  });
+
+  it("defaults SwipeToClose direction to 'up'", async () => {
+    const Host = defineComponent({
+      setup() {
+        return () =>
+          h(LightboxOverlay, {
+            isOpen: true,
+            items: sampleItems,
+            onClose: () => {
+              /* noop */
+            },
+          });
+      },
+    });
+
+    const wrapper = mount(Host, { attachTo: document.body });
+    await nextTick();
+    expect(wrapper.findComponent(SwipeToClose).props('direction')).toBe('up');
+  });
+
+  it('forwards swipeToCloseDirection="down" to SwipeToClose', async () => {
+    const Host = defineComponent({
+      setup() {
+        return () =>
+          h(LightboxOverlay, {
+            isOpen: true,
+            items: sampleItems,
+            swipeToCloseDirection: 'down',
+            onClose: () => {
+              /* noop */
+            },
+          });
+      },
+    });
+
+    const wrapper = mount(Host, { attachTo: document.body });
+    await nextTick();
+    expect(wrapper.findComponent(SwipeToClose).props('direction')).toBe('down');
   });
 
   it('omits the info overlay when showInfo is false', async () => {

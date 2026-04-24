@@ -259,6 +259,12 @@ const reelProps = [
     default: '0.12',
     description: 'Swipe threshold (0-1)',
   },
+  {
+    prop: 'swipeToCloseDirection',
+    type: "'up' | 'down'",
+    default: "'up'",
+    description: 'Direction of the swipe-to-close gesture on mobile',
+  },
 ];
 
 const keyboardShortcuts = [

@@ -4,9 +4,11 @@ import {
   type LightboxItem,
   type TransitionType,
 } from '@reelkit/angular-lightbox';
+import type { SwipeToCloseDirection } from '@reelkit/angular';
 import { cdnUrl } from '@reelkit/example-data';
 
 const _kTransitions: TransitionType[] = ['slide', 'fade', 'flip', 'zoom-in'];
+const _kSwipeDirections: SwipeToCloseDirection[] = ['up', 'down'];
 
 const sampleImages: LightboxItem[] = [
   {
@@ -129,6 +131,19 @@ const sampleImages: LightboxItem[] = [
             </button>
           }
         </div>
+        <div class="transition-selector">
+          <span>Swipe-to-close:</span>
+          @for (d of swipeDirections; track d) {
+            <button
+              [class]="
+                'transition-btn' + (swipeDirection() === d ? ' active' : '')
+              "
+              (click)="swipeDirection.set(d)"
+            >
+              {{ d }}
+            </button>
+          }
+        </div>
       </div>
 
       <div class="gallery-grid">
@@ -194,6 +209,7 @@ const sampleImages: LightboxItem[] = [
         [items]="images"
         [initialIndex]="previewIndex() ?? 0"
         [transition]="transition()"
+        [swipeToCloseDirection]="swipeDirection()"
         (closed)="previewIndex.set(null)"
       />
     </div>
@@ -202,8 +218,10 @@ const sampleImages: LightboxItem[] = [
 export class ImagePreviewPageComponent {
   protected readonly images: LightboxItem[] = sampleImages;
   protected readonly transitions: TransitionType[] = _kTransitions;
+  protected readonly swipeDirections: SwipeToCloseDirection[] = _kSwipeDirections;
   protected readonly previewIndex = signal<number | null>(null);
   protected readonly transition = signal<TransitionType>('slide');
+  protected readonly swipeDirection = signal<SwipeToCloseDirection>('up');
 
   protected readonly thumbErrors = signal<Set<number>>(new Set());
 

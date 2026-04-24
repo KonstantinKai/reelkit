@@ -5,11 +5,13 @@ import {
   type LightboxItem,
   type TransitionType,
 } from '@reelkit/react-lightbox';
+import type { SwipeToCloseDirection } from '@reelkit/react';
 import { cdnUrl } from '@reelkit/example-data';
 import '@reelkit/react-lightbox/styles.css';
 import './ImagePreviewPage.css';
 
 const _kTransitions: TransitionType[] = ['slide', 'fade', 'flip', 'zoom-in'];
+const _kSwipeDirections: SwipeToCloseDirection[] = ['up', 'down'];
 
 const sampleImages: LightboxItem[] = [
   {
@@ -139,6 +141,8 @@ const GalleryThumb: React.FC<{ src: string; alt: string }> = ({ src, alt }) => {
 function ImagePreviewPage() {
   const [previewIndex, setPreviewIndex] = useState<number | null>(null);
   const [transition, setTransition] = useState<TransitionType>('slide');
+  const [swipeDirection, setSwipeDirection] =
+    useState<SwipeToCloseDirection>('up');
 
   const handleImageClick = useCallback((index: number) => {
     setPreviewIndex(index);
@@ -165,6 +169,18 @@ function ImagePreviewPage() {
               onClick={() => setTransition(t)}
             >
               {t}
+            </button>
+          ))}
+        </div>
+        <div className="transition-selector">
+          <span>Swipe-to-close:</span>
+          {_kSwipeDirections.map((d) => (
+            <button
+              key={d}
+              className={`transition-btn ${swipeDirection === d ? 'active' : ''}`}
+              onClick={() => setSwipeDirection(d)}
+            >
+              {d}
             </button>
           ))}
         </div>
@@ -204,6 +220,7 @@ function ImagePreviewPage() {
         initialIndex={previewIndex ?? 0}
         onClose={handleClose}
         transition={transition}
+        swipeToCloseDirection={swipeDirection}
       />
     </div>
   );

@@ -303,6 +303,8 @@ export const searchItems: SearchItem[] = [
       'css-variables',
       '--rk-lightbox',
       'rk-lightbox',
+      'swipeToCloseDirection',
+      'swipe',
     ],
   },
   {
@@ -371,6 +373,8 @@ export const searchItems: SearchItem[] = [
       'css-variables',
       '--rk-lightbox',
       'rk-lightbox',
+      'swipeToCloseDirection',
+      'swipe',
     ],
   },
   {
@@ -475,6 +479,8 @@ export const searchItems: SearchItem[] = [
       '--rk-lightbox',
       'rk-lightbox',
       'lucide-vue-next',
+      'swipeToCloseDirection',
+      'swipe',
     ],
   },
   {

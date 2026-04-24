@@ -78,6 +78,12 @@ const lightboxInputs = [
       'Minimum swipe distance fraction (0–1) to trigger slide change',
   },
   {
+    prop: 'swipeToCloseDirection',
+    type: "'up' | 'down'",
+    default: "'up'",
+    description: 'Direction of the swipe-to-close gesture on mobile',
+  },
+  {
     prop: 'loop',
     type: 'boolean',
     default: 'false',

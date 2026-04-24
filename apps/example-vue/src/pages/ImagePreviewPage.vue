@@ -5,11 +5,13 @@ import {
   type LightboxItem,
   type TransitionType,
 } from '@reelkit/vue-lightbox';
+import type { SwipeToCloseDirection } from '@reelkit/vue';
 import { cdnUrl } from '@reelkit/example-data';
 import Thumbnail from '../components/Thumbnail.vue';
 import '@reelkit/vue-lightbox/styles.css';
 
 const _kTransitions: TransitionType[] = ['slide', 'fade', 'flip', 'zoom-in'];
+const _kSwipeDirections: SwipeToCloseDirection[] = ['up', 'down'];
 
 const sampleImages: LightboxItem[] = [
   {
@@ -110,6 +112,7 @@ const sampleImages: LightboxItem[] = [
 const open = ref(false);
 const initialIndex = ref(0);
 const transition = ref<TransitionType>('slide');
+const swipeDirection = ref<SwipeToCloseDirection>('up');
 
 const openAt = (index: number) => {
   initialIndex.value = index;
@@ -144,6 +147,18 @@ const onKeyActivate = (e: KeyboardEvent, index: number) => {
           {{ t }}
         </button>
       </div>
+      <div class="transition-selector">
+        <span>Swipe-to-close:</span>
+        <button
+          v-for="d in _kSwipeDirections"
+          :key="d"
+          class="transition-btn"
+          :class="{ active: swipeDirection === d }"
+          @click="swipeDirection = d"
+        >
+          {{ d }}
+        </button>
+      </div>
     </header>
 
     <div class="gallery-grid">
@@ -170,6 +185,7 @@ const onKeyActivate = (e: KeyboardEvent, index: number) => {
       :items="sampleImages"
       :initial-index="initialIndex"
       :transition="transition"
+      :swipe-to-close-direction="swipeDirection"
     />
   </div>
 </template>

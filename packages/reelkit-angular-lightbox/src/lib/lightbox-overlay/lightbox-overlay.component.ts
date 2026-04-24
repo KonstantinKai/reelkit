@@ -58,7 +58,10 @@ import {
   RkLightboxLoadingDirective,
   RkLightboxErrorDirective,
 } from '../template-slots/lightbox-template-slots';
-import { RkSwipeToCloseDirective } from '@reelkit/angular';
+import {
+  RkSwipeToCloseDirective,
+  type SwipeToCloseDirection,
+} from '@reelkit/angular';
 import { RkCloseButtonComponent } from '../lightbox-controls/close-button.component';
 import { RkCounterComponent } from '../lightbox-controls/counter.component';
 import { RkFullscreenButtonComponent } from '../lightbox-controls/fullscreen-button.component';
@@ -246,7 +249,11 @@ const focusFirstFocusable = (container: HTMLElement): void => {
         }
 
         @if (items().length > 0) {
-          <div [rkSwipeToClose]="isMobile()" (dismissed)="handleClose()">
+          <div
+            [rkSwipeToClose]="isMobile()"
+            [rkSwipeToCloseDirection]="swipeToCloseDirection()"
+            (dismissed)="handleClose()"
+          >
             <rk-reel
               [count]="items().length"
               [size]="size()"
@@ -444,6 +451,9 @@ export class RkLightboxOverlayComponent {
   readonly wheelDebounceMs = input<ReelProxyProps['wheelDebounceMs']>(
     _kDefaultWheelDebounceMs,
   );
+
+  /** Direction of the swipe-to-close gesture on mobile. @default 'up' */
+  readonly swipeToCloseDirection = input<SwipeToCloseDirection>('up');
 
   /**
    * Accessible label for the dialog, announced by screen readers when the

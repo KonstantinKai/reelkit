@@ -25,6 +25,7 @@ import {
   SwipeToClose,
   type ReelApi,
   type ReelProps,
+  type SwipeToCloseDirection,
   type TransitionTransformFn,
 } from '@reelkit/react';
 import { lightboxFadeTransition } from './lightboxFadeTransition';
@@ -172,6 +173,13 @@ export interface LightboxOverlayProps extends ReelProxyProps {
    */
   transitionFn?: TransitionTransformFn;
 
+  /**
+   * Direction of the swipe-to-close gesture on mobile.
+   *
+   * @default 'up'
+   */
+  swipeToCloseDirection?: SwipeToCloseDirection;
+
   /** Callback to close the lightbox. Triggered by close button or Escape key. */
   onClose: () => void;
 
@@ -243,6 +251,7 @@ const LightboxContent: FC<LightboxOverlayProps> = (props) => {
     wheelDebounceMs,
     transitionDuration,
     swipeDistanceFactor,
+    swipeToCloseDirection = 'up',
   } = props;
 
   const propsRef = useRef(props);
@@ -513,7 +522,7 @@ const LightboxContent: FC<LightboxOverlayProps> = (props) => {
       <Observe signals={[sizeSignal, isMobileSignal]}>
         {() => (
           <SwipeToClose
-            direction="up"
+            direction={swipeToCloseDirection}
             enabled={isMobileSignal.value}
             onClose={onClose}
           >

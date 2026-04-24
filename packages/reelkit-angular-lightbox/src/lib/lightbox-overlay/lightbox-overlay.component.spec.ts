@@ -301,6 +301,20 @@ describe('RkLightboxOverlayComponent', () => {
     }));
   });
 
+  describe('swipeToCloseDirection', () => {
+    it("defaults to 'up'", () => {
+      const fixture = createFixture(true);
+      expect(fixture.componentInstance.swipeToCloseDirection()).toBe('up');
+    });
+
+    it("updates when 'down' is set", () => {
+      const fixture = createFixture(true);
+      fixture.componentRef.setInput('swipeToCloseDirection', 'down');
+      fixture.detectChanges();
+      expect(fixture.componentInstance.swipeToCloseDirection()).toBe('down');
+    });
+  });
+
   describe('when isOpen=false', () => {
     it('does not render the container dialog', () => {
       const fixture = createFixture(false);
