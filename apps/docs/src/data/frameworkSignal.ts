@@ -52,11 +52,31 @@ export function readFrameworkFromUrl(): Framework | null {
   return kFrameworks.includes(raw as Framework) ? (raw as Framework) : null;
 }
 
+/**
+ * Module evaluation runs both during SSR (default = 'react') and on the
+ * client. To avoid hydration mismatches when the user has a different
+ * framework persisted, we always initialise to the SSR-default and then
+ * sync from storage / URL on the client via {@link syncFrameworkFromClient}
+ * (called from `Layout` once mounted).
+ */
 function initialFramework(): Framework {
-  return readFrameworkFromUrl() ?? readStored();
+  return 'react';
 }
 
 export const frameworkSignal = createSignal<Framework>(initialFramework());
+
+/**
+ * Sync the signal with storage + URL after the first client render. Called
+ * from `Layout`'s `useEffect`. Skips if URL/storage matches the current
+ * value (most users) so we avoid a redundant set + listener fanout.
+ */
+export function syncFrameworkFromClient(): void {
+  if (typeof window === 'undefined') return;
+  const fw = readFrameworkFromUrl() ?? readStored();
+  if (fw !== frameworkSignal.value) {
+    frameworkSignal.value = fw;
+  }
+}
 
 export function setFramework(fw: Framework): void {
   frameworkSignal.value = fw;

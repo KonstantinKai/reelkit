@@ -6,7 +6,6 @@ import {
 } from '@reelkit/react-stories-player';
 import '@reelkit/react-stories-player/styles.css';
 import { cdnUrl } from '@reelkit/example-data';
-import { useTheme } from '../../context/ThemeContext';
 
 const groups: StoriesGroup[] = [
   {
@@ -74,8 +73,6 @@ export function StoriesPlayerDemo() {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState(0);
   const viewedState = useMemo(() => new Map<string, number>(), []);
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
 
   const openStories = (groupIndex: number) => {
     setSelectedGroup(groupIndex);
@@ -83,10 +80,7 @@ export function StoriesPlayerDemo() {
   };
 
   return (
-    <div
-      className="w-full h-full overflow-auto p-4"
-      style={{ background: isDark ? '#0f172a' : '#f8fafc' }}
-    >
+    <div className="w-full h-full overflow-auto p-4 bg-slate-50 dark:bg-slate-900">
       <StoriesRingList
         groups={groups}
         viewedState={viewedState}

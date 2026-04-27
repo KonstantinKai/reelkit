@@ -8,7 +8,6 @@ import {
 } from '@reelkit/react-lightbox';
 import '@reelkit/react-lightbox/styles.css';
 import { cdnUrl } from '@reelkit/example-data';
-import { useTheme } from '../../context/ThemeContext';
 
 const SAMPLE_IMAGES: LightboxItem[] = [
   {
@@ -57,14 +56,9 @@ const SAMPLE_IMAGES: LightboxItem[] = [
 
 export function LightboxDemo() {
   const [index, setIndex] = useState<number | null>(null);
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
 
   return (
-    <div
-      className="w-full h-full overflow-auto p-4"
-      style={{ background: isDark ? '#0f172a' : '#f8fafc' }}
-    >
+    <div className="w-full h-full overflow-auto p-4 bg-slate-50 dark:bg-slate-900">
       <div
         style={{
           display: 'grid',
@@ -76,6 +70,7 @@ export function LightboxDemo() {
           <button
             key={i}
             onClick={() => setIndex(i)}
+            className="bg-slate-200 dark:bg-slate-800"
             style={{
               position: 'relative',
               aspectRatio: '4 / 3',
@@ -84,7 +79,6 @@ export function LightboxDemo() {
               border: 'none',
               padding: 0,
               cursor: 'pointer',
-              background: isDark ? '#1e293b' : '#e2e8f0',
             }}
           >
             <img

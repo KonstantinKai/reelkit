@@ -1,0 +1,38 @@
+import {
+  type RouteConfig,
+  index,
+  layout,
+  route,
+} from '@react-router/dev/routes';
+
+export default [
+  layout('components/layout/Layout.tsx', [
+    index('pages/Home.tsx'),
+    route('docs/getting-started', 'pages/docs/GettingStarted.tsx'),
+    route('docs/installation', 'pages/docs/Installation.tsx'),
+    route('docs/ssr', 'pages/docs/SSR.tsx'),
+    route('docs/core/guide', 'pages/docs/core/Guide.tsx'),
+    route('docs/core/api', 'pages/docs/core/Api.tsx'),
+    route('docs/react/guide', 'pages/docs/react/Guide.tsx'),
+    route('docs/react/api', 'pages/docs/react/Api.tsx'),
+    route('docs/angular/guide', 'pages/docs/angular/Guide.tsx'),
+    route('docs/angular/api', 'pages/docs/angular/Api.tsx'),
+    route('docs/reel-player', 'pages/docs/ReelPlayer.tsx'),
+    route('docs/lightbox', 'pages/docs/Lightbox.tsx'),
+    route('docs/angular-reel-player', 'pages/docs/AngularReelPlayer.tsx'),
+    route('docs/angular-lightbox', 'pages/docs/AngularLightbox.tsx'),
+    route('docs/stories-core', 'pages/docs/StoriesCore.tsx'),
+    route('docs/stories-player', 'pages/docs/StoriesPlayer.tsx'),
+    route('docs/angular-stories-player', 'pages/docs/AngularStoriesPlayer.tsx'),
+    route('docs/vue/guide', 'pages/docs/vue/Guide.tsx'),
+    route('docs/vue/api', 'pages/docs/vue/Api.tsx'),
+    route('docs/vue-reel-player', 'pages/docs/VueReelPlayer.tsx'),
+    route('docs/vue-lightbox', 'pages/docs/VueLightbox.tsx'),
+    route('docs/vue-stories-player', 'pages/docs/VueStoriesPlayer.tsx'),
+    route('docs/troubleshooting', 'pages/docs/Troubleshooting.tsx'),
+    route('docs/changelog', 'pages/docs/Changelog.tsx'),
+    route('privacy', 'pages/Privacy.tsx'),
+    route('terms', 'pages/Terms.tsx'),
+    route('*', 'pages/NotFound.tsx'),
+  ]),
+] satisfies RouteConfig;

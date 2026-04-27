@@ -15,6 +15,7 @@ import {
   readFrameworkFromUrl,
   setFramework,
   stripFrameworkFromUrl,
+  syncFrameworkFromClient,
 } from '../../data/frameworkSignal';
 
 export default function Layout() {
@@ -27,6 +28,11 @@ export default function Layout() {
     if (fw) {
       setFramework(fw);
       stripFrameworkFromUrl();
+    } else {
+      // First-paint hydration parity — module-level signal starts at the
+      // SSR default ('react') so the server + client trees match. Once
+      // hydrated, restore the user's stored choice.
+      syncFrameworkFromClient();
     }
   }, []);
 

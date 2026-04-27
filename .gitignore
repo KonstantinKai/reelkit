@@ -8,6 +8,8 @@ node_modules
 dist
 tmp
 out-tsc
+apps/docs/build
+apps/docs/.react-router
 
 # IDE
 .idea

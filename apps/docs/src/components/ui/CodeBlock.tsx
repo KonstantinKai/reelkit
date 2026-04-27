@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Check, Copy } from 'lucide-react';
 import { codeToHtml } from 'shiki';
-import { useTheme } from '../../context/ThemeContext';
 
 interface CodeBlockProps {
   code: string;
@@ -18,18 +17,27 @@ export function CodeBlock({
 }: CodeBlockProps) {
   const [html, setHtml] = useState('');
   const [copied, setCopied] = useState(false);
-  const { theme } = useTheme();
 
   useEffect(() => {
     const highlight = async () => {
+      // Render once with both palettes — Shiki emits CSS custom
+      // properties keyed off the configured `defaultColor`. The light
+      // palette is the default; the dark palette is applied via the
+      // `dark` mode override block in `styles.css` so toggling the
+      // `<html class="dark">` flag swaps colours without re-running
+      // the highlighter and without an SSR-time theme branch.
       const highlighted = await codeToHtml(code.trim(), {
         lang: language,
-        theme: theme === 'dark' ? 'catppuccin-macchiato' : 'github-light',
+        themes: {
+          light: 'github-light',
+          dark: 'catppuccin-macchiato',
+        },
+        defaultColor: 'light',
       });
       setHtml(highlighted);
     };
     highlight();
-  }, [code, language, theme]);
+  }, [code, language]);
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(code.trim());
@@ -39,12 +47,14 @@ export function CodeBlock({
 
   return (
     <div
-      className={`relative group overflow-hidden ${bare ? (theme === 'dark' ? 'bg-[#24273a]' : 'bg-white') : `rounded-2xl border ${theme === 'dark' ? 'border-slate-600 bg-[#24273a]' : 'border-slate-200 bg-white'}`}`}
+      className={
+        bare
+          ? 'relative group overflow-hidden bg-white dark:bg-[#24273a]'
+          : 'relative group overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-600 dark:bg-[#24273a]'
+      }
     >
       {!bare && (
-        <div
-          className={`flex items-center justify-between px-4 py-3 border-b ${theme === 'dark' ? 'border-slate-700 bg-slate-800' : 'border-slate-200 bg-slate-50'}`}
-        >
+        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800">
           <div className="flex items-center gap-2">
             <div className="flex gap-1.5">
               <div className="w-3 h-3 rounded-full bg-red-500" />

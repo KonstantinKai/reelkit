@@ -77,12 +77,23 @@
     text-wrap: balance;
   }
 
-  .dark code.shiki,
-  .dark code.shiki span {
+  code.shiki .line {
     background-color: transparent !important;
   }
 
-  code.shiki .line {
+  /*
+   * Shiki dual-theme rendering: `<pre>` carries both `background-color`
+   * + `--shiki-dark-bg`; each token has `color` + `--shiki-dark`.
+   * Toggle to the dark palette when `<html>` has the `dark` class so
+   * theme switching is purely CSS — no re-render, no SSR/CSR mismatch.
+   */
+  .dark pre.shiki {
+    background-color: var(--shiki-dark-bg) !important;
+    color: var(--shiki-dark) !important;
+  }
+  .dark pre.shiki code,
+  .dark pre.shiki span {
+    color: var(--shiki-dark) !important;
     background-color: transparent !important;
   }
 }

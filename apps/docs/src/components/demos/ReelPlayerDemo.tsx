@@ -6,7 +6,6 @@ import {
 import '@reelkit/react-reel-player/styles.css';
 import { Play } from 'lucide-react';
 import { cdnUrl } from '@reelkit/example-data';
-import { useTheme } from '../../context/ThemeContext';
 
 const SAMPLE_CONTENT: ContentItem[] = [
   {
@@ -130,9 +129,6 @@ function getThumbnail(item: ContentItem): string {
 export function ReelPlayerDemo() {
   const [isOpen, setIsOpen] = useState(false);
   const [initialIndex, setInitialIndex] = useState(0);
-  const { theme } = useTheme();
-
-  const isDark = theme === 'dark';
   const content = useMemo(() => SAMPLE_CONTENT, []);
 
   const handleOpen = (index: number) => {
@@ -141,10 +137,7 @@ export function ReelPlayerDemo() {
   };
 
   return (
-    <div
-      className="w-full h-full overflow-auto p-4"
-      style={{ background: isDark ? '#0f172a' : '#f8fafc' }}
-    >
+    <div className="w-full h-full overflow-auto p-4 bg-slate-50 dark:bg-slate-900">
       <div
         style={{
           display: 'grid',
@@ -156,6 +149,7 @@ export function ReelPlayerDemo() {
           <button
             key={item.id}
             onClick={() => handleOpen(i)}
+            className="bg-slate-200 dark:bg-slate-800"
             style={{
               position: 'relative',
               aspectRatio: '9 / 16',
@@ -164,7 +158,6 @@ export function ReelPlayerDemo() {
               border: 'none',
               padding: 0,
               cursor: 'pointer',
-              background: isDark ? '#1e293b' : '#e2e8f0',
             }}
           >
             <img

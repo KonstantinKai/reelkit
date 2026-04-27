@@ -34,10 +34,16 @@ function writeCache(count: number) {
 }
 
 function useStarCount(): number | null {
-  const [count, setCount] = useState<number | null>(() => readCache());
+  // Always start at null on both server and client to avoid hydration
+  // mismatch — the cached value would only exist on the client.
+  const [count, setCount] = useState<number | null>(null);
 
   useEffect(() => {
-    if (count !== null) return;
+    const cached = readCache();
+    if (cached !== null) {
+      setCount(cached);
+      return;
+    }
     let cancelled = false;
     fetch(`https://api.github.com/repos/${REPO}`)
       .then((r) => (r.ok ? r.json() : null))
@@ -52,7 +58,7 @@ function useStarCount(): number | null {
     return () => {
       cancelled = true;
     };
-  }, [count]);
+  }, []);
 
   return count;
 }

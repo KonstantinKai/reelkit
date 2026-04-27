@@ -2,7 +2,7 @@
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import { defineConfig, type Plugin } from 'vite';
-import react from '@vitejs/plugin-react';
+import { reactRouter } from '@react-router/dev/vite';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 import { nxCopyAssetsPlugin } from '@nx/vite/plugins/nx-copy-assets.plugin';
 
@@ -145,17 +145,18 @@ function loadLlmsEntries(contentDir: string): LlmsEntry[] {
 }
 
 /**
- * Extract the `docs/...` route paths declared in `app/app.tsx` so MDX
- * frontmatter `url` values can be validated against the real router
- * config (V3). Regex instead of AST keeps the plugin dependency-free.
- * We only surface routes under `docs/` — privacy, terms, index, and
- * the 404 wildcard are never backed by MDX content.
+ * Extract the `docs/...` route paths declared in `src/routes.ts` so the
+ * llms.txt frontmatter `url` values can be validated against the real
+ * router config. Regex instead of AST keeps the plugin dependency-free.
+ * We only surface routes under `docs/` — privacy, terms, index, and the
+ * 404 wildcard are never backed by content md.
  */
 function loadAppRoutePaths(appPath: string): string[] {
   if (!existsSync(appPath)) return [];
   const src = readFileSync(appPath, 'utf8');
   const paths: string[] = [];
-  for (const m of src.matchAll(/path:\s*['"]([^'"]+)['"]/g)) {
+  // React Router framework `route('docs/foo', '...')` calls.
+  for (const m of src.matchAll(/route\(\s*['"]([^'"]+)['"]/g)) {
     const p = m[1].trim();
     if (p.startsWith('docs/')) paths.push(p);
   }
@@ -289,7 +290,7 @@ function renderLlmsFullTxt(entries: LlmsEntry[]): string {
 function reelkitLlmsTxtPlugin(): Plugin {
   const contentDir = join(import.meta.dirname, 'src/content/llms');
   const sitemapPath = join(import.meta.dirname, 'public/sitemap.xml');
-  const appPath = join(import.meta.dirname, 'src/app/app.tsx');
+  const appPath = join(import.meta.dirname, 'src/routes.ts');
   const _kOrigin = 'https://reelkit.dev';
 
   const compose = (): { index: string; full: string; count: number } => {
@@ -382,7 +383,7 @@ export default defineConfig(() => ({
   plugins: [
     reelkitVersionsPlugin(),
     reelkitLlmsTxtPlugin(),
-    react(),
+    reactRouter(),
     nxViteTsPaths(),
     nxCopyAssetsPlugin(['*.md']),
   ],
