@@ -18,9 +18,19 @@ export default function Header({
 }: HeaderProps) {
   const { toggleTheme } = useTheme();
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  // Seed to the SSR-stable label, then swap on mount once `navigator`
+  // is available. Reading `navigator.platform` directly at render time
+  // produced a hydration mismatch (SSR → 'Ctrl+', macOS client → '⌘').
+  const [shortcutLabel, setShortcutLabel] = useState('Ctrl+');
 
   // Global Cmd+K / Ctrl+K shortcut
   useEffect(() => {
+    if (
+      typeof navigator !== 'undefined' &&
+      navigator.platform?.includes('Mac')
+    ) {
+      setShortcutLabel('⌘');
+    }
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
@@ -76,10 +86,7 @@ export default function Header({
                 <Search size={18} />
                 <span className="hidden sm:inline text-sm">Search</span>
                 <kbd className="hidden sm:inline-flex items-baseline gap-0.5 px-1.5 py-0.5 text-xs font-sans font-medium text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">
-                  <span className="text-[13px]">
-                    {navigator.platform?.includes('Mac') ? '\u2318' : 'Ctrl+'}
-                  </span>
-                  K
+                  <span className="text-[13px]">{shortcutLabel}</span>K
                 </kbd>
               </button>
 
