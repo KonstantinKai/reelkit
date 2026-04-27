@@ -1,11 +1,10 @@
 import { useState } from 'react';
-import { Observe } from '@reelkit/react';
 import {
-  frameworkSignal,
   setFramework,
   kFrameworks,
   type Framework,
 } from '../data/frameworkSignal';
+import { FrameworkVariant } from './ui/FrameworkVariant';
 
 function ReactIcon({ className }: { className?: string }) {
   return (
@@ -55,35 +54,36 @@ export default function FrameworkSwitcher() {
       {isOpen && (
         <>
           <div className="fixed inset-0" onClick={() => setIsOpen(false)} />
-          <Observe signals={[frameworkSignal]}>
-            {() => (
+          {kFrameworks.map((current) => (
+            <FrameworkVariant key={current} for={current}>
               <div className="relative flex flex-col gap-2 mb-1">
-                {kFrameworks.map((fw) => {
-                  if (frameworkSignal.value === fw) return null;
-                  const { Icon, color, label } = frameworkIcons[fw];
-                  return (
-                    <button
-                      key={fw}
-                      onClick={() => {
-                        setFramework(fw);
-                        setIsOpen(false);
-                      }}
-                      className="w-12 h-12 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg flex items-center justify-center hover:scale-110 transition-transform"
-                      title={label}
-                    >
-                      <Icon className={`w-6 h-6 ${color}`} />
-                    </button>
-                  );
-                })}
+                {kFrameworks
+                  .filter((fw) => fw !== current)
+                  .map((fw) => {
+                    const { Icon, color, label } = frameworkIcons[fw];
+                    return (
+                      <button
+                        key={fw}
+                        onClick={() => {
+                          setFramework(fw);
+                          setIsOpen(false);
+                        }}
+                        className="w-12 h-12 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg flex items-center justify-center hover:scale-110 transition-transform"
+                        title={label}
+                      >
+                        <Icon className={`w-6 h-6 ${color}`} />
+                      </button>
+                    );
+                  })}
               </div>
-            )}
-          </Observe>
+            </FrameworkVariant>
+          ))}
         </>
       )}
-      <Observe signals={[frameworkSignal]}>
-        {() => {
-          const { Icon, color, label } = frameworkIcons[frameworkSignal.value];
-          return (
+      {kFrameworks.map((fw) => {
+        const { Icon, color, label } = frameworkIcons[fw];
+        return (
+          <FrameworkVariant key={fw} for={fw}>
             <button
               onClick={() => setIsOpen((v) => !v)}
               className="w-14 h-14 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg flex items-center justify-center hover:scale-105 transition-transform"
@@ -91,9 +91,9 @@ export default function FrameworkSwitcher() {
             >
               <Icon className={`w-7 h-7 ${color}`} />
             </button>
-          );
-        }}
-      </Observe>
+          </FrameworkVariant>
+        );
+      })}
     </div>
   );
 }

@@ -66,6 +66,18 @@ function initialFramework(): Framework {
 export const frameworkSignal = createSignal<Framework>(initialFramework());
 
 /**
+ * Mirror the active framework onto `<html data-rk-fw="X">` so the global
+ * CSS in `styles.css` can hide non-active `<FrameworkVariant>` blocks
+ * without re-rendering React. The bootstrap script in `root.tsx` sets
+ * the same attr from localStorage before the initial paint, so server
+ * markup and client visibility stay aligned across hydration.
+ */
+function syncDocAttr(fw: Framework): void {
+  if (typeof document === 'undefined') return;
+  document.documentElement.setAttribute('data-rk-fw', fw);
+}
+
+/**
  * Sync the signal with storage + URL after the first client render. Called
  * from `Layout`'s `useEffect`. Skips if URL/storage matches the current
  * value (most users) so we avoid a redundant set + listener fanout.
@@ -76,10 +88,13 @@ export function syncFrameworkFromClient(): void {
   if (fw !== frameworkSignal.value) {
     frameworkSignal.value = fw;
   }
+  // Always re-sync the doc attr in case React hydration overwrote it.
+  syncDocAttr(fw);
 }
 
 export function setFramework(fw: Framework): void {
   frameworkSignal.value = fw;
+  syncDocAttr(fw);
   if (typeof window === 'undefined') return;
   try {
     window.localStorage.setItem(_kStorageKey, fw);

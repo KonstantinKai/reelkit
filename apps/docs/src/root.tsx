@@ -73,7 +73,7 @@ export const meta = () => [
   { name: 'twitter:image', content: 'https://reelkit.dev/og-image.png' },
 ];
 
-const _kThemeBootstrapScript = `(function () {
+const _kBootstrapScript = `(function () {
   try {
     var theme =
       localStorage.getItem('rk-docs:theme') ||
@@ -83,6 +83,19 @@ const _kThemeBootstrapScript = `(function () {
         : 'light');
     if (theme === 'dark') document.documentElement.classList.add('dark');
   } catch (e) {}
+  try {
+    var url = new URLSearchParams(window.location.search).get('framework');
+    var stored = localStorage.getItem('rk-docs:framework') ||
+      localStorage.getItem('reelkit-docs-framework');
+    var fw = ['react', 'angular', 'vue'].indexOf(url) !== -1
+      ? url
+      : ['react', 'angular', 'vue'].indexOf(stored) !== -1
+      ? stored
+      : 'react';
+    document.documentElement.setAttribute('data-rk-fw', fw);
+  } catch (e) {
+    document.documentElement.setAttribute('data-rk-fw', 'react');
+  }
 })();`;
 
 const _kStructuredData = JSON.stringify({
@@ -114,7 +127,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: _kStructuredData }}
         />
-        <script dangerouslySetInnerHTML={{ __html: _kThemeBootstrapScript }} />
+        <script dangerouslySetInnerHTML={{ __html: _kBootstrapScript }} />
       </head>
       <body>
         {children}

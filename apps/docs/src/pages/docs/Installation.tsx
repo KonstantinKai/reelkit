@@ -1,13 +1,9 @@
-import { Observe } from '@reelkit/react';
 import { CodeBlock } from '../../components/ui/CodeBlock';
 import { Callout } from '../../components/ui/Callout';
 import { Check } from 'lucide-react';
 import { NextSteps } from '../../components/NextSteps';
-import {
-  frameworkSignal,
-  renderFramework,
-  type Framework,
-} from '../../data/frameworkSignal';
+import { type Framework } from '../../data/frameworkSignal';
+import { FrameworkBlocks } from '../../components/ui/FrameworkVariant';
 import { Heading } from '../../components/ui/Heading';
 
 interface PackageInfo {
@@ -208,6 +204,33 @@ const comparison = [
   },
 ];
 
+function InstallCommands({ pkg }: { pkg: string }) {
+  return (
+    <>
+      <section className="mb-12">
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          npm
+        </Heading>
+        <CodeBlock code={`npm install ${pkg}`} language="bash" />
+      </section>
+
+      <section className="mb-12">
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          yarn
+        </Heading>
+        <CodeBlock code={`yarn add ${pkg}`} language="bash" />
+      </section>
+
+      <section className="mb-12">
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          pnpm
+        </Heading>
+        <CodeBlock code={`pnpm add ${pkg}`} language="bash" />
+      </section>
+    </>
+  );
+}
+
 export default function Installation() {
   return (
     <div className="max-w-4xl mx-auto px-6 py-12">
@@ -237,41 +260,32 @@ export default function Installation() {
                 <th className="text-left py-3 px-4 font-semibold">Use Case</th>
               </tr>
             </thead>
-            <Observe signals={[frameworkSignal]}>
-              {() => (
-                <tbody>
-                  {packages
-                    .filter(
-                      (pkg) =>
-                        !pkg.framework ||
-                        pkg.framework === frameworkSignal.value,
-                    )
-                    .map((pkg) => (
-                      <tr
-                        key={pkg.name}
-                        className="border-b border-slate-100 dark:border-slate-800"
-                      >
-                        <td className="py-3 px-4">
-                          <code className="text-sm font-mono text-primary-600 dark:text-primary-400">
-                            {pkg.name}
-                          </code>
-                          {pkg.comingSoon && (
-                            <span className="ml-2 text-xs px-1.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">
-                              Coming Soon
-                            </span>
-                          )}
-                        </td>
-                        <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
-                          {pkg.desc}
-                        </td>
-                        <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
-                          {pkg.useCase}
-                        </td>
-                      </tr>
-                    ))}
-                </tbody>
-              )}
-            </Observe>
+            <tbody>
+              {packages.map((pkg) => (
+                <tr
+                  key={pkg.name}
+                  data-rk-fw={pkg.framework}
+                  className="border-b border-slate-100 dark:border-slate-800"
+                >
+                  <td className="py-3 px-4">
+                    <code className="text-sm font-mono text-primary-600 dark:text-primary-400">
+                      {pkg.name}
+                    </code>
+                    {pkg.comingSoon && (
+                      <span className="ml-2 text-xs px-1.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">
+                        Coming Soon
+                      </span>
+                    )}
+                  </td>
+                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
+                    {pkg.desc}
+                  </td>
+                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
+                    {pkg.useCase}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
           </table>
         </div>
       </section>
@@ -297,40 +311,31 @@ export default function Installation() {
                 </th>
               </tr>
             </thead>
-            <Observe signals={[frameworkSignal]}>
-              {() => (
-                <tbody>
-                  {bundleSizes
-                    .filter(
-                      (pkg) =>
-                        !pkg.framework ||
-                        pkg.framework === frameworkSignal.value,
-                    )
-                    .map((pkg) => (
-                      <tr
-                        key={pkg.name}
-                        className="border-b border-slate-100 dark:border-slate-800"
-                      >
-                        <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
-                          {pkg.name}
-                        </td>
-                        <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
-                          {pkg.js}
-                        </td>
-                        <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
-                          {pkg.gzip}
-                        </td>
-                        <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
-                          {pkg.css}
-                        </td>
-                        <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
-                          {pkg.cssGzip}
-                        </td>
-                      </tr>
-                    ))}
-                </tbody>
-              )}
-            </Observe>
+            <tbody>
+              {bundleSizes.map((pkg) => (
+                <tr
+                  key={pkg.name}
+                  data-rk-fw={pkg.framework}
+                  className="border-b border-slate-100 dark:border-slate-800"
+                >
+                  <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                    {pkg.name}
+                  </td>
+                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
+                    {pkg.js}
+                  </td>
+                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
+                    {pkg.gzip}
+                  </td>
+                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
+                    {pkg.css}
+                  </td>
+                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
+                    {pkg.cssGzip}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
           </table>
         </div>
 
@@ -386,41 +391,11 @@ export default function Installation() {
         </div>
       </section>
 
-      <Observe signals={[frameworkSignal]}>
-        {() => {
-          const fw = frameworkSignal.value;
-          const pkg =
-            fw === 'react'
-              ? '@reelkit/react'
-              : fw === 'angular'
-                ? '@reelkit/angular'
-                : '@reelkit/vue';
-          return (
-            <>
-              <section className="mb-12">
-                <Heading level={2} className="text-2xl font-bold mb-4">
-                  npm
-                </Heading>
-                <CodeBlock code={`npm install ${pkg}`} language="bash" />
-              </section>
-
-              <section className="mb-12">
-                <Heading level={2} className="text-2xl font-bold mb-4">
-                  yarn
-                </Heading>
-                <CodeBlock code={`yarn add ${pkg}`} language="bash" />
-              </section>
-
-              <section className="mb-12">
-                <Heading level={2} className="text-2xl font-bold mb-4">
-                  pnpm
-                </Heading>
-                <CodeBlock code={`pnpm add ${pkg}`} language="bash" />
-              </section>
-            </>
-          );
-        }}
-      </Observe>
+      <FrameworkBlocks
+        react={<InstallCommands pkg="@reelkit/react" />}
+        angular={<InstallCommands pkg="@reelkit/angular" />}
+        vue={<InstallCommands pkg="@reelkit/vue" />}
+      />
 
       <section className="mb-12">
         <Heading level={2} className="text-2xl font-bold mb-4">
@@ -431,208 +406,184 @@ export default function Installation() {
           your project:
         </p>
 
-        <Observe signals={[frameworkSignal]}>
-          {() =>
-            renderFramework({
-              react: () => (
-                <div className="space-y-6">
-                  <div>
-                    <Heading level={3} className="text-lg font-semibold mb-2">
-                      @reelkit/react
-                    </Heading>
-                    <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
-                      <li>
-                        <code className="text-sm font-mono">react</code>{' '}
-                        {'>= 18.0.0'}
-                      </li>
-                      <li>
-                        <code className="text-sm font-mono">react-dom</code>{' '}
-                        {'>= 18.0.0'}
-                      </li>
-                    </ul>
-                  </div>
-                  <div>
-                    <Heading level={3} className="text-lg font-semibold mb-2">
-                      @reelkit/react-reel-player
-                    </Heading>
-                    <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
-                      <li>
-                        <code className="text-sm font-mono">
-                          @reelkit/react
-                        </code>
-                      </li>
-                      <li>
-                        <code className="text-sm font-mono">react</code>{' '}
-                        {'>= 18.0.0'}
-                      </li>
-                      <li>
-                        <code className="text-sm font-mono">react-dom</code>{' '}
-                        {'>= 18.0.0'}
-                      </li>
-                      <li>
-                        <code className="text-sm font-mono">lucide-react</code>{' '}
-                        {'>= 0.400.0'}
-                      </li>
-                    </ul>
-                  </div>
-                  <div>
-                    <Heading level={3} className="text-lg font-semibold mb-2">
-                      @reelkit/react-lightbox
-                    </Heading>
-                    <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
-                      <li>
-                        <code className="text-sm font-mono">
-                          @reelkit/react
-                        </code>
-                      </li>
-                      <li>
-                        <code className="text-sm font-mono">react</code>{' '}
-                        {'>= 18.0.0'}
-                      </li>
-                      <li>
-                        <code className="text-sm font-mono">react-dom</code>{' '}
-                        {'>= 18.0.0'}
-                      </li>
-                      <li>
-                        <code className="text-sm font-mono">lucide-react</code>{' '}
-                        {'>= 0.400.0'}
-                      </li>
-                    </ul>
-                  </div>
-                  <div>
-                    <Heading level={3} className="text-lg font-semibold mb-2">
-                      @reelkit/react-stories-player
-                    </Heading>
-                    <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
-                      <li>
-                        <code className="text-sm font-mono">
-                          @reelkit/react
-                        </code>
-                      </li>
-                      <li>
-                        <code className="text-sm font-mono">react</code>{' '}
-                        {'>= 18.0.0'}
-                      </li>
-                      <li>
-                        <code className="text-sm font-mono">react-dom</code>{' '}
-                        {'>= 18.0.0'}
-                      </li>
-                      <li>
-                        <code className="text-sm font-mono">lucide-react</code>{' '}
-                        {'>= 0.400.0'}
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              ),
-              angular: () => (
-                <div className="space-y-6">
-                  <div>
-                    <Heading level={3} className="text-lg font-semibold mb-2">
-                      @reelkit/angular
-                    </Heading>
-                    <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
-                      <li>
-                        <code className="text-sm font-mono">@angular/core</code>{' '}
-                        {'>= 17.0.0'}
-                      </li>
-                      <li>
-                        <code className="text-sm font-mono">
-                          @angular/common
-                        </code>{' '}
-                        {'>= 17.0.0'}
-                      </li>
-                    </ul>
-                  </div>
-                  <div>
-                    <Heading level={3} className="text-lg font-semibold mb-2">
-                      @reelkit/angular-reel-player
-                    </Heading>
-                    <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
-                      <li>
-                        <code className="text-sm font-mono">
-                          @reelkit/angular
-                        </code>
-                      </li>
-                      <li>
-                        <code className="text-sm font-mono">@angular/core</code>{' '}
-                        {'>= 19.0.0'}
-                      </li>
-                      <li>
-                        <code className="text-sm font-mono">
-                          lucide-angular
-                        </code>{' '}
-                        {'>= 0.460.0'}
-                      </li>
-                    </ul>
-                  </div>
-                  <div>
-                    <Heading level={3} className="text-lg font-semibold mb-2">
-                      @reelkit/angular-lightbox
-                    </Heading>
-                    <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
-                      <li>
-                        <code className="text-sm font-mono">
-                          @reelkit/angular
-                        </code>
-                      </li>
-                      <li>
-                        <code className="text-sm font-mono">@angular/core</code>{' '}
-                        {'>= 17.0.0'}
-                      </li>
-                      <li>
-                        <code className="text-sm font-mono">
-                          lucide-angular
-                        </code>{' '}
-                        {'>= 0.400.0'}
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              ),
-              vue: () => (
-                <div className="space-y-6">
-                  <div>
-                    <Heading level={3} className="text-lg font-semibold mb-2">
-                      @reelkit/vue
-                    </Heading>
-                    <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
-                      <li>
-                        <code className="text-sm font-mono">vue</code>{' '}
-                        {'>= 3.0.0'}
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              ),
-            })
+        <FrameworkBlocks
+          react={
+            <div className="space-y-6">
+              <div>
+                <Heading level={3} className="text-lg font-semibold mb-2">
+                  @reelkit/react
+                </Heading>
+                <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
+                  <li>
+                    <code className="text-sm font-mono">react</code>{' '}
+                    {'>= 18.0.0'}
+                  </li>
+                  <li>
+                    <code className="text-sm font-mono">react-dom</code>{' '}
+                    {'>= 18.0.0'}
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <Heading level={3} className="text-lg font-semibold mb-2">
+                  @reelkit/react-reel-player
+                </Heading>
+                <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
+                  <li>
+                    <code className="text-sm font-mono">@reelkit/react</code>
+                  </li>
+                  <li>
+                    <code className="text-sm font-mono">react</code>{' '}
+                    {'>= 18.0.0'}
+                  </li>
+                  <li>
+                    <code className="text-sm font-mono">react-dom</code>{' '}
+                    {'>= 18.0.0'}
+                  </li>
+                  <li>
+                    <code className="text-sm font-mono">lucide-react</code>{' '}
+                    {'>= 0.400.0'}
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <Heading level={3} className="text-lg font-semibold mb-2">
+                  @reelkit/react-lightbox
+                </Heading>
+                <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
+                  <li>
+                    <code className="text-sm font-mono">@reelkit/react</code>
+                  </li>
+                  <li>
+                    <code className="text-sm font-mono">react</code>{' '}
+                    {'>= 18.0.0'}
+                  </li>
+                  <li>
+                    <code className="text-sm font-mono">react-dom</code>{' '}
+                    {'>= 18.0.0'}
+                  </li>
+                  <li>
+                    <code className="text-sm font-mono">lucide-react</code>{' '}
+                    {'>= 0.400.0'}
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <Heading level={3} className="text-lg font-semibold mb-2">
+                  @reelkit/react-stories-player
+                </Heading>
+                <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
+                  <li>
+                    <code className="text-sm font-mono">@reelkit/react</code>
+                  </li>
+                  <li>
+                    <code className="text-sm font-mono">react</code>{' '}
+                    {'>= 18.0.0'}
+                  </li>
+                  <li>
+                    <code className="text-sm font-mono">react-dom</code>{' '}
+                    {'>= 18.0.0'}
+                  </li>
+                  <li>
+                    <code className="text-sm font-mono">lucide-react</code>{' '}
+                    {'>= 0.400.0'}
+                  </li>
+                </ul>
+              </div>
+            </div>
           }
-        </Observe>
+          angular={
+            <div className="space-y-6">
+              <div>
+                <Heading level={3} className="text-lg font-semibold mb-2">
+                  @reelkit/angular
+                </Heading>
+                <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
+                  <li>
+                    <code className="text-sm font-mono">@angular/core</code>{' '}
+                    {'>= 17.0.0'}
+                  </li>
+                  <li>
+                    <code className="text-sm font-mono">@angular/common</code>{' '}
+                    {'>= 17.0.0'}
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <Heading level={3} className="text-lg font-semibold mb-2">
+                  @reelkit/angular-reel-player
+                </Heading>
+                <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
+                  <li>
+                    <code className="text-sm font-mono">@reelkit/angular</code>
+                  </li>
+                  <li>
+                    <code className="text-sm font-mono">@angular/core</code>{' '}
+                    {'>= 19.0.0'}
+                  </li>
+                  <li>
+                    <code className="text-sm font-mono">lucide-angular</code>{' '}
+                    {'>= 0.460.0'}
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <Heading level={3} className="text-lg font-semibold mb-2">
+                  @reelkit/angular-lightbox
+                </Heading>
+                <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
+                  <li>
+                    <code className="text-sm font-mono">@reelkit/angular</code>
+                  </li>
+                  <li>
+                    <code className="text-sm font-mono">@angular/core</code>{' '}
+                    {'>= 17.0.0'}
+                  </li>
+                  <li>
+                    <code className="text-sm font-mono">lucide-angular</code>{' '}
+                    {'>= 0.400.0'}
+                  </li>
+                </ul>
+              </div>
+            </div>
+          }
+          vue={
+            <div className="space-y-6">
+              <div>
+                <Heading level={3} className="text-lg font-semibold mb-2">
+                  @reelkit/vue
+                </Heading>
+                <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
+                  <li>
+                    <code className="text-sm font-mono">vue</code> {'>= 3.0.0'}
+                  </li>
+                </ul>
+              </div>
+            </div>
+          }
+        />
 
-        <Observe signals={[frameworkSignal]}>
-          {() =>
-            renderFramework({
-              react: () => (
-                <Callout type="info" className="mt-4">
-                  <code className="text-sm font-mono">lucide-react</code> is
-                  only needed for the default control icons. If you provide your
-                  own controls via{' '}
-                  <code className="text-sm font-mono">renderControls</code>, you
-                  can skip installing it.
-                </Callout>
-              ),
-              angular: () => (
-                <Callout type="info" className="mt-4">
-                  <code className="text-sm font-mono">lucide-angular</code> is
-                  only needed for the default control icons. If you provide your
-                  own controls via{' '}
-                  <code className="text-sm font-mono">rkPlayerControls</code>,
-                  you can skip installing it.
-                </Callout>
-              ),
-            })
+        <FrameworkBlocks
+          react={
+            <Callout type="info" className="mt-4">
+              <code className="text-sm font-mono">lucide-react</code> is only
+              needed for the default control icons. If you provide your own
+              controls via{' '}
+              <code className="text-sm font-mono">renderControls</code>, you can
+              skip installing it.
+            </Callout>
           }
-        </Observe>
+          angular={
+            <Callout type="info" className="mt-4">
+              <code className="text-sm font-mono">lucide-angular</code> is only
+              needed for the default control icons. If you provide your own
+              controls via{' '}
+              <code className="text-sm font-mono">rkPlayerControls</code>, you
+              can skip installing it.
+            </Callout>
+          }
+          vue={null}
+        />
       </section>
 
       <section className="mb-12">

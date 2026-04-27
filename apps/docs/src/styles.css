@@ -96,4 +96,40 @@
     color: var(--shiki-dark) !important;
     background-color: transparent !important;
   }
+
+  /*
+   * Framework-conditional rendering: `<FrameworkVariant for="X">` wraps
+   * markup in `[data-rk-fw="X"]`. The active framework is mirrored onto
+   * `<html data-rk-fw="X">` by the bootstrap script in `root.tsx` BEFORE
+   * first paint and by `frameworkSignal.setFramework` thereafter — so a
+   * single SSR render carries all three variants and CSS hides the rest.
+   * Default to `react` when no attr is set yet (paranoid SSR fallback).
+   */
+  html:not([data-rk-fw]) [data-rk-fw]:not([data-rk-fw='react']) {
+    display: none;
+  }
+  html[data-rk-fw='react'] [data-rk-fw]:not([data-rk-fw='react']) {
+    display: none;
+  }
+  html[data-rk-fw='angular'] [data-rk-fw]:not([data-rk-fw='angular']) {
+    display: none;
+  }
+  html[data-rk-fw='vue'] [data-rk-fw]:not([data-rk-fw='vue']) {
+    display: none;
+  }
+
+  /*
+   * Framework selector buttons: rendered always, highlighted only when
+   * `<html data-rk-fw>` matches their `data-fw-btn` attr. CSS-driven
+   * active style avoids JS render branches that would flash on hydrate.
+   */
+  html[data-rk-fw='react'] [data-fw-btn='react'] {
+    @apply bg-sky-50 dark:bg-sky-950/40 border-sky-300 dark:border-sky-700 text-sky-700 dark:text-sky-300;
+  }
+  html[data-rk-fw='angular'] [data-fw-btn='angular'] {
+    @apply bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-700 text-rose-700 dark:text-rose-300;
+  }
+  html[data-rk-fw='vue'] [data-fw-btn='vue'] {
+    @apply bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300;
+  }
 }
