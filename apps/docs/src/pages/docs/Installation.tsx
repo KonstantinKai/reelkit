@@ -74,6 +74,12 @@ const packages: PackageInfo[] = [
     useCase: 'Instagram/TikTok style player',
     framework: 'vue',
   },
+  {
+    name: '@reelkit/vue-lightbox',
+    desc: 'Image gallery lightbox',
+    useCase: 'Full-screen image preview',
+    framework: 'vue',
+  },
 ];
 
 const bundleSizes: {
@@ -109,8 +115,8 @@ const bundleSizes: {
   },
   {
     name: '@reelkit/react-lightbox',
-    js: '9.5 kB',
-    gzip: '3.3 kB',
+    js: '9.6 kB',
+    gzip: '3.2 kB',
     css: '7.7 kB',
     cssGzip: '1.6 kB',
     framework: 'react',
@@ -141,16 +147,16 @@ const bundleSizes: {
   },
   {
     name: '@reelkit/angular-lightbox',
-    js: '74.4 kB',
-    gzip: '12.5 kB',
+    js: '75.2 kB',
+    gzip: '12.6 kB',
     css: '-',
     cssGzip: '-',
     framework: 'angular',
   },
   {
     name: '@reelkit/vue',
-    js: '13.3 kB',
-    gzip: '4.6 kB',
+    js: '13.5 kB',
+    gzip: '4.7 kB',
     css: '-',
     cssGzip: '-',
     framework: 'vue',
@@ -158,9 +164,17 @@ const bundleSizes: {
   {
     name: '@reelkit/vue-reel-player',
     js: '19.1 kB',
-    gzip: '5.9 kB',
+    gzip: '5.8 kB',
     css: '9.7 kB',
     cssGzip: '2.1 kB',
+    framework: 'vue',
+  },
+  {
+    name: '@reelkit/vue-lightbox',
+    js: '13.3 kB',
+    gzip: '4.0 kB',
+    css: '6.8 kB',
+    cssGzip: '1.4 kB',
     framework: 'vue',
   },
 ];
@@ -180,7 +194,7 @@ const comparison = [
   },
   {
     name: 'ReelKit (core + vue)',
-    gzip: '12.0 kB',
+    gzip: '12.1 kB',
     virtualization: true,
     notes: 'Zero dependencies',
   },

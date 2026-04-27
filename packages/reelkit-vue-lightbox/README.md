@@ -2,10 +2,11 @@
 
 <p>
   <a href="https://www.npmjs.com/package/@reelkit/vue-lightbox"><img src="https://img.shields.io/npm/v/@reelkit/vue-lightbox?color=6366f1&label=npm" alt="npm" /></a>
+  <img src="https://img.shields.io/badge/gzip-4.0%20kB-6366f1" alt="Bundle size" />
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
 
-Full-screen image and video gallery lightbox for Vue 3. Horizontal swipe navigation, fullscreen toggle, opt-in video support, and four built-in transitions.
+Full-screen image and video gallery lightbox for Vue 3. Horizontal swipe navigation, fullscreen toggle, opt-in video support, and four built-in transitions. ~4.0 kB gzip.
 
 **[Live Demo](https://vue-demo.reelkit.dev/lightbox?utm_source=npm)**
 
@@ -44,7 +45,7 @@ const items: LightboxItem[] = [
 ## Features
 
 - Horizontal swipe navigation (touch, mouse, keyboard, wheel)
-- Four built-in transitions (`slide`, `fade`, `flip`, `zoom-in`)
+- Tree-shakable transitions — `slideTransition`, `flipTransition`, `lightboxFadeTransition`, `lightboxZoomTransition` (import only what you use)
 - Fullscreen toggle with two-step Escape (exit fullscreen → close)
 - Swipe-up-to-close on mobile
 - Opt-in video support via `useVideoSlideRenderer`
@@ -65,19 +66,19 @@ const items: LightboxItem[] = [
 
 ## Props
 
-| Prop             | Type             | Default           | Description                      |
-| ---------------- | ---------------- | ----------------- | -------------------------------- |
-| `isOpen`         | `boolean`        | required          | Controls overlay visibility      |
-| `items`          | `LightboxItem[]` | required          | Images/videos to display         |
-| `initialIndex`   | `number`         | `0`               | Starting slide index             |
-| `ariaLabel`      | `string`         | `'Image gallery'` | Dialog `aria-label`              |
-| `transition`     | `TransitionType` | `'slide'`         | Built-in transition              |
-| `loop`           | `boolean`        | `false`           | Enable infinite loop             |
-| `enableNavKeys`  | `boolean`        | `true`            | Arrow-key navigation             |
-| `enableWheel`    | `boolean`        | `true`            | Wheel navigation                 |
-| `showInfo`       | `boolean`        | `true`            | Show title/description overlay   |
-| `showControls`   | `boolean`        | `true`            | Show controls bar                |
-| `showNavigation` | `boolean`        | `true`            | Show prev/next arrows on desktop |
+| Prop             | Type                    | Default           | Description                              |
+| ---------------- | ----------------------- | ----------------- | ---------------------------------------- |
+| `isOpen`         | `boolean`               | required          | Controls overlay visibility              |
+| `items`          | `LightboxItem[]`        | required          | Images/videos to display                 |
+| `initialIndex`   | `number`                | `0`               | Starting slide index                     |
+| `ariaLabel`      | `string`                | `'Image gallery'` | Dialog `aria-label`                      |
+| `transitionFn`   | `TransitionTransformFn` | `slideTransition` | Slide transition fn (built-in or custom) |
+| `loop`           | `boolean`               | `false`           | Enable infinite loop                     |
+| `enableNavKeys`  | `boolean`               | `true`            | Arrow-key navigation                     |
+| `enableWheel`    | `boolean`               | `true`            | Wheel navigation                         |
+| `showInfo`       | `boolean`               | `true`            | Show title/description overlay           |
+| `showControls`   | `boolean`               | `true`            | Show controls bar                        |
+| `showNavigation` | `boolean`               | `true`            | Show prev/next arrows on desktop         |
 
 ## Events
 

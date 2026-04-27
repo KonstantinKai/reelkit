@@ -6,7 +6,7 @@
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
 
-Image gallery lightbox for Angular — opens full-screen with swipe navigation, keyboard controls, and transition effects. Every part of the UI is replaceable via template slots. ~12.5 kB gzip.
+Image gallery lightbox for Angular — opens full-screen with swipe navigation, keyboard controls, and transition effects. Every part of the UI is replaceable via template slots. ~12.6 kB gzip.
 
 **[Live Demo](https://angular-demo.reelkit.dev/image-preview?utm_source=npm)**
 
@@ -65,7 +65,7 @@ export class GalleryComponent {
 - Touch gestures — swipe to navigate, swipe up to close
 - Keyboard navigation — arrow keys, Escape
 - Fullscreen — cross-browser Fullscreen API
-- Transitions — slide, fade, and zoom-in effects
+- Transitions — tree-shakable `slideTransition`, `flipTransition`, `lightboxFadeTransition`, `lightboxZoomTransition` (import only what you use)
 - Image preloading — adjacent images prefetched
 - Video slides (opt-in) — via `rkLightboxSlide` template slot
 - Counter — "1 / 10" indicator
@@ -86,19 +86,19 @@ export class GalleryComponent {
 
 ### rk-lightbox-overlay Inputs
 
-| Input                 | Type             | Default   | Description                  |
-| --------------------- | ---------------- | --------- | ---------------------------- |
-| `isOpen`              | `boolean`        | required  | Controls lightbox visibility |
-| `items`               | `LightboxItem[]` | required  | Array of items to display    |
-| `initialIndex`        | `number`         | `0`       | Starting image index         |
-| `transition`          | `TransitionType` | `'slide'` | Transition animation type    |
-| `showInfo`            | `boolean`        | `true`    | Show title/description       |
-| `loop`                | `boolean`        | `false`   | Enable infinite loop         |
-| `enableNavKeys`       | `boolean`        | `true`    | Enable keyboard navigation   |
-| `enableWheel`         | `boolean`        | `true`    | Enable mouse wheel           |
-| `wheelDebounceMs`     | `number`         | `200`     | Wheel debounce (ms)          |
-| `transitionDuration`  | `number`         | `300`     | Animation duration (ms)      |
-| `swipeDistanceFactor` | `number`         | `0.12`    | Swipe threshold (0-1)        |
+| Input                 | Type                    | Default           | Description                              |
+| --------------------- | ----------------------- | ----------------- | ---------------------------------------- |
+| `isOpen`              | `boolean`               | required          | Controls lightbox visibility             |
+| `items`               | `LightboxItem[]`        | required          | Array of items to display                |
+| `initialIndex`        | `number`                | `0`               | Starting image index                     |
+| `transitionFn`        | `TransitionTransformFn` | `slideTransition` | Slide transition fn (built-in or custom) |
+| `showInfo`            | `boolean`               | `true`            | Show title/description                   |
+| `loop`                | `boolean`               | `false`           | Enable infinite loop                     |
+| `enableNavKeys`       | `boolean`               | `true`            | Enable keyboard navigation               |
+| `enableWheel`         | `boolean`               | `true`            | Enable mouse wheel                       |
+| `wheelDebounceMs`     | `number`                | `200`             | Wheel debounce (ms)                      |
+| `transitionDuration`  | `number`                | `300`             | Animation duration (ms)                  |
+| `swipeDistanceFactor` | `number`                | `0.12`            | Swipe threshold (0-1)                    |
 
 ### rk-lightbox-overlay Outputs
 
@@ -119,8 +119,6 @@ interface LightboxItem {
   width?: number;
   height?: number;
 }
-
-type TransitionType = 'slide' | 'fade' | 'zoom-in';
 ```
 
 ### Sub-components

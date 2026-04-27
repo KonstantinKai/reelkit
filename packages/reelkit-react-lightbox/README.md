@@ -2,12 +2,12 @@
 
 <p>
   <a href="https://www.npmjs.com/package/@reelkit/react-lightbox"><img src="https://img.shields.io/npm/v/@reelkit/react-lightbox?color=6366f1&label=npm" alt="npm" /></a>
-  <img src="https://img.shields.io/badge/gzip-3.3%20kB-6366f1" alt="Bundle size" />
+  <img src="https://img.shields.io/badge/gzip-3.2%20kB-6366f1" alt="Bundle size" />
   <img src="https://img.shields.io/badge/coverage-95%25-brightgreen" alt="Coverage" />
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
 
-Image gallery lightbox for React — opens full-screen with swipe navigation, keyboard controls, and transition effects. Everything is replaceable via render props if the defaults don't fit. ~3.3 kB gzip.
+Image gallery lightbox for React — opens full-screen with swipe navigation, keyboard controls, and transition effects. Everything is replaceable via render props if the defaults don't fit. ~3.2 kB gzip.
 
 **[Live Demo](https://react-demo.reelkit.dev/image-preview?utm_source=npm)**
 
@@ -60,7 +60,7 @@ function App() {
 - Touch gestures — swipe to navigate, swipe up to close
 - Keyboard navigation — arrow keys, Escape
 - Fullscreen — cross-browser Fullscreen API
-- Transitions — slide, fade, and zoom-in effects
+- Transitions — tree-shakable `slideTransition`, `flipTransition`, `lightboxFadeTransition`, `lightboxZoomTransition` (import only what you use)
 - Image preloading — adjacent images prefetched
 - Video slides (opt-in) — tree-shakeable video support via `useVideoSlideRenderer`
 - Counter — "1 / 10" indicator
@@ -72,17 +72,17 @@ function App() {
 
 ### LightboxOverlay Props
 
-| Prop               | Type                                                 | Default   | Description                  |
-| ------------------ | ---------------------------------------------------- | --------- | ---------------------------- |
-| `isOpen`           | `boolean`                                            | required  | Controls lightbox visibility |
-| `images`           | `LightboxItem[]`                                     | required  | Array of images to display   |
-| `initialIndex`     | `number`                                             | `0`       | Starting image index         |
-| `transition`       | `TransitionType`                                     | `'slide'` | Transition animation type    |
-| `apiRef`           | `MutableRefObject<ReelApi>`                          | -         | Ref to access Reel API       |
-| `renderControls`   | `(props) => ReactNode`                               | -         | Custom controls              |
-| `renderNavigation` | `(props) => ReactNode`                               | -         | Custom navigation arrows     |
-| `renderInfo`       | `(props) => ReactNode`                               | -         | Custom info overlay          |
-| `renderSlide`      | `(item, index, size, isActive) => ReactNode \| null` | -         | Custom slide rendering       |
+| Prop               | Type                                                 | Default           | Description                              |
+| ------------------ | ---------------------------------------------------- | ----------------- | ---------------------------------------- |
+| `isOpen`           | `boolean`                                            | required          | Controls lightbox visibility             |
+| `images`           | `LightboxItem[]`                                     | required          | Array of images to display               |
+| `initialIndex`     | `number`                                             | `0`               | Starting image index                     |
+| `transitionFn`     | `TransitionTransformFn`                              | `slideTransition` | Slide transition fn (built-in or custom) |
+| `apiRef`           | `MutableRefObject<ReelApi>`                          | -                 | Ref to access Reel API                   |
+| `renderControls`   | `(props) => ReactNode`                               | -                 | Custom controls                          |
+| `renderNavigation` | `(props) => ReactNode`                               | -                 | Custom navigation arrows                 |
+| `renderInfo`       | `(props) => ReactNode`                               | -                 | Custom info overlay                      |
+| `renderSlide`      | `(item, index, size, isActive) => ReactNode \| null` | -                 | Custom slide rendering                   |
 
 ### Callbacks
 
@@ -114,8 +114,6 @@ interface LightboxItem {
   width?: number;
   height?: number;
 }
-
-type TransitionType = 'slide' | 'fade' | 'zoom-in';
 ```
 
 ## Video Slides (Opt-in)
