@@ -1,16 +1,27 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { ImageOff } from 'lucide-react';
 import {
   LightboxOverlay,
+  flipTransition,
+  lightboxFadeTransition,
+  lightboxZoomTransition,
+  slideTransition,
   type LightboxItem,
-  type TransitionType,
 } from '@reelkit/react-lightbox';
-import type { SwipeToCloseDirection } from '@reelkit/react';
+import type {
+  SwipeToCloseDirection,
+  TransitionTransformFn,
+} from '@reelkit/react';
 import { cdnUrl } from '@reelkit/example-data';
 import '@reelkit/react-lightbox/styles.css';
 import './ImagePreviewPage.css';
 
-const _kTransitions: TransitionType[] = ['slide', 'fade', 'flip', 'zoom-in'];
+const _kTransitions: { label: string; fn: TransitionTransformFn }[] = [
+  { label: 'slide', fn: slideTransition },
+  { label: 'fade', fn: lightboxFadeTransition },
+  { label: 'flip', fn: flipTransition },
+  { label: 'zoom-in', fn: lightboxZoomTransition },
+];
 const _kSwipeDirections: SwipeToCloseDirection[] = ['up', 'down'];
 
 const sampleImages: LightboxItem[] = [
@@ -140,7 +151,9 @@ const GalleryThumb: React.FC<{ src: string; alt: string }> = ({ src, alt }) => {
 
 function ImagePreviewPage() {
   const [previewIndex, setPreviewIndex] = useState<number | null>(null);
-  const [transition, setTransition] = useState<TransitionType>('slide');
+  const [transitionFn, setTransitionFn] = useState<TransitionTransformFn>(
+    () => slideTransition,
+  );
   const [swipeDirection, setSwipeDirection] =
     useState<SwipeToCloseDirection>('up');
 
@@ -151,6 +164,19 @@ function ImagePreviewPage() {
   const handleClose = useCallback(() => {
     setPreviewIndex(null);
   }, []);
+
+  // Disable mobile pull-to-refresh while the lightbox is open so the
+  // `swipeToCloseDirection: 'down'` gesture is not preempted by the
+  // browser. Scoped to the open window only — leaves regular scrolling
+  // untouched the rest of the time.
+  useEffect(() => {
+    if (previewIndex === null) return;
+    const prev = document.documentElement.style.overscrollBehaviorY;
+    document.documentElement.style.overscrollBehaviorY = 'contain';
+    return () => {
+      document.documentElement.style.overscrollBehaviorY = prev;
+    };
+  }, [previewIndex]);
 
   return (
     <div className="image-gallery-page">
@@ -164,11 +190,11 @@ function ImagePreviewPage() {
           <span>Transition:</span>
           {_kTransitions.map((t) => (
             <button
-              key={t}
-              className={`transition-btn ${transition === t ? 'active' : ''}`}
-              onClick={() => setTransition(t)}
+              key={t.label}
+              className={`transition-btn ${transitionFn === t.fn ? 'active' : ''}`}
+              onClick={() => setTransitionFn(() => t.fn)}
             >
-              {t}
+              {t.label}
             </button>
           ))}
         </div>
@@ -219,7 +245,7 @@ function ImagePreviewPage() {
         images={sampleImages}
         initialIndex={previewIndex ?? 0}
         onClose={handleClose}
-        transition={transition}
+        transitionFn={transitionFn}
         swipeToCloseDirection={swipeDirection}
       />
     </div>

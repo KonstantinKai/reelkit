@@ -119,7 +119,7 @@ const _kStructuredData = JSON.stringify({
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" data-rk-fw="react" suppressHydrationWarning>
       <head>
         <Meta />
         <Links />

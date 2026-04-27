@@ -1,15 +1,22 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import {
   LightboxOverlay,
+  lightboxFadeTransition,
+  lightboxZoomTransition,
+  slideTransition,
   useVideoSlideRenderer,
   type LightboxItem,
-  type TransitionType,
 } from '@reelkit/vue-lightbox';
+import type { TransitionTransformFn } from '@reelkit/vue';
 import { cdnUrl } from '@reelkit/example-data';
 import '@reelkit/vue-lightbox/styles.css';
 
-const _kTransitions: TransitionType[] = ['slide', 'fade', 'zoom-in'];
+const _kTransitions: { label: string; fn: TransitionTransformFn }[] = [
+  { label: 'slide', fn: slideTransition },
+  { label: 'fade', fn: lightboxFadeTransition },
+  { label: 'zoom-in', fn: lightboxZoomTransition },
+];
 
 const sampleItems: LightboxItem[] = [
   {
@@ -59,7 +66,7 @@ const sampleItems: LightboxItem[] = [
 
 const open = ref(false);
 const initialIndex = ref(0);
-const transition = ref<TransitionType>('slide');
+const transitionFn = ref<TransitionTransformFn>(slideTransition);
 
 const { VideoSlideRenderer, VideoControlsRenderer, SoundProvider } =
   useVideoSlideRenderer(sampleItems);
@@ -75,6 +82,16 @@ const onKeyActivate = (e: KeyboardEvent, index: number) => {
     openAt(index);
   }
 };
+
+watch(open, (isOpen, _, onCleanup) => {
+  if (!isOpen) return;
+  const html = document.documentElement;
+  const prev = html.style.overscrollBehaviorY;
+  html.style.overscrollBehaviorY = 'contain';
+  onCleanup(() => {
+    html.style.overscrollBehaviorY = prev;
+  });
+});
 </script>
 
 <template>
@@ -89,12 +106,12 @@ const onKeyActivate = (e: KeyboardEvent, index: number) => {
         <span>Transition:</span>
         <button
           v-for="t in _kTransitions"
-          :key="t"
+          :key="t.label"
           class="transition-btn"
-          :class="{ active: transition === t }"
-          @click="transition = t"
+          :class="{ active: transitionFn === t.fn }"
+          @click="transitionFn = t.fn"
         >
-          {{ t }}
+          {{ t.label }}
         </button>
       </div>
     </header>
@@ -132,7 +149,7 @@ const onKeyActivate = (e: KeyboardEvent, index: number) => {
         v-model:is-open="open"
         :items="sampleItems"
         :initial-index="initialIndex"
-        :transition="transition"
+        :transition-fn="transitionFn"
       >
         <template #slide="scope">
           <VideoSlideRenderer v-bind="scope" />

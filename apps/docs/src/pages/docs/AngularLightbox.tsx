@@ -39,11 +39,11 @@ const lightboxInputs = [
     description: 'Zero-based index of the initially visible item',
   },
   {
-    prop: 'transition',
-    type: "'slide' | 'fade' | 'flip' | 'zoom-in'",
-    default: "'slide'",
+    prop: 'transitionFn',
+    type: 'TransitionTransformFn',
+    default: 'slideTransition',
     description:
-      'Transition animation between slides. Internally maps to TransitionTransformFn',
+      'Slide transition function. Import a built-in (slideTransition, flipTransition, lightboxFadeTransition, lightboxZoomTransition) or pass a custom one. Defaults to slideTransition when omitted.',
   },
   {
     prop: 'showInfo',
@@ -1141,24 +1141,28 @@ export class AppComponent {
           Transitions
         </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
-          The lightbox supports four built-in transition animations via the{' '}
-          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
-            transition
-          </code>{' '}
-          input. Each string value maps internally to a{' '}
+          Pass any{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
             TransitionTransformFn
-          </code>
-          .
+          </code>{' '}
+          via the{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            transitionFn
+          </code>{' '}
+          input. Importing only the transition you use lets the bundler
+          tree-shake the rest. Defaults to{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            slideTransition
+          </code>{' '}
+          when omitted.
         </p>
 
         <div className="overflow-x-auto mb-4">
           <table className="w-full">
             <thead>
               <tr className="border-b border-slate-200 dark:border-slate-700">
-                <th className="text-left py-3 px-4 font-semibold">
-                  Transition
-                </th>
+                <th className="text-left py-3 px-4 font-semibold">Function</th>
+                <th className="text-left py-3 px-4 font-semibold">From</th>
                 <th className="text-left py-3 px-4 font-semibold">
                   Description
                 </th>
@@ -1167,7 +1171,10 @@ export class AppComponent {
             <tbody>
               <tr className="border-b border-slate-100 dark:border-slate-800">
                 <td className="py-3 px-4 font-mono text-sm text-primary-600">
-                  'slide'
+                  slideTransition
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  @reelkit/angular-lightbox
                 </td>
                 <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
                   Standard horizontal slide (default)
@@ -1175,7 +1182,10 @@ export class AppComponent {
               </tr>
               <tr className="border-b border-slate-100 dark:border-slate-800">
                 <td className="py-3 px-4 font-mono text-sm text-primary-600">
-                  'fade'
+                  lightboxFadeTransition
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  @reelkit/angular-lightbox
                 </td>
                 <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
                   Crossfade between images
@@ -1183,7 +1193,10 @@ export class AppComponent {
               </tr>
               <tr className="border-b border-slate-100 dark:border-slate-800">
                 <td className="py-3 px-4 font-mono text-sm text-primary-600">
-                  'flip'
+                  flipTransition
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  @reelkit/angular-lightbox
                 </td>
                 <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
                   3D card flip effect
@@ -1191,7 +1204,10 @@ export class AppComponent {
               </tr>
               <tr className="border-b border-slate-100 dark:border-slate-800">
                 <td className="py-3 px-4 font-mono text-sm text-primary-600">
-                  'zoom-in'
+                  lightboxZoomTransition
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  @reelkit/angular-lightbox
                 </td>
                 <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
                   Zoom in from smaller to normal size
@@ -1202,40 +1218,25 @@ export class AppComponent {
         </div>
 
         <CodeBlock
-          code={`<rk-lightbox-overlay
-  [isOpen]="isOpen"
-  [items]="images"
-  [transition]="'flip'"
-  (closed)="isOpen = false"
-/>`}
-          language="html"
-        />
-
-        <p className="text-slate-600 dark:text-slate-400 mt-4">
-          The{' '}
-          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
-            @reelkit/angular-lightbox
-          </code>{' '}
-          package also exports{' '}
-          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
-            lightboxFadeTransition
-          </code>{' '}
-          and{' '}
-          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
-            lightboxZoomTransition
-          </code>{' '}
-          as{' '}
-          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
-            TransitionTransformFn
-          </code>{' '}
-          values for use in custom components that accept transition functions
-          directly.
-        </p>
-        <CodeBlock
           code={`import {
+  RkLightboxOverlayComponent,
   lightboxFadeTransition,
-  lightboxZoomTransition,
-} from '@reelkit/angular-lightbox';`}
+} from '@reelkit/angular-lightbox';
+
+@Component({
+  imports: [RkLightboxOverlayComponent],
+  template: \`
+    <rk-lightbox-overlay
+      [isOpen]="isOpen"
+      [items]="images"
+      [transitionFn]="lightboxFadeTransition"
+      (closed)="isOpen = false"
+    />
+  \`,
+})
+export class GalleryComponent {
+  protected readonly lightboxFadeTransition = lightboxFadeTransition;
+}`}
           language="typescript"
         />
       </section>

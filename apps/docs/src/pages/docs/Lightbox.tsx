@@ -20,7 +20,15 @@ import {
 import { Heading } from '../../components/ui/Heading';
 
 const fullCode = `import { useState } from 'react';
-import { LightboxOverlay, type LightboxItem } from '@reelkit/react-lightbox';
+import {
+  LightboxOverlay,
+  flipTransition,
+  lightboxFadeTransition,
+  lightboxZoomTransition,
+  slideTransition,
+  type LightboxItem,
+} from '@reelkit/react-lightbox';
+import type { TransitionTransformFn } from '@reelkit/react';
 import '@reelkit/react-lightbox/styles.css';
 
 const images: LightboxItem[] = [
@@ -68,11 +76,18 @@ const images: LightboxItem[] = [
   },
 ];
 
-const transitions = ['slide', 'fade', 'flip', 'zoom-in'] as const;
+const transitions: { label: string; fn: TransitionTransformFn }[] = [
+  { label: 'slide', fn: slideTransition },
+  { label: 'fade', fn: lightboxFadeTransition },
+  { label: 'flip', fn: flipTransition },
+  { label: 'zoom-in', fn: lightboxZoomTransition },
+];
 
 export default function App() {
   const [index, setIndex] = useState<number | null>(null);
-  const [transition, setTransition] = useState<'slide' | 'fade' | 'flip' | 'zoom-in'>('slide');
+  const [transitionFn, setTransitionFn] = useState<TransitionTransformFn>(
+    () => slideTransition,
+  );
 
   return (
     <div style={{ padding: 16, background: '#f8fafc', minHeight: '100vh' }}>
@@ -80,16 +95,16 @@ export default function App() {
       <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
         {transitions.map((t) => (
           <button
-            key={t}
-            onClick={() => setTransition(t)}
+            key={t.label}
+            onClick={() => setTransitionFn(() => t.fn)}
             style={{
               padding: '6px 14px', borderRadius: 8, border: 'none', cursor: 'pointer',
               fontSize: 13, fontWeight: 500,
-              background: transition === t ? '#6366f1' : '#e2e8f0',
-              color: transition === t ? '#fff' : '#334155',
+              background: transitionFn === t.fn ? '#6366f1' : '#e2e8f0',
+              color: transitionFn === t.fn ? '#fff' : '#334155',
             }}
           >
-            {t}
+            {t.label}
           </button>
         ))}
       </div>
@@ -117,7 +132,7 @@ export default function App() {
         images={images}
         initialIndex={index ?? 0}
         onClose={() => setIndex(null)}
-        transition={transition}
+        transitionFn={transitionFn}
       />
     </div>
   );
@@ -150,17 +165,11 @@ const lightboxProps = [
     description: 'Starting image index',
   },
   {
-    prop: 'transition',
-    type: 'TransitionType',
-    default: "'slide'",
-    description: 'Transition animation type',
-  },
-  {
     prop: 'transitionFn',
     type: 'TransitionTransformFn',
-    default: '-',
+    default: 'slideTransition',
     description:
-      'Custom transition function. Takes priority over the transition alias.',
+      'Slide transition function. Import a built-in (slideTransition, flipTransition, lightboxFadeTransition, lightboxZoomTransition) or pass a custom one. Defaults to slideTransition when omitted.',
   },
   {
     prop: 'apiRef',
@@ -1296,14 +1305,6 @@ renderSlide={({ item, index, size, isActive, onReady, onWaiting, onError }) => (
         />
 
         <Heading level={3} className="text-lg font-semibold mt-6 mb-2">
-          TransitionType
-        </Heading>
-        <CodeBlock
-          code={`type TransitionType = 'slide' | 'fade' | 'flip' | 'zoom-in';`}
-          language="typescript"
-        />
-
-        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">
           ControlsRenderProps
         </Heading>
         <CodeBlock
@@ -1539,28 +1540,28 @@ function CustomLightbox() {
           Transitions
         </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
-          Choose from four built-in transition aliases via the{' '}
-          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
-            transition
-          </code>{' '}
-          prop, or pass any{' '}
+          Pass any{' '}
           <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
             TransitionTransformFn
           </code>{' '}
-          via{' '}
+          via the{' '}
           <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
             transitionFn
-          </code>
-          .
+          </code>{' '}
+          prop. Importing only the transition you use lets the bundler
+          tree-shake the rest. Defaults to{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            slideTransition
+          </code>{' '}
+          when omitted.
         </p>
 
         <div className="overflow-x-auto mb-4">
           <table className="w-full">
             <thead>
               <tr className="border-b border-slate-200 dark:border-slate-700">
-                <th className="text-left py-3 px-4 font-semibold">
-                  Transition
-                </th>
+                <th className="text-left py-3 px-4 font-semibold">Function</th>
+                <th className="text-left py-3 px-4 font-semibold">From</th>
                 <th className="text-left py-3 px-4 font-semibold">
                   Description
                 </th>
@@ -1569,7 +1570,10 @@ function CustomLightbox() {
             <tbody>
               <tr className="border-b border-slate-100 dark:border-slate-800">
                 <td className="py-3 px-4 font-mono text-sm text-primary-600">
-                  'slide'
+                  slideTransition
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  @reelkit/react-lightbox
                 </td>
                 <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
                   Standard horizontal slide (default)
@@ -1577,7 +1581,10 @@ function CustomLightbox() {
               </tr>
               <tr className="border-b border-slate-100 dark:border-slate-800">
                 <td className="py-3 px-4 font-mono text-sm text-primary-600">
-                  'fade'
+                  lightboxFadeTransition
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  @reelkit/react-lightbox
                 </td>
                 <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
                   Crossfade between images
@@ -1585,7 +1592,10 @@ function CustomLightbox() {
               </tr>
               <tr className="border-b border-slate-100 dark:border-slate-800">
                 <td className="py-3 px-4 font-mono text-sm text-primary-600">
-                  'flip'
+                  flipTransition
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  @reelkit/react-lightbox
                 </td>
                 <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
                   3D card flip effect
@@ -1593,7 +1603,10 @@ function CustomLightbox() {
               </tr>
               <tr className="border-b border-slate-100 dark:border-slate-800">
                 <td className="py-3 px-4 font-mono text-sm text-primary-600">
-                  'zoom-in'
+                  lightboxZoomTransition
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  @reelkit/react-lightbox
                 </td>
                 <td className="py-3 px-4 text-slate-600 dark:text-slate-400">
                   Zoom in from smaller to normal size
@@ -1604,12 +1617,17 @@ function CustomLightbox() {
         </div>
 
         <CodeBlock
-          code={`<LightboxOverlay
+          code={`import {
+  LightboxOverlay,
+  lightboxFadeTransition,
+} from '@reelkit/react-lightbox';
+
+<LightboxOverlay
   isOpen={isOpen}
   images={images}
   initialIndex={0}
   onClose={handleClose}
-  transition="flip"
+  transitionFn={lightboxFadeTransition}
 />`}
           language="tsx"
         />
@@ -1618,46 +1636,33 @@ function CustomLightbox() {
           Custom Transition Function
         </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
-          Use{' '}
-          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
-            transitionFn
-          </code>{' '}
-          to pass any{' '}
+          Author your own{' '}
           <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
             TransitionTransformFn
           </code>{' '}
-          directly. It takes priority over the{' '}
+          and pass it via{' '}
           <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
-            transition
-          </code>{' '}
-          alias. Built-in functions are available from{' '}
-          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
-            @reelkit/react
-          </code>{' '}
-          and lightbox-specific ones from{' '}
-          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
-            @reelkit/react-lightbox
+            transitionFn
           </code>
-          .
+          . The signature mirrors core slider transitions.
         </p>
         <CodeBlock
-          code={`import { LightboxOverlay, lightboxFadeTransition } from '@reelkit/react-lightbox';
-import { flipTransition, cubeTransition } from '@reelkit/react';
+          code={`import {
+  LightboxOverlay,
+  type TransitionTransformFn,
+} from '@reelkit/react-lightbox';
 
-// Use a core transition directly
+const customFade: TransitionTransformFn = (offset, size) => ({
+  transform: \`translate3d(\${offset * size[0]}px, 0, 0)\`,
+  opacity: 1 - Math.min(Math.abs(offset), 1),
+});
+
 <LightboxOverlay
   isOpen={isOpen}
   images={images}
-  transitionFn={flipTransition}
+  transitionFn={customFade}
   onClose={() => setIsOpen(false)}
-/>
-
-// Available from @reelkit/react:
-//   slideTransition, fadeTransition, flipTransition,
-//   cubeTransition, zoomTransition
-//
-// Available from @reelkit/react-lightbox:
-//   lightboxFadeTransition, lightboxZoomTransition`}
+/>`}
           language="tsx"
         />
       </section>

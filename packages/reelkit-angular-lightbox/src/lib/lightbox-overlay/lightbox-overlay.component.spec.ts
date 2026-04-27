@@ -769,19 +769,20 @@ describe('RkLightboxOverlayComponent', () => {
   });
 
   describe('transitionFn', () => {
-    it('defaults to slide transition', () => {
+    it('resolves to slideTransition when transitionFn input is undefined', () => {
       const fixture = createFixture(true, ITEMS, 0);
-      expect(typeof fixture.componentInstance['transitionFn']()).toBe(
+      expect(typeof fixture.componentInstance['resolvedTransitionFn']()).toBe(
         'function',
       );
     });
 
-    it('maps flip to flipTransition', () => {
+    it('forwards a custom transitionFn input', () => {
       const fixture = createFixture(true, ITEMS, 0);
-      fixture.componentRef.setInput('transition', 'flip');
+      const customFn = () => ({});
+      fixture.componentRef.setInput('transitionFn', customFn);
       fixture.detectChanges();
-      expect(typeof fixture.componentInstance['transitionFn']()).toBe(
-        'function',
+      expect(fixture.componentInstance['resolvedTransitionFn']()).toBe(
+        customFn,
       );
     });
   });

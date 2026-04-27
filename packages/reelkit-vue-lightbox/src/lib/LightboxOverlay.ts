@@ -20,7 +20,6 @@ import {
   createContentPreloader,
   createDisposableList,
   createFocusTrap,
-  flipTransition,
   hasRenderedNodes,
   observeDomEvent,
   slideTransition,
@@ -39,13 +38,10 @@ import type {
   LoadingSlotScope,
   NavigationSlotScope,
   SlideSlotScope,
-  TransitionType,
 } from './types';
 import { ImageSlide } from './ImageSlide';
 import { LightboxControls } from './LightboxControls';
 import { LightboxNavigation } from './LightboxNavigation';
-import { lightboxFadeTransition } from './lightboxFadeTransition';
-import { lightboxZoomTransition } from './lightboxZoomTransition';
 import './styles.css';
 
 /** Imperative API exposed by `<LightboxOverlay>` via template ref. */
@@ -64,13 +60,6 @@ export interface LightboxApi {
  * Matches the React + Angular implementations.
  */
 const _kPreloadRange = 2;
-
-const _kTransitionMap: Record<TransitionType, TransitionTransformFn> = {
-  slide: slideTransition,
-  fade: lightboxFadeTransition,
-  flip: flipTransition,
-  'zoom-in': lightboxZoomTransition,
-};
 
 const preloader = createContentPreloader({ maxCacheSize: 1000 });
 
@@ -104,15 +93,11 @@ const lightboxSharedProps = {
    */
   initialIndex: { type: Number, default: 0 },
   /**
-   * Built-in transition alias. Ignored when `transitionFn` is provided.
-   *
-   * @default 'slide'
+   * Slide transition function. Defaults to `slideTransition` from
+   * `@reelkit/vue`. Import additional built-ins from
+   * `@reelkit/vue-lightbox` (`lightboxFadeTransition`,
+   * `lightboxZoomTransition`) or `@reelkit/vue` (`flipTransition`).
    */
-  transition: {
-    type: String as PropType<TransitionType>,
-    default: 'slide' as TransitionType,
-  },
-  /** Custom transition function. Overrides `transition` alias. */
   transitionFn: {
     type: Function as PropType<TransitionTransformFn>,
     default: undefined,
@@ -524,8 +509,7 @@ const LightboxContent = defineComponent({
       const [width, height] = size.value;
       if (width <= 0 || height <= 0) return null;
 
-      const transitionFn =
-        props.transitionFn ?? _kTransitionMap[props.transition];
+      const transitionFn = props.transitionFn ?? slideTransition;
 
       return h(
         'div',
@@ -662,7 +646,6 @@ export const LightboxOverlay = defineComponent({
             items: props.items,
             ariaLabel: props.ariaLabel,
             initialIndex: props.initialIndex,
-            transition: props.transition,
             transitionFn: props.transitionFn,
             transitionDuration: props.transitionDuration,
             swipeDistanceFactor: props.swipeDistanceFactor,

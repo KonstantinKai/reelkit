@@ -49,7 +49,6 @@ export { RkLightboxOverlayComponent } from './lib/lightbox-overlay/lightbox-over
 
 export type {
   LightboxItem,
-  TransitionType,
   ReelProxyProps,
   LightboxControlsContext,
   LightboxNavContext,
@@ -80,5 +79,6 @@ export {
   setLightboxVideoMuted,
 } from './lib/lightbox-video-slide/lightbox-video-slide.component';
 
+export { slideTransition, flipTransition } from '@reelkit/angular';
 export { lightboxFadeTransition } from './lib/lightboxFadeTransition';
 export { lightboxZoomTransition } from './lib/lightboxZoomTransition';

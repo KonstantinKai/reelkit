@@ -34,16 +34,6 @@ export interface LightboxItem {
 }
 
 /**
- * Available CSS transition effects applied when navigating between slides.
- *
- * - `'slide'` — standard horizontal slide (default)
- * - `'fade'` — crossfade between images
- * - `'flip'` — 3D card flip
- * - `'zoom-in'` — zoom in from smaller to normal size
- */
-export type TransitionType = 'slide' | 'fade' | 'flip' | 'zoom-in';
-
-/**
  * Subset of reel configuration forwarded to the underlying slider.
  *
  * Allows controlling transition duration, swipe sensitivity, looping,

@@ -46,12 +46,12 @@
 export { LightboxOverlay } from './lib/LightboxOverlay';
 
 // Transitions
+export { slideTransition, flipTransition } from '@reelkit/react';
 export { lightboxFadeTransition } from './lib/lightboxFadeTransition';
 export { lightboxZoomTransition } from './lib/lightboxZoomTransition';
 export type {
   LightboxOverlayProps,
   LightboxItem,
-  TransitionType,
   ReelProxyProps,
 } from './lib/LightboxOverlay';
 

@@ -3,7 +3,7 @@ title: Vue Lightbox
 url: https://reelkit.dev/docs/vue-lightbox
 section: Vue
 order: 4
-desc: Full-screen image gallery lightbox overlay for Vue 3. LightboxItem schema, props, emits, scoped slots, transitions, swipe-to-close, theming shared with React lightbox.
+desc: Full-screen image gallery lightbox overlay for Vue 3. LightboxItem schema, props, emits, scoped slots, tree-shakable transitionFn, swipe-to-close, theming shared with React lightbox.
 ---
 
 # Vue Lightbox
@@ -26,7 +26,10 @@ import '@reelkit/vue-lightbox/styles.css';
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue';
-import { RkLightboxOverlay } from '@reelkit/vue-lightbox';
+import {
+  RkLightboxOverlay,
+  lightboxFadeTransition,
+} from '@reelkit/vue-lightbox';
 import '@reelkit/vue-lightbox/styles.css';
 
 const isOpen = ref(false);
@@ -60,7 +63,7 @@ const items = [
     v-model:is-open="isOpen"
     :items="items"
     :initial-index="initialIndex"
-    transition="slide"
+    :transition-fn="lightboxFadeTransition"
   />
 </template>
 ```
@@ -79,24 +82,23 @@ const items = [
 
 ## RkLightboxOverlay Props
 
-| Prop                    | Type                                       | Default           | Description                                                                            |
-| ----------------------- | ------------------------------------------ | ----------------- | -------------------------------------------------------------------------------------- |
-| `isOpen`                | `boolean`                                  | required          | Controls visibility; false = overlay removed from DOM. Bindable via `v-model:is-open`. |
-| `items`                 | `LightboxItem[]`                           | required          | Items array (images or videos)                                                         |
-| `initialIndex`          | `number`                                   | `0`               | Zero-based index of initial item                                                       |
-| `transition`            | `'slide' \| 'fade' \| 'flip' \| 'zoom-in'` | `'slide'`         | Built-in transition alias. Maps to `TransitionTransformFn` internally.                 |
-| `transitionFn`          | `TransitionTransformFn`                    | `undefined`       | Custom transition fn. Overrides alias.                                                 |
-| `showInfo`              | `boolean`                                  | `true`            | Render title/description info overlay                                                  |
-| `showControls`          | `boolean`                                  | `true`            | Render top controls bar (close, counter, fullscreen)                                   |
-| `showNavigation`        | `boolean`                                  | `true`            | Render prev/next nav arrows (desktop only)                                             |
-| `transitionDuration`    | `number`                                   | `300`             | Slide animation duration ms                                                            |
-| `swipeDistanceFactor`   | `number`                                   | `0.12`            | Min swipe distance fraction (0–1) trigger slide change                                 |
-| `swipeToCloseDirection` | `'up' \| 'down'`                           | `'up'`            | Swipe-to-close gesture direction mobile                                                |
-| `loop`                  | `boolean`                                  | `false`           | Slider wraps last → first                                                              |
-| `enableNavKeys`         | `boolean`                                  | `true`            | Keyboard arrow-key nav                                                                 |
-| `enableWheel`           | `boolean`                                  | `true`            | Mouse-wheel nav                                                                        |
-| `wheelDebounceMs`       | `number`                                   | `200`             | Wheel debounce ms                                                                      |
-| `ariaLabel`             | `string`                                   | `'Image gallery'` | Accessible label dialog region                                                         |
+| Prop                    | Type                    | Default           | Description                                                                                                                                                              |
+| ----------------------- | ----------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `isOpen`                | `boolean`               | required          | Controls visibility; false = overlay removed from DOM. Bindable via `v-model:is-open`.                                                                                   |
+| `items`                 | `LightboxItem[]`        | required          | Items array (images or videos)                                                                                                                                           |
+| `initialIndex`          | `number`                | `0`               | Zero-based index of initial item                                                                                                                                         |
+| `transitionFn`          | `TransitionTransformFn` | `slideTransition` | Slide transition fn. Import from `@reelkit/vue-lightbox` (`slideTransition`, `flipTransition`, `lightboxFadeTransition`, `lightboxZoomTransition`) or pass a custom one. |
+| `showInfo`              | `boolean`               | `true`            | Render title/description info overlay                                                                                                                                    |
+| `showControls`          | `boolean`               | `true`            | Render top controls bar (close, counter, fullscreen)                                                                                                                     |
+| `showNavigation`        | `boolean`               | `true`            | Render prev/next nav arrows (desktop only)                                                                                                                               |
+| `transitionDuration`    | `number`                | `300`             | Slide animation duration ms                                                                                                                                              |
+| `swipeDistanceFactor`   | `number`                | `0.12`            | Min swipe distance fraction (0–1) trigger slide change                                                                                                                   |
+| `swipeToCloseDirection` | `'up' \| 'down'`        | `'up'`            | Swipe-to-close gesture direction mobile                                                                                                                                  |
+| `loop`                  | `boolean`               | `false`           | Slider wraps last → first                                                                                                                                                |
+| `enableNavKeys`         | `boolean`               | `true`            | Keyboard arrow-key nav                                                                                                                                                   |
+| `enableWheel`           | `boolean`               | `true`            | Mouse-wheel nav                                                                                                                                                          |
+| `wheelDebounceMs`       | `number`                | `200`             | Wheel debounce ms                                                                                                                                                        |
+| `ariaLabel`             | `string`                | `'Image gallery'` | Accessible label dialog region                                                                                                                                           |
 
 ## Emits
 

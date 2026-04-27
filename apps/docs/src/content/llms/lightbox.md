@@ -3,12 +3,12 @@ title: Lightbox
 url: https://reelkit.dev/docs/lightbox
 section: React
 order: 4
-desc: Full-screen image gallery lightbox overlay for React. LightboxItem schema, props, transitions (slide/fade/flip/zoom-in), keyboard shortcuts, theming tokens, CSS classes, slot renderers.
+desc: Full-screen image gallery lightbox overlay for React. LightboxItem schema, props, tree-shakable transitions (slideTransition, lightboxFadeTransition, flipTransition, lightboxZoomTransition), keyboard shortcuts, theming tokens, CSS classes, slot renderers.
 ---
 
 # Lightbox
 
-Full-screen image gallery lightbox overlay for React. Configurable transitions, keyboard nav, fullscreen toggle, swipe-to-close on mobile, full theming via CSS custom properties.
+Full-screen image gallery lightbox overlay for React. Tree-shakable transitions, keyboard nav, fullscreen toggle, swipe-to-close on mobile, full theming via CSS custom properties.
 
 ## Install
 
@@ -25,7 +25,11 @@ import '@reelkit/react-lightbox/styles.css';
 
 ```tsx
 import { useState } from 'react';
-import { LightboxOverlay, type LightboxItem } from '@reelkit/react-lightbox';
+import {
+  LightboxOverlay,
+  lightboxFadeTransition,
+  type LightboxItem,
+} from '@reelkit/react-lightbox';
 import '@reelkit/react-lightbox/styles.css';
 
 const images: LightboxItem[] = [
@@ -55,7 +59,7 @@ export default function App() {
         images={images}
         initialIndex={index ?? 0}
         onClose={() => setIndex(null)}
-        transition="slide"
+        transitionFn={lightboxFadeTransition}
       />
     </>
   );
@@ -78,21 +82,20 @@ interface LightboxItem {
 
 ## LightboxOverlay Props
 
-| Prop               | Type                                             | Default           | Description                                                                                                                      |
-| ------------------ | ------------------------------------------------ | ----------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `isOpen`           | `boolean`                                        | required          | Control lightbox visibility                                                                                                      |
-| `images`           | `LightboxItem[]`                                 | required          | Image array to display                                                                                                           |
-| `ariaLabel`        | `string`                                         | `'Image gallery'` | Accessible label for dialog region; announced on open                                                                            |
-| `initialIndex`     | `number`                                         | `0`               | Starting image index                                                                                                             |
-| `transition`       | `TransitionType`                                 | `'slide'`         | Transition animation. One of `'slide'`, `'fade'`, `'flip'`, `'zoom-in'`                                                          |
-| `transitionFn`     | `TransitionTransformFn`                          | -                 | Custom transition fn. Priority over `transition` alias.                                                                          |
-| `apiRef`           | `MutableRefObject<ReelApi>`                      | -                 | Ref to Reel API                                                                                                                  |
-| `renderControls`   | `(props: ControlsRenderProps) => ReactNode`      | -                 | Custom controls, replace default close button, counter, fullscreen toggle                                                        |
-| `renderNavigation` | `(props: NavigationRenderProps) => ReactNode`    | -                 | Custom nav, replace default prev/next arrows                                                                                     |
-| `renderInfo`       | `(props: InfoRenderProps) => ReactNode`          | -                 | Custom info overlay, replace default title + description gradient. Return null to hide.                                          |
-| `renderSlide`      | `(props: SlideRenderProps) => ReactNode \| null` | -                 | Custom slide render. Receive `{ item, index, size, isActive, onReady, onWaiting, onError }`. Return null = fall back to default. |
-| `renderLoading`    | `(props: { item, activeIndex }) => ReactNode`    | -                 | Custom loading indicator, replace default spinner                                                                                |
-| `renderError`      | `(props: { item, activeIndex }) => ReactNode`    | -                 | Custom error indicator, replace default error icon                                                                               |
+| Prop               | Type                                             | Default           | Description                                                                                                                                                                |
+| ------------------ | ------------------------------------------------ | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `isOpen`           | `boolean`                                        | required          | Control lightbox visibility                                                                                                                                                |
+| `images`           | `LightboxItem[]`                                 | required          | Image array to display                                                                                                                                                     |
+| `ariaLabel`        | `string`                                         | `'Image gallery'` | Accessible label for dialog region; announced on open                                                                                                                      |
+| `initialIndex`     | `number`                                         | `0`               | Starting image index                                                                                                                                                       |
+| `transitionFn`     | `TransitionTransformFn`                          | `slideTransition` | Slide transition fn. Import from `@reelkit/react-lightbox` (`slideTransition`, `flipTransition`, `lightboxFadeTransition`, `lightboxZoomTransition`) or pass a custom one. |
+| `apiRef`           | `MutableRefObject<ReelApi>`                      | -                 | Ref to Reel API                                                                                                                                                            |
+| `renderControls`   | `(props: ControlsRenderProps) => ReactNode`      | -                 | Custom controls, replace default close button, counter, fullscreen toggle                                                                                                  |
+| `renderNavigation` | `(props: NavigationRenderProps) => ReactNode`    | -                 | Custom nav, replace default prev/next arrows                                                                                                                               |
+| `renderInfo`       | `(props: InfoRenderProps) => ReactNode`          | -                 | Custom info overlay, replace default title + description gradient. Return null to hide.                                                                                    |
+| `renderSlide`      | `(props: SlideRenderProps) => ReactNode \| null` | -                 | Custom slide render. Receive `{ item, index, size, isActive, onReady, onWaiting, onError }`. Return null = fall back to default.                                           |
+| `renderLoading`    | `(props: { item, activeIndex }) => ReactNode`    | -                 | Custom loading indicator, replace default spinner                                                                                                                          |
+| `renderError`      | `(props: { item, activeIndex }) => ReactNode`    | -                 | Custom error indicator, replace default error icon                                                                                                                         |
 
 ### Reel-Forwarded Props
 

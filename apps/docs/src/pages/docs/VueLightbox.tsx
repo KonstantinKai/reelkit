@@ -39,17 +39,11 @@ const lightboxProps = [
     description: 'Zero-based index of the initially visible item',
   },
   {
-    prop: 'transition',
-    type: "'slide' | 'fade' | 'flip' | 'zoom-in'",
-    default: "'slide'",
-    description:
-      'Built-in transition alias. Maps to a TransitionTransformFn internally.',
-  },
-  {
     prop: 'transitionFn',
     type: 'TransitionTransformFn',
-    default: 'undefined',
-    description: 'Custom transition function. Overrides the transition alias.',
+    default: 'slideTransition',
+    description:
+      'Slide transition function. Import a built-in (slideTransition, flipTransition, lightboxFadeTransition, lightboxZoomTransition) or pass a custom one. Defaults to slideTransition when omitted.',
   },
   {
     prop: 'showInfo',
@@ -268,23 +262,23 @@ const lifecycleCallbacks = [
 
 const transitions = [
   {
-    name: "'slide'",
+    name: 'slideTransition',
     description:
-      'Default. Horizontal translate between slides; reuses slideTransition from core.',
+      'Default. Horizontal translate between slides; re-exported from @reelkit/vue.',
   },
   {
-    name: "'fade'",
+    name: 'lightboxFadeTransition',
     description:
-      'Crossfade with a subtle horizontal nudge. Ships as lightboxFadeTransition.',
+      'Crossfade with a subtle horizontal nudge. Local to @reelkit/vue-lightbox.',
   },
   {
-    name: "'flip'",
-    description: '3D flip around the Y-axis; reuses flipTransition from core.',
+    name: 'flipTransition',
+    description: '3D flip around the Y-axis; re-exported from @reelkit/vue.',
   },
   {
-    name: "'zoom-in'",
+    name: 'lightboxZoomTransition',
     description:
-      'Incoming slide scales 70% → 100% with fade. Ships as lightboxZoomTransition.',
+      'Incoming slide scales 70% → 100% with fade. Local to @reelkit/vue-lightbox.',
   },
 ];
 
@@ -638,14 +632,22 @@ const { isFullscreen, toggle } = useFullscreen({ elementRef: containerRef });
 </template>`;
 
 const customTransitionCode = `<script setup lang="ts">
-import { LightboxOverlay, lightboxZoomTransition } from '@reelkit/vue-lightbox';
+import {
+  LightboxOverlay,
+  lightboxFadeTransition,
+  lightboxZoomTransition,
+} from '@reelkit/vue-lightbox';
 </script>
 
 <template>
-  <!-- Built-in alias -->
-  <LightboxOverlay v-model:is-open="open" :items="items" transition="fade" />
+  <!-- Built-in transition -->
+  <LightboxOverlay
+    v-model:is-open="open"
+    :items="items"
+    :transition-fn="lightboxFadeTransition"
+  />
 
-  <!-- Imported transition function -->
+  <!-- Different built-in -->
   <LightboxOverlay
     v-model:is-open="open"
     :items="items"
@@ -1114,11 +1116,7 @@ export default function VueLightbox() {
           Transitions
         </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
-          Four built-in aliases are selectable via the{' '}
-          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
-            transition
-          </code>{' '}
-          prop. Pass a custom{' '}
+          Pass any{' '}
           <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
             TransitionTransformFn
           </code>{' '}
@@ -1126,13 +1124,18 @@ export default function VueLightbox() {
           <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
             transition-fn
           </code>{' '}
-          prop to fully override the animation.
+          prop. Importing only the transition you use lets the bundler
+          tree-shake the rest. Defaults to{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            slideTransition
+          </code>{' '}
+          when omitted.
         </p>
         <div className="overflow-x-auto mb-6">
           <table className="w-full">
             <thead>
               <tr className="border-b border-slate-200 dark:border-slate-700">
-                <th className="text-left py-3 px-4 font-semibold">Alias</th>
+                <th className="text-left py-3 px-4 font-semibold">Function</th>
                 <th className="text-left py-3 px-4 font-semibold">
                   Description
                 </th>

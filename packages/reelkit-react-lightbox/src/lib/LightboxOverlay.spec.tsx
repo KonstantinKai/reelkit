@@ -720,33 +720,33 @@ describe('LightboxOverlay', () => {
       expect(document.querySelector('.rk-lightbox-img')).toBeNull();
     });
 
-    it('maps fade alias to lightboxFadeTransition', () => {
+    it('forwards lightboxFadeTransition when passed via transitionFn', () => {
       render(
         <LightboxOverlay
           isOpen={true}
           images={mockImages}
           onClose={vi.fn()}
-          transition="fade"
+          transitionFn={lightboxFadeTransition}
         />,
       );
 
       expect(lastReelProps.transition).toBe(lightboxFadeTransition);
     });
 
-    it('maps zoom-in alias to lightboxZoomTransition', () => {
+    it('forwards lightboxZoomTransition when passed via transitionFn', () => {
       render(
         <LightboxOverlay
           isOpen={true}
           images={mockImages}
           onClose={vi.fn()}
-          transition="zoom-in"
+          transitionFn={lightboxZoomTransition}
         />,
       );
 
       expect(lastReelProps.transition).toBe(lightboxZoomTransition);
     });
 
-    it('defaults to slideTransition', () => {
+    it('defaults to slideTransition when transitionFn is omitted', () => {
       render(
         <LightboxOverlay isOpen={true} images={mockImages} onClose={vi.fn()} />,
       );
@@ -754,14 +754,13 @@ describe('LightboxOverlay', () => {
       expect(lastReelProps.transition).toBe(slideTransition);
     });
 
-    it('transitionFn takes priority over alias', () => {
+    it('forwards a custom transition fn', () => {
       const customFn = vi.fn();
       render(
         <LightboxOverlay
           isOpen={true}
           images={mockImages}
           onClose={vi.fn()}
-          transition="fade"
           transitionFn={customFn}
         />,
       );

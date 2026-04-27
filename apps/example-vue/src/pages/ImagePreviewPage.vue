@@ -1,16 +1,27 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import {
   LightboxOverlay,
+  flipTransition,
+  lightboxFadeTransition,
+  lightboxZoomTransition,
+  slideTransition,
   type LightboxItem,
-  type TransitionType,
 } from '@reelkit/vue-lightbox';
-import type { SwipeToCloseDirection } from '@reelkit/vue';
+import type {
+  SwipeToCloseDirection,
+  TransitionTransformFn,
+} from '@reelkit/vue';
 import { cdnUrl } from '@reelkit/example-data';
 import Thumbnail from '../components/Thumbnail.vue';
 import '@reelkit/vue-lightbox/styles.css';
 
-const _kTransitions: TransitionType[] = ['slide', 'fade', 'flip', 'zoom-in'];
+const _kTransitions: { label: string; fn: TransitionTransformFn }[] = [
+  { label: 'slide', fn: slideTransition },
+  { label: 'fade', fn: lightboxFadeTransition },
+  { label: 'flip', fn: flipTransition },
+  { label: 'zoom-in', fn: lightboxZoomTransition },
+];
 const _kSwipeDirections: SwipeToCloseDirection[] = ['up', 'down'];
 
 const sampleImages: LightboxItem[] = [
@@ -111,7 +122,7 @@ const sampleImages: LightboxItem[] = [
 
 const open = ref(false);
 const initialIndex = ref(0);
-const transition = ref<TransitionType>('slide');
+const transitionFn = ref<TransitionTransformFn>(slideTransition);
 const swipeDirection = ref<SwipeToCloseDirection>('up');
 
 const openAt = (index: number) => {
@@ -125,6 +136,18 @@ const onKeyActivate = (e: KeyboardEvent, index: number) => {
     openAt(index);
   }
 };
+
+// Disable mobile pull-to-refresh while the lightbox is open so the
+// `swipe-to-close-direction="down"` gesture is not preempted.
+watch(open, (isOpen, _, onCleanup) => {
+  if (!isOpen) return;
+  const html = document.documentElement;
+  const prev = html.style.overscrollBehaviorY;
+  html.style.overscrollBehaviorY = 'contain';
+  onCleanup(() => {
+    html.style.overscrollBehaviorY = prev;
+  });
+});
 </script>
 
 <template>
@@ -139,12 +162,12 @@ const onKeyActivate = (e: KeyboardEvent, index: number) => {
         <span>Transition:</span>
         <button
           v-for="t in _kTransitions"
-          :key="t"
+          :key="t.label"
           class="transition-btn"
-          :class="{ active: transition === t }"
-          @click="transition = t"
+          :class="{ active: transitionFn === t.fn }"
+          @click="transitionFn = t.fn"
         >
-          {{ t }}
+          {{ t.label }}
         </button>
       </div>
       <div class="transition-selector">
@@ -184,7 +207,7 @@ const onKeyActivate = (e: KeyboardEvent, index: number) => {
       v-model:is-open="open"
       :items="sampleImages"
       :initial-index="initialIndex"
-      :transition="transition"
+      :transition-fn="transitionFn"
       :swipe-to-close-direction="swipeDirection"
     />
   </div>

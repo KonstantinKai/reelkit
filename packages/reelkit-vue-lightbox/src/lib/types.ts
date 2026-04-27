@@ -35,14 +35,6 @@ export interface LightboxItem {
 }
 
 /**
- * Built-in transition aliases accepted by `<LightboxOverlay :transition="…">`.
- *
- * Use the `transitionFn` prop to pass a custom `TransitionTransformFn`
- * from `@reelkit/vue` and fully override the animation.
- */
-export type TransitionType = 'slide' | 'fade' | 'flip' | 'zoom-in';
-
-/**
  * Scope object provided to the `controls` slot.
  */
 export interface ControlsSlotScope {

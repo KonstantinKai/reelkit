@@ -1,13 +1,29 @@
-import { Component, ChangeDetectionStrategy, signal } from '@angular/core';
+import {
+  Component,
+  ChangeDetectionStrategy,
+  effect,
+  signal,
+} from '@angular/core';
 import {
   RkLightboxOverlayComponent,
+  flipTransition,
+  lightboxFadeTransition,
+  lightboxZoomTransition,
+  slideTransition,
   type LightboxItem,
-  type TransitionType,
 } from '@reelkit/angular-lightbox';
-import type { SwipeToCloseDirection } from '@reelkit/angular';
+import type {
+  SwipeToCloseDirection,
+  TransitionTransformFn,
+} from '@reelkit/angular';
 import { cdnUrl } from '@reelkit/example-data';
 
-const _kTransitions: TransitionType[] = ['slide', 'fade', 'flip', 'zoom-in'];
+const _kTransitions: { label: string; fn: TransitionTransformFn }[] = [
+  { label: 'slide', fn: slideTransition },
+  { label: 'fade', fn: lightboxFadeTransition },
+  { label: 'flip', fn: flipTransition },
+  { label: 'zoom-in', fn: lightboxZoomTransition },
+];
 const _kSwipeDirections: SwipeToCloseDirection[] = ['up', 'down'];
 
 const sampleImages: LightboxItem[] = [
@@ -122,12 +138,14 @@ const sampleImages: LightboxItem[] = [
         </p>
         <div class="transition-selector">
           <span>Transition:</span>
-          @for (t of transitions; track t) {
+          @for (t of transitions; track t.label) {
             <button
-              [class]="'transition-btn' + (transition() === t ? ' active' : '')"
-              (click)="transition.set(t)"
+              [class]="
+                'transition-btn' + (transitionFn() === t.fn ? ' active' : '')
+              "
+              (click)="transitionFn.set(t.fn)"
             >
-              {{ t }}
+              {{ t.label }}
             </button>
           }
         </div>
@@ -208,7 +226,7 @@ const sampleImages: LightboxItem[] = [
         [isOpen]="previewIndex() !== null"
         [items]="images"
         [initialIndex]="previewIndex() ?? 0"
-        [transition]="transition()"
+        [transitionFn]="transitionFn()"
         [swipeToCloseDirection]="swipeDirection()"
         (closed)="previewIndex.set(null)"
       />
@@ -217,14 +235,28 @@ const sampleImages: LightboxItem[] = [
 })
 export class ImagePreviewPageComponent {
   protected readonly images: LightboxItem[] = sampleImages;
-  protected readonly transitions: TransitionType[] = _kTransitions;
+  protected readonly transitions = _kTransitions;
   protected readonly swipeDirections: SwipeToCloseDirection[] =
     _kSwipeDirections;
   protected readonly previewIndex = signal<number | null>(null);
-  protected readonly transition = signal<TransitionType>('slide');
+  protected readonly transitionFn =
+    signal<TransitionTransformFn>(slideTransition);
   protected readonly swipeDirection = signal<SwipeToCloseDirection>('up');
 
   protected readonly thumbErrors = signal<Set<number>>(new Set());
+
+  // Disable mobile pull-to-refresh while the lightbox is open so the
+  // `swipeToCloseDirection: 'down'` gesture is not preempted.
+  private readonly _overscrollEffect = effect((onCleanup) => {
+    if (this.previewIndex() === null) return;
+    if (typeof document === 'undefined') return;
+    const html = document.documentElement;
+    const prev = html.style.overscrollBehaviorY;
+    html.style.overscrollBehaviorY = 'contain';
+    onCleanup(() => {
+      html.style.overscrollBehaviorY = prev;
+    });
+  });
 
   protected onThumbError(index: number): void {
     this.thumbErrors.update((prev) => new Set([...prev, index]));

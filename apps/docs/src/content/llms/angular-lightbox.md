@@ -3,7 +3,7 @@ title: Angular Lightbox
 url: https://reelkit.dev/docs/angular-lightbox
 section: Angular
 order: 4
-desc: Full-screen image gallery lightbox overlay for Angular. LightboxItem schema, inputs, outputs, template slot directives, transitions, swipe-to-close, theming shared with React lightbox.
+desc: Full-screen image gallery lightbox overlay for Angular. LightboxItem schema, inputs, outputs, template slot directives, tree-shakable transitionFn, swipe-to-close, theming shared with React lightbox.
 ---
 
 # Angular Lightbox
@@ -25,7 +25,10 @@ import '@reelkit/angular-lightbox/styles.css';
 
 ```typescript
 import { Component, signal } from '@angular/core';
-import { RkLightboxOverlayComponent } from '@reelkit/angular-lightbox';
+import {
+  RkLightboxOverlayComponent,
+  lightboxFadeTransition,
+} from '@reelkit/angular-lightbox';
 
 @Component({
   selector: 'app-gallery',
@@ -42,7 +45,7 @@ import { RkLightboxOverlayComponent } from '@reelkit/angular-lightbox';
       [isOpen]="isOpen()"
       [items]="items"
       [initialIndex]="initialIndex()"
-      transition="slide"
+      [transitionFn]="fadeTransition"
       (closed)="isOpen.set(false)"
     />
   `,
@@ -50,6 +53,7 @@ import { RkLightboxOverlayComponent } from '@reelkit/angular-lightbox';
 export class GalleryComponent {
   isOpen = signal(false);
   initialIndex = signal(0);
+  protected readonly fadeTransition = lightboxFadeTransition;
 
   items = [
     {
@@ -78,24 +82,23 @@ export class GalleryComponent {
 
 ## RkLightboxOverlayComponent Inputs
 
-| Input                   | Type                                       | Default           | Description                                               |
-| ----------------------- | ------------------------------------------ | ----------------- | --------------------------------------------------------- |
-| `isOpen`                | `boolean`                                  | required          | Visibility; false = overlay removed from DOM              |
-| `items`                 | `LightboxItem[]`                           | required          | Array of items (images/videos)                            |
-| `initialIndex`          | `number`                                   | `0`               | Zero-based index of initial item                          |
-| `transition`            | `'slide' \| 'fade' \| 'flip' \| 'zoom-in'` | `'slide'`         | Built-in transition alias                                 |
-| `transitionFn`          | `TransitionTransformFn`                    | `undefined`       | Custom transition fn. Overrides alias.                    |
-| `showInfo`              | `boolean`                                  | `true`            | Render title/description info overlay                     |
-| `showControls`          | `boolean`                                  | `true`            | Render top controls bar (close, counter, fullscreen)      |
-| `showNavigation`        | `boolean`                                  | `true`            | Render prev/next nav arrows (desktop only)                |
-| `transitionDuration`    | `number`                                   | `300`             | Slide animation duration ms                               |
-| `swipeDistanceFactor`   | `number`                                   | `0.12`            | Min swipe distance fraction (0–1) to trigger slide change |
-| `swipeToCloseDirection` | `'up' \| 'down'`                           | `'up'`            | Swipe-to-close direction on mobile                        |
-| `loop`                  | `boolean`                                  | `false`           | Wrap last slide back to first                             |
-| `enableNavKeys`         | `boolean`                                  | `true`            | Keyboard arrow-key nav                                    |
-| `enableWheel`           | `boolean`                                  | `true`            | Mouse-wheel nav                                           |
-| `wheelDebounceMs`       | `number`                                   | `200`             | Wheel event debounce ms                                   |
-| `ariaLabel`             | `string`                                   | `'Image gallery'` | Accessible label for dialog region                        |
+| Input                   | Type                    | Default           | Description                                                                                                                                                                  |
+| ----------------------- | ----------------------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `isOpen`                | `boolean`               | required          | Visibility; false = overlay removed from DOM                                                                                                                                 |
+| `items`                 | `LightboxItem[]`        | required          | Array of items (images/videos)                                                                                                                                               |
+| `initialIndex`          | `number`                | `0`               | Zero-based index of initial item                                                                                                                                             |
+| `transitionFn`          | `TransitionTransformFn` | `slideTransition` | Slide transition fn. Import from `@reelkit/angular-lightbox` (`slideTransition`, `flipTransition`, `lightboxFadeTransition`, `lightboxZoomTransition`) or pass a custom one. |
+| `showInfo`              | `boolean`               | `true`            | Render title/description info overlay                                                                                                                                        |
+| `showControls`          | `boolean`               | `true`            | Render top controls bar (close, counter, fullscreen)                                                                                                                         |
+| `showNavigation`        | `boolean`               | `true`            | Render prev/next nav arrows (desktop only)                                                                                                                                   |
+| `transitionDuration`    | `number`                | `300`             | Slide animation duration ms                                                                                                                                                  |
+| `swipeDistanceFactor`   | `number`                | `0.12`            | Min swipe distance fraction (0–1) to trigger slide change                                                                                                                    |
+| `swipeToCloseDirection` | `'up' \| 'down'`        | `'up'`            | Swipe-to-close direction on mobile                                                                                                                                           |
+| `loop`                  | `boolean`               | `false`           | Wrap last slide back to first                                                                                                                                                |
+| `enableNavKeys`         | `boolean`               | `true`            | Keyboard arrow-key nav                                                                                                                                                       |
+| `enableWheel`           | `boolean`               | `true`            | Mouse-wheel nav                                                                                                                                                              |
+| `wheelDebounceMs`       | `number`                | `200`             | Wheel event debounce ms                                                                                                                                                      |
+| `ariaLabel`             | `string`                | `'Image gallery'` | Accessible label for dialog region                                                                                                                                           |
 
 ## Outputs
 

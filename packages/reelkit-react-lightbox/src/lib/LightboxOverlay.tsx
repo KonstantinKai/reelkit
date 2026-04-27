@@ -18,7 +18,6 @@ import {
   captureFocusForReturn,
   createFocusTrap,
   slideTransition,
-  flipTransition,
   Reel,
   Observe,
   useBodyLock,
@@ -28,8 +27,6 @@ import {
   type SwipeToCloseDirection,
   type TransitionTransformFn,
 } from '@reelkit/react';
-import { lightboxFadeTransition } from './lightboxFadeTransition';
-import { lightboxZoomTransition } from './lightboxZoomTransition';
 import { ChevronLeft, ChevronRight, ImageOff } from 'lucide-react';
 import { useFullscreen } from '@reelkit/react';
 import LightboxControls from './LightboxControls';
@@ -40,19 +37,6 @@ import type {
   InfoRenderProps,
 } from './types';
 import './LightboxOverlay.css';
-
-/**
- * Built-in transition aliases for the lightbox.
- * Use `transitionFn` for custom {@link TransitionTransformFn} instead.
- */
-export type TransitionType = 'slide' | 'fade' | 'flip' | 'zoom-in';
-
-const _kTransitionMap: Record<TransitionType, TransitionTransformFn> = {
-  slide: slideTransition,
-  fade: lightboxFadeTransition,
-  flip: flipTransition,
-  'zoom-in': lightboxZoomTransition,
-};
 
 /**
  * Data for a single lightbox item (image or video).
@@ -163,13 +147,10 @@ export interface LightboxOverlayProps extends ReelProxyProps {
   apiRef?: MutableRefObject<ReelApi | null>;
 
   /**
-   * Built-in transition alias.
-   * @default 'slide'
-   */
-  transition?: TransitionType;
-
-  /**
-   * Custom transition function. Takes priority over `transition` alias.
+   * Slide transition function. Defaults to `slideTransition` from
+   * `@reelkit/react`. Import additional built-ins from
+   * `@reelkit/react-lightbox` (`lightboxFadeTransition`,
+   * `lightboxZoomTransition`) or `@reelkit/react` (`flipTransition`).
    */
   transitionFn?: TransitionTransformFn;
 
@@ -242,7 +223,6 @@ const LightboxContent: FC<LightboxOverlayProps> = (props) => {
     images,
     initialIndex = 0,
     onClose,
-    transition = 'slide',
     transitionFn,
     apiRef,
     loop = false,
@@ -533,7 +513,7 @@ const LightboxContent: FC<LightboxOverlayProps> = (props) => {
               initialIndex={initialIndex}
               apiRef={sliderRef}
               afterChange={handleAfterChange}
-              transition={transitionFn ?? _kTransitionMap[transition]}
+              transition={transitionFn ?? slideTransition}
               transitionDuration={transitionDuration}
               swipeDistanceFactor={swipeDistanceFactor}
               loop={loop}

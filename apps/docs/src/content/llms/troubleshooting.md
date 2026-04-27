@@ -47,6 +47,20 @@ Safari pull-to-refresh + elastic bounce fight vertical swipe. Do **not** put `ov
 }
 ```
 
+**SwipeToClose downward edge case.** Any `SwipeToClose` with `direction="down"` (lightbox, stories player, custom overlays) is preempted by iOS pull-to-refresh — Safari handles the vertical pan at document level before the wrapper sees the touch. Scope `overscroll-behavior-y: contain` on `<html>` only while the overlay is open and restore on close:
+
+```tsx
+useEffect(() => {
+  if (!isOpen) return;
+  const html = document.documentElement;
+  const prev = html.style.overscrollBehaviorY;
+  html.style.overscrollBehaviorY = 'contain';
+  return () => {
+    html.style.overscrollBehaviorY = prev;
+  };
+}, [isOpen]);
+```
+
 ### Pinch-to-zoom interferes with gestures
 
 Disable zoom, stop pinch + double-tap firing during swipes:

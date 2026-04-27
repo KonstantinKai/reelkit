@@ -92,6 +92,41 @@ export default function Troubleshooting() {
 }`}
               language="css"
             />
+            <p className="text-slate-600 dark:text-slate-400 mt-3 mb-3">
+              <strong>SwipeToClose downward edge case.</strong> Any{' '}
+              <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+                SwipeToClose
+              </code>{' '}
+              with{' '}
+              <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+                direction="down"
+              </code>{' '}
+              (lightbox, stories player, custom overlays) is preempted on iOS
+              Safari — the browser fires pull-to-refresh from the document level
+              before the wrapper sees the touch. The overlay locks body scroll
+              but the browser still owns vertical-pan handling at the root.
+              Scope{' '}
+              <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+                overscroll-behavior-y: contain
+              </code>{' '}
+              on{' '}
+              <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+                {'<html>'}
+              </code>{' '}
+              only while the overlay is open and restore on close:
+            </p>
+            <CodeBlock
+              code={`useEffect(() => {
+  if (!isOpen) return;
+  const html = document.documentElement;
+  const prev = html.style.overscrollBehaviorY;
+  html.style.overscrollBehaviorY = 'contain';
+  return () => {
+    html.style.overscrollBehaviorY = prev;
+  };
+}, [isOpen]);`}
+              language="tsx"
+            />
           </div>
 
           <div>

@@ -24,7 +24,6 @@ import {
   createContentPreloader,
   createSoundController,
   slideTransition,
-  flipTransition,
   fullscreenSignal,
   requestFullscreen,
   exitFullscreen,
@@ -66,11 +65,8 @@ import { RkCloseButtonComponent } from '../lightbox-controls/close-button.compon
 import { RkCounterComponent } from '../lightbox-controls/counter.component';
 import { RkFullscreenButtonComponent } from '../lightbox-controls/fullscreen-button.component';
 import { RkSoundButtonComponent } from '../lightbox-controls/sound-button.component';
-import { lightboxFadeTransition } from '../lightboxFadeTransition';
-import { lightboxZoomTransition } from '../lightboxZoomTransition';
 import type {
   LightboxItem,
-  TransitionType,
   ReelProxyProps,
   LightboxControlsContext,
   LightboxNavContext,
@@ -82,13 +78,6 @@ const _kPreloadRange = 2;
 const _kDefaultTransitionDuration = 300;
 const _kDefaultSwipeDistanceFactor = 0.12;
 const _kDefaultWheelDebounceMs = 200;
-
-const _kTransitionMap: Record<TransitionType, TransitionTransformFn> = {
-  slide: slideTransition,
-  fade: lightboxFadeTransition,
-  flip: flipTransition,
-  'zoom-in': lightboxZoomTransition,
-};
 
 const preloader: ContentPreloader = createContentPreloader({
   maxCacheSize: 1000,
@@ -265,7 +254,7 @@ const focusFirstFocusable = (container: HTMLElement): void => {
               [wheelDebounceMs]="wheelDebounceMs() ?? 200"
               [transitionDuration]="transitionDuration() ?? 300"
               [swipeDistanceFactor]="swipeDistanceFactor() ?? 0.12"
-              [transition]="transitionFn()"
+              [transition]="resolvedTransitionFn()"
               (apiReady)="onApiReady($event)"
               (afterChange)="onAfterChange($event)"
             >
@@ -419,8 +408,13 @@ export class RkLightboxOverlayComponent {
   /** Zero-based index of the initially visible item. @default 0 */
   readonly initialIndex = input<number>(0);
 
-  /** Transition animation type. @default 'slide' */
-  readonly transition = input<TransitionType>('slide');
+  /**
+   * Slide transition function. Defaults to `slideTransition` from
+   * `@reelkit/angular`. Import additional built-ins from
+   * `@reelkit/angular-lightbox` (`lightboxFadeTransition`,
+   * `lightboxZoomTransition`) or `@reelkit/angular` (`flipTransition`).
+   */
+  readonly transitionFn = input<TransitionTransformFn | undefined>(undefined);
 
   readonly showInfo = input<boolean>(true);
 
@@ -519,8 +513,8 @@ export class RkLightboxOverlayComponent {
     return item?.type === 'video';
   });
 
-  protected readonly transitionFn = computed<TransitionTransformFn>(
-    () => _kTransitionMap[this.transition()],
+  protected readonly resolvedTransitionFn = computed<TransitionTransformFn>(
+    () => this.transitionFn() ?? slideTransition,
   );
 
   protected readonly ChevronLeftIcon = ChevronLeft;

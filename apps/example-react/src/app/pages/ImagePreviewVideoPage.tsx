@@ -1,15 +1,22 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
   LightboxOverlay,
+  lightboxFadeTransition,
+  lightboxZoomTransition,
+  slideTransition,
   useVideoSlideRenderer,
   type LightboxItem,
-  type TransitionType,
 } from '@reelkit/react-lightbox';
+import type { TransitionTransformFn } from '@reelkit/react';
 import { cdnUrl } from '@reelkit/example-data';
 import '@reelkit/react-lightbox/styles.css';
 import './ImagePreviewPage.css';
 
-const _kTransitions: TransitionType[] = ['slide', 'fade', 'zoom-in'];
+const _kTransitions: { label: string; fn: TransitionTransformFn }[] = [
+  { label: 'slide', fn: slideTransition },
+  { label: 'fade', fn: lightboxFadeTransition },
+  { label: 'zoom-in', fn: lightboxZoomTransition },
+];
 
 const sampleItems: LightboxItem[] = [
   {
@@ -59,7 +66,9 @@ const sampleItems: LightboxItem[] = [
 
 function ImagePreviewVideoPage() {
   const [previewIndex, setPreviewIndex] = useState<number | null>(null);
-  const [transition, setTransition] = useState<TransitionType>('slide');
+  const [transitionFn, setTransitionFn] = useState<TransitionTransformFn>(
+    () => slideTransition,
+  );
 
   const { renderSlide, renderControls, SoundProvider } =
     useVideoSlideRenderer(sampleItems);
@@ -71,6 +80,15 @@ function ImagePreviewVideoPage() {
   const handleClose = useCallback(() => {
     setPreviewIndex(null);
   }, []);
+
+  useEffect(() => {
+    if (previewIndex === null) return;
+    const prev = document.documentElement.style.overscrollBehaviorY;
+    document.documentElement.style.overscrollBehaviorY = 'contain';
+    return () => {
+      document.documentElement.style.overscrollBehaviorY = prev;
+    };
+  }, [previewIndex]);
 
   return (
     <div className="image-gallery-page">
@@ -84,11 +102,11 @@ function ImagePreviewVideoPage() {
           <span>Transition:</span>
           {_kTransitions.map((t) => (
             <button
-              key={t}
-              className={`transition-btn ${transition === t ? 'active' : ''}`}
-              onClick={() => setTransition(t)}
+              key={t.label}
+              className={`transition-btn ${transitionFn === t.fn ? 'active' : ''}`}
+              onClick={() => setTransitionFn(() => t.fn)}
             >
-              {t}
+              {t.label}
             </button>
           ))}
         </div>
@@ -148,7 +166,7 @@ function ImagePreviewVideoPage() {
           images={sampleItems}
           initialIndex={previewIndex ?? 0}
           onClose={handleClose}
-          transition={transition}
+          transitionFn={transitionFn}
           renderSlide={renderSlide}
           renderControls={renderControls}
         />

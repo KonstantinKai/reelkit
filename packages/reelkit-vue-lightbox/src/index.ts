@@ -20,7 +20,6 @@
 
 export type {
   LightboxItem,
-  TransitionType,
   ControlsSlotScope,
   NavigationSlotScope,
   SlideSlotScope,
@@ -29,6 +28,7 @@ export type {
   ErrorSlotScope,
 } from './lib/types';
 
+export { slideTransition, flipTransition } from '@reelkit/vue';
 export { lightboxFadeTransition } from './lib/lightboxFadeTransition';
 export { lightboxZoomTransition } from './lib/lightboxZoomTransition';
 

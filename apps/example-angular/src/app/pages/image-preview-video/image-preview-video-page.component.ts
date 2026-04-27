@@ -2,6 +2,7 @@ import {
   Component,
   ChangeDetectionStrategy,
   OnDestroy,
+  effect,
   signal,
 } from '@angular/core';
 import {
@@ -13,13 +14,22 @@ import {
   RkCounterComponent,
   RkFullscreenButtonComponent,
   RkSoundButtonComponent,
+  flipTransition,
+  lightboxFadeTransition,
+  lightboxZoomTransition,
   setLightboxVideoMuted,
+  slideTransition,
   type LightboxItem,
-  type TransitionType,
 } from '@reelkit/angular-lightbox';
+import type { TransitionTransformFn } from '@reelkit/angular';
 import { cdnUrl } from '@reelkit/example-data';
 
-const _kTransitions: TransitionType[] = ['slide', 'fade', 'flip', 'zoom-in'];
+const _kTransitions: { label: string; fn: TransitionTransformFn }[] = [
+  { label: 'slide', fn: slideTransition },
+  { label: 'fade', fn: lightboxFadeTransition },
+  { label: 'flip', fn: flipTransition },
+  { label: 'zoom-in', fn: lightboxZoomTransition },
+];
 
 const sampleItems: LightboxItem[] = [
   {
@@ -84,12 +94,14 @@ const sampleItems: LightboxItem[] = [
         </p>
         <div class="transition-selector">
           <span>Transition:</span>
-          @for (t of transitions; track t) {
+          @for (t of transitions; track t.label) {
             <button
-              [class]="'transition-btn' + (transition() === t ? ' active' : '')"
-              (click)="transition.set(t)"
+              [class]="
+                'transition-btn' + (transitionFn() === t.fn ? ' active' : '')
+              "
+              (click)="transitionFn.set(t.fn)"
             >
-              {{ t }}
+              {{ t.label }}
             </button>
           }
         </div>
@@ -142,7 +154,7 @@ const sampleItems: LightboxItem[] = [
         [isOpen]="previewIndex() !== null"
         [items]="items"
         [initialIndex]="previewIndex() ?? 0"
-        [transition]="transition()"
+        [transitionFn]="transitionFn()"
         (closed)="onClose()"
       >
         <ng-template
@@ -198,10 +210,24 @@ const sampleItems: LightboxItem[] = [
 })
 export class ImagePreviewVideoPageComponent implements OnDestroy {
   protected readonly items: LightboxItem[] = sampleItems;
-  protected readonly transitions: TransitionType[] = _kTransitions;
+  protected readonly transitions = _kTransitions;
   protected readonly previewIndex = signal<number | null>(null);
-  protected readonly transition = signal<TransitionType>('slide');
+  protected readonly transitionFn =
+    signal<TransitionTransformFn>(slideTransition);
   protected readonly isMuted = signal(true);
+
+  // Disable mobile pull-to-refresh while the lightbox is open so the
+  // `swipeToCloseDirection: 'down'` gesture is not preempted.
+  private readonly _overscrollEffect = effect((onCleanup) => {
+    if (this.previewIndex() === null) return;
+    if (typeof document === 'undefined') return;
+    const html = document.documentElement;
+    const prev = html.style.overscrollBehaviorY;
+    html.style.overscrollBehaviorY = 'contain';
+    onCleanup(() => {
+      html.style.overscrollBehaviorY = prev;
+    });
+  });
 
   protected onClose(): void {
     this.previewIndex.set(null);
