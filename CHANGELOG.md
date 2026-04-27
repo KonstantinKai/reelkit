@@ -1,3 +1,112 @@
+## @reelkit/vue@0.4.0 (2026-04-27)
+
+### 🚀 Features
+
+- New `hasRenderedNodes` helper exported for slot-fallback detection — decides whether a scoped slot has real content or only `v-if`-false placeholder comments, so overlay components can fall back to their built-in defaults cleanly
+- `toVueRef` now mirrors lazy signals correctly on first paint (previously a signal that resynced its value inside the subscribe path — e.g. core `fullscreenSignal` — surfaced a stale snapshot until the next emission)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.6.1
+
+## @reelkit/core@0.6.1 (2026-04-27)
+
+### 🩹 Fixes
+
+- `fullscreenSignal` now resyncs from the live DOM when its first observer attaches, so overlays reopened after a fullscreen close always start with the correct icon and aria state
+
+## @reelkit/react@0.6.1 (2026-04-27)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.6.1
+
+## @reelkit/angular@0.4.1 (2026-04-27)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.6.1
+
+## @reelkit/vue-lightbox@0.1.0 (2026-04-27)
+
+### 🚀 Features
+
+- New `@reelkit/vue-lightbox` package — full-screen image and video gallery overlay for Vue 3 with feature parity to `@reelkit/react-lightbox` and `@reelkit/angular-lightbox`
+- Virtualized slider renders at most three slides at a time via `@reelkit/vue` `Reel`
+- Four tree-shakable built-in transitions: `slideTransition`, `lightboxFadeTransition`, `flipTransition`, `lightboxZoomTransition` — import the one you want and pass it via `transitionFn` (defaults to `slideTransition`)
+- Opt-in video support through the `useVideoSlideRenderer` composable plus `SoundProvider` for a shared mute toggle
+- Scoped slots for `slide`, `controls`, `navigation`, `info`, `loading`, `error` — omit any slot to fall back to the built-in chrome
+- `v-model:is-open` two-way binding alongside the legacy `:is-open` / `@close` API
+- Overlay-scoped fullscreen request plus Escape two-step (exit fullscreen first, then close)
+- Body-scroll lock and focus trap while the overlay is open
+- Themeable through `--rk-lightbox-*` CSS custom properties
+- New `swipeToCloseDirection` prop (`'up' | 'down'`, default `'up'`) to flip the mobile close-swipe axis
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/vue to 0.4.0
+
+## @reelkit/stories-core@0.1.4 (2026-04-27)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.6.1
+
+## @reelkit/react-lightbox@0.5.0 (2026-04-27)
+
+### 🚀 Features
+
+- New `swipeToCloseDirection` prop (`'up' | 'down'`, default `'up'`) to flip the mobile close-swipe axis
+- `slideTransition` and `flipTransition` are now re-exported from `@reelkit/react-lightbox` alongside `lightboxFadeTransition` and `lightboxZoomTransition` — import every built-in transition from a single entry
+
+### ⚠️  Breaking Changes
+
+- `transition` string alias (`'slide' \| 'fade' \| 'flip' \| 'zoom-in'`) and `TransitionType` export removed. Pass a `TransitionTransformFn` directly to `transitionFn` (defaults to `slideTransition`). Unused built-ins now tree-shake out (~2 kB gzip saving when you only use one). Migrate `transition="fade"` → `transitionFn={lightboxFadeTransition}` after importing `lightboxFadeTransition` from `@reelkit/react-lightbox`.
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/react to 0.6.1
+
+## @reelkit/vue-reel-player@0.2.1 (2026-04-27)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/vue to 0.4.0
+
+## @reelkit/angular-lightbox@0.4.0 (2026-04-27)
+
+### 🚀 Features
+
+- New `swipeToCloseDirection` input (`'up' | 'down'`, default `'up'`) to flip the mobile close-swipe axis
+- `slideTransition` and `flipTransition` are now re-exported from `@reelkit/angular-lightbox` alongside `lightboxFadeTransition` and `lightboxZoomTransition` — import every built-in transition from a single entry
+
+### ⚠️  Breaking Changes
+
+- `transition` string input (`'slide' \| 'fade' \| 'flip' \| 'zoom-in'`) and `TransitionType` export removed. Pass a `TransitionTransformFn` directly to the `transitionFn` input (defaults to `slideTransition`). Unused built-ins now tree-shake out (~2 kB gzip saving when you only use one). Migrate `transition="fade"` → `[transitionFn]="fadeTransition"` after binding a class field to the imported `lightboxFadeTransition` from `@reelkit/angular-lightbox`.
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/angular to 0.4.1
+
+## @reelkit/react-reel-player@0.5.1 (2026-04-27)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/react to 0.6.1
+
+## @reelkit/angular-reel-player@0.4.1 (2026-04-27)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/angular to 0.4.1
+
+## @reelkit/react-stories-player@0.2.2 (2026-04-27)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/stories-core to 0.1.4
+- Updated @reelkit/react to 0.6.1
+
 ## @reelkit/vue-reel-player@0.2.0 (2026-04-24)
 
 ### 🚀 Features
