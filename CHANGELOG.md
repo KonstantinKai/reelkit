@@ -1,3 +1,55 @@
+## @reelkit/vue-lightbox@0.1.0 (2026-04-27)
+
+### 🎉 Initial Release
+
+- New `@reelkit/vue-lightbox` package — full-screen image and video gallery overlay for Vue 3 with feature parity to `@reelkit/react-lightbox` and `@reelkit/angular-lightbox`
+- Virtualized slider renders at most three slides at a time via `@reelkit/vue` `Reel`
+- Four tree-shakable built-in transitions: `slideTransition`, `lightboxFadeTransition`, `flipTransition`, `lightboxZoomTransition` — import the one you want and pass it via `transitionFn` (defaults to `slideTransition`)
+- Opt-in video support through the `useVideoSlideRenderer` composable plus `SoundProvider` for a shared mute toggle
+- Scoped slots for `slide`, `controls`, `navigation`, `info`, `loading`, `error` — omit any slot to fall back to the built-in chrome
+- `v-model:is-open` two-way binding alongside the legacy `:is-open` / `@close` API
+- Overlay-scoped fullscreen request plus Escape two-step (exit fullscreen first, then close)
+- Body-scroll lock and focus trap while the overlay is open
+- Themeable through `--rk-lightbox-*` CSS custom properties
+- New `swipeToCloseDirection` prop (`'up' | 'down'`, default `'up'`) to flip the mobile close-swipe axis
+
+## @reelkit/react-lightbox@0.5.0 (2026-04-27)
+
+### 🚀 Features
+
+- New `swipeToCloseDirection` prop (`'up' | 'down'`, default `'up'`) to flip the mobile close-swipe axis
+- `slideTransition` and `flipTransition` are now re-exported from `@reelkit/react-lightbox` alongside `lightboxFadeTransition` and `lightboxZoomTransition` — import every built-in transition from a single entry
+
+### ⚠️ Breaking Changes
+
+- `transition` string alias (`'slide' \| 'fade' \| 'flip' \| 'zoom-in'`) and `TransitionType` export removed. Pass a `TransitionTransformFn` directly to `transitionFn` (defaults to `slideTransition`). Unused built-ins now tree-shake out (~2 kB gzip saving when you only use one). Migrate `transition="fade"` → `transitionFn={lightboxFadeTransition}` after importing `lightboxFadeTransition` from `@reelkit/react-lightbox`.
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/react to 0.6.1
+
+## @reelkit/angular-lightbox@0.4.0 (2026-04-27)
+
+### 🚀 Features
+
+- New `swipeToCloseDirection` input (`'up' | 'down'`, default `'up'`) to flip the mobile close-swipe axis
+- `slideTransition` and `flipTransition` are now re-exported from `@reelkit/angular-lightbox` alongside `lightboxFadeTransition` and `lightboxZoomTransition` — import every built-in transition from a single entry
+
+### ⚠️ Breaking Changes
+
+- `transition` string input (`'slide' \| 'fade' \| 'flip' \| 'zoom-in'`) and `TransitionType` export removed. Pass a `TransitionTransformFn` directly to the `transitionFn` input (defaults to `slideTransition`). Unused built-ins now tree-shake out (~2 kB gzip saving when you only use one). Migrate `transition="fade"` → `[transitionFn]="fadeTransition"` after binding a class field to the imported `lightboxFadeTransition` from `@reelkit/angular-lightbox`.
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/angular to 0.4.1
+
+## Documentation (2026-04-27)
+
+### 📖 Documentation
+
+- Every `/docs/*` route on [reelkit.dev](https://reelkit.dev) is now pre-rendered to static HTML via React Router v7 framework mode (`prerender + ssr:false`), so AI crawlers and search bots see real prose without executing JS
+- New `llms.txt` and `llms-full.txt` published at the docs root ([reelkit.dev/llms.txt](https://reelkit.dev/llms.txt), [reelkit.dev/llms-full.txt](https://reelkit.dev/llms-full.txt)) deliver dense AI-tuned prose for all 23 docs pages
+
 ## @reelkit/vue@0.4.0 (2026-04-27)
 
 ### 🚀 Features
@@ -27,66 +79,17 @@
 
 - Updated @reelkit/core to 0.6.1
 
-## @reelkit/vue-lightbox@0.1.0 (2026-04-27)
-
-### 🚀 Features
-
-- New `@reelkit/vue-lightbox` package — full-screen image and video gallery overlay for Vue 3 with feature parity to `@reelkit/react-lightbox` and `@reelkit/angular-lightbox`
-- Virtualized slider renders at most three slides at a time via `@reelkit/vue` `Reel`
-- Four tree-shakable built-in transitions: `slideTransition`, `lightboxFadeTransition`, `flipTransition`, `lightboxZoomTransition` — import the one you want and pass it via `transitionFn` (defaults to `slideTransition`)
-- Opt-in video support through the `useVideoSlideRenderer` composable plus `SoundProvider` for a shared mute toggle
-- Scoped slots for `slide`, `controls`, `navigation`, `info`, `loading`, `error` — omit any slot to fall back to the built-in chrome
-- `v-model:is-open` two-way binding alongside the legacy `:is-open` / `@close` API
-- Overlay-scoped fullscreen request plus Escape two-step (exit fullscreen first, then close)
-- Body-scroll lock and focus trap while the overlay is open
-- Themeable through `--rk-lightbox-*` CSS custom properties
-- New `swipeToCloseDirection` prop (`'up' | 'down'`, default `'up'`) to flip the mobile close-swipe axis
-
-### 🧱 Updated Dependencies
-
-- Updated @reelkit/vue to 0.4.0
-
 ## @reelkit/stories-core@0.1.4 (2026-04-27)
 
 ### 🧱 Updated Dependencies
 
 - Updated @reelkit/core to 0.6.1
 
-## @reelkit/react-lightbox@0.5.0 (2026-04-27)
-
-### 🚀 Features
-
-- New `swipeToCloseDirection` prop (`'up' | 'down'`, default `'up'`) to flip the mobile close-swipe axis
-- `slideTransition` and `flipTransition` are now re-exported from `@reelkit/react-lightbox` alongside `lightboxFadeTransition` and `lightboxZoomTransition` — import every built-in transition from a single entry
-
-### ⚠️  Breaking Changes
-
-- `transition` string alias (`'slide' \| 'fade' \| 'flip' \| 'zoom-in'`) and `TransitionType` export removed. Pass a `TransitionTransformFn` directly to `transitionFn` (defaults to `slideTransition`). Unused built-ins now tree-shake out (~2 kB gzip saving when you only use one). Migrate `transition="fade"` → `transitionFn={lightboxFadeTransition}` after importing `lightboxFadeTransition` from `@reelkit/react-lightbox`.
-
-### 🧱 Updated Dependencies
-
-- Updated @reelkit/react to 0.6.1
-
 ## @reelkit/vue-reel-player@0.2.1 (2026-04-27)
 
 ### 🧱 Updated Dependencies
 
 - Updated @reelkit/vue to 0.4.0
-
-## @reelkit/angular-lightbox@0.4.0 (2026-04-27)
-
-### 🚀 Features
-
-- New `swipeToCloseDirection` input (`'up' | 'down'`, default `'up'`) to flip the mobile close-swipe axis
-- `slideTransition` and `flipTransition` are now re-exported from `@reelkit/angular-lightbox` alongside `lightboxFadeTransition` and `lightboxZoomTransition` — import every built-in transition from a single entry
-
-### ⚠️  Breaking Changes
-
-- `transition` string input (`'slide' \| 'fade' \| 'flip' \| 'zoom-in'`) and `TransitionType` export removed. Pass a `TransitionTransformFn` directly to the `transitionFn` input (defaults to `slideTransition`). Unused built-ins now tree-shake out (~2 kB gzip saving when you only use one). Migrate `transition="fade"` → `[transitionFn]="fadeTransition"` after binding a class field to the imported `lightboxFadeTransition` from `@reelkit/angular-lightbox`.
-
-### 🧱 Updated Dependencies
-
-- Updated @reelkit/angular to 0.4.1
 
 ## @reelkit/react-reel-player@0.5.1 (2026-04-27)
 
