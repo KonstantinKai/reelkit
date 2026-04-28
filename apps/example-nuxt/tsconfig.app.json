@@ -1,0 +1,43 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+    "noEmit": false,
+    "declaration": true,
+    "outDir": "../../dist/out-tsc",
+    "rootDir": "app"
+  },
+  "include": [".nuxt/nuxt.d.ts", "app/**/*", "server/**/*"],
+  "exclude": [
+    "out-tsc",
+    "dist",
+    "vite.config.ts",
+    "vite.config.mts",
+    "vitest.config.ts",
+    "vitest.config.mts",
+    "app/**/*.test.ts",
+    "app/**/*.spec.ts",
+    "app/**/*.test.tsx",
+    "app/**/*.spec.tsx",
+    "app/**/*.test.js",
+    "app/**/*.spec.js",
+    "app/**/*.test.jsx",
+    "app/**/*.spec.jsx",
+    "server/**/*.test.ts",
+    "server/**/*.spec.ts",
+    "server/**/*.test.tsx",
+    "server/**/*.spec.tsx",
+    "server/**/*.test.js",
+    "server/**/*.spec.js",
+    "server/**/*.test.jsx",
+    "server/**/*.spec.jsx",
+    "eslint.config.js",
+    "eslint.config.cjs",
+    "eslint.config.mjs"
+  ],
+  "references": [
+    {
+      "path": "../../packages/reelkit-vue/tsconfig.lib.json"
+    }
+  ]
+}

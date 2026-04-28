@@ -52,3 +52,10 @@ out
 .claude/worktrees
 .claude/settings.local.json
 .angular
+
+# Nuxt dev/build outputs
+.output
+.data
+.nuxt
+.nitro
+.cache
