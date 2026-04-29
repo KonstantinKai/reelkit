@@ -30,6 +30,7 @@ export default [
     route('docs/vue-lightbox', 'pages/docs/VueLightbox.tsx'),
     route('docs/vue-stories-player', 'pages/docs/VueStoriesPlayer.tsx'),
     route('docs/troubleshooting', 'pages/docs/Troubleshooting.tsx'),
+    route('docs/llms', 'pages/docs/Llms.tsx'),
     route('docs/changelog', 'pages/docs/Changelog.tsx'),
     route('privacy', 'pages/Privacy.tsx'),
     route('terms', 'pages/Terms.tsx'),

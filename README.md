@@ -96,6 +96,18 @@ By default, `Reel` measures its own size from CSS via `ResizeObserver` — no ex
 
 Full documentation, interactive demos, and API reference at **[reelkit.dev](https://reelkit.dev)**.
 
+## AI / LLM Integration
+
+Machine-readable docs for AI coding assistants.
+
+| Endpoint                                                                         | Purpose                                                  |
+| -------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| [`reelkit.dev/llms.txt`](https://reelkit.dev/llms.txt)                           | Link index of every doc page. Drop into any LLM context. |
+| [`reelkit.dev/llms-full.txt`](https://reelkit.dev/llms-full.txt)                 | Same index with embedded per-page summaries.             |
+| [`context7.com/websites/reelkit_dev`](https://context7.com/websites/reelkit_dev) | Context7 manifest. Use with the `@context7` MCP server.  |
+
+Both `.txt` endpoints regenerate on every docs build, so the corpus tracks the published site.
+
 ## Development
 
 ```bash

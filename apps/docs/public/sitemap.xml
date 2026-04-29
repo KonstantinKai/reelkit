@@ -116,6 +116,11 @@
     <priority>0.5</priority>
   </url>
   <url>
+    <loc>https://reelkit.dev/docs/llms</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
     <loc>https://reelkit.dev/docs/changelog</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>

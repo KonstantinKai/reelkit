@@ -546,6 +546,22 @@ export const searchItems: SearchItem[] = [
     ],
   },
   {
+    title: 'AI / LLM Integration',
+    path: '/docs/llms',
+    category: 'Resources',
+    keywords: [
+      'ai',
+      'llm',
+      'llms.txt',
+      'context7',
+      'mcp',
+      'cursor',
+      'claude',
+      'chatgpt',
+      'agent',
+    ],
+  },
+  {
     title: 'Changelog',
     path: '/docs/changelog',
     category: 'Resources',
@@ -2675,6 +2691,7 @@ export const navItems: NavSection[] = [
     title: 'Resources',
     items: [
       { label: 'Troubleshooting', path: '/docs/troubleshooting' },
+      { label: 'AI / LLM Integration', path: '/docs/llms' },
       { label: "What's New?", path: '/docs/changelog' },
     ],
   },
