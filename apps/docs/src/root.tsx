@@ -128,6 +128,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
           dangerouslySetInnerHTML={{ __html: _kStructuredData }}
         />
         <script dangerouslySetInnerHTML={{ __html: _kBootstrapScript }} />
+        {/* Privacy-friendly analytics by Plausible (self-hosted) */}
+        <script async src="/js/plausible.js" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};plausible.init({ domain: 'reelkit.dev', endpoint: 'https://plausible.k-kai.dev/api/event', outboundLinks: true })",
+          }}
+        />
       </head>
       <body>
         {children}

@@ -27,10 +27,7 @@
       }
     </style>
     <!-- Privacy-friendly analytics by Plausible -->
-    <script
-      async
-      src="https://plausible.k-kai.dev/js/pa-CAKJORV4zsKbI4PXCgLM1.js"
-    ></script>
+    <script async src="/js/plausible.js"></script>
     <script>
       ((window.plausible =
         window.plausible ||
@@ -42,7 +39,11 @@
           function (i) {
             plausible.o = i || {};
           }));
-      plausible.init({ endpoint: 'https://plausible.k-kai.dev/api/event' });
+      plausible.init({
+        domain: 'vue-demo.reelkit.dev',
+        endpoint: 'https://plausible.k-kai.dev/api/event',
+        outboundLinks: true,
+      });
     </script>
   </head>
   <body>

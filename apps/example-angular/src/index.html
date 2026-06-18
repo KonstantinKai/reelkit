@@ -12,10 +12,7 @@
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png" />
     <!-- Privacy-friendly analytics by Plausible -->
-    <script
-      async
-      src="https://plausible.k-kai.dev/js/pa-rA6XSrSl7zvZaXHxLe9r8.js"
-    ></script>
+    <script async src="/js/plausible.js"></script>
     <script>
       ((window.plausible =
         window.plausible ||
@@ -27,7 +24,11 @@
           function (i) {
             plausible.o = i || {};
           }));
-      plausible.init({ endpoint: 'https://plausible.k-kai.dev/api/event' });
+      plausible.init({
+        domain: 'angular-demo.reelkit.dev',
+        endpoint: 'https://plausible.k-kai.dev/api/event',
+        outboundLinks: true,
+      });
     </script>
   </head>
   <body>
