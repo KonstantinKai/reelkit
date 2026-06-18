@@ -129,7 +129,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         />
         <script dangerouslySetInnerHTML={{ __html: _kBootstrapScript }} />
         {/* Privacy-friendly analytics by Plausible (self-hosted) */}
-        <script async src="/js/plausible.js" />
+        <script async src="/js/p.js" />
         <script
           dangerouslySetInnerHTML={{
             __html:

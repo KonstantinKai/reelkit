@@ -24,7 +24,7 @@ export default [
       '**/.next',
       '**/vite.config.*.timestamp*',
       '**/vitest.config.*.timestamp*',
-      '**/public/js/plausible.js',
+      '**/public/js/p.js',
     ],
   },
   {

@@ -7,5 +7,5 @@
 apps/example-next/next-env.d.ts
 
 # Vendored (minified) self-hosted Plausible analytics script
-apps/*/public/js/plausible.js
+apps/*/public/js/p.js
 
