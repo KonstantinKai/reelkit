@@ -13,7 +13,7 @@
  * sub-components ({@link CloseButton}, {@link Counter},
  * {@link FullscreenButton}) can be composed inside `renderControls`.
  *
- * @example
+ * @example Controlled mode — the component owns whether the lightbox is open.
  * ```tsx
  * import { LightboxOverlay, type LightboxItem } from '@reelkit/react-lightbox';
  * import '@reelkit/react-lightbox/styles.css';
@@ -40,6 +40,50 @@
  *   );
  * }
  * ```
+ *
+ * @example URL-driven mode — the address bar owns the open state, so links are
+ * shareable and the back button closes the gallery. Pass `urlParam` instead of
+ * `isOpen`; opening is writing the parameter.
+ * ```tsx
+ * import { LightboxOverlay, type LightboxItem } from '@reelkit/react-lightbox';
+ * import { useUrlState } from '@reelkit/react';
+ * import '@reelkit/react-lightbox/styles.css';
+ *
+ * function Gallery({ images }: { images: LightboxItem[] }) {
+ *   const photo = useUrlState('photo');
+ *   return (
+ *     <>
+ *       {images.map((img, i) => (
+ *         <img key={img.src} src={img.src} onClick={() => photo.set(i)} />
+ *       ))}
+ *       <LightboxOverlay urlParam="photo" images={images} />
+ *     </>
+ *   );
+ * }
+ * ```
+ *
+ * @example Stable links — key the URL by a per-image identity instead of its
+ * position, so a shared link opens the same image after the gallery is
+ * reordered. `urlCodec` spells the identity into the URL; `urlLocator` finds
+ * where it now sits.
+ * ```tsx
+ * import { LightboxOverlay, type LightboxItem } from '@reelkit/react-lightbox';
+ * import '@reelkit/react-lightbox/styles.css';
+ *
+ * function Gallery({ images }: { images: LightboxItem[] }) {
+ *   return (
+ *     <LightboxOverlay
+ *       urlParam="photo"
+ *       images={images}
+ *       urlCodec={{ decode: atob, encode: btoa }}
+ *       urlLocator={{
+ *         locate: (id) => images.findIndex((x) => x.src === id),
+ *         identify: (index) => images[index].src,
+ *       }}
+ *     />
+ *   );
+ * }
+ * ```
  */
 
 // Main component
@@ -47,6 +91,7 @@ export { LightboxOverlay } from './lib/LightboxOverlay';
 
 // Transitions
 export { slideTransition, flipTransition } from '@reelkit/react';
+export type { UrlAdapter, UrlCodec, UrlLocator } from '@reelkit/react';
 export { lightboxFadeTransition } from './lib/lightboxFadeTransition';
 export { lightboxZoomTransition } from './lib/lightboxZoomTransition';
 export type {

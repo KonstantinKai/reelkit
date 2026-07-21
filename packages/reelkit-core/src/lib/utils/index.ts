@@ -14,6 +14,17 @@ export {
   type Dispose,
 } from './signal';
 
+export {
+  createUrlStateController,
+  createHistoryAdapter,
+  indexCodec,
+  type UrlAdapter,
+  type UrlCodec,
+  type UrlLocator,
+  type UrlStateController,
+  type UrlStateOptions,
+} from './urlState';
+
 export { createDeferred, type Deferred } from './deferred';
 
 export {

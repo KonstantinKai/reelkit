@@ -16,6 +16,7 @@ import {
   Volume2,
   Loader,
   AlertTriangle,
+  Link2,
 } from 'lucide-react';
 import { Heading } from '../../components/ui/Heading';
 
@@ -142,8 +143,37 @@ const lightboxProps = [
   {
     prop: 'isOpen',
     type: 'boolean',
-    default: 'required',
-    description: 'Controls lightbox visibility',
+    default: 'required*',
+    description:
+      'Controls lightbox visibility. Mutually exclusive with urlParam — pass exactly one.',
+  },
+  {
+    prop: 'urlParam',
+    type: 'string',
+    default: '-',
+    description:
+      'URL-driven mode: query parameter carrying the active slide. The lightbox opens and closes itself from the URL. Excludes isOpen.',
+  },
+  {
+    prop: 'urlAdapter',
+    type: 'UrlAdapter',
+    default: 'History API',
+    description:
+      'Navigation system to read and write through. Required in a routed app so the router does not go stale.',
+  },
+  {
+    prop: 'urlCodec',
+    type: '{ decode(raw) => Id | null; encode(id) => string }',
+    default: 'indexCodec',
+    description:
+      'Wire format: parameter text ↔ a stable identity, collection-blind. Omit for a plain ?photo=3 gallery; supply one (base64, slug) so a bookmark survives the gallery being reordered.',
+  },
+  {
+    prop: 'urlLocator',
+    type: '{ locate(id) => number | null; locateAsync?(id) => Promise<number | null>; identify(index) => id }',
+    default: '-',
+    description:
+      'Where the identity sits in images: locate (sync), locateAsync (async fallback for a paginated gallery), identify (writes). Required when urlCodec reads a non-index identity.',
   },
   {
     prop: 'images',
@@ -684,6 +714,11 @@ export default function Lightbox() {
                 icon: Layers,
                 label: 'Hooks',
                 desc: 'useVideoSlideRenderer + useFullscreen',
+              },
+              {
+                icon: Link2,
+                label: 'URL State',
+                desc: 'Shareable, bookmarkable links',
               },
             ]}
           />
@@ -1665,6 +1700,201 @@ const customFade: TransitionTransformFn = (offset, size) => ({
 />`}
           language="tsx"
         />
+      </section>
+
+      {/* URL state */}
+      <section className="mb-12">
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          URL State
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Pass{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            urlParam
+          </code>{' '}
+          instead of{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            isOpen
+          </code>{' '}
+          and the address bar owns the gallery: the lightbox opens itself when
+          the parameter names a slide and closes when it goes away. Links are
+          shareable, and the back button closes the gallery instead of leaving
+          the page.
+        </p>
+        <CodeBlock
+          code={`import { LightboxOverlay } from '@reelkit/react-lightbox';
+import { useUrlState } from '@reelkit/react';
+
+const photo = useUrlState('photo');
+
+// Opening is writing the URL — there is no open flag to hold.
+{images.map((image, i) => (
+  <img key={image.src} src={image.src} onClick={() => photo.set(i)} />
+))}
+
+<LightboxOverlay urlParam="photo" images={images} />`}
+          language="tsx"
+        />
+        <ul className="mt-4 mb-4 list-disc pl-6 space-y-1 text-slate-600 dark:text-slate-400">
+          <li>
+            Opening costs one history entry. Paging slides replaces it, so a
+            hundred swipes add none — one back step always leaves the gallery.
+            Back closes; it does not step through photos.
+          </li>
+          <li>
+            A shared link like{' '}
+            <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+              ?photo=3
+            </code>{' '}
+            opens the gallery at that slide. Closing a link that arrived with
+            the page removes the parameter in place rather than navigating off
+            your site.
+          </li>
+          <li>
+            A parameter naming no slide — a stale bookmark, a hand-edited value
+            — is dropped from the URL instead of leaving the address bar
+            asserting a slide that cannot open.
+          </li>
+        </ul>
+        <p className="text-slate-600 dark:text-slate-400 mb-2">
+          <strong>In a routed app, pass an adapter.</strong> Writing history
+          directly leaves the router's own location stale, and its next
+          navigation drops the parameter.
+        </p>
+        <CodeBlock
+          code={`const adapter = useReactRouterUrlAdapter();
+const photo = useUrlState('photo', { adapter });
+
+<LightboxOverlay urlParam="photo" urlAdapter={adapter} images={images} />`}
+          language="tsx"
+        />
+        <p className="text-slate-600 dark:text-slate-400 mt-4 mb-2">
+          <strong>Opening is a link.</strong> Because the open state lives in
+          the URL, a thumbnail is an ordinary link — no click handler — and the
+          browser's own behaviour comes free: open in a new tab, copy the
+          address, preview on hover. In a routed app use the router's link so it
+          stays client-side.
+        </p>
+        <CodeBlock
+          code={`import { Link } from 'react-router-dom';
+
+// The href is the open action — no onClick, no open flag.
+{images.map((image, i) => (
+  <Link key={image.src} to={\`?photo=\${i}\`}>
+    <img src={image.src} />
+  </Link>
+))}
+
+<LightboxOverlay urlParam="photo" urlAdapter={adapter} images={images} />`}
+          language="tsx"
+        />
+        <p className="text-slate-600 dark:text-slate-400 mt-4 mb-2">
+          <strong>Prefer a stable identity for shareable links.</strong> The
+          index is positional, so a bookmarked{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            ?photo=3
+          </code>{' '}
+          opens a different image once the list is reordered.
+        </p>
+        <CodeBlock
+          code={`<LightboxOverlay
+  urlParam="photo"
+  images={images}
+  urlCodec={{ decode: (raw) => raw, encode: (id) => id }}
+  urlLocator={{
+    locate: (id) => images.findIndex((x) => x.slug === id),
+    identify: (index) => images[index].slug,
+  }}
+/>`}
+          language="tsx"
+        />
+        <p className="text-slate-600 dark:text-slate-400 mt-4 mb-2">
+          <strong>Infinite or paginated galleries.</strong> The sync{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            locate
+          </code>{' '}
+          can only answer for images already loaded — a shared link to image 400
+          of a feed that has loaded 20 comes up empty.{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            locateAsync
+          </code>{' '}
+          is the fallback, called only when{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            locate
+          </code>{' '}
+          misses.
+        </p>
+        <CodeBlock
+          code={`<LightboxOverlay
+  urlParam="photo"
+  images={images}
+  urlCodec={{ decode: (raw) => raw, encode: (id) => id }}
+  urlLocator={{
+    locate: (id) => images.findIndex((x) => x.id === id),
+    identify: (index) => images[index].id,
+    locateAsync: async (id) => {
+      const loaded = await loadUntil(id); // load however: pages up to id, or just id spliced in
+      if (!loaded) return null; // exhausted — link names no image
+      setImages(loaded); // commit — the overlay renders from this state
+      return loaded.findIndex((x) => x.id === id); // wherever it landed
+    },
+  }}
+/>`}
+          language="tsx"
+        />
+        <ul className="mt-4 list-disc pl-6 space-y-1 text-slate-600 dark:text-slate-400">
+          <li>
+            How you load is up to you — fetch contiguous pages up to the target,
+            or fetch just that one image and append it. The URL keys by
+            identity, not position, so{' '}
+            <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+              findIndex
+            </code>{' '}
+            returns wherever the item lands.
+          </li>
+          <li>
+            While{' '}
+            <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+              locateAsync
+            </code>{' '}
+            is pending the lightbox stays closed and the parameter is left
+            alone, so the deep link survives the fetch.{' '}
+            <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+              null
+            </code>{' '}
+            or a rejection drops the parameter.
+          </li>
+          <li>
+            An answer arriving after the URL moved on, after a close, or after
+            unmount is discarded — a slow fetch cannot open a slide nobody asked
+            for.
+          </li>
+          <li>
+            Nothing is rendered while pending; the page already owns that
+            loading state, so render your own skeleton.
+          </li>
+          <li>
+            There is no timeout — the lightbox cannot know how long the gallery
+            is. Settle with{' '}
+            <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+              null
+            </code>{' '}
+            when pagination is exhausted, or the overlay stays closed
+            indefinitely.
+          </li>
+          <li>
+            Whatever{' '}
+            <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+              locateAsync
+            </code>{' '}
+            returns is authoritative — the index of data it just fetched, taken
+            as-is without re-reading{' '}
+            <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+              images
+            </code>
+            .
+          </li>
+        </ul>
       </section>
 
       {/* CSS Classes */}

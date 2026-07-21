@@ -1,6 +1,13 @@
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { slideTransition, type ReelProps } from '@reelkit/react';
+import {
+  slideTransition,
+  createDeferred,
+  type ReelProps,
+  type UrlAdapter,
+  type UrlCodec,
+  type UrlLocator,
+} from '@reelkit/react';
 import type { LightboxItem } from './LightboxOverlay';
 import { lightboxFadeTransition } from './lightboxFadeTransition';
 import { lightboxZoomTransition } from './lightboxZoomTransition';
@@ -134,6 +141,48 @@ const mockImages: LightboxItem[] = [
   { src: 'img2.jpg', title: 'Image 2' },
   { src: 'img3.jpg' },
 ];
+
+/**
+ * In-memory stand-in for the browser history stack, driving the lightbox in
+ * url mode. `push` and `goBack` notify subscribers the way a router-backed
+ * adapter does, so a test moves the url and lets the overlay react.
+ */
+const createFakeUrlAdapter = (initialSearch = '') => {
+  const entries: Array<{ search: string; state: unknown }> = [
+    { search: initialSearch, state: null },
+  ];
+  const listeners = new Set<() => void>();
+  let cursor = 0;
+
+  const notify = () => listeners.forEach((listener) => listener());
+
+  const adapter: UrlAdapter = {
+    read: () => entries[cursor].search,
+    getState: () => entries[cursor].state,
+    subscribe: (listener) => {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+    push: (to, state) => {
+      entries.splice(cursor + 1);
+      entries.push({ search: to, state: state ?? null });
+      cursor += 1;
+      notify();
+    },
+    replace: (to, state) => {
+      entries[cursor] = {
+        search: to,
+        state: { ...(entries[cursor].state as object), ...(state as object) },
+      };
+    },
+    goBack: () => {
+      if (cursor > 0) cursor -= 1;
+      notify();
+    },
+  };
+
+  return { adapter };
+};
 
 describe('LightboxOverlay', () => {
   beforeEach(() => {
@@ -1144,6 +1193,431 @@ describe('LightboxOverlay', () => {
       expect(wrapper!.getAttribute('aria-label')).toBe(
         `Image 1 of ${mockImages.length}`,
       );
+    });
+  });
+
+  describe('url-driven mode', () => {
+    const isOpen = () =>
+      document.querySelector('.rk-lightbox-overlay') !== null;
+
+    it('opens at the index named by the url on first render', () => {
+      const fake = createFakeUrlAdapter('?photo=1');
+
+      render(
+        <LightboxOverlay
+          urlParam="photo"
+          urlAdapter={fake.adapter}
+          images={mockImages}
+        />,
+      );
+
+      expect(isOpen()).toBe(true);
+      expect(lastReelProps.initialIndex).toBe(1);
+    });
+
+    it('stays closed when the parameter is absent', () => {
+      const fake = createFakeUrlAdapter('?tab=media');
+
+      render(
+        <LightboxOverlay
+          urlParam="photo"
+          urlAdapter={fake.adapter}
+          images={mockImages}
+        />,
+      );
+
+      expect(isOpen()).toBe(false);
+    });
+
+    it('opens when the parameter appears while running', () => {
+      const fake = createFakeUrlAdapter();
+
+      render(
+        <LightboxOverlay
+          urlParam="photo"
+          urlAdapter={fake.adapter}
+          images={mockImages}
+        />,
+      );
+      expect(isOpen()).toBe(false);
+
+      act(() => fake.adapter.push('?photo=2'));
+
+      expect(isOpen()).toBe(true);
+      expect(lastReelProps.initialIndex).toBe(2);
+    });
+
+    it('closes when the parameter goes away', () => {
+      const fake = createFakeUrlAdapter();
+
+      render(
+        <LightboxOverlay
+          urlParam="photo"
+          urlAdapter={fake.adapter}
+          images={mockImages}
+        />,
+      );
+
+      act(() => fake.adapter.push('?photo=2'));
+      expect(isOpen()).toBe(true);
+
+      act(() => fake.adapter.goBack());
+
+      expect(isOpen()).toBe(false);
+    });
+
+    it('keeps its initial index when the url changes while open', () => {
+      const fake = createFakeUrlAdapter('?photo=1');
+
+      render(
+        <LightboxOverlay
+          urlParam="photo"
+          urlAdapter={fake.adapter}
+          images={mockImages}
+        />,
+      );
+      expect(lastReelProps.initialIndex).toBe(1);
+
+      // Once open the slider owns the index and the url only trails it.
+      // Re-seeding here would reset the gallery under the user's swipe.
+      act(() => fake.adapter.push('?photo=2'));
+
+      expect(isOpen()).toBe(true);
+      expect(lastReelProps.initialIndex).toBe(1);
+    });
+
+    it('drops an out-of-range parameter and stays closed', () => {
+      const fake = createFakeUrlAdapter('?photo=99');
+
+      render(
+        <LightboxOverlay
+          urlParam="photo"
+          urlAdapter={fake.adapter}
+          images={mockImages}
+        />,
+      );
+
+      // The url may not assert a slide the gallery cannot show.
+      expect(isOpen()).toBe(false);
+      expect(fake.adapter.read()).toBe('');
+    });
+
+    it('drops an unparseable parameter and stays closed', () => {
+      const fake = createFakeUrlAdapter('?photo=bogus');
+
+      render(
+        <LightboxOverlay
+          urlParam="photo"
+          urlAdapter={fake.adapter}
+          images={mockImages}
+        />,
+      );
+
+      expect(isOpen()).toBe(false);
+      expect(fake.adapter.read()).toBe('');
+    });
+
+    describe('async resolution', () => {
+      const flush = () => new Promise((done) => setTimeout(done, 0));
+
+      const idCodec: UrlCodec<string> = {
+        decode: (raw) => raw,
+        encode: (id) => id,
+      };
+
+      const locateIn = (loaded: string[]): UrlLocator<string> => ({
+        locate: (id) => {
+          const found = loaded.indexOf(id);
+          return found >= 0 ? found : null;
+        },
+        identify: (index) => loaded[index],
+      });
+
+      it('leaves the parameter untouched while the item is still resolving', async () => {
+        const fake = createFakeUrlAdapter('?photo=99');
+        const pending = createDeferred();
+
+        render(
+          <LightboxOverlay
+            urlParam="photo"
+            urlAdapter={fake.adapter}
+            urlCodec={idCodec}
+            urlLocator={{
+              ...locateIn([]),
+              locateAsync: async () => {
+                await pending.promise;
+                return null;
+              },
+            }}
+            images={mockImages}
+          />,
+        );
+
+        expect(isOpen()).toBe(false);
+        expect(fake.adapter.read()).toBe('?photo=99');
+      });
+
+      it('opens at the index locateAsync finds once the page arrives', async () => {
+        const fake = createFakeUrlAdapter('?photo=late');
+        const pending = createDeferred();
+        const loaded: string[] = [];
+
+        render(
+          <LightboxOverlay
+            urlParam="photo"
+            urlAdapter={fake.adapter}
+            urlCodec={idCodec}
+            urlLocator={{
+              ...locateIn(loaded),
+              locateAsync: async (id) => {
+                await pending.promise;
+                loaded.push('a', 'b', id);
+                return loaded.indexOf(id);
+              },
+            }}
+            images={mockImages}
+          />,
+        );
+        expect(isOpen()).toBe(false);
+
+        await act(async () => {
+          pending.resolve();
+          await flush();
+        });
+
+        expect(isOpen()).toBe(true);
+        expect(lastReelProps.initialIndex).toBe(2);
+      });
+
+      it('drops the parameter when locateAsync still misses after the page arrives', async () => {
+        const fake = createFakeUrlAdapter('?photo=gone');
+        const pending = createDeferred();
+
+        render(
+          <LightboxOverlay
+            urlParam="photo"
+            urlAdapter={fake.adapter}
+            urlCodec={idCodec}
+            urlLocator={{
+              ...locateIn([]),
+              // The pages arrive, and none of them holds this image.
+              locateAsync: async () => {
+                await pending.promise;
+                return null;
+              },
+            }}
+            images={mockImages}
+          />,
+        );
+
+        await act(async () => {
+          pending.resolve();
+          await flush();
+        });
+
+        expect(isOpen()).toBe(false);
+        expect(fake.adapter.read()).toBe('');
+      });
+
+      it('trusts the index locateAsync returns without re-reading images', async () => {
+        const fake = createFakeUrlAdapter('?photo=late');
+
+        render(
+          <LightboxOverlay
+            urlParam="photo"
+            urlAdapter={fake.adapter}
+            urlCodec={idCodec}
+            urlLocator={{
+              ...locateIn([]),
+              locateAsync: async () => 2,
+            }}
+            images={[mockImages[0]]}
+          />,
+        );
+
+        await act(async () => {
+          await flush();
+        });
+
+        expect(isOpen()).toBe(true);
+        expect(lastReelProps.initialIndex).toBe(2);
+      });
+
+      it('drops the parameter when locateAsync rejects', async () => {
+        const fake = createFakeUrlAdapter('?photo=boom');
+
+        render(
+          <LightboxOverlay
+            urlParam="photo"
+            urlAdapter={fake.adapter}
+            urlCodec={idCodec}
+            urlLocator={{
+              ...locateIn([]),
+              locateAsync: () => Promise.reject(new Error('network')),
+            }}
+            images={mockImages}
+          />,
+        );
+
+        await act(async () => {
+          await flush();
+        });
+
+        expect(isOpen()).toBe(false);
+        expect(fake.adapter.read()).toBe('');
+      });
+
+      it('ignores a locateAsync that settles after the url moved on', async () => {
+        const fake = createFakeUrlAdapter('?photo=first');
+        const first = createDeferred();
+        const second = createDeferred();
+        const gates = [first, second];
+        const loaded: string[] = [];
+        let call = 0;
+
+        render(
+          <LightboxOverlay
+            urlParam="photo"
+            urlAdapter={fake.adapter}
+            urlCodec={idCodec}
+            urlLocator={{
+              ...locateIn(loaded),
+              locateAsync: async (id) => {
+                await gates[call++].promise;
+                loaded.push(id);
+                return loaded.indexOf(id);
+              },
+            }}
+            images={mockImages}
+          />,
+        );
+
+        act(() => fake.adapter.push('?photo=second'));
+
+        await act(async () => {
+          first.resolve();
+          await flush();
+        });
+        expect(isOpen()).toBe(false);
+
+        await act(async () => {
+          second.resolve();
+          await flush();
+        });
+
+        expect(isOpen()).toBe(true);
+        expect(lastReelProps.initialIndex).toBe(1);
+      });
+
+      it('ignores a locateAsync that settles after the parameter is cleared', async () => {
+        const fake = createFakeUrlAdapter();
+        const pending = createDeferred();
+        const loaded: string[] = [];
+
+        render(
+          <LightboxOverlay
+            urlParam="photo"
+            urlAdapter={fake.adapter}
+            urlCodec={idCodec}
+            urlLocator={{
+              ...locateIn(loaded),
+              locateAsync: async (id) => {
+                await pending.promise;
+                loaded.push(id);
+                return loaded.indexOf(id);
+              },
+            }}
+            images={mockImages}
+          />,
+        );
+
+        act(() => fake.adapter.push('?photo=late'));
+        act(() => fake.adapter.goBack());
+
+        await act(async () => {
+          pending.resolve();
+          await flush();
+        });
+
+        expect(isOpen()).toBe(false);
+      });
+
+      it('ignores a locateAsync that settles after unmount', async () => {
+        const fake = createFakeUrlAdapter('?photo=late');
+        const pending = createDeferred();
+
+        const { unmount } = render(
+          <LightboxOverlay
+            urlParam="photo"
+            urlAdapter={fake.adapter}
+            urlCodec={idCodec}
+            urlLocator={{
+              ...locateIn([]),
+              locateAsync: async () => {
+                await pending.promise;
+                return null;
+              },
+            }}
+            images={mockImages}
+          />,
+        );
+
+        unmount();
+
+        await act(async () => {
+          pending.resolve();
+          await flush();
+        });
+
+        expect(fake.adapter.read()).toBe('?photo=late');
+      });
+
+      it('does not run the lookup again when the url changes while open', async () => {
+        const fake = createFakeUrlAdapter('?photo=a');
+        const locateAsync = vi.fn().mockResolvedValue(0);
+
+        render(
+          <LightboxOverlay
+            urlParam="photo"
+            urlAdapter={fake.adapter}
+            urlCodec={idCodec}
+            urlLocator={{ ...locateIn(['a', 'b']), locateAsync }}
+            images={mockImages}
+          />,
+        );
+
+        await act(async () => {
+          await flush();
+        });
+        expect(isOpen()).toBe(true);
+        expect(locateAsync).not.toHaveBeenCalled();
+
+        act(() => fake.adapter.push('?photo=b'));
+
+        expect(locateAsync).not.toHaveBeenCalled();
+        expect(lastReelProps.initialIndex).toBe(0);
+      });
+    });
+
+    it('resolves the index through a custom codec and locator', () => {
+      const fake = createFakeUrlAdapter('?photo=img3');
+
+      render(
+        <LightboxOverlay
+          urlParam="photo"
+          urlAdapter={fake.adapter}
+          urlCodec={{ decode: (raw) => raw, encode: (id) => id }}
+          urlLocator={{
+            locate: (id) =>
+              mockImages.findIndex((item) => item.src === `${id}.jpg`),
+            identify: (index) => mockImages[index].src.replace('.jpg', ''),
+          }}
+          images={mockImages}
+        />,
+      );
+
+      expect(isOpen()).toBe(true);
+      expect(lastReelProps.initialIndex).toBe(2);
     });
   });
 });

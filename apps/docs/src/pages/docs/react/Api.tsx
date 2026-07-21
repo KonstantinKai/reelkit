@@ -514,6 +514,37 @@ apiRef.current?.unobserve();       // stop observing keyboard`}
 useBodyLock(isOpen);`}
           language="typescript"
         />
+
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">
+          useUrlState
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-2">
+          Mirrors one query parameter into a signal and writes changes back to
+          the URL. Writing the parameter is what opens a URL-driven overlay, so
+          there is no open flag to hold. The first write of an absent parameter
+          pushes one history entry and every write after that replaces it — so
+          paging through slides never buries the back button.
+        </p>
+        <CodeBlock
+          code={`import { useUrlState } from '@reelkit/react';
+
+const photo = useUrlState('photo');
+
+<img onClick={() => photo.set(index)} />
+<LightboxOverlay urlParam="photo" images={images} />
+
+photo.set(null); // close
+
+// Routed app: pass a router-backed adapter, otherwise the router's
+// own location goes stale and its next navigation drops the param.
+const adapter = useReactRouterUrlAdapter();
+const photo = useUrlState('photo', { adapter });
+
+// Supply a codec (or locator) to have the index derived for you.
+const photo = useUrlState('photo', { adapter, codec: indexCodec });
+photo.index.value; // 3 for ?photo=3, null when nothing is open`}
+          language="tsx"
+        />
       </section>
 
       <section className="mb-12">

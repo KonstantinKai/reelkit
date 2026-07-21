@@ -7,8 +7,9 @@
  * Provides the slider engine ({@link createSliderController}), input
  * controllers ({@link createGestureController},
  * {@link createKeyboardController}, {@link createWheelController}),
- * and a lightweight reactive system ({@link createSignal},
- * {@link createComputed}, {@link reaction}).
+ * URL-state syncing for deep-linkable overlays
+ * ({@link createUrlStateController}), and a lightweight reactive system
+ * ({@link createSignal}, {@link createComputed}, {@link reaction}).
  *
  * All public APIs follow a **factory-function** pattern: no classes.
  * Each factory returns a plain object with methods and signal-based
@@ -39,6 +40,15 @@ export {
   type Subscribable,
   type Listener,
   type Dispose,
+  // URL state
+  createUrlStateController,
+  createHistoryAdapter,
+  indexCodec,
+  type UrlAdapter,
+  type UrlCodec,
+  type UrlLocator,
+  type UrlStateController,
+  type UrlStateOptions,
   // Deferred
   createDeferred,
   type Deferred,

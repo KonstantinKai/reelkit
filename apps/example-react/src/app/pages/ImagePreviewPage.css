@@ -50,6 +50,9 @@
   cursor: pointer;
   transition: all 0.2s ease;
   text-transform: capitalize;
+  /* Also worn by an anchor, which arrives underlined and inline. */
+  display: inline-block;
+  text-decoration: none;
 }
 
 .transition-btn:hover {
@@ -78,6 +81,9 @@
   cursor: pointer;
   aspect-ratio: 4 / 3;
   background: rgba(255, 255, 255, 0.05);
+  /* Also used as a link, which would otherwise underline and recolour the title. */
+  text-decoration: none;
+  color: inherit;
   transition:
     transform 0.3s ease,
     box-shadow 0.3s ease;

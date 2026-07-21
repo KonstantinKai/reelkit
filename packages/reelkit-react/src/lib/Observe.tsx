@@ -28,7 +28,23 @@ export const Observe = ({
 }) => {
   const rerender = useReducer(() => ({}), {})[1];
 
-  useEffect(() => reaction(() => signals, rerender), []);
+  // What the render below is about to draw from. Subscribing happens in an
+  // effect, which React runs after commit, so anything written in between —
+  // a ref callback, an `onLoad` for an image the browser had cached — lands
+  // with no listener attached and would otherwise be drawn stale forever.
+  const rendered = useRef<unknown[]>([]);
+  rendered.current = signals.map((signal) => signal.value);
+
+  useEffect(() => {
+    const dispose = reaction(() => signals, rerender);
+
+    const missed = signals.some(
+      (signal, at) => signal.value !== rendered.current[at],
+    );
+    if (missed) rerender();
+
+    return dispose;
+  }, []);
 
   return children();
 };

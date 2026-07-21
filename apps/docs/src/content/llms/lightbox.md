@@ -8,7 +8,7 @@ desc: Full-screen image gallery lightbox overlay for React. LightboxItem schema,
 
 # Lightbox
 
-Full-screen image gallery lightbox overlay for React. Tree-shakable transitions, keyboard nav, fullscreen toggle, swipe-to-close on mobile, full theming via CSS custom properties.
+Full-screen image gallery lightbox overlay for React. Tree-shakable transitions, keyboard nav, fullscreen toggle, swipe-to-close on mobile, shareable/bookmarkable URL state, full theming via CSS custom properties.
 
 ## Install
 
@@ -82,20 +82,24 @@ interface LightboxItem {
 
 ## LightboxOverlay Props
 
-| Prop               | Type                                             | Default           | Description                                                                                                                                                                |
-| ------------------ | ------------------------------------------------ | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `isOpen`           | `boolean`                                        | required          | Control lightbox visibility                                                                                                                                                |
-| `images`           | `LightboxItem[]`                                 | required          | Image array to display                                                                                                                                                     |
-| `ariaLabel`        | `string`                                         | `'Image gallery'` | Accessible label for dialog region; announced on open                                                                                                                      |
-| `initialIndex`     | `number`                                         | `0`               | Starting image index                                                                                                                                                       |
-| `transitionFn`     | `TransitionTransformFn`                          | `slideTransition` | Slide transition fn. Import from `@reelkit/react-lightbox` (`slideTransition`, `flipTransition`, `lightboxFadeTransition`, `lightboxZoomTransition`) or pass a custom one. |
-| `apiRef`           | `MutableRefObject<ReelApi>`                      | -                 | Ref to Reel API                                                                                                                                                            |
-| `renderControls`   | `(props: ControlsRenderProps) => ReactNode`      | -                 | Custom controls, replace default close button, counter, fullscreen toggle                                                                                                  |
-| `renderNavigation` | `(props: NavigationRenderProps) => ReactNode`    | -                 | Custom nav, replace default prev/next arrows                                                                                                                               |
-| `renderInfo`       | `(props: InfoRenderProps) => ReactNode`          | -                 | Custom info overlay, replace default title + description gradient. Return null to hide.                                                                                    |
-| `renderSlide`      | `(props: SlideRenderProps) => ReactNode \| null` | -                 | Custom slide render. Receive `{ item, index, size, isActive, onReady, onWaiting, onError }`. Return null = fall back to default.                                           |
-| `renderLoading`    | `(props: { item, activeIndex }) => ReactNode`    | -                 | Custom loading indicator, replace default spinner                                                                                                                          |
-| `renderError`      | `(props: { item, activeIndex }) => ReactNode`    | -                 | Custom error indicator, replace default error icon                                                                                                                         |
+| Prop               | Type                                                                                        | Default           | Description                                                                                                                                                                             |
+| ------------------ | ------------------------------------------------------------------------------------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `isOpen`           | `boolean`                                                                                   | required\*        | Control lightbox visibility. Mutually exclusive with `urlParam` — pass exactly one.                                                                                                     |
+| `urlParam`         | `string`                                                                                    | -                 | URL-driven mode: query param carrying the active slide. Lightbox opens/closes itself from the URL. Excludes `isOpen`.                                                                   |
+| `urlAdapter`       | `UrlAdapter`                                                                                | History API       | Navigation system to read/write through. Required in a routed app.                                                                                                                      |
+| `urlCodec`         | `{ decode(raw) => Id \| null; encode(id) => string }`                                       | `indexCodec`      | Wire format: param text ↔ a stable identity. Collection-blind. Omit for plain `?photo=3`; supply one (base64, slug) so a bookmark survives reordering.                                 |
+| `urlLocator`       | `{ locate(id) => number \| null; locateAsync?(id) => Promise<...>; identify(index) => id }` | -                 | Where the identity sits in `images`: `locate` (sync), `locateAsync` (async fallback for a paginated gallery), `identify` (writes). Required when `urlCodec` reads a non-index identity. |
+| `images`           | `LightboxItem[]`                                                                            | required          | Image array to display                                                                                                                                                                  |
+| `ariaLabel`        | `string`                                                                                    | `'Image gallery'` | Accessible label for dialog region; announced on open                                                                                                                                   |
+| `initialIndex`     | `number`                                                                                    | `0`               | Starting image index                                                                                                                                                                    |
+| `transitionFn`     | `TransitionTransformFn`                                                                     | `slideTransition` | Slide transition fn. Import from `@reelkit/react-lightbox` (`slideTransition`, `flipTransition`, `lightboxFadeTransition`, `lightboxZoomTransition`) or pass a custom one.              |
+| `apiRef`           | `MutableRefObject<ReelApi>`                                                                 | -                 | Ref to Reel API                                                                                                                                                                         |
+| `renderControls`   | `(props: ControlsRenderProps) => ReactNode`                                                 | -                 | Custom controls, replace default close button, counter, fullscreen toggle                                                                                                               |
+| `renderNavigation` | `(props: NavigationRenderProps) => ReactNode`                                               | -                 | Custom nav, replace default prev/next arrows                                                                                                                                            |
+| `renderInfo`       | `(props: InfoRenderProps) => ReactNode`                                                     | -                 | Custom info overlay, replace default title + description gradient. Return null to hide.                                                                                                 |
+| `renderSlide`      | `(props: SlideRenderProps) => ReactNode \| null`                                            | -                 | Custom slide render. Receive `{ item, index, size, isActive, onReady, onWaiting, onError }`. Return null = fall back to default.                                                        |
+| `renderLoading`    | `(props: { item, activeIndex }) => ReactNode`                                               | -                 | Custom loading indicator, replace default spinner                                                                                                                                       |
+| `renderError`      | `(props: { item, activeIndex }) => ReactNode`                                               | -                 | Custom error indicator, replace default error icon                                                                                                                                      |
 
 ### Reel-Forwarded Props
 
@@ -108,6 +112,99 @@ interface LightboxItem {
 | `transitionDuration`    | `number`         | `300`   | Transition animation duration (ms) |
 | `swipeDistanceFactor`   | `number`         | `0.12`  | Swipe threshold (0-1)              |
 | `swipeToCloseDirection` | `'up' \| 'down'` | `'up'`  | Swipe-to-close direction on mobile |
+
+## URL State (shareable links, back button)
+
+Pass `urlParam` instead of `isOpen`. The URL owns the open state: the lightbox opens itself when the param names a slide and closes when it goes away. Opening = writing the param.
+
+```tsx
+import { LightboxOverlay } from '@reelkit/react-lightbox';
+import { useUrlState } from '@reelkit/react';
+
+const photo = useUrlState('photo');
+
+{
+  images.map((img, i) => (
+    <img key={img.src} src={img.src} onClick={() => photo.set(i)} />
+  ));
+}
+
+<LightboxOverlay urlParam="photo" images={images} />;
+```
+
+- Opening pushes **one** history entry. Paging slides **replaces** it — N swipes add 0 entries, so one back step always leaves the gallery. Back closes; it does not step photos.
+- Deep link `?photo=3` opens the gallery at that slide on load. Closing a link that arrived with the page removes the param in place rather than navigating off-site.
+- A param naming no slide (stale bookmark, hand-edited) is dropped from the URL instead of leaving the address bar asserting a slide that cannot open.
+
+**Routed app — pass an adapter.** Writing `history.pushState` behind a router leaves its location stale and its next navigation drops the param:
+
+```tsx
+const adapter = useReactRouterUrlAdapter(); // { read, subscribe, push, replace, getState, goBack }
+const photo = useUrlState('photo', { adapter });
+
+<LightboxOverlay urlParam="photo" urlAdapter={adapter} images={images} />;
+```
+
+**Opening is a link.** The open state lives in the URL, so a thumbnail is an ordinary link — no click handler — and the browser's own behaviour comes free: open in a new tab, copy the address, preview on hover. In a routed app use the router's link so it stays client-side:
+
+```tsx
+import { Link } from 'react-router-dom';
+
+// The href is the open action — no onClick, no open flag.
+{
+  images.map((img, i) => (
+    <Link key={img.src} to={`?photo=${i}`}>
+      <img src={img.src} />
+    </Link>
+  ));
+}
+
+<LightboxOverlay urlParam="photo" urlAdapter={adapter} images={images} />;
+```
+
+**Stable links.** The index is positional — a bookmarked `?photo=3` opens a different image once the list is reordered. Key by identity instead:
+
+Two separate jobs: `urlCodec` spells the identity into the URL (wire), `urlLocator` finds where that identity sits (lookup).
+
+```tsx
+<LightboxOverlay
+  urlParam="photo"
+  images={images}
+  urlCodec={{ decode: (raw) => raw, encode: (id) => id }}
+  urlLocator={{
+    locate: (id) => images.findIndex((x) => x.slug === id),
+    identify: (index) => images[index].slug,
+  }}
+/>
+```
+
+**Infinite / paginated galleries.** `locate` is synchronous, so it can only answer for images already loaded — a shared link to image 400 of a feed that has loaded 20 comes up empty. `locateAsync` is the fallback, called only when `locate` misses: load the pages you need, then return the index the identity turned out to have.
+
+```tsx
+<LightboxOverlay
+  urlParam="photo"
+  images={images}
+  urlCodec={{ decode: (raw) => raw, encode: (id) => id }}
+  urlLocator={{
+    locate: (id) => images.findIndex((x) => x.id === id),
+    identify: (index) => images[index].id,
+    locateAsync: async (id) => {
+      const loaded = await loadUntil(id); // load however: pages up to id, or just id spliced in
+      if (!loaded) return null; // exhausted — link names no image
+      setImages(loaded); // commit — the overlay renders from this state
+      return loaded.findIndex((x) => x.id === id); // wherever it landed
+    },
+  }}
+/>
+```
+
+How you load is up to you — fetch contiguous pages up to the target, or fetch just that one image and append it. The URL keys by identity, not position, so `findIndex` returns wherever the item lands.
+
+While `locateAsync` is pending the lightbox stays closed and the param is left alone — the deep link survives the fetch. `null` or a rejection drops the param. An answer that arrives after the URL moved on, after a close, or after unmount is discarded, so a slow fetch cannot open a slide nobody asked for.
+
+Nothing is rendered while pending; the page already owns that loading state, so render your own skeleton. There is no timeout — the lightbox cannot know how long the gallery is, so settle with `null` when pagination is exhausted or the overlay stays closed indefinitely.
+
+Whatever `locateAsync` returns is authoritative — it reports the index of data it just fetched, and the lightbox takes it as-is rather than re-reading `images`, which React has not re-rendered yet.
 
 ## Callbacks
 

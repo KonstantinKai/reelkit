@@ -30,6 +30,10 @@ const router = createBrowserRouter([
         lazy: lazy(() => import('./app/pages/ImagePreviewPage')),
       },
       {
+        path: 'image-preview-url',
+        lazy: lazy(() => import('./app/pages/ImagePreviewUrlPage')),
+      },
+      {
         path: 'image-preview-custom',
         lazy: lazy(() => import('./app/pages/ImagePreviewCustomPage')),
       },

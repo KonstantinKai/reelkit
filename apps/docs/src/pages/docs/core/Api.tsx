@@ -228,6 +228,50 @@ export default function CoreApi() {
 
       <section className="mb-12">
         <Heading level={2} className="text-2xl font-bold mb-4">
+          SliderController API
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-6">
+          The framework-agnostic core. One factory builds a controller from a
+          config and optional events: <strong>Config Options</strong> are the
+          config, <strong>Callbacks</strong> the events, and{' '}
+          <strong>Methods</strong> are what the returned controller exposes.
+        </p>
+
+        <Heading level={3} className="text-lg font-semibold mb-3">
+          Factory Function
+        </Heading>
+        <div className="overflow-x-auto mb-6">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left py-3 px-4 font-semibold">Export</th>
+                <th className="text-left py-3 px-4 font-semibold">Type</th>
+                <th className="text-left py-3 px-4 font-semibold">
+                  Description
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  createSliderController
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {
+                    '(config: SliderConfig, events?: SliderEvents) => SliderController'
+                  }
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Build a slider controller. <code>config</code> is required
+                  (options below); <code>events</code> is optional (callbacks
+                  below). Returns the controller whose methods drive it.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <Heading level={3} className="text-lg font-semibold mb-3">
           Config Options
         </Heading>
         <div className="overflow-x-auto">
@@ -268,7 +312,7 @@ export default function CoreApi() {
       </section>
 
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">
+        <Heading level={3} className="text-lg font-semibold mb-3">
           Callbacks
         </Heading>
         <div className="overflow-x-auto">
@@ -305,7 +349,7 @@ export default function CoreApi() {
       </section>
 
       <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">
+        <Heading level={3} className="text-lg font-semibold mb-3">
           Methods
         </Heading>
         <div className="overflow-x-auto">
@@ -1243,7 +1287,7 @@ restoreFocus();`}
         />
       </section>
 
-      <section>
+      <section className="mb-12">
         <Heading level={2} className="text-2xl font-bold mb-4">
           Video Utilities
         </Heading>
@@ -1320,6 +1364,138 @@ restoreFocus();`}
                   for portrait,{' '}
                   <span className="font-mono text-xs">'contain'</span> for
                   landscape. Resilient to wrong declared metadata.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          URL State
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Mirror one query parameter into a signal and back. Two axes, each one
+          job: a{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            codec
+          </code>{' '}
+          is the wire (param text ↔ a stable identity), a{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            locator
+          </code>{' '}
+          is the lookup (where that identity sits in the collection).
+        </p>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left py-3 px-4 font-semibold">Export</th>
+                <th className="text-left py-3 px-4 font-semibold">Type</th>
+                <th className="text-left py-3 px-4 font-semibold">
+                  Description
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  createUrlStateController
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {
+                    '({ param, adapter?, codec?, locator? }) => UrlStateController'
+                  }
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Mirrors one query parameter into a signal and writes changes
+                  back to the URL. The first write of an absent parameter pushes
+                  one history entry; every write after that replaces it. Given a{' '}
+                  <code className="font-mono text-xs">codec</code> or{' '}
+                  <code className="font-mono text-xs">locator</code> it also
+                  derives{' '}
+                  <code className="font-mono text-xs">
+                    index: Signal&lt;number | null&gt;
+                  </code>
+                  , applying the open/close latch and self-healing a parameter
+                  that names no slide — so every binding subscribes rather than
+                  re-deriving.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  createHistoryAdapter
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {'() => UrlAdapter'}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Default adapter over the History API. A routed application
+                  should inject its own instead, otherwise the router's location
+                  goes stale and its next navigation drops the parameter.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  indexCodec
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {'UrlCodec<number>'}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Reads <code className="font-mono text-xs">?photo=3</code> as
+                  slide 3. Pass it to opt into index derivation without writing
+                  a codec of your own. For an infinite or paginated list, pass{' '}
+                  <code className="font-mono text-xs">locator</code> instead —
+                  the parameter survives while the promise is pending, so a deep
+                  link into an unloaded page is not cleared mid-fetch.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  {'UrlCodec<Id>'}
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {'{ decode(raw) => Id | null; encode(id) => string }'}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  The wire format: parameter text ↔ a stable identity,
+                  collection-blind.{' '}
+                  <code className="font-mono text-xs">decode</code> returning{' '}
+                  <code className="font-mono text-xs">null</code> means
+                  malformed text.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  {'UrlLocator<Id>'}
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {
+                    '{ locate(id) => number | null; locateAsync?(id) => Promise<number | null>; identify(index) => id }'
+                  }
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  The lookup: where the identity sits in the collection.{' '}
+                  <code className="font-mono text-xs">locate</code> is
+                  synchronous,{' '}
+                  <code className="font-mono text-xs">locateAsync</code> its
+                  fallback for a paginated list, and{' '}
+                  <code className="font-mono text-xs">identify</code> turns an
+                  index back into an identity for writes.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  UrlAdapter
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {'{ read, subscribe, push, replace, getState, goBack }'}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  The injection point for a router. A routed application must
+                  supply one, or the router's own location goes stale.
                 </td>
               </tr>
             </tbody>

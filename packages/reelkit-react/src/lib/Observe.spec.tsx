@@ -14,6 +14,25 @@ describe('Observe', () => {
     expect(container.textContent).toBe('42');
   });
 
+  it('picks up a signal written during commit, before it subscribes', () => {
+    const loading = createSignal(true);
+
+    // A ref callback runs at commit — after this render, before the effect
+    // that subscribes. An image the browser had cached reports ready exactly
+    // here, so the write lands with no listener attached.
+    const { container } = render(
+      <Observe signals={[loading]}>
+        {() => (
+          <span ref={() => (loading.value = false)}>
+            {loading.value ? 'loading' : 'ready'}
+          </span>
+        )}
+      </Observe>,
+    );
+
+    expect(container.textContent).toBe('ready');
+  });
+
   it('re-renders when signal value changes', () => {
     const signal = createSignal(1);
 

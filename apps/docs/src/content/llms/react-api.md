@@ -129,6 +129,32 @@ import { useBodyLock } from '@reelkit/react';
 useBodyLock(isOpen);
 ```
 
+### useUrlState
+
+Mirrors one query parameter into a signal and writes changes back to the URL. Use it on the trigger side — writing the parameter is what opens a URL-driven overlay.
+
+First write of an absent param pushes ONE history entry; every write after replaces it. So paging N slides costs 0 entries and one back step always leaves.
+
+```tsx
+import { useUrlState } from '@reelkit/react';
+
+const photo = useUrlState('photo'); // default: History API adapter
+
+<img onClick={() => photo.set(index)} />;
+<LightboxOverlay urlParam="photo" images={images} />;
+
+photo.set(null); // close
+```
+
+Routed app? Pass a router-backed `UrlAdapter` — writing history directly leaves the router's location stale and its next navigation drops the param.
+
+```tsx
+const adapter = useReactRouterUrlAdapter(); // read/subscribe/push/replace/getState/goBack
+const photo = useUrlState('photo', { adapter });
+```
+
+The second argument takes everything `createUrlStateController` does minus `param` — `adapter`, plus a `codec` or `locator` to have `index` derived. Supply neither and the hook reports the raw `value` only.
+
 ## Accessibility
 
 `<Reel>` renders `role="region"` + `aria-roledescription="carousel"`. Set `ariaLabel` for screen reader name. Polite live region announces "Slide N of M" on change, no re-render. Inactive slides get `inert` — focus + AT skip them.

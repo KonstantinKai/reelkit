@@ -42,6 +42,7 @@ const links = [
   { to: '/reel-player', label: 'Reel Player' },
   { to: '/reel-player-custom', label: 'Custom Player' },
   { to: '/image-preview', label: 'Image Gallery' },
+  { to: '/image-preview-url', label: 'URL Gallery' },
   { to: '/image-preview-custom', label: 'Custom Gallery' },
   { to: '/image-preview-video', label: 'Video Gallery' },
   { to: '/stories-player', label: 'Stories Player' },
