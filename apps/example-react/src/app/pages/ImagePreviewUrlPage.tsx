@@ -1,11 +1,17 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
-  LightboxOverlay,
+  LightboxUrlOverlay,
   type LightboxItem,
   type UrlLocator,
 } from '@reelkit/react-lightbox';
-import { createSignal, Observe, Signal } from '@reelkit/react';
+import {
+  createSignal,
+  Observe,
+  Signal,
+  useOverlayUrlState,
+  indexCodec,
+} from '@reelkit/react';
 import { cdnUrl } from '@reelkit/example-data';
 import { ImageOff } from 'lucide-react';
 import { useReactRouterUrlAdapter } from '../hooks/useReactRouterUrlAdapter';
@@ -88,6 +94,7 @@ const GalleryThumb: React.FC<{ src: string; alt: string }> = ({ src, alt }) => {
  */
 export function ImagePreviewUrlPage() {
   const adapter = useReactRouterUrlAdapter();
+  const navigate = useNavigate();
 
   const [loaded, fetching, locator] = useState(() => {
     // Only part of the gallery has "arrived" — the rest stands in for pages this
@@ -100,10 +107,12 @@ export function ImagePreviewUrlPage() {
       fetching,
       // The parameter is a plain index, so the identity is the index — no codec
       // needed. The locator windows it: `locate` answers only for what has loaded,
-      // and `locateAsync` fetches the rest.
+      // and `locateAsync` fetches the rest. A supplied locator owns its own
+      // validity, so `locate` rejects anything outside the loaded window itself.
       {
         // Within the loaded window? Then it is at exactly that index.
-        locate: (index) => (index < loaded.value.length ? index : null),
+        locate: (index) =>
+          index >= 0 && index < loaded.value.length ? index : null,
         identify: (index) => index,
         locateAsync: async (index) => {
           // Nothing left to fetch: this link names an image the feed does not have.
@@ -122,6 +131,17 @@ export function ImagePreviewUrlPage() {
     ] as [Signal<LightboxItem[]>, Signal<boolean>, UrlLocator<number>];
   })[0];
 
+  // Build the controller once from the windowed locator, then hand it to the
+  // overlay. Keeping it here (not inside the overlay) leaves `photo.set` on hand
+  // for programmatic control. The parameter is a plain index, so it pairs with
+  // the built-in indexCodec.
+  const photo = useOverlayUrlState({
+    param: _kParam,
+    adapter,
+    codec: indexCodec,
+    locator,
+  });
+
   return (
     <div className="image-gallery-page">
       <div className="gallery-header">
@@ -133,19 +153,49 @@ export function ImagePreviewUrlPage() {
           piles up history entries.
         </p>
         <p>
-          Only the first {_kPageSize} images have loaded. The link below points
-          past them, the way a shared link into a long feed does — the lightbox
-          waits for the image to arrive instead of discarding the address.
+          Back closes the gallery when you opened it from here — the link pushed
+          an entry, so back pops to the gallery. A shared link opened directly
+          in a fresh tab has no history behind it, so back leaves the site;
+          close with the ✕ button or Escape to stay on the gallery.
+        </p>
+        <p>
+          Only the first {_kPageSize} images have loaded. The buttons below all
+          point past them, the way a shared link into a long feed does — the
+          lightbox waits for the image to arrive instead of discarding the
+          address.
         </p>
         <div className="transition-selector">
-          {/* A link, not a button: the destination is a URL, so the browser's
-              own behaviour — new tab, copy address, hover target — comes free. */}
+          {/* All three buttons open the same slide. They differ only in what
+              the browser gets to know about it. */}
+
+          {/* A link, so the browser's own behaviour comes free: new tab, copy
+              address, hover target, keyboard reach. */}
           <Link
             to={`?${_kParam}=${sampleImages.length - 1}`}
             className="transition-btn"
           >
-            Open image {sampleImages.length} (not loaded yet)
+            Open image {sampleImages.length} (link)
           </Link>
+          {/* Navigating through the router. No href, so the browser affordances
+              are gone, but the URL still changes and back still closes. */}
+          <button
+            type="button"
+            className="transition-btn"
+            onClick={() => navigate(`?${_kParam}=${sampleImages.length - 1}`)}
+          >
+            Open image {sampleImages.length} (router)
+          </button>
+          {/* Straight through the controller. The adapter routes the write, so
+              this ends up in the same place as the other two — the difference
+              is that the open started in code rather than from something the
+              user could copy or middle-click. */}
+          <button
+            type="button"
+            className="transition-btn"
+            onClick={() => photo.set(sampleImages.length - 1)}
+          >
+            Open image {sampleImages.length} (controller.set)
+          </button>
           <Observe signals={[fetching]}>
             {() => (fetching.value ? <span>Loading photo…</span> : null)}
           </Observe>
@@ -180,17 +230,7 @@ export function ImagePreviewUrlPage() {
       </Observe>
 
       <Observe signals={[loaded]}>
-        {() => (
-          <LightboxOverlay
-            urlParam={_kParam}
-            urlAdapter={adapter}
-            urlLocator={locator}
-            // The loaded window, not the whole feed. Handing over every image would
-            // let the overlay open any index straight away, and the waiting this
-            // page exists to show would never happen.
-            images={loaded.value}
-          />
-        )}
+        {() => <LightboxUrlOverlay controller={photo} images={loaded.value} />}
       </Observe>
     </div>
   );

@@ -6,6 +6,8 @@ import {
   type UrlCodec,
   type UrlLocator,
   indexCodec,
+  createIndexLocator,
+  indexKey,
 } from './urlState';
 import { createDeferred } from './deferred';
 import type { Dispose } from './signal';
@@ -645,5 +647,40 @@ describe('createUrlStateController', () => {
 
     expect(goBack).not.toHaveBeenCalled();
     expect(fake.adapter.read()).toBe('?a=1');
+  });
+});
+
+describe('createIndexLocator', () => {
+  it('resolves an in-range index to itself', () => {
+    const locator = createIndexLocator(() => 3);
+    expect(locator.locate(0)).toBe(0);
+    expect(locator.locate(2)).toBe(2);
+    expect(locator.identify(1)).toBe(1);
+  });
+
+  it('rejects an out-of-range index to null rather than coercing it', () => {
+    const locator = createIndexLocator(() => 3);
+    // A clamp would land 99 on the last slide (2); the locator drops it so the
+    // parameter self-heals instead of opening a slide the URL never named.
+    expect(locator.locate(99)).toBeNull();
+    expect(locator.locate(-1)).toBeNull();
+    expect(locator.locate(1.5)).toBeNull();
+  });
+
+  it('reads the count at lookup time, so a grown collection widens the range', () => {
+    let count = 1;
+    const locator = createIndexLocator(() => count);
+    expect(locator.locate(3)).toBeNull();
+    count = 5;
+    expect(locator.locate(3)).toBe(3);
+  });
+});
+
+describe('indexKey', () => {
+  it('bundles indexCodec with a count-bound index locator', () => {
+    const key = indexKey(() => 3);
+    expect(key.codec).toBe(indexCodec);
+    expect(key.locator.locate(2)).toBe(2);
+    expect(key.locator.locate(99)).toBeNull();
   });
 });

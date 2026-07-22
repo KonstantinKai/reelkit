@@ -44,9 +44,12 @@ export {
   createUrlStateController,
   createHistoryAdapter,
   indexCodec,
+  createIndexLocator,
+  indexKey,
   type UrlAdapter,
   type UrlCodec,
   type UrlLocator,
+  type UrlKey,
   type UrlStateController,
   type UrlStateOptions,
   // Deferred

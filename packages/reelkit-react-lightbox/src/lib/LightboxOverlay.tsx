@@ -21,17 +21,12 @@ import {
   Reel,
   Observe,
   useBodyLock,
-  useUrlState,
-  indexCodec,
   SwipeToClose,
   type ReelApi,
   type ReelProps,
   type SwipeToCloseDirection,
   type TransitionTransformFn,
-  type UrlAdapter,
-  type UrlCodec,
-  type UrlLocator,
-  type UseUrlStateOptions,
+  type UrlStateController,
 } from '@reelkit/react';
 import { ChevronLeft, ChevronRight, ImageOff } from 'lucide-react';
 import { useFullscreen } from '@reelkit/react';
@@ -214,93 +209,47 @@ export interface LightboxControlledProps {
   /** When `true`, the lightbox is rendered and body scroll is locked. */
   isOpen: boolean;
 
-  urlParam?: never;
-  urlAdapter?: never;
-  urlCodec?: never;
-  urlLocator?: never;
-
   /** Callback to close the lightbox. Triggered by close button or Escape key. */
   onClose: () => void;
 }
 
 /**
- * URL-driven mode: the address bar owns whether the lightbox is open. The
- * lightbox opens itself when the parameter appears and closes itself when it
- * goes away, so a link to a slide can be shared and the back button closes
- * the gallery.
- *
- * Open it by writing the parameter — `useUrlState(param).set(index)` — rather
- * than by holding a boolean.
+ * URL-driven mode: the address bar owns whether the lightbox is open. A
+ * {@link UrlStateController} — built in consumer code with `useOverlayUrlState`
+ * — carries the open state, so the same controller can be read and driven from
+ * elsewhere. The overlay opens itself when the controller's index names a slide
+ * and closes when it clears.
  */
-interface LightboxUrlBaseProps {
-  /** Query parameter that carries the active slide, for example `photo`. */
-  urlParam: string;
-
+export interface LightboxUrlControlledProps {
   /**
-   * Navigation system to read and write through. Defaults to the History API.
-   *
-   * Pass a router-backed adapter in a routed application: writing history
-   * directly leaves a router's own location stale, and its next navigation
-   * drops the parameter.
+   * URL-state controller from `useOverlayUrlState`. Its `index` drives whether
+   * the overlay is open and which slide it shows; the overlay writes back
+   * through it on slide change and close.
    */
-  urlAdapter?: UrlAdapter;
-
-  isOpen?: never;
+  controller: UrlStateController;
 
   /** Called after the lightbox closes. The URL drives closing, not this. */
   onClose?: () => void;
 }
 
 /**
- * URL-driven mode.
- *
- * @typeParam Id - The identity `urlCodec` reads out of the parameter. Defaults
- * to a slide index, so a plain `?photo=3` gallery needs neither prop.
+ * Props for the controlled {@link LightboxOverlay}. Open state is a boolean the
+ * caller owns. For URL-driven open state, use {@link LightboxUrlOverlay}
+ * instead — a separate component, so there is no mutually-exclusive prop to
+ * police.
  */
-export interface LightboxUrlProps<Id = number> extends LightboxUrlBaseProps {
-  /**
-   * Wire format for the parameter — its text ↔ a stable identity. Collection-
-   * blind: it spells an identity into the URL and reads it back, nothing more.
-   *
-   * Omit it for the default integer codec (`?photo=3`). Supply one — base64 of
-   * an id, a slug — to make a bookmark survive the gallery reordering: it names
-   * the *image*, not whatever slid into that slot.
-   *
-   * @default indexCodec
-   */
-  urlCodec?: UrlCodec<Id>;
-
-  /**
-   * Where the codec's identity sits in `images`: `locate` (sync), `locateAsync`
-   * (async fallback for a paginated gallery), and `identify` for writes. The
-   * lightbox clamps whatever these return to the gallery's bounds.
-   *
-   * Required whenever `urlCodec` reads a non-index identity — a string id
-   * cannot stand in for a position. Omit it only for the integer default.
-   */
-  urlLocator?: UrlLocator<Id>;
-}
+export type LightboxOverlayProps = LightboxOverlayBaseProps &
+  LightboxControlledProps;
 
 /**
- * Either controlled by a boolean, or driven by the URL — never both. Passing
- * `urlParam` and `isOpen` together is a type error, because they would be two
- * answers to the same question.
+ * Props for {@link LightboxUrlOverlay}. Open state lives in the URL, carried by
+ * a {@link UrlStateController} the consumer builds with `useOverlayUrlState`.
  */
-export type LightboxOverlayProps<Id = number> = LightboxOverlayBaseProps &
-  (LightboxControlledProps | LightboxUrlProps<Id>);
+export type LightboxUrlOverlayProps = LightboxOverlayBaseProps &
+  LightboxUrlControlledProps;
 
 /** Props the inner content actually consumes once the lightbox is open. */
 type LightboxContentProps = LightboxOverlayBaseProps & { onClose: () => void };
-
-/**
- * Narrows a parsed or resolved value to a slide the gallery can actually show.
- * Anything else — a fraction, a negative, a stale index past the end — is the
- * same answer as no slide at all.
- */
-const toSlideIndex = (value: number | null, count: number): number | null =>
-  value !== null && Number.isInteger(value) && value >= 0 && value < count
-    ? value
-    : null;
 
 /** Number of images to preload before and after the current index. */
 const _kPreloadRange = 2;
@@ -311,7 +260,8 @@ const preloader = createContentPreloader({ maxCacheSize: 1000 });
  * Inner content of the lightbox overlay. Manages slider, controls,
  * navigation, info overlay, fullscreen, resize, and image preloading.
  *
- * Rendered only when `isOpen` is `true` (gated by {@link LightboxOverlay}).
+ * Rendered only while the lightbox is open — gated by {@link LightboxOverlay}
+ * (`isOpen`) or {@link LightboxUrlOverlay} (a non-null `controller.index`).
  * @internal
  */
 const LightboxContent: FC<LightboxContentProps> = (props) => {
@@ -713,79 +663,44 @@ const LightboxContent: FC<LightboxContentProps> = (props) => {
 };
 
 /**
- * @internal
+ * Full-screen image lightbox whose open state lives in the URL. Build the
+ * controller with `useOverlayUrlState` and pass it as `controller`: the address
+ * bar owns the gallery, so it opens when the controller's index names a slide,
+ * closes when it clears — links are shareable and the back button closes when it
+ * was opened from within the app. A shared link opened directly in a fresh tab
+ * has no history behind it, so browser-back leaves the site; the close button or
+ * Escape removes the parameter in place and stays.
+ *
+ * Prefer a link to the parameter (`<Link to="?photo=3">`) as the open action —
+ * the href does it with no handler, and the open is then shareable, opens in a
+ * new tab, and back-closes for free. `controller.set` to the parameter opens it
+ * too; `set` is also the low-level write the overlay uses for slide changes and
+ * to close.
+ *
+ * The controlled {@link LightboxOverlay} and this url-driven overlay are
+ * separate components: each carries exactly one open-state driver, so there is
+ * no mutually-exclusive prop to police.
  */
-type UrlDrivenLightboxProps<Id> = LightboxOverlayBaseProps &
-  LightboxUrlProps<Id>;
-
-/**
- * Lightbox whose open state lives in the URL. Opens itself when the parameter
- * names a slide, closes itself when it goes away.
- * @internal
- */
-const UrlDrivenLightbox = <Id,>({
-  urlParam,
-  urlAdapter,
-  urlCodec,
-  urlLocator,
-  onClose,
-  ...base
-}: UrlDrivenLightboxProps<Id>) => {
-  // Read inside callbacks only, so a changing gallery never rebuilds the
-  // controller or restarts the subscription.
-  const latest = useRef({ base, urlCodec, urlLocator, onClose });
-  latest.current = { base, urlCodec, urlLocator, onClose };
-
-  const { clamp, ...options } = useState(() => {
-    // Bounding the index against the gallery is the one piece of this the
-    // controller cannot do: `images.length` is overlay knowledge, and the core
-    // primitive stays free of any overlay's shape.
-    const clamp = (value: number | null): number | null =>
-      toSlideIndex(value, latest.current.base.images.length);
-
-    // The sync `locate` runs against the collection as it stands, so clamping
-    // it is safe. `locateAsync` is forwarded UNCLAMPED: it reports the index of
-    // data it just loaded, and clamping that against an `images` prop React has
-    // not re-rendered yet would reject the very slide it went and fetched. It
-    // is authoritative — the consumer owns its correctness.
-    const locator: UrlLocator<Id> = {
-      locate: (id) => {
-        const inner = latest.current.urlLocator;
-        return clamp(inner ? inner.locate(id) : (id as number));
-      },
-      identify: (index) => {
-        const inner = latest.current.urlLocator;
-        return inner ? inner.identify(index) : (index as Id);
-      },
-    };
-
-    if (urlLocator?.locateAsync) {
-      locator.locateAsync = (id) => latest.current.urlLocator!.locateAsync!(id);
-    }
-
-    return {
-      adapter: urlAdapter,
-      codec: (latest.current.urlCodec ?? indexCodec) as UrlCodec<Id>,
-      locator,
-      clamp,
-    };
-  })[0];
-
-  const url = useUrlState<Id>(urlParam, options as UseUrlStateOptions<Id>);
+export const LightboxUrlOverlay = (
+  props: LightboxUrlOverlayProps,
+): ReactNode => {
+  const { controller, onClose, ...base } = props;
+  const latest = useRef({ base, onClose });
+  latest.current = { base, onClose };
 
   return (
-    <Observe signals={[url.index]}>
+    <Observe signals={[controller.index]}>
       {() =>
-        url.index.value === null ? null : (
+        controller.index.value === null ? null : (
           <LightboxContent
             {...base}
-            initialIndex={url.index.value}
+            initialIndex={controller.index.value}
             onClose={() => {
-              url.set(null);
+              controller.set(null);
               latest.current.onClose?.();
             }}
             onSlideChange={(index) => {
-              url.set(index);
+              controller.set(index);
               latest.current.base.onSlideChange?.(index);
             }}
           />
@@ -797,7 +712,8 @@ const UrlDrivenLightbox = <Id,>({
 
 /**
  * Full-screen image lightbox overlay with gesture, keyboard, and wheel
- * navigation.
+ * navigation. Controlled: the caller owns `isOpen`. For URL-driven open state,
+ * use {@link LightboxUrlOverlay} instead.
  *
  * Renders into a portal on `document.body`. When `isOpen` is `false` the
  * component returns `null` — no DOM nodes are created.
@@ -808,17 +724,7 @@ const UrlDrivenLightbox = <Id,>({
  * {@link Counter}, {@link FullscreenButton}) are available for
  * composition inside `renderControls`.
  */
-export const LightboxOverlay = <Id = number,>(
-  // A non-index identity cannot stand in for a position, so a `urlCodec` that
-  // reads one demands a `urlLocator`. The default `Id = number` leaves the
-  // integer gallery unconstrained.
-  props: LightboxOverlayProps<Id> &
-    (Id extends number ? object : { urlLocator: UrlLocator<Id> }),
-): ReactNode => {
-  if (props.urlParam !== undefined) {
-    return <UrlDrivenLightbox<Id> {...props} />;
-  }
-
+export const LightboxOverlay = (props: LightboxOverlayProps): ReactNode => {
   if (!props.isOpen) return null;
 
   return <LightboxContent {...props} />;

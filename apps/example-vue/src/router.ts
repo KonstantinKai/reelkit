@@ -30,6 +30,10 @@ const routes: RouteRecordRaw[] = [
     component: () => import('./pages/ImagePreviewVideoPage.vue'),
   },
   {
+    path: '/image-preview-url',
+    component: () => import('./pages/ImagePreviewUrlPage.vue'),
+  },
+  {
     path: '/:pathMatch(.*)*',
     component: () => import('./pages/NotFoundPage.vue'),
   },

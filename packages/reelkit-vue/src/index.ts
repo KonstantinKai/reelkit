@@ -110,6 +110,13 @@ export {
   createContentPreloader,
   type ContentPreloader,
   type ContentPreloaderConfig,
+
+  // URL state
+  createUrlStateController,
+  createHistoryAdapter,
+  indexCodec,
+  createIndexLocator,
+  indexKey,
 } from '@reelkit/core';
 
 // Re-export core types
@@ -118,6 +125,12 @@ export type {
   SliderConfig,
   RangeExtractor,
   NavKey,
+  UrlAdapter,
+  UrlCodec,
+  UrlLocator,
+  UrlKey,
+  UrlStateController,
+  UrlStateOptions,
 } from '@reelkit/core';
 
 // Components
@@ -152,6 +165,8 @@ export {
   RK_SOUND_KEY,
   useSoundState,
   toVueRef,
+  useOverlayUrlState,
+  type OverlayUrlStateOptions,
 } from './lib/composables';
 
 export { hasRenderedNodes } from './lib/utils/slots';

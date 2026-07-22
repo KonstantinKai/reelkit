@@ -119,14 +119,20 @@ export { ReelIndicator, type ReelIndicatorProps } from './lib/ReelIndicator';
 
 export { Observe, AnimatedObserve, type AnimatedValue } from './lib/Observe';
 
-export { useUrlState, type UseUrlStateOptions } from './lib/useUrlState';
+export {
+  useOverlayUrlState,
+  type OverlayUrlStateOptions,
+} from './lib/useOverlayUrlState';
 export {
   createUrlStateController,
   createHistoryAdapter,
   indexCodec,
+  createIndexLocator,
+  indexKey,
   type UrlAdapter,
   type UrlCodec,
   type UrlLocator,
+  type UrlKey,
   type UrlStateController,
   type UrlStateOptions,
 } from '@reelkit/core';

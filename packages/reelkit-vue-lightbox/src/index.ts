@@ -52,9 +52,12 @@ export {
 
 export {
   LightboxOverlay,
+  LightboxUrlOverlay,
   type LightboxOverlayProps,
+  type LightboxUrlOverlayProps,
   type LightboxApi,
 } from './lib/LightboxOverlay';
+export type { UrlAdapter, UrlCodec, UrlLocator } from '@reelkit/vue';
 
 export {
   LightboxVideoSlide,

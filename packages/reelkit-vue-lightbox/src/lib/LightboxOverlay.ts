@@ -29,6 +29,7 @@ import {
   type ReelExpose,
   type SwipeToCloseDirection,
   type TransitionTransformFn,
+  type UrlStateController,
 } from '@reelkit/vue';
 import type {
   ControlsSlotScope,
@@ -44,7 +45,7 @@ import { LightboxControls } from './LightboxControls';
 import { LightboxNavigation } from './LightboxNavigation';
 import './styles.css';
 
-/** Imperative API exposed by `<LightboxOverlay>` via template ref. */
+/** Imperative API exposed by `<LightboxOverlay>` and `<LightboxUrlOverlay>` via template ref. */
 export interface LightboxApi {
   next(): void;
   prev(): void;
@@ -69,8 +70,9 @@ const isTouchDevice = (): boolean => {
 };
 
 /**
- * Shared prop definitions used by both the public wrapper and the inner
- * content component. The wrapper adds `isOpen` on top.
+ * Shared prop definitions reused by both public wrappers — `LightboxOverlay`
+ * adds `isOpen`, `LightboxUrlOverlay` adds `controller` — and by the inner
+ * content component.
  *
  * @internal
  */
@@ -659,6 +661,106 @@ export const LightboxOverlay = defineComponent({
             showNavigation: props.showNavigation,
             onClose: requestClose,
             onSlideChange: (i: number) => emit('slideChange', i),
+            onApiReady: (api: LightboxApi) => {
+              innerApi.value = api;
+              emit('apiReady', api);
+            },
+          },
+          slots,
+        ),
+      ]);
+    };
+  },
+});
+
+const lightboxUrlOverlayProps = {
+  ...lightboxSharedProps,
+  /**
+   * URL-state controller from `useOverlayUrlState`. Its `index` drives whether
+   * the overlay is open and which slide it shows; the overlay writes back
+   * through it on slide change and close.
+   */
+  controller: {
+    type: Object as PropType<UrlStateController>,
+    required: true as const,
+  },
+} as const;
+
+export type LightboxUrlOverlayProps = ExtractPropTypes<
+  typeof lightboxUrlOverlayProps
+>;
+
+/**
+ * Lightbox whose open state lives in the URL. Build the controller with
+ * `useOverlayUrlState` and pass it as `controller`: the address bar owns the
+ * gallery, so it opens when the controller's index names a slide, closes when it
+ * clears — links are shareable and the back button closes when it was opened
+ * from within the app. A shared link opened directly in a fresh tab has no
+ * history behind it, so browser-back leaves the site; the close button or Escape
+ * removes the parameter in place and stays.
+ *
+ * The controlled `<LightboxOverlay>` and this url-driven overlay are separate
+ * components on purpose: each carries exactly one open-state driver, so there
+ * is no mutually-exclusive prop to police.
+ */
+export const LightboxUrlOverlay = defineComponent({
+  name: 'LightboxUrlOverlay',
+  inheritAttrs: false,
+  props: lightboxUrlOverlayProps,
+  emits: {
+    close: () => true,
+    slideChange: (_: number) => true,
+    apiReady: (_: LightboxApi) => true,
+  },
+  setup(props, { emit, slots, expose }) {
+    const innerApi = shallowRef<LightboxApi | null>(null);
+
+    const openIndex = toVueRef(props.controller.index);
+
+    const requestClose = () => {
+      props.controller.set(null);
+      emit('close');
+    };
+
+    expose({
+      next: () => innerApi.value?.next(),
+      prev: () => innerApi.value?.prev(),
+      goTo: (index: number, animate?: boolean) =>
+        innerApi.value?.goTo(index, animate) ?? Promise.resolve(),
+      adjust: () => innerApi.value?.adjust(),
+      observe: () => innerApi.value?.observe(),
+      unobserve: () => innerApi.value?.unobserve(),
+      close: requestClose,
+    } satisfies LightboxApi);
+
+    return () => {
+      if (openIndex.value === null) {
+        innerApi.value = null;
+        return null;
+      }
+      return h(Teleport, { to: 'body' }, [
+        h(
+          LightboxContent,
+          {
+            items: props.items,
+            ariaLabel: props.ariaLabel,
+            initialIndex: openIndex.value,
+            transitionFn: props.transitionFn,
+            transitionDuration: props.transitionDuration,
+            swipeDistanceFactor: props.swipeDistanceFactor,
+            swipeToCloseDirection: props.swipeToCloseDirection,
+            loop: props.loop,
+            enableNavKeys: props.enableNavKeys,
+            enableWheel: props.enableWheel,
+            wheelDebounceMs: props.wheelDebounceMs,
+            showInfo: props.showInfo,
+            showControls: props.showControls,
+            showNavigation: props.showNavigation,
+            onClose: requestClose,
+            onSlideChange: (i: number) => {
+              props.controller.set(i);
+              emit('slideChange', i);
+            },
             onApiReady: (api: LightboxApi) => {
               innerApi.value = api;
               emit('apiReady', api);

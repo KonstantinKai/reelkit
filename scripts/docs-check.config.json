@@ -1,0 +1,298 @@
+{
+  "surfaces": [
+    {
+      "package": "packages/reelkit-core/src/index.ts",
+      "page": "apps/docs/src/pages/docs/core/Api.tsx",
+      "mirror": "apps/docs/src/content/llms/core-api.md"
+    },
+    {
+      "package": "packages/reelkit-react/src/index.ts",
+      "page": "apps/docs/src/pages/docs/react/Api.tsx",
+      "mirror": "apps/docs/src/content/llms/react-api.md"
+    },
+    {
+      "package": "packages/reelkit-vue/src/index.ts",
+      "page": "apps/docs/src/pages/docs/vue/Api.tsx",
+      "mirror": "apps/docs/src/content/llms/vue-api.md"
+    },
+    {
+      "package": "packages/reelkit-react-lightbox/src/index.ts",
+      "page": "apps/docs/src/pages/docs/Lightbox.tsx",
+      "mirror": "apps/docs/src/content/llms/lightbox.md"
+    },
+    {
+      "package": "packages/reelkit-vue-lightbox/src/index.ts",
+      "page": "apps/docs/src/pages/docs/VueLightbox.tsx",
+      "mirror": "apps/docs/src/content/llms/vue-lightbox.md"
+    },
+    {
+      "package": "packages/reelkit-react-reel-player/src/index.ts",
+      "page": "apps/docs/src/pages/docs/ReelPlayer.tsx",
+      "mirror": "apps/docs/src/content/llms/reel-player.md"
+    },
+    {
+      "package": "packages/reelkit-react-stories-player/src/index.ts",
+      "page": "apps/docs/src/pages/docs/StoriesPlayer.tsx",
+      "mirror": "apps/docs/src/content/llms/stories-player.md"
+    },
+    {
+      "package": "packages/reelkit-stories-core/src/index.ts",
+      "page": "apps/docs/src/pages/docs/StoriesCore.tsx",
+      "mirror": "apps/docs/src/content/llms/stories-core.md"
+    },
+    {
+      "package": "packages/reelkit-vue-reel-player/src/index.ts",
+      "page": "apps/docs/src/pages/docs/VueReelPlayer.tsx",
+      "mirror": "apps/docs/src/content/llms/vue-reel-player.md"
+    },
+    {
+      "package": "packages/reelkit-angular/src/index.ts",
+      "page": "apps/docs/src/pages/docs/angular/Api.tsx",
+      "mirror": "apps/docs/src/content/llms/angular-api.md"
+    },
+    {
+      "package": "packages/reelkit-angular-lightbox/src/index.ts",
+      "page": "apps/docs/src/pages/docs/AngularLightbox.tsx",
+      "mirror": "apps/docs/src/content/llms/angular-lightbox.md"
+    },
+    {
+      "package": "packages/reelkit-angular-reel-player/src/index.ts",
+      "page": "apps/docs/src/pages/docs/AngularReelPlayer.tsx",
+      "mirror": "apps/docs/src/content/llms/angular-reel-player.md"
+    }
+  ],
+  "mirrorPairs": [
+    {
+      "page": "apps/docs/src/pages/docs/core/Api.tsx",
+      "mirror": "apps/docs/src/content/llms/core-api.md"
+    },
+    {
+      "page": "apps/docs/src/pages/docs/react/Api.tsx",
+      "mirror": "apps/docs/src/content/llms/react-api.md"
+    },
+    {
+      "page": "apps/docs/src/pages/docs/vue/Api.tsx",
+      "mirror": "apps/docs/src/content/llms/vue-api.md"
+    },
+    {
+      "page": "apps/docs/src/pages/docs/Lightbox.tsx",
+      "mirror": "apps/docs/src/content/llms/lightbox.md"
+    },
+    {
+      "page": "apps/docs/src/pages/docs/VueLightbox.tsx",
+      "mirror": "apps/docs/src/content/llms/vue-lightbox.md"
+    },
+    {
+      "page": "apps/docs/src/pages/docs/react/Guide.tsx",
+      "mirror": "apps/docs/src/content/llms/react-guide.md"
+    },
+    {
+      "page": "apps/docs/src/pages/docs/vue/Guide.tsx",
+      "mirror": "apps/docs/src/content/llms/vue-guide.md"
+    },
+    {
+      "page": "apps/docs/src/pages/docs/core/Guide.tsx",
+      "mirror": "apps/docs/src/content/llms/core-guide.md"
+    },
+    {
+      "page": "apps/docs/src/pages/docs/ReelPlayer.tsx",
+      "mirror": "apps/docs/src/content/llms/reel-player.md"
+    },
+    {
+      "page": "apps/docs/src/pages/docs/StoriesPlayer.tsx",
+      "mirror": "apps/docs/src/content/llms/stories-player.md"
+    },
+    {
+      "page": "apps/docs/src/pages/docs/StoriesCore.tsx",
+      "mirror": "apps/docs/src/content/llms/stories-core.md"
+    },
+    {
+      "page": "apps/docs/src/pages/docs/VueReelPlayer.tsx",
+      "mirror": "apps/docs/src/content/llms/vue-reel-player.md"
+    },
+    {
+      "page": "apps/docs/src/pages/docs/angular/Api.tsx",
+      "mirror": "apps/docs/src/content/llms/angular-api.md"
+    },
+    {
+      "page": "apps/docs/src/pages/docs/AngularLightbox.tsx",
+      "mirror": "apps/docs/src/content/llms/angular-lightbox.md"
+    },
+    {
+      "page": "apps/docs/src/pages/docs/AngularReelPlayer.tsx",
+      "mirror": "apps/docs/src/content/llms/angular-reel-player.md"
+    }
+  ],
+  "forbidden": [
+    {
+      "pattern": "\\burl(Param|Codec|Locator)\\b",
+      "reason": "removed API — url state moved to useOverlayUrlState + a controller prop",
+      "files": [
+        "apps/docs/src/pages/docs/Lightbox.tsx",
+        "apps/docs/src/pages/docs/VueLightbox.tsx",
+        "apps/docs/src/pages/docs/react/Api.tsx",
+        "apps/docs/src/pages/docs/vue/Api.tsx",
+        "apps/docs/src/content/llms/lightbox.md",
+        "apps/docs/src/content/llms/vue-lightbox.md",
+        "apps/docs/src/content/llms/react-api.md",
+        "apps/docs/src/content/llms/vue-api.md"
+      ]
+    },
+    {
+      "pattern": "not by calling|not how you open|for a programmatic close",
+      "reason": "`set` is a legitimate programmatic open — document the preference for links, do not forbid set",
+      "files": [
+        "apps/docs/src/pages/docs/Lightbox.tsx",
+        "apps/docs/src/pages/docs/VueLightbox.tsx",
+        "apps/docs/src/pages/docs/react/Api.tsx",
+        "apps/docs/src/pages/docs/vue/Api.tsx",
+        "apps/docs/src/content/llms/lightbox.md",
+        "apps/docs/src/content/llms/vue-lightbox.md",
+        "apps/docs/src/content/llms/react-api.md",
+        "apps/docs/src/content/llms/vue-api.md"
+      ]
+    },
+    {
+      "pattern": "onClick=\\{\\(\\) => [a-z]+\\.set\\(|@click=\"[a-z]+\\.set\\(",
+      "reason": "opening is taught as a link — do not ship a click-to-open `set` example",
+      "files": [
+        "apps/docs/src/pages/docs/Lightbox.tsx",
+        "apps/docs/src/pages/docs/VueLightbox.tsx",
+        "apps/docs/src/pages/docs/react/Api.tsx",
+        "apps/docs/src/pages/docs/vue/Api.tsx",
+        "apps/docs/src/content/llms/lightbox.md",
+        "apps/docs/src/content/llms/vue-lightbox.md",
+        "apps/docs/src/content/llms/react-api.md",
+        "apps/docs/src/content/llms/vue-api.md"
+      ]
+    }
+  ],
+  "requirePair": [
+    {
+      "claim": "back button closes|back closes the gallery|press back to close",
+      "caveat": "fresh tab",
+      "flags": "i",
+      "reason": "promises the back button closes the gallery without the fresh-tab caveat — a deep link opened directly has no in-app history behind it, so back leaves the site",
+      "files": [
+        "apps/docs/src/pages/docs/Lightbox.tsx",
+        "apps/docs/src/pages/docs/VueLightbox.tsx",
+        "apps/docs/src/content/llms/lightbox.md",
+        "apps/docs/src/content/llms/vue-lightbox.md"
+      ]
+    }
+  ],
+  "knownUndocumented": {
+    "packages/reelkit-core/src/index.ts": [
+      "AnimationOptions",
+      "Deferred",
+      "Dispose",
+      "Listener",
+      "LruCache",
+      "TimeoutFn",
+      "clamp",
+      "createGestureController",
+      "createKeyboardController",
+      "createWheelController",
+      "extractRange",
+      "generate",
+      "isNegative",
+      "lerp"
+    ],
+    "packages/reelkit-react/src/index.ts": [
+      "ReelContext",
+      "ReelContextValue",
+      "SoundProvider",
+      "SwipeToClose",
+      "SwipeToCloseDirection",
+      "SwipeToCloseProps",
+      "UseFullscreenProps",
+      "UseFullscreenResult",
+      "useFullscreen",
+      "useReelContext",
+      "useSoundState"
+    ],
+    "packages/reelkit-vue/src/index.ts": ["hasRenderedNodes"],
+    "packages/reelkit-react-lightbox/src/index.ts": ["LightboxVideoSlide"],
+    "packages/reelkit-vue-lightbox/src/index.ts": [
+      "CloseButton",
+      "CloseButtonProps",
+      "Counter",
+      "CounterProps",
+      "FullscreenButton",
+      "FullscreenButtonProps",
+      "ImageSlide",
+      "ImageSlideProps",
+      "LightboxNavigation",
+      "LightboxNavigationProps",
+      "LightboxVideoSlide",
+      "LightboxVideoSlideProps",
+      "SoundButton",
+      "SoundButtonProps",
+      "UseVideoSlideRendererResult"
+    ],
+    "packages/reelkit-react-reel-player/src/index.ts": [
+      "useTimelineState",
+      "useTimelineStateOptional"
+    ],
+    "packages/reelkit-react-stories-player/src/index.ts": [],
+    "packages/reelkit-stories-core/src/index.ts": [
+      "CanvasProgressRenderer",
+      "TimerController"
+    ],
+    "packages/reelkit-vue-reel-player/src/index.ts": [
+      "ErrorIndicator",
+      "LoadingIndicator",
+      "PlayerControls",
+      "RK_TIMELINE_KEY",
+      "useTimelineState",
+      "useTimelineStateOptional",
+      "useViewportSize"
+    ],
+    "packages/reelkit-angular/src/index.ts": [],
+    "packages/reelkit-angular-lightbox/src/index.ts": [
+      "LightboxErrorContext",
+      "LightboxLoadingContext",
+      "RkLightboxErrorDirective",
+      "RkLightboxLoadingDirective",
+      "RkSoundButtonComponent",
+      "setLightboxVideoMuted"
+    ],
+    "packages/reelkit-angular-reel-player/src/index.ts": [
+      "PLAYER_TEMPLATE_SLOT_DIRECTIVES",
+      "PlayerErrorContext",
+      "PlayerLoadingContext",
+      "RkImageSlideComponent",
+      "RkMediaSlideComponent",
+      "RkNestedSliderComponent",
+      "RkPlayerErrorDirective",
+      "RkPlayerLoadingDirective",
+      "RkPlayerNestedNavigationDirective",
+      "RkPlayerNestedSlideDirective",
+      "RkPlayerSlideDirective",
+      "RkPlayerTimelineDirective",
+      "RkSlideOverlayComponent",
+      "RkVideoSlideComponent"
+    ]
+  },
+  "exemptPackages": ["packages/reelkit-example-data/src/index.ts"],
+  "parity": [
+    {
+      "token": "locateAsync",
+      "reason": "every lightbox url-state surface must teach the out-of-window case (an item the feed has not loaded yet), not just the in-window one",
+      "files": [
+        "apps/docs/src/pages/docs/Lightbox.tsx",
+        "apps/docs/src/content/llms/lightbox.md",
+        "apps/docs/src/pages/docs/VueLightbox.tsx",
+        "apps/docs/src/content/llms/vue-lightbox.md"
+      ]
+    },
+    {
+      "token": "URL State",
+      "reason": "both lightbox pages advertise url state in their feature grid and section headings, so neither binding looks like it lacks the capability",
+      "files": [
+        "apps/docs/src/pages/docs/Lightbox.tsx",
+        "apps/docs/src/pages/docs/VueLightbox.tsx"
+      ]
+    }
+  ]
+}

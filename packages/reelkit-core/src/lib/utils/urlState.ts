@@ -201,6 +201,68 @@ export const indexCodec: UrlCodec<number> = {
 };
 
 /**
+ * Narrows a parsed index to a slide the gallery can actually show, or `null`
+ * when it cannot. A fraction, a negative, or a stale index past the end reads
+ * back the same as no slide, so a dead bookmark self-heals out of the URL
+ * instead of asserting a slide that cannot open.
+ *
+ * It rejects to `null` rather than repairing to the nearest valid slide: a
+ * shared link naming a gone slide must drop, not silently land on a neighbour.
+ */
+const toSlideIndex = (value: number | null, count: number): number | null =>
+  value !== null && Number.isInteger(value) && value >= 0 && value < count
+    ? value
+    : null;
+
+/**
+ * The default locator for a plain index gallery, paired with {@link indexCodec}:
+ * the parameter is a slide position, so `locate` and `identify` are the identity
+ * — bounded by the gallery's live size.
+ *
+ * Pass `countGetter` as a getter, not a number, so the bound reads the current
+ * size at lookup time: a paginated gallery grows, and a framework whose setup
+ * runs once (Vue) would otherwise capture a stale length. Hand the result to
+ * `useOverlayUrlState` as its `locator`.
+ *
+ * A gallery keyed by a stable id instead of position wants its own locator, not
+ * this one — this maps a position to itself and only bounds the range.
+ *
+ * @param countGetter - Reads the gallery's current item count.
+ * @returns A locator that resolves an in-range index and drops the rest.
+ */
+export const createIndexLocator = (
+  countGetter: () => number,
+): UrlLocator<number> => ({
+  locate: (id) => toSlideIndex(id, countGetter()),
+  identify: (index) => index,
+});
+
+/**
+ * The matched `codec` + `locator` pair for one parameter. They share the same
+ * `Id` and always travel together — the codec spells the identity into the URL,
+ * the locator finds where that identity sits — so building them as a pair is the
+ * one way to keep them from disagreeing.
+ */
+export interface UrlKey<Id = number> {
+  codec: UrlCodec<Id>;
+  locator: UrlLocator<Id>;
+}
+
+/**
+ * The default key for a plain index gallery: {@link indexCodec} paired with a
+ * {@link createIndexLocator} bound to the gallery's live size. Spread it into
+ * `useOverlayUrlState` — `useOverlayUrlState({ param, ...indexKey(() => count) })`
+ * — so the common case is one call and the codec cannot drift from the locator.
+ *
+ * @param countGetter - Reads the gallery's current item count.
+ * @returns The `{ codec, locator }` pair for an index-addressed gallery.
+ */
+export const indexKey = (countGetter: () => number): UrlKey<number> => ({
+  codec: indexCodec,
+  locator: createIndexLocator(countGetter),
+});
+
+/**
  * A single query parameter, mirrored into a reactive signal and back into the
  * URL. The URL is the source of truth: `value` always reflects what the
  * address bar says.

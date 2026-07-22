@@ -42,21 +42,28 @@
  * ```
  *
  * @example URL-driven mode — the address bar owns the open state, so links are
- * shareable and the back button closes the gallery. Pass `urlParam` instead of
- * `isOpen`; opening is writing the parameter.
+ * shareable and the back button closes the gallery when it was opened from
+ * within the app. Build the controller with `useOverlayUrlState` and pass it as
+ * `controller`; open with a link, since the href is the open action.
  * ```tsx
- * import { LightboxOverlay, type LightboxItem } from '@reelkit/react-lightbox';
- * import { useUrlState } from '@reelkit/react';
+ * import { LightboxUrlOverlay, type LightboxItem } from '@reelkit/react-lightbox';
+ * import { useOverlayUrlState, indexKey } from '@reelkit/react';
+ * import { Link } from 'react-router-dom';
  * import '@reelkit/react-lightbox/styles.css';
  *
  * function Gallery({ images }: { images: LightboxItem[] }) {
- *   const photo = useUrlState('photo');
+ *   const photo = useOverlayUrlState({
+ *     param: 'photo',
+ *     ...indexKey(() => images.length),
+ *   });
  *   return (
  *     <>
  *       {images.map((img, i) => (
- *         <img key={img.src} src={img.src} onClick={() => photo.set(i)} />
+ *         <Link key={img.src} to={`?photo=${i}`}>
+ *           <img src={img.src} />
+ *         </Link>
  *       ))}
- *       <LightboxOverlay urlParam="photo" images={images} />
+ *       <LightboxUrlOverlay controller={photo} images={images} />
  *     </>
  *   );
  * }
@@ -64,30 +71,29 @@
  *
  * @example Stable links — key the URL by a per-image identity instead of its
  * position, so a shared link opens the same image after the gallery is
- * reordered. `urlCodec` spells the identity into the URL; `urlLocator` finds
- * where it now sits.
+ * reordered. `codec` spells the identity into the URL; `locator` finds where it
+ * now sits.
  * ```tsx
- * import { LightboxOverlay, type LightboxItem } from '@reelkit/react-lightbox';
+ * import { LightboxUrlOverlay, type LightboxItem } from '@reelkit/react-lightbox';
+ * import { useOverlayUrlState } from '@reelkit/react';
  * import '@reelkit/react-lightbox/styles.css';
  *
  * function Gallery({ images }: { images: LightboxItem[] }) {
- *   return (
- *     <LightboxOverlay
- *       urlParam="photo"
- *       images={images}
- *       urlCodec={{ decode: atob, encode: btoa }}
- *       urlLocator={{
- *         locate: (id) => images.findIndex((x) => x.src === id),
- *         identify: (index) => images[index].src,
- *       }}
- *     />
- *   );
+ *   const photo = useOverlayUrlState({
+ *     param: 'photo',
+ *     codec: { decode: atob, encode: btoa },
+ *     locator: {
+ *       locate: (id) => images.findIndex((x) => x.src === id),
+ *       identify: (index) => images[index].src,
+ *     },
+ *   });
+ *   return <LightboxUrlOverlay controller={photo} images={images} />;
  * }
  * ```
  */
 
 // Main component
-export { LightboxOverlay } from './lib/LightboxOverlay';
+export { LightboxOverlay, LightboxUrlOverlay } from './lib/LightboxOverlay';
 
 // Transitions
 export { slideTransition, flipTransition } from '@reelkit/react';
@@ -96,6 +102,7 @@ export { lightboxFadeTransition } from './lib/lightboxFadeTransition';
 export { lightboxZoomTransition } from './lib/lightboxZoomTransition';
 export type {
   LightboxOverlayProps,
+  LightboxUrlOverlayProps,
   LightboxItem,
   ReelProxyProps,
 } from './lib/LightboxOverlay';
