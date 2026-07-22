@@ -1454,6 +1454,43 @@ restoreFocus();`}
               </tr>
               <tr className="border-b border-slate-100 dark:border-slate-800">
                 <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  createIndexLocator
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {'(countGetter: () => number) => UrlLocator<number>'}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  The default index locator: a slide position maps to itself,
+                  bounded by the live count the getter returns. An out-of-range
+                  index resolves to{' '}
+                  <code className="font-mono text-xs">null</code>, so a stale{' '}
+                  <code className="font-mono text-xs">?photo=99</code>{' '}
+                  self-heals out of the URL — it rejects rather than coercing to
+                  the nearest slide, which would open one the URL never named. A
+                  getter, not a number, so the bound reads the current size at
+                  lookup time as a paginated gallery grows.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  indexKey
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {'(countGetter: () => number) => UrlKey<number>'}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  The matched pair for an index-addressed gallery —{' '}
+                  <code className="font-mono text-xs">indexCodec</code> plus a{' '}
+                  <code className="font-mono text-xs">createIndexLocator</code>{' '}
+                  bound to the gallery&apos;s size. Spread it (
+                  <code className="font-mono text-xs">
+                    {'{ param, ...indexKey(() => count) }'}
+                  </code>
+                  ) so the codec cannot drift from the locator.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
                   {'UrlCodec<Id>'}
                 </td>
                 <td className="py-3 px-4 font-mono text-xs text-slate-500">
@@ -1488,6 +1525,21 @@ restoreFocus();`}
               </tr>
               <tr className="border-b border-slate-100 dark:border-slate-800">
                 <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  {'UrlKey<Id>'}
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {'{ codec: UrlCodec<Id>; locator: UrlLocator<Id> }'}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  The matched codec + locator pair for one parameter. They share
+                  the same <code className="font-mono text-xs">Id</code> and
+                  always travel together — the codec spells the identity into
+                  the URL, the locator finds where it sits — so building them as
+                  a pair is what keeps them from disagreeing.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
                   UrlAdapter
                 </td>
                 <td className="py-3 px-4 font-mono text-xs text-slate-500">
@@ -1496,6 +1548,24 @@ restoreFocus();`}
                 <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
                   The injection point for a router. A routed application must
                   supply one, or the router's own location goes stale.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  {'UrlStateOptions<Id>'}
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {
+                    '{ param: string; adapter?: UrlAdapter; codec?: UrlCodec<Id>; locator?: UrlLocator<Id> }'
+                  }
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  The options{' '}
+                  <code className="font-mono text-xs">
+                    createUrlStateController
+                  </code>{' '}
+                  takes — exported so a consumer can type a config assembled
+                  separately before handing it over.
                 </td>
               </tr>
             </tbody>

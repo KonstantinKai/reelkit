@@ -92,6 +92,35 @@ interface ContentItem {
 }
 ```
 
+## Timeline
+
+`RkTimelineBarComponent` (selector `rk-timeline-bar`) is the default playback scrub bar. It consumes `TimelineStateService` — provided by `RkReelPlayerOverlayComponent` — and renders the track, buffered ranges, progress fill, and scrub pill. Inputs: `class?: string`, `style?: Record<string, string>`. Theme via the `--rk-reel-timeline-*` custom properties, or inject `TimelineStateService` directly for full control in a custom consumer component.
+
+```html
+<rk-reel-player-overlay [isOpen]="isOpen()" [content]="items">
+  <!-- Wrap or augment the default bar: -->
+  <ng-template rkPlayerTimeline>
+    <my-timecode />
+    <rk-timeline-bar />
+  </ng-template>
+</rk-reel-player-overlay>
+```
+
+## SoundStateService
+
+Provided at the `RkReelPlayerOverlayComponent` level. Injected by the default sound button and exposed in the controls template slot context. Inject it in custom controls that are children of the overlay for direct access.
+
+```typescript
+import { inject } from '@angular/core';
+import { SoundStateService } from '@reelkit/angular-reel-player';
+
+@Component({ ... })
+export class AppComponent {
+  readonly soundState = inject(SoundStateService);
+  // soundState.muted(), soundState.disabled(), soundState.toggle()
+}
+```
+
 ## RkReelPlayerOverlayComponent Inputs
 
 | Input                        | Type                            | Default                          | Description                                                          |
@@ -122,17 +151,37 @@ interface ContentItem {
 
 Use these structural directives on `<ng-template>` for custom content:
 
-| Directive                  | Context                                              | Description                                                            |
-| -------------------------- | ---------------------------------------------------- | ---------------------------------------------------------------------- |
-| `rkPlayerControls`         | `PlayerControlsContext<T>`                           | Custom global controls bar (close, sound toggle, etc.)                 |
-| `rkPlayerError`            | `{ $implicit: activeIndex, item, innerActiveIndex }` | Custom error indicator slot                                            |
-| `rkPlayerLoading`          | `{ $implicit: activeIndex, item, innerActiveIndex }` | Custom loading indicator slot                                          |
-| `rkPlayerNavigation`       | `PlayerNavigationContext`                            | Custom prev/next nav arrows                                            |
-| `rkPlayerNestedNavigation` | `PlayerNestedNavigationContext`                      | Custom nav arrows for inner horizontal slider                          |
-| `rkPlayerNestedSlide`      | `PlayerNestedSlideContext`                           | Custom content for each slide in inner horizontal slider               |
-| `rkPlayerSlide`            | `PlayerSlideContext<T>`                              | Fully custom slide replacing default media slide                       |
-| `rkPlayerSlideOverlay`     | `PlayerSlideOverlayContext<T>`                       | Per-slide overlay (author info, likes, description, etc.)              |
-| `rkPlayerTimeline`         | `PlayerTimelineContext<T>`                           | Custom timeline bar. Rendered only when gate would render default bar. |
+| Directive                  | Class                               | Context                                              | Description                                                            |
+| -------------------------- | ----------------------------------- | ---------------------------------------------------- | ---------------------------------------------------------------------- |
+| `rkPlayerControls`         | `RkPlayerControlsDirective`         | `PlayerControlsContext<T>`                           | Custom global controls bar (close, sound toggle, etc.)                 |
+| `rkPlayerError`            | `RkPlayerErrorDirective`            | `{ $implicit: activeIndex, item, innerActiveIndex }` | Custom error indicator slot                                            |
+| `rkPlayerLoading`          | `RkPlayerLoadingDirective`          | `{ $implicit: activeIndex, item, innerActiveIndex }` | Custom loading indicator slot                                          |
+| `rkPlayerNavigation`       | `RkPlayerNavigationDirective`       | `PlayerNavigationContext`                            | Custom prev/next nav arrows                                            |
+| `rkPlayerNestedNavigation` | `RkPlayerNestedNavigationDirective` | `PlayerNestedNavigationContext`                      | Custom nav arrows for inner horizontal slider                          |
+| `rkPlayerNestedSlide`      | `RkPlayerNestedSlideDirective`      | `PlayerNestedSlideContext`                           | Custom content for each slide in inner horizontal slider               |
+| `rkPlayerSlide`            | `RkPlayerSlideDirective`            | `PlayerSlideContext<T>`                              | Fully custom slide replacing default media slide                       |
+| `rkPlayerSlideOverlay`     | `RkPlayerSlideOverlayDirective`     | `PlayerSlideOverlayContext<T>`                       | Per-slide overlay (author info, likes, description, etc.)              |
+| `rkPlayerTimeline`         | `RkPlayerTimelineDirective`         | `PlayerTimelineContext<T>`                           | Custom timeline bar. Rendered only when gate would render default bar. |
+
+### Control Components
+
+Standalone components to compose inside an `rkPlayerControls` template. Import each into the host component's `imports`.
+
+| Component                | Selector          | Description                                                                       |
+| ------------------------ | ----------------- | --------------------------------------------------------------------------------- |
+| `RkCloseButtonComponent` | `rk-close-button` | Default close button for the controls bar                                         |
+| `RkSoundButtonComponent` | `rk-sound-button` | Default mute/unmute toggle; takes the `soundState` from the controls slot context |
+
+```html
+<ng-template
+  rkPlayerControls
+  let-onClose="$implicit"
+  let-soundState="soundState"
+>
+  <rk-sound-button [soundState]="soundState" />
+  <rk-close-button (click)="onClose()" />
+</ng-template>
+```
 
 ### Slot Context Types
 

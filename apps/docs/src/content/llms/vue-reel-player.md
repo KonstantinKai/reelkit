@@ -17,7 +17,7 @@ npm install @reelkit/vue-reel-player
 ```
 
 ```ts
-import { RkReelPlayerOverlay } from '@reelkit/vue-reel-player';
+import { ReelPlayerOverlay } from '@reelkit/vue-reel-player';
 import '@reelkit/vue-reel-player/styles.css';
 ```
 
@@ -26,7 +26,7 @@ import '@reelkit/vue-reel-player/styles.css';
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue';
-import { RkReelPlayerOverlay } from '@reelkit/vue-reel-player';
+import { ReelPlayerOverlay } from '@reelkit/vue-reel-player';
 import '@reelkit/vue-reel-player/styles.css';
 
 const isOpen = ref(false);
@@ -63,7 +63,7 @@ const content = [
     <img :src="item.media[0].poster ?? item.media[0].src" />
   </button>
 
-  <RkReelPlayerOverlay
+  <ReelPlayerOverlay
     v-model:is-open="isOpen"
     :content="content"
     :initial-index="initialIndex"
@@ -89,9 +89,14 @@ interface ContentItem {
   likes?: number;
   description?: string;
 }
+
+interface TimelineBarProps {
+  class?: string;
+  style?: CSSProperties;
+}
 ```
 
-## RkReelPlayerOverlay Props
+## ReelPlayerOverlay Props
 
 | Prop                         | Type                            | Default          | Description                                                          |
 | ---------------------------- | ------------------------------- | ---------------- | -------------------------------------------------------------------- |
@@ -111,12 +116,12 @@ interface ContentItem {
 
 ## Emits
 
-| Event            | Payload   | Description                                     |
-| ---------------- | --------- | ----------------------------------------------- |
-| `api-ready`      | `ReelApi` | Fires once slider ready, exposes imperative API |
-| `close`          | `void`    | Fires when player closes                        |
-| `slide-change`   | `number`  | Fires with new active slide index after change  |
-| `update:is-open` | `boolean` | Fires on close; enables `v-model:is-open`       |
+| Event            | Payload         | Description                                     |
+| ---------------- | --------------- | ----------------------------------------------- |
+| `api-ready`      | `ReelPlayerApi` | Fires once slider ready, exposes imperative API |
+| `close`          | `void`          | Fires when player closes                        |
+| `slide-change`   | `number`        | Fires with new active slide index after change  |
+| `update:is-open` | `boolean`       | Fires on close; enables `v-model:is-open`       |
 
 ## Scoped Slots
 
@@ -131,6 +136,45 @@ interface ContentItem {
 | `slide`            | `{ item, index, size, isActive, slideKey, defaultContent, onReady, onWaiting, onError }`                       | Fully custom slide content (falls back to default if omitted)                            |
 | `slideOverlay`     | `{ item, index, isActive }`                                                                                    | Per-slide overlay (author info, likes, description, etc.)                                |
 | `timeline`         | `{ item, activeIndex, timelineState, defaultContent }`                                                         | Custom playback timeline bar. Use `defaultContent()` to wrap built-in `<TimelineBar />`. |
+
+## Sub-Components
+
+Drop these into custom `#controls`, `#slide`, or `#slideOverlay` templates. Pass dimensions + callbacks through from the slot scope so autoplay, poster capture, and sound sync keep working.
+
+| Component           | Description                                                                                                                                                                                      |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `ReelPlayerOverlay` | The full-screen player overlay itself. Mounts a `SoundProvider` and a `TimelineProvider` for its descendants.                                                                                    |
+| `CloseButton`       | Standalone circular close button with default reel-player styling. Use inside `#controls`.                                                                                                       |
+| `SoundButton`       | Mute/unmute toggle. Render inside a `SoundProvider` (`ReelPlayerOverlay` provides one). Hidden when the active slide has no video.                                                               |
+| `TimelineProvider`  | Provides the timeline state read by `TimelineBar` and the `#timeline` slot. Mounted automatically inside `ReelPlayerOverlay`.                                                                    |
+| `TimelineBar`       | Default playback scrub bar. Reads the nearest `TimelineProvider` and renders track, buffered ranges, progress fill, and scrub pill. Theme via `--rk-reel-timeline-*` or replace via `#timeline`. |
+| `SlideOverlay`      | Default gradient overlay showing author, description, and likes. Renders when content carries those fields. Replace or hide via `#slideOverlay`.                                                 |
+| `ImageSlide`        | Image slide with lazy loading and `object-fit: cover` by default. Compose inside `#slide` to customise image rendering while keeping built-in behaviour.                                         |
+| `VideoSlide`        | Video slide backed by a shared `<video>` element. Handles iOS sound continuity, poster frames, and position memory. Render inside a `SoundProvider`.                                             |
+
+```vue
+<script setup lang="ts">
+import {
+  CloseButton,
+  ImageSlide,
+  SoundButton,
+  VideoSlide,
+} from '@reelkit/vue-reel-player';
+</script>
+
+<template>
+  <SoundButton />
+  <CloseButton :on-click="onClose" />
+  <ImageSlide :src="media.src" :size="size" />
+  <VideoSlide
+    :src="media.src"
+    :poster="media.poster"
+    :size="size"
+    :is-active="isActive"
+    :slide-key="slideKey"
+  />
+</template>
+```
 
 ## Keyboard Shortcuts
 
@@ -155,14 +199,14 @@ CSS custom properties + classes shared with `@reelkit/react-reel-player`. See [R
 
 ```vue
 <template>
-  <RkReelPlayerOverlay v-model:is-open="isOpen" :content="content">
+  <ReelPlayerOverlay v-model:is-open="isOpen" :content="content">
     <template #controls="{ soundState, onClose }">
       <button @click="onClose">×</button>
       <button @click="soundState.toggle()">
         {{ soundState.isMuted ? '🔇' : '🔊' }}
       </button>
     </template>
-  </RkReelPlayerOverlay>
+  </ReelPlayerOverlay>
 </template>
 ```
 
@@ -170,13 +214,13 @@ CSS custom properties + classes shared with `@reelkit/react-reel-player`. See [R
 
 ```vue
 <template>
-  <RkReelPlayerOverlay v-model:is-open="isOpen" :content="content">
+  <ReelPlayerOverlay v-model:is-open="isOpen" :content="content">
     <template #timeline="{ defaultContent }">
       <div class="rk-reel-timeline my-custom-wrapper">
         <component :is="defaultContent()" />
       </div>
     </template>
-  </RkReelPlayerOverlay>
+  </ReelPlayerOverlay>
 </template>
 ```
 

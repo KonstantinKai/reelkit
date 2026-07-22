@@ -100,6 +100,44 @@ function App() {
 }
 ```
 
+## URL State
+
+`useOverlayUrlState` builds a URL-state controller for an overlay and returns it whole — hand it to a `*UrlOverlay` as its `controller` prop. The URL owns the open state, so a bound overlay opens itself and a **link** is the usual open action. Keep the controller to read `value`/`index` and to drive it programmatically: `set(index)` opens, `set(null)` closes, and `set` is the same low-level write the overlay uses internally on slide change.
+
+First write of an absent param pushes ONE history entry; every write after replaces it. So paging N slides costs 0 entries and one back step always leaves.
+
+```tsx
+import { useOverlayUrlState, indexKey } from '@reelkit/react';
+import { LightboxUrlOverlay } from '@reelkit/react-lightbox';
+import { Link } from 'react-router-dom';
+
+const photo = useOverlayUrlState({
+  param: 'photo',
+  ...indexKey(() => images.length),
+});
+
+// Opening is a link — the overlay reads the URL and opens itself.
+<Link to="?photo=3">
+  <img src={images[3].src} />
+</Link>;
+<LightboxUrlOverlay controller={photo} images={images} />;
+
+// Read the url-derived state, or close programmatically (a low-level write).
+photo.index.value; // 3 for ?photo=3, null when nothing is open
+photo.set(null); // close
+
+// Routed app: pass a router-backed adapter, otherwise the router's
+// own location goes stale and its next navigation drops the param.
+const adapter = useReactRouterUrlAdapter();
+const routed = useOverlayUrlState({
+  param: 'photo',
+  adapter,
+  ...indexKey(() => images.length),
+});
+```
+
+The options object takes `param`, `codec`, and `locator` (all three required), plus an optional `adapter`. `codec` and `locator` are a matched pair sharing the same `Id`, so they travel together — for a plain `?photo=3` gallery spread `...indexKey(() => images.length)`, which returns both halves at once. `indexKey` maps the param to a slide index and bounds it against the live count the getter returns, so a stale or out-of-range `?photo=99` is rejected and heals itself out of the URL instead of opening a slide that was never named. Pass a getter, not a number, so the bound stays right as a paginated feed grows. It wraps `createIndexLocator` (the locator half) and pairs it with `indexCodec`. A paginated feed or an identity-keyed gallery supplies its own matched `codec` + `locator` instead. Full options table: [React API reference](/docs/react/api#useoverlayurlstate).
+
 ## ReelIndicator
 
 Optional. Show Instagram-style progress dots for current position. Inside `Reel` = auto-connect to parent's `count` + `active` via context. No manual wiring.

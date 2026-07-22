@@ -144,15 +144,43 @@ Pass through to `<Reel>`:
 | `onClose`       | `() => void`              | Fire on player close    |
 | `onSlideChange` | `(index: number) => void` | Fire after slide change |
 
-## Keyboard Shortcuts
+## Sub-Components
 
-| Key          | Action                     |
-| ------------ | -------------------------- |
-| `ArrowUp`    | Prev slide                 |
-| `ArrowDown`  | Next slide                 |
-| `ArrowLeft`  | Prev media (nested slider) |
-| `ArrowRight` | Next media (nested slider) |
-| `Escape`     | Close player               |
+Reusable building blocks exported for composition in custom render props.
+
+| Component          | Description                                                                                                                                                                                            |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `CloseButton`      | Standalone close button with default reel-player styling. Use inside `renderControls`.                                                                                                                 |
+| `SoundButton`      | Standalone sound toggle. Must be inside a `SoundProvider` (automatically provided by `ReelPlayerOverlay`).                                                                                             |
+| `TimelineProvider` | Supplies the timeline state that `TimelineBar` reads. Mounted automatically inside `ReelPlayerOverlay`; mount it yourself to render a `TimelineBar` standalone.                                        |
+| `TimelineBar`      | Default playback scrub bar. Reads the nearest `TimelineProvider` and renders track, buffered ranges, progress fill, and scrub pill. Theme via `--rk-reel-timeline-*`, or replace via `renderTimeline`. |
+| `SlideOverlay`     | Default gradient overlay showing author, description, and likes. Rendered automatically when content has the required fields. Use `renderSlideOverlay` to replace or hide it.                          |
+
+```ts
+interface CloseButtonProps {
+  onClick: () => void;
+  className?: string;
+  style?: React.CSSProperties;
+}
+
+interface SoundButtonProps {
+  disabled?: boolean;
+  className?: string;
+  style?: React.CSSProperties;
+}
+
+interface TimelineBarProps {
+  className?: string;
+  style?: React.CSSProperties;
+}
+```
+
+```tsx
+import { CloseButton, SoundButton } from '@reelkit/react-reel-player';
+
+<CloseButton onClick={onClose} />
+<SoundButton />
+```
 
 ## CSS Theming Tokens
 
@@ -283,6 +311,16 @@ All CSS custom properties on `:root` — app-level overrides stick. Set on highe
 - `.rk-reel-timeline-buffered` — buffered segments layer
 - `.rk-reel-timeline-fill` — played-progress fill
 - `.rk-reel-timeline-cursor` — scrub-handle pill (floats above track)
+
+## Keyboard Shortcuts
+
+| Key          | Action                     |
+| ------------ | -------------------------- |
+| `ArrowUp`    | Prev slide                 |
+| `ArrowDown`  | Next slide                 |
+| `ArrowLeft`  | Prev media (nested slider) |
+| `ArrowRight` | Next media (nested slider) |
+| `Escape`     | Close player               |
 
 ## Custom Slot Examples
 

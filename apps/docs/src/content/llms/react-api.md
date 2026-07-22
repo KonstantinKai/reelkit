@@ -12,6 +12,8 @@ Reference for `@reelkit/react` components, props, methods.
 
 ## Reel Props
 
+Type: `ReelProps`
+
 | Prop                  | Type                                          | Default                 | Description                                                                                                        |
 | --------------------- | --------------------------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | `count`               | `number`                                      | required                | Total items                                                                                                        |
@@ -75,6 +77,8 @@ apiRef.current?.unobserve(); // stop observing keyboard
 
 ## ReelIndicator Props
 
+Type: `ReelIndicatorProps`
+
 | Prop            | Type                         | Default                   | Description                                                                       |
 | --------------- | ---------------------------- | ------------------------- | --------------------------------------------------------------------------------- |
 | `count`         | `number`                     | auto                      | Total items. Auto-wired from parent Reel when nested; pass explicitly standalone  |
@@ -104,6 +108,11 @@ import { Observe } from '@reelkit/react';
 </Observe>;
 ```
 
+| Prop       | Type                         | Default  | Description                                                                                                                |
+| ---------- | ---------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `signals`  | `Subscribable[]`             | required | Signals to subscribe to. Any of them notifying re-runs the children fn — and only that fn, never the parent.               |
+| `children` | `() => ReactElement \| null` | required | Render fn, re-executed on each change. Read signal values inside it; a value read outside is captured once and goes stale. |
+
 ### AnimatedObserve
 
 Subscribes to animated value signals. Smooth interpolate via `requestAnimationFrame`.
@@ -115,6 +124,11 @@ import { AnimatedObserve } from '@reelkit/react';
   {(value) => <div style={{ transform: `translateY(${value}px)` }} />}
 </AnimatedObserve>;
 ```
+
+| Prop       | Type                              | Default  | Description                                                                                                                     |
+| ---------- | --------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `signal`   | `Signal<AnimatedValue>`           | required | Signal emitting `{ value, duration, done? }`. A `duration` above 0 interpolates from the current value; 0 jumps straight there. |
+| `children` | `(value: number) => ReactElement` | required | Render fn receiving the interpolated value for the current frame, committed synchronously so the DOM keeps up.                  |
 
 ## Hooks
 
@@ -129,31 +143,20 @@ import { useBodyLock } from '@reelkit/react';
 useBodyLock(isOpen);
 ```
 
-### useUrlState
+### useOverlayUrlState
 
-Mirrors one query parameter into a signal and writes changes back to the URL. Use it on the trigger side — writing the parameter is what opens a URL-driven overlay.
+Type: `OverlayUrlStateOptions`
 
-First write of an absent param pushes ONE history entry; every write after replaces it. So paging N slides costs 0 entries and one back step always leaves.
+Builds a URL-state controller for an overlay, which you hand to a `*UrlOverlay` as its `controller` prop.
 
-```tsx
-import { useUrlState } from '@reelkit/react';
+Walkthrough + examples: [URL State in the React guide](/docs/react/guide#url-state).
 
-const photo = useUrlState('photo'); // default: History API adapter
-
-<img onClick={() => photo.set(index)} />;
-<LightboxOverlay urlParam="photo" images={images} />;
-
-photo.set(null); // close
-```
-
-Routed app? Pass a router-backed `UrlAdapter` — writing history directly leaves the router's location stale and its next navigation drops the param.
-
-```tsx
-const adapter = useReactRouterUrlAdapter(); // read/subscribe/push/replace/getState/goBack
-const photo = useUrlState('photo', { adapter });
-```
-
-The second argument takes everything `createUrlStateController` does minus `param` — `adapter`, plus a `codec` or `locator` to have `index` derived. Supply neither and the hook reports the raw `value` only.
+| Option    | Type                                                                                        | Default     | Description                                                                                                                                                                                                                                                                                                                                                               |
+| --------- | ------------------------------------------------------------------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `param`   | `string`                                                                                    | required    | Query parameter carrying the active slide, e.g. `photo`.                                                                                                                                                                                                                                                                                                                  |
+| `adapter` | `UrlAdapter`                                                                                | History API | Navigation system to read/write through. Pass a router-backed adapter in a routed app so the router's location does not go stale.                                                                                                                                                                                                                                         |
+| `codec`   | `{ decode(raw) => Id \| null; encode(id) => string }`                                       | required    | Wire format: param text ↔ a stable identity. Travels with `locator` as a matched pair sharing the same `Id` — spread `...indexKey(() => images.length)` for the default `?photo=3` index gallery, or supply your own (base64, slug) so a bookmark survives reordering.                                                                                                   |
+| `locator` | `{ locate(id) => number \| null; locateAsync?(id) => Promise<...>; identify(index) => id }` | required    | Maps the identity to a position and owns its own validity: `locate` (sync), `locateAsync` (async fallback for a paginated gallery), `identify` (writes). For a plain index gallery spread `...indexKey(() => images.length)` — it supplies this locator plus the matching codec and bounds `?photo=3` against the live count so a stale `?photo=99` heals out of the URL. |
 
 ## Accessibility
 

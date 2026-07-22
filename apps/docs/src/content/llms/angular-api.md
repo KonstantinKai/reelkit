@@ -92,7 +92,9 @@ export class AppComponent {
 
 ## RK_REEL_CONTEXT Injection Token
 
-When `<rk-reel>` is parent, provides reactive context children inject:
+When `<rk-reel>` is parent, provides reactive context children inject. Used internally by `rk-reel-indicator` for auto-connect; inject it in custom components that need slider context.
+
+Type: `ReelContextValue`
 
 | Property | Type                                                  | Description            |
 | -------- | ----------------------------------------------------- | ---------------------- |
@@ -122,7 +124,9 @@ Bridges core `Subscribable<T>` / `AnimatedValue` to Angular signals for clean On
 
 ## RkReelItemDirective
 
-Structural directive on `<ng-template>` for slide content. Template context:
+Structural directive on `<ng-template>` for slide content.
+
+Template context type: `RkReelItemContext`
 
 | Variable                            | Type               | Description                          |
 | ----------------------------------- | ------------------ | ------------------------------------ |
@@ -136,11 +140,51 @@ Structural directive on `<ng-template>` for slide content. Template context:
 </ng-template>
 ```
 
+## BodyLockService
+
+Reference-counted body scroll lock. Multiple concurrent callers (e.g. a lightbox and a modal both open) can each call lock/unlock independently — the body is only restored once the last caller releases it. Provided at root, so it can be injected anywhere.
+
+```typescript
+import { inject } from '@angular/core';
+import { BodyLockService } from '@reelkit/angular';
+
+@Component({ ... })
+export class OverlayComponent {
+  private readonly bodyLock = inject(BodyLockService);
+
+  open() { this.bodyLock.lock(); }
+  close() { this.bodyLock.unlock(); }
+}
+```
+
+## RkSwipeToCloseDirective
+
+Attribute directive (`[rkSwipeToClose]`) that adds a vertical swipe-to-dismiss gesture to its host element. While enabled it translates the host along the swipe direction and fades it out, emits `dismissed` once the drag exceeds the threshold, and animates back when it does not.
+
+| Member                    | Type                     | Default | Description                                     |
+| ------------------------- | ------------------------ | ------- | ----------------------------------------------- |
+| `rkSwipeToClose`          | `boolean`                | `false` | When `true`, the swipe-to-close gesture is live |
+| `rkSwipeToCloseDirection` | `SwipeToCloseDirection`  | `'up'`  | Swipe direction that triggers the close         |
+| `dismissed`               | `OutputEmitterRef<void>` | —       | Emitted once a swipe passes the threshold       |
+
+`SwipeToCloseDirection` is `'up' | 'down'`.
+
+```html
+<div
+  [rkSwipeToClose]="isMobile"
+  rkSwipeToCloseDirection="up"
+  (dismissed)="handleClose()"
+>
+  …slider content…
+</div>
+```
+
 ## Re-exports from core
 
 `@reelkit/angular` re-exports core helpers:
 
 - Transitions: `slideTransition`, `fadeTransition`, `flipTransition`, `cubeTransition`, `zoomTransition`
 - Range extractor: `defaultRangeExtractor`
+- Key extractor: `createDefaultKeyExtractorForLoop` — handles duplicate indexes when `loop` is enabled
 - Focus: `captureFocusForReturn`, `createFocusTrap`, `getFocusableElements`
 - Signals: `Signal`, `ComputedSignal`, `createSignal`, `createComputed`, `reaction`, `batch`

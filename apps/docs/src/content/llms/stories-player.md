@@ -17,7 +17,7 @@ npm install @reelkit/react-stories-player
 ```
 
 ```ts
-import { StoriesPlayerOverlay } from '@reelkit/react-stories-player';
+import { StoriesOverlay } from '@reelkit/react-stories-player';
 import type { StoriesGroup, StoryItem } from '@reelkit/stories-core';
 import '@reelkit/react-stories-player/styles.css';
 ```
@@ -26,7 +26,7 @@ import '@reelkit/react-stories-player/styles.css';
 
 ```tsx
 import { useState } from 'react';
-import { StoriesPlayerOverlay } from '@reelkit/react-stories-player';
+import { StoriesOverlay } from '@reelkit/react-stories-player';
 import '@reelkit/react-stories-player/styles.css';
 
 const groups = [
@@ -47,7 +47,7 @@ export default function App() {
     <>
       <button onClick={() => setIsOpen(true)}>View Stories</button>
 
-      <StoriesPlayerOverlay
+      <StoriesOverlay
         isOpen={isOpen}
         groups={groups}
         onClose={() => setIsOpen(false)}
@@ -83,7 +83,7 @@ interface StoriesGroup<T extends StoryItem = StoryItem> {
 }
 ```
 
-## StoriesPlayerOverlay Props
+## StoriesOverlay Props
 
 | Prop                      | Type                                   | Default            | Description                                            |
 | ------------------------- | -------------------------------------- | ------------------ | ------------------------------------------------------ |
@@ -139,15 +139,6 @@ interface StoriesGroup<T extends StoryItem = StoryItem> {
 | `pause()`          | `() => void`       | Pause auto-advance + timer  |
 | `resume()`         | `() => void`       | Resume auto-advance + timer |
 
-## Keyboard Shortcuts
-
-| Key          | Action         |
-| ------------ | -------------- |
-| `ArrowLeft`  | Previous story |
-| `ArrowRight` | Next story     |
-| `Escape`     | Close player   |
-| `Space`      | Pause / resume |
-
 ## Tap Zones (mobile)
 
 - Left 30% → prev story
@@ -155,6 +146,38 @@ interface StoriesGroup<T extends StoryItem = StoryItem> {
 - Long press → pause (UI hidden if `hideUIOnPause`)
 - Release long press → resume
 - Double-tap → fires `onDoubleTap`
+
+## Sub-Components
+
+Reusable building blocks exported for composition in custom render props.
+
+| Component           | Description                                                                                                                                                                                      |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `CanvasProgressBar` | Canvas-based segmented progress bar. Renders one segment per story and animates the active segment fill via `requestAnimationFrame`. Supports a sliding window for groups with many stories.     |
+| `StoryHeader`       | Default header with author avatar, name, verified badge, relative timestamp, pause/play toggle, mute/unmute toggle, loading spinner, and close button. Used when `renderHeader` is not provided. |
+| `ImageStorySlide`   | Full-bleed image slide with `object-fit: cover`. Reports load/error via callbacks for lifecycle tracking.                                                                                        |
+| `VideoStorySlide`   | Video slide using a shared `<video>` element for iOS sound continuity. Handles autoplay, poster frames, sound sync, and reports duration and playback lifecycle events.                          |
+| `StoriesRing`       | Circular avatar with an Instagram-style gradient ring. Segments indicate viewed/unviewed stories — gradient for unviewed, muted gray for viewed.                                                 |
+| `StoriesRingList`   | Horizontal scrollable row of `StoriesRing` components with author names. One ring per group.                                                                                                     |
+| `HeartAnimation`    | Animated heart overlay triggered on double-tap. Scales up and fades out over 800ms. Customise via CSS.                                                                                           |
+
+```tsx
+import {
+  CanvasProgressBar,
+  HeartAnimation,
+  ImageStorySlide,
+  StoriesRing,
+  StoriesRingList,
+  StoryHeader,
+  VideoStorySlide,
+} from '@reelkit/react-stories-player';
+
+<StoriesRingList
+  groups={groups}
+  viewedState={viewedMap}
+  onSelect={(groupIndex) => openStories(groupIndex)}
+/>;
+```
 
 ## CSS Theming Tokens
 
@@ -181,12 +204,21 @@ Common tokens (full list at `/docs/stories-player`):
 - `.rk-stories-tap-prev`, `.rk-stories-tap-next` — invisible tap zones
 - `.rk-stories-nav-prev`, `.rk-stories-nav-next` — desktop nav arrows
 
+## Keyboard Shortcuts
+
+| Key          | Action         |
+| ------------ | -------------- |
+| `ArrowLeft`  | Previous story |
+| `ArrowRight` | Next story     |
+| `Escape`     | Close player   |
+| `Space`      | Pause / resume |
+
 ## Custom Slot Examples
 
 ### renderHeader
 
 ```tsx
-<StoriesPlayerOverlay
+<StoriesOverlay
   {...props}
   renderHeader={({ author, story, isPaused, close }) => (
     <header className="my-header">
@@ -204,7 +236,7 @@ Common tokens (full list at `/docs/stories-player`):
 ### renderFooter (reply input)
 
 ```tsx
-<StoriesPlayerOverlay
+<StoriesOverlay
   {...props}
   renderFooter={({ author, story }) => (
     <footer>
@@ -220,7 +252,7 @@ Common tokens (full list at `/docs/stories-player`):
 ```tsx
 const apiRef = useRef<StoriesApi>(null);
 
-<StoriesPlayerOverlay
+<StoriesOverlay
   apiRef={apiRef}
   groups={groups}
   isOpen={isOpen}

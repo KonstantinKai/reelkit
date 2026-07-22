@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { CodeBlock } from '../../../components/ui/CodeBlock';
 import { NextSteps } from '../../../components/NextSteps';
 import { Sandbox } from '../../../components/ui/Sandbox';
@@ -550,6 +551,145 @@ const sliderRef = ref<ReelExpose | null>(null);
 </template>`}
           language="vue"
         />
+      </section>
+
+      <section className="mb-12">
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          URL State
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            useOverlayUrlState
+          </code>{' '}
+          builds a URL-state controller for an overlay and returns it whole,
+          then you hand it to a{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            {'<LightboxUrlOverlay>'}
+          </code>{' '}
+          as its{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            :controller
+          </code>{' '}
+          prop. The address bar owns the open state, so a bound overlay opens
+          itself and a link is the usual open action. The first write of an
+          absent parameter pushes one history entry and every write after
+          replaces it, so paging never buries the back button. Keep the
+          controller to read{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            value
+          </code>
+          /
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            index
+          </code>{' '}
+          and to close programmatically with{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            set(null)
+          </code>
+          , the same low-level write the overlay uses internally on slide
+          change.
+        </p>
+        <CodeBlock
+          code={`<script setup lang="ts">
+import { LightboxUrlOverlay, type LightboxItem } from '@reelkit/vue-lightbox';
+import { useOverlayUrlState, indexKey } from '@reelkit/vue';
+
+const props = defineProps<{ images: LightboxItem[] }>();
+
+const photo = useOverlayUrlState({
+  param: 'photo',
+  ...indexKey(() => props.images.length),
+});
+</script>
+
+<template>
+  <!-- Opening is a link — the overlay reads the URL and opens itself. -->
+  <RouterLink v-for="(img, i) in props.images" :key="img.src" :to="\`?photo=\${i}\`">
+    <img :src="img.src" />
+  </RouterLink>
+
+  <LightboxUrlOverlay :controller="photo" :items="props.images" />
+</template>`}
+          language="vue"
+        />
+        <p className="text-slate-600 dark:text-slate-400 mt-4">
+          The options object takes{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            param
+          </code>
+          ,{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            codec
+          </code>
+          , and{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            locator
+          </code>{' '}
+          (all three required), plus an optional{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            adapter
+          </code>
+          . The{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            codec
+          </code>{' '}
+          and{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            locator
+          </code>{' '}
+          are a matched pair sharing the same{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            Id
+          </code>
+          , so for a plain{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            ?photo=3
+          </code>{' '}
+          gallery spread{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            ...indexKey(() =&gt; props.images.length)
+          </code>
+          , which returns both halves at once.{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            indexKey
+          </code>{' '}
+          maps the parameter to a slide index and bounds it against the live
+          count the getter returns, so a stale or out-of-range{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            ?photo=99
+          </code>{' '}
+          is rejected and heals itself out of the URL instead of opening a slide
+          that was never named. Pass a getter, not a number: a Vue{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            setup
+          </code>{' '}
+          runs once, so a captured length would go stale as a paginated feed
+          grows. It wraps{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            createIndexLocator
+          </code>{' '}
+          (the locator half) and pairs it with{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            indexCodec
+          </code>
+          . A paginated feed or an identity-keyed gallery supplies its own
+          matched{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            codec
+          </code>{' '}
+          +{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            locator
+          </code>{' '}
+          instead. The full options table lives on the{' '}
+          <Link
+            to="/docs/vue/api#useoverlayurlstate"
+            className="text-primary-600 dark:text-primary-400 hover:underline"
+          >
+            Vue API reference
+          </Link>
+          .
+        </p>
       </section>
 
       <section className="mb-12">

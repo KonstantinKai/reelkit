@@ -107,7 +107,7 @@ const playerProps = [
 const playerEvents = [
   {
     name: 'api-ready',
-    payload: 'ReelApi',
+    payload: 'ReelPlayerApi',
     description:
       'Emitted once the slider is ready, exposing the imperative API',
   },
@@ -1253,10 +1253,14 @@ const items: MyItem[] = [/* ... */];
           .
         </p>
         <CodeBlock
-          code={`import { CloseButton } from '@reelkit/vue-reel-player';
+          code={`<script setup lang="ts">
+import { CloseButton } from '@reelkit/vue-reel-player';
+</script>
 
-<CloseButton :on-click="onClose" />
-<CloseButton :on-click="onClose" class-name="my-close-btn" :style="{ top: '24px', right: '24px' }" />`}
+<template>
+  <CloseButton :on-click="onClose" />
+  <CloseButton :on-click="onClose" class-name="my-close-btn" :style="{ top: '24px', right: '24px' }" />
+</template>`}
           language="vue"
         />
 
@@ -1275,10 +1279,14 @@ const items: MyItem[] = [/* ... */];
           provides one). Hidden when the active slide has no video.
         </p>
         <CodeBlock
-          code={`import { SoundButton } from '@reelkit/vue-reel-player';
+          code={`<script setup lang="ts">
+import { SoundButton } from '@reelkit/vue-reel-player';
+</script>
 
-<SoundButton />
-<SoundButton disabled class-name="my-sound-btn" />`}
+<template>
+  <SoundButton />
+  <SoundButton disabled class-name="my-sound-btn" />
+</template>`}
           language="vue"
         />
 
@@ -1329,13 +1337,17 @@ import type { TimelineSlotScope } from '@reelkit/vue-reel-player';
           slot.
         </p>
         <CodeBlock
-          code={`import { SlideOverlay } from '@reelkit/vue-reel-player';
+          code={`<script setup lang="ts">
+import { SlideOverlay } from '@reelkit/vue-reel-player';
+</script>
 
-<SlideOverlay
-  :author="{ name: 'John', avatar: '/avatar.jpg' }"
-  description="Amazing content"
-  :likes="12500"
-/>`}
+<template>
+  <SlideOverlay
+    :author="{ name: 'John', avatar: '/avatar.jpg' }"
+    description="Amazing content"
+    :likes="12500"
+  />
+</template>`}
           language="vue"
         />
 
@@ -1354,17 +1366,21 @@ import type { TimelineSlotScope } from '@reelkit/vue-reel-player';
           slot to customize image rendering while keeping built-in behavior.
         </p>
         <CodeBlock
-          code={`import { ImageSlide } from '@reelkit/vue-reel-player';
+          code={`<script setup lang="ts">
+import { ImageSlide } from '@reelkit/vue-reel-player';
+</script>
 
-<ImageSlide :src="media.src" :size="size" />
+<template>
+  <ImageSlide :src="media.src" :size="size" />
 
-<ImageSlide
-  :src="media.src"
-  :size="size"
-  class-name="my-image-slide"
-  :style="{ backgroundColor: '#1a1a1a', borderRadius: '12px' }"
-  :img-style="{ objectFit: 'contain' }"
-/>`}
+  <ImageSlide
+    :src="media.src"
+    :size="size"
+    class-name="my-image-slide"
+    :style="{ backgroundColor: '#1a1a1a', borderRadius: '12px' }"
+    :img-style="{ objectFit: 'contain' }"
+  />
+</template>`}
           language="vue"
         />
 
@@ -1388,17 +1404,21 @@ import type { TimelineSlotScope } from '@reelkit/vue-reel-player';
           provides one).
         </p>
         <CodeBlock
-          code={`import { VideoSlide } from '@reelkit/vue-reel-player';
+          code={`<script setup lang="ts">
+import { VideoSlide } from '@reelkit/vue-reel-player';
+</script>
 
-<VideoSlide
-  :src="media.src"
-  :poster="media.poster"
-  :aspect-ratio="9 / 16"
-  :size="size"
-  :is-active="isActive"
-  :slide-key="slideKey"
-  :style="{ borderRadius: '12px' }"
-/>`}
+<template>
+  <VideoSlide
+    :src="media.src"
+    :poster="media.poster"
+    :aspect-ratio="9 / 16"
+    :size="size"
+    :is-active="isActive"
+    :slide-key="slideKey"
+    :style="{ borderRadius: '12px' }"
+  />
+</template>`}
           language="vue"
         />
 

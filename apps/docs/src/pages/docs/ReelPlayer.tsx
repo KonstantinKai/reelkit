@@ -1304,7 +1304,7 @@ function CustomTimelineBar({ timelineState }) {
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           These props are forwarded to the underlying{' '}
           <Link
-            to="/docs/react/api"
+            to="/docs/react/api#reel-props"
             className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
           >
             Reel

@@ -80,6 +80,34 @@ export class GalleryComponent {
 | `width`       | `number`             | no       | Intrinsic image width px     |
 | `height`      | `number`             | no       | Intrinsic image height px    |
 
+## Video Support
+
+Video slides are opt-in via the `rkLightboxSlide` template slot plus `RkLightboxVideoSlideComponent` (selector `rk-lightbox-video-slide`). This keeps the video player out of the bundle for galleries that only need images.
+
+```html
+<rk-lightbox-overlay
+  [isOpen]="isOpen"
+  [items]="items"
+  (closed)="isOpen = false"
+>
+  <ng-template rkLightboxSlide let-item let-size="size" let-isActive="isActive">
+    @if (item.type === 'video') {
+    <rk-lightbox-video-slide
+      [item]="item"
+      [size]="size"
+      [isActive]="isActive"
+    />
+    } @else {
+    <img
+      [src]="item.src"
+      [style.width.px]="size[0]"
+      [style.height.px]="size[1]"
+    />
+    }
+  </ng-template>
+</rk-lightbox-overlay>
+```
+
 ## RkLightboxOverlayComponent Inputs
 
 | Input                   | Type                    | Default           | Description                                                                                                                                                                  |
@@ -110,14 +138,37 @@ export class GalleryComponent {
 
 ## Template Slot Directives
 
-| Directive              | Context                 | Description                                           |
-| ---------------------- | ----------------------- | ----------------------------------------------------- |
-| `rkLightboxSlide`      | `SlideSlotContext`      | Replace slide content (required for video slides)     |
-| `rkLightboxControls`   | `ControlsSlotContext`   | Replace top controls bar (close, counter, fullscreen) |
-| `rkLightboxNavigation` | `NavigationSlotContext` | Replace prev/next nav arrows                          |
-| `rkLightboxInfo`       | `InfoSlotContext`       | Replace bottom title/description gradient overlay     |
-| `rkLightboxLoading`    | `LoadingSlotContext`    | Custom loading indicator                              |
-| `rkLightboxError`      | `ErrorSlotContext`      | Custom error indicator                                |
+| Directive              | Class                           | Context                 | Description                                           |
+| ---------------------- | ------------------------------- | ----------------------- | ----------------------------------------------------- |
+| `rkLightboxSlide`      | `RkLightboxSlideDirective`      | `SlideSlotContext`      | Replace slide content (required for video slides)     |
+| `rkLightboxControls`   | `RkLightboxControlsDirective`   | `ControlsSlotContext`   | Replace top controls bar (close, counter, fullscreen) |
+| `rkLightboxNavigation` | `RkLightboxNavigationDirective` | `NavigationSlotContext` | Replace prev/next nav arrows                          |
+| `rkLightboxInfo`       | `RkLightboxInfoDirective`       | `InfoSlotContext`       | Replace bottom title/description gradient overlay     |
+| `rkLightboxLoading`    | `RkLightboxLoadingDirective`    | `LoadingSlotContext`    | Custom loading indicator                              |
+| `rkLightboxError`      | `RkLightboxErrorDirective`      | `ErrorSlotContext`      | Custom error indicator                                |
+
+### Control Components
+
+Standalone components to compose inside an `rkLightboxControls` template. Import each into the host component's `imports`.
+
+| Component                     | Selector               | Description                                   |
+| ----------------------------- | ---------------------- | --------------------------------------------- |
+| `RkCloseButtonComponent`      | `rk-close-button`      | Default close button                          |
+| `RkCounterComponent`          | `rk-counter`           | Counter chip; takes `[current]` and `[total]` |
+| `RkFullscreenButtonComponent` | `rk-fullscreen-button` | Fullscreen toggle button                      |
+
+```html
+<ng-template
+  rkLightboxControls
+  let-onClose="onClose"
+  let-activeIndex="activeIndex"
+  let-count="count"
+>
+  <rk-close-button (click)="onClose()" />
+  <rk-counter [current]="activeIndex + 1" [total]="count" />
+  <rk-fullscreen-button />
+</ng-template>
+```
 
 ### Slot Context Types
 
