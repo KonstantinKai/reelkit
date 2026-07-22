@@ -50,11 +50,21 @@
  */
 
 // Main component
-export { ReelPlayerOverlay } from './lib/ReelPlayerOverlay';
+export {
+  ReelPlayerOverlay,
+  ReelPlayerUrlOverlay,
+} from './lib/ReelPlayerOverlay';
 export type {
+  ReelPlayerOverlayBaseProps,
+  ReelPlayerControlledProps,
+  ReelPlayerUrlControlledProps,
   ReelPlayerOverlayProps,
+  ReelPlayerUrlOverlayProps,
   ReelProxyProps,
 } from './lib/ReelPlayerOverlay';
+
+// URL-state types, re-exported so url mode needs one import path
+export type { UrlAdapter, UrlCodec, UrlLocator } from '@reelkit/react';
 
 // Types
 export type {

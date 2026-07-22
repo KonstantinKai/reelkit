@@ -22,6 +22,10 @@ const router = createBrowserRouter([
         lazy: lazy(() => import('./app/pages/ReelPlayerPage')),
       },
       {
+        path: 'reel-player-url',
+        lazy: lazy(() => import('./app/pages/ReelPlayerUrlPage')),
+      },
+      {
         path: 'reel-player-custom',
         lazy: lazy(() => import('./app/pages/ReelPlayerCustomPage')),
       },

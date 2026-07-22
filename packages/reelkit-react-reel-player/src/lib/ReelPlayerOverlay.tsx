@@ -18,6 +18,7 @@ import {
   type ReelProps,
   SoundProvider,
   useSoundState,
+  type UrlStateController,
 } from '@reelkit/react';
 import { useBodyLock } from '@reelkit/react';
 import type {
@@ -55,15 +56,18 @@ export type ReelProxyProps = Pick<
 >;
 
 /**
- * Props for the {@link ReelPlayerOverlay} component.
+ * Everything the player renders with, minus whatever decides it is open. Both
+ * {@link ReelPlayerOverlay} and {@link ReelPlayerUrlOverlay} build on this;
+ * they differ only in where the open state lives.
  *
  * Generic over `T`: pass any type extending {@link BaseContentItem} to use
  * custom data. Defaults to {@link ContentItem} for backward compatibility.
  *
  * @typeParam T - Content item type. Must have `id` and `media` fields at minimum.
  */
-export interface ReelPlayerOverlayProps<T extends BaseContentItem = ContentItem>
-  extends ReelProxyProps {
+export interface ReelPlayerOverlayBaseProps<
+  T extends BaseContentItem = ContentItem,
+> extends ReelProxyProps {
   /**
    * Aspect ratio (width / height) for the player container on desktop.
    * On mobile (< 768px viewport), the player always uses full viewport.
@@ -79,9 +83,6 @@ export interface ReelPlayerOverlayProps<T extends BaseContentItem = ContentItem>
    * ```
    */
   aspectRatio?: number;
-
-  /** When `true`, the overlay is rendered and body scroll is locked. */
-  isOpen: boolean;
 
   /**
    * Accessible label for the dialog region. Announced by screen readers
@@ -121,9 +122,6 @@ export interface ReelPlayerOverlayProps<T extends BaseContentItem = ContentItem>
    * Callback fired after slide change
    */
   onSlideChange?: (index: number) => void;
-
-  /** Callback to close the overlay. Triggered by close button or Escape key. */
-  onClose: () => void;
 
   /**
    * Custom overlay on top of each slide. Replaces default SlideOverlay.
@@ -180,6 +178,61 @@ export interface ReelPlayerOverlayProps<T extends BaseContentItem = ContentItem>
   renderError?: (props: { item: T; activeIndex: number }) => ReactNode;
 }
 
+/**
+ * Controlled mode: the surrounding component owns whether the player is open,
+ * and closes it from its own state.
+ */
+export interface ReelPlayerControlledProps {
+  /** When `true`, the overlay is rendered and body scroll is locked. */
+  isOpen: boolean;
+
+  /** Callback to close the overlay. Triggered by close button or Escape key. */
+  onClose: () => void;
+}
+
+/**
+ * URL-driven mode: the address bar owns whether the player is open. A
+ * {@link UrlStateController} — built in consumer code with `useOverlayUrlState`
+ * — carries the open state, so the same controller can be read and driven from
+ * elsewhere. The overlay opens itself when the controller's index names a slide
+ * and closes when it clears.
+ */
+export interface ReelPlayerUrlControlledProps {
+  /**
+   * URL-state controller from `useOverlayUrlState`. Its `index` drives whether
+   * the overlay is open and which slide it shows; the overlay writes back
+   * through it on slide change and close.
+   */
+  controller: UrlStateController;
+
+  /** Called after the player closes. The URL drives closing, not this. */
+  onClose?: () => void;
+}
+
+/**
+ * Props for the controlled {@link ReelPlayerOverlay}. Open state is a boolean
+ * the caller owns. For URL-driven open state, use {@link ReelPlayerUrlOverlay}
+ * instead — a separate component, so there is no mutually-exclusive prop to
+ * police.
+ *
+ * @typeParam T - Content item type. Must have `id` and `media` fields at minimum.
+ */
+export type ReelPlayerOverlayProps<T extends BaseContentItem = ContentItem> =
+  ReelPlayerOverlayBaseProps<T> & ReelPlayerControlledProps;
+
+/**
+ * Props for {@link ReelPlayerUrlOverlay}. Open state lives in the URL, carried
+ * by a {@link UrlStateController} the consumer builds with `useOverlayUrlState`.
+ *
+ * @typeParam T - Content item type. Must have `id` and `media` fields at minimum.
+ */
+export type ReelPlayerUrlOverlayProps<T extends BaseContentItem = ContentItem> =
+  ReelPlayerOverlayBaseProps<T> & ReelPlayerUrlControlledProps;
+
+/** Props the player content actually consumes once it is open. */
+type ReelPlayerContentProps<T extends BaseContentItem = ContentItem> =
+  ReelPlayerOverlayBaseProps<T> & { onClose: () => void };
+
 const _kDefaultAspectRatio = 9 / 16;
 const _kMobileBreakpoint = 768;
 const _kPreloadRange = 2;
@@ -195,7 +248,7 @@ const preloader = createContentPreloader({ maxCacheSize: 1000 });
  * @internal
  */
 function ReelPlayerContent<T extends BaseContentItem = ContentItem>(
-  props: ReelPlayerOverlayProps<T>,
+  props: ReelPlayerContentProps<T>,
 ) {
   const { initialIndex = 0, apiRef } = props;
 
@@ -717,6 +770,22 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>(
 }
 
 /**
+ * Context {@link ReelPlayerContent} cannot run without: `useTimelineState` and
+ * `useSoundState` both throw outside their provider.
+ *
+ * It lives here, in one place, because both overlays mount the content and
+ * neither should have to remember the stack. A provider added to only one of
+ * them would fail in whichever mode the author was not testing.
+ *
+ * @internal
+ */
+const ReelPlayerProviders = ({ children }: { children: ReactNode }) => (
+  <SoundProvider>
+    <TimelineProvider>{children}</TimelineProvider>
+  </SoundProvider>
+);
+
+/**
  * Full-screen, Instagram/TikTok-style vertical reel player overlay.
  *
  * Renders a portal containing a virtualized vertical slider with media
@@ -773,10 +842,74 @@ export function ReelPlayerOverlay<T extends BaseContentItem = ContentItem>(
   if (!props.isOpen) return null;
 
   return (
-    <SoundProvider>
-      <TimelineProvider>
-        <ReelPlayerContent {...props} />
-      </TimelineProvider>
-    </SoundProvider>
+    <ReelPlayerProviders>
+      <ReelPlayerContent {...props} />
+    </ReelPlayerProviders>
+  );
+}
+
+/**
+ * Full-screen reel player whose open state lives in the URL.
+ *
+ * Same player as {@link ReelPlayerOverlay}; the difference is who decides it is
+ * open. Here that is a {@link UrlStateController} built in consumer code with
+ * `useOverlayUrlState`, so the visible slide has an address: it can be linked
+ * to, shared, opened in a new tab, and closed with the back button.
+ *
+ * Paging through the feed costs no history entries — opening pushes one, every
+ * slide after replaces it — so a single back step always leaves the player.
+ *
+ * @typeParam T - Content item type. Defaults to {@link ContentItem}.
+ *
+ * @example
+ * ```tsx
+ * import { useOverlayUrlState, indexKey } from '@reelkit/react';
+ * import { ReelPlayerUrlOverlay } from '@reelkit/react-reel-player';
+ *
+ * function Feed({ content }) {
+ *   const reel = useOverlayUrlState({
+ *     param: 'reel',
+ *     ...indexKey(() => content.length),
+ *   });
+ *
+ *   return (
+ *     <>
+ *       <a href="?reel=0">Watch</a>
+ *       <ReelPlayerUrlOverlay controller={reel} content={content} />
+ *     </>
+ *   );
+ * }
+ * ```
+ */
+export function ReelPlayerUrlOverlay<T extends BaseContentItem = ContentItem>(
+  props: ReelPlayerUrlOverlayProps<T>,
+): React.ReactElement | null {
+  const { controller, onClose, ...base } = props;
+  const latest = useRef({ base, onClose });
+  latest.current = { base, onClose };
+
+  return (
+    <Observe signals={[controller.index]}>
+      {() => {
+        if (controller.index.value === null) return null;
+
+        return (
+          <ReelPlayerProviders>
+            <ReelPlayerContent<T>
+              {...(base as ReelPlayerOverlayBaseProps<T>)}
+              initialIndex={controller.index.value}
+              onClose={() => {
+                controller.set(null);
+                latest.current.onClose?.();
+              }}
+              onSlideChange={(index) => {
+                controller.set(index);
+                latest.current.base.onSlideChange?.(index);
+              }}
+            />
+          </ReelPlayerProviders>
+        );
+      }}
+    </Observe>
   );
 }

@@ -663,6 +663,26 @@ const LightboxContent: FC<LightboxContentProps> = (props) => {
 };
 
 /**
+ * Full-screen image lightbox overlay with gesture, keyboard, and wheel
+ * navigation. Controlled: the caller owns `isOpen`. For URL-driven open state,
+ * use {@link LightboxUrlOverlay} instead.
+ *
+ * Renders into a portal on `document.body`. When `isOpen` is `false` the
+ * component returns `null` — no DOM nodes are created.
+ *
+ * Customise controls, navigation, info overlay, and individual slides
+ * via the `renderControls`, `renderNavigation`, `renderInfo`, and
+ * `renderSlide` props. Reusable sub-components ({@link CloseButton},
+ * {@link Counter}, {@link FullscreenButton}) are available for
+ * composition inside `renderControls`.
+ */
+export const LightboxOverlay = (props: LightboxOverlayProps): ReactNode => {
+  if (!props.isOpen) return null;
+
+  return <LightboxContent {...props} />;
+};
+
+/**
  * Full-screen image lightbox whose open state lives in the URL. Build the
  * controller with `useOverlayUrlState` and pass it as `controller`: the address
  * bar owns the gallery, so it opens when the controller's index names a slide,
@@ -690,8 +710,10 @@ export const LightboxUrlOverlay = (
 
   return (
     <Observe signals={[controller.index]}>
-      {() =>
-        controller.index.value === null ? null : (
+      {() => {
+        if (controller.index.value === null) return null;
+
+        return (
           <LightboxContent
             {...base}
             initialIndex={controller.index.value}
@@ -704,28 +726,8 @@ export const LightboxUrlOverlay = (
               latest.current.base.onSlideChange?.(index);
             }}
           />
-        )
-      }
+        );
+      }}
     </Observe>
   );
-};
-
-/**
- * Full-screen image lightbox overlay with gesture, keyboard, and wheel
- * navigation. Controlled: the caller owns `isOpen`. For URL-driven open state,
- * use {@link LightboxUrlOverlay} instead.
- *
- * Renders into a portal on `document.body`. When `isOpen` is `false` the
- * component returns `null` — no DOM nodes are created.
- *
- * Customise controls, navigation, info overlay, and individual slides
- * via the `renderControls`, `renderNavigation`, `renderInfo`, and
- * `renderSlide` props. Reusable sub-components ({@link CloseButton},
- * {@link Counter}, {@link FullscreenButton}) are available for
- * composition inside `renderControls`.
- */
-export const LightboxOverlay = (props: LightboxOverlayProps): ReactNode => {
-  if (!props.isOpen) return null;
-
-  return <LightboxContent {...props} />;
 };

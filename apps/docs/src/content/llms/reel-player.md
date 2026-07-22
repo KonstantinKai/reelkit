@@ -102,6 +102,93 @@ interface ContentItem {
 }
 ```
 
+## URL State (shareable links, back button)
+
+`ReelPlayerUrlOverlay` is a separate component whose open state lives in the URL. Build a controller with `useOverlayUrlState` from `@reelkit/react` and pass it as `controller`: the player opens itself when the param names a slide and closes when it goes away. **Opening is a link** — the href is the open action, no click handler.
+
+```tsx
+import { useOverlayUrlState, indexKey } from '@reelkit/react';
+import { ReelPlayerUrlOverlay } from '@reelkit/react-reel-player';
+import { Link } from 'react-router-dom';
+
+const reel = useOverlayUrlState({
+  param: 'reel',
+  ...indexKey(() => content.length),
+});
+
+// Opening is a link — the overlay reads the URL and opens itself.
+{
+  content.map((item, i) => (
+    <Link key={item.id} to={`?reel=${i}`}>
+      <img src={getThumbnail(item)} />
+    </Link>
+  ));
+}
+
+<ReelPlayerUrlOverlay controller={reel} content={content} />;
+```
+
+Full `useOverlayUrlState` options (`param`, `adapter`, `codec`, `locator`): see the [React API reference](/docs/react/api#useoverlayurlstate).
+
+- Opening pushes **one** history entry. Swiping the feed **replaces** it — N swipes add 0 entries, so one back step always leaves the player. Back closes; it does not step slides.
+- **Back closes only when opened from within the app** (the link pushed an entry). A shared link opened directly in a fresh tab has no history behind it, so browser-back leaves the site — close with the ✕ button or Escape to remove the parameter in place and stay.
+- Deep link `?reel=3` opens the player at that slide on load. Closing a link that arrived with the page removes the param in place rather than navigating off-site.
+- A param naming no slide (stale bookmark, hand-edited) is dropped from the URL instead of leaving the address bar asserting a slide that cannot open.
+- The param addresses the **vertical** slide only. Which image a multi-media post is showing is not carried in the URL.
+
+**Routed app — pass an adapter.** Writing `history.pushState` behind a router leaves its location stale and its next navigation drops the param:
+
+```tsx
+const adapter = useReactRouterUrlAdapter(); // { read, subscribe, push, replace, getState, goBack }
+const reel = useOverlayUrlState({
+  param: 'reel',
+  adapter,
+  ...indexKey(() => content.length),
+});
+
+<ReelPlayerUrlOverlay controller={reel} content={content} />;
+```
+
+**Stable links.** The index is positional — a bookmarked `?reel=3` opens a different post once the feed is reordered, which for a feed is the normal case rather than the exception. Key by identity instead. Two separate jobs: `codec` spells the identity into the URL (wire), `locator` finds where that identity sits (lookup).
+
+```tsx
+const reel = useOverlayUrlState({
+  param: 'reel',
+  codec: { decode: (raw) => raw, encode: (id) => id },
+  locator: {
+    locate: (id) => content.findIndex((x) => x.id === id),
+    identify: (index) => content[index].id,
+  },
+});
+
+<ReelPlayerUrlOverlay controller={reel} content={content} />;
+```
+
+**Infinite feeds.** `locate` is synchronous, so it can only answer for posts already loaded — a shared link to post 400 of a feed that has loaded 20 comes up empty. `locateAsync` is the fallback, called only when `locate` misses: load the pages you need, then return the index the identity turned out to have.
+
+```tsx
+const reel = useOverlayUrlState({
+  param: 'reel',
+  codec: { decode: (raw) => raw, encode: (id) => id },
+  locator: {
+    locate: (id) => content.findIndex((x) => x.id === id),
+    identify: (index) => content[index].id,
+    locateAsync: async (id) => {
+      const loaded = await loadById(id); // or loadUntil(id) — fetch just that one, or page up to it
+      if (!loaded) return null; // exhausted — link names no post
+      setContent(loaded); // commit — the overlay renders from this state
+      return loaded.findIndex((x) => x.id === id); // wherever it landed
+    },
+  },
+});
+
+<ReelPlayerUrlOverlay controller={reel} content={content} />;
+```
+
+While `locateAsync` is pending the player stays closed and the param is left alone — the deep link survives the fetch. `null` or a rejection drops the param. An answer that arrives after the URL moved on, after a close, or after unmount is discarded, so a slow fetch cannot open a slide nobody asked for.
+
+Nothing is rendered while pending; the page already owns that loading state, so render your own skeleton. There is no timeout — the player cannot know how long the feed is, so settle with `null` when pagination is exhausted or the overlay stays closed indefinitely.
+
 ## ReelPlayerOverlay Props
 
 | Prop                         | Type                                                     | Default          | Description                                                                                                                                                                                                              |
@@ -136,6 +223,16 @@ Pass through to `<Reel>`:
 | `swipeDistanceFactor` | `number`  | `0.12`  | Swipe threshold (0-1)    |
 | `transitionDuration`  | `number`  | `300`   | Transition duration (ms) |
 | `wheelDebounceMs`     | `number`  | `200`   | Wheel debounce (ms)      |
+
+## ReelPlayerUrlOverlay Props
+
+Type: `ReelPlayerUrlOverlayProps<T>`
+
+Takes every visual/behavior prop above except `isOpen`, replaced by a `controller`. `initialIndex` is ignored — the controller's index picks the slide, so a value passed alongside it is overwritten on every open.
+
+| Prop         | Type                 | Default  | Description                                                                                                                                                          |
+| ------------ | -------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `controller` | `UrlStateController` | required | Controller from `useOverlayUrlState`. Its `index` decides whether the overlay is open and which slide; the overlay writes back through it on slide change and close. |
 
 ## Callbacks
 

@@ -126,7 +126,7 @@
   "forbidden": [
     {
       "pattern": "\\burl(Param|Codec|Locator)\\b",
-      "reason": "removed API — url state moved to useOverlayUrlState + a controller prop",
+      "reason": "removed API \u2014 url state moved to useOverlayUrlState + a controller prop",
       "files": [
         "apps/docs/src/pages/docs/Lightbox.tsx",
         "apps/docs/src/pages/docs/VueLightbox.tsx",
@@ -135,12 +135,14 @@
         "apps/docs/src/content/llms/lightbox.md",
         "apps/docs/src/content/llms/vue-lightbox.md",
         "apps/docs/src/content/llms/react-api.md",
-        "apps/docs/src/content/llms/vue-api.md"
+        "apps/docs/src/content/llms/vue-api.md",
+        "apps/docs/src/pages/docs/ReelPlayer.tsx",
+        "apps/docs/src/content/llms/reel-player.md"
       ]
     },
     {
       "pattern": "not by calling|not how you open|for a programmatic close",
-      "reason": "`set` is a legitimate programmatic open — document the preference for links, do not forbid set",
+      "reason": "`set` is a legitimate programmatic open \u2014 document the preference for links, do not forbid set",
       "files": [
         "apps/docs/src/pages/docs/Lightbox.tsx",
         "apps/docs/src/pages/docs/VueLightbox.tsx",
@@ -149,12 +151,14 @@
         "apps/docs/src/content/llms/lightbox.md",
         "apps/docs/src/content/llms/vue-lightbox.md",
         "apps/docs/src/content/llms/react-api.md",
-        "apps/docs/src/content/llms/vue-api.md"
+        "apps/docs/src/content/llms/vue-api.md",
+        "apps/docs/src/pages/docs/ReelPlayer.tsx",
+        "apps/docs/src/content/llms/reel-player.md"
       ]
     },
     {
       "pattern": "onClick=\\{\\(\\) => [a-z]+\\.set\\(|@click=\"[a-z]+\\.set\\(",
-      "reason": "opening is taught as a link — do not ship a click-to-open `set` example",
+      "reason": "opening is taught as a link \u2014 do not ship a click-to-open `set` example",
       "files": [
         "apps/docs/src/pages/docs/Lightbox.tsx",
         "apps/docs/src/pages/docs/VueLightbox.tsx",
@@ -163,21 +167,25 @@
         "apps/docs/src/content/llms/lightbox.md",
         "apps/docs/src/content/llms/vue-lightbox.md",
         "apps/docs/src/content/llms/react-api.md",
-        "apps/docs/src/content/llms/vue-api.md"
+        "apps/docs/src/content/llms/vue-api.md",
+        "apps/docs/src/pages/docs/ReelPlayer.tsx",
+        "apps/docs/src/content/llms/reel-player.md"
       ]
     }
   ],
   "requirePair": [
     {
-      "claim": "back button closes|back closes the gallery|press back to close",
-      "caveat": "fresh tab",
+      "claim": "back\\s+button\\s+closes|back\\s+closes\\s+the\\s+gallery|press\\s+back\\s+to\\s+close|back\\s+closes\\s+the\\s+player",
+      "caveat": "fresh\\s+tab",
       "flags": "i",
-      "reason": "promises the back button closes the gallery without the fresh-tab caveat — a deep link opened directly has no in-app history behind it, so back leaves the site",
+      "reason": "promises the back button closes the gallery without the fresh-tab caveat \u2014 a deep link opened directly has no in-app history behind it, so back leaves the site",
       "files": [
         "apps/docs/src/pages/docs/Lightbox.tsx",
         "apps/docs/src/pages/docs/VueLightbox.tsx",
         "apps/docs/src/content/llms/lightbox.md",
-        "apps/docs/src/content/llms/vue-lightbox.md"
+        "apps/docs/src/content/llms/vue-lightbox.md",
+        "apps/docs/src/pages/docs/ReelPlayer.tsx",
+        "apps/docs/src/content/llms/reel-player.md"
       ]
     }
   ],
@@ -292,6 +300,15 @@
       "files": [
         "apps/docs/src/pages/docs/Lightbox.tsx",
         "apps/docs/src/pages/docs/VueLightbox.tsx"
+      ]
+    },
+    {
+      "token": "locateAsync",
+      "reason": "every url-state example must demonstrate the out-of-window case (an item the feed has not loaded yet); an example that loads its whole collection teaches only the easy half and leaves the async fallback unexercised",
+      "files": [
+        "apps/example-react/src/app/pages/ImagePreviewUrlPage.tsx",
+        "apps/example-react/src/app/pages/ReelPlayerUrlPage.tsx",
+        "apps/example-vue/src/pages/ImagePreviewUrlPage.vue"
       ]
     }
   ]
