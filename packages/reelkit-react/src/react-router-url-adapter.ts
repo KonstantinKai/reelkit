@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import type { UrlAdapter } from '@reelkit/react';
+import type { UrlAdapter } from '@reelkit/core';
 
 /**
  * Drives reelkit's URL state through React Router instead of the History API.
@@ -9,6 +9,10 @@ import type { UrlAdapter } from '@reelkit/react';
  * `history.pushState` leaves the router's own location stale, and its next
  * navigation silently drops whatever was written. Routing every read and write
  * through the router keeps one source of navigation truth.
+ *
+ * Ships behind the `@reelkit/react/react-router-url-adapter` subpath, so the
+ * main entry never imports `react-router-dom` — an application without a router
+ * pays nothing for it.
  *
  * @returns An adapter to pass as `urlAdapter`.
  */

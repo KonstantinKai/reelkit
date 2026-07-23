@@ -192,6 +192,24 @@ Builds a URL-state controller for an overlay, which you hand to `<rk-lightbox-ur
 | `codec`   | `{ decode(raw) => Id \| null; encode(id) => string }`                                       | required    | Wire format: param text ↔ a stable identity. Travels with `locator` as a matched pair — spread `...indexKey(() => images().length)` for the default `?photo=3` gallery, or supply your own so a bookmark survives reordering. |
 | `locator` | `{ locate(id) => number \| null; locateAsync?(id) => Promise<...>; identify(index) => id }` | required    | Maps the identity to a position and owns its own validity: `locate` (sync), `locateAsync` (async fallback for a paginated gallery), `identify` (writes).                                                                       |
 
+## createRouterUrlAdapter
+
+Subpath: `@reelkit/angular/ng-router-url-adapter`
+
+A `UrlAdapter` backed by the Angular Router. Pass it as the `adapter` option of `createOverlayUrlState` in a routed app so the Router stays the single source of navigation truth — writing `history.pushState` behind the Router leaves its location stale and its next navigation drops the parameter. Call it in an injection context; the `NavigationEnd` subscription releases through `DestroyRef`.
+
+Ships from its own subpath, so an app without routing never pulls `@angular/router` in. `@angular/router` is an optional peer dependency.
+
+```ts
+import { createRouterUrlAdapter } from '@reelkit/angular/ng-router-url-adapter';
+
+protected readonly photo = createOverlayUrlState({
+  param: 'photo',
+  adapter: createRouterUrlAdapter(),
+  ...indexKey(() => this.images().length),
+});
+```
+
 ## Re-exports from core
 
 `@reelkit/angular` re-exports core helpers:

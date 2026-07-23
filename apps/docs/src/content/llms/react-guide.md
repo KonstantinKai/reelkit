@@ -108,6 +108,7 @@ First write of an absent param pushes ONE history entry; every write after repla
 
 ```tsx
 import { useOverlayUrlState, indexKey } from '@reelkit/react';
+import { useReactRouterUrlAdapter } from '@reelkit/react/react-router-url-adapter';
 import { LightboxUrlOverlay } from '@reelkit/react-lightbox';
 import { Link } from 'react-router-dom';
 

@@ -21,6 +21,9 @@
     "baseUrl": ".",
     "paths": {
       "@reelkit/angular": ["packages/reelkit-angular/src/index.ts"],
+      "@reelkit/angular/ng-router-url-adapter": [
+        "packages/reelkit-angular/ng-router-url-adapter/src/public-api.ts"
+      ],
       "@reelkit/angular-lightbox": [
         "packages/reelkit-angular-lightbox/src/index.ts"
       ],

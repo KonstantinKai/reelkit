@@ -14,7 +14,7 @@ import {
 } from '@reelkit/react';
 import { cdnUrl } from '@reelkit/example-data';
 import { ImageOff } from 'lucide-react';
-import { useReactRouterUrlAdapter } from '../hooks/useReactRouterUrlAdapter';
+import { useReactRouterUrlAdapter } from '@reelkit/react/react-router-url-adapter';
 import '@reelkit/react-lightbox/styles.css';
 import './ImagePreviewPage.css';
 

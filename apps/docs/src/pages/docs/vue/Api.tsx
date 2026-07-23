@@ -1094,6 +1094,33 @@ sound.toggle(); // Toggle muted state`}
         </div>
 
         <Heading level={3} className="text-xl font-semibold mt-8 mb-3">
+          useVueRouterUrlAdapter
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          A <code>UrlAdapter</code> backed by Vue Router. Pass it as the{' '}
+          <code>adapter</code> option of <code>useOverlayUrlState</code> in a
+          routed app so the router stays the single source of navigation truth —
+          writing <code>history.pushState</code> behind the router leaves its
+          location stale and its next navigation drops the parameter.
+        </p>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Ships from its own subpath, so an app without a router never pulls{' '}
+          <code>vue-router</code> into its bundle. <code>vue-router</code> is an
+          optional peer dependency.
+        </p>
+        <CodeBlock
+          code={`import { useVueRouterUrlAdapter } from '@reelkit/vue/vue-router-url-adapter';
+
+const adapter = useVueRouterUrlAdapter();
+const photo = useOverlayUrlState({
+  param: 'photo',
+  adapter,
+  ...indexKey(() => props.images.length),
+});`}
+          language="typescript"
+        />
+
+        <Heading level={3} className="text-xl font-semibold mt-8 mb-3">
           toVueRef
         </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">

@@ -12,6 +12,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
+    },
+    "./vue-router-url-adapter": {
+      "types": "./dist/vue-router-url-adapter.d.ts",
+      "import": "./dist/vue-router-url-adapter.js",
+      "default": "./dist/vue-router-url-adapter.js"
     }
   },
   "files": [
@@ -56,6 +61,12 @@
     "@reelkit/core": "^0.6.1"
   },
   "peerDependencies": {
-    "vue": ">=3.0.0"
+    "vue": ">=3.0.0",
+    "vue-router": ">=4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "vue-router": {
+      "optional": true
+    }
   }
 }

@@ -1120,7 +1120,9 @@ export class GalleryComponent {
           :
         </p>
         <CodeBlock
-          code={`const adapter = createRouterUrlAdapter();
+          code={`import { createRouterUrlAdapter } from '@reelkit/angular/ng-router-url-adapter';
+
+const adapter = createRouterUrlAdapter();
 
 const photo = createOverlayUrlState({
   param: 'photo',

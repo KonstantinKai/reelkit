@@ -134,6 +134,23 @@ Type: `OverlayUrlStateOptions`
 | `codec`   | `{ decode(raw) => Id \| null; encode(id) => string }`                                       | required    | Wire format: param text ↔ a stable identity. Travels with `locator` as a matched pair sharing the same `Id` — spread `...indexKey(() => props.images.length)` for the default `?photo=3` index gallery, or supply your own (base64, slug) so a bookmark survives reordering.                                                                                                   |
 | `locator` | `{ locate(id) => number \| null; locateAsync?(id) => Promise<...>; identify(index) => id }` | required    | Maps the identity to a position and owns its own validity: `locate` (sync), `locateAsync` (async fallback for a paginated gallery), `identify` (writes). For a plain index gallery spread `...indexKey(() => props.images.length)` — it supplies this locator plus the matching codec and bounds `?photo=3` against the live count so a stale `?photo=99` heals out of the URL. |
 
+## useVueRouterUrlAdapter (composable)
+
+A `UrlAdapter` backed by Vue Router. Pass it as the `adapter` option of `useOverlayUrlState` in a routed app so the router stays the single source of navigation truth — writing `history.pushState` behind the router leaves its location stale and its next navigation drops the parameter.
+
+Ships from its own subpath, so an app without a router never pulls `vue-router` in. `vue-router` is an optional peer dependency.
+
+```ts
+import { useVueRouterUrlAdapter } from '@reelkit/vue/vue-router-url-adapter';
+
+const adapter = useVueRouterUrlAdapter();
+const photo = useOverlayUrlState({
+  param: 'photo',
+  adapter,
+  ...indexKey(() => props.images.length),
+});
+```
+
 ## Provide/Inject Context (`RK_REEL_KEY`)
 
 `RK_REEL_KEY` is an `InjectionKey<ReelContextValue>` that `<Reel>` provides to its descendants. Used internally by `<ReelIndicator>` for auto-connect. Call `useReelContext()` in custom components that need slider context.

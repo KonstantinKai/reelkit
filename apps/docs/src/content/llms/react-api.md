@@ -158,6 +158,23 @@ Walkthrough + examples: [URL State in the React guide](/docs/react/guide#url-sta
 | `codec`   | `{ decode(raw) => Id \| null; encode(id) => string }`                                       | required    | Wire format: param text ↔ a stable identity. Travels with `locator` as a matched pair sharing the same `Id` — spread `...indexKey(() => images.length)` for the default `?photo=3` index gallery, or supply your own (base64, slug) so a bookmark survives reordering.                                                                                                   |
 | `locator` | `{ locate(id) => number \| null; locateAsync?(id) => Promise<...>; identify(index) => id }` | required    | Maps the identity to a position and owns its own validity: `locate` (sync), `locateAsync` (async fallback for a paginated gallery), `identify` (writes). For a plain index gallery spread `...indexKey(() => images.length)` — it supplies this locator plus the matching codec and bounds `?photo=3` against the live count so a stale `?photo=99` heals out of the URL. |
 
+### useReactRouterUrlAdapter
+
+A `UrlAdapter` backed by React Router. Pass it as the `adapter` option of `useOverlayUrlState` in a routed app so the router stays the single source of navigation truth — writing `history.pushState` behind the router leaves its location stale and its next navigation drops the parameter.
+
+Ships from its own subpath, so an app without a router never pulls `react-router-dom` in. `react-router-dom` is an optional peer dependency.
+
+```tsx
+import { useReactRouterUrlAdapter } from '@reelkit/react/react-router-url-adapter';
+
+const adapter = useReactRouterUrlAdapter();
+const photo = useOverlayUrlState({
+  param: 'photo',
+  adapter,
+  ...indexKey(() => images.length),
+});
+```
+
 ## Accessibility
 
 `<Reel>` renders `role="region"` + `aria-roledescription="carousel"`. Set `ariaLabel` for screen reader name. Polite live region announces "Slide N of M" on change, no re-render. Inactive slides get `inert` — focus + AT skip them.

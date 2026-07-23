@@ -717,6 +717,33 @@ useBodyLock(isOpen);`}
             </tbody>
           </table>
         </div>
+
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">
+          useReactRouterUrlAdapter
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-2">
+          A <code>UrlAdapter</code> backed by React Router. Pass it as the{' '}
+          <code>adapter</code> option of <code>useOverlayUrlState</code> in a
+          routed app so the router stays the single source of navigation truth —
+          writing <code>history.pushState</code> behind the router leaves its
+          location stale and its next navigation drops the parameter.
+        </p>
+        <p className="text-slate-600 dark:text-slate-400 mb-2">
+          Ships from its own subpath, so an app without a router never pulls{' '}
+          <code>react-router-dom</code> into its bundle.{' '}
+          <code>react-router-dom</code> is an optional peer dependency.
+        </p>
+        <CodeBlock
+          code={`import { useReactRouterUrlAdapter } from '@reelkit/react/react-router-url-adapter';
+
+const adapter = useReactRouterUrlAdapter();
+const photo = useOverlayUrlState({
+  param: 'photo',
+  adapter,
+  ...indexKey(() => images.length),
+});`}
+          language="tsx"
+        />
       </section>
 
       <section className="mb-12">

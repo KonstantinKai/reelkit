@@ -1,11 +1,15 @@
 import { onScopeDispose, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import type { UrlAdapter } from '@reelkit/vue';
+import type { UrlAdapter } from '@reelkit/core';
 
 // Drives reelkit's URL state through Vue Router instead of the History API, so
 // the router stays the single source of navigation truth: writing
 // `history.pushState` behind the router leaves its location stale and its next
 // navigation drops the parameter.
+//
+// Ships behind the `@reelkit/vue/vue-router-url-adapter` subpath, so the main
+// entry never imports `vue-router` — an application without a router pays
+// nothing for it.
 //
 // One wrinkle the React adapter does not have: Vue Router 4 owns
 // `history.state` and exposes no way to write custom fields through

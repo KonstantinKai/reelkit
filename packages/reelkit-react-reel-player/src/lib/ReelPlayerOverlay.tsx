@@ -12,15 +12,16 @@ import {
   observeDomEvent,
   captureFocusForReturn,
   createFocusTrap,
+  captureFrame,
+  useSoundState,
+  useBodyLock,
   Reel,
   Observe,
+  SoundProvider,
   type ReelApi,
   type ReelProps,
-  SoundProvider,
-  useSoundState,
   type UrlStateController,
 } from '@reelkit/react';
-import { useBodyLock } from '@reelkit/react';
 import type {
   BaseContentItem,
   ContentItem,
@@ -32,7 +33,6 @@ import type {
   TimelineRenderProps,
 } from './types';
 import MediaSlide from './MediaSlide';
-import { captureFrame } from '@reelkit/react';
 import PlayerControls from './PlayerControls';
 import SlideOverlay from './SlideOverlay';
 import { shared as sharedVideo } from './VideoSlide';

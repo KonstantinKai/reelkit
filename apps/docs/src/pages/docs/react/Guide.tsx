@@ -623,6 +623,7 @@ function App() {
         </p>
         <CodeBlock
           code={`import { useOverlayUrlState, indexKey } from '@reelkit/react';
+import { useReactRouterUrlAdapter } from '@reelkit/react/react-router-url-adapter';
 import { LightboxUrlOverlay } from '@reelkit/react-lightbox';
 import { Link } from 'react-router-dom';
 

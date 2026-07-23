@@ -910,6 +910,39 @@ const index = toAngularSignal(controller.state.index, destroyRef);`}
 
       <section className="mb-12">
         <Heading level={2} className="text-2xl font-bold mb-4">
+          createRouterUrlAdapter
+        </Heading>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-2 font-mono">
+          @reelkit/angular/ng-router-url-adapter
+        </p>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          A <code>UrlAdapter</code> backed by the Angular Router. Pass it as the{' '}
+          <code>adapter</code> option of <code>createOverlayUrlState</code> in a
+          routed app so the Router stays the single source of navigation truth —
+          writing <code>history.pushState</code> behind the Router leaves its
+          location stale and its next navigation drops the parameter. Call it in
+          an injection context; the <code>NavigationEnd</code> subscription
+          releases through <code>DestroyRef</code>.
+        </p>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Ships from its own subpath, so an app without routing never pulls{' '}
+          <code>@angular/router</code> into its bundle.{' '}
+          <code>@angular/router</code> is an optional peer dependency.
+        </p>
+        <CodeBlock
+          code={`import { createRouterUrlAdapter } from '@reelkit/angular/ng-router-url-adapter';
+
+protected readonly photo = createOverlayUrlState({
+  param: 'photo',
+  adapter: createRouterUrlAdapter(),
+  ...indexKey(() => this.images().length),
+});`}
+          language="typescript"
+        />
+      </section>
+
+      <section className="mb-12">
+        <Heading level={2} className="text-2xl font-bold mb-4">
           Accessibility
         </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">

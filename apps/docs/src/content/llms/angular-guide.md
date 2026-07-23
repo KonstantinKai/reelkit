@@ -205,6 +205,8 @@ export class GalleryComponent {
 Routed app — pass a Router-backed adapter, otherwise the Router's own location goes stale and its next navigation drops the param:
 
 ```ts
+import { createRouterUrlAdapter } from '@reelkit/angular/ng-router-url-adapter';
+
 protected readonly photo = createOverlayUrlState({
   param: 'photo',
   adapter: createRouterUrlAdapter(),

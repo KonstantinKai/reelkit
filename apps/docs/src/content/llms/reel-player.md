@@ -139,6 +139,8 @@ Full `useOverlayUrlState` options (`param`, `adapter`, `codec`, `locator`): see 
 **Routed app — pass an adapter.** Writing `history.pushState` behind a router leaves its location stale and its next navigation drops the param:
 
 ```tsx
+import { useReactRouterUrlAdapter } from '@reelkit/react/react-router-url-adapter';
+
 const adapter = useReactRouterUrlAdapter(); // { read, subscribe, push, replace, getState, goBack }
 const reel = useOverlayUrlState({
   param: 'reel',

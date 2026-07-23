@@ -18,7 +18,7 @@ import {
   getThumbnail,
   type ContentItem,
 } from '../components/reel-player/mockContent';
-import { useReactRouterUrlAdapter } from '../hooks/useReactRouterUrlAdapter';
+import { useReactRouterUrlAdapter } from '@reelkit/react/react-router-url-adapter';
 
 const _kParam = 'reel';
 

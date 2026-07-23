@@ -1,7 +1,7 @@
 import { DestroyRef, inject } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
-import type { UrlAdapter } from '@reelkit/angular';
+import type { UrlAdapter } from '@reelkit/core';
 
 /**
  * Drives reelkit's URL state through the Angular Router instead of the
@@ -11,6 +11,10 @@ import type { UrlAdapter } from '@reelkit/angular';
  * `history.pushState` leaves the Router's own location stale, and its next
  * navigation silently drops whatever was written. Routing every read and
  * write through the Router keeps one source of navigation truth.
+ *
+ * Ships behind the `@reelkit/angular/ng-router-url-adapter` subpath, so the
+ * main entry never imports `@angular/router` — an application without routing
+ * pays nothing for it.
  *
  * Call in an injection context. The `NavigationEnd` subscription is released
  * through {@link DestroyRef}.

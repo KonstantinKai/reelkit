@@ -12,6 +12,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
+    },
+    "./react-router-url-adapter": {
+      "types": "./dist/react-router-url-adapter.d.ts",
+      "import": "./dist/react-router-url-adapter.js",
+      "default": "./dist/react-router-url-adapter.js"
     }
   },
   "files": [
@@ -56,6 +61,12 @@
   },
   "peerDependencies": {
     "react": ">=18.0.0",
-    "react-dom": ">=18.0.0"
+    "react-dom": ">=18.0.0",
+    "react-router-dom": ">=6.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react-router-dom": {
+      "optional": true
+    }
   }
 }

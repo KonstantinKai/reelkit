@@ -13,7 +13,7 @@ import {
   type UrlLocator,
 } from '@reelkit/angular-lightbox';
 import { cdnUrl } from '@reelkit/example-data';
-import { createRouterUrlAdapter } from '../../url-state/router-url-adapter';
+import { createRouterUrlAdapter } from '@reelkit/angular/ng-router-url-adapter';
 
 const _kParam = 'photo';
 

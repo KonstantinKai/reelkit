@@ -9,7 +9,7 @@ import {
 import { useOverlayUrlState, indexCodec } from '@reelkit/vue';
 import { cdnUrl } from '@reelkit/example-data';
 import Thumbnail from '../components/Thumbnail.vue';
-import { useVueRouterUrlAdapter } from '../composables/useVueRouterUrlAdapter';
+import { useVueRouterUrlAdapter } from '@reelkit/vue/vue-router-url-adapter';
 import '@reelkit/vue-lightbox/styles.css';
 
 const _kParam = 'photo';

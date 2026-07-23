@@ -1161,6 +1161,8 @@ const photo = useOverlayUrlState({
         </p>
         <CodeBlock
           code={`<script setup lang="ts">
+import { useVueRouterUrlAdapter } from '@reelkit/vue/vue-router-url-adapter';
+
 const adapter = useVueRouterUrlAdapter();
 const photo = useOverlayUrlState({
   param: 'photo',

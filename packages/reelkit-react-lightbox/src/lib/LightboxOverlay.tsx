@@ -21,6 +21,7 @@ import {
   Reel,
   Observe,
   useBodyLock,
+  useFullscreen,
   SwipeToClose,
   type ReelApi,
   type ReelProps,
@@ -29,7 +30,6 @@ import {
   type UrlStateController,
 } from '@reelkit/react';
 import { ChevronLeft, ChevronRight, ImageOff } from 'lucide-react';
-import { useFullscreen } from '@reelkit/react';
 import LightboxControls from './LightboxControls';
 import type {
   ControlsRenderProps,

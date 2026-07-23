@@ -1350,7 +1350,9 @@ const photo = useOverlayUrlState({
           navigation drops the parameter.
         </p>
         <CodeBlock
-          code={`const adapter = useReactRouterUrlAdapter();
+          code={`import { useReactRouterUrlAdapter } from '@reelkit/react/react-router-url-adapter';
+
+const adapter = useReactRouterUrlAdapter();
 const photo = useOverlayUrlState({
   param: 'photo',
   adapter,

@@ -387,7 +387,9 @@ export class GalleryComponent {
           own location goes stale and its next navigation drops the parameter:
         </p>
         <CodeBlock
-          code={`protected readonly photo = createOverlayUrlState({
+          code={`import { createRouterUrlAdapter } from '@reelkit/angular/ng-router-url-adapter';
+
+protected readonly photo = createOverlayUrlState({
   param: 'photo',
   adapter: createRouterUrlAdapter(),
   ...indexKey(() => this.images().length),
