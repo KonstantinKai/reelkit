@@ -17,7 +17,13 @@
  * For custom data types, extend {@link BaseContentItem} and pass as a
  * type parameter: `<ReelPlayerOverlay<MyItem> />`.
  *
- * @example
+ * Open state comes in two shapes. {@link ReelPlayerOverlay} is controlled — the
+ * surrounding component owns `isOpen`. {@link ReelPlayerUrlOverlay} puts it in
+ * the address bar instead, so the playing slide has a link that can be shared,
+ * bookmarked, and closed with the back button. Every render prop above works
+ * the same in either.
+ *
+ * @example Controlled — the component owns `isOpen`
  * ```tsx
  * import { useState } from 'react';
  * import { ReelPlayerOverlay, type ContentItem } from '@reelkit/react-reel-player';
@@ -43,6 +49,32 @@
  *         onClose={() => setIsOpen(false)}
  *         content={content}
  *       />
+ *     </>
+ *   );
+ * }
+ * ```
+ *
+ * @example URL-driven — opening is a link, back closes
+ * ```tsx
+ * import { useOverlayUrlState, indexKey } from '@reelkit/react';
+ * import { ReelPlayerUrlOverlay } from '@reelkit/react-reel-player';
+ * import { Link } from 'react-router-dom';
+ *
+ * function Feed() {
+ *   const reel = useOverlayUrlState({
+ *     param: 'reel',
+ *     ...indexKey(() => content.length),
+ *   });
+ *
+ *   return (
+ *     <>
+ *       {content.map((item, i) => (
+ *         <Link key={item.id} to={`?reel=${i}`}>
+ *           <img src={getThumbnail(item)} />
+ *         </Link>
+ *       ))}
+ *
+ *       <ReelPlayerUrlOverlay controller={reel} content={content} />
  *     </>
  *   );
  * }
