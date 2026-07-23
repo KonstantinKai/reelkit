@@ -1,10 +1,12 @@
+import { PublishedPackageList } from '../components/ui/PublishedPackageList';
+
 export default function Terms() {
   return (
     <div className="max-w-4xl mx-auto px-6 py-12">
       <div className="mb-12">
         <h1 className="text-4xl font-bold mb-4">Terms of Service</h1>
         <p className="text-sm text-slate-500 dark:text-slate-400">
-          Last updated: March 13, 2026
+          Last updated: July 22, 2026
         </p>
       </div>
 
@@ -32,32 +34,7 @@ export default function Terms() {
           <p className="text-slate-600 dark:text-slate-400 mb-4">
             The following npm packages are covered by the MIT License:
           </p>
-          <ul className="list-disc pl-6 space-y-2 text-slate-600 dark:text-slate-400">
-            <li>
-              <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
-                @reelkit/core
-              </code>{' '}
-              — Framework-agnostic slider engine
-            </li>
-            <li>
-              <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
-                @reelkit/react
-              </code>{' '}
-              — React bindings
-            </li>
-            <li>
-              <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
-                @reelkit/react-reel-player
-              </code>{' '}
-              — Video reel player component
-            </li>
-            <li>
-              <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
-                @reelkit/react-lightbox
-              </code>{' '}
-              — Image gallery lightbox component
-            </li>
-          </ul>
+          <PublishedPackageList withDescriptions />
         </section>
 
         <section>
