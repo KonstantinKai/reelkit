@@ -108,6 +108,83 @@ Video slides are opt-in via the `rkLightboxSlide` template slot plus `RkLightbox
 </rk-lightbox-overlay>
 ```
 
+## URL State (shareable links, back button)
+
+`RkLightboxUrlOverlayComponent` is a separate component whose open state lives in the URL. Build a controller with `createOverlayUrlState` from `@reelkit/angular` and pass it as `[controller]`: the gallery opens itself when the param names a slide and closes when it goes away. **Opening is a link** — the href is the open action, no click handler.
+
+```ts
+import {
+  RkLightboxUrlOverlayComponent,
+  createOverlayUrlState,
+  indexKey,
+} from '@reelkit/angular-lightbox';
+
+@Component({
+  imports: [RkLightboxUrlOverlayComponent, RouterLink],
+  template: `
+    @for (image of images(); track image.src; let i = $index) {
+      <a [routerLink]="[]" [queryParams]="{ photo: i }">
+        <img [src]="image.src" alt="" />
+      </a>
+    }
+
+    <rk-lightbox-url-overlay [controller]="photo" [items]="images()" />
+  `,
+})
+export class GalleryComponent {
+  protected readonly images = signal(photos);
+
+  protected readonly photo = createOverlayUrlState({
+    param: 'photo',
+    ...indexKey(() => this.images().length),
+  });
+}
+```
+
+Call `createOverlayUrlState` in an injection context — a field initialiser or the constructor. It attaches immediately and releases through `DestroyRef`, so a component destroyed while the gallery is open leaves no listener behind.
+
+- Opening pushes **one** history entry. Paging slides **replaces** it — N swipes add 0 entries, so one back step always leaves the gallery. Back closes; it does not step photos.
+- **Back closes only when opened from within the app** (the link pushed an entry). A shared link opened directly in a fresh tab has no history behind it, so browser-back leaves the site — close with the ✕ button or Escape to remove the parameter in place and stay.
+- Deep link `?photo=3` opens the gallery at that slide on load.
+- A param naming no slide (stale bookmark, hand-edited) is dropped from the URL instead of leaving the address bar asserting a slide that cannot open.
+
+**Routed app — pass an adapter.** Writing `history.pushState` behind the Router leaves its location stale and its next navigation drops the param. Build an adapter on `Router` and pass it as `adapter`.
+
+**Template slots work unchanged.** The url component runs the six slot queries itself and forwards each template to the gallery, so `<ng-template rkLightboxControls>` and its siblings sit inside `<rk-lightbox-url-overlay>` exactly as they would inside `<rk-lightbox-overlay>`.
+
+**Stable links.** The index is positional — a bookmarked `?photo=3` opens a different image once the list is reordered. Key by identity instead: `codec` spells the identity into the URL (wire), `locator` finds where it sits (lookup).
+
+**Infinite / paginated galleries.** `locate` is synchronous, so it only answers for images already loaded. `locateAsync` is the fallback, called only when `locate` misses: load the pages you need, then return the index the identity turned out to have. While it is pending the gallery stays closed and the param is left alone, so the deep link survives the fetch; `null` or a rejection drops the param.
+
+```ts
+const photo = createOverlayUrlState({
+  param: 'photo',
+  codec: { decode: (raw) => raw, encode: (id) => id },
+  locator: {
+    locate: (id) => this.images().findIndex((x) => x.id === id),
+    identify: (index) => this.images()[index].id,
+    locateAsync: async (id) => {
+      const loaded = await loadById(id); // or loadUntil(id) — fetch just that one, or page up to it
+      if (!loaded) return null; // exhausted — link names no item
+      this.images.set(loaded); // commit; the overlay renders from this
+      return loaded.findIndex((x) => x.id === id); // wherever it landed
+    },
+  },
+});
+```
+
+An answer arriving after the URL moved on, after a close, or after destroy is discarded. Whatever it returns is authoritative — the lightbox takes it as-is rather than re-reading `images`, which Angular has not re-rendered yet.
+
+## RkLightboxUrlOverlayComponent Inputs
+
+Takes every input of `rk-lightbox-overlay` except `isOpen`, replaced by `controller`.
+
+| Input        | Type                 | Default  | Description                                                                                                                                                             |
+| ------------ | -------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `controller` | `UrlStateController` | required | Controller from `createOverlayUrlState`. Its `index` decides whether the gallery is open and which slide it shows; the component writes back on slide change and close. |
+
+Outputs are the same `closed` and `slideChange`; the URL drives closing, so `closed` is a notification rather than the mechanism.
+
 ## RkLightboxOverlayComponent Inputs
 
 | Input                   | Type                    | Default           | Description                                                                                                                                                                  |
@@ -138,24 +215,24 @@ Video slides are opt-in via the `rkLightboxSlide` template slot plus `RkLightbox
 
 ## Template Slot Directives
 
-| Directive              | Class                           | Context                 | Description                                           |
-| ---------------------- | ------------------------------- | ----------------------- | ----------------------------------------------------- |
-| `rkLightboxSlide`      | `RkLightboxSlideDirective`      | `SlideSlotContext`      | Replace slide content (required for video slides)     |
-| `rkLightboxControls`   | `RkLightboxControlsDirective`   | `ControlsSlotContext`   | Replace top controls bar (close, counter, fullscreen) |
-| `rkLightboxNavigation` | `RkLightboxNavigationDirective` | `NavigationSlotContext` | Replace prev/next nav arrows                          |
-| `rkLightboxInfo`       | `RkLightboxInfoDirective`       | `InfoSlotContext`       | Replace bottom title/description gradient overlay     |
-| `rkLightboxLoading`    | `RkLightboxLoadingDirective`    | `LoadingSlotContext`    | Custom loading indicator                              |
-| `rkLightboxError`      | `RkLightboxErrorDirective`      | `ErrorSlotContext`      | Custom error indicator                                |
+| Directive              | Class                           | Context                   | Description                                           |
+| ---------------------- | ------------------------------- | ------------------------- | ----------------------------------------------------- |
+| `rkLightboxSlide`      | `RkLightboxSlideDirective`      | `LightboxSlideContext`    | Replace slide content (required for video slides)     |
+| `rkLightboxControls`   | `RkLightboxControlsDirective`   | `LightboxControlsContext` | Replace top controls bar (close, counter, fullscreen) |
+| `rkLightboxNavigation` | `RkLightboxNavigationDirective` | `LightboxNavContext`      | Replace prev/next nav arrows                          |
+| `rkLightboxInfo`       | `RkLightboxInfoDirective`       | `LightboxInfoContext`     | Replace bottom title/description gradient overlay     |
+| `rkLightboxLoading`    | `RkLightboxLoadingDirective`    | `LightboxLoadingContext`  | Custom loading indicator                              |
+| `rkLightboxError`      | `RkLightboxErrorDirective`      | `LightboxErrorContext`    | Custom error indicator                                |
 
 ### Control Components
 
 Standalone components to compose inside an `rkLightboxControls` template. Import each into the host component's `imports`.
 
-| Component                     | Selector               | Description                                   |
-| ----------------------------- | ---------------------- | --------------------------------------------- |
-| `RkCloseButtonComponent`      | `rk-close-button`      | Default close button                          |
-| `RkCounterComponent`          | `rk-counter`           | Counter chip; takes `[current]` and `[total]` |
-| `RkFullscreenButtonComponent` | `rk-fullscreen-button` | Fullscreen toggle button                      |
+| Component                     | Selector               | Description                                        |
+| ----------------------------- | ---------------------- | -------------------------------------------------- |
+| `RkCloseButtonComponent`      | `rk-close-button`      | Default close button                               |
+| `RkCounterComponent`          | `rk-counter`           | Counter chip; takes `[currentIndex]` and `[count]` |
+| `RkFullscreenButtonComponent` | `rk-fullscreen-button` | Fullscreen toggle button                           |
 
 ```html
 <ng-template
@@ -163,23 +240,28 @@ Standalone components to compose inside an `rkLightboxControls` template. Import
   let-onClose="onClose"
   let-activeIndex="activeIndex"
   let-count="count"
+  let-isFullscreen="isFullscreen"
+  let-onToggleFullscreen="onToggleFullscreen"
 >
-  <rk-close-button (click)="onClose()" />
-  <rk-counter [current]="activeIndex + 1" [total]="count" />
-  <rk-fullscreen-button />
+  <rk-close-button (clicked)="onClose()" />
+  <rk-counter [currentIndex]="activeIndex + 1" [count]="count" />
+  <rk-fullscreen-button
+    [isFullscreen]="isFullscreen"
+    (toggled)="onToggleFullscreen()"
+  />
 </ng-template>
 ```
 
 ### Slot Context Types
 
-| Name                    | Fields                                                                                      |
-| ----------------------- | ------------------------------------------------------------------------------------------- |
-| `SlideSlotContext`      | `{ $implicit: item, index, size: [number, number], isActive, onReady, onWaiting, onError }` |
-| `ControlsSlotContext`   | `{ $implicit: onClose, item, activeIndex, count, isFullscreen, onToggleFullscreen }`        |
-| `NavigationSlotContext` | `{ $implicit: onPrev, onNext, item, activeIndex, count }`                                   |
-| `InfoSlotContext`       | `{ $implicit: item, index }`                                                                |
-| `LoadingSlotContext`    | `{ $implicit: item, activeIndex }`                                                          |
-| `ErrorSlotContext`      | `{ $implicit: item, activeIndex }`                                                          |
+| Name                      | Fields                                                                                      |
+| ------------------------- | ------------------------------------------------------------------------------------------- |
+| `LightboxSlideContext`    | `{ $implicit: item, index, size: [number, number], isActive, onReady, onWaiting, onError }` |
+| `LightboxControlsContext` | `{ $implicit: void, item, activeIndex, count, isFullscreen, onClose, onToggleFullscreen }`  |
+| `LightboxNavContext`      | `{ $implicit: void, item, activeIndex, count, onPrev, onNext }`                             |
+| `LightboxInfoContext`     | `{ $implicit: item, index }`                                                                |
+| `LightboxLoadingContext`  | `{ $implicit: activeIndex, item }`                                                          |
+| `LightboxErrorContext`    | `{ $implicit: activeIndex, item }`                                                          |
 
 ## Keyboard Shortcuts
 
@@ -201,7 +283,7 @@ Tokens + classes shared w/ `@reelkit/react-lightbox`. See [Lightbox](/docs/light
 <rk-lightbox-overlay [isOpen]="isOpen()" [items]="items">
   <ng-template
     rkLightboxControls
-    let-onClose="$implicit"
+    let-onClose="onClose"
     let-activeIndex="activeIndex"
     let-count="count"
     let-isFullscreen="isFullscreen"

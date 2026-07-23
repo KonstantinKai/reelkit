@@ -286,12 +286,14 @@
   "parity": [
     {
       "token": "locateAsync",
-      "reason": "every lightbox url-state surface must teach the out-of-window case (an item the feed has not loaded yet), not just the in-window one",
+      "reason": "every lightbox url-state surface must teach the out-of-window case (an item the feed has not loaded yet), not just the in-window one \u2014 angular pages added in a later task were never folded into this rule, so the example gap went unflagged",
       "files": [
         "apps/docs/src/pages/docs/Lightbox.tsx",
         "apps/docs/src/content/llms/lightbox.md",
         "apps/docs/src/pages/docs/VueLightbox.tsx",
-        "apps/docs/src/content/llms/vue-lightbox.md"
+        "apps/docs/src/content/llms/vue-lightbox.md",
+        "apps/docs/src/pages/docs/AngularLightbox.tsx",
+        "apps/docs/src/content/llms/angular-lightbox.md"
       ]
     },
     {
@@ -308,7 +310,29 @@
       "files": [
         "apps/example-react/src/app/pages/ImagePreviewUrlPage.tsx",
         "apps/example-react/src/app/pages/ReelPlayerUrlPage.tsx",
-        "apps/example-vue/src/pages/ImagePreviewUrlPage.vue"
+        "apps/example-vue/src/pages/ImagePreviewUrlPage.vue",
+        "apps/example-angular/src/app/pages/image-preview-url/image-preview-url-page.component.ts"
+      ]
+    },
+    {
+      "token": "URL State",
+      "reason": "every framework guide that ships a URL-driven overlay teaches URL state in a guide section; the angular guide fell behind react & vue once, so pin all three together \u2014 page and llms mirror",
+      "files": [
+        "apps/docs/src/pages/docs/react/Guide.tsx",
+        "apps/docs/src/pages/docs/vue/Guide.tsx",
+        "apps/docs/src/pages/docs/angular/Guide.tsx",
+        "apps/docs/src/content/llms/react-guide.md",
+        "apps/docs/src/content/llms/vue-guide.md",
+        "apps/docs/src/content/llms/angular-guide.md"
+      ]
+    },
+    {
+      "token": "Shareable, bookmarkable links",
+      "reason": "the URL State feature tile \u2014 the plain `URL State` token collides with the section heading and passes even when the tile is gone, so guard on the tile's own description text, which appears only in the tile",
+      "files": [
+        "apps/docs/src/pages/docs/Lightbox.tsx",
+        "apps/docs/src/pages/docs/VueLightbox.tsx",
+        "apps/docs/src/pages/docs/AngularLightbox.tsx"
       ]
     }
   ]

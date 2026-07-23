@@ -30,6 +30,13 @@ export const appRoutes: Route[] = [
       ),
   },
   {
+    path: 'image-preview-url',
+    loadComponent: () =>
+      import('./pages/image-preview-url/image-preview-url-page.component').then(
+        (m) => m.ImagePreviewUrlPageComponent,
+      ),
+  },
+  {
     path: 'image-preview-custom',
     loadComponent: () =>
       import(

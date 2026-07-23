@@ -15,6 +15,7 @@ import {
   Volume2,
   AlertTriangle,
   Loader,
+  Link2,
 } from 'lucide-react';
 import { Heading } from '../../components/ui/Heading';
 
@@ -647,6 +648,11 @@ export default function AngularLightbox() {
                 label: 'OnPush',
                 desc: 'Angular signals + OnPush',
               },
+              {
+                icon: Link2,
+                label: 'URL State',
+                desc: 'Shareable, bookmarkable links',
+              },
             ]}
           />
         </div>
@@ -836,15 +842,18 @@ export class AppComponent {
 
       <!-- Custom controls bar -->
       <ng-template rkLightboxControls
-                   let-ctx
                    let-onClose="onClose"
                    let-activeIndex="activeIndex"
-                   let-count="count">
+                   let-count="count"
+                   let-isFullscreen="isFullscreen"
+                   let-onToggleFullscreen="onToggleFullscreen">
         <div style="position:absolute;top:0;left:0;right:0;padding:12px;
                     display:flex;align-items:center;justify-content:space-between">
-          <rk-close-button (click)="onClose()" />
-          <rk-counter [current]="activeIndex + 1" [total]="count" />
-          <rk-fullscreen-button />
+          <rk-close-button (clicked)="onClose()" />
+          <rk-counter [currentIndex]="activeIndex + 1" [count]="count" />
+          <rk-fullscreen-button
+            [isFullscreen]="isFullscreen"
+            (toggled)="onToggleFullscreen()" />
         </div>
       </ng-template>
 
@@ -984,6 +993,270 @@ export class AppComponent {
 }`}
           language="typescript"
         />
+      </section>
+
+      {/* URL state */}
+      <section className="mb-12">
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          URL State
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            RkLightboxUrlOverlayComponent
+          </code>{' '}
+          is a separate component whose open state lives in the address bar.
+          Build a controller with{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            createOverlayUrlState
+          </code>{' '}
+          and hand it over as{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            [controller]
+          </code>
+          : the gallery opens itself when the parameter names a slide and closes
+          when it goes away. Links are shareable, and the back button closes the
+          gallery instead of leaving the page.
+        </p>
+        <CodeBlock
+          code={
+            `import {
+  RkLightboxUrlOverlayComponent,
+  createOverlayUrlState,
+  indexKey,
+} from '@reelkit/angular-lightbox';
+
+@Component({
+  imports: [RkLightboxUrlOverlayComponent, RouterLink],
+  template: ` +
+            '`' +
+            `
+    @for (image of images(); track image.src; let i = $index) {
+      <a [routerLink]="[]" [queryParams]="{ photo: i }">
+        <img [src]="image.src" alt="" />
+      </a>
+    }
+
+    <rk-lightbox-url-overlay [controller]="photo" [items]="images()" />
+  ` +
+            '`' +
+            `,
+})
+export class GalleryComponent {
+  protected readonly images = signal(photos);
+
+  protected readonly photo = createOverlayUrlState({
+    param: 'photo',
+    ...indexKey(() => this.images().length),
+  });
+}`
+          }
+          language="typescript"
+        />
+        <p className="text-slate-600 dark:text-slate-400 mt-4 mb-4">
+          Call it in an injection context — a field initialiser or the
+          constructor. It attaches immediately and releases through{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            DestroyRef
+          </code>
+          , so a component destroyed while the gallery is open leaves no
+          listener behind. Full options live in the{' '}
+          <Link
+            to="/docs/angular/api#createoverlayurlstate"
+            className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
+          >
+            Angular API reference
+          </Link>
+          .
+        </p>
+        <ul className="list-disc pl-6 space-y-2 text-slate-600 dark:text-slate-400 mb-4">
+          <li>
+            Opening pushes <strong>one</strong> history entry. Paging slides{' '}
+            <strong>replaces</strong> it, so N steps add no entries and one back
+            step always leaves the gallery.
+          </li>
+          <li>
+            Back closes only when the gallery was opened from within the app —
+            the link pushed an entry. A shared link opened directly in a fresh
+            tab has no history behind it, so browser-back leaves the site; the ✕
+            button or Escape removes the parameter in place and stays.
+          </li>
+          <li>
+            A parameter naming no slide — a stale bookmark, a hand-edited value
+            — is dropped from the URL rather than left asserting a slide that
+            cannot open.
+          </li>
+          <li>
+            Template slots work unchanged: the url component runs the six slot
+            queries itself and forwards each template to the gallery, so{' '}
+            <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+              rkLightboxControls
+            </code>{' '}
+            and its siblings sit inside it exactly as they would inside{' '}
+            <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+              rk-lightbox-overlay
+            </code>
+            .
+          </li>
+          <li>
+            In a routed application pass an adapter built on{' '}
+            <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+              Router
+            </code>
+            . Writing history behind the Router leaves its location stale and
+            its next navigation drops the parameter.
+          </li>
+        </ul>
+        <p className="text-slate-600 dark:text-slate-400 mt-4 mb-4">
+          <strong>In a routed app, pass an adapter.</strong> Writing history
+          behind the Router leaves its location stale and its next navigation
+          drops the parameter, so build an adapter on{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            Router
+          </code>{' '}
+          and pass it as{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            adapter
+          </code>
+          :
+        </p>
+        <CodeBlock
+          code={`const adapter = createRouterUrlAdapter();
+
+const photo = createOverlayUrlState({
+  param: 'photo',
+  adapter,
+  ...indexKey(() => this.images().length),
+});`}
+          language="typescript"
+        />
+        <p className="text-slate-600 dark:text-slate-400 mt-4 mb-4">
+          <strong>Stable links.</strong> The index is positional — a bookmarked{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            ?photo=3
+          </code>{' '}
+          opens a different image once the list is reordered. Key by identity
+          instead:{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            codec
+          </code>{' '}
+          spells the identity into the URL (wire),{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            locator
+          </code>{' '}
+          finds where it sits (lookup), so a bookmark survives the gallery being
+          reordered.
+        </p>
+        <CodeBlock
+          code={`const photo = createOverlayUrlState({
+  param: 'photo',
+  codec: { decode: (raw) => raw, encode: (id) => id },
+  locator: {
+    locate: (id) => this.images().findIndex((x) => x.id === id),
+    identify: (index) => this.images()[index].id,
+  },
+});`}
+          language="typescript"
+        />
+        <p className="text-slate-600 dark:text-slate-400 mt-4 mb-4">
+          <strong>Infinite or paginated galleries.</strong>{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            locate
+          </code>{' '}
+          is synchronous, so it only answers for images already loaded — a
+          shared link to image 400 of a feed that has loaded 20 comes up empty.{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            locateAsync
+          </code>{' '}
+          is the fallback, called only when{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            locate
+          </code>{' '}
+          misses: load the pages you need, then return the index the identity
+          turned out to have. While it is pending the gallery stays closed and
+          the parameter is left alone, so the deep link survives the fetch;{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            null
+          </code>{' '}
+          or a rejection drops the parameter.
+        </p>
+        <CodeBlock
+          code={`const photo = createOverlayUrlState({
+  param: 'photo',
+  codec: { decode: (raw) => raw, encode: (id) => id },
+  locator: {
+    locate: (id) => this.images().findIndex((x) => x.id === id),
+    identify: (index) => this.images()[index].id,
+    locateAsync: async (id) => {
+      const loaded = await loadById(id); // or loadUntil(id) — fetch just that one, or page up to it
+      if (!loaded) return null; // exhausted — link names no item
+      this.images.set(loaded); // commit; the overlay renders from this
+      return loaded.findIndex((x) => x.id === id); // wherever it landed
+    },
+  },
+});`}
+          language="typescript"
+        />
+      </section>
+
+      <section className="mb-12">
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          RkLightboxUrlOverlayComponent Inputs
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Takes every input of{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            rk-lightbox-overlay
+          </code>{' '}
+          except{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            isOpen
+          </code>
+          , replaced by a controller. Outputs are the same{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            closed
+          </code>{' '}
+          and{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            slideChange
+          </code>
+          ; the URL drives closing, so{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            closed
+          </code>{' '}
+          is a notification rather than the mechanism.
+        </p>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left py-3 px-4 font-semibold">Input</th>
+                <th className="text-left py-3 px-4 font-semibold">Type</th>
+                <th className="text-left py-3 px-4 font-semibold">Default</th>
+                <th className="text-left py-3 px-4 font-semibold">
+                  Description
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  controller
+                </td>
+                <td className="py-3 px-4 font-mono text-sm text-slate-600 dark:text-slate-400">
+                  UrlStateController
+                </td>
+                <td className="py-3 px-4 font-mono text-sm text-slate-500">
+                  required
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Controller from createOverlayUrlState. Its index decides
+                  whether the gallery is open and which slide it shows; the
+                  component writes back through it on slide change and on close.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </section>
 
       <section className="mb-12">

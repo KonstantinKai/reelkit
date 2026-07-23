@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { CodeBlock } from '../../../components/ui/CodeBlock';
 import { NextSteps } from '../../../components/NextSteps';
 import { Sandbox } from '../../../components/ui/Sandbox';
@@ -299,6 +300,164 @@ export class AppComponent {
 }`}
           language="typescript"
         />
+      </section>
+
+      <section className="mb-12">
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          URL State
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            createOverlayUrlState
+          </code>{' '}
+          builds a URL-state controller for an overlay and returns it whole,
+          then you hand it to a{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            *UrlOverlay
+          </code>{' '}
+          component as its{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            [controller]
+          </code>{' '}
+          input. Call it in an injection context — a field initialiser; it
+          attaches immediately and releases through{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            DestroyRef
+          </code>
+          . The URL owns the open state, so a bound overlay opens itself and a
+          link is the usual open action. The first write of an absent parameter
+          pushes one history entry and every write after replaces it, so paging
+          never buries the back button. Keep the controller to read{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            value
+          </code>
+          /
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            index
+          </code>{' '}
+          and to drive it programmatically:{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            set(index)
+          </code>{' '}
+          opens,{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            set(null)
+          </code>{' '}
+          closes, and{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            set
+          </code>{' '}
+          is the same low-level write the overlay uses internally on slide
+          change.
+        </p>
+        <CodeBlock
+          code={`import { Component, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import {
+  RkLightboxUrlOverlayComponent,
+  createOverlayUrlState,
+  indexKey,
+} from '@reelkit/angular-lightbox';
+
+@Component({
+  imports: [RkLightboxUrlOverlayComponent, RouterLink],
+  template: \`
+    @for (image of images(); track image.src; let i = $index) {
+      <a [routerLink]="[]" [queryParams]="{ photo: i }">
+        <img [src]="image.src" alt="" />
+      </a>
+    }
+
+    <rk-lightbox-url-overlay [controller]="photo" [items]="images()" />
+  \`,
+})
+export class GalleryComponent {
+  protected readonly images = signal(photos);
+
+  // Attaches now, releases on destroy.
+  protected readonly photo = createOverlayUrlState({
+    param: 'photo',
+    ...indexKey(() => this.images().length),
+  });
+}`}
+          language="typescript"
+        />
+        <p className="text-slate-600 dark:text-slate-400 mt-4 mb-4">
+          Routed app — pass a Router-backed adapter, otherwise the Router&apos;s
+          own location goes stale and its next navigation drops the parameter:
+        </p>
+        <CodeBlock
+          code={`protected readonly photo = createOverlayUrlState({
+  param: 'photo',
+  adapter: createRouterUrlAdapter(),
+  ...indexKey(() => this.images().length),
+});`}
+          language="typescript"
+        />
+        <p className="text-slate-600 dark:text-slate-400 mt-4">
+          The options object takes{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            param
+          </code>
+          ,{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            codec
+          </code>
+          , and{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            locator
+          </code>{' '}
+          (all three required), plus an optional{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            adapter
+          </code>
+          .{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            codec
+          </code>{' '}
+          and{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            locator
+          </code>{' '}
+          are a matched pair sharing the same{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            Id
+          </code>
+          , so a plain{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            ?photo=3
+          </code>{' '}
+          gallery spreads{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            ...indexKey(() =&gt; images().length)
+          </code>
+          , which returns both halves at once.{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            indexKey
+          </code>{' '}
+          bounds the index against the live count the getter returns, so a stale{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            ?photo=99
+          </code>{' '}
+          is rejected and heals itself out of the URL instead of opening a slide
+          that was never named. A paginated feed or an identity-keyed gallery
+          supplies its own matched{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            codec
+          </code>{' '}
+          +{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            locator
+          </code>{' '}
+          instead. The full options table lives on the{' '}
+          <Link
+            to="/docs/angular/api#createoverlayurlstate"
+            className="text-primary-600 dark:text-primary-400 hover:underline"
+          >
+            Angular API reference
+          </Link>
+          .
+        </p>
       </section>
 
       <section className="mb-12">

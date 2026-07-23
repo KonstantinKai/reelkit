@@ -18,7 +18,15 @@
  * {@link RkCounterComponent}, {@link RkFullscreenButtonComponent},
  * {@link RkSoundButtonComponent}) can be composed inside custom templates.
  *
- * @example
+ * The slot directives work the same inside either overlay.
+ *
+ * Open state comes in two shapes. {@link RkLightboxOverlayComponent} is
+ * controlled — the surrounding component owns `isOpen`.
+ * {@link RkLightboxUrlOverlayComponent} puts it in the address bar instead, so
+ * the visible slide has a link that can be shared, bookmarked, and closed with
+ * the back button.
+ *
+ * @example Controlled — the component owns `isOpen`
  * ```ts
  * import { RkLightboxOverlayComponent, type LightboxItem } from '@reelkit/angular-lightbox';
  * import '@reelkit/angular-lightbox/styles.css';
@@ -43,9 +51,55 @@
  *   index: number | null = null;
  * }
  * ```
+ *
+ * @example URL-driven — opening is a link, back closes
+ * ```ts
+ * import {
+ *   RkLightboxUrlOverlayComponent,
+ *   createOverlayUrlState,
+ *   indexKey,
+ * } from '@reelkit/angular-lightbox';
+ *
+ * @Component({
+ *   imports: [RkLightboxUrlOverlayComponent, RouterLink],
+ *   template: `
+ *     @for (image of images(); track image.src; let i = $index) {
+ *       <a [routerLink]="[]" [queryParams]="{ photo: i }">
+ *         <img [src]="image.src" alt="" />
+ *       </a>
+ *     }
+ *
+ *     <rk-lightbox-url-overlay [controller]="photo" [items]="images()" />
+ *   `,
+ * })
+ * export class GalleryComponent {
+ *   protected readonly images = signal(images);
+ *
+ *   // Call in an injection context: it attaches now and releases on destroy.
+ *   protected readonly photo = createOverlayUrlState({
+ *     param: 'photo',
+ *     ...indexKey(() => this.images().length),
+ *   });
+ * }
+ * ```
  */
 
 export { RkLightboxOverlayComponent } from './lib/lightbox-overlay/lightbox-overlay.component';
+export { RkLightboxUrlOverlayComponent } from './lib/lightbox-overlay/lightbox-url-overlay.component';
+
+export {
+  createOverlayUrlState,
+  indexCodec,
+  createIndexLocator,
+  indexKey,
+  createHistoryAdapter,
+  type OverlayUrlStateOptions,
+  type UrlAdapter,
+  type UrlCodec,
+  type UrlLocator,
+  type UrlKey,
+  type UrlStateController,
+} from '@reelkit/angular';
 
 export type {
   LightboxItem,

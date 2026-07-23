@@ -179,6 +179,19 @@ Attribute directive (`[rkSwipeToClose]`) that adds a vertical swipe-to-dismiss g
 </div>
 ```
 
+## createOverlayUrlState
+
+Type: `OverlayUrlStateOptions`
+
+Builds a URL-state controller for an overlay, which you hand to `<rk-lightbox-url-overlay>` as its `[controller]` input. Call it in an injection context — a field initialiser or the constructor; it attaches immediately and releases through `DestroyRef`.
+
+| Option    | Type                                                                                        | Default     | Description                                                                                                                                                                                                                    |
+| --------- | ------------------------------------------------------------------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `param`   | `string`                                                                                    | required    | Query parameter carrying the active slide, e.g. `photo`.                                                                                                                                                                       |
+| `adapter` | `UrlAdapter`                                                                                | History API | Navigation system to read/write through. Pass a Router-backed adapter in a routed app so the Router's location does not go stale.                                                                                              |
+| `codec`   | `{ decode(raw) => Id \| null; encode(id) => string }`                                       | required    | Wire format: param text ↔ a stable identity. Travels with `locator` as a matched pair — spread `...indexKey(() => images().length)` for the default `?photo=3` gallery, or supply your own so a bookmark survives reordering. |
+| `locator` | `{ locate(id) => number \| null; locateAsync?(id) => Promise<...>; identify(index) => id }` | required    | Maps the identity to a position and owns its own validity: `locate` (sync), `locateAsync` (async fallback for a paginated gallery), `identify` (writes).                                                                       |
+
 ## Re-exports from core
 
 `@reelkit/angular` re-exports core helpers:
