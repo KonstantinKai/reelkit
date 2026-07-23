@@ -31,6 +31,7 @@ import {
   useBodyLock,
   useSoundState,
   type ReelExpose,
+  type UrlStateController,
 } from '@reelkit/vue';
 import type {
   BaseContentItem,
@@ -721,6 +722,18 @@ const ReelPlayerContent = defineComponent({
 });
 
 /**
+ * Wraps the player content in the shell both overlays share: a `Teleport` to
+ * the body, then the sound and timeline providers `ReelPlayerContent` reads
+ * from. Written once so the controlled and url-driven overlays cannot drift.
+ */
+const renderPlayerWrapper = (content: VNode): VNode =>
+  h(Teleport, { to: 'body' }, [
+    h(SoundProvider, null, {
+      default: () => [h(TimelineProvider, null, { default: () => [content] })],
+    }),
+  ]);
+
+/**
  * Full-screen, Instagram/TikTok-style vertical reel player overlay for Vue 3.
  *
  * Renders a `<Teleport to="body">` containing a virtualized vertical slider
@@ -777,26 +790,128 @@ export const ReelPlayerOverlay = defineComponent({
         return null;
       }
 
-      return h(Teleport, { to: 'body' }, [
-        h(SoundProvider, null, {
-          default: () => [
-            h(TimelineProvider, null, {
-              default: () => [
-                h(
-                  ReelPlayerContent,
-                  {
-                    ...props,
-                    onClose: requestClose,
-                    onSlideChange: (i: number) => emit('slideChange', i),
-                    onApiReady: handleApiReady,
-                  },
-                  slots,
-                ),
-              ],
-            }),
-          ],
-        }),
-      ]);
+      return renderPlayerWrapper(
+        h(
+          ReelPlayerContent,
+          {
+            ...props,
+            onClose: requestClose,
+            onSlideChange: (i: number) => emit('slideChange', i),
+            onApiReady: handleApiReady,
+          },
+          slots,
+        ),
+      );
+    };
+  },
+});
+
+/** Props accepted by the public {@link ReelPlayerUrlOverlay} component. */
+const reelPlayerUrlOverlayProps = {
+  ...reelPlayerSharedProps,
+
+  /**
+   * URL-state controller from `useOverlayUrlState`. Its `index` drives whether
+   * the player is open and which slide it shows; the overlay writes back through
+   * it on slide change and close.
+   */
+  controller: {
+    type: Object as PropType<UrlStateController>,
+    required: true as const,
+  },
+} as const;
+
+/** Public props interface for the {@link ReelPlayerUrlOverlay} component. */
+export type ReelPlayerUrlOverlayProps = ExtractPropTypes<
+  typeof reelPlayerUrlOverlayProps
+>;
+
+/**
+ * Reel player whose open state lives in the URL. Build the controller with
+ * `useOverlayUrlState` and pass it as `controller`: the address bar owns the
+ * player, so it opens when the controller's index names a slide and closes when
+ * it clears — links are shareable and the back button closes when it was opened
+ * from within the app. A shared link opened directly in a fresh tab has no
+ * history behind it, so browser-back leaves the site; the close button or
+ * Escape removes the parameter in place and stays.
+ *
+ * Opening pushes one history entry and every slide change replaces it, so
+ * paging a feed adds no entries and one back step always leaves. The parameter
+ * addresses the vertical feed index only — which image a multi-media post shows
+ * is not carried in the URL.
+ *
+ * The controlled `ReelPlayerOverlay` and this url-driven overlay are separate
+ * components on purpose: each carries exactly one open-state driver, so there is
+ * no mutually-exclusive prop to police.
+ */
+export const ReelPlayerUrlOverlay = defineComponent({
+  name: 'ReelPlayerUrlOverlay',
+  inheritAttrs: false,
+  props: reelPlayerUrlOverlayProps,
+  emits: {
+    close: () => true,
+    slideChange: (_: number) => true,
+    apiReady: (_: ReelPlayerApi) => true,
+  },
+  setup(props, { emit, slots, expose }) {
+    const innerApi = shallowRef<ReelPlayerApi | null>(null);
+
+    const openIndex = toVueRef(props.controller.index);
+
+    const requestClose = () => {
+      props.controller.set(null);
+      emit('close');
+    };
+
+    const handleApiReady = (api: ReelPlayerApi) => {
+      innerApi.value = api;
+      emit('apiReady', api);
+    };
+
+    expose({
+      next: () => innerApi.value?.next(),
+      prev: () => innerApi.value?.prev(),
+      goTo: (index: number, anim?: boolean) =>
+        innerApi.value?.goTo(index, anim) ?? Promise.resolve(),
+      adjust: () => innerApi.value?.adjust(),
+      observe: () => innerApi.value?.observe(),
+      unobserve: () => innerApi.value?.unobserve(),
+      close: requestClose,
+    } satisfies ReelPlayerApi);
+
+    return () => {
+      const index = openIndex.value;
+      if (index === null) {
+        innerApi.value = null;
+        return null;
+      }
+
+      return renderPlayerWrapper(
+        h(
+          ReelPlayerContent,
+          {
+            content: props.content,
+            ariaLabel: props.ariaLabel,
+            initialIndex: index,
+            aspectRatio: props.aspectRatio,
+            transitionDuration: props.transitionDuration,
+            swipeDistanceFactor: props.swipeDistanceFactor,
+            loop: props.loop,
+            enableNavKeys: props.enableNavKeys,
+            enableWheel: props.enableWheel,
+            wheelDebounceMs: props.wheelDebounceMs,
+            timeline: props.timeline,
+            timelineMinDurationSeconds: props.timelineMinDurationSeconds,
+            onClose: requestClose,
+            onSlideChange: (i: number) => {
+              props.controller.set(i);
+              emit('slideChange', i);
+            },
+            onApiReady: handleApiReady,
+          },
+          slots,
+        ),
+      );
     };
   },
 });

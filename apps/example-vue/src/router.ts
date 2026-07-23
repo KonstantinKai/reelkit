@@ -18,6 +18,10 @@ const routes: RouteRecordRaw[] = [
     component: () => import('./pages/ReelPlayerCustomPage.vue'),
   },
   {
+    path: '/reel-player-url',
+    component: () => import('./pages/ReelPlayerUrlPage.vue'),
+  },
+  {
     path: '/image-preview',
     component: () => import('./pages/ImagePreviewPage.vue'),
   },

@@ -9,6 +9,7 @@ const links = [
   { to: '/', label: 'Full Page Slider' },
   { to: '/reel-player', label: 'Reel Player' },
   { to: '/reel-player-custom', label: 'Custom Player' },
+  { to: '/reel-player-url', label: 'URL Reel Player' },
   { to: '/image-preview', label: 'Image Gallery' },
   { to: '/image-preview-url', label: 'URL Gallery' },
   { to: '/image-preview-custom', label: 'Custom Gallery' },

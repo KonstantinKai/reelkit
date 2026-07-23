@@ -114,6 +114,16 @@ interface TimelineBarProps {
 | `transitionDuration`         | `number`                        | `300`            | Slide animation duration ms                                          |
 | `wheelDebounceMs`            | `number`                        | `200`            | Debounce duration for wheel events ms                                |
 
+## ReelPlayerUrlOverlay Props
+
+Type: `ReelPlayerUrlOverlayProps`
+
+Takes every `ReelPlayerOverlay` prop except `is-open`, replaced by a `controller`. Emits `close`, `slide-change`, `api-ready` — but no `update:is-open`. `initial-index` is ignored — the controller's index picks the slide, so a value passed alongside it is overwritten on every open.
+
+| Prop         | Type                 | Default  | Description                                                                                                                                                                      |
+| ------------ | -------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `controller` | `UrlStateController` | required | Controller from `useOverlayUrlState`. Its `index` decides whether the overlay is open and which slide it shows; the overlay writes back through it on slide change and on close. |
+
 ## Emits
 
 | Event            | Payload         | Description                                     |
@@ -136,6 +146,86 @@ interface TimelineBarProps {
 | `slide`            | `{ item, index, size, isActive, slideKey, defaultContent, onReady, onWaiting, onError }`                       | Fully custom slide content (falls back to default if omitted)                            |
 | `slideOverlay`     | `{ item, index, isActive }`                                                                                    | Per-slide overlay (author info, likes, description, etc.)                                |
 | `timeline`         | `{ item, activeIndex, timelineState, defaultContent }`                                                         | Custom playback timeline bar. Use `defaultContent()` to wrap built-in `<TimelineBar />`. |
+
+## URL State
+
+`ReelPlayerUrlOverlay` puts the open state in the address bar: build a controller with `useOverlayUrlState` from `@reelkit/vue` and pass it as `controller`. The player opens when the parameter names a slide and closes when it clears — links are shareable and the back button closes it. Opening pushes one history entry and every slide change replaces it, so paging a feed adds no entries and one back step always leaves. The parameter addresses the vertical feed index only; a multi-media post's inner image is not carried in the URL. It is a separate component from `ReelPlayerOverlay`, so each carries exactly one open-state driver.
+
+A routed app passes a router-backed adapter — `useVueRouterUrlAdapter` from `@reelkit/vue/vue-router-url-adapter` — so the router stays the single source of navigation truth.
+
+```vue
+<script setup lang="ts">
+import {
+  ReelPlayerUrlOverlay,
+  type ContentItem,
+} from '@reelkit/vue-reel-player';
+import { useOverlayUrlState, indexKey } from '@reelkit/vue';
+import { useVueRouterUrlAdapter } from '@reelkit/vue/vue-router-url-adapter';
+import '@reelkit/vue-reel-player/styles.css';
+
+const props = defineProps<{ content: ContentItem[] }>();
+
+const reel = useOverlayUrlState({
+  param: 'reel',
+  adapter: useVueRouterUrlAdapter(),
+  ...indexKey(() => props.content.length),
+});
+</script>
+
+<template>
+  <RouterLink
+    v-for="(post, i) in props.content"
+    :key="post.id"
+    :to="`?reel=${i}`"
+  >
+    <img :src="post.media[0].src" />
+  </RouterLink>
+
+  <ReelPlayerUrlOverlay :controller="reel" :content="props.content" />
+</template>
+```
+
+Full `useOverlayUrlState` options (`param`, `adapter`, `codec`, `locator`): see the [Vue API reference](/docs/vue/api#useoverlayurlstate).
+
+- Opening pushes **one** history entry. Swiping the feed **replaces** it — N swipes add 0 entries, so one back step always leaves the player. Back closes; it does not step slides.
+- **Back closes only when opened from within the app** (the link pushed an entry). A shared link opened directly in a fresh tab has no history behind it, so browser-back leaves the site — close with the ✕ button or Escape to remove the parameter in place and stay.
+- Deep link `?reel=3` opens the player at that slide on load.
+- A param naming no slide (stale bookmark, hand-edited) is dropped from the URL instead of leaving the address bar asserting a slide that cannot open.
+- The param addresses the **vertical** slide only. Which image a multi-media post is showing is not carried in the URL.
+
+**Stable links.** The index is positional — a bookmarked `?reel=3` opens a different post once the feed is reordered, which for a feed is the normal case rather than the exception. Key by identity instead. Two separate jobs: `codec` spells the identity into the URL (wire), `locator` finds where that identity sits (lookup).
+
+```ts
+const reel = useOverlayUrlState({
+  param: 'reel',
+  codec: { decode: (raw) => raw, encode: (id) => id },
+  locator: {
+    locate: (id) => content.value.findIndex((x) => x.id === id),
+    identify: (index) => content.value[index].id,
+  },
+});
+```
+
+**Infinite feeds.** `locate` is synchronous, so it can only answer for posts already loaded — a shared link to post 400 of a feed that has loaded 20 comes up empty. `locateAsync` is the fallback, called only when `locate` misses: load the pages you need, then return the index the identity turned out to have.
+
+```ts
+const reel = useOverlayUrlState({
+  param: 'reel',
+  codec: { decode: (raw) => raw, encode: (id) => id },
+  locator: {
+    locate: (id) => content.value.findIndex((x) => x.id === id),
+    identify: (index) => content.value[index].id,
+    locateAsync: async (id) => {
+      const loaded = await loadById(id); // or loadUntil(id) — fetch just that one, or page up to it
+      if (!loaded) return null; // exhausted — link names no post
+      content.value = loaded; // commit — the overlay renders from this state
+      return loaded.findIndex((x) => x.id === id); // wherever it landed
+    },
+  },
+});
+```
+
+While `locateAsync` is pending the player stays closed and the param is left alone — the deep link survives the fetch. `null` or a rejection drops the param. An answer that arrives after the URL moved on, after a close, or after unmount is discarded, so a slow fetch cannot open a slide nobody asked for. Nothing is rendered while pending; the page already owns that loading state, so render your own skeleton. There is no timeout — settle with `null` when pagination is exhausted or the overlay stays closed indefinitely.
 
 ## Sub-Components
 
