@@ -27,6 +27,7 @@
       "@reelkit/angular-reel-player": [
         "packages/reelkit-angular-reel-player/src/index.ts"
       ],
+      "@reelkit/core/testing": ["packages/reelkit-core/src/testing/index.ts"],
       "@reelkit/example-data": ["packages/reelkit-example-data/src/index.ts"]
     }
   },

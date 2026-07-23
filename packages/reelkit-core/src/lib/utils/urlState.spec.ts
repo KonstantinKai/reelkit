@@ -1,7 +1,7 @@
+import { createFakeUrlAdapter, type FakeUrlAdapter } from '../../testing';
 import { describe, it, expect, vi } from 'vitest';
 import {
   createUrlStateController,
-  type UrlAdapter,
   type UrlStateController,
   type UrlCodec,
   type UrlLocator,
@@ -12,58 +12,11 @@ import {
 import { createDeferred } from './deferred';
 import type { Dispose } from './signal';
 
-const createFakeAdapter = (initialSearch = '') => {
-  const entries: Array<{ search: string; state: unknown }> = [
-    { search: initialSearch, state: null },
-  ];
-  const listeners = new Set<() => void>();
-  let cursor = 0;
-
-  const merge = (previous: unknown, next: unknown) =>
-    previous === null && next === undefined
-      ? null
-      : { ...(previous as object), ...(next as object) };
-
-  const adapter: UrlAdapter = {
-    read: () => entries[cursor].search,
-    getState: () => entries[cursor].state,
-    subscribe: (listener) => {
-      listeners.add(listener);
-      return () => listeners.delete(listener);
-    },
-    push: (to, state) => {
-      entries.splice(cursor + 1);
-      entries.push({ search: to, state: state ?? null });
-      cursor += 1;
-    },
-    replace: (to, state) => {
-      entries[cursor] = {
-        search: to,
-        state: merge(entries[cursor].state, state),
-      };
-    },
-    goBack: () => {
-      if (cursor > 0) cursor -= 1;
-      listeners.forEach((listener) => listener());
-    },
-  };
-
-  return {
-    adapter,
-    entries,
-    get cursor() {
-      return cursor;
-    },
-    get depth() {
-      return entries.length;
-    },
-    /** Simulates the user pressing Back or Forward. */
-    fireUrlChange: () => listeners.forEach((listener) => listener()),
-  };
-};
+const createFakeAdapter = (initial = '', notifyOnPush = false) =>
+  createFakeUrlAdapter(initial, { notifyOnPush });
 
 const attachController = (
-  fake: ReturnType<typeof createFakeAdapter>,
+  fake: FakeUrlAdapter,
   param = 'photo',
 ): [UrlStateController, Dispose] => {
   const ctrl = createUrlStateController({ param, adapter: fake.adapter });
@@ -86,7 +39,7 @@ describe('createUrlStateController', () => {
   });
 
   it('adds one history entry on the first write and none afterwards', () => {
-    const fake = createFakeAdapter();
+    const fake = createFakeAdapter('');
     const [photo] = attachController(fake);
 
     photo.set(3);
@@ -155,7 +108,7 @@ describe('createUrlStateController', () => {
   });
 
   it('clears an in-flight close latch on reattach', () => {
-    const fake = createFakeAdapter();
+    const fake = createFakeAdapter('');
     const [photo, dispose] = attachController(fake);
 
     photo.set(3);
@@ -179,7 +132,7 @@ describe('createUrlStateController', () => {
   });
 
   it('follows the url when the user navigates back', () => {
-    const fake = createFakeAdapter();
+    const fake = createFakeAdapter('');
     const [photo] = attachController(fake);
 
     photo.set(3);
@@ -236,7 +189,7 @@ describe('createUrlStateController', () => {
   });
 
   it('claims without adding a history entry', () => {
-    const fake = createFakeAdapter();
+    const fake = createFakeAdapter('');
     attachController(fake);
 
     fake.adapter.push('?photo=2');
@@ -267,7 +220,7 @@ describe('createUrlStateController', () => {
     const flushMicrotasks = () => new Promise((done) => setTimeout(done, 0));
 
     const attachDeriving = <Id = number>(
-      fake: ReturnType<typeof createFakeAdapter>,
+      fake: FakeUrlAdapter,
       extra: { codec?: UrlCodec<Id>; locator?: UrlLocator<Id> },
     ): [UrlStateController, Dispose] => {
       const controller = createUrlStateController({
@@ -296,7 +249,7 @@ describe('createUrlStateController', () => {
     it.each(['bogus', '-1', '1.5', ''])(
       'treats %o as naming no slide',
       (raw) => {
-        const fake = createFakeAdapter(`?photo=${raw}`);
+        const fake = createFakeAdapter(`?photo=${raw}`, true);
         const [photo] = attachDeriving(fake, { codec: indexCodec });
 
         expect(photo.index.value).toBe(null);
@@ -325,7 +278,7 @@ describe('createUrlStateController', () => {
     });
 
     it('serializes writes by identifying then encoding', () => {
-      const fake = createFakeAdapter();
+      const fake = createFakeAdapter('');
       const [photo] = attachDeriving<string>(fake, {
         codec: idCodec,
         locator: pagedLocate(['a', 'b', 'c']),
@@ -352,7 +305,7 @@ describe('createUrlStateController', () => {
         identify: (index) => feed[index].id,
       };
 
-      const fake = createFakeAdapter();
+      const fake = createFakeAdapter('');
       const [photo] = attachDeriving<string>(fake, { codec, locator });
 
       // Bookmark 'charlie' — index 2 today. The raw search string carries the
@@ -369,7 +322,7 @@ describe('createUrlStateController', () => {
       // must land on it at its new index, not on whatever took slot 2.
       feed.reverse();
 
-      const revisit = createFakeAdapter(bookmarked);
+      const revisit = createFakeAdapter(bookmarked, true);
       const [reopened] = attachDeriving<string>(revisit, { codec, locator });
 
       expect(reopened.index.value).toBe(0);
@@ -399,7 +352,7 @@ describe('createUrlStateController', () => {
     });
 
     it('closes when the parameter goes away', () => {
-      const fake = createFakeAdapter();
+      const fake = createFakeAdapter('');
       const [photo] = attachDeriving(fake, {
         codec: { decode: Number, encode: String },
       });
@@ -584,7 +537,7 @@ describe('createUrlStateController', () => {
     });
 
     it('discards a locateAsync that settles after the parameter is cleared', async () => {
-      const fake = createFakeAdapter();
+      const fake = createFakeAdapter('');
       const pending = createDeferred();
       const loaded: string[] = [];
       const [photo] = attachDeriving<string>(fake, {

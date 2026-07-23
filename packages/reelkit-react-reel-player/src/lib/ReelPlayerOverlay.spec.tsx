@@ -4,10 +4,10 @@ import {
   useOverlayUrlState,
   indexKey,
   type ReelProps,
-  type UrlAdapter,
   type UrlStateController,
   type OverlayUrlStateOptions,
 } from '@reelkit/react';
+import { createFakeUrlAdapter } from '@reelkit/core/testing';
 import type { ContentItem } from './types';
 // Track Reel props
 let lastReelProps: Partial<ReelProps> = {};
@@ -129,53 +129,6 @@ vi.mock('lucide-react', () => ({
 
 // eslint-disable-next-line import/first
 import { ReelPlayerOverlay, ReelPlayerUrlOverlay } from './ReelPlayerOverlay';
-
-/**
- * In-memory stand-in for the browser history stack, driving the player in url
- * mode. `push` and `goBack` notify subscribers the way a router-backed adapter
- * does, so a test moves the url and lets the overlay react. The counters make
- * the entry cost of an open visible, which is the whole point of the
- * push-once-then-replace rule.
- */
-const createFakeUrlAdapter = (initialSearch = '') => {
-  const entries: Array<{ search: string; state: unknown }> = [
-    { search: initialSearch, state: null },
-  ];
-  const listeners = new Set<() => void>();
-  let cursor = 0;
-  const counts = { push: 0, replace: 0 };
-
-  const notify = () => listeners.forEach((listener) => listener());
-
-  const adapter: UrlAdapter = {
-    read: () => entries[cursor].search,
-    getState: () => entries[cursor].state,
-    subscribe: (listener) => {
-      listeners.add(listener);
-      return () => listeners.delete(listener);
-    },
-    push: (to, state) => {
-      counts.push += 1;
-      entries.splice(cursor + 1);
-      entries.push({ search: to, state: state ?? null });
-      cursor += 1;
-      notify();
-    },
-    replace: (to, state) => {
-      counts.replace += 1;
-      entries[cursor] = {
-        search: to,
-        state: { ...(entries[cursor].state as object), ...(state as object) },
-      };
-    },
-    goBack: () => {
-      if (cursor > 0) cursor -= 1;
-      notify();
-    },
-  };
-
-  return { adapter, counts, depth: () => entries.length };
-};
 
 const mockContent: ContentItem[] = [
   {

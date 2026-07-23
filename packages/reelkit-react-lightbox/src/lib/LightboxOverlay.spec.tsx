@@ -6,11 +6,12 @@ import {
   useOverlayUrlState,
   indexKey,
   type ReelProps,
-  type UrlAdapter,
   type UrlCodec,
   type UrlLocator,
   type OverlayUrlStateOptions,
+  type UrlStateController,
 } from '@reelkit/react';
+import { createFakeUrlAdapter } from '@reelkit/core/testing';
 import type { LightboxItem } from './LightboxOverlay';
 import { lightboxFadeTransition } from './lightboxFadeTransition';
 import { lightboxZoomTransition } from './lightboxZoomTransition';
@@ -142,48 +143,6 @@ const mockImages: LightboxItem[] = [
   { src: 'img2.jpg', title: 'Image 2' },
   { src: 'img3.jpg' },
 ];
-
-/**
- * In-memory stand-in for the browser history stack, driving the lightbox in
- * url mode. `push` and `goBack` notify subscribers the way a router-backed
- * adapter does, so a test moves the url and lets the overlay react.
- */
-const createFakeUrlAdapter = (initialSearch = '') => {
-  const entries: Array<{ search: string; state: unknown }> = [
-    { search: initialSearch, state: null },
-  ];
-  const listeners = new Set<() => void>();
-  let cursor = 0;
-
-  const notify = () => listeners.forEach((listener) => listener());
-
-  const adapter: UrlAdapter = {
-    read: () => entries[cursor].search,
-    getState: () => entries[cursor].state,
-    subscribe: (listener) => {
-      listeners.add(listener);
-      return () => listeners.delete(listener);
-    },
-    push: (to, state) => {
-      entries.splice(cursor + 1);
-      entries.push({ search: to, state: state ?? null });
-      cursor += 1;
-      notify();
-    },
-    replace: (to, state) => {
-      entries[cursor] = {
-        search: to,
-        state: { ...(entries[cursor].state as object), ...(state as object) },
-      };
-    },
-    goBack: () => {
-      if (cursor > 0) cursor -= 1;
-      notify();
-    },
-  };
-
-  return { adapter };
-};
 
 describe('LightboxOverlay', () => {
   beforeEach(() => {
@@ -1203,12 +1162,14 @@ describe('LightboxOverlay', () => {
 
     // The consumer builds the controller with the hook and hands it to the
     // overlay; this harness mirrors that so a test can drive the fake url.
+    let controller: UrlStateController;
+
     const renderUrl = <Id,>(
       options: OverlayUrlStateOptions<Id>,
       images: LightboxItem[] = mockImages,
     ) => {
       const Harness = () => {
-        const controller = useOverlayUrlState(options);
+        controller = useOverlayUrlState(options);
         return <LightboxUrlOverlay controller={controller} images={images} />;
       };
       return render(<Harness />);
@@ -1216,6 +1177,23 @@ describe('LightboxOverlay', () => {
 
     // The default gallery bounds the index against its live size.
     const count = () => mockImages.length;
+
+    it('pushes one history entry on open and replaces on every slide change', () => {
+      const fake = createFakeUrlAdapter();
+
+      renderUrl({ param: 'photo', adapter: fake.adapter, ...indexKey(count) });
+
+      act(() => controller.set(0));
+      expect(fake.counts.push).toBe(1);
+
+      const afterChange = lastReelProps.afterChange as (index: number) => void;
+      act(() => afterChange(1));
+      act(() => afterChange(2));
+
+      // Paging costs nothing: one back step still leaves the gallery.
+      expect(fake.counts.push).toBe(1);
+      expect(fake.adapter.read()).toBe('?photo=2');
+    });
 
     it('opens at the index named by the url on first render', () => {
       const fake = createFakeUrlAdapter('?photo=1');
