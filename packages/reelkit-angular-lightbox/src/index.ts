@@ -54,11 +54,8 @@
  *
  * @example URL-driven — opening is a link, back closes
  * ```ts
- * import {
- *   RkLightboxUrlOverlayComponent,
- *   createOverlayUrlState,
- *   indexKey,
- * } from '@reelkit/angular-lightbox';
+ * import { RkLightboxUrlOverlayComponent } from '@reelkit/angular-lightbox';
+ * import { createOverlayUrlState, indexKey } from '@reelkit/angular';
  *
  * @Component({
  *   imports: [RkLightboxUrlOverlayComponent, RouterLink],
@@ -87,19 +84,7 @@
 export { RkLightboxOverlayComponent } from './lib/lightbox-overlay/lightbox-overlay.component';
 export { RkLightboxUrlOverlayComponent } from './lib/lightbox-overlay/lightbox-url-overlay.component';
 
-export {
-  createOverlayUrlState,
-  indexCodec,
-  createIndexLocator,
-  indexKey,
-  createHistoryAdapter,
-  type OverlayUrlStateOptions,
-  type UrlAdapter,
-  type UrlCodec,
-  type UrlLocator,
-  type UrlKey,
-  type UrlStateController,
-} from '@reelkit/angular';
+export type { UrlAdapter, UrlCodec, UrlLocator } from '@reelkit/angular';
 
 export type {
   LightboxItem,

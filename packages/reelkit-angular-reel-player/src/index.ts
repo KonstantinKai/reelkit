@@ -49,9 +49,50 @@
  *   items: ContentItem[] = [...];
  * }
  * ```
+ *
+ * Open state comes in two shapes. {@link RkReelPlayerOverlayComponent} is
+ * controlled — the surrounding component owns `isOpen`.
+ * {@link RkReelPlayerUrlOverlayComponent} puts it in the address bar instead,
+ * so the playing slide has a link that can be shared, bookmarked, and closed
+ * with the back button. Every template slot above works the same in either.
+ *
+ * @example URL-driven — opening is a link, back closes
+ * ```ts
+ * import { Component } from '@angular/core';
+ * import { RouterLink } from '@angular/router';
+ * import {
+ *   RkReelPlayerUrlOverlayComponent,
+ *   type ContentItem,
+ * } from '@reelkit/angular-reel-player';
+ * import { createOverlayUrlState, indexKey } from '@reelkit/angular';
+ * import { createRouterUrlAdapter } from '@reelkit/angular/ng-router-url-adapter';
+ * import '@reelkit/angular-reel-player/styles.css';
+ *
+ * @Component({
+ *   standalone: true,
+ *   imports: [RkReelPlayerUrlOverlayComponent, RouterLink],
+ *   template: `
+ *     @for (post of content; track post.id; let i = $index) {
+ *       <a [routerLink]="[]" [queryParams]="{ reel: i }">{{ post.id }}</a>
+ *     }
+ *     <rk-reel-player-url-overlay [controller]="reel" [content]="content" />
+ *   `,
+ * })
+ * export class FeedComponent {
+ *   content: ContentItem[] = [...];
+ *   protected readonly reel = createOverlayUrlState({
+ *     param: 'reel',
+ *     adapter: createRouterUrlAdapter(),
+ *     ...indexKey(() => this.content.length),
+ *   });
+ * }
+ * ```
  */
 
 export { RkReelPlayerOverlayComponent } from './lib/reel-player-overlay/reel-player-overlay.component';
+export { RkReelPlayerUrlOverlayComponent } from './lib/reel-player-overlay/reel-player-url-overlay.component';
+
+export type { UrlAdapter, UrlCodec, UrlLocator } from '@reelkit/angular';
 
 export type {
   MediaType,

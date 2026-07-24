@@ -40,7 +40,6 @@
  * ```
  */
 
-// Re-export from core
 export {
   createSignal,
   createComputed,
@@ -106,7 +105,6 @@ export {
   getFocusableElements,
 } from '@reelkit/core';
 
-// Main components
 export {
   Reel,
   defaultRangeExtractor,
@@ -137,24 +135,20 @@ export {
   type UrlStateOptions,
 } from '@reelkit/core';
 
-// Context
 export {
   ReelContext,
   useReelContext,
   type ReelContextValue,
 } from './lib/ReelContext';
 
-// Swipe to close
 export {
   SwipeToClose,
   type SwipeToCloseProps,
   type SwipeToCloseDirection,
 } from './lib/SwipeToClose';
 
-// Sound
 export { SoundProvider, useSoundState } from './lib/SoundState';
 
-// Hooks
 export { useBodyLock } from './lib/useBodyLock';
 export {
   useFullscreen,

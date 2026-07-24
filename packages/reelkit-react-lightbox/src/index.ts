@@ -92,10 +92,8 @@
  * ```
  */
 
-// Main component
 export { LightboxOverlay, LightboxUrlOverlay } from './lib/LightboxOverlay';
 
-// Transitions
 export { slideTransition, flipTransition } from '@reelkit/react';
 export type { UrlAdapter, UrlCodec, UrlLocator } from '@reelkit/react';
 export { lightboxFadeTransition } from './lib/lightboxFadeTransition';
@@ -107,7 +105,6 @@ export type {
   ReelProxyProps,
 } from './lib/LightboxOverlay';
 
-// Types
 export type {
   ControlsRenderProps,
   SlideRenderProps,
@@ -115,7 +112,6 @@ export type {
   InfoRenderProps,
 } from './lib/types';
 
-// Sub-components for composition
 export {
   CloseButton,
   Counter,
@@ -129,7 +125,6 @@ export type {
   SoundButtonProps,
 } from './lib/LightboxControls';
 
-// Video support (opt-in, tree-shakeable)
 export { default as LightboxVideoSlide } from './lib/LightboxVideoSlide';
 export type { LightboxVideoSlideProps } from './lib/LightboxVideoSlide';
 export { useVideoSlideRenderer } from './lib/useVideoSlideRenderer';

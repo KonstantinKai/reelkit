@@ -7,11 +7,10 @@ import {
 import { Router, RouterLink } from '@angular/router';
 import {
   RkLightboxUrlOverlayComponent,
-  createOverlayUrlState,
-  indexCodec,
   type LightboxItem,
   type UrlLocator,
 } from '@reelkit/angular-lightbox';
+import { createOverlayUrlState, indexCodec } from '@reelkit/angular';
 import { cdnUrl } from '@reelkit/example-data';
 import { createRouterUrlAdapter } from '@reelkit/angular/ng-router-url-adapter';
 

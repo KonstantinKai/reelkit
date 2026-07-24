@@ -14,6 +14,7 @@ import {
   Settings,
   Ratio,
   Layers,
+  Link2,
   Code,
 } from 'lucide-react';
 import { Heading } from '../../components/ui/Heading';
@@ -685,6 +686,11 @@ export default function AngularReelPlayer() {
                 label: 'Error Handling',
                 desc: 'Broken media detection with LRU cache',
               },
+              {
+                icon: Link2,
+                label: 'URL State',
+                desc: 'Shareable links, back-button close',
+              },
             ]}
           />
         </div>
@@ -1325,6 +1331,213 @@ export class AppComponent {
 
       <section className="mb-12">
         <Heading level={2} className="text-2xl font-bold mb-4">
+          URL State
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            RkReelPlayerUrlOverlayComponent
+          </code>{' '}
+          is a separate component whose open state lives in the address bar.
+          Build a controller with{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            createOverlayUrlState
+          </code>{' '}
+          in an injection context and pass it as{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            [controller]
+          </code>
+          : the player opens when the parameter names a slide and closes when it
+          goes away. Links are shareable, and the back button closes the player.{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            RkReelPlayerOverlayComponent
+          </code>{' '}
+          stays{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            [isOpen]
+          </code>
+          -controlled, so each component carries exactly one open-state driver.
+        </p>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          A routed app passes a Router-backed adapter, so the Router stays the
+          single source of navigation truth — writing history behind it leaves
+          its location stale and drops the parameter on the next navigation.{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            createRouterUrlAdapter
+          </code>{' '}
+          from{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            @reelkit/angular/ng-router-url-adapter
+          </code>{' '}
+          is the ready-made adapter.
+        </p>
+        <CodeBlock
+          code={`import { Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import {
+  RkReelPlayerUrlOverlayComponent,
+  type ContentItem,
+} from '@reelkit/angular-reel-player';
+import { createOverlayUrlState, indexKey } from '@reelkit/angular';
+import { createRouterUrlAdapter } from '@reelkit/angular/ng-router-url-adapter';
+import '@reelkit/angular-reel-player/styles.css';
+
+@Component({
+  standalone: true,
+  imports: [RkReelPlayerUrlOverlayComponent, RouterLink],
+  template: \`
+    @for (post of content; track post.id; let i = $index) {
+      <a [routerLink]="[]" [queryParams]="{ reel: i }">{{ post.id }}</a>
+    }
+    <rk-reel-player-url-overlay [controller]="reel" [content]="content" />
+  \`,
+})
+export class FeedComponent {
+  content: ContentItem[] = [/* ... */];
+  protected readonly reel = createOverlayUrlState({
+    param: 'reel',
+    adapter: createRouterUrlAdapter(),
+    ...indexKey(() => this.content.length),
+  });
+}`}
+          language="typescript"
+        />
+        <ul className="list-disc pl-6 space-y-2 text-slate-600 dark:text-slate-400 my-4">
+          <li>
+            Opening pushes <strong>one</strong> history entry. Swiping the feed{' '}
+            <strong>replaces</strong> it, so N swipes add no entries and one
+            back step always leaves the player. Back closes; it does not step
+            slides.
+          </li>
+          <li>
+            Back closes only when the player was opened from within the app —
+            the link pushed an entry. A shared link opened directly in a fresh
+            tab has no history behind it, so browser-back leaves the site; the ✕
+            button or Escape removes the parameter in place and stays.
+          </li>
+          <li>
+            A deep link{' '}
+            <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+              ?reel=3
+            </code>{' '}
+            opens the player at that slide on load.
+          </li>
+          <li>
+            A parameter naming no slide — a stale bookmark, a hand-edited value
+            — is dropped from the URL rather than leaving the address bar
+            asserting a slide that cannot open.
+          </li>
+          <li>
+            The parameter addresses the <strong>vertical</strong> slide only.
+            Which image a multi-media post is showing is not carried in the URL.
+          </li>
+        </ul>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Full{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            createOverlayUrlState
+          </code>{' '}
+          options are on the{' '}
+          <Link
+            to="/docs/angular/api#createoverlayurlstate"
+            className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
+          >
+            Angular API reference
+          </Link>
+          .
+        </p>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          <strong>Stable links.</strong> The index is positional, so a
+          bookmarked{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            ?reel=3
+          </code>{' '}
+          opens a different post once the feed is reordered — for a feed that is
+          the normal case. Key by identity instead. Two separate jobs:{' '}
+          <code>codec</code> spells the identity into the URL,{' '}
+          <code>locator</code> finds where that identity sits.
+        </p>
+        <CodeBlock
+          code={`protected readonly reel = createOverlayUrlState({
+  param: 'reel',
+  codec: { decode: (raw) => raw, encode: (id) => id },
+  locator: {
+    locate: (id) => this.loaded().findIndex((x) => x.id === id),
+    identify: (index) => this.loaded()[index].id,
+  },
+});`}
+          language="typescript"
+        />
+        <p className="text-slate-600 dark:text-slate-400 mt-4 mb-4">
+          <strong>Infinite feeds.</strong>{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            locate
+          </code>{' '}
+          is synchronous, so it can only answer for posts already loaded — a
+          shared link to post 400 of a feed that has loaded 20 comes up empty.{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            locateAsync
+          </code>{' '}
+          is the fallback, called only when{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            locate
+          </code>{' '}
+          misses: load the pages you need, then return the index the identity
+          turned out to have.
+        </p>
+        <CodeBlock
+          code={`protected readonly reel = createOverlayUrlState({
+  param: 'reel',
+  adapter: createRouterUrlAdapter(),
+  codec: { decode: (raw) => raw, encode: (id) => id },
+  locator: {
+    locate: (id) => this.loaded().findIndex((x) => x.id === id),
+    identify: (index) => this.loaded()[index].id,
+    locateAsync: async (id) => {
+      const page = await this.loadById(id); // or loadUntil(id) — fetch just that one, or page up to it
+      if (!page) return null; // exhausted — link names no post
+      this.loaded.set(page); // commit — the overlay renders from this state
+      return page.findIndex((x) => x.id === id);
+    },
+  },
+});`}
+          language="typescript"
+        />
+        <ul className="list-disc pl-6 space-y-2 text-slate-600 dark:text-slate-400 mt-4">
+          <li>
+            While{' '}
+            <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+              locateAsync
+            </code>{' '}
+            is pending the player stays closed and the parameter is left alone,
+            so the deep link survives the fetch.{' '}
+            <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+              null
+            </code>{' '}
+            or a rejection drops the parameter.
+          </li>
+          <li>
+            An answer arriving after the URL moved on, after a close, or after
+            unmount is discarded — a slow fetch cannot open a slide nobody asked
+            for.
+          </li>
+          <li>
+            Nothing is rendered while pending; the page already owns that
+            loading state, so render your own skeleton.
+          </li>
+          <li>
+            There is no timeout — the player cannot know how long the feed is.
+            Settle with{' '}
+            <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+              null
+            </code>{' '}
+            when pagination is exhausted, or the overlay stays closed
+            indefinitely.
+          </li>
+        </ul>
+      </section>
+
+      <section className="mb-12">
+        <Heading level={2} className="text-2xl font-bold mb-4">
           Custom Data Types
         </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
@@ -1447,6 +1660,66 @@ export class AppComponent {
                   </td>
                 </tr>
               ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section className="mb-12">
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          RkReelPlayerUrlOverlayComponent Inputs
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Takes every input above except{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            isOpen
+          </code>{' '}
+          and{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            initialIndex
+          </code>
+          , replaced by a{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            controller
+          </code>{' '}
+          whose index picks the slide. Outputs{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            closed
+          </code>{' '}
+          and{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            slideChange
+          </code>
+          .
+        </p>
+        <div className="overflow-x-auto mb-6">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left py-3 px-4 font-semibold">Input</th>
+                <th className="text-left py-3 px-4 font-semibold">Type</th>
+                <th className="text-left py-3 px-4 font-semibold">Default</th>
+                <th className="text-left py-3 px-4 font-semibold">
+                  Description
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  controller
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  UrlStateController
+                </td>
+                <td className="py-3 px-4 text-slate-500 text-sm">required</td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Controller from <code>createOverlayUrlState</code>. Its{' '}
+                  <code>index</code> decides whether the player is open and
+                  which slide it shows; the overlay writes back through it on
+                  slide change and on close.
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>

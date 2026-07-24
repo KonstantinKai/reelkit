@@ -1019,11 +1019,8 @@ export class AppComponent {
         </p>
         <CodeBlock
           code={
-            `import {
-  RkLightboxUrlOverlayComponent,
-  createOverlayUrlState,
-  indexKey,
-} from '@reelkit/angular-lightbox';
+            `import { RkLightboxUrlOverlayComponent } from '@reelkit/angular-lightbox';
+import { createOverlayUrlState, indexKey } from '@reelkit/angular';
 
 @Component({
   imports: [RkLightboxUrlOverlayComponent, RouterLink],

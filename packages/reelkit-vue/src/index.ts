@@ -16,9 +16,7 @@
  * dependency.
  */
 
-// Re-export from core
 export {
-  // Signals & reactivity
   createSignal,
   createComputed,
   reaction,
@@ -30,8 +28,6 @@ export {
   type Listener,
   type Dispose,
   type Deferred,
-
-  // Math & utilities
   first,
   last,
   generate,
@@ -41,12 +37,8 @@ export {
   lerp,
   extractRange,
   noop,
-
-  // Animation
   animate,
   type AnimatedValue,
-
-  // DOM utilities
   observeDomEvent,
   createDisposableList,
   type DisposableList,
@@ -58,15 +50,11 @@ export {
   type LruCache,
   type SharedVideoConfig,
   type SharedVideoInstance,
-
-  // Controllers
   createGestureController,
   type GestureController,
   type GestureControllerEvents,
   type GestureCommonEvent,
   type GestureEvent,
-
-  // Transitions (tree-shakeable)
   slideTransition,
   flipTransition,
   cubeTransition,
@@ -75,34 +63,22 @@ export {
   getSlideProgress,
   type TransitionTransformFn,
   type SlideTransformStyle,
-
-  // Fullscreen
   fullscreenSignal,
   requestFullscreen,
   exitFullscreen,
-
-  // Body lock
   createBodyLock,
   sharedBodyLock,
   type BodyLock,
-
-  // Focus management
   captureFocusForReturn,
   createFocusTrap,
   getFocusableElements,
-
-  // Sound
   createSoundController,
   syncMutedToVideo,
   type SoundController,
-
-  // Timeline
   createTimelineController,
   type TimelineController,
   type TimelineControllerConfig,
   type BufferedRange,
-
-  // Content loading & preloading
   observeMediaLoading,
   type MediaLoadingCallbacks,
   createContentLoadingController,
@@ -110,8 +86,6 @@ export {
   createContentPreloader,
   type ContentPreloader,
   type ContentPreloaderConfig,
-
-  // URL state
   createUrlStateController,
   createHistoryAdapter,
   indexCodec,
@@ -119,7 +93,6 @@ export {
   indexKey,
 } from '@reelkit/core';
 
-// Re-export core types
 export type {
   SliderDirection,
   SliderConfig,
@@ -133,7 +106,6 @@ export type {
   UrlStateOptions,
 } from '@reelkit/core';
 
-// Components
 export {
   Reel,
   createDefaultKeyExtractorForLoop,
@@ -148,14 +120,12 @@ export {
   type SwipeToCloseProps,
 } from './lib/components';
 
-// Context
 export {
   RK_REEL_KEY,
   useReelContext,
   type ReelContextValue,
 } from './lib/context';
 
-// Composables
 export {
   useBodyLock,
   useFullscreen,

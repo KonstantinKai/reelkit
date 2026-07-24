@@ -113,11 +113,8 @@ Video slides are opt-in via the `rkLightboxSlide` template slot plus `RkLightbox
 `RkLightboxUrlOverlayComponent` is a separate component whose open state lives in the URL. Build a controller with `createOverlayUrlState` from `@reelkit/angular` and pass it as `[controller]`: the gallery opens itself when the param names a slide and closes when it goes away. **Opening is a link** — the href is the open action, no click handler.
 
 ```ts
-import {
-  RkLightboxUrlOverlayComponent,
-  createOverlayUrlState,
-  indexKey,
-} from '@reelkit/angular-lightbox';
+import { RkLightboxUrlOverlayComponent } from '@reelkit/angular-lightbox';
+import { createOverlayUrlState, indexKey } from '@reelkit/angular';
 
 @Component({
   imports: [RkLightboxUrlOverlayComponent, RouterLink],

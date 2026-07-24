@@ -81,7 +81,6 @@
  * ```
  */
 
-// Main component
 export {
   ReelPlayerOverlay,
   ReelPlayerUrlOverlay,
@@ -95,10 +94,8 @@ export type {
   ReelProxyProps,
 } from './lib/ReelPlayerOverlay';
 
-// URL-state types, re-exported so url mode needs one import path
 export type { UrlAdapter, UrlCodec, UrlLocator } from '@reelkit/react';
 
-// Types
 export type {
   MediaType,
   MediaItem,
@@ -112,11 +109,9 @@ export type {
   TimelineRenderProps,
 } from './lib/types';
 
-// Sub-components for composition
 export { CloseButton, SoundButton } from './lib/PlayerControls';
 export type { CloseButtonProps, SoundButtonProps } from './lib/PlayerControls';
 
-// Slide components
 export { default as ImageSlide } from './lib/ImageSlide';
 export type { ImageSlideProps } from './lib/ImageSlide';
 
@@ -126,7 +121,6 @@ export type { VideoSlideProps } from './lib/VideoSlide';
 export { default as SlideOverlay } from './lib/SlideOverlay';
 export type { SlideOverlayProps } from './lib/SlideOverlay';
 
-// Timeline
 export {
   TimelineProvider,
   useTimelineState,

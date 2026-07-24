@@ -121,6 +121,87 @@ export class AppComponent {
 }
 ```
 
+## URL State (shareable links, back button)
+
+`RkReelPlayerUrlOverlayComponent` puts the open state in the address bar: build a controller with `createOverlayUrlState` in an injection context and pass it as `[controller]`. The player opens when the parameter names a slide and closes when it clears — links are shareable and the back button closes it. `RkReelPlayerOverlayComponent` stays `[isOpen]`-controlled, so each component carries exactly one open-state driver.
+
+Opening pushes one history entry and every slide change replaces it, so paging a feed adds no entries and one back step always leaves. Back closes only when opened from within the app; a shared link opened in a fresh tab has no history behind it, so close with the ✕ button or Escape. A parameter naming no slide is dropped instead of asserting one that cannot open. The parameter addresses the vertical feed index only; a multi-media post's inner image is not carried in the URL.
+
+A routed app passes a Router-backed adapter — `createRouterUrlAdapter` from `@reelkit/angular/ng-router-url-adapter` — so the Router stays the single source of navigation truth.
+
+```ts
+import { Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import {
+  RkReelPlayerUrlOverlayComponent,
+  type ContentItem,
+} from '@reelkit/angular-reel-player';
+import { createOverlayUrlState, indexKey } from '@reelkit/angular';
+import { createRouterUrlAdapter } from '@reelkit/angular/ng-router-url-adapter';
+import '@reelkit/angular-reel-player/styles.css';
+
+@Component({
+  standalone: true,
+  imports: [RkReelPlayerUrlOverlayComponent, RouterLink],
+  template: `
+    @for (post of content; track post.id; let i = $index) {
+      <a [routerLink]="[]" [queryParams]="{ reel: i }">{{ post.id }}</a>
+    }
+    <rk-reel-player-url-overlay [controller]="reel" [content]="content" />
+  `,
+})
+export class FeedComponent {
+  content: ContentItem[] = [
+    /* ... */
+  ];
+  protected readonly reel = createOverlayUrlState({
+    param: 'reel',
+    adapter: createRouterUrlAdapter(),
+    ...indexKey(() => this.content.length),
+  });
+}
+```
+
+Full `createOverlayUrlState` options: [Angular API reference](/docs/angular/api#createoverlayurlstate).
+
+**Stable links.** The index is positional, so a bookmarked `?reel=3` opens a different post once the feed is reordered, which for a feed is the normal case. Key by identity instead — `codec` spells the identity into the URL (wire), `locator` finds where that identity sits (lookup).
+
+```ts
+protected readonly reel = createOverlayUrlState({
+  param: 'reel',
+  codec: { decode: (raw) => raw, encode: (id) => id },
+  locator: {
+    locate: (id) => this.loaded().findIndex((x) => x.id === id),
+    identify: (index) => this.loaded()[index].id,
+  },
+});
+```
+
+**Infinite feeds.** `locate` is synchronous, so it can only answer for posts already loaded — a shared link to post 400 of a feed that has loaded 20 comes up empty. `locateAsync` is the fallback, called only when `locate` misses: load the pages you need, then return the index the identity turned out to have.
+
+```ts
+protected readonly reel = createOverlayUrlState({
+  param: 'reel',
+  adapter: createRouterUrlAdapter(),
+  codec: { decode: (raw) => raw, encode: (id) => id },
+  locator: {
+    locate: (id) => this.loaded().findIndex((x) => x.id === id),
+    identify: (index) => this.loaded()[index].id,
+    locateAsync: async (id) => {
+      const page = await this.loadById(id); // or loadUntil(id) — fetch just that one, or page up to it
+      if (!page) return null; // exhausted — link names no post
+      this.loaded.set(page); // commit — the overlay renders from this state
+      return page.findIndex((x) => x.id === id);
+    },
+  },
+});
+```
+
+- While `locateAsync` is pending the player stays closed and the parameter is left alone, so the deep link survives the fetch. `null` or a rejection drops the parameter.
+- An answer arriving after the URL moved on, after a close, or after unmount is discarded — a slow fetch cannot open a slide nobody asked for.
+- Nothing is rendered while pending; the page already owns that loading state, so render your own skeleton.
+- There is no timeout — the player cannot know how long the feed is. Settle with `null` when pagination is exhausted, or the overlay stays closed indefinitely.
+
 ## RkReelPlayerOverlayComponent Inputs
 
 | Input                        | Type                            | Default                          | Description                                                          |
@@ -146,6 +227,16 @@ export class AppComponent {
 | `apiReady`    | `EventEmitter<ReelApi>` | Fires once slider ready, exposes imperative API |
 | `closed`      | `EventEmitter<void>`    | Fires when player closed                        |
 | `slideChange` | `EventEmitter<number>`  | Fires when active slide index changes           |
+
+## RkReelPlayerUrlOverlayComponent Inputs
+
+Type: `RkReelPlayerUrlOverlayProps`
+
+Takes every `RkReelPlayerOverlayComponent` input except `isOpen` and `initialIndex`, replaced by a `controller` whose index picks the slide. Outputs `closed` and `slideChange`.
+
+| Input        | Type                 | Default  | Description                                                                                                                                                    |
+| ------------ | -------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `controller` | `UrlStateController` | required | Controller from `createOverlayUrlState`. Its `index` decides whether the player is open and which slide it shows; the overlay writes back on change and close. |
 
 ## Template Slot Directives
 

@@ -17,6 +17,7 @@ import {
   signal,
   untracked,
   viewChild,
+  type TemplateRef,
 } from '@angular/core';
 import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
 import {
@@ -60,12 +61,21 @@ import {
   RkPlayerNestedNavigationDirective,
   RkPlayerLoadingDirective,
   RkPlayerErrorDirective,
+  type PlayerLoadingContext,
+  type PlayerErrorContext,
 } from '../template-slots/player-template-slots';
 import type {
   BaseContentItem,
   ContentItem,
   MediaType,
+  PlayerControlsContext,
+  PlayerNavigationContext,
+  PlayerNestedNavigationContext,
+  PlayerNestedSlideContext,
+  PlayerSlideContext,
+  PlayerSlideOverlayContext,
   PlayerSoundState,
+  PlayerTimelineContext,
   PlayerTimelineState,
   TimelineMode,
 } from '../types';
@@ -165,9 +175,9 @@ const _kDefaultTimelineMinDurationSeconds = 30;
                 [style.width.px]="itemSize[0]"
                 [style.height.px]="itemSize[1]"
               >
-                @if (slideTemplate()) {
+                @if (slideTpl()) {
                   <ng-container
-                    [ngTemplateOutlet]="slideTemplate()!.templateRef"
+                    [ngTemplateOutlet]="slideTpl()!"
                     [ngTemplateOutletContext]="{
                       $implicit: item,
                       index: index,
@@ -189,20 +199,16 @@ const _kDefaultTimelineMinDurationSeconds = 30;
                     [onReady]="getOnReady(index)"
                     [onWaiting]="getOnWaiting(index)"
                     [onError]="getOnError(index)"
-                    [nestedSlideTemplate]="
-                      nestedSlideTemplate()?.templateRef ?? null
-                    "
-                    [nestedNavTemplate]="
-                      nestedNavTemplate()?.templateRef ?? null
-                    "
+                    [nestedSlideTemplate]="nestedSlideTpl() ?? null"
+                    [nestedNavTemplate]="nestedNavTpl() ?? null"
                     (videoRef)="isActive && onVideoRef($event)"
                     (innerMediaType)="isActive && onInnerMediaType($event)"
                     (innerApiReady)="onInnerApiReady($event)"
                   />
 
-                  @if (slideOverlayTemplate()) {
+                  @if (slideOverlayTpl()) {
                     <ng-container
-                      [ngTemplateOutlet]="slideOverlayTemplate()!.templateRef"
+                      [ngTemplateOutlet]="slideOverlayTpl()!"
                       [ngTemplateOutletContext]="{
                         $implicit: item,
                         index: index,
@@ -223,9 +229,9 @@ const _kDefaultTimelineMinDurationSeconds = 30;
           </rk-reel>
 
           @if (isError()) {
-            @if (errorSlot()) {
+            @if (errorTpl()) {
               <ng-container
-                [ngTemplateOutlet]="errorSlot()!.templateRef"
+                [ngTemplateOutlet]="errorTpl()!"
                 [ngTemplateOutletContext]="{
                   $implicit: activeIndex(),
                   item: content()[activeIndex()],
@@ -260,9 +266,9 @@ const _kDefaultTimelineMinDurationSeconds = 30;
               </div>
             }
           } @else if (isLoading()) {
-            @if (loadingSlot()) {
+            @if (loadingTpl()) {
               <ng-container
-                [ngTemplateOutlet]="loadingSlot()!.templateRef"
+                [ngTemplateOutlet]="loadingTpl()!"
                 [ngTemplateOutletContext]="{
                   $implicit: activeIndex(),
                   item: content()[activeIndex()],
@@ -274,9 +280,9 @@ const _kDefaultTimelineMinDurationSeconds = 30;
             }
           }
 
-          @if (controlsTemplate()) {
+          @if (controlsTpl()) {
             <ng-container
-              [ngTemplateOutlet]="controlsTemplate()!.templateRef"
+              [ngTemplateOutlet]="controlsTpl()!"
               [ngTemplateOutletContext]="{
                 $implicit: closeFn,
                 item: content()[activeIndex()],
@@ -294,9 +300,9 @@ const _kDefaultTimelineMinDurationSeconds = 30;
           }
 
           @if (shouldRenderTimeline()) {
-            @if (timelineTemplate()) {
+            @if (timelineTpl()) {
               <ng-container
-                [ngTemplateOutlet]="timelineTemplate()!.templateRef"
+                [ngTemplateOutlet]="timelineTpl()!"
                 [ngTemplateOutletContext]="{
                   $implicit: content()[activeIndex()],
                   activeIndex: activeIndex(),
@@ -309,9 +315,9 @@ const _kDefaultTimelineMinDurationSeconds = 30;
           }
         </div>
 
-        @if (navigationTemplate()) {
+        @if (navigationTpl()) {
           <ng-container
-            [ngTemplateOutlet]="navigationTemplate()!.templateRef"
+            [ngTemplateOutlet]="navigationTpl()!"
             [ngTemplateOutletContext]="{
               $implicit: onPrevFn,
               item: content()[activeIndex()],
@@ -393,17 +399,68 @@ export class RkReelPlayerOverlayComponent<
   readonly slideChange = output<number>();
   readonly apiReady = output<ReelApi>();
 
-  readonly slideTemplate = contentChild(RkPlayerSlideDirective<T>);
-  readonly slideOverlayTemplate = contentChild(
+  // Projected slot directives. A `contentChild` query does not reach through
+  // the url overlay's `<ng-content>`, so `RkReelPlayerUrlOverlayComponent`
+  // reads these itself and forwards each `templateRef` as the matching input
+  // below. The resolved `*Tpl` computed prefers the input, else this query.
+  protected readonly slideSlot = contentChild(RkPlayerSlideDirective<T>);
+  protected readonly slideOverlaySlot = contentChild(
     RkPlayerSlideOverlayDirective<T>,
   );
-  readonly controlsTemplate = contentChild(RkPlayerControlsDirective<T>);
-  readonly timelineTemplate = contentChild(RkPlayerTimelineDirective<T>);
-  readonly navigationTemplate = contentChild(RkPlayerNavigationDirective);
-  readonly nestedSlideTemplate = contentChild(RkPlayerNestedSlideDirective);
-  readonly nestedNavTemplate = contentChild(RkPlayerNestedNavigationDirective);
+  protected readonly controlsSlot = contentChild(RkPlayerControlsDirective<T>);
+  protected readonly timelineSlot = contentChild(RkPlayerTimelineDirective<T>);
+  protected readonly navigationSlot = contentChild(RkPlayerNavigationDirective);
+  protected readonly nestedSlideSlot = contentChild(
+    RkPlayerNestedSlideDirective,
+  );
+  protected readonly nestedNavSlot = contentChild(
+    RkPlayerNestedNavigationDirective,
+  );
   protected readonly loadingSlot = contentChild(RkPlayerLoadingDirective);
   protected readonly errorSlot = contentChild(RkPlayerErrorDirective);
+
+  // Template inputs the url overlay forwards. Absent in normal projected use,
+  // where the queries above supply the templates.
+  readonly slideTemplate = input<TemplateRef<PlayerSlideContext<T>>>();
+  readonly slideOverlayTemplate =
+    input<TemplateRef<PlayerSlideOverlayContext<T>>>();
+  readonly controlsTemplate = input<TemplateRef<PlayerControlsContext<T>>>();
+  readonly timelineTemplate = input<TemplateRef<PlayerTimelineContext<T>>>();
+  readonly navigationTemplate = input<TemplateRef<PlayerNavigationContext>>();
+  readonly nestedSlideTemplate = input<TemplateRef<PlayerNestedSlideContext>>();
+  readonly nestedNavTemplate =
+    input<TemplateRef<PlayerNestedNavigationContext>>();
+  readonly loadingTemplate = input<TemplateRef<PlayerLoadingContext>>();
+  readonly errorTemplate = input<TemplateRef<PlayerErrorContext>>();
+
+  // Input wins, else the projected directive's templateRef.
+  protected readonly slideTpl = computed(
+    () => this.slideTemplate() ?? this.slideSlot()?.templateRef,
+  );
+  protected readonly slideOverlayTpl = computed(
+    () => this.slideOverlayTemplate() ?? this.slideOverlaySlot()?.templateRef,
+  );
+  protected readonly controlsTpl = computed(
+    () => this.controlsTemplate() ?? this.controlsSlot()?.templateRef,
+  );
+  protected readonly timelineTpl = computed(
+    () => this.timelineTemplate() ?? this.timelineSlot()?.templateRef,
+  );
+  protected readonly navigationTpl = computed(
+    () => this.navigationTemplate() ?? this.navigationSlot()?.templateRef,
+  );
+  protected readonly nestedSlideTpl = computed(
+    () => this.nestedSlideTemplate() ?? this.nestedSlideSlot()?.templateRef,
+  );
+  protected readonly nestedNavTpl = computed(
+    () => this.nestedNavTemplate() ?? this.nestedNavSlot()?.templateRef,
+  );
+  protected readonly loadingTpl = computed(
+    () => this.loadingTemplate() ?? this.loadingSlot()?.templateRef,
+  );
+  protected readonly errorTpl = computed(
+    () => this.errorTemplate() ?? this.errorSlot()?.templateRef,
+  );
 
   private readonly _activeIndex = linkedSignal(() =>
     this.isOpen() ? this.initialIndex() : 0,

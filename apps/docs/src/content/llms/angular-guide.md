@@ -173,11 +173,8 @@ First write of an absent param pushes ONE history entry; every write after repla
 ```ts
 import { Component, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import {
-  RkLightboxUrlOverlayComponent,
-  createOverlayUrlState,
-  indexKey,
-} from '@reelkit/angular-lightbox';
+import { RkLightboxUrlOverlayComponent } from '@reelkit/angular-lightbox';
+import { createOverlayUrlState, indexKey } from '@reelkit/angular';
 
 @Component({
   imports: [RkLightboxUrlOverlayComponent, RouterLink],
