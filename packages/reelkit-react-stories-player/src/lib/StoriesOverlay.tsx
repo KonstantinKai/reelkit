@@ -148,6 +148,11 @@ function StoriesContent<T extends StoryItem = StoryItem>({
 
   // Stable refs for callbacks to avoid stale closures
   const propsRef = useRef({
+    onStoryChange,
+    onGroupChange,
+    onStoryViewed,
+    onStoryComplete,
+    onClose,
     onDoubleTap,
     onPause,
     onResume,
@@ -158,6 +163,11 @@ function StoriesContent<T extends StoryItem = StoryItem>({
     tapZoneSplit,
   });
   propsRef.current = {
+    onStoryChange,
+    onGroupChange,
+    onStoryViewed,
+    onStoryComplete,
+    onClose,
     onDoubleTap,
     onPause,
     onResume,
@@ -201,12 +211,21 @@ function StoriesContent<T extends StoryItem = StoryItem>({
         initialStoryIndex,
         defaultImageDuration,
       },
+      // Read callbacks off the ref at fire time, never off this closure. The
+      // controller is built once and outlives every prop update, so a callback
+      // captured here would freeze to the render that created it; reading the
+      // ref means a later prop carrying a different callback is still honored on
+      // the next fire.
       {
-        onStoryChange,
-        onGroupChange,
-        onStoryViewed,
-        onStoryComplete,
-        onClose,
+        onStoryChange: (groupIndex, storyIndex) =>
+          propsRef.current.onStoryChange?.(groupIndex, storyIndex),
+        onGroupChange: (groupIndex) =>
+          propsRef.current.onGroupChange?.(groupIndex),
+        onStoryViewed: (groupIndex, storyIndex) =>
+          propsRef.current.onStoryViewed?.(groupIndex, storyIndex),
+        onStoryComplete: (groupIndex, storyIndex) =>
+          propsRef.current.onStoryComplete?.(groupIndex, storyIndex),
+        onClose: () => propsRef.current.onClose(),
       },
     );
 
@@ -477,8 +496,18 @@ function StoriesContent<T extends StoryItem = StoryItem>({
         outerReelRef.current?.adjust();
       }),
       timerCtrl.dispose,
-      storiesCtrl.dispose,
     );
+
+    // Do NOT dispose `storiesCtrl` here. It is created once for the component's
+    // lifetime (in `useState`) and survives a mount/unmount/remount, but this
+    // effect's cleanup runs on every such cycle — React re-runs cleanups, and in
+    // development StrictMode deliberately mounts, unmounts, then remounts. Its
+    // `dispose()` clears the event callbacks for good, so the remounted overlay
+    // would keep the same controller with its callbacks wiped and navigation
+    // would stop writing the URL. The controller holds no timers or listeners of
+    // its own — only callback references — so there is nothing to leak; those
+    // references are released when the component truly unmounts and it is
+    // garbage-collected.
 
     startOrDeferTimer(groups[initialGroupIndex]?.stories[initialStoryIndex]);
 

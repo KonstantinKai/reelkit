@@ -1,4 +1,5 @@
-import { render } from '@testing-library/react';
+import { StrictMode } from 'react';
+import { render, act } from '@testing-library/react';
 import {
   describe,
   it,
@@ -52,6 +53,8 @@ vi.mock('@reelkit/react', async (importOriginal) => {
 
 // eslint-disable-next-line import/first
 import { StoriesOverlay } from './StoriesOverlay';
+// eslint-disable-next-line import/first
+import type { StoriesApi } from './types';
 
 const mockGroups: StoriesGroup[] = [
   {
@@ -171,6 +174,66 @@ describe('StoriesOverlay', () => {
     // The mock Reel doesn't call itemBuilder, so receivedProps won't be set
     // in this mock setup, but the component should accept the prop without error
     expect(true).toBe(true);
+  });
+
+  // The controller is built once and outlives prop updates, so an event
+  // callback captured at its creation would freeze to that render. It must call
+  // whatever callback the latest render passed, not the one from mount.
+  it('invokes the latest onStoryChange after a rerender, not one frozen at mount', () => {
+    const first = vi.fn();
+    const second = vi.fn();
+    const apiRef = { current: null as StoriesApi | null };
+
+    const { rerender } = render(
+      <StoriesOverlay
+        isOpen
+        onClose={vi.fn()}
+        groups={mockGroups}
+        apiRef={apiRef}
+        onStoryChange={first}
+      />,
+    );
+
+    rerender(
+      <StoriesOverlay
+        isOpen
+        onClose={vi.fn()}
+        groups={mockGroups}
+        apiRef={apiRef}
+        onStoryChange={second}
+      />,
+    );
+
+    act(() => apiRef.current?.nextStory());
+
+    expect(second).toHaveBeenCalledWith(0, 1);
+    expect(first).not.toHaveBeenCalled();
+  });
+
+  // The controller is created once for the component's lifetime but must not be
+  // torn down by an effect cleanup — React re-runs cleanups, and StrictMode
+  // mounts, unmounts, then remounts. A controller disposed on that cleanup would
+  // navigate with its callbacks wiped, so the URL would stop updating. Under
+  // StrictMode, navigation must still fire the callback.
+  it('still fires onStoryChange after a StrictMode mount/unmount/remount', () => {
+    const onStoryChange = vi.fn();
+    const apiRef = { current: null as StoriesApi | null };
+
+    render(
+      <StrictMode>
+        <StoriesOverlay
+          isOpen
+          onClose={vi.fn()}
+          groups={mockGroups}
+          apiRef={apiRef}
+          onStoryChange={onStoryChange}
+        />
+      </StrictMode>,
+    );
+
+    act(() => apiRef.current?.nextStory());
+
+    expect(onStoryChange).toHaveBeenCalledWith(0, 1);
   });
 
   describe('renderNavigation', () => {
