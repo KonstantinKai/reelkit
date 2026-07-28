@@ -112,9 +112,15 @@ Video slides are opt-in via the `rkLightboxSlide` template slot plus `RkLightbox
 
 `RkLightboxUrlOverlayComponent` is a separate component whose open state lives in the URL. Build a controller with `createOverlayUrlState` from `@reelkit/angular` and pass it as `[controller]`: the gallery opens itself when the param names a slide and closes when it goes away. **Opening is a link** — the href is the open action, no click handler.
 
+> **Built-in keys.** Spread `urlIndexKey` (by position) or `urlStableIdKey` (by a stable `id`) into the controller — both re-exported from `@reelkit/angular`. See the [URL State guide](/docs/core/guide#url-state) and [Core API](/docs/core/api#url-state).
+
 ```ts
 import { RkLightboxUrlOverlayComponent } from '@reelkit/angular-lightbox';
-import { createOverlayUrlState, indexKey } from '@reelkit/angular';
+import {
+  createOverlayUrlState,
+  urlIndexKey,
+  urlStableIdKey,
+} from '@reelkit/angular';
 
 @Component({
   imports: [RkLightboxUrlOverlayComponent, RouterLink],
@@ -133,7 +139,7 @@ export class GalleryComponent {
 
   protected readonly photo = createOverlayUrlState({
     param: 'photo',
-    ...indexKey(() => this.images().length),
+    ...urlIndexKey(() => this.images().length),
   });
 }
 ```
@@ -149,9 +155,22 @@ Call `createOverlayUrlState` in an injection context — a field initialiser or 
 
 **Template slots work unchanged.** The url component runs the six slot queries itself and forwards each template to the gallery, so `<ng-template rkLightboxControls>` and its siblings sit inside `<rk-lightbox-url-overlay>` exactly as they would inside `<rk-lightbox-overlay>`.
 
-**Stable links.** The index is positional — a bookmarked `?photo=3` opens a different image once the list is reordered. Key by identity instead: `codec` spells the identity into the URL (wire), `locator` finds where it sits (lookup).
+**Stable links.** The index is positional — a bookmarked `?photo=3` opens a different image once the list is reordered. `urlStableIdKey` keys by each item's stable `id`, scanning the live list — one call covers the common case:
+
+```ts
+const photo = createOverlayUrlState({
+  param: 'photo',
+  ...urlStableIdKey({ items: () => this.images() }),
+});
+```
+
+Pass `hash: true` to base64url-encode the id in the URL — reversible obfuscation, not a cryptographic hash.
+
+Key by a different field (a `slug`), or page an infinite feed with `locateAsync`, and build the `codec` (wire) and `locator` (lookup) yourself.
 
 **Infinite / paginated galleries.** `locate` is synchronous, so it only answers for images already loaded. `locateAsync` is the fallback, called only when `locate` misses: load the pages you need, then return the index the identity turned out to have. While it is pending the gallery stays closed and the param is left alone, so the deep link survives the fetch; `null` or a rejection drops the param.
+
+> **Shortcut.** Keying by the item's `id`? Skip the hand-rolled codec and locator — pass `locateAsync` straight to `urlStableIdKey({ items, locateAsync })` (it fetches on a miss, then returns the index). The fuller version below is for keying by another field, or for full control.
 
 ```ts
 const photo = createOverlayUrlState({
@@ -176,9 +195,9 @@ An answer arriving after the URL moved on, after a close, or after destroy is di
 
 Takes every input of `rk-lightbox-overlay` except `isOpen`, replaced by `controller`.
 
-| Input        | Type                 | Default  | Description                                                                                                                                                             |
-| ------------ | -------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `controller` | `UrlStateController` | required | Controller from `createOverlayUrlState`. Its `index` decides whether the gallery is open and which slide it shows; the component writes back on slide change and close. |
+| Input        | Type                 | Default  | Description                                                                                                                                                                |
+| ------------ | -------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `controller` | `UrlStateController` | required | Controller from `createOverlayUrlState`. Its `position` decides whether the gallery is open and which slide it shows; the component writes back on slide change and close. |
 
 Outputs are the same `closed` and `slideChange`; the URL drives closing, so `closed` is a notification rather than the mechanism.
 

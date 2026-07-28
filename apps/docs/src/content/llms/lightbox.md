@@ -84,14 +84,20 @@ interface LightboxItem {
 
 `LightboxUrlOverlay` is a separate component whose open state lives in the URL. Build a controller with `useOverlayUrlState` from `@reelkit/react` and pass it as `controller`: the lightbox opens itself when the param names a slide and closes when it goes away. **Opening is a link** — the href is the open action, no click handler.
 
+> **Built-in keys.** Spread `urlIndexKey` (by position) or `urlStableIdKey` (by a stable `id`) into the controller — both re-exported from `@reelkit/react`. See the [URL State guide](/docs/core/guide#url-state) and [Core API](/docs/core/api#url-state).
+
 ```tsx
-import { useOverlayUrlState, indexKey } from '@reelkit/react';
+import {
+  useOverlayUrlState,
+  urlIndexKey,
+  urlStableIdKey,
+} from '@reelkit/react';
 import { LightboxUrlOverlay } from '@reelkit/react-lightbox';
 import { Link } from 'react-router-dom';
 
 const photo = useOverlayUrlState({
   param: 'photo',
-  ...indexKey(() => images.length),
+  ...urlIndexKey(() => images.length),
 });
 
 // Opening is a link — the overlay reads the URL and opens itself.
@@ -122,7 +128,7 @@ const adapter = useReactRouterUrlAdapter(); // { read, subscribe, push, replace,
 const photo = useOverlayUrlState({
   param: 'photo',
   adapter,
-  ...indexKey(() => images.length),
+  ...urlIndexKey(() => images.length),
 });
 
 <LightboxUrlOverlay controller={photo} images={images} />;
@@ -145,9 +151,20 @@ import { Link } from 'react-router-dom';
 <LightboxUrlOverlay controller={photo} images={images} />;
 ```
 
-**Stable links.** The index is positional — a bookmarked `?photo=3` opens a different image once the list is reordered. Key by identity instead:
+**Stable links.** The index is positional — a bookmarked `?photo=3` opens a different image once the list is reordered. `urlStableIdKey` keys by each item's stable `id`, scanning the live list — one call covers the common case:
 
-Two separate jobs: `codec` spells the identity into the URL (wire), `locator` finds where that identity sits (lookup).
+```tsx
+const photo = useOverlayUrlState({
+  param: 'photo',
+  ...urlStableIdKey({ items: () => images }),
+});
+
+<LightboxUrlOverlay controller={photo} images={images} />;
+```
+
+Pass `hash: true` to base64url-encode the id in the URL — reversible obfuscation, not a cryptographic hash.
+
+Key by a different field (a `slug`), or page an infinite feed with `locateAsync`, and build the `codec`/`locator` yourself. Two separate jobs: `codec` spells the identity into the URL (wire), `locator` finds where that identity sits (lookup).
 
 ```tsx
 const photo = useOverlayUrlState({
@@ -163,6 +180,8 @@ const photo = useOverlayUrlState({
 ```
 
 **Infinite / paginated galleries.** `locate` is synchronous, so it can only answer for images already loaded — a shared link to image 400 of a feed that has loaded 20 comes up empty. `locateAsync` is the fallback, called only when `locate` misses: load the pages you need, then return the index the identity turned out to have.
+
+> **Shortcut.** Keying by the item's `id`? Skip the hand-rolled codec and locator — pass `locateAsync` straight to `urlStableIdKey({ items, locateAsync })` (it fetches on a miss, then returns the index). The fuller version below is for keying by another field, or for full control.
 
 ```tsx
 const photo = useOverlayUrlState({
@@ -222,18 +241,18 @@ Whatever `locateAsync` returns is authoritative — it reports the index of data
 
 ## LightboxUrlOverlay Props
 
-Takes every visual/behavior prop above except `isOpen`, replaced by a `controller`. `initialIndex` is ignored — the controller's index picks the slide, so a value passed alongside it is overwritten on every open.
+Takes every visual/behavior prop above except `isOpen`, replaced by a `controller`. `initialIndex` is ignored — the controller's position picks the slide, so a value passed alongside it is overwritten on every open.
 
-| Prop         | Type                 | Default  | Description                                                                                                                                                          |
-| ------------ | -------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `controller` | `UrlStateController` | required | Controller from `useOverlayUrlState`. Its `index` decides whether the overlay is open and which slide; the overlay writes back through it on slide change and close. |
+| Prop         | Type                 | Default  | Description                                                                                                                                                             |
+| ------------ | -------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `controller` | `UrlStateController` | required | Controller from `useOverlayUrlState`. Its `position` decides whether the overlay is open and which slide; the overlay writes back through it on slide change and close. |
 
 ## Callbacks
 
-| Prop            | Type                      | Description             |
-| --------------- | ------------------------- | ----------------------- |
-| `onClose`       | `() => void`              | Fire on close           |
-| `onSlideChange` | `(index: number) => void` | Fire after slide change |
+| Prop            | Type                      | Description                                                                                                                              |
+| --------------- | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `onClose`       | `() => void`              | Called on close. Required on `LightboxOverlay` (you own the open state); optional on `LightboxUrlOverlay`, where the URL drives closing. |
+| `onSlideChange` | `(index: number) => void` | Fire after slide change                                                                                                                  |
 
 ## Sub-Components
 

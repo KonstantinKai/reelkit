@@ -25,7 +25,7 @@ const lightboxUrlProps = [
     type: 'UrlStateController',
     default: 'required',
     description:
-      'Controller from useOverlayUrlState. Its index decides whether the overlay is open and which slide it shows; the overlay writes back through it on slide change and on close.',
+      'Controller from useOverlayUrlState. Its position decides whether the overlay is open and which slide it shows; the overlay writes back through it on slide change and on close.',
   },
 ];
 
@@ -1015,6 +1015,39 @@ export default function VueLightbox() {
           </code>
           , never both.
         </p>
+        <Callout type="info" title="Built-in keys" className="mb-4">
+          You can address slides with a built-in key — spread{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            urlIndexKey
+          </code>{' '}
+          (by position) or{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            urlStableIdKey
+          </code>{' '}
+          (by a stable{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            id
+          </code>
+          ) into the controller — both re-exported from{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            @reelkit/vue
+          </code>
+          . See the{' '}
+          <Link
+            to="/docs/core/guide#url-state"
+            className="text-primary-600 dark:text-primary-400 hover:underline"
+          >
+            URL State guide
+          </Link>{' '}
+          and{' '}
+          <Link
+            to="/docs/core/api#url-state"
+            className="text-primary-600 dark:text-primary-400 hover:underline"
+          >
+            Core API
+          </Link>
+          .
+        </Callout>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Back closes only when you opened from within the app — the link pushed
           an entry, so back pops to the gallery. A shared link opened directly
@@ -1025,14 +1058,14 @@ export default function VueLightbox() {
         <CodeBlock
           code={`<script setup lang="ts">
 import { LightboxUrlOverlay, type LightboxItem } from '@reelkit/vue-lightbox';
-import { useOverlayUrlState, indexKey } from '@reelkit/vue';
+import { useOverlayUrlState, urlIndexKey, urlStableIdKey } from '@reelkit/vue';
 import '@reelkit/vue-lightbox/styles.css';
 
 const props = defineProps<{ images: LightboxItem[] }>();
 
 const photo = useOverlayUrlState({
   param: 'photo',
-  ...indexKey(() => props.images.length),
+  ...urlIndexKey(() => props.images.length),
 });
 </script>
 
@@ -1167,7 +1200,7 @@ const adapter = useVueRouterUrlAdapter();
 const photo = useOverlayUrlState({
   param: 'photo',
   adapter,
-  ...indexKey(() => images.length),
+  ...urlIndexKey(() => images.length),
 });
 </script>
 
@@ -1178,8 +1211,55 @@ const photo = useOverlayUrlState({
         />
         <p className="text-slate-600 dark:text-slate-400 mt-4 mb-2">
           <strong>Stable links.</strong> The index is positional, so a bookmark
-          opens a different image once the list is reordered. Key by identity
-          instead:{' '}
+          opens a different image once the list is reordered.{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            urlStableIdKey
+          </code>{' '}
+          keys by each item's stable{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            id
+          </code>
+          , scanning the live list — one call covers the common case.
+        </p>
+        <CodeBlock
+          code={`<script setup lang="ts">
+const photo = useOverlayUrlState({
+  param: 'photo',
+  ...urlStableIdKey({ items: () => images }),
+});
+</script>
+
+<template>
+  <LightboxUrlOverlay :controller="photo" :items="images" />
+</template>`}
+          language="vue"
+        />
+        <p className="text-slate-600 dark:text-slate-400 mt-4 mb-2">
+          Pass{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            hash: true
+          </code>{' '}
+          to base64url-encode the id in the URL — reversible obfuscation, not a
+          cryptographic hash.
+        </p>
+        <p className="text-slate-600 dark:text-slate-400 mt-4 mb-2">
+          Key by a different field (a{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            slug
+          </code>
+          ), or page an infinite feed with{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            locateAsync
+          </code>
+          , and build the{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            codec
+          </code>
+          /
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            locator
+          </code>{' '}
+          yourself:{' '}
           <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
             codec
           </code>{' '}
@@ -1219,6 +1299,22 @@ const photo = useOverlayUrlState({
           is the fallback, called only when it misses: load the pages you need,
           then return the index the identity turned out to have.
         </p>
+        <Callout type="info" title="Shortcut" className="mb-4">
+          Keying by the item&rsquo;s{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            id
+          </code>
+          ? Skip the hand-rolled codec and locator — pass{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            locateAsync
+          </code>{' '}
+          straight to{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            urlStableIdKey({'{ items, locateAsync }'})
+          </code>{' '}
+          (it fetches on a miss, then returns the index). The fuller version
+          below is for keying by another field, or for full control.
+        </Callout>
         <CodeBlock
           code={`<script setup lang="ts">
 const photo = useOverlayUrlState({
@@ -1262,12 +1358,14 @@ const photo = useOverlayUrlState({
 
       <section className="mb-12">
         <Heading level={2} className="text-2xl font-bold mb-4">
+          API Reference
+        </Heading>
+
+        <Heading level={3} className="text-xl font-semibold mb-3">
           LightboxOverlay Props
         </Heading>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
-          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
-            LightboxOverlayProps
-          </code>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-2 font-mono">
+          LightboxOverlayProps
         </p>
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -1308,10 +1406,8 @@ const photo = useOverlayUrlState({
         <Heading level={3} className="text-xl font-semibold mt-8 mb-2">
           LightboxUrlOverlay Props
         </Heading>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
-          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
-            LightboxUrlOverlayProps
-          </code>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-2 font-mono">
+          LightboxUrlOverlayProps
         </p>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Takes every visual and behaviour prop above except{' '}
@@ -1342,7 +1438,7 @@ const photo = useOverlayUrlState({
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
             initial-index
           </code>{' '}
-          is ignored here — the controller&apos;s index picks the slide, so a
+          is ignored here — the controller&apos;s position picks the slide, so a
           value passed alongside it would be overwritten on every open.
         </p>
         <div className="overflow-x-auto">
@@ -1380,10 +1476,8 @@ const photo = useOverlayUrlState({
             </tbody>
           </table>
         </div>
-      </section>
 
-      <section className="mb-12">
-        <Heading level={2} className="text-2xl font-bold mb-4">
+        <Heading level={3} className="text-xl font-semibold mt-8 mb-3">
           LightboxOverlay Events
         </Heading>
         <div className="overflow-x-auto">

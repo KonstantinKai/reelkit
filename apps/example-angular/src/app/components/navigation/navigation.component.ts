@@ -7,7 +7,7 @@ const links = [
   { to: '/reel-player-custom', label: 'Custom Player' },
   { to: '/reel-player-url', label: 'URL Reel Player' },
   { to: '/image-preview', label: 'Image Gallery' },
-  { to: '/image-preview-url', label: 'URL Gallery' },
+  { to: '/image-preview-url', label: 'URL Image Gallery' },
   { to: '/image-preview-custom', label: 'Custom Gallery' },
   { to: '/image-preview-video', label: 'Video Gallery' },
 ];

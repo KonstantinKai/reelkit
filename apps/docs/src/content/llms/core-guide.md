@@ -199,3 +199,50 @@ timeline.progress.observe(() => {
 dispose();
 timeline.detach();
 ```
+
+## URL State
+
+Put an overlay's open state in the address bar: the visible slide gets a link that can be shared, deep-linked, and closed with the back button. The core owns the model; the bindings wrap it in a hook (React/Vue `useOverlayUrlState`, Angular `createOverlayUrlState`) and a URL-driven overlay component.
+
+### How it works
+
+`createUrlStateController` mirrors one query parameter into a signal and writes changes back. Opening pushes **one** history entry; every navigation **replaces** it — a hundred swipes add none, so one back step always closes. A `UrlAdapter` is the pluggable read/write seam: the default drives `history.pushState`, and a routed app passes a router-backed adapter so the router's own location never goes stale.
+
+```typescript
+import { createUrlStateController, urlIndexKey } from '@reelkit/core';
+
+const controller = createUrlStateController({
+  param: 'photo',
+  ...urlIndexKey(() => items.length),
+});
+
+const detach = controller.attach(); // begin mirroring the URL
+controller.position.observe(() => {
+  // null → closed; a number → open at that slide
+  render(controller.position.value);
+});
+
+// Write back: opening pushes once, navigating replaces, closing clears
+controller.set(3);
+controller.set(null);
+```
+
+### Codec and locator — two jobs
+
+A key is a matched `{ codec, locator }` pair. Spelling an identity into the URL and finding where it currently sits are separate concerns, so they are separate objects:
+
+- **codec — the wire.** `encode` spells an identity into the parameter text; `decode` parses it back, and rejects a malformed value so the parameter self-heals out of the URL.
+- **locator — the lookup.** `locate` finds where a decoded identity sits in the live collection (or `null` if it is gone); `identify` reads a position back to its identity for writes; optional `locateAsync` pages a windowed or infinite feed on a miss.
+
+Keeping them separate lets you pair any wire with any lookup — a stable id codec with a paging locator, for instance.
+
+### Index vs stable-id keys
+
+Two built-in keys build that pair for you; they differ only in what the URL names:
+
+- `urlIndexKey(() => count)` addresses by **position** (`?photo=3`). Simplest, but a bookmark opens a different item once the list is reordered.
+- `urlStableIdKey({ items })` addresses by each item's stable `id` (`?photo=post_42`), scanning the live list — the bookmark still names that item after a reorder, or drops cleanly when it is gone. `hash: true` base64url-obscures the id (reversible, not a cryptographic hash).
+
+**Paging a windowed feed?** Both built-in keys take an optional `locateAsync` — `urlIndexKey(() => count, locateAsync)` and `urlStableIdKey({ items, locateAsync })`. The synchronous lookup answers for what has loaded; a miss pages the rest in, so a shared link past the window still opens — no hand-rolled codec or locator.
+
+Two axes? `urlIndexTwoAxisKey` carries `?p=<outer>.<inner>` for a post plus an inner media index. Full options live on the [Core API reference](/docs/core/api#url-state).

@@ -1,16 +1,20 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { ImageOff, Play } from 'lucide-react';
-import {
-  ReelPlayerUrlOverlay,
-  type UrlLocator,
-} from '@reelkit/react-reel-player';
+import { Link } from 'react-router-dom';
+import { Play } from 'lucide-react';
+import { ReelPlayerUrlOverlay } from '@reelkit/react-reel-player';
 import {
   createSignal,
   Observe,
   Signal,
   useOverlayUrlState,
   indexCodec,
+  urlStableIdKey,
+  urlIndexTwoAxisKey,
+  type UrlCodec,
+  type UrlLocator,
+  type UrlKey,
+  type UrlStateController,
+  type TwoAxisPosition,
 } from '@reelkit/react';
 import '@reelkit/react-reel-player/styles.css';
 import {
@@ -19,46 +23,39 @@ import {
   type ContentItem,
 } from '../components/reel-player/mockContent';
 import { useReactRouterUrlAdapter } from '@reelkit/react/react-router-url-adapter';
+import { persistedSignal } from '../components/persistedSignal';
 
 const _kParam = 'reel';
-
-const CONTENT_COUNT = 24;
-
+const _kCount = 24;
 /** How many posts this feed pretends to have loaded so far. */
 const _kPageSize = 6;
-
 /** Stand-in for the round trip that fetches the next page. */
 const _kFetchDelayMs = 900;
 
-const Thumbnail: React.FC<{ src: string }> = ({ src }) => {
-  const [error, setError] = useState(false);
+/** How the URL addresses the outer (post) axis. */
+type Addressing = 'index' | 'stableId';
+/** One-axis (post only) or two-axis (post + inner media index). */
+type Axis = 'one' | 'two';
+/** How the URL addresses the inner (media) axis, in two-axis mode. */
+type InnerKey = 'index' | 'stableId';
 
-  if (error) {
-    return (
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'rgba(255,255,255,0.3)',
-        }}
-      >
-        <ImageOff size={32} strokeWidth={1.5} />
-      </div>
-    );
-  }
+const tileStyle: React.CSSProperties = {
+  position: 'relative',
+  aspectRatio: '9 / 16',
+  borderRadius: 12,
+  overflow: 'hidden',
+  background: '#000',
+  display: 'block',
+};
 
-  return (
-    <img
-      src={src}
-      alt=""
-      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-      loading="lazy"
-      onError={() => setError(true)}
-    />
-  );
+const chipStyle: React.CSSProperties = {
+  padding: '2px 8px',
+  borderRadius: 999,
+  border: '1px solid rgba(255,255,255,0.25)',
+  background: 'rgba(0,0,0,0.55)',
+  color: '#fff',
+  fontSize: '0.7rem',
+  textDecoration: 'none',
 };
 
 const buttonStyle: React.CSSProperties = {
@@ -72,73 +69,98 @@ const buttonStyle: React.CSSProperties = {
   cursor: 'pointer',
 };
 
+const segButton = (active: boolean, disabled = false): React.CSSProperties => ({
+  padding: '6px 12px',
+  borderRadius: 8,
+  border: '1px solid rgba(255,255,255,0.2)',
+  background: active ? 'rgba(99,102,241,0.55)' : 'rgba(255,255,255,0.06)',
+  color: disabled ? 'rgba(255,255,255,0.3)' : '#fff',
+  fontSize: '0.8rem',
+  cursor: disabled ? 'not-allowed' : 'pointer',
+});
+
+const Segmented = ({
+  legend,
+  options,
+}: {
+  legend: string;
+  options: {
+    label: string;
+    active: boolean;
+    disabled?: boolean;
+    onClick: () => void;
+  }[];
+}) => (
+  <fieldset style={{ border: 0, padding: 0, margin: 0 }}>
+    <legend
+      style={{
+        color: 'rgba(255,255,255,0.5)',
+        fontSize: '0.72rem',
+        marginBottom: 6,
+      }}
+    >
+      {legend}
+    </legend>
+    <div style={{ display: 'flex', gap: 6 }}>
+      {options.map((o) => (
+        <button
+          key={o.label}
+          type="button"
+          disabled={o.disabled}
+          style={segButton(o.active, o.disabled)}
+          onClick={o.onClick}
+        >
+          {o.label}
+        </button>
+      ))}
+    </div>
+  </fieldset>
+);
+
 /**
- * The reel player with its open state in the URL: the address bar names the
- * playing slide, the link can be shared, and the back button closes.
+ * The reel player with its open state in the URL, switchable across every
+ * built-in key shape so one page shows them all:
  *
- * This application is routed, so the router drives every read and write — the
- * default History adapter would leave the router's own location stale.
+ * - Index vs stable id — `?reel=3` versus `?reel=<post-id>`, the id surviving a
+ *   reorder a positional link would not.
+ * - One vs two axis — the post only, or the post plus a multi-media carousel's
+ *   inner index (`?reel=3.2`).
+ * - Hash — base64url-obscure the id in the address bar (stable id only).
+ *
+ * The feed is windowed: only part has "arrived", and a link past that window
+ * pages the rest in through the locator's `locateAsync` — the index locator
+ * pages by position, the id locator scans the feed for the shared id. This
+ * application is routed, so a router-backed adapter drives every read and write.
  */
 export function ReelPlayerUrlPage() {
-  const adapter = useReactRouterUrlAdapter();
-  const navigate = useNavigate();
-
-  const [loaded, fetching, feed, locator] = useState(() => {
-    const feed = generateContent(CONTENT_COUNT);
-
-    // Only part of the feed has "arrived" — the rest stands in for pages this
-    // feed has not fetched yet.
-    const loaded = createSignal(feed.slice(0, _kPageSize));
-    const fetching = createSignal(false);
-
-    return [
-      loaded,
-      fetching,
-      feed,
-      // The parameter is a plain index, so the identity is the index — no codec
-      // needed. The locator windows it: `locate` answers only for what has
-      // loaded, and `locateAsync` fetches the rest. A supplied locator owns its
-      // own validity, so `locate` rejects anything outside the loaded window
-      // itself.
-      {
-        // Within the loaded window? Then it is at exactly that index.
-        locate: (index) =>
-          index >= 0 && index < loaded.value.length ? index : null,
-        identify: (index) => index,
-        locateAsync: async (index) => {
-          // Nothing left to fetch: this link names a post the feed does not have.
-          if (index < 0 || index >= feed.length) return null;
-
-          fetching.value = true;
-          await new Promise((done) => setTimeout(done, _kFetchDelayMs));
-          loaded.value = feed.slice(0, index + 1);
-          fetching.value = false;
-
-          // The index the fetch just established — the player takes it as-is,
-          // never re-reading `content` (which React has not re-rendered yet).
-          return index;
-        },
-      } satisfies UrlLocator<number>,
-    ] as [
-      Signal<ContentItem[]>,
-      Signal<boolean>,
-      ContentItem[],
-      UrlLocator<number>,
-    ];
-  })[0];
-
-  // Build the controller once from the windowed locator, then hand it to the
-  // overlay. Keeping it here (not inside the overlay) leaves `reel.set` on hand
-  // for programmatic control. The parameter is a plain index, so it pairs with
-  // the built-in indexCodec.
-  const reel = useOverlayUrlState({
-    param: _kParam,
-    adapter,
-    codec: indexCodec,
-    locator,
-  });
-
-  const last = feed.length - 1;
+  // Feed + windowing signals and the switcher signals, all created once. The
+  // switchers are reactive UI state (the reelkit way); the `Observe` below
+  // bridges them into React's render — the switcher chrome + the keyed remount.
+  const [feed, loaded, fetching, addressing, axis, innerKey, hash] = useState(
+    () => {
+      const feed = generateContent(_kCount);
+      return [
+        feed,
+        createSignal(feed.slice(0, _kPageSize)),
+        createSignal(false),
+        persistedSignal<Addressing>(
+          'reelkit-reel-player-url-addressing',
+          'index',
+        ),
+        persistedSignal<Axis>('reelkit-reel-player-url-axis', 'one'),
+        persistedSignal<InnerKey>('reelkit-reel-player-url-inner-key', 'index'),
+        persistedSignal('reelkit-reel-player-url-hash', false),
+      ] as [
+        ContentItem[],
+        Signal<ContentItem[]>,
+        Signal<boolean>,
+        Signal<Addressing>,
+        Signal<Axis>,
+        Signal<InnerKey>,
+        Signal<boolean>,
+      ];
+    },
+  )[0];
 
   return (
     <div
@@ -153,7 +175,7 @@ export function ReelPlayerUrlPage() {
           style={{
             color: '#fff',
             fontSize: '1.5rem',
-            marginBottom: 24,
+            marginBottom: 16,
             fontWeight: 500,
           }}
         >
@@ -163,153 +185,356 @@ export function ReelPlayerUrlPage() {
           style={{
             color: 'rgba(255,255,255,0.6)',
             fontSize: '0.9rem',
-            marginBottom: 16,
+            marginBottom: 20,
           }}
         >
-          Every thumbnail is an ordinary link to{' '}
-          <code>?reel=&lt;index&gt;</code>— open one in a new tab, copy its
-          address, or press back to close. Swiping through the feed never piles
-          up history entries.
-        </p>
-        <p
-          style={{
-            color: 'rgba(255,255,255,0.6)',
-            fontSize: '0.9rem',
-            marginBottom: 24,
-          }}
-        >
-          Back closes the player when you opened it from here — the link pushed
-          an entry, so back pops to the grid. A shared link opened directly in a
-          fresh tab has no history behind it, so back leaves the site; close
-          with the ✕ button or Escape to stay on the grid.
-        </p>
-        <p
-          style={{
-            color: 'rgba(255,255,255,0.6)',
-            fontSize: '0.9rem',
-            marginBottom: 24,
-          }}
-        >
-          Only the first {_kPageSize} posts have loaded. The buttons below all
-          point past them, the way a shared link into a long feed does — the
-          player waits for the post to arrive instead of discarding the address.
+          Every thumbnail is an ordinary link — open one in a new tab, copy its
+          address, or press back to close. The switches rebuild the URL key, so
+          the address bar changes shape while the player stays the same. Only
+          the first {_kPageSize} posts have loaded; the buttons point past them,
+          so a shared link pages the rest in through the locator before it
+          opens.
         </p>
 
-        <div
-          style={{
-            display: 'flex',
-            gap: 8,
-            flexWrap: 'wrap',
-            marginBottom: 32,
-          }}
-        >
-          {/* All three open the same slide. They differ only in what the
-              browser gets to know about it. */}
+        <Observe signals={[addressing, axis, innerKey, hash]}>
+          {() => {
+            const a = addressing.value;
+            const ax = axis.value;
+            const ik = innerKey.value;
+            const h = hash.value;
+            const innerSwitchable = ax === 'two';
+            const hashable =
+              a === 'stableId' || (innerSwitchable && ik === 'stableId');
 
-          {/* A link, so the browser's own behaviour comes free: new tab, copy
-              address, hover target, keyboard reach. */}
-          <Link to={`?${_kParam}=${last}`} style={buttonStyle}>
-            Open reel {feed.length} (link)
-          </Link>
-          {/* Navigating through the router. No href, so the browser affordances
-              are gone, but the URL still changes and back still closes. */}
-          <button
-            type="button"
-            style={buttonStyle}
-            onClick={() => navigate(`?${_kParam}=${last}`)}
-          >
-            Open reel {feed.length} (router)
-          </button>
-          {/* Straight through the controller. The adapter routes the write, so
-              this ends up in the same place as the other two — the difference
-              is that the open started in code rather than from something the
-              user could copy or middle-click. */}
-          <button
-            type="button"
-            style={buttonStyle}
-            onClick={() => reel.set(last)}
-          >
-            Open reel {feed.length} (controller.set)
-          </button>
-          <Observe signals={[fetching]}>
-            {() =>
-              fetching.value ? (
-                <span
+            return (
+              <>
+                <div
                   style={{
-                    alignSelf: 'center',
-                    color: 'rgba(255,255,255,0.6)',
-                    fontSize: '0.85rem',
+                    display: 'flex',
+                    gap: 20,
+                    flexWrap: 'wrap',
+                    marginBottom: 24,
                   }}
                 >
-                  Loading reel…
-                </span>
-              ) : null
-            }
-          </Observe>
-        </div>
+                  <Segmented
+                    legend="Addressing"
+                    options={[
+                      {
+                        label: 'Index — ?reel=3',
+                        active: a === 'index',
+                        onClick: () => (addressing.value = 'index'),
+                      },
+                      {
+                        label: 'Stable id — ?reel=<id>',
+                        active: a === 'stableId',
+                        onClick: () => (addressing.value = 'stableId'),
+                      },
+                    ]}
+                  />
+                  <Segmented
+                    legend="Axis"
+                    options={[
+                      {
+                        label: 'One — post',
+                        active: ax === 'one',
+                        onClick: () => (axis.value = 'one'),
+                      },
+                      {
+                        label: 'Two — post.media',
+                        active: ax === 'two',
+                        onClick: () => (axis.value = 'two'),
+                      },
+                    ]}
+                  />
+                  <Segmented
+                    legend="Inner key (2-axis)"
+                    options={[
+                      {
+                        label: 'Index — .2',
+                        active: innerSwitchable && ik === 'index',
+                        disabled: !innerSwitchable,
+                        onClick: () => (innerKey.value = 'index'),
+                      },
+                      {
+                        label: 'Stable id — .<media-id>',
+                        active: innerSwitchable && ik === 'stableId',
+                        disabled: !innerSwitchable,
+                        onClick: () => (innerKey.value = 'stableId'),
+                      },
+                    ]}
+                  />
+                  <Segmented
+                    legend="Hash (stable id)"
+                    options={[
+                      {
+                        label: 'Raw',
+                        active: hashable && !h,
+                        disabled: !hashable,
+                        onClick: () => (hash.value = false),
+                      },
+                      {
+                        label: 'base64url',
+                        active: hashable && h,
+                        disabled: !hashable,
+                        onClick: () => (hash.value = true),
+                      },
+                    ]}
+                  />
+                </div>
 
-        <Observe signals={[loaded]}>
-          {() => (
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
-                gap: 8,
-              }}
-            >
-              {loaded.value.map((item, index) => {
-                const hasVideo = item.media.some((m) => m.type === 'video');
+                {/* Remount when the key shape changes: `useOverlayUrlState`
+                    builds its controller once, so a fresh key needs a fresh
+                    instance. The stale parameter self-heals out of the URL. */}
+                <ReelUrlDemo
+                  key={`${a}.${ax}.${ik}.${h ? 'hash' : 'raw'}`}
+                  feed={feed}
+                  loaded={loaded}
+                  fetching={fetching}
+                  addressing={a}
+                  axis={ax}
+                  innerKey={ik}
+                  hash={h}
+                />
+              </>
+            );
+          }}
+        </Observe>
+      </div>
+    </div>
+  );
+}
 
-                return (
-                  // The open state is a URL, so opening is a link. That buys the
-                  // browser's own behaviour for free: open in a new tab, copy the
-                  // address, see the target on hover, reach it by keyboard.
+/** The wide key shape the four built-ins collapse to for this demo. */
+type ReelKey = UrlKey<number | string, number | TwoAxisPosition>;
+
+function ReelUrlDemo({
+  feed,
+  loaded,
+  fetching,
+  addressing,
+  axis,
+  innerKey,
+  hash,
+}: {
+  feed: ContentItem[];
+  loaded: Signal<ContentItem[]>;
+  fetching: Signal<boolean>;
+  addressing: Addressing;
+  axis: Axis;
+  innerKey: InnerKey;
+  hash: boolean;
+}) {
+  const adapter = useReactRouterUrlAdapter();
+  const innerIsId = axis === 'two' && innerKey === 'stableId';
+
+  const { key, encodeOuter, encodeInner } = useState(() => {
+    // One id codec for whichever axes are id-addressed — items-independent, so
+    // pairing it with a paging (or inner) locator is fair game. `hash`
+    // base64url-obscures the id.
+    const idCodec = urlStableIdKey({ items: () => [], hash }).codec as UrlCodec<
+      number | string
+    >;
+    const outerCodec = (
+      addressing === 'index' ? indexCodec : idCodec
+    ) as UrlCodec<number | string>;
+
+    const pageTo = async (index: number) => {
+      fetching.value = true;
+      await new Promise((done) => setTimeout(done, _kFetchDelayMs));
+      loaded.value = feed.slice(0, index + 1);
+      fetching.value = false;
+      return index;
+    };
+
+    // Both outer locators window `loaded` and page the rest in on a miss. The
+    // index locator names a position; the id locator scans the full feed for
+    // the shared id — a link can only name an id the feed will eventually hold.
+    const indexLocator: UrlLocator<number> = {
+      locate: (i) => (i >= 0 && i < loaded.value.length ? i : null),
+      identify: (i) => i,
+      locateAsync: (i) =>
+        i < 0 || i >= feed.length ? Promise.resolve(null) : pageTo(i),
+    };
+    const idLocator: UrlLocator<string> = {
+      locate: (id) => {
+        const i = loaded.value.findIndex((x) => x.id === id);
+        return i === -1 ? null : i;
+      },
+      identify: (i) => loaded.value[i].id,
+      locateAsync: (id) => {
+        const i = feed.findIndex((x) => x.id === id);
+        return i === -1 ? Promise.resolve(null) : pageTo(i);
+      },
+    };
+    const outerLocator = (
+      addressing === 'index' ? indexLocator : idLocator
+    ) as UrlLocator<number | string>;
+
+    // The inner axis is index by default; opt into ids by scanning the outer
+    // slot's media for a matching id. `innerLocate` receives the resolved outer
+    // index, so it scans the right post's media.
+    const innerOptions = innerIsId
+      ? {
+          innerCodec: idCodec,
+          innerLocate: (outerIndex: number, id: number | string) => {
+            const post = loaded.value[outerIndex];
+            if (!post) return null;
+            const i = post.media.findIndex((m) => m.id === id);
+            return i === -1 ? null : i;
+          },
+          innerIdentify: (outerIndex: number, i: number): number | string =>
+            loaded.value[outerIndex].media[i].id,
+        }
+      : {};
+
+    // The conditional-type guard wants concrete axis identities; this demo picks
+    // them at runtime, so build the key through a widened call.
+    const buildTwoAxis = urlIndexTwoAxisKey as unknown as (
+      options: unknown,
+    ) => ReelKey;
+    const key: ReelKey =
+      axis === 'one'
+        ? ({ codec: outerCodec, locator: outerLocator } as ReelKey)
+        : buildTwoAxis({
+            outerCodec,
+            outerLocator,
+            outerCount: () => loaded.value.length,
+            innerCounts: () => loaded.value.map((item) => item.media.length),
+            ...innerOptions,
+          });
+
+    // Exact wire value for each axis, straight from the active codec. `feed`
+    // holds every id, so a deep link past the window can still be spelled.
+    const encodeOuter = (index: number) =>
+      outerCodec.encode(addressing === 'index' ? index : feed[index].id);
+    const encodeInner = (index: number, inner: number) =>
+      innerIsId ? idCodec.encode(feed[index].media[inner].id) : String(inner);
+
+    return { key, encodeOuter, encodeInner };
+  })[0];
+
+  const reel = useOverlayUrlState({ param: _kParam, adapter, ...key }) as
+    | UrlStateController<number>
+    | UrlStateController<TwoAxisPosition>;
+
+  const wireFor = (index: number, inner: number) =>
+    axis === 'two'
+      ? `${encodeOuter(index)}.${encodeInner(index, inner)}`
+      : encodeOuter(index);
+
+  const last = feed.length - 1;
+
+  return (
+    <>
+      <div
+        style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 24 }}
+      >
+        <Link to={`?${_kParam}=${wireFor(last, 0)}`} style={buttonStyle}>
+          Open post {feed.length} (link, past the window)
+        </Link>
+        <button
+          type="button"
+          style={buttonStyle}
+          // Pass the raw wire string: `set` writes it verbatim, so it works even
+          // for a post past the window whose id `identify` could not yet read.
+          onClick={() => reel.set(wireFor(last, 0))}
+        >
+          Open post {feed.length} (controller.set)
+        </button>
+        <Observe signals={[fetching]}>
+          {() =>
+            fetching.value ? (
+              <span
+                style={{
+                  alignSelf: 'center',
+                  color: 'rgba(255,255,255,0.6)',
+                  fontSize: '0.85rem',
+                }}
+              >
+                Loading post…
+              </span>
+            ) : null
+          }
+        </Observe>
+      </div>
+
+      <Observe signals={[loaded]}>
+        {() => (
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
+              gap: 8,
+            }}
+          >
+            {loaded.value.map((item, index) => {
+              const hasVideo = item.media.some((m) => m.type === 'video');
+              const multi = axis === 'two' && item.media.length > 1;
+
+              return (
+                <div key={item.id}>
                   <Link
-                    key={item.id}
-                    to={`?${_kParam}=${index}`}
-                    style={{
-                      position: 'relative',
-                      aspectRatio: '9 / 16',
-                      borderRadius: 8,
-                      overflow: 'hidden',
-                      backgroundColor: '#222',
-                      display: 'block',
-                    }}
+                    to={`?${_kParam}=${wireFor(index, 0)}`}
+                    style={tileStyle}
+                    aria-label={`Open post ${index + 1}`}
                   >
-                    <Thumbnail src={getThumbnail(item)} />
-
+                    <img
+                      src={getThumbnail(item)}
+                      alt=""
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                      }}
+                      loading="lazy"
+                    />
                     {hasVideo && (
-                      <div
+                      <span
                         style={{
                           position: 'absolute',
                           top: 8,
                           right: 8,
-                          width: 28,
-                          height: 28,
-                          borderRadius: '50%',
-                          backgroundColor: 'rgba(0,0,0,0.6)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
+                          color: '#fff',
                         }}
                       >
-                        <Play size={14} fill="#fff" color="#fff" />
-                      </div>
+                        <Play size={18} fill="#fff" />
+                      </span>
                     )}
                   </Link>
-                );
-              })}
-            </div>
-          )}
-        </Observe>
-      </div>
+
+                  {multi && (
+                    <div
+                      style={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: 4,
+                        marginTop: 6,
+                      }}
+                    >
+                      {item.media.map((_, inner) => (
+                        <Link
+                          key={inner}
+                          to={`?${_kParam}=${wireFor(index, inner)}`}
+                          style={chipStyle}
+                        >
+                          {index}.{inner}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </Observe>
 
       <Observe signals={[loaded]}>
         {() => (
           <ReelPlayerUrlOverlay controller={reel} content={loaded.value} />
         )}
       </Observe>
-    </div>
+    </>
   );
 }
 

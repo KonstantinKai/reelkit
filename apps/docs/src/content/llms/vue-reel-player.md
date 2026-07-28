@@ -96,43 +96,6 @@ interface TimelineBarProps {
 }
 ```
 
-## ReelPlayerOverlay Props
-
-| Prop                         | Type                            | Default          | Description                                                          |
-| ---------------------------- | ------------------------------- | ---------------- | -------------------------------------------------------------------- |
-| `isOpen`                     | `boolean`                       | required         | Controls overlay visibility; false = overlay removed from DOM        |
-| `content`                    | `T[] (extends BaseContentItem)` | required         | Array of content items to display                                    |
-| `ariaLabel`                  | `string`                        | `'Video player'` | Accessible label for dialog region                                   |
-| `aspectRatio`                | `number`                        | `9 / 16`         | Width/height ratio for desktop container. Mobile uses full viewport. |
-| `enableNavKeys`              | `boolean`                       | `true`           | Enable keyboard arrow-key navigation                                 |
-| `enableWheel`                | `boolean`                       | `true`           | Enable mouse-wheel navigation                                        |
-| `initialIndex`               | `number`                        | `0`              | Zero-based index of initial visible item                             |
-| `loop`                       | `boolean`                       | `false`          | Enable infinite loop between slides                                  |
-| `swipeDistanceFactor`        | `number`                        | `0.12`           | Min swipe distance fraction to trigger slide change                  |
-| `timeline`                   | `'auto' \| 'always' \| 'never'` | `'auto'`         | Gating strategy for built-in playback timeline bar                   |
-| `timelineMinDurationSeconds` | `number`                        | `30`             | Min video duration (seconds) for `timeline='auto'` to render bar     |
-| `transitionDuration`         | `number`                        | `300`            | Slide animation duration ms                                          |
-| `wheelDebounceMs`            | `number`                        | `200`            | Debounce duration for wheel events ms                                |
-
-## ReelPlayerUrlOverlay Props
-
-Type: `ReelPlayerUrlOverlayProps`
-
-Takes every `ReelPlayerOverlay` prop except `is-open`, replaced by a `controller`. Emits `close`, `slide-change`, `api-ready` — but no `update:is-open`. `initial-index` is ignored — the controller's index picks the slide, so a value passed alongside it is overwritten on every open.
-
-| Prop         | Type                 | Default  | Description                                                                                                                                                                      |
-| ------------ | -------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `controller` | `UrlStateController` | required | Controller from `useOverlayUrlState`. Its `index` decides whether the overlay is open and which slide it shows; the overlay writes back through it on slide change and on close. |
-
-## Emits
-
-| Event            | Payload         | Description                                     |
-| ---------------- | --------------- | ----------------------------------------------- |
-| `api-ready`      | `ReelPlayerApi` | Fires once slider ready, exposes imperative API |
-| `close`          | `void`          | Fires when player closes                        |
-| `slide-change`   | `number`        | Fires with new active slide index after change  |
-| `update:is-open` | `boolean`       | Fires on close; enables `v-model:is-open`       |
-
 ## Scoped Slots
 
 | Slot               | Scope                                                                                                          | Description                                                                              |
@@ -149,7 +112,9 @@ Takes every `ReelPlayerOverlay` prop except `is-open`, replaced by a `controller
 
 ## URL State
 
-`ReelPlayerUrlOverlay` puts the open state in the address bar: build a controller with `useOverlayUrlState` from `@reelkit/vue` and pass it as `controller`. The player opens when the parameter names a slide and closes when it clears — links are shareable and the back button closes it. Opening pushes one history entry and every slide change replaces it, so paging a feed adds no entries and one back step always leaves. The parameter addresses the vertical feed index only; a multi-media post's inner image is not carried in the URL. It is a separate component from `ReelPlayerOverlay`, so each carries exactly one open-state driver.
+`ReelPlayerUrlOverlay` puts the open state in the address bar: build a controller with `useOverlayUrlState` from `@reelkit/vue` and pass it as `controller`. The player opens when the parameter names a slide and closes when it clears — links are shareable and the back button closes it. Opening pushes one history entry and every slide change replaces it, so paging a feed adds no entries and one back step always leaves. The URL depth follows the controller's key: a one-axis `urlIndexKey` addresses the post only (`?reel=3`), a two-axis `urlIndexTwoAxisKey` also carries a multi-media post's inner media index (`?reel=3.2`); pick one key per app, the two wire shapes do not cross-decode. It is a separate component from `ReelPlayerOverlay`, so each carries exactly one open-state driver.
+
+> **Built-in keys.** Spread `urlIndexKey` (by position) or `urlStableIdKey` (by a stable `id`) into the controller — both re-exported from `@reelkit/vue`. See the [URL State guide](/docs/core/guide#url-state) and [Core API](/docs/core/api#url-state).
 
 A routed app passes a router-backed adapter — `useVueRouterUrlAdapter` from `@reelkit/vue/vue-router-url-adapter` — so the router stays the single source of navigation truth.
 
@@ -159,7 +124,7 @@ import {
   ReelPlayerUrlOverlay,
   type ContentItem,
 } from '@reelkit/vue-reel-player';
-import { useOverlayUrlState, indexKey } from '@reelkit/vue';
+import { useOverlayUrlState, urlIndexKey, urlStableIdKey } from '@reelkit/vue';
 import { useVueRouterUrlAdapter } from '@reelkit/vue/vue-router-url-adapter';
 import '@reelkit/vue-reel-player/styles.css';
 
@@ -168,7 +133,7 @@ const props = defineProps<{ content: ContentItem[] }>();
 const reel = useOverlayUrlState({
   param: 'reel',
   adapter: useVueRouterUrlAdapter(),
-  ...indexKey(() => props.content.length),
+  ...urlIndexKey(() => props.content.length),
 });
 </script>
 
@@ -191,9 +156,45 @@ Full `useOverlayUrlState` options (`param`, `adapter`, `codec`, `locator`): see 
 - **Back closes only when opened from within the app** (the link pushed an entry). A shared link opened directly in a fresh tab has no history behind it, so browser-back leaves the site — close with the ✕ button or Escape to remove the parameter in place and stay.
 - Deep link `?reel=3` opens the player at that slide on load.
 - A param naming no slide (stale bookmark, hand-edited) is dropped from the URL instead of leaving the address bar asserting a slide that cannot open.
-- The param addresses the **vertical** slide only. Which image a multi-media post is showing is not carried in the URL.
+- The URL depth follows the controller's key: one-axis for the post only, or two-axis (`urlIndexTwoAxisKey`) to also carry a multi-media post's inner image index. Pick one key per app; the shapes do not cross-decode.
 
-**Stable links.** The index is positional — a bookmarked `?reel=3` opens a different post once the feed is reordered, which for a feed is the normal case rather than the exception. Key by identity instead. Two separate jobs: `codec` spells the identity into the URL (wire), `locator` finds where that identity sits (lookup).
+### One key or two — pick your URL depth
+
+The same `ReelPlayerOverlay` drives either shape; it discriminates at runtime from the controller's position, so there is no mode prop. Choose the key when you build the controller:
+
+| Key                     | Wire        | Carries                                               |
+| ----------------------- | ----------- | ----------------------------------------------------- |
+| `urlIndexKey(…)`        | `?reel=3`   | The vertical post only.                               |
+| `urlIndexTwoAxisKey(…)` | `?reel=3.2` | The post **and** the inner media index of a carousel. |
+
+The two wires are deliberately distinct — a two-axis key is strictly dotted (`3.0`, never a bare `3`), so a bare one-axis link does not cross-decode. Switching an app between keys invalidates any previously shared links. Pick one shape and keep it.
+
+```ts
+import { useOverlayUrlState, urlIndexTwoAxisKey } from '@reelkit/vue';
+
+const reel = useOverlayUrlState({
+  param: 'reel',
+  ...urlIndexTwoAxisKey({
+    outerCount: () => content.value.length,
+    innerCounts: () => content.value.map((post) => post.media.length),
+  }),
+});
+
+// A link now names both axes: post 3, inner media 2 — ?reel=3.2
+```
+
+**Stable links.** The index is positional — a bookmarked `?reel=3` opens a different post once the feed is reordered, which for a feed is the normal case rather than the exception. `urlStableIdKey` keys by each post's stable `id`, scanning the live feed — one call covers the common case:
+
+```ts
+const reel = useOverlayUrlState({
+  param: 'reel',
+  ...urlStableIdKey({ items: () => content.value }),
+});
+```
+
+Pass `hash: true` to base64url-encode the id in the URL — reversible obfuscation, not a cryptographic hash.
+
+Key by a different field (a `slug`), or page an infinite feed with `locateAsync`, and build the `codec`/`locator` yourself. Two separate jobs: `codec` spells the identity into the URL (wire), `locator` finds where that identity sits (lookup).
 
 ```ts
 const reel = useOverlayUrlState({
@@ -207,6 +208,8 @@ const reel = useOverlayUrlState({
 ```
 
 **Infinite feeds.** `locate` is synchronous, so it can only answer for posts already loaded — a shared link to post 400 of a feed that has loaded 20 comes up empty. `locateAsync` is the fallback, called only when `locate` misses: load the pages you need, then return the index the identity turned out to have.
+
+> **Shortcut.** Keying by the item's `id`? Skip the hand-rolled codec and locator — pass `locateAsync` straight to `urlStableIdKey({ items, locateAsync })` (it fetches on a miss, then returns the index). The fuller version below is for keying by another field, or for full control.
 
 ```ts
 const reel = useOverlayUrlState({
@@ -226,6 +229,43 @@ const reel = useOverlayUrlState({
 ```
 
 While `locateAsync` is pending the player stays closed and the param is left alone — the deep link survives the fetch. `null` or a rejection drops the param. An answer that arrives after the URL moved on, after a close, or after unmount is discarded, so a slow fetch cannot open a slide nobody asked for. Nothing is rendered while pending; the page already owns that loading state, so render your own skeleton. There is no timeout — settle with `null` when pagination is exhausted or the overlay stays closed indefinitely.
+
+## ReelPlayerOverlay Props
+
+| Prop                         | Type                            | Default          | Description                                                          |
+| ---------------------------- | ------------------------------- | ---------------- | -------------------------------------------------------------------- |
+| `isOpen`                     | `boolean`                       | required         | Controls overlay visibility; false = overlay removed from DOM        |
+| `content`                    | `T[] (extends BaseContentItem)` | required         | Array of content items to display                                    |
+| `ariaLabel`                  | `string`                        | `'Video player'` | Accessible label for dialog region                                   |
+| `aspectRatio`                | `number`                        | `9 / 16`         | Width/height ratio for desktop container. Mobile uses full viewport. |
+| `enableNavKeys`              | `boolean`                       | `true`           | Enable keyboard arrow-key navigation                                 |
+| `enableWheel`                | `boolean`                       | `true`           | Enable mouse-wheel navigation                                        |
+| `initialIndex`               | `number`                        | `0`              | Zero-based index of initial visible item                             |
+| `loop`                       | `boolean`                       | `false`          | Enable infinite loop between slides                                  |
+| `swipeDistanceFactor`        | `number`                        | `0.12`           | Min swipe distance fraction to trigger slide change                  |
+| `timeline`                   | `'auto' \| 'always' \| 'never'` | `'auto'`         | Gating strategy for built-in playback timeline bar                   |
+| `timelineMinDurationSeconds` | `number`                        | `30`             | Min video duration (seconds) for `timeline='auto'` to render bar     |
+| `transitionDuration`         | `number`                        | `300`            | Slide animation duration ms                                          |
+| `wheelDebounceMs`            | `number`                        | `200`            | Debounce duration for wheel events ms                                |
+
+## ReelPlayerUrlOverlay Props
+
+Type: `ReelPlayerUrlOverlayProps`
+
+Takes every `ReelPlayerOverlay` prop except `is-open`, replaced by a `controller`. Emits `close`, `slide-change`, `api-ready` — but no `update:is-open`. `initial-index` is ignored — the controller's position picks the slide, so a value passed alongside it is overwritten on every open.
+
+| Prop         | Type                 | Default  | Description                                                                                                                                                                         |
+| ------------ | -------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `controller` | `UrlStateController` | required | Controller from `useOverlayUrlState`. Its `position` decides whether the overlay is open and which slide it shows; the overlay writes back through it on slide change and on close. |
+
+## Emits
+
+| Event            | Payload         | Description                                     |
+| ---------------- | --------------- | ----------------------------------------------- |
+| `api-ready`      | `ReelPlayerApi` | Fires once slider ready, exposes imperative API |
+| `close`          | `void`          | Fires when player closes                        |
+| `slide-change`   | `number`        | Fires with new active slide index after change  |
+| `update:is-open` | `boolean`       | Fires on close; enables `v-model:is-open`       |
 
 ## Sub-Components
 

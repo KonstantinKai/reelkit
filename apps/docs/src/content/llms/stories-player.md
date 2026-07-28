@@ -83,7 +83,122 @@ interface StoriesGroup<T extends StoryItem = StoryItem> {
 }
 ```
 
+## URL State (shareable links, back button)
+
+`StoriesUrlOverlay` is a separate component whose open state lives in the URL. Both axes ride one parameter — `?story=<group>.<story>` — so the playing story has a link that can be shared, bookmarked, and closed with the back button. Build a controller with `useOverlayUrlState` and `urlIndexTwoAxisKey`, then pass it as `controller`. **Opening a user is a link** — the href is the open action, no click handler.
+
+> **Built-in keys.** Stories are two-axis, so spread a two-axis key: `urlIndexTwoAxisKey` (group and story by position) or `urlStableIdTwoAxisKey` (the group by a stable `id`) — both re-exported from `@reelkit/react`. See the [URL State guide](/docs/core/guide#url-state) and [Core API](/docs/core/api#url-state).
+
+```tsx
+import {
+  StoriesUrlOverlay,
+  useOverlayUrlState,
+  urlIndexTwoAxisKey,
+} from '@reelkit/react-stories-player';
+import { Link } from 'react-router-dom';
+
+const stories = useOverlayUrlState({
+  param: 'story',
+  ...urlIndexTwoAxisKey({
+    outerCount: () => groups.length,
+    innerCounts: () => groups.map((g) => g.stories.length),
+  }),
+});
+
+// Opening a user is a link — the overlay reads the URL and opens itself.
+{
+  groups.map((g, i) => (
+    <Link key={g.author.id} to={`?story=${i}.0`}>
+      {g.author.name}
+    </Link>
+  ));
+}
+
+<StoriesUrlOverlay controller={stories} groups={groups} />;
+```
+
+Full `useOverlayUrlState` options (`param`, `adapter`, `codec`, `locator`): see the [React API reference](/docs/react/api#useoverlayurlstate).
+
+- Opening pushes **one** history entry. Swiping stories _and_ switching users both **replace** it — N navigations add 0 entries, so one back step always closes the player. Back closes; it does not step stories.
+- **Inner navigation is carried.** The story index is not frozen at group granularity — advancing within a user's stories updates `?story=2.<n>`, so a deep link lands on the exact story.
+- **Back closes only when opened from within the app** (the link pushed an entry). A shared link opened directly in a fresh tab has no history behind it, so browser-back leaves the site — close with the ✕ button or Escape to remove the parameter in place and stay.
+- A parameter naming no group or story (stale bookmark, hand-edited value, a story past a group's end) is dropped from the URL rather than opening a neighbor.
+
+**Routed app — pass an adapter.** Writing `history.pushState` behind a router leaves its location stale and its next navigation drops the param:
+
+```tsx
+import { useReactRouterUrlAdapter } from '@reelkit/react/react-router-url-adapter';
+
+const adapter = useReactRouterUrlAdapter();
+const stories = useOverlayUrlState({
+  param: 'story',
+  adapter,
+  ...urlIndexTwoAxisKey({
+    outerCount: () => groups.length,
+    innerCounts: () => groups.map((g) => g.stories.length),
+  }),
+});
+
+<StoriesUrlOverlay controller={stories} groups={groups} />;
+```
+
+**Stable links.** The group is positional by default — a bookmarked `?story=2.0` opens a different user once the feed is reordered. Address the group by a stable id instead: `outerCodec` spells the id into the URL, `outerLocator` finds where it sits. The story half stays a plain index within the resolved group.
+
+```tsx
+const stories = useOverlayUrlState({
+  param: 'story',
+  ...urlIndexTwoAxisKey({
+    outerCount: () => groups.length,
+    innerCounts: () => groups.map((g) => g.stories.length),
+    // ?story=user_42.3
+    outerCodec: { decode: (raw) => raw, encode: (id) => id },
+    outerLocator: {
+      locate: (id) => groups.findIndex((g) => g.author.id === id),
+      identify: (index) => groups[index].author.id,
+    },
+  }),
+});
+```
+
+**Infinite feeds.** Paging is a `outerLocator` concern, independent of the codec. `locate` is synchronous, so it answers only for groups already loaded — a shared link to group 400 of a feed that loaded 20 comes up empty. `locateAsync` is the fallback, called only when `locate` misses; the story is re-bounded against whichever group it settles on.
+
+> **Same `locateAsync`, outer axis.** This is the same `locateAsync` pager the single-axis keys take — on a two-axis key it rides the `outerLocator` you pass, so the group axis pages while the story stays a local index within the resolved group.
+
+```tsx
+const stories = useOverlayUrlState({
+  param: 'story',
+  ...urlIndexTwoAxisKey({
+    outerCount: () => groups.length,
+    innerCounts: () => groups.map((g) => g.stories.length),
+    outerLocator: {
+      locate: (index) => (index < groups.length ? index : null),
+      identify: (index) => index,
+      locateAsync: async (index) => {
+        const loaded = await loadUntilGroup(index); // page up to it
+        if (!loaded) return null; // exhausted — link names no group
+        setGroups(loaded); // commit — the overlay renders from this state
+        return index;
+      },
+    },
+  }),
+});
+```
+
+- While `locateAsync` is pending the player stays closed and the parameter is left alone, so the deep link survives the fetch. A `null` or a rejection drops the parameter.
+- An answer arriving after the URL moved on, after a close, or after unmount is discarded — a slow fetch cannot open a story nobody asked for.
+
+### StoriesUrlOverlayProps
+
+Takes every `StoriesOverlay` prop except the open-state trio (`isOpen`, `initialGroupIndex`, `initialStoryIndex`), supplied from the controller instead.
+
+| Prop         | Type                                  | Default  | Description                                                                                                                                                                                                                   |
+| ------------ | ------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `controller` | `UrlStateController<TwoAxisPosition>` | required | Controller from `useOverlayUrlState` spread with `urlIndexTwoAxisKey`. Its `position` — a `{ outer, inner }` object — decides whether the player is open and where; the overlay writes back on every navigation and on close. |
+| `onClose`    | `() => void`                          | —        | Called after the player closes. The URL drives closing, not this.                                                                                                                                                             |
+
 ## StoriesOverlay Props
+
+`StoriesOverlayProps` — the controlled overlay's props. `onClose` is **required** here because you own the open state, so you must handle closing; the URL-driven `StoriesUrlOverlay` makes it optional (the URL drives closing).
 
 | Prop                      | Type                                   | Default            | Description                                            |
 | ------------------------- | -------------------------------------- | ------------------ | ------------------------------------------------------ |
@@ -116,16 +231,16 @@ interface StoriesGroup<T extends StoryItem = StoryItem> {
 
 ## Callbacks
 
-| Prop              | Type                               | Description          |
-| ----------------- | ---------------------------------- | -------------------- |
-| `onClose`         | `() => void`                       | Overlay should close |
-| `onStoryChange`   | `(groupIndex, storyIndex) => void` | Active story changed |
-| `onGroupChange`   | `(groupIndex) => void`             | Active group changed |
-| `onStoryViewed`   | `(groupIndex, storyIndex) => void` | Story became visible |
-| `onStoryComplete` | `(groupIndex, storyIndex) => void` | Story timer done     |
-| `onDoubleTap`     | `(groupIndex, storyIndex) => void` | Double-tap gesture   |
-| `onPause`         | `() => void`                       | Player paused        |
-| `onResume`        | `() => void`                       | Player resumed       |
+| Prop              | Type                               | Description                                                                                                                            |
+| ----------------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `onClose`         | `() => void`                       | Called on close. Required on `StoriesOverlay` (you own the open state); optional on `StoriesUrlOverlay`, where the URL drives closing. |
+| `onStoryChange`   | `(groupIndex, storyIndex) => void` | Active story changed                                                                                                                   |
+| `onGroupChange`   | `(groupIndex) => void`             | Active group changed                                                                                                                   |
+| `onStoryViewed`   | `(groupIndex, storyIndex) => void` | Story became visible                                                                                                                   |
+| `onStoryComplete` | `(groupIndex, storyIndex) => void` | Story timer done                                                                                                                       |
+| `onDoubleTap`     | `(groupIndex, storyIndex) => void` | Double-tap gesture                                                                                                                     |
+| `onPause`         | `() => void`                       | Player paused                                                                                                                          |
+| `onResume`        | `() => void`                       | Player resumed                                                                                                                         |
 
 ## StoriesApi (via apiRef)
 

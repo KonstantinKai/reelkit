@@ -1,16 +1,12 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import {
-  LightboxUrlOverlay,
-  type LightboxItem,
-  type UrlLocator,
-} from '@reelkit/react-lightbox';
+import { LightboxUrlOverlay, type LightboxItem } from '@reelkit/react-lightbox';
 import {
   createSignal,
   Observe,
   Signal,
   useOverlayUrlState,
-  indexCodec,
+  urlIndexKey,
 } from '@reelkit/react';
 import { cdnUrl } from '@reelkit/example-data';
 import { ImageOff } from 'lucide-react';
@@ -96,56 +92,44 @@ export function ImagePreviewUrlPage() {
   const adapter = useReactRouterUrlAdapter();
   const navigate = useNavigate();
 
-  const [loaded, fetching, locator] = useState(() => {
-    // Only part of the gallery has "arrived" — the rest stands in for pages this
-    // feed has not fetched yet.
-    const loaded = createSignal(sampleImages.slice(0, _kPageSize));
-    const fetching = createSignal(false);
+  const [loaded, fetching] = useState(
+    () =>
+      // Only part of the gallery has "arrived" — the rest stands in for pages
+      // this feed has not fetched yet.
+      [
+        createSignal(sampleImages.slice(0, _kPageSize)),
+        createSignal(false),
+      ] as [Signal<LightboxItem[]>, Signal<boolean>],
+  )[0];
 
-    return [
-      loaded,
-      fetching,
-      // The parameter is a plain index, so the identity is the index — no codec
-      // needed. The locator windows it: `locate` answers only for what has loaded,
-      // and `locateAsync` fetches the rest. A supplied locator owns its own
-      // validity, so `locate` rejects anything outside the loaded window itself.
-      {
-        // Within the loaded window? Then it is at exactly that index.
-        locate: (index) =>
-          index >= 0 && index < loaded.value.length ? index : null,
-        identify: (index) => index,
-        locateAsync: async (index) => {
-          // Nothing left to fetch: this link names an image the feed does not have.
-          if (index < 0 || index >= sampleImages.length) return null;
-
-          fetching.value = true;
-          await new Promise((done) => setTimeout(done, _kFetchDelayMs));
-          loaded.value = sampleImages.slice(0, index + 1);
-          fetching.value = false;
-
-          // The index the fetch just established — the lightbox takes it as-is,
-          // never re-reading `images` (which React has not re-rendered yet).
-          return index;
-        },
-      } satisfies UrlLocator<number>,
-    ] as [Signal<LightboxItem[]>, Signal<boolean>, UrlLocator<number>];
-  })[0];
-
-  // Build the controller once from the windowed locator, then hand it to the
-  // overlay. Keeping it here (not inside the overlay) leaves `photo.set` on hand
-  // for programmatic control. The parameter is a plain index, so it pairs with
-  // the built-in indexCodec.
+  // A plain index gallery, so the built-in `urlIndexKey` supplies the codec and
+  // the bounded `locate`/`identify` — the only thing this windowed feed adds is
+  // a `locateAsync` pager for links past the loaded window. No hand-rolled
+  // locator. Keeping the controller here (not inside the overlay) leaves
+  // `photo.set` on hand for programmatic control.
   const photo = useOverlayUrlState({
     param: _kParam,
     adapter,
-    codec: indexCodec,
-    locator,
+    ...urlIndexKey(
+      () => loaded.value.length,
+      async (index) => {
+        // Nothing left to fetch: this link names an image the feed lacks.
+        if (index < 0 || index >= sampleImages.length) return null;
+
+        fetching.value = true;
+        await new Promise((done) => setTimeout(done, _kFetchDelayMs));
+        loaded.value = sampleImages.slice(0, index + 1);
+        fetching.value = false;
+
+        return index; // urlIndexKey re-bounds it against the grown count
+      },
+    ),
   });
 
   return (
     <div className="image-gallery-page">
       <div className="gallery-header">
-        <h1>URL Gallery</h1>
+        <h1>URL Image Gallery</h1>
         <p>
           Every thumbnail is an ordinary link to{' '}
           <code>?photo=&lt;index&gt;</code>— open one in a new tab, copy its

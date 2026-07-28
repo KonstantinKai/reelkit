@@ -256,7 +256,7 @@ const reelPlayerUrlProps = [
     type: 'UrlStateController',
     default: 'required',
     description:
-      'Controller from useOverlayUrlState. Its index decides whether the overlay is open and which slide it shows; the overlay writes back through it on slide change and on close.',
+      'Controller from useOverlayUrlState. Its position decides whether the overlay is open and which slide it shows; the overlay writes back through it on slide change and on close.',
   },
 ];
 
@@ -264,7 +264,8 @@ const reelPlayerCallbacks = [
   {
     prop: 'onClose',
     type: '() => void',
-    description: 'Called when player closes',
+    description:
+      'Called when the player closes. Required on ReelPlayerOverlay (you own the open state, so you must handle closing); optional on ReelPlayerUrlOverlay, where the URL drives closing — pass it only to react after close.',
   },
   {
     prop: 'onSlideChange',
@@ -1261,14 +1262,47 @@ function CustomTimelineBar({ timelineState }) {
           when it goes away. Links are shareable, and the back button closes the
           player instead of leaving the page.
         </p>
+        <Callout type="info" title="Built-in keys" className="mb-4">
+          You can address slides with a built-in key — spread{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            urlIndexKey
+          </code>{' '}
+          (by position) or{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            urlStableIdKey
+          </code>{' '}
+          (by a stable{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            id
+          </code>
+          ) into the controller — both re-exported from{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            @reelkit/react
+          </code>
+          . See the{' '}
+          <Link
+            to="/docs/core/guide#url-state"
+            className="text-primary-600 dark:text-primary-400 hover:underline"
+          >
+            URL State guide
+          </Link>{' '}
+          and{' '}
+          <Link
+            to="/docs/core/api#url-state"
+            className="text-primary-600 dark:text-primary-400 hover:underline"
+          >
+            Core API
+          </Link>
+          .
+        </Callout>
         <CodeBlock
-          code={`import { useOverlayUrlState, indexKey } from '@reelkit/react';
+          code={`import { useOverlayUrlState, urlIndexKey, urlStableIdKey } from '@reelkit/react';
 import { ReelPlayerUrlOverlay } from '@reelkit/react-reel-player';
 import { Link } from 'react-router-dom';
 
 const reel = useOverlayUrlState({
   param: 'reel',
-  ...indexKey(() => content.length),
+  ...urlIndexKey(() => content.length),
 });
 
 // Opening is a link — the overlay reads the URL and opens itself.
@@ -1344,11 +1378,71 @@ const reel = useOverlayUrlState({
             asserting a slide that cannot open.
           </li>
           <li>
-            The parameter addresses the <strong>vertical</strong> slide only.
-            Which image a multi-media post is showing is not carried in the URL.
+            By default the parameter addresses the <strong>vertical</strong>{' '}
+            post only (<code>?reel=3</code>). Opt into a two-axis key to also
+            carry the inner media index of a multi-media carousel — see below.
           </li>
         </ul>
+
+        <Heading level={3} className="text-xl font-semibold mt-8 mb-3">
+          One key or two — pick your URL depth
+        </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
+          The same <code>ReelPlayerUrlOverlay</code> drives either shape; it
+          discriminates at runtime from the controller's position, so there is
+          no mode prop. Choose the key when you build the controller:
+        </p>
+        <div className="overflow-x-auto mb-4">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left py-2 px-3 font-semibold">Key</th>
+                <th className="text-left py-2 px-3 font-semibold">Wire</th>
+                <th className="text-left py-2 px-3 font-semibold">Carries</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-2 px-3 font-mono text-xs">urlIndexKey(…)</td>
+                <td className="py-2 px-3 font-mono text-xs">?reel=3</td>
+                <td className="py-2 px-3">The vertical post only.</td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-2 px-3 font-mono text-xs">
+                  urlIndexTwoAxisKey(…)
+                </td>
+                <td className="py-2 px-3 font-mono text-xs">?reel=3.2</td>
+                <td className="py-2 px-3">
+                  The post <em>and</em> the inner media index of a carousel.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          The two wires are deliberately distinct — a two-axis key is strictly
+          dotted (<code>3.0</code>, never a bare <code>3</code>), so a bare
+          one-axis link does not cross-decode. Switching an app between keys
+          therefore invalidates any previously shared links. Pick one shape and
+          keep it.
+        </p>
+        <CodeBlock
+          code={`import { useOverlayUrlState, urlIndexTwoAxisKey } from '@reelkit/react';
+
+const reel = useOverlayUrlState({
+  param: 'reel',
+  ...urlIndexTwoAxisKey({
+    outerCount: () => content.length,
+    innerCounts: () => content.map((post) => post.media.length),
+  }),
+});
+
+// A link now names both axes: post 3, inner media 2.
+<Link to="?reel=3.2">…</Link>
+<ReelPlayerUrlOverlay controller={reel} content={content} />`}
+          language="tsx"
+        />
+        <p className="text-slate-600 dark:text-slate-400 mt-4 mb-4">
           <strong>Routed app — pass an adapter.</strong> Writing{' '}
           <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
             history.pushState
@@ -1363,7 +1457,7 @@ const adapter = useReactRouterUrlAdapter();
 const reel = useOverlayUrlState({
   param: 'reel',
   adapter,
-  ...indexKey(() => content.length),
+  ...urlIndexKey(() => content.length),
 });
 
 <ReelPlayerUrlOverlay controller={reel} content={content} />`}
@@ -1376,8 +1470,49 @@ const reel = useOverlayUrlState({
             ?reel=3
           </code>{' '}
           opens a different post once the feed is reordered — for a feed that is
-          the normal case, not the exception. Key by identity instead. Two
-          separate jobs:{' '}
+          the normal case, not the exception.{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            urlStableIdKey
+          </code>{' '}
+          keys by each post's stable{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            id
+          </code>
+          , scanning the live feed — one call covers the common case.
+        </p>
+        <CodeBlock
+          code={`const reel = useOverlayUrlState({
+  param: 'reel',
+  ...urlStableIdKey({ items: () => content }),
+});`}
+          language="tsx"
+        />
+        <p className="text-slate-600 dark:text-slate-400 mt-4 mb-4">
+          Pass{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            hash: true
+          </code>{' '}
+          to base64url-encode the id in the URL — reversible obfuscation, not a
+          cryptographic hash.
+        </p>
+        <p className="text-slate-600 dark:text-slate-400 mt-4 mb-4">
+          Key by a different field (a{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            slug
+          </code>
+          ), or page an infinite feed with{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            locateAsync
+          </code>
+          , and build the{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            codec
+          </code>
+          /
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            locator
+          </code>{' '}
+          yourself. Two separate jobs:{' '}
           <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
             codec
           </code>{' '}
@@ -1414,6 +1549,22 @@ const reel = useOverlayUrlState({
           </code>{' '}
           misses.
         </p>
+        <Callout type="info" title="Shortcut" className="mb-4">
+          Keying by the item&rsquo;s{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            id
+          </code>
+          ? Skip the hand-rolled codec and locator — pass{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            locateAsync
+          </code>{' '}
+          straight to{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            urlStableIdKey({'{ items, locateAsync }'})
+          </code>{' '}
+          (it fetches on a miss, then returns the index). The fuller version
+          below is for keying by another field, or for full control.
+        </Callout>
         <CodeBlock
           code={`const reel = useOverlayUrlState({
   param: 'reel',
@@ -1472,8 +1623,11 @@ const reel = useOverlayUrlState({
         </Heading>
 
         <Heading level={3} className="text-xl font-semibold mt-6 mb-4">
-          Props
+          ReelPlayerOverlayProps Props
         </Heading>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-2 font-mono">
+          ReelPlayerOverlayProps&lt;T&gt;
+        </p>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -1529,8 +1683,8 @@ const reel = useOverlayUrlState({
           <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
             initialIndex
           </code>{' '}
-          is ignored — the controller&apos;s index picks the slide, so a value
-          passed alongside it is overwritten on every open.
+          is ignored — the controller&apos;s position picks the slide, so a
+          value passed alongside it is overwritten on every open.
         </p>
         <div className="overflow-x-auto">
           <table className="w-full">

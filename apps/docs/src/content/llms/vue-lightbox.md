@@ -146,17 +146,19 @@ The shared `<video>` element powering video slides uses the same pattern as the 
 
 `LightboxUrlOverlay` puts the open state in the URL — it opens when the parameter names a slide and closes when it goes away, so links are shareable and the back button closes **when opened from within the app** (the link pushed an entry). A shared link opened directly in a fresh tab has no history behind it, so browser-back leaves the site — close with the button or Escape to remove the parameter in place. Separate component from `LightboxOverlay`: each carries one open-state driver (the `is-open` model or the url `controller`), never both. Build the controller with the `useOverlayUrlState` composable from `@reelkit/vue` and pass it as `:controller`.
 
+> **Built-in keys.** Spread `urlIndexKey` (by position) or `urlStableIdKey` (by a stable `id`) into the controller — both re-exported from `@reelkit/vue`. See the [URL State guide](/docs/core/guide#url-state) and [Core API](/docs/core/api#url-state).
+
 ```vue
 <script setup lang="ts">
 import { LightboxUrlOverlay, type LightboxItem } from '@reelkit/vue-lightbox';
-import { useOverlayUrlState, indexKey } from '@reelkit/vue';
+import { useOverlayUrlState, urlIndexKey, urlStableIdKey } from '@reelkit/vue';
 import '@reelkit/vue-lightbox/styles.css';
 
 const props = defineProps<{ images: LightboxItem[] }>();
 
 const photo = useOverlayUrlState({
   param: 'photo',
-  ...indexKey(() => props.images.length),
+  ...urlIndexKey(() => props.images.length),
 });
 </script>
 
@@ -175,9 +177,28 @@ const photo = useOverlayUrlState({
 
 - Opening pushes **one** history entry; paging replaces it. A shared `?photo=3` opens at that slide; a parameter naming no slide is dropped from the URL.
 - **Routed app:** pass `adapter` to `useOverlayUrlState` so the router's own location does not go stale and drop the parameter on its next navigation.
-- **Stable links:** key by identity with `codec` (wire: param text ↔ identity) + `locator` (lookup: identity → position) so a bookmark survives the gallery being reordered.
+  **Stable links.** The index is positional — a bookmark opens a different image once the list is reordered. `urlStableIdKey` keys by each item's stable `id`, scanning the live list — one call covers the common case:
+
+```vue
+<script setup lang="ts">
+const photo = useOverlayUrlState({
+  param: 'photo',
+  ...urlStableIdKey({ items: () => images }),
+});
+</script>
+
+<template>
+  <LightboxUrlOverlay :controller="photo" :items="images" />
+</template>
+```
+
+Pass `hash: true` to base64url-encode the id in the URL — reversible obfuscation, not a cryptographic hash.
+
+Key by a different field (a `slug`), or page an infinite feed with `locateAsync`, and build the `codec` (wire: param text ↔ identity) + `locator` (lookup: identity → position) yourself.
 
 **Infinite / paginated galleries.** `locate` is synchronous, so it only answers for items already loaded — a shared link to image 400 of a feed that has loaded 20 comes up empty. `locateAsync` is the fallback, called only when `locate` misses: load the pages you need, then return the index the identity turned out to have.
+
+> **Shortcut.** Keying by the item's `id`? Skip the hand-rolled codec and locator — pass `locateAsync` straight to `urlStableIdKey({ items, locateAsync })` (it fetches on a miss, then returns the index). The fuller version below is for keying by another field, or for full control.
 
 ```vue
 <script setup lang="ts">
@@ -230,13 +251,13 @@ Type: `LightboxOverlayProps`
 
 ## RkLightboxUrlOverlay Props
 
-Takes every visual/behaviour prop above except `is-open`, replaced by a `controller`. Emits `close`, `slide-change`, `api-ready` — but no `update:is-open`. `initial-index` is ignored — the controller's index picks the slide.
+Takes every visual/behaviour prop above except `is-open`, replaced by a `controller`. Emits `close`, `slide-change`, `api-ready` — but no `update:is-open`. `initial-index` is ignored — the controller's position picks the slide.
 
 Type: `LightboxUrlOverlayProps`
 
-| Prop         | Type                 | Default  | Description                                                                                                                                                          |
-| ------------ | -------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `controller` | `UrlStateController` | required | Controller from `useOverlayUrlState`. Its `index` decides whether the overlay is open and which slide; the overlay writes back through it on slide change and close. |
+| Prop         | Type                 | Default  | Description                                                                                                                                                             |
+| ------------ | -------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `controller` | `UrlStateController` | required | Controller from `useOverlayUrlState`. Its `position` decides whether the overlay is open and which slide; the overlay writes back through it on slide change and close. |
 
 ## Emits
 

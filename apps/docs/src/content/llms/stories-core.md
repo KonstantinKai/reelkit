@@ -71,7 +71,6 @@ npm i @reelkit/stories-core
 | `resume()`                      | `() => void`         | Resume auto-advance                                             |
 | `onStoryTimerComplete()`        | `() => void`         | Called when timer finishes; fires onStoryComplete then advances |
 | `getLastStoryIndex(groupIndex)` | `(number) => number` | Last viewed story index for group (0 if never visited)          |
-| `dispose()`                     | `() => void`         | Clean up resources                                              |
 
 ### Example
 
@@ -126,7 +125,6 @@ controller.resume();
 // Cleanup
 dispose();
 timer.dispose();
-controller.dispose();
 ```
 
 ## Timer Controller

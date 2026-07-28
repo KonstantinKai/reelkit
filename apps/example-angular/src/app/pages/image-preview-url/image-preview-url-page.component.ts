@@ -8,9 +8,8 @@ import { Router, RouterLink } from '@angular/router';
 import {
   RkLightboxUrlOverlayComponent,
   type LightboxItem,
-  type UrlLocator,
 } from '@reelkit/angular-lightbox';
-import { createOverlayUrlState, indexCodec } from '@reelkit/angular';
+import { createOverlayUrlState, urlIndexKey } from '@reelkit/angular';
 import { cdnUrl } from '@reelkit/example-data';
 import { createRouterUrlAdapter } from '@reelkit/angular/ng-router-url-adapter';
 
@@ -44,7 +43,7 @@ const sampleImages: LightboxItem[] = [
   template: `
     <div class="image-gallery-page">
       <div class="gallery-header">
-        <h1>URL Gallery</h1>
+        <h1>URL Image Gallery</h1>
         <p>
           Every thumbnail is an ordinary link to
           <code>?photo=&lt;index&gt;</code> — open one in a new tab, copy its
@@ -134,41 +133,33 @@ export class ImagePreviewUrlPageComponent {
   protected readonly loaded = signal(sampleImages.slice(0, _kPageSize));
   protected readonly fetching = signal(false);
 
-  // The parameter is a plain index, so the identity is the index. The locator
-  // windows it: `locate` answers only for what has loaded, `locateAsync`
-  // fetches the rest. A supplied locator owns its own validity, so `locate`
-  // rejects anything outside the loaded window itself.
-  private readonly _locator: UrlLocator<number> = {
-    locate: (index) =>
-      index >= 0 && index < this.loaded().length ? index : null,
-    identify: (index) => index,
-    locateAsync: async (index) => {
-      // Nothing left to fetch: this link names an image the feed does not have.
-      if (index < 0 || index >= sampleImages.length) return null;
-
-      this.fetching.set(true);
-      await new Promise((done) => setTimeout(done, _kFetchDelayMs));
-      this.loaded.set(sampleImages.slice(0, index + 1));
-      this.fetching.set(false);
-
-      // The index the fetch just established — the lightbox takes it as-is,
-      // never re-reading `loaded`, which has not re-rendered yet.
-      return index;
-    },
-  };
-
   protected openViaRouter(): void {
     void this._router.navigate([], {
       queryParams: { [_kParam]: this.total - 1 },
     });
   }
 
-  // Built here rather than inside the overlay, so `photo.set` stays on hand
+  // A plain index gallery, so the built-in `urlIndexKey` supplies the codec and
+  // the bounded `locate`/`identify` — this windowed feed only adds a
+  // `locateAsync` pager for links past the loaded window. No hand-rolled
+  // locator. Built here (not inside the overlay) so `photo.set` stays on hand
   // for programmatic control.
   protected readonly photo = createOverlayUrlState({
     param: _kParam,
     adapter: createRouterUrlAdapter(),
-    codec: indexCodec,
-    locator: this._locator,
+    ...urlIndexKey(
+      () => this.loaded().length,
+      async (index) => {
+        // Nothing left to fetch: this link names an image the feed lacks.
+        if (index < 0 || index >= sampleImages.length) return null;
+
+        this.fetching.set(true);
+        await new Promise((done) => setTimeout(done, _kFetchDelayMs));
+        this.loaded.set(sampleImages.slice(0, index + 1));
+        this.fetching.set(false);
+
+        return index; // urlIndexKey re-bounds it against the grown count
+      },
+    ),
   });
 }

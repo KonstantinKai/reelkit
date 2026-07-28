@@ -221,20 +221,20 @@ const onSlideDragEnd = (index: number) => {
 
 ## URL State
 
-`useOverlayUrlState` builds a URL-state controller for an overlay and returns it whole — hand it to a `*UrlOverlay` as its `:controller` prop. The address bar owns the open state, so a bound overlay opens itself and a **link** is the usual open action. Keep the controller to read `value`/`index` and to close programmatically with `set(null)`, the same low-level write the overlay uses internally on slide change.
+`useOverlayUrlState` builds a URL-state controller for an overlay and returns it whole — hand it to a `*UrlOverlay` as its `:controller` prop. The address bar owns the open state, so a bound overlay opens itself and a **link** is the usual open action. Keep the controller to read `value`/`position` and to close programmatically with `set(null)`, the same low-level write the overlay uses internally on slide change.
 
 First write of an absent param pushes ONE history entry; every write after replaces it. So paging N slides costs 0 entries and one back step always leaves.
 
 ```vue
 <script setup lang="ts">
 import { LightboxUrlOverlay, type LightboxItem } from '@reelkit/vue-lightbox';
-import { useOverlayUrlState, indexKey } from '@reelkit/vue';
+import { useOverlayUrlState, urlIndexKey } from '@reelkit/vue';
 
 const props = defineProps<{ images: LightboxItem[] }>();
 
 const photo = useOverlayUrlState({
   param: 'photo',
-  ...indexKey(() => props.images.length),
+  ...urlIndexKey(() => props.images.length),
 });
 </script>
 
@@ -251,7 +251,7 @@ const photo = useOverlayUrlState({
 </template>
 ```
 
-The options object takes `param`, `codec`, and `locator` (all three required), plus an optional `adapter`. `codec` and `locator` are a matched pair sharing the same `Id`, so for a plain `?photo=3` gallery spread `...indexKey(() => props.images.length)`, which returns both halves at once. `indexKey` maps the parameter to a slide index and bounds it against the live count the getter returns, so a stale or out-of-range `?photo=99` is rejected and heals itself out of the URL instead of opening a slide that was never named. Pass a getter, not a number: a Vue `setup` runs once, so a captured length would go stale as a paginated feed grows. It wraps `createIndexLocator` (the locator half) and pairs it with `indexCodec`. A paginated feed or an identity-keyed gallery supplies its own matched `codec` + `locator` instead. Full options table: [Vue API reference](/docs/vue/api#useoverlayurlstate).
+The options object takes `param`, `codec`, and `locator` (all three required), plus an optional `adapter`. `codec` and `locator` are a matched pair sharing the same `Id`, so for a plain `?photo=3` gallery spread `...urlIndexKey(() => props.images.length)`, which returns both halves at once. `urlIndexKey` maps the parameter to a slide index and bounds it against the live count the getter returns, so a stale or out-of-range `?photo=99` is rejected and heals itself out of the URL instead of opening a slide that was never named. Pass a getter, not a number: a Vue `setup` runs once, so a captured length would go stale as a paginated feed grows. It wraps `createIndexLocator` (the locator half) and pairs it with `indexCodec`. A paginated feed or an identity-keyed gallery supplies its own matched `codec` + `locator` instead. Full options table: [Vue API reference](/docs/vue/api#useoverlayurlstate).
 
 ## Virtualization
 

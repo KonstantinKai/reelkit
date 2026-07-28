@@ -1416,7 +1416,7 @@ restoreFocus();`}
                   <code className="font-mono text-xs">locator</code> it also
                   derives{' '}
                   <code className="font-mono text-xs">
-                    index: Signal&lt;number | null&gt;
+                    position: Signal&lt;Pos | null&gt;
                   </code>
                   , applying the open/close latch and self-healing a parameter
                   that names no slide — so every binding subscribes rather than
@@ -1473,10 +1473,10 @@ restoreFocus();`}
               </tr>
               <tr className="border-b border-slate-100 dark:border-slate-800">
                 <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
-                  indexKey
+                  urlIndexKey
                 </td>
                 <td className="py-3 px-4 font-mono text-xs text-slate-500">
-                  {'(countGetter: () => number) => UrlKey<number>'}
+                  {'(countGetter, locateAsync?) => UrlKey<number>'}
                 </td>
                 <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
                   The matched pair for an index-addressed gallery —{' '}
@@ -1484,9 +1484,143 @@ restoreFocus();`}
                   <code className="font-mono text-xs">createIndexLocator</code>{' '}
                   bound to the gallery&apos;s size. Spread it (
                   <code className="font-mono text-xs">
-                    {'{ param, ...indexKey(() => count) }'}
+                    {'{ param, ...urlIndexKey(() => count) }'}
                   </code>
-                  ) so the codec cannot drift from the locator.
+                  ) so the codec cannot drift from the locator. Pass a second{' '}
+                  <code className="font-mono text-xs">locateAsync</code>{' '}
+                  argument to window a paginated feed — page up to the wanted
+                  index on a miss, then return it.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  urlIndexTwoAxisKey
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {'(opts) => UrlKey<TwoAxisIdentity, TwoAxisPosition>'}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Like <code className="font-mono text-xs">urlIndexKey</code>{' '}
+                  but for a two-axis player: one strictly-dotted{' '}
+                  <code className="font-mono text-xs">
+                    ?p=&lt;outer&gt;.&lt;inner&gt;
+                  </code>{' '}
+                  parameter resolving to a{' '}
+                  <code className="font-mono text-xs">TwoAxisPosition</code>{' '}
+                  <code className="font-mono text-xs">
+                    {'{ outer, inner }'}
+                  </code>
+                  . Options (
+                  <code className="font-mono text-xs">
+                    UrlIndexTwoAxisKeyOptions
+                  </code>
+                  ): <code className="font-mono text-xs">outerCount</code>,{' '}
+                  <code className="font-mono text-xs">innerCounts</code>,
+                  optional <code className="font-mono text-xs">outerCodec</code>
+                  /<code className="font-mono text-xs">outerLocator</code> for
+                  the outer axis, and{' '}
+                  <code className="font-mono text-xs">innerCodec</code>/
+                  <code className="font-mono text-xs">innerLocate</code>/
+                  <code className="font-mono text-xs">innerIdentify</code> to
+                  address the inner axis by id too. Each axis defaults to a
+                  plain index bound. Powers the URL-driven stories player.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  createStableIdCodec
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {'(hash: boolean) => UrlCodec<string>'}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  The stable-id <strong>wire</strong>, exported for composing —
+                  the param text is the item&apos;s{' '}
+                  <code className="font-mono text-xs">id</code>, raw or (with{' '}
+                  <code className="font-mono text-xs">hash</code>)
+                  base64url-obscured. The stable-id analog of{' '}
+                  <code className="font-mono text-xs">indexCodec</code>: pair it
+                  with a locator of your own instead of taking the whole{' '}
+                  <code className="font-mono text-xs">urlStableIdKey</code>.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  createStableIdLocator
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {'(items, locateAsync?) => UrlLocator<string, number>'}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  The stable-id <strong>lookup</strong>, exported for composing
+                  — scans <code className="font-mono text-xs">items()</code> for
+                  a matching <code className="font-mono text-xs">id</code>; a
+                  gone id resolves to{' '}
+                  <code className="font-mono text-xs">null</code> and
+                  self-heals. Optional{' '}
+                  <code className="font-mono text-xs">locateAsync</code> windows
+                  a paginated feed. The stable-id analog of{' '}
+                  <code className="font-mono text-xs">createIndexLocator</code>.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  urlStableIdKey
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {'(opts) => UrlKey<string, number>'}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Addresses a gallery by each item&apos;s stable{' '}
+                  <code className="font-mono text-xs">id</code> —{' '}
+                  <code className="font-mono text-xs">?photo=&lt;id&gt;</code> —
+                  instead of its position, so a bookmark survives the list being
+                  reordered. Options (
+                  <code className="font-mono text-xs">
+                    UrlStableIdKeyOptions
+                  </code>
+                  ): <code className="font-mono text-xs">items</code> (a live
+                  getter), optional{' '}
+                  <code className="font-mono text-xs">hash</code> to
+                  base64url-encode the id, optional{' '}
+                  <code className="font-mono text-xs">locateAsync</code> to
+                  window a paginated feed (fetch until the id is present on a
+                  miss, then return its index). Prefer over{' '}
+                  <code className="font-mono text-xs">urlIndexKey</code>{' '}
+                  whenever the list can change under a shared link.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  urlStableIdTwoAxisKey
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {'(opts) => UrlKey<TwoAxisIdentity<string>, TwoAxisPosition>'}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  The two-axis analog: the outer axis by stable id, the inner by
+                  a local index —{' '}
+                  <code className="font-mono text-xs">?story=user_42.3</code>.
+                  Supply <code className="font-mono text-xs">innerItems</code>{' '}
+                  instead of{' '}
+                  <code className="font-mono text-xs">innerCounts</code> to
+                  address the inner by id too (
+                  <code className="font-mono text-xs">
+                    ?story=user_42.photo_7
+                  </code>
+                  ); <code className="font-mono text-xs">hash</code> base64url-
+                  encodes the ids. Options{' '}
+                  <code className="font-mono text-xs">
+                    UrlStableIdTwoAxisKeyOptions
+                  </code>{' '}
+                  (index inner) or{' '}
+                  <code className="font-mono text-xs">
+                    UrlStableIdTwoAxisIdInnerOptions
+                  </code>{' '}
+                  (id inner); item types satisfy{' '}
+                  <code className="font-mono text-xs">Identified</code> (
+                  <code className="font-mono text-xs">{'{ id: string }'}</code>
+                  ).
                 </td>
               </tr>
               <tr className="border-b border-slate-100 dark:border-slate-800">

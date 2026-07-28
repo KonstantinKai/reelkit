@@ -580,7 +580,7 @@ const sliderRef = ref<ReelExpose | null>(null);
           </code>
           /
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
-            index
+            position
           </code>{' '}
           and to close programmatically with{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -592,13 +592,13 @@ const sliderRef = ref<ReelExpose | null>(null);
         <CodeBlock
           code={`<script setup lang="ts">
 import { LightboxUrlOverlay, type LightboxItem } from '@reelkit/vue-lightbox';
-import { useOverlayUrlState, indexKey } from '@reelkit/vue';
+import { useOverlayUrlState, urlIndexKey } from '@reelkit/vue';
 
 const props = defineProps<{ images: LightboxItem[] }>();
 
 const photo = useOverlayUrlState({
   param: 'photo',
-  ...indexKey(() => props.images.length),
+  ...urlIndexKey(() => props.images.length),
 });
 </script>
 
@@ -647,11 +647,11 @@ const photo = useOverlayUrlState({
           </code>{' '}
           gallery spread{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
-            ...indexKey(() =&gt; props.images.length)
+            ...urlIndexKey(() =&gt; props.images.length)
           </code>
           , which returns both halves at once.{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
-            indexKey
+            urlIndexKey
           </code>{' '}
           maps the parameter to a slide index and bounds it against the live
           count the getter returns, so a stale or out-of-range{' '}

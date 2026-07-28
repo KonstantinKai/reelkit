@@ -1017,10 +1017,43 @@ export class AppComponent {
           when it goes away. Links are shareable, and the back button closes the
           gallery instead of leaving the page.
         </p>
+        <Callout type="info" title="Built-in keys" className="mb-4">
+          You can address slides with a built-in key — spread{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            urlIndexKey
+          </code>{' '}
+          (by position) or{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            urlStableIdKey
+          </code>{' '}
+          (by a stable{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            id
+          </code>
+          ) into the controller — both re-exported from{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            @reelkit/angular
+          </code>
+          . See the{' '}
+          <Link
+            to="/docs/core/guide#url-state"
+            className="text-primary-600 dark:text-primary-400 hover:underline"
+          >
+            URL State guide
+          </Link>{' '}
+          and{' '}
+          <Link
+            to="/docs/core/api#url-state"
+            className="text-primary-600 dark:text-primary-400 hover:underline"
+          >
+            Core API
+          </Link>
+          .
+        </Callout>
         <CodeBlock
           code={
             `import { RkLightboxUrlOverlayComponent } from '@reelkit/angular-lightbox';
-import { createOverlayUrlState, indexKey } from '@reelkit/angular';
+import { createOverlayUrlState, urlIndexKey, urlStableIdKey } from '@reelkit/angular';
 
 @Component({
   imports: [RkLightboxUrlOverlayComponent, RouterLink],
@@ -1043,7 +1076,7 @@ export class GalleryComponent {
 
   protected readonly photo = createOverlayUrlState({
     param: 'photo',
-    ...indexKey(() => this.images().length),
+    ...urlIndexKey(() => this.images().length),
   });
 }`
           }
@@ -1124,7 +1157,7 @@ const adapter = createRouterUrlAdapter();
 const photo = createOverlayUrlState({
   param: 'photo',
   adapter,
-  ...indexKey(() => this.images().length),
+  ...urlIndexKey(() => this.images().length),
 });`}
           language="typescript"
         />
@@ -1133,17 +1166,49 @@ const photo = createOverlayUrlState({
           <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
             ?photo=3
           </code>{' '}
-          opens a different image once the list is reordered. Key by identity
-          instead:{' '}
+          opens a different image once the list is reordered.{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            urlStableIdKey
+          </code>{' '}
+          keys by each item's stable{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            id
+          </code>
+          , scanning the live list — one call covers the common case.
+        </p>
+        <CodeBlock
+          code={`const photo = createOverlayUrlState({
+  param: 'photo',
+  ...urlStableIdKey({ items: () => this.images() }),
+});`}
+          language="typescript"
+        />
+        <p className="text-slate-600 dark:text-slate-400 mt-4 mb-4">
+          Pass{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            hash: true
+          </code>{' '}
+          to base64url-encode the id in the URL — reversible obfuscation, not a
+          cryptographic hash.
+        </p>
+        <p className="text-slate-600 dark:text-slate-400 mt-4 mb-4">
+          Key by a different field (a{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            slug
+          </code>
+          ), or page an infinite feed with{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            locateAsync
+          </code>
+          , and build the{' '}
           <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
             codec
           </code>{' '}
-          spells the identity into the URL (wire),{' '}
+          (wire) and{' '}
           <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
             locator
           </code>{' '}
-          finds where it sits (lookup), so a bookmark survives the gallery being
-          reordered.
+          (lookup) yourself:
         </p>
         <CodeBlock
           code={`const photo = createOverlayUrlState({
@@ -1178,6 +1243,22 @@ const photo = createOverlayUrlState({
           </code>{' '}
           or a rejection drops the parameter.
         </p>
+        <Callout type="info" title="Shortcut" className="mb-4">
+          Keying by the item&rsquo;s{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            id
+          </code>
+          ? Skip the hand-rolled codec and locator — pass{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            locateAsync
+          </code>{' '}
+          straight to{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            urlStableIdKey({'{ items, locateAsync }'})
+          </code>{' '}
+          (it fetches on a miss, then returns the index). The fuller version
+          below is for keying by another field, or for full control.
+        </Callout>
         <CodeBlock
           code={`const photo = createOverlayUrlState({
   param: 'photo',
@@ -1248,7 +1329,7 @@ const photo = createOverlayUrlState({
                   required
                 </td>
                 <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
-                  Controller from createOverlayUrlState. Its index decides
+                  Controller from createOverlayUrlState. Its position decides
                   whether the gallery is open and which slide it shows; the
                   component writes back through it on slide change and on close.
                 </td>

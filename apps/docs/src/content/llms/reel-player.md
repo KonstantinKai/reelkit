@@ -106,14 +106,20 @@ interface ContentItem {
 
 `ReelPlayerUrlOverlay` is a separate component whose open state lives in the URL. Build a controller with `useOverlayUrlState` from `@reelkit/react` and pass it as `controller`: the player opens itself when the param names a slide and closes when it goes away. **Opening is a link** — the href is the open action, no click handler.
 
+> **Built-in keys.** Spread `urlIndexKey` (by position) or `urlStableIdKey` (by a stable `id`) into the controller — both re-exported from `@reelkit/react`. See the [URL State guide](/docs/core/guide#url-state) and [Core API](/docs/core/api#url-state).
+
 ```tsx
-import { useOverlayUrlState, indexKey } from '@reelkit/react';
+import {
+  useOverlayUrlState,
+  urlIndexKey,
+  urlStableIdKey,
+} from '@reelkit/react';
 import { ReelPlayerUrlOverlay } from '@reelkit/react-reel-player';
 import { Link } from 'react-router-dom';
 
 const reel = useOverlayUrlState({
   param: 'reel',
-  ...indexKey(() => content.length),
+  ...urlIndexKey(() => content.length),
 });
 
 // Opening is a link — the overlay reads the URL and opens itself.
@@ -134,7 +140,34 @@ Full `useOverlayUrlState` options (`param`, `adapter`, `codec`, `locator`): see 
 - **Back closes only when opened from within the app** (the link pushed an entry). A shared link opened directly in a fresh tab has no history behind it, so browser-back leaves the site — close with the ✕ button or Escape to remove the parameter in place and stay.
 - Deep link `?reel=3` opens the player at that slide on load. Closing a link that arrived with the page removes the param in place rather than navigating off-site.
 - A param naming no slide (stale bookmark, hand-edited) is dropped from the URL instead of leaving the address bar asserting a slide that cannot open.
-- The param addresses the **vertical** slide only. Which image a multi-media post is showing is not carried in the URL.
+- By default the param addresses the **vertical** post only (`?reel=3`). Opt into a two-axis key to also carry the inner media index of a multi-media carousel — see below.
+
+### One key or two — pick your URL depth
+
+The same `ReelPlayerUrlOverlay` drives either shape; it discriminates at runtime from the controller's position, so there is no mode prop. Choose the key when you build the controller:
+
+| Key                     | Wire        | Carries                                               |
+| ----------------------- | ----------- | ----------------------------------------------------- |
+| `urlIndexKey(…)`        | `?reel=3`   | The vertical post only.                               |
+| `urlIndexTwoAxisKey(…)` | `?reel=3.2` | The post **and** the inner media index of a carousel. |
+
+The two wires are deliberately distinct — a two-axis key is strictly dotted (`3.0`, never a bare `3`), so a bare one-axis link does not cross-decode. Switching an app between keys invalidates any previously shared links. Pick one shape and keep it.
+
+```tsx
+import { useOverlayUrlState, urlIndexTwoAxisKey } from '@reelkit/react';
+
+const reel = useOverlayUrlState({
+  param: 'reel',
+  ...urlIndexTwoAxisKey({
+    outerCount: () => content.length,
+    innerCounts: () => content.map((post) => post.media.length),
+  }),
+});
+
+// A link now names both axes: post 3, inner media 2.
+<Link to="?reel=3.2">…</Link>;
+<ReelPlayerUrlOverlay controller={reel} content={content} />;
+```
 
 **Routed app — pass an adapter.** Writing `history.pushState` behind a router leaves its location stale and its next navigation drops the param:
 
@@ -145,13 +178,26 @@ const adapter = useReactRouterUrlAdapter(); // { read, subscribe, push, replace,
 const reel = useOverlayUrlState({
   param: 'reel',
   adapter,
-  ...indexKey(() => content.length),
+  ...urlIndexKey(() => content.length),
 });
 
 <ReelPlayerUrlOverlay controller={reel} content={content} />;
 ```
 
-**Stable links.** The index is positional — a bookmarked `?reel=3` opens a different post once the feed is reordered, which for a feed is the normal case rather than the exception. Key by identity instead. Two separate jobs: `codec` spells the identity into the URL (wire), `locator` finds where that identity sits (lookup).
+**Stable links.** The index is positional — a bookmarked `?reel=3` opens a different post once the feed is reordered, which for a feed is the normal case rather than the exception. `urlStableIdKey` keys by each post's stable `id`, scanning the live feed — one call covers the common case:
+
+```tsx
+const reel = useOverlayUrlState({
+  param: 'reel',
+  ...urlStableIdKey({ items: () => content }),
+});
+
+<ReelPlayerUrlOverlay controller={reel} content={content} />;
+```
+
+Pass `hash: true` to base64url-encode the id in the URL — reversible obfuscation, not a cryptographic hash.
+
+Key by a different field (a `slug`), or page an infinite feed with `locateAsync`, and build the `codec`/`locator` yourself. Two separate jobs: `codec` spells the identity into the URL (wire), `locator` finds where that identity sits (lookup).
 
 ```tsx
 const reel = useOverlayUrlState({
@@ -167,6 +213,8 @@ const reel = useOverlayUrlState({
 ```
 
 **Infinite feeds.** `locate` is synchronous, so it can only answer for posts already loaded — a shared link to post 400 of a feed that has loaded 20 comes up empty. `locateAsync` is the fallback, called only when `locate` misses: load the pages you need, then return the index the identity turned out to have.
+
+> **Shortcut.** Keying by the item's `id`? Skip the hand-rolled codec and locator — pass `locateAsync` straight to `urlStableIdKey({ items, locateAsync })` (it fetches on a miss, then returns the index). The fuller version below is for keying by another field, or for full control.
 
 ```tsx
 const reel = useOverlayUrlState({
@@ -230,18 +278,18 @@ Pass through to `<Reel>`:
 
 Type: `ReelPlayerUrlOverlayProps<T>`
 
-Takes every visual/behavior prop above except `isOpen`, replaced by a `controller`. `initialIndex` is ignored — the controller's index picks the slide, so a value passed alongside it is overwritten on every open.
+Takes every visual/behavior prop above except `isOpen`, replaced by a `controller`. `initialIndex` is ignored — the controller's position picks the slide, so a value passed alongside it is overwritten on every open.
 
-| Prop         | Type                 | Default  | Description                                                                                                                                                          |
-| ------------ | -------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `controller` | `UrlStateController` | required | Controller from `useOverlayUrlState`. Its `index` decides whether the overlay is open and which slide; the overlay writes back through it on slide change and close. |
+| Prop         | Type                 | Default  | Description                                                                                                                                                             |
+| ------------ | -------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `controller` | `UrlStateController` | required | Controller from `useOverlayUrlState`. Its `position` decides whether the overlay is open and which slide; the overlay writes back through it on slide change and close. |
 
 ## Callbacks
 
-| Prop            | Type                      | Description             |
-| --------------- | ------------------------- | ----------------------- |
-| `onClose`       | `() => void`              | Fire on player close    |
-| `onSlideChange` | `(index: number) => void` | Fire after slide change |
+| Prop            | Type                      | Description                                                                                                                                  |
+| --------------- | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `onClose`       | `() => void`              | Called on close. Required on `ReelPlayerOverlay` (you own the open state); optional on `ReelPlayerUrlOverlay`, where the URL drives closing. |
+| `onSlideChange` | `(index: number) => void` | Fire after slide change                                                                                                                      |
 
 ## Sub-Components
 

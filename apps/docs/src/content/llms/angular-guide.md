@@ -166,7 +166,7 @@ export class AppComponent {
 
 ## URL State
 
-`createOverlayUrlState` builds a URL-state controller for an overlay and returns it whole — hand it to a `*UrlOverlay` component as its `[controller]` input. Call it in an injection context (a field initialiser); it attaches immediately and releases through `DestroyRef`. The URL owns the open state, so a bound overlay opens itself and a **link** is the usual open action. Keep the controller to read `value`/`index` and to drive it programmatically: `set(index)` opens, `set(null)` closes, and `set` is the same low-level write the overlay uses internally on slide change.
+`createOverlayUrlState` builds a URL-state controller for an overlay and returns it whole — hand it to a `*UrlOverlay` component as its `[controller]` input. Call it in an injection context (a field initialiser); it attaches immediately and releases through `DestroyRef`. The URL owns the open state, so a bound overlay opens itself and a **link** is the usual open action. Keep the controller to read `value`/`position` and to drive it programmatically: `set(position)` opens, `set(null)` closes, and `set` is the same low-level write the overlay uses internally on slide change.
 
 First write of an absent param pushes ONE history entry; every write after replaces it. So paging N slides costs 0 entries and one back step always leaves.
 
@@ -174,7 +174,7 @@ First write of an absent param pushes ONE history entry; every write after repla
 import { Component, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { RkLightboxUrlOverlayComponent } from '@reelkit/angular-lightbox';
-import { createOverlayUrlState, indexKey } from '@reelkit/angular';
+import { createOverlayUrlState, urlIndexKey } from '@reelkit/angular';
 
 @Component({
   imports: [RkLightboxUrlOverlayComponent, RouterLink],
@@ -194,7 +194,7 @@ export class GalleryComponent {
   // Attaches now, releases on destroy.
   protected readonly photo = createOverlayUrlState({
     param: 'photo',
-    ...indexKey(() => this.images().length),
+    ...urlIndexKey(() => this.images().length),
   });
 }
 ```
@@ -207,11 +207,11 @@ import { createRouterUrlAdapter } from '@reelkit/angular/ng-router-url-adapter';
 protected readonly photo = createOverlayUrlState({
   param: 'photo',
   adapter: createRouterUrlAdapter(),
-  ...indexKey(() => this.images().length),
+  ...urlIndexKey(() => this.images().length),
 });
 ```
 
-The options object takes `param`, `codec`, and `locator` (all three required), plus an optional `adapter`. `codec` and `locator` are a matched pair sharing the same `Id`, so they travel together — for a plain `?photo=3` gallery spread `...indexKey(() => images().length)`, which returns both halves at once. `indexKey` maps the param to a slide index and bounds it against the live count the getter returns, so a stale or out-of-range `?photo=99` is rejected and heals itself out of the URL instead of opening a slide that was never named. Pass a getter, not a number, so the bound stays right as a paginated feed grows. It wraps `createIndexLocator` (the locator half) and pairs it with `indexCodec`. A paginated feed or an identity-keyed gallery supplies its own matched `codec` + `locator` instead. Full options table: [Angular API reference](/docs/angular/api#createoverlayurlstate).
+The options object takes `param`, `codec`, and `locator` (all three required), plus an optional `adapter`. `codec` and `locator` are a matched pair sharing the same `Id`, so they travel together — for a plain `?photo=3` gallery spread `...urlIndexKey(() => images().length)`, which returns both halves at once. `urlIndexKey` maps the param to a slide index and bounds it against the live count the getter returns, so a stale or out-of-range `?photo=99` is rejected and heals itself out of the URL instead of opening a slide that was never named. Pass a getter, not a number, so the bound stays right as a paginated feed grows. It wraps `createIndexLocator` (the locator half) and pairs it with `indexCodec`. A paginated feed or an identity-keyed gallery supplies its own matched `codec` + `locator` instead. Full options table: [Angular API reference](/docs/angular/api#createoverlayurlstate).
 
 ## ReelIndicator
 

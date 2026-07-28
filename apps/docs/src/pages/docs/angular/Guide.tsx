@@ -333,11 +333,11 @@ export class AppComponent {
           </code>
           /
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
-            index
+            position
           </code>{' '}
           and to drive it programmatically:{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
-            set(index)
+            set(position)
           </code>{' '}
           opens,{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -354,7 +354,7 @@ export class AppComponent {
           code={`import { Component, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { RkLightboxUrlOverlayComponent } from '@reelkit/angular-lightbox';
-import { createOverlayUrlState, indexKey } from '@reelkit/angular';
+import { createOverlayUrlState, urlIndexKey } from '@reelkit/angular';
 
 @Component({
   imports: [RkLightboxUrlOverlayComponent, RouterLink],
@@ -374,7 +374,7 @@ export class GalleryComponent {
   // Attaches now, releases on destroy.
   protected readonly photo = createOverlayUrlState({
     param: 'photo',
-    ...indexKey(() => this.images().length),
+    ...urlIndexKey(() => this.images().length),
   });
 }`}
           language="typescript"
@@ -389,7 +389,7 @@ export class GalleryComponent {
 protected readonly photo = createOverlayUrlState({
   param: 'photo',
   adapter: createRouterUrlAdapter(),
-  ...indexKey(() => this.images().length),
+  ...urlIndexKey(() => this.images().length),
 });`}
           language="typescript"
         />
@@ -428,11 +428,11 @@ protected readonly photo = createOverlayUrlState({
           </code>{' '}
           gallery spreads{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
-            ...indexKey(() =&gt; images().length)
+            ...urlIndexKey(() =&gt; images().length)
           </code>
           , which returns both halves at once.{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
-            indexKey
+            urlIndexKey
           </code>{' '}
           bounds the index against the live count the getter returns, so a stale{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">

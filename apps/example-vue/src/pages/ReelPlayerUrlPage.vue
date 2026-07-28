@@ -1,73 +1,48 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { RouterLink, useRouter } from 'vue-router';
-import { Play } from 'lucide-vue-next';
-import {
-  ReelPlayerUrlOverlay,
-  type ContentItem,
-  type MediaItem,
-  type UrlLocator,
-} from '@reelkit/vue-reel-player';
-import { useOverlayUrlState, indexCodec } from '@reelkit/vue';
-import { useVueRouterUrlAdapter } from '@reelkit/vue/vue-router-url-adapter';
-import { generateContent, getThumbnail } from '@reelkit/example-data';
-import Thumbnail from '../components/Thumbnail.vue';
-import '@reelkit/vue-reel-player/styles.css';
+import { computed } from 'vue';
+import { type ContentItem } from '@reelkit/vue-reel-player';
+import { generateContent } from '@reelkit/example-data';
+import { persistedRef } from '../composables/persistedRef';
+import ReelUrlDemo from './reel-player-url/ReelUrlDemo.vue';
 
-const _kParam = 'reel';
+type Addressing = 'index' | 'stableId';
+type Axis = 'one' | 'two';
+type InnerKey = 'index' | 'stableId';
 
-// How many posts this page pretends to have loaded so far.
+// How many posts the demo pretends to have loaded so far — mirrored in the
+// child, shown here only in the copy below.
 const _kPageSize = 6;
 
-// Stand-in for the round trip that fetches the next page.
-const _kFetchDelayMs = 900;
-
-// The full feed, generated once so the windowed locator has a stable target.
+// The full feed, generated once so a switch never regenerates it.
 const feed: ContentItem[] = generateContent(24);
 
-// This application is routed, so the router drives every read and write — the
-// default History adapter would leave the router's own location stale.
-const adapter = useVueRouterUrlAdapter();
+const addressing = persistedRef<Addressing>(
+  'reelkit-reel-player-url-addressing',
+  'index',
+);
+const axis = persistedRef<Axis>('reelkit-reel-player-url-axis', 'one');
+const innerKey = persistedRef<InnerKey>(
+  'reelkit-reel-player-url-inner-key',
+  'index',
+);
+const hash = persistedRef('reelkit-reel-player-url-hash', false);
 
-// Only part of the feed has "arrived"; the rest stands in for pages not yet
-// fetched.
-const loaded = ref(feed.slice(0, _kPageSize));
-const fetching = ref(false);
+const innerSwitchable = computed(() => axis.value === 'two');
+const hashable = computed(
+  () =>
+    addressing.value === 'stableId' ||
+    (innerSwitchable.value && innerKey.value === 'stableId'),
+);
 
-// Overlapping fetches: the window only ever grows, so a slow early request can
-// never shrink it under a slide a later request already loaded, and only the
-// latest request may clear the loading flag.
-let fetchTicket = 0;
-
-// A plain index feed, so identity is the index (built-in indexCodec). The
-// locator windows it: `locate` answers only for the loaded window, `locateAsync`
-// fetches the rest so a deep link into an unloaded post still opens.
-const locator: UrlLocator<number> = {
-  locate: (index) => (index >= 0 && index < loaded.value.length ? index : null),
-  identify: (index) => index,
-  locateAsync: async (index) => {
-    if (index < 0 || index >= feed.length) return null;
-    const ticket = ++fetchTicket;
-    fetching.value = true;
-    await new Promise((done) => setTimeout(done, _kFetchDelayMs));
-    loaded.value = feed.slice(0, Math.max(loaded.value.length, index + 1));
-    if (ticket === fetchTicket) fetching.value = false;
-    return index;
-  },
-};
-
-const reel = useOverlayUrlState({
-  param: _kParam,
-  adapter,
-  codec: indexCodec,
-  locator,
-});
-
-const router = useRouter();
-
-const openLastViaRouter = () => router.push(`?${_kParam}=${feed.length - 1}`);
-
-const openLastViaController = () => reel.set(feed.length - 1);
+// Remount when the key shape changes: `useOverlayUrlState` builds its controller
+// once, so a fresh key needs a fresh instance. The stale parameter self-heals
+// out of the URL.
+const demoKey = computed(
+  () =>
+    `${addressing.value}.${axis.value}.${innerKey.value}.${
+      hash.value ? 'hash' : 'raw'
+    }`,
+);
 </script>
 
 <template>
@@ -75,61 +50,109 @@ const openLastViaController = () => reel.set(feed.length - 1);
     <div class="container">
       <h1>URL Reel Player</h1>
       <p class="subtitle">
-        Every thumbnail is an ordinary link to
-        <code>?reel=&lt;index&gt;</code> — open one in a new tab, copy its
-        address, or press back to close. Paging the feed never piles up history
-        entries, so one back step always leaves the player.
-      </p>
-      <p class="subtitle">
-        Back closes the player when you opened it from here. A shared link
-        opened directly in a fresh tab has no history behind it, so back leaves
-        the site; close with the ✕ button or Escape to stay.
-      </p>
-      <p class="subtitle">
-        Only the first {{ _kPageSize }} posts have loaded. The buttons below all
-        point past them, the way a shared link into a long feed does — the
-        player waits for the post to arrive instead of discarding the address.
+        Every thumbnail is an ordinary link — open one in a new tab, copy its
+        address, or press back to close. The switches rebuild the URL key, so
+        the address bar changes shape while the player stays the same. Only the
+        first
+        {{ _kPageSize }} posts have loaded; the buttons point past them, so a
+        shared link pages the rest in through the locator before it opens.
       </p>
 
-      <div class="actions">
-        <RouterLink :to="`?${_kParam}=${feed.length - 1}`" class="action-btn">
-          Open post {{ feed.length }} (link)
-        </RouterLink>
-        <button type="button" class="action-btn" @click="openLastViaRouter">
-          Open post {{ feed.length }} (router)
-        </button>
-        <button type="button" class="action-btn" @click="openLastViaController">
-          Open post {{ feed.length }} (controller.set)
-        </button>
-        <span v-if="fetching">Loading post…</span>
+      <div class="switchers">
+        <fieldset class="seg">
+          <legend>Addressing</legend>
+          <div class="seg-row">
+            <button
+              type="button"
+              :class="{ on: addressing === 'index' }"
+              @click="addressing = 'index'"
+            >
+              Index — ?reel=3
+            </button>
+            <button
+              type="button"
+              :class="{ on: addressing === 'stableId' }"
+              @click="addressing = 'stableId'"
+            >
+              Stable id — ?reel=&lt;id&gt;
+            </button>
+          </div>
+        </fieldset>
+
+        <fieldset class="seg">
+          <legend>Axis</legend>
+          <div class="seg-row">
+            <button
+              type="button"
+              :class="{ on: axis === 'one' }"
+              @click="axis = 'one'"
+            >
+              One — post
+            </button>
+            <button
+              type="button"
+              :class="{ on: axis === 'two' }"
+              @click="axis = 'two'"
+            >
+              Two — post.media
+            </button>
+          </div>
+        </fieldset>
+
+        <fieldset class="seg">
+          <legend>Inner key (2-axis)</legend>
+          <div class="seg-row">
+            <button
+              type="button"
+              :class="{ on: innerSwitchable && innerKey === 'index' }"
+              :disabled="!innerSwitchable"
+              @click="innerKey = 'index'"
+            >
+              Index — .2
+            </button>
+            <button
+              type="button"
+              :class="{ on: innerSwitchable && innerKey === 'stableId' }"
+              :disabled="!innerSwitchable"
+              @click="innerKey = 'stableId'"
+            >
+              Stable id — .&lt;media-id&gt;
+            </button>
+          </div>
+        </fieldset>
+
+        <fieldset class="seg">
+          <legend>Hash (stable id)</legend>
+          <div class="seg-row">
+            <button
+              type="button"
+              :class="{ on: hashable && !hash }"
+              :disabled="!hashable"
+              @click="hash = false"
+            >
+              Raw
+            </button>
+            <button
+              type="button"
+              :class="{ on: hashable && hash }"
+              :disabled="!hashable"
+              @click="hash = true"
+            >
+              base64url
+            </button>
+          </div>
+        </fieldset>
       </div>
 
-      <div class="grid">
-        <RouterLink
-          v-for="(item, index) in loaded"
-          :key="item.id"
-          :to="`?${_kParam}=${index}`"
-          class="thumb"
-        >
-          <Thumbnail :src="getThumbnail(item)" />
-          <div
-            v-if="item.media.some((m: MediaItem) => m.type === 'video')"
-            class="video-badge"
-          >
-            <Play :size="14" fill="#fff" color="#fff" />
-          </div>
-          <div v-if="item.media.length > 1" class="multi-badge">
-            {{ item.media.length }}
-          </div>
-          <div class="author">
-            <img :src="item.author.avatar" alt="" class="avatar" />
-            <span class="author-name">{{ item.author.name }}</span>
-          </div>
-        </RouterLink>
-      </div>
+      <ReelUrlDemo
+        :key="demoKey"
+        :feed="feed"
+        :addressing="addressing"
+        :axis="axis"
+        :inner-key="innerKey"
+        :hash="hash"
+      />
     </div>
-
-    <ReelPlayerUrlOverlay :controller="reel" :content="loaded" />
   </div>
 </template>
 
@@ -155,104 +178,49 @@ h1 {
 .subtitle {
   color: rgba(255, 255, 255, 0.6);
   font-size: 0.9rem;
-  margin-bottom: 12px;
+  margin-bottom: 20px;
 }
 
-.actions {
+.switchers {
   display: flex;
+  gap: 20px;
   flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-  margin: 24px 0 32px;
+  margin-bottom: 24px;
 }
 
-.action-btn {
-  padding: 8px 16px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.05);
-  color: #fff;
-  font-size: 0.85rem;
-  cursor: pointer;
-  text-decoration: none;
+.seg {
+  border: 0;
+  padding: 0;
+  margin: 0;
 }
 
-.action-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
+.seg legend {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.72rem;
+  margin-bottom: 6px;
 }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 8px;
-}
-
-.thumb {
-  position: relative;
-  aspect-ratio: 9 / 16;
-  border-radius: 8px;
-  overflow: hidden;
-  cursor: pointer;
-  background-color: #222;
-  transition: transform 0.2s;
-  display: block;
-}
-
-.thumb:hover {
-  transform: scale(1.02);
-}
-
-.video-badge {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background-color: rgba(0, 0, 0, 0.6);
+.seg-row {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-}
-
-.multi-badge {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  padding: 4px 8px;
-  border-radius: 4px;
-  background-color: rgba(0, 0, 0, 0.6);
-  color: #fff;
-  font-size: 0.7rem;
-  font-weight: 500;
-}
-
-.author {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 32px 8px 8px;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
-  display: flex;
-  align-items: center;
   gap: 6px;
 }
 
-.avatar {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  object-fit: cover;
+.seg-row button {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  font-size: 0.8rem;
+  cursor: pointer;
 }
 
-.author-name {
-  color: #fff;
-  font-size: 0.7rem;
-  font-weight: 500;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.seg-row button.on {
+  background: rgba(99, 102, 241, 0.55);
+}
+
+.seg-row button:disabled {
+  color: rgba(255, 255, 255, 0.3);
+  cursor: not-allowed;
 }
 </style>

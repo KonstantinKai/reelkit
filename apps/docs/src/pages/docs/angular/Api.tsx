@@ -882,7 +882,7 @@ const index = toAngularSignal(controller.state.index, destroyRef);`}
                 </td>
                 <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
                   Wire format: param text to a stable identity. Travels with
-                  locator as a matched pair — spread ...indexKey(() =&gt;
+                  locator as a matched pair — spread ...urlIndexKey(() =&gt;
                   images().length) for the default ?photo=3 gallery, or supply
                   your own so a bookmark survives reordering.
                 </td>
@@ -935,7 +935,7 @@ const index = toAngularSignal(controller.state.index, destroyRef);`}
 protected readonly photo = createOverlayUrlState({
   param: 'photo',
   adapter: createRouterUrlAdapter(),
-  ...indexKey(() => this.images().length),
+  ...urlIndexKey(() => this.images().length),
 });`}
           language="typescript"
         />

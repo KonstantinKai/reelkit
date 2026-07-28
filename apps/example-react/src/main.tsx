@@ -50,6 +50,10 @@ const router = createBrowserRouter([
         lazy: lazy(() => import('./app/pages/StoriesPlayerPage')),
       },
       {
+        path: 'stories-player-url',
+        lazy: lazy(() => import('./app/pages/StoriesPlayerUrlPage')),
+      },
+      {
         path: 'stories-player-custom',
         lazy: lazy(() => import('./app/pages/StoriesPlayerCustomPage')),
       },

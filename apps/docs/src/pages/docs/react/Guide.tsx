@@ -604,11 +604,11 @@ function App() {
           </code>
           /
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
-            index
+            position
           </code>{' '}
           and to drive it programmatically:{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
-            set(index)
+            set(position)
           </code>{' '}
           opens,{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -622,14 +622,14 @@ function App() {
           change.
         </p>
         <CodeBlock
-          code={`import { useOverlayUrlState, indexKey } from '@reelkit/react';
+          code={`import { useOverlayUrlState, urlIndexKey } from '@reelkit/react';
 import { useReactRouterUrlAdapter } from '@reelkit/react/react-router-url-adapter';
 import { LightboxUrlOverlay } from '@reelkit/react-lightbox';
 import { Link } from 'react-router-dom';
 
 const photo = useOverlayUrlState({
   param: 'photo',
-  ...indexKey(() => images.length),
+  ...urlIndexKey(() => images.length),
 });
 
 // Opening is a link — the overlay reads the URL and opens itself.
@@ -637,7 +637,7 @@ const photo = useOverlayUrlState({
 <LightboxUrlOverlay controller={photo} images={images} />
 
 // Read the url-derived state, or close programmatically (a low-level write).
-photo.index.value; // 3 for ?photo=3, null when nothing is open
+photo.position.value; // 3 for ?photo=3, null when nothing is open
 photo.set(null); // close
 
 // Routed app: pass a router-backed adapter, otherwise the router's
@@ -646,7 +646,7 @@ const adapter = useReactRouterUrlAdapter();
 const routed = useOverlayUrlState({
   param: 'photo',
   adapter,
-  ...indexKey(() => images.length),
+  ...urlIndexKey(() => images.length),
 });`}
           language="tsx"
         />
@@ -685,11 +685,11 @@ const routed = useOverlayUrlState({
           </code>{' '}
           gallery spread{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
-            ...indexKey(() =&gt; images.length)
+            ...urlIndexKey(() =&gt; images.length)
           </code>
           , which returns both halves at once.{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
-            indexKey
+            urlIndexKey
           </code>{' '}
           maps the parameter to a slide index and bounds it against the live
           count the getter returns, so a stale or out-of-range{' '}

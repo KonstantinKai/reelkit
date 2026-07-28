@@ -10,6 +10,7 @@ import {
   Box,
   Film,
   Image,
+  Link2,
 } from 'lucide-react';
 import { CodeBlock } from '../components/ui/CodeBlock';
 import { BasicSliderDemo } from '../components/demos/BasicSliderDemo';
@@ -70,6 +71,11 @@ const moreFeatures = [
     icon: <Blocks className="w-4 h-4" />,
     title: 'Ready-made Components',
     color: 'text-rose-400',
+  },
+  {
+    icon: <Link2 className="w-4 h-4" />,
+    title: 'Shareable URL State',
+    color: 'text-violet-500',
   },
 ];
 

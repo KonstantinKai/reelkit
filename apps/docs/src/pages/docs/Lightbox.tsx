@@ -224,7 +224,8 @@ const lightboxCallbacks = [
   {
     prop: 'onClose',
     type: '() => void',
-    description: 'Called when lightbox closes',
+    description:
+      'Called when the lightbox closes. Required on LightboxOverlay (you own the open state, so you must handle closing); optional on LightboxUrlOverlay, where the URL drives closing — pass it only to react after close.',
   },
   {
     prop: 'onSlideChange',
@@ -239,7 +240,7 @@ const lightboxUrlProps = [
     type: 'UrlStateController',
     default: 'required',
     description:
-      'Controller from useOverlayUrlState. Its index decides whether the overlay is open and which slide it shows; the overlay writes back through it on slide change and on close.',
+      'Controller from useOverlayUrlState. Its position decides whether the overlay is open and which slide it shows; the overlay writes back through it on slide change and on close.',
   },
 ];
 
@@ -1195,14 +1196,47 @@ renderSlide={({ item, index, size, isActive, onReady, onWaiting, onError }) => (
           when it goes away. Links are shareable, and the back button closes the
           gallery instead of leaving the page.
         </p>
+        <Callout type="info" title="Built-in keys" className="mb-4">
+          You can address slides with a built-in key — spread{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            urlIndexKey
+          </code>{' '}
+          (by position) or{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            urlStableIdKey
+          </code>{' '}
+          (by a stable{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            id
+          </code>
+          ) into the controller — both re-exported from{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            @reelkit/react
+          </code>
+          . See the{' '}
+          <Link
+            to="/docs/core/guide#url-state"
+            className="text-primary-600 dark:text-primary-400 hover:underline"
+          >
+            URL State guide
+          </Link>{' '}
+          and{' '}
+          <Link
+            to="/docs/core/api#url-state"
+            className="text-primary-600 dark:text-primary-400 hover:underline"
+          >
+            Core API
+          </Link>
+          .
+        </Callout>
         <CodeBlock
-          code={`import { useOverlayUrlState, indexKey } from '@reelkit/react';
+          code={`import { useOverlayUrlState, urlIndexKey, urlStableIdKey } from '@reelkit/react';
 import { LightboxUrlOverlay } from '@reelkit/react-lightbox';
 import { Link } from 'react-router-dom';
 
 const photo = useOverlayUrlState({
   param: 'photo',
-  ...indexKey(() => images.length),
+  ...urlIndexKey(() => images.length),
 });
 
 // Opening is a link — the href is the open action. No open flag, no handler:
@@ -1356,7 +1390,7 @@ const adapter = useReactRouterUrlAdapter();
 const photo = useOverlayUrlState({
   param: 'photo',
   adapter,
-  ...indexKey(() => images.length),
+  ...urlIndexKey(() => images.length),
 });
 
 <LightboxUrlOverlay controller={photo} images={images} />`}
@@ -1388,7 +1422,51 @@ const photo = useOverlayUrlState({
           <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
             ?photo=3
           </code>{' '}
-          opens a different image once the list is reordered.
+          opens a different image once the list is reordered.{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            urlStableIdKey
+          </code>{' '}
+          keys by each item's stable{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            id
+          </code>
+          , scanning the live list — one call covers the common case.
+        </p>
+        <CodeBlock
+          code={`const photo = useOverlayUrlState({
+  param: 'photo',
+  ...urlStableIdKey({ items: () => images }),
+});
+
+<LightboxUrlOverlay controller={photo} images={images} />`}
+          language="tsx"
+        />
+        <p className="text-slate-600 dark:text-slate-400 mt-4 mb-2">
+          Pass{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            hash: true
+          </code>{' '}
+          to base64url-encode the id in the URL — reversible obfuscation, not a
+          cryptographic hash.
+        </p>
+        <p className="text-slate-600 dark:text-slate-400 mt-4 mb-2">
+          Key by a different field (a{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            slug
+          </code>
+          ), or page an infinite feed with{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            locateAsync
+          </code>
+          , and build the{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            codec
+          </code>
+          /
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            locator
+          </code>{' '}
+          yourself:
         </p>
         <CodeBlock
           code={`const photo = useOverlayUrlState({
@@ -1419,6 +1497,22 @@ const photo = useOverlayUrlState({
           </code>{' '}
           misses.
         </p>
+        <Callout type="info" title="Shortcut" className="mb-4">
+          Keying by the item&rsquo;s{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            id
+          </code>
+          ? Skip the hand-rolled codec and locator — pass{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            locateAsync
+          </code>{' '}
+          straight to{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            urlStableIdKey({'{ items, locateAsync }'})
+          </code>{' '}
+          (it fetches on a miss, then returns the index). The fuller version
+          below is for keying by another field, or for full control.
+        </Callout>
         <CodeBlock
           code={`const photo = useOverlayUrlState({
   param: 'photo',
@@ -1502,6 +1596,9 @@ const photo = useOverlayUrlState({
         <Heading level={3} className="text-xl font-semibold mt-6 mb-4">
           LightboxOverlay Props
         </Heading>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-2 font-mono">
+          LightboxOverlayProps
+        </p>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -1541,6 +1638,9 @@ const photo = useOverlayUrlState({
         <Heading level={3} className="text-xl font-semibold mt-8 mb-2">
           LightboxUrlOverlay Props
         </Heading>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-2 font-mono">
+          LightboxUrlOverlayProps
+        </p>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Takes every visual and behaviour prop above except{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
@@ -1554,7 +1654,7 @@ const photo = useOverlayUrlState({
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
             initialIndex
           </code>{' '}
-          is ignored here — the controller&apos;s index picks the slide, so a
+          is ignored here — the controller&apos;s position picks the slide, so a
           value passed alongside it would be overwritten on every open.
         </p>
         <div className="overflow-x-auto">
