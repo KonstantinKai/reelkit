@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { kFrameworks, type Framework } from '../data/frameworkSignal';
+import { useLocalePath, useMessages } from '../i18n/useLocale';
 import { FrameworkVariant } from './ui/FrameworkVariant';
 
 interface NextStepItem {
@@ -21,10 +22,12 @@ function NextStepLink({
   path: string;
   description: string;
 }) {
+  const localePath = useLocalePath();
+
   return (
     <>
       <Link
-        to={path}
+        to={localePath(path)}
         className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
       >
         {label}
@@ -35,9 +38,11 @@ function NextStepLink({
 }
 
 export function NextSteps({ items }: NextStepsProps) {
+  const messages = useMessages();
+
   return (
     <section>
-      <h2 className="text-2xl font-bold mb-4">Next Steps</h2>
+      <h2 className="text-2xl font-bold mb-4">{messages.nextSteps.title}</h2>
       <ul className="space-y-3">
         {items.map((item, i) => {
           if (typeof item.path === 'string') {

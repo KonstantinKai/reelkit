@@ -10,6 +10,11 @@ import { RouteProgressBar } from '../ui/RouteProgressBar';
 import FrameworkSwitcher from '../FrameworkSwitcher';
 import WhatsNewDialog from '../WhatsNewDialog';
 import {
+  readLocaleFromPath,
+  stripLocaleFromPath,
+  withLocale,
+} from '../../i18n/locale';
+import {
   frameworkSignal,
   frameworkRoutePairs,
   readFrameworkFromUrl,
@@ -42,16 +47,20 @@ export default function Layout() {
       () => {
         const fw = frameworkSignal.value;
         const path = window.location.pathname;
+        const locale = readLocaleFromPath(path);
+        const shared = stripLocaleFromPath(path);
         const toIdx = fw === 'react' ? 0 : fw === 'angular' ? 1 : 2;
-        const pair = frameworkRoutePairs.find((p) => p.includes(path));
-        if (pair && pair[toIdx] !== path) {
-          navigate(pair[toIdx], { replace: true });
+        const pair = frameworkRoutePairs.find((p) => p.includes(shared));
+        if (pair && pair[toIdx] !== shared) {
+          navigate(withLocale(locale, pair[toIdx]), { replace: true });
         }
       },
     );
   }, [navigate]);
 
-  const showSidebar = location.pathname.startsWith('/docs');
+  const showSidebar = stripLocaleFromPath(location.pathname).startsWith(
+    '/docs',
+  );
 
   useEffect(() => {
     sidebarOpen.value = false;

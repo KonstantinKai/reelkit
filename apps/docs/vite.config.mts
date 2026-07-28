@@ -3,6 +3,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import { defineConfig, type Plugin } from 'vite';
 import { reactRouter } from '@react-router/dev/vite';
+import react from '@vitejs/plugin-react';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 import { nxCopyAssetsPlugin } from '@nx/vite/plugins/nx-copy-assets.plugin';
 
@@ -189,6 +190,13 @@ function crossCheckRoutePaths(
   }
 }
 
+/**
+ * Matches a translated mirror — `https://reelkit.dev/zh`, `…/uk` and
+ * everything under them. Kept in step with `kLocales` in `src/i18n/locale.ts`;
+ * this config runs before the app bundle exists, so it cannot import it.
+ */
+const _kLocalisedPathPattern = /^https:\/\/reelkit\.dev\/(zh|uk)(\/|$)/;
+
 function crossCheckSitemap(sitemapPath: string, entries: LlmsEntry[]): void {
   if (!existsSync(sitemapPath)) return;
   const xml = readFileSync(sitemapPath, 'utf8');
@@ -201,6 +209,9 @@ function crossCheckSitemap(sitemapPath: string, entries: LlmsEntry[]): void {
   const missingInLlms: string[] = [];
   for (const url of sitemapUrls) {
     if (url === 'https://reelkit.dev/') continue;
+    // The llms files are English-only by design, so a translated mirror has
+    // no counterpart to drift from.
+    if (_kLocalisedPathPattern.test(url)) continue;
     if (!llmsUrls.has(url)) missingInLlms.push(url);
   }
   const missingInSitemap: string[] = [];
@@ -353,6 +364,8 @@ function reelkitLlmsTxtPlugin(): Plugin {
   };
 }
 
+const _kIsTest = process.env['VITEST'] === 'true';
+
 export default defineConfig(() => ({
   root: import.meta.dirname,
   cacheDir: '../node_modules/.vite/docs',
@@ -383,7 +396,11 @@ export default defineConfig(() => ({
   plugins: [
     reelkitVersionsPlugin(),
     reelkitLlmsTxtPlugin(),
-    reactRouter(),
+    // The React Router plugin owns the app entry and the route module graph,
+    // neither of which exists when Vitest imports a component directly — it
+    // fails looking for its own preamble. Component tests get the plain React
+    // transform instead.
+    ...(_kIsTest ? [react()] : [reactRouter()]),
     nxViteTsPaths(),
     nxCopyAssetsPlugin(['*.md']),
   ],

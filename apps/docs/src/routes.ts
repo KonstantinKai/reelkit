@@ -2,8 +2,84 @@ import {
   type RouteConfig,
   index,
   layout,
+  prefix,
   route,
 } from '@react-router/dev/routes';
+
+/**
+ * Each translated tree mirrors the English one under its own prefix. Every
+ * page has its own module, even the ones whose body stays in English, so each
+ * can carry its own title and description. The not-found route is the one
+ * place a module is shared, and it needs an explicit id — ids otherwise
+ * default to the file path and would collide with the English route.
+ */
+const zhRoutes = [
+  index('pages/zh/Home.tsx'),
+  route('docs/getting-started', 'pages/zh/docs/GettingStarted.tsx'),
+  route('docs/installation', 'pages/zh/docs/Installation.tsx'),
+  route('docs/ssr', 'pages/zh/docs/SSR.tsx'),
+  route('docs/core/guide', 'pages/zh/docs/core/Guide.tsx'),
+  route('docs/core/api', 'pages/zh/docs/core/Api.tsx'),
+  route('docs/react/guide', 'pages/zh/docs/react/Guide.tsx'),
+  route('docs/react/api', 'pages/zh/docs/react/Api.tsx'),
+  route('docs/angular/guide', 'pages/zh/docs/angular/Guide.tsx'),
+  route('docs/angular/api', 'pages/zh/docs/angular/Api.tsx'),
+  route('docs/reel-player', 'pages/zh/docs/ReelPlayer.tsx'),
+  route('docs/lightbox', 'pages/zh/docs/Lightbox.tsx'),
+  route('docs/angular-reel-player', 'pages/zh/docs/AngularReelPlayer.tsx'),
+  route('docs/angular-lightbox', 'pages/zh/docs/AngularLightbox.tsx'),
+  route('docs/stories-core', 'pages/zh/docs/StoriesCore.tsx'),
+  route('docs/stories-player', 'pages/zh/docs/StoriesPlayer.tsx'),
+  route(
+    'docs/angular-stories-player',
+    'pages/zh/docs/AngularStoriesPlayer.tsx',
+  ),
+  route('docs/vue/guide', 'pages/zh/docs/vue/Guide.tsx'),
+  route('docs/vue/api', 'pages/zh/docs/vue/Api.tsx'),
+  route('docs/vue-reel-player', 'pages/zh/docs/VueReelPlayer.tsx'),
+  route('docs/vue-lightbox', 'pages/zh/docs/VueLightbox.tsx'),
+  route('docs/vue-stories-player', 'pages/zh/docs/VueStoriesPlayer.tsx'),
+  route('docs/troubleshooting', 'pages/zh/docs/Troubleshooting.tsx'),
+  route('docs/llms', 'pages/zh/docs/Llms.tsx'),
+  route('docs/changelog', 'pages/zh/docs/Changelog.tsx'),
+  route('privacy', 'pages/zh/Privacy.tsx'),
+  route('terms', 'pages/zh/Terms.tsx'),
+  route('*', 'pages/NotFound.tsx', { id: 'zh-not-found' }),
+];
+
+const ukRoutes = [
+  index('pages/uk/Home.tsx'),
+  route('docs/getting-started', 'pages/uk/docs/GettingStarted.tsx'),
+  route('docs/installation', 'pages/uk/docs/Installation.tsx'),
+  route('docs/ssr', 'pages/uk/docs/SSR.tsx'),
+  route('docs/core/guide', 'pages/uk/docs/core/Guide.tsx'),
+  route('docs/core/api', 'pages/uk/docs/core/Api.tsx'),
+  route('docs/react/guide', 'pages/uk/docs/react/Guide.tsx'),
+  route('docs/react/api', 'pages/uk/docs/react/Api.tsx'),
+  route('docs/angular/guide', 'pages/uk/docs/angular/Guide.tsx'),
+  route('docs/angular/api', 'pages/uk/docs/angular/Api.tsx'),
+  route('docs/reel-player', 'pages/uk/docs/ReelPlayer.tsx'),
+  route('docs/lightbox', 'pages/uk/docs/Lightbox.tsx'),
+  route('docs/angular-reel-player', 'pages/uk/docs/AngularReelPlayer.tsx'),
+  route('docs/angular-lightbox', 'pages/uk/docs/AngularLightbox.tsx'),
+  route('docs/stories-core', 'pages/uk/docs/StoriesCore.tsx'),
+  route('docs/stories-player', 'pages/uk/docs/StoriesPlayer.tsx'),
+  route(
+    'docs/angular-stories-player',
+    'pages/uk/docs/AngularStoriesPlayer.tsx',
+  ),
+  route('docs/vue/guide', 'pages/uk/docs/vue/Guide.tsx'),
+  route('docs/vue/api', 'pages/uk/docs/vue/Api.tsx'),
+  route('docs/vue-reel-player', 'pages/uk/docs/VueReelPlayer.tsx'),
+  route('docs/vue-lightbox', 'pages/uk/docs/VueLightbox.tsx'),
+  route('docs/vue-stories-player', 'pages/uk/docs/VueStoriesPlayer.tsx'),
+  route('docs/troubleshooting', 'pages/uk/docs/Troubleshooting.tsx'),
+  route('docs/llms', 'pages/uk/docs/Llms.tsx'),
+  route('docs/changelog', 'pages/uk/docs/Changelog.tsx'),
+  route('privacy', 'pages/uk/Privacy.tsx'),
+  route('terms', 'pages/uk/Terms.tsx'),
+  route('*', 'pages/NotFound.tsx', { id: 'uk-not-found' }),
+];
 
 export default [
   layout('components/layout/Layout.tsx', [
@@ -34,6 +110,8 @@ export default [
     route('docs/changelog', 'pages/docs/Changelog.tsx'),
     route('privacy', 'pages/Privacy.tsx'),
     route('terms', 'pages/Terms.tsx'),
+    ...prefix('zh', zhRoutes),
+    ...prefix('uk', ukRoutes),
     route('*', 'pages/NotFound.tsx'),
   ]),
 ] satisfies RouteConfig;

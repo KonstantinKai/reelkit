@@ -5,6 +5,8 @@ import {
   navItems,
   type NavSection as NavSectionData,
 } from '../../data/searchData';
+import { stripLocaleFromPath } from '../../i18n/locale';
+import { useLocalePath, useMessages } from '../../i18n/useLocale';
 import { FrameworkVariant } from '../ui/FrameworkVariant';
 
 // eslint-disable-next-line @nx/enforce-module-boundaries
@@ -42,7 +44,7 @@ function useChangelogBadge() {
 
   // Clear badge when visiting changelog page
   useEffect(() => {
-    if (location.pathname === '/docs/changelog') {
+    if (stripLocaleFromPath(location.pathname) === '/docs/changelog') {
       const latest = getLatestEntry();
       if (latest) {
         localStorage.setItem(_kStorageKey, latest);
@@ -70,6 +72,8 @@ function NavSection({
   showChangelogBadge?: boolean;
 }) {
   const [isExpanded, setIsExpanded] = useState(true);
+  const messages = useMessages();
+  const localePath = useLocalePath();
 
   return (
     <div className="mb-4">
@@ -93,7 +97,7 @@ function NavSection({
               className={'comingSoon' in item && item.comingSoon ? 'mt-3' : ''}
             >
               <NavLink
-                to={item.path}
+                to={localePath(item.path)}
                 className={({ isActive }) =>
                   `flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-all duration-200 ${
                     isActive
@@ -102,14 +106,14 @@ function NavSection({
                   } ${'comingSoon' in item && item.comingSoon ? 'opacity-60 cursor-not-allowed' : ''}`
                 }
               >
-                {item.label}
+                {messages.nav.items[item.key]}
                 {'comingSoon' in item &&
                   (item as { comingSoon?: boolean }).comingSoon && (
                     <span className="text-xs px-1.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400 ml-2">
-                      Soon
+                      {messages.nav.comingSoon}
                     </span>
                   )}
-                {showChangelogBadge && item.path === '/docs/changelog' && (
+                {showChangelogBadge && item.key === 'changelog' && (
                   <span className="w-2 h-2 rounded-full bg-primary-500 animate-pulse" />
                 )}
               </NavLink>
@@ -135,6 +139,7 @@ export default function Sidebar({
   onClose,
 }: SidebarProps) {
   const showChangelogBadge = useChangelogBadge();
+  const messages = useMessages();
   return (
     <>
       <div
@@ -152,17 +157,17 @@ export default function Sidebar({
           {navItems.map((section) => {
             const node = (
               <NavSection
-                key={section.title}
-                title={section.title}
+                key={section.key}
+                title={messages.nav.sections[section.key]}
                 items={section.items}
                 showChangelogBadge={
-                  section.title === 'Resources' ? showChangelogBadge : false
+                  section.key === 'resources' ? showChangelogBadge : false
                 }
               />
             );
             if (section.framework) {
               return (
-                <FrameworkVariant key={section.title} for={section.framework}>
+                <FrameworkVariant key={section.key} for={section.framework}>
                   {node}
                 </FrameworkVariant>
               );

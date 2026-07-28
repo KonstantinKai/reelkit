@@ -1,4 +1,11 @@
 import type { Framework } from './frameworkSignal';
+import type { Messages } from '../i18n/messages';
+import { kDefaultLocale, withLocale, type Locale } from '../i18n/locale';
+import { zhCategories, zhKeywords, zhTitles } from './searchData.zh';
+import { ukCategories, ukKeywords, ukTitles } from './searchData.uk';
+
+export type NavSectionKey = keyof Messages['nav']['sections'];
+export type NavItemKey = keyof Messages['nav']['items'];
 
 export interface SearchItem {
   title: string;
@@ -2858,102 +2865,154 @@ export const searchItems: SearchItem[] = [
   },
 ];
 
+/**
+ * The search index for one locale. English is the authored list; other
+ * locales reuse it with locale-prefixed paths and translated labels, which
+ * keeps the two indexes structurally identical for free.
+ */
+export function searchItemsFor(locale: Locale): SearchItem[] {
+  if (locale === kDefaultLocale) return searchItems;
+  const cached = _kLocalisedItems.get(locale);
+  if (cached) return cached;
+  // A locale that has routes but no dictionary yet still gets a working
+  // index — English labels on its own paths — rather than an empty box.
+  const { titles, categories, keywords } =
+    _kDictionaries[locale] ?? _kEmptyDictionary;
+  const items = searchItems.map((item) => ({
+    ...item,
+    path: withLocale(locale, item.path),
+    title: titles[item.title] ?? item.title,
+    category: categories[item.category] ?? item.category,
+    sectionTitle:
+      item.sectionTitle === undefined
+        ? undefined
+        : (titles[item.sectionTitle] ?? item.sectionTitle),
+    keywords: [...item.keywords, ...(keywords[item.path] ?? [])],
+  }));
+  _kLocalisedItems.set(locale, items);
+  return items;
+}
+
+interface SearchDictionary {
+  /** Page titles and section headings, keyed by their English text. */
+  titles: Record<string, string>;
+  /** Sidebar-level groupings, keyed by their English text. */
+  categories: Record<string, string>;
+  /** Extra keywords per English path, appended to the English ones. */
+  keywords: Record<string, string[]>;
+}
+
+const _kEmptyDictionary: SearchDictionary = {
+  titles: {},
+  categories: {},
+  keywords: {},
+};
+
+const _kDictionaries: Partial<Record<Locale, SearchDictionary>> = {
+  zh: { titles: zhTitles, categories: zhCategories, keywords: zhKeywords },
+  uk: { titles: ukTitles, categories: ukCategories, keywords: ukKeywords },
+};
+
+const _kLocalisedItems = new Map<Locale, SearchItem[]>();
+
 export interface NavItem {
-  label: string;
+  /** Looked up in the locale dictionary to produce the visible label. */
+  key: NavItemKey;
   path: string;
   framework?: Framework;
   comingSoon?: boolean;
 }
 
 export interface NavSection {
-  title: string;
+  /** Looked up in the locale dictionary to produce the visible heading. */
+  key: NavSectionKey;
   items: NavItem[];
   framework?: Framework;
 }
 
 export const navItems: NavSection[] = [
   {
-    title: 'Overview',
+    key: 'overview',
     items: [
-      { label: 'Getting Started', path: '/docs/getting-started' },
-      { label: 'Installation', path: '/docs/installation' },
-      { label: 'SSR', path: '/docs/ssr' },
+      { key: 'gettingStarted', path: '/docs/getting-started' },
+      { key: 'installation', path: '/docs/installation' },
+      { key: 'ssr', path: '/docs/ssr' },
     ],
   },
   {
-    title: 'Core',
+    key: 'core',
     items: [
-      { label: 'Guide', path: '/docs/core/guide' },
-      { label: 'API Reference', path: '/docs/core/api' },
-      { label: 'Stories Core', path: '/docs/stories-core' },
+      { key: 'guide', path: '/docs/core/guide' },
+      { key: 'apiReference', path: '/docs/core/api' },
+      { key: 'storiesCore', path: '/docs/stories-core' },
     ],
   },
   {
-    title: 'React',
+    key: 'react',
     framework: 'react',
     items: [
-      { label: 'Guide', path: '/docs/react/guide' },
-      { label: 'API Reference', path: '/docs/react/api' },
+      { key: 'guide', path: '/docs/react/guide' },
+      { key: 'apiReference', path: '/docs/react/api' },
     ],
   },
   {
-    title: 'Angular',
+    key: 'angular',
     framework: 'angular',
     items: [
-      { label: 'Guide', path: '/docs/angular/guide' },
-      { label: 'API Reference', path: '/docs/angular/api' },
+      { key: 'guide', path: '/docs/angular/guide' },
+      { key: 'apiReference', path: '/docs/angular/api' },
     ],
   },
   {
-    title: 'Vue',
+    key: 'vue',
     framework: 'vue',
     items: [
-      { label: 'Guide', path: '/docs/vue/guide' },
-      { label: 'API Reference', path: '/docs/vue/api' },
+      { key: 'guide', path: '/docs/vue/guide' },
+      { key: 'apiReference', path: '/docs/vue/api' },
     ],
   },
   {
-    title: 'Components',
+    key: 'components',
     items: [
       {
-        label: 'Reel Player',
+        key: 'reelPlayer',
         path: '/docs/reel-player',
         framework: 'react',
       },
-      { label: 'Lightbox', path: '/docs/lightbox', framework: 'react' },
+      { key: 'lightbox', path: '/docs/lightbox', framework: 'react' },
       {
-        label: 'Reel Player',
+        key: 'reelPlayer',
         path: '/docs/angular-reel-player',
         framework: 'angular',
       },
       {
-        label: 'Lightbox',
+        key: 'lightbox',
         path: '/docs/angular-lightbox',
         framework: 'angular',
       },
       {
-        label: 'Stories Player',
+        key: 'storiesPlayer',
         path: '/docs/stories-player',
         framework: 'react',
       },
       {
-        label: 'Stories Player',
+        key: 'storiesPlayer',
         path: '/docs/angular-stories-player',
         framework: 'angular',
         comingSoon: true,
       },
       {
-        label: 'Reel Player',
+        key: 'reelPlayer',
         path: '/docs/vue-reel-player',
         framework: 'vue',
       },
       {
-        label: 'Lightbox',
+        key: 'lightbox',
         path: '/docs/vue-lightbox',
         framework: 'vue',
       },
       {
-        label: 'Stories Player',
+        key: 'storiesPlayer',
         path: '/docs/vue-stories-player',
         framework: 'vue',
         comingSoon: true,
@@ -2961,11 +3020,11 @@ export const navItems: NavSection[] = [
     ],
   },
   {
-    title: 'Resources',
+    key: 'resources',
     items: [
-      { label: 'Troubleshooting', path: '/docs/troubleshooting' },
-      { label: 'AI / LLM Integration', path: '/docs/llms' },
-      { label: "What's New?", path: '/docs/changelog' },
+      { key: 'troubleshooting', path: '/docs/troubleshooting' },
+      { key: 'llms', path: '/docs/llms' },
+      { key: 'changelog', path: '/docs/changelog' },
     ],
   },
 ];

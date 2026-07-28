@@ -1,12 +1,25 @@
-import { Links, Meta, Outlet, Scripts, ScrollRestoration } from 'react-router';
+import {
+  Links,
+  Meta,
+  Outlet,
+  Scripts,
+  ScrollRestoration,
+  useLocation,
+} from 'react-router';
 import { setCdnBase } from '@reelkit/example-data';
 import { ThemeProvider } from './context/ThemeContext';
+import {
+  kLocaleTags,
+  kLocales,
+  localeUrl,
+  readLocaleFromPath,
+  stripLocaleFromPath,
+} from './i18n/locale';
 import './styles.css';
 
 if (import.meta.env.DEV) setCdnBase('/cdn');
 
 export const links = () => [
-  { rel: 'canonical', href: 'https://reelkit.dev/' },
   { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
   {
     rel: 'icon',
@@ -75,13 +88,17 @@ export const meta = () => [
 
 const _kBootstrapScript = `(function () {
   try {
-    var theme =
+    var choice =
       localStorage.getItem('rk-docs:theme') ||
       localStorage.getItem('theme') ||
-      (window.matchMedia('(prefers-color-scheme: dark)').matches
-        ? 'dark'
-        : 'light');
-    if (theme === 'dark') document.documentElement.classList.add('dark');
+      'system';
+    // 'system' and anything unrecognised defer to the operating system, so
+    // the pre-paint class matches what ThemeProvider resolves after mount.
+    var dark =
+      choice === 'dark' ||
+      (choice !== 'light' &&
+        window.matchMedia('(prefers-color-scheme: dark)').matches);
+    if (dark) document.documentElement.classList.add('dark');
   } catch (e) {}
   try {
     var url = new URLSearchParams(window.location.search).get('framework');
@@ -118,11 +135,38 @@ const _kStructuredData = JSON.stringify({
 });
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  const { pathname } = useLocation();
+  const locale = readLocaleFromPath(pathname);
+  const shared = stripLocaleFromPath(pathname);
+
   return (
-    <html lang="en" data-rk-fw="react" suppressHydrationWarning>
+    <html
+      lang={kLocaleTags[locale]}
+      data-rk-fw="react"
+      suppressHydrationWarning
+    >
       <head>
         <Meta />
         <Links />
+        {/* Same-language self-referential canonical. A shared canonical would
+            fold both language versions into one, and the alternates below
+            would never surface. */}
+        <link rel="canonical" href={localeUrl(locale, shared)} />
+        {/* Each language version lists itself and every alternate; a missing
+            return link makes search engines drop the whole set. */}
+        {kLocales.map((alternate) => (
+          <link
+            key={alternate}
+            rel="alternate"
+            hrefLang={kLocaleTags[alternate]}
+            href={localeUrl(alternate, shared)}
+          />
+        ))}
+        <link
+          rel="alternate"
+          hrefLang="x-default"
+          href={localeUrl('en', shared)}
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: _kStructuredData }}

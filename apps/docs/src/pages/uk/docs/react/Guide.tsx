@@ -1,0 +1,1087 @@
+import { Link } from 'react-router-dom';
+import { CodeBlock } from '../../../../components/ui/CodeBlock';
+import { NextSteps } from '../../../../components/NextSteps';
+import { FeatureCardGrid } from '../../../../components/ui/FeatureCard';
+import { Sandbox } from '../../../../components/ui/Sandbox';
+import { BasicSliderDemo } from '../../../../components/demos/BasicSliderDemo';
+import { InfiniteListDemo } from '../../../../components/demos/InfiniteListDemo';
+import { GrowableListDemo } from '../../../../components/demos/GrowableListDemo';
+import {
+  ArrowRight,
+  Hand,
+  Keyboard,
+  Layers,
+  Navigation,
+  Zap,
+  MousePointer,
+  Infinity as InfinityIcon,
+  Radio,
+  Code,
+} from 'lucide-react';
+import { Heading } from '../../../../components/ui/Heading';
+import { ukPageMeta } from '../../../../i18n/pageMeta';
+
+export const meta = () =>
+  ukPageMeta({
+    path: '/docs/react/guide',
+    title: 'Посібник для React · ReelKit',
+    description:
+      'ReelKit у React: компонент Reel, патерн itemBuilder, автоматичний розмір, ReelIndicator і поради щодо продуктивності.',
+  });
+
+// Headings keep the English slug as an explicit id — the generator is
+// ascii-only, so a translated heading would produce an empty anchor.
+
+const basicFullCode = `import { useRef, useState, useCallback, useEffect } from 'react';
+import { Reel, ReelIndicator, type ReelApi } from '@reelkit/react';
+import {
+  ChevronUp, ChevronDown, Zap, Hand, Layers, Keyboard, Monitor, Gauge,
+} from 'lucide-react';
+
+const slides = [
+  { icon: Zap, title: 'Virtualized', subtitle: 'Only 3 slides in DOM', color: '#6366f1' },
+  { icon: Hand, title: 'Touch First', subtitle: 'Native swipe gestures', color: '#8b5cf6' },
+  { icon: Layers, title: 'Zero Deps', subtitle: 'Tiny bundle size', color: '#7c3aed' },
+  { icon: Keyboard, title: 'Keyboard Nav', subtitle: 'Full a11y support', color: '#ec4899' },
+  { icon: Monitor, title: 'SSR Ready', subtitle: 'Works everywhere', color: '#14b8a6' },
+  { icon: Gauge, title: '60fps', subtitle: 'Smooth animations', color: '#f59e0b' },
+];
+
+const AUTO_ADVANCE_MS = 3000;
+
+export default function BasicSlider() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const apiRef = useRef<ReelApi>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [size, setSize] = useState<[number, number]>([0, 0]);
+
+  const updateSize = useCallback(() => {
+    if (containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      setSize([rect.width, rect.height]);
+      apiRef.current?.adjust();
+    }
+  }, []);
+
+  useEffect(() => {
+    updateSize();
+    const observer = new ResizeObserver(updateSize);
+    if (containerRef.current) observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, [updateSize]);
+
+  useEffect(() => {
+    if (size[0] === 0 || size[1] === 0) return;
+    const id = setInterval(() => apiRef.current?.next(), AUTO_ADVANCE_MS);
+    return () => clearInterval(id);
+  }, [size]);
+
+  if (size[0] === 0 || size[1] === 0) {
+    return <div ref={containerRef} style={{ width: '100%', height: '100%' }} />;
+  }
+
+  return (
+    <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
+      <Reel
+        count={slides.length}
+        size={size}
+        direction="vertical"
+        loop
+        apiRef={apiRef}
+        afterChange={(index) => setCurrentIndex(index)}
+        itemBuilder={(index, _indexInRange, itemSize) => {
+          const slide = slides[index];
+          const Icon = slide.icon;
+          return (
+            <div
+              style={{
+                width: itemSize[0],
+                height: itemSize[1],
+                background: \`linear-gradient(160deg, \${slide.color}, \${slide.color}aa)\`,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                gap: 6,
+              }}
+            >
+              <Icon size={32} strokeWidth={1.5} style={{ opacity: 0.9 }} />
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 700 }}>{slide.title}</h2>
+              <p style={{ fontSize: '0.85rem', opacity: 0.6 }}>{slide.subtitle}</p>
+            </div>
+          );
+        }}
+      >
+        <div style={{ position: 'absolute', top: 28, left: '50%',
+          transform: 'translateX(-50%)', padding: '4px 12px',
+          background: 'rgba(0,0,0,0.4)', color: '#fff',
+          borderRadius: 12, fontSize: '0.75rem', zIndex: 10 }}>
+          {currentIndex + 1} / {slides.length}
+        </div>
+
+        <div style={{ position: 'absolute', right: 12, top: '50%',
+          transform: 'translateY(-50%)', zIndex: 10 }}>
+          <ReelIndicator direction="vertical" radius={3} gap={4} />
+        </div>
+      </Reel>
+
+      <div style={{ position: 'absolute', bottom: 28, left: '50%',
+        transform: 'translateX(-50%)', display: 'flex', gap: 8, zIndex: 10 }}>
+        <button onClick={() => apiRef.current?.prev()}
+          style={{ width: 36, height: 36, borderRadius: '50%',
+            background: 'rgba(255,255,255,0.2)', border: 'none',
+            color: 'white', cursor: 'pointer', display: 'flex',
+            alignItems: 'center', justifyContent: 'center' }}>
+          <ChevronUp size={18} />
+        </button>
+        <button onClick={() => apiRef.current?.next()}
+          style={{ width: 36, height: 36, borderRadius: '50%',
+            background: 'rgba(255,255,255,0.2)', border: 'none',
+            color: 'white', cursor: 'pointer', display: 'flex',
+            alignItems: 'center', justifyContent: 'center' }}>
+          <ChevronDown size={18} />
+        </button>
+      </div>
+    </div>
+  );
+}`;
+
+const infiniteFullCode = `import { useRef, useMemo, useState } from 'react';
+import { Reel, ReelIndicator, type ReelApi } from '@reelkit/react';
+import { ChevronUp, ChevronDown } from 'lucide-react';
+
+const TOTAL_ITEMS = 10000;
+
+const generateItems = (count: number) =>
+  Array.from({ length: count }, (_, i) => ({
+    title: \`Item \${i + 1}\`,
+    color: \`hsl(\${(i * 137.5) % 360}, 70%, 50%)\`,
+  }));
+
+export default function InfiniteList() {
+  const apiRef = useRef<ReelApi>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [goToValue, setGoToValue] = useState('');
+
+  const items = useMemo(() => generateItems(TOTAL_ITEMS), []);
+
+  const handleGoTo = () => {
+    const index = parseInt(goToValue, 10) - 1;
+    if (index >= 0 && index < TOTAL_ITEMS) {
+      apiRef.current?.goTo(index, true);
+    }
+  };
+
+  return (
+    <div style={{ position: 'relative', width: '100%', height: '100dvh' }}>
+      <Reel
+        count={items.length}
+        style={{ width: '100%', height: '100%' }}
+        direction="vertical"
+        enableWheel
+        apiRef={apiRef}
+        afterChange={(index) => setCurrentIndex(index)}
+        itemBuilder={(index, indexInRange, itemSize) => (
+          <div
+            style={{
+              width: itemSize[0],
+              height: itemSize[1],
+              background: items[index].color,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+            }}
+          >
+            <h2>{items[index].title}</h2>
+            <p>index: {index} | range: {indexInRange}</p>
+          </div>
+        )}
+      >
+        {/* Counter */}
+        <div style={{ position: 'absolute', top: 12, left: '50%',
+          transform: 'translateX(-50%)', padding: '4px 12px',
+          background: 'rgba(0,0,0,0.4)', color: '#fff',
+          borderRadius: 12, fontSize: '0.75rem', zIndex: 10 }}>
+          {(currentIndex + 1).toLocaleString()} / {TOTAL_ITEMS.toLocaleString()}
+        </div>
+
+        {/* Indicator */}
+        <div style={{ position: 'absolute', right: 12, top: '50%',
+          transform: 'translateY(-50%)', zIndex: 10 }}>
+          <ReelIndicator
+            direction="vertical"
+            visible={4}
+          />
+        </div>
+      </Reel>
+
+      {/* Controls */}
+      <div style={{ position: 'absolute', bottom: 12, left: '50%',
+        transform: 'translateX(-50%)', display: 'flex', gap: 6,
+        alignItems: 'center', zIndex: 10 }}>
+        <button onClick={() => apiRef.current?.prev()}
+          disabled={currentIndex === 0}>
+          <ChevronUp size={16} />
+        </button>
+        <button onClick={() => apiRef.current?.next()}
+          disabled={currentIndex === items.length - 1}>
+          <ChevronDown size={16} />
+        </button>
+        <input
+          type="number"
+          min={1}
+          max={TOTAL_ITEMS}
+          value={goToValue}
+          onChange={(e) => setGoToValue(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') handleGoTo(); }}
+          placeholder="Go to #"
+          style={{ width: 72, padding: '4px 8px', fontSize: '0.75rem',
+            background: 'rgba(0,0,0,0.4)', color: '#fff',
+            border: 'none', borderRadius: 6, outline: 'none' }}
+        />
+        <button onClick={handleGoTo}>Go</button>
+      </div>
+    </div>
+  );
+}`;
+
+const growableFullCode = `import { useRef, useState } from 'react';
+import { Reel, ReelIndicator, type ReelApi } from '@reelkit/react';
+import { ChevronUp, ChevronDown } from 'lucide-react';
+
+const BATCH_SIZE = 20;
+const MAX_ITEMS = 200;
+const LOAD_THRESHOLD = 3;
+
+const generateItems = (startIndex: number, count: number) =>
+  Array.from({ length: count }, (_, i) => {
+    const index = startIndex + i;
+    return {
+      title: \`Item \${index + 1}\`,
+      color: \`hsl(\${(index * 137.5) % 360}, 70%, 50%)\`,
+    };
+  });
+
+export default function GrowableList() {
+  const apiRef = useRef<ReelApi>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [items, setItems] = useState(() => generateItems(0, BATCH_SIZE));
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const loadingRef = useRef(false);
+
+  const handleAfterChange = (index: number) => {
+    setCurrentIndex(index);
+    if (
+      index >= items.length - LOAD_THRESHOLD &&
+      items.length < MAX_ITEMS &&
+      !loadingRef.current
+    ) {
+      loadingRef.current = true;
+      setIsLoadingMore(true);
+      setTimeout(() => {
+        setItems((prev) => [...prev, ...generateItems(prev.length, BATCH_SIZE)]);
+        setIsLoadingMore(false);
+        loadingRef.current = false;
+      }, 1000);
+    }
+  };
+
+  return (
+    <div style={{ position: 'relative', width: '100%', height: '100dvh' }}>
+      <Reel
+        count={items.length}
+        style={{ width: '100%', height: '100%' }}
+        direction="vertical"
+        enableWheel
+        apiRef={apiRef}
+        afterChange={handleAfterChange}
+        itemBuilder={(index, _indexInRange, itemSize) => (
+          <div
+            style={{
+              width: itemSize[0],
+              height: itemSize[1],
+              background: items[index].color,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+            }}
+          >
+            <h2>{items[index].title}</h2>
+            <p>batch: {Math.floor(index / BATCH_SIZE) + 1}</p>
+          </div>
+        )}
+      >
+        {/* Counter */}
+        <div style={{ position: 'absolute', top: 12, left: '50%',
+          transform: 'translateX(-50%)', padding: '4px 12px',
+          background: 'rgba(0,0,0,0.4)', color: '#fff',
+          borderRadius: 12, fontSize: '0.75rem', zIndex: 10 }}>
+          {currentIndex + 1} / {items.length}
+          {items.length < MAX_ITEMS && ' (growing)'}
+        </div>
+
+        {/* Indicator */}
+        <div style={{ position: 'absolute', right: 12, top: '50%',
+          transform: 'translateY(-50%)', zIndex: 10 }}>
+          <ReelIndicator direction="vertical" visible={4} />
+        </div>
+      </Reel>
+
+      {/* Controls */}
+      <div style={{ position: 'absolute', bottom: 12, left: '50%',
+        transform: 'translateX(-50%)', display: 'flex', gap: 6,
+        alignItems: 'center', zIndex: 10 }}>
+        <button onClick={() => apiRef.current?.prev()}
+          disabled={currentIndex === 0}>
+          <ChevronUp size={16} />
+        </button>
+        <button onClick={() => apiRef.current?.next()}
+          disabled={currentIndex === items.length - 1 && !isLoadingMore}>
+          <ChevronDown size={16} />
+        </button>
+      </div>
+
+      {/* Loading overlay */}
+      {isLoadingMore && (
+        <div style={{ position: 'absolute', bottom: 52, left: '50%',
+          transform: 'translateX(-50%)', padding: '6px 16px',
+          background: 'rgba(0,0,0,0.6)', color: '#fff',
+          borderRadius: 12, fontSize: '0.75rem', zIndex: 20 }}>
+          Loading more...
+        </div>
+      )}
+    </div>
+  );
+}`;
+
+export default function ReactGuide() {
+  return (
+    <div className="max-w-4xl mx-auto px-6 py-12">
+      <div className="mb-12">
+        <h1 className="text-4xl font-bold mb-4">Посібник для React</h1>
+        <p className="text-xl text-slate-600 dark:text-slate-400">
+          Дізнайтеся, як будувати слайдери з{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            @reelkit/react
+          </code>
+          .
+        </p>
+      </div>
+
+      <section className="mb-12">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <FeatureCardGrid
+            items={[
+              {
+                icon: Hand,
+                label: 'Спершу дотик',
+                desc: 'Свайп з інерцією та прилипанням',
+              },
+              {
+                icon: Keyboard,
+                label: 'Навігація з клавіатури',
+                desc: 'Стрілки + Escape',
+              },
+              {
+                icon: MousePointer,
+                label: 'Прокручування колесом',
+                desc: 'Необов’язково, з дебаунсом',
+              },
+              {
+                icon: InfinityIcon,
+                label: 'Віртуалізований',
+                desc: '10 000+ елементів, 3 у DOM',
+              },
+              {
+                icon: Radio,
+                label: 'Indicators',
+                desc: 'Прокручування точок у стилі Instagram',
+              },
+              {
+                icon: Navigation,
+                label: 'Програмний API',
+                desc: 'next(), prev(), goTo() через ref',
+              },
+              {
+                icon: Zap,
+                label: 'Режим циклу',
+                desc: 'Нескінченна кругова навігація',
+              },
+              {
+                icon: Layers,
+                label: 'Directional',
+                desc: 'Вертикально або горизонтально',
+              },
+              {
+                icon: Code,
+                label: 'Жодних зайвих рендерів',
+                desc: 'Оновлення стану на сигналах',
+              },
+            ]}
+          />
+        </div>
+      </section>
+
+      <section className="mb-12">
+        <Heading
+          level={2}
+          id="reel-component"
+          className="text-2xl font-bold mb-4"
+        >
+          Компонент Reel
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          The{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            Reel
+          </code>{' '}
+          — головний контейнер: він тримає стан слайдера, обробляє дотикові
+          жести, навігацію з клавіатури та анімації.
+        </p>
+        <CodeBlock
+          code={`import { Reel, ReelIndicator } from '@reelkit/react';
+
+<Reel
+  count={items.length}
+  size={[width, height]}
+  direction="vertical"
+  enableWheel
+  afterChange={(index) => console.log('Current:', index)}
+  itemBuilder={(index, indexInRange, size) => (
+    <div style={{ width: size[0], height: size[1] }}>
+      Slide {index}
+    </div>
+  )}
+>
+  {/* Optional children like ReelIndicator */}
+</Reel>`}
+          language="tsx"
+        />
+      </section>
+
+      <section className="mb-12">
+        <Heading level={2} id="auto-sizing" className="text-2xl font-bold mb-4">
+          Auto-sizing
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          The{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            size
+          </code>{' '}
+          необов’язковий. Якщо його не передати, Reel сам вимірює контейнер
+          через{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            ResizeObserver
+          </code>{' '}
+          і підлаштовується під макет, заданий CSS. Розмір контейнера має
+          задавати батьківський елемент — наприклад, flex, grid або явні розміри
+          в CSS.
+        </p>
+        <CodeBlock
+          code={`// Explicit size (fixed)
+<Reel count={items.length} size={[400, 600]} itemBuilder={...} />
+
+// Auto-size (responsive — sized by CSS)
+<Reel count={items.length} style={{ width: '100%', height: '100dvh' }} itemBuilder={...} />`}
+          language="tsx"
+        />
+      </section>
+
+      <section className="mb-12">
+        <Heading
+          level={2}
+          id="itembuilder-pattern"
+          className="text-2xl font-bold mb-4"
+        >
+          Патерн itemBuilder
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          The{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            itemBuilder
+          </code>{' '}
+          — функція, яка отримує індекс і повертає вміст слайда. Саме цей патерн
+          дає віртуалізацію: рендеряться лише видимі елементи.
+        </p>
+        <CodeBlock
+          code={`itemBuilder={(index, indexInRange, size) => {
+  // index: actual item index (0 to count-1)
+  // indexInRange: position in visible window (0, 1, or 2)
+  // size: [width, height] of the container
+  return <Slide index={index} />;
+}}`}
+          language="tsx"
+        />
+      </section>
+
+      <section className="mb-12">
+        <Heading level={2} id="navigation" className="text-2xl font-bold mb-4">
+          Навігація
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Вбудовані способи навігації:
+        </p>
+
+        <ul className="space-y-3 mb-6">
+          <li className="flex items-start gap-3">
+            <span className="w-2 h-2 rounded-full bg-primary-500 mt-2" />
+            <span>
+              <strong>Дотик / свайп:</strong> Тягніть, щоб гортати — з інерцією
+              та прилипанням
+            </span>
+          </li>
+          <li className="flex items-start gap-3">
+            <span className="w-2 h-2 rounded-full bg-primary-500 mt-2" />
+            <span>
+              <strong>Клавіатура:</strong> Стрілки та Escape
+            </span>
+          </li>
+          <li className="flex items-start gap-3">
+            <span className="w-2 h-2 rounded-full bg-primary-500 mt-2" />
+            <span>
+              <strong>Колесо миші:</strong> Увімкніть{' '}
+              <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+                enableWheel
+              </code>{' '}
+              у пропсах
+            </span>
+          </li>
+          <li className="flex items-start gap-3">
+            <span className="w-2 h-2 rounded-full bg-primary-500 mt-2" />
+            <span>
+              <strong>Програмно:</strong> Використовуйте{' '}
+              <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+                apiRef
+              </code>{' '}
+              для{' '}
+              <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+                next()
+              </code>
+              ,{' '}
+              <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+                prev()
+              </code>
+              ,{' '}
+              <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+                goTo()
+              </code>
+            </span>
+          </li>
+        </ul>
+
+        <CodeBlock
+          code={`import { useRef } from 'react';
+import { Reel, type ReelApi } from '@reelkit/react';
+
+function App() {
+  const apiRef = useRef<ReelApi>(null);
+
+  return (
+    <>
+      <Reel
+        count={10}
+        size={[400, 600]}
+        apiRef={apiRef}
+        itemBuilder={(index) => <Slide index={index} />}
+      />
+      <button onClick={() => apiRef.current?.prev()}>Prev</button>
+      <button onClick={() => apiRef.current?.next()}>Next</button>
+      <button onClick={() => apiRef.current?.goTo(5)}>Go to 5</button>
+    </>
+  );
+}`}
+          language="tsx"
+        />
+      </section>
+
+      <section className="mb-12">
+        <Heading level={2} id="url-state" className="text-2xl font-bold mb-4">
+          Стан в URL
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            useOverlayUrlState
+          </code>{' '}
+          будує контролер стану в URL для оверлея й повертає його цілком, а ви
+          передаєте його в{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            *UrlOverlay
+          </code>{' '}
+          як його{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            controller
+          </code>{' '}
+          . Стан відкриття належить URL, тож прив’язаний оверлей відкривається
+          сам, а посилання — звичайний спосіб його відкрити. Перший запис
+          відсутнього параметра додає один запис в історію, кожен наступний його
+          замінює, тож гортання ніколи не ховає кнопку «назад». Тримайте
+          контролер, щоб читати{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            value
+          </code>
+          /
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            позицією
+          </code>{' '}
+          і керувати ним програмно:{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            set(position)
+          </code>{' '}
+          відкриває,{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            set(null)
+          </code>{' '}
+          закриває, а{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            set
+          </code>{' '}
+          — той самий низькорівневий запис, який оверлей робить усередині під
+          час зміни слайда.
+        </p>
+        <CodeBlock
+          code={`import { useOverlayUrlState, urlIndexKey } from '@reelkit/react';
+import { useReactRouterUrlAdapter } from '@reelkit/react/react-router-url-adapter';
+import { LightboxUrlOverlay } from '@reelkit/react-lightbox';
+import { Link } from 'react-router-dom';
+
+const photo = useOverlayUrlState({
+  param: 'photo',
+  ...urlIndexKey(() => images.length),
+});
+
+// Opening is a link — the overlay reads the URL and opens itself.
+<Link to="?photo=3"><img src={images[3].src} /></Link>
+<LightboxUrlOverlay controller={photo} images={images} />
+
+// Read the url-derived state, or close programmatically (a low-level write).
+photo.position.value; // 3 for ?photo=3, null when nothing is open
+photo.set(null); // close
+
+// Routed app: pass a router-backed adapter, otherwise the router's
+// own location goes stale and its next navigation drops the param.
+const adapter = useReactRouterUrlAdapter();
+const routed = useOverlayUrlState({
+  param: 'photo',
+  adapter,
+  ...urlIndexKey(() => images.length),
+});`}
+          language="tsx"
+        />
+        <p className="text-slate-600 dark:text-slate-400 mt-4">
+          Об’єкт опцій приймає{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            param
+          </code>
+          ,{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            codec
+          </code>
+          , та{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            locator
+          </code>{' '}
+          (усі три обов’язкові) плюс необов’язковий{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            adapter
+          </code>
+          . The{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            codec
+          </code>{' '}
+          та{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            locator
+          </code>{' '}
+          — узгоджена пара з однаковим{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            Id
+          </code>
+          , тож вони йдуть разом — для звичайної{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            ?photo=3
+          </code>{' '}
+          галереї розгортайте{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            ...urlIndexKey(() =&gt; images.length)
+          </code>
+          , який повертає обидві половини одразу.{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            urlIndexKey
+          </code>{' '}
+          зіставляє параметр з індексом слайда й обмежує його живою кількістю,
+          яку повертає геттер, тож застарілий або позамежний{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            ?photo=99
+          </code>{' '}
+          відхиляється й сам зникає з URL замість того, щоб відкрити слайд,
+          якого ніхто не називав. Передавайте геттер, а не число, щоб межа
+          лишалася правильною, поки посторінкова стрічка росте. Він загортає{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            createIndexLocator
+          </code>{' '}
+          (половину-локатор) і поєднує його з{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            indexCodec
+          </code>
+          . Посторінкова стрічка або галерея з адресацією за ідентичністю
+          передає власну узгоджену пару{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            codec
+          </code>{' '}
+          +{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            locator
+          </code>{' '}
+          . Повна таблиця опцій — у{' '}
+          <Link
+            to="/uk/docs/react/api#useoverlayurlstate"
+            className="text-primary-600 dark:text-primary-400 hover:underline"
+          >
+            довіднику API для React
+          </Link>
+          .
+        </p>
+      </section>
+
+      <section className="mb-12">
+        <Heading
+          level={2}
+          id="reelindicator"
+          className="text-2xl font-bold mb-4"
+        >
+          ReelIndicator
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Необов’язковий компонент, що показує індикатори прогресу в стилі
+          Instagram із поточною позицією в слайдері. Якщо він усередині{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            Reel
+          </code>
+          , він сам під’єднується до{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            count
+          </code>{' '}
+          та{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            active
+          </code>{' '}
+          значення через контекст — нічого зв’язувати вручну не треба.
+        </p>
+        <CodeBlock
+          code={`import { Reel, ReelIndicator } from '@reelkit/react';
+
+{/* Auto-connect: count and active are inherited from parent Reel */}
+<Reel count={10} size={[400, 600]} itemBuilder={...}>
+  <ReelIndicator />
+</Reel>
+
+{/* Manual usage: pass count and active explicitly (e.g. outside a Reel) */}
+<ReelIndicator count={10} active={currentIndex} />`}
+          language="tsx"
+        />
+      </section>
+
+      {/* Live Demo: Basic Slider */}
+      <section className="mb-12">
+        <Heading
+          level={2}
+          id="live-demo-basic-slider"
+          className="text-2xl font-bold mb-4"
+        >
+          Демо наживо: базовий слайдер
+        </Heading>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <FeatureCardGrid
+            items={[
+              { icon: Hand, label: 'Touch/Swipe', desc: 'З інерцією' },
+              {
+                icon: Keyboard,
+                label: 'Keyboard',
+                desc: 'Стрілки + Escape',
+              },
+              { icon: Layers, label: 'Indicators', desc: 'Instagram-style' },
+              { icon: Navigation, label: 'Навігація', desc: 'Через apiRef' },
+            ]}
+          />
+        </div>
+        <Sandbox
+          code={basicFullCode}
+          title="BasicSlider.tsx"
+          height={500}
+          stackblitzDeps={['@reelkit/react']}
+          stackblitzExtraDeps={{ 'lucide-react': '^0.562.0' }}
+        >
+          <BasicSliderDemo />
+        </Sandbox>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-3">
+          Спробуйте — натискайте кнопки, щоб гортати слайди.
+        </p>
+      </section>
+
+      <section className="mb-12">
+        <Heading level={2} id="key-points" className="text-2xl font-bold mb-4">
+          Головне
+        </Heading>
+        <ul className="space-y-3 text-slate-600 dark:text-slate-400">
+          <li className="flex items-start gap-3">
+            <ArrowRight className="w-5 h-5 text-primary-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <strong className="text-slate-900 dark:text-white">
+                пропс size
+              </strong>
+              <p className="text-sm">
+                Необов’язковий кортеж [width, height] або пропустіть — розмір
+                визначить CSS
+              </p>
+            </div>
+          </li>
+          <li className="flex items-start gap-3">
+            <ArrowRight className="w-5 h-5 text-primary-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <strong className="text-slate-900 dark:text-white">
+                itemBuilder
+              </strong>
+              <p className="text-sm">Отримує індекс і повертає вміст слайда</p>
+            </div>
+          </li>
+          <li className="flex items-start gap-3">
+            <ArrowRight className="w-5 h-5 text-primary-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <strong className="text-slate-900 dark:text-white">apiRef</strong>
+              <p className="text-sm">
+                Доступ до методів контролера для навігації
+              </p>
+            </div>
+          </li>
+          <li className="flex items-start gap-3">
+            <ArrowRight className="w-5 h-5 text-primary-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <strong className="text-slate-900 dark:text-white">
+                afterChange
+              </strong>
+              <p className="text-sm">
+                Стежить за поточним індексом для оновлення інтерфейсу
+              </p>
+            </div>
+          </li>
+        </ul>
+      </section>
+
+      {/* Live Demo: Infinite List */}
+      <section className="mb-12">
+        <Heading
+          level={2}
+          id="live-demo-infinite-list"
+          className="text-2xl font-bold mb-4"
+        >
+          Демо наживо: нескінченний список
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          reelkit рендерить лише <strong>3 слайди в DOM</strong> у будь-який
+          момент (поточний, попередній, наступний). Це дає плавне прокручування
+          списків із 10 000+ елементів.
+        </p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <FeatureCardGrid
+            items={[
+              {
+                icon: Zap,
+                label: '3 елементи у DOM',
+                desc: 'Рендеряться лише видимі слайди',
+              },
+              {
+                icon: Zap,
+                label: '10 000+ елементів',
+                desc: 'Без ривків на будь-якому масштабі',
+              },
+              {
+                icon: Zap,
+                label: 'Стала пам’ять',
+                desc: 'Ті самі 3 вузли DOM незалежно від кількості',
+              },
+              {
+                icon: Zap,
+                label: 'goTo(n)',
+                desc: 'Миттєвий перехід до будь-якого індексу',
+              },
+            ]}
+          />
+        </div>
+        <Sandbox
+          code={infiniteFullCode}
+          title="InfiniteList.tsx"
+          height={500}
+          stackblitzDeps={['@reelkit/react']}
+          stackblitzExtraDeps={{ 'lucide-react': '^0.562.0' }}
+        >
+          <InfiniteListDemo />
+        </Sandbox>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-3">
+          10 000 елементів — і лише 3 в DOM. Гортайте кнопками або введіть номер
+          для переходу.
+        </p>
+      </section>
+
+      {/* Live Demo: Growable List */}
+      <section className="mb-12">
+        <Heading
+          level={2}
+          id="live-demo-growable-list"
+          className="text-2xl font-bold mb-4"
+        >
+          Демо наживо: список, що росте
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Імітує нескінченну стрічку, де елементи вантажаться за потреби — як у
+          TikTok чи Instagram. Почніть із 20 елементів, прокрутіть до кінця й
+          дивіться, як нові пакети надходять самі.
+        </p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <FeatureCardGrid
+            items={[
+              {
+                icon: Zap,
+                label: 'Динамічна кількість',
+                desc: 'Елементи вантажаться під час прокручування',
+              },
+              {
+                icon: Zap,
+                label: 'Пакетне завантаження',
+                desc: '20 елементів на пакет',
+              },
+              {
+                icon: Layers,
+                label: 'Віртуалізований',
+                desc: 'У DOM усе одно лише 3',
+              },
+              {
+                icon: Radio,
+                label: 'Автоматичний індикатор',
+                desc: 'Точки ростуть разом із вмістом',
+              },
+            ]}
+          />
+        </div>
+        <Sandbox
+          code={growableFullCode}
+          title="GrowableList.tsx"
+          height={500}
+          stackblitzDeps={['@reelkit/react']}
+          stackblitzExtraDeps={{ 'lucide-react': '^0.562.0' }}
+        >
+          <GrowableListDemo />
+        </Sandbox>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-3">
+          Прокрутіть до кінця — нові елементи завантажаться самі. Лічильник та
+          індикатор ростуть із кожним пакетом.
+        </p>
+      </section>
+
+      <section className="mb-12">
+        <Heading
+          level={2}
+          id="performance-tips"
+          className="text-2xl font-bold mb-4"
+        >
+          Поради щодо продуктивності
+        </Heading>
+        <ul className="space-y-3 text-slate-600 dark:text-slate-400">
+          <li className="flex items-start gap-3">
+            <ArrowRight className="w-5 h-5 text-primary-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <strong className="text-slate-900 dark:text-white">
+                Мемоізуйте масиви даних
+              </strong>
+              <p className="text-sm">
+                Загортайте масив елементів у{' '}
+                <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+                  useMemo
+                </code>
+                . Нове посилання на масив у кожному рендері спричиняє{' '}
+                <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+                  count
+                </code>{' '}
+                оновлення й перерахунок видимих діапазонів.
+              </p>
+            </div>
+          </li>
+          <li className="flex items-start gap-3">
+            <ArrowRight className="w-5 h-5 text-primary-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <strong className="text-slate-900 dark:text-white">
+                Тримайте itemBuilder легким
+              </strong>
+              <p className="text-sm">
+                Він виконується на кожну зміну видимого діапазону (зазвичай 3
+                слайди). Уникайте важких обчислень і побічних ефектів усередині.
+              </p>
+            </div>
+          </li>
+          <li className="flex items-start gap-3">
+            <ArrowRight className="w-5 h-5 text-primary-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <strong className="text-slate-900 dark:text-white">
+                Вантажте дані ближче до краю
+              </strong>
+              <p className="text-sm">
+                Використовуйте{' '}
+                <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+                  afterChange
+                </code>{' '}
+                щоб помітити наближення до кінця й підвантажити наступний пакет,
+                доки слайди не скінчилися (дивіться демо зі списком, що росте,
+                вище).
+              </p>
+            </div>
+          </li>
+          <li className="flex items-start gap-3">
+            <ArrowRight className="w-5 h-5 text-primary-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <strong className="text-slate-900 dark:text-white">
+                Вимикайте колесо на сторінках із прокручуванням
+              </strong>
+              <p className="text-sm">
+                Set{' '}
+                <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+                  enableWheel={'{false}'}
+                </code>{' '}
+                коли слайдер вбудований у макет із прокручуванням, щоб не
+                перехоплювати прокручування сторінки.
+              </p>
+            </div>
+          </li>
+        </ul>
+      </section>
+
+      <NextSteps
+        items={[
+          {
+            label: 'Довідник API',
+            path: '/docs/react/api',
+            description: 'усі доступні пропси',
+          },
+          {
+            label: 'Reel Player',
+            path: '/docs/reel-player',
+            description: 'відеоплеєр у стилі TikTok / Reels',
+          },
+          {
+            label: 'Lightbox',
+            path: '/docs/lightbox',
+            description: 'галерея зображень і відео',
+          },
+          {
+            label: 'Stories Player',
+            path: '/docs/stories-player',
+            description: 'переглядач історій у стилі Instagram',
+          },
+        ]}
+      />
+    </div>
+  );
+}

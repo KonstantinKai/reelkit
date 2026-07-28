@@ -1,9 +1,18 @@
 import { Link } from 'react-router-dom';
-import { Github, Menu, X, Search } from 'lucide-react';
+import { Menu, X, Search, Sun, Moon, Monitor } from 'lucide-react';
+import { GithubIcon } from '../ui/GithubIcon';
 import { useTheme } from '../../context/ThemeContext';
 import { useState, useEffect } from 'react';
 import logoSvg from '../../assets/logo.svg';
 import CommandPalette from '../CommandPalette';
+import LanguageSwitcher from '../LanguageSwitcher';
+import { useLocalePath, useMessages } from '../../i18n/useLocale';
+
+const _kThemeIcons = {
+  light: Sun,
+  dark: Moon,
+  system: Monitor,
+} as const;
 
 interface HeaderProps {
   onMenuToggle?: () => void;
@@ -16,7 +25,15 @@ export default function Header({
   isMenuOpen,
   showNav = true,
 }: HeaderProps) {
-  const { toggleTheme } = useTheme();
+  const { themeChoice, cycleTheme } = useTheme();
+  const messages = useMessages();
+  const ThemeChoiceIcon = _kThemeIcons[themeChoice];
+  const themeChoiceLabel = {
+    light: messages.header.themeLight,
+    dark: messages.header.themeDark,
+    system: messages.header.themeSystem,
+  }[themeChoice];
+  const localePath = useLocalePath();
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   // Seed to the SSR-stable label, then swap on mount once `navigator`
   // is available. Reading `navigator.platform` directly at render time
@@ -50,12 +67,16 @@ export default function Header({
               {onMenuToggle && (
                 <button
                   onClick={onMenuToggle}
+                  aria-label={messages.header.menuLabel}
                   className="lg:hidden p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                 >
                   {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
                 </button>
               )}
-              <Link to="/" className="flex items-center gap-2 group">
+              <Link
+                to={localePath('/')}
+                className="flex items-center gap-2 group"
+              >
                 <img
                   src={logoSvg}
                   alt="reelkit"
@@ -73,59 +94,58 @@ export default function Header({
             <div className="flex items-center gap-2">
               {showNav && (
                 <Link
-                  to="/docs/getting-started"
+                  to={localePath('/docs/getting-started')}
                   className="hidden lg:inline-flex px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all"
                 >
-                  Docs
+                  {messages.header.docs}
                 </Link>
               )}
               <button
                 onClick={() => setIsCommandPaletteOpen(true)}
+                aria-label={messages.header.search}
                 className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-500 dark:text-slate-400"
               >
                 <Search size={18} />
-                <span className="hidden sm:inline text-sm">Search</span>
+                <span className="hidden sm:inline text-sm">
+                  {messages.header.search}
+                </span>
                 <kbd className="hidden sm:inline-flex items-baseline gap-0.5 px-1.5 py-0.5 text-xs font-sans font-medium text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">
                   <span className="text-[13px]">{shortcutLabel}</span>K
                 </kbd>
               </button>
 
+              <LanguageSwitcher />
+
               <a
                 href="https://github.com/KonstantinKai/reelkit"
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label={messages.header.githubLabel}
                 className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               >
-                <Github
+                <GithubIcon
                   size={20}
                   className="text-slate-600 dark:text-slate-400"
                 />
               </a>
 
+              {/* One button, three states. The icon names the choice rather
+                  than the painted colour, so `system` stays distinguishable
+                  from the light or dark it happens to resolve to. */}
               <button
-                onClick={toggleTheme}
+                onClick={cycleTheme}
+                aria-label={`${messages.header.themeLabel} (${themeChoiceLabel})`}
+                title={themeChoiceLabel}
                 className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               >
-                {/* Sun (visible in dark mode) */}
-                <svg
-                  className="w-5 h-5 text-yellow-500 hidden dark:block"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                {/* Moon (visible in light mode) */}
-                <svg
-                  className="w-5 h-5 text-slate-600 dark:hidden"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
-                </svg>
+                <ThemeChoiceIcon
+                  size={20}
+                  className={
+                    themeChoice === 'light'
+                      ? 'text-yellow-500'
+                      : 'text-slate-600 dark:text-slate-400'
+                  }
+                />
               </button>
             </div>
           </div>
