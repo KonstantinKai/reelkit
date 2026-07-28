@@ -1,9 +1,15 @@
 /**
  * Minimal markdown-to-HTML for changelog format.
- * Handles: ## h2, ### h3, - list items (wrapped in ul), inline `code`,
- * empty lines. Escapes raw HTML characters inside inline code so literal
- * tags like `<Reel>` survive the render instead of being interpreted
- * (and silently swallowed) by the browser.
+ *
+ * Handles headings, `- ` lists, and the inline subset the changelog actually
+ * uses: `code`, [links](url), **bold**, and bare @mentions. Raw HTML
+ * characters inside inline code are escaped so a literal tag like `<Reel>`
+ * survives the render instead of being interpreted, and silently swallowed,
+ * by the browser.
+ *
+ * Anything outside that subset renders as its literal text on the changelog
+ * page, so `renderChangelog.spec.ts` reads the real CHANGELOG.md and fails on
+ * a construct this does not cover.
  */
 const escapeHtml = (s: string): string =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -11,37 +17,57 @@ const escapeHtml = (s: string): string =>
 const renderInlineCode = (inner: string): string =>
   `<code class="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono text-slate-800 dark:text-slate-200">${escapeHtml(inner)}</code>`;
 
-const _kPlaceholderPrefix = '__RK_CODE_';
-const _kPlaceholderSuffix = '__';
-const _kPlaceholderPattern = /__RK_CODE_(\d+)__/g;
+const _kSlotPrefix = '__RK_SLOT_';
+const _kSlotSuffix = '__';
+const _kSlotPattern = /__RK_SLOT_(\d+)__/g;
 
-// Processes a line in two phases so mention-linking doesn't accidentally
-// match content that lives inside inline `code`:
-//   1. extract backtick spans into placeholders
-//   2. run mention-linking on the remainder
-//   3. swap placeholders back for their rendered <code>…</code> HTML
-const linkMentions = (text: string): string => {
-  const codeHtml: string[] = [];
-  const withPlaceholders = text.replace(/`([^`]+)`/g, (_, inner) => {
-    codeHtml.push(renderInlineCode(inner));
-    return `${_kPlaceholderPrefix}${codeHtml.length - 1}${_kPlaceholderSuffix}`;
-  });
+const _kAnchorClass = 'text-primary-600 dark:text-primary-400 hover:underline';
 
-  const linked = withPlaceholders
-    .replace(
-      /\[(@[a-zA-Z\d](?:[a-zA-Z\d-]*[a-zA-Z\d])?)\]\((https?:\/\/[^)]+)\)/g,
-      '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline">$1</a>',
-    )
-    .replace(
-      // Match @username GitHub mentions, but NOT npm scopes like @reelkit/pkg.
-      // Trailing negative lookahead forbids alphanumeric/hyphen (prevents
-      // regex backtracking to a shorter username like @reelki for @reelkit/x)
-      // AND `]` (avoid double-linking) AND `/` (npm scope separator).
-      /(?<!\[)@([a-zA-Z\d](?:[a-zA-Z\d-]*[a-zA-Z\d])?)(?![a-zA-Z\d\-\]/])/g,
-      '<a href="https://github.com/$1" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline">@$1</a>',
-    );
+const anchor = (href: string, label: string): string =>
+  `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer" class="${_kAnchorClass}">${label}</a>`;
 
-  return linked.replace(_kPlaceholderPattern, (_, i) => codeHtml[Number(i)]);
+// The body reaches the page through dangerouslySetInnerHTML, so a link only
+// becomes an href when its scheme is one a reader can judge from the text.
+const isSafeHref = (href: string): boolean => /^https?:\/\//i.test(href);
+
+/**
+ * Inline pass over one line.
+ *
+ * Every rule that produces HTML parks it in a slot and leaves a placeholder
+ * behind, so no later rule can match inside markup an earlier one generated.
+ * Without that, the bare-mention rule reached into the label of a link the
+ * previous rule had just built and wrapped `@user` in a second anchor.
+ */
+const renderInline = (text: string): string => {
+  const slots: string[] = [];
+  const park = (html: string): string => {
+    slots.push(html);
+    return `${_kSlotPrefix}${slots.length - 1}${_kSlotSuffix}`;
+  };
+
+  let out = text.replace(/`([^`]+)`/g, (_, inner) =>
+    park(renderInlineCode(inner)),
+  );
+
+  out = out.replace(/\[([^\]\n]+)\]\(([^)\s]+)\)/g, (whole, label, href) =>
+    isSafeHref(href) ? park(anchor(href, escapeHtml(label))) : whole,
+  );
+
+  // Bare @username mentions, but not npm scopes like @reelkit/core. The
+  // lookahead forbids the scope separator, and forbids alphanumerics so the
+  // match cannot backtrack to a short prefix such as @reelki of @reelkit/x.
+  out = out.replace(
+    /@([a-zA-Z\d](?:[a-zA-Z\d-]*[a-zA-Z\d])?)(?![a-zA-Z\d\-/])/g,
+    (_, user) =>
+      park(anchor(`https://github.com/${user}`, `@${escapeHtml(user)}`)),
+  );
+
+  out = out.replace(
+    /\*\*([^*\n]+)\*\*/g,
+    (_, inner) => `<strong>${inner}</strong>`,
+  );
+
+  return out.replace(_kSlotPattern, (_, i) => slots[Number(i)]);
 };
 
 export function renderChangelog(md: string): string {
@@ -75,10 +101,10 @@ export function renderChangelog(md: string): string {
         `<h1 class="text-2xl font-bold mt-12 mb-4 text-slate-900 dark:text-white">${line.slice(2)}</h1>`,
       );
     } else if (isList) {
-      output.push(`<li>${linkMentions(line.slice(2))}</li>`);
+      output.push(`<li>${renderInline(line.slice(2))}</li>`);
     } else if (line.trim() !== '') {
       output.push(
-        `<p class="text-sm text-slate-600 dark:text-slate-400 mb-2">${linkMentions(line)}</p>`,
+        `<p class="text-sm text-slate-600 dark:text-slate-400 mb-2">${renderInline(line)}</p>`,
       );
     }
   }
