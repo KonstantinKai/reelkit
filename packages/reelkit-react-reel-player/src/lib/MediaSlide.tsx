@@ -16,8 +16,14 @@ interface MediaSlideProps {
   size: [number, number];
   innerSliderRef: React.MutableRefObject<ReelApi | null>;
   enableWheel?: boolean;
+
+  /** Inner media index to open at, for a multi-media post. @default 0 */
+  initialInnerIndex?: number;
   onVideoRef?: (ref: HTMLVideoElement | null) => void;
   onActiveMediaTypeChange?: (type: 'image' | 'video') => void;
+
+  /** Fired after this post's active inner media index changes. */
+  onInnerIndexChange?: (index: number) => void;
   onReady?: () => void;
   onWaiting?: () => void;
   onError?: () => void;
@@ -40,8 +46,10 @@ const MediaSlide: React.FC<MediaSlideProps> = ({
   size,
   innerSliderRef,
   enableWheel,
+  initialInnerIndex,
   onVideoRef,
   onActiveMediaTypeChange,
+  onInnerIndexChange,
   onReady,
   onWaiting,
   onError,
@@ -86,8 +94,10 @@ const MediaSlide: React.FC<MediaSlideProps> = ({
       contentId={content.id}
       innerSliderRef={innerSliderRef}
       enableWheel={enableWheel}
+      initialIndex={initialInnerIndex}
       onVideoRef={onVideoRef}
       onActiveMediaTypeChange={onActiveMediaTypeChange}
+      onIndexChange={onInnerIndexChange}
       onReady={onReady}
       onWaiting={onWaiting}
       onError={onError}

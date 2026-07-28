@@ -59,6 +59,13 @@ const playerProps = [
     description: 'Zero-based index of the initially visible item',
   },
   {
+    prop: 'initialInnerIndex',
+    type: 'number',
+    default: '0',
+    description:
+      'Inner media index to open at, for the initially visible post only — lets a two-axis URL deep-link into a specific image of a multi-media post. Ignored once the user navigates.',
+  },
+  {
     prop: 'isOpen',
     type: 'boolean',
     default: 'required',
@@ -121,6 +128,12 @@ const playerEvents = [
     name: 'slide-change',
     payload: 'number',
     description: 'Emitted with the new active slide index after a change',
+  },
+  {
+    name: 'inner-slide-change',
+    payload: 'outer: number, inner: number',
+    description:
+      "Emitted when the active post's inner media index changes — on inner navigation and on outer activation (the activated post's current inner index, 0 for single-media).",
   },
   {
     name: 'update:is-open',

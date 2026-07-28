@@ -56,14 +56,14 @@
  *
  * @example URL-driven — opening is a link, back closes
  * ```tsx
- * import { useOverlayUrlState, indexKey } from '@reelkit/react';
+ * import { useOverlayUrlState, urlIndexKey } from '@reelkit/react';
  * import { ReelPlayerUrlOverlay } from '@reelkit/react-reel-player';
  * import { Link } from 'react-router-dom';
  *
  * function Feed() {
  *   const reel = useOverlayUrlState({
  *     param: 'reel',
- *     ...indexKey(() => content.length),
+ *     ...urlIndexKey(() => content.length),
  *   });
  *
  *   return (
@@ -94,7 +94,13 @@ export type {
   ReelProxyProps,
 } from './lib/ReelPlayerOverlay';
 
-export type { UrlAdapter, UrlCodec, UrlLocator } from '@reelkit/react';
+export type {
+  UrlAdapter,
+  UrlCodec,
+  UrlLocator,
+  TwoAxisPosition,
+} from '@reelkit/react';
+export { urlIndexTwoAxisKey } from '@reelkit/react';
 
 export type {
   MediaType,

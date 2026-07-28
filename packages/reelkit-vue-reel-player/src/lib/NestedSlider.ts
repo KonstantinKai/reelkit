@@ -73,11 +73,26 @@ const nestedSliderProps = {
   },
 
   /**
+   * Inner media index to open at. Applies only on first mount, so a two-axis
+   * URL can deep-link into a specific image of a multi-media post; later
+   * navigation is the user's own.
+   *
+   * @default undefined
+   */
+  initialIndex: { type: Number, default: undefined },
+
+  /**
    * Enable mouse-wheel navigation in the nested horizontal slider.
    *
    * @default true
    */
   enableWheel: { type: Boolean, default: true },
+
+  /** Reports the active inner media index on navigation and on activation. */
+  onIndexChange: {
+    type: Function as PropType<(index: number) => void>,
+    default: undefined,
+  },
 
   /** Reports the active video element to the parent for drag pause/resume. */
   onVideoRef: {
@@ -132,7 +147,15 @@ export const NestedSlider = defineComponent({
   setup(props) {
     let localSlider: ReelExpose | null = null;
     let videoEl: HTMLVideoElement | null = null;
-    const innerIndex = ref(0);
+
+    // Clamp the seed: a URL may name an inner index past this post's media.
+    const seed =
+      props.initialIndex !== undefined &&
+      props.initialIndex >= 0 &&
+      props.initialIndex < props.media.length
+        ? props.initialIndex
+        : 0;
+    const innerIndex = ref(seed);
 
     /**
      * See identical comment in ReelPlayerOverlay: `defaultContent` for
@@ -162,6 +185,7 @@ export const NestedSlider = defineComponent({
       const item = props.media[index];
       if (item) {
         props.onActiveMediaTypeChange?.(item.type);
+        props.onIndexChange?.(index);
         if (item.type === 'image') {
           props.onReady?.();
         }
@@ -174,10 +198,18 @@ export const NestedSlider = defineComponent({
     // setInnerSlider is invoked from the inner Reel's `ref:` callback
     // (see render below) before onMounted runs, so we don't double-set
     // here. Only the unmount path needs to clear the parent's reference.
+    // On activation, report the live inner index so a URL following the player
+    // names the media actually on screen — the seed on a fresh mount, the
+    // retained index while this post stayed in the virtualization window.
+    const reportActive = () => {
+      const item = props.media[innerIndex.value];
+      if (!item) return;
+      props.onActiveMediaTypeChange?.(item.type);
+      props.onIndexChange?.(innerIndex.value);
+    };
+
     onMounted(() => {
-      if (props.isParentActive && props.media[innerIndex.value]) {
-        props.onActiveMediaTypeChange?.(props.media[innerIndex.value].type);
-      }
+      if (props.isParentActive) reportActive();
     });
 
     onUnmounted(() => {
@@ -187,9 +219,7 @@ export const NestedSlider = defineComponent({
     watch(
       () => props.isParentActive,
       (active) => {
-        if (active && props.media[innerIndex.value]) {
-          props.onActiveMediaTypeChange?.(props.media[innerIndex.value].type);
-        }
+        if (active) reportActive();
       },
     );
 
@@ -224,6 +254,7 @@ export const NestedSlider = defineComponent({
               loop: false,
               enableNavKeys: true,
               enableWheel: props.enableWheel,
+              initialIndex: seed,
               ref: (el: unknown) => {
                 const api = (el as ReelExpose | null) ?? null;
                 localSlider = api;

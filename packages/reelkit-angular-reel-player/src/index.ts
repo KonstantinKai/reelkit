@@ -64,7 +64,7 @@
  *   RkReelPlayerUrlOverlayComponent,
  *   type ContentItem,
  * } from '@reelkit/angular-reel-player';
- * import { createOverlayUrlState, indexKey } from '@reelkit/angular';
+ * import { createOverlayUrlState, urlIndexKey } from '@reelkit/angular';
  * import { createRouterUrlAdapter } from '@reelkit/angular/ng-router-url-adapter';
  * import '@reelkit/angular-reel-player/styles.css';
  *
@@ -83,7 +83,7 @@
  *   protected readonly reel = createOverlayUrlState({
  *     param: 'reel',
  *     adapter: createRouterUrlAdapter(),
- *     ...indexKey(() => this.content.length),
+ *     ...urlIndexKey(() => this.content.length),
  *   });
  * }
  * ```
@@ -92,7 +92,13 @@
 export { RkReelPlayerOverlayComponent } from './lib/reel-player-overlay/reel-player-overlay.component';
 export { RkReelPlayerUrlOverlayComponent } from './lib/reel-player-overlay/reel-player-url-overlay.component';
 
-export type { UrlAdapter, UrlCodec, UrlLocator } from '@reelkit/angular';
+export type {
+  UrlAdapter,
+  UrlCodec,
+  UrlLocator,
+  TwoAxisPosition,
+} from '@reelkit/angular';
+export { urlIndexTwoAxisKey } from '@reelkit/angular';
 
 export type {
   MediaType,

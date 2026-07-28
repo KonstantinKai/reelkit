@@ -43,7 +43,7 @@
  * ```vue
  * <script setup lang="ts">
  * import { ReelPlayerUrlOverlay, type ContentItem } from '@reelkit/vue-reel-player';
- * import { useOverlayUrlState, indexKey } from '@reelkit/vue';
+ * import { useOverlayUrlState, urlIndexKey } from '@reelkit/vue';
  * import { useVueRouterUrlAdapter } from '@reelkit/vue/vue-router-url-adapter';
  * import '@reelkit/vue-reel-player/styles.css';
  *
@@ -52,7 +52,7 @@
  * const reel = useOverlayUrlState({
  *   param: 'reel',
  *   adapter: useVueRouterUrlAdapter(),
- *   ...indexKey(() => props.content.length),
+ *   ...urlIndexKey(() => props.content.length),
  * });
  * </script>
  *
@@ -73,7 +73,13 @@ export {
   type ReelPlayerUrlOverlayProps,
 } from './lib/ReelPlayerOverlay';
 
-export type { UrlAdapter, UrlCodec, UrlLocator } from '@reelkit/vue';
+export type {
+  UrlAdapter,
+  UrlCodec,
+  UrlLocator,
+  TwoAxisPosition,
+} from '@reelkit/vue';
+export { urlIndexTwoAxisKey } from '@reelkit/vue';
 
 export type {
   MediaType,

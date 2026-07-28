@@ -232,21 +232,22 @@ While `locateAsync` is pending the player stays closed and the param is left alo
 
 ## ReelPlayerOverlay Props
 
-| Prop                         | Type                            | Default          | Description                                                          |
-| ---------------------------- | ------------------------------- | ---------------- | -------------------------------------------------------------------- |
-| `isOpen`                     | `boolean`                       | required         | Controls overlay visibility; false = overlay removed from DOM        |
-| `content`                    | `T[] (extends BaseContentItem)` | required         | Array of content items to display                                    |
-| `ariaLabel`                  | `string`                        | `'Video player'` | Accessible label for dialog region                                   |
-| `aspectRatio`                | `number`                        | `9 / 16`         | Width/height ratio for desktop container. Mobile uses full viewport. |
-| `enableNavKeys`              | `boolean`                       | `true`           | Enable keyboard arrow-key navigation                                 |
-| `enableWheel`                | `boolean`                       | `true`           | Enable mouse-wheel navigation                                        |
-| `initialIndex`               | `number`                        | `0`              | Zero-based index of initial visible item                             |
-| `loop`                       | `boolean`                       | `false`          | Enable infinite loop between slides                                  |
-| `swipeDistanceFactor`        | `number`                        | `0.12`           | Min swipe distance fraction to trigger slide change                  |
-| `timeline`                   | `'auto' \| 'always' \| 'never'` | `'auto'`         | Gating strategy for built-in playback timeline bar                   |
-| `timelineMinDurationSeconds` | `number`                        | `30`             | Min video duration (seconds) for `timeline='auto'` to render bar     |
-| `transitionDuration`         | `number`                        | `300`            | Slide animation duration ms                                          |
-| `wheelDebounceMs`            | `number`                        | `200`            | Debounce duration for wheel events ms                                |
+| Prop                         | Type                            | Default          | Description                                                                                                                                                              |
+| ---------------------------- | ------------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `isOpen`                     | `boolean`                       | required         | Controls overlay visibility; false = overlay removed from DOM                                                                                                            |
+| `content`                    | `T[] (extends BaseContentItem)` | required         | Array of content items to display                                                                                                                                        |
+| `ariaLabel`                  | `string`                        | `'Video player'` | Accessible label for dialog region                                                                                                                                       |
+| `aspectRatio`                | `number`                        | `9 / 16`         | Width/height ratio for desktop container. Mobile uses full viewport.                                                                                                     |
+| `enableNavKeys`              | `boolean`                       | `true`           | Enable keyboard arrow-key navigation                                                                                                                                     |
+| `enableWheel`                | `boolean`                       | `true`           | Enable mouse-wheel navigation                                                                                                                                            |
+| `initialIndex`               | `number`                        | `0`              | Zero-based index of initial visible item                                                                                                                                 |
+| `initialInnerIndex`          | `number`                        | `0`              | Inner media index to open at, for the initially visible post only — two-axis URL deep-link into a specific image of a multi-media post. Ignored once the user navigates. |
+| `loop`                       | `boolean`                       | `false`          | Enable infinite loop between slides                                                                                                                                      |
+| `swipeDistanceFactor`        | `number`                        | `0.12`           | Min swipe distance fraction to trigger slide change                                                                                                                      |
+| `timeline`                   | `'auto' \| 'always' \| 'never'` | `'auto'`         | Gating strategy for built-in playback timeline bar                                                                                                                       |
+| `timelineMinDurationSeconds` | `number`                        | `30`             | Min video duration (seconds) for `timeline='auto'` to render bar                                                                                                         |
+| `transitionDuration`         | `number`                        | `300`            | Slide animation duration ms                                                                                                                                              |
+| `wheelDebounceMs`            | `number`                        | `200`            | Debounce duration for wheel events ms                                                                                                                                    |
 
 ## ReelPlayerUrlOverlay Props
 
@@ -260,12 +261,13 @@ Takes every `ReelPlayerOverlay` prop except `is-open`, replaced by a `controller
 
 ## Emits
 
-| Event            | Payload         | Description                                     |
-| ---------------- | --------------- | ----------------------------------------------- |
-| `api-ready`      | `ReelPlayerApi` | Fires once slider ready, exposes imperative API |
-| `close`          | `void`          | Fires when player closes                        |
-| `slide-change`   | `number`        | Fires with new active slide index after change  |
-| `update:is-open` | `boolean`       | Fires on close; enables `v-model:is-open`       |
+| Event                | Payload                        | Description                                                                                                                                                      |
+| -------------------- | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `api-ready`          | `ReelPlayerApi`                | Fires once slider ready, exposes imperative API                                                                                                                  |
+| `close`              | `void`                         | Fires when player closes                                                                                                                                         |
+| `slide-change`       | `number`                       | Fires with new active slide index after change                                                                                                                   |
+| `inner-slide-change` | `outer: number, inner: number` | Fires when the active post's inner media index changes — on inner navigation and on outer activation (activated post's current inner index, 0 for single-media). |
+| `update:is-open`     | `boolean`                      | Fires on close; enables `v-model:is-open`                                                                                                                        |
 
 ## Sub-Components
 

@@ -248,29 +248,31 @@ protected readonly reel = createOverlayUrlState({
 
 ## RkReelPlayerOverlayComponent Inputs
 
-| Input                        | Type                            | Default                          | Description                                                          |
-| ---------------------------- | ------------------------------- | -------------------------------- | -------------------------------------------------------------------- |
-| `isOpen`                     | `boolean`                       | required                         | Overlay visibility; false → removed from DOM                         |
-| `content`                    | `T[] (extends BaseContentItem)` | required                         | Content items to display                                             |
-| `ariaLabel`                  | `string`                        | `'Video player'`                 | Accessible label for dialog region                                   |
-| `aspectRatio`                | `number \| undefined`           | `undefined` (defaults to `9/16`) | Width/height ratio for desktop container. Mobile uses full viewport. |
-| `enableNavKeys`              | `boolean`                       | `true`                           | Keyboard arrow key navigation                                        |
-| `enableWheel`                | `boolean`                       | `true`                           | Mouse wheel navigation                                               |
-| `initialIndex`               | `number`                        | `0`                              | Zero-based index of initially visible item                           |
-| `loop`                       | `boolean`                       | `false`                          | Infinite loop between slides                                         |
-| `swipeDistanceFactor`        | `number`                        | `0.12`                           | Min swipe distance fraction to trigger slide change                  |
-| `timeline`                   | `'auto' \| 'always' \| 'never'` | `'auto'`                         | Gating strategy for built-in playback timeline bar                   |
-| `timelineMinDurationSeconds` | `number`                        | `30`                             | Min video duration (seconds) for `timeline='auto'` to render bar     |
-| `transitionDuration`         | `number`                        | `300`                            | Slide animation duration in ms                                       |
-| `wheelDebounceMs`            | `number`                        | `200`                            | Debounce duration for wheel events in ms                             |
+| Input                        | Type                            | Default                          | Description                                                                                                                                                              |
+| ---------------------------- | ------------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `isOpen`                     | `boolean`                       | required                         | Overlay visibility; false → removed from DOM                                                                                                                             |
+| `content`                    | `T[] (extends BaseContentItem)` | required                         | Content items to display                                                                                                                                                 |
+| `ariaLabel`                  | `string`                        | `'Video player'`                 | Accessible label for dialog region                                                                                                                                       |
+| `aspectRatio`                | `number \| undefined`           | `undefined` (defaults to `9/16`) | Width/height ratio for desktop container. Mobile uses full viewport.                                                                                                     |
+| `enableNavKeys`              | `boolean`                       | `true`                           | Keyboard arrow key navigation                                                                                                                                            |
+| `enableWheel`                | `boolean`                       | `true`                           | Mouse wheel navigation                                                                                                                                                   |
+| `initialIndex`               | `number`                        | `0`                              | Zero-based index of initially visible item                                                                                                                               |
+| `initialInnerIndex`          | `number`                        | `0`                              | Inner media index to open at, for the initially visible post only — two-axis URL deep-link into a specific image of a multi-media post. Ignored once the user navigates. |
+| `loop`                       | `boolean`                       | `false`                          | Infinite loop between slides                                                                                                                                             |
+| `swipeDistanceFactor`        | `number`                        | `0.12`                           | Min swipe distance fraction to trigger slide change                                                                                                                      |
+| `timeline`                   | `'auto' \| 'always' \| 'never'` | `'auto'`                         | Gating strategy for built-in playback timeline bar                                                                                                                       |
+| `timelineMinDurationSeconds` | `number`                        | `30`                             | Min video duration (seconds) for `timeline='auto'` to render bar                                                                                                         |
+| `transitionDuration`         | `number`                        | `300`                            | Slide animation duration in ms                                                                                                                                           |
+| `wheelDebounceMs`            | `number`                        | `200`                            | Debounce duration for wheel events in ms                                                                                                                                 |
 
 ## Outputs
 
-| Output        | Type                    | Description                                     |
-| ------------- | ----------------------- | ----------------------------------------------- |
-| `apiReady`    | `EventEmitter<ReelApi>` | Fires once slider ready, exposes imperative API |
-| `closed`      | `EventEmitter<void>`    | Fires when player closed                        |
-| `slideChange` | `EventEmitter<number>`  | Fires when active slide index changes           |
+| Output             | Type                                             | Description                                                                                                                                                      |
+| ------------------ | ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apiReady`         | `EventEmitter<ReelApi>`                          | Fires once slider ready, exposes imperative API                                                                                                                  |
+| `closed`           | `EventEmitter<void>`                             | Fires when player closed                                                                                                                                         |
+| `slideChange`      | `EventEmitter<number>`                           | Fires when active slide index changes                                                                                                                            |
+| `innerSlideChange` | `EventEmitter<{ outer: number; inner: number }>` | Fires when the active post's inner media index changes — on inner navigation and on outer activation (activated post's current inner index, 0 for single-media). |
 
 ## RkReelPlayerUrlOverlayComponent Inputs
 

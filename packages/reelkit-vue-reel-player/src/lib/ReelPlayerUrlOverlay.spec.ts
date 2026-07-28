@@ -1,7 +1,12 @@
 import { mount } from '@vue/test-utils';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { defineComponent, h, nextTick } from 'vue';
-import { useOverlayUrlState, indexKey, type UrlAdapter } from '@reelkit/vue';
+import {
+  useOverlayUrlState,
+  urlIndexKey,
+  urlIndexTwoAxisKey,
+  type UrlAdapter,
+} from '@reelkit/vue';
 import { createFakeUrlAdapter } from '@reelkit/core/testing';
 import { ReelPlayerUrlOverlay, type ReelPlayerApi } from './ReelPlayerOverlay';
 import type { ContentItem } from './types';
@@ -49,7 +54,7 @@ function urlHost(
       const controller = useOverlayUrlState({
         param: 'reel',
         adapter,
-        ...indexKey(() => sampleContent.length),
+        ...urlIndexKey(() => sampleContent.length),
       });
       return () =>
         h(
@@ -185,5 +190,125 @@ describe('ReelPlayerUrlOverlay', () => {
     ).not.toThrow();
     await nextTick();
     expect(document.querySelector('.rk-reel-overlay')).not.toBeNull();
+  });
+});
+
+// post 0 and 1 are single-media, post 2 is a multi-media carousel.
+const twoAxisContent: ContentItem[] = [
+  {
+    id: 'a',
+    media: [
+      { id: 'a-1', type: 'image', src: 'https://x/a.jpg', aspectRatio: 9 / 16 },
+    ],
+    author: { name: 'A', avatar: 'https://x/av-a.jpg' },
+    likes: 1,
+    description: 'a',
+  },
+  {
+    id: 'b',
+    media: [
+      { id: 'b-1', type: 'image', src: 'https://x/b.jpg', aspectRatio: 9 / 16 },
+    ],
+    author: { name: 'B', avatar: 'https://x/av-b.jpg' },
+    likes: 2,
+    description: 'b',
+  },
+  {
+    id: 'c',
+    media: [
+      {
+        id: 'c-1',
+        type: 'image',
+        src: 'https://x/c1.jpg',
+        aspectRatio: 9 / 16,
+      },
+      {
+        id: 'c-2',
+        type: 'image',
+        src: 'https://x/c2.jpg',
+        aspectRatio: 9 / 16,
+      },
+    ],
+    author: { name: 'C', avatar: 'https://x/av-c.jpg' },
+    likes: 3,
+    description: 'c',
+  },
+];
+
+function urlHostTwoAxis(
+  adapter: UrlAdapter,
+  onApiReady?: (api: ReelPlayerApi) => void,
+) {
+  return defineComponent({
+    setup() {
+      const controller = useOverlayUrlState({
+        param: 'reel',
+        adapter,
+        ...urlIndexTwoAxisKey({
+          outerCount: () => twoAxisContent.length,
+          innerCounts: () => twoAxisContent.map((c) => c.media.length),
+        }),
+      });
+      return () =>
+        h(
+          ReelPlayerUrlOverlay,
+          { content: twoAxisContent, controller, onApiReady },
+          {},
+        );
+    },
+  });
+}
+
+describe('ReelPlayerUrlOverlay (two-axis)', () => {
+  it('opens at a two-axis position, seeding the named outer post', async () => {
+    const { adapter } = createFakeUrlAdapter('?reel=2.1');
+    mount(urlHostTwoAxis(adapter), { attachTo: document.body });
+    await nextTick();
+    expect(document.querySelector('.rk-reel-overlay')).not.toBeNull();
+  });
+
+  it('treats a bare one-axis param as malformed and stays closed', async () => {
+    const state = createFakeUrlAdapter('?reel=3');
+    mount(urlHostTwoAxis(state.adapter), { attachTo: document.body });
+    await nextTick();
+    await nextTick();
+    expect(document.querySelector('.rk-reel-overlay')).toBeNull();
+    expect(state.adapter.read()).not.toContain('reel=3');
+  });
+
+  it('writes both axes strictly dotted on outer navigation', async () => {
+    // Outer nav to a single-media post reports inner 0 on activation, so the
+    // two-axis wire stays dotted rather than collapsing to a bare outer.
+    const state = createFakeUrlAdapter('?reel=0.0');
+    let api: ReelPlayerApi | null = null;
+    mount(
+      urlHostTwoAxis(state.adapter, (readyApi) => (api = readyApi)),
+      {
+        attachTo: document.body,
+      },
+    );
+    await nextTick();
+    expect(api).not.toBeNull();
+
+    await api!.goTo(1, false);
+    await nextTick();
+
+    expect(state.adapter.read()).toContain('reel=1.0');
+    expect(state.counts.push).toBe(0);
+  });
+
+  it('closes and clears the parameter', async () => {
+    const state = createFakeUrlAdapter('?reel=2.1');
+    mount(urlHostTwoAxis(state.adapter), { attachTo: document.body });
+    await nextTick();
+    expect(document.querySelector('.rk-reel-overlay')).not.toBeNull();
+
+    (
+      document.querySelector('.rk-reel-close-btn') as HTMLElement | null
+    )?.click();
+    await nextTick();
+    await nextTick();
+    expect(document.querySelector('.rk-reel-overlay')).toBeNull();
+    expect(state.adapter.read()).not.toContain('reel');
   });
 });

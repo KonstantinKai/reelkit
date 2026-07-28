@@ -4,7 +4,9 @@ import { By } from '@angular/platform-browser';
 import type { Type } from '@angular/core';
 import {
   createOverlayUrlState,
-  indexKey,
+  urlIndexKey,
+  urlIndexTwoAxisKey,
+  type TwoAxisPosition,
   type UrlAdapter,
   type UrlStateController,
 } from '@reelkit/angular';
@@ -48,6 +50,7 @@ class MockReelPlayerOverlayComponent {
   readonly isOpen = input.required<boolean>();
   readonly content = input.required<ContentItem[]>();
   readonly initialIndex = input<number>(0);
+  readonly initialInnerIndex = input<number | undefined>(undefined);
   readonly ariaLabel = input<string>('Video player');
   readonly aspectRatio = input<number | undefined>(undefined);
   readonly transitionDuration = input<number>(300);
@@ -69,6 +72,7 @@ class MockReelPlayerOverlayComponent {
   readonly errorTemplate = input<TemplateRef<unknown> | undefined>();
   readonly closed = output<void>();
   readonly slideChange = output<number>();
+  readonly innerSlideChange = output<{ outer: number; inner: number }>();
 }
 
 @Component({
@@ -88,6 +92,18 @@ class HostComponent {
   readonly items = signal(content);
   closedCount = 0;
   lastSlideChange: number | null = null;
+}
+
+@Component({
+  standalone: true,
+  imports: [RkReelPlayerUrlOverlayComponent],
+  template: `
+    <rk-reel-player-url-overlay [controller]="controller" [content]="items()" />
+  `,
+})
+class TwoAxisHostComponent {
+  controller!: UrlStateController<TwoAxisPosition>;
+  readonly items = signal(content);
 }
 
 @Component({
@@ -119,7 +135,7 @@ describe('RkReelPlayerUrlOverlayComponent', () => {
       createOverlayUrlState({
         param: 'reel',
         adapter,
-        ...indexKey(() => content.length),
+        ...urlIndexKey(() => content.length),
       }),
     );
     fixture.detectChanges();
@@ -244,5 +260,103 @@ describe('RkReelPlayerUrlOverlayComponent', () => {
     fake.adapter.push('?reel=2');
 
     expect(fake.counts.replace + fake.counts.push).toBe(before + 1);
+  });
+
+  describe('two-axis', () => {
+    // post 2 is a multi-media carousel, so an inner index past 0 is valid.
+    const twoAxisContent: ContentItem[] = [
+      content[0],
+      content[1],
+      {
+        id: 'c',
+        media: [
+          { id: 'c1', type: 'image', src: 'c1.jpg', aspectRatio: 9 / 16 },
+          { id: 'c2', type: 'image', src: 'c2.jpg', aspectRatio: 9 / 16 },
+        ],
+        author: { name: 'C', avatar: 'av-c.jpg' },
+        likes: 3,
+        description: 'c',
+      },
+    ];
+
+    const buildTwoAxis = (
+      adapter: UrlAdapter,
+    ): ComponentFixture<TwoAxisHostComponent> => {
+      TestBed.overrideComponent(RkReelPlayerUrlOverlayComponent, {
+        remove: { imports: [RkReelPlayerOverlayComponent] },
+        add: { imports: [MockReelPlayerOverlayComponent] },
+      });
+
+      const fixture = TestBed.createComponent(TwoAxisHostComponent);
+      fixture.componentInstance.items.set(twoAxisContent);
+      fixture.componentInstance.controller = TestBed.runInInjectionContext(() =>
+        createOverlayUrlState({
+          param: 'reel',
+          adapter,
+          ...urlIndexTwoAxisKey({
+            outerCount: () => twoAxisContent.length,
+            innerCounts: () => twoAxisContent.map((c) => c.media.length),
+          }),
+        }),
+      );
+      fixture.detectChanges();
+      return fixture;
+    };
+
+    it('opens at a two-axis position, seeding outer and inner together', () => {
+      const fake = createFakeUrlAdapter('?reel=2.1');
+      const fixture = buildTwoAxis(fake.adapter);
+
+      expect(inner(fixture).isOpen()).toBe(true);
+      expect(inner(fixture).initialIndex()).toBe(2);
+      expect(inner(fixture).initialInnerIndex()).toBe(1);
+    });
+
+    it('treats a bare one-axis param as malformed and stays closed', () => {
+      const fake = createFakeUrlAdapter('?reel=3');
+      const fixture = buildTwoAxis(fake.adapter);
+
+      expect(inner(fixture).isOpen()).toBe(false);
+      expect(fake.adapter.read()).toBe('');
+    });
+
+    it('writes both axes strictly dotted on inner navigation', () => {
+      const fake = createFakeUrlAdapter('?reel=2.0');
+      const fixture = buildTwoAxis(fake.adapter);
+
+      inner(fixture).innerSlideChange.emit({ outer: 2, inner: 1 });
+      fixture.detectChanges();
+
+      expect(fake.adapter.read()).toBe('?reel=2.1');
+    });
+
+    it('defers the outer-nav write to the inner report so it is never bare', () => {
+      const fake = createFakeUrlAdapter('?reel=2.0');
+      const fixture = buildTwoAxis(fake.adapter);
+      const writesBefore = fake.counts.replace + fake.counts.push;
+
+      // Outer nav alone must not write in two-axis mode — that would name a
+      // bare outer before the inner index is known.
+      inner(fixture).slideChange.emit(1);
+      fixture.detectChanges();
+      expect(fake.counts.replace + fake.counts.push).toBe(writesBefore);
+
+      // The activated post reports its inner index, and only then the URL moves.
+      inner(fixture).innerSlideChange.emit({ outer: 1, inner: 0 });
+      fixture.detectChanges();
+      expect(fake.adapter.read()).toBe('?reel=1.0');
+    });
+
+    it('closes by clearing the parameter', () => {
+      const fake = createFakeUrlAdapter('?reel=2.1');
+      const fixture = buildTwoAxis(fake.adapter);
+      expect(inner(fixture).isOpen()).toBe(true);
+
+      inner(fixture).closed.emit();
+      fixture.detectChanges();
+
+      expect(inner(fixture).isOpen()).toBe(false);
+      expect(fake.adapter.read()).toBe('');
+    });
   });
 });

@@ -2,13 +2,14 @@ import {
   ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
+  computed,
   contentChild,
   effect,
   input,
   output,
   signal,
 } from '@angular/core';
-import type { UrlStateController } from '@reelkit/angular';
+import type { TwoAxisPosition, UrlStateController } from '@reelkit/angular';
 import { RkReelPlayerOverlayComponent } from './reel-player-overlay.component';
 import {
   RkPlayerSlideDirective,
@@ -32,15 +33,18 @@ import type { BaseContentItem, ContentItem, TimelineMode } from '../types';
  * linked to, shared, opened in a new tab, and closed with the back button.
  *
  * Opening pushes one history entry and every slide after replaces it, so
- * paging a feed costs nothing and a single back step always leaves. The
- * parameter addresses the vertical feed index only — which image a multi-media
- * post is showing is not carried in the URL.
+ * paging a feed costs nothing and a single back step always leaves. The URL
+ * depth follows the controller's key: a one-axis `urlIndexKey` addresses the
+ * vertical post only (`?reel=3`), a two-axis `urlIndexTwoAxisKey` also carries
+ * the inner media index of a multi-media post (`?reel=3.2`). Pick one key per
+ * app — the two wire shapes are deliberately distinct and do not cross-decode.
+ * The overlay discriminates the mode at runtime from the position shape.
  *
  * @example
  * ```ts
  * protected readonly reel = createOverlayUrlState({
  *   param: 'reel',
- *   ...indexKey(() => this.content().length),
+ *   ...urlIndexKey(() => this.content().length),
  * });
  * ```
  * ```html
@@ -55,8 +59,9 @@ import type { BaseContentItem, ContentItem, TimelineMode } from '../types';
   imports: [RkReelPlayerOverlayComponent],
   template: `
     <rk-reel-player-overlay
-      [isOpen]="index() !== null"
-      [initialIndex]="index() ?? 0"
+      [isOpen]="position() !== null"
+      [initialIndex]="outerIndex()"
+      [initialInnerIndex]="initialInner()"
       [content]="content()"
       [ariaLabel]="ariaLabel()"
       [aspectRatio]="aspectRatio()"
@@ -79,6 +84,7 @@ import type { BaseContentItem, ContentItem, TimelineMode } from '../types';
       [errorTemplate]="errorSlot()?.templateRef"
       (closed)="handleClosed()"
       (slideChange)="handleSlideChange($event)"
+      (innerSlideChange)="handleInnerSlideChange($event)"
     />
     <!-- Declares the projection outlet so the slot directives are instantiated
          and the queries below have something to match. Every slot is an
@@ -90,11 +96,19 @@ export class RkReelPlayerUrlOverlayComponent<
   T extends BaseContentItem = ContentItem,
 > {
   /**
-   * Controller from `createOverlayUrlState`. Its `index` decides whether the
+   * Controller from `createOverlayUrlState`. Its `position` decides whether the
    * player is open and which slide it shows; this component writes back through
    * it on slide change and on close.
+   *
+   * Pick the URL depth by which key the controller was built with. A one-axis
+   * `urlIndexKey` gives a `number` position (`?reel=3`, the vertical post
+   * only); a two-axis `urlIndexTwoAxisKey` gives a `{ outer, inner }` position
+   * (`?reel=3.2`, the post plus the inner media index). The overlay
+   * discriminates the mode at runtime from the position shape — no mode input.
    */
-  readonly controller = input.required<UrlStateController>();
+  readonly controller = input.required<
+    UrlStateController<number> | UrlStateController<TwoAxisPosition>
+  >();
 
   readonly content = input.required<T[]>();
 
@@ -138,29 +152,68 @@ export class RkReelPlayerUrlOverlayComponent<
   protected readonly loadingSlot = contentChild(RkPlayerLoadingDirective);
   protected readonly errorSlot = contentChild(RkPlayerErrorDirective);
 
-  protected readonly index = signal<number | null>(null);
+  protected readonly position = signal<number | TwoAxisPosition | null>(null);
+
+  // Runtime discrimination: a number is one-axis (post only); an object is
+  // two-axis (post + inner media index).
+  protected readonly isTwoAxis = computed(() => {
+    const value = this.position();
+    return value !== null && typeof value !== 'number';
+  });
+  protected readonly outerIndex = computed(() => {
+    const value = this.position();
+    if (value === null) return 0;
+    return typeof value === 'number' ? value : value.outer;
+  });
+  protected readonly initialInner = computed(() => {
+    const value = this.position();
+    return value !== null && typeof value !== 'number'
+      ? value.inner
+      : undefined;
+  });
 
   constructor() {
     // The controller arrives as an input, so it cannot be read in a field
     // initialiser. An effect defers until it is bound, and re-subscribes if a
     // different controller is ever passed — its cleanup drops the old
     // subscription, so nothing keeps writing from a controller we let go of.
+    // A union of two typed controllers cannot read `position.value` as one
+    // signal, so view it as one controller over the merged position; the
+    // template discriminates the actual shape at runtime.
     effect((onCleanup) => {
-      const controller = this.controller();
-      const sync = () => this.index.set(controller.index.value);
+      const controller = this.controller() as UrlStateController<
+        number | TwoAxisPosition
+      >;
+      const sync = () => this.position.set(controller.position.value);
 
       sync();
-      onCleanup(controller.index.observe(sync));
+      onCleanup(controller.position.observe(sync));
     });
   }
 
+  private write(next: number | TwoAxisPosition | null): void {
+    (this.controller() as UrlStateController<number | TwoAxisPosition>).set(
+      next,
+    );
+  }
+
   protected handleClosed(): void {
-    this.controller().set(null);
+    this.write(null);
     this.closed.emit();
   }
 
   protected handleSlideChange(index: number): void {
-    this.controller().set(index);
+    // One-axis writes the post index on outer nav. Two-axis leaves the write to
+    // innerSlideChange, which fires on activation with the post's live inner
+    // index — writing here would name inner 0 before that correction lands.
+    if (!this.isTwoAxis()) this.write(index);
     this.slideChange.emit(index);
+  }
+
+  protected handleInnerSlideChange(next: {
+    outer: number;
+    inner: number;
+  }): void {
+    if (this.isTwoAxis()) this.write(next);
   }
 }

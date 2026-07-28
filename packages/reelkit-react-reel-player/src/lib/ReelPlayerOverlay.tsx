@@ -21,6 +21,7 @@ import {
   type ReelApi,
   type ReelProps,
   type UrlStateController,
+  type TwoAxisPosition,
 } from '@reelkit/react';
 import type {
   BaseContentItem,
@@ -99,6 +100,13 @@ export interface ReelPlayerOverlayBaseProps<
   initialIndex?: number;
 
   /**
+   * Inner media index to open at, for the initially visible slide only. Lets a
+   * two-axis URL deep-link into a specific image of a multi-media post. Ignored
+   * once the player is open and the user navigates. Defaults to `0`.
+   */
+  initialInnerIndex?: number;
+
+  /**
    * Whether the built-in playback timeline bar renders over the active video.
    *
    * @default 'auto'
@@ -122,6 +130,13 @@ export interface ReelPlayerOverlayBaseProps<
    * Callback fired after slide change
    */
   onSlideChange?: (index: number) => void;
+
+  /**
+   * Fired when the active post's inner media index changes — on inner
+   * navigation within a multi-media post, and on outer activation, reporting
+   * the activated post's current inner index (0 for a single-media post).
+   */
+  onInnerSlideChange?: (outerIndex: number, innerIndex: number) => void;
 
   /**
    * Custom overlay on top of each slide. Replaces default SlideOverlay.
@@ -194,16 +209,22 @@ export interface ReelPlayerControlledProps {
  * URL-driven mode: the address bar owns whether the player is open. A
  * {@link UrlStateController} — built in consumer code with `useOverlayUrlState`
  * — carries the open state, so the same controller can be read and driven from
- * elsewhere. The overlay opens itself when the controller's index names a slide
- * and closes when it clears.
+ * elsewhere. The overlay opens itself when the controller's position names a
+ * slide and closes when it clears.
  */
 export interface ReelPlayerUrlControlledProps {
   /**
-   * URL-state controller from `useOverlayUrlState`. Its `index` drives whether
+   * URL-state controller from `useOverlayUrlState`. Its `position` drives whether
    * the overlay is open and which slide it shows; the overlay writes back
    * through it on slide change and close.
+   *
+   * Pick the URL depth by which key the controller was built with. A one-axis
+   * `urlIndexKey` gives a `number` position (`?reel=3`, the vertical post only); a
+   * two-axis `urlIndexTwoAxisKey` gives a `{ outer, inner }` position (`?reel=3.2`,
+   * the post plus the inner media index of a multi-media carousel). The overlay
+   * discriminates the mode at runtime from the position shape — no mode prop.
    */
-  controller: UrlStateController;
+  controller: UrlStateController<number> | UrlStateController<TwoAxisPosition>;
 
   /** Called after the player closes. The URL drives closing, not this. */
   onClose?: () => void;
@@ -320,6 +341,10 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>(
       innerMediaTypeSignal.value = type;
     };
 
+    const handleInnerIndexChange = (innerIndex: number) => {
+      propsRef.current.onInnerSlideChange?.(indexSignal.value, innerIndex);
+    };
+
     const overlayNode = (item: T, index: number, isActive: boolean) => {
       const { renderSlideOverlay } = propsRef.current;
       if (renderSlideOverlay) {
@@ -374,6 +399,13 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>(
         }
         indexSignal.value = index;
         propsRef.current.onSlideChange?.(index);
+        // A single-media post has no nested slider to report an inner index on
+        // activation, so report 0 here; a multi-media post's nested slider
+        // reports its own live inner index when it becomes active.
+        const media = propsRef.current.content[index]?.media;
+        if (!media || media.length <= 1) {
+          propsRef.current.onInnerSlideChange?.(index, 0);
+        }
       },
       handleSlideDragStart: () => {
         innerSliderRef.current?.unobserve();
@@ -431,6 +463,11 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>(
               size={itemSize}
               innerSliderRef={innerSliderRef}
               enableWheel={wheel}
+              initialInnerIndex={
+                index === initialIndex
+                  ? propsRef.current.initialInnerIndex
+                  : undefined
+              }
               onVideoRef={isActive ? handleVideoRef : undefined}
               onReady={onReady}
               onWaiting={onWaiting}
@@ -438,6 +475,7 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>(
               onActiveMediaTypeChange={
                 isActive ? handleActiveMediaTypeChange : undefined
               }
+              onInnerIndexChange={isActive ? handleInnerIndexChange : undefined}
               renderNestedNavigation={nestedNav}
               renderNestedSlide={nestedSlide}
             />
@@ -863,13 +901,13 @@ export function ReelPlayerOverlay<T extends BaseContentItem = ContentItem>(
  *
  * @example
  * ```tsx
- * import { useOverlayUrlState, indexKey } from '@reelkit/react';
+ * import { useOverlayUrlState, urlIndexKey } from '@reelkit/react';
  * import { ReelPlayerUrlOverlay } from '@reelkit/react-reel-player';
  *
  * function Feed({ content }) {
  *   const reel = useOverlayUrlState({
  *     param: 'reel',
- *     ...indexKey(() => content.length),
+ *     ...urlIndexKey(() => content.length),
  *   });
  *
  *   return (
@@ -888,23 +926,49 @@ export function ReelPlayerUrlOverlay<T extends BaseContentItem = ContentItem>(
   const latest = useRef({ base, onClose });
   latest.current = { base, onClose };
 
+  // The controller's position shape is the single source of truth for its
+  // mode, so narrow the union's set() once here. TS collapses a union of
+  // controllers' set() parameters to their intersection (`string | null`), so a
+  // direct set(number) or set({ outer, inner }) is a type error; both branches
+  // write through the same underlying controller, only the argument shape
+  // differs. set(null) needs no cast — null is in the intersection.
+  const write = controller.set as (
+    next: number | TwoAxisPosition | null,
+  ) => void;
+
   return (
-    <Observe signals={[controller.index]}>
+    <Observe signals={[controller.position]}>
       {() => {
-        if (controller.index.value === null) return null;
+        const position = controller.position.value;
+        if (position === null) return null;
+
+        // Runtime discrimination: a number is one-axis (post only); an object
+        // is two-axis (post + inner media index).
+        const twoAxis = typeof position !== 'number';
+        const outerIndex = twoAxis ? position.outer : position;
+        const initialInner = twoAxis ? position.inner : undefined;
 
         return (
           <ReelPlayerProviders>
             <ReelPlayerContent<T>
               {...(base as ReelPlayerOverlayBaseProps<T>)}
-              initialIndex={controller.index.value}
+              initialIndex={outerIndex}
+              initialInnerIndex={initialInner}
               onClose={() => {
                 controller.set(null);
                 latest.current.onClose?.();
               }}
               onSlideChange={(index) => {
-                controller.set(index);
+                // One-axis writes the post index on outer nav. Two-axis leaves
+                // the write to onInnerSlideChange, which fires on activation
+                // with the post's live inner index — writing here would name
+                // inner 0 before that correction lands.
+                if (!twoAxis) write(index);
                 latest.current.base.onSlideChange?.(index);
+              }}
+              onInnerSlideChange={(outer, inner) => {
+                if (twoAxis) write({ outer, inner });
+                latest.current.base.onInnerSlideChange?.(outer, inner);
               }}
             />
           </ReelPlayerProviders>

@@ -169,6 +169,13 @@ const reelPlayerProps = [
     description: 'Starting slide index',
   },
   {
+    prop: 'initialInnerIndex',
+    type: 'number',
+    default: '0',
+    description:
+      'Inner media index to open at, for the initially visible post only — lets a two-axis URL deep-link into a specific image of a multi-media post. Ignored once the player is open and the user navigates.',
+  },
+  {
     prop: 'isOpen',
     type: 'boolean',
     default: 'required',
@@ -271,6 +278,12 @@ const reelPlayerCallbacks = [
     prop: 'onSlideChange',
     type: '(index: number) => void',
     description: 'Called after slide change',
+  },
+  {
+    prop: 'onInnerSlideChange',
+    type: '(outerIndex: number, innerIndex: number) => void',
+    description:
+      "Called when the active post's inner media index changes — on inner navigation within a multi-media post, and on outer activation, reporting the activated post's current inner index (0 for a single-media post).",
   },
 ];
 

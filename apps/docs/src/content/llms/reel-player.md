@@ -246,6 +246,7 @@ Nothing is rendered while pending; the page already owns that loading state, so 
 | `isOpen`                     | `boolean`                                                | required         | Control overlay visibility                                                                                                                                                                                               |
 | `content`                    | `T[]`                                                    | required         | Content items array (generic, defaults to `ContentItem`)                                                                                                                                                                 |
 | `initialIndex`               | `number`                                                 | `0`              | Start slide index                                                                                                                                                                                                        |
+| `initialInnerIndex`          | `number`                                                 | `0`              | Inner media index to open at, for the initially visible post only — lets a two-axis URL deep-link into a specific image of a multi-media post. Ignored once the user navigates.                                          |
 | `apiRef`                     | `MutableRefObject<ReelApi>`                              | -                | Ref to Reel API                                                                                                                                                                                                          |
 | `ariaLabel`                  | `string`                                                 | `'Video player'` | Dialog region label; screen reader announce on overlay open                                                                                                                                                              |
 | `aspectRatio`                | `number`                                                 | `9/16 (0.5625)`  | Width/height ratio, desktop player container. Mobile = full viewport.                                                                                                                                                    |
@@ -286,10 +287,11 @@ Takes every visual/behavior prop above except `isOpen`, replaced by a `controlle
 
 ## Callbacks
 
-| Prop            | Type                      | Description                                                                                                                                  |
-| --------------- | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `onClose`       | `() => void`              | Called on close. Required on `ReelPlayerOverlay` (you own the open state); optional on `ReelPlayerUrlOverlay`, where the URL drives closing. |
-| `onSlideChange` | `(index: number) => void` | Fire after slide change                                                                                                                      |
+| Prop                 | Type                                               | Description                                                                                                                                                         |
+| -------------------- | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `onClose`            | `() => void`                                       | Called on close. Required on `ReelPlayerOverlay` (you own the open state); optional on `ReelPlayerUrlOverlay`, where the URL drives closing.                        |
+| `onSlideChange`      | `(index: number) => void`                          | Fire after slide change                                                                                                                                             |
+| `onInnerSlideChange` | `(outerIndex: number, innerIndex: number) => void` | Fire when the active post's inner media index changes — on inner navigation and on outer activation (the activated post's current inner index, 0 for single-media). |
 
 ## Sub-Components
 

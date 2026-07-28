@@ -41,11 +41,25 @@ const mediaSlideProps = {
   },
 
   /**
+   * Inner media index to open at, forwarded to a nested slider so a two-axis
+   * URL can deep-link into a specific image. Applies only on first mount.
+   *
+   * @default undefined
+   */
+  initialInnerIndex: { type: Number, default: undefined },
+
+  /**
    * Enable mouse-wheel navigation in nested horizontal sliders.
    *
    * @default true
    */
   enableWheel: { type: Boolean, default: true },
+
+  /** Reports the active inner media index of a nested slider. */
+  onInnerIndexChange: {
+    type: Function as PropType<(index: number) => void>,
+    default: undefined,
+  },
 
   /** Reports the active video element to the parent for drag pause/resume. */
   onVideoRef: {
@@ -136,8 +150,10 @@ export const MediaSlide = defineComponent({
         contentId: props.content.id,
         setInnerSlider: props.setInnerSlider,
         enableWheel: props.enableWheel,
+        initialIndex: props.initialInnerIndex,
         onVideoRef: props.onVideoRef,
         onActiveMediaTypeChange: props.onActiveMediaTypeChange,
+        onIndexChange: props.onInnerIndexChange,
         onReady: props.onReady,
         onWaiting: props.onWaiting,
         onError: props.onError,

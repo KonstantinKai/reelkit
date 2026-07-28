@@ -196,6 +196,9 @@ const _kDefaultTimelineMinDurationSeconds = 30;
                     [width]="itemSize[0]"
                     [height]="itemSize[1]"
                     [enableWheel]="enableWheel()"
+                    [initialInnerIndex]="
+                      index === initialIndex() ? initialInnerIndex() : undefined
+                    "
                     [onReady]="getOnReady(index)"
                     [onWaiting]="getOnWaiting(index)"
                     [onError]="getOnError(index)"
@@ -203,6 +206,9 @@ const _kDefaultTimelineMinDurationSeconds = 30;
                     [nestedNavTemplate]="nestedNavTpl() ?? null"
                     (videoRef)="isActive && onVideoRef($event)"
                     (innerMediaType)="isActive && onInnerMediaType($event)"
+                    (innerActiveIndexChange)="
+                      isActive && reportInnerIndex(index, $event)
+                    "
                     (innerApiReady)="onInnerApiReady($event)"
                   />
 
@@ -362,6 +368,13 @@ export class RkReelPlayerOverlayComponent<
   readonly content = input.required<T[]>();
   readonly initialIndex = input<number>(0);
 
+  /**
+   * Inner media index to open at, for the initially visible slide only. Lets a
+   * two-axis URL deep-link into a specific image of a multi-media post. Ignored
+   * once the player is open and the user navigates.
+   */
+  readonly initialInnerIndex = input<number | undefined>(undefined);
+
   /** Accessible label for the dialog. Defaults to "Video player". */
   readonly ariaLabel = input<string>('Video player');
 
@@ -397,6 +410,12 @@ export class RkReelPlayerOverlayComponent<
 
   readonly closed = output<void>();
   readonly slideChange = output<number>();
+  /**
+   * Fires when the active post's inner media index changes — on inner
+   * navigation within a multi-media post, and on outer activation, reporting
+   * the activated post's current inner index (0 for a single-media post).
+   */
+  readonly innerSlideChange = output<{ outer: number; inner: number }>();
   readonly apiReady = output<ReelApi>();
 
   // Projected slot directives. A `contentChild` query does not reach through
@@ -688,6 +707,17 @@ export class RkReelPlayerOverlayComponent<
     this._soundState.setDisabled(false);
 
     this.slideChange.emit(index);
+    // A single-media post has no nested slider to report an inner index on
+    // activation, so report 0 here; a multi-media post's nested slider reports
+    // its own live inner index when it becomes active.
+    const media = this.content()[index]?.media;
+    if (!media || media.length <= 1) {
+      this.innerSlideChange.emit({ outer: index, inner: 0 });
+    }
+  }
+
+  protected reportInnerIndex(outer: number, inner: number): void {
+    this.innerSlideChange.emit({ outer, inner });
   }
 
   getOnReady(index: number): () => void {

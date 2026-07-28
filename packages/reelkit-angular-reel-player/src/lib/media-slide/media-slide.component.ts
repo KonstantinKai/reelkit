@@ -89,6 +89,7 @@ import type {
         [height]="height()"
         [slideKey]="content().id"
         [enableWheel]="enableWheel()"
+        [initialIndex]="initialInnerIndex()"
         [onReady]="onReady()"
         [onWaiting]="onWaiting()"
         [onError]="onError()"
@@ -96,6 +97,7 @@ import type {
         [nestedNavTemplate]="nestedNavTemplate()"
         (videoRef)="videoRef.emit($event)"
         (innerMediaType)="innerMediaType.emit($event)"
+        (innerActiveIndexChange)="innerActiveIndexChange.emit($event)"
         (innerApiReady)="innerApiReady.emit($event)"
       />
     }
@@ -107,6 +109,11 @@ export class RkMediaSlideComponent {
   readonly width = input<number>(0);
   readonly height = input<number>(0);
   readonly enableWheel = input<boolean>(false);
+  /**
+   * Inner media index to open at, forwarded to a nested slider so a two-axis
+   * URL can deep-link into a specific image. Applies only on first mount.
+   */
+  readonly initialInnerIndex = input<number | undefined>(undefined);
   readonly onReady = input<(() => void) | undefined>(undefined);
   readonly onWaiting = input<(() => void) | undefined>(undefined);
   readonly onError = input<(() => void) | undefined>(undefined);
@@ -117,6 +124,7 @@ export class RkMediaSlideComponent {
 
   readonly videoRef = output<HTMLVideoElement | null>();
   readonly innerMediaType = output<MediaType>();
+  readonly innerActiveIndexChange = output<number>();
   readonly innerApiReady = output<ReelApi>();
 
   readonly nestedSlider = viewChild(RkNestedSliderComponent);
