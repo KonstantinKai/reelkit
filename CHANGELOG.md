@@ -1,3 +1,168 @@
+## @reelkit/vue@0.5.0 (2026-07-28)
+
+### 🚀 Features
+
+- New `useOverlayUrlState` composable — build a URL-state controller for an overlay: mirror a query parameter into a Vue ref and hand the controller to a URL-driven overlay
+- Re-exports the core URL-state primitives (`createUrlStateController`, `createHistoryAdapter`, `indexCodec`, `createIndexLocator`, `urlIndexKey`, `urlIndexTwoAxisKey`, `urlStableIdKey`, `urlStableIdTwoAxisKey`) and their types
+- New `useVueRouterUrlAdapter` from the `@reelkit/vue/vue-router-url-adapter` subpath — a ready-made `UrlAdapter` that drives a routed app's URL state through Vue Router, carrying the controller's ownership stamp in sessionStorage since Vue Router owns `history.state`; `vue-router` is an optional peer dependency and an app without a router never pulls it in
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.7.0
+
+## @reelkit/core@0.7.0 (2026-07-28)
+
+### 🚀 Features
+
+- New `createUrlStateController` — mirror a query parameter into a signal and write changes back to the URL
+- Opening pushes one history entry, paging replaces it — a hundred swipes add none, so one back step always leaves
+- New `UrlAdapter` injection point: routed apps drive reads and writes through their own router instead of the History API
+- New built-in URL keys: `urlIndexKey` (index gallery), `urlIndexTwoAxisKey` (a two-axis `?p=<outer>.<inner>` player), and the stable-id family `urlStableIdKey` / `urlStableIdTwoAxisKey` that address a gallery by each item's id so a bookmark survives a reorder — with an opt-in `hashCodec` (pass the exported `base64UrlCodec`) to base64url-obscure the id in the parameter, or plug in your own
+
+## @reelkit/react@0.7.0 (2026-07-28)
+
+### 🚀 Features
+
+- New `useOverlayUrlState` hook — build a URL-state controller for an overlay: mirror a query parameter into a signal and hand the controller to a URL-driven overlay
+- Opening is a link — the address bar owns the open state, so a shared link opens the overlay, and the back button closes it when it was opened from within the app (a fresh-tab deep link closes with the button or Escape)
+- Spread `urlIndexKey(() => count)` for the default index gallery — it returns the matched `codec` and `locator` pair (now both required) so a stale or out-of-range parameter drops itself from the URL; spread `urlStableIdKey({ items })` instead to key links by each item's stable `id` so a bookmark survives a reorder, or supply your own matched `codec` + `locator` for full control
+- New `useReactRouterUrlAdapter` from the `@reelkit/react/react-router-url-adapter` subpath — a ready-made `UrlAdapter` that drives a routed app's URL state through React Router, so `history.pushState` never writes behind the router's back; `react-router-dom` is an optional peer dependency and an app without a router never pulls it in
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.7.0
+
+## @reelkit/angular@0.5.0 (2026-07-28)
+
+### 🚀 Features
+
+- New `createOverlayUrlState` — builds a URL-state controller for an overlay, attaching on create and releasing through `DestroyRef`
+- Core URL-state API is now reachable from the binding: `createUrlStateController`, `createHistoryAdapter`, `indexCodec`, `createIndexLocator`, `urlIndexKey`, `urlIndexTwoAxisKey`, `urlStableIdKey`, `urlStableIdTwoAxisKey`, and their types
+- New `createRouterUrlAdapter` from the `@reelkit/angular/ng-router-url-adapter` entry point — a ready-made `UrlAdapter` that drives a routed app's URL state through the Angular Router, releasing its `NavigationEnd` subscription through `DestroyRef`; `@angular/router` is an optional peer dependency and an app without routing never pulls it in
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.7.0
+
+## @reelkit/vue-lightbox@0.2.0 (2026-07-28)
+
+### 🚀 Features
+
+- New `LightboxUrlOverlay` — a URL-driven lightbox for Vue whose open state lives in the address bar: shareable links, deep links, and a back button that closes the gallery when opened from within the app
+- Build its controller with `useOverlayUrlState` from `@reelkit/vue` and pass it as `:controller`; `LightboxOverlay` stays controlled via `v-model:is-open`
+- Stale or unresolvable parameters are dropped from the URL instead of asserting a slide that cannot open
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/vue to 0.5.0
+
+## @reelkit/stories-core@0.2.0 (2026-07-28)
+
+### 🚀 Features
+
+### ⚠️  Breaking Changes
+
+- removed `StoriesController.dispose()`. The stories controller owns no timers, listeners, or subscriptions — only references to your event callbacks — so it never needed teardown and is reclaimed once it falls out of scope. Remove any calls to it; disposing the sub-controllers you own (the timer via `createTimerController`, the progress renderer) is unchanged
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.7.0
+
+## @reelkit/react-lightbox@0.6.0 (2026-07-28)
+
+### 🚀 Features
+
+- New `LightboxUrlOverlay` — a URL-driven lightbox whose open state lives in the address bar: shareable links, deep links, and a back button that closes the gallery when opened from within the app
+- Build its controller with `useOverlayUrlState` and pass it as `controller`; `LightboxOverlay` stays controlled via `isOpen`
+- Stale or unresolvable parameters are dropped from the URL instead of asserting a slide that cannot open
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/react to 0.7.0
+- Updated @reelkit/core to 0.7.0
+
+## @reelkit/vue-reel-player@0.3.0 (2026-07-28)
+
+### 🚀 Features
+
+- New `ReelPlayerUrlOverlay` — a reel player whose open state lives in the address bar: shareable links, deep links, and a back button that closes the player when it was opened from within the app
+- Build the controller with `useOverlayUrlState` and pass it as `:controller`; `ReelPlayerOverlay` stays controlled via `v-model:is-open`, so each component carries exactly one open-state driver
+- Opening pushes a single history entry and every slide change replaces it, so paging a feed never buries the back button and one back step always leaves
+- Choose the URL depth by the controller's key: a one-axis `urlIndexKey` addresses the post only (`?reel=3`), a two-axis `urlIndexTwoAxisKey` also carries a multi-media post's inner media index (`?reel=3.2`) — pick one key per app, the two wire shapes do not cross-decode
+- `ReelPlayerOverlay` gains an `initial-inner-index` prop to open a multi-media post at a specific inner image, and an `inner-slide-change` emit reporting the active post's inner media index — the overlay side of two-axis addressing
+- Re-exports `urlIndexTwoAxisKey` and the `TwoAxisPosition` type from `@reelkit/vue`, plus the url-state types `UrlAdapter`, `UrlCodec` and `UrlLocator`, for building and typing the controller
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.7.0
+- Updated @reelkit/vue to 0.5.0
+
+## @reelkit/angular-lightbox@0.5.0 (2026-07-28)
+
+### 🚀 Features
+
+- New `RkLightboxUrlOverlayComponent` — a URL-driven lightbox whose open state lives in the address bar: shareable links, deep links, and a back button that closes the gallery when opened from within the app
+- Build its controller with `createOverlayUrlState` and pass it as `[controller]`; `RkLightboxOverlayComponent` stays controlled via `isOpen`
+- Template slot directives work unchanged inside the URL component, which runs the slot queries itself and forwards each template to the gallery
+- Opening pushes a single history entry and paging replaces it, so a gallery never buries the back button
+- Stale or unresolvable parameters are dropped from the URL instead of asserting a slide that cannot open
+- `RkLightboxOverlayComponent` gains optional `controlsTemplate`, `navigationTemplate`, `infoTemplate`, `slideTemplate`, `loadingTemplate` and `errorTemplate` inputs, each falling back to its existing template slot
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/angular to 0.5.0
+- Updated @reelkit/core to 0.7.0
+
+## @reelkit/react-reel-player@0.6.0 (2026-07-28)
+
+### 🚀 Features
+
+- New `ReelPlayerUrlOverlay` — a URL-driven reel player whose open state lives in the address bar: shareable links, deep links, and a back button that closes the player when opened from within the app
+- Build its controller with `useOverlayUrlState` from `@reelkit/react` and pass it as `controller`; `ReelPlayerOverlay` stays controlled via `isOpen`
+- Opening pushes a single history entry and swiping the feed replaces it, so paging never piles up entries and one back step always leaves
+- Choose the URL depth by the controller's key: a one-axis `urlIndexKey` addresses the post only (`?reel=3`), a two-axis `urlIndexTwoAxisKey` also carries a multi-media post's inner media index (`?reel=3.2`) — pick one key per app, the two wire shapes do not cross-decode
+- Stale or unresolvable parameters are dropped from the URL instead of asserting a slide that cannot open
+- `ReelPlayerOverlay` gains `initialInnerIndex` to open a multi-media post at a specific inner image, and an `onInnerSlideChange(outerIndex, innerIndex)` callback reporting the active post's inner media index — the overlay side of two-axis addressing
+- New `ReelPlayerOverlayBaseProps`, `ReelPlayerControlledProps`, `ReelPlayerUrlControlledProps`, and `ReelPlayerUrlOverlayProps` types; `ReelPlayerOverlayProps` keeps its existing shape
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/react to 0.7.0
+- Updated @reelkit/core to 0.7.0
+
+## @reelkit/angular-reel-player@0.5.0 (2026-07-28)
+
+### 🚀 Features
+
+- New `RkReelPlayerUrlOverlayComponent` — a reel player whose open state lives in the address bar: shareable links, deep links, and a back button that closes the player when it was opened from within the app
+- Build the controller with `createOverlayUrlState` and pass it as `[controller]`; `RkReelPlayerOverlayComponent` stays controlled via `[isOpen]`, so each component carries exactly one open-state driver
+- Opening pushes a single history entry and every slide change replaces it, so paging a feed never buries the back button and one back step always leaves
+- Choose the URL depth by the controller's key: a one-axis `urlIndexKey` addresses the post only (`?reel=3`), a two-axis `urlIndexTwoAxisKey` also carries a multi-media post's inner media index (`?reel=3.2`) — pick one key per app, the two wire shapes do not cross-decode
+- `RkReelPlayerOverlayComponent` gains an `initialInnerIndex` input to open a multi-media post at a specific inner image, and an `innerSlideChange` output (`{ outer, inner }`) reporting the active post's inner media index — the overlay side of two-axis addressing
+- `RkReelPlayerOverlayComponent` gains optional `slideTemplate`, `slideOverlayTemplate`, `controlsTemplate`, `timelineTemplate`, `navigationTemplate`, `nestedSlideTemplate`, `nestedNavTemplate`, `loadingTemplate` and `errorTemplate` inputs, each falling back to its existing template slot directive, so the url overlay can forward projected templates through
+- Re-exports `urlIndexTwoAxisKey` and the `TwoAxisPosition` type from `@reelkit/angular`, plus the url-state types `UrlAdapter`, `UrlCodec` and `UrlLocator`, for building and typing the controller; build the controller with `createOverlayUrlState` from `@reelkit/angular`
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/angular to 0.5.0
+- Updated @reelkit/core to 0.7.0
+
+## @reelkit/react-stories-player@0.3.0 (2026-07-28)
+
+### 🚀 Features
+
+- New `StoriesUrlOverlay` — a stories player whose open group and story live in one `?story=<group>.<story>` URL parameter: shareable links, deep links, and a back button that closes the player when it was opened from within the app
+- Inner navigation is carried too — swiping between a user's stories updates the URL — and opening pushes a single history entry that every navigation replaces, so one back step always closes
+- Build the controller with `useOverlayUrlState` and the core `urlIndexTwoAxisKey` (outer axis is the group, inner is the story) and pass it as `controller`; `StoriesOverlay` stays controlled via `isOpen`, so each component carries exactly one open-state driver
+- Re-exports `useOverlayUrlState`, `urlIndexTwoAxisKey`, `TwoAxisPosition`, and the url-state types (`UrlAdapter`, `UrlCodec`, `UrlLocator`, `UrlKey`, `UrlStateController`) for building and typing the controller
+- Fixed the URL-driven stories player freezing the address bar while navigating — moving between stories or groups now updates the `?story=<group>.<story>` parameter as intended
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/stories-core to 0.2.0
+- Updated @reelkit/react to 0.7.0
+- Updated @reelkit/core to 0.7.0
+
 ## @reelkit/vue-lightbox@0.1.0 (2026-04-27)
 
 ### 🎉 Initial Release
