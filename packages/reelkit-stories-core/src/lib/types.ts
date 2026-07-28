@@ -130,9 +130,6 @@ export interface StoriesController {
 
   /** Called when the timer for the current story completes. */
   onStoryTimerComplete(): void;
-
-  /** Clean up resources. */
-  dispose(): void;
 }
 
 export type SegmentStatus = 'completed' | 'active' | 'upcoming';
