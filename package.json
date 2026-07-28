@@ -9,11 +9,11 @@
     "fmt": "npx nx format",
     "lint": "npx nx run-many -t lint --no-tui",
     "typecheck": "npx nx run-many -t typecheck --no-tui",
+    "docs:check": "node scripts/docs-check.mjs",
     "check": "npm run fmt:chk && npm run lint && npm run typecheck && npm run docs:check",
     "test": "npx nx run-many -t test --no-tui",
     "e2e": "npx nx run-many -t e2e --no-tui",
     "update-sizes": "node scripts/update-sizes.mjs",
-    "docs:check": "node scripts/docs-check.mjs",
     "release:npm": "which op > /dev/null 2>&1 && op run --env-file=.env.op -- npx nx release publish || echo '1Password CLI (op) is not installed. Install it from https://1password.com/downloads/command-line/'"
   },
   "repository": {
