@@ -2,11 +2,11 @@
 
 <p>
   <a href="https://www.npmjs.com/package/@reelkit/vue-lightbox"><img src="https://img.shields.io/npm/v/@reelkit/vue-lightbox?color=6366f1&label=npm" alt="npm" /></a>
-  <img src="https://img.shields.io/badge/gzip-4.0%20kB-6366f1" alt="Bundle size" />
+  <img src="https://img.shields.io/badge/gzip-4.1%20kB-6366f1" alt="Bundle size" />
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
 
-Full-screen image and video gallery lightbox for Vue 3. Horizontal swipe navigation, fullscreen toggle, opt-in video support, and four built-in transitions. ~4.0 kB gzip.
+Full-screen image and video gallery lightbox for Vue 3. Horizontal swipe navigation, fullscreen toggle, opt-in video support, and four built-in transitions. ~4.1 kB gzip.
 
 **[Live Demo](https://vue-demo.reelkit.dev/lightbox?utm_source=npm)**
 
