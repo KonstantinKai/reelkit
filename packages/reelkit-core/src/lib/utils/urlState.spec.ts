@@ -5,10 +5,8 @@ import {
   type UrlStateController,
   type UrlCodec,
   type UrlLocator,
-  indexCodec,
-  createIndexLocator,
-  indexKey,
 } from './urlState';
+import { indexCodec } from './urlIndexKey';
 import { createDeferred } from './deferred';
 import type { Dispose } from './signal';
 
@@ -236,14 +234,14 @@ describe('createUrlStateController', () => {
       const [photo] = attachController(fake);
 
       expect(photo.value.value).toBe('3');
-      expect(photo.index.value).toBe(null);
+      expect(photo.position.value).toBe(null);
     });
 
     it('reads a plain integer index through the built-in codec', () => {
       const fake = createFakeAdapter('?photo=3');
       const [photo] = attachDeriving(fake, { codec: indexCodec });
 
-      expect(photo.index.value).toBe(3);
+      expect(photo.position.value).toBe(3);
     });
 
     it.each(['bogus', '-1', '1.5', ''])(
@@ -252,7 +250,7 @@ describe('createUrlStateController', () => {
         const fake = createFakeAdapter(`?photo=${raw}`, true);
         const [photo] = attachDeriving(fake, { codec: indexCodec });
 
-        expect(photo.index.value).toBe(null);
+        expect(photo.position.value).toBe(null);
       },
     );
 
@@ -274,7 +272,7 @@ describe('createUrlStateController', () => {
         locator: pagedLocate(['a', 'b', 'c']),
       });
 
-      expect(photo.index.value).toBe(1);
+      expect(photo.position.value).toBe(1);
     });
 
     it('serializes writes by identifying then encoding', () => {
@@ -325,7 +323,7 @@ describe('createUrlStateController', () => {
       const revisit = createFakeAdapter(bookmarked, true);
       const [reopened] = attachDeriving<string>(revisit, { codec, locator });
 
-      expect(reopened.index.value).toBe(0);
+      expect(reopened.position.value).toBe(0);
     });
 
     it('removes a parameter the codec cannot read and stays closed', () => {
@@ -334,7 +332,7 @@ describe('createUrlStateController', () => {
         codec: { decode: () => null, encode: String },
       });
 
-      expect(photo.index.value).toBe(null);
+      expect(photo.position.value).toBe(null);
       expect(fake.adapter.read()).toBe('');
     });
 
@@ -343,12 +341,12 @@ describe('createUrlStateController', () => {
       const [photo] = attachDeriving(fake, {
         codec: { decode: Number, encode: String },
       });
-      expect(photo.index.value).toBe(1);
+      expect(photo.position.value).toBe(1);
 
       fake.adapter.push('?photo=2');
       fake.fireUrlChange();
 
-      expect(photo.index.value).toBe(1);
+      expect(photo.position.value).toBe(1);
     });
 
     it('closes when the parameter goes away', () => {
@@ -359,11 +357,11 @@ describe('createUrlStateController', () => {
 
       fake.adapter.push('?photo=2');
       fake.fireUrlChange();
-      expect(photo.index.value).toBe(2);
+      expect(photo.position.value).toBe(2);
 
       fake.adapter.goBack();
 
-      expect(photo.index.value).toBe(null);
+      expect(photo.position.value).toBe(null);
     });
 
     it('leaves the parameter in place while locateAsync is in flight', () => {
@@ -380,7 +378,7 @@ describe('createUrlStateController', () => {
         },
       });
 
-      expect(photo.index.value).toBe(null);
+      expect(photo.position.value).toBe(null);
       expect(fake.adapter.read()).toBe('?photo=999');
     });
 
@@ -396,7 +394,7 @@ describe('createUrlStateController', () => {
 
       // 'b' is loaded at index 1 — the async fallback must not fire.
       expect(locateAsync).not.toHaveBeenCalled();
-      expect(photo.index.value).toBe(1);
+      expect(photo.position.value).toBe(1);
     });
 
     it('opens at the index locateAsync settles on when locate misses', async () => {
@@ -415,12 +413,12 @@ describe('createUrlStateController', () => {
         },
       });
 
-      expect(photo.index.value).toBe(null);
+      expect(photo.position.value).toBe(null);
 
       pending.resolve();
       await flushMicrotasks();
 
-      expect(photo.index.value).toBe(2);
+      expect(photo.position.value).toBe(2);
     });
 
     it('removes the parameter when locateAsync settles on nothing', async () => {
@@ -441,7 +439,7 @@ describe('createUrlStateController', () => {
       pending.resolve();
       await flushMicrotasks();
 
-      expect(photo.index.value).toBe(null);
+      expect(photo.position.value).toBe(null);
       expect(fake.adapter.read()).toBe('');
     });
 
@@ -460,7 +458,7 @@ describe('createUrlStateController', () => {
 
       await flushMicrotasks();
 
-      expect(photo.index.value).toBe(3);
+      expect(photo.position.value).toBe(3);
       expect(fake.adapter.read()).toBe('?photo=late');
     });
 
@@ -476,7 +474,7 @@ describe('createUrlStateController', () => {
 
       await flushMicrotasks();
 
-      expect(photo.index.value).toBe(null);
+      expect(photo.position.value).toBe(null);
       expect(fake.adapter.read()).toBe('');
     });
 
@@ -507,11 +505,11 @@ describe('createUrlStateController', () => {
       // its own item is now loaded.
       first.resolve();
       await flushMicrotasks();
-      expect(photo.index.value).toBe(null);
+      expect(photo.position.value).toBe(null);
 
       second.resolve();
       await flushMicrotasks();
-      expect(photo.index.value).toBe(1);
+      expect(photo.position.value).toBe(1);
     });
 
     it('does not restart the lookup when the url changes but the value does not', async () => {
@@ -533,7 +531,7 @@ describe('createUrlStateController', () => {
       await flushMicrotasks();
 
       expect(locateAsync).toHaveBeenCalledTimes(1);
-      expect(photo.index.value).toBe(0);
+      expect(photo.position.value).toBe(0);
     });
 
     it('discards a locateAsync that settles after the parameter is cleared', async () => {
@@ -559,7 +557,7 @@ describe('createUrlStateController', () => {
       pending.resolve();
       await flushMicrotasks();
 
-      expect(photo.index.value).toBe(null);
+      expect(photo.position.value).toBe(null);
       expect(fake.adapter.read()).toBe('');
     });
 
@@ -586,7 +584,7 @@ describe('createUrlStateController', () => {
       pending.resolve();
       await flushMicrotasks();
 
-      expect(photo.index.value).toBe(null);
+      expect(photo.position.value).toBe(null);
       expect(fake.adapter.read()).toBe('?photo=late');
     });
   });
@@ -603,37 +601,86 @@ describe('createUrlStateController', () => {
   });
 });
 
-describe('createIndexLocator', () => {
-  it('resolves an in-range index to itself', () => {
-    const locator = createIndexLocator(() => 3);
-    expect(locator.locate(0)).toBe(0);
-    expect(locator.locate(2)).toBe(2);
-    expect(locator.identify(1)).toBe(1);
+describe('createUrlStateController with an object position', () => {
+  // The same engine that drives a one-axis gallery drives a two-axis stories
+  // player when the position is a { group, story } object. These assert the
+  // shared history discipline still holds when Pos is not a number, so no
+  // second implementation is needed downstream.
+  type TwoAxis = { group: number; story: number };
+  const _kStoriesPerGroup = [2, 3, 4];
+
+  const build = (initial: string) => {
+    const fake = createFakeUrlAdapter(initial);
+    const codec: UrlCodec<TwoAxis> = {
+      decode: (raw) => {
+        const [group, story] = raw.split('.').map(Number);
+        if (!Number.isInteger(group) || !Number.isInteger(story)) return null;
+        return { group, story };
+      },
+      encode: ({ group, story }) => `${group}.${story}`,
+    };
+    const locator: UrlLocator<TwoAxis, TwoAxis> = {
+      locate: ({ group, story }) =>
+        group >= 0 &&
+        group < _kStoriesPerGroup.length &&
+        story >= 0 &&
+        story < _kStoriesPerGroup[group]
+          ? { group, story }
+          : null,
+      identify: (pos) => pos,
+    };
+    const ctrl = createUrlStateController<TwoAxis, TwoAxis>({
+      param: 'story',
+      adapter: fake.adapter,
+      codec,
+      locator,
+    });
+    return { fake, ctrl };
+  };
+
+  it('opens at a decoded object and writes objects back', () => {
+    const { fake, ctrl } = build('?story=1.2');
+    ctrl.attach();
+    expect(ctrl.position.value).toEqual({ group: 1, story: 2 });
+
+    ctrl.set({ group: 2, story: 0 });
+    expect(fake.adapter.read()).toBe('?story=2.0');
   });
 
-  it('rejects an out-of-range index to null rather than coercing it', () => {
-    const locator = createIndexLocator(() => 3);
-    // A clamp would land 99 on the last slide (2); the locator drops it so the
-    // parameter self-heals instead of opening a slide the URL never named.
-    expect(locator.locate(99)).toBeNull();
-    expect(locator.locate(-1)).toBeNull();
-    expect(locator.locate(1.5)).toBeNull();
+  it('runs the shared history discipline for an object: one entry, then replaces', () => {
+    const { fake, ctrl } = build('');
+    ctrl.attach();
+    ctrl.set({ group: 1, story: 0 }); // open
+    ctrl.set({ group: 1, story: 1 }); // inner nav
+    ctrl.set({ group: 2, story: 0 }); // outer nav
+    expect(fake.counts.push).toBe(1);
+    expect(fake.counts.replace).toBe(2);
   });
 
-  it('reads the count at lookup time, so a grown collection widens the range', () => {
-    let count = 1;
-    const locator = createIndexLocator(() => count);
-    expect(locator.locate(3)).toBeNull();
-    count = 5;
-    expect(locator.locate(3)).toBe(3);
+  it('pops at most one entry on repeated close for an object', () => {
+    const { fake, ctrl } = build('');
+    ctrl.attach();
+    ctrl.set({ group: 1, story: 0 });
+    ctrl.set(null);
+    ctrl.set(null);
+    expect(fake.cursor).toBe(0);
+    expect(fake.adapter.read()).toBe('');
   });
-});
 
-describe('indexKey', () => {
-  it('bundles indexCodec with a count-bound index locator', () => {
-    const key = indexKey(() => 3);
-    expect(key.codec).toBe(indexCodec);
-    expect(key.locator.locate(2)).toBe(2);
-    expect(key.locator.locate(99)).toBeNull();
+  it('claims a link-pushed object param so back closes', () => {
+    const { fake, ctrl } = build('');
+    ctrl.attach();
+    fake.adapter.push('?story=1.0');
+    fake.fireUrlChange();
+    expect(ctrl.position.value).toEqual({ group: 1, story: 0 });
+    // Appeared-claim re-stamps the entry in place — a replace, not a new push.
+    expect(fake.counts.replace).toBe(1);
+  });
+
+  it('self-heals an out-of-range object', () => {
+    const { fake, ctrl } = build('?story=9.9');
+    ctrl.attach();
+    expect(ctrl.position.value).toBeNull();
+    expect(fake.adapter.read()).toBe('');
   });
 });

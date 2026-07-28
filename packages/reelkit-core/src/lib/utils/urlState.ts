@@ -1,4 +1,5 @@
 import { createSignal, type Signal, type Dispose } from './signal';
+import { indexCodec } from './urlIndexKey';
 
 /**
  * Key stamped into a history entry's state to mark the entry as one this
@@ -94,10 +95,8 @@ export const createHistoryAdapter = (): UrlAdapter => ({
     return () => window.removeEventListener('popstate', listener);
   },
 
-  // A pushed entry is new, so it starts from the given state.
   push: (to, state) => window.history.pushState(state ?? null, '', to),
 
-  // A replaced entry is the current one: merge so a router's own keys survive.
   replace: (to, state) =>
     window.history.replaceState(merge(window.history.state, state), '', to),
 
@@ -146,133 +145,65 @@ export interface UrlCodec<Id = number> {
  * collection's type and stays overlay-agnostic.
  *
  * @typeParam Id - The identity a {@link UrlCodec} produces.
+ * @typeParam Pos - The position an identity resolves to. Defaults to a slide
+ * index (`number`) — a one-axis gallery. A stories player resolves to a
+ * two-axis `{ outer, inner }` position (`TwoAxisPosition`) instead, so one
+ * controller drives both.
  */
-export interface UrlLocator<Id> {
+export interface UrlLocator<Id, Pos = number> {
   /**
-   * The identity's index in the currently-loaded collection, or `null` when it
-   * is absent or not yet loaded. Synchronous.
+   * The identity's position in the currently-loaded collection, or `null` when
+   * it is absent or not yet loaded. Synchronous.
    */
-  locate: (id: Id) => number | null;
+  locate: (id: Id) => Pos | null;
 
   /**
    * Asynchronous fallback, called only when {@link locate} returns `null` — a
    * loaded identity never pays for a fetch. Load the pages you need, then
-   * return the index the identity turned out to have.
+   * return the position the identity turned out to have.
    *
    * Whatever this returns is the answer; nothing re-runs `locate` or `decode`
-   * afterwards, so an index computed from data this just fetched is race-free
+   * afterwards, so a position computed from data this just fetched is race-free
    * against a collection that has not re-rendered. While it is in flight the
    * parameter survives untouched and the overlay stays closed; a `null` or a
    * rejection clears the parameter. Work that finishes after the URL has moved
    * on is discarded.
    */
-  locateAsync?: (id: Id) => Promise<number | null>;
+  locateAsync?: (id: Id) => Promise<Pos | null>;
 
   /**
-   * An index back into its identity, for writes. Synchronous — a write only
+   * A position back into its identity, for writes. Synchronous — a write only
    * ever encodes a slide already on screen, so its identity is always loaded.
    */
-  identify: (index: number) => Id;
+  identify: (position: Pos) => Id;
 }
-
-/**
- * Reads a bare integer index, the shape `?photo=3` implies.
- *
- * Fractions and negatives decode to `null` rather than being rounded or
- * clamped: they are as much a broken link as `?photo=bogus`, and silently
- * repairing them would open a slide the URL never named.
- *
- * Pass it explicitly to opt a controller into index derivation without writing
- * a codec of your own. Prefer a codec over a stable identity whenever the list
- * can change — a bookmarked `?photo=3` names a different slide the moment an
- * item is inserted.
- */
-export const indexCodec: UrlCodec<number> = {
-  decode: (raw) => {
-    // Reject blank input before parsing: `Number('')` and `Number(' ')` are
-    // both `0`, so a bare or whitespace-only `?photo=` would otherwise open
-    // slide 0 instead of naming no slide.
-    if (raw.trim() === '') return null;
-
-    const parsed = Number(raw);
-    return Number.isInteger(parsed) && parsed >= 0 ? parsed : null;
-  },
-  encode: String,
-};
-
-/**
- * Narrows a parsed index to a slide the gallery can actually show, or `null`
- * when it cannot. A fraction, a negative, or a stale index past the end reads
- * back the same as no slide, so a dead bookmark self-heals out of the URL
- * instead of asserting a slide that cannot open.
- *
- * It rejects to `null` rather than repairing to the nearest valid slide: a
- * shared link naming a gone slide must drop, not silently land on a neighbour.
- */
-const toSlideIndex = (value: number | null, count: number): number | null =>
-  value !== null && Number.isInteger(value) && value >= 0 && value < count
-    ? value
-    : null;
-
-/**
- * The default locator for a plain index gallery, paired with {@link indexCodec}:
- * the parameter is a slide position, so `locate` and `identify` are the identity
- * — bounded by the gallery's live size.
- *
- * Pass `countGetter` as a getter, not a number, so the bound reads the current
- * size at lookup time: a paginated gallery grows, and a framework whose setup
- * runs once (Vue) would otherwise capture a stale length. Hand the result to
- * `useOverlayUrlState` as its `locator`.
- *
- * A gallery keyed by a stable id instead of position wants its own locator, not
- * this one — this maps a position to itself and only bounds the range.
- *
- * @param countGetter - Reads the gallery's current item count.
- * @returns A locator that resolves an in-range index and drops the rest.
- */
-export const createIndexLocator = (
-  countGetter: () => number,
-): UrlLocator<number> => ({
-  locate: (id) => toSlideIndex(id, countGetter()),
-  identify: (index) => index,
-});
 
 /**
  * The matched `codec` + `locator` pair for one parameter. They share the same
  * `Id` and always travel together — the codec spells the identity into the URL,
  * the locator finds where that identity sits — so building them as a pair is the
  * one way to keep them from disagreeing.
- */
-export interface UrlKey<Id = number> {
-  codec: UrlCodec<Id>;
-  locator: UrlLocator<Id>;
-}
-
-/**
- * The default key for a plain index gallery: {@link indexCodec} paired with a
- * {@link createIndexLocator} bound to the gallery's live size. Spread it into
- * `useOverlayUrlState` — `useOverlayUrlState({ param, ...indexKey(() => count) })`
- * — so the common case is one call and the codec cannot drift from the locator.
  *
- * @param countGetter - Reads the gallery's current item count.
- * @returns The `{ codec, locator }` pair for an index-addressed gallery.
+ * @typeParam Id - The identity the codec produces.
+ * @typeParam Pos - The position the locator resolves an identity to. Defaults
+ * to a slide index; a stories player pairs an object `Pos` here.
  */
-export const indexKey = (countGetter: () => number): UrlKey<number> => ({
-  codec: indexCodec,
-  locator: createIndexLocator(countGetter),
-});
+export interface UrlKey<Id = number, Pos = number> {
+  codec: UrlCodec<Id>;
+  locator: UrlLocator<Id, Pos>;
+}
 
 /**
  * A single query parameter, mirrored into a reactive signal and back into the
  * URL. The URL is the source of truth: `value` always reflects what the
  * address bar says.
  */
-export interface UrlStateController {
+export interface UrlStateController<Pos = number> {
   /** The parameter's current raw value, or `null` when it is absent. */
   value: Signal<string | null>;
 
   /**
-   * The slide the parameter currently names, or `null` when nothing is open.
+   * The position the parameter currently names, or `null` when nothing is open.
    *
    * Derived by the controller, so a binding subscribes rather than re-deriving:
    * the decode-then-locate dispatch, the open/close latch, self-healing of a
@@ -280,24 +211,33 @@ export interface UrlStateController {
    * all happen here, once, for every framework binding.
    *
    * Stays `null` unless a `codec` or `locator` was supplied — without one the
-   * controller has no basis for turning text into a slide, so it reports the
+   * controller has no basis for turning text into a position, so it reports the
    * raw `value` only.
    *
-   * While something is open this holds the index it opened at and stops
-   * following the URL. The slider owns the index from that point and the URL
+   * While something is open this holds the position it opened at and stops
+   * following the URL. The slider owns the position from that point and the URL
    * trails it; re-deriving would fight the user's swipe.
+   *
+   * @typeParam Pos - A slide index for a one-axis gallery; a two-axis
+   * `{ outer, inner }` position (`TwoAxisPosition`) for a stories player. The
+   * whole object lands in one atomic write, so a
+   * subscriber never reads a half-updated position.
    */
-  index: Signal<number | null>;
+  position: Signal<Pos | null>;
 
   /**
    * Writes the parameter. Passing `null` removes it.
+   *
+   * A `Pos` is encoded through the key's `identify` + `encode`; a `string` is
+   * written verbatim, the raw-wire escape hatch. (`Pos = string` is therefore
+   * not supported — a string always means the raw override.)
    *
    * Whether the write adds a history entry is derived, not chosen: the first
    * write of an absent parameter pushes one entry, and every write after that
    * replaces it. So opening costs one entry and paging through a hundred
    * slides costs none — a single back step always leaves.
    */
-  set: (next: string | number | null) => void;
+  set: (next: Pos | string | null) => void;
 
   /**
    * Seeds `value` from the current URL and starts following changes.
@@ -311,14 +251,16 @@ export interface UrlStateController {
  * Configuration for {@link createUrlStateController}.
  *
  * Supplying a `codec` or a `locator` is what makes the controller derive
- * `index` at all; with neither it reports the raw `value` only. When the
+ * `position` at all; with neither it reports the raw `value` only. When the
  * codec's identity is not itself a slide index — a string id, a slug — a
  * `locator` is required to turn that identity into a position, and the type
  * of {@link createUrlStateController} enforces it.
  *
  * @typeParam Id - The identity the codec produces. Defaults to a slide index.
+ * @typeParam Pos - The position an identity resolves to. Defaults to a slide
+ * index.
  */
-export interface UrlStateOptions<Id = number> {
+export interface UrlStateOptions<Id = number, Pos = number> {
   /** Name of the query parameter to mirror. */
   param: string;
 
@@ -342,7 +284,7 @@ export interface UrlStateOptions<Id = number> {
    * `locateAsync` (async fallback), and `identify` for writes. Omit it only
    * when the identity is already a slide index (the default `Id = number`).
    */
-  locator?: UrlLocator<Id>;
+  locator?: UrlLocator<Id, Pos>;
 }
 
 /**
@@ -366,22 +308,22 @@ export interface UrlStateOptions<Id = number> {
  * nobody, so `set(null)` clears it in place instead of stepping back off the
  * site.
  */
-export const createUrlStateController = <Id = number>(
+export const createUrlStateController = <Id = number, Pos = number>(
   // A non-`number` identity cannot stand in for an index, so a codec that
   // produces one demands a `locator` — the intersection makes it a type error
   // to omit. The default `Id = number` leaves the integer case unconstrained.
-  options: UrlStateOptions<Id> &
-    (Id extends number ? object : { locator: UrlLocator<Id> }),
-): UrlStateController => {
+  options: UrlStateOptions<Id, Pos> &
+    (Id extends number ? object : { locator: UrlLocator<Id, Pos> }),
+): UrlStateController<Pos> => {
   const { param, locator } = options;
   const adapter = options.adapter ?? createHistoryAdapter();
   // With neither, the controller has no basis for turning text into a slide,
-  // so it leaves `index` alone and reports the raw `value` only.
+  // so it leaves `position` alone and reports the raw `value` only.
   const derives = options.codec !== undefined || locator !== undefined;
   const codec = (options.codec ?? indexCodec) as UrlCodec<Id>;
 
   const value = createSignal<string | null>(null);
-  const index = createSignal<number | null>(null);
+  const position = createSignal<Pos | null>(null);
 
   // Guards against a second close while the first is still awaiting its
   // history step, which would pop an extra entry and leave the site.
@@ -404,8 +346,6 @@ export const createUrlStateController = <Id = number>(
   const readParam = (): string | null =>
     new URLSearchParams(adapter.read()).get(param);
 
-  // Rebuilds the query string around the new value, leaving every other
-  // parameter — and the path — exactly as it was.
   const buildSearch = (next: string | null): string => {
     const search = new URLSearchParams(adapter.read());
 
@@ -437,13 +377,11 @@ export const createUrlStateController = <Id = number>(
     // leave the site entirely. Drop the parameter where it stands.
     adapter.replace(buildSearch(null));
     value.value = null;
-    index.value = null;
+    position.value = null;
     closing = false;
   };
 
-  // Commits a derived slide, but only if the world still matches the one the
-  // derivation started in.
-  const settle = (next: number | null, token: number): void => {
+  const settle = (next: Pos | null, token: number): void => {
     if (disposed || token !== generation) return;
 
     if (next === null) {
@@ -454,7 +392,7 @@ export const createUrlStateController = <Id = number>(
       return;
     }
 
-    index.value = next;
+    position.value = next;
   };
 
   const derive = (): void => {
@@ -465,15 +403,14 @@ export const createUrlStateController = <Id = number>(
     if (raw === null) {
       generation += 1;
       deriving = null;
-      index.value = null;
+      position.value = null;
       return;
     }
 
-    // Already open. From here the slider owns the index and the URL only
-    // trails it — reading the index back in would fight the user's swipe.
-    if (index.value !== null) return;
+    // Already open. From here the slider owns the position and the URL only
+    // trails it — reading the position back in would fight the user's swipe.
+    if (position.value !== null) return;
 
-    // Same value, already being worked on.
     if (raw === deriving) return;
 
     deriving = raw;
@@ -488,9 +425,10 @@ export const createUrlStateController = <Id = number>(
       return;
     }
 
-    // No locator means the identity is already the index (its type is pinned
-    // to `number`). With one, ask it where the identity currently sits.
-    const found = locator ? locator.locate(id) : (id as number);
+    // No locator means the identity is already the position — a slide index
+    // (its type is pinned to `number`). With one, ask it where the identity
+    // currently sits.
+    const found = locator ? locator.locate(id) : (id as unknown as Pos);
     if (found !== null) {
       settle(found, token);
       return;
@@ -508,28 +446,25 @@ export const createUrlStateController = <Id = number>(
       return;
     }
 
-    // Not loaded, and no way to load it — self-heal.
     settle(null, token);
   };
 
-  const set = (next: string | number | null): void => {
+  const set = (next: Pos | string | null): void => {
     if (next === null) {
       remove();
       return;
     }
 
-    // A number is a slide index: turn it back into an identity (through the
-    // locator, or straight across when the identity is the index) and encode
-    // that. A string is a raw override, written verbatim.
     const serialized =
-      typeof next === 'number'
-        ? codec.encode(locator ? locator.identify(next) : (next as Id))
-        : String(next);
+      typeof next === 'string'
+        ? next
+        : codec.encode(
+            locator ? locator.identify(next) : (next as unknown as Id),
+          );
     const present = readParam() !== null;
     const to = buildSearch(serialized);
 
     if (present) {
-      // Same entry, so the ownership stamp on it is preserved by the merge.
       adapter.replace(to);
     } else {
       adapter.push(to, { [_kOwnerKey]: param });
@@ -579,5 +514,5 @@ export const createUrlStateController = <Id = number>(
     };
   };
 
-  return { value, index, set, attach };
+  return { value, position, set, attach };
 };
