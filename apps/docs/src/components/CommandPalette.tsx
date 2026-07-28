@@ -10,8 +10,10 @@ import {
   createDisposableList,
   Observe,
 } from '@reelkit/react';
-import { searchItems, SearchItem } from '../data/searchData';
+import { SearchItem, searchItemsFor } from '../data/searchData';
 import { frameworkSignal } from '../data/frameworkSignal';
+import { useLocale, useMessages } from '../i18n/useLocale';
+import type { Messages } from '../i18n/messages';
 
 interface CommandPaletteProps {
   isOpen: boolean;
@@ -19,14 +21,16 @@ interface CommandPaletteProps {
 }
 
 /**
- * Group results into ordered buckets:
- * `Pages · <category>` holds every page-level hit, then
- * `<page title> · Sections` holds that page's section hits.
+ * Group results into ordered buckets: every page-level hit lands under its
+ * category, then each page's section hits land under that page's title.
  *
  * Pages for a category appear above their sections so the user sees the
  * parent page first, followed by deeper matches within it.
  */
-function groupResults(items: SearchItem[]): Map<string, SearchItem[]> {
+function groupResults(
+  items: SearchItem[],
+  labels: Messages['search'],
+): Map<string, SearchItem[]> {
   const groups = new Map<string, SearchItem[]>();
   const push = (key: string, item: SearchItem) => {
     const g = groups.get(key);
@@ -38,10 +42,10 @@ function groupResults(items: SearchItem[]): Map<string, SearchItem[]> {
   const sectionItems = items.filter((i) => !!i.sectionAnchor);
 
   // Pages grouped by category, preserving insertion order.
-  for (const item of pageItems) push(`Pages · ${item.category}`, item);
+  for (const item of pageItems) push(labels.pagesGroup(item.category), item);
 
   // Sections grouped by their parent page title (`item.title`).
-  for (const item of sectionItems) push(`${item.title} · Sections`, item);
+  for (const item of sectionItems) push(labels.sectionsGroup(item.title), item);
 
   return groups;
 }
@@ -53,40 +57,54 @@ export default function CommandPalette({
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const locale = useLocale();
+  const messages = useMessages();
+  const messagesRef = useRef(messages);
+  messagesRef.current = messages;
 
-  const [{ query, activeIndex, filtered, grouped }] = useState(() => {
-    const query = createSignal('');
-    const activeIndex = createSignal(0);
+  const [{ query, activeIndex, localeSignal, filtered, grouped }] = useState(
+    () => {
+      const query = createSignal('');
+      const activeIndex = createSignal(0);
+      // The palette outlives a locale switch because the header stays
+      // mounted, so the active locale has to reach the computed as a signal
+      // rather than as a captured render value.
+      const localeSignal = createSignal(locale);
 
-    const filtered = createComputed(
-      () => {
-        const fw = frameworkSignal.value;
-        const base = searchItems.filter(
-          (item) => !item.framework || item.framework === fw,
-        );
-        const q = query.value.toLowerCase().trim();
-        if (!q) return base;
-        return base.filter(
-          (item) =>
-            item.title.toLowerCase().includes(q) ||
-            item.category.toLowerCase().includes(q) ||
-            item.sectionTitle?.toLowerCase().includes(q) ||
-            item.keywords.some((kw) => kw.includes(q)),
-        );
-      },
-      () => [query, frameworkSignal],
-    );
+      const filtered = createComputed(
+        () => {
+          const fw = frameworkSignal.value;
+          const base = searchItemsFor(localeSignal.value).filter(
+            (item) => !item.framework || item.framework === fw,
+          );
+          const q = query.value.toLowerCase().trim();
+          if (!q) return base;
+          return base.filter(
+            (item) =>
+              item.title.toLowerCase().includes(q) ||
+              item.category.toLowerCase().includes(q) ||
+              item.sectionTitle?.toLowerCase().includes(q) ||
+              item.keywords.some((kw) => kw.includes(q)),
+          );
+        },
+        () => [query, frameworkSignal, localeSignal],
+      );
 
-    const grouped = createComputed(
-      () => groupResults(filtered.value),
-      () => [filtered],
-    );
+      const grouped = createComputed(
+        () => groupResults(filtered.value, messagesRef.current.search),
+        () => [filtered],
+      );
 
-    return { query, activeIndex, filtered, grouped };
-  });
+      return { query, activeIndex, localeSignal, filtered, grouped };
+    },
+  );
 
   const propsRef = useRef({ onClose, navigate });
   propsRef.current = { onClose, navigate };
+
+  useEffect(() => {
+    localeSignal.value = locale;
+  }, [locale]);
 
   useEffect(() => {
     if (isOpen) {
@@ -177,7 +195,7 @@ export default function CommandPalette({
                 type="text"
                 value={query.value}
                 onChange={(e) => (query.value = e.target.value)}
-                placeholder="Search documentation..."
+                placeholder={messages.search.placeholder}
                 className="flex-1 py-4 bg-transparent border-0 outline-none text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400"
               />
             )}
@@ -194,7 +212,7 @@ export default function CommandPalette({
               if (items.length === 0) {
                 return (
                   <div className="px-4 py-8 text-center text-sm text-slate-500">
-                    No results found for &ldquo;{query.value}&rdquo;
+                    {messages.search.empty(query.value)}
                   </div>
                 );
               }
@@ -268,19 +286,19 @@ export default function CommandPalette({
             <kbd className="px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono">
               &darr;
             </kbd>
-            navigate
+            {messages.search.navigate}
           </span>
           <span className="inline-flex items-center gap-1">
             <kbd className="px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono">
               &crarr;
             </kbd>
-            open
+            {messages.search.open}
           </span>
           <span className="inline-flex items-center gap-1">
             <kbd className="px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono">
               esc
             </kbd>
-            close
+            {messages.search.close}
           </span>
         </div>
       </div>

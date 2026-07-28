@@ -5,6 +5,8 @@ import { captureFocusForReturn, createFocusTrap } from '@reelkit/react';
 import { parseChangelog } from '../utils/parseChangelog';
 import { getDeltaSinceLastSeen } from '../utils/getDeltaSinceLastSeen';
 import { useLastSeenRelease } from '../hooks/useLastSeenRelease';
+import { stripLocaleFromPath } from '../i18n/locale';
+import { useLocalePath, useMessages } from '../i18n/useLocale';
 
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import changelogRaw from '../../../../CHANGELOG.md?raw';
@@ -12,12 +14,16 @@ import changelogRaw from '../../../../CHANGELOG.md?raw';
 const _kMaxEntries = 3;
 const _kChangelogPath = '/docs/changelog';
 
-const isExcludedRoute = (pathname: string): boolean =>
-  pathname === '/' || pathname.endsWith('/changelog');
+const isExcludedRoute = (pathname: string): boolean => {
+  const shared = stripLocaleFromPath(pathname);
+  return shared === '/' || shared.endsWith('/changelog');
+};
 
 export default function WhatsNewDialog() {
   const location = useLocation();
   const navigate = useNavigate();
+  const messages = useMessages();
+  const localePath = useLocalePath();
   const dialogRef = useRef<HTMLDivElement | null>(null);
 
   const entries = useMemo(() => parseChangelog(changelogRaw), []);
@@ -41,7 +47,7 @@ export default function WhatsNewDialog() {
 
   const handleViewFull = () => {
     markSeen();
-    navigate(_kChangelogPath);
+    navigate(localePath(_kChangelogPath));
   };
 
   useEffect(() => {
@@ -86,7 +92,7 @@ export default function WhatsNewDialog() {
     >
       <button
         type="button"
-        aria-label="Close what's new dialog"
+        aria-label={messages.whatsNew.closeOverlay}
         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
         onClick={handleClose}
       />
@@ -107,17 +113,15 @@ export default function WhatsNewDialog() {
               id="whats-new-title"
               className="text-lg font-semibold text-slate-900 dark:text-white"
             >
-              What&rsquo;s new
+              {messages.whatsNew.title}
             </h2>
             <p className="text-sm text-slate-500 dark:text-slate-400">
-              {delta.length === 1
-                ? '1 new release since your last visit'
-                : `${delta.length} new releases since your last visit`}
+              {messages.whatsNew.since(delta.length)}
             </p>
           </div>
           <button
             type="button"
-            aria-label="Close"
+            aria-label={messages.whatsNew.close}
             onClick={handleClose}
             className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
           >
@@ -144,11 +148,11 @@ export default function WhatsNewDialog() {
         <div className="flex items-center justify-between gap-3 px-6 py-4 border-t border-slate-200 dark:border-slate-800">
           {hiddenCount > 0 ? (
             <Link
-              to={_kChangelogPath}
+              to={localePath(_kChangelogPath)}
               onClick={markSeen}
               className="text-sm text-primary-600 dark:text-primary-400 hover:underline"
             >
-              +{hiddenCount} more {hiddenCount === 1 ? 'release' : 'releases'}
+              {messages.whatsNew.more(hiddenCount)}
             </Link>
           ) : (
             <span />
@@ -159,14 +163,14 @@ export default function WhatsNewDialog() {
               onClick={handleClose}
               className="px-4 py-2 text-sm font-medium rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             >
-              Dismiss
+              {messages.whatsNew.dismiss}
             </button>
             <button
               type="button"
               onClick={handleViewFull}
               className="px-4 py-2 text-sm font-medium rounded-xl bg-gradient-to-r from-primary-500 to-accent-500 text-white hover:shadow-lg transition-all"
             >
-              View full changelog
+              {messages.whatsNew.viewFull}
             </button>
           </div>
         </div>

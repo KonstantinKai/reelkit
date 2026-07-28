@@ -15,4 +15,15 @@ describe('theme pre-hydration key sync', () => {
     expect(runtimeKey).toBe('rk-docs:theme');
     expect(rootShell).toContain(`localStorage.getItem('${runtimeKey}')`);
   });
+
+  // The stored value is now a choice, not a colour. If the bootstrap script
+  // treated `system` as a colour it would paint light on a dark desktop and
+  // the provider would correct it after mount — a visible flash.
+  it('resolves the system choice before paint, like the provider does', () => {
+    expect(themeCtx).toContain("'system'");
+    expect(rootShell).toContain('prefers-color-scheme: dark');
+    // Anything that is not an explicit colour defers to the media query.
+    expect(rootShell).toMatch(/choice\s*!==\s*'light'/);
+    expect(rootShell).toMatch(/choice\s*===\s*'dark'/);
+  });
 });

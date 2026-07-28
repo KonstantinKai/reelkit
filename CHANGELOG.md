@@ -1,3 +1,17 @@
+## Documentation (2026-07-28)
+
+### 📖 Documentation
+
+- The docs site is now trilingual — Simplified Chinese at [reelkit.dev/zh](https://reelkit.dev/zh) and Ukrainian at [reelkit.dev/uk](https://reelkit.dev/uk), each covering all 24 documentation pages plus the header, sidebar, footer, command palette and not-found page
+- Both translations are machine-produced and reviewed rather than written by native speakers, so wording may be rough in places — corrections are welcome at [GitHub Issues](https://github.com/KonstantinKai/reelkit/issues); English remains the source of truth
+- New language switcher in the header keeps your place: it swaps only the locale prefix, so the page, query string and anchor all survive the switch
+- Search returns results in the active language while keeping the English API names searchable, so `createSliderController` still finds its page from a translated interface
+- Code samples, identifiers, prop names and default values stay in English on the translated pages — translation touches prose only
+- Every page carries a same-language canonical URL and a bidirectional `hreflang` set (`en`, `zh-Hans`, `uk`, `x-default`), so the three language versions are indexed as alternates rather than duplicates
+- English URLs are unchanged — existing links, bookmarks and search results all still resolve
+- The changelog and the legal pages stay in English in every locale, since they are generated from release notes and translated legal text would be a second document to keep accurate
+- The theme control gains a **System** setting alongside Light and Dark — it follows the operating system's appearance live, and is what a first visit starts on
+
 ## @reelkit/vue@0.5.0 (2026-07-28)
 
 ### 🚀 Features
@@ -60,7 +74,7 @@
 
 ### 🚀 Features
 
-### ⚠️  Breaking Changes
+### ⚠️ Breaking Changes
 
 - removed `StoriesController.dispose()`. The stories controller owns no timers, listeners, or subscriptions — only references to your event callbacks — so it never needed teardown and is reclaimed once it falls out of scope. Remove any calls to it; disposing the sub-controllers you own (the timer via `createTimerController`, the progress renderer) is unchanged
 

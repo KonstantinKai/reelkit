@@ -1,8 +1,12 @@
-import { Github } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { GithubIcon } from '../ui/GithubIcon';
 import logoSvg from '../../assets/logo.svg';
+import { useLocalePath, useMessages } from '../../i18n/useLocale';
 
 export default function Footer() {
+  const messages = useMessages();
+  const localePath = useLocalePath();
+
   return (
     <footer className="bg-gradient-to-br from-slate-900 to-slate-800 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -18,43 +22,44 @@ export default function Footer() {
               </span>
             </div>
             <p className="text-slate-400 text-sm max-w-md">
-              Headless, virtualized, zero-dependency slider engine. Build
-              TikTok/Reels-style feeds with 60fps gestures and only 3 DOM nodes.
+              {messages.footer.tagline}
             </p>
           </div>
 
           <div>
-            <h4 className="font-semibold mb-4">Documentation</h4>
+            <h4 className="font-semibold mb-4">
+              {messages.footer.documentation}
+            </h4>
             <ul className="space-y-2">
               <li>
                 <Link
-                  to="/docs/getting-started"
+                  to={localePath('/docs/getting-started')}
                   className="text-slate-400 hover:text-white transition-colors text-sm"
                 >
-                  Getting Started
+                  {messages.footer.gettingStarted}
                 </Link>
               </li>
               <li>
                 <Link
-                  to="/docs/installation"
+                  to={localePath('/docs/installation')}
                   className="text-slate-400 hover:text-white transition-colors text-sm"
                 >
-                  Installation
+                  {messages.footer.installation}
                 </Link>
               </li>
               <li>
                 <Link
-                  to="/docs/react/guide"
+                  to={localePath('/docs/react/guide')}
                   className="text-slate-400 hover:text-white transition-colors text-sm"
                 >
-                  Examples
+                  {messages.footer.examples}
                 </Link>
               </li>
             </ul>
           </div>
 
           <div>
-            <h4 className="font-semibold mb-4">Community</h4>
+            <h4 className="font-semibold mb-4">{messages.footer.community}</h4>
             <div className="flex gap-3">
               <a
                 href="https://github.com/KonstantinKai/reelkit"
@@ -62,7 +67,7 @@ export default function Footer() {
                 rel="noopener noreferrer"
                 className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors"
               >
-                <Github size={20} />
+                <GithubIcon size={20} />
               </a>
             </div>
           </div>
@@ -70,20 +75,20 @@ export default function Footer() {
 
         <div className="border-t border-slate-700 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-slate-400 text-sm">
-            &copy; {new Date().getFullYear()} ReelKit. All rights reserved.
+            {messages.footer.rights(new Date().getFullYear())}
           </p>
           <div className="flex gap-6 text-sm">
             <Link
-              to="/privacy"
+              to={localePath('/privacy')}
               className="text-slate-400 hover:text-white transition-colors"
             >
-              Privacy
+              {messages.footer.privacy}
             </Link>
             <Link
-              to="/terms"
+              to={localePath('/terms')}
               className="text-slate-400 hover:text-white transition-colors"
             >
-              Terms
+              {messages.footer.terms}
             </Link>
           </div>
         </div>
