@@ -1,5 +1,12 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { type ReactElement, useState, useRef, useEffect } from 'react';
+import {
+  type ReactElement,
+  type ReactNode,
+  type MutableRefObject,
+  useState,
+  useRef,
+  useEffect,
+} from 'react';
 import { createPortal } from 'react-dom';
 import {
   createSignal,
@@ -19,6 +26,9 @@ import {
   cubeTransition,
   fadeTransition,
   type ReelApi,
+  type UrlStateController,
+  type TwoAxisPosition,
+  type TransitionTransformFn,
 } from '@reelkit/react';
 import {
   createStoriesController,
@@ -28,7 +38,16 @@ import {
   type StoriesGroup,
 } from '@reelkit/stories-core';
 import { ImageOff, ChevronLeft, ChevronRight } from 'lucide-react';
-import type { StoriesOverlayProps } from './types';
+import type {
+  StoriesApi,
+  HeaderRenderProps,
+  FooterRenderProps,
+  SlideRenderProps,
+  NavigationRenderProps,
+  ProgressBarRenderProps,
+  LoadingRenderProps,
+  ErrorRenderProps,
+} from './types';
 import { CanvasProgressBar } from './CanvasProgressBar';
 import { StoryHeader } from './StoryHeader';
 import { ImageStorySlide } from './ImageStorySlide';
@@ -38,23 +57,129 @@ import { HeartAnimation } from './HeartAnimation';
 import './StoriesOverlay.css';
 
 /**
- * Full-screen, Instagram-style stories player overlay.
+ * Props for the {@link StoriesOverlay} component.
  *
- * Renders a portal containing two nested {@link Reel} sliders: an outer
- * horizontal slider with flip transitions for group navigation, and inner
- * horizontal sliders with fade transitions for story-to-story navigation
- * within each group.
+ * Generic over `T` — pass any type extending {@link StoryItem} to use
+ * custom data on story items.
+ *
+ * @typeParam T - Story item type. Defaults to {@link StoryItem}.
  */
-export function StoriesOverlay<T extends StoryItem = StoryItem>(
-  props: StoriesOverlayProps<T>,
-): ReactElement | null {
-  if (!props.isOpen) return null;
+export interface StoriesOverlayProps<T extends StoryItem = StoryItem> {
+  /** When `true`, the overlay is rendered and body scroll is locked. */
+  isOpen: boolean;
 
-  return (
-    <SoundProvider>
-      <StoriesContent {...props} />
-    </SoundProvider>
-  );
+  /**
+   * Accessible label for the dialog region. Announced by screen readers
+   * when the overlay opens.
+   *
+   * @default 'Stories player'
+   */
+  ariaLabel?: string;
+
+  /** Array of story groups to display. */
+  groups: StoriesGroup<T>[];
+
+  /**
+   * Zero-based index of the initially visible group.
+   * @default 0
+   */
+  initialGroupIndex?: number;
+
+  /**
+   * Zero-based index of the initially visible story within the group.
+   * @default 0
+   */
+  initialStoryIndex?: number;
+
+  /**
+   * Transition effect for the outer (group) slider.
+   * @default cubeTransition
+   */
+  groupTransition?: TransitionTransformFn;
+
+  /**
+   * Default auto-advance duration for image stories in milliseconds.
+   * @default 5000
+   */
+  defaultImageDuration?: number;
+
+  /**
+   * Tap zone split ratio (0–1). Left portion triggers prev, right triggers next.
+   * @default 0.3
+   */
+  tapZoneSplit?: number;
+
+  /**
+   * Whether to hide story UI (header, footer) when paused via long press.
+   * @default true
+   */
+  hideUIOnPause?: boolean;
+
+  /**
+   * Enable keyboard navigation (left/right arrows, Escape).
+   * @default true
+   */
+  enableKeyboard?: boolean;
+
+  /**
+   * Duration of the inner (story) transition animation in milliseconds.
+   * @default 200
+   */
+  innerTransitionDuration?: number;
+
+  /**
+   * Minimum segment width in pixels for the progress bar.
+   * @default 8
+   */
+  minSegmentWidth?: number;
+
+  /** Ref to access the imperative {@link StoriesApi}. */
+  apiRef?: MutableRefObject<StoriesApi | null>;
+
+  /** Callback to close the overlay. */
+  onClose: () => void;
+
+  /** Fired when the active story changes. */
+  onStoryChange?: (groupIndex: number, storyIndex: number) => void;
+
+  /** Fired when the active group changes. */
+  onGroupChange?: (groupIndex: number) => void;
+
+  /** Fired when a story becomes visible. */
+  onStoryViewed?: (groupIndex: number, storyIndex: number) => void;
+
+  /** Fired when a story's timer completes. */
+  onStoryComplete?: (groupIndex: number, storyIndex: number) => void;
+
+  /** Fired on a double-tap gesture. */
+  onDoubleTap?: (groupIndex: number, storyIndex: number) => void;
+
+  /** Fired when the player is paused. */
+  onPause?: () => void;
+
+  /** Fired when the player is resumed. */
+  onResume?: () => void;
+
+  /** Custom header renderer. */
+  renderHeader?: (props: HeaderRenderProps<T>) => ReactNode;
+
+  /** Custom footer renderer. */
+  renderFooter?: (props: FooterRenderProps<T>) => ReactNode;
+
+  /** Custom slide renderer, replacing the default media slides. */
+  renderSlide?: (props: SlideRenderProps<T>) => ReactNode;
+
+  /** Custom desktop navigation. Replaces default prev/next chevron buttons. */
+  renderNavigation?: (props: NavigationRenderProps) => ReactNode;
+
+  /** Custom progress bar. Replaces default canvas progress bar. */
+  renderProgressBar?: (props: ProgressBarRenderProps<T>) => ReactNode;
+
+  /** Custom loading UI renderer. When not provided, shows default header spinner. */
+  renderLoading?: (props: LoadingRenderProps<T>) => ReactNode;
+
+  /** Custom error UI renderer. When not provided, shows default error icon overlay. */
+  renderError?: (props: ErrorRenderProps<T>) => ReactNode;
 }
 
 const preloader = createContentPreloader();
@@ -140,7 +265,7 @@ function StoriesContent<T extends StoryItem = StoryItem>({
   renderLoading,
   renderError,
   apiRef,
-}: StoriesOverlayProps<T>) {
+}: Omit<StoriesOverlayProps<T>, 'isOpen'>) {
   const outerReelRef = useRef<ReelApi>(null);
   const innerReelRefs = useRef<Map<number, ReelApi>>(new Map());
   const activeGroupIndexRef = useRef(initialGroupIndex);
@@ -929,4 +1054,100 @@ function StoriesContent<T extends StoryItem = StoryItem>({
   );
 
   return createPortal(overlay, document.body);
+}
+
+/**
+ * Full-screen, Instagram-style stories player overlay.
+ *
+ * Renders a portal containing two nested {@link Reel} sliders: an outer
+ * horizontal slider with flip transitions for group navigation, and inner
+ * horizontal sliders with fade transitions for story-to-story navigation
+ * within each group.
+ */
+export function StoriesOverlay<T extends StoryItem = StoryItem>(
+  props: StoriesOverlayProps<T>,
+): ReactElement | null {
+  if (!props.isOpen) return null;
+
+  return (
+    <SoundProvider>
+      <StoriesContent {...props} />
+    </SoundProvider>
+  );
+}
+
+/**
+ * Props for {@link StoriesUrlOverlay}. Every {@link StoriesOverlay} prop except
+ * the open-state trio — the URL owns whether the player is open and which group
+ * and story it shows, so `isOpen`, `initialGroupIndex`, and `initialStoryIndex`
+ * are supplied from the controller, not the caller.
+ *
+ * @typeParam T - Story item type.
+ */
+export type StoriesUrlOverlayProps<T extends StoryItem = StoryItem> = Omit<
+  StoriesOverlayProps<T>,
+  'isOpen' | 'initialGroupIndex' | 'initialStoryIndex' | 'onClose'
+> & {
+  /**
+   * URL-state controller from `useOverlayUrlState`, spread with
+   * `urlIndexTwoAxisKey(...)`. Its `position` — a `{ outer, inner }` object, the
+   * outer axis being the group and the inner the story within it — drives
+   * whether the player is open and where it opens; the overlay writes back
+   * through it on every navigation and on close.
+   */
+  controller: UrlStateController<TwoAxisPosition>;
+
+  /** Called after the player closes. The URL drives closing, not this. */
+  onClose?: () => void;
+};
+
+/**
+ * URL-driven stories player. The address bar owns the open state: the player
+ * opens when the parameter names a group and story, and closes when it clears.
+ * Prefer a link on each ring as the open action — the href does it with no
+ * handler, and the open is then shareable and closed by the back button.
+ *
+ * The position is a two-axis object, so inner (story-within-group) navigation
+ * rides in the URL alongside the outer group: a single history entry covers the
+ * whole session and one back step always closes.
+ *
+ * @typeParam T - Story item type.
+ */
+export function StoriesUrlOverlay<T extends StoryItem = StoryItem>(
+  props: StoriesUrlOverlayProps<T>,
+): ReactElement | null {
+  const { controller, onClose, onStoryChange, onGroupChange, ...base } = props;
+
+  const latest = useRef({ base, onClose, onStoryChange, onGroupChange });
+  latest.current = { base, onClose, onStoryChange, onGroupChange };
+
+  return (
+    <Observe signals={[controller.position]}>
+      {() => {
+        const position = controller.position.value;
+        if (position === null) return null;
+
+        return (
+          <SoundProvider>
+            <StoriesContent<T>
+              {...(latest.current.base as StoriesOverlayProps<T>)}
+              initialGroupIndex={position.outer}
+              initialStoryIndex={position.inner}
+              onClose={() => {
+                controller.set(null);
+                latest.current.onClose?.();
+              }}
+              onStoryChange={(groupIndex, storyIndex) => {
+                controller.set({ outer: groupIndex, inner: storyIndex });
+                latest.current.onStoryChange?.(groupIndex, storyIndex);
+              }}
+              onGroupChange={(groupIndex) => {
+                latest.current.onGroupChange?.(groupIndex);
+              }}
+            />
+          </SoundProvider>
+        );
+      }}
+    </Observe>
+  );
 }
