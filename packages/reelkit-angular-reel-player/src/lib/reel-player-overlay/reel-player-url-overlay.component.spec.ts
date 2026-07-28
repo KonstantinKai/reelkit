@@ -43,7 +43,6 @@ const content: ContentItem[] = [
 /** Records what the wrapper hands down, so the forwarding is observable. */
 @Component({
   selector: 'rk-reel-player-overlay',
-  standalone: true,
   template: '',
 })
 class MockReelPlayerOverlayComponent {
@@ -76,7 +75,6 @@ class MockReelPlayerOverlayComponent {
 }
 
 @Component({
-  standalone: true,
   imports: [RkReelPlayerUrlOverlayComponent],
   template: `
     <rk-reel-player-url-overlay
@@ -95,7 +93,6 @@ class HostComponent {
 }
 
 @Component({
-  standalone: true,
   imports: [RkReelPlayerUrlOverlayComponent],
   template: `
     <rk-reel-player-url-overlay [controller]="controller" [content]="items()" />
@@ -107,7 +104,6 @@ class TwoAxisHostComponent {
 }
 
 @Component({
-  standalone: true,
   imports: [RkReelPlayerUrlOverlayComponent, RkPlayerControlsDirective],
   template: `
     <rk-reel-player-url-overlay [controller]="controller" [content]="items()">

@@ -20,7 +20,6 @@ jest.mock('@reelkit/angular', () => {
   @Component({
     selector: 'rk-reel',
     template: '<ng-content/>',
-    standalone: true,
   })
   class ReelComponent {
     @Input() count = 0;
@@ -41,14 +40,14 @@ jest.mock('@reelkit/angular', () => {
     @Output() slideDragCanceled = new EventEmitter<void>();
   }
 
-  @Component({ selector: 'rk-reel-indicator', template: '', standalone: true })
+  @Component({ selector: 'rk-reel-indicator', template: '' })
   class ReelIndicatorComponent {
     @Input() count = 0;
     @Input() active = 0;
     @Output() dotClick = new EventEmitter<number>();
   }
 
-  @Directive({ selector: '[rkReelItem]', standalone: true })
+  @Directive({ selector: '[rkReelItem]' })
   class RkReelItemDirective {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     static ngTemplateContextGuard(_d: unknown, _ctx: unknown): boolean {

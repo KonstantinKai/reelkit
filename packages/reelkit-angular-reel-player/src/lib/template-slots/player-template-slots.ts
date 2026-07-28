@@ -25,7 +25,7 @@ import type {
  * </rk-reel-player-overlay>
  * ```
  */
-@Directive({ selector: '[rkPlayerSlide]', standalone: true })
+@Directive({ selector: '[rkPlayerSlide]' })
 export class RkPlayerSlideDirective<T extends BaseContentItem = ContentItem> {
   readonly templateRef =
     inject<TemplateRef<PlayerSlideContext<T>>>(TemplateRef);
@@ -48,7 +48,7 @@ export class RkPlayerSlideDirective<T extends BaseContentItem = ContentItem> {
  * </ng-template>
  * ```
  */
-@Directive({ selector: '[rkPlayerSlideOverlay]', standalone: true })
+@Directive({ selector: '[rkPlayerSlideOverlay]' })
 export class RkPlayerSlideOverlayDirective<
   T extends BaseContentItem = ContentItem,
 > {
@@ -73,7 +73,7 @@ export class RkPlayerSlideOverlayDirective<
  * </ng-template>
  * ```
  */
-@Directive({ selector: '[rkPlayerControls]', standalone: true })
+@Directive({ selector: '[rkPlayerControls]' })
 export class RkPlayerControlsDirective<
   T extends BaseContentItem = ContentItem,
 > {
@@ -99,7 +99,7 @@ export class RkPlayerControlsDirective<
  * </ng-template>
  * ```
  */
-@Directive({ selector: '[rkPlayerNavigation]', standalone: true })
+@Directive({ selector: '[rkPlayerNavigation]' })
 export class RkPlayerNavigationDirective {
   readonly templateRef =
     inject<TemplateRef<PlayerNavigationContext>>(TemplateRef);
@@ -122,7 +122,7 @@ export class RkPlayerNavigationDirective {
  * </ng-template>
  * ```
  */
-@Directive({ selector: '[rkPlayerNestedSlide]', standalone: true })
+@Directive({ selector: '[rkPlayerNestedSlide]' })
 export class RkPlayerNestedSlideDirective {
   readonly templateRef =
     inject<TemplateRef<PlayerNestedSlideContext>>(TemplateRef);
@@ -149,7 +149,7 @@ export class RkPlayerNestedSlideDirective {
  * </ng-template>
  * ```
  */
-@Directive({ selector: '[rkPlayerTimeline]', standalone: true })
+@Directive({ selector: '[rkPlayerTimeline]' })
 export class RkPlayerTimelineDirective<
   T extends BaseContentItem = ContentItem,
 > {
@@ -167,7 +167,7 @@ export class RkPlayerTimelineDirective<
 /**
  * Template slot for custom navigation arrows inside the nested horizontal slider.
  */
-@Directive({ selector: '[rkPlayerNestedNavigation]', standalone: true })
+@Directive({ selector: '[rkPlayerNestedNavigation]' })
 export class RkPlayerNestedNavigationDirective {
   readonly templateRef =
     inject<TemplateRef<PlayerNestedNavigationContext>>(TemplateRef);

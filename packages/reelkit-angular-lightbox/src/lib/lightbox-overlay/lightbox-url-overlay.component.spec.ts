@@ -17,7 +17,6 @@ import type { LightboxItem } from '../types';
 /** Records what the wrapper hands down, so the forwarding is observable. */
 @Component({
   selector: 'rk-lightbox-overlay',
-  standalone: true,
   template: '',
 })
 class MockLightboxOverlayComponent {
@@ -53,7 +52,6 @@ const images: LightboxItem[] = [
 ];
 
 @Component({
-  standalone: true,
   imports: [RkLightboxUrlOverlayComponent],
   template: `
     <rk-lightbox-url-overlay
@@ -72,7 +70,6 @@ class HostComponent {
 }
 
 @Component({
-  standalone: true,
   imports: [RkLightboxUrlOverlayComponent, RkLightboxControlsDirective],
   template: `
     <rk-lightbox-url-overlay [controller]="controller" [items]="items()">

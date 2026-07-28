@@ -25,21 +25,20 @@ npx nx dev example-vue
 # Run the Next.js example app (localhost:3000)
 npx nx dev example-next
 
+# Run the Nuxt example app (localhost:3000)
+npx nx dev example-nuxt
+
 # Run the docs site (localhost:4200)
 npx nx dev docs
 
 # Run all tests
 npm test
 
-# Run tests for a specific package
+# Run tests for one package — any name from the table below
 npx nx test @reelkit/core
-npx nx test @reelkit/react
-npx nx test @reelkit/angular
-npx nx test @reelkit/angular-lightbox
-npx nx test @reelkit/angular-reel-player
-npx nx test @reelkit/vue
+npx nx test @reelkit/vue-lightbox
 
-# Format + lint + typecheck
+# Format check + lint + typecheck + docs drift check
 npm run check
 
 # Format (auto-fix)
@@ -53,16 +52,20 @@ npm run e2e
 
 This is an Nx monorepo with the following packages:
 
-| Package                        | Path                                   | Description                             |
-| ------------------------------ | -------------------------------------- | --------------------------------------- |
-| `@reelkit/core`                | `packages/reelkit-core`                | Framework-agnostic slider engine        |
-| `@reelkit/react`               | `packages/reelkit-react`               | React components and hooks              |
-| `@reelkit/react-reel-player`   | `packages/reelkit-react-reel-player`   | Full-screen video reel player (React)   |
-| `@reelkit/react-lightbox`      | `packages/reelkit-react-lightbox`      | Image gallery lightbox (React)          |
-| `@reelkit/angular`             | `packages/reelkit-angular`             | Angular components and directives       |
-| `@reelkit/angular-reel-player` | `packages/reelkit-angular-reel-player` | Full-screen video reel player (Angular) |
-| `@reelkit/angular-lightbox`    | `packages/reelkit-angular-lightbox`    | Image gallery lightbox (Angular)        |
-| `@reelkit/vue`                 | `packages/reelkit-vue`                 | Vue 3 components and composables        |
+| Package                         | Path                                    | Description                             |
+| ------------------------------- | --------------------------------------- | --------------------------------------- |
+| `@reelkit/core`                 | `packages/reelkit-core`                 | Framework-agnostic slider engine        |
+| `@reelkit/stories-core`         | `packages/reelkit-stories-core`         | Framework-agnostic stories engine       |
+| `@reelkit/react`                | `packages/reelkit-react`                | React components and hooks              |
+| `@reelkit/react-reel-player`    | `packages/reelkit-react-reel-player`    | Full-screen video reel player (React)   |
+| `@reelkit/react-lightbox`       | `packages/reelkit-react-lightbox`       | Image gallery lightbox (React)          |
+| `@reelkit/react-stories-player` | `packages/reelkit-react-stories-player` | Instagram-style stories player (React)  |
+| `@reelkit/angular`              | `packages/reelkit-angular`              | Angular components and directives       |
+| `@reelkit/angular-reel-player`  | `packages/reelkit-angular-reel-player`  | Full-screen video reel player (Angular) |
+| `@reelkit/angular-lightbox`     | `packages/reelkit-angular-lightbox`     | Image gallery lightbox (Angular)        |
+| `@reelkit/vue`                  | `packages/reelkit-vue`                  | Vue 3 components and composables        |
+| `@reelkit/vue-reel-player`      | `packages/reelkit-vue-reel-player`      | Full-screen video reel player (Vue)     |
+| `@reelkit/vue-lightbox`         | `packages/reelkit-vue-lightbox`         | Image gallery lightbox (Vue)            |
 
 ## Making Changes
 
@@ -80,15 +83,36 @@ This is an Nx monorepo with the following packages:
    npm run check && npm test && npm run build
    ```
 
-3. Commit using clear, descriptive messages (we follow [Conventional Commits](https://www.conventionalcommits.org/)):
+3. If your change alters what a published package does, add a version plan —
+   releases are cut from these, so a change without one ships with no
+   changelog entry and no version bump:
+
+   ```bash
+   npx nx release plan
+   ```
+
+   Pick the affected packages and the bump level, then write the message. The
+   body **is** the changelog entry, published verbatim, so write it for
+   someone using the package rather than as a summary of your diff:
+   - One user-visible change per line. The changelog renderer turns each line
+     into its own bullet, so several concerns joined by `;` become one
+     unreadable bullet.
+   - `BREAKING:` must start its own line, otherwise it is not lifted into the
+     breaking-changes section and the migration note is buried mid-sentence.
+   - Leave out internal refactors, implementation detail, and fixes for bugs
+     that never shipped — none of it means anything to a consumer.
+
+   Docs-only and tooling changes need no plan.
+
+4. Commit using clear, descriptive messages (we follow [Conventional Commits](https://www.conventionalcommits.org/)). The scope lists every package the change touches:
 
    ```
-   feat: add swipe velocity threshold option
-   fix: prevent double-tap triggering next slide
-   docs: update lightbox API reference
+   feat(core, react): add swipe velocity threshold option
+   fix(react-reel-player): prevent double-tap triggering next slide
+   docs(docs): update lightbox API reference
    ```
 
-4. Push and open a pull request against `main`.
+5. Push and open a pull request against `main`.
 
 ## Pull Request Guidelines
 
@@ -105,7 +129,7 @@ This is an Nx monorepo with the following packages:
 - **Zero dependencies in core** — `@reelkit/core` must remain dependency-free.
 - **CSS class prefix** — all CSS classes use the `rk-` prefix.
 - **ES modules only** — all packages build to ESM.
-- **Angular conventions** — standalone components, signal inputs/outputs, `inject()`, `OnPush`, no `standalone: true` (default in v20+).
+- **Angular conventions** — standalone components, signal inputs/outputs, `inject()`, `OnPush`, no explicit `standalone: true` (it has been the default since v19).
 - **React conventions** — functional components, hooks, `memo` for performance.
 - **Vue conventions** — Composition API with `<script setup lang="ts">`, `defineProps`/`defineEmits`/`defineModel`, provide/inject for parent-child wiring.
 

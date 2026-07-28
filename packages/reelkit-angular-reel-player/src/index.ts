@@ -33,7 +33,6 @@
  * import '@reelkit/angular-reel-player/styles.css';
  *
  * @Component({
- *   standalone: true,
  *   imports: [RkReelPlayerOverlayComponent],
  *   template: `
  *     <button (click)="isOpen.set(true)">Open Player</button>
@@ -69,7 +68,6 @@
  * import '@reelkit/angular-reel-player/styles.css';
  *
  * @Component({
- *   standalone: true,
  *   imports: [RkReelPlayerUrlOverlayComponent, RouterLink],
  *   template: `
  *     @for (post of content; track post.id; let i = $index) {

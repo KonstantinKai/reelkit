@@ -23,7 +23,6 @@ import type {
 // ---------------------------------------------------------------------------
 
 @Component({
-  standalone: true,
   imports: [RkPlayerSlideDirective],
   template: `<ng-template rkPlayerSlide></ng-template>`,
 })
@@ -32,7 +31,6 @@ class SlideHost {
 }
 
 @Component({
-  standalone: true,
   imports: [RkPlayerSlideOverlayDirective],
   template: `<ng-template rkPlayerSlideOverlay></ng-template>`,
 })
@@ -41,7 +39,6 @@ class SlideOverlayHost {
 }
 
 @Component({
-  standalone: true,
   imports: [RkPlayerControlsDirective],
   template: `<ng-template rkPlayerControls></ng-template>`,
 })
@@ -50,7 +47,6 @@ class ControlsHost {
 }
 
 @Component({
-  standalone: true,
   imports: [RkPlayerNavigationDirective],
   template: `<ng-template rkPlayerNavigation></ng-template>`,
 })
@@ -59,7 +55,6 @@ class NavigationHost {
 }
 
 @Component({
-  standalone: true,
   imports: [RkPlayerNestedSlideDirective],
   template: `<ng-template rkPlayerNestedSlide></ng-template>`,
 })
@@ -68,7 +63,6 @@ class NestedSlideHost {
 }
 
 @Component({
-  standalone: true,
   imports: [RkPlayerNestedNavigationDirective],
   template: `<ng-template rkPlayerNestedNavigation></ng-template>`,
 })

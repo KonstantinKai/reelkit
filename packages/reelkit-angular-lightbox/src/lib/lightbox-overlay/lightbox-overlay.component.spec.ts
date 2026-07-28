@@ -133,7 +133,6 @@ jest.mock('@reelkit/angular', () => {
   @Component({
     selector: 'rk-reel',
     template: '<ng-content/>',
-    standalone: true,
   })
   class MockReelComponent {
     @Input() count = 0;
@@ -151,14 +150,14 @@ jest.mock('@reelkit/angular', () => {
     @Output() afterChange = new EventEmitter<{ index: number }>();
   }
 
-  @Directive({ selector: '[rkReelItem]', standalone: true })
+  @Directive({ selector: '[rkReelItem]' })
   class MockRkReelItemDirective {
     static ngTemplateContextGuard(_d: unknown, _ctx: unknown): boolean {
       return true;
     }
   }
 
-  @Directive({ selector: '[rkSwipeToClose]', standalone: true })
+  @Directive({ selector: '[rkSwipeToClose]' })
   class MockRkSwipeToCloseDirective {
     readonly rkSwipeToClose = input<boolean>(false);
     readonly rkSwipeToCloseDirection = input<string>('up');

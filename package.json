@@ -2,6 +2,10 @@
   "name": "@reelkit/source",
   "version": "0.0.0",
   "license": "MIT",
+  "engines": {
+    "node": ">=20",
+    "npm": ">=10"
+  },
   "scripts": {
     "prepare": "husky",
     "build": "npx nx run-many -t build --no-tui",
