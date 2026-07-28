@@ -1,7 +1,7 @@
 import { createFakeUrlAdapter } from '@reelkit/core/testing';
 import { renderHook } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
-import { indexKey, indexCodec, type UrlLocator } from '@reelkit/core';
+import { urlIndexKey, indexCodec, type UrlLocator } from '@reelkit/core';
 import { useOverlayUrlState } from './useOverlayUrlState';
 
 describe('useOverlayUrlState', () => {
@@ -12,11 +12,11 @@ describe('useOverlayUrlState', () => {
       useOverlayUrlState({
         param: 'photo',
         adapter,
-        ...indexKey(() => 3),
+        ...urlIndexKey(() => 3),
       }),
     );
 
-    expect(result.current.index.value).toBe(1);
+    expect(result.current.position.value).toBe(1);
   });
 
   it('drops a parameter past the live count and heals the url', () => {
@@ -26,11 +26,11 @@ describe('useOverlayUrlState', () => {
       useOverlayUrlState({
         param: 'photo',
         adapter,
-        ...indexKey(() => 3),
+        ...urlIndexKey(() => 3),
       }),
     );
 
-    expect(result.current.index.value).toBeNull();
+    expect(result.current.position.value).toBeNull();
     expect(adapter.read()).toBe('');
   });
 
@@ -41,7 +41,7 @@ describe('useOverlayUrlState', () => {
       useOverlayUrlState({
         param: 'photo',
         adapter: fake.adapter,
-        ...indexKey(() => 1),
+        ...urlIndexKey(() => 1),
       }),
     );
 
@@ -70,6 +70,6 @@ describe('useOverlayUrlState', () => {
       }),
     );
 
-    expect(result.current.index.value).toBe(2);
+    expect(result.current.position.value).toBe(2);
   });
 });

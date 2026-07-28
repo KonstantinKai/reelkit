@@ -13,7 +13,7 @@ import {
  * @typeParam Id - The identity `codec` reads out of the parameter. Defaults to a
  * slide index, the shape a plain `?photo=3` gallery uses.
  */
-export interface OverlayUrlStateOptions<Id = number> {
+export interface OverlayUrlStateOptions<Id = number, Pos = number> {
   /** Query parameter that carries the active slide, for example `photo`. */
   param: string;
 
@@ -27,7 +27,7 @@ export interface OverlayUrlStateOptions<Id = number> {
 
   /**
    * Wire format for the parameter — its text ↔ a stable identity. Pairs with
-   * `locator` on a shared `Id`, so build the two together: `indexKey()` for the
+   * `locator` on a shared `Id`, so build the two together: `urlIndexKey()` for the
    * default `?photo=3` gallery, or a matched codec/locator for a base64 id or a
    * slug so a bookmark survives the gallery being reordered.
    */
@@ -39,10 +39,10 @@ export interface OverlayUrlStateOptions<Id = number> {
    * own validity — it is used as-is.
    *
    * Comes paired with `codec`. For a plain index gallery, spread
-   * `...indexKey(() => count)`; a paginated or identity-keyed gallery supplies
+   * `...urlIndexKey(() => count)`; a paginated or identity-keyed gallery supplies
    * its own matched pair.
    */
-  locator: UrlLocator<Id>;
+  locator: UrlLocator<Id, Pos>;
 }
 
 /**
@@ -50,9 +50,9 @@ export interface OverlayUrlStateOptions<Id = number> {
  * address bar. Hand the returned controller to `<rk-lightbox-url-overlay>` as
  * its `controller` input.
  *
- * Returned whole rather than narrowed, so the caller keeps `set`, `index` and
- * `value` for programmatic control and can drive one controller from several
- * places.
+ * Returned whole rather than narrowed, so the caller keeps `set`, `position`
+ * and `value` for programmatic control and can drive one controller from
+ * several places.
  *
  * Call it in an injection context — a field initialiser or a constructor. It
  * attaches immediately and releases through {@link DestroyRef}, so a component
@@ -70,20 +70,20 @@ export interface OverlayUrlStateOptions<Id = number> {
  *
  *   protected readonly photo = createOverlayUrlState({
  *     param: 'photo',
- *     ...indexKey(() => this.images().length),
+ *     ...urlIndexKey(() => this.images().length),
  *   });
  * }
  * ```
  */
-export function createOverlayUrlState<Id = number>(
-  options: OverlayUrlStateOptions<Id>,
-): UrlStateController {
-  const controller = createUrlStateController<Id>({
+export function createOverlayUrlState<Id = number, Pos = number>(
+  options: OverlayUrlStateOptions<Id, Pos>,
+): UrlStateController<Pos> {
+  const controller = createUrlStateController<Id, Pos>({
     param: options.param,
     adapter: options.adapter,
     codec: options.codec,
     locator: options.locator,
-  } as Parameters<typeof createUrlStateController<Id>>[0]);
+  } as Parameters<typeof createUrlStateController<Id, Pos>>[0]);
 
   inject(DestroyRef).onDestroy(controller.attach());
 

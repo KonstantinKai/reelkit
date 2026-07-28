@@ -2,7 +2,7 @@ import { mount, enableAutoUnmount } from '@vue/test-utils';
 import { describe, it, expect, afterEach } from 'vitest';
 import { defineComponent, h, nextTick } from 'vue';
 import {
-  indexKey,
+  urlIndexKey,
   indexCodec,
   type UrlAdapter,
   type UrlLocator,
@@ -59,11 +59,11 @@ describe('useOverlayUrlState', () => {
     const { get } = mountHook({
       param: 'photo',
       adapter,
-      ...indexKey(() => 3),
+      ...urlIndexKey(() => 3),
     });
 
     await nextTick();
-    expect(get().index.value).toBe(1);
+    expect(get().position.value).toBe(1);
   });
 
   it('drops a parameter past the live count and heals the url', async () => {
@@ -71,11 +71,11 @@ describe('useOverlayUrlState', () => {
     const { get } = mountHook({
       param: 'photo',
       adapter,
-      ...indexKey(() => 3),
+      ...urlIndexKey(() => 3),
     });
 
     await nextTick();
-    expect(get().index.value).toBeNull();
+    expect(get().position.value).toBeNull();
     expect(query()).not.toContain('photo=99');
   });
 
@@ -84,7 +84,7 @@ describe('useOverlayUrlState', () => {
     const { wrapper } = mountHook({
       param: 'photo',
       adapter,
-      ...indexKey(() => 1),
+      ...urlIndexKey(() => 1),
     });
 
     await nextTick();
@@ -110,6 +110,6 @@ describe('useOverlayUrlState', () => {
     });
 
     await nextTick();
-    expect(get().index.value).toBe(2);
+    expect(get().position.value).toBe(2);
   });
 });

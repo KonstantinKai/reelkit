@@ -77,7 +77,13 @@ export {
   createHistoryAdapter,
   indexCodec,
   createIndexLocator,
-  indexKey,
+  urlIndexKey,
+  urlIndexTwoAxisKey,
+  createStableIdCodec,
+  base64UrlCodec,
+  createStableIdLocator,
+  urlStableIdKey,
+  urlStableIdTwoAxisKey,
   batch,
   first,
   last,
@@ -138,6 +144,13 @@ export {
   type UrlKey,
   type UrlStateController,
   type UrlStateOptions,
+  type TwoAxisPosition,
+  type TwoAxisIdentity,
+  type UrlIndexTwoAxisKeyOptions,
+  type Identified,
+  type UrlStableIdKeyOptions,
+  type UrlStableIdTwoAxisKeyOptions,
+  type UrlStableIdTwoAxisIdInnerOptions,
 } from '@reelkit/core';
 
 export {
