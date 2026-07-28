@@ -32,47 +32,13 @@ import {
 import { ChevronLeft, ChevronRight, ImageOff } from 'lucide-react';
 import LightboxControls from './LightboxControls';
 import type {
+  LightboxItem,
   ControlsRenderProps,
   SlideRenderProps,
   NavigationRenderProps,
   InfoRenderProps,
 } from './types';
 import './LightboxOverlay.css';
-
-/**
- * Data for a single lightbox item (image or video).
- *
- * At minimum, provide `src`. Optional `title` and `description` are
- * rendered in the built-in info overlay (unless overridden via `renderInfo`).
- *
- * For video items, set `type: 'video'` and optionally provide a `poster`
- * thumbnail. Video rendering requires opting in via `useVideoSlideRenderer`.
- */
-export interface LightboxItem {
-  /** URL of the image or video. */
-  src: string;
-
-  /**
-   * Item type. Defaults to `'image'` when omitted.
-   * Video items require opting in via `useVideoSlideRenderer` and `renderSlide`.
-   */
-  type?: 'image' | 'video';
-
-  /** Poster/thumbnail image for video items. Used for preloading and as placeholder. */
-  poster?: string;
-
-  /** Title displayed in the info overlay. */
-  title?: string;
-
-  /** Description displayed below the title in the info overlay. */
-  description?: string;
-
-  /** Intrinsic width of the image in pixels. Currently unused by the lightbox. */
-  width?: number;
-
-  /** Intrinsic height of the image in pixels. Currently unused by the lightbox. */
-  height?: number;
-}
 
 /**
  * Subset of {@link ReelProps} forwarded to the underlying `Reel` component.
@@ -261,7 +227,7 @@ const preloader = createContentPreloader({ maxCacheSize: 1000 });
  * navigation, info overlay, fullscreen, resize, and image preloading.
  *
  * Rendered only while the lightbox is open — gated by {@link LightboxOverlay}
- * (`isOpen`) or {@link LightboxUrlOverlay} (a non-null `controller.index`).
+ * (`isOpen`) or {@link LightboxUrlOverlay} (a non-null `controller.position`).
  * @internal
  */
 const LightboxContent: FC<LightboxContentProps> = (props) => {
@@ -709,14 +675,14 @@ export const LightboxUrlOverlay = (
   latest.current = { base, onClose };
 
   return (
-    <Observe signals={[controller.index]}>
+    <Observe signals={[controller.position]}>
       {() => {
-        if (controller.index.value === null) return null;
+        if (controller.position.value === null) return null;
 
         return (
           <LightboxContent
             {...base}
-            initialIndex={controller.index.value}
+            initialIndex={controller.position.value}
             onClose={() => {
               controller.set(null);
               latest.current.onClose?.();

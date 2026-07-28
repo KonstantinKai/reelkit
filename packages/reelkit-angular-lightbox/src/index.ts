@@ -55,7 +55,7 @@
  * @example URL-driven — opening is a link, back closes
  * ```ts
  * import { RkLightboxUrlOverlayComponent } from '@reelkit/angular-lightbox';
- * import { createOverlayUrlState, indexKey } from '@reelkit/angular';
+ * import { createOverlayUrlState, urlIndexKey } from '@reelkit/angular';
  *
  * @Component({
  *   imports: [RkLightboxUrlOverlayComponent, RouterLink],
@@ -75,7 +75,7 @@
  *   // Call in an injection context: it attaches now and releases on destroy.
  *   protected readonly photo = createOverlayUrlState({
  *     param: 'photo',
- *     ...indexKey(() => this.images().length),
+ *     ...urlIndexKey(() => this.images().length),
  *   });
  * }
  * ```

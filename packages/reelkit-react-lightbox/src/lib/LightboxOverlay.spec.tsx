@@ -4,7 +4,7 @@ import {
   slideTransition,
   createDeferred,
   useOverlayUrlState,
-  indexKey,
+  urlIndexKey,
   type ReelProps,
   type UrlCodec,
   type UrlLocator,
@@ -12,7 +12,7 @@ import {
   type UrlStateController,
 } from '@reelkit/react';
 import { createFakeUrlAdapter } from '@reelkit/core/testing';
-import type { LightboxItem } from './LightboxOverlay';
+import type { LightboxItem } from './types';
 import { lightboxFadeTransition } from './lightboxFadeTransition';
 import { lightboxZoomTransition } from './lightboxZoomTransition';
 import { LightboxOverlay, LightboxUrlOverlay } from './LightboxOverlay';
@@ -1181,7 +1181,11 @@ describe('LightboxOverlay', () => {
     it('pushes one history entry on open and replaces on every slide change', () => {
       const fake = createFakeUrlAdapter();
 
-      renderUrl({ param: 'photo', adapter: fake.adapter, ...indexKey(count) });
+      renderUrl({
+        param: 'photo',
+        adapter: fake.adapter,
+        ...urlIndexKey(count),
+      });
 
       act(() => controller.set(0));
       expect(fake.counts.push).toBe(1);
@@ -1198,7 +1202,11 @@ describe('LightboxOverlay', () => {
     it('opens at the index named by the url on first render', () => {
       const fake = createFakeUrlAdapter('?photo=1');
 
-      renderUrl({ param: 'photo', adapter: fake.adapter, ...indexKey(count) });
+      renderUrl({
+        param: 'photo',
+        adapter: fake.adapter,
+        ...urlIndexKey(count),
+      });
 
       expect(isOpen()).toBe(true);
       expect(lastReelProps.initialIndex).toBe(1);
@@ -1207,7 +1215,11 @@ describe('LightboxOverlay', () => {
     it('stays closed when the parameter is absent', () => {
       const fake = createFakeUrlAdapter('?tab=media');
 
-      renderUrl({ param: 'photo', adapter: fake.adapter, ...indexKey(count) });
+      renderUrl({
+        param: 'photo',
+        adapter: fake.adapter,
+        ...urlIndexKey(count),
+      });
 
       expect(isOpen()).toBe(false);
     });
@@ -1215,7 +1227,11 @@ describe('LightboxOverlay', () => {
     it('opens when the parameter appears while running', () => {
       const fake = createFakeUrlAdapter();
 
-      renderUrl({ param: 'photo', adapter: fake.adapter, ...indexKey(count) });
+      renderUrl({
+        param: 'photo',
+        adapter: fake.adapter,
+        ...urlIndexKey(count),
+      });
       expect(isOpen()).toBe(false);
 
       act(() => fake.adapter.push('?photo=2'));
@@ -1227,7 +1243,11 @@ describe('LightboxOverlay', () => {
     it('closes when the parameter goes away', () => {
       const fake = createFakeUrlAdapter();
 
-      renderUrl({ param: 'photo', adapter: fake.adapter, ...indexKey(count) });
+      renderUrl({
+        param: 'photo',
+        adapter: fake.adapter,
+        ...urlIndexKey(count),
+      });
 
       act(() => fake.adapter.push('?photo=2'));
       expect(isOpen()).toBe(true);
@@ -1240,7 +1260,11 @@ describe('LightboxOverlay', () => {
     it('keeps its initial index when the url changes while open', () => {
       const fake = createFakeUrlAdapter('?photo=1');
 
-      renderUrl({ param: 'photo', adapter: fake.adapter, ...indexKey(count) });
+      renderUrl({
+        param: 'photo',
+        adapter: fake.adapter,
+        ...urlIndexKey(count),
+      });
       expect(lastReelProps.initialIndex).toBe(1);
 
       // Once open the slider owns the index and the url only trails it.
@@ -1254,7 +1278,11 @@ describe('LightboxOverlay', () => {
     it('drops an out-of-range parameter and stays closed', () => {
       const fake = createFakeUrlAdapter('?photo=99');
 
-      renderUrl({ param: 'photo', adapter: fake.adapter, ...indexKey(count) });
+      renderUrl({
+        param: 'photo',
+        adapter: fake.adapter,
+        ...urlIndexKey(count),
+      });
 
       // The url may not assert a slide the gallery cannot show.
       expect(isOpen()).toBe(false);
@@ -1264,7 +1292,11 @@ describe('LightboxOverlay', () => {
     it('drops an unparseable parameter and stays closed', () => {
       const fake = createFakeUrlAdapter('?photo=bogus');
 
-      renderUrl({ param: 'photo', adapter: fake.adapter, ...indexKey(count) });
+      renderUrl({
+        param: 'photo',
+        adapter: fake.adapter,
+        ...urlIndexKey(count),
+      });
 
       expect(isOpen()).toBe(false);
       expect(fake.adapter.read()).toBe('');

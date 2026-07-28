@@ -715,7 +715,7 @@ export const LightboxUrlOverlay = defineComponent({
   setup(props, { emit, slots, expose }) {
     const innerApi = shallowRef<LightboxApi | null>(null);
 
-    const openIndex = toVueRef(props.controller.index);
+    const openIndex = toVueRef(props.controller.position);
 
     const requestClose = () => {
       props.controller.set(null);

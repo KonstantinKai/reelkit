@@ -4,7 +4,7 @@ import { defineComponent, h, nextTick, ref } from 'vue';
 import {
   SwipeToClose,
   useOverlayUrlState,
-  indexKey,
+  urlIndexKey,
   type UrlAdapter,
 } from '@reelkit/vue';
 import { LightboxOverlay, LightboxUrlOverlay } from './LightboxOverlay';
@@ -309,7 +309,7 @@ const urlHost = (adapter: UrlAdapter) =>
       const controller = useOverlayUrlState({
         param: 'photo',
         adapter,
-        ...indexKey(() => sampleItems.length),
+        ...urlIndexKey(() => sampleItems.length),
       });
       return () =>
         h(LightboxUrlOverlay, {

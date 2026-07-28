@@ -47,14 +47,14 @@
  * `controller`; open with a link, since the href is the open action.
  * ```tsx
  * import { LightboxUrlOverlay, type LightboxItem } from '@reelkit/react-lightbox';
- * import { useOverlayUrlState, indexKey } from '@reelkit/react';
+ * import { useOverlayUrlState, urlIndexKey } from '@reelkit/react';
  * import { Link } from 'react-router-dom';
  * import '@reelkit/react-lightbox/styles.css';
  *
  * function Gallery({ images }: { images: LightboxItem[] }) {
  *   const photo = useOverlayUrlState({
  *     param: 'photo',
- *     ...indexKey(() => images.length),
+ *     ...urlIndexKey(() => images.length),
  *   });
  *   return (
  *     <>
@@ -101,11 +101,11 @@ export { lightboxZoomTransition } from './lib/lightboxZoomTransition';
 export type {
   LightboxOverlayProps,
   LightboxUrlOverlayProps,
-  LightboxItem,
   ReelProxyProps,
 } from './lib/LightboxOverlay';
 
 export type {
+  LightboxItem,
   ControlsRenderProps,
   SlideRenderProps,
   NavigationRenderProps,

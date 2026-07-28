@@ -4,7 +4,7 @@ import { By } from '@angular/platform-browser';
 import type { Type } from '@angular/core';
 import {
   createOverlayUrlState,
-  indexKey,
+  urlIndexKey,
   type UrlAdapter,
   type UrlStateController,
 } from '@reelkit/angular';
@@ -100,7 +100,7 @@ describe('RkLightboxUrlOverlayComponent', () => {
       createOverlayUrlState({
         param: 'photo',
         adapter,
-        ...indexKey(() => images.length),
+        ...urlIndexKey(() => images.length),
       }),
     );
     fixture.detectChanges();

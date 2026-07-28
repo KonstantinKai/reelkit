@@ -47,7 +47,7 @@
  * <script setup lang="ts">
  * import { ref } from 'vue';
  * import { LightboxUrlOverlay, type LightboxItem } from '@reelkit/vue-lightbox';
- * import { useOverlayUrlState, indexKey } from '@reelkit/vue';
+ * import { useOverlayUrlState, urlIndexKey } from '@reelkit/vue';
  *
  * const images = ref<LightboxItem[]>([
  *   { src: '/photo-1.jpg', title: 'Sunset' },
@@ -56,7 +56,7 @@
  *
  * const photo = useOverlayUrlState({
  *   param: 'photo',
- *   ...indexKey(() => images.value.length),
+ *   ...urlIndexKey(() => images.value.length),
  * });
  * </script>
  *

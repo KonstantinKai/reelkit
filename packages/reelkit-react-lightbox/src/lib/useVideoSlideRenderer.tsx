@@ -6,7 +6,7 @@ import {
   useMemo,
 } from 'react';
 import { Observe, SoundProvider, useSoundState } from '@reelkit/react';
-import type { LightboxItem } from './LightboxOverlay';
+import type { LightboxItem } from './types';
 import type { ControlsRenderProps, SlideRenderProps } from './types';
 import LightboxVideoSlide from './LightboxVideoSlide';
 import {

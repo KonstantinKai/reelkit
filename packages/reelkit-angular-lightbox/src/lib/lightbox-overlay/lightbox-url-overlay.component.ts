@@ -39,7 +39,7 @@ import type { SwipeToCloseDirection } from '@reelkit/angular';
  * ```ts
  * protected readonly photo = createOverlayUrlState({
  *   param: 'photo',
- *   ...indexKey(() => this.images().length),
+ *   ...urlIndexKey(() => this.images().length),
  * });
  * ```
  * ```html
@@ -140,10 +140,10 @@ export class RkLightboxUrlOverlayComponent {
     // subscription, so nothing keeps writing from a controller we let go of.
     effect((onCleanup) => {
       const controller = this.controller();
-      const sync = () => this.index.set(controller.index.value);
+      const sync = () => this.index.set(controller.position.value);
 
       sync();
-      onCleanup(controller.index.observe(sync));
+      onCleanup(controller.position.observe(sync));
     });
   }
 
