@@ -16,6 +16,7 @@ import {
   Volume2,
   Loader,
   AlertTriangle,
+  Link2,
 } from 'lucide-react';
 import { Heading } from '../../components/ui/Heading';
 
@@ -143,7 +144,8 @@ const lightboxProps = [
     prop: 'isOpen',
     type: 'boolean',
     default: 'required',
-    description: 'Controls lightbox visibility',
+    description:
+      'Controls lightbox visibility. For URL-driven open state, reach for the separate LightboxUrlOverlay instead — see URL State below.',
   },
   {
     prop: 'images',
@@ -222,12 +224,23 @@ const lightboxCallbacks = [
   {
     prop: 'onClose',
     type: '() => void',
-    description: 'Called when lightbox closes',
+    description:
+      'Called when the lightbox closes. Required on LightboxOverlay (you own the open state, so you must handle closing); optional on LightboxUrlOverlay, where the URL drives closing — pass it only to react after close.',
   },
   {
     prop: 'onSlideChange',
     type: '(index: number) => void',
     description: 'Called after slide change',
+  },
+];
+
+const lightboxUrlProps = [
+  {
+    prop: 'controller',
+    type: 'UrlStateController',
+    default: 'required',
+    description:
+      'Controller from useOverlayUrlState. Its position decides whether the overlay is open and which slide it shows; the overlay writes back through it on slide change and on close.',
   },
 ];
 
@@ -684,6 +697,11 @@ export default function Lightbox() {
                 icon: Layers,
                 label: 'Hooks',
                 desc: 'useVideoSlideRenderer + useFullscreen',
+              },
+              {
+                icon: Link2,
+                label: 'URL State',
+                desc: 'Shareable, bookmarkable links',
               },
             ]}
           />
@@ -1152,6 +1170,423 @@ renderSlide={({ item, index, size, isActive, onReady, onWaiting, onError }) => (
         />
       </section>
 
+      {/* URL state */}
+      <section className="mb-12">
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          URL State
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            LightboxUrlOverlay
+          </code>{' '}
+          is a separate component whose open state lives in the address bar.
+          Build a controller with{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            useOverlayUrlState
+          </code>{' '}
+          from{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            @reelkit/react
+          </code>{' '}
+          and hand it over as{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            controller
+          </code>
+          : the gallery opens itself when the parameter names a slide and closes
+          when it goes away. Links are shareable, and the back button closes the
+          gallery instead of leaving the page.
+        </p>
+        <Callout type="info" title="Built-in keys" className="mb-4">
+          You can address slides with a built-in key — spread{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            urlIndexKey
+          </code>{' '}
+          (by position) or{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            urlStableIdKey
+          </code>{' '}
+          (by a stable{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            id
+          </code>
+          ) into the controller — both re-exported from{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            @reelkit/react
+          </code>
+          . See the{' '}
+          <Link
+            to="/docs/core/guide#url-state"
+            className="text-primary-600 dark:text-primary-400 hover:underline"
+          >
+            URL State guide
+          </Link>{' '}
+          and{' '}
+          <Link
+            to="/docs/core/api#url-state"
+            className="text-primary-600 dark:text-primary-400 hover:underline"
+          >
+            Core API
+          </Link>
+          .
+        </Callout>
+        <CodeBlock
+          code={`import { useOverlayUrlState, urlIndexKey, urlStableIdKey } from '@reelkit/react';
+import { LightboxUrlOverlay } from '@reelkit/react-lightbox';
+import { Link } from 'react-router-dom';
+
+const photo = useOverlayUrlState({
+  param: 'photo',
+  ...urlIndexKey(() => images.length),
+});
+
+// Opening is a link — the href is the open action. No open flag, no handler:
+// the overlay reads the URL and opens itself.
+{images.map((image, i) => (
+  <Link key={image.src} to={\`?photo=\${i}\`}>
+    <img src={image.src} />
+  </Link>
+))}
+
+<LightboxUrlOverlay controller={photo} images={images} />`}
+          language="tsx"
+        />
+
+        <p className="text-slate-600 dark:text-slate-400 mt-4 mb-4">
+          The hook takes one options object and returns a{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            UrlStateController
+          </code>{' '}
+          (with{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            set
+          </code>
+          ,{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            index
+          </code>
+          ,{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            value
+          </code>
+          ). Keep it for programmatic control:{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            set
+          </code>{' '}
+          is the low-level write the overlay uses internally (slide change, and{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            set(null)
+          </code>{' '}
+          to close). It drives the overlay programmatically too —{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            set(index)
+          </code>{' '}
+          opens it, the same as navigating to the parameter. Prefer a link for
+          opening though: the href is shareable, opens in a new tab, and the
+          back button closes it — all for free, with no handler.
+        </p>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Full{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            useOverlayUrlState
+          </code>{' '}
+          options (
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            param
+          </code>
+          ,{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            adapter
+          </code>
+          ,{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            codec
+          </code>
+          ,{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            locator
+          </code>
+          ): see the{' '}
+          <Link
+            to="/docs/react/api#useoverlayurlstate"
+            className="text-primary-600 dark:text-primary-400 hover:underline"
+          >
+            React API reference
+          </Link>
+          .
+        </p>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            LightboxUrlOverlay
+          </code>{' '}
+          itself takes just{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            controller
+          </code>{' '}
+          (required), an optional{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            onClose
+          </code>
+          , plus every visual and behavior prop{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            LightboxOverlay
+          </code>{' '}
+          takes ({''}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            images
+          </code>
+          ,{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            ariaLabel
+          </code>
+          ,{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            transitionFn
+          </code>
+          , the render props, and so on) — but no{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            isOpen
+          </code>
+          .
+        </p>
+        <ul className="mt-4 mb-4 list-disc pl-6 space-y-1 text-slate-600 dark:text-slate-400">
+          <li>
+            Opening costs one history entry. Paging slides replaces it, so a
+            hundred swipes add none — one back step always leaves the gallery.
+            Back closes; it does not step through photos.
+          </li>
+          <li>
+            A shared link like{' '}
+            <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+              ?photo=3
+            </code>{' '}
+            opens the gallery at that slide. Closing a link that arrived with
+            the page removes the parameter in place rather than navigating off
+            your site.
+          </li>
+          <li>
+            <strong>
+              Back closes only when you opened from within the app
+            </strong>{' '}
+            — the link pushed an entry, so back pops to the gallery. A shared
+            link opened directly in a fresh tab has no history behind it, so
+            browser-back leaves the site; the close button or Escape removes the
+            parameter in place and keeps you on the gallery.
+          </li>
+          <li>
+            A parameter naming no slide — a stale bookmark, a hand-edited value
+            — is dropped from the URL instead of leaving the address bar
+            asserting a slide that cannot open.
+          </li>
+        </ul>
+        <p className="text-slate-600 dark:text-slate-400 mb-2">
+          <strong>In a routed app, pass an adapter.</strong> Writing history
+          directly leaves the router's own location stale, and its next
+          navigation drops the parameter.
+        </p>
+        <CodeBlock
+          code={`import { useReactRouterUrlAdapter } from '@reelkit/react/react-router-url-adapter';
+
+const adapter = useReactRouterUrlAdapter();
+const photo = useOverlayUrlState({
+  param: 'photo',
+  adapter,
+  ...urlIndexKey(() => images.length),
+});
+
+<LightboxUrlOverlay controller={photo} images={images} />`}
+          language="tsx"
+        />
+        <p className="text-slate-600 dark:text-slate-400 mt-4 mb-2">
+          <strong>Opening is a link.</strong> Because the open state lives in
+          the URL, a thumbnail is an ordinary link — no click handler — and the
+          browser's own behaviour comes free: open in a new tab, copy the
+          address, preview on hover. In a routed app use the router's link so it
+          stays client-side.
+        </p>
+        <CodeBlock
+          code={`import { Link } from 'react-router-dom';
+
+// The href is the open action — no onClick, no open flag.
+{images.map((image, i) => (
+  <Link key={image.src} to={\`?photo=\${i}\`}>
+    <img src={image.src} />
+  </Link>
+))}
+
+<LightboxUrlOverlay controller={photo} images={images} />`}
+          language="tsx"
+        />
+        <p className="text-slate-600 dark:text-slate-400 mt-4 mb-2">
+          <strong>Prefer a stable identity for shareable links.</strong> The
+          index is positional, so a bookmarked{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            ?photo=3
+          </code>{' '}
+          opens a different image once the list is reordered.{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            urlStableIdKey
+          </code>{' '}
+          keys by each item's stable{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            id
+          </code>
+          , scanning the live list — one call covers the common case.
+        </p>
+        <CodeBlock
+          code={`const photo = useOverlayUrlState({
+  param: 'photo',
+  ...urlStableIdKey({ items: () => images }),
+});
+
+<LightboxUrlOverlay controller={photo} images={images} />`}
+          language="tsx"
+        />
+        <p className="text-slate-600 dark:text-slate-400 mt-4 mb-2">
+          Pass{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            hashCodec: base64UrlCodec
+          </code>{' '}
+          to base64url-encode the id in the URL — reversible obfuscation, not a
+          cryptographic hash.
+        </p>
+        <p className="text-slate-600 dark:text-slate-400 mt-4 mb-2">
+          Key by a different field (a{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            slug
+          </code>
+          ), or page an infinite feed with{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            locateAsync
+          </code>
+          , and build the{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            codec
+          </code>
+          /
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            locator
+          </code>{' '}
+          yourself:
+        </p>
+        <CodeBlock
+          code={`const photo = useOverlayUrlState({
+  param: 'photo',
+  codec: { decode: (raw) => raw, encode: (id) => id },
+  locator: {
+    locate: (id) => images.findIndex((x) => x.slug === id),
+    identify: (index) => images[index].slug,
+  },
+});
+
+<LightboxUrlOverlay controller={photo} images={images} />`}
+          language="tsx"
+        />
+        <p className="text-slate-600 dark:text-slate-400 mt-4 mb-2">
+          <strong>Infinite or paginated galleries.</strong> The sync{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            locate
+          </code>{' '}
+          can only answer for images already loaded — a shared link to image 400
+          of a feed that has loaded 20 comes up empty.{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            locateAsync
+          </code>{' '}
+          is the fallback, called only when{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            locate
+          </code>{' '}
+          misses.
+        </p>
+        <Callout type="info" title="Shortcut" className="mb-4">
+          Keying by the item&rsquo;s{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            id
+          </code>
+          ? Skip the hand-rolled codec and locator — pass{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            locateAsync
+          </code>{' '}
+          straight to{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            urlStableIdKey({'{ items, locateAsync }'})
+          </code>{' '}
+          (it fetches on a miss, then returns the index). The fuller version
+          below is for keying by another field, or for full control.
+        </Callout>
+        <CodeBlock
+          code={`const photo = useOverlayUrlState({
+  param: 'photo',
+  codec: { decode: (raw) => raw, encode: (id) => id },
+  locator: {
+    locate: (id) => images.findIndex((x) => x.id === id),
+    identify: (index) => images[index].id,
+    locateAsync: async (id) => {
+      const loaded = await loadById(id); // or loadUntil(id) — fetch just that one, or page up to it
+      if (!loaded) return null; // exhausted — link names no image
+      setImages(loaded); // commit — the overlay renders from this state
+      return loaded.findIndex((x) => x.id === id); // wherever it landed
+    },
+  },
+});
+
+<LightboxUrlOverlay controller={photo} images={images} />`}
+          language="tsx"
+        />
+        <ul className="mt-4 list-disc pl-6 space-y-1 text-slate-600 dark:text-slate-400">
+          <li>
+            How you load is up to you — fetch contiguous pages up to the target,
+            or fetch just that one image and append it. The URL keys by
+            identity, not position, so{' '}
+            <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+              findIndex
+            </code>{' '}
+            returns wherever the item lands.
+          </li>
+          <li>
+            While{' '}
+            <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+              locateAsync
+            </code>{' '}
+            is pending the lightbox stays closed and the parameter is left
+            alone, so the deep link survives the fetch.{' '}
+            <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+              null
+            </code>{' '}
+            or a rejection drops the parameter.
+          </li>
+          <li>
+            An answer arriving after the URL moved on, after a close, or after
+            unmount is discarded — a slow fetch cannot open a slide nobody asked
+            for.
+          </li>
+          <li>
+            Nothing is rendered while pending; the page already owns that
+            loading state, so render your own skeleton.
+          </li>
+          <li>
+            There is no timeout — the lightbox cannot know how long the gallery
+            is. Settle with{' '}
+            <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+              null
+            </code>{' '}
+            when pagination is exhausted, or the overlay stays closed
+            indefinitely.
+          </li>
+          <li>
+            Whatever{' '}
+            <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+              locateAsync
+            </code>{' '}
+            returns is authoritative — the index of data it just fetched, taken
+            as-is without re-reading{' '}
+            <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+              images
+            </code>
+            .
+          </li>
+        </ul>
+      </section>
+
       {/* API Reference */}
       <section className="mb-12">
         <Heading level={2} className="text-2xl font-bold mb-4">
@@ -1159,8 +1594,11 @@ renderSlide={({ item, index, size, isActive, onReady, onWaiting, onError }) => (
         </Heading>
 
         <Heading level={3} className="text-xl font-semibold mt-6 mb-4">
-          Props
+          LightboxOverlay Props
         </Heading>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-2 font-mono">
+          LightboxOverlayProps
+        </p>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -1175,6 +1613,64 @@ renderSlide={({ item, index, size, isActive, onReady, onWaiting, onError }) => (
             </thead>
             <tbody>
               {lightboxProps.map((p) => (
+                <tr
+                  key={p.prop}
+                  className="border-b border-slate-100 dark:border-slate-800"
+                >
+                  <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                    {p.prop}
+                  </td>
+                  <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                    {p.type}
+                  </td>
+                  <td className="py-3 px-4 text-slate-500 text-sm">
+                    {p.default}
+                  </td>
+                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                    {p.description}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <Heading level={3} className="text-xl font-semibold mt-8 mb-2">
+          LightboxUrlOverlay Props
+        </Heading>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-2 font-mono">
+          LightboxUrlOverlayProps
+        </p>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Takes every visual and behaviour prop above except{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            isOpen
+          </code>
+          , and replaces it with a{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            controller
+          </code>
+          .{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            initialIndex
+          </code>{' '}
+          is ignored here — the controller&apos;s position picks the slide, so a
+          value passed alongside it would be overwritten on every open.
+        </p>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left py-3 px-4 font-semibold">Prop</th>
+                <th className="text-left py-3 px-4 font-semibold">Type</th>
+                <th className="text-left py-3 px-4 font-semibold">Default</th>
+                <th className="text-left py-3 px-4 font-semibold">
+                  Description
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {lightboxUrlProps.map((p) => (
                 <tr
                   key={p.prop}
                   className="border-b border-slate-100 dark:border-slate-800"
@@ -1238,7 +1734,7 @@ renderSlide={({ item, index, size, isActive, onReady, onWaiting, onError }) => (
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           These props are forwarded to the underlying{' '}
           <Link
-            to="/docs/react/api"
+            to="/docs/react/api#reel-props"
             className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
           >
             Reel

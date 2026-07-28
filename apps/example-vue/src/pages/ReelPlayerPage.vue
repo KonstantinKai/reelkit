@@ -6,6 +6,7 @@ import {
   type MediaItem,
 } from '@reelkit/vue-reel-player';
 import '@reelkit/vue-reel-player/styles.css';
+import { Play } from 'lucide-vue-next';
 import { cdnUrl, generateContent, getThumbnail } from '@reelkit/example-data';
 import Thumbnail from '../components/Thumbnail.vue';
 
@@ -87,7 +88,7 @@ const closePlayer = () => {
             v-if="item.media.some((m: MediaItem) => m.type === 'video')"
             class="video-badge"
           >
-            ▶
+            <Play :size="14" fill="#fff" color="#fff" />
           </div>
           <div v-if="item.media.length > 1" class="multi-badge">
             {{ item.media.length }}
@@ -176,6 +177,7 @@ h1 {
   padding: 4px 8px;
   border-radius: 4px;
   background-color: rgba(0, 0, 0, 0.6);
+  color: #fff;
   font-size: 0.7rem;
   font-weight: 500;
 }

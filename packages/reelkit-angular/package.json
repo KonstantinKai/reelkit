@@ -60,6 +60,12 @@
   },
   "peerDependencies": {
     "@angular/common": ">=19.0.0",
-    "@angular/core": ">=19.0.0"
+    "@angular/core": ">=19.0.0",
+    "@angular/router": ">=19.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@angular/router": {
+      "optional": true
+    }
   }
 }

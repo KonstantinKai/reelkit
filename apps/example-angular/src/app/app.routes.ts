@@ -23,10 +23,24 @@ export const appRoutes: Route[] = [
       ).then((m) => m.ReelPlayerCustomPageComponent),
   },
   {
+    path: 'reel-player-url',
+    loadComponent: () =>
+      import('./pages/reel-player-url/reel-player-url-page.component').then(
+        (m) => m.ReelPlayerUrlPageComponent,
+      ),
+  },
+  {
     path: 'image-preview',
     loadComponent: () =>
       import('./pages/image-preview/image-preview-page.component').then(
         (m) => m.ImagePreviewPageComponent,
+      ),
+  },
+  {
+    path: 'image-preview-url',
+    loadComponent: () =>
+      import('./pages/image-preview-url/image-preview-url-page.component').then(
+        (m) => m.ImagePreviewUrlPageComponent,
       ),
   },
   {

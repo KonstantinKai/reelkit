@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { CodeBlock } from '../../../components/ui/CodeBlock';
 import { Heading } from '../../../components/ui/Heading';
 
@@ -792,6 +793,150 @@ import { createSliderController } from '@reelkit/core';
 const destroyRef = inject(DestroyRef);
 const controller = createSliderController({ count: 10 }, {});
 const index = toAngularSignal(controller.state.index, destroyRef);`}
+          language="typescript"
+        />
+      </section>
+
+      <section className="mb-12">
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          createOverlayUrlState
+        </Heading>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-2 font-mono">
+          OverlayUrlStateOptions
+        </p>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Builds a URL-state controller for an overlay, which you hand to{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            &lt;rk-lightbox-url-overlay&gt;
+          </code>{' '}
+          as its{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            [controller]
+          </code>{' '}
+          input. Call it in an injection context — a field initialiser or the
+          constructor; it attaches immediately and releases through{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            DestroyRef
+          </code>
+          . Walkthrough:{' '}
+          <Link
+            to="/docs/angular-lightbox#url-state"
+            className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
+          >
+            URL State on the Angular Lightbox page
+          </Link>
+          .
+        </p>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left py-3 px-4 font-semibold">Option</th>
+                <th className="text-left py-3 px-4 font-semibold">Type</th>
+                <th className="text-left py-3 px-4 font-semibold">Default</th>
+                <th className="text-left py-3 px-4 font-semibold">
+                  Description
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  param
+                </td>
+                <td className="py-3 px-4 font-mono text-sm text-slate-600 dark:text-slate-400">
+                  string
+                </td>
+                <td className="py-3 px-4 font-mono text-sm text-slate-500">
+                  required
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Query parameter carrying the active slide, e.g. photo.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  adapter
+                </td>
+                <td className="py-3 px-4 font-mono text-sm text-slate-600 dark:text-slate-400">
+                  UrlAdapter
+                </td>
+                <td className="py-3 px-4 font-mono text-sm text-slate-500">
+                  History API
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Navigation system to read and write through. Pass a
+                  Router-backed adapter in a routed app so the Router's location
+                  does not go stale.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  codec
+                </td>
+                <td className="py-3 px-4 font-mono text-sm text-slate-600 dark:text-slate-400">
+                  UrlCodec&lt;Id&gt;
+                </td>
+                <td className="py-3 px-4 font-mono text-sm text-slate-500">
+                  required
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Wire format: param text to a stable identity. Travels with
+                  locator as a matched pair — spread ...urlIndexKey(() =&gt;
+                  images().length) for the default ?photo=3 gallery, or supply
+                  your own so a bookmark survives reordering.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  locator
+                </td>
+                <td className="py-3 px-4 font-mono text-sm text-slate-600 dark:text-slate-400">
+                  UrlLocator&lt;Id&gt;
+                </td>
+                <td className="py-3 px-4 font-mono text-sm text-slate-500">
+                  required
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Maps the identity to a position and owns its own validity:
+                  locate (sync), locateAsync (async fallback for a paginated
+                  gallery), identify (writes).
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section className="mb-12">
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          createRouterUrlAdapter
+        </Heading>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-2 font-mono">
+          @reelkit/angular/ng-router-url-adapter
+        </p>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          A <code>UrlAdapter</code> backed by the Angular Router. Pass it as the{' '}
+          <code>adapter</code> option of <code>createOverlayUrlState</code> in a
+          routed app so the Router stays the single source of navigation truth —
+          writing <code>history.pushState</code> behind the Router leaves its
+          location stale and its next navigation drops the parameter. Call it in
+          an injection context; the <code>NavigationEnd</code> subscription
+          releases through <code>DestroyRef</code>.
+        </p>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Ships from its own subpath, so an app without routing never pulls{' '}
+          <code>@angular/router</code> into its bundle.{' '}
+          <code>@angular/router</code> is an optional peer dependency.
+        </p>
+        <CodeBlock
+          code={`import { createRouterUrlAdapter } from '@reelkit/angular/ng-router-url-adapter';
+
+protected readonly photo = createOverlayUrlState({
+  param: 'photo',
+  adapter: createRouterUrlAdapter(),
+  ...urlIndexKey(() => this.images().length),
+});`}
           language="typescript"
         />
       </section>

@@ -25,7 +25,7 @@ export const createStoriesController = (
       initialConfig.defaultImageDuration ?? _kDefaultImageDuration,
   };
 
-  let events = { ...initialEvents };
+  const events = { ...initialEvents };
 
   const activeGroupIndex = createSignal(config.initialGroupIndex);
   const activeStoryIndex = createSignal(config.initialStoryIndex);
@@ -122,10 +122,6 @@ export const createStoriesController = (
     onStoryTimerComplete() {
       events.onStoryComplete?.(activeGroupIndex.value, activeStoryIndex.value);
       this.nextStory();
-    },
-
-    dispose() {
-      events = {};
     },
   };
 };

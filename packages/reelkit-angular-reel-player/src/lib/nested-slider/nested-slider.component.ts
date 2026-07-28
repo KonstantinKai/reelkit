@@ -8,6 +8,7 @@ import {
   input,
   linkedSignal,
   output,
+  untracked,
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import {
@@ -78,6 +79,7 @@ import type {
         [loop]="false"
         [enableNavKeys]="true"
         [enableWheel]="enableWheel()"
+        [initialIndex]="seedIndex()"
         [class.rk-reel-nested-active]="isActive()"
         (apiReady)="onInnerApiReady($event)"
         (beforeChange)="onBeforeChange()"
@@ -191,6 +193,12 @@ export class RkNestedSliderComponent {
   readonly height = input<number>(0);
   readonly slideKey = input.required<string>();
   readonly enableWheel = input<boolean>(false);
+  /**
+   * Inner media index to open at. Applies only on first mount, so a two-axis
+   * URL can deep-link into a specific image of a multi-media post; later
+   * navigation is the user's own.
+   */
+  readonly initialIndex = input<number | undefined>(undefined);
   readonly onReady = input<(() => void) | undefined>(undefined);
   readonly onWaiting = input<(() => void) | undefined>(undefined);
   readonly onError = input<(() => void) | undefined>(undefined);
@@ -205,12 +213,31 @@ export class RkNestedSliderComponent {
   readonly innerApiReady = output<ReelApi>();
 
   /**
-   * Tracks the active inner slide index. Automatically resets to `0` when the
-   * `media` input changes (e.g. the parent swaps to a different content item),
-   * preventing a stale index from pointing beyond the bounds of the new array.
+   * The clamped first-mount seed: a URL may name an inner index past this
+   * post's media, so an out-of-range seed falls back to `0`. Feeds the inner
+   * reel's initial position.
+   */
+  readonly seedIndex = computed(() => {
+    const seed = this.initialIndex();
+    const length = this.media().length;
+    return seed !== undefined && seed >= 0 && seed < length ? seed : 0;
+  });
+
+  // Applies the seed on the first mount only; a later media swap resets to 0.
+  private _seeded = false;
+
+  /**
+   * Tracks the active inner slide index. Opens at the clamped seed on first
+   * mount, then resets to `0` when the `media` input changes (e.g. the parent
+   * swaps to a different content item), preventing a stale index from pointing
+   * beyond the bounds of the new array.
    */
   readonly innerActiveIndex = linkedSignal(() => {
     void this.media();
+    if (!this._seeded) {
+      this._seeded = true;
+      return untracked(this.seedIndex);
+    }
     return 0;
   });
 
@@ -240,6 +267,17 @@ export class RkNestedSliderComponent {
         if (items[idx]) {
           this.innerMediaType.emit(items[idx].type);
         }
+      }
+    });
+
+    // On activation, report the retained inner index so a URL following the
+    // player names the media actually on screen — the seed on a fresh mount,
+    // the retained index while this post stayed in the window. Depends on
+    // isActive only; the index is read untracked so it fires on activation, not
+    // on every inner navigation (that path reports through onAfterChange).
+    effect(() => {
+      if (this.isActive()) {
+        this.innerActiveIndexChange.emit(untracked(this.innerActiveIndex));
       }
     });
   }

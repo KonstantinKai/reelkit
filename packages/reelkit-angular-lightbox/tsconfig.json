@@ -11,6 +11,7 @@
     "declarationMap": true,
     "paths": {
       "@reelkit/angular": ["packages/reelkit-angular/src/index.ts"],
+      "@reelkit/core/testing": ["packages/reelkit-core/src/testing/index.ts"],
       "@reelkit/core": ["packages/reelkit-core/src/index.ts"]
     }
   },

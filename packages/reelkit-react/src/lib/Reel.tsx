@@ -3,6 +3,7 @@ import {
   type MutableRefObject,
   type CSSProperties,
   type ReactNode,
+  type UIEvent,
   useRef,
   useState,
   useEffect,
@@ -490,6 +491,20 @@ const Element = ({
     ...props.style,
   };
 
+  // Slides are positioned by transform and sit outside the root's box (offset
+  // by whole multiples of the slide size). An `overflow: hidden` box is still a
+  // scroll container, so when a control inside an off-rest slide takes focus —
+  // as happens for a beat while the slider settles after opening at a non-zero
+  // index — the browser scrolls the root to reveal it. That scroll offset never
+  // clears, leaving the whole strip shifted by one slide and the wrong slide
+  // active. The transforms already place every slide; the root must never
+  // scroll, so snap it straight back whenever anything scrolls it.
+  const resetScroll = (event: UIEvent<HTMLDivElement>) => {
+    const el = event.currentTarget;
+    if (el.scrollTop !== 0) el.scrollTop = 0;
+    if (el.scrollLeft !== 0) el.scrollLeft = 0;
+  };
+
   const { axisValue, indexes } = controller.state;
 
   const hasMeasured = !autoSize || primarySize > 0;
@@ -515,6 +530,7 @@ const Element = ({
         aria-label={ariaLabel}
         className={props.className}
         style={rootStyle}
+        onScroll={resetScroll}
       >
         {hasMeasured && (
           <Observe signals={[indexes]}>

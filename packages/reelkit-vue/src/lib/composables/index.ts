@@ -6,3 +6,7 @@ export {
 } from './useFullscreen';
 export { SoundProvider, RK_SOUND_KEY, useSoundState } from './useSoundState';
 export { toVueRef } from './toVueRef';
+export {
+  useOverlayUrlState,
+  type OverlayUrlStateOptions,
+} from './useOverlayUrlState';

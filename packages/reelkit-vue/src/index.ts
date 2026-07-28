@@ -16,9 +16,7 @@
  * dependency.
  */
 
-// Re-export from core
 export {
-  // Signals & reactivity
   createSignal,
   createComputed,
   reaction,
@@ -30,8 +28,6 @@ export {
   type Listener,
   type Dispose,
   type Deferred,
-
-  // Math & utilities
   first,
   last,
   generate,
@@ -41,12 +37,8 @@ export {
   lerp,
   extractRange,
   noop,
-
-  // Animation
   animate,
   type AnimatedValue,
-
-  // DOM utilities
   observeDomEvent,
   createDisposableList,
   type DisposableList,
@@ -58,15 +50,11 @@ export {
   type LruCache,
   type SharedVideoConfig,
   type SharedVideoInstance,
-
-  // Controllers
   createGestureController,
   type GestureController,
   type GestureControllerEvents,
   type GestureCommonEvent,
   type GestureEvent,
-
-  // Transitions (tree-shakeable)
   slideTransition,
   flipTransition,
   cubeTransition,
@@ -75,34 +63,22 @@ export {
   getSlideProgress,
   type TransitionTransformFn,
   type SlideTransformStyle,
-
-  // Fullscreen
   fullscreenSignal,
   requestFullscreen,
   exitFullscreen,
-
-  // Body lock
   createBodyLock,
   sharedBodyLock,
   type BodyLock,
-
-  // Focus management
   captureFocusForReturn,
   createFocusTrap,
   getFocusableElements,
-
-  // Sound
   createSoundController,
   syncMutedToVideo,
   type SoundController,
-
-  // Timeline
   createTimelineController,
   type TimelineController,
   type TimelineControllerConfig,
   type BufferedRange,
-
-  // Content loading & preloading
   observeMediaLoading,
   type MediaLoadingCallbacks,
   createContentLoadingController,
@@ -110,17 +86,39 @@ export {
   createContentPreloader,
   type ContentPreloader,
   type ContentPreloaderConfig,
+  createUrlStateController,
+  createHistoryAdapter,
+  indexCodec,
+  createIndexLocator,
+  urlIndexKey,
+  urlIndexTwoAxisKey,
+  createStableIdCodec,
+  base64UrlCodec,
+  createStableIdLocator,
+  urlStableIdKey,
+  urlStableIdTwoAxisKey,
 } from '@reelkit/core';
 
-// Re-export core types
 export type {
   SliderDirection,
   SliderConfig,
   RangeExtractor,
   NavKey,
+  UrlAdapter,
+  UrlCodec,
+  UrlLocator,
+  UrlKey,
+  UrlStateController,
+  UrlStateOptions,
+  TwoAxisPosition,
+  TwoAxisIdentity,
+  UrlIndexTwoAxisKeyOptions,
+  Identified,
+  UrlStableIdKeyOptions,
+  UrlStableIdTwoAxisKeyOptions,
+  UrlStableIdTwoAxisIdInnerOptions,
 } from '@reelkit/core';
 
-// Components
 export {
   Reel,
   createDefaultKeyExtractorForLoop,
@@ -135,14 +133,12 @@ export {
   type SwipeToCloseProps,
 } from './lib/components';
 
-// Context
 export {
   RK_REEL_KEY,
   useReelContext,
   type ReelContextValue,
 } from './lib/context';
 
-// Composables
 export {
   useBodyLock,
   useFullscreen,
@@ -152,6 +148,8 @@ export {
   RK_SOUND_KEY,
   useSoundState,
   toVueRef,
+  useOverlayUrlState,
+  type OverlayUrlStateOptions,
 } from './lib/composables';
 
 export { hasRenderedNodes } from './lib/utils/slots';

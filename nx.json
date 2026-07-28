@@ -86,7 +86,13 @@
   ],
   "targetDefaults": {
     "typecheck": {
-      "dependsOn": ["^typecheck"]
+      "dependsOn": ["^typecheck"],
+      "outputs": [
+        "{projectRoot}/tsconfig.tsbuildinfo",
+        "{workspaceRoot}/dist/out-tsc/{projectRoot}/**/*.d.ts",
+        "{workspaceRoot}/dist/out-tsc/{projectRoot}/**/*.d.ts.map",
+        "{workspaceRoot}/dist/out-tsc/{projectRoot}/**/*.tsbuildinfo"
+      ]
     },
     "test": {
       "dependsOn": ["^build"]

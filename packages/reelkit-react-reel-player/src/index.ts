@@ -17,7 +17,13 @@
  * For custom data types, extend {@link BaseContentItem} and pass as a
  * type parameter: `<ReelPlayerOverlay<MyItem> />`.
  *
- * @example
+ * Open state comes in two shapes. {@link ReelPlayerOverlay} is controlled — the
+ * surrounding component owns `isOpen`. {@link ReelPlayerUrlOverlay} puts it in
+ * the address bar instead, so the playing slide has a link that can be shared,
+ * bookmarked, and closed with the back button. Every render prop above works
+ * the same in either.
+ *
+ * @example Controlled — the component owns `isOpen`
  * ```tsx
  * import { useState } from 'react';
  * import { ReelPlayerOverlay, type ContentItem } from '@reelkit/react-reel-player';
@@ -47,16 +53,55 @@
  *   );
  * }
  * ```
+ *
+ * @example URL-driven — opening is a link, back closes
+ * ```tsx
+ * import { useOverlayUrlState, urlIndexKey } from '@reelkit/react';
+ * import { ReelPlayerUrlOverlay } from '@reelkit/react-reel-player';
+ * import { Link } from 'react-router-dom';
+ *
+ * function Feed() {
+ *   const reel = useOverlayUrlState({
+ *     param: 'reel',
+ *     ...urlIndexKey(() => content.length),
+ *   });
+ *
+ *   return (
+ *     <>
+ *       {content.map((item, i) => (
+ *         <Link key={item.id} to={`?reel=${i}`}>
+ *           <img src={getThumbnail(item)} />
+ *         </Link>
+ *       ))}
+ *
+ *       <ReelPlayerUrlOverlay controller={reel} content={content} />
+ *     </>
+ *   );
+ * }
+ * ```
  */
 
-// Main component
-export { ReelPlayerOverlay } from './lib/ReelPlayerOverlay';
+export {
+  ReelPlayerOverlay,
+  ReelPlayerUrlOverlay,
+} from './lib/ReelPlayerOverlay';
 export type {
+  ReelPlayerOverlayBaseProps,
+  ReelPlayerControlledProps,
+  ReelPlayerUrlControlledProps,
   ReelPlayerOverlayProps,
+  ReelPlayerUrlOverlayProps,
   ReelProxyProps,
 } from './lib/ReelPlayerOverlay';
 
-// Types
+export type {
+  UrlAdapter,
+  UrlCodec,
+  UrlLocator,
+  TwoAxisPosition,
+} from '@reelkit/react';
+export { urlIndexTwoAxisKey } from '@reelkit/react';
+
 export type {
   MediaType,
   MediaItem,
@@ -70,11 +115,9 @@ export type {
   TimelineRenderProps,
 } from './lib/types';
 
-// Sub-components for composition
 export { CloseButton, SoundButton } from './lib/PlayerControls';
 export type { CloseButtonProps, SoundButtonProps } from './lib/PlayerControls';
 
-// Slide components
 export { default as ImageSlide } from './lib/ImageSlide';
 export type { ImageSlideProps } from './lib/ImageSlide';
 
@@ -84,7 +127,6 @@ export type { VideoSlideProps } from './lib/VideoSlide';
 export { default as SlideOverlay } from './lib/SlideOverlay';
 export type { SlideOverlayProps } from './lib/SlideOverlay';
 
-// Timeline
 export {
   TimelineProvider,
   useTimelineState,

@@ -18,6 +18,10 @@ const routes: RouteRecordRaw[] = [
     component: () => import('./pages/ReelPlayerCustomPage.vue'),
   },
   {
+    path: '/reel-player-url',
+    component: () => import('./pages/ReelPlayerUrlPage.vue'),
+  },
+  {
     path: '/image-preview',
     component: () => import('./pages/ImagePreviewPage.vue'),
   },
@@ -28,6 +32,10 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/image-preview-video',
     component: () => import('./pages/ImagePreviewVideoPage.vue'),
+  },
+  {
+    path: '/image-preview-url',
+    component: () => import('./pages/ImagePreviewUrlPage.vue'),
   },
   {
     path: '/:pathMatch(.*)*',

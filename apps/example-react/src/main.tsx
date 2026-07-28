@@ -22,12 +22,20 @@ const router = createBrowserRouter([
         lazy: lazy(() => import('./app/pages/ReelPlayerPage')),
       },
       {
+        path: 'reel-player-url',
+        lazy: lazy(() => import('./app/pages/ReelPlayerUrlPage')),
+      },
+      {
         path: 'reel-player-custom',
         lazy: lazy(() => import('./app/pages/ReelPlayerCustomPage')),
       },
       {
         path: 'image-preview',
         lazy: lazy(() => import('./app/pages/ImagePreviewPage')),
+      },
+      {
+        path: 'image-preview-url',
+        lazy: lazy(() => import('./app/pages/ImagePreviewUrlPage')),
       },
       {
         path: 'image-preview-custom',
@@ -40,6 +48,10 @@ const router = createBrowserRouter([
       {
         path: 'stories-player',
         lazy: lazy(() => import('./app/pages/StoriesPlayerPage')),
+      },
+      {
+        path: 'stories-player-url',
+        lazy: lazy(() => import('./app/pages/StoriesPlayerUrlPage')),
       },
       {
         path: 'stories-player-custom',

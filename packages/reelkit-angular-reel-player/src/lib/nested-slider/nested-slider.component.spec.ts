@@ -22,6 +22,7 @@ jest.mock('@reelkit/angular', () => {
     @Input() loop = false;
     @Input() enableNavKeys = false;
     @Input() enableWheel = false;
+    @Input() initialIndex = 0;
     @Output() apiReady = new EventEmitter<unknown>();
     @Output() beforeChange = new EventEmitter<void>();
     @Output() afterChange = new EventEmitter<{ index: number }>();

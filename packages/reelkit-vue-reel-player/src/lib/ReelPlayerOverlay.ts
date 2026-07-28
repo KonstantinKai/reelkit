@@ -31,6 +31,8 @@ import {
   useBodyLock,
   useSoundState,
   type ReelExpose,
+  type TwoAxisPosition,
+  type UrlStateController,
 } from '@reelkit/vue';
 import type {
   BaseContentItem,
@@ -100,6 +102,15 @@ const reelPlayerSharedProps = {
    * @default 0
    */
   initialIndex: { type: Number, default: 0 },
+
+  /**
+   * Inner media index to open at, for the initially visible slide only. Lets a
+   * two-axis URL deep-link into a specific image of a multi-media post. Ignored
+   * once the player is open and the user navigates.
+   *
+   * @default undefined
+   */
+  initialInnerIndex: { type: Number, default: undefined },
 
   /**
    * Aspect ratio (width / height) for the player container on desktop.
@@ -205,6 +216,7 @@ const ReelPlayerContent = defineComponent({
   emits: {
     close: () => true,
     slideChange: (_: number) => true,
+    innerSlideChange: (_outer: number, _inner: number) => true,
     apiReady: (_: ReelPlayerApi) => true,
   },
   setup(props, { emit, slots, expose }) {
@@ -257,6 +269,10 @@ const ReelPlayerContent = defineComponent({
       innerMediaType.value = t;
     };
 
+    const handleInnerIndexChange = (innerIndex: number) => {
+      emit('innerSlideChange', activeIndex.value, innerIndex);
+    };
+
     const handleBeforeChange = () => {
       soundState.disabled.value = true;
       if (videoEl) {
@@ -283,6 +299,13 @@ const ReelPlayerContent = defineComponent({
       }
       activeIndex.value = index;
       emit('slideChange', index);
+      // A single-media post has no nested slider to report an inner index on
+      // activation, so report 0 here; a multi-media post's nested slider
+      // reports its own live inner index when it becomes active.
+      const media = props.content[index]?.media;
+      if (!media || media.length <= 1) {
+        emit('innerSlideChange', index, 0);
+      }
     };
 
     const handleSlideDragStart = () => {
@@ -621,12 +644,19 @@ const ReelPlayerContent = defineComponent({
                       innerSliderRef.value = api;
                     },
                     enableWheel: props.enableWheel,
+                    initialInnerIndex:
+                      index === props.initialIndex
+                        ? props.initialInnerIndex
+                        : undefined,
                     onVideoRef: isActive ? handleVideoRef : undefined,
                     onReady,
                     onWaiting,
                     onError,
                     onActiveMediaTypeChange: isActive
                       ? handleActiveMediaTypeChange
+                      : undefined,
+                    onInnerIndexChange: isActive
+                      ? handleInnerIndexChange
                       : undefined,
                     renderNestedNavigation: slotAsRender<NavigationSlotScope>(
                       slots['nestedNavigation'],
@@ -721,6 +751,18 @@ const ReelPlayerContent = defineComponent({
 });
 
 /**
+ * Wraps the player content in the shell both overlays share: a `Teleport` to
+ * the body, then the sound and timeline providers `ReelPlayerContent` reads
+ * from. Written once so the controlled and url-driven overlays cannot drift.
+ */
+const renderPlayerWrapper = (content: VNode): VNode =>
+  h(Teleport, { to: 'body' }, [
+    h(SoundProvider, null, {
+      default: () => [h(TimelineProvider, null, { default: () => [content] })],
+    }),
+  ]);
+
+/**
  * Full-screen, Instagram/TikTok-style vertical reel player overlay for Vue 3.
  *
  * Renders a `<Teleport to="body">` containing a virtualized vertical slider
@@ -739,6 +781,7 @@ export const ReelPlayerOverlay = defineComponent({
   emits: {
     close: () => true,
     slideChange: (_: number) => true,
+    innerSlideChange: (_outer: number, _inner: number) => true,
     apiReady: (_: ReelPlayerApi) => true,
     // Emitted alongside `close` so consumers can drive the overlay via
     // `v-model:is-open="..."`. The legacy `:is-open` + `@close` API
@@ -777,26 +820,166 @@ export const ReelPlayerOverlay = defineComponent({
         return null;
       }
 
-      return h(Teleport, { to: 'body' }, [
-        h(SoundProvider, null, {
-          default: () => [
-            h(TimelineProvider, null, {
-              default: () => [
-                h(
-                  ReelPlayerContent,
-                  {
-                    ...props,
-                    onClose: requestClose,
-                    onSlideChange: (i: number) => emit('slideChange', i),
-                    onApiReady: handleApiReady,
-                  },
-                  slots,
-                ),
-              ],
-            }),
-          ],
-        }),
-      ]);
+      return renderPlayerWrapper(
+        h(
+          ReelPlayerContent,
+          {
+            ...props,
+            onClose: requestClose,
+            onSlideChange: (i: number) => emit('slideChange', i),
+            onInnerSlideChange: (outer: number, inner: number) =>
+              emit('innerSlideChange', outer, inner),
+            onApiReady: handleApiReady,
+          },
+          slots,
+        ),
+      );
+    };
+  },
+});
+
+/** Props accepted by the public {@link ReelPlayerUrlOverlay} component. */
+const reelPlayerUrlOverlayProps = {
+  ...reelPlayerSharedProps,
+
+  /**
+   * URL-state controller from `useOverlayUrlState`. Its `position` drives
+   * whether the overlay is open and which slide it shows; the overlay writes
+   * back through it on slide change and close.
+   *
+   * Pick the URL depth by which key the controller was built with. A one-axis
+   * `urlIndexKey` gives a `number` position (`?reel=3`, the vertical post
+   * only); a two-axis `urlIndexTwoAxisKey` gives a `{ outer, inner }` position
+   * (`?reel=3.2`, the post plus the inner media index of a multi-media
+   * carousel). The overlay discriminates the mode at runtime from the position
+   * shape — no mode prop.
+   */
+  controller: {
+    type: Object as PropType<
+      UrlStateController<number> | UrlStateController<TwoAxisPosition>
+    >,
+    required: true as const,
+  },
+} as const;
+
+/** Public props interface for the {@link ReelPlayerUrlOverlay} component. */
+export type ReelPlayerUrlOverlayProps = ExtractPropTypes<
+  typeof reelPlayerUrlOverlayProps
+>;
+
+/**
+ * Reel player whose open state lives in the URL. Build the controller with
+ * `useOverlayUrlState` and pass it as `controller`: the address bar owns the
+ * player, so it opens when the controller's index names a slide and closes when
+ * it clears — links are shareable and the back button closes when it was opened
+ * from within the app. A shared link opened directly in a fresh tab has no
+ * history behind it, so browser-back leaves the site; the close button or
+ * Escape removes the parameter in place and stays.
+ *
+ * Opening pushes one history entry and every slide change replaces it, so
+ * paging a feed adds no entries and one back step always leaves. The URL depth
+ * follows the controller's key: a one-axis `urlIndexKey` addresses the vertical
+ * post only (`?reel=3`), a two-axis `urlIndexTwoAxisKey` also carries the inner
+ * media index of a multi-media post (`?reel=3.2`). Pick one key per app — the
+ * two wire shapes are deliberately distinct and do not cross-decode.
+ *
+ * The controlled `ReelPlayerOverlay` and this url-driven overlay are separate
+ * components on purpose: each carries exactly one open-state driver, so there is
+ * no mutually-exclusive prop to police.
+ */
+export const ReelPlayerUrlOverlay = defineComponent({
+  name: 'ReelPlayerUrlOverlay',
+  inheritAttrs: false,
+  props: reelPlayerUrlOverlayProps,
+  emits: {
+    close: () => true,
+    slideChange: (_: number) => true,
+    innerSlideChange: (_outer: number, _inner: number) => true,
+    apiReady: (_: ReelPlayerApi) => true,
+  },
+  setup(props, { emit, slots, expose }) {
+    const innerApi = shallowRef<ReelPlayerApi | null>(null);
+
+    // The controller's position shape is the single source of truth for its
+    // mode, so narrow the union once here rather than scattering casts. A union
+    // of two typed controllers has an unusable intersection `set()` and cannot
+    // feed `toVueRef` as one signal; viewing it as one controller over the
+    // merged position keeps both the read and the write honest, and the render
+    // discriminates the actual shape at runtime.
+    const controller = props.controller as UrlStateController<
+      number | TwoAxisPosition
+    >;
+    const position = toVueRef(controller.position);
+
+    const requestClose = () => {
+      controller.set(null);
+      emit('close');
+    };
+
+    const handleApiReady = (api: ReelPlayerApi) => {
+      innerApi.value = api;
+      emit('apiReady', api);
+    };
+
+    expose({
+      next: () => innerApi.value?.next(),
+      prev: () => innerApi.value?.prev(),
+      goTo: (index: number, anim?: boolean) =>
+        innerApi.value?.goTo(index, anim) ?? Promise.resolve(),
+      adjust: () => innerApi.value?.adjust(),
+      observe: () => innerApi.value?.observe(),
+      unobserve: () => innerApi.value?.unobserve(),
+      close: requestClose,
+    } satisfies ReelPlayerApi);
+
+    return () => {
+      const pos = position.value;
+      if (pos === null) {
+        innerApi.value = null;
+        return null;
+      }
+
+      // Runtime discrimination: a number is one-axis (post only); an object is
+      // two-axis (post + inner media index).
+      const twoAxis = typeof pos !== 'number';
+      const outerIndex = twoAxis ? pos.outer : pos;
+      const initialInner = twoAxis ? pos.inner : undefined;
+
+      return renderPlayerWrapper(
+        h(
+          ReelPlayerContent,
+          {
+            content: props.content,
+            ariaLabel: props.ariaLabel,
+            initialIndex: outerIndex,
+            initialInnerIndex: initialInner,
+            aspectRatio: props.aspectRatio,
+            transitionDuration: props.transitionDuration,
+            swipeDistanceFactor: props.swipeDistanceFactor,
+            loop: props.loop,
+            enableNavKeys: props.enableNavKeys,
+            enableWheel: props.enableWheel,
+            wheelDebounceMs: props.wheelDebounceMs,
+            timeline: props.timeline,
+            timelineMinDurationSeconds: props.timelineMinDurationSeconds,
+            onClose: requestClose,
+            onSlideChange: (i: number) => {
+              // One-axis writes the post index on outer nav. Two-axis leaves
+              // the write to innerSlideChange, which fires on activation with
+              // the post's live inner index — writing here would name inner 0
+              // before that correction lands.
+              if (!twoAxis) controller.set(i);
+              emit('slideChange', i);
+            },
+            onInnerSlideChange: (outer: number, inner: number) => {
+              if (twoAxis) controller.set({ outer, inner });
+              emit('innerSlideChange', outer, inner);
+            },
+            onApiReady: handleApiReady,
+          },
+          slots,
+        ),
+      );
     };
   },
 });

@@ -173,11 +173,6 @@ const methodsRows = [
     type: '(number) => number',
     desc: 'Last viewed story index for a group (0 if never visited)',
   },
-  {
-    name: 'dispose()',
-    type: '() => void',
-    desc: 'Clean up resources',
-  },
 ];
 
 const timerConfigRows = [
@@ -404,8 +399,7 @@ controller.resume();
 
 // Cleanup
 dispose();
-timer.dispose();
-controller.dispose();`;
+timer.dispose();`;
 
 const timerExample = `import { createTimerController } from '@reelkit/stories-core';
 import { reaction } from '@reelkit/core';

@@ -40,11 +40,14 @@ const activeLinkStyle: React.CSSProperties = {
 const links = [
   { to: '/', label: 'Full Page Slider' },
   { to: '/reel-player', label: 'Reel Player' },
+  { to: '/reel-player-url', label: 'URL Reel Player' },
   { to: '/reel-player-custom', label: 'Custom Player' },
   { to: '/image-preview', label: 'Image Gallery' },
+  { to: '/image-preview-url', label: 'URL Image Gallery' },
   { to: '/image-preview-custom', label: 'Custom Gallery' },
   { to: '/image-preview-video', label: 'Video Gallery' },
   { to: '/stories-player', label: 'Stories Player' },
+  { to: '/stories-player-url', label: 'URL Stories Player' },
   { to: '/stories-player-custom', label: 'Custom Stories' },
 ];
 

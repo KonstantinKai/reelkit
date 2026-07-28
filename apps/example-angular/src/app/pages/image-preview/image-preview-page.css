@@ -50,6 +50,9 @@
   cursor: pointer;
   transition: all 0.2s ease;
   text-transform: capitalize;
+  /* The class is worn by both a <button> and an <a> on the url page; without
+     this the anchor keeps the browser's underline and the row stops matching. */
+  text-decoration: none;
 }
 
 .transition-btn:hover {

@@ -1,5 +1,6 @@
 import { useRef, useState, useCallback, useEffect } from 'react';
 import { Reel, ReelIndicator, type ReelApi } from '@reelkit/react';
+import { cdnUrl } from '@reelkit/example-data';
 import {
   ChevronUp,
   ChevronDown,
@@ -9,6 +10,7 @@ import {
   Keyboard,
   Monitor,
   Gauge,
+  Link2,
 } from 'lucide-react';
 
 const slides = [
@@ -16,37 +18,43 @@ const slides = [
     icon: Zap,
     title: 'Virtualized',
     subtitle: 'Only 3 slides in DOM',
-    color: '#6366f1',
+    image: cdnUrl('samples/images/image-07.jpg'),
   },
   {
     icon: Hand,
     title: 'Touch First',
     subtitle: 'Native swipe gestures',
-    color: '#8b5cf6',
+    image: cdnUrl('samples/images/image-02.jpg'),
   },
   {
     icon: Layers,
     title: 'Zero Deps',
     subtitle: 'Tiny bundle size',
-    color: '#7c3aed',
+    image: cdnUrl('samples/images/image-03.jpg'),
   },
   {
     icon: Keyboard,
     title: 'Keyboard Nav',
     subtitle: 'Full a11y support',
-    color: '#ec4899',
+    image: cdnUrl('samples/images/image-09.jpg'),
   },
   {
     icon: Monitor,
     title: 'SSR Ready',
     subtitle: 'Works everywhere',
-    color: '#14b8a6',
+    image: cdnUrl('samples/images/image-05.jpg'),
   },
   {
     icon: Gauge,
     title: '60fps',
     subtitle: 'Smooth animations',
-    color: '#f59e0b',
+    image: cdnUrl('samples/images/image-06.jpg'),
+  },
+  {
+    icon: Link2,
+    title: 'Shareable URL State',
+    subtitle: 'Deep-link & back to close',
+    image: cdnUrl('samples/images/image-08.jpg'),
   },
 ];
 
@@ -106,7 +114,9 @@ export function BasicSliderDemo() {
               style={{
                 width: itemSize[0],
                 height: itemSize[1],
-                background: `linear-gradient(160deg, ${slide.color}, ${slide.color}aa)`,
+                // Neutral photo behind a dark scrim so the icon and labels stay
+                // legible over any image.
+                background: `linear-gradient(160deg, rgba(15,23,42,0.45), rgba(15,23,42,0.7)), url(${slide.image}) center / cover`,
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
@@ -122,6 +132,8 @@ export function BasicSliderDemo() {
                   fontSize: 'clamp(1.25rem, 3.5vw, 1.75rem)',
                   fontWeight: 700,
                   letterSpacing: '-0.02em',
+                  textAlign: 'center',
+                  padding: '0 16px',
                 }}
               >
                 {slide.title}
@@ -130,6 +142,7 @@ export function BasicSliderDemo() {
                 style={{
                   fontSize: 'clamp(0.75rem, 2vw, 0.9rem)',
                   opacity: 0.6,
+                  textAlign: 'center',
                 }}
               >
                 {slide.subtitle}

@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { CodeBlock } from '../../../components/ui/CodeBlock';
 import { Heading } from '../../../components/ui/Heading';
 
@@ -323,6 +324,36 @@ const contextShape = [
   },
 ];
 
+const overlayUrlStateOptions = [
+  {
+    prop: 'param',
+    type: 'string',
+    default: 'required',
+    description: 'Query parameter carrying the active slide, e.g. "photo".',
+  },
+  {
+    prop: 'adapter',
+    type: 'UrlAdapter',
+    default: 'History API',
+    description:
+      "Navigation system to read and write through. Pass a router-backed adapter in a routed app so the router's own location does not go stale.",
+  },
+  {
+    prop: 'codec',
+    type: '{ decode(raw) => Id | null; encode(id) => string }',
+    default: 'required',
+    description:
+      'Wire format: parameter text ↔ a stable identity, collection-blind. Travels with locator as a matched pair sharing the same Id — spread ...urlIndexKey(() => props.images.length) for the default ?photo=3 index gallery, or supply your own (base64, slug) so a bookmark survives the gallery being reordered.',
+  },
+  {
+    prop: 'locator',
+    type: '{ locate(id) => number | null; locateAsync?(id) => Promise<number | null>; identify(index) => id }',
+    default: 'required',
+    description:
+      'Maps the identity to a position and owns its own validity: locate (sync), locateAsync (async fallback for a paginated gallery), identify (writes). For a plain index gallery spread ...urlIndexKey(() => props.images.length) — it supplies this locator plus the matching codec and bounds ?photo=3 against the live count, so a stale ?photo=99 heals out of the URL instead of opening a slide that was never named. Pass a getter, not a number, because a Vue setup runs once and a captured length would go stale as a paginated feed grows. A paginated feed or an identity-keyed gallery supplies its own matched codec + locator instead.',
+  },
+];
+
 export default function VueApi() {
   return (
     <div className="max-w-4xl mx-auto px-6 py-12">
@@ -350,6 +381,11 @@ export default function VueApi() {
         <Heading level={3} className="text-lg font-semibold mb-3">
           Props
         </Heading>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            ReelProps
+          </code>
+        </p>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -561,6 +597,11 @@ function jump(i: number) { reelRef.value?.goTo(i, true); }
         <Heading level={3} className="text-lg font-semibold mb-3">
           Props
         </Heading>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            ReelIndicatorProps
+          </code>
+        </p>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -647,6 +688,11 @@ function jump(i: number) { reelRef.value?.goTo(i, true); }
         <Heading level={3} className="text-lg font-semibold mb-3">
           Props
         </Heading>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            SwipeToCloseProps
+          </code>
+        </p>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -869,6 +915,15 @@ useBodyLock(true);`}
         <Heading level={3} className="text-xl font-semibold mt-8 mb-3">
           useFullscreen
         </Heading>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            UseFullscreenOptions
+          </code>{' '}
+          →{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            UseFullscreenReturn
+          </code>
+        </p>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Composable for managing the Fullscreen API with cross-browser support.
           Exits fullscreen automatically on unmount.
@@ -970,6 +1025,98 @@ const sound = useSoundState();
 
 sound.muted;    // Signal<boolean>
 sound.toggle(); // Toggle muted state`}
+          language="typescript"
+        />
+
+        <Heading level={3} className="text-xl font-semibold mt-8 mb-3">
+          useOverlayUrlState
+        </Heading>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            OverlayUrlStateOptions
+          </code>
+        </p>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Builds a URL-state controller for an overlay, which you hand to a{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            {'<LightboxUrlOverlay>'}
+          </code>{' '}
+          as its{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            :controller
+          </code>{' '}
+          prop.
+        </p>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          See{' '}
+          <Link
+            to="/docs/vue/guide#url-state"
+            className="text-primary-600 dark:text-primary-400 hover:underline"
+          >
+            URL State in the Vue guide
+          </Link>{' '}
+          for the walkthrough and examples.
+        </p>
+        <div className="overflow-x-auto mt-4">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left py-3 px-4 font-semibold">Option</th>
+                <th className="text-left py-3 px-4 font-semibold">Type</th>
+                <th className="text-left py-3 px-4 font-semibold">Default</th>
+                <th className="text-left py-3 px-4 font-semibold">
+                  Description
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {overlayUrlStateOptions.map((p) => (
+                <tr
+                  key={p.prop}
+                  className="border-b border-slate-100 dark:border-slate-800"
+                >
+                  <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                    {p.prop}
+                  </td>
+                  <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                    {p.type}
+                  </td>
+                  <td className="py-3 px-4 text-slate-500 text-sm">
+                    {p.default}
+                  </td>
+                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                    {p.description}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <Heading level={3} className="text-xl font-semibold mt-8 mb-3">
+          useVueRouterUrlAdapter
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          A <code>UrlAdapter</code> backed by Vue Router. Pass it as the{' '}
+          <code>adapter</code> option of <code>useOverlayUrlState</code> in a
+          routed app so the router stays the single source of navigation truth —
+          writing <code>history.pushState</code> behind the router leaves its
+          location stale and its next navigation drops the parameter.
+        </p>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Ships from its own subpath, so an app without a router never pulls{' '}
+          <code>vue-router</code> into its bundle. <code>vue-router</code> is an
+          optional peer dependency.
+        </p>
+        <CodeBlock
+          code={`import { useVueRouterUrlAdapter } from '@reelkit/vue/vue-router-url-adapter';
+
+const adapter = useVueRouterUrlAdapter();
+const photo = useOverlayUrlState({
+  param: 'photo',
+  adapter,
+  ...urlIndexKey(() => props.images.length),
+});`}
           language="typescript"
         />
 

@@ -1,4 +1,5 @@
-import { render } from '@testing-library/react';
+import { StrictMode } from 'react';
+import { render, act } from '@testing-library/react';
 import {
   describe,
   it,
@@ -8,8 +9,17 @@ import {
   beforeEach,
   afterEach,
 } from 'vitest';
-import { slideTransition } from '@reelkit/react';
+import {
+  slideTransition,
+  createUrlStateController,
+  urlIndexTwoAxisKey,
+  type TwoAxisIdentity,
+  type TwoAxisPosition,
+} from '@reelkit/react';
 import type { StoriesGroup } from '@reelkit/stories-core';
+import { createFakeUrlAdapter } from '@reelkit/core/testing';
+import { StoriesOverlay, StoriesUrlOverlay } from './StoriesOverlay';
+import type { StoriesApi } from './types';
 
 beforeAll(() => {
   globalThis.ResizeObserver = class {
@@ -27,6 +37,9 @@ beforeAll(() => {
 
 let lastReelProps: Record<string, unknown>[] = [];
 
+// The Reel is mocked so a story/group Reel renders a marker and exposes a
+// controllable api; the surrounding StoriesContent stays real. Referenced only
+// when a mocked Reel renders, well after this module's top-level evaluation.
 vi.mock('@reelkit/react', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@reelkit/react')>();
   return {
@@ -49,9 +62,6 @@ vi.mock('@reelkit/react', async (importOriginal) => {
     useBodyLock: vi.fn(),
   };
 });
-
-// eslint-disable-next-line import/first
-import { StoriesOverlay } from './StoriesOverlay';
 
 const mockGroups: StoriesGroup[] = [
   {
@@ -173,6 +183,66 @@ describe('StoriesOverlay', () => {
     expect(true).toBe(true);
   });
 
+  // The controller is built once and outlives prop updates, so an event
+  // callback captured at its creation would freeze to that render. It must call
+  // whatever callback the latest render passed, not the one from mount.
+  it('invokes the latest onStoryChange after a rerender, not one frozen at mount', () => {
+    const first = vi.fn();
+    const second = vi.fn();
+    const apiRef = { current: null as StoriesApi | null };
+
+    const { rerender } = render(
+      <StoriesOverlay
+        isOpen
+        onClose={vi.fn()}
+        groups={mockGroups}
+        apiRef={apiRef}
+        onStoryChange={first}
+      />,
+    );
+
+    rerender(
+      <StoriesOverlay
+        isOpen
+        onClose={vi.fn()}
+        groups={mockGroups}
+        apiRef={apiRef}
+        onStoryChange={second}
+      />,
+    );
+
+    act(() => apiRef.current?.nextStory());
+
+    expect(second).toHaveBeenCalledWith(0, 1);
+    expect(first).not.toHaveBeenCalled();
+  });
+
+  // The controller is created once for the component's lifetime but must not be
+  // torn down by an effect cleanup — React re-runs cleanups, and StrictMode
+  // mounts, unmounts, then remounts. A controller disposed on that cleanup would
+  // navigate with its callbacks wiped, so the URL would stop updating. Under
+  // StrictMode, navigation must still fire the callback.
+  it('still fires onStoryChange after a StrictMode mount/unmount/remount', () => {
+    const onStoryChange = vi.fn();
+    const apiRef = { current: null as StoriesApi | null };
+
+    render(
+      <StrictMode>
+        <StoriesOverlay
+          isOpen
+          onClose={vi.fn()}
+          groups={mockGroups}
+          apiRef={apiRef}
+          onStoryChange={onStoryChange}
+        />
+      </StrictMode>,
+    );
+
+    act(() => apiRef.current?.nextStory());
+
+    expect(onStoryChange).toHaveBeenCalledWith(0, 1);
+  });
+
   describe('renderNavigation', () => {
     it('renders default nav buttons when renderNavigation not provided', () => {
       const { baseElement } = render(
@@ -291,5 +361,122 @@ describe('StoriesOverlay', () => {
           .getAttribute('aria-label'),
       ).toBe('Friend stories');
     });
+  });
+});
+
+describe('StoriesUrlOverlay', () => {
+  beforeEach(() => {
+    lastReelProps = [];
+    vi.stubGlobal('requestAnimationFrame', (cb: () => void) =>
+      setTimeout(cb, 0),
+    );
+    vi.stubGlobal('cancelAnimationFrame', vi.fn());
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  // mockGroups: group 0 has 2 stories, group 1 has 1 — counts [2, 1].
+  const build = (initial = '') => {
+    const fake = createFakeUrlAdapter(initial);
+    const controller = createUrlStateController<
+      TwoAxisIdentity,
+      TwoAxisPosition
+    >({
+      param: 'story',
+      adapter: fake.adapter,
+      ...urlIndexTwoAxisKey({
+        outerCount: () => mockGroups.length,
+        innerCounts: () => mockGroups.map((g) => g.stories.length),
+      }),
+    });
+    controller.attach();
+    return { fake, controller };
+  };
+
+  // The outer group Reel is the first one StoriesContent renders, so its
+  // captured props are lastReelProps[0]; a mounted content means the mocked
+  // Reel is in the document.
+  const isOpen = () =>
+    document.body.querySelector('[data-testid="mock-reel"]') !== null;
+
+  it('renders nothing while the parameter is absent', () => {
+    const { controller } = build('');
+    render(<StoriesUrlOverlay controller={controller} groups={mockGroups} />);
+    expect(isOpen()).toBe(false);
+  });
+
+  it('opens seeded at the decoded group and story', () => {
+    const { controller } = build('?story=1.0');
+    render(<StoriesUrlOverlay controller={controller} groups={mockGroups} />);
+    expect(isOpen()).toBe(true);
+    // The outer group Reel is seeded to the decoded group index.
+    expect(lastReelProps[0]['initialIndex']).toBe(1);
+  });
+
+  it('reflects navigation in the url without pushing a new entry', () => {
+    const { fake, controller } = build('');
+    const apiRef = { current: null as StoriesApi | null };
+    render(
+      <StoriesUrlOverlay
+        controller={controller}
+        groups={mockGroups}
+        apiRef={apiRef}
+      />,
+    );
+
+    act(() => controller.set({ outer: 0, inner: 0 })); // open, link-equivalent
+    expect(isOpen()).toBe(true);
+    expect(fake.counts.push).toBe(1);
+
+    act(() => apiRef.current?.nextStory()); // group 0 story 0 → story 1
+    expect(fake.adapter.read()).toBe('?story=0.1');
+    // Opening pushed one entry; navigation only replaces it.
+    expect(fake.counts.push).toBe(1);
+  });
+
+  it('closes by clearing the parameter on Escape', () => {
+    const { fake, controller } = build('?story=0.0');
+    render(<StoriesUrlOverlay controller={controller} groups={mockGroups} />);
+    expect(isOpen()).toBe(true);
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    });
+
+    expect(controller.position.value).toBeNull();
+    expect(isOpen()).toBe(false);
+    expect(fake.adapter.read()).not.toContain('story');
+  });
+
+  it('forwards the consumer callbacks alongside its own writes', () => {
+    const { fake, controller } = build('?story=0.0');
+    const onStoryChange = vi.fn();
+    const onGroupChange = vi.fn();
+    const onClose = vi.fn();
+    const apiRef = { current: null as StoriesApi | null };
+    render(
+      <StoriesUrlOverlay
+        controller={controller}
+        groups={mockGroups}
+        apiRef={apiRef}
+        onStoryChange={onStoryChange}
+        onGroupChange={onGroupChange}
+        onClose={onClose}
+      />,
+    );
+
+    act(() => apiRef.current?.nextStory());
+    expect(onStoryChange).toHaveBeenCalledWith(0, 1);
+    expect(fake.adapter.read()).toBe('?story=0.1');
+
+    act(() => apiRef.current?.nextGroup());
+    expect(onGroupChange).toHaveBeenCalledWith(1);
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    });
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 });

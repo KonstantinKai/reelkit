@@ -21,57 +21,24 @@ import {
   Reel,
   Observe,
   useBodyLock,
+  useFullscreen,
   SwipeToClose,
   type ReelApi,
   type ReelProps,
   type SwipeToCloseDirection,
   type TransitionTransformFn,
+  type UrlStateController,
 } from '@reelkit/react';
 import { ChevronLeft, ChevronRight, ImageOff } from 'lucide-react';
-import { useFullscreen } from '@reelkit/react';
 import LightboxControls from './LightboxControls';
 import type {
+  LightboxItem,
   ControlsRenderProps,
   SlideRenderProps,
   NavigationRenderProps,
   InfoRenderProps,
 } from './types';
 import './LightboxOverlay.css';
-
-/**
- * Data for a single lightbox item (image or video).
- *
- * At minimum, provide `src`. Optional `title` and `description` are
- * rendered in the built-in info overlay (unless overridden via `renderInfo`).
- *
- * For video items, set `type: 'video'` and optionally provide a `poster`
- * thumbnail. Video rendering requires opting in via `useVideoSlideRenderer`.
- */
-export interface LightboxItem {
-  /** URL of the image or video. */
-  src: string;
-
-  /**
-   * Item type. Defaults to `'image'` when omitted.
-   * Video items require opting in via `useVideoSlideRenderer` and `renderSlide`.
-   */
-  type?: 'image' | 'video';
-
-  /** Poster/thumbnail image for video items. Used for preloading and as placeholder. */
-  poster?: string;
-
-  /** Title displayed in the info overlay. */
-  title?: string;
-
-  /** Description displayed below the title in the info overlay. */
-  description?: string;
-
-  /** Intrinsic width of the image in pixels. Currently unused by the lightbox. */
-  width?: number;
-
-  /** Intrinsic height of the image in pixels. Currently unused by the lightbox. */
-  height?: number;
-}
 
 /**
  * Subset of {@link ReelProps} forwarded to the underlying `Reel` component.
@@ -120,10 +87,7 @@ export type ReelProxyProps = Pick<
  * />
  * ```
  */
-export interface LightboxOverlayProps extends ReelProxyProps {
-  /** When `true`, the lightbox is rendered and body scroll is locked. */
-  isOpen: boolean;
-
+export interface LightboxOverlayBaseProps extends ReelProxyProps {
   /**
    * Accessible label for the dialog region. Announced by screen readers
    * when the lightbox opens.
@@ -160,9 +124,6 @@ export interface LightboxOverlayProps extends ReelProxyProps {
    * @default 'up'
    */
   swipeToCloseDirection?: SwipeToCloseDirection;
-
-  /** Callback to close the lightbox. Triggered by close button or Escape key. */
-  onClose: () => void;
 
   /**
    * Callback fired after slide change
@@ -206,6 +167,56 @@ export interface LightboxOverlayProps extends ReelProxyProps {
   }) => ReactNode;
 }
 
+/**
+ * Controlled mode: the surrounding component owns whether the lightbox is
+ * open, and closes it from its own state.
+ */
+export interface LightboxControlledProps {
+  /** When `true`, the lightbox is rendered and body scroll is locked. */
+  isOpen: boolean;
+
+  /** Callback to close the lightbox. Triggered by close button or Escape key. */
+  onClose: () => void;
+}
+
+/**
+ * URL-driven mode: the address bar owns whether the lightbox is open. A
+ * {@link UrlStateController} — built in consumer code with `useOverlayUrlState`
+ * — carries the open state, so the same controller can be read and driven from
+ * elsewhere. The overlay opens itself when the controller's index names a slide
+ * and closes when it clears.
+ */
+export interface LightboxUrlControlledProps {
+  /**
+   * URL-state controller from `useOverlayUrlState`. Its `index` drives whether
+   * the overlay is open and which slide it shows; the overlay writes back
+   * through it on slide change and close.
+   */
+  controller: UrlStateController;
+
+  /** Called after the lightbox closes. The URL drives closing, not this. */
+  onClose?: () => void;
+}
+
+/**
+ * Props for the controlled {@link LightboxOverlay}. Open state is a boolean the
+ * caller owns. For URL-driven open state, use {@link LightboxUrlOverlay}
+ * instead — a separate component, so there is no mutually-exclusive prop to
+ * police.
+ */
+export type LightboxOverlayProps = LightboxOverlayBaseProps &
+  LightboxControlledProps;
+
+/**
+ * Props for {@link LightboxUrlOverlay}. Open state lives in the URL, carried by
+ * a {@link UrlStateController} the consumer builds with `useOverlayUrlState`.
+ */
+export type LightboxUrlOverlayProps = LightboxOverlayBaseProps &
+  LightboxUrlControlledProps;
+
+/** Props the inner content actually consumes once the lightbox is open. */
+type LightboxContentProps = LightboxOverlayBaseProps & { onClose: () => void };
+
 /** Number of images to preload before and after the current index. */
 const _kPreloadRange = 2;
 
@@ -215,10 +226,11 @@ const preloader = createContentPreloader({ maxCacheSize: 1000 });
  * Inner content of the lightbox overlay. Manages slider, controls,
  * navigation, info overlay, fullscreen, resize, and image preloading.
  *
- * Rendered only when `isOpen` is `true` (gated by {@link LightboxOverlay}).
+ * Rendered only while the lightbox is open — gated by {@link LightboxOverlay}
+ * (`isOpen`) or {@link LightboxUrlOverlay} (a non-null `controller.position`).
  * @internal
  */
-const LightboxContent: FC<LightboxOverlayProps> = (props) => {
+const LightboxContent: FC<LightboxContentProps> = (props) => {
   const {
     images,
     initialIndex = 0,
@@ -347,6 +359,17 @@ const LightboxContent: FC<LightboxOverlayProps> = (props) => {
               className="rk-lightbox-img"
               draggable={false}
               loading={isActive ? 'eager' : 'lazy'}
+              ref={(node) => {
+                // A cached image can finish decoding before React attaches the
+                // handler below, so its load event never arrives and the slide
+                // would sit under a spinner that has nothing left to wait for.
+                // `naturalWidth` separates a decoded image from a broken one,
+                // which reports complete just the same.
+                if (node?.complete && node.naturalWidth > 0) {
+                  preloader.markLoaded(image.src);
+                  onReady();
+                }
+              }}
               onLoad={() => {
                 preloader.markLoaded(image.src);
                 onReady();
@@ -607,7 +630,8 @@ const LightboxContent: FC<LightboxOverlayProps> = (props) => {
 
 /**
  * Full-screen image lightbox overlay with gesture, keyboard, and wheel
- * navigation.
+ * navigation. Controlled: the caller owns `isOpen`. For URL-driven open state,
+ * use {@link LightboxUrlOverlay} instead.
  *
  * Renders into a portal on `document.body`. When `isOpen` is `false` the
  * component returns `null` — no DOM nodes are created.
@@ -618,8 +642,58 @@ const LightboxContent: FC<LightboxOverlayProps> = (props) => {
  * {@link Counter}, {@link FullscreenButton}) are available for
  * composition inside `renderControls`.
  */
-export const LightboxOverlay: FC<LightboxOverlayProps> = (props) => {
+export const LightboxOverlay = (props: LightboxOverlayProps): ReactNode => {
   if (!props.isOpen) return null;
 
   return <LightboxContent {...props} />;
+};
+
+/**
+ * Full-screen image lightbox whose open state lives in the URL. Build the
+ * controller with `useOverlayUrlState` and pass it as `controller`: the address
+ * bar owns the gallery, so it opens when the controller's index names a slide,
+ * closes when it clears — links are shareable and the back button closes when it
+ * was opened from within the app. A shared link opened directly in a fresh tab
+ * has no history behind it, so browser-back leaves the site; the close button or
+ * Escape removes the parameter in place and stays.
+ *
+ * Prefer a link to the parameter (`<Link to="?photo=3">`) as the open action —
+ * the href does it with no handler, and the open is then shareable, opens in a
+ * new tab, and back-closes for free. `controller.set` to the parameter opens it
+ * too; `set` is also the low-level write the overlay uses for slide changes and
+ * to close.
+ *
+ * The controlled {@link LightboxOverlay} and this url-driven overlay are
+ * separate components: each carries exactly one open-state driver, so there is
+ * no mutually-exclusive prop to police.
+ */
+export const LightboxUrlOverlay = (
+  props: LightboxUrlOverlayProps,
+): ReactNode => {
+  const { controller, onClose, ...base } = props;
+  const latest = useRef({ base, onClose });
+  latest.current = { base, onClose };
+
+  return (
+    <Observe signals={[controller.position]}>
+      {() => {
+        if (controller.position.value === null) return null;
+
+        return (
+          <LightboxContent
+            {...base}
+            initialIndex={controller.position.value}
+            onClose={() => {
+              controller.set(null);
+              latest.current.onClose?.();
+            }}
+            onSlideChange={(index) => {
+              controller.set(index);
+              latest.current.base.onSlideChange?.(index);
+            }}
+          />
+        );
+      }}
+    </Observe>
+  );
 };

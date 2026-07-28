@@ -15,6 +15,7 @@ import {
   linkedSignal,
   output,
   signal,
+  TemplateRef,
   untracked,
   viewChild,
 } from '@angular/core';
@@ -56,6 +57,8 @@ import {
   RkLightboxSlideDirective,
   RkLightboxLoadingDirective,
   RkLightboxErrorDirective,
+  type LightboxLoadingContext,
+  type LightboxErrorContext,
 } from '../template-slots/lightbox-template-slots';
 import {
   RkSwipeToCloseDirective,
@@ -161,9 +164,9 @@ const focusFirstFocusable = (container: HTMLElement): void => {
 
         @if (items().length > 0 && showControls()) {
           <div class="rk-lightbox-top-shade"></div>
-          @if (controlsSlot()) {
+          @if (controlsTpl()) {
             <ng-container
-              [ngTemplateOutlet]="controlsSlot()!.templateRef"
+              [ngTemplateOutlet]="controlsTpl()!"
               [ngTemplateOutletContext]="controlsContext()"
             />
           } @else {
@@ -188,9 +191,9 @@ const focusFirstFocusable = (container: HTMLElement): void => {
         }
 
         @if (isError()) {
-          @if (errorSlot()) {
+          @if (errorTpl()) {
             <ng-container
-              [ngTemplateOutlet]="errorSlot()!.templateRef"
+              [ngTemplateOutlet]="errorTpl()!"
               [ngTemplateOutletContext]="{
                 $implicit: currentIndex(),
                 item: currentItem(),
@@ -224,9 +227,9 @@ const focusFirstFocusable = (container: HTMLElement): void => {
             </div>
           }
         } @else if (isLoading()) {
-          @if (loadingSlot()) {
+          @if (loadingTpl()) {
             <ng-container
-              [ngTemplateOutlet]="loadingSlot()!.templateRef"
+              [ngTemplateOutlet]="loadingTpl()!"
               [ngTemplateOutletContext]="{
                 $implicit: currentIndex(),
                 item: currentItem(),
@@ -269,9 +272,9 @@ const focusFirstFocusable = (container: HTMLElement): void => {
                     aria-roledescription="slide"
                     [attr.aria-label]="slideAriaLabel(idx)"
                   >
-                    @if (slideSlot()) {
+                    @if (slideTpl()) {
                       <ng-container
-                        [ngTemplateOutlet]="slideSlot()!.templateRef"
+                        [ngTemplateOutlet]="slideTpl()!"
                         [ngTemplateOutletContext]="slideContext(idx)"
                       />
                     } @else if (!imageErrorIndexes().has(idx)) {
@@ -293,9 +296,9 @@ const focusFirstFocusable = (container: HTMLElement): void => {
           </div>
 
           @if (showNavigation()) {
-            @if (navigationSlot()) {
+            @if (navigationTpl()) {
               <ng-container
-                [ngTemplateOutlet]="navigationSlot()!.templateRef"
+                [ngTemplateOutlet]="navigationTpl()!"
                 [ngTemplateOutletContext]="navContext()"
               />
             } @else if (!isMobile() && items().length > 1) {
@@ -325,9 +328,9 @@ const focusFirstFocusable = (container: HTMLElement): void => {
           }
 
           @if (showInfo()) {
-            @if (infoSlot()) {
+            @if (infoTpl()) {
               <ng-container
-                [ngTemplateOutlet]="infoSlot()!.templateRef"
+                [ngTemplateOutlet]="infoTpl()!"
                 [ngTemplateOutletContext]="infoContext()"
               />
             } @else if (currentItem().title || currentItem().description) {
@@ -396,6 +399,44 @@ export class RkLightboxOverlayComponent {
   protected readonly slideSlot = contentChild(RkLightboxSlideDirective);
   protected readonly loadingSlot = contentChild(RkLightboxLoadingDirective);
   protected readonly errorSlot = contentChild(RkLightboxErrorDirective);
+
+  /**
+   * Slot templates supplied as values rather than projected content.
+   *
+   * `<rk-lightbox-url-overlay>` wraps this component, so a consumer's
+   * `<ng-template rkLightboxControls>` is its content, not ours — and a
+   * `contentChild` query does not reach across a wrapper's `<ng-content>`.
+   * The wrapper therefore runs the queries itself and hands each `TemplateRef`
+   * down here.
+   *
+   * Unset for ordinary controlled usage, where the query below still answers.
+   */
+  readonly controlsTemplate = input<TemplateRef<LightboxControlsContext>>();
+  readonly navigationTemplate = input<TemplateRef<LightboxNavContext>>();
+  readonly infoTemplate = input<TemplateRef<LightboxInfoContext>>();
+  readonly slideTemplate = input<TemplateRef<LightboxSlideContext>>();
+  readonly loadingTemplate = input<TemplateRef<LightboxLoadingContext>>();
+  readonly errorTemplate = input<TemplateRef<LightboxErrorContext>>();
+
+  // Forwarded value wins; the projected query is the fallback.
+  protected readonly controlsTpl = computed(
+    () => this.controlsTemplate() ?? this.controlsSlot()?.templateRef,
+  );
+  protected readonly navigationTpl = computed(
+    () => this.navigationTemplate() ?? this.navigationSlot()?.templateRef,
+  );
+  protected readonly infoTpl = computed(
+    () => this.infoTemplate() ?? this.infoSlot()?.templateRef,
+  );
+  protected readonly slideTpl = computed(
+    () => this.slideTemplate() ?? this.slideSlot()?.templateRef,
+  );
+  protected readonly loadingTpl = computed(
+    () => this.loadingTemplate() ?? this.loadingSlot()?.templateRef,
+  );
+  protected readonly errorTpl = computed(
+    () => this.errorTemplate() ?? this.errorSlot()?.templateRef,
+  );
 
   private readonly _containerRef =
     viewChild<ElementRef<HTMLDivElement>>('container');

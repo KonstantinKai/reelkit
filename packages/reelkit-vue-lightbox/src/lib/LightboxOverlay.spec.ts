@@ -1,8 +1,13 @@
 import { mount } from '@vue/test-utils';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { defineComponent, h, nextTick, ref } from 'vue';
-import { SwipeToClose } from '@reelkit/vue';
-import { LightboxOverlay } from './LightboxOverlay';
+import {
+  SwipeToClose,
+  useOverlayUrlState,
+  urlIndexKey,
+  type UrlAdapter,
+} from '@reelkit/vue';
+import { LightboxOverlay, LightboxUrlOverlay } from './LightboxOverlay';
 import type { LightboxItem } from './types';
 
 const sampleItems: LightboxItem[] = [
@@ -266,5 +271,85 @@ describe('LightboxOverlay', () => {
     mount(Host, { attachTo: document.body });
     await nextTick();
     expect(document.querySelector('.rk-lightbox-info')).toBeNull();
+  });
+});
+
+/** In-memory adapter driving the overlay in url mode from a controlled query. */
+function fakeAdapter(initialQuery = '') {
+  let query = initialQuery;
+  let state: unknown = null;
+  const listeners = new Set<() => void>();
+  const notify = () => listeners.forEach((fn) => fn());
+  const adapter: UrlAdapter = {
+    read: () => query,
+    subscribe: (fn) => {
+      listeners.add(fn);
+      return () => listeners.delete(fn);
+    },
+    push: (to, s) => {
+      query = to;
+      state = s;
+      notify();
+    },
+    replace: (to, s) => {
+      query = to;
+      state = { ...(state as object), ...(s as object) };
+      notify();
+    },
+    getState: () => state,
+    goBack: () => undefined,
+  };
+  return { adapter, query: () => query };
+}
+
+const urlHost = (adapter: UrlAdapter) =>
+  defineComponent({
+    setup() {
+      // The consumer builds the controller and hands it to the overlay.
+      const controller = useOverlayUrlState({
+        param: 'photo',
+        adapter,
+        ...urlIndexKey(() => sampleItems.length),
+      });
+      return () =>
+        h(LightboxUrlOverlay, {
+          items: sampleItems,
+          controller,
+        });
+    },
+  });
+
+describe('LightboxUrlOverlay', () => {
+  it('opens at the slide the parameter names', async () => {
+    const { adapter } = fakeAdapter('?photo=1');
+    mount(urlHost(adapter), { attachTo: document.body });
+    await nextTick();
+    expect(document.querySelector('.rk-lightbox-overlay')).not.toBeNull();
+  });
+
+  it('closes and clears the parameter on the close button', async () => {
+    const state = fakeAdapter('?photo=0');
+    mount(urlHost(state.adapter), { attachTo: document.body });
+    await nextTick();
+    expect(document.querySelector('.rk-lightbox-overlay')).not.toBeNull();
+
+    (
+      document.querySelector('.rk-lightbox-close') as HTMLElement | null
+    )?.click();
+    await nextTick();
+    await nextTick();
+    expect(document.querySelector('.rk-lightbox-overlay')).toBeNull();
+    expect(state.query()).not.toContain('photo');
+  });
+
+  it('drops a parameter that names no slide instead of opening it', async () => {
+    // The index locator bounds 99 against the 3-item gallery, so the overlay
+    // stays closed and the stale parameter self-heals out of the URL.
+    const state = fakeAdapter('?photo=99');
+    mount(urlHost(state.adapter), { attachTo: document.body });
+    await nextTick();
+    await nextTick();
+    expect(document.querySelector('.rk-lightbox-overlay')).toBeNull();
+    expect(state.query()).not.toContain('photo=99');
   });
 });

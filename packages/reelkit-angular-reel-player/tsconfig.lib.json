@@ -17,6 +17,9 @@
   ],
   "references": [
     {
+      "path": "../reelkit-core/tsconfig.lib.json"
+    },
+    {
       "path": "../reelkit-angular/tsconfig.lib.json"
     }
   ]

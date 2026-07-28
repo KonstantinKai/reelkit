@@ -26,8 +26,14 @@ interface NestedSliderProps {
   contentId: string;
   innerSliderRef: React.MutableRefObject<ReelApi | null>;
   enableWheel?: boolean;
+
+  /** Inner media index to open at. Applies only on first mount. @default 0 */
+  initialIndex?: number;
   onVideoRef?: (ref: HTMLVideoElement | null) => void;
   onActiveMediaTypeChange?: (type: 'image' | 'video') => void;
+
+  /** Fired after the active inner media index changes. */
+  onIndexChange?: (index: number) => void;
   onReady?: () => void;
   onWaiting?: () => void;
   onError?: () => void;
@@ -56,6 +62,7 @@ const NestedSlider: React.FC<NestedSliderProps> = (props) => {
   const [
     {
       indexSignal,
+      seed,
       handleBeforeChange,
       handleAfterChange,
       handlePrev,
@@ -63,7 +70,14 @@ const NestedSlider: React.FC<NestedSliderProps> = (props) => {
       itemBuilder,
     },
   ] = useState(() => {
-    const indexSignal = createSignal(0);
+    // Clamp the seed: a URL may name an inner index past this post's media.
+    const seed =
+      props.initialIndex !== undefined &&
+      props.initialIndex >= 0 &&
+      props.initialIndex < props.media.length
+        ? props.initialIndex
+        : 0;
+    const indexSignal = createSignal(seed);
 
     const handleVideoRef = (ref: HTMLVideoElement | null) => {
       videoRef.current = ref;
@@ -72,6 +86,7 @@ const NestedSlider: React.FC<NestedSliderProps> = (props) => {
 
     return {
       indexSignal,
+      seed,
       handleBeforeChange: () => {
         if (videoRef.current && !videoRef.current.paused) {
           videoRef.current.pause();
@@ -83,8 +98,10 @@ const NestedSlider: React.FC<NestedSliderProps> = (props) => {
           media: items,
           onActiveMediaTypeChange,
           onReady,
+          onIndexChange,
         } = propsRef.current;
         onActiveMediaTypeChange?.(items[index].type);
+        onIndexChange?.(index);
         if (items[index].type === 'image') {
           onReady?.();
         }
@@ -170,7 +187,11 @@ const NestedSlider: React.FC<NestedSliderProps> = (props) => {
 
   useEffect(() => {
     if (isParentActive) {
+      // On activation, report the live inner index so a URL following the
+      // player names the media actually on screen — 0 on a fresh mount, the
+      // retained index while this post stayed in the virtualization window.
       propsRef.current.onActiveMediaTypeChange?.(media[indexSignal.value].type);
+      propsRef.current.onIndexChange?.(indexSignal.value);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isParentActive]);
@@ -191,6 +212,7 @@ const NestedSlider: React.FC<NestedSliderProps> = (props) => {
         loop={false}
         enableNavKeys={true}
         enableWheel={enableWheel}
+        initialIndex={seed}
         apiRef={localSliderRef}
         beforeChange={handleBeforeChange}
         afterChange={handleAfterChange}

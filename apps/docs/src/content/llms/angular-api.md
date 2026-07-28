@@ -92,7 +92,9 @@ export class AppComponent {
 
 ## RK_REEL_CONTEXT Injection Token
 
-When `<rk-reel>` is parent, provides reactive context children inject:
+When `<rk-reel>` is parent, provides reactive context children inject. Used internally by `rk-reel-indicator` for auto-connect; inject it in custom components that need slider context.
+
+Type: `ReelContextValue`
 
 | Property | Type                                                  | Description            |
 | -------- | ----------------------------------------------------- | ---------------------- |
@@ -122,7 +124,9 @@ Bridges core `Subscribable<T>` / `AnimatedValue` to Angular signals for clean On
 
 ## RkReelItemDirective
 
-Structural directive on `<ng-template>` for slide content. Template context:
+Structural directive on `<ng-template>` for slide content.
+
+Template context type: `RkReelItemContext`
 
 | Variable                            | Type               | Description                          |
 | ----------------------------------- | ------------------ | ------------------------------------ |
@@ -136,11 +140,82 @@ Structural directive on `<ng-template>` for slide content. Template context:
 </ng-template>
 ```
 
+## BodyLockService
+
+Reference-counted body scroll lock. Multiple concurrent callers (e.g. a lightbox and a modal both open) can each call lock/unlock independently — the body is only restored once the last caller releases it. Provided at root, so it can be injected anywhere.
+
+```typescript
+import { inject } from '@angular/core';
+import { BodyLockService } from '@reelkit/angular';
+
+@Component({ ... })
+export class OverlayComponent {
+  private readonly bodyLock = inject(BodyLockService);
+
+  open() { this.bodyLock.lock(); }
+  close() { this.bodyLock.unlock(); }
+}
+```
+
+## RkSwipeToCloseDirective
+
+Attribute directive (`[rkSwipeToClose]`) that adds a vertical swipe-to-dismiss gesture to its host element. While enabled it translates the host along the swipe direction and fades it out, emits `dismissed` once the drag exceeds the threshold, and animates back when it does not.
+
+| Member                    | Type                     | Default | Description                                     |
+| ------------------------- | ------------------------ | ------- | ----------------------------------------------- |
+| `rkSwipeToClose`          | `boolean`                | `false` | When `true`, the swipe-to-close gesture is live |
+| `rkSwipeToCloseDirection` | `SwipeToCloseDirection`  | `'up'`  | Swipe direction that triggers the close         |
+| `dismissed`               | `OutputEmitterRef<void>` | —       | Emitted once a swipe passes the threshold       |
+
+`SwipeToCloseDirection` is `'up' | 'down'`.
+
+```html
+<div
+  [rkSwipeToClose]="isMobile"
+  rkSwipeToCloseDirection="up"
+  (dismissed)="handleClose()"
+>
+  …slider content…
+</div>
+```
+
+## createOverlayUrlState
+
+Type: `OverlayUrlStateOptions`
+
+Builds a URL-state controller for an overlay, which you hand to `<rk-lightbox-url-overlay>` as its `[controller]` input. Call it in an injection context — a field initialiser or the constructor; it attaches immediately and releases through `DestroyRef`.
+
+| Option    | Type                                                                                        | Default     | Description                                                                                                                                                                                                                       |
+| --------- | ------------------------------------------------------------------------------------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `param`   | `string`                                                                                    | required    | Query parameter carrying the active slide, e.g. `photo`.                                                                                                                                                                          |
+| `adapter` | `UrlAdapter`                                                                                | History API | Navigation system to read/write through. Pass a Router-backed adapter in a routed app so the Router's location does not go stale.                                                                                                 |
+| `codec`   | `{ decode(raw) => Id \| null; encode(id) => string }`                                       | required    | Wire format: param text ↔ a stable identity. Travels with `locator` as a matched pair — spread `...urlIndexKey(() => images().length)` for the default `?photo=3` gallery, or supply your own so a bookmark survives reordering. |
+| `locator` | `{ locate(id) => number \| null; locateAsync?(id) => Promise<...>; identify(index) => id }` | required    | Maps the identity to a position and owns its own validity: `locate` (sync), `locateAsync` (async fallback for a paginated gallery), `identify` (writes).                                                                          |
+
+## createRouterUrlAdapter
+
+Subpath: `@reelkit/angular/ng-router-url-adapter`
+
+A `UrlAdapter` backed by the Angular Router. Pass it as the `adapter` option of `createOverlayUrlState` in a routed app so the Router stays the single source of navigation truth — writing `history.pushState` behind the Router leaves its location stale and its next navigation drops the parameter. Call it in an injection context; the `NavigationEnd` subscription releases through `DestroyRef`.
+
+Ships from its own subpath, so an app without routing never pulls `@angular/router` in. `@angular/router` is an optional peer dependency.
+
+```ts
+import { createRouterUrlAdapter } from '@reelkit/angular/ng-router-url-adapter';
+
+protected readonly photo = createOverlayUrlState({
+  param: 'photo',
+  adapter: createRouterUrlAdapter(),
+  ...urlIndexKey(() => this.images().length),
+});
+```
+
 ## Re-exports from core
 
 `@reelkit/angular` re-exports core helpers:
 
 - Transitions: `slideTransition`, `fadeTransition`, `flipTransition`, `cubeTransition`, `zoomTransition`
 - Range extractor: `defaultRangeExtractor`
+- Key extractor: `createDefaultKeyExtractorForLoop` — handles duplicate indexes when `loop` is enabled
 - Focus: `captureFocusForReturn`, `createFocusTrap`, `getFocusableElements`
 - Signals: `Signal`, `ComputedSignal`, `createSignal`, `createComputed`, `reaction`, `batch`

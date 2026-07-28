@@ -32,9 +32,54 @@
  *   <ReelPlayerOverlay :is-open="isOpen" :content="content" @close="isOpen = false" />
  * </template>
  * ```
+ *
+ * Open state comes in two shapes. {@link ReelPlayerOverlay} is controlled — the
+ * surrounding component owns `is-open`. {@link ReelPlayerUrlOverlay} puts it in
+ * the address bar instead, so the playing slide has a link that can be shared,
+ * bookmarked, and closed with the back button. Every scoped slot above works
+ * the same in either.
+ *
+ * @example URL-driven — opening is a link, back closes
+ * ```vue
+ * <script setup lang="ts">
+ * import { ReelPlayerUrlOverlay, type ContentItem } from '@reelkit/vue-reel-player';
+ * import { useOverlayUrlState, urlIndexKey } from '@reelkit/vue';
+ * import { useVueRouterUrlAdapter } from '@reelkit/vue/vue-router-url-adapter';
+ * import '@reelkit/vue-reel-player/styles.css';
+ *
+ * const props = defineProps<{ content: ContentItem[] }>();
+ *
+ * const reel = useOverlayUrlState({
+ *   param: 'reel',
+ *   adapter: useVueRouterUrlAdapter(),
+ *   ...urlIndexKey(() => props.content.length),
+ * });
+ * </script>
+ *
+ * <template>
+ *   <RouterLink v-for="(post, i) in props.content" :key="post.id" :to="`?reel=${i}`">
+ *     <img :src="post.media[0].src" />
+ *   </RouterLink>
+ *
+ *   <ReelPlayerUrlOverlay :controller="reel" :content="props.content" />
+ * </template>
+ * ```
  */
 
-export { ReelPlayerOverlay, type ReelPlayerApi } from './lib/ReelPlayerOverlay';
+export {
+  ReelPlayerOverlay,
+  ReelPlayerUrlOverlay,
+  type ReelPlayerApi,
+  type ReelPlayerUrlOverlayProps,
+} from './lib/ReelPlayerOverlay';
+
+export type {
+  UrlAdapter,
+  UrlCodec,
+  UrlLocator,
+  TwoAxisPosition,
+} from '@reelkit/vue';
+export { urlIndexTwoAxisKey } from '@reelkit/vue';
 
 export type {
   MediaType,

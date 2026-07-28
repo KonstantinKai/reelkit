@@ -31,13 +31,16 @@ export default defineConfig(() => ({
       transformMixedEsModules: true,
     },
     lib: {
-      entry: 'src/index.ts',
-      name: 'reelkit-vue',
-      fileName: 'index',
+      // The router adapter is a separate entry so the main entry never pulls
+      // `vue-router`. An app without a router imports only `index`.
+      entry: {
+        index: 'src/index.ts',
+        'vue-router-url-adapter': 'src/vue-router-url-adapter.ts',
+      },
       formats: ['es' as const],
     },
     rollupOptions: {
-      external: ['vue', '@reelkit/core'],
+      external: ['vue', '@reelkit/core', 'vue-router'],
     },
   },
   test: {

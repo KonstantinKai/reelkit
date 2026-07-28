@@ -10,6 +10,7 @@ tmp
 out-tsc
 apps/docs/build
 apps/docs/.react-router
+*.tsbuildinfo
 
 # IDE
 .idea

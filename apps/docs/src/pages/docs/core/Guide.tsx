@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { Callout } from '../../../components/ui/Callout';
 import { CodeBlock } from '../../../components/ui/CodeBlock';
 import { NextSteps } from '../../../components/NextSteps';
@@ -281,6 +282,192 @@ dispose();
 timeline.detach();`}
           language="typescript"
         />
+      </section>
+
+      <section className="mb-12">
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          URL State
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Put an overlay&rsquo;s open state in the address bar: the visible
+          slide gets a link that can be shared, deep-linked, and closed with the
+          back button. The core owns the model; the bindings wrap it in a hook
+          (React/Vue{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            useOverlayUrlState
+          </code>
+          , Angular{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            createOverlayUrlState
+          </code>
+          ) and a URL-driven overlay component.
+        </p>
+
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-3">
+          How it works
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            createUrlStateController
+          </code>{' '}
+          mirrors one query parameter into a signal and writes changes back.
+          Opening pushes <strong>one</strong> history entry; every navigation{' '}
+          <strong>replaces</strong> it — a hundred swipes add none, so one back
+          step always closes. A{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            UrlAdapter
+          </code>{' '}
+          is the pluggable read/write seam: the default drives{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            history.pushState
+          </code>
+          , and a routed app passes a router-backed adapter so the
+          router&rsquo;s own location never goes stale.
+        </p>
+        <CodeBlock
+          code={`import { createUrlStateController, urlIndexKey } from '@reelkit/core';
+
+const controller = createUrlStateController({
+  param: 'photo',
+  ...urlIndexKey(() => items.length),
+});
+
+const detach = controller.attach(); // begin mirroring the URL
+controller.position.observe(() => {
+  // null → closed; a number → open at that slide
+  render(controller.position.value);
+});
+
+// Write back: opening pushes once, navigating replaces, closing clears
+controller.set(3);
+controller.set(null);`}
+          language="typescript"
+        />
+
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-3">
+          Codec and locator — two jobs
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          A key is a matched{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            {'{ codec, locator }'}
+          </code>{' '}
+          pair. Spelling an identity into the URL and finding where it currently
+          sits are separate concerns, so they are separate objects:
+        </p>
+        <ul className="list-disc pl-6 space-y-2 text-slate-600 dark:text-slate-400 mb-4">
+          <li>
+            <strong>codec — the wire.</strong>{' '}
+            <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+              encode
+            </code>{' '}
+            spells an identity into the parameter text;{' '}
+            <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+              decode
+            </code>{' '}
+            parses it back, and rejects a malformed value so the parameter
+            self-heals out of the URL.
+          </li>
+          <li>
+            <strong>locator — the lookup.</strong>{' '}
+            <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+              locate
+            </code>{' '}
+            finds where a decoded identity sits in the live collection (or{' '}
+            <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+              null
+            </code>{' '}
+            if it is gone);{' '}
+            <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+              identify
+            </code>{' '}
+            reads a position back to its identity for writes; optional{' '}
+            <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+              locateAsync
+            </code>{' '}
+            pages a windowed or infinite feed on a miss.
+          </li>
+        </ul>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Keeping them separate lets you pair any wire with any lookup — a
+          stable id codec with a paging locator, for instance.
+        </p>
+
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-3">
+          Index vs stable-id keys
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Two built-in keys build that pair for you; they differ only in what
+          the URL names:
+        </p>
+        <ul className="list-disc pl-6 space-y-2 text-slate-600 dark:text-slate-400 mb-4">
+          <li>
+            <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+              urlIndexKey(() =&gt; count)
+            </code>{' '}
+            addresses by <strong>position</strong> (
+            <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+              ?photo=3
+            </code>
+            ). Simplest, but a bookmark opens a different item once the list is
+            reordered.
+          </li>
+          <li>
+            <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+              urlStableIdKey({'{ items }'})
+            </code>{' '}
+            addresses by each item&rsquo;s stable{' '}
+            <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+              id
+            </code>{' '}
+            (
+            <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+              ?photo=post_42
+            </code>
+            ), scanning the live list — the bookmark still names that item after
+            a reorder, or drops cleanly when it is gone.{' '}
+            <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+              hashCodec: base64UrlCodec
+            </code>{' '}
+            base64url-obscures the id (reversible, not a cryptographic hash).
+          </li>
+        </ul>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          <strong>Paging a windowed feed?</strong> Both built-in keys take an
+          optional{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            locateAsync
+          </code>{' '}
+          —{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            urlIndexKey(() =&gt; count, locateAsync)
+          </code>{' '}
+          and{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            urlStableIdKey({'{ items, locateAsync }'})
+          </code>
+          . The synchronous lookup answers for what has loaded; a miss pages the
+          rest in, so a shared link past the window still opens — no hand-rolled
+          codec or locator.
+        </p>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Two axes?{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            urlIndexTwoAxisKey
+          </code>{' '}
+          carries{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            ?p=&lt;outer&gt;.&lt;inner&gt;
+          </code>{' '}
+          for a post plus an inner media index. Full options live on the{' '}
+          <Link
+            to="/docs/core/api#url-state"
+            className="text-primary-600 dark:text-primary-400 hover:underline"
+          >
+            Core API reference
+          </Link>
+          .
+        </p>
       </section>
 
       <NextSteps

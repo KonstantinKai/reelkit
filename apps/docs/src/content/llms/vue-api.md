@@ -3,7 +3,7 @@ title: Vue API Reference
 url: https://reelkit.dev/docs/vue/api
 section: Vue
 order: 2
-desc: Complete reference for @reelkit/vue components, props, emits, exposed methods, ReelIndicator, useSwipeToClose, and provide/inject context shape.
+desc: Complete reference for @reelkit/vue components, props, emits, exposed methods, ReelIndicator, useSwipeToClose, useOverlayUrlState, and provide/inject context shape.
 ---
 
 # Vue API Reference
@@ -11,6 +11,8 @@ desc: Complete reference for @reelkit/vue components, props, emits, exposed meth
 Reference for `@reelkit/vue` components, props, emits, exposed methods.
 
 ## Reel Props
+
+Type: `ReelProps`
 
 | Prop                  | Type                               | Default                     | Description                                                                                                          |
 | --------------------- | ---------------------------------- | --------------------------- | -------------------------------------------------------------------------------------------------------------------- |
@@ -76,6 +78,8 @@ const reelRef = ref<ReelExpose | null>(null);
 
 ## ReelIndicator Props
 
+Type: `ReelIndicatorProps`
+
 | Prop             | Type                         | Default                      | Description                                                                                    |
 | ---------------- | ---------------------------- | ---------------------------- | ---------------------------------------------------------------------------------------------- |
 | `count`          | `number \| undefined`        | auto                         | Total items. Auto-connect from parent Reel context when nested; pass explicit when standalone  |
@@ -99,7 +103,9 @@ const reelRef = ref<ReelExpose | null>(null);
 
 ## useSwipeToClose Props (composable)
 
-For overlay packages dismissed via vertical swipe.
+For overlay packages dismissed via vertical swipe. The `<SwipeToClose>` component wraps its default slot in a touch-aware container that can be swiped to dismiss.
+
+Type: `SwipeToCloseProps` (`direction` is a `SwipeToCloseDirection`)
 
 | Prop        | Type             | Default  | Description                                                                           |
 | ----------- | ---------------- | -------- | ------------------------------------------------------------------------------------- |
@@ -113,9 +119,43 @@ For overlay packages dismissed via vertical swipe.
 | ------- | ------- | ----------------------------------------- |
 | `close` | `()`    | Swipe exceeds threshold + close anim done |
 
-## Provide/Inject Context (`reelContextKey`)
+## useOverlayUrlState (composable)
 
-`<Reel>` parent provides reactive context children inject:
+Builds a URL-state controller for an overlay, which you hand to a `*UrlOverlay` as its `:controller` prop.
+
+Walkthrough + examples: [URL State in the Vue guide](/docs/vue/guide#url-state).
+
+Type: `OverlayUrlStateOptions`
+
+| Option    | Type                                                                                        | Default     | Description                                                                                                                                                                                                                                                                                                                                                                        |
+| --------- | ------------------------------------------------------------------------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `param`   | `string`                                                                                    | required    | Query parameter carrying the active slide, e.g. `photo`.                                                                                                                                                                                                                                                                                                                           |
+| `adapter` | `UrlAdapter`                                                                                | History API | Navigation system to read/write through. Pass a router-backed adapter in a routed app so the router's location does not go stale.                                                                                                                                                                                                                                                  |
+| `codec`   | `{ decode(raw) => Id \| null; encode(id) => string }`                                       | required    | Wire format: param text ↔ a stable identity. Travels with `locator` as a matched pair sharing the same `Id` — spread `...urlIndexKey(() => props.images.length)` for the default `?photo=3` index gallery, or supply your own (base64, slug) so a bookmark survives reordering.                                                                                                   |
+| `locator` | `{ locate(id) => number \| null; locateAsync?(id) => Promise<...>; identify(index) => id }` | required    | Maps the identity to a position and owns its own validity: `locate` (sync), `locateAsync` (async fallback for a paginated gallery), `identify` (writes). For a plain index gallery spread `...urlIndexKey(() => props.images.length)` — it supplies this locator plus the matching codec and bounds `?photo=3` against the live count so a stale `?photo=99` heals out of the URL. |
+
+## useVueRouterUrlAdapter (composable)
+
+A `UrlAdapter` backed by Vue Router. Pass it as the `adapter` option of `useOverlayUrlState` in a routed app so the router stays the single source of navigation truth — writing `history.pushState` behind the router leaves its location stale and its next navigation drops the parameter.
+
+Ships from its own subpath, so an app without a router never pulls `vue-router` in. `vue-router` is an optional peer dependency.
+
+```ts
+import { useVueRouterUrlAdapter } from '@reelkit/vue/vue-router-url-adapter';
+
+const adapter = useVueRouterUrlAdapter();
+const photo = useOverlayUrlState({
+  param: 'photo',
+  adapter,
+  ...urlIndexKey(() => props.images.length),
+});
+```
+
+## Provide/Inject Context (`RK_REEL_KEY`)
+
+`RK_REEL_KEY` is an `InjectionKey<ReelContextValue>` that `<Reel>` provides to its descendants. Used internally by `<ReelIndicator>` for auto-connect. Call `useReelContext()` in custom components that need slider context.
+
+Type: `ReelContextValue`
 
 | Property | Type                                                  | Description                  |
 | -------- | ----------------------------------------------------- | ---------------------------- |
@@ -125,12 +165,45 @@ For overlay packages dismissed via vertical swipe.
 
 ```vue
 <script setup lang="ts">
-import { inject } from 'vue';
-import { reelContextKey } from '@reelkit/vue';
+import { useReelContext } from '@reelkit/vue';
 
-const ctx = inject(reelContextKey);
-// ctx?.index.value, ctx?.count.value, ctx?.goTo(5)
+const ctx = useReelContext();
+// ctx?.index.value, ctx?.count.value, ctx?.goTo(5, true)
 </script>
+
+<template>
+  <span>{{ ctx?.index.value }}</span>
+</template>
+```
+
+## Composables
+
+- `useReelContext()` — injects the `ReelContextValue` provided by an ancestor `<Reel>` via `RK_REEL_KEY`.
+- `useBodyLock(locked)` — locks document body scroll while `locked` is `true`. Accepts `Ref<boolean> | boolean`. Reference-counted so concurrent callers lock/unlock independently; unlocks automatically on unmount.
+- `useFullscreen(options)` — manages the Fullscreen API with cross-browser support; exits fullscreen automatically on unmount. Takes `UseFullscreenOptions` (`elementRef`) and returns `UseFullscreenReturn`: `isFullscreen` (`Signal<boolean>`), `request()`, `exit()`, `toggle()`.
+- `useSoundState()` — reads the current `SoundController` from context. Must be called inside a `<SoundProvider>`; throws when called outside.
+
+## SoundProvider
+
+`<SoundProvider>` creates a `SoundController` instance and provides it to descendants via `RK_SOUND_KEY`. Renders its default slot transparently.
+
+```vue
+<script setup lang="ts">
+import { Reel, SoundProvider } from '@reelkit/vue';
+
+const items = [];
+</script>
+
+<template>
+  <SoundProvider>
+    <Reel :count="items.length">
+      <template #item="{ index }">
+        <VideoSlide :index="index" />
+      </template>
+      <MuteButton />
+    </Reel>
+  </SoundProvider>
+</template>
 ```
 
 ## Helpers re-exported from core
@@ -140,6 +213,7 @@ const ctx = inject(reelContextKey);
 - `Signal`, `ComputedSignal`, `createSignal`, `createComputed`, `reaction`, `batch`
 - `slideTransition`, `fadeTransition`, `flipTransition`, `cubeTransition`, `zoomTransition`
 - `defaultRangeExtractor`
+- `createDefaultKeyExtractorForLoop` — key extractor that handles duplicate indexes when `loop` is enabled
 - `captureFocusForReturn`, `createFocusTrap`, `getFocusableElements`
 - `hasRenderedNodes` — Vue slot helper, detect rendered children before fallback to default
 

@@ -136,6 +136,26 @@ describe('Reel', () => {
       const root = container.firstElementChild as HTMLElement;
       expect(root.style.position).toBe('relative');
     });
+
+    // Slides live outside the root's box, so a browser scrolling the root to
+    // reveal a focused slide leaves it offset by a whole slide and shows the
+    // wrong one active. The root must snap any such scroll straight back to 0.
+    it('resets a native scroll on the root back to zero', () => {
+      const { container } = render(
+        <Reel count={3} size={[400, 600]} itemBuilder={defaultItemBuilder} />,
+      );
+
+      const root = container.firstElementChild as HTMLElement;
+      root.scrollTop = 600;
+      root.scrollLeft = 400;
+
+      act(() => {
+        root.dispatchEvent(new Event('scroll', { bubbles: true }));
+      });
+
+      expect(root.scrollTop).toBe(0);
+      expect(root.scrollLeft).toBe(0);
+    });
   });
 
   describe('apiRef', () => {

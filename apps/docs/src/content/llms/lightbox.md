@@ -8,7 +8,7 @@ desc: Full-screen image gallery lightbox overlay for React. LightboxItem schema,
 
 # Lightbox
 
-Full-screen image gallery lightbox overlay for React. Tree-shakable transitions, keyboard nav, fullscreen toggle, swipe-to-close on mobile, full theming via CSS custom properties.
+Full-screen image gallery lightbox overlay for React. Tree-shakable transitions, keyboard nav, fullscreen toggle, swipe-to-close on mobile, shareable/bookmarkable URL state, full theming via CSS custom properties.
 
 ## Install
 
@@ -80,11 +80,141 @@ interface LightboxItem {
 }
 ```
 
+## URL State (shareable links, back button)
+
+`LightboxUrlOverlay` is a separate component whose open state lives in the URL. Build a controller with `useOverlayUrlState` from `@reelkit/react` and pass it as `controller`: the lightbox opens itself when the param names a slide and closes when it goes away. **Opening is a link** — the href is the open action, no click handler.
+
+> **Built-in keys.** Spread `urlIndexKey` (by position) or `urlStableIdKey` (by a stable `id`) into the controller — both re-exported from `@reelkit/react`. See the [URL State guide](/docs/core/guide#url-state) and [Core API](/docs/core/api#url-state).
+
+```tsx
+import {
+  useOverlayUrlState,
+  urlIndexKey,
+  urlStableIdKey,
+} from '@reelkit/react';
+import { LightboxUrlOverlay } from '@reelkit/react-lightbox';
+import { Link } from 'react-router-dom';
+
+const photo = useOverlayUrlState({
+  param: 'photo',
+  ...urlIndexKey(() => images.length),
+});
+
+// Opening is a link — the overlay reads the URL and opens itself.
+{
+  images.map((img, i) => (
+    <Link key={img.src} to={`?photo=${i}`}>
+      <img src={img.src} />
+    </Link>
+  ));
+}
+
+<LightboxUrlOverlay controller={photo} images={images} />;
+```
+
+Full `useOverlayUrlState` options (`param`, `adapter`, `codec`, `locator`): see the [React API reference](/docs/react/api#useoverlayurlstate).
+
+- Opening pushes **one** history entry. Paging slides **replaces** it — N swipes add 0 entries, so one back step always leaves the gallery. Back closes; it does not step photos.
+- **Back closes only when opened from within the app** (the link pushed an entry). A shared link opened directly in a fresh tab has no history behind it, so browser-back leaves the site — close with the ✕ button or Escape to remove the parameter in place and stay.
+- Deep link `?photo=3` opens the gallery at that slide on load. Closing a link that arrived with the page removes the param in place rather than navigating off-site.
+- A param naming no slide (stale bookmark, hand-edited) is dropped from the URL instead of leaving the address bar asserting a slide that cannot open.
+
+**Routed app — pass an adapter.** Writing `history.pushState` behind a router leaves its location stale and its next navigation drops the param:
+
+```tsx
+import { useReactRouterUrlAdapter } from '@reelkit/react/react-router-url-adapter';
+
+const adapter = useReactRouterUrlAdapter(); // { read, subscribe, push, replace, getState, goBack }
+const photo = useOverlayUrlState({
+  param: 'photo',
+  adapter,
+  ...urlIndexKey(() => images.length),
+});
+
+<LightboxUrlOverlay controller={photo} images={images} />;
+```
+
+**Opening is a link.** The open state lives in the URL, so a thumbnail is an ordinary link — no click handler — and the browser's own behaviour comes free: open in a new tab, copy the address, preview on hover. In a routed app use the router's link so it stays client-side:
+
+```tsx
+import { Link } from 'react-router-dom';
+
+// The href is the open action — no onClick, no open flag.
+{
+  images.map((img, i) => (
+    <Link key={img.src} to={`?photo=${i}`}>
+      <img src={img.src} />
+    </Link>
+  ));
+}
+
+<LightboxUrlOverlay controller={photo} images={images} />;
+```
+
+**Stable links.** The index is positional — a bookmarked `?photo=3` opens a different image once the list is reordered. `urlStableIdKey` keys by each item's stable `id`, scanning the live list — one call covers the common case:
+
+```tsx
+const photo = useOverlayUrlState({
+  param: 'photo',
+  ...urlStableIdKey({ items: () => images }),
+});
+
+<LightboxUrlOverlay controller={photo} images={images} />;
+```
+
+Pass `hashCodec: base64UrlCodec` to base64url-encode the id in the URL — reversible obfuscation, not a cryptographic hash.
+
+Key by a different field (a `slug`), or page an infinite feed with `locateAsync`, and build the `codec`/`locator` yourself. Two separate jobs: `codec` spells the identity into the URL (wire), `locator` finds where that identity sits (lookup).
+
+```tsx
+const photo = useOverlayUrlState({
+  param: 'photo',
+  codec: { decode: (raw) => raw, encode: (id) => id },
+  locator: {
+    locate: (id) => images.findIndex((x) => x.slug === id),
+    identify: (index) => images[index].slug,
+  },
+});
+
+<LightboxUrlOverlay controller={photo} images={images} />;
+```
+
+**Infinite / paginated galleries.** `locate` is synchronous, so it can only answer for images already loaded — a shared link to image 400 of a feed that has loaded 20 comes up empty. `locateAsync` is the fallback, called only when `locate` misses: load the pages you need, then return the index the identity turned out to have.
+
+> **Shortcut.** Keying by the item's `id`? Skip the hand-rolled codec and locator — pass `locateAsync` straight to `urlStableIdKey({ items, locateAsync })` (it fetches on a miss, then returns the index). The fuller version below is for keying by another field, or for full control.
+
+```tsx
+const photo = useOverlayUrlState({
+  param: 'photo',
+  codec: { decode: (raw) => raw, encode: (id) => id },
+  locator: {
+    locate: (id) => images.findIndex((x) => x.id === id),
+    identify: (index) => images[index].id,
+    locateAsync: async (id) => {
+      const loaded = await loadById(id); // or loadUntil(id) — fetch just that one, or page up to it
+      if (!loaded) return null; // exhausted — link names no image
+      setImages(loaded); // commit — the overlay renders from this state
+      return loaded.findIndex((x) => x.id === id); // wherever it landed
+    },
+  },
+});
+
+<LightboxUrlOverlay controller={photo} images={images} />;
+```
+
+How you load is up to you — fetch contiguous pages up to the target, or fetch just that one image and append it. The URL keys by identity, not position, so `findIndex` returns wherever the item lands.
+
+While `locateAsync` is pending the lightbox stays closed and the param is left alone — the deep link survives the fetch. `null` or a rejection drops the param. An answer that arrives after the URL moved on, after a close, or after unmount is discarded, so a slow fetch cannot open a slide nobody asked for.
+
+Nothing is rendered while pending; the page already owns that loading state, so render your own skeleton. There is no timeout — the lightbox cannot know how long the gallery is, so settle with `null` when pagination is exhausted or the overlay stays closed indefinitely.
+
+Whatever `locateAsync` returns is authoritative — it reports the index of data it just fetched, and the lightbox takes it as-is rather than re-reading `images`, which React has not re-rendered yet.
+
 ## LightboxOverlay Props
 
 | Prop               | Type                                             | Default           | Description                                                                                                                                                                |
 | ------------------ | ------------------------------------------------ | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `isOpen`           | `boolean`                                        | required          | Control lightbox visibility                                                                                                                                                |
+| `isOpen`           | `boolean`                                        | required          | Control lightbox visibility. For URL-driven open state, use the separate `LightboxUrlOverlay` — see URL State.                                                             |
 | `images`           | `LightboxItem[]`                                 | required          | Image array to display                                                                                                                                                     |
 | `ariaLabel`        | `string`                                         | `'Image gallery'` | Accessible label for dialog region; announced on open                                                                                                                      |
 | `initialIndex`     | `number`                                         | `0`               | Starting image index                                                                                                                                                       |
@@ -109,20 +239,59 @@ interface LightboxItem {
 | `swipeDistanceFactor`   | `number`         | `0.12`  | Swipe threshold (0-1)              |
 | `swipeToCloseDirection` | `'up' \| 'down'` | `'up'`  | Swipe-to-close direction on mobile |
 
+## LightboxUrlOverlay Props
+
+Takes every visual/behavior prop above except `isOpen`, replaced by a `controller`. `initialIndex` is ignored — the controller's position picks the slide, so a value passed alongside it is overwritten on every open.
+
+| Prop         | Type                 | Default  | Description                                                                                                                                                             |
+| ------------ | -------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `controller` | `UrlStateController` | required | Controller from `useOverlayUrlState`. Its `position` decides whether the overlay is open and which slide; the overlay writes back through it on slide change and close. |
+
 ## Callbacks
 
-| Prop            | Type                      | Description             |
-| --------------- | ------------------------- | ----------------------- |
-| `onClose`       | `() => void`              | Fire on close           |
-| `onSlideChange` | `(index: number) => void` | Fire after slide change |
+| Prop            | Type                      | Description                                                                                                                              |
+| --------------- | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `onClose`       | `() => void`              | Called on close. Required on `LightboxOverlay` (you own the open state); optional on `LightboxUrlOverlay`, where the URL drives closing. |
+| `onSlideChange` | `(index: number) => void` | Fire after slide change                                                                                                                  |
 
-## Keyboard Shortcuts
+## Sub-Components
 
-| Key          | Action                                        |
-| ------------ | --------------------------------------------- |
-| `ArrowLeft`  | Previous image                                |
-| `ArrowRight` | Next image                                    |
-| `Escape`     | Close lightbox (or exit fullscreen if active) |
+Reusable sub-components for composing custom controls via `renderControls`.
+
+| Component          | Description                                                                                                                                                                                                       |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CloseButton`      | Default X close button.                                                                                                                                                                                           |
+| `Counter`          | Image counter pill showing "1 / 3".                                                                                                                                                                               |
+| `FullscreenButton` | Fullscreen toggle button (Maximize/Minimize icon).                                                                                                                                                                |
+| `SoundButton`      | Mute/unmute toggle for video slides (Volume2/VolumeX icon). Included automatically in the `renderControls` from `useVideoSlideRenderer`. Standalone inside custom controls, read sound state via `useSoundState`. |
+
+```tsx
+import { CloseButton, Counter, FullscreenButton } from '@reelkit/react-lightbox';
+
+<Counter currentIndex={activeIndex} count={count} />
+<FullscreenButton isFullscreen={isFullscreen} onToggle={onToggleFullscreen} />
+<CloseButton onClick={onClose} />
+```
+
+## Hooks
+
+### useVideoSlideRenderer
+
+Hook for opt-in video support. Returns `renderSlide`, `renderControls`, and `SoundProvider` — wrap the overlay in `SoundProvider` and pass the render functions.
+
+```typescript
+import { useVideoSlideRenderer } from '@reelkit/react-lightbox';
+
+const { renderSlide, renderControls, SoundProvider, hasVideo } =
+  useVideoSlideRenderer(items, isOpen);
+
+// SoundProvider  — wrap LightboxOverlay in this for mute/unmute support
+// renderSlide    — pass to LightboxOverlay's renderSlide prop
+// renderControls — pass to LightboxOverlay's renderControls prop
+//                  (includes Counter, FullscreenButton, SoundButton, CloseButton)
+// hasVideo       — true if items contain at least one video
+// isOpen param   — resets mute to true on close (enables autoplay on reopen)
+```
 
 ## CSS Theming Tokens
 
@@ -219,6 +388,14 @@ interface LightboxItem {
 - `.rk-lightbox-info` — bottom info overlay container
 - `.rk-lightbox-info-title` — title text
 - `.rk-lightbox-info-description` — description text
+
+## Keyboard Shortcuts
+
+| Key          | Action                                        |
+| ------------ | --------------------------------------------- |
+| `ArrowLeft`  | Previous image                                |
+| `ArrowRight` | Next image                                    |
+| `Escape`     | Close lightbox (or exit fullscreen if active) |
 
 ## Custom Slot Examples
 

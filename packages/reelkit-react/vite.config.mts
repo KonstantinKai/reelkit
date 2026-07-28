@@ -33,17 +33,25 @@ export default defineConfig(() => ({
       transformMixedEsModules: true,
     },
     lib: {
-      // Could also be a dictionary or array of multiple entry points.
-      entry: 'src/index.ts',
-      name: 'reelkit-react',
-      fileName: 'index',
+      // The router adapter is a separate entry so the main entry never pulls
+      // `react-router-dom`. An app without a router imports only `index`.
+      entry: {
+        index: 'src/index.ts',
+        'react-router-url-adapter': 'src/react-router-url-adapter.ts',
+      },
       // Change this to the formats you want to support.
       // Don't forget to update your package.json as well.
       formats: ['es' as const],
     },
     rollupOptions: {
       // External packages that should not be bundled into your library.
-      external: ['react', 'react-dom', 'react/jsx-runtime', '@reelkit/core'],
+      external: [
+        'react',
+        'react-dom',
+        'react/jsx-runtime',
+        '@reelkit/core',
+        'react-router-dom',
+      ],
     },
   },
   test: {

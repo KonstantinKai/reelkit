@@ -31,15 +31,36 @@ export class SliderPage {
       .evaluate((el: HTMLElement) => el.click());
   }
 
+  /**
+   * The slider listens for keydown on its own container, not on window, so
+   * arrow keys only work once it has focus. A test that has already clicked
+   * inside the slider inherits that focus; one pressing a key straight after a
+   * cold page load has focus on `<body>` and the key never reaches the
+   * listener. Force focus only in that second case, so a test relying on an
+   * inner element's focus (the nested horizontal slider) is left untouched.
+   */
+  private async focusSliderIfUnfocused(): Promise<void> {
+    await this.container.evaluate((el: HTMLElement) => {
+      const active = document.activeElement;
+      if (!active || active === document.body) {
+        el.tabIndex = -1;
+        el.focus();
+      }
+    });
+  }
+
   async pressArrowDown(): Promise<void> {
+    await this.focusSliderIfUnfocused();
     await this.page.keyboard.press('ArrowDown');
   }
 
   async pressArrowUp(): Promise<void> {
+    await this.focusSliderIfUnfocused();
     await this.page.keyboard.press('ArrowUp');
   }
 
   async pressArrowRight(): Promise<void> {
+    await this.focusSliderIfUnfocused();
     await this.page.keyboard.press('ArrowRight');
   }
 

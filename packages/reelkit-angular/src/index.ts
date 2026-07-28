@@ -1,3 +1,47 @@
+/**
+ * @module @reelkit/angular
+ *
+ * Angular bindings for reelkit.
+ *
+ * {@link ReelComponent} is the slider itself — a virtualized, gesture-driven
+ * carousel that renders only the slides around the active one. Everything else
+ * here supports it: {@link ReelIndicatorComponent} for dots,
+ * {@link RkReelItemDirective} for slide templates, {@link BodyLockService} and
+ * {@link RkSwipeToCloseDirective} for overlay behaviour.
+ *
+ * Core is framework-agnostic and exposes its own reactive primitives, so
+ * {@link toAngularSignal} bridges a core `Signal` into an Angular one. Read a
+ * core signal in a template through that bridge — a direct `.value` read is a
+ * one-time snapshot and never updates.
+ *
+ * The core API is re-exported here, so a consumer never imports
+ * `@reelkit/core` directly.
+ *
+ * @example Slider with an indicator
+ * ```ts
+ * @Component({
+ *   imports: [ReelComponent, ReelIndicatorComponent, RkReelItemDirective],
+ *   template: `
+ *     <rk-reel
+ *       [count]="photos.length"
+ *       [size]="[360, 640]"
+ *       (afterChange)="active.set($event.index)"
+ *     >
+ *       <ng-template rkReelItem let-index>
+ *         <img [src]="photos[index]" alt="" />
+ *       </ng-template>
+ *     </rk-reel>
+ *
+ *     <rk-reel-indicator [count]="photos.length" [active]="active()" />
+ *   `,
+ * })
+ * export class FeedComponent {
+ *   protected readonly photos = photos;
+ *   protected readonly active = signal(0);
+ * }
+ * ```
+ */
+
 export { ReelComponent } from './lib/reel/reel.component';
 export { ReelIndicatorComponent } from './lib/reel-indicator/reel-indicator.component';
 
@@ -29,6 +73,17 @@ export {
   createSignal,
   createComputed,
   reaction,
+  createUrlStateController,
+  createHistoryAdapter,
+  indexCodec,
+  createIndexLocator,
+  urlIndexKey,
+  urlIndexTwoAxisKey,
+  createStableIdCodec,
+  base64UrlCodec,
+  createStableIdLocator,
+  urlStableIdKey,
+  urlStableIdTwoAxisKey,
   batch,
   first,
   last,
@@ -83,4 +138,22 @@ export {
   type BodyLock,
   type TransitionTransformFn,
   type SlideTransformStyle,
+  type UrlAdapter,
+  type UrlCodec,
+  type UrlLocator,
+  type UrlKey,
+  type UrlStateController,
+  type UrlStateOptions,
+  type TwoAxisPosition,
+  type TwoAxisIdentity,
+  type UrlIndexTwoAxisKeyOptions,
+  type Identified,
+  type UrlStableIdKeyOptions,
+  type UrlStableIdTwoAxisKeyOptions,
+  type UrlStableIdTwoAxisIdInnerOptions,
 } from '@reelkit/core';
+
+export {
+  createOverlayUrlState,
+  type OverlayUrlStateOptions,
+} from './lib/url-state/create-overlay-url-state';

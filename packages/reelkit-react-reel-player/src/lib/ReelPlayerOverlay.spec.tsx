@@ -1,6 +1,15 @@
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import type { ReelProps } from '@reelkit/react';
+import {
+  useOverlayUrlState,
+  urlIndexKey,
+  urlIndexTwoAxisKey,
+  type ReelProps,
+  type UrlStateController,
+  type OverlayUrlStateOptions,
+  type TwoAxisPosition,
+} from '@reelkit/react';
+import { createFakeUrlAdapter } from '@reelkit/core/testing';
 import type { ContentItem } from './types';
 // Track Reel props
 let lastReelProps: Partial<ReelProps> = {};
@@ -121,7 +130,7 @@ vi.mock('lucide-react', () => ({
 }));
 
 // eslint-disable-next-line import/first
-import { ReelPlayerOverlay } from './ReelPlayerOverlay';
+import { ReelPlayerOverlay, ReelPlayerUrlOverlay } from './ReelPlayerOverlay';
 
 const mockContent: ContentItem[] = [
   {
@@ -1061,6 +1070,295 @@ describe('ReelPlayerOverlay', () => {
       expect(wrapper!.getAttribute('aria-label')).toBe(
         `Slide 1 of ${mockContent.length}`,
       );
+    });
+  });
+
+  describe('url-driven mode', () => {
+    const isOpen = () => document.querySelector('.rk-reel-overlay') !== null;
+
+    // The default feed bounds the index against its live size.
+    const count = () => mockContent.length;
+
+    let controller: UrlStateController;
+    let renders = 0;
+
+    // The consumer builds the controller with the hook and hands it to the
+    // overlay; this harness mirrors that so a test can drive the fake url.
+    const renderUrl = <Id,>(
+      options: OverlayUrlStateOptions<Id>,
+      onSlideChange?: (index: number) => void,
+    ) => {
+      const Harness = () => {
+        renders += 1;
+        controller = useOverlayUrlState(options);
+        return (
+          <ReelPlayerUrlOverlay
+            controller={controller}
+            content={mockContent}
+            onSlideChange={onSlideChange}
+          />
+        );
+      };
+      return render(<Harness />);
+    };
+
+    // Reel is mocked, so a swipe is its afterChange firing.
+    const slideTo = (index: number) =>
+      act(() => (lastReelProps.afterChange as (i: number) => void)(index));
+
+    beforeEach(() => {
+      renders = 0;
+    });
+
+    it('opens at the index named by the url on first render', () => {
+      const fake = createFakeUrlAdapter('?reel=1');
+
+      renderUrl({
+        param: 'reel',
+        adapter: fake.adapter,
+        ...urlIndexKey(count),
+      });
+
+      expect(isOpen()).toBe(true);
+      expect(lastReelProps.initialIndex).toBe(1);
+    });
+
+    it('renders nothing while the parameter is absent', () => {
+      const fake = createFakeUrlAdapter('?tab=feed');
+
+      const { container } = renderUrl({
+        param: 'reel',
+        adapter: fake.adapter,
+        ...urlIndexKey(count),
+      });
+
+      expect(isOpen()).toBe(false);
+      expect(container.innerHTML).toBe('');
+    });
+
+    it('pushes one history entry on open and replaces on every slide change', () => {
+      const fake = createFakeUrlAdapter();
+
+      renderUrl({
+        param: 'reel',
+        adapter: fake.adapter,
+        ...urlIndexKey(count),
+      });
+
+      act(() => controller.set(0));
+      expect(fake.counts.push).toBe(1);
+
+      slideTo(1);
+      slideTo(2);
+
+      // Paging costs nothing: one back step still leaves the player.
+      expect(fake.counts.push).toBe(1);
+      expect(fake.adapter.read()).toBe('?reel=2');
+    });
+
+    it('writes the url and still calls onSlideChange', () => {
+      const fake = createFakeUrlAdapter('?reel=0');
+      const onSlideChange = vi.fn();
+
+      renderUrl(
+        { param: 'reel', adapter: fake.adapter, ...urlIndexKey(count) },
+        onSlideChange,
+      );
+
+      slideTo(2);
+
+      expect(fake.adapter.read()).toBe('?reel=2');
+      expect(onSlideChange).toHaveBeenCalledWith(2);
+    });
+
+    it('drops an out-of-range parameter and stays closed', () => {
+      const fake = createFakeUrlAdapter('?reel=99');
+
+      renderUrl({
+        param: 'reel',
+        adapter: fake.adapter,
+        ...urlIndexKey(count),
+      });
+
+      // The url may not assert a slide the feed cannot show.
+      expect(isOpen()).toBe(false);
+      expect(fake.adapter.read()).toBe('');
+    });
+
+    it('drops an unparseable parameter and stays closed', () => {
+      const fake = createFakeUrlAdapter('?reel=bogus');
+
+      renderUrl({
+        param: 'reel',
+        adapter: fake.adapter,
+        ...urlIndexKey(count),
+      });
+
+      expect(isOpen()).toBe(false);
+      expect(fake.adapter.read()).toBe('');
+    });
+
+    it('closes on a back step, clearing the entry it pushed', () => {
+      const fake = createFakeUrlAdapter();
+
+      renderUrl({
+        param: 'reel',
+        adapter: fake.adapter,
+        ...urlIndexKey(count),
+      });
+
+      act(() => fake.adapter.push('?reel=2'));
+      expect(isOpen()).toBe(true);
+
+      act(() => fake.adapter.goBack());
+
+      expect(isOpen()).toBe(false);
+      expect(fake.adapter.read()).toBe('');
+    });
+
+    it('clears the parameter and unmounts when the player closes itself', () => {
+      const fake = createFakeUrlAdapter('?reel=1');
+      const onClose = vi.fn();
+
+      const Harness = () => {
+        const ctrl = useOverlayUrlState({
+          param: 'reel',
+          adapter: fake.adapter,
+          ...urlIndexKey(count),
+        });
+        return (
+          <ReelPlayerUrlOverlay
+            controller={ctrl}
+            content={mockContent}
+            onClose={onClose}
+          />
+        );
+      };
+      render(<Harness />);
+      expect(isOpen()).toBe(true);
+
+      act(() => {
+        fireEvent.keyDown(window, { key: 'Escape' });
+      });
+
+      // A link that arrived with the page pushed nothing, so closing drops the
+      // parameter where it stands rather than stepping off the site.
+      expect(isOpen()).toBe(false);
+      expect(fake.adapter.read()).toBe('');
+      expect(onClose).toHaveBeenCalled();
+    });
+
+    it('does not re-render the wrapper when the index changes', () => {
+      const fake = createFakeUrlAdapter();
+
+      renderUrl({
+        param: 'reel',
+        adapter: fake.adapter,
+        ...urlIndexKey(count),
+      });
+      const before = renders;
+
+      act(() => controller.set(0));
+      slideTo(1);
+
+      // The index is a signal read inside Observe: opening and paging touch
+      // only that subtree, never the component holding the controller.
+      expect(renders).toBe(before);
+    });
+  });
+
+  describe('url-driven mode (two-axis)', () => {
+    // mockContent inner counts: c1 → 1, c2 → 1, c3 → 2.
+    const outerCount = () => mockContent.length;
+    const innerCounts = () => mockContent.map((c) => c.media.length);
+
+    let controller: UrlStateController<TwoAxisPosition>;
+
+    const isOpen = () => document.querySelector('.rk-reel-overlay') !== null;
+
+    const render2Axis = (initial: string) => {
+      const fake = createFakeUrlAdapter(initial);
+      const Harness = () => {
+        controller = useOverlayUrlState({
+          param: 'reel',
+          adapter: fake.adapter,
+          ...urlIndexTwoAxisKey({ outerCount, innerCounts }),
+        });
+        return (
+          <ReelPlayerUrlOverlay controller={controller} content={mockContent} />
+        );
+      };
+      const utils = render(<Harness />);
+      return { fake, ...utils };
+    };
+
+    const slideTo = (index: number) =>
+      act(() => (lastReelProps.afterChange as (i: number) => void)(index));
+
+    it('opens at a two-axis position, seeding outer and inner together', () => {
+      render2Axis('?reel=0.0');
+
+      expect(isOpen()).toBe(true);
+      // Both axes come from one position read — outer to the vertical slider,
+      // inner to the post's nested slider.
+      expect(lastReelProps.initialIndex).toBe(0);
+      expect(lastMediaSlideProps.initialInnerIndex).toBe(0);
+    });
+
+    it('opens at the named outer post of a multi-media deep link', () => {
+      render2Axis('?reel=2.1');
+      expect(isOpen()).toBe(true);
+      expect(lastReelProps.initialIndex).toBe(2);
+    });
+
+    it('treats a bare one-axis param as malformed and stays closed', () => {
+      const { container } = render2Axis('?reel=3');
+      expect(isOpen()).toBe(false);
+      expect(container.innerHTML).toBe('');
+    });
+
+    it('writes both axes, strictly dotted, on inner navigation', () => {
+      const { fake } = render2Axis('?reel=0.0');
+
+      act(() =>
+        (lastMediaSlideProps.onInnerIndexChange as (i: number) => void)(1),
+      );
+
+      expect(fake.adapter.read()).toBe('?reel=0.1');
+    });
+
+    it('writes the activated post with its inner index on outer navigation', () => {
+      const { fake } = render2Axis('?reel=0.0');
+
+      slideTo(1); // c2 is single-media → inner resets to 0
+
+      expect(fake.adapter.read()).toBe('?reel=1.0');
+    });
+
+    it('pushes one entry on open and replaces across inner and outer nav', () => {
+      // Start empty and open via the controller, so the entry is one we pushed
+      // (a deep link that arrives with the page pushes nothing).
+      const { fake } = render2Axis('');
+      act(() => controller.set({ outer: 0, inner: 0 }));
+      expect(fake.counts.push).toBe(1);
+
+      act(() =>
+        (lastMediaSlideProps.onInnerIndexChange as (i: number) => void)(1),
+      );
+      slideTo(1);
+
+      // Inner and outer navigation only replace — one back step still closes.
+      expect(fake.counts.push).toBe(1);
+    });
+
+    it('closes by clearing the parameter', () => {
+      const { fake } = render2Axis('?reel=0.0');
+      expect(isOpen()).toBe(true);
+
+      act(() => controller.set(null));
+
+      expect(isOpen()).toBe(false);
+      expect(fake.adapter.read()).toBe('');
     });
   });
 });

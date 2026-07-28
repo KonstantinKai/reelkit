@@ -161,7 +161,9 @@ const themingCss = `
     >
       <template #info="{ item }">
         <div class="custom-info">
-          <div class="custom-info-title">{{ item.title }}</div>
+          <div class="custom-info-title">
+            {{ item.title }}
+          </div>
           <div v-if="item.description" class="custom-info-description">
             {{ item.description }}
           </div>
@@ -280,7 +282,9 @@ const themingCss = `
 
     <!-- Themed via CSS tokens -->
     <template v-if="activeDemo === 'theming'">
-      <component :is="'style'">{{ themingCss }}</component>
+      <component :is="'style'">
+        {{ themingCss }}
+      </component>
       <LightboxOverlay v-model:is-open="isOpen" :items="sampleImages" />
     </template>
   </div>

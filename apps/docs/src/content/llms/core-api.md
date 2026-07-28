@@ -10,7 +10,17 @@ desc: Complete reference for @reelkit/core configuration, callbacks, methods, st
 
 Reference for `@reelkit/core` config, callbacks, methods, state, signals, transitions, content loading, sound, timeline, fullscreen, DOM utils, focus management, video utils.
 
-## Config Options
+## SliderController API
+
+The framework-agnostic core. One factory builds a controller from a config and optional events: **Config Options** are the config, **Callbacks** the events, **Methods** what the returned controller exposes.
+
+### Factory Function
+
+| Export                   | Type                                                                | Description                                                                                                                                             |
+| ------------------------ | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `createSliderController` | `(config: SliderConfig, events?: SliderEvents) => SliderController` | Build a slider controller. `config` is required (options below); `events` is optional (callbacks below). Returns the controller whose methods drive it. |
+
+### Config Options
 
 | Property              | Type                               | Default                 | Description                                                          |
 | --------------------- | ---------------------------------- | ----------------------- | -------------------------------------------------------------------- |
@@ -26,7 +36,7 @@ Reference for `@reelkit/core` config, callbacks, methods, state, signals, transi
 | `swipeDistanceFactor` | `number`                           | `0.12`                  | Swipe threshold (0-1)                                                |
 | `rangeExtractor`      | `(index, count, loop) => number[]` | `defaultRangeExtractor` | Custom fn picks rendered indexes                                     |
 
-## Callbacks
+### Callbacks
 
 | Callback         | Type                                     | Description                                           |
 | ---------------- | ---------------------------------------- | ----------------------------------------------------- |
@@ -41,7 +51,7 @@ Reference for `@reelkit/core` config, callbacks, methods, state, signals, transi
 | `onLongPressEnd` | `(event: GestureEvent) => void`          | Pointer release after long press                      |
 | `onNavKeyPress`  | `(increment: -1 \| 1) => void`           | Custom arrow key handler. Replaces default prev/next. |
 
-## Methods
+### Methods
 
 | Method                  | Type                                  | Description                                                                                               |
 | ----------------------- | ------------------------------------- | --------------------------------------------------------------------------------------------------------- |
@@ -111,11 +121,11 @@ Built-in transition fns compute per-slide CSS transforms during animated nav. Pa
 
 Utils for per-slide loading/error state + media preload. Loading controller use index guard reject stale callbacks from old slides. Preloader use LRU cache (default 200 loaded, 100 errored) so revisit broken URL show error instant, no retry.
 
-| Export                           | Type                                                   | Description                                                                       |
-| -------------------------------- | ------------------------------------------------------ | --------------------------------------------------------------------------------- |
-| `createContentLoadingController` | `() => ContentLoadingController`                       | Per-slide loading/error tracking                                                  |
-| `createContentPreloader`         | `(config: ContentPreloaderConfig) => ContentPreloader` | LRU-cached media preloader with error caching                                     |
-| `observeMediaLoading`            | `(video, callbacks) => () => void`                     | Observe video loading state (playing, canplaythrough, waiting). Returns disposer. |
+| Export                           | Type                                                                        | Description                                                                       |
+| -------------------------------- | --------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `createContentLoadingController` | `() => ContentLoadingController`                                            | Per-slide loading/error tracking                                                  |
+| `createContentPreloader`         | `(config: ContentPreloaderConfig) => ContentPreloader`                      | LRU-cached media preloader with error caching                                     |
+| `observeMediaLoading`            | `(video: HTMLVideoElement, callbacks: MediaLoadingCallbacks) => () => void` | Observe video loading state (playing, canplaythrough, waiting). Returns disposer. |
 
 ### ContentLoadingController
 
@@ -213,3 +223,73 @@ Framework-agnostic utils for shared video playback across slides. Used internall
 | `captureFrame`       | `(video: HTMLVideoElement) => string \| null`        | Capture current frame as JPEG data URL. Null on cross-origin errors.                                                                                                                                                                                                                       |
 | `createSharedVideo`  | `(config: SharedVideoConfig) => SharedVideoInstance` | Scoped shared video singleton with playback position + frame capture maps. Each consumer gets isolated instance for iOS sound continuity.                                                                                                                                                  |
 | `syncVideoObjectFit` | `(video, fallbackIsVertical) => Disposer`            | Keep `video.style.objectFit` synced to real orientation. Apply fallback (from declared aspect ratio) immediately, then on `loadedmetadata` read actual `videoWidth` / `videoHeight` and switch to `'cover'` for portrait, `'contain'` for landscape. Resilient to wrong declared metadata. |
+
+## URL State
+
+| Export                     | Type                                                                                                      | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| -------------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `createUrlStateController` | `({ param, adapter?, codec?, locator? }) => UrlStateController`                                           | Mirrors one query param into `value: Signal<string \| null>` and, given a `codec` or `locator`, a derived `position: Signal<Pos \| null>`. `set(v)` writes; `set(null)` closes. `attach()` follows the URL.                                                                                                                                                                                                                                                                          |
+| `createHistoryAdapter`     | `() => UrlAdapter`                                                                                        | Default adapter over the History API. Globals touched lazily — safe to import during SSR/prerender.                                                                                                                                                                                                                                                                                                                                                                                  |
+| `indexCodec`               | `UrlCodec<number>`                                                                                        | Reads `?photo=3` as slide 3. The default codec — pass it to opt into index derivation without writing your own.                                                                                                                                                                                                                                                                                                                                                                      |
+| `createIndexLocator`       | `(countGetter: () => number) => UrlLocator<number>`                                                       | Default index locator: maps a slide position to itself, bounded by the live count the getter returns. An out-of-range index resolves to `null` so a stale `?photo=99` self-heals out of the URL — it rejects, never coerces to the nearest slide. A getter, not a number, so the bound reads the current size at lookup time (a paginated gallery grows).                                                                                                                            |
+| `urlIndexKey`              | `(countGetter: () => number, locateAsync?: (index: number) => Promise<number \| null>) => UrlKey<number>` | The matched `{ codec: indexCodec, locator: createIndexLocator(countGetter) }` pair for an index-addressed gallery. Spread it — `{ param, ...urlIndexKey(() => count) }` — so the codec cannot drift from the locator. Pass a second `locateAsync` arg to window a paginated feed: page up to the wanted index on a miss, then return it (re-bounded against the grown count).                                                                                                        |
+| `urlIndexTwoAxisKey`       | `(opts) => UrlKey<TwoAxisIdentity, TwoAxisPosition>`                                                      | Like `urlIndexKey` but for a two-axis player: one strictly-dotted `?p=<outer>.<inner>` parameter resolving to a `TwoAxisPosition` `{ outer, inner }`. Options (`UrlIndexTwoAxisKeyOptions`): `outerCount`, `innerCounts`, optional `outerCodec`/`outerLocator` for the outer axis, and `innerCodec`/`innerLocate`/`innerIdentify` to address the inner axis by id too. Each axis defaults to a plain index bound. Powers the URL-driven stories player.                              |
+| `createStableIdCodec`      | `(hashCodec?: UrlCodec<string>) => UrlCodec<string>`                                                      | The stable-id **wire**, exported for composing — the param text is the item's `id`, written raw or transformed by `hashCodec` (pass `base64UrlCodec` for reversible base64url). The stable-id analog of `indexCodec`: pair it with a locator of your own instead of taking the whole `urlStableIdKey`.                                                                                                                                                                               |
+| `base64UrlCodec`           | `UrlCodec<string>`                                                                                        | The ready-made hash mechanism for a stable-id key: reversible base64url (URL-safe alphabet, no padding, UTF-8) — NOT a cryptographic hash. Pass it as `hashCodec` to obscure the id in the URL, or implement your own `UrlCodec<string>` to plug in a different scheme.                                                                                                                                                                                                              |
+| `createStableIdLocator`    | `(items: () => T[], locateAsync?: (id: string) => Promise<number \| null>) => UrlLocator<string, number>` | The stable-id **lookup**, exported for composing — scans `items()` for a matching `id`; a gone id resolves to `null` and self-heals. Optional `locateAsync` windows a paginated feed. The stable-id analog of `createIndexLocator`.                                                                                                                                                                                                                                                  |
+| `urlStableIdKey`           | `(opts) => UrlKey<string, number>`                                                                        | Addresses a gallery by each item's stable `id` — `?photo=<id>` — instead of its position, so a bookmark survives the list being reordered. Options (`UrlStableIdKeyOptions`): `items` (a live getter), optional `hashCodec` (pass `base64UrlCodec`) to transform the id on the wire, optional `locateAsync` to window a paginated feed (fetch until the id is present on a miss, then return its index). Prefer over `urlIndexKey` whenever the list can change under a shared link. |
+| `urlStableIdTwoAxisKey`    | `(opts) => UrlKey<TwoAxisIdentity<string>, TwoAxisPosition>`                                              | The two-axis analog: the outer axis by stable id, the inner by a local index — `?story=user_42.3`. Supply `innerItems` instead of `innerCounts` to address the inner by id too (`?story=user_42.photo_7`); `hashCodec` (e.g. `base64UrlCodec`) transforms both ids. Options: `UrlStableIdTwoAxisKeyOptions` (index inner) or `UrlStableIdTwoAxisIdInnerOptions` (id inner); item types satisfy `Identified` (`{ id: string }`).                                                      |
+| `UrlCodec<Id>`             | `{ decode(raw) => Id \| null; encode(id) => string }`                                                     | WIRE format: param text ↔ a stable identity. Collection-blind. `decode` returning `null` = malformed text.                                                                                                                                                                                                                                                                                                                                                                          |
+| `UrlLocator<Id>`           | `{ locate(id) => number \| null; locateAsync?(id) => Promise<...>; identify(index) => id }`               | LOOKUP: where the identity sits in the collection. `locate` sync, `locateAsync` its async fallback, `identify` for writes.                                                                                                                                                                                                                                                                                                                                                           |
+| `UrlKey<Id>`               | `{ codec: UrlCodec<Id>; locator: UrlLocator<Id> }`                                                        | The matched codec + locator pair for one parameter. They share `Id` and always travel together, so building them as a pair is what keeps them from disagreeing.                                                                                                                                                                                                                                                                                                                      |
+| `UrlAdapter`               | `{ read, subscribe, push, replace, getState, goBack }`                                                    | Injection point for a router. Routed apps must supply one, or the router's location goes stale.                                                                                                                                                                                                                                                                                                                                                                                      |
+| `UrlStateOptions<Id>`      | `{ param: string; adapter?: UrlAdapter; codec?: UrlCodec<Id>; locator?: UrlLocator<Id> }`                 | The options `createUrlStateController` takes — exported so a consumer can type a config assembled separately before handing it over.                                                                                                                                                                                                                                                                                                                                                 |
+
+First write of an absent param **pushes** one entry; later writes **replace** it. Closing an entry it pushed steps back; closing a param that arrived with the page removes it in place (never navigates off-site).
+
+### Deriving an index
+
+Two axes, each one responsibility. `codec` is the **wire** — param text ↔ a stable identity, collection-blind. `locator` is the **lookup** — where that identity sits in the collection. The controller runs `decode` then `locate`, applies the open/close latch, self-heals a param that names no slide, and discards a stale async answer — once, for every binding. Without a `codec` or `locator` it reports `value` only and leaves `position` at `null`.
+
+```ts
+// Integer default: the identity IS the index, so no locator.
+const photo = createUrlStateController({ param: 'photo', codec: indexCodec });
+photo.attach();
+photo.position.value; // 3 for ?photo=3, null for ?photo=bogus (param is dropped)
+```
+
+An identity codec keeps a bookmark pointing at the entity across a reorder:
+
+```ts
+const photo = createUrlStateController({
+  param: 'photo',
+  codec: { decode: atob, encode: btoa }, // wire: base64 ↔ id
+  locator: {
+    locate: (id) => feed.findIndex((e) => e.id === id), // lookup: id → index
+    identify: (index) => feed[index].id,
+  },
+});
+```
+
+While something is open, `position` holds the position it opened at and stops following the URL — the slider owns the position from there and the URL trails it.
+
+### Async lookup
+
+For a paginated list, add `locateAsync` to the locator — the fallback called only when the sync `locate` misses. Load the pages you need, then return the index the identity turned out to have.
+
+```ts
+const photo = createUrlStateController({
+  param: 'photo',
+  codec: { decode: (raw) => raw, encode: (id) => id },
+  locator: {
+    locate: (id) => feed.findIndex((e) => e.id === id),
+    identify: (index) => feed[index].id,
+    locateAsync: async (id) => {
+      await fetchUntilFound(id); // your pagination
+      return feed.findIndex((e) => e.id === id); // null when exhausted
+    },
+  },
+});
+```
+
+While `locateAsync` is pending the param **survives** and nothing is written — a deep link into an unloaded page is not cleared mid-fetch. `null` or a rejection drops the param and stays closed. An answer arriving after the URL moved on, after a close, or after `dispose` is discarded. Whatever it returns is authoritative — the index of data it just fetched, taken as-is. There is no timeout: settle when pagination is exhausted, or the overlay stays closed with the param intact.

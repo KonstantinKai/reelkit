@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { CodeBlock } from '../../../components/ui/CodeBlock';
 import { Heading } from '../../../components/ui/Heading';
 
@@ -259,6 +260,70 @@ const indicatorProps = [
   },
 ];
 
+const observeProps = [
+  {
+    prop: 'signals',
+    type: 'Subscribable[]',
+    default: 'required',
+    description:
+      'Signals to subscribe to. Any of them notifying re-runs the children function — and only that function, never the parent.',
+  },
+  {
+    prop: 'children',
+    type: '() => ReactElement | null',
+    default: 'required',
+    description:
+      'Render function, re-executed on each change. Read the signal values inside it; a value read outside is captured once and goes stale.',
+  },
+];
+
+const animatedObserveProps = [
+  {
+    prop: 'signal',
+    type: 'Signal<AnimatedValue>',
+    default: 'required',
+    description:
+      'Signal emitting { value, duration, done? }. A duration above 0 interpolates from the current value to the new one; 0 jumps straight there.',
+  },
+  {
+    prop: 'children',
+    type: '(value: number) => ReactElement',
+    default: 'required',
+    description:
+      'Render function receiving the interpolated value for the current frame, committed synchronously so the DOM keeps up with the animation.',
+  },
+];
+
+const overlayUrlStateOptions = [
+  {
+    prop: 'param',
+    type: 'string',
+    default: 'required',
+    description: 'Query parameter carrying the active slide, e.g. "photo".',
+  },
+  {
+    prop: 'adapter',
+    type: 'UrlAdapter',
+    default: 'History API',
+    description:
+      "Navigation system to read and write through. Pass a router-backed adapter in a routed app so the router's own location does not go stale.",
+  },
+  {
+    prop: 'codec',
+    type: '{ decode(raw) => Id | null; encode(id) => string }',
+    default: 'required',
+    description:
+      'Wire format: parameter text ↔ a stable identity, collection-blind. Travels with locator as a matched pair sharing the same Id — spread ...urlIndexKey(() => images.length) for the default ?photo=3 index gallery, or supply your own (base64, slug) so a bookmark survives the gallery being reordered.',
+  },
+  {
+    prop: 'locator',
+    type: '{ locate(id) => number | null; locateAsync?(id) => Promise<number | null>; identify(index) => id }',
+    default: 'required',
+    description:
+      'Maps the identity to a position and owns its own validity: locate (sync), locateAsync (async fallback for a paginated gallery), identify (writes). For a plain index gallery spread ...urlIndexKey(() => images.length) — it supplies this locator plus the matching codec and bounds ?photo=3 against the live count, so a stale ?photo=99 heals out of the URL instead of opening a slide that was never named. A paginated feed or an identity-keyed gallery supplies its own matched codec + locator instead.',
+  },
+];
+
 export default function ReactApi() {
   return (
     <div className="max-w-4xl mx-auto px-6 py-12">
@@ -277,6 +342,11 @@ export default function ReactApi() {
         <Heading level={2} className="text-2xl font-bold mb-4">
           Reel Props
         </Heading>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            ReelProps
+          </code>
+        </p>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -415,6 +485,11 @@ apiRef.current?.unobserve();       // stop observing keyboard`}
         <Heading level={2} className="text-2xl font-bold mb-4">
           ReelIndicator Props
         </Heading>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            ReelIndicatorProps
+          </code>
+        </p>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -473,6 +548,41 @@ apiRef.current?.unobserve();       // stop observing keyboard`}
 </Observe>`}
           language="tsx"
         />
+        <div className="overflow-x-auto mt-4 mb-6">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left py-3 px-4 font-semibold">Prop</th>
+                <th className="text-left py-3 px-4 font-semibold">Type</th>
+                <th className="text-left py-3 px-4 font-semibold">Default</th>
+                <th className="text-left py-3 px-4 font-semibold">
+                  Description
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {observeProps.map((row) => (
+                <tr
+                  key={row.prop}
+                  className="border-b border-slate-100 dark:border-slate-800"
+                >
+                  <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                    {row.prop}
+                  </td>
+                  <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                    {row.type}
+                  </td>
+                  <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                    {row.default}
+                  </td>
+                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                    {row.description}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
         <Heading level={3} className="text-lg font-semibold mt-6 mb-2">
           AnimatedObserve
@@ -494,6 +604,41 @@ apiRef.current?.unobserve();       // stop observing keyboard`}
 </AnimatedObserve>`}
           language="tsx"
         />
+        <div className="overflow-x-auto mt-4">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left py-3 px-4 font-semibold">Prop</th>
+                <th className="text-left py-3 px-4 font-semibold">Type</th>
+                <th className="text-left py-3 px-4 font-semibold">Default</th>
+                <th className="text-left py-3 px-4 font-semibold">
+                  Description
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {animatedObserveProps.map((row) => (
+                <tr
+                  key={row.prop}
+                  className="border-b border-slate-100 dark:border-slate-800"
+                >
+                  <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                    {row.prop}
+                  </td>
+                  <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                    {row.type}
+                  </td>
+                  <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                    {row.default}
+                  </td>
+                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                    {row.description}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </section>
 
       <section className="mb-12">
@@ -513,6 +658,91 @@ apiRef.current?.unobserve();       // stop observing keyboard`}
 // Lock body scroll when overlay is open
 useBodyLock(isOpen);`}
           language="typescript"
+        />
+
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">
+          useOverlayUrlState
+        </Heading>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            OverlayUrlStateOptions
+          </code>
+        </p>
+        <p className="text-slate-600 dark:text-slate-400 mb-2">
+          Builds a URL-state controller for an overlay, which you hand to a{' '}
+          <code>*UrlOverlay</code> as its <code>controller</code> prop.
+        </p>
+        <p className="text-slate-600 dark:text-slate-400 mb-2">
+          See{' '}
+          <Link
+            to="/docs/react/guide#url-state"
+            className="text-primary-600 dark:text-primary-400 hover:underline"
+          >
+            URL State in the React guide
+          </Link>{' '}
+          for the walkthrough and examples.
+        </p>
+        <div className="overflow-x-auto mt-4">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left py-3 px-4 font-semibold">Option</th>
+                <th className="text-left py-3 px-4 font-semibold">Type</th>
+                <th className="text-left py-3 px-4 font-semibold">Default</th>
+                <th className="text-left py-3 px-4 font-semibold">
+                  Description
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {overlayUrlStateOptions.map((p) => (
+                <tr
+                  key={p.prop}
+                  className="border-b border-slate-100 dark:border-slate-800"
+                >
+                  <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                    {p.prop}
+                  </td>
+                  <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                    {p.type}
+                  </td>
+                  <td className="py-3 px-4 text-slate-500 text-sm">
+                    {p.default}
+                  </td>
+                  <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                    {p.description}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">
+          useReactRouterUrlAdapter
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-2">
+          A <code>UrlAdapter</code> backed by React Router. Pass it as the{' '}
+          <code>adapter</code> option of <code>useOverlayUrlState</code> in a
+          routed app so the router stays the single source of navigation truth —
+          writing <code>history.pushState</code> behind the router leaves its
+          location stale and its next navigation drops the parameter.
+        </p>
+        <p className="text-slate-600 dark:text-slate-400 mb-2">
+          Ships from its own subpath, so an app without a router never pulls{' '}
+          <code>react-router-dom</code> into its bundle.{' '}
+          <code>react-router-dom</code> is an optional peer dependency.
+        </p>
+        <CodeBlock
+          code={`import { useReactRouterUrlAdapter } from '@reelkit/react/react-router-url-adapter';
+
+const adapter = useReactRouterUrlAdapter();
+const photo = useOverlayUrlState({
+  param: 'photo',
+  adapter,
+  ...urlIndexKey(() => images.length),
+});`}
+          language="tsx"
         />
       </section>
 

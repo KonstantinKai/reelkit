@@ -2,7 +2,7 @@ import { renderHook, render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { SoundProvider } from '@reelkit/react';
 import { useVideoSlideRenderer } from './useVideoSlideRenderer';
-import type { LightboxItem } from './LightboxOverlay';
+import type { LightboxItem } from './types';
 import type { ControlsRenderProps } from './types';
 
 vi.mock('./LightboxVideoSlide', () => ({

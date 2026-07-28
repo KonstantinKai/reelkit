@@ -40,7 +40,6 @@
  * ```
  */
 
-// Re-export from core
 export {
   createSignal,
   createComputed,
@@ -106,7 +105,6 @@ export {
   getFocusableElements,
 } from '@reelkit/core';
 
-// Main components
 export {
   Reel,
   defaultRangeExtractor,
@@ -119,24 +117,51 @@ export { ReelIndicator, type ReelIndicatorProps } from './lib/ReelIndicator';
 
 export { Observe, AnimatedObserve, type AnimatedValue } from './lib/Observe';
 
-// Context
+export {
+  useOverlayUrlState,
+  type OverlayUrlStateOptions,
+} from './lib/useOverlayUrlState';
+export {
+  createUrlStateController,
+  createHistoryAdapter,
+  indexCodec,
+  createIndexLocator,
+  urlIndexKey,
+  urlIndexTwoAxisKey,
+  createStableIdCodec,
+  base64UrlCodec,
+  createStableIdLocator,
+  urlStableIdKey,
+  urlStableIdTwoAxisKey,
+  type UrlAdapter,
+  type UrlCodec,
+  type UrlLocator,
+  type UrlKey,
+  type UrlStateController,
+  type UrlStateOptions,
+  type TwoAxisPosition,
+  type TwoAxisIdentity,
+  type UrlIndexTwoAxisKeyOptions,
+  type Identified,
+  type UrlStableIdKeyOptions,
+  type UrlStableIdTwoAxisKeyOptions,
+  type UrlStableIdTwoAxisIdInnerOptions,
+} from '@reelkit/core';
+
 export {
   ReelContext,
   useReelContext,
   type ReelContextValue,
 } from './lib/ReelContext';
 
-// Swipe to close
 export {
   SwipeToClose,
   type SwipeToCloseProps,
   type SwipeToCloseDirection,
 } from './lib/SwipeToClose';
 
-// Sound
 export { SoundProvider, useSoundState } from './lib/SoundState';
 
-// Hooks
 export { useBodyLock } from './lib/useBodyLock';
 export {
   useFullscreen,

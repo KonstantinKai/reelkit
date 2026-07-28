@@ -17,6 +17,7 @@ import {
   Layers,
   Heart,
   Circle,
+  Link2,
 } from 'lucide-react';
 import { Heading } from '../../components/ui/Heading';
 
@@ -268,7 +269,8 @@ const storiesCallbacks = [
   {
     prop: 'onClose',
     type: '() => void',
-    description: 'Called when the overlay should close',
+    description:
+      'Called when the player closes. Required on StoriesOverlay (you own the open state, so you must handle closing); optional on StoriesUrlOverlay, where the URL drives closing — pass it only to react after close.',
   },
   {
     prop: 'onStoryChange',
@@ -782,6 +784,11 @@ export default function StoriesPlayerPage() {
                 label: 'Render Props',
                 desc: 'Customize every UI element',
               },
+              {
+                icon: Link2,
+                label: 'URL State',
+                desc: 'Shareable ?story=group.story links',
+              },
             ]}
           />
         </div>
@@ -866,6 +873,276 @@ export default function StoriesPlayerPage() {
         </p>
       </section>
 
+      {/* URL State */}
+      <section className="mb-12">
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          URL State
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            StoriesUrlOverlay
+          </code>{' '}
+          is a separate component whose open state lives in the address bar.
+          Both axes ride one parameter —{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            ?story=&lt;group&gt;.&lt;story&gt;
+          </code>{' '}
+          — so the playing story has a link that can be shared, bookmarked, and
+          closed with the back button. Build a controller with{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            useOverlayUrlState
+          </code>{' '}
+          and{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            urlIndexTwoAxisKey
+          </code>
+          , then hand it over as{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            controller
+          </code>
+          .
+        </p>
+        <Callout type="info" title="Built-in keys" className="mb-4">
+          Stories are two-axis, so spread a two-axis key into the controller:{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            urlIndexTwoAxisKey
+          </code>{' '}
+          (group and story by position) or{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            urlStableIdTwoAxisKey
+          </code>{' '}
+          (the group by a stable{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            id
+          </code>
+          ) — both re-exported from{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            @reelkit/react
+          </code>
+          . See the{' '}
+          <Link
+            to="/docs/core/guide#url-state"
+            className="text-primary-600 dark:text-primary-400 hover:underline"
+          >
+            URL State guide
+          </Link>{' '}
+          and{' '}
+          <Link
+            to="/docs/core/api#url-state"
+            className="text-primary-600 dark:text-primary-400 hover:underline"
+          >
+            Core API
+          </Link>
+          .
+        </Callout>
+        <CodeBlock
+          code={`import {
+  StoriesUrlOverlay,
+  useOverlayUrlState,
+  urlIndexTwoAxisKey,
+} from '@reelkit/react-stories-player';
+import { Link } from 'react-router-dom';
+
+const stories = useOverlayUrlState({
+  param: 'story',
+  ...urlIndexTwoAxisKey({
+    outerCount: () => groups.length,
+    innerCounts: () => groups.map((g) => g.stories.length),
+  }),
+});
+
+// Opening a user is a link — the overlay reads the URL and opens itself.
+{groups.map((g, i) => (
+  <Link key={g.author.id} to={\`?story=\${i}.0\`}>{g.author.name}</Link>
+))}
+
+<StoriesUrlOverlay controller={stories} groups={groups} />`}
+          language="tsx"
+        />
+        <ul className="list-disc pl-6 space-y-2 text-slate-600 dark:text-slate-400 mt-4 mb-4">
+          <li>
+            Opening pushes <strong>one</strong> history entry. Swiping stories{' '}
+            <em>and</em> switching users both <strong>replace</strong> it, so N
+            navigations add no entries and one back step always closes the
+            player. Back closes; it does not step stories.
+          </li>
+          <li>
+            <strong>Inner navigation is carried.</strong> The story index is not
+            frozen at group granularity — advancing within a user's stories
+            updates{' '}
+            <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+              ?story=2.<em>n</em>
+            </code>{' '}
+            so a deep link lands on the exact story.
+          </li>
+          <li>
+            Back closes only when the player was opened from within the app —
+            the link pushed an entry. A shared link opened directly in a fresh
+            tab has no history behind it, so browser-back leaves the site; the ✕
+            button or Escape removes the parameter in place and stays.
+          </li>
+          <li>
+            A parameter naming no group or story — a stale bookmark, a
+            hand-edited value, a story past a group's end — is dropped from the
+            URL rather than opening a neighbor.
+          </li>
+        </ul>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          <strong>Routed app — pass an adapter.</strong> Writing{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            history.pushState
+          </code>{' '}
+          behind a router leaves its location stale, and its next navigation
+          drops the parameter:
+        </p>
+        <CodeBlock
+          code={`import { useReactRouterUrlAdapter } from '@reelkit/react/react-router-url-adapter';
+
+const adapter = useReactRouterUrlAdapter();
+const stories = useOverlayUrlState({
+  param: 'story',
+  adapter,
+  ...urlIndexTwoAxisKey({
+    outerCount: () => groups.length,
+    innerCounts: () => groups.map((g) => g.stories.length),
+  }),
+});
+
+<StoriesUrlOverlay controller={stories} groups={groups} />`}
+          language="tsx"
+        />
+        <p className="text-slate-600 dark:text-slate-400 mt-4 mb-4">
+          <strong>Stable links.</strong> The group is positional by default, so
+          a bookmarked{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            ?story=2.0
+          </code>{' '}
+          opens a different user once the feed is reordered. Address the group
+          by a stable id instead —{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            outerCodec
+          </code>{' '}
+          spells the id into the URL,{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            outerLocator
+          </code>{' '}
+          finds where it sits. The story half stays a plain index within the
+          resolved group.
+        </p>
+        <CodeBlock
+          code={`const stories = useOverlayUrlState({
+  param: 'story',
+  ...urlIndexTwoAxisKey({
+    outerCount: () => groups.length,
+    innerCounts: () => groups.map((g) => g.stories.length),
+    // ?story=user_42.3
+    outerCodec: { decode: (raw) => raw, encode: (id) => id },
+    outerLocator: {
+      locate: (id) => groups.findIndex((g) => g.author.id === id),
+      identify: (index) => groups[index].author.id,
+    },
+  }),
+});`}
+          language="tsx"
+        />
+        <p className="text-slate-600 dark:text-slate-400 mt-4 mb-4">
+          <strong>Infinite feeds.</strong> Paging is a{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            outerLocator
+          </code>{' '}
+          concern, independent of the codec.{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            locate
+          </code>{' '}
+          is synchronous, so it answers only for groups already loaded — a
+          shared link to group 400 of a feed that has loaded 20 comes up empty.{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            locateAsync
+          </code>{' '}
+          is the fallback, called only when{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            locate
+          </code>{' '}
+          misses; the story is re-bounded against whichever group it settles on.
+        </p>
+        <Callout
+          type="info"
+          title="Same locateAsync, outer axis"
+          className="mb-4"
+        >
+          This is the same{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            locateAsync
+          </code>{' '}
+          pager the single-axis keys take — on a two-axis key it rides the{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            outerLocator
+          </code>{' '}
+          you pass, so the group axis pages while the story stays a local index
+          within the resolved group.
+        </Callout>
+        <CodeBlock
+          code={`const stories = useOverlayUrlState({
+  param: 'story',
+  ...urlIndexTwoAxisKey({
+    outerCount: () => groups.length,
+    innerCounts: () => groups.map((g) => g.stories.length),
+    outerLocator: {
+      locate: (index) => (index < groups.length ? index : null),
+      identify: (index) => index,
+      locateAsync: async (index) => {
+        const loaded = await loadUntilGroup(index); // page up to it
+        if (!loaded) return null; // exhausted — link names no group
+        setGroups(loaded); // commit — the overlay renders from this state
+        return index;
+      },
+    },
+  }),
+});`}
+          language="tsx"
+        />
+        <ul className="list-disc pl-6 space-y-2 text-slate-600 dark:text-slate-400 mt-4">
+          <li>
+            While{' '}
+            <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+              locateAsync
+            </code>{' '}
+            is pending the player stays closed and the parameter is left alone,
+            so the deep link survives the fetch. A{' '}
+            <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+              null
+            </code>{' '}
+            or a rejection drops the parameter.
+          </li>
+          <li>
+            An answer arriving after the URL moved on, after a close, or after
+            unmount is discarded — a slow fetch cannot open a story nobody asked
+            for.
+          </li>
+          <li>
+            Full{' '}
+            <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+              useOverlayUrlState
+            </code>{' '}
+            options live in the{' '}
+            <Link
+              to="/docs/react/api#useoverlayurlstate"
+              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
+            >
+              React API reference
+            </Link>
+            , and the walkthrough is in the{' '}
+            <Link
+              to="/docs/react/guide#url-state"
+              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-medium"
+            >
+              React guide
+            </Link>
+            .
+          </li>
+        </ul>
+      </section>
+
       {/* Props Table */}
       <section className="mb-12">
         <Heading level={2} className="text-2xl font-bold mb-4">
@@ -875,6 +1152,9 @@ export default function StoriesPlayerPage() {
         <Heading level={3} className="text-xl font-semibold mt-6 mb-4">
           StoriesOverlayProps
         </Heading>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-2 font-mono">
+          StoriesOverlayProps&lt;T&gt;
+        </p>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -907,6 +1187,64 @@ export default function StoriesPlayerPage() {
                   </td>
                 </tr>
               ))}
+            </tbody>
+          </table>
+        </div>
+
+        <Heading level={3} className="text-xl font-semibold mt-8 mb-4">
+          StoriesUrlOverlayProps
+        </Heading>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-2 font-mono">
+          StoriesUrlOverlayProps&lt;T&gt;
+        </p>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Takes every{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            StoriesOverlay
+          </code>{' '}
+          prop except the open-state trio —{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            isOpen
+          </code>
+          ,{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            initialGroupIndex
+          </code>
+          ,{' '}
+          <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            initialStoryIndex
+          </code>{' '}
+          — supplied from the controller instead.
+        </p>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left py-3 px-4 font-semibold">Prop</th>
+                <th className="text-left py-3 px-4 font-semibold">Type</th>
+                <th className="text-left py-3 px-4 font-semibold">Default</th>
+                <th className="text-left py-3 px-4 font-semibold">
+                  Description
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  controller
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  UrlStateController&lt;TwoAxisPosition&gt;
+                </td>
+                <td className="py-3 px-4 text-slate-500 text-sm">required</td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Controller from useOverlayUrlState spread with
+                  urlIndexTwoAxisKey. Its position — a {'{ outer, inner }'}{' '}
+                  object — decides whether the player is open and where it
+                  opens; the overlay writes back on every navigation and on
+                  close.
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>

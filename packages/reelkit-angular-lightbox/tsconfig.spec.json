@@ -9,6 +9,7 @@
     "baseUrl": ".",
     "paths": {
       "@reelkit/angular": ["../reelkit-angular/src/index.ts"],
+      "@reelkit/core/testing": ["../reelkit-core/src/testing/index.ts"],
       "@reelkit/core": ["../reelkit-core/src/index.ts"]
     }
   },
