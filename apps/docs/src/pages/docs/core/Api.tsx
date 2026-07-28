@@ -1531,17 +1531,38 @@ restoreFocus();`}
                   createStableIdCodec
                 </td>
                 <td className="py-3 px-4 font-mono text-xs text-slate-500">
-                  {'(hash: boolean) => UrlCodec<string>'}
+                  {'(hashCodec?: UrlCodec<string>) => UrlCodec<string>'}
                 </td>
                 <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
                   The stable-id <strong>wire</strong>, exported for composing —
                   the param text is the item&apos;s{' '}
-                  <code className="font-mono text-xs">id</code>, raw or (with{' '}
-                  <code className="font-mono text-xs">hash</code>)
-                  base64url-obscured. The stable-id analog of{' '}
+                  <code className="font-mono text-xs">id</code>, written raw or
+                  transformed by{' '}
+                  <code className="font-mono text-xs">hashCodec</code> (pass{' '}
+                  <code className="font-mono text-xs">base64UrlCodec</code> for
+                  reversible base64url). The stable-id analog of{' '}
                   <code className="font-mono text-xs">indexCodec</code>: pair it
                   with a locator of your own instead of taking the whole{' '}
                   <code className="font-mono text-xs">urlStableIdKey</code>.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  base64UrlCodec
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {'UrlCodec<string>'}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  The ready-made hash mechanism for a stable-id key: reversible
+                  base64url (URL-safe alphabet, no padding, UTF-8) —{' '}
+                  <strong>not</strong> a cryptographic hash. Pass it as{' '}
+                  <code className="font-mono text-xs">hashCodec</code> to
+                  obscure the id in the URL, or implement your own{' '}
+                  <code className="font-mono text-xs">
+                    UrlCodec&lt;string&gt;
+                  </code>{' '}
+                  to plug in a different scheme.
                 </td>
               </tr>
               <tr className="border-b border-slate-100 dark:border-slate-800">
@@ -1581,8 +1602,9 @@ restoreFocus();`}
                   </code>
                   ): <code className="font-mono text-xs">items</code> (a live
                   getter), optional{' '}
-                  <code className="font-mono text-xs">hash</code> to
-                  base64url-encode the id, optional{' '}
+                  <code className="font-mono text-xs">hashCodec</code> (pass{' '}
+                  <code className="font-mono text-xs">base64UrlCodec</code>) to
+                  transform the id on the wire, optional{' '}
                   <code className="font-mono text-xs">locateAsync</code> to
                   window a paginated feed (fetch until the id is present on a
                   miss, then return its index). Prefer over{' '}
@@ -1608,8 +1630,9 @@ restoreFocus();`}
                   <code className="font-mono text-xs">
                     ?story=user_42.photo_7
                   </code>
-                  ); <code className="font-mono text-xs">hash</code> base64url-
-                  encodes the ids. Options{' '}
+                  ); <code className="font-mono text-xs">hashCodec</code> (e.g.{' '}
+                  <code className="font-mono text-xs">base64UrlCodec</code>)
+                  transforms both ids. Options{' '}
                   <code className="font-mono text-xs">
                     UrlStableIdTwoAxisKeyOptions
                   </code>{' '}

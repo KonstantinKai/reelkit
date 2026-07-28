@@ -13,6 +13,7 @@ import {
   useOverlayUrlState,
   indexCodec,
   urlStableIdKey,
+  base64UrlCodec,
   urlIndexTwoAxisKey,
   type UrlCodec,
   type UrlLocator,
@@ -308,9 +309,10 @@ function StoriesUrlDemo({
   const { key, encodeGroup, encodeStory } = useState(() => {
     // One id codec for whichever axes are id-addressed (group by author id,
     // story by story id). Items-independent, so it pairs with a paging locator.
-    const idCodec = urlStableIdKey({ items: () => [], hash }).codec as UrlCodec<
-      number | string
-    >;
+    const idCodec = urlStableIdKey({
+      items: () => [],
+      hashCodec: hash ? base64UrlCodec : undefined,
+    }).codec as UrlCodec<number | string>;
     const outerCodec = (
       addressing === 'index' ? indexCodec : idCodec
     ) as UrlCodec<number | string>;

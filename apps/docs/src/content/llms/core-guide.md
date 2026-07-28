@@ -241,7 +241,7 @@ Keeping them separate lets you pair any wire with any lookup — a stable id cod
 Two built-in keys build that pair for you; they differ only in what the URL names:
 
 - `urlIndexKey(() => count)` addresses by **position** (`?photo=3`). Simplest, but a bookmark opens a different item once the list is reordered.
-- `urlStableIdKey({ items })` addresses by each item's stable `id` (`?photo=post_42`), scanning the live list — the bookmark still names that item after a reorder, or drops cleanly when it is gone. `hash: true` base64url-obscures the id (reversible, not a cryptographic hash).
+- `urlStableIdKey({ items })` addresses by each item's stable `id` (`?photo=post_42`), scanning the live list — the bookmark still names that item after a reorder, or drops cleanly when it is gone. `hashCodec: base64UrlCodec` base64url-obscures the id (reversible, not a cryptographic hash).
 
 **Paging a windowed feed?** Both built-in keys take an optional `locateAsync` — `urlIndexKey(() => count, locateAsync)` and `urlStableIdKey({ items, locateAsync })`. The synchronous lookup answers for what has loaded; a miss pages the rest in, so a shared link past the window still opens — no hand-rolled codec or locator.
 

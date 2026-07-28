@@ -427,7 +427,7 @@ controller.set(null);`}
             ), scanning the live list — the bookmark still names that item after
             a reorder, or drops cleanly when it is gone.{' '}
             <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
-              hash: true
+              hashCodec: base64UrlCodec
             </code>{' '}
             base64url-obscures the id (reversible, not a cryptographic hash).
           </li>

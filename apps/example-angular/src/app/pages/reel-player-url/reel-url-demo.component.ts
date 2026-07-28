@@ -17,6 +17,7 @@ import {
   createOverlayUrlState,
   indexCodec,
   urlStableIdKey,
+  base64UrlCodec,
   urlIndexTwoAxisKey,
   type UrlCodec,
   type UrlLocator,
@@ -213,11 +214,11 @@ export class ReelUrlDemoComponent implements OnInit {
     this.loaded.set(feed.slice(0, _kPageSize));
 
     // One id codec for whichever axes are id-addressed — items-independent, so
-    // pairing it with a paging (or inner) locator is fair game. `hash`
-    // base64url-obscures the id.
+    // pairing it with a paging (or inner) locator is fair game. A base64url
+    // `hashCodec` obscures the id on the wire; omit it to keep the id raw.
     const idCodec = urlStableIdKey({
       items: () => [],
-      hash: this.hash(),
+      hashCodec: this.hash() ? base64UrlCodec : undefined,
     }).codec as UrlCodec<number | string>;
     const outerCodec = (
       addressing === 'index' ? indexCodec : idCodec

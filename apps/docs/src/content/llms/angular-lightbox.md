@@ -164,7 +164,7 @@ const photo = createOverlayUrlState({
 });
 ```
 
-Pass `hash: true` to base64url-encode the id in the URL — reversible obfuscation, not a cryptographic hash.
+Pass `hashCodec: base64UrlCodec` to base64url-encode the id in the URL — reversible obfuscation, not a cryptographic hash.
 
 Key by a different field (a `slug`), or page an infinite feed with `locateAsync`, and build the `codec` (wire) and `locator` (lookup) yourself.
 

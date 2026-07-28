@@ -1237,7 +1237,7 @@ const photo = useOverlayUrlState({
         <p className="text-slate-600 dark:text-slate-400 mt-4 mb-2">
           Pass{' '}
           <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
-            hash: true
+            hashCodec: base64UrlCodec
           </code>{' '}
           to base64url-encode the id in the URL — reversible obfuscation, not a
           cryptographic hash.
