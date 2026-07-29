@@ -503,7 +503,7 @@ const cssClasses = [
   {
     className: '.rk-stories-ring--active',
     component: 'StoriesRing',
-    description: 'Ring with unviewed stories (animates)',
+    description: 'Ring with stories left to watch (animates)',
   },
   {
     className: '.rk-stories-ring-avatar',
@@ -673,7 +673,7 @@ const themeTokens = [
   {
     token: '--rk-stories-ring-spin-duration',
     default: '4s',
-    controls: 'Active ring gradient rotation duration',
+    controls: 'Rotation duration of a ring with stories left to watch',
   },
 
   // Ring list (horizontal feed above the player)
@@ -1947,9 +1947,9 @@ function App() {
           StoriesRing
         </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
-          Circular avatar with an Instagram-style gradient ring. Segments
-          indicate viewed/unviewed stories — gradient for unviewed, muted gray
-          for viewed.
+          Circular avatar with an Instagram-style gradient ring. Two states: a
+          group with stories left to watch gets the rotating gradient, a fully
+          watched one gets a flat muted ring.
         </p>
         <CodeBlock
           code={`import { StoriesRing } from '@reelkit/react-stories-player';

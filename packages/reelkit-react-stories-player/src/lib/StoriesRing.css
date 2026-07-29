@@ -1,10 +1,13 @@
 /*
  * Theme tokens for the stories ring (avatar with animated gradient border).
  * Override at :root or any ancestor of `.rk-stories-ring`.
+ * `--rk-stories-ring-gradient` is internal: the component writes the ring into
+ * it on every render.
  */
 :root {
   --rk-stories-ring-spin-duration: 4s;
   --rk-stories-ring-active-scale: 0.95;
+  --rk-stories-ring-gradient: none;
 }
 
 .rk-stories-ring {
@@ -26,7 +29,7 @@
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background: inherit;
+  background: var(--rk-stories-ring-gradient);
 }
 
 .rk-stories-ring--active::before {

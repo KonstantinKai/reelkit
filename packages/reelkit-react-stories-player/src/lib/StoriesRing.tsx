@@ -20,13 +20,13 @@ export interface StoriesRingProps {
   size?: number;
 
   /**
-   * Gradient colors for unviewed story segments.
+   * Gradient colors for a group with stories left to watch.
    * @default Instagram gradient
    */
   gradientColors?: string[];
 
   /**
-   * Color for viewed story segments.
+   * Color for a fully watched group.
    * @default 'rgba(255,255,255,0.25)'
    */
   viewedColor?: string;
@@ -46,49 +46,11 @@ const _kInstagramGradient = [
 const _kRingWidth = 2;
 const _kGap = 2;
 
-function buildGradient(
-  total: number,
-  viewed: number,
-  colors: string[],
-  viewedColor: string,
-): string {
-  if (total <= 0) return 'transparent';
-
-  const smooth = `conic-gradient(from 180deg, ${colors.join(', ')}, ${colors[0]})`;
-
-  if (viewed <= 0) return smooth;
-  if (viewed >= total) return viewedColor;
-
-  const seg = 360 / total;
-  const gap = Math.min(4, seg * 0.1);
-  const stops: string[] = [];
-
-  for (let i = 0; i < total; i++) {
-    const s = i * seg + gap / 2;
-    const e = (i + 1) * seg - gap / 2;
-
-    stops.push(`transparent ${i * seg}deg`);
-    stops.push(`transparent ${s}deg`);
-
-    if (i < viewed) {
-      stops.push(`${viewedColor} ${s}deg`);
-      stops.push(`${viewedColor} ${e}deg`);
-    } else {
-      const c1 = colors[Math.floor((s / 360) * colors.length) % colors.length];
-      const c2 = colors[Math.floor((e / 360) * colors.length) % colors.length];
-      stops.push(`${c1} ${s}deg`);
-      stops.push(`${c2} ${e}deg`);
-    }
-  }
-
-  stops.push(`transparent ${360 - gap / 2}deg`);
-  return `conic-gradient(from 180deg, ${stops.join(', ')})`;
-}
-
 /**
- * Circular avatar with a gradient ring indicating viewed/unviewed story
- * segments. Unviewed stories show a smooth Instagram gradient ring that
- * rotates. Viewed stories show a muted gray ring.
+ * Circular avatar with a gradient ring. The ring has two states: a group with
+ * anything left to watch gets the rotating Instagram gradient, a fully watched
+ * one gets a flat muted ring. Progress within a group is not shown here — the
+ * progress bar inside the player carries that.
  */
 export const StoriesRing: FC<StoriesRingProps> = ({
   author,
@@ -100,19 +62,19 @@ export const StoriesRing: FC<StoriesRingProps> = ({
   viewedColor = 'rgba(255,255,255,0.25)',
 }) => {
   const avatarSize = size - (_kRingWidth + _kGap) * 2;
-  const hasUnviewed = viewedCount < totalStories;
-  const gradient = buildGradient(
-    totalStories,
-    viewedCount,
-    gradientColors,
-    viewedColor,
-  );
+  const isEmpty = totalStories <= 0;
+  const hasUnviewed = !isEmpty && viewedCount < totalStories;
+  const palette = gradientColors.length ? gradientColors : _kInstagramGradient;
 
-  const ringStyle: CSSProperties = {
+  const ringStyle = {
     width: size,
     height: size,
-    background: gradient,
-  };
+    '--rk-stories-ring-gradient': hasUnviewed
+      ? `conic-gradient(from 180deg, ${[...palette, palette[0]].join(', ')})`
+      : isEmpty
+        ? 'none'
+        : viewedColor,
+  } as CSSProperties;
 
   return (
     <div
