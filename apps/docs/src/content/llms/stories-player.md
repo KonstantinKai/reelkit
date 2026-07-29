@@ -272,7 +272,7 @@ Reusable building blocks exported for composition in custom render props.
 | `StoryHeader`       | Default header with author avatar, name, verified badge, relative timestamp, pause/play toggle, mute/unmute toggle, loading spinner, and close button. Used when `renderHeader` is not provided. |
 | `ImageStorySlide`   | Full-bleed image slide with `object-fit: cover`. Reports load/error via callbacks for lifecycle tracking.                                                                                        |
 | `VideoStorySlide`   | Video slide using a shared `<video>` element for iOS sound continuity. Handles autoplay, poster frames, sound sync, and reports duration and playback lifecycle events.                          |
-| `StoriesRing`       | Circular avatar with an Instagram-style gradient ring. Segments indicate viewed/unviewed stories — gradient for unviewed, muted gray for viewed.                                                 |
+| `StoriesRing`       | Circular avatar with an Instagram-style gradient ring. Two states: a group with stories left to watch gets the rotating gradient, a fully watched one gets a flat muted ring.                    |
 | `StoriesRingList`   | Horizontal scrollable row of `StoriesRing` components with author names. One ring per group.                                                                                                     |
 | `HeartAnimation`    | Animated heart overlay triggered on double-tap. Scales up and fades out over 800ms. Customise via CSS.                                                                                           |
 

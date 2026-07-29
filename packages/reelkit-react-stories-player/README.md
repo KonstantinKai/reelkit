@@ -168,34 +168,34 @@ interface StoriesGroup<T extends StoryItem = StoryItem> {
 
 ## CSS Classes
 
-| Class                        | Description                   |
-| ---------------------------- | ----------------------------- |
-| `.rk-stories-overlay`        | Overlay background            |
-| `.rk-stories-container`      | Player container              |
-| `.rk-stories-slide-wrapper`  | Slide wrapper                 |
-| `.rk-stories-story`          | Single story root             |
-| `.rk-stories-ui-layer`       | UI overlay (header, progress) |
-| `.rk-stories-header`         | Header bar                    |
-| `.rk-stories-header-avatar`  | Author avatar                 |
-| `.rk-stories-header-name`    | Author name                   |
-| `.rk-stories-header-time`    | Timestamp                     |
-| `.rk-stories-header-btn`     | Header action button          |
-| `.rk-stories-header-spinner` | Loading spinner               |
-| `.rk-stories-nav-btn`        | Desktop navigation arrow      |
-| `.rk-stories-heart`          | Double-tap heart animation    |
-| `.rk-stories-error`          | Error state                   |
-| `.rk-stories-image`          | Image story element           |
-| `.rk-stories-video`          | Video story container         |
-| `.rk-stories-video-poster`   | Video poster image            |
-| `.rk-stories-video-element`  | Video element                 |
-| `.rk-stories-progress-bar`   | Canvas progress bar wrapper   |
-| `.rk-stories-ring`           | Story ring                    |
-| `.rk-stories-ring--active`   | Ring with unviewed stories    |
-| `.rk-stories-ring-avatar`    | Ring avatar image             |
-| `.rk-stories-ring-list`      | Ring list container           |
-| `.rk-stories-ring-list-item` | Ring list item                |
-| `.rk-stories-ring-list-name` | Ring author name              |
-| `.rk-stories-swipe-wrapper`  | Swipe-to-close wrapper        |
+| Class                        | Description                     |
+| ---------------------------- | ------------------------------- |
+| `.rk-stories-overlay`        | Overlay background              |
+| `.rk-stories-container`      | Player container                |
+| `.rk-stories-slide-wrapper`  | Slide wrapper                   |
+| `.rk-stories-story`          | Single story root               |
+| `.rk-stories-ui-layer`       | UI overlay (header, progress)   |
+| `.rk-stories-header`         | Header bar                      |
+| `.rk-stories-header-avatar`  | Author avatar                   |
+| `.rk-stories-header-name`    | Author name                     |
+| `.rk-stories-header-time`    | Timestamp                       |
+| `.rk-stories-header-btn`     | Header action button            |
+| `.rk-stories-header-spinner` | Loading spinner                 |
+| `.rk-stories-nav-btn`        | Desktop navigation arrow        |
+| `.rk-stories-heart`          | Double-tap heart animation      |
+| `.rk-stories-error`          | Error state                     |
+| `.rk-stories-image`          | Image story element             |
+| `.rk-stories-video`          | Video story container           |
+| `.rk-stories-video-poster`   | Video poster image              |
+| `.rk-stories-video-element`  | Video element                   |
+| `.rk-stories-progress-bar`   | Canvas progress bar wrapper     |
+| `.rk-stories-ring`           | Story ring                      |
+| `.rk-stories-ring--active`   | Ring with stories left to watch |
+| `.rk-stories-ring-avatar`    | Ring avatar image               |
+| `.rk-stories-ring-list`      | Ring list container             |
+| `.rk-stories-ring-list-item` | Ring list item                  |
+| `.rk-stories-ring-list-name` | Ring author name                |
+| `.rk-stories-swipe-wrapper`  | Swipe-to-close wrapper          |
 
 ### Theming via CSS custom properties
 
