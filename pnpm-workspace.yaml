@@ -1,0 +1,40 @@
+packages:
+  - 'packages/*'
+  - 'apps/*'
+
+# Single version of the test runners across every project. The overrides below
+# point at these entries, which is what the old npm "$vitest" self-references
+# did before pnpm deprecated that syntax.
+catalog:
+  vitest: '~4.1.0'
+  jest: '^30.0.2'
+  jest-environment-jsdom: '^30.0.2'
+  jest-environment-node: '^30.0.2'
+
+# Cross-package deps use the workspace: protocol, so linkWorkspacePackages can
+# stay at its default of false. pnpm rewrites the protocol to a real semver
+# range when a package is published.
+overrides:
+  vitest: 'catalog:'
+  jest: 'catalog:'
+  jest-environment-jsdom: 'catalog:'
+  jest-environment-node: 'catalog:'
+  ng-packagr>find-cache-directory: 'npm:find-cache-dir@^3.3.2'
+  ng-packagr>ora: 'npm:ora@^5.4.1'
+
+# pnpm blocks dependency install scripts unless they are listed here. Every
+# entry below either fetches a native binary or, in nx's case, sets up its
+# own runtime files.
+allowBuilds:
+  '@firebase/util': true
+  '@parcel/watcher': true
+  '@swc/core': true
+  canvas: true
+  esbuild: true
+  less: true
+  lmdb: true
+  msgpackr-extract: true
+  nx: true
+  protobufjs: true
+  sharp: true
+  unrs-resolver: true

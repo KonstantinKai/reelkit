@@ -180,5 +180,8 @@
       "unitTestRunner": "jest"
     }
   },
-  "analytics": true
+  "analytics": true,
+  "migrate": {
+    "createCommits": false
+  }
 }

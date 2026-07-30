@@ -58,7 +58,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@reelkit/core": "^0.7.0"
+    "@reelkit/core": "workspace:^"
   },
   "peerDependencies": {
     "vue": ">=3.0.0",

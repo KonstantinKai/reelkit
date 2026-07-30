@@ -111,11 +111,11 @@ Both `.txt` endpoints regenerate on every docs build, so the corpus tracks the p
 ## Development
 
 ```bash
-npm install          # install dependencies
-npm run build        # build all packages
-npm test             # run all tests
-npm run check        # format + lint + typecheck
-npm run fmt          # fix formatting
+pnpm install          # install dependencies
+pnpm build            # build all packages
+pnpm test             # run all tests
+pnpm check            # format + lint + typecheck
+pnpm fmt              # fix formatting
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide.

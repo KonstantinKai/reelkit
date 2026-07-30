@@ -2,23 +2,24 @@
   "name": "@reelkit/source",
   "version": "0.0.0",
   "license": "MIT",
+  "packageManager": "pnpm@11.18.0",
   "engines": {
     "node": ">=20",
-    "npm": ">=10"
+    "pnpm": ">=11"
   },
   "scripts": {
     "prepare": "husky",
-    "build": "npx nx run-many -t build --no-tui",
-    "fmt:chk": "npx nx format:check",
-    "fmt": "npx nx format",
-    "lint": "npx nx run-many -t lint --no-tui",
-    "typecheck": "npx nx run-many -t typecheck --no-tui",
+    "build": "pnpm exec nx run-many -t build --no-tui",
+    "fmt:chk": "pnpm exec nx format:check",
+    "fmt": "pnpm exec nx format",
+    "lint": "pnpm exec nx run-many -t lint --no-tui",
+    "typecheck": "pnpm exec nx run-many -t typecheck --no-tui",
     "docs:check": "node scripts/docs-check.mjs",
-    "check": "npm run fmt:chk && npm run lint && npm run typecheck && npm run docs:check",
-    "test": "npx nx run-many -t test --no-tui",
-    "e2e": "npx nx run-many -t e2e --no-tui",
+    "check": "pnpm run fmt:chk && pnpm run lint && pnpm run typecheck && pnpm run docs:check",
+    "test": "pnpm exec nx run-many -t test --no-tui",
+    "e2e": "pnpm exec nx run-many -t e2e --no-tui",
     "update-sizes": "node scripts/update-sizes.mjs",
-    "release:npm": "which op > /dev/null 2>&1 && op run --env-file=.env.op -- npx nx release publish || echo '1Password CLI (op) is not installed. Install it from https://1password.com/downloads/command-line/'"
+    "release:npm": "which op > /dev/null 2>&1 && op run --env-file=.env.op -- sh -c 'env \"pnpm_config_//registry.npmjs.org/:_authToken=$NPM_TOKEN\" pnpm exec nx release publish' || echo '1Password CLI (op) is not installed. Install it from https://1password.com/downloads/command-line/'"
   },
   "repository": {
     "type": "git",
@@ -31,7 +32,7 @@
     "@angular/forms": "^20.3.18",
     "@angular/platform-browser-dynamic": "~20.3.0",
     "@angular/router": "^20.3.18",
-    "@reelkit/react": "*",
+    "@reelkit/react": "workspace:*",
     "@stackblitz/sdk": "^1.11.0",
     "lucide-react": "^0.562.0",
     "next": "16.1.7",
@@ -145,20 +146,6 @@
     "vue": "^3.5.13",
     "vue-tsc": "^3.2.6",
     "zone.js": "^0.15.1"
-  },
-  "workspaces": [
-    "packages/*",
-    "apps/*"
-  ],
-  "overrides": {
-    "vitest": "$vitest",
-    "jest": "$jest",
-    "jest-environment-jsdom": "$jest-environment-jsdom",
-    "jest-environment-node": "$jest-environment-node",
-    "ng-packagr": {
-      "find-cache-directory": "npm:find-cache-dir@^3.3.2",
-      "ora": "npm:ora@^5.4.1"
-    }
   },
   "nx": {
     "includedScripts": []
