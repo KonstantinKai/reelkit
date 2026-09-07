@@ -577,7 +577,14 @@ seen.resolve('user_42');             // → { outer: 2, inner: 1 } | null`}
           </code>{' '}
           pair, but reading copes with either shape whatever the option says, so
           an entry stored before you turned it on counts as fresh rather than
-          being deleted. Full options live on the{' '}
+          being deleted.{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            maxTracks
+          </code>{' '}
+          bounds count instead of age: past it, the least recently recorded
+          track is dropped on the next write, and recording a track, even a
+          position already behind, moves it to the back of the line. Full
+          options live on the{' '}
           <Link
             to="/docs/core/api#viewed-state"
             className="text-primary-600 dark:text-primary-400 hover:underline"

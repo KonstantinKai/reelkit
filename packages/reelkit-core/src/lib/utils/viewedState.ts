@@ -1,8 +1,13 @@
+import { createLruCache } from './lruCache';
 import { noop } from './noop';
 import { observeDomEvent } from './observeDomEvent';
 import { createSignal, type Dispose, type Signal } from './signal';
 import type { TwoAxisIdentity, TwoAxisPosition } from './urlIndexKey';
 import type { UrlKey } from './urlState';
+
+// Distinct wires remembered per controller. Comfortably above any payload a
+// viewer accrues, so eviction is a safety valve rather than a working mode.
+const _kDecodeMemoSize = 512;
 
 /**
  * Everything a persisted store needs from the surrounding storage system.
@@ -212,6 +217,20 @@ export interface ViewedStateBaseOptions<Id = number> {
   ttlMs?: number;
 
   /**
+   * How many tracks to keep. Past it, the least recently recorded track is
+   * dropped on the next write, so an account that has seen thousands of
+   * authors keeps a payload the size of the ones it still visits. Recording a
+   * track, even a position already behind, moves it to the back of the line.
+   *
+   * Trimming also applies when a payload is read, so lowering the cap shrinks
+   * an existing file the next time it is written. Independent of `ttlMs`: age
+   * removes first, then count.
+   *
+   * @default undefined — every track kept
+   */
+  maxTracks?: number;
+
+  /**
    * Groups entries so the controller keeps one furthest position per track. A
    * stories feed tracks per group — `id => String(id.outer)`, which
    * {@link twoAxisViewedTracking} supplies — so every author keeps their own
@@ -394,7 +413,14 @@ export const twoAxisViewedTracking: {
 export const createViewedStateController = <Id = number, Pos = number>(
   options: ViewedStateOptions<Id, Pos>,
 ): ViewedStateController<Pos> => {
-  const { storageKey, codec, locator, ttlMs } = options;
+  const { storageKey, codec, locator, ttlMs, maxTracks } = options;
+
+  // Writes go through a bounded view of the same Map when a cap is set. The
+  // Map stays the thing serialized, projected and copied, so nothing else
+  // changes shape; uncapped writes never reorder, which keeps the stored text
+  // byte-identical to what it was before caps existed.
+  const sink = (map: Map<string, TrackedEntry>) =>
+    maxTracks === undefined ? map : createLruCache(maxTracks, undefined, map);
   const storage = options.storage ?? createLocalStorageAdapter();
   const trackOf = options.trackOf ?? (() => '');
   const progressOf =
@@ -403,8 +429,21 @@ export const createViewedStateController = <Id = number, Pos = number>(
   const entries = createSignal<ReadonlyMap<string, string>>(new Map());
   let detach: Dispose | null = null;
 
-  const positionOf = (wire: string): Pos | null => {
+  // Every read decodes every stored wire, and the same wires come back read
+  // after read. A wire is an immutable string, so what it decodes to never
+  // changes for this codec; remembering the answer is safe, and bounding the
+  // memory means a payload larger than the cap merely re-decodes on a miss.
+  const decoded = createLruCache<Id | null>(_kDecodeMemoSize);
+
+  const decode = (wire: string): Id | null => {
+    if (decoded.has(wire)) return decoded.get(wire) as Id | null;
     const identity = codec.decode(wire);
+    decoded.set(wire, identity);
+    return identity;
+  };
+
+  const positionOf = (wire: string): Pos | null => {
+    const identity = decode(wire);
     return identity === null ? null : locator.locate(identity);
   };
 
@@ -475,6 +514,7 @@ export const createViewedStateController = <Id = number, Pos = number>(
    */
   const parse = (raw: string | null): Map<string, TrackedEntry> => {
     const parsed = new Map<string, TrackedEntry>();
+    const into = sink(parsed);
     if (raw === null) return parsed;
 
     let payload: unknown;
@@ -489,12 +529,12 @@ export const createViewedStateController = <Id = number, Pos = number>(
       const entry = toEntry(element);
       if (entry === null || isExpired(entry)) continue;
 
-      const identity = codec.decode(entry.wire);
+      const identity = decode(entry.wire);
       if (identity === null) continue;
 
       const track = trackOf(identity);
       const held = parsed.get(track);
-      parsed.set(track, held === undefined ? entry : furthest(held, entry));
+      into.set(track, held === undefined ? entry : furthest(held, entry));
     }
 
     return parsed;
@@ -536,9 +576,26 @@ export const createViewedStateController = <Id = number, Pos = number>(
   let memory = new Map<string, TrackedEntry>();
 
   /** Takes a snapshot as the truth without writing it anywhere. */
+  /**
+   * Whether `next` would project to what observers already see. The signal
+   * dedupes by identity alone and every snapshot is a fresh Map, so without
+   * this check a record that changed nothing on disk — a rewatch, a swipe back
+   * — would still repaint every ring subscribed to it.
+   */
+  const sameProjection = (next: Map<string, TrackedEntry>): boolean => {
+    const current = entries.value;
+    if (current.size !== next.size) return false;
+    for (const [track, entry] of next) {
+      if (current.get(track) !== entry.wire) return false;
+    }
+    return true;
+  };
+
   const adopt = (next: Map<string, TrackedEntry>) => {
+    // Memory always takes the snapshot: a refreshed lifetime stamp is real
+    // even when no wire moved. Only the visible projection is guarded.
     memory = next;
-    entries.value = project(next);
+    if (!sameProjection(next)) entries.value = project(next);
   };
 
   const publish = (next: Map<string, TrackedEntry>) => {
@@ -616,7 +673,10 @@ export const createViewedStateController = <Id = number, Pos = number>(
           // The furthest entry rides along whichever side it came from, since
           // it may be the one a failed write left in memory and nowhere else.
           const storedWire = disk?.get(track)?.wire;
-          next.set(track, ttlMs === undefined ? held : { ...held, recordedAt });
+          sink(next).set(
+            track,
+            ttlMs === undefined ? held : { ...held, recordedAt },
+          );
 
           // Nothing new to say about the position, so storage is touched only
           // when it is actually behind — which it is exactly when the furthest
@@ -624,13 +684,16 @@ export const createViewedStateController = <Id = number, Pos = number>(
           // clock restarts because someone is still watching.
           commit(
             next,
-            disk !== null && (ttlMs !== undefined || held.wire !== storedWire),
+            disk !== null &&
+              (ttlMs !== undefined ||
+                maxTracks !== undefined ||
+                held.wire !== storedWire),
           );
           return;
         }
       }
 
-      next.set(track, { wire, recordedAt });
+      sink(next).set(track, { wire, recordedAt });
       commit(next, disk !== null);
     },
 

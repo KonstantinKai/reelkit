@@ -10,8 +10,10 @@ export interface StoriesViewedState {
    * How many stories each group has been seen through, keyed by author id —
    * the shape `StoriesRingList` takes as its `viewedState`.
    *
-   * Computed from the controller on every call rather than cached, so a group that
-   * pages in, moves, or gains a story is counted as it stands now.
+   * Recomputed whenever the store publishes or the groups array is replaced,
+   * so a group that pages in, moves, or gains a story is counted as it stands
+   * now. Between those, calls return the same Map, so a memoized ring list
+   * can skip its render.
    */
   viewedCounts(): Map<string, number>;
 
@@ -40,7 +42,10 @@ export interface StoriesViewedState {
  * @typeParam T - The story type the groups carry.
  * @param viewed - Controller built from the same key the URL uses, tracked per group.
  * @param groups - Reads the current groups. A getter, so a feed that pages in
- * after setup is measured at call time.
+ * after setup is measured at call time. Replace the array when the feed
+ * changes rather than mutating it in place: results are reused while the same
+ * array comes back, and an in-place mutation is the one change that cannot be
+ * seen.
  * @returns The ring counts, resume position, and view recorder.
  *
  * @example Wire a ring list and a player to what has been seen
@@ -99,13 +104,48 @@ export const createStoriesViewedState = <T extends StoryItem = StoryItem>(
     return inner === undefined ? 0 : Math.min(inner + 1, storyCount);
   };
 
+  /**
+   * The last resolve, kept while nothing it was computed from has been
+   * replaced. The store publishes a fresh Map on every change and a feed
+   * replaces its array when it pages in or reorders, so identity is the whole
+   * invalidation test: no clock, no counter. A ring list and an overlay both
+   * ask during one render, and the overlay asks once per group it shows, so
+   * without this each of those would walk every stored entry again.
+   */
+  let last: {
+    entries: ReadonlyMap<string, string>;
+    groups: StoriesGroup<T>[];
+    reached: Map<number, number>;
+    counts: Map<string, number> | null;
+  } | null = null;
+
+  const resolved = (currentGroups: StoriesGroup<T>[]) => {
+    const currentEntries = viewed.entries.value;
+    if (
+      last !== null &&
+      last.entries === currentEntries &&
+      last.groups === currentGroups
+    ) {
+      return last;
+    }
+
+    last = {
+      entries: currentEntries,
+      groups: currentGroups,
+      reached: furthestByGroup(),
+      counts: null,
+    };
+    return last;
+  };
+
   return {
     viewedCounts: () => {
-      const reached = furthestByGroup();
-      const counts = new Map<string, number>();
+      const current = resolved(groups());
+      if (current.counts !== null) return current.counts;
 
-      groups().forEach((group, index) => {
-        const count = countOf(reached, index, group.stories.length);
+      const counts = new Map<string, number>();
+      current.groups.forEach((group, index) => {
+        const count = countOf(current.reached, index, group.stories.length);
         if (count === 0) return;
 
         // A feed can carry the same author twice. The ring is drawn once per
@@ -117,15 +157,17 @@ export const createStoriesViewedState = <T extends StoryItem = StoryItem>(
         );
       });
 
+      current.counts = counts;
       return counts;
     },
 
     resumeStoryIndex: (groupIndex) => {
-      const group = groups()[groupIndex];
+      const currentGroups = groups();
+      const group = currentGroups[groupIndex];
       if (!group) return 0;
 
       const count = countOf(
-        furthestByGroup(),
+        resolved(currentGroups).reached,
         groupIndex,
         group.stories.length,
       );

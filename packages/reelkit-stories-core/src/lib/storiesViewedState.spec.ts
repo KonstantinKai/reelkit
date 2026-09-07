@@ -158,6 +158,54 @@ describe('createStoriesViewedState', () => {
     expect(viewed.viewedCounts().get('alice')).toBe(3);
   });
 
+  // The default feed getter builds a fresh array per call. These hand a
+  // stable one over, since identity is what the reuse is keyed on.
+  it('reuses the last resolve while neither the store nor the feed has changed', () => {
+    const stable = feed();
+    const { controller, viewed } = setup(
+      '["alice.a2","bob.b1","carol.c1"]',
+      () => stable,
+    );
+    const resolve = vi.spyOn(controller, 'resolve');
+
+    const first = viewed.viewedCounts();
+    const second = viewed.viewedCounts();
+
+    expect(second).toBe(first);
+    expect(resolve).toHaveBeenCalledTimes(3);
+
+    viewed.resumeStoryIndex(1);
+    expect(resolve).toHaveBeenCalledTimes(3);
+  });
+
+  it('resolves again when the feed array is replaced', () => {
+    let groups = feed();
+    const { controller, viewed } = setup(
+      '["alice.a2","bob.b1","carol.c1"]',
+      () => groups,
+    );
+    const resolve = vi.spyOn(controller, 'resolve');
+
+    const before = viewed.viewedCounts();
+    groups = [...groups];
+    const after = viewed.viewedCounts();
+
+    expect(after).not.toBe(before);
+    expect(resolve).toHaveBeenCalledTimes(6);
+  });
+
+  it('resolves again when the store publishes', () => {
+    const stable = feed();
+    const { controller, viewed } = setup('["alice.a2"]', () => stable);
+    const resolve = vi.spyOn(controller, 'resolve');
+
+    viewed.viewedCounts();
+    viewed.markViewed(1, 0);
+    viewed.viewedCounts();
+
+    expect(resolve).toHaveBeenCalledTimes(3);
+  });
+
   it('places each stored entry once however many groups the feed holds', () => {
     const { controller, viewed } = setup('["alice.a2","bob.b1","carol.c1"]');
     const resolve = vi.spyOn(controller, 'resolve');

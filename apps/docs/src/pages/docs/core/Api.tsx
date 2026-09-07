@@ -1837,7 +1837,7 @@ restoreFocus();`}
                 </td>
                 <td className="py-3 px-4 font-mono text-xs text-slate-500">
                   {
-                    '{ storageKey; codec; locator; storage?; trackOf?; progressOf; ttlMs? }'
+                    '{ storageKey; codec; locator; storage?; trackOf?; progressOf; ttlMs?; maxTracks? }'
                   }
                 </td>
                 <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">

@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { createFakeStorageAdapter } from '../../testing';
-import { urlIndexKey } from './urlIndexKey';
+import { urlIndexKey, urlIndexTwoAxisKey } from './urlIndexKey';
 import { urlStableIdTwoAxisKey } from './urlStableIdKey';
 import {
   createViewedStateController,
@@ -406,6 +406,102 @@ describe('createViewedStateController', () => {
     expect(observer).toHaveBeenCalledTimes(3);
   });
 
+  // Every snapshot is a fresh Map and the signal dedupes by identity, so
+  // without a guard a rewatch would repaint every ring for nothing.
+  it('stays silent when a record changes nothing observers can see', () => {
+    const storage = createFakeStorageAdapter();
+    const controller = createStoriesViewedController(storage.adapter);
+    controller.attach();
+    controller.record({ outer: 0, inner: 2 });
+
+    const observer = vi.fn();
+    controller.entries.observe(observer);
+
+    controller.record({ outer: 0, inner: 0 });
+    expect(observer).not.toHaveBeenCalled();
+
+    storage.notify(storage.stored);
+    expect(observer).not.toHaveBeenCalled();
+
+    controller.record({ outer: 1, inner: 0 });
+    expect(observer).toHaveBeenCalledTimes(1);
+  });
+
+  describe('decoding stored wires', () => {
+    const storiesKey = () =>
+      urlStableIdTwoAxisKey<Group, Story>({
+        outerItems: () => feed,
+        innerItems: (outer) => outer.stories,
+      });
+
+    it('decodes each distinct wire once for the life of the controller', () => {
+      const key = storiesKey();
+      const decode = vi.spyOn(key.codec, 'decode');
+      const storage = createFakeStorageAdapter({
+        initial: '["user_1.a2","user_2.b1"]',
+      });
+      const controller = createViewedStateController({
+        storageKey: 'seen',
+        storage: storage.adapter,
+        ...key,
+        ...twoAxisViewedTracking,
+      });
+
+      controller.attach();
+      expect(decode).toHaveBeenCalledTimes(2);
+
+      controller.resolve('user_1');
+      controller.resolve('user_2');
+      controller.resolve('user_1');
+      controller.record({ outer: 2, inner: 0 });
+      expect(decode).toHaveBeenCalledTimes(2);
+
+      controller.resolve('user_3');
+      expect(decode).toHaveBeenCalledTimes(3);
+    });
+
+    it('keeps the memo per controller, not per codec', () => {
+      const key = storiesKey();
+      const decode = vi.spyOn(key.codec, 'decode');
+      const storage = createFakeStorageAdapter({ initial: '["user_1.a2"]' });
+      const build = () =>
+        createViewedStateController({
+          storageKey: 'seen',
+          storage: storage.adapter,
+          ...key,
+          ...twoAxisViewedTracking,
+        });
+
+      build().attach();
+      build().attach();
+
+      expect(decode).toHaveBeenCalledTimes(2);
+    });
+
+    // More distinct wires than the memo holds: the early ones are evicted by
+    // the time they are asked for, and a miss must answer exactly as a hit.
+    it('answers correctly for wires that fell out of the memo', () => {
+      const count = 600;
+      const wires = Array.from({ length: count }, (_, i) => `${i}.0`);
+      const storage = createFakeStorageAdapter({
+        initial: JSON.stringify(wires),
+      });
+      const controller = createViewedStateController({
+        storageKey: 'seen',
+        storage: storage.adapter,
+        ...urlIndexTwoAxisKey({
+          outerCount: () => count,
+          innerCounts: () => Array.from({ length: count }, () => 1),
+        }),
+        ...twoAxisViewedTracking,
+      });
+      controller.attach();
+
+      expect(controller.resolve('7')).toEqual({ outer: 7, inner: 0 });
+      expect(controller.resolve('599')).toEqual({ outer: 599, inner: 0 });
+    });
+  });
+
   it('clears storage rather than just memory', () => {
     const storage = createFakeStorageAdapter({
       initial: '["user_1.a2", "user_2.b1"]',
@@ -608,6 +704,115 @@ describe('entry lifetimes', () => {
     expect(controller.resolve('user_1')).toEqual({ outer: 0, inner: 1 });
 
     controller.record({ outer: 1, inner: 0 });
+    expect(storage.stored).toBe('["user_1.a2","user_2.b1"]');
+  });
+});
+
+describe('bounded track count', () => {
+  const createCapped = (
+    storage: StorageAdapter,
+    maxTracks?: number,
+    ttlMs?: number,
+  ) =>
+    createViewedStateController({
+      storageKey: 'seen',
+      storage,
+      maxTracks,
+      ttlMs,
+      ...urlStableIdTwoAxisKey<Group, Story>({
+        outerItems: () => feed,
+        innerItems: (outer) => outer.stories,
+      }),
+      ...twoAxisViewedTracking,
+    });
+
+  const storedTracks = (storage: { stored: string | null }): string[] =>
+    (JSON.parse(storage.stored ?? '[]') as string[]).map(
+      (wire) => wire.split('.')[0],
+    );
+
+  it('keeps only the most recently recorded tracks', () => {
+    const storage = createFakeStorageAdapter();
+    const controller = createCapped(storage.adapter, 2);
+    controller.attach();
+
+    controller.record({ outer: 0, inner: 0 });
+    controller.record({ outer: 1, inner: 0 });
+    controller.record({ outer: 2, inner: 0 });
+
+    expect(storedTracks(storage)).toEqual(['user_2', 'user_3']);
+  });
+
+  it('never evicts the track being recorded', () => {
+    const storage = createFakeStorageAdapter();
+    const controller = createCapped(storage.adapter, 1);
+    controller.attach();
+
+    controller.record({ outer: 0, inner: 0 });
+    controller.record({ outer: 1, inner: 0 });
+
+    expect(storedTracks(storage)).toEqual(['user_2']);
+  });
+
+  // A rewatch says nothing new about progress, but it does say the viewer is
+  // still here, which is what decides who goes next.
+  it('treats a rewatch as activity, so it is not the next to go', () => {
+    const storage = createFakeStorageAdapter();
+    const controller = createCapped(storage.adapter, 2);
+    controller.attach();
+
+    controller.record({ outer: 0, inner: 2 });
+    controller.record({ outer: 1, inner: 0 });
+    controller.record({ outer: 0, inner: 0 });
+    controller.record({ outer: 2, inner: 0 });
+
+    expect(storedTracks(storage)).toEqual(['user_1', 'user_3']);
+    expect(controller.resolve('user_1')).toEqual({ outer: 0, inner: 2 });
+  });
+
+  it('trims an oversized payload on read and persists the trim on the next write', () => {
+    const storage = createFakeStorageAdapter({
+      initial: '["user_1.a1","user_2.b1","user_3.c1"]',
+    });
+    const controller = createCapped(storage.adapter, 2);
+    controller.attach();
+
+    expect([...controller.entries.value.keys()]).toEqual(['user_2', 'user_3']);
+
+    controller.record({ outer: 2, inner: 0 });
+    expect(storedTracks(storage)).toEqual(['user_2', 'user_3']);
+  });
+
+  it('removes by age before it counts', () => {
+    const day = 24 * 60 * 60 * 1000;
+    const start = 1_785_600_000_000;
+    vi.useFakeTimers();
+    vi.setSystemTime(start);
+    try {
+      const storage = createFakeStorageAdapter({
+        initial: `[["user_1.a1",${start - 2 * day}],["user_2.b1",${start}],["user_3.c1",${start}]]`,
+      });
+      const controller = createCapped(storage.adapter, 2, day);
+      controller.attach();
+
+      expect([...controller.entries.value.keys()]).toEqual([
+        'user_2',
+        'user_3',
+      ]);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('leaves the stored order alone when there is no cap', () => {
+    const storage = createFakeStorageAdapter();
+    const controller = createCapped(storage.adapter);
+    controller.attach();
+
+    controller.record({ outer: 0, inner: 1 });
+    controller.record({ outer: 1, inner: 0 });
+    controller.record({ outer: 0, inner: 0 });
+
     expect(storage.stored).toBe('["user_1.a2","user_2.b1"]');
   });
 });

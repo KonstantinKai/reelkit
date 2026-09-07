@@ -18,14 +18,20 @@ export interface LruCache<V> {
 /**
  * Creates a simple LRU (least recently used) cache with a fixed capacity.
  * When the cache exceeds `maxSize`, the oldest entry is evicted.
+ *
  * An optional `onEvict` callback is called with the evicted value
  * (useful for cleanup like `URL.revokeObjectURL`).
+ *
+ * Pass `store` to run the policy over a Map you already hold: the cache then
+ * owns what stays in it, deleting evicted keys from that same Map, while you
+ * keep iterating and serializing it directly. Leave it out for a private one.
  */
 export const createLruCache = <V>(
   maxSize: number,
   onEvict?: (value: V, key: string) => void,
+  store: Map<string, V> = new Map(),
 ): LruCache<V> => {
-  const map = new Map<string, V>();
+  const map = store;
 
   const evictIfNeeded = () => {
     while (map.size > maxSize) {
