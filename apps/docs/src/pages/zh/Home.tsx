@@ -38,7 +38,7 @@ const highlights = [
     stat: '0',
     unit: '依赖',
     title: '零依赖',
-    description: '没有任何运行时依赖，核心包 gzip 后约 9 kB。',
+    description: '没有任何运行时依赖，核心包 gzip 后约 9.6 kB。',
     color: 'text-accent-500',
   },
   {
