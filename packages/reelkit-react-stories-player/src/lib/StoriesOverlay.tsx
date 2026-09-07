@@ -160,6 +160,19 @@ export interface StoriesOverlayProps<T extends StoryItem = StoryItem> {
   /** Fired when the player is resumed. */
   onResume?: () => void;
 
+  /**
+   * Which story a group should open on the first time it is reached — how a
+   * remembered "seen up to here" reaches the player. Pass
+   * `createStoriesViewedState(...).resumeStoryIndex` to continue where the
+   * viewer left off, or leave it out and every group starts at its first story.
+   *
+   * Only consulted for a group not yet visited during this open; a group the
+   * viewer already swiped through reopens exactly where they left it.
+   *
+   * @default undefined — every group opens on its first story
+   */
+  resumeStoryIndex?: (groupIndex: number) => number;
+
   /** Custom header renderer. */
   renderHeader?: (props: HeaderRenderProps<T>) => ReactNode;
 
@@ -243,6 +256,7 @@ function StoriesContent<T extends StoryItem = StoryItem>({
   groups,
   initialGroupIndex = 0,
   initialStoryIndex = 0,
+  resumeStoryIndex,
   groupTransition = cubeTransition,
   defaultImageDuration = 5000,
   tapZoneSplit = 0.3,
@@ -281,6 +295,7 @@ function StoriesContent<T extends StoryItem = StoryItem>({
     onDoubleTap,
     onPause,
     onResume,
+    resumeStoryIndex,
     renderFooter,
     renderSlide,
     renderLoading,
@@ -296,6 +311,7 @@ function StoriesContent<T extends StoryItem = StoryItem>({
     onDoubleTap,
     onPause,
     onResume,
+    resumeStoryIndex,
     renderFooter,
     renderSlide,
     renderLoading,
@@ -335,6 +351,8 @@ function StoriesContent<T extends StoryItem = StoryItem>({
         initialGroupIndex,
         initialStoryIndex,
         defaultImageDuration,
+        resumeStoryIndex: (groupIndex) =>
+          propsRef.current.resumeStoryIndex?.(groupIndex) ?? 0,
       },
       // Read callbacks off the ref at fire time, never off this closure. The
       // controller is built once and outlives every prop update, so a callback
@@ -633,6 +651,12 @@ function StoriesContent<T extends StoryItem = StoryItem>({
     // its own — only callback references — so there is nothing to leak; those
     // references are released when the component truly unmounts and it is
     // garbage-collected.
+
+    // The opening story is on screen without anything having been navigated to,
+    // so nothing has announced it yet. Reported here rather than at creation
+    // time because the controller is built while rendering, and a consumer's
+    // handler is free to write state from this.
+    storiesCtrl.reportInitialView();
 
     startOrDeferTimer(groups[initialGroupIndex]?.stories[initialStoryIndex]);
 

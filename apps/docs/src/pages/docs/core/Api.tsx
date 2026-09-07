@@ -1729,6 +1729,188 @@ restoreFocus();`}
           </table>
         </div>
       </section>
+
+      <section>
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Viewed State
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Remember how far a viewer got through a gallery, across reloads and
+          across tabs. An entry is stored as the exact text a{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            ?photo=
+          </code>{' '}
+          link would carry and is read back through the same{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            decode
+          </code>{' '}
+          then{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            locate
+          </code>{' '}
+          cycle — nothing trusts a stored position. Spread one key into both and
+          a bookmark and a stored entry stay the same string.
+        </p>
+        <CodeBlock
+          code={`const key = urlStableIdTwoAxisKey({ outerItems, innerItems });
+
+const url = createUrlStateController({ param: 'story', ...key });
+const seen = createViewedStateController({
+  storageKey: 'stories-seen',
+  ...key,
+  ...twoAxisViewedTracking,
+});
+
+seen.attach();                       // reads storage, follows other tabs
+seen.record({ outer: 2, inner: 1 }); // furthest point wins, a rewatch never rewinds
+seen.resolve('user_42');             // → { outer: 2, inner: 1 } | null`}
+          language="ts"
+        />
+        <p className="text-slate-600 dark:text-slate-400 mb-4 mt-4">
+          Entries are kept until forgotten explicitly. Pass{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            ttlMs
+          </code>{' '}
+          to expire them instead — per track, on a sliding clock, so somewhere
+          still being watched never goes stale beside somewhere abandoned. It
+          changes what is written (each entry becomes a{' '}
+          <code className="font-mono text-xs">[wire, timestamp]</code> pair),
+          but reading copes with either shape whatever the option says, and an
+          entry stored before you turned it on counts as fresh rather than being
+          deleted.
+        </p>
+        <p className="text-slate-600 dark:text-slate-400 mb-4 mt-4">
+          Durability follows the key, not the store: an id-addressed key keeps a
+          place across the collection being reordered, a position-addressed one
+          does not. A stored entry names the furthest point reached rather than
+          a tally of views, so removing an item from the middle shortens the
+          count — the same self-healing a shared link gets.
+        </p>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left py-3 px-4 font-semibold">Export</th>
+                <th className="text-left py-3 px-4 font-semibold">Type</th>
+                <th className="text-left py-3 px-4 font-semibold">
+                  Description
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  createViewedStateController
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {'(options) => ViewedStateController<Pos>'}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Remembers how far a viewer got, persisted as the very text a
+                  URL parameter would carry. Takes the same{' '}
+                  <code className="font-mono text-xs">codec</code>/
+                  <code className="font-mono text-xs">locator</code> pair the
+                  address bar uses, plus{' '}
+                  <code className="font-mono text-xs">storageKey</code>,
+                  optional <code className="font-mono text-xs">storage</code>,{' '}
+                  <code className="font-mono text-xs">trackOf</code> (one entry
+                  per group), and{' '}
+                  <code className="font-mono text-xs">progressOf</code>. Reads
+                  nothing until{' '}
+                  <code className="font-mono text-xs">attach()</code>, so it is
+                  safe to prerender.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  twoAxisViewedTracking
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {'{ trackOf, progressOf }'}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  The tracking pair for a two-axis player: one entry per outer
+                  slot, the inner index measuring progress through it. Spread it
+                  beside a two-axis key.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  createLocalStorageAdapter
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {'() => StorageAdapter'}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  The default backing. Also{' '}
+                  <code className="font-mono text-xs">
+                    createSessionStorageAdapter
+                  </code>{' '}
+                  for state that should not outlive the tab, and{' '}
+                  <code className="font-mono text-xs">
+                    createMemoryStorageAdapter
+                  </code>{' '}
+                  for tests and server rendering. Every one absorbs its own
+                  failures — an exhausted quota loses that write and no more.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  {'ViewedStateController<Pos>'}
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {
+                    '{ entries; resolve(track); record(position); forget(track?); attach() }'
+                  }
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  <code className="font-mono text-xs">entries</code> is a signal
+                  of track → stored text, so a ring repaints when a position is
+                  recorded here or in another tab.{' '}
+                  <code className="font-mono text-xs">resolve</code> runs the
+                  full key cycle on every call.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  {'ViewedStateOptions<Id, Pos>'}
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {
+                    '{ storageKey; codec; locator; storage?; trackOf?; progressOf?; ttlMs? }'
+                  }
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  The options{' '}
+                  <code className="font-mono text-xs">
+                    createViewedStateController
+                  </code>{' '}
+                  takes — exported so a consumer can type a config assembled
+                  separately before handing it over.{' '}
+                  <code className="font-mono text-xs">ttlMs</code> opts into
+                  expiry: a track is forgotten that long after it was last
+                  recorded, and recording it again restarts its clock.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  StorageAdapter
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {
+                    '{ read(key); write(key, value); subscribe?(key, listener) }'
+                  }
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  The injection point for a storage layer. Omit{' '}
+                  <code className="font-mono text-xs">subscribe</code> and the
+                  store simply runs without cross-tab synchronisation.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
     </div>
   );
 }

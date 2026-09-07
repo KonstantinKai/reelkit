@@ -165,6 +165,13 @@ const storiesOverlayProps = [
       'Zero-based index of the initially visible story within the group',
   },
   {
+    prop: 'resumeStoryIndex',
+    type: '(groupIndex: number) => number',
+    default: '—',
+    description:
+      'Which story a group opens on the first time it is reached, so a viewer continues where they left off. Only consulted for a group not yet visited during this open.',
+  },
+  {
     prop: 'groupTransition',
     type: 'TransitionTransformFn',
     default: 'cubeTransition',
@@ -1139,6 +1146,108 @@ const stories = useOverlayUrlState({
               React guide
             </Link>
             .
+          </li>
+        </ul>
+      </section>
+
+      {/* Remembering what was seen */}
+      <section className="mb-12">
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Remembering What Was Seen
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Rings show a gradient until a group has been watched to the end, and a
+          group reopens on the first story the viewer has not seen. Both come
+          from a <code>ViewedStateController</code>, built from the same key the
+          address bar uses — so a stored entry reads exactly like the parameter
+          of a shared link, and survives the feed being reordered when the key
+          is id-addressed.
+        </p>
+        <CodeBlock
+          code={`import {
+  StoriesOverlay,
+  StoriesRingList,
+  useViewedState,
+  createStoriesViewedState,
+  urlStableIdTwoAxisKey,
+  twoAxisViewedTracking,
+} from '@reelkit/react-stories-player';
+import { Observe } from '@reelkit/react';
+
+function Feed({ groups }) {
+  const [open, setOpen] = useState(false);
+  const [group, setGroup] = useState(0);
+
+  const seen = useViewedState({
+    storageKey: 'stories-seen',
+    ...urlStableIdTwoAxisKey({
+      outerItems: () => groups.map((g) => ({ id: g.author.id })),
+      innerItems: (outer) =>
+        groups.find((g) => g.author.id === outer.id)?.stories ?? [],
+    }),
+    ...twoAxisViewedTracking,
+  });
+  const viewed = createStoriesViewedState(seen, () => groups);
+
+  return (
+    <>
+      {/* entries is a signal, so the rings repaint as stories are seen */}
+      <Observe signals={[seen.entries]}>
+        {() => (
+          <StoriesRingList
+            groups={groups}
+            viewedState={viewed.viewedCounts()}
+            onSelect={(index) => {
+              setGroup(index);
+              setOpen(true);
+            }}
+          />
+        )}
+      </Observe>
+
+      <StoriesOverlay
+        isOpen={open}
+        onClose={() => setOpen(false)}
+        groups={groups}
+        initialGroupIndex={group}
+        initialStoryIndex={viewed.resumeStoryIndex(group)}
+        resumeStoryIndex={viewed.resumeStoryIndex}
+        onStoryViewed={viewed.markViewed}
+      />
+    </>
+  );
+}`}
+          language="tsx"
+        />
+        <ul className="space-y-2 text-slate-600 dark:text-slate-400 mt-4 list-disc pl-5">
+          <li>
+            <strong>The opening story counts.</strong> The story already on
+            screen is reported viewed on mount, so opening a one-story group and
+            closing marks it watched.
+          </li>
+          <li>
+            <strong>Swiping onward resumes too.</strong>{' '}
+            <code>resumeStoryIndex</code> is consulted for any group reached for
+            the first time this session, not just the one that was clicked; a
+            group already swiped through reopens where it was left.
+          </li>
+          <li>
+            <strong>A link still wins.</strong> With{' '}
+            <code>StoriesUrlOverlay</code>, the parameter decides where the
+            player opens; stored progress only supplies the story a ring click
+            asks for.
+          </li>
+          <li>
+            <strong>A count is a position, not a tally.</strong> An entry names
+            the furthest story reached, so adding a story to a watched group
+            lights its ring again, and removing one from the middle shortens the
+            count. The same self-healing a shared link gets.
+          </li>
+          <li>
+            <strong>Storage is pluggable.</strong> Pass{' '}
+            <code>createSessionStorageAdapter()</code> to forget on tab close,
+            or your own <code>StorageAdapter</code>. Two open tabs stay in step
+            through the browser's storage event.
           </li>
         </ul>
       </section>

@@ -11,6 +11,7 @@
 // tsconfig.base.json for vitest, plus a moduleNameMapper entry and a local
 // paths override for each jest project, which do not inherit the base paths.
 
+import type { StorageAdapter } from '../lib/utils/viewedState';
 import type { UrlAdapter } from '../lib/utils/urlState';
 
 /** Options for {@link createFakeUrlAdapter}. */
@@ -137,5 +138,96 @@ export const createFakeUrlAdapter = (
       return listeners.size;
     },
     fireUrlChange: notify,
+  };
+};
+
+/** Options for {@link createFakeStorageAdapter}. */
+export interface FakeStorageAdapterOptions {
+  /** Text already stored under the key when the test starts. */
+  initial?: string | null;
+
+  /**
+   * Whether every write throws, standing in for an exhausted quota or an area
+   * that privacy settings made read-only.
+   *
+   * @default false
+   */
+  failWrites?: boolean;
+}
+
+/** What {@link createFakeStorageAdapter} hands back. */
+export interface FakeStorageAdapter {
+  /** The adapter to pass to `createViewedStateController`. */
+  adapter: StorageAdapter;
+
+  /** How many times each method ran, for asserting a write was skipped. */
+  counts: { read: number; write: number };
+
+  /** Text currently stored, as another tab would find it. */
+  readonly stored: string | null;
+
+  /** How many subscribers are attached, so teardown can be proven symmetric. */
+  readonly listenerCount: number;
+
+  /** Makes every subsequent write throw, or stops it throwing again. */
+  setFailWrites: (failing: boolean) => void;
+
+  /** Simulates another tab writing the key, notifying subscribers. */
+  fireExternalChange: (raw: string | null) => void;
+}
+
+/**
+ * In-memory stand-in for a web storage area plus its cross-tab notifications.
+ *
+ * Core specs run without a DOM, so there is no real `localStorage` and no
+ * `storage` event to fire. This supplies both, and unlike the real thing it can
+ * be made to fail on demand — the quota path is otherwise untestable.
+ *
+ * @param options - See {@link FakeStorageAdapterOptions}.
+ * @returns The adapter plus the stored text, counters, and the external-change
+ * trigger to assert against.
+ */
+export const createFakeStorageAdapter = (
+  options: FakeStorageAdapterOptions = {},
+): FakeStorageAdapter => {
+  const { initial = null, failWrites = false } = options;
+
+  const listeners = new Set<(raw: string | null) => void>();
+  const counts = { read: 0, write: 0 };
+  let stored = initial;
+  let failing = failWrites;
+
+  const adapter: StorageAdapter = {
+    read: () => {
+      counts.read += 1;
+      return stored;
+    },
+    write: (_key, value) => {
+      counts.write += 1;
+      if (failing) throw new Error('QuotaExceededError');
+      stored = value;
+    },
+    subscribe: (_key, listener) => {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+  };
+
+  return {
+    adapter,
+    counts,
+    get stored() {
+      return stored;
+    },
+    get listenerCount() {
+      return listeners.size;
+    },
+    setFailWrites: (next) => {
+      failing = next;
+    },
+    fireExternalChange: (raw) => {
+      stored = raw;
+      listeners.forEach((listener) => listener(raw));
+    },
   };
 };

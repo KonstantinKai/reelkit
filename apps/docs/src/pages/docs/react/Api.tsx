@@ -719,6 +719,38 @@ useBodyLock(isOpen);`}
         </div>
 
         <Heading level={3} className="text-lg font-semibold mt-6 mb-2">
+          useViewedState
+        </Heading>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            ViewedStateOptions
+          </code>
+        </p>
+        <p className="text-slate-600 dark:text-slate-400 mb-2">
+          Remembers how far a viewer got through a gallery and keeps following
+          storage for as long as the component lives. Pass the same key the
+          address bar uses, and a stored entry reads exactly like the parameter
+          of a shared link. Read <code>entries</code> through{' '}
+          <code>Observe</code> so a ring repaints when a position is recorded,
+          here or in another tab.
+        </p>
+        <CodeBlock
+          code={`import { useViewedState, twoAxisViewedTracking, Observe } from '@reelkit/react';
+
+const key = urlStableIdTwoAxisKey({ outerItems, innerItems });
+const seen = useViewedState({
+  storageKey: 'stories-seen',
+  ...key,
+  ...twoAxisViewedTracking,
+});
+
+<Observe signals={[seen.entries]}>
+  {() => <StoriesRingList groups={groups} viewedState={viewed.viewedCounts()} onSelect={open} />}
+</Observe>;`}
+          language="typescript"
+        />
+
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">
           useReactRouterUrlAdapter
         </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-2">

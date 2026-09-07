@@ -23,6 +23,7 @@ export const createStoriesController = (
     initialStoryIndex: initialConfig.initialStoryIndex ?? 0,
     defaultImageDuration:
       initialConfig.defaultImageDuration ?? _kDefaultImageDuration,
+    resumeStoryIndex: initialConfig.resumeStoryIndex,
   };
 
   const events = { ...initialEvents };
@@ -35,7 +36,29 @@ export const createStoriesController = (
   const lastStoryPerGroup = new Map<number, number>();
   lastStoryPerGroup.set(config.initialGroupIndex, config.initialStoryIndex);
 
+  let hasReportedInitialView = false;
+
+  const getStoryCount = (groupIndex: number) =>
+    config.storyCounts[groupIndex] ?? 0;
+
+  /**
+   * Where a group should open. Somewhere already visited reopens exactly where
+   * it was left, whatever a caller might suggest — nothing beats the viewer's
+   * own position this session. A group not yet visited asks `resumeStoryIndex`,
+   * which is how a persisted "seen up to here" reaches the player, and its
+   * answer is bounded to a story the group actually has.
+   */
+  const storyIndexFor = (groupIndex: number): number => {
+    const visited = lastStoryPerGroup.get(groupIndex);
+    if (visited !== undefined) return visited;
+
+    const resumed = config.resumeStoryIndex?.(groupIndex) ?? 0;
+    const lastStory = Math.max(getStoryCount(groupIndex) - 1, 0);
+    return Math.min(Math.max(resumed, 0), lastStory);
+  };
+
   const fireStoryChange = () => {
+    hasReportedInitialView = true;
     lastStoryPerGroup.set(activeGroupIndex.value, activeStoryIndex.value);
     events.onStoryChange?.(activeGroupIndex.value, activeStoryIndex.value);
     events.onStoryViewed?.(activeGroupIndex.value, activeStoryIndex.value);
@@ -45,14 +68,17 @@ export const createStoriesController = (
     events.onGroupChange?.(activeGroupIndex.value);
   };
 
-  const getStoryCount = (groupIndex: number) =>
-    config.storyCounts[groupIndex] ?? 0;
-
   return {
     state: { activeGroupIndex, activeStoryIndex, isPaused },
 
     getLastStoryIndex(groupIndex: number): number {
-      return lastStoryPerGroup.get(groupIndex) ?? 0;
+      return storyIndexFor(groupIndex);
+    },
+
+    reportInitialView() {
+      if (hasReportedInitialView) return;
+      hasReportedInitialView = true;
+      events.onStoryViewed?.(activeGroupIndex.value, activeStoryIndex.value);
     },
 
     nextStory() {
@@ -83,7 +109,7 @@ export const createStoriesController = (
 
       if (nextGroup < config.groupCount) {
         activeGroupIndex.value = nextGroup;
-        activeStoryIndex.value = lastStoryPerGroup.get(nextGroup) ?? 0;
+        activeStoryIndex.value = storyIndexFor(nextGroup);
         fireGroupChange();
         fireStoryChange();
       } else {
@@ -97,7 +123,7 @@ export const createStoriesController = (
 
       if (prevGroup >= 0) {
         activeGroupIndex.value = prevGroup;
-        activeStoryIndex.value = lastStoryPerGroup.get(prevGroup) ?? 0;
+        activeStoryIndex.value = storyIndexFor(prevGroup);
         fireGroupChange();
         fireStoryChange();
       }
@@ -106,7 +132,7 @@ export const createStoriesController = (
     goToGroup(index: number) {
       if (index < 0 || index >= config.groupCount) return;
       activeGroupIndex.value = index;
-      activeStoryIndex.value = lastStoryPerGroup.get(index) ?? 0;
+      activeStoryIndex.value = storyIndexFor(index);
       fireGroupChange();
       fireStoryChange();
     },

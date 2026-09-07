@@ -1,0 +1,581 @@
+import { noop } from './noop';
+import { observeDomEvent } from './observeDomEvent';
+import { createSignal, type Dispose, type Signal } from './signal';
+import type { TwoAxisIdentity, TwoAxisPosition } from './urlIndexKey';
+import type { UrlKey } from './urlState';
+
+/**
+ * Everything a persisted store needs from the surrounding storage system.
+ *
+ * Injected rather than assumed so the same store can sit on `localStorage`, on
+ * `sessionStorage`, on an in-memory map during a test or a server render, or on
+ * a host application's own synchronous key-value layer.
+ *
+ * An implementation absorbs whatever its backing can actually fail at — a
+ * viewer losing their place is never worth taking the page down with it. For
+ * web storage that is reaching the area at all, which a privacy mode denies,
+ * and writing, which throws once the quota is spent; reading defines no failure
+ * of its own.
+ *
+ * @example Back a store with something other than web storage
+ * ```ts
+ * const controller = createViewedStateController({
+ *   storageKey: 'gallery-seen',
+ *   storage: {
+ *     read: (key) => host.cache.get(key) ?? null,
+ *     write: (key, value) => host.cache.set(key, value),
+ *   },
+ *   ...urlIndexKey(() => photos.length),
+ * });
+ * ```
+ */
+export interface StorageAdapter {
+  /** Current text stored under `key`, or `null` when nothing is stored. */
+  read(key: string): string | null;
+
+  /** Stores `value` under `key`. A failed write is silently dropped. */
+  write(key: string, value: string): void;
+
+  /**
+   * Registers a listener for changes made to `key` by another document — a
+   * second tab on the same origin. The listener receives the new text, or
+   * `null` when the key was removed.
+   *
+   * Optional: a storage backing with no notion of other documents simply omits
+   * it, and the controller then runs without cross-tab synchronisation.
+   *
+   * @returns A dispose function that removes the listener.
+   */
+  subscribe?(key: string, listener: (raw: string | null) => void): Dispose;
+}
+
+/**
+ * Whether a value can actually be used as a storage area.
+ *
+ * Present is not the same as usable: Node defines a `localStorage` global that
+ * carries none of the methods unless web storage is switched on, so a server
+ * render finds an object that answers to the name and nothing else. Checking
+ * for the two methods this adapter calls turns that into "no storage here",
+ * which is what it is.
+ */
+const isStorage = (value: unknown): value is Storage =>
+  typeof (value as Storage | null | undefined)?.getItem === 'function' &&
+  typeof (value as Storage).setItem === 'function';
+
+/**
+ * Reads a usable web storage area, or `null` when there is none.
+ *
+ * Two ways there is none. Touching `localStorage` is not merely a property
+ * read — with cookies blocked it throws a `SecurityError` on access. And where
+ * it is absent, or present in name only as it is while server rendering, there
+ * is nothing to call.
+ */
+const getStorageSafe = (getter: () => Storage): Storage | null => {
+  try {
+    const area = getter();
+    return isStorage(area) ? area : null;
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Builds an adapter over one web storage area, resolved lazily on every
+ * operation so importing this module touches no globals and stays safe to
+ * prerender.
+ *
+ * @param getter - Returns the storage area to use.
+ * @returns An adapter that degrades to doing nothing when the area is absent.
+ */
+const createWebStorageAdapter = (getter: () => Storage): StorageAdapter => ({
+  read: (key) => getStorageSafe(getter)?.getItem(key) ?? null,
+
+  write: (key, value) => {
+    try {
+      getStorageSafe(getter)?.setItem(key, value);
+    } catch {
+      // Quota exhausted, or the area turned read-only mid-session. This one
+      // write is lost and the next one tries again, so a transient failure
+      // never disables persistence for the rest of the session.
+    }
+  },
+
+  subscribe: (key, listener) => {
+    const area = getStorageSafe(getter);
+    if (typeof window === 'undefined' || !area) return noop;
+
+    return observeDomEvent(window, 'storage', (event) => {
+      if (event.storageArea !== area) return;
+      // A `null` key means the whole area was cleared, which affects this key
+      // as much as a direct write to it does.
+      if (event.key !== null && event.key !== key) return;
+      listener(event.key === null ? null : event.newValue);
+    });
+  },
+});
+
+/**
+ * The default storage backing: `localStorage`, so what a viewer has
+ * already seen survives a reload and a new tab.
+ *
+ * Globals are touched lazily inside each method, never at module scope, so
+ * importing this module stays safe during server rendering and prerendering.
+ *
+ * @returns An adapter over `localStorage`, inert where it is unavailable.
+ */
+export const createLocalStorageAdapter = (): StorageAdapter =>
+  createWebStorageAdapter(() => localStorage);
+
+/**
+ * A `sessionStorage` backing, for state that should not outlive the tab —
+ * a viewer who wants every gallery to look fresh tomorrow.
+ *
+ * @returns An adapter over `sessionStorage`, inert where it is unavailable.
+ */
+export const createSessionStorageAdapter = (): StorageAdapter =>
+  createWebStorageAdapter(() => sessionStorage);
+
+/**
+ * A map-backed adapter that persists nothing, for tests and for server
+ * rendering where no real storage exists. It has no other documents to hear
+ * from, so it offers no `subscribe`.
+ *
+ * @returns A fresh in-memory adapter.
+ */
+export const createMemoryStorageAdapter = (): StorageAdapter => {
+  const entries = new Map<string, string>();
+
+  return {
+    read: (key) => entries.get(key) ?? null,
+    write: (key, value) => {
+      entries.set(key, value);
+    },
+  };
+};
+
+/**
+ * Configuration for {@link createViewedStateController}.
+ *
+ * The `codec`/`locator` pair is the same {@link UrlKey} the address bar uses,
+ * so spread one key into both surfaces and a bookmark and a stored entry are
+ * the same string.
+ *
+ * @example One key, two surfaces
+ * ```ts
+ * const key = urlStableIdTwoAxisKey({ outerItems, innerItems });
+ * const url = createUrlStateController({ param: 'story', ...key });
+ * const seen = createViewedStateController({ storageKey: 'stories-seen', ...key });
+ * ```
+ *
+ * @typeParam Id - The identity the `codec` reads out of a stored entry.
+ * @typeParam Pos - The position an identity resolves to.
+ */
+export interface ViewedStateOptions<Id = number, Pos = number>
+  extends UrlKey<Id, Pos> {
+  /** Storage key the entries are written under, for example `stories-seen`. */
+  storageKey: string;
+
+  /**
+   * Storage backing to read and write through.
+   *
+   * @default createLocalStorageAdapter()
+   */
+  storage?: StorageAdapter;
+
+  /**
+   * How long a track stays remembered after it was last recorded, in
+   * milliseconds. Each track expires on its own clock, and recording it again
+   * restarts that clock, so somewhere still being watched never goes stale
+   * beside somewhere abandoned months ago.
+   *
+   * Setting this changes what is written: each entry becomes a
+   * `[wire, timestamp]` pair rather than a bare string. Reading copes with
+   * either shape whatever this is set to, so turning it on, off, or on again
+   * never orphans what is already stored — and an entry stored before it was
+   * turned on counts as fresh rather than being thrown away.
+   *
+   * @default undefined — remembered until forgotten explicitly
+   */
+  ttlMs?: number;
+
+  /**
+   * Groups entries so the controller keeps one furthest position per track. A
+   * stories feed tracks per group — `id => String(id.outer)`, which
+   * {@link twoAxisViewedTracking} supplies — so every author keeps their own
+   * place; a single gallery leaves it alone and keeps one entry overall.
+   *
+   * Derived from the decoded identity rather than the resolved position, so an
+   * entry whose items are not loaded still knows which track it belongs to.
+   *
+   * @default () => '' — one track for the whole collection
+   */
+  trackOf?: (id: Id) => string;
+
+  /**
+   * How far through its track a position sits. The controller keeps the greatest
+   * value it has seen per track, so re-watching from the start never rewinds
+   * what was already seen.
+   *
+   * @default the position itself — a plain slide index
+   */
+  progressOf?: (position: Pos) => number;
+}
+
+/**
+ * A record of how far a viewer got, persisted as the very text the URL would
+ * carry for the same position.
+ *
+ * @typeParam Pos - The position an entry resolves to.
+ */
+export interface ViewedStateController<Pos = number> {
+  /**
+   * Track to stored text, holding every entry that could be read back —
+   * including entries whose items are not loaded yet, which {@link resolve}
+   * answers `null` for until they are.
+   *
+   * A signal, so a ring or badge rendered from it updates when a position is
+   * recorded and when another tab records one.
+   */
+  readonly entries: Signal<ReadonlyMap<string, string>>;
+
+  /**
+   * Where a track's stored entry sits in the collection right now, or `null`
+   * when there is no entry or its item is absent. Runs the full key cycle on
+   * every call, so a reordered collection answers with the new position.
+   */
+  resolve(track: string): Pos | null;
+
+  /**
+   * Stores `position` as the furthest point reached in its track. A position
+   * behind the stored one is ignored.
+   */
+  record(position: Pos): void;
+
+  /** Clears one track, or every track when called with no argument. */
+  forget(track?: string): void;
+
+  /**
+   * Loads the stored entries and starts following changes made by other tabs.
+   *
+   * Nothing is read before this is called, so the first render matches what a
+   * server rendered and hydration stays quiet. Calling it again while attached
+   * changes nothing.
+   *
+   * @returns A dispose function that stops following changes.
+   */
+  attach(): Dispose;
+}
+
+/**
+ * A stored entry as the controller holds it: the wire text plus, when a
+ * lifetime is in play, when that track was last recorded. The timestamp is
+ * absent for anything written before a lifetime was configured.
+ */
+interface TrackedEntry {
+  wire: string;
+  recordedAt?: number;
+}
+
+/**
+ * The `trackOf`/`progressOf` pair for a two-axis player: one track per outer
+ * slot — a stories group, an album — with the inner index measuring progress
+ * through it. Spread it beside a two-axis key.
+ *
+ * @example One entry per stories group
+ * ```ts
+ * createViewedStateController({
+ *   storageKey: 'stories-seen',
+ *   ...urlStableIdTwoAxisKey({ outerItems, innerItems }),
+ *   ...twoAxisViewedTracking,
+ * });
+ * ```
+ */
+export const twoAxisViewedTracking: {
+  trackOf: (id: TwoAxisIdentity<unknown, unknown>) => string;
+  progressOf: (position: TwoAxisPosition) => number;
+} = {
+  trackOf: (id) => String(id.outer),
+  progressOf: (position) => position.inner,
+};
+
+/**
+ * Creates a controller holding how far a viewer got through a collection, persisted
+ * through a {@link StorageAdapter} as raw URL parameter text.
+ *
+ * Entries are stored as the exact text the address bar would carry for the same
+ * position, and are read back through the same `codec.decode` then
+ * `locator.locate` cycle. Nothing trusts a stored index: a collection that
+ * reordered under an identity-addressed key answers with the item's new
+ * position, and an item that is gone answers `null` rather than opening
+ * whatever slid into its slot.
+ *
+ * Durability therefore follows the key, not the controller — an identity-addressed
+ * key survives the collection being reordered, a position-addressed one does
+ * not.
+ *
+ * Reading is synchronous only: a `locator.locateAsync` is never called from
+ * here, because remembering a place must not fetch pages of a feed nobody is
+ * looking at. An entry whose items are not loaded reads as absent and is left
+ * untouched in storage until they are.
+ *
+ * @typeParam Id - The identity the `codec` reads out of a stored entry.
+ * @typeParam Pos - The position an identity resolves to.
+ * @param options - The storage key and `codec`/`locator` pair, plus the
+ * optional storage backing and track/progress functions.
+ * @returns The controller, inert until {@link ViewedStateController.attach} is called.
+ *
+ * @example Remember which stories a viewer has already seen
+ * ```ts
+ * const seen = createViewedStateController({
+ *   storageKey: 'stories-seen',
+ *   ...urlStableIdTwoAxisKey({ outerItems, innerItems }),
+ *   ...twoAxisViewedTracking,
+ * });
+ *
+ * const stopFollowing = seen.attach(); // read storage, follow other tabs
+ *
+ * seen.record({ outer: 2, inner: 1 }); // furthest point wins; a rewatch never rewinds
+ * seen.resolve('user_42'); // → { outer: 2, inner: 1 }, or null once that story is gone
+ *
+ * stopFollowing();
+ * ```
+ *
+ * @example A single gallery, one entry overall
+ * ```ts
+ * const seen = createViewedStateController({
+ *   storageKey: 'gallery-seen',
+ *   ...urlIndexKey(() => photos.length),
+ * });
+ * seen.attach();
+ *
+ * seen.record(7);
+ * seen.resolve(''); // → 7 — the default track, since `trackOf` was left alone
+ * ```
+ */
+export const createViewedStateController = <Id = number, Pos = number>(
+  options: ViewedStateOptions<Id, Pos>,
+): ViewedStateController<Pos> => {
+  const { storageKey, codec, locator, ttlMs } = options;
+  const storage = options.storage ?? createLocalStorageAdapter();
+  const trackOf = options.trackOf ?? (() => '');
+  const progressOf =
+    options.progressOf ?? ((position: Pos) => position as unknown as number);
+
+  const entries = createSignal<ReadonlyMap<string, string>>(new Map());
+  let detach: Dispose | null = null;
+
+  const positionOf = (wire: string): Pos | null => {
+    const identity = codec.decode(wire);
+    return identity === null ? null : locator.locate(identity);
+  };
+
+  const progressOfWire = (wire: string): number | null => {
+    const position = positionOf(wire);
+    return position === null ? null : progressOf(position);
+  };
+
+  /**
+   * Picks the entry that reached further. An entry nobody can place right now
+   * has no measurable progress, so a placeable rival wins; when neither can be
+   * placed the one already held stays, since there is nothing to compare.
+   */
+  const furthest = (held: TrackedEntry, rival: TrackedEntry): TrackedEntry => {
+    const heldProgress = progressOfWire(held.wire);
+    const rivalProgress = progressOfWire(rival.wire);
+    // Whichever wire wins, the track is as fresh as the freshest of the two —
+    // both were recorded, so the later one is the truth about activity.
+    const recordedAt = [held.recordedAt, rival.recordedAt].includes(undefined)
+      ? undefined
+      : Math.max(held.recordedAt ?? 0, rival.recordedAt ?? 0);
+
+    if (rivalProgress === null) return { ...held, recordedAt };
+    if (heldProgress === null) return { ...rival, recordedAt };
+    return rivalProgress > heldProgress
+      ? { ...rival, recordedAt }
+      : { ...held, recordedAt };
+  };
+
+  /**
+   * Reads one payload element into an entry. Two shapes are accepted for good:
+   * a bare wire string, and a `[wire, timestamp]` pair. Which one gets written
+   * depends on whether a lifetime is configured, but reading never depends on
+   * it — otherwise turning a lifetime on or off would orphan everything stored
+   * under the other setting.
+   */
+  const toEntry = (element: unknown): TrackedEntry | null => {
+    if (typeof element === 'string') return { wire: element };
+    if (
+      Array.isArray(element) &&
+      typeof element[0] === 'string' &&
+      typeof element[1] === 'number'
+    )
+      return { wire: element[0], recordedAt: element[1] };
+    return null;
+  };
+
+  /**
+   * Whether an entry has outlived its welcome. An entry with no timestamp
+   * predates the lifetime being configured: it counts as fresh, because
+   * switching the option on is a retention policy taking effect, not a licence
+   * to delete what a viewer already did.
+   */
+  const isExpired = (entry: TrackedEntry): boolean =>
+    ttlMs !== undefined &&
+    entry.recordedAt !== undefined &&
+    Date.now() - entry.recordedAt > ttlMs;
+
+  /**
+   * Reads stored text back into tracked entries.
+   *
+   * Two kinds of damage get two different answers. Text that cannot be read at
+   * all — broken JSON, the wrong shape, an entry the codec rejects — names
+   * nothing under any state of the collection and is dropped. An entry that
+   * reads fine but cannot be placed is kept: it is a group that has not paged
+   * in yet, not garbage, and dropping it would make a windowed feed eat its own
+   * history.
+   */
+  const parse = (raw: string | null): Map<string, TrackedEntry> => {
+    const parsed = new Map<string, TrackedEntry>();
+    if (raw === null) return parsed;
+
+    let payload: unknown;
+    try {
+      payload = JSON.parse(raw);
+    } catch {
+      return parsed;
+    }
+    if (!Array.isArray(payload)) return parsed;
+
+    for (const element of payload) {
+      const entry = toEntry(element);
+      if (entry === null || isExpired(entry)) continue;
+
+      const identity = codec.decode(entry.wire);
+      if (identity === null) continue;
+
+      const track = trackOf(identity);
+      const held = parsed.get(track);
+      parsed.set(track, held === undefined ? entry : furthest(held, entry));
+    }
+
+    return parsed;
+  };
+
+  /**
+   * Writes entries back out. Without a lifetime the payload is the flat array
+   * of wire strings it has always been, byte for byte; with one, each entry
+   * carries the moment it was recorded.
+   */
+  const serialize = (map: Map<string, TrackedEntry>): string =>
+    JSON.stringify(
+      [...map.values()].map((entry) =>
+        ttlMs === undefined
+          ? entry.wire
+          : [entry.wire, entry.recordedAt ?? Date.now()],
+      ),
+    );
+
+  const project = (map: Map<string, TrackedEntry>): Map<string, string> =>
+    new Map([...map].map(([track, entry]) => [track, entry.wire]));
+
+  // The built-in adapters absorb their own failures, but a consumer's own
+  // storage layer may not, and a viewer losing their place is never worth
+  // taking the page down with it. A failed read reads as nothing stored; a
+  // failed write keeps the position in memory for this session and the next
+  // write tries storage again.
+  const readStored = () => {
+    try {
+      return parse(storage.read(storageKey));
+    } catch {
+      return new Map<string, TrackedEntry>();
+    }
+  };
+
+  const publish = (next: Map<string, TrackedEntry>) => {
+    try {
+      storage.write(storageKey, serialize(next));
+    } catch {
+      // Kept in memory below regardless.
+    }
+    entries.value = project(next);
+  };
+
+  return {
+    entries,
+
+    resolve: (track) => {
+      const wire = entries.value.get(track);
+      return wire === undefined ? null : positionOf(wire);
+    },
+
+    record: (position) => {
+      let wire: string;
+      let track: string;
+      try {
+        const identity = locator.identify(position);
+        wire = codec.encode(identity);
+        track = trackOf(identity);
+      } catch {
+        // Reading a position back into an identity is only ever asked of a
+        // position on screen, and encoding refuses text it could not read back.
+        // A caller recording something stale trips either one, and losing that
+        // single write is a far better outcome than throwing inside whatever
+        // playback callback asked for it.
+        return;
+      }
+
+      // Merge into what is on disk right now rather than serialising what this
+      // controller happens to hold. One whose `attach` has not run yet holds
+      // nothing, and a second tab may have recorded since the last read; either
+      // way, writing from memory alone would wipe tracks this controller never
+      // touched.
+      const merged = readStored();
+      const held = merged.get(track);
+      const recordedAt = ttlMs === undefined ? undefined : Date.now();
+
+      if (held !== undefined) {
+        const heldProgress = progressOfWire(held.wire);
+        if (heldProgress !== null && heldProgress >= progressOf(position)) {
+          // Behind what is stored, so the position itself is not news. Under a
+          // lifetime the activity still is: someone is watching this track, and
+          // re-watching must keep it alive rather than let it age out.
+          if (ttlMs === undefined) return;
+          merged.set(track, { ...held, recordedAt });
+          publish(merged);
+          return;
+        }
+      }
+
+      merged.set(track, { wire, recordedAt });
+      publish(merged);
+    },
+
+    forget: (track) => {
+      if (track === undefined) {
+        publish(new Map());
+        return;
+      }
+
+      const merged = readStored();
+      merged.delete(track);
+      publish(merged);
+    },
+
+    attach: () => {
+      if (detach) return detach;
+
+      entries.value = project(readStored());
+
+      const unsubscribe = storage.subscribe?.(storageKey, (raw) => {
+        entries.value = project(parse(raw));
+      });
+
+      detach = () => {
+        detach = null;
+        unsubscribe?.();
+      };
+
+      return detach;
+    },
+  };
+};

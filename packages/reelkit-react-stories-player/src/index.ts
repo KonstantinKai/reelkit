@@ -82,8 +82,21 @@ export { VideoStorySlide } from './lib/VideoStorySlide';
 export { SoundProvider, useSoundState } from '@reelkit/react';
 
 export {
+  createStoriesViewedState,
+  type StoriesViewedState,
+} from '@reelkit/stories-core';
+
+export {
   useOverlayUrlState,
+  useViewedState,
+  createViewedStateController,
+  twoAxisViewedTracking,
+  createLocalStorageAdapter,
+  createSessionStorageAdapter,
+  createMemoryStorageAdapter,
   urlIndexTwoAxisKey,
+  urlStableIdTwoAxisKey,
+  base64UrlCodec,
   type UrlAdapter,
   type UrlCodec,
   type UrlLocator,
@@ -92,6 +105,9 @@ export {
   type TwoAxisPosition,
   type TwoAxisIdentity,
   type UrlIndexTwoAxisKeyOptions,
+  type ViewedStateController,
+  type ViewedStateOptions,
+  type StorageAdapter,
 } from '@reelkit/react';
 
 export type {

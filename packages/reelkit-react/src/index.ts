@@ -121,6 +121,7 @@ export {
   useOverlayUrlState,
   type OverlayUrlStateOptions,
 } from './lib/useOverlayUrlState';
+export { useViewedState } from './lib/useViewedState';
 export {
   createUrlStateController,
   createHistoryAdapter,
@@ -146,6 +147,14 @@ export {
   type UrlStableIdKeyOptions,
   type UrlStableIdTwoAxisKeyOptions,
   type UrlStableIdTwoAxisIdInnerOptions,
+  createViewedStateController,
+  twoAxisViewedTracking,
+  createLocalStorageAdapter,
+  createSessionStorageAdapter,
+  createMemoryStorageAdapter,
+  type ViewedStateController,
+  type ViewedStateOptions,
+  type StorageAdapter,
 } from '@reelkit/core';
 
 export {

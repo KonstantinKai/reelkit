@@ -4,6 +4,10 @@ import {
   StoriesRingList,
   ImageStorySlide,
   VideoStorySlide,
+  createStoriesViewedState,
+  useViewedState,
+  twoAxisViewedTracking,
+  urlStableIdTwoAxisKey,
   type StoriesGroup,
   type StoryItem,
   type SlideRenderProps,
@@ -14,6 +18,7 @@ import {
   fadeTransition,
   zoomTransition,
   slideTransition,
+  Observe,
   type TransitionTransformFn,
 } from '@reelkit/react';
 import { cdnUrl } from '@reelkit/example-data';
@@ -349,7 +354,23 @@ function StoriesPlayerPage() {
   const groups = useMemo(() => generateGroups(), []);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState(0);
-  const [viewedState] = useState(() => new Map<string, number>());
+
+  // Groups and stories are addressed by their own ids, so what a viewer has
+  // already seen survives the feed being reordered — and the stored text is
+  // the same text a `?story=` link would carry.
+  const seen = useViewedState({
+    storageKey: 'reelkit-stories-player-seen',
+    ...urlStableIdTwoAxisKey<{ id: string }, CustomStory>({
+      outerItems: () => groups.map((group) => ({ id: group.author.id })),
+      innerItems: (outer) =>
+        groups.find((group) => group.author.id === outer.id)?.stories ?? [],
+    }),
+    ...twoAxisViewedTracking,
+  });
+  const viewed = useMemo(
+    () => createStoriesViewedState(seen, () => groups),
+    [seen, groups],
+  );
   const [transition, setTransition] = useState<TransitionTransformFn>(
     () => cubeTransition,
   );
@@ -358,6 +379,8 @@ function StoriesPlayerPage() {
     setSelectedGroup(groupIndex);
     setIsOpen(true);
   };
+
+  const clearSeen = () => seen.forget();
 
   return (
     <div
@@ -405,13 +428,30 @@ function StoriesPlayerPage() {
               {t.label}
             </button>
           ))}
+          <button
+            onClick={clearSeen}
+            style={{
+              ...btnStyle,
+              marginLeft: 'auto',
+              background: 'rgba(255,255,255,0.15)',
+              color: '#fff',
+            }}
+          >
+            clear seen
+          </button>
         </div>
 
-        <StoriesRingList
-          groups={groups}
-          viewedState={viewedState}
-          onSelect={openStories}
-        />
+        {/* The store's entries are a signal, so the rings repaint the moment a
+            story is seen — here or in another tab. */}
+        <Observe signals={[seen.entries]}>
+          {() => (
+            <StoriesRingList
+              groups={groups}
+              viewedState={viewed.viewedCounts()}
+              onSelect={openStories}
+            />
+          )}
+        </Observe>
       </div>
 
       <StoriesOverlay<CustomStory>
@@ -419,13 +459,11 @@ function StoriesPlayerPage() {
         onClose={() => setIsOpen(false)}
         groups={groups}
         initialGroupIndex={selectedGroup}
+        initialStoryIndex={viewed.resumeStoryIndex(selectedGroup)}
+        resumeStoryIndex={viewed.resumeStoryIndex}
         groupTransition={transition}
         renderSlide={(props) => <CustomSlide {...props} />}
-        onStoryViewed={(gi, si) => {
-          const author = groups[gi].author;
-          const current = viewedState.get(author.id) ?? 0;
-          viewedState.set(author.id, Math.max(current, si + 1));
-        }}
+        onStoryViewed={viewed.markViewed}
       />
     </div>
   );

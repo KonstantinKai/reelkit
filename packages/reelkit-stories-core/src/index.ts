@@ -29,6 +29,11 @@ export type {
 export { createStoriesController } from './lib/storiesController';
 
 export {
+  createStoriesViewedState,
+  type StoriesViewedState,
+} from './lib/storiesViewedState';
+
+export {
   createTimerController,
   type TimerControllerConfig,
   type TimerController,

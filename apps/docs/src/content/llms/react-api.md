@@ -175,6 +175,27 @@ const photo = useOverlayUrlState({
 });
 ```
 
+### useViewedState
+
+Type: `ViewedStateOptions`
+
+Remembers how far a viewer got through a gallery, persisted as the very text a URL parameter would carry. Created once, reads storage after mount (safe to prerender), stops following on unmount. Read `entries` through `Observe` so a ring repaints when a position is recorded, here or in another tab.
+
+```typescript
+import { useViewedState, twoAxisViewedTracking, Observe } from '@reelkit/react';
+
+const key = urlStableIdTwoAxisKey({ outerItems, innerItems });
+const seen = useViewedState({
+  storageKey: 'stories-seen',
+  ...key,
+  ...twoAxisViewedTracking,
+});
+
+<Observe signals={[seen.entries]}>
+  {() => <StoriesRingList groups={groups} viewedState={viewed.viewedCounts()} onSelect={open} />}
+</Observe>;
+```
+
 ## Accessibility
 
 `<Reel>` renders `role="region"` + `aria-roledescription="carousel"`. Set `ariaLabel` for screen reader name. Polite live region announces "Slide N of M" on change, no re-render. Inactive slides get `inert` — focus + AT skip them.

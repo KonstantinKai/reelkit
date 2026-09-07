@@ -196,6 +196,54 @@ Takes every `StoriesOverlay` prop except the open-state trio (`isOpen`, `initial
 | `controller` | `UrlStateController<TwoAxisPosition>` | required | Controller from `useOverlayUrlState` spread with `urlIndexTwoAxisKey`. Its `position` — a `{ outer, inner }` object — decides whether the player is open and where; the overlay writes back on every navigation and on close. |
 | `onClose`    | `() => void`                          | —        | Called after the player closes. The URL drives closing, not this.                                                                                                                                                             |
 
+## Remembering what was seen
+
+Rings show a gradient until a group is watched to the end, and a group reopens on the first story not yet seen. Both come from a `ViewedStateController` built from the same key the address bar uses, so a stored entry reads exactly like the parameter of a shared link.
+
+```tsx
+import {
+  StoriesOverlay,
+  StoriesRingList,
+  useViewedState,
+  createStoriesViewedState,
+  urlStableIdTwoAxisKey,
+  twoAxisViewedTracking,
+} from '@reelkit/react-stories-player';
+import { Observe } from '@reelkit/react';
+
+const seen = useViewedState({
+  storageKey: 'stories-seen',
+  ...urlStableIdTwoAxisKey({
+    outerItems: () => groups.map((g) => ({ id: g.author.id })),
+    innerItems: (outer) => groups.find((g) => g.author.id === outer.id)?.stories ?? [],
+  }),
+  ...twoAxisViewedTracking,
+});
+const viewed = createStoriesViewedState(seen, () => groups);
+
+<Observe signals={[seen.entries]}>
+  {() => (
+    <StoriesRingList groups={groups} viewedState={viewed.viewedCounts()} onSelect={open} />
+  )}
+</Observe>
+
+<StoriesOverlay
+  isOpen={isOpen}
+  onClose={close}
+  groups={groups}
+  initialGroupIndex={group}
+  initialStoryIndex={viewed.resumeStoryIndex(group)}
+  resumeStoryIndex={viewed.resumeStoryIndex}
+  onStoryViewed={viewed.markViewed}
+/>;
+```
+
+- The story already on screen is reported viewed on mount, so opening a one-story group and closing marks it watched.
+- `resumeStoryIndex` is consulted for any group reached for the first time this session, not just the one clicked; a group already swiped through reopens where it was left.
+- With `StoriesUrlOverlay` the parameter decides where the player opens; stored progress only supplies the story a ring click asks for.
+- An entry names the furthest story reached, not a tally: adding a story to a watched group lights its ring again, removing one from the middle shortens the count.
+- Storage is pluggable (`createSessionStorageAdapter()`, or your own `StorageAdapter`); two open tabs stay in step through the browser's storage event.
+
 ## StoriesOverlay Props
 
 `StoriesOverlayProps` — the controlled overlay's props. `onClose` is **required** here because you own the open state, so you must handle closing; the URL-driven `StoriesUrlOverlay` makes it optional (the URL drives closing).
@@ -208,6 +256,7 @@ Takes every `StoriesOverlay` prop except the open-state trio (`isOpen`, `initial
 | `ariaLabel`               | `string`                               | `'Stories player'` | Dialog region accessible label                         |
 | `initialGroupIndex`       | `number`                               | `0`                | Zero-based initial group index                         |
 | `initialStoryIndex`       | `number`                               | `0`                | Zero-based initial story index in group                |
+| `resumeStoryIndex`        | `(groupIndex: number) => number`       | —                  | Story a group opens on the first time it is reached    |
 | `groupTransition`         | `TransitionTransformFn`                | `cubeTransition`   | Outer (group) slider transition                        |
 | `defaultImageDuration`    | `number`                               | `5000`             | Default image auto-advance duration (ms)               |
 | `tapZoneSplit`            | `number`                               | `0.3`              | Tap zone split ratio (0–1). Left = prev, right = next. |

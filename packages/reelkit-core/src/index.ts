@@ -65,6 +65,15 @@ export {
   type UrlStableIdKeyOptions,
   type UrlStableIdTwoAxisKeyOptions,
   type UrlStableIdTwoAxisIdInnerOptions,
+  // Viewed state
+  createViewedStateController,
+  twoAxisViewedTracking,
+  createLocalStorageAdapter,
+  createSessionStorageAdapter,
+  createMemoryStorageAdapter,
+  type ViewedStateController,
+  type ViewedStateOptions,
+  type StorageAdapter,
   // Deferred
   createDeferred,
   type Deferred,

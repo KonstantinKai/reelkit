@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   StoriesRingList,
   StoriesUrlOverlay,
+  createStoriesViewedState,
   type StoriesGroup,
   type StoryItem,
 } from '@reelkit/react-stories-player';
@@ -11,6 +12,8 @@ import {
   Observe,
   Signal,
   useOverlayUrlState,
+  useViewedState,
+  twoAxisViewedTracking,
   indexCodec,
   urlStableIdKey,
   base64UrlCodec,
@@ -19,6 +22,7 @@ import {
   type UrlLocator,
   type UrlStateController,
   type TwoAxisPosition,
+  type ViewedStateController,
 } from '@reelkit/react';
 import { useReactRouterUrlAdapter } from '@reelkit/react/react-router-url-adapter';
 import { persistedSignal } from '../components/persistedSignal';
@@ -136,14 +140,13 @@ export function StoriesPlayerUrlPage() {
   // Feed + windowing state and the switcher signals, all created once. The
   // switchers are reactive UI state, bridged into React by the `Observe` below
   // (switcher chrome + keyed remount).
-  const [allGroups, loaded, fetching, viewedState, addressing, innerKey, hash] =
-    useState(() => {
+  const [allGroups, loaded, fetching, addressing, innerKey, hash] = useState(
+    () => {
       const allGroups = generateGroups();
       return [
         allGroups,
         createSignal(allGroups.slice(0, _kPageSize)),
         createSignal(false),
-        new Map<string, number>(),
         persistedSignal<Addressing>(
           'reelkit-stories-player-url-addressing',
           'index',
@@ -157,12 +160,12 @@ export function StoriesPlayerUrlPage() {
         StoriesGroup<StoryItem>[],
         Signal<StoriesGroup<StoryItem>[]>,
         Signal<boolean>,
-        Map<string, number>,
         Signal<Addressing>,
         Signal<InnerKey>,
         Signal<boolean>,
       ];
-    })[0];
+    },
+  )[0];
 
   return (
     <div
@@ -271,7 +274,6 @@ export function StoriesPlayerUrlPage() {
                   allGroups={allGroups}
                   loaded={loaded}
                   fetching={fetching}
-                  viewedState={viewedState}
                   addressing={a}
                   innerKey={ik}
                   hash={h}
@@ -289,7 +291,6 @@ function StoriesUrlDemo({
   allGroups,
   loaded,
   fetching,
-  viewedState,
   addressing,
   innerKey,
   hash,
@@ -297,7 +298,6 @@ function StoriesUrlDemo({
   allGroups: StoriesGroup<StoryItem>[];
   loaded: Signal<StoriesGroup<StoryItem>[]>;
   fetching: Signal<boolean>;
-  viewedState: Map<string, number>;
   addressing: Addressing;
   innerKey: InnerKey;
   hash: boolean;
@@ -395,8 +395,19 @@ function StoriesUrlDemo({
     ...key,
   }) as UrlStateController<TwoAxisPosition>;
 
-  const paramFor = (groupIndex: number) =>
-    `${encodeGroup(groupIndex)}.${encodeStory(groupIndex, 0)}`;
+  // The same key drives the address bar and what is remembered, so a stored
+  // entry reads exactly like the parameter of a shared link. The wire changes
+  // with the switchers above, so the storage key carries the shape too — index
+  // entries would otherwise be read back under id addressing and name nothing.
+  const seen = useViewedState({
+    storageKey: `reelkit-stories-url-seen-${addressing}.${innerKey}${hash ? '.hash' : ''}`,
+    ...key,
+    ...twoAxisViewedTracking,
+  }) as ViewedStateController<TwoAxisPosition>;
+  const viewed = createStoriesViewedState(seen, () => loaded.value);
+
+  const paramFor = (groupIndex: number, storyIndex = 0) =>
+    `${encodeGroup(groupIndex)}.${encodeStory(groupIndex, storyIndex)}`;
   const lastGroup = allGroups.length - 1;
 
   return (
@@ -440,13 +451,18 @@ function StoriesUrlDemo({
         </Observe>
       </div>
 
-      <Observe signals={[loaded]}>
+      <Observe signals={[loaded, seen.entries]}>
         {() => (
           <StoriesRingList
             groups={loaded.value}
-            viewedState={viewedState}
+            viewedState={viewed.viewedCounts()}
             onSelect={(groupIndex) =>
-              navigate(`?${_kParam}=${paramFor(groupIndex)}`)
+              navigate(
+                `?${_kParam}=${paramFor(
+                  groupIndex,
+                  viewed.resumeStoryIndex(groupIndex),
+                )}`,
+              )
             }
           />
         )}
@@ -457,12 +473,8 @@ function StoriesUrlDemo({
           <StoriesUrlOverlay<StoryItem>
             controller={stories}
             groups={loaded.value}
-            onStoryViewed={(gi, si) => {
-              const author = loaded.value[gi]?.author;
-              if (!author) return;
-              const current = viewedState.get(author.id) ?? 0;
-              viewedState.set(author.id, Math.max(current, si + 1));
-            }}
+            resumeStoryIndex={viewed.resumeStoryIndex}
+            onStoryViewed={viewed.markViewed}
           />
         )}
       </Observe>
