@@ -229,6 +229,76 @@ describe('createStoriesController', () => {
 
       expect(ctrl.state.activeStoryIndex.value).toBe(0);
     });
+
+    it('resumes the group it opens on, like any other', () => {
+      const ctrl = makeController({
+        initialGroupIndex: 1,
+        resumeStoryIndex: () => 1,
+      });
+
+      expect(ctrl.state.activeStoryIndex.value).toBe(1);
+      expect(ctrl.getLastStoryIndex(1)).toBe(1);
+    });
+
+    it('lets an explicit opening story beat the resume callback', () => {
+      const ctrl = makeController({
+        initialGroupIndex: 1,
+        initialStoryIndex: 0,
+        resumeStoryIndex: () => 1,
+      });
+
+      expect(ctrl.state.activeStoryIndex.value).toBe(0);
+    });
+
+    it('opens the first story when neither is given', () => {
+      const ctrl = makeController({ initialGroupIndex: 1 });
+
+      expect(ctrl.state.activeStoryIndex.value).toBe(0);
+    });
+
+    // A resume answer is computed by a consumer — an empty feed divided into a
+    // count, a parsed value — so it can arrive as anything a number can be.
+    it.each([
+      ['not a number', Number.NaN, 0],
+      ['unbounded', Number.POSITIVE_INFINITY, 0],
+      ['negatively unbounded', Number.NEGATIVE_INFINITY, 0],
+      ['fractional', 2.7, 2],
+      ['a negative fraction', -0.7, 0],
+    ])(
+      'opens on a whole story when the answer is %s',
+      (_label, answer, expected) => {
+        const ctrl = makeController({
+          initialGroupIndex: 2,
+          resumeStoryIndex: () => answer,
+        });
+
+        expect(ctrl.state.activeStoryIndex.value).toBe(expected);
+        expect(Number.isInteger(ctrl.state.activeStoryIndex.value)).toBe(true);
+      },
+    );
+
+    it.each([
+      ['not a number', Number.NaN, 0],
+      ['fractional', 2.7, 2],
+    ])(
+      'opens a group reached later on a whole story when the answer is %s',
+      (_label, answer, expected) => {
+        const ctrl = makeController({ resumeStoryIndex: () => answer });
+
+        ctrl.goToGroup(2);
+
+        expect(ctrl.state.activeStoryIndex.value).toBe(expected);
+      },
+    );
+
+    it('bounds a suggestion the opening group cannot honour', () => {
+      const ctrl = makeController({
+        initialGroupIndex: 1,
+        resumeStoryIndex: () => 99,
+      });
+
+      expect(ctrl.state.activeStoryIndex.value).toBe(1);
+    });
   });
 
   describe('the story the player opens on', () => {

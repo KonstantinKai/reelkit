@@ -1,9 +1,10 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import {
   createViewedStateController,
   twoAxisViewedTracking,
+  urlIndexTwoAxisKey,
   urlStableIdTwoAxisKey,
   type TwoAxisPosition,
   type ViewedStateController,
@@ -126,6 +127,44 @@ describe('createStoriesViewedState', () => {
     const { viewed } = setup('["alice.a1","alice.a3"]', groups);
 
     expect(viewed.viewedCounts().get('alice')).toBe(3);
+  });
+
+  // A ring is drawn once per author, so a feed carrying the same author twice
+  // has to collapse their groups into one count. Positions address the groups
+  // here because an id-addressed key resolves both entries to the first match,
+  // which is the one case where the collapse never comes up.
+  it('reports the furthest of two groups sharing an author', () => {
+    const groups = [
+      group('alice', 'a1', 'a2', 'a3'),
+      group('bob', 'b1'),
+      group('alice', 'a4'),
+    ];
+    const storage = createFakeStorageAdapter({ initial: '["0.2","2.0"]' });
+    const controller = createViewedStateController({
+      storageKey: 'seen',
+      storage: storage.adapter,
+      ...urlIndexTwoAxisKey({
+        outerCount: () => groups.length,
+        innerCounts: () => groups.map((g) => g.stories.length),
+      }),
+      ...twoAxisViewedTracking,
+    });
+    controller.attach();
+
+    const viewed = createStoriesViewedState(controller, () => groups);
+
+    // Her later group is one story in; reporting whichever came last would
+    // show that instead of the three she has actually watched.
+    expect(viewed.viewedCounts().get('alice')).toBe(3);
+  });
+
+  it('places each stored entry once however many groups the feed holds', () => {
+    const { controller, viewed } = setup('["alice.a2","bob.b1","carol.c1"]');
+    const resolve = vi.spyOn(controller, 'resolve');
+
+    viewed.viewedCounts();
+
+    expect(resolve).toHaveBeenCalledTimes(3);
   });
 
   it('never counts past the stories a group still has', () => {

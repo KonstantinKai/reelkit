@@ -86,8 +86,12 @@ export interface StoriesOverlayProps<T extends StoryItem = StoryItem> {
   initialGroupIndex?: number;
 
   /**
-   * Zero-based index of the initially visible story within the group.
-   * @default 0
+   * Zero-based index of the initially visible story within the group. Naming
+   * one outright wins over anything remembered, which is what makes a shared
+   * link open where it points; leave it out and the opening group resumes
+   * through `resumeStoryIndex` like every other group.
+   *
+   * @default resumeStoryIndex(initialGroupIndex), or 0 with no resume callback
    */
   initialStoryIndex?: number;
 
@@ -167,7 +171,13 @@ export interface StoriesOverlayProps<T extends StoryItem = StoryItem> {
    * viewer left off, or leave it out and every group starts at its first story.
    *
    * Only consulted for a group not yet visited during this open; a group the
-   * viewer already swiped through reopens exactly where they left it.
+   * viewer already swiped through reopens exactly where they left it. That
+   * includes the group the player opens on, unless `initialStoryIndex` names a
+   * story outright.
+   *
+   * Called while rendering, so it must only read what a viewer has seen — a
+   * handler that writes state from it would be updating one component during
+   * another's render.
    *
    * @default undefined — every group opens on its first story
    */
@@ -255,7 +265,7 @@ function StoriesContent<T extends StoryItem = StoryItem>({
   ariaLabel,
   groups,
   initialGroupIndex = 0,
-  initialStoryIndex = 0,
+  initialStoryIndex,
   resumeStoryIndex,
   groupTransition = cubeTransition,
   defaultImageDuration = 5000,
@@ -283,7 +293,9 @@ function StoriesContent<T extends StoryItem = StoryItem>({
   const outerReelRef = useRef<ReelApi>(null);
   const innerReelRefs = useRef<Map<number, ReelApi>>(new Map());
   const activeGroupIndexRef = useRef(initialGroupIndex);
-  const activeStoryIndexRef = useRef(initialStoryIndex);
+  // Seeded from the controller below, which is what settles an omitted
+  // `initialStoryIndex` against the resume callback.
+  const activeStoryIndexRef = useRef(0);
 
   // Stable refs for callbacks to avoid stale closures
   const propsRef = useRef({
@@ -371,6 +383,11 @@ function StoriesContent<T extends StoryItem = StoryItem>({
         onClose: () => propsRef.current.onClose(),
       },
     );
+
+    // The controller settles where the player actually opens — an omitted
+    // `initialStoryIndex` resolves through the resume callback — so the ref
+    // that mirrors its position is seeded from it rather than from the prop.
+    activeStoryIndexRef.current = storiesCtrl.state.activeStoryIndex.value;
 
     const timerCtrl = createTimerController({
       duration: defaultImageDuration,
@@ -658,7 +675,11 @@ function StoriesContent<T extends StoryItem = StoryItem>({
     // handler is free to write state from this.
     storiesCtrl.reportInitialView();
 
-    startOrDeferTimer(groups[initialGroupIndex]?.stories[initialStoryIndex]);
+    startOrDeferTimer(
+      groups[storiesCtrl.state.activeGroupIndex.value]?.stories[
+        storiesCtrl.state.activeStoryIndex.value
+      ],
+    );
 
     if (apiRef) {
       apiRef.current = {

@@ -135,6 +135,24 @@ describe('createViewedStateController', () => {
     expect(storage.counts.write).toBe(writesAfterFirst);
   });
 
+  // A record that changes nothing still read storage, and what came back may
+  // be further along than this controller knew — it may never have attached at
+  // all. Throwing that answer away would leave a ring painted from a position
+  // the viewer has already passed.
+  it('takes up what storage holds even when the position it was given is behind', () => {
+    const storage = createFakeStorageAdapter({
+      initial: '["user_1.a3","user_2.b2"]',
+    });
+    const controller = createStoriesViewedController(storage.adapter);
+
+    const writesBefore = storage.counts.write;
+    controller.record({ outer: 0, inner: 1 });
+
+    expect(controller.resolve('user_1')).toEqual({ outer: 0, inner: 2 });
+    expect(controller.resolve('user_2')).toEqual({ outer: 1, inner: 1 });
+    expect(storage.counts.write).toBe(writesBefore);
+  });
+
   it('reads nothing until it is attached', () => {
     const storage = createFakeStorageAdapter({ initial: '["user_1.a2"]' });
     const controller = createStoriesViewedController(storage.adapter);
@@ -192,6 +210,64 @@ describe('createViewedStateController', () => {
     expect(controller.resolve('user_2')).toEqual({ outer: 1, inner: 1 });
   });
 
+  // A `storage` event is delivered asynchronously, so the payload it carries
+  // can already be history by the time it lands.
+  it('answers a late notification with what storage holds now, not what the event carried', () => {
+    const storage = createFakeStorageAdapter();
+    const controller = createViewedStateController({
+      storageKey: 'seen',
+      storage: storage.adapter,
+      ...urlIndexKey(() => 10),
+    });
+    controller.attach();
+
+    controller.record(7);
+    const writesAfterRecord = storage.counts.write;
+
+    // Another tab wrote 2 before this tab wrote 7; only the event is late.
+    storage.notify('["2"]');
+
+    expect(controller.resolve('')).toBe(7);
+    expect(storage.stored).toBe('["7"]');
+    expect(storage.counts.write).toBe(writesAfterRecord);
+  });
+
+  it('ignores a late clear but honours one that already happened', () => {
+    const storage = createFakeStorageAdapter();
+    const controller = createViewedStateController({
+      storageKey: 'seen',
+      storage: storage.adapter,
+      ...urlIndexKey(() => 10),
+    });
+    controller.attach();
+
+    controller.record(7);
+    storage.notify(null);
+
+    expect(controller.resolve('')).toBe(7);
+
+    storage.fireExternalChange(null);
+    expect(controller.entries.value.size).toBe(0);
+  });
+
+  it('keeps what it has when the read behind a notification fails, and catches up on the next one', () => {
+    const storage = createFakeStorageAdapter({ initial: '["4"]' });
+    const controller = createViewedStateController({
+      storageKey: 'seen',
+      storage: storage.adapter,
+      ...urlIndexKey(() => 10),
+    });
+    controller.attach();
+
+    storage.setFailReads(true);
+    storage.notify('["9"]');
+    expect(controller.resolve('')).toBe(4);
+
+    storage.setFailReads(false);
+    storage.fireExternalChange('["9"]');
+    expect(controller.resolve('')).toBe(9);
+  });
+
   it('empties out when another document clears the area', () => {
     const storage = createFakeStorageAdapter({ initial: '["user_1.a2"]' });
     const controller = createStoriesViewedController(storage.adapter);
@@ -200,6 +276,78 @@ describe('createViewedStateController', () => {
     storage.fireExternalChange(null);
 
     expect(controller.entries.value.size).toBe(0);
+  });
+
+  // A position kept alive only in memory is still the furthest one reached, so
+  // a later rewatch from earlier in the group must not quietly undo it.
+  it('does not let a later, shorter position undo one a failed write left in memory', () => {
+    const storage = createFakeStorageAdapter({ failWrites: true });
+    const controller = createStoriesViewedController(storage.adapter);
+    controller.attach();
+
+    controller.record({ outer: 0, inner: 2 });
+    controller.record({ outer: 0, inner: 0 });
+
+    expect(controller.resolve('user_1')).toEqual({ outer: 0, inner: 2 });
+
+    storage.setFailWrites(false);
+    controller.record({ outer: 0, inner: 1 });
+
+    expect(storage.stored).toBe('["user_1.a3"]');
+  });
+
+  // A read that threw says nothing about what is stored. Writing a payload
+  // built on that guess would erase every track this controller cannot see.
+  it('writes nothing when the read throws, and keeps the position in memory', () => {
+    const storage = createFakeStorageAdapter({
+      initial: '["user_1.a1","user_2.b2"]',
+    });
+    const controller = createStoriesViewedController(storage.adapter);
+    controller.attach();
+
+    storage.setFailReads(true);
+    const writesBefore = storage.counts.write;
+    controller.record({ outer: 2, inner: 0 });
+
+    expect(storage.counts.write).toBe(writesBefore);
+    expect(controller.resolve('user_3')).toEqual({ outer: 2, inner: 0 });
+
+    storage.setFailReads(false);
+    controller.record({ outer: 0, inner: 2 });
+
+    // What was on disk survives. The track that only ever lived in memory does
+    // not: for every track but the one being recorded the stored value wins, so
+    // a clear made in another tab is never resurrected from this one.
+    expect(JSON.parse(storage.stored ?? '[]').sort()).toEqual([
+      'user_1.a3',
+      'user_2.b2',
+    ]);
+  });
+
+  it('writes nothing when the read throws during a forget, and drops the track', () => {
+    const storage = createFakeStorageAdapter({
+      initial: '["user_1.a1","user_2.b2"]',
+    });
+    const controller = createStoriesViewedController(storage.adapter);
+    controller.attach();
+
+    storage.setFailReads(true);
+    const writesBefore = storage.counts.write;
+    controller.forget('user_1');
+
+    expect(storage.counts.write).toBe(writesBefore);
+    expect(controller.entries.value.has('user_1')).toBe(false);
+
+    storage.setFailReads(false);
+    controller.record({ outer: 2, inner: 0 });
+
+    // The other tab's track was never at risk: it lives on disk, which this
+    // controller re-reads rather than overwrites from memory.
+    expect(JSON.parse(storage.stored ?? '[]').sort()).toEqual([
+      'user_1.a1',
+      'user_2.b2',
+      'user_3.c1',
+    ]);
   });
 
   it('keeps the position in memory when storage refuses the write, and retries next time', () => {
@@ -479,7 +627,7 @@ describe('documentation', () => {
     // Anchor on the declaration, not the first mention: the name also appears
     // inside earlier doc comments as an `{@link}`.
     const declared = source.search(
-      new RegExp(`^export (const|interface) ${name}\\b`, 'm'),
+      new RegExp(`^export (const|interface|type) ${name}\\b`, 'm'),
     );
     expect(declared).toBeGreaterThan(-1);
 

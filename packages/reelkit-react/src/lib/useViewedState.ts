@@ -20,6 +20,10 @@ import {
  * touches `localStorage` during render and the hook is safe to prerender —
  * server and first client render agree that nothing has been seen yet.
  *
+ * Options are read once, when that controller is built. A later render passing
+ * a different `storageKey` changes nothing; give the component a `key` so it
+ * remounts when the key must change.
+ *
  * @typeParam Id - The identity the key's codec reads out of a stored entry.
  * @typeParam Pos - The position an identity resolves to.
  * @param options - Storage key and the `codec`/`locator` pair, plus the

@@ -41,6 +41,10 @@ export interface StorageAdapter {
    * second tab on the same origin. The listener receives the new text, or
    * `null` when the key was removed.
    *
+   * That value is advisory: the controller re-reads storage rather than trust
+   * it, because an event can arrive after a newer local write and would
+   * otherwise roll a viewer back past a position they had already passed.
+   *
    * Optional: a storage backing with no notion of other documents simply omits
    * it, and the controller then runs without cross-tab synchronisation.
    *
@@ -154,24 +158,28 @@ export const createMemoryStorageAdapter = (): StorageAdapter => {
 };
 
 /**
- * Configuration for {@link createViewedStateController}.
+ * How far through its track a position sits. The controller keeps the greatest
+ * value it has seen per track, so re-watching from the start never rewinds
+ * what was already seen.
  *
- * The `codec`/`locator` pair is the same {@link UrlKey} the address bar uses,
- * so spread one key into both surfaces and a bookmark and a stored entry are
- * the same string.
+ * Required for any position that is not a plain slide index, since there is no
+ * other way to compare two of them. A two-axis player spreads
+ * {@link twoAxisViewedTracking} rather than writing it out.
  *
- * @example One key, two surfaces
- * ```ts
- * const key = urlStableIdTwoAxisKey({ outerItems, innerItems });
- * const url = createUrlStateController({ param: 'story', ...key });
- * const seen = createViewedStateController({ storageKey: 'stories-seen', ...key });
- * ```
+ * @typeParam Pos - The position being measured.
+ */
+export interface ViewedProgressOption<Pos> {
+  progressOf: (position: Pos) => number;
+}
+
+/**
+ * The part of {@link ViewedStateOptions} that does not depend on the position
+ * type. Split out so the progress function can be required or optional
+ * according to that type without restating everything else.
  *
  * @typeParam Id - The identity the `codec` reads out of a stored entry.
- * @typeParam Pos - The position an identity resolves to.
  */
-export interface ViewedStateOptions<Id = number, Pos = number>
-  extends UrlKey<Id, Pos> {
+export interface ViewedStateBaseOptions<Id = number> {
   /** Storage key the entries are written under, for example `stories-seen`. */
   storageKey: string;
 
@@ -194,6 +202,11 @@ export interface ViewedStateOptions<Id = number, Pos = number>
    * never orphans what is already stored — and an entry stored before it was
    * turned on counts as fresh rather than being thrown away.
    *
+   * Age is judged whenever storage is read: at `attach()`, on every write, and
+   * when another tab changes the key. No timer runs, so a page left open for
+   * longer than the lifetime keeps showing what it loaded until something
+   * touches storage again.
+   *
    * @default undefined — remembered until forgotten explicitly
    */
   ttlMs?: number;
@@ -210,16 +223,40 @@ export interface ViewedStateOptions<Id = number, Pos = number>
    * @default () => '' — one track for the whole collection
    */
   trackOf?: (id: Id) => string;
-
-  /**
-   * How far through its track a position sits. The controller keeps the greatest
-   * value it has seen per track, so re-watching from the start never rewinds
-   * what was already seen.
-   *
-   * @default the position itself — a plain slide index
-   */
-  progressOf?: (position: Pos) => number;
 }
+
+/**
+ * Configuration for {@link createViewedStateController}.
+ *
+ * The `codec`/`locator` pair is the same {@link UrlKey} the address bar uses,
+ * so spread one key into both surfaces and a bookmark and a stored entry are
+ * the same string.
+ *
+ * `progressOf` is optional only for a plain slide index, where the position is
+ * its own measure of progress. Any other position — a two-axis
+ * `{ outer, inner }`, say — must say which number to compare, because
+ * "further than" has no meaning otherwise and every recording would overwrite
+ * the last.
+ *
+ * @example One key, two surfaces
+ * ```ts
+ * const key = urlStableIdTwoAxisKey({ outerItems, innerItems });
+ * const url = createUrlStateController({ param: 'story', ...key });
+ * const seen = createViewedStateController({
+ *   storageKey: 'stories-seen',
+ *   ...key,
+ *   ...twoAxisViewedTracking,
+ * });
+ * ```
+ *
+ * @typeParam Id - The identity the `codec` reads out of a stored entry.
+ * @typeParam Pos - The position an identity resolves to.
+ */
+export type ViewedStateOptions<Id = number, Pos = number> = UrlKey<Id, Pos> &
+  ViewedStateBaseOptions<Id> &
+  ([Pos] extends [number]
+    ? Partial<ViewedProgressOption<Pos>>
+    : ViewedProgressOption<Pos>);
 
 /**
  * A record of how far a viewer got, persisted as the very text the URL would
@@ -247,7 +284,9 @@ export interface ViewedStateController<Pos = number> {
 
   /**
    * Stores `position` as the furthest point reached in its track. A position
-   * behind the stored one is ignored.
+   * behind the one already held does not move it, but it does refresh what
+   * this controller knows from storage, and under `ttlMs` it restarts that
+   * track's clock.
    */
   record(position: Pos): void;
 
@@ -480,15 +519,26 @@ export const createViewedStateController = <Id = number, Pos = number>(
 
   // The built-in adapters absorb their own failures, but a consumer's own
   // storage layer may not, and a viewer losing their place is never worth
-  // taking the page down with it. A failed read reads as nothing stored; a
-  // failed write keeps the position in memory for this session and the next
-  // write tries storage again.
-  const readStored = () => {
+  // taking the page down with it. A failed read answers `null` — which is not
+  // the same as an empty area, and is why it is not merely parsed as nothing:
+  // writing a payload built on that guess would erase every track this
+  // controller cannot see. A failed write keeps the position in memory for the
+  // session and the next write tries storage again.
+  const readStored = (): Map<string, TrackedEntry> | null => {
     try {
       return parse(storage.read(storageKey));
     } catch {
-      return new Map<string, TrackedEntry>();
+      return null;
     }
+  };
+
+  /** What this controller currently holds, in the shape storage is read into. */
+  let memory = new Map<string, TrackedEntry>();
+
+  /** Takes a snapshot as the truth without writing it anywhere. */
+  const adopt = (next: Map<string, TrackedEntry>) => {
+    memory = next;
+    entries.value = project(next);
   };
 
   const publish = (next: Map<string, TrackedEntry>) => {
@@ -497,7 +547,25 @@ export const createViewedStateController = <Id = number, Pos = number>(
     } catch {
       // Kept in memory below regardless.
     }
-    entries.value = project(next);
+    adopt(next);
+  };
+
+  /**
+   * Takes a snapshot, writing it out only when storage answered. A read that
+   * threw says nothing about what is stored, so the position is kept for this
+   * session rather than written over tracks this controller cannot see.
+   */
+  const commit = (next: Map<string, TrackedEntry>, persist: boolean) =>
+    persist ? publish(next) : adopt(next);
+
+  /** The further of two entries where either may be missing. */
+  const furthestOf = (
+    a: TrackedEntry | undefined,
+    b: TrackedEntry | undefined,
+  ): TrackedEntry | undefined => {
+    if (a === undefined) return b;
+    if (b === undefined) return a;
+    return furthest(a, b);
   };
 
   return {
@@ -529,25 +597,41 @@ export const createViewedStateController = <Id = number, Pos = number>(
       // nothing, and a second tab may have recorded since the last read; either
       // way, writing from memory alone would wipe tracks this controller never
       // touched.
-      const merged = readStored();
-      const held = merged.get(track);
+      const disk = readStored();
+      const next = disk ?? new Map(memory);
       const recordedAt = ttlMs === undefined ? undefined : Date.now();
 
-      if (held !== undefined) {
-        const heldProgress = progressOfWire(held.wire);
-        if (heldProgress !== null && heldProgress >= progressOf(position)) {
-          // Behind what is stored, so the position itself is not news. Under a
+      // For the track being recorded, what this controller holds counts as much
+      // as what is on disk. A position that survived a failed write lives only
+      // in memory, and a later, shorter one must not quietly undo it.
+      const held = furthestOf(next.get(track), memory.get(track));
+      const heldProgress =
+        held === undefined ? null : progressOfWire(held.wire);
+
+      if (held !== undefined && heldProgress !== null) {
+        if (heldProgress >= progressOf(position)) {
+          // Behind what is known, so the position itself is not news. Under a
           // lifetime the activity still is: someone is watching this track, and
           // re-watching must keep it alive rather than let it age out.
-          if (ttlMs === undefined) return;
-          merged.set(track, { ...held, recordedAt });
-          publish(merged);
+          // The furthest entry rides along whichever side it came from, since
+          // it may be the one a failed write left in memory and nowhere else.
+          const storedWire = disk?.get(track)?.wire;
+          next.set(track, ttlMs === undefined ? held : { ...held, recordedAt });
+
+          // Nothing new to say about the position, so storage is touched only
+          // when it is actually behind — which it is exactly when the furthest
+          // entry never reached it. Under a lifetime it is always touched: the
+          // clock restarts because someone is still watching.
+          commit(
+            next,
+            disk !== null && (ttlMs !== undefined || held.wire !== storedWire),
+          );
           return;
         }
       }
 
-      merged.set(track, { wire, recordedAt });
-      publish(merged);
+      next.set(track, { wire, recordedAt });
+      commit(next, disk !== null);
     },
 
     forget: (track) => {
@@ -556,18 +640,26 @@ export const createViewedStateController = <Id = number, Pos = number>(
         return;
       }
 
-      const merged = readStored();
-      merged.delete(track);
-      publish(merged);
+      const disk = readStored();
+      const next = disk ?? new Map(memory);
+      next.delete(track);
+      commit(next, disk !== null);
     },
 
     attach: () => {
       if (detach) return detach;
 
-      entries.value = project(readStored());
+      const stored = readStored();
+      if (stored !== null) adopt(stored);
 
-      const unsubscribe = storage.subscribe?.(storageKey, (raw) => {
-        entries.value = project(parse(raw));
+      const unsubscribe = storage.subscribe?.(storageKey, () => {
+        // What the event carries is what another document wrote at the moment
+        // it wrote it. Delivery is asynchronous, and this tab may have recorded
+        // since, so taking the payload at face value would roll a viewer back
+        // to a position they had already moved past. Current storage is the
+        // truth; a read that fails leaves this tab on what it already had.
+        const current = readStored();
+        if (current !== null) adopt(current);
       });
 
       detach = () => {

@@ -153,6 +153,15 @@ export interface FakeStorageAdapterOptions {
    * @default false
    */
   failWrites?: boolean;
+
+  /**
+   * Whether every read throws, standing in for a consumer's own storage layer
+   * failing. Web storage defines no failure for a read, so this is only
+   * reachable through an adapter someone wrote themselves.
+   *
+   * @default false
+   */
+  failReads?: boolean;
 }
 
 /** What {@link createFakeStorageAdapter} hands back. */
@@ -172,8 +181,18 @@ export interface FakeStorageAdapter {
   /** Makes every subsequent write throw, or stops it throwing again. */
   setFailWrites: (failing: boolean) => void;
 
+  /** Makes every subsequent read throw, or stops it throwing again. */
+  setFailReads: (failing: boolean) => void;
+
   /** Simulates another tab writing the key, notifying subscribers. */
   fireExternalChange: (raw: string | null) => void;
+
+  /**
+   * Delivers a notification carrying `raw` without changing what is stored —
+   * an event that was queued before a later write and arrives after it, which
+   * is the ordering a real `storage` event makes possible.
+   */
+  notify: (raw: string | null) => void;
 }
 
 /**
@@ -190,16 +209,18 @@ export interface FakeStorageAdapter {
 export const createFakeStorageAdapter = (
   options: FakeStorageAdapterOptions = {},
 ): FakeStorageAdapter => {
-  const { initial = null, failWrites = false } = options;
+  const { initial = null, failWrites = false, failReads = false } = options;
 
   const listeners = new Set<(raw: string | null) => void>();
   const counts = { read: 0, write: 0 };
   let stored = initial;
   let failing = failWrites;
+  let failingReads = failReads;
 
   const adapter: StorageAdapter = {
     read: () => {
       counts.read += 1;
+      if (failingReads) throw new Error('storage unavailable');
       return stored;
     },
     write: (_key, value) => {
@@ -225,9 +246,13 @@ export const createFakeStorageAdapter = (
     setFailWrites: (next) => {
       failing = next;
     },
+    setFailReads: (next) => {
+      failingReads = next;
+    },
     fireExternalChange: (raw) => {
       stored = raw;
       listeners.forEach((listener) => listener(raw));
     },
+    notify: (raw) => listeners.forEach((listener) => listener(raw)),
   };
 };

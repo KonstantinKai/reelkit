@@ -1,4 +1,4 @@
-import { createSignal } from '@reelkit/core';
+import { clamp, createSignal } from '@reelkit/core';
 import type {
   StoriesControllerConfig,
   StoriesControllerEvents,
@@ -20,7 +20,7 @@ export const createStoriesController = (
     groupCount: initialConfig.groupCount,
     storyCounts: [...initialConfig.storyCounts],
     initialGroupIndex: initialConfig.initialGroupIndex ?? 0,
-    initialStoryIndex: initialConfig.initialStoryIndex ?? 0,
+    initialStoryIndex: initialConfig.initialStoryIndex,
     defaultImageDuration:
       initialConfig.defaultImageDuration ?? _kDefaultImageDuration,
     resumeStoryIndex: initialConfig.resumeStoryIndex,
@@ -28,34 +28,50 @@ export const createStoriesController = (
 
   const events = { ...initialEvents };
 
-  const activeGroupIndex = createSignal(config.initialGroupIndex);
-  const activeStoryIndex = createSignal(config.initialStoryIndex);
-  const isPaused = createSignal(false);
-
-  // Track last viewed story index per group for resume on return
-  const lastStoryPerGroup = new Map<number, number>();
-  lastStoryPerGroup.set(config.initialGroupIndex, config.initialStoryIndex);
-
-  let hasReportedInitialView = false;
-
   const getStoryCount = (groupIndex: number) =>
     config.storyCounts[groupIndex] ?? 0;
 
   /**
+   * Where a group opens the first time it is reached: what `resumeStoryIndex`
+   * names, which is how a persisted "seen up to here" reaches the player,
+   * bounded to a story the group actually has.
+   */
+  const resumedStoryIndex = (groupIndex: number): number => {
+    const suggested = config.resumeStoryIndex?.(groupIndex) ?? 0;
+
+    // The answer is computed by a consumer, so it can arrive as anything a
+    // number can be. Only a whole one names a story: a fraction would index
+    // nothing, and a value that is not a number at all carries no opinion, so
+    // the group starts at its beginning.
+    const resumed = Number.isFinite(suggested) ? Math.trunc(suggested) : 0;
+    const lastStory = Math.max(getStoryCount(groupIndex) - 1, 0);
+    return clamp(resumed, 0, lastStory);
+  };
+
+  // The group the player opens on is reached for the first time like any other,
+  // so it resumes like any other. An explicit `initialStoryIndex` still wins —
+  // that is a caller naming the story outright, which is what a shared link
+  // does, and a link beats what was remembered.
+  const openingStoryIndex =
+    config.initialStoryIndex ?? resumedStoryIndex(config.initialGroupIndex);
+
+  const activeGroupIndex = createSignal(config.initialGroupIndex);
+  const activeStoryIndex = createSignal(openingStoryIndex);
+  const isPaused = createSignal(false);
+
+  // Track last viewed story index per group for resume on return
+  const lastStoryPerGroup = new Map<number, number>();
+  lastStoryPerGroup.set(config.initialGroupIndex, openingStoryIndex);
+
+  let hasReportedInitialView = false;
+
+  /**
    * Where a group should open. Somewhere already visited reopens exactly where
    * it was left, whatever a caller might suggest — nothing beats the viewer's
-   * own position this session. A group not yet visited asks `resumeStoryIndex`,
-   * which is how a persisted "seen up to here" reaches the player, and its
-   * answer is bounded to a story the group actually has.
+   * own position this session.
    */
-  const storyIndexFor = (groupIndex: number): number => {
-    const visited = lastStoryPerGroup.get(groupIndex);
-    if (visited !== undefined) return visited;
-
-    const resumed = config.resumeStoryIndex?.(groupIndex) ?? 0;
-    const lastStory = Math.max(getStoryCount(groupIndex) - 1, 0);
-    return Math.min(Math.max(resumed, 0), lastStory);
-  };
+  const storyIndexFor = (groupIndex: number): number =>
+    lastStoryPerGroup.get(groupIndex) ?? resumedStoryIndex(groupIndex);
 
   const fireStoryChange = () => {
     hasReportedInitialView = true;

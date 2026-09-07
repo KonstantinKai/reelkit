@@ -51,6 +51,18 @@ export default defineConfig(() => ({
     environment: 'jsdom',
     include: ['{src,tests}/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     reporters: ['default'],
+    // A runtime spec proves nothing about a type: the transform strips types
+    // before the test runs, so an expectation that a call must not compile
+    // passes whether or not it does. These files are compiled instead of run.
+    typecheck: {
+      enabled: true,
+      include: ['src/**/*.test-d.ts'],
+      // Its own project rather than the spec one, which pulls in every runtime
+      // spec — those are compiled away before they run, so they carry type
+      // errors nothing has ever reported, and they would arrive here as noise
+      // from files this gate is not about.
+      tsconfig: './tsconfig.test-d.json',
+    },
     coverage: {
       reportsDirectory: '../../coverage/packages/reelkit-core',
       provider: 'v8' as const,

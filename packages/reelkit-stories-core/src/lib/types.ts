@@ -64,8 +64,12 @@ export interface StoriesControllerConfig {
   initialGroupIndex?: number;
 
   /**
-   * Initial story index within the group.
-   * @default 0
+   * Initial story index within the group. Naming one outright wins over
+   * anything remembered, which is what makes a shared link open where it
+   * points; leave it out and the opening group resumes through
+   * {@link StoriesControllerConfig.resumeStoryIndex} like any other.
+   *
+   * @default resumeStoryIndex(initialGroupIndex), or 0 with no resume callback
    */
   initialStoryIndex?: number;
 

@@ -64,29 +64,57 @@ export const createStoriesViewedState = <T extends StoryItem = StoryItem>(
   groups: () => StoriesGroup<T>[],
 ): StoriesViewedState => {
   /**
-   * How many stories of `groupIndex` have been seen. Two entries can point at
-   * one group — a feed with a repeated author, or a position key whose groups
-   * moved — so the furthest of them wins rather than whichever came last.
+   * Furthest story reached in each group, keyed by group index. Every stored
+   * entry is placed once — resolving runs the whole key cycle, so asking per
+   * group would repeat that work for every group in the feed.
+   *
+   * Two entries can point at one group — a feed with a repeated author, or a
+   * position key whose groups moved — so the furthest of them wins rather than
+   * whichever came last.
    */
-  const countOf = (groupIndex: number, storyCount: number): number => {
-    let count = 0;
+  const furthestByGroup = (): Map<number, number> => {
+    const reached = new Map<number, number>();
 
     for (const track of viewed.entries.value.keys()) {
       const position = viewed.resolve(track);
-      if (position === null || position.outer !== groupIndex) continue;
-      count = Math.max(count, Math.min(position.inner + 1, storyCount));
+      if (position === null) continue;
+
+      const held = reached.get(position.outer);
+      reached.set(
+        position.outer,
+        held === undefined ? position.inner : Math.max(held, position.inner),
+      );
     }
 
-    return count;
+    return reached;
+  };
+
+  /** How many stories of a group have been seen, never more than it holds. */
+  const countOf = (
+    reached: Map<number, number>,
+    groupIndex: number,
+    storyCount: number,
+  ): number => {
+    const inner = reached.get(groupIndex);
+    return inner === undefined ? 0 : Math.min(inner + 1, storyCount);
   };
 
   return {
     viewedCounts: () => {
+      const reached = furthestByGroup();
       const counts = new Map<string, number>();
 
       groups().forEach((group, index) => {
-        const count = countOf(index, group.stories.length);
-        if (count > 0) counts.set(group.author.id, count);
+        const count = countOf(reached, index, group.stories.length);
+        if (count === 0) return;
+
+        // A feed can carry the same author twice. The ring is drawn once per
+        // author, so it reports the furthest of their groups.
+        const held = counts.get(group.author.id);
+        counts.set(
+          group.author.id,
+          held === undefined ? count : Math.max(held, count),
+        );
       });
 
       return counts;
@@ -96,7 +124,11 @@ export const createStoriesViewedState = <T extends StoryItem = StoryItem>(
       const group = groups()[groupIndex];
       if (!group) return 0;
 
-      const count = countOf(groupIndex, group.stories.length);
+      const count = countOf(
+        furthestByGroup(),
+        groupIndex,
+        group.stories.length,
+      );
       return count >= group.stories.length ? 0 : count;
     },
 
