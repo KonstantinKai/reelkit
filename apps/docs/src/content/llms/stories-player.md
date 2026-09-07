@@ -219,7 +219,10 @@ const seen = useViewedState({
   }),
   ...twoAxisViewedTracking,
 });
-const viewed = createStoriesViewedState(seen, () => groups);
+const viewed = useMemo(
+  () => createStoriesViewedState(seen, () => groups),
+  [seen, groups],
+);
 
 <Observe signals={[seen.entries]}>
   {() => (
@@ -232,15 +235,14 @@ const viewed = createStoriesViewedState(seen, () => groups);
   onClose={close}
   groups={groups}
   initialGroupIndex={group}
-  initialStoryIndex={viewed.resumeStoryIndex(group)}
   resumeStoryIndex={viewed.resumeStoryIndex}
   onStoryViewed={viewed.markViewed}
 />;
 ```
 
 - The story already on screen is reported viewed on mount, so opening a one-story group and closing marks it watched.
-- `resumeStoryIndex` is consulted for any group reached for the first time this session, not just the one clicked; a group already swiped through reopens where it was left.
-- With `StoriesUrlOverlay` the parameter decides where the player opens; stored progress only supplies the story a ring click asks for.
+- `resumeStoryIndex` is consulted for every group reached for the first time this session, the one the player opens on included, unless `initialStoryIndex` names a story outright; a group already swiped through reopens where it was left.
+- With `StoriesUrlOverlay` the parameter decides where the player opens, whatever has been stored. Everywhere else the resume callback decides.
 - An entry names the furthest story reached, not a tally: adding a story to a watched group lights its ring again, removing one from the middle shortens the count.
 - Storage is pluggable (`createSessionStorageAdapter()`, or your own `StorageAdapter`); two open tabs stay in step through the browser's storage event.
 
@@ -248,23 +250,23 @@ const viewed = createStoriesViewedState(seen, () => groups);
 
 `StoriesOverlayProps` — the controlled overlay's props. `onClose` is **required** here because you own the open state, so you must handle closing; the URL-driven `StoriesUrlOverlay` makes it optional (the URL drives closing).
 
-| Prop                      | Type                                   | Default            | Description                                            |
-| ------------------------- | -------------------------------------- | ------------------ | ------------------------------------------------------ |
-| `isOpen`                  | `boolean`                              | required           | Overlay visibility. True = body scroll locked.         |
-| `groups`                  | `StoriesGroup<T>[]`                    | required           | Story groups to display                                |
-| `onClose`                 | `() => void`                           | required           | Close overlay callback                                 |
-| `ariaLabel`               | `string`                               | `'Stories player'` | Dialog region accessible label                         |
-| `initialGroupIndex`       | `number`                               | `0`                | Zero-based initial group index                         |
-| `initialStoryIndex`       | `number`                               | `0`                | Zero-based initial story index in group                |
-| `resumeStoryIndex`        | `(groupIndex: number) => number`       | —                  | Story a group opens on the first time it is reached    |
-| `groupTransition`         | `TransitionTransformFn`                | `cubeTransition`   | Outer (group) slider transition                        |
-| `defaultImageDuration`    | `number`                               | `5000`             | Default image auto-advance duration (ms)               |
-| `tapZoneSplit`            | `number`                               | `0.3`              | Tap zone split ratio (0–1). Left = prev, right = next. |
-| `hideUIOnPause`           | `boolean`                              | `true`             | Hide story UI (header, footer) on long-press pause     |
-| `enableKeyboard`          | `boolean`                              | `true`             | Enable keyboard nav (arrows, Escape)                   |
-| `innerTransitionDuration` | `number`                               | `200`              | Inner (story) transition duration (ms)                 |
-| `minSegmentWidth`         | `number`                               | `8`                | Min progress bar segment width (px)                    |
-| `apiRef`                  | `MutableRefObject<StoriesApi \| null>` | -                  | Ref for imperative StoriesApi                          |
+| Prop                      | Type                                   | Default                                         | Description                                                                       |
+| ------------------------- | -------------------------------------- | ----------------------------------------------- | --------------------------------------------------------------------------------- |
+| `isOpen`                  | `boolean`                              | required                                        | Overlay visibility. True = body scroll locked.                                    |
+| `groups`                  | `StoriesGroup<T>[]`                    | required                                        | Story groups to display                                                           |
+| `onClose`                 | `() => void`                           | required                                        | Close overlay callback                                                            |
+| `ariaLabel`               | `string`                               | `'Stories player'`                              | Dialog region accessible label                                                    |
+| `initialGroupIndex`       | `number`                               | `0`                                             | Zero-based initial group index                                                    |
+| `initialStoryIndex`       | `number`                               | `resumeStoryIndex(initialGroupIndex)`, else `0` | Zero-based initial story index in group. Naming one wins over anything remembered |
+| `resumeStoryIndex`        | `(groupIndex: number) => number`       | —                                               | Story a group opens on the first time it is reached                               |
+| `groupTransition`         | `TransitionTransformFn`                | `cubeTransition`                                | Outer (group) slider transition                                                   |
+| `defaultImageDuration`    | `number`                               | `5000`                                          | Default image auto-advance duration (ms)                                          |
+| `tapZoneSplit`            | `number`                               | `0.3`                                           | Tap zone split ratio (0–1). Left = prev, right = next.                            |
+| `hideUIOnPause`           | `boolean`                              | `true`                                          | Hide story UI (header, footer) on long-press pause                                |
+| `enableKeyboard`          | `boolean`                              | `true`                                          | Enable keyboard nav (arrows, Escape)                                              |
+| `innerTransitionDuration` | `number`                               | `200`                                           | Inner (story) transition duration (ms)                                            |
+| `minSegmentWidth`         | `number`                               | `8`                                             | Min progress bar segment width (px)                                               |
+| `apiRef`                  | `MutableRefObject<StoriesApi \| null>` | -                                               | Ref for imperative StoriesApi                                                     |
 
 ### Slot renderers
 

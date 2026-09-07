@@ -18,6 +18,7 @@ import {
   Heart,
   Circle,
   Link2,
+  Eye,
 } from 'lucide-react';
 import { Heading } from '../../components/ui/Heading';
 
@@ -160,9 +161,9 @@ const storiesOverlayProps = [
   {
     prop: 'initialStoryIndex',
     type: 'number',
-    default: '0',
+    default: 'resumeStoryIndex(initialGroupIndex), else 0',
     description:
-      'Zero-based index of the initially visible story within the group',
+      'Zero-based index of the initially visible story within the group. Naming one wins over anything remembered; leave it out and the opening group resumes like every other.',
   },
   {
     prop: 'resumeStoryIndex',
@@ -796,6 +797,11 @@ export default function StoriesPlayerPage() {
                 label: 'URL State',
                 desc: 'Shareable ?story=group.story links',
               },
+              {
+                icon: Eye,
+                label: 'Viewed State',
+                desc: 'Seen rings and resume survive reloads',
+              },
             ]}
           />
         </div>
@@ -1164,17 +1170,19 @@ const stories = useOverlayUrlState({
           is id-addressed.
         </p>
         <CodeBlock
-          code={`import {
+          code={`import { useMemo, useState } from 'react';
+import {
   StoriesOverlay,
   StoriesRingList,
   useViewedState,
   createStoriesViewedState,
   urlStableIdTwoAxisKey,
   twoAxisViewedTracking,
+  type StoriesGroup,
 } from '@reelkit/react-stories-player';
 import { Observe } from '@reelkit/react';
 
-function Feed({ groups }) {
+function Feed({ groups }: { groups: StoriesGroup[] }) {
   const [open, setOpen] = useState(false);
   const [group, setGroup] = useState(0);
 
@@ -1187,7 +1195,10 @@ function Feed({ groups }) {
     }),
     ...twoAxisViewedTracking,
   });
-  const viewed = createStoriesViewedState(seen, () => groups);
+  const viewed = useMemo(
+    () => createStoriesViewedState(seen, () => groups),
+    [seen, groups],
+  );
 
   return (
     <>
@@ -1210,7 +1221,6 @@ function Feed({ groups }) {
         onClose={() => setOpen(false)}
         groups={groups}
         initialGroupIndex={group}
-        initialStoryIndex={viewed.resumeStoryIndex(group)}
         resumeStoryIndex={viewed.resumeStoryIndex}
         onStoryViewed={viewed.markViewed}
       />
@@ -1227,15 +1237,16 @@ function Feed({ groups }) {
           </li>
           <li>
             <strong>Swiping onward resumes too.</strong>{' '}
-            <code>resumeStoryIndex</code> is consulted for any group reached for
-            the first time this session, not just the one that was clicked; a
-            group already swiped through reopens where it was left.
+            <code>resumeStoryIndex</code> is consulted for every group reached
+            for the first time this session, the one the player opens on
+            included, unless <code>initialStoryIndex</code> names a story
+            outright; a group already swiped through reopens where it was left.
           </li>
           <li>
             <strong>A link still wins.</strong> With{' '}
             <code>StoriesUrlOverlay</code>, the parameter decides where the
-            player opens; stored progress only supplies the story a ring click
-            asks for.
+            player opens, whatever has been stored. Everywhere else the resume
+            callback decides.
           </li>
           <li>
             <strong>A count is a position, not a tally.</strong> An entry names

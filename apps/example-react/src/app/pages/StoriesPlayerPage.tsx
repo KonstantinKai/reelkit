@@ -459,7 +459,6 @@ function StoriesPlayerPage() {
         onClose={() => setIsOpen(false)}
         groups={groups}
         initialGroupIndex={selectedGroup}
-        initialStoryIndex={viewed.resumeStoryIndex(selectedGroup)}
         resumeStoryIndex={viewed.resumeStoryIndex}
         groupTransition={transition}
         renderSlide={(props) => <CustomSlide {...props} />}

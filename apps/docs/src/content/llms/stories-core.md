@@ -31,14 +31,14 @@ npm i @reelkit/stories-core
 
 ### Config (StoriesControllerConfig)
 
-| Property               | Type                             | Default  | Description                                                         |
-| ---------------------- | -------------------------------- | -------- | ------------------------------------------------------------------- |
-| `groupCount`           | `number`                         | required | Total number of story groups                                        |
-| `storyCounts`          | `number[]`                       | required | Number of stories in each group                                     |
-| `initialGroupIndex`    | `number`                         | `0`      | Initial group index                                                 |
-| `initialStoryIndex`    | `number`                         | `0`      | Initial story index within group                                    |
-| `defaultImageDuration` | `number`                         | `5000`   | Default auto-advance duration for image stories in ms               |
-| `resumeStoryIndex`     | `(groupIndex: number) => number` | —        | Story an unvisited group opens on; bounded to a story the group has |
+| Property               | Type                             | Default                                         | Description                                                                                                                             |
+| ---------------------- | -------------------------------- | ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `groupCount`           | `number`                         | required                                        | Total number of story groups                                                                                                            |
+| `storyCounts`          | `number[]`                       | required                                        | Number of stories in each group                                                                                                         |
+| `initialGroupIndex`    | `number`                         | `0`                                             | Initial group index                                                                                                                     |
+| `initialStoryIndex`    | `number`                         | `resumeStoryIndex(initialGroupIndex)`, else `0` | Initial story index within group. Naming one wins over anything remembered; leave it out and the opening group resumes like every other |
+| `defaultImageDuration` | `number`                         | `5000`                                          | Default auto-advance duration for image stories in ms                                                                                   |
+| `resumeStoryIndex`     | `(groupIndex: number) => number` | —                                               | Story an unvisited group opens on; bounded to a story the group has                                                                     |
 
 ### Events (StoriesControllerEvents)
 
@@ -256,6 +256,13 @@ renderer.dispose();
 
 `createStoriesViewedState(controller, groups)` turns a core `ViewedStateController<TwoAxisPosition>` into the terms a stories player uses, returning a `StoriesViewedState`. Build the controller from the same `UrlKey` the address bar uses, tracked per group, so a stored entry reads exactly like a `?story=` link.
 
+| Parameter    | Type                                     | Description                                                                                                                    |
+| ------------ | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `controller` | `ViewedStateController<TwoAxisPosition>` | Core store built from the same key the address bar uses, spread with `twoAxisViewedTracking` so each group keeps its own entry |
+| `groups`     | `() => StoriesGroup<T>[]`                | Reads the current groups. A getter, so a feed that pages in or reorders after setup is measured at call time.                  |
+
+### StoriesViewedState
+
 | Method                               | Type                        | Description                                                                |
 | ------------------------------------ | --------------------------- | -------------------------------------------------------------------------- |
 | `viewedCounts()`                     | `() => Map<string, number>` | Stories seen per group, keyed by author id — `StoriesRingList.viewedState` |
@@ -265,6 +272,13 @@ renderer.dispose();
 An entry names the furthest story reached, not a tally of views: an id-addressed key keeps a group's place across the feed being reordered, while removing a story from the middle of a group shortens its count and lights its ring again.
 
 ```typescript
+import { createStoriesViewedState } from '@reelkit/stories-core';
+import {
+  createViewedStateController,
+  urlStableIdTwoAxisKey,
+  twoAxisViewedTracking,
+} from '@reelkit/core';
+
 const seen = createViewedStateController({
   storageKey: 'stories-seen',
   ...urlStableIdTwoAxisKey({ outerItems, innerItems }),

@@ -65,8 +65,8 @@ const configRows = [
   {
     name: 'initialStoryIndex',
     type: 'number',
-    default: '0',
-    desc: 'Initial story index within the group',
+    default: 'resumeStoryIndex(initialGroupIndex), else 0',
+    desc: 'Initial story index within the group. Naming one wins over anything remembered; leave it out and the opening group resumes like every other.',
   },
   {
     name: 'defaultImageDuration',
@@ -186,6 +186,19 @@ const methodsRows = [
   },
 ];
 
+const viewedStateParamRows = [
+  {
+    name: 'controller',
+    type: 'ViewedStateController<TwoAxisPosition>',
+    desc: 'Core store built from the same key the address bar uses, spread with twoAxisViewedTracking so each group keeps its own entry',
+  },
+  {
+    name: 'groups',
+    type: '() => StoriesGroup<T>[]',
+    desc: 'Reads the current groups. A getter, so a feed that pages in or reorders after setup is measured at call time.',
+  },
+];
+
 const viewedStateRows = [
   {
     name: 'viewedCounts()',
@@ -204,12 +217,12 @@ const viewedStateRows = [
   },
 ];
 
-const viewedStateExample = `import {
-  createStoriesViewedState,
+const viewedStateExample = `import { createStoriesViewedState } from '@reelkit/stories-core';
+import {
   createViewedStateController,
   urlStableIdTwoAxisKey,
   twoAxisViewedTracking,
-} from '@reelkit/stories-core';
+} from '@reelkit/core';
 
 const seen = createViewedStateController({
   storageKey: 'stories-seen',
@@ -772,6 +785,13 @@ export default function StoriesCorePage() {
           group, and a stored entry reads exactly like a shared link's
           parameter.
         </p>
+        <Table3Col
+          headers={['Parameter', 'Type', 'Description']}
+          rows={viewedStateParamRows}
+        />
+        <Heading level={3} className="text-lg font-semibold mt-8 mb-3">
+          StoriesViewedState
+        </Heading>
         <Table3Col
           headers={['Method', 'Type', 'Description']}
           rows={viewedStateRows}

@@ -434,6 +434,17 @@ function StoriesUrlDemo({
         >
           Open group {lastGroup + 1} (controller.set)
         </button>
+        {/* Seen state outlives the page, so without this the rings fill up
+            once and the demo can never be watched a second time. Clears the
+            store for the switcher combination on screen, which is the one key
+            the controller above holds. */}
+        <button
+          type="button"
+          style={{ ...buttonStyle, marginLeft: 'auto' }}
+          onClick={() => seen.forget()}
+        >
+          clear seen
+        </button>
         <Observe signals={[fetching]}>
           {() =>
             fetching.value ? (

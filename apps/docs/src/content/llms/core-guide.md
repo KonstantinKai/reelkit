@@ -246,3 +246,45 @@ Two built-in keys build that pair for you; they differ only in what the URL name
 **Paging a windowed feed?** Both built-in keys take an optional `locateAsync` — `urlIndexKey(() => count, locateAsync)` and `urlStableIdKey({ items, locateAsync })`. The synchronous lookup answers for what has loaded; a miss pages the rest in, so a shared link past the window still opens — no hand-rolled codec or locator.
 
 Two axes? `urlIndexTwoAxisKey` carries `?p=<outer>.<inner>` for a post plus an inner media index. Full options live on the [Core API reference](/docs/core/api#url-state).
+
+## Viewed State
+
+Remember how far a viewer got through a gallery, across reloads and across tabs — a ring that shows what has been seen, a gallery that reopens where it was left. Same model as URL state, pointed at storage instead of the address bar, so the two share a key.
+
+### How it works
+
+`createViewedStateController` stores an entry as the exact text a `?photo=` link would carry, and reads it back through the same `decode` → `locate` cycle. Nothing trusts a stored position. Spread one key into both surfaces and a bookmark and a stored entry are the same string.
+
+```typescript
+import {
+  createUrlStateController,
+  createViewedStateController,
+  urlStableIdTwoAxisKey,
+  twoAxisViewedTracking,
+} from '@reelkit/core';
+
+const key = urlStableIdTwoAxisKey({ outerItems, innerItems });
+
+const url = createUrlStateController({ param: 'story', ...key });
+const seen = createViewedStateController({
+  storageKey: 'stories-seen',
+  ...key,
+  ...twoAxisViewedTracking,
+});
+
+seen.attach(); // reads storage, follows other tabs
+seen.record({ outer: 2, inner: 1 }); // furthest point wins, a rewatch never rewinds
+seen.resolve('user_42'); // → { outer: 2, inner: 1 } | null
+```
+
+### Durability follows the key
+
+The store adds no repair of its own, so which key you spread decides what survives: an id-addressed key keeps a place across the collection being reordered, a position-addressed one does not. A stored entry names the furthest point reached rather than a tally of views, so removing an item from the middle shortens the count — the same self-healing a shared link gets.
+
+Reading is synchronous only. An entry whose items have not loaded yet reads as absent and stays in storage untouched, so a windowed feed never eats its own history.
+
+### Storage and expiry
+
+`localStorage` backs the store by default; `createSessionStorageAdapter()` forgets on tab close, and a `StorageAdapter` of your own puts it anywhere synchronous. Nothing is read until `attach()`, so a server render and the first client render agree.
+
+Entries are kept until forgotten explicitly. Pass `ttlMs` to expire them instead — per track, on a sliding clock, so somewhere still being watched never goes stale beside somewhere abandoned. It changes what is written, each entry becoming a `[wire, timestamp]` pair, but reading copes with either shape whatever the option says, so an entry stored before you turned it on counts as fresh rather than being deleted. Full options live on the [Core API reference](/docs/core/api#viewed-state).

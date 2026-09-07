@@ -17,7 +17,7 @@ npm install @reelkit/vue-lightbox
 ```
 
 ```ts
-import { RkLightboxOverlay } from '@reelkit/vue-lightbox';
+import { LightboxOverlay } from '@reelkit/vue-lightbox';
 import '@reelkit/vue-lightbox/styles.css';
 ```
 
@@ -26,10 +26,7 @@ import '@reelkit/vue-lightbox/styles.css';
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue';
-import {
-  RkLightboxOverlay,
-  lightboxFadeTransition,
-} from '@reelkit/vue-lightbox';
+import { LightboxOverlay, lightboxFadeTransition } from '@reelkit/vue-lightbox';
 import '@reelkit/vue-lightbox/styles.css';
 
 const isOpen = ref(false);
@@ -59,7 +56,7 @@ const items = [
     <img :src="item.src" />
   </button>
 
-  <RkLightboxOverlay
+  <LightboxOverlay
     v-model:is-open="isOpen"
     :items="items"
     :initial-index="initialIndex"
@@ -227,7 +224,7 @@ While it is pending the lightbox stays closed and the parameter is left alone, s
 
 Full `useOverlayUrlState` options (`param`, `adapter`, `codec`, `locator`): see the [Vue API reference](/docs/vue/api#useoverlayurlstate).
 
-## RkLightboxOverlay Props
+## LightboxOverlay Props
 
 Type: `LightboxOverlayProps`
 
@@ -286,7 +283,7 @@ Tokens + classes shared w/ `@reelkit/react-lightbox`. See [Lightbox](/docs/light
 
 ```vue
 <template>
-  <RkLightboxOverlay v-model:is-open="isOpen" :items="items">
+  <LightboxOverlay v-model:is-open="isOpen" :items="items">
     <template
       #controls="{
         activeIndex,
@@ -302,7 +299,7 @@ Tokens + classes shared w/ `@reelkit/react-lightbox`. See [Lightbox](/docs/light
         {{ isFullscreen ? '⤡' : '⤢' }}
       </button>
     </template>
-  </RkLightboxOverlay>
+  </LightboxOverlay>
 </template>
 ```
 
@@ -310,7 +307,7 @@ Tokens + classes shared w/ `@reelkit/react-lightbox`. See [Lightbox](/docs/light
 
 ```vue
 <template>
-  <RkLightboxOverlay v-model:is-open="isOpen" :items="items">
+  <LightboxOverlay v-model:is-open="isOpen" :items="items">
     <template #slide="{ item, size, isActive, onReady, onError }">
       <video
         v-if="item.type === 'video'"
@@ -326,6 +323,6 @@ Tokens + classes shared w/ `@reelkit/react-lightbox`. See [Lightbox](/docs/light
       />
       <img v-else :src="item.src" @load="onReady" @error="onError" />
     </template>
-  </RkLightboxOverlay>
+  </LightboxOverlay>
 </template>
 ```

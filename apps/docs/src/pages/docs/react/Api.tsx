@@ -735,7 +735,16 @@ useBodyLock(isOpen);`}
           here or in another tab.
         </p>
         <CodeBlock
-          code={`import { useViewedState, twoAxisViewedTracking, Observe } from '@reelkit/react';
+          code={`import {
+  useViewedState,
+  urlStableIdTwoAxisKey,
+  twoAxisViewedTracking,
+  Observe,
+} from '@reelkit/react';
+import {
+  StoriesRingList,
+  createStoriesViewedState,
+} from '@reelkit/react-stories-player';
 
 const key = urlStableIdTwoAxisKey({ outerItems, innerItems });
 const seen = useViewedState({
@@ -743,11 +752,18 @@ const seen = useViewedState({
   ...key,
   ...twoAxisViewedTracking,
 });
+const viewed = createStoriesViewedState(seen, () => groups);
 
 <Observe signals={[seen.entries]}>
-  {() => <StoriesRingList groups={groups} viewedState={viewed.viewedCounts()} onSelect={open} />}
+  {() => (
+    <StoriesRingList
+      groups={groups}
+      viewedState={viewed.viewedCounts()}
+      onSelect={open}
+    />
+  )}
 </Observe>;`}
-          language="typescript"
+          language="tsx"
         />
 
         <Heading level={3} className="text-lg font-semibold mt-6 mb-2">

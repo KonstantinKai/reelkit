@@ -296,32 +296,13 @@ While `locateAsync` is pending the param **survives** and nothing is written —
 
 ## Viewed State
 
-Remember how far a viewer got through a gallery, across reloads and across tabs. An entry is stored as the exact text a `?photo=` link would carry and read back through the same `decode` → `locate` cycle — nothing trusts a stored position. Spread one key into both surfaces and a bookmark and a stored entry stay the same string.
+Persist how far a viewer got, keyed the same way the address bar is: an entry is the parameter text itself, read back through the same `codec` and `locator`. Concepts and examples live in the [Core Guide](https://reelkit.dev/docs/core/guide#viewed-state).
 
-| Export                        | Type                                                                      | Description                                                                                                                                           |
-| ----------------------------- | ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `createViewedStateController` | `(options) => ViewedStateController<Pos>`                                 | Options: `storageKey`, the `codec`/`locator` pair, optional `storage`, `trackOf` (one entry per group), `progressOf`. Reads nothing until `attach()`. |
-| `twoAxisViewedTracking`       | `{ trackOf, progressOf }`                                                 | Tracking pair for a two-axis player: one entry per outer slot, inner index as progress                                                                |
-| `createLocalStorageAdapter`   | `() => StorageAdapter`                                                    | Default backing. Also `createSessionStorageAdapter`, `createMemoryStorageAdapter`. Each absorbs its own failures.                                     |
-| `ViewedStateController<Pos>`  | `{ entries; resolve(track); record(position); forget(track?); attach() }` | `entries` is a signal of track → stored text; `resolve` runs the full key cycle per call                                                              |
-| `StorageAdapter`              | `{ read(key); write(key, value); subscribe?(key, listener) }`             | Injection point for a storage layer. No `subscribe` = no cross-tab synchronisation.                                                                   |
-| `ViewedStateOptions<Id, Pos>` | `{ storageKey; codec; locator; storage?; trackOf?; progressOf?; ttlMs? }` | The options `createViewedStateController` takes, exported for typing a config assembled separately                                                    |
-
-```typescript
-const key = urlStableIdTwoAxisKey({ outerItems, innerItems });
-
-const url = createUrlStateController({ param: 'story', ...key });
-const seen = createViewedStateController({
-  storageKey: 'stories-seen',
-  ...key,
-  ...twoAxisViewedTracking,
-});
-
-seen.attach(); // reads storage, follows other tabs
-seen.record({ outer: 2, inner: 1 }); // furthest point wins, a rewatch never rewinds
-seen.resolve('user_42'); // → { outer: 2, inner: 1 } | null
-```
-
-Entries are kept until forgotten explicitly. Pass `ttlMs` to expire them instead — per track, on a sliding clock, so a track still being watched never goes stale beside one abandoned months ago. It changes what is written (each entry becomes a `[wire, timestamp]` pair), but reading copes with either shape whatever the option says, and an entry stored before it was turned on counts as fresh rather than being deleted.
-
-Durability follows the key, not the store: an id-addressed key keeps a place across the collection being reordered, a position-addressed one does not. A stored entry names the furthest point reached rather than a tally of views, so removing an item from the middle shortens the count.
+| Export                        | Type                                                                      | Description                                                                                                                                                                                                           |
+| ----------------------------- | ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `createViewedStateController` | `(options) => ViewedStateController<Pos>`                                 | Options: `storageKey`, the `codec`/`locator` pair, optional `storage`, `trackOf` (one entry per group), `progressOf`. Reads nothing until `attach()`.                                                                 |
+| `twoAxisViewedTracking`       | `{ trackOf, progressOf }`                                                 | Tracking pair for a two-axis player: one entry per outer slot, inner index as progress                                                                                                                                |
+| `createLocalStorageAdapter`   | `() => StorageAdapter`                                                    | Default backing. Also `createSessionStorageAdapter`, `createMemoryStorageAdapter`. Each absorbs its own failures.                                                                                                     |
+| `ViewedStateController<Pos>`  | `{ entries; resolve(track); record(position); forget(track?); attach() }` | `entries` is a signal of track → stored text; `resolve` runs the full key cycle per call                                                                                                                              |
+| `StorageAdapter`              | `{ read(key); write(key, value); subscribe?(key, listener) }`             | Injection point for a storage layer. No `subscribe` = no cross-tab synchronisation.                                                                                                                                   |
+| `ViewedStateOptions<Id, Pos>` | `{ storageKey; codec; locator; storage?; trackOf?; progressOf; ttlMs? }`  | The options `createViewedStateController` takes, exported for typing a config assembled separately. `progressOf` is optional only for a plain index position; any other position must supply it, and the type says so |
