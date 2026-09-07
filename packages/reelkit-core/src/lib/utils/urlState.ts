@@ -1,3 +1,4 @@
+import { observeDomEvent } from './observeDomEvent';
 import { createSignal, type Signal, type Dispose } from './signal';
 import { indexCodec } from './urlIndexKey';
 
@@ -90,10 +91,7 @@ const merge = (prev: unknown, next: unknown): unknown =>
 export const createHistoryAdapter = (): UrlAdapter => ({
   read: () => window.location.search,
 
-  subscribe: (listener) => {
-    window.addEventListener('popstate', listener);
-    return () => window.removeEventListener('popstate', listener);
-  },
+  subscribe: (listener) => observeDomEvent(window, 'popstate', listener),
 
   push: (to, state) => window.history.pushState(state ?? null, '', to),
 
