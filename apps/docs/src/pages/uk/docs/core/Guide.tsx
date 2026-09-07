@@ -530,6 +530,147 @@ controller.set(null);`}
         </p>
       </section>
 
+      <section className="mb-12">
+        <Heading
+          level={2}
+          id="viewed-state"
+          className="text-2xl font-bold mb-4"
+        >
+          Переглянуте
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Запам&rsquo;ятовуйте, як далеко глядач дійшов у галереї, — між
+          перезавантаженнями та вкладками: кільце, що показує переглянуте,
+          галерея, що відкривається там, де її залишили. Це та сама модель, що й
+          стан в URL, лише спрямована на сховище замість адресного рядка, тож
+          обидві ділять один ключ.
+        </p>
+
+        <Heading
+          level={3}
+          id="how-it-works"
+          className="text-lg font-semibold mt-6 mb-3"
+        >
+          Як це працює
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            createViewedStateController
+          </code>{' '}
+          зберігає запис як точно той текст, який ніс би{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            ?photo=
+          </code>{' '}
+          посилання, і читає його назад через той самий цикл{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            decode
+          </code>{' '}
+          →{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            locate
+          </code>
+          . Збереженій позиції ніхто не довіряє. Розгорніть один ключ в обидві
+          поверхні — і закладка та збережений запис будуть одним рядком.
+        </p>
+        <CodeBlock
+          code={`import {
+  createUrlStateController,
+  createViewedStateController,
+  urlStableIdTwoAxisKey,
+  twoAxisViewedTracking,
+} from '@reelkit/core';
+
+const key = urlStableIdTwoAxisKey({ outerItems, innerItems });
+
+const url = createUrlStateController({ param: 'story', ...key });
+const seen = createViewedStateController({
+  storageKey: 'stories-seen',
+  ...key,
+  ...twoAxisViewedTracking,
+});
+
+seen.attach();                       // reads storage, follows other tabs
+seen.record({ outer: 2, inner: 1 }); // furthest point wins, a rewatch never rewinds
+seen.resolve('user_42');             // → { outer: 2, inner: 1 } | null`}
+          language="typescript"
+        />
+
+        <Heading
+          level={3}
+          id="durability-follows-the-key"
+          className="text-lg font-semibold mt-6 mb-3"
+        >
+          Довговічність визначає ключ
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Сховище не додає власного відновлення, тож який ключ ви розгорнете, те
+          й переживе зміни: ключ за ідентифікатором зберігає місце попри
+          перевпорядкування колекції, ключ за позицією — ні. Збережений запис
+          називає найдальшу досягнуту точку, а не підрахунок переглядів, тож
+          вилучення елемента із середини скорочує лічильник — те саме
+          самовиправлення, яке отримує спільне посилання.
+        </p>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Читання лише синхронне. Запис, елементи якого ще не завантажено,
+          читається як відсутній і лишається у сховищі недоторканим, тож віконна
+          стрічка ніколи не з&rsquo;їдає власну історію.
+        </p>
+
+        <Heading
+          level={3}
+          id="storage-and-expiry"
+          className="text-lg font-semibold mt-6 mb-3"
+        >
+          Сховище та термін дії
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Типово сховище стоїть на{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            localStorage
+          </code>
+          ;{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            createSessionStorageAdapter()
+          </code>{' '}
+          забуває при закритті вкладки, а власний{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            StorageAdapter
+          </code>{' '}
+          кладе його будь-куди синхронно. Нічого не читається до{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            attach()
+          </code>
+          , тож серверний рендер і перший клієнтський збігаються.
+        </p>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Записи зберігаються, доки їх явно не забути. Передайте{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            ttlMs
+          </code>
+          , щоб натомість вони закінчувалися — на трек, за ковзним годинником,
+          тож те, що ще дивляться, не застаріває поруч із покинутим. Це змінює
+          запис: кожен елемент стає парою{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            [wire, timestamp]
+          </code>
+          , але читання приймає обидві форми незалежно від опції, тож запис,
+          збережений до її ввімкнення, вважається свіжим, а не видаляється.{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            maxTracks
+          </code>{' '}
+          обмежує кількість, а не вік: понад ліміт найдавніше записаний трек
+          вилучається під час наступного запису, а запис треку, навіть позиції
+          позаду, переставляє його в кінець черги. Повний перелік опцій — у{' '}
+          <Link
+            to="/uk/docs/core/api#viewed-state"
+            className="text-primary-600 dark:text-primary-400 hover:underline"
+          >
+            довіднику API ядра
+          </Link>
+          .
+        </p>
+      </section>
+
       <NextSteps
         items={[
           {

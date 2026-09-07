@@ -1432,7 +1432,7 @@ restoreFocus();`}
         </div>
       </section>
 
-      <section>
+      <section className="mb-12">
         <Heading level={2} id="url-state" className="text-2xl font-bold mb-4">
           Стан в URL
         </Heading>
@@ -1790,6 +1790,158 @@ restoreFocus();`}
                   </code>{' '}
                   , — експортовані, щоб споживач міг типізувати конфігурацію,
                   зібрану окремо, перед передаванням.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section className="mb-12">
+        <Heading
+          level={2}
+          id="viewed-state"
+          className="text-2xl font-bold mb-4"
+        >
+          Переглянуте
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Зберігає, як далеко дійшов глядач, з тим самим ключем, що й адресний
+          рядок: запис — це сам текст параметра, прочитаний назад через ті самі{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            codec
+          </code>{' '}
+          і{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            locator
+          </code>
+          .
+        </p>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left py-3 px-4 font-semibold">Експорт</th>
+                <th className="text-left py-3 px-4 font-semibold">Тип</th>
+                <th className="text-left py-3 px-4 font-semibold">Опис</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  createViewedStateController
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {'(options) => ViewedStateController<Pos>'}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Запам&rsquo;ятовує, як далеко дійшов глядач, зберігаючи саме
+                  той текст, який ніс би параметр URL. Приймає ту саму пару{' '}
+                  <code className="font-mono text-xs">codec</code>/
+                  <code className="font-mono text-xs">locator</code>, що й
+                  адресний рядок, плюс{' '}
+                  <code className="font-mono text-xs">storageKey</code>,
+                  необов&rsquo;язкові{' '}
+                  <code className="font-mono text-xs">storage</code>,{' '}
+                  <code className="font-mono text-xs">trackOf</code> (один запис
+                  на групу) і{' '}
+                  <code className="font-mono text-xs">progressOf</code>. Нічого
+                  не читає до{' '}
+                  <code className="font-mono text-xs">attach()</code>, тож
+                  безпечний для попереднього рендерингу.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  twoAxisViewedTracking
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {'{ trackOf, progressOf }'}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Пара відстеження для двовісного плеєра: один запис на
+                  зовнішній слот, внутрішній індекс вимірює прогрес у ньому.
+                  Розгорніть її поруч із двовісним ключем.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  createLocalStorageAdapter
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {'() => StorageAdapter'}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Типове сховище. Також{' '}
+                  <code className="font-mono text-xs">
+                    createSessionStorageAdapter
+                  </code>{' '}
+                  для стану, що не має пережити вкладку, і{' '}
+                  <code className="font-mono text-xs">
+                    createMemoryStorageAdapter
+                  </code>{' '}
+                  для тестів і серверного рендерингу. Кожен поглинає власні збої
+                  — вичерпана квота втрачає лише той один запис.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  {'ViewedStateController<Pos>'}
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {
+                    '{ entries; resolve(track); record(position); forget(track?); attach() }'
+                  }
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  <code className="font-mono text-xs">entries</code> — сигнал
+                  «трек → збережений текст», тож кільце перемальовується, коли
+                  позицію записано тут або в іншій вкладці.{' '}
+                  <code className="font-mono text-xs">resolve</code> проходить
+                  повний цикл ключа на кожному виклику.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  {'ViewedStateOptions<Id, Pos>'}
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {
+                    '{ storageKey; codec; locator; storage?; trackOf?; progressOf; ttlMs?; maxTracks? }'
+                  }
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Опції, які приймає{' '}
+                  <code className="font-mono text-xs">
+                    createViewedStateController
+                  </code>{' '}
+                  — експортовані, щоб споживач міг типізувати конфігурацію,
+                  зібрану окремо, перед передаванням.{' '}
+                  <code className="font-mono text-xs">progressOf</code>{' '}
+                  необов&rsquo;язковий лише для простого індексу, який сам є
+                  мірою прогресу; будь-яка інша позиція має сказати, яке число
+                  порівнювати, і тип цього вимагає.{' '}
+                  <code className="font-mono text-xs">ttlMs</code> вмикає
+                  закінчення терміну: трек забувається через стільки після
+                  останнього запису, а повторний запис перезапускає його
+                  годинник. <code className="font-mono text-xs">maxTracks</code>{' '}
+                  обмежує кількість: понад ліміт найдавніше записаний трек
+                  вилучається під час наступного запису.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  StorageAdapter
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {
+                    '{ read(key); write(key, value); subscribe?(key, listener) }'
+                  }
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Точка підключення шару сховища. Пропустіть{' '}
+                  <code className="font-mono text-xs">subscribe</code> — і
+                  сховище просто працює без синхронізації між вкладками.
                 </td>
               </tr>
             </tbody>

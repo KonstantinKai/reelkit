@@ -513,6 +513,132 @@ controller.set(null);`}
         </p>
       </section>
 
+      <section className="mb-12">
+        <Heading
+          level={2}
+          id="viewed-state"
+          className="text-2xl font-bold mb-4"
+        >
+          已观看状态
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          记住观看者在图库中看到了哪里，跨刷新、跨标签页——一个显示已看内容的圆环，一个从上次离开处重新打开的图库。它与
+          URL 状态是同一套模型，只是指向存储而不是地址栏，因此两者共用一个键。
+        </p>
+
+        <Heading
+          level={3}
+          id="how-it-works"
+          className="text-lg font-semibold mt-6 mb-3"
+        >
+          工作原理
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            createViewedStateController
+          </code>{' '}
+          把记录存为{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            ?photo=
+          </code>{' '}
+          链接所携带的原文，并通过同一个{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            decode
+          </code>{' '}
+          →{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            locate
+          </code>{' '}
+          循环读回。已存的位置从不被直接信任。把同一个键展开到两处，书签和已存记录就是同一个字符串。
+        </p>
+        <CodeBlock
+          code={`import {
+  createUrlStateController,
+  createViewedStateController,
+  urlStableIdTwoAxisKey,
+  twoAxisViewedTracking,
+} from '@reelkit/core';
+
+const key = urlStableIdTwoAxisKey({ outerItems, innerItems });
+
+const url = createUrlStateController({ param: 'story', ...key });
+const seen = createViewedStateController({
+  storageKey: 'stories-seen',
+  ...key,
+  ...twoAxisViewedTracking,
+});
+
+seen.attach();                       // reads storage, follows other tabs
+seen.record({ outer: 2, inner: 1 }); // furthest point wins, a rewatch never rewinds
+seen.resolve('user_42');             // → { outer: 2, inner: 1 } | null`}
+          language="typescript"
+        />
+
+        <Heading
+          level={3}
+          id="durability-follows-the-key"
+          className="text-lg font-semibold mt-6 mb-3"
+        >
+          持久性取决于键
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          存储本身不做任何修复，所以你展开哪个键，决定了什么能保留：按 id
+          寻址的键在集合重排后仍记得位置，按位置寻址的键则不能。已存记录记的是到达的最远点，而不是观看次数，因此从中间删掉一项会让计数变短——与分享链接得到的自愈相同。
+        </p>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          读取只有同步方式。条目尚未加载的记录会读作缺失，并原样留在存储中，因此分窗加载的信息流永远不会吞掉自己的历史。
+        </p>
+
+        <Heading
+          level={3}
+          id="storage-and-expiry"
+          className="text-lg font-semibold mt-6 mb-3"
+        >
+          存储与过期
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          存储默认由{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            localStorage
+          </code>{' '}
+          支撑；
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            createSessionStorageAdapter()
+          </code>{' '}
+          在关闭标签页时遗忘，自定义{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            StorageAdapter
+          </code>{' '}
+          则可以放到任何同步的地方。在{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            attach()
+          </code>{' '}
+          之前不会读取任何内容，因此服务端渲染与首次客户端渲染保持一致。
+        </p>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          记录会一直保留，直到被显式遗忘。传入{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            ttlMs
+          </code>{' '}
+          让它们过期——按轨道、按滑动时钟计算，因此仍在观看的内容不会与早已放弃的内容一起过时。它会改变写入的内容，每条记录变成一对{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            [wire, timestamp]
+          </code>
+          ，但无论选项如何设置，读取都能接受两种形状，所以在开启之前存下的记录会被视为新鲜，而不是被删除。
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            maxTracks
+          </code>{' '}
+          限制的是数量而非时长：超出后，最久未记录的轨道会在下次写入时被丢弃，而记录某条轨道（即使位置落后）会把它移到队尾。完整选项见{' '}
+          <Link
+            to="/zh/docs/core/api#viewed-state"
+            className="text-primary-600 dark:text-primary-400 hover:underline"
+          >
+            核心 API 参考
+          </Link>
+          。
+        </p>
+      </section>
+
       <NextSteps
         items={[
           {

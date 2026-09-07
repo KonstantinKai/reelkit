@@ -1853,7 +1853,10 @@ restoreFocus();`}
                   to compare, and the type requires it.{' '}
                   <code className="font-mono text-xs">ttlMs</code> opts into
                   expiry: a track is forgotten that long after it was last
-                  recorded, and recording it again restarts its clock.
+                  recorded, and recording it again restarts its clock.{' '}
+                  <code className="font-mono text-xs">maxTracks</code> keeps at
+                  most that many tracks, dropping the least recently recorded on
+                  the next write.
                 </td>
               </tr>
               <tr className="border-b border-slate-100 dark:border-slate-800">

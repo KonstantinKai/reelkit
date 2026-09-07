@@ -524,6 +524,7 @@ const items = await useFetch('/api/feed');
                 code={`<!-- components/Feed.vue -->
 <script setup lang="ts">
 import { Reel, ReelIndicator } from '@reelkit/vue';
+
 defineProps<{ items: FeedItem[] }>();
 </script>
 

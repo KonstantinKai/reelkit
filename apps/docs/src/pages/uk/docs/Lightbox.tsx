@@ -2273,10 +2273,8 @@ function CustomLightbox() {
           . Сигнатура повторює переходи слайдера в ядрі.
         </p>
         <CodeBlock
-          code={`import {
-  LightboxOverlay,
-  type TransitionTransformFn,
-} from '@reelkit/react-lightbox';
+          code={`import { LightboxOverlay } from '@reelkit/react-lightbox';
+import type { TransitionTransformFn } from '@reelkit/react';
 
 const customFade: TransitionTransformFn = (offset, size) => ({
   transform: \`translate3d(\${offset * size[0]}px, 0, 0)\`,
