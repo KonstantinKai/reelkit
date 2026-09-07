@@ -399,14 +399,20 @@ for (const f of filesToUpdate) {
   }
 }
 
-// Docs Installation.tsx
-const docsFile = resolve(root, 'apps/docs/src/pages/docs/Installation.tsx');
-const docsRel = docsFile.replace(root + '/', '');
-if (updateDocs(docsFile, results)) {
-  changed++;
-  console.log(`  ${isCheck ? '✗ stale' : '✓ updated'}  ${docsRel}`);
-} else {
-  console.log(`  · no change  ${docsRel}`);
+// Docs Installation.tsx, once per locale. The translated pages are full copies
+// carrying their own size table, so they go stale independently.
+for (const page of [
+  'apps/docs/src/pages/docs/Installation.tsx',
+  'apps/docs/src/pages/uk/docs/Installation.tsx',
+  'apps/docs/src/pages/zh/docs/Installation.tsx',
+]) {
+  const docsFile = resolve(root, page);
+  if (updateDocs(docsFile, results)) {
+    changed++;
+    console.log(`  ${isCheck ? '✗ stale' : '✓ updated'}  ${page}`);
+  } else {
+    console.log(`  · no change  ${page}`);
+  }
 }
 
 // The landing pages quote the core gzip figure in a sentence, once per
