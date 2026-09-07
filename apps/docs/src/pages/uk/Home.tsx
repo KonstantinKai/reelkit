@@ -41,7 +41,7 @@ const highlights = [
     stat: '0',
     unit: 'залежностей',
     title: 'Нуль залежностей',
-    description: 'Жодних рантайм-залежностей. Ядро — близько 9.9 кБ у gzip.',
+    description: 'Жодних рантайм-залежностей. Ядро — близько 10.0 кБ у gzip.',
     color: 'text-accent-500',
   },
   {

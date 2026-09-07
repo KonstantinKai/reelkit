@@ -101,15 +101,15 @@ const bundleSizes: {
 }[] = [
   {
     name: '@reelkit/core',
-    js: '23.7 kB',
-    gzip: '9.0 kB',
+    js: '26.4 kB',
+    gzip: '10.0 kB',
     css: '-',
     cssGzip: '-',
   },
   {
     name: '@reelkit/react',
-    js: '12.8 kB',
-    gzip: '4.7 kB',
+    js: '13.2 kB',
+    gzip: '4.8 kB',
     css: '-',
     cssGzip: '-',
     framework: 'react',
@@ -132,7 +132,7 @@ const bundleSizes: {
   },
   {
     name: '@reelkit/react-stories-player',
-    js: '18.8 kB',
+    js: '19.1 kB',
     gzip: '5.8 kB',
     css: '7.5 kB',
     cssGzip: '1.7 kB',
@@ -140,7 +140,7 @@ const bundleSizes: {
   },
   {
     name: '@reelkit/angular',
-    js: '66.6 kB',
+    js: '66.7 kB',
     gzip: '15.1 kB',
     css: '-',
     cssGzip: '-',
@@ -148,7 +148,7 @@ const bundleSizes: {
   },
   {
     name: '@reelkit/angular-reel-player',
-    js: '149.3 kB',
+    js: '149.0 kB',
     gzip: '24.4 kB',
     css: '-',
     cssGzip: '-',
@@ -164,8 +164,8 @@ const bundleSizes: {
   },
   {
     name: '@reelkit/vue',
-    js: '14.2 kB',
-    gzip: '4.9 kB',
+    js: '14.4 kB',
+    gzip: '5.0 kB',
     css: '-',
     cssGzip: '-',
     framework: 'vue',
@@ -191,19 +191,19 @@ const bundleSizes: {
 const comparison = [
   {
     name: 'ReelKit (core + react)',
-    gzip: '13.7 kB',
+    gzip: '14.7 kB',
     virtualization: true,
     notes: '零依赖',
   },
   {
     name: 'ReelKit (core + angular)',
-    gzip: '24.1 kB',
+    gzip: '25.1 kB',
     virtualization: true,
     notes: '零依赖',
   },
   {
     name: 'ReelKit (core + vue)',
-    gzip: '13.9 kB',
+    gzip: '14.9 kB',
     virtualization: true,
     notes: '零依赖',
   },

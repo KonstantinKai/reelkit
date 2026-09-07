@@ -13,7 +13,7 @@
   <a href="https://www.npmjs.com/package/@reelkit/core"><img src="https://img.shields.io/npm/v/@reelkit/core?color=6366f1&label=npm" alt="npm" /></a>
   <img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License" />
   <img src="https://img.shields.io/badge/types-TypeScript-blue?logo=typescript&logoColor=white" alt="TypeScript" />
-  <img src="https://img.shields.io/badge/core%20gzip-9.9%20kB-6366f1" alt="Bundle size" />
+  <img src="https://img.shields.io/badge/core%20gzip-10.0%20kB-6366f1" alt="Bundle size" />
   <br/>
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
@@ -25,7 +25,7 @@
 
 - **Virtualized** — only 3 slides in DOM, handles 10,000+ items
 - **Touch first** — native swipe with momentum and snap
-- **Zero dependencies** — ~9.9 kB gzip core
+- **Zero dependencies** — ~10.0 kB gzip core
 - **Keyboard & wheel** — arrow keys, scroll, and swipe navigation built in
 - **Loop mode** — infinite circular scrolling
 - **SSR ready** — works with Next.js, Remix, and any SSR setup
@@ -36,11 +36,11 @@
 
 | Package                                                                | Description                       | JS (gzip) |
 | ---------------------------------------------------------------------- | --------------------------------- | --------- |
-| [@reelkit/core](packages/reelkit-core)                                 | Framework-agnostic slider engine  | 9.9 kB    |
+| [@reelkit/core](packages/reelkit-core)                                 | Framework-agnostic slider engine  | 10.0 kB   |
 | [@reelkit/react](packages/reelkit-react)                               | React components and hooks        | 4.8 kB    |
 | [@reelkit/react-reel-player](packages/reelkit-react-reel-player)       | Full-screen video reel player     | 5.4 kB    |
 | [@reelkit/react-lightbox](packages/reelkit-react-lightbox)             | Image & video gallery lightbox    | 3.4 kB    |
-| [@reelkit/stories-core](packages/reelkit-stories-core)                 | Framework-agnostic stories engine | 2.0 kB    |
+| [@reelkit/stories-core](packages/reelkit-stories-core)                 | Framework-agnostic stories engine | 2.1 kB    |
 | [@reelkit/react-stories-player](packages/reelkit-react-stories-player) | Instagram-style stories player    | 5.8 kB    |
 | [@reelkit/angular](packages/reelkit-angular)                           | Angular standalone components     | 15.1 kB   |
 | [@reelkit/angular-reel-player](packages/reelkit-angular-reel-player)   | Full-screen video reel player     | 24.4 kB   |
