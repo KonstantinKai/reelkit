@@ -63,19 +63,13 @@ describe('createLruCache', () => {
       expect(cache.get('a')).toBe(10);
     });
 
-    // The caller keeps reading its own Map; the cache only decides what
-    // stays in it.
-    it('runs its policy over a Map the caller owns', () => {
-      const store = new Map<string, number>([['a', 1]]);
-      const cache = createLruCache<number>(2, undefined, store);
+    it('is a real Map, so it iterates, spreads, and chains like one', () => {
+      const cache = createLruCache<number>(2);
+      cache.set('a', 1).set('b', 2).set('a', 10).set('c', 3);
 
-      cache.set('b', 2);
-      cache.set('a', 10);
-      cache.set('c', 3);
-
-      expect([...store.keys()]).toEqual(['a', 'c']);
-      expect(store.get('a')).toBe(10);
-      expect(cache.size).toBe(store.size);
+      expect(cache instanceof Map).toBe(true);
+      expect([...cache.keys()]).toEqual(['a', 'c']);
+      expect(new Map(cache).get('a')).toBe(10);
     });
 
     it('calls onEvict with evicted value and key', () => {

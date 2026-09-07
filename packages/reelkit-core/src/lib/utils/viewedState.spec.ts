@@ -406,8 +406,6 @@ describe('createViewedStateController', () => {
     expect(observer).toHaveBeenCalledTimes(3);
   });
 
-  // Every snapshot is a fresh Map and the signal dedupes by identity, so
-  // without a guard a rewatch would repaint every ring for nothing.
   it('stays silent when a record changes nothing observers can see', () => {
     const storage = createFakeStorageAdapter();
     const controller = createStoriesViewedController(storage.adapter);

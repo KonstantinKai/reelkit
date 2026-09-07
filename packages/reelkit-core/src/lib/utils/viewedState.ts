@@ -415,12 +415,19 @@ export const createViewedStateController = <Id = number, Pos = number>(
 ): ViewedStateController<Pos> => {
   const { storageKey, codec, locator, ttlMs, maxTracks } = options;
 
-  // Writes go through a bounded view of the same Map when a cap is set. The
-  // Map stays the thing serialized, projected and copied, so nothing else
-  // changes shape; uncapped writes never reorder, which keeps the stored text
-  // byte-identical to what it was before caps existed.
-  const sink = (map: Map<string, TrackedEntry>) =>
-    maxTracks === undefined ? map : createLruCache(maxTracks, undefined, map);
+  // With a cap the snapshot is a Map that evicts by recency on every set;
+  // without one it is a plain Map that never reorders, which keeps the stored
+  // text byte-identical to what it was before caps existed.
+  const emptyStore = (): Map<string, TrackedEntry> =>
+    maxTracks === undefined ? new Map() : createLruCache(maxTracks);
+
+  // For the path where storage could not be read: the copy keeps the cap, so a
+  // write during that window trims exactly as one after a successful read.
+  const copyOf = (source: Map<string, TrackedEntry>) => {
+    const copy = emptyStore();
+    for (const [track, entry] of source) copy.set(track, entry);
+    return copy;
+  };
   const storage = options.storage ?? createLocalStorageAdapter();
   const trackOf = options.trackOf ?? (() => '');
   const progressOf =
@@ -513,8 +520,7 @@ export const createViewedStateController = <Id = number, Pos = number>(
    * history.
    */
   const parse = (raw: string | null): Map<string, TrackedEntry> => {
-    const parsed = new Map<string, TrackedEntry>();
-    const into = sink(parsed);
+    const parsed = emptyStore();
     if (raw === null) return parsed;
 
     let payload: unknown;
@@ -534,7 +540,7 @@ export const createViewedStateController = <Id = number, Pos = number>(
 
       const track = trackOf(identity);
       const held = parsed.get(track);
-      into.set(track, held === undefined ? entry : furthest(held, entry));
+      parsed.set(track, held === undefined ? entry : furthest(held, entry));
     }
 
     return parsed;
@@ -655,7 +661,7 @@ export const createViewedStateController = <Id = number, Pos = number>(
       // way, writing from memory alone would wipe tracks this controller never
       // touched.
       const disk = readStored();
-      const next = disk ?? new Map(memory);
+      const next = disk ?? copyOf(memory);
       const recordedAt = ttlMs === undefined ? undefined : Date.now();
 
       // For the track being recorded, what this controller holds counts as much
@@ -673,10 +679,7 @@ export const createViewedStateController = <Id = number, Pos = number>(
           // The furthest entry rides along whichever side it came from, since
           // it may be the one a failed write left in memory and nowhere else.
           const storedWire = disk?.get(track)?.wire;
-          sink(next).set(
-            track,
-            ttlMs === undefined ? held : { ...held, recordedAt },
-          );
+          next.set(track, ttlMs === undefined ? held : { ...held, recordedAt });
 
           // Nothing new to say about the position, so storage is touched only
           // when it is actually behind — which it is exactly when the furthest
@@ -693,7 +696,7 @@ export const createViewedStateController = <Id = number, Pos = number>(
         }
       }
 
-      sink(next).set(track, { wire, recordedAt });
+      next.set(track, { wire, recordedAt });
       commit(next, disk !== null);
     },
 
@@ -704,7 +707,7 @@ export const createViewedStateController = <Id = number, Pos = number>(
       }
 
       const disk = readStored();
-      const next = disk ?? new Map(memory);
+      const next = disk ?? copyOf(memory);
       next.delete(track);
       commit(next, disk !== null);
     },
