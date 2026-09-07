@@ -409,6 +409,40 @@ if (updateDocs(docsFile, results)) {
   console.log(`  · no change  ${docsRel}`);
 }
 
+// The landing pages quote the core gzip figure in a sentence, once per
+// language. Prose is where a number goes stale unnoticed, so the digits are
+// rewritten in place and the wording around them is left to the translator.
+const core = results.find((r) => r.name === '@reelkit/core');
+for (const page of [
+  'apps/docs/src/pages/Home.tsx',
+  'apps/docs/src/pages/uk/Home.tsx',
+  'apps/docs/src/pages/zh/Home.tsx',
+]) {
+  if (!core) break;
+
+  const file = resolve(root, page);
+  let content;
+  try {
+    content = readFileSync(file, 'utf8');
+  } catch {
+    continue;
+  }
+
+  const updated = content.replace(
+    /(description:\s*'[^']*?)\d+\.\d+( (?:kB|кБ)[^']*')/,
+    `$1${core.kB}$2`,
+  );
+
+  if (updated === content) {
+    console.log(`  · no change  ${page}`);
+    continue;
+  }
+
+  changed++;
+  if (!isCheck) writeFileSync(file, updated, 'utf8');
+  console.log(`  ${isCheck ? '✗ stale' : '✓ updated'}  ${page}`);
+}
+
 console.log();
 
 if (isCheck && changed > 0) {
