@@ -5,47 +5,47 @@ Thanks for your interest in contributing to ReelKit! This guide will help you ge
 ## Prerequisites
 
 - Node.js >= 20
-- npm >= 10
+- pnpm >= 11 (`corepack enable pnpm`, or install via the pinned `.prototools` version)
 
 ## Development Workflow
 
 ```bash
 # Build all packages
-npm run build
+pnpm build
 
 # Run the React example app (localhost:4200)
-npx nx dev example-react
+pnpm exec nx dev example-react
 
 # Run the Angular example app (localhost:4200)
-npx nx dev example-angular
+pnpm exec nx dev example-angular
 
 # Run the Vue example app (localhost:4200)
-npx nx dev example-vue
+pnpm exec nx dev example-vue
 
 # Run the Next.js example app (localhost:3000)
-npx nx dev example-next
+pnpm exec nx dev example-next
 
 # Run the Nuxt example app (localhost:3000)
-npx nx dev example-nuxt
+pnpm exec nx dev example-nuxt
 
 # Run the docs site (localhost:4200)
-npx nx dev docs
+pnpm exec nx dev docs
 
 # Run all tests
-npm test
+pnpm test
 
 # Run tests for one package — any name from the table below
-npx nx test @reelkit/core
-npx nx test @reelkit/vue-lightbox
+pnpm exec nx test @reelkit/core
+pnpm exec nx test @reelkit/vue-lightbox
 
 # Format check + lint + typecheck + docs drift check
-npm run check
+pnpm check
 
 # Format (auto-fix)
-npm run fmt
+pnpm fmt
 
 # Run E2E tests
-npm run e2e
+pnpm e2e
 ```
 
 ## Project Structure
@@ -74,13 +74,13 @@ This is an Nx monorepo with the following packages:
    ```bash
    git clone https://github.com/<your-username>/reelkit.git
    cd reelkit
-   npm install
+   pnpm install
    ```
 
 2. Make your changes and ensure they pass:
 
    ```bash
-   npm run check && npm test && npm run build
+   pnpm check && pnpm test && pnpm build
    ```
 
 3. If your change alters what a published package does, add a version plan —
@@ -88,7 +88,7 @@ This is an Nx monorepo with the following packages:
    changelog entry and no version bump:
 
    ```bash
-   npx nx release plan
+   pnpm exec nx release plan
    ```
 
    Pick the affected packages and the bump level, then write the message. The

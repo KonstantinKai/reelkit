@@ -4,7 +4,6 @@
     "default": ["{projectRoot}/**/*", "sharedGlobals"],
     "production": [
       "default",
-      "!{projectRoot}/.eslintrc.json",
       "!{projectRoot}/eslint.config.mjs",
       "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
       "!{projectRoot}/**/*.test-d.ts",
@@ -183,5 +182,8 @@
       "unitTestRunner": "jest"
     }
   },
-  "analytics": true
+  "analytics": true,
+  "migrate": {
+    "createCommits": false
+  }
 }

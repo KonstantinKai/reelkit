@@ -1,5 +1,23 @@
-import DefaultChangelogRenderer from 'nx/release/changelog-renderer';
+import * as changelogRendererModule from 'nx/release/changelog-renderer';
 import type { ChangelogChange } from 'nx/release/changelog-renderer';
+
+type ChangelogRendererClass = typeof changelogRendererModule.default;
+
+// Nx ships this module as CommonJS, and the class arrives at a different depth
+// depending on which TypeScript loader Nx picks. Under swc and ts-node the
+// default export is already the class; under Node's native type stripping the
+// file loads as an ES module and `default` is the whole `module.exports`
+// object, leaving the class one level further in. Extending the wrong one
+// throws "Class extends value is not a constructor".
+const defaultExport =
+  (changelogRendererModule as { default?: unknown }).default ??
+  changelogRendererModule;
+
+const DefaultChangelogRenderer = (
+  typeof defaultExport === 'function'
+    ? defaultExport
+    : (defaultExport as { default: unknown }).default
+) as ChangelogRendererClass;
 
 /**
  * Custom changelog renderer that formats per-project entries

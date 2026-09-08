@@ -53,12 +53,12 @@
     "access": "public"
   },
   "peerDependencies": {
-    "@reelkit/react": "^0.7.0",
+    "@reelkit/react": "workspace:^",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0",
     "lucide-react": ">=0.400.0"
   },
   "dependencies": {
-    "@reelkit/stories-core": "^0.2.0"
+    "@reelkit/stories-core": "workspace:^"
   }
 }

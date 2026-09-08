@@ -56,12 +56,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v6
+        with:
+          run_install: false
+
       - uses: actions/setup-node@v4
         with:
           node-version: 25
-          cache: 'npm'
-      - run: npm ci
-      - run: npx nx build example-react
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec nx build example-react
       - uses: cloudflare/wrangler-action@v3
         with:
           wranglerVersion: '4'
@@ -75,12 +79,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v6
+        with:
+          run_install: false
+
       - uses: actions/setup-node@v4
         with:
           node-version: 25
-          cache: 'npm'
-      - run: npm ci
-      - run: npx nx build example-angular --configuration=production
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec nx build example-angular --configuration=production
       - uses: cloudflare/wrangler-action@v3
         with:
           wranglerVersion: '4'
@@ -94,12 +102,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v6
+        with:
+          run_install: false
+
       - uses: actions/setup-node@v4
         with:
           node-version: 25
-          cache: 'npm'
-      - run: npm ci
-      - run: npx nx build example-vue
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec nx build example-vue
       - uses: cloudflare/wrangler-action@v3
         with:
           wranglerVersion: '4'

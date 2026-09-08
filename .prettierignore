@@ -1,4 +1,6 @@
 # Add files here to ignore them from prettier formatting
+# Prettier ignores package-lock.json by default but not pnpm's lockfile
+pnpm-lock.yaml
 /dist
 /coverage
 /.nx/cache
@@ -9,3 +11,4 @@ apps/example-next/next-env.d.ts
 # Vendored (minified) self-hosted Plausible analytics script
 apps/*/public/js/p.js
 
+.nx/self-healing

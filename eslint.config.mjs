@@ -1,19 +1,35 @@
-import { FlatCompat } from '@eslint/eslintrc';
 import js from '@eslint/js';
 import nx from '@nx/eslint-plugin';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-  recommendedConfig: js.configs.recommended,
-});
+import tseslint from 'typescript-eslint';
 
 export default [
-  ...compat.config({ extends: ['plugin:@nx/typescript'] }),
+  // `flat/typescript` and `flat/javascript` below only match .ts/.js files, so
+  // the recommended sets are applied to .vue script blocks here. The FlatCompat
+  // shim this replaces extended `plugin:@nx/typescript` without a `files` key,
+  // which is how SFCs picked up these rules before flat config.
+  {
+    files: ['**/*.vue'],
+    rules: js.configs.recommended.rules,
+  },
+  ...tseslint.configs.recommended.map((config) => ({
+    ...config,
+    files: ['**/*.vue'],
+  })),
+  {
+    files: ['**/*.vue'],
+    // Severities mirror nx.configs['flat/typescript'] so SFCs and .ts files
+    // are held to the same standard.
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-unused-vars': 'warn',
+      '@typescript-eslint/no-require-imports': 'off',
+      'no-empty-function': 'off',
+      '@typescript-eslint/no-empty-function': 'error',
+      '@typescript-eslint/no-inferrable-types': 'error',
+      '@typescript-eslint/adjacent-overload-signatures': 'error',
+      '@typescript-eslint/prefer-namespace-keyword': 'error',
+    },
+  },
   ...nx.configs['flat/base'],
   ...nx.configs['flat/typescript'],
   ...nx.configs['flat/javascript'],

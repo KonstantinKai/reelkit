@@ -60,3 +60,7 @@ out
 .nuxt
 .nitro
 .cache
+
+# Nx migration run artifacts
+.nx/migrate-runs
+.nx/self-healing

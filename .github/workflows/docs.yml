@@ -30,13 +30,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 25
-          cache: 'npm'
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Build docs
-        run: npx nx build docs
+        run: pnpm exec nx build docs
         env:
           VITE_STACKBLITZ_CDN_TOKEN: ${{ secrets.STACKBLITZ_CDN_TOKEN }}
 

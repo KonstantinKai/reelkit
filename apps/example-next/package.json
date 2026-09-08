@@ -3,6 +3,6 @@
   "version": "0.0.0",
   "private": true,
   "dependencies": {
-    "@reelkit/react": "*"
+    "@reelkit/react": "workspace:*"
   }
 }
