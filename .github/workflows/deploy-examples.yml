@@ -8,10 +8,15 @@ on:
       - 'packages/*/package.json'
       - 'apps/example-react/src/**'
       - 'apps/example-react/public/**'
+      - 'apps/example-react/package.json'
+      - 'apps/example-react/project.json'
       - 'apps/example-angular/src/**'
       - 'apps/example-angular/public/**'
+      - 'apps/example-angular/project.json'
       - 'apps/example-vue/src/**'
       - 'apps/example-vue/public/**'
+      - 'apps/example-vue/package.json'
+      - 'apps/example-vue/project.json'
   workflow_dispatch:
 
 jobs:
@@ -30,6 +35,8 @@ jobs:
             react:
               - 'apps/example-react/src/**'
               - 'apps/example-react/public/**'
+              - 'apps/example-react/package.json'
+              - 'apps/example-react/project.json'
               - 'packages/reelkit-core/**'
               - 'packages/reelkit-react/**'
               - 'packages/reelkit-react-reel-player/**'
@@ -40,6 +47,7 @@ jobs:
             angular:
               - 'apps/example-angular/src/**'
               - 'apps/example-angular/public/**'
+              - 'apps/example-angular/project.json'
               - 'packages/reelkit-core/**'
               - 'packages/reelkit-angular/**'
               - 'packages/reelkit-angular-reel-player/**'
@@ -47,6 +55,8 @@ jobs:
             vue:
               - 'apps/example-vue/src/**'
               - 'apps/example-vue/public/**'
+              - 'apps/example-vue/package.json'
+              - 'apps/example-vue/project.json'
               - 'packages/reelkit-core/**'
               - 'packages/reelkit-vue/**'
 
