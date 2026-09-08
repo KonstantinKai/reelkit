@@ -6,17 +6,6 @@
   "main": "./fesm2022/reelkit-angular.mjs",
   "module": "./fesm2022/reelkit-angular.mjs",
   "types": "./index.d.ts",
-  "exports": {
-    "./package.json": {
-      "default": "./package.json"
-    },
-    ".": {
-      "types": "./index.d.ts",
-      "esm2022": "./esm2022/reelkit-angular.mjs",
-      "esm": "./esm2022/reelkit-angular.mjs",
-      "default": "./fesm2022/reelkit-angular.mjs"
-    }
-  },
   "files": [
     "esm2022",
     "fesm2022",
