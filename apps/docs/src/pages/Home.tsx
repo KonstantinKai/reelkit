@@ -29,7 +29,7 @@ const highlights = [
     stat: '0',
     unit: 'deps',
     title: 'Zero Dependencies',
-    description: 'No runtime dependencies. Core is ~10.0 kB gzipped.',
+    description: 'No runtime dependencies. Core is ~10.1 kB gzipped.',
     color: 'text-accent-500',
   },
   {
