@@ -1,3 +1,152 @@
+## @reelkit/vue@0.6.0 (2026-09-08)
+
+### 🚀 Features
+
+- Re-exports the new viewed-state store from core, so a Vue gallery can remember how far a viewer got through it
+- Call the store's `attach()` from your own lifecycle hook to start reading storage and following other tabs
+- `useVueRouterUrlAdapter` keeps the path, hash, and repeated query keys such as `?tag=a&tag=b` on every write; the query used to read the fragment as part of itself, so `/gallery?photo=2#details` closed on load, and repeated keys collapsed to their last value
+- It reports whether the router pushed on the same page, replaced, or stepped through history, so a gallery opened from a `<router-link>` closes with one back step
+- Its ownership stamp now travels through the router's own `state` navigation option into `history.state`, replacing the sessionStorage store that could mark an unrelated entry after a back step
+- The new `UrlChange` type is re-exported alongside `UrlAdapter`
+
+### ⚠️  Breaking Changes
+
+- `vue-router` peer floor is now `>=4.1.0`, the first release with the `state` navigation option; on an older router the adapter still works but closing clears the parameter in place instead of stepping back
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.8.0
+
+## @reelkit/core@0.8.0 (2026-09-08)
+
+### 🚀 Features
+
+- New `createViewedStateController` remembers how far a viewer got through a gallery, so a gallery can show what has already been seen and reopen where it was left
+- An entry is persisted as the exact text a URL parameter would carry and read back through the same codec and locator, so spreading one key into both `createUrlStateController` and `createViewedStateController` keeps a bookmark and a stored entry the same string
+- Durability follows that key: an id-addressed one keeps a place across the collection being reordered, and an entry that cannot be placed right now is kept rather than dropped, so a paginated feed never eats its own history
+- Storage is pluggable through the new `StorageAdapter`, with `createLocalStorageAdapter` (the default), `createSessionStorageAdapter` and `createMemoryStorageAdapter`
+- A denied or exhausted storage loses that one write and no more, and two open tabs stay in step through the browser's storage event
+- Nothing is read until `attach()`, so a server render and the first client render agree and the store is safe to prerender
+- `twoAxisViewedTracking` is the ready-made tracking pair for a two-axis player: one entry per outer slot, the inner index measuring progress through it
+- `progressOf` is required for any position that is not a plain slide index, since nothing else says which number makes one position further than another — a two-axis player spreads `twoAxisViewedTracking`, which supplies it
+- New optional `maxTracks` bounds how many tracks are kept: past it, the least recently recorded track is dropped on the next write, and recording a track, even a position already behind, keeps it from being the next to go
+- `createLruCache` now returns a real Map, so it can be iterated, spread, or handed to `new Map()` directly; `LruCache` is an alias for `Map<string, V>`
+- New optional `ttlMs` expires what a viewer has seen after a period of inactivity — per track, on a sliding clock, so a gallery still being visited never goes stale beside one abandoned months ago. Leave it out and entries are kept until forgotten explicitly, byte-for-byte as before
+- `createUrlStateController`: writing a position while nothing is open now opens at once, without waiting for the adapter to report the write back — with the default History adapter, `set(2)` used to change the URL and leave `position` at `null`. A position past the loaded window still waits for `locateAsync` to page it in, as a shared link does
+- Closing a cold deep link with the default History adapter now removes the parameter from the address bar; it used to leave `?photo=2` in place, so a reload reopened the overlay
+- Closing never steps back off an entry it cannot prove is safe: only an entry the controller pushed, or one its adapter reported as a same-page push, is popped, and anything else is cleared in place
+- `UrlAdapter.subscribe` listeners may now receive an optional `UrlChange` (`{ kind?: 'push' | 'replace' | 'pop' }`) saying how the entry came to be current; an adapter that passes nothing keeps compiling and gets the in-place close
+- A lookup still in flight is cancelled the moment the overlay closes, so a late answer no longer opens a slide or writes to the URL after the user has left
+- Detaching and reattaching a controller restarts a pending lookup instead of leaving `position` stuck at `null`
+- The default History adapter keeps the pathname and fragment through open, swipe, and close; a bare `?photo=2` used to drop `#details`
+
+## @reelkit/react@0.8.0 (2026-09-08)
+
+### 🚀 Features
+
+- New `useViewedState` hook builds a viewed-state store once and follows storage for the life of the component, so a gallery can show what has already been seen and reopen where it was left
+- Reads nothing during render, so it is safe to prerender; observe its `entries` signal to repaint when a position is recorded, here or in another tab
+- The core viewed-state exports are re-exported alongside it
+- `useOverlayUrlState` now reads `codec` and `locator` from the latest render, so a link resolved after the gallery grew or reordered sees the current list; `param` and `adapter` stay fixed for the life of the component
+- `useReactRouterUrlAdapter` keeps the pathname and hash on every write, and reports whether the router pushed on the same page, replaced, or stepped through history, so a gallery opened from a `<Link>` closes with one back step
+- The new `UrlChange` type is re-exported alongside `UrlAdapter`
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.8.0
+
+## @reelkit/angular@0.6.0 (2026-09-08)
+
+### 🚀 Features
+
+- Re-exports the new viewed-state store from core, so an Angular gallery can remember how far a viewer got through it
+- Call the store's `attach()` from your own lifecycle hook to start reading storage and following other tabs
+- `createRouterUrlAdapter` keeps the path, fragment, and repeated query keys such as `?tag=a&tag=b` on every write; the query used to read the fragment as part of itself, so `/gallery?photo=2#details` closed on load, and repeated keys collapsed to their last value
+- It reports whether the Router pushed on the same page, replaced, or stepped through history, so a gallery opened from a `routerLink` closes with one back step
+- The new `UrlChange` type is re-exported alongside `UrlAdapter`
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.8.0
+
+## @reelkit/vue-lightbox@0.2.1 (2026-09-08)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/vue to 0.6.0
+
+## @reelkit/stories-core@0.3.0 (2026-09-08)
+
+### 🚀 Features
+
+- New `createStoriesViewedState` turns a viewed-state store into what a stories player needs: ring counts by author id, the story a group should resume on, and a recorder to wire to `onStoryViewed`
+- `createStoriesController` gains a `resumeStoryIndex` option, consulted for any group reached for the first time in a session, so swiping onward continues where the viewer left off rather than restarting at story one
+- That includes the group the player opens on: leave `initialStoryIndex` out and it resumes like every other group, while naming one outright still wins, which is how a shared link keeps opening exactly where it points
+- An answer that is fractional or not a number at all is bounded to a real story rather than opening nothing
+- New `reportInitialView()` reports the story the player opened on as viewed, so a group holding a single story can be marked seen without navigating
+- `getLastStoryIndex` now answers with that resume position for a group not yet visited this session, so a neighbouring group renders the same story it will open on
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.8.0
+
+## @reelkit/react-lightbox@0.6.1 (2026-09-08)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/react to 0.8.0
+- Updated @reelkit/core to 0.8.0
+
+## @reelkit/vue-reel-player@0.3.1 (2026-09-08)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.8.0
+- Updated @reelkit/vue to 0.6.0
+
+## @reelkit/angular-lightbox@0.5.1 (2026-09-08)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/angular to 0.6.0
+- Updated @reelkit/core to 0.8.0
+
+## @reelkit/react-reel-player@0.6.1 (2026-09-08)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/react to 0.8.0
+- Updated @reelkit/core to 0.8.0
+
+## @reelkit/angular-reel-player@0.5.1 (2026-09-08)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/angular to 0.6.0
+- Updated @reelkit/core to 0.8.0
+
+## @reelkit/react-stories-player@0.4.0 (2026-09-08)
+
+### 🚀 Features
+
+- Rings now show seen and unseen across reloads, and a partly watched group reopens on its first unseen story — wire `useViewedState` and `createStoriesViewedState`, both re-exported here, to the ring list and the overlay
+- `StoriesOverlay` and `StoriesUrlOverlay` take a new optional `resumeStoryIndex`, consulted for any group reached for the first time in a session, so swiping onward continues where the viewer left off
+- The group the player opens on resumes through the same callback when `initialStoryIndex` is left out, so a ring click needs one prop rather than two — pass `initialStoryIndex` only to name a story outright, which still wins
+- With the URL-driven overlay a link still wins: the parameter decides where the player opens, whatever has been stored
+- The story the player opens on is now reported through `onStoryViewed` when the overlay mounts, so opening a one-story group and closing marks it watched — a handler that counts views will see one call per open that it did not before
+
+### 🩹 Fixes
+
+- `StoriesRing` now shows two states and only two: a group with stories left to watch keeps the rotating gradient, a fully watched one turns a flat muted ring
+- Fixes a part-watched ring rendering as a smeared, arbitrarily rotated arc — the gaps between story segments were painted over by a second, unrotated copy of the ring, so the muted and gradient halves ran together and lined up with no particular story
+- `viewedCount` between 1 and `totalStories - 1` now renders the same as an untouched group; per-story progress belongs to the progress bar inside the player, not to the ring
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/stories-core to 0.3.0
+- Updated @reelkit/react to 0.8.0
+- Updated @reelkit/core to 0.8.0
+
 ## Documentation (2026-07-28)
 
 ### 📖 Documentation
