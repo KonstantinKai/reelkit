@@ -1,4 +1,6 @@
 import { useState, useMemo } from 'react';
+import { persistedSignal } from '../components/persistedSignal';
+import { Segmented } from '../components/Segmented';
 import {
   StoriesOverlay,
   StoriesRingList,
@@ -375,6 +377,14 @@ function StoriesPlayerPage() {
     () => cubeTransition,
   );
 
+  // Off, the page behaves as if nothing had ever been seen: rings all unseen,
+  // every group opens on its first story, nothing recorded. The store stays
+  // attached, so switching back on shows what was stored all along. The
+  // choice itself is kept next to the store, so a reload respects it.
+  const rememberSeen = useState(() =>
+    persistedSignal('reelkit-stories-player-remember-seen', true),
+  )[0];
+
   const openStories = (groupIndex: number) => {
     setSelectedGroup(groupIndex);
     setIsOpen(true);
@@ -441,13 +451,44 @@ function StoriesPlayerPage() {
           </button>
         </div>
 
+        <div
+          style={{
+            display: 'flex',
+            gap: 20,
+            flexWrap: 'wrap',
+            marginBottom: 24,
+          }}
+        >
+          <Observe signals={[rememberSeen]}>
+            {() => (
+              <Segmented
+                legend="Remember seen"
+                options={[
+                  {
+                    label: 'On',
+                    active: rememberSeen.value,
+                    onClick: () => (rememberSeen.value = true),
+                  },
+                  {
+                    label: 'Off',
+                    active: !rememberSeen.value,
+                    onClick: () => (rememberSeen.value = false),
+                  },
+                ]}
+              />
+            )}
+          </Observe>
+        </div>
+
         {/* The store's entries are a signal, so the rings repaint the moment a
             story is seen — here or in another tab. */}
-        <Observe signals={[seen.entries]}>
+        <Observe signals={[seen.entries, rememberSeen]}>
           {() => (
             <StoriesRingList
               groups={groups}
-              viewedState={viewed.viewedCounts()}
+              viewedState={
+                rememberSeen.value ? viewed.viewedCounts() : new Map()
+              }
               onSelect={openStories}
             />
           )}
@@ -459,10 +500,14 @@ function StoriesPlayerPage() {
         onClose={() => setIsOpen(false)}
         groups={groups}
         initialGroupIndex={selectedGroup}
-        resumeStoryIndex={viewed.resumeStoryIndex}
+        resumeStoryIndex={(groupIndex) =>
+          rememberSeen.value ? viewed.resumeStoryIndex(groupIndex) : 0
+        }
         groupTransition={transition}
         renderSlide={(props) => <CustomSlide {...props} />}
-        onStoryViewed={viewed.markViewed}
+        onStoryViewed={(groupIndex, storyIndex) => {
+          if (rememberSeen.value) viewed.markViewed(groupIndex, storyIndex);
+        }}
       />
     </div>
   );
