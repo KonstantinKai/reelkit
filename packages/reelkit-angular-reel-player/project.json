@@ -28,7 +28,15 @@
       },
       "defaultConfiguration": "production"
     },
+    "prepare-publish": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "command": "node scripts/resolve-workspace-protocol.mjs dist/{projectRoot}/package.json"
+      }
+    },
     "nx-release-publish": {
+      "dependsOn": ["prepare-publish"],
       "options": {
         "packageRoot": "dist/{projectRoot}"
       }
