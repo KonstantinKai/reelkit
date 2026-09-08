@@ -987,6 +987,14 @@ export default function VueLightbox() {
         <Heading level={2} id="url-state" className="text-2xl font-bold mb-4">
           URL 状态
         </Heading>
+        <a
+          href="https://vue-demo.reelkit.dev/image-preview-url?utm_source=docs"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 mb-4 text-sm font-medium text-primary-500 hover:text-primary-600 transition-colors"
+        >
+          查看在线演示 &rarr;
+        </a>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           用{' '}
           <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">

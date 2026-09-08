@@ -141,6 +141,8 @@ The shared `<video>` element powering video slides uses the same pattern as the 
 
 ## URL State (shareable links, back button)
 
+Live demo: https://vue-demo.reelkit.dev/image-preview-url
+
 `LightboxUrlOverlay` puts the open state in the URL — it opens when the parameter names a slide and closes when it goes away, so links are shareable and the back button closes **when opened from within the app** (the link pushed an entry). A shared link opened directly in a fresh tab has no history behind it, so browser-back leaves the site — close with the button or Escape to remove the parameter in place. Separate component from `LightboxOverlay`: each carries one open-state driver (the `is-open` model or the url `controller`), never both. Build the controller with the `useOverlayUrlState` composable from `@reelkit/vue` and pass it as `:controller`.
 
 > **Built-in keys.** Spread `urlIndexKey` (by position) or `urlStableIdKey` (by a stable `id`) into the controller — both re-exported from `@reelkit/vue`. See the [URL State guide](/docs/core/guide#url-state) and [Core API](/docs/core/api#url-state).

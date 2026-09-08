@@ -104,6 +104,8 @@ interface ContentItem {
 
 ## URL State (shareable links, back button)
 
+Live demo: https://react-demo.reelkit.dev/reel-player-url
+
 `ReelPlayerUrlOverlay` is a separate component whose open state lives in the URL. Build a controller with `useOverlayUrlState` from `@reelkit/react` and pass it as `controller`: the player opens itself when the param names a slide and closes when it goes away. **Opening is a link** — the href is the open action, no click handler.
 
 > **Built-in keys.** Spread `urlIndexKey` (by position) or `urlStableIdKey` (by a stable `id`) into the controller — both re-exported from `@reelkit/react`. See the [URL State guide](/docs/core/guide#url-state) and [Core API](/docs/core/api#url-state).

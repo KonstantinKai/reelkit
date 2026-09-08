@@ -1035,6 +1035,14 @@ const items: MyItem[] = [/* ... */];
         <Heading level={2} className="text-2xl font-bold mb-4">
           URL State
         </Heading>
+        <a
+          href="https://vue-demo.reelkit.dev/reel-player-url?utm_source=docs"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 mb-4 text-sm font-medium text-primary-500 hover:text-primary-600 transition-colors"
+        >
+          View live demo &rarr;
+        </a>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Build a controller with{' '}
           <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">

@@ -85,6 +85,8 @@ interface StoriesGroup<T extends StoryItem = StoryItem> {
 
 ## URL State (shareable links, back button)
 
+Live demo: https://react-demo.reelkit.dev/stories-player-url
+
 `StoriesUrlOverlay` is a separate component whose open state lives in the URL. Both axes ride one parameter — `?story=<group>.<story>` — so the playing story has a link that can be shared, bookmarked, and closed with the back button. Build a controller with `useOverlayUrlState` and `urlIndexTwoAxisKey`, then pass it as `controller`. **Opening a user is a link** — the href is the open action, no click handler.
 
 > **Built-in keys.** Stories are two-axis, so spread a two-axis key: `urlIndexTwoAxisKey` (group and story by position) or `urlStableIdTwoAxisKey` (the group by a stable `id`) — both re-exported from `@reelkit/react`. See the [URL State guide](/docs/core/guide#url-state) and [Core API](/docs/core/api#url-state).
