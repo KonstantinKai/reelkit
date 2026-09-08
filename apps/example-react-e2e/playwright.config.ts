@@ -3,7 +3,6 @@ import { nxE2EPreset } from '@nx/playwright/preset';
 import { workspaceRoot } from '@nx/devkit';
 
 const baseURL = process.env['BASE_URL'] || 'http://localhost:4300';
-const port = new URL(baseURL).port;
 
 export default defineConfig({
   ...nxE2EPreset(__filename, { testDir: './src' }),
@@ -19,7 +18,7 @@ export default defineConfig({
     { name: 'mobile-chrome', use: { ...devices['Pixel 5'], hasTouch: true } },
   ],
   webServer: {
-    command: `npx nx serve example-react --port ${port}`,
+    command: 'pnpm exec nx run example-react:serve-e2e',
     url: baseURL,
     reuseExistingServer: !process.env['CI'],
     cwd: workspaceRoot,

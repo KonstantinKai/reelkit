@@ -63,6 +63,10 @@
         },
         "development": {
           "buildTarget": "example-angular:build:development"
+        },
+        "e2e": {
+          "buildTarget": "example-angular:build:development",
+          "port": 4400
         }
       },
       "defaultConfiguration": "development"
