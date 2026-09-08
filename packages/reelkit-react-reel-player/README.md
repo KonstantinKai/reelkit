@@ -117,8 +117,10 @@ type MediaType = 'image' | 'video';
 
 ### Sound Context
 
+The sound context ships with `@reelkit/react`, which this package depends on:
+
 ```tsx
-import { SoundProvider, useSoundState } from '@reelkit/react-reel-player';
+import { SoundProvider, useSoundState } from '@reelkit/react';
 
 interface SoundState {
   muted: boolean;
@@ -129,7 +131,9 @@ interface SoundState {
 }
 ```
 
-### Re-exports from @reelkit/react
+### From @reelkit/react
+
+The slider primitives the player is built on are imported from `@reelkit/react` directly:
 
 ```tsx
 import {
@@ -138,7 +142,7 @@ import {
   type ReelProps,
   type ReelApi,
   type ReelIndicatorProps,
-} from '@reelkit/react-reel-player';
+} from '@reelkit/react';
 ```
 
 ## Examples
