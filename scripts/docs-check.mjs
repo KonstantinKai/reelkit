@@ -293,6 +293,217 @@ for (const rule of config.requirePair ?? []) {
   }
 }
 
+// A snippet is meant to be pasted, and the first line that breaks when an API
+// moves between packages is its import — the name is still real, just published
+// somewhere else now, so nothing about the prose looks wrong. Named imports are
+// resolved against the package's own entry point. A side-effect import carries
+// no names, and a default import names nothing the entry point has to declare.
+if (config.snippetImports) {
+  const packageDirs = new Map();
+  for (const entry of readdirSync(join(root, 'packages'))) {
+    const manifest = join(root, 'packages', entry, 'package.json');
+    if (!existsSync(manifest)) continue;
+    const name = JSON.parse(readFileSync(manifest, 'utf8')).name;
+    if (name) packageDirs.set(name, `packages/${entry}`);
+  }
+
+  /**
+   * Source entry point behind an import specifier: the package root, a bundler
+   * secondary entry (`src/<subpath>.ts`), or an Angular secondary entry point,
+   * which is its own directory carrying a public interface file.
+   */
+  const entryFor = (specifier) => {
+    const [scope, name, ...rest] = specifier.split('/');
+    const dir = packageDirs.get(`${scope}/${name}`);
+    if (!dir) return null;
+
+    const subpath = rest.join('/');
+    const candidates = subpath
+      ? [
+          `${dir}/src/${subpath}.ts`,
+          `${dir}/${subpath}/src/public-api.ts`,
+          `${dir}/${subpath}/src/index.ts`,
+        ]
+      : [`${dir}/src/index.ts`];
+
+    return candidates.find((candidate) => existsSync(join(root, candidate)));
+  };
+
+  /**
+   * Every name a module publishes, including the ones it re-exports from
+   * another package. That is the opposite question from `publicExports`, which
+   * asks which package OWNS a symbol's reference table; a reader importing from
+   * a binding only cares that the binding hands the name out.
+   *
+   * A star re-export cannot be enumerated without resolving its target, so the
+   * whole entry point is reported and left unchecked rather than answering with
+   * a list that is quietly short.
+   */
+  const exportedNames = (file) => {
+    const src = read(file);
+    if (/^\s*export\s+\*\s+from/m.test(src)) {
+      warnings.push(
+        `${file}: has \`export * from\` — snippet imports against this entry point are not checked.`,
+      );
+      return null;
+    }
+
+    const names = new Set();
+    // `export type { … }` publishes names exactly as `export { … }` does, and a
+    // package's type surface is most of what a snippet imports.
+    for (const block of src.matchAll(/export\s*(?:type\s+)?\{([^}]*)\}/g)) {
+      // Long export lists group their names under comment headings, which sit
+      // inside the braces and name nothing.
+      for (const spec of block[1].replace(/\/\/[^\n]*/g, '').split(',')) {
+        const clean = spec.trim().replace(/^type\s+/, '');
+        if (!clean) continue;
+        const renamed = clean.match(/\bas\s+([A-Za-z_$][\w$]*)$/);
+        names.add(renamed ? renamed[1] : clean);
+      }
+    }
+    for (const m of src.matchAll(
+      /^\s*export\s+(?:declare\s+)?(?:const|let|var|function|class|interface|type|enum)\s+([A-Za-z_$][\w$]*)/gm,
+    )) {
+      names.add(m[1]);
+    }
+
+    names.delete('default');
+    return names;
+  };
+
+  const allow = new Set(config.snippetImports.allow ?? []);
+  const exportCache = new Map();
+  const files = new Set([
+    ...config.mirrorPairs.flatMap((p) => [p.page, p.mirror]),
+    ...(config.snippetImports.files ?? []),
+  ]);
+
+  for (const file of files) {
+    if (!existsSync(join(root, file))) continue;
+    const src = read(file);
+
+    for (const m of src.matchAll(
+      /import\s+(?:type\s+)?\{([^}]*)\}\s*from\s*['"](@reelkit\/[^'"]+)['"]/g,
+    )) {
+      const [, clause, specifier] = m;
+      const line = src.slice(0, m.index).split('\n').length;
+      const entry = entryFor(specifier);
+
+      if (!entry) {
+        errors.push(
+          `${file}:${line}: snippet imports from \`${specifier}\` — no package under packages/ publishes that entry point.`,
+        );
+        continue;
+      }
+      if (!exportCache.has(entry)) exportCache.set(entry, exportedNames(entry));
+      const exported = exportCache.get(entry);
+      if (exported === null) continue;
+
+      // A long import list is often grouped under comment headings, which are
+      // part of the clause but name nothing.
+      for (const spec of clause.replace(/\/\/[^\n]*/g, '').split(',')) {
+        const clean = spec.trim().replace(/^type\s+/, '');
+        if (!clean) continue;
+        const name = clean.split(/\s+as\s+/)[0].trim();
+        if (exported.has(name) || allow.has(`${specifier}:${name}`)) continue;
+        errors.push(
+          `${file}:${line}: snippet imports \`${name}\` from \`${specifier}\`, which does not export it — see ${rel(join(root, entry))}`,
+        );
+      }
+    }
+  }
+}
+
+// A translated page is a full copy of its English original, and the two drift
+// the moment a section lands on one and not the other. Prose is translated, so
+// it cannot be compared. The parts that must be identical can: every code
+// sample, which the translations keep byte for byte, the number of sections,
+// and the identifiers in the reference tables.
+if (config.localeParity) {
+  const pagesRoot = 'apps/docs/src/pages/docs';
+  const englishPages = [];
+  const walk = (dir) => {
+    for (const entry of readdirSync(join(root, dir), { withFileTypes: true })) {
+      const path = `${dir}/${entry.name}`;
+      if (entry.isDirectory()) walk(path);
+      else if (entry.name.endsWith('.tsx')) englishPages.push(path);
+    }
+  };
+  walk(pagesRoot);
+
+  // A multi-line template literal on a docs page is a code sample; the
+  // single-line ones are interpolated class names and the like.
+  const samples = (src) =>
+    [...src.matchAll(/`((?:[^`\\]|\\.)*)`/g)]
+      .map((m) => m[1])
+      .filter((body) => body.includes('\n'));
+  const sectionCount = (src) =>
+    (src.match(/<Heading\b[^>]*level=\{2\}/g) ?? []).length;
+  const identifiers = (src) =>
+    new Set(
+      [...src.matchAll(/\b(?:prop|name):\s*'([^']+)'/g)].map((m) => m[1]),
+    );
+
+  const preview = (body) => JSON.stringify(body.trim().slice(0, 60));
+  const without = (from, take) => {
+    const pool = [...take];
+    return from.filter((item) => {
+      const at = pool.indexOf(item);
+      if (at === -1) return true;
+      pool.splice(at, 1);
+      return false;
+    });
+  };
+
+  for (const page of englishPages) {
+    const english = read(page);
+    for (const locale of config.localeParity.locales) {
+      const sibling = page.replace(
+        `${pagesRoot}/`,
+        `apps/docs/src/pages/${locale}/docs/`,
+      );
+      if (!existsSync(join(root, sibling))) continue;
+      const translated = read(sibling);
+
+      const missing = without(samples(english), samples(translated));
+      const extra = without(samples(translated), samples(english));
+      if (missing.length) {
+        errors.push(
+          `${sibling}: ${missing.length} code sample(s) on ${rel(join(root, page))} are absent here — first begins ${preview(missing[0])}`,
+        );
+      }
+      if (extra.length) {
+        errors.push(
+          `${sibling}: ${extra.length} code sample(s) here have no match on ${rel(join(root, page))} — first begins ${preview(extra[0])}`,
+        );
+      }
+
+      const englishSections = sectionCount(english);
+      const translatedSections = sectionCount(translated);
+      if (englishSections !== translatedSections) {
+        errors.push(
+          `${sibling}: ${translatedSections} sections where ${rel(join(root, page))} has ${englishSections}`,
+        );
+      }
+
+      const englishIds = identifiers(english);
+      const translatedIds = identifiers(translated);
+      const missingIds = [...englishIds].filter((id) => !translatedIds.has(id));
+      const extraIds = [...translatedIds].filter((id) => !englishIds.has(id));
+      if (missingIds.length) {
+        errors.push(
+          `${sibling}: table rows missing versus ${rel(join(root, page))}: ${missingIds.join(', ')}`,
+        );
+      }
+      if (extraIds.length) {
+        errors.push(
+          `${sibling}: table rows with no English counterpart: ${extraIds.join(', ')}`,
+        );
+      }
+    }
+  }
+}
+
 if (updateBaseline) {
   config.knownUndocumented = freshBaseline;
   writeFileSync(configPath, `${JSON.stringify(config, null, 2)}\n`);

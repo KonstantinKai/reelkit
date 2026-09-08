@@ -1232,6 +1232,14 @@ renderSlide={({ item, index, size, isActive, onReady, onWaiting, onError }) => (
         <Heading level={2} id="url-state" className="text-2xl font-bold mb-4">
           Стан в URL
         </Heading>
+        <a
+          href="https://react-demo.reelkit.dev/image-preview-url?utm_source=docs"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 mb-4 text-sm font-medium text-primary-500 hover:text-primary-600 transition-colors"
+        >
+          Подивитися демо наживо &rarr;
+        </a>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
             LightboxUrlOverlay
@@ -2273,10 +2281,8 @@ function CustomLightbox() {
           . Сигнатура повторює переходи слайдера в ядрі.
         </p>
         <CodeBlock
-          code={`import {
-  LightboxOverlay,
-  type TransitionTransformFn,
-} from '@reelkit/react-lightbox';
+          code={`import { LightboxOverlay } from '@reelkit/react-lightbox';
+import type { TransitionTransformFn } from '@reelkit/react';
 
 const customFade: TransitionTransformFn = (offset, size) => ({
   transform: \`translate3d(\${offset * size[0]}px, 0, 0)\`,

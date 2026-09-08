@@ -1199,6 +1199,21 @@ describe('LightboxOverlay', () => {
       expect(fake.adapter.read()).toBe('?photo=2');
     });
 
+    it('opens visibly from a controller write through the History API', () => {
+      // No adapter: the real History API, which reports nothing for a push
+      // of our own. The overlay must open from the write itself.
+      window.history.replaceState(null, '', '/gallery');
+
+      renderUrl({ param: 'photo', ...urlIndexKey(count) });
+      expect(isOpen()).toBe(false);
+
+      act(() => controller.set(1));
+
+      expect(isOpen()).toBe(true);
+      expect(lastReelProps.initialIndex).toBe(1);
+      expect(window.location.search).toBe('?photo=1');
+    });
+
     it('opens at the index named by the url on first render', () => {
       const fake = createFakeUrlAdapter('?photo=1');
 

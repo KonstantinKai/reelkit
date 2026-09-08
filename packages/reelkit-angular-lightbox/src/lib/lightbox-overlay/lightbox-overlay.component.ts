@@ -49,6 +49,7 @@ import {
   captureFocusForReturn,
   createFocusTrap,
   getFocusableElements,
+  observeDomEvent,
 } from '@reelkit/angular';
 import {
   RkLightboxControlsDirective,
@@ -565,17 +566,20 @@ export class RkLightboxOverlayComponent {
   private _preloaderDispose: (() => void) | null = null;
   private _restoreFocus: (() => void) | null = null;
   private _releaseFocusTrap: (() => void) | null = null;
+  private _stopObservingResize: (() => void) | null = null;
 
   constructor() {
     if (typeof window !== 'undefined') {
       this._ngZone.runOutsideAngular(() => {
-        window.addEventListener('resize', this._handleResize);
+        this._stopObservingResize = observeDomEvent(
+          window,
+          'resize',
+          this._handleResize,
+        );
       });
     }
     this._destroyRef.onDestroy(() => {
-      if (typeof window !== 'undefined') {
-        window.removeEventListener('resize', this._handleResize);
-      }
+      this._stopObservingResize?.();
       this._bodyLock.unlock();
     });
 

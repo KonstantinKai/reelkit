@@ -1378,7 +1378,7 @@ restoreFocus();`}
         </div>
       </section>
 
-      <section>
+      <section className="mb-12">
         <Heading level={2} id="url-state" className="text-2xl font-bold mb-4">
           URL 状态
         </Heading>
@@ -1703,6 +1703,26 @@ restoreFocus();`}
                 <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
                   路由器的注入点。带路由的应用必须提供一个，否则路由器自己的
                   location 会过期。
+                  <code className="font-mono text-xs">subscribe</code>{' '}
+                  的监听器接受一个可选的{' '}
+                  <code className="font-mono text-xs">UrlChange</code>
+                  ；不带参数调用始终合法，表示适配器无法说明当前条目是如何产生的。
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  UrlChange
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {"{ kind?: 'push' | 'replace' | 'pop' }"}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  适配器对刚刚完成的导航所知的信息。仅当路由器自身在同一页面上
+                  推入新条目时才报告{' '}
+                  <code className="font-mono text-xs">push</code>
+                  ——这是关闭时可以弹出该条目的唯一情形。没有证据时条目永远不会被
+                  认领，关闭只会就地清除参数，在历史中留下一个页面副本，而不是冒险
+                  跳出站点。
                 </td>
               </tr>
               <tr className="border-b border-slate-100 dark:border-slate-800">
@@ -1720,6 +1740,144 @@ restoreFocus();`}
                     createUrlStateController
                   </code>{' '}
                   所接受的选项 —— 单独导出，方便使用方先组装好配置再传进去。
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section className="mb-12">
+        <Heading
+          level={2}
+          id="viewed-state"
+          className="text-2xl font-bold mb-4"
+        >
+          已观看状态
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          记住观看者看到了哪里，键与地址栏相同：一条记录就是参数文本本身，通过同一个{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            codec
+          </code>{' '}
+          和{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            locator
+          </code>{' '}
+          读回。
+        </p>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left py-3 px-4 font-semibold">导出</th>
+                <th className="text-left py-3 px-4 font-semibold">类型</th>
+                <th className="text-left py-3 px-4 font-semibold">说明</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  createViewedStateController
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {'(options) => ViewedStateController<Pos>'}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  记住观看者看到了哪里，持久化为 URL
+                  参数所携带的原文。接收地址栏所用的同一对{' '}
+                  <code className="font-mono text-xs">codec</code>/
+                  <code className="font-mono text-xs">locator</code>，外加{' '}
+                  <code className="font-mono text-xs">storageKey</code>、可选的{' '}
+                  <code className="font-mono text-xs">storage</code>、
+                  <code className="font-mono text-xs">trackOf</code>
+                  （每组一条记录）和{' '}
+                  <code className="font-mono text-xs">progressOf</code>。在{' '}
+                  <code className="font-mono text-xs">attach()</code>{' '}
+                  之前不读取任何内容，因此可安全预渲染。
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  twoAxisViewedTracking
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {'{ trackOf, progressOf }'}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  双轴播放器的跟踪对：每个外层槽位一条记录，内层索引衡量其中的进度。与双轴键一起展开即可。
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  createLocalStorageAdapter
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {'() => StorageAdapter'}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  默认后端。另有{' '}
+                  <code className="font-mono text-xs">
+                    createSessionStorageAdapter
+                  </code>{' '}
+                  用于不应超出标签页寿命的状态，以及{' '}
+                  <code className="font-mono text-xs">
+                    createMemoryStorageAdapter
+                  </code>{' '}
+                  用于测试和服务端渲染。每个都会吸收自身的失败——配额耗尽只丢失那一次写入。
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  {'ViewedStateController<Pos>'}
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {
+                    '{ entries; resolve(track); record(position); forget(track?); attach() }'
+                  }
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  <code className="font-mono text-xs">entries</code> 是「轨道 →
+                  已存文本」的信号，因此本页或另一标签页记录位置时，圆环会重绘。
+                  <code className="font-mono text-xs">resolve</code>{' '}
+                  每次调用都走完整的键循环。
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  {'ViewedStateOptions<Id, Pos>'}
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {
+                    '{ storageKey; codec; locator; storage?; trackOf?; progressOf; ttlMs?; maxTracks? }'
+                  }
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  <code className="font-mono text-xs">
+                    createViewedStateController
+                  </code>{' '}
+                  接受的选项——单独导出，方便使用方先组装好配置再传进去。
+                  <code className="font-mono text-xs">progressOf</code>{' '}
+                  只对纯索引位置可选，索引本身就是进度；其他任何位置都必须说明比较哪个数字，类型会强制要求。
+                  <code className="font-mono text-xs">ttlMs</code>{' '}
+                  启用过期：轨道在最后一次记录后经过该时长即被遗忘，再次记录会重置计时。
+                  <code className="font-mono text-xs">maxTracks</code>{' '}
+                  限制数量：超出后，最久未记录的轨道会在下次写入时被丢弃。
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  StorageAdapter
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {
+                    '{ read(key); write(key, value); subscribe?(key, listener) }'
+                  }
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  存储层的注入点。省略{' '}
+                  <code className="font-mono text-xs">subscribe</code>
+                  ，存储就只是不做跨标签页同步。
                 </td>
               </tr>
             </tbody>

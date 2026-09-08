@@ -738,6 +738,55 @@ useBodyLock(isOpen);`}
 
         <Heading
           level={3}
+          id="useviewedstate"
+          className="text-lg font-semibold mt-6 mb-2"
+        >
+          useViewedState
+        </Heading>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            ViewedStateOptions
+          </code>
+        </p>
+        <p className="text-slate-600 dark:text-slate-400 mb-2">
+          记住观看者在图库中看到了哪里，并在组件存活期间持续跟随存储。传入地址栏所用的同一个键，已存记录读起来就与分享链接的参数完全一样。通过{' '}
+          <code>Observe</code> 读取 <code>entries</code>
+          ，本页或另一标签页记录位置时圆环就会重绘。
+        </p>
+        <CodeBlock
+          code={`import {
+  useViewedState,
+  urlStableIdTwoAxisKey,
+  twoAxisViewedTracking,
+  Observe,
+} from '@reelkit/react';
+import {
+  StoriesRingList,
+  createStoriesViewedState,
+} from '@reelkit/react-stories-player';
+
+const key = urlStableIdTwoAxisKey({ outerItems, innerItems });
+const seen = useViewedState({
+  storageKey: 'stories-seen',
+  ...key,
+  ...twoAxisViewedTracking,
+});
+const viewed = createStoriesViewedState(seen, () => groups);
+
+<Observe signals={[seen.entries]}>
+  {() => (
+    <StoriesRingList
+      groups={groups}
+      viewedState={viewed.viewedCounts()}
+      onSelect={open}
+    />
+  )}
+</Observe>;`}
+          language="tsx"
+        />
+
+        <Heading
+          level={3}
           id="usereactrouterurladapter"
           className="text-lg font-semibold mt-6 mb-2"
         >

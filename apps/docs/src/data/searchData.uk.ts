@@ -43,6 +43,8 @@ export const ukTitles: Record<string, string> = {
 
   // Sections
   'URL State': 'Стан в URL',
+  'Viewed State': 'Переглянуте',
+  'Remembering What Was Seen': 'Запам’ятовування переглянутого',
   Features: 'Можливості',
   'Quick Start': 'Швидкий старт',
   'Live Demo': 'Демо наживо',

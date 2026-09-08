@@ -112,6 +112,8 @@ interface TimelineBarProps {
 
 ## URL State
 
+Live demo: https://vue-demo.reelkit.dev/reel-player-url
+
 `ReelPlayerUrlOverlay` puts the open state in the address bar: build a controller with `useOverlayUrlState` from `@reelkit/vue` and pass it as `controller`. The player opens when the parameter names a slide and closes when it clears — links are shareable and the back button closes it. Opening pushes one history entry and every slide change replaces it, so paging a feed adds no entries and one back step always leaves. The URL depth follows the controller's key: a one-axis `urlIndexKey` addresses the post only (`?reel=3`), a two-axis `urlIndexTwoAxisKey` also carries a multi-media post's inner media index (`?reel=3.2`); pick one key per app, the two wire shapes do not cross-decode. It is a separate component from `ReelPlayerOverlay`, so each carries exactly one open-state driver.
 
 > **Built-in keys.** Spread `urlIndexKey` (by position) or `urlStableIdKey` (by a stable `id`) into the controller — both re-exported from `@reelkit/vue`. See the [URL State guide](/docs/core/guide#url-state) and [Core API](/docs/core/api#url-state).

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   StoriesRingList,
   StoriesUrlOverlay,
+  createStoriesViewedState,
   type StoriesGroup,
   type StoryItem,
 } from '@reelkit/react-stories-player';
@@ -11,6 +12,8 @@ import {
   Observe,
   Signal,
   useOverlayUrlState,
+  useViewedState,
+  twoAxisViewedTracking,
   indexCodec,
   urlStableIdKey,
   base64UrlCodec,
@@ -19,9 +22,11 @@ import {
   type UrlLocator,
   type UrlStateController,
   type TwoAxisPosition,
+  type ViewedStateController,
 } from '@reelkit/react';
 import { useReactRouterUrlAdapter } from '@reelkit/react/react-router-url-adapter';
 import { persistedSignal } from '../components/persistedSignal';
+import { Segmented } from '../components/Segmented';
 import { cdnUrl } from '@reelkit/example-data';
 import '@reelkit/react-stories-player/styles.css';
 
@@ -77,54 +82,6 @@ const buttonStyle: React.CSSProperties = {
   cursor: 'pointer',
 };
 
-const segButton = (active: boolean, disabled = false): React.CSSProperties => ({
-  padding: '6px 12px',
-  borderRadius: 8,
-  border: '1px solid rgba(255,255,255,0.2)',
-  background: active ? 'rgba(99,102,241,0.55)' : 'rgba(255,255,255,0.06)',
-  color: disabled ? 'rgba(255,255,255,0.3)' : '#fff',
-  fontSize: '0.8rem',
-  cursor: disabled ? 'not-allowed' : 'pointer',
-});
-
-const Segmented = ({
-  legend,
-  options,
-}: {
-  legend: string;
-  options: {
-    label: string;
-    active: boolean;
-    disabled?: boolean;
-    onClick: () => void;
-  }[];
-}) => (
-  <fieldset style={{ border: 0, padding: 0, margin: 0 }}>
-    <legend
-      style={{
-        color: 'rgba(255,255,255,0.5)',
-        fontSize: '0.72rem',
-        marginBottom: 6,
-      }}
-    >
-      {legend}
-    </legend>
-    <div style={{ display: 'flex', gap: 6 }}>
-      {options.map((o) => (
-        <button
-          key={o.label}
-          type="button"
-          disabled={o.disabled}
-          style={segButton(o.active, o.disabled)}
-          onClick={o.onClick}
-        >
-          {o.label}
-        </button>
-      ))}
-    </div>
-  </fieldset>
-);
-
 /**
  * URL-driven stories player over a windowed feed. The open group and story ride
  * one `?story=<group>.<story>` parameter — the outer group switchable between a
@@ -136,33 +93,40 @@ export function StoriesPlayerUrlPage() {
   // Feed + windowing state and the switcher signals, all created once. The
   // switchers are reactive UI state, bridged into React by the `Observe` below
   // (switcher chrome + keyed remount).
-  const [allGroups, loaded, fetching, viewedState, addressing, innerKey, hash] =
-    useState(() => {
-      const allGroups = generateGroups();
-      return [
-        allGroups,
-        createSignal(allGroups.slice(0, _kPageSize)),
-        createSignal(false),
-        new Map<string, number>(),
-        persistedSignal<Addressing>(
-          'reelkit-stories-player-url-addressing',
-          'index',
-        ),
-        persistedSignal<InnerKey>(
-          'reelkit-stories-player-url-inner-key',
-          'index',
-        ),
-        persistedSignal('reelkit-stories-player-url-hash', false),
-      ] as [
-        StoriesGroup<StoryItem>[],
-        Signal<StoriesGroup<StoryItem>[]>,
-        Signal<boolean>,
-        Map<string, number>,
-        Signal<Addressing>,
-        Signal<InnerKey>,
-        Signal<boolean>,
-      ];
-    })[0];
+  const [
+    allGroups,
+    loaded,
+    fetching,
+    addressing,
+    innerKey,
+    hash,
+    rememberSeen,
+  ] = useState(() => {
+    const allGroups = generateGroups();
+    return [
+      allGroups,
+      createSignal(allGroups.slice(0, _kPageSize)),
+      createSignal(false),
+      persistedSignal<Addressing>(
+        'reelkit-stories-player-url-addressing',
+        'index',
+      ),
+      persistedSignal<InnerKey>(
+        'reelkit-stories-player-url-inner-key',
+        'index',
+      ),
+      persistedSignal('reelkit-stories-player-url-hash', false),
+      persistedSignal('reelkit-stories-player-url-remember-seen', true),
+    ] as [
+      StoriesGroup<StoryItem>[],
+      Signal<StoriesGroup<StoryItem>[]>,
+      Signal<boolean>,
+      Signal<Addressing>,
+      Signal<InnerKey>,
+      Signal<boolean>,
+      Signal<boolean>,
+    ];
+  })[0];
 
   return (
     <div
@@ -198,11 +162,12 @@ export function StoriesPlayerUrlPage() {
           pages the rest in first.
         </p>
 
-        <Observe signals={[addressing, innerKey, hash]}>
+        <Observe signals={[addressing, innerKey, hash, rememberSeen]}>
           {() => {
             const a = addressing.value;
             const ik = innerKey.value;
             const h = hash.value;
+            const remember = rememberSeen.value;
             const hashable = a === 'stableId' || ik === 'stableId';
 
             return (
@@ -262,6 +227,25 @@ export function StoriesPlayerUrlPage() {
                       },
                     ]}
                   />
+                  {/* Off, the page behaves as if nothing had ever been seen:
+                      rings all unseen, every group opens on its first story,
+                      nothing recorded. The store stays attached, so switching
+                      back on shows what was stored all along. */}
+                  <Segmented
+                    legend="Remember seen"
+                    options={[
+                      {
+                        label: 'On',
+                        active: remember,
+                        onClick: () => (rememberSeen.value = true),
+                      },
+                      {
+                        label: 'Off',
+                        active: !remember,
+                        onClick: () => (rememberSeen.value = false),
+                      },
+                    ]}
+                  />
                 </div>
 
                 {/* Remount when the key shape changes so `useOverlayUrlState`
@@ -271,10 +255,10 @@ export function StoriesPlayerUrlPage() {
                   allGroups={allGroups}
                   loaded={loaded}
                   fetching={fetching}
-                  viewedState={viewedState}
                   addressing={a}
                   innerKey={ik}
                   hash={h}
+                  rememberSeen={rememberSeen}
                 />
               </>
             );
@@ -289,18 +273,18 @@ function StoriesUrlDemo({
   allGroups,
   loaded,
   fetching,
-  viewedState,
   addressing,
   innerKey,
   hash,
+  rememberSeen,
 }: {
   allGroups: StoriesGroup<StoryItem>[];
   loaded: Signal<StoriesGroup<StoryItem>[]>;
   fetching: Signal<boolean>;
-  viewedState: Map<string, number>;
   addressing: Addressing;
   innerKey: InnerKey;
   hash: boolean;
+  rememberSeen: Signal<boolean>;
 }) {
   const adapter = useReactRouterUrlAdapter();
   const navigate = useNavigate();
@@ -395,8 +379,19 @@ function StoriesUrlDemo({
     ...key,
   }) as UrlStateController<TwoAxisPosition>;
 
-  const paramFor = (groupIndex: number) =>
-    `${encodeGroup(groupIndex)}.${encodeStory(groupIndex, 0)}`;
+  // The same key drives the address bar and what is remembered, so a stored
+  // entry reads exactly like the parameter of a shared link. The wire changes
+  // with the switchers above, so the storage key carries the shape too — index
+  // entries would otherwise be read back under id addressing and name nothing.
+  const seen = useViewedState({
+    storageKey: `reelkit-stories-url-seen-${addressing}.${innerKey}${hash ? '.hash' : ''}`,
+    ...key,
+    ...twoAxisViewedTracking,
+  }) as ViewedStateController<TwoAxisPosition>;
+  const viewed = createStoriesViewedState(seen, () => loaded.value);
+
+  const paramFor = (groupIndex: number, storyIndex = 0) =>
+    `${encodeGroup(groupIndex)}.${encodeStory(groupIndex, storyIndex)}`;
   const lastGroup = allGroups.length - 1;
 
   return (
@@ -423,6 +418,17 @@ function StoriesUrlDemo({
         >
           Open group {lastGroup + 1} (controller.set)
         </button>
+        {/* Seen state outlives the page, so without this the rings fill up
+            once and the demo can never be watched a second time. Clears the
+            store for the switcher combination on screen, which is the one key
+            the controller above holds. */}
+        <button
+          type="button"
+          style={{ ...buttonStyle, marginLeft: 'auto' }}
+          onClick={() => seen.forget()}
+        >
+          clear seen
+        </button>
         <Observe signals={[fetching]}>
           {() =>
             fetching.value ? (
@@ -440,13 +446,18 @@ function StoriesUrlDemo({
         </Observe>
       </div>
 
-      <Observe signals={[loaded]}>
+      <Observe signals={[loaded, seen.entries, rememberSeen]}>
         {() => (
           <StoriesRingList
             groups={loaded.value}
-            viewedState={viewedState}
+            viewedState={rememberSeen.value ? viewed.viewedCounts() : new Map()}
             onSelect={(groupIndex) =>
-              navigate(`?${_kParam}=${paramFor(groupIndex)}`)
+              navigate(
+                `?${_kParam}=${paramFor(
+                  groupIndex,
+                  rememberSeen.value ? viewed.resumeStoryIndex(groupIndex) : 0,
+                )}`,
+              )
             }
           />
         )}
@@ -457,11 +468,11 @@ function StoriesUrlDemo({
           <StoriesUrlOverlay<StoryItem>
             controller={stories}
             groups={loaded.value}
-            onStoryViewed={(gi, si) => {
-              const author = loaded.value[gi]?.author;
-              if (!author) return;
-              const current = viewedState.get(author.id) ?? 0;
-              viewedState.set(author.id, Math.max(current, si + 1));
+            resumeStoryIndex={(groupIndex) =>
+              rememberSeen.value ? viewed.resumeStoryIndex(groupIndex) : 0
+            }
+            onStoryViewed={(groupIndex, storyIndex) => {
+              if (rememberSeen.value) viewed.markViewed(groupIndex, storyIndex);
             }}
           />
         )}

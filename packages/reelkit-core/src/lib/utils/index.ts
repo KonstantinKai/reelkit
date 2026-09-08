@@ -18,6 +18,7 @@ export {
   createUrlStateController,
   createHistoryAdapter,
   type UrlAdapter,
+  type UrlChange,
   type UrlCodec,
   type UrlLocator,
   type UrlKey,
@@ -46,6 +47,17 @@ export {
   type UrlStableIdTwoAxisKeyOptions,
   type UrlStableIdTwoAxisIdInnerOptions,
 } from './urlStableIdKey';
+
+export {
+  createViewedStateController,
+  twoAxisViewedTracking,
+  createLocalStorageAdapter,
+  createSessionStorageAdapter,
+  createMemoryStorageAdapter,
+  type ViewedStateController,
+  type ViewedStateOptions,
+  type StorageAdapter,
+} from './viewedState';
 
 export { createDeferred, type Deferred } from './deferred';
 

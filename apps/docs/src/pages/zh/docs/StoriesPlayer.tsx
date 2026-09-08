@@ -18,6 +18,7 @@ import {
   Heart,
   Circle,
   Link2,
+  Eye,
 } from 'lucide-react';
 import { Heading } from '../../../components/ui/Heading';
 import { zhPageMeta } from '../../../i18n/pageMeta';
@@ -170,8 +171,16 @@ const storiesOverlayProps = [
   {
     prop: 'initialStoryIndex',
     type: 'number',
-    default: '0',
-    description: '分组内初始可见 story 的索引（从 0 开始）',
+    default: 'resumeStoryIndex(initialGroupIndex)，否则为 0',
+    description:
+      '分组内初始可见 story 的索引（从 0 开始）。显式指定时优先于任何记忆；省略则初始分组像其他分组一样恢复。',
+  },
+  {
+    prop: 'resumeStoryIndex',
+    type: '(groupIndex: number) => number',
+    default: '—',
+    description:
+      '分组第一次被打开时所在的 story，让观看者从上次离开处继续。仅对本次打开中尚未访问的分组生效。',
   },
   {
     prop: 'groupTransition',
@@ -790,6 +799,11 @@ export default function StoriesPlayerPage() {
                 label: 'URL 状态',
                 desc: '可分享的 ?story=group.story 链接',
               },
+              {
+                icon: Eye,
+                label: '已观看状态',
+                desc: '已看圆环与续播跨刷新保留',
+              },
             ]}
           />
         </div>
@@ -882,6 +896,14 @@ export default function StoriesPlayerPage() {
         <Heading level={2} id="url-state" className="text-2xl font-bold mb-4">
           URL 状态
         </Heading>
+        <a
+          href="https://react-demo.reelkit.dev/stories-player-url?utm_source=docs"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 mb-4 text-sm font-medium text-primary-500 hover:text-primary-600 transition-colors"
+        >
+          查看在线演示 &rarr;
+        </a>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
             StoriesUrlOverlay
@@ -1133,6 +1155,109 @@ const stories = useOverlayUrlState({
               React 指南
             </Link>
             .
+          </li>
+        </ul>
+      </section>
+
+      {/* Remembering what was seen */}
+      <section className="mb-12">
+        <Heading
+          level={2}
+          id="remembering-what-was-seen"
+          className="text-2xl font-bold mb-4"
+        >
+          记住已观看内容
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          圆环在分组看完之前显示渐变，分组重新打开时停在观看者尚未看过的第一条
+          story。两者都来自一个 <code>ViewedStateController</code>
+          ，它用地址栏所用的同一个键构建——因此已存记录读起来与分享链接的参数完全一样，并且在键按
+          id 寻址时能经受信息流重排。
+        </p>
+        <CodeBlock
+          code={`import { useMemo, useState } from 'react';
+import {
+  StoriesOverlay,
+  StoriesRingList,
+  useViewedState,
+  createStoriesViewedState,
+  urlStableIdTwoAxisKey,
+  twoAxisViewedTracking,
+  type StoriesGroup,
+} from '@reelkit/react-stories-player';
+import { Observe } from '@reelkit/react';
+
+function Feed({ groups }: { groups: StoriesGroup[] }) {
+  const [open, setOpen] = useState(false);
+  const [group, setGroup] = useState(0);
+
+  const seen = useViewedState({
+    storageKey: 'stories-seen',
+    ...urlStableIdTwoAxisKey({
+      outerItems: () => groups.map((g) => ({ id: g.author.id })),
+      innerItems: (outer) =>
+        groups.find((g) => g.author.id === outer.id)?.stories ?? [],
+    }),
+    ...twoAxisViewedTracking,
+  });
+  const viewed = useMemo(
+    () => createStoriesViewedState(seen, () => groups),
+    [seen, groups],
+  );
+
+  return (
+    <>
+      {/* entries is a signal, so the rings repaint as stories are seen */}
+      <Observe signals={[seen.entries]}>
+        {() => (
+          <StoriesRingList
+            groups={groups}
+            viewedState={viewed.viewedCounts()}
+            onSelect={(index) => {
+              setGroup(index);
+              setOpen(true);
+            }}
+          />
+        )}
+      </Observe>
+
+      <StoriesOverlay
+        isOpen={open}
+        onClose={() => setOpen(false)}
+        groups={groups}
+        initialGroupIndex={group}
+        resumeStoryIndex={viewed.resumeStoryIndex}
+        onStoryViewed={viewed.markViewed}
+      />
+    </>
+  );
+}`}
+          language="tsx"
+        />
+        <ul className="space-y-2 text-slate-600 dark:text-slate-400 mt-4 list-disc pl-5">
+          <li>
+            <strong>打开时的 story 也算。</strong> 挂载时就把屏幕上的 story
+            报告为已看，所以打开只有一条 story 的分组再关闭，也会标记为已看。
+          </li>
+          <li>
+            <strong>往后滑同样会续播。</strong> <code>resumeStoryIndex</code>{' '}
+            对本次会话中第一次到达的每个分组生效，包括播放器打开时所在的那个，除非{' '}
+            <code>initialStoryIndex</code> 显式指定了
+            story；已经滑过的分组会在离开处重新打开。
+          </li>
+          <li>
+            <strong>链接仍然优先。</strong> 使用 <code>StoriesUrlOverlay</code>{' '}
+            时，由参数决定播放器在哪里打开，无论存了什么。其他情况下由续播回调决定。
+          </li>
+          <li>
+            <strong>计数是位置，不是次数。</strong> 记录记的是到达的最远一条
+            story，因此给已看完的分组新增一条会重新点亮圆环，从中间删掉一条则会让计数变短。与分享链接得到的自愈相同。
+          </li>
+          <li>
+            <strong>存储可替换。</strong> 传入{' '}
+            <code>createSessionStorageAdapter()</code>{' '}
+            在关闭标签页时遗忘，或使用自己的 <code>StorageAdapter</code>
+            。两个打开的标签页通过浏览器的 storage 事件保持一致。
           </li>
         </ul>
       </section>

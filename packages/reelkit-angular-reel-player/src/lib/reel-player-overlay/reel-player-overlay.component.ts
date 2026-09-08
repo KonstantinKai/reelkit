@@ -42,6 +42,7 @@ import {
   type ReelApi,
   type ContentLoadingController,
   type ContentPreloader,
+  observeDomEvent,
 } from '@reelkit/angular';
 import { SoundStateService } from '../sound-state/sound-state.service';
 import { TimelineStateService } from '../timeline-state/timeline-state.service';
@@ -822,9 +823,8 @@ export class RkReelPlayerOverlayComponent<
   }
 
   private _listenToEscape(): void {
-    this._document.addEventListener('keydown', this._onKeyDown);
-    this._destroyRef.onDestroy(() =>
-      this._document.removeEventListener('keydown', this._onKeyDown),
+    this._destroyRef.onDestroy(
+      observeDomEvent(this._document, 'keydown', this._onKeyDown),
     );
   }
 
@@ -839,9 +839,8 @@ export class RkReelPlayerOverlayComponent<
     if (!win) return;
 
     this._zone.runOutsideAngular(() => {
-      win.addEventListener('resize', this._onResize);
-      this._destroyRef.onDestroy(() =>
-        win.removeEventListener('resize', this._onResize),
+      this._destroyRef.onDestroy(
+        observeDomEvent(win, 'resize', this._onResize),
       );
     });
   }

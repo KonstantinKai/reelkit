@@ -64,8 +64,12 @@ export interface StoriesControllerConfig {
   initialGroupIndex?: number;
 
   /**
-   * Initial story index within the group.
-   * @default 0
+   * Initial story index within the group. Naming one outright wins over
+   * anything remembered, which is what makes a shared link open where it
+   * points; leave it out and the opening group resumes through
+   * {@link StoriesControllerConfig.resumeStoryIndex} like any other.
+   *
+   * @default resumeStoryIndex(initialGroupIndex), or 0 with no resume callback
    */
   initialStoryIndex?: number;
 
@@ -74,6 +78,16 @@ export interface StoriesControllerConfig {
    * @default 5000
    */
   defaultImageDuration?: number;
+
+  /**
+   * Where a group should open the first time it is reached this session —
+   * how a remembered "seen up to here" reaches the player. Called only for a
+   * group with no position from this session, and its answer is bounded to a
+   * story the group has, so an out-of-range suggestion cannot open nothing.
+   *
+   * @default undefined — every unvisited group opens on its first story
+   */
+  resumeStoryIndex?: (groupIndex: number) => number;
 }
 
 export interface StoriesControllerEvents {
@@ -104,8 +118,26 @@ export interface StoriesController {
     isPaused: Signal<boolean>;
   };
 
-  /** Returns the last viewed story index for a group (0 if never visited). */
+  /**
+   * Where a group opens: the story it was left on this session, or the one
+   * `resumeStoryIndex` names for a group not yet visited (its first story when
+   * nothing is configured).
+   */
   getLastStoryIndex(groupIndex: number): number;
+
+  /**
+   * Reports the story the player opened on as viewed, once.
+   *
+   * Navigation is what normally marks a story viewed, so the very first story
+   * — the one already on screen before anything is tapped — would otherwise go
+   * unreported, and a group holding a single story could never be marked seen.
+   * Call this after mounting, not while rendering: it invokes `onStoryViewed`,
+   * and a consumer's handler is free to write state from it.
+   *
+   * A no-op once anything has been viewed, so calling it late or twice cannot
+   * double-count.
+   */
+  reportInitialView(): void;
 
   /** Advance to the next story, switching groups at boundary. */
   nextStory(): void;

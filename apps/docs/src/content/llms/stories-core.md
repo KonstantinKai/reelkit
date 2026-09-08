@@ -31,13 +31,14 @@ npm i @reelkit/stories-core
 
 ### Config (StoriesControllerConfig)
 
-| Property               | Type       | Default  | Description                                           |
-| ---------------------- | ---------- | -------- | ----------------------------------------------------- |
-| `groupCount`           | `number`   | required | Total number of story groups                          |
-| `storyCounts`          | `number[]` | required | Number of stories in each group                       |
-| `initialGroupIndex`    | `number`   | `0`      | Initial group index                                   |
-| `initialStoryIndex`    | `number`   | `0`      | Initial story index within group                      |
-| `defaultImageDuration` | `number`   | `5000`   | Default auto-advance duration for image stories in ms |
+| Property               | Type                             | Default                                         | Description                                                                                                                             |
+| ---------------------- | -------------------------------- | ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `groupCount`           | `number`                         | required                                        | Total number of story groups                                                                                                            |
+| `storyCounts`          | `number[]`                       | required                                        | Number of stories in each group                                                                                                         |
+| `initialGroupIndex`    | `number`                         | `0`                                             | Initial group index                                                                                                                     |
+| `initialStoryIndex`    | `number`                         | `resumeStoryIndex(initialGroupIndex)`, else `0` | Initial story index within group. Naming one wins over anything remembered; leave it out and the opening group resumes like every other |
+| `defaultImageDuration` | `number`                         | `5000`                                          | Default auto-advance duration for image stories in ms                                                                                   |
+| `resumeStoryIndex`     | `(groupIndex: number) => number` | —                                               | Story an unvisited group opens on; bounded to a story the group has                                                                     |
 
 ### Events (StoriesControllerEvents)
 
@@ -60,17 +61,18 @@ npm i @reelkit/stories-core
 
 ### Methods
 
-| Method                          | Type                 | Description                                                     |
-| ------------------------------- | -------------------- | --------------------------------------------------------------- |
-| `nextStory()`                   | `() => void`         | Advance within group; crosses boundary to next group            |
-| `prevStory()`                   | `() => void`         | Go back within group; crosses boundary to prev group            |
-| `nextGroup()`                   | `() => void`         | Switch to next group, resuming at last viewed story             |
-| `prevGroup()`                   | `() => void`         | Switch to previous group, resuming at last viewed story         |
-| `goToGroup(index)`              | `(number) => void`   | Jump to specific group by index                                 |
-| `pause()`                       | `() => void`         | Pause auto-advance                                              |
-| `resume()`                      | `() => void`         | Resume auto-advance                                             |
-| `onStoryTimerComplete()`        | `() => void`         | Called when timer finishes; fires onStoryComplete then advances |
-| `getLastStoryIndex(groupIndex)` | `(number) => number` | Last viewed story index for group (0 if never visited)          |
+| Method                          | Type                 | Description                                                                                      |
+| ------------------------------- | -------------------- | ------------------------------------------------------------------------------------------------ |
+| `nextStory()`                   | `() => void`         | Advance within group; crosses boundary to next group                                             |
+| `prevStory()`                   | `() => void`         | Go back within group; crosses boundary to prev group                                             |
+| `nextGroup()`                   | `() => void`         | Switch to next group, resuming at last viewed story                                              |
+| `prevGroup()`                   | `() => void`         | Switch to previous group, resuming at last viewed story                                          |
+| `goToGroup(index)`              | `(number) => void`   | Jump to specific group by index                                                                  |
+| `pause()`                       | `() => void`         | Pause auto-advance                                                                               |
+| `resume()`                      | `() => void`         | Resume auto-advance                                                                              |
+| `onStoryTimerComplete()`        | `() => void`         | Called when timer finishes; fires onStoryComplete then advances                                  |
+| `getLastStoryIndex(groupIndex)` | `(number) => number` | Where a group opens: the story left on this session, else `resumeStoryIndex`                     |
+| `reportInitialView()`           | `() => void`         | Reports the story the player opened on as viewed, once. Call after mounting, not while rendering |
 
 ### Example
 
@@ -248,6 +250,45 @@ frameId = requestAnimationFrame(loop);
 // Cleanup
 cancelAnimationFrame(frameId);
 renderer.dispose();
+```
+
+## Viewed State
+
+`createStoriesViewedState(controller, groups)` turns a core `ViewedStateController<TwoAxisPosition>` into the terms a stories player uses, returning a `StoriesViewedState`. Build the controller from the same `UrlKey` the address bar uses, tracked per group, so a stored entry reads exactly like a `?story=` link.
+
+| Parameter    | Type                                     | Description                                                                                                                    |
+| ------------ | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `controller` | `ViewedStateController<TwoAxisPosition>` | Core store built from the same key the address bar uses, spread with `twoAxisViewedTracking` so each group keeps its own entry |
+| `groups`     | `() => StoriesGroup<T>[]`                | Reads the current groups. A getter, so a feed that pages in or reorders after setup is measured at call time.                  |
+
+### StoriesViewedState
+
+| Method                               | Type                        | Description                                                                |
+| ------------------------------------ | --------------------------- | -------------------------------------------------------------------------- |
+| `viewedCounts()`                     | `() => Map<string, number>` | Stories seen per group, keyed by author id — `StoriesRingList.viewedState` |
+| `resumeStoryIndex(groupIndex)`       | `(number) => number`        | First unseen story, or `0` when the group has been watched to the end      |
+| `markViewed(groupIndex, storyIndex)` | `(number, number) => void`  | Records a story as seen. Wire it to `onStoryViewed`.                       |
+
+An entry names the furthest story reached, not a tally of views: an id-addressed key keeps a group's place across the feed being reordered, while removing a story from the middle of a group shortens its count and lights its ring again.
+
+```typescript
+import { createStoriesViewedState } from '@reelkit/stories-core';
+import {
+  createViewedStateController,
+  urlStableIdTwoAxisKey,
+  twoAxisViewedTracking,
+} from '@reelkit/core';
+
+const seen = createViewedStateController({
+  storageKey: 'stories-seen',
+  ...urlStableIdTwoAxisKey({ outerItems, innerItems }),
+  ...twoAxisViewedTracking,
+});
+seen.attach();
+
+const viewed = createStoriesViewedState(seen, () => groups);
+viewed.viewedCounts(); // → Map { 'user_42' => 2 }
+viewed.resumeStoryIndex(0); // → 2, the first story not yet seen
 ```
 
 ## Utility Functions

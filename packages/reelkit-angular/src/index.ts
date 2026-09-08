@@ -84,6 +84,11 @@ export {
   createStableIdLocator,
   urlStableIdKey,
   urlStableIdTwoAxisKey,
+  createViewedStateController,
+  twoAxisViewedTracking,
+  createLocalStorageAdapter,
+  createSessionStorageAdapter,
+  createMemoryStorageAdapter,
   batch,
   first,
   last,
@@ -139,6 +144,7 @@ export {
   type TransitionTransformFn,
   type SlideTransformStyle,
   type UrlAdapter,
+  type UrlChange,
   type UrlCodec,
   type UrlLocator,
   type UrlKey,
@@ -151,6 +157,9 @@ export {
   type UrlStableIdKeyOptions,
   type UrlStableIdTwoAxisKeyOptions,
   type UrlStableIdTwoAxisIdInnerOptions,
+  type ViewedStateController,
+  type ViewedStateOptions,
+  type StorageAdapter,
 } from '@reelkit/core';
 
 export {

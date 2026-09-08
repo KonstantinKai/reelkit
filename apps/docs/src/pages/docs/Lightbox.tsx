@@ -1175,6 +1175,14 @@ renderSlide={({ item, index, size, isActive, onReady, onWaiting, onError }) => (
         <Heading level={2} className="text-2xl font-bold mb-4">
           URL State
         </Heading>
+        <a
+          href="https://react-demo.reelkit.dev/image-preview-url?utm_source=docs"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 mb-4 text-sm font-medium text-primary-500 hover:text-primary-600 transition-colors"
+        >
+          View live demo &rarr;
+        </a>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
             LightboxUrlOverlay
@@ -1370,7 +1378,11 @@ const photo = useOverlayUrlState({
             — the link pushed an entry, so back pops to the gallery. A shared
             link opened directly in a fresh tab has no history behind it, so
             browser-back leaves the site; the close button or Escape removes the
-            parameter in place and keeps you on the gallery.
+            parameter in place and keeps you on the gallery. The packaged router
+            adapters vouch for a same-page link push; a custom adapter that
+            cannot say how the entry arrived gets the in-place close too, which
+            leaves a duplicate of the page in history — one back step then looks
+            like nothing happened, but nothing reopens.
           </li>
           <li>
             A parameter naming no slide — a stale bookmark, a hand-edited value
@@ -2143,10 +2155,8 @@ function CustomLightbox() {
           . The signature mirrors core slider transitions.
         </p>
         <CodeBlock
-          code={`import {
-  LightboxOverlay,
-  type TransitionTransformFn,
-} from '@reelkit/react-lightbox';
+          code={`import { LightboxOverlay } from '@reelkit/react-lightbox';
+import type { TransitionTransformFn } from '@reelkit/react';
 
 const customFade: TransitionTransformFn = (offset, size) => ({
   transform: \`translate3d(\${offset * size[0]}px, 0, 0)\`,

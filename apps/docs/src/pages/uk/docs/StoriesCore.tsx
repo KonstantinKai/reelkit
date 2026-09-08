@@ -77,14 +77,20 @@ const configRows = [
   {
     name: 'initialStoryIndex',
     type: 'number',
-    default: '0',
-    desc: 'Початковий індекс історії всередині групи',
+    default: 'resumeStoryIndex(initialGroupIndex), інакше 0',
+    desc: 'Початковий індекс історії всередині групи. Явно названий переважає над збереженим; пропустіть — і початкова група відновлюється, як і всі інші.',
   },
   {
     name: 'defaultImageDuration',
     type: 'number',
     default: '5000',
     desc: 'Типова тривалість автопереходу для історій-зображень у мілісекундах',
+  },
+  {
+    name: 'resumeStoryIndex',
+    type: '(groupIndex: number) => number',
+    default: 'undefined',
+    desc: 'Історія, на якій відкривається ще не відвідана група; обмежена наявними історіями',
   },
 ];
 
@@ -183,9 +189,65 @@ const methodsRows = [
   {
     name: 'getLastStoryIndex(groupIndex)',
     type: '(number) => number',
-    desc: 'Індекс останньої переглянутої історії групи (0, якщо група ще не відкривалася)',
+    desc: 'Де відкривається група: історія, на якій її залишили в цій сесії, інакше та, що назве resumeStoryIndex',
+  },
+  {
+    name: 'reportInitialView()',
+    type: '() => void',
+    desc: 'Повідомляє історію, на якій відкрився плеєр, як переглянуту — один раз. Викликайте після монтування, а не під час рендерингу.',
   },
 ];
+
+const viewedStateParamRows = [
+  {
+    name: 'controller',
+    type: 'ViewedStateController<TwoAxisPosition>',
+    desc: 'Сховище ядра, побудоване з того самого ключа, що й адресний рядок, розгорнуте з twoAxisViewedTracking, щоб кожна група мала власний запис',
+  },
+  {
+    name: 'groups',
+    type: '() => StoriesGroup<T>[]',
+    desc: 'Читає поточні групи. Гетер, тож стрічка, що довантажується або перевпорядковується після налаштування, вимірюється на момент виклику.',
+  },
+];
+
+const viewedStateRows = [
+  {
+    name: 'viewedCounts()',
+    type: '() => Map<string, number>',
+    desc: 'Переглянуті історії на групу, за id автора — форма, яку StoriesRingList приймає як viewedState',
+  },
+  {
+    name: 'resumeStoryIndex(groupIndex)',
+    type: '(number) => number',
+    desc: 'Перша непереглянута історія або 0, коли групу переглянуто до кінця',
+  },
+  {
+    name: 'markViewed(groupIndex, storyIndex)',
+    type: '(number, number) => void',
+    desc: "Записує історію як переглянуту. Під'єднайте до onStoryViewed.",
+  },
+];
+
+const viewedStateExample = `import { createStoriesViewedState } from '@reelkit/stories-core';
+import {
+  createViewedStateController,
+  urlStableIdTwoAxisKey,
+  twoAxisViewedTracking,
+} from '@reelkit/core';
+
+const seen = createViewedStateController({
+  storageKey: 'stories-seen',
+  ...urlStableIdTwoAxisKey({ outerItems, innerItems }),
+  ...twoAxisViewedTracking,
+});
+seen.attach();
+
+const viewed = createStoriesViewedState(seen, () => groups);
+
+viewed.viewedCounts(); // Map { 'user_42' => 2 }
+viewed.resumeStoryIndex(0); // 2 — the first story not yet seen
+viewed.markViewed(0, 2); // furthest point wins; a rewatch never rewinds`;
 
 const timerConfigRows = [
   {
@@ -759,6 +821,60 @@ export default function StoriesCorePage() {
           Example
         </Heading>
         <CodeBlock code={canvasExample} />
+      </section>
+
+      {/* Viewed State */}
+      <section className="mb-12">
+        <Heading
+          level={2}
+          id="viewed-state"
+          className="text-2xl font-bold mb-6"
+        >
+          Переглянуте
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            createStoriesViewedState(controller, groups)
+          </code>{' '}
+          читає{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            ViewedStateController
+          </code>{' '}
+          ядра в термінах плеєра — групи, автори, індекси історій, — лишаючи
+          саме сховище про них необізнаним. Повертає{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            StoriesViewedState
+          </code>
+          . Побудуйте сховище з того самого ключа, що й адресний рядок, з
+          відстеженням на групу — і збережений запис читатиметься точно як
+          параметр спільного посилання.
+        </p>
+        <Table3Col
+          headers={['Параметр', 'Тип', 'Опис']}
+          rows={viewedStateParamRows}
+        />
+        <Heading
+          level={3}
+          id="storiesviewedstate"
+          className="text-lg font-semibold mt-8 mb-3"
+        >
+          StoriesViewedState
+        </Heading>
+        <Table3Col headers={['Метод', 'Тип', 'Опис']} rows={viewedStateRows} />
+        <Heading
+          level={3}
+          id="example"
+          className="text-lg font-semibold mt-8 mb-3"
+        >
+          Приклад
+        </Heading>
+        <CodeBlock code={viewedStateExample} />
+        <p className="text-slate-600 dark:text-slate-400 mt-4">
+          Запис називає найдальшу досягнуту історію, а не підрахунок переглядів,
+          тож ключ за ідентифікатором зберігає місце групи попри
+          перевпорядкування стрічки, а вилучена із середини групи історія
+          скорочує лічильник і знову засвічує кільце.
+        </p>
       </section>
 
       {/* Utility Functions */}

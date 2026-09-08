@@ -18,6 +18,7 @@ import {
   Heart,
   Circle,
   Link2,
+  Eye,
 } from 'lucide-react';
 import { Heading } from '../../../components/ui/Heading';
 import { ukPageMeta } from '../../../i18n/pageMeta';
@@ -172,8 +173,16 @@ const storiesOverlayProps = [
   {
     prop: 'initialStoryIndex',
     type: 'number',
-    default: '0',
-    description: 'Індекс початково видимої історії всередині групи, від нуля',
+    default: 'resumeStoryIndex(initialGroupIndex), інакше 0',
+    description:
+      'Індекс початково видимої історії всередині групи, від нуля. Явно названий переважає над збереженим; пропустіть — і початкова група відновлюється, як і всі інші.',
+  },
+  {
+    prop: 'resumeStoryIndex',
+    type: '(groupIndex: number) => number',
+    default: '—',
+    description:
+      'Історія, на якій група відкривається вперше, щоб глядач продовжив там, де зупинився. Береться до уваги лише для групи, ще не відвіданої під час цього відкриття.',
   },
   {
     prop: 'groupTransition',
@@ -803,6 +812,11 @@ export default function StoriesPlayerPage() {
                 label: 'Стан в URL',
                 desc: 'Посилання ?story=group.story, якими можна ділитися',
               },
+              {
+                icon: Eye,
+                label: 'Переглянуте',
+                desc: 'Кільця та відновлення переживають перезавантаження',
+              },
             ]}
           />
         </div>
@@ -897,6 +911,14 @@ export default function StoriesPlayerPage() {
         <Heading level={2} id="url-state" className="text-2xl font-bold mb-4">
           Стан в URL
         </Heading>
+        <a
+          href="https://react-demo.reelkit.dev/stories-player-url?utm_source=docs"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 mb-4 text-sm font-medium text-primary-500 hover:text-primary-600 transition-colors"
+        >
+          Подивитися демо наживо &rarr;
+        </a>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
             StoriesUrlOverlay
@@ -1160,6 +1182,120 @@ const stories = useOverlayUrlState({
               посібнику для React
             </Link>
             .
+          </li>
+        </ul>
+      </section>
+
+      {/* Remembering what was seen */}
+      <section className="mb-12">
+        <Heading
+          level={2}
+          id="remembering-what-was-seen"
+          className="text-2xl font-bold mb-4"
+        >
+          Пам&rsquo;ять про переглянуте
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Кільця показують градієнт, доки групу не переглянуто до кінця, а група
+          знову відкривається на першій історії, якої глядач ще не бачив. Обидва
+          беруться з <code>ViewedStateController</code>, побудованого з того
+          самого ключа, що й адресний рядок, — тож збережений запис читається
+          точно як параметр спільного посилання й переживає перевпорядкування
+          стрічки, якщо ключ адресує за ідентифікатором.
+        </p>
+        <CodeBlock
+          code={`import { useMemo, useState } from 'react';
+import {
+  StoriesOverlay,
+  StoriesRingList,
+  useViewedState,
+  createStoriesViewedState,
+  urlStableIdTwoAxisKey,
+  twoAxisViewedTracking,
+  type StoriesGroup,
+} from '@reelkit/react-stories-player';
+import { Observe } from '@reelkit/react';
+
+function Feed({ groups }: { groups: StoriesGroup[] }) {
+  const [open, setOpen] = useState(false);
+  const [group, setGroup] = useState(0);
+
+  const seen = useViewedState({
+    storageKey: 'stories-seen',
+    ...urlStableIdTwoAxisKey({
+      outerItems: () => groups.map((g) => ({ id: g.author.id })),
+      innerItems: (outer) =>
+        groups.find((g) => g.author.id === outer.id)?.stories ?? [],
+    }),
+    ...twoAxisViewedTracking,
+  });
+  const viewed = useMemo(
+    () => createStoriesViewedState(seen, () => groups),
+    [seen, groups],
+  );
+
+  return (
+    <>
+      {/* entries is a signal, so the rings repaint as stories are seen */}
+      <Observe signals={[seen.entries]}>
+        {() => (
+          <StoriesRingList
+            groups={groups}
+            viewedState={viewed.viewedCounts()}
+            onSelect={(index) => {
+              setGroup(index);
+              setOpen(true);
+            }}
+          />
+        )}
+      </Observe>
+
+      <StoriesOverlay
+        isOpen={open}
+        onClose={() => setOpen(false)}
+        groups={groups}
+        initialGroupIndex={group}
+        resumeStoryIndex={viewed.resumeStoryIndex}
+        onStoryViewed={viewed.markViewed}
+      />
+    </>
+  );
+}`}
+          language="tsx"
+        />
+        <ul className="space-y-2 text-slate-600 dark:text-slate-400 mt-4 list-disc pl-5">
+          <li>
+            <strong>Початкова історія рахується.</strong> Історію, що вже на
+            екрані, повідомлено переглянутою під час монтування, тож відкрити
+            групу з однією історією й закрити — означає позначити її
+            переглянутою.
+          </li>
+          <li>
+            <strong>Свайп далі теж відновлює.</strong>{' '}
+            <code>resumeStoryIndex</code> береться до уваги для кожної групи,
+            досягнутої вперше в цій сесії, включно з тією, на якій відкрився
+            плеєр, якщо тільки <code>initialStoryIndex</code> не називає історію
+            явно; група, яку вже прогорнули, знову відкривається там, де її
+            залишили.
+          </li>
+          <li>
+            <strong>Посилання все одно переважає.</strong> Зі{' '}
+            <code>StoriesUrlOverlay</code> параметр вирішує, де відкривається
+            плеєр, що б не було збережено. Скрізь інде вирішує колбек
+            відновлення.
+          </li>
+          <li>
+            <strong>Лічильник — це позиція, а не підрахунок.</strong> Запис
+            називає найдальшу досягнуту історію, тож додавання історії до
+            переглянутої групи знову засвічує її кільце, а вилучення із середини
+            скорочує лічильник. Те саме самовиправлення, яке отримує спільне
+            посилання.
+          </li>
+          <li>
+            <strong>Сховище замінне.</strong> Передайте{' '}
+            <code>createSessionStorageAdapter()</code>, щоб забувати при
+            закритті вкладки, або власний <code>StorageAdapter</code>. Дві
+            відкриті вкладки тримаються в ногу через подію storage браузера.
           </li>
         </ul>
       </section>
@@ -1686,7 +1822,7 @@ const stories = useOverlayUrlState({
       justifyContent: 'center',
       color: '#fff',
     }}>
-      <span>Завантаження історії {storyIndex + 1}…</span>
+      <span>Loading story {storyIndex + 1}...</span>
     </div>
   )}
 />`}
@@ -1720,7 +1856,7 @@ const stories = useOverlayUrlState({
       background: 'rgba(0,0,0,0.8)',
     }}>
       <span style={{ fontSize: 48 }}>!</span>
-      <span>Не вдалося завантажити історію</span>
+      <span>Failed to load story</span>
     </div>
   )}
 />`}

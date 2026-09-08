@@ -77,14 +77,20 @@ const configRows = [
   {
     name: 'initialStoryIndex',
     type: 'number',
-    default: '0',
-    desc: '分组内的初始 story 索引',
+    default: 'resumeStoryIndex(initialGroupIndex)，否则为 0',
+    desc: '分组内的初始 story 索引。显式指定时优先于任何记忆；省略则初始分组像其他分组一样恢复。',
   },
   {
     name: 'defaultImageDuration',
     type: 'number',
     default: '5000',
     desc: '图片类 story 的默认自动播放时长（毫秒）',
+  },
+  {
+    name: 'resumeStoryIndex',
+    type: '(groupIndex: number) => number',
+    default: 'undefined',
+    desc: '尚未访问的分组打开时所在的 story；限制在该分组实际拥有的 story 范围内',
   },
 ];
 
@@ -183,9 +189,65 @@ const methodsRows = [
   {
     name: 'getLastStoryIndex(groupIndex)',
     type: '(number) => number',
-    desc: '某分组最后看到的 story 索引（从未访问过则为 0）',
+    desc: '分组打开的位置：本次会话中离开时所在的 story，否则由 resumeStoryIndex 指定',
+  },
+  {
+    name: 'reportInitialView()',
+    type: '() => void',
+    desc: '把播放器打开时所在的 story 报告为已观看，仅一次。挂载后调用，不要在渲染期间调用。',
   },
 ];
+
+const viewedStateParamRows = [
+  {
+    name: 'controller',
+    type: 'ViewedStateController<TwoAxisPosition>',
+    desc: '由地址栏所用的同一个键构建的核心存储，并展开 twoAxisViewedTracking，让每个分组各有一条记录',
+  },
+  {
+    name: 'groups',
+    type: '() => StoriesGroup<T>[]',
+    desc: '读取当前分组。是一个 getter，因此在设置之后才加载或重排的信息流，会在调用时按当前状态计量。',
+  },
+];
+
+const viewedStateRows = [
+  {
+    name: 'viewedCounts()',
+    type: '() => Map<string, number>',
+    desc: '每个分组已看的 story 数，按作者 id 索引——即 StoriesRingList 接受的 viewedState 形状',
+  },
+  {
+    name: 'resumeStoryIndex(groupIndex)',
+    type: '(number) => number',
+    desc: '第一个未看的 story；分组已看完时为 0',
+  },
+  {
+    name: 'markViewed(groupIndex, storyIndex)',
+    type: '(number, number) => void',
+    desc: '把某条 story 记为已看。接到 onStoryViewed 上。',
+  },
+];
+
+const viewedStateExample = `import { createStoriesViewedState } from '@reelkit/stories-core';
+import {
+  createViewedStateController,
+  urlStableIdTwoAxisKey,
+  twoAxisViewedTracking,
+} from '@reelkit/core';
+
+const seen = createViewedStateController({
+  storageKey: 'stories-seen',
+  ...urlStableIdTwoAxisKey({ outerItems, innerItems }),
+  ...twoAxisViewedTracking,
+});
+seen.attach();
+
+const viewed = createStoriesViewedState(seen, () => groups);
+
+viewed.viewedCounts(); // Map { 'user_42' => 2 }
+viewed.resumeStoryIndex(0); // 2 — the first story not yet seen
+viewed.markViewed(0, 2); // furthest point wins; a rewatch never rewinds`;
 
 const timerConfigRows = [
   {
@@ -758,6 +820,56 @@ export default function StoriesCorePage() {
           示例
         </Heading>
         <CodeBlock code={canvasExample} />
+      </section>
+
+      {/* Viewed State */}
+      <section className="mb-12">
+        <Heading
+          level={2}
+          id="viewed-state"
+          className="text-2xl font-bold mb-6"
+        >
+          已观看状态
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            createStoriesViewedState(controller, groups)
+          </code>{' '}
+          以播放器的语汇——分组、作者、story 索引——读取核心的{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            ViewedStateController
+          </code>
+          ，而存储本身对这些一无所知。它返回一个{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            StoriesViewedState
+          </code>
+          。用地址栏所用的同一个键构建存储并按分组跟踪，已存记录读起来就与分享链接的参数完全一样。
+        </p>
+        <Table3Col
+          headers={['参数', '类型', '说明']}
+          rows={viewedStateParamRows}
+        />
+        <Heading
+          level={3}
+          id="storiesviewedstate"
+          className="text-lg font-semibold mt-8 mb-3"
+        >
+          StoriesViewedState
+        </Heading>
+        <Table3Col headers={['方法', '类型', '说明']} rows={viewedStateRows} />
+        <Heading
+          level={3}
+          id="example"
+          className="text-lg font-semibold mt-8 mb-3"
+        >
+          示例
+        </Heading>
+        <CodeBlock code={viewedStateExample} />
+        <p className="text-slate-600 dark:text-slate-400 mt-4">
+          记录记的是到达的最远一条 story，而不是观看次数，因此按 id
+          寻址的键在信息流重排后仍记得分组的位置，而从分组中间删掉一条 story
+          会让计数变短并重新点亮圆环。
+        </p>
       </section>
 
       {/* Utility Functions */}

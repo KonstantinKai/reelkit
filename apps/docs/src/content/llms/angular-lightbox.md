@@ -110,6 +110,8 @@ Video slides are opt-in via the `rkLightboxSlide` template slot plus `RkLightbox
 
 ## URL State (shareable links, back button)
 
+Live demo: https://angular-demo.reelkit.dev/image-preview-url
+
 `RkLightboxUrlOverlayComponent` is a separate component whose open state lives in the URL. Build a controller with `createOverlayUrlState` from `@reelkit/angular` and pass it as `[controller]`: the gallery opens itself when the param names a slide and closes when it goes away. **Opening is a link** — the href is the open action, no click handler.
 
 > **Built-in keys.** Spread `urlIndexKey` (by position) or `urlStableIdKey` (by a stable `id`) into the controller — both re-exported from `@reelkit/angular`. See the [URL State guide](/docs/core/guide#url-state) and [Core API](/docs/core/api#url-state).

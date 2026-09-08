@@ -1,3 +1,4 @@
+import { observeDomEvent } from './observeDomEvent';
 import { createSignal, type Signal, type Dispose } from './signal';
 import { indexCodec } from './urlIndexKey';
 
@@ -7,6 +8,33 @@ import { indexCodec } from './urlIndexKey';
  * land on our own entry — instance memory cannot answer that after a remount.
  */
 const _kOwnerKey = '__rk_url_owner';
+
+/**
+ * What an adapter knows about the navigation that just landed.
+ *
+ * Passed to a `subscribe` listener. Every field is optional: an adapter that
+ * cannot tell how the current entry came to be current passes nothing, and
+ * the controller then takes the conservative path — it never claims an entry
+ * it cannot prove is safe to step back from.
+ */
+export interface UrlChange {
+  /**
+   * How the entry the URL now sits on came to be current.
+   *
+   * - `push`: a new entry was added on top of the page that was already
+   *   running, without leaving that page. Stepping back from it lands on the
+   *   page as it was before, so the controller may claim the entry and let a
+   *   close pop it.
+   * - `replace`: the current entry was rewritten in place. Nothing is known
+   *   about what lies behind it.
+   * - `pop`: the user moved through history. The entry already existed.
+   *
+   * Report `push` only for a navigation the adapter's own router made on the
+   * same page. A cross-page navigation, a cold load, and a hash change all
+   * leave it out.
+   */
+  kind?: 'push' | 'replace' | 'pop';
+}
 
 /**
  * Everything the controller needs from the surrounding navigation system.
@@ -26,9 +54,14 @@ export interface UrlAdapter {
    * Listening to `popstate` alone is not enough under a router: a programmatic
    * navigation pushes a new entry without emitting `popstate`.
    *
+   * The listener accepts an optional {@link UrlChange}. Pass one when the
+   * adapter can tell how the entry came to be current; calling the listener
+   * with no argument is always valid and means "unknown". An adapter written
+   * against the earlier zero-argument listener keeps compiling and working.
+   *
    * @returns A dispose function that removes the listener.
    */
-  subscribe: (listener: () => void) => Dispose;
+  subscribe: (listener: (change?: UrlChange) => void) => Dispose;
 
   /**
    * Navigates to `to`, adding a history entry that starts from `state`.
@@ -87,23 +120,39 @@ const merge = (prev: unknown, next: unknown): unknown =>
  *
  * @returns An adapter driving `window.history`.
  */
-export const createHistoryAdapter = (): UrlAdapter => ({
-  read: () => window.location.search,
+export const createHistoryAdapter = (): UrlAdapter => {
+  // A bare `?photo=2` handed to the History API resolves like a relative
+  // link: the fragment is dropped, and an empty string resolves to the
+  // current URL, query included, so a removal would never land. Spell out the
+  // whole same-document URL instead.
+  const sameDocument = (search: string): string => {
+    const { pathname, hash } = window.location;
+    return `${pathname}${search}${hash}`;
+  };
 
-  subscribe: (listener) => {
-    window.addEventListener('popstate', listener);
-    return () => window.removeEventListener('popstate', listener);
-  },
+  return {
+    read: () => window.location.search,
 
-  push: (to, state) => window.history.pushState(state ?? null, '', to),
+    // The History API tells us about the user's own steps and nothing else;
+    // a push made by other code on the page emits no event at all.
+    subscribe: (listener) =>
+      observeDomEvent(window, 'popstate', () => listener({ kind: 'pop' })),
 
-  replace: (to, state) =>
-    window.history.replaceState(merge(window.history.state, state), '', to),
+    push: (to, state) =>
+      window.history.pushState(state ?? null, '', sameDocument(to)),
 
-  getState: () => window.history.state,
+    replace: (to, state) =>
+      window.history.replaceState(
+        merge(window.history.state, state),
+        '',
+        sameDocument(to),
+      ),
 
-  goBack: () => window.history.back(),
-});
+    getState: () => window.history.state,
+
+    goBack: () => window.history.back(),
+  };
+};
 
 /**
  * The wire format of a URL parameter: its text and a stable identity, nothing
@@ -167,7 +216,7 @@ export interface UrlLocator<Id, Pos = number> {
    * against a collection that has not re-rendered. While it is in flight the
    * parameter survives untouched and the overlay stays closed; a `null` or a
    * rejection clears the parameter. Work that finishes after the URL has moved
-   * on is discarded.
+   * on, after a close, or after a detach is discarded.
    */
   locateAsync?: (id: Id) => Promise<Pos | null>;
 
@@ -231,6 +280,11 @@ export interface UrlStateController<Pos = number> {
    * A `Pos` is encoded through the key's `identify` + `encode`; a `string` is
    * written verbatim, the raw-wire escape hatch. (`Pos = string` is therefore
    * not supported — a string always means the raw override.)
+   *
+   * Writing a position while nothing is open opens at that position at once.
+   * The controller does not wait for the adapter to report the write back:
+   * the History API reports nothing for a push of our own, and a router
+   * reports it only once its navigation has settled.
    *
    * Whether the write adds a history entry is derived, not chosen: the first
    * write of an absent parameter pushes one entry, and every write after that
@@ -304,9 +358,13 @@ export interface UrlStateOptions<Id = number, Pos = number> {
  * photo.set(null); // → steps back, removing the entry it pushed
  * ```
  *
- * A parameter that arrived with the page — a shared link — was pushed by
- * nobody, so `set(null)` clears it in place instead of stepping back off the
- * site.
+ * Closing steps back only when the entry on top is provably one the
+ * controller pushed, or one its adapter reported as a same-page push. A
+ * parameter that arrived any other way — with the page, as a shared link
+ * would, or through a navigation the adapter could not vouch for — is cleared
+ * in place, because stepping back might leave the site. In that case the
+ * entry that carried the parameter is rewritten in place and stays in history
+ * as a copy of the page, so one back step appears to do nothing.
  */
 export const createUrlStateController = <Id = number, Pos = number>(
   // A non-`number` identity cannot stand in for an index, so a codec that
@@ -321,20 +379,24 @@ export const createUrlStateController = <Id = number, Pos = number>(
   // so it leaves `position` alone and reports the raw `value` only.
   const derives = options.codec !== undefined || locator !== undefined;
   const codec = (options.codec ?? indexCodec) as UrlCodec<Id>;
+  const stamp = { [_kOwnerKey]: param };
 
   const value = createSignal<string | null>(null);
   const position = createSignal<Pos | null>(null);
 
   // Guards against a second close while the first is still awaiting its
-  // history step, which would pop an extra entry and leave the site.
+  // history step, which would pop an extra entry and leave the site. Set only
+  // when a step was actually requested; a close that clears in place never
+  // latches it.
   let closing = false;
 
-  // Bumped on every derivation. An asynchronous lookup captures the value
-  // current when it started and compares on settle, so a slow answer for a
-  // parameter the user has already navigated away from is dropped instead of
-  // opening a slide nobody asked for.
+  // Bumped whenever the answer to "what does the parameter name" can no longer
+  // be trusted: a new derivation, a close, a detach. An asynchronous lookup
+  // captures the value current when it started and compares on settle, so a
+  // slow answer for a parameter the user has already navigated away from is
+  // dropped instead of opening a slide nobody asked for.
   let generation = 0;
-  let disposed = false;
+  let attached = false;
 
   // The value the current derivation is for. A URL change that leaves the
   // parameter untouched — a router re-emitting on its own key, the ownership
@@ -361,28 +423,50 @@ export const createUrlStateController = <Id = number, Pos = number>(
     return isRecord(state) && state[_kOwnerKey] === param;
   };
 
+  // Forgets whatever the parameter named, and drops any lookup still working
+  // it out. Local only: the URL is dealt with by the caller.
+  const forget = (): void => {
+    generation += 1;
+    deriving = null;
+    position.value = null;
+  };
+
   const remove = (): void => {
-    if (closing || readParam() === null) return;
-    closing = true;
+    if (closing) return;
+
+    // Nothing is open and the URL carries nothing: there is nothing to close.
+    if (value.value === null && readParam() === null) return;
+
+    // A lookup still in flight must not open anything after the user has
+    // closed, so it is cancelled here, before any navigation lands.
+    forget();
+
+    if (readParam() === null) {
+      // Open locally, but the URL never carried the parameter — the router
+      // refused or has not yet landed the navigation that opened us. There is
+      // nothing in the URL to remove and no entry of ours to pop; just close.
+      value.value = null;
+      return;
+    }
 
     if (ownsCurrentEntry()) {
       // Our own entry is on top: stepping back removes it and leaves no
       // stranded forward entry. The parameter clears when the step lands.
+      closing = true;
       adapter.goBack();
       return;
     }
 
-    // Nobody pushed this parameter — it arrived with the page, as a shared
-    // link would. There is nothing of ours behind us, so going back would
-    // leave the site entirely. Drop the parameter where it stands.
+    // Nobody proved this entry is ours to pop — the parameter arrived with the
+    // page, as a shared link would, or through a navigation the adapter could
+    // not vouch for. Stepping back might leave the site, so drop the
+    // parameter where it stands.
     adapter.replace(buildSearch(null));
     value.value = null;
-    position.value = null;
-    closing = false;
   };
 
   const settle = (next: Pos | null, token: number): void => {
-    if (disposed || token !== generation) return;
+    if (token !== generation) return;
 
     if (next === null) {
       // The parameter names no slide — a stale bookmark, or a hand-edited
@@ -401,9 +485,7 @@ export const createUrlStateController = <Id = number, Pos = number>(
     const raw = value.value;
 
     if (raw === null) {
-      generation += 1;
-      deriving = null;
-      position.value = null;
+      forget();
       return;
     }
 
@@ -461,55 +543,86 @@ export const createUrlStateController = <Id = number, Pos = number>(
         : codec.encode(
             locator ? locator.identify(next) : (next as unknown as Id),
           );
-    const present = readParam() !== null;
     const to = buildSearch(serialized);
 
-    if (present) {
+    // Push or replace is decided from what this controller already knows, not
+    // from the adapter's current URL: under a router that URL lags until the
+    // navigation settles, and two quick writes would otherwise push twice.
+    const wasPresent = value.value !== null;
+
+    // Nothing is open yet, so this write is the open. Reconcile locally rather
+    // than wait for the adapter to report the write back — the History API
+    // never reports a push of our own. While open, the slider owns the
+    // position and a write only trails it.
+    const opening = derives && position.value === null;
+
+    // Local state settles before the write goes out, so an adapter that
+    // reports the write back synchronously finds nothing new to derive.
+    value.value = serialized;
+
+    if (wasPresent) {
       adapter.replace(to);
     } else {
-      adapter.push(to, { [_kOwnerKey]: param });
+      adapter.push(to, stamp);
     }
 
-    value.value = serialized;
+    // The written value derives like any other wire value, position or raw
+    // string alike — a position is not taken at its word, because it may name
+    // a slide past the loaded window that only the locator's pager can bring
+    // in. A loaded slide still opens on this same tick. It runs after the
+    // write, because a value that names nothing clears itself from the URL,
+    // and there has to be a URL to clear it from.
+    if (opening) derive();
   };
 
-  const sync = (): void => {
+  const sync = (change?: UrlChange): void => {
     const next = readParam();
     const appeared = value.value === null && next !== null;
 
     closing = false;
     value.value = next;
 
-    // The parameter appeared without us writing it, so something else — an
-    // ordinary link, a router navigation — pushed this entry. That can only
-    // happen while the page is already running, which means there is an entry
-    // behind us and stepping back is safe. Claim it, so closing pops the entry
-    // instead of stranding a copy of the page in the history.
+    // The parameter appeared through a navigation the adapter vouches for: a
+    // push made on this same page, by a link or by the router, with the page
+    // as it was before sitting right behind it. Claim the entry, so closing
+    // pops it instead of stranding a copy of the page in the history.
     //
-    // A link that arrives with the page is not claimed: the parameter is
-    // already set when tracking starts, so no appearance is ever observed and
-    // there is nothing behind us to step back to.
-    if (appeared && !ownsCurrentEntry()) {
-      adapter.replace(buildSearch(next), { [_kOwnerKey]: param });
+    // Nothing else is claimed. A parameter that arrived with the page has
+    // nothing of ours behind it; one that arrived by replace, or by a
+    // navigation the adapter cannot classify, might have anything behind it.
+    // Both close in place.
+    if (appeared && change?.kind === 'push' && !ownsCurrentEntry()) {
+      adapter.replace(buildSearch(next), stamp);
     }
 
     derive();
   };
 
   const attach = (): Dispose => {
-    disposed = false;
+    attached = true;
     // A close awaiting its history step when we last detached can never land
     // now — its listener is gone — so its latch must not carry into this life.
     closing = false;
-    value.value = readParam();
+
+    // Anything left from a previous life is stale: a lookup that settled
+    // while nobody was listening, or one still in flight. Start the
+    // derivation over, keeping an open position only if the URL still names
+    // the same value it opened at.
+    const next = readParam();
+    if (next !== value.value) position.value = null;
+    generation += 1;
+    deriving = null;
+    value.value = next;
     derive();
 
     const stop = adapter.subscribe(sync);
 
     return () => {
+      if (!attached) return;
+      attached = false;
       // Marks any async lookup still in flight as stale, so an answer arriving
       // after teardown neither opens anything nor writes to the URL.
-      disposed = true;
+      generation += 1;
       stop();
     };
   };

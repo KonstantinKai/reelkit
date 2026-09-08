@@ -1101,12 +1101,20 @@ sound.toggle(); // Toggle muted state`}
           <code>adapter</code> option of <code>useOverlayUrlState</code> in a
           routed app so the router stays the single source of navigation truth —
           writing <code>history.pushState</code> behind the router leaves its
-          location stale and its next navigation drops the parameter.
+          location stale and its next navigation drops the parameter. Writes
+          touch the query only, so the path, the hash, and repeated keys such as{' '}
+          <code>?tag=a&amp;tag=b</code> ride along untouched. Every change
+          reports whether the router pushed on the same page, replaced, or
+          stepped through history, so a gallery opened from a{' '}
+          <code>&lt;router-link&gt;</code> closes with one back step.
         </p>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Ships from its own subpath, so an app without a router never pulls{' '}
           <code>vue-router</code> into its bundle. <code>vue-router</code> is an
-          optional peer dependency.
+          optional peer dependency, 4.1 or later: the adapter carries its
+          ownership stamp through the router's <code>state</code> navigation
+          option, which older releases ignore. On an older router nothing breaks
+          — closing just clears the parameter in place instead of stepping back.
         </p>
         <CodeBlock
           code={`import { useVueRouterUrlAdapter } from '@reelkit/vue/vue-router-url-adapter';

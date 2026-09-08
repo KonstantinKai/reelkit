@@ -43,6 +43,8 @@ export const zhTitles: Record<string, string> = {
 
   // Sections
   'URL State': 'URL 状态',
+  'Viewed State': '已观看状态',
+  'Remembering What Was Seen': '记住已观看内容',
   Features: '特性',
   'Quick Start': '快速上手',
   'Live Demo': '在线演示',

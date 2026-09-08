@@ -17,7 +17,7 @@ npm install @reelkit/vue-lightbox
 ```
 
 ```ts
-import { RkLightboxOverlay } from '@reelkit/vue-lightbox';
+import { LightboxOverlay } from '@reelkit/vue-lightbox';
 import '@reelkit/vue-lightbox/styles.css';
 ```
 
@@ -26,10 +26,7 @@ import '@reelkit/vue-lightbox/styles.css';
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue';
-import {
-  RkLightboxOverlay,
-  lightboxFadeTransition,
-} from '@reelkit/vue-lightbox';
+import { LightboxOverlay, lightboxFadeTransition } from '@reelkit/vue-lightbox';
 import '@reelkit/vue-lightbox/styles.css';
 
 const isOpen = ref(false);
@@ -59,7 +56,7 @@ const items = [
     <img :src="item.src" />
   </button>
 
-  <RkLightboxOverlay
+  <LightboxOverlay
     v-model:is-open="isOpen"
     :items="items"
     :initial-index="initialIndex"
@@ -144,6 +141,8 @@ The shared `<video>` element powering video slides uses the same pattern as the 
 
 ## URL State (shareable links, back button)
 
+Live demo: https://vue-demo.reelkit.dev/image-preview-url
+
 `LightboxUrlOverlay` puts the open state in the URL — it opens when the parameter names a slide and closes when it goes away, so links are shareable and the back button closes **when opened from within the app** (the link pushed an entry). A shared link opened directly in a fresh tab has no history behind it, so browser-back leaves the site — close with the button or Escape to remove the parameter in place. Separate component from `LightboxOverlay`: each carries one open-state driver (the `is-open` model or the url `controller`), never both. Build the controller with the `useOverlayUrlState` composable from `@reelkit/vue` and pass it as `:controller`.
 
 > **Built-in keys.** Spread `urlIndexKey` (by position) or `urlStableIdKey` (by a stable `id`) into the controller — both re-exported from `@reelkit/vue`. See the [URL State guide](/docs/core/guide#url-state) and [Core API](/docs/core/api#url-state).
@@ -227,7 +226,7 @@ While it is pending the lightbox stays closed and the parameter is left alone, s
 
 Full `useOverlayUrlState` options (`param`, `adapter`, `codec`, `locator`): see the [Vue API reference](/docs/vue/api#useoverlayurlstate).
 
-## RkLightboxOverlay Props
+## LightboxOverlay Props
 
 Type: `LightboxOverlayProps`
 
@@ -286,7 +285,7 @@ Tokens + classes shared w/ `@reelkit/react-lightbox`. See [Lightbox](/docs/light
 
 ```vue
 <template>
-  <RkLightboxOverlay v-model:is-open="isOpen" :items="items">
+  <LightboxOverlay v-model:is-open="isOpen" :items="items">
     <template
       #controls="{
         activeIndex,
@@ -302,7 +301,7 @@ Tokens + classes shared w/ `@reelkit/react-lightbox`. See [Lightbox](/docs/light
         {{ isFullscreen ? '⤡' : '⤢' }}
       </button>
     </template>
-  </RkLightboxOverlay>
+  </LightboxOverlay>
 </template>
 ```
 
@@ -310,7 +309,7 @@ Tokens + classes shared w/ `@reelkit/react-lightbox`. See [Lightbox](/docs/light
 
 ```vue
 <template>
-  <RkLightboxOverlay v-model:is-open="isOpen" :items="items">
+  <LightboxOverlay v-model:is-open="isOpen" :items="items">
     <template #slide="{ item, size, isActive, onReady, onError }">
       <video
         v-if="item.type === 'video'"
@@ -326,6 +325,6 @@ Tokens + classes shared w/ `@reelkit/react-lightbox`. See [Lightbox](/docs/light
       />
       <img v-else :src="item.src" @load="onReady" @error="onError" />
     </template>
-  </RkLightboxOverlay>
+  </LightboxOverlay>
 </template>
 ```

@@ -188,4 +188,157 @@ describe('createStoriesController', () => {
       expect(onGroupChange).toHaveBeenCalledTimes(1);
     });
   });
+  describe('resuming a group that has not been visited yet', () => {
+    it('opens an unvisited group where the resume callback points', () => {
+      const ctrl = makeController({ resumeStoryIndex: () => 2 });
+
+      ctrl.goToGroup(2);
+
+      expect(ctrl.state.activeStoryIndex.value).toBe(2);
+    });
+
+    it('prefers the position this session left a group on', () => {
+      const ctrl = makeController({ resumeStoryIndex: () => 3 });
+
+      ctrl.goToGroup(2);
+      ctrl.nextStory();
+      ctrl.goToGroup(0);
+      ctrl.goToGroup(2);
+
+      expect(ctrl.state.activeStoryIndex.value).toBe(3);
+    });
+
+    it('bounds a suggestion the group cannot honour', () => {
+      const ctrl = makeController({ resumeStoryIndex: () => 99 });
+
+      ctrl.goToGroup(1);
+
+      expect(ctrl.state.activeStoryIndex.value).toBe(1);
+    });
+
+    it('reports the same story it will open, so a neighbour renders in step', () => {
+      const ctrl = makeController({ resumeStoryIndex: () => 1 });
+
+      expect(ctrl.getLastStoryIndex(2)).toBe(1);
+    });
+
+    it('opens at the first story when nothing is configured', () => {
+      const ctrl = makeController();
+
+      ctrl.goToGroup(1);
+
+      expect(ctrl.state.activeStoryIndex.value).toBe(0);
+    });
+
+    it('resumes the group it opens on, like any other', () => {
+      const ctrl = makeController({
+        initialGroupIndex: 1,
+        resumeStoryIndex: () => 1,
+      });
+
+      expect(ctrl.state.activeStoryIndex.value).toBe(1);
+      expect(ctrl.getLastStoryIndex(1)).toBe(1);
+    });
+
+    it('lets an explicit opening story beat the resume callback', () => {
+      const ctrl = makeController({
+        initialGroupIndex: 1,
+        initialStoryIndex: 0,
+        resumeStoryIndex: () => 1,
+      });
+
+      expect(ctrl.state.activeStoryIndex.value).toBe(0);
+    });
+
+    it('opens the first story when neither is given', () => {
+      const ctrl = makeController({ initialGroupIndex: 1 });
+
+      expect(ctrl.state.activeStoryIndex.value).toBe(0);
+    });
+
+    // A resume answer is computed by a consumer — an empty feed divided into a
+    // count, a parsed value — so it can arrive as anything a number can be.
+    it.each([
+      ['not a number', Number.NaN, 0],
+      ['unbounded', Number.POSITIVE_INFINITY, 0],
+      ['negatively unbounded', Number.NEGATIVE_INFINITY, 0],
+      ['fractional', 2.7, 2],
+      ['a negative fraction', -0.7, 0],
+    ])(
+      'opens on a whole story when the answer is %s',
+      (_label, answer, expected) => {
+        const ctrl = makeController({
+          initialGroupIndex: 2,
+          resumeStoryIndex: () => answer,
+        });
+
+        expect(ctrl.state.activeStoryIndex.value).toBe(expected);
+        expect(Number.isInteger(ctrl.state.activeStoryIndex.value)).toBe(true);
+      },
+    );
+
+    it.each([
+      ['not a number', Number.NaN, 0],
+      ['fractional', 2.7, 2],
+    ])(
+      'opens a group reached later on a whole story when the answer is %s',
+      (_label, answer, expected) => {
+        const ctrl = makeController({ resumeStoryIndex: () => answer });
+
+        ctrl.goToGroup(2);
+
+        expect(ctrl.state.activeStoryIndex.value).toBe(expected);
+      },
+    );
+
+    it('bounds a suggestion the opening group cannot honour', () => {
+      const ctrl = makeController({
+        initialGroupIndex: 1,
+        resumeStoryIndex: () => 99,
+      });
+
+      expect(ctrl.state.activeStoryIndex.value).toBe(1);
+    });
+  });
+
+  describe('the story the player opens on', () => {
+    it('is reported as viewed', () => {
+      const onStoryViewed = vi.fn();
+      const ctrl = makeController({ initialStoryIndex: 1 }, { onStoryViewed });
+
+      ctrl.reportInitialView();
+
+      expect(onStoryViewed).toHaveBeenCalledWith(0, 1);
+    });
+
+    it('is reported once however many times it is asked for', () => {
+      const onStoryViewed = vi.fn();
+      const ctrl = makeController({}, { onStoryViewed });
+
+      ctrl.reportInitialView();
+      ctrl.reportInitialView();
+
+      expect(onStoryViewed).toHaveBeenCalledTimes(1);
+    });
+
+    it('is not reported again once the viewer has moved on', () => {
+      const onStoryViewed = vi.fn();
+      const ctrl = makeController({}, { onStoryViewed });
+
+      ctrl.nextStory();
+      ctrl.reportInitialView();
+
+      expect(onStoryViewed).toHaveBeenCalledTimes(1);
+      expect(onStoryViewed).toHaveBeenCalledWith(0, 1);
+    });
+
+    it('does not announce a story change, only a view', () => {
+      const onStoryChange = vi.fn();
+      const ctrl = makeController({}, { onStoryChange });
+
+      ctrl.reportInitialView();
+
+      expect(onStoryChange).not.toHaveBeenCalled();
+    });
+  });
 });

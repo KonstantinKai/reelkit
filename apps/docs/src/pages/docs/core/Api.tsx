@@ -1371,7 +1371,7 @@ restoreFocus();`}
         </div>
       </section>
 
-      <section>
+      <section className="mb-12">
         <Heading level={2} className="text-2xl font-bold mb-4">
           URL State
         </Heading>
@@ -1420,7 +1420,10 @@ restoreFocus();`}
                   </code>
                   , applying the open/close latch and self-healing a parameter
                   that names no slide — so every binding subscribes rather than
-                  re-deriving.
+                  re-deriving. Writing a position while closed opens at once,
+                  without waiting for the adapter to report the write back;{' '}
+                  <code className="font-mono text-xs">UrlChange</code> says when
+                  a close steps back versus clears in place.
                 </td>
               </tr>
               <tr className="border-b border-slate-100 dark:border-slate-800">
@@ -1704,7 +1707,29 @@ restoreFocus();`}
                 </td>
                 <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
                   The injection point for a router. A routed application must
-                  supply one, or the router's own location goes stale.
+                  supply one, or the router's own location goes stale. The{' '}
+                  <code className="font-mono text-xs">subscribe</code> listener
+                  accepts an optional{' '}
+                  <code className="font-mono text-xs">UrlChange</code>; calling
+                  it with nothing is always valid and means the adapter cannot
+                  say how the entry came to be current.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  UrlChange
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {"{ kind?: 'push' | 'replace' | 'pop' }"}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  What an adapter knows about the navigation that just landed.
+                  Report <code className="font-mono text-xs">push</code> only
+                  for a navigation the router itself made on the same page; that
+                  is the one case where closing may pop the entry. With no
+                  evidence the entry is never claimed and closing clears the
+                  parameter in place, leaving a duplicate of the page in history
+                  rather than risking a step off the site.
                 </td>
               </tr>
               <tr className="border-b border-slate-100 dark:border-slate-800">
@@ -1723,6 +1748,155 @@ restoreFocus();`}
                   </code>{' '}
                   takes — exported so a consumer can type a config assembled
                   separately before handing it over.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section className="mb-12">
+        <Heading level={2} className="text-2xl font-bold mb-4">
+          Viewed State
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          Persist how far a viewer got, keyed the same way the address bar is:
+          an entry is the parameter text itself, read back through the same{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            codec
+          </code>{' '}
+          and{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            locator
+          </code>
+          .
+        </p>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left py-3 px-4 font-semibold">Export</th>
+                <th className="text-left py-3 px-4 font-semibold">Type</th>
+                <th className="text-left py-3 px-4 font-semibold">
+                  Description
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  createViewedStateController
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {'(options) => ViewedStateController<Pos>'}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Remembers how far a viewer got, persisted as the very text a
+                  URL parameter would carry. Takes the same{' '}
+                  <code className="font-mono text-xs">codec</code>/
+                  <code className="font-mono text-xs">locator</code> pair the
+                  address bar uses, plus{' '}
+                  <code className="font-mono text-xs">storageKey</code>,
+                  optional <code className="font-mono text-xs">storage</code>,{' '}
+                  <code className="font-mono text-xs">trackOf</code> (one entry
+                  per group), and{' '}
+                  <code className="font-mono text-xs">progressOf</code>. Reads
+                  nothing until{' '}
+                  <code className="font-mono text-xs">attach()</code>, so it is
+                  safe to prerender.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  twoAxisViewedTracking
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {'{ trackOf, progressOf }'}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  The tracking pair for a two-axis player: one entry per outer
+                  slot, the inner index measuring progress through it. Spread it
+                  beside a two-axis key.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  createLocalStorageAdapter
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {'() => StorageAdapter'}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  The default backing. Also{' '}
+                  <code className="font-mono text-xs">
+                    createSessionStorageAdapter
+                  </code>{' '}
+                  for state that should not outlive the tab, and{' '}
+                  <code className="font-mono text-xs">
+                    createMemoryStorageAdapter
+                  </code>{' '}
+                  for tests and server rendering. Every one absorbs its own
+                  failures — an exhausted quota loses that write and no more.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  {'ViewedStateController<Pos>'}
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {
+                    '{ entries; resolve(track); record(position); forget(track?); attach() }'
+                  }
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  <code className="font-mono text-xs">entries</code> is a signal
+                  of track → stored text, so a ring repaints when a position is
+                  recorded here or in another tab.{' '}
+                  <code className="font-mono text-xs">resolve</code> runs the
+                  full key cycle on every call.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  {'ViewedStateOptions<Id, Pos>'}
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {
+                    '{ storageKey; codec; locator; storage?; trackOf?; progressOf; ttlMs?; maxTracks? }'
+                  }
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  The options{' '}
+                  <code className="font-mono text-xs">
+                    createViewedStateController
+                  </code>{' '}
+                  takes — exported so a consumer can type a config assembled
+                  separately before handing it over.{' '}
+                  <code className="font-mono text-xs">progressOf</code> is
+                  optional only for a plain index position, which is its own
+                  measure of progress; any other position must say which number
+                  to compare, and the type requires it.{' '}
+                  <code className="font-mono text-xs">ttlMs</code> opts into
+                  expiry: a track is forgotten that long after it was last
+                  recorded, and recording it again restarts its clock.{' '}
+                  <code className="font-mono text-xs">maxTracks</code> keeps at
+                  most that many tracks, dropping the least recently recorded on
+                  the next write.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  StorageAdapter
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {
+                    '{ read(key); write(key, value); subscribe?(key, listener) }'
+                  }
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  The injection point for a storage layer. Omit{' '}
+                  <code className="font-mono text-xs">subscribe</code> and the
+                  store simply runs without cross-tab synchronisation.
                 </td>
               </tr>
             </tbody>

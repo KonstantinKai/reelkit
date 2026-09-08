@@ -123,6 +123,8 @@ export class AppComponent {
 
 ## URL State (shareable links, back button)
 
+Live demo: https://angular-demo.reelkit.dev/reel-player-url
+
 `RkReelPlayerUrlOverlayComponent` puts the open state in the address bar: build a controller with `createOverlayUrlState` in an injection context and pass it as `[controller]`. The player opens when the parameter names a slide and closes when it clears — links are shareable and the back button closes it. `RkReelPlayerOverlayComponent` stays `[isOpen]`-controlled, so each component carries exactly one open-state driver.
 
 > **Built-in keys.** Spread `urlIndexKey` (by position) or `urlStableIdKey` (by a stable `id`) into the controller — both re-exported from `@reelkit/angular`. See the [URL State guide](/docs/core/guide#url-state) and [Core API](/docs/core/api#url-state).

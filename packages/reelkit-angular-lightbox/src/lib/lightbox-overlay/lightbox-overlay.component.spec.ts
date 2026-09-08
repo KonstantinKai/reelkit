@@ -192,6 +192,7 @@ jest.mock('@reelkit/angular', () => {
     captureFocusForReturn: jest.fn(() => jest.fn()),
     createFocusTrap: jest.fn(() => jest.fn()),
     getFocusableElements: jest.fn(() => []),
+    observeDomEvent: jest.fn(() => jest.fn()),
   };
 });
 

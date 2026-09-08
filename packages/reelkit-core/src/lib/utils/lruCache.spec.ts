@@ -63,6 +63,15 @@ describe('createLruCache', () => {
       expect(cache.get('a')).toBe(10);
     });
 
+    it('is a real Map, so it iterates, spreads, and chains like one', () => {
+      const cache = createLruCache<number>(2);
+      cache.set('a', 1).set('b', 2).set('a', 10).set('c', 3);
+
+      expect(cache instanceof Map).toBe(true);
+      expect([...cache.keys()]).toEqual(['a', 'c']);
+      expect(new Map(cache).get('a')).toBe(10);
+    });
+
     it('calls onEvict with evicted value and key', () => {
       const onEvict = vi.fn();
       const cache = createLruCache<string>(2, onEvict);

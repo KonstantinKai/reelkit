@@ -97,6 +97,11 @@ export {
   createStableIdLocator,
   urlStableIdKey,
   urlStableIdTwoAxisKey,
+  createViewedStateController,
+  twoAxisViewedTracking,
+  createLocalStorageAdapter,
+  createSessionStorageAdapter,
+  createMemoryStorageAdapter,
 } from '@reelkit/core';
 
 export type {
@@ -105,6 +110,7 @@ export type {
   RangeExtractor,
   NavKey,
   UrlAdapter,
+  UrlChange,
   UrlCodec,
   UrlLocator,
   UrlKey,
@@ -117,6 +123,9 @@ export type {
   UrlStableIdKeyOptions,
   UrlStableIdTwoAxisKeyOptions,
   UrlStableIdTwoAxisIdInnerOptions,
+  ViewedStateController,
+  ViewedStateOptions,
+  StorageAdapter,
 } from '@reelkit/core';
 
 export {

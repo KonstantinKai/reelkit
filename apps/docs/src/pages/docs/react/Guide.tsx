@@ -667,7 +667,25 @@ const routed = useOverlayUrlState({
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
             adapter
           </code>
-          . The{' '}
+          .{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            param
+          </code>{' '}
+          and{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            adapter
+          </code>{' '}
+          are read on the first render and fixed after that — remount to change
+          them — while{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            codec
+          </code>{' '}
+          and{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            locator
+          </code>{' '}
+          are read live, so a lookup after the list grew or reordered sees the
+          current list. The{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
             codec
           </code>{' '}

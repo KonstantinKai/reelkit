@@ -299,28 +299,29 @@ const overlayUrlStateOptions = [
     prop: 'param',
     type: 'string',
     default: 'required',
-    description: 'Query parameter carrying the active slide, e.g. "photo".',
+    description:
+      'Query parameter carrying the active slide, e.g. "photo". Read on the first render and fixed for the life of the component — remount (give it a key) to change it.',
   },
   {
     prop: 'adapter',
     type: 'UrlAdapter',
     default: 'History API',
     description:
-      "Navigation system to read and write through. Pass a router-backed adapter in a routed app so the router's own location does not go stale.",
+      "Navigation system to read and write through. Pass a router-backed adapter in a routed app so the router's own location does not go stale. Read on the first render and fixed for the life of the component — remount to change it.",
   },
   {
     prop: 'codec',
     type: '{ decode(raw) => Id | null; encode(id) => string }',
     default: 'required',
     description:
-      'Wire format: parameter text ↔ a stable identity, collection-blind. Travels with locator as a matched pair sharing the same Id — spread ...urlIndexKey(() => images.length) for the default ?photo=3 index gallery, or supply your own (base64, slug) so a bookmark survives the gallery being reordered.',
+      "Wire format: parameter text ↔ a stable identity, collection-blind. Travels with locator as a matched pair sharing the same Id — spread ...urlIndexKey(() => images.length) for the default ?photo=3 index gallery, or supply your own (base64, slug) so a bookmark survives the gallery being reordered. Read live: the latest render's codec handles the next decode or encode.",
   },
   {
     prop: 'locator',
     type: '{ locate(id) => number | null; locateAsync?(id) => Promise<number | null>; identify(index) => id }',
     default: 'required',
     description:
-      'Maps the identity to a position and owns its own validity: locate (sync), locateAsync (async fallback for a paginated gallery), identify (writes). For a plain index gallery spread ...urlIndexKey(() => images.length) — it supplies this locator plus the matching codec and bounds ?photo=3 against the live count, so a stale ?photo=99 heals out of the URL instead of opening a slide that was never named. A paginated feed or an identity-keyed gallery supplies its own matched codec + locator instead.',
+      "Maps the identity to a position and owns its own validity: locate (sync), locateAsync (async fallback for a paginated gallery), identify (writes). For a plain index gallery spread ...urlIndexKey(() => images.length) — it supplies this locator plus the matching codec and bounds ?photo=3 against the live count, so a stale ?photo=99 heals out of the URL instead of opening a slide that was never named. A paginated feed or an identity-keyed gallery supplies its own matched codec + locator instead. Read live: the latest render's locator answers the next lookup, and adding or removing locateAsync between renders takes effect on the next miss.",
   },
 ];
 
@@ -719,6 +720,54 @@ useBodyLock(isOpen);`}
         </div>
 
         <Heading level={3} className="text-lg font-semibold mt-6 mb-2">
+          useViewedState
+        </Heading>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            ViewedStateOptions
+          </code>
+        </p>
+        <p className="text-slate-600 dark:text-slate-400 mb-2">
+          Remembers how far a viewer got through a gallery and keeps following
+          storage for as long as the component lives. Pass the same key the
+          address bar uses, and a stored entry reads exactly like the parameter
+          of a shared link. Read <code>entries</code> through{' '}
+          <code>Observe</code> so a ring repaints when a position is recorded,
+          here or in another tab.
+        </p>
+        <CodeBlock
+          code={`import {
+  useViewedState,
+  urlStableIdTwoAxisKey,
+  twoAxisViewedTracking,
+  Observe,
+} from '@reelkit/react';
+import {
+  StoriesRingList,
+  createStoriesViewedState,
+} from '@reelkit/react-stories-player';
+
+const key = urlStableIdTwoAxisKey({ outerItems, innerItems });
+const seen = useViewedState({
+  storageKey: 'stories-seen',
+  ...key,
+  ...twoAxisViewedTracking,
+});
+const viewed = createStoriesViewedState(seen, () => groups);
+
+<Observe signals={[seen.entries]}>
+  {() => (
+    <StoriesRingList
+      groups={groups}
+      viewedState={viewed.viewedCounts()}
+      onSelect={open}
+    />
+  )}
+</Observe>;`}
+          language="tsx"
+        />
+
+        <Heading level={3} className="text-lg font-semibold mt-6 mb-2">
           useReactRouterUrlAdapter
         </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
@@ -726,7 +775,11 @@ useBodyLock(isOpen);`}
           <code>adapter</code> option of <code>useOverlayUrlState</code> in a
           routed app so the router stays the single source of navigation truth —
           writing <code>history.pushState</code> behind the router leaves its
-          location stale and its next navigation drops the parameter.
+          location stale and its next navigation drops the parameter. Writes
+          touch the query only, so the pathname and hash ride along untouched.
+          Every change reports whether the router pushed on the same page,
+          replaced, or stepped through history, so a gallery opened from a{' '}
+          <code>&lt;Link&gt;</code> closes with one back step.
         </p>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
           Ships from its own subpath, so an app without a router never pulls{' '}

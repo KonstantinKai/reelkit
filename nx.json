@@ -6,7 +6,9 @@
       "default",
       "!{projectRoot}/eslint.config.mjs",
       "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
+      "!{projectRoot}/**/*.test-d.ts",
       "!{projectRoot}/tsconfig.spec.json",
+      "!{projectRoot}/tsconfig.test-d.json",
       "!{projectRoot}/src/test-setup.[jt]s",
       "!{projectRoot}/jest.config.[jt]s",
       "!{projectRoot}/test-setup.[jt]s"

@@ -760,6 +760,58 @@ useBodyLock(isOpen);`}
 
         <Heading
           level={3}
+          id="useviewedstate"
+          className="text-lg font-semibold mt-6 mb-2"
+        >
+          useViewedState
+        </Heading>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            ViewedStateOptions
+          </code>
+        </p>
+        <p className="text-slate-600 dark:text-slate-400 mb-2">
+          Запам&rsquo;ятовує, як далеко глядач дійшов у галереї, і стежить за
+          сховищем, доки живе компонент. Передайте той самий ключ, що й адресний
+          рядок, — і збережений запис читатиметься точно як параметр спільного
+          посилання. Читайте <code>entries</code> через <code>Observe</code>,
+          щоб кільце перемальовувалося, коли позицію записано тут або в іншій
+          вкладці.
+        </p>
+        <CodeBlock
+          code={`import {
+  useViewedState,
+  urlStableIdTwoAxisKey,
+  twoAxisViewedTracking,
+  Observe,
+} from '@reelkit/react';
+import {
+  StoriesRingList,
+  createStoriesViewedState,
+} from '@reelkit/react-stories-player';
+
+const key = urlStableIdTwoAxisKey({ outerItems, innerItems });
+const seen = useViewedState({
+  storageKey: 'stories-seen',
+  ...key,
+  ...twoAxisViewedTracking,
+});
+const viewed = createStoriesViewedState(seen, () => groups);
+
+<Observe signals={[seen.entries]}>
+  {() => (
+    <StoriesRingList
+      groups={groups}
+      viewedState={viewed.viewedCounts()}
+      onSelect={open}
+    />
+  )}
+</Observe>;`}
+          language="tsx"
+        />
+
+        <Heading
+          level={3}
           id="usereactrouterurladapter"
           className="text-lg font-semibold mt-6 mb-2"
         >

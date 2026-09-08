@@ -65,14 +65,20 @@ const configRows = [
   {
     name: 'initialStoryIndex',
     type: 'number',
-    default: '0',
-    desc: 'Initial story index within the group',
+    default: 'resumeStoryIndex(initialGroupIndex), else 0',
+    desc: 'Initial story index within the group. Naming one wins over anything remembered; leave it out and the opening group resumes like every other.',
   },
   {
     name: 'defaultImageDuration',
     type: 'number',
     default: '5000',
     desc: 'Default auto-advance duration for image stories in ms',
+  },
+  {
+    name: 'resumeStoryIndex',
+    type: '(groupIndex: number) => number',
+    default: 'undefined',
+    desc: 'Story an unvisited group opens on, bounded to a story the group has',
   },
 ];
 
@@ -171,9 +177,65 @@ const methodsRows = [
   {
     name: 'getLastStoryIndex(groupIndex)',
     type: '(number) => number',
-    desc: 'Last viewed story index for a group (0 if never visited)',
+    desc: 'Where a group opens: the story it was left on this session, else the one resumeStoryIndex names',
+  },
+  {
+    name: 'reportInitialView()',
+    type: '() => void',
+    desc: 'Reports the story the player opened on as viewed, once. Call after mounting, not while rendering.',
   },
 ];
+
+const viewedStateParamRows = [
+  {
+    name: 'controller',
+    type: 'ViewedStateController<TwoAxisPosition>',
+    desc: 'Core store built from the same key the address bar uses, spread with twoAxisViewedTracking so each group keeps its own entry',
+  },
+  {
+    name: 'groups',
+    type: '() => StoriesGroup<T>[]',
+    desc: 'Reads the current groups. A getter, so a feed that pages in or reorders after setup is measured at call time.',
+  },
+];
+
+const viewedStateRows = [
+  {
+    name: 'viewedCounts()',
+    type: '() => Map<string, number>',
+    desc: 'Stories seen per group, keyed by author id — the shape StoriesRingList takes as viewedState',
+  },
+  {
+    name: 'resumeStoryIndex(groupIndex)',
+    type: '(number) => number',
+    desc: 'First unseen story, or 0 once the group has been watched to the end',
+  },
+  {
+    name: 'markViewed(groupIndex, storyIndex)',
+    type: '(number, number) => void',
+    desc: 'Records a story as seen. Wire it to onStoryViewed.',
+  },
+];
+
+const viewedStateExample = `import { createStoriesViewedState } from '@reelkit/stories-core';
+import {
+  createViewedStateController,
+  urlStableIdTwoAxisKey,
+  twoAxisViewedTracking,
+} from '@reelkit/core';
+
+const seen = createViewedStateController({
+  storageKey: 'stories-seen',
+  ...urlStableIdTwoAxisKey({ outerItems, innerItems }),
+  ...twoAxisViewedTracking,
+});
+seen.attach();
+
+const viewed = createStoriesViewedState(seen, () => groups);
+
+viewed.viewedCounts(); // Map { 'user_42' => 2 }
+viewed.resumeStoryIndex(0); // 2 — the first story not yet seen
+viewed.markViewed(0, 2); // furthest point wins; a rewatch never rewinds`;
 
 const timerConfigRows = [
   {
@@ -699,6 +761,51 @@ export default function StoriesCorePage() {
           Example
         </Heading>
         <CodeBlock code={canvasExample} />
+      </section>
+
+      {/* Viewed State */}
+      <section className="mb-12">
+        <Heading level={2} className="text-2xl font-bold mb-6">
+          Viewed State
+        </Heading>
+        <p className="text-slate-600 dark:text-slate-400 mb-4">
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            createStoriesViewedState(controller, groups)
+          </code>{' '}
+          reads a core{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            ViewedStateController
+          </code>{' '}
+          in the terms a player uses — groups, authors, story indexes — leaving
+          the store itself unaware of any of them. It returns a{' '}
+          <code className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+            StoriesViewedState
+          </code>
+          . Build the store from the same key the address bar uses, tracked per
+          group, and a stored entry reads exactly like a shared link's
+          parameter.
+        </p>
+        <Table3Col
+          headers={['Parameter', 'Type', 'Description']}
+          rows={viewedStateParamRows}
+        />
+        <Heading level={3} className="text-lg font-semibold mt-8 mb-3">
+          StoriesViewedState
+        </Heading>
+        <Table3Col
+          headers={['Method', 'Type', 'Description']}
+          rows={viewedStateRows}
+        />
+        <Heading level={3} className="text-lg font-semibold mt-8 mb-3">
+          Example
+        </Heading>
+        <CodeBlock code={viewedStateExample} />
+        <p className="text-slate-600 dark:text-slate-400 mt-4">
+          An entry names the furthest story reached rather than a tally of
+          views, so an id-addressed key keeps a group's place across the feed
+          being reordered, while a story removed from the middle of a group
+          shortens its count and lights its ring again.
+        </p>
       </section>
 
       {/* Utility Functions */}

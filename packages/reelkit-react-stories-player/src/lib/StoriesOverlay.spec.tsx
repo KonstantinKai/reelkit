@@ -364,6 +364,180 @@ describe('StoriesOverlay', () => {
   });
 });
 
+describe('StoriesOverlay remembering where a viewer got to', () => {
+  beforeEach(() => {
+    lastReelProps = [];
+    vi.stubGlobal('requestAnimationFrame', (cb: () => void) =>
+      setTimeout(cb, 0),
+    );
+    vi.stubGlobal('cancelAnimationFrame', vi.fn());
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('reports the story it opened on as viewed', () => {
+    const onStoryViewed = vi.fn();
+    render(
+      <StoriesOverlay
+        isOpen={true}
+        onClose={vi.fn()}
+        groups={mockGroups}
+        initialGroupIndex={1}
+        onStoryViewed={onStoryViewed}
+      />,
+    );
+
+    expect(onStoryViewed).toHaveBeenCalledWith(1, 0);
+  });
+
+  it('reports the opening story once, not again on the first navigation', () => {
+    const onStoryViewed = vi.fn();
+    const apiRef = { current: null as StoriesApi | null };
+    render(
+      <StoriesOverlay
+        isOpen={true}
+        onClose={vi.fn()}
+        groups={mockGroups}
+        apiRef={apiRef}
+        onStoryViewed={onStoryViewed}
+      />,
+    );
+
+    act(() => apiRef.current?.nextStory());
+
+    expect(onStoryViewed.mock.calls).toEqual([
+      [0, 0],
+      [0, 1],
+    ]);
+  });
+
+  it('opens the group it was given on the resumed story', () => {
+    const onStoryViewed = vi.fn();
+    render(
+      <StoriesOverlay
+        isOpen={true}
+        onClose={vi.fn()}
+        groups={mockGroups}
+        initialGroupIndex={0}
+        resumeStoryIndex={() => 1}
+        onStoryViewed={onStoryViewed}
+      />,
+    );
+
+    expect(onStoryViewed).toHaveBeenCalledWith(0, 1);
+  });
+
+  // The timer is armed from the story the player actually opens on. Reading the
+  // raw prop instead hands it nothing, which falls through to the no-media
+  // branch and counts down over an image that has not loaded — so the header
+  // spinner, which tracks that wait, is what tells the two apart.
+  it('arms the timer against the resumed story, not an absent one', () => {
+    const { baseElement } = render(
+      <StoriesOverlay
+        isOpen={true}
+        onClose={vi.fn()}
+        groups={mockGroups}
+        initialGroupIndex={0}
+        resumeStoryIndex={() => 1}
+      />,
+    );
+
+    expect(
+      baseElement.querySelector('.rk-stories-header-spinner'),
+    ).not.toBeNull();
+  });
+
+  it('lets an explicit opening story beat the resume callback', () => {
+    const onStoryViewed = vi.fn();
+    render(
+      <StoriesOverlay
+        isOpen={true}
+        onClose={vi.fn()}
+        groups={mockGroups}
+        initialGroupIndex={0}
+        initialStoryIndex={0}
+        resumeStoryIndex={() => 1}
+        onStoryViewed={onStoryViewed}
+      />,
+    );
+
+    expect(onStoryViewed).toHaveBeenCalledWith(0, 0);
+  });
+
+  it('opens an unvisited group where the resume callback points', () => {
+    const apiRef = { current: null as StoriesApi | null };
+    const onStoryChange = vi.fn();
+    render(
+      <StoriesOverlay
+        isOpen={true}
+        onClose={vi.fn()}
+        groups={mockGroups}
+        initialGroupIndex={1}
+        resumeStoryIndex={(groupIndex) => (groupIndex === 0 ? 1 : 0)}
+        onStoryChange={onStoryChange}
+        apiRef={apiRef}
+      />,
+    );
+
+    act(() => apiRef.current?.prevGroup());
+
+    expect(onStoryChange).toHaveBeenCalledWith(0, 1);
+  });
+
+  it('honours a resume callback swapped in after mount', () => {
+    const apiRef = { current: null as StoriesApi | null };
+    const onStoryChange = vi.fn();
+    const { rerender } = render(
+      <StoriesOverlay
+        isOpen={true}
+        onClose={vi.fn()}
+        groups={mockGroups}
+        initialGroupIndex={1}
+        resumeStoryIndex={() => 0}
+        onStoryChange={onStoryChange}
+        apiRef={apiRef}
+      />,
+    );
+
+    rerender(
+      <StoriesOverlay
+        isOpen={true}
+        onClose={vi.fn()}
+        groups={mockGroups}
+        initialGroupIndex={1}
+        resumeStoryIndex={() => 1}
+        onStoryChange={onStoryChange}
+        apiRef={apiRef}
+      />,
+    );
+
+    act(() => apiRef.current?.prevGroup());
+
+    expect(onStoryChange).toHaveBeenCalledWith(0, 1);
+  });
+
+  it('leaves every group on its first story when no resume is given', () => {
+    const apiRef = { current: null as StoriesApi | null };
+    const onStoryChange = vi.fn();
+    render(
+      <StoriesOverlay
+        isOpen={true}
+        onClose={vi.fn()}
+        groups={mockGroups}
+        initialGroupIndex={1}
+        onStoryChange={onStoryChange}
+        apiRef={apiRef}
+      />,
+    );
+
+    act(() => apiRef.current?.prevGroup());
+
+    expect(onStoryChange).toHaveBeenCalledWith(0, 0);
+  });
+});
+
 describe('StoriesUrlOverlay', () => {
   beforeEach(() => {
     lastReelProps = [];
@@ -478,5 +652,19 @@ describe('StoriesUrlOverlay', () => {
       window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
     });
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+  it('opens where the link points, whatever a resume callback suggests', () => {
+    const { controller } = build('?story=0.0');
+    const onStoryViewed = vi.fn();
+    render(
+      <StoriesUrlOverlay
+        controller={controller}
+        groups={mockGroups}
+        resumeStoryIndex={() => 1}
+        onStoryViewed={onStoryViewed}
+      />,
+    );
+
+    expect(onStoryViewed).toHaveBeenCalledWith(0, 0);
   });
 });

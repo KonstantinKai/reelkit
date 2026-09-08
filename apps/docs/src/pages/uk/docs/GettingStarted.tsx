@@ -553,6 +553,7 @@ function App() {
               code={`<script setup lang="ts">
 import { ref } from 'vue';
 import { Reel, type ReelExpose } from '@reelkit/vue';
+
 const reelRef = ref<InstanceType<typeof Reel> & ReelExpose>();
 </script>
 
