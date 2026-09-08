@@ -30,7 +30,16 @@
   "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"],
   "references": [
     {
-      "path": "../../packages/reelkit-core/tsconfig.lib.json"
+      "path": "../../packages/reelkit-vue-reel-player/tsconfig.lib.json"
+    },
+    {
+      "path": "../../packages/reelkit-vue-lightbox/tsconfig.lib.json"
+    },
+    {
+      "path": "../../packages/reelkit-vue/tsconfig.lib.json"
+    },
+    {
+      "path": "../../packages/reelkit-stories-core/tsconfig.lib.json"
     },
     {
       "path": "../../packages/reelkit-react-stories-player/tsconfig.lib.json"
@@ -39,13 +48,25 @@
       "path": "../../packages/reelkit-react-reel-player/tsconfig.lib.json"
     },
     {
-      "path": "../../packages/reelkit-example-data/tsconfig.lib.json"
-    },
-    {
       "path": "../../packages/reelkit-react-lightbox/tsconfig.lib.json"
     },
     {
       "path": "../../packages/reelkit-react/tsconfig.lib.json"
+    },
+    {
+      "path": "../../packages/reelkit-example-data/tsconfig.lib.json"
+    },
+    {
+      "path": "../../packages/reelkit-core/tsconfig.lib.json"
+    },
+    {
+      "path": "../../packages/reelkit-angular-reel-player/tsconfig.lib.json"
+    },
+    {
+      "path": "../../packages/reelkit-angular-lightbox/tsconfig.lib.json"
+    },
+    {
+      "path": "../../packages/reelkit-angular/tsconfig.lib.json"
     }
   ]
 }

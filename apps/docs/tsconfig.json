@@ -28,6 +28,15 @@
       "path": "../../packages/reelkit-react"
     },
     {
+      "path": "../../packages/reelkit-angular-reel-player"
+    },
+    {
+      "path": "../../packages/reelkit-angular-lightbox"
+    },
+    {
+      "path": "../../packages/reelkit-angular"
+    },
+    {
       "path": "./tsconfig.app.json"
     }
   ]

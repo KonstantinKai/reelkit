@@ -4,10 +4,12 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "@reelkit/core": "workspace:*",
     "@reelkit/example-data": "workspace:*",
     "@reelkit/react": "workspace:*",
     "@reelkit/react-lightbox": "workspace:*",
     "@reelkit/react-reel-player": "workspace:*",
+    "@reelkit/react-stories-player": "workspace:*",
     "lucide-react": "^0.468.0",
     "react": "18.3.1",
     "react-dom": "18.3.1"
