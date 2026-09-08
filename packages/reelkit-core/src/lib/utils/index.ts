@@ -18,6 +18,7 @@ export {
   createUrlStateController,
   createHistoryAdapter,
   type UrlAdapter,
+  type UrlChange,
   type UrlCodec,
   type UrlLocator,
   type UrlKey,

@@ -196,7 +196,7 @@ Builds a URL-state controller for an overlay, which you hand to `<rk-lightbox-ur
 
 Subpath: `@reelkit/angular/ng-router-url-adapter`
 
-A `UrlAdapter` backed by the Angular Router. Pass it as the `adapter` option of `createOverlayUrlState` in a routed app so the Router stays the single source of navigation truth — writing `history.pushState` behind the Router leaves its location stale and its next navigation drops the parameter. Call it in an injection context; the `NavigationEnd` subscription releases through `DestroyRef`.
+A `UrlAdapter` backed by the Angular Router. Pass it as the `adapter` option of `createOverlayUrlState` in a routed app so the Router stays the single source of navigation truth — writing `history.pushState` behind the Router leaves its location stale and its next navigation drops the parameter. Writes touch the query only, so the path, the fragment, and repeated keys such as `?tag=a&tag=b` ride along untouched. Every change reports whether the Router pushed on the same page, replaced, or stepped through history, so a gallery opened from a `routerLink` closes with one back step. Call it in an injection context; the router subscription releases through `DestroyRef`.
 
 Ships from its own subpath, so an app without routing never pulls `@angular/router` in. `@angular/router` is an optional peer dependency.
 

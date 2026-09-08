@@ -1703,6 +1703,26 @@ restoreFocus();`}
                 <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
                   路由器的注入点。带路由的应用必须提供一个，否则路由器自己的
                   location 会过期。
+                  <code className="font-mono text-xs">subscribe</code>{' '}
+                  的监听器接受一个可选的{' '}
+                  <code className="font-mono text-xs">UrlChange</code>
+                  ；不带参数调用始终合法，表示适配器无法说明当前条目是如何产生的。
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  UrlChange
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {"{ kind?: 'push' | 'replace' | 'pop' }"}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  适配器对刚刚完成的导航所知的信息。仅当路由器自身在同一页面上
+                  推入新条目时才报告{' '}
+                  <code className="font-mono text-xs">push</code>
+                  ——这是关闭时可以弹出该条目的唯一情形。没有证据时条目永远不会被
+                  认领，关闭只会就地清除参数，在历史中留下一个页面副本，而不是冒险
+                  跳出站点。
                 </td>
               </tr>
               <tr className="border-b border-slate-100 dark:border-slate-800">

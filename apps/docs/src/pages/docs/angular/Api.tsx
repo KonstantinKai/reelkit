@@ -920,9 +920,14 @@ const index = toAngularSignal(controller.state.index, destroyRef);`}
           <code>adapter</code> option of <code>createOverlayUrlState</code> in a
           routed app so the Router stays the single source of navigation truth —
           writing <code>history.pushState</code> behind the Router leaves its
-          location stale and its next navigation drops the parameter. Call it in
-          an injection context; the <code>NavigationEnd</code> subscription
-          releases through <code>DestroyRef</code>.
+          location stale and its next navigation drops the parameter. Writes
+          touch the query only, so the path, the fragment, and repeated keys
+          such as <code>?tag=a&amp;tag=b</code> ride along untouched. Every
+          change reports whether the Router pushed on the same page, replaced,
+          or stepped through history, so a gallery opened from a{' '}
+          <code>routerLink</code> closes with one back step. Call it in an
+          injection context; the router subscription releases through{' '}
+          <code>DestroyRef</code>.
         </p>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Ships from its own subpath, so an app without routing never pulls{' '}

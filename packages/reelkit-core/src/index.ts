@@ -53,6 +53,7 @@ export {
   urlStableIdKey,
   urlStableIdTwoAxisKey,
   type UrlAdapter,
+  type UrlChange,
   type UrlCodec,
   type UrlLocator,
   type UrlKey,

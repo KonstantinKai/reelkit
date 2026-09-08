@@ -110,6 +110,7 @@ export type {
   RangeExtractor,
   NavKey,
   UrlAdapter,
+  UrlChange,
   UrlCodec,
   UrlLocator,
   UrlKey,

@@ -1420,7 +1420,10 @@ restoreFocus();`}
                   </code>
                   , applying the open/close latch and self-healing a parameter
                   that names no slide — so every binding subscribes rather than
-                  re-deriving.
+                  re-deriving. Writing a position while closed opens at once,
+                  without waiting for the adapter to report the write back;{' '}
+                  <code className="font-mono text-xs">UrlChange</code> says when
+                  a close steps back versus clears in place.
                 </td>
               </tr>
               <tr className="border-b border-slate-100 dark:border-slate-800">
@@ -1704,7 +1707,29 @@ restoreFocus();`}
                 </td>
                 <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
                   The injection point for a router. A routed application must
-                  supply one, or the router's own location goes stale.
+                  supply one, or the router's own location goes stale. The{' '}
+                  <code className="font-mono text-xs">subscribe</code> listener
+                  accepts an optional{' '}
+                  <code className="font-mono text-xs">UrlChange</code>; calling
+                  it with nothing is always valid and means the adapter cannot
+                  say how the entry came to be current.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  UrlChange
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {"{ kind?: 'push' | 'replace' | 'pop' }"}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  What an adapter knows about the navigation that just landed.
+                  Report <code className="font-mono text-xs">push</code> only
+                  for a navigation the router itself made on the same page; that
+                  is the one case where closing may pop the entry. With no
+                  evidence the entry is never claimed and closing clears the
+                  parameter in place, leaving a duplicate of the page in history
+                  rather than risking a step off the site.
                 </td>
               </tr>
               <tr className="border-b border-slate-100 dark:border-slate-800">

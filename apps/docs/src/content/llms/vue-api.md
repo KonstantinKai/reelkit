@@ -136,9 +136,9 @@ Type: `OverlayUrlStateOptions`
 
 ## useVueRouterUrlAdapter (composable)
 
-A `UrlAdapter` backed by Vue Router. Pass it as the `adapter` option of `useOverlayUrlState` in a routed app so the router stays the single source of navigation truth — writing `history.pushState` behind the router leaves its location stale and its next navigation drops the parameter.
+A `UrlAdapter` backed by Vue Router. Pass it as the `adapter` option of `useOverlayUrlState` in a routed app so the router stays the single source of navigation truth — writing `history.pushState` behind the router leaves its location stale and its next navigation drops the parameter. Writes touch the query only, so the path, the hash, and repeated keys such as `?tag=a&tag=b` ride along untouched. Every change reports whether the router pushed on the same page, replaced, or stepped through history, so a gallery opened from a `<router-link>` closes with one back step.
 
-Ships from its own subpath, so an app without a router never pulls `vue-router` in. `vue-router` is an optional peer dependency.
+Ships from its own subpath, so an app without a router never pulls `vue-router` in. `vue-router` is an optional peer dependency, 4.1 or later: the adapter carries its ownership stamp through the router's `state` navigation option, which older releases ignore. On an older router nothing breaks — closing just clears the parameter in place instead of stepping back.
 
 ```ts
 import { useVueRouterUrlAdapter } from '@reelkit/vue/vue-router-url-adapter';

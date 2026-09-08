@@ -12,12 +12,14 @@
 // paths override for each jest project, which do not inherit the base paths.
 
 import type { StorageAdapter } from '../lib/utils/viewedState';
-import type { UrlAdapter } from '../lib/utils/urlState';
+import type { UrlAdapter, UrlChange } from '../lib/utils/urlState';
 
 /** Options for {@link createFakeUrlAdapter}. */
 export interface FakeUrlAdapterOptions {
   /**
-   * Whether `push` notifies subscribers, as a real navigation would.
+   * Whether `push` notifies subscribers, as a real navigation would. The
+   * notification carries push evidence, the way a router adapter reports a
+   * same-page push of its own.
    *
    * A binding test drives the URL and expects the overlay to react, so it wants
    * `true`. A core test usually wants to separate "the URL was written" from
@@ -27,6 +29,16 @@ export interface FakeUrlAdapterOptions {
    * @default true
    */
   notifyOnPush?: boolean;
+
+  /**
+   * Whether `push` and `replace` wait to land, the way a router navigation
+   * does: the written URL is not readable and nobody is notified until
+   * `landWrites` is called, and `dropWrites` throws the writes away as a
+   * navigation guard would.
+   *
+   * @default false
+   */
+  deferWrites?: boolean;
 }
 
 /** What {@link createFakeUrlAdapter} hands back. */
@@ -57,8 +69,18 @@ export interface FakeUrlAdapter {
    */
   readonly listenerCount: number;
 
-  /** Simulates the user pressing Back or Forward. */
-  fireUrlChange: () => void;
+  /**
+   * Tells subscribers the URL changed. With no argument the change carries no
+   * evidence, the way an adapter that cannot classify a navigation reports
+   * it; pass `{ kind: 'push' }` to stand in for a router's same-page push.
+   */
+  fireUrlChange: (change?: UrlChange) => void;
+
+  /** Lands every deferred write in order, notifying subscribers for each. */
+  landWrites: () => void;
+
+  /** Discards every deferred write, as a navigation guard would. */
+  dropWrites: () => void;
 }
 
 /**
@@ -76,16 +98,23 @@ export const createFakeUrlAdapter = (
   initialSearch = '',
   options: FakeUrlAdapterOptions = {},
 ): FakeUrlAdapter => {
-  const { notifyOnPush = true } = options;
+  const { notifyOnPush = true, deferWrites = false } = options;
 
   const entries: Array<{ search: string; state: unknown }> = [
     { search: initialSearch, state: null },
   ];
-  const listeners = new Set<() => void>();
+  const listeners = new Set<(change?: UrlChange) => void>();
   let cursor = 0;
   const counts = { push: 0, replace: 0 };
+  const pending: Array<() => void> = [];
 
-  const notify = () => listeners.forEach((listener) => listener());
+  const notify = (change?: UrlChange) =>
+    listeners.forEach((listener) => listener(change));
+
+  const write = (land: () => void) => {
+    if (deferWrites) pending.push(land);
+    else land();
+  };
 
   // A brand-new entry starts from the given state, so there is nothing to
   // preserve — but `null` and `undefined` are not the same answer here. The
@@ -106,21 +135,26 @@ export const createFakeUrlAdapter = (
     },
     push: (to, state) => {
       counts.push += 1;
-      entries.splice(cursor + 1);
-      entries.push({ search: to, state: state ?? null });
-      cursor += 1;
-      if (notifyOnPush) notify();
+      write(() => {
+        entries.splice(cursor + 1);
+        entries.push({ search: to, state: state ?? null });
+        cursor += 1;
+        if (notifyOnPush || deferWrites) notify({ kind: 'push' });
+      });
     },
     replace: (to, state) => {
       counts.replace += 1;
-      entries[cursor] = {
-        search: to,
-        state: merge(entries[cursor].state, state),
-      };
+      write(() => {
+        entries[cursor] = {
+          search: to,
+          state: merge(entries[cursor].state, state),
+        };
+        if (deferWrites) notify({ kind: 'replace' });
+      });
     },
     goBack: () => {
       if (cursor > 0) cursor -= 1;
-      notify();
+      notify({ kind: 'pop' });
     },
   };
 
@@ -138,6 +172,12 @@ export const createFakeUrlAdapter = (
       return listeners.size;
     },
     fireUrlChange: notify,
+    landWrites: () => {
+      while (pending.length > 0) pending.shift()?.();
+    },
+    dropWrites: () => {
+      pending.length = 0;
+    },
   };
 };
 

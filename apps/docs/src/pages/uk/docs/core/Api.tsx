@@ -1771,7 +1771,29 @@ restoreFocus();`}
                 </td>
                 <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
                   Точка підключення роутера. Застосунок із роутером має надати
-                  свій, інакше власне місцеположення роутера застаріє.
+                  свій, інакше власне місцеположення роутера застаріє. Слухач{' '}
+                  <code className="font-mono text-xs">subscribe</code> приймає
+                  необов'язковий{' '}
+                  <code className="font-mono text-xs">UrlChange</code>; виклик
+                  без аргументу завжди коректний і означає, що адаптер не знає,
+                  як запис став поточним.
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                <td className="py-3 px-4 font-mono text-sm text-primary-600 dark:text-primary-400">
+                  UrlChange
+                </td>
+                <td className="py-3 px-4 font-mono text-xs text-slate-500">
+                  {"{ kind?: 'push' | 'replace' | 'pop' }"}
+                </td>
+                <td className="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">
+                  Що адаптер знає про навігацію, яка щойно завершилася.
+                  Повідомляйте <code className="font-mono text-xs">push</code>{' '}
+                  лише для навігації, яку сам роутер виконав на тій самій
+                  сторінці — єдиний випадок, коли закриття може зняти запис
+                  історії. Без доказів запис ніколи не привласнюється, а
+                  закриття прибирає параметр на місці, залишаючи в історії
+                  дублікат сторінки замість ризику кроку за межі сайту.
                 </td>
               </tr>
               <tr className="border-b border-slate-100 dark:border-slate-800">

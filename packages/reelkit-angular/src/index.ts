@@ -144,6 +144,7 @@ export {
   type TransitionTransformFn,
   type SlideTransformStyle,
   type UrlAdapter,
+  type UrlChange,
   type UrlCodec,
   type UrlLocator,
   type UrlKey,

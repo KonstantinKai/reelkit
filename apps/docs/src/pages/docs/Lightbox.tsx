@@ -1370,7 +1370,11 @@ const photo = useOverlayUrlState({
             — the link pushed an entry, so back pops to the gallery. A shared
             link opened directly in a fresh tab has no history behind it, so
             browser-back leaves the site; the close button or Escape removes the
-            parameter in place and keeps you on the gallery.
+            parameter in place and keeps you on the gallery. The packaged router
+            adapters vouch for a same-page link push; a custom adapter that
+            cannot say how the entry arrived gets the in-place close too, which
+            leaves a duplicate of the page in history — one back step then looks
+            like nothing happened, but nothing reopens.
           </li>
           <li>
             A parameter naming no slide — a stale bookmark, a hand-edited value

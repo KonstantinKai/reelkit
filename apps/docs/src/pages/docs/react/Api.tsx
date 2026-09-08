@@ -299,28 +299,29 @@ const overlayUrlStateOptions = [
     prop: 'param',
     type: 'string',
     default: 'required',
-    description: 'Query parameter carrying the active slide, e.g. "photo".',
+    description:
+      'Query parameter carrying the active slide, e.g. "photo". Read on the first render and fixed for the life of the component — remount (give it a key) to change it.',
   },
   {
     prop: 'adapter',
     type: 'UrlAdapter',
     default: 'History API',
     description:
-      "Navigation system to read and write through. Pass a router-backed adapter in a routed app so the router's own location does not go stale.",
+      "Navigation system to read and write through. Pass a router-backed adapter in a routed app so the router's own location does not go stale. Read on the first render and fixed for the life of the component — remount to change it.",
   },
   {
     prop: 'codec',
     type: '{ decode(raw) => Id | null; encode(id) => string }',
     default: 'required',
     description:
-      'Wire format: parameter text ↔ a stable identity, collection-blind. Travels with locator as a matched pair sharing the same Id — spread ...urlIndexKey(() => images.length) for the default ?photo=3 index gallery, or supply your own (base64, slug) so a bookmark survives the gallery being reordered.',
+      "Wire format: parameter text ↔ a stable identity, collection-blind. Travels with locator as a matched pair sharing the same Id — spread ...urlIndexKey(() => images.length) for the default ?photo=3 index gallery, or supply your own (base64, slug) so a bookmark survives the gallery being reordered. Read live: the latest render's codec handles the next decode or encode.",
   },
   {
     prop: 'locator',
     type: '{ locate(id) => number | null; locateAsync?(id) => Promise<number | null>; identify(index) => id }',
     default: 'required',
     description:
-      'Maps the identity to a position and owns its own validity: locate (sync), locateAsync (async fallback for a paginated gallery), identify (writes). For a plain index gallery spread ...urlIndexKey(() => images.length) — it supplies this locator plus the matching codec and bounds ?photo=3 against the live count, so a stale ?photo=99 heals out of the URL instead of opening a slide that was never named. A paginated feed or an identity-keyed gallery supplies its own matched codec + locator instead.',
+      "Maps the identity to a position and owns its own validity: locate (sync), locateAsync (async fallback for a paginated gallery), identify (writes). For a plain index gallery spread ...urlIndexKey(() => images.length) — it supplies this locator plus the matching codec and bounds ?photo=3 against the live count, so a stale ?photo=99 heals out of the URL instead of opening a slide that was never named. A paginated feed or an identity-keyed gallery supplies its own matched codec + locator instead. Read live: the latest render's locator answers the next lookup, and adding or removing locateAsync between renders takes effect on the next miss.",
   },
 ];
 
@@ -774,7 +775,11 @@ const viewed = createStoriesViewedState(seen, () => groups);
           <code>adapter</code> option of <code>useOverlayUrlState</code> in a
           routed app so the router stays the single source of navigation truth —
           writing <code>history.pushState</code> behind the router leaves its
-          location stale and its next navigation drops the parameter.
+          location stale and its next navigation drops the parameter. Writes
+          touch the query only, so the pathname and hash ride along untouched.
+          Every change reports whether the router pushed on the same page,
+          replaced, or stepped through history, so a gallery opened from a{' '}
+          <code>&lt;Link&gt;</code> closes with one back step.
         </p>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
           Ships from its own subpath, so an app without a router never pulls{' '}

@@ -115,7 +115,7 @@ const photo = useOverlayUrlState({
 Full `useOverlayUrlState` options (`param`, `adapter`, `codec`, `locator`): see the [React API reference](/docs/react/api#useoverlayurlstate).
 
 - Opening pushes **one** history entry. Paging slides **replaces** it — N swipes add 0 entries, so one back step always leaves the gallery. Back closes; it does not step photos.
-- **Back closes only when opened from within the app** (the link pushed an entry). A shared link opened directly in a fresh tab has no history behind it, so browser-back leaves the site — close with the ✕ button or Escape to remove the parameter in place and stay.
+- **Back closes only when opened from within the app** (the link pushed an entry). A shared link opened directly in a fresh tab has no history behind it, so browser-back leaves the site — close with the ✕ button or Escape to remove the parameter in place and stay. The packaged router adapters vouch for a same-page link push; a custom adapter that cannot say how the entry arrived gets the in-place close too, which leaves a duplicate of the page in history — one back step then looks like nothing happened, but nothing reopens.
 - Deep link `?photo=3` opens the gallery at that slide on load. Closing a link that arrived with the page removes the param in place rather than navigating off-site.
 - A param naming no slide (stale bookmark, hand-edited) is dropped from the URL instead of leaving the address bar asserting a slide that cannot open.
 

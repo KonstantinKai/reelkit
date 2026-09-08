@@ -1,12 +1,13 @@
 import { createFakeUrlAdapter, type FakeUrlAdapter } from '../../testing';
 import { describe, it, expect, vi } from 'vitest';
 import {
+  createHistoryAdapter,
   createUrlStateController,
   type UrlStateController,
   type UrlCodec,
   type UrlLocator,
 } from './urlState';
-import { indexCodec } from './urlIndexKey';
+import { indexCodec, urlIndexKey, urlIndexTwoAxisKey } from './urlIndexKey';
 import { createDeferred } from './deferred';
 import type { Dispose } from './signal';
 
@@ -158,9 +159,10 @@ describe('createUrlStateController', () => {
     const fake = createFakeAdapter('?tab=media');
     const [photo] = attachController(fake);
 
-    // An ordinary link, not the controller: no ownership stamp of ours.
+    // An ordinary link, not the controller: no ownership stamp of ours, but
+    // the adapter vouches that it was a same-page push.
     fake.adapter.push('?tab=media&photo=3');
-    fake.fireUrlChange();
+    fake.fireUrlChange({ kind: 'push' });
 
     expect(photo.value.value).toBe('3');
 
@@ -191,7 +193,7 @@ describe('createUrlStateController', () => {
     attachController(fake);
 
     fake.adapter.push('?photo=2');
-    fake.fireUrlChange();
+    fake.fireUrlChange({ kind: 'push' });
 
     // Claiming annotates the entry it landed on; it does not stack another.
     expect(fake.depth).toBe(2);
@@ -671,9 +673,9 @@ describe('createUrlStateController with an object position', () => {
     const { fake, ctrl } = build('');
     ctrl.attach();
     fake.adapter.push('?story=1.0');
-    fake.fireUrlChange();
     expect(ctrl.position.value).toEqual({ group: 1, story: 0 });
-    // Appeared-claim re-stamps the entry in place — a replace, not a new push.
+    // The fake's push notifies with push evidence, so the claim re-stamps the
+    // entry in place — a replace, not a new push.
     expect(fake.counts.replace).toBe(1);
   });
 
@@ -682,5 +684,682 @@ describe('createUrlStateController with an object position', () => {
     ctrl.attach();
     expect(ctrl.position.value).toBeNull();
     expect(fake.adapter.read()).toBe('');
+  });
+});
+
+describe('createUrlStateController through the History API', () => {
+  // The real History API reports nothing for a push or replace of our own —
+  // only the user's steps arrive as popstate. These run against jsdom's
+  // history rather than the fake, so an open that silently depended on the
+  // adapter reporting the write back would show up here and nowhere else.
+  const setUrl = (url: string) => window.history.replaceState(null, '', url);
+  const here = () =>
+    `${window.location.pathname}${window.location.search}${window.location.hash}`;
+  const nextPopstate = () =>
+    new Promise<void>((resolve) =>
+      window.addEventListener('popstate', () => resolve(), { once: true }),
+    );
+
+  it('opens at once from a controller write, with one push and no popstate', () => {
+    setUrl('/gallery');
+    const push = vi.spyOn(window.history, 'pushState');
+    const replace = vi.spyOn(window.history, 'replaceState');
+    const photo = createUrlStateController({
+      param: 'photo',
+      ...urlIndexKey(() => 3),
+    });
+    photo.attach();
+
+    photo.set(2);
+
+    expect(window.location.search).toBe('?photo=2');
+    expect(photo.value.value).toBe('2');
+    expect(photo.position.value).toBe(2);
+    expect(push).toHaveBeenCalledTimes(1);
+
+    // Swiping replaces, and the position stays latched where it opened.
+    photo.set(1);
+
+    expect(window.location.search).toBe('?photo=1');
+    expect(replace).toHaveBeenCalledTimes(1);
+    expect(push).toHaveBeenCalledTimes(1);
+    expect(photo.position.value).toBe(2);
+  });
+
+  it('opens a two-axis position at once from a controller write', () => {
+    setUrl('/stories');
+    const player = createUrlStateController({
+      param: 'p',
+      ...urlIndexTwoAxisKey({
+        outerCount: () => 3,
+        innerCounts: () => [2, 2, 2],
+      }),
+    });
+    player.attach();
+
+    player.set({ outer: 1, inner: 1 });
+
+    expect(window.location.search).toBe('?p=1.1');
+    expect(player.position.value).toEqual({ outer: 1, inner: 1 });
+  });
+
+  it('clears a cold deep link in place and leaves the page where it stood', () => {
+    setUrl('/gallery?photo=2#details');
+    const back = vi.spyOn(window.history, 'back');
+    const photo = createUrlStateController({
+      param: 'photo',
+      ...urlIndexKey(() => 3),
+    });
+    photo.attach();
+    expect(photo.position.value).toBe(2);
+
+    photo.set(null);
+
+    expect(here()).toBe('/gallery#details');
+    expect(photo.value.value).toBe(null);
+    expect(photo.position.value).toBe(null);
+    expect(back).not.toHaveBeenCalled();
+
+    const fresh = createUrlStateController({
+      param: 'photo',
+      ...urlIndexKey(() => 3),
+    });
+    fresh.attach();
+    expect(fresh.position.value).toBe(null);
+  });
+
+  it('self-heals an invalid sole parameter in place', () => {
+    setUrl('/gallery?photo=bogus');
+    const photo = createUrlStateController({
+      param: 'photo',
+      ...urlIndexKey(() => 3),
+    });
+    photo.attach();
+
+    expect(photo.position.value).toBe(null);
+    expect(here()).toBe('/gallery');
+  });
+
+  it('keeps the pathname and fragment through open, swipe, and close', async () => {
+    setUrl('/gallery#details');
+    const photo = createUrlStateController({
+      param: 'photo',
+      ...urlIndexKey(() => 3),
+    });
+    photo.attach();
+
+    photo.set(1);
+    expect(here()).toBe('/gallery?photo=1#details');
+
+    photo.set(2);
+    expect(here()).toBe('/gallery?photo=2#details');
+
+    const landed = nextPopstate();
+    photo.set(null);
+    await landed;
+
+    expect(here()).toBe('/gallery#details');
+    expect(photo.value.value).toBe(null);
+  });
+
+  it('closes during a pending lookup without letting the answer open anything', async () => {
+    setUrl('/gallery?photo=late');
+    const pending = createDeferred();
+    const photo = createUrlStateController<string>({
+      param: 'photo',
+      codec: { decode: (raw) => raw, encode: (id) => id },
+      locator: {
+        locate: () => null,
+        identify: () => 'late',
+        locateAsync: async () => {
+          await pending.promise;
+          return 2;
+        },
+      },
+    });
+    photo.attach();
+
+    photo.set(null);
+    expect(here()).toBe('/gallery');
+
+    pending.resolve();
+    await new Promise((done) => setTimeout(done, 0));
+
+    expect(photo.position.value).toBe(null);
+    expect(here()).toBe('/gallery');
+  });
+
+  it('builds the adapter without touching any global', () => {
+    vi.stubGlobal('window', undefined);
+    try {
+      expect(() => createHistoryAdapter()).not.toThrow();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+});
+
+describe('createUrlStateController under a notifying adapter', () => {
+  // A router adapter reports the controller's own write back once the
+  // navigation settles. That report must be recognised as ours: no second
+  // derivation, no ownership claim, no extra history entry.
+  it('does not derive again or claim its own entry when the write is reported back', () => {
+    const fake = createFakeUrlAdapter('', { notifyOnPush: true });
+    const locate = vi.fn((id: number) => id);
+    const photo = createUrlStateController({
+      param: 'photo',
+      adapter: fake.adapter,
+      locator: { locate, identify: (index) => index },
+    });
+    photo.attach();
+
+    photo.set(2);
+
+    expect(photo.position.value).toBe(2);
+    // Once for the write itself; the adapter's report of it adds nothing.
+    expect(locate).toHaveBeenCalledTimes(1);
+    expect(fake.counts.push).toBe(1);
+    expect(fake.counts.replace).toBe(0);
+    expect(fake.depth).toBe(2);
+  });
+
+  it('waits for the pager when a written position is past the loaded window', async () => {
+    const fake = createFakeUrlAdapter('', { notifyOnPush: false });
+    const loaded = [0, 1, 2];
+    const pending = createDeferred();
+    const locateAsync = vi.fn(async (index: number) => {
+      await pending.promise;
+      loaded.push(3, 4);
+      return index;
+    });
+    const photo = createUrlStateController({
+      param: 'photo',
+      adapter: fake.adapter,
+      ...urlIndexKey(() => loaded.length, locateAsync),
+    });
+    photo.attach();
+
+    // The write names a slide the gallery has not loaded yet, the way a
+    // shared link into a long feed does. The URL carries it at once; the
+    // overlay waits for the page.
+    photo.set(4);
+
+    expect(fake.adapter.read()).toBe('?photo=4');
+    expect(photo.value.value).toBe('4');
+    expect(photo.position.value).toBe(null);
+    expect(locateAsync).toHaveBeenCalledWith(4);
+
+    pending.resolve();
+    await new Promise((done) => setTimeout(done, 0));
+
+    expect(photo.position.value).toBe(4);
+  });
+
+  it('self-heals a written position past the window when there is no pager', () => {
+    const fake = createFakeUrlAdapter('', { notifyOnPush: false });
+    const photo = createUrlStateController({
+      param: 'photo',
+      adapter: fake.adapter,
+      ...urlIndexKey(() => 3),
+    });
+    photo.attach();
+
+    photo.set(9);
+
+    expect(photo.position.value).toBe(null);
+    expect(photo.value.value).toBe(null);
+    expect(fake.adapter.read()).toBe('');
+  });
+
+  it('keeps the current lookup across repeated unchanged notifications and drops it when the value changes', async () => {
+    const fake = createFakeUrlAdapter('?photo=first', { notifyOnPush: false });
+    const gates = [createDeferred(), createDeferred()];
+    const locateAsync = vi.fn(async (id: string) => {
+      await gates[locateAsync.mock.calls.length - 1].promise;
+      return id === 'first' ? 1 : 2;
+    });
+    const photo = createUrlStateController<string>({
+      param: 'photo',
+      adapter: fake.adapter,
+      codec: { decode: (raw) => raw, encode: (id) => id },
+      locator: { locate: () => null, identify: () => 'first', locateAsync },
+    });
+    photo.attach();
+
+    fake.fireUrlChange();
+    fake.fireUrlChange({ kind: 'replace' });
+    expect(locateAsync).toHaveBeenCalledTimes(1);
+
+    fake.adapter.replace('?photo=second');
+    fake.fireUrlChange({ kind: 'replace' });
+    expect(locateAsync).toHaveBeenCalledTimes(2);
+
+    gates[0].resolve();
+    await new Promise((done) => setTimeout(done, 0));
+    expect(photo.position.value).toBe(null);
+
+    gates[1].resolve();
+    await new Promise((done) => setTimeout(done, 0));
+    expect(photo.position.value).toBe(2);
+  });
+});
+
+describe('createUrlStateController closing during a pending lookup', () => {
+  const idCodec: UrlCodec<string> = {
+    decode: (raw) => raw,
+    encode: (id) => id,
+  };
+  const flush = () => new Promise((done) => setTimeout(done, 0));
+
+  /** A locator whose asynchronous answer is released by the test. */
+  const gated = (answer: () => Promise<number | null>) => ({
+    locate: () => null,
+    identify: () => 'late',
+    locateAsync: answer,
+  });
+
+  it.each([
+    ['a position', () => 2],
+    ['nothing', () => null],
+  ])(
+    'cancels the lookup at close, so a late answer of %s opens nothing and writes nothing',
+    async (_label, answer) => {
+      const fake = createFakeUrlAdapter('?tab=media&photo=late', {
+        notifyOnPush: false,
+      });
+      const pending = createDeferred();
+      const photo = createUrlStateController<string>({
+        param: 'photo',
+        adapter: fake.adapter,
+        codec: idCodec,
+        locator: gated(async () => {
+          await pending.promise;
+          return answer();
+        }),
+      });
+      photo.attach();
+
+      photo.set(null);
+      expect(fake.adapter.read()).toBe('?tab=media');
+      expect(fake.counts.replace).toBe(1);
+
+      pending.resolve();
+      await flush();
+
+      expect(photo.position.value).toBe(null);
+      expect(photo.value.value).toBe(null);
+      expect(fake.adapter.read()).toBe('?tab=media');
+      expect(fake.counts.replace).toBe(1);
+    },
+  );
+
+  it('ignores a rejection that arrives after close', async () => {
+    const fake = createFakeUrlAdapter('?tab=media&photo=late', {
+      notifyOnPush: false,
+    });
+    const pending = createDeferred();
+    const photo = createUrlStateController<string>({
+      param: 'photo',
+      adapter: fake.adapter,
+      codec: idCodec,
+      locator: gated(async () => {
+        await pending.promise;
+        throw new Error('network');
+      }),
+    });
+    photo.attach();
+
+    photo.set(null);
+    pending.resolve();
+    await flush();
+
+    expect(photo.position.value).toBe(null);
+    expect(fake.adapter.read()).toBe('?tab=media');
+    expect(fake.counts.replace).toBe(1);
+  });
+
+  it('holds the cancellation while the router is still landing the removal', async () => {
+    const fake = createFakeUrlAdapter('?photo=late', { deferWrites: true });
+    const pending = createDeferred();
+    const photo = createUrlStateController<string>({
+      param: 'photo',
+      adapter: fake.adapter,
+      codec: idCodec,
+      locator: gated(async () => {
+        await pending.promise;
+        return 2;
+      }),
+    });
+    photo.attach();
+
+    photo.set(null);
+    expect(photo.value.value).toBe(null);
+
+    pending.resolve();
+    await flush();
+    expect(photo.position.value).toBe(null);
+
+    fake.landWrites();
+    expect(fake.adapter.read()).toBe('');
+    expect(photo.position.value).toBe(null);
+  });
+
+  it('holds the cancellation while a close is still awaiting its back step', async () => {
+    const fake = createFakeUrlAdapter('', { notifyOnPush: false });
+    const pending = createDeferred();
+    const photo = createUrlStateController<string>({
+      param: 'photo',
+      adapter: fake.adapter,
+      codec: idCodec,
+      locator: gated(async () => {
+        await pending.promise;
+        return 2;
+      }),
+    });
+    photo.attach();
+
+    // A same-page link push the adapter vouches for: claimed, so closing
+    // steps back rather than replacing.
+    fake.adapter.push('?photo=late');
+    fake.fireUrlChange({ kind: 'push' });
+    const goBack = vi.spyOn(fake.adapter, 'goBack').mockImplementation(() => {
+      /* step requested, not yet delivered */
+    });
+
+    photo.set(null);
+    expect(goBack).toHaveBeenCalledTimes(1);
+
+    pending.resolve();
+    await flush();
+
+    expect(photo.position.value).toBe(null);
+    // The claim was the only replace; the late answer wrote nothing more.
+    expect(fake.counts.replace).toBe(1);
+  });
+
+  it('lets a later open start a fresh lookup that a stale answer cannot affect', async () => {
+    const fake = createFakeUrlAdapter('?photo=late', { notifyOnPush: false });
+    const first = createDeferred();
+    const second = createDeferred();
+    const answers = [
+      { gate: first, index: 1 },
+      { gate: second, index: 3 },
+    ];
+    const photo = createUrlStateController<string>({
+      param: 'photo',
+      adapter: fake.adapter,
+      codec: idCodec,
+      locator: gated(async () => {
+        const answer = answers.shift();
+        await answer?.gate.promise;
+        return answer?.index ?? null;
+      }),
+    });
+    photo.attach();
+
+    photo.set(null);
+    photo.set('later');
+    expect(fake.adapter.read()).toBe('?photo=later');
+
+    first.resolve();
+    await flush();
+    expect(photo.position.value).toBe(null);
+
+    second.resolve();
+    await flush();
+    expect(photo.position.value).toBe(3);
+  });
+});
+
+describe('createUrlStateController across detach and reattach', () => {
+  const idCodec: UrlCodec<string> = {
+    decode: (raw) => raw,
+    encode: (id) => id,
+  };
+  const flush = () => new Promise((done) => setTimeout(done, 0));
+
+  it('runs a fresh lookup on reattach when the earlier one settled while detached', async () => {
+    const fake = createFakeUrlAdapter('?photo=late', { notifyOnPush: false });
+    const gates = [createDeferred(), createDeferred()];
+    const locateAsync = vi.fn(async () => {
+      await gates[locateAsync.mock.calls.length - 1].promise;
+      return 2;
+    });
+    const photo = createUrlStateController<string>({
+      param: 'photo',
+      adapter: fake.adapter,
+      codec: idCodec,
+      locator: { locate: () => null, identify: () => 'late', locateAsync },
+    });
+
+    const dispose = photo.attach();
+    dispose();
+
+    gates[0].resolve();
+    await flush();
+    expect(photo.position.value).toBe(null);
+    expect(fake.adapter.read()).toBe('?photo=late');
+
+    photo.attach();
+    expect(locateAsync).toHaveBeenCalledTimes(2);
+
+    gates[1].resolve();
+    await flush();
+    expect(photo.position.value).toBe(2);
+  });
+
+  it('drops a lookup from a previous life that settles after reattach', async () => {
+    const fake = createFakeUrlAdapter('?photo=late', { notifyOnPush: false });
+    const gates = [createDeferred(), createDeferred()];
+    const answers = [1, 2];
+    const locateAsync = vi.fn(async () => {
+      const call = locateAsync.mock.calls.length - 1;
+      await gates[call].promise;
+      return answers[call];
+    });
+    const photo = createUrlStateController<string>({
+      param: 'photo',
+      adapter: fake.adapter,
+      codec: idCodec,
+      locator: { locate: () => null, identify: () => 'late', locateAsync },
+    });
+
+    photo.attach()();
+    photo.attach();
+
+    gates[0].resolve();
+    await flush();
+    expect(photo.position.value).toBe(null);
+
+    gates[1].resolve();
+    await flush();
+    expect(photo.position.value).toBe(2);
+  });
+
+  it('keeps an open position across a reattach at the same url', () => {
+    const fake = createFakeUrlAdapter('?photo=1');
+    const photo = createUrlStateController({
+      param: 'photo',
+      adapter: fake.adapter,
+      ...urlIndexKey(() => 3),
+    });
+
+    photo.attach()();
+    photo.attach();
+
+    expect(photo.position.value).toBe(1);
+  });
+
+  it('survives repeated attach and dispose cycles with no listener left behind', () => {
+    const fake = createFakeUrlAdapter('');
+    const photo = createUrlStateController({
+      param: 'photo',
+      adapter: fake.adapter,
+      ...urlIndexKey(() => 3),
+    });
+
+    for (let cycle = 0; cycle < 3; cycle += 1) {
+      const dispose = photo.attach();
+      dispose();
+      dispose();
+    }
+    expect(fake.listenerCount).toBe(0);
+
+    photo.attach();
+    expect(fake.listenerCount).toBe(1);
+
+    photo.set(2);
+    expect(photo.position.value).toBe(2);
+    expect(fake.adapter.read()).toBe('?photo=2');
+  });
+});
+
+describe('createUrlStateController ownership', () => {
+  const attach = (fake: FakeUrlAdapter) => {
+    const photo = createUrlStateController({
+      param: 'photo',
+      adapter: fake.adapter,
+      ...urlIndexKey(() => 5),
+    });
+    return [photo, photo.attach()] as const;
+  };
+
+  it('closes in place when the parameter arrived by replace', () => {
+    const fake = createFakeUrlAdapter('?tab=media', { notifyOnPush: false });
+    const [photo] = attach(fake);
+    const goBack = vi.spyOn(fake.adapter, 'goBack');
+
+    fake.adapter.replace('?tab=media&photo=2');
+    fake.fireUrlChange({ kind: 'replace' });
+    expect(photo.position.value).toBe(2);
+
+    photo.set(null);
+
+    expect(goBack).not.toHaveBeenCalled();
+    expect(fake.depth).toBe(1);
+    expect(fake.adapter.read()).toBe('?tab=media');
+    expect(photo.position.value).toBe(null);
+  });
+
+  it.each([
+    ['an unrelated entry behind it', '?tab=media'],
+    ['no entry behind it', ''],
+  ])(
+    'closes in place when a navigation with no evidence brought the parameter, with %s',
+    (_label, initial) => {
+      const fake = createFakeUrlAdapter(initial, { notifyOnPush: false });
+      const [photo] = attach(fake);
+      const goBack = vi.spyOn(fake.adapter, 'goBack');
+
+      // Whatever pushed this, the adapter could not classify it.
+      fake.adapter.push(`${initial ? `${initial}&` : '?'}photo=2`);
+      fake.fireUrlChange();
+      expect(photo.position.value).toBe(2);
+
+      photo.set(null);
+
+      expect(goBack).not.toHaveBeenCalled();
+      expect(photo.position.value).toBe(null);
+      expect(fake.adapter.read()).toBe(initial);
+      // The entry stays as a duplicate of the page, with the parameter gone
+      // from it. Stepping back lands on the page as it was, not on the
+      // overlay: nothing reopens.
+      expect(fake.depth).toBe(2);
+      fake.adapter.goBack();
+      expect(fake.adapter.read()).toBe(initial);
+      expect(photo.position.value).toBe(null);
+    },
+  );
+
+  it('keeps ownership of its own entry across a remount', () => {
+    const fake = createFakeUrlAdapter('?tab=media', { notifyOnPush: false });
+    const [photo, dispose] = attach(fake);
+
+    photo.set(2);
+    dispose();
+
+    const [remounted] = attach(fake);
+    expect(remounted.position.value).toBe(2);
+
+    const goBack = vi.spyOn(fake.adapter, 'goBack');
+    remounted.set(null);
+
+    expect(goBack).toHaveBeenCalledTimes(1);
+    expect(fake.cursor).toBe(0);
+    expect(fake.adapter.read()).toBe('?tab=media');
+  });
+
+  it('pops exactly one entry when closing a same-page push the adapter vouched for', () => {
+    const fake = createFakeUrlAdapter('?tab=media', { notifyOnPush: false });
+    const [photo] = attach(fake);
+    const goBack = vi.spyOn(fake.adapter, 'goBack');
+
+    fake.adapter.push('?tab=media&photo=2');
+    fake.fireUrlChange({ kind: 'push' });
+
+    photo.set(null);
+    photo.set(null);
+
+    expect(goBack).toHaveBeenCalledTimes(1);
+    expect(fake.cursor).toBe(0);
+  });
+
+  it('stays closable after a close that requested no history step', () => {
+    const fake = createFakeUrlAdapter('?photo=2', { notifyOnPush: false });
+    const [photo] = attach(fake);
+
+    photo.set(null);
+    expect(photo.position.value).toBe(null);
+
+    photo.set(3);
+    expect(photo.position.value).toBe(3);
+
+    const goBack = vi.spyOn(fake.adapter, 'goBack');
+    photo.set(null);
+    expect(goBack).toHaveBeenCalledTimes(1);
+    expect(photo.position.value).toBe(null);
+  });
+
+  it('closes locally when the navigation that opened it never landed', () => {
+    const fake = createFakeUrlAdapter('', { deferWrites: true });
+    const [photo] = attach(fake);
+    const goBack = vi.spyOn(fake.adapter, 'goBack');
+
+    photo.set(2);
+    expect(photo.position.value).toBe(2);
+    expect(fake.adapter.read()).toBe('');
+
+    // A navigation guard refused the push: the URL never changes.
+    fake.dropWrites();
+
+    photo.set(null);
+
+    expect(photo.position.value).toBe(null);
+    expect(photo.value.value).toBe(null);
+    expect(goBack).not.toHaveBeenCalled();
+    expect(fake.counts.replace).toBe(0);
+    expect(fake.depth).toBe(1);
+
+    photo.set(3);
+    fake.landWrites();
+    expect(photo.position.value).toBe(3);
+    expect(fake.adapter.read()).toBe('?photo=3');
+  });
+
+  it('replaces rather than pushes a second write made before the first has landed', () => {
+    const fake = createFakeUrlAdapter('', { deferWrites: true });
+    const [photo] = attach(fake);
+
+    photo.set(2);
+    photo.set(3);
+
+    expect(fake.counts.push).toBe(1);
+    expect(fake.counts.replace).toBe(1);
+
+    fake.landWrites();
+
+    expect(fake.depth).toBe(2);
+    expect(fake.adapter.read()).toBe('?photo=3');
+    expect(photo.position.value).toBe(2);
   });
 });

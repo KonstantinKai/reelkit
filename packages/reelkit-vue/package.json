@@ -62,7 +62,7 @@
   },
   "peerDependencies": {
     "vue": ">=3.0.0",
-    "vue-router": ">=4.0.0"
+    "vue-router": ">=4.1.0"
   },
   "peerDependenciesMeta": {
     "vue-router": {
