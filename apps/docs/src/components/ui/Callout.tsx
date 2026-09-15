@@ -53,6 +53,7 @@ export function Callout({
 
   return (
     <div
+      data-callout={type}
       className={`flex gap-3 p-4 rounded-xl border ${style.bg} ${style.border}${className ? ` ${className}` : ''}`}
     >
       <Icon className={`w-5 h-5 flex-shrink-0 mt-0.5 ${style.icon}`} />

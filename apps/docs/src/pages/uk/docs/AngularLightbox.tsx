@@ -18,10 +18,10 @@ import {
   Link2,
 } from 'lucide-react';
 import { Heading } from '../../../components/ui/Heading';
-import { ukPageMeta } from '../../../i18n/pageMeta';
+import { localePageMeta } from '../../../i18n/pageMeta';
 
 export const meta = () =>
-  ukPageMeta({
+  localePageMeta('uk', {
     path: '/docs/angular-lightbox',
     title: 'Lightbox для Angular · ReelKit',
     description:

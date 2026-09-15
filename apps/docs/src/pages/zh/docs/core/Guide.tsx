@@ -3,10 +3,10 @@ import { Callout } from '../../../../components/ui/Callout';
 import { CodeBlock } from '../../../../components/ui/CodeBlock';
 import { NextSteps } from '../../../../components/NextSteps';
 import { Heading } from '../../../../components/ui/Heading';
-import { zhPageMeta } from '../../../../i18n/pageMeta';
+import { localePageMeta } from '../../../../i18n/pageMeta';
 
 export const meta = () =>
-  zhPageMeta({
+  localePageMeta('zh', {
     path: '/docs/core/guide',
     title: '核心指南 · ReelKit',
     description:

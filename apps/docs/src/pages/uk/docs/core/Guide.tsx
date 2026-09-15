@@ -3,10 +3,10 @@ import { Callout } from '../../../../components/ui/Callout';
 import { CodeBlock } from '../../../../components/ui/CodeBlock';
 import { NextSteps } from '../../../../components/NextSteps';
 import { Heading } from '../../../../components/ui/Heading';
-import { ukPageMeta } from '../../../../i18n/pageMeta';
+import { localePageMeta } from '../../../../i18n/pageMeta';
 
 export const meta = () =>
-  ukPageMeta({
+  localePageMeta('uk', {
     path: '/docs/core/guide',
     title: 'Посібник з ядра · ReelKit',
     description:

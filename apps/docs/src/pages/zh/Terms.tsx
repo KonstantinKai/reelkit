@@ -1,7 +1,7 @@
-import { zhPageMeta } from '../../i18n/pageMeta';
+import { localePageMeta } from '../../i18n/pageMeta';
 
 export const meta = () =>
-  zhPageMeta({
+  localePageMeta('zh', {
     path: '/terms',
     title: '服务条款 · ReelKit',
     description: 'ReelKit 文档站的服务条款。法律文本以英文为准。',

@@ -1,7 +1,7 @@
-import { ukPageMeta } from '../../i18n/pageMeta';
+import { localePageMeta } from '../../i18n/pageMeta';
 
 export const meta = () =>
-  ukPageMeta({
+  localePageMeta('uk', {
     path: '/privacy',
     title: 'Політика конфіденційності · ReelKit',
     description:

@@ -5,10 +5,10 @@ import { NextSteps } from '../../../components/NextSteps';
 import { type Framework } from '../../../data/frameworkSignal';
 import { FrameworkBlocks } from '../../../components/ui/FrameworkVariant';
 import { Heading } from '../../../components/ui/Heading';
-import { ukPageMeta } from '../../../i18n/pageMeta';
+import { localePageMeta } from '../../../i18n/pageMeta';
 
 export const meta = () =>
-  ukPageMeta({
+  localePageMeta('uk', {
     path: '/docs/installation',
     title: 'Встановлення · ReelKit',
     description:

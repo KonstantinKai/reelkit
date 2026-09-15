@@ -1,9 +1,9 @@
 import { Callout } from '../../../components/ui/Callout';
 import { Clock } from 'lucide-react';
-import { ukPageMeta } from '../../../i18n/pageMeta';
+import { localePageMeta } from '../../../i18n/pageMeta';
 
 export const meta = () =>
-  ukPageMeta({
+  localePageMeta('uk', {
     path: '/docs/angular-stories-player',
     title: 'Stories Player для Angular · ReelKit',
     description:

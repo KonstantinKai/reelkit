@@ -1,9 +1,9 @@
 import { CodeBlock } from '../../../components/ui/CodeBlock';
 import { Heading } from '../../../components/ui/Heading';
-import { zhPageMeta } from '../../../i18n/pageMeta';
+import { localePageMeta } from '../../../i18n/pageMeta';
 
 export const meta = () =>
-  zhPageMeta({
+  localePageMeta('zh', {
     path: '/docs/troubleshooting',
     title: '疑难排查 · ReelKit',
     description:

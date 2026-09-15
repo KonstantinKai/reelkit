@@ -14,6 +14,7 @@
     ]
   },
   "exclude": [
+    "src/content/snippets",
     "src/**/*.spec.ts",
     "src/**/*.test.ts",
     "src/**/*.spec.tsx",

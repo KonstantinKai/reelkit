@@ -18,10 +18,10 @@ import {
   Code,
 } from 'lucide-react';
 import { Heading } from '../../../components/ui/Heading';
-import { ukPageMeta } from '../../../i18n/pageMeta';
+import { localePageMeta } from '../../../i18n/pageMeta';
 
 export const meta = () =>
-  ukPageMeta({
+  localePageMeta('uk', {
     path: '/docs/vue-reel-player',
     title: 'Reel Player для Vue · ReelKit',
     description:

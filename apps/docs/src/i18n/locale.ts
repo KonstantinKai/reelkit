@@ -101,10 +101,11 @@ export function withLocaleLocation(
   }`;
 }
 
-const _kOrigin = 'https://reelkit.dev';
+/** Public origin of the site, without a trailing slash. */
+export const kSiteOrigin = 'https://reelkit.dev';
 
 /** Absolute URL of a shared path in one locale, for canonical and hreflang. */
 export function localeUrl(locale: Locale, pathname: string): string {
   const path = withLocale(locale, pathname);
-  return path === '/' ? `${_kOrigin}/` : `${_kOrigin}${path}`;
+  return path === '/' ? `${kSiteOrigin}/` : `${kSiteOrigin}${path}`;
 }

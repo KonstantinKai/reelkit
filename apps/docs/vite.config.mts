@@ -6,6 +6,15 @@ import { reactRouter } from '@react-router/dev/vite';
 import react from '@vitejs/plugin-react';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 import { nxCopyAssetsPlugin } from '@nx/vite/plugins/nx-copy-assets.plugin';
+import mdx from '@mdx-js/rollup';
+import { kDefaultLocale, kSiteOrigin } from './src/i18n/locale';
+import { kSitePages } from './src/content/manifest';
+import { renderSitemap, sitemapEntries } from './src/content/sitePages';
+import {
+  kMdxComponentsPath,
+  kMdxComponentsSpecifier,
+  mdxOptions,
+} from './mdx.config';
 
 function reelkitVersionsPlugin(): Plugin {
   const virtualId = 'virtual:reelkit-versions';
@@ -146,32 +155,17 @@ function loadLlmsEntries(contentDir: string): LlmsEntry[] {
 }
 
 /**
- * Extract the `docs/...` route paths declared in `src/routes.ts` so the
- * llms.txt frontmatter `url` values can be validated against the real
- * router config. Regex instead of AST keeps the plugin dependency-free.
- * We only surface routes under `docs/` — privacy, terms, index, and the
- * 404 wildcard are never backed by content md.
+ * Every llms.txt frontmatter `url` must name a docs page the site actually
+ * routes. The page manifest is the route source, so the check reads it
+ * rather than the route config. Privacy, terms and home are never backed by
+ * an llms file, so only `docs/` pages count.
  */
-function loadAppRoutePaths(appPath: string): string[] {
-  if (!existsSync(appPath)) return [];
-  const src = readFileSync(appPath, 'utf8');
-  const paths: string[] = [];
-  // React Router framework `route('docs/foo', '...')` calls.
-  for (const m of src.matchAll(/route\(\s*['"]([^'"]+)['"]/g)) {
-    const p = m[1].trim();
-    if (p.startsWith('docs/')) paths.push(p);
-  }
-  return paths;
-}
-
-function crossCheckRoutePaths(
-  appPath: string,
-  entries: LlmsEntry[],
-  origin: string,
-): void {
-  const routePaths = loadAppRoutePaths(appPath);
-  if (routePaths.length === 0) return;
-  const routeUrls = new Set(routePaths.map((p) => `${origin}/${p}`));
+function crossCheckRoutePaths(entries: LlmsEntry[]): void {
+  const routeUrls = new Set(
+    kSitePages
+      .filter((page) => page.path.startsWith('docs/'))
+      .map((page) => `${kSiteOrigin}/${page.path}`),
+  );
 
   const missing: string[] = [];
   for (const entry of entries) {
@@ -182,36 +176,27 @@ function crossCheckRoutePaths(
   if (missing.length > 0) {
     throw new Error(
       [
-        '[llms-txt] content/frontmatter url has no matching route in app.tsx:',
+        '[llms-txt] content/frontmatter url has no matching page in src/content/manifest.ts:',
         ...missing,
-        '  → either fix the frontmatter `url` or add the route to app/app.tsx',
+        '  → either fix the frontmatter `url` or add the page to the manifest',
       ].join('\n'),
     );
   }
 }
 
-/**
- * Matches a translated mirror — `https://reelkit.dev/zh`, `…/uk` and
- * everything under them. Kept in step with `kLocales` in `src/i18n/locale.ts`;
- * this config runs before the app bundle exists, so it cannot import it.
- */
-const _kLocalisedPathPattern = /^https:\/\/reelkit\.dev\/(zh|uk)(\/|$)/;
-
-function crossCheckSitemap(sitemapPath: string, entries: LlmsEntry[]): void {
-  if (!existsSync(sitemapPath)) return;
-  const xml = readFileSync(sitemapPath, 'utf8');
-  const sitemapUrls = new Set<string>();
-  for (const m of xml.matchAll(/<loc>([^<]+)<\/loc>/g)) {
-    sitemapUrls.add(m[1].trim());
-  }
+function crossCheckSitemap(entries: LlmsEntry[]): void {
+  // The llms files are English-only by design, so a translated mirror has no
+  // counterpart to drift from.
+  const sitemapUrls = new Set(
+    sitemapEntries()
+      .filter((entry) => entry.locale === kDefaultLocale)
+      .map((entry) => entry.url),
+  );
   const llmsUrls = new Set(entries.map((e) => e.url));
 
   const missingInLlms: string[] = [];
   for (const url of sitemapUrls) {
-    if (url === 'https://reelkit.dev/') continue;
-    // The llms files are English-only by design, so a translated mirror has
-    // no counterpart to drift from.
-    if (_kLocalisedPathPattern.test(url)) continue;
+    if (url === `${kSiteOrigin}/`) continue;
     if (!llmsUrls.has(url)) missingInLlms.push(url);
   }
   const missingInSitemap: string[] = [];
@@ -298,16 +283,37 @@ function renderLlmsFullTxt(entries: LlmsEntry[]): string {
   return lines.join('\n');
 }
 
+/**
+ * Serves `sitemap.xml` in dev and emits it at build, rendered from the page
+ * manifest and the locale registry — there is no hand-kept copy under
+ * `public/`.
+ */
+function reelkitSitemapPlugin(): Plugin {
+  return {
+    name: 'reelkit-sitemap',
+    configureServer(server) {
+      server.middlewares.use('/sitemap.xml', (_req, res) => {
+        res.setHeader('content-type', 'application/xml; charset=utf-8');
+        res.end(renderSitemap());
+      });
+    },
+    generateBundle() {
+      this.emitFile({
+        type: 'asset',
+        fileName: 'sitemap.xml',
+        source: renderSitemap(),
+      });
+    },
+  };
+}
+
 function reelkitLlmsTxtPlugin(): Plugin {
   const contentDir = join(import.meta.dirname, 'src/content/llms');
-  const sitemapPath = join(import.meta.dirname, 'public/sitemap.xml');
-  const appPath = join(import.meta.dirname, 'src/routes.ts');
-  const _kOrigin = 'https://reelkit.dev';
 
   const compose = (): { index: string; full: string; count: number } => {
     const entries = loadLlmsEntries(contentDir);
-    crossCheckSitemap(sitemapPath, entries);
-    crossCheckRoutePaths(appPath, entries, _kOrigin);
+    crossCheckSitemap(entries);
+    crossCheckRoutePaths(entries);
     return {
       index: renderLlmsTxt(entries),
       full: renderLlmsFullTxt(entries),
@@ -393,8 +399,15 @@ export default defineConfig(() => ({
     port: 4200,
     host: 'localhost',
   },
+  resolve: {
+    alias: { [kMdxComponentsSpecifier]: kMdxComponentsPath },
+  },
   plugins: [
+    // Content files must be JavaScript before the router plugin reads their
+    // exports, so the MDX compiler goes first.
+    { enforce: 'pre', ...mdx(mdxOptions) },
     reelkitVersionsPlugin(),
+    reelkitSitemapPlugin(),
     reelkitLlmsTxtPlugin(),
     // The React Router plugin owns the app entry and the route module graph,
     // neither of which exists when Vitest imports a component directly — it

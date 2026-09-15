@@ -19,10 +19,10 @@ import {
   Link2,
 } from 'lucide-react';
 import { Heading } from '../../../components/ui/Heading';
-import { zhPageMeta } from '../../../i18n/pageMeta';
+import { localePageMeta } from '../../../i18n/pageMeta';
 
 export const meta = () =>
-  zhPageMeta({
+  localePageMeta('zh', {
     path: '/docs/reel-player',
     title: 'React Reel Player · ReelKit',
     description:

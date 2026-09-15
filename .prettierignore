@@ -12,3 +12,11 @@ apps/example-next/next-env.d.ts
 apps/*/public/js/p.js
 
 .nx/self-healing
+
+# Prettier only knows MDX version 1 and reflows markdown inside JSX blocks — a
+# list inside a <Callout> came back as one paragraph. Content files stay hand-formatted.
+apps/docs/src/content/**/*.mdx
+
+# Code samples shown on the docs pages, imported as text. Kept byte-for-byte as
+# authored so a sample reads the same as the page that used to inline it.
+apps/docs/src/content/snippets/

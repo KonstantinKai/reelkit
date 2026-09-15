@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import routes from './routes';
-import sitemapXml from '../public/sitemap.xml?raw';
 import { kDefaultLocale, kLocales, localePrefix } from './i18n/locale';
+import { sitemapEntries } from './content/sitePages';
 
 interface FlatRoute {
   path?: string;
@@ -16,7 +16,13 @@ function leaves(entries: FlatRoute[]): FlatRoute[] {
 }
 
 const all = leaves(routes as unknown as FlatRoute[]);
-const paths = all.map((entry) => entry.path ?? '');
+
+// A page mid-migration to a content file keeps its old module mounted at
+// `<path>-legacy` for a side-by-side check. Those twins go with the old
+// modules and are not part of the public route set.
+const paths = all
+  .map((entry) => entry.path ?? '')
+  .filter((path) => !path.endsWith('-legacy'));
 
 /** Prefixes without the leading slash — route paths carry none. */
 const translated = kLocales
@@ -59,37 +65,42 @@ describe('route tree', () => {
     },
   );
 
+  // Routes are generated from the page manifest, so their order follows it;
+  // the router ranks by specificity, and only the set of addresses matters.
   it('leaves the English paths untouched', () => {
-    expect(english).toEqual([
-      '',
-      'docs/getting-started',
-      'docs/installation',
-      'docs/ssr',
-      'docs/core/guide',
-      'docs/core/api',
-      'docs/react/guide',
-      'docs/react/api',
-      'docs/angular/guide',
-      'docs/angular/api',
-      'docs/reel-player',
-      'docs/lightbox',
-      'docs/angular-reel-player',
-      'docs/angular-lightbox',
-      'docs/stories-core',
-      'docs/stories-player',
-      'docs/angular-stories-player',
-      'docs/vue/guide',
-      'docs/vue/api',
-      'docs/vue-reel-player',
-      'docs/vue-lightbox',
-      'docs/vue-stories-player',
-      'docs/troubleshooting',
-      'docs/llms',
-      'docs/changelog',
-      'privacy',
-      'terms',
-      '*',
-    ]);
+    const sorted = (list: string[]) => [...list].sort();
+    expect(sorted(english)).toEqual(
+      sorted([
+        '',
+        'docs/getting-started',
+        'docs/installation',
+        'docs/ssr',
+        'docs/core/guide',
+        'docs/core/api',
+        'docs/react/guide',
+        'docs/react/api',
+        'docs/angular/guide',
+        'docs/angular/api',
+        'docs/reel-player',
+        'docs/lightbox',
+        'docs/angular-reel-player',
+        'docs/angular-lightbox',
+        'docs/stories-core',
+        'docs/stories-player',
+        'docs/angular-stories-player',
+        'docs/vue/guide',
+        'docs/vue/api',
+        'docs/vue-reel-player',
+        'docs/vue-lightbox',
+        'docs/vue-stories-player',
+        'docs/troubleshooting',
+        'docs/llms',
+        'docs/changelog',
+        'privacy',
+        'terms',
+        '*',
+      ]),
+    );
   });
 
   // A missing sitemap entry means the route is never prerendered, because
@@ -97,12 +108,7 @@ describe('route tree', () => {
   it.each(translated)(
     'lists a "$locale" sitemap entry wherever English has one',
     ({ prefix }) => {
-      const origin = 'https://reelkit.dev';
-      const listed = new Set(
-        [...sitemapXml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) =>
-          match[1].trim().slice(origin.length),
-        ),
-      );
+      const listed = new Set(sitemapEntries().map((entry) => entry.path));
       const sitemapPath = (path: string) =>
         path === '' ? '/' : `/${path}`.replace(/\/$/, '');
 

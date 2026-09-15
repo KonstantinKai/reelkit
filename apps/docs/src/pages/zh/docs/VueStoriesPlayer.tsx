@@ -1,9 +1,9 @@
 import { Callout } from '../../../components/ui/Callout';
 import { Clock } from 'lucide-react';
-import { zhPageMeta } from '../../../i18n/pageMeta';
+import { localePageMeta } from '../../../i18n/pageMeta';
 
 export const meta = () =>
-  zhPageMeta({
+  localePageMeta('zh', {
     path: '/docs/vue-stories-player',
     title: 'Vue Stories Player · ReelKit',
     description: 'Vue Stories 播放浮层：进度、手势与主题定制。',

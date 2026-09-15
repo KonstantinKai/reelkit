@@ -1,10 +1,10 @@
 import { Link } from 'react-router-dom';
 import { CodeBlock } from '../../../../components/ui/CodeBlock';
 import { Heading } from '../../../../components/ui/Heading';
-import { zhPageMeta } from '../../../../i18n/pageMeta';
+import { localePageMeta } from '../../../../i18n/pageMeta';
 
 export const meta = () =>
-  zhPageMeta({
+  localePageMeta('zh', {
     path: '/docs/react/api',
     title: 'React API 参考 · ReelKit',
     description:

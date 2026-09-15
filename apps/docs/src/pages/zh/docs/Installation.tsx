@@ -5,10 +5,10 @@ import { NextSteps } from '../../../components/NextSteps';
 import { type Framework } from '../../../data/frameworkSignal';
 import { FrameworkBlocks } from '../../../components/ui/FrameworkVariant';
 import { Heading } from '../../../components/ui/Heading';
-import { zhPageMeta } from '../../../i18n/pageMeta';
+import { localePageMeta } from '../../../i18n/pageMeta';
 
 export const meta = () =>
-  zhPageMeta({
+  localePageMeta('zh', {
     path: '/docs/installation',
     title: '安装 · ReelKit',
     description:

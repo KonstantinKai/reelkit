@@ -1,4 +1,9 @@
-import { localeUrl, type Locale } from './locale';
+import {
+  localeUrl,
+  readLocaleFromPath,
+  stripLocaleFromPath,
+  type Locale,
+} from './locale';
 
 interface LocalePageMetaOptions {
   /** Shared, unprefixed path of the page — `/docs/ssr`, not `/zh/docs/ssr`. */
@@ -51,12 +56,18 @@ export function localePageMeta(
   ];
 }
 
-/** Meta descriptors for a Chinese page. */
-export function zhPageMeta(options: LocalePageMetaOptions) {
-  return localePageMeta('zh', options);
-}
-
-/** Meta descriptors for a Ukrainian page. */
-export function ukPageMeta(options: LocalePageMetaOptions) {
-  return localePageMeta('uk', options);
+/**
+ * Meta descriptors for a content page, derived from its frontmatter. The
+ * locale and the shared path both come from the URL the router is
+ * rendering, so one content file serves its language without naming it.
+ */
+export function pageMeta(
+  frontmatter: { title: string; description: string },
+  { location }: { location: { pathname: string } },
+) {
+  return localePageMeta(readLocaleFromPath(location.pathname), {
+    path: stripLocaleFromPath(location.pathname),
+    title: `${frontmatter.title} · ReelKit`,
+    description: frontmatter.description,
+  });
 }

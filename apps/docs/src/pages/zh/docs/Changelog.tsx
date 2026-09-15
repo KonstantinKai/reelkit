@@ -1,7 +1,7 @@
-import { zhPageMeta } from '../../../i18n/pageMeta';
+import { localePageMeta } from '../../../i18n/pageMeta';
 
 export const meta = () =>
-  zhPageMeta({
+  localePageMeta('zh', {
     path: '/docs/changelog',
     title: '更新日志 · ReelKit',
     description: 'ReelKit 各个包的版本发布记录。正文由发布流程生成，保持英文。',

@@ -19,10 +19,10 @@ import {
   Code,
 } from 'lucide-react';
 import { Heading } from '../../../../components/ui/Heading';
-import { ukPageMeta } from '../../../../i18n/pageMeta';
+import { localePageMeta } from '../../../../i18n/pageMeta';
 
 export const meta = () =>
-  ukPageMeta({
+  localePageMeta('uk', {
     path: '/docs/react/guide',
     title: 'Посібник для React · ReelKit',
     description:

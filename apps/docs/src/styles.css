@@ -70,6 +70,95 @@
   .section-description {
     @apply text-lg text-slate-600 dark:text-slate-400 mb-8 max-w-2xl;
   }
+
+  /*
+   * Typography for docs pages authored as content files. The markup there
+   * carries no class names; the components map stamps a `docs-*` hook on
+   * every markdown-generated element and the rules below reach only those
+   * hooks. A shared component rendering the same tag inside the page — the
+   * anchor in a heading, the list in NextSteps, the code in a highlighted
+   * block — carries no hook and keeps its own look. JSX tables bypass the
+   * map, so their cells are the one place a tag name is styled, under
+   * `.docs-table`. The first paragraph is the lead under the title, then
+   * sections open with an h2 and inner steps with an h3.
+   */
+  .docs-mdx-content > .docs-p:first-child {
+    @apply text-xl mb-12;
+  }
+  .docs-p {
+    @apply text-slate-600 dark:text-slate-400 mb-4;
+  }
+  .docs-code {
+    @apply mb-4;
+  }
+  .docs-code + .docs-p {
+    @apply mt-6;
+  }
+  .docs-h2 {
+    @apply text-2xl font-bold mt-12 mb-4;
+  }
+  .docs-h3 {
+    @apply text-xl font-bold mt-8 mb-4;
+  }
+  .docs-link {
+    @apply text-primary-600 dark:text-primary-400 hover:underline;
+  }
+  .docs-list {
+    @apply list-disc list-inside space-y-1 mb-4 text-slate-600 dark:text-slate-400;
+  }
+  .docs-list-ordered {
+    @apply list-decimal;
+  }
+  .docs-inline-code {
+    @apply px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono;
+  }
+  .docs-table {
+    @apply w-full text-sm text-left border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden;
+  }
+  .docs-table thead {
+    @apply bg-slate-50 dark:bg-slate-800;
+  }
+  .docs-table th {
+    @apply px-4 py-3 font-semibold;
+  }
+  .docs-table tbody {
+    @apply divide-y divide-slate-200 dark:divide-slate-700;
+  }
+  .docs-table td {
+    @apply px-4 py-3 text-slate-600 dark:text-slate-400;
+  }
+  .docs-table td:first-child > .docs-inline-code {
+    @apply p-0 bg-transparent text-[var(--color-text)];
+  }
+  .docs-mdx-content [data-callout] {
+    @apply mb-4;
+  }
+  [data-callout] .docs-p,
+  [data-callout] .docs-list {
+    @apply text-inherit;
+  }
+  [data-callout] .docs-p:last-child,
+  [data-callout] .docs-list {
+    @apply mb-0;
+  }
+  [data-callout] .docs-list {
+    @apply mt-1;
+  }
+  [data-callout] .docs-inline-code {
+    @apply px-1 py-0.5 text-xs;
+  }
+  [data-callout='info'] .docs-inline-code {
+    @apply bg-blue-100 dark:bg-blue-900/30;
+  }
+  [data-callout='success'] .docs-inline-code {
+    @apply bg-green-100 dark:bg-green-900/30;
+  }
+  [data-callout='warning'] .docs-inline-code {
+    @apply bg-amber-100 dark:bg-amber-900/30;
+  }
+  [data-callout='error'] .docs-inline-code {
+    @apply bg-red-100 dark:bg-red-900/30;
+  }
 }
 
 @layer utilities {

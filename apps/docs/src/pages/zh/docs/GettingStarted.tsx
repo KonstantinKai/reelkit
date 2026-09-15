@@ -9,10 +9,10 @@ import {
 } from '../../../components/FrameworkSwitcher';
 import { Heading } from '../../../components/ui/Heading';
 import { FrameworkBlocks } from '../../../components/ui/FrameworkVariant';
-import { zhPageMeta } from '../../../i18n/pageMeta';
+import { localePageMeta } from '../../../i18n/pageMeta';
 
 export const meta = () =>
-  zhPageMeta({
+  localePageMeta('zh', {
     path: '/docs/getting-started',
     title: '快速开始 · ReelKit',
     description:

@@ -1,9 +1,9 @@
 import { CodeBlock } from '../../../../components/ui/CodeBlock';
 import { Heading } from '../../../../components/ui/Heading';
-import { zhPageMeta } from '../../../../i18n/pageMeta';
+import { localePageMeta } from '../../../../i18n/pageMeta';
 
 export const meta = () =>
-  zhPageMeta({
+  localePageMeta('zh', {
     path: '/docs/core/api',
     title: '核心 API 参考 · ReelKit',
     description:

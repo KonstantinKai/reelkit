@@ -16,10 +16,10 @@ import { CodeBlock } from '../../components/ui/CodeBlock';
 import { BasicSliderDemo } from '../../components/demos/BasicSliderDemo';
 import { AnimatedLogo } from '../../components/ui/AnimatedLogo';
 import { GitHubStarButton } from '../../components/ui/GitHubStarButton';
-import { ukPageMeta } from '../../i18n/pageMeta';
+import { localePageMeta } from '../../i18n/pageMeta';
 
 export const meta = () =>
-  ukPageMeta({
+  localePageMeta('uk', {
     path: '/',
     title: 'ReelKit — headless віртуалізований рушій слайдера для React',
     description:

@@ -3,10 +3,10 @@ import { Heading } from '../../../components/ui/Heading';
 import { CodeBlock } from '../../../components/ui/CodeBlock';
 import { Callout } from '../../../components/ui/Callout';
 import { FeatureCardGrid } from '../../../components/ui/FeatureCard';
-import { ukPageMeta } from '../../../i18n/pageMeta';
+import { localePageMeta } from '../../../i18n/pageMeta';
 
 export const meta = () =>
-  ukPageMeta({
+  localePageMeta('uk', {
     path: '/docs/llms',
     title: 'Інтеграція з AI / LLM · ReelKit',
     description:

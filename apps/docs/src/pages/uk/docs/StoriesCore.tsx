@@ -9,10 +9,10 @@ import {
   Cpu,
 } from 'lucide-react';
 import { Heading } from '../../../components/ui/Heading';
-import { ukPageMeta } from '../../../i18n/pageMeta';
+import { localePageMeta } from '../../../i18n/pageMeta';
 
 export const meta = () =>
-  ukPageMeta({
+  localePageMeta('uk', {
     path: '/docs/stories-core',
     title: 'Stories Core · ReelKit',
     description:

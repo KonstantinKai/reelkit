@@ -16,10 +16,10 @@ import { CodeBlock } from '../../components/ui/CodeBlock';
 import { BasicSliderDemo } from '../../components/demos/BasicSliderDemo';
 import { AnimatedLogo } from '../../components/ui/AnimatedLogo';
 import { GitHubStarButton } from '../../components/ui/GitHubStarButton';
-import { zhPageMeta } from '../../i18n/pageMeta';
+import { localePageMeta } from '../../i18n/pageMeta';
 
 export const meta = () =>
-  zhPageMeta({
+  localePageMeta('zh', {
     path: '/',
     title: 'ReelKit — 面向 React 的无头虚拟化滑动引擎',
     description:

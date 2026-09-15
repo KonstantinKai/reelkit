@@ -20,11 +20,11 @@ describe('vite ambient types', () => {
     ).not.toEqual([]);
   });
 
-  // Both features are load-bearing in the suite: the search index reads the
-  // sitemap with `?raw`, and the brand-icon guard globs the sources.
+  // Both features are load-bearing: content pages import their code samples
+  // with `?raw`, and the brand-icon guard globs the sources.
   it('resolves the bundler-only imports it declares', async () => {
     expect(Object.keys(declarations).length).toBeGreaterThan(0);
-    const sitemap = await import('../public/sitemap.xml?raw');
-    expect(sitemap.default).toContain('<urlset');
+    const sample = await import('./content/snippets/ssr/core-direct.ts?raw');
+    expect(sample.default).toContain('createSliderController');
   });
 });

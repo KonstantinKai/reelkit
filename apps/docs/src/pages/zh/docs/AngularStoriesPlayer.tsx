@@ -1,9 +1,9 @@
 import { Callout } from '../../../components/ui/Callout';
 import { Clock } from 'lucide-react';
-import { zhPageMeta } from '../../../i18n/pageMeta';
+import { localePageMeta } from '../../../i18n/pageMeta';
 
 export const meta = () =>
-  zhPageMeta({
+  localePageMeta('zh', {
     path: '/docs/angular-stories-player',
     title: 'Angular Stories Player · ReelKit',
     description: 'Angular Stories 播放浮层：进度、手势与主题定制。',

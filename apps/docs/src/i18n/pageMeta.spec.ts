@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { kLocales } from './locale';
-import { localePageMeta, ukPageMeta, zhPageMeta } from './pageMeta';
+import { localePageMeta, pageMeta } from './pageMeta';
 
 const options = {
   path: '/docs/ssr',
@@ -58,8 +58,19 @@ describe('page meta', () => {
     }
   });
 
-  it('gives the per-language helpers the same output as the general one', () => {
-    expect(zhPageMeta(options)).toEqual(localePageMeta('zh', options));
-    expect(ukPageMeta(options)).toEqual(localePageMeta('uk', options));
+  // A content file names no locale and no path; both come from the address
+  // the prerenderer hands the route, trailing slash included.
+  it('reads the locale and the page path from the rendered address', () => {
+    const frontmatter = { title: 'Заголовок', description: 'Опис' };
+    const meta = pageMeta(frontmatter, {
+      location: { pathname: '/uk/docs/ssr/' },
+    });
+    expect(meta).toEqual(
+      localePageMeta('uk', {
+        path: '/docs/ssr',
+        title: 'Заголовок · ReelKit',
+        description: 'Опис',
+      }),
+    );
   });
 });

@@ -17,6 +17,7 @@
     "noFallthroughCasesInSwitch": true
   },
   "include": ["src"],
+  "exclude": ["src/content/snippets"],
   "references": [
     {
       "path": "../../packages/reelkit-react-reel-player"

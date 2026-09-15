@@ -11,6 +11,12 @@ export default [
     ignores: ['.react-router/**', 'build/**'],
   },
   {
+    // Code samples shown on the docs pages. They reference types and
+    // helpers that exist only in the reader's project, so they are neither
+    // compiled nor linted — just imported as text.
+    ignores: ['src/content/snippets/**'],
+  },
+  {
     files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
     rules: {
       '@nx/workspace-constant-naming': 'off',
