@@ -1,0 +1,23 @@
+<rk-reel-player-overlay [isOpen]="isOpen" [content]="items" (closed)="isOpen = false">
+  <ng-template rkPlayerLoading let-index let-item="item">
+    <div style="
+      position: absolute; inset: 0; z-index: 10;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 14px;
+    ">
+      Loading slide {{ index + 1 }}...
+    </div>
+  </ng-template>
+
+  <ng-template rkPlayerError let-index let-item="item">
+    <div style="
+      position: absolute; inset: 0; z-index: 10;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 12px; color: rgba(255,255,255,0.5);
+    ">
+      <span style="font-size: 48px">!</span>
+      <span>Failed to load media</span>
+    </div>
+  </ng-template>
+</rk-reel-player-overlay>

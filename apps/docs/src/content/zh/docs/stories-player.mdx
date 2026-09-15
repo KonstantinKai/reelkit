@@ -1,0 +1,553 @@
+---
+title: Stories Player
+description: 全屏 Stories 播放浮层：StoriesApi、双击点赞、自定义 Story 类型、进度条与主题定制。
+---
+
+import { Zap, Play, Timer, Layout, Clock, Image, Layers, Heart, Monitor, Circle, Code, Settings, Link2, Eye } from 'lucide-react';
+import { StoriesPlayerDemo } from '../../../components/demos/StoriesPlayerDemo';
+import installation from '../../snippets/stories-player/installation.sh?raw';
+import installation2 from '../../snippets/stories-player/installation-2.ts?raw';
+import fullCode from '../../snippets/stories-player/full-code.tsx?raw';
+import fullCode2 from '../../snippets/stories-player/full-code-2.tsx?raw';
+import urlState from '../../snippets/stories-player/url-state.tsx?raw';
+import urlState2 from '../../snippets/stories-player/url-state-2.tsx?raw';
+import urlState3 from '../../snippets/stories-player/url-state-3.tsx?raw';
+import urlState4 from '../../snippets/stories-player/url-state-4.tsx?raw';
+import rememberingWhatWasSeen from '../../snippets/stories-player/remembering-what-was-seen.tsx?raw';
+import transitions from '../../snippets/stories-player/transitions.tsx?raw';
+import renderheader from '../../snippets/stories-player/renderheader.tsx?raw';
+import renderfooter from '../../snippets/stories-player/renderfooter.tsx?raw';
+import renderslide from '../../snippets/stories-player/renderslide.tsx?raw';
+import rendernavigation from '../../snippets/stories-player/rendernavigation.tsx?raw';
+import renderprogressbar from '../../snippets/stories-player/renderprogressbar.tsx?raw';
+import renderloading from '../../snippets/stories-player/renderloading.tsx?raw';
+import rendererror from '../../snippets/stories-player/rendererror.tsx?raw';
+import storiesapi from '../../snippets/stories-player/storiesapi.tsx?raw';
+import doubleTapLikes from '../../snippets/stories-player/double-tap-likes.tsx?raw';
+import customizingTheHeartAnimation from '../../snippets/stories-player/customizing-the-heart-animation.css?raw';
+import canvasprogressbar from '../../snippets/stories-player/canvasprogressbar.tsx?raw';
+import storyheader from '../../snippets/stories-player/storyheader.tsx?raw';
+import imagestoryslide from '../../snippets/stories-player/imagestoryslide.tsx?raw';
+import videostoryslide from '../../snippets/stories-player/videostoryslide.tsx?raw';
+import storiesring from '../../snippets/stories-player/storiesring.tsx?raw';
+import storiesringlist from '../../snippets/stories-player/storiesringlist.tsx?raw';
+import heartanimation from '../../snippets/stories-player/heartanimation.tsx?raw';
+import storyitem from '../../snippets/stories-player/storyitem.ts?raw';
+import authorinfo from '../../snippets/stories-player/authorinfo.ts?raw';
+import storiesgroupT from '../../snippets/stories-player/storiesgroup-t.ts?raw';
+import headerrenderpropsT from '../../snippets/stories-player/headerrenderprops-t.ts?raw';
+import footerrenderpropsT from '../../snippets/stories-player/footerrenderprops-t.ts?raw';
+import sliderenderpropsT from '../../snippets/stories-player/sliderenderprops-t.ts?raw';
+import navigationrenderprops from '../../snippets/stories-player/navigationrenderprops.ts?raw';
+import progressbarrenderpropsT from '../../snippets/stories-player/progressbarrenderprops-t.ts?raw';
+import loadingrenderpropsT from '../../snippets/stories-player/loadingrenderprops-t.ts?raw';
+import errorrenderpropsT from '../../snippets/stories-player/errorrenderprops-t.ts?raw';
+import storiesapi2 from '../../snippets/stories-player/storiesapi-2.ts?raw';
+import customStoryTypes from '../../snippets/stories-player/custom-story-types.tsx?raw';
+import theming from '../../snippets/stories-player/theming.css?raw';
+
+一个面向 React 的 Instagram 风格 Stories 播放浮层，基于 `@reelkit/react-stories-player`.
+
+<DemoLink href="https://react-demo.reelkit.dev/stories-player?utm_source=docs">查看在线演示 →</DemoLink>
+
+## 特性 [#features]
+
+<FeatureGrid items={[
+              {
+                icon: Zap,
+                label: '嵌套导航',
+                desc: '点击切换 story，滑动切换分组',
+              },
+              {
+                icon: Play,
+                label: '视频 story',
+                desc: '自动播放，带声音开关',
+              },
+              {
+                icon: Timer,
+                label: '自动播放',
+                desc: '每个 story 可配置计时',
+              },
+              {
+                icon: Layout,
+                label: '3D 过渡',
+                desc: '立方体、翻转、淡入、缩放、滑动',
+              },
+              {
+                icon: Clock,
+                label: '进度条',
+                desc: '基于 canvas 的分段进度',
+              },
+              {
+                icon: Image,
+                label: '图片与视频',
+                desc: '两种媒体类型都支持',
+              },
+              {
+                icon: Layers,
+                label: '虚拟化',
+                desc: 'DOM 里只有 3 张幻灯片',
+              },
+              {
+                icon: Heart,
+                label: '双击点赞',
+                desc: '双击时的爱心动画',
+              },
+              {
+                icon: Monitor,
+                label: '桌面端导航',
+                desc: '桌面端的箭头按钮',
+              },
+              {
+                icon: Circle,
+                label: 'story 圆环',
+                desc: 'Instagram 风格的头像圆环',
+              },
+              {
+                icon: Code,
+                label: '泛型类型',
+                desc: '用自定义数据扩展 StoryItem',
+              },
+              {
+                icon: Settings,
+                label: 'Render Props',
+                desc: '每个界面元素都可定制',
+              },
+              {
+                icon: Link2,
+                label: 'URL 状态',
+                desc: '可分享的 ?story=group.story 链接',
+              },
+              {
+                icon: Eye,
+                label: '已观看状态',
+                desc: '已看圆环与续播跨刷新保留',
+              },
+            ]} />
+
+## 安装 [#installation]
+
+<CodeBlock code={installation} language="bash" />
+
+别忘了引入样式：
+
+<CodeBlock code={installation2} language="typescript" />
+
+<Callout type="info" title="图标">
+  默认页眉使用 `lucide-react` 作为图标。如果你想换一套图标库，可以用 `renderHeader` 和 `renderNavigation` 提供自己的实现。
+</Callout>
+
+## 快速上手 [#quick-start]
+
+`StoriesOverlay` 组件渲染一个全屏 Stories Player。搭配 `StoriesRingList` 作为 Instagram 风格的入口。传入一组 `StoriesGroup` 对象，并用 `isOpen`.
+
+<CodeBlock code={fullCode} language="tsx" />
+
+## 在线演示 [#live-demo]
+
+<Sandbox
+  code={fullCode2}
+  title="StoriesPlayer.tsx"
+  height={200}
+  stackblitzDeps={['@reelkit/react-stories-player', '@reelkit/react']}
+>
+  <StoriesPlayerDemo />
+</Sandbox>
+
+<Caption>点圆环打开播放器。点左右两侧切换 story，滑动切换用户。</Caption>
+
+## URL 状态 [#url-state]
+
+<DemoLink href="https://react-demo.reelkit.dev/stories-player-url?utm_source=docs">查看在线演示 →</DemoLink>
+
+`StoriesUrlOverlay` 是一个独立组件，它的打开状态存放在地址栏里。两条轴共用一个参数 —— `?story=<group>.<story>` —— 于是正在播放的 story 就有了可分享、可收藏、能用返回键关闭的链接。用 `useOverlayUrlState` 和 `urlIndexTwoAxisKey`构建控制器，再作为 `controller`.
+
+<Callout type="info" title="内置的 key">
+  Stories 是双轴的，所以请把双轴 key 展开进控制器： `urlIndexTwoAxisKey` （分组和 story 都按位置）或 `urlStableIdTwoAxisKey` （分组按稳定的 `id`）—— 两者都从 `@reelkit/react`. See the [URL 状态指南](/docs/core/guide#url-state) 和 [核心 API](/docs/core/api#url-state).
+</Callout>
+
+<CodeBlock code={urlState} language="tsx" />
+
+- 打开时压入 **一条** 历史记录。滑动 story *和* 切换用户都是 **替换** 它，因此导航 N 次也不会多出记录，退一步永远就是关闭播放器。返回键关闭播放器，不会逐个后退 story。
+- **内层导航也会被记录。** story 索引不会被冻结在分组粒度上 —— 在某个用户的 story 之间前进时会更新 `?story=2.`*n* ，因此深链能精确落到那一个 story。
+- 只有在应用内部打开播放器时返回键才会关闭它 —— 因为那次链接压入了一条记录。在新标签页里直接打开的分享链接背后没有历史，浏览器返回会离开站点；这时用 ✕ 按钮或 Escape 就地移除参数并留在页面上。
+- 指向不存在的分组或 story 的参数 —— 过期的书签、手改的值、超出分组末尾的 story —— 会从 URL 中移除，而不是打开相邻的那个。
+
+**带路由的应用 —— 请传入适配器。** 绕过路由器直接写 `history.pushState` 会让它的 location 过期，下一次导航就会把参数丢掉：
+
+<CodeBlock code={urlState2} language="tsx" />
+
+**稳定的链接。** 分组默认是按位置的，所以收藏下来的 `?story=2.0` 在信息流重新排序后就会打开另一个用户。请改用稳定 id 来寻址分组 —— `outerCodec` 把 id 写进 URL， `outerLocator` 负责找到它在哪。story 那一半仍然是解析出的分组内的普通索引。
+
+<CodeBlock code={urlState3} language="tsx" />
+
+**无限信息流。** 翻页是 `outerLocator` 该管的事，与编解码器无关。 `locate` 是同步的，因此只能回答已经加载过的分组 —— 只加载了 20 个时，指向第 400 个分组的分享链接就查不到。 `locateAsync` 是兜底，只有在 `locate` 未命中时才调用；story 会以最终落到的那个分组重新校准上界。
+
+<Callout type="info" title="同一个 locateAsync，作用在外层轴">
+  这和单轴 key 接受的 `locateAsync` 翻页器是同一个 —— 在双轴 key 上它跟随你传入的 `outerLocator` ，因此分组这条轴负责翻页，而 story 仍是解析出的分组内的局部索引。
+</Callout>
+
+<CodeBlock code={urlState4} language="tsx" />
+
+- 在 `locateAsync` 未完成期间，播放器保持关闭，参数也不动，因此深链能熬过这次请求。返回 `null` 或请求被拒绝则会移除参数。
+- 如果结果在 URL 已经变化、播放器已关闭或组件已卸载之后才到达，就会被丢弃 —— 慢请求不能打开一个没人要的 story。
+- 完整的 `useOverlayUrlState` 选项见 [React API 参考](/docs/react/api#useoverlayurlstate)，完整讲解见 [React 指南](/docs/react/guide#url-state).
+
+## 记住已观看内容 [#remembering-what-was-seen]
+
+圆环在分组看完之前显示渐变，分组重新打开时停在观看者尚未看过的第一条 story。两者都来自一个 `ViewedStateController`，它用地址栏所用的同一个键构建——因此已存记录读起来与分享链接的参数完全一样，并且在键按 id 寻址时能经受信息流重排。
+
+<CodeBlock code={rememberingWhatWasSeen} language="tsx" />
+
+- **打开时的 story 也算。** 挂载时就把屏幕上的 story 报告为已看，所以打开只有一条 story 的分组再关闭，也会标记为已看。
+- **往后滑同样会续播。** `resumeStoryIndex` 对本次会话中第一次到达的每个分组生效，包括播放器打开时所在的那个，除非 `initialStoryIndex` 显式指定了 story；已经滑过的分组会在离开处重新打开。
+- **链接仍然优先。** 使用 `StoriesUrlOverlay` 时，由参数决定播放器在哪里打开，无论存了什么。其他情况下由续播回调决定。
+- **计数是位置，不是次数。** 记录记的是到达的最远一条 story，因此给已看完的分组新增一条会重新点亮圆环，从中间删掉一条则会让计数变短。与分享链接得到的自愈相同。
+- **存储可替换。** 传入 `createSessionStorageAdapter()` 在关闭标签页时遗忘，或使用自己的 `StorageAdapter`。两个打开的标签页通过浏览器的 storage 事件保持一致。
+
+## API 参考 [#api-reference]
+
+### StoriesOverlayProps [#storiesoverlayprops]
+
+<Signature>StoriesOverlayProps\<T></Signature>
+
+| 属性 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `isOpen` | `boolean` | 必填 | 控制浮层的显示。为 true 时会锁住 body 滚动。 |
+| `groups` | `StoriesGroup<T>[]` | 必填 | 要展示的 story 分组数组 |
+| `onClose` | `() => void` | 必填 | 关闭浮层的回调 |
+| `ariaLabel` | `string` | 'Stories player' | 对话框区域的无障碍标签；浮层打开时由屏幕阅读器播报 |
+| `initialGroupIndex` | `number` | 0 | 初始可见分组的索引（从 0 开始） |
+| `initialStoryIndex` | `number` | resumeStoryIndex(initialGroupIndex)，否则为 0 | 分组内初始可见 story 的索引（从 0 开始）。显式指定时优先于任何记忆；省略则初始分组像其他分组一样恢复。 |
+| `resumeStoryIndex` | `(groupIndex: number) => number` | — | 分组第一次被打开时所在的 story，让观看者从上次离开处继续。仅对本次打开中尚未访问的分组生效。 |
+| `groupTransition` | `TransitionTransformFn` | cubeTransition | 外层（分组）滑动器的过渡效果 |
+| `defaultImageDuration` | `number` | 5000 | 图片类 story 的默认自动播放时长（毫秒） |
+| `tapZoneSplit` | `number` | 0.3 | 点击区域的分割比例（0–1）。左侧触发上一个，右侧触发下一个。 |
+| `hideUIOnPause` | `boolean` | true | 长按暂停时是否隐藏 story 界面（页眉、页脚） |
+| `enableKeyboard` | `boolean` | true | 启用键盘导航（左右方向键、Escape） |
+| `innerTransitionDuration` | `number` | 200 | 内层（story）过渡动画的时长（毫秒） |
+| `minSegmentWidth` | `number` | 8 | 进度条分段的最小宽度（像素） |
+| `apiRef` | `MutableRefObject<StoriesApi \| null>` | - | 用于访问命令式 StoriesApi 的 ref |
+| `renderHeader` | `(props: HeaderRenderProps<T>) => ReactNode` | - | 自定义页眉渲染器。接收作者、story 以及暂停 / 静音状态。 |
+| `renderFooter` | `(props: FooterRenderProps<T>) => ReactNode` | - | 自定义页脚渲染器。接收作者和 story 信息。 |
+| `renderSlide` | `(props: SlideRenderProps<T>) => ReactNode` | - | 自定义幻灯片渲染器，替换默认的图片 / 视频幻灯片。 |
+| `renderNavigation` | `(props: NavigationRenderProps) => ReactNode` | - | 自定义桌面端导航。替换默认的上一张 / 下一张箭头按钮。 |
+| `renderProgressBar` | `(props: ProgressBarRenderProps<T>) => ReactNode` | - | 自定义进度条。替换默认的 canvas 进度条。 |
+| `renderLoading` | `(props: LoadingRenderProps<T>) => ReactNode` | - | 自定义加载界面渲染器。不提供时显示默认的页眉转圈动画。 |
+| `renderError` | `(props: ErrorRenderProps<T>) => ReactNode` | - | 自定义错误界面渲染器。不提供时显示默认的错误图标浮层。 |
+
+### StoriesUrlOverlayProps [#storiesurloverlayprops]
+
+<Signature>StoriesUrlOverlayProps\<T></Signature>
+
+接受 `StoriesOverlay` 的所有属性，除了打开状态那三个 —— `isOpen`, `initialGroupIndex`, `initialStoryIndex` —— 它们改由控制器提供。
+
+| 属性 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `controller` | `UrlStateController<TwoAxisPosition>` | 必填 | 来自 useOverlayUrlState 并展开了 urlIndexTwoAxisKey 的控制器。它的 position —— 一个 \{ outer, inner \} 对象 —— 决定播放器是否打开、打开到哪里；浮层会在每次导航和关闭时写回。 |
+
+### 回调 [#callbacks]
+
+| 属性 | 类型 | 说明 |
+| --- | --- | --- |
+| `onClose` | `() => void` | 播放器关闭时调用。在 StoriesOverlay 上是必填的（打开状态归你管，所以关闭也得你处理）；在 StoriesUrlOverlay 上是可选的，那里由 URL 驱动关闭 —— 只在你需要关闭后做点什么时才传。 |
+| `onStoryChange` | `(groupIndex: number, storyIndex: number) => void` | 当前 story 变化时触发 |
+| `onGroupChange` | `(groupIndex: number) => void` | 当前分组变化时触发 |
+| `onStoryViewed` | `(groupIndex: number, storyIndex: number) => void` | 某个 story 变为可见时触发 |
+| `onStoryComplete` | `(groupIndex: number, storyIndex: number) => void` | Fired when a story's timer completes |
+| `onDoubleTap` | `(groupIndex: number, storyIndex: number) => void` | 双击手势时触发 |
+| `onPause` | `() => void` | 播放器暂停时触发 |
+| `onResume` | `() => void` | 播放器恢复时触发 |
+
+## 过渡动画 [#transitions]
+
+`groupTransition` 属性控制在用户分组之间滑动时的 3D 过渡效果。过渡函数请从 `@reelkit/react`:
+
+<CodeBlock code={transitions} language="tsx" />
+
+## 内容加载生命周期 [#content-loading-lifecycle]
+
+每个 story 幻灯片都通过 `SlideRenderProps`:
+
+| 回调 | 何时 |
+| --- | --- |
+| `onReady` | 内容就绪（图片已加载、视频在播放）。进度计时开始。 |
+| `onWaiting` | 内容卡住（视频播放途中缓冲）。显示转圈动画并暂停计时。 |
+| `onError` | 内容加载失败。显示错误浮层。 |
+| `onDurationReady` | 上报媒体的真实时长（例如来自视频元数据），以便用正确的时长重启计时。 |
+| `onEnded` | 表示媒体已播完（例如视频结束）。会前进到下一个 story。 |
+
+<Callout type="info" title="预加载缓存">
+  内置的 `ImageStorySlide` 和 `VideoStorySlide` 组件会在后台预加载下一个 story。用户切到已预加载的 story 时，内容会立刻出现，不会有加载动画。
+</Callout>
+
+## Render Props [#render-props]
+
+每个界面元素都可以通过 render props 替换。每个都会收到带类型的属性，包含所需的全部状态和回调。
+
+### renderHeader [#renderheader]
+
+替换默认页眉（作者信息、暂停 / 静音按钮、关闭按钮）：
+
+<CodeBlock code={renderheader} language="tsx" />
+
+### renderFooter [#renderfooter]
+
+在 story 内容下方加一个页脚：
+
+<CodeBlock code={renderfooter} language="tsx" />
+
+### renderSlide [#renderslide]
+
+完全替换默认的图片 / 视频幻灯片。可以用 `ImageStorySlide` 和 `VideoStorySlide` 这些子组件来复用内置的媒体处理：
+
+<CodeBlock code={renderslide} language="tsx" />
+
+### renderNavigation [#rendernavigation]
+
+替换默认的桌面端箭头按钮：
+
+<CodeBlock code={rendernavigation} language="tsx" />
+
+### renderProgressBar [#renderprogressbar]
+
+用自定义实现替换默认的 canvas 进度条。 `progress` 信号发出 0 到 1 的值：
+
+<CodeBlock code={renderprogressbar} language="tsx" />
+
+### renderLoading [#renderloading]
+
+内容加载期间的自定义加载提示：
+
+<CodeBlock code={renderloading} language="tsx" />
+
+### renderError [#rendererror]
+
+内容加载失败时的自定义错误浮层：
+
+<CodeBlock code={rendererror} language="tsx" />
+
+## StoriesApi [#storiesapi]
+
+Use the `apiRef` 属性做命令式控制：
+
+<CodeBlock code={storiesapi} language="tsx" />
+
+### 方法 [#methods]
+
+| 方法 | 类型 | 说明 |
+| --- | --- | --- |
+| `nextStory()` | `() => void` | 在当前分组内前进到下一个 story |
+| `prevStory()` | `() => void` | 在当前分组内回到上一个 story |
+| `nextGroup()` | `() => void` | 切到下一个用户分组 |
+| `prevGroup()` | `() => void` | 切到上一个用户分组 |
+| `goToGroup(index)` | `(index: number) => void` | 按索引跳到指定分组 |
+| `pause()` | `() => void` | 暂停自动播放和进度计时 |
+| `resume()` | `() => void` | 恢复自动播放和进度计时 |
+
+## 双击与点赞 [#double-tap-likes]
+
+双击时会播放内置的爱心动画，给出即时的视觉反馈。 `onDoubleTap` 回调会带上分组和 story 索引，你可以据此把点赞存进自己的状态里（调接口、本地存储等等）。播放器内部并不管理点赞状态。
+
+<CodeBlock code={doubleTapLikes} language="tsx" />
+
+### 定制爱心动画 [#customizing-the-heart-animation]
+
+通过 `--rk-stories-heart-duration` 变量调整动画速度（见 [主题定制](#theming)）。要改颜色、尺寸或者干脆隐藏爱心，请直接针对 `.rk-stories-heart` 类。 `HeartAnimation` 组件也单独导出，可以独立使用。
+
+<CodeBlock code={customizingTheHeartAnimation} language="css" />
+
+<Callout type="info">
+  内置的爱心动画目前还不能通过 render prop 替换。你可以用 CSS 改样式，或者用 `display: none` 把它隐藏，然后在 `onDoubleTap` 回调里做自己的动画。如果你需要一个 `renderDoubleTap` render prop，欢迎通过 [GitHub Issues](https://github.com/KonstantinKai/reelkit/issues).
+</Callout>
+
+## 子组件 [#sub-components]
+
+对外导出的可复用积木，用于在自定义 render props 中组合：
+
+### CanvasProgressBar [#canvasprogressbar]
+
+基于 canvas 的高性能分段进度条。为每个 story 渲染一段，并用 `requestAnimationFrame`为当前段做填充动画。story 很多的分组会启用滑动窗口。
+
+<CodeBlock code={canvasprogressbar} language="tsx" />
+
+### StoryHeader [#storyheader]
+
+默认页眉，包含作者头像、名称、认证徽章、相对时间、暂停 / 播放开关、静音开关、加载动画和关闭按钮。未提供 `renderHeader` 时自动使用。
+
+<CodeBlock code={storyheader} language="tsx" />
+
+### ImageStorySlide [#imagestoryslide]
+
+铺满的图片幻灯片，使用 `object-fit: cover`。通过回调上报加载 / 错误状态以便跟踪生命周期。
+
+<CodeBlock code={imagestoryslide} language="tsx" />
+
+### VideoStorySlide [#videostoryslide]
+
+视频幻灯片，使用共享的 `<video>` 元素以保证 iOS 上声音连续。它负责自动播放、封面帧、声音同步，并上报时长和播放生命周期事件。
+
+<CodeBlock code={videostoryslide} language="tsx" />
+
+### StoriesRing [#storiesring]
+
+带 Instagram 风格渐变圆环的圆形头像。分段表示已读 / 未读 story —— 未读是渐变色，已读是灰色。
+
+<CodeBlock code={storiesring} language="tsx" />
+
+### StoriesRingList [#storiesringlist]
+
+可横向滚动的一排 `StoriesRing` 组件，带作者名称。每个分组一个圆环。
+
+<CodeBlock code={storiesringlist} language="tsx" />
+
+### HeartAnimation [#heartanimation]
+
+双击触发的爱心动画浮层。在 800 毫秒内放大并淡出。可通过 CSS 定制（见“双击与点赞”一节）。
+
+<CodeBlock code={heartanimation} language="tsx" />
+
+## 类型 [#types]
+
+### StoryItem [#storyitem]
+
+<CodeBlock code={storyitem} language="typescript" />
+
+### AuthorInfo [#authorinfo]
+
+<CodeBlock code={authorinfo} language="typescript" />
+
+### StoriesGroup\<T> [#storiesgroup-t]
+
+<CodeBlock code={storiesgroupT} language="typescript" />
+
+### HeaderRenderProps\<T> [#headerrenderprops-t]
+
+<CodeBlock code={headerrenderpropsT} language="typescript" />
+
+### FooterRenderProps\<T> [#footerrenderprops-t]
+
+<CodeBlock code={footerrenderpropsT} language="typescript" />
+
+### SlideRenderProps\<T> [#sliderenderprops-t]
+
+<CodeBlock code={sliderenderpropsT} language="typescript" />
+
+### NavigationRenderProps [#navigationrenderprops]
+
+<CodeBlock code={navigationrenderprops} language="typescript" />
+
+### ProgressBarRenderProps\<T> [#progressbarrenderprops-t]
+
+<CodeBlock code={progressbarrenderpropsT} language="typescript" />
+
+### LoadingRenderProps\<T> [#loadingrenderprops-t]
+
+<CodeBlock code={loadingrenderpropsT} language="typescript" />
+
+### ErrorRenderProps\<T> [#errorrenderprops-t]
+
+<CodeBlock code={errorrenderpropsT} language="typescript" />
+
+### StoriesApi [#storiesapi]
+
+<CodeBlock code={storiesapi2} language="typescript" />
+
+## 自定义 Story 类型 [#custom-story-types]
+
+扩展 `StoryItem` ，加上自定义字段，再把类型参数传给 `StoriesOverlay`。所有 render props 都会收到你扩展后的类型：
+
+<CodeBlock code={customStoryTypes} language="tsx" />
+
+## CSS 类名 [#css-classes]
+
+所有 CSS 类名都是普通类名（不是 CSS Modules），因此可以在 `@reelkit/react-stories-player/styles.css`之后加载的样式表里用更高优先级的选择器覆盖它们。若只是改颜色、尺寸和 z-index，请优先使用下面 [主题定制](#theming) 一节。
+
+| 类名 | 组件 | 说明 |
+| --- | --- | --- |
+| `.rk-stories-overlay` | Overlay | 固定的全屏背景层（背景、z-index） |
+| `.rk-stories-swipe-wrapper` | Overlay | 滑动关闭的包装层（容纳导航按钮 + canvas） |
+| `.rk-stories-container` | Overlay | 圆角的 story 画布（定位、溢出） |
+| `.rk-stories-ui-layer` | Overlay | 界面浮层容器（页眉、进度、导航） |
+| `.rk-stories-ui-layer--hidden` | Overlay | 界面隐藏状态（由 hideUIOnPause 切换） |
+| `.rk-stories-error` | Overlay | 错误状态（居中图标 + 文字） |
+| `.rk-stories-error-text` | Overlay | 错误信息文字 |
+| `.rk-stories-nav-btn` | 导航 | 桌面端上一张 / 下一张箭头 |
+| `.rk-stories-progress-bar` | ProgressBar | canvas 进度条的定位包装层 |
+| `.rk-stories-slide-wrapper` | Group | 一个 story 分组（外层幻灯片） |
+| `.rk-stories-story` | Story | 单个 story（内层幻灯片根节点） |
+| `.rk-stories-header` | StoryHeader | 页眉栏（头像、名称、操作） |
+| `.rk-stories-header--hidden` | StoryHeader | 页眉隐藏状态（visible=false） |
+| `.rk-stories-header-avatar` | StoryHeader | 作者头像图片 |
+| `.rk-stories-header-name` | StoryHeader | 作者名称文字 |
+| `.rk-stories-header-verified` | StoryHeader | 认证徽章容器 |
+| `.rk-stories-header-time` | StoryHeader | 相对时间文字 |
+| `.rk-stories-header-actions` | StoryHeader | 右侧操作（关闭、静音、暂停） |
+| `.rk-stories-header-btn` | StoryHeader | 页眉操作按钮 |
+| `.rk-stories-header-spinner` | StoryHeader | 视频缓冲转圈动画 |
+| `.rk-stories-image` | ImageStorySlide | 图片 story 元素 |
+| `.rk-stories-video` | VideoStorySlide | 视频 story 容器 |
+| `.rk-stories-video-element` | VideoStorySlide | 共享的 \<video> 元素 |
+| `.rk-stories-video-poster` | VideoStorySlide | 视频封面图（播放时淡出） |
+| `.rk-stories-video-poster--visible` | VideoStorySlide | 封面图可见状态（播放前） |
+| `.rk-stories-heart` | HeartAnimation | 双击时的爱心弹出动画 |
+| `.rk-stories-ring` | StoriesRing | story 圆环（带动画渐变边框的头像） |
+| `.rk-stories-ring--active` | StoriesRing | 含未读 story 的圆环（会动） |
+| `.rk-stories-ring-avatar` | StoriesRing | 圆环内部的头像图片 |
+| `.rk-stories-ring-list` | StoriesRingList | 横向圆环列表容器 |
+| `.rk-stories-ring-list-item` | StoriesRingList | 圆环 + 名称的一列 |
+| `.rk-stories-ring-list-name` | StoriesRingList | 每个圆环下方的作者名称 |
+
+## 主题定制 [#theming]
+
+每一个颜色、尺寸、z-index 和过渡都放在 CSS 自定义属性里。在 `:root` （或浮层的任意祖先元素）上覆盖其中一个或多个，即可在不改组件源码的情况下换主题。
+
+| 变量 | 默认值 | 控制内容 |
+| --- | --- | --- |
+| `--rk-stories-overlay-bg` | `#000` | Full-screen backdrop color |
+| `--rk-stories-overlay-z` | `9999` | Overlay z-index |
+| `--rk-stories-container-radius` | `12px` | Rounded corners on the story canvas (desktop) |
+| `--rk-stories-swipe-gap` | `16px` | Gap between nav buttons and the story canvas |
+| `--rk-stories-top-shade-height` | `120px` | Top gradient scrim height behind the header |
+| `--rk-stories-top-shade-bg` | `linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%)` | Top gradient scrim color |
+| `--rk-stories-ui-transition` | `200ms` | Fade duration when hideUIOnPause toggles |
+| `--rk-stories-nav-size` | `44px` | Desktop prev/next button size |
+| `--rk-stories-nav-bg` | `rgba(255, 255, 255, 0.1)` | Desktop nav button background |
+| `--rk-stories-nav-bg-hover` | `rgba(255, 255, 255, 0.2)` | Desktop nav button hover background |
+| `--rk-stories-nav-fg` | `rgba(255, 255, 255, 0.7)` | Desktop nav button icon color |
+| `--rk-stories-nav-fg-hover` | `#fff` | Desktop nav button hover icon color |
+| `--rk-stories-error-bg` | `linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)` | Error state background gradient |
+| `--rk-stories-error-fg` | `rgba(255, 255, 255, 0.5)` | Error icon and text color |
+| `--rk-stories-error-text-size` | `13px` | Error message font size |
+| `--rk-stories-video-bg` | `#000` | Letterbox background behind \<video> |
+| `--rk-stories-video-poster-transition` | `200ms` | Poster fade duration when the video starts playing |
+| `--rk-stories-header-top` | `18px` | Vertical offset of the header from the top of the story |
+| `--rk-stories-header-padding` | `12px 16px` | Inner padding of the header row |
+| `--rk-stories-header-avatar-size` | `32px` | Avatar width/height |
+| `--rk-stories-header-name-fg` | `#fff` | Author name color |
+| `--rk-stories-header-name-size` | `14px` | Author name font size |
+| `--rk-stories-header-time-fg` | `rgba(255, 255, 255, 0.6)` | Time-ago text color |
+| `--rk-stories-header-btn-fg` | `#fff` | Header action icon color (close, mute, pause) |
+| `--rk-stories-heart-duration` | `800ms` | Pop-in/fade-out animation duration |
+| `--rk-stories-ring-spin-duration` | `4s` | Active ring gradient rotation duration |
+| `--rk-stories-ring-list-gap` | `12px` | Spacing between rings in the list |
+| `--rk-stories-ring-list-padding` | `12px` | Inner padding around the ring list |
+| `--rk-stories-ring-list-name-size` | `12px` | Author name font size below each ring |
+
+把下面这段放进在 `@reelkit/react-stories-player/styles.css`.
+
+<CodeBlock code={theming} language="css" />
+
+## 无障碍 [#accessibility]
+
+浮层根节点是一个模态对话框（`role="dialog"`, `aria-modal="true"`）。设置 `ariaLabel` 可以改变屏幕阅读器的播报内容，默认是 “Stories player”。
+
+浮层打开时捕获焦点，关闭时把焦点还给触发元素。Tab 和 Shift+Tab 在内部的可聚焦元素之间循环；跑出去的焦点（点击外部、程序化聚焦）会被拉回来。实现基于 `captureFocusForReturn` 和 `createFocusTrap` from `@reelkit/core`.
+
+## 键盘快捷键 [#keyboard-shortcuts]
+
+| Key | 作用 |
+| --- | --- |
+| `ArrowLeft` | Previous story |
+| `ArrowRight` | Next story |
+| `Escape` | Close player |

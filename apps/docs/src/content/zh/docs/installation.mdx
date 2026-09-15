@@ -1,0 +1,301 @@
+---
+title: 安装
+description: 用 npm、yarn 或 pnpm 安装 ReelKit。包的选择、打包体积、同级依赖与 TypeScript 支持。
+---
+
+import npmReact from '../../snippets/installation/npm-react.sh?raw';
+import yarnReact from '../../snippets/installation/yarn-react.sh?raw';
+import pnpmReact from '../../snippets/installation/pnpm-react.sh?raw';
+import npmAngular from '../../snippets/installation/npm-angular.sh?raw';
+import yarnAngular from '../../snippets/installation/yarn-angular.sh?raw';
+import pnpmAngular from '../../snippets/installation/pnpm-angular.sh?raw';
+import npmVue from '../../snippets/installation/npm-vue.sh?raw';
+import yarnVue from '../../snippets/installation/yarn-vue.sh?raw';
+import pnpmVue from '../../snippets/installation/pnpm-vue.sh?raw';
+
+安装 reelkit 的各个包，并完成项目配置。
+
+## 包的选择 [#package-options]
+
+用到哪个装哪个：
+
+<Table>
+  <thead>
+    <tr>
+      <th>包名</th>
+      <th>说明</th>
+      <th>适用场景</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>`@reelkit/core`</td>
+      <td>与框架无关的核心</td>
+      <td>自定义集成</td>
+    </tr>
+    <tr data-rk-fw="react">
+      <td>`@reelkit/react`</td>
+      <td>React 组件</td>
+      <td>React 18+ 应用</td>
+    </tr>
+    <tr data-rk-fw="react">
+      <td>`@reelkit/react-reel-player`</td>
+      <td>全屏竖向 Reel Player</td>
+      <td>Instagram / TikTok 风格播放器</td>
+    </tr>
+    <tr data-rk-fw="react">
+      <td>`@reelkit/react-lightbox`</td>
+      <td>图片画廊Lightbox</td>
+      <td>全屏图片预览</td>
+    </tr>
+    <tr data-rk-fw="react">
+      <td>`@reelkit/react-stories-player`</td>
+      <td>Instagram 风格 Stories Player</td>
+      <td>带自动播放与手势的 Stories</td>
+    </tr>
+    <tr data-rk-fw="angular">
+      <td>`@reelkit/angular`</td>
+      <td>Angular 独立组件</td>
+      <td>Angular 17+ 应用</td>
+    </tr>
+    <tr data-rk-fw="angular">
+      <td>`@reelkit/angular-reel-player`</td>
+      <td>全屏竖向 Reel Player</td>
+      <td>Instagram / TikTok 风格播放器</td>
+    </tr>
+    <tr data-rk-fw="angular">
+      <td>`@reelkit/angular-lightbox`</td>
+      <td>图片画廊Lightbox</td>
+      <td>全屏图片预览</td>
+    </tr>
+    <tr data-rk-fw="vue">
+      <td>`@reelkit/vue`</td>
+      <td>Vue 3 组件与组合式函数</td>
+      <td>Vue 3 应用</td>
+    </tr>
+    <tr data-rk-fw="vue">
+      <td>`@reelkit/vue-reel-player`</td>
+      <td>全屏竖向 Reel Player</td>
+      <td>Instagram / TikTok 风格播放器</td>
+    </tr>
+    <tr data-rk-fw="vue">
+      <td>`@reelkit/vue-lightbox`</td>
+      <td>图片画廊Lightbox</td>
+      <td>全屏图片预览</td>
+    </tr>
+  </tbody>
+</Table>
+
+## 打包体积 [#bundle-sizes]
+
+所有包都针对最小的体积影响做过优化：
+
+<BundleSizeTable headers={['包名', 'JS', 'JS (gzip)', 'CSS', 'CSS (gzip)']} />
+
+### 与其他库的对比 [#comparison-with-other-libraries]
+
+ReelKit 任何时候只往 DOM 里渲染 **3 张幻灯片**，可以扛住 10,000+ 条目。其他轮播库会渲染全部幻灯片，列表一大就卡。
+
+<LibraryComparison
+  headers={['库', 'JS (gzip)', '虚拟化', '备注']}
+  plugin="插件"
+  notes={[
+    '零依赖',
+    '零依赖',
+    '零依赖',
+    '完整包体；支持 tree-shaking',
+    '轻量，基于插件',
+    '零依赖',
+  ]}
+/>
+
+<FrameworkVariant for="react">
+
+## npm [#npm]
+
+<CodeBlock code={npmReact} language="bash" />
+
+## yarn [#yarn]
+
+<CodeBlock code={yarnReact} language="bash" />
+
+## pnpm [#pnpm]
+
+<CodeBlock code={pnpmReact} language="bash" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+## npm [#npm]
+
+<CodeBlock code={npmAngular} language="bash" />
+
+## yarn [#yarn]
+
+<CodeBlock code={yarnAngular} language="bash" />
+
+## pnpm [#pnpm]
+
+<CodeBlock code={pnpmAngular} language="bash" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+## npm [#npm]
+
+<CodeBlock code={npmVue} language="bash" />
+
+## yarn [#yarn]
+
+<CodeBlock code={yarnVue} language="bash" />
+
+## pnpm [#pnpm]
+
+<CodeBlock code={pnpmVue} language="bash" />
+
+</FrameworkVariant>
+
+## 同级依赖 [#peer-dependencies]
+
+框架相关的包都有同级依赖，通常你的项目里已经装好了：
+
+<FrameworkVariant for="react">
+
+### @reelkit/react [#reelkit-react]
+
+- `react` >= 18.0.0
+- `react-dom` >= 18.0.0
+
+### @reelkit/react-reel-player [#reelkit-react-reel-player]
+
+- `@reelkit/react`
+- `react` >= 18.0.0
+- `react-dom` >= 18.0.0
+- `lucide-react` >= 0.400.0
+
+### @reelkit/react-lightbox [#reelkit-react-lightbox]
+
+- `@reelkit/react`
+- `react` >= 18.0.0
+- `react-dom` >= 18.0.0
+- `lucide-react` >= 0.400.0
+
+### @reelkit/react-stories-player [#reelkit-react-stories-player]
+
+- `@reelkit/react`
+- `react` >= 18.0.0
+- `react-dom` >= 18.0.0
+- `lucide-react` >= 0.400.0
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+### @reelkit/angular [#reelkit-angular]
+
+- `@angular/core` >= 17.0.0
+- `@angular/common` >= 17.0.0
+
+### @reelkit/angular-reel-player [#reelkit-angular-reel-player]
+
+- `@reelkit/angular`
+- `@angular/core` >= 19.0.0
+- `lucide-angular` >= 0.460.0
+
+### @reelkit/angular-lightbox [#reelkit-angular-lightbox]
+
+- `@reelkit/angular`
+- `@angular/core` >= 17.0.0
+- `lucide-angular` >= 0.400.0
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+### @reelkit/vue [#reelkit-vue]
+
+- `vue` >= 3.0.0
+
+</FrameworkVariant>
+
+<FrameworkVariant for="react">
+
+<Callout type="info">
+  `lucide-react` 只用于默认的控制图标。如果你通过 `renderControls` 提供自己的控件，就可以不装它。
+</Callout>
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+<Callout type="info">
+  `lucide-angular` 只用于默认的控制图标。如果你通过 `rkPlayerControls` 提供自己的控件，就可以不装它。
+</Callout>
+
+</FrameworkVariant>
+
+## TypeScript [#typescript]
+
+所有包都自带 TypeScript 类型定义，不需要额外安装 @types 包。
+
+## 浏览器支持 [#browser-support]
+
+reelkit 支持所有现代浏览器：
+
+<Bullets marker="check">
+
+- Chrome/Edge 88+
+- Firefox 78+
+- Safari 14+
+- iOS Safari 14+
+- Android Chrome 88+
+
+</Bullets>
+
+<NextSteps
+        items={[
+          {
+            label: '核心指南',
+            path: '/docs/core/guide',
+            description: '与框架无关的引擎',
+          },
+          {
+            label: '框架指南',
+            path: {
+              react: '/docs/react/guide',
+              angular: '/docs/angular/guide',
+              vue: '/docs/vue/guide',
+            },
+            description: '组件、演示与集成方式',
+          },
+          {
+            label: 'Reel Player',
+            path: {
+              react: '/docs/reel-player',
+              angular: '/docs/angular-reel-player',
+              vue: '/docs/vue-reel-player',
+            },
+            description: 'TikTok / Reels 风格的视频播放器',
+          },
+          {
+            label: 'Lightbox',
+            path: {
+              react: '/docs/lightbox',
+              angular: '/docs/angular-lightbox',
+              vue: '/docs/vue-lightbox',
+            },
+            description: '图片与视频画廊',
+          },
+          {
+            label: 'Stories Player',
+            path: {
+              react: '/docs/stories-player',
+              angular: '/docs/angular-stories-player',
+              vue: '/docs/vue-stories-player',
+            },
+            description: 'Instagram 风格的 Stories 浏览器',
+          },
+        ]}
+      />

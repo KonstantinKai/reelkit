@@ -1,0 +1,177 @@
+---
+title: Angular API 参考
+description: '@reelkit/angular 完整 API：ReelComponent、ReelApi 接口、指令、服务与信号桥接工具。'
+---
+
+import reelapiInterface from '../../../snippets/angular-api/reelapi-interface.ts?raw';
+import templateContext from '../../../snippets/angular-api/template-context.html?raw';
+import rkReelContext from '../../../snippets/angular-api/rk-reel-context.ts?raw';
+import bodylockservice from '../../../snippets/angular-api/bodylockservice.ts?raw';
+import signalBridgeUtilities from '../../../snippets/angular-api/signal-bridge-utilities.ts?raw';
+import createrouterurladapter from '../../../snippets/angular-api/createrouterurladapter.ts?raw';
+import packageExports from '../../../snippets/angular-api/package-exports.ts?raw';
+
+完整参考： `@reelkit/angular` 的组件、指令、服务与工具。
+
+## ReelComponent [#reelcomponent]
+
+选择器： `rk-reel`
+
+### 输入 [#inputs]
+
+| 输入 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `count` | `number` | 必填 | 幻灯片总数 |
+| `direction` | `'vertical' \| 'horizontal'` | 'vertical' | 滚动方向 |
+| `size` | `[number, number] \| undefined` | undefined | 以 \[宽, 高\] 表示的尺寸。省略时通过 ResizeObserver 自动测量 |
+| `initialIndex` | `number` | 0 | 起始幻灯片索引 |
+| `loop` | `boolean` | false | 启用无限循环 |
+| `transition` | `TransitionTransformFn` | slideTransition | 过渡效果函数。内置有 slideTransition、fadeTransition、flipTransition、cubeTransition、zoomTransition |
+| `transitionDuration` | `number` | 300 | 动画时长（毫秒） |
+| `swipeDistanceFactor` | `number` | 0.12 | 滑动阈值（0-1） |
+| `enableGestures` | `boolean` | true | 启用触摸 / 鼠标拖拽导航 |
+| `enableNavKeys` | `boolean` | true | 启用键盘方向键导航 |
+| `enableWheel` | `boolean` | false | 启用鼠标滚轮导航 |
+| `wheelDebounceMs` | `number` | 200 | 滚轮事件防抖时长（毫秒） |
+| `rangeExtractor` | `(index: number, count: number) => number[]` | defaultRangeExtractor | 自定义函数，决定渲染哪些索引 |
+| `keyExtractor` | `(index: number, indexInRange: number) => string \| number` | index => index | @for track 表达式的自定义 key 函数（配合 loop 时很有用） |
+| `className` | `string` | '' | 施加在根容器元素上的 CSS 类名 |
+| `ariaLabel` | `string` | 'Carousel' | 轮播区域的无障碍标签 |
+
+### 输出 [#outputs]
+
+| 输出 | 类型 | 说明 |
+| --- | --- | --- |
+| `afterChange` | `EventEmitter<{ index: number; indexInRange: number }>` | 幻灯片过渡完成后发出 |
+| `beforeChange` | `EventEmitter<{ index: number; nextIndex: number; indexInRange: number }>` | 幻灯片过渡开始前发出 |
+| `slideDragStart` | `EventEmitter<number>` | 拖拽手势开始时发出 |
+| `slideDragEnd` | `EventEmitter<number>` | 拖拽手势结束（松手）时发出 |
+| `slideDragCanceled` | `EventEmitter<number>` | 拖拽手势被取消（回弹）时发出 |
+| `apiReady` | `EventEmitter<ReelApi>` | 视图初始化后发出一次，暴露命令式 API |
+
+## ReelApi 接口 [#reelapi-interface]
+
+通过 `(apiReady)` 输出获取：
+
+<CodeBlock code={reelapiInterface} language="typescript" />
+
+| 方法 | 类型 | 说明 |
+| --- | --- | --- |
+| `next()` | `() => void` | 切到下一张幻灯片 |
+| `prev()` | `() => void` | 切到上一张幻灯片 |
+| `goTo(index, animate?)` | `(number, boolean?) => Promise<void>` | 跳到指定的幻灯片索引 |
+| `adjust()` | `() => void` | 重新计算幻灯片位置（布局变化后很有用） |
+| `observe()` | `() => void` | 开始监听键盘事件 |
+| `unobserve()` | `() => void` | 停止监听键盘事件 |
+
+## RkReelItemDirective [#rkreelitemdirective]
+
+选择器： `[rkReelItem]` —— 用在 `ng-template` 内部的 `rk-reel`.
+
+### 模板上下文 [#template-context]
+
+<CodeBlock code={templateContext} language="html" />
+
+| 变量 | 类型 | 说明 |
+| --- | --- | --- |
+| `$implicit (let-i)` | `number` | 绝对幻灯片索引（0 到 count-1） |
+| `indexInRange` | `number` | 在可见窗口中的位置（0、1 或 2） |
+| `size` | `[number, number]` | 滑动器当前尺寸，形如 \[宽, 高\]（像素） |
+
+## ReelIndicatorComponent [#reelindicatorcomponent]
+
+选择器： `rk-reel-indicator`
+
+### 输入 [#inputs]
+
+| 输入 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `count` | `number \| undefined` | auto | 条目总数。嵌套在 rk-reel 内部时会自动从父级上下文连接；单独使用时请显式传入 |
+| `active` | `number \| undefined` | auto | 当前活动索引。嵌套在 rk-reel 内部时会自动从父级上下文连接；单独使用时请显式传入 |
+| `direction` | `'vertical' \| 'horizontal'` | 'vertical' | 指示器方向 |
+| `radius` | `number` | 3 | 圆点半径（像素） |
+| `visible` | `number` | 5 | 同时可见的正常尺寸圆点上限 |
+| `gap` | `number` | 4 | 圆点之间的间距（像素） |
+| `activeColor` | `string` | '#fff' | 活动圆点颜色 |
+| `inactiveColor` | `string` | 'rgba(255,255,255,0.5)' | 非活动圆点颜色 |
+| `edgeScale` | `number` | 0.5 | 边缘溢出圆点的缩放系数 |
+| `className` | `string` | '' | 施加在指示器容器上的自定义 CSS 类名 |
+| `tablistLabel` | `string` | 'Slide navigation' | tablist 地标的无障碍标签 |
+
+### 输出 [#outputs]
+
+| 输出 | 类型 | 说明 |
+| --- | --- | --- |
+| `dotClick` | `EventEmitter<number>` | 点击圆点时发出，带上圆点索引 |
+
+## RK_REEL_CONTEXT [#rk-reel-context]
+
+An `InjectionToken<ReelContextValue>` 由 `rk-reel` 提供给后代组件。内部被 `rk-reel-indicator` 用于自动连接。在需要滑动器上下文的自定义组件里注入它。
+
+<CodeBlock code={rkReelContext} language="typescript" />
+
+| 属性 | 类型 | 说明 |
+| --- | --- | --- |
+| `index` | `Signal<number>` | 响应式的当前幻灯片索引 |
+| `count` | `Signal<number>` | 响应式的条目总数 |
+| `goTo` | `(index: number, animate?: boolean) => Promise<void>` | 以编程方式跳到某张幻灯片 |
+
+## BodyLockService [#bodylockservice]
+
+带引用计数的 body 滚动锁。多个并发调用方（例如Lightbox和弹窗同时打开）可以各自独立调用 lock/unlock —— 只有最后一个调用方释放后 body 才恢复。在 root 级提供 —— 任意位置都能注入。
+
+<CodeBlock code={bodylockservice} language="typescript" />
+
+| 成员 | 类型 | 说明 |
+| --- | --- | --- |
+| `locked` | `boolean（getter）` | body 当前是否被锁住 |
+| `lock()` | `() => void` | 锁住 body 滚动并补偿滚动条宽度 |
+| `unlock()` | `() => void` | 恢复 body 原本的滚动样式 |
+
+## Signal 桥接工具 [#signal-bridge-utilities]
+
+把核心信号系统（`@reelkit/core`）桥接到 Angular 原生信号 API 的工具函数。内部被 `ReelComponent`使用，也可用于自定义框架集成。
+
+| 函数 | 签名 | 说明 |
+| --- | --- | --- |
+| `toAngularSignal` | `(source: Subscribable<T>, destroyRef: DestroyRef) => Signal<T>` | 把核心的 Subscribable 桥接成只读的 Angular Signal |
+| `animatedSignalBridge` | `(source: AnimatedValue, zone: NgZone, cdRef: ChangeDetectorRef, destroyRef: DestroyRef) => Signal<number>` | 把核心的动画值桥接成 Angular Signal，在 zone 之外通过 requestAnimationFrame 更新 |
+
+<CodeBlock code={signalBridgeUtilities} language="typescript" />
+
+## createOverlayUrlState [#createoverlayurlstate]
+
+<Signature>OverlayUrlStateOptions</Signature>
+
+为浮层构建一个 URL 状态控制器，你再把它交给 `<rk-lightbox-url-overlay>` 的 `[controller]` 输入。请在注入上下文中调用它 —— 字段初始化器或构造函数；它会立即挂载，并通过 `DestroyRef`释放。完整讲解： [Angular Lightbox页面的 URL 状态](/docs/angular-lightbox#url-state).
+
+| 选项 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `param` | `string` | `必填` | 承载当前幻灯片的查询参数，例如 photo。 |
+| `adapter` | `UrlAdapter` | `History API` | 读写导航状态所走的系统。带路由的应用请传入基于 Router 的适配器，避免 Router 的 location 过期。 |
+| `codec` | `UrlCodec<Id>` | `必填` | 传输格式：参数文本 ↔ 稳定身份。它与 locator 成对出现 —— 默认的 ?photo=3 画廊展开 ...urlIndexKey(() => images().length) 即可；也可以提供你自己的实现，让重新排序后书签依然有效。 |
+| `locator` | `UrlLocator<Id>` | `必填` | 把身份映射成位置，并自己判断有效性：locate（同步）、locateAsync（分页画廊的异步兜底）、identify（写回）。 |
+
+## createRouterUrlAdapter [#createrouterurladapter]
+
+<Signature>@reelkit/angular/ng-router-url-adapter</Signature>
+
+A `UrlAdapter` ，底层用 Angular Router。在带路由的应用里把它作为 `adapter` 的 `createOverlayUrlState` 选项传入，让 Router 始终是导航的唯一真相来源 —— 绕过 Router 直接写 `history.pushState` 会让它的 location 过期，下一次导航就会把参数丢掉。写入只触及查询部分，路径、fragment 以及 `?tag=a&tag=b` 这样的重复键都原样保留。每次变化都会报告 Router 是在同一页面内压栈、替换，还是在历史中前进后退，因此从 `routerLink` 打开的画廊按一次返回就能关闭。请在注入上下文中调用它；路由订阅会通过 `DestroyRef` 释放。
+
+它从独立的子路径导出，因此没有路由的应用永远不会把 `@angular/router` 打进产物。 `@angular/router` 是可选的同级依赖。
+
+<CodeBlock code={createrouterurladapter} language="typescript" />
+
+## 无障碍 [#accessibility]
+
+`<rk-reel>` 渲染为 `role="region"` ，并带 `aria-roledescription="carousel"`。把 `ariaLabel` 输入即可给这个区域一个屏幕阅读器能读的名字。一个 polite 的实时区域会在每次切换时播报“第 N 张，共 M 张”。非活动幻灯片会带上 `inert` 属性，于是焦点和辅助技术导航会跳过它们。
+
+`<rk-reel-indicator>` 渲染为 `role="tablist"` ，圆点上使用漫游 tabindex；方向键移动焦点，Enter 或空格激活对应幻灯片。
+
+如果你要围绕 `<rk-reel>`? `captureFocusForReturn`, `createFocusTrap`、 `getFocusableElements` 都从 `@reelkit/angular` 重新导出，用于焦点归还和焦点陷阱。
+
+## 包导出 [#package-exports]
+
+全部公开导出自 `@reelkit/angular`:
+
+<CodeBlock code={packageExports} language="typescript" />

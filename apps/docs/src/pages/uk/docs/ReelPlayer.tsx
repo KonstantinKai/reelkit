@@ -2167,7 +2167,7 @@ const reel = useOverlayUrlState({
 
         <Heading
           level={3}
-          id="timelinerenderprops-lt-t-gt"
+          id="timelinerenderprops-t"
           className="text-lg font-semibold mt-6 mb-2"
         >
           TimelineRenderProps&lt;T&gt;

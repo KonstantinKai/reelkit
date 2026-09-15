@@ -682,6 +682,22 @@ const routed = useOverlayUrlState({
           </code>
           。{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            param
+          </code>{' '}
+          和{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            adapter
+          </code>{' '}
+          在首次渲染时读取，之后保持不变 —— 要更改请重新挂载；而{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            codec
+          </code>{' '}
+          和{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            locator
+          </code>{' '}
+          是实时读取的，因此列表增长或重新排序后的查找看到的是当前列表。{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
             codec
           </code>{' '}
           和{' '}

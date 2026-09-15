@@ -1,0 +1,72 @@
+---
+title: Інтеграція з AI / LLM
+description: 'Як згодувати документацію ReelKit асистентам: llms.txt, llms-full.txt і рекомендовані способи підключення.'
+---
+
+import { FileText, Sparkles, Bot } from 'lucide-react';
+import agentPrompt from '../../snippets/llms/agent-prompt.txt?raw';
+import directIngestion from '../../snippets/llms/direct-ingestion.sh?raw';
+
+Документація в машиночитному вигляді для AI-асистентів із написання коду.
+
+<FeatureGrid columns={3} items={[
+            {
+              icon: FileText,
+              label: 'llms.txt',
+              desc: 'Компактний індекс посилань. Уся документація в одному файлі. Оновлюється на збірці.',
+            },
+            {
+              icon: Sparkles,
+              label: 'llms-full.txt',
+              desc: 'Повний корпус із підсумками сторінок. Контекст за один запит.',
+            },
+            {
+              icon: Bot,
+              label: 'context7',
+              desc: 'Маніфест із живим індексом. Використовуйте з MCP-сервером @context7.',
+            },
+          ]} />
+
+<Callout type="info">
+  Обидві точки доступу \`.txt\` перегенеровуються на кожній збірці документації. Корпус відповідає опублікованому сайту.
+</Callout>
+
+## Точки доступу [#endpoints]
+
+| Точка доступу | Призначення |
+| --- | --- |
+| [`/llms.txt`](https://reelkit.dev/llms.txt) | Індексований список посилань на кожну сторінку документації. Кидайте в контекст будь-якої мовної моделі. |
+| [`/llms-full.txt`](https://reelkit.dev/llms-full.txt) | Той самий індекс плюс вбудовані підсумки кожної сторінки. Увесь корпус за один запит. |
+| [`context7.com/websites/reelkit_dev`](https://context7.com/websites/reelkit_dev) | Маніфест Context7 із живим індексом. Підключається через MCP-сервер @context7. |
+
+## Швидкий старт [#quick-start]
+
+### Запит до агента [#agent-prompt]
+
+Вставте URL точки доступу в агента, щоб його відповіді спиралися на актуальну документацію.
+
+<CodeBlock code={agentPrompt} language="text" />
+
+### MCP-сервер Context7 [#context7-mcp-server]
+
+Встановіть MCP-сервер [@context7](https://github.com/upstash/context7) . Агент сам підхопить маніфест ReelKit і завантажить документацію за потреби. Згадайте `reelkit` у своєму запиті.
+
+### Пряме завантаження [#direct-ingestion]
+
+Завантажуйте програмно:
+
+<CodeBlock code={directIngestion} language="bash" />
+
+## Що потрапляє в індекс [#what-gets-indexed]
+
+- Початок роботи та встановлення
+- Посібник із рушія ядра та API
+- Прив’язки для React, Vue, Angular (посібник, API, reel-плеєр, Lightbox, плеєр історій)
+- Рушій Stories Core
+- Нотатки про SSR
+- Усунення несправностей
+- Журнал змін
+
+## Навіщо? [#why]
+
+AI-асистенти відстають від змін у бібліотеці, і згенерований код спирається на застарілі API. Ці точки доступу оновлюються з кожним випуском документації, тож підказки відповідають поточній поведінці, а не тій, що була минулого кварталу.

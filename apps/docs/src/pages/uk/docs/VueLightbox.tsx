@@ -1690,7 +1690,7 @@ const photo = useOverlayUrlState({
       <section className="mb-12">
         <Heading
           level={2}
-          id="content-loading-amp-error-handling"
+          id="content-loading-error-handling"
           className="text-2xl font-bold mb-4"
         >
           Завантаження вмісту та обробка помилок

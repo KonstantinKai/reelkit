@@ -1,0 +1,367 @@
+---
+title: Vue Lightbox
+description: Vue 全屏图片画廊浮层：LightboxOverlay 属性与事件、插槽作用域类型、内容加载与主题定制。
+---
+
+import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2 } from 'lucide-react';
+import installation from '../../snippets/vue-lightbox/installation.sh?raw';
+import installation2 from '../../snippets/vue-lightbox/installation-2.ts?raw';
+import basicUsageCode from '../../snippets/vue-lightbox/basic-usage-code.vue?raw';
+import slotsExampleCode from '../../snippets/vue-lightbox/slots-example-code.vue?raw';
+import videoOptInCode from '../../snippets/vue-lightbox/video-opt-in-code.vue?raw';
+import fullscreenCode from '../../snippets/vue-lightbox/fullscreen-code.vue?raw';
+import urlState from '../../snippets/vue-lightbox/url-state.vue?raw';
+import urlState2 from '../../snippets/vue-lightbox/url-state-2.vue?raw';
+import urlState3 from '../../snippets/vue-lightbox/url-state-3.vue?raw';
+import urlState4 from '../../snippets/vue-lightbox/url-state-4.vue?raw';
+import urlState5 from '../../snippets/vue-lightbox/url-state-5.vue?raw';
+import customTransitionCode from '../../snippets/vue-lightbox/custom-transition-code.vue?raw';
+import lifecycleSlideCode from '../../snippets/vue-lightbox/lifecycle-slide-code.vue?raw';
+import customLoadingCode from '../../snippets/vue-lightbox/custom-loading-code.vue?raw';
+import customErrorCode from '../../snippets/vue-lightbox/custom-error-code.vue?raw';
+import themingCode from '../../snippets/vue-lightbox/theming-code.css?raw';
+
+面向 Vue 3 的全屏图片与视频画廊Lightbox，基于 `@reelkit/vue-lightbox`.
+
+<DemoLink href="https://vue-demo.reelkit.dev/image-preview?utm_source=docs">查看在线演示 →</DemoLink>
+
+## 特性 [#features]
+
+<FeatureGrid items={[
+              {
+                icon: Image,
+                label: '图片与视频',
+                desc: '内置视频幻灯片支持',
+              },
+              {
+                icon: MousePointer,
+                label: '触摸手势',
+                desc: '滑动翻页',
+              },
+              {
+                icon: X,
+                label: '滑动关闭',
+                desc: '上滑关闭',
+              },
+              {
+                icon: Keyboard,
+                label: '键盘导航',
+                desc: '方向键 + Escape',
+              },
+              {
+                icon: Maximize2,
+                label: '全屏',
+                desc: '跨浏览器 API',
+              },
+              {
+                icon: Hash,
+                label: '过渡动画',
+                desc: '滑动、淡入、翻转、放大',
+              },
+              {
+                icon: Zap,
+                label: '预加载',
+                desc: '预取前后各 2 张',
+              },
+              {
+                icon: Volume2,
+                label: '声音开关',
+                desc: '逐张静音 / 取消静音',
+              },
+              {
+                icon: Loader,
+                label: '加载状态',
+                desc: '转圈动画 + 自定义插槽',
+              },
+              {
+                icon: AlertTriangle,
+                label: '错误处理',
+                desc: '错误图标 + 自定义插槽',
+              },
+              {
+                icon: Layers,
+                label: '作用域插槽',
+                desc: '6 个可定制的插槽区域',
+              },
+              {
+                icon: Layers,
+                label: 'v-model',
+                desc: 'v-model:is-open 双向绑定',
+              },
+              {
+                icon: Link2,
+                label: 'URL 状态',
+                desc: '可分享、可收藏的链接',
+              },
+            ]} />
+
+## 安装 [#installation]
+
+<CodeBlock code={installation} language="bash" />
+
+别忘了引入样式：
+
+<CodeBlock code={installation2} language="typescript" />
+
+<Callout type="info" title="图标">
+  默认控件使用 `lucide-vue-next` 作为图标。如果你想换一套图标库，可以用 `#controls` 和 `#navigation` 作用域插槽提供自己的实现。
+</Callout>
+
+## 基本用法 [#basic-usage]
+
+引入样式表和 `LightboxOverlay` 组件，然后用 `v-model:is-open`.
+
+<Sandbox code={basicUsageCode} language="vue" title="App.vue" framework="vue" stackblitzDeps={['@reelkit/vue-lightbox']} stackblitzExtraDeps={{ 'lucide-vue-next': '>=0.460.0' }} />
+
+## 作用域插槽 [#scoped-slots]
+
+六个具名作用域插槽让你完全定制浮层的各个界面。省略插槽即保留内置默认实现；插槽内部什么都不放（例如用 `v-if="false"`）就能把该部分整个隐藏。
+
+| 插槽 | 作用域 | 说明 |
+| --- | --- | --- |
+| #slide | `SlideSlotScope` | 替换单张幻灯片的内容（视频幻灯片必须提供） |
+| #controls | `ControlsSlotScope` | 替换顶部控件栏（关闭、计数、全屏） |
+| #navigation | `NavigationSlotScope` | 替换上一张 / 下一张导航箭头 |
+| #info | `InfoSlotScope` | 替换底部的标题 / 描述渐变浮层 |
+| #loading | `LoadingSlotScope` | 自定义加载提示 |
+| #error | `ErrorSlotScope` | 自定义错误提示 |
+
+<CodeBlock code={slotsExampleCode} language="vue" />
+
+## 视频支持 [#video-support]
+
+视频幻灯片是按需开启的，默认产物里不会掺进音视频相关代码。调用 `useVideoSlideRenderer(items)` 并把返回的 `VideoSlideRenderer` / `VideoControlsRenderer` 接到浮层的 `#slide` 和 `#controls` 插槽上。再把浮层包进返回的 `SoundProvider` 里，内置的声音开关才有上下文。
+
+<CodeBlock code={videoOptInCode} language="vue" />
+
+<Callout type="info">
+  驱动视频幻灯片的共享 `<video>` 元素与 vue reel-player 用的是同一套模式 —— 在 iOS 上切换幻灯片时播放不会中断，也不需要每张都由用户手势触发。
+</Callout>
+
+## 全屏 [#fullscreen]
+
+使用 `useFullscreen` from `@reelkit/vue` 来观察或切换某个引用元素的全屏状态。Lightbox内置的全屏按钮用的就是同一个组合式函数。
+
+<CodeBlock code={fullscreenCode} language="vue" />
+
+## URL 状态 [#url-state]
+
+<DemoLink href="https://vue-demo.reelkit.dev/image-preview-url?utm_source=docs">查看在线演示 →</DemoLink>
+
+用 `useOverlayUrlState` from `@reelkit/vue` 构建控制器，再把它交给 `LightboxUrlOverlay` 作为 `controller`，地址栏就拥有了这个画廊：参数指向某张幻灯片时它自己打开，参数消失时关闭。链接可以分享，返回键会关闭画廊。它是一个独立于 `LightboxOverlay`的组件，因此每个组件都只有一个打开状态的驱动源 —— 要么是 `is-open` 模型，要么是 URL `controller`，绝不会同时用两个。
+
+<Callout type="info" title="内置的 key">
+  可以用内置的 key 来寻址幻灯片 —— 把 `urlIndexKey` （按位置）或 `urlStableIdKey` （按稳定的 `id`）展开进控制器 —— 两者都从 `@reelkit/vue`. See the [URL 状态指南](/docs/core/guide#url-state) 和 [核心 API](/docs/core/api#url-state).
+</Callout>
+
+只有从应用内部打开时返回键才会关闭 —— 因为那次链接压入了一条记录，返回就会弹回画廊。在新标签页里直接打开的分享链接背后没有历史，浏览器返回会离开站点；这时关闭按钮或 Escape 会就地移除参数，把你留在画廊上。
+
+<CodeBlock code={urlState} language="vue" />
+
+这个组合式函数接受一个选项对象，返回一个 `UrlStateController` （带 `set`, `index`, `value`）。留着它就能编程式地控制： `set` 是浮层内部使用的底层写入（切换幻灯片，以及用 `set(null)` 关闭）。它同样可以编程式驱动浮层 —— `set(index)` 会打开它，效果和导航到该参数一样。不过打开时更推荐用链接：href 可以分享、能在新标签页打开、返回键会关闭它 —— 全都不用写处理函数。
+
+完整的 `useOverlayUrlState` 选项（`param`, `adapter`, `codec`, `locator`）：见 [Vue API 参考](/docs/vue/api#useoverlayurlstate).
+
+`LightboxUrlOverlay` 本身只接受 `:controller` （必填）、一个 `@close` 事件，外加所有视觉和行为属性 `LightboxOverlay` 所转发的（`items`, `transition-fn`、各种作用域插槽等等）—— 但没有 `is-open`.
+
+- 打开会花掉一条历史记录；翻页则是替换它，所以滑一百次也不会多出记录 —— 退一步永远就是离开画廊。
+- 像 `?photo=3` 会把画廊直接打开到那一张。指向不存在幻灯片的参数会从 URL 中移除，而不是继续声称一张打不开的幻灯片。
+
+**带路由的应用请传入适配器。** 直接写历史会让路由器自己的 location 过期，下一次导航就会把参数丢掉。
+
+<CodeBlock code={urlState2} language="vue" />
+
+**稳定的链接。** 索引是按位置的，所以列表重新排序后书签会打开另一张图片。 `urlStableIdKey` 按每个条目稳定的 `id`来寻址，扫描当前列表 —— 一次调用就覆盖了常见场景。
+
+<CodeBlock code={urlState3} language="vue" />
+
+传入 `hashCodec: base64UrlCodec` 即可把 URL 中的 id 做 base64url 编码 —— 这是可逆的混淆，不是加密哈希。
+
+想按别的字段（比如 `slug`）来寻址，或者用 `locateAsync`给无限信息流翻页，就自己构建 `codec`/`locator` ： `codec` 把身份写进 URL， `locator` 负责找到它现在在哪。
+
+<CodeBlock code={urlState4} language="vue" />
+
+**无限 / 分页画廊。** `locate` 是同步的，因此只能回答已经加载过的条目 —— 只加载了 20 张时，指向第 400 张的分享链接就查不到。 `locateAsync` 是兜底，只有在未命中时才调用：把需要的页拉进来，再返回该身份最终对应的索引。
+
+<Callout type="info" title="快捷键">
+  只想按条目的 `id`来寻址？那就不必手写编解码器和定位器 —— 直接把 `locateAsync` 传给 `urlStableIdKey({ items, locateAsync })` （未命中时它会去拉取，然后返回索引）。下面更完整的写法是给按别的字段寻址、或者需要完全掌控的场景准备的。
+</Callout>
+
+<CodeBlock code={urlState5} language="vue" />
+
+在它未完成期间，Lightbox保持关闭，参数也不动，因此深链能熬过这次请求。 `null` 或请求被拒绝则会移除参数。如果结果在 URL 已经变化、Lightbox已关闭或组件已卸载之后才到达，就会被丢弃，因此慢请求不能打开一张没人要的幻灯片。它返回什么都以它为准 —— 它报告的是自己刚取到的数据的索引，Lightbox会直接采用，而不是再去读一遍 `items`，那里 Vue 还没有重新渲染。
+
+## API 参考 [#api-reference]
+
+### LightboxOverlay 属性 [#lightboxoverlay-props]
+
+<Signature>LightboxOverlayProps</Signature>
+
+| 属性 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `isOpen` | `boolean` | 必填 | 控制显示；为 false 时浮层会从 DOM 中移除。可用 v-model:is-open 双向绑定。 |
+| `items` | `LightboxItem[]` | 必填 | 条目数组（图片或视频） |
+| `initialIndex` | `number` | 0 | 初始可见条目的索引（从 0 开始） |
+| `transitionFn` | `TransitionTransformFn` | slideTransition | 幻灯片过渡函数。可以引入内置的（slideTransition、flipTransition、lightboxFadeTransition、lightboxZoomTransition），也可以传自定义的。省略时默认为 slideTransition。 |
+| `showInfo` | `boolean` | true | 是否渲染标题 / 描述信息浮层 |
+| `showControls` | `boolean` | true | 是否渲染顶部控件栏（关闭、计数、全屏） |
+| `showNavigation` | `boolean` | true | 是否渲染上一张 / 下一张导航箭头（仅桌面端） |
+| `transitionDuration` | `number` | 300 | 幻灯片动画时长（毫秒） |
+| `swipeDistanceFactor` | `number` | 0.12 | 触发切换所需的最小滑动距离占比（0–1） |
+| `swipeToCloseDirection` | `'up' \| 'down'` | 'up' | 移动端滑动关闭手势的方向 |
+| `loop` | `boolean` | false | 滑动器是否从最后一张绕回第一张 |
+| `enableNavKeys` | `boolean` | true | 启用键盘方向键导航 |
+| `enableWheel` | `boolean` | true | 启用鼠标滚轮导航 |
+| `wheelDebounceMs` | `number` | 200 | 滚轮事件的防抖时长（毫秒） |
+| `ariaLabel` | `string` | 'Image gallery' | 对话框区域的无障碍标签 |
+
+### LightboxUrlOverlay 属性 [#lightboxurloverlay-props]
+
+<Signature>LightboxUrlOverlayProps</Signature>
+
+接受上面所有视觉和行为属性，除了 `is-open`，并把它换成 `controller`。它会发出 `close`, `slide-change` 和 `api-ready`，但没有 `update:is-open`. `initial-index` 在这里会被忽略 —— 由控制器的 position 决定打开哪一张，所以同时传入的值每次打开都会被覆盖。
+
+| 属性 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `controller` | `UrlStateController` | 必填 | 来自 useOverlayUrlState 的控制器。它的 position 决定浮层是否打开、显示哪一张；浮层会在切换幻灯片和关闭时通过它写回。 |
+
+### LightboxOverlay 事件 [#lightboxoverlay-events]
+
+| 事件 | 负载 | 说明 |
+| --- | --- | --- |
+| `close` | `void` | 用户关闭Lightbox时发出 |
+| `slide-change` | `number` | 切换后发出，带上新的活动幻灯片索引 |
+| `api-ready` | `LightboxApi` | 滑动器就绪时发出一次，同时暴露命令式 API |
+| `update:is-open` | `boolean` | 关闭时发出；用于支持 v-model:is-open |
+
+## LightboxItem 接口 [#lightboxitem-interface]
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `src` | `string` | yes | 图片或视频的 URL |
+| `type` | `'image' \| 'video'` | no | Item type. Defaults to 'image' |
+| `poster` | `string` | no | 视频条目的缩略图 |
+| `title` | `string` | no | 信息浮层中显示的标题 |
+| `description` | `string` | no | 标题下方显示的描述 |
+| `width` | `number` | no | 图片固有宽度（像素） |
+| `height` | `number` | no | 图片固有高度（像素） |
+
+## 插槽作用域类型 [#slot-scope-types]
+
+| 类型 | 字段 |
+| --- | --- |
+| `SlideSlotScope` | `{ item, index, size: [number, number], isActive, onReady, onWaiting, onError }` |
+| `ControlsSlotScope` | `{ item, activeIndex, count, isFullscreen, onClose, onToggleFullscreen }` |
+| `NavigationSlotScope` | `{ item, activeIndex, count, onPrev, onNext }` |
+| `InfoSlotScope` | `{ item, index }` |
+| `LoadingSlotScope` | `{ item, activeIndex }` |
+| `ErrorSlotScope` | `{ item, activeIndex }` |
+
+## 过渡动画 [#transitions]
+
+把任意 `TransitionTransformFn` 通过 `transition-fn` 属性传入。只引入你用到的那个过渡，打包器就能把其余的摇掉。省略时默认为 `slideTransition` 。
+
+| 函数 | 说明 |
+| --- | --- |
+| `slideTransition` | 默认。幻灯片之间横向平移；从 @reelkit/vue 重新导出。 |
+| `lightboxFadeTransition` | 交叉淡入淡出，带轻微的横向位移。仅存在于 @reelkit/vue-lightbox。 |
+| `flipTransition` | 绕 Y 轴的 3D 翻转；从 @reelkit/vue 重新导出。 |
+| `lightboxZoomTransition` | 进入的幻灯片从 70% 放大到 100% 并淡入。仅存在于 @reelkit/vue-lightbox。 |
+
+<CodeBlock code={customTransitionCode} language="vue" />
+
+## 内容加载与错误处理 [#content-loading-error-handling]
+
+当你通过 `#slide` 插槽接管渲染时，插槽作用域上有三个生命周期回调可用于上报加载状态。Lightbox会逐张跟踪状态，并据此显示转圈动画或错误图标。内容预加载器会缓存损坏的 URL，因此再次访问失败的幻灯片不会重试。
+
+### 生命周期回调 [#lifecycle-callbacks]
+
+| 回调 | 类型 | 说明 |
+| --- | --- | --- |
+| `onReady` | `() => void` | 通知幻灯片内容已成功加载（例如图片解码完成） |
+| `onWaiting` | `() => void` | 通知幻灯片内容正在加载 / 缓冲（显示转圈动画） |
+| `onError` | `() => void` | 通知幻灯片内容加载失败（显示错误图标） |
+
+### 在 #slide 中接上回调 [#wiring-callbacks-in-slide]
+
+<CodeBlock code={lifecycleSlideCode} language="vue" />
+
+### 自定义加载插槽 [#custom-loading-slot]
+
+Use the `#loading` 插槽替换默认的转圈动画。
+
+<CodeBlock code={customLoadingCode} language="vue" />
+
+### 自定义错误插槽 [#custom-error-slot]
+
+Use the `#error` 插槽替换默认的图片损坏图标。
+
+<CodeBlock code={customErrorCode} language="vue" />
+
+## CSS 类名 [#css-classes]
+
+所有 CSS 类名都是普通类名（没有 scoped），因此可以在 `@reelkit/vue-lightbox/styles.css`之后加载的样式表里用更高优先级的选择器覆盖它们。若只是改颜色、尺寸和 z-index，请优先使用下面 [主题定制](#theming) 一节。
+
+| 类名 | 组件 | 说明 |
+| --- | --- | --- |
+| `.rk-lightbox-overlay` | Overlay | 根容器（全屏背景层） |
+| `.rk-lightbox-top-shade` | Overlay | 控件背后的顶部渐变遮罩 |
+| `.rk-lightbox-spinner` | Overlay | 默认的加载转圈动画 |
+| `.rk-lightbox-error` | Overlay | 错误状态容器（图片损坏） |
+| `.rk-lightbox-error-text` | Overlay | 错误状态文字标签 |
+| `.rk-lightbox-controls-left` | 控制内容 | 左上角控件容器 |
+| `.rk-lightbox-btn` | 控制内容 | 控制按钮（全屏、声音等） |
+| `.rk-lightbox-close` | 控制内容 | 关闭按钮 |
+| `.rk-lightbox-counter` | 控制内容 | 图片计数标签 |
+| `.rk-lightbox-nav` | 导航 | 导航箭头（上一张和下一张） |
+| `.rk-lightbox-nav-prev` | 导航 | 上一张箭头 |
+| `.rk-lightbox-nav-next` | 导航 | 下一张箭头 |
+| `.rk-lightbox-info` | Info | 标题 / 描述容器 |
+| `.rk-lightbox-info-title` | Info | 图片标题 |
+| `.rk-lightbox-info-description` | Info | 图片描述 |
+| `.rk-lightbox-slide` | Slide | 幻灯片容器 |
+| `.rk-lightbox-img` | Slide | 图片元素 |
+| `.rk-lightbox-video-container` | VideoSlide | 视频幻灯片容器（按需开启） |
+| `.rk-lightbox-video-element` | VideoSlide | 视频元素（按需开启） |
+| `.rk-lightbox-video-poster` | VideoSlide | 视频封面图（按需开启） |
+
+## 主题定制 [#theming]
+
+在 `--rk-lightbox-*` 上覆盖任意 `:root` （或 `.rk-lightbox-overlay`的任意祖先元素）即可换主题。直接写在 `.rk-lightbox-overlay` 上的声明会遮蔽继承下来的值，所以请把覆盖写在祖先选择器上。
+
+| 变量 | 默认值 | 控制内容 |
+| --- | --- | --- |
+| `--rk-lightbox-overlay-bg` | `#000` | Backdrop color |
+| `--rk-lightbox-overlay-z` | `9999` | Overlay z-index |
+| `--rk-lightbox-top-shade-height` | `80px` | Top scrim height |
+| `--rk-lightbox-top-shade-bg` | `linear-gradient(rgba(0,0,0,0.6), transparent)` | Top scrim gradient |
+| `--rk-lightbox-edge-padding` | `16px` | Edge inset for close / nav / controls |
+| `--rk-lightbox-btn-bg` | `rgba(0, 0, 0, 0.5)` | Default background for close / nav / small buttons |
+| `--rk-lightbox-btn-bg-hover` | `rgba(255, 255, 255, 0.2)` | Hover background for close / nav / small buttons |
+| `--rk-lightbox-btn-fg` | `#fff` | Icon color for close / nav / small buttons |
+| `--rk-lightbox-btn-size` | `36px` | Small button size (fullscreen toggle, etc.) |
+| `--rk-lightbox-close-size` | `40px` | Close button size |
+| `--rk-lightbox-nav-size` | `48px` | Prev / next arrow size |
+| `--rk-lightbox-nav-opacity` | `0.7` | Idle opacity of prev / next arrows |
+| `--rk-lightbox-counter-bg` | `rgba(0, 0, 0, 0.5)` | Counter chip background |
+| `--rk-lightbox-counter-fg` | `#fff` | Counter text color |
+| `--rk-lightbox-info-bg` | `linear-gradient(transparent, rgba(0,0,0,0.8))` | Caption scrim gradient |
+| `--rk-lightbox-title-size` | `18px` | Title font size |
+| `--rk-lightbox-description-size` | `14px` | Description font size |
+| `--rk-lightbox-video-bg` | `#000` | Letterbox background behind \<video> |
+
+<CodeBlock code={themingCode} language="css" />
+
+## 无障碍 [#accessibility]
+
+浮层根节点是一个模态对话框（`role="dialog"`, `aria-modal="true"`). Set the `aria-label` 属性可以改变屏幕阅读器的播报内容，默认是 “Image gallery”。每张幻灯片都带有 `role="group"`, `aria-roledescription="slide"`，以及 `aria-label` ，由位置推导而来（例如 “Image 2 of 5”）。
+
+Lightbox打开时捕获焦点，关闭时把焦点还给触发元素。Tab 和 Shift+Tab 在内部的可聚焦元素之间循环；跑出去的焦点（点击外部、程序化聚焦）会被拉回来。实现基于 `captureFocusForReturn` 和 `createFocusTrap` from `@reelkit/vue`.
+
+## 键盘快捷键 [#keyboard-shortcuts]
+
+| Key | 作用 |
+| --- | --- |
+| `ArrowLeft` | Previous image |
+| `ArrowRight` | Next image |
+| `Escape` | Close lightbox (or exit fullscreen if active) |

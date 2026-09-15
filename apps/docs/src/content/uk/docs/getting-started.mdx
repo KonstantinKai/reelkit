@@ -1,0 +1,190 @@
+---
+title: Початок роботи
+description: 'Запустіть перший слайдер ReelKit за кілька хвилин: встановлення, три віртуалізовані слайди, жести та навігація з клавіатури.'
+---
+
+import quickStart from '../../snippets/getting-started/quick-start.tsx?raw';
+import quickStart2 from '../../snippets/getting-started/quick-start-2.ts?raw';
+import quickStart3 from '../../snippets/getting-started/quick-start-3.vue?raw';
+import reelindicator from '../../snippets/getting-started/reelindicator.tsx?raw';
+import reelindicator2 from '../../snippets/getting-started/reelindicator-2.html?raw';
+import reelindicator3 from '../../snippets/getting-started/reelindicator-3.vue?raw';
+import navigation from '../../snippets/getting-started/navigation.tsx?raw';
+import navigation2 from '../../snippets/getting-started/navigation-2.html?raw';
+import navigation3 from '../../snippets/getting-started/navigation-3.vue?raw';
+
+reelkit — це **слайдер по одному елементу** — на екрані видно один елемент, як у TikTok, Instagram Reels чи Stories. Ідеально для вертикальних відеострічок, повноекранних галерей і вмісту, який гортають свайпом.
+
+<Callout type="warning" title="0.x.x — Unstable API">
+  ReelKit активно розробляється. Поки версія 0.x.x, API може змінюватися між мінорними випусками без періоду застарівання. Фіксуйте версію, щоб нічого не зламалося несподівано.
+</Callout>
+
+## Оберіть свій фреймворк [#select-your-framework]
+
+<FrameworkPicker />
+
+## Спробувати онлайн [#try-it-online]
+
+Спробуйте просто в браузері, без встановлення:
+
+<FrameworkVariant for="react">
+
+<DemoLinks demo="https://react-demo.reelkit.dev/?utm_source=docs" demoLabel="Демо для React" starter="https://stackblitz.com/github/KonstantinKai/reelkit-react-starter" starterLabel="Стартовий проєкт для React" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+<DemoLinks demo="https://angular-demo.reelkit.dev/?utm_source=docs" demoLabel="Демо для Angular" starter="https://stackblitz.com/github/KonstantinKai/reelkit-angular-starter" starterLabel="Стартовий проєкт для Angular" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+<DemoLinks demo="https://vue-demo.reelkit.dev/?utm_source=docs" demoLabel="Демо для Vue" starter="https://stackblitz.com/github/KonstantinKai/reelkit-vue-starter" starterLabel="Стартовий проєкт для Vue" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="react">
+
+## Швидкий старт [#quick-start]
+
+Мінімальний вертикальний слайдер на React:
+
+<CodeBlock code={quickStart} language="tsx" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+## Швидкий старт [#quick-start]
+
+Мінімальний вертикальний слайдер на Angular:
+
+<CodeBlock code={quickStart2} language="typescript" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+## Швидкий старт [#quick-start]
+
+Мінімальний вертикальний слайдер на Vue:
+
+<CodeBlock code={quickStart3} language="vue" />
+
+</FrameworkVariant>
+
+## Ключові поняття [#key-concepts]
+
+### Reel [#reel]
+
+Компонент `Reel` — головний контейнер: він тримає стан слайдера, обробляє дотикові жести, навігацію з клавіатури та анімації. Для рендерингу слайдів використовує патерн render prop через `itemBuilder` .
+
+### itemBuilder [#itembuilder]
+
+Пропс `itemBuilder` — функція, яка отримує індекс і повертає вміст слайда. Саме цей патерн дає віртуалізацію: рендеряться лише видимі елементи.
+
+### ReelIndicator [#reelindicator]
+
+Необов’язковий компонент, що показує індикатори прогресу в стилі Instagram із поточною позицією в слайдері.
+
+<FrameworkVariant for="react">
+
+<CodeBlock code={reelindicator} language="tsx" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+<CodeBlock code={reelindicator2} language="html" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+<CodeBlock code={reelindicator3} language="vue-html" />
+
+</FrameworkVariant>
+
+## Навігація [#navigation]
+
+Вбудовані способи навігації:
+
+<Bullets marker="dot">
+
+- **Дотик / свайп:** Тягніть, щоб гортати — з інерцією та прилипанням
+- **Клавіатура:** Стрілки (оверлейні компоненти ще обробляють Escape для закриття)
+- **Колесо миші:** Увімкніть `enableWheel` у пропсах
+- **Програмно:** Використовуйте `apiRef` для `next()`, `prev()`, `goTo()`
+
+</Bullets>
+
+<FrameworkVariant for="react">
+
+<CodeBlock code={navigation} language="tsx" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+<CodeBlock code={navigation2} language="html" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+<CodeBlock code={navigation3} language="vue" />
+
+</FrameworkVariant>
+
+<NextSteps
+        items={[
+          {
+            label: 'Встановлення',
+            path: '/docs/installation',
+            description: 'усі пакети та варіанти налаштування',
+          },
+          {
+            label: 'Посібник з ядра',
+            path: '/docs/core/guide',
+            description: 'рушій без прив’язки до фреймворку',
+          },
+          {
+            label: 'Посібник для фреймворку',
+            path: {
+              react: '/docs/react/guide',
+              angular: '/docs/angular/guide',
+              vue: '/docs/vue/guide',
+            },
+            description: 'компоненти, демо та інтеграція',
+          },
+          {
+            label: 'Reel Player',
+            path: {
+              react: '/docs/reel-player',
+              angular: '/docs/angular-reel-player',
+              vue: '/docs/vue-reel-player',
+            },
+            description: 'відеоплеєр у стилі TikTok / Reels',
+          },
+          {
+            label: 'Lightbox',
+            path: {
+              react: '/docs/lightbox',
+              angular: '/docs/angular-lightbox',
+              vue: '/docs/vue-lightbox',
+            },
+            description: 'галерея зображень і відео',
+          },
+          {
+            label: 'Stories Player',
+            path: {
+              react: '/docs/stories-player',
+              angular: '/docs/angular-stories-player',
+              vue: '/docs/vue-stories-player',
+            },
+            description: 'переглядач історій у стилі Instagram',
+          },
+        ]}
+      />

@@ -1,0 +1,72 @@
+---
+title: AI / LLM Integration
+description: Machine-readable docs for AI coding assistants — llms.txt, llms-full.txt, and the Context7 manifest.
+---
+
+import { FileText, Sparkles, Bot } from 'lucide-react';
+import agentPrompt from '../../snippets/llms/agent-prompt.txt?raw';
+import directIngestion from '../../snippets/llms/direct-ingestion.sh?raw';
+
+Machine-readable docs for AI coding assistants.
+
+<FeatureGrid columns={3} items={[
+            {
+              icon: FileText,
+              label: 'llms.txt',
+              desc: 'Compact link index. Every doc page in one file. Updated at build.',
+            },
+            {
+              icon: Sparkles,
+              label: 'llms-full.txt',
+              desc: 'Full corpus with per-page summaries. Single-fetch context.',
+            },
+            {
+              icon: Bot,
+              label: 'context7',
+              desc: 'Live-indexed manifest. Use with the @context7 MCP server.',
+            },
+          ]} />
+
+<Callout type="info">
+  Both \`.txt\` endpoints regenerate on every docs build. The corpus tracks the published site.
+</Callout>
+
+## Endpoints [#endpoints]
+
+| Endpoint | Purpose |
+| --- | --- |
+| [`/llms.txt`](https://reelkit.dev/llms.txt) | Indexed link list of every doc page. Drop into any LLM context. |
+| [`/llms-full.txt`](https://reelkit.dev/llms-full.txt) | Same index plus embedded per-page summaries. Full corpus in a single fetch. |
+| [`context7.com/websites/reelkit_dev`](https://context7.com/websites/reelkit_dev) | Live-indexed Context7 manifest. Plug in via the @context7 MCP server. |
+
+## Quick start [#quick-start]
+
+### Agent prompt [#agent-prompt]
+
+Paste an endpoint URL into the agent to ground answers in current docs.
+
+<CodeBlock code={agentPrompt} language="text" />
+
+### Context7 MCP server [#context7-mcp-server]
+
+Install the [@context7](https://github.com/upstash/context7) MCP server. The agent picks up the ReelKit manifest automatically and fetches docs on demand. Mention `reelkit` in your prompt.
+
+### Direct ingestion [#direct-ingestion]
+
+Fetch programmatically:
+
+<CodeBlock code={directIngestion} language="bash" />
+
+## What gets indexed [#what-gets-indexed]
+
+- Getting started + Installation
+- Core engine guide + API
+- React, Vue, Angular bindings (guide + API + reel-player + lightbox + stories-player)
+- Stories core engine
+- SSR notes
+- Troubleshooting
+- Changelog
+
+## Why? [#why]
+
+AI assistants lag behind library changes. Generated code references stale APIs. These endpoints update with every doc release, so suggestions match current behavior instead of last quarter's.

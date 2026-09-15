@@ -1,0 +1,176 @@
+---
+title: 核心指南
+description: '@reelkit/core 的架构：滑动控制器、虚拟化、信号系统、手势与时间轴控制器。'
+---
+
+import createslidercontroller from '../../../snippets/core-guide/createslidercontroller.ts?raw';
+import navigation from '../../../snippets/core-guide/navigation.ts?raw';
+import lifecycle from '../../../snippets/core-guide/lifecycle.ts?raw';
+import stateUpdates from '../../../snippets/core-guide/state-updates.ts?raw';
+import virtualization from '../../../snippets/core-guide/virtualization.ts?raw';
+import signals from '../../../snippets/core-guide/signals.ts?raw';
+import controllerState from '../../../snippets/core-guide/controller-state.ts?raw';
+import timelineController from '../../../snippets/core-guide/timeline-controller.ts?raw';
+import howItWorks from '../../../snippets/core-guide/how-it-works.ts?raw';
+import howItWorks2 from '../../../snippets/core-guide/how-it-works-2.ts?raw';
+
+`@reelkit/core` 包提供与框架无关的滑动逻辑。用它来做自定义集成，或者理解底层架构。
+
+## 架构概览 [#architecture-overview]
+
+核心采用工厂函数式的**控制器模式**。没有类 —— 全是闭包返回的普通对象，零依赖。核心负责协调这几个部分：
+
+<Bullets marker="dot">
+
+- **SliderController** —— 中央状态管理与导航
+- **GestureController** —— 触摸 / 指针拖拽处理
+- **KeyboardController** —— 方向键与 Escape
+- **WheelController** —— 带防抖的鼠标滚轮
+
+</Bullets>
+
+## createSliderController [#createslidercontroller]
+
+创建一个新的滑动控制器实例，管理滑动器的全部状态和行为。
+
+<CodeBlock code={createslidercontroller} language="typescript" />
+
+## 控制器方法 [#controller-methods]
+
+### 导航 [#navigation]
+
+<CodeBlock code={navigation} language="typescript" />
+
+### 生命周期 [#lifecycle]
+
+<CodeBlock code={lifecycle} language="typescript" />
+
+### 状态更新 [#state-updates]
+
+<CodeBlock code={stateUpdates} language="typescript" />
+
+## 虚拟化 [#virtualization]
+
+核心在任何时刻只往 DOM 里渲染 **3 张幻灯片**（当前、上一张、下一张）。由范围提取器决定渲染窗口里包含哪些索引：
+
+<CodeBlock code={virtualization} language="typescript" />
+
+<Callout type="info">
+  结果始终被限制在最多 3 个索引。如果你的提取器返回更多， 核心会保留围绕当前幻灯片居中的那 3 个。
+</Callout>
+
+## Signals [#signals]
+
+核心使用一套轻量的信号系统来做响应式：
+
+<CodeBlock code={signals} language="typescript" />
+
+## 控制器状态 [#controller-state]
+
+通过 `controller.state` 访问响应式状态：
+
+<CodeBlock code={controllerState} language="typescript" />
+
+## 时间轴控制器 [#timeline-controller]
+
+为任意 `<video>` 元素做一个自定义拖动条。控制器把时长、当前时间、缓冲区间和拖动状态 都暴露成响应式信号，并且一次调用就能把指针和键盘交互接到任意 DOM 元素上。
+
+<CodeBlock code={timelineController} language="typescript" />
+
+## URL 状态 [#url-state]
+
+把浮层的打开状态放进地址栏：当前这张幻灯片就有了可分享、可直达的链接， 按返回键即可关闭。模型由核心持有；各框架绑定把它包成一个钩子（React / Vue 的 `useOverlayUrlState`，Angular 的 `createOverlayUrlState`）以及一个由 URL 驱动的浮层组件。
+
+### 工作原理 [#how-it-works]
+
+`createUrlStateController` 把一个查询参数映射成信号，并把变化写回去。打开时压入**一条**历史记录，之后每次导航都是**替换** —— 滑一百次也不会多出一条，所以退一步永远就是关闭。 `UrlAdapter` 是可插拔的读写接缝：默认实现走 `history.pushState`；带路由的应用则传入一个基于路由器的适配器，这样路由器自己的 location 永远不会过期。
+
+<CodeBlock code={howItWorks} language="typescript" />
+
+### 编解码器与定位器 —— 两件事 [#codec-and-locator-two-jobs]
+
+一个 key 是配套的 `{ codec, locator }` 组合。把身份写进 URL 和在当前集合里找到它的位置，是两件不同的事， 所以它们是两个对象：
+
+- **codec —— 传输格式。** `encode` 把身份写成参数文本； `decode` 再解析回来，遇到非法值直接拒绝，参数就会自动从 URL 里消失。
+- **locator —— 查找。** `locate` 在当前集合里找到解码后的身份所在的位置（找不到就返回 `null`）； `identify` 则把位置反查回身份，用于写入；可选的 `locateAsync` 会在未命中时继续翻页加载窗口式或无限式的信息流。
+
+把两者分开，你就能任意搭配 —— 比如稳定 id 的编解码器配上一个会翻页的定位器。
+
+### 索引 key 与稳定 id key [#index-vs-stable-id-keys]
+
+有两个内置 key 会帮你搭好这一对，区别只在于 URL 里写的是什么：
+
+- `urlIndexKey(() => count)` 按**位置**寻址（`?photo=3`）。最简单，但列表一旦重新排序，书签打开的就是另一条了。
+- `urlStableIdKey({ items })` 按每个条目稳定的 `id` 寻址（`?photo=post_42`），扫描当前列表 —— 重新排序后书签指向的仍是那条内容，条目没了就干净地失效。 `hashCodec: base64UrlCodec` 会把 id 做 base64url 混淆（可逆，不是加密哈希）。
+
+**要给窗口式信息流翻页？** 两个内置 key 都接受可选的 `locateAsync`—— `urlIndexKey(() => count, locateAsync)` 和 `urlStableIdKey({ items, locateAsync })`。同步查找负责已加载的部分；未命中时继续把剩下的翻进来， 于是指向窗口之外的分享链接照样能打开 —— 不需要你自己手写编解码器或定位器。
+
+需要两个维度？ `urlIndexTwoAxisKey` 会携带 `?p=<outer>.<inner>`，同时表示一条帖子和它内部的媒体索引。完整选项见 [核心 API 参考](/docs/core/api#url-state)。
+
+## 已观看状态 [#viewed-state]
+
+记住观看者在图库中看到了哪里，跨刷新、跨标签页——一个显示已看内容的圆环，一个从上次离开处重新打开的图库。它与 URL 状态是同一套模型，只是指向存储而不是地址栏，因此两者共用一个键。
+
+### 工作原理 [#how-it-works]
+
+`createViewedStateController` 把记录存为 `?photo=` 链接所携带的原文，并通过同一个 `decode` → `locate` 循环读回。已存的位置从不被直接信任。把同一个键展开到两处，书签和已存记录就是同一个字符串。
+
+<CodeBlock code={howItWorks2} language="typescript" />
+
+### 持久性取决于键 [#durability-follows-the-key]
+
+存储本身不做任何修复，所以你展开哪个键，决定了什么能保留：按 id 寻址的键在集合重排后仍记得位置，按位置寻址的键则不能。已存记录记的是到达的最远点，而不是观看次数，因此从中间删掉一项会让计数变短——与分享链接得到的自愈相同。
+
+读取只有同步方式。条目尚未加载的记录会读作缺失，并原样留在存储中，因此分窗加载的信息流永远不会吞掉自己的历史。
+
+### 存储与过期 [#storage-and-expiry]
+
+存储默认由 `localStorage` 支撑；`createSessionStorageAdapter()` 在关闭标签页时遗忘，自定义 `StorageAdapter` 则可以放到任何同步的地方。在 `attach()` 之前不会读取任何内容，因此服务端渲染与首次客户端渲染保持一致。
+
+记录会一直保留，直到被显式遗忘。传入 `ttlMs` 让它们过期——按轨道、按滑动时钟计算，因此仍在观看的内容不会与早已放弃的内容一起过时。它会改变写入的内容，每条记录变成一对 `[wire, timestamp]`，但无论选项如何设置，读取都能接受两种形状，所以在开启之前存下的记录会被视为新鲜，而不是被删除。`maxTracks` 限制的是数量而非时长：超出后，最久未记录的轨道会在下次写入时被丢弃，而记录某条轨道（即使位置落后）会把它移到队尾。完整选项见 [核心 API 参考](/docs/core/api#viewed-state)。
+
+<NextSteps
+        items={[
+          {
+            label: '核心 API 参考',
+            path: '/docs/core/api',
+            description: '全部可用配置项',
+          },
+          {
+            label: '框架指南',
+            path: {
+              react: '/docs/react/guide',
+              angular: '/docs/angular/guide',
+              vue: '/docs/vue/guide',
+            },
+            description: '组件、演示与集成方式',
+          },
+          {
+            label: 'Reel Player',
+            path: {
+              react: '/docs/reel-player',
+              angular: '/docs/angular-reel-player',
+              vue: '/docs/vue-reel-player',
+            },
+            description: 'TikTok / Reels 风格的视频播放器',
+          },
+          {
+            label: 'Lightbox',
+            path: {
+              react: '/docs/lightbox',
+              angular: '/docs/angular-lightbox',
+              vue: '/docs/vue-lightbox',
+            },
+            description: '图片与视频画廊',
+          },
+          {
+            label: 'Stories Player',
+            path: {
+              react: '/docs/stories-player',
+              angular: '/docs/angular-stories-player',
+              vue: '/docs/vue-stories-player',
+            },
+            description: 'Instagram 风格的 Stories 浏览器',
+          },
+        ]}
+      />

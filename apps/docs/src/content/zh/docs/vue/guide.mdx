@@ -1,0 +1,221 @@
+---
+title: Vue 指南
+description: '在 Vue 3 中使用 ReelKit：Reel 组件、#item 插槽模式、命令式 API、循环模式与事件回调。'
+---
+
+import { Hand, Keyboard, MousePointer, InfinityIcon, Radio, Navigation, Zap, Layers, Code } from 'lucide-react';
+import basicSlider from '../../../snippets/vue-guide/basic-slider.vue?raw';
+import reelindicator from '../../../snippets/vue-guide/reelindicator.vue?raw';
+import imperativeApiTemplateRef from '../../../snippets/vue-guide/imperative-api-template-ref.vue?raw';
+import horizontalDirection from '../../../snippets/vue-guide/horizontal-direction.vue?raw';
+import autoSizing from '../../../snippets/vue-guide/auto-sizing.vue?raw';
+import transitions from '../../../snippets/vue-guide/transitions.vue?raw';
+import loopMode from '../../../snippets/vue-guide/loop-mode.vue?raw';
+import eventCallbacks from '../../../snippets/vue-guide/event-callbacks.vue?raw';
+import navigation from '../../../snippets/vue-guide/navigation.vue?raw';
+import urlState from '../../../snippets/vue-guide/url-state.vue?raw';
+import itemSlotPattern from '../../../snippets/vue-guide/item-slot-pattern.vue?raw';
+import composables from '../../../snippets/vue-guide/composables.vue?raw';
+
+学习如何用 `@reelkit/vue`.
+
+<FeatureGrid columns={3} items={[
+              {
+                icon: Hand,
+                label: '触摸优先',
+                desc: '带惯性和吸附的滑动',
+              },
+              {
+                icon: Keyboard,
+                label: '键盘导航',
+                desc: '方向键 + Escape',
+              },
+              {
+                icon: MousePointer,
+                label: '滚轮滚动',
+                desc: '可选，带防抖',
+              },
+              {
+                icon: InfinityIcon,
+                label: '虚拟化',
+                desc: '10,000+ 条目，DOM 里只有 3 个',
+              },
+              {
+                icon: Radio,
+                label: '指示器',
+                desc: 'Instagram 风格的圆点滚动',
+              },
+              {
+                icon: Navigation,
+                label: '编程式 API',
+                desc: '通过模板 ref 调用 next()、prev()、goTo()',
+              },
+              {
+                icon: Zap,
+                label: '循环模式',
+                desc: '无限循环导航',
+              },
+              {
+                icon: Layers,
+                label: '方向可选',
+                desc: '竖向或横向',
+              },
+              {
+                icon: Code,
+                label: '组合式 API',
+                desc: '<script setup> 搭配组合式函数',
+              },
+            ]} />
+
+## 基础滑动器 [#basic-slider]
+
+`<Reel>` 组件包装了核心的滑动控制器。用 `#item` 插槽渲染每张幻灯片，并自动虚拟化 —— 只有可见的幻灯片会被挂载。
+
+<Sandbox code={basicSlider} language="vue" title="App.vue" framework="vue" stackblitzDeps={['@reelkit/vue']} />
+
+## ReelIndicator [#reelindicator]
+
+可选组件，显示 Instagram 风格的进度指示器，标出当前在滑动器中的位置。放在 `<Reel>`内部时，它会通过上下文自动连接到父级的 `count` 和 `active` 值，走的是 Vue 的 `provide/inject` —— 不需要手动接线。
+
+<CodeBlock code={reelindicator} language="vue-html" />
+
+## 命令式 API —— 模板引用 [#imperative-api-template-ref]
+
+`<Reel>` 组件通过模板 ref 暴露 `ReelExpose` 接口。用 `ref()` 保存引用，即可调用命令式方法，比如 `next()`, `prev()`、 `goTo()`.
+
+<CodeBlock code={imperativeApiTemplateRef} language="vue" />
+
+## 横向方向 [#horizontal-direction]
+
+把 `direction="horizontal"` 即可做成左右滑动的滑动器。指示器的方向也要一致。
+
+<CodeBlock code={horizontalDirection} language="vue-html" />
+
+## 自动尺寸 [#auto-sizing]
+
+`size` 属性是可选的。省略时， `<Reel>` 会通过 `ResizeObserver` 自动测量容器，并适配由 CSS 决定的布局。容器的尺寸必须由父级决定（例如 flex、grid 或显式的 CSS 尺寸）。
+
+<CodeBlock code={autoSizing} language="vue-html" />
+
+## 过渡动画 [#transitions]
+
+传入 `transition` 属性即可自定义幻灯片动画。ReelKit 提供五种可被 tree-shaking 的过渡： `slideTransition` （默认）、 `fadeTransition`, `flipTransition`, `cubeTransition`、 `zoomTransition`.
+
+<CodeBlock code={transitions} language="vue" />
+
+## 循环模式 [#loop-mode]
+
+用 `loop` 属性开启无限循环导航。滑动器会从最后一张无缝回到第一张（反之亦然）。
+
+<CodeBlock code={loopMode} language="vue-html" />
+
+## 事件回调 [#event-callbacks]
+
+`<Reel>` 组件会发出若干事件，用于跟踪滑动器状态：
+
+<CodeBlock code={eventCallbacks} language="vue" />
+
+## 导航 [#navigation]
+
+内置的导航方式：
+
+<Bullets marker="dot">
+
+- **触摸 / 滑动：** 拖动即可翻页，带惯性和吸附
+- **键盘：** 方向键和 Escape
+- **鼠标滚轮：** 用 `:enable-wheel="true"`
+- **编程式：** 用模板 ref 访问 `next()`, `prev()`, `goTo()`
+
+</Bullets>
+
+<CodeBlock code={navigation} language="vue" />
+
+## URL 状态 [#url-state]
+
+`useOverlayUrlState` 为浮层构建一个 URL 状态控制器并整个返回，你再把它作为 `<LightboxUrlOverlay>` 的 `:controller` 属性。打开状态归地址栏所有，因此绑定后的浮层会自己打开，链接就是通常的打开方式。参数原本不存在时第一次写入压入一条历史记录，之后每次写入都是替换，所以翻页永远不会把返回键埋掉。留着控制器就能读取 `value`/`position` ，也能用 `set(null)`编程式关闭 —— 这正是浮层内部在切换幻灯片时使用的底层写入。
+
+<CodeBlock code={urlState} language="vue" />
+
+选项对象接受 `param`, `codec`、 `locator` （这三个都是必填的），外加可选的 `adapter`。 `codec` 和 `locator` 是共用同一个 `Id`，因此对于普通的 `?photo=3` 画廊，展开 `...urlIndexKey(() => props.images.length)`即可，它会一次性返回两半。 `urlIndexKey` 把参数映射成幻灯片索引，并以 getter 返回的实时数量为上界，因此过期或越界的 `?photo=99` 会被拒绝并自动从 URL 中消失，而不是打开一张从未指定的幻灯片。请传 getter 而不是数字：Vue 的 `setup` 只会执行一次，捕获下来的长度会随着分页信息流增长而过期。它包装了 `createIndexLocator` (the locator half) and pairs it with `indexCodec`。分页信息流或按身份寻址的画廊则自行提供配套的 `codec` + `locator` 。完整的选项表见 [Vue API 参考](/docs/vue/api#useoverlayurlstate).
+
+## #item 插槽模式 [#item-slot-pattern]
+
+Vue 不用 React 的 render prop，而是用 `#item` 作用域插槽。它让虚拟化成为可能 —— 只有可见的幻灯片会被挂载。插槽作用域提供三个属性：
+
+<CodeBlock code={itemSlotPattern} language="vue-html" />
+
+## 组合式函数 [#composables]
+
+`@reelkit/vue` 为常见的浮层场景提供了组合式函数：
+
+<CodeBlock code={composables} language="vue" />
+
+## 要点 [#key-points]
+
+<KeyPoints>
+<KeyPoint title="组合式 API">
+  把 `Reel`, `ReelIndicator`以及各种组合式函数直接引入你的 `<script setup>` —— 不需要注册插件
+</KeyPoint>
+<KeyPoint title="#item 作用域插槽">
+  Vue 里对应 React `itemBuilder` 属性的写法 —— 用熟悉的模板语法实现虚拟化
+</KeyPoint>
+<KeyPoint title="模板 ref">
+  使用 `ref<ReelExpose>()` 用于命令式导航 —— 不需要事件回调
+</KeyPoint>
+<KeyPoint title="@after-change">
+  发出 `(index, rangeIndex)` —— 跟踪当前索引以更新界面
+</KeyPoint>
+<KeyPoint title="provide/inject 上下文">
+  `ReelIndicator` 会自动连接到父级 `Reel` ，走 Vue 的 provide/inject —— 不必层层传属性
+</KeyPoint>
+</KeyPoints>
+
+## 性能建议 [#performance-tips]
+
+<KeyPoints>
+<KeyPoint title="让幻灯片模板保持轻量">
+  `#item` 插槽会为每张可见幻灯片执行（通常同时 3 张）。不要在里面做重计算或写太深的嵌套结构。
+</KeyPoint>
+<KeyPoint title="临近边缘时加载数据">
+  使用 `@after-change` 来检测用户是否接近末尾，并在幻灯片用完之前取下一批 —— 这样就能做无限滚动的信息流。
+</KeyPoint>
+<KeyPoint title="命令式状态用 ref">
+  把 `ReelExpose` 引用和当前索引存在 Vue 的 `ref()`里，既能细粒度响应又不会产生多余的重渲染。
+</KeyPoint>
+<KeyPoint title="在可滚动页面里关掉滚轮">
+  把 `:enable-wheel="false"` ，当滑动器嵌在可滚动布局里时，避免抢走页面滚动。
+</KeyPoint>
+</KeyPoints>
+
+<NextSteps
+        items={[
+          {
+            label: 'Vue API 参考',
+            path: '/docs/vue/api',
+            description: '全部属性、事件与组合式函数',
+          },
+          {
+            label: '核心指南',
+            path: '/docs/core/guide',
+            description: '与框架无关的引擎',
+          },
+          {
+            label: 'Reel Player',
+            path: {
+              react: '/docs/reel-player',
+              angular: '/docs/angular-reel-player',
+              vue: '/docs/vue-reel-player',
+            },
+            description: 'TikTok / Reels 风格的视频播放器',
+          },
+          {
+            label: 'Lightbox',
+            path: {
+              react: '/docs/lightbox',
+              angular: '/docs/angular-lightbox',
+              vue: '/docs/vue-lightbox',
+            },
+            description: '图片与视频画廊',
+          },
+        ]}
+      />

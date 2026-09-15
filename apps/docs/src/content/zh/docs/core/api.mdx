@@ -1,0 +1,248 @@
+---
+title: 核心 API 参考
+description: '@reelkit/core 完整 API：配置项、回调、方法、状态属性、信号、URL 状态与视频工具。'
+---
+
+import usage from '../../../snippets/core-api/usage.ts?raw';
+
+完整参考： `@reelkit/core` 的配置、回调、方法与状态。
+
+## SliderController API [#slidercontroller-api]
+
+与框架无关的核心。一个工厂函数从配置和可选事件构建出控制器： **配置项** 就是配置， **回调** 就是事件， **方法** 则是返回的控制器所暴露的能力。
+
+### 工厂函数 [#factory-function]
+
+| 导出 | 类型 | 说明 |
+| --- | --- | --- |
+| `createSliderController` | `(config: SliderConfig, events?: SliderEvents) => SliderController` | 构建一个滑动控制器。 `config` 是必填的（选项见下）； `events` 是可选的（回调见下）。返回的控制器就是驱动它的入口。 |
+
+### 配置项 [#config-options]
+
+| 属性 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `count` | `number` | required | 条目总数 |
+| `initialIndex` | `number` | 0 | 起始索引 |
+| `direction` | `'vertical' \| 'horizontal'` | 'vertical' | 滚动方向 |
+| `enableGestures` | `boolean` | true | 启用触摸 / 鼠标拖拽导航。为 false 时不挂载手势控制器。 |
+| `enableNavKeys` | `boolean` | true | 启用键盘方向键导航 |
+| `enableWheel` | `boolean` | false | 启用鼠标滚轮 |
+| `wheelDebounceMs` | `number` | 200 | 滚轮防抖时间 |
+| `loop` | `boolean` | false | 循环导航 |
+| `transitionDuration` | `number` | 300 | 动画时长（毫秒） |
+| `swipeDistanceFactor` | `number` | 0.12 | 滑动阈值（0-1） |
+| `rangeExtractor` | `(index: number, count: number, loop: boolean) => number[]` | defaultRangeExtractor | 自定义函数，决定渲染哪些索引 |
+
+### 回调 [#callbacks]
+
+| 回调 | 类型 | 说明 |
+| --- | --- | --- |
+| `onBeforeChange` | `(index, nextIndex, rangeIndex) => void` | 幻灯片切换前 |
+| `onAfterChange` | `(index, rangeIndex) => void` | 幻灯片切换后 |
+| `onDragStart` | `(index) => void` | 拖拽开始 |
+| `onDragEnd` | `(index) => void` | 拖拽结束 |
+| `onDragCanceled` | `(index) => void` | 拖拽取消 |
+| `onTap` | `(event: GestureCommonEvent) => void` | 单击（会等待双击判定窗口） |
+| `onDoubleTap` | `(event: GestureCommonEvent) => void` | 检测到双击 |
+| `onLongPress` | `(event: GestureCommonEvent) => void` | 检测到长按 |
+| `onLongPressEnd` | `(event: GestureEvent) => void` | 长按后指针抬起 |
+| `onNavKeyPress` | `(increment: -1 \| 1) => void` | 方向键导航的自定义处理器。会替换默认的上一张 / 下一张行为。 |
+
+### 方法 [#methods]
+
+| 方法 | 类型 | 说明 |
+| --- | --- | --- |
+| `attach(element)` | `(HTMLElement) => void` | 把控制器接到 DOM 元素上以检测手势 |
+| `detach()` | `() => void` | 移除 DOM 监听（手势、键盘、滚轮）。之后可以通过 observe() 重新挂上。用于 React 的 effect 清理。 |
+| `dispose()` | `() => void` | 彻底销毁：移除所有控制器并清理信号观察者。用于 Angular 的 onDestroy。 |
+| `observe()` | `() => void` | 开始监听手势、键盘和滚轮。会遵循 enableGestures、enableNavKeys 和 enableWheel 这几个配置开关。 |
+| `unobserve()` | `() => void` | 停止监听手势、键盘和滚轮 |
+| `next()` | `() => Promise<void>` | 切到下一张幻灯片 |
+| `prev()` | `() => Promise<void>` | 切到上一张幻灯片 |
+| `goTo(index, animate?)` | `(number, boolean?) => Promise<void>` | 切到指定幻灯片 |
+| `adjust(duration?)` | `(number?) => void` | 重新计算幻灯片位置 |
+| `setPrimarySize(size)` | `(number) => void` | 更新容器尺寸 |
+| `updateConfig(config)` | `(Partial<SliderConfig>) => void` | 更新配置项 |
+| `updateEvents(events)` | `(Partial<SliderEvents>) => void` | 替换事件处理器（未包含在内的既有处理器会保留） |
+| `getRangeIndex()` | `() => number` | 返回当前索引在可见范围数组中的位置 |
+
+## 状态属性 [#state-properties]
+
+| 属性 | 类型 | 说明 |
+| --- | --- | --- |
+| `index` | `Signal<number>` | 当前幻灯片索引 |
+| `axisValue` | `Signal<AnimatedValue>` | 当前轴向位置值（带动画） |
+| `indexes` | `ComputedSignal<number[]>` | 用于虚拟化的可见索引 |
+
+## 范围提取器 [#range-extractor]
+
+| 导出 | 类型 | 说明 |
+| --- | --- | --- |
+| `defaultRangeExtractor` | `(index: number, count: number, loop: boolean) => number[]` | 默认提取器，渲染当前索引周围的 3 个条目 |
+
+## Signal API [#signal-api]
+
+核心内部通用的轻量响应式原语。
+
+### Signal 接口 [#signal-interface]
+
+| 成员 | 类型 | 说明 |
+| --- | --- | --- |
+| `value` | `T` | 读取或写入当前值。写入时若值发生变化会通知观察者。 |
+| `observe(callback)` | `(callback: () => void) => () => void` | 注册一个在每次值变化时调用的监听器。返回用于移除它的销毁函数。 |
+
+### 工厂函数 [#factory-functions]
+
+| 导出 | 类型 | 说明 |
+| --- | --- | --- |
+| `createSignal` | `<T>(initial: T) => Signal<T>` | 创建一个可变的响应式信号 |
+| `createComputed` | `<T>(fn: () => T, deps: () => Subscribable[]) => ComputedSignal<T>` | 创建派生的计算信号。第二个参数是依赖工厂，返回需要追踪的信号。 |
+| `reaction` | `(deps: () => Subscribable[], effect: () => void) => () => void` | 任一依赖信号变化时执行副作用，返回销毁函数。信号的值请在副作用回调里读取。 |
+| `batch` | `(fn: () => void) => void` | 把多次信号更新合并成一次通知，支持嵌套 |
+
+## 过渡动画 [#transitions]
+
+内置的过渡函数，在动画导航期间计算每张幻灯片的 CSS 变换。把其中一个作为 `transitionTransformFn` 属性传给框架组件。
+
+| 导出 | 类型 | 说明 |
+| --- | --- | --- |
+| `TransitionTransformFn` | `type` | 自定义过渡函数的签名 |
+| `getSlideProgress` | `(axisValue: number, slideIndex: number, primarySize: number) => number` | 返回某张幻灯片相对视口的归一化偏移量（-1 到 1）。在自定义过渡函数里使用。 |
+| `slideTransition` | `TransitionTransformFn` | 默认的滑动过渡（translateX/Y） |
+| `fadeTransition` | `TransitionTransformFn` | 交叉淡入淡出过渡 |
+| `flipTransition` | `TransitionTransformFn` | 3D 翻卡过渡 |
+| `cubeTransition` | `TransitionTransformFn` | 3D 立方体旋转过渡 |
+| `zoomTransition` | `TransitionTransformFn` | 缩放过渡 |
+
+## 内容加载 [#content-loading]
+
+用于跟踪每张幻灯片的加载 / 错误状态并预加载媒体的工具。加载控制器带索引守卫，会拒绝来自旧的活动幻灯片的过期回调。预加载器使用 LRU 缓存（默认成功 200 条、失败 100 条），因此再次访问一个坏掉的 URL 会立刻显示错误而不重试。
+
+| 导出 | 类型 | 说明 |
+| --- | --- | --- |
+| `createContentLoadingController` | `() => ContentLoadingController` | 逐张幻灯片的加载 / 错误状态跟踪 |
+| `createContentPreloader` | `(config: ContentPreloaderConfig) => ContentPreloader` | 带错误缓存的 LRU 媒体预加载器 |
+| `observeMediaLoading` | `(video: HTMLVideoElement, callbacks: MediaLoadingCallbacks) => () => void` | 监听视频加载状态（playing、canplaythrough、waiting）。返回销毁函数。 |
+
+### ContentLoadingController [#contentloadingcontroller]
+
+| 导出 | 类型 | 说明 |
+| --- | --- | --- |
+| `isLoading` | `Signal<boolean>` | 当前幻灯片是否正在加载 |
+| `isError` | `Signal<boolean>` | 当前幻灯片是否出错 |
+| `setActiveIndex` | `(index: number) => void` | 更新当前索引，并重置加载 / 错误状态 |
+| `onReady` | `(index: number) => void` | 把幻灯片标记为就绪（索引与当前不符时忽略） |
+| `onWaiting` | `(index: number) => void` | 把幻灯片标记为加载中（索引与当前不符时忽略） |
+| `onError` | `(index: number) => void` | 把幻灯片标记为出错（索引与当前不符时忽略） |
+
+### ContentPreloader [#contentpreloader]
+
+| 导出 | 类型 | 说明 |
+| --- | --- | --- |
+| `preload` | `(src: string, type?: "image" \| "video") => void` | 开始预加载一个媒体 URL |
+| `isLoaded` | `(src: string) => boolean` | 检查 URL 是否在成功的 LRU 缓存里（上限 200） |
+| `isErrored` | `(src: string) => boolean` | 检查 URL 是否在错误的 LRU 缓存里（上限 100） |
+| `markLoaded` | `(src: string) => void` | 手动把某个 URL 标记为已加载 |
+| `markErrored` | `(src: string) => void` | 手动把某个 URL 标记为出错 |
+| `onLoaded` | `(src: string, cb: () => void) => () => void` | 订阅加载完成事件，返回销毁函数 |
+
+## 声音 [#sound]
+
+媒体播放共享的静音状态。声音控制器提供一个响应式的 muted 信号，可以同步到 video 元素，也可以由自定义控件切换。
+
+| 导出 | 类型 | 说明 |
+| --- | --- | --- |
+| `createSoundController` | `() => SoundController` | 共享静音状态的控制器 |
+| `syncMutedToVideo` | `(video: HTMLVideoElement, sound: SoundController) => () => void` | 把 muted 信号同步到 video 元素。返回销毁函数。 |
+
+## 时间轴 [#timeline]
+
+用于视频拖动的播放时间轴控制器。把时长、当前时间、缓冲区间和用户拖动状态都作为响应式信号来跟踪。一次调用即可把指针和键盘交互接到任意 DOM 元素上，让它表现得像原生拖动条：带指针捕获、实时跳转，以及完整的键盘支持（方向键、Home/End、PageUp/PageDown）。
+
+| 导出 | 类型 | 说明 |
+| --- | --- | --- |
+| `createTimelineController` | `(config?: TimelineControllerConfig) => TimelineController` | 工厂函数，返回一个带有 `duration`, `currentTime`, `progress`, `bufferedRanges`、 `isScrubbing` 等信号，以及 `attach`, `detach`, `bindInteractions`、 `seek` 等方法。 |
+| `TimelineControllerConfig` | `接口` | `keyboardStepSeconds` （默认 5）、 `keyboardPageFraction` （默认 0.1）以及 `onSeek`, `onScrubStart`, `onScrubEnd` 等回调。 |
+| `BufferedRange` | `{ start: number; end: number }` | 一段连续的缓冲区间，用相对总时长的 0–1 比例表示。输出时已排序且互不重叠。 |
+
+## 全屏 [#fullscreen]
+
+跨浏览器的全屏工具，带 Safari 厂商前缀兼容处理。fullscreen 信号是一个惰性单例，用响应式的方式跟踪全屏状态。
+
+| 导出 | 类型 | 说明 |
+| --- | --- | --- |
+| `fullscreenSignal` | `Signal<boolean>` | 跟踪文档是否处于全屏模式的响应式信号 |
+| `requestFullscreen` | `(element: HTMLElement) => Promise<void>` | 让指定元素进入全屏 |
+| `exitFullscreen` | `() => Promise<void>` | 退出全屏模式 |
+
+## DOM 与清理工具 [#dom-cleanup-utilities]
+
+用于 DOM 事件管理和确定性清理的底层工具。所有控制器内部都在用，也可以用在自定义集成里。
+
+| 导出 | 类型 | 说明 |
+| --- | --- | --- |
+| `observeDomEvent` | `(target, event, handler, options?) => () => void` | 添加一个 DOM 事件监听器，并返回用于移除它的销毁函数 |
+| `createDisposableList` | `() => DisposableList` | 用来收集销毁函数的可组合列表。调用 dispose() 一次性全部执行。 |
+| `createBodyLock` | `() => BodyLock` | 带引用计数的 body 滚动锁。多个使用方可以同时上锁，全部解锁后才恢复滚动。 |
+| `sharedBodyLock` | `BodyLock` | 模块级的单例实例。当应用里多个组件需要共用同一个引用计数、让嵌套的弹窗 / 浮层正确叠加时使用。各框架绑定（`@reelkit/react`, `@reelkit/vue`, `@reelkit/angular`）内部用的就是它。 |
+
+## 焦点管理 [#focus-management]
+
+与框架无关的对话框无障碍原语。浮层包用它们在关闭时把焦点还给触发元素，并在打开期间把 Tab / Shift+Tab 锁在浮层内部。服务端安全：在非浏览器环境下每个工具都返回空操作的销毁函数。
+
+| 导出 | 类型 | 说明 |
+| --- | --- | --- |
+| `captureFocusForReturn` | `() => Disposer` | 记录当前获得焦点的元素，并返回一个把焦点还回去的销毁函数。尽力而为：如果该元素已经从 DOM 中移除，销毁函数就是空操作。 |
+| `createFocusTrap` | `(container: HTMLElement) => Disposer` | 把 Tab / Shift+Tab 锁在 `container` 内部。在最后一个可聚焦元素上按 Tab 会回到第一个；在第一个上按 Shift+Tab 会回到最后一个；焦点若跑出容器（点击外部、程序化聚焦）会被拉回来。激活时不会主动把焦点移进容器 —— 那由调用方决定。 |
+| `getFocusableElements` | `(container: HTMLElement) => HTMLElement[]` | 按 DOM 顺序返回所有可用键盘聚焦的后代元素，跳过禁用的、隐藏的以及带 `tabindex="-1"` 的元素。 |
+
+### 用法 [#usage]
+
+<CodeBlock code={usage} language="typescript" />
+
+## 视频工具 [#video-utilities]
+
+与框架无关的跨幻灯片共享视频播放工具。内部被 `@reelkit/react-reel-player` and `@reelkit/react-lightbox`在用，也可用于自定义框架绑定。
+
+| 导出 | 类型 | 说明 |
+| --- | --- | --- |
+| `captureFrame` | `(video: HTMLVideoElement) => string \| null` | 把当前视频帧截成 JPEG 的 data URL。遇到跨域错误时返回 null。 |
+| `createSharedVideo` | `(config: SharedVideoConfig) => SharedVideoInstance` | 创建一个作用域内共享的 video 单例，附带播放位置和抽帧映射表。每个使用方拿到独立实例，以保证 iOS 上声音的连续性。 |
+| `syncVideoObjectFit` | `(video: HTMLVideoElement, fallbackIsVertical: boolean) => Disposer` | 让 `video.style.objectFit` 与视频真实方向保持同步。先立即套用回退值（来自声明的宽高比），随后在 `loadedmetadata` 时读取真实的 `videoWidth` / `videoHeight` ，竖屏时切到 `'cover'` ，横屏时切到 `'contain'` 。即使声明的元数据有误也能正确处理。 |
+
+## URL 状态 [#url-state]
+
+把一个查询参数与信号双向映射。两条轴，各司其职： `codec` 负责传输格式（参数文本 ↔ 稳定身份）， `locator` 负责查找（该身份在集合中的位置）。
+
+| 导出 | 类型 | 说明 |
+| --- | --- | --- |
+| `createUrlStateController` | `({ param, adapter?, codec?, locator? }) => UrlStateController` | 把一个查询参数映射成信号，并把变化写回 URL。参数原本不存在时，第一次写入压入一条历史记录，之后每次写入都是替换。给定一个 `codec` or `locator` 后，它还会推导出 `position: Signal<Pos \| null>`，负责处理开关闩锁，并让指向不存在幻灯片的参数自动失效 —— 于是各框架绑定只需订阅，不必各自重新推导。 |
+| `createHistoryAdapter` | `() => UrlAdapter` | 基于 History API 的默认适配器。带路由的应用应当注入自己的实现，否则路由器的 location 会过期，下一次导航就会把参数丢掉。 |
+| `indexCodec` | `UrlCodec<number>` | 把 `?photo=3` 读成第 3 张幻灯片。传入它即可直接使用索引推导，不必自己写编解码器。对于无限或分页列表，请改传 `locator` —— 参数会在 promise 未完成期间保留，因此指向尚未加载页的深链不会在请求过程中被清掉。 |
+| `createIndexLocator` | `(countGetter: () => number) => UrlLocator<number>` | 默认的索引定位器：幻灯片位置映射到它自己，上界由 getter 返回的实时数量决定。越界的索引解析为 `null`，于是过期的 `?photo=99` 会自动从 URL 中消失 —— 它选择拒绝，而不是就近取一张，否则打开的就不是 URL 指定的那一张了。这里用 getter 而不是数字，是为了在分页画廊变大时，每次查找都读取当前的数量。 |
+| `urlIndexKey` | `(countGetter, locateAsync?) => UrlKey<number>` | 按索引寻址的画廊所需的配套组合 —— `indexCodec` 加上一个 `createIndexLocator` 以画廊尺寸为上界的定位器。展开它（`{ param, ...urlIndexKey(() => count) }`），编解码器就不会和定位器脱节。传入第二个参数 `locateAsync` 即可支持分页信息流 —— 未命中时一直翻页到目标索引，再返回它。 |
+| `urlIndexTwoAxisKey` | `(opts) => UrlKey<TwoAxisIdentity, TwoAxisPosition>` | 类似 `urlIndexKey` ，但面向双轴播放器：一个严格以点分隔的 `?p=<outer>.<inner>` 参数，解析成 `TwoAxisPosition` `{ outer, inner }`。选项（`UrlIndexTwoAxisKeyOptions`): `outerCount`, `innerCounts`，可选的 `outerCodec`/`outerLocator` 用于外层维度，而 `innerCodec`/`innerLocate`/`innerIdentify` 则让内层维度也能按 id 寻址。每个维度默认按普通索引处理。URL 驱动的 Stories Player就基于它。 |
+| `createStableIdCodec` | `(hashCodec?: UrlCodec<string>) => UrlCodec<string>` | 稳定 id 的 **传输格式**，单独导出以便组合 —— 参数文本就是条目的 `id`，可以原样写入，也可以由 `hashCodec` （传入 `base64UrlCodec` 即可得到可逆的 base64url）。它是 `indexCodec`在稳定 id 场景下的对应物：可以把它和你自己的定位器配对，而不必整包使用 `urlStableIdKey`. |
+| `base64UrlCodec` | `UrlCodec<string>` | 稳定 id key 的现成混淆机制：可逆的 base64url（URL 安全字母表、无填充、UTF-8）—— **并不是** 加密哈希。把它作为 `hashCodec` 传入即可在 URL 中隐藏 id；也可以自己实现 `UrlCodec<string>` 来接入别的方案。 |
+| `createStableIdLocator` | `(items, locateAsync?) => UrlLocator<string, number>` | 稳定 id 的 **lookup**，单独导出以便组合 —— 它会扫描 `items()` ，寻找匹配的 `id`；已消失的 id 解析为 `null` 并自动失效。可选的 `locateAsync` 支持分页信息流。它是索引定位器在稳定 id 场景下的对应物： `createIndexLocator`. |
+| `urlStableIdKey` | `(opts) => UrlKey<string, number>` | 按每个条目稳定的 `id` — `?photo=<id>` 来寻址画廊 —— 而不是按位置，因此列表重新排序后书签依然有效。选项（`UrlStableIdKeyOptions`): `items` （一个实时 getter）、可选的 `hashCodec` （传入 `base64UrlCodec`用于在传输时变换 id，以及可选的 `locateAsync` 用于支持分页信息流（未命中时一直拉取到该 id 出现，再返回它的索引）。只要列表可能在分享链接之后发生变化，就优先用它而不是 `urlIndexKey` 。 |
+| `urlStableIdTwoAxisKey` | `(opts) => UrlKey<TwoAxisIdentity<string>, TwoAxisPosition>` | 双轴版本：外层按稳定 id，内层按局部索引 —— `?story=user_42.3`。提供 `innerItems` ，而不是 `innerCounts` 即可让内层也按 id 寻址（`?story=user_42.photo_7`); `hashCodec` (e.g. `base64UrlCodec`）会同时变换两个 id。选项为 `UrlStableIdTwoAxisKeyOptions` （内层用索引）或 `UrlStableIdTwoAxisIdInnerOptions` （内层用 id）；条目类型需满足 `Identified` (`{ id: string }`). |
+| `UrlCodec<Id>` | `{ decode(raw) => Id \| null; encode(id) => string }` | 传输格式：参数文本 ↔ 稳定身份，与集合无关。 `decode` 返回 `null` 表示文本格式非法。 |
+| `UrlLocator<Id>` | `{ locate(id) => number \| null; locateAsync?(id) => Promise<number \| null>; identify(index) => id }` | 查找：该身份在集合中的位置。 `locate` 是同步的， `locateAsync` 是分页列表下的兜底， `identify` 则把索引反查成身份，用于写回。 |
+| `UrlKey<Id>` | `{ codec: UrlCodec<Id>; locator: UrlLocator<Id> }` | 一个参数所对应的编解码器与定位器组合。它们共用同一个 `Id` ，并且总是成对出现 —— 编解码器把身份写进 URL，定位器负责找到它在哪 —— 成对构建正是它们不会互相矛盾的原因。 |
+| `UrlAdapter` | `{ read, subscribe, push, replace, getState, goBack }` | 路由器的注入点。带路由的应用必须提供一个，否则路由器自己的 location 会过期。`subscribe` 的监听器接受一个可选的 `UrlChange`；不带参数调用始终合法，表示适配器无法说明当前条目是如何产生的。 |
+| `UrlChange` | `{ kind?: 'push' \| 'replace' \| 'pop' }` | 适配器对刚刚完成的导航所知的信息。仅当路由器自身在同一页面上 推入新条目时才报告 `push`——这是关闭时可以弹出该条目的唯一情形。没有证据时条目永远不会被 认领，关闭只会就地清除参数，在历史中留下一个页面副本，而不是冒险 跳出站点。 |
+| `UrlStateOptions<Id>` | `{ param: string; adapter?: UrlAdapter; codec?: UrlCodec<Id>; locator?: UrlLocator<Id> }` | 选项类型： `createUrlStateController` 所接受的选项 —— 单独导出，方便使用方先组装好配置再传进去。 |
+
+## 已观看状态 [#viewed-state]
+
+记住观看者看到了哪里，键与地址栏相同：一条记录就是参数文本本身，通过同一个 `codec` 和 `locator` 读回。
+
+| 导出 | 类型 | 说明 |
+| --- | --- | --- |
+| `createViewedStateController` | `(options) => ViewedStateController<Pos>` | 记住观看者看到了哪里，持久化为 URL 参数所携带的原文。接收地址栏所用的同一对 `codec`/`locator`，外加 `storageKey`、可选的 `storage`、`trackOf`（每组一条记录）和 `progressOf`。在 `attach()` 之前不读取任何内容，因此可安全预渲染。 |
+| `twoAxisViewedTracking` | `{ trackOf, progressOf }` | 双轴播放器的跟踪对：每个外层槽位一条记录，内层索引衡量其中的进度。与双轴键一起展开即可。 |
+| `createLocalStorageAdapter` | `() => StorageAdapter` | 默认后端。另有 `createSessionStorageAdapter` 用于不应超出标签页寿命的状态，以及 `createMemoryStorageAdapter` 用于测试和服务端渲染。每个都会吸收自身的失败——配额耗尽只丢失那一次写入。 |
+| `ViewedStateController<Pos>` | `{ entries; resolve(track); record(position); forget(track?); attach() }` | `entries` 是「轨道 → 已存文本」的信号，因此本页或另一标签页记录位置时，圆环会重绘。`resolve` 每次调用都走完整的键循环。 |
+| `ViewedStateOptions<Id, Pos>` | `{ storageKey; codec; locator; storage?; trackOf?; progressOf; ttlMs?; maxTracks? }` | `createViewedStateController` 接受的选项——单独导出，方便使用方先组装好配置再传进去。`progressOf` 只对纯索引位置可选，索引本身就是进度；其他任何位置都必须说明比较哪个数字，类型会强制要求。`ttlMs` 启用过期：轨道在最后一次记录后经过该时长即被遗忘，再次记录会重置计时。`maxTracks` 限制数量：超出后，最久未记录的轨道会在下次写入时被丢弃。 |
+| `StorageAdapter` | `{ read(key); write(key, value); subscribe?(key, listener) }` | 存储层的注入点。省略 `subscribe`，存储就只是不做跨标签页同步。 |

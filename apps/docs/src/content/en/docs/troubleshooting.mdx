@@ -1,0 +1,94 @@
+---
+title: Troubleshooting
+description: Fixes for iOS Safari quirks, video playback, fullscreen, keyboard navigation, and auto-sizing issues.
+---
+
+import viewportDoesntFillScreen from '../../snippets/troubleshooting/viewport-doesnt-fill-screen.css?raw';
+import horizontalScrollContentOverflow from '../../snippets/troubleshooting/horizontal-scroll-content-overflow.css?raw';
+import pullToRefreshRubber from '../../snippets/troubleshooting/pull-to-refresh-rubber.css?raw';
+import pullToRefreshRubber2 from '../../snippets/troubleshooting/pull-to-refresh-rubber-2.tsx?raw';
+import pinchToZoomInterferes from '../../snippets/troubleshooting/pinch-to-zoom-interferes.html?raw';
+import layoutBrokenAfterKeyboard from '../../snippets/troubleshooting/layout-broken-after-keyboard.tsx?raw';
+import slidesRenderAt0 from '../../snippets/troubleshooting/slides-render-at-0.css?raw';
+import videoThumbnailFrameCapture from '../../snippets/troubleshooting/video-thumbnail-frame-capture.txt?raw';
+import arrowKeysDontNavigate from '../../snippets/troubleshooting/arrow-keys-dont-navigate.tsx?raw';
+
+Fixes for iOS Safari quirks, video playback, fullscreen, and keyboard navigation.
+
+## iOS Safari [#ios-safari]
+
+### Viewport doesn't fill screen / bottom black space [#viewport-doesn-t-fill-screen-bottom-black-space]
+
+Safari's collapsible address bar makes `100vh` taller than the visible area. Use `100dvh`:
+
+<CodeBlock code={viewportDoesntFillScreen} language="css" />
+
+### Horizontal scroll / content overflow [#horizontal-scroll-content-overflow]
+
+`100vw` includes scrollbar width on iOS, pushing content past the edge. Use `100%` and lock horizontal overflow:
+
+<CodeBlock code={horizontalScrollContentOverflow} language="css" />
+
+### Pull-to-refresh / rubber-band bounce [#pull-to-refresh-rubber-band-bounce]
+
+Safari's pull-to-refresh and elastic bounce fight vertical swipe gestures. Do **not** put `overscroll-behavior: none` on `html, body`. That kills normal page scroll. ReelPlayerOverlay, LightboxOverlay, and StoriesPlayerOverlay handle this on their own containers. For custom layouts, scope it:
+
+<CodeBlock code={pullToRefreshRubber} language="css" />
+
+**SwipeToClose downward edge case.** Any `SwipeToClose` with `direction="down"` (lightbox, stories player, custom overlays) is preempted on iOS Safari — the browser fires pull-to-refresh from the document level before the wrapper sees the touch. The overlay locks body scroll but the browser still owns vertical-pan handling at the root. Scope `overscroll-behavior-y: contain` on `<html>` only while the overlay is open and restore on close:
+
+<CodeBlock code={pullToRefreshRubber2} language="tsx" />
+
+### Pinch-to-zoom interferes with gestures [#pinch-to-zoom-interferes-with-gestures]
+
+Disable zoom to stop pinch and double-tap from firing during swipes:
+
+<CodeBlock code={pinchToZoomInterferes} language="html" />
+
+<Caption>`viewport-fit=cover` extends your layout into the Dynamic Island / notch safe area.</Caption>
+
+### Layout broken after keyboard dismisses [#layout-broken-after-keyboard-dismisses]
+
+Safari sometimes leaves the viewport compressed after the keyboard closes. Force a reset on blur:
+
+<CodeBlock code={layoutBrokenAfterKeyboard} language="tsx" />
+
+## General [#general]
+
+### Slides render at 0×0 size [#slides-render-at-0-0-size]
+
+Without a `size` prop, the slider reads its container dimensions through `ResizeObserver`. A container with no CSS height measures 0×0, so nothing renders. Pass `size` or give the container dimensions:
+
+<CodeBlock code={slidesRenderAt0} language="css" />
+
+## Video [#video]
+
+### Video doesn't autoplay [#video-doesn-t-autoplay]
+
+Browsers block unmuted autoplay. ReelKit sets `muted` and `playsInline` on every video element. Videos start muted; users unmute with the sound toggle after a tap. Check that you're not overriding these attributes in a custom slide.
+
+### Video thumbnail / frame capture is blank [#video-thumbnail-frame-capture-is-blank]
+
+Frame capture draws the video onto a `<canvas>`. Cross-origin videos taint the canvas, so the draw silently fails. Your video CDN must return CORS headers:
+
+<CodeBlock code={videoThumbnailFrameCapture} language="text" />
+
+<Caption>ReelKit sets `crossOrigin="anonymous"` by default. If you use a custom video element, add it yourself.</Caption>
+
+## Fullscreen [#fullscreen]
+
+### Fullscreen button does nothing on Safari [#fullscreen-button-does-nothing-on-safari]
+
+ReelKit disables the Fullscreen API on Safari. iOS Safari restricts fullscreen to `<video>` elements only. Desktop Safari breaks `position: fixed` overlays in fullscreen: elements lose stacking context or vanish. `requestFullscreen()` resolves as a no-op on Safari.
+
+## Keyboard Navigation [#keyboard-navigation]
+
+### Arrow keys don't navigate after providing onNavKeyPress [#arrow-keys-don-t-navigate-after-providing-onnavkeypress]
+
+`onNavKeyPress` **replaces** default keyboard navigation. ReelKit stops calling `next()`/`prev()` and hands control to you. Call them yourself:
+
+<CodeBlock code={arrowKeysDontNavigate} language="tsx" />
+
+### Escape key doesn't close the overlay [#escape-key-doesn-t-close-the-overlay]
+
+The keyboard controller handles arrow keys only. ReelPlayerOverlay and LightboxOverlay listen for Escape separately. If you build a custom overlay, add your own Escape handler in `onClose`.

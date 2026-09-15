@@ -1,0 +1,8 @@
+<rk-lightbox-overlay [isOpen]="isOpen" [items]="items" (closed)="isOpen = false">
+  <ng-template rkLightboxError let-index let-item="item">
+    <div style="display:flex;flex-direction:column;align-items:center;color:#ef4444">
+      <span>Failed to load</span>
+      <span style="opacity:0.6">{{ item.title ?? item.src }}</span>
+    </div>
+  </ng-template>
+</rk-lightbox-overlay>

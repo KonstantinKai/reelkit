@@ -1,0 +1,202 @@
+---
+title: Stories Core
+description: 'Рушій Stories без прив’язки до фреймворку: контролер Stories, контролер таймера, рендерер прогресу на Canvas та утиліти.'
+---
+
+import { Cpu, Layers, Timer, Minus, MousePointerClick, Cog } from 'lucide-react';
+import installation from '../../snippets/stories-core/installation.sh?raw';
+import controllerExample from '../../snippets/stories-core/controller-example.ts?raw';
+import timerExample from '../../snippets/stories-core/timer-example.ts?raw';
+import canvasExample from '../../snippets/stories-core/canvas-example.ts?raw';
+import viewedStateExample from '../../snippets/stories-core/viewed-state-example.ts?raw';
+import typesCode from '../../snippets/stories-core/types-code.ts?raw';
+
+Рушій, на якому працює `@reelkit/react-stories-player`. Чистий TypeScript, без залежностей від фреймворків. Беріть його, щоб будувати плеєри історій для Angular, Vue чи звичайного JavaScript.
+
+<FeatureGrid columns={3} items={[
+  {
+    icon: Cpu,
+    label: 'Framework-Agnostic',
+    desc: 'Чистий TypeScript, жодних залежностей від DOM-фреймворків',
+  },
+  {
+    icon: Layers,
+    label: 'Дворівнева навігація',
+    desc: 'Групи та історії всередині кожної групи',
+  },
+  {
+    icon: Timer,
+    label: 'Таймер на requestAnimationFrame',
+    desc: 'Автоперехід на requestAnimationFrame із паузою та відновленням',
+  },
+  {
+    icon: Minus,
+    label: 'Прогрес на Canvas',
+    desc: 'Сегментована смуга прогресу з рухомим вікном, готова до Retina',
+  },
+  {
+    icon: MousePointerClick,
+    label: 'Зони дотику',
+    desc: 'Налаштовне розпізнавання дотиків ліворуч і праворуч',
+  },
+  {
+    icon: Cog,
+    label: 'Реактивні сигнали',
+    desc: 'Побудовано на примітивах сигналів @reelkit/core',
+  },
+]} />
+
+## Встановлення [#installation]
+
+<CodeBlock code={installation} language="bash" />
+
+## Контролер Stories [#stories-controller]
+
+`createStoriesController(config, events?)` керує навігацією між групами та історіями. Стежить за станом паузи, запам’ятовує останню переглянуту історію в кожній групі й викликає колбеки на кожному переході.
+
+### Конфігурація (StoriesControllerConfig) [#config-storiescontrollerconfig]
+
+| Властивість | Тип | Типове значення | Опис |
+| --- | --- | --- | --- |
+| `groupCount` | `number` | required | Загальна кількість груп історій |
+| `storyCounts` | `number[]` | required | Кількість історій у кожній групі |
+| `initialGroupIndex` | `number` | 0 | Початковий індекс групи |
+| `initialStoryIndex` | `number` | resumeStoryIndex(initialGroupIndex), інакше 0 | Початковий індекс історії всередині групи. Явно названий переважає над збереженим; пропустіть — і початкова група відновлюється, як і всі інші. |
+| `defaultImageDuration` | `number` | 5000 | Типова тривалість автопереходу для історій-зображень у мілісекундах |
+| `resumeStoryIndex` | `(groupIndex: number) => number` | undefined | Історія, на якій відкривається ще не відвідана група; обмежена наявними історіями |
+
+### Події (StoriesControllerEvents) [#events-storiescontrollerevents]
+
+| Event | Тип | Опис |
+| --- | --- | --- |
+| `onStoryChange` | `(groupIndex, storyIndex) => void` | Спрацьовує, коли змінюється активна історія |
+| `onGroupChange` | `(groupIndex) => void` | Спрацьовує, коли змінюється активна група |
+| `onStoryViewed` | `(groupIndex, storyIndex) => void` | Спрацьовує, коли історія стає видимою |
+| `onStoryComplete` | `(groupIndex, storyIndex) => void` | Спрацьовує, коли завершується таймер історії (перед переходом) |
+| `onComplete` | `() => void` | Спрацьовує, коли завершується остання історія останньої групи |
+| `onClose` | `() => void` | Спрацьовує, коли оверлей має закритися |
+
+### Стан (реактивні сигнали) [#state-reactive-signals]
+
+| Signal | Тип | Опис |
+| --- | --- | --- |
+| `state.activeGroupIndex` | `Signal<number>` | Індекс поточної активної групи |
+| `state.activeStoryIndex` | `Signal<number>` | Індекс поточної активної історії всередині групи |
+| `state.isPaused` | `Signal<boolean>` | Чи призупинено автоперехід |
+
+### Методи [#methods]
+
+| Метод | Тип | Опис |
+| --- | --- | --- |
+| `nextStory()` | `() => void` | Перехід уперед у межах групи; на межі переходить у наступну групу |
+| `prevStory()` | `() => void` | Перехід назад у межах групи; на межі переходить у попередню групу |
+| `nextGroup()` | `() => void` | Перемикає на наступну групу, продовжуючи з останньої переглянутої історії |
+| `prevGroup()` | `() => void` | Перемикає на попередню групу, продовжуючи з останньої переглянутої історії |
+| `goToGroup(index)` | `(number) => void` | Перехід до конкретної групи за індексом |
+| `pause()` | `() => void` | Призупиняє автоперехід |
+| `resume()` | `() => void` | Відновлює автоперехід |
+| `onStoryTimerComplete()` | `() => void` | Викликається, коли таймер завершується; спрацьовує onStoryComplete, а потім відбувається перехід |
+| `getLastStoryIndex(groupIndex)` | `(number) => number` | Де відкривається група: історія, на якій її залишили в цій сесії, інакше та, що назве resumeStoryIndex |
+| `reportInitialView()` | `() => void` | Повідомляє історію, на якій відкрився плеєр, як переглянуту — один раз. Викликайте після монтування, а не під час рендерингу. |
+
+### Example [#example]
+
+<CodeBlock code={controllerExample} />
+
+## Контролер таймера [#timer-controller]
+
+`createTimerController(config)` керує автопереходом через цикл `requestAnimationFrame` . Сигнал прогресу (від 0 до 1) живить смугу прогресу. Пауза й відновлення зберігають точну позицію.
+
+### Конфігурація (TimerControllerConfig) [#config-timercontrollerconfig]
+
+| Властивість | Тип | Типове значення | Опис |
+| --- | --- | --- | --- |
+| `duration` | `number` | required | Типова тривалість у мілісекундах |
+| `onComplete` | `() => void` | undefined | Викликається, коли таймер доходить до 100% |
+
+### State [#state]
+
+| Signal | Тип | Опис |
+| --- | --- | --- |
+| `progress` | `Signal<number>` | Сигнал прогресу (від 0 до 1) |
+| `isRunning` | `Signal<boolean>` | Чи таймер зараз працює |
+
+### Методи [#methods]
+
+| Метод | Тип | Опис |
+| --- | --- | --- |
+| `start(duration?)` | `(number?) => void` | Запускає (або перезапускає) таймер із необов’язковою заміною тривалості |
+| `pause()` | `() => void` | Заморожує прогрес на поточній позиції |
+| `resume()` | `() => void` | Продовжує із замороженої позиції |
+| `reset()` | `() => void` | Скидає прогрес до 0 і зупиняє |
+| `dispose()` | `() => void` | Звільняє ресурси |
+
+### Example [#example]
+
+<CodeBlock code={timerExample} />
+
+## Рендерер прогресу на Canvas [#canvas-progress-renderer]
+
+`createCanvasProgressRenderer(config?)` малює сегментовані смуги прогресу на canvas. Масштабується під дисплеї Retina, вимірює свій контейнер через ResizeObserver і вмикає рухоме вікно, коли сегменти не вміщаються.
+
+### Config (CanvasProgressRendererConfig) [#config-canvasprogressrendererconfig]
+
+| Властивість | Тип | Типове значення | Опис |
+| --- | --- | --- | --- |
+| `gap` | `number` | 2 | Проміжок між сегментами в пікселях |
+| `barHeight` | `number` | 2 | Висота смуги в пікселях |
+| `minSegmentWidth` | `number` | 8 | Мінімальна ширина сегмента, після якої вмикається рухоме вікно |
+| `bgColor` | `string` | 'rgba(255,255,255,0.3)' | Колір тла незаповнених сегментів |
+| `fillColor` | `string` | '#ffffff' | Колір заповнення завершених та активних сегментів |
+
+### Методи [#methods]
+
+| Член | Тип | Опис |
+| --- | --- | --- |
+| `attach(canvas)` | `(HTMLCanvasElement) => void` | Підключає до елемента canvas; запускає ResizeObserver на батьківському елементі |
+| `draw(totalStories, activeIndex, progress)` | `(number, number, number) => void` | Малює смугу прогресу для заданого стану |
+| `width` | `number (readonly)` | Поточна виміряна ширина в пікселях CSS |
+| `dispose()` | `() => void` | Прибирає ResizeObserver і внутрішній стан |
+
+### Example [#example]
+
+<CodeBlock code={canvasExample} />
+
+## Переглянуте [#viewed-state]
+
+`createStoriesViewedState(controller, groups)` читає `ViewedStateController` ядра в термінах плеєра — групи, автори, індекси історій, — лишаючи саме сховище про них необізнаним. Повертає `StoriesViewedState`. Побудуйте сховище з того самого ключа, що й адресний рядок, з відстеженням на групу — і збережений запис читатиметься точно як параметр спільного посилання.
+
+| Параметр | Тип | Опис |
+| --- | --- | --- |
+| `controller` | `ViewedStateController<TwoAxisPosition>` | Сховище ядра, побудоване з того самого ключа, що й адресний рядок, розгорнуте з twoAxisViewedTracking, щоб кожна група мала власний запис |
+| `groups` | `() => StoriesGroup<T>[]` | Читає поточні групи. Гетер, тож стрічка, що довантажується або перевпорядковується після налаштування, вимірюється на момент виклику. |
+
+### StoriesViewedState [#storiesviewedstate]
+
+| Метод | Тип | Опис |
+| --- | --- | --- |
+| `viewedCounts()` | `() => Map<string, number>` | Переглянуті історії на групу, за id автора — форма, яку StoriesRingList приймає як viewedState |
+| `resumeStoryIndex(groupIndex)` | `(number) => number` | Перша непереглянута історія або 0, коли групу переглянуто до кінця |
+| `markViewed(groupIndex, storyIndex)` | `(number, number) => void` | Записує історію як переглянуту. Під'єднайте до onStoryViewed. |
+
+### Приклад [#example]
+
+<CodeBlock code={viewedStateExample} />
+
+Запис називає найдальшу досягнуту історію, а не підрахунок переглядів, тож ключ за ідентифікатором зберігає місце групи попри перевпорядкування стрічки, а вилучена із середини групи історія скорочує лічильник і знову засвічує кільце.
+
+## Utility Functions [#utility-functions]
+
+Чисті функції для розпізнавання зон дотику та обчислень смуги прогресу.
+
+| Function | Тип | Опис |
+| --- | --- | --- |
+| `getTapAction(tapX, containerWidth, splitRatio?)` | `(number, number, number?) => 'prev' \| 'next'` | Визначає за позицією, що спричиняє дотик — 'prev' чи 'next'. Типове значення splitRatio — 0.3. |
+| `getSegments(totalStories, activeIndex, progress)` | `(number, number, number) => SegmentState[]` | Обчислює стан і відсоток заповнення кожного сегмента смуги прогресу |
+| `getVisibleWindow(totalStories, activeIndex, progress, containerWidth, minSegmentWidth?, gap?)` | `(number, number, number, number, number?, number?) => VisibleWindow` | Обчислює видиме рухоме вікно сегментів, коли їх більше, ніж уміщає контейнер |
+
+## Types [#types]
+
+Усі визначення типів, експортовані з `@reelkit/stories-core`.
+
+<CodeBlock code={typesCode} />

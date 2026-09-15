@@ -1,0 +1,7 @@
+html, body {
+  overflow-x: hidden;
+}
+
+.slider-container {
+  width: 100%; /* not 100vw */
+}

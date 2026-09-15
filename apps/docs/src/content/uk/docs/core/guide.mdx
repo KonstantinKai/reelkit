@@ -1,0 +1,176 @@
+---
+title: Посібник з ядра
+description: 'Архітектура @reelkit/core: контролер слайдера, віртуалізація, система сигналів, контролери жестів і таймлайну.'
+---
+
+import createslidercontroller from '../../../snippets/core-guide/createslidercontroller.ts?raw';
+import navigation from '../../../snippets/core-guide/navigation.ts?raw';
+import lifecycle from '../../../snippets/core-guide/lifecycle.ts?raw';
+import stateUpdates from '../../../snippets/core-guide/state-updates.ts?raw';
+import virtualization from '../../../snippets/core-guide/virtualization.ts?raw';
+import signals from '../../../snippets/core-guide/signals.ts?raw';
+import controllerState from '../../../snippets/core-guide/controller-state.ts?raw';
+import timelineController from '../../../snippets/core-guide/timeline-controller.ts?raw';
+import howItWorks from '../../../snippets/core-guide/how-it-works.ts?raw';
+import howItWorks2 from '../../../snippets/core-guide/how-it-works-2.ts?raw';
+
+The `@reelkit/core` містить логіку слайдера без прив’язки до фреймворку. Беріть його для власних інтеграцій або щоб розібратися в архітектурі під капотом.
+
+## Огляд архітектури [#architecture-overview]
+
+Ядро побудоване на **патерні контролерів** із фабричними функціями. Жодних класів — лише звичайні об’єкти, повернуті із замикань. Нуль залежностей. Ядро узгоджує роботу:
+
+<Bullets marker="dot">
+
+- **SliderController** — центральний стан і навігація
+- **GestureController** — обробка перетягування дотиком і вказівником
+- **KeyboardController** — стрілки та Escape
+- **WheelController** — колесо миші з тротлінгом
+
+</Bullets>
+
+## createSliderController [#createslidercontroller]
+
+Створює новий екземпляр контролера слайдера, який керує всім станом і поведінкою.
+
+<CodeBlock code={createslidercontroller} language="typescript" />
+
+## Методи контролера [#controller-methods]
+
+### Навігація [#navigation]
+
+<CodeBlock code={navigation} language="typescript" />
+
+### Життєвий цикл [#lifecycle]
+
+<CodeBlock code={lifecycle} language="typescript" />
+
+### Оновлення стану [#state-updates]
+
+<CodeBlock code={stateUpdates} language="typescript" />
+
+## Віртуалізація [#virtualization]
+
+Ядро тримає в DOM лише **3 слайди** у будь-який момент (поточний, попередній, наступний). Екстрактор діапазону вирішує, які індекси потрапляють у вікно рендерингу:
+
+<CodeBlock code={virtualization} language="typescript" />
+
+<Callout type="info">
+  Результат завжди обмежується трьома індексами. Якщо ваш екстрактор поверне більше, ядро залишить 3 навколо поточного слайда.
+</Callout>
+
+## Сигнали [#signals]
+
+Для реактивності ядро використовує легку систему сигналів:
+
+<CodeBlock code={signals} language="typescript" />
+
+## Стан контролера [#controller-state]
+
+Доступ до реактивного стану — через `controller.state`:
+
+<CodeBlock code={controllerState} language="typescript" />
+
+## Контролер таймлайну [#timeline-controller]
+
+Зберіть власну смугу перемотування для будь-якого `<video>` елемента. Контролер дає реактивні сигнали тривалості, поточного часу, буферизованих діапазонів і стану перемотування, а також одним викликом навішує обробку вказівника й клавіатури на будь-який елемент DOM.
+
+<CodeBlock code={timelineController} language="typescript" />
+
+## Стан в URL [#url-state]
+
+Винесіть стан відкриття оверлея в адресний рядок: видимий слайд отримує посилання, яким можна поділитися, відкрити напряму й закрити кнопкою «назад». Модель живе в ядрі; прив’язки загортають її в хук (React / Vue `useOverlayUrlState`, Angular `createOverlayUrlState`) і компонент оверлея, керований URL.
+
+### Як це працює [#how-it-works]
+
+`createUrlStateController` віддзеркалює один параметр запиту в сигнал і записує зміни назад. Відкриття додає **один** запис в історію; кожна навігація **замінює** його — сто свайпів не додають жодного, тож один крок назад завжди закриває. `UrlAdapter` — це змінний шов читання й запису: типовий керує `history.pushState`, а застосунок із роутером передає адаптер на базі роутера, щоб власне місцеположення роутера не застаріло.
+
+<CodeBlock code={howItWorks} language="typescript" />
+
+### Кодек і локатор — дві різні задачі [#codec-and-locator-two-jobs]
+
+Ключ — це узгоджена пара `{ codec, locator }` . Записати ідентичність в URL і знайти, де вона зараз, — різні задачі, тож і об’єкти різні:
+
+- **кодек — формат передавання.** `encode` записує ідентичність у текст параметра; `decode` розбирає його назад і відхиляє зіпсоване значення, тож параметр сам зникає з URL.
+- **локатор — пошук.** `locate` знаходить, де розкодована ідентичність лежить у живій колекції (або `null` якщо її вже немає); `identify` читає позицію назад в ідентичність для запису; необов’язковий `locateAsync` дотягує сторінку вікна чи нескінченної стрічки, якщо не знайшлося.
+
+Роздільність дає змогу поєднати будь-який формат із будь-яким пошуком — наприклад, кодек зі стабільним id і локатор із підвантаженням.
+
+### Ключі за індексом і за стабільним id [#index-vs-stable-id-keys]
+
+Два вбудовані ключі будують цю пару за вас; різняться лише тим, що саме називає URL:
+
+- `urlIndexKey(() => count)` адресує за **позицією** (`?photo=3`). Найпростіше, але після зміни порядку закладка відкриє інший елемент.
+- `urlStableIdKey({ items })` адресує за стабільним `id` (`?photo=post_42`), скануючи живий список — закладка називає той самий елемент і після зміни порядку, а якщо його немає, акуратно зникає. `hashCodec: base64UrlCodec` маскує id у base64url (оборотно, це не криптографічний хеш).
+
+**Гортаєте стрічку вікнами?** Обидва вбудовані ключі приймають необов’язковий `locateAsync` — `urlIndexKey(() => count, locateAsync)` та `urlStableIdKey({ items, locateAsync })`. Синхронний пошук відповідає за вже завантажене; якщо не знайшлося, решта підвантажується, тож надіслане посилання за межі вікна все одно відкриється — без власноруч написаних кодека й локатора.
+
+Дві осі? `urlIndexTwoAxisKey` несе `?p=<outer>.<inner>` для допису разом із індексом внутрішнього медіа. Повний перелік опцій — у [довіднику API ядра](/docs/core/api#url-state).
+
+## Переглянуте [#viewed-state]
+
+Запам’ятовуйте, як далеко глядач дійшов у галереї, — між перезавантаженнями та вкладками: кільце, що показує переглянуте, галерея, що відкривається там, де її залишили. Це та сама модель, що й стан в URL, лише спрямована на сховище замість адресного рядка, тож обидві ділять один ключ.
+
+### Як це працює [#how-it-works]
+
+`createViewedStateController` зберігає запис як точно той текст, який ніс би `?photo=` посилання, і читає його назад через той самий цикл `decode` → `locate`. Збереженій позиції ніхто не довіряє. Розгорніть один ключ в обидві поверхні — і закладка та збережений запис будуть одним рядком.
+
+<CodeBlock code={howItWorks2} language="typescript" />
+
+### Довговічність визначає ключ [#durability-follows-the-key]
+
+Сховище не додає власного відновлення, тож який ключ ви розгорнете, те й переживе зміни: ключ за ідентифікатором зберігає місце попри перевпорядкування колекції, ключ за позицією — ні. Збережений запис називає найдальшу досягнуту точку, а не підрахунок переглядів, тож вилучення елемента із середини скорочує лічильник — те саме самовиправлення, яке отримує спільне посилання.
+
+Читання лише синхронне. Запис, елементи якого ще не завантажено, читається як відсутній і лишається у сховищі недоторканим, тож віконна стрічка ніколи не з’їдає власну історію.
+
+### Сховище та термін дії [#storage-and-expiry]
+
+Типово сховище стоїть на `localStorage`; `createSessionStorageAdapter()` забуває при закритті вкладки, а власний `StorageAdapter` кладе його будь-куди синхронно. Нічого не читається до `attach()`, тож серверний рендер і перший клієнтський збігаються.
+
+Записи зберігаються, доки їх явно не забути. Передайте `ttlMs`, щоб натомість вони закінчувалися — на трек, за ковзним годинником, тож те, що ще дивляться, не застаріває поруч із покинутим. Це змінює запис: кожен елемент стає парою `[wire, timestamp]`, але читання приймає обидві форми незалежно від опції, тож запис, збережений до її ввімкнення, вважається свіжим, а не видаляється. `maxTracks` обмежує кількість, а не вік: понад ліміт найдавніше записаний трек вилучається під час наступного запису, а запис треку, навіть позиції позаду, переставляє його в кінець черги. Повний перелік опцій — у [довіднику API ядра](/docs/core/api#viewed-state).
+
+<NextSteps
+        items={[
+          {
+            label: 'Довідник API ядра',
+            path: '/docs/core/api',
+            description: 'усі доступні пропси',
+          },
+          {
+            label: 'Посібник для фреймворку',
+            path: {
+              react: '/docs/react/guide',
+              angular: '/docs/angular/guide',
+              vue: '/docs/vue/guide',
+            },
+            description: 'компоненти, демо та інтеграція',
+          },
+          {
+            label: 'Reel Player',
+            path: {
+              react: '/docs/reel-player',
+              angular: '/docs/angular-reel-player',
+              vue: '/docs/vue-reel-player',
+            },
+            description: 'відеоплеєр у стилі TikTok / Reels',
+          },
+          {
+            label: 'Lightbox',
+            path: {
+              react: '/docs/lightbox',
+              angular: '/docs/angular-lightbox',
+              vue: '/docs/vue-lightbox',
+            },
+            description: 'галерея зображень і відео',
+          },
+          {
+            label: 'Stories Player',
+            path: {
+              react: '/docs/stories-player',
+              angular: '/docs/angular-stories-player',
+              vue: '/docs/vue-stories-player',
+            },
+            description: 'переглядач історій у стилі Instagram',
+          },
+        ]}
+      />

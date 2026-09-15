@@ -1,0 +1,190 @@
+---
+title: Getting Started
+description: reelkit is a single-item slider — one item visible at a time, like TikTok, Instagram Reels, or Stories. Perfect for vertical video feeds, fullscreen galleries, and swipeable content.
+---
+
+import quickStart from '../../snippets/getting-started/quick-start.tsx?raw';
+import quickStart2 from '../../snippets/getting-started/quick-start-2.ts?raw';
+import quickStart3 from '../../snippets/getting-started/quick-start-3.vue?raw';
+import reelindicator from '../../snippets/getting-started/reelindicator.tsx?raw';
+import reelindicator2 from '../../snippets/getting-started/reelindicator-2.html?raw';
+import reelindicator3 from '../../snippets/getting-started/reelindicator-3.vue?raw';
+import navigation from '../../snippets/getting-started/navigation.tsx?raw';
+import navigation2 from '../../snippets/getting-started/navigation-2.html?raw';
+import navigation3 from '../../snippets/getting-started/navigation-3.vue?raw';
+
+reelkit is a **single-item slider** — one item visible at a time, like TikTok, Instagram Reels, or Stories. Perfect for vertical video feeds, fullscreen galleries, and swipeable content.
+
+<Callout type="warning" title="0.x.x — Unstable API">
+  ReelKit is under active development. While in 0.x.x, APIs may change between minor versions without a deprecation period. Pin your version to avoid unexpected breakage.
+</Callout>
+
+## Select Your Framework [#select-your-framework]
+
+<FrameworkPicker />
+
+## Try It Online [#try-it-online]
+
+Try it in the browser, no install required:
+
+<FrameworkVariant for="react">
+
+<DemoLinks demo="https://react-demo.reelkit.dev/?utm_source=docs" demoLabel="React Demo" starter="https://stackblitz.com/github/KonstantinKai/reelkit-react-starter" starterLabel="React Starter" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+<DemoLinks demo="https://angular-demo.reelkit.dev/?utm_source=docs" demoLabel="Angular Demo" starter="https://stackblitz.com/github/KonstantinKai/reelkit-angular-starter" starterLabel="Angular Starter" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+<DemoLinks demo="https://vue-demo.reelkit.dev/?utm_source=docs" demoLabel="Vue Demo" starter="https://stackblitz.com/github/KonstantinKai/reelkit-vue-starter" starterLabel="Vue Starter" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="react">
+
+## Quick Start [#quick-start]
+
+Minimal vertical slider with React:
+
+<CodeBlock code={quickStart} language="tsx" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+## Quick Start [#quick-start]
+
+Minimal vertical slider with Angular:
+
+<CodeBlock code={quickStart2} language="typescript" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+## Quick Start [#quick-start]
+
+Minimal vertical slider with Vue:
+
+<CodeBlock code={quickStart3} language="vue" />
+
+</FrameworkVariant>
+
+## Key Concepts [#key-concepts]
+
+### Reel [#reel]
+
+The `Reel` component is the main container that manages slider state, handles touch gestures, keyboard navigation, and animations. It uses a render prop pattern via `itemBuilder` for rendering slides.
+
+### itemBuilder [#itembuilder]
+
+The `itemBuilder` prop is a function that receives the index and returns the content for each slide. This pattern enables virtualization — only visible items are rendered.
+
+### ReelIndicator [#reelindicator]
+
+Optional component that displays Instagram-style progress indicators showing the current position in the slider.
+
+<FrameworkVariant for="react">
+
+<CodeBlock code={reelindicator} language="tsx" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+<CodeBlock code={reelindicator2} language="html" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+<CodeBlock code={reelindicator3} language="vue-html" />
+
+</FrameworkVariant>
+
+## Navigation [#navigation]
+
+Built-in navigation methods:
+
+<Bullets marker="dot">
+
+- **Touch/Swipe:** Drag to navigate with momentum and snap
+- **Keyboard:** Arrow keys (overlay components also handle Escape to close)
+- **Mouse Wheel:** Enable with `enableWheel` prop
+- **Programmatic:** Use `apiRef` for `next()`, `prev()`, `goTo()`
+
+</Bullets>
+
+<FrameworkVariant for="react">
+
+<CodeBlock code={navigation} language="tsx" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+<CodeBlock code={navigation2} language="html" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+<CodeBlock code={navigation3} language="vue" />
+
+</FrameworkVariant>
+
+<NextSteps
+        items={[
+          {
+            label: 'Installation',
+            path: '/docs/installation',
+            description: 'all packages and setup options',
+          },
+          {
+            label: 'Core Guide',
+            path: '/docs/core/guide',
+            description: 'framework-agnostic engine',
+          },
+          {
+            label: 'Framework Guide',
+            path: {
+              react: '/docs/react/guide',
+              angular: '/docs/angular/guide',
+              vue: '/docs/vue/guide',
+            },
+            description: 'components, demos, and integration',
+          },
+          {
+            label: 'Reel Player',
+            path: {
+              react: '/docs/reel-player',
+              angular: '/docs/angular-reel-player',
+              vue: '/docs/vue-reel-player',
+            },
+            description: 'TikTok/Reels-style video player',
+          },
+          {
+            label: 'Lightbox',
+            path: {
+              react: '/docs/lightbox',
+              angular: '/docs/angular-lightbox',
+              vue: '/docs/vue-lightbox',
+            },
+            description: 'image & video gallery',
+          },
+          {
+            label: 'Stories Player',
+            path: {
+              react: '/docs/stories-player',
+              angular: '/docs/angular-stories-player',
+              vue: '/docs/vue-stories-player',
+            },
+            description: 'Instagram-style stories viewer',
+          },
+        ]}
+      />

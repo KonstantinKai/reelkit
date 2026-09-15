@@ -1,0 +1,6 @@
+<rk-reel [count]="items.length" [size]="[400, 600]">
+  <ng-template rkReelItem let-index>
+    <app-slide [data]="items[index]" />
+  </ng-template>
+  <rk-reel-indicator />
+</rk-reel>

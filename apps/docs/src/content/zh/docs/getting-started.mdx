@@ -1,0 +1,190 @@
+---
+title: 快速开始
+description: 几分钟内跑通第一个 ReelKit 滑动器：安装、渲染 3 个虚拟化幻灯片、接上手势与键盘导航。
+---
+
+import quickStart from '../../snippets/getting-started/quick-start.tsx?raw';
+import quickStart2 from '../../snippets/getting-started/quick-start-2.ts?raw';
+import quickStart3 from '../../snippets/getting-started/quick-start-3.vue?raw';
+import reelindicator from '../../snippets/getting-started/reelindicator.tsx?raw';
+import reelindicator2 from '../../snippets/getting-started/reelindicator-2.html?raw';
+import reelindicator3 from '../../snippets/getting-started/reelindicator-3.vue?raw';
+import navigation from '../../snippets/getting-started/navigation.tsx?raw';
+import navigation2 from '../../snippets/getting-started/navigation-2.html?raw';
+import navigation3 from '../../snippets/getting-started/navigation-3.vue?raw';
+
+reelkit 是一个**单条目滑动器** —— 同一时间只显示一个条目，就像 TikTok、Instagram Reels 或 Stories。非常适合竖向视频流、全屏画廊和可滑动的内容。
+
+<Callout type="warning" title="0.x.x —— API 尚未稳定">
+  ReelKit 正在活跃开发中。在 0.x.x 期间，API 可能在次版本之间发生变化，且不保证有废弃过渡期。 请锁定版本号，避免意外的破坏性变更。
+</Callout>
+
+## 选择你的框架 [#select-your-framework]
+
+<FrameworkPicker />
+
+## 在线试用 [#try-it-online]
+
+直接在浏览器里试，无需安装：
+
+<FrameworkVariant for="react">
+
+<DemoLinks demo="https://react-demo.reelkit.dev/?utm_source=docs" demoLabel="React 演示" starter="https://stackblitz.com/github/KonstantinKai/reelkit-react-starter" starterLabel="React 脚手架" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+<DemoLinks demo="https://angular-demo.reelkit.dev/?utm_source=docs" demoLabel="Angular 演示" starter="https://stackblitz.com/github/KonstantinKai/reelkit-angular-starter" starterLabel="Angular 脚手架" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+<DemoLinks demo="https://vue-demo.reelkit.dev/?utm_source=docs" demoLabel="Vue 演示" starter="https://stackblitz.com/github/KonstantinKai/reelkit-vue-starter" starterLabel="Vue 脚手架" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="react">
+
+## 快速上手 [#quick-start]
+
+用 React 写一个最小的竖向滑动器：
+
+<CodeBlock code={quickStart} language="tsx" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+## 快速上手 [#quick-start]
+
+用 Angular 写一个最小的竖向滑动器：
+
+<CodeBlock code={quickStart2} language="typescript" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+## 快速上手 [#quick-start]
+
+用 Vue 写一个最小的竖向滑动器：
+
+<CodeBlock code={quickStart3} language="vue" />
+
+</FrameworkVariant>
+
+## 核心概念 [#key-concepts]
+
+### Reel [#reel]
+
+`Reel` 组件是主容器，负责管理滑动器状态、处理触摸手势、键盘导航和动画。 它通过 `itemBuilder` 这一 render prop 模式来渲染幻灯片。
+
+### itemBuilder [#itembuilder]
+
+`itemBuilder` 属性是一个函数，接收索引并返回该幻灯片的内容。 正是这个模式让虚拟化成为可能 —— 只有可见的条目会被渲染。
+
+### ReelIndicator [#reelindicator]
+
+可选组件，显示 Instagram 风格的进度指示器，标出当前在滑动器中的位置。
+
+<FrameworkVariant for="react">
+
+<CodeBlock code={reelindicator} language="tsx" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+<CodeBlock code={reelindicator2} language="html" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+<CodeBlock code={reelindicator3} language="vue-html" />
+
+</FrameworkVariant>
+
+## 导航 [#navigation]
+
+内置的导航方式：
+
+<Bullets marker="dot">
+
+- **触摸 / 滑动：** 拖动即可翻页，带惯性和吸附
+- **键盘：** 方向键（浮层组件还会处理 Escape 关闭）
+- **鼠标滚轮：** 用 `enableWheel` 属性开启
+- **编程式：** 通过 `apiRef` 调用 `next()`、 `prev()`、 `goTo()`
+
+</Bullets>
+
+<FrameworkVariant for="react">
+
+<CodeBlock code={navigation} language="tsx" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+<CodeBlock code={navigation2} language="html" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+<CodeBlock code={navigation3} language="vue" />
+
+</FrameworkVariant>
+
+<NextSteps
+        items={[
+          {
+            label: '安装',
+            path: '/docs/installation',
+            description: '所有包与安装选项',
+          },
+          {
+            label: '核心指南',
+            path: '/docs/core/guide',
+            description: '与框架无关的引擎',
+          },
+          {
+            label: '框架指南',
+            path: {
+              react: '/docs/react/guide',
+              angular: '/docs/angular/guide',
+              vue: '/docs/vue/guide',
+            },
+            description: '组件、演示与集成方式',
+          },
+          {
+            label: 'Reel Player',
+            path: {
+              react: '/docs/reel-player',
+              angular: '/docs/angular-reel-player',
+              vue: '/docs/vue-reel-player',
+            },
+            description: 'TikTok / Reels 风格的视频播放器',
+          },
+          {
+            label: 'Lightbox',
+            path: {
+              react: '/docs/lightbox',
+              angular: '/docs/angular-lightbox',
+              vue: '/docs/vue-lightbox',
+            },
+            description: '图片与视频画廊',
+          },
+          {
+            label: 'Stories Player',
+            path: {
+              react: '/docs/stories-player',
+              angular: '/docs/angular-stories-player',
+              vue: '/docs/vue-stories-player',
+            },
+            description: 'Instagram 风格的 Stories 浏览器',
+          },
+        ]}
+      />

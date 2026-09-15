@@ -1,0 +1,183 @@
+---
+title: Посібник для Angular
+description: 'ReelKit в Angular: компонент rk-reel, шаблонний патерн rkReelItem та вихід apiReady на сигналах.'
+---
+
+import { Hand, Keyboard, MousePointer, InfinityIcon, Radio, Navigation, Zap, Layers, Code } from 'lucide-react';
+import rkReelComponent from '../../../snippets/angular-guide/rk-reel-component.ts?raw';
+import autoSizing from '../../../snippets/angular-guide/auto-sizing.html?raw';
+import rkreelitemTemplatePattern from '../../../snippets/angular-guide/rkreelitem-template-pattern.html?raw';
+import navigation from '../../../snippets/angular-guide/navigation.ts?raw';
+import urlState from '../../../snippets/angular-guide/url-state.ts?raw';
+import urlState2 from '../../../snippets/angular-guide/url-state-2.ts?raw';
+import reelindicator from '../../../snippets/angular-guide/reelindicator.html?raw';
+import apireadyOutputSignalBased from '../../../snippets/angular-guide/apiready-output-signal-based.ts?raw';
+
+Дізнайтеся, як будувати слайдери з `@reelkit/angular`.
+
+<FeatureGrid columns={3} items={[
+              {
+                icon: Hand,
+                label: 'Спершу дотик',
+                desc: 'Свайп з інерцією та прилипанням',
+              },
+              {
+                icon: Keyboard,
+                label: 'Навігація з клавіатури',
+                desc: 'Стрілки + Escape',
+              },
+              {
+                icon: MousePointer,
+                label: 'Прокручування колесом',
+                desc: 'Необов’язково, з дебаунсом',
+              },
+              {
+                icon: InfinityIcon,
+                label: 'Віртуалізований',
+                desc: '10 000+ елементів, 3 у DOM',
+              },
+              {
+                icon: Radio,
+                label: 'Indicators',
+                desc: 'Прокручування точок у стилі Instagram',
+              },
+              {
+                icon: Navigation,
+                label: 'Програмний API',
+                desc: 'next(), prev(), goTo() через apiReady',
+              },
+              {
+                icon: Zap,
+                label: 'Режим циклу',
+                desc: 'Нескінченна кругова навігація',
+              },
+              {
+                icon: Layers,
+                label: 'Directional',
+                desc: 'Вертикально або горизонтально',
+              },
+              {
+                icon: Code,
+                label: 'Signals-Based',
+                desc: 'OnPush із сигналами Angular',
+              },
+            ]} />
+
+## Компонент rk-reel [#rk-reel-component]
+
+The `rk-reel` загортає контролер слайдера з ядра. Автономний, із `ChangeDetectionStrategy.OnPush`.
+
+<Sandbox code={rkReelComponent} language="typescript" title="app.component.ts" framework="angular" stackblitzDeps={['@reelkit/angular']} />
+
+## Auto-sizing [#auto-sizing]
+
+The `size` необов’язковий. Якщо його не передати, `rk-reel` сам вимірює свій контейнер через `ResizeObserver` і підлаштовується під макет, заданий CSS. Розмір контейнера має задавати батьківський елемент — наприклад, flex, grid або явні розміри в CSS.
+
+<CodeBlock code={autoSizing} language="html" />
+
+## Шаблонний патерн rkReelItem [#rkreelitem-template-pattern]
+
+Замість render prop із React в Angular використовується структурна директива `rkReelItem` на `ng-template`. Саме це дає віртуалізацію: створюються лише видимі слайди. Контекст шаблону надає три змінні:
+
+<CodeBlock code={rkreelitemTemplatePattern} language="html" />
+
+## Навігація [#navigation]
+
+Вбудовані способи навігації:
+
+<Bullets marker="dot">
+
+- **Дотик / свайп:** Тягніть, щоб гортати — з інерцією та прилипанням
+- **Клавіатура:** Стрілки та Escape
+- **Колесо миші:** Увімкніть `[enableWheel]="true"`
+- **Програмно:** Скористайтеся пропсом `(apiReady)` щоб отримати `next()`, `prev()`, `goTo()`
+
+</Bullets>
+
+<CodeBlock code={navigation} language="typescript" />
+
+## Стан в URL [#url-state]
+
+`createOverlayUrlState` будує контролер стану в URL для оверлея й повертає його цілком, а ви передаєте його в `*UrlOverlay` компонента як його вхід `[controller]` . Викликайте його в контексті впровадження — в ініціалізаторі поля; він під’єднується одразу й звільняється через `DestroyRef`. Стан відкриття належить URL, тож прив’язаний оверлей відкривається сам, а посилання — звичайний спосіб його відкрити. Перший запис відсутнього параметра додає один запис в історію, кожен наступний його замінює, тож гортання ніколи не ховає кнопку «назад». Тримайте контролер, щоб читати `value`/`позицією` і керувати ним програмно: `set(position)` відкриває, `set(null)` закриває, а `set` — той самий низькорівневий запис, який оверлей робить усередині під час зміни слайда.
+
+<CodeBlock code={urlState} language="typescript" />
+
+Застосунок із роутером — передайте адаптер на базі Router, інакше власне місцеположення роутера застаріє і наступна навігація втратить параметр:
+
+<CodeBlock code={urlState2} language="typescript" />
+
+Об’єкт опцій приймає `param`, `codec`, та `locator` (усі три обов’язкові) плюс необов’язковий `adapter`. `codec` та `locator` — узгоджена пара з однаковим `Id`, so a plain `?photo=3` галерея розгортає `...urlIndexKey(() => images().length)`, який повертає обидві половини одразу. `urlIndexKey` обмежує індекс живою кількістю, яку повертає геттер, тож застарілий `?photo=99` відхиляється й сам зникає з URL замість того, щоб відкрити слайд, якого ніхто не називав. Посторінкова стрічка або галерея з адресацією за ідентичністю передає власну узгоджену пару `codec` + `locator` . Повна таблиця опцій — у [довіднику API для Angular](/docs/angular/api#createoverlayurlstate).
+
+## ReelIndicator [#reelindicator]
+
+Необов’язковий компонент, що показує індикатори прогресу в стилі Instagram із поточною позицією в слайдері. Якщо він усередині `rk-reel`, він сам під’єднується до `count` та `active` значення через токен впровадження `RK_REEL_CONTEXT` — нічого зв’язувати вручну не треба.
+
+<CodeBlock code={reelindicator} language="html" />
+
+## Вихід apiReady — патерн на сигналах [#apiready-output-signal-based-pattern]
+
+The `(apiReady)` спрацьовує один раз після того, як компонент змонтовано й виміряно. Він видає об’єкт `ReelApi` який можна зберегти й використовувати для імперативної навігації. Тримати це посилання в сигналах Angular добре поєднується з виявленням змін `OnPush` .
+
+<CodeBlock code={apireadyOutputSignalBased} language="typescript" />
+
+## Головне [#key-points]
+
+<KeyPoints>
+<KeyPoint title="Автономний компонент">
+  Import `ReelComponent`, `RkReelItemDirective`, and optionally `ReelIndicatorComponent` просто в `imports` array
+</KeyPoint>
+<KeyPoint title="ng-template і rkReelItem">
+  Відповідник в Angular для пропса `itemBuilder` із React — дає віртуалізацію
+</KeyPoint>
+<KeyPoint title="apiReady">
+  Вихід, що спрацьовує один раз із імперативним API навігації — жодних запитів через ViewChild
+</KeyPoint>
+<KeyPoint title="afterChange">
+  Emits `{ index, indexInRange }` — стежить за поточним індексом для оновлення інтерфейсу
+</KeyPoint>
+<KeyPoint title="OnPush за замовчуванням">
+  Усі компоненти використовують `ChangeDetectionStrategy.OnPush` і сигнали Angular заради максимальної продуктивності
+</KeyPoint>
+</KeyPoints>
+
+## Поради щодо продуктивності [#performance-tips]
+
+<KeyPoints>
+<KeyPoint title="Тримайте шаблони слайдів легкими">
+  The `rkReelItem` виконується для кожного видимого слайда (зазвичай трьох одночасно). Уникайте важких обчислень і глибоко вкладених структур усередині.
+</KeyPoint>
+<KeyPoint title="Вантажте дані ближче до краю">
+  Використовуйте `(afterChange)` щоб помітити наближення до кінця й підвантажити наступний пакет, доки слайди не скінчилися — так виходить нескінченна стрічка.
+</KeyPoint>
+<KeyPoint title="Тримайте імперативний стан у сигналах">
+  Зберігайте посилання `ReelApi` та поточний індекс у сигналах Angular — це дає точкову реактивність без повного перерендеру компонента.
+</KeyPoint>
+<KeyPoint title="Вимикайте колесо на сторінках із прокручуванням">
+  Set `[enableWheel]="false"` коли слайдер вбудований у макет із прокручуванням, щоб не перехоплювати прокручування сторінки.
+</KeyPoint>
+</KeyPoints>
+
+<NextSteps
+        items={[
+          {
+            label: 'Довідник API для Angular',
+            path: '/docs/angular/api',
+            description: 'усі доступні входи, виходи та методи',
+          },
+          {
+            label: 'Reel Player',
+            path: '/docs/angular-reel-player',
+            description: 'відеоплеєр у стилі TikTok / Reels',
+          },
+          {
+            label: 'Lightbox',
+            path: '/docs/angular-lightbox',
+            description: 'галерея зображень і відео',
+          },
+          {
+            label: 'Stories Player',
+            path: '/docs/angular-stories-player',
+            description: 'переглядач історій у стилі Instagram (скоро)',
+          },
+        ]}
+      />

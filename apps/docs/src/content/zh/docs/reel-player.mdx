@@ -1,0 +1,569 @@
+---
+title: Reel Player
+description: 全屏 Instagram / TikTok 风格的视频播放浮层：URL 状态、时间轴、声音上下文、主题与无障碍。
+---
+
+import { Zap, Play, Volume2, Layout, Clock, Image, Layers, Ratio, Monitor, Code, Settings, Link2 } from 'lucide-react';
+import { ReelPlayerDemo } from '../../../components/demos/ReelPlayerDemo';
+import installation from '../../snippets/reel-player/installation.sh?raw';
+import installation2 from '../../snippets/reel-player/installation-2.ts?raw';
+import quickStart from '../../snippets/reel-player/quick-start.tsx?raw';
+import fullCode from '../../snippets/reel-player/full-code.tsx?raw';
+import genericContentType from '../../snippets/reel-player/generic-content-type.tsx?raw';
+import customSlideOverlay from '../../snippets/reel-player/custom-slide-overlay.tsx?raw';
+import nonMediaSlides from '../../snippets/reel-player/non-media-slides.tsx?raw';
+import customControls from '../../snippets/reel-player/custom-controls.tsx?raw';
+import customTimeline from '../../snippets/reel-player/custom-timeline.tsx?raw';
+import customNavigation from '../../snippets/reel-player/custom-navigation.tsx?raw';
+import customNestedNavigation from '../../snippets/reel-player/custom-nested-navigation.tsx?raw';
+import customNestedSlides from '../../snippets/reel-player/custom-nested-slides.tsx?raw';
+import urlState from '../../snippets/reel-player/url-state.tsx?raw';
+import oneKeyOrTwo from '../../snippets/reel-player/one-key-or-two.tsx?raw';
+import oneKeyOrTwo2 from '../../snippets/reel-player/one-key-or-two-2.tsx?raw';
+import oneKeyOrTwo3 from '../../snippets/reel-player/one-key-or-two-3.tsx?raw';
+import oneKeyOrTwo4 from '../../snippets/reel-player/one-key-or-two-4.tsx?raw';
+import oneKeyOrTwo5 from '../../snippets/reel-player/one-key-or-two-5.tsx?raw';
+import basecontentitem from '../../snippets/reel-player/basecontentitem.ts?raw';
+import contentitem from '../../snippets/reel-player/contentitem.ts?raw';
+import mediaitem from '../../snippets/reel-player/mediaitem.ts?raw';
+import mediatype from '../../snippets/reel-player/mediatype.ts?raw';
+import controlsrenderpropsT from '../../snippets/reel-player/controlsrenderprops-t.ts?raw';
+import navigationrenderprops from '../../snippets/reel-player/navigationrenderprops.ts?raw';
+import sliderenderpropsT from '../../snippets/reel-player/sliderenderprops-t.ts?raw';
+import nestedsliderenderprops from '../../snippets/reel-player/nestedsliderenderprops.ts?raw';
+import slideoverlayprops from '../../snippets/reel-player/slideoverlayprops.ts?raw';
+import imageslideprops from '../../snippets/reel-player/imageslideprops.ts?raw';
+import videoslideprops from '../../snippets/reel-player/videoslideprops.ts?raw';
+import closebuttonprops from '../../snippets/reel-player/closebuttonprops.ts?raw';
+import soundbuttonprops from '../../snippets/reel-player/soundbuttonprops.ts?raw';
+import timelinebarprops from '../../snippets/reel-player/timelinebarprops.ts?raw';
+import timelinerenderpropsT from '../../snippets/reel-player/timelinerenderprops-t.ts?raw';
+import closebutton from '../../snippets/reel-player/closebutton.tsx?raw';
+import soundbutton from '../../snippets/reel-player/soundbutton.tsx?raw';
+import timelinebar from '../../snippets/reel-player/timelinebar.tsx?raw';
+import slideoverlay from '../../snippets/reel-player/slideoverlay.tsx?raw';
+import imageslide from '../../snippets/reel-player/imageslide.tsx?raw';
+import videoslide from '../../snippets/reel-player/videoslide.tsx?raw';
+import videoslide2 from '../../snippets/reel-player/videoslide-2.tsx?raw';
+import lifecycleCallbacks from '../../snippets/reel-player/lifecycle-callbacks.tsx?raw';
+import customLoadingErrorUi from '../../snippets/reel-player/custom-loading-error-ui.tsx?raw';
+import timeline from '../../snippets/reel-player/timeline.tsx?raw';
+import soundContext from '../../snippets/reel-player/sound-context.tsx?raw';
+import theming from '../../snippets/reel-player/theming.css?raw';
+
+一个全屏的 Instagram Reels / TikTok 风格视频播放器组件，基于 `@reelkit/react-reel-player`.
+
+<DemoLink href="https://react-demo.reelkit.dev/reel-player?utm_source=docs">查看在线演示 →</DemoLink>
+
+## 特性 [#features]
+
+<FeatureGrid items={[
+              {
+                icon: Zap,
+                label: '竖向滑动',
+                desc: '触摸、拖拽、键盘、滚轮',
+              },
+              {
+                icon: Play,
+                label: '视频自动播放',
+                desc: '可见时播放',
+              },
+              { icon: Volume2, label: '声音开关', desc: 'iOS 上声音连续' },
+              {
+                icon: Layout,
+                label: '多媒体',
+                desc: '嵌套的横向轮播',
+              },
+              {
+                icon: Clock,
+                label: '位置记忆',
+                desc: '从上次的位置继续',
+              },
+              {
+                icon: Image,
+                label: '抽帧',
+                desc: '封面图到视频的交叉淡入',
+              },
+              {
+                icon: Layers,
+                label: '虚拟化',
+                desc: 'DOM 里只有 3 张幻灯片',
+              },
+              {
+                icon: Ratio,
+                label: '宽高比',
+                desc: '桌面端 9:16，移动端全屏',
+              },
+              { icon: Monitor, label: '桌面端导航', desc: '箭头按钮' },
+              {
+                icon: Code,
+                label: '泛型类型',
+                desc: '自定义内容数据模型',
+              },
+              {
+                icon: Settings,
+                label: '可定制',
+                desc: '所有部分都可通过 render props 替换',
+              },
+              {
+                icon: Zap,
+                label: '幻灯片浮层',
+                desc: '作者、点赞、描述',
+              },
+              {
+                icon: Link2,
+                label: 'URL 状态',
+                desc: '可分享、可收藏的链接',
+              },
+            ]} />
+
+## 安装 [#installation]
+
+<CodeBlock code={installation} language="bash" />
+
+别忘了引入样式：
+
+<CodeBlock code={installation2} language="typescript" />
+
+<Callout type="info" title="图标">
+  默认控件使用 `lucide-react` 作为图标。如果你想换一套图标库，可以用 `renderControls` 和 `renderNavigation` 提供自己的实现。
+</Callout>
+
+## 快速上手 [#quick-start]
+
+`ReelPlayerOverlay` 组件渲染一个全屏播放器浮层。传入一组 `ContentItem` 对象，并用 `isOpen`.
+
+<CodeBlock code={quickStart} language="tsx" />
+
+## 在线演示 [#live-demo]
+
+<Sandbox
+  code={fullCode}
+  title="ReelPlayerPage.tsx"
+  height={500}
+  stackblitzDeps={['@reelkit/react-reel-player']}
+  stackblitzExtraDeps={{ 'lucide-react': '^0.562.0' }}
+>
+  <ReelPlayerDemo />
+</Sandbox>
+
+<Caption>点缩略图打开全屏播放器。按 Escape 或点关闭按钮返回。</Caption>
+
+## 自定义 [#customization]
+
+### 泛型内容类型 [#generic-content-type]
+
+通过扩展 `BaseContentItem`:
+
+<CodeBlock code={genericContentType} language="tsx" />
+
+### 自定义幻灯片浮层 [#custom-slide-overlay]
+
+用每张幻灯片自己的内容替换内置的幻灯片浮层：
+
+<CodeBlock code={customSlideOverlay} language="tsx" />
+
+### 非媒体幻灯片 [#non-media-slides]
+
+使用 `renderSlide` 注入自定义内容（例如行动号召卡片）。返回 `null` 则回退到默认实现：
+
+<CodeBlock code={nonMediaSlides} language="tsx" />
+
+### 自定义控件 [#custom-controls]
+
+把可复用的子组件和你自己的东西组合起来：
+
+<CodeBlock code={customControls} language="tsx" />
+
+### 自定义时间轴 [#custom-timeline]
+
+用你自己的拖动界面替换内置的播放条，方式是 `renderTimeline`. The callback only fires when the overlay's gating rules would render the default bar (same `timeline` 模式 + `timelineMinDurationSeconds` 的逻辑），所以不必自己重写一遍。在你的根元素上复用 `.rk-reel-timeline` 类，即可继承贴底定位、安全区内边距，以及触摸设备上为幻灯片浮层预留的空间。
+
+<CodeBlock code={customTimeline} language="tsx" />
+
+### 自定义导航 [#custom-navigation]
+
+<CodeBlock code={customNavigation} language="tsx" />
+
+### 自定义嵌套导航 [#custom-nested-navigation]
+
+用自定义导航替换多媒体幻灯片（横向轮播）内部的左右箭头：
+
+<CodeBlock code={customNestedNavigation} language="tsx" />
+
+### 自定义嵌套幻灯片 [#custom-nested-slides]
+
+用 `renderNestedSlide`定制多媒体轮播内部的单张幻灯片。用 `props.defaultContent` 包裹默认的 ImageSlide/VideoSlide，或者完全替换它：
+
+<CodeBlock code={customNestedSlides} language="tsx" />
+
+## URL 状态 [#url-state]
+
+<DemoLink href="https://react-demo.reelkit.dev/reel-player-url?utm_source=docs">查看在线演示 →</DemoLink>
+
+`ReelPlayerUrlOverlay` 是一个独立组件，它的打开状态存放在地址栏里。用 `useOverlayUrlState` from `@reelkit/react` 构建控制器，再作为 `controller`传进去：参数指向某张幻灯片时播放器自己打开，参数消失时关闭。链接可以分享，返回键关闭的是播放器而不是离开页面。
+
+<Callout type="info" title="内置的 key">
+  可以用内置的 key 来寻址幻灯片 —— 把 `urlIndexKey` （按位置）或 `urlStableIdKey` （按稳定的 `id`）展开进控制器 —— 两者都从 `@reelkit/react`. See the [URL 状态指南](/docs/core/guide#url-state) 和 [核心 API](/docs/core/api#url-state).
+</Callout>
+
+<CodeBlock code={urlState} language="tsx" />
+
+完整的 `useOverlayUrlState` 选项 —— `param`, `adapter`, `codec`, `locator` —— 见 [React API 参考](/docs/react/api#useoverlayurlstate)。完整讲解见 [React 指南](/docs/react/guide#url-state).
+
+- 打开时压入 **一条** 历史记录。滑动信息流则是 **替换** 它，因此滑 N 次也不会多出记录，退一步永远就是离开播放器。返回键关闭播放器，不会逐张后退。
+- 只有在应用内部打开播放器时返回键才会关闭它 —— 因为那次链接压入了一条记录。在新标签页里直接打开的分享链接背后没有历史，浏览器返回会离开站点；这时用 ✕ 按钮或 Escape 就地移除参数并留在页面上。
+- 深链 `?reel=3` 会在加载时直接把播放器打开到那一张。
+- 指向不存在幻灯片的参数 —— 过期的书签、手改的值 —— 会从 URL 中移除，而不是让地址栏继续声称一张打不开的幻灯片。
+- 默认情况下参数寻址的是 **竖向** 的帖子（`?reel=3`）。改用双轴 key 还能同时携带多媒体轮播的内层媒体索引 —— 见下文。
+
+### 一条轴还是两条 —— 自己决定 URL 的深度 [#one-key-or-two-pick-your-url-depth]
+
+同一个 `ReelPlayerUrlOverlay` 两种形态都能驱动；它在运行时根据控制器的 position 自行判别，所以没有 mode 属性。在构建控制器时选好 key 即可：
+
+| Key | URL 形态 | 携带内容 |
+| --- | --- | --- |
+| `urlIndexKey(…)` | `?reel=3` | 只有竖向的帖子。 |
+| `urlIndexTwoAxisKey(…)` | `?reel=3.2` | 帖子 *和* 轮播内层媒体索引。 |
+
+两种形态是刻意区分开的 —— 双轴 key 严格使用点分隔（`3.0`，绝不会是裸的 `3`），因此单轴链接不会被错误解码。也正因如此，应用在两种 key 之间切换会让此前分享出去的链接全部失效。选定一种形态就别再改。
+
+<CodeBlock code={oneKeyOrTwo} language="tsx" />
+
+**带路由的应用 —— 请传入适配器。** 绕过路由器直接写 `history.pushState` 会让它的 location 过期，下一次导航就会把参数丢掉：
+
+<CodeBlock code={oneKeyOrTwo2} language="tsx" />
+
+**稳定的链接。** 索引是按位置的，所以收藏下来的 `?reel=3` 在信息流重新排序后就会打开另一条帖子 —— 对信息流来说这是常态，而不是例外。 `urlStableIdKey` 按每条帖子稳定的 `id`来寻址，扫描当前的信息流 —— 一次调用就覆盖了常见场景。
+
+<CodeBlock code={oneKeyOrTwo3} language="tsx" />
+
+传入 `hashCodec: base64UrlCodec` 即可把 URL 中的 id 做 base64url 编码 —— 这是可逆的混淆，不是加密哈希。
+
+想按别的字段（比如 `slug`）来寻址，或者用 `locateAsync`给无限信息流翻页，就自己构建 `codec`/`locator` 。这是两件事： `codec` 把身份写进 URL， `locator` 则负责找到这个身份在哪。
+
+<CodeBlock code={oneKeyOrTwo4} language="tsx" />
+
+**无限信息流。** `locate` 是同步的，因此只能回答已经加载过的帖子 —— 只加载了 20 条时，指向第 400 条的分享链接就查不到。 `locateAsync` 是兜底，只有在 `locate` 未命中时才调用。
+
+<Callout type="info" title="快捷键">
+  只想按条目的 `id`来寻址？那就不必手写编解码器和定位器 —— 直接把 `locateAsync` 传给 `urlStableIdKey({ items, locateAsync })` （未命中时它会去拉取，然后返回索引）。下面更完整的写法是给按别的字段寻址、或者需要完全掌控的场景准备的。
+</Callout>
+
+<CodeBlock code={oneKeyOrTwo5} language="tsx" />
+
+- 在 `locateAsync` 未完成期间，播放器保持关闭，参数也不动，因此深链能熬过这次请求。 `null` 或请求被拒绝则会移除参数。
+- 如果结果在 URL 已经变化、播放器已关闭或组件已卸载之后才到达，就会被丢弃 —— 慢请求不能打开一张没人要的幻灯片。
+- 等待期间什么都不渲染；加载状态本来就归页面自己管，所以请渲染你自己的骨架屏。
+- 没有超时机制 —— 播放器无从得知信息流有多长。分页用尽时请以 `null` 结束，否则浮层会一直关着。
+
+## API 参考 [#api-reference]
+
+### ReelPlayerOverlayProps Props [#reelplayeroverlayprops-props]
+
+<Signature>ReelPlayerOverlayProps\<T></Signature>
+
+| 属性 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `apiRef` | `MutableRefObject<ReelApi>` | - | 用于访问 Reel API 的 ref |
+| `ariaLabel` | `string` | 'Video player' | 对话框区域的无障碍标签；浮层打开时由屏幕阅读器播报 |
+| `aspectRatio` | `number` | 9/16 (0.5625) | 桌面端播放器容器的宽高比。移动端播放器始终占满视口。 |
+| `content` | `T[]` | 必填 | 内容条目数组（泛型，默认为 ContentItem） |
+| `initialIndex` | `number` | 0 | 起始幻灯片索引 |
+| `initialInnerIndex` | `number` | 0 | 打开时定位的内层媒体索引，只对最初可见的那条帖子生效 —— 让双轴 URL 能直达多媒体帖子里的某一张图。播放器打开后用户一开始导航就会忽略它。 |
+| `isOpen` | `boolean` | 必填 | 控制浮层的显示。如果希望由 URL 驱动打开状态，请改用独立的 ReelPlayerUrlOverlay —— 见下面的 URL 状态。 |
+| `timeline` | `'auto' \| 'always' \| 'never'` | 'auto' | Gating strategy for the built-in playback timeline bar. 'auto' renders only for videos longer than timelineMinDurationSeconds; 'always' renders whenever the active slide has a video; 'never' disables the built-in bar (use renderTimeline for a fully custom replacement). |
+| `timelineMinDurationSeconds` | `number` | 30 | Minimum video duration (seconds) for timeline='auto' to render the built-in bar. Short looping clips below this threshold are suppressed. |
+| `renderControls` | `(props: ControlsRenderProps) => ReactNode` | - | 自定义控件，替换默认的关闭 + 声音按钮 |
+| `renderError` | `(props: { item: T; activeIndex: number }) => ReactNode` | - | 自定义错误提示，替换默认的错误图标 |
+| `renderLoading` | `(props: { item: T; activeIndex: number }) => ReactNode` | - | 自定义加载提示，替换默认的波浪加载动画 |
+| `renderNavigation` | `(props: NavigationRenderProps) => ReactNode` | - | 自定义导航，替换默认的竖向箭头 |
+| `renderNestedNavigation` | `(props: NavigationRenderProps) => ReactNode` | - | 嵌套横向滑动器（多媒体帖子）的自定义导航，替换默认的左右箭头 |
+| `renderNestedSlide` | `(props: NestedSlideRenderProps) => ReactNode` | - | 嵌套横向滑动器条目的自定义渲染器。用 props.defaultContent 包裹或嵌入默认的 ImageSlide/VideoSlide。与 renderSlide 不同，这里返回 null 不会回退到默认实现。 |
+| `renderSlide` | `(props: SlideRenderProps) => ReactNode \| null` | - | 自定义幻灯片渲染。返回 null 则回退到默认实现。用 props.defaultContent 包裹或嵌入默认幻灯片。 |
+| `renderSlideOverlay` | `(item, index, isActive) => ReactNode` | - | 每张幻灯片的自定义浮层，替换默认的 SlideOverlay。返回 null 则隐藏。 |
+| `renderTimeline` | `(props: TimelineRenderProps) => ReactNode` | - | 自定义播放时间轴条。只有在门控规则会渲染默认条时才会调用（同样是 auto/always/never + timelineMinDurationSeconds 的逻辑）。用 props.defaultContent 包裹内置的 \<TimelineBar />；返回 null 则隐藏。 |
+
+### ReelPlayerUrlOverlay 属性 [#reelplayerurloverlay-props]
+
+<Signature>ReelPlayerUrlOverlayProps\<T></Signature>
+
+接受上面所有视觉和行为属性，除了 `isOpen`，它被 `controller`. `initialIndex` 会被忽略 —— 由控制器的 position 决定打开哪一张，所以同时传入的值每次打开都会被覆盖。
+
+| 属性 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `controller` | `UrlStateController` | `必填` | 来自 useOverlayUrlState 的控制器。它的 position 决定浮层是否打开、显示哪一张；浮层会在切换幻灯片和关闭时通过它写回。 |
+
+### 回调 [#callbacks]
+
+| 属性 | 类型 | 说明 |
+| --- | --- | --- |
+| `onClose` | `() => void` | 播放器关闭时调用。在 ReelPlayerOverlay 上是必填的（打开状态归你管，所以关闭也得你处理）；在 ReelPlayerUrlOverlay 上是可选的，那里由 URL 驱动关闭 —— 只在你需要关闭后做点什么时才传。 |
+| `onSlideChange` | `(index: number) => void` | 幻灯片切换后调用 |
+| `onInnerSlideChange` | `(outerIndex: number, innerIndex: number) => void` | Called when the active post's inner media index changes — on inner navigation within a multi-media post, and on outer activation, reporting the activated post's current inner index (0 for a single-media post). |
+
+### Reel 属性（透传） [#reel-props-proxied]
+
+这些属性会转发给底层的 [Reel](/docs/react/api#reel-props) 组件。
+
+| 属性 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `enableNavKeys` | `boolean` | true | 启用键盘导航 |
+| `enableWheel` | `boolean` | true | 启用鼠标滚轮导航 |
+| `loop` | `boolean` | false | 启用无限循环 |
+| `swipeDistanceFactor` | `number` | 0.12 | 滑动阈值（0-1） |
+| `transitionDuration` | `number` | 300 | 过渡动画时长（毫秒） |
+| `wheelDebounceMs` | `number` | 200 | 滚轮防抖时长（毫秒） |
+
+## 类型 [#types]
+
+### BaseContentItem [#basecontentitem]
+
+泛型约束类型。扩展它即可在 ReelPlayerOverlay 中使用自定义数据模型。
+
+<CodeBlock code={basecontentitem} language="typescript" />
+
+### ContentItem [#contentitem]
+
+<CodeBlock code={contentitem} language="typescript" />
+
+### MediaItem [#mediaitem]
+
+<CodeBlock code={mediaitem} language="typescript" />
+
+### MediaType [#mediatype]
+
+<CodeBlock code={mediatype} language="typescript" />
+
+### ControlsRenderProps\<T> [#controlsrenderprops-t]
+
+<CodeBlock code={controlsrenderpropsT} language="typescript" />
+
+### NavigationRenderProps [#navigationrenderprops]
+
+<CodeBlock code={navigationrenderprops} language="typescript" />
+
+### SlideRenderProps\<T> [#sliderenderprops-t]
+
+<CodeBlock code={sliderenderpropsT} language="typescript" />
+
+### NestedSlideRenderProps [#nestedsliderenderprops]
+
+<CodeBlock code={nestedsliderenderprops} language="typescript" />
+
+### SlideOverlayProps [#slideoverlayprops]
+
+<CodeBlock code={slideoverlayprops} language="typescript" />
+
+### ImageSlideProps [#imageslideprops]
+
+<CodeBlock code={imageslideprops} language="typescript" />
+
+### VideoSlideProps [#videoslideprops]
+
+<CodeBlock code={videoslideprops} language="typescript" />
+
+### CloseButtonProps [#closebuttonprops]
+
+<CodeBlock code={closebuttonprops} language="typescript" />
+
+### SoundButtonProps [#soundbuttonprops]
+
+<CodeBlock code={soundbuttonprops} language="typescript" />
+
+### TimelineBarProps [#timelinebarprops]
+
+<CodeBlock code={timelinebarprops} language="typescript" />
+
+### TimelineRenderProps\<T> [#timelinerenderprops-t]
+
+<CodeBlock code={timelinerenderpropsT} language="typescript" />
+
+## 子组件 [#sub-components]
+
+对外导出的可复用积木，用于在自定义 render props 中组合：
+
+### CloseButton [#closebutton]
+
+带默认播放器样式的独立关闭按钮。在 `renderControls`.
+
+<CodeBlock code={closebutton} language="tsx" />
+
+### SoundButton [#soundbutton]
+
+独立的声音开关。必须位于 `SoundProvider` 内部（ReelPlayerOverlay 会自动提供）。
+
+<CodeBlock code={soundbutton} language="tsx" />
+
+### TimelineBar [#timelinebar]
+
+默认的播放拖动条。它读取最近的 `TimelineProvider` (automatically mounted inside `ReelPlayerOverlay`内部自动挂载），并渲染轨道、缓冲区间、进度填充和拖动手柄。通过 `--rk-reel-timeline-*` 自定义属性做主题定制，或者用 `renderTimeline`.
+
+<CodeBlock code={timelinebar} language="tsx" />
+
+### SlideOverlay [#slideoverlay]
+
+默认的渐变浮层，显示作者、描述和点赞。当内容具备所需字段时自动渲染。用 `renderSlideOverlay` 可以替换或隐藏它。
+
+<CodeBlock code={slideoverlay} language="tsx" />
+
+### ImageSlide [#imageslide]
+
+带懒加载的图片幻灯片，默认使用 `object-fit: cover` 。在 `renderSlide` 内部使用它，即可用你自己的样式组合出自定义图片幻灯片。
+
+<CodeBlock code={imageslide} language="tsx" />
+
+### VideoSlide [#videoslide]
+
+视频幻灯片，使用共享的 `<video>` 元素以保证 iOS 上声音连续，并支持封面帧、位置记忆和加载提示。必须位于 `SoundProvider` 内部（ReelPlayerOverlay 会自动提供）。
+
+<CodeBlock code={videoslide} language="tsx" />
+
+<Callout type="info" title="组合自定义幻灯片">
+  使用 `renderSlide` ，并带 `ImageSlide` / `VideoSlide` 即可在保留全部内置行为（自动播放、封面抽帧、声音同步）的前提下自定义媒体渲染。
+</Callout>
+
+<CodeBlock code={videoslide2} language="tsx" />
+
+## 内容加载与错误处理 [#content-loading-error-handling]
+
+播放器会逐张跟踪加载和错误状态。内容加载时显示波浪加载动画；媒体损坏时显示错误图标。出错的 URL 会被缓存，再次访问时立刻显示错误而不重试。
+
+### 生命周期回调 [#lifecycle-callbacks]
+
+使用 `renderSlide`时，请调用这些回调来控制加载提示：
+
+| 回调 | 何时调用 |
+| --- | --- |
+| `onReady` | 图片已加载，或视频已开始播放。会清除加载和错误状态。 |
+| `onWaiting` | 视频在播放途中正在缓冲。显示加载提示。 |
+| `onError` | 内容加载失败。显示错误浮层，并把该 URL 标记为损坏缓存起来。 |
+
+<CodeBlock code={lifecycleCallbacks} language="tsx" />
+
+### 自定义加载与错误界面 [#custom-loading-error-ui]
+
+用自定义组件替换默认的波浪加载动画和错误图标：
+
+<CodeBlock code={customLoadingErrorUi} language="tsx" />
+
+## 时间轴 [#timeline]
+
+浮层会在当前视频上方渲染一个内置的播放时间轴条。 `timeline` 属性控制它是否渲染：
+
+- `'auto'` （默认）：当前媒体是时长超过 `timelineMinDurationSeconds` （默认 30）的视频时渲染。单视频幻灯片和多媒体轮播都适用；进度条会跟随当前的内层条目，遇到图片则隐藏。
+- `'always'`：只要当前幻灯片有视频就渲染。
+- `'never'`：永不渲染。请通过 `renderTimeline`.
+
+<CodeBlock code={timeline} language="tsx" />
+
+通过 `--rk-reel-timeline-*` CSS 自定义属性做主题定制（高度、颜色、光标大小）。若要完全自定义拖动条、时间码或进度指示，请用 `renderTimeline`；回调会收到一个 `timelineState` ，其数据来自底层的 `TimelineController`.
+
+## 声音上下文 [#sound-context]
+
+自定义实现时，你可以访问声音状态：
+
+<CodeBlock code={soundContext} language="tsx" />
+
+## CSS 类名 [#css-classes]
+
+所有 CSS 类名都是普通类名（不是 CSS Modules），因此可以在 `@reelkit/react-reel-player/styles.css`之后加载的样式表里用更高优先级的选择器覆盖它们。若只是改颜色、尺寸和 z-index，请优先使用下面 [主题定制](#theming) 一节记录的 CSS 自定义属性 —— 它们正是为此设计的。
+
+| 类名 | 组件 | 说明 |
+| --- | --- | --- |
+| `.rk-reel-overlay` | Overlay | 固定的全屏背景层（背景、z-index） |
+| `.rk-reel-container` | Overlay | 播放器容器（定位、溢出） |
+| `.rk-reel-loader` | Overlay | 波浪加载动画浮层 |
+| `.rk-reel-media-error` | Overlay | 错误状态浮层（居中图标 + 文字） |
+| `.rk-reel-media-error-text` | Overlay | 错误信息文字 |
+| `.rk-reel-button` | 控制内容 | 共用的圆形图标按钮（关闭、声音、导航箭头） |
+| `.rk-reel-close-btn` | 控制内容 | 关闭按钮 |
+| `.rk-reel-sound-btn` | 控制内容 | 声音开关按钮 |
+| `.rk-reel-nav-arrows` | 导航 | 仅桌面端的箭头容器（小于 768px 时隐藏） |
+| `.rk-reel-nav-button` | 导航 | 单个上一张 / 下一张导航箭头 |
+| `.rk-reel-slide-wrapper` | Slide | 媒体 + 浮层的包装层 |
+| `.rk-reel-slide-overlay` | SlideOverlay | 渐变浮层容器 |
+| `.rk-reel-slide-overlay-author` | SlideOverlay | 作者行（头像 + 名称） |
+| `.rk-reel-slide-overlay-avatar` | SlideOverlay | 作者头像图片 |
+| `.rk-reel-slide-overlay-name` | SlideOverlay | 作者名称文字 |
+| `.rk-reel-slide-overlay-description` | SlideOverlay | 描述文字 |
+| `.rk-reel-slide-overlay-likes` | SlideOverlay | 点赞行（爱心 + 数量） |
+| `.rk-reel-video-container` | VideoSlide | 视频包装层（背景、溢出） |
+| `.rk-reel-video-element` | VideoSlide | \<video> 元素 |
+| `.rk-reel-video-poster` | VideoSlide | 封面图（播放时淡出） |
+| `.rk-reel-video-poster.rk-visible` | VideoSlide | 视频暂停 / 加载时施加在封面图上的状态修饰类 |
+| `.rk-reel-nested-indicator` | NestedSlider | 多媒体幻灯片下方的圆点分页（桌面端与触摸端位置不同） |
+| `.rk-reel-nested-nav` | NestedSlider | 横向轮播箭头（小于 768px 时隐藏） |
+| `.rk-reel-nested-nav-next` | NestedSlider | 嵌套的下一张箭头位置 |
+| `.rk-reel-nested-nav-prev` | NestedSlider | 嵌套的上一张箭头位置 |
+| `.rk-reel-timeline` | TimelineBar | 拖动条包装层。在自定义的  \`renderTimeline\`  根元素上复用它，即可继承贴底定位、安全区内边距，以及触摸设备上为幻灯片浮层预留的空间。 |
+| `.rk-reel-timeline-track` | TimelineBar | 轨道（未播放区域） |
+| `.rk-reel-timeline-buffered` | TimelineBar | 缓冲分段层 |
+| `.rk-reel-timeline-fill` | TimelineBar | 已播放进度填充 |
+| `.rk-reel-timeline-cursor` | TimelineBar | 拖动手柄（浮在轨道上方） |
+
+## 主题定制 [#theming]
+
+每一个颜色、尺寸、z-index 和过渡都放在 CSS 自定义属性里。在 `:root` （或浮层的任意祖先元素）上覆盖其中一个或多个，即可在不改组件源码的情况下换主题。
+
+| 变量 | 默认值 | 控制内容 |
+| --- | --- | --- |
+| `--rk-reel-overlay-bg` | `#000` | Full-screen backdrop color |
+| `--rk-reel-overlay-z` | `1000` | Overlay z-index |
+| `--rk-reel-button-bg` | `rgba(0, 0, 0, 0.5)` | Default circular button background |
+| `--rk-reel-button-bg-hover` | `rgba(255, 255, 255, 0.1)` | Nav arrow background (and base hover state) |
+| `--rk-reel-button-bg-hover-strong` | `rgba(255, 255, 255, 0.2)` | Nav arrow hover background |
+| `--rk-reel-button-fg` | `#fff` | Button icon color |
+| `--rk-reel-button-size` | `44px` | Button width / height |
+| `--rk-reel-button-radius` | `50%` | Button border-radius |
+| `--rk-reel-ui-z` | `10` | Close / sound / nav z-index |
+| `--rk-reel-edge-padding` | `16px` | Edge inset for close / sound / nav arrows |
+| `--rk-reel-nav-gap` | `8px` | Spacing between stacked nav arrows |
+| `--rk-reel-transition` | `0.2s` | Hover transition duration |
+| `--rk-reel-loader-color` | `rgba(255, 255, 255, 0.12)` | Wave loader gradient color |
+| `--rk-reel-loader-duration` | `1.8s` | Wave loader animation duration |
+| `--rk-reel-error-fg` | `rgba(255, 255, 255, 0.4)` | Error icon and text color |
+| `--rk-reel-error-text-size` | `13px` | Error message font size |
+| `--rk-reel-slide-overlay-bg` | `linear-gradient(transparent, rgba(0, 0, 0, 0.7))` | Caption scrim gradient |
+| `--rk-reel-slide-overlay-padding` | `48px 16px 16px` | Caption inner padding |
+| `--rk-reel-slide-overlay-name-color` | `#fff` | Author name color |
+| `--rk-reel-slide-overlay-description-color` | `rgba(255, 255, 255, 0.9)` | Description text color |
+| `--rk-reel-slide-overlay-likes-color` | `rgba(255, 255, 255, 0.8)` | Likes row text color |
+| `--rk-reel-video-bg` | `#000` | Letterbox background behind \<video> |
+| `--rk-reel-nested-button-bg` | `rgba(0, 0, 0, 0.5)` | Nested arrow background |
+| `--rk-reel-nested-button-bg-hover` | `rgba(255, 255, 255, 0.2)` | Nested arrow hover background |
+| `--rk-reel-nested-button-size` | `36px` | Nested arrow size |
+| `--rk-reel-nested-edge-padding` | `12px` | Nested arrow edge inset |
+| `--rk-reel-timeline-track` | `rgba(255, 255, 255, 0.22)` | Track background (unplayed region) |
+| `--rk-reel-timeline-buffered` | `rgba(255, 255, 255, 0.4)` | Buffered segments color |
+| `--rk-reel-timeline-fill` | `#fff` | Played-progress fill color |
+| `--rk-reel-timeline-cursor` | `#fff` | Scrub-handle pill color |
+| `--rk-reel-timeline-height` | `3px` | Track height at rest |
+| `--rk-reel-timeline-height-active` | `6px` | Track height on hover / focus / scrub |
+| `--rk-reel-timeline-cursor-width` | `10px` | Scrub-pill width at rest |
+| `--rk-reel-timeline-cursor-width-active` | `14px` | Scrub-pill width while scrubbing |
+| `--rk-reel-timeline-cursor-height` | `24px` | Scrub-pill height at rest |
+| `--rk-reel-timeline-cursor-height-active` | `32px` | Scrub-pill height while scrubbing |
+| `--rk-reel-timeline-hitbox` | `16px` | Extra pointer hit-area above the track |
+| `--rk-reel-timeline-transition` | `0.15s ease-out` | Track + pill grow/shrink animation |
+| `--rk-reel-timeline-z` | `11` | Timeline z-index (above the default UI layer) |
+
+把下面这段放进在 `@reelkit/react-reel-player/styles.css`.
+
+<CodeBlock code={theming} language="css" />
+
+## 无障碍 [#accessibility]
+
+浮层根节点是一个模态对话框（`role="dialog"`, `aria-modal="true"`）。设置 `ariaLabel` 可以改变屏幕阅读器的播报内容，默认是 “Video player”。每张幻灯片都带有 `role="group"`, `aria-roledescription="slide"`，以及 `aria-label="第 N 张，共 M 张"`，因此滑动时会播报当前在序列中的位置。
+
+浮层打开时捕获焦点，关闭时把焦点还给触发元素。Tab 和 Shift+Tab 在内部的可聚焦元素之间循环；跑出去的焦点（点击外部、程序化聚焦）会被拉回来。实现基于 `captureFocusForReturn` 和 `createFocusTrap` from `@reelkit/core`.
+
+## 键盘快捷键 [#keyboard-shortcuts]
+
+| Key | 作用 |
+| --- | --- |
+| `ArrowUp` | Previous slide |
+| `ArrowDown` | Next slide |
+| `ArrowLeft` | Previous media (in nested slider) |
+| `ArrowRight` | Next media (in nested slider) |
+| `Escape` | Close player |

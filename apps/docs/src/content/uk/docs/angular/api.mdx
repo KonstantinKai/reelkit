@@ -1,0 +1,177 @@
+---
+title: Довідник API для Angular
+description: 'Повний API @reelkit/angular: ReelComponent, інтерфейс ReelApi, директиви, сервіси та утиліти мосту сигналів.'
+---
+
+import reelapiInterface from '../../../snippets/angular-api/reelapi-interface.ts?raw';
+import templateContext from '../../../snippets/angular-api/template-context.html?raw';
+import rkReelContext from '../../../snippets/angular-api/rk-reel-context.ts?raw';
+import bodylockservice from '../../../snippets/angular-api/bodylockservice.ts?raw';
+import signalBridgeUtilities from '../../../snippets/angular-api/signal-bridge-utilities.ts?raw';
+import createrouterurladapter from '../../../snippets/angular-api/createrouterurladapter.ts?raw';
+import packageExports from '../../../snippets/angular-api/package-exports.ts?raw';
+
+Повний довідник `@reelkit/angular` : компоненти, директиви, сервіси та утиліти.
+
+## ReelComponent [#reelcomponent]
+
+Селектор: `rk-reel`
+
+### Inputs [#inputs]
+
+| Input | Тип | Типове значення | Опис |
+| --- | --- | --- | --- |
+| `count` | `number` | required | Загальна кількість слайдів |
+| `direction` | `'vertical' \| 'horizontal'` | 'vertical' | Напрямок прокручування |
+| `size` | `[number, number] \| undefined` | undefined | Ширина й висота у вигляді \[width, height\]. Якщо не задано, вимірюється автоматично через ResizeObserver |
+| `initialIndex` | `number` | 0 | Початковий індекс слайда |
+| `loop` | `boolean` | false | Вмикає нескінченний цикл |
+| `transition` | `TransitionTransformFn` | slideTransition | Функція ефекту переходу. Вбудовані: slideTransition, fadeTransition, flipTransition, cubeTransition, zoomTransition |
+| `transitionDuration` | `number` | 300 | Тривалість анімації в мілісекундах |
+| `swipeDistanceFactor` | `number` | 0.12 | Поріг свайпу (0–1) |
+| `enableGestures` | `boolean` | true | Вмикає навігацію перетягуванням дотиком або мишею |
+| `enableNavKeys` | `boolean` | true | Вмикає навігацію стрілками клавіатури |
+| `enableWheel` | `boolean` | false | Вмикає навігацію колесом миші |
+| `wheelDebounceMs` | `number` | 200 | Дебаунс події колеса в мілісекундах |
+| `rangeExtractor` | `(index: number, count: number) => number[]` | defaultRangeExtractor | Власна функція, що визначає, які індекси рендеряться |
+| `keyExtractor` | `(index: number, indexInRange: number) => string \| number` | index => index | Власна функція ключів для виразів track у @for (корисно з циклом) |
+| `className` | `string` | '' | Клас CSS для кореневого контейнера |
+| `ariaLabel` | `string` | 'Carousel' | Доступна назва області каруселі |
+
+### Outputs [#outputs]
+
+| Output | Тип | Опис |
+| --- | --- | --- |
+| `afterChange` | `EventEmitter<{ index: number; indexInRange: number }>` | Видається після завершення переходу між слайдами |
+| `beforeChange` | `EventEmitter<{ index: number; nextIndex: number; indexInRange: number }>` | Видається перед початком переходу між слайдами |
+| `slideDragStart` | `EventEmitter<number>` | Видається на початку перетягування |
+| `slideDragEnd` | `EventEmitter<number>` | Видається, коли перетягування завершується (палець або кнопку відпустили) |
+| `slideDragCanceled` | `EventEmitter<number>` | Видається, коли перетягування скасовано (слайд повертається назад) |
+| `apiReady` | `EventEmitter<ReelApi>` | Видається один раз після ініціалізації подання й відкриває імперативний API |
+
+## Інтерфейс ReelApi [#reelapi-interface]
+
+Отримується через вихід `(apiReady)` :
+
+<CodeBlock code={reelapiInterface} language="typescript" />
+
+| Метод | Тип | Опис |
+| --- | --- | --- |
+| `next()` | `() => void` | Перейти до наступного слайда |
+| `prev()` | `() => void` | Перейти до попереднього слайда |
+| `goTo(index, animate?)` | `(number, boolean?) => Promise<void>` | Перехід до слайда за індексом |
+| `adjust()` | `() => void` | Перерахувати позиції слайдів (корисно після зміни макета) |
+| `observe()` | `() => void` | Почати слухати події клавіатури |
+| `unobserve()` | `() => void` | Припинити слухати події клавіатури |
+
+## RkReelItemDirective [#rkreelitemdirective]
+
+Селектор: `[rkReelItem]` — застосовується до `ng-template` inside `rk-reel`.
+
+### Контекст шаблону [#template-context]
+
+<CodeBlock code={templateContext} language="html" />
+
+| Variable | Тип | Опис |
+| --- | --- | --- |
+| `$implicit (let-i)` | `number` | Абсолютний індекс слайда (від 0 до count-1) |
+| `indexInRange` | `number` | Позиція у видимому вікні (0, 1 або 2) |
+| `size` | `[number, number]` | Поточні розміри слайдера як \[width, height\] у пікселях |
+
+## ReelIndicatorComponent [#reelindicatorcomponent]
+
+Селектор: `rk-reel-indicator`
+
+### Inputs [#inputs]
+
+| Input | Тип | Типове значення | Опис |
+| --- | --- | --- | --- |
+| `count` | `number \| undefined` | auto | Загальна кількість елементів. Береться з контексту батьківського rk-reel, якщо компонент вкладений у нього; передавайте явно за окремого використання |
+| `active` | `number \| undefined` | auto | Поточний активний індекс. Береться з контексту батьківського rk-reel, якщо компонент вкладений у нього; передавайте явно за окремого використання |
+| `direction` | `'vertical' \| 'horizontal'` | 'vertical' | Орієнтація індикатора |
+| `radius` | `number` | 3 | Радіус точки в пікселях |
+| `visible` | `number` | 5 | Максимум одночасно видимих точок звичайного розміру |
+| `gap` | `number` | 4 | Відстань між точками в пікселях |
+| `activeColor` | `string` | '#fff' | Колір активної точки |
+| `inactiveColor` | `string` | 'rgba(255,255,255,0.5)' | Колір неактивної точки |
+| `edgeScale` | `number` | 0.5 | Коефіцієнт масштабу крайніх точок за межами видимого |
+| `className` | `string` | '' | Власний клас CSS для контейнера індикатора |
+| `tablistLabel` | `string` | 'Slide navigation' | Доступна назва орієнтира tablist |
+
+### Outputs [#outputs]
+
+| Output | Тип | Опис |
+| --- | --- | --- |
+| `dotClick` | `EventEmitter<number>` | Видається на клік по точці; передає індекс точки |
+
+## RK_REEL_CONTEXT [#rk-reel-context]
+
+An `InjectionToken<ReelContextValue>` який надає `rk-reel` своїм нащадкам. Використовується всередині `rk-reel-indicator` для автоматичного під’єднання. Впроваджуйте його у власні компоненти, яким потрібен контекст слайдера.
+
+<CodeBlock code={rkReelContext} language="typescript" />
+
+| Властивість | Тип | Опис |
+| --- | --- | --- |
+| `index` | `Signal<number>` | Реактивний індекс поточного слайда |
+| `count` | `Signal<number>` | Реактивна загальна кількість елементів |
+| `goTo` | `(index: number, animate?: boolean) => Promise<void>` | Програмний перехід до слайда |
+
+## BodyLockService [#bodylockservice]
+
+Блокування прокручування body з підрахунком посилань. Кілька одночасних викликачів (наприклад, відкриті водночас Lightbox і модальне вікно) блокують і розблоковують незалежно — body повертається до норми лише коли останній із них звільнить. Надається на рівні кореня — впроваджуйте будь-де.
+
+<CodeBlock code={bodylockservice} language="typescript" />
+
+| Член | Тип | Опис |
+| --- | --- | --- |
+| `locked` | `boolean (getter)` | Чи заблоковано body просто зараз |
+| `lock()` | `() => void` | Заблокувати прокручування body й компенсувати ширину смуги прокручування |
+| `unlock()` | `() => void` | Повернути початкові стилі прокручування body |
+
+## Утиліти мосту сигналів [#signal-bridge-utilities]
+
+Допоміжні функції, що з’єднують систему сигналів ядра (`@reelkit/core`) with Angular's native signal API. Used internally by `ReelComponent`; also available for custom framework integrations.
+
+| Function | Signature | Опис |
+| --- | --- | --- |
+| `toAngularSignal` | `(source: Subscribable<T>, destroyRef: DestroyRef) => Signal<T>` | Місток від Subscribable з ядра до сигналу Angular лише для читання |
+| `animatedSignalBridge` | `(source: AnimatedValue, zone: NgZone, cdRef: ChangeDetectorRef, destroyRef: DestroyRef) => Signal<number>` | Місток від анімованого значення ядра до сигналу Angular, що оновлюється через requestAnimationFrame поза зоною |
+
+<CodeBlock code={signalBridgeUtilities} language="typescript" />
+
+## createOverlayUrlState [#createoverlayurlstate]
+
+<Signature>OverlayUrlStateOptions</Signature>
+
+Будує контролер стану в URL для оверлея, який ви передаєте в `<rk-lightbox-url-overlay>` як його `[controller]` . Викликайте його в контексті впровадження — в ініціалізаторі поля або в конструкторі; він під’єднується одразу й звільняється через `DestroyRef`. Покроковий розбір: [Стан в URL на сторінці Lightbox для Angular](/docs/angular-lightbox#url-state).
+
+| Option | Тип | Типове значення | Опис |
+| --- | --- | --- | --- |
+| `param` | `string` | `required` | Параметр запиту, що несе активний слайд, наприклад photo. |
+| `adapter` | `UrlAdapter` | `History API` | Система навігації, через яку читати й писати. У застосунку з роутером передайте адаптер на базі Router, щоб місцеположення роутера не застаріло. |
+| `codec` | `UrlCodec<Id>` | `required` | Формат передавання: текст параметра в стабільну ідентичність. Іде разом із локатором як узгоджена пара — розгорніть ...urlIndexKey(() => images().length) для типової галереї з ?photo=3 або передайте власний, щоб закладка пережила зміну порядку. |
+| `locator` | `UrlLocator<Id>` | `required` | Зіставляє ідентичність із позицією і сам відповідає за свою чинність: locate (синхронно), locateAsync (запасний варіант для посторінкової галереї), identify (для запису). |
+
+## createRouterUrlAdapter [#createrouterurladapter]
+
+<Signature>@reelkit/angular/ng-router-url-adapter</Signature>
+
+A `UrlAdapter` на базі Angular Router. Передайте його як `adapter` у `createOverlayUrlState` у застосунку з роутером, щоб Router лишався єдиним джерелом правди про навігацію: запис `history.pushState` повз Router лишає його місцеположення застарілим, і наступна навігація втрачає параметр. Запис торкається лише запиту, тож шлях, фрагмент і повторювані ключі на кшталт `?tag=a&tag=b` лишаються недоторканими. Кожна зміна повідомляє, чи Router додав запис на тій самій сторінці, замінив його чи пройшов історією, тож галерея, відкрита з `routerLink`, закривається одним кроком назад. Викликайте його в контексті впровадження; підписка на роутер звільняється через `DestroyRef`.
+
+Постачається з окремого підшляху, тож застосунок без роутингу ніколи не тягне `@angular/router` у свій бандл. `@angular/router` — необов’язкова peer-залежність.
+
+<CodeBlock code={createrouterurladapter} language="typescript" />
+
+## Accessibility [#accessibility]
+
+`<rk-reel>` рендериться як `role="region"` з `aria-roledescription="carousel"`. Задайте пропс `ariaLabel` щоб дати області назву для екранного читача. Ввічлива жива область оголошує «Слайд N з M» на кожну зміну слайда. Неактивні слайди отримують атрибут `inert` , тож фокус і навігація допоміжних технологій їх пропускають.
+
+`<rk-reel-indicator>` рендериться як `role="tablist"` з рухомим tabindex на точках; стрілки переміщують фокус, а Enter або Space активує слайд.
+
+Будуєте власне модальне вікно навколо `<rk-reel>`? `captureFocusForReturn`, `createFocusTrap`, та `getFocusableElements` — вони реекспортовані з `@reelkit/angular` для повернення й утримання фокуса.
+
+## Експорти пакета [#package-exports]
+
+Усі публічні експорти з `@reelkit/angular`:
+
+<CodeBlock code={packageExports} language="typescript" />

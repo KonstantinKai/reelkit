@@ -689,7 +689,25 @@ const routed = useOverlayUrlState({
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
             adapter
           </code>
-          . The{' '}
+          .{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            param
+          </code>{' '}
+          та{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            adapter
+          </code>{' '}
+          читаються під час першого рендеру й далі не змінюються — щоб змінити
+          їх, перемонтуйте компонент, — а{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            codec
+          </code>{' '}
+          та{' '}
+          <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
+            locator
+          </code>{' '}
+          читаються наживо, тож пошук після того, як список виріс чи змінив
+          порядок, бачить поточний список.{' '}
           <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-mono">
             codec
           </code>{' '}

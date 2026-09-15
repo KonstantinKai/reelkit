@@ -1,0 +1,18 @@
+/* Brand the reel-player overlay */
+:root {
+  --rk-reel-overlay-bg: #0f172a;
+  --rk-reel-button-bg: rgba(99, 102, 241, 0.65);
+  --rk-reel-button-bg-hover-strong: rgba(168, 85, 247, 0.85);
+  --rk-reel-edge-padding: 24px;
+  --rk-reel-button-size: 52px;
+
+  /* Timeline bar: brand-matched, beefier on desktop */
+  --rk-reel-timeline-track: rgba(99, 102, 241, 0.25);
+  --rk-reel-timeline-buffered: rgba(168, 85, 247, 0.45);
+  --rk-reel-timeline-fill: #a855f7;
+  --rk-reel-timeline-cursor: #a855f7;
+  --rk-reel-timeline-height: 4px;
+  --rk-reel-timeline-height-active: 8px;
+  --rk-reel-timeline-cursor-width-active: 18px;
+  --rk-reel-timeline-transition: 0.2s ease-out;
+}

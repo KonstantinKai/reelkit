@@ -1,0 +1,182 @@
+---
+title: 服务端渲染
+description: 在 Next.js、Nuxt 3 与 Angular Universal 中使用 ReelKit：水合、响应式尺寸与浮层组件的注意事项。
+---
+
+import nextAppRouter from '../../snippets/ssr/next-app-router.tsx?raw';
+import nextAppRouterPage from '../../snippets/ssr/next-app-router-page.tsx?raw';
+import nextPagesRouter from '../../snippets/ssr/next-pages-router.tsx?raw';
+import nextAutoSize from '../../snippets/ssr/next-auto-size.tsx?raw';
+import nextExplicitSize from '../../snippets/ssr/next-explicit-size.tsx?raw';
+import nextOverlay from '../../snippets/ssr/next-overlay.tsx?raw';
+import angularUniversal from '../../snippets/ssr/angular-universal.ts?raw';
+import nuxtPage from '../../snippets/ssr/nuxt-page.vue?raw';
+import nuxtFeed from '../../snippets/ssr/nuxt-feed.vue?raw';
+import nuxtAutoSize from '../../snippets/ssr/nuxt-auto-size.vue?raw';
+import coreDirect from '../../snippets/ssr/core-direct.ts?raw';
+
+所有 reelkit 包都能在服务端运行。可以在 Next.js、Remix、Angular Universal 或任何服务端渲染方案里直接引入和渲染。
+
+## 工作原理 [#how-it-works]
+
+核心的滑动控制器是纯逻辑，构造时不碰 DOM。 手势监听、键盘事件和动画只会在客户端的生命周期钩子里挂载。
+
+服务端渲染时， `Reel` 组件会渲染一个静态容器，里面是初始可见的幻灯片（通常是 3 张：上一张、当前、下一张）。水合之后，它会挂上手势、键盘和滚轮控制器， 让一切变得可交互。
+
+<Table boxed>
+  <thead>
+    <tr>
+      <th>包名</th>
+      <th>服务端安全</th>
+      <th>备注</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>@reelkit/core</td>
+      <td>是</td>
+      <td>纯逻辑，导入和构造时都不使用浏览器 API</td>
+    </tr>
+    <tr data-rk-fw="react">
+      <td>@reelkit/react</td>
+      <td>是</td>
+      <td>Reel 和 ReelIndicator 在服务端渲染出合法的 HTML</td>
+    </tr>
+    <tr data-rk-fw="angular">
+      <td>@reelkit/angular</td>
+      <td>是</td>
+      <td>独立组件，兼容 Angular Universal 的服务端渲染</td>
+    </tr>
+    <tr data-rk-fw="vue">
+      <td>@reelkit/vue</td>
+      <td>是</td>
+      <td>组件与组合式函数，兼容 Nuxt 3 的服务端渲染</td>
+    </tr>
+    <tr data-rk-fw="react">
+      <td>@reelkit/react-reel-player</td>
+      <td>是</td>
+      <td>关闭时（`isOpen=false`）什么都不渲染</td>
+    </tr>
+    <tr data-rk-fw="react">
+      <td>@reelkit/react-lightbox</td>
+      <td>是</td>
+      <td>关闭时（`isOpen=false`）什么都不渲染</td>
+    </tr>
+    <tr data-rk-fw="angular">
+      <td>@reelkit/angular-reel-player</td>
+      <td>是</td>
+      <td>关闭时（`isOpen=false`）什么都不渲染</td>
+    </tr>
+    <tr data-rk-fw="angular">
+      <td>@reelkit/angular-lightbox</td>
+      <td>是</td>
+      <td>关闭时（`isOpen=false`）什么都不渲染</td>
+    </tr>
+    <tr>
+      <td>@reelkit/stories-core</td>
+      <td>是</td>
+      <td>与框架无关，不访问 DOM</td>
+    </tr>
+    <tr data-rk-fw="react">
+      <td>@reelkit/react-stories-player</td>
+      <td>是</td>
+      <td>关闭时（`isOpen=false`）什么都不渲染</td>
+    </tr>
+  </tbody>
+</Table>
+
+<FrameworkVariant for="react">
+
+## Next.js App Router [#next-js-app-router]
+
+Reel 会用到浏览器事件和 ref，所以它是客户端组件。请在使用 `Reel` 的文件顶部加上 `"use client"` 指令：
+
+<CodeBlock code={nextAppRouter} language="tsx" />
+
+数据可以在服务端组件里取好，再传下去：
+
+<CodeBlock code={nextAppRouterPage} language="tsx" />
+
+## Next.js Pages Router [#next-js-pages-router]
+
+Pages Router 不需要额外配置。组件会在服务端渲染，然后在客户端水合：
+
+<CodeBlock code={nextPagesRouter} language="tsx" />
+
+## 服务端渲染下的响应式尺寸 [#responsive-size-with-ssr]
+
+干脆不要传 `size` 属性。没有 `size` 时，Reel 会在客户端用 `ResizeObserver` 自动测量容器。服务端渲染阶段滑动器渲染成一个空容器； 水合之后马上测量并渲染幻灯片：
+
+<CodeBlock code={nextAutoSize} language="tsx" />
+
+<Callout type="info" title="自动测量是怎么工作的">
+  省略 `size` 时，容器的尺寸必须由 CSS 决定（父级的 flex / grid、显式的宽高，或者百分比）。 在第一次测量完成之前滑动器什么都不渲染， 之后会填满测到的尺寸，并自动响应后续的尺寸变化。
+</Callout>
+
+### 显式尺寸（手动方案） [#explicit-size-manual-approach]
+
+想要像素级的控制，就显式传 `size` 属性。由于服务端渲染时拿不到 `window.innerWidth`，请给一个默认值，并在挂载后更新：
+
+<CodeBlock code={nextExplicitSize} language="tsx" />
+
+<Callout type="info" title="小提示">
+  默认尺寸尽量选你最常见的视口（比如移动端优先）。 如果实际视口不一样，滑动器会在水合时立刻重新调整。
+</Callout>
+
+## 浮层组件 [#overlay-components]
+
+`ReelPlayerOverlay` 和 `LightboxOverlay` 在 `isOpen={false}` 时什么都不渲染，所以默认就是服务端安全的。 只有被打开时（通常来自客户端的用户交互）才会挂载它们的 portal：
+
+<CodeBlock code={nextOverlay} language="tsx" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+## Angular Universal / 服务端渲染 [#angular-universal-ssr]
+
+所有 Angular 组件都是服务端安全的。滑动控制器把浏览器 API 的访问推迟到 `afterRenderEffect` 里。浮层组件在 `isOpen=false` 时什么都不渲染，因此服务端渲染阶段不会产出任何标记。
+
+<CodeBlock code={angularUniversal} language="typescript" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+## Nuxt 3 [#nuxt-3]
+
+ReelKit 的 Vue 组件在 Nuxt 3 里开箱即用。由于 Reel 会用到浏览器 API（触摸事件、ResizeObserver），请把它包在 `<ClientOnly>` 组件里，或者用 `.client.vue` 后缀：
+
+<CodeBlock code={nuxtPage} language="vue" />
+
+Feed 组件里照常使用 Reel：
+
+<CodeBlock code={nuxtFeed} language="vue" />
+
+## 服务端渲染下的响应式尺寸 [#responsive-size-with-ssr]
+
+省略 `size` 属性即可启用自动测量。Reel 会自动撑满父级的 100%。服务端渲染阶段它渲染一个空容器；水合之后测量并渲染幻灯片：
+
+<CodeBlock code={nuxtAutoSize} language="vue" />
+
+</FrameworkVariant>
+
+## 直接使用核心包 [#using-core-directly]
+
+如果你直接用 `@reelkit/core` 做自定义框架集成，控制器可以在服务端创建。 `attach()` 和 `observe()` 则只在客户端调用：
+
+<CodeBlock code={coreDirect} language="typescript" />
+
+## 小结 [#summary]
+
+<Callout type="success" title="开箱即用的部分">
+  - 在服务端导入任意 reelkit 包
+  - 服务端渲染阶段渲染滑动器组件（产出合法的静态 HTML）
+  - 在服务端创建控制器
+  - 浮层组件在 `isOpen=false` 时的表现
+</Callout>
+
+<Callout type="warning" title="需要留意的地方">
+  - 省略 `size` 以启用自动测量；如果要用基于视口的尺寸，请给一个默认值
+  - 直接使用核心包时，不要在服务端调用 `attach()`/`observe()`
+</Callout>

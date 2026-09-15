@@ -1,0 +1,33 @@
+<!-- Wire lifecycle callbacks in a custom slide template -->
+<rk-reel-player-overlay [isOpen]="isOpen" [content]="items" (closed)="isOpen = false">
+  <ng-template rkPlayerSlide
+    let-item
+    let-size="size"
+    let-isActive="isActive"
+    let-onReady="onReady"
+    let-onWaiting="onWaiting"
+    let-onError="onError"
+  >
+    @if (item.media[0].type === 'image') {
+      <img
+        [src]="item.media[0].src"
+        (load)="onReady()"
+        (error)="onError()"
+        [style.width.px]="size[0]"
+        [style.height.px]="size[1]"
+        style="object-fit: cover"
+      />
+    } @else {
+      <video
+        [src]="item.media[0].src"
+        [autoplay]="isActive"
+        (canplay)="onReady()"
+        (waiting)="onWaiting()"
+        (error)="onError()"
+        [style.width.px]="size[0]"
+        [style.height.px]="size[1]"
+        style="object-fit: cover"
+      />
+    }
+  </ng-template>
+</rk-reel-player-overlay>

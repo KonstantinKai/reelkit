@@ -1,0 +1,221 @@
+---
+title: Посібник для Vue
+description: 'ReelKit у Vue 3: компонент Reel, патерн слота #item, імперативний API, режим циклу та колбеки подій.'
+---
+
+import { Hand, Keyboard, MousePointer, InfinityIcon, Radio, Navigation, Zap, Layers, Code } from 'lucide-react';
+import basicSlider from '../../../snippets/vue-guide/basic-slider.vue?raw';
+import reelindicator from '../../../snippets/vue-guide/reelindicator.vue?raw';
+import imperativeApiTemplateRef from '../../../snippets/vue-guide/imperative-api-template-ref.vue?raw';
+import horizontalDirection from '../../../snippets/vue-guide/horizontal-direction.vue?raw';
+import autoSizing from '../../../snippets/vue-guide/auto-sizing.vue?raw';
+import transitions from '../../../snippets/vue-guide/transitions.vue?raw';
+import loopMode from '../../../snippets/vue-guide/loop-mode.vue?raw';
+import eventCallbacks from '../../../snippets/vue-guide/event-callbacks.vue?raw';
+import navigation from '../../../snippets/vue-guide/navigation.vue?raw';
+import urlState from '../../../snippets/vue-guide/url-state.vue?raw';
+import itemSlotPattern from '../../../snippets/vue-guide/item-slot-pattern.vue?raw';
+import composables from '../../../snippets/vue-guide/composables.vue?raw';
+
+Дізнайтеся, як будувати слайдери з `@reelkit/vue`.
+
+<FeatureGrid columns={3} items={[
+              {
+                icon: Hand,
+                label: 'Спершу дотик',
+                desc: 'Свайп з інерцією та прилипанням',
+              },
+              {
+                icon: Keyboard,
+                label: 'Навігація з клавіатури',
+                desc: 'Стрілки + Escape',
+              },
+              {
+                icon: MousePointer,
+                label: 'Прокручування колесом',
+                desc: 'Необов’язково, з дебаунсом',
+              },
+              {
+                icon: InfinityIcon,
+                label: 'Віртуалізований',
+                desc: '10 000+ елементів, 3 у DOM',
+              },
+              {
+                icon: Radio,
+                label: 'Indicators',
+                desc: 'Прокручування точок у стилі Instagram',
+              },
+              {
+                icon: Navigation,
+                label: 'Програмний API',
+                desc: 'next(), prev(), goTo() через шаблонний ref',
+              },
+              {
+                icon: Zap,
+                label: 'Режим циклу',
+                desc: 'Нескінченна кругова навігація',
+              },
+              {
+                icon: Layers,
+                label: 'Directional',
+                desc: 'Вертикально або горизонтально',
+              },
+              {
+                icon: Code,
+                label: 'Composition API',
+                desc: '<script setup> із композаблами',
+              },
+            ]} />
+
+## Базовий слайдер [#basic-slider]
+
+The `<Reel>` загортає контролер слайдера з ядра. Використовуйте слот `#item` щоб рендерити кожен слайд із віртуалізацією — монтуються лише видимі слайди.
+
+<Sandbox code={basicSlider} language="vue" title="App.vue" framework="vue" stackblitzDeps={['@reelkit/vue']} />
+
+## ReelIndicator [#reelindicator]
+
+Необов’язковий компонент, що показує індикатори прогресу в стилі Instagram із поточною позицією в слайдері. Якщо він усередині `<Reel>`, він сам під’єднується до `count` та `active` значення через `provide/inject` у Vue — нічого зв’язувати вручну не треба.
+
+<CodeBlock code={reelindicator} language="vue-html" />
+
+## Імперативний API — шаблонний ref [#imperative-api-template-ref]
+
+The `<Reel>` надає інтерфейс `ReelExpose` через шаблонний ref. Скористайтеся `ref()` щоб зберегти посилання й викликати імперативні методи на кшталт `next()`, `prev()`, та `goTo()`.
+
+<CodeBlock code={imperativeApiTemplateRef} language="vue" />
+
+## Горизонтальний напрямок [#horizontal-direction]
+
+Set `direction="horizontal"` для слайдера зі свайпом ліворуч і праворуч. Напрямок індикатора має збігатися.
+
+<CodeBlock code={horizontalDirection} language="vue-html" />
+
+## Auto-sizing [#auto-sizing]
+
+The `size` необов’язковий. Якщо його не передати, `<Reel>` сам вимірює свій контейнер через `ResizeObserver` і підлаштовується під макет, заданий CSS. Розмір контейнера має задавати батьківський елемент — наприклад, flex, grid або явні розміри в CSS.
+
+<CodeBlock code={autoSizing} language="vue-html" />
+
+## Переходи [#transitions]
+
+Передайте пропс `transition` щоб змінити анімацію слайдів. ReelKit має п’ять переходів, які піддаються tree-shaking: `slideTransition` (типово), `fadeTransition`, `flipTransition`, `cubeTransition`, та `zoomTransition`.
+
+<CodeBlock code={transitions} language="vue" />
+
+## Режим циклу [#loop-mode]
+
+Увімкніть нескінченну кругову навігацію пропсом `loop` . Слайдер безшовно переходить з останнього слайда на перший і навпаки.
+
+<CodeBlock code={loopMode} language="vue-html" />
+
+## Колбеки подій [#event-callbacks]
+
+The `<Reel>` видає кілька подій для відстеження стану слайдера:
+
+<CodeBlock code={eventCallbacks} language="vue" />
+
+## Навігація [#navigation]
+
+Вбудовані способи навігації:
+
+<Bullets marker="dot">
+
+- **Дотик / свайп:** Тягніть, щоб гортати — з інерцією та прилипанням
+- **Клавіатура:** Стрілки та Escape
+- **Колесо миші:** Увімкніть `:enable-wheel="true"`
+- **Програмно:** Використовуйте шаблонний ref, щоб дістатися `next()`, `prev()`, `goTo()`
+
+</Bullets>
+
+<CodeBlock code={navigation} language="vue" />
+
+## Стан в URL [#url-state]
+
+`useOverlayUrlState` будує контролер стану в URL для оверлея й повертає його цілком, а ви передаєте його в `<LightboxUrlOverlay>` як його `:controller` . Стан відкриття належить адресному рядку, тож прив’язаний оверлей відкривається сам, а посилання — звичайний спосіб його відкрити. Перший запис відсутнього параметра додає один запис в історію, кожен наступний його замінює, тож гортання ніколи не ховає кнопку «назад». Тримайте контролер, щоб читати `value`/`позицією` і закривати програмно через `set(null)`, the same low-level write the overlay uses internally on slide change.
+
+<CodeBlock code={urlState} language="vue" />
+
+Об’єкт опцій приймає `param`, `codec`, та `locator` (усі три обов’язкові) плюс необов’язковий `adapter`. The `codec` та `locator` — узгоджена пара з однаковим `Id`, so for a plain `?photo=3` галереї розгортайте `...urlIndexKey(() => props.images.length)`, який повертає обидві половини одразу. `urlIndexKey` зіставляє параметр з індексом слайда й обмежує його живою кількістю, яку повертає геттер, тож застарілий або позамежний `?photo=99` відхиляється й сам зникає з URL замість того, щоб відкрити слайд, якого ніхто не називав. Передавайте геттер, а не число: у Vue `setup` виконується один раз, тож захоплена довжина застаріла б, поки посторінкова стрічка росте. Він загортає `createIndexLocator` (половину-локатор) і поєднує його з `indexCodec`. Посторінкова стрічка або галерея з адресацією за ідентичністю передає власну узгоджену пару `codec` + `locator` . Повна таблиця опцій — у [довіднику API для Vue](/docs/vue/api#useoverlayurlstate).
+
+## Патерн слота #item [#item-slot-pattern]
+
+Замість render prop із React у Vue використовується слот `#item` з областю видимості. Саме він дає віртуалізацію: монтуються лише видимі слайди. Область слота надає три властивості:
+
+<CodeBlock code={itemSlotPattern} language="vue-html" />
+
+## Composables [#composables]
+
+`@reelkit/vue` дає композабли для типових сценаріїв з оверлеями:
+
+<CodeBlock code={composables} language="vue" />
+
+## Головне [#key-points]
+
+<KeyPoints>
+<KeyPoint title="Composition API">
+  Import `Reel`, `ReelIndicator`, and composables directly into your `<script setup>` — реєструвати плагін не потрібно
+</KeyPoint>
+<KeyPoint title="слот #item з областю видимості">
+  Відповідник у Vue для пропса `itemBuilder` із React — дає віртуалізацію звичним синтаксисом шаблонів
+</KeyPoint>
+<KeyPoint title="Шаблонний ref">
+  Використовуйте `ref<ReelExpose>()` для імперативної навігації — колбеки подій не потрібні
+</KeyPoint>
+<KeyPoint title="@after-change">
+  Emits `(index, rangeIndex)` — стежить за поточним індексом для оновлення інтерфейсу
+</KeyPoint>
+<KeyPoint title="контекст provide/inject">
+  `ReelIndicator` сам під’єднується до батьківського `Reel` через provide/inject у Vue — жодного протягування пропсів вручну
+</KeyPoint>
+</KeyPoints>
+
+## Поради щодо продуктивності [#performance-tips]
+
+<KeyPoints>
+<KeyPoint title="Тримайте шаблони слайдів легкими">
+  The `#item` виконується для кожного видимого слайда (зазвичай трьох одночасно). Уникайте важких обчислень і глибоко вкладених структур усередині.
+</KeyPoint>
+<KeyPoint title="Вантажте дані ближче до краю">
+  Використовуйте `@after-change` щоб помітити наближення до кінця й підвантажити наступний пакет, доки слайди не скінчилися — так виходить нескінченна стрічка.
+</KeyPoint>
+<KeyPoint title="Тримайте імперативний стан у ref">
+  Зберігайте посилання `ReelExpose` та поточний індекс у `ref()`Vue — це дає точкову реактивність без зайвих перерендерів.
+</KeyPoint>
+<KeyPoint title="Вимикайте колесо на сторінках із прокручуванням">
+  Set `:enable-wheel="false"` коли слайдер вбудований у макет із прокручуванням, щоб не перехоплювати прокручування сторінки.
+</KeyPoint>
+</KeyPoints>
+
+<NextSteps
+        items={[
+          {
+            label: 'Довідник API для Vue',
+            path: '/docs/vue/api',
+            description: 'усі пропси, події та композабли',
+          },
+          {
+            label: 'Посібник з ядра',
+            path: '/docs/core/guide',
+            description: 'рушій без прив’язки до фреймворку',
+          },
+          {
+            label: 'Reel Player',
+            path: {
+              react: '/docs/reel-player',
+              angular: '/docs/angular-reel-player',
+              vue: '/docs/vue-reel-player',
+            },
+            description: 'відеоплеєр у стилі TikTok / Reels',
+          },
+          {
+            label: 'Lightbox',
+            path: {
+              react: '/docs/lightbox',
+              angular: '/docs/angular-lightbox',
+              vue: '/docs/vue-lightbox',
+            },
+            description: 'галерея зображень і відео',
+          },
+        ]}
+      />

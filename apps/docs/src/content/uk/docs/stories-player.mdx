@@ -1,0 +1,553 @@
+---
+title: Stories Player
+description: 'Повноекранний Stories Player: StoriesApi, лайк подвійним дотиком, власні типи Story, смуга прогресу й темізація.'
+---
+
+import { Zap, Play, Timer, Layout, Clock, Image, Layers, Heart, Monitor, Circle, Code, Settings, Link2, Eye } from 'lucide-react';
+import { StoriesPlayerDemo } from '../../../components/demos/StoriesPlayerDemo';
+import installation from '../../snippets/stories-player/installation.sh?raw';
+import installation2 from '../../snippets/stories-player/installation-2.ts?raw';
+import fullCode from '../../snippets/stories-player/full-code.tsx?raw';
+import fullCode2 from '../../snippets/stories-player/full-code-2.tsx?raw';
+import urlState from '../../snippets/stories-player/url-state.tsx?raw';
+import urlState2 from '../../snippets/stories-player/url-state-2.tsx?raw';
+import urlState3 from '../../snippets/stories-player/url-state-3.tsx?raw';
+import urlState4 from '../../snippets/stories-player/url-state-4.tsx?raw';
+import rememberingWhatWasSeen from '../../snippets/stories-player/remembering-what-was-seen.tsx?raw';
+import transitions from '../../snippets/stories-player/transitions.tsx?raw';
+import renderheader from '../../snippets/stories-player/renderheader.tsx?raw';
+import renderfooter from '../../snippets/stories-player/renderfooter.tsx?raw';
+import renderslide from '../../snippets/stories-player/renderslide.tsx?raw';
+import rendernavigation from '../../snippets/stories-player/rendernavigation.tsx?raw';
+import renderprogressbar from '../../snippets/stories-player/renderprogressbar.tsx?raw';
+import renderloading from '../../snippets/stories-player/renderloading.tsx?raw';
+import rendererror from '../../snippets/stories-player/rendererror.tsx?raw';
+import storiesapi from '../../snippets/stories-player/storiesapi.tsx?raw';
+import doubleTapLikes from '../../snippets/stories-player/double-tap-likes.tsx?raw';
+import customizingTheHeartAnimation from '../../snippets/stories-player/customizing-the-heart-animation.css?raw';
+import canvasprogressbar from '../../snippets/stories-player/canvasprogressbar.tsx?raw';
+import storyheader from '../../snippets/stories-player/storyheader.tsx?raw';
+import imagestoryslide from '../../snippets/stories-player/imagestoryslide.tsx?raw';
+import videostoryslide from '../../snippets/stories-player/videostoryslide.tsx?raw';
+import storiesring from '../../snippets/stories-player/storiesring.tsx?raw';
+import storiesringlist from '../../snippets/stories-player/storiesringlist.tsx?raw';
+import heartanimation from '../../snippets/stories-player/heartanimation.tsx?raw';
+import storyitem from '../../snippets/stories-player/storyitem.ts?raw';
+import authorinfo from '../../snippets/stories-player/authorinfo.ts?raw';
+import storiesgroupT from '../../snippets/stories-player/storiesgroup-t.ts?raw';
+import headerrenderpropsT from '../../snippets/stories-player/headerrenderprops-t.ts?raw';
+import footerrenderpropsT from '../../snippets/stories-player/footerrenderprops-t.ts?raw';
+import sliderenderpropsT from '../../snippets/stories-player/sliderenderprops-t.ts?raw';
+import navigationrenderprops from '../../snippets/stories-player/navigationrenderprops.ts?raw';
+import progressbarrenderpropsT from '../../snippets/stories-player/progressbarrenderprops-t.ts?raw';
+import loadingrenderpropsT from '../../snippets/stories-player/loadingrenderprops-t.ts?raw';
+import errorrenderpropsT from '../../snippets/stories-player/errorrenderprops-t.ts?raw';
+import storiesapi2 from '../../snippets/stories-player/storiesapi-2.ts?raw';
+import customStoryTypes from '../../snippets/stories-player/custom-story-types.tsx?raw';
+import theming from '../../snippets/stories-player/theming.css?raw';
+
+Оверлей плеєра історій у стилі Instagram для React на основі `@reelkit/react-stories-player`.
+
+<DemoLink href="https://react-demo.reelkit.dev/stories-player?utm_source=docs">Подивитися демо наживо →</DemoLink>
+
+## Features [#features]
+
+<FeatureGrid items={[
+              {
+                icon: Zap,
+                label: 'Вкладена навігація',
+                desc: 'Дотик гортає історії, свайп перемикає групи',
+              },
+              {
+                icon: Play,
+                label: 'Історії-відео',
+                desc: 'Автовідтворення з перемикачем звуку',
+              },
+              {
+                icon: Timer,
+                label: 'Auto-Advance',
+                desc: 'Налаштовний таймер для кожної історії',
+              },
+              {
+                icon: Layout,
+                label: '3D-переходи',
+                desc: 'Куб, переворот, затухання, масштаб, зсув',
+              },
+              {
+                icon: Clock,
+                label: 'Смуга прогресу',
+                desc: 'Сегментований прогрес на canvas',
+              },
+              {
+                icon: Image,
+                label: 'Зображення та відео',
+                desc: 'Працює з обома типами медіа',
+              },
+              {
+                icon: Layers,
+                label: 'Віртуалізований',
+                desc: 'Лише 3 слайди в DOM',
+              },
+              {
+                icon: Heart,
+                label: 'Лайк подвійним дотиком',
+                desc: 'Анімація сердечка на подвійний дотик',
+              },
+              {
+                icon: Monitor,
+                label: 'Навігація на десктопі',
+                desc: 'Кнопки-стрілки на десктопі',
+              },
+              {
+                icon: Circle,
+                label: 'Кільця історій',
+                desc: 'Кільця аватарів у стилі Instagram',
+              },
+              {
+                icon: Code,
+                label: 'Узагальнені типи',
+                desc: 'Розширюйте StoryItem власними даними',
+              },
+              {
+                icon: Settings,
+                label: 'Render Props',
+                desc: 'Налаштовуйте кожен елемент інтерфейсу',
+              },
+              {
+                icon: Link2,
+                label: 'Стан в URL',
+                desc: 'Посилання ?story=group.story, якими можна ділитися',
+              },
+              {
+                icon: Eye,
+                label: 'Переглянуте',
+                desc: 'Кільця та відновлення переживають перезавантаження',
+              },
+            ]} />
+
+## Встановлення [#installation]
+
+<CodeBlock code={installation} language="bash" />
+
+Не забудьте імпортувати стилі:
+
+<CodeBlock code={installation2} language="typescript" />
+
+<Callout type="info" title="Icons">
+  Стандартна шапка використовує `lucide-react` для іконок. Якщо ви віддаєте перевагу іншій бібліотеці іконок, скористайтеся `renderHeader` та `renderNavigation` , щоб передати власні.
+</Callout>
+
+## Швидкий старт [#quick-start]
+
+The `StoriesOverlay` рендерить повноекранний плеєр історій. Поєднуйте його з `StoriesRingList` для точок входу в стилі Instagram. Передайте масив об’єктів `StoriesGroup` і керуйте видимістю через `isOpen`.
+
+<CodeBlock code={fullCode} language="tsx" />
+
+## Демо наживо [#live-demo]
+
+<Sandbox
+  code={fullCode2}
+  title="StoriesPlayer.tsx"
+  height={200}
+  stackblitzDeps={['@reelkit/react-stories-player', '@reelkit/react']}
+>
+  <StoriesPlayerDemo />
+</Sandbox>
+
+<Caption>Натисніть кільце історії, щоб відкрити плеєр. Дотик ліворуч або праворуч гортає, свайп перемикає користувачів.</Caption>
+
+## Стан в URL [#url-state]
+
+<DemoLink href="https://react-demo.reelkit.dev/stories-player-url?utm_source=docs">Подивитися демо наживо →</DemoLink>
+
+`StoriesUrlOverlay` — окремий компонент, стан відкриття якого живе в адресному рядку. Обидві осі їдуть в одному параметрі — `?story=<group>.<story>` — тож історія, що грає, має посилання, яким можна поділитися, зберегти в закладки й закрити кнопкою «назад». Побудуйте контролер через `useOverlayUrlState` та `urlIndexTwoAxisKey`, а потім передайте його як `controller`.
+
+<Callout type="info" title="Вбудовані клавіші">
+  Історії двовісні, тож розгорніть у контролер двовісний ключ: `urlIndexTwoAxisKey` (група та історія за позицією) або `urlStableIdTwoAxisKey` (група за стабільним `id`) — обидва реекспортовані з `@reelkit/react`. See the [посібник зі стану в URL](/docs/core/guide#url-state) та [API ядра](/docs/core/api#url-state).
+</Callout>
+
+<CodeBlock code={urlState} language="tsx" />
+
+- Відкриття додає **один** запис в історію. Свайп історій *та* і перемикання користувачів **replace** його, тож N переходів не додають записів, і один крок назад завжди закриває плеєр. «Назад» закриває, а не гортає історії.
+- **Внутрішня навігація теж передається.** Індекс історії не застигає на рівні групи — перехід між історіями користувача оновлює `?story=2.`*n* тож пряме посилання відкриває саме потрібну історію.
+- «Назад» закриває лише тоді, коли плеєр відкрили всередині застосунку — посилання додало запис. За надісланим посиланням у новій вкладці історії позаду немає, тож кнопка «назад» виведе із сайту; кнопка ✕ або Escape прибирає параметр на місці й лишає вас на сторінці.
+- Параметр, який не називає ані групи, ані історії — застаріла закладка, змінене вручну значення, історія за межами групи — прибирається з URL, а не відкриває сусідню.
+
+**Застосунок із роутером — передайте адаптер.** Writing `history.pushState` повз роутер лишає його місцеположення застарілим, і наступна навігація втрачає параметр:
+
+<CodeBlock code={urlState2} language="tsx" />
+
+**Стабільні посилання.** Група типово адресується за позицією, тож збережений у закладках `?story=2.0` відкриє іншого користувача, щойно стрічку перевпорядкують. Адресуйте групу за стабільним id — `outerCodec` записує id в URL, `outerLocator` знаходить, де він лежить. Половина з історією лишається звичайним індексом усередині знайденої групи.
+
+<CodeBlock code={urlState3} language="tsx" />
+
+**Нескінченні стрічки.** Гортання сторінками — задача `outerLocator` , незалежна від кодека. `locate` синхронний, тож відповідає лише за вже завантажені групи — надіслане посилання на групу 400 у стрічці, де завантажено 20, нічого не знайде. `locateAsync` — запасний варіант, що викликається лише коли `locate` не знаходить; історія заново обмежується за тією групою, на якій усе зупинилося.
+
+<Callout type="info" title="Той самий locateAsync, зовнішня вісь">
+  Це той самий `locateAsync` пейджер, який приймають одновісні ключі — у двовісному ключі він їде разом із `outerLocator` , який ви передаєте, тож вісь груп гортається сторінками, а історія лишається локальним індексом усередині знайденої групи.
+</Callout>
+
+<CodeBlock code={urlState4} language="tsx" />
+
+- While `locateAsync` у процесі, плеєр лишається закритим, а параметр — недоторканим, тож пряме посилання переживає запит. `null` або відмова прибирає параметр.
+- Відповідь, що приходить після зміни URL, після закриття або після демонтажу, відкидається — повільний запит не відкриє історію, якої ніхто не просив.
+- Full `useOverlayUrlState` опції — у [довіднику API для React](/docs/react/api#useoverlayurlstate), а покроковий розбір — у [посібнику для React](/docs/react/guide#url-state).
+
+## Пам’ять про переглянуте [#remembering-what-was-seen]
+
+Кільця показують градієнт, доки групу не переглянуто до кінця, а група знову відкривається на першій історії, якої глядач ще не бачив. Обидва беруться з `ViewedStateController`, побудованого з того самого ключа, що й адресний рядок, — тож збережений запис читається точно як параметр спільного посилання й переживає перевпорядкування стрічки, якщо ключ адресує за ідентифікатором.
+
+<CodeBlock code={rememberingWhatWasSeen} language="tsx" />
+
+- **Початкова історія рахується.** Історію, що вже на екрані, повідомлено переглянутою під час монтування, тож відкрити групу з однією історією й закрити — означає позначити її переглянутою.
+- **Свайп далі теж відновлює.** `resumeStoryIndex` береться до уваги для кожної групи, досягнутої вперше в цій сесії, включно з тією, на якій відкрився плеєр, якщо тільки `initialStoryIndex` не називає історію явно; група, яку вже прогорнули, знову відкривається там, де її залишили.
+- **Посилання все одно переважає.** Зі `StoriesUrlOverlay` параметр вирішує, де відкривається плеєр, що б не було збережено. Скрізь інде вирішує колбек відновлення.
+- **Лічильник — це позиція, а не підрахунок.** Запис називає найдальшу досягнуту історію, тож додавання історії до переглянутої групи знову засвічує її кільце, а вилучення із середини скорочує лічильник. Те саме самовиправлення, яке отримує спільне посилання.
+- **Сховище замінне.** Передайте `createSessionStorageAdapter()`, щоб забувати при закритті вкладки, або власний `StorageAdapter`. Дві відкриті вкладки тримаються в ногу через подію storage браузера.
+
+## Довідник API [#api-reference]
+
+### StoriesOverlayProps [#storiesoverlayprops]
+
+<Signature>StoriesOverlayProps\<T></Signature>
+
+| Prop | Тип | Типове значення | Опис |
+| --- | --- | --- | --- |
+| `isOpen` | `boolean` | required | Керує видимістю оверлея. Якщо true, прокручування body заблоковано. |
+| `groups` | `StoriesGroup<T>[]` | required | Масив груп історій для показу |
+| `onClose` | `() => void` | required | Колбек для закриття оверлея |
+| `ariaLabel` | `string` | 'Stories player' | Доступна назва області діалогу; екранні читачі оголошують її, коли оверлей відкривається |
+| `initialGroupIndex` | `number` | 0 | Індекс початково видимої групи, від нуля |
+| `initialStoryIndex` | `number` | resumeStoryIndex(initialGroupIndex), інакше 0 | Індекс початково видимої історії всередині групи, від нуля. Явно названий переважає над збереженим; пропустіть — і початкова група відновлюється, як і всі інші. |
+| `resumeStoryIndex` | `(groupIndex: number) => number` | — | Історія, на якій група відкривається вперше, щоб глядач продовжив там, де зупинився. Береться до уваги лише для групи, ще не відвіданої під час цього відкриття. |
+| `groupTransition` | `TransitionTransformFn` | cubeTransition | Ефект переходу для зовнішнього слайдера груп |
+| `defaultImageDuration` | `number` | 5000 | Типова тривалість автопереходу для історій-зображень у мілісекундах |
+| `tapZoneSplit` | `number` | 0.3 | Співвідношення зон дотику (0–1). Ліва частина гортає назад, права — уперед. |
+| `hideUIOnPause` | `boolean` | true | Чи ховати інтерфейс історії (шапку, підвал) на паузі від довгого натискання |
+| `enableKeyboard` | `boolean` | true | Вмикає навігацію з клавіатури (стрілки ліворуч і праворуч, Escape) |
+| `innerTransitionDuration` | `number` | 200 | Тривалість анімації внутрішнього переходу між історіями в мілісекундах |
+| `minSegmentWidth` | `number` | 8 | Мінімальна ширина сегмента смуги прогресу в пікселях |
+| `apiRef` | `MutableRefObject<StoriesApi \| null>` | - | Ref для доступу до імперативного StoriesApi |
+| `renderHeader` | `(props: HeaderRenderProps<T>) => ReactNode` | - | Власний рендерер шапки. Отримує автора, історію, стан паузи та звуку. |
+| `renderFooter` | `(props: FooterRenderProps<T>) => ReactNode` | - | Власний рендерер підвала. Отримує дані автора та історії. |
+| `renderSlide` | `(props: SlideRenderProps<T>) => ReactNode` | - | Власний рендерер слайда, що замінює стандартні слайди із зображенням і відео. |
+| `renderNavigation` | `(props: NavigationRenderProps) => ReactNode` | - | Власна навігація для десктопа. Замінює стандартні кнопки-стрілки. |
+| `renderProgressBar` | `(props: ProgressBarRenderProps<T>) => ReactNode` | - | Власна смуга прогресу. Замінює стандартну смугу на canvas. |
+| `renderLoading` | `(props: LoadingRenderProps<T>) => ReactNode` | - | Власний рендерер стану завантаження. Якщо не задано, показується стандартний індикатор у шапці. |
+| `renderError` | `(props: ErrorRenderProps<T>) => ReactNode` | - | Власний рендерер стану помилки. Якщо не задано, показується стандартний значок помилки. |
+
+### StoriesUrlOverlayProps [#storiesurloverlayprops]
+
+<Signature>StoriesUrlOverlayProps\<T></Signature>
+
+Приймає всі пропси `StoriesOverlay` , крім трійки стану відкриття — `isOpen`, `initialGroupIndex`, `initialStoryIndex` , яку натомість дає контролер.
+
+| Prop | Тип | Типове значення | Опис |
+| --- | --- | --- | --- |
+| `controller` | `UrlStateController<TwoAxisPosition>` | required | Контролер із useOverlayUrlState, розгорнутий разом із urlIndexTwoAxisKey. Його position — об’єкт \{ outer, inner \} — вирішує, чи плеєр відкритий і де саме; оверлей записує назад на кожній навігації та на закритті. |
+
+### Колбеки [#callbacks]
+
+| Prop | Тип | Опис |
+| --- | --- | --- |
+| `onClose` | `() => void` | Викликається, коли плеєр закривається. Обов’язковий у StoriesOverlay (стан відкриття ваш, тож закриття обробляєте ви); необов’язковий у StoriesUrlOverlay, де закриттям керує URL — передавайте лише щоб зреагувати після закриття. |
+| `onStoryChange` | `(groupIndex: number, storyIndex: number) => void` | Спрацьовує, коли змінюється активна історія |
+| `onGroupChange` | `(groupIndex: number) => void` | Спрацьовує, коли змінюється активна група |
+| `onStoryViewed` | `(groupIndex: number, storyIndex: number) => void` | Спрацьовує, коли історія стає видимою |
+| `onStoryComplete` | `(groupIndex: number, storyIndex: number) => void` | Спрацьовує, коли завершується таймер історії |
+| `onDoubleTap` | `(groupIndex: number, storyIndex: number) => void` | Спрацьовує на подвійний дотик |
+| `onPause` | `() => void` | Спрацьовує, коли плеєр на паузі |
+| `onResume` | `() => void` | Спрацьовує, коли плеєр продовжує відтворення |
+
+## Переходи [#transitions]
+
+The `groupTransition` керує 3D-ефектом переходу під час свайпу між групами користувачів. Імпортуйте функції переходів із `@reelkit/react`:
+
+<CodeBlock code={transitions} language="tsx" />
+
+## Життєвий цикл завантаження вмісту [#content-loading-lifecycle]
+
+Кожен слайд історії повідомляє свій стан завантаження через колбеки, передані в `SlideRenderProps`:
+
+| Колбек | Якщо |
+| --- | --- |
+| `onReady` | Вміст готовий (зображення завантажено, відео грає). Таймер прогресу запускається. |
+| `onWaiting` | Вміст затримується (відео буферизується посеред відтворення). З’являється індикатор, таймер стає на паузу. |
+| `onError` | Вміст не завантажився. Показується оверлей помилки. |
+| `onDurationReady` | Повідомте справжню тривалість медіа (наприклад, із метаданих відео), щоб перезапустити таймер із правильною тривалістю. |
+| `onEnded` | Сигналізує, що медіа завершилося (наприклад, відео догралося). Відбувається перехід до наступної історії. |
+
+<Callout type="info" title="Кешування попереднього завантаження">
+  The built-in `ImageStorySlide` та `VideoStorySlide` заздалегідь вантажать наступну історію у фоні. Коли користувач переходить до вже завантаженої історії, вміст з’являється миттєво, без індикатора.
+</Callout>
+
+## Render Props [#render-props]
+
+Будь-який елемент інтерфейсу можна замінити через render props. Кожен отримує типізовані пропси з усім потрібним станом і колбеками.
+
+### renderHeader [#renderheader]
+
+Замініть стандартну шапку (дані автора, кнопки паузи та звуку, кнопка закриття):
+
+<CodeBlock code={renderheader} language="tsx" />
+
+### renderFooter [#renderfooter]
+
+Додайте підвал під вмістом історії:
+
+<CodeBlock code={renderfooter} language="tsx" />
+
+### renderSlide [#renderslide]
+
+Повністю замініть стандартні слайди із зображенням і відео. Скористайтеся підкомпонентами `ImageStorySlide` та `VideoStorySlide` для вбудованої роботи з медіа:
+
+<CodeBlock code={renderslide} language="tsx" />
+
+### renderNavigation [#rendernavigation]
+
+Замініть стандартні кнопки-стрілки для десктопа:
+
+<CodeBlock code={rendernavigation} language="tsx" />
+
+### renderProgressBar [#renderprogressbar]
+
+Замініть стандартну смугу прогресу на canvas власною реалізацією. Сигнал `progress` видає значення від 0 до 1:
+
+<CodeBlock code={renderprogressbar} language="tsx" />
+
+### renderLoading [#renderloading]
+
+Власний індикатор завантаження, поки вміст вантажиться:
+
+<CodeBlock code={renderloading} language="tsx" />
+
+### renderError [#rendererror]
+
+Власний оверлей помилки, коли вміст не завантажився:
+
+<CodeBlock code={rendererror} language="tsx" />
+
+## StoriesApi [#storiesapi]
+
+Скористайтеся пропсом `apiRef` для імперативного керування:
+
+<CodeBlock code={storiesapi} language="tsx" />
+
+### Методи [#methods]
+
+| Метод | Тип | Опис |
+| --- | --- | --- |
+| `nextStory()` | `() => void` | Перехід до наступної історії в поточній групі |
+| `prevStory()` | `() => void` | Перехід до попередньої історії в поточній групі |
+| `nextGroup()` | `() => void` | Перемикає на наступну групу користувача |
+| `prevGroup()` | `() => void` | Перемикає на попередню групу користувача |
+| `goToGroup(index)` | `(index: number) => void` | Перехід до конкретної групи за індексом |
+| `pause()` | `() => void` | Призупиняє автоперехід і таймер прогресу |
+| `resume()` | `() => void` | Відновлює автоперехід і таймер прогресу |
+
+## Подвійний дотик і лайки [#double-tap-likes]
+
+На подвійний дотик програється вбудована анімація сердечка — миттєвий візуальний відгук. Колбек `onDoubleTap` спрацьовує з індексами групи та історії, тож ви можете зберегти лайк у власному стані (запит до API, локальне сховище тощо). Сам плеєр стан лайків не веде.
+
+<CodeBlock code={doubleTapLikes} language="tsx" />
+
+### Налаштування анімації сердечка [#customizing-the-heart-animation]
+
+Змініть швидкість анімації через `--rk-stories-heart-duration` token (see [Theming](#theming)). Для кольору, розміру чи повного приховування сердечка звертайтеся до `.rk-stories-heart` напряму. Компонент `HeartAnimation` також експортовано для окремого використання.
+
+<CodeBlock code={customizingTheHeartAnimation} language="css" />
+
+<Callout type="info">
+  Вбудовану анімацію сердечка поки не можна замінити через render prop. Її можна перестилізувати засобами CSS або сховати через `display: none` і зробити власну анімацію в колбеку `onDoubleTap` . Якщо вам потрібен render prop `renderDoubleTap` , напишіть нам через [GitHub Issues](https://github.com/KonstantinKai/reelkit/issues).
+</Callout>
+
+## Sub-Components [#sub-components]
+
+Повторно використовувані блоки, експортовані для складання власних render props:
+
+### CanvasProgressBar [#canvasprogressbar]
+
+Швидка сегментована смуга прогресу на canvas. Рендерить сегмент для кожної історії й анімує заповнення активного через `requestAnimationFrame`. Підтримує рухоме вікно для груп із багатьма історіями.
+
+<CodeBlock code={canvasprogressbar} language="tsx" />
+
+### StoryHeader [#storyheader]
+
+Стандартна шапка з аватаром автора, іменем, значком підтвердження, відносним часом, перемикачами паузи та звуку, індикатором завантаження й кнопкою закриття. Використовується автоматично, коли `renderHeader` не задано.
+
+<CodeBlock code={storyheader} language="tsx" />
+
+### ImageStorySlide [#imagestoryslide]
+
+Слайд-зображення на всю площу з `object-fit: cover`. Повідомляє про завантаження та помилки через колбеки для відстеження життєвого циклу.
+
+<CodeBlock code={imagestoryslide} language="tsx" />
+
+### VideoStorySlide [#videostoryslide]
+
+Слайд-відео, що використовує спільний елемент `<video>` заради безперервності звуку на iOS. Дає раду автовідтворенню, постерам, синхронізації звуку й повідомляє тривалість і події життєвого циклу відтворення.
+
+<CodeBlock code={videostoryslide} language="tsx" />
+
+### StoriesRing [#storiesring]
+
+Круглий аватар із градієнтним кільцем у стилі Instagram. Сегменти показують переглянуті й непереглянуті історії — градієнт для непереглянутих, приглушений сірий для переглянутих.
+
+<CodeBlock code={storiesring} language="tsx" />
+
+### StoriesRingList [#storiesringlist]
+
+Горизонтальний прокручуваний ряд компонентів `StoriesRing` з іменами авторів. Одне кільце на групу.
+
+<CodeBlock code={storiesringlist} language="tsx" />
+
+### HeartAnimation [#heartanimation]
+
+Анімований оверлей сердечка, що спрацьовує на подвійний дотик. Збільшується й згасає за 800 мс. Налаштовується засобами CSS (дивіться розділ про подвійний дотик і лайки).
+
+<CodeBlock code={heartanimation} language="tsx" />
+
+## Types [#types]
+
+### StoryItem [#storyitem]
+
+<CodeBlock code={storyitem} language="typescript" />
+
+### AuthorInfo [#authorinfo]
+
+<CodeBlock code={authorinfo} language="typescript" />
+
+### StoriesGroup\<T> [#storiesgroup-t]
+
+<CodeBlock code={storiesgroupT} language="typescript" />
+
+### HeaderRenderProps\<T> [#headerrenderprops-t]
+
+<CodeBlock code={headerrenderpropsT} language="typescript" />
+
+### FooterRenderProps\<T> [#footerrenderprops-t]
+
+<CodeBlock code={footerrenderpropsT} language="typescript" />
+
+### SlideRenderProps\<T> [#sliderenderprops-t]
+
+<CodeBlock code={sliderenderpropsT} language="typescript" />
+
+### NavigationRenderProps [#navigationrenderprops]
+
+<CodeBlock code={navigationrenderprops} language="typescript" />
+
+### ProgressBarRenderProps\<T> [#progressbarrenderprops-t]
+
+<CodeBlock code={progressbarrenderpropsT} language="typescript" />
+
+### LoadingRenderProps\<T> [#loadingrenderprops-t]
+
+<CodeBlock code={loadingrenderpropsT} language="typescript" />
+
+### ErrorRenderProps\<T> [#errorrenderprops-t]
+
+<CodeBlock code={errorrenderpropsT} language="typescript" />
+
+### StoriesApi [#storiesapi]
+
+<CodeBlock code={storiesapi2} language="typescript" />
+
+## Власні типи Story [#custom-story-types]
+
+Extend `StoryItem` власними полями й передайте параметр типу в `StoriesOverlay`. Усі render props отримають ваш розширений тип:
+
+<CodeBlock code={customStoryTypes} language="tsx" />
+
+## Класи CSS [#css-classes]
+
+Усі класи CSS звичайні (не CSS-модулі), тож їх можна перекрити селекторами вищої специфічності в таблиці стилів, підключеній після `@reelkit/react-stories-player/styles.css`. Для змін кольору, розміру та z-index краще беріть власні властивості CSS, описані в розділі [Theming](#theming) нижче.
+
+| Class | Component | Опис |
+| --- | --- | --- |
+| `.rk-stories-overlay` | Overlay | Фіксоване повноекранне тло (фон, z-index) |
+| `.rk-stories-swipe-wrapper` | Overlay | Обгортка свайпу для закриття (містить кнопки навігації та canvas) |
+| `.rk-stories-container` | Overlay | Заокруглене полотно історії (позиція, переповнення) |
+| `.rk-stories-ui-layer` | Overlay | Контейнер інтерфейсу (шапка, прогрес, навігація) |
+| `.rk-stories-ui-layer--hidden` | Overlay | Стан прихованого інтерфейсу (перемикається через hideUIOnPause) |
+| `.rk-stories-error` | Overlay | Стан помилки (значок і текст по центру) |
+| `.rk-stories-error-text` | Overlay | Текст повідомлення про помилку |
+| `.rk-stories-nav-btn` | Навігація | Стрілка вперед або назад на десктопі |
+| `.rk-stories-progress-bar` | ProgressBar | Обгортка позиціювання смуги прогресу на canvas |
+| `.rk-stories-slide-wrapper` | Group | Одна група історій (зовнішній слайд) |
+| `.rk-stories-story` | Story | Одна історія (корінь внутрішнього слайда) |
+| `.rk-stories-header` | StoryHeader | Смуга шапки (аватар, ім’я, дії) |
+| `.rk-stories-header--hidden` | StoryHeader | Стан прихованої шапки (visible=false) |
+| `.rk-stories-header-avatar` | StoryHeader | Зображення аватара автора |
+| `.rk-stories-header-name` | StoryHeader | Текст імені автора |
+| `.rk-stories-header-verified` | StoryHeader | Контейнер значка підтвердження |
+| `.rk-stories-header-time` | StoryHeader | Текст «скільки часу тому» |
+| `.rk-stories-header-actions` | StoryHeader | Дії праворуч (закрити, вимкнути звук, пауза) |
+| `.rk-stories-header-btn` | StoryHeader | Кнопка дії в шапці |
+| `.rk-stories-header-spinner` | StoryHeader | Індикатор буферизації відео |
+| `.rk-stories-image` | ImageStorySlide | Елемент історії-зображення |
+| `.rk-stories-video` | VideoStorySlide | Контейнер історії-відео |
+| `.rk-stories-video-element` | VideoStorySlide | The shared \<video> element |
+| `.rk-stories-video-poster` | VideoStorySlide | Постер відео (зникає з початком відтворення) |
+| `.rk-stories-video-poster--visible` | VideoStorySlide | Стан видимого постера (до відтворення) |
+| `.rk-stories-heart` | HeartAnimation | Анімація сердечка на подвійний дотик |
+| `.rk-stories-ring` | StoriesRing | Кільце історії (аватар з анімованою градієнтною рамкою) |
+| `.rk-stories-ring--active` | StoriesRing | Кільце з непереглянутими історіями (анімується) |
+| `.rk-stories-ring-avatar` | StoriesRing | Зображення аватара всередині кільця |
+| `.rk-stories-ring-list` | StoriesRingList | Контейнер горизонтального списку кілець |
+| `.rk-stories-ring-list-item` | StoriesRingList | Колонка з кільцем та іменем |
+| `.rk-stories-ring-list-name` | StoriesRingList | Ім’я автора під кожним кільцем |
+
+## Theming [#theming]
+
+Кожен колір, розмір, z-index і перехід живе у власній властивості CSS. Перевизначайте одну чи кілька на `:root` (або на будь-якому предку оверлея), щоб змінити тему, не чіпаючи код компонентів.
+
+| Token | Типове значення | Controls |
+| --- | --- | --- |
+| `--rk-stories-overlay-bg` | `#000` | Full-screen backdrop color |
+| `--rk-stories-overlay-z` | `9999` | Overlay z-index |
+| `--rk-stories-container-radius` | `12px` | Rounded corners on the story canvas (desktop) |
+| `--rk-stories-swipe-gap` | `16px` | Gap between nav buttons and the story canvas |
+| `--rk-stories-top-shade-height` | `120px` | Top gradient scrim height behind the header |
+| `--rk-stories-top-shade-bg` | `linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%)` | Top gradient scrim color |
+| `--rk-stories-ui-transition` | `200ms` | Fade duration when hideUIOnPause toggles |
+| `--rk-stories-nav-size` | `44px` | Desktop prev/next button size |
+| `--rk-stories-nav-bg` | `rgba(255, 255, 255, 0.1)` | Desktop nav button background |
+| `--rk-stories-nav-bg-hover` | `rgba(255, 255, 255, 0.2)` | Desktop nav button hover background |
+| `--rk-stories-nav-fg` | `rgba(255, 255, 255, 0.7)` | Desktop nav button icon color |
+| `--rk-stories-nav-fg-hover` | `#fff` | Desktop nav button hover icon color |
+| `--rk-stories-error-bg` | `linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)` | Error state background gradient |
+| `--rk-stories-error-fg` | `rgba(255, 255, 255, 0.5)` | Error icon and text color |
+| `--rk-stories-error-text-size` | `13px` | Error message font size |
+| `--rk-stories-video-bg` | `#000` | Letterbox background behind \<video> |
+| `--rk-stories-video-poster-transition` | `200ms` | Poster fade duration when the video starts playing |
+| `--rk-stories-header-top` | `18px` | Vertical offset of the header from the top of the story |
+| `--rk-stories-header-padding` | `12px 16px` | Inner padding of the header row |
+| `--rk-stories-header-avatar-size` | `32px` | Avatar width/height |
+| `--rk-stories-header-name-fg` | `#fff` | Author name color |
+| `--rk-stories-header-name-size` | `14px` | Author name font size |
+| `--rk-stories-header-time-fg` | `rgba(255, 255, 255, 0.6)` | Time-ago text color |
+| `--rk-stories-header-btn-fg` | `#fff` | Header action icon color (close, mute, pause) |
+| `--rk-stories-heart-duration` | `800ms` | Pop-in/fade-out animation duration |
+| `--rk-stories-ring-spin-duration` | `4s` | Active ring gradient rotation duration |
+| `--rk-stories-ring-list-gap` | `12px` | Spacing between rings in the list |
+| `--rk-stories-ring-list-padding` | `12px` | Inner padding around the ring list |
+| `--rk-stories-ring-list-name-size` | `12px` | Author name font size below each ring |
+
+Вставте фрагмент нижче в таблицю стилів, підключену після `@reelkit/react-stories-player/styles.css`.
+
+<CodeBlock code={theming} language="css" />
+
+## Accessibility [#accessibility]
+
+Корінь оверлея — модальний діалог (`role="dialog"`, `aria-modal="true"`). Set `ariaLabel` щоб змінити оголошення для екранного читача; типове значення — «Stories player».
+
+Оверлей захоплює фокус під час відкриття й повертає його на елемент-тригер після закриття. Tab і Shift+Tab циклічно проходять фокусовані елементи всередині; фокус, що вислизнув (клік поза оверлеєм, програмна установка), повертається назад. Реалізовано через `captureFocusForReturn` та `createFocusTrap` from `@reelkit/core`.
+
+## Клавіатурні скорочення [#keyboard-shortcuts]
+
+| Key | Action |
+| --- | --- |
+| `ArrowLeft` | Previous story |
+| `ArrowRight` | Next story |
+| `Escape` | Close player |

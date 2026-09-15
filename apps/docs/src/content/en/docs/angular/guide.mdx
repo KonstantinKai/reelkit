@@ -1,0 +1,183 @@
+---
+title: Angular Guide
+description: Build sliders with @reelkit/angular. rk-reel component, rkReelItem directive, ReelIndicator, apiReady output, signal-based imperative API, virtualization.
+---
+
+import { Hand, Keyboard, MousePointer, InfinityIcon, Radio, Navigation, Zap, Layers, Code } from 'lucide-react';
+import rkReelComponent from '../../../snippets/angular-guide/rk-reel-component.ts?raw';
+import autoSizing from '../../../snippets/angular-guide/auto-sizing.html?raw';
+import rkreelitemTemplatePattern from '../../../snippets/angular-guide/rkreelitem-template-pattern.html?raw';
+import navigation from '../../../snippets/angular-guide/navigation.ts?raw';
+import urlState from '../../../snippets/angular-guide/url-state.ts?raw';
+import urlState2 from '../../../snippets/angular-guide/url-state-2.ts?raw';
+import reelindicator from '../../../snippets/angular-guide/reelindicator.html?raw';
+import apireadyOutputSignalBased from '../../../snippets/angular-guide/apiready-output-signal-based.ts?raw';
+
+Learn how to build sliders with `@reelkit/angular`.
+
+<FeatureGrid columns={3} items={[
+              {
+                icon: Hand,
+                label: 'Touch First',
+                desc: 'Swipe with momentum and snap',
+              },
+              {
+                icon: Keyboard,
+                label: 'Keyboard Nav',
+                desc: 'Arrow keys + Escape',
+              },
+              {
+                icon: MousePointer,
+                label: 'Wheel Scroll',
+                desc: 'Optional with debounce',
+              },
+              {
+                icon: InfinityIcon,
+                label: 'Virtualized',
+                desc: '10,000+ items, 3 in DOM',
+              },
+              {
+                icon: Radio,
+                label: 'Indicators',
+                desc: 'Instagram-style dot scrolling',
+              },
+              {
+                icon: Navigation,
+                label: 'Programmatic API',
+                desc: 'next(), prev(), goTo() via apiReady',
+              },
+              {
+                icon: Zap,
+                label: 'Loop Mode',
+                desc: 'Infinite circular navigation',
+              },
+              {
+                icon: Layers,
+                label: 'Directional',
+                desc: 'Vertical or horizontal',
+              },
+              {
+                icon: Code,
+                label: 'Signals-Based',
+                desc: 'OnPush with Angular signals',
+              },
+            ]} />
+
+## rk-reel Component [#rk-reel-component]
+
+The `rk-reel` component wraps the core slider controller. Standalone, with `ChangeDetectionStrategy.OnPush`.
+
+<Sandbox code={rkReelComponent} language="typescript" title="app.component.ts" framework="angular" stackblitzDeps={['@reelkit/angular']} />
+
+## Auto-sizing [#auto-sizing]
+
+The `size` input is optional. When omitted, `rk-reel` auto-measures its container via `ResizeObserver` and adapts to CSS-driven layout. The container must be sized by its parent (e.g. flex, grid, or explicit CSS dimensions).
+
+<CodeBlock code={autoSizing} language="html" />
+
+## rkReelItem Template Pattern [#rkreelitem-template-pattern]
+
+Instead of React's render prop, Angular uses a structural directive `rkReelItem` on an `ng-template`. This enables virtualization — only visible slides are instantiated. The template context provides three variables:
+
+<CodeBlock code={rkreelitemTemplatePattern} language="html" />
+
+## Navigation [#navigation]
+
+Built-in navigation methods:
+
+<Bullets marker="dot">
+
+- **Touch/Swipe:** Drag to navigate with momentum and snap
+- **Keyboard:** Arrow keys and Escape
+- **Mouse Wheel:** Enable with `[enableWheel]="true"`
+- **Programmatic:** Use the `(apiReady)` output to obtain `next()`, `prev()`, `goTo()`
+
+</Bullets>
+
+<CodeBlock code={navigation} language="typescript" />
+
+## URL State [#url-state]
+
+`createOverlayUrlState` builds a URL-state controller for an overlay and returns it whole, then you hand it to a `*UrlOverlay` component as its `[controller]` input. Call it in an injection context — a field initialiser; it attaches immediately and releases through `DestroyRef`. The URL owns the open state, so a bound overlay opens itself and a link is the usual open action. The first write of an absent parameter pushes one history entry and every write after replaces it, so paging never buries the back button. Keep the controller to read `value`/`position` and to drive it programmatically: `set(position)` opens, `set(null)` closes, and `set` is the same low-level write the overlay uses internally on slide change.
+
+<CodeBlock code={urlState} language="typescript" />
+
+Routed app — pass a Router-backed adapter, otherwise the Router's own location goes stale and its next navigation drops the parameter:
+
+<CodeBlock code={urlState2} language="typescript" />
+
+The options object takes `param`, `codec`, and `locator` (all three required), plus an optional `adapter`. `codec` and `locator` are a matched pair sharing the same `Id`, so a plain `?photo=3` gallery spreads `...urlIndexKey(() => images().length)`, which returns both halves at once. `urlIndexKey` bounds the index against the live count the getter returns, so a stale `?photo=99` is rejected and heals itself out of the URL instead of opening a slide that was never named. A paginated feed or an identity-keyed gallery supplies its own matched `codec` + `locator` instead. The full options table lives on the [Angular API reference](/docs/angular/api#createoverlayurlstate).
+
+## ReelIndicator [#reelindicator]
+
+Optional component that displays Instagram-style progress indicators showing the current position in the slider. When placed inside a `rk-reel`, it auto-connects to the parent's `count` and `active` values via the `RK_REEL_CONTEXT` injection token — no manual wiring needed.
+
+<CodeBlock code={reelindicator} language="html" />
+
+## apiReady Output — Signal-Based Pattern [#apiready-output-signal-based-pattern]
+
+The `(apiReady)` output fires once after the component is mounted and measured. It emits a `ReelApi` object you can store and use for imperative navigation. Using Angular signals for this reference works cleanly with `OnPush` change detection.
+
+<CodeBlock code={apireadyOutputSignalBased} language="typescript" />
+
+## Key Points [#key-points]
+
+<KeyPoints>
+<KeyPoint title="Standalone component">
+  Import `ReelComponent`, `RkReelItemDirective`, and optionally `ReelIndicatorComponent` directly into your component's `imports` array
+</KeyPoint>
+<KeyPoint title="ng-template + rkReelItem">
+  The Angular equivalent of React's `itemBuilder` prop — enables virtualization
+</KeyPoint>
+<KeyPoint title="apiReady">
+  Output that fires once with the imperative navigation API — no ViewChild querying required
+</KeyPoint>
+<KeyPoint title="afterChange">
+  Emits `{ index, indexInRange }` — track current index for UI updates
+</KeyPoint>
+<KeyPoint title="OnPush by default">
+  All components use `ChangeDetectionStrategy.OnPush` and Angular signals for maximum performance
+</KeyPoint>
+</KeyPoints>
+
+## Performance Tips [#performance-tips]
+
+<KeyPoints>
+<KeyPoint title="Keep slide templates lightweight">
+  The `rkReelItem` template runs for each visible slide (typically 3 at a time). Avoid heavy computation or deeply nested structures inside it.
+</KeyPoint>
+<KeyPoint title="Load data near the edge">
+  Use `(afterChange)` to detect when the user approaches the end and fetch the next batch before slides run out — enabling infinite scroll feeds.
+</KeyPoint>
+<KeyPoint title="Use signals for imperative state">
+  Store the `ReelApi` reference and current index in Angular signals to get fine-grained reactivity without triggering full component re-renders.
+</KeyPoint>
+<KeyPoint title="Disable wheel in scrollable pages">
+  Set `[enableWheel]="false"` when the slider is embedded in a scrollable layout to avoid capturing the page scroll.
+</KeyPoint>
+</KeyPoints>
+
+<NextSteps
+        items={[
+          {
+            label: 'Angular API Reference',
+            path: '/docs/angular/api',
+            description: 'all available inputs, outputs, and methods',
+          },
+          {
+            label: 'Reel Player',
+            path: '/docs/angular-reel-player',
+            description: 'TikTok/Reels-style video player',
+          },
+          {
+            label: 'Lightbox',
+            path: '/docs/angular-lightbox',
+            description: 'image & video gallery',
+          },
+          {
+            label: 'Stories Player',
+            path: '/docs/angular-stories-player',
+            description: 'Instagram-style stories viewer (coming soon)',
+          },
+        ]}
+      />

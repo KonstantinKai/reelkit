@@ -1,0 +1,488 @@
+---
+title: Lightbox
+description: 'Повноекранна галерея зображень: двовісний URL, підкомпоненти, завантаження вмісту й обробка помилок, переходи та класи CSS.'
+---
+
+import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2 } from 'lucide-react';
+import { LightboxDemo } from '../../../components/demos/LightboxDemo';
+import installation from '../../snippets/lightbox/installation.sh?raw';
+import installation2 from '../../snippets/lightbox/installation-2.ts?raw';
+import quickStart from '../../snippets/lightbox/quick-start.tsx?raw';
+import fullCode from '../../snippets/lightbox/full-code.tsx?raw';
+import videoSlidesOptIn from '../../snippets/lightbox/video-slides-opt-in.tsx?raw';
+import customControls from '../../snippets/lightbox/custom-controls.tsx?raw';
+import customInfoOverlay from '../../snippets/lightbox/custom-info-overlay.tsx?raw';
+import customNavigation from '../../snippets/lightbox/custom-navigation.tsx?raw';
+import customSlide from '../../snippets/lightbox/custom-slide.tsx?raw';
+import lifecycleCallbacks from '../../snippets/lightbox/lifecycle-callbacks.tsx?raw';
+import customLoadingErrorUi from '../../snippets/lightbox/custom-loading-error-ui.tsx?raw';
+import urlState from '../../snippets/lightbox/url-state.tsx?raw';
+import urlState2 from '../../snippets/lightbox/url-state-2.tsx?raw';
+import urlState3 from '../../snippets/lightbox/url-state-3.tsx?raw';
+import urlState4 from '../../snippets/lightbox/url-state-4.tsx?raw';
+import urlState5 from '../../snippets/lightbox/url-state-5.tsx?raw';
+import urlState6 from '../../snippets/lightbox/url-state-6.tsx?raw';
+import lightboxitem from '../../snippets/lightbox/lightboxitem.ts?raw';
+import controlsrenderprops from '../../snippets/lightbox/controlsrenderprops.ts?raw';
+import navigationrenderprops from '../../snippets/lightbox/navigationrenderprops.ts?raw';
+import sliderenderprops from '../../snippets/lightbox/sliderenderprops.ts?raw';
+import inforenderprops from '../../snippets/lightbox/inforenderprops.ts?raw';
+import closebutton from '../../snippets/lightbox/closebutton.tsx?raw';
+import counter from '../../snippets/lightbox/counter.tsx?raw';
+import fullscreenbutton from '../../snippets/lightbox/fullscreenbutton.tsx?raw';
+import soundbutton from '../../snippets/lightbox/soundbutton.tsx?raw';
+import usevideosliderenderer from '../../snippets/lightbox/usevideosliderenderer.ts?raw';
+import usefullscreen from '../../snippets/lightbox/usefullscreen.tsx?raw';
+import transitions from '../../snippets/lightbox/transitions.tsx?raw';
+import customTransitionFunction from '../../snippets/lightbox/custom-transition-function.tsx?raw';
+import theming from '../../snippets/lightbox/theming.css?raw';
+
+Повноекранний компонент Lightbox-галереї зображень і відео на основі `@reelkit/react-lightbox`.
+
+<DemoLink href="https://react-demo.reelkit.dev/image-preview?utm_source=docs">Подивитися демо наживо →</DemoLink>
+
+## Features [#features]
+
+<FeatureGrid items={[
+              {
+                icon: Image,
+                label: 'Зображення та відео',
+                desc: 'Вбудована підтримка слайдів-відео',
+              },
+              {
+                icon: MousePointer,
+                label: 'Дотикові жести',
+                desc: 'Свайп для гортання',
+              },
+              {
+                icon: X,
+                label: 'Свайп для закриття',
+                desc: 'Свайп угору закриває',
+              },
+              {
+                icon: Keyboard,
+                label: 'Навігація з клавіатури',
+                desc: 'Стрілки + Escape',
+              },
+              {
+                icon: Maximize2,
+                label: 'Повний екран',
+                desc: 'Кросбраузерний API',
+              },
+              {
+                icon: Hash,
+                label: 'Переходи',
+                desc: 'Зсув, затухання, переворот, наближення',
+              },
+              {
+                icon: Zap,
+                label: 'Preloading',
+                desc: 'Сусідні зображення завантажуються заздалегідь',
+              },
+              {
+                icon: Volume2,
+                label: 'Перемикач звуку',
+                desc: 'Звук вмикається й вимикається для кожного слайда',
+              },
+              {
+                icon: Loader,
+                label: 'Стани завантаження',
+                desc: 'Індикатор і власний рендеринг',
+              },
+              {
+                icon: AlertTriangle,
+                label: 'Обробка помилок',
+                desc: 'Значок помилки та власний рендеринг',
+              },
+              {
+                icon: Layers,
+                label: 'Render Props',
+                desc: '6 налаштовних зон рендерингу',
+              },
+              {
+                icon: Layers,
+                label: 'Hooks',
+                desc: 'useVideoSlideRenderer + useFullscreen',
+              },
+              {
+                icon: Link2,
+                label: 'Стан в URL',
+                desc: 'Посилання, якими можна ділитися й зберігати в закладки',
+              },
+            ]} />
+
+## Встановлення [#installation]
+
+<CodeBlock code={installation} language="bash" />
+
+Не забудьте імпортувати стилі:
+
+<CodeBlock code={installation2} language="typescript" />
+
+<Callout type="info" title="Icons">
+  Стандартні елементи керування використовують `lucide-react` для іконок. Якщо ви віддаєте перевагу іншій бібліотеці іконок, скористайтеся `renderControls` та `renderNavigation` , щоб передати власні.
+</Callout>
+
+## Швидкий старт [#quick-start]
+
+The `LightboxOverlay` показує зображення на весь екран. Передайте масив об’єктів `LightboxItem` і керуйте видимістю через індекс, який може бути null.
+
+<CodeBlock code={quickStart} language="tsx" />
+
+## Демо наживо [#live-demo]
+
+<Sandbox
+  code={fullCode}
+  title="LightboxPage.tsx"
+  height={500}
+  stackblitzDeps={['@reelkit/react-lightbox']}
+  stackblitzExtraDeps={{ 'lucide-react': '^0.562.0' }}
+>
+  <LightboxDemo />
+</Sandbox>
+
+<Caption>Натисніть мініатюру, щоб відкрити Lightbox. Гортайте стрілками або свайпом.</Caption>
+
+## Слайди-відео (за бажанням) [#video-slides-opt-in]
+
+Підтримка відео вмикається за бажанням і піддається tree-shaking — використання лише зображень нічого не додає до бандла. Імпортуйте `useVideoSlideRenderer` і передайте повернені значення у `LightboxOverlay`. Хук сам дає раду станам завантаження, керуванню звуком і життєвим циклом відео.
+
+<CodeBlock code={videoSlidesOptIn} language="tsx" />
+
+<Callout type="info" title="Як це працює">
+  - Хук повертає `SoundProvider` — загорніть у нього оверлей, щоб перемикання звуку працювало
+  - Відео відтворюється автоматично (типово без звуку), коли слайд стає активним
+  - Спільний елемент відео повторно використовується між слайдами заради безперервності звуку на iOS
+  - Кнопка звуку з’являється на слайдах-відео автоматично, з реактивним перемикачем
+  - Елементи без `type: 'video'` рендеряться як зображення (зворотна сумісність)
+</Callout>
+
+## Customization [#customization]
+
+### Власні елементи керування [#custom-controls]
+
+Використовуйте `renderControls` щоб замінити стандартну кнопку закриття, лічильник і перемикач повного екрана. Складайте з експортованих підкомпонентів:
+
+<CodeBlock code={customControls} language="tsx" />
+
+### Власний інформаційний оверлей [#custom-info-overlay]
+
+Використовуйте `renderInfo` щоб замінити стандартний градієнт із заголовком та описом, або передайте `renderInfo={() => null}` щоб сховати його повністю:
+
+<CodeBlock code={customInfoOverlay} language="tsx" />
+
+### Власна навігація [#custom-navigation]
+
+Використовуйте `renderNavigation` щоб замінити стандартні стрілки вперед і назад:
+
+<CodeBlock code={customNavigation} language="tsx" />
+
+### Власний слайд [#custom-slide]
+
+Використовуйте `renderSlide` для повністю власного вмісту слайда. Поверніть `null` щоб лишити стандартний слайд-зображення:
+
+<CodeBlock code={customSlide} language="tsx" />
+
+## Завантаження вмісту та обробка помилок [#content-loading-error-handling]
+
+Lightbox стежить за станом завантаження й помилок кожного слайда. Поки вміст вантажиться, показується індикатор; для медіа, що не завантажилося, — значок зіпсованого зображення. URL з помилками кешуються, тож повторний перехід одразу показує помилку без нової спроби.
+
+### Колбеки життєвого циклу [#lifecycle-callbacks]
+
+Якщо ви використовуєте `renderSlide`, call these callbacks to control the loading indicator:
+
+| Колбек | Коли викликати |
+| --- | --- |
+| `onReady` | Зображення завантажилося або відео почало грати. Скидає стани завантаження й помилки. |
+| `onWaiting` | Відео буферизується посеред відтворення. Показує індикатор завантаження. |
+| `onError` | Вміст не завантажився. Показує оверлей помилки й кешує URL як зіпсований. |
+
+<CodeBlock code={lifecycleCallbacks} language="tsx" />
+
+### Власний інтерфейс завантаження та помилок [#custom-loading-error-ui]
+
+Замініть стандартний індикатор і значок помилки власними компонентами:
+
+<CodeBlock code={customLoadingErrorUi} language="tsx" />
+
+## Стан в URL [#url-state]
+
+<DemoLink href="https://react-demo.reelkit.dev/image-preview-url?utm_source=docs">Подивитися демо наживо →</DemoLink>
+
+`LightboxUrlOverlay` — окремий компонент, стан відкриття якого живе в адресному рядку. Побудуйте контролер через `useOverlayUrlState` from `@reelkit/react` і передайте його як `controller`: галерея відкривається сама, коли параметр називає слайд, і закривається, коли параметр зникає. Посиланнями можна ділитися, а кнопка «назад» закриває галерею, а не виводить зі сторінки.
+
+<Callout type="info" title="Вбудовані клавіші">
+  Слайди можна адресувати вбудованим ключем — розгорніть `urlIndexKey` (за позицією) або `urlStableIdKey` (за стабільним `id`) into the controller — both re-exported from `@reelkit/react`. See the [посібник зі стану в URL](/docs/core/guide#url-state) та [API ядра](/docs/core/api#url-state).
+</Callout>
+
+<CodeBlock code={urlState} language="tsx" />
+
+Хук приймає один об’єкт опцій і повертає `UrlStateController` (with `set`, `index`, `value`). Keep it for programmatic control: `set` — низькорівневий запис, який оверлей робить усередині (зміна слайда та `set(null)` для закриття). Ним же можна керувати оверлеєм програмно: `set(index)` відкриває його — так само, як перехід за параметром. Але для відкриття краще звичайне посилання: href можна надіслати, відкрити в новій вкладці, а кнопка «назад» його закриє — і все це без жодного обробника.
+
+Full `useOverlayUrlState` options (`param`, `adapter`, `codec`, `locator`): see the [довіднику API для React](/docs/react/api#useoverlayurlstate).
+
+`LightboxUrlOverlay` приймає лише `controller` (обов’язково), необов’язковий `onClose`, plus every visual and behavior prop `LightboxOverlay` takes (`images`, `ariaLabel`, `transitionFn`, the render props, and so on) — but no `isOpen`.
+
+- Відкриття коштує одного запису в історії. Гортання слайдів замінює його, тож сто свайпів не додають жодного — один крок назад завжди виходить із галереї. «Назад» закриває, а не гортає фотографії.
+- Надіслане посилання на кшталт `?photo=3` відкриває галерею на цьому слайді. Закриття посилання, що прийшло разом зі сторінкою, прибирає параметр на місці, а не виводить із сайту.
+- **«Назад» закриває лише тоді, коли ви відкрили галерею всередині застосунку** — посилання додало запис, тож «назад» повертає до галереї. За надісланим посиланням у новій вкладці історії позаду немає, тож кнопка «назад» виведе із сайту; кнопка закриття або Escape прибирає параметр на місці й лишає вас у галереї. Готові адаптери роутерів ручаються за перехід за посиланням на тій самій сторінці; власний адаптер, який не може сказати, як з’явився запис, теж отримує закриття на місці, і в історії лишається дублікат сторінки — один крок назад тоді ніби нічого не робить, але нічого й не відкриває.
+- Параметр, який не називає жодного слайда — застаріла закладка, змінене вручну значення, — прибирається з URL, а не лишає в адресному рядку слайд, який не відкриється.
+
+**У застосунку з роутером передайте адаптер.** Прямий запис в історію лишає власне місцеположення роутера застарілим, і наступна навігація втрачає параметр.
+
+<CodeBlock code={urlState2} language="tsx" />
+
+**Відкриття — це посилання.** Оскільки стан відкриття живе в URL, мініатюра — звичайне посилання без обробника кліку, і вся поведінка браузера дістається безкоштовно: відкрити в новій вкладці, скопіювати адресу, побачити підказку при наведенні. У застосунку з роутером беріть посилання роутера, щоб перехід лишався на клієнті.
+
+<CodeBlock code={urlState3} language="tsx" />
+
+**Для посилань, якими діляться, краще стабільна ідентичність.** Індекс адресує за позицією, тож збережений у закладках `?photo=3` відкриє інше зображення, щойно список перевпорядкують. `urlStableIdKey` адресує за стабільним `id`, scanning the live list — one call covers the common case.
+
+<CodeBlock code={urlState4} language="tsx" />
+
+Pass `hashCodec: base64UrlCodec` щоб закодувати id в URL у base64url — оборотне маскування, а не криптографічний хеш.
+
+Адресуєте за іншим полем ( `slug`), or page an infinite feed with `locateAsync`, and build the `codec`/`locator` самі:
+
+<CodeBlock code={urlState5} language="tsx" />
+
+**Нескінченні та посторінкові галереї.** Синхронний `locate` відповідає лише за вже завантажені зображення — надіслане посилання на зображення 400 у стрічці, де завантажено 20, нічого не знайде. `locateAsync` — запасний варіант, що викликається лише коли `locate` misses.
+
+<Callout type="info" title="Shortcut">
+  Keying by the item’s `id`? Не пишіть кодек і локатор вручну — передайте `locateAsync` просто в `urlStableIdKey({ items, locateAsync })` (він вантажить дані, якщо не знайшов, і повертає індекс). Розгорнутий варіант нижче — для адресації за іншим полем або для повного контролю.
+</Callout>
+
+<CodeBlock code={urlState6} language="tsx" />
+
+- Як саме вантажити — ваша справа: тягніть сторінки поспіль до потрібної або лише одне зображення й додайте його. URL адресує за ідентичністю, а не за позицією, тож `findIndex` поверне те місце, де елемент опинився.
+- While `locateAsync` у процесі, Lightbox лишається закритим, а параметр — недоторканим, тож пряме посилання переживає запит. `null` або відмова прибирає параметр.
+- Відповідь, що приходить після зміни URL, після закриття або після демонтажу, відкидається — повільний запит не відкриє слайд, якого ніхто не просив.
+- Поки триває очікування, нічого не рендериться: цей стан завантаження вже належить сторінці, тож малюйте власний скелетон.
+- Тайм-ауту немає — Lightbox не може знати, яка галерея завдовжки. Завершуйте значенням `null` коли сторінки скінчилися, інакше оверлей лишиться закритим назавжди.
+- Whatever `locateAsync` є остаточним — це індекс щойно завантажених даних, узятий як є, без повторного читання `images`.
+
+## Довідник API [#api-reference]
+
+### Пропси LightboxOverlay [#lightboxoverlay-props]
+
+<Signature>LightboxOverlayProps</Signature>
+
+| Prop | Тип | Типове значення | Опис |
+| --- | --- | --- | --- |
+| `isOpen` | `boolean` | required | Керує видимістю Lightbox. Для стану відкриття, керованого URL, беріть окремий LightboxUrlOverlay — дивіться розділ про стан в URL нижче. |
+| `images` | `LightboxItem[]` | required | Масив зображень для показу |
+| `ariaLabel` | `string` | 'Image gallery' | Доступна назва області діалогу; екранні читачі оголошують її, коли Lightbox відкривається |
+| `initialIndex` | `number` | 0 | Початковий індекс зображення |
+| `transitionFn` | `TransitionTransformFn` | slideTransition | Функція переходу між слайдами. Імпортуйте вбудовану (slideTransition, flipTransition, lightboxFadeTransition, lightboxZoomTransition) або передайте власну. Якщо не задано, використовується slideTransition. |
+| `apiRef` | `MutableRefObject<ReelApi>` | - | Ref для доступу до API Reel |
+| `renderControls` | `(props: ControlsRenderProps) => ReactNode` | - | Власні елементи керування, замінюють стандартну кнопку закриття, лічильник і перемикач повного екрана |
+| `renderNavigation` | `(props: NavigationRenderProps) => ReactNode` | - | Власна навігація, замінює стандартні стрілки вперед і назад |
+| `renderInfo` | `(props: InfoRenderProps) => ReactNode` | - | Власний інформаційний оверлей, замінює стандартний градієнт із заголовком та описом. Поверніть null, щоб сховати. |
+| `renderSlide` | `(props: SlideRenderProps) => ReactNode \| null` | - | Власний рендеринг слайда. Отримує \{ item, index, size, isActive, onReady, onWaiting, onError \}. Поверніть null, щоб лишити стандартний. |
+| `renderLoading` | `(props: { item: LightboxItem; activeIndex: number }) => ReactNode` | - | Власний індикатор завантаження, замінює стандартний |
+| `renderError` | `(props: { item: LightboxItem; activeIndex: number }) => ReactNode` | - | Власний індикатор помилки, замінює стандартний значок |
+
+### Пропси LightboxUrlOverlay [#lightboxurloverlay-props]
+
+<Signature>LightboxUrlOverlayProps</Signature>
+
+Приймає всі візуальні та поведінкові пропси вище, крім `isOpen`, and replaces it with a `controller`. `initialIndex` тут ігнорується — слайд обирає position контролера, тож передане поруч значення перезаписувалося б на кожному відкритті.
+
+| Prop | Тип | Типове значення | Опис |
+| --- | --- | --- | --- |
+| `controller` | `UrlStateController` | required | Контролер із useOverlayUrlState. Його position вирішує, чи оверлей відкритий і який слайд показує; оверлей записує через нього назад на зміну слайда та на закриття. |
+
+### Колбеки [#callbacks]
+
+| Prop | Тип | Опис |
+| --- | --- | --- |
+| `onClose` | `() => void` | Викликається, коли Lightbox закривається. Обов’язковий у LightboxOverlay (стан відкриття ваш, тож закриття обробляєте ви); необов’язковий у LightboxUrlOverlay, де закриттям керує URL — передавайте лише щоб зреагувати після закриття. |
+| `onSlideChange` | `(index: number) => void` | Викликається після зміни слайда |
+
+### Пропси Reel (передані далі) [#reel-props-proxied]
+
+Ці пропси передаються далі в [Reel](/docs/react/api#reel-props) component.
+
+| Prop | Тип | Типове значення | Опис |
+| --- | --- | --- | --- |
+| `loop` | `boolean` | false | Вмикає нескінченний цикл |
+| `enableNavKeys` | `boolean` | true | Вмикає навігацію з клавіатури |
+| `enableWheel` | `boolean` | true | Вмикає навігацію колесом миші |
+| `wheelDebounceMs` | `number` | 200 | Тривалість дебаунсу колеса (мс) |
+| `transitionDuration` | `number` | 300 | Тривалість анімації переходу (мс) |
+| `swipeDistanceFactor` | `number` | 0.12 | Поріг свайпу (0–1) |
+| `swipeToCloseDirection` | `'up' \| 'down'` | 'up' | Напрямок жесту свайпу для закриття на мобільних |
+
+## Types [#types]
+
+### LightboxItem [#lightboxitem]
+
+<CodeBlock code={lightboxitem} language="typescript" />
+
+### ControlsRenderProps [#controlsrenderprops]
+
+<CodeBlock code={controlsrenderprops} language="typescript" />
+
+### NavigationRenderProps [#navigationrenderprops]
+
+<CodeBlock code={navigationrenderprops} language="typescript" />
+
+### SlideRenderProps [#sliderenderprops]
+
+<CodeBlock code={sliderenderprops} language="typescript" />
+
+### InfoRenderProps [#inforenderprops]
+
+<CodeBlock code={inforenderprops} language="typescript" />
+
+## Sub-Components [#sub-components]
+
+Повторно використовувані підкомпоненти для складання власних елементів керування через `renderControls`.
+
+### CloseButton [#closebutton]
+
+Стандартна кнопка закриття у вигляді хрестика.
+
+<CodeBlock code={closebutton} language="tsx" />
+
+### Counter [#counter]
+
+Значок лічильника зображень на кшталт «1 / 3».
+
+<CodeBlock code={counter} language="tsx" />
+
+### FullscreenButton [#fullscreenbutton]
+
+Кнопка перемикання повного екрана (іконка Maximize або Minimize).
+
+<CodeBlock code={fullscreenbutton} language="tsx" />
+
+### SoundButton [#soundbutton]
+
+Кнопка перемикання звуку для слайдів-відео (іконка Volume2 або VolumeX). Автоматично входить у `renderControls` from `useVideoSlideRenderer`. Для окремого використання у власних елементах керування доступ до стану звуку — через `useSoundState`.
+
+<CodeBlock code={soundbutton} language="tsx" />
+
+## Hooks [#hooks]
+
+### useVideoSlideRenderer [#usevideosliderenderer]
+
+Хук для підтримки відео за бажанням. Повертає `renderSlide`, `renderControls`, та `SoundProvider` — загорніть оверлей у SoundProvider і передайте функції рендерингу.
+
+<CodeBlock code={usevideosliderenderer} language="typescript" />
+
+### useFullscreen [#usefullscreen]
+
+<Callout type="warning" title="Moved">
+  `useFullscreen` прибрано з `@reelkit/react-lightbox`. Import it from `@reelkit/react` instead.
+</Callout>
+
+Хук для керування станом повного екрана з кросбраузерною підтримкою.
+
+<CodeBlock code={usefullscreen} language="tsx" />
+
+## Переходи [#transitions]
+
+Передайте будь-яку `TransitionTransformFn` via the `transitionFn` Якщо імпортувати лише той перехід, який використовуєте, решту збирач прибере через tree-shaking. Типово — `slideTransition` , коли не задано.
+
+| Function | From | Опис |
+| --- | --- | --- |
+| `slideTransition` | `@reelkit/react-lightbox` | Звичайний горизонтальний зсув (типово) |
+| `lightboxFadeTransition` | `@reelkit/react-lightbox` | Плавне перетікання між зображеннями |
+| `flipTransition` | `@reelkit/react-lightbox` | Ефект 3D-перевороту картки |
+| `lightboxZoomTransition` | `@reelkit/react-lightbox` | Наближення від меншого до звичайного розміру |
+
+<CodeBlock code={transitions} language="tsx" />
+
+### Власна функція переходу [#custom-transition-function]
+
+Напишіть власну `TransitionTransformFn` and pass it via `transitionFn`. Сигнатура повторює переходи слайдера в ядрі.
+
+<CodeBlock code={customTransitionFunction} language="tsx" />
+
+## Класи CSS [#css-classes]
+
+Усі елементи інтерфейсу використовують звичайні класи CSS (не CSS-модулі), які можна перекрити селекторами вищої специфічності в таблиці стилів, підключеній після `@reelkit/react-lightbox/styles.css`. Для змін кольору, розміру та z-index краще беріть власні властивості CSS, описані в розділі [Theming](#theming) нижче.
+
+| Class | Component | Опис |
+| --- | --- | --- |
+| `.rk-lightbox-overlay` | Overlay | Кореневий контейнер (повноекранне тло) |
+| `.rk-lightbox-spinner` | Overlay | Стандартний індикатор завантаження |
+| `.rk-lightbox-img-error` | Overlay | Контейнер стану помилки (зіпсоване зображення чи відео) |
+| `.rk-lightbox-img-error-text` | Overlay | Текст стану помилки |
+| `.rk-lightbox-swipe-hint` | Overlay | Підказка про свайп на мобільних |
+| `.rk-lightbox-controls-left` | Controls | Контейнер елементів керування вгорі ліворуч |
+| `.rk-lightbox-btn` | Controls | Кнопки керування (повний екран тощо) |
+| `.rk-lightbox-close` | Controls | Кнопка закриття |
+| `.rk-lightbox-counter` | Controls | Значок лічильника зображень |
+| `.rk-lightbox-nav` | Навігація | Стрілки навігації (обидві) |
+| `.rk-lightbox-nav-prev` | Навігація | Стрілка назад |
+| `.rk-lightbox-nav-next` | Навігація | Стрілка вперед |
+| `.rk-lightbox-info` | Info | Контейнер заголовка й опису |
+| `.rk-lightbox-title` | Info | Заголовок зображення |
+| `.rk-lightbox-description` | Info | Опис зображення |
+| `.rk-lightbox-slide` | Slide | Контейнер слайда |
+| `.rk-lightbox-img` | Slide | Елемент зображення |
+| `.rk-lightbox-video-container` | VideoSlide | Контейнер слайда-відео (за бажанням) |
+| `.rk-lightbox-video-element` | VideoSlide | Елемент відео (за бажанням) |
+| `.rk-lightbox-video-poster` | VideoSlide | Постер відео (за бажанням) |
+
+## Theming [#theming]
+
+Кожен колір, розмір, z-index і перехід живе у власній властивості CSS. Перевизначайте одну чи кілька на `:root` (або на будь-якому предку Lightbox), щоб змінити тему, не чіпаючи код компонентів.
+
+| Token | Типове значення | Controls |
+| --- | --- | --- |
+| `--rk-lightbox-overlay-bg` | `#000` | Full-screen backdrop color |
+| `--rk-lightbox-overlay-z` | `9999` | Overlay z-index |
+| `--rk-lightbox-top-shade-height` | `80px` | Top gradient scrim height |
+| `--rk-lightbox-top-shade-bg` | `linear-gradient(rgba(0,0,0,0.6), transparent)` | Top gradient scrim color |
+| `--rk-lightbox-edge-padding` | `16px` | Edge inset for close / nav / top-left controls |
+| `--rk-lightbox-controls-gap` | `12px` | Gap between top-left controls |
+| `--rk-lightbox-transition` | `0.2s` | Button hover transition duration |
+| `--rk-lightbox-blur` | `8px` | Backdrop blur radius for buttons / chips |
+| `--rk-lightbox-btn-bg` | `rgba(0, 0, 0, 0.5)` | Default background for close, nav, small buttons |
+| `--rk-lightbox-btn-bg-hover` | `rgba(255, 255, 255, 0.2)` | Hover background for close, nav, small buttons |
+| `--rk-lightbox-btn-fg` | `#fff` | Icon color for close, nav, small buttons |
+| `--rk-lightbox-btn-size` | `36px` | Small button size (fullscreen toggle, etc.) |
+| `--rk-lightbox-close-size` | `40px` | Close button size |
+| `--rk-lightbox-nav-size` | `48px` | Prev/next arrow size |
+| `--rk-lightbox-nav-opacity` | `0.7` | Idle opacity of prev/next arrows |
+| `--rk-lightbox-counter-fg` | `#fff` | Counter text color |
+| `--rk-lightbox-counter-bg` | `rgba(0, 0, 0, 0.5)` | Counter chip background |
+| `--rk-lightbox-counter-size` | `14px` | Counter font size |
+| `--rk-lightbox-counter-padding` | `6px 12px` | Counter chip padding |
+| `--rk-lightbox-counter-radius` | `20px` | Counter chip border-radius |
+| `--rk-lightbox-spinner-size` | `28px` | Default spinner width/height |
+| `--rk-lightbox-spinner-track` | `rgba(255, 255, 255, 0.2)` | Spinner track color |
+| `--rk-lightbox-spinner-fg` | `#fff` | Spinner indicator color |
+| `--rk-lightbox-spinner-duration` | `0.8s` | Spinner rotation duration |
+| `--rk-lightbox-error-fg` | `rgba(255, 255, 255, 0.4)` | Error icon + text color |
+| `--rk-lightbox-error-text-size` | `13px` | Error message font size |
+| `--rk-lightbox-info-bg` | `linear-gradient(transparent, rgba(0,0,0,0.8))` | Caption scrim gradient |
+| `--rk-lightbox-info-padding` | `24px` | Caption inner padding |
+| `--rk-lightbox-title-size` | `18px` | Title font size |
+| `--rk-lightbox-description-size` | `14px` | Description font size |
+| `--rk-lightbox-info-fg` | `#fff` | Caption text color |
+| `--rk-lightbox-hint-fg` | `rgba(255, 255, 255, 0.5)` | Swipe hint text color |
+| `--rk-lightbox-hint-bg` | `rgba(0, 0, 0, 0.3)` | Swipe hint chip background |
+| `--rk-lightbox-hint-duration` | `3s` | Swipe hint fade-in/out total duration |
+| `--rk-lightbox-video-bg` | `#000` | Letterbox background behind \<video> |
+
+Вставте фрагмент нижче в таблицю стилів, підключену після `@reelkit/react-lightbox/styles.css`.
+
+<CodeBlock code={theming} language="css" />
+
+## Accessibility [#accessibility]
+
+Корінь оверлея — модальний діалог (`role="dialog"`, `aria-modal="true"`). Set `ariaLabel` щоб змінити оголошення для екранного читача; типове значення — «Image gallery». Кожен слайд несе `role="group"`, `aria-roledescription="slide"`, та `aria-label="Зображення N з M"`.
+
+Lightbox захоплює фокус під час відкриття й повертає його на елемент-тригер після закриття. Tab і Shift+Tab циклічно проходять фокусовані елементи всередині; фокус, що вислизнув (клік поза Lightbox, програмна установка), повертається назад. Реалізовано через `captureFocusForReturn` та `createFocusTrap` from `@reelkit/core`.
+
+## Клавіатурні скорочення [#keyboard-shortcuts]
+
+| Key | Action |
+| --- | --- |
+| `ArrowLeft` | Previous image |
+| `ArrowRight` | Next image |
+| `Escape` | Close lightbox (or exit fullscreen if active) |

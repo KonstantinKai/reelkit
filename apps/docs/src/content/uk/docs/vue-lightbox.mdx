@@ -1,0 +1,367 @@
+---
+title: Lightbox для Vue
+description: 'Повноекранна галерея зображень для Vue: властивості та події LightboxOverlay, типи слотів, завантаження вмісту й темізація.'
+---
+
+import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2 } from 'lucide-react';
+import installation from '../../snippets/vue-lightbox/installation.sh?raw';
+import installation2 from '../../snippets/vue-lightbox/installation-2.ts?raw';
+import basicUsageCode from '../../snippets/vue-lightbox/basic-usage-code.vue?raw';
+import slotsExampleCode from '../../snippets/vue-lightbox/slots-example-code.vue?raw';
+import videoOptInCode from '../../snippets/vue-lightbox/video-opt-in-code.vue?raw';
+import fullscreenCode from '../../snippets/vue-lightbox/fullscreen-code.vue?raw';
+import urlState from '../../snippets/vue-lightbox/url-state.vue?raw';
+import urlState2 from '../../snippets/vue-lightbox/url-state-2.vue?raw';
+import urlState3 from '../../snippets/vue-lightbox/url-state-3.vue?raw';
+import urlState4 from '../../snippets/vue-lightbox/url-state-4.vue?raw';
+import urlState5 from '../../snippets/vue-lightbox/url-state-5.vue?raw';
+import customTransitionCode from '../../snippets/vue-lightbox/custom-transition-code.vue?raw';
+import lifecycleSlideCode from '../../snippets/vue-lightbox/lifecycle-slide-code.vue?raw';
+import customLoadingCode from '../../snippets/vue-lightbox/custom-loading-code.vue?raw';
+import customErrorCode from '../../snippets/vue-lightbox/custom-error-code.vue?raw';
+import themingCode from '../../snippets/vue-lightbox/theming-code.css?raw';
+
+Повноекранний Lightbox-галерея зображень і відео для Vue 3 на основі `@reelkit/vue-lightbox`.
+
+<DemoLink href="https://vue-demo.reelkit.dev/image-preview?utm_source=docs">Подивитися демо наживо →</DemoLink>
+
+## Features [#features]
+
+<FeatureGrid items={[
+              {
+                icon: Image,
+                label: 'Зображення та відео',
+                desc: 'Вбудована підтримка слайдів-відео',
+              },
+              {
+                icon: MousePointer,
+                label: 'Дотикові жести',
+                desc: 'Свайп для гортання',
+              },
+              {
+                icon: X,
+                label: 'Свайп для закриття',
+                desc: 'Свайп угору закриває',
+              },
+              {
+                icon: Keyboard,
+                label: 'Навігація з клавіатури',
+                desc: 'Стрілки + Escape',
+              },
+              {
+                icon: Maximize2,
+                label: 'Повний екран',
+                desc: 'Кросбраузерний API',
+              },
+              {
+                icon: Hash,
+                label: 'Переходи',
+                desc: 'Зсув, затухання, переворот, наближення',
+              },
+              {
+                icon: Zap,
+                label: 'Preloading',
+                desc: '±2 сусідні слайди завантажуються заздалегідь',
+              },
+              {
+                icon: Volume2,
+                label: 'Перемикач звуку',
+                desc: 'Звук вмикається й вимикається для кожного слайда',
+              },
+              {
+                icon: Loader,
+                label: 'Стани завантаження',
+                desc: 'Індикатор і власний слот',
+              },
+              {
+                icon: AlertTriangle,
+                label: 'Обробка помилок',
+                desc: 'Значок помилки та власний слот',
+              },
+              {
+                icon: Layers,
+                label: 'Слоти з областю видимості',
+                desc: '6 налаштовних зон-слотів',
+              },
+              {
+                icon: Layers,
+                label: 'v-model',
+                desc: 'Двостороння прив’язка v-model:is-open',
+              },
+              {
+                icon: Link2,
+                label: 'Стан в URL',
+                desc: 'Посилання, якими можна ділитися й зберігати в закладки',
+              },
+            ]} />
+
+## Встановлення [#installation]
+
+<CodeBlock code={installation} language="bash" />
+
+Не забудьте імпортувати стилі:
+
+<CodeBlock code={installation2} language="typescript" />
+
+<Callout type="info" title="Icons">
+  Стандартні елементи керування використовують `lucide-vue-next` for icons. If you prefer a different icon library, use the `#controls` та `#navigation` з областю видимості, щоб передати власні.
+</Callout>
+
+## Базове використання [#basic-usage]
+
+Імпортуйте таблицю стилів і компонент `LightboxOverlay` , а відкриттям і закриттям керуйте через `v-model:is-open`.
+
+<Sandbox code={basicUsageCode} language="vue" title="App.vue" framework="vue" stackblitzDeps={['@reelkit/vue-lightbox']} stackblitzExtraDeps={{ 'lucide-vue-next': '>=0.460.0' }} />
+
+## Слоти з областю видимості [#scoped-slots]
+
+Шість іменованих слотів з областю видимості дають повністю налаштувати поверхні оверлея. Не задавайте слот, щоб лишити вбудований типовий вигляд; залиште слот порожнім (наприклад, через `v-if="false"`) to hide that section entirely.
+
+| Slot | Scope | Опис |
+| --- | --- | --- |
+| #slide | `SlideSlotScope` | Замінює вміст окремого слайда (обов’язково для слайдів-відео) |
+| #controls | `ControlsSlotScope` | Замінює верхню смугу керування (закриття, лічильник, повний екран) |
+| #navigation | `NavigationSlotScope` | Замінює стрілки навігації вперед і назад |
+| #info | `InfoSlotScope` | Замінює нижній градієнтний оверлей із заголовком та описом |
+| #loading | `LoadingSlotScope` | Власний індикатор завантаження |
+| #error | `ErrorSlotScope` | Власний індикатор помилки |
+
+<CodeBlock code={slotsExampleCode} language="vue" />
+
+## Підтримка відео [#video-support]
+
+Слайди-відео вмикаються за бажанням, тож типовий бандл лишається без обв’язки для аудіо та відео. Викличте `useVideoSlideRenderer(items)` і передайте повернені `VideoSlideRenderer` / `VideoControlsRenderer` в слоти оверлея `#slide` та `#controls` . Загорніть оверлей у повернений `SoundProvider` щоб вбудований перемикач звуку мав контекст.
+
+<CodeBlock code={videoOptInCode} language="vue" />
+
+<Callout type="info">
+  Спільний елемент `<video>` що живить слайди-відео, працює за тим самим патерном, що й reel-плеєр для Vue: на iOS відтворення триває між змінами слайдів і не потребує окремого жесту користувача на кожному.
+</Callout>
+
+## Повний екран [#fullscreen]
+
+Використовуйте `useFullscreen` from `@reelkit/vue` щоб стежити за станом повного екрана для елемента за посиланням або перемикати його. Вбудована кнопка повного екрана в Lightbox працює через той самий композабл.
+
+<CodeBlock code={fullscreenCode} language="vue" />
+
+## Стан в URL [#url-state]
+
+<DemoLink href="https://vue-demo.reelkit.dev/image-preview-url?utm_source=docs">Подивитися демо наживо →</DemoLink>
+
+Build a controller with `useOverlayUrlState` from `@reelkit/vue` і передайте його в `LightboxUrlOverlay` as `controller`, and the address bar owns the gallery: it opens itself when the parameter names a slide and closes when the parameter goes away. Links are shareable, and the back button closes the gallery. It is a separate component from `LightboxOverlay`, so each carries exactly one open-state driver — the `is-open` модель або url `controller`, never both.
+
+<Callout type="info" title="Вбудовані клавіші">
+  Слайди можна адресувати вбудованим ключем — розгорніть `urlIndexKey` (за позицією) або `urlStableIdKey` (за стабільним `id`) into the controller — both re-exported from `@reelkit/vue`. See the [посібник зі стану в URL](/docs/core/guide#url-state) та [API ядра](/docs/core/api#url-state).
+</Callout>
+
+«Назад» закриває лише тоді, коли ви відкрили галерею всередині застосунку — посилання додало запис, тож «назад» повертає до галереї. За надісланим посиланням у новій вкладці історії позаду немає, тож кнопка «назад» виведе із сайту; кнопка закриття або Escape прибирає параметр на місці й лишає вас у галереї.
+
+<CodeBlock code={urlState} language="vue" />
+
+Композабл приймає один об’єкт опцій і повертає `UrlStateController` (with `set`, `index`, `value`). Keep it for programmatic control: `set` — низькорівневий запис, який оверлей робить усередині (зміна слайда та `set(null)` для закриття). Ним же можна керувати оверлеєм програмно: `set(index)` відкриває його — так само, як перехід за параметром. Але для відкриття краще звичайне посилання: href можна надіслати, відкрити в новій вкладці, а кнопка «назад» його закриє — і все це без жодного обробника.
+
+Full `useOverlayUrlState` options (`param`, `adapter`, `codec`, `locator`): see the [довіднику API для Vue](/docs/vue/api#useoverlayurlstate).
+
+`LightboxUrlOverlay` приймає лише `:controller` (обов’язково), `@close` emit, а також усі візуальні та поведінкові пропси, які передає далі `LightboxOverlay` forwards (`items`, `transition-fn`, the scoped slots, and so on) — but no `is-open`.
+
+- Відкриття коштує одного запису в історії; гортання слайдів замінює його, тож сто свайпів не додають жодного — один крок назад завжди виходить із галереї.
+- Надіслане посилання на кшталт `?photo=3` відкриває галерею на цьому слайді. Параметр, який не називає жодного слайда, прибирається з URL, а не наполягає на слайді, що не відкриється.
+
+**У застосунку з роутером передайте адаптер.** Прямий запис в історію лишає власне місцеположення роутера застарілим, і наступна навігація втрачає параметр.
+
+<CodeBlock code={urlState2} language="vue" />
+
+**Стабільні посилання.** Індекс адресує за позицією, тож закладка відкриє інше зображення, щойно список перевпорядкують. `urlStableIdKey` адресує за стабільним `id`, scanning the live list — one call covers the common case.
+
+<CodeBlock code={urlState3} language="vue" />
+
+Pass `hashCodec: base64UrlCodec` щоб закодувати id в URL у base64url — оборотне маскування, а не криптографічний хеш.
+
+Адресуєте за іншим полем ( `slug`), or page an infinite feed with `locateAsync`, and build the `codec`/`locator` самі: `codec` записує ідентичність в URL, `locator` знаходить, де воно тепер лежить.
+
+<CodeBlock code={urlState4} language="vue" />
+
+**Нескінченні та посторінкові галереї.** `locate` синхронний, тож відповідає лише за вже завантажені елементи — надіслане посилання на зображення 400 у стрічці, де завантажено 20, нічого не знайде. `locateAsync` — запасний варіант, що викликається лише коли не знайшлося: завантажте потрібні сторінки й поверніть індекс, який ця ідентичність отримала.
+
+<Callout type="info" title="Shortcut">
+  Keying by the item’s `id`? Не пишіть кодек і локатор вручну — передайте `locateAsync` просто в `urlStableIdKey({ items, locateAsync })` (він вантажить дані, якщо не знайшов, і повертає індекс). Розгорнутий варіант нижче — для адресації за іншим полем або для повного контролю.
+</Callout>
+
+<CodeBlock code={urlState5} language="vue" />
+
+Поки він у процесі, Lightbox лишається закритим, а параметр — недоторканим, тож пряме посилання переживає запит. `null` або відмова прибирає параметр. Відповідь, що приходить після зміни URL, після закриття або після демонтажу, відкидається, тож повільний запит не відкриє слайд, якого ніхто не просив. Те, що він повертає, є остаточним: це індекс щойно завантажених даних, і Lightbox бере його як є, не перечитуючи `items`, which Vue has not re-rendered yet.
+
+## Довідник API [#api-reference]
+
+### Пропси LightboxOverlay [#lightboxoverlay-props]
+
+<Signature>LightboxOverlayProps</Signature>
+
+| Prop | Тип | Типове значення | Опис |
+| --- | --- | --- | --- |
+| `isOpen` | `boolean` | required | Керує видимістю; якщо false, оверлей прибирається з DOM. Прив’язується через v-model:is-open. |
+| `items` | `LightboxItem[]` | required | Масив елементів (зображення або відео) |
+| `initialIndex` | `number` | 0 | Індекс початково видимого елемента, від нуля |
+| `transitionFn` | `TransitionTransformFn` | slideTransition | Функція переходу між слайдами. Імпортуйте вбудовану (slideTransition, flipTransition, lightboxFadeTransition, lightboxZoomTransition) або передайте власну. Якщо не задано, використовується slideTransition. |
+| `showInfo` | `boolean` | true | Чи показувати інформаційний оверлей із заголовком та описом |
+| `showControls` | `boolean` | true | Чи показувати верхню смугу керування (закриття, лічильник, повний екран) |
+| `showNavigation` | `boolean` | true | Чи показувати стрілки навігації вперед і назад (лише на десктопі) |
+| `transitionDuration` | `number` | 300 | Тривалість анімації слайда в мілісекундах |
+| `swipeDistanceFactor` | `number` | 0.12 | Мінімальна частка відстані свайпу (0–1), щоб змінити слайд |
+| `swipeToCloseDirection` | `'up' \| 'down'` | 'up' | Напрямок жесту свайпу для закриття на мобільних |
+| `loop` | `boolean` | false | Чи переходить слайдер з останнього слайда на перший |
+| `enableNavKeys` | `boolean` | true | Вмикає навігацію стрілками клавіатури |
+| `enableWheel` | `boolean` | true | Вмикає навігацію колесом миші |
+| `wheelDebounceMs` | `number` | 200 | Тривалість дебаунсу подій колеса в мілісекундах |
+| `ariaLabel` | `string` | 'Image gallery' | Доступна назва області діалогу |
+
+### Пропси LightboxUrlOverlay [#lightboxurloverlay-props]
+
+<Signature>LightboxUrlOverlayProps</Signature>
+
+Приймає всі візуальні та поведінкові пропси вище, крім `is-open`, and replaces it with a `controller`. Він видає `close`, `slide-change` та `api-ready`, but no `update:is-open`. `initial-index` тут ігнорується — слайд обирає position контролера, тож передане поруч значення перезаписувалося б на кожному відкритті.
+
+| Prop | Тип | Типове значення | Опис |
+| --- | --- | --- | --- |
+| `controller` | `UrlStateController` | required | Контролер із useOverlayUrlState. Його position вирішує, чи оверлей відкритий і який слайд показує; оверлей записує через нього назад на зміну слайда та на закриття. |
+
+### Події LightboxOverlay [#lightboxoverlay-events]
+
+| Event | Payload | Опис |
+| --- | --- | --- |
+| `close` | `void` | Видається, коли користувач закриває Lightbox |
+| `slide-change` | `number` | Видається з новим індексом активного слайда після зміни |
+| `api-ready` | `LightboxApi` | Видається, коли слайдер готовий, і відкриває імперативний API |
+| `update:is-open` | `boolean` | Видається на закриття; забезпечує роботу v-model:is-open |
+
+## Інтерфейс LightboxItem [#lightboxitem-interface]
+
+| Field | Тип | Required | Опис |
+| --- | --- | --- | --- |
+| `src` | `string` | yes | URL зображення або відео |
+| `type` | `'image' \| 'video'` | no | Тип елемента. Типово 'image' |
+| `poster` | `string` | no | Мініатюра для елементів-відео |
+| `title` | `string` | no | Заголовок в інформаційному оверлеї |
+| `description` | `string` | no | Опис під заголовком |
+| `width` | `number` | no | Власна ширина зображення в пікселях |
+| `height` | `number` | no | Власна висота зображення в пікселях |
+
+## Типи області видимості слотів [#slot-scope-types]
+
+| Тип | Fields |
+| --- | --- |
+| `SlideSlotScope` | `{ item, index, size: [number, number], isActive, onReady, onWaiting, onError }` |
+| `ControlsSlotScope` | `{ item, activeIndex, count, isFullscreen, onClose, onToggleFullscreen }` |
+| `NavigationSlotScope` | `{ item, activeIndex, count, onPrev, onNext }` |
+| `InfoSlotScope` | `{ item, index }` |
+| `LoadingSlotScope` | `{ item, activeIndex }` |
+| `ErrorSlotScope` | `{ item, activeIndex }` |
+
+## Переходи [#transitions]
+
+Передайте будь-яку `TransitionTransformFn` via the `transition-fn` Якщо імпортувати лише той перехід, який використовуєте, решту збирач прибере через tree-shaking. Типово — `slideTransition` , коли не задано.
+
+| Function | Опис |
+| --- | --- |
+| `slideTransition` | Типовий. Горизонтальний зсув між слайдами; реекспортовано з @reelkit/vue. |
+| `lightboxFadeTransition` | Плавне перетікання з легким горизонтальним зсувом. Власний для @reelkit/vue-lightbox. |
+| `flipTransition` | 3D-переворот навколо осі Y; реекспортовано з @reelkit/vue. |
+| `lightboxZoomTransition` | Новий слайд масштабується з 70% до 100% із затуханням. Власний для @reelkit/vue-lightbox. |
+
+<CodeBlock code={customTransitionCode} language="vue" />
+
+## Завантаження вмісту та обробка помилок [#content-loading-error-handling]
+
+Коли ви берете рендеринг на себе через слот `#slide` , в області слота доступні три колбеки життєвого циклу, щоб повідомляти стан завантаження. Lightbox стежить за станом кожного слайда й показує індикатор або значок помилки. Попереднє завантаження кешує зіпсовані URL, тож повторний перехід до невдалого слайда обходиться без нової спроби.
+
+### Колбеки життєвого циклу [#lifecycle-callbacks]
+
+| Колбек | Тип | Опис |
+| --- | --- | --- |
+| `onReady` | `() => void` | Повідомляє, що вміст слайда успішно завантажився (наприклад, зображення декодовано) |
+| `onWaiting` | `() => void` | Повідомляє, що вміст слайда вантажиться або буферизується (показує індикатор) |
+| `onError` | `() => void` | Повідомляє, що вміст слайда не завантажився (показує значок помилки) |
+
+### Підключення колбеків у #slide [#wiring-callbacks-in-slide]
+
+<CodeBlock code={lifecycleSlideCode} language="vue" />
+
+### Власний слот завантаження [#custom-loading-slot]
+
+Скористайтеся пропсом `#loading` щоб замінити стандартний індикатор.
+
+<CodeBlock code={customLoadingCode} language="vue" />
+
+### Власний слот помилки [#custom-error-slot]
+
+Скористайтеся пропсом `#error` щоб замінити стандартний значок зіпсованого зображення.
+
+<CodeBlock code={customErrorCode} language="vue" />
+
+## Класи CSS [#css-classes]
+
+Усі класи CSS звичайні (не scoped), тож їх можна перекрити селекторами вищої специфічності в таблиці стилів, підключеній після `@reelkit/vue-lightbox/styles.css`. Для змін кольору, розміру та z-index краще беріть власні властивості CSS, описані в розділі [Theming](#theming) нижче.
+
+| Class | Component | Опис |
+| --- | --- | --- |
+| `.rk-lightbox-overlay` | Overlay | Кореневий контейнер (повноекранне тло) |
+| `.rk-lightbox-top-shade` | Overlay | Верхній градієнтний шар за елементами керування |
+| `.rk-lightbox-spinner` | Overlay | Стандартний індикатор завантаження |
+| `.rk-lightbox-error` | Overlay | Контейнер стану помилки (зіпсоване зображення) |
+| `.rk-lightbox-error-text` | Overlay | Текст стану помилки |
+| `.rk-lightbox-controls-left` | Controls | Контейнер елементів керування вгорі ліворуч |
+| `.rk-lightbox-btn` | Controls | Кнопка керування (повний екран, звук тощо) |
+| `.rk-lightbox-close` | Controls | Кнопка закриття |
+| `.rk-lightbox-counter` | Controls | Значок лічильника зображень |
+| `.rk-lightbox-nav` | Навігація | Стрілка навігації (і вперед, і назад) |
+| `.rk-lightbox-nav-prev` | Навігація | Стрілка назад |
+| `.rk-lightbox-nav-next` | Навігація | Стрілка вперед |
+| `.rk-lightbox-info` | Info | Контейнер заголовка й опису |
+| `.rk-lightbox-info-title` | Info | Заголовок зображення |
+| `.rk-lightbox-info-description` | Info | Опис зображення |
+| `.rk-lightbox-slide` | Slide | Контейнер слайда |
+| `.rk-lightbox-img` | Slide | Елемент зображення |
+| `.rk-lightbox-video-container` | VideoSlide | Контейнер слайда-відео (за бажанням) |
+| `.rk-lightbox-video-element` | VideoSlide | Елемент відео (за бажанням) |
+| `.rk-lightbox-video-poster` | VideoSlide | Постер відео (за бажанням) |
+
+## Theming [#theming]
+
+Перевизначайте будь-яку власну властивість CSS `--rk-lightbox-*` на `:root` (або на будь-якому предку `.rk-lightbox-overlay`) to retheme. Direct declarations on `.rk-lightbox-overlay` перекрив би успадковані значення, тож тримайте перевизначення на селекторі предка.
+
+| Token | Типове значення | Controls |
+| --- | --- | --- |
+| `--rk-lightbox-overlay-bg` | `#000` | Backdrop color |
+| `--rk-lightbox-overlay-z` | `9999` | Overlay z-index |
+| `--rk-lightbox-top-shade-height` | `80px` | Top scrim height |
+| `--rk-lightbox-top-shade-bg` | `linear-gradient(rgba(0,0,0,0.6), transparent)` | Top scrim gradient |
+| `--rk-lightbox-edge-padding` | `16px` | Edge inset for close / nav / controls |
+| `--rk-lightbox-btn-bg` | `rgba(0, 0, 0, 0.5)` | Default background for close / nav / small buttons |
+| `--rk-lightbox-btn-bg-hover` | `rgba(255, 255, 255, 0.2)` | Hover background for close / nav / small buttons |
+| `--rk-lightbox-btn-fg` | `#fff` | Icon color for close / nav / small buttons |
+| `--rk-lightbox-btn-size` | `36px` | Small button size (fullscreen toggle, etc.) |
+| `--rk-lightbox-close-size` | `40px` | Close button size |
+| `--rk-lightbox-nav-size` | `48px` | Prev / next arrow size |
+| `--rk-lightbox-nav-opacity` | `0.7` | Idle opacity of prev / next arrows |
+| `--rk-lightbox-counter-bg` | `rgba(0, 0, 0, 0.5)` | Counter chip background |
+| `--rk-lightbox-counter-fg` | `#fff` | Counter text color |
+| `--rk-lightbox-info-bg` | `linear-gradient(transparent, rgba(0,0,0,0.8))` | Caption scrim gradient |
+| `--rk-lightbox-title-size` | `18px` | Title font size |
+| `--rk-lightbox-description-size` | `14px` | Description font size |
+| `--rk-lightbox-video-bg` | `#000` | Letterbox background behind \<video> |
+
+<CodeBlock code={themingCode} language="css" />
+
+## Accessibility [#accessibility]
+
+Корінь оверлея — модальний діалог (`role="dialog"`, `aria-modal="true"`). Set the `aria-label` щоб змінити оголошення для екранного читача; типове значення — «Image gallery». Кожен слайд несе `role="group"`, `aria-roledescription="slide"`, and an `aria-label` виведений із позиції (наприклад, «Зображення 2 з 5»).
+
+Lightbox захоплює фокус під час відкриття й повертає його на елемент-тригер після закриття. Tab і Shift+Tab циклічно проходять фокусовані елементи всередині; фокус, що вислизнув (клік поза Lightbox, програмна установка), повертається назад. Реалізовано через `captureFocusForReturn` та `createFocusTrap` from `@reelkit/vue`.
+
+## Клавіатурні скорочення [#keyboard-shortcuts]
+
+| Key | Action |
+| --- | --- |
+| `ArrowLeft` | Previous image |
+| `ArrowRight` | Next image |
+| `Escape` | Close lightbox (or exit fullscreen if active) |

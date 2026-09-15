@@ -1,0 +1,9 @@
+<!-- Explicit size (fixed) -->
+<rk-reel [count]="items.length" [size]="[400, 600]">
+  <ng-template rkReelItem let-i let-size="size"> ... </ng-template>
+</rk-reel>
+
+<!-- Auto-size (responsive — sized by CSS) -->
+<rk-reel [count]="items.length" style="width: 100%; height: 100dvh">
+  <ng-template rkReelItem let-i let-size="size"> ... </ng-template>
+</rk-reel>

@@ -1,0 +1,488 @@
+---
+title: Lightbox
+description: 全屏图片画廊浮层：双轴 URL、子组件、内容加载与错误处理、过渡动画与 CSS 类名。
+---
+
+import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2 } from 'lucide-react';
+import { LightboxDemo } from '../../../components/demos/LightboxDemo';
+import installation from '../../snippets/lightbox/installation.sh?raw';
+import installation2 from '../../snippets/lightbox/installation-2.ts?raw';
+import quickStart from '../../snippets/lightbox/quick-start.tsx?raw';
+import fullCode from '../../snippets/lightbox/full-code.tsx?raw';
+import videoSlidesOptIn from '../../snippets/lightbox/video-slides-opt-in.tsx?raw';
+import customControls from '../../snippets/lightbox/custom-controls.tsx?raw';
+import customInfoOverlay from '../../snippets/lightbox/custom-info-overlay.tsx?raw';
+import customNavigation from '../../snippets/lightbox/custom-navigation.tsx?raw';
+import customSlide from '../../snippets/lightbox/custom-slide.tsx?raw';
+import lifecycleCallbacks from '../../snippets/lightbox/lifecycle-callbacks.tsx?raw';
+import customLoadingErrorUi from '../../snippets/lightbox/custom-loading-error-ui.tsx?raw';
+import urlState from '../../snippets/lightbox/url-state.tsx?raw';
+import urlState2 from '../../snippets/lightbox/url-state-2.tsx?raw';
+import urlState3 from '../../snippets/lightbox/url-state-3.tsx?raw';
+import urlState4 from '../../snippets/lightbox/url-state-4.tsx?raw';
+import urlState5 from '../../snippets/lightbox/url-state-5.tsx?raw';
+import urlState6 from '../../snippets/lightbox/url-state-6.tsx?raw';
+import lightboxitem from '../../snippets/lightbox/lightboxitem.ts?raw';
+import controlsrenderprops from '../../snippets/lightbox/controlsrenderprops.ts?raw';
+import navigationrenderprops from '../../snippets/lightbox/navigationrenderprops.ts?raw';
+import sliderenderprops from '../../snippets/lightbox/sliderenderprops.ts?raw';
+import inforenderprops from '../../snippets/lightbox/inforenderprops.ts?raw';
+import closebutton from '../../snippets/lightbox/closebutton.tsx?raw';
+import counter from '../../snippets/lightbox/counter.tsx?raw';
+import fullscreenbutton from '../../snippets/lightbox/fullscreenbutton.tsx?raw';
+import soundbutton from '../../snippets/lightbox/soundbutton.tsx?raw';
+import usevideosliderenderer from '../../snippets/lightbox/usevideosliderenderer.ts?raw';
+import usefullscreen from '../../snippets/lightbox/usefullscreen.tsx?raw';
+import transitions from '../../snippets/lightbox/transitions.tsx?raw';
+import customTransitionFunction from '../../snippets/lightbox/custom-transition-function.tsx?raw';
+import theming from '../../snippets/lightbox/theming.css?raw';
+
+一个全屏的图片与视频画廊Lightbox组件，基于 `@reelkit/react-lightbox`.
+
+<DemoLink href="https://react-demo.reelkit.dev/image-preview?utm_source=docs">查看在线演示 →</DemoLink>
+
+## 特性 [#features]
+
+<FeatureGrid items={[
+              {
+                icon: Image,
+                label: '图片与视频',
+                desc: '内置视频幻灯片支持',
+              },
+              {
+                icon: MousePointer,
+                label: '触摸手势',
+                desc: '滑动翻页',
+              },
+              {
+                icon: X,
+                label: '滑动关闭',
+                desc: '上滑关闭',
+              },
+              {
+                icon: Keyboard,
+                label: '键盘导航',
+                desc: '方向键 + Escape',
+              },
+              {
+                icon: Maximize2,
+                label: '全屏',
+                desc: '跨浏览器 API',
+              },
+              {
+                icon: Hash,
+                label: '过渡动画',
+                desc: '滑动、淡入、翻转、放大',
+              },
+              {
+                icon: Zap,
+                label: '预加载',
+                desc: '相邻图片预取',
+              },
+              {
+                icon: Volume2,
+                label: '声音开关',
+                desc: '逐张静音 / 取消静音',
+              },
+              {
+                icon: Loader,
+                label: '加载状态',
+                desc: '转圈动画 + 自定义渲染',
+              },
+              {
+                icon: AlertTriangle,
+                label: '错误处理',
+                desc: '错误图标 + 自定义渲染',
+              },
+              {
+                icon: Layers,
+                label: 'Render Props',
+                desc: '6 个可定制的渲染区域',
+              },
+              {
+                icon: Layers,
+                label: 'Hooks',
+                desc: 'useVideoSlideRenderer + useFullscreen',
+              },
+              {
+                icon: Link2,
+                label: 'URL 状态',
+                desc: '可分享、可收藏的链接',
+              },
+            ]} />
+
+## 安装 [#installation]
+
+<CodeBlock code={installation} language="bash" />
+
+别忘了引入样式：
+
+<CodeBlock code={installation2} language="typescript" />
+
+<Callout type="info" title="图标">
+  默认控件使用 `lucide-react` 作为图标。如果你想换一套图标库，可以用 `renderControls` 和 `renderNavigation` 提供自己的实现。
+</Callout>
+
+## 快速上手 [#quick-start]
+
+`LightboxOverlay` 组件以全屏方式展示图片。传入一组 `LightboxItem` 对象，并用一个可为 null 的索引控制显示。
+
+<CodeBlock code={quickStart} language="tsx" />
+
+## 在线演示 [#live-demo]
+
+<Sandbox
+  code={fullCode}
+  title="LightboxPage.tsx"
+  height={500}
+  stackblitzDeps={['@reelkit/react-lightbox']}
+  stackblitzExtraDeps={{ 'lucide-react': '^0.562.0' }}
+>
+  <LightboxDemo />
+</Sandbox>
+
+<Caption>点缩略图打开Lightbox。用方向键或滑动翻页。</Caption>
+
+## 视频幻灯片（按需开启） [#video-slides-opt-in]
+
+视频支持完全按需开启且可被 tree-shaking —— 只用图片时不会增加任何体积。引入 `useVideoSlideRenderer` 并把它的返回值接到 `LightboxOverlay`。这个 Hook 会自动处理加载状态、声音管理和视频生命周期。
+
+<CodeBlock code={videoSlidesOptIn} language="tsx" />
+
+<Callout type="info" title="工作原理">
+  - 这个 Hook 返回 `SoundProvider` —— 把浮层包在它里面，静音开关才能生效
+  - 幻灯片变为活动时视频会自动播放（默认静音）
+  - 各幻灯片复用同一个 video 元素，以保证 iOS 上声音连续
+  - 视频幻灯片上会自动出现声音按钮，带响应式的静音开关
+  - 没有 `type: 'video'` 的条目按图片渲染（向后兼容）
+</Callout>
+
+## 自定义 [#customization]
+
+### 自定义控件 [#custom-controls]
+
+使用 `renderControls` 替换默认的关闭按钮、计数器和全屏开关。可以和导出的子组件组合使用：
+
+<CodeBlock code={customControls} language="tsx" />
+
+### 自定义信息浮层 [#custom-info-overlay]
+
+使用 `renderInfo` 替换默认的标题 / 描述渐变层，或者传 `renderInfo={() => null}` 把它整个隐藏：
+
+<CodeBlock code={customInfoOverlay} language="tsx" />
+
+### 自定义导航 [#custom-navigation]
+
+使用 `renderNavigation` 替换默认的上一张 / 下一张箭头：
+
+<CodeBlock code={customNavigation} language="tsx" />
+
+### 自定义幻灯片 [#custom-slide]
+
+使用 `renderSlide` 可以完全自定义幻灯片内容。返回 `null` 则回退到默认的图片幻灯片：
+
+<CodeBlock code={customSlide} language="tsx" />
+
+## 内容加载与错误处理 [#content-loading-error-handling]
+
+Lightbox会逐张跟踪加载和错误状态。内容加载时显示转圈动画；媒体失败时显示图片损坏图标。出错的 URL 会被缓存，再次访问时立刻显示错误而不重试。
+
+### 生命周期回调 [#lifecycle-callbacks]
+
+使用 `renderSlide`时，请调用这些回调来控制加载提示：
+
+| 回调 | 何时调用 |
+| --- | --- |
+| `onReady` | 图片已加载，或视频已开始播放。会清除加载和错误状态。 |
+| `onWaiting` | 视频在播放途中正在缓冲。显示加载提示。 |
+| `onError` | 内容加载失败。显示错误浮层，并把该 URL 标记为损坏缓存起来。 |
+
+<CodeBlock code={lifecycleCallbacks} language="tsx" />
+
+### 自定义加载与错误界面 [#custom-loading-error-ui]
+
+用自定义组件替换默认的转圈动画和错误图标：
+
+<CodeBlock code={customLoadingErrorUi} language="tsx" />
+
+## URL 状态 [#url-state]
+
+<DemoLink href="https://react-demo.reelkit.dev/image-preview-url?utm_source=docs">查看在线演示 →</DemoLink>
+
+`LightboxUrlOverlay` 是一个独立组件，它的打开状态存放在地址栏里。用 `useOverlayUrlState` from `@reelkit/react` 构建控制器，再作为 `controller`传进去：参数指向某张幻灯片时画廊自己打开，参数消失时关闭。链接可以分享，返回键关闭的是画廊而不是离开页面。
+
+<Callout type="info" title="内置的 key">
+  可以用内置的 key 来寻址幻灯片 —— 把 `urlIndexKey` （按位置）或 `urlStableIdKey` （按稳定的 `id`）展开进控制器 —— 两者都从 `@reelkit/react`. See the [URL 状态指南](/docs/core/guide#url-state) 和 [核心 API](/docs/core/api#url-state).
+</Callout>
+
+<CodeBlock code={urlState} language="tsx" />
+
+这个 Hook 接受一个选项对象，返回一个 `UrlStateController` （带 `set`, `index`, `value`）。留着它就能编程式地控制： `set` 是浮层内部使用的底层写入（切换幻灯片，以及用 `set(null)` 关闭）。它同样可以编程式驱动浮层 —— `set(index)` 会打开它，效果和导航到该参数一样。不过打开时更推荐用链接：href 可以分享、能在新标签页打开、返回键会关闭它 —— 全都不用写处理函数。
+
+完整的 `useOverlayUrlState` 选项（`param`, `adapter`, `codec`, `locator`）：见 [React API 参考](/docs/react/api#useoverlayurlstate).
+
+`LightboxUrlOverlay` 本身只接受 `controller` （必填）、可选的 `onClose`，外加所有视觉和行为属性 `LightboxOverlay` 所接受的（`images`, `ariaLabel`, `transitionFn`、各种 render props 等等）—— 但没有 `isOpen`.
+
+- 打开会花掉一条历史记录。翻页则是替换它，所以滑一百次也不会多出记录 —— 退一步永远就是离开画廊。返回键关闭画廊，不会逐张后退。
+- 像 `?photo=3` 这样的分享链接会把画廊直接打开到那一张。关闭随页面一起到达的链接时，会就地移除参数，而不是导航离开你的站点。
+- **只有从应用内部打开时返回键才会关闭** —— 因为那次链接压入了一条记录，返回就会弹回画廊。在新标签页里直接打开的分享链接背后没有历史，浏览器返回会离开站点；这时关闭按钮或 Escape 会就地移除参数，把你留在画廊上。自带的路由适配器能为同一页面内的链接压栈作证；无法说明记录如何到来的自定义适配器同样会就地关闭，历史里会留下一条重复的页面记录 —— 于是有一次返回看起来什么都没发生，但也不会重新打开任何东西。
+- 指向不存在幻灯片的参数 —— 过期的书签、手改的值 —— 会从 URL 中移除，而不是让地址栏继续声称一张打不开的幻灯片。
+
+**带路由的应用请传入适配器。** 直接写历史会让路由器自己的 location 过期，下一次导航就会把参数丢掉。
+
+<CodeBlock code={urlState2} language="tsx" />
+
+**打开就是一个链接。** 因为打开状态存放在 URL 里，缩略图就是一个普通链接 —— 不需要点击处理函数 —— 浏览器自带的行为也就免费到手：新标签页打开、复制地址、悬停预览。带路由的应用请用路由器的链接组件，让导航保持在客户端。
+
+<CodeBlock code={urlState3} language="tsx" />
+
+**分享链接请优先使用稳定身份。** 索引是按位置的，所以收藏下来的 `?photo=3` 在列表重新排序后就会打开另一张图片。 `urlStableIdKey` 按每个条目稳定的 `id`来寻址，扫描当前列表 —— 一次调用就覆盖了常见场景。
+
+<CodeBlock code={urlState4} language="tsx" />
+
+传入 `hashCodec: base64UrlCodec` 即可把 URL 中的 id 做 base64url 编码 —— 这是可逆的混淆，不是加密哈希。
+
+想按别的字段（比如 `slug`）来寻址，或者用 `locateAsync`给无限信息流翻页，就自己构建 `codec`/`locator` ：
+
+<CodeBlock code={urlState5} language="tsx" />
+
+**无限或分页画廊。** 同步的 `locate` 只能回答已经加载过的图片 —— 只加载了 20 张时，指向第 400 张的分享链接就查不到。 `locateAsync` 是兜底，只有在 `locate` 未命中时才调用。
+
+<Callout type="info" title="快捷键">
+  只想按条目的 `id`来寻址？那就不必手写编解码器和定位器 —— 直接把 `locateAsync` 传给 `urlStableIdKey({ items, locateAsync })` （未命中时它会去拉取，然后返回索引）。下面更完整的写法是给按别的字段寻址、或者需要完全掌控的场景准备的。
+</Callout>
+
+<CodeBlock code={urlState6} language="tsx" />
+
+- 怎么加载由你决定 —— 可以一页页拉到目标处，也可以只拉那一张图片再追加进去。URL 是按身份而不是按位置寻址的，所以 `findIndex` 返回它最终落在哪里都行。
+- 在 `locateAsync` 未完成期间，Lightbox保持关闭，参数也不动，因此深链能熬过这次请求。 `null` 或请求被拒绝则会移除参数。
+- 如果结果在 URL 已经变化、播放器已关闭或组件已卸载之后才到达，就会被丢弃 —— 慢请求不能打开一张没人要的幻灯片。
+- 等待期间什么都不渲染；加载状态本来就归页面自己管，所以请渲染你自己的骨架屏。
+- 没有超时机制 —— Lightbox无从得知画廊有多长。分页用尽时请以 `null` 结束，否则浮层会一直关着。
+- 无论 `locateAsync` 返回什么都以它为准 —— 就是它刚取到的数据的索引，直接采用，不会再去读一遍 `images`.
+
+## API 参考 [#api-reference]
+
+### LightboxOverlay 属性 [#lightboxoverlay-props]
+
+<Signature>LightboxOverlayProps</Signature>
+
+| 属性 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `isOpen` | `boolean` | 必填 | 控制Lightbox的显示。如果希望由 URL 驱动打开状态，请改用独立的 LightboxUrlOverlay —— 见下面的 URL 状态。 |
+| `images` | `LightboxItem[]` | 必填 | 要显示的图片数组 |
+| `ariaLabel` | `string` | 'Image gallery' | 对话框区域的无障碍标签；Lightbox打开时由屏幕阅读器播报 |
+| `initialIndex` | `number` | 0 | 起始图片索引 |
+| `transitionFn` | `TransitionTransformFn` | slideTransition | 幻灯片过渡函数。可以引入内置的（slideTransition、flipTransition、lightboxFadeTransition、lightboxZoomTransition），也可以传自定义的。省略时默认为 slideTransition。 |
+| `apiRef` | `MutableRefObject<ReelApi>` | - | 用于访问 Reel API 的 ref |
+| `renderControls` | `(props: ControlsRenderProps) => ReactNode` | - | 自定义控件，替换默认的关闭按钮、计数器和全屏开关 |
+| `renderNavigation` | `(props: NavigationRenderProps) => ReactNode` | - | 自定义导航，替换默认的上一张 / 下一张箭头 |
+| `renderInfo` | `(props: InfoRenderProps) => ReactNode` | - | 自定义信息浮层，替换默认的标题 + 描述渐变层。返回 null 则隐藏。 |
+| `renderSlide` | `(props: SlideRenderProps) => ReactNode \| null` | - | 自定义幻灯片渲染。接收 \{ item, index, size, isActive, onReady, onWaiting, onError \}。返回 null 则回退到默认实现。 |
+| `renderLoading` | `(props: { item: LightboxItem; activeIndex: number }) => ReactNode` | - | 自定义加载提示，替换默认的转圈动画 |
+| `renderError` | `(props: { item: LightboxItem; activeIndex: number }) => ReactNode` | - | 自定义错误提示，替换默认的错误图标 |
+
+### LightboxUrlOverlay 属性 [#lightboxurloverlay-props]
+
+<Signature>LightboxUrlOverlayProps</Signature>
+
+接受上面所有视觉和行为属性，除了 `isOpen`，并把它换成 `controller`. `initialIndex` 在这里会被忽略 —— 由控制器的 position 决定打开哪一张，所以同时传入的值每次打开都会被覆盖。
+
+| 属性 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `controller` | `UrlStateController` | 必填 | 来自 useOverlayUrlState 的控制器。它的 position 决定浮层是否打开、显示哪一张；浮层会在切换幻灯片和关闭时通过它写回。 |
+
+### 回调 [#callbacks]
+
+| 属性 | 类型 | 说明 |
+| --- | --- | --- |
+| `onClose` | `() => void` | Lightbox关闭时调用。在 LightboxOverlay 上是必填的（打开状态归你管，所以关闭也得你处理）；在 LightboxUrlOverlay 上是可选的，那里由 URL 驱动关闭 —— 只在你需要关闭后做点什么时才传。 |
+| `onSlideChange` | `(index: number) => void` | 幻灯片切换后调用 |
+
+### Reel 属性（透传） [#reel-props-proxied]
+
+这些属性会转发给底层的 [Reel](/docs/react/api#reel-props) 组件。
+
+| 属性 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `loop` | `boolean` | false | 启用无限循环 |
+| `enableNavKeys` | `boolean` | true | 启用键盘导航 |
+| `enableWheel` | `boolean` | true | 启用鼠标滚轮导航 |
+| `wheelDebounceMs` | `number` | 200 | 滚轮防抖时长（毫秒） |
+| `transitionDuration` | `number` | 300 | 过渡动画时长（毫秒） |
+| `swipeDistanceFactor` | `number` | 0.12 | 滑动阈值（0-1） |
+| `swipeToCloseDirection` | `'up' \| 'down'` | 'up' | 移动端滑动关闭手势的方向 |
+
+## 类型 [#types]
+
+### LightboxItem [#lightboxitem]
+
+<CodeBlock code={lightboxitem} language="typescript" />
+
+### ControlsRenderProps [#controlsrenderprops]
+
+<CodeBlock code={controlsrenderprops} language="typescript" />
+
+### NavigationRenderProps [#navigationrenderprops]
+
+<CodeBlock code={navigationrenderprops} language="typescript" />
+
+### SlideRenderProps [#sliderenderprops]
+
+<CodeBlock code={sliderenderprops} language="typescript" />
+
+### InfoRenderProps [#inforenderprops]
+
+<CodeBlock code={inforenderprops} language="typescript" />
+
+## 子组件 [#sub-components]
+
+可复用的子组件，用于通过 `renderControls`.
+
+### CloseButton [#closebutton]
+
+默认的 ✕ 关闭按钮。
+
+<CodeBlock code={closebutton} language="tsx" />
+
+### 计数器 [#counter]
+
+显示 “1 / 3” 的图片计数标签。
+
+<CodeBlock code={counter} language="tsx" />
+
+### FullscreenButton [#fullscreenbutton]
+
+全屏开关按钮（Maximize/Minimize 图标）。
+
+<CodeBlock code={fullscreenbutton} language="tsx" />
+
+### SoundButton [#soundbutton]
+
+视频幻灯片的静音开关按钮（Volume2/VolumeX 图标）。已自动包含在 `renderControls` from `useVideoSlideRenderer`中。若要在自定义控件里单独使用，请通过 `useSoundState`.
+
+<CodeBlock code={soundbutton} language="tsx" />
+
+## Hooks [#hooks]
+
+### useVideoSlideRenderer [#usevideosliderenderer]
+
+按需启用视频支持的 Hook。返回 `renderSlide`, `renderControls`、 `SoundProvider` —— 把浮层包在 SoundProvider 里，并把这些渲染函数传进去。
+
+<CodeBlock code={usevideosliderenderer} language="typescript" />
+
+### useFullscreen [#usefullscreen]
+
+<Callout type="warning" title="已迁移">
+  `useFullscreen` 已从 `@reelkit/react-lightbox`中移除。请改从 `@reelkit/react` 引入。
+</Callout>
+
+管理全屏状态的 Hook，跨浏览器可用。
+
+<CodeBlock code={usefullscreen} language="tsx" />
+
+## 过渡动画 [#transitions]
+
+把任意 `TransitionTransformFn` 通过 `transitionFn` 属性传入。只引入你用到的那个过渡，打包器就能把其余的摇掉。省略时默认为 `slideTransition` 。
+
+| 函数 | 来源 | 说明 |
+| --- | --- | --- |
+| `slideTransition` | `@reelkit/react-lightbox` | 标准横向滑动（默认） |
+| `lightboxFadeTransition` | `@reelkit/react-lightbox` | 图片之间交叉淡入淡出 |
+| `flipTransition` | `@reelkit/react-lightbox` | 3D 翻卡效果 |
+| `lightboxZoomTransition` | `@reelkit/react-lightbox` | 从缩小状态放大到正常尺寸 |
+
+<CodeBlock code={transitions} language="tsx" />
+
+### 自定义过渡函数 [#custom-transition-function]
+
+自己写一个 `TransitionTransformFn` ，通过 `transitionFn`属性传入。签名与核心滑动器的过渡函数一致。
+
+<CodeBlock code={customTransitionFunction} language="tsx" />
+
+## CSS 类名 [#css-classes]
+
+所有界面元素都使用普通 CSS 类名（不是 CSS Modules），可以在 `@reelkit/react-lightbox/styles.css`之后加载的样式表里用更高优先级的选择器覆盖它们。若只是改颜色、尺寸和 z-index，请优先使用下面 [主题定制](#theming) 一节。
+
+| 类名 | 组件 | 说明 |
+| --- | --- | --- |
+| `.rk-lightbox-overlay` | Overlay | 根容器（全屏背景层） |
+| `.rk-lightbox-spinner` | Overlay | 默认的加载转圈动画 |
+| `.rk-lightbox-img-error` | Overlay | 错误状态容器（图片 / 视频损坏） |
+| `.rk-lightbox-img-error-text` | Overlay | 错误状态文字标签 |
+| `.rk-lightbox-swipe-hint` | Overlay | 移动端滑动提示 |
+| `.rk-lightbox-controls-left` | 控制内容 | 左上角控件容器 |
+| `.rk-lightbox-btn` | 控制内容 | 控制按钮（全屏等） |
+| `.rk-lightbox-close` | 控制内容 | 关闭按钮 |
+| `.rk-lightbox-counter` | 控制内容 | 图片计数标签 |
+| `.rk-lightbox-nav` | 导航 | 导航箭头（两侧） |
+| `.rk-lightbox-nav-prev` | 导航 | 上一张箭头 |
+| `.rk-lightbox-nav-next` | 导航 | 下一张箭头 |
+| `.rk-lightbox-info` | Info | 标题 / 描述容器 |
+| `.rk-lightbox-title` | Info | 图片标题 |
+| `.rk-lightbox-description` | Info | 图片描述 |
+| `.rk-lightbox-slide` | Slide | 幻灯片容器 |
+| `.rk-lightbox-img` | Slide | 图片元素 |
+| `.rk-lightbox-video-container` | VideoSlide | 视频幻灯片容器（按需开启） |
+| `.rk-lightbox-video-element` | VideoSlide | 视频元素（按需开启） |
+| `.rk-lightbox-video-poster` | VideoSlide | 视频封面图（按需开启） |
+
+## 主题定制 [#theming]
+
+每一个颜色、尺寸、z-index 和过渡都放在 CSS 自定义属性里。在 `:root` （或Lightbox的任意祖先元素）上覆盖，即可在不改组件源码的情况下换主题。
+
+| 变量 | 默认值 | 控制内容 |
+| --- | --- | --- |
+| `--rk-lightbox-overlay-bg` | `#000` | Full-screen backdrop color |
+| `--rk-lightbox-overlay-z` | `9999` | Overlay z-index |
+| `--rk-lightbox-top-shade-height` | `80px` | Top gradient scrim height |
+| `--rk-lightbox-top-shade-bg` | `linear-gradient(rgba(0,0,0,0.6), transparent)` | Top gradient scrim color |
+| `--rk-lightbox-edge-padding` | `16px` | Edge inset for close / nav / top-left controls |
+| `--rk-lightbox-controls-gap` | `12px` | Gap between top-left controls |
+| `--rk-lightbox-transition` | `0.2s` | Button hover transition duration |
+| `--rk-lightbox-blur` | `8px` | Backdrop blur radius for buttons / chips |
+| `--rk-lightbox-btn-bg` | `rgba(0, 0, 0, 0.5)` | Default background for close, nav, small buttons |
+| `--rk-lightbox-btn-bg-hover` | `rgba(255, 255, 255, 0.2)` | Hover background for close, nav, small buttons |
+| `--rk-lightbox-btn-fg` | `#fff` | Icon color for close, nav, small buttons |
+| `--rk-lightbox-btn-size` | `36px` | Small button size (fullscreen toggle, etc.) |
+| `--rk-lightbox-close-size` | `40px` | Close button size |
+| `--rk-lightbox-nav-size` | `48px` | Prev/next arrow size |
+| `--rk-lightbox-nav-opacity` | `0.7` | Idle opacity of prev/next arrows |
+| `--rk-lightbox-counter-fg` | `#fff` | Counter text color |
+| `--rk-lightbox-counter-bg` | `rgba(0, 0, 0, 0.5)` | Counter chip background |
+| `--rk-lightbox-counter-size` | `14px` | Counter font size |
+| `--rk-lightbox-counter-padding` | `6px 12px` | Counter chip padding |
+| `--rk-lightbox-counter-radius` | `20px` | Counter chip border-radius |
+| `--rk-lightbox-spinner-size` | `28px` | Default spinner width/height |
+| `--rk-lightbox-spinner-track` | `rgba(255, 255, 255, 0.2)` | Spinner track color |
+| `--rk-lightbox-spinner-fg` | `#fff` | Spinner indicator color |
+| `--rk-lightbox-spinner-duration` | `0.8s` | Spinner rotation duration |
+| `--rk-lightbox-error-fg` | `rgba(255, 255, 255, 0.4)` | Error icon + text color |
+| `--rk-lightbox-error-text-size` | `13px` | Error message font size |
+| `--rk-lightbox-info-bg` | `linear-gradient(transparent, rgba(0,0,0,0.8))` | Caption scrim gradient |
+| `--rk-lightbox-info-padding` | `24px` | Caption inner padding |
+| `--rk-lightbox-title-size` | `18px` | Title font size |
+| `--rk-lightbox-description-size` | `14px` | Description font size |
+| `--rk-lightbox-info-fg` | `#fff` | Caption text color |
+| `--rk-lightbox-hint-fg` | `rgba(255, 255, 255, 0.5)` | Swipe hint text color |
+| `--rk-lightbox-hint-bg` | `rgba(0, 0, 0, 0.3)` | Swipe hint chip background |
+| `--rk-lightbox-hint-duration` | `3s` | Swipe hint fade-in/out total duration |
+| `--rk-lightbox-video-bg` | `#000` | Letterbox background behind \<video> |
+
+把下面这段放进在 `@reelkit/react-lightbox/styles.css`.
+
+<CodeBlock code={theming} language="css" />
+
+## 无障碍 [#accessibility]
+
+浮层根节点是一个模态对话框（`role="dialog"`, `aria-modal="true"`）。设置 `ariaLabel` 可以改变屏幕阅读器的播报内容，默认是 “Image gallery”。每张幻灯片都带有 `role="group"`, `aria-roledescription="slide"`、 `aria-label="第 N 张，共 M 张"`.
+
+Lightbox打开时捕获焦点，关闭时把焦点还给触发元素。Tab 和 Shift+Tab 在内部的可聚焦元素之间循环；跑出去的焦点（点击外部、程序化聚焦）会被拉回来。实现基于 `captureFocusForReturn` 和 `createFocusTrap` from `@reelkit/core`.
+
+## 键盘快捷键 [#keyboard-shortcuts]
+
+| Key | 作用 |
+| --- | --- |
+| `ArrowLeft` | Previous image |
+| `ArrowRight` | Next image |
+| `Escape` | Close lightbox (or exit fullscreen if active) |

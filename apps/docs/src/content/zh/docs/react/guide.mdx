@@ -1,0 +1,277 @@
+---
+title: React 指南
+description: 在 React 中使用 ReelKit：Reel 组件、itemBuilder 模式、自动尺寸、ReelIndicator 与性能建议。
+---
+
+import { Hand, Keyboard, MousePointer, InfinityIcon, Radio, Navigation, Zap, Layers, Code } from 'lucide-react';
+import { BasicSliderDemo } from '../../../../components/demos/BasicSliderDemo';
+import { InfiniteListDemo } from '../../../../components/demos/InfiniteListDemo';
+import { GrowableListDemo } from '../../../../components/demos/GrowableListDemo';
+import reelComponent from '../../../snippets/react-guide/reel-component.tsx?raw';
+import autoSizing from '../../../snippets/react-guide/auto-sizing.tsx?raw';
+import itembuilderPattern from '../../../snippets/react-guide/itembuilder-pattern.tsx?raw';
+import navigation from '../../../snippets/react-guide/navigation.tsx?raw';
+import urlState from '../../../snippets/react-guide/url-state.tsx?raw';
+import reelindicator from '../../../snippets/react-guide/reelindicator.tsx?raw';
+import basicFullCode from '../../../snippets/react-guide/basic-full-code.tsx?raw';
+import infiniteFullCode from '../../../snippets/react-guide/infinite-full-code.tsx?raw';
+import growableFullCode from '../../../snippets/react-guide/growable-full-code.tsx?raw';
+
+学习如何用 `@reelkit/react`.
+
+<FeatureGrid columns={3} items={[
+              {
+                icon: Hand,
+                label: '触摸优先',
+                desc: '带惯性和吸附的滑动',
+              },
+              {
+                icon: Keyboard,
+                label: '键盘导航',
+                desc: '方向键 + Escape',
+              },
+              {
+                icon: MousePointer,
+                label: '滚轮滚动',
+                desc: '可选，带防抖',
+              },
+              {
+                icon: InfinityIcon,
+                label: '虚拟化',
+                desc: '10,000+ 条目，DOM 里只有 3 个',
+              },
+              {
+                icon: Radio,
+                label: '指示器',
+                desc: 'Instagram 风格的圆点滚动',
+              },
+              {
+                icon: Navigation,
+                label: '编程式 API',
+                desc: '通过 ref 调用 next()、prev()、goTo()',
+              },
+              {
+                icon: Zap,
+                label: '循环模式',
+                desc: '无限循环导航',
+              },
+              {
+                icon: Layers,
+                label: '方向可选',
+                desc: '竖向或横向',
+              },
+              {
+                icon: Code,
+                label: '零重渲染',
+                desc: '基于信号的状态更新',
+              },
+            ]} />
+
+## Reel 组件 [#reel-component]
+
+`Reel` 组件是主容器，负责管理滑动器状态、处理触摸手势、键盘导航和动画。
+
+<CodeBlock code={reelComponent} language="tsx" />
+
+## 自动尺寸 [#auto-sizing]
+
+`size` 属性是可选的。省略时，Reel 会通过 `ResizeObserver` 自动测量容器，并适配由 CSS 决定的布局。容器的尺寸必须由父级决定（例如 flex、grid 或显式的 CSS 尺寸）。
+
+<CodeBlock code={autoSizing} language="tsx" />
+
+## itemBuilder 模式 [#itembuilder-pattern]
+
+`itemBuilder` 属性是一个函数，接收索引并返回该幻灯片的内容。正是这个模式让虚拟化成为可能 —— 只有可见的条目会被渲染。
+
+<CodeBlock code={itembuilderPattern} language="tsx" />
+
+## 导航 [#navigation]
+
+内置的导航方式：
+
+<Bullets marker="dot">
+
+- **触摸 / 滑动：** 拖动即可翻页，带惯性和吸附
+- **键盘：** 方向键和 Escape
+- **鼠标滚轮：** 用 `enableWheel` 属性开启
+- **编程式：** 使用 `apiRef` for `next()`, `prev()`, `goTo()`
+
+</Bullets>
+
+<CodeBlock code={navigation} language="tsx" />
+
+## URL 状态 [#url-state]
+
+`useOverlayUrlState` 为浮层构建一个 URL 状态控制器并整个返回，你再把它作为 `*UrlOverlay` 的 `controller` 属性传进去。打开状态归 URL 所有，因此绑定后的浮层会自己打开，链接就是通常的打开方式。参数原本不存在时第一次写入压入一条历史记录，之后每次写入都是替换，所以翻页永远不会把返回键埋掉。留着控制器就能读取 `value`/`position` ，也能编程式地驱动它： `set(position)` 打开， `set(null)` 关闭，而 `set` 正是浮层内部在切换幻灯片时使用的底层写入。
+
+<CodeBlock code={urlState} language="tsx" />
+
+选项对象接受 `param`, `codec`、 `locator` （这三个都是必填的），外加可选的 `adapter`。 `param` 和 `adapter` 在首次渲染时读取，之后保持不变 —— 要更改请重新挂载；而 `codec` 和 `locator` 是实时读取的，因此列表增长或重新排序后的查找看到的是当前列表。 `codec` 和 `locator` 是共用同一个 `Id`的配套组合，因此总是一起出现 —— 对于普通的 `?photo=3` 画廊，展开 `...urlIndexKey(() => images.length)`即可，它会一次性返回两半。 `urlIndexKey` 把参数映射成幻灯片索引，并以 getter 返回的实时数量为上界，因此过期或越界的 `?photo=99` 会被拒绝并自动从 URL 中消失，而不是打开一张 URL 从未指定的幻灯片。请传 getter 而不是数字，这样分页信息流增长时上界依然正确。它包装了 `createIndexLocator` (the locator half) and pairs it with `indexCodec`。分页信息流或按身份寻址的画廊则自行提供配套的 `codec` + `locator` 。完整的选项表见 [React API 参考](/docs/react/api#useoverlayurlstate).
+
+## ReelIndicator [#reelindicator]
+
+可选组件，显示 Instagram 风格的进度指示器，标出当前在滑动器中的位置。放在 `Reel`内部时，它会通过上下文自动连接到父级的 `count` 和 `active` 值 —— 不需要手动接状态。
+
+<CodeBlock code={reelindicator} language="tsx" />
+
+## 在线演示：基础滑动器 [#live-demo-basic-slider]
+
+<FeatureGrid items={[
+              { icon: Hand, label: '触摸 / 滑动', desc: '带惯性' },
+              {
+                icon: Keyboard,
+                label: '键盘',
+                desc: '方向键 + Escape',
+              },
+              { icon: Layers, label: '指示器', desc: 'Instagram 风格' },
+              { icon: Navigation, label: '导航', desc: '通过 apiRef' },
+            ]} />
+
+<Sandbox
+  code={basicFullCode}
+  title="BasicSlider.tsx"
+  height={500}
+  stackblitzDeps={['@reelkit/react']}
+  stackblitzExtraDeps={{ 'lucide-react': '^0.562.0' }}
+>
+  <BasicSliderDemo />
+</Sandbox>
+
+<Caption>试试看 —— 点按钮在幻灯片之间切换。</Caption>
+
+## 要点 [#key-points]
+
+<KeyPoints>
+<KeyPoint title="size 属性">
+  可选的 \[宽, 高\] 元组；省略则由 CSS 自动决定尺寸
+</KeyPoint>
+<KeyPoint title="itemBuilder">
+  接收索引并返回幻灯片内容
+</KeyPoint>
+<KeyPoint title="apiRef">
+  访问控制器方法以进行导航
+</KeyPoint>
+<KeyPoint title="afterChange">
+  跟踪当前索引以更新界面
+</KeyPoint>
+</KeyPoints>
+
+## 在线演示：无限列表 [#live-demo-infinite-list]
+
+reelkit 在任何时刻只渲染 **DOM 里的 3 张幻灯片** （当前、上一张、下一张）。因此即便列表有 10,000+ 条目也能顺畅滚动。
+
+<FeatureGrid items={[
+              {
+                icon: Zap,
+                label: 'DOM 里 3 个条目',
+                desc: '只渲染可见的幻灯片',
+              },
+              {
+                icon: Zap,
+                label: '10,000+ 条目',
+                desc: '任何规模都不卡顿',
+              },
+              {
+                icon: Zap,
+                label: '内存恒定',
+                desc: '无论多少条目，都是同样 3 个 DOM 节点',
+              },
+              {
+                icon: Zap,
+                label: 'goTo(n)',
+                desc: '瞬间跳到任意索引',
+              },
+            ]} />
+
+<Sandbox
+  code={infiniteFullCode}
+  title="InfiniteList.tsx"
+  height={500}
+  stackblitzDeps={['@reelkit/react']}
+  stackblitzExtraDeps={{ 'lucide-react': '^0.562.0' }}
+>
+  <InfiniteListDemo />
+</Sandbox>
+
+<Caption>10,000 个条目 —— DOM 里只有 3 个。用按钮或输入数字跳转。</Caption>
+
+## 在线演示：可增长列表 [#live-demo-growable-list]
+
+模拟按需加载的无限信息流 —— 就像 TikTok 或 Instagram。先加载 20 条，滚到接近末尾时，新的一批会自动到达。
+
+<FeatureGrid items={[
+              {
+                icon: Zap,
+                label: '动态数量',
+                desc: '条目随滚动加载',
+              },
+              {
+                icon: Zap,
+                label: '批量加载',
+                desc: '每批 20 条',
+              },
+              {
+                icon: Layers,
+                label: '虚拟化',
+                desc: 'DOM 里依然只有 3 个',
+              },
+              {
+                icon: Radio,
+                label: '自动指示器',
+                desc: '圆点随内容增长',
+              },
+            ]} />
+
+<Sandbox
+  code={growableFullCode}
+  title="GrowableList.tsx"
+  height={500}
+  stackblitzDeps={['@reelkit/react']}
+  stackblitzExtraDeps={{ 'lucide-react': '^0.562.0' }}
+>
+  <GrowableListDemo />
+</Sandbox>
+
+<Caption>滚到末尾 —— 新条目会自动加载。计数和指示器会随着批次到达而增长。</Caption>
+
+## 性能建议 [#performance-tips]
+
+<KeyPoints>
+<KeyPoint title="缓存数据数组">
+  把条目数组用 `useMemo`包起来。每次渲染都产生新的数组引用会触发一次 `count` 更新并重新计算可见范围。
+</KeyPoint>
+<KeyPoint title="让 itemBuilder 保持轻量">
+  它在每次可见范围变化时都会运行（通常是 3 张幻灯片）。不要在里面做重计算或副作用。
+</KeyPoint>
+<KeyPoint title="临近边缘时加载数据">
+  使用 `afterChange` 来检测用户是否接近末尾，并在幻灯片用完之前取下一批（见上面的可增长列表演示）。
+</KeyPoint>
+<KeyPoint title="在可滚动页面里关掉滚轮">
+  把 `enableWheel={false}` ，当滑动器嵌在可滚动布局里时，避免抢走页面滚动。
+</KeyPoint>
+</KeyPoints>
+
+<NextSteps
+        items={[
+          {
+            label: 'API 参考',
+            path: '/docs/react/api',
+            description: '全部可用属性',
+          },
+          {
+            label: 'Reel Player',
+            path: '/docs/reel-player',
+            description: 'TikTok / Reels 风格的视频播放器',
+          },
+          {
+            label: 'Lightbox',
+            path: '/docs/lightbox',
+            description: '图片与视频画廊',
+          },
+          {
+            label: 'Stories Player',
+            path: '/docs/stories-player',
+            description: 'Instagram 风格的 Stories 浏览器',
+          },
+        ]}
+      />

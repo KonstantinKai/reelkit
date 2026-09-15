@@ -1,0 +1,94 @@
+---
+title: Усунення несправностей
+description: 'Типові проблеми та їх розв’язання: iOS Safari, відтворення відео, навігація з клавіатури й загальні пастки інтеграції.'
+---
+
+import viewportDoesntFillScreen from '../../snippets/troubleshooting/viewport-doesnt-fill-screen.css?raw';
+import horizontalScrollContentOverflow from '../../snippets/troubleshooting/horizontal-scroll-content-overflow.css?raw';
+import pullToRefreshRubber from '../../snippets/troubleshooting/pull-to-refresh-rubber.css?raw';
+import pullToRefreshRubber2 from '../../snippets/troubleshooting/pull-to-refresh-rubber-2.tsx?raw';
+import pinchToZoomInterferes from '../../snippets/troubleshooting/pinch-to-zoom-interferes.html?raw';
+import layoutBrokenAfterKeyboard from '../../snippets/troubleshooting/layout-broken-after-keyboard.tsx?raw';
+import slidesRenderAt0 from '../../snippets/troubleshooting/slides-render-at-0.css?raw';
+import videoThumbnailFrameCapture from '../../snippets/troubleshooting/video-thumbnail-frame-capture.txt?raw';
+import arrowKeysDontNavigate from '../../snippets/troubleshooting/arrow-keys-dont-navigate.tsx?raw';
+
+Розв’язання проблем iOS Safari, відтворення відео, повного екрана та навігації з клавіатури.
+
+## iOS Safari [#ios-safari]
+
+### Область перегляду не заповнює екран / чорна смуга внизу [#viewport-doesn-t-fill-screen-bottom-black-space]
+
+Панель адреси Safari, що згортається, робить `100vh` вищим за видиму область. Використовуйте `100dvh`:
+
+<CodeBlock code={viewportDoesntFillScreen} language="css" />
+
+### Горизонтальне прокручування / вміст виходить за межі [#horizontal-scroll-content-overflow]
+
+`100vw` враховує ширину смуги прокручування на iOS, і вміст виходить за край. Використовуйте `100%` і заблокуйте горизонтальне переповнення:
+
+<CodeBlock code={horizontalScrollContentOverflow} language="css" />
+
+### Оновлення потягуванням / пружний відскок [#pull-to-refresh-rubber-band-bounce]
+
+Оновлення потягуванням і пружний відскок у Safari конфліктують із вертикальними свайпами. У жодному разі **не** ставте `overscroll-behavior: none` на `html, body`. Це вимикає звичайне прокручування сторінки. ReelPlayerOverlay, LightboxOverlay і StoriesPlayerOverlay роблять це на власних контейнерах. Для власних макетів обмежте область дії:
+
+<CodeBlock code={pullToRefreshRubber} language="css" />
+
+**Крайній випадок SwipeToClose вниз.** Будь-який `SwipeToClose` з `direction="down"` (Lightbox, плеєр історій, власні оверлеї) перехоплюється в iOS Safari — браузер запускає оновлення потягуванням на рівні документа раніше, ніж обгортка побачить дотик. Оверлей блокує прокручування body, але вертикальні жести в корені лишаються за браузером. Обмежте `overscroll-behavior-y: contain` на `<html>` лише поки оверлей відкритий, і поверніть як було на закритті:
+
+<CodeBlock code={pullToRefreshRubber2} language="tsx" />
+
+### Масштабування щипком заважає жестам [#pinch-to-zoom-interferes-with-gestures]
+
+Вимкніть масштабування, щоб щипок і подвійний дотик не спрацьовували під час свайпів:
+
+<CodeBlock code={pinchToZoomInterferes} language="html" />
+
+<Caption>`viewport-fit=cover` розширює ваш макет у безпечну зону Dynamic Island / вирізу.</Caption>
+
+### Макет ламається після приховування клавіатури [#layout-broken-after-keyboard-dismisses]
+
+Іноді Safari лишає область перегляду стиснутою після закриття клавіатури. Скиньте її на blur:
+
+<CodeBlock code={layoutBrokenAfterKeyboard} language="tsx" />
+
+## Загальне [#general]
+
+### Слайди рендеряться розміром 0×0 [#slides-render-at-0-0-size]
+
+Без пропса `size` слайдер читає розміри контейнера через `ResizeObserver`. Контейнер без висоти в CSS має розмір 0×0, тож нічого не рендериться. Передайте `size` або задайте контейнеру розміри:
+
+<CodeBlock code={slidesRenderAt0} language="css" />
+
+## Відео [#video]
+
+### Відео не відтворюється автоматично [#video-doesn-t-autoplay]
+
+Браузери блокують автовідтворення зі звуком. ReelKit виставляє `muted` і `playsInline` на кожному відеоелементі. Відео починається без звуку; користувач вмикає його перемикачем після дотику. Перевірте, чи не перевизначаєте ці атрибути у власному слайді.
+
+### Мініатюра відео / знімок кадру порожній [#video-thumbnail-frame-capture-is-blank]
+
+Знімок кадру малює відео на `<canvas>`. Відео з іншого джерела «забруднює» canvas, і малювання тихо не спрацьовує. Ваш CDN для відео має повертати заголовки CORS:
+
+<CodeBlock code={videoThumbnailFrameCapture} language="text" />
+
+<Caption>ReelKit виставляє `crossOrigin="anonymous"` за замовчуванням. Якщо використовуєте власний відеоелемент, додайте його самі.</Caption>
+
+## Повний екран [#fullscreen]
+
+### Кнопка повного екрана нічого не робить у Safari [#fullscreen-button-does-nothing-on-safari]
+
+ReelKit вимикає Fullscreen API в Safari. iOS Safari дозволяє повний екран лише для `<video>` елементів. Десктопний Safari ламає `position: fixed` оверлеї в повному екрані: елементи втрачають контекст накладання або зникають. `requestFullscreen()` у Safari завершується без жодної дії.
+
+## Навігація з клавіатури [#keyboard-navigation]
+
+### Стрілки не гортають після передавання onNavKeyPress [#arrow-keys-don-t-navigate-after-providing-onnavkeypress]
+
+`onNavKeyPress` **замінює** стандартну навігацію з клавіатури. ReelKit перестає викликати `next()`/`prev()` і передає керування вам. Викликайте їх самі:
+
+<CodeBlock code={arrowKeysDontNavigate} language="tsx" />
+
+### Клавіша Escape не закриває оверлей [#escape-key-doesn-t-close-the-overlay]
+
+Контролер клавіатури обробляє лише стрілки. ReelPlayerOverlay і LightboxOverlay слухають Escape окремо. Якщо будуєте власний оверлей, додайте власний обробник Escape у `onClose`.

@@ -1,0 +1,183 @@
+---
+title: Angular 指南
+description: 在 Angular 中使用 ReelKit：rk-reel 组件、rkReelItem 模板模式与基于信号的 apiReady 输出。
+---
+
+import { Hand, Keyboard, MousePointer, InfinityIcon, Radio, Navigation, Zap, Layers, Code } from 'lucide-react';
+import rkReelComponent from '../../../snippets/angular-guide/rk-reel-component.ts?raw';
+import autoSizing from '../../../snippets/angular-guide/auto-sizing.html?raw';
+import rkreelitemTemplatePattern from '../../../snippets/angular-guide/rkreelitem-template-pattern.html?raw';
+import navigation from '../../../snippets/angular-guide/navigation.ts?raw';
+import urlState from '../../../snippets/angular-guide/url-state.ts?raw';
+import urlState2 from '../../../snippets/angular-guide/url-state-2.ts?raw';
+import reelindicator from '../../../snippets/angular-guide/reelindicator.html?raw';
+import apireadyOutputSignalBased from '../../../snippets/angular-guide/apiready-output-signal-based.ts?raw';
+
+学习如何用 `@reelkit/angular`.
+
+<FeatureGrid columns={3} items={[
+              {
+                icon: Hand,
+                label: '触摸优先',
+                desc: '带惯性和吸附的滑动',
+              },
+              {
+                icon: Keyboard,
+                label: '键盘导航',
+                desc: '方向键 + Escape',
+              },
+              {
+                icon: MousePointer,
+                label: '滚轮滚动',
+                desc: '可选，带防抖',
+              },
+              {
+                icon: InfinityIcon,
+                label: '虚拟化',
+                desc: '10,000+ 条目，DOM 里只有 3 个',
+              },
+              {
+                icon: Radio,
+                label: '指示器',
+                desc: 'Instagram 风格的圆点滚动',
+              },
+              {
+                icon: Navigation,
+                label: '编程式 API',
+                desc: '通过 apiReady 调用 next()、prev()、goTo()',
+              },
+              {
+                icon: Zap,
+                label: '循环模式',
+                desc: '无限循环导航',
+              },
+              {
+                icon: Layers,
+                label: '方向可选',
+                desc: '竖向或横向',
+              },
+              {
+                icon: Code,
+                label: '基于信号',
+                desc: 'OnPush 搭配 Angular 信号',
+              },
+            ]} />
+
+## rk-reel 组件 [#rk-reel-component]
+
+`rk-reel` 组件包装了核心的滑动控制器。它是独立组件，使用 `ChangeDetectionStrategy.OnPush`.
+
+<Sandbox code={rkReelComponent} language="typescript" title="app.component.ts" framework="angular" stackblitzDeps={['@reelkit/angular']} />
+
+## 自动尺寸 [#auto-sizing]
+
+`size` 输入是可选的。省略时， `rk-reel` 会通过 `ResizeObserver` 自动测量容器，并适配由 CSS 决定的布局。容器的尺寸必须由父级决定（例如 flex、grid 或显式的 CSS 尺寸）。
+
+<CodeBlock code={autoSizing} language="html" />
+
+## rkReelItem 模板模式 [#rkreelitem-template-pattern]
+
+Angular 不用 React 的 render prop，而是在 `rkReelItem` 上使用结构指令 `ng-template`。它让虚拟化成为可能 —— 只有可见的幻灯片会被实例化。模板上下文提供三个变量：
+
+<CodeBlock code={rkreelitemTemplatePattern} language="html" />
+
+## 导航 [#navigation]
+
+内置的导航方式：
+
+<Bullets marker="dot">
+
+- **触摸 / 滑动：** 拖动即可翻页，带惯性和吸附
+- **键盘：** 方向键和 Escape
+- **鼠标滚轮：** 用 `[enableWheel]="true"`
+- **编程式：** Use the `(apiReady)` 输出来获取 `next()`, `prev()`, `goTo()`
+
+</Bullets>
+
+<CodeBlock code={navigation} language="typescript" />
+
+## URL 状态 [#url-state]
+
+`createOverlayUrlState` 为浮层构建一个 URL 状态控制器并整个返回，你再把它作为 `*UrlOverlay` 组件的 `[controller]` 输入。请在注入上下文中调用它 —— 例如字段初始化器；它会立即挂载，并通过 `DestroyRef`释放。打开状态归 URL 所有，因此绑定后的浮层会自己打开，链接就是通常的打开方式。参数原本不存在时第一次写入压入一条历史记录，之后每次写入都是替换，所以翻页永远不会把返回键埋掉。留着控制器就能读取 `value`/`position` ，也能编程式地驱动它： `set(position)` 打开， `set(null)` 关闭，而 `set` 正是浮层内部在切换幻灯片时使用的底层写入。
+
+<CodeBlock code={urlState} language="typescript" />
+
+带路由的应用 —— 请传入基于 Router 的适配器，否则 Router 自己的 location 会过期，下一次导航就会把参数丢掉：
+
+<CodeBlock code={urlState2} language="typescript" />
+
+选项对象接受 `param`, `codec`、 `locator` （这三个都是必填的），外加可选的 `adapter`. `codec` 和 `locator` 是共用同一个 `Id`，因此对于普通的 `?photo=3` 画廊，展开 `...urlIndexKey(() => images().length)`即可，它会一次性返回两半。 `urlIndexKey` 会以 getter 返回的实时数量为上界约束索引，因此过期的 `?photo=99` 会被拒绝并自动从 URL 中消失，而不是打开一张从未指定的幻灯片。分页信息流或按身份寻址的画廊则自行提供配套的 `codec` + `locator` 。完整的选项表见 [Angular API 参考](/docs/angular/api#createoverlayurlstate).
+
+## ReelIndicator [#reelindicator]
+
+可选组件，显示 Instagram 风格的进度指示器，标出当前在滑动器中的位置。放在 `rk-reel`内部时，它会通过上下文自动连接到父级的 `count` 和 `active` 值，走的是 `RK_REEL_CONTEXT` 注入令牌 —— 不需要手动接线。
+
+<CodeBlock code={reelindicator} language="html" />
+
+## apiReady 输出 —— 基于信号的模式 [#apiready-output-signal-based-pattern]
+
+`(apiReady)` 输出会在组件挂载并测量完成后触发一次。它发出一个 `ReelApi` 对象，你可以存下来做命令式导航。用 Angular 信号保存这个引用，与 `OnPush` 变更检测配合得很好。
+
+<CodeBlock code={apireadyOutputSignalBased} language="typescript" />
+
+## 要点 [#key-points]
+
+<KeyPoints>
+<KeyPoint title="独立组件">
+  把 `ReelComponent`, `RkReelItemDirective`, and optionally `ReelIndicatorComponent` 直接放进组件的 `imports` 数组
+</KeyPoint>
+<KeyPoint title="ng-template + rkReelItem">
+  Angular 里对应 React `itemBuilder` 属性的写法 —— 实现虚拟化
+</KeyPoint>
+<KeyPoint title="apiReady">
+  只触发一次的输出，带上命令式导航 API —— 不需要 ViewChild 查询
+</KeyPoint>
+<KeyPoint title="afterChange">
+  发出 `{ index, indexInRange }` —— 跟踪当前索引以更新界面
+</KeyPoint>
+<KeyPoint title="默认 OnPush">
+  所有组件都使用 `ChangeDetectionStrategy.OnPush` 和 Angular 信号以获得最佳性能
+</KeyPoint>
+</KeyPoints>
+
+## 性能建议 [#performance-tips]
+
+<KeyPoints>
+<KeyPoint title="让幻灯片模板保持轻量">
+  `rkReelItem` 模板会为每张可见幻灯片执行（通常同时 3 张）。不要在里面做重计算或写太深的嵌套结构。
+</KeyPoint>
+<KeyPoint title="临近边缘时加载数据">
+  使用 `(afterChange)` 来检测用户是否接近末尾，并在幻灯片用完之前取下一批 —— 这样就能做无限滚动的信息流。
+</KeyPoint>
+<KeyPoint title="命令式状态用信号">
+  把 `ReelApi` 引用和当前索引存在 Angular 信号里，既能细粒度响应，又不会触发整个组件重渲染。
+</KeyPoint>
+<KeyPoint title="在可滚动页面里关掉滚轮">
+  把 `[enableWheel]="false"` ，当滑动器嵌在可滚动布局里时，避免抢走页面滚动。
+</KeyPoint>
+</KeyPoints>
+
+<NextSteps
+        items={[
+          {
+            label: 'Angular API 参考',
+            path: '/docs/angular/api',
+            description: '全部可用的输入、输出与方法',
+          },
+          {
+            label: 'Reel Player',
+            path: '/docs/angular-reel-player',
+            description: 'TikTok / Reels 风格的视频播放器',
+          },
+          {
+            label: 'Lightbox',
+            path: '/docs/angular-lightbox',
+            description: '图片与视频画廊',
+          },
+          {
+            label: 'Stories Player',
+            path: '/docs/angular-stories-player',
+            description: 'Instagram 风格的 Stories 浏览器（即将推出）',
+          },
+        ]}
+      />

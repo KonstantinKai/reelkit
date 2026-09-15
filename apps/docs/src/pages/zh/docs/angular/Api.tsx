@@ -23,8 +23,8 @@ const reelInputs = [
   },
   {
     prop: 'direction',
-    type: "'竖向' | 'horizontal'",
-    default: "'竖向'",
+    type: "'vertical' | 'horizontal'",
+    default: "'vertical'",
     description: '滚动方向',
   },
   {
@@ -189,8 +189,8 @@ const indicatorInputs = [
   },
   {
     prop: 'direction',
-    type: "'竖向' | 'horizontal'",
-    default: "'竖向'",
+    type: "'vertical' | 'horizontal'",
+    default: "'vertical'",
     description: '指示器方向',
   },
   {
@@ -951,8 +951,13 @@ const index = toAngularSignal(controller.state.index, destroyRef);`}
           <code>createOverlayUrlState</code> 选项传入，让 Router
           始终是导航的唯一真相来源 —— 绕过 Router 直接写{' '}
           <code>history.pushState</code> 会让它的 location
-          过期，下一次导航就会把参数丢掉。请在注入上下文中调用它；{' '}
-          <code>NavigationEnd</code> 订阅会通过 <code>DestroyRef</code>.
+          过期，下一次导航就会把参数丢掉。写入只触及查询部分，路径、fragment
+          以及 <code>?tag=a&amp;tag=b</code>{' '}
+          这样的重复键都原样保留。每次变化都会报告 Router
+          是在同一页面内压栈、替换，还是在历史中前进后退，因此从{' '}
+          <code>routerLink</code>{' '}
+          打开的画廊按一次返回就能关闭。请在注入上下文中调用它；路由订阅会通过{' '}
+          <code>DestroyRef</code> 释放。
         </p>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           它从独立的子路径导出，因此没有路由的应用永远不会把{' '}

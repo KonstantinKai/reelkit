@@ -1,0 +1,277 @@
+---
+title: Посібник для React
+description: 'ReelKit у React: компонент Reel, патерн itemBuilder, автоматичний розмір, ReelIndicator і поради щодо продуктивності.'
+---
+
+import { Hand, Keyboard, MousePointer, InfinityIcon, Radio, Navigation, Zap, Layers, Code } from 'lucide-react';
+import { BasicSliderDemo } from '../../../../components/demos/BasicSliderDemo';
+import { InfiniteListDemo } from '../../../../components/demos/InfiniteListDemo';
+import { GrowableListDemo } from '../../../../components/demos/GrowableListDemo';
+import reelComponent from '../../../snippets/react-guide/reel-component.tsx?raw';
+import autoSizing from '../../../snippets/react-guide/auto-sizing.tsx?raw';
+import itembuilderPattern from '../../../snippets/react-guide/itembuilder-pattern.tsx?raw';
+import navigation from '../../../snippets/react-guide/navigation.tsx?raw';
+import urlState from '../../../snippets/react-guide/url-state.tsx?raw';
+import reelindicator from '../../../snippets/react-guide/reelindicator.tsx?raw';
+import basicFullCode from '../../../snippets/react-guide/basic-full-code.tsx?raw';
+import infiniteFullCode from '../../../snippets/react-guide/infinite-full-code.tsx?raw';
+import growableFullCode from '../../../snippets/react-guide/growable-full-code.tsx?raw';
+
+Дізнайтеся, як будувати слайдери з `@reelkit/react`.
+
+<FeatureGrid columns={3} items={[
+              {
+                icon: Hand,
+                label: 'Спершу дотик',
+                desc: 'Свайп з інерцією та прилипанням',
+              },
+              {
+                icon: Keyboard,
+                label: 'Навігація з клавіатури',
+                desc: 'Стрілки + Escape',
+              },
+              {
+                icon: MousePointer,
+                label: 'Прокручування колесом',
+                desc: 'Необов’язково, з дебаунсом',
+              },
+              {
+                icon: InfinityIcon,
+                label: 'Віртуалізований',
+                desc: '10 000+ елементів, 3 у DOM',
+              },
+              {
+                icon: Radio,
+                label: 'Indicators',
+                desc: 'Прокручування точок у стилі Instagram',
+              },
+              {
+                icon: Navigation,
+                label: 'Програмний API',
+                desc: 'next(), prev(), goTo() через ref',
+              },
+              {
+                icon: Zap,
+                label: 'Режим циклу',
+                desc: 'Нескінченна кругова навігація',
+              },
+              {
+                icon: Layers,
+                label: 'Directional',
+                desc: 'Вертикально або горизонтально',
+              },
+              {
+                icon: Code,
+                label: 'Жодних зайвих рендерів',
+                desc: 'Оновлення стану на сигналах',
+              },
+            ]} />
+
+## Компонент Reel [#reel-component]
+
+The `Reel` — головний контейнер: він тримає стан слайдера, обробляє дотикові жести, навігацію з клавіатури та анімації.
+
+<CodeBlock code={reelComponent} language="tsx" />
+
+## Auto-sizing [#auto-sizing]
+
+The `size` необов’язковий. Якщо його не передати, Reel сам вимірює контейнер через `ResizeObserver` і підлаштовується під макет, заданий CSS. Розмір контейнера має задавати батьківський елемент — наприклад, flex, grid або явні розміри в CSS.
+
+<CodeBlock code={autoSizing} language="tsx" />
+
+## Патерн itemBuilder [#itembuilder-pattern]
+
+The `itemBuilder` — функція, яка отримує індекс і повертає вміст слайда. Саме цей патерн дає віртуалізацію: рендеряться лише видимі елементи.
+
+<CodeBlock code={itembuilderPattern} language="tsx" />
+
+## Навігація [#navigation]
+
+Вбудовані способи навігації:
+
+<Bullets marker="dot">
+
+- **Дотик / свайп:** Тягніть, щоб гортати — з інерцією та прилипанням
+- **Клавіатура:** Стрілки та Escape
+- **Колесо миші:** Увімкніть `enableWheel` у пропсах
+- **Програмно:** Використовуйте `apiRef` для `next()`, `prev()`, `goTo()`
+
+</Bullets>
+
+<CodeBlock code={navigation} language="tsx" />
+
+## Стан в URL [#url-state]
+
+`useOverlayUrlState` будує контролер стану в URL для оверлея й повертає його цілком, а ви передаєте його в `*UrlOverlay` як його `controller` . Стан відкриття належить URL, тож прив’язаний оверлей відкривається сам, а посилання — звичайний спосіб його відкрити. Перший запис відсутнього параметра додає один запис в історію, кожен наступний його замінює, тож гортання ніколи не ховає кнопку «назад». Тримайте контролер, щоб читати `value`/`позицією` і керувати ним програмно: `set(position)` відкриває, `set(null)` закриває, а `set` — той самий низькорівневий запис, який оверлей робить усередині під час зміни слайда.
+
+<CodeBlock code={urlState} language="tsx" />
+
+Об’єкт опцій приймає `param`, `codec`, та `locator` (усі три обов’язкові) плюс необов’язковий `adapter`. `param` та `adapter` читаються під час першого рендеру й далі не змінюються — щоб змінити їх, перемонтуйте компонент, — а `codec` та `locator` читаються наживо, тож пошук після того, як список виріс чи змінив порядок, бачить поточний список. `codec` та `locator` — узгоджена пара з однаковим `Id`, тож вони йдуть разом — для звичайної `?photo=3` галереї розгортайте `...urlIndexKey(() => images.length)`, який повертає обидві половини одразу. `urlIndexKey` зіставляє параметр з індексом слайда й обмежує його живою кількістю, яку повертає геттер, тож застарілий або позамежний `?photo=99` відхиляється й сам зникає з URL замість того, щоб відкрити слайд, якого ніхто не називав. Передавайте геттер, а не число, щоб межа лишалася правильною, поки посторінкова стрічка росте. Він загортає `createIndexLocator` (половину-локатор) і поєднує його з `indexCodec`. Посторінкова стрічка або галерея з адресацією за ідентичністю передає власну узгоджену пару `codec` + `locator` . Повна таблиця опцій — у [довіднику API для React](/docs/react/api#useoverlayurlstate).
+
+## ReelIndicator [#reelindicator]
+
+Необов’язковий компонент, що показує індикатори прогресу в стилі Instagram із поточною позицією в слайдері. Якщо він усередині `Reel`, він сам під’єднується до `count` та `active` значення через контекст — нічого зв’язувати вручну не треба.
+
+<CodeBlock code={reelindicator} language="tsx" />
+
+## Демо наживо: базовий слайдер [#live-demo-basic-slider]
+
+<FeatureGrid items={[
+              { icon: Hand, label: 'Touch/Swipe', desc: 'З інерцією' },
+              {
+                icon: Keyboard,
+                label: 'Keyboard',
+                desc: 'Стрілки + Escape',
+              },
+              { icon: Layers, label: 'Indicators', desc: 'Instagram-style' },
+              { icon: Navigation, label: 'Навігація', desc: 'Через apiRef' },
+            ]} />
+
+<Sandbox
+  code={basicFullCode}
+  title="BasicSlider.tsx"
+  height={500}
+  stackblitzDeps={['@reelkit/react']}
+  stackblitzExtraDeps={{ 'lucide-react': '^0.562.0' }}
+>
+  <BasicSliderDemo />
+</Sandbox>
+
+<Caption>Спробуйте — натискайте кнопки, щоб гортати слайди.</Caption>
+
+## Головне [#key-points]
+
+<KeyPoints>
+<KeyPoint title="пропс size">
+  Необов’язковий кортеж \[width, height\] або пропустіть — розмір визначить CSS
+</KeyPoint>
+<KeyPoint title="itemBuilder">
+  Отримує індекс і повертає вміст слайда
+</KeyPoint>
+<KeyPoint title="apiRef">
+  Доступ до методів контролера для навігації
+</KeyPoint>
+<KeyPoint title="afterChange">
+  Стежить за поточним індексом для оновлення інтерфейсу
+</KeyPoint>
+</KeyPoints>
+
+## Демо наживо: нескінченний список [#live-demo-infinite-list]
+
+reelkit рендерить лише **3 слайди в DOM** у будь-який момент (поточний, попередній, наступний). Це дає плавне прокручування списків із 10 000+ елементів.
+
+<FeatureGrid items={[
+              {
+                icon: Zap,
+                label: '3 елементи у DOM',
+                desc: 'Рендеряться лише видимі слайди',
+              },
+              {
+                icon: Zap,
+                label: '10 000+ елементів',
+                desc: 'Без ривків на будь-якому масштабі',
+              },
+              {
+                icon: Zap,
+                label: 'Стала пам’ять',
+                desc: 'Ті самі 3 вузли DOM незалежно від кількості',
+              },
+              {
+                icon: Zap,
+                label: 'goTo(n)',
+                desc: 'Миттєвий перехід до будь-якого індексу',
+              },
+            ]} />
+
+<Sandbox
+  code={infiniteFullCode}
+  title="InfiniteList.tsx"
+  height={500}
+  stackblitzDeps={['@reelkit/react']}
+  stackblitzExtraDeps={{ 'lucide-react': '^0.562.0' }}
+>
+  <InfiniteListDemo />
+</Sandbox>
+
+<Caption>10 000 елементів — і лише 3 в DOM. Гортайте кнопками або введіть номер для переходу.</Caption>
+
+## Демо наживо: список, що росте [#live-demo-growable-list]
+
+Імітує нескінченну стрічку, де елементи вантажаться за потреби — як у TikTok чи Instagram. Почніть із 20 елементів, прокрутіть до кінця й дивіться, як нові пакети надходять самі.
+
+<FeatureGrid items={[
+              {
+                icon: Zap,
+                label: 'Динамічна кількість',
+                desc: 'Елементи вантажаться під час прокручування',
+              },
+              {
+                icon: Zap,
+                label: 'Пакетне завантаження',
+                desc: '20 елементів на пакет',
+              },
+              {
+                icon: Layers,
+                label: 'Віртуалізований',
+                desc: 'У DOM усе одно лише 3',
+              },
+              {
+                icon: Radio,
+                label: 'Автоматичний індикатор',
+                desc: 'Точки ростуть разом із вмістом',
+              },
+            ]} />
+
+<Sandbox
+  code={growableFullCode}
+  title="GrowableList.tsx"
+  height={500}
+  stackblitzDeps={['@reelkit/react']}
+  stackblitzExtraDeps={{ 'lucide-react': '^0.562.0' }}
+>
+  <GrowableListDemo />
+</Sandbox>
+
+<Caption>Прокрутіть до кінця — нові елементи завантажаться самі. Лічильник та індикатор ростуть із кожним пакетом.</Caption>
+
+## Поради щодо продуктивності [#performance-tips]
+
+<KeyPoints>
+<KeyPoint title="Мемоізуйте масиви даних">
+  Загортайте масив елементів у `useMemo`. Нове посилання на масив у кожному рендері спричиняє `count` оновлення й перерахунок видимих діапазонів.
+</KeyPoint>
+<KeyPoint title="Тримайте itemBuilder легким">
+  Він виконується на кожну зміну видимого діапазону (зазвичай 3 слайди). Уникайте важких обчислень і побічних ефектів усередині.
+</KeyPoint>
+<KeyPoint title="Вантажте дані ближче до краю">
+  Використовуйте `afterChange` щоб помітити наближення до кінця й підвантажити наступний пакет, доки слайди не скінчилися (дивіться демо зі списком, що росте, вище).
+</KeyPoint>
+<KeyPoint title="Вимикайте колесо на сторінках із прокручуванням">
+  Set `enableWheel={false}` коли слайдер вбудований у макет із прокручуванням, щоб не перехоплювати прокручування сторінки.
+</KeyPoint>
+</KeyPoints>
+
+<NextSteps
+        items={[
+          {
+            label: 'Довідник API',
+            path: '/docs/react/api',
+            description: 'усі доступні пропси',
+          },
+          {
+            label: 'Reel Player',
+            path: '/docs/reel-player',
+            description: 'відеоплеєр у стилі TikTok / Reels',
+          },
+          {
+            label: 'Lightbox',
+            path: '/docs/lightbox',
+            description: 'галерея зображень і відео',
+          },
+          {
+            label: 'Stories Player',
+            path: '/docs/stories-player',
+            description: 'переглядач історій у стилі Instagram',
+          },
+        ]}
+      />

@@ -1,0 +1,8 @@
+<!-- Auto-connect: count and active are inherited from parent rk-reel -->
+<rk-reel [count]="10" [size]="[400, 600]">
+  <ng-template rkReelItem let-i let-size="size"> ... </ng-template>
+  <rk-reel-indicator direction="vertical" />
+</rk-reel>
+
+<!-- Manual usage: pass count and active explicitly (e.g. outside a rk-reel) -->
+<rk-reel-indicator [count]="10" [active]="currentIndex" />

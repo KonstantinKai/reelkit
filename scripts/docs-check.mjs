@@ -12,7 +12,7 @@
 //   node scripts/docs-check.mjs --update-baseline   re-snapshot known gaps
 
 import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
-import { join, dirname } from 'node:path';
+import { join, dirname, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -24,6 +24,44 @@ const errors = [];
 const warnings = [];
 const read = (p) => readFileSync(join(root, p), 'utf8');
 const rel = (p) => p.replace(`${root}/`, '');
+
+/**
+ * Code samples a content page shows. A `.mdx` page keeps each sample in a
+ * snippet file it imports as text and hands to `<CodeBlock>` or `<Sandbox>`;
+ * a tsx page has none to resolve. Each sample carries the snippet's path, its
+ * body, its language, and the line of the page that shows it.
+ */
+function snippetsOf(file) {
+  if (!file.endsWith('.mdx')) return [];
+  const src = read(file);
+  const imports = new Map(
+    [...src.matchAll(/^import (\w+) from '([^']+)\?raw';$/gm)].map((m) => [
+      m[1],
+      normalize(join(dirname(file), m[2])),
+    ]),
+  );
+  return [...src.matchAll(/<(?:CodeBlock|Sandbox)\b([^>]*)>/g)].flatMap((m) => {
+    const name = m[1].match(/\bcode=\{(\w+)\}/)?.[1];
+    const path = name && imports.get(name);
+    if (!path || !existsSync(join(root, path))) return [];
+    return [
+      {
+        path,
+        body: read(path),
+        language: m[1].match(/\blanguage="([^"]+)"/)?.[1],
+        line: src.slice(0, m.index).split('\n').length,
+      },
+    ];
+  });
+}
+
+/**
+ * Everything a reader sees on a page as source text: the page itself and,
+ * for a content page, the code samples it imports — which is where a tsx
+ * page kept them all along.
+ */
+const pageSource = (file) =>
+  [read(file), ...snippetsOf(file).map((s) => s.body)].join('\n');
 
 /**
  * Symbols a package genuinely OWNS — declared here or re-exported from a local
@@ -89,6 +127,11 @@ function headings(file) {
   if (file.endsWith('.md')) {
     return [...src.matchAll(/^##\s+(.+)$/gm)].map((m) => clean(m[1]));
   }
+  if (file.endsWith('.mdx')) {
+    return [...src.matchAll(/^##\s+(.+?)\s*\[#[a-z0-9-]+\]\s*$/gm)].map((m) =>
+      clean(m[1]),
+    );
+  }
   return [
     ...src.matchAll(/<Heading\s+level=\{2\}[^>]*>([\s\S]*?)<\/Heading>/g),
   ].map((m) => clean(m[1]));
@@ -123,7 +166,7 @@ for (const s of config.surfaces) {
   }
   if (!existsSync(join(root, s.package))) continue;
 
-  const pageSrc = read(s.page);
+  const pageSrc = pageSource(s.page);
   const mirrorSrc = read(s.mirror);
   const known = new Set(baseline[s.package] ?? []);
   const gaps = [];
@@ -195,6 +238,12 @@ for (const pair of config.mirrorPairs) {
 
 const slugsOf = (file) => {
   const src = read(file);
+  // A content page states every anchor explicitly as `[#slug]`.
+  if (file.endsWith('.mdx')) {
+    return new Set(
+      [...src.matchAll(/^#{2,3}\s+.*\[#([a-z0-9-]+)\]\s*$/gm)].map((m) => m[1]),
+    );
+  }
   const texts = file.endsWith('.md')
     ? [...src.matchAll(/^#{2,3}\s+(.+)$/gm)].map((m) => m[1])
     : [
@@ -240,14 +289,24 @@ for (const file of new Set(
 )) {
   if (!existsSync(join(root, file))) continue;
   const src = read(file);
-  const blocks = file.endsWith('.md')
-    ? [...src.matchAll(/```vue\n([\s\S]*?)```/g)]
-    : [...src.matchAll(/code=\{`((?:[^`\\]|\\.)*)`\}\s*\n\s*language="vue"/g)];
-  for (const m of blocks) {
-    const body = m[1];
+  const lineOf = (index) => src.slice(0, index).split('\n').length;
+  const blocks = file.endsWith('.mdx')
+    ? snippetsOf(file)
+        .filter((s) => s.language === 'vue')
+        .map((s) => ({ body: s.body, line: s.line }))
+    : file.endsWith('.md')
+      ? [...src.matchAll(/```vue\n([\s\S]*?)```/g)].map((m) => ({
+          body: m[1],
+          line: lineOf(m.index),
+        }))
+      : [
+          ...src.matchAll(
+            /code=\{`((?:[^`\\]|\\.)*)`\}\s*\n\s*language="vue"/g,
+          ),
+        ].map((m) => ({ body: m[1], line: lineOf(m.index) }));
+  for (const { body, line } of blocks) {
     const hasStatement = /^\s*(const|let|var|import|function)\s/m.test(body);
     if (hasStatement && !body.includes('<script')) {
-      const line = src.slice(0, m.index).split('\n').length;
       errors.push(
         `${file}:${line}: a \`vue\` snippet has top-level statements but no <script> block — wrap it as an SFC (<script setup> + <template>) or tag it \`ts\`.`,
       );
@@ -260,7 +319,7 @@ for (const file of new Set(
 for (const rule of config.parity ?? []) {
   for (const file of rule.files) {
     if (!existsSync(join(root, file))) continue;
-    if (!new RegExp(`\\b${rule.token}\\b`).test(read(file))) {
+    if (!new RegExp(`\\b${rule.token}\\b`).test(pageSource(file))) {
       errors.push(`${file}: missing \`${rule.token}\` — ${rule.reason}`);
     }
   }
@@ -271,7 +330,7 @@ for (const rule of config.forbidden ?? []) {
   const re = new RegExp(rule.pattern, rule.flags ?? 'g');
   for (const file of rule.files) {
     if (!existsSync(join(root, file))) continue;
-    const src = read(file);
+    const src = pageSource(file);
     for (const m of src.matchAll(re)) {
       const line = src.slice(0, m.index).split('\n').length;
       errors.push(`${file}:${line}: ${rule.reason} (matched "${m[0].trim()}")`);
@@ -286,7 +345,7 @@ for (const rule of config.requirePair ?? []) {
   const caveat = new RegExp(rule.caveat, rule.flags ?? '');
   for (const file of rule.files) {
     if (!existsSync(join(root, file))) continue;
-    const src = read(file);
+    const src = pageSource(file);
     if (claim.test(src) && !caveat.test(src)) {
       errors.push(`${file}: ${rule.reason}`);
     }
@@ -378,10 +437,16 @@ if (config.snippetImports) {
     ...(config.snippetImports.files ?? []),
   ]);
 
-  for (const file of files) {
-    if (!existsSync(join(root, file))) continue;
-    const src = read(file);
+  // A content page's samples are separate files, so each is scanned on its
+  // own and a finding names the snippet that needs the fix.
+  const sampleSources = [...files].flatMap((file) => {
+    if (!existsSync(join(root, file))) return [];
+    return file.endsWith('.mdx')
+      ? snippetsOf(file).map((s) => [s.path, s.body])
+      : [[file, read(file)]];
+  });
 
+  for (const [file, src] of sampleSources) {
     for (const m of src.matchAll(
       /import\s+(?:type\s+)?\{([^}]*)\}\s*from\s*['"](@reelkit\/[^'"]+)['"]/g,
     )) {
@@ -493,6 +558,72 @@ if (config.localeParity) {
       if (missingIds.length) {
         errors.push(
           `${sibling}: table rows missing versus ${rel(join(root, page))}: ${missingIds.join(', ')}`,
+        );
+      }
+      if (extraIds.length) {
+        errors.push(
+          `${sibling}: table rows with no English counterpart: ${extraIds.join(', ')}`,
+        );
+      }
+    }
+  }
+}
+
+// The same comparison for pages authored as content files. A translation
+// imports the English page's snippet files rather than copying the samples,
+// so the check is that both import the same ones in the same order.
+if (config.localeParity) {
+  const contentRoot = 'apps/docs/src/content/en/docs';
+  const englishPages = [];
+  const walk = (dir) => {
+    if (!existsSync(join(root, dir))) return;
+    for (const entry of readdirSync(join(root, dir), { withFileTypes: true })) {
+      const path = `${dir}/${entry.name}`;
+      if (entry.isDirectory()) walk(path);
+      else if (entry.name.endsWith('.mdx')) englishPages.push(path);
+    }
+  };
+  walk(contentRoot);
+
+  const sampleFiles = (file) => snippetsOf(file).map((s) => s.path);
+  const sectionCount = (src) => (src.match(/^##\s/gm) ?? []).length;
+  const identifiers = (src) =>
+    new Set([
+      ...[...src.matchAll(/^\|\s*`([^`]+)`/gm)].map((m) => m[1]),
+      ...[...src.matchAll(/\b(?:prop|name):\s*'([^']+)'/g)].map((m) => m[1]),
+    ]);
+
+  for (const page of englishPages) {
+    const english = read(page);
+    for (const locale of config.localeParity.locales) {
+      const sibling = page.replace('/content/en/', `/content/${locale}/`);
+      if (!existsSync(join(root, sibling))) continue;
+      const translated = read(sibling);
+
+      if (
+        JSON.stringify(sampleFiles(page)) !==
+        JSON.stringify(sampleFiles(sibling))
+      ) {
+        errors.push(
+          `${sibling}: code samples differ from ${page} — both must show the same snippet files in the same order`,
+        );
+      }
+
+      const englishSections = sectionCount(english);
+      const translatedSections = sectionCount(translated);
+      if (englishSections !== translatedSections) {
+        errors.push(
+          `${sibling}: ${translatedSections} sections where ${page} has ${englishSections}`,
+        );
+      }
+
+      const englishIds = identifiers(english);
+      const translatedIds = identifiers(translated);
+      const missingIds = [...englishIds].filter((id) => !translatedIds.has(id));
+      const extraIds = [...translatedIds].filter((id) => !englishIds.has(id));
+      if (missingIds.length) {
+        errors.push(
+          `${sibling}: table rows missing versus ${page}: ${missingIds.join(', ')}`,
         );
       }
       if (extraIds.length) {

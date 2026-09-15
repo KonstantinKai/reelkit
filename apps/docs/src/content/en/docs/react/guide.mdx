@@ -1,0 +1,277 @@
+---
+title: React Guide
+description: Build sliders with @reelkit/react. Reel component, itemBuilder pattern, navigation, ReelIndicator, virtualization with 10000+ items, and performance tips.
+---
+
+import { Hand, Keyboard, MousePointer, InfinityIcon, Radio, Navigation, Zap, Layers, Code } from 'lucide-react';
+import { BasicSliderDemo } from '../../../../components/demos/BasicSliderDemo';
+import { InfiniteListDemo } from '../../../../components/demos/InfiniteListDemo';
+import { GrowableListDemo } from '../../../../components/demos/GrowableListDemo';
+import reelComponent from '../../../snippets/react-guide/reel-component.tsx?raw';
+import autoSizing from '../../../snippets/react-guide/auto-sizing.tsx?raw';
+import itembuilderPattern from '../../../snippets/react-guide/itembuilder-pattern.tsx?raw';
+import navigation from '../../../snippets/react-guide/navigation.tsx?raw';
+import urlState from '../../../snippets/react-guide/url-state.tsx?raw';
+import reelindicator from '../../../snippets/react-guide/reelindicator.tsx?raw';
+import basicFullCode from '../../../snippets/react-guide/basic-full-code.tsx?raw';
+import infiniteFullCode from '../../../snippets/react-guide/infinite-full-code.tsx?raw';
+import growableFullCode from '../../../snippets/react-guide/growable-full-code.tsx?raw';
+
+Learn how to build sliders with `@reelkit/react`.
+
+<FeatureGrid columns={3} items={[
+              {
+                icon: Hand,
+                label: 'Touch First',
+                desc: 'Swipe with momentum and snap',
+              },
+              {
+                icon: Keyboard,
+                label: 'Keyboard Nav',
+                desc: 'Arrow keys + Escape',
+              },
+              {
+                icon: MousePointer,
+                label: 'Wheel Scroll',
+                desc: 'Optional with debounce',
+              },
+              {
+                icon: InfinityIcon,
+                label: 'Virtualized',
+                desc: '10,000+ items, 3 in DOM',
+              },
+              {
+                icon: Radio,
+                label: 'Indicators',
+                desc: 'Instagram-style dot scrolling',
+              },
+              {
+                icon: Navigation,
+                label: 'Programmatic API',
+                desc: 'next(), prev(), goTo() via ref',
+              },
+              {
+                icon: Zap,
+                label: 'Loop Mode',
+                desc: 'Infinite circular navigation',
+              },
+              {
+                icon: Layers,
+                label: 'Directional',
+                desc: 'Vertical or horizontal',
+              },
+              {
+                icon: Code,
+                label: 'Zero Re-renders',
+                desc: 'Signal-based state updates',
+              },
+            ]} />
+
+## Reel Component [#reel-component]
+
+The `Reel` component is the main container that manages slider state, handles touch gestures, keyboard navigation, and animations.
+
+<CodeBlock code={reelComponent} language="tsx" />
+
+## Auto-sizing [#auto-sizing]
+
+The `size` prop is optional. When omitted, Reel auto-measures its container via `ResizeObserver` and adapts to CSS-driven layout. The container must be sized by its parent (e.g. flex, grid, or explicit CSS dimensions).
+
+<CodeBlock code={autoSizing} language="tsx" />
+
+## itemBuilder Pattern [#itembuilder-pattern]
+
+The `itemBuilder` prop is a function that receives the index and returns the content for each slide. This pattern enables virtualization — only visible items are rendered.
+
+<CodeBlock code={itembuilderPattern} language="tsx" />
+
+## Navigation [#navigation]
+
+Built-in navigation methods:
+
+<Bullets marker="dot">
+
+- **Touch/Swipe:** Drag to navigate with momentum and snap
+- **Keyboard:** Arrow keys and Escape
+- **Mouse Wheel:** Enable with `enableWheel` prop
+- **Programmatic:** Use `apiRef` for `next()`, `prev()`, `goTo()`
+
+</Bullets>
+
+<CodeBlock code={navigation} language="tsx" />
+
+## URL State [#url-state]
+
+`useOverlayUrlState` builds a URL-state controller for an overlay and returns it whole, then you hand it to a `*UrlOverlay` as its `controller` prop. The URL owns the open state, so a bound overlay opens itself and a link is the usual open action. The first write of an absent parameter pushes one history entry and every write after replaces it, so paging never buries the back button. Keep the controller to read `value`/`position` and to drive it programmatically: `set(position)` opens, `set(null)` closes, and `set` is the same low-level write the overlay uses internally on slide change.
+
+<CodeBlock code={urlState} language="tsx" />
+
+The options object takes `param`, `codec`, and `locator` (all three required), plus an optional `adapter`. `param` and `adapter` are read on the first render and fixed after that — remount to change them — while `codec` and `locator` are read live, so a lookup after the list grew or reordered sees the current list. The `codec` and `locator` are a matched pair sharing the same `Id`, so they travel together — for a plain `?photo=3` gallery spread `...urlIndexKey(() => images.length)`, which returns both halves at once. `urlIndexKey` maps the parameter to a slide index and bounds it against the live count the getter returns, so a stale or out-of-range `?photo=99` is rejected and heals itself out of the URL instead of opening a slide that was never named. Pass a getter, not a number, so the bound stays right as a paginated feed grows. It wraps `createIndexLocator` (the locator half) and pairs it with `indexCodec`. A paginated feed or an identity-keyed gallery supplies its own matched `codec` + `locator` instead. The full options table lives on the [React API reference](/docs/react/api#useoverlayurlstate).
+
+## ReelIndicator [#reelindicator]
+
+Optional component that displays Instagram-style progress indicators showing the current position in the slider. When placed inside a `Reel`, it auto-connects to the parent's `count` and `active` values via context — no manual state wiring needed.
+
+<CodeBlock code={reelindicator} language="tsx" />
+
+## Live Demo: Basic Slider [#live-demo-basic-slider]
+
+<FeatureGrid items={[
+              { icon: Hand, label: 'Touch/Swipe', desc: 'With momentum' },
+              {
+                icon: Keyboard,
+                label: 'Keyboard',
+                desc: 'Arrow keys + Escape',
+              },
+              { icon: Layers, label: 'Indicators', desc: 'Instagram-style' },
+              { icon: Navigation, label: 'Navigation', desc: 'Via apiRef' },
+            ]} />
+
+<Sandbox
+  code={basicFullCode}
+  title="BasicSlider.tsx"
+  height={500}
+  stackblitzDeps={['@reelkit/react']}
+  stackblitzExtraDeps={{ 'lucide-react': '^0.562.0' }}
+>
+  <BasicSliderDemo />
+</Sandbox>
+
+<Caption>Try it — click the buttons to navigate between slides.</Caption>
+
+## Key Points [#key-points]
+
+<KeyPoints>
+<KeyPoint title="size prop">
+  Optional \[width, height\] tuple, or omit for auto-sizing via CSS
+</KeyPoint>
+<KeyPoint title="itemBuilder">
+  Receives index and returns the slide content
+</KeyPoint>
+<KeyPoint title="apiRef">
+  Access controller methods for navigation
+</KeyPoint>
+<KeyPoint title="afterChange">
+  Track current index for UI updates
+</KeyPoint>
+</KeyPoints>
+
+## Live Demo: Infinite List [#live-demo-infinite-list]
+
+reelkit renders only **3 slides in the DOM** at any time (current, previous, next). This allows smooth scrolling for lists with 10,000+ items.
+
+<FeatureGrid items={[
+              {
+                icon: Zap,
+                label: '3 Items in DOM',
+                desc: 'Only visible slides rendered',
+              },
+              {
+                icon: Zap,
+                label: '10,000+ Items',
+                desc: 'No jank at any scale',
+              },
+              {
+                icon: Zap,
+                label: 'Constant Memory',
+                desc: 'Same 3 DOM nodes regardless of count',
+              },
+              {
+                icon: Zap,
+                label: 'goTo(n)',
+                desc: 'Jump to any index instantly',
+              },
+            ]} />
+
+<Sandbox
+  code={infiniteFullCode}
+  title="InfiniteList.tsx"
+  height={500}
+  stackblitzDeps={['@reelkit/react']}
+  stackblitzExtraDeps={{ 'lucide-react': '^0.562.0' }}
+>
+  <InfiniteListDemo />
+</Sandbox>
+
+<Caption>10,000 items — only 3 in the DOM. Use buttons or type a number to jump.</Caption>
+
+## Live Demo: Growable List [#live-demo-growable-list]
+
+Simulates an infinite feed where items load on demand — just like TikTok or Instagram. Start with 20 items, scroll near the end, and watch new batches arrive automatically.
+
+<FeatureGrid items={[
+              {
+                icon: Zap,
+                label: 'Dynamic Count',
+                desc: 'Items load as you scroll',
+              },
+              {
+                icon: Zap,
+                label: 'Batch Loading',
+                desc: '20 items per batch',
+              },
+              {
+                icon: Layers,
+                label: 'Virtualized',
+                desc: 'Still only 3 in DOM',
+              },
+              {
+                icon: Radio,
+                label: 'Auto Indicator',
+                desc: 'Dots grow with content',
+              },
+            ]} />
+
+<Sandbox
+  code={growableFullCode}
+  title="GrowableList.tsx"
+  height={500}
+  stackblitzDeps={['@reelkit/react']}
+  stackblitzExtraDeps={{ 'lucide-react': '^0.562.0' }}
+>
+  <GrowableListDemo />
+</Sandbox>
+
+<Caption>Scroll to the end — new items load automatically. The counter and indicator grow as batches arrive.</Caption>
+
+## Performance Tips [#performance-tips]
+
+<KeyPoints>
+<KeyPoint title="Memoize data arrays">
+  Wrap your items array with `useMemo`. A new array reference on every render triggers a `count` update and re-computation of visible ranges.
+</KeyPoint>
+<KeyPoint title="Keep itemBuilder lightweight">
+  It runs on every visible range change (typically 3 slides). Avoid heavy computation or side effects inside it.
+</KeyPoint>
+<KeyPoint title="Load data near the edge">
+  Use `afterChange` to detect when the user approaches the end and fetch the next batch before they run out of slides (see Growable List demo above).
+</KeyPoint>
+<KeyPoint title="Disable wheel in scrollable pages">
+  Set `enableWheel={false}` when the slider is embedded in a scrollable layout to avoid capturing the page scroll.
+</KeyPoint>
+</KeyPoints>
+
+<NextSteps
+        items={[
+          {
+            label: 'API Reference',
+            path: '/docs/react/api',
+            description: 'all available props',
+          },
+          {
+            label: 'Reel Player',
+            path: '/docs/reel-player',
+            description: 'TikTok/Reels-style video player',
+          },
+          {
+            label: 'Lightbox',
+            path: '/docs/lightbox',
+            description: 'image & video gallery',
+          },
+          {
+            label: 'Stories Player',
+            path: '/docs/stories-player',
+            description: 'Instagram-style stories viewer',
+          },
+        ]}
+      />

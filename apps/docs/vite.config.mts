@@ -435,6 +435,10 @@ export default defineConfig(() => ({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./src/test-setup.ts'],
+    // Vitest replaces every stylesheet import with an empty module unless
+    // told otherwise, `?raw` included — and the CSS code samples on the docs
+    // pages are exactly such imports.
+    css: { include: [/content\/snippets\//] },
     include: ['{src,tests}/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     passWithNoTests: true,
     reporters: ['default'],

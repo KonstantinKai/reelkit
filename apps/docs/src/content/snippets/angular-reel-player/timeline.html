@@ -1,0 +1,7 @@
+<rk-reel-player-overlay
+  [isOpen]="isOpen()"
+  [content]="items"
+  timeline="auto"
+  [timelineMinDurationSeconds]="30"
+  (closed)="isOpen.set(false)"
+/>

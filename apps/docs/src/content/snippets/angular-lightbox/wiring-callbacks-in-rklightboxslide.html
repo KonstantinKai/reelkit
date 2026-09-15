@@ -1,0 +1,24 @@
+<rk-lightbox-overlay [isOpen]="isOpen" [items]="items" (closed)="isOpen = false">
+  <ng-template rkLightboxSlide
+               let-item
+               let-size="size"
+               let-isActive="isActive"
+               let-onReady="onReady"
+               let-onWaiting="onWaiting"
+               let-onError="onError">
+    @if (item.type === 'video') {
+      <rk-lightbox-video-slide
+        [item]="item"
+        [size]="size"
+        [isActive]="isActive"
+      />
+    } @else {
+      <img [src]="item.src"
+           [style.width.px]="size[0]"
+           [style.height.px]="size[1]"
+           style="object-fit:contain"
+           (load)="onReady()"
+           (error)="onError()" />
+    }
+  </ng-template>
+</rk-lightbox-overlay>

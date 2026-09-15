@@ -307,28 +307,29 @@ const overlayUrlStateOptions = [
     prop: 'param',
     type: 'string',
     default: 'required',
-    description: '承载当前幻灯片的查询参数，例如 "photo"。',
+    description:
+      '承载当前幻灯片的查询参数，例如 "photo"。在首次渲染时读取，并在组件的整个生命周期内保持不变 —— 要更改请重新挂载（给它一个 key）。',
   },
   {
     prop: 'adapter',
     type: 'UrlAdapter',
     default: 'History API',
     description:
-      "Navigation system to read and write through. Pass a router-backed adapter in a routed app so the router's own location does not go stale.",
+      '用于读写的导航系统。在带路由的应用里传入基于路由器的适配器，避免路由器自己的 location 过期。在首次渲染时读取，并在组件的整个生命周期内保持不变 —— 要更改请重新挂载。',
   },
   {
     prop: 'codec',
     type: '{ decode(raw) => Id | null; encode(id) => string }',
     default: 'required',
     description:
-      '传输格式：参数文本 ↔ 稳定身份，与集合无关。它与 locator 组成共用同一个 Id 的配套组合 —— 默认的 ?photo=3 索引画廊展开 ...urlIndexKey(() => images.length) 即可；也可以提供你自己的实现（base64、slug），让画廊重新排序后书签依然有效。',
+      '传输格式：参数文本 ↔ 稳定身份，与集合无关。它与 locator 组成共用同一个 Id 的配套组合 —— 默认的 ?photo=3 索引画廊展开 ...urlIndexKey(() => images.length) 即可；也可以提供你自己的实现（base64、slug），让画廊重新排序后书签依然有效。实时读取：下一次解码或编码由最近一次渲染的 codec 处理。',
   },
   {
     prop: 'locator',
     type: '{ locate(id) => number | null; locateAsync?(id) => Promise<number | null>; identify(index) => id }',
     default: 'required',
     description:
-      '把身份映射成位置，并自己判断有效性：locate（同步）、locateAsync（分页画廊的异步兜底）、identify（写回）。普通的索引画廊展开 ...urlIndexKey(() => images.length) 即可 —— 它同时提供这个定位器和配套的编解码器，并以实时数量为上界约束 ?photo=3，于是过期的 ?photo=99 会自动从 URL 中消失，而不是打开一张从未指定的幻灯片。分页信息流或按身份寻址的画廊则自行提供配套的编解码器 + 定位器。',
+      '把身份映射成位置，并自己判断有效性：locate（同步）、locateAsync（分页画廊的异步兜底）、identify（写回）。普通的索引画廊展开 ...urlIndexKey(() => images.length) 即可 —— 它同时提供这个定位器和配套的编解码器，并以实时数量为上界约束 ?photo=3，于是过期的 ?photo=99 会自动从 URL 中消失，而不是打开一张从未指定的幻灯片。分页信息流或按身份寻址的画廊则自行提供配套的编解码器 + 定位器。实时读取：下一次查找由最近一次渲染的 locator 应答，在两次渲染之间添加或移除 locateAsync 会在下一次未命中时生效。',
   },
 ];
 
@@ -798,7 +799,9 @@ const viewed = createStoriesViewedState(seen, () => groups);
           <code>useOverlayUrlState</code>{' '}
           选项传入，让路由器始终是导航的唯一真相来源 —— 绕过路由器直接写{' '}
           <code>history.pushState</code> 会让它的 location
-          过期，下一次导航就会把参数丢掉。
+          过期，下一次导航就会把参数丢掉。写入只触及查询部分，pathname 和 hash
+          原样保留。每次变化都会报告路由器是在同一页面内压栈、替换，还是在历史中前进后退，因此从{' '}
+          <code>&lt;Link&gt;</code> 打开的画廊按一次返回就能关闭。
         </p>
         <p className="text-slate-600 dark:text-slate-400 mb-2">
           它从独立的子路径导出，因此没有路由器的应用永远不会把{' '}

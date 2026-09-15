@@ -1,0 +1,94 @@
+---
+title: 疑难排查
+description: 常见问题与修复：iOS Safari、视频播放、键盘导航与通用集成陷阱。
+---
+
+import viewportDoesntFillScreen from '../../snippets/troubleshooting/viewport-doesnt-fill-screen.css?raw';
+import horizontalScrollContentOverflow from '../../snippets/troubleshooting/horizontal-scroll-content-overflow.css?raw';
+import pullToRefreshRubber from '../../snippets/troubleshooting/pull-to-refresh-rubber.css?raw';
+import pullToRefreshRubber2 from '../../snippets/troubleshooting/pull-to-refresh-rubber-2.tsx?raw';
+import pinchToZoomInterferes from '../../snippets/troubleshooting/pinch-to-zoom-interferes.html?raw';
+import layoutBrokenAfterKeyboard from '../../snippets/troubleshooting/layout-broken-after-keyboard.tsx?raw';
+import slidesRenderAt0 from '../../snippets/troubleshooting/slides-render-at-0.css?raw';
+import videoThumbnailFrameCapture from '../../snippets/troubleshooting/video-thumbnail-frame-capture.txt?raw';
+import arrowKeysDontNavigate from '../../snippets/troubleshooting/arrow-keys-dont-navigate.tsx?raw';
+
+iOS Safari 的怪癖、视频播放、全屏与键盘导航的修复办法。
+
+## iOS Safari [#ios-safari]
+
+### 视口没有铺满屏幕 / 底部出现黑边 [#viewport-doesn-t-fill-screen-bottom-black-space]
+
+Safari 可收起的地址栏会让 `100vh` 高于实际可见区域。改用 `100dvh`：
+
+<CodeBlock code={viewportDoesntFillScreen} language="css" />
+
+### 横向滚动 / 内容溢出 [#horizontal-scroll-content-overflow]
+
+在 iOS 上， `100vw` 把滚动条宽度也算了进去，内容会被推出屏幕边缘。改用 `100%` 并锁住横向溢出：
+
+<CodeBlock code={horizontalScrollContentOverflow} language="css" />
+
+### 下拉刷新 / 橡皮筋回弹 [#pull-to-refresh-rubber-band-bounce]
+
+Safari 的下拉刷新和弹性回弹会和竖向滑动手势打架。**不要**把 `overscroll-behavior: none` 加在 `html, body` 上，那会把正常的页面滚动也一起废掉。ReelPlayerOverlay、 LightboxOverlay 和 StoriesPlayerOverlay 会在各自的容器上处理好这件事。自定义布局请把它限定在自己的容器里：
+
+<CodeBlock code={pullToRefreshRubber} language="css" />
+
+**SwipeToClose 向下滑动的边界情况。** 任何 `direction="down"` 的 `SwipeToClose`（Lightbox、Stories Player、自定义浮层）在 iOS Safari 上都会被抢先处理 —— 浏览器在包装层看到触摸事件之前，就已经从文档层级触发了下拉刷新。 浮层虽然锁住了 body 滚动，但根节点的竖向拖拽仍然归浏览器管。 只在浮层打开期间把 `overscroll-behavior-y: contain` 限定在 `<html>` 上，关闭时再还原：
+
+<CodeBlock code={pullToRefreshRubber2} language="tsx" />
+
+### 双指缩放干扰手势 [#pinch-to-zoom-interferes-with-gestures]
+
+关掉缩放，避免滑动过程中触发捏合和双击：
+
+<CodeBlock code={pinchToZoomInterferes} language="html" />
+
+<Caption>`viewport-fit=cover` 会把布局延伸到灵动岛 / 刘海的安全区域里。</Caption>
+
+### 键盘收起后布局错乱 [#layout-broken-after-keyboard-dismisses]
+
+键盘关闭后，Safari 有时会让视口保持被压缩的状态。在失焦时强制重置：
+
+<CodeBlock code={layoutBrokenAfterKeyboard} language="tsx" />
+
+## 通用 [#general]
+
+### 幻灯片渲染出来是 0×0 [#slides-render-at-0-0-size]
+
+不传 `size` 属性时，滑动器会通过 `ResizeObserver` 读取容器尺寸。没有 CSS 高度的容器量出来就是 0×0，于是什么都渲染不出来。要么传 `size`，要么给容器一个尺寸：
+
+<CodeBlock code={slidesRenderAt0} language="css" />
+
+## 视频 [#video]
+
+### 视频不自动播放 [#video-doesn-t-autoplay]
+
+浏览器会拦截非静音的自动播放。ReelKit 给每个 video 元素都设了 `muted` 和 `playsInline`。视频以静音开始，用户点一下声音开关就能取消静音。 请检查自定义幻灯片里有没有覆盖掉这两个属性。
+
+### 视频缩略图 / 抽帧是空白 [#video-thumbnail-frame-capture-is-blank]
+
+抽帧是把视频画到 `<canvas>` 上。跨域视频会污染画布，绘制会静默失败。你的视频 CDN 必须返回 CORS 响应头：
+
+<CodeBlock code={videoThumbnailFrameCapture} language="text" />
+
+<Caption>ReelKit 默认会设置 `crossOrigin="anonymous"`。如果你用的是自定义 video 元素，请自己加上。</Caption>
+
+## 全屏 [#fullscreen]
+
+### Safari 上全屏按钮没反应 [#fullscreen-button-does-nothing-on-safari]
+
+ReelKit 在 Safari 上禁用了 Fullscreen API。iOS Safari 只允许 `<video>` 元素进入全屏；桌面版 Safari 在全屏状态下会弄坏 `position: fixed` 的浮层：元素会丢失层叠上下文，或者干脆消失。在 Safari 上， `requestFullscreen()` 会当作空操作直接完成。
+
+## 键盘导航 [#keyboard-navigation]
+
+### 传了 onNavKeyPress 之后方向键就不翻页了 [#arrow-keys-don-t-navigate-after-providing-onnavkeypress]
+
+`onNavKeyPress` 是**替换**掉默认的键盘导航。ReelKit 不再调用 `next()`/`prev()`，而是把控制权交给你。需要你自己调用它们：
+
+<CodeBlock code={arrowKeysDontNavigate} language="tsx" />
+
+### 按 Escape 关不掉浮层 [#escape-key-doesn-t-close-the-overlay]
+
+键盘控制器只负责方向键。ReelPlayerOverlay 和 LightboxOverlay 各自单独监听 Escape。如果你自己写浮层，请在 `onClose` 里加上自己的 Escape 处理。

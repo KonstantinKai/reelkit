@@ -399,9 +399,11 @@ for (const f of filesToUpdate) {
   }
 }
 
-// Docs Installation.tsx, once per locale. The translated pages are full copies
-// carrying their own size table, so they go stale independently.
+// The docs size tables. Content pages read the shared data module; the tsx
+// installation pages still mounted for side-by-side review carry their own
+// copy of the numbers until they are removed.
 for (const page of [
+  'apps/docs/src/data/bundleSizes.ts',
   'apps/docs/src/pages/docs/Installation.tsx',
   'apps/docs/src/pages/uk/docs/Installation.tsx',
   'apps/docs/src/pages/zh/docs/Installation.tsx',

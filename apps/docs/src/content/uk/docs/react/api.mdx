@@ -1,0 +1,164 @@
+---
+title: Довідник API для React
+description: 'Повний API @reelkit/react: властивості Reel, методи ReelApi, ReelIndicator, компоненти-спостерігачі та утиліти.'
+---
+
+import reelapiMethods from '../../../snippets/react-api/reelapi-methods.ts?raw';
+import observe from '../../../snippets/react-api/observe.tsx?raw';
+import animatedobserve from '../../../snippets/react-api/animatedobserve.tsx?raw';
+import usebodylock from '../../../snippets/react-api/usebodylock.ts?raw';
+import useviewedstate from '../../../snippets/react-api/useviewedstate.tsx?raw';
+import usereactrouterurladapter from '../../../snippets/react-api/usereactrouterurladapter.tsx?raw';
+import createdefaultkeyextractorforloop from '../../../snippets/react-api/createdefaultkeyextractorforloop.tsx?raw';
+
+Повний довідник `@reelkit/react` : компоненти, пропси та методи.
+
+## Пропси Reel [#reel-props]
+
+<Caption>`ReelProps`</Caption>
+
+| Prop | Тип | Типове значення | Опис |
+| --- | --- | --- | --- |
+| `count` | `number` | required | Загальна кількість елементів |
+| `size` | `[number, number]` | - | Ширина й висота у вигляді \[width, height\]. Якщо не задано, вимірюється автоматично через ResizeObserver |
+| `itemBuilder` | `(index, indexInRange, size) => ReactElement` | required | Функція, що рендерить кожен слайд |
+| `direction` | `'vertical' \| 'horizontal'` | 'vertical' | Напрямок прокручування |
+| `initialIndex` | `number` | 0 | Початковий індекс |
+| `loop` | `boolean` | false | Вмикає нескінченний цикл |
+| `enableWheel` | `boolean` | false | Вмикає навігацію колесом миші |
+| `wheelDebounceMs` | `number` | 200 | Дебаунс події колеса в мілісекундах |
+| `enableNavKeys` | `boolean` | true | Вмикає навігацію з клавіатури |
+| `onNavKeyPress` | `(increment: -1 \| 1) => void` | - | Власний обробник навігації стрілками. Замінює стандартну поведінку prev/next. |
+| `transition` | `TransitionTransformFn` | slideTransition | Функція ефекту переходу. Вбудовані: slideTransition, fadeTransition, flipTransition, cubeTransition, zoomTransition |
+| `transitionDuration` | `number` | 300 | Тривалість анімації в мілісекундах |
+| `enableGestures` | `boolean` | true | Вмикає навігацію перетягуванням дотиком або мишею |
+| `swipeDistanceFactor` | `number` | 0.12 | Поріг свайпу (0–1) |
+| `rangeExtractor` | `(index: number, count: number) => number[]` | defaultRangeExtractor | Власна функція, що визначає, які індекси рендеряться |
+| `keyExtractor` | `(index: number) => string` | - | Власна функція ключів для звіряння в React (корисно з циклом) |
+| `apiRef` | `RefObject<ReelApi>` | - | Ref для доступу до методів API |
+| `className` | `string` | - | Клас CSS для елемента-контейнера |
+| `style` | `CSSProperties` | - | Вбудовані стилі для елемента-контейнера |
+| `ariaLabel` | `string` | - | Доступна назва області каруселі, яку читають екранні читачі |
+
+## Колбеки [#callbacks]
+
+| Prop | Тип | Опис |
+| --- | --- | --- |
+| `afterChange` | `(index, indexInRange) => void` | Викликається після завершення зміни слайда |
+| `beforeChange` | `(index, nextIndex, indexInRange) => void` | Викликається перед початком зміни слайда |
+| `onSlideDragStart` | `(index) => void` | Викликається на початку перетягування |
+| `onSlideDragEnd` | `(index) => void` | Викликається після завершення перетягування |
+| `onSlideDragCanceled` | `(index) => void` | Викликається, коли перетягування скасовано |
+
+## Методи ReelApi [#reelapi-methods]
+
+Доступ до методів слайдера через `apiRef`:
+
+<CodeBlock code={reelapiMethods} language="typescript" />
+
+| Метод | Тип | Опис |
+| --- | --- | --- |
+| `next()` | `() => void` | Перейти до наступного слайда |
+| `prev()` | `() => void` | Перейти до попереднього слайда |
+| `goTo(index, animate?)` | `(number, boolean?) => Promise` | Перейти до конкретного слайда |
+| `adjust()` | `() => void` | Перерахувати позиції слайдів |
+| `observe()` | `() => void` | Починає стежити за клавіатурою |
+| `unobserve()` | `() => void` | Припиняє стежити за клавіатурою |
+
+## Пропси ReelIndicator [#reelindicator-props]
+
+<Caption>`ReelIndicatorProps`</Caption>
+
+| Prop | Тип | Типове значення | Опис |
+| --- | --- | --- | --- |
+| `count` | `number` | auto | Загальна кількість елементів. Береться від батьківського Reel, якщо компонент вкладений у нього; передавайте явно за окремого використання |
+| `active` | `number` | auto | Поточний активний індекс. Береться від батьківського Reel, якщо компонент вкладений у нього; передавайте явно за окремого використання |
+| `direction` | `'vertical' \| 'horizontal'` | 'vertical' | Орієнтація індикатора |
+| `radius` | `number` | 3 | Розмір точки в пікселях |
+| `visible` | `number` | 5 | Максимум видимих точок звичайного розміру |
+| `gap` | `number` | 4 | Відстань між точками в пікселях |
+| `activeColor` | `string` | '#fff' | Колір активної точки |
+| `inactiveColor` | `string` | 'rgba(255,255,255,0.5)' | Колір неактивної точки |
+| `edgeScale` | `number` | 0.5 | Масштаб крайніх точок за межами видимого |
+| `onDotClick` | `(index: number) => void` | - | Колбек на клік по точці |
+| `className` | `string` | - | Власний клас CSS |
+| `style` | `CSSProperties` | - | Власні вбудовані стилі |
+
+## Компоненти-спостерігачі [#observer-components]
+
+### Observe [#observe]
+
+Містить між сигналами ядра й рендерингом React без зайвих рендерів батька. Коли підписані сигнали змінюються, виконується заново лише функція children.
+
+<CodeBlock code={observe} language="tsx" />
+
+| Prop | Тип | Типове значення | Опис |
+| --- | --- | --- | --- |
+| `signals` | `Subscribable[]` | `required` | Сигнали для підписки. Сповіщення від будь-якого з них перезапускає функцію children — і лише її, ніколи батьківський компонент. |
+| `children` | `() => ReactElement \| null` | `required` | Функція рендерингу, що виконується заново на кожну зміну. Читайте значення сигналів усередині неї; прочитане ззовні захоплюється один раз і застаріває. |
+
+### AnimatedObserve [#animatedobserve]
+
+Підписується на сигнали анімованих значень і плавно інтерполює через `requestAnimationFrame`.
+
+<CodeBlock code={animatedobserve} language="tsx" />
+
+| Prop | Тип | Типове значення | Опис |
+| --- | --- | --- | --- |
+| `signal` | `Signal<AnimatedValue>` | `required` | Сигнал, що видає \{ value, duration, done? \}. Тривалість більша за 0 інтерполює від поточного значення до нового; 0 переходить одразу. |
+| `children` | `(value: number) => ReactElement` | `required` | Функція рендерингу отримує інтерпольоване значення для поточного кадру, застосоване синхронно, щоб DOM встигав за анімацією. |
+
+## Hooks [#hooks]
+
+### useBodyLock [#usebodylock]
+
+Блокує прокручування body й компенсує зсув на ширину смуги прокручування.
+
+<CodeBlock code={usebodylock} language="typescript" />
+
+### useOverlayUrlState [#useoverlayurlstate]
+
+<Caption>`OverlayUrlStateOptions`</Caption>
+
+Будує контролер стану в URL для оверлея, який ви передаєте в `*UrlOverlay` як його `controller` prop.
+
+See [Стан в URL у посібнику для React](/docs/react/guide#url-state) — там покроковий розбір і приклади.
+
+| Option | Тип | Типове значення | Опис |
+| --- | --- | --- | --- |
+| `param` | `string` | required | Параметр запиту, що несе активний слайд, наприклад "photo". Читається під час першого рендеру й не змінюється весь час життя компонента — щоб змінити, перемонтуйте його (задайте key). |
+| `adapter` | `UrlAdapter` | History API | Система навігації, через яку читати й писати. У застосунку з роутером передайте адаптер на його базі, щоб власне місцеположення роутера не застаріло. Читається під час першого рендеру й не змінюється весь час життя компонента — щоб змінити, перемонтуйте його. |
+| `codec` | `{ decode(raw) => Id \| null; encode(id) => string }` | required | Формат передавання: текст параметра ↔ стабільна ідентичність, незалежно від колекції. Іде разом із локатором як узгоджена пара з однаковим Id — розгорніть ...urlIndexKey(() => images.length) для типової галереї з ?photo=3 або передайте власний (base64, slug), щоб закладка пережила зміну порядку галереї. Читається наживо: наступне декодування чи кодування виконує кодек з останнього рендеру. |
+| `locator` | `{ locate(id) => number \| null; locateAsync?(id) => Promise<number \| null>; identify(index) => id }` | required | Зіставляє ідентичність із позицією і сам відповідає за свою чинність: locate (синхронно), locateAsync (запасний варіант для посторінкової галереї), identify (для запису). Для звичайної галереї за індексом розгорніть ...urlIndexKey(() => images.length) — він дає цей локатор разом із відповідним кодеком і обмежує ?photo=3 живою кількістю, тож застарілий ?photo=99 сам зникає з URL замість того, щоб відкрити слайд, якого ніхто не називав. Посторінкова стрічка або галерея з адресацією за ідентичністю передає власну узгоджену пару кодек + локатор. Читається наживо: на наступний пошук відповідає локатор з останнього рендеру, а додавання чи прибирання locateAsync між рендерами діє з наступного промаху. |
+
+### useViewedState [#useviewedstate]
+
+<Caption>`ViewedStateOptions`</Caption>
+
+Запам’ятовує, як далеко глядач дійшов у галереї, і стежить за сховищем, доки живе компонент. Передайте той самий ключ, що й адресний рядок, — і збережений запис читатиметься точно як параметр спільного посилання. Читайте `entries` через `Observe`, щоб кільце перемальовувалося, коли позицію записано тут або в іншій вкладці.
+
+<CodeBlock code={useviewedstate} language="tsx" />
+
+### useReactRouterUrlAdapter [#usereactrouterurladapter]
+
+A `UrlAdapter` на базі React Router. Передайте його як опцію `adapter` у `useOverlayUrlState` у застосунку з роутером, щоб роутер лишався єдиним джерелом правди про навігацію: запис `history.pushState` повз роутер лишає його місцеположення застарілим, і наступна навігація втрачає параметр. Запис торкається лише запиту, тож шлях і хеш лишаються недоторканими. Кожна зміна повідомляє, чи роутер додав запис на тій самій сторінці, замінив його чи пройшов історією, тож галерея, відкрита з `<Link>`, закривається одним кроком назад.
+
+Постачається з окремого підшляху, тож застосунок без роутера ніколи не тягне `react-router-dom` у свій бандл. `react-router-dom` — необов’язкова peer-залежність.
+
+<CodeBlock code={usereactrouterurladapter} language="tsx" />
+
+## Accessibility [#accessibility]
+
+`<Reel>` рендериться як `role="region"` з `aria-roledescription="carousel"`. Задайте пропс `ariaLabel` , щоб дати області назву для екранного читача. Ввічлива жива область оголошує «Слайд N з M» на кожну зміну слайда, не перерендерюючи карусель. Неактивні слайди отримують атрибут `inert` , тож фокус і навігація допоміжних технологій їх пропускають.
+
+`<ReelIndicator>` рендериться як `role="tablist"` з рухомим tabindex на точках; стрілки переміщують фокус, а Enter або Space активує слайд.
+
+Будуєте власне модальне вікно навколо `<Reel>`? `captureFocusForReturn`, `createFocusTrap`, та `getFocusableElements` — вони реекспортовані з `@reelkit/react` для повернення й утримання фокуса.
+
+## Utilities [#utilities]
+
+### createDefaultKeyExtractorForLoop [#createdefaultkeyextractorforloop]
+
+Створює екстрактор ключів, який дає раду однаковим індексам, коли `loop` увімкнено.
+
+<CodeBlock code={createdefaultkeyextractorforloop} language="tsx" />

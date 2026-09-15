@@ -823,7 +823,7 @@ function jump(i: number) { reelRef.value?.goTo(i, true); }
       <section className="mb-12">
         <Heading
           level={2}
-          id="rk-reel-key-amp-usereelcontext"
+          id="rk-reel-key-usereelcontext"
           className="text-2xl font-bold mb-4"
         >
           RK_REEL_KEY &amp; useReelContext
@@ -1156,11 +1156,20 @@ sound.toggle(); // Toggle muted state`}
           роутером, щоб роутер лишався єдиним джерелом правди про навігацію:
           запис <code>history.pushState</code> повз роутер лишає його
           місцеположення застарілим, і наступна навігація втрачає параметр.
+          Запис торкається лише запиту, тож шлях, хеш і повторювані ключі на
+          кшталт <code>?tag=a&amp;tag=b</code> лишаються недоторканими. Кожна
+          зміна повідомляє, чи роутер додав запис на тій самій сторінці, замінив
+          його чи пройшов історією, тож галерея, відкрита з{' '}
+          <code>&lt;router-link&gt;</code>, закривається одним кроком назад.
         </p>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           Постачається з окремого підшляху, тож застосунок без роутера ніколи не
           тягне <code>vue-router</code> у свій бандл. <code>vue-router</code> —
-          необов’язкова peer-залежність.
+          необов’язкова peer-залежність версії 4.1 або новішої: адаптер передає
+          свою позначку власності через навігаційну опцію роутера{' '}
+          <code>state</code>, яку старіші випуски ігнорують. Зі старішим
+          роутером нічого не ламається — закриття просто прибирає параметр на
+          місці замість кроку назад.
         </p>
         <CodeBlock
           code={`import { useVueRouterUrlAdapter } from '@reelkit/vue/vue-router-url-adapter';

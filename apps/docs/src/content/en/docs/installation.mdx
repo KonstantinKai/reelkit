@@ -1,0 +1,301 @@
+---
+title: Installation
+description: Install reelkit packages and configure your project. Independent versioning per package; install only what you need.
+---
+
+import npmReact from '../../snippets/installation/npm-react.sh?raw';
+import yarnReact from '../../snippets/installation/yarn-react.sh?raw';
+import pnpmReact from '../../snippets/installation/pnpm-react.sh?raw';
+import npmAngular from '../../snippets/installation/npm-angular.sh?raw';
+import yarnAngular from '../../snippets/installation/yarn-angular.sh?raw';
+import pnpmAngular from '../../snippets/installation/pnpm-angular.sh?raw';
+import npmVue from '../../snippets/installation/npm-vue.sh?raw';
+import yarnVue from '../../snippets/installation/yarn-vue.sh?raw';
+import pnpmVue from '../../snippets/installation/pnpm-vue.sh?raw';
+
+Install reelkit packages and configure your project.
+
+## Package Options [#package-options]
+
+Install only what you use:
+
+<Table>
+  <thead>
+    <tr>
+      <th>Package</th>
+      <th>Description</th>
+      <th>Use Case</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>`@reelkit/core`</td>
+      <td>Framework-agnostic core</td>
+      <td>Custom integrations</td>
+    </tr>
+    <tr data-rk-fw="react">
+      <td>`@reelkit/react`</td>
+      <td>React components</td>
+      <td>React 18+ applications</td>
+    </tr>
+    <tr data-rk-fw="react">
+      <td>`@reelkit/react-reel-player`</td>
+      <td>Full-screen vertical reel player</td>
+      <td>Instagram/TikTok style player</td>
+    </tr>
+    <tr data-rk-fw="react">
+      <td>`@reelkit/react-lightbox`</td>
+      <td>Image gallery lightbox</td>
+      <td>Full-screen image preview</td>
+    </tr>
+    <tr data-rk-fw="react">
+      <td>`@reelkit/react-stories-player`</td>
+      <td>Instagram-style stories player</td>
+      <td>Stories with auto-advance and gestures</td>
+    </tr>
+    <tr data-rk-fw="angular">
+      <td>`@reelkit/angular`</td>
+      <td>Angular standalone components</td>
+      <td>Angular 17+ applications</td>
+    </tr>
+    <tr data-rk-fw="angular">
+      <td>`@reelkit/angular-reel-player`</td>
+      <td>Full-screen vertical reel player</td>
+      <td>Instagram/TikTok style player</td>
+    </tr>
+    <tr data-rk-fw="angular">
+      <td>`@reelkit/angular-lightbox`</td>
+      <td>Image gallery lightbox</td>
+      <td>Full-screen image preview</td>
+    </tr>
+    <tr data-rk-fw="vue">
+      <td>`@reelkit/vue`</td>
+      <td>Vue 3 components and composables</td>
+      <td>Vue 3 applications</td>
+    </tr>
+    <tr data-rk-fw="vue">
+      <td>`@reelkit/vue-reel-player`</td>
+      <td>Full-screen vertical reel player</td>
+      <td>Instagram/TikTok style player</td>
+    </tr>
+    <tr data-rk-fw="vue">
+      <td>`@reelkit/vue-lightbox`</td>
+      <td>Image gallery lightbox</td>
+      <td>Full-screen image preview</td>
+    </tr>
+  </tbody>
+</Table>
+
+## Bundle Sizes [#bundle-sizes]
+
+All packages are optimized for minimal bundle impact:
+
+<BundleSizeTable headers={['Package', 'JS', 'JS (gzip)', 'CSS', 'CSS (gzip)']} />
+
+### Comparison with Other Libraries [#comparison-with-other-libraries]
+
+ReelKit renders **3 slides to DOM** at any time and handles 10,000+ items. Other carousel libraries render all slides, which stalls on large lists.
+
+<LibraryComparison
+  headers={['Library', 'JS (gzip)', 'Virtualization', 'Notes']}
+  plugin="Plugin"
+  notes={[
+    'Zero dependencies',
+    'Zero dependencies',
+    'Zero dependencies',
+    'Full bundle; tree-shakeable',
+    'Lightweight, plugin-based',
+    'Zero dependencies',
+  ]}
+/>
+
+<FrameworkVariant for="react">
+
+## npm [#npm]
+
+<CodeBlock code={npmReact} language="bash" />
+
+## yarn [#yarn]
+
+<CodeBlock code={yarnReact} language="bash" />
+
+## pnpm [#pnpm]
+
+<CodeBlock code={pnpmReact} language="bash" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+## npm [#npm]
+
+<CodeBlock code={npmAngular} language="bash" />
+
+## yarn [#yarn]
+
+<CodeBlock code={yarnAngular} language="bash" />
+
+## pnpm [#pnpm]
+
+<CodeBlock code={pnpmAngular} language="bash" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+## npm [#npm]
+
+<CodeBlock code={npmVue} language="bash" />
+
+## yarn [#yarn]
+
+<CodeBlock code={yarnVue} language="bash" />
+
+## pnpm [#pnpm]
+
+<CodeBlock code={pnpmVue} language="bash" />
+
+</FrameworkVariant>
+
+## Peer Dependencies [#peer-dependencies]
+
+Framework packages have peer dependencies that should already be in your project:
+
+<FrameworkVariant for="react">
+
+### @reelkit/react [#reelkit-react]
+
+- `react` >= 18.0.0
+- `react-dom` >= 18.0.0
+
+### @reelkit/react-reel-player [#reelkit-react-reel-player]
+
+- `@reelkit/react`
+- `react` >= 18.0.0
+- `react-dom` >= 18.0.0
+- `lucide-react` >= 0.400.0
+
+### @reelkit/react-lightbox [#reelkit-react-lightbox]
+
+- `@reelkit/react`
+- `react` >= 18.0.0
+- `react-dom` >= 18.0.0
+- `lucide-react` >= 0.400.0
+
+### @reelkit/react-stories-player [#reelkit-react-stories-player]
+
+- `@reelkit/react`
+- `react` >= 18.0.0
+- `react-dom` >= 18.0.0
+- `lucide-react` >= 0.400.0
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+### @reelkit/angular [#reelkit-angular]
+
+- `@angular/core` >= 17.0.0
+- `@angular/common` >= 17.0.0
+
+### @reelkit/angular-reel-player [#reelkit-angular-reel-player]
+
+- `@reelkit/angular`
+- `@angular/core` >= 19.0.0
+- `lucide-angular` >= 0.460.0
+
+### @reelkit/angular-lightbox [#reelkit-angular-lightbox]
+
+- `@reelkit/angular`
+- `@angular/core` >= 17.0.0
+- `lucide-angular` >= 0.400.0
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+### @reelkit/vue [#reelkit-vue]
+
+- `vue` >= 3.0.0
+
+</FrameworkVariant>
+
+<FrameworkVariant for="react">
+
+<Callout type="info">
+  `lucide-react` is only needed for the default control icons. If you provide your own controls via `renderControls`, you can skip installing it.
+</Callout>
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+<Callout type="info">
+  `lucide-angular` is only needed for the default control icons. If you provide your own controls via `rkPlayerControls`, you can skip installing it.
+</Callout>
+
+</FrameworkVariant>
+
+## TypeScript [#typescript]
+
+All packages ship with TypeScript type definitions. No additional @types packages needed.
+
+## Browser Support [#browser-support]
+
+reelkit supports all modern browsers:
+
+<Bullets marker="check">
+
+- Chrome/Edge 88+
+- Firefox 78+
+- Safari 14+
+- iOS Safari 14+
+- Android Chrome 88+
+
+</Bullets>
+
+<NextSteps
+        items={[
+          {
+            label: 'Core Guide',
+            path: '/docs/core/guide',
+            description: 'framework-agnostic engine',
+          },
+          {
+            label: 'Framework Guide',
+            path: {
+              react: '/docs/react/guide',
+              angular: '/docs/angular/guide',
+              vue: '/docs/vue/guide',
+            },
+            description: 'components, demos, and integration',
+          },
+          {
+            label: 'Reel Player',
+            path: {
+              react: '/docs/reel-player',
+              angular: '/docs/angular-reel-player',
+              vue: '/docs/vue-reel-player',
+            },
+            description: 'TikTok/Reels-style video player',
+          },
+          {
+            label: 'Lightbox',
+            path: {
+              react: '/docs/lightbox',
+              angular: '/docs/angular-lightbox',
+              vue: '/docs/vue-lightbox',
+            },
+            description: 'image & video gallery',
+          },
+          {
+            label: 'Stories Player',
+            path: {
+              react: '/docs/stories-player',
+              angular: '/docs/angular-stories-player',
+              vue: '/docs/vue-stories-player',
+            },
+            description: 'Instagram-style stories viewer',
+          },
+        ]}
+      />

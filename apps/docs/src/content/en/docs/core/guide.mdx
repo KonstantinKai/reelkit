@@ -1,0 +1,176 @@
+---
+title: Core Guide
+description: The @reelkit/core package provides framework-agnostic slider logic. Use it to build custom integrations or understand the underlying architecture.
+---
+
+import createslidercontroller from '../../../snippets/core-guide/createslidercontroller.ts?raw';
+import navigation from '../../../snippets/core-guide/navigation.ts?raw';
+import lifecycle from '../../../snippets/core-guide/lifecycle.ts?raw';
+import stateUpdates from '../../../snippets/core-guide/state-updates.ts?raw';
+import virtualization from '../../../snippets/core-guide/virtualization.ts?raw';
+import signals from '../../../snippets/core-guide/signals.ts?raw';
+import controllerState from '../../../snippets/core-guide/controller-state.ts?raw';
+import timelineController from '../../../snippets/core-guide/timeline-controller.ts?raw';
+import howItWorks from '../../../snippets/core-guide/how-it-works.ts?raw';
+import howItWorks2 from '../../../snippets/core-guide/how-it-works-2.ts?raw';
+
+The `@reelkit/core` package provides the framework-agnostic slider logic. Use it to build custom integrations or understand the underlying architecture.
+
+## Architecture Overview [#architecture-overview]
+
+The core uses a **controller pattern** with factory functions. No classes — all plain objects returned from closures. Zero dependencies. The core coordinates:
+
+<Bullets marker="dot">
+
+- **SliderController** — central state management and navigation
+- **GestureController** — touch/pointer drag handling
+- **KeyboardController** — arrow keys and Escape
+- **WheelController** — mouse wheel with debounce
+
+</Bullets>
+
+## createSliderController [#createslidercontroller]
+
+Creates a new slider controller instance that manages all slider state and behavior.
+
+<CodeBlock code={createslidercontroller} language="typescript" />
+
+## Controller Methods [#controller-methods]
+
+### Navigation [#navigation]
+
+<CodeBlock code={navigation} language="typescript" />
+
+### Lifecycle [#lifecycle]
+
+<CodeBlock code={lifecycle} language="typescript" />
+
+### State Updates [#state-updates]
+
+<CodeBlock code={stateUpdates} language="typescript" />
+
+## Virtualization [#virtualization]
+
+The core renders only **3 slides to DOM** at any time (current, previous, next). The range extractor determines which indices are included in the rendered window:
+
+<CodeBlock code={virtualization} language="typescript" />
+
+<Callout type="info">
+  The result is always clamped to a maximum of 3 indices. If your extractor returns more, the core keeps 3 centered around the current slide.
+</Callout>
+
+## Signals [#signals]
+
+The core uses a lightweight signal system for reactivity:
+
+<CodeBlock code={signals} language="typescript" />
+
+## Controller State [#controller-state]
+
+Access reactive state through `controller.state`:
+
+<CodeBlock code={controllerState} language="typescript" />
+
+## Timeline Controller [#timeline-controller]
+
+Build a custom scrub bar for any `<video>` element. The controller exposes reactive signals for duration, current time, buffered ranges, and scrubbing state, and wires pointer plus keyboard interactions onto any DOM element in one call.
+
+<CodeBlock code={timelineController} language="typescript" />
+
+## URL State [#url-state]
+
+Put an overlay’s open state in the address bar: the visible slide gets a link that can be shared, deep-linked, and closed with the back button. The core owns the model; the bindings wrap it in a hook (React/Vue `useOverlayUrlState`, Angular `createOverlayUrlState`) and a URL-driven overlay component.
+
+### How it works [#how-it-works]
+
+`createUrlStateController` mirrors one query parameter into a signal and writes changes back. Opening pushes **one** history entry; every navigation **replaces** it — a hundred swipes add none, so one back step always closes. A `UrlAdapter` is the pluggable read/write seam: the default drives `history.pushState`, and a routed app passes a router-backed adapter so the router’s own location never goes stale.
+
+<CodeBlock code={howItWorks} language="typescript" />
+
+### Codec and locator — two jobs [#codec-and-locator-two-jobs]
+
+A key is a matched `{ codec, locator }` pair. Spelling an identity into the URL and finding where it currently sits are separate concerns, so they are separate objects:
+
+- **codec — the wire.** `encode` spells an identity into the parameter text; `decode` parses it back, and rejects a malformed value so the parameter self-heals out of the URL.
+- **locator — the lookup.** `locate` finds where a decoded identity sits in the live collection (or `null` if it is gone); `identify` reads a position back to its identity for writes; optional `locateAsync` pages a windowed or infinite feed on a miss.
+
+Keeping them separate lets you pair any wire with any lookup — a stable id codec with a paging locator, for instance.
+
+### Index vs stable-id keys [#index-vs-stable-id-keys]
+
+Two built-in keys build that pair for you; they differ only in what the URL names:
+
+- `urlIndexKey(() => count)` addresses by **position** (`?photo=3`). Simplest, but a bookmark opens a different item once the list is reordered.
+- `urlStableIdKey({ items })` addresses by each item’s stable `id` (`?photo=post_42`), scanning the live list — the bookmark still names that item after a reorder, or drops cleanly when it is gone. `hashCodec: base64UrlCodec` base64url-obscures the id (reversible, not a cryptographic hash).
+
+**Paging a windowed feed?** Both built-in keys take an optional `locateAsync` — `urlIndexKey(() => count, locateAsync)` and `urlStableIdKey({ items, locateAsync })`. The synchronous lookup answers for what has loaded; a miss pages the rest in, so a shared link past the window still opens — no hand-rolled codec or locator.
+
+Two axes? `urlIndexTwoAxisKey` carries `?p=<outer>.<inner>` for a post plus an inner media index. Full options live on the [Core API reference](/docs/core/api#url-state).
+
+## Viewed State [#viewed-state]
+
+Remember how far a viewer got through a gallery, across reloads and across tabs — a ring that shows what has been seen, a gallery that reopens where it was left. It is the same model as URL state, pointed at storage instead of the address bar, so the two share a key.
+
+### How it works [#how-it-works]
+
+`createViewedStateController` stores an entry as the exact text a `?photo=` link would carry, and reads it back through the same `decode` then `locate` cycle. Nothing trusts a stored position. Spread one key into both surfaces and a bookmark and a stored entry are the same string.
+
+<CodeBlock code={howItWorks2} language="typescript" />
+
+### Durability follows the key [#durability-follows-the-key]
+
+The store adds no repair of its own, so which key you spread decides what survives: an id-addressed key keeps a place across the collection being reordered, a position-addressed one does not. A stored entry names the furthest point reached rather than a tally of views, so removing an item from the middle shortens the count — the same self-healing a shared link gets.
+
+Reading is synchronous only. An entry whose items have not loaded yet reads as absent and stays in storage untouched, so a windowed feed never eats its own history.
+
+### Storage and expiry [#storage-and-expiry]
+
+`localStorage` backs the store by default; `createSessionStorageAdapter()` forgets on tab close, and a `StorageAdapter` of your own puts it anywhere synchronous. Nothing is read until `attach()`, so a server render and the first client render agree.
+
+Entries are kept until forgotten explicitly. Pass `ttlMs` to expire them instead — per track, on a sliding clock, so somewhere still being watched never goes stale beside somewhere abandoned. It changes what is written, each entry becoming a `[wire, timestamp]` pair, but reading copes with either shape whatever the option says, so an entry stored before you turned it on counts as fresh rather than being deleted. `maxTracks` bounds count instead of age: past it, the least recently recorded track is dropped on the next write, and recording a track, even a position already behind, moves it to the back of the line. Full options live on the [Core API reference](/docs/core/api#viewed-state).
+
+<NextSteps
+        items={[
+          {
+            label: 'Core API Reference',
+            path: '/docs/core/api',
+            description: 'all available props',
+          },
+          {
+            label: 'Framework Guide',
+            path: {
+              react: '/docs/react/guide',
+              angular: '/docs/angular/guide',
+              vue: '/docs/vue/guide',
+            },
+            description: 'components, demos, and integration',
+          },
+          {
+            label: 'Reel Player',
+            path: {
+              react: '/docs/reel-player',
+              angular: '/docs/angular-reel-player',
+              vue: '/docs/vue-reel-player',
+            },
+            description: 'TikTok/Reels-style video player',
+          },
+          {
+            label: 'Lightbox',
+            path: {
+              react: '/docs/lightbox',
+              angular: '/docs/angular-lightbox',
+              vue: '/docs/vue-lightbox',
+            },
+            description: 'image & video gallery',
+          },
+          {
+            label: 'Stories Player',
+            path: {
+              react: '/docs/stories-player',
+              angular: '/docs/angular-stories-player',
+              vue: '/docs/vue-stories-player',
+            },
+            description: 'Instagram-style stories viewer',
+          },
+        ]}
+      />

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { glob } from 'node:fs/promises';
+import { kBundleSizes } from '../data/bundleSizes';
 
 const repoRoot = join(import.meta.dirname, '../../../..');
 const pagesDir = join(import.meta.dirname);
@@ -47,15 +48,11 @@ describe('quoted bundle sizes', () => {
     );
   });
 
+  // The installation page in every locale renders its size table from this
+  // one data module, so one check covers them all.
   it('lists the measured core size in the installation table', () => {
-    const source = readFileSync(
-      join(pagesDir, 'docs/Installation.tsx'),
-      'utf8',
-    );
-    const row = source.match(
-      /name: '@reelkit\/core',[\s\S]*?gzip: '([\d.]+) kB'/,
-    );
-    expect(row, 'installation table has no core row').toBeTruthy();
-    expect(Number(row![1])).toBe(measuredCoreGzip());
+    const core = kBundleSizes.find((size) => size.name === '@reelkit/core');
+    expect(core, 'installation table has no core row').toBeTruthy();
+    expect(Number(core!.gzip.replace(' kB', ''))).toBe(measuredCoreGzip());
   });
 });

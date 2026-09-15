@@ -1660,7 +1660,7 @@ const reel = useOverlayUrlState({
 
         <Heading
           level={3}
-          id="timelineslotscope-lt-t-gt"
+          id="timelineslotscope-t"
           className="text-xl font-semibold mt-6 mb-3"
         >
           TimelineSlotScope&lt;T&gt;

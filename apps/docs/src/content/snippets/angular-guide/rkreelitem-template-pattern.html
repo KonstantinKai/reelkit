@@ -1,0 +1,10 @@
+<ng-template rkReelItem let-i let-indexInRange="indexInRange" let-size="size">
+  <!--
+    $implicit (let-i)   : number  — absolute slide index (0 to count-1)
+    indexInRange        : number  — position in visible window (0, 1, or 2)
+    size                : [number, number] — [width, height] of the container
+  -->
+  <app-slide [data]="items[i]"
+             [style.width.px]="size[0]"
+             [style.height.px]="size[1]" />
+</ng-template>

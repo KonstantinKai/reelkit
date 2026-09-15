@@ -23,8 +23,8 @@ const reelProps = [
   },
   {
     prop: 'direction',
-    type: "'竖向' | 'horizontal'",
-    default: "'竖向'",
+    type: "'vertical' | 'horizontal'",
+    default: "'vertical'",
     description: '滚动方向',
   },
   {
@@ -217,8 +217,8 @@ const indicatorProps = [
   },
   {
     prop: 'direction',
-    type: "'竖向' | 'horizontal'",
-    default: "'竖向'",
+    type: "'vertical' | 'horizontal'",
+    default: "'vertical'",
     description: '指示器方向',
   },
   {
@@ -800,7 +800,7 @@ function jump(i: number) { reelRef.value?.goTo(i, true); }
       <section className="mb-12">
         <Heading
           level={2}
-          id="rk-reel-key-amp-usereelcontext"
+          id="rk-reel-key-usereelcontext"
           className="text-2xl font-bold mb-4"
         >
           RK_REEL_KEY &amp; useReelContext
@@ -1123,12 +1123,18 @@ sound.toggle(); // Toggle muted state`}
           <code>useOverlayUrlState</code>{' '}
           选项传入，让路由器始终是导航的唯一真相来源 —— 绕过路由器直接写{' '}
           <code>history.pushState</code> 会让它的 location
-          过期，下一次导航就会把参数丢掉。
+          过期，下一次导航就会把参数丢掉。写入只触及查询部分，路径、hash 以及{' '}
+          <code>?tag=a&amp;tag=b</code>{' '}
+          这样的重复键都原样保留。每次变化都会报告路由器是在同一页面内压栈、替换，还是在历史中前进后退，因此从{' '}
+          <code>&lt;router-link&gt;</code> 打开的画廊按一次返回就能关闭。
         </p>
         <p className="text-slate-600 dark:text-slate-400 mb-4">
           它从独立的子路径导出，因此没有路由器的应用永远不会把{' '}
           <code>vue-router</code> 打进产物。 <code>vue-router</code>{' '}
-          是可选的同级依赖。
+          是可选的同级依赖，需要 4.1 或更高版本：适配器通过路由器的{' '}
+          <code>state</code>{' '}
+          导航选项携带归属标记，而更早的版本会忽略它。在旧版路由器上也不会出错
+          —— 关闭时只是就地清除参数，而不是后退一步。
         </p>
         <CodeBlock
           code={`import { useVueRouterUrlAdapter } from '@reelkit/vue/vue-router-url-adapter';

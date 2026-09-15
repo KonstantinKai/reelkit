@@ -1,0 +1,235 @@
+---
+title: Довідник API для Vue
+description: 'Повний API @reelkit/vue: властивості та події Reel, ReelExpose, композабли, SwipeToClose і експорти пакета.'
+---
+
+import slots from '../../../snippets/vue-api/slots.vue?raw';
+import reelexpose from '../../../snippets/vue-api/reelexpose.vue?raw';
+import rkReelKeyUsereelcontext from '../../../snippets/vue-api/rk-reel-key-usereelcontext.vue?raw';
+import usebodylock from '../../../snippets/vue-api/usebodylock.ts?raw';
+import usefullscreen from '../../../snippets/vue-api/usefullscreen.ts?raw';
+import usesoundstate from '../../../snippets/vue-api/usesoundstate.ts?raw';
+import usevuerouterurladapter from '../../../snippets/vue-api/usevuerouterurladapter.ts?raw';
+import tovueref from '../../../snippets/vue-api/tovueref.ts?raw';
+import soundprovider from '../../../snippets/vue-api/soundprovider.vue?raw';
+import packageExports from '../../../snippets/vue-api/package-exports.ts?raw';
+
+Повний довідник `@reelkit/vue` : компоненти, композабли та утиліти.
+
+## Reel [#reel]
+
+Тег: `<Reel>`
+
+### Props [#props]
+
+<Caption>`ReelProps`</Caption>
+
+| Prop | Тип | Типове значення | Опис |
+| --- | --- | --- | --- |
+| `count` | `number` | required | Загальна кількість слайдів |
+| `direction` | `'vertical' \| 'horizontal'` | 'vertical' | Напрямок прокручування |
+| `size` | `[number, number] \| undefined` | undefined | Ширина й висота у вигляді \[width, height\]. Якщо не задано, вимірюється автоматично через ResizeObserver |
+| `initialIndex` | `number` | 0 | Початковий індекс слайда |
+| `loop` | `boolean` | false | Вмикає нескінченний цикл |
+| `transition` | `TransitionTransformFn` | slideTransition | Функція ефекту переходу. Вбудовані: slideTransition, fadeTransition, flipTransition, cubeTransition, zoomTransition |
+| `transitionDuration` | `number` | 300 | Тривалість анімації в мілісекундах |
+| `swipeDistanceFactor` | `number` | 0.12 | Поріг свайпу (0–1) |
+| `enableGestures` | `boolean` | true | Вмикає навігацію перетягуванням дотиком або мишею |
+| `enableNavKeys` | `boolean` | true | Вмикає навігацію стрілками клавіатури |
+| `enableWheel` | `boolean` | false | Вмикає навігацію колесом миші |
+| `wheelDebounceMs` | `number` | 200 | Дебаунс події колеса в мілісекундах |
+| `rangeExtractor` | `(index: number, count: number) => number[]` | defaultRangeExtractor | Власна функція, що визначає, які індекси рендеряться |
+| `keyExtractor` | `(index: number, indexInRange: number) => string` | index => index.toString() | Власна функція ключів для рендерингу слайдів (корисно з циклом) |
+| `ariaLabel` | `string` | undefined | Доступна назва області каруселі |
+| `reelStyle` | `Record<string, string \| number>` | undefined | Вбудовані стилі для кореневого контейнера |
+| `reelClass` | `string \| Array \| Object` | undefined | Класи CSS для кореневого контейнера |
+| `onNavKeyPress` | `(increment: -1 \| 1) => void` | undefined | Пропс-колбек, що замінює стандартну навігацію стрілками вгору й вниз. Якщо його передати, навігацію реалізуєте ви самі (наприклад, викликаєте reelRef.value.next()). Не передавайте, щоб лишити стандартну поведінку. |
+
+### Events [#events]
+
+| Event | Payload | Опис |
+| --- | --- | --- |
+| `beforeChange` | `(index: number, nextIndex: number, indexInRange: number)` | Видається перед початком переходу між слайдами |
+| `afterChange` | `(index: number, indexInRange: number)` | Видається після завершення переходу між слайдами |
+| `slideDragStart` | `(index: number)` | Видається на початку перетягування |
+| `slideDragEnd` | `(index: number)` | Видається, коли перетягування завершується (палець або кнопку відпустили) |
+| `slideDragCanceled` | `(index: number)` | Видається, коли перетягування скасовано (слайд повертається назад) |
+| `tap` | `(event: GestureCommonEvent)` | Видається на одиночний дотик |
+| `doubleTap` | `(event: GestureCommonEvent)` | Видається на подвійний дотик |
+| `longPress` | `(event: GestureCommonEvent)` | Видається на початку довгого натискання |
+| `longPressEnd` | `(event: GestureEvent)` | Видається після завершення довгого натискання |
+
+### Slots [#slots]
+
+<CodeBlock code={slots} language="vue-html" />
+
+| Slot | Властивості області слота | Опис |
+| --- | --- | --- |
+| `#item` | `{ index: number, indexInRange: number, size: [number, number] }` | Рендерить кожен видимий слайд. Викликається для кожного індексу у віртуалізованому діапазоні |
+| `default` | `none` | Вміст оверлея поверх усіх слайдів (індикатори, елементи керування тощо) |
+
+## ReelExpose [#reelexpose]
+
+Імперативний API, доступний через шаблонний ref:
+
+<CodeBlock code={reelexpose} language="vue" />
+
+| Метод | Тип | Опис |
+| --- | --- | --- |
+| `next()` | `() => void` | Перейти до наступного слайда |
+| `prev()` | `() => void` | Перейти до попереднього слайда |
+| `goTo(index, animate?)` | `(number, boolean?) => Promise<void>` | Перехід до слайда за індексом |
+| `adjust()` | `() => void` | Перерахувати позиції слайдів (корисно після зміни макета) |
+| `observe()` | `() => void` | Почати слухати події жестів, клавіатури та колеса |
+| `unobserve()` | `() => void` | Припинити слухати події жестів, клавіатури та колеса |
+
+## ReelIndicator [#reelindicator]
+
+Тег: `<ReelIndicator>`
+
+### Props [#props]
+
+<Caption>`ReelIndicatorProps`</Caption>
+
+| Prop | Тип | Типове значення | Опис |
+| --- | --- | --- | --- |
+| `count` | `number \| undefined` | auto | Загальна кількість елементів. Береться з контексту батьківського Reel, якщо компонент вкладений у нього; передавайте явно за окремого використання |
+| `active` | `number \| undefined` | auto | Поточний активний індекс. Береться з контексту батьківського Reel, якщо компонент вкладений у нього; передавайте явно за окремого використання |
+| `direction` | `'vertical' \| 'horizontal'` | 'vertical' | Орієнтація індикатора |
+| `radius` | `number` | 3 | Радіус точки в пікселях |
+| `visible` | `number` | 5 | Максимум одночасно видимих точок звичайного розміру |
+| `gap` | `number` | 4 | Відстань між точками в пікселях |
+| `activeColor` | `string` | '#fff' | Колір активної точки |
+| `inactiveColor` | `string` | 'rgba(255, 255, 255, 0.5)' | Колір неактивної точки |
+| `edgeScale` | `number` | 0.5 | Коефіцієнт масштабу крайніх точок за межами видимого |
+| `onDotClick` | `(index: number) => void` | undefined | Власний обробник кліку. Якщо не задано всередині Reel, типово відбувається перехід до індексу натиснутої точки |
+| `indicatorClass` | `string \| Array \| Object` | undefined | Класи CSS для кореневого елемента tablist |
+| `indicatorStyle` | `CSSProperties` | undefined | Вбудовані стилі, додані до кореневого елемента tablist |
+
+### Events [#events]
+
+| Event | Payload | Опис |
+| --- | --- | --- |
+| `dotClick` | `(index: number)` | Видається на клік по точці; передає індекс точки |
+
+## SwipeToClose [#swipetoclose]
+
+Тег: `<SwipeToClose>` — загортає свій типовий слот у контейнер, чутливий до дотику, який можна закрити свайпом.
+
+### Props [#props]
+
+<Caption>`SwipeToCloseProps`</Caption>
+
+| Prop | Тип | Типове значення | Опис |
+| --- | --- | --- | --- |
+| `direction` | `'up' \| 'down'` | required | Напрямок свайпу, що закриває. Беріть "up" для Lightbox й "down" для історій |
+| `enabled` | `boolean` | true | Чи активний жест свайпу для закриття |
+| `threshold` | `number` | 0.2 | Частка висоти області перегляду, потрібна для закриття (0–1) |
+
+### Events [#events]
+
+| Event | Payload | Опис |
+| --- | --- | --- |
+| `close` | `()` | Видається, коли свайп перевищує поріг і анімація закриття завершилася |
+
+### Slots [#slots]
+
+| Slot | Опис |
+| --- | --- |
+| `default` | Вміст, який треба загорнути в обробку свайпу для закриття |
+
+## RK_REEL_KEY & useReelContext [#rk-reel-key-usereelcontext]
+
+An `InjectionKey<ReelContextValue>` який надає `<Reel>` своїм нащадкам. Використовується всередині `<ReelIndicator>` для автоматичного під’єднання. Викликайте `useReelContext()` у власних компонентах, яким потрібен контекст слайдера.
+
+<CodeBlock code={rkReelKeyUsereelcontext} language="vue" />
+
+| Властивість | Тип | Опис |
+| --- | --- | --- |
+| `index` | `Signal<number>` | Реактивний індекс поточного слайда |
+| `count` | `Signal<number>` | Реактивна загальна кількість елементів |
+| `goTo` | `(index: number, animate?: boolean) => Promise<void>` | Програмний перехід до слайда |
+
+## Composables [#composables]
+
+### useBodyLock [#usebodylock]
+
+Блокує прокручування body документа, коли передане значення — `true`. Використовує підрахунок посилань, тож кілька одночасних викликачів блокують і розблоковують незалежно. Автоматично розблоковує при демонтажі.
+
+<CodeBlock code={usebodylock} language="typescript" />
+
+| Parameter | Тип | Опис |
+| --- | --- | --- |
+| `locked` | `Ref<boolean> \| boolean` | Чи блокувати прокручування body. Приймає реактивний ref або звичайне булеве значення |
+
+### useFullscreen [#usefullscreen]
+
+<Caption>`UseFullscreenOptions` → `UseFullscreenReturn`</Caption>
+
+Композабл для роботи з Fullscreen API з кросбраузерною підтримкою. Автоматично виходить із повного екрана при демонтажі.
+
+<CodeBlock code={usefullscreen} language="typescript" />
+
+| Return | Тип | Опис |
+| --- | --- | --- |
+| `isFullscreen` | `Signal<boolean>` | Сигнал ядра, що відображає поточний стан повного екрана (читайте `.value`) |
+| `request` | `() => Promise<void>` | Запитує повний екран для елемента за посиланням. Якщо в повному екрані вже інший елемент, спершу відбувається вихід із нього (з очікуванням). |
+| `exit` | `() => Promise<void>` | Вийти з повного екрана |
+| `toggle` | `() => Promise<void>` | Перемкнути стан повного екрана |
+
+### useSoundState [#usesoundstate]
+
+Дає доступ до поточного `SoundController` з контексту. Викликати треба всередині `<SoundProvider>`. Поза ним кидає помилку.
+
+<CodeBlock code={usesoundstate} language="typescript" />
+
+### useOverlayUrlState [#useoverlayurlstate]
+
+<Caption>`OverlayUrlStateOptions`</Caption>
+
+Будує контролер стану в URL для оверлея, який ви передаєте в `<LightboxUrlOverlay>` як його `:controller` prop.
+
+See [Стан в URL у посібнику для Vue](/docs/vue/guide#url-state) — там покроковий розбір і приклади.
+
+| Option | Тип | Типове значення | Опис |
+| --- | --- | --- | --- |
+| `param` | `string` | required | Параметр запиту, що несе активний слайд, наприклад "photo". |
+| `adapter` | `UrlAdapter` | History API | Система навігації, через яку читати й писати. У застосунку з роутером передайте адаптер на його базі, щоб власне місцеположення роутера не застаріло. |
+| `codec` | `{ decode(raw) => Id \| null; encode(id) => string }` | required | Формат передавання: текст параметра ↔ стабільна ідентичність, незалежно від колекції. Іде разом із локатором як узгоджена пара з однаковим Id — розгорніть ...urlIndexKey(() => props.images.length) для типової галереї з ?photo=3 або передайте власний (base64, slug), щоб закладка пережила зміну порядку галереї. |
+| `locator` | `{ locate(id) => number \| null; locateAsync?(id) => Promise<number \| null>; identify(index) => id }` | required | Зіставляє ідентичність із позицією і сам відповідає за свою чинність: locate (синхронно), locateAsync (запасний варіант для посторінкової галереї), identify (для запису). Для звичайної галереї за індексом розгорніть ...urlIndexKey(() => props.images.length) — він дає цей локатор разом із відповідним кодеком і обмежує ?photo=3 живою кількістю, тож застарілий ?photo=99 сам зникає з URL замість того, щоб відкрити слайд, якого ніхто не називав. Передавайте геттер, а не число: setup у Vue виконується один раз, і захоплена довжина застаріла б, поки посторінкова стрічка росте. Посторінкова стрічка або галерея з адресацією за ідентичністю передає власну узгоджену пару кодек + локатор. |
+
+### useVueRouterUrlAdapter [#usevuerouterurladapter]
+
+A `UrlAdapter` на базі Vue Router. Передайте його як опцію `adapter` у `useOverlayUrlState` у застосунку з роутером, щоб роутер лишався єдиним джерелом правди про навігацію: запис `history.pushState` повз роутер лишає його місцеположення застарілим, і наступна навігація втрачає параметр. Запис торкається лише запиту, тож шлях, хеш і повторювані ключі на кшталт `?tag=a&tag=b` лишаються недоторканими. Кожна зміна повідомляє, чи роутер додав запис на тій самій сторінці, замінив його чи пройшов історією, тож галерея, відкрита з `<router-link>`, закривається одним кроком назад.
+
+Постачається з окремого підшляху, тож застосунок без роутера ніколи не тягне `vue-router` у свій бандл. `vue-router` — необов’язкова peer-залежність версії 4.1 або новішої: адаптер передає свою позначку власності через навігаційну опцію роутера `state`, яку старіші випуски ігнорують. Зі старішим роутером нічого не ламається — закриття просто прибирає параметр на місці замість кроку назад.
+
+<CodeBlock code={usevuerouterurladapter} language="typescript" />
+
+### toVueRef [#tovueref]
+
+Місток від сигналу ядра `Subscribable` (будь-який `Signal` from `@reelkit/core`) into a read-only Vue `Ref`. Беріть його щоразу, коли значення сигналу ядра має спричиняти перерендер у Vue — прямі читання `signal.value` у функціях рендерингу чи шаблонах **не** реактивні самі собою.
+
+Підписка звільняється автоматично через `onScopeDispose`, so this must be called inside a Vue `setup()` чи інший контекст, обізнаний про область ефектів.
+
+<CodeBlock code={tovueref} language="typescript" />
+
+## SoundProvider [#soundprovider]
+
+Тег: `<SoundProvider>` — постачальник контексту, що створює екземпляр `SoundController` і надає його нащадкам через `RK_SOUND_KEY`. Свій типовий слот рендерить прозоро.
+
+<CodeBlock code={soundprovider} language="vue" />
+
+## Accessibility [#accessibility]
+
+`<Reel>` рендериться як `role="region"` з `aria-roledescription="carousel"`. Передайте `aria-label` (пропс має назву `ariaLabel` у TypeScript), щоб дати області назву для екранного читача. Ввічлива жива область оголошує «Слайд N з M» на кожну зміну слайда. Неактивні слайди отримують атрибут `inert` , тож фокус і навігація допоміжних технологій їх пропускають.
+
+`<ReelIndicator>` рендериться як `role="tablist"` з рухомим tabindex на точках; стрілки переміщують фокус, а Enter або Space активує слайд.
+
+Будуєте власне модальне вікно навколо `<Reel>`? `captureFocusForReturn`, `createFocusTrap`, та `getFocusableElements` — вони реекспортовані з `@reelkit/vue` для повернення й утримання фокуса.
+
+## Експорти пакета [#package-exports]
+
+Усі публічні експорти з `@reelkit/vue`:
+
+<CodeBlock code={packageExports} language="typescript" />

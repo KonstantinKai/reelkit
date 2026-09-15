@@ -1,0 +1,301 @@
+---
+title: Встановлення
+description: Встановлення ReelKit через npm, yarn або pnpm. Вибір пакета, розмір бандла, peer-залежності та підтримка TypeScript.
+---
+
+import npmReact from '../../snippets/installation/npm-react.sh?raw';
+import yarnReact from '../../snippets/installation/yarn-react.sh?raw';
+import pnpmReact from '../../snippets/installation/pnpm-react.sh?raw';
+import npmAngular from '../../snippets/installation/npm-angular.sh?raw';
+import yarnAngular from '../../snippets/installation/yarn-angular.sh?raw';
+import pnpmAngular from '../../snippets/installation/pnpm-angular.sh?raw';
+import npmVue from '../../snippets/installation/npm-vue.sh?raw';
+import yarnVue from '../../snippets/installation/yarn-vue.sh?raw';
+import pnpmVue from '../../snippets/installation/pnpm-vue.sh?raw';
+
+Встановіть пакети reelkit і налаштуйте проєкт.
+
+## Вибір пакета [#package-options]
+
+Встановлюйте лише те, що використовуєте:
+
+<Table>
+  <thead>
+    <tr>
+      <th>Пакет</th>
+      <th>Опис</th>
+      <th>Коли брати</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>`@reelkit/core`</td>
+      <td>Ядро без прив’язки до фреймворку</td>
+      <td>Власні інтеграції</td>
+    </tr>
+    <tr data-rk-fw="react">
+      <td>`@reelkit/react`</td>
+      <td>Компоненти React</td>
+      <td>Застосунки на React 18+</td>
+    </tr>
+    <tr data-rk-fw="react">
+      <td>`@reelkit/react-reel-player`</td>
+      <td>Повноекранний вертикальний reel-плеєр</td>
+      <td>Плеєр у стилі Instagram / TikTok</td>
+    </tr>
+    <tr data-rk-fw="react">
+      <td>`@reelkit/react-lightbox`</td>
+      <td>Lightbox-галерея зображень</td>
+      <td>Повноекранний перегляд зображень</td>
+    </tr>
+    <tr data-rk-fw="react">
+      <td>`@reelkit/react-stories-player`</td>
+      <td>Плеєр історій у стилі Instagram</td>
+      <td>Історії з автопрогортанням і жестами</td>
+    </tr>
+    <tr data-rk-fw="angular">
+      <td>`@reelkit/angular`</td>
+      <td>Автономні компоненти Angular</td>
+      <td>Застосунки на Angular 17+</td>
+    </tr>
+    <tr data-rk-fw="angular">
+      <td>`@reelkit/angular-reel-player`</td>
+      <td>Повноекранний вертикальний reel-плеєр</td>
+      <td>Плеєр у стилі Instagram / TikTok</td>
+    </tr>
+    <tr data-rk-fw="angular">
+      <td>`@reelkit/angular-lightbox`</td>
+      <td>Lightbox-галерея зображень</td>
+      <td>Повноекранний перегляд зображень</td>
+    </tr>
+    <tr data-rk-fw="vue">
+      <td>`@reelkit/vue`</td>
+      <td>Компоненти та композабли для Vue 3</td>
+      <td>Застосунки на Vue 3</td>
+    </tr>
+    <tr data-rk-fw="vue">
+      <td>`@reelkit/vue-reel-player`</td>
+      <td>Повноекранний вертикальний reel-плеєр</td>
+      <td>Плеєр у стилі Instagram / TikTok</td>
+    </tr>
+    <tr data-rk-fw="vue">
+      <td>`@reelkit/vue-lightbox`</td>
+      <td>Lightbox-галерея зображень</td>
+      <td>Повноекранний перегляд зображень</td>
+    </tr>
+  </tbody>
+</Table>
+
+## Розміри бандлів [#bundle-sizes]
+
+Усі пакети оптимізовані так, щоб мінімально впливати на розмір бандла:
+
+<BundleSizeTable headers={['Пакет', 'JS', 'JS (gzip)', 'CSS', 'CSS (gzip)']} />
+
+### Порівняння з іншими бібліотеками [#comparison-with-other-libraries]
+
+ReelKit тримає в DOM **лише 3 слайди** в будь-який момент і витримує 10 000+ елементів. Інші бібліотеки каруселей рендерять усі слайди, і на великих списках це гальмує.
+
+<LibraryComparison
+  headers={['Бібліотека', 'JS (gzip)', 'Віртуалізація', 'Примітки']}
+  plugin="Плагін"
+  notes={[
+    'Нуль залежностей',
+    'Нуль залежностей',
+    'Нуль залежностей',
+    'Повний бандл; підтримує tree-shaking',
+    'Легка, на плагінах',
+    'Нуль залежностей',
+  ]}
+/>
+
+<FrameworkVariant for="react">
+
+## npm [#npm]
+
+<CodeBlock code={npmReact} language="bash" />
+
+## yarn [#yarn]
+
+<CodeBlock code={yarnReact} language="bash" />
+
+## pnpm [#pnpm]
+
+<CodeBlock code={pnpmReact} language="bash" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+## npm [#npm]
+
+<CodeBlock code={npmAngular} language="bash" />
+
+## yarn [#yarn]
+
+<CodeBlock code={yarnAngular} language="bash" />
+
+## pnpm [#pnpm]
+
+<CodeBlock code={pnpmAngular} language="bash" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+## npm [#npm]
+
+<CodeBlock code={npmVue} language="bash" />
+
+## yarn [#yarn]
+
+<CodeBlock code={yarnVue} language="bash" />
+
+## pnpm [#pnpm]
+
+<CodeBlock code={pnpmVue} language="bash" />
+
+</FrameworkVariant>
+
+## Peer-залежності [#peer-dependencies]
+
+Пакети для фреймворків мають peer-залежності, які вже мають бути у вашому проєкті:
+
+<FrameworkVariant for="react">
+
+### @reelkit/react [#reelkit-react]
+
+- `react` >= 18.0.0
+- `react-dom` >= 18.0.0
+
+### @reelkit/react-reel-player [#reelkit-react-reel-player]
+
+- `@reelkit/react`
+- `react` >= 18.0.0
+- `react-dom` >= 18.0.0
+- `lucide-react` >= 0.400.0
+
+### @reelkit/react-lightbox [#reelkit-react-lightbox]
+
+- `@reelkit/react`
+- `react` >= 18.0.0
+- `react-dom` >= 18.0.0
+- `lucide-react` >= 0.400.0
+
+### @reelkit/react-stories-player [#reelkit-react-stories-player]
+
+- `@reelkit/react`
+- `react` >= 18.0.0
+- `react-dom` >= 18.0.0
+- `lucide-react` >= 0.400.0
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+### @reelkit/angular [#reelkit-angular]
+
+- `@angular/core` >= 17.0.0
+- `@angular/common` >= 17.0.0
+
+### @reelkit/angular-reel-player [#reelkit-angular-reel-player]
+
+- `@reelkit/angular`
+- `@angular/core` >= 19.0.0
+- `lucide-angular` >= 0.460.0
+
+### @reelkit/angular-lightbox [#reelkit-angular-lightbox]
+
+- `@reelkit/angular`
+- `@angular/core` >= 17.0.0
+- `lucide-angular` >= 0.400.0
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+### @reelkit/vue [#reelkit-vue]
+
+- `vue` >= 3.0.0
+
+</FrameworkVariant>
+
+<FrameworkVariant for="react">
+
+<Callout type="info">
+  `lucide-react` потрібен лише для стандартних іконок керування. Якщо ви передаєте власні елементи керування через `renderControls`, встановлювати його не потрібно.
+</Callout>
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+<Callout type="info">
+  `lucide-angular` потрібен лише для стандартних іконок керування. Якщо ви передаєте власні елементи керування через `rkPlayerControls`, встановлювати його не потрібно.
+</Callout>
+
+</FrameworkVariant>
+
+## TypeScript [#typescript]
+
+Усі пакети постачаються з типами TypeScript. Додаткові @types пакети не потрібні.
+
+## Підтримка браузерів [#browser-support]
+
+reelkit працює в усіх сучасних браузерах:
+
+<Bullets marker="check">
+
+- Chrome/Edge 88+
+- Firefox 78+
+- Safari 14+
+- iOS Safari 14+
+- Android Chrome 88+
+
+</Bullets>
+
+<NextSteps
+        items={[
+          {
+            label: 'Посібник з ядра',
+            path: '/docs/core/guide',
+            description: 'рушій без прив’язки до фреймворку',
+          },
+          {
+            label: 'Посібник для фреймворку',
+            path: {
+              react: '/docs/react/guide',
+              angular: '/docs/angular/guide',
+              vue: '/docs/vue/guide',
+            },
+            description: 'компоненти, демо та інтеграція',
+          },
+          {
+            label: 'Reel Player',
+            path: {
+              react: '/docs/reel-player',
+              angular: '/docs/angular-reel-player',
+              vue: '/docs/vue-reel-player',
+            },
+            description: 'відеоплеєр у стилі TikTok / Reels',
+          },
+          {
+            label: 'Lightbox',
+            path: {
+              react: '/docs/lightbox',
+              angular: '/docs/angular-lightbox',
+              vue: '/docs/vue-lightbox',
+            },
+            description: 'галерея зображень і відео',
+          },
+          {
+            label: 'Stories Player',
+            path: {
+              react: '/docs/stories-player',
+              angular: '/docs/angular-stories-player',
+              vue: '/docs/vue-stories-player',
+            },
+            description: 'переглядач історій у стилі Instagram',
+          },
+        ]}
+      />

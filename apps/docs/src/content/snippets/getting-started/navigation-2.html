@@ -1,0 +1,13 @@
+<rk-reel
+  [count]="10"
+  [size]="[400, 600]"
+  (apiReady)="reelApi = $event"
+>
+  <ng-template rkReelItem let-index>
+    <app-slide [index]="index" />
+  </ng-template>
+</rk-reel>
+
+<button (click)="reelApi?.prev()">Prev</button>
+<button (click)="reelApi?.next()">Next</button>
+<button (click)="reelApi?.goTo(5)">Go to 5</button>

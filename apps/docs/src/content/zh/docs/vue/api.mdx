@@ -1,0 +1,235 @@
+---
+title: Vue API 参考
+description: '@reelkit/vue 完整 API：Reel 属性与事件、ReelExpose、组合式函数、SwipeToClose 与包导出。'
+---
+
+import slots from '../../../snippets/vue-api/slots.vue?raw';
+import reelexpose from '../../../snippets/vue-api/reelexpose.vue?raw';
+import rkReelKeyUsereelcontext from '../../../snippets/vue-api/rk-reel-key-usereelcontext.vue?raw';
+import usebodylock from '../../../snippets/vue-api/usebodylock.ts?raw';
+import usefullscreen from '../../../snippets/vue-api/usefullscreen.ts?raw';
+import usesoundstate from '../../../snippets/vue-api/usesoundstate.ts?raw';
+import usevuerouterurladapter from '../../../snippets/vue-api/usevuerouterurladapter.ts?raw';
+import tovueref from '../../../snippets/vue-api/tovueref.ts?raw';
+import soundprovider from '../../../snippets/vue-api/soundprovider.vue?raw';
+import packageExports from '../../../snippets/vue-api/package-exports.ts?raw';
+
+完整参考： `@reelkit/vue` 的组件、组合式函数与工具。
+
+## Reel [#reel]
+
+标签： `<Reel>`
+
+### 属性 [#props]
+
+<Caption>`ReelProps`</Caption>
+
+| 属性 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `count` | `number` | 必填 | 幻灯片总数 |
+| `direction` | `'vertical' \| 'horizontal'` | 'vertical' | 滚动方向 |
+| `size` | `[number, number] \| undefined` | undefined | 以 \[宽, 高\] 表示的尺寸。省略时通过 ResizeObserver 自动测量 |
+| `initialIndex` | `number` | 0 | 起始幻灯片索引 |
+| `loop` | `boolean` | false | 启用无限循环 |
+| `transition` | `TransitionTransformFn` | slideTransition | 过渡效果函数。内置有 slideTransition、fadeTransition、flipTransition、cubeTransition、zoomTransition |
+| `transitionDuration` | `number` | 300 | 动画时长（毫秒） |
+| `swipeDistanceFactor` | `number` | 0.12 | 滑动阈值（0-1） |
+| `enableGestures` | `boolean` | true | 启用触摸 / 鼠标拖拽导航 |
+| `enableNavKeys` | `boolean` | true | 启用键盘方向键导航 |
+| `enableWheel` | `boolean` | false | 启用鼠标滚轮导航 |
+| `wheelDebounceMs` | `number` | 200 | 滚轮事件防抖时长（毫秒） |
+| `rangeExtractor` | `(index: number, count: number) => number[]` | defaultRangeExtractor | 自定义函数，决定渲染哪些索引 |
+| `keyExtractor` | `(index: number, indexInRange: number) => string` | index => index.toString() | 幻灯片渲染的自定义 key 函数（配合 loop 时很有用） |
+| `ariaLabel` | `string` | undefined | 轮播区域的无障碍标签 |
+| `reelStyle` | `Record<string, string \| number>` | undefined | 施加在根容器元素上的内联样式 |
+| `reelClass` | `string \| Array \| Object` | undefined | 施加在根容器元素上的 CSS 类名 |
+| `onNavKeyPress` | `(increment: -1 \| 1) => void` | undefined | 替换默认上下方向键导航的回调属性。提供之后就由你自己实现导航（例如调用 reelRef.value.next()）。省略则保持默认行为。 |
+
+### 事件 [#events]
+
+| 事件 | 负载 | 说明 |
+| --- | --- | --- |
+| `beforeChange` | `(index: number, nextIndex: number, indexInRange: number)` | 幻灯片过渡开始前发出 |
+| `afterChange` | `(index: number, indexInRange: number)` | 幻灯片过渡完成后发出 |
+| `slideDragStart` | `(index: number)` | 拖拽手势开始时发出 |
+| `slideDragEnd` | `(index: number)` | 拖拽手势结束（松手）时发出 |
+| `slideDragCanceled` | `(index: number)` | 拖拽手势被取消（回弹）时发出 |
+| `tap` | `(event: GestureCommonEvent)` | 单击手势时发出 |
+| `doubleTap` | `(event: GestureCommonEvent)` | 双击手势时发出 |
+| `longPress` | `(event: GestureCommonEvent)` | 长按手势开始时发出 |
+| `longPressEnd` | `(event: GestureEvent)` | 长按手势结束时发出 |
+
+### 插槽 [#slots]
+
+<CodeBlock code={slots} language="vue-html" />
+
+| 插槽 | 作用域属性 | 说明 |
+| --- | --- | --- |
+| `#item` | `{ index: number, indexInRange: number, size: [number, number] }` | 渲染每张可见幻灯片。虚拟化范围内的每个索引都会调用一次 |
+| `default` | `none` | 渲染在所有幻灯片之上的浮层内容（指示器、控件等） |
+
+## ReelExpose [#reelexpose]
+
+通过模板 ref 暴露的命令式 API：
+
+<CodeBlock code={reelexpose} language="vue" />
+
+| 方法 | 类型 | 说明 |
+| --- | --- | --- |
+| `next()` | `() => void` | 切到下一张幻灯片 |
+| `prev()` | `() => void` | 切到上一张幻灯片 |
+| `goTo(index, animate?)` | `(number, boolean?) => Promise<void>` | 跳到指定的幻灯片索引 |
+| `adjust()` | `() => void` | 重新计算幻灯片位置（布局变化后很有用） |
+| `observe()` | `() => void` | 开始监听手势、键盘和滚轮事件 |
+| `unobserve()` | `() => void` | 停止监听手势、键盘和滚轮事件 |
+
+## ReelIndicator [#reelindicator]
+
+标签： `<ReelIndicator>`
+
+### 属性 [#props]
+
+<Caption>`ReelIndicatorProps`</Caption>
+
+| 属性 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `count` | `number \| undefined` | auto | 条目总数。嵌套在 Reel 内部时会自动从父级上下文连接；单独使用时请显式传入 |
+| `active` | `number \| undefined` | auto | 当前活动索引。嵌套在 Reel 内部时会自动从父级上下文连接；单独使用时请显式传入 |
+| `direction` | `'vertical' \| 'horizontal'` | 'vertical' | 指示器方向 |
+| `radius` | `number` | 3 | 圆点半径（像素） |
+| `visible` | `number` | 5 | 同时可见的正常尺寸圆点上限 |
+| `gap` | `number` | 4 | 圆点之间的间距（像素） |
+| `activeColor` | `string` | '#fff' | 活动圆点颜色 |
+| `inactiveColor` | `string` | 'rgba(255, 255, 255, 0.5)' | 非活动圆点颜色 |
+| `edgeScale` | `number` | 0.5 | 边缘溢出圆点的缩放系数 |
+| `onDotClick` | `(index: number) => void` | undefined | 自定义点击处理器。在 Reel 内部省略时，默认跳到所点圆点对应的索引 |
+| `indicatorClass` | `string \| Array \| Object` | undefined | 施加在 tablist 根元素上的 CSS 类名 |
+| `indicatorStyle` | `CSSProperties` | undefined | 合并到 tablist 根元素上的内联样式 |
+
+### 事件 [#events]
+
+| 事件 | 负载 | 说明 |
+| --- | --- | --- |
+| `dotClick` | `(index: number)` | 点击圆点时发出，带上圆点索引 |
+
+## SwipeToClose [#swipetoclose]
+
+标签： `<SwipeToClose>` —— 把默认插槽包进一个支持触摸的容器，可以滑动关闭。
+
+### 属性 [#props]
+
+<Caption>`SwipeToCloseProps`</Caption>
+
+| 属性 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `direction` | `'up' \| 'down'` | 必填 | 触发关闭的滑动方向。Lightbox用 "up"，Stories 用 "down" |
+| `enabled` | `boolean` | true | 滑动关闭手势是否启用 |
+| `threshold` | `number` | 0.2 | 触发关闭所需的视口高度占比（0-1） |
+
+### 事件 [#events]
+
+| 事件 | 负载 | 说明 |
+| --- | --- | --- |
+| `close` | `()` | 滑动超过阈值且关闭动画播完后发出 |
+
+### 插槽 [#slots]
+
+| 插槽 | 说明 |
+| --- | --- |
+| `default` | 需要套上滑动关闭手势的内容 |
+
+## RK_REEL_KEY & useReelContext [#rk-reel-key-usereelcontext]
+
+An `InjectionKey<ReelContextValue>` 由 `<Reel>` 提供给后代组件。内部被 `<ReelIndicator>` 用于自动连接。在需要滑动器上下文的自定义组件里用 `useReelContext()` 。
+
+<CodeBlock code={rkReelKeyUsereelcontext} language="vue" />
+
+| 属性 | 类型 | 说明 |
+| --- | --- | --- |
+| `index` | `Signal<number>` | 响应式的当前幻灯片索引 |
+| `count` | `Signal<number>` | 响应式的条目总数 |
+| `goTo` | `(index: number, animate?: boolean) => Promise<void>` | 以编程方式跳到某张幻灯片 |
+
+## 组合式函数 [#composables]
+
+### useBodyLock [#usebodylock]
+
+当传入的值为 `true`时锁住文档 body 的滚动。采用引用计数，多个并发调用方可以各自独立上锁 / 解锁。卸载时自动解锁。
+
+<CodeBlock code={usebodylock} language="typescript" />
+
+| 参数 | 类型 | 说明 |
+| --- | --- | --- |
+| `locked` | `Ref<boolean> \| boolean` | 是否应当锁住 body 滚动。接受响应式 ref 或静态布尔值 |
+
+### useFullscreen [#usefullscreen]
+
+<Caption>`UseFullscreenOptions` → `UseFullscreenReturn`</Caption>
+
+管理 Fullscreen API 的组合式函数，跨浏览器可用。卸载时自动退出全屏。
+
+<CodeBlock code={usefullscreen} language="typescript" />
+
+| 返回值 | 类型 | 说明 |
+| --- | --- | --- |
+| `isFullscreen` | `Signal<boolean>` | 反映当前全屏状态的核心信号（读 `.value`) |
+| `request` | `() => Promise<void>` | 让引用的元素进入全屏。若已有别的元素处于全屏，会先退出（并等待完成）。 |
+| `exit` | `() => Promise<void>` | 退出全屏 |
+| `toggle` | `() => Promise<void>` | 切换全屏状态 |
+
+### useSoundState [#usesoundstate]
+
+获取上下文中当前的 `SoundController` 。必须在 `<SoundProvider>`. Throws if called outside.
+
+<CodeBlock code={usesoundstate} language="typescript" />
+
+### useOverlayUrlState [#useoverlayurlstate]
+
+<Caption>`OverlayUrlStateOptions`</Caption>
+
+为浮层构建一个 URL 状态控制器，你再把它交给 `<LightboxUrlOverlay>` 的 `:controller` 属性。
+
+参见 [Vue 指南中的 URL 状态](/docs/vue/guide#url-state) ，那里有完整讲解和示例。
+
+| 选项 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `param` | `string` | 必填 | 承载当前幻灯片的查询参数，例如 "photo"。 |
+| `adapter` | `UrlAdapter` | History API | Navigation system to read and write through. Pass a router-backed adapter in a routed app so the router's own location does not go stale. |
+| `codec` | `{ decode(raw) => Id \| null; encode(id) => string }` | 必填 | 传输格式：参数文本 ↔ 稳定身份，与集合无关。它与 locator 组成共用同一个 Id 的配套组合 —— 默认的 ?photo=3 索引画廊展开 ...urlIndexKey(() => props.images.length) 即可；也可以提供你自己的实现（base64、slug），让画廊重新排序后书签依然有效。 |
+| `locator` | `{ locate(id) => number \| null; locateAsync?(id) => Promise<number \| null>; identify(index) => id }` | 必填 | 把身份映射成位置，并自己判断有效性：locate（同步）、locateAsync（分页画廊的异步兜底）、identify（写回）。普通的索引画廊展开 ...urlIndexKey(() => props.images.length) 即可 —— 它同时提供这个定位器和配套的编解码器，并以实时数量为上界约束 ?photo=3，于是过期的 ?photo=99 会自动从 URL 中消失，而不是打开一张从未指定的幻灯片。请传 getter 而不是数字，因为 Vue 的 setup 只执行一次，捕获下来的长度会随分页信息流增长而过期。分页信息流或按身份寻址的画廊则自行提供配套的编解码器 + 定位器。 |
+
+### useVueRouterUrlAdapter [#usevuerouterurladapter]
+
+A `UrlAdapter` ，底层用 Vue Router。在带路由的应用里把它作为 `adapter` 的 `useOverlayUrlState` 选项传入，让路由器始终是导航的唯一真相来源 —— 绕过路由器直接写 `history.pushState` 会让它的 location 过期，下一次导航就会把参数丢掉。写入只触及查询部分，路径、hash 以及 `?tag=a&tag=b` 这样的重复键都原样保留。每次变化都会报告路由器是在同一页面内压栈、替换，还是在历史中前进后退，因此从 `<router-link>` 打开的画廊按一次返回就能关闭。
+
+它从独立的子路径导出，因此没有路由器的应用永远不会把 `vue-router` 打进产物。 `vue-router` 是可选的同级依赖，需要 4.1 或更高版本：适配器通过路由器的 `state` 导航选项携带归属标记，而更早的版本会忽略它。在旧版路由器上也不会出错 —— 关闭时只是就地清除参数，而不是后退一步。
+
+<CodeBlock code={usevuerouterurladapter} language="typescript" />
+
+### toVueRef [#tovueref]
+
+把核心的 `Subscribable` （任意来自 `Signal` from `@reelkit/core`的 `Ref`）桥接成只读的 Vue Ref。只要你需要用核心信号的值驱动 Vue 重渲染，就用它 —— 在渲染函数或模板里直接读 `signal.value` 并 **并不是** 具备响应性。
+
+订阅会通过 `onScopeDispose`自动销毁，因此必须在 Vue 的 `setup()` 或其他能感知 effect 作用域的上下文中调用。
+
+<CodeBlock code={tovueref} language="typescript" />
+
+## SoundProvider [#soundprovider]
+
+标签： `<SoundProvider>` —— 上下文提供者，它会创建一个 `SoundController` 实例并通过 `RK_SOUND_KEY`提供给后代。默认插槽会被透明渲染。
+
+<CodeBlock code={soundprovider} language="vue" />
+
+## 无障碍 [#accessibility]
+
+`<Reel>` 渲染为 `role="region"` ，并带 `aria-roledescription="carousel"`。传 `aria-label` （在 TS 里属性名是 `ariaLabel` ）即可给这个区域一个屏幕阅读器能读的名字。一个 polite 的实时区域会在每次切换时播报“第 N 张，共 M 张”。非活动幻灯片会带上 `inert` 属性，于是焦点和辅助技术导航会跳过它们。
+
+`<ReelIndicator>` 渲染为 `role="tablist"` ，圆点上使用漫游 tabindex；方向键移动焦点，Enter 或空格激活对应幻灯片。
+
+如果你要围绕 `<Reel>`? `captureFocusForReturn`, `createFocusTrap`、 `getFocusableElements` 都从 `@reelkit/vue` 重新导出，用于焦点归还和焦点陷阱。
+
+## 包导出 [#package-exports]
+
+全部公开导出自 `@reelkit/vue`:
+
+<CodeBlock code={packageExports} language="typescript" />

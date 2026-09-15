@@ -1,0 +1,202 @@
+---
+title: Stories Core
+description: 框架无关的 Stories 引擎：Stories 控制器、计时控制器、Canvas 进度渲染器与工具函数。
+---
+
+import { Cpu, Layers, Timer, Minus, MousePointerClick, Cog } from 'lucide-react';
+import installation from '../../snippets/stories-core/installation.sh?raw';
+import controllerExample from '../../snippets/stories-core/controller-example.ts?raw';
+import timerExample from '../../snippets/stories-core/timer-example.ts?raw';
+import canvasExample from '../../snippets/stories-core/canvas-example.ts?raw';
+import viewedStateExample from '../../snippets/stories-core/viewed-state-example.ts?raw';
+import typesCode from '../../snippets/stories-core/types-code.ts?raw';
+
+驱动 `@reelkit/react-stories-player`的引擎。纯 TypeScript，不依赖任何框架。可以用它为 Angular、Vue 或原生 JS 构建 Stories Player。
+
+<FeatureGrid columns={3} items={[
+  {
+    icon: Cpu,
+    label: '与框架无关',
+    desc: '纯 TypeScript，不依赖任何 DOM 框架',
+  },
+  {
+    icon: Layers,
+    label: '两级导航',
+    desc: '分组，以及每个分组内部的 story',
+  },
+  {
+    icon: Timer,
+    label: 'RAF 计时器',
+    desc: '基于 requestAnimationFrame 的自动播放，支持暂停 / 恢复',
+  },
+  {
+    icon: Minus,
+    label: 'Canvas 进度条',
+    desc: '适配 Retina 的分段进度条，带滑动窗口',
+  },
+  {
+    icon: MousePointerClick,
+    label: '点击区域',
+    desc: '可配置的左右点击检测',
+  },
+  {
+    icon: Cog,
+    label: '响应式信号',
+    desc: '构建在 @reelkit/core 的信号原语之上',
+  },
+]} />
+
+## 安装 [#installation]
+
+<CodeBlock code={installation} language="bash" />
+
+## Stories 控制器 [#stories-controller]
+
+`createStoriesController(config, events?)` 负责在分组和 story 之间导航。它跟踪暂停 / 恢复状态，记住每个分组最后看到的 story，并在每次切换时触发回调。
+
+### 配置（StoriesControllerConfig） [#config-storiescontrollerconfig]
+
+| 属性 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `groupCount` | `number` | 必填 | story 分组总数 |
+| `storyCounts` | `number[]` | 必填 | 每个分组内的 story 数量 |
+| `initialGroupIndex` | `number` | 0 | 初始分组索引 |
+| `initialStoryIndex` | `number` | resumeStoryIndex(initialGroupIndex)，否则为 0 | 分组内的初始 story 索引。显式指定时优先于任何记忆；省略则初始分组像其他分组一样恢复。 |
+| `defaultImageDuration` | `number` | 5000 | 图片类 story 的默认自动播放时长（毫秒） |
+| `resumeStoryIndex` | `(groupIndex: number) => number` | undefined | 尚未访问的分组打开时所在的 story；限制在该分组实际拥有的 story 范围内 |
+
+### 事件（StoriesControllerEvents） [#events-storiescontrollerevents]
+
+| 事件 | 类型 | 说明 |
+| --- | --- | --- |
+| `onStoryChange` | `(groupIndex, storyIndex) => void` | 当前 story 变化时触发 |
+| `onGroupChange` | `(groupIndex) => void` | 当前分组变化时触发 |
+| `onStoryViewed` | `(groupIndex, storyIndex) => void` | 某个 story 变为可见时触发 |
+| `onStoryComplete` | `(groupIndex, storyIndex) => void` | Fired when a story's timer completes (before advancing) |
+| `onComplete` | `() => void` | 最后一个分组的最后一个 story 播完时触发 |
+| `onClose` | `() => void` | 浮层应当关闭时触发 |
+
+### 状态（响应式信号） [#state-reactive-signals]
+
+| Signal | 类型 | 说明 |
+| --- | --- | --- |
+| `state.activeGroupIndex` | `Signal<number>` | 当前分组索引 |
+| `state.activeStoryIndex` | `Signal<number>` | 分组内当前 story 的索引 |
+| `state.isPaused` | `Signal<boolean>` | 自动播放是否已暂停 |
+
+### 方法 [#methods]
+
+| 方法 | 类型 | 说明 |
+| --- | --- | --- |
+| `nextStory()` | `() => void` | 在分组内前进；越过边界时进入下一个分组 |
+| `prevStory()` | `() => void` | 在分组内后退；越过边界时回到上一个分组 |
+| `nextGroup()` | `() => void` | 切到下一个分组，并从上次看到的 story 继续 |
+| `prevGroup()` | `() => void` | 切到上一个分组，并从上次看到的 story 继续 |
+| `goToGroup(index)` | `(number) => void` | 按索引跳到指定分组 |
+| `pause()` | `() => void` | 暂停自动播放 |
+| `resume()` | `() => void` | 恢复自动播放 |
+| `onStoryTimerComplete()` | `() => void` | 计时结束时调用；先触发 onStoryComplete 再前进 |
+| `getLastStoryIndex(groupIndex)` | `(number) => number` | 分组打开的位置：本次会话中离开时所在的 story，否则由 resumeStoryIndex 指定 |
+| `reportInitialView()` | `() => void` | 把播放器打开时所在的 story 报告为已观看，仅一次。挂载后调用，不要在渲染期间调用。 |
+
+### 示例 [#example]
+
+<CodeBlock code={controllerExample} />
+
+## 计时控制器 [#timer-controller]
+
+`createTimerController(config)` 用 `requestAnimationFrame` 循环驱动自动播放。进度信号（0 到 1）供给进度条。暂停和恢复会精确保留位置。
+
+### 配置（TimerControllerConfig） [#config-timercontrollerconfig]
+
+| 属性 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `duration` | `number` | 必填 | 默认时长（毫秒） |
+| `onComplete` | `() => void` | undefined | 计时到达 100% 时调用 |
+
+### 状态 [#state]
+
+| Signal | 类型 | 说明 |
+| --- | --- | --- |
+| `progress` | `Signal<number>` | 进度信号（0 到 1） |
+| `isRunning` | `Signal<boolean>` | 计时器当前是否在运行 |
+
+### 方法 [#methods]
+
+| 方法 | 类型 | 说明 |
+| --- | --- | --- |
+| `start(duration?)` | `(number?) => void` | 启动（或重启）计时器，可选地覆盖时长 |
+| `pause()` | `() => void` | 把进度冻结在当前位置 |
+| `resume()` | `() => void` | 从冻结的位置继续 |
+| `reset()` | `() => void` | 把进度重置为 0 并停止 |
+| `dispose()` | `() => void` | 清理资源 |
+
+### 示例 [#example]
+
+<CodeBlock code={timerExample} />
+
+## Canvas 进度渲染器 [#canvas-progress-renderer]
+
+`createCanvasProgressRenderer(config?)` 在 canvas 上绘制分段进度条。它会针对 Retina 屏缩放，通过 ResizeObserver 测量容器，并在分段放不下时启用滑动窗口。
+
+### 配置（CanvasProgressRendererConfig） [#config-canvasprogressrendererconfig]
+
+| 属性 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `gap` | `number` | 2 | 分段之间的间距（像素） |
+| `barHeight` | `number` | 2 | 进度条高度（像素） |
+| `minSegmentWidth` | `number` | 8 | 触发滑动窗口之前的最小分段宽度 |
+| `bgColor` | `string` | 'rgba(255,255,255,0.3)' | 未填充分段的背景色 |
+| `fillColor` | `string` | '#ffffff' | 已完成 / 当前分段的填充色 |
+
+### 方法 [#methods]
+
+| 成员 | 类型 | 说明 |
+| --- | --- | --- |
+| `attach(canvas)` | `(HTMLCanvasElement) => void` | 挂到 canvas 元素上；并在父级启动 ResizeObserver |
+| `draw(totalStories, activeIndex, progress)` | `(number, number, number) => void` | 按给定状态绘制进度条 |
+| `width` | `number (readonly)` | 当前测得的宽度（CSS 像素） |
+| `dispose()` | `() => void` | 清理 ResizeObserver 和内部状态 |
+
+### 示例 [#example]
+
+<CodeBlock code={canvasExample} />
+
+## 已观看状态 [#viewed-state]
+
+`createStoriesViewedState(controller, groups)` 以播放器的语汇——分组、作者、story 索引——读取核心的 `ViewedStateController`，而存储本身对这些一无所知。它返回一个 `StoriesViewedState`。用地址栏所用的同一个键构建存储并按分组跟踪，已存记录读起来就与分享链接的参数完全一样。
+
+| 参数 | 类型 | 说明 |
+| --- | --- | --- |
+| `controller` | `ViewedStateController<TwoAxisPosition>` | 由地址栏所用的同一个键构建的核心存储，并展开 twoAxisViewedTracking，让每个分组各有一条记录 |
+| `groups` | `() => StoriesGroup<T>[]` | 读取当前分组。是一个 getter，因此在设置之后才加载或重排的信息流，会在调用时按当前状态计量。 |
+
+### StoriesViewedState [#storiesviewedstate]
+
+| 方法 | 类型 | 说明 |
+| --- | --- | --- |
+| `viewedCounts()` | `() => Map<string, number>` | 每个分组已看的 story 数，按作者 id 索引——即 StoriesRingList 接受的 viewedState 形状 |
+| `resumeStoryIndex(groupIndex)` | `(number) => number` | 第一个未看的 story；分组已看完时为 0 |
+| `markViewed(groupIndex, storyIndex)` | `(number, number) => void` | 把某条 story 记为已看。接到 onStoryViewed 上。 |
+
+### 示例 [#example]
+
+<CodeBlock code={viewedStateExample} />
+
+记录记的是到达的最远一条 story，而不是观看次数，因此按 id 寻址的键在信息流重排后仍记得分组的位置，而从分组中间删掉一条 story 会让计数变短并重新点亮圆环。
+
+## 工具函数 [#utility-functions]
+
+用于点击区域检测和进度条计算的纯函数。
+
+| 函数 | 类型 | 说明 |
+| --- | --- | --- |
+| `getTapAction(tapX, containerWidth, splitRatio?)` | `(number, number, number?) => 'prev' \| 'next'` | Determines whether a tap triggers 'prev' or 'next' based on position. Default splitRatio is 0.3. |
+| `getSegments(totalStories, activeIndex, progress)` | `(number, number, number) => SegmentState[]` | 计算进度条中每个分段的状态和填充比例 |
+| `getVisibleWindow(totalStories, activeIndex, progress, containerWidth, minSegmentWidth?, gap?)` | `(number, number, number, number, number?, number?) => VisibleWindow` | 当分段总数超出容器容量时，计算可见的滑动窗口 |
+
+## 类型 [#types]
+
+全部类型定义均导出自 `@reelkit/stories-core`.
+
+<CodeBlock code={typesCode} />

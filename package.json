@@ -15,6 +15,7 @@
     "lint": "pnpm exec nx run-many -t lint --no-tui",
     "typecheck": "pnpm exec nx run-many -t typecheck --no-tui",
     "docs:check": "node scripts/docs-check.mjs",
+    "docs:i18n": "node scripts/docs-i18n.mjs",
     "check": "pnpm run fmt:chk && pnpm run lint && pnpm run typecheck && pnpm run docs:check",
     "test": "pnpm exec nx run-many -t test --no-tui",
     "e2e": "pnpm exec nx run-many -t e2e --no-tui",

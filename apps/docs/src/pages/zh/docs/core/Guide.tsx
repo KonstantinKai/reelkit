@@ -287,7 +287,11 @@ disposeIndexes();`}
       </section>
 
       <section className="mb-12">
-        <Heading level={2} id="timeline" className="text-2xl font-bold mb-4">
+        <Heading
+          level={2}
+          id="timeline-controller"
+          className="text-2xl font-bold mb-4"
+        >
           时间轴控制器
         </Heading>
         <p className="text-slate-600 dark:text-slate-400 mb-4">

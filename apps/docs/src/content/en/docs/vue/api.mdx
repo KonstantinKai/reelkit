@@ -1,0 +1,235 @@
+---
+title: Vue API Reference
+description: Complete reference for @reelkit/vue components, props, emits, exposed methods, ReelIndicator, useSwipeToClose, useOverlayUrlState, and provide/inject context shape.
+---
+
+import slots from '../../../snippets/vue-api/slots.vue?raw';
+import reelexpose from '../../../snippets/vue-api/reelexpose.vue?raw';
+import rkReelKeyUsereelcontext from '../../../snippets/vue-api/rk-reel-key-usereelcontext.vue?raw';
+import usebodylock from '../../../snippets/vue-api/usebodylock.ts?raw';
+import usefullscreen from '../../../snippets/vue-api/usefullscreen.ts?raw';
+import usesoundstate from '../../../snippets/vue-api/usesoundstate.ts?raw';
+import usevuerouterurladapter from '../../../snippets/vue-api/usevuerouterurladapter.ts?raw';
+import tovueref from '../../../snippets/vue-api/tovueref.ts?raw';
+import soundprovider from '../../../snippets/vue-api/soundprovider.vue?raw';
+import packageExports from '../../../snippets/vue-api/package-exports.ts?raw';
+
+Complete reference for `@reelkit/vue` components, composables, and utilities.
+
+## Reel [#reel]
+
+Tag: `<Reel>`
+
+### Props [#props]
+
+<Caption>`ReelProps`</Caption>
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `count` | `number` | required | Total number of slides |
+| `direction` | `'vertical' \| 'horizontal'` | 'vertical' | Scroll direction |
+| `size` | `[number, number] \| undefined` | undefined | Width and height as \[width, height\]. When omitted, auto-measures via ResizeObserver |
+| `initialIndex` | `number` | 0 | Starting slide index |
+| `loop` | `boolean` | false | Enable infinite loop |
+| `transition` | `TransitionTransformFn` | slideTransition | Transition effect function. Built-in: slideTransition, fadeTransition, flipTransition, cubeTransition, zoomTransition |
+| `transitionDuration` | `number` | 300 | Animation duration in ms |
+| `swipeDistanceFactor` | `number` | 0.12 | Swipe threshold (0-1) |
+| `enableGestures` | `boolean` | true | Enable touch/mouse drag navigation |
+| `enableNavKeys` | `boolean` | true | Enable keyboard arrow key navigation |
+| `enableWheel` | `boolean` | false | Enable mouse wheel navigation |
+| `wheelDebounceMs` | `number` | 200 | Wheel event debounce in ms |
+| `rangeExtractor` | `(index: number, count: number) => number[]` | defaultRangeExtractor | Custom function to determine which indexes are rendered |
+| `keyExtractor` | `(index: number, indexInRange: number) => string` | index => index.toString() | Custom key function for slide rendering (useful with loop) |
+| `ariaLabel` | `string` | undefined | Accessible label for the carousel region |
+| `reelStyle` | `Record<string, string \| number>` | undefined | Inline styles applied to the root container element |
+| `reelClass` | `string \| Array \| Object` | undefined | CSS class(es) applied to the root container element |
+| `onNavKeyPress` | `(increment: -1 \| 1) => void` | undefined | Callback prop that replaces the default ArrowUp/ArrowDown navigation. When provided, you implement your own navigation (e.g. call reelRef.value.next()). Omit for default behavior. |
+
+### Events [#events]
+
+| Event | Payload | Description |
+| --- | --- | --- |
+| `beforeChange` | `(index: number, nextIndex: number, indexInRange: number)` | Emitted before slide transition begins |
+| `afterChange` | `(index: number, indexInRange: number)` | Emitted after slide transition completes |
+| `slideDragStart` | `(index: number)` | Emitted when a drag gesture starts |
+| `slideDragEnd` | `(index: number)` | Emitted when a drag gesture ends (released) |
+| `slideDragCanceled` | `(index: number)` | Emitted when a drag gesture is canceled (snap-back) |
+| `tap` | `(event: GestureCommonEvent)` | Emitted on a single tap gesture |
+| `doubleTap` | `(event: GestureCommonEvent)` | Emitted on a double tap gesture |
+| `longPress` | `(event: GestureCommonEvent)` | Emitted when a long press gesture starts |
+| `longPressEnd` | `(event: GestureEvent)` | Emitted when a long press gesture ends |
+
+### Slots [#slots]
+
+<CodeBlock code={slots} language="vue-html" />
+
+| Slot | Scoped Props | Description |
+| --- | --- | --- |
+| `#item` | `{ index: number, indexInRange: number, size: [number, number] }` | Renders each visible slide. Called for each index in the virtualized range |
+| `default` | `none` | Overlay content rendered on top of all slides (indicators, controls, etc.) |
+
+## ReelExpose [#reelexpose]
+
+Imperative API exposed via template ref:
+
+<CodeBlock code={reelexpose} language="vue" />
+
+| Method | Type | Description |
+| --- | --- | --- |
+| `next()` | `() => void` | Go to next slide |
+| `prev()` | `() => void` | Go to previous slide |
+| `goTo(index, animate?)` | `(number, boolean?) => Promise<void>` | Navigate to a specific slide index |
+| `adjust()` | `() => void` | Recalculate slide positions (useful after layout change) |
+| `observe()` | `() => void` | Start listening to gesture, keyboard, and wheel events |
+| `unobserve()` | `() => void` | Stop listening to gesture, keyboard, and wheel events |
+
+## ReelIndicator [#reelindicator]
+
+Tag: `<ReelIndicator>`
+
+### Props [#props]
+
+<Caption>`ReelIndicatorProps`</Caption>
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `count` | `number \| undefined` | auto | Total number of items. Auto-connected from parent Reel context when nested inside one; pass explicitly when used standalone |
+| `active` | `number \| undefined` | auto | Current active index. Auto-connected from parent Reel context when nested inside one; pass explicitly when used standalone |
+| `direction` | `'vertical' \| 'horizontal'` | 'vertical' | Indicator orientation |
+| `radius` | `number` | 3 | Dot radius in pixels |
+| `visible` | `number` | 5 | Max normal-sized dots visible at once |
+| `gap` | `number` | 4 | Space between dots in pixels |
+| `activeColor` | `string` | '#fff' | Active dot color |
+| `inactiveColor` | `string` | 'rgba(255, 255, 255, 0.5)' | Inactive dot color |
+| `edgeScale` | `number` | 0.5 | Scale factor for edge overflow dots |
+| `onDotClick` | `(index: number) => void` | undefined | Custom click handler. When omitted inside a Reel, defaults to navigating to the clicked dot index |
+| `indicatorClass` | `string \| Array \| Object` | undefined | CSS class(es) applied to the tablist root element |
+| `indicatorStyle` | `CSSProperties` | undefined | Inline styles merged into the tablist root element |
+
+### Events [#events]
+
+| Event | Payload | Description |
+| --- | --- | --- |
+| `dotClick` | `(index: number)` | Emitted when a dot is clicked; provides the dot index |
+
+## SwipeToClose [#swipetoclose]
+
+Tag: `<SwipeToClose>` — Wraps its default slot in a touch-aware container that can be swiped to dismiss.
+
+### Props [#props]
+
+<Caption>`SwipeToCloseProps`</Caption>
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `direction` | `'up' \| 'down'` | required | Swipe direction to trigger close. Use "up" for lightbox dismiss, "down" for stories dismiss |
+| `enabled` | `boolean` | true | Whether the swipe-to-close gesture is active |
+| `threshold` | `number` | 0.2 | Fraction of viewport height required to trigger close (0-1) |
+
+### Events [#events]
+
+| Event | Payload | Description |
+| --- | --- | --- |
+| `close` | `()` | Emitted when the swipe gesture exceeds the threshold and the close animation completes |
+
+### Slots [#slots]
+
+| Slot | Description |
+| --- | --- |
+| `default` | Content to wrap with swipe-to-close gesture handling |
+
+## RK_REEL_KEY & useReelContext [#rk-reel-key-usereelcontext]
+
+An `InjectionKey<ReelContextValue>` provided by `<Reel>` to its descendants. Used internally by `<ReelIndicator>` for auto-connect behavior. Use `useReelContext()` in custom components that need slider context.
+
+<CodeBlock code={rkReelKeyUsereelcontext} language="vue" />
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `index` | `Signal<number>` | Reactive current slide index |
+| `count` | `Signal<number>` | Reactive total item count |
+| `goTo` | `(index: number, animate?: boolean) => Promise<void>` | Programmatically navigate to a slide |
+
+## Composables [#composables]
+
+### useBodyLock [#usebodylock]
+
+Locks the document body scroll when the provided value is `true`. Uses reference counting so multiple concurrent callers can each lock/unlock independently. Automatically unlocks on unmount.
+
+<CodeBlock code={usebodylock} language="typescript" />
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `locked` | `Ref<boolean> \| boolean` | Whether body scroll should be locked. Accepts a reactive ref or a static boolean |
+
+### useFullscreen [#usefullscreen]
+
+<Caption>`UseFullscreenOptions` → `UseFullscreenReturn`</Caption>
+
+Composable for managing the Fullscreen API with cross-browser support. Exits fullscreen automatically on unmount.
+
+<CodeBlock code={usefullscreen} language="typescript" />
+
+| Return | Type | Description |
+| --- | --- | --- |
+| `isFullscreen` | `Signal<boolean>` | Core signal reflecting current fullscreen state (read `.value`) |
+| `request` | `() => Promise<void>` | Request fullscreen on the referenced element. If another element is already fullscreen, it is exited first (awaited). |
+| `exit` | `() => Promise<void>` | Exit fullscreen |
+| `toggle` | `() => Promise<void>` | Toggle fullscreen state |
+
+### useSoundState [#usesoundstate]
+
+Access the current `SoundController` from context. Must be called inside a `<SoundProvider>`. Throws if called outside.
+
+<CodeBlock code={usesoundstate} language="typescript" />
+
+### useOverlayUrlState [#useoverlayurlstate]
+
+<Caption>`OverlayUrlStateOptions`</Caption>
+
+Builds a URL-state controller for an overlay, which you hand to a `<LightboxUrlOverlay>` as its `:controller` prop.
+
+See [URL State in the Vue guide](/docs/vue/guide#url-state) for the walkthrough and examples.
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `param` | `string` | required | Query parameter carrying the active slide, e.g. "photo". |
+| `adapter` | `UrlAdapter` | History API | Navigation system to read and write through. Pass a router-backed adapter in a routed app so the router's own location does not go stale. |
+| `codec` | `{ decode(raw) => Id \| null; encode(id) => string }` | required | Wire format: parameter text ↔ a stable identity, collection-blind. Travels with locator as a matched pair sharing the same Id — spread ...urlIndexKey(() => props.images.length) for the default ?photo=3 index gallery, or supply your own (base64, slug) so a bookmark survives the gallery being reordered. |
+| `locator` | `{ locate(id) => number \| null; locateAsync?(id) => Promise<number \| null>; identify(index) => id }` | required | Maps the identity to a position and owns its own validity: locate (sync), locateAsync (async fallback for a paginated gallery), identify (writes). For a plain index gallery spread ...urlIndexKey(() => props.images.length) — it supplies this locator plus the matching codec and bounds ?photo=3 against the live count, so a stale ?photo=99 heals out of the URL instead of opening a slide that was never named. Pass a getter, not a number, because a Vue setup runs once and a captured length would go stale as a paginated feed grows. A paginated feed or an identity-keyed gallery supplies its own matched codec + locator instead. |
+
+### useVueRouterUrlAdapter [#usevuerouterurladapter]
+
+A `UrlAdapter` backed by Vue Router. Pass it as the `adapter` option of `useOverlayUrlState` in a routed app so the router stays the single source of navigation truth — writing `history.pushState` behind the router leaves its location stale and its next navigation drops the parameter. Writes touch the query only, so the path, the hash, and repeated keys such as `?tag=a&tag=b` ride along untouched. Every change reports whether the router pushed on the same page, replaced, or stepped through history, so a gallery opened from a `<router-link>` closes with one back step.
+
+Ships from its own subpath, so an app without a router never pulls `vue-router` into its bundle. `vue-router` is an optional peer dependency, 4.1 or later: the adapter carries its ownership stamp through the router's `state` navigation option, which older releases ignore. On an older router nothing breaks — closing just clears the parameter in place instead of stepping back.
+
+<CodeBlock code={usevuerouterurladapter} language="typescript" />
+
+### toVueRef [#tovueref]
+
+Bridges a core `Subscribable` (any `Signal` from `@reelkit/core`) into a read-only Vue `Ref`. Use it whenever you need a core signal value to drive a Vue re-render — direct `signal.value` reads in render functions or templates are **not** reactive on their own.
+
+The subscription is auto-disposed via `onScopeDispose`, so this must be called inside a Vue `setup()` or other effect-scope-aware context.
+
+<CodeBlock code={tovueref} language="typescript" />
+
+## SoundProvider [#soundprovider]
+
+Tag: `<SoundProvider>` — Context provider that creates a `SoundController` instance and provides it to descendants via `RK_SOUND_KEY`. Renders its default slot transparently.
+
+<CodeBlock code={soundprovider} language="vue" />
+
+## Accessibility [#accessibility]
+
+`<Reel>` renders as `role="region"` with `aria-roledescription="carousel"`. Pass `aria-label` (the prop is `ariaLabel` in TS) to give the region a screen-reader name. A polite live region announces "Slide N of M" on every slide change. Inactive slides receive the `inert` attribute so focus and AT navigation skip them.
+
+`<ReelIndicator>` renders as `role="tablist"` with roving tabindex on the dots; arrow keys move focus and Enter or Space activates the slide.
+
+Building a custom modal around `<Reel>`? `captureFocusForReturn`, `createFocusTrap`, and `getFocusableElements` are re-exported from `@reelkit/vue` for focus return and trap.
+
+## Package Exports [#package-exports]
+
+All public exports from `@reelkit/vue`:
+
+<CodeBlock code={packageExports} language="typescript" />

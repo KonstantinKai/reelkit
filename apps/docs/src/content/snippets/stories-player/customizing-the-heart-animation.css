@@ -1,0 +1,15 @@
+/* Speed up the pop via the token */
+:root {
+  --rk-stories-heart-duration: 1s;
+}
+
+/* Restyle color and size via the class */
+.rk-stories-heart {
+  color: #ff3b5c;
+  font-size: 80px;
+}
+
+/* Or hide the built-in heart entirely */
+.rk-stories-heart {
+  display: none;
+}

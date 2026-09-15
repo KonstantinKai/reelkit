@@ -98,7 +98,13 @@
     @apply text-2xl font-bold mt-12 mb-4;
   }
   .docs-h3 {
-    @apply text-xl font-bold mt-8 mb-4;
+    @apply text-lg font-semibold mt-6 mb-2;
+  }
+  .docs-h2 + .docs-h3 {
+    @apply mt-0;
+  }
+  .docs-section {
+    @apply mt-12;
   }
   .docs-link {
     @apply text-primary-600 dark:text-primary-400 hover:underline;
@@ -110,25 +116,120 @@
     @apply list-decimal;
   }
   .docs-inline-code {
-    @apply px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono;
+    @apply px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono;
   }
+  .docs-strong {
+    @apply font-bold;
+  }
+  .docs-caption {
+    @apply text-sm text-slate-500 dark:text-slate-400 -mt-1 mb-4;
+  }
+  .docs-signature {
+    @apply text-sm text-slate-500 dark:text-slate-400 mb-2 font-mono;
+  }
+  .docs-demo-link {
+    @apply inline-flex items-center gap-1.5 mb-4 text-sm font-medium text-primary-500 hover:text-primary-600 transition-colors;
+  }
+  /* A demo link right under the lead belongs to the page header. */
+  .docs-mdx-content > .docs-p:first-child:has(+ .docs-demo-link) {
+    @apply mb-3;
+  }
+  .docs-mdx-content > .docs-p:first-child + .docs-demo-link {
+    @apply mb-0;
+  }
+
+  /*
+   * Reference tables — the markdown default. Identifiers in the first
+   * column read in the accent colour, types and defaults in the columns
+   * after it stay small and muted, descriptions are plain prose.
+   */
   .docs-table {
-    @apply w-full text-sm text-left border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden;
+    @apply w-full;
   }
-  .docs-table thead {
-    @apply bg-slate-50 dark:bg-slate-800;
+  .docs-table thead tr {
+    @apply border-b border-slate-200 dark:border-slate-700;
   }
   .docs-table th {
-    @apply px-4 py-3 font-semibold;
+    @apply text-left py-3 px-4 font-semibold;
   }
-  .docs-table tbody {
-    @apply divide-y divide-slate-200 dark:divide-slate-700;
+  .docs-table tbody tr {
+    @apply border-b border-slate-100 dark:border-slate-800;
   }
   .docs-table td {
-    @apply px-4 py-3 text-slate-600 dark:text-slate-400;
+    @apply py-3 px-4 text-sm text-slate-600 dark:text-slate-400;
+  }
+  .docs-table td > .docs-inline-code {
+    @apply p-0 bg-transparent text-xs text-slate-500;
   }
   .docs-table td:first-child > .docs-inline-code {
-    @apply p-0 bg-transparent text-[var(--color-text)];
+    @apply text-sm text-primary-600 dark:text-primary-400;
+  }
+
+  /* Bordered comparison table, written as JSX with `<Table boxed>`. */
+  .docs-table-boxed {
+    @apply text-sm text-left border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden;
+  }
+  .docs-table-boxed thead {
+    @apply bg-slate-50 dark:bg-slate-800;
+  }
+  .docs-table-boxed thead tr,
+  .docs-table-boxed tbody tr {
+    @apply border-b-0;
+  }
+  .docs-table-boxed tbody {
+    @apply divide-y divide-slate-200 dark:divide-slate-700;
+  }
+  .docs-table-boxed td > .docs-inline-code {
+    @apply px-1 py-0.5 bg-slate-100 dark:bg-slate-800 text-xs text-inherit;
+  }
+  .docs-table-boxed td:first-child > .docs-inline-code {
+    @apply p-0 bg-transparent text-sm text-[var(--color-text)];
+  }
+
+  /*
+   * Lists with a marker other than the default disc. The marker is
+   * positioned in the item's left padding rather than laid out as a flex
+   * item, so bold words and the text after them stay one run of prose.
+   */
+  [data-bullets] .docs-list {
+    @apply list-none space-y-3 mb-6;
+  }
+  [data-bullets] .docs-li {
+    @apply relative;
+  }
+  [data-bullets] .docs-li::before {
+    content: '';
+    @apply absolute left-0;
+  }
+  [data-bullets='dot'] .docs-li {
+    @apply pl-5;
+  }
+  [data-bullets='dot'] .docs-li::before {
+    @apply top-2 w-2 h-2 rounded-full bg-primary-500;
+  }
+  [data-bullets='check'] .docs-list {
+    @apply grid grid-cols-2 gap-2 space-y-0;
+  }
+  [data-bullets='check'] .docs-li {
+    @apply pl-6;
+  }
+  [data-bullets='check'] .docs-li::before {
+    @apply top-1 w-4 h-4 bg-green-500;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E")
+      no-repeat center / contain;
+  }
+
+  .docs-key-points {
+    @apply space-y-3 mb-4 text-slate-600 dark:text-slate-400;
+  }
+  .docs-key-point {
+    @apply flex items-start gap-3;
+  }
+  .docs-key-point-title {
+    @apply font-semibold text-slate-900 dark:text-white;
+  }
+  .docs-key-point .docs-p {
+    @apply text-sm mb-0;
   }
   .docs-mdx-content [data-callout] {
     @apply mb-4;

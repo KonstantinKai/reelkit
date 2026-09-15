@@ -1,0 +1,475 @@
+---
+title: Reel Player для Vue
+description: 'Повноекранний відеоплеєр для Vue: властивості та події, слоти з областю видимості, таймлайн, контекст звуку й темізація.'
+---
+
+import { Zap, Play, Volume2, Layout, Clock, Image, Layers, Ratio, Monitor, Code, Settings, Link2 } from 'lucide-react';
+import installation from '../../snippets/vue-reel-player/installation.sh?raw';
+import installation2 from '../../snippets/vue-reel-player/installation-2.ts?raw';
+import basicUsage from '../../snippets/vue-reel-player/basic-usage.vue?raw';
+import scopedSlots from '../../snippets/vue-reel-player/scoped-slots.vue?raw';
+import customTimeline from '../../snippets/vue-reel-player/custom-timeline.vue?raw';
+import customContentTypes from '../../snippets/vue-reel-player/custom-content-types.vue?raw';
+import urlState from '../../snippets/vue-reel-player/url-state.vue?raw';
+import oneKeyOrTwo from '../../snippets/vue-reel-player/one-key-or-two.ts?raw';
+import oneKeyOrTwo2 from '../../snippets/vue-reel-player/one-key-or-two-2.ts?raw';
+import oneKeyOrTwo3 from '../../snippets/vue-reel-player/one-key-or-two-3.ts?raw';
+import oneKeyOrTwo4 from '../../snippets/vue-reel-player/one-key-or-two-4.ts?raw';
+import vModelIsOpen from '../../snippets/vue-reel-player/v-model-is-open.vue?raw';
+import timelinebarprops from '../../snippets/vue-reel-player/timelinebarprops.ts?raw';
+import timelineslotscopeT from '../../snippets/vue-reel-player/timelineslotscope-t.ts?raw';
+import closebutton from '../../snippets/vue-reel-player/closebutton.vue?raw';
+import soundbutton from '../../snippets/vue-reel-player/soundbutton.vue?raw';
+import timelinebar from '../../snippets/vue-reel-player/timelinebar.vue?raw';
+import slideoverlay from '../../snippets/vue-reel-player/slideoverlay.vue?raw';
+import imageslide from '../../snippets/vue-reel-player/imageslide.vue?raw';
+import videoslide from '../../snippets/vue-reel-player/videoslide.vue?raw';
+import videoslide2 from '../../snippets/vue-reel-player/videoslide-2.vue?raw';
+import lifecycleCallbacks from '../../snippets/vue-reel-player/lifecycle-callbacks.vue?raw';
+import customLoadingErrorUi from '../../snippets/vue-reel-player/custom-loading-error-ui.vue?raw';
+import timeline from '../../snippets/vue-reel-player/timeline.vue?raw';
+import soundContext from '../../snippets/vue-reel-player/sound-context.vue?raw';
+import theming from '../../snippets/vue-reel-player/theming.css?raw';
+
+Повноекранний вертикальний медіаплеєр у стилі Instagram чи TikTok для Vue 3 на основі `@reelkit/vue-reel-player`.
+
+<DemoLink href="https://vue-demo.reelkit.dev/reel-player?utm_source=docs">Подивитися демо наживо →</DemoLink>
+
+## Features [#features]
+
+<FeatureGrid items={[
+              {
+                icon: Zap,
+                label: 'Вертикальний свайп',
+                desc: 'Дотик, перетягування, клавіатура, колесо',
+              },
+              {
+                icon: Play,
+                label: 'Автовідтворення відео',
+                desc: 'Грає, коли слайд видимий',
+              },
+              {
+                icon: Volume2,
+                label: 'Перемикач звуку',
+                desc: 'Безперервність на iOS',
+              },
+              {
+                icon: Layout,
+                label: 'Multi-Media',
+                desc: 'Вкладені горизонтальні каруселі',
+              },
+              {
+                icon: Clock,
+                label: 'Пам’ять позиції',
+                desc: 'Продовжує з місця, де зупинилися',
+              },
+              {
+                icon: Image,
+                label: 'Знімок кадру',
+                desc: 'Плавний перехід від постера до відео',
+              },
+              {
+                icon: Layers,
+                label: 'Віртуалізований',
+                desc: 'Лише 3 слайди в DOM',
+              },
+              {
+                icon: Ratio,
+                label: 'Співвідношення сторін',
+                desc: '9:16 на десктопі, на весь екран на мобільних',
+              },
+              {
+                icon: Monitor,
+                label: 'Навігація на десктопі',
+                desc: 'Кнопки-стрілки',
+              },
+              {
+                icon: Code,
+                label: 'Узагальнені типи',
+                desc: 'Власні моделі даних вмісту',
+              },
+              {
+                icon: Settings,
+                label: 'Слоти з областю видимості',
+                desc: 'Налаштовуйте кожен елемент інтерфейсу',
+              },
+              {
+                icon: Zap,
+                label: 'v-model:is-open',
+                desc: 'Двостороння прив’язка видимості',
+              },
+              {
+                icon: Link2,
+                label: 'Стан в URL',
+                desc: 'Посилання, якими можна ділитися, і закриття кнопкою «назад»',
+              },
+            ]} />
+
+## Встановлення [#installation]
+
+<CodeBlock code={installation} language="bash" />
+
+Імпортуйте таблицю стилів один раз у точці входу застосунку (або в будь-якому компоненті):
+
+<CodeBlock code={installation2} language="typescript" />
+
+<Callout type="info" title="Icons">
+  Стандартні елементи керування використовують `lucide-vue-next` для іконок (закриття, звук, стрілки навігації). Якщо ви віддаєте перевагу іншій бібліотеці іконок, скористайтеся слотами `#controls` та `#navigation` з областю видимості, щоб передати власні.
+</Callout>
+
+## Базове використання [#basic-usage]
+
+Покажіть сітку мініатюр і відкривайте оверлей на натиснутому індексі. Прив’язка `v-model:is-open` означає, що батьківський `ref` лишається синхронним, коли користувач закриває плеєр кнопкою, жестом або клавішею Escape.
+
+<Sandbox code={basicUsage} language="vue" title="App.vue" framework="vue" stackblitzDeps={['@reelkit/vue-reel-player']} stackblitzExtraDeps={{ 'lucide-vue-next': '>=0.460.0' }} />
+
+## Слоти з областю видимості [#scoped-slots]
+
+Вісім слотів з областю видимості дають замінити будь-яку частину інтерфейсу плеєра. Кожен отримує строго типізований об’єкт області. Слоти, які ви не передали, лишаються стандартними.
+
+| Slot | Scope | Опис |
+| --- | --- | --- |
+| #controls | `{ item, soundState, activeIndex, content, onClose }` | Власна загальна смуга керування (закриття, звук, поділитися тощо) |
+| #error | `{ item, activeIndex, innerActiveIndex }` | Власний індикатор помилки (замінює стандартний значок) |
+| #loading | `{ item, activeIndex, innerActiveIndex }` | Власний індикатор завантаження (замінює стандартну хвилю) |
+| #navigation | `{ item, activeIndex, count, onPrev, onNext }` | Власні стрілки навігації вперед і назад (десктоп) |
+| #nestedNavigation | `{ media, activeIndex, count, onPrev, onNext }` | Власні стрілки для внутрішнього горизонтального слайдера |
+| #nestedSlide | `{ item, media, index, size, isActive, isInnerActive, slideKey, defaultContent, onReady, onWaiting, onError }` | Власний вміст слайда всередині внутрішнього горизонтального слайдера |
+| #slide | `{ item, index, size, isActive, slideKey, defaultContent, onReady, onWaiting, onError }` | Повністю власний вміст слайда (якщо не задано, лишається стандартний) |
+| #slideOverlay | `{ item, index, isActive }` | Оверлей для кожного слайда (дані автора, лайки, опис тощо) |
+| #timeline | `{ item, activeIndex, timelineState, defaultContent }` | Власна смуга таймлайну відтворення. Викликається лише тоді, коли за вбудованим правилом (режим timeline плюс мінімальна тривалість) вивелася б стандартна смуга; логіка auto/always/never та сама. Через defaultContent() можна загорнути вбудований \<TimelineBar />. |
+
+<CodeBlock code={scopedSlots} language="vue" />
+
+### Власний таймлайн [#custom-timeline]
+
+Замініть вбудовану смугу відтворення власним інтерфейсом перемотування через слот `#timeline` . Слот спрацьовує лише тоді, коли за правилами показу оверлей вивів би стандартну смугу (та сама логіка `timeline` плюс `timelineMinDurationSeconds`), so you don't re-implement it. Reuse the `.rk-reel-timeline` на своєму корені, щоб успадкувати притиснення до низу, відступи безпечної зони та проміжок на дотикових пристроях.
+
+<CodeBlock code={customTimeline} language="vue" />
+
+## Власні типи вмісту [#custom-content-types]
+
+`ReelPlayerOverlay` узагальнений за формою вашого елемента вмісту. Розширте `BaseContentItem` щоб узяти будь-яку модель даних, і імпортуйте відповідний тип області слота, щоб прив’язки лишалися строго типізованими:
+
+<CodeBlock code={customContentTypes} language="vue" />
+
+Той самий патерн працює для будь-якого іншого слота. Імпортуйте відповідний тип області (`SlideSlotScope`, `ControlsSlotScope`, `NavigationSlotScope`, `NestedSlideSlotScope`, `LoadingSlotScope`) and annotate the destructure.
+
+## Стан в URL [#url-state]
+
+<DemoLink href="https://vue-demo.reelkit.dev/reel-player-url?utm_source=docs">Подивитися демо наживо →</DemoLink>
+
+Build a controller with `useOverlayUrlState` from `@reelkit/vue` і передайте його в `ReelPlayerUrlOverlay` as `controller`: плеєр належить адресному рядку, тож він відкривається, коли параметр називає слайд, і закривається, коли параметр зникає. Відкриття додає один запис в історію, а кожна зміна слайда його замінює, тож гортання стрічки не додає записів і один крок назад завжди виводить. Глибина URL залежить від ключа контролера: одновісний `urlIndexKey` адресує лише допис (`?reel=3`), a two-axis `urlIndexTwoAxisKey` несе ще й індекс внутрішнього медіа мультимедійного допису (`?reel=3.2`); pick one key per app, the two wire shapes do not cross-decode. It is a separate component from `ReelPlayerOverlay`, so each carries exactly one open-state driver — the `is-open` модель або url `controller`, never both.
+
+<Callout type="info" title="Вбудовані клавіші">
+  Слайди можна адресувати вбудованим ключем — розгорніть `urlIndexKey` (за позицією) або `urlStableIdKey` (за стабільним `id`) into the controller — both re-exported from `@reelkit/vue`. See the [посібник зі стану в URL](/docs/core/guide#url-state) та [API ядра](/docs/core/api#url-state).
+</Callout>
+
+Застосунок із роутером має передати адаптер на базі роутера, щоб той лишався єдиним джерелом правди про навігацію: запис в історію повз нього лишає його місцеположення застарілим і втрачає параметр на наступній навігації. `useVueRouterUrlAdapter` from `@reelkit/vue/vue-router-url-adapter` — готовий адаптер для Vue Router.
+
+<CodeBlock code={urlState} language="vue" />
+
+Full `useOverlayUrlState` опції — у [довіднику API для Vue](/docs/vue/api#useoverlayurlstate).
+
+- Відкриття додає **один** запис в історію. Свайп стрічки **замінює** його, тож N свайпів не додають записів, і один крок назад завжди виходить із плеєра. «Назад» закриває, а не гортає слайди.
+- «Назад» закриває лише тоді, коли плеєр відкрили всередині застосунку — посилання додало запис. За надісланим посиланням у новій вкладці історії позаду немає, тож кнопка «назад» виведе із сайту; кнопка ✕ або Escape прибирає параметр на місці й лишає вас на сторінці.
+- Пряме посилання `?reel=3` відкриває плеєр одразу на цьому слайді.
+- Параметр, який не називає жодного слайда — застаріла закладка, змінене вручну значення, — прибирається з URL, а не лишає в адресному рядку слайд, який не відкриється.
+- Глибина URL залежить від ключа контролера: одна вісь для самого допису або дві (`urlIndexTwoAxisKey`) to also carry a multi-media post’s inner image index. Pick one key per app; the shapes do not cross-decode.
+
+### Один ключ чи два — оберіть глибину URL [#one-key-or-two-pick-your-url-depth]
+
+Той самий `ReelPlayerOverlay` працює з обома формами; він розрізняє їх під час виконання за position контролера, тож жодного пропса режиму немає. Ключ обирайте, коли будуєте контролер:
+
+| Key | Wire | Carries |
+| --- | --- | --- |
+| `urlIndexKey(…)` | `?reel=3` | Лише вертикальний допис. |
+| `urlIndexTwoAxisKey(…)` | `?reel=3.2` | Допис *та* та індекс внутрішнього медіа каруселі. |
+
+Дві форми запису навмисно різні — двовісний ключ строго з крапкою (`3.0`, never a bare `3`), so a bare one-axis link does not cross-decode. Switching an app between keys therefore invalidates any previously shared links. Pick one shape and keep it.
+
+<CodeBlock code={oneKeyOrTwo} language="typescript" />
+
+**Стабільні посилання.** Індекс адресує за позицією, тож збережений у закладках `?reel=3` відкриє інший допис, щойно стрічку перевпорядкують — а для стрічки це радше правило, ніж виняток. `urlStableIdKey` адресує за стабільним `id`, scanning the live feed — one call covers the common case.
+
+<CodeBlock code={oneKeyOrTwo2} language="typescript" />
+
+Pass `hashCodec: base64UrlCodec` щоб закодувати id в URL у base64url — оборотне маскування, а не криптографічний хеш.
+
+Адресуєте за іншим полем ( `slug`), or page an infinite feed with `locateAsync`, and build the `codec`/`locator` самі. Дві окремі задачі: `codec` записує ідентичність в URL, `locator` знаходить, де ця ідентичність лежить.
+
+<CodeBlock code={oneKeyOrTwo3} language="typescript" />
+
+**Нескінченні стрічки.** `locate` синхронний, тож відповідає лише за вже завантажені дописи — надіслане посилання на допис 400 у стрічці, де завантажено 20, нічого не знайде. `locateAsync` — запасний варіант, що викликається лише коли `locate` misses.
+
+<Callout type="info" title="Shortcut">
+  Keying by the item’s `id`? Не пишіть кодек і локатор вручну — передайте `locateAsync` просто в `urlStableIdKey({ items, locateAsync })` (він вантажить дані, якщо не знайшов, і повертає індекс). Розгорнутий варіант нижче — для адресації за іншим полем або для повного контролю.
+</Callout>
+
+<CodeBlock code={oneKeyOrTwo4} language="typescript" />
+
+- While `locateAsync` у процесі, плеєр лишається закритим, а параметр — недоторканим, тож пряме посилання переживає запит. `null` або відмова прибирає параметр.
+- Відповідь, що приходить після зміни URL, після закриття або після демонтажу, відкидається — повільний запит не відкриє слайд, якого ніхто не просив.
+- Поки триває очікування, нічого не рендериться: цей стан завантаження вже належить сторінці, тож малюйте власний скелетон.
+- Тайм-ауту немає — плеєр не може знати, яка стрічка завдовжки. Завершуйте значенням `null` коли сторінки скінчилися, інакше оверлей лишиться закритим назавжди.
+
+## Довідник API [#api-reference]
+
+### Пропси ReelPlayerOverlay [#reelplayeroverlay-props]
+
+<Signature>ReelPlayerOverlayProps</Signature>
+
+| Prop | Тип | Типове значення | Опис |
+| --- | --- | --- | --- |
+| `ariaLabel` | `string` | `'Video player'` | Доступна назва області діалогу; екранні читачі оголошують її, коли оверлей відкривається |
+| `aspectRatio` | `number` | `9 / 16` | Співвідношення ширини до висоти контейнера на десктопі. На мобільних використовується вся область перегляду. |
+| `content` | `T[] (extends BaseContentItem)` | `required` | Масив елементів вмісту для показу в плеєрі |
+| `enableNavKeys` | `boolean` | `true` | Вмикає навігацію стрілками клавіатури |
+| `enableWheel` | `boolean` | `true` | Вмикає навігацію колесом миші |
+| `initialIndex` | `number` | `0` | Індекс початково видимого елемента, від нуля |
+| `initialInnerIndex` | `number` | `0` | Індекс внутрішнього медіа, з якого відкриватися, лише для початково видимого допису — дає змогу двовісному URL вести просто до потрібного зображення мультимедійного допису. Ігнорується, щойно користувач починає гортати. |
+| `isOpen` | `boolean` | `required` | Керує видимістю оверлея; якщо false, оверлей прибирається з DOM |
+| `loop` | `boolean` | `false` | Вмикає нескінченний цикл між слайдами |
+| `swipeDistanceFactor` | `number` | `0.12` | Мінімальна частка відстані свайпу, щоб змінити слайд |
+| `timeline` | `'auto' \| 'always' \| 'never'` | `'auto'` | Правило показу вбудованої смуги таймлайну. 'auto' показує її лише для відео, довших за timelineMinDurationSeconds; 'always' — щойно на активному слайді є відео; 'never' вимикає вбудовану смугу (для повної заміни беріть слот #timeline). |
+| `timelineMinDurationSeconds` | `number` | `30` | Мінімальна тривалість відео (у секундах), за якої timeline='auto' показує вбудовану смугу. Короткі зациклені кліпи нижче цього порогу не показують її. |
+| `transitionDuration` | `number` | `300` | Тривалість анімації слайда в мілісекундах |
+| `wheelDebounceMs` | `number` | `200` | Тривалість дебаунсу подій колеса в мілісекундах |
+
+### Пропси ReelPlayerUrlOverlay [#reelplayerurloverlay-props]
+
+<Signature>ReelPlayerUrlOverlayProps</Signature>
+
+Приймає всі пропси вище, крім `is-open`, replaced by a `controller`. `initial-index` ігнорується — слайд обирає position контролера, тож передане поруч значення перезаписується на кожному відкритті.
+
+| Prop | Тип | Типове значення | Опис |
+| --- | --- | --- | --- |
+| `controller` | `UrlStateController` | `required` | Контролер із `useOverlayUrlState`. Its `позицією` вирішує, чи оверлей відкритий і який слайд показує; оверлей записує через нього назад на зміну слайда та на закриття. |
+
+### Events [#events]
+
+| Event | Payload | Опис |
+| --- | --- | --- |
+| @api-ready | `ReelPlayerApi` | Видається, коли слайдер готовий, і відкриває імперативний API |
+| @close | `void` | Видається, коли плеєр закривається |
+| @slide-change | `number` | Видається з новим індексом активного слайда після зміни |
+| @inner-slide-change | `outer: number, inner: number` | Видається, коли змінюється індекс внутрішнього медіа активного допису — під час внутрішньої навігації та під час активації зовнішнього (поточний внутрішній індекс активованого допису, 0 для допису з одним медіа). |
+| @update:is-open | `boolean` | Видається на закриття; забезпечує роботу \`v-model:is-open\` |
+
+### v-model:is-open [#v-model-is-open]
+
+Використовуйте `v-model:is-open` щоб керувати оверлеєм однією прив’язкою. Давніший патерн `:is-open` + `@close` теж працює, якщо вам потрібна явна подія.
+
+<CodeBlock code={vModelIsOpen} language="vue" />
+
+## Types [#types]
+
+### ContentItem [#contentitem]
+
+| Field | Тип | Опис |
+| --- | --- | --- |
+| `id` | `string` | Унікальний ідентифікатор |
+| `media` | `MediaItem[]` | Один або кілька медіафайлів (зображення чи відео) |
+| `author` | `{ name: string; avatar?: string }` | Автор, показаний у стандартному оверлеї слайда |
+| `description` | `string?` | Текст підпису |
+| `likes` | `number?` | Кількість лайків |
+
+### TimelineBarProps [#timelinebarprops]
+
+<CodeBlock code={timelinebarprops} language="typescript" />
+
+### TimelineSlotScope\<T> [#timelineslotscope-t]
+
+<CodeBlock code={timelineslotscopeT} language="typescript" />
+
+### MediaItem [#mediaitem]
+
+| Field | Тип | Опис |
+| --- | --- | --- |
+| `id` | `string` | Унікальний ідентифікатор |
+| `type` | `'image' \| 'video'` | Тип медіа |
+| `src` | `string` | URL медіафайлу |
+| `poster` | `string?` | URL мініатюри-постера для елементів-відео |
+| `aspectRatio` | `number` | співвідношення ширини до висоти. Значення \< 1 — вертикальне (cover), ≥ 1 — горизонтальне (contain). |
+
+## Sub-Components [#sub-components]
+
+Вставляйте їх у власні шаблони `#controls`, `#slide`, or `#slideOverlay` . Передавайте розміри й колбеки з області слота, щоб автовідтворення, знімок постера й синхронізація звуку далі працювали.
+
+### CloseButton [#closebutton]
+
+Окрема кругла кнопка закриття зі стандартними стилями плеєра. Використовуйте всередині `#controls`.
+
+<CodeBlock code={closebutton} language="vue" />
+
+### SoundButton [#soundbutton]
+
+Перемикач звуку. Рендерте його всередині `SoundProvider` (`ReelPlayerOverlay` надає його). Ховається, коли на активному слайді немає відео.
+
+<CodeBlock code={soundbutton} language="vue" />
+
+### TimelineBar [#timelinebar]
+
+Стандартна смуга перемотування. Читає з найближчого `TimelineProvider` (автоматично монтується всередині `ReelPlayerOverlay`) and renders the track, buffered ranges, progress fill, and scrub pill. Theme via the `--rk-reel-timeline-*` власними властивостями або замініть через слот `#timeline` slot.
+
+<CodeBlock code={timelinebar} language="vue" />
+
+### SlideOverlay [#slideoverlay]
+
+Стандартний градієнтний оверлей з автором, описом і лайками. Показується, коли у вмісті є ці поля. Замінити або сховати його можна через слот `#slideOverlay` slot.
+
+<CodeBlock code={slideoverlay} language="vue" />
+
+### ImageSlide [#imageslide]
+
+Слайд-зображення з лінивим завантаженням і `object-fit: cover` за замовчуванням. Складайте його всередині слота `#slide` щоб змінити рендеринг зображення, зберігши вбудовану поведінку.
+
+<CodeBlock code={imageslide} language="vue" />
+
+### VideoSlide [#videoslide]
+
+Слайд-відео на основі спільного елемента `<video>` . Дає раду безперервності звуку на iOS, постерам і пам’яті позиції. Рендерте його всередині `SoundProvider` (`ReelPlayerOverlay` надає його).
+
+<CodeBlock code={videoslide} language="vue" />
+
+<Callout type="info" title="Складання власних слайдів">
+  Використовуйте `#slide` з `ImageSlide` / `VideoSlide` щоб змінити рендеринг медіа, зберігши всю вбудовану поведінку (автовідтворення, знімок постера, синхронізацію звуку).
+</Callout>
+
+<CodeBlock code={videoslide2} language="vue" />
+
+## Завантаження вмісту та обробка помилок [#content-loading-error-handling]
+
+Плеєр стежить за станом завантаження й помилок кожного слайда. Поки вміст вантажиться, показується хвильовий індикатор; для зіпсованого медіа — значок помилки. Плеєр кешує невдалі URL, тож повторне відкриття зіпсованого слайда обходиться без нової спроби.
+
+### Колбеки життєвого циклу [#lifecycle-callbacks]
+
+Коли використовуєте слот `#slide` , викликайте ці колбеки з області слота, щоб керувати індикатором завантаження:
+
+| Колбек | Коли викликати |
+| --- | --- |
+| `onReady` | Зображення завантажилося або відео почало грати. Скидає стани завантаження й помилки. |
+| `onWaiting` | Відео буферизується посеред відтворення. Показує індикатор завантаження. |
+| `onError` | Вміст не завантажився. Показує оверлей помилки й кешує URL як зіпсований. |
+
+<CodeBlock code={lifecycleCallbacks} language="vue" />
+
+### Власний інтерфейс завантаження та помилок [#custom-loading-error-ui]
+
+Замініть стандартний хвильовий індикатор і значок помилки через слоти `#loading` та `#error` slots:
+
+<CodeBlock code={customLoadingErrorUi} language="vue" />
+
+## Таймлайн [#timeline]
+
+Оверлей показує вбудовану смугу таймлайну відтворення над активним відео. Керуйте показом через пропс `timeline` prop: `'auto'` (типово) показує її, коли активне медіа — відео, довше за `timelineMinDurationSeconds` (default 30), `'always'` щойно активне відео, `'never'` вимикає її. Для повністю власної смуги перемотування беріть слот `#timeline` ; його область відкриває `timelineState` на основі `TimelineController`.
+
+<CodeBlock code={timeline} language="vue" />
+
+Тему задавайте через власні властивості CSS `--rk-reel-timeline-*` власними властивостями CSS.
+
+## Контекст звуку [#sound-context]
+
+`ReelPlayerOverlay` монтує `SoundProvider` у своєму корені, тож будь-який компонент усередині може читати або перемикати стан звуку через `useSoundState`. Композабл реекспортовано з `@reelkit/vue-reel-player` тож окремий `@reelkit/vue` import.
+
+<CodeBlock code={soundContext} language="vue" />
+
+<Callout type="info">
+  Усередині плеєра слот `#controls` також відкриває `soundState` у своїй області. Беріть саме його, якщо він потрібен лише в шаблоні елементів керування.
+</Callout>
+
+## Класи CSS [#css-classes]
+
+Класи CSS звичайні (не scoped). Таблиця стилів, підключена після `@reelkit/vue-reel-player/styles.css` може перекрити будь-який із них селектором вищої специфічності. Для змін кольору, розміру та z-index беріть власні властивості CSS із розділу [Theming](#theming) нижче.
+
+| Class | Component | Опис |
+| --- | --- | --- |
+| `.rk-reel-overlay` | Overlay | Фіксоване повноекранне тло (фон, z-index) |
+| `.rk-reel-container` | Overlay | Контейнер плеєра (позиція, переповнення) |
+| `.rk-reel-loader` | Overlay | Оверлей хвильової анімації завантаження |
+| `.rk-reel-media-error` | Overlay | Оверлей стану помилки (значок і текст по центру) |
+| `.rk-reel-media-error-text` | Overlay | Текст повідомлення про помилку |
+| `.rk-reel-button` | Controls | Спільна кругла кнопка з іконкою (закриття, звук, стрілки) |
+| `.rk-reel-close-btn` | Controls | Кнопка закриття |
+| `.rk-reel-sound-btn` | Controls | Кнопка перемикання звуку |
+| `.rk-reel-nav-arrows` | Навігація | Контейнер стрілок лише для десктопа (прихований до 768px) |
+| `.rk-reel-nav-button` | Навігація | Окрема стрілка вперед або назад |
+| `.rk-reel-slide-wrapper` | Slide | Обгортка навколо медіа та оверлея |
+| `.rk-reel-slide-overlay` | SlideOverlay | Контейнер градієнтного оверлея |
+| `.rk-reel-slide-overlay-author` | SlideOverlay | Рядок автора (аватар та ім’я) |
+| `.rk-reel-slide-overlay-avatar` | SlideOverlay | Зображення аватара автора |
+| `.rk-reel-slide-overlay-name` | SlideOverlay | Текст імені автора |
+| `.rk-reel-slide-overlay-description` | SlideOverlay | Текст опису |
+| `.rk-reel-slide-overlay-likes` | SlideOverlay | Рядок лайків (сердечко й лічильник) |
+| `.rk-reel-video-container` | VideoSlide | Обгортка відео (фон, переповнення) |
+| `.rk-reel-video-element` | VideoSlide | The \<video> element |
+| `.rk-reel-video-poster` | VideoSlide | Постер (зникає з початком відтворення) |
+| `.rk-reel-video-poster.rk-visible` | VideoSlide | Модифікатор стану постера, поки відео на паузі або вантажиться |
+| `.rk-reel-nested-indicator` | NestedSlider | Пагінація точками під мультимедійними слайдами (позиція різна на десктопі й на дотикових пристроях) |
+| `.rk-reel-nested-nav` | NestedSlider | Стрілки горизонтальної каруселі (приховані до 768px) |
+| `.rk-reel-nested-nav-next` | NestedSlider | Позиція вкладеної стрілки вперед |
+| `.rk-reel-nested-nav-prev` | NestedSlider | Позиція вкладеної стрілки назад |
+| `.rk-reel-timeline` | TimelineBar | Обгортка смуги перемотування. Використовуйте на власних коренях слота \`#timeline\`, щоб успадкувати притиснення до низу, відступи безпечної зони та проміжок для оверлея слайда на дотикових пристроях. |
+| `.rk-reel-timeline-track` | TimelineBar | Доріжка (невідтворена частина) |
+| `.rk-reel-timeline-buffered` | TimelineBar | Шар буферизованих сегментів |
+| `.rk-reel-timeline-fill` | TimelineBar | Заповнення відтвореного прогресу |
+| `.rk-reel-timeline-cursor` | TimelineBar | Повзунок перемотування (плаває над доріжкою) |
+
+## Theming [#theming]
+
+Кожен колір, розмір, z-index і перехід живе у власній властивості CSS. Перевизначайте одну чи кілька на `:root` (або на будь-якому предку оверлея), щоб змінити тему, не чіпаючи код компонентів. Токени збігаються з `@reelkit/react-reel-player`, so overrides port between bindings.
+
+| Token | Типове значення | Controls |
+| --- | --- | --- |
+| `--rk-reel-overlay-bg` | `#000` | Full-screen backdrop color |
+| `--rk-reel-overlay-z` | `1000` | Overlay z-index |
+| `--rk-reel-button-bg` | `rgba(0, 0, 0, 0.5)` | Default circular button background |
+| `--rk-reel-button-bg-hover` | `rgba(255, 255, 255, 0.1)` | Nav arrow background (and base hover state) |
+| `--rk-reel-button-bg-hover-strong` | `rgba(255, 255, 255, 0.2)` | Nav arrow hover background |
+| `--rk-reel-button-fg` | `#fff` | Button icon color |
+| `--rk-reel-button-size` | `44px` | Button width / height |
+| `--rk-reel-button-radius` | `50%` | Button border-radius |
+| `--rk-reel-ui-z` | `10` | Close / sound / nav z-index |
+| `--rk-reel-edge-padding` | `16px` | Edge inset for close / sound / nav arrows |
+| `--rk-reel-nav-gap` | `8px` | Spacing between stacked nav arrows |
+| `--rk-reel-transition` | `0.2s` | Hover transition duration |
+| `--rk-reel-loader-color` | `rgba(255, 255, 255, 0.12)` | Wave loader gradient color |
+| `--rk-reel-loader-duration` | `1.8s` | Wave loader animation duration |
+| `--rk-reel-error-fg` | `rgba(255, 255, 255, 0.4)` | Error icon and text color |
+| `--rk-reel-slide-overlay-bg` | `linear-gradient(transparent, rgba(0, 0, 0, 0.7))` | Caption scrim gradient |
+| `--rk-reel-slide-overlay-padding` | `48px 16px 16px` | Caption inner padding |
+| `--rk-reel-slide-overlay-name-color` | `#fff` | Author name color |
+| `--rk-reel-video-bg` | `#000` | Letterbox background behind \<video> |
+| `--rk-reel-nested-button-bg` | `rgba(0, 0, 0, 0.5)` | Nested arrow background |
+| `--rk-reel-nested-button-size` | `36px` | Nested arrow size |
+| `--rk-reel-timeline-track` | `rgba(255, 255, 255, 0.22)` | Track background (unplayed region) |
+| `--rk-reel-timeline-buffered` | `rgba(255, 255, 255, 0.4)` | Buffered segments color |
+| `--rk-reel-timeline-fill` | `#fff` | Played-progress fill color |
+| `--rk-reel-timeline-cursor` | `#fff` | Scrub-handle pill color |
+| `--rk-reel-timeline-height` | `3px` | Track height at rest |
+| `--rk-reel-timeline-height-active` | `6px` | Track height on hover / focus / scrub |
+| `--rk-reel-timeline-cursor-width` | `10px` | Scrub-pill width at rest |
+| `--rk-reel-timeline-cursor-width-active` | `14px` | Scrub-pill width while scrubbing |
+| `--rk-reel-timeline-cursor-height` | `24px` | Scrub-pill height at rest |
+| `--rk-reel-timeline-cursor-height-active` | `32px` | Scrub-pill height while scrubbing |
+| `--rk-reel-timeline-transition` | `0.15s ease-out` | Track + pill grow/shrink animation |
+
+Вставте фрагмент нижче в таблицю стилів, підключену після `@reelkit/vue-reel-player/styles.css`.
+
+<CodeBlock code={theming} language="css" />
+
+## Accessibility [#accessibility]
+
+Корінь оверлея — модальний діалог (`role="dialog"`, `aria-modal="true"`). Set the `aria-label` щоб змінити оголошення для екранного читача; типове значення — «Video player». Кожен слайд несе `role="group"`, `aria-roledescription="slide"`, та `aria-label="Слайд N з M"`.
+
+Оверлей захоплює фокус під час відкриття й повертає його на елемент-тригер після закриття. Tab і Shift+Tab циклічно проходять фокусовані елементи всередині; фокус, що вислизнув (клік поза оверлеєм, програмна установка), повертається назад. Реалізовано через `captureFocusForReturn` та `createFocusTrap` from `@reelkit/core`.
+
+## Клавіатурні скорочення [#keyboard-shortcuts]
+
+| Key | Action |
+| --- | --- |
+| `ArrowUp` | Previous slide |
+| `ArrowDown` | Next slide |
+| `ArrowLeft` | Previous media (nested carousel) |
+| `ArrowRight` | Next media (nested carousel) |
+| `Escape` | Close player |

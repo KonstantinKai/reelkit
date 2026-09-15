@@ -1,0 +1,577 @@
+---
+title: Reel Player
+description: 'Повноекранний відеоплеєр у стилі Instagram / TikTok: стан в URL, таймлайн, контекст звуку, темізація та доступність.'
+---
+
+import { Zap, Play, Volume2, Layout, Clock, Image, Layers, Ratio, Monitor, Code, Settings, Link2 } from 'lucide-react';
+import { ReelPlayerDemo } from '../../../components/demos/ReelPlayerDemo';
+import installation from '../../snippets/reel-player/installation.sh?raw';
+import installation2 from '../../snippets/reel-player/installation-2.ts?raw';
+import quickStart from '../../snippets/reel-player/quick-start.tsx?raw';
+import fullCode from '../../snippets/reel-player/full-code.tsx?raw';
+import genericContentType from '../../snippets/reel-player/generic-content-type.tsx?raw';
+import customSlideOverlay from '../../snippets/reel-player/custom-slide-overlay.tsx?raw';
+import nonMediaSlides from '../../snippets/reel-player/non-media-slides.tsx?raw';
+import customControls from '../../snippets/reel-player/custom-controls.tsx?raw';
+import customTimeline from '../../snippets/reel-player/custom-timeline.tsx?raw';
+import customNavigation from '../../snippets/reel-player/custom-navigation.tsx?raw';
+import customNestedNavigation from '../../snippets/reel-player/custom-nested-navigation.tsx?raw';
+import customNestedSlides from '../../snippets/reel-player/custom-nested-slides.tsx?raw';
+import urlState from '../../snippets/reel-player/url-state.tsx?raw';
+import oneKeyOrTwo from '../../snippets/reel-player/one-key-or-two.tsx?raw';
+import oneKeyOrTwo2 from '../../snippets/reel-player/one-key-or-two-2.tsx?raw';
+import oneKeyOrTwo3 from '../../snippets/reel-player/one-key-or-two-3.tsx?raw';
+import oneKeyOrTwo4 from '../../snippets/reel-player/one-key-or-two-4.tsx?raw';
+import oneKeyOrTwo5 from '../../snippets/reel-player/one-key-or-two-5.tsx?raw';
+import basecontentitem from '../../snippets/reel-player/basecontentitem.ts?raw';
+import contentitem from '../../snippets/reel-player/contentitem.ts?raw';
+import mediaitem from '../../snippets/reel-player/mediaitem.ts?raw';
+import mediatype from '../../snippets/reel-player/mediatype.ts?raw';
+import controlsrenderpropsT from '../../snippets/reel-player/controlsrenderprops-t.ts?raw';
+import navigationrenderprops from '../../snippets/reel-player/navigationrenderprops.ts?raw';
+import sliderenderpropsT from '../../snippets/reel-player/sliderenderprops-t.ts?raw';
+import nestedsliderenderprops from '../../snippets/reel-player/nestedsliderenderprops.ts?raw';
+import slideoverlayprops from '../../snippets/reel-player/slideoverlayprops.ts?raw';
+import imageslideprops from '../../snippets/reel-player/imageslideprops.ts?raw';
+import videoslideprops from '../../snippets/reel-player/videoslideprops.ts?raw';
+import closebuttonprops from '../../snippets/reel-player/closebuttonprops.ts?raw';
+import soundbuttonprops from '../../snippets/reel-player/soundbuttonprops.ts?raw';
+import timelinebarprops from '../../snippets/reel-player/timelinebarprops.ts?raw';
+import timelinerenderpropsT from '../../snippets/reel-player/timelinerenderprops-t.ts?raw';
+import closebutton from '../../snippets/reel-player/closebutton.tsx?raw';
+import soundbutton from '../../snippets/reel-player/soundbutton.tsx?raw';
+import timelinebar from '../../snippets/reel-player/timelinebar.tsx?raw';
+import slideoverlay from '../../snippets/reel-player/slideoverlay.tsx?raw';
+import imageslide from '../../snippets/reel-player/imageslide.tsx?raw';
+import videoslide from '../../snippets/reel-player/videoslide.tsx?raw';
+import videoslide2 from '../../snippets/reel-player/videoslide-2.tsx?raw';
+import lifecycleCallbacks from '../../snippets/reel-player/lifecycle-callbacks.tsx?raw';
+import customLoadingErrorUi from '../../snippets/reel-player/custom-loading-error-ui.tsx?raw';
+import timeline from '../../snippets/reel-player/timeline.tsx?raw';
+import soundContext from '../../snippets/reel-player/sound-context.tsx?raw';
+import theming from '../../snippets/reel-player/theming.css?raw';
+
+Повноекранний компонент відеоплеєра у стилі Instagram Reels чи TikTok на основі `@reelkit/react-reel-player`.
+
+<DemoLink href="https://react-demo.reelkit.dev/reel-player?utm_source=docs">Подивитися демо наживо →</DemoLink>
+
+## Features [#features]
+
+<FeatureGrid items={[
+              {
+                icon: Zap,
+                label: 'Вертикальний свайп',
+                desc: 'Дотик, перетягування, клавіатура, колесо',
+              },
+              {
+                icon: Play,
+                label: 'Автовідтворення відео',
+                desc: 'Грає, коли слайд видимий',
+              },
+              {
+                icon: Volume2,
+                label: 'Перемикач звуку',
+                desc: 'Безперервність на iOS',
+              },
+              {
+                icon: Layout,
+                label: 'Multi-Media',
+                desc: 'Вкладені горизонтальні каруселі',
+              },
+              {
+                icon: Clock,
+                label: 'Пам’ять позиції',
+                desc: 'Продовжує з місця, де зупинилися',
+              },
+              {
+                icon: Image,
+                label: 'Знімок кадру',
+                desc: 'Плавний перехід від постера до відео',
+              },
+              {
+                icon: Layers,
+                label: 'Віртуалізований',
+                desc: 'Лише 3 слайди в DOM',
+              },
+              {
+                icon: Ratio,
+                label: 'Співвідношення сторін',
+                desc: '9:16 на десктопі, на весь екран на мобільних',
+              },
+              {
+                icon: Monitor,
+                label: 'Навігація на десктопі',
+                desc: 'Кнопки-стрілки',
+              },
+              {
+                icon: Code,
+                label: 'Узагальнені типи',
+                desc: 'Власні моделі даних вмісту',
+              },
+              {
+                icon: Settings,
+                label: 'Customizable',
+                desc: 'Render props для всього',
+              },
+              {
+                icon: Zap,
+                label: 'Оверлей слайда',
+                desc: 'Автор, лайки, опис',
+              },
+              {
+                icon: Link2,
+                label: 'Стан в URL',
+                desc: 'Посилання, якими можна ділитися й зберігати в закладки',
+              },
+            ]} />
+
+## Встановлення [#installation]
+
+<CodeBlock code={installation} language="bash" />
+
+Не забудьте імпортувати стилі:
+
+<CodeBlock code={installation2} language="typescript" />
+
+<Callout type="info" title="Icons">
+  Стандартні елементи керування використовують `lucide-react` для іконок. Якщо ви віддаєте перевагу іншій бібліотеці іконок, скористайтеся `renderControls` та `renderNavigation` , щоб передати власні.
+</Callout>
+
+## Швидкий старт [#quick-start]
+
+The `ReelPlayerOverlay` рендерить повноекранний оверлей плеєра. Передайте масив `ContentItem` і керуйте видимістю через `isOpen`.
+
+<CodeBlock code={quickStart} language="tsx" />
+
+## Демо наживо [#live-demo]
+
+<Sandbox
+  code={fullCode}
+  title="ReelPlayerPage.tsx"
+  height={500}
+  stackblitzDeps={['@reelkit/react-reel-player']}
+  stackblitzExtraDeps={{ 'lucide-react': '^0.562.0' }}
+>
+  <ReelPlayerDemo />
+</Sandbox>
+
+<Caption>Натисніть мініатюру, щоб відкрити повноекранний плеєр. Escape або кнопка закриття повертають назад.</Caption>
+
+## Customization [#customization]
+
+### Узагальнений тип вмісту [#generic-content-type]
+
+Використовуйте власні типи даних, розширивши `BaseContentItem`:
+
+<CodeBlock code={genericContentType} language="tsx" />
+
+### Власний оверлей слайда [#custom-slide-overlay]
+
+Замініть вбудований оверлей слайда власним вмістом для кожного слайда:
+
+<CodeBlock code={customSlideOverlay} language="tsx" />
+
+### Слайди без медіа [#non-media-slides]
+
+Використовуйте `renderSlide` щоб вставити власний вміст (наприклад, картки із закликом до дії). Поверніть `null` щоб лишити стандартний:
+
+<CodeBlock code={nonMediaSlides} language="tsx" />
+
+### Власні елементи керування [#custom-controls]
+
+Складайте готові підкомпоненти разом із власними доповненнями:
+
+<CodeBlock code={customControls} language="tsx" />
+
+### Власний таймлайн [#custom-timeline]
+
+Замініть вбудовану смугу відтворення власним інтерфейсом перемотування через `renderTimeline`. Колбек спрацьовує лише тоді, коли за правилами показу оверлей вивів би стандартну смугу (та сама логіка `timeline` плюс `timelineMinDurationSeconds` ), тож переписувати її не доведеться. Використайте клас `.rk-reel-timeline` на своєму корені, щоб успадкувати притиснення до низу, відступи безпечної зони та проміжок для оверлея слайда на дотикових пристроях.
+
+<CodeBlock code={customTimeline} language="tsx" />
+
+### Власна навігація [#custom-navigation]
+
+<CodeBlock code={customNavigation} language="tsx" />
+
+### Власна вкладена навігація [#custom-nested-navigation]
+
+Замініть стрілки ліворуч і праворуч усередині мультимедійних слайдів (горизонтальна карусель) власною навігацією:
+
+<CodeBlock code={customNestedNavigation} language="tsx" />
+
+### Власні вкладені слайди [#custom-nested-slides]
+
+Налаштуйте окремі слайди всередині мультимедійних каруселей через `renderNestedSlide`. Use `props.defaultContent` щоб загорнути стандартний ImageSlide чи VideoSlide або замінити його повністю:
+
+<CodeBlock code={customNestedSlides} language="tsx" />
+
+## Стан в URL [#url-state]
+
+<DemoLink href="https://react-demo.reelkit.dev/reel-player-url?utm_source=docs">Подивитися демо наживо →</DemoLink>
+
+`ReelPlayerUrlOverlay` — окремий компонент, стан відкриття якого живе в адресному рядку. Побудуйте контролер через `useOverlayUrlState` from `@reelkit/react` і передайте його як `controller`: плеєр відкривається сам, коли параметр називає слайд, і закривається, коли параметр зникає. Посиланнями можна ділитися, а кнопка «назад» закриває плеєр, а не виводить зі сторінки.
+
+<Callout type="info" title="Вбудовані клавіші">
+  Слайди можна адресувати вбудованим ключем — розгорніть `urlIndexKey` (за позицією) або `urlStableIdKey` (за стабільним `id`) into the controller — both re-exported from `@reelkit/react`. See the [посібник зі стану в URL](/docs/core/guide#url-state) та [API ядра](/docs/core/api#url-state).
+</Callout>
+
+<CodeBlock code={urlState} language="tsx" />
+
+Full `useOverlayUrlState` опції — `param`, `adapter`, `codec`, `locator` — у [довіднику API для React](/docs/react/api#useoverlayurlstate). Покроковий розбір — у [посібнику для React](/docs/react/guide#url-state).
+
+- Відкриття додає **один** запис в історію. Свайп стрічки **замінює** його, тож N свайпів не додають записів, і один крок назад завжди виходить із плеєра. «Назад» закриває, а не гортає слайди.
+- «Назад» закриває лише тоді, коли плеєр відкрили всередині застосунку — посилання додало запис. За надісланим посиланням у новій вкладці історії позаду немає, тож кнопка «назад» виведе із сайту; кнопка ✕ або Escape прибирає параметр на місці й лишає вас на сторінці.
+- Пряме посилання `?reel=3` відкриває плеєр одразу на цьому слайді.
+- Параметр, який не називає жодного слайда — застаріла закладка, змінене вручну значення, — прибирається з URL, а не лишає в адресному рядку слайд, який не відкриється.
+- Типово параметр адресує лише **vertical** допис (`?reel=3`). Opt into a two-axis key to also carry the inner media index of a multi-media carousel — see below.
+
+### Один ключ чи два — оберіть глибину URL [#one-key-or-two-pick-your-url-depth]
+
+Той самий `ReelPlayerUrlOverlay` працює з обома формами; він розрізняє їх під час виконання за position контролера, тож жодного пропса режиму немає. Ключ обирайте, коли будуєте контролер:
+
+| Key | Wire | Carries |
+| --- | --- | --- |
+| `urlIndexKey(…)` | `?reel=3` | Лише вертикальний допис. |
+| `urlIndexTwoAxisKey(…)` | `?reel=3.2` | Допис *та* та індекс внутрішнього медіа каруселі. |
+
+Дві форми запису навмисно різні — двовісний ключ строго з крапкою (`3.0`, never a bare `3`), so a bare one-axis link does not cross-decode. Switching an app between keys therefore invalidates any previously shared links. Pick one shape and keep it.
+
+<CodeBlock code={oneKeyOrTwo} language="tsx" />
+
+**Застосунок із роутером — передайте адаптер.** Writing `history.pushState` повз роутер лишає його місцеположення застарілим, і наступна навігація втрачає параметр:
+
+<CodeBlock code={oneKeyOrTwo2} language="tsx" />
+
+**Стабільні посилання.** Індекс адресує за позицією, тож збережений у закладках `?reel=3` відкриє інший допис, щойно стрічку перевпорядкують — а для стрічки це радше правило, ніж виняток. `urlStableIdKey` адресує за стабільним `id`, scanning the live feed — one call covers the common case.
+
+<CodeBlock code={oneKeyOrTwo3} language="tsx" />
+
+Pass `hashCodec: base64UrlCodec` щоб закодувати id в URL у base64url — оборотне маскування, а не криптографічний хеш.
+
+Адресуєте за іншим полем ( `slug`), or page an infinite feed with `locateAsync`, and build the `codec`/`locator` самі. Дві окремі задачі: `codec` записує ідентичність в URL, `locator` знаходить, де ця ідентичність лежить.
+
+<CodeBlock code={oneKeyOrTwo4} language="tsx" />
+
+**Нескінченні стрічки.** `locate` синхронний, тож відповідає лише за вже завантажені дописи — надіслане посилання на допис 400 у стрічці, де завантажено 20, нічого не знайде. `locateAsync` — запасний варіант, що викликається лише коли `locate` misses.
+
+<Callout type="info" title="Shortcut">
+  Keying by the item’s `id`? Не пишіть кодек і локатор вручну — передайте `locateAsync` просто в `urlStableIdKey({ items, locateAsync })` (він вантажить дані, якщо не знайшов, і повертає індекс). Розгорнутий варіант нижче — для адресації за іншим полем або для повного контролю.
+</Callout>
+
+<CodeBlock code={oneKeyOrTwo5} language="tsx" />
+
+- While `locateAsync` у процесі, плеєр лишається закритим, а параметр — недоторканим, тож пряме посилання переживає запит. `null` або відмова прибирає параметр.
+- Відповідь, що приходить після зміни URL, після закриття або після демонтажу, відкидається — повільний запит не відкриє слайд, якого ніхто не просив.
+- Поки триває очікування, нічого не рендериться: цей стан завантаження вже належить сторінці, тож малюйте власний скелетон.
+- Тайм-ауту немає — плеєр не може знати, яка стрічка завдовжки. Завершуйте значенням `null` коли сторінки скінчилися, інакше оверлей лишиться закритим назавжди.
+
+## Довідник API [#api-reference]
+
+### Пропси ReelPlayerOverlayProps [#reelplayeroverlayprops-props]
+
+<Signature>ReelPlayerOverlayProps\<T></Signature>
+
+| Prop | Тип | Типове значення | Опис |
+| --- | --- | --- | --- |
+| `apiRef` | `MutableRefObject<ReelApi>` | - | Ref для доступу до API Reel |
+| `ariaLabel` | `string` | 'Video player' | Доступна назва області діалогу; екранні читачі оголошують її, коли оверлей відкривається |
+| `aspectRatio` | `number` | 9/16 (0.5625) | Співвідношення ширини до висоти контейнера плеєра на десктопі. На мобільних плеєр завжди займає всю область перегляду. |
+| `content` | `T[]` | required | Масив елементів вмісту (узагальнений тип, типово ContentItem) |
+| `initialIndex` | `number` | 0 | Початковий індекс слайда |
+| `initialInnerIndex` | `number` | 0 | Індекс внутрішнього медіа, з якого відкриватися, лише для початково видимого допису — дає змогу двовісному URL вести просто до потрібного зображення мультимедійного допису. Ігнорується, щойно плеєр відкрито й користувач починає гортати. |
+| `isOpen` | `boolean` | required | Керує видимістю оверлея. Для стану відкриття, керованого URL, беріть окремий ReelPlayerUrlOverlay — дивіться розділ про стан в URL нижче. |
+| `timeline` | `'auto' \| 'always' \| 'never'` | 'auto' | Правило показу вбудованої смуги таймлайну. 'auto' показує її лише для відео, довших за timelineMinDurationSeconds; 'always' — щойно на активному слайді є відео; 'never' вимикає вбудовану смугу (для повної заміни беріть renderTimeline). |
+| `timelineMinDurationSeconds` | `number` | 30 | Мінімальна тривалість відео (у секундах), за якої timeline='auto' показує вбудовану смугу. Короткі зациклені кліпи нижче цього порогу не показують її. |
+| `renderControls` | `(props: ControlsRenderProps) => ReactNode` | - | Власні елементи керування, замінюють стандартні кнопки закриття та звуку |
+| `renderError` | `(props: { item: T; activeIndex: number }) => ReactNode` | - | Власний індикатор помилки, замінює стандартний значок |
+| `renderLoading` | `(props: { item: T; activeIndex: number }) => ReactNode` | - | Власний індикатор завантаження, замінює стандартну хвилю |
+| `renderNavigation` | `(props: NavigationRenderProps) => ReactNode` | - | Власна навігація, замінює стандартні вертикальні стрілки |
+| `renderNestedNavigation` | `(props: NavigationRenderProps) => ReactNode` | - | Власна навігація для вкладеного горизонтального слайдера (мультимедійні дописи), замінює стандартні стрілки ліворуч і праворуч |
+| `renderNestedSlide` | `(props: NestedSlideRenderProps) => ReactNode` | - | Власний рендерер слайдів вкладеного горизонтального слайдера. Через props.defaultContent можна загорнути або вбудувати стандартний ImageSlide чи VideoSlide. На відміну від renderSlide, null тут не означає повернення до стандартного. |
+| `renderSlide` | `(props: SlideRenderProps) => ReactNode \| null` | - | Власний рендеринг слайда. Поверніть null, щоб лишити стандартний. Через props.defaultContent можна загорнути або вбудувати стандартний слайд. |
+| `renderSlideOverlay` | `(item, index, isActive) => ReactNode` | - | Власний оверлей для кожного слайда, замінює стандартний SlideOverlay. Поверніть null, щоб сховати. |
+| `renderTimeline` | `(props: TimelineRenderProps) => ReactNode` | - | Власна смуга таймлайну відтворення. Викликається лише тоді, коли за правилами показу вивелася б стандартна смуга (та сама логіка auto/always/never плюс timelineMinDurationSeconds). Через props.defaultContent можна загорнути вбудований \<TimelineBar />; поверніть null, щоб сховати. |
+
+### Пропси ReelPlayerUrlOverlay [#reelplayerurloverlay-props]
+
+<Signature>ReelPlayerUrlOverlayProps\<T></Signature>
+
+Приймає всі візуальні та поведінкові пропси вище, крім `isOpen`, replaced by a `controller`. `initialIndex` ігнорується — слайд обирає position контролера, тож передане поруч значення перезаписується на кожному відкритті.
+
+| Prop | Тип | Типове значення | Опис |
+| --- | --- | --- | --- |
+| `controller` | `UrlStateController` | `required` | Контролер із useOverlayUrlState. Його position вирішує, чи оверлей відкритий і який слайд показує; оверлей записує через нього назад на зміну слайда та на закриття. |
+
+### Колбеки [#callbacks]
+
+| Prop | Тип | Опис |
+| --- | --- | --- |
+| `onClose` | `() => void` | Викликається, коли плеєр закривається. Обов’язковий у ReelPlayerOverlay (стан відкриття ваш, тож закриття обробляєте ви); необов’язковий у ReelPlayerUrlOverlay, де закриттям керує URL — передавайте лише щоб зреагувати після закриття. |
+| `onSlideChange` | `(index: number) => void` | Викликається після зміни слайда |
+| `onInnerSlideChange` | `(outerIndex: number, innerIndex: number) => void` | Викликається, коли змінюється індекс внутрішнього медіа активного допису — під час навігації всередині мультимедійного допису й під час активації зовнішнього, повідомляючи поточний внутрішній індекс активованого допису (0 для допису з одним медіа). |
+
+### Пропси Reel (передані далі) [#reel-props-proxied]
+
+Ці пропси передаються далі в [Reel](/docs/react/api#reel-props) component.
+
+| Prop | Тип | Типове значення | Опис |
+| --- | --- | --- | --- |
+| `enableNavKeys` | `boolean` | true | Вмикає навігацію з клавіатури |
+| `enableWheel` | `boolean` | true | Вмикає навігацію колесом миші |
+| `loop` | `boolean` | false | Вмикає нескінченний цикл |
+| `swipeDistanceFactor` | `number` | 0.12 | Поріг свайпу (0–1) |
+| `transitionDuration` | `number` | 300 | Тривалість анімації переходу (мс) |
+| `wheelDebounceMs` | `number` | 200 | Тривалість дебаунсу колеса (мс) |
+
+## Types [#types]
+
+### BaseContentItem [#basecontentitem]
+
+Тип-обмеження для узагальнення. Розширюйте його, щоб використовувати власні типи даних із ReelPlayerOverlay.
+
+<CodeBlock code={basecontentitem} language="typescript" />
+
+### ContentItem [#contentitem]
+
+<CodeBlock code={contentitem} language="typescript" />
+
+### MediaItem [#mediaitem]
+
+<CodeBlock code={mediaitem} language="typescript" />
+
+### MediaType [#mediatype]
+
+<CodeBlock code={mediatype} language="typescript" />
+
+### ControlsRenderProps\<T> [#controlsrenderprops-t]
+
+<CodeBlock code={controlsrenderpropsT} language="typescript" />
+
+### NavigationRenderProps [#navigationrenderprops]
+
+<CodeBlock code={navigationrenderprops} language="typescript" />
+
+### SlideRenderProps\<T> [#sliderenderprops-t]
+
+<CodeBlock code={sliderenderpropsT} language="typescript" />
+
+### NestedSlideRenderProps [#nestedsliderenderprops]
+
+<CodeBlock code={nestedsliderenderprops} language="typescript" />
+
+### SlideOverlayProps [#slideoverlayprops]
+
+<CodeBlock code={slideoverlayprops} language="typescript" />
+
+### ImageSlideProps [#imageslideprops]
+
+<CodeBlock code={imageslideprops} language="typescript" />
+
+### VideoSlideProps [#videoslideprops]
+
+<CodeBlock code={videoslideprops} language="typescript" />
+
+### CloseButtonProps [#closebuttonprops]
+
+<CodeBlock code={closebuttonprops} language="typescript" />
+
+### SoundButtonProps [#soundbuttonprops]
+
+<CodeBlock code={soundbuttonprops} language="typescript" />
+
+### TimelineBarProps [#timelinebarprops]
+
+<CodeBlock code={timelinebarprops} language="typescript" />
+
+### TimelineRenderProps\<T> [#timelinerenderprops-t]
+
+<CodeBlock code={timelinerenderpropsT} language="typescript" />
+
+## Sub-Components [#sub-components]
+
+Повторно використовувані блоки, експортовані для складання власних render props:
+
+### CloseButton [#closebutton]
+
+Окрема кнопка закриття зі стандартними стилями плеєра. Використовуйте всередині `renderControls`.
+
+<CodeBlock code={closebutton} language="tsx" />
+
+### SoundButton [#soundbutton]
+
+Окремий перемикач звуку. Має бути всередині `SoundProvider` (ReelPlayerOverlay додає його автоматично).
+
+<CodeBlock code={soundbutton} language="tsx" />
+
+### TimelineBar [#timelinebar]
+
+Стандартна смуга перемотування. Читає з найближчого `TimelineProvider` (автоматично монтується всередині `ReelPlayerOverlay`) and renders the track, buffered ranges, progress fill, and scrub pill. Theme via the `--rk-reel-timeline-*` власними властивостями або замініть через `renderTimeline`.
+
+<CodeBlock code={timelinebar} language="tsx" />
+
+### SlideOverlay [#slideoverlay]
+
+Стандартний градієнтний оверлей з автором, описом і лайками. Показується автоматично, коли у вмісті є потрібні поля. Через `renderSlideOverlay` його можна замінити або сховати.
+
+<CodeBlock code={slideoverlay} language="tsx" />
+
+### ImageSlide [#imageslide]
+
+Слайд-зображення з лінивим завантаженням і `object-fit: cover` за замовчуванням. Використовуйте всередині `renderSlide` щоб складати власні слайди-зображення зі своїми стилями.
+
+<CodeBlock code={imageslide} language="tsx" />
+
+### VideoSlide [#videoslide]
+
+Слайд-відео зі спільним елементом `<video>` заради безперервності звуку на iOS, з постерами, пам’яттю позиції та індикатором завантаження. Має бути всередині `SoundProvider` (ReelPlayerOverlay додає його автоматично).
+
+<CodeBlock code={videoslide} language="tsx" />
+
+<Callout type="info" title="Складання власних слайдів">
+  Використовуйте `renderSlide` з `ImageSlide` / `VideoSlide` щоб змінити рендеринг медіа, зберігши всю вбудовану поведінку (автовідтворення, знімок постера, синхронізацію звуку).
+</Callout>
+
+<CodeBlock code={videoslide2} language="tsx" />
+
+## Завантаження вмісту та обробка помилок [#content-loading-error-handling]
+
+Плеєр стежить за станом завантаження й помилок кожного слайда. Поки вміст вантажиться, показується хвильовий індикатор; для зіпсованого медіа — значок помилки. URL з помилками кешуються, тож повторний перехід одразу показує помилку без нової спроби.
+
+### Колбеки життєвого циклу [#lifecycle-callbacks]
+
+Якщо ви використовуєте `renderSlide`, call these callbacks to control the loading indicator:
+
+| Колбек | Коли викликати |
+| --- | --- |
+| `onReady` | Зображення завантажилося або відео почало грати. Скидає стани завантаження й помилки. |
+| `onWaiting` | Відео буферизується посеред відтворення. Показує індикатор завантаження. |
+| `onError` | Вміст не завантажився. Показує оверлей помилки й кешує URL як зіпсований. |
+
+<CodeBlock code={lifecycleCallbacks} language="tsx" />
+
+### Власний інтерфейс завантаження та помилок [#custom-loading-error-ui]
+
+Замініть стандартний хвильовий індикатор і значок помилки власними компонентами:
+
+<CodeBlock code={customLoadingErrorUi} language="tsx" />
+
+## Таймлайн [#timeline]
+
+Оверлей показує вбудовану смугу таймлайну відтворення над активним відео. Пропс `timeline` визначає, коли її показувати:
+
+- `'auto'` (типово): показується, коли активне медіа — відео, тривалість якого перевищує `timelineMinDurationSeconds` (типово 30). Працює і для слайдів з одним відео, і для мультимедійних каруселей; смуга слідує за активним вкладеним елементом і ховається на зображеннях.
+- `'always'`: показується, щойно на активному слайді є відео.
+- `'never'`: не показується ніколи. Власну смугу будуйте через `renderTimeline`.
+
+<CodeBlock code={timeline} language="tsx" />
+
+Тему задавайте через власні властивості CSS `--rk-reel-timeline-*` (висота, кольори, розмір повзунка). Для повністю власної смуги перемотування, таймкоду чи індикатора прогресу беріть `renderTimeline`; the callback receives a `timelineState` на основі `TimelineController`.
+
+## Контекст звуку [#sound-context]
+
+Для власних реалізацій доступ до стану звуку відкритий:
+
+<CodeBlock code={soundContext} language="tsx" />
+
+## Класи CSS [#css-classes]
+
+Усі класи CSS звичайні (не CSS-модулі), тож їх можна перекрити селекторами вищої специфічності в таблиці стилів, підключеній після `@reelkit/react-reel-player/styles.css`. Для змін кольору, розміру та z-index краще беріть власні властивості CSS, описані в розділі [Theming](#theming) нижче — вони саме для цього й зроблені.
+
+| Class | Component | Опис |
+| --- | --- | --- |
+| `.rk-reel-overlay` | Overlay | Фіксоване повноекранне тло (фон, z-index) |
+| `.rk-reel-container` | Overlay | Контейнер плеєра (позиція, переповнення) |
+| `.rk-reel-loader` | Overlay | Оверлей хвильової анімації завантаження |
+| `.rk-reel-media-error` | Overlay | Оверлей стану помилки (значок і текст по центру) |
+| `.rk-reel-media-error-text` | Overlay | Текст повідомлення про помилку |
+| `.rk-reel-button` | Controls | Спільна кругла кнопка з іконкою (закриття, звук, стрілки) |
+| `.rk-reel-close-btn` | Controls | Кнопка закриття |
+| `.rk-reel-sound-btn` | Controls | Кнопка перемикання звуку |
+| `.rk-reel-nav-arrows` | Навігація | Контейнер стрілок лише для десктопа (прихований до 768px) |
+| `.rk-reel-nav-button` | Навігація | Окрема стрілка вперед або назад |
+| `.rk-reel-slide-wrapper` | Slide | Обгортка навколо медіа та оверлея |
+| `.rk-reel-slide-overlay` | SlideOverlay | Контейнер градієнтного оверлея |
+| `.rk-reel-slide-overlay-author` | SlideOverlay | Рядок автора (аватар та ім’я) |
+| `.rk-reel-slide-overlay-avatar` | SlideOverlay | Зображення аватара автора |
+| `.rk-reel-slide-overlay-name` | SlideOverlay | Текст імені автора |
+| `.rk-reel-slide-overlay-description` | SlideOverlay | Текст опису |
+| `.rk-reel-slide-overlay-likes` | SlideOverlay | Рядок лайків (сердечко й лічильник) |
+| `.rk-reel-video-container` | VideoSlide | Обгортка відео (фон, переповнення) |
+| `.rk-reel-video-element` | VideoSlide | The \<video> element |
+| `.rk-reel-video-poster` | VideoSlide | Постер (зникає з початком відтворення) |
+| `.rk-reel-video-poster.rk-visible` | VideoSlide | Модифікатор стану постера, поки відео на паузі або вантажиться |
+| `.rk-reel-nested-indicator` | NestedSlider | Пагінація точками під мультимедійними слайдами (позиція різна на десктопі й на дотикових пристроях) |
+| `.rk-reel-nested-nav` | NestedSlider | Стрілки горизонтальної каруселі (приховані до 768px) |
+| `.rk-reel-nested-nav-next` | NestedSlider | Позиція вкладеної стрілки вперед |
+| `.rk-reel-nested-nav-prev` | NestedSlider | Позиція вкладеної стрілки назад |
+| `.rk-reel-timeline` | TimelineBar | Обгортка смуги перемотування. Використовуйте на власних коренях \`renderTimeline\`, щоб успадкувати притиснення до низу, відступи безпечної зони та проміжок для оверлея слайда на дотикових пристроях. |
+| `.rk-reel-timeline-track` | TimelineBar | Доріжка (невідтворена частина) |
+| `.rk-reel-timeline-buffered` | TimelineBar | Шар буферизованих сегментів |
+| `.rk-reel-timeline-fill` | TimelineBar | Заповнення відтвореного прогресу |
+| `.rk-reel-timeline-cursor` | TimelineBar | Повзунок перемотування (плаває над доріжкою) |
+
+## Theming [#theming]
+
+Кожен колір, розмір, z-index і перехід живе у власній властивості CSS. Перевизначайте одну чи кілька на `:root` (або на будь-якому предку оверлея), щоб змінити тему, не чіпаючи код компонентів.
+
+| Token | Типове значення | Controls |
+| --- | --- | --- |
+| `--rk-reel-overlay-bg` | `#000` | Full-screen backdrop color |
+| `--rk-reel-overlay-z` | `1000` | Overlay z-index |
+| `--rk-reel-button-bg` | `rgba(0, 0, 0, 0.5)` | Default circular button background |
+| `--rk-reel-button-bg-hover` | `rgba(255, 255, 255, 0.1)` | Nav arrow background (and base hover state) |
+| `--rk-reel-button-bg-hover-strong` | `rgba(255, 255, 255, 0.2)` | Nav arrow hover background |
+| `--rk-reel-button-fg` | `#fff` | Button icon color |
+| `--rk-reel-button-size` | `44px` | Button width / height |
+| `--rk-reel-button-radius` | `50%` | Button border-radius |
+| `--rk-reel-ui-z` | `10` | Close / sound / nav z-index |
+| `--rk-reel-edge-padding` | `16px` | Edge inset for close / sound / nav arrows |
+| `--rk-reel-nav-gap` | `8px` | Spacing between stacked nav arrows |
+| `--rk-reel-transition` | `0.2s` | Hover transition duration |
+| `--rk-reel-loader-color` | `rgba(255, 255, 255, 0.12)` | Wave loader gradient color |
+| `--rk-reel-loader-duration` | `1.8s` | Wave loader animation duration |
+| `--rk-reel-error-fg` | `rgba(255, 255, 255, 0.4)` | Error icon and text color |
+| `--rk-reel-error-text-size` | `13px` | Error message font size |
+| `--rk-reel-slide-overlay-bg` | `linear-gradient(transparent, rgba(0, 0, 0, 0.7))` | Caption scrim gradient |
+| `--rk-reel-slide-overlay-padding` | `48px 16px 16px` | Caption inner padding |
+| `--rk-reel-slide-overlay-name-color` | `#fff` | Author name color |
+| `--rk-reel-slide-overlay-description-color` | `rgba(255, 255, 255, 0.9)` | Description text color |
+| `--rk-reel-slide-overlay-likes-color` | `rgba(255, 255, 255, 0.8)` | Likes row text color |
+| `--rk-reel-video-bg` | `#000` | Letterbox background behind \<video> |
+| `--rk-reel-nested-button-bg` | `rgba(0, 0, 0, 0.5)` | Nested arrow background |
+| `--rk-reel-nested-button-bg-hover` | `rgba(255, 255, 255, 0.2)` | Nested arrow hover background |
+| `--rk-reel-nested-button-size` | `36px` | Nested arrow size |
+| `--rk-reel-nested-edge-padding` | `12px` | Nested arrow edge inset |
+| `--rk-reel-timeline-track` | `rgba(255, 255, 255, 0.22)` | Track background (unplayed region) |
+| `--rk-reel-timeline-buffered` | `rgba(255, 255, 255, 0.4)` | Buffered segments color |
+| `--rk-reel-timeline-fill` | `#fff` | Played-progress fill color |
+| `--rk-reel-timeline-cursor` | `#fff` | Scrub-handle pill color |
+| `--rk-reel-timeline-height` | `3px` | Track height at rest |
+| `--rk-reel-timeline-height-active` | `6px` | Track height on hover / focus / scrub |
+| `--rk-reel-timeline-cursor-width` | `10px` | Scrub-pill width at rest |
+| `--rk-reel-timeline-cursor-width-active` | `14px` | Scrub-pill width while scrubbing |
+| `--rk-reel-timeline-cursor-height` | `24px` | Scrub-pill height at rest |
+| `--rk-reel-timeline-cursor-height-active` | `32px` | Scrub-pill height while scrubbing |
+| `--rk-reel-timeline-hitbox` | `16px` | Extra pointer hit-area above the track |
+| `--rk-reel-timeline-transition` | `0.15s ease-out` | Track + pill grow/shrink animation |
+| `--rk-reel-timeline-z` | `11` | Timeline z-index (above the default UI layer) |
+
+Вставте фрагмент нижче в таблицю стилів, підключену після `@reelkit/react-reel-player/styles.css`.
+
+<CodeBlock code={theming} language="css" />
+
+## Accessibility [#accessibility]
+
+Корінь оверлея — модальний діалог (`role="dialog"`, `aria-modal="true"`). Set `ariaLabel` щоб змінити оголошення для екранного читача; типове значення — «Video player». Кожен слайд несе `role="group"`, `aria-roledescription="slide"`, and an `aria-label="Слайд N з M"`, so swiping announces position in the sequence.
+
+Оверлей захоплює фокус під час відкриття й повертає його на елемент-тригер після закриття. Tab і Shift+Tab циклічно проходять фокусовані елементи всередині; фокус, що вислизнув (клік поза оверлеєм, програмна установка), повертається назад. Реалізовано через `captureFocusForReturn` та `createFocusTrap` from `@reelkit/core`.
+
+## Клавіатурні скорочення [#keyboard-shortcuts]
+
+| Key | Action |
+| --- | --- |
+| `ArrowUp` | Previous slide |
+| `ArrowDown` | Next slide |
+| `ArrowLeft` | Previous media (in nested slider) |
+| `ArrowRight` | Next media (in nested slider) |
+| `Escape` | Close player |

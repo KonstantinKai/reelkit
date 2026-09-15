@@ -1,0 +1,72 @@
+---
+title: AI / 大模型集成
+description: 把 ReelKit 文档喂给 AI 助手：llms.txt、llms-full.txt 与推荐的接入方式。
+---
+
+import { FileText, Sparkles, Bot } from 'lucide-react';
+import agentPrompt from '../../snippets/llms/agent-prompt.txt?raw';
+import directIngestion from '../../snippets/llms/direct-ingestion.sh?raw';
+
+面向 AI 编码助手的机器可读文档。
+
+<FeatureGrid columns={3} items={[
+            {
+              icon: FileText,
+              label: 'llms.txt',
+              desc: '紧凑的链接索引。所有文档页汇于一个文件，构建时更新。',
+            },
+            {
+              icon: Sparkles,
+              label: 'llms-full.txt',
+              desc: '带每页摘要的完整语料。一次请求即可获得上下文。',
+            },
+            {
+              icon: Bot,
+              label: 'context7',
+              desc: '实时索引的清单。配合 @context7 MCP 服务器使用。',
+            },
+          ]} />
+
+<Callout type="info">
+  两个 \`.txt\` 端点都会在每次文档构建时重新生成，语料始终跟随已发布的 站点。
+</Callout>
+
+## 端点 [#endpoints]
+
+| 端点 | 用途 |
+| --- | --- |
+| [`/llms.txt`](https://reelkit.dev/llms.txt) | 每个文档页的索引链接列表。可直接放进任意大模型上下文。 |
+| [`/llms-full.txt`](https://reelkit.dev/llms-full.txt) | 同样的索引，外加每页的内嵌摘要。一次请求拿到全部语料。 |
+| [`context7.com/websites/reelkit_dev`](https://context7.com/websites/reelkit_dev) | 实时索引的 Context7 清单。通过 @context7 MCP 服务器接入。 |
+
+## 快速上手 [#quick-start]
+
+### Agent 提示词 [#agent-prompt]
+
+把端点 URL 粘给 agent，让它的回答基于当前文档。
+
+<CodeBlock code={agentPrompt} language="text" />
+
+### Context7 MCP 服务器 [#context7-mcp-server]
+
+安装 [@context7](https://github.com/upstash/context7) MCP 服务器。agent 会自动识别 ReelKit 的清单并按需拉取文档。在提示词里提到 `reelkit` 即可。
+
+### 直接接入 [#direct-ingestion]
+
+以编程方式拉取：
+
+<CodeBlock code={directIngestion} language="bash" />
+
+## 索引了哪些内容 [#what-gets-indexed]
+
+- 快速开始 + 安装
+- 核心引擎指南 + API
+- React、Vue、Angular 绑定（指南 + API + reel-player + lightbox + stories-player）
+- Stories Core 引擎
+- 服务端渲染说明
+- 疑难排查
+- 更新日志
+
+## 为什么？ [#why]
+
+AI 助手总是跟不上库的变化，生成的代码引用的是过时的 API。这些端点会随每次文档发布更新，因此建议贴合当前行为，而不是上个季度的。
