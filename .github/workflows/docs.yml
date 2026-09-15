@@ -13,11 +13,11 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
+# Deploys run one at a time and never cancel each other, so the Worker always
+# ends up on the build of the latest finished run.
 concurrency:
-  group: pages
+  group: docs-deploy
   cancel-in-progress: false
 
 jobs:
@@ -47,17 +47,7 @@ jobs:
         env:
           VITE_STACKBLITZ_CDN_TOKEN: ${{ secrets.STACKBLITZ_CDN_TOKEN }}
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./apps/dist/docs
-
-      # The same build, for the Cloudflare Workers deploy below. The GitHub
-      # Pages artifact is a tarball meant for Pages only.
-      - name: Upload build for Cloudflare
+      - name: Upload build
         uses: actions/upload-artifact@v4
         with:
           name: docs-dist
@@ -67,7 +57,7 @@ jobs:
 
   # Serves reelkit.dev from Cloudflare Workers static assets, with the
   # language redirect at the edge.
-  deploy-cloudflare:
+  deploy:
     runs-on: ubuntu-latest
     needs: build
     steps:
@@ -117,14 +107,3 @@ jobs:
             sleep 20
           done
           exit 1
-
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
