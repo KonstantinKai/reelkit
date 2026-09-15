@@ -64,3 +64,6 @@ out
 # Nx migration run artifacts
 .nx/migrate-runs
 .nx/self-healing
+
+# Wrangler local dev state
+.wrangler/

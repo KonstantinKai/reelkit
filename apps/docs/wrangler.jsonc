@@ -1,0 +1,17 @@
+{
+  // Docs site on Cloudflare Workers static assets. The build output is served
+  // as files; no Worker script runs yet.
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "reelkit-docs",
+  "compatibility_date": "2026-09-10",
+  "assets": {
+    "directory": "../dist/docs",
+    // Canonical URLs, the sitemap and hreflang all use the form without a
+    // trailing slash, so `/docs/ssr` is served directly from
+    // `docs/ssr/index.html` and `/docs/ssr/` redirects to it.
+    "html_handling": "drop-trailing-slash",
+    // A missing page gets the nearest `404.html` with a 404 status, never the
+    // home page with a 200.
+    "not_found_handling": "404-page",
+  },
+}
