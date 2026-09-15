@@ -5,6 +5,11 @@
   "name": "reelkit-docs",
   "main": "src/worker/index.ts",
   "compatibility_date": "2026-09-10",
+  // The site answers on its own domain only. A workers.dev copy would be a
+  // second crawlable address for every page.
+  "routes": [{ "pattern": "reelkit.dev", "custom_domain": true }],
+  "workers_dev": false,
+  "preview_urls": false,
   "assets": {
     "directory": "../dist/docs",
     "binding": "ASSETS",
