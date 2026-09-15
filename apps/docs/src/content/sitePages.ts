@@ -75,10 +75,21 @@ export function renderSitemap(): string {
 }
 
 /**
- * Paths rendered to static HTML at build time. The static host has no
- * rewrites, so a listed page that is not prerendered would answer with the
- * single-page fallback and a 404 status.
+ * Every English page path, `/` included, without a trailing slash. On the
+ * Cloudflare host these are the only requests the edge script runs for;
+ * everything else is served straight from the build.
+ */
+export function englishPagePaths(): string[] {
+  return kSitePages.map((page) => (page.path === '' ? '/' : `/${page.path}`));
+}
+
+/**
+ * Paths rendered to static HTML at build time: every page in every locale,
+ * listed in the sitemap or not. A page left out would reach the reader as the
+ * single-page fallback with a 404 status, and a crawler as an empty shell.
  */
 export function prerenderPaths(): string[] {
-  return sitemapEntries().map((entry) => entry.path);
+  return kLocales.flatMap((locale) =>
+    kSitePages.map((page) => withLocale(locale, `/${page.path}`)),
+  );
 }

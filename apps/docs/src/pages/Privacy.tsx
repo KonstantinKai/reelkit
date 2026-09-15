@@ -6,7 +6,7 @@ export default function Privacy() {
       <div className="mb-12">
         <h1 className="text-4xl font-bold mb-4">Privacy Policy</h1>
         <p className="text-sm text-slate-500 dark:text-slate-400">
-          Last updated: July 22, 2026
+          Last updated: September 15, 2026
         </p>
       </div>
 
@@ -16,7 +16,7 @@ export default function Privacy() {
           <p className="text-slate-600 dark:text-slate-400">
             ReelKit is an open-source software library. This privacy policy
             applies to the documentation website at reelkit.dev. There are no
-            accounts, no cookies, and nothing here that identifies you
+            accounts, no tracking cookies, and nothing here that identifies you
             personally. The site does measure aggregate traffic, and the section
             below describes exactly what that involves.
           </p>
@@ -74,9 +74,31 @@ export default function Privacy() {
         </section>
 
         <section>
+          <h2 className="text-2xl font-bold mb-4">Language</h2>
+          <p className="text-slate-600 dark:text-slate-400 mb-4">
+            The documentation is available in several languages. When you open
+            an English page, the server reads the language your browser says you
+            prefer and, if the site offers that language, sends you to the same
+            page in it. That preference is read for the one request and is not
+            stored.
+          </p>
+          <p className="text-slate-600 dark:text-slate-400">
+            When you pick a language yourself with the language switcher, the
+            site stores that choice in a single cookie,{' '}
+            <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+              rk-locale
+            </code>
+            , holding only the language code, so it can respect your choice on
+            later visits. It is kept for one year, is only ever sent to
+            reelkit.dev, and is not used for analytics. Deleting it brings back
+            the browser-based choice.
+          </p>
+        </section>
+
+        <section>
           <h2 className="text-2xl font-bold mb-4">What We Don't Collect</h2>
           <ul className="list-disc pl-6 space-y-2 text-slate-600 dark:text-slate-400">
-            <li>No cookies or tracking pixels</li>
+            <li>No tracking cookies or tracking pixels</li>
             <li>No user accounts or personal information</li>
             <li>No advertising or third-party marketing tools</li>
             <li>No cross-site tracking or visitor profiles</li>

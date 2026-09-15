@@ -4,7 +4,12 @@ import { join } from 'node:path';
 import { kDefaultLocale, kLocales } from '../i18n/locale';
 import * as pageMetaModule from '../i18n/pageMeta';
 import { kSitePages } from './manifest';
-import { pageFile, renderSitemap, sitemapEntries } from './sitePages';
+import {
+  pageFile,
+  prerenderPaths,
+  renderSitemap,
+  sitemapEntries,
+} from './sitePages';
 
 const appDir = join(import.meta.dirname, '..');
 const docsDir = join(appDir, '..');
@@ -100,6 +105,18 @@ describe('sitemap', () => {
       '/docs/llms monthly 0.5',
       '/docs/changelog weekly 0.6',
     ]);
+  });
+
+  // The legal pages are left out of the sitemap, yet still have to arrive as
+  // real HTML: without a prerendered file the static host answers with the
+  // single-page fallback and a 404 status.
+  it('prerenders every page in every locale, listed or not', () => {
+    const paths = prerenderPaths();
+    expect(paths).toHaveLength(kSitePages.length * kLocales.length);
+    for (const path of ['/privacy', '/terms', '/uk/privacy', '/zh/terms']) {
+      expect(paths, path).toContain(path);
+    }
+    expect(new Set(paths).size).toBe(paths.length);
   });
 
   it('carries one entry per listed page in every locale', () => {

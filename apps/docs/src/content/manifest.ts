@@ -28,9 +28,8 @@ export interface SitePage {
   module?: string;
 
   /**
-   * How the sitemap lists the page. A page without it is still routed, but
-   * neither listed nor prerendered — the static host serves it through the
-   * single-page fallback instead.
+   * How the sitemap lists the page. A page without it is still routed and
+   * prerendered, it is only left out of the sitemap.
    */
   sitemap?: { changefreq: ChangeFrequency; priority: string };
 }

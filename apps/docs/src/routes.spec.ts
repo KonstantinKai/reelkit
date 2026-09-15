@@ -98,8 +98,8 @@ describe('route tree', () => {
     );
   });
 
-  // A missing sitemap entry means the route is never prerendered, because
-  // `react-router.config.ts` derives its prerender list from the sitemap.
+  // A translation listed where English is not, or the other way round, hands
+  // search engines an incomplete set of alternates for the page.
   it.each(translated)(
     'lists a "$locale" sitemap entry wherever English has one',
     ({ prefix }) => {

@@ -29,13 +29,18 @@ if (!origin) {
 const results = [];
 const check = (name, ok, detail = '') => results.push({ name, ok, detail });
 
-async function get(path) {
-  const response = await fetch(`${origin}${path}`, { redirect: 'manual' });
+async function get(path, headers = {}) {
+  const response = await fetch(`${origin}${path}`, {
+    redirect: 'manual',
+    headers,
+  });
   const body = Buffer.from(await response.arrayBuffer());
   return {
     status: response.status,
     location: response.headers.get('location'),
     cacheControl: response.headers.get('cache-control') ?? '',
+    vary: response.headers.get('vary') ?? '',
+    setCookie: response.headers.get('set-cookie'),
     body,
   };
 }
@@ -90,6 +95,17 @@ check(
   longCachedHtml ?? '',
 );
 
+// Pages the sitemap leaves out are still prerendered and served directly.
+for (const path of ['/privacy', '/terms']) {
+  const page = await get(path);
+  const canonical = canonicalOf(page.body.toString('utf8'));
+  check(
+    `unlisted page ${path} answers 200 with its own canonical URL`,
+    page.status === 200 && canonical === `${kProductionOrigin}${path}`,
+    `${page.status}, canonical ${canonical}`,
+  );
+}
+
 // The slash form of a page leads to the page, in a single step.
 for (const path of ['/docs/ssr/', '/uk/', '/zh/docs/getting-started/']) {
   const response = await get(path);
@@ -140,6 +156,79 @@ if (asset) {
   );
 } else {
   check('hashed asset', false, `no local build under ${dist}`);
+}
+
+// Language redirect: a browser that prefers a served language is sent there
+// from an English page, once, without caching or a cookie. A remembered
+// choice, a crawler, a prefixed page and a file are always left alone.
+const kBrowser =
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0 Safari/537.36';
+const reader = (extra) => ({ 'User-Agent': kBrowser, ...extra });
+
+{
+  const response = await get(
+    '/docs/ssr?framework=vue',
+    reader({ 'Accept-Language': 'uk-UA,uk;q=0.9,en;q=0.8' }),
+  );
+  check(
+    'English page redirects a Ukrainian browser to /uk, temporarily and uncached',
+    response.status === 302 &&
+      locationPath(response.location) === '/uk/docs/ssr' &&
+      new URL(response.location, `${origin}/`).search === '?framework=vue' &&
+      /accept-language/i.test(response.vary) &&
+      /cookie/i.test(response.vary) &&
+      /no-store/.test(response.cacheControl) &&
+      !response.setCookie,
+    `${response.status} → ${response.location}, vary ${response.vary}, cache ${response.cacheControl}`,
+  );
+}
+{
+  const response = await get('/', reader({ 'Accept-Language': 'zh-CN' }));
+  check(
+    'home redirects a Chinese browser to /zh',
+    response.status === 302 && locationPath(response.location) === '/zh',
+    `${response.status} → ${response.location}`,
+  );
+}
+for (const [name, path, headers] of [
+  [
+    'remembered English choice',
+    '/docs/ssr',
+    reader({ 'Accept-Language': 'uk', Cookie: 'rk-locale=en' }),
+  ],
+  [
+    'English browser',
+    '/docs/ssr',
+    reader({ 'Accept-Language': 'en-US,uk;q=0.5' }),
+  ],
+  [
+    'crawler',
+    '/docs/ssr',
+    {
+      'User-Agent':
+        'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+      'Accept-Language': 'uk',
+    },
+  ],
+  ['prefixed page', '/zh/docs/ssr', reader({ 'Accept-Language': 'uk' })],
+  ['sitemap', '/sitemap.xml', reader({ 'Accept-Language': 'uk' })],
+]) {
+  const response = await get(path, headers);
+  check(
+    `${name} is served without a language redirect`,
+    response.status === 200,
+    `${response.status}${response.location ? ` → ${response.location}` : ''}`,
+  );
+}
+{
+  const response = await get('/docs/ssr', reader({ 'Accept-Language': 'en' }));
+  check(
+    'English page served as built varies by language',
+    response.status === 200 &&
+      /accept-language/i.test(response.vary) &&
+      /cookie/i.test(response.vary),
+    `vary ${response.vary || 'none'}`,
+  );
 }
 
 const failed = results.filter((result) => !result.ok);

@@ -1,11 +1,13 @@
 {
   // Docs site on Cloudflare Workers static assets. The build output is served
-  // as files; no Worker script runs yet.
+  // as files; the edge script runs only for the routes listed below.
   "$schema": "../../node_modules/wrangler/config-schema.json",
   "name": "reelkit-docs",
+  "main": "src/worker/index.ts",
   "compatibility_date": "2026-09-10",
   "assets": {
     "directory": "../dist/docs",
+    "binding": "ASSETS",
     // Canonical URLs, the sitemap and hreflang all use the form without a
     // trailing slash, so `/docs/ssr` is served directly from
     // `docs/ssr/index.html` and `/docs/ssr/` redirects to it.
@@ -13,5 +15,39 @@
     // A missing page gets the nearest `404.html` with a 404 status, never the
     // home page with a 200.
     "not_found_handling": "404-page",
+    // English page routes only, one exact path each. Assets, text files,
+    // prefixed locale pages and slash forms never run the script, so they
+    // stay free and keep working if the Workers request quota runs out. The
+    // list must match the page manifest; `src/worker/wrangler.spec.ts`
+    // checks it.
+    "run_worker_first": [
+      "/",
+      "/docs/getting-started",
+      "/docs/installation",
+      "/docs/ssr",
+      "/docs/core/guide",
+      "/docs/core/api",
+      "/docs/stories-core",
+      "/docs/react/guide",
+      "/docs/react/api",
+      "/docs/reel-player",
+      "/docs/lightbox",
+      "/docs/stories-player",
+      "/docs/vue/guide",
+      "/docs/vue/api",
+      "/docs/vue-reel-player",
+      "/docs/vue-lightbox",
+      "/docs/vue-stories-player",
+      "/docs/angular/guide",
+      "/docs/angular/api",
+      "/docs/angular-reel-player",
+      "/docs/angular-lightbox",
+      "/docs/angular-stories-player",
+      "/docs/troubleshooting",
+      "/docs/llms",
+      "/docs/changelog",
+      "/privacy",
+      "/terms",
+    ],
   },
 }

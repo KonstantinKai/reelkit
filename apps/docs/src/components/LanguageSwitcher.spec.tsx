@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import LanguageSwitcher from './LanguageSwitcher';
@@ -61,5 +61,33 @@ describe('language switcher', () => {
     const at = renderAt('/');
     choose('简体中文');
     expect(at()).toBe('/zh');
+  });
+
+  describe('remembered choice', () => {
+    const written: string[] = [];
+    const cookieSetter = vi
+      .spyOn(document, 'cookie', 'set')
+      .mockImplementation((value: string) => {
+        written.push(value);
+      });
+
+    afterEach(() => {
+      written.length = 0;
+    });
+
+    // The edge reads this cookie before the browser's language, so a reader
+    // who picks English after a redirect to their own language stays there.
+    it('remembers the language picked, English included', () => {
+      renderAt('/zh/docs/ssr');
+      choose('English');
+      expect(written.at(-1)).toMatch(/^rk-locale=en; Path=\/; Max-Age=\d+;/);
+    });
+
+    it('remembers a pick of the language already shown', () => {
+      renderAt('/zh/docs/ssr');
+      choose('简体中文');
+      expect(written.at(-1)).toMatch(/^rk-locale=zh;/);
+      expect(cookieSetter).toHaveBeenCalled();
+    });
   });
 });

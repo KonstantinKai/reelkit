@@ -7,6 +7,7 @@ import {
   withLocaleLocation,
   type Locale,
 } from '../i18n/locale';
+import { localePreferenceCookie } from '../i18n/localePreference';
 import { useLocale, useMessages } from '../i18n/useLocale';
 
 export default function LanguageSwitcher() {
@@ -37,8 +38,11 @@ export default function LanguageSwitcher() {
 
   // The search string carries the live `?framework=` contract and the hash
   // carries the section being read, so both ride along to the other locale.
+  // Picking a language, even the current one, is the reader's own choice. The
+  // cookie tells the edge to stop guessing from the browser's language.
   const switchTo = (next: Locale) => {
     setIsOpen(false);
+    document.cookie = localePreferenceCookie(next);
     if (next === locale) return;
     navigate(withLocaleLocation(next, location));
   };
