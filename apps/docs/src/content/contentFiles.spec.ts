@@ -33,6 +33,13 @@ describe.each(files)('content file $name', ({ source }) => {
     expect(frontmatter).toMatch(/^description:\s*\S/m);
   });
 
+  // The build derives page meta from the frontmatter and injects it. A
+  // hand-written export would collide with the injected one, or quietly
+  // replace the locale-aware tags with whatever one translation wrote.
+  it('leaves page meta to the frontmatter', () => {
+    expect(body(source)).not.toMatch(/^export\s+(const|function)\s+meta\b/m);
+  });
+
   // A sample written into the prose is a copy per locale, and copies drift.
   // Samples live once under `snippets/` and every locale imports the same
   // file, so a fix lands everywhere and the translations cannot disagree.

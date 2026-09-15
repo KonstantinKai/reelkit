@@ -7,42 +7,24 @@ import {
 } from '../i18n/locale';
 import { kSitePages, type ChangeFrequency, type SitePage } from './manifest';
 
-/** Page module path for one locale, relative to the app directory. */
-function moduleFile(module: string, locale: Locale): string {
-  return locale === kDefaultLocale
-    ? `pages/${module}`
-    : `pages/${locale}/${module}`;
-}
-
-function hasContent(page: SitePage, locale: Locale): boolean {
-  return (
-    page.content !== undefined &&
-    (page.contentLocales === undefined || page.contentLocales.includes(locale))
-  );
-}
-
 /**
- * Route modules a page contributes in one locale, relative to the app
- * directory — the form React Router's route config expects. `main` serves
- * the page at its path; `legacy`, when present, is the page module a content
- * file replaced, still mounted at `<path>-legacy`.
+ * Route module that serves a page in one locale, relative to the app
+ * directory — the form React Router's route config expects. A docs page is
+ * its content file; any other page is its page module, under the locale's
+ * own folder outside English.
  */
-export function pageFiles(
-  page: SitePage,
-  locale: Locale,
-): { main: string; legacy: string | null } {
-  if (hasContent(page, locale)) {
-    return {
-      main: `content/${locale}/${page.content}.mdx`,
-      legacy: page.module ? moduleFile(page.module, locale) : null,
-    };
+export function pageFile(page: SitePage, locale: Locale): string {
+  if (page.content !== undefined) {
+    return `content/${locale}/${page.content}.mdx`;
   }
-  if (!page.module) {
+  if (page.module === undefined) {
     throw new Error(
-      `Page "/${page.path}" has no content file for "${locale}" and no page module to fall back to`,
+      `Page "/${page.path}" names neither a content file nor a page module`,
     );
   }
-  return { main: moduleFile(page.module, locale), legacy: null };
+  return locale === kDefaultLocale
+    ? `pages/${page.module}`
+    : `pages/${locale}/${page.module}`;
 }
 
 export interface SitemapEntry {

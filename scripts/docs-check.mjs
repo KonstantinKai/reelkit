@@ -479,99 +479,12 @@ if (config.snippetImports) {
   }
 }
 
-// A translated page is a full copy of its English original, and the two drift
-// the moment a section lands on one and not the other. Prose is translated, so
-// it cannot be compared. The parts that must be identical can: every code
-// sample, which the translations keep byte for byte, the number of sections,
-// and the identifiers in the reference tables.
-if (config.localeParity) {
-  const pagesRoot = 'apps/docs/src/pages/docs';
-  const englishPages = [];
-  const walk = (dir) => {
-    for (const entry of readdirSync(join(root, dir), { withFileTypes: true })) {
-      const path = `${dir}/${entry.name}`;
-      if (entry.isDirectory()) walk(path);
-      else if (entry.name.endsWith('.tsx')) englishPages.push(path);
-    }
-  };
-  walk(pagesRoot);
-
-  // A multi-line template literal on a docs page is a code sample; the
-  // single-line ones are interpolated class names and the like.
-  const samples = (src) =>
-    [...src.matchAll(/`((?:[^`\\]|\\.)*)`/g)]
-      .map((m) => m[1])
-      .filter((body) => body.includes('\n'));
-  const sectionCount = (src) =>
-    (src.match(/<Heading\b[^>]*level=\{2\}/g) ?? []).length;
-  const identifiers = (src) =>
-    new Set(
-      [...src.matchAll(/\b(?:prop|name):\s*'([^']+)'/g)].map((m) => m[1]),
-    );
-
-  const preview = (body) => JSON.stringify(body.trim().slice(0, 60));
-  const without = (from, take) => {
-    const pool = [...take];
-    return from.filter((item) => {
-      const at = pool.indexOf(item);
-      if (at === -1) return true;
-      pool.splice(at, 1);
-      return false;
-    });
-  };
-
-  for (const page of englishPages) {
-    const english = read(page);
-    for (const locale of config.localeParity.locales) {
-      const sibling = page.replace(
-        `${pagesRoot}/`,
-        `apps/docs/src/pages/${locale}/docs/`,
-      );
-      if (!existsSync(join(root, sibling))) continue;
-      const translated = read(sibling);
-
-      const missing = without(samples(english), samples(translated));
-      const extra = without(samples(translated), samples(english));
-      if (missing.length) {
-        errors.push(
-          `${sibling}: ${missing.length} code sample(s) on ${rel(join(root, page))} are absent here — first begins ${preview(missing[0])}`,
-        );
-      }
-      if (extra.length) {
-        errors.push(
-          `${sibling}: ${extra.length} code sample(s) here have no match on ${rel(join(root, page))} — first begins ${preview(extra[0])}`,
-        );
-      }
-
-      const englishSections = sectionCount(english);
-      const translatedSections = sectionCount(translated);
-      if (englishSections !== translatedSections) {
-        errors.push(
-          `${sibling}: ${translatedSections} sections where ${rel(join(root, page))} has ${englishSections}`,
-        );
-      }
-
-      const englishIds = identifiers(english);
-      const translatedIds = identifiers(translated);
-      const missingIds = [...englishIds].filter((id) => !translatedIds.has(id));
-      const extraIds = [...translatedIds].filter((id) => !englishIds.has(id));
-      if (missingIds.length) {
-        errors.push(
-          `${sibling}: table rows missing versus ${rel(join(root, page))}: ${missingIds.join(', ')}`,
-        );
-      }
-      if (extraIds.length) {
-        errors.push(
-          `${sibling}: table rows with no English counterpart: ${extraIds.join(', ')}`,
-        );
-      }
-    }
-  }
-}
-
-// The same comparison for pages authored as content files. A translation
-// imports the English page's snippet files rather than copying the samples,
-// so the check is that both import the same ones in the same order.
+// A translated page mirrors its English original, and the two drift the
+// moment a section lands on one and not the other. Prose is translated, so it
+// cannot be compared. The parts that must match can: a translation imports the
+// English page's snippet files rather than copying the samples, so both import
+// the same ones in the same order, with the same number of sections and the
+// same identifiers in the reference tables.
 if (config.localeParity) {
   const contentRoot = 'apps/docs/src/content/en/docs';
   const englishPages = [];

@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { kDefaultLocale, kLocales } from '../i18n/locale';
 import * as pageMetaModule from '../i18n/pageMeta';
 import { kSitePages } from './manifest';
-import { pageFiles, renderSitemap, sitemapEntries } from './sitePages';
+import { pageFile, renderSitemap, sitemapEntries } from './sitePages';
 
 const appDir = join(import.meta.dirname, '..');
 const docsDir = join(appDir, '..');
@@ -21,30 +21,43 @@ describe('page manifest', () => {
     }
   });
 
-  it('gives every page a body in every locale', () => {
+  // A page is either docs prose in a content file or a page with its own
+  // layout. Naming both would leave one of them silently unrouted.
+  it('gives every page exactly one kind of body', () => {
     for (const page of kSitePages) {
       expect(
-        page.module ?? page.content,
-        `"/${page.path}" names neither a module nor a content file`,
-      ).toBeTruthy();
+        [page.content, page.module].filter(Boolean),
+        `"/${page.path}"`,
+      ).toHaveLength(1);
+    }
+  });
+
+  it('gives every page a body in every locale', () => {
+    for (const page of kSitePages) {
       for (const locale of kLocales) {
-        const { main, legacy } = pageFiles(page, locale);
-        for (const file of [main, legacy]) {
-          if (file === null) continue;
-          expect(existsSync(join(appDir, file)), `${locale}: ${file}`).toBe(
-            true,
-          );
-        }
+        const file = pageFile(page, locale);
+        expect(existsSync(join(appDir, file)), `${locale}: ${file}`).toBe(true);
       }
     }
   });
 
-  it('lists every content locale in the registry', () => {
-    for (const page of kSitePages) {
-      for (const locale of page.contentLocales ?? []) {
-        expect(kLocales as readonly string[], `"/${page.path}"`).toContain(
-          locale,
+  // A docs page moved to a content file leaves no module behind: the content
+  // file is the only copy of its prose, in every language.
+  it('keeps no page module a content file replaced', () => {
+    for (const page of kSitePages.filter((entry) => entry.content)) {
+      const name = page.content!.split('/').pop()!.replace(/-/g, '');
+      for (const locale of kLocales) {
+        const dir = join(
+          appDir,
+          locale === kDefaultLocale ? 'pages' : `pages/${locale}`,
+          page.content!.split('/').slice(0, -1).join('/'),
         );
+        const stray = existsSync(dir)
+          ? readdirSync(dir).filter(
+              (file) => file.toLowerCase() === `${name}.tsx`,
+            )
+          : [];
+        expect(stray, `${locale}: /${page.path}`).toEqual([]);
       }
     }
   });

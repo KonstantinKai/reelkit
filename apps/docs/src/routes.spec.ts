@@ -17,12 +17,7 @@ function leaves(entries: FlatRoute[]): FlatRoute[] {
 
 const all = leaves(routes as unknown as FlatRoute[]);
 
-// A page mid-migration to a content file keeps its old module mounted at
-// `<path>-legacy` for a side-by-side check. Those twins go with the old
-// modules and are not part of the public route set.
-const paths = all
-  .map((entry) => entry.path ?? '')
-  .filter((path) => !path.endsWith('-legacy'));
+const paths = all.map((entry) => entry.path ?? '');
 
 /** Prefixes without the leading slash — route paths carry none. */
 const translated = kLocales

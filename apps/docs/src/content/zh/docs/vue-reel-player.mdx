@@ -223,8 +223,8 @@ import theming from '../../snippets/vue-reel-player/theming.css?raw';
 | `isOpen` | `boolean` | `必填` | 控制浮层显示；为 false 时浮层会从 DOM 中移除 |
 | `loop` | `boolean` | `false` | 在幻灯片之间启用无限循环 |
 | `swipeDistanceFactor` | `number` | `0.12` | 触发切换所需的最小滑动距离占比 |
-| `timeline` | `'auto' \| 'always' \| 'never'` | `'auto'` | Gating strategy for the built-in playback timeline bar. 'auto' renders only for videos longer than timelineMinDurationSeconds; 'always' renders whenever the active slide has a video; 'never' disables the built-in bar (use the #timeline slot for a fully custom replacement). |
-| `timelineMinDurationSeconds` | `number` | `30` | Minimum video duration (seconds) for timeline='auto' to render the built-in bar. Short looping clips below this threshold are suppressed. |
+| `timeline` | `'auto' \| 'always' \| 'never'` | `'auto'` | 内置播放进度条的显示策略。'auto' 只在视频时长超过 timelineMinDurationSeconds 时渲染；'always' 只要当前幻灯片有视频就渲染；'never' 关闭内置进度条（需要完全自定义时使用 #timeline 插槽）。 |
+| `timelineMinDurationSeconds` | `number` | `30` | timeline='auto' 时渲染内置进度条所需的最短视频时长（秒）。低于该阈值的循环短片不显示进度条。 |
 | `transitionDuration` | `number` | `300` | 幻灯片动画时长（毫秒） |
 | `wheelDebounceMs` | `number` | `200` | 滚轮事件的防抖时长（毫秒） |
 
@@ -413,38 +413,38 @@ CSS 类名都是普通类名（没有 scoped）。在 `@reelkit/vue-reel-player/
 
 | 变量 | 默认值 | 控制内容 |
 | --- | --- | --- |
-| `--rk-reel-overlay-bg` | `#000` | Full-screen backdrop color |
-| `--rk-reel-overlay-z` | `1000` | Overlay z-index |
-| `--rk-reel-button-bg` | `rgba(0, 0, 0, 0.5)` | Default circular button background |
-| `--rk-reel-button-bg-hover` | `rgba(255, 255, 255, 0.1)` | Nav arrow background (and base hover state) |
-| `--rk-reel-button-bg-hover-strong` | `rgba(255, 255, 255, 0.2)` | Nav arrow hover background |
-| `--rk-reel-button-fg` | `#fff` | Button icon color |
-| `--rk-reel-button-size` | `44px` | Button width / height |
-| `--rk-reel-button-radius` | `50%` | Button border-radius |
-| `--rk-reel-ui-z` | `10` | Close / sound / nav z-index |
-| `--rk-reel-edge-padding` | `16px` | Edge inset for close / sound / nav arrows |
-| `--rk-reel-nav-gap` | `8px` | Spacing between stacked nav arrows |
-| `--rk-reel-transition` | `0.2s` | Hover transition duration |
-| `--rk-reel-loader-color` | `rgba(255, 255, 255, 0.12)` | Wave loader gradient color |
-| `--rk-reel-loader-duration` | `1.8s` | Wave loader animation duration |
-| `--rk-reel-error-fg` | `rgba(255, 255, 255, 0.4)` | Error icon and text color |
-| `--rk-reel-slide-overlay-bg` | `linear-gradient(transparent, rgba(0, 0, 0, 0.7))` | Caption scrim gradient |
-| `--rk-reel-slide-overlay-padding` | `48px 16px 16px` | Caption inner padding |
-| `--rk-reel-slide-overlay-name-color` | `#fff` | Author name color |
-| `--rk-reel-video-bg` | `#000` | Letterbox background behind \<video> |
-| `--rk-reel-nested-button-bg` | `rgba(0, 0, 0, 0.5)` | Nested arrow background |
-| `--rk-reel-nested-button-size` | `36px` | Nested arrow size |
-| `--rk-reel-timeline-track` | `rgba(255, 255, 255, 0.22)` | Track background (unplayed region) |
-| `--rk-reel-timeline-buffered` | `rgba(255, 255, 255, 0.4)` | Buffered segments color |
-| `--rk-reel-timeline-fill` | `#fff` | Played-progress fill color |
-| `--rk-reel-timeline-cursor` | `#fff` | Scrub-handle pill color |
-| `--rk-reel-timeline-height` | `3px` | Track height at rest |
-| `--rk-reel-timeline-height-active` | `6px` | Track height on hover / focus / scrub |
-| `--rk-reel-timeline-cursor-width` | `10px` | Scrub-pill width at rest |
-| `--rk-reel-timeline-cursor-width-active` | `14px` | Scrub-pill width while scrubbing |
-| `--rk-reel-timeline-cursor-height` | `24px` | Scrub-pill height at rest |
-| `--rk-reel-timeline-cursor-height-active` | `32px` | Scrub-pill height while scrubbing |
-| `--rk-reel-timeline-transition` | `0.15s ease-out` | Track + pill grow/shrink animation |
+| `--rk-reel-overlay-bg` | `#000` | 全屏背景颜色 |
+| `--rk-reel-overlay-z` | `1000` | 浮层 z-index |
+| `--rk-reel-button-bg` | `rgba(0, 0, 0, 0.5)` | 圆形按钮的默认背景 |
+| `--rk-reel-button-bg-hover` | `rgba(255, 255, 255, 0.1)` | 导航箭头背景（以及基础悬停状态） |
+| `--rk-reel-button-bg-hover-strong` | `rgba(255, 255, 255, 0.2)` | 导航箭头悬停背景 |
+| `--rk-reel-button-fg` | `#fff` | 按钮图标颜色 |
+| `--rk-reel-button-size` | `44px` | 按钮宽高 |
+| `--rk-reel-button-radius` | `50%` | 按钮圆角半径 |
+| `--rk-reel-ui-z` | `10` | 关闭、声音和导航按钮的 z-index |
+| `--rk-reel-edge-padding` | `16px` | 关闭、声音和导航箭头距边缘的内缩 |
+| `--rk-reel-nav-gap` | `8px` | 堆叠导航箭头之间的间距 |
+| `--rk-reel-transition` | `0.2s` | 悬停过渡时长 |
+| `--rk-reel-loader-color` | `rgba(255, 255, 255, 0.12)` | 波浪加载渐变颜色 |
+| `--rk-reel-loader-duration` | `1.8s` | 波浪加载动画时长 |
+| `--rk-reel-error-fg` | `rgba(255, 255, 255, 0.4)` | 错误图标和文字颜色 |
+| `--rk-reel-slide-overlay-bg` | `linear-gradient(transparent, rgba(0, 0, 0, 0.7))` | 说明文字遮罩渐变 |
+| `--rk-reel-slide-overlay-padding` | `48px 16px 16px` | 说明文字内边距 |
+| `--rk-reel-slide-overlay-name-color` | `#fff` | 作者名称颜色 |
+| `--rk-reel-video-bg` | `#000` | \<video> 后方的留黑背景 |
+| `--rk-reel-nested-button-bg` | `rgba(0, 0, 0, 0.5)` | 内层箭头背景 |
+| `--rk-reel-nested-button-size` | `36px` | 内层箭头尺寸 |
+| `--rk-reel-timeline-track` | `rgba(255, 255, 255, 0.22)` | 轨道背景（未播放区域） |
+| `--rk-reel-timeline-buffered` | `rgba(255, 255, 255, 0.4)` | 已缓冲片段颜色 |
+| `--rk-reel-timeline-fill` | `#fff` | 已播放进度的填充颜色 |
+| `--rk-reel-timeline-cursor` | `#fff` | 拖动手柄胶囊颜色 |
+| `--rk-reel-timeline-height` | `3px` | 轨道静止时的高度 |
+| `--rk-reel-timeline-height-active` | `6px` | 悬停、聚焦或拖动时的轨道高度 |
+| `--rk-reel-timeline-cursor-width` | `10px` | 拖动胶囊静止时的宽度 |
+| `--rk-reel-timeline-cursor-width-active` | `14px` | 拖动时胶囊的宽度 |
+| `--rk-reel-timeline-cursor-height` | `24px` | 拖动胶囊静止时的高度 |
+| `--rk-reel-timeline-cursor-height-active` | `32px` | 拖动时胶囊的高度 |
+| `--rk-reel-timeline-transition` | `0.15s ease-out` | 轨道与胶囊的伸缩动画 |
 
 把下面这段放进在 `@reelkit/vue-reel-player/styles.css`.
 
@@ -460,8 +460,8 @@ CSS 类名都是普通类名（没有 scoped）。在 `@reelkit/vue-reel-player/
 
 | Key | 作用 |
 | --- | --- |
-| `ArrowUp` | Previous slide |
-| `ArrowDown` | Next slide |
-| `ArrowLeft` | Previous media (nested carousel) |
-| `ArrowRight` | Next media (nested carousel) |
-| `Escape` | Close player |
+| `ArrowUp` | 上一张幻灯片 |
+| `ArrowDown` | 下一张幻灯片 |
+| `ArrowLeft` | 上一个媒体（内层轮播） |
+| `ArrowRight` | 下一个媒体（内层轮播） |
+| `Escape` | 关闭播放器 |

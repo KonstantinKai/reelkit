@@ -254,7 +254,7 @@ import theming from '../../snippets/stories-player/theming.css?raw';
 | `onStoryChange` | `(groupIndex: number, storyIndex: number) => void` | 当前 story 变化时触发 |
 | `onGroupChange` | `(groupIndex: number) => void` | 当前分组变化时触发 |
 | `onStoryViewed` | `(groupIndex: number, storyIndex: number) => void` | 某个 story 变为可见时触发 |
-| `onStoryComplete` | `(groupIndex: number, storyIndex: number) => void` | Fired when a story's timer completes |
+| `onStoryComplete` | `(groupIndex: number, storyIndex: number) => void` | 某个 story 的计时器走完时触发 |
 | `onDoubleTap` | `(groupIndex: number, storyIndex: number) => void` | 双击手势时触发 |
 | `onPause` | `() => void` | 播放器暂停时触发 |
 | `onResume` | `() => void` | 播放器恢复时触发 |
@@ -504,35 +504,35 @@ Use the `apiRef` 属性做命令式控制：
 
 | 变量 | 默认值 | 控制内容 |
 | --- | --- | --- |
-| `--rk-stories-overlay-bg` | `#000` | Full-screen backdrop color |
-| `--rk-stories-overlay-z` | `9999` | Overlay z-index |
-| `--rk-stories-container-radius` | `12px` | Rounded corners on the story canvas (desktop) |
-| `--rk-stories-swipe-gap` | `16px` | Gap between nav buttons and the story canvas |
-| `--rk-stories-top-shade-height` | `120px` | Top gradient scrim height behind the header |
-| `--rk-stories-top-shade-bg` | `linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%)` | Top gradient scrim color |
-| `--rk-stories-ui-transition` | `200ms` | Fade duration when hideUIOnPause toggles |
-| `--rk-stories-nav-size` | `44px` | Desktop prev/next button size |
-| `--rk-stories-nav-bg` | `rgba(255, 255, 255, 0.1)` | Desktop nav button background |
-| `--rk-stories-nav-bg-hover` | `rgba(255, 255, 255, 0.2)` | Desktop nav button hover background |
-| `--rk-stories-nav-fg` | `rgba(255, 255, 255, 0.7)` | Desktop nav button icon color |
-| `--rk-stories-nav-fg-hover` | `#fff` | Desktop nav button hover icon color |
-| `--rk-stories-error-bg` | `linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)` | Error state background gradient |
-| `--rk-stories-error-fg` | `rgba(255, 255, 255, 0.5)` | Error icon and text color |
-| `--rk-stories-error-text-size` | `13px` | Error message font size |
-| `--rk-stories-video-bg` | `#000` | Letterbox background behind \<video> |
-| `--rk-stories-video-poster-transition` | `200ms` | Poster fade duration when the video starts playing |
-| `--rk-stories-header-top` | `18px` | Vertical offset of the header from the top of the story |
-| `--rk-stories-header-padding` | `12px 16px` | Inner padding of the header row |
-| `--rk-stories-header-avatar-size` | `32px` | Avatar width/height |
-| `--rk-stories-header-name-fg` | `#fff` | Author name color |
-| `--rk-stories-header-name-size` | `14px` | Author name font size |
-| `--rk-stories-header-time-fg` | `rgba(255, 255, 255, 0.6)` | Time-ago text color |
-| `--rk-stories-header-btn-fg` | `#fff` | Header action icon color (close, mute, pause) |
-| `--rk-stories-heart-duration` | `800ms` | Pop-in/fade-out animation duration |
-| `--rk-stories-ring-spin-duration` | `4s` | Active ring gradient rotation duration |
-| `--rk-stories-ring-list-gap` | `12px` | Spacing between rings in the list |
-| `--rk-stories-ring-list-padding` | `12px` | Inner padding around the ring list |
-| `--rk-stories-ring-list-name-size` | `12px` | Author name font size below each ring |
+| `--rk-stories-overlay-bg` | `#000` | 全屏背景颜色 |
+| `--rk-stories-overlay-z` | `9999` | 浮层 z-index |
+| `--rk-stories-container-radius` | `12px` | story 画布的圆角（桌面端） |
+| `--rk-stories-swipe-gap` | `16px` | 导航按钮与 story 画布之间的间距 |
+| `--rk-stories-top-shade-height` | `120px` | 头部后方顶部渐变遮罩的高度 |
+| `--rk-stories-top-shade-bg` | `linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%)` | 顶部渐变遮罩颜色 |
+| `--rk-stories-ui-transition` | `200ms` | hideUIOnPause 切换时的淡入淡出时长 |
+| `--rk-stories-nav-size` | `44px` | 桌面端上一个 / 下一个按钮尺寸 |
+| `--rk-stories-nav-bg` | `rgba(255, 255, 255, 0.1)` | 桌面端导航按钮背景 |
+| `--rk-stories-nav-bg-hover` | `rgba(255, 255, 255, 0.2)` | 桌面端导航按钮悬停背景 |
+| `--rk-stories-nav-fg` | `rgba(255, 255, 255, 0.7)` | 桌面端导航按钮图标颜色 |
+| `--rk-stories-nav-fg-hover` | `#fff` | 桌面端导航按钮悬停图标颜色 |
+| `--rk-stories-error-bg` | `linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)` | 错误状态背景渐变 |
+| `--rk-stories-error-fg` | `rgba(255, 255, 255, 0.5)` | 错误图标和文字颜色 |
+| `--rk-stories-error-text-size` | `13px` | 错误信息字号 |
+| `--rk-stories-video-bg` | `#000` | \<video> 后方的留黑背景 |
+| `--rk-stories-video-poster-transition` | `200ms` | 视频开始播放时封面淡出的时长 |
+| `--rk-stories-header-top` | `18px` | 头部距 story 顶部的垂直偏移 |
+| `--rk-stories-header-padding` | `12px 16px` | 头部行的内边距 |
+| `--rk-stories-header-avatar-size` | `32px` | 头像宽高 |
+| `--rk-stories-header-name-fg` | `#fff` | 作者名称颜色 |
+| `--rk-stories-header-name-size` | `14px` | 作者名称字号 |
+| `--rk-stories-header-time-fg` | `rgba(255, 255, 255, 0.6)` | 发布时间文字颜色 |
+| `--rk-stories-header-btn-fg` | `#fff` | 头部操作图标颜色（关闭、静音、暂停） |
+| `--rk-stories-heart-duration` | `800ms` | 弹出 / 淡出动画时长 |
+| `--rk-stories-ring-spin-duration` | `4s` | 活动圆环渐变的旋转时长 |
+| `--rk-stories-ring-list-gap` | `12px` | 列表中圆环之间的间距 |
+| `--rk-stories-ring-list-padding` | `12px` | 圆环列表的内边距 |
+| `--rk-stories-ring-list-name-size` | `12px` | 每个圆环下方作者名称的字号 |
 
 把下面这段放进在 `@reelkit/react-stories-player/styles.css`.
 
@@ -548,6 +548,6 @@ Use the `apiRef` 属性做命令式控制：
 
 | Key | 作用 |
 | --- | --- |
-| `ArrowLeft` | Previous story |
-| `ArrowRight` | Next story |
-| `Escape` | Close player |
+| `ArrowLeft` | 上一个 story |
+| `ArrowRight` | 下一个 story |
+| `Escape` | 关闭播放器 |

@@ -194,7 +194,7 @@ An `InjectionKey<ReelContextValue>` 由 `<Reel>` 提供给后代组件。内部�
 | 选项 | 类型 | 默认值 | 说明 |
 | --- | --- | --- | --- |
 | `param` | `string` | 必填 | 承载当前幻灯片的查询参数，例如 "photo"。 |
-| `adapter` | `UrlAdapter` | History API | Navigation system to read and write through. Pass a router-backed adapter in a routed app so the router's own location does not go stale. |
+| `adapter` | `UrlAdapter` | History API | 用于读写的导航系统。在带路由的应用里传入基于路由器的适配器，避免路由器自己的 location 过期。 |
 | `codec` | `{ decode(raw) => Id \| null; encode(id) => string }` | 必填 | 传输格式：参数文本 ↔ 稳定身份，与集合无关。它与 locator 组成共用同一个 Id 的配套组合 —— 默认的 ?photo=3 索引画廊展开 ...urlIndexKey(() => props.images.length) 即可；也可以提供你自己的实现（base64、slug），让画廊重新排序后书签依然有效。 |
 | `locator` | `{ locate(id) => number \| null; locateAsync?(id) => Promise<number \| null>; identify(index) => id }` | 必填 | 把身份映射成位置，并自己判断有效性：locate（同步）、locateAsync（分页画廊的异步兜底）、identify（写回）。普通的索引画廊展开 ...urlIndexKey(() => props.images.length) 即可 —— 它同时提供这个定位器和配套的编解码器，并以实时数量为上界约束 ?photo=3，于是过期的 ?photo=99 会自动从 URL 中消失，而不是打开一张从未指定的幻灯片。请传 getter 而不是数字，因为 Vue 的 setup 只执行一次，捕获下来的长度会随分页信息流增长而过期。分页信息流或按身份寻址的画廊则自行提供配套的编解码器 + 定位器。 |
 

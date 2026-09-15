@@ -402,7 +402,7 @@ Pass `hashCodec: base64UrlCodec` щоб закодувати id в URL у base64
 | `.rk-reel-slide-overlay-description` | SlideOverlay | Текст опису |
 | `.rk-reel-slide-overlay-likes` | SlideOverlay | Рядок лайків (сердечко й лічильник) |
 | `.rk-reel-video-container` | VideoSlide | Обгортка відео (фон, переповнення) |
-| `.rk-reel-video-element` | VideoSlide | The \<video> element |
+| `.rk-reel-video-element` | VideoSlide | Елемент \<video> |
 | `.rk-reel-video-poster` | VideoSlide | Постер (зникає з початком відтворення) |
 | `.rk-reel-video-poster.rk-visible` | VideoSlide | Модифікатор стану постера, поки відео на паузі або вантажиться |
 | `.rk-reel-nested-indicator` | NestedSlider | Пагінація точками під мультимедійними слайдами (позиція різна на десктопі й на дотикових пристроях) |
@@ -421,38 +421,38 @@ Pass `hashCodec: base64UrlCodec` щоб закодувати id в URL у base64
 
 | Token | Типове значення | Controls |
 | --- | --- | --- |
-| `--rk-reel-overlay-bg` | `#000` | Full-screen backdrop color |
-| `--rk-reel-overlay-z` | `1000` | Overlay z-index |
-| `--rk-reel-button-bg` | `rgba(0, 0, 0, 0.5)` | Default circular button background |
-| `--rk-reel-button-bg-hover` | `rgba(255, 255, 255, 0.1)` | Nav arrow background (and base hover state) |
-| `--rk-reel-button-bg-hover-strong` | `rgba(255, 255, 255, 0.2)` | Nav arrow hover background |
-| `--rk-reel-button-fg` | `#fff` | Button icon color |
-| `--rk-reel-button-size` | `44px` | Button width / height |
-| `--rk-reel-button-radius` | `50%` | Button border-radius |
-| `--rk-reel-ui-z` | `10` | Close / sound / nav z-index |
-| `--rk-reel-edge-padding` | `16px` | Edge inset for close / sound / nav arrows |
-| `--rk-reel-nav-gap` | `8px` | Spacing between stacked nav arrows |
-| `--rk-reel-transition` | `0.2s` | Hover transition duration |
-| `--rk-reel-loader-color` | `rgba(255, 255, 255, 0.12)` | Wave loader gradient color |
-| `--rk-reel-loader-duration` | `1.8s` | Wave loader animation duration |
-| `--rk-reel-error-fg` | `rgba(255, 255, 255, 0.4)` | Error icon and text color |
-| `--rk-reel-slide-overlay-bg` | `linear-gradient(transparent, rgba(0, 0, 0, 0.7))` | Caption scrim gradient |
-| `--rk-reel-slide-overlay-padding` | `48px 16px 16px` | Caption inner padding |
-| `--rk-reel-slide-overlay-name-color` | `#fff` | Author name color |
-| `--rk-reel-video-bg` | `#000` | Letterbox background behind \<video> |
-| `--rk-reel-nested-button-bg` | `rgba(0, 0, 0, 0.5)` | Nested arrow background |
-| `--rk-reel-nested-button-size` | `36px` | Nested arrow size |
-| `--rk-reel-timeline-track` | `rgba(255, 255, 255, 0.22)` | Track background (unplayed region) |
-| `--rk-reel-timeline-buffered` | `rgba(255, 255, 255, 0.4)` | Buffered segments color |
-| `--rk-reel-timeline-fill` | `#fff` | Played-progress fill color |
-| `--rk-reel-timeline-cursor` | `#fff` | Scrub-handle pill color |
-| `--rk-reel-timeline-height` | `3px` | Track height at rest |
-| `--rk-reel-timeline-height-active` | `6px` | Track height on hover / focus / scrub |
-| `--rk-reel-timeline-cursor-width` | `10px` | Scrub-pill width at rest |
-| `--rk-reel-timeline-cursor-width-active` | `14px` | Scrub-pill width while scrubbing |
-| `--rk-reel-timeline-cursor-height` | `24px` | Scrub-pill height at rest |
-| `--rk-reel-timeline-cursor-height-active` | `32px` | Scrub-pill height while scrubbing |
-| `--rk-reel-timeline-transition` | `0.15s ease-out` | Track + pill grow/shrink animation |
+| `--rk-reel-overlay-bg` | `#000` | Колір повноекранного фону |
+| `--rk-reel-overlay-z` | `1000` | z-index оверлею |
+| `--rk-reel-button-bg` | `rgba(0, 0, 0, 0.5)` | Типовий фон круглої кнопки |
+| `--rk-reel-button-bg-hover` | `rgba(255, 255, 255, 0.1)` | Фон стрілки навігації (і базовий стан наведення) |
+| `--rk-reel-button-bg-hover-strong` | `rgba(255, 255, 255, 0.2)` | Фон стрілки навігації під час наведення |
+| `--rk-reel-button-fg` | `#fff` | Колір іконки кнопки |
+| `--rk-reel-button-size` | `44px` | Ширина й висота кнопки |
+| `--rk-reel-button-radius` | `50%` | Радіус заокруглення кнопки |
+| `--rk-reel-ui-z` | `10` | z-index кнопок закриття, звуку й навігації |
+| `--rk-reel-edge-padding` | `16px` | Відступ від краю для кнопок закриття, звуку та стрілок навігації |
+| `--rk-reel-nav-gap` | `8px` | Відстань між розташованими одна над одною стрілками навігації |
+| `--rk-reel-transition` | `0.2s` | Тривалість переходу під час наведення |
+| `--rk-reel-loader-color` | `rgba(255, 255, 255, 0.12)` | Колір градієнта хвильового завантажувача |
+| `--rk-reel-loader-duration` | `1.8s` | Тривалість анімації хвильового завантажувача |
+| `--rk-reel-error-fg` | `rgba(255, 255, 255, 0.4)` | Колір іконки й тексту помилки |
+| `--rk-reel-slide-overlay-bg` | `linear-gradient(transparent, rgba(0, 0, 0, 0.7))` | Градієнт затемнення під підписом |
+| `--rk-reel-slide-overlay-padding` | `48px 16px 16px` | Внутрішній відступ підпису |
+| `--rk-reel-slide-overlay-name-color` | `#fff` | Колір імені автора |
+| `--rk-reel-video-bg` | `#000` | Фон смуг навколо \<video> |
+| `--rk-reel-nested-button-bg` | `rgba(0, 0, 0, 0.5)` | Фон вкладеної стрілки |
+| `--rk-reel-nested-button-size` | `36px` | Розмір вкладеної стрілки |
+| `--rk-reel-timeline-track` | `rgba(255, 255, 255, 0.22)` | Фон доріжки (невідтворена частина) |
+| `--rk-reel-timeline-buffered` | `rgba(255, 255, 255, 0.4)` | Колір буферизованих відрізків |
+| `--rk-reel-timeline-fill` | `#fff` | Колір заповнення відтвореної частини |
+| `--rk-reel-timeline-cursor` | `#fff` | Колір капсули повзунка перемотування |
+| `--rk-reel-timeline-height` | `3px` | Висота доріжки у спокої |
+| `--rk-reel-timeline-height-active` | `6px` | Висота доріжки під час наведення, фокусу й перемотування |
+| `--rk-reel-timeline-cursor-width` | `10px` | Ширина капсули перемотування у спокої |
+| `--rk-reel-timeline-cursor-width-active` | `14px` | Ширина капсули під час перемотування |
+| `--rk-reel-timeline-cursor-height` | `24px` | Висота капсули перемотування у спокої |
+| `--rk-reel-timeline-cursor-height-active` | `32px` | Висота капсули під час перемотування |
+| `--rk-reel-timeline-transition` | `0.15s ease-out` | Анімація збільшення й зменшення доріжки та капсули |
 
 Вставте фрагмент нижче в таблицю стилів, підключену після `@reelkit/vue-reel-player/styles.css`.
 
@@ -468,8 +468,8 @@ Pass `hashCodec: base64UrlCodec` щоб закодувати id в URL у base64
 
 | Key | Action |
 | --- | --- |
-| `ArrowUp` | Previous slide |
-| `ArrowDown` | Next slide |
-| `ArrowLeft` | Previous media (nested carousel) |
-| `ArrowRight` | Next media (nested carousel) |
-| `Escape` | Close player |
+| `ArrowUp` | Попередній слайд |
+| `ArrowDown` | Наступний слайд |
+| `ArrowLeft` | Попереднє медіа (вкладена карусель) |
+| `ArrowRight` | Наступне медіа (вкладена карусель) |
+| `Escape` | Закрити плеєр |

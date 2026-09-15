@@ -15,21 +15,17 @@ export interface SitePage {
   path: string;
 
   /**
-   * Page module at `pages/<module>` in English and `pages/<locale>/<module>`
-   * in every other locale. It is the page body wherever no content file has
-   * replaced it yet; where one has, it stays mounted at `<path>-legacy` so
-   * the two can be compared side by side until the move is finished.
+   * Docs page authored as a content file, at `content/<locale>/<content>.mdx`
+   * in every locale, English included.
    */
-  module?: string;
-
-  /** Content file at `content/<locale>/<content>.mdx`, English included. */
   content?: string;
 
   /**
-   * Locales whose content file already exists, while a page is part way
-   * through the move. Absent means every locale has one.
+   * Page with its own layout, at `pages/<module>` in English and
+   * `pages/<locale>/<module>` in every other locale. Set for the pages that
+   * are not docs prose: the home page, the legal pages and the changelog.
    */
-  contentLocales?: readonly string[];
+  module?: string;
 
   /**
    * How the sitemap lists the page. A page without it is still routed, but
@@ -51,139 +47,116 @@ export const kSitePages: readonly SitePage[] = [
   {
     path: 'docs/getting-started',
     content: 'docs/getting-started',
-    module: 'docs/GettingStarted.tsx',
     sitemap: monthly('0.9'),
   },
   {
     path: 'docs/installation',
     content: 'docs/installation',
-    module: 'docs/Installation.tsx',
     sitemap: monthly('0.8'),
   },
   {
     path: 'docs/ssr',
     content: 'docs/ssr',
-    module: 'docs/SSR.tsx',
     sitemap: monthly('0.6'),
   },
   {
     path: 'docs/core/guide',
     content: 'docs/core/guide',
-    module: 'docs/core/Guide.tsx',
     sitemap: monthly('0.8'),
   },
   {
     path: 'docs/core/api',
     content: 'docs/core/api',
-    module: 'docs/core/Api.tsx',
     sitemap: monthly('0.7'),
   },
   {
     path: 'docs/stories-core',
     content: 'docs/stories-core',
-    module: 'docs/StoriesCore.tsx',
     sitemap: monthly('0.7'),
   },
   {
     path: 'docs/react/guide',
     content: 'docs/react/guide',
-    module: 'docs/react/Guide.tsx',
     sitemap: monthly('0.8'),
   },
   {
     path: 'docs/react/api',
     content: 'docs/react/api',
-    module: 'docs/react/Api.tsx',
     sitemap: monthly('0.7'),
   },
   {
     path: 'docs/reel-player',
     content: 'docs/reel-player',
-    module: 'docs/ReelPlayer.tsx',
     sitemap: monthly('0.8'),
   },
   {
     path: 'docs/lightbox',
     content: 'docs/lightbox',
-    module: 'docs/Lightbox.tsx',
     sitemap: monthly('0.8'),
   },
   {
     path: 'docs/stories-player',
     content: 'docs/stories-player',
-    module: 'docs/StoriesPlayer.tsx',
     sitemap: monthly('0.8'),
   },
   {
     path: 'docs/vue/guide',
     content: 'docs/vue/guide',
-    module: 'docs/vue/Guide.tsx',
     sitemap: monthly('0.8'),
   },
   {
     path: 'docs/vue/api',
     content: 'docs/vue/api',
-    module: 'docs/vue/Api.tsx',
     sitemap: monthly('0.7'),
   },
   {
     path: 'docs/vue-reel-player',
     content: 'docs/vue-reel-player',
-    module: 'docs/VueReelPlayer.tsx',
     sitemap: monthly('0.8'),
   },
   {
     path: 'docs/vue-lightbox',
     content: 'docs/vue-lightbox',
-    module: 'docs/VueLightbox.tsx',
     sitemap: monthly('0.8'),
   },
   {
     path: 'docs/vue-stories-player',
     content: 'docs/vue-stories-player',
-    module: 'docs/VueStoriesPlayer.tsx',
     sitemap: monthly('0.8'),
   },
   {
     path: 'docs/angular/guide',
     content: 'docs/angular/guide',
-    module: 'docs/angular/Guide.tsx',
     sitemap: monthly('0.8'),
   },
   {
     path: 'docs/angular/api',
     content: 'docs/angular/api',
-    module: 'docs/angular/Api.tsx',
     sitemap: monthly('0.7'),
   },
   {
     path: 'docs/angular-reel-player',
     content: 'docs/angular-reel-player',
-    module: 'docs/AngularReelPlayer.tsx',
     sitemap: monthly('0.8'),
   },
   {
     path: 'docs/angular-lightbox',
     content: 'docs/angular-lightbox',
-    module: 'docs/AngularLightbox.tsx',
     sitemap: monthly('0.8'),
   },
   {
     path: 'docs/angular-stories-player',
     content: 'docs/angular-stories-player',
-    module: 'docs/AngularStoriesPlayer.tsx',
     sitemap: monthly('0.8'),
   },
   {
     path: 'docs/troubleshooting',
     content: 'docs/troubleshooting',
-    module: 'docs/Troubleshooting.tsx',
     sitemap: monthly('0.5'),
   },
   {
     path: 'docs/llms',
     content: 'docs/llms',
-    module: 'docs/Llms.tsx',
     sitemap: monthly('0.5'),
   },
   {

@@ -487,7 +487,7 @@ Extend `StoryItem` власними полями й передайте пара�
 | `.rk-stories-header-spinner` | StoryHeader | Індикатор буферизації відео |
 | `.rk-stories-image` | ImageStorySlide | Елемент історії-зображення |
 | `.rk-stories-video` | VideoStorySlide | Контейнер історії-відео |
-| `.rk-stories-video-element` | VideoStorySlide | The shared \<video> element |
+| `.rk-stories-video-element` | VideoStorySlide | Спільний елемент \<video> |
 | `.rk-stories-video-poster` | VideoStorySlide | Постер відео (зникає з початком відтворення) |
 | `.rk-stories-video-poster--visible` | VideoStorySlide | Стан видимого постера (до відтворення) |
 | `.rk-stories-heart` | HeartAnimation | Анімація сердечка на подвійний дотик |
@@ -504,35 +504,35 @@ Extend `StoryItem` власними полями й передайте пара�
 
 | Token | Типове значення | Controls |
 | --- | --- | --- |
-| `--rk-stories-overlay-bg` | `#000` | Full-screen backdrop color |
-| `--rk-stories-overlay-z` | `9999` | Overlay z-index |
-| `--rk-stories-container-radius` | `12px` | Rounded corners on the story canvas (desktop) |
-| `--rk-stories-swipe-gap` | `16px` | Gap between nav buttons and the story canvas |
-| `--rk-stories-top-shade-height` | `120px` | Top gradient scrim height behind the header |
-| `--rk-stories-top-shade-bg` | `linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%)` | Top gradient scrim color |
-| `--rk-stories-ui-transition` | `200ms` | Fade duration when hideUIOnPause toggles |
-| `--rk-stories-nav-size` | `44px` | Desktop prev/next button size |
-| `--rk-stories-nav-bg` | `rgba(255, 255, 255, 0.1)` | Desktop nav button background |
-| `--rk-stories-nav-bg-hover` | `rgba(255, 255, 255, 0.2)` | Desktop nav button hover background |
-| `--rk-stories-nav-fg` | `rgba(255, 255, 255, 0.7)` | Desktop nav button icon color |
-| `--rk-stories-nav-fg-hover` | `#fff` | Desktop nav button hover icon color |
-| `--rk-stories-error-bg` | `linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)` | Error state background gradient |
-| `--rk-stories-error-fg` | `rgba(255, 255, 255, 0.5)` | Error icon and text color |
-| `--rk-stories-error-text-size` | `13px` | Error message font size |
-| `--rk-stories-video-bg` | `#000` | Letterbox background behind \<video> |
-| `--rk-stories-video-poster-transition` | `200ms` | Poster fade duration when the video starts playing |
-| `--rk-stories-header-top` | `18px` | Vertical offset of the header from the top of the story |
-| `--rk-stories-header-padding` | `12px 16px` | Inner padding of the header row |
-| `--rk-stories-header-avatar-size` | `32px` | Avatar width/height |
-| `--rk-stories-header-name-fg` | `#fff` | Author name color |
-| `--rk-stories-header-name-size` | `14px` | Author name font size |
-| `--rk-stories-header-time-fg` | `rgba(255, 255, 255, 0.6)` | Time-ago text color |
-| `--rk-stories-header-btn-fg` | `#fff` | Header action icon color (close, mute, pause) |
-| `--rk-stories-heart-duration` | `800ms` | Pop-in/fade-out animation duration |
-| `--rk-stories-ring-spin-duration` | `4s` | Active ring gradient rotation duration |
-| `--rk-stories-ring-list-gap` | `12px` | Spacing between rings in the list |
-| `--rk-stories-ring-list-padding` | `12px` | Inner padding around the ring list |
-| `--rk-stories-ring-list-name-size` | `12px` | Author name font size below each ring |
+| `--rk-stories-overlay-bg` | `#000` | Колір повноекранного фону |
+| `--rk-stories-overlay-z` | `9999` | z-index оверлею |
+| `--rk-stories-container-radius` | `12px` | Заокруглені кути полотна історії (десктоп) |
+| `--rk-stories-swipe-gap` | `16px` | Відстань між кнопками навігації та полотном історії |
+| `--rk-stories-top-shade-height` | `120px` | Висота верхнього градієнтного затемнення під шапкою |
+| `--rk-stories-top-shade-bg` | `linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%)` | Колір верхнього градієнтного затемнення |
+| `--rk-stories-ui-transition` | `200ms` | Тривалість згасання, коли перемикається hideUIOnPause |
+| `--rk-stories-nav-size` | `44px` | Розмір кнопок «назад» і «далі» на десктопі |
+| `--rk-stories-nav-bg` | `rgba(255, 255, 255, 0.1)` | Фон кнопки навігації на десктопі |
+| `--rk-stories-nav-bg-hover` | `rgba(255, 255, 255, 0.2)` | Фон кнопки навігації на десктопі під час наведення |
+| `--rk-stories-nav-fg` | `rgba(255, 255, 255, 0.7)` | Колір іконки кнопки навігації на десктопі |
+| `--rk-stories-nav-fg-hover` | `#fff` | Колір іконки кнопки навігації на десктопі під час наведення |
+| `--rk-stories-error-bg` | `linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)` | Градієнт фону в стані помилки |
+| `--rk-stories-error-fg` | `rgba(255, 255, 255, 0.5)` | Колір іконки й тексту помилки |
+| `--rk-stories-error-text-size` | `13px` | Розмір шрифту повідомлення про помилку |
+| `--rk-stories-video-bg` | `#000` | Фон смуг навколо \<video> |
+| `--rk-stories-video-poster-transition` | `200ms` | Тривалість згасання постера, коли починається відтворення відео |
+| `--rk-stories-header-top` | `18px` | Вертикальний відступ шапки від верху історії |
+| `--rk-stories-header-padding` | `12px 16px` | Внутрішній відступ рядка шапки |
+| `--rk-stories-header-avatar-size` | `32px` | Ширина й висота аватара |
+| `--rk-stories-header-name-fg` | `#fff` | Колір імені автора |
+| `--rk-stories-header-name-size` | `14px` | Розмір шрифту імені автора |
+| `--rk-stories-header-time-fg` | `rgba(255, 255, 255, 0.6)` | Колір тексту часу публікації |
+| `--rk-stories-header-btn-fg` | `#fff` | Колір іконок дій у шапці (закриття, звук, пауза) |
+| `--rk-stories-heart-duration` | `800ms` | Тривалість анімації появи та згасання |
+| `--rk-stories-ring-spin-duration` | `4s` | Тривалість обертання градієнта активного кільця |
+| `--rk-stories-ring-list-gap` | `12px` | Відстань між кільцями в списку |
+| `--rk-stories-ring-list-padding` | `12px` | Внутрішній відступ навколо списку кілець |
+| `--rk-stories-ring-list-name-size` | `12px` | Розмір шрифту імені автора під кожним кільцем |
 
 Вставте фрагмент нижче в таблицю стилів, підключену після `@reelkit/react-stories-player/styles.css`.
 
@@ -548,6 +548,6 @@ Extend `StoryItem` власними полями й передайте пара�
 
 | Key | Action |
 | --- | --- |
-| `ArrowLeft` | Previous story |
-| `ArrowRight` | Next story |
-| `Escape` | Close player |
+| `ArrowLeft` | Попередня історія |
+| `ArrowRight` | Наступна історія |
+| `Escape` | Закрити плеєр |

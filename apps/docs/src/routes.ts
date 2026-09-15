@@ -7,7 +7,7 @@ import {
 } from '@react-router/dev/routes';
 import { kDefaultLocale, kLocales, type Locale } from './i18n/locale';
 import { kSitePages } from './content/manifest';
-import { pageFiles } from './content/sitePages';
+import { pageFile } from './content/sitePages';
 
 /**
  * One route per page in the manifest, for one locale. Every translated tree
@@ -17,13 +17,9 @@ import { pageFiles } from './content/sitePages';
  * shares, so it takes an explicit id.
  */
 function localeRoutes(locale: Locale) {
-  const routes = kSitePages.flatMap((page) => {
-    const files = pageFiles(page, locale);
-    const main =
-      page.path === '' ? index(files.main) : route(page.path, files.main);
-    return files.legacy
-      ? [main, route(`${page.path}-legacy`, files.legacy)]
-      : [main];
+  const routes = kSitePages.map((page) => {
+    const file = pageFile(page, locale);
+    return page.path === '' ? index(file) : route(page.path, file);
   });
   return locale === kDefaultLocale
     ? routes

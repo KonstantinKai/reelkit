@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { kDefaultLocale, kLocales } from '../i18n/locale';
 import { kSitePages } from './manifest';
-import { pageFiles } from './sitePages';
+import { pageFile } from './sitePages';
 
 interface FreshnessRecord {
   source: string;
@@ -39,11 +39,11 @@ function translatedPages(): Freshness {
   for (const locale of kLocales) {
     if (locale === kDefaultLocale) continue;
     for (const page of kSitePages) {
-      const translation = pageFiles(page, locale).main;
+      const translation = pageFile(page, locale);
       const body = readFileSync(join(appDir, translation), 'utf8');
       if (body.includes('export { default } from')) continue;
       (pages[locale] ??= {})[`/${page.path}`] = {
-        source: pageFiles(page, kDefaultLocale).main,
+        source: pageFile(page, kDefaultLocale),
         translation,
         sha: '',
       };

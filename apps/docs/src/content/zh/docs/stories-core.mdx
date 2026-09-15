@@ -72,7 +72,7 @@ import typesCode from '../../snippets/stories-core/types-code.ts?raw';
 | `onStoryChange` | `(groupIndex, storyIndex) => void` | 当前 story 变化时触发 |
 | `onGroupChange` | `(groupIndex) => void` | 当前分组变化时触发 |
 | `onStoryViewed` | `(groupIndex, storyIndex) => void` | 某个 story 变为可见时触发 |
-| `onStoryComplete` | `(groupIndex, storyIndex) => void` | Fired when a story's timer completes (before advancing) |
+| `onStoryComplete` | `(groupIndex, storyIndex) => void` | 某个 story 的计时器走完时触发（在切换之前） |
 | `onComplete` | `() => void` | 最后一个分组的最后一个 story 播完时触发 |
 | `onClose` | `() => void` | 浮层应当关闭时触发 |
 
@@ -191,7 +191,7 @@ import typesCode from '../../snippets/stories-core/types-code.ts?raw';
 
 | 函数 | 类型 | 说明 |
 | --- | --- | --- |
-| `getTapAction(tapX, containerWidth, splitRatio?)` | `(number, number, number?) => 'prev' \| 'next'` | Determines whether a tap triggers 'prev' or 'next' based on position. Default splitRatio is 0.3. |
+| `getTapAction(tapX, containerWidth, splitRatio?)` | `(number, number, number?) => 'prev' \| 'next'` | 根据点击位置判断触发 'prev' 还是 'next'。splitRatio 默认为 0.3。 |
 | `getSegments(totalStories, activeIndex, progress)` | `(number, number, number) => SegmentState[]` | 计算进度条中每个分段的状态和填充比例 |
 | `getVisibleWindow(totalStories, activeIndex, progress, containerWidth, minSegmentWidth?, gap?)` | `(number, number, number, number, number?, number?) => VisibleWindow` | 当分段总数超出容器容量时，计算可见的滑动窗口 |
 

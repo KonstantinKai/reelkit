@@ -331,24 +331,24 @@ Pass `hashCodec: base64UrlCodec` щоб закодувати id в URL у base64
 
 | Token | Типове значення | Controls |
 | --- | --- | --- |
-| `--rk-lightbox-overlay-bg` | `#000` | Backdrop color |
-| `--rk-lightbox-overlay-z` | `9999` | Overlay z-index |
-| `--rk-lightbox-top-shade-height` | `80px` | Top scrim height |
-| `--rk-lightbox-top-shade-bg` | `linear-gradient(rgba(0,0,0,0.6), transparent)` | Top scrim gradient |
-| `--rk-lightbox-edge-padding` | `16px` | Edge inset for close / nav / controls |
-| `--rk-lightbox-btn-bg` | `rgba(0, 0, 0, 0.5)` | Default background for close / nav / small buttons |
-| `--rk-lightbox-btn-bg-hover` | `rgba(255, 255, 255, 0.2)` | Hover background for close / nav / small buttons |
-| `--rk-lightbox-btn-fg` | `#fff` | Icon color for close / nav / small buttons |
-| `--rk-lightbox-btn-size` | `36px` | Small button size (fullscreen toggle, etc.) |
-| `--rk-lightbox-close-size` | `40px` | Close button size |
-| `--rk-lightbox-nav-size` | `48px` | Prev / next arrow size |
-| `--rk-lightbox-nav-opacity` | `0.7` | Idle opacity of prev / next arrows |
-| `--rk-lightbox-counter-bg` | `rgba(0, 0, 0, 0.5)` | Counter chip background |
-| `--rk-lightbox-counter-fg` | `#fff` | Counter text color |
-| `--rk-lightbox-info-bg` | `linear-gradient(transparent, rgba(0,0,0,0.8))` | Caption scrim gradient |
-| `--rk-lightbox-title-size` | `18px` | Title font size |
-| `--rk-lightbox-description-size` | `14px` | Description font size |
-| `--rk-lightbox-video-bg` | `#000` | Letterbox background behind \<video> |
+| `--rk-lightbox-overlay-bg` | `#000` | Колір фону |
+| `--rk-lightbox-overlay-z` | `9999` | z-index оверлею |
+| `--rk-lightbox-top-shade-height` | `80px` | Висота верхнього затемнення |
+| `--rk-lightbox-top-shade-bg` | `linear-gradient(rgba(0,0,0,0.6), transparent)` | Градієнт верхнього затемнення |
+| `--rk-lightbox-edge-padding` | `16px` | Відступ від краю для кнопок закриття, навігації та елементів керування |
+| `--rk-lightbox-btn-bg` | `rgba(0, 0, 0, 0.5)` | Типовий фон кнопок закриття, навігації та малих кнопок |
+| `--rk-lightbox-btn-bg-hover` | `rgba(255, 255, 255, 0.2)` | Фон кнопок закриття, навігації та малих кнопок під час наведення |
+| `--rk-lightbox-btn-fg` | `#fff` | Колір іконок кнопок закриття, навігації та малих кнопок |
+| `--rk-lightbox-btn-size` | `36px` | Розмір малої кнопки (перемикач повноекранного режиму тощо) |
+| `--rk-lightbox-close-size` | `40px` | Розмір кнопки закриття |
+| `--rk-lightbox-nav-size` | `48px` | Розмір стрілок «назад» і «далі» |
+| `--rk-lightbox-nav-opacity` | `0.7` | Непрозорість стрілок «назад» і «далі» у спокої |
+| `--rk-lightbox-counter-bg` | `rgba(0, 0, 0, 0.5)` | Фон плашки лічильника |
+| `--rk-lightbox-counter-fg` | `#fff` | Колір тексту лічильника |
+| `--rk-lightbox-info-bg` | `linear-gradient(transparent, rgba(0,0,0,0.8))` | Градієнт затемнення під підписом |
+| `--rk-lightbox-title-size` | `18px` | Розмір шрифту заголовка |
+| `--rk-lightbox-description-size` | `14px` | Розмір шрифту опису |
+| `--rk-lightbox-video-bg` | `#000` | Фон смуг навколо \<video> |
 
 <CodeBlock code={themingCode} language="css" />
 
@@ -362,6 +362,6 @@ Lightbox захоплює фокус під час відкриття й пов�
 
 | Key | Action |
 | --- | --- |
-| `ArrowLeft` | Previous image |
-| `ArrowRight` | Next image |
-| `Escape` | Close lightbox (or exit fullscreen if active) |
+| `ArrowLeft` | Попереднє зображення |
+| `ArrowRight` | Наступне зображення |
+| `Escape` | Закрити Lightbox (або вийти з повноекранного режиму, якщо він активний) |

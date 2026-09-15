@@ -399,15 +399,8 @@ for (const f of filesToUpdate) {
   }
 }
 
-// The docs size tables. Content pages read the shared data module; the tsx
-// installation pages still mounted for side-by-side review carry their own
-// copy of the numbers until they are removed.
-for (const page of [
-  'apps/docs/src/data/bundleSizes.ts',
-  'apps/docs/src/pages/docs/Installation.tsx',
-  'apps/docs/src/pages/uk/docs/Installation.tsx',
-  'apps/docs/src/pages/zh/docs/Installation.tsx',
-]) {
+// The docs size tables, in every language, render the shared data module.
+for (const page of ['apps/docs/src/data/bundleSizes.ts']) {
   const docsFile = resolve(root, page);
   if (updateDocs(docsFile, results)) {
     changed++;
