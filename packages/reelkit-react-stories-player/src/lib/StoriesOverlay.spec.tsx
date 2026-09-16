@@ -668,3 +668,95 @@ describe('StoriesUrlOverlay', () => {
     expect(onStoryViewed).toHaveBeenCalledWith(0, 0);
   });
 });
+
+// On a desktop screen the story fills the window height apart from a small
+// margin, keeps its 9:16 shape, and only gives way to the width when the
+// canvas and both arrows would not fit side by side. Phones, and a window
+// exactly as wide as the CSS breakpoint, fill the whole screen.
+describe('StoriesOverlay size', () => {
+  const original = {
+    width: window.innerWidth,
+    height: window.innerHeight,
+  };
+
+  const setViewport = (width: number, height: number) => {
+    Object.defineProperty(window, 'innerWidth', {
+      configurable: true,
+      value: width,
+    });
+    Object.defineProperty(window, 'innerHeight', {
+      configurable: true,
+      value: height,
+    });
+  };
+
+  const groupReelSize = () => {
+    const groupReels = lastReelProps.filter(
+      (props) =>
+        props['direction'] === 'horizontal' &&
+        props['count'] === mockGroups.length,
+    );
+    return groupReels[groupReels.length - 1]['size'] as [number, number];
+  };
+
+  const openAt = (width: number, height: number) => {
+    setViewport(width, height);
+    render(
+      <StoriesOverlay isOpen={true} onClose={vi.fn()} groups={mockGroups} />,
+    );
+    return groupReelSize();
+  };
+
+  beforeEach(() => {
+    lastReelProps = [];
+    vi.stubGlobal('requestAnimationFrame', (cb: () => void) =>
+      setTimeout(cb, 0),
+    );
+    vi.stubGlobal('cancelAnimationFrame', vi.fn());
+  });
+
+  afterEach(() => {
+    setViewport(original.width, original.height);
+    vi.restoreAllMocks();
+  });
+
+  it.each([
+    [1280, 720, 387, 688],
+    [1440, 900, 488, 868],
+    [1920, 1080, 589, 1048],
+    [2560, 1440, 792, 1408],
+  ])(
+    'fills the height of a %ix%i desktop window at 9:16',
+    (width, height, expectedWidth, expectedHeight) => {
+      const [actualWidth, actualHeight] = openAt(width, height);
+      expect(Math.abs(actualWidth - expectedWidth)).toBeLessThanOrEqual(1);
+      expect(Math.abs(actualHeight - expectedHeight)).toBeLessThanOrEqual(1);
+    },
+  );
+
+  // 800 wide leaves 648 for the canvas once both 44px arrows, their 16px
+  // gaps and the 16px side margins are taken out.
+  it('narrows to the room beside the arrows in a tall, narrow window', () => {
+    const [width, height] = openAt(800, 1400);
+    expect(width).toBe(648);
+    expect(height).toBeCloseTo(1152, 5);
+  });
+
+  it.each([
+    [768, 1024],
+    [390, 844],
+  ])('fills a %ix%i mobile screen', (width, height) => {
+    expect(openAt(width, height)).toEqual([width, height]);
+  });
+
+  it('follows the window when it is resized', () => {
+    openAt(1440, 900);
+    act(() => {
+      setViewport(1440, 1100);
+      window.dispatchEvent(new Event('resize'));
+    });
+    const [width, height] = groupReelSize();
+    expect(height).toBe(1068);
+    expect(width).toBeCloseTo(1068 * (9 / 16), 5);
+  });
+});

@@ -248,16 +248,35 @@ function NavButton({
   );
 }
 
+const _kMobileBreakpoint = 768;
+const _kAspectRatio = 9 / 16;
+const _kDesktopMargin = 16;
+// One arrow and its gap, matching the default `--rk-stories-nav-size` and
+// `--rk-stories-swipe-gap`. The size has to be known here, before layout, so
+// the CSS values cannot be read; arrows themed larger than the default can
+// crowd a very narrow desktop window.
+const _kNavReserve = 44 + 16;
+
+/**
+ * Size of the story canvas. A phone fills the screen. On a desktop the story
+ * fills the window height, less a margin above and below, at 9:16, and only
+ * narrows when the canvas and both arrows would not fit across the window.
+ * Widths up to and including 768 count as a phone, matching the stylesheet,
+ * which hides the arrows and squares the corners at that width.
+ */
 const getSize = (): [number, number] => {
   if (typeof window === 'undefined') return [0, 0];
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
-  if (vw < 768) return [vw, vh];
-  const maxH = vh - 40;
-  const maxW = Math.min(vw * 0.35, 480);
-  const height = Math.min(maxW / (9 / 16), maxH);
-  const width = height * (9 / 16);
-  return [width, height];
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = window.innerHeight;
+  if (viewportWidth <= _kMobileBreakpoint) {
+    return [viewportWidth, viewportHeight];
+  }
+  const maxWidth = viewportWidth - 2 * (_kNavReserve + _kDesktopMargin);
+  const height = Math.min(
+    viewportHeight - 2 * _kDesktopMargin,
+    maxWidth / _kAspectRatio,
+  );
+  return [height * _kAspectRatio, height];
 };
 
 function StoriesContent<T extends StoryItem = StoryItem>({
