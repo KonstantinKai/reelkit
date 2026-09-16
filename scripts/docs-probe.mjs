@@ -29,21 +29,31 @@ if (!origin) {
 const results = [];
 const check = (name, ok, detail = '') => results.push({ name, ok, detail });
 
+// Asked for explicitly, because the edge also speaks Zstandard, which not
+// every Node release can decode. Bodies arrive decoded either way, so the
+// byte comparisons below hold whatever the transfer encoding was.
+const kAcceptEncoding = 'br, gzip';
+
 async function get(path, headers = {}) {
   const response = await fetch(`${origin}${path}`, {
     redirect: 'manual',
-    headers,
+    headers: { 'Accept-Encoding': kAcceptEncoding, ...headers },
   });
   const body = Buffer.from(await response.arrayBuffer());
   return {
     status: response.status,
     location: response.headers.get('location'),
     cacheControl: response.headers.get('cache-control') ?? '',
+    contentEncoding: response.headers.get('content-encoding') ?? '',
     vary: response.headers.get('vary') ?? '',
     setCookie: response.headers.get('set-cookie'),
     body,
   };
 }
+
+// Cloudflare injects its JavaScript detections script under this path when
+// Bot Fight Mode is on. The pages must reach the reader as built.
+const kInjectedScript = '/cdn-cgi/challenge-platform';
 
 const canonicalOf = (html) =>
   html.match(/<link[^>]*rel="canonical"[^>]*href="([^"]+)"/i)?.[1] ??
@@ -68,10 +78,13 @@ const locs = [
 check('sitemap lists pages', locs.length > 0, `${locs.length} entries`);
 
 let longCachedHtml = null;
+let injectedPage = null;
 for (const loc of locs) {
   const path = new URL(loc).pathname;
   const page = await get(path);
-  const canonical = canonicalOf(page.body.toString('utf8'));
+  const html = page.body.toString('utf8');
+  if (html.includes(kInjectedScript)) injectedPage ??= path;
+  const canonical = canonicalOf(html);
   const ok = page.status === 200 && canonical === loc;
   if (!ok) {
     check(
@@ -94,6 +107,53 @@ check(
   longCachedHtml === null,
   longCachedHtml ?? '',
 );
+check(
+  'no page carries an injected Cloudflare script',
+  injectedPage === null,
+  injectedPage ? `${kInjectedScript} in ${injectedPage}` : '',
+);
+
+// The home page, its stylesheet and its scripts travel compressed, and still
+// decode to exactly what was built. A local runtime serves files as they are,
+// so only a deployed host is held to the compression half.
+{
+  const home = await get('/');
+  const builtHome = localFile('index.html');
+  check(
+    'home page matches the build once decoded',
+    home.status === 200 &&
+      (!builtHome || Buffer.compare(home.body, builtHome) === 0),
+    `${home.status}${builtHome ? '' : ', no local build to compare'}`,
+  );
+
+  const html = home.body.toString('utf8');
+  const stylesheet = html.match(/href="(\/assets\/[^"]+\.css)"/)?.[1];
+  const scripts = [...html.matchAll(/(?:href|src)="(\/assets\/[^"]+\.js)"/g)]
+    .map((match) => match[1])
+    .filter((path) => localFile(path.slice(1)));
+  const largestScript = scripts.sort(
+    (a, b) => localFile(b.slice(1)).length - localFile(a.slice(1)).length,
+  )[0];
+
+  const deployed = !/^https?:\/\/(localhost|127\.0\.0\.1)(:|$)/.test(origin);
+  for (const [name, response] of [
+    ['home page', home],
+    ['stylesheet', stylesheet ? await get(stylesheet) : null],
+    ['largest home script', largestScript ? await get(largestScript) : null],
+  ]) {
+    if (!response) {
+      check(`${name} is compressed`, false, 'not found in the home page');
+      continue;
+    }
+    check(
+      `${name} is compressed`,
+      !deployed || /^(br|gzip|zstd)$/.test(response.contentEncoding),
+      deployed
+        ? `content-encoding ${response.contentEncoding || 'none'}`
+        : 'local runtime, not checked',
+    );
+  }
+}
 
 // Pages the sitemap leaves out are still prerendered and served directly.
 for (const path of ['/privacy', '/terms']) {
