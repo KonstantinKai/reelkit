@@ -125,6 +125,32 @@ describe('language redirect decision', () => {
     );
   });
 
+  // Brazil and Portugal send different region subtags for one set of pages,
+  // and neither region is in the site's tag, so both have to fold to it.
+  it('sends a Brazilian or a European Portuguese browser to /pt', () => {
+    expect(preferredLocale('pt-BR,pt;q=0.9,en;q=0.8')).toBe('pt');
+    expect(preferredLocale('pt-PT')).toBe('pt');
+    expect(detectLocale(request({ acceptLanguage: 'pt-BR,pt;q=0.9' }))).toBe(
+      '/pt/docs/ssr',
+    );
+    expect(
+      detectLocale(request({ pathname: '/', acceptLanguage: 'pt-PT' })),
+    ).toBe('/pt');
+    expect(
+      detectLocale(
+        request({ acceptLanguage: 'pt-BR', cookie: 'rk-locale=en' }),
+      ),
+    ).toBe(null);
+    expect(
+      detectLocale(request({ pathname: '/pt/docs/ssr', acceptLanguage: 'pt' })),
+    ).toBe(null);
+    expect(
+      detectLocale(
+        request({ acceptLanguage: 'pt-BR', userAgent: 'curl/8.7.1' }),
+      ),
+    ).toBe(null);
+  });
+
   it('redirects each translated locale to its own prefix', () => {
     for (const locale of kLocales) {
       if (locale === kDefaultLocale) continue;

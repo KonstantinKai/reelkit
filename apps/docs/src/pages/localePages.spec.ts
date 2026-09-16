@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { glob } from 'node:fs/promises';
-import { kDefaultLocale, kLocales } from '../i18n/locale';
+import { kDefaultLocale, kLocales, type Locale } from '../i18n/locale';
 
 const appDir = join(import.meta.dirname, '..');
 const pagesDir = join(appDir, 'pages');
@@ -22,9 +22,56 @@ const translated = kLocales.filter((locale) => locale !== kDefaultLocale);
 const inTemplateLiteral = (source: string, offset: number) =>
   (source.slice(0, offset).match(/`/g) ?? []).length % 2 === 1;
 
-/** A run of lowercase Latin words and no letter of the translated scripts. */
-const readsAsEnglish = (text: string) =>
-  /[a-z]{3}\s+[a-z]{2}/.test(text) && !/[А-Яа-яЇїІіЄєҐґ一-鿿]/.test(text);
+/**
+ * Prose with the code taken out — an identifier is English everywhere. Not
+ * every one of them arrives in backticks: a prop written plainly mid-sentence
+ * still splits into English-looking words, and `v-model:is-open` holds an
+ * "is" that no translator put there.
+ */
+const withoutCode = (text: string) =>
+  text
+    .replace(/`[^`]*`/g, ' ')
+    .replace(/\S*[-_:]\S*/g, ' ')
+    .replace(/\b[a-z]+[A-Z]\w*/g, ' ');
+
+// A run of Latin words used to mean English, which held while every
+// translation was written in Cyrillic or Han. It cannot survive a language
+// written in the same letters as English, so the tell is a function word
+// instead: English prose long enough to describe a page carries one, and a
+// translation carries none. `for` is missing on purpose — Portuguese
+// conjugates both ser and ir into it.
+const englishFunctionWords =
+  /\b(the|and|with|when|from|that|this|of|is|are|you|your|or|to)\b/i;
+
+/**
+ * A word the language uses and English does not. Absence of English is only
+ * half the check: a description can carry no function word and still be the
+ * English one, lightly reworded. This is the other half — proof the sentence
+ * is written in the language it claims.
+ */
+const localeMarkers: Record<Exclude<Locale, 'en'>, RegExp> = {
+  uk: /[А-Яа-яЇїІіЄєҐґ]/,
+  zh: /[一-鿿]/,
+  // Latin script like English, so the marker is a word no English sentence
+  // uses. `do`, `no`, `a` and `e` stay out even though Portuguese leans on
+  // them: each is also an English word, and an untranslated "No runtime
+  // dependencies" would pass as Portuguese.
+  pt: /(?<!\p{L})(de|da|para|com|que|não|uma|na|em|por)(?!\p{L})/iu,
+};
+
+const markerFor = (locale: Locale) =>
+  localeMarkers[locale as Exclude<Locale, 'en'>];
+
+/**
+ * Text that is English rather than this language. A sentence carrying the
+ * language's own words is translated, whatever English it quotes along the
+ * way — a row may well say `codec` or `locator` in the middle of its own
+ * grammar. Without such a word, an English function word gives it away.
+ */
+const readsAsEnglish = (text: string, locale: Locale) => {
+  const prose = withoutCode(text);
+  return !markerFor(locale).test(prose) && englishFunctionWords.test(prose);
+};
 
 const frontmatterValue = (source: string, key: string) => {
   const block = source.match(/^---\n([\s\S]*?)\n---\n/)?.[1] ?? '';
@@ -46,6 +93,14 @@ const translatedProductNames = [
   '灯箱',
   'Stories 播放器',
   'Stories 核心',
+  'Reprodutor de Reels',
+  'reprodutor de reels',
+  'Leitor de Reels',
+  'leitor de reels',
+  'Caixa de Luz',
+  'caixa de luz',
+  'Reprodutor de Stories',
+  'Núcleo de Stories',
 ];
 
 describe.each(translated)('%s page modules', (locale) => {
@@ -136,12 +191,14 @@ describe.each(translated)('%s content files', (locale) => {
   // choosing to open it. Titles may legitimately match, they are often a
   // product name.
   it('translates the page description', async () => {
+    const marker = markerFor(locale);
     const untranslated: string[] = [];
     for (const { name, source, english } of await contentFiles()) {
       const description = frontmatterValue(source, 'description');
       if (
         description === frontmatterValue(english, 'description') ||
-        readsAsEnglish(description)
+        readsAsEnglish(description, locale) ||
+        !marker.test(withoutCode(description))
       ) {
         untranslated.push(`${name}: ${description}`);
       }
@@ -175,7 +232,7 @@ describe.each(translated)('%s content files', (locale) => {
           englishCells?.[0] === cells[0] &&
           englishCells[englishCells.length - 1] === description &&
           /[A-Za-z]{3}/.test(description.replace(/`[^`]*`/g, ''));
-        if (sameAsEnglish || readsAsEnglish(description)) {
+        if (sameAsEnglish || readsAsEnglish(description, locale)) {
           untranslated.push(`${name}: ${cells[0]} ${description}`);
         }
       });

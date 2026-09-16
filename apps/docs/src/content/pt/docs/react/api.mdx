@@ -1,0 +1,164 @@
+---
+title: Referência da API para React
+description: Referência completa de @reelkit/react — componentes, props, métodos, callbacks, ReelIndicator, Observe, AnimatedObserve, hooks, acessibilidade e utilitários.
+---
+
+import reelapiMethods from '../../../snippets/react-api/reelapi-methods.ts?raw';
+import observe from '../../../snippets/react-api/observe.tsx?raw';
+import animatedobserve from '../../../snippets/react-api/animatedobserve.tsx?raw';
+import usebodylock from '../../../snippets/react-api/usebodylock.ts?raw';
+import useviewedstate from '../../../snippets/react-api/useviewedstate.tsx?raw';
+import usereactrouterurladapter from '../../../snippets/react-api/usereactrouterurladapter.tsx?raw';
+import createdefaultkeyextractorforloop from '../../../snippets/react-api/createdefaultkeyextractorforloop.tsx?raw';
+
+Referência completa dos componentes, das props e dos métodos de `@reelkit/react`.
+
+## Props do Reel [#reel-props]
+
+<Caption>`ReelProps`</Caption>
+
+| Prop | Tipo | Padrão | Descrição |
+| --- | --- | --- | --- |
+| `count` | `number` | obrigatório | Número total de itens |
+| `size` | `[number, number]` | - | Largura e altura, na forma \[largura, altura\]. Sem esta prop, o tamanho é medido pelo ResizeObserver |
+| `itemBuilder` | `(index, indexInRange, size) => ReactElement` | obrigatório | Função que renderiza cada slide |
+| `direction` | `'vertical' \| 'horizontal'` | 'vertical' | Direção do deslocamento |
+| `initialIndex` | `number` | 0 | Índice inicial |
+| `loop` | `boolean` | false | Liga o ciclo infinito |
+| `enableWheel` | `boolean` | false | Liga a navegação pela roda do mouse |
+| `wheelDebounceMs` | `number` | 200 | Debounce do evento de roda, em ms |
+| `enableNavKeys` | `boolean` | true | Liga a navegação por teclado |
+| `onNavKeyPress` | `(increment: -1 \| 1) => void` | - | Tratamento próprio das setas. Substitui o comportamento padrão de avançar e voltar. |
+| `transition` | `TransitionTransformFn` | slideTransition | Função do efeito de transição. Prontas: slideTransition, fadeTransition, flipTransition, cubeTransition, zoomTransition |
+| `transitionDuration` | `number` | 300 | Duração da animação em ms |
+| `enableGestures` | `boolean` | true | Liga a navegação por arrasto de toque ou mouse |
+| `swipeDistanceFactor` | `number` | 0.12 | Limiar do deslize (0-1) |
+| `rangeExtractor` | `(index: number, count: number) => number[]` | defaultRangeExtractor | Função própria para decidir quais índices são renderizados |
+| `keyExtractor` | `(index: number) => string` | - | Função de chave própria para a reconciliação do React (útil com loop) |
+| `apiRef` | `RefObject<ReelApi>` | - | Ref para alcançar os métodos da API |
+| `className` | `string` | - | Classe CSS do elemento contêiner |
+| `style` | `CSSProperties` | - | Estilos inline do elemento contêiner |
+| `ariaLabel` | `string` | - | Rótulo acessível da região do carrossel, lido por leitores de tela |
+
+## Callbacks [#callbacks]
+
+| Prop | Tipo | Descrição |
+| --- | --- | --- |
+| `afterChange` | `(index, indexInRange) => void` | Chamado depois que a troca de slide termina |
+| `beforeChange` | `(index, nextIndex, indexInRange) => void` | Chamado antes de a troca de slide começar |
+| `onSlideDragStart` | `(index) => void` | Chamado quando o gesto de arrasto começa |
+| `onSlideDragEnd` | `(index) => void` | Chamado quando o gesto de arrasto termina |
+| `onSlideDragCanceled` | `(index) => void` | Chamado quando o arrasto é cancelado |
+
+## Métodos do ReelApi [#reelapi-methods]
+
+Alcance os métodos do slider pelo `apiRef`:
+
+<CodeBlock code={reelapiMethods} language="typescript" />
+
+| Método | Tipo | Descrição |
+| --- | --- | --- |
+| `next()` | `() => void` | Vai para o próximo slide |
+| `prev()` | `() => void` | Vai para o slide anterior |
+| `goTo(index, animate?)` | `(number, boolean?) => Promise` | Vai para um slide específico |
+| `adjust()` | `() => void` | Recalcula as posições dos slides |
+| `observe()` | `() => void` | Começa a observar o teclado |
+| `unobserve()` | `() => void` | Para de observar o teclado |
+
+## Props do ReelIndicator [#reelindicator-props]
+
+<Caption>`ReelIndicatorProps`</Caption>
+
+| Prop | Tipo | Padrão | Descrição |
+| --- | --- | --- | --- |
+| `count` | `number` | automático | Número total de itens. Vem sozinho do Reel que o envolve; passe explicitamente ao usar o indicador isolado |
+| `active` | `number` | automático | Índice ativo no momento. Vem sozinho do Reel que o envolve; passe explicitamente ao usar o indicador isolado |
+| `direction` | `'vertical' \| 'horizontal'` | 'vertical' | Orientação do indicador |
+| `radius` | `number` | 3 | Tamanho do ponto em pixels |
+| `visible` | `number` | 5 | Máximo de pontos em tamanho normal visíveis |
+| `gap` | `number` | 4 | Espaço entre os pontos em pixels |
+| `activeColor` | `string` | '#fff' | Cor do ponto ativo |
+| `inactiveColor` | `string` | 'rgba(255,255,255,0.5)' | Cor dos pontos inativos |
+| `edgeScale` | `number` | 0.5 | Escala dos pontos que transbordam nas bordas |
+| `onDotClick` | `(index: number) => void` | - | Callback do clique em um ponto |
+| `className` | `string` | - | Classe CSS própria |
+| `style` | `CSSProperties` | - | Estilos inline próprios |
+
+## Componentes observadores [#observer-components]
+
+### Observe [#observe]
+
+Faz a ponte entre os sinais do core e a renderização do React sem provocar re-renderizações no componente pai. Só a função dos filhos roda de novo quando os sinais assinados mudam.
+
+<CodeBlock code={observe} language="tsx" />
+
+| Prop | Tipo | Padrão | Descrição |
+| --- | --- | --- | --- |
+| `signals` | `Subscribable[]` | `obrigatório` | Sinais a assinar. Qualquer aviso de um deles roda a função dos filhos de novo — só ela, nunca o componente pai. |
+| `children` | `() => ReactElement \| null` | `obrigatório` | Função de renderização, executada de novo a cada mudança. Leia os valores dos sinais dentro dela; um valor lido fora é capturado uma vez e envelhece. |
+
+### AnimatedObserve [#animatedobserve]
+
+Assina sinais de valor animado e interpola suavemente usando `requestAnimationFrame`.
+
+<CodeBlock code={animatedobserve} language="tsx" />
+
+| Prop | Tipo | Padrão | Descrição |
+| --- | --- | --- | --- |
+| `signal` | `Signal<AnimatedValue>` | `obrigatório` | Sinal que emite \{ value, duration, done? \}. Uma duração acima de 0 interpola do valor atual até o novo; 0 salta direto para lá. |
+| `children` | `(value: number) => ReactElement` | `obrigatório` | Função de renderização que recebe o valor interpolado do quadro atual, aplicado de forma síncrona para que o DOM acompanhe a animação. |
+
+## Hooks [#hooks]
+
+### useBodyLock [#usebodylock]
+
+Trava a rolagem do corpo e compensa o deslocamento causado pela largura da barra de rolagem.
+
+<CodeBlock code={usebodylock} language="typescript" />
+
+### useOverlayUrlState [#useoverlayurlstate]
+
+<Caption>`OverlayUrlStateOptions`</Caption>
+
+Monta um controlador de estado na URL para o overlay, que você entrega a um `*UrlOverlay` pela prop `controller`.
+
+Veja [Estado na URL no guia para React](/docs/react/guide#url-state) para o passo a passo e os exemplos.
+
+| Opção | Tipo | Padrão | Descrição |
+| --- | --- | --- | --- |
+| `param` | `string` | obrigatório | Parâmetro de consulta que carrega o slide ativo, por exemplo "photo". Lido na primeira renderização e fixo por toda a vida do componente — remonte (dê a ele uma key) para trocá-lo. |
+| `adapter` | `UrlAdapter` | History API | Sistema de navegação por onde ler e escrever. Em um app com rotas, passe um adaptador ligado ao roteador para que a localização dele não fique desatualizada. Lido na primeira renderização e fixo por toda a vida do componente — remonte para trocá-lo. |
+| `codec` | `{ decode(raw) => Id \| null; encode(id) => string }` | obrigatório | Formato do fio: texto do parâmetro ↔ identidade estável, sem enxergar a coleção. Anda junto do locator como par combinado que divide o mesmo Id — espalhe ...urlIndexKey(() => images.length) para a galeria padrão endereçada por índice em ?photo=3, ou forneça o seu (base64, slug) para que um favorito sobreviva à galeria mudar de ordem. Lido ao vivo: o codec da última renderização cuida da próxima decodificação ou codificação. |
+| `locator` | `{ locate(id) => number \| null; locateAsync?(id) => Promise<number \| null>; identify(index) => id }` | obrigatório | Liga a identidade a uma posição e responde pela própria validade: locate (síncrono), locateAsync (plano B assíncrono de uma galeria paginada) e identify (nas escritas). Em uma galeria simples por índice, espalhe ...urlIndexKey(() => images.length) — ele fornece este locator mais o codec correspondente e limita ?photo=3 pela contagem atual, então um ?photo=99 velho se cura saindo da URL em vez de abrir um slide que ninguém nomeou. Um feed paginado ou uma galeria endereçada por identidade fornece o próprio par de codec e locator. Lido ao vivo: o locator da última renderização responde à próxima busca, e acrescentar ou remover locateAsync entre renderizações vale já na falha seguinte. |
+
+### useViewedState [#useviewedstate]
+
+<Caption>`ViewedStateOptions`</Caption>
+
+Lembra até onde o leitor chegou em uma galeria e segue acompanhando o armazenamento enquanto o componente viver. Passe a mesma chave usada na barra de endereços e a entrada guardada fica idêntica ao parâmetro de um link compartilhado. Leia `entries` através de `Observe` para que um anel se redesenhe quando uma posição for registrada, aqui ou em outra aba.
+
+<CodeBlock code={useviewedstate} language="tsx" />
+
+### useReactRouterUrlAdapter [#usereactrouterurladapter]
+
+Um `UrlAdapter` apoiado no React Router. Passe-o na opção `adapter` de `useOverlayUrlState` em um app com rotas, para que o roteador siga sendo a única fonte de verdade da navegação — escrever `history.pushState` por trás dele deixa sua localização desatualizada, e a navegação seguinte derruba o parâmetro. As escritas mexem apenas na consulta, então o caminho e o hash seguem intactos. Cada mudança informa se o roteador empilhou na mesma página, substituiu ou andou pelo histórico, de modo que uma galeria aberta por um `<Link>` fecha com um único passo para trás.
+
+Vem de um subcaminho próprio, então um app sem roteador nunca puxa `react-router-dom` para o bundle. `react-router-dom` é uma peer dependency opcional.
+
+<CodeBlock code={usereactrouterurladapter} language="tsx" />
+
+## Acessibilidade [#accessibility]
+
+`<Reel>` é renderizado como `role="region"` com `aria-roledescription="carousel"`. Defina a prop `ariaLabel` para dar à região um nome que o leitor de tela anuncie. Uma live region educada anuncia "Slide N de M" a cada troca, sem re-renderizar o carrossel. Os slides inativos recebem o atributo `inert`, então o foco e a navegação por tecnologia assistiva passam por cima deles.
+
+`<ReelIndicator>` é renderizado como `role="tablist"`, com tabindex móvel nos pontos; as setas movem o foco e Enter ou Espaço ativa o slide.
+
+Montando um modal próprio em volta de `<Reel>`? `captureFocusForReturn`, `createFocusTrap` e `getFocusableElements` são reexportados por `@reelkit/react` para devolver e prender o foco.
+
+## Utilitários [#utilities]
+
+### createDefaultKeyExtractorForLoop [#createdefaultkeyextractorforloop]
+
+Cria um extrator de chaves que dá conta dos índices repetidos quando `loop` está ligado.
+
+<CodeBlock code={createdefaultkeyextractorforloop} language="tsx" />

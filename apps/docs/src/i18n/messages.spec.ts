@@ -50,4 +50,14 @@ describe('chrome dictionaries', () => {
     expect(since(21)).toContain('новий реліз');
     expect(since(22)).toContain('нові релізи');
   });
+
+  // Portuguese splits counts two ways: one, and everything else.
+  it('picks the Portuguese plural form for each count', () => {
+    const since = messages.pt.whatsNew.since;
+    expect(since(1)).toContain('1 novo lançamento');
+    expect(since(2)).toContain('2 novos lançamentos');
+    expect(since(21)).toContain('21 novos lançamentos');
+    expect(messages.pt.whatsNew.more(1)).toBe('+1 lançamento');
+    expect(messages.pt.whatsNew.more(3)).toBe('+3 lançamentos');
+  });
 });

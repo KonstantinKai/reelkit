@@ -1,0 +1,176 @@
+---
+title: Guia do core
+description: O pacote @reelkit/core traz a lógica do slider sem amarras de framework. Use-o para criar integrações próprias ou para entender a arquitetura por baixo dos componentes.
+---
+
+import createslidercontroller from '../../../snippets/core-guide/createslidercontroller.ts?raw';
+import navigation from '../../../snippets/core-guide/navigation.ts?raw';
+import lifecycle from '../../../snippets/core-guide/lifecycle.ts?raw';
+import stateUpdates from '../../../snippets/core-guide/state-updates.ts?raw';
+import virtualization from '../../../snippets/core-guide/virtualization.ts?raw';
+import signals from '../../../snippets/core-guide/signals.ts?raw';
+import controllerState from '../../../snippets/core-guide/controller-state.ts?raw';
+import timelineController from '../../../snippets/core-guide/timeline-controller.ts?raw';
+import howItWorks from '../../../snippets/core-guide/how-it-works.ts?raw';
+import howItWorks2 from '../../../snippets/core-guide/how-it-works-2.ts?raw';
+
+O pacote `@reelkit/core` traz a lógica do slider sem amarras de framework. Use-o para criar integrações próprias ou para entender a arquitetura por baixo dos componentes.
+
+## Visão geral da arquitetura [#architecture-overview]
+
+O core adota um **padrão de controladores** com funções fábrica. Nada de classes — apenas objetos simples devolvidos por closures. Zero dependências. O core coordena:
+
+<Bullets marker="dot">
+
+- **SliderController** — estado central e navegação
+- **GestureController** — arrasto por toque ou ponteiro
+- **KeyboardController** — setas e Escape
+- **WheelController** — roda do mouse, com debounce
+
+</Bullets>
+
+## createSliderController [#createslidercontroller]
+
+Cria uma instância do controlador que cuida de todo o estado e do comportamento do slider.
+
+<CodeBlock code={createslidercontroller} language="typescript" />
+
+## Métodos do controlador [#controller-methods]
+
+### Navegação [#navigation]
+
+<CodeBlock code={navigation} language="typescript" />
+
+### Ciclo de vida [#lifecycle]
+
+<CodeBlock code={lifecycle} language="typescript" />
+
+### Atualizações de estado [#state-updates]
+
+<CodeBlock code={stateUpdates} language="typescript" />
+
+## Virtualização [#virtualization]
+
+O core mantém apenas **3 slides no DOM** a qualquer momento (atual, anterior, próximo). O extrator de intervalo decide quais índices entram na janela renderizada:
+
+<CodeBlock code={virtualization} language="typescript" />
+
+<Callout type="info">
+  O resultado é sempre limitado a no máximo 3 índices. Se o seu extrator devolver mais, o core fica com 3 centrados no slide atual.
+</Callout>
+
+## Sinais [#signals]
+
+O core usa um sistema de sinais enxuto para a reatividade:
+
+<CodeBlock code={signals} language="typescript" />
+
+## Estado do controlador [#controller-state]
+
+Acesse o estado reativo por `controller.state`:
+
+<CodeBlock code={controllerState} language="typescript" />
+
+## Controlador da linha do tempo [#timeline-controller]
+
+Monte uma barra de progresso arrastável para qualquer elemento `<video>`. O controlador expõe sinais reativos de duração, tempo atual, trechos em buffer e estado do arrasto, e liga as interações de ponteiro e teclado a qualquer elemento do DOM em uma única chamada.
+
+<CodeBlock code={timelineController} language="typescript" />
+
+## Estado na URL [#url-state]
+
+Leve o estado aberto de um overlay para a barra de endereços: o slide visível ganha um link que dá para compartilhar, abrir direto e fechar com o botão voltar. O modelo pertence ao core; os bindings o embrulham em um hook (`useOverlayUrlState` no React e no Vue, `createOverlayUrlState` no Angular) e em um componente de overlay guiado pela URL.
+
+### Como funciona [#how-it-works]
+
+`createUrlStateController` espelha um parâmetro de consulta em um sinal e escreve as mudanças de volta. Abrir empilha **uma** entrada no histórico; cada navegação seguinte **substitui** essa entrada — cem deslizes não acrescentam nenhuma, então um único passo para trás sempre fecha. O `UrlAdapter` é a costura conectável de leitura e escrita: o padrão aciona `history.pushState`, e um app com rotas passa um adaptador ligado ao roteador, para que a localização do próprio roteador nunca fique desatualizada.
+
+<CodeBlock code={howItWorks} language="typescript" />
+
+### Codec e locator — dois papéis [#codec-and-locator-two-jobs]
+
+Uma chave é um par combinado `{ codec, locator }`. Escrever uma identidade na URL e descobrir onde ela está agora são preocupações distintas, por isso vivem em objetos distintos:
+
+- **codec — o fio.** `encode` escreve uma identidade no texto do parâmetro; `decode` faz o caminho inverso e rejeita valores malformados, de modo que o parâmetro se cura sozinho saindo da URL.
+- **locator — a busca.** `locate` encontra onde a identidade decodificada está na coleção atual (ou `null`, se sumiu); `identify` faz o caminho de volta, da posição à identidade, na hora de escrever; `locateAsync`, opcional, pagina um feed em janela ou infinito quando a busca falha.
+
+Manter os dois separados permite combinar qualquer fio com qualquer busca — um codec de id estável com um locator que pagina, por exemplo.
+
+### Chaves por índice e por id estável [#index-vs-stable-id-keys]
+
+Duas chaves prontas montam esse par por você; a diferença está apenas no que a URL nomeia:
+
+- `urlIndexKey(() => count)` endereça pela **posição** (`?photo=3`). É a mais simples, mas um favorito abre outro item assim que a lista muda de ordem.
+- `urlStableIdKey({ items })` endereça pelo `id` estável de cada item (`?photo=post_42`), varrendo a lista atual — o favorito continua apontando para aquele item depois de uma reordenação, ou se desfaz sem sujeira quando o item some. `hashCodec: base64UrlCodec` disfarça o id em base64url (reversível, não é hash criptográfico).
+
+**Feed em janela, carregado aos poucos?** As duas chaves prontas aceitam um `locateAsync` opcional — `urlIndexKey(() => count, locateAsync)` e `urlStableIdKey({ items, locateAsync })`. A busca síncrona responde pelo que já carregou; quando ela falha, o resto é paginado, então um link compartilhado que aponta além da janela ainda abre — sem codec nem locator escritos à mão.
+
+Dois eixos? `urlIndexTwoAxisKey` carrega `?p=<externo>.<interno>` para um post mais o índice da mídia interna. As opções completas estão na [referência da API do core](/docs/core/api#url-state).
+
+## Itens já vistos [#viewed-state]
+
+Lembre até onde o leitor chegou em uma galeria, entre recarregamentos e entre abas — um anel que mostra o que já foi visto, uma galeria que reabre onde parou. É o mesmo modelo do estado na URL, apontado para o armazenamento em vez da barra de endereços, e por isso os dois compartilham a mesma chave.
+
+### Como funciona [#how-it-works]
+
+`createViewedStateController` guarda uma entrada com exatamente o texto que um link `?photo=` carregaria, e a lê de volta pelo mesmo ciclo de `decode` seguido de `locate`. Nada confia em uma posição armazenada. Espalhe uma única chave nas duas superfícies e o favorito e a entrada guardada passam a ser a mesma string.
+
+<CodeBlock code={howItWorks2} language="typescript" />
+
+### A durabilidade acompanha a chave [#durability-follows-the-key]
+
+O armazenamento não acrescenta nenhum reparo próprio, então a chave que você espalha decide o que sobrevive: uma chave endereçada por id mantém o lugar mesmo que a coleção mude de ordem; uma endereçada por posição, não. A entrada guardada nomeia o ponto mais distante alcançado, e não um total de visualizações, então remover um item do meio encurta a contagem — a mesma cura espontânea que um link compartilhado recebe.
+
+A leitura é só síncrona. Uma entrada cujos itens ainda não carregaram é lida como ausente e permanece intacta no armazenamento, de forma que um feed em janela nunca devore o próprio histórico.
+
+### Armazenamento e expiração [#storage-and-expiry]
+
+Por padrão o `localStorage` sustenta o armazenamento; `createSessionStorageAdapter()` esquece tudo ao fechar a aba, e um `StorageAdapter` seu leva os dados para qualquer lugar síncrono. Nada é lido antes de `attach()`, então a renderização no servidor e a primeira renderização no cliente concordam.
+
+As entradas ficam guardadas até serem esquecidas explicitamente. Passe `ttlMs` para que expirem — por trilha, em um relógio deslizante, para que algo ainda em uso não envelheça junto com algo abandonado. Isso muda o que é gravado, e cada entrada vira um par `[wire, timestamp]`, mas a leitura entende os dois formatos independentemente da opção, então uma entrada guardada antes de você ligar o recurso conta como recente em vez de ser apagada. `maxTracks` limita a quantidade em vez da idade: passando do limite, a trilha registrada há mais tempo cai na próxima escrita, e registrar uma trilha, mesmo em uma posição já vista, a manda para o fim da fila. As opções completas estão na [referência da API do core](/docs/core/api#viewed-state).
+
+<NextSteps
+        items={[
+          {
+            label: 'Referência da API do core',
+            path: '/docs/core/api',
+            description: 'todas as props disponíveis',
+          },
+          {
+            label: 'Guia do framework',
+            path: {
+              react: '/docs/react/guide',
+              angular: '/docs/angular/guide',
+              vue: '/docs/vue/guide',
+            },
+            description: 'componentes, demonstrações e integração',
+          },
+          {
+            label: 'Reel Player',
+            path: {
+              react: '/docs/reel-player',
+              angular: '/docs/angular-reel-player',
+              vue: '/docs/vue-reel-player',
+            },
+            description: 'player de vídeo no estilo TikTok/Reels',
+          },
+          {
+            label: 'Lightbox',
+            path: {
+              react: '/docs/lightbox',
+              angular: '/docs/angular-lightbox',
+              vue: '/docs/vue-lightbox',
+            },
+            description: 'galeria de imagens e vídeos',
+          },
+          {
+            label: 'Stories Player',
+            path: {
+              react: '/docs/stories-player',
+              angular: '/docs/angular-stories-player',
+              vue: '/docs/vue-stories-player',
+            },
+            description: 'visualizador de stories no estilo Instagram',
+          },
+        ]}
+      />

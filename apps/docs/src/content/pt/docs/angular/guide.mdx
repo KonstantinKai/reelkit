@@ -1,0 +1,183 @@
+---
+title: Guia para Angular
+description: Monte sliders com @reelkit/angular. Componente rk-reel, diretiva rkReelItem, ReelIndicator, output apiReady, API imperativa baseada em sinais e virtualização.
+---
+
+import { Hand, Keyboard, MousePointer, InfinityIcon, Radio, Navigation, Zap, Layers, Code } from 'lucide-react';
+import rkReelComponent from '../../../snippets/angular-guide/rk-reel-component.ts?raw';
+import autoSizing from '../../../snippets/angular-guide/auto-sizing.html?raw';
+import rkreelitemTemplatePattern from '../../../snippets/angular-guide/rkreelitem-template-pattern.html?raw';
+import navigation from '../../../snippets/angular-guide/navigation.ts?raw';
+import urlState from '../../../snippets/angular-guide/url-state.ts?raw';
+import urlState2 from '../../../snippets/angular-guide/url-state-2.ts?raw';
+import reelindicator from '../../../snippets/angular-guide/reelindicator.html?raw';
+import apireadyOutputSignalBased from '../../../snippets/angular-guide/apiready-output-signal-based.ts?raw';
+
+Aprenda a montar sliders com `@reelkit/angular`.
+
+<FeatureGrid columns={3} items={[
+              {
+                icon: Hand,
+                label: 'Toque em primeiro lugar',
+                desc: 'Deslize com inércia e encaixe',
+              },
+              {
+                icon: Keyboard,
+                label: 'Navegação por teclado',
+                desc: 'Setas e Escape',
+              },
+              {
+                icon: MousePointer,
+                label: 'Roda do mouse',
+                desc: 'Opcional, com debounce',
+              },
+              {
+                icon: InfinityIcon,
+                label: 'Virtualizado',
+                desc: 'Mais de 10.000 itens, 3 no DOM',
+              },
+              {
+                icon: Radio,
+                label: 'Indicadores',
+                desc: 'Pontinhos deslizantes no estilo Instagram',
+              },
+              {
+                icon: Navigation,
+                label: 'API programática',
+                desc: 'next(), prev(), goTo() pelo apiReady',
+              },
+              {
+                icon: Zap,
+                label: 'Modo cíclico',
+                desc: 'Navegação circular sem fim',
+              },
+              {
+                icon: Layers,
+                label: 'Nos dois sentidos',
+                desc: 'Vertical ou horizontal',
+              },
+              {
+                icon: Code,
+                label: 'Baseado em sinais',
+                desc: 'OnPush com os sinais do Angular',
+              },
+            ]} />
+
+## Componente rk-reel [#rk-reel-component]
+
+O componente `rk-reel` embrulha o controlador do slider do core. É standalone e usa `ChangeDetectionStrategy.OnPush`.
+
+<Sandbox code={rkReelComponent} language="typescript" title="app.component.ts" framework="angular" stackblitzDeps={['@reelkit/angular']} />
+
+## Dimensionamento automático [#auto-sizing]
+
+O input `size` é opcional. Sem ele, o `rk-reel` mede o próprio contêiner com `ResizeObserver` e acompanha o layout definido no CSS. O contêiner precisa ganhar tamanho do elemento pai (flex, grid ou dimensões explícitas no CSS).
+
+<CodeBlock code={autoSizing} language="html" />
+
+## Padrão de template rkReelItem [#rkreelitem-template-pattern]
+
+No lugar da render prop do React, o Angular usa a diretiva estrutural `rkReelItem` em um `ng-template`. É ela que viabiliza a virtualização — só os slides visíveis são instanciados. O contexto do template entrega três variáveis:
+
+<CodeBlock code={rkreelitemTemplatePattern} language="html" />
+
+## Navegação [#navigation]
+
+Formas de navegação já incluídas:
+
+<Bullets marker="dot">
+
+- **Toque/Deslizar:** arraste para navegar, com inércia e encaixe
+- **Teclado:** setas e Escape
+- **Roda do mouse:** ligue com `[enableWheel]="true"`
+- **Programática:** use o output `(apiReady)` para obter `next()`, `prev()`, `goTo()`
+
+</Bullets>
+
+<CodeBlock code={navigation} language="typescript" />
+
+## Estado na URL [#url-state]
+
+`createOverlayUrlState` monta um controlador de estado na URL para o overlay e devolve o controlador inteiro; você o entrega a um componente `*UrlOverlay` pelo input `[controller]`. Chame-o em um contexto de injeção — na inicialização de um campo; ele se liga na hora e se solta pelo `DestroyRef`. Quem manda no estado aberto é a URL, então um overlay ligado a ela se abre sozinho e o link vira a forma normal de abrir. A primeira escrita de um parâmetro ausente empilha uma entrada no histórico e cada escrita seguinte a substitui, então percorrer os itens nunca soterra o botão voltar. Guarde o controlador para ler `value`/`position` e para conduzi-lo por código: `set(position)` abre, `set(null)` fecha, e `set` é exatamente a mesma escrita de baixo nível que o overlay usa internamente ao trocar de slide.
+
+<CodeBlock code={urlState} language="typescript" />
+
+App com rotas — passe um adaptador ligado ao Router, senão a localização dele fica desatualizada e a navegação seguinte derruba o parâmetro:
+
+<CodeBlock code={urlState2} language="typescript" />
+
+O objeto de opções recebe `param`, `codec` e `locator` (os três obrigatórios), mais um `adapter` opcional. `codec` e `locator` formam um par combinado que divide o mesmo `Id`, então uma galeria simples com `?photo=3` espalha `...urlIndexKey(() => images().length)`, que devolve as duas metades de uma vez. `urlIndexKey` limita o índice pela contagem atual que o getter devolve, então um `?photo=99` velho é rejeitado e se cura sozinho saindo da URL, em vez de abrir um slide que ninguém nomeou. Um feed paginado ou uma galeria endereçada por identidade fornece o próprio par `codec` + `locator`. A tabela completa de opções está na [referência da API para Angular](/docs/angular/api#createoverlayurlstate).
+
+## ReelIndicator [#reelindicator]
+
+Componente opcional que mostra indicadores de progresso no estilo Instagram, sinalizando a posição atual dentro do slider. Colocado dentro de um `rk-reel`, ele se liga sozinho aos valores de `count` e `active` do componente pai pelo token de injeção `RK_REEL_CONTEXT` — sem ligação manual.
+
+<CodeBlock code={reelindicator} language="html" />
+
+## Output apiReady — padrão baseado em sinais [#apiready-output-signal-based-pattern]
+
+O output `(apiReady)` dispara uma única vez, depois de o componente ser montado e medido. Ele emite um objeto `ReelApi` que você guarda e usa para navegar de forma imperativa. Guardar essa referência em um sinal do Angular combina bem com a detecção de mudanças `OnPush`.
+
+<CodeBlock code={apireadyOutputSignalBased} language="typescript" />
+
+## Pontos principais [#key-points]
+
+<KeyPoints>
+<KeyPoint title="Componente standalone">
+  Importe `ReelComponent`, `RkReelItemDirective` e, se quiser, `ReelIndicatorComponent` direto no array `imports` do seu componente
+</KeyPoint>
+<KeyPoint title="ng-template + rkReelItem">
+  O equivalente, no Angular, à prop `itemBuilder` do React — é o que viabiliza a virtualização
+</KeyPoint>
+<KeyPoint title="apiReady">
+  Output que dispara uma vez com a API imperativa de navegação — sem precisar consultar ViewChild
+</KeyPoint>
+<KeyPoint title="afterChange">
+  Emite `{ index, indexInRange }` — acompanhe o índice atual para atualizar a interface
+</KeyPoint>
+<KeyPoint title="OnPush por padrão">
+  Todos os componentes usam `ChangeDetectionStrategy.OnPush` e sinais do Angular, para tirar o máximo de desempenho
+</KeyPoint>
+</KeyPoints>
+
+## Dicas de desempenho [#performance-tips]
+
+<KeyPoints>
+<KeyPoint title="Deixe os templates dos slides leves">
+  O template `rkReelItem` roda para cada slide visível (normalmente 3 por vez). Evite cálculos pesados ou estruturas muito aninhadas lá dentro.
+</KeyPoint>
+<KeyPoint title="Carregue os dados perto da borda">
+  Use `(afterChange)` para perceber quando o leitor se aproxima do fim e busque o lote seguinte antes que os slides acabem — é assim que nasce um feed sem fim.
+</KeyPoint>
+<KeyPoint title="Use sinais para o estado imperativo">
+  Guarde a referência de `ReelApi` e o índice atual em sinais do Angular, para ter reatividade fina sem provocar a re-renderização do componente inteiro.
+</KeyPoint>
+<KeyPoint title="Desligue a roda em páginas roláveis">
+  Defina `[enableWheel]="false"` quando o slider estiver dentro de um layout rolável, para não capturar a rolagem da página.
+</KeyPoint>
+</KeyPoints>
+
+<NextSteps
+        items={[
+          {
+            label: 'Referência da API para Angular',
+            path: '/docs/angular/api',
+            description: 'todos os inputs, outputs e métodos disponíveis',
+          },
+          {
+            label: 'Reel Player',
+            path: '/docs/angular-reel-player',
+            description: 'player de vídeo no estilo TikTok/Reels',
+          },
+          {
+            label: 'Lightbox',
+            path: '/docs/angular-lightbox',
+            description: 'galeria de imagens e vídeos',
+          },
+          {
+            label: 'Stories Player',
+            path: '/docs/angular-stories-player',
+            description: 'visualizador de stories no estilo Instagram (em breve)',
+          },
+        ]}
+      />

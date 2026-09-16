@@ -48,6 +48,46 @@ describe('quoted bundle sizes', () => {
     );
   });
 
+  // The refresh script rewrites the quoted size in each home page it names,
+  // and a page it does not name is left at whatever number it was written
+  // with. The script reports "no change" for a file it never reads, so a
+  // missing path reads exactly like an up-to-date one.
+  it('names every home page in the size refresh script', async () => {
+    const script = readFileSync(
+      join(repoRoot, 'scripts/update-sizes.mjs'),
+      'utf8',
+    );
+    const homes = ['Home.tsx'];
+    for await (const entry of glob('*/Home.tsx', { cwd: pagesDir })) {
+      homes.push(entry);
+    }
+    for (const home of homes) {
+      expect(
+        script,
+        `scripts/update-sizes.mjs never rewrites ${home}`,
+      ).toContain(`apps/docs/src/pages/${home}`);
+    }
+  });
+
+  // The rewrite is a regular expression over the page source: a single-quoted
+  // description holding a decimal size and an ASCII space before the unit. A
+  // translation that writes 3,2 kB, or splits the string, silently stops
+  // being updated — and only the next size bump would show it.
+  it('leaves every home page in the shape the refresh script rewrites', async () => {
+    const rewrite = /(description:\s*'[^']*?)\d+\.\d+( (?:kB|кБ)[^']*')/;
+    const homes = ['Home.tsx'];
+    for await (const entry of glob('*/Home.tsx', { cwd: pagesDir })) {
+      homes.push(entry);
+    }
+    for (const home of homes) {
+      const source = readFileSync(join(pagesDir, home), 'utf8');
+      expect(
+        rewrite.test(source),
+        `${home} quotes no size the refresh script can rewrite`,
+      ).toBe(true);
+    }
+  });
+
   // The installation page in every locale renders its size table from this
   // one data module, so one check covers them all.
   it('lists the measured core size in the installation table', () => {

@@ -10,7 +10,7 @@ import {
   createDisposableList,
   Observe,
 } from '@reelkit/react';
-import { SearchItem, searchItemsFor } from '../data/searchData';
+import { SearchItem, matchesSearch, searchItemsFor } from '../data/searchData';
 import { frameworkSignal } from '../data/frameworkSignal';
 import { useLocale, useMessages } from '../i18n/useLocale';
 import type { Messages } from '../i18n/messages';
@@ -77,15 +77,9 @@ export default function CommandPalette({
           const base = searchItemsFor(localeSignal.value).filter(
             (item) => !item.framework || item.framework === fw,
           );
-          const q = query.value.toLowerCase().trim();
+          const q = query.value.trim();
           if (!q) return base;
-          return base.filter(
-            (item) =>
-              item.title.toLowerCase().includes(q) ||
-              item.category.toLowerCase().includes(q) ||
-              item.sectionTitle?.toLowerCase().includes(q) ||
-              item.keywords.some((kw) => kw.includes(q)),
-          );
+          return base.filter((item) => matchesSearch(item, q));
         },
         () => [query, frameworkSignal, localeSignal],
       );

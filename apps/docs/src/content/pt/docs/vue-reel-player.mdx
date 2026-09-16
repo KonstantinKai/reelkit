@@ -1,0 +1,467 @@
+---
+title: Vue Reel Player
+description: Overlay de player de vídeo em tela cheia no estilo TikTok/Reels para Vue 3. Esquema do ContentItem, props, emits, slots com escopo, tokens de tema e classes CSS compartilhadas com o reel-player do React.
+---
+
+import { Zap, Play, Volume2, Layout, Clock, Image, Layers, Ratio, Monitor, Code, Settings, Link2 } from 'lucide-react';
+import installation from '../../snippets/vue-reel-player/installation.sh?raw';
+import installation2 from '../../snippets/vue-reel-player/installation-2.ts?raw';
+import basicUsage from '../../snippets/vue-reel-player/basic-usage.vue?raw';
+import scopedSlots from '../../snippets/vue-reel-player/scoped-slots.vue?raw';
+import customTimeline from '../../snippets/vue-reel-player/custom-timeline.vue?raw';
+import customContentTypes from '../../snippets/vue-reel-player/custom-content-types.vue?raw';
+import urlState from '../../snippets/vue-reel-player/url-state.vue?raw';
+import oneKeyOrTwo from '../../snippets/vue-reel-player/one-key-or-two.ts?raw';
+import oneKeyOrTwo2 from '../../snippets/vue-reel-player/one-key-or-two-2.ts?raw';
+import oneKeyOrTwo3 from '../../snippets/vue-reel-player/one-key-or-two-3.ts?raw';
+import oneKeyOrTwo4 from '../../snippets/vue-reel-player/one-key-or-two-4.ts?raw';
+import vModelIsOpen from '../../snippets/vue-reel-player/v-model-is-open.vue?raw';
+import timelinebarprops from '../../snippets/vue-reel-player/timelinebarprops.ts?raw';
+import timelineslotscopeT from '../../snippets/vue-reel-player/timelineslotscope-t.ts?raw';
+import closebutton from '../../snippets/vue-reel-player/closebutton.vue?raw';
+import soundbutton from '../../snippets/vue-reel-player/soundbutton.vue?raw';
+import timelinebar from '../../snippets/vue-reel-player/timelinebar.vue?raw';
+import slideoverlay from '../../snippets/vue-reel-player/slideoverlay.vue?raw';
+import imageslide from '../../snippets/vue-reel-player/imageslide.vue?raw';
+import videoslide from '../../snippets/vue-reel-player/videoslide.vue?raw';
+import videoslide2 from '../../snippets/vue-reel-player/videoslide-2.vue?raw';
+import lifecycleCallbacks from '../../snippets/vue-reel-player/lifecycle-callbacks.vue?raw';
+import customLoadingErrorUi from '../../snippets/vue-reel-player/custom-loading-error-ui.vue?raw';
+import timeline from '../../snippets/vue-reel-player/timeline.vue?raw';
+import soundContext from '../../snippets/vue-reel-player/sound-context.vue?raw';
+import theming from '../../snippets/vue-reel-player/theming.css?raw';
+
+Player vertical de mídia em tela cheia no estilo Instagram/TikTok para Vue 3, construído sobre `@reelkit/vue-reel-player`.
+
+<DemoLink href="https://vue-demo.reelkit.dev/reel-player?utm_source=docs">Ver demonstração ao vivo →</DemoLink>
+
+## Recursos [#features]
+
+<FeatureGrid items={[
+              {
+                icon: Zap,
+                label: 'Deslize vertical',
+                desc: 'Toque, arrasto, teclado, roda',
+              },
+              {
+                icon: Play,
+                label: 'Vídeo automático',
+                desc: 'Toca quando fica visível',
+              },
+              { icon: Volume2, label: 'Botão de som', desc: 'Continuidade no iOS' },
+              {
+                icon: Layout,
+                label: 'Várias mídias',
+                desc: 'Carrosséis horizontais aninhados',
+              },
+              {
+                icon: Clock,
+                label: 'Memória de posição',
+                desc: 'Retoma de onde parou',
+              },
+              {
+                icon: Image,
+                label: 'Captura de quadro',
+                desc: 'Transição suave do pôster ao vídeo',
+              },
+              {
+                icon: Layers,
+                label: 'Virtualizado',
+                desc: 'Apenas 3 slides no DOM',
+              },
+              {
+                icon: Ratio,
+                label: 'Proporção',
+                desc: '9:16 no desktop, tela inteira no celular',
+              },
+              { icon: Monitor, label: 'Navegação no desktop', desc: 'Botões de seta' },
+              {
+                icon: Code,
+                label: 'Tipos genéricos',
+                desc: 'Modelos de dados próprios',
+              },
+              {
+                icon: Settings,
+                label: 'Slots com escopo',
+                desc: 'Personalize cada elemento da interface',
+              },
+              {
+                icon: Zap,
+                label: 'v-model:is-open',
+                desc: 'Ligação de mão dupla na visibilidade',
+              },
+              {
+                icon: Link2,
+                label: 'Estado na URL',
+                desc: 'Links para compartilhar, fechamento no botão voltar',
+              },
+            ]} />
+
+## Instalação [#installation]
+
+<CodeBlock code={installation} language="bash" />
+
+Importe a folha de estilo uma vez na entrada do seu app (ou em qualquer componente):
+
+<CodeBlock code={installation2} language="typescript" />
+
+<Callout type="info" title="Ícones">
+  Os controles padrão usam `lucide-vue-next` para os ícones (fechar, som, setas de navegação). Se você prefere outra biblioteca de ícones, use os slots com escopo `#controls` e `#navigation` para fornecer os seus.
+</Callout>
+
+## Uso básico [#basic-usage]
+
+Desenhe uma grade de miniaturas e abra o overlay no índice clicado. Ligar `v-model:is-open` mantém o `ref` do componente pai em sintonia quando o leitor fecha o player pelo botão, por gesto ou com Escape.
+
+<Sandbox code={basicUsage} language="vue" title="App.vue" framework="vue" stackblitzDeps={['@reelkit/vue-reel-player']} stackblitzExtraDeps={{ 'lucide-vue-next': '>=0.460.0' }} />
+
+## Slots com escopo [#scoped-slots]
+
+Oito slots com escopo permitem trocar qualquer parte da interface do player. Cada um recebe um objeto de escopo fortemente tipado. Os slots que você não passar caem no padrão.
+
+| Slot | Escopo | Descrição |
+| --- | --- | --- |
+| #controls | `{ item, soundState, activeIndex, content, onClose }` | Barra de controles global própria (fechar, som, compartilhar e afins) |
+| #error | `{ item, activeIndex, innerActiveIndex }` | Indicador de erro próprio (substitui o ícone padrão) |
+| #loading | `{ item, activeIndex, innerActiveIndex }` | Indicador de carregamento próprio (substitui a animação padrão de onda) |
+| #navigation | `{ item, activeIndex, count, onPrev, onNext }` | Setas próprias de avançar e voltar (desktop) |
+| #nestedNavigation | `{ media, activeIndex, count, onPrev, onNext }` | Setas próprias do slider horizontal interno |
+| #nestedSlide | `{ item, media, index, size, isActive, isInnerActive, slideKey, defaultContent, onReady, onWaiting, onError }` | Conteúdo próprio dos slides dentro do slider horizontal interno |
+| #slide | `{ item, index, size, isActive, slideKey, defaultContent, onReady, onWaiting, onError }` | Conteúdo de slide totalmente seu (sem ele, vale o padrão) |
+| #slideOverlay | `{ item, index, isActive }` | Camada de cada slide (dados do autor, curtidas, descrição e afins) |
+| #timeline | `{ item, activeIndex, timelineState, defaultContent }` | Barra de reprodução própria. Só é chamada quando a regra embutida (modo da linha do tempo e duração mínima) renderizaria a barra padrão; reaproveita a mesma lógica de auto/always/never. Use defaultContent() para envolver a \<TimelineBar /> embutida. |
+
+<CodeBlock code={scopedSlots} language="vue" />
+
+### Linha do tempo própria [#custom-timeline]
+
+Troque a barra de reprodução padrão pela sua, com o slot `#timeline`. O slot só dispara quando as regras do overlay renderizariam a barra padrão (o mesmo modo `timeline` e o mesmo `timelineMinDurationSeconds`), então você não precisa reimplementá-las. Reaproveite a classe `.rk-reel-timeline` na sua raiz para herdar o posicionamento rente à base, o respiro da área segura e o espaço reservado em dispositivos de toque.
+
+<CodeBlock code={customTimeline} language="vue" />
+
+## Tipos de conteúdo próprios [#custom-content-types]
+
+`ReelPlayerOverlay` é genérico em relação ao formato dos seus itens de conteúdo. Estenda `BaseContentItem` para usar qualquer modelo de dados e importe o tipo de escopo de slot correspondente para manter as ligações fortemente tipadas:
+
+<CodeBlock code={customContentTypes} language="vue" />
+
+O mesmo padrão vale para todos os outros slots. Importe o tipo de escopo correspondente (`SlideSlotScope`, `ControlsSlotScope`, `NavigationSlotScope`, `NestedSlideSlotScope`, `LoadingSlotScope`) e anote a desestruturação.
+
+## Estado na URL [#url-state]
+
+<DemoLink href="https://vue-demo.reelkit.dev/reel-player-url?utm_source=docs">Ver demonstração ao vivo →</DemoLink>
+
+Monte um controlador com `useOverlayUrlState`, de `@reelkit/vue`, e entregue-o ao `ReelPlayerUrlOverlay` como `controller`: quem manda no player é a barra de endereços, então ele abre quando o parâmetro nomeia um slide e fecha quando o parâmetro some. Abrir empilha uma entrada no histórico e cada troca de slide a substitui, então percorrer um feed não acrescenta entradas e um único passo para trás sempre sai. A profundidade da URL acompanha a chave do controlador: um `urlIndexKey` de eixo único endereça apenas o post (`?reel=3`); um `urlIndexTwoAxisKey` de dois eixos carrega também o índice da mídia interna de um post com várias mídias (`?reel=3.2`); escolha uma chave por app, porque os dois formatos não são decodificados um pelo outro. É um componente separado do `ReelPlayerOverlay`, então cada um carrega exatamente um comando do estado aberto — o modelo `is-open` ou o `controller` da URL, nunca os dois.
+
+<Callout type="info" title="Chaves prontas">
+  Você pode endereçar os slides com uma chave pronta — espalhe `urlIndexKey` (por posição) ou `urlStableIdKey` (por um `id` estável) no controlador — as duas reexportadas por `@reelkit/vue`. Veja o [guia de estado na URL](/docs/core/guide#url-state) e a [API do core](/docs/core/api#url-state).
+</Callout>
+
+Um app com rotas deve passar um adaptador ligado ao roteador, para que ele siga sendo a única fonte de verdade da navegação — escrever no histórico por trás dele deixa sua localização desatualizada e derruba o parâmetro na navegação seguinte. `useVueRouterUrlAdapter`, de `@reelkit/vue/vue-router-url-adapter`, é o adaptador pronto para o Vue Router.
+
+<CodeBlock code={urlState} language="vue" />
+
+As opções completas de `useOverlayUrlState` estão na [referência da API para Vue](/docs/vue/api#useoverlayurlstate).
+
+- Abrir empilha **uma** entrada no histórico. Percorrer o feed **substitui** essa entrada, então N deslizes não acrescentam nenhuma e um único passo para trás sempre sai do player. Voltar fecha; não troca de slide.
+- Voltar só fecha quando o player foi aberto de dentro do app — foi o link que empilhou a entrada. Um link compartilhado aberto direto em uma aba nova não tem histórico atrás de si, então o voltar do navegador sai do site; o botão ✕ ou o Escape removem o parâmetro ali mesmo e você continua na página.
+- Um link direto `?reel=3` abre o player naquele slide já no carregamento.
+- Um parâmetro que não nomeia slide nenhum — um favorito velho, um valor editado à mão — é retirado da URL, em vez de deixar a barra de endereços afirmando um slide que não abre.
+- A profundidade da URL acompanha a chave do controlador: eixo único para o post apenas, ou dois eixos (`urlIndexTwoAxisKey`) para carregar também o índice da imagem interna de um post com várias mídias. Escolha uma chave por app; os formatos não são decodificados um pelo outro.
+
+### Uma chave ou duas — escolha a profundidade da URL [#one-key-or-two-pick-your-url-depth]
+
+O mesmo `ReelPlayerOverlay` conduz os dois formatos; ele distingue em tempo de execução pela posição do controlador, então não existe prop de modo. Escolha a chave ao montar o controlador:
+
+| Chave | Fio | O que carrega |
+| --- | --- | --- |
+| `urlIndexKey(…)` | `?reel=3` | Apenas o post vertical. |
+| `urlIndexTwoAxisKey(…)` | `?reel=3.2` | O post *e* o índice da mídia interna do carrossel. |
+
+Os dois fios são deliberadamente distintos — uma chave de dois eixos é estritamente pontuada (`3.0`, nunca um `3` solto), então um link de um eixo não é decodificado pelo outro. Trocar a chave de um app, portanto, invalida qualquer link já compartilhado. Escolha um formato e fique com ele.
+
+<CodeBlock code={oneKeyOrTwo} language="typescript" />
+
+**Links estáveis.** O índice é posicional, então um `?reel=3` favoritado abre outro post assim que o feed muda de ordem — e num feed isso é o normal, não a exceção. `urlStableIdKey` usa o `id` estável de cada post, varrendo o feed atual — uma chamada resolve o caso comum.
+
+<CodeBlock code={oneKeyOrTwo2} language="typescript" />
+
+Passe `hashCodec: base64UrlCodec` para escrever o id em base64url na URL — é um disfarce reversível, não um hash criptográfico.
+
+Quer endereçar por outro campo (um `slug`), ou paginar um feed infinito com `locateAsync`? Monte o `codec` e o `locator` você mesmo. São dois papéis distintos: o `codec` escreve a identidade na URL, o `locator` descobre onde ela está.
+
+<CodeBlock code={oneKeyOrTwo3} language="typescript" />
+
+**Feeds infinitos.** `locate` é síncrono, então só responde pelos posts já carregados — um link compartilhado para o post 400 de um feed que carregou 20 volta vazio. `locateAsync` é o plano B, chamado somente quando `locate` falha.
+
+<Callout type="info" title="Atalho">
+  Vai endereçar pelo `id` do item? Dispense o codec e o locator escritos à mão — passe `locateAsync` direto para `urlStableIdKey({ items, locateAsync })` (ele busca quando falha e então devolve o índice). A versão mais completa abaixo serve para endereçar por outro campo, ou para ter controle total.
+</Callout>
+
+<CodeBlock code={oneKeyOrTwo4} language="typescript" />
+
+- Enquanto `locateAsync` está pendente, o player fica fechado e o parâmetro é deixado em paz, então o link direto sobrevive à busca. Um `null` ou uma rejeição derrubam o parâmetro.
+- Uma resposta que chega depois de a URL ter mudado, depois de um fechamento ou depois da desmontagem é descartada — uma busca lenta não pode abrir um slide que ninguém pediu.
+- Nada é renderizado enquanto a busca corre; esse estado de carregamento já pertence à página, então desenhe o seu próprio esqueleto.
+- Não existe tempo limite — o player não tem como saber o tamanho do feed. Termine com `null` quando a paginação se esgotar, ou o overlay fica fechado para sempre.
+
+## Referência da API [#api-reference]
+
+### Props do ReelPlayerOverlay [#reelplayeroverlay-props]
+
+<Signature>ReelPlayerOverlayProps</Signature>
+
+| Prop | Tipo | Padrão | Descrição |
+| --- | --- | --- | --- |
+| `ariaLabel` | `string` | `'Video player'` | Rótulo acessível da região do diálogo; anunciado pelos leitores de tela quando o overlay abre |
+| `aspectRatio` | `number` | `9 / 16` | Proporção entre largura e altura do contêiner no desktop. No celular vale a tela inteira. |
+| `content` | `T[] (extends BaseContentItem)` | `obrigatório` | Array de itens de conteúdo a exibir no player |
+| `enableNavKeys` | `boolean` | `true` | Liga a navegação pelas setas do teclado |
+| `enableWheel` | `boolean` | `true` | Liga a navegação pela roda do mouse |
+| `initialIndex` | `number` | `0` | Índice, começando em zero, do item visível no início |
+| `initialInnerIndex` | `number` | `0` | Índice da mídia interna em que abrir, apenas para o post visível no início — permite que uma URL de dois eixos aponte direto para uma imagem específica de um post com várias mídias. Ignorado assim que o leitor navega. |
+| `isOpen` | `boolean` | `obrigatório` | Controla a visibilidade do overlay; com false, o overlay sai do DOM |
+| `loop` | `boolean` | `false` | Liga o ciclo infinito entre os slides |
+| `swipeDistanceFactor` | `number` | `0.12` | Fração mínima da distância de deslize para trocar de slide |
+| `timeline` | `'auto' \| 'always' \| 'never'` | `'auto'` | Estratégia que libera a barra de reprodução embutida. 'auto' só renderiza para vídeos mais longos que timelineMinDurationSeconds; 'always' renderiza sempre que o slide ativo tiver vídeo; 'never' desliga a barra embutida (use o slot #timeline para substituí-la inteiramente). |
+| `timelineMinDurationSeconds` | `number` | `30` | Duração mínima do vídeo, em segundos, para que timeline='auto' renderize a barra embutida. Clipes curtos em repetição abaixo desse limite ficam sem barra. |
+| `transitionDuration` | `number` | `300` | Duração da animação do slide em ms |
+| `wheelDebounceMs` | `number` | `200` | Duração do debounce dos eventos de roda em ms |
+
+### Props do ReelPlayerUrlOverlay [#reelplayerurloverlay-props]
+
+<Signature>ReelPlayerUrlOverlayProps</Signature>
+
+Aceita todas as props acima, menos `is-open`, substituída por `controller`. `initial-index` é ignorada — quem escolhe o slide é a posição do controlador, então um valor passado ao lado dela é sobrescrito a cada abertura.
+
+| Prop | Tipo | Padrão | Descrição |
+| --- | --- | --- | --- |
+| `controller` | `UrlStateController` | `obrigatório` | Controlador vindo de `useOverlayUrlState`. A `position` dele decide se o overlay está aberto e qual slide aparece; o overlay escreve de volta por ele na troca de slide e no fechamento. |
+
+### Eventos [#events]
+
+| Evento | Carga | Descrição |
+| --- | --- | --- |
+| @api-ready | `ReelPlayerApi` | Emitido assim que o slider fica pronto, expondo a API imperativa |
+| @close | `void` | Emitido quando o player fecha |
+| @slide-change | `number` | Emitido com o novo índice do slide ativo depois de uma troca |
+| @inner-slide-change | `outer: number, inner: number` | Emitido quando o índice da mídia interna do post ativo muda — na navegação interna e na ativação externa (o índice interno atual do post ativado, 0 para mídia única). |
+| @update:is-open | `boolean` | Emitido no fechamento; é o que viabiliza o \`v-model:is-open\` |
+
+### v-model:is-open [#v-model-is-open]
+
+Use `v-model:is-open` para conduzir o overlay com uma única ligação. O padrão antigo de `:is-open` com `@close` continua funcionando, se você precisar do evento explícito.
+
+<CodeBlock code={vModelIsOpen} language="vue" />
+
+## Tipos [#types]
+
+### ContentItem [#contentitem]
+
+| Campo | Tipo | Descrição |
+| --- | --- | --- |
+| `id` | `string` | Identificador único |
+| `media` | `MediaItem[]` | Uma ou mais mídias (imagem ou vídeo) |
+| `author` | `{ name: string; avatar?: string }` | Autor mostrado na camada padrão do slide |
+| `description` | `string?` | Texto da legenda |
+| `likes` | `number?` | Contagem de curtidas |
+
+### TimelineBarProps [#timelinebarprops]
+
+<CodeBlock code={timelinebarprops} language="typescript" />
+
+### TimelineSlotScope\<T> [#timelineslotscope-t]
+
+<CodeBlock code={timelineslotscopeT} language="typescript" />
+
+### MediaItem [#mediaitem]
+
+| Campo | Tipo | Descrição |
+| --- | --- | --- |
+| `id` | `string` | Identificador único |
+| `type` | `'image' \| 'video'` | Tipo da mídia |
+| `src` | `string` | URL do arquivo de mídia |
+| `poster` | `string?` | URL da miniatura de pôster, para itens de vídeo |
+| `aspectRatio` | `number` | Proporção entre largura e altura. Valores \< 1 = vertical (cover), ≥ 1 = horizontal (contain). |
+
+## Subcomponentes [#sub-components]
+
+Use-os dentro dos seus templates de `#controls`, `#slide` ou `#slideOverlay`. Repasse as dimensões e os callbacks do escopo do slot para que a reprodução automática, a captura de pôster e a sincronia do som continuem funcionando.
+
+### CloseButton [#closebutton]
+
+Botão circular de fechar isolado, já com o estilo do reel player. Use dentro de `#controls`.
+
+<CodeBlock code={closebutton} language="vue" />
+
+### SoundButton [#soundbutton]
+
+Botão de mudo. Renderize-o dentro de um `SoundProvider` (o `ReelPlayerOverlay` fornece um). Fica escondido quando o slide ativo não tem vídeo.
+
+<CodeBlock code={soundbutton} language="vue" />
+
+### TimelineBar [#timelinebar]
+
+Barra de reprodução padrão. Lê o `TimelineProvider` mais próximo (montado automaticamente dentro do `ReelPlayerOverlay`) e desenha a trilha, os trechos em buffer, o preenchimento do progresso e a pílula de arrasto. Personalize pelas propriedades `--rk-reel-timeline-*`, ou substitua pelo slot `#timeline`.
+
+<CodeBlock code={timelinebar} language="vue" />
+
+### SlideOverlay [#slideoverlay]
+
+A camada em gradiente padrão, que mostra autor, descrição e curtidas. Aparece quando o conteúdo traz esses campos. Substitua-a ou esconda-a pelo slot `#slideOverlay`.
+
+<CodeBlock code={slideoverlay} language="vue" />
+
+### ImageSlide [#imageslide]
+
+Slide de imagem com carregamento tardio e `object-fit: cover` por padrão. Componha-o dentro do slot `#slide` para personalizar a exibição da imagem mantendo o comportamento embutido.
+
+<CodeBlock code={imageslide} language="vue" />
+
+### VideoSlide [#videoslide]
+
+Slide de vídeo apoiado em um elemento `<video>` compartilhado. Cuida da continuidade do som no iOS, dos quadros de pôster e da memória de posição. Renderize-o dentro de um `SoundProvider` (o `ReelPlayerOverlay` fornece um).
+
+<CodeBlock code={videoslide} language="vue" />
+
+<Callout type="info" title="Compondo slides próprios">
+  Use `#slide` com `ImageSlide` / `VideoSlide` para personalizar a exibição da mídia mantendo todo o comportamento embutido (reprodução automática, captura de pôster, sincronia do som).
+</Callout>
+
+<CodeBlock code={videoslide2} language="vue" />
+
+## Carregamento de conteúdo e tratamento de erros [#content-loading-error-handling]
+
+O player acompanha o carregamento e os erros de cada slide. Uma animação de onda aparece enquanto o conteúdo carrega; mídias quebradas mostram um ícone de erro. O player guarda em cache as URLs que falharam, então reabrir um slide quebrado pula a nova tentativa.
+
+### Callbacks de ciclo de vida [#lifecycle-callbacks]
+
+Ao usar o slot `#slide`, chame estes callbacks, vindos do escopo do slot, para comandar o indicador de carregamento:
+
+| Callback | Quando chamar |
+| --- | --- |
+| `onReady` | A imagem carregou ou o vídeo começou a tocar. Limpa os estados de carregamento e erro. |
+| `onWaiting` | O vídeo está carregando no meio da reprodução. Mostra o indicador de carregamento. |
+| `onError` | O conteúdo não carregou. Mostra a camada de erro e registra a URL como quebrada. |
+
+<CodeBlock code={lifecycleCallbacks} language="vue" />
+
+### Interface própria de carregamento e erro [#custom-loading-error-ui]
+
+Troque a animação de onda e o ícone de erro padrão pelos slots `#loading` e `#error`:
+
+<CodeBlock code={customLoadingErrorUi} language="vue" />
+
+## Linha do tempo [#timeline]
+
+O overlay desenha uma barra de reprodução embutida sobre o vídeo ativo. Libere-a pela prop `timeline`: `'auto'` (padrão) aparece sempre que a mídia ativa for um vídeo mais longo que `timelineMinDurationSeconds` (30 por padrão), `'always'` sempre que houver um vídeo ativo, `'never'` para desligar. Para uma barra totalmente sua, use o slot `#timeline`; o escopo dele expõe um `timelineState` apoiado no `TimelineController` por baixo.
+
+<CodeBlock code={timeline} language="vue" />
+
+Personalize pelas propriedades CSS `--rk-reel-timeline-*`.
+
+## Contexto de som [#sound-context]
+
+O `ReelPlayerOverlay` monta um `SoundProvider` na raiz, então qualquer componente renderizado lá dentro pode ler ou alternar o estado de mudo por `useSoundState`. O composable é reexportado por `@reelkit/vue-reel-player`, então você não precisa de um import separado de `@reelkit/vue`.
+
+<CodeBlock code={soundContext} language="vue" />
+
+<Callout type="info">
+  Dentro do player, o slot `#controls` também expõe `soundState` no seu escopo. Prefira essa via quando precisar do estado apenas no template dos controles.
+</Callout>
+
+## Classes CSS [#css-classes]
+
+As classes CSS são simples (sem escopo). Uma folha de estilo carregada depois de `@reelkit/vue-reel-player/styles.css` pode sobrescrever qualquer uma delas com um seletor de especificidade maior. Para mudar cor, tamanho e z-index, use as propriedades CSS da seção [Temas](#theming), abaixo.
+
+| Classe | Componente | Descrição |
+| --- | --- | --- |
+| `.rk-reel-overlay` | Overlay | Fundo fixo em tela cheia (cor de fundo, z-index) |
+| `.rk-reel-container` | Overlay | Contêiner do player (posição, transbordo) |
+| `.rk-reel-loader` | Overlay | Camada da animação de onda do carregamento |
+| `.rk-reel-media-error` | Overlay | Camada do estado de erro (ícone e texto centralizados) |
+| `.rk-reel-media-error-text` | Overlay | Texto da mensagem de erro |
+| `.rk-reel-button` | Controls | Botão circular de ícone compartilhado (fechar, som, setas) |
+| `.rk-reel-close-btn` | Controls | Botão de fechar |
+| `.rk-reel-sound-btn` | Controls | Botão de alternar o som |
+| `.rk-reel-nav-arrows` | Navigation | Contêiner das setas, só no desktop (escondido abaixo de 768px) |
+| `.rk-reel-nav-button` | Navigation | Cada seta de avançar e voltar |
+| `.rk-reel-slide-wrapper` | Slide | Invólucro em volta da mídia e da camada sobreposta |
+| `.rk-reel-slide-overlay` | SlideOverlay | Contêiner da camada em gradiente |
+| `.rk-reel-slide-overlay-author` | SlideOverlay | Linha do autor (avatar e nome) |
+| `.rk-reel-slide-overlay-avatar` | SlideOverlay | Imagem do avatar do autor |
+| `.rk-reel-slide-overlay-name` | SlideOverlay | Texto do nome do autor |
+| `.rk-reel-slide-overlay-description` | SlideOverlay | Texto da descrição |
+| `.rk-reel-slide-overlay-likes` | SlideOverlay | Linha das curtidas (coração e contagem) |
+| `.rk-reel-video-container` | VideoSlide | Invólucro do vídeo (cor de fundo, transbordo) |
+| `.rk-reel-video-element` | VideoSlide | O elemento \<video> |
+| `.rk-reel-video-poster` | VideoSlide | Imagem de pôster (some ao dar play) |
+| `.rk-reel-video-poster.rk-visible` | VideoSlide | Modificador de estado aplicado ao pôster enquanto o vídeo está pausado ou carregando |
+| `.rk-reel-nested-indicator` | NestedSlider | Pontinhos de paginação sob os slides com várias mídias (a posição muda entre desktop e toque) |
+| `.rk-reel-nested-nav` | NestedSlider | Setas do carrossel horizontal (escondidas abaixo de 768px) |
+| `.rk-reel-nested-nav-next` | NestedSlider | Posição da seta de avançar aninhada |
+| `.rk-reel-nested-nav-prev` | NestedSlider | Posição da seta de voltar aninhada |
+| `.rk-reel-timeline` | TimelineBar | Invólucro da barra de arrasto. Reaproveite nas raízes do seu slot \`#timeline\` para herdar o posicionamento rente à base, o respiro da área segura e o espaço reservado para a camada do slide em dispositivos de toque. |
+| `.rk-reel-timeline-track` | TimelineBar | Trilha (trecho ainda não reproduzido) |
+| `.rk-reel-timeline-buffered` | TimelineBar | Camada dos trechos em buffer |
+| `.rk-reel-timeline-fill` | TimelineBar | Preenchimento do que já foi reproduzido |
+| `.rk-reel-timeline-cursor` | TimelineBar | Pílula da alça de arrasto (flutua acima da trilha) |
+
+## Temas [#theming]
+
+Cada cor, tamanho, z-index e transição vive em uma propriedade CSS. Sobrescreva uma ou várias em `:root` (ou em qualquer ancestral do overlay) para trocar o tema sem mexer no código dos componentes. Os tokens são os mesmos de `@reelkit/react-reel-player`, então as sobrescritas valem para os dois bindings.
+
+| Token | Padrão | O que controla |
+| --- | --- | --- |
+| `--rk-reel-overlay-bg` | `#000` | Cor do fundo em tela cheia |
+| `--rk-reel-overlay-z` | `1000` | z-index do overlay |
+| `--rk-reel-button-bg` | `rgba(0, 0, 0, 0.5)` | Fundo padrão dos botões circulares |
+| `--rk-reel-button-bg-hover` | `rgba(255, 255, 255, 0.1)` | Fundo das setas de navegação (e estado básico ao passar o mouse) |
+| `--rk-reel-button-bg-hover-strong` | `rgba(255, 255, 255, 0.2)` | Fundo das setas ao passar o mouse |
+| `--rk-reel-button-fg` | `#fff` | Cor do ícone do botão |
+| `--rk-reel-button-size` | `44px` | Largura e altura do botão |
+| `--rk-reel-button-radius` | `50%` | Arredondamento do botão |
+| `--rk-reel-ui-z` | `10` | z-index de fechar, som e navegação |
+| `--rk-reel-edge-padding` | `16px` | Recuo da borda para fechar, som e setas |
+| `--rk-reel-nav-gap` | `8px` | Espaço entre as setas empilhadas |
+| `--rk-reel-transition` | `0.2s` | Duração da transição ao passar o mouse |
+| `--rk-reel-loader-color` | `rgba(255, 255, 255, 0.12)` | Cor do gradiente da animação de onda |
+| `--rk-reel-loader-duration` | `1.8s` | Duração da animação de onda |
+| `--rk-reel-error-fg` | `rgba(255, 255, 255, 0.4)` | Cor do ícone e do texto de erro |
+| `--rk-reel-slide-overlay-bg` | `linear-gradient(transparent, rgba(0, 0, 0, 0.7))` | Gradiente que escurece o fundo da legenda |
+| `--rk-reel-slide-overlay-padding` | `48px 16px 16px` | Respiro interno da legenda |
+| `--rk-reel-slide-overlay-name-color` | `#fff` | Cor do nome do autor |
+| `--rk-reel-video-bg` | `#000` | Cor das faixas em volta do \<video> |
+| `--rk-reel-nested-button-bg` | `rgba(0, 0, 0, 0.5)` | Fundo das setas aninhadas |
+| `--rk-reel-nested-button-size` | `36px` | Tamanho das setas aninhadas |
+| `--rk-reel-timeline-track` | `rgba(255, 255, 255, 0.22)` | Fundo da trilha (trecho ainda não reproduzido) |
+| `--rk-reel-timeline-buffered` | `rgba(255, 255, 255, 0.4)` | Cor dos trechos em buffer |
+| `--rk-reel-timeline-fill` | `#fff` | Cor do preenchimento já reproduzido |
+| `--rk-reel-timeline-cursor` | `#fff` | Cor da pílula da alça de arrasto |
+| `--rk-reel-timeline-height` | `3px` | Altura da trilha em repouso |
+| `--rk-reel-timeline-height-active` | `6px` | Altura da trilha ao passar o mouse, no foco ou durante o arrasto |
+| `--rk-reel-timeline-cursor-width` | `10px` | Largura da pílula em repouso |
+| `--rk-reel-timeline-cursor-width-active` | `14px` | Largura da pílula durante o arrasto |
+| `--rk-reel-timeline-cursor-height` | `24px` | Altura da pílula em repouso |
+| `--rk-reel-timeline-cursor-height-active` | `32px` | Altura da pílula durante o arrasto |
+| `--rk-reel-timeline-transition` | `0.15s ease-out` | Animação de crescer e encolher da trilha e da pílula |
+
+Cole o trecho abaixo em uma folha de estilo carregada depois de `@reelkit/vue-reel-player/styles.css`.
+
+<CodeBlock code={theming} language="css" />
+
+## Acessibilidade [#accessibility]
+
+A raiz do overlay é um diálogo modal (`role="dialog"`, `aria-modal="true"`). Defina a prop `aria-label` para mudar o que o leitor de tela anuncia; o padrão é "Video player". Cada slide carrega `role="group"`, `aria-roledescription="slide"` e `aria-label="Slide N of M"`.
+
+O overlay captura o foco ao abrir e o devolve ao gatilho ao fechar. Tab e Shift+Tab percorrem os elementos focáveis lá dentro; um foco que escapa (clique fora, foco por código) é trazido de volta. Implementado com `captureFocusForReturn` e `createFocusTrap`, de `@reelkit/core`.
+
+## Atalhos de teclado [#keyboard-shortcuts]
+
+| Tecla | Ação |
+| --- | --- |
+| `ArrowUp` | Slide anterior |
+| `ArrowDown` | Próximo slide |
+| `ArrowLeft` | Mídia anterior (carrossel aninhado) |
+| `ArrowRight` | Próxima mídia (carrossel aninhado) |
+| `Escape` | Fecha o player |

@@ -89,6 +89,16 @@ describe('locale helpers', () => {
     );
   });
 
+  it('reads the Portuguese locale from the path prefix', () => {
+    expect(readLocaleFromPath('/pt')).toBe('pt');
+    expect(readLocaleFromPath('/pt/docs/ssr')).toBe('pt');
+    expect(stripLocaleFromPath('/pt/docs/ssr')).toBe('/docs/ssr');
+    expect(localeUrl('pt', '/docs/ssr')).toBe(
+      'https://reelkit.dev/pt/docs/ssr',
+    );
+    expect(localeUrl('pt', '/')).toBe('https://reelkit.dev/pt');
+  });
+
   // A page named `ukraine` is English prose, not the Ukrainian tree.
   it('does not mistake an English slug that opens with a locale prefix', () => {
     expect(readLocaleFromPath('/ukraine')).toBe('en');
@@ -106,6 +116,12 @@ describe('locale helpers', () => {
   // anyone who reads the language.
   it('tags Ukrainian without a region', () => {
     expect(kLocaleTags.uk).toBe('uk');
+  });
+
+  // Brazilian spelling is used throughout, but a reader in Lisbon or Luanda
+  // reads the same page, so the tag names only the language.
+  it('tags Portuguese without a region', () => {
+    expect(kLocaleTags.pt).toBe('pt');
   });
 
   it('gives every non-English locale its own prefix', () => {

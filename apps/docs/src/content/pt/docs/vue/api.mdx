@@ -1,0 +1,235 @@
+---
+title: Referência da API para Vue
+description: Referência completa de @reelkit/vue — componentes, props, emits, métodos expostos, ReelIndicator, useSwipeToClose, useOverlayUrlState e o formato do contexto de provide/inject.
+---
+
+import slots from '../../../snippets/vue-api/slots.vue?raw';
+import reelexpose from '../../../snippets/vue-api/reelexpose.vue?raw';
+import rkReelKeyUsereelcontext from '../../../snippets/vue-api/rk-reel-key-usereelcontext.vue?raw';
+import usebodylock from '../../../snippets/vue-api/usebodylock.ts?raw';
+import usefullscreen from '../../../snippets/vue-api/usefullscreen.ts?raw';
+import usesoundstate from '../../../snippets/vue-api/usesoundstate.ts?raw';
+import usevuerouterurladapter from '../../../snippets/vue-api/usevuerouterurladapter.ts?raw';
+import tovueref from '../../../snippets/vue-api/tovueref.ts?raw';
+import soundprovider from '../../../snippets/vue-api/soundprovider.vue?raw';
+import packageExports from '../../../snippets/vue-api/package-exports.ts?raw';
+
+Referência completa dos componentes, dos composables e dos utilitários de `@reelkit/vue`.
+
+## Reel [#reel]
+
+Tag: `<Reel>`
+
+### Props [#props]
+
+<Caption>`ReelProps`</Caption>
+
+| Prop | Tipo | Padrão | Descrição |
+| --- | --- | --- | --- |
+| `count` | `number` | obrigatório | Número total de slides |
+| `direction` | `'vertical' \| 'horizontal'` | 'vertical' | Direção do deslocamento |
+| `size` | `[number, number] \| undefined` | undefined | Largura e altura, na forma \[largura, altura\]. Sem esta prop, o tamanho é medido pelo ResizeObserver |
+| `initialIndex` | `number` | 0 | Índice do slide inicial |
+| `loop` | `boolean` | false | Liga o ciclo infinito |
+| `transition` | `TransitionTransformFn` | slideTransition | Função do efeito de transição. Prontas: slideTransition, fadeTransition, flipTransition, cubeTransition, zoomTransition |
+| `transitionDuration` | `number` | 300 | Duração da animação em ms |
+| `swipeDistanceFactor` | `number` | 0.12 | Limiar do deslize (0-1) |
+| `enableGestures` | `boolean` | true | Liga a navegação por arrasto de toque ou mouse |
+| `enableNavKeys` | `boolean` | true | Liga a navegação pelas setas do teclado |
+| `enableWheel` | `boolean` | false | Liga a navegação pela roda do mouse |
+| `wheelDebounceMs` | `number` | 200 | Debounce do evento de roda, em ms |
+| `rangeExtractor` | `(index: number, count: number) => number[]` | defaultRangeExtractor | Função própria para decidir quais índices são renderizados |
+| `keyExtractor` | `(index: number, indexInRange: number) => string` | index => index.toString() | Função de chave própria para a renderização dos slides (útil com loop) |
+| `ariaLabel` | `string` | undefined | Rótulo acessível da região do carrossel |
+| `reelStyle` | `Record<string, string \| number>` | undefined | Estilos inline aplicados ao elemento contêiner raiz |
+| `reelClass` | `string \| Array \| Object` | undefined | Classe ou classes CSS aplicadas ao elemento contêiner raiz |
+| `onNavKeyPress` | `(increment: -1 \| 1) => void` | undefined | Prop de callback que substitui a navegação padrão por ArrowUp/ArrowDown. Ao informá-la, a navegação passa a ser sua (chame reelRef.value.next(), por exemplo). Omita para manter o comportamento padrão. |
+
+### Eventos [#events]
+
+| Evento | Carga | Descrição |
+| --- | --- | --- |
+| `beforeChange` | `(index: number, nextIndex: number, indexInRange: number)` | Emitido antes de a transição de slide começar |
+| `afterChange` | `(index: number, indexInRange: number)` | Emitido depois que a transição de slide termina |
+| `slideDragStart` | `(index: number)` | Emitido quando um gesto de arrasto começa |
+| `slideDragEnd` | `(index: number)` | Emitido quando um gesto de arrasto termina (dedo solto) |
+| `slideDragCanceled` | `(index: number)` | Emitido quando um gesto de arrasto é cancelado (o slide volta ao lugar) |
+| `tap` | `(event: GestureCommonEvent)` | Emitido em um gesto de toque único |
+| `doubleTap` | `(event: GestureCommonEvent)` | Emitido em um gesto de toque duplo |
+| `longPress` | `(event: GestureCommonEvent)` | Emitido quando um gesto de toque longo começa |
+| `longPressEnd` | `(event: GestureEvent)` | Emitido quando um gesto de toque longo termina |
+
+### Slots [#slots]
+
+<CodeBlock code={slots} language="vue-html" />
+
+| Slot | Props com escopo | Descrição |
+| --- | --- | --- |
+| `#item` | `{ index: number, indexInRange: number, size: [number, number] }` | Desenha cada slide visível. Chamado para cada índice do intervalo virtualizado |
+| `default` | `nenhuma` | Conteúdo sobreposto a todos os slides (indicadores, controles e afins) |
+
+## ReelExpose [#reelexpose]
+
+API imperativa exposta por um ref de template:
+
+<CodeBlock code={reelexpose} language="vue" />
+
+| Método | Tipo | Descrição |
+| --- | --- | --- |
+| `next()` | `() => void` | Vai para o próximo slide |
+| `prev()` | `() => void` | Vai para o slide anterior |
+| `goTo(index, animate?)` | `(number, boolean?) => Promise<void>` | Navega até um índice de slide específico |
+| `adjust()` | `() => void` | Recalcula as posições dos slides (útil depois de uma mudança de layout) |
+| `observe()` | `() => void` | Começa a escutar os eventos de gesto, teclado e roda |
+| `unobserve()` | `() => void` | Para de escutar os eventos de gesto, teclado e roda |
+
+## ReelIndicator [#reelindicator]
+
+Tag: `<ReelIndicator>`
+
+### Props [#props]
+
+<Caption>`ReelIndicatorProps`</Caption>
+
+| Prop | Tipo | Padrão | Descrição |
+| --- | --- | --- | --- |
+| `count` | `number \| undefined` | automático | Número total de itens. Vem sozinho do contexto do Reel que o envolve; passe explicitamente ao usar o indicador isolado |
+| `active` | `number \| undefined` | automático | Índice ativo no momento. Vem sozinho do contexto do Reel que o envolve; passe explicitamente ao usar o indicador isolado |
+| `direction` | `'vertical' \| 'horizontal'` | 'vertical' | Orientação do indicador |
+| `radius` | `number` | 3 | Raio do ponto em pixels |
+| `visible` | `number` | 5 | Máximo de pontos em tamanho normal visíveis ao mesmo tempo |
+| `gap` | `number` | 4 | Espaço entre os pontos em pixels |
+| `activeColor` | `string` | '#fff' | Cor do ponto ativo |
+| `inactiveColor` | `string` | 'rgba(255, 255, 255, 0.5)' | Cor dos pontos inativos |
+| `edgeScale` | `number` | 0.5 | Fator de escala dos pontos que transbordam nas bordas |
+| `onDotClick` | `(index: number) => void` | undefined | Tratador de clique próprio. Dentro de um Reel, sem esta prop, o clique navega até o ponto escolhido |
+| `indicatorClass` | `string \| Array \| Object` | undefined | Classe ou classes CSS aplicadas ao elemento raiz do tablist |
+| `indicatorStyle` | `CSSProperties` | undefined | Estilos inline mesclados ao elemento raiz do tablist |
+
+### Eventos [#events]
+
+| Evento | Carga | Descrição |
+| --- | --- | --- |
+| `dotClick` | `(index: number)` | Emitido quando um ponto é clicado; entrega o índice do ponto |
+
+## SwipeToClose [#swipetoclose]
+
+Tag: `<SwipeToClose>` — envolve o slot padrão em um contêiner sensível ao toque, que dá para dispensar com um deslize.
+
+### Props [#props]
+
+<Caption>`SwipeToCloseProps`</Caption>
+
+| Prop | Tipo | Padrão | Descrição |
+| --- | --- | --- | --- |
+| `direction` | `'up' \| 'down'` | obrigatório | Direção do deslize que fecha. Use "up" para dispensar a galeria, "down" para dispensar os stories |
+| `enabled` | `boolean` | true | Se o gesto de deslizar para fechar está ativo |
+| `threshold` | `number` | 0.2 | Fração da altura da tela necessária para fechar (0-1) |
+
+### Eventos [#events]
+
+| Evento | Carga | Descrição |
+| --- | --- | --- |
+| `close` | `()` | Emitido quando o deslize passa do limiar e a animação de fechamento termina |
+
+### Slots [#slots]
+
+| Slot | Descrição |
+| --- | --- |
+| `default` | Conteúdo a envolver com o gesto de deslizar para fechar |
+
+## RK_REEL_KEY e useReelContext [#rk-reel-key-usereelcontext]
+
+Uma `InjectionKey<ReelContextValue>` que o `<Reel>` fornece aos seus descendentes. Usada internamente pelo `<ReelIndicator>` para se ligar sozinho. Use `useReelContext()` em componentes seus que precisem do contexto do slider.
+
+<CodeBlock code={rkReelKeyUsereelcontext} language="vue" />
+
+| Propriedade | Tipo | Descrição |
+| --- | --- | --- |
+| `index` | `Signal<number>` | Índice reativo do slide atual |
+| `count` | `Signal<number>` | Contagem reativa do total de itens |
+| `goTo` | `(index: number, animate?: boolean) => Promise<void>` | Navega até um slide por código |
+
+## Composables [#composables]
+
+### useBodyLock [#usebodylock]
+
+Trava a rolagem do corpo do documento enquanto o valor informado for `true`. Usa contagem de referências, então vários chamadores simultâneos travam e destravam de forma independente. Destrava sozinho na desmontagem.
+
+<CodeBlock code={usebodylock} language="typescript" />
+
+| Parâmetro | Tipo | Descrição |
+| --- | --- | --- |
+| `locked` | `Ref<boolean> \| boolean` | Se a rolagem do corpo deve ficar travada. Aceita um ref reativo ou um booleano fixo |
+
+### useFullscreen [#usefullscreen]
+
+<Caption>`UseFullscreenOptions` → `UseFullscreenReturn`</Caption>
+
+Composable para lidar com a Fullscreen API com suporte entre navegadores. Sai da tela cheia sozinho na desmontagem.
+
+<CodeBlock code={usefullscreen} language="typescript" />
+
+| Retorno | Tipo | Descrição |
+| --- | --- | --- |
+| `isFullscreen` | `Signal<boolean>` | Sinal do core que reflete o estado atual de tela cheia (leia `.value`) |
+| `request` | `() => Promise<void>` | Pede tela cheia no elemento referenciado. Se outro elemento já estiver em tela cheia, ele sai primeiro (com espera). |
+| `exit` | `() => Promise<void>` | Sai da tela cheia |
+| `toggle` | `() => Promise<void>` | Alterna o estado de tela cheia |
+
+### useSoundState [#usesoundstate]
+
+Alcança o `SoundController` atual pelo contexto. Precisa ser chamado dentro de um `<SoundProvider>`. Lança erro se for chamado fora.
+
+<CodeBlock code={usesoundstate} language="typescript" />
+
+### useOverlayUrlState [#useoverlayurlstate]
+
+<Caption>`OverlayUrlStateOptions`</Caption>
+
+Monta um controlador de estado na URL para o overlay, que você entrega a um `<LightboxUrlOverlay>` pela prop `:controller`.
+
+Veja [Estado na URL no guia para Vue](/docs/vue/guide#url-state) para o passo a passo e os exemplos.
+
+| Opção | Tipo | Padrão | Descrição |
+| --- | --- | --- | --- |
+| `param` | `string` | obrigatório | Parâmetro de consulta que carrega o slide ativo, por exemplo "photo". |
+| `adapter` | `UrlAdapter` | History API | Sistema de navegação por onde ler e escrever. Em um app com rotas, passe um adaptador ligado ao roteador para que a localização dele não fique desatualizada. |
+| `codec` | `{ decode(raw) => Id \| null; encode(id) => string }` | obrigatório | Formato do fio: texto do parâmetro ↔ identidade estável, sem enxergar a coleção. Anda junto do locator como par combinado que divide o mesmo Id — espalhe ...urlIndexKey(() => props.images.length) para a galeria padrão endereçada por índice em ?photo=3, ou forneça o seu (base64, slug) para que um favorito sobreviva à galeria mudar de ordem. |
+| `locator` | `{ locate(id) => number \| null; locateAsync?(id) => Promise<number \| null>; identify(index) => id }` | obrigatório | Liga a identidade a uma posição e responde pela própria validade: locate (síncrono), locateAsync (plano B assíncrono de uma galeria paginada) e identify (nas escritas). Em uma galeria simples por índice, espalhe ...urlIndexKey(() => props.images.length) — ele fornece este locator mais o codec correspondente e limita ?photo=3 pela contagem atual, então um ?photo=99 velho se cura saindo da URL em vez de abrir um slide que ninguém nomeou. Passe um getter, e não um número, porque o setup do Vue roda uma única vez e um comprimento capturado envelheceria conforme o feed paginado cresce. Um feed paginado ou uma galeria endereçada por identidade fornece o próprio par de codec e locator. |
+
+### useVueRouterUrlAdapter [#usevuerouterurladapter]
+
+Um `UrlAdapter` apoiado no Vue Router. Passe-o na opção `adapter` de `useOverlayUrlState` em um app com rotas, para que o roteador siga sendo a única fonte de verdade da navegação — escrever `history.pushState` por trás dele deixa sua localização desatualizada, e a navegação seguinte derruba o parâmetro. As escritas mexem apenas na consulta, então o caminho, o hash e chaves repetidas como `?tag=a&tag=b` seguem intactos. Cada mudança informa se o roteador empilhou na mesma página, substituiu ou andou pelo histórico, de modo que uma galeria aberta por um `<router-link>` fecha com um único passo para trás.
+
+Vem de um subcaminho próprio, então um app sem roteador nunca puxa `vue-router` para o bundle. `vue-router` é uma peer dependency opcional, da versão 4.1 em diante: o adaptador leva seu carimbo de propriedade pela opção de navegação `state` do roteador, que as versões mais antigas ignoram. Em um roteador antigo nada quebra — fechar apenas limpa o parâmetro no lugar, em vez de dar um passo para trás.
+
+<CodeBlock code={usevuerouterurladapter} language="typescript" />
+
+### toVueRef [#tovueref]
+
+Faz a ponte de um `Subscribable` do core (qualquer `Signal` de `@reelkit/core`) para um `Ref` somente leitura do Vue. Use sempre que o valor de um sinal do core precisar provocar uma nova renderização no Vue — ler `signal.value` direto em funções de renderização ou em templates **não** é reativo por si só.
+
+A assinatura é descartada sozinha por `onScopeDispose`, então isto precisa ser chamado dentro de um `setup()` do Vue ou de outro contexto com escopo de efeito.
+
+<CodeBlock code={tovueref} language="typescript" />
+
+## SoundProvider [#soundprovider]
+
+Tag: `<SoundProvider>` — provedor de contexto que cria uma instância de `SoundController` e a entrega aos descendentes por `RK_SOUND_KEY`. Renderiza o slot padrão de forma transparente.
+
+<CodeBlock code={soundprovider} language="vue" />
+
+## Acessibilidade [#accessibility]
+
+`<Reel>` é renderizado como `role="region"` com `aria-roledescription="carousel"`. Passe `aria-label` (no TypeScript a prop é `ariaLabel`) para dar à região um nome que o leitor de tela anuncie. Uma live region educada anuncia "Slide N de M" a cada troca. Os slides inativos recebem o atributo `inert`, então o foco e a navegação por tecnologia assistiva passam por cima deles.
+
+`<ReelIndicator>` é renderizado como `role="tablist"`, com tabindex móvel nos pontos; as setas movem o foco e Enter ou Espaço ativa o slide.
+
+Montando um modal próprio em volta de `<Reel>`? `captureFocusForReturn`, `createFocusTrap` e `getFocusableElements` são reexportados por `@reelkit/vue` para devolver e prender o foco.
+
+## Exports do pacote [#package-exports]
+
+Todos os exports públicos de `@reelkit/vue`:
+
+<CodeBlock code={packageExports} language="typescript" />

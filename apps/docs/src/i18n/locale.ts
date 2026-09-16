@@ -8,21 +8,22 @@
  * hreflang set and the canonical builder all read from these, so none of them
  * grows a branch per language.
  */
-export const kLocales = ['en', 'uk', 'zh'] as const;
+export const kLocales = ['en', 'uk', 'zh', 'pt'] as const;
 
 export type Locale = (typeof kLocales)[number];
 
 export const kDefaultLocale: Locale = 'en';
 
 /**
- * BCP 47 tag used for `<html lang>` and `hreflang`. Ukrainian stays
- * unregioned: `uk-UA` would scope the page to one country, and the docs are
- * written for anyone who reads the language.
+ * BCP 47 tag used for `<html lang>` and `hreflang`. Ukrainian and Portuguese
+ * stay unregioned: `uk-UA` or `pt-BR` would scope the page to one country,
+ * and the docs are written for anyone who reads the language.
  */
 export const kLocaleTags: Record<Locale, string> = {
   en: 'en',
   zh: 'zh-Hans',
   uk: 'uk',
+  pt: 'pt',
 };
 
 /** Name of each language, written in that language. */
@@ -30,15 +31,17 @@ export const kLocaleNames: Record<Locale, string> = {
   en: 'English',
   zh: '简体中文',
   uk: 'Українська',
+  pt: 'Português',
 };
 
 const _kPrefixes: Record<Locale, string> = {
   en: '',
   zh: '/zh',
   uk: '/uk',
+  pt: '/pt',
 };
 
-/** URL prefix for a locale — empty for English, `/zh` or `/uk` otherwise. */
+/** URL prefix for a locale — empty for English, `/zh`, `/uk` or `/pt` otherwise. */
 export function localePrefix(locale: Locale): string {
   return _kPrefixes[locale];
 }

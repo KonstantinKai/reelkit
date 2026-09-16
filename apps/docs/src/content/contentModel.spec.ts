@@ -46,6 +46,21 @@ describe('heading ids across locales', () => {
   });
 });
 
+describe('locale parity configuration', () => {
+  // `docs:check` compares every translated page against its English original.
+  // Its locale list is hand-kept JSON, so a language added to the registry
+  // and forgotten here is checked by nothing, and the gap is invisible —
+  // the check passes, it just never looks at that language.
+  it('checks every translated locale the registry serves', () => {
+    const config = JSON.parse(
+      read(join(repoRoot, 'scripts/docs-check.config.json')),
+    );
+    expect([...config.localeParity.locales].sort()).toEqual(
+      kLocales.filter((locale) => locale !== kDefaultLocale).sort(),
+    );
+  });
+});
+
 describe('content toolchain', () => {
   const toolchain = [
     '@mdx-js/rollup',

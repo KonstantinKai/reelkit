@@ -3,6 +3,7 @@ import type { Messages } from '../i18n/messages';
 import { kDefaultLocale, withLocale, type Locale } from '../i18n/locale';
 import { zhCategories, zhKeywords, zhTitles } from './searchData.zh';
 import { ukCategories, ukKeywords, ukTitles } from './searchData.uk';
+import { ptCategories, ptKeywords, ptTitles } from './searchData.pt';
 
 export type NavSectionKey = keyof Messages['nav']['sections'];
 export type NavItemKey = keyof Messages['nav']['items'];
@@ -2948,6 +2949,42 @@ export const searchItems: SearchItem[] = [
 ];
 
 /**
+ * Both sides of a palette comparison, reduced to the form a reader is most
+ * likely to type. Compatibility composition first, so a full-width `ＡＰＩ`
+ * from a Japanese keyboard reaches the same letters as `API`. Then the
+ * accents come off, which is what lets `instalacao` find `Instalação` on a
+ * keyboard without a cedilla.
+ *
+ * Only the Latin combining range is stripped. `\p{M}` would take the dakuten
+ * with it and fold `ダ` into `タ`, turning two different kana into one and
+ * matching words nobody searched for.
+ */
+// Written as escapes: the marks themselves are invisible in an editor and
+// would read as an empty-looking character class.
+const _kLatinCombiningMarks = /[\u0300-\u036f]/g;
+
+export function foldForSearch(text: string): string {
+  return text
+    .normalize('NFKC')
+    .normalize('NFD')
+    .replace(_kLatinCombiningMarks, '')
+    .toLowerCase();
+}
+
+/** Whether one index entry answers a query, both sides folded. */
+export function matchesSearch(item: SearchItem, query: string): boolean {
+  const q = foldForSearch(query);
+  if (!q) return true;
+  return (
+    foldForSearch(item.title).includes(q) ||
+    foldForSearch(item.category).includes(q) ||
+    (item.sectionTitle !== undefined &&
+      foldForSearch(item.sectionTitle).includes(q)) ||
+    item.keywords.some((keyword) => foldForSearch(keyword).includes(q))
+  );
+}
+
+/**
  * The search index for one locale. English is the authored list; other
  * locales reuse it with locale-prefixed paths and translated labels, which
  * keeps the two indexes structurally identical for free.
@@ -2993,6 +3030,7 @@ const _kEmptyDictionary: SearchDictionary = {
 const _kDictionaries: Partial<Record<Locale, SearchDictionary>> = {
   zh: { titles: zhTitles, categories: zhCategories, keywords: zhKeywords },
   uk: { titles: ukTitles, categories: ukCategories, keywords: ukKeywords },
+  pt: { titles: ptTitles, categories: ptCategories, keywords: ptKeywords },
 };
 
 const _kLocalisedItems = new Map<Locale, SearchItem[]>();

@@ -1,0 +1,94 @@
+---
+title: Solução de problemas
+description: Correções para as peculiaridades do Safari no iOS, reprodução de vídeo, tela cheia, navegação por teclado e medição automática.
+---
+
+import viewportDoesntFillScreen from '../../snippets/troubleshooting/viewport-doesnt-fill-screen.css?raw';
+import horizontalScrollContentOverflow from '../../snippets/troubleshooting/horizontal-scroll-content-overflow.css?raw';
+import pullToRefreshRubber from '../../snippets/troubleshooting/pull-to-refresh-rubber.css?raw';
+import pullToRefreshRubber2 from '../../snippets/troubleshooting/pull-to-refresh-rubber-2.tsx?raw';
+import pinchToZoomInterferes from '../../snippets/troubleshooting/pinch-to-zoom-interferes.html?raw';
+import layoutBrokenAfterKeyboard from '../../snippets/troubleshooting/layout-broken-after-keyboard.tsx?raw';
+import slidesRenderAt0 from '../../snippets/troubleshooting/slides-render-at-0.css?raw';
+import videoThumbnailFrameCapture from '../../snippets/troubleshooting/video-thumbnail-frame-capture.txt?raw';
+import arrowKeysDontNavigate from '../../snippets/troubleshooting/arrow-keys-dont-navigate.tsx?raw';
+
+Correções para as peculiaridades do Safari no iOS, reprodução de vídeo, tela cheia e navegação por teclado.
+
+## iOS Safari [#ios-safari]
+
+### A área visível não preenche a tela / faixa preta embaixo [#viewport-doesn-t-fill-screen-bottom-black-space]
+
+A barra de endereços retrátil do Safari deixa `100vh` maior que a área realmente visível. Use `100dvh`:
+
+<CodeBlock code={viewportDoesntFillScreen} language="css" />
+
+### Rolagem horizontal / conteúdo transbordando [#horizontal-scroll-content-overflow]
+
+No iOS, `100vw` inclui a largura da barra de rolagem e empurra o conteúdo para fora da borda. Use `100%` e trave a rolagem horizontal:
+
+<CodeBlock code={horizontalScrollContentOverflow} language="css" />
+
+### Puxar para atualizar / efeito elástico [#pull-to-refresh-rubber-band-bounce]
+
+O gesto de puxar para atualizar e o efeito elástico do Safari brigam com os deslizes verticais. **Não** coloque `overscroll-behavior: none` em `html, body`: isso mata a rolagem normal da página. ReelPlayerOverlay, LightboxOverlay e StoriesPlayerOverlay já cuidam disso nos próprios contêineres. Em layouts personalizados, limite o escopo:
+
+<CodeBlock code={pullToRefreshRubber} language="css" />
+
+**Caso especial do SwipeToClose para baixo.** Qualquer `SwipeToClose` com `direction="down"` (lightbox, stories player, overlays personalizados) é interceptado no Safari do iOS — o navegador dispara o puxar para atualizar a partir do documento antes que o wrapper receba o toque. O overlay trava a rolagem do corpo, mas quem controla o arrasto vertical na raiz ainda é o navegador. Aplique `overscroll-behavior-y: contain` em `<html>` somente enquanto o overlay estiver aberto e restaure ao fechar:
+
+<CodeBlock code={pullToRefreshRubber2} language="tsx" />
+
+### O gesto de pinça atrapalha os demais [#pinch-to-zoom-interferes-with-gestures]
+
+Desative o zoom para que a pinça e o toque duplo não disparem durante os deslizes:
+
+<CodeBlock code={pinchToZoomInterferes} language="html" />
+
+<Caption>`viewport-fit=cover` estende seu layout até a área segura da Dynamic Island / do entalhe.</Caption>
+
+### Layout quebrado depois que o teclado some [#layout-broken-after-keyboard-dismisses]
+
+Às vezes o Safari deixa a área visível comprimida depois que o teclado fecha. Force a recomposição no blur:
+
+<CodeBlock code={layoutBrokenAfterKeyboard} language="tsx" />
+
+## Geral [#general]
+
+### Os slides aparecem com tamanho 0×0 [#slides-render-at-0-0-size]
+
+Sem a prop `size`, o slider lê as dimensões do contêiner pelo `ResizeObserver`. Um contêiner sem altura definida no CSS mede 0×0, e aí nada aparece. Passe `size` ou dê dimensões ao contêiner:
+
+<CodeBlock code={slidesRenderAt0} language="css" />
+
+## Vídeo [#video]
+
+### O vídeo não inicia sozinho [#video-doesn-t-autoplay]
+
+Os navegadores bloqueiam a reprodução automática com som. O ReelKit define `muted` e `playsInline` em todo elemento de vídeo. Os vídeos começam sem som; o leitor ativa o áudio no botão de som depois de um toque. Confira se um slide personalizado seu não está sobrescrevendo esses atributos.
+
+### A miniatura / captura de quadro sai em branco [#video-thumbnail-frame-capture-is-blank]
+
+A captura desenha o vídeo em um `<canvas>`. Vídeos de outra origem contaminam o canvas, e o desenho falha em silêncio. Sua CDN de vídeo precisa devolver os cabeçalhos de CORS:
+
+<CodeBlock code={videoThumbnailFrameCapture} language="text" />
+
+<Caption>O ReelKit define `crossOrigin="anonymous"` por padrão. Se você usa um elemento de vídeo próprio, acrescente o atributo você mesmo.</Caption>
+
+## Tela cheia [#fullscreen]
+
+### O botão de tela cheia não faz nada no Safari [#fullscreen-button-does-nothing-on-safari]
+
+O ReelKit desativa a Fullscreen API no Safari. No iOS, o Safari restringe a tela cheia a elementos `<video>`. No desktop, o Safari quebra overlays com `position: fixed` em tela cheia: os elementos perdem o contexto de empilhamento ou somem. No Safari, `requestFullscreen()` termina sem fazer nada.
+
+## Navegação por teclado [#keyboard-navigation]
+
+### As setas pararam de navegar depois de informar onNavKeyPress [#arrow-keys-don-t-navigate-after-providing-onnavkeypress]
+
+`onNavKeyPress` **substitui** a navegação padrão por teclado. O ReelKit deixa de chamar `next()`/`prev()` e entrega o controle a você. Chame esses métodos você mesmo:
+
+<CodeBlock code={arrowKeysDontNavigate} language="tsx" />
+
+### A tecla Escape não fecha o overlay [#escape-key-doesn-t-close-the-overlay]
+
+O controlador de teclado cuida apenas das setas. ReelPlayerOverlay e LightboxOverlay escutam o Escape por conta própria. Se você montar um overlay personalizado, trate o Escape dentro do seu `onClose`.

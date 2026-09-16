@@ -1,0 +1,360 @@
+---
+title: Angular Lightbox
+description: Overlay de galeria de imagens em tela cheia para Angular. Esquema do LightboxItem, inputs, outputs, diretivas de slot de template, transitionFn que permite tree-shaking, deslizar para fechar e temas compartilhados com o lightbox do React.
+---
+
+import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2 } from 'lucide-react';
+import installation from '../../snippets/angular-lightbox/installation.sh?raw';
+import basicUsage from '../../snippets/angular-lightbox/basic-usage.ts?raw';
+import templateSlots from '../../snippets/angular-lightbox/template-slots.ts?raw';
+import videoSupport from '../../snippets/angular-lightbox/video-support.ts?raw';
+import fullscreen from '../../snippets/angular-lightbox/fullscreen.ts?raw';
+import urlState from '../../snippets/angular-lightbox/url-state.ts?raw';
+import urlState2 from '../../snippets/angular-lightbox/url-state-2.ts?raw';
+import urlState3 from '../../snippets/angular-lightbox/url-state-3.ts?raw';
+import urlState4 from '../../snippets/angular-lightbox/url-state-4.ts?raw';
+import urlState5 from '../../snippets/angular-lightbox/url-state-5.ts?raw';
+import transitions from '../../snippets/angular-lightbox/transitions.ts?raw';
+import wiringCallbacksInRklightboxslide from '../../snippets/angular-lightbox/wiring-callbacks-in-rklightboxslide.html?raw';
+import customLoadingTemplate from '../../snippets/angular-lightbox/custom-loading-template.html?raw';
+import customErrorTemplate from '../../snippets/angular-lightbox/custom-error-template.html?raw';
+import theming from '../../snippets/angular-lightbox/theming.css?raw';
+
+Galeria de imagens e vídeos em tela cheia para Angular, construída sobre `@reelkit/angular-lightbox`.
+
+<DemoLink href="https://angular-demo.reelkit.dev/image-preview?utm_source=docs">Ver demonstração ao vivo →</DemoLink>
+
+## Recursos [#features]
+
+<FeatureGrid items={[
+              {
+                icon: Image,
+                label: 'Imagens e vídeo',
+                desc: 'Slides de vídeo já incluídos',
+              },
+              {
+                icon: MousePointer,
+                label: 'Gestos de toque',
+                desc: 'Deslize para navegar',
+              },
+              {
+                icon: X,
+                label: 'Deslizar para fechar',
+                desc: 'Deslize para cima e dispense',
+              },
+              {
+                icon: Keyboard,
+                label: 'Navegação por teclado',
+                desc: 'Setas e Escape',
+              },
+              {
+                icon: Maximize2,
+                label: 'Tela cheia',
+                desc: 'API entre navegadores',
+              },
+              {
+                icon: Hash,
+                label: 'Transições',
+                desc: 'Deslizar, esmaecer, virar, aproximar',
+              },
+              {
+                icon: Zap,
+                label: 'Pré-carregamento',
+                desc: 'Imagens vizinhas buscadas antes',
+              },
+              {
+                icon: Volume2,
+                label: 'Botão de som',
+                desc: 'Mudo por slide',
+              },
+              {
+                icon: Loader,
+                label: 'Estados de carregamento',
+                desc: 'Girador e slot próprio',
+              },
+              {
+                icon: AlertTriangle,
+                label: 'Tratamento de erros',
+                desc: 'Ícone de erro e slot próprio',
+              },
+              {
+                icon: Layers,
+                label: 'Slots de template',
+                desc: '6 zonas personalizáveis',
+              },
+              {
+                icon: Layers,
+                label: 'OnPush',
+                desc: 'Sinais do Angular com OnPush',
+              },
+              {
+                icon: Link2,
+                label: 'Estado na URL',
+                desc: 'Links para compartilhar e favoritar',
+              },
+            ]} />
+
+## Instalação [#installation]
+
+<CodeBlock code={installation} language="bash" />
+
+<Callout type="info" title="Ícones">
+  Os controles padrão usam `lucide-angular` para os ícones. Se você prefere outra biblioteca de ícones, use os slots de template `rkLightboxControls` e `rkLightboxNavigation` para fornecer os seus.
+</Callout>
+
+## Uso básico [#basic-usage]
+
+Importe os estilos e o componente standalone `RkLightboxOverlayComponent` no array `imports` do seu componente.
+
+<Sandbox code={basicUsage} language="typescript" title="gallery.component.ts" framework="angular" />
+
+## Slots de template [#template-slots]
+
+Quatro diretivas de slot de template permitem personalizar por completo a interface do overlay, sem precisar copiar o componente. Cada slot recebe um objeto de contexto fortemente tipado.
+
+| Diretiva | Tipo do contexto | Descrição |
+| --- | --- | --- |
+| \[rkLightboxControls\] | `LightboxControlsContext` | Substitui a barra de controles do topo (botão de fechar, contador, botão de tela cheia) |
+| \[rkLightboxNavigation\] | `LightboxNavContext` | Substitui as setas de avançar e voltar |
+| \[rkLightboxInfo\] | `LightboxInfoContext` | Substitui o gradiente de título e descrição na base |
+| \[rkLightboxSlide\] | `LightboxSlideContext` | Substitui o conteúdo de cada slide (necessário para slides de vídeo) |
+| \[rkLightboxLoading\] | `{ $implicit: activeIndex, item }` | Indicador de carregamento próprio |
+| \[rkLightboxError\] | `{ $implicit: activeIndex, item }` | Indicador de erro próprio |
+
+<CodeBlock code={templateSlots} language="typescript" />
+
+## Suporte a vídeo [#video-support]
+
+Para ter slides de vídeo é preciso optar por eles, pelo slot de template `rkLightboxSlide` e pelo `RkLightboxVideoSlideComponent`. Esse desenho evita embutir o player de vídeo em galerias que só precisam de imagens.
+
+<CodeBlock code={videoSupport} language="typescript" />
+
+## Tela cheia [#fullscreen]
+
+Use `fullscreenSignal`, `requestFullscreen` e `exitFullscreen`, de `@reelkit/angular`, para observar ou alternar o estado de tela cheia.
+
+<CodeBlock code={fullscreen} language="typescript" />
+
+## Estado na URL [#url-state]
+
+<DemoLink href="https://angular-demo.reelkit.dev/image-preview-url?utm_source=docs">Ver demonstração ao vivo →</DemoLink>
+
+`RkLightboxUrlOverlayComponent` é um componente à parte cujo estado aberto vive na barra de endereços. Monte um controlador com `createOverlayUrlState` e entregue-o como `[controller]`: a galeria se abre quando o parâmetro nomeia um slide e se fecha quando ele some. Os links dão para compartilhar, e o botão voltar fecha a galeria em vez de sair da página.
+
+<Callout type="info" title="Chaves prontas">
+  Você pode endereçar os slides com uma chave pronta — espalhe `urlIndexKey` (por posição) ou `urlStableIdKey` (por um `id` estável) no controlador — as duas reexportadas por `@reelkit/angular`. Veja o [guia de estado na URL](/docs/core/guide#url-state) e a [API do core](/docs/core/api#url-state).
+</Callout>
+
+<CodeBlock code={urlState} language="typescript" />
+
+Chame-o em um contexto de injeção — na inicialização de um campo ou no construtor. Ele se liga na hora e se solta pelo `DestroyRef`, então um componente destruído com a galeria aberta não deixa nenhuma escuta para trás. As opções completas estão na [referência da API para Angular](/docs/angular/api#createoverlayurlstate).
+
+- Abrir empilha **uma** entrada no histórico. Percorrer os slides **substitui** essa entrada, então N passos não acrescentam nenhuma e um único passo para trás sempre sai da galeria.
+- Voltar só fecha quando a galeria foi aberta de dentro do app — foi o link que empilhou a entrada. Um link compartilhado aberto direto em uma aba nova não tem histórico atrás de si, então o voltar do navegador sai do site; o botão ✕ ou o Escape removem o parâmetro ali mesmo e você continua na página.
+- Um parâmetro que não nomeia slide nenhum — um favorito velho, um valor editado à mão — é retirado da URL, em vez de ficar afirmando um slide que não abre.
+- Os slots de template funcionam sem mudança: o componente de URL faz ele mesmo as seis consultas de slot e repassa cada template à galeria, então `rkLightboxControls` e seus irmãos ficam dentro dele exatamente como ficariam dentro de `rk-lightbox-overlay`.
+- Em uma aplicação com rotas, passe um adaptador construído sobre o `Router`. Escrever no histórico por trás do Router deixa a localização dele desatualizada, e a navegação seguinte derruba o parâmetro.
+
+**Em um app com rotas, passe um adaptador.** Escrever no histórico por trás do Router deixa a localização dele desatualizada, e a navegação seguinte derruba o parâmetro; então construa um adaptador sobre o `Router` e passe-o como `adapter`:
+
+<CodeBlock code={urlState2} language="typescript" />
+
+**Links estáveis.** O índice é posicional — um `?photo=3` favoritado abre outra imagem assim que a lista muda de ordem. `urlStableIdKey` usa o `id` estável de cada item, varrendo a lista atual — uma chamada resolve o caso comum.
+
+<CodeBlock code={urlState3} language="typescript" />
+
+Passe `hashCodec: base64UrlCodec` para escrever o id em base64url na URL — é um disfarce reversível, não um hash criptográfico.
+
+Quer endereçar por outro campo (um `slug`), ou paginar um feed infinito com `locateAsync`? Monte o `codec` (o fio) e o `locator` (a busca) você mesmo:
+
+<CodeBlock code={urlState4} language="typescript" />
+
+**Galerias infinitas ou paginadas.** `locate` é síncrono, então só responde pelas imagens já carregadas — um link compartilhado para a imagem 400 de um feed que carregou 20 volta vazio. `locateAsync` é o plano B, chamado somente quando `locate` falha: carregue as páginas necessárias e devolva o índice que a identidade acabou tendo. Enquanto a busca corre, a galeria fica fechada e o parâmetro é deixado em paz, então o link direto sobrevive; um `null` ou uma rejeição derrubam o parâmetro.
+
+<Callout type="info" title="Atalho">
+  Vai endereçar pelo `id` do item? Dispense o codec e o locator escritos à mão — passe `locateAsync` direto para `urlStableIdKey({ items, locateAsync })` (ele busca quando falha e então devolve o índice). A versão mais completa abaixo serve para endereçar por outro campo, ou para ter controle total.
+</Callout>
+
+<CodeBlock code={urlState5} language="typescript" />
+
+## Inputs do RkLightboxUrlOverlayComponent [#rklightboxurloverlaycomponent-inputs]
+
+Aceita todos os inputs de `rk-lightbox-overlay`, menos `isOpen`, substituído por um controlador. Os outputs são os mesmos, `closed` e `slideChange`; quem fecha é a URL, então `closed` é um aviso, não o mecanismo.
+
+| Input | Tipo | Padrão | Descrição |
+| --- | --- | --- | --- |
+| `controller` | `UrlStateController` | `obrigatório` | Controlador vindo de createOverlayUrlState. A posição dele decide se a galeria está aberta e qual slide aparece; o componente escreve de volta por ele na troca de slide e no fechamento. |
+
+## Inputs do RkLightboxOverlayComponent [#rklightboxoverlaycomponent-inputs]
+
+| Input | Tipo | Padrão | Descrição |
+| --- | --- | --- | --- |
+| `isOpen` | `boolean` | obrigatório | Controla a visibilidade; com false, o overlay sai do DOM |
+| `items` | `LightboxItem[]` | obrigatório | Array de itens da galeria (imagens ou vídeos) |
+| `initialIndex` | `number` | 0 | Índice, começando em zero, do item visível no início |
+| `transitionFn` | `TransitionTransformFn` | slideTransition | Função da transição entre slides. Importe uma das prontas (slideTransition, flipTransition, lightboxFadeTransition, lightboxZoomTransition) ou passe a sua. Sem este input, vale slideTransition. |
+| `showInfo` | `boolean` | true | Se a camada de título e descrição aparece |
+| `showControls` | `boolean` | true | Se a barra de controles do topo aparece (fechar, contador, tela cheia) |
+| `showNavigation` | `boolean` | true | Se as setas de avançar e voltar aparecem |
+| `transitionDuration` | `number` | 300 | Duração da animação do slide em ms |
+| `swipeDistanceFactor` | `number` | 0.12 | Fração mínima da distância de deslize (0–1) para trocar de slide |
+| `swipeToCloseDirection` | `'up' \| 'down'` | 'up' | Direção do gesto de deslizar para fechar no celular |
+| `loop` | `boolean` | false | Se o slider passa do último slide de volta ao primeiro |
+| `enableNavKeys` | `boolean` | true | Liga a navegação pelas setas do teclado |
+| `enableWheel` | `boolean` | true | Liga a navegação pela roda do mouse |
+| `wheelDebounceMs` | `number` | 200 | Duração do debounce dos eventos de roda em ms |
+| `ariaLabel` | `string` | 'Image gallery' | Rótulo acessível da região do diálogo |
+
+## Outputs do RkLightboxOverlayComponent [#rklightboxoverlaycomponent-outputs]
+
+| Output | Tipo | Descrição |
+| --- | --- | --- |
+| `closed` | `EventEmitter<void>` | Emitido quando o leitor fecha a galeria |
+| `slideChange` | `EventEmitter<number>` | Emitido quando o índice do slide ativo muda |
+
+## Interface LightboxItem [#lightboxitem-interface]
+
+| Campo | Tipo | Obrigatório | Descrição |
+| --- | --- | --- | --- |
+| `src` | `string` | sim | URL da imagem ou do vídeo |
+| `type` | `'image' \| 'video'` | não | Tipo do item. O padrão é 'image' |
+| `poster` | `string` | não | Imagem de miniatura dos itens de vídeo |
+| `title` | `string` | não | Título mostrado na camada de informações |
+| `description` | `string` | não | Descrição mostrada abaixo do título |
+| `width` | `number` | não | Largura original da imagem em pixels |
+| `height` | `number` | não | Altura original da imagem em pixels |
+
+## Tipos de contexto dos slots de template [#template-slot-context-types]
+
+| Tipo | Campos |
+| --- | --- |
+| `LightboxControlsContext` | `{ item, onClose, activeIndex, count, isFullscreen, onToggleFullscreen }` |
+| `LightboxNavContext` | `{ item, onPrev, onNext, activeIndex, count }` |
+| `LightboxInfoContext` | `{ $implicit: LightboxItem, index }` |
+| `LightboxSlideContext` | `{ $implicit: LightboxItem, index, size: [number, number], isActive, onReady, onWaiting, onError }` |
+
+## Transições [#transitions]
+
+Passe qualquer `TransitionTransformFn` pelo input `transitionFn`. Importar apenas a transição que você usa deixa o bundler descartar as outras. Sem este input, vale `slideTransition`.
+
+| Função | De onde vem | Descrição |
+| --- | --- | --- |
+| `slideTransition` | `@reelkit/angular-lightbox` | Deslizamento horizontal comum (padrão) |
+| `lightboxFadeTransition` | `@reelkit/angular-lightbox` | Esmaecimento cruzado entre as imagens |
+| `flipTransition` | `@reelkit/angular-lightbox` | Efeito de virada de carta em 3D |
+| `lightboxZoomTransition` | `@reelkit/angular-lightbox` | Aproximação, do menor até o tamanho normal |
+
+<CodeBlock code={transitions} language="typescript" />
+
+## Carregamento de conteúdo e tratamento de erros [#content-loading-error-handling]
+
+Ao usar o slot de template `rkLightboxSlide`, três callbacks de ciclo de vida ficam disponíveis no contexto para informar o estado de carregamento. A galeria acompanha o estado de cada slide e mostra o girador ou o ícone de erro conforme o caso. Um pré-carregador guarda em cache as URLs quebradas, então voltar a um slide que falhou pula a nova tentativa.
+
+### Callbacks de ciclo de vida [#lifecycle-callbacks]
+
+| Callback | Tipo | Descrição |
+| --- | --- | --- |
+| `onReady` | `() => void` | Avisa que o conteúdo do slide carregou (a imagem foi decodificada, por exemplo) |
+| `onWaiting` | `() => void` | Avisa que o conteúdo do slide está carregando (mostra o girador) |
+| `onError` | `() => void` | Avisa que o conteúdo do slide não carregou (mostra o ícone de erro) |
+
+### Ligando os callbacks no rkLightboxSlide [#wiring-callbacks-in-rklightboxslide]
+
+<CodeBlock code={wiringCallbacksInRklightboxslide} language="html" />
+
+### Template de carregamento próprio [#custom-loading-template]
+
+Use a diretiva `rkLightboxLoading` para substituir o girador padrão.
+
+<CodeBlock code={customLoadingTemplate} language="html" />
+
+### Template de erro próprio [#custom-error-template]
+
+Use a diretiva `rkLightboxError` para substituir o ícone de erro padrão.
+
+<CodeBlock code={customErrorTemplate} language="html" />
+
+## Classes CSS [#css-classes]
+
+Todas as classes CSS são simples (sem escopo), então dá para alcançá-las com seletores de especificidade maior em uma folha de estilo carregada depois de `@reelkit/angular-lightbox/styles.css`. Para mudar cor, tamanho e z-index, prefira as propriedades CSS documentadas na seção [Temas](#theming), abaixo.
+
+| Classe | Componente | Descrição |
+| --- | --- | --- |
+| `.rk-lightbox-overlay` | Overlay | Contêiner raiz (fundo em tela cheia) |
+| `.rk-lightbox-top-shade` | Overlay | Gradiente do topo, atrás dos controles |
+| `.rk-lightbox-spinner` | Overlay | Girador de carregamento padrão |
+| `.rk-lightbox-img-error` | Overlay | Contêiner do estado de erro (imagem quebrada) |
+| `.rk-lightbox-img-error-text` | Overlay | Texto do estado de erro |
+| `.rk-lightbox-swipe-hint` | Overlay | Dica de deslize no celular |
+| `.rk-lightbox-empty` | Overlay | Texto do estado vazio |
+| `.rk-lightbox-controls-left` | Controls | Contêiner dos controles no canto superior esquerdo |
+| `.rk-lightbox-btn` | Controls | Botão de controle (tela cheia e afins) |
+| `.rk-lightbox-close` | Controls | Botão de fechar |
+| `.rk-lightbox-counter` | Controls | Etiqueta contadora de imagens |
+| `.rk-lightbox-nav` | Navigation | Seta de navegação (avançar e voltar) |
+| `.rk-lightbox-nav-prev` | Navigation | Seta de voltar |
+| `.rk-lightbox-nav-next` | Navigation | Seta de avançar |
+| `.rk-lightbox-info` | Info | Contêiner de título e descrição |
+| `.rk-lightbox-title` | Info | Título da imagem |
+| `.rk-lightbox-description` | Info | Descrição da imagem |
+| `.rk-lightbox-slide` | Slide | Contêiner do slide |
+| `.rk-lightbox-img` | Slide | Elemento de imagem |
+| `.rk-lightbox-video-container` | VideoSlide | Contêiner do slide de vídeo (opcional) |
+| `.rk-lightbox-video-element` | VideoSlide | Elemento de vídeo (opcional) |
+| `.rk-lightbox-video-poster` | VideoSlide | Imagem de pôster do vídeo (opcional) |
+| `.rk-lightbox-video-error` | VideoSlide | Contêiner do estado de erro do vídeo |
+
+## Temas [#theming]
+
+Cada cor, tamanho, z-index e transição vive em uma propriedade CSS. Sobrescreva uma ou várias em `:root` (ou em qualquer ancestral da galeria) para trocar o tema sem mexer no código dos componentes. Os tokens são os mesmos do lightbox do React, então as sobrescritas valem para os dois bindings.
+
+| Token | Padrão | O que controla |
+| --- | --- | --- |
+| `--rk-lightbox-overlay-bg` | `#000` | Cor do fundo em tela cheia |
+| `--rk-lightbox-overlay-z` | `9999` | z-index do overlay |
+| `--rk-lightbox-top-shade-height` | `80px` | Altura do gradiente do topo |
+| `--rk-lightbox-top-shade-bg` | `linear-gradient(rgba(0,0,0,0.6), transparent)` | Cor do gradiente do topo |
+| `--rk-lightbox-edge-padding` | `16px` | Recuo da borda para fechar, navegação e controles do canto superior esquerdo |
+| `--rk-lightbox-controls-gap` | `12px` | Espaço entre os controles do canto superior esquerdo |
+| `--rk-lightbox-transition` | `0.2s` | Duração da transição dos botões ao passar o mouse |
+| `--rk-lightbox-blur` | `8px` | Raio do desfoque atrás de botões e etiquetas |
+| `--rk-lightbox-btn-bg` | `rgba(0, 0, 0, 0.5)` | Fundo padrão dos botões de fechar, navegação e dos pequenos |
+| `--rk-lightbox-btn-bg-hover` | `rgba(255, 255, 255, 0.2)` | Fundo desses botões ao passar o mouse |
+| `--rk-lightbox-btn-fg` | `#fff` | Cor do ícone desses botões |
+| `--rk-lightbox-btn-size` | `36px` | Tamanho dos botões pequenos (tela cheia e afins) |
+| `--rk-lightbox-close-size` | `40px` | Tamanho do botão de fechar |
+| `--rk-lightbox-nav-size` | `48px` | Tamanho das setas de avançar e voltar |
+| `--rk-lightbox-nav-opacity` | `0.7` | Opacidade das setas em repouso |
+| `--rk-lightbox-counter-fg` | `#fff` | Cor do texto do contador |
+| `--rk-lightbox-counter-bg` | `rgba(0, 0, 0, 0.5)` | Fundo da etiqueta do contador |
+| `--rk-lightbox-counter-size` | `14px` | Tamanho da fonte do contador |
+| `--rk-lightbox-counter-padding` | `6px 12px` | Respiro interno da etiqueta do contador |
+| `--rk-lightbox-counter-radius` | `20px` | Arredondamento da etiqueta do contador |
+| `--rk-lightbox-spinner-size` | `28px` | Largura e altura do girador padrão |
+| `--rk-lightbox-spinner-duration` | `0.8s` | Duração de uma volta do girador |
+| `--rk-lightbox-error-fg` | `rgba(255, 255, 255, 0.4)` | Cor do ícone e do texto de erro |
+| `--rk-lightbox-info-bg` | `linear-gradient(transparent, rgba(0,0,0,0.8))` | Gradiente que escurece o fundo da legenda |
+| `--rk-lightbox-info-padding` | `24px` | Respiro interno da legenda |
+| `--rk-lightbox-title-size` | `18px` | Tamanho da fonte do título |
+| `--rk-lightbox-description-size` | `14px` | Tamanho da fonte da descrição |
+| `--rk-lightbox-hint-fg` | `rgba(255, 255, 255, 0.5)` | Cor do texto da dica de deslize |
+| `--rk-lightbox-hint-bg` | `rgba(0, 0, 0, 0.3)` | Fundo da etiqueta da dica de deslize |
+| `--rk-lightbox-video-bg` | `#000` | Cor das faixas em volta do \<video> |
+
+Cole o trecho abaixo em uma folha de estilo carregada depois de `@reelkit/angular-lightbox/styles.css`.
+
+<CodeBlock code={theming} language="css" />
+
+## Acessibilidade [#accessibility]
+
+A raiz do overlay é um diálogo modal (`role="dialog"`, `aria-modal="true"`). Defina o input `ariaLabel` para mudar o que o leitor de tela anuncia; o padrão é "Image gallery". Cada slide carrega `role="group"`, `aria-roledescription="slide"` e um `aria-label` derivado do título da imagem e da posição.
+
+A galeria captura o foco ao abrir e o devolve ao gatilho ao fechar. Tab e Shift+Tab percorrem os elementos focáveis lá dentro; um foco que escapa (clique fora, foco por código) é trazido de volta. Implementado com `captureFocusForReturn` e `createFocusTrap`, de `@reelkit/core`.
+
+## Atalhos de teclado [#keyboard-shortcuts]
+
+| Tecla | Ação |
+| --- | --- |
+| `ArrowLeft` | Imagem anterior |
+| `ArrowRight` | Próxima imagem |
+| `Escape` | Fecha a galeria (ou sai da tela cheia, se estiver nela) |

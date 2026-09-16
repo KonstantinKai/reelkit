@@ -1,0 +1,190 @@
+---
+title: Primeiros passos
+description: 'Coloque seu primeiro slider ReelKit no ar em poucos minutos: instalação, três slides virtualizados, gestos e navegação por teclado.'
+---
+
+import quickStart from '../../snippets/getting-started/quick-start.tsx?raw';
+import quickStart2 from '../../snippets/getting-started/quick-start-2.ts?raw';
+import quickStart3 from '../../snippets/getting-started/quick-start-3.vue?raw';
+import reelindicator from '../../snippets/getting-started/reelindicator.tsx?raw';
+import reelindicator2 from '../../snippets/getting-started/reelindicator-2.html?raw';
+import reelindicator3 from '../../snippets/getting-started/reelindicator-3.vue?raw';
+import navigation from '../../snippets/getting-started/navigation.tsx?raw';
+import navigation2 from '../../snippets/getting-started/navigation-2.html?raw';
+import navigation3 from '../../snippets/getting-started/navigation-3.vue?raw';
+
+reelkit é um **slider de um item por vez** — apenas um item visível na tela, como no TikTok, no Instagram Reels ou nos Stories. Ideal para feeds de vídeo vertical, galerias em tela cheia e conteúdo que se percorre com o dedo.
+
+<Callout type="warning" title="0.x.x — Unstable API">
+  O ReelKit está em desenvolvimento ativo. Enquanto a versão for 0.x.x, a API pode mudar entre versões menores sem período de descontinuação. Fixe a versão para evitar quebras inesperadas.
+</Callout>
+
+## Escolha seu framework [#select-your-framework]
+
+<FrameworkPicker />
+
+## Teste online [#try-it-online]
+
+Teste direto no navegador, sem instalar nada:
+
+<FrameworkVariant for="react">
+
+<DemoLinks demo="https://react-demo.reelkit.dev/?utm_source=docs" demoLabel="React Demo" starter="https://stackblitz.com/github/KonstantinKai/reelkit-react-starter" starterLabel="React Starter" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+<DemoLinks demo="https://angular-demo.reelkit.dev/?utm_source=docs" demoLabel="Angular Demo" starter="https://stackblitz.com/github/KonstantinKai/reelkit-angular-starter" starterLabel="Angular Starter" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+<DemoLinks demo="https://vue-demo.reelkit.dev/?utm_source=docs" demoLabel="Vue Demo" starter="https://stackblitz.com/github/KonstantinKai/reelkit-vue-starter" starterLabel="Vue Starter" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="react">
+
+## Início rápido [#quick-start]
+
+Slider vertical mínimo com React:
+
+<CodeBlock code={quickStart} language="tsx" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+## Início rápido [#quick-start]
+
+Slider vertical mínimo com Angular:
+
+<CodeBlock code={quickStart2} language="typescript" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+## Início rápido [#quick-start]
+
+Slider vertical mínimo com Vue:
+
+<CodeBlock code={quickStart3} language="vue" />
+
+</FrameworkVariant>
+
+## Conceitos principais [#key-concepts]
+
+### Reel [#reel]
+
+O componente `Reel` é o contêiner principal: cuida do estado do slider, dos gestos de toque, da navegação por teclado e das animações. Ele renderiza os slides pelo padrão de render prop, através de `itemBuilder`.
+
+### itemBuilder [#itembuilder]
+
+A prop `itemBuilder` é uma função que recebe o índice e devolve o conteúdo de cada slide. Esse padrão é o que viabiliza a virtualização — apenas os itens visíveis são renderizados.
+
+### ReelIndicator [#reelindicator]
+
+Componente opcional que mostra indicadores de progresso no estilo Instagram, sinalizando a posição atual dentro do slider.
+
+<FrameworkVariant for="react">
+
+<CodeBlock code={reelindicator} language="tsx" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+<CodeBlock code={reelindicator2} language="html" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+<CodeBlock code={reelindicator3} language="vue-html" />
+
+</FrameworkVariant>
+
+## Navegação [#navigation]
+
+Formas de navegação já incluídas:
+
+<Bullets marker="dot">
+
+- **Toque/Deslizar:** arraste para navegar, com inércia e encaixe
+- **Teclado:** setas (componentes de overlay também fecham com Escape)
+- **Roda do mouse:** ative pela prop `enableWheel`
+- **Programática:** use `apiRef` para `next()`, `prev()`, `goTo()`
+
+</Bullets>
+
+<FrameworkVariant for="react">
+
+<CodeBlock code={navigation} language="tsx" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+<CodeBlock code={navigation2} language="html" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+<CodeBlock code={navigation3} language="vue" />
+
+</FrameworkVariant>
+
+<NextSteps
+        items={[
+          {
+            label: 'Instalação',
+            path: '/docs/installation',
+            description: 'todos os pacotes e formas de configuração',
+          },
+          {
+            label: 'Guia do core',
+            path: '/docs/core/guide',
+            description: 'o motor independente de framework',
+          },
+          {
+            label: 'Guia do framework',
+            path: {
+              react: '/docs/react/guide',
+              angular: '/docs/angular/guide',
+              vue: '/docs/vue/guide',
+            },
+            description: 'componentes, demonstrações e integração',
+          },
+          {
+            label: 'Reel Player',
+            path: {
+              react: '/docs/reel-player',
+              angular: '/docs/angular-reel-player',
+              vue: '/docs/vue-reel-player',
+            },
+            description: 'player de vídeo no estilo TikTok/Reels',
+          },
+          {
+            label: 'Lightbox',
+            path: {
+              react: '/docs/lightbox',
+              angular: '/docs/angular-lightbox',
+              vue: '/docs/vue-lightbox',
+            },
+            description: 'galeria de imagens e vídeos',
+          },
+          {
+            label: 'Stories Player',
+            path: {
+              react: '/docs/stories-player',
+              angular: '/docs/angular-stories-player',
+              vue: '/docs/vue-stories-player',
+            },
+            description: 'visualizador de stories no estilo Instagram',
+          },
+        ]}
+      />

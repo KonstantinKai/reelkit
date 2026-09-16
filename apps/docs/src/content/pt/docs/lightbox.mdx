@@ -1,0 +1,488 @@
+---
+title: Lightbox
+description: Overlay de galeria de imagens em tela cheia para React. Esquema do LightboxItem, props, transições que permitem tree-shaking (slideTransition, lightboxFadeTransition, flipTransition, lightboxZoomTransition), atalhos de teclado, tokens de tema, classes CSS e renderizadores de slot.
+---
+
+import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2 } from 'lucide-react';
+import { LightboxDemo } from '../../../components/demos/LightboxDemo';
+import installation from '../../snippets/lightbox/installation.sh?raw';
+import installation2 from '../../snippets/lightbox/installation-2.ts?raw';
+import quickStart from '../../snippets/lightbox/quick-start.tsx?raw';
+import fullCode from '../../snippets/lightbox/full-code.tsx?raw';
+import videoSlidesOptIn from '../../snippets/lightbox/video-slides-opt-in.tsx?raw';
+import customControls from '../../snippets/lightbox/custom-controls.tsx?raw';
+import customInfoOverlay from '../../snippets/lightbox/custom-info-overlay.tsx?raw';
+import customNavigation from '../../snippets/lightbox/custom-navigation.tsx?raw';
+import customSlide from '../../snippets/lightbox/custom-slide.tsx?raw';
+import lifecycleCallbacks from '../../snippets/lightbox/lifecycle-callbacks.tsx?raw';
+import customLoadingErrorUi from '../../snippets/lightbox/custom-loading-error-ui.tsx?raw';
+import urlState from '../../snippets/lightbox/url-state.tsx?raw';
+import urlState2 from '../../snippets/lightbox/url-state-2.tsx?raw';
+import urlState3 from '../../snippets/lightbox/url-state-3.tsx?raw';
+import urlState4 from '../../snippets/lightbox/url-state-4.tsx?raw';
+import urlState5 from '../../snippets/lightbox/url-state-5.tsx?raw';
+import urlState6 from '../../snippets/lightbox/url-state-6.tsx?raw';
+import lightboxitem from '../../snippets/lightbox/lightboxitem.ts?raw';
+import controlsrenderprops from '../../snippets/lightbox/controlsrenderprops.ts?raw';
+import navigationrenderprops from '../../snippets/lightbox/navigationrenderprops.ts?raw';
+import sliderenderprops from '../../snippets/lightbox/sliderenderprops.ts?raw';
+import inforenderprops from '../../snippets/lightbox/inforenderprops.ts?raw';
+import closebutton from '../../snippets/lightbox/closebutton.tsx?raw';
+import counter from '../../snippets/lightbox/counter.tsx?raw';
+import fullscreenbutton from '../../snippets/lightbox/fullscreenbutton.tsx?raw';
+import soundbutton from '../../snippets/lightbox/soundbutton.tsx?raw';
+import usevideosliderenderer from '../../snippets/lightbox/usevideosliderenderer.ts?raw';
+import usefullscreen from '../../snippets/lightbox/usefullscreen.tsx?raw';
+import transitions from '../../snippets/lightbox/transitions.tsx?raw';
+import customTransitionFunction from '../../snippets/lightbox/custom-transition-function.tsx?raw';
+import theming from '../../snippets/lightbox/theming.css?raw';
+
+Uma galeria de imagens e vídeos em tela cheia, com `@reelkit/react-lightbox`.
+
+<DemoLink href="https://react-demo.reelkit.dev/image-preview?utm_source=docs">Ver demonstração ao vivo →</DemoLink>
+
+## Recursos [#features]
+
+<FeatureGrid items={[
+              {
+                icon: Image,
+                label: 'Imagens e vídeo',
+                desc: 'Slides de vídeo já incluídos',
+              },
+              {
+                icon: MousePointer,
+                label: 'Gestos de toque',
+                desc: 'Deslize para navegar',
+              },
+              {
+                icon: X,
+                label: 'Deslizar para fechar',
+                desc: 'Deslize para cima e dispense',
+              },
+              {
+                icon: Keyboard,
+                label: 'Navegação por teclado',
+                desc: 'Setas e Escape',
+              },
+              {
+                icon: Maximize2,
+                label: 'Tela cheia',
+                desc: 'API entre navegadores',
+              },
+              {
+                icon: Hash,
+                label: 'Transições',
+                desc: 'Deslizar, esmaecer, virar, aproximar',
+              },
+              {
+                icon: Zap,
+                label: 'Pré-carregamento',
+                desc: 'Imagens vizinhas buscadas antes',
+              },
+              {
+                icon: Volume2,
+                label: 'Botão de som',
+                desc: 'Mudo por slide',
+              },
+              {
+                icon: Loader,
+                label: 'Estados de carregamento',
+                desc: 'Girador e renderização própria',
+              },
+              {
+                icon: AlertTriangle,
+                label: 'Tratamento de erros',
+                desc: 'Ícone de erro e renderização própria',
+              },
+              {
+                icon: Layers,
+                label: 'Render Props',
+                desc: '6 zonas personalizáveis',
+              },
+              {
+                icon: Layers,
+                label: 'Hooks',
+                desc: 'useVideoSlideRenderer e useFullscreen',
+              },
+              {
+                icon: Link2,
+                label: 'Estado na URL',
+                desc: 'Links para compartilhar e favoritar',
+              },
+            ]} />
+
+## Instalação [#installation]
+
+<CodeBlock code={installation} language="bash" />
+
+Não esqueça de importar os estilos:
+
+<CodeBlock code={installation2} language="typescript" />
+
+<Callout type="info" title="Ícones">
+  Os controles padrão usam `lucide-react` para os ícones. Se você prefere outra biblioteca de ícones, use `renderControls` e `renderNavigation` para fornecer os seus.
+</Callout>
+
+## Início rápido [#quick-start]
+
+O componente `LightboxOverlay` mostra imagens em tela cheia. Passe um array de objetos `LightboxItem` e controle a visibilidade com um índice que aceita nulo.
+
+<CodeBlock code={quickStart} language="tsx" />
+
+## Demonstração ao vivo [#live-demo]
+
+<Sandbox
+  code={fullCode}
+  title="LightboxPage.tsx"
+  height={500}
+  stackblitzDeps={['@reelkit/react-lightbox']}
+  stackblitzExtraDeps={{ 'lucide-react': '^0.562.0' }}
+>
+  <LightboxDemo />
+</Sandbox>
+
+<Caption>Clique em uma miniatura para abrir a galeria. Use as setas ou deslize para navegar.</Caption>
+
+## Slides de vídeo (opcionais) [#video-slides-opt-in]
+
+O suporte a vídeo é inteiramente opcional e sai no tree-shaking — quem usa só imagens não paga nada a mais no bundle. Importe `useVideoSlideRenderer` e ligue o que ele devolve ao `LightboxOverlay`. O hook cuida sozinho dos estados de carregamento, do som e do ciclo de vida do vídeo.
+
+<CodeBlock code={videoSlidesOptIn} language="tsx" />
+
+<Callout type="info" title="Como funciona">
+  - O hook devolve `SoundProvider` — envolva seu overlay nele para que o mudo funcione
+  - Os vídeos tocam sozinhos (sem som, por padrão) quando o slide fica ativo
+  - Um elemento de vídeo compartilhado é reaproveitado entre os slides, o que mantém o som contínuo no iOS
+  - O botão de som aparece sozinho nos slides de vídeo, com alternância reativa
+  - Itens sem `type: 'video'` são exibidos como imagens (compatível com o que já existia)
+</Callout>
+
+## Personalização [#customization]
+
+### Controles próprios [#custom-controls]
+
+Use `renderControls` para substituir o botão de fechar, o contador e o botão de tela cheia padrão. Componha com os subcomponentes exportados:
+
+<CodeBlock code={customControls} language="tsx" />
+
+### Camada de informações própria [#custom-info-overlay]
+
+Use `renderInfo` para substituir o gradiente padrão de título e descrição, ou passe `renderInfo={() => null}` para escondê-lo por completo:
+
+<CodeBlock code={customInfoOverlay} language="tsx" />
+
+### Navegação própria [#custom-navigation]
+
+Use `renderNavigation` para substituir as setas padrão de avançar e voltar:
+
+<CodeBlock code={customNavigation} language="tsx" />
+
+### Slide próprio [#custom-slide]
+
+Use `renderSlide` para um conteúdo de slide totalmente seu. Devolva `null` para cair no slide de imagem padrão:
+
+<CodeBlock code={customSlide} language="tsx" />
+
+## Carregamento de conteúdo e tratamento de erros [#content-loading-error-handling]
+
+A galeria acompanha o carregamento e os erros de cada slide. Um girador aparece enquanto o conteúdo carrega; um ícone de imagem quebrada aparece quando a mídia falha. As URLs com erro ficam em cache, então voltar a elas mostra o erro na hora, sem nova tentativa.
+
+### Callbacks de ciclo de vida [#lifecycle-callbacks]
+
+Ao usar `renderSlide`, chame estes callbacks para comandar o indicador de carregamento:
+
+| Callback | Quando chamar |
+| --- | --- |
+| `onReady` | A imagem carregou ou o vídeo começou a tocar. Limpa os estados de carregamento e erro. |
+| `onWaiting` | O vídeo está carregando no meio da reprodução. Mostra o indicador de carregamento. |
+| `onError` | O conteúdo não carregou. Mostra a camada de erro e registra a URL como quebrada. |
+
+<CodeBlock code={lifecycleCallbacks} language="tsx" />
+
+### Interface própria de carregamento e erro [#custom-loading-error-ui]
+
+Troque o girador e o ícone de erro padrão por componentes seus:
+
+<CodeBlock code={customLoadingErrorUi} language="tsx" />
+
+## Estado na URL [#url-state]
+
+<DemoLink href="https://react-demo.reelkit.dev/image-preview-url?utm_source=docs">Ver demonstração ao vivo →</DemoLink>
+
+`LightboxUrlOverlay` é um componente à parte cujo estado aberto vive na barra de endereços. Monte um controlador com `useOverlayUrlState`, de `@reelkit/react`, e entregue-o como `controller`: a galeria se abre quando o parâmetro nomeia um slide e se fecha quando ele some. Os links dão para compartilhar, e o botão voltar fecha a galeria em vez de sair da página.
+
+<Callout type="info" title="Chaves prontas">
+  Você pode endereçar os slides com uma chave pronta — espalhe `urlIndexKey` (por posição) ou `urlStableIdKey` (por um `id` estável) no controlador — as duas reexportadas por `@reelkit/react`. Veja o [guia de estado na URL](/docs/core/guide#url-state) e a [API do core](/docs/core/api#url-state).
+</Callout>
+
+<CodeBlock code={urlState} language="tsx" />
+
+O hook recebe um objeto de opções e devolve um `UrlStateController` (com `set`, `index`, `value`). Guarde-o para o controle programático: `set` é a escrita de baixo nível que o overlay usa internamente (troca de slide, e `set(null)` para fechar). Ele também conduz o overlay por código — `set(index)` o abre, exatamente como navegar até o parâmetro. Ainda assim, prefira um link para abrir: o href dá para compartilhar, abre em nova aba e o botão voltar o fecha — tudo de graça, sem nenhum handler.
+
+As opções completas de `useOverlayUrlState` (`param`, `adapter`, `codec`, `locator`) estão na [referência da API para React](/docs/react/api#useoverlayurlstate).
+
+O próprio `LightboxUrlOverlay` recebe apenas `controller` (obrigatório), um `onClose` opcional e todas as props visuais e de comportamento que o `LightboxOverlay` aceita (`images`, `ariaLabel`, `transitionFn`, as render props e assim por diante) — mas nenhum `isOpen`.
+
+- Abrir custa uma entrada no histórico. Percorrer os slides a substitui, então cem deslizes não acrescentam nenhuma — um único passo para trás sempre sai da galeria. Voltar fecha; não passa de foto em foto.
+- Um link compartilhado como `?photo=3` abre a galeria naquele slide. Fechar um link que chegou junto com a página remove o parâmetro ali mesmo, em vez de tirar o leitor do seu site.
+- **Voltar só fecha quando você abriu de dentro do app** — o link empilhou uma entrada, então voltar desempilha até a galeria. Um link compartilhado aberto direto em uma aba nova não tem histórico atrás de si, então o voltar do navegador sai do site; o botão de fechar ou o Escape removem o parâmetro ali mesmo e mantêm você na galeria. Os adaptadores de roteador que acompanham o pacote atestam um empilhamento na mesma página; um adaptador próprio que não sabe dizer como a entrada chegou recebe o fechamento no lugar, o que deixa uma cópia da página no histórico — um passo para trás parece então não fazer nada, mas nada reabre.
+- Um parâmetro que não nomeia slide nenhum — um favorito velho, um valor editado à mão — é retirado da URL, em vez de deixar a barra de endereços afirmando um slide que não abre.
+
+**Em um app com rotas, passe um adaptador.** Escrever direto no histórico deixa a localização do roteador desatualizada, e a navegação seguinte derruba o parâmetro.
+
+<CodeBlock code={urlState2} language="tsx" />
+
+**Abrir é um link.** Como o estado aberto vive na URL, a miniatura é um link comum — sem handler de clique — e o comportamento nativo do navegador vem junto: abrir em nova aba, copiar o endereço, pré-visualizar ao passar o mouse. Em um app com rotas, use o link do roteador para que a navegação siga no cliente.
+
+<CodeBlock code={urlState3} language="tsx" />
+
+**Prefira uma identidade estável nos links compartilhados.** O índice é posicional, então um `?photo=3` favoritado abre outra imagem assim que a lista muda de ordem. `urlStableIdKey` usa o `id` estável de cada item, varrendo a lista atual — uma chamada resolve o caso comum.
+
+<CodeBlock code={urlState4} language="tsx" />
+
+Passe `hashCodec: base64UrlCodec` para escrever o id em base64url na URL — é um disfarce reversível, não um hash criptográfico.
+
+Quer endereçar por outro campo (um `slug`), ou paginar um feed infinito com `locateAsync`? Monte o `codec` e o `locator` você mesmo:
+
+<CodeBlock code={urlState5} language="tsx" />
+
+**Galerias infinitas ou paginadas.** O `locate` síncrono só responde pelas imagens já carregadas — um link compartilhado para a imagem 400 de um feed que carregou 20 volta vazio. `locateAsync` é o plano B, chamado somente quando `locate` falha.
+
+<Callout type="info" title="Atalho">
+  Vai endereçar pelo `id` do item? Dispense o codec e o locator escritos à mão — passe `locateAsync` direto para `urlStableIdKey({ items, locateAsync })` (ele busca quando falha e então devolve o índice). A versão mais completa abaixo serve para endereçar por outro campo, ou para ter controle total.
+</Callout>
+
+<CodeBlock code={urlState6} language="tsx" />
+
+- A forma de carregar é escolha sua — busque páginas contíguas até o alvo, ou busque só aquela imagem e a acrescente. A URL endereça por identidade, não por posição, então `findIndex` devolve onde quer que o item tenha caído.
+- Enquanto `locateAsync` está pendente, a galeria fica fechada e o parâmetro é deixado em paz, então o link direto sobrevive à busca. Um `null` ou uma rejeição derrubam o parâmetro.
+- Uma resposta que chega depois de a URL ter mudado, depois de um fechamento ou depois da desmontagem é descartada — uma busca lenta não pode abrir um slide que ninguém pediu.
+- Nada é renderizado enquanto a busca corre; esse estado de carregamento já pertence à página, então desenhe o seu próprio esqueleto.
+- Não existe tempo limite — a galeria não tem como saber o próprio tamanho. Termine com `null` quando a paginação se esgotar, ou o overlay fica fechado para sempre.
+- O que `locateAsync` devolver é palavra final — o índice dos dados que ele acabou de buscar, tomado como está, sem reler `images`.
+
+## Referência da API [#api-reference]
+
+### Props do LightboxOverlay [#lightboxoverlay-props]
+
+<Signature>LightboxOverlayProps</Signature>
+
+| Prop | Tipo | Padrão | Descrição |
+| --- | --- | --- | --- |
+| `isOpen` | `boolean` | obrigatório | Controla a visibilidade da galeria. Para um estado aberto guiado pela URL, use o componente à parte LightboxUrlOverlay — veja Estado na URL, abaixo. |
+| `images` | `LightboxItem[]` | obrigatório | Array de imagens a exibir |
+| `ariaLabel` | `string` | 'Image gallery' | Rótulo acessível da região do diálogo; anunciado pelos leitores de tela quando a galeria abre |
+| `initialIndex` | `number` | 0 | Índice da imagem inicial |
+| `transitionFn` | `TransitionTransformFn` | slideTransition | Função da transição entre slides. Importe uma das prontas (slideTransition, flipTransition, lightboxFadeTransition, lightboxZoomTransition) ou passe a sua. Sem esta prop, vale slideTransition. |
+| `apiRef` | `MutableRefObject<ReelApi>` | - | Ref para alcançar a API do Reel |
+| `renderControls` | `(props: ControlsRenderProps) => ReactNode` | - | Controles próprios, substituem o botão de fechar, o contador e o botão de tela cheia padrão |
+| `renderNavigation` | `(props: NavigationRenderProps) => ReactNode` | - | Navegação própria, substitui as setas padrão de avançar e voltar |
+| `renderInfo` | `(props: InfoRenderProps) => ReactNode` | - | Camada de informações própria, substitui o gradiente padrão de título e descrição. Devolva null para esconder. |
+| `renderSlide` | `(props: SlideRenderProps) => ReactNode \| null` | - | Renderização própria do slide. Recebe \{ item, index, size, isActive, onReady, onWaiting, onError \}. Devolva null para cair no padrão. |
+| `renderLoading` | `(props: { item: LightboxItem; activeIndex: number }) => ReactNode` | - | Indicador de carregamento próprio, substitui o girador padrão |
+| `renderError` | `(props: { item: LightboxItem; activeIndex: number }) => ReactNode` | - | Indicador de erro próprio, substitui o ícone padrão de erro |
+
+### Props do LightboxUrlOverlay [#lightboxurloverlay-props]
+
+<Signature>LightboxUrlOverlayProps</Signature>
+
+Aceita todas as props visuais e de comportamento acima, menos `isOpen`, substituída por `controller`. `initialIndex` é ignorada aqui — quem escolhe o slide é a posição do controlador, então um valor passado ao lado dela seria sobrescrito a cada abertura.
+
+| Prop | Tipo | Padrão | Descrição |
+| --- | --- | --- | --- |
+| `controller` | `UrlStateController` | obrigatório | Controlador vindo de useOverlayUrlState. A posição dele decide se o overlay está aberto e qual slide aparece; o overlay escreve de volta por ele na troca de slide e no fechamento. |
+
+### Callbacks [#callbacks]
+
+| Prop | Tipo | Descrição |
+| --- | --- | --- |
+| `onClose` | `() => void` | Chamado quando a galeria fecha. Obrigatório no LightboxOverlay (o estado aberto é seu, então o fechamento também); opcional no LightboxUrlOverlay, onde quem fecha é a URL — passe apenas se quiser reagir depois do fechamento. |
+| `onSlideChange` | `(index: number) => void` | Chamado depois da troca de slide |
+
+### Props do Reel (repassadas) [#reel-props-proxied]
+
+Estas props são repassadas ao componente [Reel](/docs/react/api#reel-props) por baixo.
+
+| Prop | Tipo | Padrão | Descrição |
+| --- | --- | --- | --- |
+| `loop` | `boolean` | false | Liga o ciclo infinito |
+| `enableNavKeys` | `boolean` | true | Liga a navegação por teclado |
+| `enableWheel` | `boolean` | true | Liga a navegação pela roda do mouse |
+| `wheelDebounceMs` | `number` | 200 | Debounce da roda do mouse (ms) |
+| `transitionDuration` | `number` | 300 | Duração da animação de transição (ms) |
+| `swipeDistanceFactor` | `number` | 0.12 | Limiar do deslize (0-1) |
+| `swipeToCloseDirection` | `'up' \| 'down'` | 'up' | Direção do gesto de deslizar para fechar no celular |
+
+## Tipos [#types]
+
+### LightboxItem [#lightboxitem]
+
+<CodeBlock code={lightboxitem} language="typescript" />
+
+### ControlsRenderProps [#controlsrenderprops]
+
+<CodeBlock code={controlsrenderprops} language="typescript" />
+
+### NavigationRenderProps [#navigationrenderprops]
+
+<CodeBlock code={navigationrenderprops} language="typescript" />
+
+### SlideRenderProps [#sliderenderprops]
+
+<CodeBlock code={sliderenderprops} language="typescript" />
+
+### InfoRenderProps [#inforenderprops]
+
+<CodeBlock code={inforenderprops} language="typescript" />
+
+## Subcomponentes [#sub-components]
+
+Subcomponentes reutilizáveis para compor controles próprios com `renderControls`.
+
+### CloseButton [#closebutton]
+
+O botão X de fechar padrão.
+
+<CodeBlock code={closebutton} language="tsx" />
+
+### Counter [#counter]
+
+Pílula contadora de imagens, mostrando "1 / 3".
+
+<CodeBlock code={counter} language="tsx" />
+
+### FullscreenButton [#fullscreenbutton]
+
+Botão de tela cheia (ícone de maximizar/minimizar).
+
+<CodeBlock code={fullscreenbutton} language="tsx" />
+
+### SoundButton [#soundbutton]
+
+Botão de mudo para os slides de vídeo (ícone Volume2/VolumeX). Vem incluído automaticamente no `renderControls` de `useVideoSlideRenderer`. Para usá-lo isolado dentro de controles próprios, alcance o estado do som por `useSoundState`.
+
+<CodeBlock code={soundbutton} language="tsx" />
+
+## Hooks [#hooks]
+
+### useVideoSlideRenderer [#usevideosliderenderer]
+
+Hook do suporte opcional a vídeo. Devolve `renderSlide`, `renderControls` e `SoundProvider` — envolva o overlay no SoundProvider e passe as funções de renderização.
+
+<CodeBlock code={usevideosliderenderer} language="typescript" />
+
+### useFullscreen [#usefullscreen]
+
+<Callout type="warning" title="Mudou de lugar">
+  `useFullscreen` saiu de `@reelkit/react-lightbox`. Importe-o de `@reelkit/react`.
+</Callout>
+
+Hook para controlar o estado de tela cheia com suporte entre navegadores.
+
+<CodeBlock code={usefullscreen} language="tsx" />
+
+## Transições [#transitions]
+
+Passe qualquer `TransitionTransformFn` pela prop `transitionFn`. Importar apenas a transição que você usa deixa o bundler descartar as outras. Sem esta prop, vale `slideTransition`.
+
+| Função | De onde vem | Descrição |
+| --- | --- | --- |
+| `slideTransition` | `@reelkit/react-lightbox` | Deslizamento horizontal comum (padrão) |
+| `lightboxFadeTransition` | `@reelkit/react-lightbox` | Esmaecimento cruzado entre as imagens |
+| `flipTransition` | `@reelkit/react-lightbox` | Efeito de virada de carta em 3D |
+| `lightboxZoomTransition` | `@reelkit/react-lightbox` | Aproximação, do menor até o tamanho normal |
+
+<CodeBlock code={transitions} language="tsx" />
+
+### Função de transição própria [#custom-transition-function]
+
+Escreva a sua `TransitionTransformFn` e passe-a por `transitionFn`. A assinatura é a mesma das transições do slider do core.
+
+<CodeBlock code={customTransitionFunction} language="tsx" />
+
+## Classes CSS [#css-classes]
+
+Todos os elementos da interface usam classes CSS simples (não são CSS modules), que dá para alcançar com seletores de especificidade maior em uma folha de estilo carregada depois de `@reelkit/react-lightbox/styles.css`. Para mudar cor, tamanho e z-index, prefira as propriedades CSS documentadas na seção [Temas](#theming), abaixo.
+
+| Classe | Componente | Descrição |
+| --- | --- | --- |
+| `.rk-lightbox-overlay` | Overlay | Contêiner raiz (fundo em tela cheia) |
+| `.rk-lightbox-spinner` | Overlay | Girador de carregamento padrão |
+| `.rk-lightbox-img-error` | Overlay | Contêiner do estado de erro (imagem ou vídeo quebrado) |
+| `.rk-lightbox-img-error-text` | Overlay | Texto do estado de erro |
+| `.rk-lightbox-swipe-hint` | Overlay | Dica de deslize no celular |
+| `.rk-lightbox-controls-left` | Controls | Contêiner dos controles no canto superior esquerdo |
+| `.rk-lightbox-btn` | Controls | Botões de controle (tela cheia e afins) |
+| `.rk-lightbox-close` | Controls | Botão de fechar |
+| `.rk-lightbox-counter` | Controls | Etiqueta contadora de imagens |
+| `.rk-lightbox-nav` | Navigation | Setas de navegação (as duas) |
+| `.rk-lightbox-nav-prev` | Navigation | Seta de voltar |
+| `.rk-lightbox-nav-next` | Navigation | Seta de avançar |
+| `.rk-lightbox-info` | Info | Contêiner de título e descrição |
+| `.rk-lightbox-title` | Info | Título da imagem |
+| `.rk-lightbox-description` | Info | Descrição da imagem |
+| `.rk-lightbox-slide` | Slide | Contêiner do slide |
+| `.rk-lightbox-img` | Slide | Elemento de imagem |
+| `.rk-lightbox-video-container` | VideoSlide | Contêiner do slide de vídeo (opcional) |
+| `.rk-lightbox-video-element` | VideoSlide | Elemento de vídeo (opcional) |
+| `.rk-lightbox-video-poster` | VideoSlide | Imagem de pôster do vídeo (opcional) |
+
+## Temas [#theming]
+
+Cada cor, tamanho, z-index e transição vive em uma propriedade CSS. Sobrescreva uma ou várias em `:root` (ou em qualquer ancestral da galeria) para trocar o tema sem mexer no código dos componentes.
+
+| Token | Padrão | O que controla |
+| --- | --- | --- |
+| `--rk-lightbox-overlay-bg` | `#000` | Cor do fundo em tela cheia |
+| `--rk-lightbox-overlay-z` | `9999` | z-index do overlay |
+| `--rk-lightbox-top-shade-height` | `80px` | Altura do gradiente do topo |
+| `--rk-lightbox-top-shade-bg` | `linear-gradient(rgba(0,0,0,0.6), transparent)` | Cor do gradiente do topo |
+| `--rk-lightbox-edge-padding` | `16px` | Recuo da borda para fechar, navegação e controles do canto superior esquerdo |
+| `--rk-lightbox-controls-gap` | `12px` | Espaço entre os controles do canto superior esquerdo |
+| `--rk-lightbox-transition` | `0.2s` | Duração da transição dos botões ao passar o mouse |
+| `--rk-lightbox-blur` | `8px` | Raio do desfoque atrás de botões e etiquetas |
+| `--rk-lightbox-btn-bg` | `rgba(0, 0, 0, 0.5)` | Fundo padrão dos botões de fechar, navegação e dos pequenos |
+| `--rk-lightbox-btn-bg-hover` | `rgba(255, 255, 255, 0.2)` | Fundo desses botões ao passar o mouse |
+| `--rk-lightbox-btn-fg` | `#fff` | Cor do ícone desses botões |
+| `--rk-lightbox-btn-size` | `36px` | Tamanho dos botões pequenos (tela cheia e afins) |
+| `--rk-lightbox-close-size` | `40px` | Tamanho do botão de fechar |
+| `--rk-lightbox-nav-size` | `48px` | Tamanho das setas de avançar e voltar |
+| `--rk-lightbox-nav-opacity` | `0.7` | Opacidade das setas em repouso |
+| `--rk-lightbox-counter-fg` | `#fff` | Cor do texto do contador |
+| `--rk-lightbox-counter-bg` | `rgba(0, 0, 0, 0.5)` | Fundo da etiqueta do contador |
+| `--rk-lightbox-counter-size` | `14px` | Tamanho da fonte do contador |
+| `--rk-lightbox-counter-padding` | `6px 12px` | Respiro interno da etiqueta do contador |
+| `--rk-lightbox-counter-radius` | `20px` | Arredondamento da etiqueta do contador |
+| `--rk-lightbox-spinner-size` | `28px` | Largura e altura do girador padrão |
+| `--rk-lightbox-spinner-track` | `rgba(255, 255, 255, 0.2)` | Cor da trilha do girador |
+| `--rk-lightbox-spinner-fg` | `#fff` | Cor do indicador do girador |
+| `--rk-lightbox-spinner-duration` | `0.8s` | Duração de uma volta do girador |
+| `--rk-lightbox-error-fg` | `rgba(255, 255, 255, 0.4)` | Cor do ícone e do texto de erro |
+| `--rk-lightbox-error-text-size` | `13px` | Tamanho da fonte da mensagem de erro |
+| `--rk-lightbox-info-bg` | `linear-gradient(transparent, rgba(0,0,0,0.8))` | Gradiente que escurece o fundo da legenda |
+| `--rk-lightbox-info-padding` | `24px` | Respiro interno da legenda |
+| `--rk-lightbox-title-size` | `18px` | Tamanho da fonte do título |
+| `--rk-lightbox-description-size` | `14px` | Tamanho da fonte da descrição |
+| `--rk-lightbox-info-fg` | `#fff` | Cor do texto da legenda |
+| `--rk-lightbox-hint-fg` | `rgba(255, 255, 255, 0.5)` | Cor do texto da dica de deslize |
+| `--rk-lightbox-hint-bg` | `rgba(0, 0, 0, 0.3)` | Fundo da etiqueta da dica de deslize |
+| `--rk-lightbox-hint-duration` | `3s` | Duração total da dica de deslize, entrando e saindo |
+| `--rk-lightbox-video-bg` | `#000` | Cor das faixas em volta do \<video> |
+
+Cole o trecho abaixo em uma folha de estilo carregada depois de `@reelkit/react-lightbox/styles.css`.
+
+<CodeBlock code={theming} language="css" />
+
+## Acessibilidade [#accessibility]
+
+A raiz do overlay é um diálogo modal (`role="dialog"`, `aria-modal="true"`). Defina `ariaLabel` para mudar o que o leitor de tela anuncia; o padrão é "Image gallery". Cada slide carrega `role="group"`, `aria-roledescription="slide"` e `aria-label="Image N of M"`.
+
+A galeria captura o foco ao abrir e o devolve ao gatilho ao fechar. Tab e Shift+Tab percorrem os elementos focáveis lá dentro; um foco que escapa (clique fora, foco por código) é trazido de volta. Implementado com `captureFocusForReturn` e `createFocusTrap`, de `@reelkit/core`.
+
+## Atalhos de teclado [#keyboard-shortcuts]
+
+| Tecla | Ação |
+| --- | --- |
+| `ArrowLeft` | Imagem anterior |
+| `ArrowRight` | Próxima imagem |
+| `Escape` | Fecha a galeria (ou sai da tela cheia, se estiver nela) |

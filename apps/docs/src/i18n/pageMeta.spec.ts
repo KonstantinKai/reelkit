@@ -28,6 +28,9 @@ describe('page meta', () => {
     expect(contentOf(localePageMeta('zh', options), 'property', 'og:url')).toBe(
       'https://reelkit.dev/zh/docs/ssr',
     );
+    expect(contentOf(localePageMeta('pt', options), 'property', 'og:url')).toBe(
+      'https://reelkit.dev/pt/docs/ssr',
+    );
     expect(contentOf(localePageMeta('en', options), 'property', 'og:url')).toBe(
       'https://reelkit.dev/docs/ssr',
     );
@@ -38,6 +41,12 @@ describe('page meta', () => {
     expect(
       contentOf(localePageMeta('uk', options), 'property', 'og:locale'),
     ).toBe('uk_UA');
+  });
+
+  it('stamps the Brazilian Open Graph locale for Portuguese', () => {
+    expect(
+      contentOf(localePageMeta('pt', options), 'property', 'og:locale'),
+    ).toBe('pt_BR');
   });
 
   it('carries the page title and description into the social tags', () => {
