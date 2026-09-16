@@ -1,0 +1,221 @@
+---
+title: Guía de Vue
+description: 'Crea sliders con @reelkit/vue. El componente Reel, el slot #item, ReelIndicator, la API imperativa con template ref, las transiciones, la virtualización y los manejadores de eventos.'
+---
+
+import { Hand, Keyboard, MousePointer, InfinityIcon, Radio, Navigation, Zap, Layers, Code } from 'lucide-react';
+import basicSlider from '../../../snippets/vue-guide/basic-slider.vue?raw';
+import reelindicator from '../../../snippets/vue-guide/reelindicator.vue?raw';
+import imperativeApiTemplateRef from '../../../snippets/vue-guide/imperative-api-template-ref.vue?raw';
+import horizontalDirection from '../../../snippets/vue-guide/horizontal-direction.vue?raw';
+import autoSizing from '../../../snippets/vue-guide/auto-sizing.vue?raw';
+import transitions from '../../../snippets/vue-guide/transitions.vue?raw';
+import loopMode from '../../../snippets/vue-guide/loop-mode.vue?raw';
+import eventCallbacks from '../../../snippets/vue-guide/event-callbacks.vue?raw';
+import navigation from '../../../snippets/vue-guide/navigation.vue?raw';
+import urlState from '../../../snippets/vue-guide/url-state.vue?raw';
+import itemSlotPattern from '../../../snippets/vue-guide/item-slot-pattern.vue?raw';
+import composables from '../../../snippets/vue-guide/composables.vue?raw';
+
+Aprende a crear sliders con `@reelkit/vue`.
+
+<FeatureGrid columns={3} items={[
+              {
+                icon: Hand,
+                label: 'Táctil ante todo',
+                desc: 'Deslizamiento con inercia y ajuste',
+              },
+              {
+                icon: Keyboard,
+                label: 'Teclado',
+                desc: 'Flechas + Escape',
+              },
+              {
+                icon: MousePointer,
+                label: 'Rueda del ratón',
+                desc: 'Opcional, con debounce',
+              },
+              {
+                icon: InfinityIcon,
+                label: 'Virtualizado',
+                desc: 'Más de 10.000 elementos, 3 en el DOM',
+              },
+              {
+                icon: Radio,
+                label: 'Indicadores',
+                desc: 'Puntos que se desplazan al estilo de Instagram',
+              },
+              {
+                icon: Navigation,
+                label: 'API por código',
+                desc: 'next(), prev(), goTo() mediante template ref',
+              },
+              {
+                icon: Zap,
+                label: 'Modo bucle',
+                desc: 'Navegación circular infinita',
+              },
+              {
+                icon: Layers,
+                label: 'Dirección',
+                desc: 'Vertical u horizontal',
+              },
+              {
+                icon: Code,
+                label: 'Composition API',
+                desc: '<script setup> con composables',
+              },
+            ]} />
+
+## Slider básico [#basic-slider]
+
+El componente `<Reel>` envuelve el controlador del slider del core. Usa el slot `#item` para renderizar cada slide con virtualización: solo se montan los slides visibles.
+
+<Sandbox code={basicSlider} language="vue" title="App.vue" framework="vue" stackblitzDeps={['@reelkit/vue']} />
+
+## ReelIndicator [#reelindicator]
+
+Componente opcional que muestra indicadores de progreso al estilo de Instagram con la posición actual en el slider. Colocado dentro de un `<Reel>`, se conecta solo a los valores `count` y `active` del padre a través del `provide/inject` de Vue, sin conectar nada a mano.
+
+<CodeBlock code={reelindicator} language="vue-html" />
+
+## API imperativa — template ref [#imperative-api-template-ref]
+
+El componente `<Reel>` expone una interfaz `ReelExpose` a través de un template ref. Usa `ref()` para guardar la referencia y llamar a métodos imperativos como `next()`, `prev()` y `goTo()`.
+
+<CodeBlock code={imperativeApiTemplateRef} language="vue" />
+
+## Dirección horizontal [#horizontal-direction]
+
+Pon `direction="horizontal"` para un slider que se desliza a izquierda y derecha. La dirección del indicador debería coincidir.
+
+<CodeBlock code={horizontalDirection} language="vue-html" />
+
+## Tamaño automático [#auto-sizing]
+
+La prop `size` es opcional. Sin ella, `<Reel>` mide su contenedor con `ResizeObserver` y se adapta al diseño que marque el CSS. El tamaño del contenedor lo tiene que dar su padre (por ejemplo, flex, grid o dimensiones explícitas en CSS).
+
+<CodeBlock code={autoSizing} language="vue-html" />
+
+## Transiciones [#transitions]
+
+Pasa una prop `transition` para personalizar la animación de los slides. ReelKit incluye cinco transiciones que admiten tree-shaking: `slideTransition` (por defecto), `fadeTransition`, `flipTransition`, `cubeTransition` y `zoomTransition`.
+
+<CodeBlock code={transitions} language="vue" />
+
+## Modo bucle [#loop-mode]
+
+Activa la navegación circular infinita con la prop `loop`. El slider pasa sin cortes del último slide al primero (y al revés).
+
+<CodeBlock code={loopMode} language="vue-html" />
+
+## Callbacks de eventos [#event-callbacks]
+
+El componente `<Reel>` emite varios eventos para seguir el estado del slider:
+
+<CodeBlock code={eventCallbacks} language="vue" />
+
+## Navegación [#navigation]
+
+Métodos de navegación incluidos:
+
+<Bullets marker="dot">
+
+- **Táctil / deslizar:** arrastra para navegar con inercia y ajuste al slide
+- **Teclado:** teclas de flecha y Escape
+- **Rueda del ratón:** se activa con `:enable-wheel="true"`
+- **Por código:** usa un template ref para acceder a `next()`, `prev()`, `goTo()`
+
+</Bullets>
+
+<CodeBlock code={navigation} language="vue" />
+
+## Estado en la URL [#url-state]
+
+`useOverlayUrlState` crea un controlador de estado en la URL para un overlay y lo devuelve entero; después se lo pasas a un `<LightboxUrlOverlay>` en su prop `:controller`. La barra de direcciones es dueña del estado abierto, así que un overlay vinculado se abre solo y lo habitual es abrirlo con un enlace. La primera escritura de un parámetro ausente añade una entrada al historial y las siguientes la sustituyen, así que pasar slides nunca entierra el botón de volver. Guarda el controlador para leer `value`/`position` y para cerrar por código con `set(null)`, la misma escritura de bajo nivel que usa el overlay internamente al cambiar de slide.
+
+<CodeBlock code={urlState} language="vue" />
+
+El objeto de opciones recibe `param`, `codec` y `locator` (los tres obligatorios), más un `adapter` opcional. El `codec` y el `locator` son un par a juego que comparte el mismo `Id`, así que para una galería simple con `?photo=3` usa `...urlIndexKey(() => props.images.length)`, que devuelve las dos mitades a la vez. `urlIndexKey` convierte el parámetro en el índice de un slide y lo limita con el recuento actual que devuelve el getter, así que un `?photo=99` desfasado o fuera de rango se rechaza y se limpia solo de la URL en lugar de abrir un slide que nunca se nombró. Pasa un getter y no un número: el `setup` de Vue se ejecuta una sola vez, así que una longitud capturada quedaría desfasada mientras crece un feed paginado. Envuelve `createIndexLocator` (la mitad del locator) y lo combina con `indexCodec`. Un feed paginado o una galería por identidad aporta su propio par de `codec` + `locator`. La tabla completa de opciones está en la [referencia de la API de Vue](/docs/vue/api#useoverlayurlstate).
+
+## Patrón del slot #item [#item-slot-pattern]
+
+En lugar de la render prop de React, Vue usa el scoped slot `#item`. Esto hace posible la virtualización: solo se montan los slides visibles. El ámbito del slot ofrece tres propiedades:
+
+<CodeBlock code={itemSlotPattern} language="vue-html" />
+
+## Composables [#composables]
+
+`@reelkit/vue` incluye composables para los casos de overlay más comunes:
+
+<CodeBlock code={composables} language="vue" />
+
+## Puntos clave [#key-points]
+
+<KeyPoints>
+<KeyPoint title="Composition API">
+  Importa `Reel`, `ReelIndicator` y los composables directamente en tu `<script setup>`, sin registrar ningún plugin
+</KeyPoint>
+<KeyPoint title="Scoped slot #item">
+  El equivalente en Vue de la prop `itemBuilder` de React: hace posible la virtualización con la sintaxis de plantillas de siempre
+</KeyPoint>
+<KeyPoint title="Template ref">
+  Usa `ref<ReelExpose>()` para navegar de forma imperativa, sin callbacks de eventos
+</KeyPoint>
+<KeyPoint title="@after-change">
+  Emite `(index, rangeIndex)`: sigue el índice actual para actualizar la interfaz
+</KeyPoint>
+<KeyPoint title="Contexto con provide/inject">
+  `ReelIndicator` se conecta solo al `Reel` padre con el provide/inject de Vue, sin pasar props a mano por varios niveles
+</KeyPoint>
+</KeyPoints>
+
+## Consejos de rendimiento [#performance-tips]
+
+<KeyPoints>
+<KeyPoint title="Mantén ligeras las plantillas de los slides">
+  El slot `#item` se ejecuta para cada slide visible (normalmente 3 a la vez). Evita dentro cálculos pesados o estructuras muy anidadas.
+</KeyPoint>
+<KeyPoint title="Carga datos cerca del final">
+  Usa `@after-change` para detectar cuándo el usuario se acerca al final y pide el siguiente lote antes de que se acaben los slides; así puedes tener feeds con scroll infinito.
+</KeyPoint>
+<KeyPoint title="Usa refs para el estado imperativo">
+  Guarda la referencia a `ReelExpose` y el índice actual en `ref()` de Vue para tener una reactividad precisa sin re-renderizados innecesarios.
+</KeyPoint>
+<KeyPoint title="Desactiva la rueda en páginas con scroll">
+  Pon `:enable-wheel="false"` cuando el slider esté dentro de un diseño con scroll para no capturar el desplazamiento de la página.
+</KeyPoint>
+</KeyPoints>
+
+<NextSteps
+        items={[
+          {
+            label: 'Referencia de la API de Vue',
+            path: '/docs/vue/api',
+            description: 'todas las props, eventos y composables',
+          },
+          {
+            label: 'Guía del core',
+            path: '/docs/core/guide',
+            description: 'el motor independiente del framework',
+          },
+          {
+            label: 'Reel Player',
+            path: {
+              react: '/docs/reel-player',
+              angular: '/docs/angular-reel-player',
+              vue: '/docs/vue-reel-player',
+            },
+            description: 'reproductor de vídeo al estilo de TikTok/Reels',
+          },
+          {
+            label: 'Lightbox',
+            path: {
+              react: '/docs/lightbox',
+              angular: '/docs/angular-lightbox',
+              vue: '/docs/vue-lightbox',
+            },
+            description: 'galería de imágenes y vídeos',
+          },
+        ]}
+      />

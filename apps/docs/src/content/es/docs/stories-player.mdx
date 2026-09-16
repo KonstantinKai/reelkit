@@ -1,0 +1,553 @@
+---
+title: Stories Player
+description: Overlay de stories al estilo de Instagram para React. Esquema de StoriesGroup, navegación en dos niveles (grupos y stories), temporizador de avance automático, barra de progreso en canvas, zonas de toque, renderizadores de slots y temas.
+---
+
+import { Zap, Play, Timer, Layout, Clock, Image, Layers, Heart, Monitor, Circle, Code, Settings, Link2, Eye } from 'lucide-react';
+import { StoriesPlayerDemo } from '../../../components/demos/StoriesPlayerDemo';
+import installation from '../../snippets/stories-player/installation.sh?raw';
+import installation2 from '../../snippets/stories-player/installation-2.ts?raw';
+import fullCode from '../../snippets/stories-player/full-code.tsx?raw';
+import fullCode2 from '../../snippets/stories-player/full-code-2.tsx?raw';
+import urlState from '../../snippets/stories-player/url-state.tsx?raw';
+import urlState2 from '../../snippets/stories-player/url-state-2.tsx?raw';
+import urlState3 from '../../snippets/stories-player/url-state-3.tsx?raw';
+import urlState4 from '../../snippets/stories-player/url-state-4.tsx?raw';
+import rememberingWhatWasSeen from '../../snippets/stories-player/remembering-what-was-seen.tsx?raw';
+import transitions from '../../snippets/stories-player/transitions.tsx?raw';
+import renderheader from '../../snippets/stories-player/renderheader.tsx?raw';
+import renderfooter from '../../snippets/stories-player/renderfooter.tsx?raw';
+import renderslide from '../../snippets/stories-player/renderslide.tsx?raw';
+import rendernavigation from '../../snippets/stories-player/rendernavigation.tsx?raw';
+import renderprogressbar from '../../snippets/stories-player/renderprogressbar.tsx?raw';
+import renderloading from '../../snippets/stories-player/renderloading.tsx?raw';
+import rendererror from '../../snippets/stories-player/rendererror.tsx?raw';
+import storiesapi from '../../snippets/stories-player/storiesapi.tsx?raw';
+import doubleTapLikes from '../../snippets/stories-player/double-tap-likes.tsx?raw';
+import customizingTheHeartAnimation from '../../snippets/stories-player/customizing-the-heart-animation.css?raw';
+import canvasprogressbar from '../../snippets/stories-player/canvasprogressbar.tsx?raw';
+import storyheader from '../../snippets/stories-player/storyheader.tsx?raw';
+import imagestoryslide from '../../snippets/stories-player/imagestoryslide.tsx?raw';
+import videostoryslide from '../../snippets/stories-player/videostoryslide.tsx?raw';
+import storiesring from '../../snippets/stories-player/storiesring.tsx?raw';
+import storiesringlist from '../../snippets/stories-player/storiesringlist.tsx?raw';
+import heartanimation from '../../snippets/stories-player/heartanimation.tsx?raw';
+import storyitem from '../../snippets/stories-player/storyitem.ts?raw';
+import authorinfo from '../../snippets/stories-player/authorinfo.ts?raw';
+import storiesgroupT from '../../snippets/stories-player/storiesgroup-t.ts?raw';
+import headerrenderpropsT from '../../snippets/stories-player/headerrenderprops-t.ts?raw';
+import footerrenderpropsT from '../../snippets/stories-player/footerrenderprops-t.ts?raw';
+import sliderenderpropsT from '../../snippets/stories-player/sliderenderprops-t.ts?raw';
+import navigationrenderprops from '../../snippets/stories-player/navigationrenderprops.ts?raw';
+import progressbarrenderpropsT from '../../snippets/stories-player/progressbarrenderprops-t.ts?raw';
+import loadingrenderpropsT from '../../snippets/stories-player/loadingrenderprops-t.ts?raw';
+import errorrenderpropsT from '../../snippets/stories-player/errorrenderprops-t.ts?raw';
+import storiesapi2 from '../../snippets/stories-player/storiesapi-2.ts?raw';
+import customStoryTypes from '../../snippets/stories-player/custom-story-types.tsx?raw';
+import theming from '../../snippets/stories-player/theming.css?raw';
+
+Un overlay de stories al estilo de Instagram para React, con `@reelkit/react-stories-player`.
+
+<DemoLink href="https://react-demo.reelkit.dev/stories-player?utm_source=docs">Ver la demo en vivo →</DemoLink>
+
+## Características [#features]
+
+<FeatureGrid items={[
+              {
+                icon: Zap,
+                label: 'Navegación anidada',
+                desc: 'Toca para avanzar entre stories, desliza para cambiar de grupo',
+              },
+              {
+                icon: Play,
+                label: 'Stories de vídeo',
+                desc: 'Reproducción automática con botón de sonido',
+              },
+              {
+                icon: Timer,
+                label: 'Avance automático',
+                desc: 'Temporizador configurable por story',
+              },
+              {
+                icon: Layout,
+                label: 'Transiciones 3D',
+                desc: 'Cubo, volteo, fundido, zoom, deslizamiento',
+              },
+              {
+                icon: Clock,
+                label: 'Barra de progreso',
+                desc: 'Progreso segmentado dibujado en canvas',
+              },
+              {
+                icon: Image,
+                label: 'Imagen y vídeo',
+                desc: 'Admite los dos tipos de medio',
+              },
+              {
+                icon: Layers,
+                label: 'Virtualizado',
+                desc: 'Solo 3 slides en el DOM',
+              },
+              {
+                icon: Heart,
+                label: 'Me gusta con doble toque',
+                desc: 'Animación de corazón al tocar dos veces',
+              },
+              {
+                icon: Monitor,
+                label: 'Navegación en escritorio',
+                desc: 'Botones con flechas en escritorio',
+              },
+              {
+                icon: Circle,
+                label: 'Anillos de stories',
+                desc: 'Anillos de avatar al estilo de Instagram',
+              },
+              {
+                icon: Code,
+                label: 'Tipos genéricos',
+                desc: 'Extiende StoryItem con datos propios',
+              },
+              {
+                icon: Settings,
+                label: 'Render props',
+                desc: 'Personaliza cada elemento de la interfaz',
+              },
+              {
+                icon: Link2,
+                label: 'Estado en la URL',
+                desc: 'Enlaces ?story=grupo.story que se pueden compartir',
+              },
+              {
+                icon: Eye,
+                label: 'Elementos ya vistos',
+                desc: 'Los anillos vistos y la reanudación sobreviven a las recargas',
+              },
+            ]} />
+
+## Instalación [#installation]
+
+<CodeBlock code={installation} language="bash" />
+
+No olvides importar los estilos:
+
+<CodeBlock code={installation2} language="typescript" />
+
+<Callout type="info" title="Iconos">
+  La cabecera por defecto usa `lucide-react` para los iconos. Si prefieres otra librería de iconos, usa `renderHeader` y `renderNavigation` para poner los tuyos.
+</Callout>
+
+## Inicio rápido [#quick-start]
+
+El componente `StoriesOverlay` renderiza un visor de stories a pantalla completa. Combínalo con `StoriesRingList` para tener puntos de entrada al estilo de Instagram. Pásale un array de objetos `StoriesGroup` y controla su visibilidad con `isOpen`.
+
+<CodeBlock code={fullCode} language="tsx" />
+
+## Demo en vivo [#live-demo]
+
+<Sandbox
+  code={fullCode2}
+  title="StoriesPlayer.tsx"
+  height={200}
+  stackblitzDeps={['@reelkit/react-stories-player', '@reelkit/react']}
+>
+  <StoriesPlayerDemo />
+</Sandbox>
+
+<Caption>Pulsa un anillo de stories para abrir el visor. Toca los lados izquierdo o derecho para navegar y desliza para cambiar de usuario.</Caption>
+
+## Estado en la URL [#url-state]
+
+<DemoLink href="https://react-demo.reelkit.dev/stories-player-url?utm_source=docs">Ver la demo en vivo →</DemoLink>
+
+`StoriesUrlOverlay` es un componente aparte cuyo estado abierto vive en la barra de direcciones. Los dos ejes van en un solo parámetro, `?story=<group>.<story>`, así que la story que se reproduce tiene un enlace que se puede compartir, guardar y cerrar con el botón de volver. Crea un controlador con `useOverlayUrlState` y `urlIndexTwoAxisKey` y pásalo como `controller`.
+
+<Callout type="info" title="Claves incluidas">
+  Las stories tienen dos ejes, así que pasa con spread una clave de dos ejes al controlador: `urlIndexTwoAxisKey` (grupo y story por posición) o `urlStableIdTwoAxisKey` (el grupo por un `id` estable); las dos se reexportan desde `@reelkit/react`. Consulta la [guía del estado en la URL](/docs/core/guide#url-state) y la [API del core](/docs/core/api#url-state).
+</Callout>
+
+<CodeBlock code={urlState} language="tsx" />
+
+- Abrir añade **una** entrada al historial. Deslizar entre stories *y* cambiar de usuario la **sustituyen**, así que N navegaciones no añaden entradas y volver una vez siempre cierra el visor. Volver cierra; no cambia de story.
+- **La navegación interior también va en la URL.** El índice de la story no se queda fijo por grupo: al avanzar por las stories de un usuario se actualiza `?story=2.`*n*, así que un enlace directo abre la story exacta.
+- Volver solo cierra cuando el visor se abrió desde dentro de la aplicación, es decir, cuando el enlace añadió una entrada. Un enlace compartido abierto directamente en una pestaña nueva no tiene historial detrás, así que el botón de volver del navegador sale del sitio; el botón ✕ o Escape quitan el parámetro en el sitio y se quedan.
+- Un parámetro que no nombra ningún grupo o story (un marcador desfasado, un valor editado a mano, una story más allá del final de un grupo) se quita de la URL en lugar de abrir una vecina.
+
+**Aplicación con router: pasa un adaptador.** Escribir con `history.pushState` a espaldas de un router deja su ubicación desfasada, y su siguiente navegación pierde el parámetro:
+
+<CodeBlock code={urlState2} language="tsx" />
+
+**Enlaces estables.** Por defecto el grupo va por posición, así que un `?story=2.0` guardado abre otro usuario en cuanto el feed se reordena. Apunta al grupo por un id estable: `outerCodec` escribe el id en la URL y `outerLocator` encuentra dónde está. La parte de la story sigue siendo un índice simple dentro del grupo encontrado.
+
+<CodeBlock code={urlState3} language="tsx" />
+
+**Feeds infinitos.** La paginación es cosa de `outerLocator`, independiente del codec. `locate` es síncrono, así que solo responde por los grupos ya cargados: un enlace compartido al grupo 400 de un feed que ha cargado 20 no encuentra nada. `locateAsync` es la alternativa y solo se llama cuando `locate` falla; la story se vuelve a acotar según el grupo en el que acabe.
+
+<Callout type="info" title="El mismo locateAsync, en el eje exterior">
+  Es el mismo paginador `locateAsync` que aceptan las claves de un eje: en una clave de dos ejes va en el `outerLocator` que pasas, así que el eje del grupo pagina mientras la story sigue siendo un índice local dentro del grupo encontrado.
+</Callout>
+
+<CodeBlock code={urlState4} language="tsx" />
+
+- Mientras `locateAsync` está pendiente, el visor sigue cerrado y el parámetro no se toca, así que el enlace directo sobrevive a la carga. Un `null` o un rechazo quitan el parámetro.
+- Una respuesta que llega después de que la URL haya cambiado, después de cerrar o después de desmontar se descarta: una carga lenta no puede abrir una story que nadie ha pedido.
+- Las opciones completas de `useOverlayUrlState` están en la [referencia de la API de React](/docs/react/api#useoverlayurlstate), y la explicación paso a paso está en la [guía de React](/docs/react/guide#url-state).
+
+## Recordar lo que ya se ha visto [#remembering-what-was-seen]
+
+Los anillos muestran un degradado hasta que un grupo se ha visto hasta el final, y un grupo se vuelve a abrir en la primera story que no se ha visto. Las dos cosas salen de un `ViewedStateController` creado con la misma clave que usa la barra de direcciones, así que una entrada guardada se lee exactamente igual que el parámetro de un enlace compartido y sobrevive a que el feed se reordene cuando la clave va por id.
+
+<CodeBlock code={rememberingWhatWasSeen} language="tsx" />
+
+- **La story inicial cuenta.** La story que ya está en pantalla se marca como vista al montar, así que abrir un grupo de una sola story y cerrarlo lo marca como visto.
+- **Deslizar hacia delante también reanuda.** Se consulta `resumeStoryIndex` para cada grupo al que se llega por primera vez en esta sesión, incluido el grupo con el que se abre el visor, salvo que `initialStoryIndex` indique una story concreta; un grupo por el que ya se ha pasado se vuelve a abrir donde se dejó.
+- **Un enlace sigue mandando.** Con `StoriesUrlOverlay`, el parámetro decide dónde se abre el visor, se haya guardado lo que se haya guardado. En los demás casos decide el callback de reanudación.
+- **Una cuenta es una posición, no un recuento.** Una entrada indica la story más lejana a la que se llegó, así que añadir una story a un grupo visto vuelve a encender su anillo, y quitar una del medio acorta la cuenta. Es la misma corrección automática que tiene un enlace compartido.
+- **El almacenamiento es intercambiable.** Pasa `createSessionStorageAdapter()` para olvidarlo al cerrar la pestaña, o tu propio `StorageAdapter`. Dos pestañas abiertas se mantienen sincronizadas con el evento storage del navegador.
+
+## Referencia de la API [#api-reference]
+
+### StoriesOverlayProps [#storiesoverlayprops]
+
+<Signature>StoriesOverlayProps\<T></Signature>
+
+| Prop | Tipo | Por defecto | Descripción |
+| --- | --- | --- | --- |
+| `isOpen` | `boolean` | obligatorio | Controla la visibilidad del overlay. Con true, el scroll del body se bloquea. |
+| `groups` | `StoriesGroup<T>[]` | obligatorio | Array de grupos de stories que mostrar |
+| `onClose` | `() => void` | obligatorio | Callback para cerrar el overlay |
+| `ariaLabel` | `string` | 'Stories player' | Etiqueta accesible de la región del diálogo; los lectores de pantalla la anuncian al abrirse el overlay |
+| `initialGroupIndex` | `number` | 0 | Índice, empezando en cero, del grupo visible al principio |
+| `initialStoryIndex` | `number` | resumeStoryIndex(initialGroupIndex), si no 0 | Índice, empezando en cero, de la story visible al principio dentro del grupo. Si lo indicas, se impone a lo que se haya recordado; si no, el grupo inicial se reanuda igual que los demás. |
+| `resumeStoryIndex` | `(groupIndex: number) => number` | — | Con qué story se abre un grupo la primera vez que se llega a él, para que se siga donde se dejó. Solo se consulta para un grupo que aún no se ha visitado desde que se abrió. |
+| `groupTransition` | `TransitionTransformFn` | cubeTransition | Efecto de transición del slider exterior (grupos) |
+| `defaultImageDuration` | `number` | 5000 | Duración por defecto del avance automático en las stories con imagen, en milisegundos |
+| `tapZoneSplit` | `number` | 0.3 | Proporción de las zonas de toque (0–1). La parte izquierda lanza anterior y la derecha, siguiente. |
+| `hideUIOnPause` | `boolean` | true | Indica si se oculta la interfaz de la story (cabecera, pie) al pausar con una pulsación larga |
+| `enableKeyboard` | `boolean` | true | Activa la navegación con teclado (flechas izquierda y derecha, Escape) |
+| `innerTransitionDuration` | `number` | 200 | Duración de la animación de transición interior (stories) en milisegundos |
+| `minSegmentWidth` | `number` | 8 | Ancho mínimo de un segmento de la barra de progreso en píxeles |
+| `apiRef` | `MutableRefObject<StoriesApi \| null>` | - | Ref para acceder a la StoriesApi imperativa |
+| `renderHeader` | `(props: HeaderRenderProps<T>) => ReactNode` | - | Renderizador de cabecera propio. Recibe el autor, la story y el estado de pausa y de silencio. |
+| `renderFooter` | `(props: FooterRenderProps<T>) => ReactNode` | - | Renderizador de pie propio. Recibe la información del autor y de la story. |
+| `renderSlide` | `(props: SlideRenderProps<T>) => ReactNode` | - | Renderizador de slide propio que sustituye los slides de imagen y vídeo por defecto. |
+| `renderNavigation` | `(props: NavigationRenderProps) => ReactNode` | - | Navegación propia en escritorio. Sustituye los botones con flechas de anterior y siguiente por defecto. |
+| `renderProgressBar` | `(props: ProgressBarRenderProps<T>) => ReactNode` | - | Barra de progreso propia. Sustituye la barra de progreso en canvas por defecto. |
+| `renderLoading` | `(props: LoadingRenderProps<T>) => ReactNode` | - | Renderizador propio de la interfaz de carga. Si no se pasa, se muestra el spinner de la cabecera por defecto. |
+| `renderError` | `(props: ErrorRenderProps<T>) => ReactNode` | - | Renderizador propio de la interfaz de error. Si no se pasa, se muestra el overlay con el icono de error por defecto. |
+
+### StoriesUrlOverlayProps [#storiesurloverlayprops]
+
+<Signature>StoriesUrlOverlayProps\<T></Signature>
+
+Acepta todas las props de `StoriesOverlay` salvo las tres del estado abierto (`isOpen`, `initialGroupIndex`, `initialStoryIndex`), que vienen del controlador.
+
+| Prop | Tipo | Por defecto | Descripción |
+| --- | --- | --- | --- |
+| `controller` | `UrlStateController<TwoAxisPosition>` | obligatorio | Controlador de useOverlayUrlState con urlIndexTwoAxisKey. Su posición, un objeto \{ outer, inner \}, decide si el visor está abierto y dónde se abre; el overlay escribe de vuelta en cada navegación y al cerrar. |
+
+### Callbacks [#callbacks]
+
+| Prop | Tipo | Descripción |
+| --- | --- | --- |
+| `onClose` | `() => void` | Se llama al cerrar el visor. Obligatorio en StoriesOverlay (el estado abierto es tuyo, así que tienes que gestionar el cierre); opcional en StoriesUrlOverlay, donde la URL controla el cierre: pásalo solo para reaccionar después de cerrar. |
+| `onStoryChange` | `(groupIndex: number, storyIndex: number) => void` | Se lanza al cambiar la story activa |
+| `onGroupChange` | `(groupIndex: number) => void` | Se lanza al cambiar el grupo activo |
+| `onStoryViewed` | `(groupIndex: number, storyIndex: number) => void` | Se lanza cuando una story se hace visible |
+| `onStoryComplete` | `(groupIndex: number, storyIndex: number) => void` | Se lanza al terminar el temporizador de una story |
+| `onDoubleTap` | `(groupIndex: number, storyIndex: number) => void` | Se lanza con un gesto de doble toque |
+| `onPause` | `() => void` | Se lanza al pausar el visor |
+| `onResume` | `() => void` | Se lanza al reanudar el visor |
+
+## Transiciones [#transitions]
+
+La prop `groupTransition` controla el efecto de transición 3D al deslizar entre los grupos de usuarios. Importa las funciones de transición desde `@reelkit/react`:
+
+<CodeBlock code={transitions} language="tsx" />
+
+## Ciclo de vida de la carga de contenido [#content-loading-lifecycle]
+
+Cada slide de story comunica su estado de carga con los callbacks que recibe a través de `SlideRenderProps`:
+
+| Callback | Cuándo |
+| --- | --- |
+| `onReady` | El contenido está listo (imagen cargada, vídeo reproduciéndose). Arranca el temporizador de progreso. |
+| `onWaiting` | El contenido se atasca (el vídeo carga a mitad de la reproducción). Aparece el spinner y el temporizador se pausa. |
+| `onError` | El contenido no se ha podido cargar. Se muestra el overlay de error. |
+| `onDurationReady` | Indica la duración real del medio (por ejemplo, con los metadatos del vídeo) para reiniciar el temporizador con la duración correcta. |
+| `onEnded` | Indica que el medio ha terminado (por ejemplo, el vídeo ha acabado). Avanza a la story siguiente. |
+
+<Callout type="info" title="Caché del precargador">
+  Los componentes incluidos `ImageStorySlide` y `VideoStorySlide` precargan la story siguiente en segundo plano. Cuando el usuario llega a una story precargada, el contenido aparece al instante sin spinner de carga.
+</Callout>
+
+## Render props [#render-props]
+
+Cada elemento de la interfaz se puede sustituir con render props. Cada una recibe props tipadas con todo el estado y los callbacks necesarios.
+
+### renderHeader [#renderheader]
+
+Sustituye la cabecera por defecto (información del autor, botones de pausa y silencio, botón de cerrar):
+
+<CodeBlock code={renderheader} language="tsx" />
+
+### renderFooter [#renderfooter]
+
+Añade un pie debajo del contenido de la story:
+
+<CodeBlock code={renderfooter} language="tsx" />
+
+### renderSlide [#renderslide]
+
+Sustituye por completo los slides de imagen y vídeo por defecto. Usa los subcomponentes `ImageStorySlide` y `VideoStorySlide` para aprovechar la gestión de medios incluida:
+
+<CodeBlock code={renderslide} language="tsx" />
+
+### renderNavigation [#rendernavigation]
+
+Sustituye los botones con flechas de escritorio por defecto:
+
+<CodeBlock code={rendernavigation} language="tsx" />
+
+### renderProgressBar [#renderprogressbar]
+
+Sustituye la barra de progreso en canvas por defecto por una implementación propia. La señal `progress` emite valores de 0 a 1:
+
+<CodeBlock code={renderprogressbar} language="tsx" />
+
+### renderLoading [#renderloading]
+
+Indicador de carga propio mientras se descarga el contenido:
+
+<CodeBlock code={renderloading} language="tsx" />
+
+### renderError [#rendererror]
+
+Overlay de error propio cuando el contenido no se puede cargar:
+
+<CodeBlock code={rendererror} language="tsx" />
+
+## StoriesApi [#storiesapi]
+
+Usa la prop `apiRef` para controlarlo de forma imperativa:
+
+<CodeBlock code={storiesapi} language="tsx" />
+
+### Métodos [#methods]
+
+| Método | Tipo | Descripción |
+| --- | --- | --- |
+| `nextStory()` | `() => void` | Avanza a la story siguiente dentro del grupo actual |
+| `prevStory()` | `() => void` | Va a la story anterior dentro del grupo actual |
+| `nextGroup()` | `() => void` | Cambia al grupo de usuario siguiente |
+| `prevGroup()` | `() => void` | Cambia al grupo de usuario anterior |
+| `goToGroup(index)` | `(index: number) => void` | Salta a un grupo concreto por su índice |
+| `pause()` | `() => void` | Pausa el avance automático y el temporizador de progreso |
+| `resume()` | `() => void` | Reanuda el avance automático y el temporizador de progreso |
+
+## Doble toque y me gusta [#double-tap-likes]
+
+Con un doble toque se reproduce una animación de corazón incluida que da una respuesta visual inmediata. El callback `onDoubleTap` recibe el índice del grupo y de la story para que guardes el me gusta en tu propio estado (llamada a una API, almacenamiento local, etc.). El visor no gestiona internamente el estado de los me gusta.
+
+<CodeBlock code={doubleTapLikes} language="tsx" />
+
+### Personalizar la animación del corazón [#customizing-the-heart-animation]
+
+Ajusta la velocidad de la animación con el token `--rk-stories-heart-duration` (mira [Temas](#theming)). Para el color, el tamaño o para ocultar del todo el corazón, apunta directamente a la clase `.rk-stories-heart`. El componente `HeartAnimation` también se exporta para usarlo por separado.
+
+<CodeBlock code={customizingTheHeartAnimation} language="css" />
+
+<Callout type="info">
+  Por ahora la animación del corazón incluida no se puede sustituir con una render prop. Puedes cambiar su estilo con CSS u ocultarla con `display: none` y crear tu propia animación en el callback `onDoubleTap`. Si necesitas una render prop `renderDoubleTap`, dínoslo en [GitHub Issues](https://github.com/KonstantinKai/reelkit/issues).
+</Callout>
+
+## Subcomponentes [#sub-components]
+
+Piezas reutilizables exportadas para combinarlas en render props propias:
+
+### CanvasProgressBar [#canvasprogressbar]
+
+Barra de progreso segmentada de alto rendimiento dibujada en canvas. Renderiza un segmento por story y anima el relleno del segmento activo con `requestAnimationFrame`. Admite una ventana deslizante para grupos con muchas stories.
+
+<CodeBlock code={canvasprogressbar} language="tsx" />
+
+### StoryHeader [#storyheader]
+
+Cabecera por defecto con el avatar del autor, el nombre, la insignia de verificado, la hora relativa, el botón de pausa y reproducción, el botón de silencio, el spinner de carga y el botón de cerrar. Se usa automáticamente cuando no se pasa `renderHeader`.
+
+<CodeBlock code={storyheader} language="tsx" />
+
+### ImageStorySlide [#imagestoryslide]
+
+Slide de imagen a sangre con `object-fit: cover`. Indica la carga y los errores con callbacks para seguir el ciclo de vida.
+
+<CodeBlock code={imagestoryslide} language="tsx" />
+
+### VideoStorySlide [#videostoryslide]
+
+Slide de vídeo que usa un elemento `<video>` compartido para que el sonido no se corte en iOS. Gestiona la reproducción automática, los fotogramas de póster y la sincronización del sonido, e informa de la duración y de los eventos del ciclo de reproducción.
+
+<CodeBlock code={videostoryslide} language="tsx" />
+
+### StoriesRing [#storiesring]
+
+Avatar circular con un anillo con degradado al estilo de Instagram. Tiene dos estados: un grupo con stories por ver lleva el degradado giratorio, y uno visto por completo lleva un anillo plano y apagado.
+
+<CodeBlock code={storiesring} language="tsx" />
+
+### StoriesRingList [#storiesringlist]
+
+Fila horizontal con scroll de componentes `StoriesRing` con los nombres de los autores. Un anillo por grupo.
+
+<CodeBlock code={storiesringlist} language="tsx" />
+
+### HeartAnimation [#heartanimation]
+
+Overlay con un corazón animado que aparece con un doble toque. Crece y se desvanece en 800ms. Personalízalo con CSS (mira la sección de doble toque y me gusta).
+
+<CodeBlock code={heartanimation} language="tsx" />
+
+## Tipos [#types]
+
+### StoryItem [#storyitem]
+
+<CodeBlock code={storyitem} language="typescript" />
+
+### AuthorInfo [#authorinfo]
+
+<CodeBlock code={authorinfo} language="typescript" />
+
+### StoriesGroup\<T> [#storiesgroup-t]
+
+<CodeBlock code={storiesgroupT} language="typescript" />
+
+### HeaderRenderProps\<T> [#headerrenderprops-t]
+
+<CodeBlock code={headerrenderpropsT} language="typescript" />
+
+### FooterRenderProps\<T> [#footerrenderprops-t]
+
+<CodeBlock code={footerrenderpropsT} language="typescript" />
+
+### SlideRenderProps\<T> [#sliderenderprops-t]
+
+<CodeBlock code={sliderenderpropsT} language="typescript" />
+
+### NavigationRenderProps [#navigationrenderprops]
+
+<CodeBlock code={navigationrenderprops} language="typescript" />
+
+### ProgressBarRenderProps\<T> [#progressbarrenderprops-t]
+
+<CodeBlock code={progressbarrenderpropsT} language="typescript" />
+
+### LoadingRenderProps\<T> [#loadingrenderprops-t]
+
+<CodeBlock code={loadingrenderpropsT} language="typescript" />
+
+### ErrorRenderProps\<T> [#errorrenderprops-t]
+
+<CodeBlock code={errorrenderpropsT} language="typescript" />
+
+### StoriesApi [#storiesapi]
+
+<CodeBlock code={storiesapi2} language="typescript" />
+
+## Tipos de Story personalizados [#custom-story-types]
+
+Extiende `StoryItem` con campos propios y pasa el parámetro de tipo a `StoriesOverlay`. Todas las render props recibirán tu tipo extendido:
+
+<CodeBlock code={customStoryTypes} language="tsx" />
+
+## Clases CSS [#css-classes]
+
+Todas las clases CSS son normales (no CSS modules), así que puedes apuntar a ellas con selectores más específicos en una hoja de estilos cargada después de `@reelkit/react-stories-player/styles.css`. Para cambiar colores, tamaños y z-index, es mejor usar las propiedades personalizadas de CSS de la sección [Temas](#theming) de más abajo.
+
+| Clase | Componente | Descripción |
+| --- | --- | --- |
+| `.rk-stories-overlay` | Overlay | Fondo fijo a pantalla completa (fondo, z-index) |
+| `.rk-stories-swipe-wrapper` | Overlay | Envoltorio de deslizar para cerrar (contiene los botones de navegación y el lienzo) |
+| `.rk-stories-container` | Overlay | Lienzo redondeado de la story (posición, desbordamiento) |
+| `.rk-stories-ui-layer` | Overlay | Contenedor del overlay de la interfaz (cabecera, progreso, navegación) |
+| `.rk-stories-ui-layer--hidden` | Overlay | Estado oculto de la interfaz (lo activa hideUIOnPause) |
+| `.rk-stories-error` | Overlay | Estado de error (icono y texto centrados) |
+| `.rk-stories-error-text` | Overlay | Texto del mensaje de error |
+| `.rk-stories-nav-btn` | Navigation | Flecha de anterior o siguiente en escritorio |
+| `.rk-stories-progress-bar` | ProgressBar | Envoltorio que posiciona la barra de progreso en canvas |
+| `.rk-stories-slide-wrapper` | Group | Un grupo de stories (slide exterior) |
+| `.rk-stories-story` | Story | Una sola story (raíz del slide interior) |
+| `.rk-stories-header` | StoryHeader | Barra de cabecera (avatar, nombre, acciones) |
+| `.rk-stories-header--hidden` | StoryHeader | Estado oculto de la cabecera (visible=false) |
+| `.rk-stories-header-avatar` | StoryHeader | Imagen del avatar del autor |
+| `.rk-stories-header-name` | StoryHeader | Texto con el nombre del autor |
+| `.rk-stories-header-verified` | StoryHeader | Contenedor de la insignia de verificado |
+| `.rk-stories-header-time` | StoryHeader | Texto con el tiempo transcurrido |
+| `.rk-stories-header-actions` | StoryHeader | Acciones del lado derecho (cerrar, silencio, pausa) |
+| `.rk-stories-header-btn` | StoryHeader | Botón de acción de la cabecera |
+| `.rk-stories-header-spinner` | StoryHeader | Spinner mientras el vídeo carga |
+| `.rk-stories-image` | ImageStorySlide | Elemento de la story de imagen |
+| `.rk-stories-video` | VideoStorySlide | Contenedor de la story de vídeo |
+| `.rk-stories-video-element` | VideoStorySlide | El elemento \<video> compartido |
+| `.rk-stories-video-poster` | VideoStorySlide | Imagen del póster del vídeo (se desvanece al reproducir) |
+| `.rk-stories-video-poster--visible` | VideoStorySlide | Estado visible del póster (antes de reproducir) |
+| `.rk-stories-heart` | HeartAnimation | Animación del corazón al tocar dos veces |
+| `.rk-stories-ring` | StoriesRing | Anillo de stories (avatar con borde de degradado animado) |
+| `.rk-stories-ring--active` | StoriesRing | Anillo con stories por ver (animado) |
+| `.rk-stories-ring-avatar` | StoriesRing | Imagen del avatar dentro del anillo |
+| `.rk-stories-ring-list` | StoriesRingList | Contenedor de la lista horizontal de anillos |
+| `.rk-stories-ring-list-item` | StoriesRingList | Columna con anillo y nombre |
+| `.rk-stories-ring-list-name` | StoriesRingList | Nombre del autor debajo de cada anillo |
+
+## Temas [#theming]
+
+Cada color, tamaño, z-index y transición vive en una propiedad personalizada de CSS. Sobrescribe una o varias en `:root` (o en cualquier ancestro del overlay) para cambiar el tema sin tocar el código de los componentes.
+
+| Token | Por defecto | Controla |
+| --- | --- | --- |
+| `--rk-stories-overlay-bg` | `#000` | Color del fondo a pantalla completa |
+| `--rk-stories-overlay-z` | `9999` | z-index del overlay |
+| `--rk-stories-container-radius` | `12px` | Esquinas redondeadas del lienzo de la story (escritorio) |
+| `--rk-stories-swipe-gap` | `16px` | Espacio entre los botones de navegación y el lienzo de la story |
+| `--rk-stories-top-shade-height` | `120px` | Altura del degradado superior detrás de la cabecera |
+| `--rk-stories-top-shade-bg` | `linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%)` | Color del degradado superior |
+| `--rk-stories-ui-transition` | `200ms` | Duración del fundido al activarse hideUIOnPause |
+| `--rk-stories-nav-size` | `44px` | Tamaño de los botones de anterior y siguiente en escritorio |
+| `--rk-stories-nav-bg` | `rgba(255, 255, 255, 0.1)` | Fondo de los botones de navegación en escritorio |
+| `--rk-stories-nav-bg-hover` | `rgba(255, 255, 255, 0.2)` | Fondo de los botones de navegación en escritorio al pasar el ratón |
+| `--rk-stories-nav-fg` | `rgba(255, 255, 255, 0.7)` | Color del icono de los botones de navegación en escritorio |
+| `--rk-stories-nav-fg-hover` | `#fff` | Color del icono de los botones de navegación en escritorio al pasar el ratón |
+| `--rk-stories-error-bg` | `linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)` | Degradado del fondo del estado de error |
+| `--rk-stories-error-fg` | `rgba(255, 255, 255, 0.5)` | Color del icono y el texto de error |
+| `--rk-stories-error-text-size` | `13px` | Tamaño de letra del mensaje de error |
+| `--rk-stories-video-bg` | `#000` | Fondo de las bandas detrás del \<video> |
+| `--rk-stories-video-poster-transition` | `200ms` | Duración del fundido del póster cuando el vídeo empieza a reproducirse |
+| `--rk-stories-header-top` | `18px` | Separación vertical de la cabecera desde la parte superior de la story |
+| `--rk-stories-header-padding` | `12px 16px` | Relleno interior de la fila de la cabecera |
+| `--rk-stories-header-avatar-size` | `32px` | Ancho y alto del avatar |
+| `--rk-stories-header-name-fg` | `#fff` | Color del nombre del autor |
+| `--rk-stories-header-name-size` | `14px` | Tamaño de letra del nombre del autor |
+| `--rk-stories-header-time-fg` | `rgba(255, 255, 255, 0.6)` | Color del texto con el tiempo transcurrido |
+| `--rk-stories-header-btn-fg` | `#fff` | Color de los iconos de acción de la cabecera (cerrar, silencio, pausa) |
+| `--rk-stories-heart-duration` | `800ms` | Duración de la animación de aparición y desvanecimiento |
+| `--rk-stories-ring-spin-duration` | `4s` | Duración del giro de un anillo con stories por ver |
+| `--rk-stories-ring-list-gap` | `12px` | Espacio entre los anillos de la lista |
+| `--rk-stories-ring-list-padding` | `12px` | Relleno interior alrededor de la lista de anillos |
+| `--rk-stories-ring-list-name-size` | `12px` | Tamaño de letra del nombre del autor debajo de cada anillo |
+
+Pega el fragmento de abajo en una hoja de estilos cargada después de `@reelkit/react-stories-player/styles.css`.
+
+<CodeBlock code={theming} language="css" />
+
+## Accesibilidad [#accessibility]
+
+La raíz del overlay es un diálogo modal (`role="dialog"`, `aria-modal="true"`). Usa `ariaLabel` para cambiar lo que anuncia el lector de pantalla; por defecto es "Stories player".
+
+El overlay captura el foco al abrirse y lo devuelve al disparador al cerrarse. Tab y Mayús+Tab recorren los elementos enfocables de dentro; el foco que sale (un clic fuera, un foco por código) vuelve dentro. Está implementado con `captureFocusForReturn` y `createFocusTrap` de `@reelkit/core`.
+
+## Atajos de teclado [#keyboard-shortcuts]
+
+| Tecla | Acción |
+| --- | --- |
+| `ArrowLeft` | Story anterior |
+| `ArrowRight` | Story siguiente |
+| `Escape` | Cierra el visor |

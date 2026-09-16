@@ -1,0 +1,72 @@
+---
+title: Integración con IA / LLM
+description: Documentación legible por máquinas para asistentes de programación con IA — llms.txt, llms-full.txt y el manifiesto de Context7.
+---
+
+import { FileText, Sparkles, Bot } from 'lucide-react';
+import agentPrompt from '../../snippets/llms/agent-prompt.txt?raw';
+import directIngestion from '../../snippets/llms/direct-ingestion.sh?raw';
+
+Documentación legible por máquinas para asistentes de programación con IA.
+
+<FeatureGrid columns={3} items={[
+            {
+              icon: FileText,
+              label: 'llms.txt',
+              desc: 'Índice compacto de enlaces. Todas las páginas de la documentación en un archivo. Se actualiza en cada build.',
+            },
+            {
+              icon: Sparkles,
+              label: 'llms-full.txt',
+              desc: 'Corpus completo con resúmenes por página. Todo el contexto en una sola petición.',
+            },
+            {
+              icon: Bot,
+              label: 'context7',
+              desc: 'Manifiesto indexado en vivo. Úsalo con el servidor MCP @context7.',
+            },
+          ]} />
+
+<Callout type="info">
+  Los dos endpoints \`.txt\` se regeneran en cada build de la documentación. El corpus sigue al sitio publicado.
+</Callout>
+
+## Endpoints [#endpoints]
+
+| Endpoint | Para qué sirve |
+| --- | --- |
+| [`/llms.txt`](https://reelkit.dev/llms.txt) | Lista indexada de enlaces a todas las páginas de la documentación. Añádela a cualquier contexto de un LLM. |
+| [`/llms-full.txt`](https://reelkit.dev/llms-full.txt) | El mismo índice con los resúmenes de cada página incluidos. El corpus completo en una sola petición. |
+| [`context7.com/websites/reelkit_dev`](https://context7.com/websites/reelkit_dev) | Manifiesto de Context7 indexado en vivo. Conéctalo con el servidor MCP @context7. |
+
+## Inicio rápido [#quick-start]
+
+### Prompt para el agente [#agent-prompt]
+
+Pega la URL de un endpoint en el agente para que base sus respuestas en la documentación actual.
+
+<CodeBlock code={agentPrompt} language="text" />
+
+### Servidor MCP de Context7 [#context7-mcp-server]
+
+Instala el servidor MCP [@context7](https://github.com/upstash/context7). El agente detecta el manifiesto de ReelKit y descarga la documentación cuando la necesita. Menciona `reelkit` en tu prompt.
+
+### Ingesta directa [#direct-ingestion]
+
+Descárgala por código:
+
+<CodeBlock code={directIngestion} language="bash" />
+
+## Qué se indexa [#what-gets-indexed]
+
+- Primeros pasos + Instalación
+- Guía y API del motor core
+- Bindings de React, Vue y Angular (guía + API + reel-player + lightbox + stories-player)
+- Motor de Stories Core
+- Notas sobre SSR
+- Solución de problemas
+- Historial de versiones
+
+## ¿Por qué? [#why]
+
+Los asistentes de IA van por detrás de los cambios de las librerías, y el código que generan usa APIs obsoletas. Estos endpoints se actualizan con cada publicación de la documentación, así que las sugerencias se ajustan al comportamiento actual y no al de hace unos meses.

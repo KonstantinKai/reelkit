@@ -1,0 +1,94 @@
+---
+title: Solución de problemas
+description: Soluciones para las peculiaridades de iOS Safari, la reproducción de vídeo, la pantalla completa, la navegación con teclado y el tamaño automático.
+---
+
+import viewportDoesntFillScreen from '../../snippets/troubleshooting/viewport-doesnt-fill-screen.css?raw';
+import horizontalScrollContentOverflow from '../../snippets/troubleshooting/horizontal-scroll-content-overflow.css?raw';
+import pullToRefreshRubber from '../../snippets/troubleshooting/pull-to-refresh-rubber.css?raw';
+import pullToRefreshRubber2 from '../../snippets/troubleshooting/pull-to-refresh-rubber-2.tsx?raw';
+import pinchToZoomInterferes from '../../snippets/troubleshooting/pinch-to-zoom-interferes.html?raw';
+import layoutBrokenAfterKeyboard from '../../snippets/troubleshooting/layout-broken-after-keyboard.tsx?raw';
+import slidesRenderAt0 from '../../snippets/troubleshooting/slides-render-at-0.css?raw';
+import videoThumbnailFrameCapture from '../../snippets/troubleshooting/video-thumbnail-frame-capture.txt?raw';
+import arrowKeysDontNavigate from '../../snippets/troubleshooting/arrow-keys-dont-navigate.tsx?raw';
+
+Soluciones para las peculiaridades de iOS Safari, la reproducción de vídeo, la pantalla completa y la navegación con teclado.
+
+## iOS Safari [#ios-safari]
+
+### El viewport no llena la pantalla / franja negra abajo [#viewport-doesn-t-fill-screen-bottom-black-space]
+
+La barra de direcciones plegable de Safari hace que `100vh` sea más alto que el área visible. Usa `100dvh`:
+
+<CodeBlock code={viewportDoesntFillScreen} language="css" />
+
+### Scroll horizontal / el contenido se desborda [#horizontal-scroll-content-overflow]
+
+En iOS, `100vw` incluye el ancho de la barra de desplazamiento y empuja el contenido más allá del borde. Usa `100%` y bloquea el desbordamiento horizontal:
+
+<CodeBlock code={horizontalScrollContentOverflow} language="css" />
+
+### Tirar para recargar / rebote elástico [#pull-to-refresh-rubber-band-bounce]
+
+El gesto de tirar para recargar y el rebote elástico de Safari compiten con los gestos verticales. **No** pongas `overscroll-behavior: none` en `html, body`: eso anula el scroll normal de la página. ReelPlayerOverlay, LightboxOverlay y StoriesPlayerOverlay ya lo resuelven en sus propios contenedores. En diseños propios, limítalo a un contenedor:
+
+<CodeBlock code={pullToRefreshRubber} language="css" />
+
+**Caso límite de SwipeToClose hacia abajo.** Cualquier `SwipeToClose` con `direction="down"` (lightbox, Stories Player, overlays propios) queda anulado en iOS Safari: el navegador lanza el tirar para recargar desde el documento antes de que el contenedor reciba el toque. El overlay bloquea el scroll del body, pero el navegador sigue controlando el desplazamiento vertical en la raíz. Aplica `overscroll-behavior-y: contain` en `<html>` solo mientras el overlay está abierto y restáuralo al cerrar:
+
+<CodeBlock code={pullToRefreshRubber2} language="tsx" />
+
+### El zoom con los dedos interfiere con los gestos [#pinch-to-zoom-interferes-with-gestures]
+
+Desactiva el zoom para que ni el pellizco ni el doble toque se disparen al deslizar:
+
+<CodeBlock code={pinchToZoomInterferes} language="html" />
+
+<Caption>`viewport-fit=cover` extiende el diseño hasta la zona segura de la Dynamic Island o el notch.</Caption>
+
+### El diseño se rompe al cerrar el teclado [#layout-broken-after-keyboard-dismisses]
+
+A veces Safari deja el viewport comprimido después de cerrar el teclado. Fuerza un reajuste en el blur:
+
+<CodeBlock code={layoutBrokenAfterKeyboard} language="tsx" />
+
+## General [#general]
+
+### Los slides se renderizan con tamaño 0×0 [#slides-render-at-0-0-size]
+
+Sin la prop `size`, el slider lee las dimensiones de su contenedor con `ResizeObserver`. Un contenedor sin altura en el CSS mide 0×0, así que no se renderiza nada. Pasa `size` o da dimensiones al contenedor:
+
+<CodeBlock code={slidesRenderAt0} language="css" />
+
+## Vídeo [#video]
+
+### El vídeo no se reproduce solo [#video-doesn-t-autoplay]
+
+Los navegadores bloquean la reproducción automática con sonido. ReelKit pone `muted` y `playsInline` en cada elemento de vídeo. Los vídeos empiezan en silencio y el usuario activa el sonido con el botón tras un toque. Comprueba que no sobrescribes estos atributos en un slide propio.
+
+### La miniatura o captura de fotograma del vídeo sale en blanco [#video-thumbnail-frame-capture-is-blank]
+
+La captura de fotogramas dibuja el vídeo en un `<canvas>`. Los vídeos de otro origen contaminan el canvas, así que el dibujo falla sin avisar. La CDN de tus vídeos debe devolver cabeceras CORS:
+
+<CodeBlock code={videoThumbnailFrameCapture} language="text" />
+
+<Caption>ReelKit pone `crossOrigin="anonymous"` por defecto. Si usas un elemento de vídeo propio, añádelo tú.</Caption>
+
+## Pantalla completa [#fullscreen]
+
+### El botón de pantalla completa no hace nada en Safari [#fullscreen-button-does-nothing-on-safari]
+
+ReelKit desactiva la Fullscreen API en Safari. iOS Safari solo permite la pantalla completa en elementos `<video>`. Safari de escritorio rompe los overlays con `position: fixed` en pantalla completa: los elementos pierden su contexto de apilamiento o desaparecen. En Safari, `requestFullscreen()` se resuelve sin hacer nada.
+
+## Navegación con teclado [#keyboard-navigation]
+
+### Las flechas no navegan después de pasar onNavKeyPress [#arrow-keys-don-t-navigate-after-providing-onnavkeypress]
+
+`onNavKeyPress` **sustituye** la navegación con teclado por defecto. ReelKit deja de llamar a `next()`/`prev()` y te cede el control. Llámalos tú:
+
+<CodeBlock code={arrowKeysDontNavigate} language="tsx" />
+
+### La tecla Escape no cierra el overlay [#escape-key-doesn-t-close-the-overlay]
+
+El controlador de teclado solo gestiona las flechas. ReelPlayerOverlay y LightboxOverlay escuchan Escape por separado. Si creas un overlay propio, añade tu propio manejador de Escape en `onClose`.

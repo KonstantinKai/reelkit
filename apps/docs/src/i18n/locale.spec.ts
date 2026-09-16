@@ -151,6 +151,16 @@ describe('locale helpers', () => {
     );
   });
 
+  // The Spanish pages follow Spain's usage, but the language tag stays bare
+  // so the pages are not limited to one country.
+  it('tags Spanish without a region', () => {
+    expect(kLocaleTags.es).toBe('es');
+    expect(readLocaleFromPath('/es/docs/ssr')).toBe('es');
+    expect(localeUrl('es', '/docs/ssr')).toBe(
+      'https://reelkit.dev/es/docs/ssr',
+    );
+  });
+
   it('gives every non-English locale its own prefix', () => {
     const prefixes = kLocales
       .filter((locale) => locale !== 'en')

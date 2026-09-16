@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { glob } from 'node:fs/promises';
 import { BasicSliderDemo, heroSlidePreloadLinks } from './BasicSliderDemo';
+import { kLocales } from '../../i18n/locale';
 
 const appDir = join(import.meta.dirname, '../..');
 
@@ -61,7 +62,7 @@ describe('basic slider demo as prerendered', () => {
 describe('home pages', () => {
   it('preload the hero slide and give the demo priority in every locale', async () => {
     const homes = await filesUnder('pages/{,*/}Home.tsx');
-    expect(homes).toHaveLength(6);
+    expect(homes).toHaveLength(kLocales.length);
     for (const home of homes) {
       const source = readFileSync(join(appDir, home), 'utf8');
       expect(source, home).toContain(

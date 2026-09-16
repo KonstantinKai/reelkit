@@ -1,0 +1,301 @@
+---
+title: Instalación
+description: Instala los paquetes de reelkit y configura tu proyecto. Cada paquete tiene su propia versión, así que instala solo lo que necesites.
+---
+
+import npmReact from '../../snippets/installation/npm-react.sh?raw';
+import yarnReact from '../../snippets/installation/yarn-react.sh?raw';
+import pnpmReact from '../../snippets/installation/pnpm-react.sh?raw';
+import npmAngular from '../../snippets/installation/npm-angular.sh?raw';
+import yarnAngular from '../../snippets/installation/yarn-angular.sh?raw';
+import pnpmAngular from '../../snippets/installation/pnpm-angular.sh?raw';
+import npmVue from '../../snippets/installation/npm-vue.sh?raw';
+import yarnVue from '../../snippets/installation/yarn-vue.sh?raw';
+import pnpmVue from '../../snippets/installation/pnpm-vue.sh?raw';
+
+Instala los paquetes de reelkit y configura tu proyecto.
+
+## Elegir el paquete [#package-options]
+
+Instala solo lo que uses:
+
+<Table>
+  <thead>
+    <tr>
+      <th>Paquete</th>
+      <th>Descripción</th>
+      <th>Caso de uso</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>`@reelkit/core`</td>
+      <td>Core independiente del framework</td>
+      <td>Integraciones propias</td>
+    </tr>
+    <tr data-rk-fw="react">
+      <td>`@reelkit/react`</td>
+      <td>Componentes de React</td>
+      <td>Aplicaciones con React 18+</td>
+    </tr>
+    <tr data-rk-fw="react">
+      <td>`@reelkit/react-reel-player`</td>
+      <td>Reproductor vertical de reels a pantalla completa</td>
+      <td>Reproductor al estilo de Instagram/TikTok</td>
+    </tr>
+    <tr data-rk-fw="react">
+      <td>`@reelkit/react-lightbox`</td>
+      <td>Lightbox para galerías de imágenes</td>
+      <td>Vista previa de imágenes a pantalla completa</td>
+    </tr>
+    <tr data-rk-fw="react">
+      <td>`@reelkit/react-stories-player`</td>
+      <td>Visor de stories al estilo de Instagram</td>
+      <td>Stories con avance automático y gestos</td>
+    </tr>
+    <tr data-rk-fw="angular">
+      <td>`@reelkit/angular`</td>
+      <td>Componentes standalone de Angular</td>
+      <td>Aplicaciones con Angular 17+</td>
+    </tr>
+    <tr data-rk-fw="angular">
+      <td>`@reelkit/angular-reel-player`</td>
+      <td>Reproductor vertical de reels a pantalla completa</td>
+      <td>Reproductor al estilo de Instagram/TikTok</td>
+    </tr>
+    <tr data-rk-fw="angular">
+      <td>`@reelkit/angular-lightbox`</td>
+      <td>Lightbox para galerías de imágenes</td>
+      <td>Vista previa de imágenes a pantalla completa</td>
+    </tr>
+    <tr data-rk-fw="vue">
+      <td>`@reelkit/vue`</td>
+      <td>Componentes y composables de Vue 3</td>
+      <td>Aplicaciones con Vue 3</td>
+    </tr>
+    <tr data-rk-fw="vue">
+      <td>`@reelkit/vue-reel-player`</td>
+      <td>Reproductor vertical de reels a pantalla completa</td>
+      <td>Reproductor al estilo de Instagram/TikTok</td>
+    </tr>
+    <tr data-rk-fw="vue">
+      <td>`@reelkit/vue-lightbox`</td>
+      <td>Lightbox para galerías de imágenes</td>
+      <td>Vista previa de imágenes a pantalla completa</td>
+    </tr>
+  </tbody>
+</Table>
+
+## Tamaño de los paquetes [#bundle-sizes]
+
+Todos los paquetes están optimizados para añadir el mínimo peso al bundle:
+
+<BundleSizeTable headers={['Paquete', 'JS', 'JS (gzip)', 'CSS', 'CSS (gzip)']} />
+
+### Comparación con otras librerías [#comparison-with-other-libraries]
+
+ReelKit renderiza **3 slides en el DOM** en todo momento y admite más de 10.000 elementos. Otras librerías de carrusel renderizan todos los slides, y eso se atasca con listas grandes.
+
+<LibraryComparison
+  headers={['Librería', 'JS (gzip)', 'Virtualización', 'Notas']}
+  plugin="Plugin"
+  notes={[
+    'Sin dependencias',
+    'Sin dependencias',
+    'Sin dependencias',
+    'Bundle completo; admite tree-shaking',
+    'Ligera, basada en plugins',
+    'Sin dependencias',
+  ]}
+/>
+
+<FrameworkVariant for="react">
+
+## npm [#npm]
+
+<CodeBlock code={npmReact} language="bash" />
+
+## yarn [#yarn]
+
+<CodeBlock code={yarnReact} language="bash" />
+
+## pnpm [#pnpm]
+
+<CodeBlock code={pnpmReact} language="bash" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+## npm [#npm]
+
+<CodeBlock code={npmAngular} language="bash" />
+
+## yarn [#yarn]
+
+<CodeBlock code={yarnAngular} language="bash" />
+
+## pnpm [#pnpm]
+
+<CodeBlock code={pnpmAngular} language="bash" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+## npm [#npm]
+
+<CodeBlock code={npmVue} language="bash" />
+
+## yarn [#yarn]
+
+<CodeBlock code={yarnVue} language="bash" />
+
+## pnpm [#pnpm]
+
+<CodeBlock code={pnpmVue} language="bash" />
+
+</FrameworkVariant>
+
+## Peer dependencies [#peer-dependencies]
+
+Los paquetes de cada framework tienen peer dependencies que tu proyecto ya debería incluir:
+
+<FrameworkVariant for="react">
+
+### @reelkit/react [#reelkit-react]
+
+- `react` >= 18.0.0
+- `react-dom` >= 18.0.0
+
+### @reelkit/react-reel-player [#reelkit-react-reel-player]
+
+- `@reelkit/react`
+- `react` >= 18.0.0
+- `react-dom` >= 18.0.0
+- `lucide-react` >= 0.400.0
+
+### @reelkit/react-lightbox [#reelkit-react-lightbox]
+
+- `@reelkit/react`
+- `react` >= 18.0.0
+- `react-dom` >= 18.0.0
+- `lucide-react` >= 0.400.0
+
+### @reelkit/react-stories-player [#reelkit-react-stories-player]
+
+- `@reelkit/react`
+- `react` >= 18.0.0
+- `react-dom` >= 18.0.0
+- `lucide-react` >= 0.400.0
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+### @reelkit/angular [#reelkit-angular]
+
+- `@angular/core` >= 17.0.0
+- `@angular/common` >= 17.0.0
+
+### @reelkit/angular-reel-player [#reelkit-angular-reel-player]
+
+- `@reelkit/angular`
+- `@angular/core` >= 19.0.0
+- `lucide-angular` >= 0.460.0
+
+### @reelkit/angular-lightbox [#reelkit-angular-lightbox]
+
+- `@reelkit/angular`
+- `@angular/core` >= 17.0.0
+- `lucide-angular` >= 0.400.0
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+### @reelkit/vue [#reelkit-vue]
+
+- `vue` >= 3.0.0
+
+</FrameworkVariant>
+
+<FrameworkVariant for="react">
+
+<Callout type="info">
+  `lucide-react` solo hace falta para los iconos de los controles por defecto. Si pasas tus propios controles con `renderControls`, no necesitas instalarlo.
+</Callout>
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+<Callout type="info">
+  `lucide-angular` solo hace falta para los iconos de los controles por defecto. Si pasas tus propios controles con `rkPlayerControls`, no necesitas instalarlo.
+</Callout>
+
+</FrameworkVariant>
+
+## TypeScript [#typescript]
+
+Todos los paquetes incluyen definiciones de tipos de TypeScript. No hace falta instalar paquetes @types adicionales.
+
+## Compatibilidad con navegadores [#browser-support]
+
+reelkit funciona en todos los navegadores modernos:
+
+<Bullets marker="check">
+
+- Chrome/Edge 88+
+- Firefox 78+
+- Safari 14+
+- iOS Safari 14+
+- Android Chrome 88+
+
+</Bullets>
+
+<NextSteps
+        items={[
+          {
+            label: 'Guía del core',
+            path: '/docs/core/guide',
+            description: 'el motor independiente del framework',
+          },
+          {
+            label: 'Guía del framework',
+            path: {
+              react: '/docs/react/guide',
+              angular: '/docs/angular/guide',
+              vue: '/docs/vue/guide',
+            },
+            description: 'componentes, demos e integración',
+          },
+          {
+            label: 'Reel Player',
+            path: {
+              react: '/docs/reel-player',
+              angular: '/docs/angular-reel-player',
+              vue: '/docs/vue-reel-player',
+            },
+            description: 'reproductor de vídeo al estilo de TikTok/Reels',
+          },
+          {
+            label: 'Lightbox',
+            path: {
+              react: '/docs/lightbox',
+              angular: '/docs/angular-lightbox',
+              vue: '/docs/vue-lightbox',
+            },
+            description: 'galería de imágenes y vídeos',
+          },
+          {
+            label: 'Stories Player',
+            path: {
+              react: '/docs/stories-player',
+              angular: '/docs/angular-stories-player',
+              vue: '/docs/vue-stories-player',
+            },
+            description: 'visor de stories al estilo de Instagram',
+          },
+        ]}
+      />

@@ -1,0 +1,401 @@
+---
+title: Angular Reel Player
+description: Overlay de reproductor de vídeo a pantalla completa al estilo de TikTok/Reels para Angular. Esquema de ContentItem, inputs, outputs, directivas de slots de plantilla y temas compartidos con el reel-player de React.
+---
+
+import { Zap, Play, Volume2, Layout, Clock, Image, Layers, Ratio, Monitor, Code, Settings, Link2 } from 'lucide-react';
+import installation from '../../snippets/angular-reel-player/installation.sh?raw';
+import basicUsage from '../../snippets/angular-reel-player/basic-usage.ts?raw';
+import templateSlots from '../../snippets/angular-reel-player/template-slots.ts?raw';
+import nestedSliderMultiMedia from '../../snippets/angular-reel-player/nested-slider-multi-media.ts?raw';
+import lifecycleCallbacks from '../../snippets/angular-reel-player/lifecycle-callbacks.html?raw';
+import customLoadingErrorUi from '../../snippets/angular-reel-player/custom-loading-error-ui.html?raw';
+import timeline from '../../snippets/angular-reel-player/timeline.html?raw';
+import rktimelinebarcomponent from '../../snippets/angular-reel-player/rktimelinebarcomponent.ts?raw';
+import soundstateservice from '../../snippets/angular-reel-player/soundstateservice.ts?raw';
+import urlState from '../../snippets/angular-reel-player/url-state.ts?raw';
+import oneKeyOrTwo from '../../snippets/angular-reel-player/one-key-or-two.ts?raw';
+import oneKeyOrTwo2 from '../../snippets/angular-reel-player/one-key-or-two-2.ts?raw';
+import oneKeyOrTwo3 from '../../snippets/angular-reel-player/one-key-or-two-3.ts?raw';
+import oneKeyOrTwo4 from '../../snippets/angular-reel-player/one-key-or-two-4.ts?raw';
+import customDataTypes from '../../snippets/angular-reel-player/custom-data-types.ts?raw';
+import theming from '../../snippets/angular-reel-player/theming.css?raw';
+
+Reproductor vertical de medios a pantalla completa al estilo de Instagram y TikTok para Angular, con `@reelkit/angular-reel-player`.
+
+<DemoLink href="https://angular-demo.reelkit.dev/reel-player?utm_source=docs">Ver la demo en vivo →</DemoLink>
+
+## Características [#features]
+
+<FeatureGrid items={[
+              {
+                icon: Zap,
+                label: 'Deslizamiento vertical',
+                desc: 'Táctil, arrastre, teclado, rueda',
+              },
+              {
+                icon: Play,
+                label: 'Reproducción automática',
+                desc: 'Se reproduce al hacerse visible',
+              },
+              { icon: Volume2, label: 'Botón de sonido', desc: 'Sin cortes en iOS' },
+              {
+                icon: Layout,
+                label: 'Varios medios',
+                desc: 'Carruseles horizontales anidados',
+              },
+              {
+                icon: Clock,
+                label: 'Recuerda la posición',
+                desc: 'Continúa donde lo dejaste',
+              },
+              {
+                icon: Image,
+                label: 'Captura de fotogramas',
+                desc: 'Fundido del póster al vídeo',
+              },
+              {
+                icon: Layers,
+                label: 'Virtualizado',
+                desc: 'Solo 3 slides en el DOM',
+              },
+              {
+                icon: Ratio,
+                label: 'Relación de aspecto',
+                desc: '9:16 en escritorio, completo en móvil',
+              },
+              { icon: Monitor, label: 'Navegación en escritorio', desc: 'Botones de flecha' },
+              {
+                icon: Code,
+                label: 'Tipos genéricos',
+                desc: 'Modelos de datos de contenido propios',
+              },
+              {
+                icon: Settings,
+                label: 'Personalizable',
+                desc: 'Slots de plantilla para todo',
+              },
+              {
+                icon: Zap,
+                label: 'Gestión de errores',
+                desc: 'Detección de medios rotos con caché LRU',
+              },
+              {
+                icon: Link2,
+                label: 'Estado en la URL',
+                desc: 'Enlaces compartibles y cierre con el botón de volver',
+              },
+            ]} />
+
+## Instalación [#installation]
+
+<CodeBlock code={installation} language="bash" />
+
+<Callout type="info" title="Iconos">
+  Los controles por defecto usan `lucide-angular` para los iconos (cerrar, sonido, flechas de navegación). Si prefieres otra librería de iconos, usa los slots de plantilla `rkPlayerControls` y `rkPlayerNavigation` para poner los tuyos.
+</Callout>
+
+## Uso básico [#basic-usage]
+
+Importa la hoja de estilos y el componente standalone `RkReelPlayerOverlayComponent` en el array `imports` de tu componente.
+
+<Sandbox code={basicUsage} language="typescript" title="reel-feed.component.ts" framework="angular" />
+
+## Slots de plantilla [#template-slots]
+
+Seis directivas de slots de plantilla te permiten personalizar cada aspecto de la interfaz del reproductor. Cada una recibe un objeto de contexto con tipos estrictos. Pasa solo los slots que quieras sobrescribir; para el resto se usan los valores por defecto.
+
+| Directiva | Tipo del contexto | Descripción |
+| --- | --- | --- |
+| \[rkPlayerControls\] | `PlayerControlsContext<T>` | Barra de controles globales propia (cerrar, botón de sonido, etc.) |
+| \[rkPlayerError\] | `{ $implicit: activeIndex, item, innerActiveIndex }` | Slot de plantilla para un indicador de error propio |
+| \[rkPlayerLoading\] | `{ $implicit: activeIndex, item, innerActiveIndex }` | Slot de plantilla para un indicador de carga propio |
+| \[rkPlayerNavigation\] | `PlayerNavigationContext` | Flechas de navegación de anterior y siguiente propias |
+| \[rkPlayerNestedNavigation\] | `PlayerNestedNavigationContext` | Flechas de navegación propias para el slider horizontal interior |
+| \[rkPlayerNestedSlide\] | `PlayerNestedSlideContext` | Contenido propio de cada slide dentro del slider horizontal interior |
+| \[rkPlayerSlide\] | `PlayerSlideContext<T>` | Contenido del slide totalmente propio que sustituye el slide de medios por defecto |
+| \[rkPlayerSlideOverlay\] | `PlayerSlideOverlayContext<T>` | Overlay por slide (información del autor, me gusta, descripción, etc.) |
+| \[rkPlayerTimeline\] | `PlayerTimelineContext<T>` | Barra de reproducción propia. Solo se renderiza cuando la regla (modo de timeline y duración mínima) renderizaría la barra por defecto (la misma lógica de auto/always/never). |
+
+<CodeBlock code={templateSlots} language="typescript" />
+
+### Línea de tiempo propia [#custom-timeline]
+
+El slot de plantilla `rkPlayerTimeline` solo se usa cuando las reglas del overlay renderizarían la barra por defecto (el mismo modo `timeline` y `timelineMinDurationSeconds`), así que no tienes que reimplementarlas. Reutiliza la clase `.rk-reel-timeline` en tu raíz para heredar la posición pegada al borde inferior, el relleno de la zona segura y el espacio que deja en dispositivos táctiles. Llama a `state.bindInteractions(el)` en tu pista de arrastre para conectar el arrastre con puntero y teclado.
+
+## Slider anidado (elementos con varios medios) [#nested-slider-multi-media-items]
+
+Cuando un `ContentItem` tiene varias entradas en `media`, el reproductor las muestra en un slider horizontal anidado (al estilo del carrusel de Instagram). Usa el slot `rkPlayerNestedSlide` para personalizar el contenido de los slides interiores.
+
+<CodeBlock code={nestedSliderMultiMedia} language="typescript" />
+
+## Carga de contenido y gestión de errores [#content-loading-error-handling]
+
+El reproductor sigue el estado de carga y de error de cada slide. Mientras el contenido se carga se muestra una animación de onda; con un medio roto aparece un icono de error. Las URLs con error se guardan en caché, así que al volver se muestra el error al instante sin reintentar.
+
+### Callbacks del ciclo de vida [#lifecycle-callbacks]
+
+Si usas el slot de plantilla `rkPlayerSlide`, usa los callbacks del contexto para controlar el indicador de carga:
+
+| Callback | Cuándo llamarlo |
+| --- | --- |
+| `onReady` | La imagen se ha cargado o el vídeo ha empezado a reproducirse. Limpia los estados de carga y de error. |
+| `onWaiting` | El vídeo está cargando a mitad de la reproducción. Muestra el indicador de carga. |
+| `onError` | El contenido no se ha podido cargar. Muestra el overlay de error y guarda la URL en caché como rota. |
+
+<CodeBlock code={lifecycleCallbacks} language="html" />
+
+### Interfaz de carga y de error propia [#custom-loading-error-ui]
+
+Sustituye la animación de onda y el icono de error por defecto por plantillas propias:
+
+<CodeBlock code={customLoadingErrorUi} language="html" />
+
+## Línea de tiempo [#timeline]
+
+El overlay renderiza una barra de reproducción incluida sobre el vídeo activo. Controla cuándo con el input `timeline`: `'auto'` (por defecto) la renderiza siempre que el medio activo sea un vídeo más largo que `timelineMinDurationSeconds` (30 por defecto), `'always'` siempre que haya un vídeo activo y `'never'` la desactiva. Para una barra de arrastre totalmente propia, usa la directiva de plantilla `rkPlayerTimeline`; su contexto expone un `timelineState` respaldado por el `TimelineController` que hay debajo.
+
+<CodeBlock code={timeline} language="html" />
+
+Cambia su tema con las propiedades personalizadas de CSS `--rk-reel-timeline-*`. Para controlarla directamente desde componentes propios, inyecta `TimelineStateService`.
+
+### RkTimelineBarComponent [#rktimelinebarcomponent]
+
+Componente de la barra de reproducción por defecto. Usa `TimelineStateService` (lo proporciona `RkReelPlayerOverlayComponent`) y renderiza la pista, los rangos cargados, el relleno del progreso y la píldora de arrastre. Selector: `rk-timeline-bar`. Inputs: `class?: string`, `style?: Record<string, string>`. Úsalo dentro de una plantilla `rkPlayerTimeline` para envolver o ampliar la barra por defecto; por separado, úsalo solo dentro de un componente que proporcione el servicio.
+
+<CodeBlock code={rktimelinebarcomponent} language="typescript" />
+
+## SoundStateService [#soundstateservice]
+
+Se proporciona en el nivel de `RkReelPlayerOverlayComponent`. Lo inyecta el botón de sonido por defecto y se expone en el contexto del slot de plantilla de los controles. Puedes inyectarlo en controles propios que sean *hijos* del overlay para acceder a él directamente.
+
+<CodeBlock code={soundstateservice} language="typescript" />
+
+| Miembro | Tipo | Descripción |
+| --- | --- | --- |
+| `muted()` | `Signal<boolean>` | Indica si el reproductor está en silencio |
+| `disabled()` | `Signal<boolean>` | Es true cuando el slide activo no tiene vídeo o está en transición |
+| `toggle()` | `() => void` | Alterna el estado de silencio |
+
+## Estado en la URL [#url-state]
+
+<DemoLink href="https://angular-demo.reelkit.dev/reel-player-url?utm_source=docs">Ver la demo en vivo →</DemoLink>
+
+`RkReelPlayerUrlOverlayComponent` es un componente aparte cuyo estado abierto vive en la barra de direcciones. Crea un controlador con `createOverlayUrlState` en un contexto de inyección y pásalo como `[controller]`: el reproductor se abre cuando el parámetro nombra un slide y se cierra cuando desaparece. Los enlaces se pueden compartir y el botón de volver cierra el reproductor. `RkReelPlayerOverlayComponent` sigue controlándose con `[isOpen]`, así que cada componente tiene una única forma de controlar el estado abierto.
+
+<Callout type="info" title="Claves incluidas">
+  Puedes apuntar a los slides con una clave incluida: pasa con spread `urlIndexKey` (por posición) o `urlStableIdKey` (por un `id` estable) al controlador; las dos se reexportan desde `@reelkit/angular`. Consulta la [guía del estado en la URL](/docs/core/guide#url-state) y la [API del core](/docs/core/api#url-state).
+</Callout>
+
+Una aplicación con router pasa un adaptador basado en el Router, para que este siga siendo la única fuente de verdad de la navegación: escribir en el historial a sus espaldas deja su ubicación desfasada y pierde el parámetro en la siguiente navegación. `createRouterUrlAdapter` de `@reelkit/angular/ng-router-url-adapter` es el adaptador listo para usar.
+
+<CodeBlock code={urlState} language="typescript" />
+
+- Abrir añade **una** entrada al historial. Deslizar por el feed la **sustituye**, así que N deslizamientos no añaden entradas y volver una vez siempre sale del reproductor. Volver cierra; no cambia de slide.
+- Volver solo cierra cuando el reproductor se abrió desde dentro de la aplicación, es decir, cuando el enlace añadió una entrada. Un enlace compartido abierto directamente en una pestaña nueva no tiene historial detrás, así que el botón de volver del navegador sale del sitio; el botón ✕ o Escape quitan el parámetro en el sitio y se quedan.
+- Un enlace directo `?reel=3` abre el reproductor en ese slide al cargar.
+- Un parámetro que no nombra ningún slide (un marcador desfasado, un valor editado a mano) se quita de la URL en lugar de dejar la barra de direcciones apuntando a un slide que no se puede abrir.
+- La profundidad de la URL depende de la clave del controlador: un eje solo para la publicación, o dos ejes (`urlIndexTwoAxisKey`) para llevar también el índice de la imagen interior de una publicación con varios medios. Elige una clave por aplicación; los formatos no se decodifican entre sí.
+
+Las opciones completas de `createOverlayUrlState` están en la [referencia de la API de Angular](/docs/angular/api#createoverlayurlstate).
+
+### Una clave o dos: elige la profundidad de la URL [#one-key-or-two-pick-your-url-depth]
+
+El mismo `RkReelPlayerUrlOverlayComponent` admite las dos formas; las distingue en tiempo de ejecución por la posición del controlador, así que no hay ningún input de modo. Elige la clave al crear el controlador:
+
+| Clave | Formato | Lleva |
+| --- | --- | --- |
+| `urlIndexKey(…)` | `?reel=3` | Solo la publicación vertical. |
+| `urlIndexTwoAxisKey(…)` | `?reel=3.2` | La publicación *y* el índice del medio interior de un carrusel. |
+
+Los dos formatos son distintos a propósito: una clave de dos ejes siempre lleva punto (`3.0`, nunca un `3` suelto), así que un enlace de un eje no se decodifica como de dos. Por eso cambiar una aplicación de una clave a otra invalida los enlaces compartidos antes. Elige una forma y mantenla.
+
+<CodeBlock code={oneKeyOrTwo} language="typescript" />
+
+**Enlaces estables.** El índice es posicional, así que un `?reel=3` guardado abre otra publicación en cuanto el feed se reordena, y en un feed eso es lo normal. `urlStableIdKey` usa como clave el `id` estable de cada publicación y recorre el feed actual; una sola llamada cubre el caso habitual.
+
+<CodeBlock code={oneKeyOrTwo2} language="typescript" />
+
+Pasa `hashCodec: base64UrlCodec` para codificar el id en base64url en la URL: es una ofuscación reversible, no un hash criptográfico.
+
+Si usas otro campo como clave (un `slug`) o paginas un feed infinito con `locateAsync`, crea tú el `codec` y el `locator`. Son dos tareas distintas: `codec` escribe la identidad en la URL y `locator` encuentra dónde está esa identidad.
+
+<CodeBlock code={oneKeyOrTwo3} language="typescript" />
+
+**Feeds infinitos.** `locate` es síncrono, así que solo puede responder por las publicaciones ya cargadas: un enlace compartido a la publicación 400 de un feed que ha cargado 20 no encuentra nada. `locateAsync` es la alternativa y solo se llama cuando `locate` falla: carga las páginas que necesites y devuelve el índice que resulte tener la identidad.
+
+<Callout type="info" title="Atajo">
+  ¿Usas el `id` del elemento como clave? Sáltate el codec y el locator hechos a mano y pasa `locateAsync` directamente a `urlStableIdKey({ items, locateAsync })` (carga cuando no lo encuentra y después devuelve el índice). La versión más completa de abajo es para usar otro campo como clave o para tener el control total.
+</Callout>
+
+<CodeBlock code={oneKeyOrTwo4} language="typescript" />
+
+- Mientras `locateAsync` está pendiente, el reproductor sigue cerrado y el parámetro no se toca, así que el enlace directo sobrevive a la carga. `null` o un rechazo quitan el parámetro.
+- Una respuesta que llega después de que la URL haya cambiado, después de cerrar o después de desmontar se descarta: una carga lenta no puede abrir un slide que nadie ha pedido.
+- Mientras está pendiente no se renderiza nada; la página ya es dueña de ese estado de carga, así que renderiza tu propio esqueleto.
+- No hay tiempo límite: el reproductor no puede saber lo largo que es el feed. Resuelve con `null` cuando se agote la paginación, o el overlay seguirá cerrado indefinidamente.
+
+## Tipos de datos personalizados [#custom-data-types]
+
+Extiende `BaseContentItem` para usar tu propio modelo de dominio. El componente es genérico: `RkReelPlayerOverlayComponent<T extends BaseContentItem>`.
+
+<CodeBlock code={customDataTypes} language="typescript" />
+
+## Inputs de RkReelPlayerOverlayComponent [#rkreelplayeroverlaycomponent-inputs]
+
+| Input | Tipo | Por defecto | Descripción |
+| --- | --- | --- | --- |
+| `ariaLabel` | `string` | 'Video player' | Etiqueta accesible de la región del diálogo |
+| `aspectRatio` | `number \| undefined` | undefined | Relación entre ancho y alto del contenedor en escritorio. Por defecto es 9/16. En móvil el reproductor ocupa todo el viewport. |
+| `content` | `T[] (extends BaseContentItem)` | obligatorio | Array de elementos de contenido que mostrar en el reproductor |
+| `enableNavKeys` | `boolean` | true | Activa la navegación con las teclas de flecha |
+| `enableWheel` | `boolean` | true | Activa la navegación con la rueda del ratón |
+| `initialIndex` | `number` | 0 | Índice, empezando en cero, del elemento visible al principio |
+| `initialInnerIndex` | `number` | 0 | Índice del medio interior con el que abrir, solo para la publicación visible al principio: permite que una URL de dos ejes enlace a una imagen concreta de una publicación con varios medios. Se ignora cuando el usuario navega. |
+| `isOpen` | `boolean` | obligatorio | Controla la visibilidad del overlay; con false el overlay se quita del DOM |
+| `loop` | `boolean` | false | Activa el bucle infinito entre slides |
+| `swipeDistanceFactor` | `number` | 0.12 | Fracción mínima de la distancia de deslizamiento para cambiar de slide |
+| `timeline` | `'auto' \| 'always' \| 'never'` | 'auto' | Cuándo se muestra la barra de reproducción incluida. 'auto' solo la renderiza con vídeos más largos que timelineMinDurationSeconds; 'always' la renderiza siempre que el slide activo tenga un vídeo; 'never' desactiva la barra incluida (usa el slot de plantilla rkPlayerTimeline para sustituirla por completo). |
+| `timelineMinDurationSeconds` | `number` | 30 | Duración mínima del vídeo (en segundos) para que timeline='auto' renderice la barra incluida. Los clips cortos en bucle por debajo de este umbral no la muestran. |
+| `transitionDuration` | `number` | 300 | Duración de la animación de los slides en ms |
+| `wheelDebounceMs` | `number` | 200 | Duración del debounce de los eventos de la rueda en ms |
+
+## Outputs de RkReelPlayerOverlayComponent [#rkreelplayeroverlaycomponent-outputs]
+
+| Output | Tipo | Descripción |
+| --- | --- | --- |
+| `apiReady` | `EventEmitter<ReelApi>` | Se emite cuando el slider está listo y expone la API imperativa |
+| `closed` | `EventEmitter<void>` | Se emite al cerrar el reproductor |
+| `slideChange` | `EventEmitter<number>` | Se emite cuando cambia el índice del slide activo |
+| `innerSlideChange` | `EventEmitter<{ outer: number; inner: number }>` | Se emite cuando cambia el índice del medio interior de la publicación activa: al navegar por dentro y al activar una publicación, con su índice interior actual (0 en una publicación con un solo medio). |
+
+## Inputs de RkReelPlayerUrlOverlayComponent [#rkreelplayerurloverlaycomponent-inputs]
+
+Acepta todos los inputs de arriba salvo `isOpen` e `initialIndex`, que se sustituyen por un `controller` cuya posición elige el slide. Tiene los outputs `closed` y `slideChange`.
+
+| Input | Tipo | Por defecto | Descripción |
+| --- | --- | --- | --- |
+| `controller` | `UrlStateController` | obligatorio | Controlador de `createOverlayUrlState`. Su `position` decide si el reproductor está abierto y qué slide muestra; el overlay escribe a través de él al cambiar de slide y al cerrar. |
+
+## Interfaz MediaItem [#mediaitem-interface]
+
+| Campo | Tipo | Descripción |
+| --- | --- | --- |
+| `id` | `string` | Identificador único del medio |
+| `type` | `'image' \| 'video'` | Tipo de medio |
+| `src` | `string` | URL del medio |
+| `poster` | `string?` | URL de la miniatura del póster en los vídeos |
+| `aspectRatio` | `number` | Relación entre ancho y alto. Los valores \< 1 indican vertical (cover) y > 1, horizontal (contain) |
+
+## Tipos de contexto de los slots de plantilla [#template-slot-context-types]
+
+| Tipo | Campos |
+| --- | --- |
+| `PlayerControlsContext<T>` | `{ $implicit: onClose, activeIndex, content: T[], soundState: PlayerSoundState }` |
+| `PlayerNavigationContext` | `{ $implicit: onPrev, onNext, activeIndex, count }` |
+| `PlayerNestedNavigationContext` | `{ $implicit: onPrev, onNext, activeIndex, count }` |
+| `PlayerNestedSlideContext` | `{ $implicit: MediaItem, index, size, isActive, isInnerActive, slideKey }` |
+| `PlayerSlideContext<T>` | `{ $implicit: T, index, size: [number,number], isActive, slideKey, onReady, onWaiting, onError }` |
+| `PlayerSlideOverlayContext<T>` | `{ $implicit: T, index, isActive }` |
+| `PlayerTimelineContext<T>` | `{ $implicit: T, activeIndex, timelineState: PlayerTimelineState }` |
+| `PlayerTimelineState` | `{ duration(), currentTime(), progress(), bufferedRanges(), isScrubbing(), seek(t), bindInteractions(el) }` |
+
+## Clases CSS [#css-classes]
+
+Todas las clases CSS son normales (no scoped), así que puedes apuntar a ellas con selectores más específicos en una hoja de estilos cargada después de `@reelkit/angular-reel-player/styles.css`. Para cambiar colores, tamaños y z-index, es mejor usar las propiedades personalizadas de CSS de la sección [Temas](#theming) de más abajo: están pensadas justo para eso.
+
+| Clase | Componente | Descripción |
+| --- | --- | --- |
+| `.rk-reel-overlay` | Overlay | Fondo fijo a pantalla completa (fondo, z-index) |
+| `.rk-reel-container` | Overlay | Contenedor del reproductor (posición, desbordamiento) |
+| `.rk-reel-loader` | Overlay | Overlay con la animación de carga en onda |
+| `.rk-reel-media-error` | Overlay | Overlay del estado de error (icono y texto centrados) |
+| `.rk-reel-media-error-text` | Overlay | Texto del mensaje de error |
+| `.rk-reel-button` | Controls | Botón circular de icono compartido (cerrar, sonido, flechas de navegación) |
+| `.rk-reel-close-btn` | Controls | Botón de cerrar |
+| `.rk-reel-sound-btn` | Controls | Botón de sonido |
+| `.rk-reel-nav-arrows` | Navigation | Contenedor de flechas solo para escritorio (oculto por debajo de 768px) |
+| `.rk-reel-nav-btn` | Navigation | Cada flecha de navegación de anterior o siguiente |
+| `.rk-reel-slide-wrapper` | Slide | Envoltorio alrededor del medio y el overlay |
+| `.rk-reel-slide-overlay` | SlideOverlay | Contenedor del overlay con degradado |
+| `.rk-reel-slide-overlay-author` | SlideOverlay | Fila del autor (avatar y nombre) |
+| `.rk-reel-slide-overlay-avatar` | SlideOverlay | Imagen del avatar del autor |
+| `.rk-reel-slide-overlay-name` | SlideOverlay | Texto con el nombre del autor |
+| `.rk-reel-slide-overlay-description` | SlideOverlay | Texto de la descripción |
+| `.rk-reel-slide-overlay-likes` | SlideOverlay | Fila de me gusta (corazón y recuento) |
+| `.rk-reel-video-container` | VideoSlide | Envoltorio del vídeo (fondo, desbordamiento) |
+| `.rk-reel-video-element` | VideoSlide | El elemento \<video> |
+| `.rk-reel-video-poster` | VideoSlide | Imagen del póster (se desvanece al reproducir) |
+| `.rk-reel-video-loader` | VideoSlide | Animación de carga en onda |
+| `.rk-reel-video-poster.rk-visible` | VideoSlide | Modificador de estado que se aplica al póster mientras el vídeo está en pausa o cargando |
+| `.rk-reel-nested-indicator` | NestedSlider | Paginación con puntos bajo los slides con varios medios (su posición cambia entre escritorio y táctil) |
+| `.rk-reel-nested-nav` | NestedSlider | Flechas del carrusel horizontal (ocultas por debajo de 768px) |
+| `.rk-reel-nested-nav-next` | NestedSlider | Posición de la flecha anidada de siguiente |
+| `.rk-reel-nested-nav-prev` | NestedSlider | Posición de la flecha anidada de anterior |
+| `.rk-reel-nested-slider-inner` | NestedSlider | Raíz del slider horizontal anidado |
+| `.rk-reel-timeline` | TimelineBar | Envoltorio de la barra de arrastre. Reutilízalo en las raíces de una plantilla \`rkPlayerTimeline\` propia para heredar la posición pegada al borde inferior, el relleno de la zona segura y el espacio que deja al overlay del slide en dispositivos táctiles. |
+| `.rk-reel-timeline-track` | TimelineBar | Pista (la zona sin reproducir) |
+| `.rk-reel-timeline-buffered` | TimelineBar | Capa de segmentos cargados |
+| `.rk-reel-timeline-fill` | TimelineBar | Relleno del progreso reproducido |
+| `.rk-reel-timeline-cursor` | TimelineBar | Píldora de arrastre (flota sobre la pista) |
+
+## Temas [#theming]
+
+Cada color, tamaño, z-index y transición vive en una propiedad personalizada de CSS. Sobrescribe una o varias en `:root` (o en cualquier ancestro del overlay) para cambiar el tema sin tocar el código de los componentes. Los tokens coinciden con los de los paquetes de React y Vue, así que los cambios sirven para todos los bindings.
+
+| Token | Por defecto | Controla |
+| --- | --- | --- |
+| `--rk-reel-overlay-bg` | `#000` | Color del fondo a pantalla completa |
+| `--rk-reel-overlay-z` | `1000` | z-index del overlay |
+| `--rk-reel-button-bg` | `rgba(0, 0, 0, 0.5)` | Fondo por defecto de los botones circulares |
+| `--rk-reel-button-bg-hover` | `rgba(255, 255, 255, 0.1)` | Fondo de las flechas de navegación (y estado hover base) |
+| `--rk-reel-button-bg-hover-strong` | `rgba(255, 255, 255, 0.2)` | Fondo de las flechas de navegación al pasar el ratón |
+| `--rk-reel-button-fg` | `#fff` | Color del icono de los botones |
+| `--rk-reel-button-size` | `44px` | Ancho / alto de los botones |
+| `--rk-reel-button-radius` | `50%` | border-radius de los botones |
+| `--rk-reel-ui-z` | `10` | z-index de cerrar / sonido / navegación |
+| `--rk-reel-edge-padding` | `16px` | Separación del borde de cerrar / sonido / flechas |
+| `--rk-reel-nav-gap` | `8px` | Espacio entre las flechas de navegación apiladas |
+| `--rk-reel-transition` | `0.2s` | Duración de la transición al pasar el ratón |
+| `--rk-reel-loader-color` | `rgba(255, 255, 255, 0.12)` | Color del degradado de la animación de onda |
+| `--rk-reel-loader-duration` | `1.8s` | Duración de la animación de onda |
+| `--rk-reel-error-fg` | `rgba(255, 255, 255, 0.4)` | Color del icono y el texto de error |
+| `--rk-reel-slide-overlay-bg` | `linear-gradient(transparent, rgba(0, 0, 0, 0.7))` | Degradado del fondo del pie |
+| `--rk-reel-slide-overlay-padding` | `48px 16px 16px` | Relleno interior del pie |
+| `--rk-reel-slide-overlay-name-color` | `#fff` | Color del nombre del autor |
+| `--rk-reel-video-bg` | `#000` | Fondo de las bandas detrás del \<video> |
+| `--rk-reel-video-loader-color` | `rgba(255, 255, 255, 0.15)` | Color del brillo mientras el vídeo carga |
+| `--rk-reel-nested-button-bg` | `rgba(0, 0, 0, 0.5)` | Fondo de las flechas anidadas |
+| `--rk-reel-nested-button-size` | `36px` | Tamaño de las flechas anidadas |
+| `--rk-reel-nested-edge-padding` | `12px` | Separación del borde de las flechas anidadas |
+| `--rk-reel-timeline-track` | `rgba(255, 255, 255, 0.22)` | Fondo de la pista (la zona sin reproducir) |
+| `--rk-reel-timeline-buffered` | `rgba(255, 255, 255, 0.4)` | Color de los segmentos cargados |
+| `--rk-reel-timeline-fill` | `#fff` | Color del relleno del progreso reproducido |
+| `--rk-reel-timeline-cursor` | `#fff` | Color de la píldora de arrastre |
+| `--rk-reel-timeline-height` | `3px` | Altura de la pista en reposo |
+| `--rk-reel-timeline-height-active` | `6px` | Altura de la pista al pasar el ratón, con foco o al arrastrar |
+| `--rk-reel-timeline-cursor-width` | `10px` | Ancho de la píldora en reposo |
+| `--rk-reel-timeline-cursor-width-active` | `14px` | Ancho de la píldora al arrastrar |
+| `--rk-reel-timeline-cursor-height` | `24px` | Altura de la píldora en reposo |
+| `--rk-reel-timeline-cursor-height-active` | `32px` | Altura de la píldora al arrastrar |
+| `--rk-reel-timeline-transition` | `0.15s ease-out` | Animación al crecer y encoger la pista y la píldora |
+
+Pega el fragmento de abajo en una hoja de estilos cargada después de `@reelkit/angular-reel-player/styles.css`.
+
+<CodeBlock code={theming} language="css" />
+
+## Accesibilidad [#accessibility]
+
+La raíz del overlay es un diálogo modal (`role="dialog"`, `aria-modal="true"`). Usa el input `ariaLabel` para cambiar lo que anuncia el lector de pantalla; por defecto es "Video player". Cada slide lleva `role="group"`, `aria-roledescription="slide"` y `aria-label="Slide N of M"`.
+
+El overlay captura el foco al abrirse y lo devuelve al disparador al cerrarse. Tab y Mayús+Tab recorren los elementos enfocables de dentro; el foco que sale (un clic fuera, un foco por código) vuelve dentro. Está implementado con `captureFocusForReturn` y `createFocusTrap` de `@reelkit/core`.
+
+## Atajos de teclado [#keyboard-shortcuts]
+
+| Tecla | Acción |
+| --- | --- |
+| `ArrowUp` | Slide anterior |
+| `ArrowDown` | Slide siguiente |
+| `ArrowLeft` | Medio anterior (en el slider anidado) |
+| `ArrowRight` | Medio siguiente (en el slider anidado) |
+| `Escape` | Cierra el reproductor |

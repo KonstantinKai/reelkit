@@ -5,6 +5,7 @@ import { ukCategories, ukKeywords, ukTitles } from './searchData.uk';
 import { ptCategories, ptKeywords, ptTitles } from './searchData.pt';
 import { jaCategories, jaKeywords, jaTitles } from './searchData.ja';
 import { hiCategories, hiKeywords, hiTitles } from './searchData.hi';
+import { esCategories, esKeywords, esTitles } from './searchData.es';
 
 export interface SearchItem {
   title: string;
@@ -3031,6 +3032,7 @@ const _kDictionaries: Partial<Record<Locale, SearchDictionary>> = {
   pt: { titles: ptTitles, categories: ptCategories, keywords: ptKeywords },
   ja: { titles: jaTitles, categories: jaCategories, keywords: jaKeywords },
   hi: { titles: hiTitles, categories: hiCategories, keywords: hiKeywords },
+  es: { titles: esTitles, categories: esCategories, keywords: esKeywords },
 };
 
 const _kLocalisedItems = new Map<Locale, SearchItem[]>();

@@ -1,0 +1,248 @@
+---
+title: Referencia de la API del core
+description: Referencia completa de @reelkit/core con la configuración, callbacks, métodos, estado, señales, transiciones, carga de contenido, sonido, línea de tiempo, pantalla completa, utilidades del DOM, gestión del foco y utilidades de vídeo.
+---
+
+import usage from '../../../snippets/core-api/usage.ts?raw';
+
+Referencia completa de la configuración, los callbacks, los métodos y el estado de `@reelkit/core`.
+
+## SliderController API [#slidercontroller-api]
+
+El core independiente del framework. Una sola factoría crea un controlador a partir de una configuración y unos eventos opcionales: las **opciones de configuración** son la configuración, los **callbacks** son los eventos y los **métodos** son lo que expone el controlador devuelto.
+
+### Función factoría [#factory-function]
+
+| Export | Tipo | Descripción |
+| --- | --- | --- |
+| `createSliderController` | `(config: SliderConfig, events?: SliderEvents) => SliderController` | Crea un controlador del slider. `config` es obligatorio (opciones más abajo); `events` es opcional (callbacks más abajo). Devuelve el controlador con los métodos que lo manejan. |
+
+### Opciones de configuración [#config-options]
+
+| Propiedad | Tipo | Por defecto | Descripción |
+| --- | --- | --- | --- |
+| `count` | `number` | obligatorio | Número total de elementos |
+| `initialIndex` | `number` | 0 | Índice inicial |
+| `direction` | `'vertical' \| 'horizontal'` | 'vertical' | Dirección del desplazamiento |
+| `enableGestures` | `boolean` | true | Activa la navegación arrastrando con el dedo o el ratón. Con false, el controlador de gestos no se conecta. |
+| `enableNavKeys` | `boolean` | true | Activa la navegación con las teclas de flecha |
+| `enableWheel` | `boolean` | false | Activa la rueda del ratón |
+| `wheelDebounceMs` | `number` | 200 | Tiempo de debounce de la rueda |
+| `loop` | `boolean` | false | Navegación en bucle |
+| `transitionDuration` | `number` | 300 | Duración de la animación en ms |
+| `swipeDistanceFactor` | `number` | 0.12 | Umbral del deslizamiento (0-1) |
+| `rangeExtractor` | `(index: number, count: number, loop: boolean) => number[]` | defaultRangeExtractor | Función propia que decide qué índices se renderizan |
+
+### Callbacks [#callbacks]
+
+| Callback | Tipo | Descripción |
+| --- | --- | --- |
+| `onBeforeChange` | `(index, nextIndex, rangeIndex) => void` | Antes del cambio de slide |
+| `onAfterChange` | `(index, rangeIndex) => void` | Después del cambio de slide |
+| `onDragStart` | `(index) => void` | Empieza el arrastre |
+| `onDragEnd` | `(index) => void` | Termina el arrastre |
+| `onDragCanceled` | `(index) => void` | Se cancela el arrastre |
+| `onTap` | `(event: GestureCommonEvent) => void` | Toque simple (se retrasa lo que dura la ventana del doble toque) |
+| `onDoubleTap` | `(event: GestureCommonEvent) => void` | Se detecta un doble toque |
+| `onLongPress` | `(event: GestureCommonEvent) => void` | Se detecta una pulsación larga |
+| `onLongPressEnd` | `(event: GestureEvent) => void` | Se suelta el puntero tras una pulsación larga |
+| `onNavKeyPress` | `(increment: -1 \| 1) => void` | Manejador propio para la navegación con flechas. Sustituye el comportamiento por defecto de anterior y siguiente. |
+
+### Métodos [#methods]
+
+| Método | Tipo | Descripción |
+| --- | --- | --- |
+| `attach(element)` | `(HTMLElement) => void` | Conecta el controlador a un elemento del DOM para detectar gestos |
+| `detach()` | `() => void` | Quita los listeners del DOM (gestos, teclado, rueda). Se puede volver a conectar con observe(). Úsalo en la limpieza de un efecto de React. |
+| `dispose()` | `() => void` | Desmontaje definitivo: desconecta todos los controladores y limpia los observadores de señales. Úsalo en el onDestroy de Angular. |
+| `observe()` | `() => void` | Empieza a observar gestos, teclado y rueda. Respeta las opciones enableGestures, enableNavKeys y enableWheel. |
+| `unobserve()` | `() => void` | Deja de observar gestos, teclado y rueda |
+| `next()` | `() => Promise<void>` | Va al slide siguiente |
+| `prev()` | `() => Promise<void>` | Va al slide anterior |
+| `goTo(index, animate?)` | `(number, boolean?) => Promise<void>` | Va a un slide concreto |
+| `adjust(duration?)` | `(number?) => void` | Recalcula las posiciones de los slides |
+| `setPrimarySize(size)` | `(number) => void` | Actualiza el tamaño del contenedor |
+| `updateConfig(config)` | `(Partial<SliderConfig>) => void` | Actualiza las opciones de configuración |
+| `updateEvents(events)` | `(Partial<SliderEvents>) => void` | Sustituye los manejadores de eventos (los que no se incluyen se conservan) |
+| `getRangeIndex()` | `() => number` | Devuelve la posición del índice activo dentro del array del rango visible |
+
+## Propiedades de estado [#state-properties]
+
+| Propiedad | Tipo | Descripción |
+| --- | --- | --- |
+| `index` | `Signal<number>` | Índice del slide actual |
+| `axisValue` | `Signal<AnimatedValue>` | Posición actual en el eje (animada) |
+| `indexes` | `ComputedSignal<number[]>` | Índices visibles para la virtualización |
+
+## Extractor de rango [#range-extractor]
+
+| Export | Tipo | Descripción |
+| --- | --- | --- |
+| `defaultRangeExtractor` | `(index: number, count: number, loop: boolean) => number[]` | Extractor por defecto que renderiza 3 elementos alrededor del índice actual |
+
+## Signal API [#signal-api]
+
+Primitivas reactivas ligeras que usa todo el core.
+
+### Interfaz Signal [#signal-interface]
+
+| Miembro | Tipo | Descripción |
+| --- | --- | --- |
+| `value` | `T` | Lee o cambia el valor actual. Al cambiarlo avisa a los observadores si el valor es distinto. |
+| `observe(callback)` | `(callback: () => void) => () => void` | Registra un listener que se llama en cada cambio de valor. Devuelve una función que lo elimina. |
+
+### Funciones factoría [#factory-functions]
+
+| Export | Tipo | Descripción |
+| --- | --- | --- |
+| `createSignal` | `<T>(initial: T) => Signal<T>` | Crea una señal reactiva mutable |
+| `createComputed` | `<T>(fn: () => T, deps: () => Subscribable[]) => ComputedSignal<T>` | Crea una señal calculada derivada. El segundo argumento es una factoría de dependencias que devuelve las señales que hay que seguir. |
+| `reaction` | `(deps: () => Subscribable[], effect: () => void) => () => void` | Ejecuta un efecto secundario cuando cambia cualquier señal de la que depende y devuelve una función para desmontarlo. Lee los valores de las señales dentro del callback del efecto. |
+| `batch` | `(fn: () => void) => void` | Agrupa varias actualizaciones de señales en una sola ronda de avisos; admite anidación |
+
+## Transiciones [#transitions]
+
+Funciones de transición incluidas que calculan las transformaciones CSS de cada slide durante la navegación animada. Pasa una como prop `transitionTransformFn` al componente del framework.
+
+| Export | Tipo | Descripción |
+| --- | --- | --- |
+| `TransitionTransformFn` | `type` | Firma de las funciones de transición propias |
+| `getSlideProgress` | `(axisValue: number, slideIndex: number, primarySize: number) => number` | Devuelve un desplazamiento normalizado (de -1 a 1) de un slide respecto al viewport. Úsalo dentro de funciones de transición propias. |
+| `slideTransition` | `TransitionTransformFn` | Transición de deslizamiento por defecto (translateX/Y) |
+| `fadeTransition` | `TransitionTransformFn` | Transición de fundido cruzado con opacidad |
+| `flipTransition` | `TransitionTransformFn` | Transición 3D de volteo de tarjeta |
+| `cubeTransition` | `TransitionTransformFn` | Transición 3D con rotación de cubo |
+| `zoomTransition` | `TransitionTransformFn` | Transición de escala y zoom |
+
+## Carga de contenido [#content-loading]
+
+Utilidades para seguir el estado de carga y de error de cada slide y precargar medios. El controlador de carga usa una comprobación del índice para descartar callbacks antiguos de slides que ya no están activos. El precargador usa una caché LRU (200 cargados y 100 con error por defecto), así que volver a una URL rota muestra el error al instante sin reintentar.
+
+| Export | Tipo | Descripción |
+| --- | --- | --- |
+| `createContentLoadingController` | `() => ContentLoadingController` | Seguimiento del estado de carga y de error de cada slide |
+| `createContentPreloader` | `(config: ContentPreloaderConfig) => ContentPreloader` | Precargador de medios con caché LRU que también guarda los errores |
+| `observeMediaLoading` | `(video: HTMLVideoElement, callbacks: MediaLoadingCallbacks) => () => void` | Observa el estado de carga de un vídeo (playing, canplaythrough, waiting). Devuelve una función para desmontarlo. |
+
+### ContentLoadingController [#contentloadingcontroller]
+
+| Export | Tipo | Descripción |
+| --- | --- | --- |
+| `isLoading` | `Signal<boolean>` | Indica si el slide activo se está cargando |
+| `isError` | `Signal<boolean>` | Indica si el slide activo ha dado error |
+| `setActiveIndex` | `(index: number) => void` | Actualiza el índice activo y reinicia el estado de carga y de error |
+| `onReady` | `(index: number) => void` | Marca el slide como listo (se ignora si el índice no coincide con el activo) |
+| `onWaiting` | `(index: number) => void` | Marca el slide como en carga (se ignora si el índice no coincide con el activo) |
+| `onError` | `(index: number) => void` | Marca el slide con error (se ignora si el índice no coincide con el activo) |
+
+### ContentPreloader [#contentpreloader]
+
+| Export | Tipo | Descripción |
+| --- | --- | --- |
+| `preload` | `(src: string, type?: "image" \| "video") => void` | Empieza a precargar la URL de un medio |
+| `isLoaded` | `(src: string) => boolean` | Comprueba si la URL está en la caché LRU de cargados (máximo 200) |
+| `isErrored` | `(src: string) => boolean` | Comprueba si la URL está en la caché LRU de errores (máximo 100) |
+| `markLoaded` | `(src: string) => void` | Marca a mano una URL como cargada |
+| `markErrored` | `(src: string) => void` | Marca a mano una URL con error |
+| `onLoaded` | `(src: string, cb: () => void) => () => void` | Se suscribe al final de la carga; devuelve una función para desmontarlo |
+
+## Sonido [#sound]
+
+Estado compartido de silencio para la reproducción de medios. El controlador de sonido ofrece una señal reactiva de silencio que se puede sincronizar con elementos de vídeo y cambiar desde controles propios.
+
+| Export | Tipo | Descripción |
+| --- | --- | --- |
+| `createSoundController` | `() => SoundController` | Controlador del estado de silencio compartido |
+| `syncMutedToVideo` | `(video: HTMLVideoElement, sound: SoundController) => () => void` | Sincroniza la señal de silencio con un elemento de vídeo. Devuelve una función para desmontarlo. |
+
+## Línea de tiempo [#timeline]
+
+Controlador de la línea de tiempo para avanzar y retroceder en un vídeo. Sigue la duración, el tiempo actual, los rangos cargados y si el usuario está arrastrando, todo como señales reactivas. Una sola llamada conecta las interacciones con puntero y teclado a cualquier elemento del DOM para que funcione como una barra de progreso nativa, con captura del puntero, búsqueda en vivo y teclado completo (flechas, Inicio/Fin, RePág/AvPág).
+
+| Export | Tipo | Descripción |
+| --- | --- | --- |
+| `createTimelineController` | `(config?: TimelineControllerConfig) => TimelineController` | Factoría que devuelve un controlador con las señales `duration`, `currentTime`, `progress`, `bufferedRanges` y `isScrubbing` y los métodos `attach`, `detach`, `bindInteractions` y `seek`. |
+| `TimelineControllerConfig` | `interface` | `keyboardStepSeconds` (5 por defecto), `keyboardPageFraction` (0.1 por defecto) y los callbacks `onSeek`, `onScrubStart` y `onScrubEnd`. |
+| `BufferedRange` | `{ start: number; end: number }` | Una zona cargada continua, expresada como fracciones de 0 a 1 de la duración total. Se emiten ordenadas y sin solaparse. |
+
+## Pantalla completa [#fullscreen]
+
+Utilidades de pantalla completa compatibles con todos los navegadores, con protección para los prefijos de Safari. La señal de pantalla completa es un singleton perezoso que sigue ese estado de forma reactiva.
+
+| Export | Tipo | Descripción |
+| --- | --- | --- |
+| `fullscreenSignal` | `Signal<boolean>` | Señal reactiva que indica si el documento está en pantalla completa |
+| `requestFullscreen` | `(element: HTMLElement) => Promise<void>` | Pone en pantalla completa el elemento indicado |
+| `exitFullscreen` | `() => Promise<void>` | Sale de la pantalla completa |
+
+## Utilidades de DOM y limpieza [#dom-cleanup-utilities]
+
+Ayudantes de bajo nivel para gestionar eventos del DOM y limpiar de forma determinista. Los usan todos los controladores internamente y están disponibles para integraciones propias.
+
+| Export | Tipo | Descripción |
+| --- | --- | --- |
+| `observeDomEvent` | `(target, event, handler, options?) => () => void` | Añade un listener de eventos del DOM y devuelve una función que lo quita |
+| `createDisposableList` | `() => DisposableList` | Lista combinable para reunir funciones de limpieza. Llama a dispose() para ejecutarlas todas a la vez. |
+| `createBodyLock` | `() => BodyLock` | Bloqueo del scroll del body con recuento de referencias. Varios consumidores pueden bloquearlo a la vez; el scroll vuelve cuando todos lo liberan. |
+| `sharedBodyLock` | `BodyLock` | Instancia única a nivel de módulo. Úsala cuando varios componentes de tu aplicación deban compartir un solo contador para que los modales y overlays anidados se intercalen bien. Los bindings de los frameworks (`@reelkit/react`, `@reelkit/vue`, `@reelkit/angular`) la usan por debajo. |
+
+## Gestión del foco [#focus-management]
+
+Primitivas de accesibilidad para diálogos, independientes del framework. Los paquetes de overlay las usan para devolver el foco al disparador al cerrar y para mantener Tab / Mayús+Tab dentro del overlay mientras está abierto. Seguras en SSR: fuera del navegador, cada ayudante devuelve una función de limpieza que no hace nada.
+
+| Export | Tipo | Descripción |
+| --- | --- | --- |
+| `captureFocusForReturn` | `() => Disposer` | Guarda el elemento con el foco y devuelve una función que se lo devuelve. Hace lo que puede: si el elemento guardado ya no está en el DOM, la función no hace nada. |
+| `createFocusTrap` | `(container: HTMLElement) => Disposer` | Mantiene Tab/Mayús+Tab dentro de `container`. Tab en el último elemento enfocable salta al primero; Mayús+Tab en el primero salta al último; el foco que sale del contenedor (un clic fuera, un foco por código) vuelve dentro. Al activarse no mueve el foco dentro del contenedor: eso lo decide quien lo llama. |
+| `getFocusableElements` | `(container: HTMLElement) => HTMLElement[]` | Devuelve todos los descendientes enfocables con teclado en el orden del DOM, sin los elementos desactivados, ocultos o con `tabindex="-1"`. |
+
+### Uso [#usage]
+
+<CodeBlock code={usage} language="typescript" />
+
+## Utilidades de vídeo [#video-utilities]
+
+Utilidades independientes del framework para compartir la reproducción de vídeo entre slides. Las usan internamente `@reelkit/react-reel-player` y `@reelkit/react-lightbox`, y están disponibles para bindings de otros frameworks.
+
+| Export | Tipo | Descripción |
+| --- | --- | --- |
+| `captureFrame` | `(video: HTMLVideoElement) => string \| null` | Captura el fotograma actual del vídeo como una data URL en JPEG. Devuelve null ante errores de origen cruzado. |
+| `createSharedVideo` | `(config: SharedVideoConfig) => SharedVideoInstance` | Crea un singleton de vídeo compartido con su propio ámbito, con mapas de la posición de reproducción y de los fotogramas capturados. Cada consumidor recibe una instancia aislada para que el sonido no se corte en iOS. |
+| `syncVideoObjectFit` | `(video: HTMLVideoElement, fallbackIsVertical: boolean) => Disposer` | Mantiene `video.style.objectFit` acorde con la orientación real del vídeo. Aplica al momento el valor de respaldo (según la relación de aspecto declarada) y, en `loadedmetadata`, lee los `videoWidth` / `videoHeight` reales y cambia a `'cover'` en vertical y a `'contain'` en horizontal. Aguanta metadatos declarados erróneos. |
+
+## Estado en la URL [#url-state]
+
+Refleja un parámetro de la query en una señal y viceversa. Dos ejes, una tarea cada uno: un `codec` es el formato (texto del parámetro ↔ una identidad estable) y un `locator` es la búsqueda (dónde está esa identidad en la colección).
+
+| Export | Tipo | Descripción |
+| --- | --- | --- |
+| `createUrlStateController` | `({ param, adapter?, codec?, locator? }) => UrlStateController` | Refleja un parámetro de la query en una señal y escribe los cambios de vuelta en la URL. La primera escritura de un parámetro ausente añade una entrada al historial; las siguientes la sustituyen. Con un `codec` o un `locator` también deriva `position: Signal<Pos \| null>`, aplica el cierre al abrir y cerrar y limpia solo un parámetro que no nombra ningún slide, así que cada binding se suscribe en lugar de volver a derivarlo. Escribir una posición con el overlay cerrado lo abre al momento, sin esperar a que el adaptador confirme la escritura; `UrlChange` indica cuándo un cierre vuelve atrás en el historial y cuándo limpia en el sitio. |
+| `createHistoryAdapter` | `() => UrlAdapter` | Adaptador por defecto sobre la History API. Una aplicación con router debería inyectar el suyo; si no, la ubicación del router queda desfasada y su siguiente navegación pierde el parámetro. |
+| `indexCodec` | `UrlCodec<number>` | Lee `?photo=3` como el slide 3. Pásalo para derivar el índice sin escribir un codec propio. Para una lista infinita o paginada, pasa `locator` en su lugar: el parámetro se mantiene mientras la promesa está pendiente, así que un enlace directo a una página sin cargar no se borra a mitad de la petición. |
+| `createIndexLocator` | `(countGetter: () => number) => UrlLocator<number>` | El locator por índice por defecto: la posición de un slide se corresponde consigo misma, limitada por el recuento actual que devuelve el getter. Un índice fuera de rango da `null`, así que un `?photo=99` desfasado se limpia solo de la URL; se rechaza en lugar de ajustarse al slide más cercano, que abriría uno que la URL nunca nombró. Es un getter y no un número, así que el límite lee el tamaño actual en cada búsqueda mientras crece una galería paginada. |
+| `urlIndexKey` | `(countGetter, locateAsync?) => UrlKey<number>` | El par a juego para una galería por índice: `indexCodec` más un `createIndexLocator` ligado al tamaño de la galería. Pásalo con spread (`{ param, ...urlIndexKey(() => count) }`) para que el codec no se desajuste del locator. Pasa un segundo argumento `locateAsync` para un feed paginado con ventana: carga páginas hasta el índice buscado si no lo encuentra y después lo devuelve. |
+| `urlIndexTwoAxisKey` | `(opts) => UrlKey<TwoAxisIdentity, TwoAxisPosition>` | Como `urlIndexKey` pero para un reproductor con dos ejes: un único parámetro `?p=<outer>.<inner>` con punto obligatorio que se resuelve en un `TwoAxisPosition` `{ outer, inner }`. Opciones (`UrlIndexTwoAxisKeyOptions`): `outerCount`, `innerCounts`, `outerCodec`/`outerLocator` opcionales para el eje exterior, y `innerCodec`/`innerLocate`/`innerIdentify` para apuntar también al eje interior por id. Cada eje usa por defecto un índice acotado. Es la base del Stories Player controlado por la URL. |
+| `createStableIdCodec` | `(hashCodec?: UrlCodec<string>) => UrlCodec<string>` | El **formato** por id estable, exportado para combinarlo: el texto del parámetro es el `id` del elemento, tal cual o transformado con `hashCodec` (pasa `base64UrlCodec` para usar base64url reversible). Es el equivalente de `indexCodec` para ids estables: combínalo con un locator propio en lugar de usar todo `urlStableIdKey`. |
+| `base64UrlCodec` | `UrlCodec<string>` | El mecanismo de ofuscación listo para una clave por id estable: base64url reversible (alfabeto seguro para URLs, sin relleno, UTF-8), **no** un hash criptográfico. Pásalo como `hashCodec` para ocultar el id en la URL, o implementa tu propio `UrlCodec<string>` para usar otro esquema. |
+| `createStableIdLocator` | `(items, locateAsync?) => UrlLocator<string, number>` | La **búsqueda** por id estable, exportada para combinarla: recorre `items()` en busca de un `id` que coincida; un id que ya no existe da `null` y se limpia solo. El `locateAsync` opcional pagina un feed con ventana. Es el equivalente de `createIndexLocator` para ids estables. |
+| `urlStableIdKey` | `(opts) => UrlKey<string, number>` | Apunta a los elementos de una galería por su `id` estable (`?photo=<id>`) en lugar de por su posición, así que un marcador sobrevive a que la lista se reordene. Opciones (`UrlStableIdKeyOptions`): `items` (un getter actual), `hashCodec` opcional (pasa `base64UrlCodec`) para transformar el id en la URL, y `locateAsync` opcional para un feed paginado con ventana (carga hasta que aparece el id y después devuelve su índice). Prefiérela a `urlIndexKey` siempre que la lista pueda cambiar bajo un enlace compartido. |
+| `urlStableIdTwoAxisKey` | `(opts) => UrlKey<TwoAxisIdentity<string>, TwoAxisPosition>` | El equivalente con dos ejes: el eje exterior por id estable y el interior por índice local (`?story=user_42.3`). Pasa `innerItems` en lugar de `innerCounts` para apuntar también al interior por id (`?story=user_42.photo_7`); `hashCodec` (por ejemplo `base64UrlCodec`) transforma los dos ids. Opciones `UrlStableIdTwoAxisKeyOptions` (interior por índice) o `UrlStableIdTwoAxisIdInnerOptions` (interior por id); los tipos de los elementos cumplen `Identified` (`{ id: string }`). |
+| `UrlCodec<Id>` | `{ decode(raw) => Id \| null; encode(id) => string }` | El formato: texto del parámetro ↔ una identidad estable, sin conocer la colección. Si `decode` devuelve `null`, el texto está mal formado. |
+| `UrlLocator<Id>` | `{ locate(id) => number \| null; locateAsync?(id) => Promise<number \| null>; identify(index) => id }` | La búsqueda: dónde está la identidad en la colección. `locate` es síncrono, `locateAsync` es su alternativa para una lista paginada e `identify` convierte un índice en una identidad al escribir. |
+| `UrlKey<Id>` | `{ codec: UrlCodec<Id>; locator: UrlLocator<Id> }` | El par a juego de codec y locator para un parámetro. Comparten el mismo `Id` y siempre van juntos: el codec escribe la identidad en la URL y el locator encuentra dónde está, así que crearlos como par es lo que evita que se contradigan. |
+| `UrlAdapter` | `{ read, subscribe, push, replace, getState, goBack }` | El punto de inyección para un router. Una aplicación con router debe pasar uno, o su propia ubicación queda desfasada. El listener de `subscribe` acepta un `UrlChange` opcional; llamarlo sin nada siempre es válido y significa que el adaptador no sabe cómo llegó a ser actual esa entrada. |
+| `UrlChange` | `{ kind?: 'push' \| 'replace' \| 'pop' }` | Lo que sabe un adaptador de la navegación que acaba de ocurrir. Indica `push` solo en una navegación que haya hecho el propio router en la misma página; es el único caso en que cerrar puede quitar la entrada del historial. Sin esa certeza nunca se reclama la entrada y cerrar limpia el parámetro en el sitio, dejando una copia de la página en el historial en lugar de arriesgarse a salir del sitio. |
+| `UrlStateOptions<Id>` | `{ param: string; adapter?: UrlAdapter; codec?: UrlCodec<Id>; locator?: UrlLocator<Id> }` | Las opciones que recibe `createUrlStateController`, exportadas para que un consumidor pueda tipar una configuración montada por separado antes de pasarla. |
+
+## Elementos ya vistos [#viewed-state]
+
+Guarda hasta dónde llegó alguien con la misma clave que la barra de direcciones: una entrada es el propio texto del parámetro y se lee con el mismo `codec` y `locator`.
+
+| Export | Tipo | Descripción |
+| --- | --- | --- |
+| `createViewedStateController` | `(options) => ViewedStateController<Pos>` | Recuerda hasta dónde llegó alguien y lo guarda con el mismo texto que llevaría un parámetro de la URL. Recibe el mismo par `codec`/`locator` que usa la barra de direcciones, más `storageKey`, `storage` opcional, `trackOf` (una entrada por grupo) y `progressOf`. No lee nada hasta `attach()`, así que es seguro prerrenderizarlo. |
+| `twoAxisViewedTracking` | `{ trackOf, progressOf }` | El par de seguimiento para un reproductor con dos ejes: una entrada por cada elemento exterior, con el índice interior como medida del avance. Pásalo con spread junto a una clave de dos ejes. |
+| `createLocalStorageAdapter` | `() => StorageAdapter` | El almacenamiento por defecto. También hay `createSessionStorageAdapter` para un estado que no debe durar más que la pestaña, y `createMemoryStorageAdapter` para tests y renderizado en el servidor. Cada uno absorbe sus propios fallos: una cuota agotada pierde esa escritura y nada más. |
+| `ViewedStateController<Pos>` | `{ entries; resolve(track); record(position); forget(track?); attach() }` | `entries` es una señal de pista → texto guardado, así que un anillo se repinta cuando se registra una posición aquí o en otra pestaña. `resolve` ejecuta el ciclo completo de la clave en cada llamada. |
+| `ViewedStateOptions<Id, Pos>` | `{ storageKey; codec; locator; storage?; trackOf?; progressOf; ttlMs?; maxTracks? }` | Las opciones que recibe `createViewedStateController`, exportadas para que un consumidor pueda tipar una configuración montada por separado antes de pasarla. `progressOf` solo es opcional con una posición por índice simple, que ya es su propia medida del avance; cualquier otra posición debe indicar qué número comparar, y el tipo lo exige. `ttlMs` activa la caducidad: una pista se olvida ese tiempo después de su último registro, y registrarla de nuevo reinicia su reloj. `maxTracks` guarda como mucho ese número de pistas y descarta la registrada hace más tiempo en la siguiente escritura. |
+| `StorageAdapter` | `{ read(key); write(key, value); subscribe?(key, listener) }` | El punto de inyección para una capa de almacenamiento. Sin `subscribe`, el almacén funciona igual pero sin sincronizar entre pestañas. |

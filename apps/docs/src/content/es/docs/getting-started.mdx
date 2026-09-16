@@ -1,0 +1,194 @@
+---
+title: Primeros pasos
+description: 'Pon en marcha tu primer slider con ReelKit en pocos minutos: instalación, slides virtualizados, gestos y navegación con teclado.'
+---
+
+import quickStart from '../../snippets/getting-started/quick-start.tsx?raw';
+import quickStart2 from '../../snippets/getting-started/quick-start-2.ts?raw';
+import quickStart3 from '../../snippets/getting-started/quick-start-3.vue?raw';
+import reelindicator from '../../snippets/getting-started/reelindicator.tsx?raw';
+import reelindicator2 from '../../snippets/getting-started/reelindicator-2.html?raw';
+import reelindicator3 from '../../snippets/getting-started/reelindicator-3.vue?raw';
+import navigation from '../../snippets/getting-started/navigation.tsx?raw';
+import navigation2 from '../../snippets/getting-started/navigation-2.html?raw';
+import navigation3 from '../../snippets/getting-started/navigation-3.vue?raw';
+
+reelkit es un **slider de un solo elemento**: se ve un elemento cada vez, como en TikTok, Instagram Reels o Stories. Es ideal para feeds verticales de vídeo, galerías a pantalla completa y contenido que se desliza.
+
+<Callout type="info" title="¿Te gusta ReelKit?">
+  Si ReelKit te resulta útil, plantéate darle una [estrella en GitHub](https://github.com/KonstantinKai/reelkit). Ayuda a que otros desarrolladores encuentren el proyecto y lo mantiene vivo. ¡Gracias, agradezco de verdad tu apoyo!
+</Callout>
+
+<Callout type="warning" title="0.x.x — API inestable">
+  ReelKit está en desarrollo activo. Mientras siga en 0.x.x, la API puede cambiar entre versiones menores sin periodo de obsolescencia. Fija la versión para evitar roturas inesperadas.
+</Callout>
+
+## Elige tu framework [#select-your-framework]
+
+<FrameworkPicker />
+
+## Pruébalo en línea [#try-it-online]
+
+Pruébalo en el navegador, sin instalar nada:
+
+<FrameworkVariant for="react">
+
+<DemoLinks demo="https://react-demo.reelkit.dev/?utm_source=docs" demoLabel="Demo de React" starter="https://stackblitz.com/github/KonstantinKai/reelkit-react-starter" starterLabel="Plantilla de React" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+<DemoLinks demo="https://angular-demo.reelkit.dev/?utm_source=docs" demoLabel="Demo de Angular" starter="https://stackblitz.com/github/KonstantinKai/reelkit-angular-starter" starterLabel="Plantilla de Angular" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+<DemoLinks demo="https://vue-demo.reelkit.dev/?utm_source=docs" demoLabel="Demo de Vue" starter="https://stackblitz.com/github/KonstantinKai/reelkit-vue-starter" starterLabel="Plantilla de Vue" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="react">
+
+## Inicio rápido [#quick-start]
+
+Slider vertical mínimo con React:
+
+<CodeBlock code={quickStart} language="tsx" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+## Inicio rápido [#quick-start]
+
+Slider vertical mínimo con Angular:
+
+<CodeBlock code={quickStart2} language="typescript" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+## Inicio rápido [#quick-start]
+
+Slider vertical mínimo con Vue:
+
+<CodeBlock code={quickStart3} language="vue" />
+
+</FrameworkVariant>
+
+## Conceptos clave [#key-concepts]
+
+### Reel [#reel]
+
+El componente `Reel` es el contenedor principal: gestiona el estado del slider, los gestos táctiles, la navegación con teclado y las animaciones. Renderiza los slides con un patrón de render prop a través de `itemBuilder`.
+
+### itemBuilder [#itembuilder]
+
+La prop `itemBuilder` es una función que recibe el índice y devuelve el contenido de cada slide. Este patrón hace posible la virtualización: solo se renderizan los elementos visibles.
+
+### ReelIndicator [#reelindicator]
+
+Componente opcional que muestra indicadores de progreso al estilo de Instagram con la posición actual en el slider.
+
+<FrameworkVariant for="react">
+
+<CodeBlock code={reelindicator} language="tsx" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+<CodeBlock code={reelindicator2} language="html" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+<CodeBlock code={reelindicator3} language="vue-html" />
+
+</FrameworkVariant>
+
+## Navegación [#navigation]
+
+Métodos de navegación incluidos:
+
+<Bullets marker="dot">
+
+- **Táctil / deslizar:** arrastra para navegar con inercia y ajuste al slide
+- **Teclado:** teclas de flecha (los componentes overlay también cierran con Escape)
+- **Rueda del ratón:** se activa con la prop `enableWheel`
+- **Por código:** usa `apiRef` para `next()`, `prev()`, `goTo()`
+
+</Bullets>
+
+<FrameworkVariant for="react">
+
+<CodeBlock code={navigation} language="tsx" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+<CodeBlock code={navigation2} language="html" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+<CodeBlock code={navigation3} language="vue" />
+
+</FrameworkVariant>
+
+<NextSteps
+        items={[
+          {
+            label: 'Instalación',
+            path: '/docs/installation',
+            description: 'todos los paquetes y opciones de configuración',
+          },
+          {
+            label: 'Guía del core',
+            path: '/docs/core/guide',
+            description: 'el motor independiente del framework',
+          },
+          {
+            label: 'Guía del framework',
+            path: {
+              react: '/docs/react/guide',
+              angular: '/docs/angular/guide',
+              vue: '/docs/vue/guide',
+            },
+            description: 'componentes, demos e integración',
+          },
+          {
+            label: 'Reel Player',
+            path: {
+              react: '/docs/reel-player',
+              angular: '/docs/angular-reel-player',
+              vue: '/docs/vue-reel-player',
+            },
+            description: 'reproductor de vídeo al estilo de TikTok/Reels',
+          },
+          {
+            label: 'Lightbox',
+            path: {
+              react: '/docs/lightbox',
+              angular: '/docs/angular-lightbox',
+              vue: '/docs/vue-lightbox',
+            },
+            description: 'galería de imágenes y vídeos',
+          },
+          {
+            label: 'Stories Player',
+            path: {
+              react: '/docs/stories-player',
+              angular: '/docs/angular-stories-player',
+              vue: '/docs/vue-stories-player',
+            },
+            description: 'visor de stories al estilo de Instagram',
+          },
+        ]}
+      />

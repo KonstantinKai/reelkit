@@ -10,6 +10,7 @@ import { ukCategories, ukKeywords, ukTitles } from './searchData.uk';
 import { ptCategories, ptKeywords, ptTitles } from './searchData.pt';
 import { jaCategories, jaKeywords, jaTitles } from './searchData.ja';
 import { hiCategories, hiKeywords, hiTitles } from './searchData.hi';
+import { esCategories, esKeywords, esTitles } from './searchData.es';
 import {
   kDefaultLocale,
   kLocales,
@@ -32,6 +33,7 @@ const dictionaries: Record<Exclude<Locale, 'en'>, Dictionary> = {
   pt: { titles: ptTitles, categories: ptCategories, keywords: ptKeywords },
   ja: { titles: jaTitles, categories: jaCategories, keywords: jaKeywords },
   hi: { titles: hiTitles, categories: hiCategories, keywords: hiKeywords },
+  es: { titles: esTitles, categories: esCategories, keywords: esKeywords },
 };
 
 const translated = kLocales
@@ -221,6 +223,8 @@ describe('palette matching', () => {
       'インストール',
       'इंस्टॉल',
       'इन्स्टॉल',
+      'instalación',
+      'guía',
     ];
     for (const query of queries) {
       const q = query.toLowerCase().trim();
@@ -250,5 +254,19 @@ describe('palette matching', () => {
     expect(pathsFor('इंस्टॉल')).toContain('/hi/docs/installation');
     expect(pathsFor('इन्स्टॉल')).toContain('/hi/docs/installation');
     expect(pathsFor('शुरुआत')).toContain('/hi/docs/getting-started');
+  });
+
+  // Spanish readers often type without accents. The fold strips them from
+  // both sides, so the bare spelling finds the page the accented one does,
+  // and no Spanish word turns up English pages that did not match before.
+  it('finds a Spanish page with or without its accents', () => {
+    const pathsIn = (locale: Locale, query: string) =>
+      searchItemsFor(locale)
+        .filter((item) => matchesSearch(item, query))
+        .map((item) => item.path);
+    expect(pathsIn('es', 'instalacion')).toContain('/es/docs/installation');
+    expect(pathsIn('es', 'instalación')).toContain('/es/docs/installation');
+    expect(pathsIn('es', 'guia')).toContain('/es/docs/react/guide');
+    expect(pathsIn('en', 'espanol')).toEqual([]);
   });
 });

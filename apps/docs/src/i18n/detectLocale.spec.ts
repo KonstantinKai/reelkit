@@ -201,6 +201,30 @@ describe('language redirect decision', () => {
     ).toBe(null);
   });
 
+  // Every Spanish-speaking region folds into the one Spanish tree, including
+  // the numeric Latin American region.
+  it('sends a Spanish browser from any region to /es', () => {
+    expect(preferredLocale('es-419,es;q=0.9')).toBe('es');
+    expect(preferredLocale('es-ES')).toBe('es');
+    expect(preferredLocale('es-MX')).toBe('es');
+    expect(preferredLocale('en-US,es;q=0.8')).toBe('en');
+    expect(detectLocale(request({ acceptLanguage: 'es-419,es;q=0.9' }))).toBe(
+      '/es/docs/ssr',
+    );
+    expect(detectLocale(request({ acceptLanguage: 'en-US,es;q=0.8' }))).toBe(
+      null,
+    );
+    expect(
+      detectLocale(request({ acceptLanguage: 'es', cookie: 'rk-locale=en' })),
+    ).toBe(null);
+    expect(
+      detectLocale(request({ pathname: '/es/docs/ssr', acceptLanguage: 'es' })),
+    ).toBe(null);
+    expect(
+      detectLocale(request({ acceptLanguage: 'es', userAgent: 'curl/8.7.1' })),
+    ).toBe(null);
+  });
+
   it('redirects each translated locale to its own prefix', () => {
     for (const locale of kLocales) {
       if (locale === kDefaultLocale) continue;

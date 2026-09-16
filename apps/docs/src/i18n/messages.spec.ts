@@ -76,4 +76,13 @@ describe('chrome dictionaries', () => {
     expect(since(1)).toContain('1 नई रिलीज़');
     expect(since(5)).toContain('5 नई रिलीज़');
   });
+
+  // Spanish splits counts two ways: one, and everything else.
+  it('picks the Spanish plural form for each count', () => {
+    const since = messages.es.whatsNew.since;
+    expect(since(1)).toContain('1 nueva versión');
+    expect(since(2)).toContain('2 nuevas versiones');
+    expect(messages.es.whatsNew.more(1)).toBe('+1 versión más');
+    expect(messages.es.whatsNew.more(3)).toBe('+3 versiones más');
+  });
 });

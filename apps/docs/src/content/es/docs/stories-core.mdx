@@ -1,0 +1,202 @@
+---
+title: Stories Core
+description: El motor de @reelkit/react-stories-player. TypeScript puro, sin dependencias de framework. Úsalo para crear reproductores de stories con Angular, Vue o JavaScript sin framework.
+---
+
+import { Cpu, Layers, Timer, Minus, MousePointerClick, Cog } from 'lucide-react';
+import installation from '../../snippets/stories-core/installation.sh?raw';
+import controllerExample from '../../snippets/stories-core/controller-example.ts?raw';
+import timerExample from '../../snippets/stories-core/timer-example.ts?raw';
+import canvasExample from '../../snippets/stories-core/canvas-example.ts?raw';
+import viewedStateExample from '../../snippets/stories-core/viewed-state-example.ts?raw';
+import typesCode from '../../snippets/stories-core/types-code.ts?raw';
+
+El motor de `@reelkit/react-stories-player`. TypeScript puro, sin dependencias de framework. Úsalo para crear reproductores de stories con Angular, Vue o JavaScript sin framework.
+
+<FeatureGrid columns={3} items={[
+  {
+    icon: Cpu,
+    label: 'Independiente del framework',
+    desc: 'TypeScript puro, sin dependencias de frameworks de DOM',
+  },
+  {
+    icon: Layers,
+    label: 'Navegación en dos niveles',
+    desc: 'Grupos y stories dentro de cada grupo',
+  },
+  {
+    icon: Timer,
+    label: 'Temporizador con RAF',
+    desc: 'Avance automático con requestAnimationFrame, con pausa y reanudación',
+  },
+  {
+    icon: Minus,
+    label: 'Progreso en Canvas',
+    desc: 'Barra de progreso segmentada lista para Retina, con ventana deslizante',
+  },
+  {
+    icon: MousePointerClick,
+    label: 'Zonas de toque',
+    desc: 'Detección configurable de toques a izquierda y derecha',
+  },
+  {
+    icon: Cog,
+    label: 'Señales reactivas',
+    desc: 'Construido sobre las primitivas de señales de @reelkit/core',
+  },
+]} />
+
+## Instalación [#installation]
+
+<CodeBlock code={installation} language="bash" />
+
+## Controlador de Stories [#stories-controller]
+
+`createStoriesController(config, events?)` gestiona la navegación entre grupos y stories. Sigue el estado de pausa y reanudación, recuerda la última story vista de cada grupo y lanza callbacks en cada transición.
+
+### Configuración (StoriesControllerConfig) [#config-storiescontrollerconfig]
+
+| Propiedad | Tipo | Por defecto | Descripción |
+| --- | --- | --- | --- |
+| `groupCount` | `number` | obligatorio | Número total de grupos de stories |
+| `storyCounts` | `number[]` | obligatorio | Número de stories de cada grupo |
+| `initialGroupIndex` | `number` | 0 | Índice del grupo inicial |
+| `initialStoryIndex` | `number` | resumeStoryIndex(initialGroupIndex), si no 0 | Índice de la story inicial dentro del grupo. Si lo indicas, se impone a lo que se haya recordado; si no, el grupo inicial se reanuda igual que los demás. |
+| `defaultImageDuration` | `number` | 5000 | Duración por defecto del avance automático en las stories con imagen, en ms |
+| `resumeStoryIndex` | `(groupIndex: number) => number` | undefined | Story con la que se abre un grupo no visitado, limitada a una story que el grupo tenga |
+
+### Eventos (StoriesControllerEvents) [#events-storiescontrollerevents]
+
+| Evento | Tipo | Descripción |
+| --- | --- | --- |
+| `onStoryChange` | `(groupIndex, storyIndex) => void` | Se lanza al cambiar la story activa |
+| `onGroupChange` | `(groupIndex) => void` | Se lanza al cambiar el grupo activo |
+| `onStoryViewed` | `(groupIndex, storyIndex) => void` | Se lanza cuando una story se hace visible |
+| `onStoryComplete` | `(groupIndex, storyIndex) => void` | Se lanza al terminar el temporizador de una story (antes de avanzar) |
+| `onComplete` | `() => void` | Se lanza al terminar la última story del último grupo |
+| `onClose` | `() => void` | Se lanza cuando el overlay debe cerrarse |
+
+### Estado (señales reactivas) [#state-reactive-signals]
+
+| Señal | Tipo | Descripción |
+| --- | --- | --- |
+| `state.activeGroupIndex` | `Signal<number>` | Índice del grupo activo |
+| `state.activeStoryIndex` | `Signal<number>` | Índice de la story activa dentro del grupo |
+| `state.isPaused` | `Signal<boolean>` | Indica si el avance automático está en pausa |
+
+### Métodos [#methods]
+
+| Método | Tipo | Descripción |
+| --- | --- | --- |
+| `nextStory()` | `() => void` | Avanza dentro del grupo; al llegar al final pasa al grupo siguiente |
+| `prevStory()` | `() => void` | Retrocede dentro del grupo; al llegar al principio pasa al grupo anterior |
+| `nextGroup()` | `() => void` | Cambia al grupo siguiente y retoma la última story vista |
+| `prevGroup()` | `() => void` | Cambia al grupo anterior y retoma la última story vista |
+| `goToGroup(index)` | `(number) => void` | Salta a un grupo concreto por su índice |
+| `pause()` | `() => void` | Pausa el avance automático |
+| `resume()` | `() => void` | Reanuda el avance automático |
+| `onStoryTimerComplete()` | `() => void` | Se llama al terminar el temporizador; lanza onStoryComplete y después avanza |
+| `getLastStoryIndex(groupIndex)` | `(number) => number` | Dónde se abre un grupo: la story en la que se dejó en esta sesión o, si no, la que indique resumeStoryIndex |
+| `reportInitialView()` | `() => void` | Marca como vista, una sola vez, la story con la que se abrió el reproductor. Llámalo después de montar, no durante el renderizado. |
+
+### Ejemplo [#example]
+
+<CodeBlock code={controllerExample} />
+
+## Controlador del temporizador [#timer-controller]
+
+`createTimerController(config)` hace avanzar las stories con un bucle de `requestAnimationFrame`. La señal de progreso (de 0 a 1) alimenta la barra de progreso. Pausar y reanudar conserva la posición exacta.
+
+### Configuración (TimerControllerConfig) [#config-timercontrollerconfig]
+
+| Propiedad | Tipo | Por defecto | Descripción |
+| --- | --- | --- | --- |
+| `duration` | `number` | obligatorio | Duración por defecto en milisegundos |
+| `onComplete` | `() => void` | undefined | Se llama cuando el temporizador llega al 100 % |
+
+### Estado [#state]
+
+| Señal | Tipo | Descripción |
+| --- | --- | --- |
+| `progress` | `Signal<number>` | Señal de progreso (de 0 a 1) |
+| `isRunning` | `Signal<boolean>` | Indica si el temporizador está en marcha |
+
+### Métodos [#methods]
+
+| Método | Tipo | Descripción |
+| --- | --- | --- |
+| `start(duration?)` | `(number?) => void` | Inicia (o reinicia) el temporizador con una duración opcional distinta |
+| `pause()` | `() => void` | Congela el progreso en la posición actual |
+| `resume()` | `() => void` | Continúa desde la posición congelada |
+| `reset()` | `() => void` | Vuelve el progreso a 0 y lo detiene |
+| `dispose()` | `() => void` | Libera los recursos |
+
+### Ejemplo [#example]
+
+<CodeBlock code={timerExample} />
+
+## Renderizador de progreso en Canvas [#canvas-progress-renderer]
+
+`createCanvasProgressRenderer(config?)` dibuja barras de progreso segmentadas en un canvas. Se adapta a pantallas Retina, mide su contenedor con ResizeObserver y usa una ventana deslizante cuando los segmentos no caben.
+
+### Configuración (CanvasProgressRendererConfig) [#config-canvasprogressrendererconfig]
+
+| Propiedad | Tipo | Por defecto | Descripción |
+| --- | --- | --- | --- |
+| `gap` | `number` | 2 | Separación en píxeles entre segmentos |
+| `barHeight` | `number` | 2 | Altura de la barra en píxeles |
+| `minSegmentWidth` | `number` | 8 | Ancho mínimo de un segmento antes de que entre en juego la ventana deslizante |
+| `bgColor` | `string` | 'rgba(255,255,255,0.3)' | Color de fondo de los segmentos sin rellenar |
+| `fillColor` | `string` | '#ffffff' | Color de relleno de los segmentos completados o activos |
+
+### Métodos [#methods]
+
+| Miembro | Tipo | Descripción |
+| --- | --- | --- |
+| `attach(canvas)` | `(HTMLCanvasElement) => void` | Se conecta a un elemento canvas e inicia ResizeObserver en su padre |
+| `draw(totalStories, activeIndex, progress)` | `(number, number, number) => void` | Dibuja la barra de progreso para el estado indicado |
+| `width` | `number (readonly)` | Ancho medido actual en píxeles CSS |
+| `dispose()` | `() => void` | Limpia ResizeObserver y el estado interno |
+
+### Ejemplo [#example]
+
+<CodeBlock code={canvasExample} />
+
+## Elementos ya vistos [#viewed-state]
+
+`createStoriesViewedState(controller, groups)` lee un `ViewedStateController` del core con los términos que usa un reproductor (grupos, autores, índices de story) sin que el almacén conozca ninguno de ellos. Devuelve un `StoriesViewedState`. Crea el almacén con la misma clave que usa la barra de direcciones, con seguimiento por grupo, y una entrada guardada se leerá exactamente igual que el parámetro de un enlace compartido.
+
+| Parámetro | Tipo | Descripción |
+| --- | --- | --- |
+| `controller` | `ViewedStateController<TwoAxisPosition>` | Almacén del core creado con la misma clave que la barra de direcciones y con twoAxisViewedTracking para que cada grupo tenga su propia entrada |
+| `groups` | `() => StoriesGroup<T>[]` | Lee los grupos actuales. Es un getter, así que un feed que carga páginas o se reordena después de configurarse se mide en el momento de la llamada. |
+
+### StoriesViewedState [#storiesviewedstate]
+
+| Método | Tipo | Descripción |
+| --- | --- | --- |
+| `viewedCounts()` | `() => Map<string, number>` | Stories vistas por grupo, con el id del autor como clave: la forma que StoriesRingList espera como viewedState |
+| `resumeStoryIndex(groupIndex)` | `(number) => number` | La primera story sin ver, o 0 cuando el grupo ya se ha visto hasta el final |
+| `markViewed(groupIndex, storyIndex)` | `(number, number) => void` | Registra una story como vista. Conéctalo a onStoryViewed. |
+
+### Ejemplo [#example]
+
+<CodeBlock code={viewedStateExample} />
+
+Una entrada indica la story más lejana a la que se llegó, no un recuento de visualizaciones, así que una clave por id mantiene el punto de un grupo aunque el feed se reordene, mientras que quitar una story del medio de un grupo acorta su cuenta y vuelve a encender su anillo.
+
+## Funciones de utilidad [#utility-functions]
+
+Funciones puras para detectar las zonas de toque y calcular la barra de progreso.
+
+| Función | Tipo | Descripción |
+| --- | --- | --- |
+| `getTapAction(tapX, containerWidth, splitRatio?)` | `(number, number, number?) => 'prev' \| 'next'` | Decide según la posición si un toque lanza 'prev' o 'next'. El splitRatio por defecto es 0.3. |
+| `getSegments(totalStories, activeIndex, progress)` | `(number, number, number) => SegmentState[]` | Calcula el estado y el porcentaje de relleno de cada segmento de una barra de progreso |
+| `getVisibleWindow(totalStories, activeIndex, progress, containerWidth, minSegmentWidth?, gap?)` | `(number, number, number, number, number?, number?) => VisibleWindow` | Calcula la ventana deslizante de segmentos visibles cuando el total no cabe en el contenedor |
+
+## Tipos [#types]
+
+Todas las definiciones de tipos que exporta `@reelkit/stories-core`.
+
+<CodeBlock code={typesCode} />

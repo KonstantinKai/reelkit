@@ -421,6 +421,7 @@ for (const page of [
   'apps/docs/src/pages/pt/Home.tsx',
   'apps/docs/src/pages/ja/Home.tsx',
   'apps/docs/src/pages/hi/Home.tsx',
+  'apps/docs/src/pages/es/Home.tsx',
 ]) {
   if (!core) break;
 

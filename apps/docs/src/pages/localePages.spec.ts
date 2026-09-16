@@ -57,6 +57,11 @@ const localeMarkers: Record<Exclude<Locale, 'en'>, RegExp> = {
   // them: each is also an English word, and an untranslated "No runtime
   // dependencies" would pass as Portuguese.
   pt: /(?<!\p{L})(de|da|para|com|que|não|uma|na|em|por)(?!\p{L})/iu,
+  // Spanish shares its letters with English and much of its grammar with
+  // Portuguese, so its marker is a word neither of them writes. `de`, `que`,
+  // `para` and `por` are Portuguese too, `la` turns up in English as "à la",
+  // and `es` is the English "ES modules".
+  es: /(?<!\p{L})(el|los|las|del|con|una|al|y)(?!\p{L})/iu,
   // Kana, not kanji: every Japanese sentence carries kana particles and
   // Chinese carries none, so a page copied over from the Chinese tree fails.
   ja: /[\u3040-\u30ff]/,
@@ -121,7 +126,35 @@ const translatedProductNames = [
   'स्टोरीज़ कोर',
   'स्टोरीज कोर',
   'रीलकिट',
+  'Reproductor de Reels',
+  'reproductor de reels',
+  'Reproductor de reels',
+  'Caja de luz',
+  'caja de luz',
+  'Caja de Luz',
+  'Reproductor de Stories',
+  'reproductor de stories',
+  'Reproductor de historias',
+  'reproductor de historias',
+  'Núcleo de Stories',
+  'núcleo de stories',
 ];
+
+// A page copied over from the English or the Portuguese tree must not pass as
+// Spanish, so the Spanish marker may not match a single description there.
+describe('Spanish marker', () => {
+  it.each(['en', 'pt'])('matches no %s page description', async (locale) => {
+    const matched: string[] = [];
+    for (const file of await filesUnder(join(contentDir, locale), '**/*.mdx')) {
+      const source = read(join(contentDir, locale, file));
+      const description = frontmatterValue(source, 'description');
+      if (localeMarkers.es.test(withoutCode(description))) {
+        matched.push(`${locale}/${file}: ${description}`);
+      }
+    }
+    expect(matched, matched.join('\n')).toEqual([]);
+  });
+});
 
 describe.each(translated)('%s page modules', (locale) => {
   const modules = () => filesUnder(pagesDir, `${locale}/**/*.tsx`);
