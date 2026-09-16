@@ -6,7 +6,7 @@ export default function Privacy() {
       <div className="mb-12">
         <h1 className="text-4xl font-bold mb-4">Privacy Policy</h1>
         <p className="text-sm text-slate-500 dark:text-slate-400">
-          Last updated: September 15, 2026
+          Last updated: September 16, 2026
         </p>
       </div>
 
@@ -92,6 +92,30 @@ export default function Privacy() {
             later visits. It is kept for one year, is only ever sent to
             reelkit.dev, and is not used for analytics. Deleting it brings back
             the browser-based choice.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-2xl font-bold mb-4">Bot Protection</h2>
+          <p className="text-slate-600 dark:text-slate-400">
+            The site is hosted on Cloudflare. To tell browsers from automated
+            traffic, Cloudflare adds a small script to each page that runs a
+            check in your browser and stores the result in a cookie,{' '}
+            <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+              cf_clearance
+            </code>
+            . The cookie is only ever sent to reelkit.dev, is needed for that
+            protection to work, and is not used for analytics, advertising or
+            following you across sites. It is subject to{' '}
+            <a
+              href="https://www.cloudflare.com/privacypolicy/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary-600 dark:text-primary-400 hover:underline"
+            >
+              Cloudflare's Privacy Policy
+            </a>
+            .
           </p>
         </section>
 

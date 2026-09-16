@@ -51,10 +51,20 @@ async function get(path, headers = {}) {
   };
 }
 
-// Cloudflare injects its JavaScript detections script under this path into any
-// page served without `no-transform`, Bot Fight Mode or not. The pages must
-// reach the reader as built.
+// Cloudflare injects its bot protection script, loaded from this path, into
+// every page. Pages are allowed to carry it and nothing else: with those script
+// elements removed, a page must equal the build.
 const kInjectedScript = '/cdn-cgi/challenge-platform';
+
+/** The HTML without the script elements Cloudflare injects. */
+const withoutInjectedScripts = (html) =>
+  html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/g, (element) =>
+    element.includes(kInjectedScript) ? '' : element,
+  );
+
+/** Whether a served page equals the built file once the injection is removed. */
+const matchesBuild = (body, built) =>
+  withoutInjectedScripts(body.toString('utf8')) === built.toString('utf8');
 
 const canonicalOf = (html) =>
   html.match(/<link[^>]*rel="canonical"[^>]*href="([^"]+)"/i)?.[1] ??
@@ -79,12 +89,14 @@ const locs = [
 check('sitemap lists pages', locs.length > 0, `${locs.length} entries`);
 
 let longCachedHtml = null;
-let injectedPage = null;
+let strayInjection = null;
 for (const loc of locs) {
   const path = new URL(loc).pathname;
   const page = await get(path);
   const html = page.body.toString('utf8');
-  if (html.includes(kInjectedScript)) injectedPage ??= path;
+  if (withoutInjectedScripts(html).includes(kInjectedScript)) {
+    strayInjection ??= path;
+  }
   const canonical = canonicalOf(html);
   const ok = page.status === 200 && canonical === loc;
   if (!ok) {
@@ -109,23 +121,23 @@ check(
   longCachedHtml ?? '',
 );
 check(
-  'no page carries an injected Cloudflare script',
-  injectedPage === null,
-  injectedPage ? `${kInjectedScript} in ${injectedPage}` : '',
+  'Cloudflare injects nothing but its script elements into pages',
+  strayInjection === null,
+  strayInjection
+    ? `${kInjectedScript} outside a script in ${strayInjection}`
+    : '',
 );
 
-// The home page decodes to exactly what was built. Its stylesheet, its scripts
-// and the large text file travel compressed; the HTML itself does not, because
-// `no-transform` on pages is what keeps the injected script out. A local
-// runtime serves files as they are, so only a deployed host is held to the
-// compression half.
+// The home page decodes to what was built, apart from the injected script.
+// Pages, their stylesheet, their scripts and the large text file all travel
+// compressed. A local runtime serves files as they are, so only a deployed
+// host is held to the compression half.
 {
   const home = await get('/');
   const builtHome = localFile('index.html');
   check(
-    'home page matches the build once decoded',
-    home.status === 200 &&
-      (!builtHome || Buffer.compare(home.body, builtHome) === 0),
+    'home page matches the build once decoded, apart from the injected script',
+    home.status === 200 && (!builtHome || matchesBuild(home.body, builtHome)),
     `${home.status}${builtHome ? '' : ', no local build to compare'}`,
   );
 
@@ -171,6 +183,9 @@ check(
 
   const deployed = !/^https?:\/\/(localhost|127\.0\.0\.1)(:|$)/.test(origin);
   for (const [name, response] of [
+    ['home page', home],
+    ['docs page', await get('/docs/getting-started')],
+    ['locale home page', await get('/uk')],
     ['llms-full.txt', await get('/llms-full.txt')],
     ['stylesheet', stylesheet ? await get(stylesheet) : null],
     ['largest home script', largestScript ? await get(largestScript) : null],
@@ -218,7 +233,7 @@ const notFoundFile = localFile('404.html');
 check(
   'missing page answers 404 with the fallback page',
   missing.status === 404 &&
-    (!notFoundFile || Buffer.compare(missing.body, notFoundFile) === 0),
+    (!notFoundFile || matchesBuild(missing.body, notFoundFile)),
   `${missing.status}`,
 );
 

@@ -1,27 +1,8 @@
-# Pages must reach the reader exactly as built. `no-transform` stops the
-# Cloudflare zone from injecting its JavaScript detections script into the HTML
-# — it still did with Bot Fight Mode switched off. The cost is that pages are
-# not compressed, because Cloudflare skips compression for such responses too.
-# Pages stay revalidated on every visit so a deploy shows up at once.
+# Pages stay revalidated on every visit so a deploy shows up at once. No rule
+# here carries `no-transform`: with it Cloudflare skips compression, and the
+# only thing it bought was keeping the zone's bot protection script out of the
+# HTML. That script is accepted, and the privacy page names its cookie.
 /*
-  Cache-Control: public, max-age=0, must-revalidate, no-transform
-
-# The script is only ever injected into HTML, so everything else drops
-# `no-transform` and travels compressed.
-/sitemap.xml
-  ! Cache-Control
-  Cache-Control: public, max-age=0, must-revalidate
-
-/robots.txt
-  ! Cache-Control
-  Cache-Control: public, max-age=0, must-revalidate
-
-/llms.txt
-  ! Cache-Control
-  Cache-Control: public, max-age=0, must-revalidate
-
-/llms-full.txt
-  ! Cache-Control
   Cache-Control: public, max-age=0, must-revalidate
 
 # Build assets carry a content hash in their file name, so a changed file is
