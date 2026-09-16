@@ -113,9 +113,11 @@ check(
   injectedPage ? `${kInjectedScript} in ${injectedPage}` : '',
 );
 
-// The home page, its stylesheet and its scripts travel compressed, and still
-// decode to exactly what was built. A local runtime serves files as they are,
-// so only a deployed host is held to the compression half.
+// The home page decodes to exactly what was built. Its stylesheet, its scripts
+// and the large text file travel compressed; the HTML itself does not, because
+// `no-transform` on pages is what keeps the injected script out. A local
+// runtime serves files as they are, so only a deployed host is held to the
+// compression half.
 {
   const home = await get('/');
   const builtHome = localFile('index.html');
@@ -137,7 +139,7 @@ check(
 
   const deployed = !/^https?:\/\/(localhost|127\.0\.0\.1)(:|$)/.test(origin);
   for (const [name, response] of [
-    ['home page', home],
+    ['llms-full.txt', await get('/llms-full.txt')],
     ['stylesheet', stylesheet ? await get(stylesheet) : null],
     ['largest home script', largestScript ? await get(largestScript) : null],
   ]) {
