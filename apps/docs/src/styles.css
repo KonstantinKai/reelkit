@@ -63,6 +63,82 @@
     @apply px-6 py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all duration-300;
   }
 
+  /*
+   * The home page "ReelKit" heading, one span per letter. Full looping cycle
+   * (6s), matching the logo beside it, each letter 60ms behind the one before:
+   *   0–10%   letter sharpens in
+   *  10–65%   hold
+   *  65–75%   letter blurs out
+   *  75–100%  pause
+   */
+  .rk-wordmark {
+    white-space: nowrap;
+  }
+  .rk-wordmark-letter {
+    display: inline-block;
+    animation: rk-wordmark-reveal 6s ease-in-out infinite both;
+    animation-delay: calc(var(--i) * 60ms);
+  }
+  @keyframes rk-wordmark-reveal {
+    0% {
+      opacity: 0;
+      filter: blur(12px);
+      transform: translateY(0.3em);
+    }
+    10%,
+    65% {
+      opacity: 1;
+      filter: blur(0);
+      transform: translateY(0);
+    }
+    75%,
+    100% {
+      opacity: 0;
+      filter: blur(12px);
+      transform: translateY(-0.3em);
+    }
+  }
+
+  /*
+   * A filter on a letter cuts it off from a gradient clipped to the whole
+   * word, so every letter paints its own slice: the gradient is sized to the
+   * word and shifted to the position of the letter in it.
+   */
+  .rk-wordmark-gradient {
+    background-image: linear-gradient(to right, #6366f1, #a855f7);
+    background-size: calc(var(--n) * 100%) 100%;
+    background-position: calc(var(--j) / (var(--n) - 1) * 100%) 0;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /*
+   * With reduced motion the letters still fade and blur, which moves nothing
+   * across the screen, but no longer drift up and down.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    .rk-wordmark-letter {
+      animation-name: rk-wordmark-reveal-still;
+    }
+  }
+  @keyframes rk-wordmark-reveal-still {
+    0% {
+      opacity: 0;
+      filter: blur(12px);
+    }
+    10%,
+    65% {
+      opacity: 1;
+      filter: blur(0);
+    }
+    75%,
+    100% {
+      opacity: 0;
+      filter: blur(12px);
+    }
+  }
+
   .section-title {
     @apply text-3xl md:text-4xl font-bold mb-4;
   }

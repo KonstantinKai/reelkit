@@ -3,12 +3,12 @@
     "/": {
       "source": "pages/Home.tsx",
       "translation": "pages/uk/Home.tsx",
-      "sha": "b391e2dc0ed3eaede5557e51150977b1b639c3fb"
+      "sha": "f184af79b74ce5f81af62869d097e361f73b1498"
     },
     "/docs/getting-started": {
       "source": "content/en/docs/getting-started.mdx",
       "translation": "content/uk/docs/getting-started.mdx",
-      "sha": "b8615a0cc970457a11f27e5ad4724be5ab9f8aeb"
+      "sha": "ba087e59a141d6b4196bb6b0c78fbd4f41882b5f"
     },
     "/docs/installation": {
       "source": "content/en/docs/installation.mdx",
@@ -125,12 +125,12 @@
     "/": {
       "source": "pages/Home.tsx",
       "translation": "pages/zh/Home.tsx",
-      "sha": "b391e2dc0ed3eaede5557e51150977b1b639c3fb"
+      "sha": "f184af79b74ce5f81af62869d097e361f73b1498"
     },
     "/docs/getting-started": {
       "source": "content/en/docs/getting-started.mdx",
       "translation": "content/zh/docs/getting-started.mdx",
-      "sha": "b8615a0cc970457a11f27e5ad4724be5ab9f8aeb"
+      "sha": "ba087e59a141d6b4196bb6b0c78fbd4f41882b5f"
     },
     "/docs/installation": {
       "source": "content/en/docs/installation.mdx",
@@ -247,12 +247,12 @@
     "/": {
       "source": "pages/Home.tsx",
       "translation": "pages/pt/Home.tsx",
-      "sha": "b391e2dc0ed3eaede5557e51150977b1b639c3fb"
+      "sha": "f184af79b74ce5f81af62869d097e361f73b1498"
     },
     "/docs/getting-started": {
       "source": "content/en/docs/getting-started.mdx",
       "translation": "content/pt/docs/getting-started.mdx",
-      "sha": "b8615a0cc970457a11f27e5ad4724be5ab9f8aeb"
+      "sha": "ba087e59a141d6b4196bb6b0c78fbd4f41882b5f"
     },
     "/docs/installation": {
       "source": "content/en/docs/installation.mdx",

@@ -15,6 +15,7 @@ import {
 import { CodeBlock } from '../components/ui/CodeBlock';
 import { BasicSliderDemo } from '../components/demos/BasicSliderDemo';
 import { AnimatedLogo } from '../components/ui/AnimatedLogo';
+import { AnimatedWordmark } from '../components/ui/AnimatedWordmark';
 import { GitHubStarButton } from '../components/ui/GitHubStarButton';
 
 const highlights = [
@@ -117,12 +118,7 @@ export default function Home() {
             <div className="flex-1 text-center lg:text-left">
               <h1 className="text-5xl md:text-6xl font-bold mb-6 flex items-center justify-center lg:justify-start gap-3">
                 <AnimatedLogo className="w-12 h-12 md:w-14 md:h-14" />
-                <span>
-                  <span className="text-slate-900 dark:text-white">Reel</span>
-                  <span className="bg-gradient-to-r from-primary-500 to-accent-500 bg-clip-text text-transparent">
-                    Kit
-                  </span>
-                </span>
+                <AnimatedWordmark />
               </h1>
 
               <p className="text-xl md:text-2xl text-slate-600 dark:text-slate-300 mb-4 max-w-lg">

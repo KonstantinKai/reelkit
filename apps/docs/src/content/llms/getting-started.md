@@ -10,6 +10,9 @@ desc: reelkit is a single-item slider — one item visible at a time, like TikTo
 
 reelkit = **single-item slider**. One item visible at time. Like TikTok, Instagram Reels, Stories. Good for vertical video feeds, fullscreen galleries, swipeable content.
 
+> [!NOTE]
+> Enjoying ReelKit? Star repo on GitHub: https://github.com/KonstantinKai/reelkit. Helps other devs find project, keeps it going. Thank you, support truly appreciated!
+
 > [!WARNING]
 > ReelKit under active dev. While 0.x.x, APIs may change between minor versions, no deprecation period. Pin version to avoid breakage.
 
