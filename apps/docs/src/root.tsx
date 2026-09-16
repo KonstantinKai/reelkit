@@ -40,6 +40,14 @@ export const links = () => [
     href: 'https://fonts.gstatic.com',
     crossOrigin: 'anonymous',
   },
+  // The GitHub star button fetches the star count from here as soon as the
+  // page hydrates. The fetch is a CORS request, so the warmed connection has
+  // to be anonymous too or the browser opens a second one.
+  {
+    rel: 'preconnect',
+    href: 'https://api.github.com',
+    crossOrigin: 'anonymous',
+  },
   {
     rel: 'stylesheet',
     href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Code+Pro:wght@400;500&display=swap',

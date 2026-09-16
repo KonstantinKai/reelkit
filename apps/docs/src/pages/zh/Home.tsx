@@ -13,11 +13,16 @@ import {
   Link2,
 } from 'lucide-react';
 import { CodeBlock } from '../../components/ui/CodeBlock';
-import { BasicSliderDemo } from '../../components/demos/BasicSliderDemo';
+import {
+  BasicSliderDemo,
+  heroSlidePreloadLinks,
+} from '../../components/demos/BasicSliderDemo';
 import { AnimatedLogo } from '../../components/ui/AnimatedLogo';
 import { AnimatedWordmark } from '../../components/ui/AnimatedWordmark';
 import { GitHubStarButton } from '../../components/ui/GitHubStarButton';
 import { localePageMeta } from '../../i18n/pageMeta';
+
+export const links = heroSlidePreloadLinks;
 
 export const meta = () =>
   localePageMeta('zh', {
@@ -216,7 +221,7 @@ export default function Home() {
                 <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-24 h-1 bg-white/30 rounded-full z-20" />
                 {/* Demo */}
                 <div className="w-full h-full rounded-[2.25rem] overflow-hidden">
-                  <BasicSliderDemo />
+                  <BasicSliderDemo priority />
                 </div>
               </div>
               <p className="text-center text-xs text-slate-400 dark:text-slate-500 mt-3">

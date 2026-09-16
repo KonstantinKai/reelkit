@@ -17,7 +17,7 @@ vi.mock('react-router', async (importOriginal) => ({
 // context instance; importing the router from `react-router-dom` would give
 // `Layout` a context its own `useLocation` never sees.
 const { MemoryRouter } = await import('react-router');
-const { Layout } = await import('./root');
+const { Layout, links } = await import('./root');
 
 function headOf(pathname: string) {
   const markup = renderToStaticMarkup(
@@ -89,5 +89,29 @@ describe('document head', () => {
   it('keeps the home page canonical on the site root', () => {
     expect(headOf('/').canonical).toBe('https://reelkit.dev/');
     expect(headOf('/uk').canonical).toBe('https://reelkit.dev/uk');
+  });
+});
+
+describe('connection hints', () => {
+  const preconnects = () => links().filter((link) => link.rel === 'preconnect');
+
+  // The star count is a CORS fetch, and a connection warmed without
+  // `crossorigin` would not be reused for it.
+  it('warms the GitHub API connection the star button uses', () => {
+    expect(preconnects()).toContainEqual({
+      rel: 'preconnect',
+      href: 'https://api.github.com',
+      crossOrigin: 'anonymous',
+    });
+  });
+
+  // Each hint opens a connection up front. Beyond a few they compete with
+  // the page's own requests, and analytics or images the home page no longer
+  // loads first do not earn one.
+  it('keeps the hints to the few that speed up what readers see', () => {
+    expect(preconnects().length).toBeLessThanOrEqual(4);
+    const hosts = preconnects().map((link) => new URL(link.href).host);
+    expect(hosts).not.toContain('plausible.k-kai.dev');
+    expect(hosts).not.toContain('cdn.reelkit.dev');
   });
 });

@@ -3,7 +3,7 @@
     "/": {
       "source": "pages/Home.tsx",
       "translation": "pages/uk/Home.tsx",
-      "sha": "f184af79b74ce5f81af62869d097e361f73b1498"
+      "sha": "83df82fc9b3ea6851c6c0b071043d2cd6aa4c3c8"
     },
     "/docs/getting-started": {
       "source": "content/en/docs/getting-started.mdx",
@@ -125,7 +125,7 @@
     "/": {
       "source": "pages/Home.tsx",
       "translation": "pages/zh/Home.tsx",
-      "sha": "f184af79b74ce5f81af62869d097e361f73b1498"
+      "sha": "83df82fc9b3ea6851c6c0b071043d2cd6aa4c3c8"
     },
     "/docs/getting-started": {
       "source": "content/en/docs/getting-started.mdx",
@@ -247,7 +247,7 @@
     "/": {
       "source": "pages/Home.tsx",
       "translation": "pages/pt/Home.tsx",
-      "sha": "f184af79b74ce5f81af62869d097e361f73b1498"
+      "sha": "83df82fc9b3ea6851c6c0b071043d2cd6aa4c3c8"
     },
     "/docs/getting-started": {
       "source": "content/en/docs/getting-started.mdx",
@@ -369,7 +369,7 @@
     "/": {
       "source": "pages/Home.tsx",
       "translation": "pages/ja/Home.tsx",
-      "sha": "f184af79b74ce5f81af62869d097e361f73b1498"
+      "sha": "83df82fc9b3ea6851c6c0b071043d2cd6aa4c3c8"
     },
     "/docs/getting-started": {
       "source": "content/en/docs/getting-started.mdx",
@@ -491,7 +491,7 @@
     "/": {
       "source": "pages/Home.tsx",
       "translation": "pages/hi/Home.tsx",
-      "sha": "f184af79b74ce5f81af62869d097e361f73b1498"
+      "sha": "83df82fc9b3ea6851c6c0b071043d2cd6aa4c3c8"
     },
     "/docs/getting-started": {
       "source": "content/en/docs/getting-started.mdx",

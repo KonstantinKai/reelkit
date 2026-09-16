@@ -51,8 +51,9 @@ async function get(path, headers = {}) {
   };
 }
 
-// Cloudflare injects its JavaScript detections script under this path when
-// Bot Fight Mode is on. The pages must reach the reader as built.
+// Cloudflare injects its JavaScript detections script under this path into any
+// page served without `no-transform`, Bot Fight Mode or not. The pages must
+// reach the reader as built.
 const kInjectedScript = '/cdn-cgi/challenge-platform';
 
 const canonicalOf = (html) =>
@@ -129,6 +130,37 @@ check(
   );
 
   const html = home.body.toString('utf8');
+
+  // The home demo's first slide is the page's largest paint. It has to be in
+  // the HTML as an image fetched early, preloaded from the head, and small.
+  for (const path of ['/', '/uk']) {
+    const page = path === '/' ? home : await get(path);
+    const pageHtml = page.body.toString('utf8');
+    const slide = pageHtml.match(
+      /<img[^>]*src="(\/assets\/slide-1-[^"]+)"[^>]*>/,
+    );
+    const preloaded =
+      slide &&
+      new RegExp(
+        `<link[^>]*rel="preload"[^>]*as="image"[^>]*href="${slide[1]}"`,
+      ).test(pageHtml);
+    const image = slide ? await get(slide[1]) : null;
+    check(
+      `${path} ships its first demo slide as an early, preloaded, small image`,
+      Boolean(
+        slide &&
+          /fetchpriority="high"/.test(slide[0]) &&
+          !/loading="lazy"/.test(slide[0]) &&
+          preloaded &&
+          image?.status === 200 &&
+          image.body.length <= 40 * 1024,
+      ),
+      slide
+        ? `${slide[1]}, preload ${preloaded ? 'yes' : 'no'}, ${image?.body.length ?? 0} B`
+        : 'no slide image in the HTML',
+    );
+  }
+
   const stylesheet = html.match(/href="(\/assets\/[^"]+\.css)"/)?.[1];
   const scripts = [...html.matchAll(/(?:href|src)="(\/assets\/[^"]+\.js)"/g)]
     .map((match) => match[1])

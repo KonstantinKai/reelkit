@@ -1,16 +1,23 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { NavLink, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import {
+  createDisposableList,
+  createSignal,
+  reaction,
+  Observe,
+  type Signal,
+} from '@reelkit/react';
 import { ChevronDown } from 'lucide-react';
 import {
   navItems,
   type NavSection as NavSectionData,
-} from '../../data/searchData';
+} from '../../data/navItems';
 import { stripLocaleFromPath } from '../../i18n/locale';
 import { useLocalePath, useMessages } from '../../i18n/useLocale';
 import { FrameworkVariant } from '../ui/FrameworkVariant';
-
-// eslint-disable-next-line @nx/enforce-module-boundaries
-import changelogRaw from '../../../../../CHANGELOG.md?raw';
+import { loadChangelogEntries } from '../../utils/loadChangelog';
+import { whenIdle } from '../../utils/whenIdle';
 
 const _kStorageKey = 'rk-docs:changelog:last-seen';
 const _kLegacyStorageKey = 'reelkit-changelog-seen';
@@ -27,31 +34,46 @@ function readSeen(): string | null {
   return null;
 }
 
-function getLatestEntry(): string | null {
-  const match = changelogRaw.match(/^## (.+@[\d.]+)/m);
-  return match ? match[1] : null;
-}
-
-function useChangelogBadge() {
-  const [showBadge, setShowBadge] = useState(false);
+function useChangelogBadge(): Signal<boolean> {
+  const [{ latest, pathname, showBadge }] = useState(() => ({
+    latest: createSignal<string | null>(null),
+    pathname: createSignal(''),
+    showBadge: createSignal(false),
+  }));
   const location = useLocation();
 
   useEffect(() => {
-    const latest = getLatestEntry();
-    if (!latest) return;
-    setShowBadge(readSeen() !== latest);
-  }, []);
-
-  // Clear badge when visiting changelog page
-  useEffect(() => {
-    if (stripLocaleFromPath(location.pathname) === '/docs/changelog') {
-      const latest = getLatestEntry();
-      if (latest) {
-        localStorage.setItem(_kStorageKey, latest);
-        setShowBadge(false);
-      }
-    }
+    pathname.value = location.pathname;
   }, [location.pathname]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const disposables = createDisposableList();
+    disposables.push(
+      () => (cancelled = true),
+      // The newest release id comes from the release notes, which load once
+      // the page has settled rather than with it.
+      whenIdle(() => {
+        void loadChangelogEntries().then((entries) => {
+          if (!cancelled) latest.value = entries[0]?.id ?? null;
+        });
+      }),
+      reaction(
+        () => [latest, pathname],
+        () => {
+          const newest = latest.value;
+          if (!newest) return;
+          if (stripLocaleFromPath(pathname.value) === '/docs/changelog') {
+            localStorage.setItem(_kStorageKey, newest);
+            showBadge.value = false;
+          } else {
+            showBadge.value = readSeen() !== newest;
+          }
+        },
+      ),
+    );
+    return disposables.dispose;
+  }, []);
 
   return showBadge;
 }
@@ -65,71 +87,81 @@ interface SidebarProps {
 function NavSection({
   title,
   items,
-  showChangelogBadge,
+  changelogBadge,
 }: {
   title: string;
   items: NavSectionData['items'];
-  showChangelogBadge?: boolean;
+  changelogBadge?: Signal<boolean>;
 }) {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [{ isExpanded, noBadge }] = useState(() => ({
+    isExpanded: createSignal(true),
+    noBadge: createSignal(false),
+  }));
+  const badge = changelogBadge ?? noBadge;
   const messages = useMessages();
   const localePath = useLocalePath();
 
   return (
-    <div className="mb-4">
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="flex items-center justify-between w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-      >
-        {title}
-        <ChevronDown
-          size={14}
-          className={`transform transition-transform duration-200 ${isExpanded ? 'rotate-0' : '-rotate-90'}`}
-        />
-      </button>
-      <ul
-        className={`space-y-1 overflow-hidden transition-all duration-200 ${isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}
-      >
-        {items.map((item) => {
-          const li = (
-            <li
-              key={item.path}
-              className={'comingSoon' in item && item.comingSoon ? 'mt-3' : ''}
-            >
-              <NavLink
-                to={localePath(item.path)}
-                className={({ isActive }) =>
-                  `flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-all duration-200 ${
-                    isActive
-                      ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 font-medium'
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200'
-                  } ${'comingSoon' in item && item.comingSoon ? 'opacity-60 cursor-not-allowed' : ''}`
-                }
-              >
-                {messages.nav.items[item.key]}
-                {'comingSoon' in item &&
-                  (item as { comingSoon?: boolean }).comingSoon && (
-                    <span className="text-xs px-1.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400 ml-2">
-                      {messages.nav.comingSoon}
-                    </span>
-                  )}
-                {showChangelogBadge && item.key === 'changelog' && (
-                  <span className="w-2 h-2 rounded-full bg-primary-500 animate-pulse" />
-                )}
-              </NavLink>
-            </li>
-          );
-          if (item.framework) {
-            return (
-              <FrameworkVariant key={item.path} for={item.framework}>
-                {li}
-              </FrameworkVariant>
-            );
-          }
-          return li;
-        })}
-      </ul>
-    </div>
+    <Observe signals={[isExpanded, badge]}>
+      {() => (
+        <div className="mb-4">
+          <button
+            onClick={() => (isExpanded.value = !isExpanded.value)}
+            className="flex items-center justify-between w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+          >
+            {title}
+            <ChevronDown
+              size={14}
+              className={`transform transition-transform duration-200 ${isExpanded.value ? 'rotate-0' : '-rotate-90'}`}
+            />
+          </button>
+          <ul
+            className={`space-y-1 overflow-hidden transition-all duration-200 ${isExpanded.value ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}
+          >
+            {items.map((item) => {
+              const li = (
+                <li
+                  key={item.path}
+                  className={
+                    'comingSoon' in item && item.comingSoon ? 'mt-3' : ''
+                  }
+                >
+                  <NavLink
+                    to={localePath(item.path)}
+                    className={({ isActive }) =>
+                      `flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-all duration-200 ${
+                        isActive
+                          ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 font-medium'
+                          : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200'
+                      } ${'comingSoon' in item && item.comingSoon ? 'opacity-60 cursor-not-allowed' : ''}`
+                    }
+                  >
+                    {messages.nav.items[item.key]}
+                    {'comingSoon' in item &&
+                      (item as { comingSoon?: boolean }).comingSoon && (
+                        <span className="text-xs px-1.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400 ml-2">
+                          {messages.nav.comingSoon}
+                        </span>
+                      )}
+                    {badge.value && item.key === 'changelog' && (
+                      <span className="w-2 h-2 rounded-full bg-primary-500 animate-pulse" />
+                    )}
+                  </NavLink>
+                </li>
+              );
+              if (item.framework) {
+                return (
+                  <FrameworkVariant key={item.path} for={item.framework}>
+                    {li}
+                  </FrameworkVariant>
+                );
+              }
+              return li;
+            })}
+          </ul>
+        </div>
+      )}
+    </Observe>
   );
 }
 
@@ -138,7 +170,7 @@ export default function Sidebar({
   showDesktop = true,
   onClose,
 }: SidebarProps) {
-  const showChangelogBadge = useChangelogBadge();
+  const changelogBadge = useChangelogBadge();
   const messages = useMessages();
   return (
     <>
@@ -160,8 +192,8 @@ export default function Sidebar({
                 key={section.key}
                 title={messages.nav.sections[section.key]}
                 items={section.items}
-                showChangelogBadge={
-                  section.key === 'resources' ? showChangelogBadge : false
+                changelogBadge={
+                  section.key === 'resources' ? changelogBadge : undefined
                 }
               />
             );

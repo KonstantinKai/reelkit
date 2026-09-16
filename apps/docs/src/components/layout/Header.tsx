@@ -1,12 +1,19 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { Link } from 'react-router-dom';
 import { Menu, X, Search, Sun, Moon, Monitor } from 'lucide-react';
 import { GithubIcon } from '../ui/GithubIcon';
 import { useTheme } from '../../context/ThemeContext';
-import { useState, useEffect } from 'react';
+import { lazy, Suspense, useState, useEffect } from 'react';
+import { createSignal, Observe } from '@reelkit/react';
 import logoSvg from '../../assets/logo.svg';
-import CommandPalette from '../CommandPalette';
 import LanguageSwitcher from '../LanguageSwitcher';
 import { useLocalePath, useMessages } from '../../i18n/useLocale';
+
+// The palette carries the whole search index, so it loads the first time a
+// reader asks for it instead of with every page. Hovering or focusing the
+// search button starts the download early.
+const loadCommandPalette = () => import('../CommandPalette');
+const CommandPalette = lazy(loadCommandPalette);
 
 const _kThemeIcons = {
   light: Sun,
@@ -34,11 +41,20 @@ export default function Header({
     system: messages.header.themeSystem,
   }[themeChoice];
   const localePath = useLocalePath();
-  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
-  // Seed to the SSR-stable label, then swap on mount once `navigator`
-  // is available. Reading `navigator.platform` directly at render time
-  // produced a hydration mismatch (SSR → 'Ctrl+', macOS client → '⌘').
-  const [shortcutLabel, setShortcutLabel] = useState('Ctrl+');
+  const [{ paletteOpen, paletteRequested, shortcutLabel }] = useState(() => ({
+    paletteOpen: createSignal(false),
+    // Stays mounted after the first open so its query and signals survive a
+    // close, as they did when it was always mounted.
+    paletteRequested: createSignal(false),
+    // Seed to the SSR-stable label, then swap on mount once `navigator`
+    // is available. Reading `navigator.platform` directly at render time
+    // produced a hydration mismatch (SSR → 'Ctrl+', macOS client → '⌘').
+    shortcutLabel: createSignal('Ctrl+'),
+  }));
+  const setPaletteOpen = (open: boolean) => {
+    if (open) paletteRequested.value = true;
+    paletteOpen.value = open;
+  };
 
   // Global Cmd+K / Ctrl+K shortcut
   useEffect(() => {
@@ -46,12 +62,12 @@ export default function Header({
       typeof navigator !== 'undefined' &&
       navigator.platform?.includes('Mac')
     ) {
-      setShortcutLabel('⌘');
+      shortcutLabel.value = '⌘';
     }
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
-        setIsCommandPaletteOpen((open) => !open);
+        setPaletteOpen(!paletteOpen.value);
       }
     };
     document.addEventListener('keydown', handleKeyDown);
@@ -101,7 +117,9 @@ export default function Header({
                 </Link>
               )}
               <button
-                onClick={() => setIsCommandPaletteOpen(true)}
+                onClick={() => setPaletteOpen(true)}
+                onPointerEnter={() => void loadCommandPalette()}
+                onFocus={() => void loadCommandPalette()}
                 aria-label={messages.header.search}
                 className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-500 dark:text-slate-400"
               >
@@ -110,7 +128,12 @@ export default function Header({
                   {messages.header.search}
                 </span>
                 <kbd className="hidden sm:inline-flex items-baseline gap-0.5 px-1.5 py-0.5 text-xs font-sans font-medium text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">
-                  <span className="text-[13px]">{shortcutLabel}</span>K
+                  <Observe signals={[shortcutLabel]}>
+                    {() => (
+                      <span className="text-[13px]">{shortcutLabel.value}</span>
+                    )}
+                  </Observe>
+                  K
                 </kbd>
               </button>
 
@@ -152,10 +175,18 @@ export default function Header({
         </div>
       </header>
 
-      <CommandPalette
-        isOpen={isCommandPaletteOpen}
-        onClose={() => setIsCommandPaletteOpen(false)}
-      />
+      <Observe signals={[paletteOpen, paletteRequested]}>
+        {() =>
+          paletteRequested.value ? (
+            <Suspense fallback={null}>
+              <CommandPalette
+                isOpen={paletteOpen.value}
+                onClose={() => setPaletteOpen(false)}
+              />
+            </Suspense>
+          ) : null
+        }
+      </Observe>
     </>
   );
 }

@@ -1,15 +1,16 @@
-import { useEffect, useMemo, useRef } from 'react';
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { createSignal, Observe } from '@reelkit/react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { X, Sparkles } from 'lucide-react';
 import { captureFocusForReturn, createFocusTrap } from '@reelkit/react';
-import { parseChangelog } from '../utils/parseChangelog';
+import type { ChangelogEntry } from '../utils/parseChangelog';
+import { loadChangelogEntries } from '../utils/loadChangelog';
+import { whenIdle } from '../utils/whenIdle';
 import { getDeltaSinceLastSeen } from '../utils/getDeltaSinceLastSeen';
 import { useLastSeenRelease } from '../hooks/useLastSeenRelease';
 import { stripLocaleFromPath } from '../i18n/locale';
 import { useLocalePath, useMessages } from '../i18n/useLocale';
-
-// eslint-disable-next-line @nx/enforce-module-boundaries
-import changelogRaw from '../../../../CHANGELOG.md?raw';
 
 const _kMaxEntries = 3;
 const _kChangelogPath = '/docs/changelog';
@@ -21,17 +22,48 @@ const isExcludedRoute = (pathname: string): boolean => {
 
 export default function WhatsNewDialog() {
   const location = useLocation();
+  const excluded = isExcludedRoute(location.pathname);
+
+  // The release notes load once the page has settled, and never on the pages
+  // that show no dialog, so they stay out of every page's first load.
+  const [entries] = useState(() => createSignal<ChangelogEntry[]>([]));
+  useEffect(() => {
+    if (excluded || entries.value.length > 0) return;
+    let cancelled = false;
+    const cancelIdle = whenIdle(() => {
+      void loadChangelogEntries().then((parsed) => {
+        if (!cancelled) entries.value = parsed;
+      });
+    });
+    return () => {
+      cancelled = true;
+      cancelIdle();
+    };
+  }, [excluded]);
+
+  return (
+    <Observe signals={[entries]}>
+      {() => <ReleaseDialog entries={entries.value} excluded={excluded} />}
+    </Observe>
+  );
+}
+
+function ReleaseDialog({
+  entries,
+  excluded,
+}: {
+  entries: ChangelogEntry[];
+  excluded: boolean;
+}) {
   const navigate = useNavigate();
   const messages = useMessages();
   const localePath = useLocalePath();
   const dialogRef = useRef<HTMLDivElement | null>(null);
 
-  const entries = useMemo(() => parseChangelog(changelogRaw), []);
   const newestId = entries[0]?.id ?? null;
 
   const { lastSeen, markSeen } = useLastSeenRelease(newestId);
 
-  const excluded = isExcludedRoute(location.pathname);
   const delta = useMemo(
     () => (excluded ? [] : getDeltaSinceLastSeen(entries, lastSeen)),
     [entries, lastSeen, excluded],
@@ -80,7 +112,6 @@ export default function WhatsNewDialog() {
       releaseTrap();
       restoreFocus();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   if (!open) return null;
