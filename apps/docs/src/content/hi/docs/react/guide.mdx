@@ -1,0 +1,277 @@
+---
+title: React गाइड
+description: '@reelkit/react से स्लाइडर बनाएँ। Reel कंपोनेंट, itemBuilder पैटर्न, नेविगेशन, ReelIndicator, 10000+ आइटम के साथ वर्चुअलाइज़ेशन और परफ़ॉर्मेंस के सुझाव।'
+---
+
+import { Hand, Keyboard, MousePointer, InfinityIcon, Radio, Navigation, Zap, Layers, Code } from 'lucide-react';
+import { BasicSliderDemo } from '../../../../components/demos/BasicSliderDemo';
+import { InfiniteListDemo } from '../../../../components/demos/InfiniteListDemo';
+import { GrowableListDemo } from '../../../../components/demos/GrowableListDemo';
+import reelComponent from '../../../snippets/react-guide/reel-component.tsx?raw';
+import autoSizing from '../../../snippets/react-guide/auto-sizing.tsx?raw';
+import itembuilderPattern from '../../../snippets/react-guide/itembuilder-pattern.tsx?raw';
+import navigation from '../../../snippets/react-guide/navigation.tsx?raw';
+import urlState from '../../../snippets/react-guide/url-state.tsx?raw';
+import reelindicator from '../../../snippets/react-guide/reelindicator.tsx?raw';
+import basicFullCode from '../../../snippets/react-guide/basic-full-code.tsx?raw';
+import infiniteFullCode from '../../../snippets/react-guide/infinite-full-code.tsx?raw';
+import growableFullCode from '../../../snippets/react-guide/growable-full-code.tsx?raw';
+
+`@reelkit/react` से स्लाइडर बनाना सीखें।
+
+<FeatureGrid columns={3} items={[
+              {
+                icon: Hand,
+                label: 'टच सबसे पहले',
+                desc: 'momentum और snap के साथ स्वाइप',
+              },
+              {
+                icon: Keyboard,
+                label: 'कीबोर्ड नेविगेशन',
+                desc: 'तीर वाली कुंजियाँ + Escape',
+              },
+              {
+                icon: MousePointer,
+                label: 'व्हील स्क्रॉल',
+                desc: 'वैकल्पिक, debounce के साथ',
+              },
+              {
+                icon: InfinityIcon,
+                label: 'वर्चुअलाइज़्ड',
+                desc: '10,000+ आइटम, DOM में 3',
+              },
+              {
+                icon: Radio,
+                label: 'इंडिकेटर',
+                desc: 'Instagram जैसे खिसकते बिंदु',
+              },
+              {
+                icon: Navigation,
+                label: 'प्रोग्राम से API',
+                desc: 'ref के ज़रिए next(), prev(), goTo()',
+              },
+              {
+                icon: Zap,
+                label: 'लूप मोड',
+                desc: 'अनंत गोल नेविगेशन',
+              },
+              {
+                icon: Layers,
+                label: 'दिशा',
+                desc: 'वर्टिकल या हॉरिज़ॉन्टल',
+              },
+              {
+                icon: Code,
+                label: 'बिना दोबारा रेंडर',
+                desc: 'signal पर आधारित स्टेट अपडेट',
+              },
+            ]} />
+
+## Reel कंपोनेंट [#reel-component]
+
+`Reel` कंपोनेंट मुख्य कंटेनर है। यह स्लाइडर की स्टेट संभालता है और टच जेस्चर, कीबोर्ड नेविगेशन और एनिमेशन को हैंडल करता है।
+
+<CodeBlock code={reelComponent} language="tsx" />
+
+## अपने-आप साइज़ [#auto-sizing]
+
+`size` prop वैकल्पिक है। इसे छोड़ने पर Reel `ResizeObserver` से अपना कंटेनर खुद नापता है और CSS से तय लेआउट के हिसाब से ढल जाता है। कंटेनर का साइज़ उसके parent से तय होना चाहिए (जैसे flex, grid या तय CSS आकार)।
+
+<CodeBlock code={autoSizing} language="tsx" />
+
+## itemBuilder पैटर्न [#itembuilder-pattern]
+
+`itemBuilder` prop एक फ़ंक्शन है जो index लेता है और हर स्लाइड का कंटेंट लौटाता है। इसी पैटर्न से वर्चुअलाइज़ेशन संभव होता है — सिर्फ़ दिखने वाले आइटम ही रेंडर होते हैं।
+
+<CodeBlock code={itembuilderPattern} language="tsx" />
+
+## नेविगेशन [#navigation]
+
+नेविगेशन के बिल्ट-इन तरीके:
+
+<Bullets marker="dot">
+
+- **टच/स्वाइप:** momentum और snap के साथ खींचकर आगे-पीछे जाएँ
+- **कीबोर्ड:** तीर वाली कुंजियाँ और Escape
+- **माउस व्हील:** `enableWheel` prop से चालू करें
+- **प्रोग्राम से:** `next()`, `prev()`, `goTo()` के लिए `apiRef` इस्तेमाल करें
+
+</Bullets>
+
+<CodeBlock code={navigation} language="tsx" />
+
+## URL स्टेट [#url-state]
+
+`useOverlayUrlState` किसी overlay के लिए URL-स्टेट कंट्रोलर बनाकर पूरा लौटाता है, फिर आप उसे किसी `*UrlOverlay` को उसके `controller` prop के रूप में देते हैं। खुले होने की स्टेट URL के पास है, इसलिए जुड़ा हुआ overlay खुद खुलता है और आम तौर पर लिंक ही उसे खोलता है। न मौजूद parameter का पहला write history में एक entry जोड़ता है और उसके बाद हर write उसे बदल देता है, इसलिए पेज बदलना back बटन को कभी दबाता नहीं। `value`/`position` पढ़ने और प्रोग्राम से चलाने के लिए कंट्रोलर रखें: `set(position)` खोलता है, `set(null)` बंद करता है, और `set` वही निचले स्तर का write है जो overlay स्लाइड बदलने पर अंदर से करता है।
+
+<CodeBlock code={urlState} language="tsx" />
+
+विकल्पों का object `param`, `codec` और `locator` (तीनों ज़रूरी) लेता है, साथ में वैकल्पिक `adapter`। `param` और `adapter` पहले रेंडर पर पढ़े जाते हैं और उसके बाद तय रहते हैं — बदलने के लिए दोबारा mount करें — जबकि `codec` और `locator` हर बार ताज़ा पढ़े जाते हैं, इसलिए सूची बढ़ने या क्रम बदलने के बाद की खोज मौजूदा सूची देखती है। `codec` और `locator` एक ही `Id` साझा करने वाली मेल खाती जोड़ी हैं, इसलिए साथ चलते हैं — साधारण `?photo=3` गैलरी के लिए `...urlIndexKey(() => images.length)` spread करें, जो दोनों हिस्से एक साथ लौटाता है। `urlIndexKey` parameter को स्लाइड index से जोड़ता है और उसे getter की लौटाई मौजूदा गिनती तक सीमित रखता है, इसलिए पुराना या सीमा से बाहर का `?photo=99` ठुकराया जाता है और कभी नाम न ली गई स्लाइड खोलने के बजाय URL से अपने-आप हट जाता है। संख्या नहीं, getter पास करें, ताकि पेज वाली फ़ीड बढ़ने पर भी सीमा सही रहे। यह `createIndexLocator` (locator वाला हिस्सा) को लपेटकर `indexCodec` के साथ जोड़ता है। पेज वाली फ़ीड या पहचान से key होने वाली गैलरी इसकी जगह अपनी मेल खाती `codec` + `locator` जोड़ी देती है। विकल्पों की पूरी तालिका [React API रेफ़रेंस](/docs/react/api#useoverlayurlstate) में है।
+
+## ReelIndicator [#reelindicator]
+
+एक वैकल्पिक कंपोनेंट, जो Instagram जैसे प्रोग्रेस इंडिकेटर दिखाता है कि आप स्लाइडर में अभी किस जगह पर हैं। `Reel` के अंदर रखने पर यह context के ज़रिए parent की `count` और `active` values से अपने-आप जुड़ जाता है — हाथ से स्टेट जोड़ने की ज़रूरत नहीं।
+
+<CodeBlock code={reelindicator} language="tsx" />
+
+## लाइव डेमो: बुनियादी स्लाइडर [#live-demo-basic-slider]
+
+<FeatureGrid items={[
+              { icon: Hand, label: 'टच/स्वाइप', desc: 'momentum के साथ' },
+              {
+                icon: Keyboard,
+                label: 'कीबोर्ड',
+                desc: 'तीर वाली कुंजियाँ + Escape',
+              },
+              { icon: Layers, label: 'इंडिकेटर', desc: 'Instagram जैसे' },
+              { icon: Navigation, label: 'नेविगेशन', desc: 'apiRef के ज़रिए' },
+            ]} />
+
+<Sandbox
+  code={basicFullCode}
+  title="BasicSlider.tsx"
+  height={500}
+  stackblitzDeps={['@reelkit/react']}
+  stackblitzExtraDeps={{ 'lucide-react': '^0.562.0' }}
+>
+  <BasicSliderDemo />
+</Sandbox>
+
+<Caption>आज़माकर देखें — स्लाइडों के बीच जाने के लिए बटन दबाएँ।</Caption>
+
+## मुख्य बातें [#key-points]
+
+<KeyPoints>
+<KeyPoint title="size prop">
+  वैकल्पिक \[width, height\] tuple, या CSS से अपने-आप साइज़ के लिए छोड़ दें
+</KeyPoint>
+<KeyPoint title="itemBuilder">
+  index लेता है और स्लाइड का कंटेंट लौटाता है
+</KeyPoint>
+<KeyPoint title="apiRef">
+  नेविगेशन के लिए कंट्रोलर के मेथड तक पहुँच
+</KeyPoint>
+<KeyPoint title="afterChange">
+  UI अपडेट के लिए मौजूदा index पर नज़र रखें
+</KeyPoint>
+</KeyPoints>
+
+## लाइव डेमो: अनंत सूची [#live-demo-infinite-list]
+
+reelkit किसी भी समय **DOM में सिर्फ़ 3 स्लाइड** रेंडर करता है (मौजूदा, पिछली, अगली)। इससे 10,000+ आइटम वाली सूचियाँ भी आराम से स्क्रॉल होती हैं।
+
+<FeatureGrid items={[
+              {
+                icon: Zap,
+                label: 'DOM में 3 आइटम',
+                desc: 'सिर्फ़ दिखने वाली स्लाइड रेंडर होती हैं',
+              },
+              {
+                icon: Zap,
+                label: '10,000+ आइटम',
+                desc: 'किसी भी पैमाने पर कोई अटकन नहीं',
+              },
+              {
+                icon: Zap,
+                label: 'स्थिर मेमोरी',
+                desc: 'गिनती कुछ भी हो, वही 3 DOM नोड',
+              },
+              {
+                icon: Zap,
+                label: 'goTo(n)',
+                desc: 'किसी भी index पर तुरंत जाएँ',
+              },
+            ]} />
+
+<Sandbox
+  code={infiniteFullCode}
+  title="InfiniteList.tsx"
+  height={500}
+  stackblitzDeps={['@reelkit/react']}
+  stackblitzExtraDeps={{ 'lucide-react': '^0.562.0' }}
+>
+  <InfiniteListDemo />
+</Sandbox>
+
+<Caption>10,000 आइटम — DOM में सिर्फ़ 3। जाने के लिए बटन इस्तेमाल करें या कोई संख्या लिखें।</Caption>
+
+## लाइव डेमो: बढ़ने वाली सूची [#live-demo-growable-list]
+
+ऐसी अनंत फ़ीड का नमूना जिसमें आइटम ज़रूरत पड़ने पर लोड होते हैं — ठीक TikTok या Instagram की तरह। 20 आइटम से शुरू करें, आख़िर के पास स्क्रॉल करें, और देखें कि नए बैच अपने-आप आ जाते हैं।
+
+<FeatureGrid items={[
+              {
+                icon: Zap,
+                label: 'बदलती गिनती',
+                desc: 'स्क्रॉल करते ही आइटम लोड होते हैं',
+              },
+              {
+                icon: Zap,
+                label: 'बैच में लोडिंग',
+                desc: 'हर बैच में 20 आइटम',
+              },
+              {
+                icon: Layers,
+                label: 'वर्चुअलाइज़्ड',
+                desc: 'अब भी DOM में सिर्फ़ 3',
+              },
+              {
+                icon: Radio,
+                label: 'अपने-आप इंडिकेटर',
+                desc: 'कंटेंट के साथ बिंदु बढ़ते हैं',
+              },
+            ]} />
+
+<Sandbox
+  code={growableFullCode}
+  title="GrowableList.tsx"
+  height={500}
+  stackblitzDeps={['@reelkit/react']}
+  stackblitzExtraDeps={{ 'lucide-react': '^0.562.0' }}
+>
+  <GrowableListDemo />
+</Sandbox>
+
+<Caption>आख़िर तक स्क्रॉल करें — नए आइटम अपने-आप लोड होते हैं। बैच आने के साथ काउंटर और इंडिकेटर बढ़ते हैं।</Caption>
+
+## परफ़ॉर्मेंस टिप्स [#performance-tips]
+
+<KeyPoints>
+<KeyPoint title="डेटा arrays को memoize करें">
+  अपने आइटम के array को `useMemo` में लपेटें। हर रेंडर पर नया array reference `count` अपडेट करवाता है और दिखने वाली ranges दोबारा निकलवाता है।
+</KeyPoint>
+<KeyPoint title="itemBuilder को हल्का रखें">
+  यह दिखने वाली range के हर बदलाव पर चलता है (आम तौर पर 3 स्लाइड)। इसके अंदर भारी गणना या side effects से बचें।
+</KeyPoint>
+<KeyPoint title="किनारे के पास डेटा लोड करें">
+  `afterChange` से पहचानें कि यूज़र आख़िर के पास पहुँच रहा है, और स्लाइड ख़त्म होने से पहले अगला बैच fetch करें (ऊपर बढ़ने वाली सूची का डेमो देखें)।
+</KeyPoint>
+<KeyPoint title="स्क्रॉल होने वाले पेज में व्हील बंद करें">
+  जब स्लाइडर स्क्रॉल होने वाले लेआउट के अंदर हो, तो पेज का स्क्रॉल पकड़ने से बचने के लिए `enableWheel={false}` सेट करें।
+</KeyPoint>
+</KeyPoints>
+
+<NextSteps
+        items={[
+          {
+            label: 'API रेफ़रेंस',
+            path: '/docs/react/api',
+            description: 'सभी उपलब्ध props',
+          },
+          {
+            label: 'Reel Player',
+            path: '/docs/reel-player',
+            description: 'TikTok/Reels जैसा वीडियो प्लेयर',
+          },
+          {
+            label: 'Lightbox',
+            path: '/docs/lightbox',
+            description: 'इमेज और वीडियो गैलरी',
+          },
+          {
+            label: 'Stories Player',
+            path: '/docs/stories-player',
+            description: 'Instagram जैसा stories व्यूअर',
+          },
+        ]}
+      />

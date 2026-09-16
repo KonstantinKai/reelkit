@@ -1,0 +1,367 @@
+---
+title: Vue Lightbox
+description: Vue 3 के लिए फ़ुलस्क्रीन इमेज गैलरी lightbox overlay। LightboxItem schema, props, emits, scoped slots, tree-shake होने वाला transitionFn, स्वाइप करके बंद करना और React lightbox के साथ साझा थीमिंग।
+---
+
+import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2 } from 'lucide-react';
+import installation from '../../snippets/vue-lightbox/installation.sh?raw';
+import installation2 from '../../snippets/vue-lightbox/installation-2.ts?raw';
+import basicUsageCode from '../../snippets/vue-lightbox/basic-usage-code.vue?raw';
+import slotsExampleCode from '../../snippets/vue-lightbox/slots-example-code.vue?raw';
+import videoOptInCode from '../../snippets/vue-lightbox/video-opt-in-code.vue?raw';
+import fullscreenCode from '../../snippets/vue-lightbox/fullscreen-code.vue?raw';
+import urlState from '../../snippets/vue-lightbox/url-state.vue?raw';
+import urlState2 from '../../snippets/vue-lightbox/url-state-2.vue?raw';
+import urlState3 from '../../snippets/vue-lightbox/url-state-3.vue?raw';
+import urlState4 from '../../snippets/vue-lightbox/url-state-4.vue?raw';
+import urlState5 from '../../snippets/vue-lightbox/url-state-5.vue?raw';
+import customTransitionCode from '../../snippets/vue-lightbox/custom-transition-code.vue?raw';
+import lifecycleSlideCode from '../../snippets/vue-lightbox/lifecycle-slide-code.vue?raw';
+import customLoadingCode from '../../snippets/vue-lightbox/custom-loading-code.vue?raw';
+import customErrorCode from '../../snippets/vue-lightbox/custom-error-code.vue?raw';
+import themingCode from '../../snippets/vue-lightbox/theming-code.css?raw';
+
+Vue 3 के लिए फ़ुलस्क्रीन इमेज और वीडियो गैलरी lightbox, जो `@reelkit/vue-lightbox` पर बना है।
+
+<DemoLink href="https://vue-demo.reelkit.dev/image-preview?utm_source=docs">लाइव डेमो देखें →</DemoLink>
+
+## फ़ीचर [#features]
+
+<FeatureGrid items={[
+              {
+                icon: Image,
+                label: 'इमेज और वीडियो',
+                desc: 'वीडियो स्लाइड का बिल्ट-इन सपोर्ट',
+              },
+              {
+                icon: MousePointer,
+                label: 'टच जेस्चर',
+                desc: 'स्वाइप करके आगे-पीछे जाएँ',
+              },
+              {
+                icon: X,
+                label: 'स्वाइप करके बंद करें',
+                desc: 'हटाने के लिए ऊपर स्वाइप करें',
+              },
+              {
+                icon: Keyboard,
+                label: 'कीबोर्ड नेविगेशन',
+                desc: 'तीर वाली कुंजियाँ + Escape',
+              },
+              {
+                icon: Maximize2,
+                label: 'फ़ुलस्क्रीन',
+                desc: 'सभी ब्राउज़र में चलने वाला API',
+              },
+              {
+                icon: Hash,
+                label: 'ट्रांज़िशन',
+                desc: 'Slide, fade, flip, zoom-in',
+              },
+              {
+                icon: Zap,
+                label: 'पहले से लोडिंग',
+                desc: '±2 पड़ोसी पहले से fetch होते हैं',
+              },
+              {
+                icon: Volume2,
+                label: 'साउंड टॉगल',
+                desc: 'हर स्लाइड पर mute/unmute',
+              },
+              {
+                icon: Loader,
+                label: 'लोडिंग स्टेट',
+                desc: 'Spinner + कस्टम slot',
+              },
+              {
+                icon: AlertTriangle,
+                label: 'एरर हैंडलिंग',
+                desc: 'एरर आइकन + कस्टम slot',
+              },
+              {
+                icon: Layers,
+                label: 'Scoped slots',
+                desc: 'कस्टमाइज़ होने वाले 6 slot हिस्से',
+              },
+              {
+                icon: Layers,
+                label: 'v-model',
+                desc: 'v-model:is-open दोतरफ़ा binding',
+              },
+              {
+                icon: Link2,
+                label: 'URL स्टेट',
+                desc: 'शेयर और bookmark करने लायक लिंक',
+              },
+            ]} />
+
+## इंस्टॉलेशन [#installation]
+
+<CodeBlock code={installation} language="bash" />
+
+styles import करना न भूलें:
+
+<CodeBlock code={installation2} language="typescript" />
+
+<Callout type="info" title="आइकन">
+  डिफ़ॉल्ट कंट्रोल आइकन के लिए `lucide-vue-next` इस्तेमाल करते हैं। अगर आप कोई और आइकन लाइब्रेरी पसंद करते हैं, तो अपने देने के लिए `#controls` और `#navigation` scoped slots इस्तेमाल करें।
+</Callout>
+
+## बुनियादी इस्तेमाल [#basic-usage]
+
+stylesheet और `LightboxOverlay` कंपोनेंट import करें, फिर `v-model:is-open` से खोलना/बंद करना चलाएँ।
+
+<Sandbox code={basicUsageCode} language="vue" title="App.vue" framework="vue" stackblitzDeps={['@reelkit/vue-lightbox']} stackblitzExtraDeps={{ 'lucide-vue-next': '>=0.460.0' }} />
+
+## Scoped slots [#scoped-slots]
+
+छह नाम वाले scoped slots से overlay के हर हिस्से को पूरी तरह कस्टमाइज़ किया जा सकता है। बिल्ट-इन डिफ़ॉल्ट रखने के लिए slot छोड़ दें; उस हिस्से को पूरी तरह छिपाने के लिए slot के अंदर कुछ न दें (जैसे `v-if="false"` से)।
+
+| Slot | Scope | विवरण |
+| --- | --- | --- |
+| #slide | `SlideSlotScope` | अलग-अलग स्लाइड का कंटेंट बदलें (वीडियो स्लाइड के लिए ज़रूरी) |
+| #controls | `ControlsSlotScope` | ऊपर का कंट्रोल बार बदलें (बंद, काउंटर, फ़ुलस्क्रीन) |
+| #navigation | `NavigationSlotScope` | prev/next नेविगेशन तीर बदलें |
+| #info | `InfoSlotScope` | नीचे का शीर्षक/विवरण gradient overlay बदलें |
+| #loading | `LoadingSlotScope` | कस्टम लोडिंग इंडिकेटर |
+| #error | `ErrorSlotScope` | कस्टम एरर इंडिकेटर |
+
+<CodeBlock code={slotsExampleCode} language="vue" />
+
+## वीडियो सपोर्ट [#video-support]
+
+वीडियो स्लाइड opt-in हैं, ताकि डिफ़ॉल्ट बंडल ऑडियो/वीडियो की वायरिंग से मुक्त रहे। `useVideoSlideRenderer(items)` कॉल करें और लौटाए गए `VideoSlideRenderer` / `VideoControlsRenderer` को overlay के `#slide` और `#controls` slots में आगे भेजें। बिल्ट-इन साउंड टॉगल को context मिले, इसके लिए overlay को लौटाए गए `SoundProvider` में लपेटें।
+
+<CodeBlock code={videoOptInCode} language="vue" />
+
+<Callout type="info">
+  वीडियो स्लाइड चलाने वाला साझा `<video>` एलिमेंट वही पैटर्न इस्तेमाल करता है जो vue reel-player — iOS पर हर स्लाइड के लिए यूज़र जेस्चर माँगे बिना स्लाइड बदलने पर भी प्लेबैक चलता रहता है।
+</Callout>
+
+## फ़ुलस्क्रीन [#fullscreen]
+
+किसी जुड़े हुए एलिमेंट की फ़ुलस्क्रीन स्टेट देखने या टॉगल करने के लिए `@reelkit/vue` का `useFullscreen` इस्तेमाल करें। Lightbox अपना बिल्ट-इन फ़ुलस्क्रीन बटन इसी composable से चलाता है।
+
+<CodeBlock code={fullscreenCode} language="vue" />
+
+## URL स्टेट [#url-state]
+
+<DemoLink href="https://vue-demo.reelkit.dev/image-preview-url?utm_source=docs">लाइव डेमो देखें →</DemoLink>
+
+`@reelkit/vue` के `useOverlayUrlState` से कंट्रोलर बनाएँ और उसे `LightboxUrlOverlay` को `controller` के रूप में दें, तो गैलरी address bar के हाथ में आ जाती है: parameter किसी स्लाइड का नाम ले तो वह खुद खुलती है, और parameter हटते ही बंद हो जाती है। लिंक शेयर किए जा सकते हैं, और back बटन गैलरी बंद करता है। यह `LightboxOverlay` से अलग कंपोनेंट है, इसलिए हर एक में खुली स्टेट चलाने वाला ठीक एक स्रोत होता है — `is-open` model या url `controller`, कभी दोनों नहीं।
+
+<Callout type="info" title="बिल्ट-इन keys">
+  आप बिल्ट-इन key से स्लाइडों को पहचान सकते हैं — कंट्रोलर में `urlIndexKey` (स्थिति से) या `urlStableIdKey` (स्थिर `id` से) spread करें — दोनों `@reelkit/vue` से भी export होते हैं। [URL स्टेट गाइड](/docs/core/guide#url-state) और [Core API](/docs/core/api#url-state) देखें।
+</Callout>
+
+Back सिर्फ़ तब बंद करता है जब आपने ऐप के अंदर से खोला हो — लिंक ने entry जोड़ी, इसलिए back गैलरी पर लौटता है। नए tab में सीधे खोले गए शेयर किए गए लिंक के पीछे कोई history नहीं होती, इसलिए ब्राउज़र का back साइट छोड़ देता है; बंद करने का बटन या Escape parameter को उसी जगह हटाकर आपको गैलरी पर रखता है।
+
+<CodeBlock code={urlState} language="vue" />
+
+Composable विकल्पों का एक object लेता है और `UrlStateController` (`set`, `index`, `value` के साथ) लौटाता है। प्रोग्राम से नियंत्रण के लिए इसे रखें: `set` वह निचले स्तर का write है जो overlay अंदर से इस्तेमाल करता है (स्लाइड बदलना, और बंद करने के लिए `set(null)`)। यह overlay को प्रोग्राम से भी चलाता है — `set(index)` उसे खोलता है, बिल्कुल parameter पर जाने की तरह। फिर भी खोलने के लिए लिंक को प्राथमिकता दें: href शेयर किया जा सकता है, नए tab में खुलता है, और back बटन उसे बंद करता है — सब मुफ़्त में, बिना किसी हैंडलर के।
+
+`useOverlayUrlState` के सारे विकल्प (`param`, `adapter`, `codec`, `locator`): [Vue API रेफ़रेंस](/docs/vue/api#useoverlayurlstate) देखें।
+
+`LightboxUrlOverlay` खुद सिर्फ़ `:controller` (ज़रूरी), एक `@close` emit, और `LightboxOverlay` के आगे भेजे जाने वाले सारे दिखावट और व्यवहार वाले props (`items`, `transition-fn`, scoped slots वगैरह) लेता है — लेकिन `is-open` नहीं।
+
+- खोलने पर history की एक entry लगती है; स्लाइड बदलना उसे बदल देता है, इसलिए सौ स्वाइप भी कोई entry नहीं जोड़ते — back का एक कदम हमेशा गैलरी छोड़ देता है।
+- `?photo=3` जैसा शेयर किया गया लिंक गैलरी को उसी स्लाइड पर खोलता है। किसी स्लाइड का नाम न लेने वाला parameter, न खुल सकने वाली स्लाइड का दावा करने के बजाय URL से हटा दिया जाता है।
+
+**Routing वाले ऐप में adapter पास करें।** history में सीधे लिखने से router की अपनी location पुरानी पड़ जाती है, और उसका अगला नेविगेशन parameter गिरा देता है।
+
+<CodeBlock code={urlState2} language="vue" />
+
+**स्थिर लिंक।** Index स्थिति पर आधारित है, इसलिए सूची का क्रम बदलते ही bookmark कोई दूसरी इमेज खोलता है। `urlStableIdKey` हर आइटम की स्थिर `id` से key बनाता है और मौजूदा सूची में ढूँढता है — आम मामले के लिए एक कॉल काफ़ी है।
+
+<CodeBlock code={urlState3} language="vue" />
+
+URL में id को base64url में encode करने के लिए `hashCodec: base64UrlCodec` पास करें — वापस पढ़ा जा सकने वाला छिपाव, cryptographic hash नहीं।
+
+किसी दूसरे field (`slug`) से key बनाएँ, या `locateAsync` से अनंत फ़ीड के पेज लोड करें, और `codec`/`locator` खुद बनाएँ: `codec` पहचान को URL में लिखता है, `locator` ढूँढता है कि वह अब कहाँ है।
+
+<CodeBlock code={urlState4} language="vue" />
+
+**अनंत / पेज वाली गैलरी।** `locate` synchronous है, इसलिए यह सिर्फ़ लोड हो चुके आइटम के लिए जवाब दे सकता है — जिस फ़ीड में 20 इमेज लोड हुई हैं, उसकी इमेज 400 का शेयर किया गया लिंक खाली लौटता है। `locateAsync` विकल्प है, जो सिर्फ़ न मिलने पर कॉल होता है: ज़रूरी पेज लोड करें, फिर वह index लौटाएँ जो पहचान का निकला।
+
+<Callout type="info" title="छोटा रास्ता">
+  आइटम की `id` से key बना रहे हैं? अपना codec और locator लिखना छोड़ें — `locateAsync` सीधे `urlStableIdKey({ items, locateAsync })` को पास करें (न मिलने पर यह fetch करता है, फिर index लौटाता है)। नीचे का पूरा रूप किसी दूसरे field से key बनाने या पूरे नियंत्रण के लिए है।
+</Callout>
+
+<CodeBlock code={urlState5} language="vue" />
+
+इसके pending रहने तक lightbox बंद रहता है और parameter को छुआ नहीं जाता, इसलिए सीधा लिंक fetch के बाद भी बना रहता है। `null` या rejection parameter हटा देता है। URL आगे बढ़ जाने, बंद होने या unmount के बाद आया जवाब फेंक दिया जाता है, इसलिए धीमा fetch ऐसी स्लाइड नहीं खोल सकता जो किसी ने माँगी ही नहीं। यह जो भी लौटाए, वही अंतिम है — यह अभी fetch किए डेटा का index बताता है, और lightbox `items` को दोबारा पढ़ने के बजाय उसे जैसा है वैसा लेता है, क्योंकि Vue ने उसे अभी दोबारा रेंडर नहीं किया है।
+
+## API रेफ़रेंस [#api-reference]
+
+### LightboxOverlay के props [#lightboxoverlay-props]
+
+<Signature>LightboxOverlayProps</Signature>
+
+| Prop | टाइप | डिफ़ॉल्ट | विवरण |
+| --- | --- | --- | --- |
+| `isOpen` | `boolean` | ज़रूरी | दिखना नियंत्रित करता है; false होने पर overlay DOM से हट जाता है। v-model:is-open से bind किया जा सकता है। |
+| `items` | `LightboxItem[]` | ज़रूरी | आइटम (इमेज या वीडियो) का array |
+| `initialIndex` | `number` | 0 | शुरू में दिखने वाले आइटम का शून्य से शुरू होने वाला index |
+| `transitionFn` | `TransitionTransformFn` | slideTransition | स्लाइड ट्रांज़िशन फ़ंक्शन। कोई बिल्ट-इन (slideTransition, flipTransition, lightboxFadeTransition, lightboxZoomTransition) import करें या अपना पास करें। छोड़ने पर slideTransition लगता है। |
+| `showInfo` | `boolean` | true | शीर्षक/विवरण वाली जानकारी का overlay रेंडर करना है या नहीं |
+| `showControls` | `boolean` | true | ऊपर का कंट्रोल बार (बंद, काउंटर, फ़ुलस्क्रीन) रेंडर करना है या नहीं |
+| `showNavigation` | `boolean` | true | prev/next नेविगेशन तीर रेंडर करने हैं या नहीं (सिर्फ़ डेस्कटॉप) |
+| `transitionDuration` | `number` | 300 | ms में स्लाइड एनिमेशन की अवधि |
+| `swipeDistanceFactor` | `number` | 0.12 | स्लाइड बदलने के लिए स्वाइप दूरी का न्यूनतम हिस्सा (0–1) |
+| `swipeToCloseDirection` | `'up' \| 'down'` | 'up' | मोबाइल पर स्वाइप करके बंद करने वाले जेस्चर की दिशा |
+| `loop` | `boolean` | false | स्लाइडर आख़िरी स्लाइड से पहली पर लौटता है या नहीं |
+| `enableNavKeys` | `boolean` | true | कीबोर्ड की तीर वाली कुंजियों से नेविगेशन चालू करता है |
+| `enableWheel` | `boolean` | true | माउस व्हील से नेविगेशन चालू करता है |
+| `wheelDebounceMs` | `number` | 200 | ms में व्हील इवेंट के debounce की अवधि |
+| `ariaLabel` | `string` | 'Image gallery' | dialog क्षेत्र का सुलभ लेबल |
+
+### LightboxUrlOverlay के props [#lightboxurloverlay-props]
+
+<Signature>LightboxUrlOverlayProps</Signature>
+
+ऊपर के सारे दिखावट और व्यवहार वाले props लेता है, सिवाय `is-open` के, जिसकी जगह `controller` आता है। यह `close`, `slide-change` और `api-ready` emit करता है, लेकिन `update:is-open` नहीं। यहाँ `initial-index` अनदेखा होता है — स्लाइड कंट्रोलर की स्थिति चुनती है, इसलिए साथ में दी गई value हर बार खुलने पर बदल दी जाती।
+
+| Prop | टाइप | डिफ़ॉल्ट | विवरण |
+| --- | --- | --- | --- |
+| `controller` | `UrlStateController` | ज़रूरी | useOverlayUrlState से मिला कंट्रोलर। इसकी स्थिति तय करती है कि overlay खुला है या नहीं और कौन-सी स्लाइड दिखती है; स्लाइड बदलने और बंद होने पर overlay इसी के ज़रिए वापस लिखता है। |
+
+### LightboxOverlay के इवेंट [#lightboxoverlay-events]
+
+| इवेंट | Payload | विवरण |
+| --- | --- | --- |
+| `close` | `void` | यूज़र के lightbox बंद करने पर emit होता है |
+| `slide-change` | `number` | बदलाव के बाद नए सक्रिय स्लाइड index के साथ emit होता है |
+| `api-ready` | `LightboxApi` | स्लाइडर तैयार होते ही एक बार emit होता है और imperative API देता है |
+| `update:is-open` | `boolean` | बंद होने पर emit होता है; v-model:is-open संभव बनाता है |
+
+## LightboxItem इंटरफ़ेस [#lightboxitem-interface]
+
+| Field | टाइप | ज़रूरी | विवरण |
+| --- | --- | --- | --- |
+| `src` | `string` | हाँ | इमेज या वीडियो का URL |
+| `type` | `'image' \| 'video'` | नहीं | आइटम का प्रकार। डिफ़ॉल्ट 'image' |
+| `poster` | `string` | नहीं | वीडियो आइटम की थंबनेल इमेज |
+| `title` | `string` | नहीं | जानकारी वाले overlay में दिखने वाला शीर्षक |
+| `description` | `string` | नहीं | शीर्षक के नीचे दिखने वाला विवरण |
+| `width` | `number` | नहीं | पिक्सेल में इमेज की असली चौड़ाई |
+| `height` | `number` | नहीं | पिक्सेल में इमेज की असली ऊँचाई |
+
+## स्लॉट scope के टाइप [#slot-scope-types]
+
+| टाइप | Fields |
+| --- | --- |
+| `SlideSlotScope` | `{ item, index, size: [number, number], isActive, onReady, onWaiting, onError }` |
+| `ControlsSlotScope` | `{ item, activeIndex, count, isFullscreen, onClose, onToggleFullscreen }` |
+| `NavigationSlotScope` | `{ item, activeIndex, count, onPrev, onNext }` |
+| `InfoSlotScope` | `{ item, index }` |
+| `LoadingSlotScope` | `{ item, activeIndex }` |
+| `ErrorSlotScope` | `{ item, activeIndex }` |
+
+## ट्रांज़िशन [#transitions]
+
+`transition-fn` prop के ज़रिए कोई भी `TransitionTransformFn` पास करें। सिर्फ़ इस्तेमाल होने वाला ट्रांज़िशन import करने से bundler बाकी को tree-shake कर देता है। छोड़ने पर `slideTransition` लगता है।
+
+| फ़ंक्शन | विवरण |
+| --- | --- |
+| `slideTransition` | डिफ़ॉल्ट। स्लाइडों के बीच हॉरिज़ॉन्टल खिसकाव; @reelkit/vue से भी export होता है। |
+| `lightboxFadeTransition` | हल्के हॉरिज़ॉन्टल झटके के साथ crossfade। @reelkit/vue-lightbox का अपना। |
+| `flipTransition` | Y-अक्ष के चारों ओर 3D flip; @reelkit/vue से भी export होता है। |
+| `lightboxZoomTransition` | आने वाली स्लाइड fade के साथ 70% → 100% बड़ी होती है। @reelkit/vue-lightbox का अपना। |
+
+<CodeBlock code={customTransitionCode} language="vue" />
+
+## कंटेंट लोडिंग और एरर हैंडलिंग [#content-loading-error-handling]
+
+जब आप `#slide` slot से रेंडरिंग अपने हाथ में लेते हैं, तो लोडिंग स्टेट बताने के लिए slot scope पर तीन lifecycle callbacks मिलते हैं। Lightbox हर स्लाइड की स्टेट ट्रैक करता है और उसके हिसाब से spinner या एरर आइकन दिखाता है। कंटेंट preloader टूटे URL cache करता है, इसलिए फ़ेल हुई स्लाइड पर दोबारा आने पर फिर से कोशिश नहीं होती।
+
+### Lifecycle callbacks [#lifecycle-callbacks]
+
+| Callback | टाइप | विवरण |
+| --- | --- | --- |
+| `onReady` | `() => void` | बताता है कि स्लाइड का कंटेंट सफलता से लोड हो गया (जैसे इमेज decode हुई) |
+| `onWaiting` | `() => void` | बताता है कि स्लाइड का कंटेंट लोड/buffer हो रहा है (spinner दिखाता है) |
+| `onError` | `() => void` | बताता है कि स्लाइड का कंटेंट लोड नहीं हुआ (एरर आइकन दिखाता है) |
+
+### #slide में callbacks जोड़ना [#wiring-callbacks-in-slide]
+
+<CodeBlock code={lifecycleSlideCode} language="vue" />
+
+### कस्टम loading slot [#custom-loading-slot]
+
+डिफ़ॉल्ट spinner बदलने के लिए `#loading` slot इस्तेमाल करें।
+
+<CodeBlock code={customLoadingCode} language="vue" />
+
+### कस्टम error slot [#custom-error-slot]
+
+डिफ़ॉल्ट टूटी इमेज का आइकन बदलने के लिए `#error` slot इस्तेमाल करें।
+
+<CodeBlock code={customErrorCode} language="vue" />
+
+## CSS क्लास [#css-classes]
+
+सारी CSS क्लास साधारण हैं (scoped नहीं), इसलिए `@reelkit/vue-lightbox/styles.css` के बाद लोड होने वाली stylesheet में ज़्यादा specificity वाले selectors से इन्हें निशाना बनाया जा सकता है। रंग, आकार और z-index बदलने के लिए नीचे [थीमिंग](#theming) हिस्से में बताई CSS custom properties को प्राथमिकता दें।
+
+| क्लास | कंपोनेंट | विवरण |
+| --- | --- | --- |
+| `.rk-lightbox-overlay` | Overlay | Root कंटेनर (फ़ुलस्क्रीन backdrop) |
+| `.rk-lightbox-top-shade` | Overlay | कंट्रोल के पीछे ऊपर का gradient |
+| `.rk-lightbox-spinner` | Overlay | डिफ़ॉल्ट लोडिंग spinner |
+| `.rk-lightbox-error` | Overlay | एरर स्टेट का कंटेनर (टूटी इमेज) |
+| `.rk-lightbox-error-text` | Overlay | एरर स्टेट का टेक्स्ट लेबल |
+| `.rk-lightbox-controls-left` | Controls | ऊपर-बाएँ कंट्रोल का कंटेनर |
+| `.rk-lightbox-btn` | Controls | कंट्रोल बटन (फ़ुलस्क्रीन, साउंड वगैरह) |
+| `.rk-lightbox-close` | Controls | बंद करने का बटन |
+| `.rk-lightbox-counter` | Controls | इमेज काउंटर chip |
+| `.rk-lightbox-nav` | Navigation | नेविगेशन तीर (prev और next दोनों) |
+| `.rk-lightbox-nav-prev` | Navigation | पिछला तीर |
+| `.rk-lightbox-nav-next` | Navigation | अगला तीर |
+| `.rk-lightbox-info` | Info | शीर्षक / विवरण का कंटेनर |
+| `.rk-lightbox-info-title` | Info | इमेज का शीर्षक |
+| `.rk-lightbox-info-description` | Info | इमेज का विवरण |
+| `.rk-lightbox-slide` | Slide | स्लाइड कंटेनर |
+| `.rk-lightbox-img` | Slide | इमेज एलिमेंट |
+| `.rk-lightbox-video-container` | VideoSlide | वीडियो स्लाइड कंटेनर (opt-in) |
+| `.rk-lightbox-video-element` | VideoSlide | वीडियो एलिमेंट (opt-in) |
+| `.rk-lightbox-video-poster` | VideoSlide | वीडियो की poster इमेज (opt-in) |
+
+## थीमिंग [#theming]
+
+थीम बदलने के लिए `:root` (या `.rk-lightbox-overlay` के किसी भी ancestor) पर कोई भी `--rk-lightbox-*` CSS custom property override करें। `.rk-lightbox-overlay` पर सीधे लिखी declarations विरासत में मिली values को ढक देंगी, इसलिए overrides किसी ancestor selector पर रखें।
+
+| Token | डिफ़ॉल्ट | क्या नियंत्रित करता है |
+| --- | --- | --- |
+| `--rk-lightbox-overlay-bg` | `#000` | Backdrop का रंग |
+| `--rk-lightbox-overlay-z` | `9999` | Overlay का z-index |
+| `--rk-lightbox-top-shade-height` | `80px` | ऊपर के gradient की ऊँचाई |
+| `--rk-lightbox-top-shade-bg` | `linear-gradient(rgba(0,0,0,0.6), transparent)` | ऊपर का gradient |
+| `--rk-lightbox-edge-padding` | `16px` | बंद / नेविगेशन / कंट्रोल की किनारे से दूरी |
+| `--rk-lightbox-btn-bg` | `rgba(0, 0, 0, 0.5)` | बंद / नेविगेशन / छोटे बटन का डिफ़ॉल्ट background |
+| `--rk-lightbox-btn-bg-hover` | `rgba(255, 255, 255, 0.2)` | बंद / नेविगेशन / छोटे बटन का hover background |
+| `--rk-lightbox-btn-fg` | `#fff` | बंद / नेविगेशन / छोटे बटन के आइकन का रंग |
+| `--rk-lightbox-btn-size` | `36px` | छोटे बटन का आकार (फ़ुलस्क्रीन टॉगल वगैरह) |
+| `--rk-lightbox-close-size` | `40px` | बंद करने के बटन का आकार |
+| `--rk-lightbox-nav-size` | `48px` | prev / next तीर का आकार |
+| `--rk-lightbox-nav-opacity` | `0.7` | आराम की हालत में prev / next तीरों की opacity |
+| `--rk-lightbox-counter-bg` | `rgba(0, 0, 0, 0.5)` | काउंटर chip का background |
+| `--rk-lightbox-counter-fg` | `#fff` | काउंटर के टेक्स्ट का रंग |
+| `--rk-lightbox-info-bg` | `linear-gradient(transparent, rgba(0,0,0,0.8))` | कैप्शन के पीछे का gradient |
+| `--rk-lightbox-title-size` | `18px` | शीर्षक का font size |
+| `--rk-lightbox-description-size` | `14px` | विवरण का font size |
+| `--rk-lightbox-video-bg` | `#000` | \<video> के पीछे letterbox background |
+
+<CodeBlock code={themingCode} language="css" />
+
+## सुलभता [#accessibility]
+
+Overlay का root एक modal dialog है (`role="dialog"`, `aria-modal="true"`)। स्क्रीन रीडर की घोषणा बदलने के लिए `aria-label` prop सेट करें; डिफ़ॉल्ट "Image gallery" है। हर स्लाइड पर `role="group"`, `aria-roledescription="slide"` और स्थिति से बना `aria-label` होता है (जैसे "Image 2 of 5")।
+
+Lightbox खुलने पर फ़ोकस पकड़ता है और बंद होने पर उसे trigger पर लौटा देता है। Tab और Shift+Tab अंदर के फ़ोकस होने वाले एलिमेंट में घूमते हैं; बाहर निकला फ़ोकस (बाहर क्लिक, प्रोग्राम से फ़ोकस) वापस खींच लिया जाता है। यह `@reelkit/vue` के `captureFocusForReturn` और `createFocusTrap` से बना है।
+
+## कीबोर्ड शॉर्टकट [#keyboard-shortcuts]
+
+| कुंजी | क्रिया |
+| --- | --- |
+| `ArrowLeft` | पिछली इमेज |
+| `ArrowRight` | अगली इमेज |
+| `Escape` | lightbox बंद करें (या चालू हो तो फ़ुलस्क्रीन से बाहर आएँ) |

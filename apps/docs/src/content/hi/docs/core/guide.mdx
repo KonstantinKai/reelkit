@@ -1,0 +1,176 @@
+---
+title: Core गाइड
+description: '@reelkit/core पैकेज फ़्रेमवर्क से स्वतंत्र स्लाइडर logic देता है। इससे कस्टम इंटीग्रेशन बनाएँ या अंदर की आर्किटेक्चर समझें।'
+---
+
+import createslidercontroller from '../../../snippets/core-guide/createslidercontroller.ts?raw';
+import navigation from '../../../snippets/core-guide/navigation.ts?raw';
+import lifecycle from '../../../snippets/core-guide/lifecycle.ts?raw';
+import stateUpdates from '../../../snippets/core-guide/state-updates.ts?raw';
+import virtualization from '../../../snippets/core-guide/virtualization.ts?raw';
+import signals from '../../../snippets/core-guide/signals.ts?raw';
+import controllerState from '../../../snippets/core-guide/controller-state.ts?raw';
+import timelineController from '../../../snippets/core-guide/timeline-controller.ts?raw';
+import howItWorks from '../../../snippets/core-guide/how-it-works.ts?raw';
+import howItWorks2 from '../../../snippets/core-guide/how-it-works-2.ts?raw';
+
+`@reelkit/core` पैकेज फ़्रेमवर्क से स्वतंत्र स्लाइडर logic देता है। इससे कस्टम इंटीग्रेशन बनाएँ या अंदर की आर्किटेक्चर समझें।
+
+## आर्किटेक्चर का परिचय [#architecture-overview]
+
+core factory फ़ंक्शन के साथ **controller पैटर्न** इस्तेमाल करता है। कोई class नहीं — सब closures से लौटाए गए साधारण objects हैं। कोई dependency नहीं। core इन सबके बीच तालमेल रखता है:
+
+<Bullets marker="dot">
+
+- **SliderController** — स्टेट का केंद्रीय प्रबंधन और नेविगेशन
+- **GestureController** — टच/pointer से खींचने को संभालना
+- **KeyboardController** — तीर वाली कुंजियाँ और Escape
+- **WheelController** — debounce के साथ माउस व्हील
+
+</Bullets>
+
+## createSliderController [#createslidercontroller]
+
+एक नया स्लाइडर कंट्रोलर instance बनाता है, जो स्लाइडर की सारी स्टेट और व्यवहार संभालता है।
+
+<CodeBlock code={createslidercontroller} language="typescript" />
+
+## कंट्रोलर के मेथड [#controller-methods]
+
+### नेविगेशन [#navigation]
+
+<CodeBlock code={navigation} language="typescript" />
+
+### Lifecycle [#lifecycle]
+
+<CodeBlock code={lifecycle} language="typescript" />
+
+### स्टेट अपडेट [#state-updates]
+
+<CodeBlock code={stateUpdates} language="typescript" />
+
+## वर्चुअलाइज़ेशन [#virtualization]
+
+core किसी भी समय **DOM में सिर्फ़ 3 स्लाइड** रेंडर करता है (मौजूदा, पिछली, अगली)। Range extractor तय करता है कि रेंडर होने वाली विंडो में कौन-से index शामिल हों:
+
+<CodeBlock code={virtualization} language="typescript" />
+
+<Callout type="info">
+  नतीजा हमेशा ज़्यादा से ज़्यादा 3 index तक सीमित रहता है। अगर आपका extractor इससे ज़्यादा लौटाता है, तो core मौजूदा स्लाइड के आसपास के 3 रखता है।
+</Callout>
+
+## सिग्नल [#signals]
+
+reactivity के लिए core एक हल्का signal सिस्टम इस्तेमाल करता है:
+
+<CodeBlock code={signals} language="typescript" />
+
+## कंट्रोलर की स्टेट [#controller-state]
+
+reactive स्टेट `controller.state` से पढ़ें:
+
+<CodeBlock code={controllerState} language="typescript" />
+
+## टाइमलाइन कंट्रोलर [#timeline-controller]
+
+किसी भी `<video>` एलिमेंट के लिए अपना scrub bar बनाएँ। कंट्रोलर अवधि, मौजूदा समय, buffered ranges और scrubbing स्टेट के reactive signals देता है, और एक ही कॉल में किसी भी DOM एलिमेंट पर pointer और कीबोर्ड इंटरैक्शन जोड़ देता है।
+
+<CodeBlock code={timelineController} language="typescript" />
+
+## URL स्टेट [#url-state]
+
+Overlay के खुले होने की स्टेट address bar में रखें: दिखने वाली स्लाइड को एक ऐसा लिंक मिलता है जिसे शेयर किया जा सके, जिस पर सीधे पहुँचा जा सके और जिसे back बटन से बंद किया जा सके। मॉडल core के पास है; bindings इसे एक hook (React/Vue में `useOverlayUrlState`, Angular में `createOverlayUrlState`) और URL से चलने वाले overlay कंपोनेंट में लपेटती हैं।
+
+### यह कैसे काम करता है [#how-it-works]
+
+`createUrlStateController` एक query parameter को signal में दर्शाता है और बदलाव वापस लिखता है। खोलने पर history में **एक** entry जुड़ती है; हर नेविगेशन उसी को **बदल देता है** — सौ स्वाइप भी कोई नई entry नहीं जोड़ते, इसलिए back का एक कदम हमेशा बंद कर देता है। `UrlAdapter` पढ़ने/लिखने की बदली जा सकने वाली कड़ी है: डिफ़ॉल्ट `history.pushState` चलाता है, और routing वाला ऐप router पर आधारित adapter देता है ताकि router की अपनी location कभी पुरानी न पड़े।
+
+<CodeBlock code={howItWorks} language="typescript" />
+
+### Codec और locator — दो अलग काम [#codec-and-locator-two-jobs]
+
+एक key, `{ codec, locator }` की मेल खाती जोड़ी है। किसी पहचान को URL में लिखना और यह ढूँढना कि वह अभी कहाँ है, दो अलग ज़िम्मेदारियाँ हैं, इसलिए ये दो अलग objects हैं:
+
+- **codec — wire का काम।** `encode` पहचान को parameter के टेक्स्ट में लिखता है; `decode` उसे वापस पढ़ता है, और गलत value को ठुकरा देता है ताकि parameter URL से अपने-आप हट जाए।
+- **locator — खोज का काम।** `locate` ढूँढता है कि decode की गई पहचान मौजूदा collection में कहाँ है (या हट चुकी हो तो `null`); `identify` लिखने के लिए किसी स्थिति को वापस उसकी पहचान में बदलता है; वैकल्पिक `locateAsync` न मिलने पर windowed या अनंत फ़ीड के अगले पेज लोड करता है।
+
+इन्हें अलग रखने से आप किसी भी wire को किसी भी खोज के साथ जोड़ सकते हैं — जैसे स्थिर id वाला codec, पेज लोड करने वाले locator के साथ।
+
+### Index बनाम स्थिर id वाली keys [#index-vs-stable-id-keys]
+
+दो बिल्ट-इन keys आपके लिए यह जोड़ी बना देती हैं; फ़र्क सिर्फ़ इतना है कि URL किसका नाम लेता है:
+
+- `urlIndexKey(() => count)` **स्थिति** से पहचानता है (`?photo=3`)। सबसे आसान, लेकिन सूची का क्रम बदलते ही bookmark कोई दूसरा आइटम खोलता है।
+- `urlStableIdKey({ items })` हर आइटम की स्थिर `id` से पहचानता है (`?photo=post_42`) और मौजूदा सूची में ढूँढता है — क्रम बदलने के बाद भी bookmark उसी आइटम का नाम लेता है, या आइटम हट जाने पर साफ़ तौर पर हट जाता है। `hashCodec: base64UrlCodec` id को base64url से छिपा देता है (वापस पढ़ा जा सकता है, cryptographic hash नहीं)।
+
+**Windowed फ़ीड के पेज लोड करने हैं?** दोनों बिल्ट-इन keys वैकल्पिक `locateAsync` लेती हैं — `urlIndexKey(() => count, locateAsync)` और `urlStableIdKey({ items, locateAsync })`। Synchronous खोज लोड हो चुके आइटम के लिए जवाब देती है; न मिलने पर बाकी पेज लोड होते हैं, इसलिए विंडो से आगे का शेयर किया गया लिंक भी खुलता है — अपना codec या locator लिखने की ज़रूरत नहीं।
+
+दो अक्ष? `urlIndexTwoAxisKey` किसी पोस्ट और उसके अंदर के मीडिया index के लिए `?p=<outer>.<inner>` रखता है। सारे विकल्प [Core API रेफ़रेंस](/docs/core/api#url-state) में हैं।
+
+## देखे गए आइटम की स्टेट [#viewed-state]
+
+याद रखें कि दर्शक गैलरी में कहाँ तक पहुँचा, reload और tabs के पार भी — एक ring जो दिखाती है कि क्या देखा जा चुका है, एक गैलरी जो वहीं से खुलती है जहाँ छोड़ी गई थी। यह URL स्टेट वाला ही मॉडल है, बस address bar की जगह storage की ओर इशारा करता है, इसलिए दोनों एक ही key साझा करते हैं।
+
+### यह कैसे काम करता है [#how-it-works]
+
+`createViewedStateController` एक entry को ठीक उसी टेक्स्ट के रूप में सहेजता है जो `?photo=` लिंक में होता, और उसे उसी `decode` फिर `locate` चक्र से वापस पढ़ता है। सहेजी गई स्थिति पर कभी सीधे भरोसा नहीं किया जाता। एक ही key दोनों जगह spread करें, तो bookmark और सहेजी गई entry एक ही string होते हैं।
+
+<CodeBlock code={howItWorks2} language="typescript" />
+
+### टिकाऊपन key पर निर्भर है [#durability-follows-the-key]
+
+Store अपनी तरफ़ से कोई मरम्मत नहीं करता, इसलिए आप जो key spread करते हैं वही तय करती है कि क्या बचा रहेगा: id से पहचानने वाली key collection का क्रम बदलने पर भी जगह बनाए रखती है, स्थिति से पहचानने वाली नहीं। सहेजी गई entry देखे जाने की गिनती नहीं, बल्कि सबसे दूर पहुँचे बिंदु का नाम है, इसलिए बीच से कोई आइटम हटाने पर गिनती घट जाती है — वैसे ही जैसे शेयर किया गया लिंक खुद को ठीक कर लेता है।
+
+पढ़ना सिर्फ़ synchronous है। जिस entry के आइटम अभी लोड नहीं हुए, वह मौजूद नहीं मानी जाती और storage में बिना छुए पड़ी रहती है, इसलिए windowed फ़ीड अपनी ही history कभी नहीं मिटाती।
+
+### Storage और समय-सीमा [#storage-and-expiry]
+
+डिफ़ॉल्ट रूप से store `localStorage` पर चलता है; `createSessionStorageAdapter()` tab बंद होने पर भूल जाता है, और आपका अपना `StorageAdapter` इसे किसी भी synchronous जगह रख सकता है। `attach()` से पहले कुछ भी नहीं पढ़ा जाता, इसलिए सर्वर रेंडर और क्लाइंट का पहला रेंडर एक जैसे रहते हैं।
+
+Entries तब तक रखी जाती हैं जब तक उन्हें साफ़ तौर पर भुलाया न जाए। उन्हें समाप्त करने के लिए `ttlMs` पास करें — हर track के लिए अलग, खिसकती घड़ी पर, ताकि जो चीज़ अभी भी देखी जा रही है वह छोड़ी गई चीज़ के साथ पुरानी न पड़े। इससे लिखा जाने वाला रूप बदलता है — हर entry `[wire, timestamp]` जोड़ी बन जाती है — लेकिन विकल्प कुछ भी हो, पढ़ना दोनों रूप संभाल लेता है, इसलिए विकल्प चालू करने से पहले सहेजी गई entry मिटाई नहीं जाती बल्कि ताज़ा मानी जाती है। `maxTracks` उम्र की जगह गिनती सीमित करता है: सीमा पार होने पर अगली बार लिखते समय सबसे पहले दर्ज किया गया track हटा दिया जाता है, और किसी track को दर्ज करना — भले ही स्थिति पीछे की हो — उसे कतार के आख़िर में भेज देता है। सारे विकल्प [Core API रेफ़रेंस](/docs/core/api#viewed-state) में हैं।
+
+<NextSteps
+        items={[
+          {
+            label: 'Core API रेफ़रेंस',
+            path: '/docs/core/api',
+            description: 'सभी उपलब्ध props',
+          },
+          {
+            label: 'फ़्रेमवर्क गाइड',
+            path: {
+              react: '/docs/react/guide',
+              angular: '/docs/angular/guide',
+              vue: '/docs/vue/guide',
+            },
+            description: 'कंपोनेंट, डेमो और इंटीग्रेशन',
+          },
+          {
+            label: 'Reel Player',
+            path: {
+              react: '/docs/reel-player',
+              angular: '/docs/angular-reel-player',
+              vue: '/docs/vue-reel-player',
+            },
+            description: 'TikTok/Reels जैसा वीडियो प्लेयर',
+          },
+          {
+            label: 'Lightbox',
+            path: {
+              react: '/docs/lightbox',
+              angular: '/docs/angular-lightbox',
+              vue: '/docs/vue-lightbox',
+            },
+            description: 'इमेज और वीडियो गैलरी',
+          },
+          {
+            label: 'Stories Player',
+            path: {
+              react: '/docs/stories-player',
+              angular: '/docs/angular-stories-player',
+              vue: '/docs/vue-stories-player',
+            },
+            description: 'Instagram जैसा stories व्यूअर',
+          },
+        ]}
+      />

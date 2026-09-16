@@ -1,0 +1,183 @@
+---
+title: Angular गाइड
+description: '@reelkit/angular से स्लाइडर बनाएँ। rk-reel कंपोनेंट, rkReelItem directive, ReelIndicator, apiReady output, signal पर आधारित imperative API और वर्चुअलाइज़ेशन।'
+---
+
+import { Hand, Keyboard, MousePointer, InfinityIcon, Radio, Navigation, Zap, Layers, Code } from 'lucide-react';
+import rkReelComponent from '../../../snippets/angular-guide/rk-reel-component.ts?raw';
+import autoSizing from '../../../snippets/angular-guide/auto-sizing.html?raw';
+import rkreelitemTemplatePattern from '../../../snippets/angular-guide/rkreelitem-template-pattern.html?raw';
+import navigation from '../../../snippets/angular-guide/navigation.ts?raw';
+import urlState from '../../../snippets/angular-guide/url-state.ts?raw';
+import urlState2 from '../../../snippets/angular-guide/url-state-2.ts?raw';
+import reelindicator from '../../../snippets/angular-guide/reelindicator.html?raw';
+import apireadyOutputSignalBased from '../../../snippets/angular-guide/apiready-output-signal-based.ts?raw';
+
+`@reelkit/angular` से स्लाइडर बनाना सीखें।
+
+<FeatureGrid columns={3} items={[
+              {
+                icon: Hand,
+                label: 'टच सबसे पहले',
+                desc: 'momentum और snap के साथ स्वाइप',
+              },
+              {
+                icon: Keyboard,
+                label: 'कीबोर्ड नेविगेशन',
+                desc: 'तीर वाली कुंजियाँ + Escape',
+              },
+              {
+                icon: MousePointer,
+                label: 'व्हील स्क्रॉल',
+                desc: 'वैकल्पिक, debounce के साथ',
+              },
+              {
+                icon: InfinityIcon,
+                label: 'वर्चुअलाइज़्ड',
+                desc: '10,000+ आइटम, DOM में 3',
+              },
+              {
+                icon: Radio,
+                label: 'इंडिकेटर',
+                desc: 'Instagram जैसे खिसकते बिंदु',
+              },
+              {
+                icon: Navigation,
+                label: 'प्रोग्राम से API',
+                desc: 'apiReady के ज़रिए next(), prev(), goTo()',
+              },
+              {
+                icon: Zap,
+                label: 'लूप मोड',
+                desc: 'अनंत गोल नेविगेशन',
+              },
+              {
+                icon: Layers,
+                label: 'दिशा',
+                desc: 'वर्टिकल या हॉरिज़ॉन्टल',
+              },
+              {
+                icon: Code,
+                label: 'सिग्नल पर आधारित',
+                desc: 'Angular signals के साथ OnPush',
+              },
+            ]} />
+
+## rk-reel कंपोनेंट [#rk-reel-component]
+
+`rk-reel` कंपोनेंट core स्लाइडर कंट्रोलर को लपेटता है। Standalone, `ChangeDetectionStrategy.OnPush` के साथ।
+
+<Sandbox code={rkReelComponent} language="typescript" title="app.component.ts" framework="angular" stackblitzDeps={['@reelkit/angular']} />
+
+## अपने-आप साइज़ [#auto-sizing]
+
+`size` input वैकल्पिक है। इसे छोड़ने पर `rk-reel` `ResizeObserver` से अपना कंटेनर खुद नापता है और CSS से तय लेआउट के हिसाब से ढल जाता है। कंटेनर का साइज़ उसके parent से तय होना चाहिए (जैसे flex, grid या तय CSS आकार)।
+
+<CodeBlock code={autoSizing} language="html" />
+
+## rkReelItem टेम्पलेट पैटर्न [#rkreelitem-template-pattern]
+
+React के render prop की जगह Angular `ng-template` पर structural directive `rkReelItem` इस्तेमाल करता है। इससे वर्चुअलाइज़ेशन संभव होता है — सिर्फ़ दिखने वाली स्लाइड बनती हैं। Template context तीन variables देता है:
+
+<CodeBlock code={rkreelitemTemplatePattern} language="html" />
+
+## नेविगेशन [#navigation]
+
+नेविगेशन के बिल्ट-इन तरीके:
+
+<Bullets marker="dot">
+
+- **टच/स्वाइप:** momentum और snap के साथ खींचकर आगे-पीछे जाएँ
+- **कीबोर्ड:** तीर वाली कुंजियाँ और Escape
+- **माउस व्हील:** `[enableWheel]="true"` से चालू करें
+- **प्रोग्राम से:** `next()`, `prev()`, `goTo()` पाने के लिए `(apiReady)` output इस्तेमाल करें
+
+</Bullets>
+
+<CodeBlock code={navigation} language="typescript" />
+
+## URL स्टेट [#url-state]
+
+`createOverlayUrlState` किसी overlay के लिए URL-स्टेट कंट्रोलर बनाकर पूरा लौटाता है, फिर आप उसे किसी `*UrlOverlay` कंपोनेंट को उसके `[controller]` input के रूप में देते हैं। इसे injection context में कॉल करें — field initialiser में; यह तुरंत जुड़ता है और `DestroyRef` से छूटता है। खुले होने की स्टेट URL के पास है, इसलिए जुड़ा हुआ overlay खुद खुलता है और आम तौर पर लिंक ही उसे खोलता है। न मौजूद parameter का पहला write history में एक entry जोड़ता है और उसके बाद हर write उसे बदल देता है, इसलिए पेज बदलना back बटन को कभी दबाता नहीं। `value`/`position` पढ़ने और प्रोग्राम से चलाने के लिए कंट्रोलर रखें: `set(position)` खोलता है, `set(null)` बंद करता है, और `set` वही निचले स्तर का write है जो overlay स्लाइड बदलने पर अंदर से करता है।
+
+<CodeBlock code={urlState} language="typescript" />
+
+Routing वाला ऐप — Router पर आधारित adapter पास करें, नहीं तो Router की अपनी location पुरानी पड़ जाती है और उसका अगला नेविगेशन parameter गिरा देता है:
+
+<CodeBlock code={urlState2} language="typescript" />
+
+विकल्पों का object `param`, `codec` और `locator` (तीनों ज़रूरी) लेता है, साथ में वैकल्पिक `adapter`। `codec` और `locator` एक ही `Id` साझा करने वाली मेल खाती जोड़ी हैं, इसलिए साधारण `?photo=3` गैलरी `...urlIndexKey(() => images().length)` spread करती है, जो दोनों हिस्से एक साथ लौटाता है। `urlIndexKey` index को getter की लौटाई मौजूदा गिनती तक सीमित रखता है, इसलिए पुराना `?photo=99` ठुकराया जाता है और कभी नाम न ली गई स्लाइड खोलने के बजाय URL से अपने-आप हट जाता है। पेज वाली फ़ीड या पहचान से key होने वाली गैलरी इसकी जगह अपनी मेल खाती `codec` + `locator` जोड़ी देती है। विकल्पों की पूरी तालिका [Angular API रेफ़रेंस](/docs/angular/api#createoverlayurlstate) में है।
+
+## ReelIndicator [#reelindicator]
+
+एक वैकल्पिक कंपोनेंट, जो Instagram जैसे प्रोग्रेस इंडिकेटर दिखाता है कि आप स्लाइडर में अभी किस जगह पर हैं। `rk-reel` के अंदर रखने पर यह `RK_REEL_CONTEXT` injection token के ज़रिए parent की `count` और `active` values से अपने-आप जुड़ जाता है — हाथ से जोड़ने की ज़रूरत नहीं।
+
+<CodeBlock code={reelindicator} language="html" />
+
+## apiReady output — सिग्नल पर आधारित पैटर्न [#apiready-output-signal-based-pattern]
+
+`(apiReady)` output कंपोनेंट के mount होने और नापे जाने के बाद एक बार चलता है। यह एक `ReelApi` object देता है, जिसे आप रख सकते हैं और imperative नेविगेशन के लिए इस्तेमाल कर सकते हैं। इस reference के लिए Angular signals इस्तेमाल करना `OnPush` change detection के साथ साफ़ तरीके से काम करता है।
+
+<CodeBlock code={apireadyOutputSignalBased} language="typescript" />
+
+## मुख्य बातें [#key-points]
+
+<KeyPoints>
+<KeyPoint title="Standalone कंपोनेंट">
+  `ReelComponent`, `RkReelItemDirective` और ज़रूरत हो तो `ReelIndicatorComponent` को सीधे अपने कंपोनेंट के `imports` array में import करें
+</KeyPoint>
+<KeyPoint title="ng-template + rkReelItem">
+  React के `itemBuilder` prop का Angular वाला रूप — वर्चुअलाइज़ेशन संभव बनाता है
+</KeyPoint>
+<KeyPoint title="apiReady">
+  output, जो imperative नेविगेशन API के साथ एक बार चलता है — ViewChild query की ज़रूरत नहीं
+</KeyPoint>
+<KeyPoint title="afterChange">
+  `{ index, indexInRange }` emit करता है — UI अपडेट के लिए मौजूदा index पर नज़र रखें
+</KeyPoint>
+<KeyPoint title="डिफ़ॉल्ट रूप से OnPush">
+  सबसे अच्छे परफ़ॉर्मेंस के लिए सारे कंपोनेंट `ChangeDetectionStrategy.OnPush` और Angular signals इस्तेमाल करते हैं
+</KeyPoint>
+</KeyPoints>
+
+## परफ़ॉर्मेंस टिप्स [#performance-tips]
+
+<KeyPoints>
+<KeyPoint title="स्लाइड templates को हल्का रखें">
+  `rkReelItem` template हर दिखने वाली स्लाइड के लिए चलता है (आम तौर पर एक बार में 3)। इसके अंदर भारी गणना या बहुत गहरी nested संरचना से बचें।
+</KeyPoint>
+<KeyPoint title="किनारे के पास डेटा लोड करें">
+  `(afterChange)` से पहचानें कि यूज़र आख़िर के पास पहुँच रहा है, और स्लाइड ख़त्म होने से पहले अगला बैच fetch करें — इससे अनंत स्क्रॉल वाली फ़ीड बनती है।
+</KeyPoint>
+<KeyPoint title="imperative स्टेट के लिए signals इस्तेमाल करें">
+  पूरे कंपोनेंट को दोबारा रेंडर किए बिना बारीक reactivity पाने के लिए `ReelApi` reference और मौजूदा index को Angular signals में रखें।
+</KeyPoint>
+<KeyPoint title="स्क्रॉल होने वाले पेज में व्हील बंद करें">
+  जब स्लाइडर स्क्रॉल होने वाले लेआउट के अंदर हो, तो पेज का स्क्रॉल पकड़ने से बचने के लिए `[enableWheel]="false"` सेट करें।
+</KeyPoint>
+</KeyPoints>
+
+<NextSteps
+        items={[
+          {
+            label: 'Angular API रेफ़रेंस',
+            path: '/docs/angular/api',
+            description: 'सभी उपलब्ध inputs, outputs और मेथड',
+          },
+          {
+            label: 'Reel Player',
+            path: '/docs/angular-reel-player',
+            description: 'TikTok/Reels जैसा वीडियो प्लेयर',
+          },
+          {
+            label: 'Lightbox',
+            path: '/docs/angular-lightbox',
+            description: 'इमेज और वीडियो गैलरी',
+          },
+          {
+            label: 'Stories Player',
+            path: '/docs/angular-stories-player',
+            description: 'Instagram जैसा stories व्यूअर (जल्द आ रहा है)',
+          },
+        ]}
+      />

@@ -1,0 +1,235 @@
+---
+title: Vue API रेफ़रेंस
+description: '@reelkit/vue के कंपोनेंट, props, emits, exposed मेथड, ReelIndicator, useSwipeToClose, useOverlayUrlState और provide/inject context के रूप का पूरा रेफ़रेंस।'
+---
+
+import slots from '../../../snippets/vue-api/slots.vue?raw';
+import reelexpose from '../../../snippets/vue-api/reelexpose.vue?raw';
+import rkReelKeyUsereelcontext from '../../../snippets/vue-api/rk-reel-key-usereelcontext.vue?raw';
+import usebodylock from '../../../snippets/vue-api/usebodylock.ts?raw';
+import usefullscreen from '../../../snippets/vue-api/usefullscreen.ts?raw';
+import usesoundstate from '../../../snippets/vue-api/usesoundstate.ts?raw';
+import usevuerouterurladapter from '../../../snippets/vue-api/usevuerouterurladapter.ts?raw';
+import tovueref from '../../../snippets/vue-api/tovueref.ts?raw';
+import soundprovider from '../../../snippets/vue-api/soundprovider.vue?raw';
+import packageExports from '../../../snippets/vue-api/package-exports.ts?raw';
+
+`@reelkit/vue` के कंपोनेंट, composables और यूटिलिटी का पूरा रेफ़रेंस।
+
+## Reel [#reel]
+
+टैग: `<Reel>`
+
+### Props [#props]
+
+<Caption>`ReelProps`</Caption>
+
+| Prop | टाइप | डिफ़ॉल्ट | विवरण |
+| --- | --- | --- | --- |
+| `count` | `number` | ज़रूरी | स्लाइड की कुल संख्या |
+| `direction` | `'vertical' \| 'horizontal'` | 'vertical' | स्क्रॉल की दिशा |
+| `size` | `[number, number] \| undefined` | undefined | \[width, height\] के रूप में चौड़ाई और ऊँचाई। छोड़ने पर ResizeObserver से अपने-आप नापता है |
+| `initialIndex` | `number` | 0 | शुरुआती स्लाइड index |
+| `loop` | `boolean` | false | अनंत लूप चालू करता है |
+| `transition` | `TransitionTransformFn` | slideTransition | ट्रांज़िशन इफ़ेक्ट का फ़ंक्शन। बिल्ट-इन: slideTransition, fadeTransition, flipTransition, cubeTransition, zoomTransition |
+| `transitionDuration` | `number` | 300 | ms में एनिमेशन की अवधि |
+| `swipeDistanceFactor` | `number` | 0.12 | स्वाइप की सीमा (0-1) |
+| `enableGestures` | `boolean` | true | टच/माउस से खींचकर नेविगेशन चालू करता है |
+| `enableNavKeys` | `boolean` | true | कीबोर्ड की तीर वाली कुंजियों से नेविगेशन चालू करता है |
+| `enableWheel` | `boolean` | false | माउस व्हील से नेविगेशन चालू करता है |
+| `wheelDebounceMs` | `number` | 200 | ms में व्हील इवेंट का debounce |
+| `rangeExtractor` | `(index: number, count: number) => number[]` | defaultRangeExtractor | कौन-से index रेंडर हों, यह तय करने वाला कस्टम फ़ंक्शन |
+| `keyExtractor` | `(index: number, indexInRange: number) => string` | index => index.toString() | स्लाइड रेंडरिंग के लिए कस्टम key फ़ंक्शन (loop के साथ काम का) |
+| `ariaLabel` | `string` | undefined | carousel क्षेत्र का सुलभ लेबल |
+| `reelStyle` | `Record<string, string \| number>` | undefined | root कंटेनर एलिमेंट पर लगने वाली inline styles |
+| `reelClass` | `string \| Array \| Object` | undefined | root कंटेनर एलिमेंट पर लगने वाली CSS class(es) |
+| `onNavKeyPress` | `(increment: -1 \| 1) => void` | undefined | callback prop, जो डिफ़ॉल्ट ArrowUp/ArrowDown नेविगेशन की जगह लेता है। देने पर नेविगेशन आप खुद लिखते हैं (जैसे reelRef.value.next() कॉल करें)। डिफ़ॉल्ट व्यवहार के लिए छोड़ दें। |
+
+### इवेंट [#events]
+
+| इवेंट | Payload | विवरण |
+| --- | --- | --- |
+| `beforeChange` | `(index: number, nextIndex: number, indexInRange: number)` | स्लाइड ट्रांज़िशन शुरू होने से पहले emit होता है |
+| `afterChange` | `(index: number, indexInRange: number)` | स्लाइड ट्रांज़िशन पूरा होने के बाद emit होता है |
+| `slideDragStart` | `(index: number)` | खींचने का जेस्चर शुरू होने पर emit होता है |
+| `slideDragEnd` | `(index: number)` | खींचने का जेस्चर ख़त्म होने (छोड़ने) पर emit होता है |
+| `slideDragCanceled` | `(index: number)` | खींचने का जेस्चर रद्द होने (वापस अपनी जगह) पर emit होता है |
+| `tap` | `(event: GestureCommonEvent)` | एक टैप जेस्चर पर emit होता है |
+| `doubleTap` | `(event: GestureCommonEvent)` | डबल टैप जेस्चर पर emit होता है |
+| `longPress` | `(event: GestureCommonEvent)` | लंबे दबाव का जेस्चर शुरू होने पर emit होता है |
+| `longPressEnd` | `(event: GestureEvent)` | लंबे दबाव का जेस्चर ख़त्म होने पर emit होता है |
+
+### Slots [#slots]
+
+<CodeBlock code={slots} language="vue-html" />
+
+| Slot | Scoped props | विवरण |
+| --- | --- | --- |
+| `#item` | `{ index: number, indexInRange: number, size: [number, number] }` | हर दिखने वाली स्लाइड रेंडर करता है। वर्चुअलाइज़्ड range के हर index के लिए कॉल होता है |
+| `default` | `none` | सारी स्लाइडों के ऊपर रेंडर होने वाला overlay कंटेंट (इंडिकेटर, कंट्रोल वगैरह) |
+
+## ReelExpose [#reelexpose]
+
+template ref के ज़रिए मिलने वाला imperative API:
+
+<CodeBlock code={reelexpose} language="vue" />
+
+| मेथड | टाइप | विवरण |
+| --- | --- | --- |
+| `next()` | `() => void` | अगली स्लाइड पर जाता है |
+| `prev()` | `() => void` | पिछली स्लाइड पर जाता है |
+| `goTo(index, animate?)` | `(number, boolean?) => Promise<void>` | किसी खास स्लाइड index पर जाता है |
+| `adjust()` | `() => void` | स्लाइड की स्थितियाँ दोबारा निकालता है (लेआउट बदलने के बाद काम का) |
+| `observe()` | `() => void` | जेस्चर, कीबोर्ड और व्हील इवेंट सुनना शुरू करता है |
+| `unobserve()` | `() => void` | जेस्चर, कीबोर्ड और व्हील इवेंट सुनना बंद करता है |
+
+## ReelIndicator [#reelindicator]
+
+टैग: `<ReelIndicator>`
+
+### Props [#props]
+
+<Caption>`ReelIndicatorProps`</Caption>
+
+| Prop | टाइप | डिफ़ॉल्ट | विवरण |
+| --- | --- | --- | --- |
+| `count` | `number \| undefined` | auto | आइटम की कुल संख्या। parent Reel के अंदर होने पर उसके context से अपने-आप जुड़ती है; अकेले इस्तेमाल करने पर साफ़ तौर पर पास करें |
+| `active` | `number \| undefined` | auto | मौजूदा सक्रिय index। parent Reel के अंदर होने पर उसके context से अपने-आप जुड़ता है; अकेले इस्तेमाल करने पर साफ़ तौर पर पास करें |
+| `direction` | `'vertical' \| 'horizontal'` | 'vertical' | इंडिकेटर की दिशा |
+| `radius` | `number` | 3 | पिक्सेल में बिंदु का radius |
+| `visible` | `number` | 5 | एक साथ दिखने वाले सामान्य आकार के बिंदुओं की अधिकतम संख्या |
+| `gap` | `number` | 4 | पिक्सेल में बिंदुओं के बीच की दूरी |
+| `activeColor` | `string` | '#fff' | सक्रिय बिंदु का रंग |
+| `inactiveColor` | `string` | 'rgba(255, 255, 255, 0.5)' | निष्क्रिय बिंदु का रंग |
+| `edgeScale` | `number` | 0.5 | किनारे पर overflow वाले बिंदुओं का scale |
+| `onDotClick` | `(index: number) => void` | undefined | कस्टम click हैंडलर। Reel के अंदर छोड़ने पर डिफ़ॉल्ट रूप से क्लिक किए बिंदु के index पर ले जाता है |
+| `indicatorClass` | `string \| Array \| Object` | undefined | tablist root एलिमेंट पर लगने वाली CSS class(es) |
+| `indicatorStyle` | `CSSProperties` | undefined | tablist root एलिमेंट में मिलाई जाने वाली inline styles |
+
+### इवेंट [#events]
+
+| इवेंट | Payload | विवरण |
+| --- | --- | --- |
+| `dotClick` | `(index: number)` | बिंदु पर क्लिक होने पर emit होता है; बिंदु का index देता है |
+
+## SwipeToClose [#swipetoclose]
+
+टैग: `<SwipeToClose>` — अपने default slot को टच समझने वाले कंटेनर में लपेटता है, जिसे स्वाइप करके हटाया जा सकता है।
+
+### Props [#props]
+
+<Caption>`SwipeToCloseProps`</Caption>
+
+| Prop | टाइप | डिफ़ॉल्ट | विवरण |
+| --- | --- | --- | --- |
+| `direction` | `'up' \| 'down'` | ज़रूरी | बंद करने के लिए स्वाइप की दिशा। lightbox हटाने के लिए "up", stories हटाने के लिए "down" इस्तेमाल करें |
+| `enabled` | `boolean` | true | स्वाइप करके बंद करने वाला जेस्चर चालू है या नहीं |
+| `threshold` | `number` | 0.2 | बंद करने के लिए ज़रूरी viewport ऊँचाई का हिस्सा (0-1) |
+
+### इवेंट [#events]
+
+| इवेंट | Payload | विवरण |
+| --- | --- | --- |
+| `close` | `()` | स्वाइप जेस्चर सीमा पार करने और बंद होने का एनिमेशन पूरा होने पर emit होता है |
+
+### Slots [#slots]
+
+| Slot | विवरण |
+| --- | --- |
+| `default` | स्वाइप करके बंद करने वाले जेस्चर से लपेटा जाने वाला कंटेंट |
+
+## RK_REEL_KEY और useReelContext [#rk-reel-key-usereelcontext]
+
+`<Reel>` अपने descendants को जो `InjectionKey<ReelContextValue>` देता है। `<ReelIndicator>` अपने-आप जुड़ने के लिए अंदर से इसे इस्तेमाल करता है। जिन कस्टम कंपोनेंट को स्लाइडर context चाहिए, उनमें `useReelContext()` इस्तेमाल करें।
+
+<CodeBlock code={rkReelKeyUsereelcontext} language="vue" />
+
+| प्रॉपर्टी | टाइप | विवरण |
+| --- | --- | --- |
+| `index` | `Signal<number>` | मौजूदा स्लाइड का reactive index |
+| `count` | `Signal<number>` | आइटम की reactive कुल गिनती |
+| `goTo` | `(index: number, animate?: boolean) => Promise<void>` | प्रोग्राम से किसी स्लाइड पर ले जाता है |
+
+## Composables [#composables]
+
+### useBodyLock [#usebodylock]
+
+दी गई value `true` होने पर document body का स्क्रॉल lock करता है। reference गिनती इस्तेमाल करता है, इसलिए एक साथ कई कॉल करने वाले अलग-अलग lock/unlock कर सकते हैं। unmount पर अपने-आप unlock होता है।
+
+<CodeBlock code={usebodylock} language="typescript" />
+
+| पैरामीटर | टाइप | विवरण |
+| --- | --- | --- |
+| `locked` | `Ref<boolean> \| boolean` | body का स्क्रॉल lock होना चाहिए या नहीं। reactive ref या स्थिर boolean लेता है |
+
+### useFullscreen [#usefullscreen]
+
+<Caption>`UseFullscreenOptions` → `UseFullscreenReturn`</Caption>
+
+सभी ब्राउज़र के सपोर्ट के साथ Fullscreen API संभालने वाला composable। unmount पर अपने-आप फ़ुलस्क्रीन से बाहर आता है।
+
+<CodeBlock code={usefullscreen} language="typescript" />
+
+| लौटाया गया मान | टाइप | विवरण |
+| --- | --- | --- |
+| `isFullscreen` | `Signal<boolean>` | मौजूदा फ़ुलस्क्रीन स्टेट दिखाने वाला core signal (`.value` पढ़ें) |
+| `request` | `() => Promise<void>` | जुड़े हुए एलिमेंट पर फ़ुलस्क्रीन माँगता है। अगर कोई दूसरा एलिमेंट पहले से फ़ुलस्क्रीन है, तो पहले उससे बाहर आता है (इंतज़ार करके)। |
+| `exit` | `() => Promise<void>` | फ़ुलस्क्रीन से बाहर आता है |
+| `toggle` | `() => Promise<void>` | फ़ुलस्क्रीन स्टेट टॉगल करता है |
+
+### useSoundState [#usesoundstate]
+
+context से मौजूदा `SoundController` तक पहुँचें। `<SoundProvider>` के अंदर ही कॉल करना ज़रूरी है। बाहर कॉल करने पर error फेंकता है।
+
+<CodeBlock code={usesoundstate} language="typescript" />
+
+### useOverlayUrlState [#useoverlayurlstate]
+
+<Caption>`OverlayUrlStateOptions`</Caption>
+
+किसी overlay के लिए URL-स्टेट कंट्रोलर बनाता है, जिसे आप `<LightboxUrlOverlay>` को उसके `:controller` prop के रूप में देते हैं।
+
+पूरी जानकारी और उदाहरणों के लिए [Vue गाइड में URL स्टेट](/docs/vue/guide#url-state) देखें।
+
+| विकल्प | टाइप | डिफ़ॉल्ट | विवरण |
+| --- | --- | --- | --- |
+| `param` | `string` | ज़रूरी | सक्रिय स्लाइड रखने वाला query parameter, जैसे "photo"। |
+| `adapter` | `UrlAdapter` | History API | पढ़ने और लिखने के लिए नेविगेशन सिस्टम। routing वाले ऐप में router पर आधारित adapter पास करें, ताकि router की अपनी location पुरानी न पड़े। |
+| `codec` | `{ decode(raw) => Id \| null; encode(id) => string }` | ज़रूरी | wire का रूप: parameter का टेक्स्ट ↔ स्थिर पहचान, collection से बेख़बर। एक ही Id साझा करने वाली मेल खाती जोड़ी के रूप में locator के साथ चलता है — डिफ़ॉल्ट ?photo=3 index गैलरी के लिए ...urlIndexKey(() => props.images.length) spread करें, या अपना (base64, slug) दें ताकि गैलरी का क्रम बदलने पर भी bookmark काम करे। |
+| `locator` | `{ locate(id) => number \| null; locateAsync?(id) => Promise<number \| null>; identify(index) => id }` | ज़रूरी | पहचान को स्थिति से जोड़ता है और उसकी वैधता खुद संभालता है: locate (sync), locateAsync (पेज वाली गैलरी के लिए async विकल्प), identify (writes)। साधारण index गैलरी के लिए ...urlIndexKey(() => props.images.length) spread करें — यह यह locator और मेल खाता codec देता है और ?photo=3 को मौजूदा गिनती तक सीमित रखता है, इसलिए पुराना ?photo=99 कभी नाम न ली गई स्लाइड खोलने के बजाय URL से अपने-आप हट जाता है। संख्या नहीं, getter पास करें, क्योंकि Vue का setup एक ही बार चलता है और पकड़ी गई लंबाई पेज वाली फ़ीड बढ़ने पर पुरानी पड़ जाएगी। पेज वाली फ़ीड या पहचान से key होने वाली गैलरी इसकी जगह अपनी मेल खाती codec + locator जोड़ी देती है। |
+
+### useVueRouterUrlAdapter [#usevuerouterurladapter]
+
+Vue Router पर आधारित `UrlAdapter`। routing वाले ऐप में इसे `useOverlayUrlState` के `adapter` विकल्प के रूप में पास करें, ताकि नेविगेशन की सच्चाई का अकेला स्रोत router ही रहे — router के पीछे `history.pushState` लिखने से उसकी location पुरानी पड़ जाती है और उसका अगला नेविगेशन parameter गिरा देता है। Writes सिर्फ़ query को छूते हैं, इसलिए path, hash और `?tag=a&tag=b` जैसी दोहराई गई keys बिना बदले साथ चलती हैं। हर बदलाव बताता है कि router ने उसी पेज पर push किया, replace किया या history में आगे-पीछे गया, इसलिए `<router-link>` से खुली गैलरी back के एक कदम से बंद होती है।
+
+यह अपने अलग subpath से आता है, इसलिए बिना router वाला ऐप `vue-router` को कभी अपने बंडल में नहीं खींचता। `vue-router` एक वैकल्पिक peer dependency है, 4.1 या उसके बाद का: adapter अपनी पहचान की मुहर router के `state` नेविगेशन विकल्प से ले जाता है, जिसे पुराने रिलीज़ अनदेखा करते हैं। पुराने router पर कुछ नहीं टूटता — बंद करना बस एक कदम पीछे जाने के बजाय parameter को उसी जगह साफ़ कर देता है।
+
+<CodeBlock code={usevuerouterurladapter} language="typescript" />
+
+### toVueRef [#tovueref]
+
+core के `Subscribable` (`@reelkit/core` का कोई भी `Signal`) को read-only Vue `Ref` से जोड़ता है। जब भी core signal की value से Vue को दोबारा रेंडर करवाना हो, इसे इस्तेमाल करें — render फ़ंक्शन या templates में सीधे `signal.value` पढ़ना अपने-आप में reactive **नहीं** है।
+
+subscription `onScopeDispose` से अपने-आप हट जाता है, इसलिए इसे Vue के `setup()` या effect scope समझने वाले किसी दूसरे context के अंदर ही कॉल करें।
+
+<CodeBlock code={tovueref} language="typescript" />
+
+## SoundProvider [#soundprovider]
+
+टैग: `<SoundProvider>` — context provider, जो `SoundController` instance बनाता है और उसे `RK_SOUND_KEY` के ज़रिए descendants को देता है। अपना default slot बिना कुछ जोड़े रेंडर करता है।
+
+<CodeBlock code={soundprovider} language="vue" />
+
+## सुलभता [#accessibility]
+
+`<Reel>` `aria-roledescription="carousel"` के साथ `role="region"` के रूप में रेंडर होता है। क्षेत्र को स्क्रीन रीडर के लिए नाम देने के लिए `aria-label` पास करें (TS में prop का नाम `ariaLabel` है)। एक polite live region हर स्लाइड बदलने पर "Slide N of M" बोलता है। निष्क्रिय स्लाइडों को `inert` attribute मिलता है, ताकि फ़ोकस और सहायक तकनीक का नेविगेशन उन्हें छोड़ दे।
+
+`<ReelIndicator>` बिंदुओं पर roving tabindex के साथ `role="tablist"` के रूप में रेंडर होता है; तीर वाली कुंजियाँ फ़ोकस खिसकाती हैं और Enter या Space स्लाइड सक्रिय करता है।
+
+`<Reel>` के आसपास अपना modal बना रहे हैं? फ़ोकस लौटाने और रोकने के लिए `captureFocusForReturn`, `createFocusTrap` और `getFocusableElements` `@reelkit/vue` से भी export होते हैं।
+
+## पैकेज exports [#package-exports]
+
+`@reelkit/vue` के सारे सार्वजनिक exports:
+
+<CodeBlock code={packageExports} language="typescript" />

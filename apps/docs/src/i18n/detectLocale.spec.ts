@@ -174,6 +174,33 @@ describe('language redirect decision', () => {
     ).toBe(null);
   });
 
+  // A browser that lists Indian English before Hindi keeps the English page;
+  // only Hindi listed first redirects.
+  it('sends a Hindi-first browser to /hi and keeps an Indian English one', () => {
+    expect(preferredLocale('hi-IN,hi;q=0.9,en;q=0.8')).toBe('hi');
+    expect(preferredLocale('en-IN,en;q=0.9,hi;q=0.8')).toBe('en');
+    expect(detectLocale(request({ acceptLanguage: 'hi' }))).toBe(
+      '/hi/docs/ssr',
+    );
+    expect(
+      detectLocale(
+        request({ pathname: '/', acceptLanguage: 'hi-IN,hi;q=0.9,en;q=0.8' }),
+      ),
+    ).toBe('/hi');
+    expect(
+      detectLocale(request({ acceptLanguage: 'en-IN,en;q=0.9,hi;q=0.8' })),
+    ).toBe(null);
+    expect(
+      detectLocale(request({ acceptLanguage: 'hi', cookie: 'rk-locale=en' })),
+    ).toBe(null);
+    expect(
+      detectLocale(request({ pathname: '/hi/docs/ssr', acceptLanguage: 'hi' })),
+    ).toBe(null);
+    expect(
+      detectLocale(request({ acceptLanguage: 'hi', userAgent: 'curl/8.7.1' })),
+    ).toBe(null);
+  });
+
   it('redirects each translated locale to its own prefix', () => {
     for (const locale of kLocales) {
       if (locale === kDefaultLocale) continue;

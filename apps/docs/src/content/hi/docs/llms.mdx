@@ -1,0 +1,72 @@
+---
+title: AI / LLM इंटीग्रेशन
+description: AI कोडिंग असिस्टेंट के लिए मशीन से पढ़ने लायक डॉक्स — llms.txt, llms-full.txt और Context7 manifest।
+---
+
+import { FileText, Sparkles, Bot } from 'lucide-react';
+import agentPrompt from '../../snippets/llms/agent-prompt.txt?raw';
+import directIngestion from '../../snippets/llms/direct-ingestion.sh?raw';
+
+AI कोडिंग असिस्टेंट के लिए मशीन से पढ़ने लायक डॉक्स।
+
+<FeatureGrid columns={3} items={[
+            {
+              icon: FileText,
+              label: 'llms.txt',
+              desc: 'छोटा लिंक इंडेक्स। डॉक्स का हर पेज एक फ़ाइल में। हर build पर अपडेट होता है।',
+            },
+            {
+              icon: Sparkles,
+              label: 'llms-full.txt',
+              desc: 'हर पेज के सारांश के साथ पूरा corpus। एक ही fetch में पूरा context।',
+            },
+            {
+              icon: Bot,
+              label: 'context7',
+              desc: 'लाइव इंडेक्स होने वाला manifest। @context7 MCP सर्वर के साथ इस्तेमाल करें।',
+            },
+          ]} />
+
+<Callout type="info">
+  दोनों \`.txt\` endpoints डॉक्स के हर build पर दोबारा बनते हैं। Corpus प्रकाशित साइट के साथ चलता है।
+</Callout>
+
+## Endpoints [#endpoints]
+
+| Endpoint | उद्देश्य |
+| --- | --- |
+| [`/llms.txt`](https://reelkit.dev/llms.txt) | डॉक्स के हर पेज की इंडेक्स की गई लिंक सूची। किसी भी LLM के context में डाल दें। |
+| [`/llms-full.txt`](https://reelkit.dev/llms-full.txt) | वही इंडेक्स, साथ में हर पेज का सारांश। एक ही fetch में पूरा corpus। |
+| [`context7.com/websites/reelkit_dev`](https://context7.com/websites/reelkit_dev) | लाइव इंडेक्स होने वाला Context7 manifest। @context7 MCP सर्वर के ज़रिए जोड़ें। |
+
+## क्विक स्टार्ट [#quick-start]
+
+### Agent prompt [#agent-prompt]
+
+Agent में किसी endpoint का URL पेस्ट करें, ताकि उसके जवाब मौजूदा डॉक्स पर आधारित हों।
+
+<CodeBlock code={agentPrompt} language="text" />
+
+### Context7 MCP सर्वर [#context7-mcp-server]
+
+[@context7](https://github.com/upstash/context7) MCP सर्वर इंस्टॉल करें। Agent ReelKit का manifest अपने-आप उठा लेता है और ज़रूरत पड़ने पर डॉक्स fetch करता है। अपने prompt में `reelkit` का ज़िक्र करें।
+
+### सीधे ingestion [#direct-ingestion]
+
+प्रोग्राम से fetch करें:
+
+<CodeBlock code={directIngestion} language="bash" />
+
+## क्या इंडेक्स होता है [#what-gets-indexed]
+
+- शुरुआत + इंस्टॉलेशन
+- Core इंजन गाइड + API
+- React, Vue, Angular bindings (गाइड + API + reel-player + lightbox + stories-player)
+- Stories core इंजन
+- SSR नोट्स
+- समस्या निवारण
+- बदलावों की सूची
+
+## क्यों? [#why]
+
+AI असिस्टेंट लाइब्रेरी के बदलावों से पीछे रह जाते हैं। बनाया गया कोड पुराने API का हवाला देता है। ये endpoints डॉक्स की हर रिलीज़ के साथ अपडेट होते हैं, इसलिए सुझाव पिछली तिमाही के नहीं, मौजूदा व्यवहार से मेल खाते हैं।

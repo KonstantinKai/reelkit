@@ -1,0 +1,301 @@
+---
+title: इंस्टॉलेशन
+description: reelkit के पैकेज इंस्टॉल करें और अपना प्रोजेक्ट कॉन्फ़िगर करें। हर पैकेज का वर्ज़न अलग है, इसलिए सिर्फ़ वही इंस्टॉल करें जो आपको चाहिए।
+---
+
+import npmReact from '../../snippets/installation/npm-react.sh?raw';
+import yarnReact from '../../snippets/installation/yarn-react.sh?raw';
+import pnpmReact from '../../snippets/installation/pnpm-react.sh?raw';
+import npmAngular from '../../snippets/installation/npm-angular.sh?raw';
+import yarnAngular from '../../snippets/installation/yarn-angular.sh?raw';
+import pnpmAngular from '../../snippets/installation/pnpm-angular.sh?raw';
+import npmVue from '../../snippets/installation/npm-vue.sh?raw';
+import yarnVue from '../../snippets/installation/yarn-vue.sh?raw';
+import pnpmVue from '../../snippets/installation/pnpm-vue.sh?raw';
+
+reelkit के पैकेज इंस्टॉल करें और अपना प्रोजेक्ट कॉन्फ़िगर करें।
+
+## पैकेज के विकल्प [#package-options]
+
+सिर्फ़ वही इंस्टॉल करें जो आप इस्तेमाल करते हैं:
+
+<Table>
+  <thead>
+    <tr>
+      <th>पैकेज</th>
+      <th>विवरण</th>
+      <th>कहाँ काम आता है</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>`@reelkit/core`</td>
+      <td>फ़्रेमवर्क से स्वतंत्र core</td>
+      <td>कस्टम इंटीग्रेशन</td>
+    </tr>
+    <tr data-rk-fw="react">
+      <td>`@reelkit/react`</td>
+      <td>React कंपोनेंट</td>
+      <td>React 18+ ऐप्लिकेशन</td>
+    </tr>
+    <tr data-rk-fw="react">
+      <td>`@reelkit/react-reel-player`</td>
+      <td>फ़ुलस्क्रीन वर्टिकल reel प्लेयर</td>
+      <td>Instagram/TikTok जैसा प्लेयर</td>
+    </tr>
+    <tr data-rk-fw="react">
+      <td>`@reelkit/react-lightbox`</td>
+      <td>इमेज गैलरी lightbox</td>
+      <td>फ़ुलस्क्रीन इमेज प्रीव्यू</td>
+    </tr>
+    <tr data-rk-fw="react">
+      <td>`@reelkit/react-stories-player`</td>
+      <td>Instagram जैसा stories प्लेयर</td>
+      <td>अपने-आप आगे बढ़ने और जेस्चर वाली stories</td>
+    </tr>
+    <tr data-rk-fw="angular">
+      <td>`@reelkit/angular`</td>
+      <td>Angular standalone कंपोनेंट</td>
+      <td>Angular 17+ ऐप्लिकेशन</td>
+    </tr>
+    <tr data-rk-fw="angular">
+      <td>`@reelkit/angular-reel-player`</td>
+      <td>फ़ुलस्क्रीन वर्टिकल reel प्लेयर</td>
+      <td>Instagram/TikTok जैसा प्लेयर</td>
+    </tr>
+    <tr data-rk-fw="angular">
+      <td>`@reelkit/angular-lightbox`</td>
+      <td>इमेज गैलरी lightbox</td>
+      <td>फ़ुलस्क्रीन इमेज प्रीव्यू</td>
+    </tr>
+    <tr data-rk-fw="vue">
+      <td>`@reelkit/vue`</td>
+      <td>Vue 3 कंपोनेंट और composables</td>
+      <td>Vue 3 ऐप्लिकेशन</td>
+    </tr>
+    <tr data-rk-fw="vue">
+      <td>`@reelkit/vue-reel-player`</td>
+      <td>फ़ुलस्क्रीन वर्टिकल reel प्लेयर</td>
+      <td>Instagram/TikTok जैसा प्लेयर</td>
+    </tr>
+    <tr data-rk-fw="vue">
+      <td>`@reelkit/vue-lightbox`</td>
+      <td>इमेज गैलरी lightbox</td>
+      <td>फ़ुलस्क्रीन इमेज प्रीव्यू</td>
+    </tr>
+  </tbody>
+</Table>
+
+## बंडल साइज़ [#bundle-sizes]
+
+सभी पैकेज इस तरह ऑप्टिमाइज़ किए गए हैं कि बंडल पर कम से कम असर पड़े:
+
+<BundleSizeTable headers={['पैकेज', 'JS', 'JS (gzip)', 'CSS', 'CSS (gzip)']} />
+
+### दूसरी लाइब्रेरी से तुलना [#comparison-with-other-libraries]
+
+ReelKit किसी भी समय **DOM में सिर्फ़ 3 स्लाइड** रेंडर करता है और 10,000+ आइटम संभाल लेता है। दूसरी carousel लाइब्रेरी सारी स्लाइड रेंडर करती हैं, इसलिए बड़ी सूचियों पर अटक जाती हैं।
+
+<LibraryComparison
+  headers={['लाइब्रेरी', 'JS (gzip)', 'वर्चुअलाइज़ेशन', 'टिप्पणी']}
+  plugin="प्लगइन"
+  notes={[
+    'कोई dependency नहीं',
+    'कोई dependency नहीं',
+    'कोई dependency नहीं',
+    'पूरा बंडल; tree-shaking संभव',
+    'हल्का, प्लगइन पर आधारित',
+    'कोई dependency नहीं',
+  ]}
+/>
+
+<FrameworkVariant for="react">
+
+## npm [#npm]
+
+<CodeBlock code={npmReact} language="bash" />
+
+## yarn [#yarn]
+
+<CodeBlock code={yarnReact} language="bash" />
+
+## pnpm [#pnpm]
+
+<CodeBlock code={pnpmReact} language="bash" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+## npm [#npm]
+
+<CodeBlock code={npmAngular} language="bash" />
+
+## yarn [#yarn]
+
+<CodeBlock code={yarnAngular} language="bash" />
+
+## pnpm [#pnpm]
+
+<CodeBlock code={pnpmAngular} language="bash" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+## npm [#npm]
+
+<CodeBlock code={npmVue} language="bash" />
+
+## yarn [#yarn]
+
+<CodeBlock code={yarnVue} language="bash" />
+
+## pnpm [#pnpm]
+
+<CodeBlock code={pnpmVue} language="bash" />
+
+</FrameworkVariant>
+
+## Peer dependencies [#peer-dependencies]
+
+फ़्रेमवर्क पैकेज की peer dependencies हैं, जो आपके प्रोजेक्ट में पहले से होनी चाहिए:
+
+<FrameworkVariant for="react">
+
+### @reelkit/react [#reelkit-react]
+
+- `react` >= 18.0.0
+- `react-dom` >= 18.0.0
+
+### @reelkit/react-reel-player [#reelkit-react-reel-player]
+
+- `@reelkit/react`
+- `react` >= 18.0.0
+- `react-dom` >= 18.0.0
+- `lucide-react` >= 0.400.0
+
+### @reelkit/react-lightbox [#reelkit-react-lightbox]
+
+- `@reelkit/react`
+- `react` >= 18.0.0
+- `react-dom` >= 18.0.0
+- `lucide-react` >= 0.400.0
+
+### @reelkit/react-stories-player [#reelkit-react-stories-player]
+
+- `@reelkit/react`
+- `react` >= 18.0.0
+- `react-dom` >= 18.0.0
+- `lucide-react` >= 0.400.0
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+### @reelkit/angular [#reelkit-angular]
+
+- `@angular/core` >= 17.0.0
+- `@angular/common` >= 17.0.0
+
+### @reelkit/angular-reel-player [#reelkit-angular-reel-player]
+
+- `@reelkit/angular`
+- `@angular/core` >= 19.0.0
+- `lucide-angular` >= 0.460.0
+
+### @reelkit/angular-lightbox [#reelkit-angular-lightbox]
+
+- `@reelkit/angular`
+- `@angular/core` >= 17.0.0
+- `lucide-angular` >= 0.400.0
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+### @reelkit/vue [#reelkit-vue]
+
+- `vue` >= 3.0.0
+
+</FrameworkVariant>
+
+<FrameworkVariant for="react">
+
+<Callout type="info">
+  `lucide-react` सिर्फ़ डिफ़ॉल्ट कंट्रोल आइकन के लिए चाहिए। अगर आप `renderControls` के ज़रिए अपने कंट्रोल देते हैं, तो इसे इंस्टॉल करने की ज़रूरत नहीं।
+</Callout>
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+<Callout type="info">
+  `lucide-angular` सिर्फ़ डिफ़ॉल्ट कंट्रोल आइकन के लिए चाहिए। अगर आप `rkPlayerControls` के ज़रिए अपने कंट्रोल देते हैं, तो इसे इंस्टॉल करने की ज़रूरत नहीं।
+</Callout>
+
+</FrameworkVariant>
+
+## TypeScript [#typescript]
+
+सभी पैकेज के साथ TypeScript टाइप डेफ़िनिशन आती हैं। अलग से @types पैकेज की ज़रूरत नहीं है।
+
+## ब्राउज़र सपोर्ट [#browser-support]
+
+reelkit सभी आधुनिक ब्राउज़र पर चलता है:
+
+<Bullets marker="check">
+
+- Chrome/Edge 88+
+- Firefox 78+
+- Safari 14+
+- iOS Safari 14+
+- Android Chrome 88+
+
+</Bullets>
+
+<NextSteps
+        items={[
+          {
+            label: 'Core गाइड',
+            path: '/docs/core/guide',
+            description: 'फ़्रेमवर्क से स्वतंत्र इंजन',
+          },
+          {
+            label: 'फ़्रेमवर्क गाइड',
+            path: {
+              react: '/docs/react/guide',
+              angular: '/docs/angular/guide',
+              vue: '/docs/vue/guide',
+            },
+            description: 'कंपोनेंट, डेमो और इंटीग्रेशन',
+          },
+          {
+            label: 'Reel Player',
+            path: {
+              react: '/docs/reel-player',
+              angular: '/docs/angular-reel-player',
+              vue: '/docs/vue-reel-player',
+            },
+            description: 'TikTok/Reels जैसा वीडियो प्लेयर',
+          },
+          {
+            label: 'Lightbox',
+            path: {
+              react: '/docs/lightbox',
+              angular: '/docs/angular-lightbox',
+              vue: '/docs/vue-lightbox',
+            },
+            description: 'इमेज और वीडियो गैलरी',
+          },
+          {
+            label: 'Stories Player',
+            path: {
+              react: '/docs/stories-player',
+              angular: '/docs/angular-stories-player',
+              vue: '/docs/vue-stories-player',
+            },
+            description: 'Instagram जैसा stories व्यूअर',
+          },
+        ]}
+      />

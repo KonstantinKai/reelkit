@@ -1,0 +1,194 @@
+---
+title: शुरुआत
+description: reelkit एक सिंगल-आइटम स्लाइडर है — TikTok, Instagram Reels या Stories की तरह एक समय में एक ही आइटम दिखता है। वर्टिकल वीडियो फ़ीड, फ़ुलस्क्रीन गैलरी और स्वाइप करने वाले कंटेंट के लिए बढ़िया।
+---
+
+import quickStart from '../../snippets/getting-started/quick-start.tsx?raw';
+import quickStart2 from '../../snippets/getting-started/quick-start-2.ts?raw';
+import quickStart3 from '../../snippets/getting-started/quick-start-3.vue?raw';
+import reelindicator from '../../snippets/getting-started/reelindicator.tsx?raw';
+import reelindicator2 from '../../snippets/getting-started/reelindicator-2.html?raw';
+import reelindicator3 from '../../snippets/getting-started/reelindicator-3.vue?raw';
+import navigation from '../../snippets/getting-started/navigation.tsx?raw';
+import navigation2 from '../../snippets/getting-started/navigation-2.html?raw';
+import navigation3 from '../../snippets/getting-started/navigation-3.vue?raw';
+
+reelkit एक **सिंगल-आइटम स्लाइडर** है — TikTok, Instagram Reels या Stories की तरह एक समय में एक ही आइटम दिखता है। यह वर्टिकल वीडियो फ़ीड, फ़ुलस्क्रीन गैलरी और स्वाइप करने वाले कंटेंट के लिए बढ़िया है।
+
+<Callout type="info" title="ReelKit पसंद आ रहा है?">
+  अगर ReelKit आपके काम आया है, तो [GitHub पर star](https://github.com/KonstantinKai/reelkit) देने के बारे में ज़रूर सोचें। इससे दूसरे डेवलपर इस प्रोजेक्ट को ढूँढ पाते हैं और इसका काम आगे बढ़ता रहता है। धन्यवाद, आपके साथ के लिए मैं सच में आभारी हूँ!
+</Callout>
+
+<Callout type="warning" title="0.x.x — अस्थिर API">
+  ReelKit पर अभी सक्रिय रूप से काम चल रहा है। 0.x.x के दौरान API बिना deprecation अवधि के minor वर्ज़न के बीच बदल सकते हैं। अचानक टूट-फूट से बचने के लिए अपना वर्ज़न पिन कर लें।
+</Callout>
+
+## अपना फ़्रेमवर्क चुनें [#select-your-framework]
+
+<FrameworkPicker />
+
+## ऑनलाइन आज़माएँ [#try-it-online]
+
+ब्राउज़र में ही आज़माएँ, कुछ भी इंस्टॉल करने की ज़रूरत नहीं:
+
+<FrameworkVariant for="react">
+
+<DemoLinks demo="https://react-demo.reelkit.dev/?utm_source=docs" demoLabel="React Demo" starter="https://stackblitz.com/github/KonstantinKai/reelkit-react-starter" starterLabel="React Starter" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+<DemoLinks demo="https://angular-demo.reelkit.dev/?utm_source=docs" demoLabel="Angular Demo" starter="https://stackblitz.com/github/KonstantinKai/reelkit-angular-starter" starterLabel="Angular Starter" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+<DemoLinks demo="https://vue-demo.reelkit.dev/?utm_source=docs" demoLabel="Vue Demo" starter="https://stackblitz.com/github/KonstantinKai/reelkit-vue-starter" starterLabel="Vue Starter" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="react">
+
+## क्विक स्टार्ट [#quick-start]
+
+React के साथ सबसे छोटा वर्टिकल स्लाइडर:
+
+<CodeBlock code={quickStart} language="tsx" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+## क्विक स्टार्ट [#quick-start]
+
+Angular के साथ सबसे छोटा वर्टिकल स्लाइडर:
+
+<CodeBlock code={quickStart2} language="typescript" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+## क्विक स्टार्ट [#quick-start]
+
+Vue के साथ सबसे छोटा वर्टिकल स्लाइडर:
+
+<CodeBlock code={quickStart3} language="vue" />
+
+</FrameworkVariant>
+
+## मुख्य कॉन्सेप्ट [#key-concepts]
+
+### Reel [#reel]
+
+`Reel` कंपोनेंट मुख्य कंटेनर है। यह स्लाइडर की स्टेट संभालता है और टच जेस्चर, कीबोर्ड नेविगेशन और एनिमेशन को हैंडल करता है। स्लाइड रेंडर करने के लिए यह `itemBuilder` के ज़रिए render prop पैटर्न का इस्तेमाल करता है।
+
+### itemBuilder [#itembuilder]
+
+`itemBuilder` prop एक फ़ंक्शन है जो index लेता है और हर स्लाइड का कंटेंट लौटाता है। इसी पैटर्न से वर्चुअलाइज़ेशन संभव होता है — सिर्फ़ दिखने वाले आइटम ही रेंडर होते हैं।
+
+### ReelIndicator [#reelindicator]
+
+एक वैकल्पिक कंपोनेंट, जो Instagram जैसे प्रोग्रेस इंडिकेटर दिखाता है कि आप स्लाइडर में अभी किस जगह पर हैं।
+
+<FrameworkVariant for="react">
+
+<CodeBlock code={reelindicator} language="tsx" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+<CodeBlock code={reelindicator2} language="html" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+<CodeBlock code={reelindicator3} language="vue-html" />
+
+</FrameworkVariant>
+
+## नेविगेशन [#navigation]
+
+नेविगेशन के बिल्ट-इन तरीके:
+
+<Bullets marker="dot">
+
+- **टच/स्वाइप:** momentum और snap के साथ खींचकर आगे-पीछे जाएँ
+- **कीबोर्ड:** तीर वाली कुंजियाँ (overlay कंपोनेंट बंद करने के लिए Escape भी संभालते हैं)
+- **माउस व्हील:** `enableWheel` prop से चालू करें
+- **प्रोग्राम से:** `next()`, `prev()`, `goTo()` के लिए `apiRef` इस्तेमाल करें
+
+</Bullets>
+
+<FrameworkVariant for="react">
+
+<CodeBlock code={navigation} language="tsx" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+<CodeBlock code={navigation2} language="html" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+<CodeBlock code={navigation3} language="vue" />
+
+</FrameworkVariant>
+
+<NextSteps
+        items={[
+          {
+            label: 'इंस्टॉलेशन',
+            path: '/docs/installation',
+            description: 'सभी पैकेज और सेटअप के विकल्प',
+          },
+          {
+            label: 'Core गाइड',
+            path: '/docs/core/guide',
+            description: 'फ़्रेमवर्क से स्वतंत्र इंजन',
+          },
+          {
+            label: 'फ़्रेमवर्क गाइड',
+            path: {
+              react: '/docs/react/guide',
+              angular: '/docs/angular/guide',
+              vue: '/docs/vue/guide',
+            },
+            description: 'कंपोनेंट, डेमो और इंटीग्रेशन',
+          },
+          {
+            label: 'Reel Player',
+            path: {
+              react: '/docs/reel-player',
+              angular: '/docs/angular-reel-player',
+              vue: '/docs/vue-reel-player',
+            },
+            description: 'TikTok/Reels जैसा वीडियो प्लेयर',
+          },
+          {
+            label: 'Lightbox',
+            path: {
+              react: '/docs/lightbox',
+              angular: '/docs/angular-lightbox',
+              vue: '/docs/vue-lightbox',
+            },
+            description: 'इमेज और वीडियो गैलरी',
+          },
+          {
+            label: 'Stories Player',
+            path: {
+              react: '/docs/stories-player',
+              angular: '/docs/angular-stories-player',
+              vue: '/docs/vue-stories-player',
+            },
+            description: 'Instagram जैसा stories व्यूअर',
+          },
+        ]}
+      />

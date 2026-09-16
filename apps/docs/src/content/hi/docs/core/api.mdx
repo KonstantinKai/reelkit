@@ -1,0 +1,248 @@
+---
+title: Core API रेफ़रेंस
+description: '@reelkit/core के कॉन्फ़िगरेशन, callbacks, मेथड, स्टेट, सिग्नल, ट्रांज़िशन, कंटेंट लोडिंग, साउंड, टाइमलाइन, फ़ुलस्क्रीन, DOM यूटिलिटी, फ़ोकस मैनेजमेंट और वीडियो यूटिलिटी का पूरा रेफ़रेंस।'
+---
+
+import usage from '../../../snippets/core-api/usage.ts?raw';
+
+`@reelkit/core` के कॉन्फ़िगरेशन, callbacks, मेथड और स्टेट का पूरा रेफ़रेंस।
+
+## SliderController API [#slidercontroller-api]
+
+फ़्रेमवर्क से स्वतंत्र core। एक factory, config और वैकल्पिक events से कंट्रोलर बनाती है: **कॉन्फ़िग विकल्प** config हैं, **Callbacks** events हैं, और **मेथड** वह है जो लौटाया गया कंट्रोलर देता है।
+
+### Factory फ़ंक्शन [#factory-function]
+
+| Export | टाइप | विवरण |
+| --- | --- | --- |
+| `createSliderController` | `(config: SliderConfig, events?: SliderEvents) => SliderController` | स्लाइडर कंट्रोलर बनाता है। `config` ज़रूरी है (विकल्प नीचे); `events` वैकल्पिक है (callbacks नीचे)। वह कंट्रोलर लौटाता है जिसके मेथड उसे चलाते हैं। |
+
+### कॉन्फ़िग विकल्प [#config-options]
+
+| प्रॉपर्टी | टाइप | डिफ़ॉल्ट | विवरण |
+| --- | --- | --- | --- |
+| `count` | `number` | ज़रूरी | आइटम की कुल संख्या |
+| `initialIndex` | `number` | 0 | शुरुआती index |
+| `direction` | `'vertical' \| 'horizontal'` | 'vertical' | स्क्रॉल की दिशा |
+| `enableGestures` | `boolean` | true | टच/माउस से खींचकर नेविगेशन चालू करता है। false होने पर gesture कंट्रोलर नहीं जुड़ता। |
+| `enableNavKeys` | `boolean` | true | कीबोर्ड की तीर वाली कुंजियों से नेविगेशन चालू करता है |
+| `enableWheel` | `boolean` | false | माउस व्हील चालू करता है |
+| `wheelDebounceMs` | `number` | 200 | व्हील का debounce समय |
+| `loop` | `boolean` | false | लूप में नेविगेशन |
+| `transitionDuration` | `number` | 300 | ms में एनिमेशन की अवधि |
+| `swipeDistanceFactor` | `number` | 0.12 | स्वाइप की सीमा (0-1) |
+| `rangeExtractor` | `(index: number, count: number, loop: boolean) => number[]` | defaultRangeExtractor | कौन-से index रेंडर हों, यह तय करने वाला कस्टम फ़ंक्शन |
+
+### Callbacks [#callbacks]
+
+| Callback | टाइप | विवरण |
+| --- | --- | --- |
+| `onBeforeChange` | `(index, nextIndex, rangeIndex) => void` | स्लाइड बदलने से पहले |
+| `onAfterChange` | `(index, rangeIndex) => void` | स्लाइड बदलने के बाद |
+| `onDragStart` | `(index) => void` | खींचना शुरू हुआ |
+| `onDragEnd` | `(index) => void` | खींचना ख़त्म हुआ |
+| `onDragCanceled` | `(index) => void` | खींचना रद्द हुआ |
+| `onTap` | `(event: GestureCommonEvent) => void` | एक टैप (double-tap की विंडो जितनी देरी से) |
+| `onDoubleTap` | `(event: GestureCommonEvent) => void` | डबल टैप पहचाना गया |
+| `onLongPress` | `(event: GestureCommonEvent) => void` | लंबा दबाव पहचाना गया |
+| `onLongPressEnd` | `(event: GestureEvent) => void` | लंबे दबाव के बाद pointer छोड़ा गया |
+| `onNavKeyPress` | `(increment: -1 \| 1) => void` | तीर वाली कुंजियों से नेविगेशन का कस्टम हैंडलर। डिफ़ॉल्ट prev/next व्यवहार की जगह लेता है। |
+
+### मेथड [#methods]
+
+| मेथड | टाइप | विवरण |
+| --- | --- | --- |
+| `attach(element)` | `(HTMLElement) => void` | जेस्चर पहचानने के लिए कंट्रोलर को DOM एलिमेंट से जोड़ता है |
+| `detach()` | `() => void` | DOM listeners (जेस्चर, कीबोर्ड, व्हील) हटाता है। observe() से दोबारा जोड़ना सुरक्षित है। React effect की सफ़ाई में इस्तेमाल करें। |
+| `dispose()` | `() => void` | स्थायी रूप से समेटना: सारे कंट्रोलर हटाता है और signal observers साफ़ करता है। Angular के onDestroy में इस्तेमाल करें। |
+| `observe()` | `() => void` | जेस्चर, कीबोर्ड और व्हील पर नज़र रखना शुरू करता है। enableGestures, enableNavKeys और enableWheel कॉन्फ़िग का पालन करता है। |
+| `unobserve()` | `() => void` | जेस्चर, कीबोर्ड और व्हील पर नज़र रखना बंद करता है |
+| `next()` | `() => Promise<void>` | अगली स्लाइड पर जाता है |
+| `prev()` | `() => Promise<void>` | पिछली स्लाइड पर जाता है |
+| `goTo(index, animate?)` | `(number, boolean?) => Promise<void>` | किसी खास स्लाइड पर जाता है |
+| `adjust(duration?)` | `(number?) => void` | स्लाइड की स्थितियाँ दोबारा निकालता है |
+| `setPrimarySize(size)` | `(number) => void` | कंटेनर का साइज़ अपडेट करता है |
+| `updateConfig(config)` | `(Partial<SliderConfig>) => void` | कॉन्फ़िगरेशन के विकल्प अपडेट करता है |
+| `updateEvents(events)` | `(Partial<SliderEvents>) => void` | इवेंट हैंडलर बदलता है (जो मौजूदा हैंडलर शामिल नहीं हैं, वे बने रहते हैं) |
+| `getRangeIndex()` | `() => number` | दिखने वाले range array में सक्रिय index की स्थिति लौटाता है |
+
+## स्टेट प्रॉपर्टी [#state-properties]
+
+| प्रॉपर्टी | टाइप | विवरण |
+| --- | --- | --- |
+| `index` | `Signal<number>` | मौजूदा स्लाइड का index |
+| `axisValue` | `Signal<AnimatedValue>` | अक्ष पर मौजूदा स्थिति का मान (एनिमेटेड) |
+| `indexes` | `ComputedSignal<number[]>` | वर्चुअलाइज़ेशन के लिए दिखने वाले index |
+
+## Range extractor [#range-extractor]
+
+| Export | टाइप | विवरण |
+| --- | --- | --- |
+| `defaultRangeExtractor` | `(index: number, count: number, loop: boolean) => number[]` | डिफ़ॉल्ट extractor, जो मौजूदा index के आसपास 3 आइटम रेंडर करता है |
+
+## Signal API [#signal-api]
+
+पूरे core में इस्तेमाल होने वाले हल्के reactive primitives।
+
+### Signal इंटरफ़ेस [#signal-interface]
+
+| सदस्य | टाइप | विवरण |
+| --- | --- | --- |
+| `value` | `T` | मौजूदा मान पढ़ें या सेट करें। मान बदलने पर सेट करना observers को सूचित करता है। |
+| `observe(callback)` | `(callback: () => void) => () => void` | हर बदलाव पर कॉल होने वाला listener दर्ज करता है। listener हटाने वाला dispose फ़ंक्शन लौटाता है। |
+
+### Factory फ़ंक्शन [#factory-functions]
+
+| Export | टाइप | विवरण |
+| --- | --- | --- |
+| `createSignal` | `<T>(initial: T) => Signal<T>` | बदला जा सकने वाला reactive signal बनाता है |
+| `createComputed` | `<T>(fn: () => T, deps: () => Subscribable[]) => ComputedSignal<T>` | व्युत्पन्न computed signal बनाता है। दूसरा argument deps factory है, जो ट्रैक किए जाने वाले signals लौटाती है। |
+| `reaction` | `(deps: () => Subscribable[], effect: () => void) => () => void` | किसी भी dependency signal के बदलने पर side effect चलाता है; dispose फ़ंक्शन लौटाता है। signal के मान effect callback के अंदर पढ़ें। |
+| `batch` | `(fn: () => void) => void` | कई signal अपडेट को सूचना के एक ही दौर में समेटता है; nesting का समर्थन करता है |
+
+## ट्रांज़िशन [#transitions]
+
+बिल्ट-इन ट्रांज़िशन फ़ंक्शन, जो एनिमेटेड नेविगेशन के दौरान हर स्लाइड का CSS transform निकालते हैं। इनमें से एक को फ़्रेमवर्क कंपोनेंट के `transitionTransformFn` prop में पास करें।
+
+| Export | टाइप | विवरण |
+| --- | --- | --- |
+| `TransitionTransformFn` | `type` | कस्टम ट्रांज़िशन फ़ंक्शन का signature |
+| `getSlideProgress` | `(axisValue: number, slideIndex: number, primarySize: number) => number` | viewport के सापेक्ष किसी स्लाइड का सामान्यीकृत offset (-1 से 1) लौटाता है। कस्टम ट्रांज़िशन फ़ंक्शन के अंदर इस्तेमाल करें। |
+| `slideTransition` | `TransitionTransformFn` | डिफ़ॉल्ट स्लाइड ट्रांज़िशन (translateX/Y) |
+| `fadeTransition` | `TransitionTransformFn` | opacity से crossfade ट्रांज़िशन |
+| `flipTransition` | `TransitionTransformFn` | 3D कार्ड पलटने वाला ट्रांज़िशन |
+| `cubeTransition` | `TransitionTransformFn` | 3D क्यूब घूमने वाला ट्रांज़िशन |
+| `zoomTransition` | `TransitionTransformFn` | scale/zoom ट्रांज़िशन |
+
+## कंटेंट लोडिंग [#content-loading]
+
+हर स्लाइड की लोडिंग/एरर स्टेट ट्रैक करने और मीडिया पहले से लोड करने की यूटिलिटी। लोडिंग कंट्रोलर index guard से पहले सक्रिय रही स्लाइड के पुराने callbacks ठुकरा देता है। Preloader LRU cache इस्तेमाल करता है (डिफ़ॉल्ट 200 लोड हुए, 100 एरर वाले), इसलिए टूटे URL पर दोबारा जाने पर बिना फिर से कोशिश किए तुरंत एरर दिखता है।
+
+| Export | टाइप | विवरण |
+| --- | --- | --- |
+| `createContentLoadingController` | `() => ContentLoadingController` | हर स्लाइड की लोडिंग/एरर स्टेट ट्रैक करना |
+| `createContentPreloader` | `(config: ContentPreloaderConfig) => ContentPreloader` | एरर को भी cache करने वाला, LRU cache वाला मीडिया preloader |
+| `observeMediaLoading` | `(video: HTMLVideoElement, callbacks: MediaLoadingCallbacks) => () => void` | वीडियो की लोडिंग स्टेट (playing, canplaythrough, waiting) पर नज़र रखता है। disposer लौटाता है। |
+
+### ContentLoadingController [#contentloadingcontroller]
+
+| Export | टाइप | विवरण |
+| --- | --- | --- |
+| `isLoading` | `Signal<boolean>` | सक्रिय स्लाइड लोड हो रही है या नहीं |
+| `isError` | `Signal<boolean>` | सक्रिय स्लाइड में एरर आया है या नहीं |
+| `setActiveIndex` | `(index: number) => void` | सक्रिय index अपडेट करता है, लोडिंग/एरर स्टेट रीसेट करता है |
+| `onReady` | `(index: number) => void` | स्लाइड को तैयार दर्ज करता है (index सक्रिय से मेल न खाए तो अनदेखा) |
+| `onWaiting` | `(index: number) => void` | स्लाइड को लोड होती दर्ज करता है (index सक्रिय से मेल न खाए तो अनदेखा) |
+| `onError` | `(index: number) => void` | स्लाइड को एरर वाली दर्ज करता है (index सक्रिय से मेल न खाए तो अनदेखा) |
+
+### ContentPreloader [#contentpreloader]
+
+| Export | टाइप | विवरण |
+| --- | --- | --- |
+| `preload` | `(src: string, type?: "image" \| "video") => void` | किसी मीडिया URL को पहले से लोड करना शुरू करता है |
+| `isLoaded` | `(src: string) => boolean` | जाँचता है कि URL लोड हुए LRU cache (अधिकतम 200) में है या नहीं |
+| `isErrored` | `(src: string) => boolean` | जाँचता है कि URL एरर वाले LRU cache (अधिकतम 100) में है या नहीं |
+| `markLoaded` | `(src: string) => void` | URL को हाथ से लोड हुआ दर्ज करता है |
+| `markErrored` | `(src: string) => void` | URL को हाथ से एरर वाला दर्ज करता है |
+| `onLoaded` | `(src: string, cb: () => void) => () => void` | लोड पूरा होने की सूचना के लिए subscribe करता है; disposer लौटाता है |
+
+## साउंड [#sound]
+
+मीडिया प्लेबैक के लिए साझा mute/unmute स्टेट। साउंड कंट्रोलर एक reactive muted signal देता है, जिसे वीडियो एलिमेंट से sync किया जा सकता है और कस्टम कंट्रोल से टॉगल किया जा सकता है।
+
+| Export | टाइप | विवरण |
+| --- | --- | --- |
+| `createSoundController` | `() => SoundController` | साझा mute स्टेट का कंट्रोलर |
+| `syncMutedToVideo` | `(video: HTMLVideoElement, sound: SoundController) => () => void` | muted signal को वीडियो एलिमेंट से sync करता है। disposer लौटाता है। |
+
+## टाइमलाइन [#timeline]
+
+वीडियो scrubbing के लिए प्लेबैक टाइमलाइन कंट्रोलर। अवधि, मौजूदा समय, buffered ranges और यूज़र की scrubbing स्टेट को reactive signals के रूप में ट्रैक करता है। एक ही कॉल किसी भी DOM एलिमेंट पर pointer और कीबोर्ड इंटरैक्शन जोड़ देता है, ताकि वह असली scrub bar जैसा चले — pointer capture, लाइव seeking और पूरे कीबोर्ड सपोर्ट (तीर, Home/End, PageUp/PageDown) के साथ।
+
+| Export | टाइप | विवरण |
+| --- | --- | --- |
+| `createTimelineController` | `(config?: TimelineControllerConfig) => TimelineController` | Factory, जो `duration`, `currentTime`, `progress`, `bufferedRanges` और `isScrubbing` signals के साथ `attach`, `detach`, `bindInteractions` और `seek` मेथड वाला कंट्रोलर लौटाती है। |
+| `TimelineControllerConfig` | `interface` | `keyboardStepSeconds` (डिफ़ॉल्ट 5), `keyboardPageFraction` (डिफ़ॉल्ट 0.1), और `onSeek`, `onScrubStart`, `onScrubEnd` callbacks। |
+| `BufferedRange` | `{ start: number; end: number }` | एक लगातार buffered हिस्सा, कुल अवधि के 0–1 भिन्न के रूप में। क्रम से और बिना एक-दूसरे पर चढ़े दिए जाते हैं। |
+
+## फ़ुलस्क्रीन [#fullscreen]
+
+Safari के vendor-prefix guards के साथ सभी ब्राउज़र में चलने वाली फ़ुलस्क्रीन यूटिलिटी। फ़ुलस्क्रीन signal एक lazy singleton है, जो फ़ुलस्क्रीन स्टेट को reactive तरीके से ट्रैक करता है।
+
+| Export | टाइप | विवरण |
+| --- | --- | --- |
+| `fullscreenSignal` | `Signal<boolean>` | document फ़ुलस्क्रीन मोड में है या नहीं, इसे ट्रैक करने वाला reactive signal |
+| `requestFullscreen` | `(element: HTMLElement) => Promise<void>` | दिए गए एलिमेंट पर फ़ुलस्क्रीन में जाता है |
+| `exitFullscreen` | `() => Promise<void>` | फ़ुलस्क्रीन मोड से बाहर आता है |
+
+## DOM और cleanup यूटिलिटी [#dom-cleanup-utilities]
+
+DOM इवेंट प्रबंधन और तय क्रम में सफ़ाई के लिए निचले स्तर के helpers। सभी कंट्रोलर अंदर से इन्हें इस्तेमाल करते हैं, और ये कस्टम इंटीग्रेशन के लिए भी उपलब्ध हैं।
+
+| Export | टाइप | विवरण |
+| --- | --- | --- |
+| `observeDomEvent` | `(target, event, handler, options?) => () => void` | DOM इवेंट listener जोड़ता है और उसे हटाने वाला disposer लौटाता है |
+| `createDisposableList` | `() => DisposableList` | disposer फ़ंक्शन इकट्ठा करने वाली सूची। सबको एक साथ चलाने के लिए dispose() कॉल करें। |
+| `createBodyLock` | `() => BodyLock` | reference गिनने वाला body scroll lock। कई consumers एक साथ lock कर सकते हैं; सबके unlock करने पर स्क्रॉल वापस आता है। |
+| `sharedBodyLock` | `BodyLock` | module स्तर का singleton instance। जब ऐप के कई कंपोनेंट को एक ही reference counter साझा करना हो ताकि nested modals/overlays सही क्रम में चलें, तब इस्तेमाल करें। फ़्रेमवर्क bindings (`@reelkit/react`, `@reelkit/vue`, `@reelkit/angular`) अंदर से यही इस्तेमाल करती हैं। |
+
+## फ़ोकस मैनेजमेंट [#focus-management]
+
+फ़्रेमवर्क से स्वतंत्र dialog सुलभता primitives। Overlay पैकेज इनसे बंद होने पर फ़ोकस trigger पर लौटाते हैं और खुले रहने तक Tab / Shift+Tab को overlay के अंदर रोके रखते हैं। SSR के लिए सुरक्षित: ब्राउज़र के बाहर हर helper कुछ न करने वाला disposer लौटाता है।
+
+| Export | टाइप | विवरण |
+| --- | --- | --- |
+| `captureFocusForReturn` | `() => Disposer` | अभी फ़ोकस वाले एलिमेंट को पकड़ता है और उसे फिर से फ़ोकस करने वाला disposer लौटाता है। पूरी कोशिश के आधार पर: अगर पकड़ा गया एलिमेंट बाद में DOM से हट चुका है, तो disposer कुछ नहीं करता। |
+| `createFocusTrap` | `(container: HTMLElement) => Disposer` | Tab/Shift+Tab को `container` के अंदर रोकता है। आख़िरी फ़ोकस योग्य पर Tab पहले पर लौटता है; पहले पर Shift+Tab आख़िरी पर जाता है; कंटेनर से बाहर निकला फ़ोकस (बाहर क्लिक, प्रोग्राम से फ़ोकस) वापस खींच लिया जाता है। चालू होने पर फ़ोकस को कंटेनर में नहीं ले जाता — यह कॉल करने वाला तय करता है। |
+| `getFocusableElements` | `(container: HTMLElement) => HTMLElement[]` | DOM क्रम में हर कीबोर्ड से फ़ोकस होने वाला descendant लौटाता है, disabled, छिपे और `tabindex="-1"` वाले एलिमेंट छोड़कर। |
+
+### इस्तेमाल [#usage]
+
+<CodeBlock code={usage} language="typescript" />
+
+## वीडियो यूटिलिटी [#video-utilities]
+
+स्लाइडों के बीच साझा वीडियो प्लेबैक के लिए फ़्रेमवर्क से स्वतंत्र यूटिलिटी। `@reelkit/react-reel-player` और `@reelkit/react-lightbox` अंदर से इन्हें इस्तेमाल करते हैं, और ये कस्टम फ़्रेमवर्क bindings के लिए उपलब्ध हैं।
+
+| Export | टाइप | विवरण |
+| --- | --- | --- |
+| `captureFrame` | `(video: HTMLVideoElement) => string \| null` | वीडियो के मौजूदा फ़्रेम को JPEG data URL के रूप में पकड़ता है। cross-origin एरर पर null लौटाता है। |
+| `createSharedVideo` | `(config: SharedVideoConfig) => SharedVideoInstance` | प्लेबैक स्थिति और फ़्रेम कैप्चर maps के साथ सीमित दायरे वाला साझा वीडियो singleton बनाता है। iOS पर आवाज़ बनी रहे, इसके लिए हर consumer को अलग instance मिलता है। |
+| `syncVideoObjectFit` | `(video: HTMLVideoElement, fallbackIsVertical: boolean) => Disposer` | `video.style.objectFit` को वीडियो के असली orientation के साथ sync रखता है। पहले तुरंत fallback (घोषित aspect ratio से) लगाता है, फिर `loadedmetadata` पर असली `videoWidth` / `videoHeight` पढ़कर portrait के लिए `'cover'` और landscape के लिए `'contain'` कर देता है। गलत घोषित metadata से भी नहीं बिगड़ता। |
+
+## URL स्टेट [#url-state]
+
+एक query parameter को signal में और वापस दर्शाना। दो अक्ष, हर एक का एक काम: `codec` wire है (parameter का टेक्स्ट ↔ स्थिर पहचान), `locator` खोज है (वह पहचान collection में कहाँ है)।
+
+| Export | टाइप | विवरण |
+| --- | --- | --- |
+| `createUrlStateController` | `({ param, adapter?, codec?, locator? }) => UrlStateController` | एक query parameter को signal में दर्शाता है और बदलाव वापस URL में लिखता है। न मौजूद parameter का पहला write history में एक entry जोड़ता है; उसके बाद हर write उसे बदल देता है। `codec` या `locator` मिलने पर यह `position: Signal<Pos \| null>` भी निकालता है, open/close latch लगाता है और किसी स्लाइड का नाम न लेने वाले parameter को खुद ठीक कर देता है — इसलिए हर binding दोबारा निकालने के बजाय subscribe करती है। बंद हालत में स्थिति लिखने पर यह तुरंत खुल जाता है, adapter के write वापस बताने का इंतज़ार किए बिना; `UrlChange` बताता है कि बंद करना एक कदम पीछे जाता है या उसी जगह साफ़ करता है। |
+| `createHistoryAdapter` | `() => UrlAdapter` | History API पर बना डिफ़ॉल्ट adapter। routing वाले ऐप्लिकेशन को इसकी जगह अपना adapter देना चाहिए, नहीं तो router की location पुरानी पड़ जाती है और उसका अगला नेविगेशन parameter गिरा देता है। |
+| `indexCodec` | `UrlCodec<number>` | `?photo=3` को स्लाइड 3 के रूप में पढ़ता है। अपना codec लिखे बिना index निकालना चालू करने के लिए इसे पास करें। अनंत या पेज वाली सूची के लिए इसकी जगह `locator` पास करें — promise के pending रहने तक parameter बना रहता है, इसलिए न लोड हुए पेज का सीधा लिंक fetch के बीच साफ़ नहीं होता। |
+| `createIndexLocator` | `(countGetter: () => number) => UrlLocator<number>` | डिफ़ॉल्ट index locator: स्लाइड की स्थिति खुद अपनी ओर इशारा करती है, getter की लौटाई मौजूदा गिनती तक सीमित। सीमा से बाहर का index `null` बनता है, इसलिए पुराना `?photo=99` URL से अपने-आप हट जाता है — यह सबसे पास की स्लाइड मान लेने के बजाय ठुकरा देता है, क्योंकि वह स्लाइड खोलना जिसका URL ने कभी नाम नहीं लिया, गलत होता। संख्या नहीं, getter, ताकि पेज वाली गैलरी बढ़ने पर सीमा खोज के समय का मौजूदा साइज़ पढ़े। |
+| `urlIndexKey` | `(countGetter, locateAsync?) => UrlKey<number>` | index से पहचानी जाने वाली गैलरी की मेल खाती जोड़ी — `indexCodec` और गैलरी के साइज़ से बँधा `createIndexLocator`। इसे spread करें (`{ param, ...urlIndexKey(() => count) }`) ताकि codec, locator से अलग न पड़े। पेज वाली फ़ीड की विंडो के लिए दूसरा argument `locateAsync` पास करें — न मिलने पर चाहे गए index तक पेज लोड करें, फिर उसे लौटाएँ। |
+| `urlIndexTwoAxisKey` | `(opts) => UrlKey<TwoAxisIdentity, TwoAxisPosition>` | `urlIndexKey` जैसा, पर दो-अक्ष वाले प्लेयर के लिए: सख़्ती से बिंदु वाला एक `?p=<outer>.<inner>` parameter, जो `TwoAxisPosition` `{ outer, inner }` बनता है। विकल्प (`UrlIndexTwoAxisKeyOptions`): `outerCount`, `innerCounts`, बाहरी अक्ष के लिए वैकल्पिक `outerCodec`/`outerLocator`, और अंदरूनी अक्ष को भी id से पहचानने के लिए `innerCodec`/`innerLocate`/`innerIdentify`। हर अक्ष डिफ़ॉल्ट रूप से साधारण index सीमा पर चलता है। URL से चलने वाले stories प्लेयर के पीछे यही है। |
+| `createStableIdCodec` | `(hashCodec?: UrlCodec<string>) => UrlCodec<string>` | स्थिर id का **wire**, जोड़कर इस्तेमाल करने के लिए export किया गया — parameter का टेक्स्ट आइटम की `id` है, सीधे लिखी हुई या `hashCodec` से बदली हुई (वापस पढ़े जा सकने वाले base64url के लिए `base64UrlCodec` पास करें)। `indexCodec` का स्थिर-id वाला रूप: पूरा `urlStableIdKey` लेने के बजाय इसे अपने locator के साथ जोड़ें। |
+| `base64UrlCodec` | `UrlCodec<string>` | स्थिर-id key के लिए तैयार hash तरीका: वापस पढ़ा जा सकने वाला base64url (URL के लिए सुरक्षित अक्षर, कोई padding नहीं, UTF-8) — cryptographic hash **नहीं**। URL में id छिपाने के लिए इसे `hashCodec` के रूप में पास करें, या कोई और तरीका लगाने के लिए अपना `UrlCodec<string>` लिखें। |
+| `createStableIdLocator` | `(items, locateAsync?) => UrlLocator<string, number>` | स्थिर id की **खोज**, जोड़कर इस्तेमाल करने के लिए export की गई — `items()` में मेल खाती `id` ढूँढती है; हट चुकी id `null` बनती है और अपने-आप ठीक हो जाती है। वैकल्पिक `locateAsync` पेज वाली फ़ीड की विंडो चलाता है। `createIndexLocator` का स्थिर-id वाला रूप। |
+| `urlStableIdKey` | `(opts) => UrlKey<string, number>` | गैलरी को स्थिति की जगह हर आइटम की स्थिर `id` से पहचानता है — `?photo=<id>` — ताकि सूची का क्रम बदलने पर भी bookmark काम करे। विकल्प (`UrlStableIdKeyOptions`): `items` (मौजूदा getter), wire पर id बदलने के लिए वैकल्पिक `hashCodec` (`base64UrlCodec` पास करें), पेज वाली फ़ीड की विंडो के लिए वैकल्पिक `locateAsync` (न मिलने पर id आने तक fetch करें, फिर उसका index लौटाएँ)। जब भी शेयर किए गए लिंक के नीचे सूची बदल सकती हो, `urlIndexKey` की जगह इसे चुनें। |
+| `urlStableIdTwoAxisKey` | `(opts) => UrlKey<TwoAxisIdentity<string>, TwoAxisPosition>` | दो-अक्ष वाला रूप: बाहरी अक्ष स्थिर id से, अंदरूनी स्थानीय index से — `?story=user_42.3`। अंदरूनी अक्ष को भी id से पहचानने के लिए `innerCounts` की जगह `innerItems` दें (`?story=user_42.photo_7`); `hashCodec` (जैसे `base64UrlCodec`) दोनों ids को बदलता है। विकल्प `UrlStableIdTwoAxisKeyOptions` (अंदर index) या `UrlStableIdTwoAxisIdInnerOptions` (अंदर id); आइटम टाइप `Identified` (`{ id: string }`) को पूरा करते हैं। |
+| `UrlCodec<Id>` | `{ decode(raw) => Id \| null; encode(id) => string }` | wire का रूप: parameter का टेक्स्ट ↔ स्थिर पहचान, collection से बेख़बर। `decode` का `null` लौटाना मतलब गलत टेक्स्ट। |
+| `UrlLocator<Id>` | `{ locate(id) => number \| null; locateAsync?(id) => Promise<number \| null>; identify(index) => id }` | खोज: पहचान collection में कहाँ है। `locate` synchronous है, `locateAsync` पेज वाली सूची के लिए उसका विकल्प, और `identify` लिखने के लिए index को वापस पहचान में बदलता है। |
+| `UrlKey<Id>` | `{ codec: UrlCodec<Id>; locator: UrlLocator<Id> }` | एक parameter के लिए codec + locator की मेल खाती जोड़ी। दोनों एक ही `Id` साझा करते हैं और हमेशा साथ चलते हैं — codec पहचान को URL में लिखता है, locator ढूँढता है कि वह कहाँ है — इसलिए इन्हें जोड़ी के रूप में बनाना ही इन्हें असहमत होने से रोकता है। |
+| `UrlAdapter` | `{ read, subscribe, push, replace, getState, goBack }` | router जोड़ने की जगह। routing वाले ऐप्लिकेशन को एक देना ही होगा, नहीं तो router की अपनी location पुरानी पड़ जाती है। `subscribe` listener वैकल्पिक `UrlChange` लेता है; उसे बिना कुछ दिए कॉल करना हमेशा मान्य है और इसका मतलब है कि adapter नहीं बता सकता कि entry मौजूदा कैसे बनी। |
+| `UrlChange` | `{ kind?: 'push' \| 'replace' \| 'pop' }` | अभी पूरे हुए नेविगेशन के बारे में adapter क्या जानता है। `push` सिर्फ़ उस नेविगेशन के लिए बताएँ जो router ने खुद उसी पेज पर किया; सिर्फ़ इसी मामले में बंद करना entry को pop कर सकता है। सबूत न होने पर entry पर कभी दावा नहीं किया जाता और बंद करना parameter को उसी जगह साफ़ करता है — साइट से एक कदम बाहर जाने का जोखिम लेने के बजाय history में पेज की एक नकल छोड़ देता है। |
+| `UrlStateOptions<Id>` | `{ param: string; adapter?: UrlAdapter; codec?: UrlCodec<Id>; locator?: UrlLocator<Id> }` | `createUrlStateController` जो विकल्प लेता है — export किए गए ताकि consumer अलग से बने config को सौंपने से पहले उसे टाइप कर सके। |
+
+## देखे गए आइटम की स्टेट [#viewed-state]
+
+दर्शक कहाँ तक पहुँचा, इसे उसी तरह की key से सहेजें जैसे address bar करता है: entry खुद parameter का टेक्स्ट है, जो उसी `codec` और `locator` से वापस पढ़ा जाता है।
+
+| Export | टाइप | विवरण |
+| --- | --- | --- |
+| `createViewedStateController` | `(options) => ViewedStateController<Pos>` | याद रखता है कि दर्शक कहाँ तक पहुँचा, ठीक उसी टेक्स्ट के रूप में सहेजकर जो URL parameter में होता। address bar वाली वही `codec`/`locator` जोड़ी लेता है, साथ में `storageKey`, वैकल्पिक `storage`, `trackOf` (हर ग्रुप की एक entry) और `progressOf`। `attach()` से पहले कुछ नहीं पढ़ता, इसलिए prerender के लिए सुरक्षित है। |
+| `twoAxisViewedTracking` | `{ trackOf, progressOf }` | दो-अक्ष वाले प्लेयर के लिए ट्रैकिंग जोड़ी: हर बाहरी slot की एक entry, और अंदरूनी index उसमें प्रगति नापता है। इसे दो-अक्ष वाली key के साथ spread करें। |
+| `createLocalStorageAdapter` | `() => StorageAdapter` | डिफ़ॉल्ट आधार। tab से ज़्यादा न टिकने वाली स्टेट के लिए `createSessionStorageAdapter` भी है, और tests व सर्वर रेंडरिंग के लिए `createMemoryStorageAdapter`। हर एक अपनी गड़बड़ियाँ खुद संभालता है — quota भर जाने पर सिर्फ़ वही write खोता है, उससे ज़्यादा नहीं। |
+| `ViewedStateController<Pos>` | `{ entries; resolve(track); record(position); forget(track?); attach() }` | `entries` track → सहेजे गए टेक्स्ट का signal है, इसलिए यहाँ या किसी दूसरे tab में स्थिति दर्ज होने पर ring फिर से बनती है। `resolve` हर कॉल पर key का पूरा चक्र चलाता है। |
+| `ViewedStateOptions<Id, Pos>` | `{ storageKey; codec; locator; storage?; trackOf?; progressOf; ttlMs?; maxTracks? }` | `createViewedStateController` जो विकल्प लेता है — export किए गए ताकि consumer अलग से बने config को सौंपने से पहले उसे टाइप कर सके। `progressOf` सिर्फ़ साधारण index स्थिति के लिए वैकल्पिक है, जो खुद अपनी प्रगति का माप है; कोई और स्थिति बतानी ही होगी कि किस संख्या की तुलना हो, और टाइप इसे ज़रूरी बनाता है। `ttlMs` समय-सीमा चालू करता है: कोई track आख़िरी बार दर्ज होने के उतने समय बाद भुला दिया जाता है, और दोबारा दर्ज करने पर उसकी घड़ी फिर शुरू होती है। `maxTracks` ज़्यादा से ज़्यादा उतने tracks रखता है, और अगले write पर सबसे पहले दर्ज किया गया हटा देता है। |
+| `StorageAdapter` | `{ read(key); write(key, value); subscribe?(key, listener) }` | storage परत जोड़ने की जगह। `subscribe` छोड़ दें, तो store बस tabs के बीच sync के बिना चलता है। |

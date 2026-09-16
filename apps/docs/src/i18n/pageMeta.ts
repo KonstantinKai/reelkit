@@ -22,6 +22,7 @@ const _kOpenGraphLocales: Record<Locale, string> = {
   uk: 'uk_UA',
   pt: 'pt_BR',
   ja: 'ja_JP',
+  hi: 'hi_IN',
 };
 
 /**

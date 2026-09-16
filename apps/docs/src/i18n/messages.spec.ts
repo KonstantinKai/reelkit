@@ -68,4 +68,12 @@ describe('chrome dictionaries', () => {
     expect(since(1)).toContain('1 件');
     expect(since(5)).toContain('5 件');
   });
+
+  // The Hindi noun for a release does not change with the count, so one
+  // template serves every number.
+  it('counts Hindi releases with one template', () => {
+    const since = messages.hi.whatsNew.since;
+    expect(since(1)).toContain('1 नई रिलीज़');
+    expect(since(5)).toContain('5 नई रिलीज़');
+  });
 });

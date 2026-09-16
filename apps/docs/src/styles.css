@@ -398,4 +398,15 @@
   html[data-rk-fw='vue'] [data-fw-btn='vue'] {
     @apply bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300;
   }
+
+  /*
+   * Devanagari stacks vowel signs above and below the letters, so a large
+   * heading needs more room between lines than Latin text does. At the
+   * default heading line height a wrapped title puts the vowel signs of its
+   * second line into the descenders of the first. The home page title is the
+   * logo and the Latin wordmark, so it keeps its height.
+   */
+  :lang(hi) :is(h1:not(:has(svg)), h2, h3) {
+    line-height: 1.35;
+  }
 }

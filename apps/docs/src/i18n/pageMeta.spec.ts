@@ -58,6 +58,15 @@ describe('page meta', () => {
     );
   });
 
+  it('stamps the Indian Open Graph locale for Hindi', () => {
+    expect(
+      contentOf(localePageMeta('hi', options), 'property', 'og:locale'),
+    ).toBe('hi_IN');
+    expect(contentOf(localePageMeta('hi', options), 'property', 'og:url')).toBe(
+      'https://reelkit.dev/hi/docs/ssr',
+    );
+  });
+
   it('carries the page title and description into the social tags', () => {
     const meta = localePageMeta('uk', options);
     expect(contentOf(meta, 'property', 'og:title')).toBe(options.title);

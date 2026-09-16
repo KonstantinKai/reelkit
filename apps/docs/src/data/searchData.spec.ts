@@ -9,6 +9,7 @@ import { zhCategories, zhKeywords, zhTitles } from './searchData.zh';
 import { ukCategories, ukKeywords, ukTitles } from './searchData.uk';
 import { ptCategories, ptKeywords, ptTitles } from './searchData.pt';
 import { jaCategories, jaKeywords, jaTitles } from './searchData.ja';
+import { hiCategories, hiKeywords, hiTitles } from './searchData.hi';
 import {
   kDefaultLocale,
   kLocales,
@@ -30,6 +31,7 @@ const dictionaries: Record<Exclude<Locale, 'en'>, Dictionary> = {
   uk: { titles: ukTitles, categories: ukCategories, keywords: ukKeywords },
   pt: { titles: ptTitles, categories: ptCategories, keywords: ptKeywords },
   ja: { titles: jaTitles, categories: jaCategories, keywords: jaKeywords },
+  hi: { titles: hiTitles, categories: hiCategories, keywords: hiKeywords },
 };
 
 const translated = kLocales
@@ -179,6 +181,16 @@ describe('palette matching', () => {
     );
   });
 
+  // A Devanagari nukta letter has a precomposed code point and a two-part
+  // spelling. The fold has to match them to each other, and it must not drop
+  // the nukta, which would turn za into the different letter ja.
+  it('matches both spellings of a nukta letter and keeps the nukta', () => {
+    const precomposed = 'रिली\u095b';
+    const decomposed = 'रिलीज\u093c';
+    expect(foldForSearch(precomposed)).toBe(foldForSearch(decomposed));
+    expect(foldForSearch(decomposed)).not.toBe(foldForSearch('रिलीज'));
+  });
+
   it('answers a query that matches a title, a category or a keyword', () => {
     const item = {
       title: 'Instalação',
@@ -207,6 +219,8 @@ describe('palette matching', () => {
       'встановлення',
       '安装',
       'インストール',
+      'इंस्टॉल',
+      'इन्स्टॉल',
     ];
     for (const query of queries) {
       const q = query.toLowerCase().trim();
@@ -222,5 +236,19 @@ describe('palette matching', () => {
         expect(after, `"${query}" lost ${item.path}`).toContain(item);
       }
     }
+  });
+
+  // Hindi writes a nasal either as a dot above or as a half letter, and both
+  // spellings are in everyday use. The fold cannot tell them apart without a
+  // Hindi-only rule, so the keyword list carries both.
+  it('finds a Hindi page under either common spelling', () => {
+    const items = searchItemsFor('hi');
+    const pathsFor = (query: string) =>
+      items
+        .filter((item) => matchesSearch(item, query))
+        .map((item) => item.path);
+    expect(pathsFor('इंस्टॉल')).toContain('/hi/docs/installation');
+    expect(pathsFor('इन्स्टॉल')).toContain('/hi/docs/installation');
+    expect(pathsFor('शुरुआत')).toContain('/hi/docs/getting-started');
   });
 });

@@ -60,6 +60,7 @@ const localeMarkers: Record<Exclude<Locale, 'en'>, RegExp> = {
   // Kana, not kanji: every Japanese sentence carries kana particles and
   // Chinese carries none, so a page copied over from the Chinese tree fails.
   ja: /[\u3040-\u30ff]/,
+  hi: /[\u0900-\u097f]/,
 };
 
 const markerFor = (locale: Locale) =>
@@ -111,6 +112,15 @@ const translatedProductNames = [
   'ストーリーズ プレイヤー',
   'ストーリーズコア',
   'ストーリーズ コア',
+  'रील प्लेयर',
+  'रील्स प्लेयर',
+  'लाइटबॉक्स',
+  'लाइट बॉक्स',
+  'स्टोरीज़ प्लेयर',
+  'स्टोरीज प्लेयर',
+  'स्टोरीज़ कोर',
+  'स्टोरीज कोर',
+  'रीलकिट',
 ];
 
 describe.each(translated)('%s page modules', (locale) => {
@@ -284,5 +294,44 @@ describe.each(translated)('%s content files', (locale) => {
     );
     const own = await filesUnder(join(contentDir, locale), '**/*.mdx');
     expect(own, relative(appDir, join(contentDir, locale))).toEqual(english);
+  });
+});
+
+// Devanagari spells a nukta letter such as za two ways: one precomposed code
+// point, or the base letter followed by the nukta sign. Both render the same,
+// but the checks above compare raw text, so a product name typed one way
+// slips past a guard written the other way. Normalization always yields the
+// two-code-point form, which makes it the one spelling every file agrees on.
+describe('Devanagari source text', () => {
+  const precomposedNukta = /[\u0958-\u095f]/;
+
+  const sources = async () => [
+    ...(await filesUnder(join(contentDir, 'hi'), '**/*.mdx')).map((file) =>
+      join(contentDir, 'hi', file),
+    ),
+    ...(await filesUnder(join(pagesDir, 'hi'), '**/*.tsx')).map((file) =>
+      join(pagesDir, 'hi', file),
+    ),
+    ...(
+      await filesUnder(appDir, '{data/searchData.hi.ts,i18n/messages.ts}')
+    ).map((file) => join(appDir, file)),
+  ];
+
+  it('keeps every Hindi file in one normalized spelling', async () => {
+    const offenders: string[] = [];
+    for (const path of await sources()) {
+      const source = read(path);
+      if (source !== source.normalize('NFC') || precomposedNukta.test(source)) {
+        offenders.push(relative(appDir, path));
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+
+  it('writes the product-name guard in the same spelling', () => {
+    for (const name of translatedProductNames) {
+      expect(name, name).toBe(name.normalize('NFC'));
+      expect(precomposedNukta.test(name), name).toBe(false);
+    }
   });
 });

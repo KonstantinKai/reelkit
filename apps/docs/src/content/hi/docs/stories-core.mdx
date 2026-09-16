@@ -1,0 +1,202 @@
+---
+title: Stories Core
+description: '@reelkit/react-stories-player के पीछे का इंजन। शुद्ध TypeScript, किसी फ़्रेमवर्क पर निर्भर नहीं। Angular, Vue या vanilla JS के लिए stories प्लेयर बनाने में इस्तेमाल करें।'
+---
+
+import { Cpu, Layers, Timer, Minus, MousePointerClick, Cog } from 'lucide-react';
+import installation from '../../snippets/stories-core/installation.sh?raw';
+import controllerExample from '../../snippets/stories-core/controller-example.ts?raw';
+import timerExample from '../../snippets/stories-core/timer-example.ts?raw';
+import canvasExample from '../../snippets/stories-core/canvas-example.ts?raw';
+import viewedStateExample from '../../snippets/stories-core/viewed-state-example.ts?raw';
+import typesCode from '../../snippets/stories-core/types-code.ts?raw';
+
+`@reelkit/react-stories-player` के पीछे का इंजन। शुद्ध TypeScript, किसी फ़्रेमवर्क पर निर्भर नहीं। Angular, Vue या vanilla JS के लिए stories प्लेयर बनाने में इसका इस्तेमाल करें।
+
+<FeatureGrid columns={3} items={[
+  {
+    icon: Cpu,
+    label: 'फ़्रेमवर्क से स्वतंत्र',
+    desc: 'शुद्ध TypeScript, किसी DOM फ़्रेमवर्क पर निर्भरता नहीं',
+  },
+  {
+    icon: Layers,
+    label: 'दो-स्तर का नेविगेशन',
+    desc: 'ग्रुप + हर ग्रुप के अंदर की stories',
+  },
+  {
+    icon: Timer,
+    label: 'RAF टाइमर',
+    desc: 'pause/resume के साथ requestAnimationFrame से अपने-आप आगे बढ़ना',
+  },
+  {
+    icon: Minus,
+    label: 'Canvas प्रोग्रेस',
+    desc: 'खिसकती विंडो वाला, Retina के लिए तैयार segmented प्रोग्रेस बार',
+  },
+  {
+    icon: MousePointerClick,
+    label: 'टैप ज़ोन',
+    desc: 'बाएँ/दाएँ टैप की पहचान, जिसे कॉन्फ़िगर किया जा सकता है',
+  },
+  {
+    icon: Cog,
+    label: 'Reactive सिग्नल',
+    desc: '@reelkit/core के signal primitives पर बना',
+  },
+]} />
+
+## इंस्टॉलेशन [#installation]
+
+<CodeBlock code={installation} language="bash" />
+
+## Stories कंट्रोलर [#stories-controller]
+
+`createStoriesController(config, events?)` ग्रुप और stories के बीच नेविगेशन संभालता है। यह pause/resume स्टेट पर नज़र रखता है, हर ग्रुप में आख़िरी देखी गई story याद रखता है, और हर बदलाव पर callbacks चलाता है।
+
+### कॉन्फ़िग (StoriesControllerConfig) [#config-storiescontrollerconfig]
+
+| प्रॉपर्टी | टाइप | डिफ़ॉल्ट | विवरण |
+| --- | --- | --- | --- |
+| `groupCount` | `number` | ज़रूरी | story ग्रुप की कुल संख्या |
+| `storyCounts` | `number[]` | ज़रूरी | हर ग्रुप में stories की संख्या |
+| `initialGroupIndex` | `number` | 0 | शुरुआती ग्रुप index |
+| `initialStoryIndex` | `number` | resumeStoryIndex(initialGroupIndex), नहीं तो 0 | ग्रुप के अंदर शुरुआती story index। इसे देने पर यह याद रखी गई किसी भी स्थिति से ऊपर रहता है; न देने पर खुलने वाला ग्रुप भी बाकी ग्रुप की तरह वहीं से शुरू होता है। |
+| `defaultImageDuration` | `number` | 5000 | इमेज stories के अपने-आप आगे बढ़ने की डिफ़ॉल्ट अवधि, ms में |
+| `resumeStoryIndex` | `(groupIndex: number) => number` | undefined | वह story जिस पर न देखा गया ग्रुप खुलता है, ग्रुप में मौजूद stories तक सीमित |
+
+### इवेंट (StoriesControllerEvents) [#events-storiescontrollerevents]
+
+| इवेंट | टाइप | विवरण |
+| --- | --- | --- |
+| `onStoryChange` | `(groupIndex, storyIndex) => void` | सक्रिय story बदलने पर चलता है |
+| `onGroupChange` | `(groupIndex) => void` | सक्रिय ग्रुप बदलने पर चलता है |
+| `onStoryViewed` | `(groupIndex, storyIndex) => void` | किसी story के दिखने पर चलता है |
+| `onStoryComplete` | `(groupIndex, storyIndex) => void` | story का टाइमर पूरा होने पर चलता है (आगे बढ़ने से पहले) |
+| `onComplete` | `() => void` | आख़िरी ग्रुप की आख़िरी story ख़त्म होने पर चलता है |
+| `onClose` | `() => void` | जब overlay बंद होना चाहिए, तब चलता है |
+
+### स्टेट (reactive signals) [#state-reactive-signals]
+
+| सिग्नल | टाइप | विवरण |
+| --- | --- | --- |
+| `state.activeGroupIndex` | `Signal<number>` | अभी सक्रिय ग्रुप का index |
+| `state.activeStoryIndex` | `Signal<number>` | ग्रुप के अंदर अभी सक्रिय story का index |
+| `state.isPaused` | `Signal<boolean>` | अपने-आप आगे बढ़ना रुका है या नहीं |
+
+### मेथड [#methods]
+
+| मेथड | टाइप | विवरण |
+| --- | --- | --- |
+| `nextStory()` | `() => void` | ग्रुप के अंदर आगे बढ़ता है; सीमा पार करके अगले ग्रुप में जाता है |
+| `prevStory()` | `() => void` | ग्रुप के अंदर पीछे जाता है; सीमा पार करके पिछले ग्रुप में जाता है |
+| `nextGroup()` | `() => void` | अगले ग्रुप पर जाता है, आख़िरी देखी गई story से शुरू करके |
+| `prevGroup()` | `() => void` | पिछले ग्रुप पर जाता है, आख़िरी देखी गई story से शुरू करके |
+| `goToGroup(index)` | `(number) => void` | index से किसी खास ग्रुप पर सीधे जाता है |
+| `pause()` | `() => void` | अपने-आप आगे बढ़ना रोकता है |
+| `resume()` | `() => void` | अपने-आप आगे बढ़ना फिर शुरू करता है |
+| `onStoryTimerComplete()` | `() => void` | टाइमर पूरा होने पर कॉल होता है; पहले onStoryComplete चलाता है, फिर आगे बढ़ता है |
+| `getLastStoryIndex(groupIndex)` | `(number) => number` | ग्रुप कहाँ खुलेगा: इस सेशन में जिस story पर छोड़ा गया, नहीं तो वह जो resumeStoryIndex बताए |
+| `reportInitialView()` | `() => void` | प्लेयर जिस story पर खुला, उसे एक बार देखी गई के रूप में दर्ज करता है। mount के बाद कॉल करें, रेंडर के दौरान नहीं। |
+
+### उदाहरण [#example]
+
+<CodeBlock code={controllerExample} />
+
+## टाइमर कंट्रोलर [#timer-controller]
+
+`createTimerController(config)` एक `requestAnimationFrame` loop से अपने-आप आगे बढ़ना चलाता है। प्रोग्रेस signal (0 से 1) प्रोग्रेस बार को भरता है। Pause और resume ठीक वही स्थिति बनाए रखते हैं।
+
+### कॉन्फ़िग (TimerControllerConfig) [#config-timercontrollerconfig]
+
+| प्रॉपर्टी | टाइप | डिफ़ॉल्ट | विवरण |
+| --- | --- | --- | --- |
+| `duration` | `number` | ज़रूरी | मिलीसेकंड में डिफ़ॉल्ट अवधि |
+| `onComplete` | `() => void` | undefined | टाइमर 100% पर पहुँचने पर कॉल होता है |
+
+### स्टेट [#state]
+
+| सिग्नल | टाइप | विवरण |
+| --- | --- | --- |
+| `progress` | `Signal<number>` | प्रोग्रेस signal (0 से 1) |
+| `isRunning` | `Signal<boolean>` | टाइमर अभी चल रहा है या नहीं |
+
+### मेथड [#methods]
+
+| मेथड | टाइप | विवरण |
+| --- | --- | --- |
+| `start(duration?)` | `(number?) => void` | टाइमर शुरू (या दोबारा शुरू) करता है, वैकल्पिक रूप से अलग अवधि के साथ |
+| `pause()` | `() => void` | प्रोग्रेस को मौजूदा स्थिति पर रोक देता है |
+| `resume()` | `() => void` | रुकी हुई स्थिति से आगे चलता है |
+| `reset()` | `() => void` | प्रोग्रेस को 0 पर लाकर रोक देता है |
+| `dispose()` | `() => void` | संसाधन साफ़ करता है |
+
+### उदाहरण [#example]
+
+<CodeBlock code={timerExample} />
+
+## Canvas प्रोग्रेस रेंडरर [#canvas-progress-renderer]
+
+`createCanvasProgressRenderer(config?)` canvas पर segmented प्रोग्रेस बार बनाता है। यह Retina डिस्प्ले के हिसाब से स्केल होता है, ResizeObserver से अपना कंटेनर नापता है, और segments न समाने पर खिसकती विंडो इस्तेमाल करता है।
+
+### कॉन्फ़िग (CanvasProgressRendererConfig) [#config-canvasprogressrendererconfig]
+
+| प्रॉपर्टी | टाइप | डिफ़ॉल्ट | विवरण |
+| --- | --- | --- | --- |
+| `gap` | `number` | 2 | segments के बीच पिक्सेल में दूरी |
+| `barHeight` | `number` | 2 | पिक्सेल में बार की ऊँचाई |
+| `minSegmentWidth` | `number` | 8 | segment की न्यूनतम चौड़ाई, जिसके बाद खिसकती विंडो शुरू होती है |
+| `bgColor` | `string` | 'rgba(255,255,255,0.3)' | न भरे segments का बैकग्राउंड रंग |
+| `fillColor` | `string` | '#ffffff' | पूरे/सक्रिय segments का भरने वाला रंग |
+
+### मेथड [#methods]
+
+| सदस्य | टाइप | विवरण |
+| --- | --- | --- |
+| `attach(canvas)` | `(HTMLCanvasElement) => void` | canvas एलिमेंट से जुड़ता है; parent पर ResizeObserver शुरू करता है |
+| `draw(totalStories, activeIndex, progress)` | `(number, number, number) => void` | दी गई स्टेट के लिए प्रोग्रेस बार बनाता है |
+| `width` | `number (readonly)` | CSS पिक्सेल में अभी नापी गई चौड़ाई |
+| `dispose()` | `() => void` | ResizeObserver और अंदरूनी स्टेट साफ़ करता है |
+
+### उदाहरण [#example]
+
+<CodeBlock code={canvasExample} />
+
+## देखे गए आइटम की स्टेट [#viewed-state]
+
+`createStoriesViewedState(controller, groups)` core के `ViewedStateController` को प्लेयर की भाषा में पढ़ता है — ग्रुप, लेखक, story index — जबकि store खुद इनमें से किसी के बारे में नहीं जानता। यह `StoriesViewedState` लौटाता है। Store को उसी key से बनाएँ जो address bar इस्तेमाल करता है, हर ग्रुप के लिए अलग track करके, तो सहेजी गई entry ठीक शेयर किए गए लिंक के parameter जैसी पढ़ी जाती है।
+
+| पैरामीटर | टाइप | विवरण |
+| --- | --- | --- |
+| `controller` | `ViewedStateController<TwoAxisPosition>` | address bar वाली key से बना core store, twoAxisViewedTracking के साथ spread किया गया ताकि हर ग्रुप की अपनी entry रहे |
+| `groups` | `() => StoriesGroup<T>[]` | मौजूदा ग्रुप पढ़ता है। यह getter है, इसलिए setup के बाद पेज लोड करने या क्रम बदलने वाली फ़ीड कॉल के समय नापी जाती है। |
+
+### StoriesViewedState [#storiesviewedstate]
+
+| मेथड | टाइप | विवरण |
+| --- | --- | --- |
+| `viewedCounts()` | `() => Map<string, number>` | हर ग्रुप में देखी गई stories, लेखक की id से — वही रूप जो StoriesRingList viewedState के रूप में लेता है |
+| `resumeStoryIndex(groupIndex)` | `(number) => number` | पहली न देखी गई story, या ग्रुप पूरा देख लेने पर 0 |
+| `markViewed(groupIndex, storyIndex)` | `(number, number) => void` | story को देखी गई के रूप में दर्ज करता है। इसे onStoryViewed से जोड़ें। |
+
+### उदाहरण [#example]
+
+<CodeBlock code={viewedStateExample} />
+
+Entry देखे जाने की गिनती नहीं, बल्कि सबसे दूर पहुँची story का नाम है, इसलिए id से पहचानने वाली key फ़ीड का क्रम बदलने पर भी ग्रुप की जगह बनाए रखती है, जबकि ग्रुप के बीच से हटाई गई story उसकी गिनती घटा देती है और उसकी ring फिर से जल उठती है।
+
+## यूटिलिटी फ़ंक्शन [#utility-functions]
+
+टैप ज़ोन पहचानने और प्रोग्रेस बार के हिसाब के लिए शुद्ध फ़ंक्शन।
+
+| फ़ंक्शन | टाइप | विवरण |
+| --- | --- | --- |
+| `getTapAction(tapX, containerWidth, splitRatio?)` | `(number, number, number?) => 'prev' \| 'next'` | स्थिति के आधार पर तय करता है कि टैप 'prev' चलाएगा या 'next'। डिफ़ॉल्ट splitRatio 0.3 है। |
+| `getSegments(totalStories, activeIndex, progress)` | `(number, number, number) => SegmentState[]` | प्रोग्रेस बार के हर segment की स्थिति और भराव का प्रतिशत निकालता है |
+| `getVisibleWindow(totalStories, activeIndex, progress, containerWidth, minSegmentWidth?, gap?)` | `(number, number, number, number, number?, number?) => VisibleWindow` | कुल संख्या कंटेनर की क्षमता से ज़्यादा होने पर segments की दिखने वाली खिसकती विंडो निकालता है |
+
+## टाइप [#types]
+
+`@reelkit/stories-core` से export होने वाली सभी टाइप डेफ़िनिशन।
+
+<CodeBlock code={typesCode} />

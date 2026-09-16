@@ -1,0 +1,488 @@
+---
+title: Lightbox
+description: React के लिए फ़ुलस्क्रीन इमेज गैलरी lightbox overlay। LightboxItem schema, props, tree-shake होने वाले ट्रांज़िशन (slideTransition, lightboxFadeTransition, flipTransition, lightboxZoomTransition), कीबोर्ड शॉर्टकट, थीमिंग tokens, CSS क्लास और slot renderers।
+---
+
+import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2 } from 'lucide-react';
+import { LightboxDemo } from '../../../components/demos/LightboxDemo';
+import installation from '../../snippets/lightbox/installation.sh?raw';
+import installation2 from '../../snippets/lightbox/installation-2.ts?raw';
+import quickStart from '../../snippets/lightbox/quick-start.tsx?raw';
+import fullCode from '../../snippets/lightbox/full-code.tsx?raw';
+import videoSlidesOptIn from '../../snippets/lightbox/video-slides-opt-in.tsx?raw';
+import customControls from '../../snippets/lightbox/custom-controls.tsx?raw';
+import customInfoOverlay from '../../snippets/lightbox/custom-info-overlay.tsx?raw';
+import customNavigation from '../../snippets/lightbox/custom-navigation.tsx?raw';
+import customSlide from '../../snippets/lightbox/custom-slide.tsx?raw';
+import lifecycleCallbacks from '../../snippets/lightbox/lifecycle-callbacks.tsx?raw';
+import customLoadingErrorUi from '../../snippets/lightbox/custom-loading-error-ui.tsx?raw';
+import urlState from '../../snippets/lightbox/url-state.tsx?raw';
+import urlState2 from '../../snippets/lightbox/url-state-2.tsx?raw';
+import urlState3 from '../../snippets/lightbox/url-state-3.tsx?raw';
+import urlState4 from '../../snippets/lightbox/url-state-4.tsx?raw';
+import urlState5 from '../../snippets/lightbox/url-state-5.tsx?raw';
+import urlState6 from '../../snippets/lightbox/url-state-6.tsx?raw';
+import lightboxitem from '../../snippets/lightbox/lightboxitem.ts?raw';
+import controlsrenderprops from '../../snippets/lightbox/controlsrenderprops.ts?raw';
+import navigationrenderprops from '../../snippets/lightbox/navigationrenderprops.ts?raw';
+import sliderenderprops from '../../snippets/lightbox/sliderenderprops.ts?raw';
+import inforenderprops from '../../snippets/lightbox/inforenderprops.ts?raw';
+import closebutton from '../../snippets/lightbox/closebutton.tsx?raw';
+import counter from '../../snippets/lightbox/counter.tsx?raw';
+import fullscreenbutton from '../../snippets/lightbox/fullscreenbutton.tsx?raw';
+import soundbutton from '../../snippets/lightbox/soundbutton.tsx?raw';
+import usevideosliderenderer from '../../snippets/lightbox/usevideosliderenderer.ts?raw';
+import usefullscreen from '../../snippets/lightbox/usefullscreen.tsx?raw';
+import transitions from '../../snippets/lightbox/transitions.tsx?raw';
+import customTransitionFunction from '../../snippets/lightbox/custom-transition-function.tsx?raw';
+import theming from '../../snippets/lightbox/theming.css?raw';
+
+`@reelkit/react-lightbox` से बना फ़ुलस्क्रीन इमेज और वीडियो गैलरी lightbox कंपोनेंट।
+
+<DemoLink href="https://react-demo.reelkit.dev/image-preview?utm_source=docs">लाइव डेमो देखें →</DemoLink>
+
+## फ़ीचर [#features]
+
+<FeatureGrid items={[
+              {
+                icon: Image,
+                label: 'इमेज और वीडियो',
+                desc: 'वीडियो स्लाइड का बिल्ट-इन सपोर्ट',
+              },
+              {
+                icon: MousePointer,
+                label: 'टच जेस्चर',
+                desc: 'स्वाइप करके आगे-पीछे जाएँ',
+              },
+              {
+                icon: X,
+                label: 'स्वाइप करके बंद करें',
+                desc: 'हटाने के लिए ऊपर स्वाइप करें',
+              },
+              {
+                icon: Keyboard,
+                label: 'कीबोर्ड नेविगेशन',
+                desc: 'तीर वाली कुंजियाँ + Escape',
+              },
+              {
+                icon: Maximize2,
+                label: 'फ़ुलस्क्रीन',
+                desc: 'सभी ब्राउज़र में चलने वाला API',
+              },
+              {
+                icon: Hash,
+                label: 'ट्रांज़िशन',
+                desc: 'Slide, fade, flip, zoom-in',
+              },
+              {
+                icon: Zap,
+                label: 'पहले से लोडिंग',
+                desc: 'आसपास की इमेज पहले से fetch होती हैं',
+              },
+              {
+                icon: Volume2,
+                label: 'साउंड टॉगल',
+                desc: 'हर स्लाइड पर mute/unmute',
+              },
+              {
+                icon: Loader,
+                label: 'लोडिंग स्टेट',
+                desc: 'Spinner + कस्टम रेंडर',
+              },
+              {
+                icon: AlertTriangle,
+                label: 'एरर हैंडलिंग',
+                desc: 'एरर आइकन + कस्टम रेंडर',
+              },
+              {
+                icon: Layers,
+                label: 'Render props',
+                desc: 'कस्टमाइज़ होने वाले 6 रेंडर हिस्से',
+              },
+              {
+                icon: Layers,
+                label: 'Hooks',
+                desc: 'useVideoSlideRenderer + useFullscreen',
+              },
+              {
+                icon: Link2,
+                label: 'URL स्टेट',
+                desc: 'शेयर और bookmark करने लायक लिंक',
+              },
+            ]} />
+
+## इंस्टॉलेशन [#installation]
+
+<CodeBlock code={installation} language="bash" />
+
+styles import करना न भूलें:
+
+<CodeBlock code={installation2} language="typescript" />
+
+<Callout type="info" title="आइकन">
+  डिफ़ॉल्ट कंट्रोल आइकन के लिए `lucide-react` इस्तेमाल करते हैं। अगर आप कोई और आइकन लाइब्रेरी पसंद करते हैं, तो अपने कंट्रोल देने के लिए `renderControls` और `renderNavigation` इस्तेमाल करें।
+</Callout>
+
+## क्विक स्टार्ट [#quick-start]
+
+`LightboxOverlay` कंपोनेंट इमेज फ़ुलस्क्रीन में दिखाता है। `LightboxItem` objects का array पास करें और null हो सकने वाले index से दिखना नियंत्रित करें।
+
+<CodeBlock code={quickStart} language="tsx" />
+
+## लाइव डेमो [#live-demo]
+
+<Sandbox
+  code={fullCode}
+  title="LightboxPage.tsx"
+  height={500}
+  stackblitzDeps={['@reelkit/react-lightbox']}
+  stackblitzExtraDeps={{ 'lucide-react': '^0.562.0' }}
+>
+  <LightboxDemo />
+</Sandbox>
+
+<Caption>lightbox खोलने के लिए किसी थंबनेल पर क्लिक करें। आगे-पीछे जाने के लिए तीर वाली कुंजियाँ या स्वाइप इस्तेमाल करें।</Caption>
+
+## वीडियो स्लाइड (opt-in) [#video-slides-opt-in]
+
+वीडियो सपोर्ट पूरी तरह opt-in और tree-shake होने लायक है — सिर्फ़ इमेज इस्तेमाल करने पर बंडल पर कोई अतिरिक्त भार नहीं पड़ता। `useVideoSlideRenderer` import करें और उसकी लौटाई values को `LightboxOverlay` से जोड़ें। Hook लोडिंग स्टेट, साउंड प्रबंधन और वीडियो lifecycle अपने-आप संभालता है।
+
+<CodeBlock code={videoSlidesOptIn} language="tsx" />
+
+<Callout type="info" title="यह कैसे काम करता है">
+  - Hook `SoundProvider` लौटाता है — mute/unmute काम करे, इसके लिए अपने overlay को इसमें लपेटें
+  - स्लाइड सक्रिय होने पर वीडियो अपने-आप चलते हैं (डिफ़ॉल्ट रूप से muted)
+  - iOS पर आवाज़ बनी रहे, इसके लिए स्लाइडों के बीच एक साझा वीडियो एलिमेंट दोबारा इस्तेमाल होता है
+  - वीडियो स्लाइड पर reactive mute टॉगल वाला साउंड बटन अपने-आप दिखता है
+  - `type: 'video'` के बिना आइटम इमेज के रूप में रेंडर होते हैं (पुराने कोड के साथ संगत)
+</Callout>
+
+## कस्टमाइज़ेशन [#customization]
+
+### कस्टम कंट्रोल [#custom-controls]
+
+डिफ़ॉल्ट बंद करने का बटन, काउंटर और फ़ुलस्क्रीन टॉगल बदलने के लिए `renderControls` इस्तेमाल करें। export किए गए sub-components से जोड़ें:
+
+<CodeBlock code={customControls} language="tsx" />
+
+### कस्टम जानकारी overlay [#custom-info-overlay]
+
+डिफ़ॉल्ट शीर्षक/विवरण gradient बदलने के लिए `renderInfo` इस्तेमाल करें, या उसे पूरी तरह छिपाने के लिए `renderInfo={() => null}` पास करें:
+
+<CodeBlock code={customInfoOverlay} language="tsx" />
+
+### कस्टम नेविगेशन [#custom-navigation]
+
+डिफ़ॉल्ट prev/next तीरों को बदलने के लिए `renderNavigation` इस्तेमाल करें:
+
+<CodeBlock code={customNavigation} language="tsx" />
+
+### कस्टम स्लाइड [#custom-slide]
+
+पूरी तरह कस्टम स्लाइड कंटेंट के लिए `renderSlide` इस्तेमाल करें। डिफ़ॉल्ट इमेज स्लाइड पर लौटने के लिए `null` लौटाएँ:
+
+<CodeBlock code={customSlide} language="tsx" />
+
+## कंटेंट लोडिंग और एरर हैंडलिंग [#content-loading-error-handling]
+
+Lightbox हर स्लाइड की लोडिंग और एरर स्टेट ट्रैक करता है। कंटेंट लोड होते समय spinner दिखता है; फ़ेल हुए मीडिया पर टूटी इमेज का आइकन दिखता है। एरर वाले URL cache हो जाते हैं, इसलिए दोबारा आने पर बिना फिर से कोशिश किए तुरंत एरर दिखता है।
+
+### Lifecycle callbacks [#lifecycle-callbacks]
+
+`renderSlide` इस्तेमाल करते समय लोडिंग इंडिकेटर नियंत्रित करने के लिए ये callbacks कॉल करें:
+
+| Callback | कब कॉल करें |
+| --- | --- |
+| `onReady` | इमेज लोड हुई या वीडियो चलने लगा। लोडिंग और एरर स्टेट साफ़ करता है। |
+| `onWaiting` | वीडियो चलते-चलते buffer हो रहा है। लोडिंग इंडिकेटर दिखाता है। |
+| `onError` | कंटेंट लोड नहीं हुआ। एरर overlay दिखाता है और URL को टूटा हुआ cache करता है। |
+
+<CodeBlock code={lifecycleCallbacks} language="tsx" />
+
+### कस्टम लोडिंग और एरर UI [#custom-loading-error-ui]
+
+डिफ़ॉल्ट spinner और एरर आइकन की जगह अपने कंपोनेंट लगाएँ:
+
+<CodeBlock code={customLoadingErrorUi} language="tsx" />
+
+## URL स्टेट [#url-state]
+
+<DemoLink href="https://react-demo.reelkit.dev/image-preview-url?utm_source=docs">लाइव डेमो देखें →</DemoLink>
+
+`LightboxUrlOverlay` एक अलग कंपोनेंट है जिसकी खुले होने की स्टेट address bar में रहती है। `@reelkit/react` के `useOverlayUrlState` से कंट्रोलर बनाएँ और उसे `controller` के रूप में दें: जब parameter किसी स्लाइड का नाम लेता है तो गैलरी खुद खुलती है, और उसके हटते ही बंद हो जाती है। लिंक शेयर किए जा सकते हैं, और back बटन पेज छोड़ने के बजाय गैलरी बंद करता है।
+
+<Callout type="info" title="बिल्ट-इन keys">
+  आप बिल्ट-इन key से स्लाइडों को पहचान सकते हैं — कंट्रोलर में `urlIndexKey` (स्थिति से) या `urlStableIdKey` (स्थिर `id` से) spread करें — दोनों `@reelkit/react` से भी export होते हैं। [URL स्टेट गाइड](/docs/core/guide#url-state) और [Core API](/docs/core/api#url-state) देखें।
+</Callout>
+
+<CodeBlock code={urlState} language="tsx" />
+
+Hook विकल्पों का एक object लेता है और `UrlStateController` (`set`, `index`, `value` के साथ) लौटाता है। प्रोग्राम से नियंत्रण के लिए इसे रखें: `set` वह निचले स्तर का write है जो overlay अंदर से इस्तेमाल करता है (स्लाइड बदलना, और बंद करने के लिए `set(null)`)। यह overlay को प्रोग्राम से भी चलाता है — `set(index)` उसे खोलता है, बिल्कुल parameter पर जाने की तरह। फिर भी खोलने के लिए लिंक को प्राथमिकता दें: href शेयर किया जा सकता है, नए tab में खुलता है, और back बटन उसे बंद करता है — सब मुफ़्त में, बिना किसी हैंडलर के।
+
+`useOverlayUrlState` के सारे विकल्प (`param`, `adapter`, `codec`, `locator`): [React API रेफ़रेंस](/docs/react/api#useoverlayurlstate) देखें।
+
+`LightboxUrlOverlay` खुद सिर्फ़ `controller` (ज़रूरी), वैकल्पिक `onClose`, और `LightboxOverlay` के सारे दिखावट और व्यवहार वाले props (`images`, `ariaLabel`, `transitionFn`, render props वगैरह) लेता है — लेकिन `isOpen` नहीं।
+
+- खोलने पर history की एक entry लगती है। स्लाइड बदलना उसे बदल देता है, इसलिए सौ स्वाइप भी कोई entry नहीं जोड़ते — back का एक कदम हमेशा गैलरी छोड़ देता है। Back बंद करता है; फ़ोटो में पीछे नहीं जाता।
+- `?photo=3` जैसा शेयर किया गया लिंक गैलरी को उसी स्लाइड पर खोलता है। पेज के साथ आए लिंक को बंद करना आपकी साइट से बाहर जाने के बजाय parameter को उसी जगह हटाता है।
+- **Back सिर्फ़ तब बंद करता है जब आपने ऐप के अंदर से खोला हो** — लिंक ने entry जोड़ी, इसलिए back गैलरी पर लौटता है। नए tab में सीधे खोले गए शेयर किए गए लिंक के पीछे कोई history नहीं होती, इसलिए ब्राउज़र का back साइट छोड़ देता है; बंद करने का बटन या Escape parameter को उसी जगह हटाकर आपको गैलरी पर रखता है। पैकेज के साथ आने वाले router adapters उसी पेज पर लिंक के push की पुष्टि करते हैं; जो कस्टम adapter नहीं बता सकता कि entry कैसे आई, उसे भी उसी जगह बंद होना मिलता है, जिससे history में पेज की एक नकल रह जाती है — तब back का एक कदम ऐसा लगता है जैसे कुछ हुआ ही नहीं, लेकिन कुछ दोबारा नहीं खुलता।
+- किसी स्लाइड का नाम न लेने वाला parameter — पुराना bookmark, हाथ से बदली value — URL से हटा दिया जाता है, ताकि address bar ऐसी स्लाइड का दावा न करता रहे जो खुल ही नहीं सकती।
+
+**Routing वाले ऐप में adapter पास करें।** history में सीधे लिखने से router की अपनी location पुरानी पड़ जाती है, और उसका अगला नेविगेशन parameter गिरा देता है।
+
+<CodeBlock code={urlState2} language="tsx" />
+
+**खोलना एक लिंक है।** खुली स्टेट URL में रहती है, इसलिए थंबनेल एक साधारण लिंक है — कोई click हैंडलर नहीं — और ब्राउज़र का अपना व्यवहार मुफ़्त मिलता है: नए tab में खोलना, पता कॉपी करना, hover पर प्रीव्यू। Routing वाले ऐप में router का लिंक इस्तेमाल करें, ताकि सब क्लाइंट साइड पर ही रहे।
+
+<CodeBlock code={urlState3} language="tsx" />
+
+**शेयर होने वाले लिंक के लिए स्थिर पहचान चुनें।** Index स्थिति पर आधारित है, इसलिए सूची का क्रम बदलते ही bookmark किया गया `?photo=3` कोई दूसरी इमेज खोलता है। `urlStableIdKey` हर आइटम की स्थिर `id` से key बनाता है और मौजूदा सूची में ढूँढता है — आम मामले के लिए एक कॉल काफ़ी है।
+
+<CodeBlock code={urlState4} language="tsx" />
+
+URL में id को base64url में encode करने के लिए `hashCodec: base64UrlCodec` पास करें — वापस पढ़ा जा सकने वाला छिपाव, cryptographic hash नहीं।
+
+किसी दूसरे field (`slug`) से key बनाएँ, या `locateAsync` से अनंत फ़ीड के पेज लोड करें, और `codec`/`locator` खुद बनाएँ:
+
+<CodeBlock code={urlState5} language="tsx" />
+
+**अनंत या पेज वाली गैलरी।** synchronous `locate` सिर्फ़ लोड हो चुकी इमेज के लिए जवाब दे सकता है — जिस फ़ीड में 20 इमेज लोड हुई हैं, उसकी इमेज 400 का शेयर किया गया लिंक खाली लौटता है। `locateAsync` विकल्प है, जो सिर्फ़ `locate` के न मिलने पर कॉल होता है।
+
+<Callout type="info" title="छोटा रास्ता">
+  आइटम की `id` से key बना रहे हैं? अपना codec और locator लिखना छोड़ें — `locateAsync` सीधे `urlStableIdKey({ items, locateAsync })` को पास करें (न मिलने पर यह fetch करता है, फिर index लौटाता है)। नीचे का पूरा रूप किसी दूसरे field से key बनाने या पूरे नियंत्रण के लिए है।
+</Callout>
+
+<CodeBlock code={urlState6} language="tsx" />
+
+- लोड कैसे करना है, यह आप पर है — लक्ष्य तक लगातार पेज fetch करें, या सिर्फ़ वही एक इमेज fetch करके जोड़ दें। URL स्थिति से नहीं, पहचान से key बनाता है, इसलिए आइटम जहाँ भी पहुँचे, `findIndex` वही लौटाता है।
+- `locateAsync` के pending रहने तक lightbox बंद रहता है और parameter को छुआ नहीं जाता, इसलिए सीधा लिंक fetch के बाद भी बना रहता है। `null` या rejection parameter हटा देता है।
+- URL आगे बढ़ जाने, बंद होने या unmount के बाद आया जवाब फेंक दिया जाता है — धीमा fetch ऐसी स्लाइड नहीं खोल सकता जो किसी ने माँगी ही नहीं।
+- pending रहने के दौरान कुछ भी रेंडर नहीं होता; लोडिंग की वह स्टेट पेज के पास पहले से है, इसलिए अपना skeleton रेंडर करें।
+- कोई timeout नहीं है — lightbox नहीं जान सकता कि गैलरी कितनी लंबी है। पेज ख़त्म होने पर `null` से निपटाएँ, नहीं तो overlay हमेशा बंद रहेगा।
+- `locateAsync` जो भी लौटाए, वही अंतिम है — अभी fetch किए डेटा का index, `images` दोबारा पढ़े बिना जैसा है वैसा लिया जाता है।
+
+## API रेफ़रेंस [#api-reference]
+
+### LightboxOverlay के props [#lightboxoverlay-props]
+
+<Signature>LightboxOverlayProps</Signature>
+
+| Prop | टाइप | डिफ़ॉल्ट | विवरण |
+| --- | --- | --- | --- |
+| `isOpen` | `boolean` | ज़रूरी | lightbox का दिखना नियंत्रित करता है। URL से चलने वाली खुली स्टेट के लिए इसकी जगह अलग LightboxUrlOverlay इस्तेमाल करें — नीचे URL स्टेट देखें। |
+| `images` | `LightboxItem[]` | ज़रूरी | दिखाई जाने वाली इमेज का array |
+| `ariaLabel` | `string` | 'Image gallery' | dialog क्षेत्र का सुलभ लेबल; lightbox खुलने पर स्क्रीन रीडर इसे बोलते हैं |
+| `initialIndex` | `number` | 0 | शुरुआती इमेज index |
+| `transitionFn` | `TransitionTransformFn` | slideTransition | स्लाइड ट्रांज़िशन फ़ंक्शन। कोई बिल्ट-इन (slideTransition, flipTransition, lightboxFadeTransition, lightboxZoomTransition) import करें या अपना पास करें। छोड़ने पर slideTransition लगता है। |
+| `apiRef` | `MutableRefObject<ReelApi>` | - | Reel API तक पहुँचने के लिए ref |
+| `renderControls` | `(props: ControlsRenderProps) => ReactNode` | - | कस्टम कंट्रोल, डिफ़ॉल्ट बंद करने के बटन, काउंटर और फ़ुलस्क्रीन टॉगल की जगह लेते हैं |
+| `renderNavigation` | `(props: NavigationRenderProps) => ReactNode` | - | कस्टम नेविगेशन, डिफ़ॉल्ट prev/next तीरों की जगह लेता है |
+| `renderInfo` | `(props: InfoRenderProps) => ReactNode` | - | कस्टम जानकारी overlay, डिफ़ॉल्ट शीर्षक + विवरण gradient की जगह लेता है। छिपाने के लिए null लौटाएँ। |
+| `renderSlide` | `(props: SlideRenderProps) => ReactNode \| null` | - | कस्टम स्लाइड रेंडरिंग। \{ item, index, size, isActive, onReady, onWaiting, onError \} मिलता है। डिफ़ॉल्ट पर लौटने के लिए null लौटाएँ। |
+| `renderLoading` | `(props: { item: LightboxItem; activeIndex: number }) => ReactNode` | - | कस्टम लोडिंग इंडिकेटर, डिफ़ॉल्ट spinner की जगह लेता है |
+| `renderError` | `(props: { item: LightboxItem; activeIndex: number }) => ReactNode` | - | कस्टम एरर इंडिकेटर, डिफ़ॉल्ट एरर आइकन की जगह लेता है |
+
+### LightboxUrlOverlay के props [#lightboxurloverlay-props]
+
+<Signature>LightboxUrlOverlayProps</Signature>
+
+ऊपर के सारे दिखावट और व्यवहार वाले props लेता है, सिवाय `isOpen` के, जिसकी जगह `controller` आता है। यहाँ `initialIndex` अनदेखा होता है — स्लाइड कंट्रोलर की स्थिति चुनती है, इसलिए साथ में दी गई value हर बार खुलने पर बदल दी जाती।
+
+| Prop | टाइप | डिफ़ॉल्ट | विवरण |
+| --- | --- | --- | --- |
+| `controller` | `UrlStateController` | ज़रूरी | useOverlayUrlState से मिला कंट्रोलर। इसकी स्थिति तय करती है कि overlay खुला है या नहीं और कौन-सी स्लाइड दिखती है; स्लाइड बदलने और बंद होने पर overlay इसी के ज़रिए वापस लिखता है। |
+
+### Callbacks [#callbacks]
+
+| Prop | टाइप | विवरण |
+| --- | --- | --- |
+| `onClose` | `() => void` | lightbox बंद होने पर कॉल होता है। LightboxOverlay पर ज़रूरी (खुली स्टेट आपके पास है, इसलिए बंद करना आपको संभालना होगा); LightboxUrlOverlay पर वैकल्पिक, जहाँ बंद करना URL चलाता है — इसे सिर्फ़ बंद होने के बाद कुछ करने के लिए पास करें। |
+| `onSlideChange` | `(index: number) => void` | स्लाइड बदलने के बाद कॉल होता है |
+
+### Reel के props (आगे भेजे गए) [#reel-props-proxied]
+
+ये props अंदर के [Reel](/docs/react/api#reel-props) कंपोनेंट को आगे भेजे जाते हैं।
+
+| Prop | टाइप | डिफ़ॉल्ट | विवरण |
+| --- | --- | --- | --- |
+| `loop` | `boolean` | false | अनंत लूप चालू करता है |
+| `enableNavKeys` | `boolean` | true | कीबोर्ड नेविगेशन चालू करता है |
+| `enableWheel` | `boolean` | true | माउस व्हील से नेविगेशन चालू करता है |
+| `wheelDebounceMs` | `number` | 200 | व्हील debounce की अवधि (ms) |
+| `transitionDuration` | `number` | 300 | ट्रांज़िशन एनिमेशन की अवधि (ms) |
+| `swipeDistanceFactor` | `number` | 0.12 | स्वाइप की सीमा (0-1) |
+| `swipeToCloseDirection` | `'up' \| 'down'` | 'up' | मोबाइल पर स्वाइप करके बंद करने वाले जेस्चर की दिशा |
+
+## टाइप [#types]
+
+### LightboxItem [#lightboxitem]
+
+<CodeBlock code={lightboxitem} language="typescript" />
+
+### ControlsRenderProps [#controlsrenderprops]
+
+<CodeBlock code={controlsrenderprops} language="typescript" />
+
+### NavigationRenderProps [#navigationrenderprops]
+
+<CodeBlock code={navigationrenderprops} language="typescript" />
+
+### SlideRenderProps [#sliderenderprops]
+
+<CodeBlock code={sliderenderprops} language="typescript" />
+
+### InfoRenderProps [#inforenderprops]
+
+<CodeBlock code={inforenderprops} language="typescript" />
+
+## सब-कंपोनेंट [#sub-components]
+
+`renderControls` के ज़रिए कस्टम कंट्रोल बनाने के लिए दोबारा इस्तेमाल होने वाले sub-components।
+
+### CloseButton [#closebutton]
+
+डिफ़ॉल्ट X बंद करने का बटन।
+
+<CodeBlock code={closebutton} language="tsx" />
+
+### Counter [#counter]
+
+"1 / 3" दिखाने वाली इमेज काउंटर pill।
+
+<CodeBlock code={counter} language="tsx" />
+
+### FullscreenButton [#fullscreenbutton]
+
+फ़ुलस्क्रीन टॉगल बटन (Maximize/Minimize आइकन)।
+
+<CodeBlock code={fullscreenbutton} language="tsx" />
+
+### SoundButton [#soundbutton]
+
+वीडियो स्लाइड के लिए mute/unmute टॉगल बटन (Volume2/VolumeX आइकन)। `useVideoSlideRenderer` से मिले `renderControls` में अपने-आप शामिल है। कस्टम कंट्रोल के अंदर अलग से इस्तेमाल के लिए `useSoundState` से साउंड स्टेट तक पहुँचें।
+
+<CodeBlock code={soundbutton} language="tsx" />
+
+## Hooks [#hooks]
+
+### useVideoSlideRenderer [#usevideosliderenderer]
+
+opt-in वीडियो सपोर्ट का hook। `renderSlide`, `renderControls` और `SoundProvider` लौटाता है — overlay को SoundProvider में लपेटें और रेंडर फ़ंक्शन पास करें।
+
+<CodeBlock code={usevideosliderenderer} language="typescript" />
+
+### useFullscreen [#usefullscreen]
+
+<Callout type="warning" title="जगह बदली">
+  `useFullscreen` को `@reelkit/react-lightbox` से हटा दिया गया है। इसकी जगह इसे `@reelkit/react` से import करें।
+</Callout>
+
+सभी ब्राउज़र के सपोर्ट के साथ फ़ुलस्क्रीन स्टेट संभालने का hook।
+
+<CodeBlock code={usefullscreen} language="tsx" />
+
+## ट्रांज़िशन [#transitions]
+
+`transitionFn` prop के ज़रिए कोई भी `TransitionTransformFn` पास करें। सिर्फ़ इस्तेमाल होने वाला ट्रांज़िशन import करने से bundler बाकी को tree-shake कर देता है। छोड़ने पर `slideTransition` लगता है।
+
+| फ़ंक्शन | कहाँ से | विवरण |
+| --- | --- | --- |
+| `slideTransition` | `@reelkit/react-lightbox` | सामान्य हॉरिज़ॉन्टल स्लाइड (डिफ़ॉल्ट) |
+| `lightboxFadeTransition` | `@reelkit/react-lightbox` | इमेज के बीच crossfade |
+| `flipTransition` | `@reelkit/react-lightbox` | 3D कार्ड पलटने का इफ़ेक्ट |
+| `lightboxZoomTransition` | `@reelkit/react-lightbox` | छोटे से सामान्य आकार तक zoom in |
+
+<CodeBlock code={transitions} language="tsx" />
+
+### कस्टम ट्रांज़िशन फ़ंक्शन [#custom-transition-function]
+
+अपना `TransitionTransformFn` लिखें और `transitionFn` के ज़रिए पास करें। इसका signature core स्लाइडर ट्रांज़िशन जैसा ही है।
+
+<CodeBlock code={customTransitionFunction} language="tsx" />
+
+## CSS क्लास [#css-classes]
+
+सारे UI एलिमेंट साधारण CSS क्लास इस्तेमाल करते हैं (CSS modules नहीं), जिन्हें `@reelkit/react-lightbox/styles.css` के बाद लोड होने वाली stylesheet में ज़्यादा specificity वाले selectors से निशाना बनाया जा सकता है। रंग, आकार और z-index बदलने के लिए नीचे [थीमिंग](#theming) हिस्से में बताई CSS custom properties को प्राथमिकता दें।
+
+| क्लास | कंपोनेंट | विवरण |
+| --- | --- | --- |
+| `.rk-lightbox-overlay` | Overlay | Root कंटेनर (फ़ुलस्क्रीन backdrop) |
+| `.rk-lightbox-spinner` | Overlay | डिफ़ॉल्ट लोडिंग spinner |
+| `.rk-lightbox-img-error` | Overlay | एरर स्टेट का कंटेनर (टूटी इमेज/वीडियो) |
+| `.rk-lightbox-img-error-text` | Overlay | एरर स्टेट का टेक्स्ट लेबल |
+| `.rk-lightbox-swipe-hint` | Overlay | मोबाइल पर स्वाइप का संकेत |
+| `.rk-lightbox-controls-left` | Controls | ऊपर-बाएँ कंट्रोल का कंटेनर |
+| `.rk-lightbox-btn` | Controls | कंट्रोल बटन (फ़ुलस्क्रीन वगैरह) |
+| `.rk-lightbox-close` | Controls | बंद करने का बटन |
+| `.rk-lightbox-counter` | Controls | इमेज काउंटर chip |
+| `.rk-lightbox-nav` | Navigation | नेविगेशन तीर (दोनों) |
+| `.rk-lightbox-nav-prev` | Navigation | पिछला तीर |
+| `.rk-lightbox-nav-next` | Navigation | अगला तीर |
+| `.rk-lightbox-info` | Info | शीर्षक/विवरण का कंटेनर |
+| `.rk-lightbox-title` | Info | इमेज का शीर्षक |
+| `.rk-lightbox-description` | Info | इमेज का विवरण |
+| `.rk-lightbox-slide` | Slide | स्लाइड कंटेनर |
+| `.rk-lightbox-img` | Slide | इमेज एलिमेंट |
+| `.rk-lightbox-video-container` | VideoSlide | वीडियो स्लाइड कंटेनर (opt-in) |
+| `.rk-lightbox-video-element` | VideoSlide | वीडियो एलिमेंट (opt-in) |
+| `.rk-lightbox-video-poster` | VideoSlide | वीडियो की poster इमेज (opt-in) |
+
+## थीमिंग [#theming]
+
+हर रंग, आकार, z-index और ट्रांज़िशन एक CSS custom property में है। कंपोनेंट का source छुए बिना थीम बदलने के लिए `:root` (या lightbox के किसी भी ancestor) पर एक या कई override करें।
+
+| Token | डिफ़ॉल्ट | क्या नियंत्रित करता है |
+| --- | --- | --- |
+| `--rk-lightbox-overlay-bg` | `#000` | फ़ुलस्क्रीन backdrop का रंग |
+| `--rk-lightbox-overlay-z` | `9999` | Overlay का z-index |
+| `--rk-lightbox-top-shade-height` | `80px` | ऊपर के gradient की ऊँचाई |
+| `--rk-lightbox-top-shade-bg` | `linear-gradient(rgba(0,0,0,0.6), transparent)` | ऊपर के gradient का रंग |
+| `--rk-lightbox-edge-padding` | `16px` | बंद / नेविगेशन / ऊपर-बाएँ कंट्रोल की किनारे से दूरी |
+| `--rk-lightbox-controls-gap` | `12px` | ऊपर-बाएँ कंट्रोल के बीच की दूरी |
+| `--rk-lightbox-transition` | `0.2s` | बटन hover ट्रांज़िशन की अवधि |
+| `--rk-lightbox-blur` | `8px` | बटन / chips के backdrop blur का radius |
+| `--rk-lightbox-btn-bg` | `rgba(0, 0, 0, 0.5)` | बंद, नेविगेशन और छोटे बटन का डिफ़ॉल्ट background |
+| `--rk-lightbox-btn-bg-hover` | `rgba(255, 255, 255, 0.2)` | बंद, नेविगेशन और छोटे बटन का hover background |
+| `--rk-lightbox-btn-fg` | `#fff` | बंद, नेविगेशन और छोटे बटन के आइकन का रंग |
+| `--rk-lightbox-btn-size` | `36px` | छोटे बटन का आकार (फ़ुलस्क्रीन टॉगल वगैरह) |
+| `--rk-lightbox-close-size` | `40px` | बंद करने के बटन का आकार |
+| `--rk-lightbox-nav-size` | `48px` | prev/next तीर का आकार |
+| `--rk-lightbox-nav-opacity` | `0.7` | आराम की हालत में prev/next तीरों की opacity |
+| `--rk-lightbox-counter-fg` | `#fff` | काउंटर के टेक्स्ट का रंग |
+| `--rk-lightbox-counter-bg` | `rgba(0, 0, 0, 0.5)` | काउंटर chip का background |
+| `--rk-lightbox-counter-size` | `14px` | काउंटर का font size |
+| `--rk-lightbox-counter-padding` | `6px 12px` | काउंटर chip की padding |
+| `--rk-lightbox-counter-radius` | `20px` | काउंटर chip का border-radius |
+| `--rk-lightbox-spinner-size` | `28px` | डिफ़ॉल्ट spinner की चौड़ाई/ऊँचाई |
+| `--rk-lightbox-spinner-track` | `rgba(255, 255, 255, 0.2)` | spinner track का रंग |
+| `--rk-lightbox-spinner-fg` | `#fff` | spinner इंडिकेटर का रंग |
+| `--rk-lightbox-spinner-duration` | `0.8s` | spinner के घूमने की अवधि |
+| `--rk-lightbox-error-fg` | `rgba(255, 255, 255, 0.4)` | एरर आइकन + टेक्स्ट का रंग |
+| `--rk-lightbox-error-text-size` | `13px` | एरर संदेश का font size |
+| `--rk-lightbox-info-bg` | `linear-gradient(transparent, rgba(0,0,0,0.8))` | कैप्शन के पीछे का gradient |
+| `--rk-lightbox-info-padding` | `24px` | कैप्शन की अंदरूनी padding |
+| `--rk-lightbox-title-size` | `18px` | शीर्षक का font size |
+| `--rk-lightbox-description-size` | `14px` | विवरण का font size |
+| `--rk-lightbox-info-fg` | `#fff` | कैप्शन के टेक्स्ट का रंग |
+| `--rk-lightbox-hint-fg` | `rgba(255, 255, 255, 0.5)` | स्वाइप संकेत के टेक्स्ट का रंग |
+| `--rk-lightbox-hint-bg` | `rgba(0, 0, 0, 0.3)` | स्वाइप संकेत chip का background |
+| `--rk-lightbox-hint-duration` | `3s` | स्वाइप संकेत के दिखने/छिपने की कुल अवधि |
+| `--rk-lightbox-video-bg` | `#000` | \<video> के पीछे letterbox background |
+
+नीचे का snippet `@reelkit/react-lightbox/styles.css` के बाद लोड होने वाली stylesheet में डालें।
+
+<CodeBlock code={theming} language="css" />
+
+## सुलभता [#accessibility]
+
+Overlay का root एक modal dialog है (`role="dialog"`, `aria-modal="true"`)। स्क्रीन रीडर की घोषणा बदलने के लिए `ariaLabel` सेट करें; डिफ़ॉल्ट "Image gallery" है। हर स्लाइड पर `role="group"`, `aria-roledescription="slide"` और `aria-label="Image N of M"` होते हैं।
+
+Lightbox खुलने पर फ़ोकस पकड़ता है और बंद होने पर उसे trigger पर लौटा देता है। Tab और Shift+Tab अंदर के फ़ोकस होने वाले एलिमेंट में घूमते हैं; बाहर निकला फ़ोकस (बाहर क्लिक, प्रोग्राम से फ़ोकस) वापस खींच लिया जाता है। यह `@reelkit/core` के `captureFocusForReturn` और `createFocusTrap` से बना है।
+
+## कीबोर्ड शॉर्टकट [#keyboard-shortcuts]
+
+| कुंजी | क्रिया |
+| --- | --- |
+| `ArrowLeft` | पिछली इमेज |
+| `ArrowRight` | अगली इमेज |
+| `Escape` | lightbox बंद करें (या चालू हो तो फ़ुलस्क्रीन से बाहर आएँ) |

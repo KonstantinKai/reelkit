@@ -8,7 +8,7 @@
  * hreflang set and the canonical builder all read from these, so none of them
  * grows a branch per language.
  */
-export const kLocales = ['en', 'uk', 'zh', 'pt', 'ja'] as const;
+export const kLocales = ['en', 'uk', 'zh', 'pt', 'ja', 'hi'] as const;
 
 export type Locale = (typeof kLocales)[number];
 
@@ -20,7 +20,9 @@ export const kDefaultLocale: Locale = 'en';
  * and the docs are written for anyone who reads the language. Japanese needs
  * no region either, and the tag does more than label the page: browsers pick
  * Japanese glyph forms for the characters it shares with Chinese only when
- * the text is tagged `ja`.
+ * the text is tagged `ja`. Hindi has one standard written form, so `hi` is
+ * enough, and the tag is what picks a Devanagari font and a Hindi voice for
+ * screen readers.
  */
 export const kLocaleTags: Record<Locale, string> = {
   en: 'en',
@@ -28,6 +30,7 @@ export const kLocaleTags: Record<Locale, string> = {
   uk: 'uk',
   pt: 'pt',
   ja: 'ja',
+  hi: 'hi',
 };
 
 /** Name of each language, written in that language. */
@@ -37,6 +40,7 @@ export const kLocaleNames: Record<Locale, string> = {
   uk: 'Українська',
   pt: 'Português',
   ja: '日本語',
+  hi: 'हिन्दी',
 };
 
 const _kPrefixes: Record<Locale, string> = {
@@ -45,6 +49,7 @@ const _kPrefixes: Record<Locale, string> = {
   uk: '/uk',
   pt: '/pt',
   ja: '/ja',
+  hi: '/hi',
 };
 
 /** URL prefix for a locale — empty for English, the language code otherwise. */

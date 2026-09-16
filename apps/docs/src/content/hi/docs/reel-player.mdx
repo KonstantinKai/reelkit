@@ -1,0 +1,569 @@
+---
+title: Reel Player
+description: React के लिए फ़ुलस्क्रीन TikTok/Reels जैसा वीडियो reel प्लेयर overlay। ContentItem schema, props, callbacks, slot renderers, कीबोर्ड शॉर्टकट, थीमिंग tokens और CSS क्लास।
+---
+
+import { Zap, Play, Volume2, Layout, Clock, Image, Layers, Ratio, Monitor, Code, Settings, Link2 } from 'lucide-react';
+import { ReelPlayerDemo } from '../../../components/demos/ReelPlayerDemo';
+import installation from '../../snippets/reel-player/installation.sh?raw';
+import installation2 from '../../snippets/reel-player/installation-2.ts?raw';
+import quickStart from '../../snippets/reel-player/quick-start.tsx?raw';
+import fullCode from '../../snippets/reel-player/full-code.tsx?raw';
+import genericContentType from '../../snippets/reel-player/generic-content-type.tsx?raw';
+import customSlideOverlay from '../../snippets/reel-player/custom-slide-overlay.tsx?raw';
+import nonMediaSlides from '../../snippets/reel-player/non-media-slides.tsx?raw';
+import customControls from '../../snippets/reel-player/custom-controls.tsx?raw';
+import customTimeline from '../../snippets/reel-player/custom-timeline.tsx?raw';
+import customNavigation from '../../snippets/reel-player/custom-navigation.tsx?raw';
+import customNestedNavigation from '../../snippets/reel-player/custom-nested-navigation.tsx?raw';
+import customNestedSlides from '../../snippets/reel-player/custom-nested-slides.tsx?raw';
+import urlState from '../../snippets/reel-player/url-state.tsx?raw';
+import oneKeyOrTwo from '../../snippets/reel-player/one-key-or-two.tsx?raw';
+import oneKeyOrTwo2 from '../../snippets/reel-player/one-key-or-two-2.tsx?raw';
+import oneKeyOrTwo3 from '../../snippets/reel-player/one-key-or-two-3.tsx?raw';
+import oneKeyOrTwo4 from '../../snippets/reel-player/one-key-or-two-4.tsx?raw';
+import oneKeyOrTwo5 from '../../snippets/reel-player/one-key-or-two-5.tsx?raw';
+import basecontentitem from '../../snippets/reel-player/basecontentitem.ts?raw';
+import contentitem from '../../snippets/reel-player/contentitem.ts?raw';
+import mediaitem from '../../snippets/reel-player/mediaitem.ts?raw';
+import mediatype from '../../snippets/reel-player/mediatype.ts?raw';
+import controlsrenderpropsT from '../../snippets/reel-player/controlsrenderprops-t.ts?raw';
+import navigationrenderprops from '../../snippets/reel-player/navigationrenderprops.ts?raw';
+import sliderenderpropsT from '../../snippets/reel-player/sliderenderprops-t.ts?raw';
+import nestedsliderenderprops from '../../snippets/reel-player/nestedsliderenderprops.ts?raw';
+import slideoverlayprops from '../../snippets/reel-player/slideoverlayprops.ts?raw';
+import imageslideprops from '../../snippets/reel-player/imageslideprops.ts?raw';
+import videoslideprops from '../../snippets/reel-player/videoslideprops.ts?raw';
+import closebuttonprops from '../../snippets/reel-player/closebuttonprops.ts?raw';
+import soundbuttonprops from '../../snippets/reel-player/soundbuttonprops.ts?raw';
+import timelinebarprops from '../../snippets/reel-player/timelinebarprops.ts?raw';
+import timelinerenderpropsT from '../../snippets/reel-player/timelinerenderprops-t.ts?raw';
+import closebutton from '../../snippets/reel-player/closebutton.tsx?raw';
+import soundbutton from '../../snippets/reel-player/soundbutton.tsx?raw';
+import timelinebar from '../../snippets/reel-player/timelinebar.tsx?raw';
+import slideoverlay from '../../snippets/reel-player/slideoverlay.tsx?raw';
+import imageslide from '../../snippets/reel-player/imageslide.tsx?raw';
+import videoslide from '../../snippets/reel-player/videoslide.tsx?raw';
+import videoslide2 from '../../snippets/reel-player/videoslide-2.tsx?raw';
+import lifecycleCallbacks from '../../snippets/reel-player/lifecycle-callbacks.tsx?raw';
+import customLoadingErrorUi from '../../snippets/reel-player/custom-loading-error-ui.tsx?raw';
+import timeline from '../../snippets/reel-player/timeline.tsx?raw';
+import soundContext from '../../snippets/reel-player/sound-context.tsx?raw';
+import theming from '../../snippets/reel-player/theming.css?raw';
+
+`@reelkit/react-reel-player` से बना, Instagram Reel/TikTok जैसा फ़ुलस्क्रीन वीडियो प्लेयर कंपोनेंट।
+
+<DemoLink href="https://react-demo.reelkit.dev/reel-player?utm_source=docs">लाइव डेमो देखें →</DemoLink>
+
+## फ़ीचर [#features]
+
+<FeatureGrid items={[
+              {
+                icon: Zap,
+                label: 'वर्टिकल स्वाइप',
+                desc: 'टच, खींचना, कीबोर्ड, व्हील',
+              },
+              {
+                icon: Play,
+                label: 'वीडियो autoplay',
+                desc: 'दिखते ही चलता है',
+              },
+              { icon: Volume2, label: 'साउंड टॉगल', desc: 'iOS पर आवाज़ बनी रहती है' },
+              {
+                icon: Layout,
+                label: 'मल्टी-मीडिया',
+                desc: 'हॉरिज़ॉन्टल nested carousels',
+              },
+              {
+                icon: Clock,
+                label: 'स्थिति याद रखना',
+                desc: 'जहाँ छोड़ा था, वहीं से शुरू',
+              },
+              {
+                icon: Image,
+                label: 'फ़्रेम कैप्चर',
+                desc: 'poster से वीडियो तक crossfade',
+              },
+              {
+                icon: Layers,
+                label: 'वर्चुअलाइज़्ड',
+                desc: 'DOM में सिर्फ़ 3 स्लाइड',
+              },
+              {
+                icon: Ratio,
+                label: 'Aspect ratio',
+                desc: 'डेस्कटॉप पर 9:16, मोबाइल पर पूरी स्क्रीन',
+              },
+              { icon: Monitor, label: 'डेस्कटॉप नेविगेशन', desc: 'तीर वाले बटन' },
+              {
+                icon: Code,
+                label: 'Generic टाइप',
+                desc: 'कंटेंट के कस्टम डेटा मॉडल',
+              },
+              {
+                icon: Settings,
+                label: 'कस्टमाइज़ करने लायक',
+                desc: 'हर चीज़ के लिए render props',
+              },
+              {
+                icon: Zap,
+                label: 'स्लाइड overlay',
+                desc: 'लेखक, लाइक, विवरण',
+              },
+              {
+                icon: Link2,
+                label: 'URL स्टेट',
+                desc: 'शेयर और bookmark करने लायक लिंक',
+              },
+            ]} />
+
+## इंस्टॉलेशन [#installation]
+
+<CodeBlock code={installation} language="bash" />
+
+styles import करना न भूलें:
+
+<CodeBlock code={installation2} language="typescript" />
+
+<Callout type="info" title="आइकन">
+  डिफ़ॉल्ट कंट्रोल आइकन के लिए `lucide-react` इस्तेमाल करते हैं। अगर आप कोई और आइकन लाइब्रेरी पसंद करते हैं, तो अपने कंट्रोल देने के लिए `renderControls` और `renderNavigation` इस्तेमाल करें।
+</Callout>
+
+## क्विक स्टार्ट [#quick-start]
+
+`ReelPlayerOverlay` कंपोनेंट फ़ुलस्क्रीन प्लेयर overlay रेंडर करता है। `ContentItem` objects का array पास करें और `isOpen` से दिखना नियंत्रित करें।
+
+<CodeBlock code={quickStart} language="tsx" />
+
+## लाइव डेमो [#live-demo]
+
+<Sandbox
+  code={fullCode}
+  title="ReelPlayerPage.tsx"
+  height={500}
+  stackblitzDeps={['@reelkit/react-reel-player']}
+  stackblitzExtraDeps={{ 'lucide-react': '^0.562.0' }}
+>
+  <ReelPlayerDemo />
+</Sandbox>
+
+<Caption>फ़ुलस्क्रीन प्लेयर खोलने के लिए किसी थंबनेल पर क्लिक करें। वापस आने के लिए Escape या बंद करने का बटन दबाएँ।</Caption>
+
+## कस्टमाइज़ेशन [#customization]
+
+### Generic कंटेंट टाइप [#generic-content-type]
+
+`BaseContentItem` को extend करके कस्टम डेटा टाइप इस्तेमाल करें:
+
+<CodeBlock code={genericContentType} language="tsx" />
+
+### कस्टम स्लाइड overlay [#custom-slide-overlay]
+
+बिल्ट-इन स्लाइड overlay की जगह हर स्लाइड पर अपना कंटेंट दिखाएँ:
+
+<CodeBlock code={customSlideOverlay} language="tsx" />
+
+### बिना मीडिया वाली स्लाइड [#non-media-slides]
+
+कस्टम कंटेंट (जैसे CTA कार्ड) डालने के लिए `renderSlide` इस्तेमाल करें। डिफ़ॉल्ट पर लौटने के लिए `null` लौटाएँ:
+
+<CodeBlock code={nonMediaSlides} language="tsx" />
+
+### कस्टम कंट्रोल [#custom-controls]
+
+दोबारा इस्तेमाल होने वाले sub-components को अपनी चीज़ों के साथ जोड़ें:
+
+<CodeBlock code={customControls} language="tsx" />
+
+### कस्टम टाइमलाइन [#custom-timeline]
+
+`renderTimeline` के ज़रिए बिल्ट-इन प्लेबैक बार की जगह अपना scrub UI लगाएँ। Callback सिर्फ़ तब चलता है जब overlay के नियम डिफ़ॉल्ट बार रेंडर करते (वही `timeline` मोड + `timelineMinDurationSeconds` logic), इसलिए आपको इसे दोबारा नहीं लिखना पड़ता। नीचे से सटी स्थिति, safe-area padding और टच डिवाइस पर स्लाइड overlay से दूरी पाने के लिए अपने root पर `.rk-reel-timeline` class दोबारा इस्तेमाल करें।
+
+<CodeBlock code={customTimeline} language="tsx" />
+
+### कस्टम नेविगेशन [#custom-navigation]
+
+<CodeBlock code={customNavigation} language="tsx" />
+
+### कस्टम nested नेविगेशन [#custom-nested-navigation]
+
+मल्टी-मीडिया स्लाइड (हॉरिज़ॉन्टल carousel) के अंदर बाएँ/दाएँ तीरों की जगह अपना नेविगेशन लगाएँ:
+
+<CodeBlock code={customNestedNavigation} language="tsx" />
+
+### कस्टम nested स्लाइड [#custom-nested-slides]
+
+`renderNestedSlide` से मल्टी-मीडिया carousels के अंदर की अलग-अलग स्लाइड कस्टमाइज़ करें। डिफ़ॉल्ट ImageSlide/VideoSlide को लपेटने के लिए `props.defaultContent` इस्तेमाल करें, या उसे पूरी तरह बदल दें:
+
+<CodeBlock code={customNestedSlides} language="tsx" />
+
+## URL स्टेट [#url-state]
+
+<DemoLink href="https://react-demo.reelkit.dev/reel-player-url?utm_source=docs">लाइव डेमो देखें →</DemoLink>
+
+`ReelPlayerUrlOverlay` एक अलग कंपोनेंट है जिसकी खुले होने की स्टेट address bar में रहती है। `@reelkit/react` के `useOverlayUrlState` से कंट्रोलर बनाएँ और उसे `controller` के रूप में दें: जब parameter किसी स्लाइड का नाम लेता है तो प्लेयर खुद खुलता है, और उसके हटते ही बंद हो जाता है। लिंक शेयर किए जा सकते हैं, और back बटन पेज छोड़ने के बजाय प्लेयर बंद करता है।
+
+<Callout type="info" title="बिल्ट-इन keys">
+  आप बिल्ट-इन key से स्लाइडों को पहचान सकते हैं — कंट्रोलर में `urlIndexKey` (स्थिति से) या `urlStableIdKey` (स्थिर `id` से) spread करें — दोनों `@reelkit/react` से भी export होते हैं। [URL स्टेट गाइड](/docs/core/guide#url-state) और [Core API](/docs/core/api#url-state) देखें।
+</Callout>
+
+<CodeBlock code={urlState} language="tsx" />
+
+`useOverlayUrlState` के सारे विकल्प — `param`, `adapter`, `codec`, `locator` — [React API रेफ़रेंस](/docs/react/api#useoverlayurlstate) में हैं। पूरी जानकारी [React गाइड](/docs/react/guide#url-state) में है।
+
+- खोलने पर history में **एक** entry जुड़ती है। फ़ीड स्वाइप करना उसे **बदल देता है**, इसलिए N स्वाइप कोई entry नहीं जोड़ते और back का एक कदम हमेशा प्लेयर छोड़ देता है। Back बंद करता है; स्लाइड नहीं बदलता।
+- Back सिर्फ़ तब बंद करता है जब प्लेयर ऐप के अंदर से खोला गया हो — लिंक ने entry जोड़ी हो। नए tab में सीधे खोले गए शेयर किए गए लिंक के पीछे कोई history नहीं होती, इसलिए ब्राउज़र का back साइट छोड़ देता है; ✕ बटन या Escape parameter को उसी जगह हटाकर पेज पर बना रहता है।
+- सीधा लिंक `?reel=3` लोड होते ही प्लेयर को उसी स्लाइड पर खोलता है।
+- किसी स्लाइड का नाम न लेने वाला parameter — पुराना bookmark, हाथ से बदली value — URL से हटा दिया जाता है, ताकि address bar ऐसी स्लाइड का दावा न करता रहे जो खुल ही नहीं सकती।
+- डिफ़ॉल्ट रूप से parameter सिर्फ़ **वर्टिकल** पोस्ट को पहचानता है (`?reel=3`)। मल्टी-मीडिया carousel का अंदरूनी मीडिया index भी रखने के लिए दो-अक्ष वाली key चुनें — नीचे देखें।
+
+### एक key या दो — URL की गहराई चुनें [#one-key-or-two-pick-your-url-depth]
+
+वही `ReelPlayerUrlOverlay` दोनों रूप चलाता है; यह चलते समय कंट्रोलर की स्थिति से फ़र्क पहचानता है, इसलिए कोई mode prop नहीं है। कंट्रोलर बनाते समय key चुनें:
+
+| Key | Wire | क्या रखता है |
+| --- | --- | --- |
+| `urlIndexKey(…)` | `?reel=3` | सिर्फ़ वर्टिकल पोस्ट। |
+| `urlIndexTwoAxisKey(…)` | `?reel=3.2` | पोस्ट *और* carousel का अंदरूनी मीडिया index। |
+
+दोनों wire जानबूझकर अलग हैं — दो-अक्ष वाली key सख़्ती से बिंदु वाली है (`3.0`, कभी अकेला `3` नहीं), इसलिए एक-अक्ष वाला साधारण लिंक दूसरे रूप में decode नहीं होता। इसलिए ऐप में key बदलने से पहले शेयर किए गए सारे लिंक बेकार हो जाते हैं। एक रूप चुनें और उसी पर टिके रहें।
+
+<CodeBlock code={oneKeyOrTwo} language="tsx" />
+
+**Routing वाला ऐप — adapter पास करें।** router के पीछे `history.pushState` लिखने से उसकी location पुरानी पड़ जाती है, और उसका अगला नेविगेशन parameter गिरा देता है:
+
+<CodeBlock code={oneKeyOrTwo2} language="tsx" />
+
+**स्थिर लिंक।** Index स्थिति पर आधारित है, इसलिए फ़ीड का क्रम बदलते ही bookmark किया गया `?reel=3` कोई दूसरी पोस्ट खोलता है — फ़ीड के लिए यह अपवाद नहीं, आम बात है। `urlStableIdKey` हर पोस्ट की स्थिर `id` से key बनाता है और मौजूदा फ़ीड में ढूँढता है — आम मामले के लिए एक कॉल काफ़ी है।
+
+<CodeBlock code={oneKeyOrTwo3} language="tsx" />
+
+URL में id को base64url में encode करने के लिए `hashCodec: base64UrlCodec` पास करें — वापस पढ़ा जा सकने वाला छिपाव, cryptographic hash नहीं।
+
+किसी दूसरे field (`slug`) से key बनाएँ, या `locateAsync` से अनंत फ़ीड के पेज लोड करें, और `codec`/`locator` खुद बनाएँ। दो अलग काम: `codec` पहचान को URL में लिखता है, `locator` ढूँढता है कि वह पहचान कहाँ है।
+
+<CodeBlock code={oneKeyOrTwo4} language="tsx" />
+
+**अनंत फ़ीड।** `locate` synchronous है, इसलिए यह सिर्फ़ लोड हो चुकी पोस्ट के लिए जवाब दे सकता है — जिस फ़ीड में 20 पोस्ट लोड हुई हैं, उसकी पोस्ट 400 का शेयर किया गया लिंक खाली लौटता है। `locateAsync` विकल्प है, जो सिर्फ़ `locate` के न मिलने पर कॉल होता है।
+
+<Callout type="info" title="छोटा रास्ता">
+  आइटम की `id` से key बना रहे हैं? अपना codec और locator लिखना छोड़ें — `locateAsync` सीधे `urlStableIdKey({ items, locateAsync })` को पास करें (न मिलने पर यह fetch करता है, फिर index लौटाता है)। नीचे का पूरा रूप किसी दूसरे field से key बनाने या पूरे नियंत्रण के लिए है।
+</Callout>
+
+<CodeBlock code={oneKeyOrTwo5} language="tsx" />
+
+- `locateAsync` के pending रहने तक प्लेयर बंद रहता है और parameter को छुआ नहीं जाता, इसलिए सीधा लिंक fetch के बाद भी बना रहता है। `null` या rejection parameter हटा देता है।
+- URL आगे बढ़ जाने, बंद होने या unmount के बाद आया जवाब फेंक दिया जाता है — धीमा fetch ऐसी स्लाइड नहीं खोल सकता जो किसी ने माँगी ही नहीं।
+- pending रहने के दौरान कुछ भी रेंडर नहीं होता; लोडिंग की वह स्टेट पेज के पास पहले से है, इसलिए अपना skeleton रेंडर करें।
+- कोई timeout नहीं है — प्लेयर नहीं जान सकता कि फ़ीड कितनी लंबी है। पेज ख़त्म होने पर `null` से निपटाएँ, नहीं तो overlay हमेशा बंद रहेगा।
+
+## API रेफ़रेंस [#api-reference]
+
+### ReelPlayerOverlayProps के props [#reelplayeroverlayprops-props]
+
+<Signature>ReelPlayerOverlayProps\<T></Signature>
+
+| Prop | टाइप | डिफ़ॉल्ट | विवरण |
+| --- | --- | --- | --- |
+| `apiRef` | `MutableRefObject<ReelApi>` | - | Reel API तक पहुँचने के लिए ref |
+| `ariaLabel` | `string` | 'Video player' | dialog क्षेत्र का सुलभ लेबल; overlay खुलने पर स्क्रीन रीडर इसे बोलते हैं |
+| `aspectRatio` | `number` | 9/16 (0.5625) | डेस्कटॉप पर प्लेयर कंटेनर का चौड़ाई/ऊँचाई अनुपात। मोबाइल पर प्लेयर हमेशा पूरा viewport लेता है। |
+| `content` | `T[]` | ज़रूरी | कंटेंट आइटम का array (generic, डिफ़ॉल्ट ContentItem) |
+| `initialIndex` | `number` | 0 | शुरुआती स्लाइड index |
+| `initialInnerIndex` | `number` | 0 | अंदरूनी मीडिया index जिस पर खोलना है, सिर्फ़ शुरू में दिखने वाली पोस्ट के लिए — इससे दो-अक्ष वाला URL मल्टी-मीडिया पोस्ट की किसी खास इमेज पर सीधे ले जा सकता है। प्लेयर खुलने और यूज़र के नेविगेट करने के बाद अनदेखा होता है। |
+| `isOpen` | `boolean` | ज़रूरी | overlay का दिखना नियंत्रित करता है। URL से चलने वाली खुली स्टेट के लिए इसकी जगह अलग ReelPlayerUrlOverlay इस्तेमाल करें — नीचे URL स्टेट देखें। |
+| `timeline` | `'auto' \| 'always' \| 'never'` | 'auto' | बिल्ट-इन प्लेबैक टाइमलाइन बार दिखाने का नियम। 'auto' सिर्फ़ timelineMinDurationSeconds से लंबे वीडियो पर रेंडर करता है; 'always' जब भी सक्रिय स्लाइड में वीडियो हो; 'never' बिल्ट-इन बार बंद करता है (पूरी तरह कस्टम बार के लिए renderTimeline इस्तेमाल करें)। |
+| `timelineMinDurationSeconds` | `number` | 30 | timeline='auto' में बिल्ट-इन बार दिखाने के लिए वीडियो की न्यूनतम अवधि (सेकंड)। इससे छोटी लूप होने वाली क्लिप पर बार नहीं दिखता। |
+| `renderControls` | `(props: ControlsRenderProps) => ReactNode` | - | कस्टम कंट्रोल, डिफ़ॉल्ट बंद + साउंड बटन की जगह लेते हैं |
+| `renderError` | `(props: { item: T; activeIndex: number }) => ReactNode` | - | कस्टम एरर इंडिकेटर, डिफ़ॉल्ट एरर आइकन की जगह लेता है |
+| `renderLoading` | `(props: { item: T; activeIndex: number }) => ReactNode` | - | कस्टम लोडिंग इंडिकेटर, डिफ़ॉल्ट wave loader की जगह लेता है |
+| `renderNavigation` | `(props: NavigationRenderProps) => ReactNode` | - | कस्टम नेविगेशन, डिफ़ॉल्ट वर्टिकल तीरों की जगह लेता है |
+| `renderNestedNavigation` | `(props: NavigationRenderProps) => ReactNode` | - | nested हॉरिज़ॉन्टल स्लाइडर (मल्टी-मीडिया पोस्ट) का कस्टम नेविगेशन, डिफ़ॉल्ट बाएँ/दाएँ तीरों की जगह लेता है |
+| `renderNestedSlide` | `(props: NestedSlideRenderProps) => ReactNode` | - | nested हॉरिज़ॉन्टल स्लाइडर के आइटम का कस्टम स्लाइड renderer। डिफ़ॉल्ट ImageSlide/VideoSlide को लपेटने या अंदर रखने के लिए props.defaultContent इस्तेमाल करें। renderSlide के उलट, null को डिफ़ॉल्ट पर लौटना नहीं माना जाता। |
+| `renderSlide` | `(props: SlideRenderProps) => ReactNode \| null` | - | कस्टम स्लाइड रेंडरिंग। डिफ़ॉल्ट पर लौटने के लिए null लौटाएँ। डिफ़ॉल्ट स्लाइड को लपेटने या अंदर रखने के लिए props.defaultContent इस्तेमाल करें। |
+| `renderSlideOverlay` | `(item, index, isActive) => ReactNode` | - | हर स्लाइड का कस्टम overlay, डिफ़ॉल्ट SlideOverlay की जगह लेता है। छिपाने के लिए null लौटाएँ। |
+| `renderTimeline` | `(props: TimelineRenderProps) => ReactNode` | - | कस्टम प्लेबैक टाइमलाइन बार। सिर्फ़ तब चलता है जब नियम डिफ़ॉल्ट बार रेंडर करते (वही auto/always/never + timelineMinDurationSeconds logic)। बिल्ट-इन \<TimelineBar /> को लपेटने के लिए props.defaultContent इस्तेमाल करें; छिपाने के लिए null लौटाएँ। |
+
+### ReelPlayerUrlOverlay के props [#reelplayerurloverlay-props]
+
+<Signature>ReelPlayerUrlOverlayProps\<T></Signature>
+
+ऊपर के सारे दिखावट और व्यवहार वाले props लेता है, सिवाय `isOpen` के, जिसकी जगह `controller` है। `initialIndex` अनदेखा होता है — स्लाइड कंट्रोलर की स्थिति चुनती है, इसलिए साथ में दी गई value हर बार खुलने पर बदल दी जाती है।
+
+| Prop | टाइप | डिफ़ॉल्ट | विवरण |
+| --- | --- | --- | --- |
+| `controller` | `UrlStateController` | `required` | useOverlayUrlState से मिला कंट्रोलर। इसकी स्थिति तय करती है कि overlay खुला है या नहीं और कौन-सी स्लाइड दिखती है; स्लाइड बदलने और बंद होने पर overlay इसी के ज़रिए वापस लिखता है। |
+
+### Callbacks [#callbacks]
+
+| Prop | टाइप | विवरण |
+| --- | --- | --- |
+| `onClose` | `() => void` | प्लेयर बंद होने पर कॉल होता है। ReelPlayerOverlay पर ज़रूरी (खुली स्टेट आपके पास है, इसलिए बंद करना आपको संभालना होगा); ReelPlayerUrlOverlay पर वैकल्पिक, जहाँ बंद करना URL चलाता है — इसे सिर्फ़ बंद होने के बाद कुछ करने के लिए पास करें। |
+| `onSlideChange` | `(index: number) => void` | स्लाइड बदलने के बाद कॉल होता है |
+| `onInnerSlideChange` | `(outerIndex: number, innerIndex: number) => void` | सक्रिय पोस्ट का अंदरूनी मीडिया index बदलने पर कॉल होता है — मल्टी-मीडिया पोस्ट के अंदर नेविगेशन पर, और बाहरी सक्रियता पर, सक्रिय हुई पोस्ट का मौजूदा अंदरूनी index बताते हुए (एक मीडिया वाली पोस्ट के लिए 0)। |
+
+### Reel के props (आगे भेजे गए) [#reel-props-proxied]
+
+ये props अंदर के [Reel](/docs/react/api#reel-props) कंपोनेंट को आगे भेजे जाते हैं।
+
+| Prop | टाइप | डिफ़ॉल्ट | विवरण |
+| --- | --- | --- | --- |
+| `enableNavKeys` | `boolean` | true | कीबोर्ड नेविगेशन चालू करता है |
+| `enableWheel` | `boolean` | true | माउस व्हील से नेविगेशन चालू करता है |
+| `loop` | `boolean` | false | अनंत लूप चालू करता है |
+| `swipeDistanceFactor` | `number` | 0.12 | स्वाइप की सीमा (0-1) |
+| `transitionDuration` | `number` | 300 | ट्रांज़िशन एनिमेशन की अवधि (ms) |
+| `wheelDebounceMs` | `number` | 200 | व्हील debounce की अवधि (ms) |
+
+## टाइप [#types]
+
+### BaseContentItem [#basecontentitem]
+
+generic की सीमा तय करने वाला टाइप। ReelPlayerOverlay के साथ कस्टम डेटा टाइप इस्तेमाल करने के लिए इसे extend करें।
+
+<CodeBlock code={basecontentitem} language="typescript" />
+
+### ContentItem [#contentitem]
+
+<CodeBlock code={contentitem} language="typescript" />
+
+### MediaItem [#mediaitem]
+
+<CodeBlock code={mediaitem} language="typescript" />
+
+### MediaType [#mediatype]
+
+<CodeBlock code={mediatype} language="typescript" />
+
+### ControlsRenderProps\<T> [#controlsrenderprops-t]
+
+<CodeBlock code={controlsrenderpropsT} language="typescript" />
+
+### NavigationRenderProps [#navigationrenderprops]
+
+<CodeBlock code={navigationrenderprops} language="typescript" />
+
+### SlideRenderProps\<T> [#sliderenderprops-t]
+
+<CodeBlock code={sliderenderpropsT} language="typescript" />
+
+### NestedSlideRenderProps [#nestedsliderenderprops]
+
+<CodeBlock code={nestedsliderenderprops} language="typescript" />
+
+### SlideOverlayProps [#slideoverlayprops]
+
+<CodeBlock code={slideoverlayprops} language="typescript" />
+
+### ImageSlideProps [#imageslideprops]
+
+<CodeBlock code={imageslideprops} language="typescript" />
+
+### VideoSlideProps [#videoslideprops]
+
+<CodeBlock code={videoslideprops} language="typescript" />
+
+### CloseButtonProps [#closebuttonprops]
+
+<CodeBlock code={closebuttonprops} language="typescript" />
+
+### SoundButtonProps [#soundbuttonprops]
+
+<CodeBlock code={soundbuttonprops} language="typescript" />
+
+### TimelineBarProps [#timelinebarprops]
+
+<CodeBlock code={timelinebarprops} language="typescript" />
+
+### TimelineRenderProps\<T> [#timelinerenderprops-t]
+
+<CodeBlock code={timelinerenderpropsT} language="typescript" />
+
+## सब-कंपोनेंट [#sub-components]
+
+कस्टम render props में जोड़कर इस्तेमाल करने के लिए export किए गए, दोबारा इस्तेमाल होने वाले हिस्से:
+
+### CloseButton [#closebutton]
+
+reel प्लेयर की डिफ़ॉल्ट styling वाला अलग बंद करने का बटन। `renderControls` के अंदर इस्तेमाल करें।
+
+<CodeBlock code={closebutton} language="tsx" />
+
+### SoundButton [#soundbutton]
+
+अलग साउंड टॉगल। `SoundProvider` के अंदर होना ज़रूरी है (ReelPlayerOverlay इसे अपने-आप देता है)।
+
+<CodeBlock code={soundbutton} language="tsx" />
+
+### TimelineBar [#timelinebar]
+
+डिफ़ॉल्ट प्लेबैक scrub bar। सबसे पास के `TimelineProvider` (जो `ReelPlayerOverlay` के अंदर अपने-आप mount होता है) से पढ़ता है और track, buffered ranges, प्रोग्रेस भराव और scrub pill रेंडर करता है। `--rk-reel-timeline-*` custom properties से थीम करें, या `renderTimeline` से बदल दें।
+
+<CodeBlock code={timelinebar} language="tsx" />
+
+### SlideOverlay [#slideoverlay]
+
+लेखक, विवरण और लाइक दिखाने वाला डिफ़ॉल्ट gradient overlay। कंटेंट में ज़रूरी fields होने पर अपने-आप रेंडर होता है। इसे बदलने या छिपाने के लिए `renderSlideOverlay` इस्तेमाल करें।
+
+<CodeBlock code={slideoverlay} language="tsx" />
+
+### ImageSlide [#imageslide]
+
+lazy loading और डिफ़ॉल्ट `object-fit: cover` वाली इमेज स्लाइड। अपनी styles के साथ कस्टम इमेज स्लाइड बनाने के लिए `renderSlide` के अंदर इस्तेमाल करें।
+
+<CodeBlock code={imageslide} language="tsx" />
+
+### VideoSlide [#videoslide]
+
+iOS पर आवाज़ बनाए रखने के लिए साझा `<video>` एलिमेंट, poster फ़्रेम, स्थिति याद रखने और लोडिंग इंडिकेटर वाली वीडियो स्लाइड। `SoundProvider` के अंदर होना ज़रूरी है (ReelPlayerOverlay इसे अपने-आप देता है)।
+
+<CodeBlock code={videoslide} language="tsx" />
+
+<Callout type="info" title="कस्टम स्लाइड बनाना">
+  सारा बिल्ट-इन व्यवहार (autoplay, poster कैप्चर, साउंड sync) बनाए रखते हुए मीडिया रेंडरिंग कस्टमाइज़ करने के लिए `ImageSlide` / `VideoSlide` के साथ `renderSlide` इस्तेमाल करें।
+</Callout>
+
+<CodeBlock code={videoslide2} language="tsx" />
+
+## कंटेंट लोडिंग और एरर हैंडलिंग [#content-loading-error-handling]
+
+प्लेयर हर स्लाइड की लोडिंग और एरर स्टेट ट्रैक करता है। कंटेंट लोड होते समय wave loader दिखता है; टूटे मीडिया पर एरर आइकन दिखता है। एरर वाले URL cache हो जाते हैं, इसलिए दोबारा आने पर बिना फिर से कोशिश किए तुरंत एरर दिखता है।
+
+### Lifecycle callbacks [#lifecycle-callbacks]
+
+`renderSlide` इस्तेमाल करते समय लोडिंग इंडिकेटर नियंत्रित करने के लिए ये callbacks कॉल करें:
+
+| Callback | कब कॉल करें |
+| --- | --- |
+| `onReady` | इमेज लोड हुई या वीडियो चलने लगा। लोडिंग और एरर स्टेट साफ़ करता है। |
+| `onWaiting` | वीडियो चलते-चलते buffer हो रहा है। लोडिंग इंडिकेटर दिखाता है। |
+| `onError` | कंटेंट लोड नहीं हुआ। एरर overlay दिखाता है और URL को टूटा हुआ cache करता है। |
+
+<CodeBlock code={lifecycleCallbacks} language="tsx" />
+
+### कस्टम लोडिंग और एरर UI [#custom-loading-error-ui]
+
+डिफ़ॉल्ट wave loader और एरर आइकन की जगह अपने कंपोनेंट लगाएँ:
+
+<CodeBlock code={customLoadingErrorUi} language="tsx" />
+
+## टाइमलाइन [#timeline]
+
+Overlay सक्रिय वीडियो के ऊपर एक बिल्ट-इन प्लेबैक टाइमलाइन बार रेंडर करता है। `timeline` prop रेंडरिंग तय करता है:
+
+- `'auto'` (डिफ़ॉल्ट): तब रेंडर होता है जब सक्रिय मीडिया ऐसा वीडियो हो जिसकी अवधि `timelineMinDurationSeconds` (डिफ़ॉल्ट 30) से ज़्यादा हो। एक वीडियो वाली स्लाइड और मल्टी-मीडिया carousels दोनों पर काम करता है; बार सक्रिय nested आइटम के साथ चलता है और इमेज पर छिप जाता है।
+- `'always'`: जब भी सक्रिय स्लाइड में वीडियो हो, रेंडर होता है।
+- `'never'`: कभी रेंडर नहीं होता। `renderTimeline` से अपना बार बनाएँ।
+
+<CodeBlock code={timeline} language="tsx" />
+
+`--rk-reel-timeline-*` CSS custom properties (ऊँचाई, रंग, cursor का आकार) से थीम करें। पूरी तरह कस्टम scrub bar, timecode या प्रोग्रेस इंडिकेटर के लिए `renderTimeline` इस्तेमाल करें; callback को अंदर के `TimelineController` पर आधारित `timelineState` मिलता है।
+
+## साउंड context [#sound-context]
+
+कस्टम implementation के लिए आप साउंड स्टेट तक पहुँच सकते हैं:
+
+<CodeBlock code={soundContext} language="tsx" />
+
+## CSS क्लास [#css-classes]
+
+सारी CSS क्लास साधारण हैं (CSS modules नहीं), इसलिए `@reelkit/react-reel-player/styles.css` के बाद लोड होने वाली stylesheet में ज़्यादा specificity वाले selectors से इन्हें निशाना बनाया जा सकता है। रंग, आकार और z-index बदलने के लिए नीचे [थीमिंग](#theming) हिस्से में बताई CSS custom properties को प्राथमिकता दें — वे ठीक इसी के लिए बनी हैं।
+
+| क्लास | कंपोनेंट | विवरण |
+| --- | --- | --- |
+| `.rk-reel-overlay` | Overlay | तय फ़ुलस्क्रीन backdrop (background, z-index) |
+| `.rk-reel-container` | Overlay | प्लेयर कंटेनर (position, overflow) |
+| `.rk-reel-loader` | Overlay | wave लोडिंग एनिमेशन का overlay |
+| `.rk-reel-media-error` | Overlay | एरर स्टेट का overlay (बीच में आइकन + टेक्स्ट) |
+| `.rk-reel-media-error-text` | Overlay | एरर संदेश का टेक्स्ट |
+| `.rk-reel-button` | Controls | साझा गोल आइकन बटन (बंद, साउंड, नेविगेशन तीर) |
+| `.rk-reel-close-btn` | Controls | बंद करने का बटन |
+| `.rk-reel-sound-btn` | Controls | साउंड टॉगल बटन |
+| `.rk-reel-nav-arrows` | Navigation | सिर्फ़ डेस्कटॉप वाला तीरों का कंटेनर (768px से कम पर छिपा) |
+| `.rk-reel-nav-button` | Navigation | अलग prev/next नेविगेशन तीर |
+| `.rk-reel-slide-wrapper` | Slide | मीडिया + overlay के चारों ओर का wrapper |
+| `.rk-reel-slide-overlay` | SlideOverlay | gradient overlay का कंटेनर |
+| `.rk-reel-slide-overlay-author` | SlideOverlay | लेखक की पंक्ति (avatar + नाम) |
+| `.rk-reel-slide-overlay-avatar` | SlideOverlay | लेखक की avatar इमेज |
+| `.rk-reel-slide-overlay-name` | SlideOverlay | लेखक के नाम का टेक्स्ट |
+| `.rk-reel-slide-overlay-description` | SlideOverlay | विवरण का टेक्स्ट |
+| `.rk-reel-slide-overlay-likes` | SlideOverlay | लाइक की पंक्ति (दिल + गिनती) |
+| `.rk-reel-video-container` | VideoSlide | वीडियो wrapper (background, overflow) |
+| `.rk-reel-video-element` | VideoSlide | \<video> एलिमेंट |
+| `.rk-reel-video-poster` | VideoSlide | poster इमेज (चलने पर धुंधली होकर गायब) |
+| `.rk-reel-video-poster.rk-visible` | VideoSlide | वीडियो रुका/लोड होते समय poster पर लगने वाला स्टेट modifier |
+| `.rk-reel-nested-indicator` | NestedSlider | मल्टी-मीडिया स्लाइड के नीचे बिंदु वाला pagination (डेस्कटॉप और टच पर स्थिति अलग) |
+| `.rk-reel-nested-nav` | NestedSlider | हॉरिज़ॉन्टल carousel के तीर (768px से कम पर छिपे) |
+| `.rk-reel-nested-nav-next` | NestedSlider | nested अगले तीर की स्थिति |
+| `.rk-reel-nested-nav-prev` | NestedSlider | nested पिछले तीर की स्थिति |
+| `.rk-reel-timeline` | TimelineBar | scrub bar का wrapper। नीचे से सटी स्थिति, safe-area padding और टच डिवाइस पर स्लाइड overlay से दूरी पाने के लिए कस्टम \`renderTimeline\` roots पर दोबारा इस्तेमाल करें। |
+| `.rk-reel-timeline-track` | TimelineBar | Track (न चला हुआ हिस्सा) |
+| `.rk-reel-timeline-buffered` | TimelineBar | buffered हिस्सों की परत |
+| `.rk-reel-timeline-fill` | TimelineBar | चले हुए हिस्से का भराव |
+| `.rk-reel-timeline-cursor` | TimelineBar | scrub handle की pill (track के ऊपर तैरती) |
+
+## थीमिंग [#theming]
+
+हर रंग, आकार, z-index और ट्रांज़िशन एक CSS custom property में है। कंपोनेंट का source छुए बिना थीम बदलने के लिए `:root` (या overlay के किसी भी ancestor) पर एक या कई override करें।
+
+| Token | डिफ़ॉल्ट | क्या नियंत्रित करता है |
+| --- | --- | --- |
+| `--rk-reel-overlay-bg` | `#000` | फ़ुलस्क्रीन backdrop का रंग |
+| `--rk-reel-overlay-z` | `1000` | Overlay का z-index |
+| `--rk-reel-button-bg` | `rgba(0, 0, 0, 0.5)` | डिफ़ॉल्ट गोल बटन का background |
+| `--rk-reel-button-bg-hover` | `rgba(255, 255, 255, 0.1)` | नेविगेशन तीर का background (और hover की मूल स्टेट) |
+| `--rk-reel-button-bg-hover-strong` | `rgba(255, 255, 255, 0.2)` | नेविगेशन तीर का hover background |
+| `--rk-reel-button-fg` | `#fff` | बटन आइकन का रंग |
+| `--rk-reel-button-size` | `44px` | बटन की चौड़ाई / ऊँचाई |
+| `--rk-reel-button-radius` | `50%` | बटन का border-radius |
+| `--rk-reel-ui-z` | `10` | बंद / साउंड / नेविगेशन का z-index |
+| `--rk-reel-edge-padding` | `16px` | बंद / साउंड / नेविगेशन तीरों की किनारे से दूरी |
+| `--rk-reel-nav-gap` | `8px` | एक के ऊपर एक रखे नेविगेशन तीरों के बीच की दूरी |
+| `--rk-reel-transition` | `0.2s` | hover ट्रांज़िशन की अवधि |
+| `--rk-reel-loader-color` | `rgba(255, 255, 255, 0.12)` | wave loader के gradient का रंग |
+| `--rk-reel-loader-duration` | `1.8s` | wave loader एनिमेशन की अवधि |
+| `--rk-reel-error-fg` | `rgba(255, 255, 255, 0.4)` | एरर आइकन और टेक्स्ट का रंग |
+| `--rk-reel-error-text-size` | `13px` | एरर संदेश का font size |
+| `--rk-reel-slide-overlay-bg` | `linear-gradient(transparent, rgba(0, 0, 0, 0.7))` | कैप्शन के पीछे का gradient |
+| `--rk-reel-slide-overlay-padding` | `48px 16px 16px` | कैप्शन की अंदरूनी padding |
+| `--rk-reel-slide-overlay-name-color` | `#fff` | लेखक के नाम का रंग |
+| `--rk-reel-slide-overlay-description-color` | `rgba(255, 255, 255, 0.9)` | विवरण के टेक्स्ट का रंग |
+| `--rk-reel-slide-overlay-likes-color` | `rgba(255, 255, 255, 0.8)` | लाइक वाली पंक्ति के टेक्स्ट का रंग |
+| `--rk-reel-video-bg` | `#000` | \<video> के पीछे letterbox background |
+| `--rk-reel-nested-button-bg` | `rgba(0, 0, 0, 0.5)` | nested तीर का background |
+| `--rk-reel-nested-button-bg-hover` | `rgba(255, 255, 255, 0.2)` | nested तीर का hover background |
+| `--rk-reel-nested-button-size` | `36px` | nested तीर का आकार |
+| `--rk-reel-nested-edge-padding` | `12px` | nested तीर की किनारे से दूरी |
+| `--rk-reel-timeline-track` | `rgba(255, 255, 255, 0.22)` | Track का background (न चला हुआ हिस्सा) |
+| `--rk-reel-timeline-buffered` | `rgba(255, 255, 255, 0.4)` | buffered हिस्सों का रंग |
+| `--rk-reel-timeline-fill` | `#fff` | चले हुए हिस्से के भराव का रंग |
+| `--rk-reel-timeline-cursor` | `#fff` | scrub handle की pill का रंग |
+| `--rk-reel-timeline-height` | `3px` | आराम की हालत में track की ऊँचाई |
+| `--rk-reel-timeline-height-active` | `6px` | hover / फ़ोकस / scrub पर track की ऊँचाई |
+| `--rk-reel-timeline-cursor-width` | `10px` | आराम की हालत में scrub pill की चौड़ाई |
+| `--rk-reel-timeline-cursor-width-active` | `14px` | scrub करते समय scrub pill की चौड़ाई |
+| `--rk-reel-timeline-cursor-height` | `24px` | आराम की हालत में scrub pill की ऊँचाई |
+| `--rk-reel-timeline-cursor-height-active` | `32px` | scrub करते समय scrub pill की ऊँचाई |
+| `--rk-reel-timeline-hitbox` | `16px` | track के ऊपर pointer के लिए अतिरिक्त छूने की जगह |
+| `--rk-reel-timeline-transition` | `0.15s ease-out` | track + pill के बढ़ने/घटने का एनिमेशन |
+| `--rk-reel-timeline-z` | `11` | टाइमलाइन का z-index (डिफ़ॉल्ट UI परत के ऊपर) |
+
+नीचे का snippet `@reelkit/react-reel-player/styles.css` के बाद लोड होने वाली stylesheet में डालें।
+
+<CodeBlock code={theming} language="css" />
+
+## सुलभता [#accessibility]
+
+Overlay का root एक modal dialog है (`role="dialog"`, `aria-modal="true"`)। स्क्रीन रीडर की घोषणा बदलने के लिए `ariaLabel` सेट करें; डिफ़ॉल्ट "Video player" है। हर स्लाइड पर `role="group"`, `aria-roledescription="slide"` और `aria-label="Slide N of M"` होते हैं, इसलिए स्वाइप करने पर क्रम में स्थिति बोली जाती है।
+
+Overlay खुलने पर फ़ोकस पकड़ता है और बंद होने पर उसे trigger पर लौटा देता है। Tab और Shift+Tab अंदर के फ़ोकस होने वाले एलिमेंट में घूमते हैं; बाहर निकला फ़ोकस (बाहर क्लिक, प्रोग्राम से फ़ोकस) वापस खींच लिया जाता है। यह `@reelkit/core` के `captureFocusForReturn` और `createFocusTrap` से बना है।
+
+## कीबोर्ड शॉर्टकट [#keyboard-shortcuts]
+
+| कुंजी | क्रिया |
+| --- | --- |
+| `ArrowUp` | पिछली स्लाइड |
+| `ArrowDown` | अगली स्लाइड |
+| `ArrowLeft` | पिछला मीडिया (nested स्लाइडर में) |
+| `ArrowRight` | अगला मीडिया (nested स्लाइडर में) |
+| `Escape` | प्लेयर बंद करें |

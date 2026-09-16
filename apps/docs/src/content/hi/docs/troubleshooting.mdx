@@ -1,0 +1,94 @@
+---
+title: समस्या निवारण
+description: iOS Safari की अजीब आदतों, वीडियो प्लेबैक, फ़ुलस्क्रीन, कीबोर्ड नेविगेशन और अपने-आप साइज़ से जुड़ी समस्याओं के समाधान।
+---
+
+import viewportDoesntFillScreen from '../../snippets/troubleshooting/viewport-doesnt-fill-screen.css?raw';
+import horizontalScrollContentOverflow from '../../snippets/troubleshooting/horizontal-scroll-content-overflow.css?raw';
+import pullToRefreshRubber from '../../snippets/troubleshooting/pull-to-refresh-rubber.css?raw';
+import pullToRefreshRubber2 from '../../snippets/troubleshooting/pull-to-refresh-rubber-2.tsx?raw';
+import pinchToZoomInterferes from '../../snippets/troubleshooting/pinch-to-zoom-interferes.html?raw';
+import layoutBrokenAfterKeyboard from '../../snippets/troubleshooting/layout-broken-after-keyboard.tsx?raw';
+import slidesRenderAt0 from '../../snippets/troubleshooting/slides-render-at-0.css?raw';
+import videoThumbnailFrameCapture from '../../snippets/troubleshooting/video-thumbnail-frame-capture.txt?raw';
+import arrowKeysDontNavigate from '../../snippets/troubleshooting/arrow-keys-dont-navigate.tsx?raw';
+
+iOS Safari की अजीब आदतों, वीडियो प्लेबैक, फ़ुलस्क्रीन और कीबोर्ड नेविगेशन से जुड़ी समस्याओं के समाधान।
+
+## iOS Safari [#ios-safari]
+
+### Viewport स्क्रीन नहीं भरता / नीचे काली जगह [#viewport-doesn-t-fill-screen-bottom-black-space]
+
+Safari का छोटा-बड़ा होने वाला address bar `100vh` को दिखने वाले हिस्से से लंबा कर देता है। `100dvh` इस्तेमाल करें:
+
+<CodeBlock code={viewportDoesntFillScreen} language="css" />
+
+### हॉरिज़ॉन्टल स्क्रॉल / कंटेंट का बाहर निकलना [#horizontal-scroll-content-overflow]
+
+iOS पर `100vw` में scrollbar की चौड़ाई भी शामिल होती है, जिससे कंटेंट किनारे से बाहर चला जाता है। `100%` इस्तेमाल करें और हॉरिज़ॉन्टल overflow बंद करें:
+
+<CodeBlock code={horizontalScrollContentOverflow} language="css" />
+
+### Pull-to-refresh / रबर-बैंड bounce [#pull-to-refresh-rubber-band-bounce]
+
+Safari का pull-to-refresh और elastic bounce वर्टिकल स्वाइप जेस्चर से टकराते हैं। `html, body` पर `overscroll-behavior: none` **न** लगाएँ। इससे पेज का सामान्य स्क्रॉल ही बंद हो जाता है। ReelPlayerOverlay, LightboxOverlay और StoriesPlayerOverlay यह अपने कंटेनर पर खुद संभालते हैं। कस्टम लेआउट में इसे सीमित दायरे में लगाएँ:
+
+<CodeBlock code={pullToRefreshRubber} language="css" />
+
+**SwipeToClose में नीचे की ओर स्वाइप का खास मामला।** `direction="down"` वाला कोई भी `SwipeToClose` (lightbox, stories प्लेयर, कस्टम overlay) iOS Safari पर पहले ही रोक लिया जाता है — wrapper तक टच पहुँचने से पहले ब्राउज़र document के स्तर पर pull-to-refresh चला देता है। Overlay body का स्क्रॉल लॉक कर देता है, लेकिन root पर वर्टिकल pan अब भी ब्राउज़र के हाथ में रहता है। `overscroll-behavior-y: contain` को `<html>` पर सिर्फ़ तब लगाएँ जब overlay खुला हो, और बंद होने पर पहले जैसा कर दें:
+
+<CodeBlock code={pullToRefreshRubber2} language="tsx" />
+
+### Pinch-to-zoom जेस्चर में दखल देता है [#pinch-to-zoom-interferes-with-gestures]
+
+स्वाइप के दौरान pinch और double-tap चलने से रोकने के लिए zoom बंद करें:
+
+<CodeBlock code={pinchToZoomInterferes} language="html" />
+
+<Caption>`viewport-fit=cover` आपके लेआउट को Dynamic Island / notch के safe area तक फैला देता है।</Caption>
+
+### कीबोर्ड बंद होने के बाद लेआउट बिगड़ जाता है [#layout-broken-after-keyboard-dismisses]
+
+कीबोर्ड बंद होने के बाद Safari कभी-कभी viewport को सिकुड़ा हुआ छोड़ देता है। blur पर उसे ज़बरदस्ती रीसेट करें:
+
+<CodeBlock code={layoutBrokenAfterKeyboard} language="tsx" />
+
+## सामान्य [#general]
+
+### स्लाइड 0×0 साइज़ में रेंडर होती हैं [#slides-render-at-0-0-size]
+
+`size` prop के बिना स्लाइडर `ResizeObserver` से अपने कंटेनर का आकार पढ़ता है। जिस कंटेनर की CSS में ऊँचाई नहीं है, उसका माप 0×0 आता है, इसलिए कुछ भी रेंडर नहीं होता। `size` पास करें या कंटेनर को आकार दें:
+
+<CodeBlock code={slidesRenderAt0} language="css" />
+
+## वीडियो [#video]
+
+### वीडियो अपने-आप नहीं चलता [#video-doesn-t-autoplay]
+
+ब्राउज़र आवाज़ वाले autoplay को रोक देते हैं। ReelKit हर वीडियो एलिमेंट पर `muted` और `playsInline` सेट करता है। वीडियो बिना आवाज़ के शुरू होते हैं; टैप के बाद यूज़र साउंड टॉगल से आवाज़ चालू करते हैं। जाँच लें कि किसी कस्टम स्लाइड में आप इन attributes को बदल तो नहीं रहे।
+
+### वीडियो थंबनेल / फ़्रेम कैप्चर खाली आता है [#video-thumbnail-frame-capture-is-blank]
+
+फ़्रेम कैप्चर वीडियो को `<canvas>` पर बनाता है। दूसरे origin के वीडियो canvas को taint कर देते हैं, इसलिए ड्रॉ चुपचाप फ़ेल हो जाता है। आपके वीडियो CDN को CORS headers लौटाने होंगे:
+
+<CodeBlock code={videoThumbnailFrameCapture} language="text" />
+
+<Caption>ReelKit डिफ़ॉल्ट रूप से `crossOrigin="anonymous"` सेट करता है। अगर आप कस्टम वीडियो एलिमेंट इस्तेमाल करते हैं, तो इसे खुद जोड़ें।</Caption>
+
+## फ़ुलस्क्रीन [#fullscreen]
+
+### Safari पर फ़ुलस्क्रीन बटन कुछ नहीं करता [#fullscreen-button-does-nothing-on-safari]
+
+ReelKit Safari पर Fullscreen API बंद रखता है। iOS Safari फ़ुलस्क्रीन को सिर्फ़ `<video>` एलिमेंट तक सीमित रखता है। डेस्कटॉप Safari फ़ुलस्क्रीन में `position: fixed` वाले overlay बिगाड़ देता है: एलिमेंट अपना stacking context खो देते हैं या गायब हो जाते हैं। Safari पर `requestFullscreen()` बिना कुछ किए resolve हो जाता है।
+
+## कीबोर्ड नेविगेशन [#keyboard-navigation]
+
+### onNavKeyPress देने के बाद तीर वाली कुंजियाँ काम नहीं करतीं [#arrow-keys-don-t-navigate-after-providing-onnavkeypress]
+
+`onNavKeyPress` डिफ़ॉल्ट कीबोर्ड नेविगेशन की **जगह ले लेता है**। ReelKit `next()`/`prev()` कॉल करना बंद कर देता है और नियंत्रण आपको सौंप देता है। इन्हें खुद कॉल करें:
+
+<CodeBlock code={arrowKeysDontNavigate} language="tsx" />
+
+### Escape कुंजी overlay बंद नहीं करती [#escape-key-doesn-t-close-the-overlay]
+
+कीबोर्ड कंट्रोलर सिर्फ़ तीर वाली कुंजियाँ संभालता है। ReelPlayerOverlay और LightboxOverlay Escape को अलग से सुनते हैं। अगर आप कस्टम overlay बनाते हैं, तो `onClose` में अपना Escape हैंडलर जोड़ें।

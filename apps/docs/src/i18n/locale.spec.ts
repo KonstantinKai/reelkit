@@ -141,6 +141,16 @@ describe('locale helpers', () => {
     expect(kLocaleTags.ja).not.toBe(kLocaleTags.zh);
   });
 
+  // Hindi has one standard written form, so a region would add nothing but
+  // a country the page is not limited to.
+  it('tags Hindi without a region', () => {
+    expect(kLocaleTags.hi).toBe('hi');
+    expect(readLocaleFromPath('/hi/docs/ssr')).toBe('hi');
+    expect(localeUrl('hi', '/docs/ssr')).toBe(
+      'https://reelkit.dev/hi/docs/ssr',
+    );
+  });
+
   it('gives every non-English locale its own prefix', () => {
     const prefixes = kLocales
       .filter((locale) => locale !== 'en')

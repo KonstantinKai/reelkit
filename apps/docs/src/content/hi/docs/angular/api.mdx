@@ -1,0 +1,177 @@
+---
+title: Angular API रेफ़रेंस
+description: '@reelkit/angular के कंपोनेंट, inputs, outputs, exposed API मेथड, ReelIndicator, RK_REEL_CONTEXT injection token और signal bridges का पूरा रेफ़रेंस।'
+---
+
+import reelapiInterface from '../../../snippets/angular-api/reelapi-interface.ts?raw';
+import templateContext from '../../../snippets/angular-api/template-context.html?raw';
+import rkReelContext from '../../../snippets/angular-api/rk-reel-context.ts?raw';
+import bodylockservice from '../../../snippets/angular-api/bodylockservice.ts?raw';
+import signalBridgeUtilities from '../../../snippets/angular-api/signal-bridge-utilities.ts?raw';
+import createrouterurladapter from '../../../snippets/angular-api/createrouterurladapter.ts?raw';
+import packageExports from '../../../snippets/angular-api/package-exports.ts?raw';
+
+`@reelkit/angular` के कंपोनेंट, directives, services और यूटिलिटी का पूरा रेफ़रेंस।
+
+## ReelComponent [#reelcomponent]
+
+Selector: `rk-reel`
+
+### Inputs [#inputs]
+
+| Input | टाइप | डिफ़ॉल्ट | विवरण |
+| --- | --- | --- | --- |
+| `count` | `number` | ज़रूरी | स्लाइड की कुल संख्या |
+| `direction` | `'vertical' \| 'horizontal'` | 'vertical' | स्क्रॉल की दिशा |
+| `size` | `[number, number] \| undefined` | undefined | \[width, height\] के रूप में चौड़ाई और ऊँचाई। छोड़ने पर ResizeObserver से अपने-आप नापता है |
+| `initialIndex` | `number` | 0 | शुरुआती स्लाइड index |
+| `loop` | `boolean` | false | अनंत लूप चालू करता है |
+| `transition` | `TransitionTransformFn` | slideTransition | ट्रांज़िशन इफ़ेक्ट का फ़ंक्शन। बिल्ट-इन: slideTransition, fadeTransition, flipTransition, cubeTransition, zoomTransition |
+| `transitionDuration` | `number` | 300 | ms में एनिमेशन की अवधि |
+| `swipeDistanceFactor` | `number` | 0.12 | स्वाइप की सीमा (0-1) |
+| `enableGestures` | `boolean` | true | टच/माउस से खींचकर नेविगेशन चालू करता है |
+| `enableNavKeys` | `boolean` | true | कीबोर्ड की तीर वाली कुंजियों से नेविगेशन चालू करता है |
+| `enableWheel` | `boolean` | false | माउस व्हील से नेविगेशन चालू करता है |
+| `wheelDebounceMs` | `number` | 200 | ms में व्हील इवेंट का debounce |
+| `rangeExtractor` | `(index: number, count: number) => number[]` | defaultRangeExtractor | कौन-से index रेंडर हों, यह तय करने वाला कस्टम फ़ंक्शन |
+| `keyExtractor` | `(index: number, indexInRange: number) => string \| number` | index => index | @for track expressions के लिए कस्टम key फ़ंक्शन (loop के साथ काम का) |
+| `className` | `string` | '' | root कंटेनर एलिमेंट पर लगने वाली CSS class |
+| `ariaLabel` | `string` | 'Carousel' | carousel क्षेत्र का सुलभ लेबल |
+
+### Outputs [#outputs]
+
+| Output | टाइप | विवरण |
+| --- | --- | --- |
+| `afterChange` | `EventEmitter<{ index: number; indexInRange: number }>` | स्लाइड ट्रांज़िशन पूरा होने के बाद emit होता है |
+| `beforeChange` | `EventEmitter<{ index: number; nextIndex: number; indexInRange: number }>` | स्लाइड ट्रांज़िशन शुरू होने से पहले emit होता है |
+| `slideDragStart` | `EventEmitter<number>` | खींचने का जेस्चर शुरू होने पर emit होता है |
+| `slideDragEnd` | `EventEmitter<number>` | खींचने का जेस्चर ख़त्म होने (छोड़ने) पर emit होता है |
+| `slideDragCanceled` | `EventEmitter<number>` | खींचने का जेस्चर रद्द होने (वापस अपनी जगह) पर emit होता है |
+| `apiReady` | `EventEmitter<ReelApi>` | view init के बाद एक बार emit होता है और imperative API देता है |
+
+## ReelApi इंटरफ़ेस [#reelapi-interface]
+
+`(apiReady)` output से मिलता है:
+
+<CodeBlock code={reelapiInterface} language="typescript" />
+
+| मेथड | टाइप | विवरण |
+| --- | --- | --- |
+| `next()` | `() => void` | अगली स्लाइड पर जाता है |
+| `prev()` | `() => void` | पिछली स्लाइड पर जाता है |
+| `goTo(index, animate?)` | `(number, boolean?) => Promise<void>` | किसी खास स्लाइड index पर जाता है |
+| `adjust()` | `() => void` | स्लाइड की स्थितियाँ दोबारा निकालता है (लेआउट बदलने के बाद काम का) |
+| `observe()` | `() => void` | कीबोर्ड इवेंट सुनना शुरू करता है |
+| `unobserve()` | `() => void` | कीबोर्ड इवेंट सुनना बंद करता है |
+
+## RkReelItemDirective [#rkreelitemdirective]
+
+Selector: `[rkReelItem]` — `rk-reel` के अंदर `ng-template` पर लगाया जाता है।
+
+### Template context [#template-context]
+
+<CodeBlock code={templateContext} language="html" />
+
+| Variable | टाइप | विवरण |
+| --- | --- | --- |
+| `$implicit (let-i)` | `number` | स्लाइड का पूर्ण index (0 से count-1 तक) |
+| `indexInRange` | `number` | दिखने वाली विंडो में स्थिति (0, 1 या 2) |
+| `size` | `[number, number]` | पिक्सेल में \[width, height\] के रूप में स्लाइडर का मौजूदा आकार |
+
+## ReelIndicatorComponent [#reelindicatorcomponent]
+
+Selector: `rk-reel-indicator`
+
+### Inputs [#inputs]
+
+| Input | टाइप | डिफ़ॉल्ट | विवरण |
+| --- | --- | --- | --- |
+| `count` | `number \| undefined` | auto | आइटम की कुल संख्या। parent rk-reel के अंदर होने पर उसके context से अपने-आप जुड़ती है; अकेले इस्तेमाल करने पर साफ़ तौर पर पास करें |
+| `active` | `number \| undefined` | auto | मौजूदा सक्रिय index। parent rk-reel के अंदर होने पर उसके context से अपने-आप जुड़ता है; अकेले इस्तेमाल करने पर साफ़ तौर पर पास करें |
+| `direction` | `'vertical' \| 'horizontal'` | 'vertical' | इंडिकेटर की दिशा |
+| `radius` | `number` | 3 | पिक्सेल में बिंदु का radius |
+| `visible` | `number` | 5 | एक साथ दिखने वाले सामान्य आकार के बिंदुओं की अधिकतम संख्या |
+| `gap` | `number` | 4 | पिक्सेल में बिंदुओं के बीच की दूरी |
+| `activeColor` | `string` | '#fff' | सक्रिय बिंदु का रंग |
+| `inactiveColor` | `string` | 'rgba(255,255,255,0.5)' | निष्क्रिय बिंदु का रंग |
+| `edgeScale` | `number` | 0.5 | किनारे पर overflow वाले बिंदुओं का scale |
+| `className` | `string` | '' | इंडिकेटर कंटेनर पर लगने वाली कस्टम CSS class |
+| `tablistLabel` | `string` | 'Slide navigation' | tablist landmark का सुलभ लेबल |
+
+### Outputs [#outputs]
+
+| Output | टाइप | विवरण |
+| --- | --- | --- |
+| `dotClick` | `EventEmitter<number>` | बिंदु पर क्लिक होने पर emit होता है; बिंदु का index देता है |
+
+## RK_REEL_CONTEXT [#rk-reel-context]
+
+`rk-reel` अपने descendants को जो `InjectionToken<ReelContextValue>` देता है। `rk-reel-indicator` अपने-आप जुड़ने के लिए अंदर से इसे इस्तेमाल करता है। जिन कस्टम कंपोनेंट को स्लाइडर context चाहिए, उनमें इसे inject करें।
+
+<CodeBlock code={rkReelContext} language="typescript" />
+
+| प्रॉपर्टी | टाइप | विवरण |
+| --- | --- | --- |
+| `index` | `Signal<number>` | मौजूदा स्लाइड का reactive index |
+| `count` | `Signal<number>` | आइटम की reactive कुल गिनती |
+| `goTo` | `(index: number, animate?: boolean) => Promise<void>` | प्रोग्राम से किसी स्लाइड पर ले जाता है |
+
+## BodyLockService [#bodylockservice]
+
+reference गिनने वाला body scroll lock। एक साथ कई कॉल करने वाले (जैसे lightbox और modal दोनों खुले हों) अलग-अलग lock/unlock कर सकते हैं — body तभी पहले जैसा होता है जब आख़िरी कॉल करने वाला उसे छोड़ता है। root पर उपलब्ध — कहीं भी inject करें।
+
+<CodeBlock code={bodylockservice} language="typescript" />
+
+| सदस्य | टाइप | विवरण |
+| --- | --- | --- |
+| `locked` | `boolean (getter)` | body अभी lock है या नहीं |
+| `lock()` | `() => void` | body का स्क्रॉल lock करता है और scrollbar की चौड़ाई की भरपाई लगाता है |
+| `unlock()` | `() => void` | body के स्क्रॉल की मूल styles वापस लाता है |
+
+## सिग्नल ब्रिज यूटिलिटी [#signal-bridge-utilities]
+
+core signal सिस्टम (`@reelkit/core`) को Angular के अपने signal API से जोड़ने वाले यूटिलिटी फ़ंक्शन। `ReelComponent` अंदर से इन्हें इस्तेमाल करता है; कस्टम फ़्रेमवर्क इंटीग्रेशन के लिए भी उपलब्ध हैं।
+
+| फ़ंक्शन | Signature | विवरण |
+| --- | --- | --- |
+| `toAngularSignal` | `(source: Subscribable<T>, destroyRef: DestroyRef) => Signal<T>` | core के Subscribable को read-only Angular Signal से जोड़ता है |
+| `animatedSignalBridge` | `(source: AnimatedValue, zone: NgZone, cdRef: ChangeDetectorRef, destroyRef: DestroyRef) => Signal<number>` | core की एनिमेटेड value को Angular Signal से जोड़ता है, जो zone के बाहर requestAnimationFrame से अपडेट होता है |
+
+<CodeBlock code={signalBridgeUtilities} language="typescript" />
+
+## createOverlayUrlState [#createoverlayurlstate]
+
+<Signature>OverlayUrlStateOptions</Signature>
+
+किसी overlay के लिए URL-स्टेट कंट्रोलर बनाता है, जिसे आप `<rk-lightbox-url-overlay>` को उसके `[controller]` input के रूप में देते हैं। इसे injection context में कॉल करें — field initialiser या constructor में; यह तुरंत जुड़ता है और `DestroyRef` से छूटता है। पूरी जानकारी: [Angular Lightbox पेज पर URL स्टेट](/docs/angular-lightbox#url-state)।
+
+| विकल्प | टाइप | डिफ़ॉल्ट | विवरण |
+| --- | --- | --- | --- |
+| `param` | `string` | `required` | सक्रिय स्लाइड रखने वाला query parameter, जैसे photo। |
+| `adapter` | `UrlAdapter` | `History API` | पढ़ने और लिखने के लिए नेविगेशन सिस्टम। routing वाले ऐप में Router पर आधारित adapter पास करें, ताकि Router की location पुरानी न पड़े। |
+| `codec` | `UrlCodec<Id>` | `required` | wire का रूप: parameter के टेक्स्ट से स्थिर पहचान तक। मेल खाती जोड़ी के रूप में locator के साथ चलता है — डिफ़ॉल्ट ?photo=3 गैलरी के लिए ...urlIndexKey(() => images().length) spread करें, या अपना दें ताकि क्रम बदलने पर भी bookmark काम करे। |
+| `locator` | `UrlLocator<Id>` | `required` | पहचान को स्थिति से जोड़ता है और उसकी वैधता खुद संभालता है: locate (sync), locateAsync (पेज वाली गैलरी के लिए async विकल्प), identify (writes)। |
+
+## createRouterUrlAdapter [#createrouterurladapter]
+
+<Signature>@reelkit/angular/ng-router-url-adapter</Signature>
+
+Angular Router पर आधारित `UrlAdapter`। routing वाले ऐप में इसे `createOverlayUrlState` के `adapter` विकल्प के रूप में पास करें, ताकि नेविगेशन की सच्चाई का अकेला स्रोत Router ही रहे — Router के पीछे `history.pushState` लिखने से उसकी location पुरानी पड़ जाती है और उसका अगला नेविगेशन parameter गिरा देता है। Writes सिर्फ़ query को छूते हैं, इसलिए path, fragment और `?tag=a&tag=b` जैसी दोहराई गई keys बिना बदले साथ चलती हैं। हर बदलाव बताता है कि Router ने उसी पेज पर push किया, replace किया या history में आगे-पीछे गया, इसलिए `routerLink` से खुली गैलरी back के एक कदम से बंद होती है। इसे injection context में कॉल करें; router की subscription `DestroyRef` से छूटती है।
+
+यह अपने अलग subpath से आता है, इसलिए बिना routing वाला ऐप `@angular/router` को कभी अपने बंडल में नहीं खींचता। `@angular/router` एक वैकल्पिक peer dependency है।
+
+<CodeBlock code={createrouterurladapter} language="typescript" />
+
+## सुलभता [#accessibility]
+
+`<rk-reel>` `aria-roledescription="carousel"` के साथ `role="region"` के रूप में रेंडर होता है। क्षेत्र को स्क्रीन रीडर के लिए नाम देने के लिए `ariaLabel` input सेट करें। एक polite live region हर स्लाइड बदलने पर "Slide N of M" बोलता है। निष्क्रिय स्लाइडों को `inert` attribute मिलता है, ताकि फ़ोकस और सहायक तकनीक का नेविगेशन उन्हें छोड़ दे।
+
+`<rk-reel-indicator>` बिंदुओं पर roving tabindex के साथ `role="tablist"` के रूप में रेंडर होता है; तीर वाली कुंजियाँ फ़ोकस खिसकाती हैं और Enter या Space स्लाइड सक्रिय करता है।
+
+`<rk-reel>` के आसपास अपना modal बना रहे हैं? फ़ोकस लौटाने और रोकने के लिए `captureFocusForReturn`, `createFocusTrap` और `getFocusableElements` `@reelkit/angular` से भी export होते हैं।
+
+## पैकेज exports [#package-exports]
+
+`@reelkit/angular` के सारे सार्वजनिक exports:
+
+<CodeBlock code={packageExports} language="typescript" />
