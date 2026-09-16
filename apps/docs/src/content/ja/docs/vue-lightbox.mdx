@@ -1,0 +1,367 @@
+---
+title: Vue Lightbox
+description: Vue 3 用の、フルスクリーンの画像ギャラリーのオーバーレイです。LightboxItem のスキーマ、props、emits、スコープ付きスロット、ツリーシェイキングできる transitionFn、スワイプで閉じる操作、React 版と共通のテーマ設定を扱います。
+---
+
+import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2 } from 'lucide-react';
+import installation from '../../snippets/vue-lightbox/installation.sh?raw';
+import installation2 from '../../snippets/vue-lightbox/installation-2.ts?raw';
+import basicUsageCode from '../../snippets/vue-lightbox/basic-usage-code.vue?raw';
+import slotsExampleCode from '../../snippets/vue-lightbox/slots-example-code.vue?raw';
+import videoOptInCode from '../../snippets/vue-lightbox/video-opt-in-code.vue?raw';
+import fullscreenCode from '../../snippets/vue-lightbox/fullscreen-code.vue?raw';
+import urlState from '../../snippets/vue-lightbox/url-state.vue?raw';
+import urlState2 from '../../snippets/vue-lightbox/url-state-2.vue?raw';
+import urlState3 from '../../snippets/vue-lightbox/url-state-3.vue?raw';
+import urlState4 from '../../snippets/vue-lightbox/url-state-4.vue?raw';
+import urlState5 from '../../snippets/vue-lightbox/url-state-5.vue?raw';
+import customTransitionCode from '../../snippets/vue-lightbox/custom-transition-code.vue?raw';
+import lifecycleSlideCode from '../../snippets/vue-lightbox/lifecycle-slide-code.vue?raw';
+import customLoadingCode from '../../snippets/vue-lightbox/custom-loading-code.vue?raw';
+import customErrorCode from '../../snippets/vue-lightbox/custom-error-code.vue?raw';
+import themingCode from '../../snippets/vue-lightbox/theming-code.css?raw';
+
+`@reelkit/vue-lightbox` で作られた、Vue 3 用のフルスクリーンの画像と動画のギャラリーです。
+
+<DemoLink href="https://vue-demo.reelkit.dev/image-preview?utm_source=docs">ライブデモを見る →</DemoLink>
+
+## 機能 [#features]
+
+<FeatureGrid items={[
+              {
+                icon: Image,
+                label: '画像と動画',
+                desc: '動画スライドを標準でサポート',
+              },
+              {
+                icon: MousePointer,
+                label: 'タッチジェスチャー',
+                desc: 'スワイプで移動',
+              },
+              {
+                icon: X,
+                label: 'スワイプで閉じる',
+                desc: '上にスワイプして閉じる',
+              },
+              {
+                icon: Keyboard,
+                label: 'キーボード操作',
+                desc: '矢印キーと Escape',
+              },
+              {
+                icon: Maximize2,
+                label: 'フルスクリーン',
+                desc: 'ブラウザー間で動く API',
+              },
+              {
+                icon: Hash,
+                label: 'トランジション',
+                desc: 'スライド、フェード、フリップ、ズームイン',
+              },
+              {
+                icon: Zap,
+                label: '先読み',
+                desc: '前後 2 枚を事前に取得',
+              },
+              {
+                icon: Volume2,
+                label: 'サウンド切り替え',
+                desc: 'スライドごとのミュート',
+              },
+              {
+                icon: Loader,
+                label: '読み込み状態',
+                desc: 'スピナーと独自のスロット',
+              },
+              {
+                icon: AlertTriangle,
+                label: 'エラー処理',
+                desc: 'エラーアイコンと独自のスロット',
+              },
+              {
+                icon: Layers,
+                label: 'スコープ付きスロット',
+                desc: 'カスタマイズできる 6 つのスロット領域',
+              },
+              {
+                icon: Layers,
+                label: 'v-model',
+                desc: 'v-model:is-open の双方向バインディング',
+              },
+              {
+                icon: Link2,
+                label: 'URL の状態',
+                desc: '共有もブックマークもできるリンク',
+              },
+            ]} />
+
+## インストール [#installation]
+
+<CodeBlock code={installation} language="bash" />
+
+スタイルのインポートを忘れないでください：
+
+<CodeBlock code={installation2} language="typescript" />
+
+<Callout type="info" title="アイコン">
+  デフォルトのコントロールはアイコンに `lucide-vue-next` を使います。別のアイコンライブラリを使いたい場合は、スコープ付きスロットの `#controls` と `#navigation` で独自のものを渡してください。
+</Callout>
+
+## 基本的な使い方 [#basic-usage]
+
+スタイルシートと `LightboxOverlay` コンポーネントをインポートし、`v-model:is-open` で開閉を操作します。
+
+<Sandbox code={basicUsageCode} language="vue" title="App.vue" framework="vue" stackblitzDeps={['@reelkit/vue-lightbox']} stackblitzExtraDeps={{ 'lucide-vue-next': '>=0.460.0' }} />
+
+## スコープ付きスロット [#scoped-slots]
+
+名前付きの 6 つのスコープ付きスロットで、オーバーレイの各部分を自由にカスタマイズできます。組み込みのデフォルトを使うならスロットを省略し、その部分を完全に隠すならスロットの中を空にします（たとえば `v-if="false"`）。
+
+| スロット | スコープ | 説明 |
+| --- | --- | --- |
+| #slide | `SlideSlotScope` | 個々のスライドの内容を置き換えます（動画スライドに必要） |
+| #controls | `ControlsSlotScope` | 上部のコントロールバー（閉じる、カウンター、フルスクリーン）を置き換えます |
+| #navigation | `NavigationSlotScope` | 前後のナビゲーション矢印を置き換えます |
+| #info | `InfoSlotScope` | 下部のタイトルと説明のグラデーションのオーバーレイを置き換えます |
+| #loading | `LoadingSlotScope` | 独自の読み込み表示 |
+| #error | `ErrorSlotScope` | 独自のエラー表示 |
+
+<CodeBlock code={slotsExampleCode} language="vue" />
+
+## 動画のサポート [#video-support]
+
+動画スライドはオプトインなので、デフォルトのバンドルには音声や動画の処理が入りません。`useVideoSlideRenderer(items)` を呼び、返された `VideoSlideRenderer`／`VideoControlsRenderer` をオーバーレイの `#slide` と `#controls` のスロットに渡してください。組み込みのサウンド切り替えがコンテキストを持てるよう、返された `SoundProvider` でオーバーレイを包みます。
+
+<CodeBlock code={videoOptInCode} language="vue" />
+
+<Callout type="info">
+  動画スライドを支える共有の `<video>` 要素は、Vue のプレイヤーと同じパターンです。iOS では、スライドごとにユーザーの操作を求めることなく、スライドが変わっても再生が続きます。
+</Callout>
+
+## フルスクリーン [#fullscreen]
+
+`@reelkit/vue` の `useFullscreen` で、参照した要素のフルスクリーンの状態を監視したり切り替えたりします。ギャラリーの組み込みのフルスクリーンボタンも、同じコンポーザブルで動いています。
+
+<CodeBlock code={fullscreenCode} language="vue" />
+
+## URL の状態 [#url-state]
+
+<DemoLink href="https://vue-demo.reelkit.dev/image-preview-url?utm_source=docs">ライブデモを見る →</DemoLink>
+
+`@reelkit/vue` の `useOverlayUrlState` でコントローラーを作り、`LightboxUrlOverlay` に `controller` として渡すと、ギャラリーを持つのはアドレスバーになります。パラメーターがスライドを指すと自分で開き、パラメーターがなくなると閉じます。リンクは共有でき、戻るボタンでギャラリーが閉じます。これは `LightboxOverlay` とは別のコンポーネントなので、開閉状態を決めるものはそれぞれ 1 つだけです。`is-open` のモデルか、URL の `controller` のどちらかで、両方ではありません。
+
+<Callout type="info" title="組み込みのキー">
+  スライドは組み込みのキーで指せます。`urlIndexKey`（位置で指す）か `urlStableIdKey`（安定した `id` で指す）をコントローラーに展開してください。どちらも `@reelkit/vue` から再エクスポートされています。[URL の状態のガイド](/docs/core/guide#url-state) と [Core API](/docs/core/api#url-state) を参照してください。
+</Callout>
+
+戻るで閉じるのは、アプリ内から開いた場合だけです。リンクがエントリーを積んだので、戻るとギャラリーの前へ戻ります。新しいタブで直接開いた共有リンクには前の履歴がないので、ブラウザーの戻るではサイトを離れます。閉じるボタンか Escape なら、その場でパラメーターを取り除いてギャラリーにとどまります。
+
+<CodeBlock code={urlState} language="vue" />
+
+コンポーザブルは 1 つのオプションのオブジェクトを受け取り、`UrlStateController`（`set`、`index`、`value` を持ちます）を返します。プログラムから制御するために手元に残してください。`set` はオーバーレイが内部で使う低レベルの書き込みです（スライドの切り替えと、`set(null)` で閉じる処理）。プログラムからオーバーレイを操作することもでき、`set(index)` はパラメーターへ移動するのと同じように開きます。ただし、開く操作にはリンクを使うほうがよいでしょう。href は共有でき、新しいタブで開け、戻るボタンで閉じられます。ハンドラーなしで、すべてがそのまま手に入ります。
+
+`useOverlayUrlState` のすべてのオプション（`param`、`adapter`、`codec`、`locator`）は [Vue API リファレンス](/docs/vue/api#useoverlayurlstate) を参照してください。
+
+`LightboxUrlOverlay` 自体が受け取るのは `:controller`（必須）、`@close` の emit、そして `LightboxOverlay` が渡すすべての見た目と挙動の props（`items`、`transition-fn`、スコープ付きスロットなど）です。`is-open` はありません。
+
+- 開くと履歴エントリーを 1 つ使います。スライドを送るとそれを置き換えるので、100 回スワイプしてもエントリーは増えず、1 回戻れば必ずギャラリーから出られます。
+- `?photo=3` のような共有リンクは、そのスライドでギャラリーを開きます。どのスライドも指さないパラメーターは、開けないスライドを指したままにならないよう、URL から取り除かれます。
+
+**ルーターを使うアプリでは、アダプターを渡します。** 履歴に直接書き込むとルーター自身の位置情報が古くなり、次のナビゲーションでパラメーターが消えます。
+
+<CodeBlock code={urlState2} language="vue" />
+
+**安定したリンク。** インデックスは位置なので、リストが並べ替えられるとブックマークは別の画像を開きます。`urlStableIdKey` は各アイテムの安定した `id` で指し、現在のリストを走査します。よくあるケースは 1 回の呼び出しで済みます。
+
+<CodeBlock code={urlState3} language="vue" />
+
+`hashCodec: base64UrlCodec` を渡すと、URL の id を base64url でエンコードします。元に戻せる難読化で、暗号学的ハッシュではありません。
+
+別のフィールド（`slug`）で指したい場合や、`locateAsync` で無限フィードをページングしたい場合は、`codec`／`locator` を自分で作ります。`codec` は識別子を URL に書き、`locator` はそれがいまどこにあるかを探します。
+
+<CodeBlock code={urlState4} language="vue" />
+
+**無限またはページングされたギャラリー。** `locate` は同期なので、読み込み済みのアイテムにしか答えられません。20 件を読み込んだフィードの 400 番目の画像への共有リンクは見つかりません。`locateAsync` はフォールバックで、それが見つけられなかったときだけ呼ばれます。必要なページを読み込み、その識別子が最終的に持ったインデックスを返してください。
+
+<Callout type="info" title="近道">
+  アイテムの `id` で指すなら、codec と locator を手書きする必要はありません。`locateAsync` をそのまま `urlStableIdKey({ items, locateAsync })` に渡してください（見つからなければ取得してからインデックスを返します）。下のより完全な例は、別のフィールドで指す場合や、すべてを自分で制御したい場合のものです。
+</Callout>
+
+<CodeBlock code={urlState5} language="vue" />
+
+保留中のあいだギャラリーは閉じたままで、パラメーターはそのまま残るので、ディープリンクは取得のあいだも失われません。`null` か reject でパラメーターは取り除かれます。URL が変わったあと、閉じたあと、アンマウントしたあとに届いた答えは破棄されるので、遅い取得が誰も求めていないスライドを開くことはありません。返したものが正です。取得したばかりのデータのインデックスを伝えるもので、ギャラリーは Vue がまだ再描画していない `items` を読み直さずに、それをそのまま使います。
+
+## API リファレンス [#api-reference]
+
+### LightboxOverlay の Props [#lightboxoverlay-props]
+
+<Signature>LightboxOverlayProps</Signature>
+
+| Prop | 型 | デフォルト | 説明 |
+| --- | --- | --- | --- |
+| `isOpen` | `boolean` | 必須 | 表示を制御します。false のときオーバーレイは DOM から取り除かれます。v-model:is-open でバインドできます。 |
+| `items` | `LightboxItem[]` | 必須 | アイテム（画像または動画）の配列 |
+| `initialIndex` | `number` | 0 | 最初に表示するアイテムの 0 始まりのインデックス |
+| `transitionFn` | `TransitionTransformFn` | slideTransition | スライドのトランジション関数。組み込みのもの（slideTransition、flipTransition、lightboxFadeTransition、lightboxZoomTransition）をインポートするか、独自のものを渡します。省略すると slideTransition になります。 |
+| `showInfo` | `boolean` | true | タイトルと説明の情報オーバーレイを描画するかどうか |
+| `showControls` | `boolean` | true | 上部のコントロールバー（閉じる、カウンター、フルスクリーン）を描画するかどうか |
+| `showNavigation` | `boolean` | true | 前後のナビゲーション矢印を描画するかどうか（デスクトップのみ） |
+| `transitionDuration` | `number` | 300 | スライドのアニメーションの長さ（ms） |
+| `swipeDistanceFactor` | `number` | 0.12 | スライドを切り替えるのに必要なスワイプ距離の最小の割合（0–1） |
+| `swipeToCloseDirection` | `'up' \| 'down'` | 'up' | モバイルでスワイプして閉じるジェスチャーの方向 |
+| `loop` | `boolean` | false | 最後のスライドから最初のスライドへ戻るかどうか |
+| `enableNavKeys` | `boolean` | true | キーボードの矢印キーによる操作を有効にします |
+| `enableWheel` | `boolean` | true | マウスホイールでの操作を有効にします |
+| `wheelDebounceMs` | `number` | 200 | ホイールイベントのデバウンス時間（ms） |
+| `ariaLabel` | `string` | 'Image gallery' | ダイアログ領域のアクセシブルなラベル |
+
+### LightboxUrlOverlay の Props [#lightboxurloverlay-props]
+
+<Signature>LightboxUrlOverlayProps</Signature>
+
+上の見た目と挙動の props をすべて受け取りますが、`is-open` の代わりに `controller` を使います。`close`、`slide-change`、`api-ready` は発行しますが、`update:is-open` は発行しません。ここでは `initial-index` は無視されます。スライドはコントローラーの位置で決まるので、一緒に渡した値は開くたびに上書きされてしまいます。
+
+| Prop | 型 | デフォルト | 説明 |
+| --- | --- | --- | --- |
+| `controller` | `UrlStateController` | 必須 | useOverlayUrlState のコントローラー。その位置で、オーバーレイが開いているかどうかと、どのスライドを表示するかが決まります。オーバーレイはスライドの切り替え時と閉じるときに、これを通じて書き戻します。 |
+
+### LightboxOverlay のイベント [#lightboxoverlay-events]
+
+| イベント | ペイロード | 説明 |
+| --- | --- | --- |
+| `close` | `void` | ユーザーがギャラリーを閉じたときに発行されます |
+| `slide-change` | `number` | 切り替え後の新しいアクティブなスライドのインデックスとともに発行されます |
+| `api-ready` | `LightboxApi` | スライダーの準備ができたときに発行され、命令的な API を公開します |
+| `update:is-open` | `boolean` | 閉じるときに発行され、v-model:is-open を可能にします |
+
+## LightboxItem インターフェース [#lightboxitem-interface]
+
+| フィールド | 型 | 必須 | 説明 |
+| --- | --- | --- | --- |
+| `src` | `string` | はい | 画像または動画の URL |
+| `type` | `'image' \| 'video'` | いいえ | アイテムの種類。デフォルトは 'image' です |
+| `poster` | `string` | いいえ | 動画アイテムのサムネイル画像 |
+| `title` | `string` | いいえ | 情報オーバーレイに表示するタイトル |
+| `description` | `string` | いいえ | タイトルの下に表示する説明 |
+| `width` | `number` | いいえ | 画像の本来の幅（ピクセル） |
+| `height` | `number` | いいえ | 画像の本来の高さ（ピクセル） |
+
+## スロットスコープの型 [#slot-scope-types]
+
+| 型 | フィールド |
+| --- | --- |
+| `SlideSlotScope` | `{ item, index, size: [number, number], isActive, onReady, onWaiting, onError }` |
+| `ControlsSlotScope` | `{ item, activeIndex, count, isFullscreen, onClose, onToggleFullscreen }` |
+| `NavigationSlotScope` | `{ item, activeIndex, count, onPrev, onNext }` |
+| `InfoSlotScope` | `{ item, index }` |
+| `LoadingSlotScope` | `{ item, activeIndex }` |
+| `ErrorSlotScope` | `{ item, activeIndex }` |
+
+## トランジション [#transitions]
+
+任意の `TransitionTransformFn` を `transition-fn` プロップで渡します。使うトランジションだけをインポートすれば、残りはバンドラーがツリーシェイキングします。省略すると `slideTransition` になります。
+
+| 関数 | 説明 |
+| --- | --- |
+| `slideTransition` | デフォルト。スライド間を横方向に移動します。@reelkit/vue から再エクスポートされています。 |
+| `lightboxFadeTransition` | わずかに横へずらしながらクロスフェードします。@reelkit/vue-lightbox 独自のものです。 |
+| `flipTransition` | Y 軸を中心に 3D でめくります。@reelkit/vue から再エクスポートされています。 |
+| `lightboxZoomTransition` | 入ってくるスライドがフェードしながら 70% から 100% に拡大します。@reelkit/vue-lightbox 独自のものです。 |
+
+<CodeBlock code={customTransitionCode} language="vue" />
+
+## コンテンツの読み込みとエラー処理 [#content-loading-error-handling]
+
+`#slide` スロットで描画を引き受ける場合、読み込み状態を報告するための 3 つのライフサイクルのコールバックがスロットのスコープで使えます。ギャラリーはスライドごとの状態を追跡し、それに応じてスピナーかエラーアイコンを表示します。コンテンツのプリローダーは壊れた URL をキャッシュするので、失敗したスライドを再訪しても再試行はしません。
+
+### ライフサイクルのコールバック [#lifecycle-callbacks]
+
+| コールバック | 型 | 説明 |
+| --- | --- | --- |
+| `onReady` | `() => void` | スライドの内容の読み込みに成功したことを伝えます（たとえば画像のデコードが終わった） |
+| `onWaiting` | `() => void` | スライドの内容が読み込み中またはバッファリング中であることを伝えます（スピナーを表示） |
+| `onError` | `() => void` | スライドの内容の読み込みに失敗したことを伝えます（エラーアイコンを表示） |
+
+### #slide でコールバックをつなぐ [#wiring-callbacks-in-slide]
+
+<CodeBlock code={lifecycleSlideCode} language="vue" />
+
+### 独自の読み込みスロット [#custom-loading-slot]
+
+`#loading` スロットで、デフォルトのスピナーを置き換えます。
+
+<CodeBlock code={customLoadingCode} language="vue" />
+
+### 独自のエラースロット [#custom-error-slot]
+
+`#error` スロットで、デフォルトの壊れた画像のアイコンを置き換えます。
+
+<CodeBlock code={customErrorCode} language="vue" />
+
+## CSS クラス [#css-classes]
+
+CSS クラスはすべて通常のクラス（スコープなし）なので、`@reelkit/vue-lightbox/styles.css` のあとに読み込むスタイルシートで、詳細度の高いセレクターを使って指定できます。色、サイズ、z-index を変えるなら、下の [テーマ設定](#theming) で説明している CSS カスタムプロパティを使ってください。
+
+| クラス | コンポーネント | 説明 |
+| --- | --- | --- |
+| `.rk-lightbox-overlay` | Overlay | ルートのコンテナー（フルスクリーンの背景） |
+| `.rk-lightbox-top-shade` | Overlay | コントロールの後ろの上部のグラデーション |
+| `.rk-lightbox-spinner` | Overlay | デフォルトの読み込みスピナー |
+| `.rk-lightbox-error` | Overlay | エラー状態のコンテナー（壊れた画像） |
+| `.rk-lightbox-error-text` | Overlay | エラー状態のテキストラベル |
+| `.rk-lightbox-controls-left` | Controls | 左上のコントロールのコンテナー |
+| `.rk-lightbox-btn` | Controls | コントロールのボタン（フルスクリーン、サウンドなど） |
+| `.rk-lightbox-close` | Controls | 閉じるボタン |
+| `.rk-lightbox-counter` | Controls | 画像のカウンターのチップ |
+| `.rk-lightbox-nav` | Navigation | ナビゲーションの矢印（前へ・次への両方） |
+| `.rk-lightbox-nav-prev` | Navigation | 前へ の矢印 |
+| `.rk-lightbox-nav-next` | Navigation | 次へ の矢印 |
+| `.rk-lightbox-info` | Info | タイトルと説明のコンテナー |
+| `.rk-lightbox-info-title` | Info | 画像のタイトル |
+| `.rk-lightbox-info-description` | Info | 画像の説明 |
+| `.rk-lightbox-slide` | Slide | スライドのコンテナー |
+| `.rk-lightbox-img` | Slide | 画像要素 |
+| `.rk-lightbox-video-container` | VideoSlide | 動画スライドのコンテナー（オプトイン） |
+| `.rk-lightbox-video-element` | VideoSlide | 動画要素（オプトイン） |
+| `.rk-lightbox-video-poster` | VideoSlide | 動画のポスター画像（オプトイン） |
+
+## テーマ設定 [#theming]
+
+テーマを変えるには、任意の `--rk-lightbox-*` CSS カスタムプロパティを `:root`（または `.rk-lightbox-overlay` の任意の祖先）で上書きします。`.rk-lightbox-overlay` に直接宣言すると継承された値を隠してしまうので、上書きは祖先のセレクターに置いてください。
+
+| トークン | デフォルト | 制御するもの |
+| --- | --- | --- |
+| `--rk-lightbox-overlay-bg` | `#000` | 背景色 |
+| `--rk-lightbox-overlay-z` | `9999` | オーバーレイの z-index |
+| `--rk-lightbox-top-shade-height` | `80px` | 上部のグラデーションの高さ |
+| `--rk-lightbox-top-shade-bg` | `linear-gradient(rgba(0,0,0,0.6), transparent)` | 上部のグラデーション |
+| `--rk-lightbox-edge-padding` | `16px` | 閉じる、ナビゲーション、コントロールの端からの距離 |
+| `--rk-lightbox-btn-bg` | `rgba(0, 0, 0, 0.5)` | 閉じる、ナビゲーション、小さいボタンのデフォルトの背景 |
+| `--rk-lightbox-btn-bg-hover` | `rgba(255, 255, 255, 0.2)` | 閉じる、ナビゲーション、小さいボタンのホバー時の背景 |
+| `--rk-lightbox-btn-fg` | `#fff` | 閉じる、ナビゲーション、小さいボタンのアイコンの色 |
+| `--rk-lightbox-btn-size` | `36px` | 小さいボタンの大きさ（フルスクリーン切り替えなど） |
+| `--rk-lightbox-close-size` | `40px` | 閉じるボタンの大きさ |
+| `--rk-lightbox-nav-size` | `48px` | 前後の矢印の大きさ |
+| `--rk-lightbox-nav-opacity` | `0.7` | 前後の矢印の通常時の不透明度 |
+| `--rk-lightbox-counter-bg` | `rgba(0, 0, 0, 0.5)` | カウンターのチップの背景 |
+| `--rk-lightbox-counter-fg` | `#fff` | カウンターのテキストの色 |
+| `--rk-lightbox-info-bg` | `linear-gradient(transparent, rgba(0,0,0,0.8))` | キャプションの背景のグラデーション |
+| `--rk-lightbox-title-size` | `18px` | タイトルの文字サイズ |
+| `--rk-lightbox-description-size` | `14px` | 説明の文字サイズ |
+| `--rk-lightbox-video-bg` | `#000` | \<video> の後ろのレターボックスの背景 |
+
+<CodeBlock code={themingCode} language="css" />
+
+## アクセシビリティ [#accessibility]
+
+オーバーレイのルートはモーダルダイアログ（`role="dialog"`、`aria-modal="true"`）です。`aria-label` プロップを指定すると、スクリーンリーダーの読み上げが変わります。デフォルトは「Image gallery」です。各スライドは `role="group"`、`aria-roledescription="slide"`、そして位置から作られる `aria-label`（たとえば「Image 2 of 5」）を持ちます。
+
+ギャラリーは開くとフォーカスを取り込み、閉じるとトリガーに戻します。Tab と Shift+Tab は中のフォーカス可能な要素を循環し、外へ出たフォーカス（外側のクリック、プログラムからのフォーカス）は引き戻されます。`@reelkit/vue` の `captureFocusForReturn` と `createFocusTrap` で実装されています。
+
+## キーボードショートカット [#keyboard-shortcuts]
+
+| キー | 動作 |
+| --- | --- |
+| `ArrowLeft` | 前の画像 |
+| `ArrowRight` | 次の画像 |
+| `Escape` | ギャラリーを閉じる（フルスクリーン中ならフルスクリーンを終了） |

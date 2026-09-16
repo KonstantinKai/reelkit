@@ -151,6 +151,29 @@ describe('language redirect decision', () => {
     ).toBe(null);
   });
 
+  // A Japanese browser usually lists English as a fallback, and Chinese
+  // readers must keep landing on the Chinese tree despite the shared script.
+  it('sends a Japanese browser to /ja and a Chinese one to /zh', () => {
+    expect(preferredLocale('ja,en-US;q=0.9,en;q=0.8')).toBe('ja');
+    expect(preferredLocale('ja-JP')).toBe('ja');
+    expect(preferredLocale('zh-CN,ja;q=0.5')).toBe('zh');
+    expect(detectLocale(request({ acceptLanguage: 'ja,en-US;q=0.9' }))).toBe(
+      '/ja/docs/ssr',
+    );
+    expect(
+      detectLocale(request({ pathname: '/', acceptLanguage: 'ja-JP' })),
+    ).toBe('/ja');
+    expect(
+      detectLocale(request({ acceptLanguage: 'ja', cookie: 'rk-locale=en' })),
+    ).toBe(null);
+    expect(
+      detectLocale(request({ pathname: '/ja/docs/ssr', acceptLanguage: 'ja' })),
+    ).toBe(null);
+    expect(
+      detectLocale(request({ acceptLanguage: 'ja', userAgent: 'curl/8.7.1' })),
+    ).toBe(null);
+  });
+
   it('redirects each translated locale to its own prefix', () => {
     for (const locale of kLocales) {
       if (locale === kDefaultLocale) continue;

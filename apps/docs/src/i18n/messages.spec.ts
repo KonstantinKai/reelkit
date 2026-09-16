@@ -60,4 +60,12 @@ describe('chrome dictionaries', () => {
     expect(messages.pt.whatsNew.more(1)).toBe('+1 lançamento');
     expect(messages.pt.whatsNew.more(3)).toBe('+3 lançamentos');
   });
+
+  // Japanese counts with a counter word and no plural, so one template
+  // serves every number.
+  it('counts Japanese releases with the counter word', () => {
+    const since = messages.ja.whatsNew.since;
+    expect(since(1)).toContain('1 件');
+    expect(since(5)).toContain('5 件');
+  });
 });

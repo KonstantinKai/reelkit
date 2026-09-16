@@ -8,7 +8,7 @@
  * hreflang set and the canonical builder all read from these, so none of them
  * grows a branch per language.
  */
-export const kLocales = ['en', 'uk', 'zh', 'pt'] as const;
+export const kLocales = ['en', 'uk', 'zh', 'pt', 'ja'] as const;
 
 export type Locale = (typeof kLocales)[number];
 
@@ -17,13 +17,17 @@ export const kDefaultLocale: Locale = 'en';
 /**
  * BCP 47 tag used for `<html lang>` and `hreflang`. Ukrainian and Portuguese
  * stay unregioned: `uk-UA` or `pt-BR` would scope the page to one country,
- * and the docs are written for anyone who reads the language.
+ * and the docs are written for anyone who reads the language. Japanese needs
+ * no region either, and the tag does more than label the page: browsers pick
+ * Japanese glyph forms for the characters it shares with Chinese only when
+ * the text is tagged `ja`.
  */
 export const kLocaleTags: Record<Locale, string> = {
   en: 'en',
   zh: 'zh-Hans',
   uk: 'uk',
   pt: 'pt',
+  ja: 'ja',
 };
 
 /** Name of each language, written in that language. */
@@ -32,6 +36,7 @@ export const kLocaleNames: Record<Locale, string> = {
   zh: '简体中文',
   uk: 'Українська',
   pt: 'Português',
+  ja: '日本語',
 };
 
 const _kPrefixes: Record<Locale, string> = {
@@ -39,9 +44,10 @@ const _kPrefixes: Record<Locale, string> = {
   zh: '/zh',
   uk: '/uk',
   pt: '/pt',
+  ja: '/ja',
 };
 
-/** URL prefix for a locale — empty for English, `/zh`, `/uk` or `/pt` otherwise. */
+/** URL prefix for a locale — empty for English, the language code otherwise. */
 export function localePrefix(locale: Locale): string {
   return _kPrefixes[locale];
 }

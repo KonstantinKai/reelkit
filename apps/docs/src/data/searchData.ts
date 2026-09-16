@@ -4,6 +4,7 @@ import { kDefaultLocale, withLocale, type Locale } from '../i18n/locale';
 import { zhCategories, zhKeywords, zhTitles } from './searchData.zh';
 import { ukCategories, ukKeywords, ukTitles } from './searchData.uk';
 import { ptCategories, ptKeywords, ptTitles } from './searchData.pt';
+import { jaCategories, jaKeywords, jaTitles } from './searchData.ja';
 
 export type NavSectionKey = keyof Messages['nav']['sections'];
 export type NavItemKey = keyof Messages['nav']['items'];
@@ -3031,6 +3032,7 @@ const _kDictionaries: Partial<Record<Locale, SearchDictionary>> = {
   zh: { titles: zhTitles, categories: zhCategories, keywords: zhKeywords },
   uk: { titles: ukTitles, categories: ukCategories, keywords: ukKeywords },
   pt: { titles: ptTitles, categories: ptCategories, keywords: ptKeywords },
+  ja: { titles: jaTitles, categories: jaCategories, keywords: jaKeywords },
 };
 
 const _kLocalisedItems = new Map<Locale, SearchItem[]>();

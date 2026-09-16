@@ -14,6 +14,7 @@ import { SearchItem, matchesSearch, searchItemsFor } from '../data/searchData';
 import { frameworkSignal } from '../data/frameworkSignal';
 import { useLocale, useMessages } from '../i18n/useLocale';
 import type { Messages } from '../i18n/messages';
+import { isImeComposing } from './imeComposition';
 
 interface CommandPaletteProps {
   isOpen: boolean;
@@ -129,6 +130,7 @@ export default function CommandPalette({
       ),
       observeDomEvent(document, 'keydown', (e: Event) => {
         const ke = e as KeyboardEvent;
+        if (isImeComposing(ke)) return;
         const items = filtered.value;
         switch (ke.key) {
           case 'ArrowDown':

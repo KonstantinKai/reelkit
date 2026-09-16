@@ -1,0 +1,164 @@
+---
+title: React API リファレンス
+description: '@reelkit/react の完全なリファレンスです。コンポーネント、props、メソッド、コールバック、ReelIndicator、Observe、AnimatedObserve、フック、アクセシビリティ、ユーティリティを扱います。'
+---
+
+import reelapiMethods from '../../../snippets/react-api/reelapi-methods.ts?raw';
+import observe from '../../../snippets/react-api/observe.tsx?raw';
+import animatedobserve from '../../../snippets/react-api/animatedobserve.tsx?raw';
+import usebodylock from '../../../snippets/react-api/usebodylock.ts?raw';
+import useviewedstate from '../../../snippets/react-api/useviewedstate.tsx?raw';
+import usereactrouterurladapter from '../../../snippets/react-api/usereactrouterurladapter.tsx?raw';
+import createdefaultkeyextractorforloop from '../../../snippets/react-api/createdefaultkeyextractorforloop.tsx?raw';
+
+`@reelkit/react` のコンポーネント、props、メソッドの完全なリファレンスです。
+
+## Reel の Props [#reel-props]
+
+<Caption>`ReelProps`</Caption>
+
+| Prop | 型 | デフォルト | 説明 |
+| --- | --- | --- | --- |
+| `count` | `number` | 必須 | アイテムの総数 |
+| `size` | `[number, number]` | - | \[幅, 高さ\] の形での幅と高さ。省略すると ResizeObserver で自動計測します |
+| `itemBuilder` | `(index, indexInRange, size) => ReactElement` | 必須 | 各スライドを描画する関数 |
+| `direction` | `'vertical' \| 'horizontal'` | 'vertical' | スクロールの方向 |
+| `initialIndex` | `number` | 0 | 開始時のインデックス |
+| `loop` | `boolean` | false | 無限ループを有効にします |
+| `enableWheel` | `boolean` | false | マウスホイールでの操作を有効にします |
+| `wheelDebounceMs` | `number` | 200 | ホイールイベントのデバウンス（ms） |
+| `enableNavKeys` | `boolean` | true | キーボード操作を有効にします |
+| `onNavKeyPress` | `(increment: -1 \| 1) => void` | - | 矢印キーによる操作の独自ハンドラー。デフォルトの前後移動を置き換えます。 |
+| `transition` | `TransitionTransformFn` | slideTransition | トランジション効果の関数。組み込み：slideTransition、fadeTransition、flipTransition、cubeTransition、zoomTransition |
+| `transitionDuration` | `number` | 300 | アニメーションの長さ（ms） |
+| `enableGestures` | `boolean` | true | タッチやマウスのドラッグによる操作を有効にします |
+| `swipeDistanceFactor` | `number` | 0.12 | スワイプのしきい値（0-1） |
+| `rangeExtractor` | `(index: number, count: number) => number[]` | defaultRangeExtractor | 描画するインデックスを決める独自の関数 |
+| `keyExtractor` | `(index: number) => string` | - | React の差分更新に使う独自のキー関数（ループ時に便利） |
+| `apiRef` | `RefObject<ReelApi>` | - | API のメソッドにアクセスするための ref |
+| `className` | `string` | - | コンテナー要素の CSS クラス |
+| `style` | `CSSProperties` | - | コンテナー要素のインラインスタイル |
+| `ariaLabel` | `string` | - | スクリーンリーダーが読み上げる、カルーセル領域のアクセシブルなラベル |
+
+## コールバック [#callbacks]
+
+| Prop | 型 | 説明 |
+| --- | --- | --- |
+| `afterChange` | `(index, indexInRange) => void` | スライドの切り替えが完了したあとに呼ばれます |
+| `beforeChange` | `(index, nextIndex, indexInRange) => void` | スライドの切り替えが始まる前に呼ばれます |
+| `onSlideDragStart` | `(index) => void` | ドラッグジェスチャーが始まったときに呼ばれます |
+| `onSlideDragEnd` | `(index) => void` | ドラッグジェスチャーが終わったときに呼ばれます |
+| `onSlideDragCanceled` | `(index) => void` | ドラッグがキャンセルされたときに呼ばれます |
+
+## ReelApi のメソッド [#reelapi-methods]
+
+`apiRef` からスライダーのメソッドにアクセスします：
+
+<CodeBlock code={reelapiMethods} language="typescript" />
+
+| メソッド | 型 | 説明 |
+| --- | --- | --- |
+| `next()` | `() => void` | 次のスライドへ移動します |
+| `prev()` | `() => void` | 前のスライドへ移動します |
+| `goTo(index, animate?)` | `(number, boolean?) => Promise` | 指定したスライドへ移動します |
+| `adjust()` | `() => void` | スライドの位置を計算し直します |
+| `observe()` | `() => void` | キーボードの監視を始めます |
+| `unobserve()` | `() => void` | キーボードの監視を止めます |
+
+## ReelIndicator の Props [#reelindicator-props]
+
+<Caption>`ReelIndicatorProps`</Caption>
+
+| Prop | 型 | デフォルト | 説明 |
+| --- | --- | --- | --- |
+| `count` | `number` | 自動 | アイテムの総数。Reel の中に置けば親から自動で接続されます。単独で使うときは明示的に渡してください |
+| `active` | `number` | 自動 | 現在アクティブなインデックス。Reel の中に置けば親から自動で接続されます。単独で使うときは明示的に渡してください |
+| `direction` | `'vertical' \| 'horizontal'` | 'vertical' | インジケーターの向き |
+| `radius` | `number` | 3 | ドットの大きさ（ピクセル） |
+| `visible` | `number` | 5 | 通常サイズで表示するドットの最大数 |
+| `gap` | `number` | 4 | ドットの間隔（ピクセル） |
+| `activeColor` | `string` | '#fff' | アクティブなドットの色 |
+| `inactiveColor` | `string` | 'rgba(255,255,255,0.5)' | 非アクティブなドットの色 |
+| `edgeScale` | `number` | 0.5 | はみ出した端のドットの縮小率 |
+| `onDotClick` | `(index: number) => void` | - | ドットがクリックされたときのコールバック |
+| `className` | `string` | - | 独自の CSS クラス |
+| `style` | `CSSProperties` | - | 独自のインラインスタイル |
+
+## オブザーバーコンポーネント [#observer-components]
+
+### Observe [#observe]
+
+親を再レンダリングさせずに、コアのシグナルを React の描画につなぎます。購読しているシグナルが変わったときに再実行されるのは、children の関数だけです。
+
+<CodeBlock code={observe} language="tsx" />
+
+| Prop | 型 | デフォルト | 説明 |
+| --- | --- | --- | --- |
+| `signals` | `Subscribable[]` | `必須` | 購読するシグナル。どれかが通知すると children の関数が再実行されます。再実行されるのはその関数だけで、親は再レンダリングされません。 |
+| `children` | `() => ReactElement \| null` | `必須` | 変更のたびに再実行される描画関数。シグナルの値はこの中で読んでください。外で読んだ値は一度だけ取り込まれ、古くなります。 |
+
+### AnimatedObserve [#animatedobserve]
+
+アニメーションする値のシグナルを購読し、`requestAnimationFrame` でなめらかに補間します。
+
+<CodeBlock code={animatedobserve} language="tsx" />
+
+| Prop | 型 | デフォルト | 説明 |
+| --- | --- | --- | --- |
+| `signal` | `Signal<AnimatedValue>` | `必須` | \{ value, duration, done? \} を出すシグナル。duration が 0 より大きければ現在の値から新しい値へ補間し、0 ならすぐその値になります。 |
+| `children` | `(value: number) => ReactElement` | `必須` | 現在のフレームの補間された値を受け取る描画関数。DOM がアニメーションに遅れないよう、同期的に反映されます。 |
+
+## フック [#hooks]
+
+### useBodyLock [#usebodylock]
+
+body のスクロールを止め、スクロールバーの幅によるずれを補正します。
+
+<CodeBlock code={usebodylock} language="typescript" />
+
+### useOverlayUrlState [#useoverlayurlstate]
+
+<Caption>`OverlayUrlStateOptions`</Caption>
+
+オーバーレイ用の URL 状態コントローラーを作ります。それを `*UrlOverlay` の `controller` プロップに渡します。
+
+手順と例は [React ガイドの URL の状態](/docs/react/guide#url-state) を参照してください。
+
+| オプション | 型 | デフォルト | 説明 |
+| --- | --- | --- | --- |
+| `param` | `string` | 必須 | アクティブなスライドを持つクエリパラメーター（たとえば "photo"）。最初の描画で読まれ、コンポーネントが生きているあいだは固定です。変えるには再マウント（key を付ける）してください。 |
+| `adapter` | `UrlAdapter` | History API | 読み書きに使うナビゲーションの仕組み。ルーターを使うアプリでは、ルーター自身の位置情報が古くならないよう、ルーターに連動したアダプターを渡してください。最初の描画で読まれ、コンポーネントが生きているあいだは固定です。変えるには再マウントしてください。 |
+| `codec` | `{ decode(raw) => Id \| null; encode(id) => string }` | 必須 | 通信形式：パラメーターの文字列 ↔ 安定した識別子で、コレクションは見ません。同じ Id を共有する対として locator と一緒に使います。デフォルトの ?photo=3 のインデックスギャラリーなら ...urlIndexKey(() => images.length) を展開し、ギャラリーが並べ替えられてもブックマークが保たれるようにするなら独自のもの（base64、スラッグ）を用意します。毎回読まれるので、次のデコードやエンコードは最新の描画の codec が担当します。 |
+| `locator` | `{ locate(id) => number \| null; locateAsync?(id) => Promise<number \| null>; identify(index) => id }` | 必須 | 識別子を位置に対応させ、その妥当性を自分で判断します：locate（同期）、locateAsync（ページングされたギャラリー向けの非同期フォールバック）、identify（書き込み）。単純なインデックスのギャラリーなら ...urlIndexKey(() => images.length) を展開します。この locator と対応する codec を提供し、?photo=3 を現在の件数で制限するので、古い ?photo=99 は指されていないスライドを開く代わりに URL から取り除かれます。ページングされたフィードや識別子で指すギャラリーは、代わりに独自の codec と locator の対を用意します。毎回読まれるので、次の検索には最新の描画の locator が答え、描画のあいだに locateAsync を追加または削除すると、次に見つからなかったときから反映されます。 |
+
+### useViewedState [#useviewedstate]
+
+<Caption>`ViewedStateOptions`</Caption>
+
+閲覧者がギャラリーのどこまで見たかを覚え、コンポーネントが生きているあいだストレージを追い続けます。アドレスバーと同じキーを渡せば、保存されたエントリーは共有リンクのパラメーターとまったく同じになります。`entries` は `Observe` を通して読んでください。そうすれば、ここか別のタブで位置が記録されたときにリングが描き直されます。
+
+<CodeBlock code={useviewedstate} language="tsx" />
+
+### useReactRouterUrlAdapter [#usereactrouterurladapter]
+
+React Router に連動した `UrlAdapter` です。ルーターを使うアプリで `useOverlayUrlState` の `adapter` オプションに渡すと、ナビゲーションの信頼できる情報源がルーターだけに保たれます。ルーターの裏で `history.pushState` を書くと、その位置情報が古くなり、次のナビゲーションでパラメーターが消えます。書き込むのはクエリだけなので、パス名とハッシュはそのまま残ります。変更のたびに、ルーターが同じページで push したのか、replace したのか、履歴をたどったのかを報告するので、`<Link>` から開いたギャラリーは 1 回戻るだけで閉じます。
+
+独自のサブパスから提供されるので、ルーターを使わないアプリのバンドルに `react-router-dom` が入ることはありません。`react-router-dom` は任意の peer dependency です。
+
+<CodeBlock code={usereactrouterurladapter} language="tsx" />
+
+## アクセシビリティ [#accessibility]
+
+`<Reel>` は `aria-roledescription="carousel"` を持つ `role="region"` として描画されます。`ariaLabel` プロップを指定すると、スクリーンリーダー向けの名前が付きます。控えめなライブリージョンが、カルーセルを再レンダリングせずに、スライドが変わるたびに「Slide N of M」と読み上げます。非アクティブなスライドには `inert` 属性が付くので、フォーカスや支援技術での移動では飛ばされます。
+
+`<ReelIndicator>` は、ドットにローミング tabindex を持つ `role="tablist"` として描画されます。矢印キーでフォーカスが移動し、Enter か Space でスライドが有効になります。
+
+`<Reel>` を囲む独自のモーダルを作るなら、フォーカスを戻したり閉じ込めたりするために `captureFocusForReturn`、`createFocusTrap`、`getFocusableElements` が `@reelkit/react` から再エクスポートされています。
+
+## ユーティリティ [#utilities]
+
+### createDefaultKeyExtractorForLoop [#createdefaultkeyextractorforloop]
+
+`loop` が有効なときに重複するインデックスを扱うキーエクストラクターを作ります。
+
+<CodeBlock code={createdefaultkeyextractorforloop} language="tsx" />

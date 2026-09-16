@@ -99,6 +99,16 @@ describe('locale helpers', () => {
     expect(localeUrl('pt', '/')).toBe('https://reelkit.dev/pt');
   });
 
+  it('reads the Japanese locale from the path prefix', () => {
+    expect(readLocaleFromPath('/ja')).toBe('ja');
+    expect(readLocaleFromPath('/ja/docs/ssr')).toBe('ja');
+    expect(stripLocaleFromPath('/ja/docs/ssr')).toBe('/docs/ssr');
+    expect(localeUrl('ja', '/docs/ssr')).toBe(
+      'https://reelkit.dev/ja/docs/ssr',
+    );
+    expect(localeUrl('ja', '/')).toBe('https://reelkit.dev/ja');
+  });
+
   // A page named `ukraine` is English prose, not the Ukrainian tree.
   it('does not mistake an English slug that opens with a locale prefix', () => {
     expect(readLocaleFromPath('/ukraine')).toBe('en');
@@ -122,6 +132,13 @@ describe('locale helpers', () => {
   // reads the same page, so the tag names only the language.
   it('tags Portuguese without a region', () => {
     expect(kLocaleTags.pt).toBe('pt');
+  });
+
+  // The tag is what makes a browser draw shared characters in their Japanese
+  // forms; `zh-Hans` or no tag at all would draw them the Chinese way.
+  it('tags Japanese as ja, apart from Chinese', () => {
+    expect(kLocaleTags.ja).toBe('ja');
+    expect(kLocaleTags.ja).not.toBe(kLocaleTags.zh);
   });
 
   it('gives every non-English locale its own prefix', () => {

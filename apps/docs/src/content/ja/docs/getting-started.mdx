@@ -1,0 +1,194 @@
+---
+title: はじめに
+description: 数分で最初の ReelKit スライダーを動かします。インストール、仮想化された 3 枚のスライド、ジェスチャーとキーボード操作まで。
+---
+
+import quickStart from '../../snippets/getting-started/quick-start.tsx?raw';
+import quickStart2 from '../../snippets/getting-started/quick-start-2.ts?raw';
+import quickStart3 from '../../snippets/getting-started/quick-start-3.vue?raw';
+import reelindicator from '../../snippets/getting-started/reelindicator.tsx?raw';
+import reelindicator2 from '../../snippets/getting-started/reelindicator-2.html?raw';
+import reelindicator3 from '../../snippets/getting-started/reelindicator-3.vue?raw';
+import navigation from '../../snippets/getting-started/navigation.tsx?raw';
+import navigation2 from '../../snippets/getting-started/navigation-2.html?raw';
+import navigation3 from '../../snippets/getting-started/navigation-3.vue?raw';
+
+reelkit は **一度に 1 つのアイテムだけを表示するスライダー** です。TikTok、Instagram Reels、Stories のように、画面には常に 1 つのアイテムが表示されます。縦型の動画フィード、フルスクリーンのギャラリー、スワイプで切り替えるコンテンツに最適です。
+
+<Callout type="info" title="ReelKit を気に入っていただけましたか？">
+  ReelKit が役に立ったら、[GitHub でスターを付けて](https://github.com/KonstantinKai/reelkit)いただけるとうれしいです。ほかの開発者がプロジェクトを見つけやすくなり、開発を続ける力になります。応援していただき、心から感謝しています！
+</Callout>
+
+<Callout type="warning" title="0.x.x — Unstable API">
+  ReelKit は活発に開発中です。バージョンが 0.x.x のあいだは、非推奨期間を設けずにマイナーバージョン間で API が変わることがあります。予期しない破損を避けるため、バージョンを固定してください。
+</Callout>
+
+## フレームワークを選ぶ [#select-your-framework]
+
+<FrameworkPicker />
+
+## オンラインで試す [#try-it-online]
+
+インストール不要で、ブラウザーからそのまま試せます：
+
+<FrameworkVariant for="react">
+
+<DemoLinks demo="https://react-demo.reelkit.dev/?utm_source=docs" demoLabel="React Demo" starter="https://stackblitz.com/github/KonstantinKai/reelkit-react-starter" starterLabel="React Starter" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+<DemoLinks demo="https://angular-demo.reelkit.dev/?utm_source=docs" demoLabel="Angular Demo" starter="https://stackblitz.com/github/KonstantinKai/reelkit-angular-starter" starterLabel="Angular Starter" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+<DemoLinks demo="https://vue-demo.reelkit.dev/?utm_source=docs" demoLabel="Vue Demo" starter="https://stackblitz.com/github/KonstantinKai/reelkit-vue-starter" starterLabel="Vue Starter" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="react">
+
+## クイックスタート [#quick-start]
+
+React で作る最小限の縦型スライダー：
+
+<CodeBlock code={quickStart} language="tsx" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+## クイックスタート [#quick-start]
+
+Angular で作る最小限の縦型スライダー：
+
+<CodeBlock code={quickStart2} language="typescript" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+## クイックスタート [#quick-start]
+
+Vue で作る最小限の縦型スライダー：
+
+<CodeBlock code={quickStart3} language="vue" />
+
+</FrameworkVariant>
+
+## 主な概念 [#key-concepts]
+
+### Reel [#reel]
+
+`Reel` コンポーネントはメインのコンテナーです。スライダーの状態を管理し、タッチジェスチャー、キーボード操作、アニメーションを処理します。スライドの描画には `itemBuilder` によるレンダープロップパターンを使います。
+
+### itemBuilder [#itembuilder]
+
+`itemBuilder` プロップは、インデックスを受け取って各スライドの内容を返す関数です。このパターンによって仮想化が可能になり、表示中のアイテムだけが描画されます。
+
+### ReelIndicator [#reelindicator]
+
+スライダー内の現在位置を示す、Instagram 風の進捗インジケーターを表示する任意のコンポーネントです。
+
+<FrameworkVariant for="react">
+
+<CodeBlock code={reelindicator} language="tsx" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+<CodeBlock code={reelindicator2} language="html" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+<CodeBlock code={reelindicator3} language="vue-html" />
+
+</FrameworkVariant>
+
+## ナビゲーション [#navigation]
+
+組み込みの操作方法：
+
+<Bullets marker="dot">
+
+- **タッチ／スワイプ：** ドラッグで移動し、慣性とスナップが効きます
+- **キーボード：** 矢印キー（オーバーレイ系のコンポーネントは Escape でも閉じます）
+- **マウスホイール：** `enableWheel` プロップで有効にします
+- **プログラムから：** `apiRef` で `next()`、`prev()`、`goTo()` を呼びます
+
+</Bullets>
+
+<FrameworkVariant for="react">
+
+<CodeBlock code={navigation} language="tsx" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+<CodeBlock code={navigation2} language="html" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+<CodeBlock code={navigation3} language="vue" />
+
+</FrameworkVariant>
+
+<NextSteps
+        items={[
+          {
+            label: 'インストール',
+            path: '/docs/installation',
+            description: 'すべてのパッケージとセットアップ方法',
+          },
+          {
+            label: 'Core ガイド',
+            path: '/docs/core/guide',
+            description: 'フレームワークに依存しないエンジン',
+          },
+          {
+            label: 'フレームワークガイド',
+            path: {
+              react: '/docs/react/guide',
+              angular: '/docs/angular/guide',
+              vue: '/docs/vue/guide',
+            },
+            description: 'コンポーネント、デモ、組み込み方',
+          },
+          {
+            label: 'Reel Player',
+            path: {
+              react: '/docs/reel-player',
+              angular: '/docs/angular-reel-player',
+              vue: '/docs/vue-reel-player',
+            },
+            description: 'TikTok／Reels 風の動画プレイヤー',
+          },
+          {
+            label: 'Lightbox',
+            path: {
+              react: '/docs/lightbox',
+              angular: '/docs/angular-lightbox',
+              vue: '/docs/vue-lightbox',
+            },
+            description: '画像と動画のギャラリー',
+          },
+          {
+            label: 'Stories Player',
+            path: {
+              react: '/docs/stories-player',
+              angular: '/docs/angular-stories-player',
+              vue: '/docs/vue-stories-player',
+            },
+            description: 'Instagram 風のストーリービューアー',
+          },
+        ]}
+      />

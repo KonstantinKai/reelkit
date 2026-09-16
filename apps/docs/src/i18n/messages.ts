@@ -425,4 +425,83 @@ const pt: Messages = {
   },
 };
 
-export const messages: Record<Locale, Messages> = { en, zh, uk, pt };
+const ja: Messages = {
+  header: {
+    docs: 'ドキュメント',
+    search: '検索',
+    githubLabel: 'GitHub の ReelKit',
+    themeLabel: 'テーマを切り替える',
+    themeLight: 'ライト',
+    themeDark: 'ダーク',
+    themeSystem: 'システム',
+    menuLabel: 'ナビゲーションを切り替える',
+    languageLabel: '言語を変更する',
+  },
+  nav: {
+    sections: {
+      overview: '概要',
+      core: 'Core',
+      react: 'React',
+      angular: 'Angular',
+      vue: 'Vue',
+      components: 'コンポーネント',
+      resources: 'リソース',
+    },
+    items: {
+      gettingStarted: 'はじめに',
+      installation: 'インストール',
+      ssr: 'SSR',
+      guide: 'ガイド',
+      apiReference: 'API リファレンス',
+      storiesCore: 'Stories Core',
+      reelPlayer: 'Reel Player',
+      lightbox: 'Lightbox',
+      storiesPlayer: 'Stories Player',
+      troubleshooting: 'トラブルシューティング',
+      llms: 'AI / LLM との連携',
+      changelog: '新着情報',
+    },
+    comingSoon: '近日公開',
+  },
+  footer: {
+    tagline:
+      'ヘッドレスで仮想化された、依存関係のないスライダーエンジン。60 fps のジェスチャーと 3 つの DOM ノードだけで、TikTok／Reels 風のフィードを作れます。',
+    documentation: 'ドキュメント',
+    gettingStarted: 'はじめに',
+    installation: 'インストール',
+    examples: '例',
+    community: 'コミュニティ',
+    rights: (year) => `© ${year} ReelKit. All rights reserved.`,
+    privacy: 'プライバシー',
+    terms: '利用規約',
+  },
+  search: {
+    placeholder: 'ドキュメントを検索…',
+    empty: (query) => `「${query}」に一致する結果はありません`,
+    pagesGroup: (category) => `ページ · ${category}`,
+    sectionsGroup: (page) => `${page} · セクション`,
+    navigate: '移動',
+    open: '開く',
+    close: '閉じる',
+  },
+  whatsNew: {
+    title: '新着情報',
+    since: (count) => `前回の訪問以降、${count} 件の新しいリリース`,
+    more: (count) => `ほか ${count} 件のリリース`,
+    dismiss: '閉じる',
+    viewFull: '変更履歴をすべて見る',
+    close: '閉じる',
+    closeOverlay: '新着情報のダイアログを閉じる',
+  },
+  nextSteps: {
+    title: '次のステップ',
+  },
+  notFound: {
+    title: 'ページが見つかりません',
+    description: 'お探しのページは存在しないか、移動した可能性があります。',
+    home: 'ホーム',
+    docs: 'ドキュメント',
+  },
+};
+
+export const messages: Record<Locale, Messages> = { en, zh, uk, pt, ja };

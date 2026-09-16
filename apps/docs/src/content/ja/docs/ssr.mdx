@@ -1,0 +1,182 @@
+---
+title: サーバーサイドレンダリング
+description: reelkit のすべてのパッケージはサーバーで動作します。Next.js、Remix、Angular Universal、Nuxt 3 など、どの SSR 環境でもインポートして描画できます。
+---
+
+import nextAppRouter from '../../snippets/ssr/next-app-router.tsx?raw';
+import nextAppRouterPage from '../../snippets/ssr/next-app-router-page.tsx?raw';
+import nextPagesRouter from '../../snippets/ssr/next-pages-router.tsx?raw';
+import nextAutoSize from '../../snippets/ssr/next-auto-size.tsx?raw';
+import nextExplicitSize from '../../snippets/ssr/next-explicit-size.tsx?raw';
+import nextOverlay from '../../snippets/ssr/next-overlay.tsx?raw';
+import angularUniversal from '../../snippets/ssr/angular-universal.ts?raw';
+import nuxtPage from '../../snippets/ssr/nuxt-page.vue?raw';
+import nuxtFeed from '../../snippets/ssr/nuxt-feed.vue?raw';
+import nuxtAutoSize from '../../snippets/ssr/nuxt-auto-size.vue?raw';
+import coreDirect from '../../snippets/ssr/core-direct.ts?raw';
+
+reelkit のすべてのパッケージはサーバーで動作します。Next.js、Remix、Angular Universal など、どの SSR 環境でもインポートして描画できます。
+
+## 仕組み [#how-it-works]
+
+コアのスライダーコントローラーは純粋なロジックで、生成時に DOM へはアクセスしません。ジェスチャーのリスナー、キーボードイベント、アニメーションは、クライアント側のライフサイクルでだけ取り付けられます。
+
+SSR のあいだ、`Reel` コンポーネントは最初に表示されるスライド（通常は前・現在・次の 3 枚）を持つ静的なコンテナーを描画します。ハイドレーション時に、ジェスチャー・キーボード・ホイールのコントローラーを取り付けて、すべてを操作可能にします。
+
+<Table boxed>
+  <thead>
+    <tr>
+      <th>パッケージ</th>
+      <th>SSR で安全</th>
+      <th>備考</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>`@reelkit/core`</td>
+      <td><Ok>はい</Ok></td>
+      <td>純粋なロジックで、インポート時にも生成時にもブラウザー API を使いません</td>
+    </tr>
+    <tr data-rk-fw="react">
+      <td>`@reelkit/react`</td>
+      <td><Ok>はい</Ok></td>
+      <td>Reel と ReelIndicator はサーバーで正しい HTML を出力します</td>
+    </tr>
+    <tr data-rk-fw="angular">
+      <td>`@reelkit/angular`</td>
+      <td><Ok>はい</Ok></td>
+      <td>スタンドアロンコンポーネントで、Angular Universal に対応します</td>
+    </tr>
+    <tr data-rk-fw="vue">
+      <td>`@reelkit/vue`</td>
+      <td><Ok>はい</Ok></td>
+      <td>コンポーネントとコンポーザブルで、Nuxt 3 に対応します</td>
+    </tr>
+    <tr data-rk-fw="react">
+      <td>`@reelkit/react-reel-player`</td>
+      <td><Ok>はい</Ok></td>
+      <td>閉じているあいだ（`isOpen=false`）は何も描画しません</td>
+    </tr>
+    <tr data-rk-fw="react">
+      <td>`@reelkit/react-lightbox`</td>
+      <td><Ok>はい</Ok></td>
+      <td>閉じているあいだ（`isOpen=false`）は何も描画しません</td>
+    </tr>
+    <tr data-rk-fw="angular">
+      <td>`@reelkit/angular-reel-player`</td>
+      <td><Ok>はい</Ok></td>
+      <td>閉じているあいだ（`isOpen=false`）は何も描画しません</td>
+    </tr>
+    <tr data-rk-fw="angular">
+      <td>`@reelkit/angular-lightbox`</td>
+      <td><Ok>はい</Ok></td>
+      <td>閉じているあいだ（`isOpen=false`）は何も描画しません</td>
+    </tr>
+    <tr>
+      <td>`@reelkit/stories-core`</td>
+      <td><Ok>はい</Ok></td>
+      <td>フレームワークに依存せず、DOM にアクセスしません</td>
+    </tr>
+    <tr data-rk-fw="react">
+      <td>`@reelkit/react-stories-player`</td>
+      <td><Ok>はい</Ok></td>
+      <td>閉じているあいだ（`isOpen=false`）は何も描画しません</td>
+    </tr>
+  </tbody>
+</Table>
+
+<FrameworkVariant for="react">
+
+## Next.js App Router [#next-js-app-router]
+
+Reel はブラウザーのイベントと ref を使うため、Client Component として動作します。`Reel` を使うファイルの先頭に `"use client"` ディレクティブを追加してください：
+
+<CodeBlock code={nextAppRouter} language="tsx" />
+
+データは Server Component で取得して、下に渡せます：
+
+<CodeBlock code={nextAppRouterPage} language="tsx" />
+
+## Next.js Pages Router [#next-js-pages-router]
+
+Pages Router は追加の設定なしで動作します。コンポーネントは SSR で描画され、クライアントでハイドレーションされます：
+
+<CodeBlock code={nextPagesRouter} language="tsx" />
+
+## SSR でのレスポンシブなサイズ [#responsive-size-with-ssr]
+
+`size` プロップは省略してください。`size` を渡さない場合、Reel はクライアントで `ResizeObserver` を使ってコンテナーを自動計測します。SSR のあいだは空のコンテナーを描画し、ハイドレーション時に計測してすぐにスライドを描画します：
+
+<CodeBlock code={nextAutoSize} language="tsx" />
+
+<Callout type="info" title="自動計測の仕組み">
+  `size` を省略した場合、コンテナーのサイズは CSS で決める必要があります（親の flex／grid、明示的な幅と高さ、またはパーセント指定）。最初の計測が終わるまでスライダーは何も描画せず、その後は計測した寸法いっぱいに広がり、以降のリサイズにも自動で追従します。
+</Callout>
+
+### サイズの明示（手動の方法） [#explicit-size-manual-approach]
+
+ピクセル単位で制御したい場合は、`size` プロップを明示的に渡します。SSR のあいだは `window.innerWidth` が使えないので、デフォルト値を用意してマウント時に更新してください：
+
+<CodeBlock code={nextExplicitSize} language="tsx" />
+
+<Callout type="info" title="ヒント">
+  最も多い画面サイズに合うデフォルト値を選びましょう（まずはモバイルから）。実際の画面が異なっていても、ハイドレーション時にスライダーがすぐ調整し直します。
+</Callout>
+
+## オーバーレイコンポーネント [#overlay-components]
+
+`ReelPlayerOverlay` と `LightboxOverlay` は `isOpen={false}` のとき何も描画しないため、そのままで SSR に安全です。ポータルをマウントするのは開いたとき（通常はクライアントでの操作がきっかけ）だけです：
+
+<CodeBlock code={nextOverlay} language="tsx" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+## Angular Universal / SSR [#angular-universal-ssr]
+
+Angular のコンポーネントはすべて SSR に安全です。スライダーコントローラーはブラウザー API へのアクセスを `afterRenderEffect` まで遅らせます。オーバーレイコンポーネントは `isOpen=false` のとき何も描画しないので、サーバーでのレンダリング中にマークアップを出力しません。
+
+<CodeBlock code={angularUniversal} language="typescript" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+## Nuxt 3 [#nuxt-3]
+
+ReelKit の Vue コンポーネントは Nuxt 3 でそのまま動作します。Reel はブラウザー API（タッチイベント、ResizeObserver）を使うため、`<ClientOnly>` コンポーネントで囲むか、`.client.vue` サフィックスを使ってください：
+
+<CodeBlock code={nuxtPage} language="vue" />
+
+Feed コンポーネントでは、いつもどおり Reel を使います：
+
+<CodeBlock code={nuxtFeed} language="vue" />
+
+## SSR でのレスポンシブなサイズ [#responsive-size-with-ssr]
+
+`size` プロップを省略すると自動計測が使われます。Reel は親の 100% に合わせてサイズを決めます。SSR のあいだは空のコンテナーを描画し、ハイドレーション時に計測してスライドを描画します：
+
+<CodeBlock code={nuxtAutoSize} language="vue" />
+
+</FrameworkVariant>
+
+## Core を直接使う [#using-core-directly]
+
+独自のフレームワーク連携のために `@reelkit/core` を直接使う場合、コントローラーはサーバーで作成できます。`attach()` と `observe()` はクライアントで呼んでください：
+
+<CodeBlock code={coreDirect} language="typescript" />
+
+## まとめ [#summary]
+
+<Callout type="success" title="そのまま動くもの">
+  - どの reelkit パッケージもサーバーでインポートできる
+  - SSR 中にスライダーコンポーネントを描画できる（正しい静的 HTML を出力）
+  - サーバーでコントローラーを作成できる
+  - `isOpen=false` のオーバーレイコンポーネント
+</Callout>
+
+<Callout type="warning" title="注意すること">
+  - 自動計測には `size` を省略する。画面サイズに基づく寸法を使う場合はデフォルト値を用意する
+  - Core を直接使う場合、サーバーでは `attach()`／`observe()` を呼ばない
+</Callout>

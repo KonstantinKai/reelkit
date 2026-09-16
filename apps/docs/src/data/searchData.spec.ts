@@ -8,6 +8,7 @@ import {
 import { zhCategories, zhKeywords, zhTitles } from './searchData.zh';
 import { ukCategories, ukKeywords, ukTitles } from './searchData.uk';
 import { ptCategories, ptKeywords, ptTitles } from './searchData.pt';
+import { jaCategories, jaKeywords, jaTitles } from './searchData.ja';
 import {
   kDefaultLocale,
   kLocales,
@@ -28,6 +29,7 @@ const dictionaries: Record<Exclude<Locale, 'en'>, Dictionary> = {
   zh: { titles: zhTitles, categories: zhCategories, keywords: zhKeywords },
   uk: { titles: ukTitles, categories: ukCategories, keywords: ukKeywords },
   pt: { titles: ptTitles, categories: ptCategories, keywords: ptKeywords },
+  ja: { titles: jaTitles, categories: jaCategories, keywords: jaKeywords },
 };
 
 const translated = kLocales
@@ -204,6 +206,7 @@ describe('palette matching', () => {
       'stories',
       'встановлення',
       '安装',
+      'インストール',
     ];
     for (const query of queries) {
       const q = query.toLowerCase().trim();

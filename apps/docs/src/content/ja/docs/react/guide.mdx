@@ -1,0 +1,277 @@
+---
+title: React ガイド
+description: '@reelkit/react でスライダーを作ります。Reel コンポーネント、itemBuilder パターン、ナビゲーション、ReelIndicator、10000 件を超える仮想化、パフォーマンスのヒントを扱います。'
+---
+
+import { Hand, Keyboard, MousePointer, InfinityIcon, Radio, Navigation, Zap, Layers, Code } from 'lucide-react';
+import { BasicSliderDemo } from '../../../../components/demos/BasicSliderDemo';
+import { InfiniteListDemo } from '../../../../components/demos/InfiniteListDemo';
+import { GrowableListDemo } from '../../../../components/demos/GrowableListDemo';
+import reelComponent from '../../../snippets/react-guide/reel-component.tsx?raw';
+import autoSizing from '../../../snippets/react-guide/auto-sizing.tsx?raw';
+import itembuilderPattern from '../../../snippets/react-guide/itembuilder-pattern.tsx?raw';
+import navigation from '../../../snippets/react-guide/navigation.tsx?raw';
+import urlState from '../../../snippets/react-guide/url-state.tsx?raw';
+import reelindicator from '../../../snippets/react-guide/reelindicator.tsx?raw';
+import basicFullCode from '../../../snippets/react-guide/basic-full-code.tsx?raw';
+import infiniteFullCode from '../../../snippets/react-guide/infinite-full-code.tsx?raw';
+import growableFullCode from '../../../snippets/react-guide/growable-full-code.tsx?raw';
+
+`@reelkit/react` でスライダーを作る方法を説明します。
+
+<FeatureGrid columns={3} items={[
+              {
+                icon: Hand,
+                label: 'タッチ優先',
+                desc: '慣性とスナップのあるスワイプ',
+              },
+              {
+                icon: Keyboard,
+                label: 'キーボード操作',
+                desc: '矢印キーと Escape',
+              },
+              {
+                icon: MousePointer,
+                label: 'ホイールスクロール',
+                desc: '任意、デバウンス付き',
+              },
+              {
+                icon: InfinityIcon,
+                label: '仮想化',
+                desc: '10,000 件以上、DOM には 3 つ',
+              },
+              {
+                icon: Radio,
+                label: 'インジケーター',
+                desc: 'Instagram 風のドットのスクロール',
+              },
+              {
+                icon: Navigation,
+                label: 'プログラムからの操作',
+                desc: 'ref で next()、prev()、goTo()',
+              },
+              {
+                icon: Zap,
+                label: 'ループモード',
+                desc: '終わりのない循環ナビゲーション',
+              },
+              {
+                icon: Layers,
+                label: '方向を選べる',
+                desc: '縦でも横でも',
+              },
+              {
+                icon: Code,
+                label: '再レンダリングなし',
+                desc: 'シグナルによる状態の更新',
+              },
+            ]} />
+
+## Reel コンポーネント [#reel-component]
+
+`Reel` コンポーネントはメインのコンテナーです。スライダーの状態を管理し、タッチジェスチャー、キーボード操作、アニメーションを処理します。
+
+<CodeBlock code={reelComponent} language="tsx" />
+
+## サイズの自動計測 [#auto-sizing]
+
+`size` プロップは任意です。省略すると、Reel は `ResizeObserver` でコンテナーを自動計測し、CSS で決まるレイアウトに合わせます。コンテナーのサイズは親要素で決める必要があります（flex、grid、または CSS での明示的な寸法など）。
+
+<CodeBlock code={autoSizing} language="tsx" />
+
+## itemBuilder パターン [#itembuilder-pattern]
+
+`itemBuilder` プロップは、インデックスを受け取って各スライドの内容を返す関数です。このパターンによって仮想化が可能になり、表示中のアイテムだけが描画されます。
+
+<CodeBlock code={itembuilderPattern} language="tsx" />
+
+## ナビゲーション [#navigation]
+
+組み込みの操作方法：
+
+<Bullets marker="dot">
+
+- **タッチ／スワイプ：** ドラッグで移動し、慣性とスナップが効きます
+- **キーボード：** 矢印キーと Escape
+- **マウスホイール：** `enableWheel` プロップで有効にします
+- **プログラムから：** `apiRef` で `next()`、`prev()`、`goTo()` を呼びます
+
+</Bullets>
+
+<CodeBlock code={navigation} language="tsx" />
+
+## URL の状態 [#url-state]
+
+`useOverlayUrlState` はオーバーレイ用の URL 状態コントローラーを作り、そのまま返します。それを `*UrlOverlay` の `controller` プロップに渡します。開閉状態は URL が持つので、結び付けられたオーバーレイは自分で開き、開く操作は通常リンクになります。存在しないパラメーターへの最初の書き込みは履歴エントリーを 1 つ積み、以降の書き込みはそれを置き換えるので、ページを送っても戻るボタンが埋もれることはありません。コントローラーは手元に残しておき、`value`／`position` を読んだり、プログラムから操作したりするのに使います。`set(position)` で開き、`set(null)` で閉じます。`set` は、オーバーレイがスライドの切り替え時に内部で使っているのと同じ低レベルの書き込みです。
+
+<CodeBlock code={urlState} language="tsx" />
+
+オプションのオブジェクトは `param`、`codec`、`locator`（3 つとも必須）と、任意の `adapter` を受け取ります。`param` と `adapter` は最初の描画で読まれ、その後は固定です（変えるには再マウントします）。一方 `codec` と `locator` は毎回読まれるので、リストが伸びたり並べ替えられたりしたあとの検索では、現在のリストが見えます。`codec` と `locator` は同じ `Id` を共有する対なので、一緒に扱います。単純な `?photo=3` のギャラリーなら `...urlIndexKey(() => images.length)` を展開すれば、両方が一度に返されます。`urlIndexKey` はパラメーターをスライドのインデックスに対応させ、getter が返す現在の件数で範囲を制限するので、古いまたは範囲外の `?photo=99` は拒否され、指されていないスライドを開く代わりに URL から自動で取り除かれます。数値ではなく getter を渡してください。そうすればページングされたフィードが伸びても範囲が正しく保たれます。内部では `createIndexLocator`（locator の側）を包み、`indexCodec` と組み合わせています。ページングされたフィードや識別子で指すギャラリーは、代わりに独自の `codec` と `locator` の対を用意します。すべてのオプションの表は [React API リファレンス](/docs/react/api#useoverlayurlstate) にあります。
+
+## ReelIndicator [#reelindicator]
+
+スライダー内の現在位置を示す、Instagram 風の進捗インジケーターを表示する任意のコンポーネントです。`Reel` の中に置くと、コンテキストを通じて親の `count` と `active` の値に自動で接続するので、状態を手でつなぐ必要はありません。
+
+<CodeBlock code={reelindicator} language="tsx" />
+
+## ライブデモ：基本のスライダー [#live-demo-basic-slider]
+
+<FeatureGrid items={[
+              { icon: Hand, label: 'タッチ／スワイプ', desc: '慣性付き' },
+              {
+                icon: Keyboard,
+                label: 'キーボード',
+                desc: '矢印キーと Escape',
+              },
+              { icon: Layers, label: 'インジケーター', desc: 'Instagram 風' },
+              { icon: Navigation, label: 'ナビゲーション', desc: 'apiRef から' },
+            ]} />
+
+<Sandbox
+  code={basicFullCode}
+  title="BasicSlider.tsx"
+  height={500}
+  stackblitzDeps={['@reelkit/react']}
+  stackblitzExtraDeps={{ 'lucide-react': '^0.562.0' }}
+>
+  <BasicSliderDemo />
+</Sandbox>
+
+<Caption>試してみてください。ボタンをクリックするとスライドを移動できます。</Caption>
+
+## ポイント [#key-points]
+
+<KeyPoints>
+<KeyPoint title="size プロップ">
+  任意の \[幅, 高さ\] のタプルです。省略すると CSS でサイズが決まります
+</KeyPoint>
+<KeyPoint title="itemBuilder">
+  インデックスを受け取り、スライドの内容を返します
+</KeyPoint>
+<KeyPoint title="apiRef">
+  ナビゲーションのためにコントローラーのメソッドへアクセスします
+</KeyPoint>
+<KeyPoint title="afterChange">
+  UI を更新するために現在のインデックスを追跡します
+</KeyPoint>
+</KeyPoints>
+
+## ライブデモ：無限リスト [#live-demo-infinite-list]
+
+reelkit は常に **DOM に 3 枚のスライド**（現在・前・次）だけを描画します。これにより、10,000 件を超えるリストでもなめらかにスクロールできます。
+
+<FeatureGrid items={[
+              {
+                icon: Zap,
+                label: 'DOM に 3 つ',
+                desc: '表示中のスライドだけを描画',
+              },
+              {
+                icon: Zap,
+                label: '10,000 件以上',
+                desc: 'どの規模でもカクつきません',
+              },
+              {
+                icon: Zap,
+                label: '一定のメモリ',
+                desc: '件数に関係なく DOM ノードは同じ 3 つ',
+              },
+              {
+                icon: Zap,
+                label: 'goTo(n)',
+                desc: '任意のインデックスへすぐ移動',
+              },
+            ]} />
+
+<Sandbox
+  code={infiniteFullCode}
+  title="InfiniteList.tsx"
+  height={500}
+  stackblitzDeps={['@reelkit/react']}
+  stackblitzExtraDeps={{ 'lucide-react': '^0.562.0' }}
+>
+  <InfiniteListDemo />
+</Sandbox>
+
+<Caption>10,000 件のうち DOM にあるのは 3 つだけ。ボタンを使うか、数字を入力して移動してください。</Caption>
+
+## ライブデモ：伸びていくリスト [#live-demo-growable-list]
+
+TikTok や Instagram のように、必要に応じてアイテムを読み込む無限フィードを再現しています。20 件から始まり、終わり近くまでスクロールすると新しいバッチが自動で届きます。
+
+<FeatureGrid items={[
+              {
+                icon: Zap,
+                label: '件数が変わる',
+                desc: 'スクロールに合わせて読み込み',
+              },
+              {
+                icon: Zap,
+                label: 'バッチ読み込み',
+                desc: '1 バッチ 20 件',
+              },
+              {
+                icon: Layers,
+                label: '仮想化',
+                desc: 'それでも DOM には 3 つだけ',
+              },
+              {
+                icon: Radio,
+                label: '自動インジケーター',
+                desc: 'コンテンツに合わせてドットが増えます',
+              },
+            ]} />
+
+<Sandbox
+  code={growableFullCode}
+  title="GrowableList.tsx"
+  height={500}
+  stackblitzDeps={['@reelkit/react']}
+  stackblitzExtraDeps={{ 'lucide-react': '^0.562.0' }}
+>
+  <GrowableListDemo />
+</Sandbox>
+
+<Caption>最後までスクロールすると、新しいアイテムが自動で読み込まれます。バッチが届くたびにカウンターとインジケーターが増えます。</Caption>
+
+## パフォーマンスのヒント [#performance-tips]
+
+<KeyPoints>
+<KeyPoint title="データの配列をメモ化する">
+  アイテムの配列を `useMemo` で包んでください。描画のたびに配列の参照が新しくなると、`count` の更新と表示範囲の再計算が起きます。
+</KeyPoint>
+<KeyPoint title="itemBuilder を軽く保つ">
+  表示範囲が変わるたびに（通常は 3 枚分）実行されます。中で重い計算や副作用を行わないでください。
+</KeyPoint>
+<KeyPoint title="端に近づいたらデータを読み込む">
+  `afterChange` でユーザーが終わりに近づいたことを検知し、スライドが尽きる前に次のバッチを取得します（上の伸びていくリストのデモを参照）。
+</KeyPoint>
+<KeyPoint title="スクロールするページではホイールを無効にする">
+  スクロールするレイアウトの中にスライダーを埋め込むときは、ページのスクロールを奪わないよう `enableWheel={false}` を指定してください。
+</KeyPoint>
+</KeyPoints>
+
+<NextSteps
+        items={[
+          {
+            label: 'API リファレンス',
+            path: '/docs/react/api',
+            description: '利用できるすべての props',
+          },
+          {
+            label: 'Reel Player',
+            path: '/docs/reel-player',
+            description: 'TikTok／Reels 風の動画プレイヤー',
+          },
+          {
+            label: 'Lightbox',
+            path: '/docs/lightbox',
+            description: '画像と動画のギャラリー',
+          },
+          {
+            label: 'Stories Player',
+            path: '/docs/stories-player',
+            description: 'Instagram 風のストーリービューアー',
+          },
+        ]}
+      />

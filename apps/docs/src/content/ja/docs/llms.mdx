@@ -1,0 +1,72 @@
+---
+title: AI / LLM との連携
+description: AI コーディングアシスタント向けの機械可読なドキュメントです。llms.txt、llms-full.txt、Context7 のマニフェストを提供しています。
+---
+
+import { FileText, Sparkles, Bot } from 'lucide-react';
+import agentPrompt from '../../snippets/llms/agent-prompt.txt?raw';
+import directIngestion from '../../snippets/llms/direct-ingestion.sh?raw';
+
+AI コーディングアシスタント向けの機械可読なドキュメントです。
+
+<FeatureGrid columns={3} items={[
+            {
+              icon: FileText,
+              label: 'llms.txt',
+              desc: 'コンパクトなリンク索引。すべてのページを 1 ファイルに。ビルドごとに更新されます。',
+            },
+            {
+              icon: Sparkles,
+              label: 'llms-full.txt',
+              desc: 'ページごとの要約付きの完全なコーパス。1 回の取得でコンテキストがそろいます。',
+            },
+            {
+              icon: Bot,
+              label: 'context7',
+              desc: 'ライブで索引されるマニフェスト。@context7 MCP サーバーと一緒に使います。',
+            },
+          ]} />
+
+<Callout type="info">
+  2 つの \`.txt\` エンドポイントは、ドキュメントをビルドするたびに生成し直されます。コーパスは公開中のサイトと一致します。
+</Callout>
+
+## エンドポイント [#endpoints]
+
+| エンドポイント | 用途 |
+| --- | --- |
+| [`/llms.txt`](https://reelkit.dev/llms.txt) | すべてのページへのリンクの索引です。どの LLM のコンテキストにもそのまま入れられます。 |
+| [`/llms-full.txt`](https://reelkit.dev/llms-full.txt) | 同じ索引に、ページごとの要約を埋め込んだものです。1 回の取得でコーパス全体が手に入ります。 |
+| [`context7.com/websites/reelkit_dev`](https://context7.com/websites/reelkit_dev) | ライブで索引される Context7 のマニフェストです。@context7 MCP サーバー経由で接続します。 |
+
+## クイックスタート [#quick-start]
+
+### エージェントへのプロンプト [#agent-prompt]
+
+エンドポイントの URL をエージェントに貼り付けると、回答が最新のドキュメントに基づくようになります。
+
+<CodeBlock code={agentPrompt} language="text" />
+
+### Context7 MCP サーバー [#context7-mcp-server]
+
+[@context7](https://github.com/upstash/context7) MCP サーバーをインストールしてください。エージェントが ReelKit のマニフェストを自動で見つけ、必要に応じてドキュメントを取得します。プロンプトで `reelkit` に触れるだけです。
+
+### 直接取り込む [#direct-ingestion]
+
+プログラムから取得します：
+
+<CodeBlock code={directIngestion} language="bash" />
+
+## 索引に含まれるもの [#what-gets-indexed]
+
+- はじめに + インストール
+- Core エンジンのガイド + API
+- React、Vue、Angular のバインディング（ガイド + API + reel-player + lightbox + stories-player）
+- Stories のコアエンジン
+- SSR の注意点
+- トラブルシューティング
+- 変更履歴
+
+## なぜ？ [#why]
+
+AI アシスタントはライブラリの変更に追いつくのが遅れがちです。生成されたコードは古い API を参照します。これらのエンドポイントはドキュメントの公開ごとに更新されるので、提案が前の四半期ではなく現在の挙動に沿ったものになります。

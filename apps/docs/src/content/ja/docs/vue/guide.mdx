@@ -1,0 +1,221 @@
+---
+title: Vue ガイド
+description: '@reelkit/vue でスライダーを作ります。Reel コンポーネント、#item スロット、ReelIndicator、テンプレート参照による命令的 API、トランジション、仮想化、イベントハンドラーを扱います。'
+---
+
+import { Hand, Keyboard, MousePointer, InfinityIcon, Radio, Navigation, Zap, Layers, Code } from 'lucide-react';
+import basicSlider from '../../../snippets/vue-guide/basic-slider.vue?raw';
+import reelindicator from '../../../snippets/vue-guide/reelindicator.vue?raw';
+import imperativeApiTemplateRef from '../../../snippets/vue-guide/imperative-api-template-ref.vue?raw';
+import horizontalDirection from '../../../snippets/vue-guide/horizontal-direction.vue?raw';
+import autoSizing from '../../../snippets/vue-guide/auto-sizing.vue?raw';
+import transitions from '../../../snippets/vue-guide/transitions.vue?raw';
+import loopMode from '../../../snippets/vue-guide/loop-mode.vue?raw';
+import eventCallbacks from '../../../snippets/vue-guide/event-callbacks.vue?raw';
+import navigation from '../../../snippets/vue-guide/navigation.vue?raw';
+import urlState from '../../../snippets/vue-guide/url-state.vue?raw';
+import itemSlotPattern from '../../../snippets/vue-guide/item-slot-pattern.vue?raw';
+import composables from '../../../snippets/vue-guide/composables.vue?raw';
+
+`@reelkit/vue` でスライダーを作る方法を説明します。
+
+<FeatureGrid columns={3} items={[
+              {
+                icon: Hand,
+                label: 'タッチ優先',
+                desc: '慣性とスナップのあるスワイプ',
+              },
+              {
+                icon: Keyboard,
+                label: 'キーボード操作',
+                desc: '矢印キーと Escape',
+              },
+              {
+                icon: MousePointer,
+                label: 'ホイールスクロール',
+                desc: '任意、デバウンス付き',
+              },
+              {
+                icon: InfinityIcon,
+                label: '仮想化',
+                desc: '10,000 件以上、DOM には 3 つ',
+              },
+              {
+                icon: Radio,
+                label: 'インジケーター',
+                desc: 'Instagram 風のドットのスクロール',
+              },
+              {
+                icon: Navigation,
+                label: 'プログラムからの操作',
+                desc: 'テンプレート参照で next()、prev()、goTo()',
+              },
+              {
+                icon: Zap,
+                label: 'ループモード',
+                desc: '終わりのない循環ナビゲーション',
+              },
+              {
+                icon: Layers,
+                label: '方向を選べる',
+                desc: '縦でも横でも',
+              },
+              {
+                icon: Code,
+                label: 'Composition API',
+                desc: 'コンポーザブルと <script setup>',
+              },
+            ]} />
+
+## 基本のスライダー [#basic-slider]
+
+`<Reel>` コンポーネントはコアのスライダーコントローラーを包みます。`#item` スロットで各スライドを仮想化して描画し、マウントされるのは表示中のスライドだけです。
+
+<Sandbox code={basicSlider} language="vue" title="App.vue" framework="vue" stackblitzDeps={['@reelkit/vue']} />
+
+## ReelIndicator [#reelindicator]
+
+スライダー内の現在位置を示す、Instagram 風の進捗インジケーターを表示する任意のコンポーネントです。`<Reel>` の中に置くと、Vue の `provide/inject` を通じて親の `count` と `active` の値に自動で接続するので、手でつなぐ必要はありません。
+
+<CodeBlock code={reelindicator} language="vue-html" />
+
+## 命令的 API — テンプレート参照 [#imperative-api-template-ref]
+
+`<Reel>` コンポーネントは、テンプレート参照を通じて `ReelExpose` インターフェースを公開します。`ref()` で参照を保持し、`next()`、`prev()`、`goTo()` などの命令的なメソッドを呼びます。
+
+<CodeBlock code={imperativeApiTemplateRef} language="vue" />
+
+## 横方向 [#horizontal-direction]
+
+左右にスワイプするスライダーにするには `direction="horizontal"` を指定します。インジケーターの向きも合わせてください。
+
+<CodeBlock code={horizontalDirection} language="vue-html" />
+
+## サイズの自動計測 [#auto-sizing]
+
+`size` プロップは任意です。省略すると、`<Reel>` は `ResizeObserver` でコンテナーを自動計測し、CSS で決まるレイアウトに合わせます。コンテナーのサイズは親要素で決める必要があります（flex、grid、または CSS での明示的な寸法など）。
+
+<CodeBlock code={autoSizing} language="vue-html" />
+
+## トランジション [#transitions]
+
+スライドのアニメーションをカスタマイズするには `transition` プロップを渡します。ReelKit にはツリーシェイキングできる 5 つのトランジションが用意されています。`slideTransition`（デフォルト）、`fadeTransition`、`flipTransition`、`cubeTransition`、`zoomTransition` です。
+
+<CodeBlock code={transitions} language="vue" />
+
+## ループモード [#loop-mode]
+
+`loop` プロップで、終わりのない循環ナビゲーションを有効にします。スライダーは最後のスライドから最初のスライドへ（逆も同様に）継ぎ目なく戻ります。
+
+<CodeBlock code={loopMode} language="vue-html" />
+
+## イベントコールバック [#event-callbacks]
+
+`<Reel>` コンポーネントは、スライダーの状態を追跡するためのイベントをいくつか発行します：
+
+<CodeBlock code={eventCallbacks} language="vue" />
+
+## ナビゲーション [#navigation]
+
+組み込みの操作方法：
+
+<Bullets marker="dot">
+
+- **タッチ／スワイプ：** ドラッグで移動し、慣性とスナップが効きます
+- **キーボード：** 矢印キーと Escape
+- **マウスホイール：** `:enable-wheel="true"` で有効にします
+- **プログラムから：** テンプレート参照で `next()`、`prev()`、`goTo()` にアクセスします
+
+</Bullets>
+
+<CodeBlock code={navigation} language="vue" />
+
+## URL の状態 [#url-state]
+
+`useOverlayUrlState` はオーバーレイ用の URL 状態コントローラーを作り、そのまま返します。それを `<LightboxUrlOverlay>` の `:controller` プロップに渡します。開閉状態はアドレスバーが持つので、結び付けられたオーバーレイは自分で開き、開く操作は通常リンクになります。存在しないパラメーターへの最初の書き込みは履歴エントリーを 1 つ積み、以降の書き込みはそれを置き換えるので、ページを送っても戻るボタンが埋もれることはありません。コントローラーは手元に残しておき、`value`／`position` を読んだり、`set(null)` でプログラムから閉じたりするのに使います。これは、オーバーレイがスライドの切り替え時に内部で使っているのと同じ低レベルの書き込みです。
+
+<CodeBlock code={urlState} language="vue" />
+
+オプションのオブジェクトは `param`、`codec`、`locator`（3 つとも必須）と、任意の `adapter` を受け取ります。`codec` と `locator` は同じ `Id` を共有する対なので、単純な `?photo=3` のギャラリーなら `...urlIndexKey(() => props.images.length)` を展開すれば、両方が一度に返されます。`urlIndexKey` はパラメーターをスライドのインデックスに対応させ、getter が返す現在の件数で範囲を制限するので、古いまたは範囲外の `?photo=99` は拒否され、指されていないスライドを開く代わりに URL から自動で取り除かれます。数値ではなく getter を渡してください。Vue の `setup` は一度しか実行されないので、取り込んだ長さはページングされたフィードが伸びると古くなります。内部では `createIndexLocator`（locator の側）を包み、`indexCodec` と組み合わせています。ページングされたフィードや識別子で指すギャラリーは、代わりに独自の `codec` と `locator` の対を用意します。すべてのオプションの表は [Vue API リファレンス](/docs/vue/api#useoverlayurlstate) にあります。
+
+## #item スロットのパターン [#item-slot-pattern]
+
+React のレンダープロップの代わりに、Vue ではスコープ付きの `#item` スロットを使います。これによって仮想化が可能になり、マウントされるのは表示中のスライドだけです。スロットのスコープは 3 つのプロパティを提供します：
+
+<CodeBlock code={itemSlotPattern} language="vue-html" />
+
+## コンポーザブル [#composables]
+
+`@reelkit/vue` には、よくあるオーバーレイの場面のためのコンポーザブルがあります：
+
+<CodeBlock code={composables} language="vue" />
+
+## ポイント [#key-points]
+
+<KeyPoints>
+<KeyPoint title="Composition API">
+  `Reel`、`ReelIndicator`、コンポーザブルを `<script setup>` に直接インポートします。プラグインの登録は必要ありません
+</KeyPoint>
+<KeyPoint title="スコープ付きの #item スロット">
+  React の `itemBuilder` プロップに相当する Vue の仕組みで、なじみのあるテンプレート構文のまま仮想化が使えます
+</KeyPoint>
+<KeyPoint title="テンプレート参照">
+  命令的なナビゲーションには `ref<ReelExpose>()` を使います。イベントコールバックは必要ありません
+</KeyPoint>
+<KeyPoint title="@after-change">
+  `(index, rangeIndex)` を発行します。UI を更新するために現在のインデックスを追跡します
+</KeyPoint>
+<KeyPoint title="provide/inject のコンテキスト">
+  `ReelIndicator` は Vue の provide/inject で親の `Reel` に自動で接続します。props を手でたどって渡す必要はありません
+</KeyPoint>
+</KeyPoints>
+
+## パフォーマンスのヒント [#performance-tips]
+
+<KeyPoints>
+<KeyPoint title="スライドのテンプレートを軽く保つ">
+  `#item` スロットは表示中のスライドごと（通常は同時に 3 枚）に実行されます。中で重い計算や深い入れ子の構造を使わないでください。
+</KeyPoint>
+<KeyPoint title="端に近づいたらデータを読み込む">
+  `@after-change` でユーザーが終わりに近づいたことを検知し、スライドが尽きる前に次のバッチを取得します。これで無限スクロールのフィードが作れます。
+</KeyPoint>
+<KeyPoint title="命令的な状態には ref を使う">
+  `ReelExpose` の参照と現在のインデックスを Vue の `ref()` に保持すると、不要な再描画なしに細かなリアクティビティが得られます。
+</KeyPoint>
+<KeyPoint title="スクロールするページではホイールを無効にする">
+  スクロールするレイアウトの中にスライダーを埋め込むときは、ページのスクロールを奪わないよう `:enable-wheel="false"` を指定してください。
+</KeyPoint>
+</KeyPoints>
+
+<NextSteps
+        items={[
+          {
+            label: 'Vue API リファレンス',
+            path: '/docs/vue/api',
+            description: 'すべての props、イベント、コンポーザブル',
+          },
+          {
+            label: 'Core ガイド',
+            path: '/docs/core/guide',
+            description: 'フレームワークに依存しないエンジン',
+          },
+          {
+            label: 'Reel Player',
+            path: {
+              react: '/docs/reel-player',
+              angular: '/docs/angular-reel-player',
+              vue: '/docs/vue-reel-player',
+            },
+            description: 'TikTok／Reels 風の動画プレイヤー',
+          },
+          {
+            label: 'Lightbox',
+            path: {
+              react: '/docs/lightbox',
+              angular: '/docs/angular-lightbox',
+              vue: '/docs/vue-lightbox',
+            },
+            description: '画像と動画のギャラリー',
+          },
+        ]}
+      />

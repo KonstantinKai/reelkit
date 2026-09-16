@@ -1,0 +1,467 @@
+---
+title: Vue Reel Player
+description: Vue 3 用の、TikTok／Reels 風のフルスクリーン動画プレイヤーのオーバーレイです。ContentItem のスキーマ、props、emits、スコープ付きスロット、テーマのトークン、React 版と共通の CSS クラスを扱います。
+---
+
+import { Zap, Play, Volume2, Layout, Clock, Image, Layers, Ratio, Monitor, Code, Settings, Link2 } from 'lucide-react';
+import installation from '../../snippets/vue-reel-player/installation.sh?raw';
+import installation2 from '../../snippets/vue-reel-player/installation-2.ts?raw';
+import basicUsage from '../../snippets/vue-reel-player/basic-usage.vue?raw';
+import scopedSlots from '../../snippets/vue-reel-player/scoped-slots.vue?raw';
+import customTimeline from '../../snippets/vue-reel-player/custom-timeline.vue?raw';
+import customContentTypes from '../../snippets/vue-reel-player/custom-content-types.vue?raw';
+import urlState from '../../snippets/vue-reel-player/url-state.vue?raw';
+import oneKeyOrTwo from '../../snippets/vue-reel-player/one-key-or-two.ts?raw';
+import oneKeyOrTwo2 from '../../snippets/vue-reel-player/one-key-or-two-2.ts?raw';
+import oneKeyOrTwo3 from '../../snippets/vue-reel-player/one-key-or-two-3.ts?raw';
+import oneKeyOrTwo4 from '../../snippets/vue-reel-player/one-key-or-two-4.ts?raw';
+import vModelIsOpen from '../../snippets/vue-reel-player/v-model-is-open.vue?raw';
+import timelinebarprops from '../../snippets/vue-reel-player/timelinebarprops.ts?raw';
+import timelineslotscopeT from '../../snippets/vue-reel-player/timelineslotscope-t.ts?raw';
+import closebutton from '../../snippets/vue-reel-player/closebutton.vue?raw';
+import soundbutton from '../../snippets/vue-reel-player/soundbutton.vue?raw';
+import timelinebar from '../../snippets/vue-reel-player/timelinebar.vue?raw';
+import slideoverlay from '../../snippets/vue-reel-player/slideoverlay.vue?raw';
+import imageslide from '../../snippets/vue-reel-player/imageslide.vue?raw';
+import videoslide from '../../snippets/vue-reel-player/videoslide.vue?raw';
+import videoslide2 from '../../snippets/vue-reel-player/videoslide-2.vue?raw';
+import lifecycleCallbacks from '../../snippets/vue-reel-player/lifecycle-callbacks.vue?raw';
+import customLoadingErrorUi from '../../snippets/vue-reel-player/custom-loading-error-ui.vue?raw';
+import timeline from '../../snippets/vue-reel-player/timeline.vue?raw';
+import soundContext from '../../snippets/vue-reel-player/sound-context.vue?raw';
+import theming from '../../snippets/vue-reel-player/theming.css?raw';
+
+`@reelkit/vue-reel-player` で作られた、Vue 3 用の Instagram／TikTok 風のフルスクリーン縦型メディアプレイヤーです。
+
+<DemoLink href="https://vue-demo.reelkit.dev/reel-player?utm_source=docs">ライブデモを見る →</DemoLink>
+
+## 機能 [#features]
+
+<FeatureGrid items={[
+              {
+                icon: Zap,
+                label: '縦方向のスワイプ',
+                desc: 'タッチ、ドラッグ、キーボード、ホイール',
+              },
+              {
+                icon: Play,
+                label: '動画の自動再生',
+                desc: '表示されたら再生',
+              },
+              { icon: Volume2, label: 'サウンド切り替え', desc: 'iOS でも途切れない' },
+              {
+                icon: Layout,
+                label: '複数メディア',
+                desc: '横方向にネストしたカルーセル',
+              },
+              {
+                icon: Clock,
+                label: '位置の記憶',
+                desc: '止めたところから再開',
+              },
+              {
+                icon: Image,
+                label: 'フレームキャプチャー',
+                desc: 'ポスターから動画へのクロスフェード',
+              },
+              {
+                icon: Layers,
+                label: '仮想化',
+                desc: 'DOM にはスライド 3 枚だけ',
+              },
+              {
+                icon: Ratio,
+                label: 'アスペクト比',
+                desc: 'デスクトップは 9:16、モバイルは全画面',
+              },
+              { icon: Monitor, label: 'デスクトップの操作', desc: '矢印ボタン' },
+              {
+                icon: Code,
+                label: 'ジェネリック型',
+                desc: '独自のコンテンツのデータモデル',
+              },
+              {
+                icon: Settings,
+                label: 'スコープ付きスロット',
+                desc: 'あらゆる UI 要素をカスタマイズ',
+              },
+              {
+                icon: Zap,
+                label: 'v-model:is-open',
+                desc: '表示の双方向バインディング',
+              },
+              {
+                icon: Link2,
+                label: 'URL の状態',
+                desc: '共有できるリンク、戻るボタンで閉じる',
+              },
+            ]} />
+
+## インストール [#installation]
+
+<CodeBlock code={installation} language="bash" />
+
+アプリのエントリー（または任意のコンポーネント）でスタイルシートを 1 回インポートします：
+
+<CodeBlock code={installation2} language="typescript" />
+
+<Callout type="info" title="アイコン">
+  デフォルトのコントロールはアイコン（閉じる、サウンド、ナビゲーションの矢印）に `lucide-vue-next` を使います。別のアイコンライブラリを使いたい場合は、スコープ付きスロットの `#controls` と `#navigation` で独自のものを渡してください。
+</Callout>
+
+## 基本的な使い方 [#basic-usage]
+
+サムネイルのグリッドを描画し、クリックしたインデックスでオーバーレイを開きます。`v-model:is-open` をバインドすると、ユーザーがボタン、ジェスチャー、Escape でプレイヤーを閉じたときにも、親の `ref` が同期されます。
+
+<Sandbox code={basicUsage} language="vue" title="App.vue" framework="vue" stackblitzDeps={['@reelkit/vue-reel-player']} stackblitzExtraDeps={{ 'lucide-vue-next': '>=0.460.0' }} />
+
+## スコープ付きスロット [#scoped-slots]
+
+8 つのスコープ付きスロットで、プレイヤーの UI のどの部分でも置き換えられます。それぞれが厳密に型付けされたスコープのオブジェクトを受け取ります。渡さなかったスロットはデフォルトが使われます。
+
+| スロット | スコープ | 説明 |
+| --- | --- | --- |
+| #controls | `{ item, soundState, activeIndex, content, onClose }` | 独自のグローバルなコントロールバー（閉じる、サウンド、共有など） |
+| #error | `{ item, activeIndex, innerActiveIndex }` | 独自のエラー表示（デフォルトのアイコンを置き換え） |
+| #loading | `{ item, activeIndex, innerActiveIndex }` | 独自の読み込み表示（デフォルトの波のローダーを置き換え） |
+| #navigation | `{ item, activeIndex, count, onPrev, onNext }` | 独自の前後のナビゲーション矢印（デスクトップ） |
+| #nestedNavigation | `{ media, activeIndex, count, onPrev, onNext }` | 内側の横方向のスライダー用の独自の矢印 |
+| #nestedSlide | `{ item, media, index, size, isActive, isInnerActive, slideKey, defaultContent, onReady, onWaiting, onError }` | 内側の横方向のスライダーの中の独自のスライドの内容 |
+| #slide | `{ item, index, size, isActive, slideKey, defaultContent, onReady, onWaiting, onError }` | 完全に独自のスライドの内容（省略するとデフォルト） |
+| #slideOverlay | `{ item, index, isActive }` | スライドごとのオーバーレイ（作者の情報、いいね、説明など） |
+| #timeline | `{ item, activeIndex, timelineState, defaultContent }` | 独自の再生タイムラインバー。組み込みの条件（タイムラインのモードと最小の長さ）がデフォルトのバーを描画する場合だけ呼ばれ、同じ auto/always/never の判定を使います。組み込みの \<TimelineBar /> を包むには defaultContent() を使います。 |
+
+<CodeBlock code={scopedSlots} language="vue" />
+
+### 独自のタイムライン [#custom-timeline]
+
+`#timeline` スロットで、組み込みの再生バーを独自のシーク UI に置き換えます。スロットが呼ばれるのは、オーバーレイの表示条件がデフォルトのバーを描画する場合（同じ `timeline` モードと `timelineMinDurationSeconds`）だけなので、それを実装し直す必要はありません。ルート要素で `.rk-reel-timeline` クラスを使えば、下端に沿った配置、セーフエリアの余白、タッチ端末での間隔を引き継げます。
+
+<CodeBlock code={customTimeline} language="vue" />
+
+## 独自のコンテンツ型 [#custom-content-types]
+
+`ReelPlayerOverlay` は、コンテンツのアイテムの形についてジェネリックです。`BaseContentItem` を拡張すれば任意のデータモデルを使え、対応するスロットのスコープの型をインポートすれば、スロットのバインディングも厳密に型付けされます：
+
+<CodeBlock code={customContentTypes} language="vue" />
+
+ほかのすべてのスロットでも同じパターンです。対応するスコープの型（`SlideSlotScope`、`ControlsSlotScope`、`NavigationSlotScope`、`NestedSlideSlotScope`、`LoadingSlotScope`）をインポートし、分割代入に型を付けてください。
+
+## URL の状態 [#url-state]
+
+<DemoLink href="https://vue-demo.reelkit.dev/reel-player-url?utm_source=docs">ライブデモを見る →</DemoLink>
+
+`@reelkit/vue` の `useOverlayUrlState` でコントローラーを作り、`ReelPlayerUrlOverlay` に `controller` として渡します。プレイヤーを持つのはアドレスバーなので、パラメーターがスライドを指すと開き、パラメーターがなくなると閉じます。開くと履歴エントリーを 1 つ積み、スライドが変わるたびにそれを置き換えるので、フィードを送ってもエントリーは増えず、1 回戻れば必ず出られます。URL の深さはコントローラーのキーで決まります。一軸の `urlIndexKey` は投稿だけを指し（`?reel=3`）、二軸の `urlIndexTwoAxisKey` は複数メディアの投稿の内側のメディアのインデックスも運びます（`?reel=3.2`）。アプリごとにキーを 1 つ選んでください。2 つの通信形式は互いに読み替えられません。これは `ReelPlayerOverlay` とは別のコンポーネントなので、開閉状態を決めるものはそれぞれ 1 つだけです。`is-open` のモデルか、URL の `controller` のどちらかで、両方ではありません。
+
+<Callout type="info" title="組み込みのキー">
+  スライドは組み込みのキーで指せます。`urlIndexKey`（位置で指す）か `urlStableIdKey`（安定した `id` で指す）をコントローラーに展開してください。どちらも `@reelkit/vue` から再エクスポートされています。[URL の状態のガイド](/docs/core/guide#url-state) と [Core API](/docs/core/api#url-state) を参照してください。
+</Callout>
+
+ルーターを使うアプリでは、ルーターに連動したアダプターを渡して、ナビゲーションの信頼できる情報源をルーターだけに保つべきです。ルーターの裏で履歴を書くと、その位置情報が古くなり、次のナビゲーションでパラメーターが消えます。`@reelkit/vue/vue-router-url-adapter` の `useVueRouterUrlAdapter` が、Vue Router 用に用意されたアダプターです。
+
+<CodeBlock code={urlState} language="vue" />
+
+`useOverlayUrlState` のすべてのオプションは [Vue API リファレンス](/docs/vue/api#useoverlayurlstate) にあります。
+
+- 開くと履歴エントリーを **1 つ** 積みます。フィードをスワイプするとそれを **置き換え** るので、N 回スワイプしてもエントリーは増えず、1 回戻れば必ずプレイヤーから出られます。戻るとプレイヤーが閉じ、スライドは戻りません。
+- 戻るで閉じるのは、アプリ内から開いた場合だけです（リンクがエントリーを積んだ場合）。新しいタブで直接開いた共有リンクには前の履歴がないので、ブラウザーの戻るではサイトを離れます。✕ ボタンか Escape なら、その場でパラメーターを取り除いてページにとどまります。
+- ディープリンク `?reel=3` は、読み込み時にそのスライドでプレイヤーを開きます。
+- どのスライドも指さないパラメーター（古いブックマークや手で書き換えた値）は、開けないスライドをアドレスバーが指したままにならないよう、URL から取り除かれます。
+- URL の深さはコントローラーのキーで決まります。投稿だけなら一軸、複数メディアの投稿の内側の画像のインデックスも運ぶなら二軸（`urlIndexTwoAxisKey`）です。アプリごとにキーを 1 つ選んでください。形は互いに読み替えられません。
+
+### キーは 1 つか 2 つか — URL の深さを選ぶ [#one-key-or-two-pick-your-url-depth]
+
+同じ `ReelPlayerOverlay` がどちらの形も扱います。実行時にコントローラーの位置から判別するので、モードを指定するプロップはありません。コントローラーを作るときにキーを選んでください：
+
+| キー | 通信形式 | 運ぶもの |
+| --- | --- | --- |
+| `urlIndexKey(…)` | `?reel=3` | 縦方向の投稿だけ。 |
+| `urlIndexTwoAxisKey(…)` | `?reel=3.2` | 投稿 *と* カルーセルの内側のメディアのインデックス。 |
+
+2 つの通信形式は意図的に区別されています。二軸のキーは厳密にドットで区切る（`3.0` で、`3` だけにはしない）ので、一軸のリンクが二軸として読まれることはありません。そのため、アプリでキーを切り替えると、それまでに共有されたリンクは無効になります。形を 1 つ選んで使い続けてください。
+
+<CodeBlock code={oneKeyOrTwo} language="typescript" />
+
+**安定したリンク。** インデックスは位置なので、ブックマークした `?reel=3` はフィードが並べ替えられると別の投稿を開きます。フィードではそれが例外ではなく普通のことです。`urlStableIdKey` は各投稿の安定した `id` で指し、現在のフィードを走査します。よくあるケースは 1 回の呼び出しで済みます。
+
+<CodeBlock code={oneKeyOrTwo2} language="typescript" />
+
+`hashCodec: base64UrlCodec` を渡すと、URL の id を base64url でエンコードします。元に戻せる難読化で、暗号学的ハッシュではありません。
+
+別のフィールド（`slug`）で指したい場合や、`locateAsync` で無限フィードをページングしたい場合は、`codec`／`locator` を自分で作ります。2 つは別の役割です。`codec` は識別子を URL に書き、`locator` はその識別子がどこにあるかを探します。
+
+<CodeBlock code={oneKeyOrTwo3} language="typescript" />
+
+**無限フィード。** `locate` は同期なので、読み込み済みの投稿にしか答えられません。20 件を読み込んだフィードの 400 番目の投稿への共有リンクは見つかりません。`locateAsync` はフォールバックで、`locate` が見つけられなかったときだけ呼ばれます。
+
+<Callout type="info" title="近道">
+  アイテムの `id` で指すなら、codec と locator を手書きする必要はありません。`locateAsync` をそのまま `urlStableIdKey({ items, locateAsync })` に渡してください（見つからなければ取得してからインデックスを返します）。下のより完全な例は、別のフィールドで指す場合や、すべてを自分で制御したい場合のものです。
+</Callout>
+
+<CodeBlock code={oneKeyOrTwo4} language="typescript" />
+
+- `locateAsync` が保留中のあいだ、プレイヤーは閉じたままで、パラメーターはそのまま残るので、ディープリンクは取得のあいだも失われません。`null` か reject でパラメーターは取り除かれます。
+- URL が変わったあと、閉じたあと、アンマウントしたあとに届いた答えは破棄されます。遅い取得が、誰も求めていないスライドを開くことはありません。
+- 保留中は何も描画されません。その読み込み状態はすでにページが持っているので、独自のスケルトンを描画してください。
+- タイムアウトはありません。プレイヤーにはフィードの長さがわからないからです。ページングが尽きたら `null` で決着をつけてください。そうしないとオーバーレイは閉じたままになります。
+
+## API リファレンス [#api-reference]
+
+### ReelPlayerOverlay の Props [#reelplayeroverlay-props]
+
+<Signature>ReelPlayerOverlayProps</Signature>
+
+| Prop | 型 | デフォルト | 説明 |
+| --- | --- | --- | --- |
+| `ariaLabel` | `string` | `'Video player'` | ダイアログ領域のアクセシブルなラベル。オーバーレイが開くとスクリーンリーダーが読み上げます |
+| `aspectRatio` | `number` | `9 / 16` | デスクトップのコンテナーの幅と高さの比。モバイルでは全画面を使います。 |
+| `content` | `T[] (extends BaseContentItem)` | `必須` | プレイヤーに表示するコンテンツアイテムの配列 |
+| `enableNavKeys` | `boolean` | `true` | キーボードの矢印キーによる操作を有効にします |
+| `enableWheel` | `boolean` | `true` | マウスホイールでの操作を有効にします |
+| `initialIndex` | `number` | `0` | 最初に表示するアイテムの 0 始まりのインデックス |
+| `initialInnerIndex` | `number` | `0` | 最初に表示する投稿でだけ使う、内側のメディアのインデックス。二軸の URL で、複数メディアの投稿の特定の画像へ直接リンクできます。ユーザーが移動したあとは無視されます。 |
+| `isOpen` | `boolean` | `必須` | オーバーレイの表示を制御します。false のときオーバーレイは DOM から取り除かれます |
+| `loop` | `boolean` | `false` | スライド間の無限ループを有効にします |
+| `swipeDistanceFactor` | `number` | `0.12` | スライドを切り替えるのに必要なスワイプ距離の最小の割合 |
+| `timeline` | `'auto' \| 'always' \| 'never'` | `'auto'` | 組み込みの再生タイムラインバーの表示条件。'auto' は timelineMinDurationSeconds より長い動画でだけ表示し、'always' はアクティブなスライドに動画があれば常に表示し、'never' は組み込みのバーを無効にします（完全に置き換えるには #timeline スロットを使います）。 |
+| `timelineMinDurationSeconds` | `number` | `30` | timeline='auto' で組み込みのバーを表示する動画の最小の長さ（秒）。これより短いループ動画では表示されません。 |
+| `transitionDuration` | `number` | `300` | スライドのアニメーションの長さ（ms） |
+| `wheelDebounceMs` | `number` | `200` | ホイールイベントのデバウンス時間（ms） |
+
+### ReelPlayerUrlOverlay の Props [#reelplayerurloverlay-props]
+
+<Signature>ReelPlayerUrlOverlayProps</Signature>
+
+上の props をすべて受け取りますが、`is-open` の代わりに `controller` を使います。`initial-index` は無視されます。スライドはコントローラーの位置で決まるので、一緒に渡した値は開くたびに上書きされます。
+
+| Prop | 型 | デフォルト | 説明 |
+| --- | --- | --- | --- |
+| `controller` | `UrlStateController` | `必須` | `useOverlayUrlState` のコントローラー。その `position` で、オーバーレイが開いているかどうかと、どのスライドを表示するかが決まります。オーバーレイはスライドの切り替え時と閉じるときに、これを通じて書き戻します。 |
+
+### イベント [#events]
+
+| イベント | ペイロード | 説明 |
+| --- | --- | --- |
+| @api-ready | `ReelPlayerApi` | スライダーの準備ができたときに発行され、命令的な API を公開します |
+| @close | `void` | プレイヤーが閉じたときに発行されます |
+| @slide-change | `number` | 切り替え後の新しいアクティブなスライドのインデックスとともに発行されます |
+| @inner-slide-change | `outer: number, inner: number` | アクティブな投稿の内側のメディアのインデックスが変わったときに発行されます。内側で移動したときと、外側でアクティブになったとき（アクティブになった投稿の現在の内側のインデックス、単一メディアなら 0）です。 |
+| @update:is-open | `boolean` | 閉じるときに発行され、\`v-model:is-open\` を可能にします |
+
+### v-model:is-open [#v-model-is-open]
+
+`v-model:is-open` を使うと、1 つのバインディングでオーバーレイを操作できます。明示的なイベントが必要なら、従来の `:is-open` と `@close` の組み合わせもそのまま使えます。
+
+<CodeBlock code={vModelIsOpen} language="vue" />
+
+## 型 [#types]
+
+### ContentItem [#contentitem]
+
+| フィールド | 型 | 説明 |
+| --- | --- | --- |
+| `id` | `string` | 一意の識別子 |
+| `media` | `MediaItem[]` | 1 つ以上のメディア（画像または動画） |
+| `author` | `{ name: string; avatar?: string }` | デフォルトのスライドオーバーレイに表示する作者 |
+| `description` | `string?` | キャプションのテキスト |
+| `likes` | `number?` | いいねの件数 |
+
+### TimelineBarProps [#timelinebarprops]
+
+<CodeBlock code={timelinebarprops} language="typescript" />
+
+### TimelineSlotScope\<T> [#timelineslotscope-t]
+
+<CodeBlock code={timelineslotscopeT} language="typescript" />
+
+### MediaItem [#mediaitem]
+
+| フィールド | 型 | 説明 |
+| --- | --- | --- |
+| `id` | `string` | 一意の識別子 |
+| `type` | `'image' \| 'video'` | メディアの種類 |
+| `src` | `string` | メディアの URL |
+| `poster` | `string?` | 動画アイテムのポスターのサムネイルの URL |
+| `aspectRatio` | `number` | 幅と高さの比。\< 1 は縦長（cover）、≥ 1 は横長（contain）。 |
+
+## サブコンポーネント [#sub-components]
+
+独自の `#controls`、`#slide`、`#slideOverlay` のテンプレートに入れて使います。自動再生、ポスターのキャプチャー、サウンドの同期が動き続けるよう、寸法とコールバックはスロットのスコープからそのまま渡してください。
+
+### CloseButton [#closebutton]
+
+デフォルトのプレイヤーのスタイルを持つ、単独の円形の閉じるボタンです。`#controls` の中で使います。
+
+<CodeBlock code={closebutton} language="vue" />
+
+### SoundButton [#soundbutton]
+
+ミュートの切り替えボタンです。`SoundProvider` の中に描画してください（`ReelPlayerOverlay` が用意します）。アクティブなスライドに動画がないときは非表示です。
+
+<CodeBlock code={soundbutton} language="vue" />
+
+### TimelineBar [#timelinebar]
+
+デフォルトの再生シークバーです。いちばん近い `TimelineProvider`（`ReelPlayerOverlay` の中に自動でマウントされます）から読み取り、トラック、バッファー済みの範囲、進捗の塗り、シーク用のつまみを描画します。`--rk-reel-timeline-*` のカスタムプロパティでテーマを変えるか、`#timeline` スロットで置き換えます。
+
+<CodeBlock code={timelinebar} language="vue" />
+
+### SlideOverlay [#slideoverlay]
+
+作者、説明、いいねを表示するデフォルトのグラデーションのオーバーレイです。コンテンツにそれらのフィールドがあると描画されます。置き換えるか非表示にするには `#slideOverlay` スロットを使います。
+
+<CodeBlock code={slideoverlay} language="vue" />
+
+### ImageSlide [#imageslide]
+
+遅延読み込みとデフォルトの `object-fit: cover` を備えた画像スライドです。`#slide` スロットの中で組み合わせれば、組み込みの挙動を保ったまま画像の描画をカスタマイズできます。
+
+<CodeBlock code={imageslide} language="vue" />
+
+### VideoSlide [#videoslide]
+
+共有の `<video>` 要素に支えられた動画スライドです。iOS で音声を途切れさせない処理、ポスターのフレーム、位置の記憶を扱います。`SoundProvider` の中に描画してください（`ReelPlayerOverlay` が用意します）。
+
+<CodeBlock code={videoslide} language="vue" />
+
+<Callout type="info" title="独自のスライドを組み立てる">
+  `#slide` と `ImageSlide`／`VideoSlide` を組み合わせれば、組み込みの挙動（自動再生、ポスターのキャプチャー、サウンドの同期）をすべて保ったまま、メディアの描画をカスタマイズできます。
+</Callout>
+
+<CodeBlock code={videoslide2} language="vue" />
+
+## コンテンツの読み込みとエラー処理 [#content-loading-error-handling]
+
+プレイヤーはスライドごとの読み込み中とエラーの状態を追跡します。読み込み中は波のローダーを表示し、壊れたメディアにはエラーアイコンを表示します。失敗した URL はキャッシュされるので、壊れたスライドを開き直しても再試行はしません。
+
+### ライフサイクルのコールバック [#lifecycle-callbacks]
+
+`#slide` スロットを使う場合は、スロットのスコープにあるこれらのコールバックを呼んで読み込み表示を制御します：
+
+| コールバック | 呼ぶタイミング |
+| --- | --- |
+| `onReady` | 画像が読み込まれたか、動画の再生が始まったとき。読み込み中とエラーの状態をクリアします。 |
+| `onWaiting` | 再生の途中で動画がバッファリングしているとき。読み込み表示を出します。 |
+| `onError` | コンテンツの読み込みに失敗したとき。エラーのオーバーレイを出し、その URL を壊れたものとしてキャッシュします。 |
+
+<CodeBlock code={lifecycleCallbacks} language="vue" />
+
+### 独自の読み込みとエラーの UI [#custom-loading-error-ui]
+
+`#loading` と `#error` のスロットで、デフォルトの波のローダーとエラーアイコンを置き換えます：
+
+<CodeBlock code={customLoadingErrorUi} language="vue" />
+
+## タイムライン [#timeline]
+
+オーバーレイは、アクティブな動画の上に組み込みの再生タイムラインバーを描画します。`timeline` プロップで表示条件を決めます。`'auto'`（デフォルト）はアクティブなメディアが `timelineMinDurationSeconds`（デフォルト 30）より長い動画のときに表示し、`'always'` は動画がアクティブなら常に表示し、`'never'` で無効にします。完全に独自のシークバーには `#timeline` スロットを使います。そのスコープは、内部の `TimelineController` に支えられた `timelineState` を公開します。
+
+<CodeBlock code={timeline} language="vue" />
+
+テーマは `--rk-reel-timeline-*` の CSS カスタムプロパティで変えます。
+
+## サウンドコンテキスト [#sound-context]
+
+`ReelPlayerOverlay` はルートに `SoundProvider` をマウントするので、中に描画されたどのコンポーネントでも `useSoundState` でミュートの状態を読んだり切り替えたりできます。このコンポーザブルは `@reelkit/vue-reel-player` から再エクスポートされているので、`@reelkit/vue` を別にインポートする必要はありません。
+
+<CodeBlock code={soundContext} language="vue" />
+
+<Callout type="info">
+  プレイヤーの中では、`#controls` スロットのスコープでも `soundState` が公開されています。コントロールのテンプレートの中でだけ必要なら、そちらを使ってください。
+</Callout>
+
+## CSS クラス [#css-classes]
+
+CSS クラスは通常のクラス（スコープなし）です。`@reelkit/vue-reel-player/styles.css` のあとに読み込むスタイルシートで、詳細度の高いセレクターを使えばどれでも上書きできます。色、サイズ、z-index を変えるなら、下の [テーマ設定](#theming) の CSS カスタムプロパティを使ってください。
+
+| クラス | コンポーネント | 説明 |
+| --- | --- | --- |
+| `.rk-reel-overlay` | Overlay | 固定配置のフルスクリーンの背景（背景色、z-index） |
+| `.rk-reel-container` | Overlay | プレイヤーのコンテナー（配置、はみ出し） |
+| `.rk-reel-loader` | Overlay | 波の読み込みアニメーションのオーバーレイ |
+| `.rk-reel-media-error` | Overlay | エラー状態のオーバーレイ（中央のアイコンとテキスト） |
+| `.rk-reel-media-error-text` | Overlay | エラーメッセージのテキスト |
+| `.rk-reel-button` | Controls | 共通の円形アイコンボタン（閉じる、サウンド、ナビゲーションの矢印） |
+| `.rk-reel-close-btn` | Controls | 閉じるボタン |
+| `.rk-reel-sound-btn` | Controls | サウンド切り替えボタン |
+| `.rk-reel-nav-arrows` | Navigation | デスクトップ専用の矢印のコンテナー（768px 未満では非表示） |
+| `.rk-reel-nav-button` | Navigation | 個々の前後のナビゲーション矢印 |
+| `.rk-reel-slide-wrapper` | Slide | メディアとオーバーレイを包むラッパー |
+| `.rk-reel-slide-overlay` | SlideOverlay | グラデーションのオーバーレイのコンテナー |
+| `.rk-reel-slide-overlay-author` | SlideOverlay | 作者の行（アバターと名前） |
+| `.rk-reel-slide-overlay-avatar` | SlideOverlay | 作者のアバター画像 |
+| `.rk-reel-slide-overlay-name` | SlideOverlay | 作者の名前のテキスト |
+| `.rk-reel-slide-overlay-description` | SlideOverlay | 説明のテキスト |
+| `.rk-reel-slide-overlay-likes` | SlideOverlay | いいねの行（ハートと件数） |
+| `.rk-reel-video-container` | VideoSlide | 動画のラッパー（背景色、はみ出し） |
+| `.rk-reel-video-element` | VideoSlide | \<video> 要素 |
+| `.rk-reel-video-poster` | VideoSlide | ポスター画像（再生でフェードアウト） |
+| `.rk-reel-video-poster.rk-visible` | VideoSlide | 動画が一時停止中か読み込み中のあいだ、ポスターに付く状態のモディファイア |
+| `.rk-reel-nested-indicator` | NestedSlider | 複数メディアのスライドの下のドットのページネーション（デスクトップとタッチで位置が変わります） |
+| `.rk-reel-nested-nav` | NestedSlider | 横方向のカルーセルの矢印（768px 未満では非表示） |
+| `.rk-reel-nested-nav-next` | NestedSlider | ネストした「次へ」の矢印の位置 |
+| `.rk-reel-nested-nav-prev` | NestedSlider | ネストした「前へ」の矢印の位置 |
+| `.rk-reel-timeline` | TimelineBar | シークバーのラッパー。独自の \`#timeline\` スロットのルートで使えば、下端に沿った配置、セーフエリアの余白、タッチ端末でのスライドオーバーレイとの間隔を引き継げます。 |
+| `.rk-reel-timeline-track` | TimelineBar | トラック（未再生の範囲） |
+| `.rk-reel-timeline-buffered` | TimelineBar | バッファー済みの区間のレイヤー |
+| `.rk-reel-timeline-fill` | TimelineBar | 再生済みの進捗の塗り |
+| `.rk-reel-timeline-cursor` | TimelineBar | シーク用のつまみ（トラックの上に浮かびます） |
+
+## テーマ設定 [#theming]
+
+色、サイズ、z-index、トランジションはすべて CSS カスタムプロパティにあります。`:root`（またはオーバーレイの任意の祖先）で 1 つでも複数でも上書きすれば、コンポーネントのソースに触れずにテーマを変えられます。トークンは `@reelkit/react-reel-player` と共通なので、上書きはバインディング間でそのまま使えます。
+
+| トークン | デフォルト | 制御するもの |
+| --- | --- | --- |
+| `--rk-reel-overlay-bg` | `#000` | フルスクリーンの背景色 |
+| `--rk-reel-overlay-z` | `1000` | オーバーレイの z-index |
+| `--rk-reel-button-bg` | `rgba(0, 0, 0, 0.5)` | 円形ボタンのデフォルトの背景 |
+| `--rk-reel-button-bg-hover` | `rgba(255, 255, 255, 0.1)` | ナビゲーション矢印の背景（とホバーの基本状態） |
+| `--rk-reel-button-bg-hover-strong` | `rgba(255, 255, 255, 0.2)` | ナビゲーション矢印のホバー時の背景 |
+| `--rk-reel-button-fg` | `#fff` | ボタンのアイコンの色 |
+| `--rk-reel-button-size` | `44px` | ボタンの幅と高さ |
+| `--rk-reel-button-radius` | `50%` | ボタンの角丸 |
+| `--rk-reel-ui-z` | `10` | 閉じる、サウンド、ナビゲーションの z-index |
+| `--rk-reel-edge-padding` | `16px` | 閉じる、サウンド、ナビゲーション矢印の端からの距離 |
+| `--rk-reel-nav-gap` | `8px` | 縦に並んだナビゲーション矢印の間隔 |
+| `--rk-reel-transition` | `0.2s` | ホバーのトランジションの長さ |
+| `--rk-reel-loader-color` | `rgba(255, 255, 255, 0.12)` | 波のローダーのグラデーションの色 |
+| `--rk-reel-loader-duration` | `1.8s` | 波のローダーのアニメーションの長さ |
+| `--rk-reel-error-fg` | `rgba(255, 255, 255, 0.4)` | エラーアイコンとテキストの色 |
+| `--rk-reel-slide-overlay-bg` | `linear-gradient(transparent, rgba(0, 0, 0, 0.7))` | キャプションの背景のグラデーション |
+| `--rk-reel-slide-overlay-padding` | `48px 16px 16px` | キャプションの内側の余白 |
+| `--rk-reel-slide-overlay-name-color` | `#fff` | 作者の名前の色 |
+| `--rk-reel-video-bg` | `#000` | \<video> の後ろのレターボックスの背景 |
+| `--rk-reel-nested-button-bg` | `rgba(0, 0, 0, 0.5)` | ネストした矢印の背景 |
+| `--rk-reel-nested-button-size` | `36px` | ネストした矢印の大きさ |
+| `--rk-reel-timeline-track` | `rgba(255, 255, 255, 0.22)` | トラックの背景（未再生の範囲） |
+| `--rk-reel-timeline-buffered` | `rgba(255, 255, 255, 0.4)` | バッファー済みの区間の色 |
+| `--rk-reel-timeline-fill` | `#fff` | 再生済みの進捗の塗りの色 |
+| `--rk-reel-timeline-cursor` | `#fff` | シーク用のつまみの色 |
+| `--rk-reel-timeline-height` | `3px` | 通常時のトラックの高さ |
+| `--rk-reel-timeline-height-active` | `6px` | ホバー、フォーカス、シーク中のトラックの高さ |
+| `--rk-reel-timeline-cursor-width` | `10px` | 通常時のつまみの幅 |
+| `--rk-reel-timeline-cursor-width-active` | `14px` | シーク中のつまみの幅 |
+| `--rk-reel-timeline-cursor-height` | `24px` | 通常時のつまみの高さ |
+| `--rk-reel-timeline-cursor-height-active` | `32px` | シーク中のつまみの高さ |
+| `--rk-reel-timeline-transition` | `0.15s ease-out` | トラックとつまみが伸び縮みするアニメーション |
+
+下のスニペットを、`@reelkit/vue-reel-player/styles.css` のあとに読み込むスタイルシートに入れてください。
+
+<CodeBlock code={theming} language="css" />
+
+## アクセシビリティ [#accessibility]
+
+オーバーレイのルートはモーダルダイアログ（`role="dialog"`、`aria-modal="true"`）です。`aria-label` プロップを指定すると、スクリーンリーダーの読み上げが変わります。デフォルトは「Video player」です。各スライドは `role="group"`、`aria-roledescription="slide"`、`aria-label="Slide N of M"` を持ちます。
+
+オーバーレイは開くとフォーカスを取り込み、閉じるとトリガーに戻します。Tab と Shift+Tab は中のフォーカス可能な要素を循環し、外へ出たフォーカス（外側のクリック、プログラムからのフォーカス）は引き戻されます。`@reelkit/core` の `captureFocusForReturn` と `createFocusTrap` で実装されています。
+
+## キーボードショートカット [#keyboard-shortcuts]
+
+| キー | 動作 |
+| --- | --- |
+| `ArrowUp` | 前のスライド |
+| `ArrowDown` | 次のスライド |
+| `ArrowLeft` | 前のメディア（ネストしたカルーセル） |
+| `ArrowRight` | 次のメディア（ネストしたカルーセル） |
+| `Escape` | プレイヤーを閉じる |

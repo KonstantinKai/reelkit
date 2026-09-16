@@ -1,0 +1,553 @@
+---
+title: Stories Player
+description: React 用の、Instagram 風のストーリーのオーバーレイです。StoriesGroup のスキーマ、2 階層のナビゲーション（グループとストーリー）、自動送りのタイマー、canvas の進捗バー、タップゾーン、スロットレンダラー、テーマ設定を扱います。
+---
+
+import { Zap, Play, Timer, Layout, Clock, Image, Layers, Heart, Monitor, Circle, Code, Settings, Link2, Eye } from 'lucide-react';
+import { StoriesPlayerDemo } from '../../../components/demos/StoriesPlayerDemo';
+import installation from '../../snippets/stories-player/installation.sh?raw';
+import installation2 from '../../snippets/stories-player/installation-2.ts?raw';
+import fullCode from '../../snippets/stories-player/full-code.tsx?raw';
+import fullCode2 from '../../snippets/stories-player/full-code-2.tsx?raw';
+import urlState from '../../snippets/stories-player/url-state.tsx?raw';
+import urlState2 from '../../snippets/stories-player/url-state-2.tsx?raw';
+import urlState3 from '../../snippets/stories-player/url-state-3.tsx?raw';
+import urlState4 from '../../snippets/stories-player/url-state-4.tsx?raw';
+import rememberingWhatWasSeen from '../../snippets/stories-player/remembering-what-was-seen.tsx?raw';
+import transitions from '../../snippets/stories-player/transitions.tsx?raw';
+import renderheader from '../../snippets/stories-player/renderheader.tsx?raw';
+import renderfooter from '../../snippets/stories-player/renderfooter.tsx?raw';
+import renderslide from '../../snippets/stories-player/renderslide.tsx?raw';
+import rendernavigation from '../../snippets/stories-player/rendernavigation.tsx?raw';
+import renderprogressbar from '../../snippets/stories-player/renderprogressbar.tsx?raw';
+import renderloading from '../../snippets/stories-player/renderloading.tsx?raw';
+import rendererror from '../../snippets/stories-player/rendererror.tsx?raw';
+import storiesapi from '../../snippets/stories-player/storiesapi.tsx?raw';
+import doubleTapLikes from '../../snippets/stories-player/double-tap-likes.tsx?raw';
+import customizingTheHeartAnimation from '../../snippets/stories-player/customizing-the-heart-animation.css?raw';
+import canvasprogressbar from '../../snippets/stories-player/canvasprogressbar.tsx?raw';
+import storyheader from '../../snippets/stories-player/storyheader.tsx?raw';
+import imagestoryslide from '../../snippets/stories-player/imagestoryslide.tsx?raw';
+import videostoryslide from '../../snippets/stories-player/videostoryslide.tsx?raw';
+import storiesring from '../../snippets/stories-player/storiesring.tsx?raw';
+import storiesringlist from '../../snippets/stories-player/storiesringlist.tsx?raw';
+import heartanimation from '../../snippets/stories-player/heartanimation.tsx?raw';
+import storyitem from '../../snippets/stories-player/storyitem.ts?raw';
+import authorinfo from '../../snippets/stories-player/authorinfo.ts?raw';
+import storiesgroupT from '../../snippets/stories-player/storiesgroup-t.ts?raw';
+import headerrenderpropsT from '../../snippets/stories-player/headerrenderprops-t.ts?raw';
+import footerrenderpropsT from '../../snippets/stories-player/footerrenderprops-t.ts?raw';
+import sliderenderpropsT from '../../snippets/stories-player/sliderenderprops-t.ts?raw';
+import navigationrenderprops from '../../snippets/stories-player/navigationrenderprops.ts?raw';
+import progressbarrenderpropsT from '../../snippets/stories-player/progressbarrenderprops-t.ts?raw';
+import loadingrenderpropsT from '../../snippets/stories-player/loadingrenderprops-t.ts?raw';
+import errorrenderpropsT from '../../snippets/stories-player/errorrenderprops-t.ts?raw';
+import storiesapi2 from '../../snippets/stories-player/storiesapi-2.ts?raw';
+import customStoryTypes from '../../snippets/stories-player/custom-story-types.tsx?raw';
+import theming from '../../snippets/stories-player/theming.css?raw';
+
+`@reelkit/react-stories-player` を使った、React 用の Instagram 風のストーリーのオーバーレイです。
+
+<DemoLink href="https://react-demo.reelkit.dev/stories-player?utm_source=docs">ライブデモを見る →</DemoLink>
+
+## 機能 [#features]
+
+<FeatureGrid items={[
+              {
+                icon: Zap,
+                label: 'ネストしたナビゲーション',
+                desc: 'タップでストーリーを送り、スワイプでグループを切り替え',
+              },
+              {
+                icon: Play,
+                label: '動画のストーリー',
+                desc: 'サウンド切り替え付きの自動再生',
+              },
+              {
+                icon: Timer,
+                label: '自動送り',
+                desc: 'ストーリーごとに設定できるタイマー',
+              },
+              {
+                icon: Layout,
+                label: '3D トランジション',
+                desc: 'キューブ、フリップ、フェード、ズーム、スライド',
+              },
+              {
+                icon: Clock,
+                label: '進捗バー',
+                desc: 'canvas で描く分割された進捗',
+              },
+              {
+                icon: Image,
+                label: '画像と動画',
+                desc: '両方のメディアに対応',
+              },
+              {
+                icon: Layers,
+                label: '仮想化',
+                desc: 'DOM にはスライド 3 枚だけ',
+              },
+              {
+                icon: Heart,
+                label: 'ダブルタップでいいね',
+                desc: 'ダブルタップでハートのアニメーション',
+              },
+              {
+                icon: Monitor,
+                label: 'デスクトップの操作',
+                desc: 'デスクトップでは矢印ボタン',
+              },
+              {
+                icon: Circle,
+                label: 'ストーリーのリング',
+                desc: 'Instagram 風のアバターのリング',
+              },
+              {
+                icon: Code,
+                label: 'ジェネリック型',
+                desc: '独自のデータで StoryItem を拡張',
+              },
+              {
+                icon: Settings,
+                label: 'レンダープロップ',
+                desc: 'あらゆる UI 要素をカスタマイズ',
+              },
+              {
+                icon: Link2,
+                label: 'URL の状態',
+                desc: '共有できる ?story=group.story のリンク',
+              },
+              {
+                icon: Eye,
+                label: '既読の状態',
+                desc: '既読のリングと続きからの再開がリロード後も残ります',
+              },
+            ]} />
+
+## インストール [#installation]
+
+<CodeBlock code={installation} language="bash" />
+
+スタイルのインポートを忘れないでください：
+
+<CodeBlock code={installation2} language="typescript" />
+
+<Callout type="info" title="アイコン">
+  デフォルトのヘッダーはアイコンに `lucide-react` を使います。別のアイコンライブラリを使いたい場合は、`renderHeader` と `renderNavigation` で独自のものを渡してください。
+</Callout>
+
+## クイックスタート [#quick-start]
+
+`StoriesOverlay` コンポーネントはフルスクリーンのストーリーのプレイヤーを描画します。Instagram 風の入り口として `StoriesRingList` と組み合わせてください。`StoriesGroup` オブジェクトの配列を渡し、`isOpen` で表示を制御します。
+
+<CodeBlock code={fullCode} language="tsx" />
+
+## ライブデモ [#live-demo]
+
+<Sandbox
+  code={fullCode2}
+  title="StoriesPlayer.tsx"
+  height={200}
+  stackblitzDeps={['@reelkit/react-stories-player', '@reelkit/react']}
+>
+  <StoriesPlayerDemo />
+</Sandbox>
+
+<Caption>ストーリーのリングをクリックするとプレイヤーが開きます。左右をタップして移動し、スワイプでユーザーを切り替えます。</Caption>
+
+## URL の状態 [#url-state]
+
+<DemoLink href="https://react-demo.reelkit.dev/stories-player-url?utm_source=docs">ライブデモを見る →</DemoLink>
+
+`StoriesUrlOverlay` は、開閉状態をアドレスバーに持つ別のコンポーネントです。2 つの軸が 1 つのパラメーター（`?story=<group>.<story>`）に乗るので、再生中のストーリーに、共有でき、ブックマークでき、戻るボタンで閉じられるリンクが付きます。`useOverlayUrlState` と `urlIndexTwoAxisKey` でコントローラーを作り、`controller` として渡します。
+
+<Callout type="info" title="組み込みのキー">
+  ストーリーは二軸なので、二軸のキーをコントローラーに展開します。`urlIndexTwoAxisKey`（グループとストーリーを位置で指す）か `urlStableIdTwoAxisKey`（グループを安定した `id` で指す）で、どちらも `@reelkit/react` から再エクスポートされています。[URL の状態のガイド](/docs/core/guide#url-state) と [Core API](/docs/core/api#url-state) を参照してください。
+</Callout>
+
+<CodeBlock code={urlState} language="tsx" />
+
+- 開くと履歴エントリーを **1 つ** 積みます。ストーリーのスワイプ *も* ユーザーの切り替えもそれを **置き換え** るので、N 回移動してもエントリーは増えず、1 回戻れば必ずプレイヤーが閉じます。戻るとプレイヤーが閉じ、ストーリーは戻りません。
+- **内側の移動も運ばれます。** ストーリーのインデックスはグループ単位で固定されず、ユーザーのストーリー内で進むと `?story=2.`*n* が更新されるので、ディープリンクは正確なストーリーに着きます。
+- 戻るで閉じるのは、アプリ内から開いた場合だけです（リンクがエントリーを積んだ場合）。新しいタブで直接開いた共有リンクには前の履歴がないので、ブラウザーの戻るではサイトを離れます。✕ ボタンか Escape なら、その場でパラメーターを取り除いてページにとどまります。
+- どのグループやストーリーも指さないパラメーター（古いブックマーク、手で書き換えた値、グループの末尾を超えたストーリー）は、隣を開くのではなく URL から取り除かれます。
+
+**ルーターを使うアプリでは、アダプターを渡します。** ルーターの裏で `history.pushState` を書くと、その位置情報が古くなり、次のナビゲーションでパラメーターが消えます：
+
+<CodeBlock code={urlState2} language="tsx" />
+
+**安定したリンク。** グループはデフォルトで位置なので、ブックマークした `?story=2.0` はフィードが並べ替えられると別のユーザーを開きます。代わりにグループを安定した id で指してください。`outerCodec` が id を URL に書き、`outerLocator` がその場所を探します。ストーリーの側は、解決されたグループ内の単純なインデックスのままです。
+
+<CodeBlock code={urlState3} language="tsx" />
+
+**無限フィード。** ページングは codec とは関係なく、`outerLocator` の役目です。`locate` は同期なので、読み込み済みのグループにしか答えません。20 件を読み込んだフィードの 400 番目のグループへの共有リンクは見つかりません。`locateAsync` はフォールバックで、`locate` が見つけられなかったときだけ呼ばれます。ストーリーは、最終的に決まったグループの範囲に合わせて改めて制限されます。
+
+<Callout type="info" title="同じ locateAsync を外側の軸で">
+  これは一軸のキーが受け取るのと同じ `locateAsync` のページャーです。二軸のキーでは渡した `outerLocator` に乗るので、グループの軸がページングされ、ストーリーは解決されたグループ内のローカルなインデックスのままです。
+</Callout>
+
+<CodeBlock code={urlState4} language="tsx" />
+
+- `locateAsync` が保留中のあいだ、プレイヤーは閉じたままで、パラメーターはそのまま残るので、ディープリンクは取得のあいだも失われません。`null` か reject でパラメーターは取り除かれます。
+- URL が変わったあと、閉じたあと、アンマウントしたあとに届いた答えは破棄されます。遅い取得が、誰も求めていないストーリーを開くことはありません。
+- `useOverlayUrlState` のすべてのオプションは [React API リファレンス](/docs/react/api#useoverlayurlstate) に、手順は [React ガイド](/docs/react/guide#url-state) にあります。
+
+## 見たところを覚えておく [#remembering-what-was-seen]
+
+リングは、グループを最後まで見るまでグラデーションを表示し、グループは閲覧者がまだ見ていない最初のストーリーから開きます。どちらも、アドレスバーと同じキーで作った `ViewedStateController` によるものです。そのため保存されたエントリーは共有リンクのパラメーターとまったく同じになり、キーが id で指すものならフィードが並べ替えられても残ります。
+
+<CodeBlock code={rememberingWhatWasSeen} language="tsx" />
+
+- **最初のストーリーも数えます。** 画面にすでに表示されているストーリーはマウント時に既読として報告されるので、ストーリーが 1 つだけのグループは開いて閉じれば見たことになります。
+- **スワイプで進んでも続きから再開します。** `resumeStoryIndex` は、このセッションで初めて到達したすべてのグループ（プレイヤーが開いたグループも含む）で参照されます。ただし `initialStoryIndex` がストーリーを直接指定している場合は別です。すでにスワイプで通過したグループは、離れたところから再び開きます。
+- **リンクが優先されます。** `StoriesUrlOverlay` では、何が保存されていても、プレイヤーがどこで開くかはパラメーターが決めます。それ以外では再開のコールバックが決めます。
+- **件数は合計ではなく位置です。** エントリーが表すのは到達したいちばん先のストーリーなので、見終えたグループにストーリーを追加するとリングがまた点灯し、途中から削除すると件数が減ります。共有リンクと同じ自己修復です。
+- **ストレージは差し替えられます。** タブを閉じたら忘れるには `createSessionStorageAdapter()` を、ほかには独自の `StorageAdapter` を渡してください。開いている 2 つのタブは、ブラウザーの storage イベントで同期します。
+
+## API リファレンス [#api-reference]
+
+### StoriesOverlayProps [#storiesoverlayprops]
+
+<Signature>StoriesOverlayProps\<T></Signature>
+
+| Prop | 型 | デフォルト | 説明 |
+| --- | --- | --- | --- |
+| `isOpen` | `boolean` | 必須 | オーバーレイの表示を制御します。true のとき body のスクロールが止まります。 |
+| `groups` | `StoriesGroup<T>[]` | 必須 | 表示するストーリーのグループの配列 |
+| `onClose` | `() => void` | 必須 | オーバーレイを閉じるコールバック |
+| `ariaLabel` | `string` | 'Stories player' | ダイアログ領域のアクセシブルなラベル。オーバーレイが開くとスクリーンリーダーが読み上げます |
+| `initialGroupIndex` | `number` | 0 | 最初に表示するグループの 0 始まりのインデックス |
+| `initialStoryIndex` | `number` | resumeStoryIndex(initialGroupIndex)、なければ 0 | グループ内で最初に表示するストーリーの 0 始まりのインデックス。指定すると覚えている位置より優先されます。省略すると、開いたグループもほかのグループと同じように続きから始まります。 |
+| `resumeStoryIndex` | `(groupIndex: number) => number` | — | グループに初めて到達したときに開くストーリー。閲覧者が前回の続きから見られます。今回開いてからまだ訪れていないグループでだけ参照されます。 |
+| `groupTransition` | `TransitionTransformFn` | cubeTransition | 外側（グループ）のスライダーのトランジション効果 |
+| `defaultImageDuration` | `number` | 5000 | 画像のストーリーを自動で送るまでのデフォルトの時間（ミリ秒） |
+| `tapZoneSplit` | `number` | 0.3 | タップゾーンの分割比（0–1）。左の部分で前へ、右で次へ移動します。 |
+| `hideUIOnPause` | `boolean` | true | 長押しで一時停止したときに、ストーリーの UI（ヘッダー、フッター）を隠すかどうか |
+| `enableKeyboard` | `boolean` | true | キーボード操作（左右の矢印、Escape）を有効にします |
+| `innerTransitionDuration` | `number` | 200 | 内側（ストーリー）のトランジションのアニメーションの長さ（ミリ秒） |
+| `minSegmentWidth` | `number` | 8 | 進捗バーのセグメントの最小幅（ピクセル） |
+| `apiRef` | `MutableRefObject<StoriesApi \| null>` | - | 命令的な StoriesApi にアクセスするための ref |
+| `renderHeader` | `(props: HeaderRenderProps<T>) => ReactNode` | - | 独自のヘッダーレンダラー。作者、ストーリー、一時停止とミュートの状態を受け取ります。 |
+| `renderFooter` | `(props: FooterRenderProps<T>) => ReactNode` | - | 独自のフッターレンダラー。作者とストーリーの情報を受け取ります。 |
+| `renderSlide` | `(props: SlideRenderProps<T>) => ReactNode` | - | 独自のスライドレンダラー。デフォルトの画像と動画のスライドを置き換えます。 |
+| `renderNavigation` | `(props: NavigationRenderProps) => ReactNode` | - | デスクトップ用の独自のナビゲーション。デフォルトの前後の矢印ボタンを置き換えます。 |
+| `renderProgressBar` | `(props: ProgressBarRenderProps<T>) => ReactNode` | - | 独自の進捗バー。デフォルトの canvas の進捗バーを置き換えます。 |
+| `renderLoading` | `(props: LoadingRenderProps<T>) => ReactNode` | - | 独自の読み込み UI のレンダラー。指定しなければヘッダーのデフォルトのスピナーを表示します。 |
+| `renderError` | `(props: ErrorRenderProps<T>) => ReactNode` | - | 独自のエラー UI のレンダラー。指定しなければデフォルトのエラーアイコンのオーバーレイを表示します。 |
+
+### StoriesUrlOverlayProps [#storiesurloverlayprops]
+
+<Signature>StoriesUrlOverlayProps\<T></Signature>
+
+`StoriesOverlay` の props をすべて受け取りますが、開閉状態の 3 つ（`isOpen`、`initialGroupIndex`、`initialStoryIndex`）は代わりにコントローラーから与えられます。
+
+| Prop | 型 | デフォルト | 説明 |
+| --- | --- | --- | --- |
+| `controller` | `UrlStateController<TwoAxisPosition>` | 必須 | urlIndexTwoAxisKey を展開した useOverlayUrlState のコントローラー。その位置（\{ outer, inner \} のオブジェクト）で、プレイヤーが開いているかどうかとどこで開くかが決まります。オーバーレイは移動のたびと閉じるときに書き戻します。 |
+
+### コールバック [#callbacks]
+
+| Prop | 型 | 説明 |
+| --- | --- | --- |
+| `onClose` | `() => void` | プレイヤーが閉じたときに呼ばれます。StoriesOverlay では必須です（開閉状態を持つのはあなたなので、閉じる処理も必要です）。StoriesUrlOverlay では任意で、閉じるのは URL が行うので、閉じたあとに反応したいときだけ渡します。 |
+| `onStoryChange` | `(groupIndex: number, storyIndex: number) => void` | アクティブなストーリーが変わったときに呼ばれます |
+| `onGroupChange` | `(groupIndex: number) => void` | アクティブなグループが変わったときに呼ばれます |
+| `onStoryViewed` | `(groupIndex: number, storyIndex: number) => void` | ストーリーが表示されたときに呼ばれます |
+| `onStoryComplete` | `(groupIndex: number, storyIndex: number) => void` | ストーリーのタイマーが終わったときに呼ばれます |
+| `onDoubleTap` | `(groupIndex: number, storyIndex: number) => void` | ダブルタップのジェスチャーで呼ばれます |
+| `onPause` | `() => void` | プレイヤーが一時停止したときに呼ばれます |
+| `onResume` | `() => void` | プレイヤーが再開したときに呼ばれます |
+
+## トランジション [#transitions]
+
+`groupTransition` プロップは、ユーザーのグループ間をスワイプするときの 3D トランジション効果を決めます。トランジション関数は `@reelkit/react` からインポートします：
+
+<CodeBlock code={transitions} language="tsx" />
+
+## コンテンツ読み込みのライフサイクル [#content-loading-lifecycle]
+
+各ストーリーのスライドは、`SlideRenderProps` を通じて渡されるコールバックで読み込み状態を伝えます：
+
+| コールバック | タイミング |
+| --- | --- |
+| `onReady` | コンテンツの準備ができた（画像が読み込まれた、動画が再生中）。進捗のタイマーが始まります。 |
+| `onWaiting` | コンテンツが止まった（再生の途中で動画がバッファリング中）。スピナーが表示され、タイマーが止まります。 |
+| `onError` | コンテンツの読み込みに失敗した。エラーのオーバーレイが表示されます。 |
+| `onDurationReady` | メディアの実際の長さ（たとえば動画のメタデータから）を報告し、正しい長さでタイマーを再開します。 |
+| `onEnded` | メディアが終わった（たとえば動画が最後まで再生された）ことを伝えます。次のストーリーへ進みます。 |
+
+<Callout type="info" title="プリローダーのキャッシュ">
+  組み込みの `ImageStorySlide` と `VideoStorySlide` コンポーネントは、次のストーリーをバックグラウンドで先読みします。先読み済みのストーリーへ移動すると、読み込みのスピナーなしで内容がすぐに表示されます。
+</Callout>
+
+## レンダープロップ [#render-props]
+
+UI 要素はすべてレンダープロップで置き換えられます。それぞれが、必要な状態とコールバックをすべて持つ型付きの props を受け取ります。
+
+### renderHeader [#renderheader]
+
+デフォルトのヘッダー（作者の情報、一時停止とミュートのボタン、閉じるボタン）を置き換えます：
+
+<CodeBlock code={renderheader} language="tsx" />
+
+### renderFooter [#renderfooter]
+
+ストーリーの内容の下にフッターを追加します：
+
+<CodeBlock code={renderfooter} language="tsx" />
+
+### renderSlide [#renderslide]
+
+デフォルトの画像と動画のスライドを完全に置き換えます。組み込みのメディア処理には `ImageStorySlide` と `VideoStorySlide` のサブコンポーネントを使ってください：
+
+<CodeBlock code={renderslide} language="tsx" />
+
+### renderNavigation [#rendernavigation]
+
+デスクトップのデフォルトの矢印ボタンを置き換えます：
+
+<CodeBlock code={rendernavigation} language="tsx" />
+
+### renderProgressBar [#renderprogressbar]
+
+デフォルトの canvas の進捗バーを独自の実装に置き換えます。`progress` シグナルは 0 から 1 の値を出します：
+
+<CodeBlock code={renderprogressbar} language="tsx" />
+
+### renderLoading [#renderloading]
+
+コンテンツの取得中に表示する独自の読み込みインジケーター：
+
+<CodeBlock code={renderloading} language="tsx" />
+
+### renderError [#rendererror]
+
+コンテンツの読み込みに失敗したときの独自のエラーオーバーレイ：
+
+<CodeBlock code={rendererror} language="tsx" />
+
+## StoriesApi [#storiesapi]
+
+命令的に制御するには `apiRef` プロップを使います：
+
+<CodeBlock code={storiesapi} language="tsx" />
+
+### メソッド [#methods]
+
+| メソッド | 型 | 説明 |
+| --- | --- | --- |
+| `nextStory()` | `() => void` | 現在のグループ内で次のストーリーへ進みます |
+| `prevStory()` | `() => void` | 現在のグループ内で前のストーリーへ戻ります |
+| `nextGroup()` | `() => void` | 次のユーザーのグループへ切り替えます |
+| `prevGroup()` | `() => void` | 前のユーザーのグループへ切り替えます |
+| `goToGroup(index)` | `(index: number) => void` | インデックスで指定したグループへ移動します |
+| `pause()` | `() => void` | 自動送りと進捗のタイマーを一時停止します |
+| `resume()` | `() => void` | 自動送りと進捗のタイマーを再開します |
+
+## ダブルタップといいね [#double-tap-likes]
+
+ダブルタップすると組み込みのハートのアニメーションが再生され、すぐに視覚的なフィードバックが返ります。`onDoubleTap` コールバックはグループとストーリーのインデックス付きで呼ばれるので、いいねを自分の状態（API 呼び出し、ローカルストレージなど）に保存できます。プレイヤー自体は、いいねの状態を内部で管理しません。
+
+<CodeBlock code={doubleTapLikes} language="tsx" />
+
+### ハートのアニメーションをカスタマイズする [#customizing-the-heart-animation]
+
+アニメーションの速さは `--rk-stories-heart-duration` トークンで調整します（[テーマ設定](#theming) を参照）。色、大きさ、またはハートを完全に隠すには、`.rk-stories-heart` クラスを直接指定してください。`HeartAnimation` コンポーネントも単独で使えるよう公開されています。
+
+<CodeBlock code={customizingTheHeartAnimation} language="css" />
+
+<Callout type="info">
+  組み込みのハートのアニメーションは、今のところレンダープロップでは置き換えられません。CSS でスタイルを変えるか、`display: none` で隠して `onDoubleTap` コールバックの中で独自のアニメーションを扱ってください。`renderDoubleTap` のレンダープロップが必要なら、[GitHub Issues](https://github.com/KonstantinKai/reelkit/issues) で知らせてください。
+</Callout>
+
+## サブコンポーネント [#sub-components]
+
+独自のレンダープロップで組み合わせるために公開されている、再利用できる部品です：
+
+### CanvasProgressBar [#canvasprogressbar]
+
+高性能な、canvas で描く分割された進捗バーです。ストーリーごとにセグメントを描き、アクティブなセグメントの塗りを `requestAnimationFrame` でアニメーションします。ストーリーの多いグループではスライドするウィンドウに対応します。
+
+<CodeBlock code={canvasprogressbar} language="tsx" />
+
+### StoryHeader [#storyheader]
+
+作者のアバター、名前、認証バッジ、相対的な時刻、一時停止と再生の切り替え、ミュートの切り替え、読み込みスピナー、閉じるボタンを持つデフォルトのヘッダーです。`renderHeader` を指定しない場合に自動で使われます。
+
+<CodeBlock code={storyheader} language="tsx" />
+
+### ImageStorySlide [#imagestoryslide]
+
+`object-fit: cover` の、端まで広がる画像スライドです。ライフサイクルの追跡のために、読み込みとエラーをコールバックで報告します。
+
+<CodeBlock code={imagestoryslide} language="tsx" />
+
+### VideoStorySlide [#videostoryslide]
+
+iOS で音声を途切れさせないために共有の `<video>` 要素を使う動画スライドです。自動再生、ポスターのフレーム、サウンドの同期を処理し、長さと再生のライフサイクルのイベントを報告します。
+
+<CodeBlock code={videostoryslide} language="tsx" />
+
+### StoriesRing [#storiesring]
+
+Instagram 風のグラデーションのリングが付いた円形のアバターです。状態は 2 つで、まだ見るストーリーが残っているグループは回転するグラデーションに、すべて見たグループは落ち着いた平坦なリングになります。
+
+<CodeBlock code={storiesring} language="tsx" />
+
+### StoriesRingList [#storiesringlist]
+
+作者の名前付きの `StoriesRing` コンポーネントが横に並ぶ、スクロールできる行です。グループごとに 1 つのリングです。
+
+<CodeBlock code={storiesringlist} language="tsx" />
+
+### HeartAnimation [#heartanimation]
+
+ダブルタップで表示されるハートのアニメーションのオーバーレイです。800ms かけて拡大しながらフェードアウトします。CSS でカスタマイズしてください（ダブルタップといいねの節を参照）。
+
+<CodeBlock code={heartanimation} language="tsx" />
+
+## 型 [#types]
+
+### StoryItem [#storyitem]
+
+<CodeBlock code={storyitem} language="typescript" />
+
+### AuthorInfo [#authorinfo]
+
+<CodeBlock code={authorinfo} language="typescript" />
+
+### StoriesGroup\<T> [#storiesgroup-t]
+
+<CodeBlock code={storiesgroupT} language="typescript" />
+
+### HeaderRenderProps\<T> [#headerrenderprops-t]
+
+<CodeBlock code={headerrenderpropsT} language="typescript" />
+
+### FooterRenderProps\<T> [#footerrenderprops-t]
+
+<CodeBlock code={footerrenderpropsT} language="typescript" />
+
+### SlideRenderProps\<T> [#sliderenderprops-t]
+
+<CodeBlock code={sliderenderpropsT} language="typescript" />
+
+### NavigationRenderProps [#navigationrenderprops]
+
+<CodeBlock code={navigationrenderprops} language="typescript" />
+
+### ProgressBarRenderProps\<T> [#progressbarrenderprops-t]
+
+<CodeBlock code={progressbarrenderpropsT} language="typescript" />
+
+### LoadingRenderProps\<T> [#loadingrenderprops-t]
+
+<CodeBlock code={loadingrenderpropsT} language="typescript" />
+
+### ErrorRenderProps\<T> [#errorrenderprops-t]
+
+<CodeBlock code={errorrenderpropsT} language="typescript" />
+
+### StoriesApi [#storiesapi]
+
+<CodeBlock code={storiesapi2} language="typescript" />
+
+## カスタム Story 型 [#custom-story-types]
+
+`StoryItem` を独自のフィールドで拡張し、型パラメーターを `StoriesOverlay` に渡します。すべてのレンダープロップが拡張した型を受け取ります：
+
+<CodeBlock code={customStoryTypes} language="tsx" />
+
+## CSS クラス [#css-classes]
+
+CSS クラスはすべて通常のクラス（CSS Modules ではありません）なので、`@reelkit/react-stories-player/styles.css` のあとに読み込むスタイルシートで、詳細度の高いセレクターを使って指定できます。色、サイズ、z-index を変えるなら、下の [テーマ設定](#theming) で説明している CSS カスタムプロパティを使ってください。
+
+| クラス | コンポーネント | 説明 |
+| --- | --- | --- |
+| `.rk-stories-overlay` | Overlay | 固定配置のフルスクリーンの背景（背景色、z-index） |
+| `.rk-stories-swipe-wrapper` | Overlay | スワイプで閉じるためのラッパー（ナビゲーションボタンと canvas を含みます） |
+| `.rk-stories-container` | Overlay | 角の丸いストーリーの表示領域（配置、はみ出し） |
+| `.rk-stories-ui-layer` | Overlay | UI オーバーレイのコンテナー（ヘッダー、進捗、ナビゲーション） |
+| `.rk-stories-ui-layer--hidden` | Overlay | UI を隠した状態（hideUIOnPause で切り替わります） |
+| `.rk-stories-error` | Overlay | エラー状態（中央のアイコンとテキスト） |
+| `.rk-stories-error-text` | Overlay | エラーメッセージのテキスト |
+| `.rk-stories-nav-btn` | Navigation | デスクトップの前後の矢印 |
+| `.rk-stories-progress-bar` | ProgressBar | canvas の進捗バーを配置するラッパー |
+| `.rk-stories-slide-wrapper` | Group | ストーリーの 1 グループ（外側のスライド） |
+| `.rk-stories-story` | Story | 1 つのストーリー（内側のスライドのルート） |
+| `.rk-stories-header` | StoryHeader | ヘッダーのバー（アバター、名前、操作） |
+| `.rk-stories-header--hidden` | StoryHeader | ヘッダーを隠した状態（visible=false） |
+| `.rk-stories-header-avatar` | StoryHeader | 作者のアバター画像 |
+| `.rk-stories-header-name` | StoryHeader | 作者の名前のテキスト |
+| `.rk-stories-header-verified` | StoryHeader | 認証バッジのコンテナー |
+| `.rk-stories-header-time` | StoryHeader | 「何分前」のテキスト |
+| `.rk-stories-header-actions` | StoryHeader | 右側の操作（閉じる、ミュート、一時停止） |
+| `.rk-stories-header-btn` | StoryHeader | ヘッダーの操作ボタン |
+| `.rk-stories-header-spinner` | StoryHeader | 動画のバッファリングのスピナー |
+| `.rk-stories-image` | ImageStorySlide | 画像のストーリーの要素 |
+| `.rk-stories-video` | VideoStorySlide | 動画のストーリーのコンテナー |
+| `.rk-stories-video-element` | VideoStorySlide | 共有の \<video> 要素 |
+| `.rk-stories-video-poster` | VideoStorySlide | 動画のポスター画像（再生でフェードアウト） |
+| `.rk-stories-video-poster--visible` | VideoStorySlide | ポスターを表示した状態（再生前） |
+| `.rk-stories-heart` | HeartAnimation | ダブルタップで飛び出すハートのアニメーション |
+| `.rk-stories-ring` | StoriesRing | ストーリーのリング（アニメーションするグラデーションの枠付きアバター） |
+| `.rk-stories-ring--active` | StoriesRing | まだ見るストーリーが残っているリング（アニメーションします） |
+| `.rk-stories-ring-avatar` | StoriesRing | リングの中のアバター画像 |
+| `.rk-stories-ring-list` | StoriesRingList | 横に並ぶリングのリストのコンテナー |
+| `.rk-stories-ring-list-item` | StoriesRingList | リングと名前の列 |
+| `.rk-stories-ring-list-name` | StoriesRingList | 各リングの下の作者の名前 |
+
+## テーマ設定 [#theming]
+
+色、サイズ、z-index、トランジションはすべて CSS カスタムプロパティにあります。`:root`（またはオーバーレイの任意の祖先）で 1 つでも複数でも上書きすれば、コンポーネントのソースに触れずにテーマを変えられます。
+
+| トークン | デフォルト | 制御するもの |
+| --- | --- | --- |
+| `--rk-stories-overlay-bg` | `#000` | フルスクリーンの背景色 |
+| `--rk-stories-overlay-z` | `9999` | オーバーレイの z-index |
+| `--rk-stories-container-radius` | `12px` | ストーリーの表示領域の角丸（デスクトップ） |
+| `--rk-stories-swipe-gap` | `16px` | ナビゲーションボタンとストーリーの表示領域の間隔 |
+| `--rk-stories-top-shade-height` | `120px` | ヘッダーの後ろの上部のグラデーションの高さ |
+| `--rk-stories-top-shade-bg` | `linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%)` | 上部のグラデーションの色 |
+| `--rk-stories-ui-transition` | `200ms` | hideUIOnPause が切り替わるときのフェードの長さ |
+| `--rk-stories-nav-size` | `44px` | デスクトップの前後のボタンの大きさ |
+| `--rk-stories-nav-bg` | `rgba(255, 255, 255, 0.1)` | デスクトップのナビゲーションボタンの背景 |
+| `--rk-stories-nav-bg-hover` | `rgba(255, 255, 255, 0.2)` | デスクトップのナビゲーションボタンのホバー時の背景 |
+| `--rk-stories-nav-fg` | `rgba(255, 255, 255, 0.7)` | デスクトップのナビゲーションボタンのアイコンの色 |
+| `--rk-stories-nav-fg-hover` | `#fff` | デスクトップのナビゲーションボタンのホバー時のアイコンの色 |
+| `--rk-stories-error-bg` | `linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)` | エラー状態の背景のグラデーション |
+| `--rk-stories-error-fg` | `rgba(255, 255, 255, 0.5)` | エラーアイコンとテキストの色 |
+| `--rk-stories-error-text-size` | `13px` | エラーメッセージの文字サイズ |
+| `--rk-stories-video-bg` | `#000` | \<video> の後ろのレターボックスの背景 |
+| `--rk-stories-video-poster-transition` | `200ms` | 動画の再生が始まるときのポスターのフェードの長さ |
+| `--rk-stories-header-top` | `18px` | ストーリーの上端からのヘッダーの縦の位置 |
+| `--rk-stories-header-padding` | `12px 16px` | ヘッダーの行の内側の余白 |
+| `--rk-stories-header-avatar-size` | `32px` | アバターの幅と高さ |
+| `--rk-stories-header-name-fg` | `#fff` | 作者の名前の色 |
+| `--rk-stories-header-name-size` | `14px` | 作者の名前の文字サイズ |
+| `--rk-stories-header-time-fg` | `rgba(255, 255, 255, 0.6)` | 「何分前」のテキストの色 |
+| `--rk-stories-header-btn-fg` | `#fff` | ヘッダーの操作アイコンの色（閉じる、ミュート、一時停止） |
+| `--rk-stories-heart-duration` | `800ms` | 飛び出してフェードアウトするアニメーションの長さ |
+| `--rk-stories-ring-spin-duration` | `4s` | まだ見るストーリーが残っているリングの回転の長さ |
+| `--rk-stories-ring-list-gap` | `12px` | リスト内のリングの間隔 |
+| `--rk-stories-ring-list-padding` | `12px` | リングのリストの内側の余白 |
+| `--rk-stories-ring-list-name-size` | `12px` | 各リングの下の作者の名前の文字サイズ |
+
+下のスニペットを、`@reelkit/react-stories-player/styles.css` のあとに読み込むスタイルシートに入れてください。
+
+<CodeBlock code={theming} language="css" />
+
+## アクセシビリティ [#accessibility]
+
+オーバーレイのルートはモーダルダイアログ（`role="dialog"`、`aria-modal="true"`）です。`ariaLabel` を指定すると、スクリーンリーダーの読み上げが変わります。デフォルトは「Stories player」です。
+
+オーバーレイは開くとフォーカスを取り込み、閉じるとトリガーに戻します。Tab と Shift+Tab は中のフォーカス可能な要素を循環し、外へ出たフォーカス（外側のクリック、プログラムからのフォーカス）は引き戻されます。`@reelkit/core` の `captureFocusForReturn` と `createFocusTrap` で実装されています。
+
+## キーボードショートカット [#keyboard-shortcuts]
+
+| キー | 動作 |
+| --- | --- |
+| `ArrowLeft` | 前のストーリー |
+| `ArrowRight` | 次のストーリー |
+| `Escape` | プレイヤーを閉じる |

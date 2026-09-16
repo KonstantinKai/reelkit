@@ -57,6 +57,9 @@ const localeMarkers: Record<Exclude<Locale, 'en'>, RegExp> = {
   // them: each is also an English word, and an untranslated "No runtime
   // dependencies" would pass as Portuguese.
   pt: /(?<!\p{L})(de|da|para|com|que|não|uma|na|em|por)(?!\p{L})/iu,
+  // Kana, not kanji: every Japanese sentence carries kana particles and
+  // Chinese carries none, so a page copied over from the Chinese tree fails.
+  ja: /[\u3040-\u30ff]/,
 };
 
 const markerFor = (locale: Locale) =>
@@ -101,6 +104,13 @@ const translatedProductNames = [
   'caixa de luz',
   'Reprodutor de Stories',
   'Núcleo de Stories',
+  'リールプレイヤー',
+  'リール プレイヤー',
+  'ライトボックス',
+  'ストーリーズプレイヤー',
+  'ストーリーズ プレイヤー',
+  'ストーリーズコア',
+  'ストーリーズ コア',
 ];
 
 describe.each(translated)('%s page modules', (locale) => {

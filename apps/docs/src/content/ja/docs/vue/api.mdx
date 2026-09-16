@@ -1,0 +1,235 @@
+---
+title: Vue API リファレンス
+description: '@reelkit/vue の完全なリファレンスです。コンポーネント、props、emits、公開メソッド、ReelIndicator、useSwipeToClose、useOverlayUrlState、provide/inject のコンテキストの形を扱います。'
+---
+
+import slots from '../../../snippets/vue-api/slots.vue?raw';
+import reelexpose from '../../../snippets/vue-api/reelexpose.vue?raw';
+import rkReelKeyUsereelcontext from '../../../snippets/vue-api/rk-reel-key-usereelcontext.vue?raw';
+import usebodylock from '../../../snippets/vue-api/usebodylock.ts?raw';
+import usefullscreen from '../../../snippets/vue-api/usefullscreen.ts?raw';
+import usesoundstate from '../../../snippets/vue-api/usesoundstate.ts?raw';
+import usevuerouterurladapter from '../../../snippets/vue-api/usevuerouterurladapter.ts?raw';
+import tovueref from '../../../snippets/vue-api/tovueref.ts?raw';
+import soundprovider from '../../../snippets/vue-api/soundprovider.vue?raw';
+import packageExports from '../../../snippets/vue-api/package-exports.ts?raw';
+
+`@reelkit/vue` のコンポーネント、コンポーザブル、ユーティリティの完全なリファレンスです。
+
+## Reel [#reel]
+
+タグ：`<Reel>`
+
+### Props [#props]
+
+<Caption>`ReelProps`</Caption>
+
+| Prop | 型 | デフォルト | 説明 |
+| --- | --- | --- | --- |
+| `count` | `number` | 必須 | スライドの総数 |
+| `direction` | `'vertical' \| 'horizontal'` | 'vertical' | スクロールの方向 |
+| `size` | `[number, number] \| undefined` | undefined | \[幅, 高さ\] の形での幅と高さ。省略すると ResizeObserver で自動計測します |
+| `initialIndex` | `number` | 0 | 開始時のスライドのインデックス |
+| `loop` | `boolean` | false | 無限ループを有効にします |
+| `transition` | `TransitionTransformFn` | slideTransition | トランジション効果の関数。組み込み：slideTransition、fadeTransition、flipTransition、cubeTransition、zoomTransition |
+| `transitionDuration` | `number` | 300 | アニメーションの長さ（ms） |
+| `swipeDistanceFactor` | `number` | 0.12 | スワイプのしきい値（0-1） |
+| `enableGestures` | `boolean` | true | タッチやマウスのドラッグによる操作を有効にします |
+| `enableNavKeys` | `boolean` | true | キーボードの矢印キーによる操作を有効にします |
+| `enableWheel` | `boolean` | false | マウスホイールでの操作を有効にします |
+| `wheelDebounceMs` | `number` | 200 | ホイールイベントのデバウンス（ms） |
+| `rangeExtractor` | `(index: number, count: number) => number[]` | defaultRangeExtractor | 描画するインデックスを決める独自の関数 |
+| `keyExtractor` | `(index: number, indexInRange: number) => string` | index => index.toString() | スライドの描画に使う独自のキー関数（ループ時に便利） |
+| `ariaLabel` | `string` | undefined | カルーセル領域のアクセシブルなラベル |
+| `reelStyle` | `Record<string, string \| number>` | undefined | ルートのコンテナー要素に適用するインラインスタイル |
+| `reelClass` | `string \| Array \| Object` | undefined | ルートのコンテナー要素に適用する CSS クラス |
+| `onNavKeyPress` | `(increment: -1 \| 1) => void` | undefined | デフォルトの ArrowUp/ArrowDown の操作を置き換えるコールバックのプロップ。指定するとナビゲーションは自分で実装します（たとえば reelRef.value.next() を呼ぶ）。デフォルトの挙動にするなら省略してください。 |
+
+### イベント [#events]
+
+| イベント | ペイロード | 説明 |
+| --- | --- | --- |
+| `beforeChange` | `(index: number, nextIndex: number, indexInRange: number)` | スライドのトランジションが始まる前に発行されます |
+| `afterChange` | `(index: number, indexInRange: number)` | スライドのトランジションが完了したあとに発行されます |
+| `slideDragStart` | `(index: number)` | ドラッグジェスチャーが始まったときに発行されます |
+| `slideDragEnd` | `(index: number)` | ドラッグジェスチャーが終わった（指を離した）ときに発行されます |
+| `slideDragCanceled` | `(index: number)` | ドラッグジェスチャーがキャンセルされた（元に戻った）ときに発行されます |
+| `tap` | `(event: GestureCommonEvent)` | シングルタップのジェスチャーで発行されます |
+| `doubleTap` | `(event: GestureCommonEvent)` | ダブルタップのジェスチャーで発行されます |
+| `longPress` | `(event: GestureCommonEvent)` | 長押しのジェスチャーが始まったときに発行されます |
+| `longPressEnd` | `(event: GestureEvent)` | 長押しのジェスチャーが終わったときに発行されます |
+
+### スロット [#slots]
+
+<CodeBlock code={slots} language="vue-html" />
+
+| スロット | スコープの props | 説明 |
+| --- | --- | --- |
+| `#item` | `{ index: number, indexInRange: number, size: [number, number] }` | 表示中の各スライドを描画します。仮想化された範囲のインデックスごとに呼ばれます |
+| `default` | `なし` | すべてのスライドの上に描画するオーバーレイの内容（インジケーター、コントロールなど） |
+
+## ReelExpose [#reelexpose]
+
+テンプレート参照を通じて公開される命令的な API：
+
+<CodeBlock code={reelexpose} language="vue" />
+
+| メソッド | 型 | 説明 |
+| --- | --- | --- |
+| `next()` | `() => void` | 次のスライドへ移動します |
+| `prev()` | `() => void` | 前のスライドへ移動します |
+| `goTo(index, animate?)` | `(number, boolean?) => Promise<void>` | 指定したスライドのインデックスへ移動します |
+| `adjust()` | `() => void` | スライドの位置を計算し直します（レイアウトが変わったあとに便利） |
+| `observe()` | `() => void` | ジェスチャー、キーボード、ホイールのイベントの監視を始めます |
+| `unobserve()` | `() => void` | ジェスチャー、キーボード、ホイールのイベントの監視を止めます |
+
+## ReelIndicator [#reelindicator]
+
+タグ：`<ReelIndicator>`
+
+### Props [#props]
+
+<Caption>`ReelIndicatorProps`</Caption>
+
+| Prop | 型 | デフォルト | 説明 |
+| --- | --- | --- | --- |
+| `count` | `number \| undefined` | 自動 | アイテムの総数。Reel の中に置けば親のコンテキストから自動で接続されます。単独で使うときは明示的に渡してください |
+| `active` | `number \| undefined` | 自動 | 現在アクティブなインデックス。Reel の中に置けば親のコンテキストから自動で接続されます。単独で使うときは明示的に渡してください |
+| `direction` | `'vertical' \| 'horizontal'` | 'vertical' | インジケーターの向き |
+| `radius` | `number` | 3 | ドットの半径（ピクセル） |
+| `visible` | `number` | 5 | 同時に通常サイズで表示するドットの最大数 |
+| `gap` | `number` | 4 | ドットの間隔（ピクセル） |
+| `activeColor` | `string` | '#fff' | アクティブなドットの色 |
+| `inactiveColor` | `string` | 'rgba(255, 255, 255, 0.5)' | 非アクティブなドットの色 |
+| `edgeScale` | `number` | 0.5 | はみ出した端のドットの縮小率 |
+| `onDotClick` | `(index: number) => void` | undefined | 独自のクリックハンドラー。Reel の中で省略すると、クリックしたドットのインデックスへ移動します |
+| `indicatorClass` | `string \| Array \| Object` | undefined | tablist のルート要素に適用する CSS クラス |
+| `indicatorStyle` | `CSSProperties` | undefined | tablist のルート要素にマージするインラインスタイル |
+
+### イベント [#events]
+
+| イベント | ペイロード | 説明 |
+| --- | --- | --- |
+| `dotClick` | `(index: number)` | ドットがクリックされたときに発行され、ドットのインデックスを渡します |
+
+## SwipeToClose [#swipetoclose]
+
+タグ：`<SwipeToClose>` — デフォルトスロットを、スワイプで閉じられるタッチ対応のコンテナーで包みます。
+
+### Props [#props]
+
+<Caption>`SwipeToCloseProps`</Caption>
+
+| Prop | 型 | デフォルト | 説明 |
+| --- | --- | --- | --- |
+| `direction` | `'up' \| 'down'` | 必須 | 閉じるスワイプの方向。ギャラリーを閉じるなら "up"、ストーリーを閉じるなら "down" を使います |
+| `enabled` | `boolean` | true | スワイプで閉じるジェスチャーが有効かどうか |
+| `threshold` | `number` | 0.2 | 閉じるのに必要な、ビューポートの高さに対する割合（0-1） |
+
+### イベント [#events]
+
+| イベント | ペイロード | 説明 |
+| --- | --- | --- |
+| `close` | `()` | スワイプがしきい値を超え、閉じるアニメーションが終わったときに発行されます |
+
+### スロット [#slots]
+
+| スロット | 説明 |
+| --- | --- |
+| `default` | スワイプで閉じるジェスチャーで包む内容 |
+
+## RK_REEL_KEY と useReelContext [#rk-reel-key-usereelcontext]
+
+`<Reel>` が子孫に提供する `InjectionKey<ReelContextValue>` です。`<ReelIndicator>` の自動接続に内部で使われています。スライダーのコンテキストが必要な独自のコンポーネントでは `useReelContext()` を使ってください。
+
+<CodeBlock code={rkReelKeyUsereelcontext} language="vue" />
+
+| プロパティ | 型 | 説明 |
+| --- | --- | --- |
+| `index` | `Signal<number>` | 現在のスライドのリアクティブなインデックス |
+| `count` | `Signal<number>` | アイテムの総数のリアクティブな値 |
+| `goTo` | `(index: number, animate?: boolean) => Promise<void>` | プログラムからスライドへ移動します |
+
+## コンポーザブル [#composables]
+
+### useBodyLock [#usebodylock]
+
+渡した値が `true` のとき、ドキュメントの body のスクロールを止めます。参照カウントを使うので、同時に複数の呼び出し元がそれぞれ独立して止めたり解除したりできます。アンマウント時に自動で解除します。
+
+<CodeBlock code={usebodylock} language="typescript" />
+
+| パラメーター | 型 | 説明 |
+| --- | --- | --- |
+| `locked` | `Ref<boolean> \| boolean` | body のスクロールを止めるかどうか。リアクティブな ref でも固定の真偽値でも受け取ります |
+
+### useFullscreen [#usefullscreen]
+
+<Caption>`UseFullscreenOptions` → `UseFullscreenReturn`</Caption>
+
+ブラウザー間で動く Fullscreen API を扱うコンポーザブルです。アンマウント時に自動でフルスクリーンを終了します。
+
+<CodeBlock code={usefullscreen} language="typescript" />
+
+| 戻り値 | 型 | 説明 |
+| --- | --- | --- |
+| `isFullscreen` | `Signal<boolean>` | 現在のフルスクリーンの状態を反映するコアのシグナル（`.value` を読みます） |
+| `request` | `() => Promise<void>` | 参照した要素でフルスクリーンを要求します。別の要素がすでにフルスクリーンなら、先にそれを終了します（完了を待ちます）。 |
+| `exit` | `() => Promise<void>` | フルスクリーンを終了します |
+| `toggle` | `() => Promise<void>` | フルスクリーンの状態を切り替えます |
+
+### useSoundState [#usesoundstate]
+
+コンテキストから現在の `SoundController` にアクセスします。`<SoundProvider>` の中で呼ぶ必要があり、外で呼ぶと例外を投げます。
+
+<CodeBlock code={usesoundstate} language="typescript" />
+
+### useOverlayUrlState [#useoverlayurlstate]
+
+<Caption>`OverlayUrlStateOptions`</Caption>
+
+オーバーレイ用の URL 状態コントローラーを作ります。それを `<LightboxUrlOverlay>` の `:controller` プロップに渡します。
+
+手順と例は [Vue ガイドの URL の状態](/docs/vue/guide#url-state) を参照してください。
+
+| オプション | 型 | デフォルト | 説明 |
+| --- | --- | --- | --- |
+| `param` | `string` | 必須 | アクティブなスライドを持つクエリパラメーター（たとえば "photo"）。 |
+| `adapter` | `UrlAdapter` | History API | 読み書きに使うナビゲーションの仕組み。ルーターを使うアプリでは、ルーター自身の位置情報が古くならないよう、ルーターに連動したアダプターを渡してください。 |
+| `codec` | `{ decode(raw) => Id \| null; encode(id) => string }` | 必須 | 通信形式：パラメーターの文字列 ↔ 安定した識別子で、コレクションは見ません。同じ Id を共有する対として locator と一緒に使います。デフォルトの ?photo=3 のインデックスギャラリーなら ...urlIndexKey(() => props.images.length) を展開し、ギャラリーが並べ替えられてもブックマークが保たれるようにするなら独自のもの（base64、スラッグ）を用意します。 |
+| `locator` | `{ locate(id) => number \| null; locateAsync?(id) => Promise<number \| null>; identify(index) => id }` | 必須 | 識別子を位置に対応させ、その妥当性を自分で判断します：locate（同期）、locateAsync（ページングされたギャラリー向けの非同期フォールバック）、identify（書き込み）。単純なインデックスのギャラリーなら ...urlIndexKey(() => props.images.length) を展開します。この locator と対応する codec を提供し、?photo=3 を現在の件数で制限するので、古い ?photo=99 は指されていないスライドを開く代わりに URL から取り除かれます。Vue の setup は一度しか実行されず、取り込んだ長さはページングされたフィードが伸びると古くなるので、数値ではなく getter を渡してください。ページングされたフィードや識別子で指すギャラリーは、代わりに独自の codec と locator の対を用意します。 |
+
+### useVueRouterUrlAdapter [#usevuerouterurladapter]
+
+Vue Router に連動した `UrlAdapter` です。ルーターを使うアプリで `useOverlayUrlState` の `adapter` オプションに渡すと、ナビゲーションの信頼できる情報源がルーターだけに保たれます。ルーターの裏で `history.pushState` を書くと、その位置情報が古くなり、次のナビゲーションでパラメーターが消えます。書き込むのはクエリだけなので、パス、ハッシュ、`?tag=a&tag=b` のような繰り返しのキーはそのまま残ります。変更のたびに、ルーターが同じページで push したのか、replace したのか、履歴をたどったのかを報告するので、`<router-link>` から開いたギャラリーは 1 回戻るだけで閉じます。
+
+独自のサブパスから提供されるので、ルーターを使わないアプリのバンドルに `vue-router` が入ることはありません。`vue-router` は任意の peer dependency で、4.1 以降が必要です。アダプターはルーターの `state` ナビゲーションオプションで所有の印を運びますが、古いリリースはこれを無視します。古いルーターでも壊れることはなく、閉じるときに履歴を戻る代わりに、その場でパラメーターをクリアするだけです。
+
+<CodeBlock code={usevuerouterurladapter} language="typescript" />
+
+### toVueRef [#tovueref]
+
+コアの `Subscribable`（`@reelkit/core` の任意の `Signal`）を、読み取り専用の Vue の `Ref` につなぎます。コアのシグナルの値で Vue の再描画を起こしたいときは、常にこれを使ってください。描画関数やテンプレートで `signal.value` を直接読んでも、それだけではリアクティブに **なりません**。
+
+購読は `onScopeDispose` で自動的に破棄されるので、Vue の `setup()` か、エフェクトスコープを扱える別のコンテキストの中で呼ぶ必要があります。
+
+<CodeBlock code={tovueref} language="typescript" />
+
+## SoundProvider [#soundprovider]
+
+タグ：`<SoundProvider>` — `SoundController` のインスタンスを作り、`RK_SOUND_KEY` を通じて子孫に提供するコンテキストプロバイダーです。デフォルトスロットをそのまま描画します。
+
+<CodeBlock code={soundprovider} language="vue" />
+
+## アクセシビリティ [#accessibility]
+
+`<Reel>` は `aria-roledescription="carousel"` を持つ `role="region"` として描画されます。`aria-label`（TS でのプロップ名は `ariaLabel`）を渡すと、スクリーンリーダー向けの名前が付きます。控えめなライブリージョンが、スライドが変わるたびに「Slide N of M」と読み上げます。非アクティブなスライドには `inert` 属性が付くので、フォーカスや支援技術での移動では飛ばされます。
+
+`<ReelIndicator>` は、ドットにローミング tabindex を持つ `role="tablist"` として描画されます。矢印キーでフォーカスが移動し、Enter か Space でスライドが有効になります。
+
+`<Reel>` を囲む独自のモーダルを作るなら、フォーカスを戻したり閉じ込めたりするために `captureFocusForReturn`、`createFocusTrap`、`getFocusableElements` が `@reelkit/vue` から再エクスポートされています。
+
+## パッケージのエクスポート [#package-exports]
+
+`@reelkit/vue` の公開エクスポートの一覧：
+
+<CodeBlock code={packageExports} language="typescript" />

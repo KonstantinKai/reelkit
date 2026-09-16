@@ -1,0 +1,301 @@
+---
+title: インストール
+description: reelkit のパッケージをインストールしてプロジェクトを設定します。パッケージごとに独立したバージョンで、必要なものだけを入れられます。
+---
+
+import npmReact from '../../snippets/installation/npm-react.sh?raw';
+import yarnReact from '../../snippets/installation/yarn-react.sh?raw';
+import pnpmReact from '../../snippets/installation/pnpm-react.sh?raw';
+import npmAngular from '../../snippets/installation/npm-angular.sh?raw';
+import yarnAngular from '../../snippets/installation/yarn-angular.sh?raw';
+import pnpmAngular from '../../snippets/installation/pnpm-angular.sh?raw';
+import npmVue from '../../snippets/installation/npm-vue.sh?raw';
+import yarnVue from '../../snippets/installation/yarn-vue.sh?raw';
+import pnpmVue from '../../snippets/installation/pnpm-vue.sh?raw';
+
+reelkit のパッケージをインストールして、プロジェクトを設定します。
+
+## パッケージの選び方 [#package-options]
+
+使うものだけをインストールしてください：
+
+<Table>
+  <thead>
+    <tr>
+      <th>パッケージ</th>
+      <th>説明</th>
+      <th>用途</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>`@reelkit/core`</td>
+      <td>フレームワークに依存しないコア</td>
+      <td>独自の組み込み</td>
+    </tr>
+    <tr data-rk-fw="react">
+      <td>`@reelkit/react`</td>
+      <td>React コンポーネント</td>
+      <td>React 18 以降のアプリケーション</td>
+    </tr>
+    <tr data-rk-fw="react">
+      <td>`@reelkit/react-reel-player`</td>
+      <td>フルスクリーンの縦型動画プレイヤー</td>
+      <td>Instagram／TikTok 風のプレイヤー</td>
+    </tr>
+    <tr data-rk-fw="react">
+      <td>`@reelkit/react-lightbox`</td>
+      <td>画像ギャラリーのオーバーレイ</td>
+      <td>フルスクリーンでの画像プレビュー</td>
+    </tr>
+    <tr data-rk-fw="react">
+      <td>`@reelkit/react-stories-player`</td>
+      <td>Instagram 風のストーリープレイヤー</td>
+      <td>自動送りとジェスチャーのあるストーリー</td>
+    </tr>
+    <tr data-rk-fw="angular">
+      <td>`@reelkit/angular`</td>
+      <td>Angular のスタンドアロンコンポーネント</td>
+      <td>Angular 17 以降のアプリケーション</td>
+    </tr>
+    <tr data-rk-fw="angular">
+      <td>`@reelkit/angular-reel-player`</td>
+      <td>フルスクリーンの縦型動画プレイヤー</td>
+      <td>Instagram／TikTok 風のプレイヤー</td>
+    </tr>
+    <tr data-rk-fw="angular">
+      <td>`@reelkit/angular-lightbox`</td>
+      <td>画像ギャラリーのオーバーレイ</td>
+      <td>フルスクリーンでの画像プレビュー</td>
+    </tr>
+    <tr data-rk-fw="vue">
+      <td>`@reelkit/vue`</td>
+      <td>Vue 3 のコンポーネントとコンポーザブル</td>
+      <td>Vue 3 のアプリケーション</td>
+    </tr>
+    <tr data-rk-fw="vue">
+      <td>`@reelkit/vue-reel-player`</td>
+      <td>フルスクリーンの縦型動画プレイヤー</td>
+      <td>Instagram／TikTok 風のプレイヤー</td>
+    </tr>
+    <tr data-rk-fw="vue">
+      <td>`@reelkit/vue-lightbox`</td>
+      <td>画像ギャラリーのオーバーレイ</td>
+      <td>フルスクリーンでの画像プレビュー</td>
+    </tr>
+  </tbody>
+</Table>
+
+## バンドルサイズ [#bundle-sizes]
+
+どのパッケージもバンドルへの影響が最小になるよう最適化されています：
+
+<BundleSizeTable headers={['パッケージ', 'JS', 'JS (gzip)', 'CSS', 'CSS (gzip)']} />
+
+### ほかのライブラリとの比較 [#comparison-with-other-libraries]
+
+ReelKit は常に **DOM に 3 枚のスライド** しか描画せず、10,000 件を超えるアイテムも扱えます。ほかのカルーセルライブラリはすべてのスライドを描画するため、大きなリストでは動作が止まってしまいます。
+
+<LibraryComparison
+  headers={['ライブラリ', 'JS (gzip)', '仮想化', '備考']}
+  plugin="プラグイン"
+  notes={[
+    '依存関係なし',
+    '依存関係なし',
+    '依存関係なし',
+    'フルバンドル。ツリーシェイキング可能',
+    '軽量、プラグイン方式',
+    '依存関係なし',
+  ]}
+/>
+
+<FrameworkVariant for="react">
+
+## npm [#npm]
+
+<CodeBlock code={npmReact} language="bash" />
+
+## yarn [#yarn]
+
+<CodeBlock code={yarnReact} language="bash" />
+
+## pnpm [#pnpm]
+
+<CodeBlock code={pnpmReact} language="bash" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+## npm [#npm]
+
+<CodeBlock code={npmAngular} language="bash" />
+
+## yarn [#yarn]
+
+<CodeBlock code={yarnAngular} language="bash" />
+
+## pnpm [#pnpm]
+
+<CodeBlock code={pnpmAngular} language="bash" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+## npm [#npm]
+
+<CodeBlock code={npmVue} language="bash" />
+
+## yarn [#yarn]
+
+<CodeBlock code={yarnVue} language="bash" />
+
+## pnpm [#pnpm]
+
+<CodeBlock code={pnpmVue} language="bash" />
+
+</FrameworkVariant>
+
+## Peer dependencies [#peer-dependencies]
+
+フレームワーク向けのパッケージには、すでにプロジェクトに入っているはずの peer dependencies があります：
+
+<FrameworkVariant for="react">
+
+### @reelkit/react [#reelkit-react]
+
+- `react` >= 18.0.0
+- `react-dom` >= 18.0.0
+
+### @reelkit/react-reel-player [#reelkit-react-reel-player]
+
+- `@reelkit/react`
+- `react` >= 18.0.0
+- `react-dom` >= 18.0.0
+- `lucide-react` >= 0.400.0
+
+### @reelkit/react-lightbox [#reelkit-react-lightbox]
+
+- `@reelkit/react`
+- `react` >= 18.0.0
+- `react-dom` >= 18.0.0
+- `lucide-react` >= 0.400.0
+
+### @reelkit/react-stories-player [#reelkit-react-stories-player]
+
+- `@reelkit/react`
+- `react` >= 18.0.0
+- `react-dom` >= 18.0.0
+- `lucide-react` >= 0.400.0
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+### @reelkit/angular [#reelkit-angular]
+
+- `@angular/core` >= 17.0.0
+- `@angular/common` >= 17.0.0
+
+### @reelkit/angular-reel-player [#reelkit-angular-reel-player]
+
+- `@reelkit/angular`
+- `@angular/core` >= 19.0.0
+- `lucide-angular` >= 0.460.0
+
+### @reelkit/angular-lightbox [#reelkit-angular-lightbox]
+
+- `@reelkit/angular`
+- `@angular/core` >= 17.0.0
+- `lucide-angular` >= 0.400.0
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+### @reelkit/vue [#reelkit-vue]
+
+- `vue` >= 3.0.0
+
+</FrameworkVariant>
+
+<FrameworkVariant for="react">
+
+<Callout type="info">
+  `lucide-react` はデフォルトのコントロールのアイコンにだけ使います。`renderControls` で独自のコントロールを渡す場合は、インストールを省けます。
+</Callout>
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+<Callout type="info">
+  `lucide-angular` はデフォルトのコントロールのアイコンにだけ使います。`rkPlayerControls` で独自のコントロールを渡す場合は、インストールを省けます。
+</Callout>
+
+</FrameworkVariant>
+
+## TypeScript [#typescript]
+
+すべてのパッケージに TypeScript の型定義が同梱されています。追加の @types パッケージは必要ありません。
+
+## ブラウザー対応 [#browser-support]
+
+reelkit はすべてのモダンブラウザーで動作します：
+
+<Bullets marker="check">
+
+- Chrome/Edge 88+
+- Firefox 78+
+- Safari 14+
+- iOS Safari 14+
+- Android Chrome 88+
+
+</Bullets>
+
+<NextSteps
+        items={[
+          {
+            label: 'Core ガイド',
+            path: '/docs/core/guide',
+            description: 'フレームワークに依存しないエンジン',
+          },
+          {
+            label: 'フレームワークガイド',
+            path: {
+              react: '/docs/react/guide',
+              angular: '/docs/angular/guide',
+              vue: '/docs/vue/guide',
+            },
+            description: 'コンポーネント、デモ、組み込み方',
+          },
+          {
+            label: 'Reel Player',
+            path: {
+              react: '/docs/reel-player',
+              angular: '/docs/angular-reel-player',
+              vue: '/docs/vue-reel-player',
+            },
+            description: 'TikTok／Reels 風の動画プレイヤー',
+          },
+          {
+            label: 'Lightbox',
+            path: {
+              react: '/docs/lightbox',
+              angular: '/docs/angular-lightbox',
+              vue: '/docs/vue-lightbox',
+            },
+            description: '画像と動画のギャラリー',
+          },
+          {
+            label: 'Stories Player',
+            path: {
+              react: '/docs/stories-player',
+              angular: '/docs/angular-stories-player',
+              vue: '/docs/vue-stories-player',
+            },
+            description: 'Instagram 風のストーリービューアー',
+          },
+        ]}
+      />

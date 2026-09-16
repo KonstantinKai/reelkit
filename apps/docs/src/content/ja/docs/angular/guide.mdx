@@ -1,0 +1,183 @@
+---
+title: Angular ガイド
+description: '@reelkit/angular でスライダーを作ります。rk-reel コンポーネント、rkReelItem ディレクティブ、ReelIndicator、apiReady 出力、シグナルベースの命令的 API、仮想化を扱います。'
+---
+
+import { Hand, Keyboard, MousePointer, InfinityIcon, Radio, Navigation, Zap, Layers, Code } from 'lucide-react';
+import rkReelComponent from '../../../snippets/angular-guide/rk-reel-component.ts?raw';
+import autoSizing from '../../../snippets/angular-guide/auto-sizing.html?raw';
+import rkreelitemTemplatePattern from '../../../snippets/angular-guide/rkreelitem-template-pattern.html?raw';
+import navigation from '../../../snippets/angular-guide/navigation.ts?raw';
+import urlState from '../../../snippets/angular-guide/url-state.ts?raw';
+import urlState2 from '../../../snippets/angular-guide/url-state-2.ts?raw';
+import reelindicator from '../../../snippets/angular-guide/reelindicator.html?raw';
+import apireadyOutputSignalBased from '../../../snippets/angular-guide/apiready-output-signal-based.ts?raw';
+
+`@reelkit/angular` でスライダーを作る方法を説明します。
+
+<FeatureGrid columns={3} items={[
+              {
+                icon: Hand,
+                label: 'タッチ優先',
+                desc: '慣性とスナップのあるスワイプ',
+              },
+              {
+                icon: Keyboard,
+                label: 'キーボード操作',
+                desc: '矢印キーと Escape',
+              },
+              {
+                icon: MousePointer,
+                label: 'ホイールスクロール',
+                desc: '任意、デバウンス付き',
+              },
+              {
+                icon: InfinityIcon,
+                label: '仮想化',
+                desc: '10,000 件以上、DOM には 3 つ',
+              },
+              {
+                icon: Radio,
+                label: 'インジケーター',
+                desc: 'Instagram 風のドットのスクロール',
+              },
+              {
+                icon: Navigation,
+                label: 'プログラムからの操作',
+                desc: 'apiReady で next()、prev()、goTo()',
+              },
+              {
+                icon: Zap,
+                label: 'ループモード',
+                desc: '終わりのない循環ナビゲーション',
+              },
+              {
+                icon: Layers,
+                label: '方向を選べる',
+                desc: '縦でも横でも',
+              },
+              {
+                icon: Code,
+                label: 'シグナルベース',
+                desc: 'Angular のシグナルと OnPush',
+              },
+            ]} />
+
+## rk-reel コンポーネント [#rk-reel-component]
+
+`rk-reel` コンポーネントはコアのスライダーコントローラーを包みます。スタンドアロンで、`ChangeDetectionStrategy.OnPush` を使います。
+
+<Sandbox code={rkReelComponent} language="typescript" title="app.component.ts" framework="angular" stackblitzDeps={['@reelkit/angular']} />
+
+## サイズの自動計測 [#auto-sizing]
+
+`size` の入力は任意です。省略すると、`rk-reel` は `ResizeObserver` でコンテナーを自動計測し、CSS で決まるレイアウトに合わせます。コンテナーのサイズは親要素で決める必要があります（flex、grid、または CSS での明示的な寸法など）。
+
+<CodeBlock code={autoSizing} language="html" />
+
+## rkReelItem テンプレートのパターン [#rkreelitem-template-pattern]
+
+React のレンダープロップの代わりに、Angular では `ng-template` に構造ディレクティブ `rkReelItem` を使います。これによって仮想化が可能になり、インスタンス化されるのは表示中のスライドだけです。テンプレートのコンテキストは 3 つの変数を提供します：
+
+<CodeBlock code={rkreelitemTemplatePattern} language="html" />
+
+## ナビゲーション [#navigation]
+
+組み込みの操作方法：
+
+<Bullets marker="dot">
+
+- **タッチ／スワイプ：** ドラッグで移動し、慣性とスナップが効きます
+- **キーボード：** 矢印キーと Escape
+- **マウスホイール：** `[enableWheel]="true"` で有効にします
+- **プログラムから：** `(apiReady)` 出力で `next()`、`prev()`、`goTo()` を取得します
+
+</Bullets>
+
+<CodeBlock code={navigation} language="typescript" />
+
+## URL の状態 [#url-state]
+
+`createOverlayUrlState` はオーバーレイ用の URL 状態コントローラーを作り、そのまま返します。それを `*UrlOverlay` コンポーネントの `[controller]` 入力に渡します。インジェクションコンテキスト（フィールドの初期化子）の中で呼んでください。すぐに接続し、`DestroyRef` で解放されます。開閉状態は URL が持つので、結び付けられたオーバーレイは自分で開き、開く操作は通常リンクになります。存在しないパラメーターへの最初の書き込みは履歴エントリーを 1 つ積み、以降の書き込みはそれを置き換えるので、ページを送っても戻るボタンが埋もれることはありません。コントローラーは手元に残しておき、`value`／`position` を読んだり、プログラムから操作したりするのに使います。`set(position)` で開き、`set(null)` で閉じます。`set` は、オーバーレイがスライドの切り替え時に内部で使っているのと同じ低レベルの書き込みです。
+
+<CodeBlock code={urlState} language="typescript" />
+
+ルーターを使うアプリでは、Router に連動したアダプターを渡してください。そうしないと Router 自身の位置情報が古くなり、次のナビゲーションでパラメーターが消えます：
+
+<CodeBlock code={urlState2} language="typescript" />
+
+オプションのオブジェクトは `param`、`codec`、`locator`（3 つとも必須）と、任意の `adapter` を受け取ります。`codec` と `locator` は同じ `Id` を共有する対なので、単純な `?photo=3` のギャラリーでは `...urlIndexKey(() => images().length)` を展開すれば、両方が一度に返されます。`urlIndexKey` は getter が返す現在の件数でインデックスを制限するので、古い `?photo=99` は拒否され、指されていないスライドを開く代わりに URL から自動で取り除かれます。ページングされたフィードや識別子で指すギャラリーは、代わりに独自の `codec` と `locator` の対を用意します。すべてのオプションの表は [Angular API リファレンス](/docs/angular/api#createoverlayurlstate) にあります。
+
+## ReelIndicator [#reelindicator]
+
+スライダー内の現在位置を示す、Instagram 風の進捗インジケーターを表示する任意のコンポーネントです。`rk-reel` の中に置くと、`RK_REEL_CONTEXT` のインジェクショントークンを通じて親の `count` と `active` の値に自動で接続するので、手でつなぐ必要はありません。
+
+<CodeBlock code={reelindicator} language="html" />
+
+## apiReady 出力 — シグナルベースのパターン [#apiready-output-signal-based-pattern]
+
+`(apiReady)` 出力は、コンポーネントがマウントされて計測されたあとに 1 回だけ発火します。保持して命令的なナビゲーションに使える `ReelApi` オブジェクトを出力します。この参照を Angular のシグナルに持たせると、`OnPush` の変更検知ときれいに噛み合います。
+
+<CodeBlock code={apireadyOutputSignalBased} language="typescript" />
+
+## ポイント [#key-points]
+
+<KeyPoints>
+<KeyPoint title="スタンドアロンコンポーネント">
+  `ReelComponent`、`RkReelItemDirective`、必要なら `ReelIndicatorComponent` を、コンポーネントの `imports` 配列に直接インポートします
+</KeyPoint>
+<KeyPoint title="ng-template + rkReelItem">
+  React の `itemBuilder` プロップに相当する Angular の仕組みで、仮想化を可能にします
+</KeyPoint>
+<KeyPoint title="apiReady">
+  命令的なナビゲーションの API とともに 1 回だけ発火する出力です。ViewChild で問い合わせる必要はありません
+</KeyPoint>
+<KeyPoint title="afterChange">
+  `{ index, indexInRange }` を出力します。UI を更新するために現在のインデックスを追跡します
+</KeyPoint>
+<KeyPoint title="デフォルトで OnPush">
+  すべてのコンポーネントが `ChangeDetectionStrategy.OnPush` と Angular のシグナルを使い、性能を最大限に引き出します
+</KeyPoint>
+</KeyPoints>
+
+## パフォーマンスのヒント [#performance-tips]
+
+<KeyPoints>
+<KeyPoint title="スライドのテンプレートを軽く保つ">
+  `rkReelItem` のテンプレートは表示中のスライドごと（通常は同時に 3 枚）に実行されます。中で重い計算や深い入れ子の構造を使わないでください。
+</KeyPoint>
+<KeyPoint title="端に近づいたらデータを読み込む">
+  `(afterChange)` でユーザーが終わりに近づいたことを検知し、スライドが尽きる前に次のバッチを取得します。これで無限スクロールのフィードが作れます。
+</KeyPoint>
+<KeyPoint title="命令的な状態にはシグナルを使う">
+  `ReelApi` の参照と現在のインデックスを Angular のシグナルに保持すると、コンポーネント全体を再描画させずに細かなリアクティビティが得られます。
+</KeyPoint>
+<KeyPoint title="スクロールするページではホイールを無効にする">
+  スクロールするレイアウトの中にスライダーを埋め込むときは、ページのスクロールを奪わないよう `[enableWheel]="false"` を指定してください。
+</KeyPoint>
+</KeyPoints>
+
+<NextSteps
+        items={[
+          {
+            label: 'Angular API リファレンス',
+            path: '/docs/angular/api',
+            description: '利用できるすべての入力、出力、メソッド',
+          },
+          {
+            label: 'Reel Player',
+            path: '/docs/angular-reel-player',
+            description: 'TikTok／Reels 風の動画プレイヤー',
+          },
+          {
+            label: 'Lightbox',
+            path: '/docs/angular-lightbox',
+            description: '画像と動画のギャラリー',
+          },
+          {
+            label: 'Stories Player',
+            path: '/docs/angular-stories-player',
+            description: 'Instagram 風のストーリービューアー（近日公開）',
+          },
+        ]}
+      />

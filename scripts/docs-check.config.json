@@ -351,6 +351,6 @@
   },
   "localeParity": {
     "reason": "a translated page is a full copy of its English original; code samples, section count, and table-row identifiers must match or a section has landed on one and not the other",
-    "locales": ["uk", "zh", "pt"]
+    "locales": ["uk", "zh", "pt", "ja"]
   }
 }

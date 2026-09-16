@@ -1,0 +1,94 @@
+---
+title: トラブルシューティング
+description: iOS Safari 特有の問題、動画の再生、フルスクリーン、キーボード操作、サイズの自動計測に関する対処法です。
+---
+
+import viewportDoesntFillScreen from '../../snippets/troubleshooting/viewport-doesnt-fill-screen.css?raw';
+import horizontalScrollContentOverflow from '../../snippets/troubleshooting/horizontal-scroll-content-overflow.css?raw';
+import pullToRefreshRubber from '../../snippets/troubleshooting/pull-to-refresh-rubber.css?raw';
+import pullToRefreshRubber2 from '../../snippets/troubleshooting/pull-to-refresh-rubber-2.tsx?raw';
+import pinchToZoomInterferes from '../../snippets/troubleshooting/pinch-to-zoom-interferes.html?raw';
+import layoutBrokenAfterKeyboard from '../../snippets/troubleshooting/layout-broken-after-keyboard.tsx?raw';
+import slidesRenderAt0 from '../../snippets/troubleshooting/slides-render-at-0.css?raw';
+import videoThumbnailFrameCapture from '../../snippets/troubleshooting/video-thumbnail-frame-capture.txt?raw';
+import arrowKeysDontNavigate from '../../snippets/troubleshooting/arrow-keys-dont-navigate.tsx?raw';
+
+iOS Safari 特有の問題、動画の再生、フルスクリーン、キーボード操作に関する対処法です。
+
+## iOS Safari [#ios-safari]
+
+### ビューポートが画面いっぱいにならない／下に黒い余白が出る [#viewport-doesn-t-fill-screen-bottom-black-space]
+
+Safari の折りたたみ式アドレスバーのせいで、`100vh` は見えている領域より高くなります。`100dvh` を使ってください：
+
+<CodeBlock code={viewportDoesntFillScreen} language="css" />
+
+### 横スクロールが出る／コンテンツがはみ出す [#horizontal-scroll-content-overflow]
+
+iOS では `100vw` にスクロールバーの幅が含まれ、コンテンツが端からはみ出します。`100%` を使い、横方向のはみ出しを止めてください：
+
+<CodeBlock code={horizontalScrollContentOverflow} language="css" />
+
+### 引っ張って更新／ラバーバンドのバウンス [#pull-to-refresh-rubber-band-bounce]
+
+Safari の「引っ張って更新」と弾むスクロールは、縦方向のスワイプジェスチャーとぶつかります。`html, body` に `overscroll-behavior: none` を付けては **いけません**。通常のページスクロールが効かなくなります。ReelPlayerOverlay、LightboxOverlay、StoriesPlayerOverlay は自分のコンテナーでこれを処理しています。独自のレイアウトでは、範囲を限定して指定してください：
+
+<CodeBlock code={pullToRefreshRubber} language="css" />
+
+**下方向の SwipeToClose で起きる特殊なケース。** `direction="down"` を指定した `SwipeToClose`（lightbox、ストーリープレイヤー、独自のオーバーレイ）は、iOS Safari で横取りされます。ラッパーがタッチを受け取る前に、ブラウザーがドキュメントのレベルで「引っ張って更新」を発火させるためです。オーバーレイは body のスクロールを止めますが、ルートでの縦方向のパン操作はブラウザーが握ったままです。オーバーレイが開いているあいだだけ `<html>` に `overscroll-behavior-y: contain` を指定し、閉じるときに元に戻してください：
+
+<CodeBlock code={pullToRefreshRubber2} language="tsx" />
+
+### ピンチズームがジェスチャーを邪魔する [#pinch-to-zoom-interferes-with-gestures]
+
+ズームを無効にして、スワイプ中にピンチやダブルタップが発火しないようにします：
+
+<CodeBlock code={pinchToZoomInterferes} language="html" />
+
+<Caption>`viewport-fit=cover` を指定すると、レイアウトが Dynamic Island やノッチのセーフエリアまで広がります。</Caption>
+
+### キーボードを閉じたあとにレイアウトが崩れる [#layout-broken-after-keyboard-dismisses]
+
+Safari では、キーボードを閉じたあともビューポートが縮んだままになることがあります。blur のタイミングで強制的にリセットしてください：
+
+<CodeBlock code={layoutBrokenAfterKeyboard} language="tsx" />
+
+## 全般 [#general]
+
+### スライドが 0×0 のサイズで描画される [#slides-render-at-0-0-size]
+
+`size` プロップがない場合、スライダーは `ResizeObserver` でコンテナーの寸法を読み取ります。CSS で高さが決まっていないコンテナーは 0×0 と計測され、何も描画されません。`size` を渡すか、コンテナーに寸法を与えてください：
+
+<CodeBlock code={slidesRenderAt0} language="css" />
+
+## 動画 [#video]
+
+### 動画が自動再生されない [#video-doesn-t-autoplay]
+
+ブラウザーは音声付きの自動再生をブロックします。ReelKit はすべての動画要素に `muted` と `playsInline` を設定しています。動画はミュートで始まり、ユーザーはタップしたあとでサウンドボタンからミュートを解除します。独自のスライドでこれらの属性を上書きしていないか確認してください。
+
+### 動画のサムネイル／フレームキャプチャーが真っ白になる [#video-thumbnail-frame-capture-is-blank]
+
+フレームキャプチャーは動画を `<canvas>` に描画します。別オリジンの動画は canvas を汚染するため、描画は何も言わずに失敗します。動画を配信する CDN は CORS ヘッダーを返す必要があります：
+
+<CodeBlock code={videoThumbnailFrameCapture} language="text" />
+
+<Caption>ReelKit はデフォルトで `crossOrigin="anonymous"` を設定します。独自の動画要素を使う場合は、自分で追加してください。</Caption>
+
+## フルスクリーン [#fullscreen]
+
+### Safari でフルスクリーンボタンが何もしない [#fullscreen-button-does-nothing-on-safari]
+
+ReelKit は Safari で Fullscreen API を無効にしています。iOS Safari ではフルスクリーンにできるのが `<video>` 要素に限られます。デスクトップの Safari では、フルスクリーン中に `position: fixed` のオーバーレイが崩れ、要素がスタッキングコンテキストを失ったり消えたりします。Safari では `requestFullscreen()` は何もせずに完了します。
+
+## キーボード操作 [#keyboard-navigation]
+
+### onNavKeyPress を渡したら矢印キーで移動しなくなった [#arrow-keys-don-t-navigate-after-providing-onnavkeypress]
+
+`onNavKeyPress` はデフォルトのキーボード操作を **置き換えます**。ReelKit は `next()`／`prev()` を呼ぶのをやめ、制御をあなたに渡します。自分で呼んでください：
+
+<CodeBlock code={arrowKeysDontNavigate} language="tsx" />
+
+### Escape キーでオーバーレイが閉じない [#escape-key-doesn-t-close-the-overlay]
+
+キーボードコントローラーが扱うのは矢印キーだけです。ReelPlayerOverlay と LightboxOverlay は Escape を別に監視しています。独自のオーバーレイを作る場合は、`onClose` の中で Escape の処理を自分で追加してください。

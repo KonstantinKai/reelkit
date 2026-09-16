@@ -49,6 +49,15 @@ describe('page meta', () => {
     ).toBe('pt_BR');
   });
 
+  it('stamps the Japanese Open Graph locale', () => {
+    expect(
+      contentOf(localePageMeta('ja', options), 'property', 'og:locale'),
+    ).toBe('ja_JP');
+    expect(contentOf(localePageMeta('ja', options), 'property', 'og:url')).toBe(
+      'https://reelkit.dev/ja/docs/ssr',
+    );
+  });
+
   it('carries the page title and description into the social tags', () => {
     const meta = localePageMeta('uk', options);
     expect(contentOf(meta, 'property', 'og:title')).toBe(options.title);

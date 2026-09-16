@@ -1,0 +1,360 @@
+---
+title: Angular Lightbox
+description: Angular 用の、フルスクリーンの画像ギャラリーのオーバーレイです。LightboxItem のスキーマ、入力、出力、テンプレートスロットのディレクティブ、ツリーシェイキングできる transitionFn、スワイプで閉じる操作、React 版と共通のテーマ設定を扱います。
+---
+
+import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2 } from 'lucide-react';
+import installation from '../../snippets/angular-lightbox/installation.sh?raw';
+import basicUsage from '../../snippets/angular-lightbox/basic-usage.ts?raw';
+import templateSlots from '../../snippets/angular-lightbox/template-slots.ts?raw';
+import videoSupport from '../../snippets/angular-lightbox/video-support.ts?raw';
+import fullscreen from '../../snippets/angular-lightbox/fullscreen.ts?raw';
+import urlState from '../../snippets/angular-lightbox/url-state.ts?raw';
+import urlState2 from '../../snippets/angular-lightbox/url-state-2.ts?raw';
+import urlState3 from '../../snippets/angular-lightbox/url-state-3.ts?raw';
+import urlState4 from '../../snippets/angular-lightbox/url-state-4.ts?raw';
+import urlState5 from '../../snippets/angular-lightbox/url-state-5.ts?raw';
+import transitions from '../../snippets/angular-lightbox/transitions.ts?raw';
+import wiringCallbacksInRklightboxslide from '../../snippets/angular-lightbox/wiring-callbacks-in-rklightboxslide.html?raw';
+import customLoadingTemplate from '../../snippets/angular-lightbox/custom-loading-template.html?raw';
+import customErrorTemplate from '../../snippets/angular-lightbox/custom-error-template.html?raw';
+import theming from '../../snippets/angular-lightbox/theming.css?raw';
+
+`@reelkit/angular-lightbox` で作られた、Angular 用のフルスクリーンの画像と動画のギャラリーです。
+
+<DemoLink href="https://angular-demo.reelkit.dev/image-preview?utm_source=docs">ライブデモを見る →</DemoLink>
+
+## 機能 [#features]
+
+<FeatureGrid items={[
+              {
+                icon: Image,
+                label: '画像と動画',
+                desc: '動画スライドを標準でサポート',
+              },
+              {
+                icon: MousePointer,
+                label: 'タッチジェスチャー',
+                desc: 'スワイプで移動',
+              },
+              {
+                icon: X,
+                label: 'スワイプで閉じる',
+                desc: '上にスワイプして閉じる',
+              },
+              {
+                icon: Keyboard,
+                label: 'キーボード操作',
+                desc: '矢印キーと Escape',
+              },
+              {
+                icon: Maximize2,
+                label: 'フルスクリーン',
+                desc: 'ブラウザー間で動く API',
+              },
+              {
+                icon: Hash,
+                label: 'トランジション',
+                desc: 'スライド、フェード、フリップ、ズームイン',
+              },
+              {
+                icon: Zap,
+                label: '先読み',
+                desc: '隣の画像を事前に取得',
+              },
+              {
+                icon: Volume2,
+                label: 'サウンド切り替え',
+                desc: 'スライドごとのミュート',
+              },
+              {
+                icon: Loader,
+                label: '読み込み状態',
+                desc: 'スピナーと独自のスロット',
+              },
+              {
+                icon: AlertTriangle,
+                label: 'エラー処理',
+                desc: 'エラーアイコンと独自のスロット',
+              },
+              {
+                icon: Layers,
+                label: 'テンプレートスロット',
+                desc: 'カスタマイズできる 6 つのスロット領域',
+              },
+              {
+                icon: Layers,
+                label: 'OnPush',
+                desc: 'Angular のシグナルと OnPush',
+              },
+              {
+                icon: Link2,
+                label: 'URL の状態',
+                desc: '共有もブックマークもできるリンク',
+              },
+            ]} />
+
+## インストール [#installation]
+
+<CodeBlock code={installation} language="bash" />
+
+<Callout type="info" title="アイコン">
+  デフォルトのコントロールはアイコンに `lucide-angular` を使います。別のアイコンライブラリを使いたい場合は、`rkLightboxControls` と `rkLightboxNavigation` のテンプレートスロットで独自のものを渡してください。
+</Callout>
+
+## 基本的な使い方 [#basic-usage]
+
+スタイルとスタンドアロンの `RkLightboxOverlayComponent` を、コンポーネントの `imports` 配列にインポートします。
+
+<Sandbox code={basicUsage} language="typescript" title="gallery.component.ts" framework="angular" />
+
+## テンプレートスロット [#template-slots]
+
+4 つのテンプレートスロットのディレクティブで、コンポーネントを複製せずにオーバーレイの UI を自由にカスタマイズできます。各スロットは厳密に型付けされたコンテキストのオブジェクトを受け取ります。
+
+| ディレクティブ | コンテキストの型 | 説明 |
+| --- | --- | --- |
+| \[rkLightboxControls\] | `LightboxControlsContext` | 上部のコントロールバー（閉じるボタン、カウンター、フルスクリーン切り替え）を置き換えます |
+| \[rkLightboxNavigation\] | `LightboxNavContext` | 前後のナビゲーション矢印を置き換えます |
+| \[rkLightboxInfo\] | `LightboxInfoContext` | 下部のタイトルと説明のグラデーションのオーバーレイを置き換えます |
+| \[rkLightboxSlide\] | `LightboxSlideContext` | 個々のスライドの内容を置き換えます（動画スライドに必要） |
+| \[rkLightboxLoading\] | `{ $implicit: activeIndex, item }` | 独自の読み込み表示 |
+| \[rkLightboxError\] | `{ $implicit: activeIndex, item }` | 独自のエラー表示 |
+
+<CodeBlock code={templateSlots} language="typescript" />
+
+## 動画のサポート [#video-support]
+
+動画スライドを使うには、`rkLightboxSlide` のテンプレートスロットと `RkLightboxVideoSlideComponent` でオプトインする必要があります。画像だけでよいギャラリーに動画プレイヤーをバンドルしないための設計です。
+
+<CodeBlock code={videoSupport} language="typescript" />
+
+## フルスクリーン [#fullscreen]
+
+フルスクリーンの状態を監視したり切り替えたりするには、`@reelkit/angular` の `fullscreenSignal`、`requestFullscreen`、`exitFullscreen` を使います。
+
+<CodeBlock code={fullscreen} language="typescript" />
+
+## URL の状態 [#url-state]
+
+<DemoLink href="https://angular-demo.reelkit.dev/image-preview-url?utm_source=docs">ライブデモを見る →</DemoLink>
+
+`RkLightboxUrlOverlayComponent` は、開閉状態をアドレスバーに持つ別のコンポーネントです。`createOverlayUrlState` でコントローラーを作り、`[controller]` として渡します。パラメーターがスライドを指すとギャラリーは自分で開き、なくなると閉じます。リンクは共有でき、戻るボタンはページを離れる代わりにギャラリーを閉じます。
+
+<Callout type="info" title="組み込みのキー">
+  スライドは組み込みのキーで指せます。`urlIndexKey`（位置で指す）か `urlStableIdKey`（安定した `id` で指す）をコントローラーに展開してください。どちらも `@reelkit/angular` から再エクスポートされています。[URL の状態のガイド](/docs/core/guide#url-state) と [Core API](/docs/core/api#url-state) を参照してください。
+</Callout>
+
+<CodeBlock code={urlState} language="typescript" />
+
+インジェクションコンテキスト（フィールドの初期化子かコンストラクター）の中で呼んでください。すぐに接続し、`DestroyRef` で解放されるので、ギャラリーが開いたままコンポーネントが破棄されてもリスナーは残りません。すべてのオプションは [Angular API リファレンス](/docs/angular/api#createoverlayurlstate) にあります。
+
+- 開くと履歴エントリーを **1 つ** 積みます。スライドを送るとそれを **置き換え** るので、N 回移動してもエントリーは増えず、1 回戻れば必ずギャラリーから出られます。
+- 戻るで閉じるのは、アプリ内からギャラリーを開いた場合だけです（リンクがエントリーを積んだ場合）。新しいタブで直接開いた共有リンクには前の履歴がないので、ブラウザーの戻るではサイトを離れます。✕ ボタンか Escape なら、その場でパラメーターを取り除いてページにとどまります。
+- どのスライドも指さないパラメーター（古いブックマークや手で書き換えた値）は、開けないスライドを指したままにならないよう、URL から取り除かれます。
+- テンプレートスロットはそのまま使えます。URL のコンポーネントが 6 つのスロットの問い合わせを自分で行い、それぞれのテンプレートをギャラリーへ渡すので、`rkLightboxControls` などは `rk-lightbox-overlay` の中と同じように置けます。
+- ルーティングを使うアプリケーションでは、`Router` の上に作ったアダプターを渡してください。Router の裏で履歴を書くと、その位置情報が古くなり、次のナビゲーションでパラメーターが消えます。
+
+**ルーターを使うアプリでは、アダプターを渡します。** Router の裏で履歴を書くと、その位置情報が古くなり、次のナビゲーションでパラメーターが消えます。`Router` の上にアダプターを作り、`adapter` として渡してください：
+
+<CodeBlock code={urlState2} language="typescript" />
+
+**安定したリンク。** インデックスは位置なので、ブックマークした `?photo=3` はリストが並べ替えられると別の画像を開きます。`urlStableIdKey` は各アイテムの安定した `id` で指し、現在のリストを走査します。よくあるケースは 1 回の呼び出しで済みます。
+
+<CodeBlock code={urlState3} language="typescript" />
+
+`hashCodec: base64UrlCodec` を渡すと、URL の id を base64url でエンコードします。元に戻せる難読化で、暗号学的ハッシュではありません。
+
+別のフィールド（`slug`）で指したい場合や、`locateAsync` で無限フィードをページングしたい場合は、`codec`（通信形式）と `locator`（検索）を自分で作ります：
+
+<CodeBlock code={urlState4} language="typescript" />
+
+**無限またはページングされたギャラリー。** `locate` は同期なので、読み込み済みの画像にしか答えません。20 件を読み込んだフィードの 400 番目の画像への共有リンクは見つかりません。`locateAsync` はフォールバックで、`locate` が見つけられなかったときだけ呼ばれます。必要なページを読み込み、その識別子が最終的に持ったインデックスを返してください。保留中のあいだギャラリーは閉じたままで、パラメーターはそのまま残るので、ディープリンクは取得のあいだも失われません。`null` か reject でパラメーターは取り除かれます。
+
+<Callout type="info" title="近道">
+  アイテムの `id` で指すなら、codec と locator を手書きする必要はありません。`locateAsync` をそのまま `urlStableIdKey({ items, locateAsync })` に渡してください（見つからなければ取得してからインデックスを返します）。下のより完全な例は、別のフィールドで指す場合や、すべてを自分で制御したい場合のものです。
+</Callout>
+
+<CodeBlock code={urlState5} language="typescript" />
+
+## RkLightboxUrlOverlayComponent の入力 [#rklightboxurloverlaycomponent-inputs]
+
+`rk-lightbox-overlay` の入力をすべて受け取りますが、`isOpen` の代わりにコントローラーを使います。出力は同じ `closed` と `slideChange` です。閉じるのは URL が行うので、`closed` は仕組みではなく通知です。
+
+| 入力 | 型 | デフォルト | 説明 |
+| --- | --- | --- | --- |
+| `controller` | `UrlStateController` | `必須` | createOverlayUrlState のコントローラー。その位置で、ギャラリーが開いているかどうかと、どのスライドを表示するかが決まります。コンポーネントはスライドの切り替え時と閉じるときに、これを通じて書き戻します。 |
+
+## RkLightboxOverlayComponent の入力 [#rklightboxoverlaycomponent-inputs]
+
+| 入力 | 型 | デフォルト | 説明 |
+| --- | --- | --- | --- |
+| `isOpen` | `boolean` | 必須 | 表示を制御します。false のときオーバーレイは DOM から取り除かれます |
+| `items` | `LightboxItem[]` | 必須 | ギャラリーのアイテム（画像または動画）の配列 |
+| `initialIndex` | `number` | 0 | 最初に表示するアイテムの 0 始まりのインデックス |
+| `transitionFn` | `TransitionTransformFn` | slideTransition | スライドのトランジション関数。組み込みのもの（slideTransition、flipTransition、lightboxFadeTransition、lightboxZoomTransition）をインポートするか、独自のものを渡します。省略すると slideTransition になります。 |
+| `showInfo` | `boolean` | true | タイトルと説明の情報オーバーレイを描画するかどうか |
+| `showControls` | `boolean` | true | 上部のコントロールバー（閉じる、カウンター、フルスクリーン）を描画するかどうか |
+| `showNavigation` | `boolean` | true | 前後のナビゲーション矢印を描画するかどうか |
+| `transitionDuration` | `number` | 300 | スライドのアニメーションの長さ（ms） |
+| `swipeDistanceFactor` | `number` | 0.12 | スライドを切り替えるのに必要なスワイプ距離の最小の割合（0–1） |
+| `swipeToCloseDirection` | `'up' \| 'down'` | 'up' | モバイルでスワイプして閉じるジェスチャーの方向 |
+| `loop` | `boolean` | false | 最後のスライドから最初のスライドへ戻るかどうか |
+| `enableNavKeys` | `boolean` | true | キーボードの矢印キーによる操作を有効にします |
+| `enableWheel` | `boolean` | true | マウスホイールでの操作を有効にします |
+| `wheelDebounceMs` | `number` | 200 | ホイールイベントのデバウンス時間（ms） |
+| `ariaLabel` | `string` | 'Image gallery' | ダイアログ領域のアクセシブルなラベル |
+
+## RkLightboxOverlayComponent の出力 [#rklightboxoverlaycomponent-outputs]
+
+| 出力 | 型 | 説明 |
+| --- | --- | --- |
+| `closed` | `EventEmitter<void>` | ユーザーがギャラリーを閉じたときに発行されます |
+| `slideChange` | `EventEmitter<number>` | アクティブなスライドのインデックスが変わったときに発行されます |
+
+## LightboxItem インターフェース [#lightboxitem-interface]
+
+| フィールド | 型 | 必須 | 説明 |
+| --- | --- | --- | --- |
+| `src` | `string` | はい | 画像または動画の URL |
+| `type` | `'image' \| 'video'` | いいえ | アイテムの種類。デフォルトは 'image' です |
+| `poster` | `string` | いいえ | 動画アイテムのサムネイル画像 |
+| `title` | `string` | いいえ | 情報オーバーレイに表示するタイトル |
+| `description` | `string` | いいえ | タイトルの下に表示する説明 |
+| `width` | `number` | いいえ | 画像の本来の幅（ピクセル） |
+| `height` | `number` | いいえ | 画像の本来の高さ（ピクセル） |
+
+## テンプレートスロットのコンテキスト型 [#template-slot-context-types]
+
+| 型 | フィールド |
+| --- | --- |
+| `LightboxControlsContext` | `{ item, onClose, activeIndex, count, isFullscreen, onToggleFullscreen }` |
+| `LightboxNavContext` | `{ item, onPrev, onNext, activeIndex, count }` |
+| `LightboxInfoContext` | `{ $implicit: LightboxItem, index }` |
+| `LightboxSlideContext` | `{ $implicit: LightboxItem, index, size: [number, number], isActive, onReady, onWaiting, onError }` |
+
+## トランジション [#transitions]
+
+任意の `TransitionTransformFn` を `transitionFn` 入力で渡します。使うトランジションだけをインポートすれば、残りはバンドラーがツリーシェイキングします。省略すると `slideTransition` になります。
+
+| 関数 | 提供元 | 説明 |
+| --- | --- | --- |
+| `slideTransition` | `@reelkit/angular-lightbox` | 標準的な横方向のスライド（デフォルト） |
+| `lightboxFadeTransition` | `@reelkit/angular-lightbox` | 画像どうしをクロスフェード |
+| `flipTransition` | `@reelkit/angular-lightbox` | 3D でカードをめくる効果 |
+| `lightboxZoomTransition` | `@reelkit/angular-lightbox` | 小さいサイズから通常のサイズへズームイン |
+
+<CodeBlock code={transitions} language="typescript" />
+
+## コンテンツの読み込みとエラー処理 [#content-loading-error-handling]
+
+`rkLightboxSlide` のテンプレートスロットを使う場合、読み込み状態を報告するための 3 つのライフサイクルのコールバックがコンテキストで使えます。ギャラリーはスライドごとの状態を追跡し、それに応じてスピナーかエラーアイコンを表示します。コンテンツのプリローダーは壊れた URL をキャッシュするので、失敗したスライドを再訪しても再試行はしません。
+
+### ライフサイクルのコールバック [#lifecycle-callbacks]
+
+| コールバック | 型 | 説明 |
+| --- | --- | --- |
+| `onReady` | `() => void` | スライドの内容の読み込みに成功したことを伝えます（たとえば画像のデコードが終わった） |
+| `onWaiting` | `() => void` | スライドの内容が読み込み中またはバッファリング中であることを伝えます（スピナーを表示） |
+| `onError` | `() => void` | スライドの内容の読み込みに失敗したことを伝えます（エラーアイコンを表示） |
+
+### rkLightboxSlide でコールバックをつなぐ [#wiring-callbacks-in-rklightboxslide]
+
+<CodeBlock code={wiringCallbacksInRklightboxslide} language="html" />
+
+### 独自の読み込みテンプレート [#custom-loading-template]
+
+`rkLightboxLoading` ディレクティブで、デフォルトのスピナーを置き換えます。
+
+<CodeBlock code={customLoadingTemplate} language="html" />
+
+### 独自のエラーテンプレート [#custom-error-template]
+
+`rkLightboxError` ディレクティブで、デフォルトのエラーアイコンを置き換えます。
+
+<CodeBlock code={customErrorTemplate} language="html" />
+
+## CSS クラス [#css-classes]
+
+CSS クラスはすべて通常のクラス（スコープなし）なので、`@reelkit/angular-lightbox/styles.css` のあとに読み込むスタイルシートで、詳細度の高いセレクターを使って指定できます。色、サイズ、z-index を変えるなら、下の [テーマ設定](#theming) で説明している CSS カスタムプロパティを使ってください。
+
+| クラス | コンポーネント | 説明 |
+| --- | --- | --- |
+| `.rk-lightbox-overlay` | Overlay | ルートのコンテナー（フルスクリーンの背景） |
+| `.rk-lightbox-top-shade` | Overlay | コントロールの後ろの上部のグラデーション |
+| `.rk-lightbox-spinner` | Overlay | デフォルトの読み込みスピナー |
+| `.rk-lightbox-img-error` | Overlay | エラー状態のコンテナー（壊れた画像） |
+| `.rk-lightbox-img-error-text` | Overlay | エラー状態のテキストラベル |
+| `.rk-lightbox-swipe-hint` | Overlay | モバイルでのスワイプのヒント |
+| `.rk-lightbox-empty` | Overlay | 空の状態のテキスト |
+| `.rk-lightbox-controls-left` | Controls | 左上のコントロールのコンテナー |
+| `.rk-lightbox-btn` | Controls | コントロールのボタン（フルスクリーンなど） |
+| `.rk-lightbox-close` | Controls | 閉じるボタン |
+| `.rk-lightbox-counter` | Controls | 画像のカウンターのチップ |
+| `.rk-lightbox-nav` | Navigation | ナビゲーションの矢印（前へ・次への両方） |
+| `.rk-lightbox-nav-prev` | Navigation | 前へ の矢印 |
+| `.rk-lightbox-nav-next` | Navigation | 次へ の矢印 |
+| `.rk-lightbox-info` | Info | タイトルと説明のコンテナー |
+| `.rk-lightbox-title` | Info | 画像のタイトル |
+| `.rk-lightbox-description` | Info | 画像の説明 |
+| `.rk-lightbox-slide` | Slide | スライドのコンテナー |
+| `.rk-lightbox-img` | Slide | 画像要素 |
+| `.rk-lightbox-video-container` | VideoSlide | 動画スライドのコンテナー（オプトイン） |
+| `.rk-lightbox-video-element` | VideoSlide | 動画要素（オプトイン） |
+| `.rk-lightbox-video-poster` | VideoSlide | 動画のポスター画像（オプトイン） |
+| `.rk-lightbox-video-error` | VideoSlide | 動画のエラー状態のコンテナー |
+
+## テーマ設定 [#theming]
+
+色、サイズ、z-index、トランジションはすべて CSS カスタムプロパティにあります。`:root`（またはギャラリーの任意の祖先）で 1 つでも複数でも上書きすれば、コンポーネントのソースに触れずにテーマを変えられます。トークンは React のギャラリーと共通なので、上書きはバインディング間でそのまま使えます。
+
+| トークン | デフォルト | 制御するもの |
+| --- | --- | --- |
+| `--rk-lightbox-overlay-bg` | `#000` | フルスクリーンの背景色 |
+| `--rk-lightbox-overlay-z` | `9999` | オーバーレイの z-index |
+| `--rk-lightbox-top-shade-height` | `80px` | 上部のグラデーションの高さ |
+| `--rk-lightbox-top-shade-bg` | `linear-gradient(rgba(0,0,0,0.6), transparent)` | 上部のグラデーションの色 |
+| `--rk-lightbox-edge-padding` | `16px` | 閉じる、ナビゲーション、左上のコントロールの端からの距離 |
+| `--rk-lightbox-controls-gap` | `12px` | 左上のコントロールの間隔 |
+| `--rk-lightbox-transition` | `0.2s` | ボタンのホバーのトランジションの長さ |
+| `--rk-lightbox-blur` | `8px` | ボタンやチップの背景のぼかしの半径 |
+| `--rk-lightbox-btn-bg` | `rgba(0, 0, 0, 0.5)` | 閉じる、ナビゲーション、小さいボタンのデフォルトの背景 |
+| `--rk-lightbox-btn-bg-hover` | `rgba(255, 255, 255, 0.2)` | 閉じる、ナビゲーション、小さいボタンのホバー時の背景 |
+| `--rk-lightbox-btn-fg` | `#fff` | 閉じる、ナビゲーション、小さいボタンのアイコンの色 |
+| `--rk-lightbox-btn-size` | `36px` | 小さいボタンの大きさ（フルスクリーン切り替えなど） |
+| `--rk-lightbox-close-size` | `40px` | 閉じるボタンの大きさ |
+| `--rk-lightbox-nav-size` | `48px` | 前後の矢印の大きさ |
+| `--rk-lightbox-nav-opacity` | `0.7` | 前後の矢印の通常時の不透明度 |
+| `--rk-lightbox-counter-fg` | `#fff` | カウンターのテキストの色 |
+| `--rk-lightbox-counter-bg` | `rgba(0, 0, 0, 0.5)` | カウンターのチップの背景 |
+| `--rk-lightbox-counter-size` | `14px` | カウンターの文字サイズ |
+| `--rk-lightbox-counter-padding` | `6px 12px` | カウンターのチップの余白 |
+| `--rk-lightbox-counter-radius` | `20px` | カウンターのチップの角丸 |
+| `--rk-lightbox-spinner-size` | `28px` | デフォルトのスピナーの幅と高さ |
+| `--rk-lightbox-spinner-duration` | `0.8s` | スピナーの回転の長さ |
+| `--rk-lightbox-error-fg` | `rgba(255, 255, 255, 0.4)` | エラーアイコンとテキストの色 |
+| `--rk-lightbox-info-bg` | `linear-gradient(transparent, rgba(0,0,0,0.8))` | キャプションの背景のグラデーション |
+| `--rk-lightbox-info-padding` | `24px` | キャプションの内側の余白 |
+| `--rk-lightbox-title-size` | `18px` | タイトルの文字サイズ |
+| `--rk-lightbox-description-size` | `14px` | 説明の文字サイズ |
+| `--rk-lightbox-hint-fg` | `rgba(255, 255, 255, 0.5)` | スワイプのヒントのテキストの色 |
+| `--rk-lightbox-hint-bg` | `rgba(0, 0, 0, 0.3)` | スワイプのヒントのチップの背景 |
+| `--rk-lightbox-video-bg` | `#000` | \<video> の後ろのレターボックスの背景 |
+
+下のスニペットを、`@reelkit/angular-lightbox/styles.css` のあとに読み込むスタイルシートに入れてください。
+
+<CodeBlock code={theming} language="css" />
+
+## アクセシビリティ [#accessibility]
+
+オーバーレイのルートはモーダルダイアログ（`role="dialog"`、`aria-modal="true"`）です。`ariaLabel` 入力を指定すると、スクリーンリーダーの読み上げが変わります。デフォルトは「Image gallery」です。各スライドは `role="group"`、`aria-roledescription="slide"`、そして画像のタイトルと位置から作られる `aria-label` を持ちます。
+
+ギャラリーは開くとフォーカスを取り込み、閉じるとトリガーに戻します。Tab と Shift+Tab は中のフォーカス可能な要素を循環し、外へ出たフォーカス（外側のクリック、プログラムからのフォーカス）は引き戻されます。`@reelkit/core` の `captureFocusForReturn` と `createFocusTrap` で実装されています。
+
+## キーボードショートカット [#keyboard-shortcuts]
+
+| キー | 動作 |
+| --- | --- |
+| `ArrowLeft` | 前の画像 |
+| `ArrowRight` | 次の画像 |
+| `Escape` | ギャラリーを閉じる（フルスクリーン中ならフルスクリーンを終了） |

@@ -419,6 +419,7 @@ for (const page of [
   'apps/docs/src/pages/uk/Home.tsx',
   'apps/docs/src/pages/zh/Home.tsx',
   'apps/docs/src/pages/pt/Home.tsx',
+  'apps/docs/src/pages/ja/Home.tsx',
 ]) {
   if (!core) break;
 

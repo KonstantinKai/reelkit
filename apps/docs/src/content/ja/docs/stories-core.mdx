@@ -1,0 +1,202 @@
+---
+title: Stories Core
+description: '@reelkit/react-stories-player を支えるエンジンです。純粋な TypeScript で、フレームワークへの依存はありません。Angular、Vue、素の JavaScript でストーリープレイヤーを作るのに使います。'
+---
+
+import { Cpu, Layers, Timer, Minus, MousePointerClick, Cog } from 'lucide-react';
+import installation from '../../snippets/stories-core/installation.sh?raw';
+import controllerExample from '../../snippets/stories-core/controller-example.ts?raw';
+import timerExample from '../../snippets/stories-core/timer-example.ts?raw';
+import canvasExample from '../../snippets/stories-core/canvas-example.ts?raw';
+import viewedStateExample from '../../snippets/stories-core/viewed-state-example.ts?raw';
+import typesCode from '../../snippets/stories-core/types-code.ts?raw';
+
+`@reelkit/react-stories-player` を支えるエンジンです。純粋な TypeScript で、フレームワークへの依存はありません。Angular、Vue、素の JavaScript でストーリープレイヤーを作るのに使います。
+
+<FeatureGrid columns={3} items={[
+  {
+    icon: Cpu,
+    label: 'フレームワークに依存しない',
+    desc: '純粋な TypeScript で、DOM フレームワークへの依存なし',
+  },
+  {
+    icon: Layers,
+    label: '2 階層のナビゲーション',
+    desc: 'グループと、各グループ内のストーリー',
+  },
+  {
+    icon: Timer,
+    label: 'RAF タイマー',
+    desc: 'requestAnimationFrame による自動送り、一時停止と再開にも対応',
+  },
+  {
+    icon: Minus,
+    label: 'Canvas の進捗表示',
+    desc: 'Retina 対応の分割された進捗バー、スライドするウィンドウ付き',
+  },
+  {
+    icon: MousePointerClick,
+    label: 'タップゾーン',
+    desc: '左右のタップ判定を設定できます',
+  },
+  {
+    icon: Cog,
+    label: 'リアクティブなシグナル',
+    desc: '@reelkit/core のシグナルプリミティブの上に構築',
+  },
+]} />
+
+## インストール [#installation]
+
+<CodeBlock code={installation} language="bash" />
+
+## Stories コントローラー [#stories-controller]
+
+`createStoriesController(config, events?)` はグループとストーリーをまたいだナビゲーションを管理します。一時停止と再開の状態を追跡し、グループごとに最後に見たストーリーを覚え、切り替えのたびにコールバックを呼びます。
+
+### 設定（StoriesControllerConfig） [#config-storiescontrollerconfig]
+
+| プロパティ | 型 | デフォルト | 説明 |
+| --- | --- | --- | --- |
+| `groupCount` | `number` | 必須 | ストーリーのグループの総数 |
+| `storyCounts` | `number[]` | 必須 | 各グループのストーリー数 |
+| `initialGroupIndex` | `number` | 0 | 最初のグループのインデックス |
+| `initialStoryIndex` | `number` | resumeStoryIndex(initialGroupIndex)、なければ 0 | グループ内の最初のストーリーのインデックス。指定すると覚えている位置より優先されます。省略すると、開いたグループもほかのグループと同じように続きから始まります。 |
+| `defaultImageDuration` | `number` | 5000 | 画像のストーリーを自動で送るまでのデフォルトの時間（ms） |
+| `resumeStoryIndex` | `(groupIndex: number) => number` | undefined | まだ訪れていないグループが開くストーリー。そのグループにあるストーリーの範囲に収められます |
+
+### イベント（StoriesControllerEvents） [#events-storiescontrollerevents]
+
+| イベント | 型 | 説明 |
+| --- | --- | --- |
+| `onStoryChange` | `(groupIndex, storyIndex) => void` | アクティブなストーリーが変わったときに呼ばれます |
+| `onGroupChange` | `(groupIndex) => void` | アクティブなグループが変わったときに呼ばれます |
+| `onStoryViewed` | `(groupIndex, storyIndex) => void` | ストーリーが表示されたときに呼ばれます |
+| `onStoryComplete` | `(groupIndex, storyIndex) => void` | ストーリーのタイマーが終わったとき（送る前）に呼ばれます |
+| `onComplete` | `() => void` | 最後のグループの最後のストーリーが終わったときに呼ばれます |
+| `onClose` | `() => void` | オーバーレイを閉じるべきときに呼ばれます |
+
+### 状態（リアクティブなシグナル） [#state-reactive-signals]
+
+| シグナル | 型 | 説明 |
+| --- | --- | --- |
+| `state.activeGroupIndex` | `Signal<number>` | 現在アクティブなグループのインデックス |
+| `state.activeStoryIndex` | `Signal<number>` | グループ内で現在アクティブなストーリーのインデックス |
+| `state.isPaused` | `Signal<boolean>` | 自動送りが一時停止しているかどうか |
+
+### メソッド [#methods]
+
+| メソッド | 型 | 説明 |
+| --- | --- | --- |
+| `nextStory()` | `() => void` | グループ内で進みます。端に達したら次のグループへ移ります |
+| `prevStory()` | `() => void` | グループ内で戻ります。端に達したら前のグループへ移ります |
+| `nextGroup()` | `() => void` | 次のグループへ切り替え、最後に見たストーリーから再開します |
+| `prevGroup()` | `() => void` | 前のグループへ切り替え、最後に見たストーリーから再開します |
+| `goToGroup(index)` | `(number) => void` | インデックスで指定したグループへ移動します |
+| `pause()` | `() => void` | 自動送りを一時停止します |
+| `resume()` | `() => void` | 自動送りを再開します |
+| `onStoryTimerComplete()` | `() => void` | タイマーが終わったときに呼ばれ、onStoryComplete を呼んでから進みます |
+| `getLastStoryIndex(groupIndex)` | `(number) => number` | グループが開く位置です。このセッションで離れたストーリー、なければ resumeStoryIndex が示すストーリー |
+| `reportInitialView()` | `() => void` | プレイヤーが開いたときのストーリーを、一度だけ既読として報告します。描画中ではなく、マウント後に呼んでください。 |
+
+### 例 [#example]
+
+<CodeBlock code={controllerExample} />
+
+## タイマーコントローラー [#timer-controller]
+
+`createTimerController(config)` は `requestAnimationFrame` のループで自動送りを動かします。進捗のシグナル（0 から 1）が進捗バーに使われます。一時停止と再開では正確な位置が保たれます。
+
+### 設定（TimerControllerConfig） [#config-timercontrollerconfig]
+
+| プロパティ | 型 | デフォルト | 説明 |
+| --- | --- | --- | --- |
+| `duration` | `number` | 必須 | デフォルトの長さ（ミリ秒） |
+| `onComplete` | `() => void` | undefined | タイマーが 100% に達したときに呼ばれます |
+
+### 状態 [#state]
+
+| シグナル | 型 | 説明 |
+| --- | --- | --- |
+| `progress` | `Signal<number>` | 進捗のシグナル（0 から 1） |
+| `isRunning` | `Signal<boolean>` | タイマーが動いているかどうか |
+
+### メソッド [#methods]
+
+| メソッド | 型 | 説明 |
+| --- | --- | --- |
+| `start(duration?)` | `(number?) => void` | タイマーを開始（または再開始）します。長さを上書きすることもできます |
+| `pause()` | `() => void` | 現在の位置で進捗を止めます |
+| `resume()` | `() => void` | 止めた位置から続けます |
+| `reset()` | `() => void` | 進捗を 0 に戻して止めます |
+| `dispose()` | `() => void` | リソースを片付けます |
+
+### 例 [#example]
+
+<CodeBlock code={timerExample} />
+
+## Canvas プログレスレンダラー [#canvas-progress-renderer]
+
+`createCanvasProgressRenderer(config?)` は分割された進捗バーを canvas に描きます。Retina ディスプレイに合わせて拡大し、ResizeObserver でコンテナーを計測し、セグメントが収まらないときはスライドするウィンドウを使います。
+
+### 設定（CanvasProgressRendererConfig） [#config-canvasprogressrendererconfig]
+
+| プロパティ | 型 | デフォルト | 説明 |
+| --- | --- | --- | --- |
+| `gap` | `number` | 2 | セグメント間の間隔（ピクセル） |
+| `barHeight` | `number` | 2 | バーの高さ（ピクセル） |
+| `minSegmentWidth` | `number` | 8 | スライドするウィンドウに切り替わる前のセグメントの最小幅 |
+| `bgColor` | `string` | 'rgba(255,255,255,0.3)' | 塗られていないセグメントの背景色 |
+| `fillColor` | `string` | '#ffffff' | 完了したセグメントとアクティブなセグメントの塗りの色 |
+
+### メソッド [#methods]
+
+| メンバー | 型 | 説明 |
+| --- | --- | --- |
+| `attach(canvas)` | `(HTMLCanvasElement) => void` | canvas 要素に接続し、親要素で ResizeObserver を開始します |
+| `draw(totalStories, activeIndex, progress)` | `(number, number, number) => void` | 指定した状態で進捗バーを描きます |
+| `width` | `number (readonly)` | 現在計測されている幅（CSS ピクセル） |
+| `dispose()` | `() => void` | ResizeObserver と内部の状態を片付けます |
+
+### 例 [#example]
+
+<CodeBlock code={canvasExample} />
+
+## 既読の状態 [#viewed-state]
+
+`createStoriesViewedState(controller, groups)` は、コアの `ViewedStateController` を、プレイヤーが使う言葉（グループ、作者、ストーリーのインデックス）で読みます。ストア自体はそれらを何も知らないままです。`StoriesViewedState` を返します。アドレスバーと同じキーを使い、グループごとに追跡してストアを作れば、保存されたエントリーは共有リンクのパラメーターとまったく同じになります。
+
+| パラメーター | 型 | 説明 |
+| --- | --- | --- |
+| `controller` | `ViewedStateController<TwoAxisPosition>` | アドレスバーと同じキーで作ったコアのストアです。各グループが自分のエントリーを持つよう、twoAxisViewedTracking と一緒に展開します |
+| `groups` | `() => StoriesGroup<T>[]` | 現在のグループを読みます。getter なので、設定のあとでページングされたり並べ替えられたりしたフィードも、呼び出し時点で計測されます。 |
+
+### StoriesViewedState [#storiesviewedstate]
+
+| メソッド | 型 | 説明 |
+| --- | --- | --- |
+| `viewedCounts()` | `() => Map<string, number>` | グループごとに見たストーリーの数で、キーは作者の id です。StoriesRingList が viewedState として受け取る形です |
+| `resumeStoryIndex(groupIndex)` | `(number) => number` | まだ見ていない最初のストーリー。グループを最後まで見ていれば 0 |
+| `markViewed(groupIndex, storyIndex)` | `(number, number) => void` | ストーリーを既読として記録します。onStoryViewed につないでください。 |
+
+### 例 [#example]
+
+<CodeBlock code={viewedStateExample} />
+
+エントリーが表すのは閲覧回数の合計ではなく、到達したいちばん先のストーリーです。そのため id で指すキーなら、フィードが並べ替えられてもグループの位置は保たれ、グループの途中からストーリーが削除されると件数が減ってリングがまた点灯します。
+
+## ユーティリティ関数 [#utility-functions]
+
+タップゾーンの判定と、進捗バーの計算のための純粋関数です。
+
+| 関数 | 型 | 説明 |
+| --- | --- | --- |
+| `getTapAction(tapX, containerWidth, splitRatio?)` | `(number, number, number?) => 'prev' \| 'next'` | 位置に応じて、タップが 'prev' と 'next' のどちらになるかを決めます。splitRatio のデフォルトは 0.3 です。 |
+| `getSegments(totalStories, activeIndex, progress)` | `(number, number, number) => SegmentState[]` | 進捗バーの各セグメントの状態と塗りの割合を計算します |
+| `getVisibleWindow(totalStories, activeIndex, progress, containerWidth, minSegmentWidth?, gap?)` | `(number, number, number, number, number?, number?) => VisibleWindow` | 総数がコンテナーに収まらないときに、表示するセグメントのスライドするウィンドウを計算します |
+
+## 型 [#types]
+
+`@reelkit/stories-core` がエクスポートするすべての型定義です。
+
+<CodeBlock code={typesCode} />

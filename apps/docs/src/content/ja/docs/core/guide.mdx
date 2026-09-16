@@ -1,0 +1,176 @@
+---
+title: Core ガイド
+description: '@reelkit/core パッケージは、フレームワークに依存しないスライダーのロジックを提供します。独自の組み込みを作るときや、内部のアーキテクチャを理解したいときに使います。'
+---
+
+import createslidercontroller from '../../../snippets/core-guide/createslidercontroller.ts?raw';
+import navigation from '../../../snippets/core-guide/navigation.ts?raw';
+import lifecycle from '../../../snippets/core-guide/lifecycle.ts?raw';
+import stateUpdates from '../../../snippets/core-guide/state-updates.ts?raw';
+import virtualization from '../../../snippets/core-guide/virtualization.ts?raw';
+import signals from '../../../snippets/core-guide/signals.ts?raw';
+import controllerState from '../../../snippets/core-guide/controller-state.ts?raw';
+import timelineController from '../../../snippets/core-guide/timeline-controller.ts?raw';
+import howItWorks from '../../../snippets/core-guide/how-it-works.ts?raw';
+import howItWorks2 from '../../../snippets/core-guide/how-it-works-2.ts?raw';
+
+`@reelkit/core` パッケージは、フレームワークに依存しないスライダーのロジックを提供します。独自の組み込みを作るときや、内部のアーキテクチャを理解したいときに使います。
+
+## アーキテクチャの概要 [#architecture-overview]
+
+コアはファクトリー関数による **コントローラーパターン** を採用しています。クラスは使わず、すべてクロージャーから返されるプレーンなオブジェクトです。依存関係はありません。コアが連携させるのは次のものです：
+
+<Bullets marker="dot">
+
+- **SliderController** — 状態の一元管理とナビゲーション
+- **GestureController** — タッチやポインターによるドラッグの処理
+- **KeyboardController** — 矢印キーと Escape
+- **WheelController** — デバウンス付きのマウスホイール
+
+</Bullets>
+
+## createSliderController [#createslidercontroller]
+
+スライダーのすべての状態と挙動を管理する、新しいコントローラーのインスタンスを作成します。
+
+<CodeBlock code={createslidercontroller} language="typescript" />
+
+## コントローラーのメソッド [#controller-methods]
+
+### ナビゲーション [#navigation]
+
+<CodeBlock code={navigation} language="typescript" />
+
+### ライフサイクル [#lifecycle]
+
+<CodeBlock code={lifecycle} language="typescript" />
+
+### 状態の更新 [#state-updates]
+
+<CodeBlock code={stateUpdates} language="typescript" />
+
+## 仮想化 [#virtualization]
+
+コアは常に **DOM に 3 枚のスライド**（現在・前・次）だけを描画します。レンジエクストラクターが、描画ウィンドウに含めるインデックスを決めます：
+
+<CodeBlock code={virtualization} language="typescript" />
+
+<Callout type="info">
+  結果は常に最大 3 つのインデックスに制限されます。エクストラクターがそれより多く返した場合、コアは現在のスライドを中心とした 3 つを残します。
+</Callout>
+
+## シグナル [#signals]
+
+コアはリアクティビティのために軽量なシグナルシステムを使います：
+
+<CodeBlock code={signals} language="typescript" />
+
+## コントローラーの状態 [#controller-state]
+
+リアクティブな状態には `controller.state` からアクセスします：
+
+<CodeBlock code={controllerState} language="typescript" />
+
+## タイムラインコントローラー [#timeline-controller]
+
+任意の `<video>` 要素に独自のシークバーを作れます。コントローラーは再生時間、現在時刻、バッファー済みの範囲、シーク中かどうかをリアクティブなシグナルとして公開し、1 回の呼び出しで任意の DOM 要素にポインターとキーボードの操作を取り付けます。
+
+<CodeBlock code={timelineController} language="typescript" />
+
+## URL の状態 [#url-state]
+
+オーバーレイの開閉状態をアドレスバーに持たせます。表示中のスライドに、共有でき、直接開けて、戻るボタンで閉じられるリンクが付きます。モデルはコアが持ち、各バインディングがそれをフック（React／Vue の `useOverlayUrlState`、Angular の `createOverlayUrlState`）と URL 駆動のオーバーレイコンポーネントで包みます。
+
+### 仕組み [#how-it-works]
+
+`createUrlStateController` は 1 つのクエリパラメーターをシグナルに映し、変更を書き戻します。開くと履歴エントリーを **1 つ** 積み、以降のナビゲーションはそれを **置き換え** ます。100 回スワイプしてもエントリーは増えないので、1 回戻れば必ず閉じます。`UrlAdapter` は差し替え可能な読み書きの接点です。デフォルトは `history.pushState` を操作し、ルーターを使うアプリはルーターに連動したアダプターを渡して、ルーター自身の位置情報が古くならないようにします。
+
+<CodeBlock code={howItWorks} language="typescript" />
+
+### codec と locator — 2 つの役割 [#codec-and-locator-two-jobs]
+
+キーは対になった `{ codec, locator }` です。識別子を URL に書き込むことと、その識別子がいまどこにあるかを探すことは別の関心事なので、別のオブジェクトになっています：
+
+- **codec — 通信形式。** `encode` は識別子をパラメーターの文字列にし、`decode` はそれを読み戻します。不正な値は拒否するので、パラメーターは URL から自動的に取り除かれます。
+- **locator — 検索。** `locate` はデコードした識別子が現在のコレクションのどこにあるかを探します（なくなっていれば `null`）。`identify` は書き込み時に位置を識別子へ戻します。任意の `locateAsync` は、見つからなかったときにウィンドウ方式や無限フィードをページングします。
+
+分けておくことで、どの通信形式とどの検索でも組み合わせられます。たとえば、安定した id の codec とページングする locator です。
+
+### インデックスのキーと安定した id のキー [#index-vs-stable-id-keys]
+
+組み込みの 2 つのキーがこの対を作ってくれます。違いは URL が何を指すかだけです：
+
+- `urlIndexKey(() => count)` は **位置** で指します（`?photo=3`）。いちばん単純ですが、リストの並びが変わるとブックマークは別のアイテムを開きます。
+- `urlStableIdKey({ items })` は各アイテムの安定した `id` で指し（`?photo=post_42`）、現在のリストを走査します。並べ替えのあともブックマークは同じアイテムを指し、アイテムがなくなればきれいに外れます。`hashCodec: base64UrlCodec` を指定すると、id を base64url で見えにくくします（元に戻せる変換で、暗号学的ハッシュではありません）。
+
+**ウィンドウ方式のフィードをページングする場合は？** 組み込みの 2 つのキーはどちらも任意の `locateAsync` を受け取ります。`urlIndexKey(() => count, locateAsync)` と `urlStableIdKey({ items, locateAsync })` です。同期の検索は読み込み済みのものに答え、見つからなければ残りをページングして読み込むので、ウィンドウの外を指す共有リンクも開きます。codec や locator を手書きする必要はありません。
+
+二軸の場合は？ `urlIndexTwoAxisKey` は、投稿と内側のメディアのインデックスを `?p=<outer>.<inner>` で運びます。すべてのオプションは [Core API リファレンス](/docs/core/api#url-state) にあります。
+
+## 既読の状態 [#viewed-state]
+
+閲覧者がギャラリーのどこまで見たかを、リロードやタブをまたいで覚えておきます。見たものを示すリングや、前回の続きから開くギャラリーに使えます。URL の状態と同じモデルをアドレスバーではなくストレージに向けたものなので、2 つは同じキーを共有します。
+
+### 仕組み [#how-it-works]
+
+`createViewedStateController` は、`?photo=` リンクが持つのとまったく同じ文字列でエントリーを保存し、同じ `decode` から `locate` への流れで読み戻します。保存された位置をそのまま信用することはありません。1 つのキーを両方に展開すれば、ブックマークと保存されたエントリーは同じ文字列になります。
+
+<CodeBlock code={howItWorks2} language="typescript" />
+
+### 持続性はキーで決まる [#durability-follows-the-key]
+
+ストアは独自の補正を加えないので、何が残るかは展開したキーで決まります。id で指すキーはコレクションが並べ替えられても位置を保ち、位置で指すキーは保ちません。保存されるエントリーは閲覧回数の合計ではなく到達したいちばん先の地点を表すので、途中のアイテムを削除すると件数が減ります。共有リンクと同じ自己修復です。
+
+読み込みは同期のみです。アイテムがまだ読み込まれていないエントリーは存在しないものとして読まれ、ストレージにはそのまま残るので、ウィンドウ方式のフィードが自分の履歴を消してしまうことはありません。
+
+### ストレージと有効期限 [#storage-and-expiry]
+
+デフォルトでは `localStorage` に保存します。`createSessionStorageAdapter()` はタブを閉じると忘れ、独自の `StorageAdapter` を使えば同期的に扱える任意の場所に保存できます。`attach()` までは何も読まないので、サーバーでの描画とクライアントでの最初の描画が一致します。
+
+エントリーは明示的に忘れるまで残ります。代わりに `ttlMs` を渡すと期限切れにできます。期限はトラックごとで、スライドする時計なので、まだ見られている場所が放置された場所と一緒に古くなることはありません。書き込まれる内容は変わり、各エントリーが `[wire, timestamp]` の組になりますが、読み込みはオプションに関係なくどちらの形式も扱えるので、有効にする前に保存されたエントリーは削除されずに新しいものとして数えられます。`maxTracks` は期間ではなく件数を制限します。上限を超えると、次の書き込みで記録がいちばん古いトラックが削除されます。トラックを記録すると、すでに通過した位置であっても、そのトラックは列の最後尾に移ります。すべてのオプションは [Core API リファレンス](/docs/core/api#viewed-state) にあります。
+
+<NextSteps
+        items={[
+          {
+            label: 'Core API リファレンス',
+            path: '/docs/core/api',
+            description: '利用できるすべての props',
+          },
+          {
+            label: 'フレームワークガイド',
+            path: {
+              react: '/docs/react/guide',
+              angular: '/docs/angular/guide',
+              vue: '/docs/vue/guide',
+            },
+            description: 'コンポーネント、デモ、組み込み方',
+          },
+          {
+            label: 'Reel Player',
+            path: {
+              react: '/docs/reel-player',
+              angular: '/docs/angular-reel-player',
+              vue: '/docs/vue-reel-player',
+            },
+            description: 'TikTok／Reels 風の動画プレイヤー',
+          },
+          {
+            label: 'Lightbox',
+            path: {
+              react: '/docs/lightbox',
+              angular: '/docs/angular-lightbox',
+              vue: '/docs/vue-lightbox',
+            },
+            description: '画像と動画のギャラリー',
+          },
+          {
+            label: 'Stories Player',
+            path: {
+              react: '/docs/stories-player',
+              angular: '/docs/angular-stories-player',
+              vue: '/docs/vue-stories-player',
+            },
+            description: 'Instagram 風のストーリービューアー',
+          },
+        ]}
+      />

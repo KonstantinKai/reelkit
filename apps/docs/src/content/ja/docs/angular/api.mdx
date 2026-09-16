@@ -1,0 +1,177 @@
+---
+title: Angular API リファレンス
+description: '@reelkit/angular の完全なリファレンスです。コンポーネント、入力、出力、公開される API のメソッド、ReelIndicator、RK_REEL_CONTEXT のインジェクショントークン、シグナルのブリッジを扱います。'
+---
+
+import reelapiInterface from '../../../snippets/angular-api/reelapi-interface.ts?raw';
+import templateContext from '../../../snippets/angular-api/template-context.html?raw';
+import rkReelContext from '../../../snippets/angular-api/rk-reel-context.ts?raw';
+import bodylockservice from '../../../snippets/angular-api/bodylockservice.ts?raw';
+import signalBridgeUtilities from '../../../snippets/angular-api/signal-bridge-utilities.ts?raw';
+import createrouterurladapter from '../../../snippets/angular-api/createrouterurladapter.ts?raw';
+import packageExports from '../../../snippets/angular-api/package-exports.ts?raw';
+
+`@reelkit/angular` のコンポーネント、ディレクティブ、サービス、ユーティリティの完全なリファレンスです。
+
+## ReelComponent [#reelcomponent]
+
+セレクター：`rk-reel`
+
+### 入力 [#inputs]
+
+| 入力 | 型 | デフォルト | 説明 |
+| --- | --- | --- | --- |
+| `count` | `number` | 必須 | スライドの総数 |
+| `direction` | `'vertical' \| 'horizontal'` | 'vertical' | スクロールの方向 |
+| `size` | `[number, number] \| undefined` | undefined | \[幅, 高さ\] の形での幅と高さ。省略すると ResizeObserver で自動計測します |
+| `initialIndex` | `number` | 0 | 開始時のスライドのインデックス |
+| `loop` | `boolean` | false | 無限ループを有効にします |
+| `transition` | `TransitionTransformFn` | slideTransition | トランジション効果の関数。組み込み：slideTransition、fadeTransition、flipTransition、cubeTransition、zoomTransition |
+| `transitionDuration` | `number` | 300 | アニメーションの長さ（ms） |
+| `swipeDistanceFactor` | `number` | 0.12 | スワイプのしきい値（0-1） |
+| `enableGestures` | `boolean` | true | タッチやマウスのドラッグによる操作を有効にします |
+| `enableNavKeys` | `boolean` | true | キーボードの矢印キーによる操作を有効にします |
+| `enableWheel` | `boolean` | false | マウスホイールでの操作を有効にします |
+| `wheelDebounceMs` | `number` | 200 | ホイールイベントのデバウンス（ms） |
+| `rangeExtractor` | `(index: number, count: number) => number[]` | defaultRangeExtractor | 描画するインデックスを決める独自の関数 |
+| `keyExtractor` | `(index: number, indexInRange: number) => string \| number` | index => index | @for の track 式に使う独自のキー関数（ループ時に便利） |
+| `className` | `string` | '' | ルートのコンテナー要素に適用する CSS クラス |
+| `ariaLabel` | `string` | 'Carousel' | カルーセル領域のアクセシブルなラベル |
+
+### 出力 [#outputs]
+
+| 出力 | 型 | 説明 |
+| --- | --- | --- |
+| `afterChange` | `EventEmitter<{ index: number; indexInRange: number }>` | スライドのトランジションが完了したあとに発行されます |
+| `beforeChange` | `EventEmitter<{ index: number; nextIndex: number; indexInRange: number }>` | スライドのトランジションが始まる前に発行されます |
+| `slideDragStart` | `EventEmitter<number>` | ドラッグジェスチャーが始まったときに発行されます |
+| `slideDragEnd` | `EventEmitter<number>` | ドラッグジェスチャーが終わった（指を離した）ときに発行されます |
+| `slideDragCanceled` | `EventEmitter<number>` | ドラッグジェスチャーがキャンセルされた（元に戻った）ときに発行されます |
+| `apiReady` | `EventEmitter<ReelApi>` | ビューの初期化後に 1 回だけ発行され、命令的な API を公開します |
+
+## ReelApi インターフェース [#reelapi-interface]
+
+`(apiReady)` 出力から取得します：
+
+<CodeBlock code={reelapiInterface} language="typescript" />
+
+| メソッド | 型 | 説明 |
+| --- | --- | --- |
+| `next()` | `() => void` | 次のスライドへ移動します |
+| `prev()` | `() => void` | 前のスライドへ移動します |
+| `goTo(index, animate?)` | `(number, boolean?) => Promise<void>` | 指定したスライドのインデックスへ移動します |
+| `adjust()` | `() => void` | スライドの位置を計算し直します（レイアウトが変わったあとに便利） |
+| `observe()` | `() => void` | キーボードイベントの監視を始めます |
+| `unobserve()` | `() => void` | キーボードイベントの監視を止めます |
+
+## RkReelItemDirective [#rkreelitemdirective]
+
+セレクター：`[rkReelItem]` — `rk-reel` の中の `ng-template` に適用します。
+
+### テンプレートのコンテキスト [#template-context]
+
+<CodeBlock code={templateContext} language="html" />
+
+| 変数 | 型 | 説明 |
+| --- | --- | --- |
+| `$implicit (let-i)` | `number` | スライドの絶対インデックス（0 から count-1） |
+| `indexInRange` | `number` | 表示ウィンドウ内での位置（0、1、2） |
+| `size` | `[number, number]` | 現在のスライダーの寸法。\[幅, 高さ\] のピクセル値 |
+
+## ReelIndicatorComponent [#reelindicatorcomponent]
+
+セレクター：`rk-reel-indicator`
+
+### 入力 [#inputs]
+
+| 入力 | 型 | デフォルト | 説明 |
+| --- | --- | --- | --- |
+| `count` | `number \| undefined` | 自動 | アイテムの総数。rk-reel の中に置けば親のコンテキストから自動で接続されます。単独で使うときは明示的に渡してください |
+| `active` | `number \| undefined` | 自動 | 現在アクティブなインデックス。rk-reel の中に置けば親のコンテキストから自動で接続されます。単独で使うときは明示的に渡してください |
+| `direction` | `'vertical' \| 'horizontal'` | 'vertical' | インジケーターの向き |
+| `radius` | `number` | 3 | ドットの半径（ピクセル） |
+| `visible` | `number` | 5 | 同時に通常サイズで表示するドットの最大数 |
+| `gap` | `number` | 4 | ドットの間隔（ピクセル） |
+| `activeColor` | `string` | '#fff' | アクティブなドットの色 |
+| `inactiveColor` | `string` | 'rgba(255,255,255,0.5)' | 非アクティブなドットの色 |
+| `edgeScale` | `number` | 0.5 | はみ出した端のドットの縮小率 |
+| `className` | `string` | '' | インジケーターのコンテナーに適用する独自の CSS クラス |
+| `tablistLabel` | `string` | 'Slide navigation' | tablist のランドマークのアクセシブルなラベル |
+
+### 出力 [#outputs]
+
+| 出力 | 型 | 説明 |
+| --- | --- | --- |
+| `dotClick` | `EventEmitter<number>` | ドットがクリックされたときに発行され、ドットのインデックスを渡します |
+
+## RK_REEL_CONTEXT [#rk-reel-context]
+
+`rk-reel` が子孫に提供する `InjectionToken<ReelContextValue>` です。`rk-reel-indicator` の自動接続に内部で使われています。スライダーのコンテキストが必要な独自のコンポーネントでインジェクトしてください。
+
+<CodeBlock code={rkReelContext} language="typescript" />
+
+| プロパティ | 型 | 説明 |
+| --- | --- | --- |
+| `index` | `Signal<number>` | 現在のスライドのリアクティブなインデックス |
+| `count` | `Signal<number>` | アイテムの総数のリアクティブな値 |
+| `goTo` | `(index: number, animate?: boolean) => Promise<void>` | プログラムからスライドへ移動します |
+
+## BodyLockService [#bodylockservice]
+
+参照カウント付きで body のスクロールを止めます。同時に複数の呼び出し元（たとえばギャラリーとモーダルが両方開いている場合）がそれぞれ独立して止めたり解除したりでき、最後の呼び出し元が解除したときにだけ body が元に戻ります。ルートで提供されているので、どこでもインジェクトできます。
+
+<CodeBlock code={bodylockservice} language="typescript" />
+
+| メンバー | 型 | 説明 |
+| --- | --- | --- |
+| `locked` | `boolean (getter)` | body が現在ロックされているかどうか |
+| `lock()` | `() => void` | body のスクロールを止め、スクロールバーの幅を補正します |
+| `unlock()` | `() => void` | body の元のスクロールのスタイルに戻します |
+
+## シグナルブリッジのユーティリティ [#signal-bridge-utilities]
+
+コアのシグナルシステム（`@reelkit/core`）と Angular ネイティブのシグナル API をつなぐユーティリティ関数です。`ReelComponent` が内部で使っており、独自のフレームワーク連携にも使えます。
+
+| 関数 | シグネチャ | 説明 |
+| --- | --- | --- |
+| `toAngularSignal` | `(source: Subscribable<T>, destroyRef: DestroyRef) => Signal<T>` | コアの Subscribable を、読み取り専用の Angular の Signal につなぎます |
+| `animatedSignalBridge` | `(source: AnimatedValue, zone: NgZone, cdRef: ChangeDetectorRef, destroyRef: DestroyRef) => Signal<number>` | コアのアニメーションする値を Angular の Signal につなぎ、zone の外で requestAnimationFrame によって更新します |
+
+<CodeBlock code={signalBridgeUtilities} language="typescript" />
+
+## createOverlayUrlState [#createoverlayurlstate]
+
+<Signature>OverlayUrlStateOptions</Signature>
+
+オーバーレイ用の URL 状態コントローラーを作ります。それを `<rk-lightbox-url-overlay>` の `[controller]` 入力に渡します。インジェクションコンテキスト（フィールドの初期化子かコンストラクター）の中で呼んでください。すぐに接続し、`DestroyRef` で解放されます。手順：[Angular Lightbox のページの URL の状態](/docs/angular-lightbox#url-state)。
+
+| オプション | 型 | デフォルト | 説明 |
+| --- | --- | --- | --- |
+| `param` | `string` | `必須` | アクティブなスライドを持つクエリパラメーター（たとえば photo）。 |
+| `adapter` | `UrlAdapter` | `History API` | 読み書きに使うナビゲーションの仕組み。ルーターを使うアプリでは、Router の位置情報が古くならないよう、Router に連動したアダプターを渡してください。 |
+| `codec` | `UrlCodec<Id>` | `必須` | 通信形式：パラメーターの文字列から安定した識別子へ。対として locator と一緒に使います。デフォルトの ?photo=3 のギャラリーなら ...urlIndexKey(() => images().length) を展開し、並べ替えてもブックマークが保たれるようにするなら独自のものを用意します。 |
+| `locator` | `UrlLocator<Id>` | `必須` | 識別子を位置に対応させ、その妥当性を自分で判断します：locate（同期）、locateAsync（ページングされたギャラリー向けの非同期フォールバック）、identify（書き込み）。 |
+
+## createRouterUrlAdapter [#createrouterurladapter]
+
+<Signature>@reelkit/angular/ng-router-url-adapter</Signature>
+
+Angular の Router に連動した `UrlAdapter` です。ルーターを使うアプリで `createOverlayUrlState` の `adapter` オプションに渡すと、ナビゲーションの信頼できる情報源が Router だけに保たれます。Router の裏で `history.pushState` を書くと、その位置情報が古くなり、次のナビゲーションでパラメーターが消えます。書き込むのはクエリだけなので、パス、フラグメント、`?tag=a&tag=b` のような繰り返しのキーはそのまま残ります。変更のたびに、Router が同じページで push したのか、replace したのか、履歴をたどったのかを報告するので、`routerLink` から開いたギャラリーは 1 回戻るだけで閉じます。インジェクションコンテキストの中で呼んでください。ルーターの購読は `DestroyRef` で解放されます。
+
+独自のサブパスから提供されるので、ルーティングを使わないアプリのバンドルに `@angular/router` が入ることはありません。`@angular/router` は任意の peer dependency です。
+
+<CodeBlock code={createrouterurladapter} language="typescript" />
+
+## アクセシビリティ [#accessibility]
+
+`<rk-reel>` は `aria-roledescription="carousel"` を持つ `role="region"` として描画されます。`ariaLabel` 入力を指定すると、スクリーンリーダー向けの名前が付きます。控えめなライブリージョンが、スライドが変わるたびに「Slide N of M」と読み上げます。非アクティブなスライドには `inert` 属性が付くので、フォーカスや支援技術での移動では飛ばされます。
+
+`<rk-reel-indicator>` は、ドットにローミング tabindex を持つ `role="tablist"` として描画されます。矢印キーでフォーカスが移動し、Enter か Space でスライドが有効になります。
+
+`<rk-reel>` を囲む独自のモーダルを作るなら、フォーカスを戻したり閉じ込めたりするために `captureFocusForReturn`、`createFocusTrap`、`getFocusableElements` が `@reelkit/angular` から再エクスポートされています。
+
+## パッケージのエクスポート [#package-exports]
+
+`@reelkit/angular` の公開エクスポートの一覧：
+
+<CodeBlock code={packageExports} language="typescript" />

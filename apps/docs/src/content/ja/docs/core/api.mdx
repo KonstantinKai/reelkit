@@ -1,0 +1,248 @@
+---
+title: Core API リファレンス
+description: '@reelkit/core の完全なリファレンスです。設定、コールバック、メソッド、状態、シグナル、トランジション、コンテンツの読み込み、サウンド、タイムライン、フルスクリーン、DOM ユーティリティ、フォーカス管理、動画ユーティリティを扱います。'
+---
+
+import usage from '../../../snippets/core-api/usage.ts?raw';
+
+`@reelkit/core` の設定、コールバック、メソッド、状態の完全なリファレンスです。
+
+## SliderController API [#slidercontroller-api]
+
+フレームワークに依存しないコアです。1 つのファクトリーが、設定と任意のイベントからコントローラーを作ります。**設定オプション** が設定、**コールバック** がイベント、**メソッド** が返されたコントローラーの公開するものです。
+
+### ファクトリー関数 [#factory-function]
+
+| Export | 型 | 説明 |
+| --- | --- | --- |
+| `createSliderController` | `(config: SliderConfig, events?: SliderEvents) => SliderController` | スライダーコントローラーを作ります。`config` は必須（オプションは下記）、`events` は任意（コールバックは下記）です。操作に使うメソッドを持つコントローラーを返します。 |
+
+### 設定オプション [#config-options]
+
+| プロパティ | 型 | デフォルト | 説明 |
+| --- | --- | --- | --- |
+| `count` | `number` | 必須 | アイテムの総数 |
+| `initialIndex` | `number` | 0 | 開始時のインデックス |
+| `direction` | `'vertical' \| 'horizontal'` | 'vertical' | スクロールの方向 |
+| `enableGestures` | `boolean` | true | タッチやマウスのドラッグによる操作を有効にします。false のときジェスチャーコントローラーは取り付けられません。 |
+| `enableNavKeys` | `boolean` | true | キーボードの矢印キーによる操作を有効にします |
+| `enableWheel` | `boolean` | false | マウスホイールを有効にします |
+| `wheelDebounceMs` | `number` | 200 | ホイールのデバウンス時間 |
+| `loop` | `boolean` | false | ループするナビゲーション |
+| `transitionDuration` | `number` | 300 | アニメーションの長さ（ms） |
+| `swipeDistanceFactor` | `number` | 0.12 | スワイプのしきい値（0-1） |
+| `rangeExtractor` | `(index: number, count: number, loop: boolean) => number[]` | defaultRangeExtractor | 描画するインデックスを決める独自の関数 |
+
+### コールバック [#callbacks]
+
+| コールバック | 型 | 説明 |
+| --- | --- | --- |
+| `onBeforeChange` | `(index, nextIndex, rangeIndex) => void` | スライドが切り替わる前 |
+| `onAfterChange` | `(index, rangeIndex) => void` | スライドが切り替わったあと |
+| `onDragStart` | `(index) => void` | ドラッグの開始 |
+| `onDragEnd` | `(index) => void` | ドラッグの終了 |
+| `onDragCanceled` | `(index) => void` | ドラッグのキャンセル |
+| `onTap` | `(event: GestureCommonEvent) => void` | シングルタップ（ダブルタップの判定時間だけ遅れます） |
+| `onDoubleTap` | `(event: GestureCommonEvent) => void` | ダブルタップを検出 |
+| `onLongPress` | `(event: GestureCommonEvent) => void` | 長押しを検出 |
+| `onLongPressEnd` | `(event: GestureEvent) => void` | 長押しのあとにポインターが離された |
+| `onNavKeyPress` | `(increment: -1 \| 1) => void` | 矢印キーによる操作の独自ハンドラー。デフォルトの前後移動を置き換えます。 |
+
+### メソッド [#methods]
+
+| メソッド | 型 | 説明 |
+| --- | --- | --- |
+| `attach(element)` | `(HTMLElement) => void` | ジェスチャー検出のためにコントローラーを DOM 要素に接続します |
+| `detach()` | `() => void` | DOM のリスナー（ジェスチャー、キーボード、ホイール）を外します。observe() で再接続しても安全です。React のエフェクトのクリーンアップに使います。 |
+| `dispose()` | `() => void` | 完全な破棄です。すべてのコントローラーを外し、シグナルのオブザーバーを片付けます。Angular の onDestroy に使います。 |
+| `observe()` | `() => void` | ジェスチャー、キーボード、ホイールの監視を始めます。enableGestures、enableNavKeys、enableWheel の設定に従います。 |
+| `unobserve()` | `() => void` | ジェスチャー、キーボード、ホイールの監視を止めます |
+| `next()` | `() => Promise<void>` | 次のスライドへ移動します |
+| `prev()` | `() => Promise<void>` | 前のスライドへ移動します |
+| `goTo(index, animate?)` | `(number, boolean?) => Promise<void>` | 指定したスライドへ移動します |
+| `adjust(duration?)` | `(number?) => void` | スライドの位置を計算し直します |
+| `setPrimarySize(size)` | `(number) => void` | コンテナーのサイズを更新します |
+| `updateConfig(config)` | `(Partial<SliderConfig>) => void` | 設定オプションを更新します |
+| `updateEvents(events)` | `(Partial<SliderEvents>) => void` | イベントハンドラーを差し替えます（渡さなかった既存のハンドラーはそのまま残ります） |
+| `getRangeIndex()` | `() => number` | 表示範囲の配列の中で、アクティブなインデックスがある位置を返します |
+
+## 状態プロパティ [#state-properties]
+
+| プロパティ | 型 | 説明 |
+| --- | --- | --- |
+| `index` | `Signal<number>` | 現在のスライドのインデックス |
+| `axisValue` | `Signal<AnimatedValue>` | 現在の軸の位置（アニメーションします） |
+| `indexes` | `ComputedSignal<number[]>` | 仮想化のための表示中のインデックス |
+
+## レンジエクストラクター [#range-extractor]
+
+| Export | 型 | 説明 |
+| --- | --- | --- |
+| `defaultRangeExtractor` | `(index: number, count: number, loop: boolean) => number[]` | 現在のインデックスの前後 3 つを描画するデフォルトのエクストラクター |
+
+## Signal API [#signal-api]
+
+コア全体で使われている軽量なリアクティブプリミティブです。
+
+### Signal インターフェース [#signal-interface]
+
+| メンバー | 型 | 説明 |
+| --- | --- | --- |
+| `value` | `T` | 現在の値を読み書きします。値が変わった場合、書き込みでオブザーバーに通知されます。 |
+| `observe(callback)` | `(callback: () => void) => () => void` | 値が変わるたびに呼ばれるリスナーを登録します。そのリスナーを外す破棄関数を返します。 |
+
+### ファクトリー関数 [#factory-functions]
+
+| Export | 型 | 説明 |
+| --- | --- | --- |
+| `createSignal` | `<T>(initial: T) => Signal<T>` | 変更可能なリアクティブシグナルを作ります |
+| `createComputed` | `<T>(fn: () => T, deps: () => Subscribable[]) => ComputedSignal<T>` | 派生した計算シグナルを作ります。2 つ目の引数は、追跡するシグナルを返す依存関係のファクトリーです。 |
+| `reaction` | `(deps: () => Subscribable[], effect: () => void) => () => void` | 依存するシグナルのどれかが変わったときに副作用を実行し、破棄関数を返します。シグナルの値はエフェクトのコールバック内で読んでください。 |
+| `batch` | `(fn: () => void) => void` | 複数のシグナル更新を 1 回の通知にまとめます。入れ子にできます |
+
+## トランジション [#transitions]
+
+アニメーション付きのナビゲーション中に、スライドごとの CSS トランスフォームを計算する組み込みのトランジション関数です。フレームワークのコンポーネントの `transitionTransformFn` プロップに 1 つ渡してください。
+
+| Export | 型 | 説明 |
+| --- | --- | --- |
+| `TransitionTransformFn` | `type` | 独自のトランジション関数のシグネチャ |
+| `getSlideProgress` | `(axisValue: number, slideIndex: number, primarySize: number) => number` | ビューポートに対するスライドの正規化されたオフセット（-1 から 1）を返します。独自のトランジション関数の中で使います。 |
+| `slideTransition` | `TransitionTransformFn` | デフォルトのスライドするトランジション（translateX/Y） |
+| `fadeTransition` | `TransitionTransformFn` | 透明度をクロスフェードするトランジション |
+| `flipTransition` | `TransitionTransformFn` | 3D でカードをめくるトランジション |
+| `cubeTransition` | `TransitionTransformFn` | 3D で立方体を回すトランジション |
+| `zoomTransition` | `TransitionTransformFn` | 拡大縮小するトランジション |
+
+## コンテンツの読み込み [#content-loading]
+
+スライドごとの読み込み中とエラーの状態を追跡し、メディアを先読みするためのユーティリティです。読み込みコントローラーはインデックスのガードを使い、以前アクティブだったスライドからの遅れて届いたコールバックを無視します。プリローダーは LRU キャッシュ（デフォルトで読み込み済み 200 件、エラー 100 件）を使うので、壊れた URL を再訪すると再試行せずにすぐエラーを表示します。
+
+| Export | 型 | 説明 |
+| --- | --- | --- |
+| `createContentLoadingController` | `() => ContentLoadingController` | スライドごとの読み込み中とエラーの状態を追跡します |
+| `createContentPreloader` | `(config: ContentPreloaderConfig) => ContentPreloader` | エラーもキャッシュする、LRU キャッシュ付きのメディアプリローダー |
+| `observeMediaLoading` | `(video: HTMLVideoElement, callbacks: MediaLoadingCallbacks) => () => void` | 動画の読み込み状態（playing、canplaythrough、waiting）を監視し、破棄関数を返します。 |
+
+### ContentLoadingController [#contentloadingcontroller]
+
+| Export | 型 | 説明 |
+| --- | --- | --- |
+| `isLoading` | `Signal<boolean>` | アクティブなスライドが読み込み中かどうか |
+| `isError` | `Signal<boolean>` | アクティブなスライドでエラーが起きたかどうか |
+| `setActiveIndex` | `(index: number) => void` | アクティブなインデックスを更新し、読み込みとエラーの状態をリセットします |
+| `onReady` | `(index: number) => void` | スライドを準備完了にします（インデックスがアクティブと一致しなければ無視されます） |
+| `onWaiting` | `(index: number) => void` | スライドを読み込み中にします（インデックスがアクティブと一致しなければ無視されます） |
+| `onError` | `(index: number) => void` | スライドをエラーにします（インデックスがアクティブと一致しなければ無視されます） |
+
+### ContentPreloader [#contentpreloader]
+
+| Export | 型 | 説明 |
+| --- | --- | --- |
+| `preload` | `(src: string, type?: "image" \| "video") => void` | メディアの URL の先読みを始めます |
+| `isLoaded` | `(src: string) => boolean` | URL が読み込み済みの LRU キャッシュ（最大 200 件）にあるか確認します |
+| `isErrored` | `(src: string) => boolean` | URL がエラーの LRU キャッシュ（最大 100 件）にあるか確認します |
+| `markLoaded` | `(src: string) => void` | URL を手動で読み込み済みにします |
+| `markErrored` | `(src: string) => void` | URL を手動でエラーにします |
+| `onLoaded` | `(src: string, cb: () => void) => () => void` | 読み込みの完了を購読し、破棄関数を返します |
+
+## サウンド [#sound]
+
+メディア再生で共有するミュート状態です。サウンドコントローラーはリアクティブなミュートのシグナルを提供し、動画要素と同期させたり、独自のコントロールから切り替えたりできます。
+
+| Export | 型 | 説明 |
+| --- | --- | --- |
+| `createSoundController` | `() => SoundController` | 共有のミュート状態のコントローラー |
+| `syncMutedToVideo` | `(video: HTMLVideoElement, sound: SoundController) => () => void` | ミュートのシグナルを動画要素と同期し、破棄関数を返します。 |
+
+## タイムライン [#timeline]
+
+動画をシークするための再生タイムラインのコントローラーです。再生時間、現在時刻、バッファー済みの範囲、ユーザーがシーク中かどうかをリアクティブなシグナルとして追跡します。1 回の呼び出しで任意の DOM 要素にポインターとキーボードの操作を取り付け、ポインターのキャプチャー、ライブシーク、完全なキーボード操作（矢印キー、Home/End、PageUp/PageDown）を備えた、ネイティブのような感触のシークバーにします。
+
+| Export | 型 | 説明 |
+| --- | --- | --- |
+| `createTimelineController` | `(config?: TimelineControllerConfig) => TimelineController` | `duration`、`currentTime`、`progress`、`bufferedRanges`、`isScrubbing` のシグナルと、`attach`、`detach`、`bindInteractions`、`seek` のメソッドを持つコントローラーを返すファクトリーです。 |
+| `TimelineControllerConfig` | `interface` | `keyboardStepSeconds`（デフォルト 5）、`keyboardPageFraction`（デフォルト 0.1）、および `onSeek`、`onScrubStart`、`onScrubEnd` のコールバック。 |
+| `BufferedRange` | `{ start: number; end: number }` | 連続したバッファー済みの 1 区間を、全体の長さに対する 0 から 1 の割合で表したものです。並べ替え済みで、重なりなく出力されます。 |
+
+## フルスクリーン [#fullscreen]
+
+Safari のベンダープレフィックスにも対応した、ブラウザー間で動くフルスクリーンのユーティリティです。フルスクリーンのシグナルは遅延生成されるシングルトンで、状態をリアクティブに追跡します。
+
+| Export | 型 | 説明 |
+| --- | --- | --- |
+| `fullscreenSignal` | `Signal<boolean>` | ドキュメントがフルスクリーンかどうかを追跡するリアクティブなシグナル |
+| `requestFullscreen` | `(element: HTMLElement) => Promise<void>` | 指定した要素でフルスクリーンにします |
+| `exitFullscreen` | `() => Promise<void>` | フルスクリーンを終了します |
+
+## DOM とクリーンアップのユーティリティ [#dom-cleanup-utilities]
+
+DOM イベントの管理と、確実な後片付けのための低レベルのヘルパーです。すべてのコントローラーが内部で使っており、独自の組み込みにも使えます。
+
+| Export | 型 | 説明 |
+| --- | --- | --- |
+| `observeDomEvent` | `(target, event, handler, options?) => () => void` | DOM イベントのリスナーを追加し、それを外す破棄関数を返します |
+| `createDisposableList` | `() => DisposableList` | 破棄関数を集めるための組み合わせ可能なリストです。dispose() を呼ぶとまとめて実行します。 |
+| `createBodyLock` | `() => BodyLock` | 参照カウント付きで body のスクロールを止めます。複数の利用者が同時に止められ、全員が解除するとスクロールが戻ります。 |
+| `sharedBodyLock` | `BodyLock` | モジュールレベルのシングルトンインスタンスです。入れ子になったモーダルやオーバーレイが正しく噛み合うように、アプリ内の複数のコンポーネントで 1 つの参照カウンターを共有したいときに使います。フレームワークのバインディング（`@reelkit/react`、`@reelkit/vue`、`@reelkit/angular`）は内部でこれを使っています。 |
+
+## フォーカス管理 [#focus-management]
+
+フレームワークに依存しない、ダイアログのアクセシビリティのためのプリミティブです。オーバーレイのパッケージは、閉じたときにトリガーへフォーカスを戻し、開いているあいだは Tab／Shift+Tab をオーバーレイ内に閉じ込めるためにこれらを使います。SSR に安全で、ブラウザー以外の環境ではどのヘルパーも何もしない破棄関数を返します。
+
+| Export | 型 | 説明 |
+| --- | --- | --- |
+| `captureFocusForReturn` | `() => Disposer` | 現在フォーカスされている要素を記録し、そこへフォーカスを戻す破棄関数を返します。ベストエフォートで、記録した要素がその後 DOM から取り除かれていれば、破棄関数は何もしません。 |
+| `createFocusTrap` | `(container: HTMLElement) => Disposer` | Tab／Shift+Tab を `container` の中に閉じ込めます。最後のフォーカス可能な要素で Tab を押すと最初に戻り、最初の要素で Shift+Tab を押すと最後に移ります。コンテナーの外へ出たフォーカス（外側のクリック、プログラムからのフォーカス）は引き戻されます。有効にした時点でコンテナー内にフォーカスを移すことはせず、それは呼び出し側が決めます。 |
+| `getFocusableElements` | `(container: HTMLElement) => HTMLElement[]` | キーボードでフォーカスできる子孫要素を DOM の順序ですべて返します。無効化された要素、非表示の要素、`tabindex="-1"` の要素は除きます。 |
+
+### 使い方 [#usage]
+
+<CodeBlock code={usage} language="typescript" />
+
+## 動画ユーティリティ [#video-utilities]
+
+スライド間で動画の再生を共有するための、フレームワークに依存しないユーティリティです。`@reelkit/react-reel-player` と `@reelkit/react-lightbox` が内部で使っており、独自のフレームワークバインディングにも使えます。
+
+| Export | 型 | 説明 |
+| --- | --- | --- |
+| `captureFrame` | `(video: HTMLVideoElement) => string \| null` | 動画の現在のフレームを JPEG のデータ URL として取り込みます。クロスオリジンのエラーでは null を返します。 |
+| `createSharedVideo` | `(config: SharedVideoConfig) => SharedVideoInstance` | 再生位置と取り込んだフレームのマップを持つ、スコープ付きの共有動画シングルトンを作ります。iOS で音声を途切れさせないよう、利用者ごとに独立したインスタンスが渡されます。 |
+| `syncVideoObjectFit` | `(video: HTMLVideoElement, fallbackIsVertical: boolean) => Disposer` | `video.style.objectFit` を動画の実際の向きに合わせ続けます。宣言されたアスペクト比からのフォールバックをすぐ適用し、`loadedmetadata` で実際の `videoWidth`／`videoHeight` を読んで、縦長なら `'cover'`、横長なら `'contain'` に切り替えます。宣言されたメタデータが間違っていても正しく動きます。 |
+
+## URL の状態 [#url-state]
+
+1 つのクエリパラメーターをシグナルに映し、書き戻します。2 つの軸にそれぞれ 1 つの役割があります。`codec` は通信形式（パラメーターの文字列 ↔ 安定した識別子）、`locator` は検索（その識別子がコレクションのどこにあるか）です。
+
+| Export | 型 | 説明 |
+| --- | --- | --- |
+| `createUrlStateController` | `({ param, adapter?, codec?, locator? }) => UrlStateController` | 1 つのクエリパラメーターをシグナルに映し、変更を URL に書き戻します。存在しないパラメーターへの最初の書き込みは履歴エントリーを 1 つ積み、以降の書き込みはそれを置き換えます。`codec` か `locator` を渡すと `position: Signal<Pos \| null>` も導出し、開閉のラッチを適用して、どのスライドも指さないパラメーターを自動で取り除きます。そのため各バインディングは導出し直さずに購読するだけで済みます。閉じているときに位置を書き込むと、アダプターが書き込みを報告し返すのを待たずにすぐ開きます。`UrlChange` は、閉じるときに履歴を戻るのか、その場でクリアするのかを伝えます。 |
+| `createHistoryAdapter` | `() => UrlAdapter` | History API を使うデフォルトのアダプターです。ルーターを使うアプリは代わりに独自のものを注入してください。そうしないとルーターの位置情報が古くなり、次のナビゲーションでパラメーターが消えます。 |
+| `indexCodec` | `UrlCodec<number>` | `?photo=3` をスライド 3 として読みます。独自の codec を書かずにインデックスの導出を使いたいときに渡します。無限リストやページングされたリストでは代わりに `locator` を渡してください。Promise が保留中のあいだパラメーターは残るので、未読み込みのページへのディープリンクが取得中に消されることはありません。 |
+| `createIndexLocator` | `(countGetter: () => number) => UrlLocator<number>` | デフォルトのインデックス locator です。スライドの位置はそのまま自分自身を指し、getter が返す現在の件数で範囲が制限されます。範囲外のインデックスは `null` になるので、古い `?photo=99` は URL から自動で取り除かれます。いちばん近いスライドに丸めることはしません。URL が指していないスライドを開いてしまうからです。数値ではなく getter なので、ページングされたギャラリーが伸びても、検索の時点での現在のサイズで範囲を判断します。 |
+| `urlIndexKey` | `(countGetter, locateAsync?) => UrlKey<number>` | インデックスで指すギャラリー用の対です。`indexCodec` と、ギャラリーのサイズに結び付いた `createIndexLocator` を組み合わせます。展開して（`{ param, ...urlIndexKey(() => count) }`）使えば、codec が locator とずれることはありません。2 つ目の引数に `locateAsync` を渡すと、ページングされたフィードを扱えます。見つからなかったときに目的のインデックスまでページングし、それを返します。 |
+| `urlIndexTwoAxisKey` | `(opts) => UrlKey<TwoAxisIdentity, TwoAxisPosition>` | `urlIndexKey` と同様ですが、二軸のプレイヤー向けです。厳密にドットで区切った 1 つの `?p=<outer>.<inner>` パラメーターが、`TwoAxisPosition` の `{ outer, inner }` に解決されます。オプション（`UrlIndexTwoAxisKeyOptions`）：`outerCount`、`innerCounts`、外側の軸用の任意の `outerCodec`／`outerLocator`、そして内側の軸も id で指すための `innerCodec`／`innerLocate`／`innerIdentify`。各軸のデフォルトは単純なインデックスの範囲です。URL 駆動のストーリープレイヤーを支えています。 |
+| `createStableIdCodec` | `(hashCodec?: UrlCodec<string>) => UrlCodec<string>` | 組み合わせ用に公開されている、安定した id の **通信形式** です。パラメーターの文字列はアイテムの `id` で、そのまま書くか `hashCodec` で変換します（元に戻せる base64url には `base64UrlCodec` を渡します）。`indexCodec` の安定した id 版で、`urlStableIdKey` 全体を使う代わりに独自の locator と組み合わせられます。 |
+| `base64UrlCodec` | `UrlCodec<string>` | 安定した id のキー用に用意された変換方式です。元に戻せる base64url（URL で安全な文字、パディングなし、UTF-8）で、暗号学的ハッシュでは **ありません**。URL の id を見えにくくするには `hashCodec` として渡します。別の方式を使うなら、独自の `UrlCodec<string>` を実装してください。 |
+| `createStableIdLocator` | `(items, locateAsync?) => UrlLocator<string, number>` | 組み合わせ用に公開されている、安定した id の **検索** です。`items()` から一致する `id` を探し、なくなった id は `null` になって自動で取り除かれます。任意の `locateAsync` でページングされたフィードを扱えます。`createIndexLocator` の安定した id 版です。 |
+| `urlStableIdKey` | `(opts) => UrlKey<string, number>` | ギャラリーを位置ではなく各アイテムの安定した `id` で指します（`?photo=<id>`）。リストが並べ替えられてもブックマークが保たれます。オプション（`UrlStableIdKeyOptions`）：`items`（現在の値を返す getter）、通信形式で id を変換する任意の `hashCodec`（`base64UrlCodec` を渡します）、ページングされたフィードを扱う任意の `locateAsync`（見つからなければ id が現れるまで取得し、そのインデックスを返します）。共有リンクの下でリストが変わりうるときは、常に `urlIndexKey` よりこちらを選んでください。 |
+| `urlStableIdTwoAxisKey` | `(opts) => UrlKey<TwoAxisIdentity<string>, TwoAxisPosition>` | 二軸版です。外側の軸を安定した id で、内側をローカルなインデックスで指します（`?story=user_42.3`）。`innerCounts` の代わりに `innerItems` を渡すと、内側も id で指せます（`?story=user_42.photo_7`）。`hashCodec`（たとえば `base64UrlCodec`）は両方の id を変換します。オプションは `UrlStableIdTwoAxisKeyOptions`（内側がインデックス）または `UrlStableIdTwoAxisIdInnerOptions`（内側が id）で、アイテムの型は `Identified`（`{ id: string }`）を満たします。 |
+| `UrlCodec<Id>` | `{ decode(raw) => Id \| null; encode(id) => string }` | 通信形式です。パラメーターの文字列 ↔ 安定した識別子で、コレクションは見ません。`decode` が `null` を返すのは不正な文字列の場合です。 |
+| `UrlLocator<Id>` | `{ locate(id) => number \| null; locateAsync?(id) => Promise<number \| null>; identify(index) => id }` | 検索です。識別子がコレクションのどこにあるかを探します。`locate` は同期、`locateAsync` はページングされたリスト向けのフォールバック、`identify` は書き込みのためにインデックスを識別子へ戻します。 |
+| `UrlKey<Id>` | `{ codec: UrlCodec<Id>; locator: UrlLocator<Id> }` | 1 つのパラメーター用の codec と locator の対です。同じ `Id` を共有し、常に一緒に使われます。codec が識別子を URL に書き、locator がその場所を探します。対として作ることで、2 つが食い違わないようにしています。 |
+| `UrlAdapter` | `{ read, subscribe, push, replace, getState, goBack }` | ルーターを注入する接点です。ルーターを使うアプリは独自のものを渡す必要があり、そうしないとルーター自身の位置情報が古くなります。`subscribe` のリスナーは任意の `UrlChange` を受け取ります。何も渡さずに呼ぶのは常に有効で、アダプターがそのエントリーが現在になった経緯を伝えられないことを意味します。 |
+| `UrlChange` | `{ kind?: 'push' \| 'replace' \| 'pop' }` | 直前に起きたナビゲーションについて、アダプターが知っていることです。`push` を報告するのは、ルーター自身が同じページで行ったナビゲーションだけにしてください。閉じるときにエントリーを戻してよいのはその場合だけです。根拠がなければエントリーを自分のものとは見なさず、閉じるときはその場でパラメーターをクリアします。サイトの外へ戻ってしまう危険を冒すより、履歴にページの重複を残すほうを選びます。 |
+| `UrlStateOptions<Id>` | `{ param: string; adapter?: UrlAdapter; codec?: UrlCodec<Id>; locator?: UrlLocator<Id> }` | `createUrlStateController` が受け取るオプションです。別に組み立てた設定を渡す前に型付けできるよう公開されています。 |
+
+## 既読の状態 [#viewed-state]
+
+閲覧者がどこまで見たかを、アドレスバーと同じキーで保存します。エントリーはパラメーターの文字列そのもので、同じ `codec` と `locator` で読み戻されます。
+
+| Export | 型 | 説明 |
+| --- | --- | --- |
+| `createViewedStateController` | `(options) => ViewedStateController<Pos>` | 閲覧者がどこまで見たかを、URL パラメーターが持つのとまったく同じ文字列として保存します。アドレスバーと同じ `codec`／`locator` の対に加えて、`storageKey`、任意の `storage`、`trackOf`（グループごとに 1 エントリー）、`progressOf` を受け取ります。`attach()` までは何も読まないので、事前レンダリングしても安全です。 |
+| `twoAxisViewedTracking` | `{ trackOf, progressOf }` | 二軸のプレイヤー用の追跡の対です。外側の位置ごとに 1 エントリーで、内側のインデックスがその中の進み具合を表します。二軸のキーと並べて展開します。 |
+| `createLocalStorageAdapter` | `() => StorageAdapter` | デフォルトの保存先です。タブを閉じたら残すべきでない状態には `createSessionStorageAdapter`、テストやサーバーでのレンダリングには `createMemoryStorageAdapter` もあります。どれも自分の失敗は自分で吸収するので、容量を使い切っても失われるのはその書き込みだけです。 |
+| `ViewedStateController<Pos>` | `{ entries; resolve(track); record(position); forget(track?); attach() }` | `entries` はトラック → 保存された文字列のシグナルなので、ここか別のタブで位置が記録されるとリングが描き直されます。`resolve` は呼ぶたびにキーの流れを最初から最後までたどります。 |
+| `ViewedStateOptions<Id, Pos>` | `{ storageKey; codec; locator; storage?; trackOf?; progressOf; ttlMs?; maxTracks? }` | `createViewedStateController` が受け取るオプションです。別に組み立てた設定を渡す前に型付けできるよう公開されています。`progressOf` が任意なのは、それ自体が進み具合を表す単純なインデックスの位置の場合だけで、それ以外の位置ではどの数値を比べるかを示す必要があり、型がそれを要求します。`ttlMs` を指定すると期限切れが有効になり、トラックは最後に記録されてからその時間が経つと忘れられ、もう一度記録すると時計がリセットされます。`maxTracks` はトラックの件数をその数までに保ち、次の書き込みで記録がいちばん古いものを削除します。 |
+| `StorageAdapter` | `{ read(key); write(key, value); subscribe?(key, listener) }` | ストレージ層を注入する接点です。`subscribe` を省くと、ストアはタブ間の同期なしで動作します。 |
