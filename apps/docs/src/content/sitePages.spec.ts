@@ -120,11 +120,25 @@ describe('sitemap', () => {
   });
 
   it('carries one entry per listed page in every locale', () => {
-    const listed = kSitePages.filter((page) => page.sitemap).length;
+    const listed = kSitePages.filter((page) => page.sitemap);
+    const englishOnly = listed.filter((page) => page.sitemap?.englishOnly);
     const xml = renderSitemap();
-    expect(xml.match(/<loc>/g)).toHaveLength(listed * kLocales.length);
+    expect(xml.match(/<loc>/g)).toHaveLength(
+      listed.length * kLocales.length -
+        englishOnly.length * (kLocales.length - 1),
+    );
     expect(xml).toContain('<loc>https://reelkit.dev/</loc>');
     expect(xml).toContain('<loc>https://reelkit.dev/uk/docs/ssr</loc>');
+  });
+
+  // The changelog body is the English release notes in every locale, so the
+  // prefixed copies stay served but only the English page is listed.
+  it('lists the changelog in English only', () => {
+    const changelog = sitemapEntries().filter((entry) =>
+      entry.path.endsWith('/docs/changelog'),
+    );
+    expect(changelog.map((entry) => entry.path)).toEqual(['/docs/changelog']);
+    expect(prerenderPaths()).toContain('/uk/docs/changelog');
   });
 
   // A copy under `public/` would be served ahead of the generated one in dev

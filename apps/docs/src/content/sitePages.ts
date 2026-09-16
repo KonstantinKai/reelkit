@@ -41,13 +41,16 @@ export function sitemapEntries(): SitemapEntry[] {
   return kLocales.flatMap((locale) =>
     kSitePages.flatMap((page) => {
       if (!page.sitemap) return [];
+      const { englishOnly, changefreq, priority } = page.sitemap;
+      if (englishOnly && locale !== kDefaultLocale) return [];
       const shared = `/${page.path}`;
       return [
         {
           locale,
           path: withLocale(locale, shared),
           url: localeUrl(locale, shared),
-          ...page.sitemap,
+          changefreq,
+          priority,
         },
       ];
     }),

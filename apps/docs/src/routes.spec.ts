@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import routes from './routes';
 import { kDefaultLocale, kLocales, localePrefix } from './i18n/locale';
+import { kSitePages } from './content/manifest';
 import { sitemapEntries } from './content/sitePages';
 
 interface FlatRoute {
@@ -111,8 +112,9 @@ describe('route tree', () => {
         if (path === '*') continue;
         const en = sitemapPath(path);
         const mirrored = en === '/' ? `/${prefix}` : `/${prefix}${en}`;
+        const page = kSitePages.find((entry) => sitemapPath(entry.path) === en);
         expect(listed.has(mirrored), `sitemap misses "${mirrored}"`).toBe(
-          listed.has(en),
+          listed.has(en) && !page?.sitemap?.englishOnly,
         );
       }
     },

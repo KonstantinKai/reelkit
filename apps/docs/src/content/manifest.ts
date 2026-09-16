@@ -31,7 +31,16 @@ export interface SitePage {
    * How the sitemap lists the page. A page without it is still routed and
    * prerendered, it is only left out of the sitemap.
    */
-  sitemap?: { changefreq: ChangeFrequency; priority: string };
+  sitemap?: {
+    changefreq: ChangeFrequency;
+    priority: string;
+    /**
+     * List the English page only. For a page whose body stays English in
+     * every locale, where the prefixed copies would be the same text under
+     * more URLs.
+     */
+    englishOnly?: boolean;
+  };
 }
 
 const monthly = (priority: string) =>
@@ -161,7 +170,7 @@ export const kSitePages: readonly SitePage[] = [
   {
     path: 'docs/changelog',
     module: 'docs/Changelog.tsx',
-    sitemap: { changefreq: 'weekly', priority: '0.6' },
+    sitemap: { changefreq: 'weekly', priority: '0.6', englishOnly: true },
   },
   { path: 'privacy', module: 'Privacy.tsx' },
   { path: 'terms', module: 'Terms.tsx' },
