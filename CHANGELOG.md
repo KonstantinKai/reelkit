@@ -1,3 +1,18 @@
+## Documentation (2026-09-16)
+
+### 📖 Documentation
+
+- The docs site now reads in six languages — Portuguese at [reelkit.dev/pt](https://reelkit.dev/pt), Japanese at [reelkit.dev/ja](https://reelkit.dev/ja) and Hindi at [reelkit.dev/hi](https://reelkit.dev/hi) join English, Simplified Chinese and Ukrainian, each covering all 24 documentation pages, the home page and the header, sidebar, footer, command palette and not-found page
+- The new translations are machine-produced and have not yet been reviewed by native speakers, so wording may be rough in places — corrections are welcome at [GitHub Issues](https://github.com/KonstantinKai/reelkit/issues) or as [pull requests](https://github.com/KonstantinKai/reelkit/pulls); English remains the source of truth
+- A first visit to an English page from a browser that prefers one of the site's languages now opens that page in your language; picking a language in the switcher is remembered and always wins, English included, and search engines keep indexing the English pages as before
+- The privacy policy describes this browser language check and the language cookie the switcher sets
+- The privacy and terms pages load directly as real pages instead of through the not-found fallback
+- Search in the command palette ignores accents and full-width letters, so `instalacao` finds `Instalação`, and Hindi keywords accept both common spellings of words such as install
+- Typing a search in Japanese or Chinese no longer jumps to a result or closes the palette by accident: while the keyboard's suggestion list is open, Enter picks the character and Escape dismisses the list, as they do in any other text field
+- Section anchors are identical in every language, so a `#theming` link works on any translation, and the theming token, CSS class and keyboard tables are now translated in Chinese and Ukrainian too
+- Every page carries the full `hreflang` set for all six languages; the changelog is listed in the sitemap once, in English, since its body is English everywhere
+- Page addresses have no trailing slash — the slash form redirects to them — and a missing page now answers with a real 404 status
+
 ## @reelkit/vue@0.6.0 (2026-09-08)
 
 ### 🚀 Features
@@ -9,7 +24,7 @@
 - Its ownership stamp now travels through the router's own `state` navigation option into `history.state`, replacing the sessionStorage store that could mark an unrelated entry after a back step
 - The new `UrlChange` type is re-exported alongside `UrlAdapter`
 
-### ⚠️  Breaking Changes
+### ⚠️ Breaking Changes
 
 - `vue-router` peer floor is now `>=4.1.0`, the first release with the `state` navigation option; on an older router the adapter still works but closing clears the parameter in place instead of stepping back
 
