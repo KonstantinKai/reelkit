@@ -77,6 +77,26 @@
   border-radius: var(--rk-stories-container-radius);
 }
 
+/*
+ * Above the carousel cards, which sit on the overlay behind the player. The
+ * wrapper spans the whole window, so only the player and its arrows take
+ * pointer input; the rest passes through to the cards.
+ */
+.rk-stories-overlay--carousel .rk-stories-swipe-wrapper {
+  position: relative;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.rk-stories-overlay--carousel .rk-stories-swipe-wrapper > * {
+  pointer-events: auto;
+}
+
+/* The carousel draws both groups while it slides, so the player steps aside. */
+.rk-stories-overlay--sliding .rk-stories-container {
+  visibility: hidden;
+}
+
 .rk-stories-slide-wrapper {
   position: relative;
   overflow: hidden;

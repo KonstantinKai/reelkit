@@ -248,6 +248,34 @@ const viewed = useMemo(
 - An entry names the furthest story reached, not a tally: adding a story to a watched group lights its ring again, removing one from the middle shortens the count.
 - Storage is pluggable (`createSessionStorageAdapter()`, or your own `StorageAdapter`); two open tabs stay in step through the browser's storage event.
 
+## Desktop Carousel
+
+`desktopLayout="carousel"` lays the player out like the Instagram web viewer: the active story in the center at its usual size, up to two neighbouring groups per side as smaller dimmed cards. Clicking a card opens that group while the cards slide across. `viewedState` (same map as `StoriesRingList`) gives a watched group's card the muted ring.
+
+```tsx
+<Observe signals={[seen.entries]}>
+  {() => (
+    <StoriesOverlay
+      isOpen={open}
+      onClose={() => setOpen(false)}
+      groups={groups}
+      initialGroupIndex={group}
+      desktopLayout="carousel"
+      viewedState={viewed.viewedCounts()}
+      resumeStoryIndex={viewed.resumeStoryIndex}
+      onStoryViewed={viewed.markViewed}
+    />
+  )}
+</Observe>
+```
+
+- Up to 768px wide there are no cards and swipes use `groupTransition`, as with the default `'single'`; resizing across that width switches live.
+- A card previews the story the group opens on (left there this session, else `resumeStoryIndex`): video poster or image; a non-video story with neither is drawn by `renderSlide` at player size and scaled down; a video without a poster shows `--rk-stories-card-bg`.
+- The timer does not run, and `onStoryViewed` does not fire for the opened story, until the slide ends. The slide runs regardless of `prefers-reduced-motion`.
+- Card click, `goToGroup` / `nextGroup` / `prevGroup`, and arrow keys past a group's end all slide; a touch swipe moves the player itself and gets no slide.
+- `renderGroupPreview` replaces a card's content; it gets `{ group, groupIndex, story, offset, viewedCount, onOpen }` (`GroupPreviewRenderProps<T>`), and the player still positions and slides the card.
+- Default cards are buttons labelled "Open stories by {name}", after the player controls in tab order, out of it during a slide.
+
 ## StoriesOverlay Props
 
 `StoriesOverlayProps` — the controlled overlay's props. `onClose` is **required** here because you own the open state, so you must handle closing; the URL-driven `StoriesUrlOverlay` makes it optional (the URL drives closing).
@@ -269,18 +297,21 @@ const viewed = useMemo(
 | `innerTransitionDuration` | `number`                               | `200`                                           | Inner (story) transition duration (ms)                                            |
 | `minSegmentWidth`         | `number`                               | `8`                                             | Min progress bar segment width (px)                                               |
 | `apiRef`                  | `MutableRefObject<StoriesApi \| null>` | -                                               | Ref for imperative StoriesApi                                                     |
+| `desktopLayout`           | `'single' \| 'carousel'`               | `'single'`                                      | Desktop layout; `'carousel'` = neighbouring group cards + slide. Phones: single   |
+| `viewedState`             | `Map<string, number>`                  | -                                               | Stories seen per author id; carousel cards mute a watched group's ring            |
 
 ### Slot renderers
 
-| Prop                | Type                                              | Description                                              |
-| ------------------- | ------------------------------------------------- | -------------------------------------------------------- |
-| `renderHeader`      | `(props: HeaderRenderProps<T>) => ReactNode`      | Custom header. Gets author, story, pause/mute state.     |
-| `renderFooter`      | `(props: FooterRenderProps<T>) => ReactNode`      | Custom footer. Gets author + story info.                 |
-| `renderSlide`       | `(props: SlideRenderProps<T>) => ReactNode`       | Custom slide. Replaces default image/video slides.       |
-| `renderNavigation`  | `(props: NavigationRenderProps) => ReactNode`     | Custom desktop nav. Replaces default prev/next chevrons. |
-| `renderProgressBar` | `(props: ProgressBarRenderProps<T>) => ReactNode` | Custom progress bar. Replaces default canvas bar.        |
-| `renderLoading`     | `(props: LoadingRenderProps<T>) => ReactNode`     | Custom loading UI. Default = header spinner.             |
-| `renderError`       | `(props: ErrorRenderProps<T>) => ReactNode`       | Custom error UI. Default = error icon overlay.           |
+| Prop                 | Type                                               | Description                                              |
+| -------------------- | -------------------------------------------------- | -------------------------------------------------------- |
+| `renderHeader`       | `(props: HeaderRenderProps<T>) => ReactNode`       | Custom header. Gets author, story, pause/mute state.     |
+| `renderFooter`       | `(props: FooterRenderProps<T>) => ReactNode`       | Custom footer. Gets author + story info.                 |
+| `renderSlide`        | `(props: SlideRenderProps<T>) => ReactNode`        | Custom slide. Replaces default image/video slides.       |
+| `renderNavigation`   | `(props: NavigationRenderProps) => ReactNode`      | Custom desktop nav. Replaces default prev/next chevrons. |
+| `renderProgressBar`  | `(props: ProgressBarRenderProps<T>) => ReactNode`  | Custom progress bar. Replaces default canvas bar.        |
+| `renderLoading`      | `(props: LoadingRenderProps<T>) => ReactNode`      | Custom loading UI. Default = header spinner.             |
+| `renderError`        | `(props: ErrorRenderProps<T>) => ReactNode`        | Custom error UI. Default = error icon overlay.           |
+| `renderGroupPreview` | `(props: GroupPreviewRenderProps<T>) => ReactNode` | Custom desktop carousel card content.                    |
 
 ## Callbacks
 
@@ -351,15 +382,18 @@ import {
 
 Common tokens (full list at `/docs/stories-player`):
 
-| Token                         | Default                                         | Controls                    |
-| ----------------------------- | ----------------------------------------------- | --------------------------- |
-| `--rk-stories-overlay-bg`     | `#000`                                          | Full-screen backdrop color  |
-| `--rk-stories-overlay-z`      | `9999`                                          | Overlay z-index             |
-| `--rk-stories-progress-track` | `rgba(255, 255, 255, 0.3)`                      | Progress segment background |
-| `--rk-stories-progress-fill`  | `#fff`                                          | Active progress fill color  |
-| `--rk-stories-header-bg`      | `linear-gradient(rgba(0,0,0,0.4), transparent)` | Header gradient scrim       |
-| `--rk-stories-button-bg`      | `rgba(0, 0, 0, 0.5)`                            | Button background           |
-| `--rk-stories-button-fg`      | `#fff`                                          | Button icon color           |
+| Token                          | Default                                         | Controls                    |
+| ------------------------------ | ----------------------------------------------- | --------------------------- |
+| `--rk-stories-overlay-bg`      | `#000`                                          | Full-screen backdrop color  |
+| `--rk-stories-overlay-z`       | `9999`                                          | Overlay z-index             |
+| `--rk-stories-progress-track`  | `rgba(255, 255, 255, 0.3)`                      | Progress segment background |
+| `--rk-stories-progress-fill`   | `#fff`                                          | Active progress fill color  |
+| `--rk-stories-header-bg`       | `linear-gradient(rgba(0,0,0,0.4), transparent)` | Header gradient scrim       |
+| `--rk-stories-button-bg`       | `rgba(0, 0, 0, 0.5)`                            | Button background           |
+| `--rk-stories-button-fg`       | `#fff`                                          | Button icon color           |
+| `--rk-stories-card-bg`         | `#262626`                                       | Carousel card background    |
+| `--rk-stories-card-scrim`      | `rgba(0, 0, 0, 0.45)`                           | Dimming over a side card    |
+| `--rk-stories-card-transition` | `300ms`                                         | Carousel slide duration     |
 
 ## CSS Classes
 
@@ -371,6 +405,8 @@ Common tokens (full list at `/docs/stories-player`):
 - `.rk-stories-slide` — story slide wrapper
 - `.rk-stories-tap-prev`, `.rk-stories-tap-next` — invisible tap zones
 - `.rk-stories-nav-prev`, `.rk-stories-nav-next` — desktop nav arrows
+- `.rk-stories-overlay--carousel`, `.rk-stories-overlay--sliding` — desktop carousel showing, slide running
+- `.rk-stories-carousel`, `.rk-stories-card` (`--center`, `--hidden`), `.rk-stories-card-button`, `.rk-stories-card-image`, `.rk-stories-card-scrim`, `.rk-stories-card-info`, `.rk-stories-card-name`, `.rk-stories-card-time` — desktop carousel cards
 
 ## Keyboard Shortcuts
 

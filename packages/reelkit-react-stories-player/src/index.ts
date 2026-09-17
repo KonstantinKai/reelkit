@@ -122,5 +122,7 @@ export type {
   ProgressBarRenderProps,
   LoadingRenderProps,
   ErrorRenderProps,
+  DesktopLayout,
+  GroupPreviewRenderProps,
   StoriesApi,
 } from './lib/types';

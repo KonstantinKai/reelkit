@@ -5,6 +5,7 @@ import type { KeyboardControllerEvents } from '../keyboard/types';
 import type { WheelControllerEvents } from '../wheel/types';
 import type { AnimatedValue } from './types';
 
+let capturedGestureConfig: unknown = null;
 let capturedGestureEvents: Partial<GestureControllerEvents> = {};
 let capturedKeyboardEvents: KeyboardControllerEvents | null = null;
 let capturedWheelEvents: WheelControllerEvents | null = null;
@@ -31,9 +32,10 @@ const mockWheel = {
 
 vi.mock('../gestures/gestureController', () => ({
   createGestureController: (
-    _config: unknown,
+    config: unknown,
     events: Partial<GestureControllerEvents>,
   ) => {
+    capturedGestureConfig = config;
     capturedGestureEvents = events;
     return mockGesture;
   },
@@ -261,6 +263,17 @@ describe('createSliderController', () => {
   });
 
   describe('observe / unobserve', () => {
+    // A mouse drag must never switch slides, which is what lets overlays such
+    // as the stories player be used with a mouse without a stray drag moving
+    // content. The gesture controller's own spec pins that touch-only ignores
+    // the mouse.
+    it('listens to touch only, never the mouse', () => {
+      const ctrl = createSliderController({ count: 5 });
+
+      expect(capturedGestureConfig).toMatchObject({ useTouchEventsOnly: true });
+      ctrl.dispose();
+    });
+
     it('observe attaches keyboard and gesture controllers', () => {
       const ctrl = createSliderController({ count: 5 });
       ctrl.observe();

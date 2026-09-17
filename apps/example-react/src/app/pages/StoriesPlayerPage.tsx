@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { persistedSignal } from '../components/persistedSignal';
-import { Segmented } from '../components/Segmented';
+import { RememberSeenSwitch } from '../components/RememberSeenSwitch';
+import { DesktopLayoutSwitch } from '../components/DesktopLayoutSwitch';
 import {
   StoriesOverlay,
   StoriesRingList,
@@ -13,6 +14,7 @@ import {
   type StoriesGroup,
   type StoryItem,
   type SlideRenderProps,
+  type DesktopLayout,
 } from '@reelkit/react-stories-player';
 import {
   cubeTransition,
@@ -377,20 +379,20 @@ function StoriesPlayerPage() {
     () => cubeTransition,
   );
 
-  // Off, the page behaves as if nothing had ever been seen: rings all unseen,
-  // every group opens on its first story, nothing recorded. The store stays
-  // attached, so switching back on shows what was stored all along. The
-  // choice itself is kept next to the store, so a reload respects it.
-  const rememberSeen = useState(() =>
-    persistedSignal('reelkit-stories-player-remember-seen', true),
-  )[0];
+  // The switch choices are kept next to the seen store, so a reload respects
+  // them.
+  const [{ rememberSeen, desktopLayout }] = useState(() => ({
+    rememberSeen: persistedSignal('reelkit-stories-player-remember-seen', true),
+    desktopLayout: persistedSignal<DesktopLayout>(
+      'reelkit-stories-player-desktop-layout',
+      'single',
+    ),
+  }));
 
   const openStories = (groupIndex: number) => {
     setSelectedGroup(groupIndex);
     setIsOpen(true);
   };
-
-  const clearSeen = () => seen.forget();
 
   return (
     <div
@@ -439,7 +441,7 @@ function StoriesPlayerPage() {
             </button>
           ))}
           <button
-            onClick={clearSeen}
+            onClick={() => seen.forget()}
             style={{
               ...btnStyle,
               marginLeft: 'auto',
@@ -459,25 +461,8 @@ function StoriesPlayerPage() {
             marginBottom: 24,
           }}
         >
-          <Observe signals={[rememberSeen]}>
-            {() => (
-              <Segmented
-                legend="Remember seen"
-                options={[
-                  {
-                    label: 'On',
-                    active: rememberSeen.value,
-                    onClick: () => (rememberSeen.value = true),
-                  },
-                  {
-                    label: 'Off',
-                    active: !rememberSeen.value,
-                    onClick: () => (rememberSeen.value = false),
-                  },
-                ]}
-              />
-            )}
-          </Observe>
+          <RememberSeenSwitch signal={rememberSeen} />
+          <DesktopLayoutSwitch signal={desktopLayout} />
         </div>
 
         {/* The store's entries are a signal, so the rings repaint the moment a
@@ -495,20 +480,27 @@ function StoriesPlayerPage() {
         </Observe>
       </div>
 
-      <StoriesOverlay<CustomStory>
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-        groups={groups}
-        initialGroupIndex={selectedGroup}
-        resumeStoryIndex={(groupIndex) =>
-          rememberSeen.value ? viewed.resumeStoryIndex(groupIndex) : 0
-        }
-        groupTransition={transition}
-        renderSlide={(props) => <CustomSlide {...props} />}
-        onStoryViewed={(groupIndex, storyIndex) => {
-          if (rememberSeen.value) viewed.markViewed(groupIndex, storyIndex);
-        }}
-      />
+      {/* The carousel cards draw the same seen rings as the list above. */}
+      <Observe signals={[seen.entries, rememberSeen, desktopLayout]}>
+        {() => (
+          <StoriesOverlay<CustomStory>
+            isOpen={isOpen}
+            onClose={() => setIsOpen(false)}
+            groups={groups}
+            initialGroupIndex={selectedGroup}
+            resumeStoryIndex={(groupIndex) =>
+              rememberSeen.value ? viewed.resumeStoryIndex(groupIndex) : 0
+            }
+            groupTransition={transition}
+            desktopLayout={desktopLayout.value}
+            viewedState={rememberSeen.value ? viewed.viewedCounts() : new Map()}
+            renderSlide={(props) => <CustomSlide {...props} />}
+            onStoryViewed={(groupIndex, storyIndex) => {
+              if (rememberSeen.value) viewed.markViewed(groupIndex, storyIndex);
+            }}
+          />
+        )}
+      </Observe>
     </div>
   );
 }

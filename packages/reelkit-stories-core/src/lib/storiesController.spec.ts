@@ -208,6 +208,31 @@ describe('createStoriesController', () => {
       expect(ctrl.state.activeStoryIndex.value).toBe(3);
     });
 
+    it('reopens a story left mid-way, not the first unseen one after it', () => {
+      const seen = new Map<number, number>();
+      const ctrl = makeController(
+        {
+          resumeStoryIndex: (groupIndex: number) =>
+            (seen.get(groupIndex) ?? -1) + 1,
+        },
+        {
+          onStoryViewed: (groupIndex: number, storyIndex: number) =>
+            seen.set(
+              groupIndex,
+              Math.max(seen.get(groupIndex) ?? -1, storyIndex),
+            ),
+        },
+      );
+
+      ctrl.reportInitialView();
+      ctrl.nextStory();
+      ctrl.goToGroup(1);
+      ctrl.goToGroup(0);
+
+      expect(ctrl.getLastStoryIndex(0)).toBe(1);
+      expect(ctrl.state.activeStoryIndex.value).toBe(1);
+    });
+
     it('bounds a suggestion the group cannot honour', () => {
       const ctrl = makeController({ resumeStoryIndex: () => 99 });
 

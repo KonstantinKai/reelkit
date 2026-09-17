@@ -14,6 +14,7 @@ import urlState2 from '../../snippets/stories-player/url-state-2.tsx?raw';
 import urlState3 from '../../snippets/stories-player/url-state-3.tsx?raw';
 import urlState4 from '../../snippets/stories-player/url-state-4.tsx?raw';
 import rememberingWhatWasSeen from '../../snippets/stories-player/remembering-what-was-seen.tsx?raw';
+import desktopCarousel from '../../snippets/stories-player/desktop-carousel.tsx?raw';
 import transitions from '../../snippets/stories-player/transitions.tsx?raw';
 import renderheader from '../../snippets/stories-player/renderheader.tsx?raw';
 import renderfooter from '../../snippets/stories-player/renderfooter.tsx?raw';
@@ -22,6 +23,7 @@ import rendernavigation from '../../snippets/stories-player/rendernavigation.tsx
 import renderprogressbar from '../../snippets/stories-player/renderprogressbar.tsx?raw';
 import renderloading from '../../snippets/stories-player/renderloading.tsx?raw';
 import rendererror from '../../snippets/stories-player/rendererror.tsx?raw';
+import rendergrouppreview from '../../snippets/stories-player/rendergrouppreview.tsx?raw';
 import storiesapi from '../../snippets/stories-player/storiesapi.tsx?raw';
 import doubleTapLikes from '../../snippets/stories-player/double-tap-likes.tsx?raw';
 import customizingTheHeartAnimation from '../../snippets/stories-player/customizing-the-heart-animation.css?raw';
@@ -42,6 +44,7 @@ import navigationrenderprops from '../../snippets/stories-player/navigationrende
 import progressbarrenderpropsT from '../../snippets/stories-player/progressbarrenderprops-t.ts?raw';
 import loadingrenderpropsT from '../../snippets/stories-player/loadingrenderprops-t.ts?raw';
 import errorrenderpropsT from '../../snippets/stories-player/errorrenderprops-t.ts?raw';
+import grouppreviewrenderpropsT from '../../snippets/stories-player/grouppreviewrenderprops-t.ts?raw';
 import storiesapi2 from '../../snippets/stories-player/storiesapi-2.ts?raw';
 import customStoryTypes from '../../snippets/stories-player/custom-story-types.tsx?raw';
 import theming from '../../snippets/stories-player/theming.css?raw';
@@ -205,6 +208,17 @@ Rings show a gradient until a group has been watched to the end, and a group reo
 - **A count is a position, not a tally.** An entry names the furthest story reached, so adding a story to a watched group lights its ring again, and removing one from the middle shortens the count. The same self-healing a shared link gets.
 - **Storage is pluggable.** Pass `createSessionStorageAdapter()` to forget on tab close, or your own `StorageAdapter`. Two open tabs stay in step through the browser's storage event.
 
+## Desktop Carousel [#desktop-carousel]
+
+Set `desktopLayout="carousel"` to lay the player out like the Instagram web viewer: the active story stays in the center at its usual size, and up to two neighbouring groups sit on each side as smaller, dimmed cards. Clicking a card opens that group, and the cards slide across while the group changes. Pass the same `viewedState` map the ring list takes, and a watched group's card gets the muted ring.
+
+<CodeBlock code={desktopCarousel} language="tsx" />
+
+- **Phones keep the plain player.** Up to 768px wide the cards are not rendered and swipes use `groupTransition`, as with the default `'single'` layout. Resizing across that width switches live.
+- **Each card previews where the group opens**: the story it was left on this session, else what `resumeStoryIndex` returns. It shows the video poster or the image. A story with neither, like a text story on a gradient, is drawn by your `renderSlide` at the player's size and scaled down; a video without a poster shows the card background.
+- **The timer waits for the slide.** The story does not advance, and `onStoryViewed` does not fire for it, until the cards have finished moving.
+- **Every way of changing group slides**: a card click, `StoriesApi.goToGroup`, `nextGroup` and `prevGroup`, and the arrow keys past the end of a group. A touch swipe moves the player itself, so it gets no slide on top.
+
 ## API Reference [#api-reference]
 
 ### StoriesOverlayProps [#storiesoverlayprops]
@@ -228,6 +242,8 @@ Rings show a gradient until a group has been watched to the end, and a group reo
 | `innerTransitionDuration` | `number` | 200 | Duration of the inner (story) transition animation in milliseconds |
 | `minSegmentWidth` | `number` | 8 | Minimum segment width in pixels for the progress bar |
 | `apiRef` | `MutableRefObject<StoriesApi \| null>` | - | Ref to access the imperative StoriesApi |
+| `desktopLayout` | `'single' \| 'carousel'` | 'single' | Desktop layout. 'carousel' shows neighbouring groups as preview cards beside the active story and slides between groups. Phones always show the story alone. |
+| `viewedState` | `Map<string, number>` | - | Stories seen per author id, from viewedCounts(). Carousel cards show a muted ring for a group watched to the end. |
 | `renderHeader` | `(props: HeaderRenderProps<T>) => ReactNode` | - | Custom header renderer. Receives author, story, pause/mute state. |
 | `renderFooter` | `(props: FooterRenderProps<T>) => ReactNode` | - | Custom footer renderer. Receives author and story info. |
 | `renderSlide` | `(props: SlideRenderProps<T>) => ReactNode` | - | Custom slide renderer, replacing the default image/video slides. |
@@ -235,6 +251,7 @@ Rings show a gradient until a group has been watched to the end, and a group reo
 | `renderProgressBar` | `(props: ProgressBarRenderProps<T>) => ReactNode` | - | Custom progress bar. Replaces default canvas progress bar. |
 | `renderLoading` | `(props: LoadingRenderProps<T>) => ReactNode` | - | Custom loading UI renderer. When not provided, shows default header spinner. |
 | `renderError` | `(props: ErrorRenderProps<T>) => ReactNode` | - | Custom error UI renderer. When not provided, shows default error icon overlay. |
+| `renderGroupPreview` | `(props: GroupPreviewRenderProps<T>) => ReactNode` | - | Custom desktop carousel card. Replaces the default card content. |
 
 ### StoriesUrlOverlayProps [#storiesurloverlayprops]
 
@@ -326,6 +343,12 @@ Custom loading indicator while content is being fetched:
 Custom error overlay when content fails to load:
 
 <CodeBlock code={rendererror} language="tsx" />
+
+### renderGroupPreview [#rendergrouppreview]
+
+Replace the content of a desktop carousel card. The player still positions, scales and slides the card; call `onOpen` to open the group:
+
+<CodeBlock code={rendergrouppreview} language="tsx" />
 
 ## StoriesApi [#storiesapi]
 
@@ -449,6 +472,10 @@ Animated heart overlay triggered on double-tap. Scales up and fades out over 800
 
 <CodeBlock code={errorrenderpropsT} language="typescript" />
 
+### GroupPreviewRenderProps\<T> [#grouppreviewrenderprops-t]
+
+<CodeBlock code={grouppreviewrenderpropsT} language="typescript" />
+
 ### StoriesApi [#storiesapi]
 
 <CodeBlock code={storiesapi2} language="typescript" />
@@ -497,6 +524,19 @@ All CSS classes are plain (not CSS modules), so they can be targeted with higher
 | `.rk-stories-ring-list` | StoriesRingList | Horizontal ring list container |
 | `.rk-stories-ring-list-item` | StoriesRingList | Ring + name column |
 | `.rk-stories-ring-list-name` | StoriesRingList | Author name below each ring |
+| `.rk-stories-overlay--carousel` | Overlay | Overlay with the desktop carousel showing |
+| `.rk-stories-overlay--sliding` | Overlay | Carousel slide running; the player canvas is hidden |
+| `.rk-stories-carousel` | Carousel | Layer of preview cards behind the player |
+| `.rk-stories-carousel--instant` | Carousel | First frame of a slide, laid out without a transition |
+| `.rk-stories-card` | Carousel | One positioned preview card |
+| `.rk-stories-card--center` | Carousel | Card in the center slot during a slide |
+| `.rk-stories-card--hidden` | Carousel | Card past the two shown on a side |
+| `.rk-stories-card-button` | Carousel | Default card content (the button that opens the group) |
+| `.rk-stories-card-image` | Carousel | Preview frame (poster or image) |
+| `.rk-stories-card-scrim` | Carousel | Dimming layer over the frame |
+| `.rk-stories-card-info` | Carousel | Ring, author name and time column |
+| `.rk-stories-card-name` | Carousel | Author name |
+| `.rk-stories-card-time` | Carousel | Time-ago text |
 
 ## Theming [#theming]
 
@@ -533,6 +573,15 @@ Every color, size, z-index, and transition lives in a CSS custom property. Overr
 | `--rk-stories-ring-list-gap` | `12px` | Spacing between rings in the list |
 | `--rk-stories-ring-list-padding` | `12px` | Inner padding around the ring list |
 | `--rk-stories-ring-list-name-size` | `12px` | Author name font size below each ring |
+| `--rk-stories-card-bg` | `#262626` | Carousel card background, shown when there is no preview frame |
+| `--rk-stories-card-radius` | `8px` | Carousel card corner radius |
+| `--rk-stories-card-scrim` | `rgba(0, 0, 0, 0.45)` | Dimming over a side card |
+| `--rk-stories-card-fg` | `#fff` | Card text color |
+| `--rk-stories-card-name-size` | `14px` | Card author name font size |
+| `--rk-stories-card-time-fg` | `rgba(255, 255, 255, 0.7)` | Card time-ago text color |
+| `--rk-stories-card-time-size` | `13px` | Card time-ago font size |
+| `--rk-stories-card-gap` | `6px` | Spacing between the ring, name and time on a card |
+| `--rk-stories-card-transition` | `300ms` | Carousel slide duration |
 
 Drop the snippet below into a stylesheet loaded after `@reelkit/react-stories-player/styles.css`.
 
@@ -543,6 +592,8 @@ Drop the snippet below into a stylesheet loaded after `@reelkit/react-stories-pl
 The overlay root is a modal dialog (`role="dialog"`, `aria-modal="true"`). Set `ariaLabel` to change the screen-reader announcement; it defaults to "Stories player".
 
 The overlay captures focus on open and returns it to the trigger on close. Tab and Shift+Tab cycle through focusable elements inside; focus that escapes (click outside, programmatic focus) gets pulled back. Implemented with `captureFocusForReturn` and `createFocusTrap` from `@reelkit/core`.
+
+With the desktop carousel, each default card is a button labelled "Open stories by" and the author's name. The cards come after the player controls in the tab order, and are left out of it while a slide runs.
 
 ## Keyboard Shortcuts [#keyboard-shortcuts]
 

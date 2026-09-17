@@ -1,0 +1,110 @@
+/*
+ * Theme tokens for the desktop carousel of neighbouring groups.
+ *
+ * Defaults live on `:root` so they inherit through the DOM. Override at
+ * `:root` (or any ancestor of `.rk-stories-overlay`) to retheme.
+ */
+:root {
+  --rk-stories-card-bg: #262626;
+  --rk-stories-card-radius: 8px;
+  --rk-stories-card-scrim: rgba(0, 0, 0, 0.45);
+  --rk-stories-card-fg: #fff;
+  --rk-stories-card-name-size: 14px;
+  --rk-stories-card-time-fg: rgba(255, 255, 255, 0.7);
+  --rk-stories-card-time-size: 13px;
+  --rk-stories-card-gap: 6px;
+  --rk-stories-card-transition: 300ms;
+}
+
+.rk-stories-carousel {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.rk-stories-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border-radius: var(--rk-stories-card-radius);
+  overflow: hidden;
+  background: var(--rk-stories-card-bg);
+  pointer-events: auto;
+  transition:
+    transform var(--rk-stories-card-transition) ease,
+    opacity var(--rk-stories-card-transition) ease;
+}
+
+.rk-stories-card--hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.rk-stories-carousel--instant .rk-stories-card,
+.rk-stories-carousel--instant .rk-stories-card-scrim,
+.rk-stories-carousel--instant .rk-stories-card-info {
+  transition: none;
+}
+
+.rk-stories-card-button {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--rk-stories-card-fg);
+  cursor: pointer;
+  font: inherit;
+}
+
+.rk-stories-card-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.rk-stories-card-frame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: top left;
+  pointer-events: none;
+}
+
+.rk-stories-card-scrim {
+  position: absolute;
+  inset: 0;
+  background: var(--rk-stories-card-scrim);
+  transition: opacity var(--rk-stories-card-transition) ease;
+}
+
+.rk-stories-card-info {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--rk-stories-card-gap);
+  transition: opacity var(--rk-stories-card-transition) ease;
+}
+
+.rk-stories-card--center .rk-stories-card-scrim,
+.rk-stories-card--center .rk-stories-card-info {
+  opacity: 0;
+}
+
+.rk-stories-card-name {
+  font-size: var(--rk-stories-card-name-size);
+  font-weight: 600;
+}
+
+.rk-stories-card-time {
+  font-size: var(--rk-stories-card-time-size);
+  color: var(--rk-stories-card-time-fg);
+}

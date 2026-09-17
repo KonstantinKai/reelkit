@@ -1,5 +1,5 @@
 import { StrictMode } from 'react';
-import { render, act } from '@testing-library/react';
+import { render, act, cleanup } from '@testing-library/react';
 import {
   describe,
   it,
@@ -360,6 +360,57 @@ describe('StoriesOverlay', () => {
           .querySelector('.rk-stories-overlay')!
           .getAttribute('aria-label'),
       ).toBe('Friend stories');
+    });
+  });
+
+  describe('enableKeyboard', () => {
+    const pressEscape = () =>
+      act(() => {
+        window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+      });
+
+    it('handles the arrow keys and Escape by default', () => {
+      const onClose = vi.fn();
+      render(<StoriesOverlay isOpen onClose={onClose} groups={mockGroups} />);
+
+      expect(lastReelProps[0]['enableNavKeys']).toBe(true);
+      pressEscape();
+      expect(onClose).toHaveBeenCalledOnce();
+    });
+
+    it('leaves the arrow keys and Escape alone when turned off', () => {
+      const onClose = vi.fn();
+      render(
+        <StoriesOverlay
+          isOpen
+          onClose={onClose}
+          groups={mockGroups}
+          enableKeyboard={false}
+        />,
+      );
+
+      expect(lastReelProps[0]['enableNavKeys']).toBe(false);
+      pressEscape();
+      expect(onClose).not.toHaveBeenCalled();
+    });
+
+    it('follows the prop when it changes while open', () => {
+      const onClose = vi.fn();
+      const { rerender } = render(
+        <StoriesOverlay isOpen onClose={onClose} groups={mockGroups} />,
+      );
+      rerender(
+        <StoriesOverlay
+          isOpen
+          onClose={onClose}
+          groups={mockGroups}
+          enableKeyboard={false}
+        />,
+      );
+
+      expect(lastReelProps.at(-1)?.['enableNavKeys']).toBe(false);
+      pressEscape();
+      expect(onClose).not.toHaveBeenCalled();
     });
   });
 });
@@ -758,5 +809,419 @@ describe('StoriesOverlay size', () => {
     const [width, height] = groupReelSize();
     expect(height).toBe(1068);
     expect(width).toBeCloseTo(1068 * (9 / 16), 5);
+  });
+});
+
+// With the carousel layout a desktop screen shows neighbouring groups as cards
+// beside the player and slides between groups; phones keep the plain player.
+describe('StoriesOverlay desktop carousel', () => {
+  const original = {
+    width: window.innerWidth,
+    height: window.innerHeight,
+  };
+
+  const setViewport = (width: number, height: number) => {
+    Object.defineProperty(window, 'innerWidth', {
+      configurable: true,
+      value: width,
+    });
+    Object.defineProperty(window, 'innerHeight', {
+      configurable: true,
+      value: height,
+    });
+  };
+
+  const threeGroups: StoriesGroup[] = [
+    ...mockGroups,
+    {
+      author: { id: '3', name: 'Carol', avatar: 'carol.jpg' },
+      stories: [
+        { id: 's4', mediaType: 'image', src: 'img4.jpg' },
+        { id: 's5', mediaType: 'image', src: 'img5.jpg' },
+      ],
+    },
+  ];
+
+  const outerReel = () => {
+    const groupReels = lastReelProps.filter(
+      (props) => props['count'] === threeGroups.length,
+    );
+    return groupReels[groupReels.length - 1];
+  };
+
+  const overlay = () =>
+    document.querySelector('.rk-stories-overlay') as HTMLElement;
+  const cards = () => document.querySelectorAll('.rk-stories-card');
+  const openCard = (name: string) =>
+    act(() => {
+      (
+        document.querySelector(
+          `[aria-label="Open stories by ${name}"]`,
+        ) as HTMLElement
+      ).click();
+    });
+  // jsdom has no TransitionEvent, so React listens for the prefixed name
+  // instead; sending both reaches the handler whichever one React picked.
+  const finishSlide = (name: string) => {
+    const card = document
+      .querySelector(`[aria-label="Open stories by ${name}"]`)!
+      .closest('.rk-stories-card')!;
+    for (const type of ['transitionend', 'webkitTransitionEnd']) {
+      const event = new Event(type, { bubbles: true });
+      Object.defineProperty(event, 'propertyName', { value: 'transform' });
+      act(() => {
+        card.dispatchEvent(event);
+      });
+    }
+  };
+  const nextFrames = () =>
+    act(() => {
+      vi.advanceTimersByTime(20);
+    });
+
+  beforeEach(() => {
+    // Animation frames stay the stub below, which runs on these fake
+    // timeouts; the story timer measures elapsed time through `performance`.
+    vi.useFakeTimers({
+      toFake: ['setTimeout', 'clearTimeout', 'Date', 'performance'],
+    });
+    lastReelProps = [];
+    vi.stubGlobal('requestAnimationFrame', (cb: () => void) =>
+      setTimeout(cb, 0),
+    );
+    vi.stubGlobal('cancelAnimationFrame', vi.fn());
+    setViewport(1440, 900);
+  });
+
+  afterEach(() => {
+    // Unmount while the fake timers still stand in for animation frames; the
+    // player cancels its pending frames on the way out.
+    cleanup();
+    setViewport(original.width, original.height);
+    Reflect.deleteProperty(window, 'matchMedia');
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+
+  it('shows no cards with the default layout', () => {
+    render(<StoriesOverlay isOpen onClose={vi.fn()} groups={threeGroups} />);
+    expect(cards()).toHaveLength(0);
+    expect(outerReel()['transition']).not.toBe(slideTransition);
+  });
+
+  it('shows the neighbouring groups beside the player on a desktop screen', () => {
+    render(
+      <StoriesOverlay
+        isOpen
+        onClose={vi.fn()}
+        groups={threeGroups}
+        initialGroupIndex={1}
+        desktopLayout="carousel"
+      />,
+    );
+    expect(
+      Array.from(cards()).map((card) =>
+        card.querySelector('button')?.getAttribute('aria-label'),
+      ),
+    ).toEqual(['Open stories by Alice', 'Open stories by Carol']);
+    expect(overlay().classList).toContain('rk-stories-overlay--carousel');
+  });
+
+  it('keeps the plain player and its group transition on a phone', () => {
+    setViewport(768, 1024);
+    render(
+      <StoriesOverlay
+        isOpen
+        onClose={vi.fn()}
+        groups={threeGroups}
+        desktopLayout="carousel"
+      />,
+    );
+    expect(cards()).toHaveLength(0);
+    expect(outerReel()['transition']).not.toBe(slideTransition);
+    expect(overlay().classList).not.toContain('rk-stories-overlay--carousel');
+  });
+
+  it('switches layout when the window crosses the phone breakpoint', () => {
+    render(
+      <StoriesOverlay
+        isOpen
+        onClose={vi.fn()}
+        groups={threeGroups}
+        desktopLayout="carousel"
+      />,
+    );
+    expect(cards().length).toBeGreaterThan(0);
+
+    act(() => {
+      setViewport(600, 900);
+      window.dispatchEvent(new Event('resize'));
+    });
+    expect(cards()).toHaveLength(0);
+
+    act(() => {
+      setViewport(1440, 900);
+      window.dispatchEvent(new Event('resize'));
+    });
+    expect(cards().length).toBeGreaterThan(0);
+  });
+
+  it('follows the layout prop when it changes', () => {
+    const { rerender } = render(
+      <StoriesOverlay isOpen onClose={vi.fn()} groups={threeGroups} />,
+    );
+    expect(cards()).toHaveLength(0);
+
+    rerender(
+      <StoriesOverlay
+        isOpen
+        onClose={vi.fn()}
+        groups={threeGroups}
+        desktopLayout="carousel"
+      />,
+    );
+    expect(cards().length).toBeGreaterThan(0);
+  });
+
+  it('opens a clicked group once, on the story it resumes from', () => {
+    const onGroupChange = vi.fn();
+    const onStoryChange = vi.fn();
+    render(
+      <StoriesOverlay
+        isOpen
+        onClose={vi.fn()}
+        groups={threeGroups}
+        desktopLayout="carousel"
+        resumeStoryIndex={(groupIndex) => (groupIndex === 2 ? 1 : 0)}
+        onGroupChange={onGroupChange}
+        onStoryChange={onStoryChange}
+      />,
+    );
+    const api = outerReel()['apiRef'] as {
+      current: { goTo: ReturnType<typeof vi.fn> };
+    };
+
+    openCard('Carol');
+
+    expect(onGroupChange).toHaveBeenCalledOnce();
+    expect(onGroupChange).toHaveBeenCalledWith(2);
+    expect(onStoryChange).toHaveBeenLastCalledWith(2, 1);
+    // The player jumps straight to the group; the cards carry the motion.
+    expect(api.current.goTo).toHaveBeenCalledWith(2, false);
+  });
+
+  it('writes the clicked group to the url', () => {
+    const fake = createFakeUrlAdapter('?story=0.0');
+    const controller = createUrlStateController<
+      TwoAxisIdentity,
+      TwoAxisPosition
+    >({
+      param: 'story',
+      adapter: fake.adapter,
+      ...urlIndexTwoAxisKey({
+        outerCount: () => threeGroups.length,
+        innerCounts: () => threeGroups.map((g) => g.stories.length),
+      }),
+    });
+    controller.attach();
+    render(
+      <StoriesUrlOverlay
+        controller={controller}
+        groups={threeGroups}
+        desktopLayout="carousel"
+      />,
+    );
+
+    openCard('Bob');
+    expect(fake.adapter.read()).toBe('?story=1.0');
+  });
+
+  it('reports the opened story as viewed only once the slide ends', () => {
+    const onStoryViewed = vi.fn();
+    render(
+      <StoriesOverlay
+        isOpen
+        onClose={vi.fn()}
+        groups={threeGroups}
+        desktopLayout="carousel"
+        onStoryViewed={onStoryViewed}
+      />,
+    );
+    onStoryViewed.mockClear();
+
+    openCard('Bob');
+    nextFrames();
+    expect(overlay().classList).toContain('rk-stories-overlay--sliding');
+    expect(onStoryViewed).not.toHaveBeenCalled();
+
+    finishSlide('Bob');
+    expect(onStoryViewed).toHaveBeenCalledOnce();
+    expect(onStoryViewed).toHaveBeenCalledWith(1, 0);
+    expect(overlay().classList).not.toContain('rk-stories-overlay--sliding');
+  });
+
+  // Leaving from the second story changes the story index on the way to Bob's
+  // first; leaving from the first changes only the group, which asks nothing of
+  // the timer on its own.
+  it.each([
+    ['another story index', 1],
+    ['the same story index', 0],
+  ])('holds the story timer until the slide ends, from %s', (_, from) => {
+    // An image with no source starts its timer straight away, so the only
+    // thing holding it back is the slide.
+    const groups: StoriesGroup[] = [
+      threeGroups[0],
+      {
+        author: { id: '2', name: 'Bob', avatar: 'bob.jpg' },
+        stories: [{ id: 'quick', mediaType: 'image', src: '', duration: 300 }],
+      },
+      threeGroups[2],
+    ];
+    const onStoryComplete = vi.fn();
+    render(
+      <StoriesOverlay
+        isOpen
+        onClose={vi.fn()}
+        groups={groups}
+        initialStoryIndex={from}
+        desktopLayout="carousel"
+        onStoryComplete={onStoryComplete}
+      />,
+    );
+
+    openCard('Bob');
+    act(() => {
+      vi.advanceTimersByTime(900);
+    });
+    expect(onStoryComplete).not.toHaveBeenCalled();
+
+    // No transition event arrives here, so the slide ends on its time limit.
+    act(() => {
+      vi.advanceTimersByTime(200);
+    });
+    expect(overlay().classList).not.toContain('rk-stories-overlay--sliding');
+    act(() => {
+      vi.advanceTimersByTime(400);
+    });
+    expect(onStoryComplete).toHaveBeenCalledWith(1, 0);
+  });
+
+  // Deliberate: the carousel slide ignores prefers-reduced-motion. Do not
+  // restore the check.
+  it('slides even when the viewer prefers less motion', () => {
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      value: (query: string) => ({
+        matches: query === '(prefers-reduced-motion: reduce)',
+      }),
+    });
+    const onStoryViewed = vi.fn();
+    render(
+      <StoriesOverlay
+        isOpen
+        onClose={vi.fn()}
+        groups={threeGroups}
+        desktopLayout="carousel"
+        onStoryViewed={onStoryViewed}
+      />,
+    );
+    onStoryViewed.mockClear();
+
+    openCard('Bob');
+    nextFrames();
+    expect(overlay().classList).toContain('rk-stories-overlay--sliding');
+    expect(onStoryViewed).not.toHaveBeenCalled();
+  });
+
+  it('does not slide after a touch swipe has already moved the player', () => {
+    const onStoryViewed = vi.fn();
+    render(
+      <StoriesOverlay
+        isOpen
+        onClose={vi.fn()}
+        groups={threeGroups}
+        desktopLayout="carousel"
+        onStoryViewed={onStoryViewed}
+      />,
+    );
+    onStoryViewed.mockClear();
+
+    act(() => {
+      (outerReel()['afterChange'] as (index: number) => void)(1);
+    });
+    nextFrames();
+    expect(overlay().classList).not.toContain('rk-stories-overlay--sliding');
+    expect(onStoryViewed).toHaveBeenCalledWith(1, 0);
+    expect(
+      Array.from(cards()).map((card) =>
+        card.querySelector('button')?.getAttribute('aria-label'),
+      ),
+    ).toEqual(['Open stories by Alice', 'Open stories by Carol']);
+  });
+
+  it('previews a custom story with no image through renderSlide, inactive', () => {
+    const groups: StoriesGroup[] = [
+      threeGroups[0],
+      {
+        author: { id: '2', name: 'Bob', avatar: 'bob.jpg' },
+        stories: [{ id: 'tip', mediaType: 'image', src: '' }],
+      },
+    ];
+    const renderSlide = vi.fn(({ story, isActive, size }) => (
+      <div
+        data-testid={`slide-${story.id}`}
+        data-active={String(isActive)}
+        data-size={size.join('x')}
+      />
+    ));
+    render(
+      <StoriesOverlay
+        isOpen
+        onClose={vi.fn()}
+        groups={groups}
+        desktopLayout="carousel"
+        renderSlide={renderSlide}
+      />,
+    );
+    const slide = document.querySelector(
+      '.rk-stories-card [data-testid="slide-tip"]',
+    ) as HTMLElement;
+    expect(slide).not.toBeNull();
+    expect(slide.dataset['active']).toBe('false');
+    expect(slide.dataset['size']).toBe(
+      (lastReelProps[0]['size'] as number[]).join('x'),
+    );
+  });
+
+  it('puts the cards after the player controls in the tab order', () => {
+    render(
+      <StoriesOverlay
+        isOpen
+        onClose={vi.fn()}
+        groups={threeGroups}
+        desktopLayout="carousel"
+      />,
+    );
+    const isCard = Array.from(overlay().querySelectorAll('button')).map(
+      (button) => button.classList.contains('rk-stories-card-button'),
+    );
+    expect(isCard).toContain(false);
+    expect(isCard.indexOf(true)).toBe(isCard.lastIndexOf(false) + 1);
+  });
+
+  it('still closes on Escape', () => {
+    const onClose = vi.fn();
+    render(
+      <StoriesOverlay
+        isOpen
+        onClose={onClose}
+        groups={threeGroups}
+        desktopLayout="carousel"
+      />,
+    );
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    });
+    expect(onClose).toHaveBeenCalled();
   });
 });

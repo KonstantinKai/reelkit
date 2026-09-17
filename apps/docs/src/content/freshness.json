@@ -58,7 +58,7 @@
     "/docs/stories-player": {
       "source": "content/en/docs/stories-player.mdx",
       "translation": "content/uk/docs/stories-player.mdx",
-      "sha": "e523661229446af711f394f148a389769ca98dc6"
+      "sha": "89f24e9589bc644ad39d1022f266668996aff226"
     },
     "/docs/vue/guide": {
       "source": "content/en/docs/vue/guide.mdx",
@@ -180,7 +180,7 @@
     "/docs/stories-player": {
       "source": "content/en/docs/stories-player.mdx",
       "translation": "content/zh/docs/stories-player.mdx",
-      "sha": "e523661229446af711f394f148a389769ca98dc6"
+      "sha": "89f24e9589bc644ad39d1022f266668996aff226"
     },
     "/docs/vue/guide": {
       "source": "content/en/docs/vue/guide.mdx",
@@ -302,7 +302,7 @@
     "/docs/stories-player": {
       "source": "content/en/docs/stories-player.mdx",
       "translation": "content/pt/docs/stories-player.mdx",
-      "sha": "e523661229446af711f394f148a389769ca98dc6"
+      "sha": "89f24e9589bc644ad39d1022f266668996aff226"
     },
     "/docs/vue/guide": {
       "source": "content/en/docs/vue/guide.mdx",
@@ -424,7 +424,7 @@
     "/docs/stories-player": {
       "source": "content/en/docs/stories-player.mdx",
       "translation": "content/ja/docs/stories-player.mdx",
-      "sha": "e523661229446af711f394f148a389769ca98dc6"
+      "sha": "89f24e9589bc644ad39d1022f266668996aff226"
     },
     "/docs/vue/guide": {
       "source": "content/en/docs/vue/guide.mdx",
@@ -546,7 +546,7 @@
     "/docs/stories-player": {
       "source": "content/en/docs/stories-player.mdx",
       "translation": "content/hi/docs/stories-player.mdx",
-      "sha": "e523661229446af711f394f148a389769ca98dc6"
+      "sha": "89f24e9589bc644ad39d1022f266668996aff226"
     },
     "/docs/vue/guide": {
       "source": "content/en/docs/vue/guide.mdx",
@@ -668,7 +668,7 @@
     "/docs/stories-player": {
       "source": "content/en/docs/stories-player.mdx",
       "translation": "content/es/docs/stories-player.mdx",
-      "sha": "e523661229446af711f394f148a389769ca98dc6"
+      "sha": "89f24e9589bc644ad39d1022f266668996aff226"
     },
     "/docs/vue/guide": {
       "source": "content/en/docs/vue/guide.mdx",

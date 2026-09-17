@@ -14,6 +14,7 @@ import urlState2 from '../../snippets/stories-player/url-state-2.tsx?raw';
 import urlState3 from '../../snippets/stories-player/url-state-3.tsx?raw';
 import urlState4 from '../../snippets/stories-player/url-state-4.tsx?raw';
 import rememberingWhatWasSeen from '../../snippets/stories-player/remembering-what-was-seen.tsx?raw';
+import desktopCarousel from '../../snippets/stories-player/desktop-carousel.tsx?raw';
 import transitions from '../../snippets/stories-player/transitions.tsx?raw';
 import renderheader from '../../snippets/stories-player/renderheader.tsx?raw';
 import renderfooter from '../../snippets/stories-player/renderfooter.tsx?raw';
@@ -22,6 +23,7 @@ import rendernavigation from '../../snippets/stories-player/rendernavigation.tsx
 import renderprogressbar from '../../snippets/stories-player/renderprogressbar.tsx?raw';
 import renderloading from '../../snippets/stories-player/renderloading.tsx?raw';
 import rendererror from '../../snippets/stories-player/rendererror.tsx?raw';
+import rendergrouppreview from '../../snippets/stories-player/rendergrouppreview.tsx?raw';
 import storiesapi from '../../snippets/stories-player/storiesapi.tsx?raw';
 import doubleTapLikes from '../../snippets/stories-player/double-tap-likes.tsx?raw';
 import customizingTheHeartAnimation from '../../snippets/stories-player/customizing-the-heart-animation.css?raw';
@@ -42,6 +44,7 @@ import navigationrenderprops from '../../snippets/stories-player/navigationrende
 import progressbarrenderpropsT from '../../snippets/stories-player/progressbarrenderprops-t.ts?raw';
 import loadingrenderpropsT from '../../snippets/stories-player/loadingrenderprops-t.ts?raw';
 import errorrenderpropsT from '../../snippets/stories-player/errorrenderprops-t.ts?raw';
+import grouppreviewrenderpropsT from '../../snippets/stories-player/grouppreviewrenderprops-t.ts?raw';
 import storiesapi2 from '../../snippets/stories-player/storiesapi-2.ts?raw';
 import customStoryTypes from '../../snippets/stories-player/custom-story-types.tsx?raw';
 import theming from '../../snippets/stories-player/theming.css?raw';
@@ -205,6 +208,17 @@ import theming from '../../snippets/stories-player/theming.css?raw';
 - **计数是位置，不是次数。** 记录记的是到达的最远一条 story，因此给已看完的分组新增一条会重新点亮圆环，从中间删掉一条则会让计数变短。与分享链接得到的自愈相同。
 - **存储可替换。** 传入 `createSessionStorageAdapter()` 在关闭标签页时遗忘，或使用自己的 `StorageAdapter`。两个打开的标签页通过浏览器的 storage 事件保持一致。
 
+## 桌面端轮播 [#desktop-carousel]
+
+设置 `desktopLayout="carousel"`，播放器就会像 Instagram 网页版那样布局：当前故事保持原有尺寸居中，两侧各最多显示两个相邻分组，以较小、变暗的卡片呈现。点击卡片会打开对应分组，切换分组时卡片会横向滑动。传入与头像环列表相同的 `viewedState` 映射，已看完分组的卡片就会显示灰色的环。
+
+<CodeBlock code={desktopCarousel} language="tsx" />
+
+- **手机上仍是普通播放器。** 宽度不超过 768px 时不渲染卡片，滑动使用 `groupTransition`，与默认的 `'single'` 布局一致。窗口宽度跨过这个值时布局会即时切换。
+- **卡片预览分组将要打开的位置**：本次会话中离开时所在的故事，否则是 `resumeStoryIndex` 返回的故事。卡片显示视频封面或图片本身。两者都没有的故事（例如渐变背景上的文字故事）会由你的 `renderSlide` 按播放器尺寸绘制后再缩小；没有封面的视频显示卡片背景。
+- **计时器会等滑动结束。** 卡片停止移动之前，故事不会前进，也不会为它触发 `onStoryViewed`。
+- **所有切换分组的方式都会滑动**：点击卡片、`StoriesApi.goToGroup`、`nextGroup` 和 `prevGroup`，以及在分组末尾继续按方向键。触摸滑动本身已经移动了播放器，因此不会再叠加滑动。
+
 ## API 参考 [#api-reference]
 
 ### StoriesOverlayProps [#storiesoverlayprops]
@@ -228,6 +242,8 @@ import theming from '../../snippets/stories-player/theming.css?raw';
 | `innerTransitionDuration` | `number` | 200 | 内层（story）过渡动画的时长（毫秒） |
 | `minSegmentWidth` | `number` | 8 | 进度条分段的最小宽度（像素） |
 | `apiRef` | `MutableRefObject<StoriesApi \| null>` | - | 用于访问命令式 StoriesApi 的 ref |
+| `desktopLayout` | `'single' \| 'carousel'` | 'single' | 桌面端布局。'carousel' 在当前故事两侧以预览卡片显示相邻分组，并在分组之间滑动。手机上始终只显示故事本身。 |
+| `viewedState` | `Map<string, number>` | - | 按作者 id 记录已看的故事数，来自 viewedCounts()。轮播卡片会为看完的分组显示灰色的环。 |
 | `renderHeader` | `(props: HeaderRenderProps<T>) => ReactNode` | - | 自定义页眉渲染器。接收作者、story 以及暂停 / 静音状态。 |
 | `renderFooter` | `(props: FooterRenderProps<T>) => ReactNode` | - | 自定义页脚渲染器。接收作者和 story 信息。 |
 | `renderSlide` | `(props: SlideRenderProps<T>) => ReactNode` | - | 自定义幻灯片渲染器，替换默认的图片 / 视频幻灯片。 |
@@ -235,6 +251,7 @@ import theming from '../../snippets/stories-player/theming.css?raw';
 | `renderProgressBar` | `(props: ProgressBarRenderProps<T>) => ReactNode` | - | 自定义进度条。替换默认的 canvas 进度条。 |
 | `renderLoading` | `(props: LoadingRenderProps<T>) => ReactNode` | - | 自定义加载界面渲染器。不提供时显示默认的页眉转圈动画。 |
 | `renderError` | `(props: ErrorRenderProps<T>) => ReactNode` | - | 自定义错误界面渲染器。不提供时显示默认的错误图标浮层。 |
+| `renderGroupPreview` | `(props: GroupPreviewRenderProps<T>) => ReactNode` | - | 自定义桌面端轮播卡片。替换默认的卡片内容。 |
 
 ### StoriesUrlOverlayProps [#storiesurloverlayprops]
 
@@ -326,6 +343,12 @@ import theming from '../../snippets/stories-player/theming.css?raw';
 内容加载失败时的自定义错误浮层：
 
 <CodeBlock code={rendererror} language="tsx" />
+
+### renderGroupPreview [#rendergrouppreview]
+
+替换桌面端轮播卡片的内容。卡片的位置、缩放和滑动仍由播放器负责；调用 `onOpen` 打开分组：
+
+<CodeBlock code={rendergrouppreview} language="tsx" />
 
 ## StoriesApi [#storiesapi]
 
@@ -449,6 +472,10 @@ Use the `apiRef` 属性做命令式控制：
 
 <CodeBlock code={errorrenderpropsT} language="typescript" />
 
+### GroupPreviewRenderProps\<T> [#grouppreviewrenderprops-t]
+
+<CodeBlock code={grouppreviewrenderpropsT} language="typescript" />
+
 ### StoriesApi [#storiesapi]
 
 <CodeBlock code={storiesapi2} language="typescript" />
@@ -497,6 +524,19 @@ Use the `apiRef` 属性做命令式控制：
 | `.rk-stories-ring-list` | StoriesRingList | 横向圆环列表容器 |
 | `.rk-stories-ring-list-item` | StoriesRingList | 圆环 + 名称的一列 |
 | `.rk-stories-ring-list-name` | StoriesRingList | 每个圆环下方的作者名称 |
+| `.rk-stories-overlay--carousel` | Overlay | 正在显示桌面端轮播的浮层 |
+| `.rk-stories-overlay--sliding` | Overlay | 轮播正在滑动；播放器画布被隐藏 |
+| `.rk-stories-carousel` | Carousel | 播放器后方的预览卡片层 |
+| `.rk-stories-carousel--instant` | Carousel | 滑动的第一帧，不带过渡地完成布局 |
+| `.rk-stories-card` | Carousel | 一张已定位的预览卡片 |
+| `.rk-stories-card--center` | Carousel | 滑动期间位于中间位置的卡片 |
+| `.rk-stories-card--hidden` | Carousel | 超出单侧显示的两张之外的卡片 |
+| `.rk-stories-card-button` | Carousel | 默认卡片内容（打开分组的按钮） |
+| `.rk-stories-card-image` | Carousel | 预览画面（封面或图片） |
+| `.rk-stories-card-scrim` | Carousel | 覆盖在画面上的变暗层 |
+| `.rk-stories-card-info` | Carousel | 头像环、作者名和时间所在的列 |
+| `.rk-stories-card-name` | Carousel | 作者名 |
+| `.rk-stories-card-time` | Carousel | 相对时间文字 |
 
 ## 主题定制 [#theming]
 
@@ -533,6 +573,15 @@ Use the `apiRef` 属性做命令式控制：
 | `--rk-stories-ring-list-gap` | `12px` | 列表中圆环之间的间距 |
 | `--rk-stories-ring-list-padding` | `12px` | 圆环列表的内边距 |
 | `--rk-stories-ring-list-name-size` | `12px` | 每个圆环下方作者名称的字号 |
+| `--rk-stories-card-bg` | `#262626` | 轮播卡片背景，没有预览画面时可见 |
+| `--rk-stories-card-radius` | `8px` | 轮播卡片圆角 |
+| `--rk-stories-card-scrim` | `rgba(0, 0, 0, 0.45)` | 侧边卡片上的变暗层 |
+| `--rk-stories-card-fg` | `#fff` | 卡片文字颜色 |
+| `--rk-stories-card-name-size` | `14px` | 卡片作者名字号 |
+| `--rk-stories-card-time-fg` | `rgba(255, 255, 255, 0.7)` | 卡片相对时间文字颜色 |
+| `--rk-stories-card-time-size` | `13px` | 卡片相对时间字号 |
+| `--rk-stories-card-gap` | `6px` | 卡片上头像环、名字和时间之间的间距 |
+| `--rk-stories-card-transition` | `300ms` | 轮播滑动时长 |
 
 把下面这段放进在 `@reelkit/react-stories-player/styles.css`.
 
@@ -543,6 +592,8 @@ Use the `apiRef` 属性做命令式控制：
 浮层根节点是一个模态对话框（`role="dialog"`, `aria-modal="true"`）。设置 `ariaLabel` 可以改变屏幕阅读器的播报内容，默认是 “Stories player”。
 
 浮层打开时捕获焦点，关闭时把焦点还给触发元素。Tab 和 Shift+Tab 在内部的可聚焦元素之间循环；跑出去的焦点（点击外部、程序化聚焦）会被拉回来。实现基于 `captureFocusForReturn` 和 `createFocusTrap` from `@reelkit/core`.
+
+在桌面端轮播中，每张默认卡片都是一个按钮，标签为 “Open stories by” 加上作者名。卡片在 Tab 顺序中排在播放器控件之后，滑动进行时会暂时移出 Tab 顺序。
 
 ## 键盘快捷键 [#keyboard-shortcuts]
 

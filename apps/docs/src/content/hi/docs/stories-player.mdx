@@ -14,6 +14,7 @@ import urlState2 from '../../snippets/stories-player/url-state-2.tsx?raw';
 import urlState3 from '../../snippets/stories-player/url-state-3.tsx?raw';
 import urlState4 from '../../snippets/stories-player/url-state-4.tsx?raw';
 import rememberingWhatWasSeen from '../../snippets/stories-player/remembering-what-was-seen.tsx?raw';
+import desktopCarousel from '../../snippets/stories-player/desktop-carousel.tsx?raw';
 import transitions from '../../snippets/stories-player/transitions.tsx?raw';
 import renderheader from '../../snippets/stories-player/renderheader.tsx?raw';
 import renderfooter from '../../snippets/stories-player/renderfooter.tsx?raw';
@@ -22,6 +23,7 @@ import rendernavigation from '../../snippets/stories-player/rendernavigation.tsx
 import renderprogressbar from '../../snippets/stories-player/renderprogressbar.tsx?raw';
 import renderloading from '../../snippets/stories-player/renderloading.tsx?raw';
 import rendererror from '../../snippets/stories-player/rendererror.tsx?raw';
+import rendergrouppreview from '../../snippets/stories-player/rendergrouppreview.tsx?raw';
 import storiesapi from '../../snippets/stories-player/storiesapi.tsx?raw';
 import doubleTapLikes from '../../snippets/stories-player/double-tap-likes.tsx?raw';
 import customizingTheHeartAnimation from '../../snippets/stories-player/customizing-the-heart-animation.css?raw';
@@ -42,6 +44,7 @@ import navigationrenderprops from '../../snippets/stories-player/navigationrende
 import progressbarrenderpropsT from '../../snippets/stories-player/progressbarrenderprops-t.ts?raw';
 import loadingrenderpropsT from '../../snippets/stories-player/loadingrenderprops-t.ts?raw';
 import errorrenderpropsT from '../../snippets/stories-player/errorrenderprops-t.ts?raw';
+import grouppreviewrenderpropsT from '../../snippets/stories-player/grouppreviewrenderprops-t.ts?raw';
 import storiesapi2 from '../../snippets/stories-player/storiesapi-2.ts?raw';
 import customStoryTypes from '../../snippets/stories-player/custom-story-types.tsx?raw';
 import theming from '../../snippets/stories-player/theming.css?raw';
@@ -205,6 +208,17 @@ styles import करना न भूलें:
 - **गिनती एक स्थिति है, जोड़ नहीं।** Entry सबसे दूर पहुँची story का नाम है, इसलिए देखे जा चुके ग्रुप में story जोड़ने पर उसकी ring फिर से जल उठती है, और बीच से एक हटाने पर गिनती घट जाती है। वैसे ही जैसे शेयर किया गया लिंक खुद को ठीक कर लेता है।
 - **Storage बदला जा सकता है।** tab बंद होने पर भूलने के लिए `createSessionStorageAdapter()` पास करें, या अपना `StorageAdapter`। दो खुले tabs ब्राउज़र के storage इवेंट से एक-दूसरे के साथ चलते हैं।
 
+## डेस्कटॉप कैरोसेल [#desktop-carousel]
+
+`desktopLayout="carousel"` सेट करें तो player का layout Instagram वेब जैसा हो जाता है: active story अपने सामान्य आकार में बीच में रहती है, और हर तरफ़ ज़्यादा से ज़्यादा दो पड़ोसी groups छोटे, धुंधले कार्ड के रूप में दिखते हैं। किसी कार्ड पर क्लिक करने से वह group खुलता है, और group बदलते समय कार्ड बगल में खिसकते हैं। ring list को दिया जाने वाला वही `viewedState` map पास करें, तो पूरे देखे गए group के कार्ड पर फीकी ring दिखती है।
+
+<CodeBlock code={desktopCarousel} language="tsx" />
+
+- **फ़ोन पर player सामान्य रहता है।** 768px चौड़ाई तक कार्ड render नहीं होते और swipe में `groupTransition` इस्तेमाल होता है, बिल्कुल डिफ़ॉल्ट `'single'` layout की तरह। विंडो की चौड़ाई इस सीमा के पार बदलने पर layout तुरंत बदल जाता है।
+- **हर कार्ड दिखाता है कि group कहाँ से खुलेगा**: इस session में जिस story पर उसे छोड़ा गया था, वरना वह story जो `resumeStoryIndex` लौटाता है। कार्ड पर वीडियो का poster या खुद इमेज दिखती है। जिस story में दोनों में से कुछ नहीं है, जैसे gradient पर टेक्स्ट वाली story, उसे आपका `renderSlide` player के आकार में बनाता है और फिर छोटा करके दिखाया जाता है; बिना poster वाले वीडियो पर कार्ड का background दिखता है।
+- **टाइमर slide पूरी होने का इंतज़ार करता है।** जब तक कार्ड रुक नहीं जाते, story आगे नहीं बढ़ती और उसके लिए `onStoryViewed` नहीं चलता।
+- **group बदलने का हर तरीका slide करता है**: कार्ड पर क्लिक, `StoriesApi.goToGroup`, `nextGroup` और `prevGroup`, और group के आख़िर से आगे arrow keys। touch swipe खुद player को खिसकाता है, इसलिए उसके ऊपर कोई slide नहीं होती।
+
 ## API रेफ़रेंस [#api-reference]
 
 ### StoriesOverlayProps [#storiesoverlayprops]
@@ -228,6 +242,8 @@ styles import करना न भूलें:
 | `innerTransitionDuration` | `number` | 200 | अंदरूनी (story) ट्रांज़िशन एनिमेशन की अवधि, मिलीसेकंड में |
 | `minSegmentWidth` | `number` | 8 | प्रोग्रेस बार के segment की पिक्सेल में न्यूनतम चौड़ाई |
 | `apiRef` | `MutableRefObject<StoriesApi \| null>` | - | imperative StoriesApi तक पहुँचने के लिए ref |
+| `desktopLayout` | `'single' \| 'carousel'` | 'single' | डेस्कटॉप layout। 'carousel' active story के बगल में पड़ोसी groups को preview कार्ड के रूप में दिखाता है और groups के बीच slide करता है। फ़ोन पर story हमेशा अकेली दिखती है। |
+| `viewedState` | `Map<string, number>` | - | हर author id के लिए देखी गई stories की गिनती, viewedCounts() से। पूरे देखे गए group के carousel कार्ड पर फीकी ring दिखती है। |
 | `renderHeader` | `(props: HeaderRenderProps<T>) => ReactNode` | - | कस्टम header renderer। लेखक, story और pause/mute स्टेट मिलती है। |
 | `renderFooter` | `(props: FooterRenderProps<T>) => ReactNode` | - | कस्टम footer renderer। लेखक और story की जानकारी मिलती है। |
 | `renderSlide` | `(props: SlideRenderProps<T>) => ReactNode` | - | कस्टम स्लाइड renderer, जो डिफ़ॉल्ट इमेज/वीडियो स्लाइड की जगह लेता है। |
@@ -235,6 +251,7 @@ styles import करना न भूलें:
 | `renderProgressBar` | `(props: ProgressBarRenderProps<T>) => ReactNode` | - | कस्टम प्रोग्रेस बार। डिफ़ॉल्ट canvas प्रोग्रेस बार की जगह लेता है। |
 | `renderLoading` | `(props: LoadingRenderProps<T>) => ReactNode` | - | कस्टम लोडिंग UI renderer। न देने पर डिफ़ॉल्ट header spinner दिखता है। |
 | `renderError` | `(props: ErrorRenderProps<T>) => ReactNode` | - | कस्टम एरर UI renderer। न देने पर डिफ़ॉल्ट एरर आइकन overlay दिखता है। |
+| `renderGroupPreview` | `(props: GroupPreviewRenderProps<T>) => ReactNode` | - | कस्टम डेस्कटॉप carousel कार्ड। डिफ़ॉल्ट कार्ड content की जगह लेता है। |
 
 ### StoriesUrlOverlayProps [#storiesurloverlayprops]
 
@@ -326,6 +343,12 @@ story कंटेंट के नीचे footer जोड़ें:
 कंटेंट लोड न होने पर कस्टम एरर overlay:
 
 <CodeBlock code={rendererror} language="tsx" />
+
+### renderGroupPreview [#rendergrouppreview]
+
+डेस्कटॉप carousel कार्ड का content बदलें। कार्ड की जगह, आकार और slide अब भी player संभालता है; group खोलने के लिए `onOpen` कॉल करें:
+
+<CodeBlock code={rendergrouppreview} language="tsx" />
 
 ## StoriesApi [#storiesapi]
 
@@ -449,6 +472,10 @@ Instagram जैसी gradient ring वाला गोल avatar। दो स
 
 <CodeBlock code={errorrenderpropsT} language="typescript" />
 
+### GroupPreviewRenderProps\<T> [#grouppreviewrenderprops-t]
+
+<CodeBlock code={grouppreviewrenderpropsT} language="typescript" />
+
 ### StoriesApi [#storiesapi]
 
 <CodeBlock code={storiesapi2} language="typescript" />
@@ -497,6 +524,19 @@ Instagram जैसी gradient ring वाला गोल avatar। दो स
 | `.rk-stories-ring-list` | StoriesRingList | हॉरिज़ॉन्टल ring सूची का कंटेनर |
 | `.rk-stories-ring-list-item` | StoriesRingList | Ring + नाम वाला कॉलम |
 | `.rk-stories-ring-list-name` | StoriesRingList | हर ring के नीचे लेखक का नाम |
+| `.rk-stories-overlay--carousel` | Overlay | डेस्कटॉप carousel दिखाता हुआ overlay |
+| `.rk-stories-overlay--sliding` | Overlay | carousel slide चल रही है; player canvas छिपा है |
+| `.rk-stories-carousel` | Carousel | player के पीछे preview कार्ड की layer |
+| `.rk-stories-carousel--instant` | Carousel | slide का पहला frame, बिना transition के रखा गया |
+| `.rk-stories-card` | Carousel | एक positioned preview कार्ड |
+| `.rk-stories-card--center` | Carousel | slide के दौरान बीच वाली जगह पर कार्ड |
+| `.rk-stories-card--hidden` | Carousel | एक तरफ़ दिखने वाले दो कार्ड से आगे का कार्ड |
+| `.rk-stories-card-button` | Carousel | डिफ़ॉल्ट कार्ड content (group खोलने वाला बटन) |
+| `.rk-stories-card-image` | Carousel | preview frame (poster या इमेज) |
+| `.rk-stories-card-scrim` | Carousel | frame के ऊपर धुंधली layer |
+| `.rk-stories-card-info` | Carousel | ring, author का नाम और समय वाला column |
+| `.rk-stories-card-name` | Carousel | author का नाम |
+| `.rk-stories-card-time` | Carousel | कितने समय पहले वाला टेक्स्ट |
 
 ## थीमिंग [#theming]
 
@@ -533,6 +573,15 @@ Instagram जैसी gradient ring वाला गोल avatar। दो स
 | `--rk-stories-ring-list-gap` | `12px` | सूची में rings के बीच की दूरी |
 | `--rk-stories-ring-list-padding` | `12px` | ring सूची के चारों ओर की अंदरूनी padding |
 | `--rk-stories-ring-list-name-size` | `12px` | हर ring के नीचे लेखक के नाम का font size |
+| `--rk-stories-card-bg` | `#262626` | carousel कार्ड का background, preview frame न होने पर दिखता है |
+| `--rk-stories-card-radius` | `8px` | carousel कार्ड के कोनों की गोलाई |
+| `--rk-stories-card-scrim` | `rgba(0, 0, 0, 0.45)` | बगल वाले कार्ड पर धुंधलापन |
+| `--rk-stories-card-fg` | `#fff` | कार्ड के टेक्स्ट का रंग |
+| `--rk-stories-card-name-size` | `14px` | कार्ड पर author के नाम का font size |
+| `--rk-stories-card-time-fg` | `rgba(255, 255, 255, 0.7)` | कार्ड पर समय वाले टेक्स्ट का रंग |
+| `--rk-stories-card-time-size` | `13px` | कार्ड पर समय वाले टेक्स्ट का font size |
+| `--rk-stories-card-gap` | `6px` | कार्ड पर ring, नाम और समय के बीच की दूरी |
+| `--rk-stories-card-transition` | `300ms` | carousel slide की अवधि |
 
 नीचे का snippet `@reelkit/react-stories-player/styles.css` के बाद लोड होने वाली stylesheet में डालें।
 
@@ -543,6 +592,8 @@ Instagram जैसी gradient ring वाला गोल avatar। दो स
 Overlay का root एक modal dialog है (`role="dialog"`, `aria-modal="true"`)। स्क्रीन रीडर की घोषणा बदलने के लिए `ariaLabel` सेट करें; डिफ़ॉल्ट "Stories player" है।
 
 Overlay खुलने पर फ़ोकस पकड़ता है और बंद होने पर उसे trigger पर लौटा देता है। Tab और Shift+Tab अंदर के फ़ोकस होने वाले एलिमेंट में घूमते हैं; बाहर निकला फ़ोकस (बाहर क्लिक, प्रोग्राम से फ़ोकस) वापस खींच लिया जाता है। यह `@reelkit/core` के `captureFocusForReturn` और `createFocusTrap` से बना है।
+
+डेस्कटॉप carousel में हर डिफ़ॉल्ट कार्ड एक बटन है, जिसका label "Open stories by" और author का नाम है। Tab क्रम में कार्ड player के controls के बाद आते हैं, और slide चलने के दौरान उस क्रम से बाहर रहते हैं।
 
 ## कीबोर्ड शॉर्टकट [#keyboard-shortcuts]
 

@@ -85,25 +85,28 @@ function App() {
 - Sliding window progress bar for 50+ stories
 - Render props for header, footer, and slides
 - Desktop navigation arrows
+- Optional Instagram-style desktop carousel of neighbouring groups
 
 ## API Reference
 
 ### StoriesOverlay Props
 
-| Prop                      | Type                    | Default  | Description                      |
-| ------------------------- | ----------------------- | -------- | -------------------------------- |
-| `isOpen`                  | `boolean`               | required | Controls overlay visibility      |
-| `onClose`                 | `() => void`            | required | Called when overlay closes       |
-| `groups`                  | `StoriesGroup<T>[]`     | required | Story groups to display          |
-| `initialGroupIndex`       | `number`                | `0`      | Starting group index             |
-| `initialStoryIndex`       | `number`                | `0`      | Starting story index             |
-| `groupTransition`         | `TransitionTransformFn` | cube     | Transition between groups        |
-| `defaultImageDuration`    | `number`                | `5000`   | Image auto-advance duration (ms) |
-| `tapZoneSplit`            | `number`                | `0.3`    | Left zone ratio (0-1)            |
-| `hideUIOnPause`           | `boolean`               | `true`   | Hide header/progress on hold     |
-| `enableKeyboard`          | `boolean`               | `true`   | Enable keyboard navigation       |
-| `innerTransitionDuration` | `number`                | `200`    | Story crossfade duration (ms)    |
-| `minSegmentWidth`         | `number`                | `4`      | Min progress segment width (px)  |
+| Prop                      | Type                     | Default    | Description                                                                    |
+| ------------------------- | ------------------------ | ---------- | ------------------------------------------------------------------------------ |
+| `isOpen`                  | `boolean`                | required   | Controls overlay visibility                                                    |
+| `onClose`                 | `() => void`             | required   | Called when overlay closes                                                     |
+| `groups`                  | `StoriesGroup<T>[]`      | required   | Story groups to display                                                        |
+| `initialGroupIndex`       | `number`                 | `0`        | Starting group index                                                           |
+| `initialStoryIndex`       | `number`                 | `0`        | Starting story index                                                           |
+| `groupTransition`         | `TransitionTransformFn`  | cube       | Transition between groups                                                      |
+| `defaultImageDuration`    | `number`                 | `5000`     | Image auto-advance duration (ms)                                               |
+| `tapZoneSplit`            | `number`                 | `0.3`      | Left zone ratio (0-1)                                                          |
+| `hideUIOnPause`           | `boolean`                | `true`     | Hide header/progress on hold                                                   |
+| `enableKeyboard`          | `boolean`                | `true`     | Enable keyboard navigation                                                     |
+| `innerTransitionDuration` | `number`                 | `200`      | Story crossfade duration (ms)                                                  |
+| `minSegmentWidth`         | `number`                 | `4`        | Min progress segment width (px)                                                |
+| `desktopLayout`           | `'single' \| 'carousel'` | `'single'` | `'carousel'`: neighbouring groups as preview cards beside the story on desktop |
+| `viewedState`             | `Map<string, number>`    | —          | author.id → viewed count; mutes watched groups' card rings                     |
 
 ### Callbacks
 
@@ -118,11 +121,12 @@ function App() {
 
 ### Render Props
 
-| Prop           | Type                                 | Description            |
-| -------------- | ------------------------------------ | ---------------------- |
-| `renderHeader` | `(props: HeaderRenderProps) => Node` | Custom header          |
-| `renderFooter` | `(props: FooterRenderProps) => Node` | Custom footer          |
-| `renderSlide`  | `(props: SlideRenderProps) => Node`  | Custom slide rendering |
+| Prop                 | Type                                       | Description                          |
+| -------------------- | ------------------------------------------ | ------------------------------------ |
+| `renderHeader`       | `(props: HeaderRenderProps) => Node`       | Custom header                        |
+| `renderFooter`       | `(props: FooterRenderProps) => Node`       | Custom footer                        |
+| `renderSlide`        | `(props: SlideRenderProps) => Node`        | Custom slide rendering               |
+| `renderGroupPreview` | `(props: GroupPreviewRenderProps) => Node` | Custom desktop carousel card content |
 
 ### StoriesRingList Props
 
@@ -168,34 +172,44 @@ interface StoriesGroup<T extends StoryItem = StoryItem> {
 
 ## CSS Classes
 
-| Class                        | Description                     |
-| ---------------------------- | ------------------------------- |
-| `.rk-stories-overlay`        | Overlay background              |
-| `.rk-stories-container`      | Player container                |
-| `.rk-stories-slide-wrapper`  | Slide wrapper                   |
-| `.rk-stories-story`          | Single story root               |
-| `.rk-stories-ui-layer`       | UI overlay (header, progress)   |
-| `.rk-stories-header`         | Header bar                      |
-| `.rk-stories-header-avatar`  | Author avatar                   |
-| `.rk-stories-header-name`    | Author name                     |
-| `.rk-stories-header-time`    | Timestamp                       |
-| `.rk-stories-header-btn`     | Header action button            |
-| `.rk-stories-header-spinner` | Loading spinner                 |
-| `.rk-stories-nav-btn`        | Desktop navigation arrow        |
-| `.rk-stories-heart`          | Double-tap heart animation      |
-| `.rk-stories-error`          | Error state                     |
-| `.rk-stories-image`          | Image story element             |
-| `.rk-stories-video`          | Video story container           |
-| `.rk-stories-video-poster`   | Video poster image              |
-| `.rk-stories-video-element`  | Video element                   |
-| `.rk-stories-progress-bar`   | Canvas progress bar wrapper     |
-| `.rk-stories-ring`           | Story ring                      |
-| `.rk-stories-ring--active`   | Ring with stories left to watch |
-| `.rk-stories-ring-avatar`    | Ring avatar image               |
-| `.rk-stories-ring-list`      | Ring list container             |
-| `.rk-stories-ring-list-item` | Ring list item                  |
-| `.rk-stories-ring-list-name` | Ring author name                |
-| `.rk-stories-swipe-wrapper`  | Swipe-to-close wrapper          |
+| Class                           | Description                               |
+| ------------------------------- | ----------------------------------------- |
+| `.rk-stories-overlay`           | Overlay background                        |
+| `.rk-stories-container`         | Player container                          |
+| `.rk-stories-slide-wrapper`     | Slide wrapper                             |
+| `.rk-stories-story`             | Single story root                         |
+| `.rk-stories-ui-layer`          | UI overlay (header, progress)             |
+| `.rk-stories-header`            | Header bar                                |
+| `.rk-stories-header-avatar`     | Author avatar                             |
+| `.rk-stories-header-name`       | Author name                               |
+| `.rk-stories-header-time`       | Timestamp                                 |
+| `.rk-stories-header-btn`        | Header action button                      |
+| `.rk-stories-header-spinner`    | Loading spinner                           |
+| `.rk-stories-nav-btn`           | Desktop navigation arrow                  |
+| `.rk-stories-heart`             | Double-tap heart animation                |
+| `.rk-stories-error`             | Error state                               |
+| `.rk-stories-image`             | Image story element                       |
+| `.rk-stories-video`             | Video story container                     |
+| `.rk-stories-video-poster`      | Video poster image                        |
+| `.rk-stories-video-element`     | Video element                             |
+| `.rk-stories-progress-bar`      | Canvas progress bar wrapper               |
+| `.rk-stories-ring`              | Story ring                                |
+| `.rk-stories-ring--active`      | Ring with stories left to watch           |
+| `.rk-stories-ring-avatar`       | Ring avatar image                         |
+| `.rk-stories-ring-list`         | Ring list container                       |
+| `.rk-stories-ring-list-item`    | Ring list item                            |
+| `.rk-stories-ring-list-name`    | Ring author name                          |
+| `.rk-stories-swipe-wrapper`     | Swipe-to-close wrapper                    |
+| `.rk-stories-overlay--carousel` | Overlay with the desktop carousel showing |
+| `.rk-stories-overlay--sliding`  | Carousel slide running                    |
+| `.rk-stories-carousel`          | Layer of preview cards                    |
+| `.rk-stories-card`              | One preview card (`--center`, `--hidden`) |
+| `.rk-stories-card-button`       | Default card content                      |
+| `.rk-stories-card-image`        | Card preview frame                        |
+| `.rk-stories-card-scrim`        | Card dimming layer                        |
+| `.rk-stories-card-info`         | Card ring, name and time                  |
+| `.rk-stories-card-name`         | Card author name                          |
+| `.rk-stories-card-time`         | Card time-ago text                        |
 
 ### Theming via CSS custom properties
 

@@ -25,6 +25,7 @@ import {
   useSoundState,
   cubeTransition,
   fadeTransition,
+  slideTransition,
   type ReelApi,
   type UrlStateController,
   type TwoAxisPosition,
@@ -47,6 +48,8 @@ import type {
   ProgressBarRenderProps,
   LoadingRenderProps,
   ErrorRenderProps,
+  DesktopLayout,
+  GroupPreviewRenderProps,
 } from './types';
 import { CanvasProgressBar } from './CanvasProgressBar';
 import { StoryHeader } from './StoryHeader';
@@ -54,7 +57,14 @@ import { ImageStorySlide } from './ImageStorySlide';
 import { VideoStorySlide, shared as sharedVideo } from './VideoStorySlide';
 import { SwipeToClose, type GestureCommonEvent } from '@reelkit/react';
 import { HeartAnimation } from './HeartAnimation';
+import { getSize, isMobileWidth } from './layout';
+import { StoriesCarousel, type CarouselSlide } from './StoriesCarousel';
 import './StoriesOverlay.css';
+
+// The slide normally ends on the transition of the card moving into the
+// center. A transition that never runs — the tab hidden mid-slide, a theme
+// setting the duration to zero — sends no event, so this ends it instead.
+const _kSlideTimeoutMs = 1000;
 
 /**
  * Props for the {@link StoriesOverlay} component.
@@ -140,6 +150,25 @@ export interface StoriesOverlayProps<T extends StoryItem = StoryItem> {
   /** Ref to access the imperative {@link StoriesApi}. */
   apiRef?: MutableRefObject<StoriesApi | null>;
 
+  /**
+   * Layout on a desktop screen. `'carousel'` shows neighbouring groups as
+   * dimmed preview cards on both sides of the active story, the way the
+   * Instagram desktop viewer does, and slides between groups; clicking a card
+   * opens that group. Phones always show the active story alone.
+   *
+   * @default 'single'
+   */
+  desktopLayout?: DesktopLayout;
+
+  /**
+   * Stories seen per group, keyed by author id — the same map
+   * `StoriesRingList` takes, from
+   * `createStoriesViewedState(...).viewedCounts()`. The carousel cards use it
+   * to draw a muted ring for a group watched to the end; without it every
+   * card shows the unwatched gradient.
+   */
+  viewedState?: Map<string, number>;
+
   /** Callback to close the overlay. */
   onClose: () => void;
 
@@ -182,6 +211,13 @@ export interface StoriesOverlayProps<T extends StoryItem = StoryItem> {
    * @default undefined — every group opens on its first story
    */
   resumeStoryIndex?: (groupIndex: number) => number;
+
+  /**
+   * Replaces the content of a desktop carousel card. The player still
+   * positions, scales and slides the card; call `onOpen` from the props to open
+   * the group.
+   */
+  renderGroupPreview?: (props: GroupPreviewRenderProps<T>) => ReactNode;
 
   /** Custom header renderer. */
   renderHeader?: (props: HeaderRenderProps<T>) => ReactNode;
@@ -248,37 +284,6 @@ function NavButton({
   );
 }
 
-const _kMobileBreakpoint = 768;
-const _kAspectRatio = 9 / 16;
-const _kDesktopMargin = 16;
-// One arrow and its gap, matching the default `--rk-stories-nav-size` and
-// `--rk-stories-swipe-gap`. The size has to be known here, before layout, so
-// the CSS values cannot be read; arrows themed larger than the default can
-// crowd a very narrow desktop window.
-const _kNavReserve = 44 + 16;
-
-/**
- * Size of the story canvas. A phone fills the screen. On a desktop the story
- * fills the window height, less a margin above and below, at 9:16, and only
- * narrows when the canvas and both arrows would not fit across the window.
- * Widths up to and including 768 count as a phone, matching the stylesheet,
- * which hides the arrows and squares the corners at that width.
- */
-const getSize = (): [number, number] => {
-  if (typeof window === 'undefined') return [0, 0];
-  const viewportWidth = window.innerWidth;
-  const viewportHeight = window.innerHeight;
-  if (viewportWidth <= _kMobileBreakpoint) {
-    return [viewportWidth, viewportHeight];
-  }
-  const maxWidth = viewportWidth - 2 * (_kNavReserve + _kDesktopMargin);
-  const height = Math.min(
-    viewportHeight - 2 * _kDesktopMargin,
-    maxWidth / _kAspectRatio,
-  );
-  return [height * _kAspectRatio, height];
-};
-
 function StoriesContent<T extends StoryItem = StoryItem>({
   onClose,
   ariaLabel,
@@ -307,6 +312,9 @@ function StoriesContent<T extends StoryItem = StoryItem>({
   renderProgressBar,
   renderLoading,
   renderError,
+  desktopLayout = 'single',
+  viewedState,
+  renderGroupPreview,
   apiRef,
 }: Omit<StoriesOverlayProps<T>, 'isOpen'>) {
   const outerReelRef = useRef<ReelApi>(null);
@@ -332,6 +340,7 @@ function StoriesContent<T extends StoryItem = StoryItem>({
     renderLoading,
     renderError,
     tapZoneSplit,
+    desktopLayout,
   });
   propsRef.current = {
     onStoryChange,
@@ -348,6 +357,7 @@ function StoriesContent<T extends StoryItem = StoryItem>({
     renderLoading,
     renderError,
     tapZoneSplit,
+    desktopLayout,
   };
 
   const heartIdRef = useRef(0);
@@ -359,6 +369,12 @@ function StoriesContent<T extends StoryItem = StoryItem>({
     heartsSignal,
     longPressSignal,
     loadingCtrl,
+    carouselActive,
+    slideSignal,
+    updateCarouselActive,
+    endSlide,
+    runTimer,
+    followActiveGroup,
     startOrDeferTimer,
     handleTap,
     handleDoubleTap,
@@ -375,6 +391,19 @@ function StoriesContent<T extends StoryItem = StoryItem>({
     removeHeart,
     togglePause,
   } = useState(() => {
+    const isCarouselLayout = () =>
+      propsRef.current.desktopLayout === 'carousel' &&
+      !isMobileWidth(window.innerWidth);
+    const carouselActive = createSignal(isCarouselLayout());
+    const slideSignal = createSignal<CarouselSlide | null>(null);
+    // The newest story the viewer reached while a slide was running. It is not
+    // on screen until the slide ends, so it is reported as viewed only then.
+    let pendingViewed: [number, number] | null = null;
+    // The newest timer action asked for while a slide was running.
+    let pendingTimerAction: (() => void) | null = null;
+    let slideTimeout: ReturnType<typeof setTimeout> | undefined;
+    let slideFrame = 0;
+
     const storiesCtrl = createStoriesController(
       {
         groupCount: groups.length,
@@ -395,8 +424,10 @@ function StoriesContent<T extends StoryItem = StoryItem>({
           propsRef.current.onStoryChange?.(groupIndex, storyIndex),
         onGroupChange: (groupIndex) =>
           propsRef.current.onGroupChange?.(groupIndex),
-        onStoryViewed: (groupIndex, storyIndex) =>
-          propsRef.current.onStoryViewed?.(groupIndex, storyIndex),
+        onStoryViewed: (groupIndex, storyIndex) => {
+          if (slideSignal.value) pendingViewed = [groupIndex, storyIndex];
+          else propsRef.current.onStoryViewed?.(groupIndex, storyIndex);
+        },
         onStoryComplete: (groupIndex, storyIndex) =>
           propsRef.current.onStoryComplete?.(groupIndex, storyIndex),
         onClose: () => propsRef.current.onClose(),
@@ -425,6 +456,79 @@ function StoriesContent<T extends StoryItem = StoryItem>({
       return knownDurations.get(story.src) ?? defaultImageDuration;
     };
 
+    // While a slide runs the player is hidden behind the moving cards, so the
+    // timer waits: the action is kept and run when the slide ends.
+    const runTimer = (action: () => void) => {
+      if (slideSignal.value) pendingTimerAction = action;
+      else action();
+    };
+
+    const endSlide = () => {
+      if (!slideSignal.value) return;
+      clearTimeout(slideTimeout);
+      cancelAnimationFrame(slideFrame);
+      slideSignal.value = null;
+
+      const viewed = pendingViewed;
+      const timerAction = pendingTimerAction;
+      pendingViewed = null;
+      pendingTimerAction = null;
+      if (viewed) propsRef.current.onStoryViewed?.(viewed[0], viewed[1]);
+      if (storiesCtrl.state.isPaused.value) return;
+      if (timerAction) {
+        timerAction();
+      } else if (!timerCtrl.isRunning.value) {
+        // A group opened on the same story index as the one left behind
+        // changes no story, so nothing asked for the timer during the slide.
+        timerCtrl.reset();
+        startOrDeferTimer(
+          groups[storiesCtrl.state.activeGroupIndex.value]?.stories[
+            storiesCtrl.state.activeStoryIndex.value
+          ],
+        );
+      }
+    };
+
+    const beginSlide = (from: number, to: number) => {
+      clearTimeout(slideTimeout);
+      cancelAnimationFrame(slideFrame);
+      timerCtrl.pause();
+      slideSignal.value = { from, to, phase: 'start' };
+      // Two frames: the first paints the cards around the group being left,
+      // the second starts the transition from there.
+      slideFrame = requestAnimationFrame(() => {
+        slideFrame = requestAnimationFrame(() => {
+          slideSignal.value = { from, to, phase: 'run' };
+        });
+      });
+      slideTimeout = setTimeout(endSlide, _kSlideTimeoutMs);
+    };
+
+    const updateCarouselActive = () => {
+      carouselActive.value = isCarouselLayout();
+      if (!carouselActive.value) endSlide();
+    };
+
+    // A touch swipe has already moved the player to the new group, so it gets
+    // no slide on top.
+    let changingByDrag = false;
+
+    const followActiveGroup = () => {
+      const previous = activeGroupIndexRef.current;
+      const groupIndex = storiesCtrl.state.activeGroupIndex.value;
+      activeGroupIndexRef.current = groupIndex;
+
+      if (!carouselActive.value) {
+        outerReelRef.current?.goTo(groupIndex, true);
+        return;
+      }
+
+      outerReelRef.current?.goTo(groupIndex, false);
+      if (!changingByDrag && previous !== groupIndex) {
+        beginSlide(previous, groupIndex);
+      }
+    };
+
     const startOrDeferTimer = (story: StoryItem | undefined) => {
       // NOTE: Skip if timer already running — handleContentReady may have
       // fired before this effect runs (cached content on re-open).
@@ -441,7 +545,7 @@ function StoriesContent<T extends StoryItem = StoryItem>({
       if (story?.mediaType === 'image' && story.src) {
         if (preloader.isLoaded(story.src)) {
           loadingCtrl.isLoading.value = false;
-          timerCtrl.start(getDuration(story));
+          runTimer(() => timerCtrl.start(getDuration(story)));
         } else {
           loadingCtrl.isLoading.value = true;
         }
@@ -449,7 +553,9 @@ function StoriesContent<T extends StoryItem = StoryItem>({
         loadingCtrl.isLoading.value = true;
       } else {
         loadingCtrl.isLoading.value = false;
-        timerCtrl.start(story?.duration ?? defaultImageDuration);
+        runTimer(() =>
+          timerCtrl.start(story?.duration ?? defaultImageDuration),
+        );
       }
     };
 
@@ -460,6 +566,12 @@ function StoriesContent<T extends StoryItem = StoryItem>({
       heartsSignal,
       longPressSignal,
       loadingCtrl,
+      carouselActive,
+      slideSignal,
+      updateCarouselActive,
+      endSlide,
+      runTimer,
+      followActiveGroup,
       startOrDeferTimer,
 
       handleTap(event: GestureCommonEvent) {
@@ -522,7 +634,9 @@ function StoriesContent<T extends StoryItem = StoryItem>({
 
         const prevSi = storiesCtrl.state.activeStoryIndex.value;
         timerCtrl.reset();
+        changingByDrag = true;
         storiesCtrl.goToGroup(index);
+        changingByDrag = false;
         const si = storiesCtrl.state.activeStoryIndex.value;
         // If activeStoryIndex didn't change, the reaction won't fire — handle here
         if (si === prevSi) {
@@ -538,11 +652,13 @@ function StoriesContent<T extends StoryItem = StoryItem>({
           storyIndex === storiesCtrl.state.activeStoryIndex.value
         ) {
           loadingCtrl.isLoading.value = false;
-          if (timerCtrl.progress.value > 0) {
-            timerCtrl.resume();
-          } else {
-            timerCtrl.start(getDuration(story));
-          }
+          runTimer(() => {
+            if (timerCtrl.progress.value > 0) {
+              timerCtrl.resume();
+            } else {
+              timerCtrl.start(getDuration(story));
+            }
+          });
         }
       },
       handleVideoWaiting(groupIndex: number, storyIndex: number) {
@@ -561,7 +677,7 @@ function StoriesContent<T extends StoryItem = StoryItem>({
           groupIndex === storiesCtrl.state.activeGroupIndex.value &&
           storyIndex === storiesCtrl.state.activeStoryIndex.value
         ) {
-          timerCtrl.start(ms);
+          runTimer(() => timerCtrl.start(ms));
         }
       },
       handleVideoEnded() {
@@ -591,6 +707,16 @@ function StoriesContent<T extends StoryItem = StoryItem>({
 
   useBodyLock(true);
 
+  // Set on the element directly: a class in the render would re-render the
+  // whole player, both sliders included, on every slide.
+  const applyOverlayModifiers = () => {
+    const classes = overlayRef.current?.classList;
+    classes?.toggle('rk-stories-overlay--carousel', carouselActive.value);
+    classes?.toggle('rk-stories-overlay--sliding', slideSignal.value !== null);
+  };
+
+  useEffect(updateCarouselActive, [desktopLayout]);
+
   useEffect(() => {
     const disposables = createDisposableList();
 
@@ -603,14 +729,8 @@ function StoriesContent<T extends StoryItem = StoryItem>({
     }
 
     disposables.push(
-      reaction(
-        () => [storiesCtrl.state.activeGroupIndex],
-        () => {
-          const gi = storiesCtrl.state.activeGroupIndex.value;
-          activeGroupIndexRef.current = gi;
-          outerReelRef.current?.goTo(gi, true);
-        },
-      ),
+      reaction(() => [storiesCtrl.state.activeGroupIndex], followActiveGroup),
+      reaction(() => [carouselActive, slideSignal], applyOverlayModifiers),
       reaction(
         () => [storiesCtrl.state.activeStoryIndex],
         () => {
@@ -638,7 +758,7 @@ function StoriesContent<T extends StoryItem = StoryItem>({
             timerCtrl.pause();
             if (isVideo) sharedVideo.getVideo().pause();
           } else {
-            timerCtrl.resume();
+            runTimer(timerCtrl.resume);
             if (isVideo) sharedVideo.getVideo().play().catch(noop);
           }
         },
@@ -672,10 +792,13 @@ function StoriesContent<T extends StoryItem = StoryItem>({
       ),
       observeDomEvent(window, 'resize', () => {
         sizeSignal.value = getSize();
+        updateCarouselActive();
         outerReelRef.current?.adjust();
       }),
+      endSlide,
       timerCtrl.dispose,
     );
+    applyOverlayModifiers();
 
     // Do NOT dispose `storiesCtrl` here. It is created once for the component's
     // lifetime (in `useState`) and survives a mount/unmount/remount, but this
@@ -719,10 +842,11 @@ function StoriesContent<T extends StoryItem = StoryItem>({
   }, []);
 
   useEffect(() => {
+    if (!enableKeyboard) return;
     return observeDomEvent(window, 'keydown', (e) => {
       if (e.key === 'Escape') onClose();
     });
-  }, [onClose]);
+  }, [enableKeyboard, onClose]);
 
   const overlay = (
     <div
@@ -758,15 +882,17 @@ function StoriesContent<T extends StoryItem = StoryItem>({
           className="rk-stories-container"
           onContextMenu={(e) => e.preventDefault()}
         >
-          <Observe signals={[sizeSignal]}>
+          <Observe signals={[sizeSignal, carouselActive]}>
             {() => (
               <Reel
                 count={groups.length}
                 size={sizeSignal.value}
                 direction="horizontal"
-                transition={groupTransition}
+                transition={
+                  carouselActive.value ? slideTransition : groupTransition
+                }
                 enableGestures
-                enableNavKeys
+                enableNavKeys={enableKeyboard}
                 onNavKeyPress={(increment) => {
                   if (increment === -1) storiesCtrl.prevStory();
                   else storiesCtrl.nextStory();
@@ -1114,6 +1240,50 @@ function StoriesContent<T extends StoryItem = StoryItem>({
           </NavButton>
         )}
       </SwipeToClose>
+
+      <Observe
+        signals={[
+          carouselActive,
+          sizeSignal,
+          slideSignal,
+          storiesCtrl.state.activeGroupIndex,
+        ]}
+      >
+        {() =>
+          carouselActive.value ? (
+            <StoriesCarousel<T>
+              groups={groups}
+              activeGroupIndex={storiesCtrl.state.activeGroupIndex.value}
+              slide={slideSignal.value}
+              activeSize={sizeSignal.value}
+              storyIndexFor={storiesCtrl.getLastStoryIndex}
+              viewedState={viewedState}
+              renderGroupPreview={renderGroupPreview}
+              renderFrame={
+                propsRef.current.renderSlide
+                  ? (story, groupIndex) =>
+                      propsRef.current.renderSlide?.({
+                        story,
+                        index: storiesCtrl.getLastStoryIndex(groupIndex),
+                        groupIndex,
+                        isActive: false,
+                        size: sizeSignal.value,
+                        activeGroupIndex: storiesCtrl.state.activeGroupIndex,
+                        activeStoryIndex: storiesCtrl.state.activeStoryIndex,
+                        onDurationReady: noop,
+                        onReady: noop,
+                        onWaiting: noop,
+                        onError: noop,
+                        onEnded: noop,
+                      })
+                  : undefined
+              }
+              onOpen={storiesCtrl.goToGroup}
+              onSlideEnd={endSlide}
+            />
+          ) : null
+        }
+      </Observe>
     </div>
   );
 

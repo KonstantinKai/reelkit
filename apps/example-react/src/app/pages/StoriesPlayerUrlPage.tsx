@@ -4,6 +4,7 @@ import {
   StoriesRingList,
   StoriesUrlOverlay,
   createStoriesViewedState,
+  type DesktopLayout,
   type StoriesGroup,
   type StoryItem,
 } from '@reelkit/react-stories-player';
@@ -27,6 +28,8 @@ import {
 import { useReactRouterUrlAdapter } from '@reelkit/react/react-router-url-adapter';
 import { persistedSignal } from '../components/persistedSignal';
 import { Segmented } from '../components/Segmented';
+import { RememberSeenSwitch } from '../components/RememberSeenSwitch';
+import { DesktopLayoutSwitch } from '../components/DesktopLayoutSwitch';
 import { cdnUrl } from '@reelkit/example-data';
 import '@reelkit/react-stories-player/styles.css';
 
@@ -94,39 +97,41 @@ export function StoriesPlayerUrlPage() {
   // switchers are reactive UI state, bridged into React by the `Observe` below
   // (switcher chrome + keyed remount).
   const [
-    allGroups,
-    loaded,
-    fetching,
-    addressing,
-    innerKey,
-    hash,
-    rememberSeen,
+    {
+      allGroups,
+      loaded,
+      fetching,
+      addressing,
+      innerKey,
+      hash,
+      rememberSeen,
+      desktopLayout,
+    },
   ] = useState(() => {
     const allGroups = generateGroups();
-    return [
+    return {
       allGroups,
-      createSignal(allGroups.slice(0, _kPageSize)),
-      createSignal(false),
-      persistedSignal<Addressing>(
+      loaded: createSignal(allGroups.slice(0, _kPageSize)),
+      fetching: createSignal(false),
+      addressing: persistedSignal<Addressing>(
         'reelkit-stories-player-url-addressing',
         'index',
       ),
-      persistedSignal<InnerKey>(
+      innerKey: persistedSignal<InnerKey>(
         'reelkit-stories-player-url-inner-key',
         'index',
       ),
-      persistedSignal('reelkit-stories-player-url-hash', false),
-      persistedSignal('reelkit-stories-player-url-remember-seen', true),
-    ] as [
-      StoriesGroup<StoryItem>[],
-      Signal<StoriesGroup<StoryItem>[]>,
-      Signal<boolean>,
-      Signal<Addressing>,
-      Signal<InnerKey>,
-      Signal<boolean>,
-      Signal<boolean>,
-    ];
-  })[0];
+      hash: persistedSignal('reelkit-stories-player-url-hash', false),
+      rememberSeen: persistedSignal(
+        'reelkit-stories-player-url-remember-seen',
+        true,
+      ),
+      desktopLayout: persistedSignal<DesktopLayout>(
+        'reelkit-stories-player-url-desktop-layout',
+        'single',
+      ),
+    };
+  });
 
   return (
     <div
@@ -162,12 +167,11 @@ export function StoriesPlayerUrlPage() {
           pages the rest in first.
         </p>
 
-        <Observe signals={[addressing, innerKey, hash, rememberSeen]}>
+        <Observe signals={[addressing, innerKey, hash]}>
           {() => {
             const a = addressing.value;
             const ik = innerKey.value;
             const h = hash.value;
-            const remember = rememberSeen.value;
             const hashable = a === 'stableId' || ik === 'stableId';
 
             return (
@@ -227,25 +231,8 @@ export function StoriesPlayerUrlPage() {
                       },
                     ]}
                   />
-                  {/* Off, the page behaves as if nothing had ever been seen:
-                      rings all unseen, every group opens on its first story,
-                      nothing recorded. The store stays attached, so switching
-                      back on shows what was stored all along. */}
-                  <Segmented
-                    legend="Remember seen"
-                    options={[
-                      {
-                        label: 'On',
-                        active: remember,
-                        onClick: () => (rememberSeen.value = true),
-                      },
-                      {
-                        label: 'Off',
-                        active: !remember,
-                        onClick: () => (rememberSeen.value = false),
-                      },
-                    ]}
-                  />
+                  <RememberSeenSwitch signal={rememberSeen} />
+                  <DesktopLayoutSwitch signal={desktopLayout} />
                 </div>
 
                 {/* Remount when the key shape changes so `useOverlayUrlState`
@@ -259,6 +246,7 @@ export function StoriesPlayerUrlPage() {
                   innerKey={ik}
                   hash={h}
                   rememberSeen={rememberSeen}
+                  desktopLayout={desktopLayout}
                 />
               </>
             );
@@ -277,6 +265,7 @@ function StoriesUrlDemo({
   innerKey,
   hash,
   rememberSeen,
+  desktopLayout,
 }: {
   allGroups: StoriesGroup<StoryItem>[];
   loaded: Signal<StoriesGroup<StoryItem>[]>;
@@ -285,6 +274,7 @@ function StoriesUrlDemo({
   innerKey: InnerKey;
   hash: boolean;
   rememberSeen: Signal<boolean>;
+  desktopLayout: Signal<DesktopLayout>;
 }) {
   const adapter = useReactRouterUrlAdapter();
   const navigate = useNavigate();
@@ -463,11 +453,14 @@ function StoriesUrlDemo({
         )}
       </Observe>
 
-      <Observe signals={[loaded]}>
+      {/* The carousel cards draw the same seen rings as the list above. */}
+      <Observe signals={[loaded, seen.entries, rememberSeen, desktopLayout]}>
         {() => (
           <StoriesUrlOverlay<StoryItem>
             controller={stories}
             groups={loaded.value}
+            desktopLayout={desktopLayout.value}
+            viewedState={rememberSeen.value ? viewed.viewedCounts() : new Map()}
             resumeStoryIndex={(groupIndex) =>
               rememberSeen.value ? viewed.resumeStoryIndex(groupIndex) : 0
             }

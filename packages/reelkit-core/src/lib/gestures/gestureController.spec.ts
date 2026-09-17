@@ -236,6 +236,27 @@ describe('createGestureController — tap & double-tap', () => {
     expect(onTap).toHaveBeenCalledTimes(1);
   });
 
+  it('ignores mouse events when useTouchEventsOnly is true', () => {
+    const onTap = vi.fn();
+    const onHorizontalDragStart = vi.fn();
+    element = createMockElement();
+    controller = createGestureController(
+      { useTouchEventsOnly: true },
+      { onTap, onHorizontalDragStart },
+    );
+    controller.attach(element);
+    controller.observe();
+
+    element.dispatch('mousedown', { clientX: 300, clientY: 100, target: null });
+    element.dispatch('mousemove', { clientX: 200, clientY: 100, target: null });
+    element.dispatch('mousemove', { clientX: 50, clientY: 100, target: null });
+    element.dispatch('mouseup', { clientX: 50, clientY: 100, target: null });
+
+    vi.advanceTimersByTime(300);
+    expect(onHorizontalDragStart).not.toHaveBeenCalled();
+    expect(onTap).not.toHaveBeenCalled();
+  });
+
   it('fires drag events on vertical swipe', () => {
     const onVerticalDragStart = vi.fn();
     const onDragEnd = vi.fn();

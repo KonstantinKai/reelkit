@@ -170,6 +170,46 @@ export interface ProgressBarRenderProps<T extends StoryItem = StoryItem> {
 }
 
 /**
+ * How the player lays out on a desktop screen. `'single'` shows the active
+ * story alone; `'carousel'` also shows neighbouring groups as preview cards on
+ * both sides, the way the Instagram desktop viewer does. Phones always show
+ * the active story alone.
+ */
+export type DesktopLayout = 'single' | 'carousel';
+
+/**
+ * Render props passed to the custom group preview renderer, which draws one
+ * side card of the desktop carousel.
+ *
+ * @typeParam T - Story item type.
+ */
+export interface GroupPreviewRenderProps<T extends StoryItem = StoryItem> {
+  /** The group the card previews. */
+  group: StoriesGroup<T>;
+
+  /** Zero-based index of that group. */
+  groupIndex: number;
+
+  /**
+   * The story the group would open on — where it was left this session, or
+   * where `resumeStoryIndex` points. Undefined for a group with no stories.
+   */
+  story: T | undefined;
+
+  /**
+   * Distance from the active group: negative on the left, positive on the
+   * right, 0 while the card slides through the center.
+   */
+  offset: number;
+
+  /** Stories of the group already seen, from `viewedState`; 0 without it. */
+  viewedCount: number;
+
+  /** Opens the group, with the same slide as a click on the default card. */
+  onOpen: () => void;
+}
+
+/**
  * Imperative API for controlling the stories player programmatically.
  */
 export interface StoriesApi {
