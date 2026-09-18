@@ -165,6 +165,7 @@ export const jaTitles: Record<string, string> = {
   'RK_REEL_KEY & useReelContext': 'RK_REEL_KEY と useReelContext',
   SoundProvider: 'SoundProvider',
   'Package Exports': 'パッケージのエクスポート',
+  'In-browser agents (WebMCP)': 'ブラウザ内のエージェント（WebMCP）',
   'rk-reel Component': 'rk-reel コンポーネント',
   'rkReelItem Template Pattern': 'rkReelItem テンプレートのパターン',
   'apiReady Output — Signal-Based Pattern':

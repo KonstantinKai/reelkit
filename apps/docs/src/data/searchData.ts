@@ -2966,6 +2966,14 @@ export const searchItems: SearchItem[] = [
     sectionAnchor: 'package-exports',
     keywords: ['package', 'exports'],
   },
+  {
+    title: 'AI / LLM Integration',
+    path: '/docs/llms',
+    category: 'Resources',
+    sectionTitle: 'In-browser agents (WebMCP)',
+    sectionAnchor: 'webmcp',
+    keywords: ['webmcp', 'browser', 'agent', 'tools', 'mcp'],
+  },
 ];
 
 /**

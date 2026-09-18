@@ -165,6 +165,7 @@ export const ukTitles: Record<string, string> = {
   'RK_REEL_KEY & useReelContext': 'RK_REEL_KEY та useReelContext',
   SoundProvider: 'SoundProvider',
   'Package Exports': 'Експорти пакета',
+  'In-browser agents (WebMCP)': 'Агенти в браузері (WebMCP)',
   'rk-reel Component': 'Компонент rk-reel',
   'rkReelItem Template Pattern': 'Шаблонний патерн rkReelItem',
   'apiReady Output — Signal-Based Pattern':

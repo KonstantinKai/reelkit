@@ -1,3 +1,10 @@
+## Documentation (2026-09-18)
+
+### 📖 Documentation
+
+- AI agents running in your browser can now use the docs directly through WebMCP: every page on reelkit.dev offers `list_pages`, `search_docs`, `get_page` and `open_page`, so an agent can list every page, search the docs the way the command palette does, read a page as markdown and open one in the current tab, in your language — see [AI / LLM Integration](https://reelkit.dev/docs/llms#webmcp)
+- The tools work without a flag in Chrome 149 to 156 through the WebMCP origin trial; browsers without WebMCP load nothing extra, and the tools only read the public docs — no cookies, no storage, no requests to other sites
+
 ## @reelkit/react-stories-player@0.5.0 (2026-09-18)
 
 ### 🚀 Features
@@ -14,7 +21,7 @@
 
 - Fixed enableKeyboard={false} having no effect: the arrow keys and Escape are now left alone when it is off
 
-### ⚠️  Breaking Changes
+### ⚠️ Breaking Changes
 
 - StoriesRingList no longer takes a viewedState map; pass the same viewed controller the player takes
 - useViewedState is no longer re-exported; create a viewed controller with createStoriesViewedStateController instead
@@ -32,7 +39,7 @@
 - New createStoriesViewedStateController: everything a feed needs to remember what was seen from one call, with ring counts, resume positions, recording and storage that survives a reload; framework-agnostic, so React, Vue and Angular use it the same way
 - New StoriesController.updateConfig({ groupCount, storyCounts }) for a feed that changes while the player is open, so groups paged in later can be reached
 
-### ⚠️  Breaking Changes
+### ⚠️ Breaking Changes
 
 - createStoriesViewedState and the StoriesViewedState type are no longer exported; createStoriesViewedStateController covers the same ground and takes the key, storage, ttlMs and maxTracks options directly
 
@@ -46,7 +53,7 @@
 
 - Observe now follows a different signal handed to it on a later render, in place of the one it replaced
 
-### ⚠️  Breaking Changes
+### ⚠️ Breaking Changes
 
 - useViewedState is removed; create the store once with useState(() => createViewedStateController(options)) and attach it in an effect, useEffect(() => store.attach(), [store]), or use createStoriesViewedStateController from @reelkit/stories-core for a stories feed
 

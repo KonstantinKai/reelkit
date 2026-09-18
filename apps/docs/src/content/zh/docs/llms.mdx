@@ -1,15 +1,15 @@
 ---
 title: AI / 大模型集成
-description: 把 ReelKit 文档喂给 AI 助手：llms.txt、llms-full.txt 与推荐的接入方式。
+description: 把 ReelKit 文档喂给 AI 助手：llms.txt、llms-full.txt、WebMCP 工具与推荐的接入方式。
 ---
 
-import { FileText, Sparkles, Bot } from 'lucide-react';
+import { FileText, Sparkles, Bot, Globe } from 'lucide-react';
 import agentPrompt from '../../snippets/llms/agent-prompt.txt?raw';
 import directIngestion from '../../snippets/llms/direct-ingestion.sh?raw';
 
 面向 AI 编码助手的机器可读文档。
 
-<FeatureGrid columns={3} items={[
+<FeatureGrid columns={4} items={[
             {
               icon: FileText,
               label: 'llms.txt',
@@ -24,6 +24,11 @@ import directIngestion from '../../snippets/llms/direct-ingestion.sh?raw';
               icon: Bot,
               label: 'context7',
               desc: '实时索引的清单。配合 @context7 MCP 服务器使用。',
+            },
+            {
+              icon: Globe,
+              label: 'WebMCP',
+              desc: '面向 Agent 的浏览器工具：列出、搜索、读取和打开页面。',
             },
           ]} />
 
@@ -56,6 +61,21 @@ import directIngestion from '../../snippets/llms/direct-ingestion.sh?raw';
 以编程方式拉取：
 
 <CodeBlock code={directIngestion} language="bash" />
+
+## 浏览器内的 Agent（WebMCP） [#webmcp]
+
+reelkit.dev 的每个页面都会注册 [WebMCP](https://webmachinelearning.github.io/webmcp/) 工具，浏览器里运行的 AI Agent 可以直接读取文档，而不必抓取渲染后的页面。
+
+| 工具 | 用途 |
+| --- | --- |
+| `list_pages` | 列出所有文档页面及其标题、URL 和分组。 |
+| `search_docs` | 按 `query` 使用站内搜索，可选 `locale` 和 `framework`。最多 20 条结果，含章节锚点。 |
+| `get_page` | 以 markdown 返回单个页面：即 `llms-full.txt` 中该页的英文内容。 |
+| `open_page` | 在当前标签页中以你正在阅读的语言打开页面，可直接定位到某个章节。 |
+
+<Callout type="info">
+  WebMCP 仍是标准草案。在 reelkit.dev 上，它通过 origin trial 在 Chrome 149–156 中可用；在其他地方，Chrome 需开启 `chrome://flags/#enable-webmcp-testing`。不支持它的浏览器不会额外加载任何内容。这些工具只读取公开文档：不使用 cookie，不使用存储，也不会请求本站以外的地址。
+</Callout>
 
 ## 索引了哪些内容 [#what-gets-indexed]
 

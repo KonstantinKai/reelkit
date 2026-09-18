@@ -166,6 +166,7 @@ export const hiTitles: Record<string, string> = {
   'RK_REEL_KEY & useReelContext': 'RK_REEL_KEY और useReelContext',
   SoundProvider: 'SoundProvider',
   'Package Exports': 'पैकेज exports',
+  'In-browser agents (WebMCP)': 'ब्राउज़र में चलने वाले agents (WebMCP)',
   'rk-reel Component': 'rk-reel कंपोनेंट',
   'rkReelItem Template Pattern': 'rkReelItem टेम्पलेट पैटर्न',
   'apiReady Output — Signal-Based Pattern':

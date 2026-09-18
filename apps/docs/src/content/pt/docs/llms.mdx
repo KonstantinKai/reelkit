@@ -1,15 +1,15 @@
 ---
 title: Integração com IA / LLM
-description: Documentação legível por máquina para assistentes de programação com IA — llms.txt, llms-full.txt e o manifesto do Context7.
+description: Documentação legível por máquina para assistentes de programação com IA — llms.txt, llms-full.txt, o manifesto do Context7 e ferramentas WebMCP.
 ---
 
-import { FileText, Sparkles, Bot } from 'lucide-react';
+import { FileText, Sparkles, Bot, Globe } from 'lucide-react';
 import agentPrompt from '../../snippets/llms/agent-prompt.txt?raw';
 import directIngestion from '../../snippets/llms/direct-ingestion.sh?raw';
 
 Documentação legível por máquina para assistentes de programação com IA.
 
-<FeatureGrid columns={3} items={[
+<FeatureGrid columns={4} items={[
             {
               icon: FileText,
               label: 'llms.txt',
@@ -24,6 +24,11 @@ Documentação legível por máquina para assistentes de programação com IA.
               icon: Bot,
               label: 'context7',
               desc: 'Manifesto indexado ao vivo. Use com o servidor MCP @context7.',
+            },
+            {
+              icon: Globe,
+              label: 'WebMCP',
+              desc: 'Ferramentas no navegador para agentes: listar, buscar, ler e abrir páginas.',
             },
           ]} />
 
@@ -56,6 +61,21 @@ Instale o servidor MCP [@context7](https://github.com/upstash/context7). O agent
 Busque via linha de comando:
 
 <CodeBlock code={directIngestion} language="bash" />
+
+## Agentes no navegador (WebMCP) [#webmcp]
+
+Toda página do reelkit.dev registra ferramentas [WebMCP](https://webmachinelearning.github.io/webmcp/), então um agente de IA rodando no seu navegador lê a documentação diretamente, sem raspar a página renderizada.
+
+| Ferramenta | Função |
+| --- | --- |
+| `list_pages` | Todas as páginas da documentação com título, URL e grupo. |
+| `search_docs` | A busca do site por `query`, com `locale` e `framework` opcionais. Até 20 resultados, com as âncoras das seções. |
+| `get_page` | Uma página em markdown: o texto em inglês que o `llms-full.txt` traz para ela. |
+| `open_page` | Abre uma página na aba atual, no idioma em que você está lendo, opcionalmente já em uma seção. |
+
+<Callout type="info">
+  WebMCP ainda é um rascunho de padrão. No reelkit.dev ele funciona no Chrome 149 a 156 por meio de um origin trial; em outros lugares, o Chrome precisa de `chrome://flags/#enable-webmcp-testing`. Navegadores sem ele não carregam nada a mais. As ferramentas só leem a documentação pública: sem cookies, sem armazenamento, sem requisições para fora deste site.
+</Callout>
 
 ## O que entra no índice [#what-gets-indexed]
 

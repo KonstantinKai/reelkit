@@ -1,15 +1,15 @@
 ---
 title: AI / LLM इंटीग्रेशन
-description: AI कोडिंग असिस्टेंट के लिए मशीन से पढ़ने लायक डॉक्स — llms.txt, llms-full.txt और Context7 manifest।
+description: AI कोडिंग असिस्टेंट के लिए मशीन से पढ़ने लायक डॉक्स — llms.txt, llms-full.txt, Context7 manifest और WebMCP tools।
 ---
 
-import { FileText, Sparkles, Bot } from 'lucide-react';
+import { FileText, Sparkles, Bot, Globe } from 'lucide-react';
 import agentPrompt from '../../snippets/llms/agent-prompt.txt?raw';
 import directIngestion from '../../snippets/llms/direct-ingestion.sh?raw';
 
 AI कोडिंग असिस्टेंट के लिए मशीन से पढ़ने लायक डॉक्स।
 
-<FeatureGrid columns={3} items={[
+<FeatureGrid columns={4} items={[
             {
               icon: FileText,
               label: 'llms.txt',
@@ -24,6 +24,11 @@ AI कोडिंग असिस्टेंट के लिए मशीन 
               icon: Bot,
               label: 'context7',
               desc: 'लाइव इंडेक्स होने वाला manifest। @context7 MCP सर्वर के साथ इस्तेमाल करें।',
+            },
+            {
+              icon: Globe,
+              label: 'WebMCP',
+              desc: 'agents के लिए ब्राउज़र tools: पेज की सूची, सर्च, पढ़ना और खोलना।',
             },
           ]} />
 
@@ -56,6 +61,21 @@ Agent में किसी endpoint का URL पेस्ट करें, �
 प्रोग्राम से fetch करें:
 
 <CodeBlock code={directIngestion} language="bash" />
+
+## ब्राउज़र में चलने वाले agents (WebMCP) [#webmcp]
+
+reelkit.dev का हर पेज [WebMCP](https://webmachinelearning.github.io/webmcp/) tools रजिस्टर करता है, ताकि आपके ब्राउज़र में चल रहा AI agent रेंडर हुए पेज को scrape करने के बजाय docs सीधे पढ़ सके।
+
+| Tool | काम |
+| --- | --- |
+| `list_pages` | हर docs पेज, उसके title, URL और group के साथ। |
+| `search_docs` | `query` से साइट सर्च, वैकल्पिक `locale` और `framework` के साथ। अधिकतम 20 नतीजे, section anchors सहित। |
+| `get_page` | एक पेज markdown में: वही अंग्रेज़ी टेक्स्ट जो `llms-full.txt` में उस पेज के लिए है। |
+| `open_page` | पेज को मौजूदा टैब में, आप जिस भाषा में पढ़ रहे हैं उसी में खोलता है, चाहें तो किसी section पर। |
+
+<Callout type="info">
+  WebMCP अभी एक draft standard है। reelkit.dev पर यह origin trial के ज़रिए Chrome 149 से 156 में काम करता है; बाकी जगह Chrome में `chrome://flags/#enable-webmcp-testing` चालू करना होता है। जिन ब्राउज़र में यह नहीं है वे कुछ भी अतिरिक्त लोड नहीं करते। ये tools सिर्फ़ सार्वजनिक docs पढ़ते हैं: न cookies, न storage, न इस साइट के बाहर कोई request।
+</Callout>
 
 ## क्या इंडेक्स होता है [#what-gets-indexed]
 

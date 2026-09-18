@@ -167,6 +167,7 @@ export const esTitles: Record<string, string> = {
   'RK_REEL_KEY & useReelContext': 'RK_REEL_KEY y useReelContext',
   SoundProvider: 'SoundProvider',
   'Package Exports': 'Exports del paquete',
+  'In-browser agents (WebMCP)': 'Agentes en el navegador (WebMCP)',
   'rk-reel Component': 'Componente rk-reel',
   'rkReelItem Template Pattern': 'Patrón de plantilla rkReelItem',
   'apiReady Output — Signal-Based Pattern':

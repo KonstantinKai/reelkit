@@ -3,7 +3,7 @@ title: AI / LLM Integration
 url: https://reelkit.dev/docs/llms
 section: Meta
 order: 3
-desc: Machine-readable docs for AI coding assistants — llms.txt, llms-full.txt, and the Context7 manifest.
+desc: Machine-readable docs for AI coding assistants — llms.txt, llms-full.txt, the Context7 manifest, and WebMCP tools.
 ---
 
 # AI / LLM Integration
@@ -38,6 +38,19 @@ Install [@context7](https://github.com/upstash/context7) MCP server. Agent picks
 curl -s https://reelkit.dev/llms.txt
 curl -s https://reelkit.dev/llms-full.txt
 ```
+
+## In-browser agents (WebMCP)
+
+Every reelkit.dev page registers [WebMCP](https://webmachinelearning.github.io/webmcp/) tools → agent running in the browser reads docs directly, no scraping.
+
+| Tool          | Purpose                                                                                         |
+| ------------- | ----------------------------------------------------------------------------------------------- |
+| `list_pages`  | Every docs page: title, URL, group.                                                             |
+| `search_docs` | Site search by `query`; optional `locale`, `framework`. ≤ 20 results, section anchors included. |
+| `get_page`    | One page as markdown — English text `llms-full.txt` holds for it.                               |
+| `open_page`   | Opens page in current tab, in reader's language, optionally at a section.                       |
+
+WebMCP = draft standard. reelkit.dev: works in Chrome 149–156 via origin trial; elsewhere Chrome needs `chrome://flags/#enable-webmcp-testing`. Browsers without it load nothing extra. Tools read public docs only — no cookies, no storage, no requests beyond the site.
 
 ## What gets indexed
 

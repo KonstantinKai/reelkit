@@ -123,6 +123,13 @@ const _kBootstrapScript = `(function () {
   }
 })();`;
 
+// Chrome origin trial token for WebMCP on https://reelkit.dev. It lets the
+// docs register their agent tools in Chrome 149 to 156 without the testing
+// flag, and expires on 17 November 2026 with the trial. Anyone can read it in
+// the page source; it only proves the site signed up.
+const _kWebMcpOriginTrialToken =
+  'Au91fum1KEuQZb5u5g8Vns0m6VppOUgpOqOv9oSyLkjAFvds19Sgq2nQOO3oIU4WDuc8xhgeFC5dd1iw1lBFtwwAAABLeyJvcmlnaW4iOiJodHRwczovL3JlZWxraXQuZGV2OjQ0MyIsImZlYXR1cmUiOiJXZWJNQ1AiLCJleHBpcnkiOjE3OTQ4NzM2MDB9';
+
 const _kStructuredData = JSON.stringify({
   '@context': 'https://schema.org',
   '@type': 'SoftwareSourceCode',
@@ -155,6 +162,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     >
       <head>
         <Meta />
+        <meta httpEquiv="origin-trial" content={_kWebMcpOriginTrialToken} />
         <Links />
         {/* Same-language self-referential canonical. A shared canonical would
             fold both language versions into one, and the alternates below
