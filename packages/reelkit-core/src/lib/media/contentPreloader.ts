@@ -1,6 +1,6 @@
-import { noop } from './noop';
-import { createLruCache } from './lruCache';
-import type { Disposer } from './disposable';
+import { noop } from '../utils/noop';
+import { createLruCache } from '../utils/lruCache';
+import type { Disposer } from '../utils/disposable';
 
 export interface ContentPreloaderConfig {
   /**

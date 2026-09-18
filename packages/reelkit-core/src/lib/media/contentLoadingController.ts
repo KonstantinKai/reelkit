@@ -1,4 +1,4 @@
-import { createSignal, type Signal } from './signal';
+import { createSignal, type Signal } from '../signal/signal';
 
 export interface ContentLoadingController {
   /** Whether the active content is currently loading. */

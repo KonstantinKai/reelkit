@@ -1,6 +1,6 @@
-import { createLruCache, type LruCache } from './lruCache';
-import { observeDomEvent } from './observeDomEvent';
-import type { Disposer } from './disposable';
+import { createLruCache, type LruCache } from '../utils/lruCache';
+import { observeDomEvent } from '../dom/observeDomEvent';
+import type { Disposer } from '../utils/disposable';
 
 const _kMaxCachedPositions = 200;
 const _kMaxCachedFrames = 50;

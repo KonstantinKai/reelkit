@@ -11,7 +11,11 @@ describe('observeDomEvent', () => {
 
     observeDomEvent(target, 'click', callback);
 
-    expect(target.addEventListener).toHaveBeenCalledWith('click', callback, undefined);
+    expect(target.addEventListener).toHaveBeenCalledWith(
+      'click',
+      callback,
+      undefined,
+    );
   });
 
   it('should pass options to addEventListener', () => {
@@ -24,7 +28,11 @@ describe('observeDomEvent', () => {
 
     observeDomEvent(target, 'click', callback, options);
 
-    expect(target.addEventListener).toHaveBeenCalledWith('click', callback, options);
+    expect(target.addEventListener).toHaveBeenCalledWith(
+      'click',
+      callback,
+      options,
+    );
   });
 
   it('should return function that removes event listener', () => {
@@ -37,7 +45,11 @@ describe('observeDomEvent', () => {
     const dispose = observeDomEvent(target, 'click', callback);
     dispose();
 
-    expect(target.removeEventListener).toHaveBeenCalledWith('click', callback, undefined);
+    expect(target.removeEventListener).toHaveBeenCalledWith(
+      'click',
+      callback,
+      undefined,
+    );
   });
 
   it('should pass options to removeEventListener', () => {
@@ -51,7 +63,11 @@ describe('observeDomEvent', () => {
     const dispose = observeDomEvent(target, 'click', callback, options);
     dispose();
 
-    expect(target.removeEventListener).toHaveBeenCalledWith('click', callback, options);
+    expect(target.removeEventListener).toHaveBeenCalledWith(
+      'click',
+      callback,
+      options,
+    );
   });
 
   it('should work with different event types', () => {
@@ -65,8 +81,23 @@ describe('observeDomEvent', () => {
     observeDomEvent(target, 'keydown', vi.fn());
 
     expect(target.addEventListener).toHaveBeenCalledTimes(3);
-    expect(target.addEventListener).toHaveBeenNthCalledWith(1, 'mousedown', expect.any(Function), undefined);
-    expect(target.addEventListener).toHaveBeenNthCalledWith(2, 'touchstart', expect.any(Function), undefined);
-    expect(target.addEventListener).toHaveBeenNthCalledWith(3, 'keydown', expect.any(Function), undefined);
+    expect(target.addEventListener).toHaveBeenNthCalledWith(
+      1,
+      'mousedown',
+      expect.any(Function),
+      undefined,
+    );
+    expect(target.addEventListener).toHaveBeenNthCalledWith(
+      2,
+      'touchstart',
+      expect.any(Function),
+      undefined,
+    );
+    expect(target.addEventListener).toHaveBeenNthCalledWith(
+      3,
+      'keydown',
+      expect.any(Function),
+      undefined,
+    );
   });
 });

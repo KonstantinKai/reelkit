@@ -1,7 +1,7 @@
-import { createSignal, type Signal } from './signal';
-import { createDisposableList } from './disposable';
+import { createSignal, type Signal } from '../signal/signal';
+import { createDisposableList } from '../utils/disposable';
 import { observeDomEvent } from './observeDomEvent';
-import type { Disposer } from './disposable';
+import type { Disposer } from '../utils/disposable';
 
 type FullscreenDocument = Document & {
   readonly webkitFullscreenElement?: Element | null;

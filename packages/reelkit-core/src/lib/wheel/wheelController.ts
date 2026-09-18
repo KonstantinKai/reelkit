@@ -1,7 +1,7 @@
 import { abs } from '../utils/number';
 import { timeout } from '../utils/timeout';
 import { createDisposableList } from '../utils/disposable';
-import { observeDomEvent } from '../utils/observeDomEvent';
+import { observeDomEvent } from '../dom/observeDomEvent';
 import type {
   WheelDirection,
   WheelControllerConfig,

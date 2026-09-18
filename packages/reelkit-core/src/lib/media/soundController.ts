@@ -1,5 +1,5 @@
-import { createSignal, type Signal } from './signal';
-import type { Disposer } from './disposable';
+import { createSignal, type Signal } from '../signal/signal';
+import type { Disposer } from '../utils/disposable';
 
 export interface SoundController {
   /** Whether audio is muted. Defaults to `true` (muted). */

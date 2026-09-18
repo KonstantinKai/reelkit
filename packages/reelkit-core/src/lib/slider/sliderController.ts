@@ -1,8 +1,6 @@
+import { createSignal, createComputed, batch } from '../signal/signal';
 import {
-  createSignal,
-  createComputed,
   createDeferred,
-  batch,
   clamp,
   extractRange,
   abs,

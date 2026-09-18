@@ -3,10 +3,10 @@ import {
   createComputed,
   type Signal,
   type ComputedSignal,
-} from './signal';
-import { createDisposableList, type Disposer } from './disposable';
-import { clamp } from './number';
-import { observeDomEvent } from './observeDomEvent';
+} from '../signal/signal';
+import { createDisposableList, type Disposer } from '../utils/disposable';
+import { clamp } from '../utils/number';
+import { observeDomEvent } from '../dom/observeDomEvent';
 
 /**
  * Configuration for {@link createTimelineController}.

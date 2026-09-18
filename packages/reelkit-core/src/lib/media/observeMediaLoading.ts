@@ -1,6 +1,6 @@
-import { createDisposableList } from './disposable';
-import type { Disposer } from './disposable';
-import { observeDomEvent } from './observeDomEvent';
+import { createDisposableList } from '../utils/disposable';
+import type { Disposer } from '../utils/disposable';
+import { observeDomEvent } from '../dom/observeDomEvent';
 
 export interface MediaLoadingCallbacks {
   /**

@@ -1,6 +1,6 @@
 import { describe, it } from 'vitest';
-import { urlIndexKey } from './urlIndexKey';
-import { urlStableIdTwoAxisKey } from './urlStableIdKey';
+import { urlIndexKey } from '../url/urlIndexKey';
+import { urlStableIdTwoAxisKey } from '../url/urlStableIdKey';
 import {
   createViewedStateController,
   twoAxisViewedTracking,

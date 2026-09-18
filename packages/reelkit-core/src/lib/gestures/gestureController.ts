@@ -1,7 +1,8 @@
 import { createDisposableList } from '../utils/disposable';
 import { timeout } from '../utils/timeout';
-import { observeDomEvent } from '../utils/observeDomEvent';
-import { abs, first, last } from '../utils';
+import { observeDomEvent } from '../dom/observeDomEvent';
+import { abs } from '../utils/number';
+import { first, last } from '../utils/array';
 import type {
   Offset,
   EventKind,

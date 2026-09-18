@@ -1,5 +1,5 @@
-import { observeDomEvent } from './observeDomEvent';
-import { createSignal, type Signal, type Dispose } from './signal';
+import { observeDomEvent } from '../dom/observeDomEvent';
+import { createSignal, type Signal, type Dispose } from '../signal/signal';
 import { indexCodec } from './urlIndexKey';
 
 /**

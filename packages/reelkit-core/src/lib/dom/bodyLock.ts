@@ -1,5 +1,5 @@
-import type { Disposer } from './disposable';
-import { noop } from './noop';
+import type { Disposer } from '../utils/disposable';
+import { noop } from '../utils/noop';
 
 /**
  * A reference-counted body scroll lock. Multiple callers can lock/unlock

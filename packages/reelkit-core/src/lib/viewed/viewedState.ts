@@ -1,9 +1,9 @@
-import { createLruCache } from './lruCache';
-import { noop } from './noop';
-import { observeDomEvent } from './observeDomEvent';
-import { createSignal, type Dispose, type Signal } from './signal';
-import type { TwoAxisIdentity, TwoAxisPosition } from './urlIndexKey';
-import type { UrlKey } from './urlState';
+import { createLruCache } from '../utils/lruCache';
+import { noop } from '../utils/noop';
+import { observeDomEvent } from '../dom/observeDomEvent';
+import { createSignal, type Dispose, type Signal } from '../signal/signal';
+import type { TwoAxisIdentity, TwoAxisPosition } from '../url/urlIndexKey';
+import type { UrlKey } from '../url/urlState';
 
 // Distinct wires remembered per controller. Comfortably above any payload a
 // viewer accrues, so eviction is a safety valve rather than a working mode.

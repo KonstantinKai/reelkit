@@ -1,4 +1,4 @@
-import type { Signal, ComputedSignal } from '../utils/signal';
+import type { Signal, ComputedSignal } from '../signal/signal';
 import type { GestureCommonEvent, GestureEvent } from '../gestures/types';
 
 /** Axis along which the slider moves. */

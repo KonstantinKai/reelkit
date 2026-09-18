@@ -1,4 +1,4 @@
-import { observeDomEvent } from '../utils/observeDomEvent';
+import { observeDomEvent } from '../dom/observeDomEvent';
 import type {
   NavKey,
   KeyboardControllerConfig,

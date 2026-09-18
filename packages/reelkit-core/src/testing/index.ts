@@ -11,8 +11,8 @@
 // tsconfig.base.json for vitest, plus a moduleNameMapper entry and a local
 // paths override for each jest project, which do not inherit the base paths.
 
-import type { StorageAdapter } from '../lib/utils/viewedState';
-import type { UrlAdapter, UrlChange } from '../lib/utils/urlState';
+import type { StorageAdapter } from '../lib/viewed/viewedState';
+import type { UrlAdapter, UrlChange } from '../lib/url/urlState';
 
 /** Options for {@link createFakeUrlAdapter}. */
 export interface FakeUrlAdapterOptions {

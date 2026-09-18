@@ -8,8 +8,8 @@ import {
   type UrlLocator,
 } from './urlState';
 import { indexCodec, urlIndexKey, urlIndexTwoAxisKey } from './urlIndexKey';
-import { createDeferred } from './deferred';
-import type { Dispose } from './signal';
+import { createDeferred } from '../utils/deferred';
+import type { Dispose } from '../signal/signal';
 
 const createFakeAdapter = (initial = '', notifyOnPush = false) =>
   createFakeUrlAdapter(initial, { notifyOnPush });

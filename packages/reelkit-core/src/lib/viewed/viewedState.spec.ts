@@ -2,8 +2,8 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { createFakeStorageAdapter } from '../../testing';
-import { urlIndexKey, urlIndexTwoAxisKey } from './urlIndexKey';
-import { urlStableIdTwoAxisKey } from './urlStableIdKey';
+import { urlIndexKey, urlIndexTwoAxisKey } from '../url/urlIndexKey';
+import { urlStableIdTwoAxisKey } from '../url/urlStableIdKey';
 import {
   createViewedStateController,
   twoAxisViewedTracking,

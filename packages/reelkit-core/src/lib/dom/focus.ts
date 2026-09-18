@@ -1,6 +1,6 @@
-import { createDisposableList, type Disposer } from './disposable';
+import { createDisposableList, type Disposer } from '../utils/disposable';
 import { observeDomEvent } from './observeDomEvent';
-import { noop } from './noop';
+import { noop } from '../utils/noop';
 
 /**
  * Selector matching elements that can receive keyboard focus and are not
