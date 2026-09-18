@@ -1,15 +1,15 @@
 ---
 title: AI / LLM との連携
-description: AI コーディングアシスタント向けの機械可読なドキュメントです。llms.txt、llms-full.txt、Context7 のマニフェストを提供しています。
+description: AI コーディングアシスタント向けの機械可読なドキュメントです。llms.txt、llms-full.txt、Context7 のマニフェスト、WebMCP ツールを提供しています。
 ---
 
-import { FileText, Sparkles, Bot } from 'lucide-react';
+import { FileText, Sparkles, Bot, Globe } from 'lucide-react';
 import agentPrompt from '../../snippets/llms/agent-prompt.txt?raw';
 import directIngestion from '../../snippets/llms/direct-ingestion.sh?raw';
 
 AI コーディングアシスタント向けの機械可読なドキュメントです。
 
-<FeatureGrid columns={3} items={[
+<FeatureGrid columns={4} items={[
             {
               icon: FileText,
               label: 'llms.txt',
@@ -24,6 +24,11 @@ AI コーディングアシスタント向けの機械可読なドキュメン�
               icon: Bot,
               label: 'context7',
               desc: 'ライブで索引されるマニフェスト。@context7 MCP サーバーと一緒に使います。',
+            },
+            {
+              icon: Globe,
+              label: 'WebMCP',
+              desc: 'エージェント向けのブラウザ内ツール。ページの一覧、検索、読み取り、表示。',
             },
           ]} />
 
@@ -56,6 +61,21 @@ AI コーディングアシスタント向けの機械可読なドキュメン�
 プログラムから取得します：
 
 <CodeBlock code={directIngestion} language="bash" />
+
+## ブラウザ内のエージェント（WebMCP） [#webmcp]
+
+reelkit.dev のすべてのページは [WebMCP](https://webmachinelearning.github.io/webmcp/) ツールを登録します。ブラウザで動く AI エージェントは、描画済みのページをスクレイピングせずにドキュメントを直接読めます。
+
+| ツール | 用途 |
+| --- | --- |
+| `list_pages` | すべてのドキュメントページをタイトル、URL、グループ付きで返します。 |
+| `search_docs` | `query` によるサイト内検索。`locale` と `framework` は任意。最大 20 件で、セクションのアンカーも含みます。 |
+| `get_page` | 1 ページを markdown で返します。`llms-full.txt` がそのページに収める英語のテキストです。 |
+| `open_page` | 読んでいる言語のまま、現在のタブでページを開きます。セクションを指定することもできます。 |
+
+<Callout type="info">
+  WebMCP はまだ標準の草案です。reelkit.dev では origin trial により Chrome 149〜156 で動作します。それ以外のサイトでは Chrome に `chrome://flags/#enable-webmcp-testing` が必要です。対応していないブラウザは何も追加で読み込みません。ツールは公開ドキュメントを読むだけで、cookie もストレージも使わず、このサイト以外へのリクエストも行いません。
+</Callout>
 
 ## 索引に含まれるもの [#what-gets-indexed]
 

@@ -1,15 +1,15 @@
 ---
 title: AI / LLM Integration
-description: Machine-readable docs for AI coding assistants — llms.txt, llms-full.txt, and the Context7 manifest.
+description: Machine-readable docs for AI coding assistants — llms.txt, llms-full.txt, the Context7 manifest, and WebMCP tools.
 ---
 
-import { FileText, Sparkles, Bot } from 'lucide-react';
+import { FileText, Sparkles, Bot, Globe } from 'lucide-react';
 import agentPrompt from '../../snippets/llms/agent-prompt.txt?raw';
 import directIngestion from '../../snippets/llms/direct-ingestion.sh?raw';
 
 Machine-readable docs for AI coding assistants.
 
-<FeatureGrid columns={3} items={[
+<FeatureGrid columns={4} items={[
             {
               icon: FileText,
               label: 'llms.txt',
@@ -24,6 +24,11 @@ Machine-readable docs for AI coding assistants.
               icon: Bot,
               label: 'context7',
               desc: 'Live-indexed manifest. Use with the @context7 MCP server.',
+            },
+            {
+              icon: Globe,
+              label: 'WebMCP',
+              desc: 'Browser tools for agents: list, search, read and open pages.',
             },
           ]} />
 
@@ -56,6 +61,21 @@ Install the [@context7](https://github.com/upstash/context7) MCP server. The age
 Fetch programmatically:
 
 <CodeBlock code={directIngestion} language="bash" />
+
+## In-browser agents (WebMCP) [#webmcp]
+
+Every page on reelkit.dev registers [WebMCP](https://webmachinelearning.github.io/webmcp/) tools, so an AI agent running in your browser reads the docs directly instead of scraping the rendered page.
+
+| Tool | Purpose |
+| --- | --- |
+| `list_pages` | Every docs page with its title, URL and group. |
+| `search_docs` | The site search by `query`, with optional `locale` and `framework`. Up to 20 results, section anchors included. |
+| `get_page` | One page as markdown: the English text `llms-full.txt` holds for it. |
+| `open_page` | Opens a page in the current tab, in the language you are reading, optionally at a section. |
+
+<Callout type="info">
+  WebMCP is a draft standard. On reelkit.dev it works in Chrome 149 to 156 through an origin trial; anywhere else, Chrome needs `chrome://flags/#enable-webmcp-testing`. Browsers without it load nothing extra. The tools only read the public docs: no cookies, no storage, no requests beyond this site.
+</Callout>
 
 ## What gets indexed [#what-gets-indexed]
 

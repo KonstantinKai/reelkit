@@ -1,15 +1,15 @@
 ---
 title: Інтеграція з AI / LLM
-description: 'Як згодувати документацію ReelKit асистентам: llms.txt, llms-full.txt і рекомендовані способи підключення.'
+description: 'Як згодувати документацію ReelKit асистентам: llms.txt, llms-full.txt, інструменти WebMCP і рекомендовані способи підключення.'
 ---
 
-import { FileText, Sparkles, Bot } from 'lucide-react';
+import { FileText, Sparkles, Bot, Globe } from 'lucide-react';
 import agentPrompt from '../../snippets/llms/agent-prompt.txt?raw';
 import directIngestion from '../../snippets/llms/direct-ingestion.sh?raw';
 
 Документація в машиночитному вигляді для AI-асистентів із написання коду.
 
-<FeatureGrid columns={3} items={[
+<FeatureGrid columns={4} items={[
             {
               icon: FileText,
               label: 'llms.txt',
@@ -24,6 +24,11 @@ import directIngestion from '../../snippets/llms/direct-ingestion.sh?raw';
               icon: Bot,
               label: 'context7',
               desc: 'Маніфест із живим індексом. Використовуйте з MCP-сервером @context7.',
+            },
+            {
+              icon: Globe,
+              label: 'WebMCP',
+              desc: 'Інструменти в браузері для агентів: список, пошук, читання й відкриття сторінок.',
             },
           ]} />
 
@@ -56,6 +61,21 @@ import directIngestion from '../../snippets/llms/direct-ingestion.sh?raw';
 Завантажуйте програмно:
 
 <CodeBlock code={directIngestion} language="bash" />
+
+## Агенти в браузері (WebMCP) [#webmcp]
+
+Кожна сторінка reelkit.dev реєструє інструменти [WebMCP](https://webmachinelearning.github.io/webmcp/), тож AI-агент у вашому браузері читає документацію напряму, а не розбирає відрендерену сторінку.
+
+| Інструмент | Призначення |
+| --- | --- |
+| `list_pages` | Усі сторінки документації з назвою, URL і розділом. |
+| `search_docs` | Пошук сайту за `query`, з необовʼязковими `locale` і `framework`. До 20 результатів, з якорями розділів. |
+| `get_page` | Одна сторінка в markdown: англійський текст, який містить для неї `llms-full.txt`. |
+| `open_page` | Відкриває сторінку в поточній вкладці мовою, якою ви читаєте, за потреби одразу на потрібному розділі. |
+
+<Callout type="info">
+  WebMCP — чернетка стандарту. На reelkit.dev він працює в Chrome 149–156 завдяки origin trial; деінде Chrome потребує прапорця `chrome://flags/#enable-webmcp-testing`. Браузери без нього нічого додатково не завантажують. Інструменти лише читають публічну документацію: без cookie, без сховища, без запитів за межі цього сайту.
+</Callout>
 
 ## Що потрапляє в індекс [#what-gets-indexed]
 

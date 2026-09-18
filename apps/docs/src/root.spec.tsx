@@ -30,6 +30,9 @@ function headOf(pathname: string) {
   return {
     lang: markup.match(/<html[^>]*\slang="([^"]+)"/)?.[1],
     canonical: markup.match(/<link rel="canonical" href="([^"]+)"/)?.[1],
+    originTrial: markup.match(
+      /<meta http-equiv="origin-trial" content="([^"]+)"/,
+    )?.[1],
     alternates: [
       ...markup.matchAll(
         /<link rel="alternate" hrefLang="([^"]+)" href="([^"]+)"/g,
@@ -90,6 +93,24 @@ describe('document head', () => {
     expect(headOf('/').canonical).toBe('https://reelkit.dev/');
     expect(headOf('/uk').canonical).toBe('https://reelkit.dev/uk');
   });
+
+  // The token is signed for one origin and one feature; a token pasted for
+  // another site or trial would silently do nothing.
+  it.each(['/', '/docs/llms', '/uk/docs/ssr', '/privacy'])(
+    'carries the WebMCP origin trial token on %s',
+    (pathname) => {
+      const token = headOf(pathname).originTrial;
+      expect(token).toBeTruthy();
+      const signed = Buffer.from(token as string, 'base64');
+      const payload = JSON.parse(
+        signed.subarray(signed.indexOf('{')).toString('utf8'),
+      );
+      expect(payload).toMatchObject({
+        origin: 'https://reelkit.dev:443',
+        feature: 'WebMCP',
+      });
+    },
+  );
 });
 
 describe('connection hints', () => {

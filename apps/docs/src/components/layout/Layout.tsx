@@ -1,7 +1,12 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { createSignal, reaction, Observe } from '@reelkit/react';
+import {
+  createDisposableList,
+  createSignal,
+  reaction,
+  Observe,
+} from '@reelkit/react';
 import Header from './Header';
 import Sidebar from './Sidebar';
 import Footer from './Footer';
@@ -22,6 +27,7 @@ import {
   stripFrameworkFromUrl,
   syncFrameworkFromClient,
 } from '../../data/frameworkSignal';
+import { loadDocsTools } from '../../webmcp/loadDocsTools';
 
 export default function Layout() {
   const [sidebarOpen] = useState(() => createSignal(false));
@@ -42,20 +48,25 @@ export default function Layout() {
   }, []);
 
   useEffect(() => {
-    return reaction(
-      () => [frameworkSignal],
-      () => {
-        const fw = frameworkSignal.value;
-        const path = window.location.pathname;
-        const locale = readLocaleFromPath(path);
-        const shared = stripLocaleFromPath(path);
-        const toIdx = fw === 'react' ? 0 : fw === 'angular' ? 1 : 2;
-        const pair = frameworkRoutePairs.find((p) => p.includes(shared));
-        if (pair && pair[toIdx] !== shared) {
-          navigate(withLocale(locale, pair[toIdx]), { replace: true });
-        }
-      },
+    const disposables = createDisposableList();
+    disposables.push(
+      reaction(
+        () => [frameworkSignal],
+        () => {
+          const fw = frameworkSignal.value;
+          const path = window.location.pathname;
+          const locale = readLocaleFromPath(path);
+          const shared = stripLocaleFromPath(path);
+          const toIdx = fw === 'react' ? 0 : fw === 'angular' ? 1 : 2;
+          const pair = frameworkRoutePairs.find((p) => p.includes(shared));
+          if (pair && pair[toIdx] !== shared) {
+            navigate(withLocale(locale, pair[toIdx]), { replace: true });
+          }
+        },
+      ),
+      loadDocsTools(navigate),
     );
+    return disposables.dispose;
   }, [navigate]);
 
   const showSidebar = stripLocaleFromPath(location.pathname).startsWith(

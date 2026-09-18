@@ -164,6 +164,7 @@ export const zhTitles: Record<string, string> = {
   'RK_REEL_KEY & useReelContext': 'RK_REEL_KEY 与 useReelContext',
   SoundProvider: 'SoundProvider',
   'Package Exports': '包导出',
+  'In-browser agents (WebMCP)': '浏览器内的 Agent（WebMCP）',
   'rk-reel Component': 'rk-reel 组件',
   'rkReelItem Template Pattern': 'rkReelItem 模板模式',
   'apiReady Output — Signal-Based Pattern': 'apiReady 输出 — 基于信号的模式',

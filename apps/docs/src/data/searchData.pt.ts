@@ -168,6 +168,7 @@ export const ptTitles: Record<string, string> = {
   'RK_REEL_KEY & useReelContext': 'RK_REEL_KEY e useReelContext',
   SoundProvider: 'SoundProvider',
   'Package Exports': 'Exports do pacote',
+  'In-browser agents (WebMCP)': 'Agentes no navegador (WebMCP)',
   'rk-reel Component': 'Componente rk-reel',
   'rkReelItem Template Pattern': 'Padrão de template rkReelItem',
   'apiReady Output — Signal-Based Pattern':
