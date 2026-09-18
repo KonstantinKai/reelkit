@@ -1,3 +1,137 @@
+## @reelkit/vue@0.6.1 (2026-09-18)
+
+### 🩹 Fixes
+
+- Editor hovers on ReelIndicator and the Reel context no longer show broken links to Reel
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.8.1
+
+## @reelkit/core@0.8.1 (2026-09-18)
+
+### 🩹 Fixes
+
+- Callable members of the controller, signal and storage adapter interfaces are declared as function-typed properties, so code that implements one of them is now checked strictly: a narrower parameter type than the interface allows is a type error
+- SliderController.updateConfig and updateEvents, and GestureController.attach and updateEvents, document what a partial update keeps, what undefined clears and when listeners are attached
+- Editor hovers no longer show broken links to symbols from other modules
+
+## @reelkit/react@0.9.0 (2026-09-18)
+
+### 🚀 Features
+
+- Observe now follows a different signal handed to it on a later render, in place of the one it replaced
+
+### ⚠️  Breaking Changes
+
+- useViewedState is removed; create the store once with useState(() => createViewedStateController(options)) and attach it in an effect, useEffect(() => store.attach(), [store]), or use createStoriesViewedStateController from @reelkit/stories-core for a stories feed
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.8.1
+
+## @reelkit/angular@0.6.1 (2026-09-18)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.8.1
+
+## @reelkit/vue-lightbox@0.2.2 (2026-09-18)
+
+### 🩹 Fixes
+
+- LightboxApi, the object api-ready emits and the template ref exposes, is documented member by member: slider methods do nothing while the lightbox is closed, close always works, goTo clamps its index
+- LightboxApi members are declared as function-typed properties, so code that implements the interface is now checked strictly
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/vue to 0.6.1
+
+## @reelkit/stories-core@0.4.0 (2026-09-18)
+
+### 🚀 Features
+
+- New createStoriesViewedStateController: everything a feed needs to remember what was seen from one call, with ring counts, resume positions, recording and storage that survives a reload; framework-agnostic, so React, Vue and Angular use it the same way
+- New StoriesController.updateConfig({ groupCount, storyCounts }) for a feed that changes while the player is open, so groups paged in later can be reached
+
+### ⚠️  Breaking Changes
+
+- createStoriesViewedState and the StoriesViewedState type are no longer exported; createStoriesViewedStateController covers the same ground and takes the key, storage, ttlMs and maxTracks options directly
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.8.1
+
+## @reelkit/react-lightbox@0.6.2 (2026-09-18)
+
+### 🩹 Fixes
+
+- Editor hovers no longer show broken links to LightboxOverlay and the sub-components in the render prop types
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/react to 0.9.0
+- Updated @reelkit/core to 0.8.1
+
+## @reelkit/vue-reel-player@0.3.2 (2026-09-18)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.8.1
+- Updated @reelkit/vue to 0.6.1
+
+## @reelkit/angular-lightbox@0.5.2 (2026-09-18)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/angular to 0.6.1
+- Updated @reelkit/core to 0.8.1
+
+## @reelkit/react-reel-player@0.6.2 (2026-09-18)
+
+### 🩹 Fixes
+
+- Editor hovers no longer show broken links to SoundProvider, TimelineProvider and the slide components
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/react to 0.9.0
+- Updated @reelkit/core to 0.8.1
+
+## @reelkit/angular-reel-player@0.5.2 (2026-09-18)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/angular to 0.6.1
+- Updated @reelkit/core to 0.8.1
+
+## @reelkit/react-stories-player@0.5.0 (2026-09-18)
+
+### 🚀 Features
+
+- Stories player on desktop now fills the window height (with a 16px margin) at 9:16 instead of stopping at 480px wide, so the story is noticeably larger on big screens
+- New desktopLayout="carousel" option lays the stories player out like Instagram on the web: neighbouring groups show as preview cards beside the active story, clicking one opens that group, and the cards slide across while the group changes
+- New viewed prop on StoriesOverlay, StoriesUrlOverlay and StoriesRingList takes a createStoriesViewedStateController and does the whole viewed-state job: groups resume on their first unseen story, every story shown is recorded, and the rings and carousel cards mute a group watched to the end
+- New renderGroupPreview render prop replaces the content of a carousel card
+- A carousel card previews a story with no image through renderSlide, scaled down and inert
+- The groups prop may grow while the player is open: cards for groups paged in later can be opened, and the last group moves on to them instead of closing
+- Changing group always resumes a paused player, whether or not the story index changes
+
+### 🩹 Fixes
+
+- Fixed enableKeyboard={false} having no effect: the arrow keys and Escape are now left alone when it is off
+
+### ⚠️  Breaking Changes
+
+- StoriesRingList no longer takes a viewedState map; pass the same viewed controller the player takes
+- useViewedState is no longer re-exported; create a viewed controller with createStoriesViewedStateController instead
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/stories-core to 0.4.0
+- Updated @reelkit/react to 0.9.0
+- Updated @reelkit/core to 0.8.1
+
 ## Documentation (2026-09-16)
 
 ### 📖 Documentation
