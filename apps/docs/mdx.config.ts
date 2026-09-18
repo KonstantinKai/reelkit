@@ -29,7 +29,7 @@ interface Node {
 
 interface File {
   path: string;
-  fail(reason: string, place?: Node): never;
+  fail: (reason: string, place?: Node) => never;
 }
 
 /**

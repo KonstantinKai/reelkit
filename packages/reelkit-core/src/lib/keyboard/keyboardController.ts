@@ -3,8 +3,22 @@ import type {
   NavKey,
   KeyboardControllerConfig,
   KeyboardControllerEvents,
-  KeyboardController,
 } from './types';
+
+/**
+ * Keyboard navigation controller that listens for arrow keys.
+ * Created via {@link createKeyboardController}.
+ */
+export interface KeyboardController {
+  /**
+   * Starts listening for `keydown` events on the given target.
+   * @param target - The event target. Defaults to `window`.
+   */
+  attach: (target?: Window | HTMLElement) => void;
+
+  /** Removes the `keydown` listener and detaches from the target. */
+  detach: () => void;
+}
 
 const _kNavKeyCodes: Record<string, NavKey | undefined> = {
   ArrowUp: 'up',

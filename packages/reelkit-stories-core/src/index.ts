@@ -19,18 +19,21 @@ export type {
   StoriesGroup,
   StoriesControllerConfig,
   StoriesControllerEvents,
-  StoriesController,
   SegmentStatus,
   SegmentState,
   VisibleWindow,
   TapAction,
 } from './lib/types';
 
-export { createStoriesController } from './lib/storiesController';
+export {
+  createStoriesController,
+  type StoriesController,
+} from './lib/storiesController';
 
 export {
-  createStoriesViewedState,
-  type StoriesViewedState,
+  createStoriesViewedStateController,
+  type StoriesViewedStateController,
+  type StoriesViewedStateControllerConfig,
 } from './lib/storiesViewedState';
 
 export {

@@ -1,9 +1,89 @@
-import { clamp, createSignal } from '@reelkit/core';
-import type {
-  StoriesControllerConfig,
-  StoriesControllerEvents,
-  StoriesController,
-} from './types';
+import { clamp, createSignal, type Signal } from '@reelkit/core';
+import type { StoriesControllerConfig, StoriesControllerEvents } from './types';
+
+export interface StoriesController {
+  /** Reactive state signals. */
+  readonly state: {
+    activeGroupIndex: Signal<number>;
+    activeStoryIndex: Signal<number>;
+    isPaused: Signal<boolean>;
+  };
+
+  /**
+   * Where a group opens: the story it was left on this session, or the one
+   * `resumeStoryIndex` names for a group not yet visited (its first story when
+   * nothing is configured).
+   */
+  getLastStoryIndex: (groupIndex: number) => number;
+
+  /**
+   * Replaces the group and story counts, for a feed that changes while the
+   * player is open: more groups paged in, or a story added to a group. The
+   * counts are copied when the controller is created, so until this is called
+   * a group past the original count cannot be reached, and the last original
+   * group closes the player instead of moving on.
+   *
+   * Fires no event. Positions are kept by group index, so where each group was
+   * left survives groups being appended; inserting or removing groups before
+   * the end shifts them. If the feed shrank, the active position and every
+   * remembered one are pulled back to a group and story that still exist.
+   *
+   * @example Follow a feed that loads more groups
+   * ```ts
+   * controller.updateConfig({
+   *   groupCount: groups.length,
+   *   storyCounts: groups.map((group) => group.stories.length),
+   * });
+   * ```
+   */
+  updateConfig: (
+    config: Pick<StoriesControllerConfig, 'groupCount' | 'storyCounts'>,
+  ) => void;
+
+  /**
+   * Reports the story the player opened on as viewed, once.
+   *
+   * Navigation is what normally marks a story viewed, so the very first story
+   * — the one already on screen before anything is tapped — would otherwise go
+   * unreported, and a group holding a single story could never be marked seen.
+   * Call this after mounting, not while rendering: it invokes `onStoryViewed`,
+   * and a consumer's handler is free to write state from it.
+   *
+   * A no-op once anything has been viewed, so calling it late or twice cannot
+   * double-count.
+   */
+  reportInitialView: () => void;
+
+  /** Advance to the next story, switching groups at boundary. */
+  nextStory: () => void;
+
+  /** Go to the previous story, switching groups at boundary. */
+  prevStory: () => void;
+
+  /**
+   * Switches to the next group, opening it where `getLastStoryIndex` says.
+   * Past the last group it fires `onComplete` and `onClose` instead.
+   */
+  nextGroup: () => void;
+
+  /**
+   * Switches to the previous group, opening it where `getLastStoryIndex`
+   * says. Does nothing on the first group.
+   */
+  prevGroup: () => void;
+
+  /** Jump to a specific group by index. */
+  goToGroup: (index: number) => void;
+
+  /** Pause auto-advance. */
+  pause: () => void;
+
+  /** Resume auto-advance. */
+  resume: () => void;
+
+  /** Called when the timer for the current story completes. */
+  onStoryTimerComplete: () => void;
+}
 
 const _kDefaultImageDuration = 5000;
 
@@ -31,6 +111,9 @@ export const createStoriesController = (
   const getStoryCount = (groupIndex: number) =>
     config.storyCounts[groupIndex] ?? 0;
 
+  const lastStoryOf = (groupIndex: number) =>
+    Math.max(getStoryCount(groupIndex) - 1, 0);
+
   /**
    * Where a group opens the first time it is reached: what `resumeStoryIndex`
    * names, which is how a persisted "seen up to here" reaches the player,
@@ -44,8 +127,7 @@ export const createStoriesController = (
     // nothing, and a value that is not a number at all carries no opinion, so
     // the group starts at its beginning.
     const resumed = Number.isFinite(suggested) ? Math.trunc(suggested) : 0;
-    const lastStory = Math.max(getStoryCount(groupIndex) - 1, 0);
-    return clamp(resumed, 0, lastStory);
+    return clamp(resumed, 0, lastStoryOf(groupIndex));
   };
 
   // The group the player opens on is reached for the first time like any other,
@@ -89,6 +171,36 @@ export const createStoriesController = (
 
     getLastStoryIndex(groupIndex: number): number {
       return storyIndexFor(groupIndex);
+    },
+
+    updateConfig({ groupCount, storyCounts }) {
+      config.groupCount = groupCount;
+      config.storyCounts = [...storyCounts];
+
+      // A feed that shrank can leave positions pointing past its end.
+      for (const [groupIndex, storyIndex] of lastStoryPerGroup) {
+        if (groupIndex >= groupCount) {
+          lastStoryPerGroup.delete(groupIndex);
+        } else {
+          lastStoryPerGroup.set(
+            groupIndex,
+            clamp(storyIndex, 0, lastStoryOf(groupIndex)),
+          );
+        }
+      }
+
+      const groupIndex = clamp(
+        activeGroupIndex.value,
+        0,
+        Math.max(groupCount - 1, 0),
+      );
+      const storyIndex =
+        groupIndex === activeGroupIndex.value
+          ? clamp(activeStoryIndex.value, 0, lastStoryOf(groupIndex))
+          : storyIndexFor(groupIndex);
+      activeGroupIndex.value = groupIndex;
+      activeStoryIndex.value = storyIndex;
+      lastStoryPerGroup.set(groupIndex, storyIndex);
     },
 
     reportInitialView() {

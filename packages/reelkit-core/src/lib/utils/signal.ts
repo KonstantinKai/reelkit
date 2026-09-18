@@ -20,7 +20,7 @@ export interface Subscribable<T = unknown> {
    * @param listener - Callback invoked on each value change.
    * @returns A dispose function that removes the listener.
    */
-  observe(listener: Listener): Dispose;
+  observe: (listener: Listener) => Dispose;
 }
 
 /**

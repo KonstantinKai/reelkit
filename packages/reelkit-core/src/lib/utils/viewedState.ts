@@ -36,10 +36,10 @@ const _kDecodeMemoSize = 512;
  */
 export interface StorageAdapter {
   /** Current text stored under `key`, or `null` when nothing is stored. */
-  read(key: string): string | null;
+  read: (key: string) => string | null;
 
   /** Stores `value` under `key`. A failed write is silently dropped. */
-  write(key: string, value: string): void;
+  write: (key: string, value: string) => void;
 
   /**
    * Registers a listener for changes made to `key` by another document — a
@@ -55,7 +55,7 @@ export interface StorageAdapter {
    *
    * @returns A dispose function that removes the listener.
    */
-  subscribe?(key: string, listener: (raw: string | null) => void): Dispose;
+  subscribe?: (key: string, listener: (raw: string | null) => void) => Dispose;
 }
 
 /**
@@ -299,7 +299,7 @@ export interface ViewedStateController<Pos = number> {
    * when there is no entry or its item is absent. Runs the full key cycle on
    * every call, so a reordered collection answers with the new position.
    */
-  resolve(track: string): Pos | null;
+  resolve: (track: string) => Pos | null;
 
   /**
    * Stores `position` as the furthest point reached in its track. A position
@@ -307,10 +307,10 @@ export interface ViewedStateController<Pos = number> {
    * this controller knows from storage, and under `ttlMs` it restarts that
    * track's clock.
    */
-  record(position: Pos): void;
+  record: (position: Pos) => void;
 
   /** Clears one track, or every track when called with no argument. */
-  forget(track?: string): void;
+  forget: (track?: string) => void;
 
   /**
    * Loads the stored entries and starts following changes made by other tabs.
@@ -321,7 +321,7 @@ export interface ViewedStateController<Pos = number> {
    *
    * @returns A dispose function that stops following changes.
    */
-  attach(): Dispose;
+  attach: () => Dispose;
 }
 
 /**

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { persistedSignal } from '../components/persistedSignal';
 import { RememberSeenSwitch } from '../components/RememberSeenSwitch';
 import { DesktopLayoutSwitch } from '../components/DesktopLayoutSwitch';
@@ -7,10 +7,7 @@ import {
   StoriesRingList,
   ImageStorySlide,
   VideoStorySlide,
-  createStoriesViewedState,
-  useViewedState,
-  twoAxisViewedTracking,
-  urlStableIdTwoAxisKey,
+  createStoriesViewedStateController,
   type StoriesGroup,
   type StoryItem,
   type SlideRenderProps,
@@ -22,6 +19,7 @@ import {
   fadeTransition,
   zoomTransition,
   slideTransition,
+  createSignal,
   Observe,
   type TransitionTransformFn,
 } from '@reelkit/react';
@@ -38,6 +36,11 @@ const AVATARS = [
 ];
 
 const NAMES = ['Alice', 'Bob', 'Charlie', 'Diana', 'Eve'];
+// Authors that "Load more" appends while the player is open, a few at a time.
+const _kMoreNames = ['Frank', 'Grace', 'Heidi', 'Ivan', 'Judy', 'Mallory'];
+const _kLoadMoreCount = 3;
+// The ReelKit group, one per name above, and the 100 stories group.
+const _kInitialGroupCount = NAMES.length + 2;
 const _kTransitions: { label: string; fn: TransitionTransformFn }[] = [
   { label: 'cube', fn: cubeTransition },
   { label: 'flip', fn: flipTransition },
@@ -253,12 +256,12 @@ function CustomSlide({
   );
 }
 
-function generateGroups(): StoriesGroup<CustomStory>[] {
-  const regular: StoriesGroup<CustomStory>[] = NAMES.map((name, i) => ({
+function makeUserGroup(name: string, i: number): StoriesGroup<CustomStory> {
+  return {
     author: {
       id: `user-${i}`,
       name,
-      avatar: AVATARS[i],
+      avatar: AVATARS[i % AVATARS.length],
       verified: i === 0 || i === 3,
     },
     stories: [
@@ -312,7 +315,11 @@ function generateGroups(): StoriesGroup<CustomStory>[] {
           ]
         : []),
     ],
-  }));
+  };
+}
+
+function generateGroups(): StoriesGroup<CustomStory>[] {
+  const regular = NAMES.map(makeUserGroup);
 
   const promoGroup: StoriesGroup<CustomStory> = {
     author: {
@@ -354,40 +361,85 @@ const btnStyle: React.CSSProperties = {
   transition: 'background 150ms',
 };
 
+// A stylesheet rather than inline styles, for the media query: the button is
+// for desktop screens only, above the same 768px the player counts as a phone.
+// It sits one step above the player overlay (`--rk-stories-overlay-z`, 9999).
+const _kLoadMoreStyles = `
+  .load-more-groups {
+    display: none;
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 10000;
+    padding: 10px 18px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    font-size: 0.85rem;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    transition: background 150ms;
+  }
+  .load-more-groups:hover {
+    background: rgba(255, 255, 255, 0.22);
+  }
+  @media (min-width: 769px) {
+    .load-more-groups {
+      display: block;
+    }
+  }
+`;
+
 function StoriesPlayerPage() {
-  const groups = useMemo(() => generateGroups(), []);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState(0);
 
-  // Groups and stories are addressed by their own ids, so what a viewer has
-  // already seen survives the feed being reordered — and the stored text is
-  // the same text a `?story=` link would carry.
-  const seen = useViewedState({
-    storageKey: 'reelkit-stories-player-seen',
-    ...urlStableIdTwoAxisKey<{ id: string }, CustomStory>({
-      outerItems: () => groups.map((group) => ({ id: group.author.id })),
-      innerItems: (outer) =>
-        groups.find((group) => group.author.id === outer.id)?.stories ?? [],
-    }),
-    ...twoAxisViewedTracking,
-  });
-  const viewed = useMemo(
-    () => createStoriesViewedState(seen, () => groups),
-    [seen, groups],
-  );
-  const [transition, setTransition] = useState<TransitionTransformFn>(
-    () => cubeTransition,
-  );
-
   // The switch choices are kept next to the seen store, so a reload respects
-  // them.
-  const [{ rememberSeen, desktopLayout }] = useState(() => ({
-    rememberSeen: persistedSignal('reelkit-stories-player-remember-seen', true),
-    desktopLayout: persistedSignal<DesktopLayout>(
-      'reelkit-stories-player-desktop-layout',
-      'single',
-    ),
-  }));
+  // them. The groups are a signal because the feed grows: "Load more" replaces
+  // the array with a longer one while the player is open. What was seen is one
+  // controller, handed to the ring list and the player: they attach it and
+  // follow it themselves. It reads the groups through the signal, so groups
+  // added later are counted too.
+  const [{ groups, transition, rememberSeen, desktopLayout, viewed }] =
+    useState(() => {
+      const groups = createSignal(generateGroups());
+      const rememberSeen = persistedSignal(
+        'reelkit-stories-player-remember-seen',
+        true,
+      );
+      return {
+        groups,
+        transition: createSignal<TransitionTransformFn>(cubeTransition),
+        rememberSeen,
+        desktopLayout: persistedSignal<DesktopLayout>(
+          'reelkit-stories-player-desktop-layout',
+          'single',
+        ),
+        viewed: createStoriesViewedStateController({
+          storageKey: 'reelkit-stories-player-seen',
+          groups: () => groups.value,
+        }),
+      };
+    });
+
+  // Stands in for fetching the next page of a feed. The new groups go on the
+  // end, so every group already loaded keeps its index and its place.
+  const loadMore = () => {
+    const loaded = groups.value.length;
+    groups.value = [
+      ...groups.value,
+      ...Array.from({ length: _kLoadMoreCount }, (_, offset) => {
+        const added = loaded - _kInitialGroupCount + offset;
+        const round = Math.floor(added / _kMoreNames.length);
+        const name = _kMoreNames[added % _kMoreNames.length];
+        return makeUserGroup(
+          round === 0 ? name : `${name} ${round + 1}`,
+          NAMES.length + added,
+        );
+      }),
+    ];
+  };
 
   const openStories = (groupIndex: number) => {
     setSelectedGroup(groupIndex);
@@ -424,24 +476,49 @@ function StoriesPlayerPage() {
           stories, swipe left/right to switch users. Tap-and-hold to pause,
           double-tap to like.
         </p>
+        <p
+          style={{
+            color: 'rgba(255,255,255,0.6)',
+            fontSize: '0.9rem',
+            marginBottom: 24,
+          }}
+        >
+          The feed can grow while the player is open. With the Carousel layout
+          on a desktop screen, a &ldquo;Load more&rdquo; button sits in the
+          corner of the open player and adds {_kLoadMoreCount} more authors to
+          the end of the feed, the way a real one pages in. Go to the last group
+          and press it: the new cards appear beside the player, a click opens
+          them, and the player moves on to them instead of closing after the
+          last group.
+        </p>
 
         <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
-          {_kTransitions.map((t) => (
-            <button
-              key={t.label}
-              onClick={() => setTransition(() => t.fn)}
-              style={{
-                ...btnStyle,
-                background:
-                  transition === t.fn ? '#fff' : 'rgba(255,255,255,0.15)',
-                color: transition === t.fn ? '#000' : '#fff',
-              }}
-            >
-              {t.label}
-            </button>
-          ))}
+          <Observe signals={[transition]}>
+            {() => (
+              <>
+                {_kTransitions.map((t) => (
+                  <button
+                    key={t.label}
+                    onClick={() => {
+                      transition.value = t.fn;
+                    }}
+                    style={{
+                      ...btnStyle,
+                      background:
+                        transition.value === t.fn
+                          ? '#fff'
+                          : 'rgba(255,255,255,0.15)',
+                      color: transition.value === t.fn ? '#000' : '#fff',
+                    }}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </>
+            )}
+          </Observe>
           <button
-            onClick={() => seen.forget()}
+            onClick={() => viewed.forget()}
             style={{
               ...btnStyle,
               marginLeft: 'auto',
@@ -465,42 +542,59 @@ function StoriesPlayerPage() {
           <DesktopLayoutSwitch signal={desktopLayout} />
         </div>
 
-        {/* The store's entries are a signal, so the rings repaint the moment a
-            story is seen — here or in another tab. */}
-        <Observe signals={[seen.entries, rememberSeen]}>
+        {/* The rings follow the viewed controller by themselves, so only the
+            growing feed and the switch are watched for here. "Remember seen"
+            off means the controller is not handed over at all. */}
+        <Observe signals={[groups, rememberSeen]}>
           {() => (
             <StoriesRingList
-              groups={groups}
-              viewedState={
-                rememberSeen.value ? viewed.viewedCounts() : new Map()
-              }
+              groups={groups.value}
+              viewed={rememberSeen.value ? viewed : undefined}
               onSelect={openStories}
             />
           )}
         </Observe>
       </div>
 
-      {/* The carousel cards draw the same seen rings as the list above. */}
-      <Observe signals={[seen.entries, rememberSeen, desktopLayout]}>
+      {/* The same controller as the ring list: the carousel cards draw the
+          same rings, groups resume where they were left, and every story
+          shown is recorded. */}
+      <Observe signals={[groups, transition, desktopLayout, rememberSeen]}>
         {() => (
           <StoriesOverlay<CustomStory>
             isOpen={isOpen}
             onClose={() => setIsOpen(false)}
-            groups={groups}
+            groups={groups.value}
             initialGroupIndex={selectedGroup}
-            resumeStoryIndex={(groupIndex) =>
-              rememberSeen.value ? viewed.resumeStoryIndex(groupIndex) : 0
-            }
-            groupTransition={transition}
+            viewed={rememberSeen.value ? viewed : undefined}
+            groupTransition={transition.value}
             desktopLayout={desktopLayout.value}
-            viewedState={rememberSeen.value ? viewed.viewedCounts() : new Map()}
             renderSlide={(props) => <CustomSlide {...props} />}
-            onStoryViewed={(groupIndex, storyIndex) => {
-              if (rememberSeen.value) viewed.markViewed(groupIndex, storyIndex);
-            }}
           />
         )}
       </Observe>
+
+      {/* Drawn over the open player, which covers the rest of the page. Only
+          for the carousel on a desktop screen: the point is the cards picking
+          up the new groups, and the single layout and a phone show none. */}
+      {isOpen ? (
+        <>
+          <style>{_kLoadMoreStyles}</style>
+          <Observe signals={[groups, desktopLayout]}>
+            {() =>
+              desktopLayout.value === 'carousel' ? (
+                <button
+                  type="button"
+                  className="load-more-groups"
+                  onClick={loadMore}
+                >
+                  Load more ({groups.value.length} groups)
+                </button>
+              ) : null
+            }
+          </Observe>
+        </>
+      ) : null}
     </div>
   );
 }

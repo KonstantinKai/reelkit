@@ -45,15 +45,54 @@ import { LightboxControls } from './LightboxControls';
 import { LightboxNavigation } from './LightboxNavigation';
 import './styles.css';
 
-/** Imperative API exposed by `<LightboxOverlay>` and `<LightboxUrlOverlay>` via template ref. */
+/**
+ * Imperative API of `<LightboxOverlay>` and `<LightboxUrlOverlay>`: handed out
+ * by the `api-ready` event and exposed on the component's template ref. The
+ * slider exists only while the overlay is open, so every slider method is a
+ * no-op while it is closed; `close` always works.
+ */
 export interface LightboxApi {
-  next(): void;
-  prev(): void;
-  goTo(index: number, animate?: boolean): Promise<void>;
-  adjust(): void;
-  observe(): void;
-  unobserve(): void;
-  close(): void;
+  /**
+   * Moves to the next slide, animated. Stays on the last slide unless `loop`
+   * is on.
+   */
+  next: () => void;
+
+  /**
+   * Moves to the previous slide, animated. Stays on the first slide unless
+   * `loop` is on.
+   */
+  prev: () => void;
+
+  /**
+   * Jumps to a slide.
+   *
+   * @param index - Zero-based slide index, clamped to the items.
+   * @param animate - Animate the move. Default: `false`.
+   * @returns Resolves when the move has finished; at once while closed.
+   */
+  goTo: (index: number, animate?: boolean) => Promise<void>;
+
+  /**
+   * Recomputes the slide position after a layout change the overlay did not
+   * see itself.
+   */
+  adjust: () => void;
+
+  /**
+   * Starts listening for gesture, keyboard and wheel input again after
+   * `unobserve`.
+   */
+  observe: () => void;
+
+  /**
+   * Stops listening for gesture, keyboard and wheel input; the slides stay
+   * where they are.
+   */
+  unobserve: () => void;
+
+  /** Closes the lightbox, the same as the close button or Escape. */
+  close: () => void;
 }
 
 /**

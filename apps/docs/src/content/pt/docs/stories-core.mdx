@@ -8,7 +8,7 @@ import installation from '../../snippets/stories-core/installation.sh?raw';
 import controllerExample from '../../snippets/stories-core/controller-example.ts?raw';
 import timerExample from '../../snippets/stories-core/timer-example.ts?raw';
 import canvasExample from '../../snippets/stories-core/canvas-example.ts?raw';
-import viewedStateExample from '../../snippets/stories-core/viewed-state-example.ts?raw';
+import viewedControllerExample from '../../snippets/stories-core/viewed-controller-example.ts?raw';
 import typesCode from '../../snippets/stories-core/types-code.ts?raw';
 
 O motor por trás de `@reelkit/react-stories-player`. TypeScript puro, sem dependência de framework. Use para montar players de stories em Angular, Vue ou JavaScript puro.
@@ -52,7 +52,7 @@ O motor por trás de `@reelkit/react-stories-player`. TypeScript puro, sem depen
 
 ## Controlador do Stories [#stories-controller]
 
-`createStoriesController(config, events?)` cuida da navegação entre grupos e stories. Acompanha o estado de pausa, lembra o último story visto de cada grupo e dispara callbacks a cada transição.
+`createStoriesController(config, events?)` devolve um `StoriesController` que cuida da navegação entre grupos e stories. Acompanha o estado de pausa, lembra o último story visto de cada grupo e dispara callbacks a cada transição.
 
 ### Configuração (StoriesControllerConfig) [#config-storiescontrollerconfig]
 
@@ -98,6 +98,7 @@ O motor por trás de `@reelkit/react-stories-player`. TypeScript puro, sem depen
 | `onStoryTimerComplete()` | `() => void` | Chamado quando o timer termina; dispara onStoryComplete e então avança |
 | `getLastStoryIndex(groupIndex)` | `(number) => number` | Onde o grupo abre: o story em que foi deixado nesta sessão, senão o que resumeStoryIndex indicar |
 | `reportInitialView()` | `() => void` | Registra, uma única vez, como visto o story em que o player abriu. Chame depois da montagem, não durante a renderização. |
+| `updateConfig({ groupCount, storyCounts })` | `(config) => void` | Substitui a contagem de grupos e de stories quando o feed muda com o player aberto, para que os grupos carregados depois possam ser alcançados. Não dispara nenhum evento, mantém onde cada grupo foi deixado e traz as posições de volta para dentro de um feed que encolheu. |
 
 ### Exemplo [#example]
 
@@ -162,28 +163,37 @@ O motor por trás de `@reelkit/react-stories-player`. TypeScript puro, sem depen
 
 <CodeBlock code={canvasExample} />
 
-## Itens já vistos [#viewed-state]
+## Controlador do que já foi visto [#viewed-controller]
 
-`createStoriesViewedState(controller, groups)` lê um `ViewedStateController` do core nos termos que um player usa — grupos, autores, índices de story — sem que o armazenamento precise saber de nada disso. Devolve um `StoriesViewedState`. Monte o armazenamento com a mesma chave da barra de endereços, acompanhado por grupo, e a entrada guardada fica idêntica ao parâmetro de um link compartilhado.
+`createStoriesViewedStateController(config)` reúne, em uma única chamada, tudo o que um feed precisa para lembrar o que já foi visto: as contagens dos anéis, onde cada grupo é retomado e o registro do que foi visto, sobre um armazenamento que sobrevive a um recarregamento. Ele não importa nenhum framework, então React, Vue e Angular o usam do mesmo jeito: crie-o uma vez onde o feed vive e passe-o para a lista de anéis e para o player, que cuidam de conectá-lo e de acompanhá-lo. Ele é montado sobre o `createViewedStateController` do core com a chave de dois eixos por ids estáveis; recorra a eles diretamente quando isto não servir. A entrada nomeia o story mais distante alcançado, e não um total de visualizações, então o lugar do grupo sobrevive à reordenação do feed, enquanto um story removido do meio de um grupo encurta a contagem e acende o anel de novo.
 
-| Parâmetro | Tipo | Descrição |
+### Configuração (StoriesViewedStateControllerConfig) [#config-storiesviewedstatecontrollerconfig]
+
+| Propriedade | Tipo | Padrão | Descrição |
+| --- | --- | --- | --- |
+| `storageKey` | `string` | obrigatório | Chave de armazenamento sob a qual as entradas são gravadas |
+| `groups` | `() => StoriesGroup<T>[]` | obrigatório | Lê os grupos atuais. É um getter, chamado toda vez, então um feed que carrega mais grupos só precisa devolvê-los. Mantenha-o atualizado: um getter preso ao primeiro array conta errado todos os grupos carregados depois. |
+| `key` | `UrlKey<Id, TwoAxisPosition>` | ids estáveis | Como uma posição é escrita no armazenamento. Passe a chave que o controlador de URL usa e uma entrada será lida como um link compartilhado. |
+| `storage` | `StorageAdapter` | localStorage | Onde as entradas ficam guardadas. Um adaptador próprio também é a forma de plugar o seu próprio repositório do que foi visto. |
+| `ttlMs` | `number` | não expira | Por quanto tempo a entrada de um grupo fica lembrada depois do último registro. Cada grupo expira no seu próprio relógio. |
+| `maxTracks` | `number` | todos mantidos | Quantos grupos manter. Acima disso, o grupo registrado há mais tempo é descartado na próxima gravação. |
+
+`storageKey`, `key` e `storage` são lidos uma única vez, na criação do controlador. Para trocar de armazenamento, crie outro controlador.
+
+### StoriesViewedStateController [#storiesviewedstatecontroller]
+
+| Membro | Tipo | Descrição |
 | --- | --- | --- |
-| `controller` | `ViewedStateController<TwoAxisPosition>` | Armazenamento do core montado com a mesma chave da barra de endereços, espalhado junto de twoAxisViewedTracking para que cada grupo tenha sua entrada |
-| `groups` | `() => StoriesGroup<T>[]` | Lê os grupos atuais. É um getter, então um feed que pagina ou muda de ordem depois da configuração é medido na hora da chamada. |
-
-### StoriesViewedState [#storiesviewedstate]
-
-| Método | Tipo | Descrição |
-| --- | --- | --- |
-| `viewedCounts()` | `() => Map<string, number>` | Stories vistos por grupo, com o id do autor como chave — o formato que StoriesRingList recebe em viewedState |
+| `viewedState` | `Subscribable<Map<string, number>>` | Stories vistos por id de autor, como signal. Vazio antes de attach(). |
+| `controller` | `ViewedStateController<TwoAxisPosition>` | O repositório por baixo, para o que isto não cobrir |
 | `resumeStoryIndex(groupIndex)` | `(number) => number` | Primeiro story ainda não visto, ou 0 quando o grupo já foi assistido até o fim |
-| `markViewed(groupIndex, storyIndex)` | `(number, number) => void` | Registra um story como visto. Ligue este método ao onStoryViewed. |
+| `markViewed(groupIndex, storyIndex)` | `(number, number) => void` | Registra um story como visto. O player o chama para cada story mostrado. |
+| `forget()` | `() => void` | Esquece tudo o que foi visto, aqui e no armazenamento |
+| `attach()` | `() => Dispose` | Lê o armazenamento e acompanha as outras abas. É contado, então uma lista de anéis e um player podem se conectar e ser desmontados em qualquer ordem. Os componentes do player o chamam por conta própria. |
 
 ### Exemplo [#example]
 
-<CodeBlock code={viewedStateExample} />
-
-A entrada nomeia o story mais distante alcançado, e não um total de visualizações, então uma chave endereçada por id mantém o lugar do grupo mesmo que o feed mude de ordem, enquanto um story removido do meio de um grupo encurta a contagem e acende o anel de novo.
+<CodeBlock code={viewedControllerExample} />
 
 ## Funções utilitárias [#utility-functions]
 

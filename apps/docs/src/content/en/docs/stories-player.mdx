@@ -198,7 +198,7 @@ The `StoriesOverlay` component renders a full-screen stories player. Pair it wit
 
 ## Remembering What Was Seen [#remembering-what-was-seen]
 
-Rings show a gradient until a group has been watched to the end, and a group reopens on the first story the viewer has not seen. Both come from a `ViewedStateController`, built from the same key the address bar uses — so a stored entry reads exactly like the parameter of a shared link, and survives the feed being reordered when the key is id-addressed.
+Rings show a gradient until a group has been watched to the end, and a group reopens on the first story the viewer has not seen. Both come from one `createStoriesViewedStateController`, created once where the feed lives and handed to the ring list and the player as `viewed`: they read the store, follow it and record what is shown by themselves. A stored entry names the author and the story by id, so it survives the feed being reordered, and the same controller works in Vue and Angular.
 
 <CodeBlock code={rememberingWhatWasSeen} language="tsx" />
 
@@ -206,16 +206,17 @@ Rings show a gradient until a group has been watched to the end, and a group reo
 - **Swiping onward resumes too.** `resumeStoryIndex` is consulted for every group reached for the first time this session, the one the player opens on included, unless `initialStoryIndex` names a story outright; a group already swiped through reopens where it was left.
 - **A link still wins.** With `StoriesUrlOverlay`, the parameter decides where the player opens, whatever has been stored. Everywhere else the resume callback decides.
 - **A count is a position, not a tally.** An entry names the furthest story reached, so adding a story to a watched group lights its ring again, and removing one from the middle shortens the count. The same self-healing a shared link gets.
-- **Storage is pluggable.** Pass `createSessionStorageAdapter()` to forget on tab close, or your own `StorageAdapter`. Two open tabs stay in step through the browser's storage event.
+- **Storage is pluggable.** Pass `storage: createSessionStorageAdapter()` to forget on tab close, or your own `StorageAdapter`. Two open tabs stay in step through the browser's storage event.
+- **A player mounted only when it opens reads too late.** The player reads the store in an effect that runs while it is still closed. With `{open && <StoriesOverlay … />}` there is no such moment, so call `viewed.attach()` yourself in an effect that returns its dispose. The options, and the lower-level pieces this is built from, are on the [Stories Core](/docs/stories-core#viewed-controller) page.
 
 ## Desktop Carousel [#desktop-carousel]
 
-Set `desktopLayout="carousel"` to lay the player out like the Instagram web viewer: the active story stays in the center at its usual size, and up to two neighbouring groups sit on each side as smaller, dimmed cards. Clicking a card opens that group, and the cards slide across while the group changes. Pass the same `viewedState` map the ring list takes, and a watched group's card gets the muted ring.
+Set `desktopLayout="carousel"` to lay the player out like the Instagram web viewer: the active story stays in the center at its usual size, and up to two neighbouring groups sit on each side as smaller, dimmed cards. Clicking a card opens that group, and the cards slide across while the group changes. Pass the same `viewed` controller the ring list takes, and a watched group's card gets the muted ring. The cards follow it by themselves, so only they repaint when a story is marked seen and the player does not render again.
 
 <CodeBlock code={desktopCarousel} language="tsx" />
 
 - **Phones keep the plain player.** Up to 768px wide the cards are not rendered and swipes use `groupTransition`, as with the default `'single'` layout. Resizing across that width switches live.
-- **Each card previews where the group opens**: the story it was left on this session, else what `resumeStoryIndex` returns. It shows the video poster or the image. A story with neither, like a text story on a gradient, is drawn by your `renderSlide` at the player's size and scaled down; a video without a poster shows the card background.
+- **Each card previews where the group opens**: the story it was left on this session, else what `resumeStoryIndex` returns. It shows the video poster or the image. A story with neither, like a text story on a gradient, is drawn by your `renderSlide` at the player's size and scaled down; a video without a poster shows the card background. That preview calls `renderSlide` with `isActive: false` and is only a picture: nothing in it can be focused or clicked. Keep whatever a slide does when it mounts, such as playback or analytics, behind `isActive`.
 - **The timer waits for the slide.** The story does not advance, and `onStoryViewed` does not fire for it, until the cards have finished moving.
 - **Every way of changing group slides**: a card click, `StoriesApi.goToGroup`, `nextGroup` and `prevGroup`, and the arrow keys past the end of a group. A touch swipe moves the player itself, so it gets no slide on top.
 
@@ -242,8 +243,8 @@ Set `desktopLayout="carousel"` to lay the player out like the Instagram web view
 | `innerTransitionDuration` | `number` | 200 | Duration of the inner (story) transition animation in milliseconds |
 | `minSegmentWidth` | `number` | 8 | Minimum segment width in pixels for the progress bar |
 | `apiRef` | `MutableRefObject<StoriesApi \| null>` | - | Ref to access the imperative StoriesApi |
-| `desktopLayout` | `'single' \| 'carousel'` | 'single' | Desktop layout. 'carousel' shows neighbouring groups as preview cards beside the active story and slides between groups. Phones always show the story alone. |
-| `viewedState` | `Map<string, number>` | - | Stories seen per author id, from viewedCounts(). Carousel cards show a muted ring for a group watched to the end. |
+| `desktopLayout` | `'single' \| 'carousel'` | 'single' | Desktop layout. 'carousel' shows neighbouring groups as preview cards beside the active story and slides between groups. Phones always show the story alone. The type is exported as `DesktopLayout`. |
+| `viewed` | `StoriesViewedStateController` | - | What the viewer has seen, from createStoriesViewedStateController(). Groups resume on their first unseen story, every story shown is recorded, and carousel cards mute the ring of a group watched to the end. Hand the same controller to StoriesRingList. |
 | `renderHeader` | `(props: HeaderRenderProps<T>) => ReactNode` | - | Custom header renderer. Receives author, story, pause/mute state. |
 | `renderFooter` | `(props: FooterRenderProps<T>) => ReactNode` | - | Custom footer renderer. Receives author and story info. |
 | `renderSlide` | `(props: SlideRenderProps<T>) => ReactNode` | - | Custom slide renderer, replacing the default image/video slides. |

@@ -1,4 +1,4 @@
-import { StrictMode } from 'react';
+import { StrictMode, type ReactElement } from 'react';
 import { render, act, cleanup } from '@testing-library/react';
 import {
   describe,
@@ -10,14 +10,21 @@ import {
   afterEach,
 } from 'vitest';
 import {
+  noop,
   slideTransition,
   createUrlStateController,
   urlIndexTwoAxisKey,
   type TwoAxisIdentity,
   type TwoAxisPosition,
 } from '@reelkit/react';
-import type { StoriesGroup } from '@reelkit/stories-core';
-import { createFakeUrlAdapter } from '@reelkit/core/testing';
+import {
+  createStoriesViewedStateController,
+  type StoriesGroup,
+} from '@reelkit/stories-core';
+import {
+  createFakeStorageAdapter,
+  createFakeUrlAdapter,
+} from '@reelkit/core/testing';
 import { StoriesOverlay, StoriesUrlOverlay } from './StoriesOverlay';
 import type { StoriesApi } from './types';
 
@@ -1089,10 +1096,13 @@ describe('StoriesOverlay desktop carousel', () => {
       />,
     );
 
+    // The story lasts 300ms, so without the slide holding the timer it would
+    // be over by now.
     openCard('Bob');
     act(() => {
-      vi.advanceTimersByTime(900);
+      vi.advanceTimersByTime(600);
     });
+    expect(overlay().classList).toContain('rk-stories-overlay--sliding');
     expect(onStoryComplete).not.toHaveBeenCalled();
 
     // No transition event arrives here, so the slide ends on its time limit.
@@ -1100,10 +1110,585 @@ describe('StoriesOverlay desktop carousel', () => {
       vi.advanceTimersByTime(200);
     });
     expect(overlay().classList).not.toContain('rk-stories-overlay--sliding');
+    expect(onStoryComplete).not.toHaveBeenCalled();
     act(() => {
       vi.advanceTimersByTime(400);
     });
     expect(onStoryComplete).toHaveBeenCalledWith(1, 0);
+  });
+
+  // A story with no source starts its timer straight away and runs for the
+  // given time; one with a source waits for an image that never loads here.
+  const quickStory = (id: string, duration?: number) => ({
+    id,
+    mediaType: 'image' as const,
+    src: '',
+    duration,
+  });
+  const quickGroups = (carolDuration?: number): StoriesGroup[] => [
+    threeGroups[0],
+    {
+      author: { id: '2', name: 'Bob', avatar: 'bob.jpg' },
+      stories: [quickStory('quick-bob', 300)],
+    },
+    {
+      author: { id: '3', name: 'Carol', avatar: 'carol.jpg' },
+      stories: [quickStory('quick-carol', carolDuration)],
+    },
+  ];
+  const pausePlayer = () =>
+    act(() => {
+      (document.querySelector('[aria-label="Pause"]') as HTMLElement).click();
+    });
+  // jsdom reports no transition duration, which leaves the limit at its margin.
+  const endSlideOnTimeLimit = () =>
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
+
+  it('leaves the timer stopped after a slide into a story still loading', () => {
+    const onStoryComplete = vi.fn();
+    render(
+      <StoriesOverlay
+        isOpen
+        onClose={vi.fn()}
+        groups={threeGroups}
+        initialStoryIndex={1}
+        desktopLayout="carousel"
+        onStoryComplete={onStoryComplete}
+      />,
+    );
+
+    // Leaving a paused player asks the timer to resume during the slide, and
+    // the new story then resets it; the reset has to win.
+    pausePlayer();
+    openCard('Bob');
+    endSlideOnTimeLimit();
+    act(() => {
+      vi.advanceTimersByTime(6000);
+    });
+    expect(onStoryComplete).not.toHaveBeenCalled();
+  });
+
+  it('drops a timer start asked for during the slide when the story then fails', () => {
+    const onStoryComplete = vi.fn();
+    let failStory = noop;
+    render(
+      <StoriesOverlay
+        isOpen
+        onClose={vi.fn()}
+        groups={quickGroups()}
+        initialStoryIndex={1}
+        desktopLayout="carousel"
+        renderSlide={(props) => {
+          failStory = props.onError;
+          return null;
+        }}
+        onStoryComplete={onStoryComplete}
+      />,
+    );
+
+    openCard('Bob');
+    nextFrames();
+    // The mocked Reel draws no slides, so Bob's story is built by hand to get
+    // hold of the callbacks the player gives it.
+    const group = (
+      outerReel()['itemBuilder'] as (
+        index: number,
+        indexInRange: number,
+        size: [number, number],
+      ) => ReactElement<{
+        children: ReactElement<Record<string, unknown>>[];
+      }>
+    )(1, 0, [400, 700]);
+    const storyReel = [group.props.children]
+      .flat()
+      .find((child) => child?.props?.['itemBuilder']);
+    (
+      storyReel?.props['itemBuilder'] as (
+        index: number,
+        indexInRange: number,
+        size: [number, number],
+      ) => unknown
+    )(0, 0, [400, 700]);
+    act(failStory);
+
+    endSlideOnTimeLimit();
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(onStoryComplete).not.toHaveBeenCalled();
+  });
+
+  it('starts the timer for the group opened last when a slide is interrupted', () => {
+    const onStoryViewed = vi.fn();
+    const onStoryComplete = vi.fn();
+    render(
+      <StoriesOverlay
+        isOpen
+        onClose={vi.fn()}
+        groups={quickGroups(5000)}
+        initialStoryIndex={1}
+        desktopLayout="carousel"
+        onStoryViewed={onStoryViewed}
+        onStoryComplete={onStoryComplete}
+      />,
+    );
+    onStoryViewed.mockClear();
+
+    openCard('Bob');
+    nextFrames();
+    openCard('Carol');
+    nextFrames();
+    finishSlide('Carol');
+
+    expect(onStoryViewed).toHaveBeenCalledOnce();
+    expect(onStoryViewed).toHaveBeenCalledWith(2, 0);
+
+    // Bob's 300ms start was asked for first and must not run on Carol's story.
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(onStoryComplete).not.toHaveBeenCalled();
+    act(() => {
+      vi.advanceTimersByTime(4500);
+    });
+    expect(onStoryComplete).toHaveBeenCalledOnce();
+    expect(onStoryComplete).toHaveBeenCalledWith(2, 0);
+  });
+
+  it.each([
+    ['another story index', 1],
+    ['the same story index', 0],
+  ])('resumes a paused player on a card click, from %s', (_, from) => {
+    const onStoryComplete = vi.fn();
+    render(
+      <StoriesOverlay
+        isOpen
+        onClose={vi.fn()}
+        groups={quickGroups()}
+        initialStoryIndex={from}
+        desktopLayout="carousel"
+        onStoryComplete={onStoryComplete}
+      />,
+    );
+
+    pausePlayer();
+    openCard('Bob');
+    endSlideOnTimeLimit();
+    expect(document.querySelector('[aria-label="Pause"]')).not.toBeNull();
+
+    act(() => {
+      vi.advanceTimersByTime(400);
+    });
+    expect(onStoryComplete).toHaveBeenCalledWith(1, 0);
+  });
+
+  it('resumes a paused player on a group change without the carousel too', () => {
+    const apiRef = { current: null as StoriesApi | null };
+    const onStoryComplete = vi.fn();
+    render(
+      <StoriesOverlay
+        isOpen
+        onClose={vi.fn()}
+        groups={quickGroups()}
+        apiRef={apiRef}
+        onStoryComplete={onStoryComplete}
+      />,
+    );
+
+    pausePlayer();
+    act(() => apiRef.current?.goToGroup(1));
+    expect(document.querySelector('[aria-label="Pause"]')).not.toBeNull();
+
+    act(() => {
+      vi.advanceTimersByTime(400);
+    });
+    expect(onStoryComplete).toHaveBeenCalledWith(1, 0);
+  });
+
+  it('reports nothing for a story the player closed before showing', () => {
+    const onStoryViewed = vi.fn();
+    const onStoryComplete = vi.fn();
+    const { unmount } = render(
+      <StoriesOverlay
+        isOpen
+        onClose={vi.fn()}
+        groups={quickGroups()}
+        desktopLayout="carousel"
+        onStoryViewed={onStoryViewed}
+        onStoryComplete={onStoryComplete}
+      />,
+    );
+    onStoryViewed.mockClear();
+
+    openCard('Bob');
+    nextFrames();
+    unmount();
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
+    expect(onStoryViewed).not.toHaveBeenCalled();
+    expect(onStoryComplete).not.toHaveBeenCalled();
+  });
+
+  // One controller does the whole viewed job for the player: card rings,
+  // where a group opens, and recording what was shown.
+  describe('given a viewed controller', () => {
+    const viewedFor = (stored: string | null = null) => {
+      const storage = createFakeStorageAdapter({ initial: stored });
+      const viewed = createStoriesViewedStateController({
+        storageKey: 'seen',
+        storage: storage.adapter,
+        groups: () => threeGroups,
+      });
+      return { storage, viewed };
+    };
+    const bobRing = () =>
+      document.querySelector(
+        '[aria-label="Open stories by Bob"] .rk-stories-ring',
+      ) as HTMLElement;
+
+    // A story is marked seen every few seconds. The cards follow the
+    // controller's signal and repaint alone; the mocked Reel records each
+    // time it renders, and must not.
+    it('draws the card rings from it and repaints them without re-rendering the player', () => {
+      const { viewed } = viewedFor();
+      render(
+        <StoriesOverlay
+          isOpen
+          onClose={vi.fn()}
+          groups={threeGroups}
+          desktopLayout="carousel"
+          viewed={viewed}
+        />,
+      );
+      expect(bobRing().classList).toContain('rk-stories-ring--active');
+      const reelRenders = lastReelProps.length;
+
+      // Bob has one story, so one seen is the whole group.
+      act(() => {
+        viewed.markViewed(1, 0);
+      });
+
+      expect(bobRing().classList).not.toContain('rk-stories-ring--active');
+      expect(lastReelProps.length).toBe(reelRenders);
+    });
+
+    it('records every story shown and still tells the consumer', () => {
+      const { viewed, storage } = viewedFor();
+      const onStoryViewed = vi.fn();
+      render(
+        <StoriesOverlay
+          isOpen
+          onClose={vi.fn()}
+          groups={threeGroups}
+          viewed={viewed}
+          onStoryViewed={onStoryViewed}
+        />,
+      );
+
+      expect(storage.stored).toBe('["1.s1"]');
+      expect(onStoryViewed).toHaveBeenCalledWith(0, 0);
+    });
+
+    it('opens a group where the controller says it was left', () => {
+      const { viewed } = viewedFor('["1.s1"]');
+      viewed.attach();
+      const onStoryViewed = vi.fn();
+      render(
+        <StoriesOverlay
+          isOpen
+          onClose={vi.fn()}
+          groups={threeGroups}
+          viewed={viewed}
+          onStoryViewed={onStoryViewed}
+        />,
+      );
+
+      expect(onStoryViewed).toHaveBeenCalledWith(0, 1);
+    });
+
+    it('lets an explicit resumeStoryIndex win over the controller', () => {
+      const { viewed } = viewedFor('["1.s1"]');
+      viewed.attach();
+      const onStoryViewed = vi.fn();
+      render(
+        <StoriesOverlay
+          isOpen
+          onClose={vi.fn()}
+          groups={threeGroups}
+          viewed={viewed}
+          resumeStoryIndex={() => 0}
+          onStoryViewed={onStoryViewed}
+        />,
+      );
+
+      expect(onStoryViewed).toHaveBeenCalledWith(0, 0);
+    });
+
+    // The player chooses its opening story while it first renders, so the
+    // store has to be read before that: from the wrapper that is mounted while
+    // the player is still closed, not from the player itself.
+    it('reads the store while still closed, so the first open resumes', () => {
+      const { viewed, storage } = viewedFor('["1.s1"]');
+      const onStoryViewed = vi.fn();
+      const closed = (
+        <StoriesOverlay
+          isOpen={false}
+          onClose={vi.fn()}
+          groups={threeGroups}
+          viewed={viewed}
+          onStoryViewed={onStoryViewed}
+        />
+      );
+      const { rerender } = render(closed);
+      expect(storage.counts.read).toBeGreaterThan(0);
+
+      rerender(
+        <StoriesOverlay
+          isOpen
+          onClose={vi.fn()}
+          groups={threeGroups}
+          viewed={viewed}
+          onStoryViewed={onStoryViewed}
+        />,
+      );
+
+      expect(onStoryViewed).toHaveBeenCalledWith(0, 1);
+    });
+
+    it('stops following the store when it unmounts', () => {
+      const { viewed, storage } = viewedFor();
+      const { unmount } = render(
+        <StoriesOverlay
+          isOpen={false}
+          onClose={vi.fn()}
+          groups={threeGroups}
+          viewed={viewed}
+        />,
+      );
+      unmount();
+
+      storage.fireExternalChange('["2.s3"]');
+
+      expect(viewed.viewedState.value.get('2')).toBeUndefined();
+    });
+
+    it('is read by the url overlay while its player is closed', () => {
+      const { storage, viewed } = viewedFor('["1.s1"]');
+      const fake = createFakeUrlAdapter('');
+      const controller = createUrlStateController<
+        TwoAxisIdentity,
+        TwoAxisPosition
+      >({
+        param: 'story',
+        adapter: fake.adapter,
+        ...urlIndexTwoAxisKey({
+          outerCount: () => threeGroups.length,
+          innerCounts: () => threeGroups.map((g) => g.stories.length),
+        }),
+      });
+      controller.attach();
+      render(
+        <StoriesUrlOverlay
+          controller={controller}
+          groups={threeGroups}
+          viewed={viewed}
+        />,
+      );
+
+      expect(storage.counts.read).toBeGreaterThan(0);
+      expect(viewed.viewedState.value.get('1')).toBe(1);
+    });
+  });
+
+  // A feed that loads another page while the player is open.
+  const fourGroups: StoriesGroup[] = [
+    ...threeGroups,
+    {
+      author: { id: '4', name: 'Dave', avatar: 'dave.jpg' },
+      stories: [{ id: 's6', mediaType: 'image', src: 'img6.jpg' }],
+    },
+  ];
+
+  it('opens a group that arrived after the player did, from its card', () => {
+    const onGroupChange = vi.fn();
+    const onStoryViewed = vi.fn();
+    const props = {
+      isOpen: true,
+      onClose: vi.fn(),
+      initialGroupIndex: 2,
+      desktopLayout: 'carousel' as const,
+      onGroupChange,
+      onStoryViewed,
+    };
+    const { rerender } = render(
+      <StoriesOverlay {...props} groups={threeGroups} />,
+    );
+    rerender(<StoriesOverlay {...props} groups={fourGroups} />);
+    onStoryViewed.mockClear();
+
+    openCard('Dave');
+    nextFrames();
+    finishSlide('Dave');
+
+    expect(onGroupChange).toHaveBeenCalledOnce();
+    expect(onGroupChange).toHaveBeenCalledWith(3);
+    expect(onStoryViewed).toHaveBeenCalledWith(3, 0);
+  });
+
+  it('moves on to a group that arrived late instead of closing, without the carousel too', () => {
+    const apiRef = { current: null as StoriesApi | null };
+    const onClose = vi.fn();
+    const onGroupChange = vi.fn();
+    const props = {
+      isOpen: true,
+      onClose,
+      initialGroupIndex: 2,
+      apiRef,
+      onGroupChange,
+    };
+    const { rerender } = render(
+      <StoriesOverlay {...props} groups={threeGroups} />,
+    );
+    rerender(<StoriesOverlay {...props} groups={fourGroups} />);
+
+    act(() => apiRef.current?.nextGroup());
+
+    expect(onClose).not.toHaveBeenCalled();
+    expect(onGroupChange).toHaveBeenCalledWith(3);
+  });
+
+  // The story a late group opens on has no source, so its timer starts at
+  // once. It can only do that when the player reads the groups it has now.
+  it('times the story of a group that arrived late', () => {
+    const apiRef = { current: null as StoriesApi | null };
+    const onStoryComplete = vi.fn();
+    const props = {
+      isOpen: true,
+      onClose: vi.fn(),
+      initialGroupIndex: 2,
+      apiRef,
+      onStoryComplete,
+    };
+    const { rerender } = render(
+      <StoriesOverlay {...props} groups={threeGroups} />,
+    );
+    rerender(
+      <StoriesOverlay
+        {...props}
+        groups={[
+          ...threeGroups,
+          {
+            author: { id: '4', name: 'Dave', avatar: 'dave.jpg' },
+            stories: [quickStory('quick-dave', 300)],
+          },
+        ]}
+      />,
+    );
+
+    act(() => apiRef.current?.goToGroup(3));
+    act(() => {
+      vi.advanceTimersByTime(400);
+    });
+    expect(onStoryComplete).toHaveBeenCalledWith(3, 0);
+  });
+
+  // jsdom resolves no stylesheet, so the duration a theme would give the cards
+  // is reported by hand. The time limit has to wait for it, not cut it short.
+  it('lets a slide themed longer than a second run to its end', () => {
+    const computed = window.getComputedStyle.bind(window);
+    vi.spyOn(window, 'getComputedStyle').mockImplementation(
+      (element, pseudo) => {
+        const style = computed(element, pseudo);
+        return (element as Element).classList?.contains('rk-stories-card')
+          ? Object.assign(Object.create(style), {
+              transitionDuration: '1.5s, 1.5s',
+            })
+          : style;
+      },
+    );
+    render(
+      <StoriesOverlay
+        isOpen
+        onClose={vi.fn()}
+        groups={threeGroups}
+        desktopLayout="carousel"
+      />,
+    );
+
+    openCard('Bob');
+    act(() => {
+      vi.advanceTimersByTime(1400);
+    });
+    expect(overlay().classList).toContain('rk-stories-overlay--sliding');
+
+    // Still no transition event: the limit ends the slide once the themed
+    // duration has passed.
+    act(() => {
+      vi.advanceTimersByTime(1500);
+    });
+    expect(overlay().classList).not.toContain('rk-stories-overlay--sliding');
+  });
+
+  // The opened group's card leaves the page when the slide ends. Focus left on
+  // it would fall to the document body, outside the dialog.
+  it('keeps focus in the dialog after opening a group from a focused card', () => {
+    render(
+      <StoriesOverlay
+        isOpen
+        onClose={vi.fn()}
+        groups={threeGroups}
+        desktopLayout="carousel"
+      />,
+    );
+    (
+      document.querySelector(
+        '[aria-label="Open stories by Bob"]',
+      ) as HTMLElement
+    ).focus();
+
+    openCard('Bob');
+    nextFrames();
+    finishSlide('Bob');
+    expect(document.activeElement).toBe(overlay());
+  });
+
+  it('leaves focus alone after a slide when it was not on a card', () => {
+    render(
+      <StoriesOverlay
+        isOpen
+        onClose={vi.fn()}
+        groups={threeGroups}
+        desktopLayout="carousel"
+      />,
+    );
+    const close = document.querySelector('[aria-label="Close"]') as HTMLElement;
+    close.focus();
+
+    openCard('Bob');
+    nextFrames();
+    finishSlide('Bob');
+    expect(document.activeElement).toBe(close);
+  });
+
+  it('does not count a window resize as a slide', () => {
+    render(
+      <StoriesOverlay
+        isOpen
+        onClose={vi.fn()}
+        groups={threeGroups}
+        desktopLayout="carousel"
+      />,
+    );
+
+    act(() => {
+      setViewport(1920, 1080);
+      window.dispatchEvent(new Event('resize'));
+    });
+    nextFrames();
+    expect(overlay().classList).not.toContain('rk-stories-overlay--sliding');
   });
 
   // Deliberate: the carousel slide ignores prefers-reduced-motion. Do not

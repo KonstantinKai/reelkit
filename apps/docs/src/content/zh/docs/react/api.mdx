@@ -7,7 +7,6 @@ import reelapiMethods from '../../../snippets/react-api/reelapi-methods.ts?raw';
 import observe from '../../../snippets/react-api/observe.tsx?raw';
 import animatedobserve from '../../../snippets/react-api/animatedobserve.tsx?raw';
 import usebodylock from '../../../snippets/react-api/usebodylock.ts?raw';
-import useviewedstate from '../../../snippets/react-api/useviewedstate.tsx?raw';
 import usereactrouterurladapter from '../../../snippets/react-api/usereactrouterurladapter.tsx?raw';
 import createdefaultkeyextractorforloop from '../../../snippets/react-api/createdefaultkeyextractorforloop.tsx?raw';
 
@@ -94,7 +93,7 @@ import createdefaultkeyextractorforloop from '../../../snippets/react-api/create
 
 | 属性 | 类型 | 默认值 | 说明 |
 | --- | --- | --- | --- |
-| `signals` | `Subscribable[]` | `required` | 要订阅的信号。其中任意一个发出通知都会重新执行 children 函数 —— 且只有这个函数，父组件不受影响。 |
+| `signals` | `Subscribable[]` | `required` | 要订阅的信号。其中任意一个发出通知都会重新执行 children 函数 —— 且只有这个函数，父组件不受影响。之后的渲染传入不同的信号时，会转而跟随新信号，替换掉原来的那个。 |
 | `children` | `() => ReactElement \| null` | `required` | 渲染函数，每次变化都会重新执行。请在它内部读取信号的值；在外部读取的值只会被捕获一次，然后就过期了。 |
 
 ### AnimatedObserve [#animatedobserve]
@@ -130,14 +129,6 @@ import createdefaultkeyextractorforloop from '../../../snippets/react-api/create
 | `adapter` | `UrlAdapter` | History API | 用于读写的导航系统。在带路由的应用里传入基于路由器的适配器，避免路由器自己的 location 过期。在首次渲染时读取，并在组件的整个生命周期内保持不变 —— 要更改请重新挂载。 |
 | `codec` | `{ decode(raw) => Id \| null; encode(id) => string }` | required | 传输格式：参数文本 ↔ 稳定身份，与集合无关。它与 locator 组成共用同一个 Id 的配套组合 —— 默认的 ?photo=3 索引画廊展开 ...urlIndexKey(() => images.length) 即可；也可以提供你自己的实现（base64、slug），让画廊重新排序后书签依然有效。实时读取：下一次解码或编码由最近一次渲染的 codec 处理。 |
 | `locator` | `{ locate(id) => number \| null; locateAsync?(id) => Promise<number \| null>; identify(index) => id }` | required | 把身份映射成位置，并自己判断有效性：locate（同步）、locateAsync（分页画廊的异步兜底）、identify（写回）。普通的索引画廊展开 ...urlIndexKey(() => images.length) 即可 —— 它同时提供这个定位器和配套的编解码器，并以实时数量为上界约束 ?photo=3，于是过期的 ?photo=99 会自动从 URL 中消失，而不是打开一张从未指定的幻灯片。分页信息流或按身份寻址的画廊则自行提供配套的编解码器 + 定位器。实时读取：下一次查找由最近一次渲染的 locator 应答，在两次渲染之间添加或移除 locateAsync 会在下一次未命中时生效。 |
-
-### useViewedState [#useviewedstate]
-
-<Caption>`ViewedStateOptions`</Caption>
-
-记住观看者在图库中看到了哪里，并在组件存活期间持续跟随存储。传入地址栏所用的同一个键，已存记录读起来就与分享链接的参数完全一样。通过 `Observe` 读取 `entries`，本页或另一标签页记录位置时圆环就会重绘。
-
-<CodeBlock code={useviewedstate} language="tsx" />
 
 ### useReactRouterUrlAdapter [#usereactrouterurladapter]
 

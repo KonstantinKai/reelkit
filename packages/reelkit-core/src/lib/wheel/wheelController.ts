@@ -6,8 +6,22 @@ import type {
   WheelDirection,
   WheelControllerConfig,
   WheelControllerEvents,
-  WheelController,
 } from './types';
+
+/**
+ * Mouse wheel navigation controller that translates scroll events into
+ * debounced directional callbacks. Created via {@link createWheelController}.
+ */
+export interface WheelController {
+  /**
+   * Starts listening for `wheel` events on the given target.
+   * @param target - The event target. Defaults to `window`.
+   */
+  attach: (target?: Window | HTMLElement) => void;
+
+  /** Removes the `wheel` listener, clears pending debounce, and detaches. */
+  detach: () => void;
+}
 
 const _kDefaultDebounceMs = 200;
 const _kDefaultDeltaThreshold = 10;

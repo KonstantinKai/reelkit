@@ -198,7 +198,7 @@ O componente `StoriesOverlay` renderiza um player de stories em tela cheia. Comb
 
 ## Lembrar o que já foi visto [#remembering-what-was-seen]
 
-Os anéis exibem o gradiente até o grupo ser assistido até o fim, e um grupo reabre no primeiro story que o leitor ainda não viu. As duas coisas vêm de um `ViewedStateController`, montado com a mesma chave da barra de endereços — então a entrada guardada fica idêntica ao parâmetro de um link compartilhado e sobrevive à reordenação do feed quando a chave é endereçada por id.
+Os anéis exibem o gradiente até o grupo ser assistido até o fim, e um grupo reabre no primeiro story que o leitor ainda não viu. As duas coisas vêm de um único `createStoriesViewedStateController`, criado uma vez onde o feed vive e passado para a lista de anéis e para o player como `viewed`: eles leem o repositório, o acompanham e registram o que é mostrado por conta própria. Uma entrada guardada nomeia o autor e o story por id, então sobrevive à reordenação do feed, e o mesmo controlador funciona em Vue e em Angular.
 
 <CodeBlock code={rememberingWhatWasSeen} language="tsx" />
 
@@ -206,16 +206,17 @@ Os anéis exibem o gradiente até o grupo ser assistido até o fim, e um grupo r
 - **Deslizar adiante também retoma.** `resumeStoryIndex` é consultado para todo grupo alcançado pela primeira vez na sessão, inclusive aquele em que o player abriu, a menos que `initialStoryIndex` nomeie um story diretamente; um grupo já percorrido reabre onde parou.
 - **O link ainda vence.** Com `StoriesUrlOverlay`, quem decide onde o player abre é o parâmetro, independentemente do que estiver guardado. Em todos os outros casos quem decide é o callback de retomada.
 - **A contagem é uma posição, não um total.** A entrada nomeia o story mais distante alcançado, então acrescentar um story a um grupo já assistido acende o anel de novo, e remover um do meio encurta a contagem. A mesma cura espontânea que um link compartilhado recebe.
-- **O armazenamento é trocável.** Passe `createSessionStorageAdapter()` para esquecer ao fechar a aba, ou o seu próprio `StorageAdapter`. Duas abas abertas ficam em sintonia pelo evento de armazenamento do navegador.
+- **O armazenamento é trocável.** Passe `storage: createSessionStorageAdapter()` para esquecer ao fechar a aba, ou o seu próprio `StorageAdapter`. Duas abas abertas ficam em sintonia pelo evento de armazenamento do navegador.
+- **Um player montado só na hora de abrir lê tarde demais.** O player lê o repositório em um efeito que roda enquanto ainda está fechado. Com `{open && <StoriesOverlay … />}` esse momento não existe, então chame `viewed.attach()` você mesmo em um efeito que devolva o seu dispose. As opções, e as peças de nível mais baixo que o compõem, estão na página do [Stories Core](/docs/stories-core#viewed-controller).
 
 ## Carrossel no desktop [#desktop-carousel]
 
-Defina `desktopLayout="carousel"` para dispor o player como o Instagram na web: o story ativo fica no centro com o tamanho de sempre, e até dois grupos vizinhos ficam de cada lado como cards menores e escurecidos. Clicar em um card abre esse grupo, e os cards deslizam enquanto o grupo muda. Passe o mesmo mapa `viewedState` que a lista de anéis recebe, e o card de um grupo já assistido ganha o anel apagado.
+Defina `desktopLayout="carousel"` para dispor o player como o Instagram na web: o story ativo fica no centro com o tamanho de sempre, e até dois grupos vizinhos ficam de cada lado como cards menores e escurecidos. Clicar em um card abre esse grupo, e os cards deslizam enquanto o grupo muda. Passe o mesmo controlador `viewed` que a lista de anéis recebe, e o card de um grupo já assistido ganha o anel apagado. Os cards o acompanham sozinhos, então só eles são redesenhados quando um story é marcado como visto e o player não é renderizado de novo.
 
 <CodeBlock code={desktopCarousel} language="tsx" />
 
 - **No celular o player continua simples.** Até 768px de largura os cards não são renderizados e os gestos de deslizar usam `groupTransition`, como no layout padrão `'single'`. Redimensionar a janela passando dessa largura troca o layout na hora.
-- **Cada card mostra onde o grupo abre**: o story em que ele foi deixado nesta sessão, ou então o que `resumeStoryIndex` retorna. O card exibe o pôster do vídeo ou a própria imagem. Um story sem nenhum dos dois, como um texto sobre um gradiente, é desenhado pelo seu `renderSlide` no tamanho do player e reduzido; um vídeo sem pôster mostra o fundo do card.
+- **Cada card mostra onde o grupo abre**: o story em que ele foi deixado nesta sessão, ou então o que `resumeStoryIndex` retorna. O card exibe o pôster do vídeo ou a própria imagem. Um story sem nenhum dos dois, como um texto sobre um gradiente, é desenhado pelo seu `renderSlide` no tamanho do player e reduzido; um vídeo sem pôster mostra o fundo do card. Essa prévia chama `renderSlide` com `isActive: false` e é só uma imagem: nada dentro dela recebe foco ou cliques. Deixe atrás de `isActive` tudo o que um slide faz ao ser montado, como reprodução ou analytics.
 - **O timer espera o deslize.** O story não avança, e `onStoryViewed` não dispara para ele, até os cards pararem de se mover.
 - **Toda forma de trocar de grupo desliza**: clique em um card, `StoriesApi.goToGroup`, `nextGroup` e `prevGroup` e as setas do teclado depois do fim de um grupo. Um deslize com o dedo já move o próprio player, então não ganha outro deslize por cima.
 
@@ -242,8 +243,8 @@ Defina `desktopLayout="carousel"` para dispor o player como o Instagram na web: 
 | `innerTransitionDuration` | `number` | 200 | Duração, em milissegundos, da animação de transição interna (entre stories) |
 | `minSegmentWidth` | `number` | 8 | Largura mínima, em pixels, de um segmento da barra de progresso |
 | `apiRef` | `MutableRefObject<StoriesApi \| null>` | - | Ref para alcançar a StoriesApi imperativa |
-| `desktopLayout` | `'single' \| 'carousel'` | 'single' | Layout no desktop. 'carousel' mostra os grupos vizinhos como cards de prévia ao lado do story ativo e desliza entre grupos. No celular o story sempre aparece sozinho. |
-| `viewedState` | `Map<string, number>` | - | Stories vistos por id de autor, vindo de viewedCounts(). Os cards do carrossel mostram o anel apagado para um grupo assistido até o fim. |
+| `desktopLayout` | `'single' \| 'carousel'` | 'single' | Layout no desktop. 'carousel' mostra os grupos vizinhos como cards de prévia ao lado do story ativo e desliza entre grupos. No celular o story sempre aparece sozinho. O tipo é exportado como `DesktopLayout`. |
+| `viewed` | `StoriesViewedStateController` | - | O que o leitor já viu, vindo de createStoriesViewedStateController(). Os grupos são retomados no primeiro story não visto, cada story mostrado é registrado e os cards do carrossel apagam o anel de um grupo assistido até o fim. Passe o mesmo controlador para StoriesRingList. |
 | `renderHeader` | `(props: HeaderRenderProps<T>) => ReactNode` | - | Renderizador próprio do cabeçalho. Recebe autor, story e os estados de pausa e de som. |
 | `renderFooter` | `(props: FooterRenderProps<T>) => ReactNode` | - | Renderizador próprio do rodapé. Recebe os dados do autor e do story. |
 | `renderSlide` | `(props: SlideRenderProps<T>) => ReactNode` | - | Renderizador próprio do slide, no lugar dos slides padrão de imagem e vídeo. |

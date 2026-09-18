@@ -31,14 +31,27 @@
   overflow: hidden;
   background: var(--rk-stories-card-bg);
   pointer-events: auto;
-  transition:
-    transform var(--rk-stories-card-transition) ease,
-    opacity var(--rk-stories-card-transition) ease;
 }
 
 .rk-stories-card--hidden {
   opacity: 0;
   pointer-events: none;
+}
+
+/*
+ * The cards animate only while the overlay slides to another group. A window
+ * resize or a touch swipe moves them too, and there they have to keep up with
+ * the player, which does not ease into its new size or place.
+ */
+.rk-stories-overlay--sliding .rk-stories-card {
+  transition:
+    transform var(--rk-stories-card-transition) ease,
+    opacity var(--rk-stories-card-transition) ease;
+}
+
+.rk-stories-overlay--sliding .rk-stories-card-scrim,
+.rk-stories-overlay--sliding .rk-stories-card-info {
+  transition: opacity var(--rk-stories-card-transition) ease;
 }
 
 .rk-stories-carousel--instant .rk-stories-card,
@@ -80,7 +93,6 @@
   position: absolute;
   inset: 0;
   background: var(--rk-stories-card-scrim);
-  transition: opacity var(--rk-stories-card-transition) ease;
 }
 
 .rk-stories-card-info {
@@ -91,7 +103,6 @@
   align-items: center;
   justify-content: center;
   gap: var(--rk-stories-card-gap);
-  transition: opacity var(--rk-stories-card-transition) ease;
 }
 
 .rk-stories-card--center .rk-stories-card-scrim,

@@ -44,6 +44,7 @@ export const esTitles: Record<string, string> = {
   // Sections
   'URL State': 'Estado en la URL',
   'Viewed State': 'Elementos ya vistos',
+  'Viewed Controller': 'Controlador de lo ya visto',
   'Remembering What Was Seen': 'Recordar lo que ya se ha visto',
   Features: 'Características',
   'Quick Start': 'Inicio rápido',
@@ -67,6 +68,7 @@ export const esTitles: Record<string, string> = {
   Fullscreen: 'Pantalla completa',
   'LightboxOverlay Props': 'Props de LightboxOverlay',
   'LightboxOverlay Events': 'Eventos de LightboxOverlay',
+  LightboxApi: 'LightboxApi',
   'LightboxItem Interface': 'Interfaz LightboxItem',
   'Slot Scope Types': 'Tipos del ámbito de slot',
   Transitions: 'Transiciones',

@@ -91,22 +91,22 @@ function App() {
 
 ### StoriesOverlay Props
 
-| Prop                      | Type                     | Default    | Description                                                                    |
-| ------------------------- | ------------------------ | ---------- | ------------------------------------------------------------------------------ |
-| `isOpen`                  | `boolean`                | required   | Controls overlay visibility                                                    |
-| `onClose`                 | `() => void`             | required   | Called when overlay closes                                                     |
-| `groups`                  | `StoriesGroup<T>[]`      | required   | Story groups to display                                                        |
-| `initialGroupIndex`       | `number`                 | `0`        | Starting group index                                                           |
-| `initialStoryIndex`       | `number`                 | `0`        | Starting story index                                                           |
-| `groupTransition`         | `TransitionTransformFn`  | cube       | Transition between groups                                                      |
-| `defaultImageDuration`    | `number`                 | `5000`     | Image auto-advance duration (ms)                                               |
-| `tapZoneSplit`            | `number`                 | `0.3`      | Left zone ratio (0-1)                                                          |
-| `hideUIOnPause`           | `boolean`                | `true`     | Hide header/progress on hold                                                   |
-| `enableKeyboard`          | `boolean`                | `true`     | Enable keyboard navigation                                                     |
-| `innerTransitionDuration` | `number`                 | `200`      | Story crossfade duration (ms)                                                  |
-| `minSegmentWidth`         | `number`                 | `4`        | Min progress segment width (px)                                                |
-| `desktopLayout`           | `'single' \| 'carousel'` | `'single'` | `'carousel'`: neighbouring groups as preview cards beside the story on desktop |
-| `viewedState`             | `Map<string, number>`    | —          | author.id → viewed count; mutes watched groups' card rings                     |
+| Prop                      | Type                           | Default    | Description                                                                                            |
+| ------------------------- | ------------------------------ | ---------- | ------------------------------------------------------------------------------------------------------ |
+| `isOpen`                  | `boolean`                      | required   | Controls overlay visibility                                                                            |
+| `onClose`                 | `() => void`                   | required   | Called when overlay closes                                                                             |
+| `groups`                  | `StoriesGroup<T>[]`            | required   | Story groups to display                                                                                |
+| `initialGroupIndex`       | `number`                       | `0`        | Starting group index                                                                                   |
+| `initialStoryIndex`       | `number`                       | `0`        | Starting story index                                                                                   |
+| `groupTransition`         | `TransitionTransformFn`        | cube       | Transition between groups                                                                              |
+| `defaultImageDuration`    | `number`                       | `5000`     | Image auto-advance duration (ms)                                                                       |
+| `tapZoneSplit`            | `number`                       | `0.3`      | Left zone ratio (0-1)                                                                                  |
+| `hideUIOnPause`           | `boolean`                      | `true`     | Hide header/progress on hold                                                                           |
+| `enableKeyboard`          | `boolean`                      | `true`     | Enable keyboard navigation                                                                             |
+| `innerTransitionDuration` | `number`                       | `200`      | Story crossfade duration (ms)                                                                          |
+| `minSegmentWidth`         | `number`                       | `8`        | Min progress segment width (px)                                                                        |
+| `desktopLayout`           | `'single' \| 'carousel'`       | `'single'` | `'carousel'`: neighbouring groups as preview cards beside the story on desktop                         |
+| `viewed`                  | `StoriesViewedStateController` | —          | From `createStoriesViewedStateController()`: resume, recording and muted card rings for watched groups |
 
 ### Callbacks
 
@@ -130,12 +130,12 @@ function App() {
 
 ### StoriesRingList Props
 
-| Prop          | Type                           | Description                  |
-| ------------- | ------------------------------ | ---------------------------- |
-| `groups`      | `StoriesGroup[]`               | Story groups                 |
-| `viewedState` | `Map<string, number>`          | author.id → viewed count     |
-| `onSelect`    | `(groupIndex: number) => void` | Called when a ring is tapped |
-| `ringSize`    | `number`                       | Ring diameter (px)           |
+| Prop       | Type                           | Description                                                          |
+| ---------- | ------------------------------ | -------------------------------------------------------------------- |
+| `groups`   | `StoriesGroup[]`               | Story groups                                                         |
+| `viewed`   | `StoriesViewedStateController` | Rings follow it by themselves; the same controller the overlay takes |
+| `onSelect` | `(groupIndex: number) => void` | Called when a ring is tapped                                         |
+| `ringSize` | `number`                       | Ring diameter (px)                                                   |
 
 ### Types
 

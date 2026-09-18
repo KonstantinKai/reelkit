@@ -49,7 +49,7 @@ interface NestedSliderProps {
  * and left/right navigation arrows. Syncs its active ref with the parent
  * player for coordinated drag/unobserve behavior.
  *
- * @internal Used by {@link MediaSlide} when a content item has multiple media assets.
+ * @internal Used by `MediaSlide` when a content item has multiple media assets.
  */
 const NestedSlider: React.FC<NestedSliderProps> = (props) => {
   const { media, isParentActive, size, innerSliderRef, enableWheel } = props;

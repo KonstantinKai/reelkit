@@ -44,6 +44,7 @@ export const hiTitles: Record<string, string> = {
   // Sections
   'URL State': 'URL स्टेट',
   'Viewed State': 'देखे गए आइटम की स्टेट',
+  'Viewed Controller': 'देखे गए आइटम का कंट्रोलर',
   'Remembering What Was Seen': 'देखी गई चीज़ें याद रखना',
   Features: 'फ़ीचर',
   'Quick Start': 'क्विक स्टार्ट',
@@ -67,6 +68,7 @@ export const hiTitles: Record<string, string> = {
   Fullscreen: 'फ़ुलस्क्रीन',
   'LightboxOverlay Props': 'LightboxOverlay के props',
   'LightboxOverlay Events': 'LightboxOverlay के इवेंट',
+  LightboxApi: 'LightboxApi',
   'LightboxItem Interface': 'LightboxItem इंटरफ़ेस',
   'Slot Scope Types': 'स्लॉट scope के टाइप',
   Transitions: 'ट्रांज़िशन',

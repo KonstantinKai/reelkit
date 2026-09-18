@@ -10,11 +10,16 @@ import {
   kConstantNamingRuleName,
   constantNamingRule,
 } from './rules/constant-naming';
+import {
+  kJsdocLinkInFileRuleName,
+  jsdocLinkInFileRule,
+} from './rules/jsdoc-link-in-file';
 
 module.exports = {
   rules: {
     [kLinesBetweenTypeMembersRuleName]: linesBetweenTypeMembersRule,
     [kFieldsBeforeCallbacksRuleName]: fieldsBeforeCallbacksRule,
     [kConstantNamingRuleName]: constantNamingRule,
+    [kJsdocLinkInFileRuleName]: jsdocLinkInFileRule,
   },
 };

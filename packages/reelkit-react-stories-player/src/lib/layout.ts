@@ -21,6 +21,21 @@ const _kCardArrowGap = 16;
 /** Side cards shown on each side of the active story. */
 const _kCardsPerSide = 2;
 
+/**
+ * Longest duration in a computed `transition-duration`, in milliseconds. The
+ * value lists one time per transitioned property, each in seconds or
+ * milliseconds. Anything that is not a time counts as no duration at all.
+ */
+export const parseDurationMs = (value: string): number =>
+  Math.max(
+    0,
+    ...value.split(',').map((part) => {
+      const match = /^(\d*\.?\d+)(ms|s)$/.exec(part.trim());
+      if (!match) return 0;
+      return Math.round(Number(match[1]) * (match[2] === 's' ? 1000 : 1));
+    }),
+  );
+
 /** Whether a viewport of this width uses the phone layout. */
 export const isMobileWidth = (viewportWidth: number) =>
   viewportWidth <= _kMobileBreakpoint;
@@ -114,17 +129,19 @@ export const getSlotOffset = (offset: number) =>
   clamp(offset, -_kCardsPerSide - 1, _kCardsPerSide + 1);
 
 /**
- * Groups a slide between two groups draws: every group it passes over, plus
- * the cards shown around both ends.
+ * Groups a slide between two groups draws: the cards shown around the group
+ * being left and around the one being opened, in group order. The groups a far
+ * jump passes over are left out. They would cross the screen faded out, and
+ * drawing them mounts a card, with its images, for every group on the way.
  */
 export const getSlideGroupIndexes = (
   from: number,
   to: number,
   groupCount: number,
 ): number[] =>
-  extractRange(
-    groupCount,
-    Math.min(from, to),
-    Math.max(from, to),
-    _kCardsPerSide,
-  );
+  [
+    ...new Set([
+      ...extractRange(groupCount, from, from, _kCardsPerSide),
+      ...extractRange(groupCount, to, to, _kCardsPerSide),
+    ]),
+  ].sort((a, b) => a - b);

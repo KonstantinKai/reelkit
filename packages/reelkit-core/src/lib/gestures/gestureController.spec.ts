@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { createGestureController } from './gestureController';
-import type { GestureController } from './types';
+import type { GestureController } from './gestureController';
 
 const createMockElement = () => {
   const listeners = new Map<string, EventListener>();

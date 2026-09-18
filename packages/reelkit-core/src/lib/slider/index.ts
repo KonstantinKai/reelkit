@@ -1,6 +1,7 @@
 export {
   createSliderController,
   defaultRangeExtractor,
+  type SliderController,
 } from './sliderController';
 export { animate, type AnimationOptions } from './animate';
 export type {
@@ -9,5 +10,4 @@ export type {
   SliderConfig,
   SliderEvents,
   SliderState,
-  SliderController,
 } from './types';

@@ -7,7 +7,6 @@ import reelapiMethods from '../../../snippets/react-api/reelapi-methods.ts?raw';
 import observe from '../../../snippets/react-api/observe.tsx?raw';
 import animatedobserve from '../../../snippets/react-api/animatedobserve.tsx?raw';
 import usebodylock from '../../../snippets/react-api/usebodylock.ts?raw';
-import useviewedstate from '../../../snippets/react-api/useviewedstate.tsx?raw';
 import usereactrouterurladapter from '../../../snippets/react-api/usereactrouterurladapter.tsx?raw';
 import createdefaultkeyextractorforloop from '../../../snippets/react-api/createdefaultkeyextractorforloop.tsx?raw';
 
@@ -94,7 +93,7 @@ import createdefaultkeyextractorforloop from '../../../snippets/react-api/create
 
 | Prop | 型 | デフォルト | 説明 |
 | --- | --- | --- | --- |
-| `signals` | `Subscribable[]` | `必須` | 購読するシグナル。どれかが通知すると children の関数が再実行されます。再実行されるのはその関数だけで、親は再レンダリングされません。 |
+| `signals` | `Subscribable[]` | `必須` | 購読するシグナル。どれかが通知すると children の関数が再実行されます。再実行されるのはその関数だけで、親は再レンダリングされません。後のレンダーで別のシグナルを渡すと、置き換えられたものの代わりにそちらを追従します。 |
 | `children` | `() => ReactElement \| null` | `必須` | 変更のたびに再実行される描画関数。シグナルの値はこの中で読んでください。外で読んだ値は一度だけ取り込まれ、古くなります。 |
 
 ### AnimatedObserve [#animatedobserve]
@@ -130,14 +129,6 @@ body のスクロールを止め、スクロールバーの幅によるずれを
 | `adapter` | `UrlAdapter` | History API | 読み書きに使うナビゲーションの仕組み。ルーターを使うアプリでは、ルーター自身の位置情報が古くならないよう、ルーターに連動したアダプターを渡してください。最初の描画で読まれ、コンポーネントが生きているあいだは固定です。変えるには再マウントしてください。 |
 | `codec` | `{ decode(raw) => Id \| null; encode(id) => string }` | 必須 | 通信形式：パラメーターの文字列 ↔ 安定した識別子で、コレクションは見ません。同じ Id を共有する対として locator と一緒に使います。デフォルトの ?photo=3 のインデックスギャラリーなら ...urlIndexKey(() => images.length) を展開し、ギャラリーが並べ替えられてもブックマークが保たれるようにするなら独自のもの（base64、スラッグ）を用意します。毎回読まれるので、次のデコードやエンコードは最新の描画の codec が担当します。 |
 | `locator` | `{ locate(id) => number \| null; locateAsync?(id) => Promise<number \| null>; identify(index) => id }` | 必須 | 識別子を位置に対応させ、その妥当性を自分で判断します：locate（同期）、locateAsync（ページングされたギャラリー向けの非同期フォールバック）、identify（書き込み）。単純なインデックスのギャラリーなら ...urlIndexKey(() => images.length) を展開します。この locator と対応する codec を提供し、?photo=3 を現在の件数で制限するので、古い ?photo=99 は指されていないスライドを開く代わりに URL から取り除かれます。ページングされたフィードや識別子で指すギャラリーは、代わりに独自の codec と locator の対を用意します。毎回読まれるので、次の検索には最新の描画の locator が答え、描画のあいだに locateAsync を追加または削除すると、次に見つからなかったときから反映されます。 |
-
-### useViewedState [#useviewedstate]
-
-<Caption>`ViewedStateOptions`</Caption>
-
-閲覧者がギャラリーのどこまで見たかを覚え、コンポーネントが生きているあいだストレージを追い続けます。アドレスバーと同じキーを渡せば、保存されたエントリーは共有リンクのパラメーターとまったく同じになります。`entries` は `Observe` を通して読んでください。そうすれば、ここか別のタブで位置が記録されたときにリングが描き直されます。
-
-<CodeBlock code={useviewedstate} language="tsx" />
 
 ### useReactRouterUrlAdapter [#usereactrouterurladapter]
 

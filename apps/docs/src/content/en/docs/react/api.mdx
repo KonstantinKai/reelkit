@@ -7,7 +7,6 @@ import reelapiMethods from '../../../snippets/react-api/reelapi-methods.ts?raw';
 import observe from '../../../snippets/react-api/observe.tsx?raw';
 import animatedobserve from '../../../snippets/react-api/animatedobserve.tsx?raw';
 import usebodylock from '../../../snippets/react-api/usebodylock.ts?raw';
-import useviewedstate from '../../../snippets/react-api/useviewedstate.tsx?raw';
 import usereactrouterurladapter from '../../../snippets/react-api/usereactrouterurladapter.tsx?raw';
 import createdefaultkeyextractorforloop from '../../../snippets/react-api/createdefaultkeyextractorforloop.tsx?raw';
 
@@ -94,7 +93,7 @@ Bridges core signals to React rendering without causing parent re-renders. Only 
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `signals` | `Subscribable[]` | `required` | Signals to subscribe to. Any of them notifying re-runs the children function — and only that function, never the parent. |
+| `signals` | `Subscribable[]` | `required` | Signals to subscribe to. Any of them notifying re-runs the children function — and only that function, never the parent. A different signal on a later render is followed in place of the one it replaced. |
 | `children` | `() => ReactElement \| null` | `required` | Render function, re-executed on each change. Read the signal values inside it; a value read outside is captured once and goes stale. |
 
 ### AnimatedObserve [#animatedobserve]
@@ -130,14 +129,6 @@ See [URL State in the React guide](/docs/react/guide#url-state) for the walkthro
 | `adapter` | `UrlAdapter` | History API | Navigation system to read and write through. Pass a router-backed adapter in a routed app so the router's own location does not go stale. Read on the first render and fixed for the life of the component — remount to change it. |
 | `codec` | `{ decode(raw) => Id \| null; encode(id) => string }` | required | Wire format: parameter text ↔ a stable identity, collection-blind. Travels with locator as a matched pair sharing the same Id — spread ...urlIndexKey(() => images.length) for the default ?photo=3 index gallery, or supply your own (base64, slug) so a bookmark survives the gallery being reordered. Read live: the latest render's codec handles the next decode or encode. |
 | `locator` | `{ locate(id) => number \| null; locateAsync?(id) => Promise<number \| null>; identify(index) => id }` | required | Maps the identity to a position and owns its own validity: locate (sync), locateAsync (async fallback for a paginated gallery), identify (writes). For a plain index gallery spread ...urlIndexKey(() => images.length) — it supplies this locator plus the matching codec and bounds ?photo=3 against the live count, so a stale ?photo=99 heals out of the URL instead of opening a slide that was never named. A paginated feed or an identity-keyed gallery supplies its own matched codec + locator instead. Read live: the latest render's locator answers the next lookup, and adding or removing locateAsync between renders takes effect on the next miss. |
-
-### useViewedState [#useviewedstate]
-
-<Caption>`ViewedStateOptions`</Caption>
-
-Remembers how far a viewer got through a gallery and keeps following storage for as long as the component lives. Pass the same key the address bar uses, and a stored entry reads exactly like the parameter of a shared link. Read `entries` through `Observe` so a ring repaints when a position is recorded, here or in another tab.
-
-<CodeBlock code={useviewedstate} language="tsx" />
 
 ### useReactRouterUrlAdapter [#usereactrouterurladapter]
 

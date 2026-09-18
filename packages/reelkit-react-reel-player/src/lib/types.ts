@@ -53,7 +53,7 @@ export interface BaseContentItem {
 /**
  * Default content item type with social-media-style metadata.
  *
- * Used by the built-in {@link SlideOverlay} to display author info,
+ * Used by the built-in `SlideOverlay` to display author info,
  * description text, and a like count. Extends {@link BaseContentItem}.
  */
 export interface ContentItem extends BaseContentItem {
@@ -162,7 +162,7 @@ export interface SlideRenderProps<T extends BaseContentItem> {
   /** Whether this is the currently active (visible) slide. */
   isActive: boolean;
 
-  /** Unique key for {@link VideoSlide} playback position persistence. Derived from `content.id`. */
+  /** Unique key for `VideoSlide` playback position persistence. Derived from `content.id`. */
   slideKey: string;
 
   /** Ref to the inner horizontal slider API, required for drag coordination in multi-media slides. */
@@ -228,7 +228,7 @@ export interface NestedSlideRenderProps {
   /** Whether this is the active item within the nested slider. */
   isInnerActive: boolean;
 
-  /** Unique key for {@link VideoSlide} playback position persistence. */
+  /** Unique key for `VideoSlide` playback position persistence. */
   slideKey: string;
 
   /** The default slide content (ImageSlide or VideoSlide). Render this to wrap the default with your own styles. */

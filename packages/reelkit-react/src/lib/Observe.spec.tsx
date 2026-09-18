@@ -72,6 +72,55 @@ describe('Observe', () => {
     expect(container.textContent).toBe('a-B');
   });
 
+  // A parent may hand over a different signal on a later render. What is
+  // followed has to be what the latest render gave, not what the first did.
+  it('follows a signal that replaced the one it was given first', () => {
+    const first = createSignal('first');
+    const second = createSignal('second');
+    const { container, rerender } = render(
+      <Observe signals={[first]}>{() => <span>{first.value}</span>}</Observe>,
+    );
+
+    rerender(
+      <Observe signals={[second]}>{() => <span>{second.value}</span>}</Observe>,
+    );
+    act(() => {
+      second.value = 'changed';
+    });
+
+    expect(container.textContent).toBe('changed');
+  });
+
+  it('lets go of a signal it was handed and then not', () => {
+    const first = createSignal(0);
+    const second = createSignal(0);
+    const renderSpy = vi.fn(() => <span>{first.value + second.value}</span>);
+    const { rerender } = render(
+      <Observe signals={[first]}>{renderSpy}</Observe>,
+    );
+    rerender(<Observe signals={[second]}>{renderSpy}</Observe>);
+    const renders = renderSpy.mock.calls.length;
+
+    act(() => {
+      first.value = 1;
+    });
+
+    expect(renderSpy.mock.calls.length).toBe(renders);
+  });
+
+  it('keeps one subscription while the same signals come back each render', () => {
+    const signal = createSignal(0);
+    const observe = vi.spyOn(signal, 'observe');
+    const { rerender } = render(
+      <Observe signals={[signal]}>{() => <span>{signal.value}</span>}</Observe>,
+    );
+    rerender(
+      <Observe signals={[signal]}>{() => <span>{signal.value}</span>}</Observe>,
+    );
+
+    expect(observe).toHaveBeenCalledTimes(1);
+  });
+
   it('stops reacting after unmount', () => {
     const signal = createSignal(0);
     const renderSpy = vi.fn(() => <span>{signal.value}</span>);

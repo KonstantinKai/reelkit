@@ -198,7 +198,7 @@ import theming from '../../snippets/stories-player/theming.css?raw';
 
 ## 记住已观看内容 [#remembering-what-was-seen]
 
-圆环在分组看完之前显示渐变，分组重新打开时停在观看者尚未看过的第一条 story。两者都来自一个 `ViewedStateController`，它用地址栏所用的同一个键构建——因此已存记录读起来与分享链接的参数完全一样，并且在键按 id 寻址时能经受信息流重排。
+圆环在分组看完之前显示渐变，分组重新打开时停在观看者尚未看过的第一条 story。两者都来自同一个 `createStoriesViewedStateController`：在 feed 所在的地方创建一次，作为 `viewed` 交给圆环列表和播放器，它们会自己读取存储、跟随它并记录看过的内容。已存记录按 id 记下作者和 story，因此能经受 feed 重排，而且同一个控制器在 Vue 和 Angular 中同样可用。
 
 <CodeBlock code={rememberingWhatWasSeen} language="tsx" />
 
@@ -206,16 +206,17 @@ import theming from '../../snippets/stories-player/theming.css?raw';
 - **往后滑同样会续播。** `resumeStoryIndex` 对本次会话中第一次到达的每个分组生效，包括播放器打开时所在的那个，除非 `initialStoryIndex` 显式指定了 story；已经滑过的分组会在离开处重新打开。
 - **链接仍然优先。** 使用 `StoriesUrlOverlay` 时，由参数决定播放器在哪里打开，无论存了什么。其他情况下由续播回调决定。
 - **计数是位置，不是次数。** 记录记的是到达的最远一条 story，因此给已看完的分组新增一条会重新点亮圆环，从中间删掉一条则会让计数变短。与分享链接得到的自愈相同。
-- **存储可替换。** 传入 `createSessionStorageAdapter()` 在关闭标签页时遗忘，或使用自己的 `StorageAdapter`。两个打开的标签页通过浏览器的 storage 事件保持一致。
+- **存储可替换。** 传入 `storage: createSessionStorageAdapter()` 在关闭标签页时遗忘，或使用自己的 `StorageAdapter`。两个打开的标签页通过浏览器的 storage 事件保持一致。
+- **只在打开时才挂载的播放器读取得太晚。** 播放器在一个效果中读取存储，而该效果在它仍然关闭时就已运行。使用 `{open && <StoriesOverlay … />}` 时没有这个时机，所以请自己在一个返回其 dispose 的效果中调用 `viewed.attach()`。各选项以及它所基于的底层部件，见 [Stories Core](/docs/stories-core#viewed-controller) 页面。
 
 ## 桌面端轮播 [#desktop-carousel]
 
-设置 `desktopLayout="carousel"`，播放器就会像 Instagram 网页版那样布局：当前故事保持原有尺寸居中，两侧各最多显示两个相邻分组，以较小、变暗的卡片呈现。点击卡片会打开对应分组，切换分组时卡片会横向滑动。传入与头像环列表相同的 `viewedState` 映射，已看完分组的卡片就会显示灰色的环。
+设置 `desktopLayout="carousel"`，播放器就会像 Instagram 网页版那样布局：当前故事保持原有尺寸居中，两侧各最多显示两个相邻分组，以较小、变暗的卡片呈现。点击卡片会打开对应分组，切换分组时卡片会横向滑动。传入与头像环列表相同的 `viewed` 控制器，已看完分组的卡片就会显示灰色的环。卡片会自行跟随它，因此故事被标记为已看时只有卡片重绘，播放器不会重新渲染。
 
 <CodeBlock code={desktopCarousel} language="tsx" />
 
 - **手机上仍是普通播放器。** 宽度不超过 768px 时不渲染卡片，滑动使用 `groupTransition`，与默认的 `'single'` 布局一致。窗口宽度跨过这个值时布局会即时切换。
-- **卡片预览分组将要打开的位置**：本次会话中离开时所在的故事，否则是 `resumeStoryIndex` 返回的故事。卡片显示视频封面或图片本身。两者都没有的故事（例如渐变背景上的文字故事）会由你的 `renderSlide` 按播放器尺寸绘制后再缩小；没有封面的视频显示卡片背景。
+- **卡片预览分组将要打开的位置**：本次会话中离开时所在的故事，否则是 `resumeStoryIndex` 返回的故事。卡片显示视频封面或图片本身。两者都没有的故事（例如渐变背景上的文字故事）会由你的 `renderSlide` 按播放器尺寸绘制后再缩小；没有封面的视频显示卡片背景。这个预览以 `isActive: false` 调用 `renderSlide`，只是一张图：其中的任何内容都无法获得焦点或被点击。幻灯片在挂载时做的事情（例如播放或统计）请放在 `isActive` 判断之后。
 - **计时器会等滑动结束。** 卡片停止移动之前，故事不会前进，也不会为它触发 `onStoryViewed`。
 - **所有切换分组的方式都会滑动**：点击卡片、`StoriesApi.goToGroup`、`nextGroup` 和 `prevGroup`，以及在分组末尾继续按方向键。触摸滑动本身已经移动了播放器，因此不会再叠加滑动。
 
@@ -242,8 +243,8 @@ import theming from '../../snippets/stories-player/theming.css?raw';
 | `innerTransitionDuration` | `number` | 200 | 内层（story）过渡动画的时长（毫秒） |
 | `minSegmentWidth` | `number` | 8 | 进度条分段的最小宽度（像素） |
 | `apiRef` | `MutableRefObject<StoriesApi \| null>` | - | 用于访问命令式 StoriesApi 的 ref |
-| `desktopLayout` | `'single' \| 'carousel'` | 'single' | 桌面端布局。'carousel' 在当前故事两侧以预览卡片显示相邻分组，并在分组之间滑动。手机上始终只显示故事本身。 |
-| `viewedState` | `Map<string, number>` | - | 按作者 id 记录已看的故事数，来自 viewedCounts()。轮播卡片会为看完的分组显示灰色的环。 |
+| `desktopLayout` | `'single' \| 'carousel'` | 'single' | 桌面端布局。'carousel' 在当前故事两侧以预览卡片显示相邻分组，并在分组之间滑动。手机上始终只显示故事本身。类型以 `DesktopLayout` 导出。 |
+| `viewed` | `StoriesViewedStateController` | - | 观看者已看过的内容，来自 createStoriesViewedStateController()。分组从第一个未看的 story 续播，每个显示过的 story 都会被记录，轮播卡片会为看完的分组显示灰色的环。把同一个控制器交给 StoriesRingList。 |
 | `renderHeader` | `(props: HeaderRenderProps<T>) => ReactNode` | - | 自定义页眉渲染器。接收作者、story 以及暂停 / 静音状态。 |
 | `renderFooter` | `(props: FooterRenderProps<T>) => ReactNode` | - | 自定义页脚渲染器。接收作者和 story 信息。 |
 | `renderSlide` | `(props: SlideRenderProps<T>) => ReactNode` | - | 自定义幻灯片渲染器，替换默认的图片 / 视频幻灯片。 |

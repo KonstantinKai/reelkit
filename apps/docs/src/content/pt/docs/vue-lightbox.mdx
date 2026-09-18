@@ -234,6 +234,20 @@ Aceita todas as props visuais e de comportamento acima, menos `is-open`, substit
 | `api-ready` | `LightboxApi` | Emitido assim que o slider fica pronto, expondo a API imperativa |
 | `update:is-open` | `boolean` | Emitido no fechamento; é o que viabiliza o v-model:is-open |
 
+### LightboxApi [#lightboxapi]
+
+O objeto que `api-ready` emite, exposto também na ref de template do componente. O slider só existe enquanto o overlay está aberto, então cada método do slider não faz nada enquanto ele está fechado; `close()` sempre funciona.
+
+| Método | Tipo | Descrição |
+| --- | --- | --- |
+| `next()` | `() => void` | Vai para o próximo slide, com animação. Fica no último slide a menos que `loop` esteja ativo. |
+| `prev()` | `() => void` | Volta para o slide anterior, com animação. Fica no primeiro slide a menos que `loop` esteja ativo. |
+| `goTo(index, animate?)` | `(number, boolean?) => Promise<void>` | Salta para um slide. `index` é limitado aos itens e `animate` é false por padrão. Resolve quando o movimento termina. |
+| `adjust()` | `() => void` | Recalcula a posição do slide após uma mudança de layout que o overlay não percebeu sozinho |
+| `observe()` | `() => void` | Volta a escutar gestos, teclado e roda do mouse depois de `unobserve()` |
+| `unobserve()` | `() => void` | Para de escutar gestos, teclado e roda do mouse; os slides ficam onde estão |
+| `close()` | `() => void` | Fecha o lightbox, igual ao botão de fechar ou Escape |
+
 ## Interface LightboxItem [#lightboxitem-interface]
 
 | Campo | Tipo | Obrigatório | Descrição |

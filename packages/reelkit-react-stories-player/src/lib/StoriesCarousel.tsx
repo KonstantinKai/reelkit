@@ -1,4 +1,5 @@
 import type { ReactNode, TransitionEvent } from 'react';
+import { Observe, type Subscribable } from '@reelkit/react';
 import type { StoryItem, StoriesGroup } from '@reelkit/stories-core';
 import type { GroupPreviewRenderProps } from './types';
 import {
@@ -59,11 +60,12 @@ export interface StoriesCarouselProps<T extends StoryItem = StoryItem> {
   activeSize: [number, number];
 
   /**
-   * Stories seen per author id, the overlay's `viewedState` prop. A card whose
-   * group is watched to the end draws the muted ring; without it every ring
-   * shows the unwatched gradient.
+   * Signal holding the stories seen per author id, from the overlay's `viewed`
+   * controller. A card whose group is watched to the end draws the muted ring;
+   * without it every ring shows the unwatched gradient. The cards follow the
+   * signal by themselves, so a change repaints them and nothing else.
    */
-  viewedState?: Map<string, number>;
+  viewedState?: Subscribable<Map<string, number>>;
 
   /**
    * Story a group would open on, which is the one its card previews. The
@@ -99,6 +101,48 @@ export interface StoriesCarouselProps<T extends StoryItem = StoryItem> {
 
 const _kCardRingSize = 52;
 
+/**
+ * The cards themselves, drawn under an `Observe` on the viewed signal. A story
+ * being marked seen re-renders this component alone: the carousel around it,
+ * and the player that renders the carousel, take no part.
+ */
+function CarouselCards({
+  groupIndexes,
+  viewedState,
+  renderCard,
+}: {
+  /** Groups to draw a card for, in group order. */
+  groupIndexes: number[];
+
+  /** Signal holding the stories seen per author id, when the player has one. */
+  viewedState: Subscribable<Map<string, number>> | undefined;
+
+  /** Draws the card of one group from the viewed map as it is right now. */
+  renderCard: (
+    groupIndex: number,
+    viewed: Map<string, number> | undefined,
+  ) => ReactNode;
+}) {
+  return (
+    <Observe signals={viewedState ? [viewedState] : []}>
+      {() => (
+        <>
+          {groupIndexes.map((groupIndex) =>
+            renderCard(groupIndex, viewedState?.value),
+          )}
+        </>
+      )}
+    </Observe>
+  );
+}
+
+// Set on the element rather than through the `inert` prop: React 18 does not
+// know the prop and React 19 reads it as a boolean, so the same markup would
+// mean different things under each.
+const makeInert = (element: HTMLElement | null) => {
+  element?.setAttribute('inert', '');
+};
+
 /** Image a card shows: the video poster, the image itself, or none. */
 const previewSource = (story: StoryItem | undefined) =>
   story?.poster ?? (story?.mediaType === 'image' ? story.src : undefined);
@@ -122,36 +166,40 @@ function DefaultCard<T extends StoryItem>({
   });
 
   return (
-    <button
-      type="button"
-      className="rk-stories-card-button"
-      aria-label={`Open stories by ${group.author.name}`}
-      tabIndex={focusable ? 0 : -1}
-      onClick={onOpen}
-    >
-      {source ? (
-        <img className="rk-stories-card-image" src={source} alt="" />
-      ) : null}
+    <>
+      {/* Under the button, never inside it: a custom slide can hold buttons
+          and links of its own, and a control cannot sit inside another. */}
       {source ? null : renderFrame()}
-      <span className="rk-stories-card-scrim" />
-      <span className="rk-stories-card-info">
-        <span className={ring.className} style={ring.style}>
-          <img
-            className="rk-stories-ring-avatar"
-            src={group.author.avatar}
-            alt=""
-            width={ring.avatarSize}
-            height={ring.avatarSize}
-          />
-        </span>
-        <span className="rk-stories-card-name">{group.author.name}</span>
-        {story?.createdAt ? (
-          <span className="rk-stories-card-time">
-            {formatTimeAgo(story.createdAt)}
-          </span>
+      <button
+        type="button"
+        className="rk-stories-card-button"
+        aria-label={`Open stories by ${group.author.name}`}
+        tabIndex={focusable ? 0 : -1}
+        onClick={onOpen}
+      >
+        {source ? (
+          <img className="rk-stories-card-image" src={source} alt="" />
         ) : null}
-      </span>
-    </button>
+        <span className="rk-stories-card-scrim" />
+        <span className="rk-stories-card-info">
+          <span className={ring.className} style={ring.style}>
+            <img
+              className="rk-stories-ring-avatar"
+              src={group.author.avatar}
+              alt=""
+              width={ring.avatarSize}
+              height={ring.avatarSize}
+            />
+          </span>
+          <span className="rk-stories-card-name">{group.author.name}</span>
+          {story?.createdAt ? (
+            <span className="rk-stories-card-time">
+              {formatTimeAgo(story.createdAt)}
+            </span>
+          ) : null}
+        </span>
+      </button>
+    </>
   );
 }
 
@@ -189,10 +237,12 @@ export function StoriesCarousel<T extends StoryItem = StoryItem>({
   // The story drawn by the consumer's slide renderer at the player's size and
   // scaled to the card, for a story with no poster or image of its own, like a
   // text story on a gradient. Videos are left out: the player plays every video
-  // through one shared element.
+  // through one shared element. The frame is a picture of the story, nothing
+  // in it is for use, so it is inert: no focus, no clicks, no screen reader.
   const cardFrame = (story: T | undefined, groupIndex: number) =>
     story && story.mediaType !== 'video' && renderFrame ? (
       <span
+        ref={makeInert}
         className="rk-stories-card-frame"
         aria-hidden="true"
         style={{ transform: `scale(${cardHeight / activeSize[1]})` }}
@@ -215,51 +265,60 @@ export function StoriesCarousel<T extends StoryItem = StoryItem>({
     }
   };
 
+  const renderCard = (
+    groupIndex: number,
+    viewed: Map<string, number> | undefined,
+  ) => {
+    const group = groups[groupIndex];
+    if (!group) return null;
+
+    const offset = groupIndex - base;
+    const visible = isCardShown(offset);
+    const slot = getCarouselSlot(getSlotOffset(offset), activeSize);
+    const scale = slot.height / cardHeight;
+    const story = group.stories[storyIndexFor(groupIndex)];
+    const previewProps: GroupPreviewRenderProps<T> = {
+      group,
+      groupIndex,
+      story,
+      offset,
+      viewedCount: viewed?.get(group.author.id) ?? 0,
+      onOpen: () => onOpen(groupIndex),
+    };
+
+    return (
+      <div
+        key={groupIndex}
+        className={`rk-stories-card${offset === 0 ? ' rk-stories-card--center' : ''}${visible ? '' : ' rk-stories-card--hidden'}`}
+        style={{
+          width: cardWidth,
+          height: cardHeight,
+          transform: `translate(-50%, -50%) translateX(${slot.x}px) scale(${scale})`,
+        }}
+        onTransitionEnd={(event) => onTransitionEnd(event, groupIndex)}
+      >
+        {renderGroupPreview ? (
+          renderGroupPreview(previewProps)
+        ) : (
+          <DefaultCard
+            {...previewProps}
+            focusable={slide === null && visible}
+            renderFrame={() => cardFrame(story, groupIndex)}
+          />
+        )}
+      </div>
+    );
+  };
+
   return (
     <div
       className={`rk-stories-carousel${slide?.phase === 'start' ? ' rk-stories-carousel--instant' : ''}`}
     >
-      {groupIndexes.map((groupIndex) => {
-        const group = groups[groupIndex];
-        if (!group) return null;
-
-        const offset = groupIndex - base;
-        const visible = isCardShown(offset);
-        const slot = getCarouselSlot(getSlotOffset(offset), activeSize);
-        const scale = slot.height / cardHeight;
-        const story = group.stories[storyIndexFor(groupIndex)];
-        const previewProps: GroupPreviewRenderProps<T> = {
-          group,
-          groupIndex,
-          story,
-          offset,
-          viewedCount: viewedState?.get(group.author.id) ?? 0,
-          onOpen: () => onOpen(groupIndex),
-        };
-
-        return (
-          <div
-            key={groupIndex}
-            className={`rk-stories-card${offset === 0 ? ' rk-stories-card--center' : ''}${visible ? '' : ' rk-stories-card--hidden'}`}
-            style={{
-              width: cardWidth,
-              height: cardHeight,
-              transform: `translate(-50%, -50%) translateX(${slot.x}px) scale(${scale})`,
-            }}
-            onTransitionEnd={(event) => onTransitionEnd(event, groupIndex)}
-          >
-            {renderGroupPreview ? (
-              renderGroupPreview(previewProps)
-            ) : (
-              <DefaultCard
-                {...previewProps}
-                focusable={slide === null && visible}
-                renderFrame={() => cardFrame(story, groupIndex)}
-              />
-            )}
-          </div>
-        );
-      })}
+      <CarouselCards
+        groupIndexes={groupIndexes}
+        viewedState={viewedState}
+        renderCard={renderCard}
+      />
     </div>
   );
 }

@@ -1,14 +1,10 @@
-<Observe signals={[seen.entries]}>
-  {() => (
-    <StoriesOverlay
-      isOpen={open}
-      onClose={() => setOpen(false)}
-      groups={groups}
-      initialGroupIndex={group}
-      desktopLayout="carousel"
-      viewedState={viewed.viewedCounts()}
-      resumeStoryIndex={viewed.resumeStoryIndex}
-      onStoryViewed={viewed.markViewed}
-    />
-  )}
-</Observe>
+// The same controller the ring list takes: the cards draw the same rings and
+// repaint by themselves when a story is marked seen.
+<StoriesOverlay
+  isOpen={open}
+  onClose={() => setOpen(false)}
+  groups={groups}
+  initialGroupIndex={group}
+  desktopLayout="carousel"
+  viewed={viewed}
+/>;

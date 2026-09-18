@@ -198,7 +198,7 @@ styles import करना न भूलें:
 
 ## देखी गई चीज़ें याद रखना [#remembering-what-was-seen]
 
-ग्रुप पूरा देख लिए जाने तक rings पर gradient दिखता है, और ग्रुप उस पहली story पर दोबारा खुलता है जिसे दर्शक ने नहीं देखा। दोनों `ViewedStateController` से आते हैं, जो उसी key से बनता है जो address bar इस्तेमाल करता है — इसलिए सहेजी गई entry ठीक शेयर किए गए लिंक के parameter जैसी पढ़ी जाती है, और id से पहचानने वाली key होने पर फ़ीड का क्रम बदलने के बाद भी बनी रहती है।
+ग्रुप पूरा देख लिए जाने तक rings पर gradient दिखता है, और ग्रुप उस पहली story पर दोबारा खुलता है जिसे दर्शक ने नहीं देखा। दोनों एक ही `createStoriesViewedStateController` से आते हैं, जो वहाँ एक बार बनता है जहाँ feed रहता है, और `viewed` के रूप में ring list और player को दिया जाता है: वे खुद store पढ़ते हैं, उसे follow करते हैं और जो दिखाया गया उसे दर्ज करते हैं। सहेजी गई entry author और story को id से नाम देती है, इसलिए feed का क्रम बदलने के बाद भी बनी रहती है, और वही कंट्रोलर Vue और Angular में भी काम करता है।
 
 <CodeBlock code={rememberingWhatWasSeen} language="tsx" />
 
@@ -206,16 +206,17 @@ styles import करना न भूलें:
 - **आगे स्वाइप करने पर भी वहीं से शुरू होता है।** इस सेशन में पहली बार पहुँचे हर ग्रुप के लिए `resumeStoryIndex` से पूछा जाता है, उस ग्रुप समेत जिस पर प्लेयर खुलता है, जब तक `initialStoryIndex` सीधे किसी story का नाम न ले; पहले से स्वाइप करके देखा गया ग्रुप वहीं खुलता है जहाँ छोड़ा गया था।
 - **लिंक फिर भी ऊपर रहता है।** `StoriesUrlOverlay` के साथ parameter तय करता है कि प्लेयर कहाँ खुले, चाहे जो भी सहेजा गया हो। बाकी हर जगह resume callback तय करता है।
 - **गिनती एक स्थिति है, जोड़ नहीं।** Entry सबसे दूर पहुँची story का नाम है, इसलिए देखे जा चुके ग्रुप में story जोड़ने पर उसकी ring फिर से जल उठती है, और बीच से एक हटाने पर गिनती घट जाती है। वैसे ही जैसे शेयर किया गया लिंक खुद को ठीक कर लेता है।
-- **Storage बदला जा सकता है।** tab बंद होने पर भूलने के लिए `createSessionStorageAdapter()` पास करें, या अपना `StorageAdapter`। दो खुले tabs ब्राउज़र के storage इवेंट से एक-दूसरे के साथ चलते हैं।
+- **Storage बदला जा सकता है।** tab बंद होने पर भूलने के लिए `storage: createSessionStorageAdapter()` पास करें, या अपना `StorageAdapter`। दो खुले tabs ब्राउज़र के storage इवेंट से एक-दूसरे के साथ चलते हैं।
+- **सिर्फ़ खुलते समय mount होने वाला player बहुत देर से पढ़ता है।** player store को ऐसे effect में पढ़ता है जो उसके बंद रहते हुए ही चलता है। `{open && <StoriesOverlay … />}` में वह मौका नहीं होता, इसलिए `viewed.attach()` को खुद ऐसे effect में कॉल करें जो अपना dispose लौटाए। विकल्प, और जिन निचले स्तर के हिस्सों से यह बना है, वे [Stories Core](/docs/stories-core#viewed-controller) पेज पर हैं।
 
 ## डेस्कटॉप कैरोसेल [#desktop-carousel]
 
-`desktopLayout="carousel"` सेट करें तो player का layout Instagram वेब जैसा हो जाता है: active story अपने सामान्य आकार में बीच में रहती है, और हर तरफ़ ज़्यादा से ज़्यादा दो पड़ोसी groups छोटे, धुंधले कार्ड के रूप में दिखते हैं। किसी कार्ड पर क्लिक करने से वह group खुलता है, और group बदलते समय कार्ड बगल में खिसकते हैं। ring list को दिया जाने वाला वही `viewedState` map पास करें, तो पूरे देखे गए group के कार्ड पर फीकी ring दिखती है।
+`desktopLayout="carousel"` सेट करें तो player का layout Instagram वेब जैसा हो जाता है: active story अपने सामान्य आकार में बीच में रहती है, और हर तरफ़ ज़्यादा से ज़्यादा दो पड़ोसी groups छोटे, धुंधले कार्ड के रूप में दिखते हैं। किसी कार्ड पर क्लिक करने से वह group खुलता है, और group बदलते समय कार्ड बगल में खिसकते हैं। वही `viewed` कंट्रोलर पास करें जो ring list को दिया जाता है, तो पूरे देखे गए group के कार्ड पर फीकी ring दिखती है। कार्ड खुद उसे follow करते हैं, इसलिए story के देखी गई दर्ज होने पर सिर्फ़ वही दोबारा बनते हैं और player दोबारा render नहीं होता।
 
 <CodeBlock code={desktopCarousel} language="tsx" />
 
 - **फ़ोन पर player सामान्य रहता है।** 768px चौड़ाई तक कार्ड render नहीं होते और swipe में `groupTransition` इस्तेमाल होता है, बिल्कुल डिफ़ॉल्ट `'single'` layout की तरह। विंडो की चौड़ाई इस सीमा के पार बदलने पर layout तुरंत बदल जाता है।
-- **हर कार्ड दिखाता है कि group कहाँ से खुलेगा**: इस session में जिस story पर उसे छोड़ा गया था, वरना वह story जो `resumeStoryIndex` लौटाता है। कार्ड पर वीडियो का poster या खुद इमेज दिखती है। जिस story में दोनों में से कुछ नहीं है, जैसे gradient पर टेक्स्ट वाली story, उसे आपका `renderSlide` player के आकार में बनाता है और फिर छोटा करके दिखाया जाता है; बिना poster वाले वीडियो पर कार्ड का background दिखता है।
+- **हर कार्ड दिखाता है कि group कहाँ से खुलेगा**: इस session में जिस story पर उसे छोड़ा गया था, वरना वह story जो `resumeStoryIndex` लौटाता है। कार्ड पर वीडियो का poster या खुद इमेज दिखती है। जिस story में दोनों में से कुछ नहीं है, जैसे gradient पर टेक्स्ट वाली story, उसे आपका `renderSlide` player के आकार में बनाता है और फिर छोटा करके दिखाया जाता है; बिना poster वाले वीडियो पर कार्ड का background दिखता है। यह preview `renderSlide` को `isActive: false` के साथ बुलाता है और सिर्फ़ एक तस्वीर है: इसके अंदर की किसी चीज़ पर न focus जाता है, न click। slide mount होते समय जो भी करती है, जैसे playback या analytics, उसे `isActive` के पीछे रखें।
 - **टाइमर slide पूरी होने का इंतज़ार करता है।** जब तक कार्ड रुक नहीं जाते, story आगे नहीं बढ़ती और उसके लिए `onStoryViewed` नहीं चलता।
 - **group बदलने का हर तरीका slide करता है**: कार्ड पर क्लिक, `StoriesApi.goToGroup`, `nextGroup` और `prevGroup`, और group के आख़िर से आगे arrow keys। touch swipe खुद player को खिसकाता है, इसलिए उसके ऊपर कोई slide नहीं होती।
 
@@ -242,8 +243,8 @@ styles import करना न भूलें:
 | `innerTransitionDuration` | `number` | 200 | अंदरूनी (story) ट्रांज़िशन एनिमेशन की अवधि, मिलीसेकंड में |
 | `minSegmentWidth` | `number` | 8 | प्रोग्रेस बार के segment की पिक्सेल में न्यूनतम चौड़ाई |
 | `apiRef` | `MutableRefObject<StoriesApi \| null>` | - | imperative StoriesApi तक पहुँचने के लिए ref |
-| `desktopLayout` | `'single' \| 'carousel'` | 'single' | डेस्कटॉप layout। 'carousel' active story के बगल में पड़ोसी groups को preview कार्ड के रूप में दिखाता है और groups के बीच slide करता है। फ़ोन पर story हमेशा अकेली दिखती है। |
-| `viewedState` | `Map<string, number>` | - | हर author id के लिए देखी गई stories की गिनती, viewedCounts() से। पूरे देखे गए group के carousel कार्ड पर फीकी ring दिखती है। |
+| `desktopLayout` | `'single' \| 'carousel'` | 'single' | डेस्कटॉप layout। 'carousel' active story के बगल में पड़ोसी groups को preview कार्ड के रूप में दिखाता है और groups के बीच slide करता है। फ़ोन पर story हमेशा अकेली दिखती है। टाइप `DesktopLayout` नाम से export होता है। |
+| `viewed` | `StoriesViewedStateController` | - | दर्शक ने जो देखा है, createStoriesViewedStateController() से। group अपनी पहली न देखी गई story से दोबारा शुरू होते हैं, दिखाई गई हर story दर्ज होती है, और carousel कार्ड पूरे देखे गए group की ring फीकी कर देते हैं। वही कंट्रोलर StoriesRingList को भी दें। |
 | `renderHeader` | `(props: HeaderRenderProps<T>) => ReactNode` | - | कस्टम header renderer। लेखक, story और pause/mute स्टेट मिलती है। |
 | `renderFooter` | `(props: FooterRenderProps<T>) => ReactNode` | - | कस्टम footer renderer। लेखक और story की जानकारी मिलती है। |
 | `renderSlide` | `(props: SlideRenderProps<T>) => ReactNode` | - | कस्टम स्लाइड renderer, जो डिफ़ॉल्ट इमेज/वीडियो स्लाइड की जगह लेता है। |

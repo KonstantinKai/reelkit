@@ -4,7 +4,7 @@
  */
 export type WheelDirection = 'up' | 'down' | 'left' | 'right';
 
-/** Configuration for a {@link WheelController}. */
+/** Configuration for a `WheelController`. */
 export interface WheelControllerConfig {
   /**
    * Debounce duration in milliseconds. Rapid wheel events within this
@@ -30,19 +30,4 @@ export interface WheelControllerEvents {
    * @param event - The underlying DOM wheel event.
    */
   onWheel: (direction: WheelDirection, event: WheelEvent) => void;
-}
-
-/**
- * Mouse wheel navigation controller that translates scroll events into
- * debounced directional callbacks. Created via {@link createWheelController}.
- */
-export interface WheelController {
-  /**
-   * Starts listening for `wheel` events on the given target.
-   * @param target - The event target. Defaults to `window`.
-   */
-  attach(target?: Window | HTMLElement): void;
-
-  /** Removes the `wheel` listener, clears pending debounce, and detaches. */
-  detach(): void;
 }

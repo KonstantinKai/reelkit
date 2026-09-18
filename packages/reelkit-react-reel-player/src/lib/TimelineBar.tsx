@@ -17,10 +17,10 @@ export interface TimelineBarProps {
 /**
  * Default playback timeline bar for the reel player overlay.
  *
- * Reads state from the nearest {@link TimelineProvider} and renders a DOM
+ * Reads state from the nearest `TimelineProvider` and renders a DOM
  * track with buffered segments, a progress fill, and a draggable cursor.
  * Wires pointer + keyboard scrubbing through
- * {@link TimelineController.bindInteractions}.
+ * `TimelineController.bindInteractions`.
  *
  * @remarks
  * Positioned absolutely at the bottom of the overlay. Theme via the

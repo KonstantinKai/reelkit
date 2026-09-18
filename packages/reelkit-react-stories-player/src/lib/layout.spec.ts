@@ -7,6 +7,7 @@ import {
   getSlotOffset,
   isCardShown,
   isMobileWidth,
+  parseDurationMs,
 } from './layout';
 
 // Card proportions follow the Instagram desktop viewer: a side card is 0.4 of
@@ -87,12 +88,33 @@ describe('desktop carousel layout', () => {
     [3, 2, 10, [0, 1, 2, 3, 4, 5]],
     [0, 1, 2, [0, 1]],
     [7, 9, 10, [5, 6, 7, 8, 9]],
+    // A far jump draws the cards around both ends, never the groups between:
+    // those would only cross the screen faded out.
+    [0, 150, 200, [0, 1, 2, 148, 149, 150, 151, 152]],
+    [150, 0, 200, [0, 1, 2, 148, 149, 150, 151, 152]],
+    [3, 8, 200, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]],
   ])(
     'draws the groups of a slide from %i to %i among %i groups',
     (from, to, count, expected) => {
       expect(getSlideGroupIndexes(from, to, count)).toEqual(expected);
     },
   );
+
+  // What `getComputedStyle` reports for `transition-duration`: seconds or
+  // milliseconds, one value per transitioned property.
+  it.each([
+    ['1500ms', 1500],
+    ['0.3s', 300],
+    ['1.5s', 1500],
+    ['0.3s, 0.5s', 500],
+    ['.25s', 250],
+    ['0s', 0],
+    ['', 0],
+    ['fast', 0],
+    ['-1s', 0],
+  ])('reads a transition duration of "%s" as %i milliseconds', (value, ms) => {
+    expect(parseDurationMs(value)).toBe(ms);
+  });
 
   it('treats 768 and below as a phone', () => {
     expect(isMobileWidth(768)).toBe(true);

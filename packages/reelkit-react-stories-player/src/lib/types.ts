@@ -202,7 +202,7 @@ export interface GroupPreviewRenderProps<T extends StoryItem = StoryItem> {
    */
   offset: number;
 
-  /** Stories of the group already seen, from `viewedState`; 0 without it. */
+  /** Stories of the group already seen, from `viewed`; 0 without it. */
   viewedCount: number;
 
   /** Opens the group, with the same slide as a click on the default card. */
@@ -214,23 +214,23 @@ export interface GroupPreviewRenderProps<T extends StoryItem = StoryItem> {
  */
 export interface StoriesApi {
   /** Advance to the next story within the current group. */
-  nextStory(): void;
+  nextStory: () => void;
 
   /** Go to the previous story within the current group. */
-  prevStory(): void;
+  prevStory: () => void;
 
   /** Switch to the next user group. */
-  nextGroup(): void;
+  nextGroup: () => void;
 
   /** Switch to the previous user group. */
-  prevGroup(): void;
+  prevGroup: () => void;
 
   /** Jump to a specific group by index. */
-  goToGroup(index: number): void;
+  goToGroup: (index: number) => void;
 
   /** Pause auto-advance and the progress timer. */
-  pause(): void;
+  pause: () => void;
 
   /** Resume auto-advance and the progress timer. */
-  resume(): void;
+  resume: () => void;
 }

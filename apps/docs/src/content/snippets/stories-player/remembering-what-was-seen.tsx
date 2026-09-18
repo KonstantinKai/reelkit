@@ -1,56 +1,46 @@
-import { useMemo, useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   StoriesOverlay,
   StoriesRingList,
-  useViewedState,
-  createStoriesViewedState,
-  urlStableIdTwoAxisKey,
-  twoAxisViewedTracking,
+  createStoriesViewedStateController,
   type StoriesGroup,
 } from '@reelkit/react-stories-player';
-import { Observe } from '@reelkit/react';
 
 function Feed({ groups }: { groups: StoriesGroup[] }) {
   const [open, setOpen] = useState(false);
   const [group, setGroup] = useState(0);
 
-  const seen = useViewedState({
-    storageKey: 'stories-seen',
-    ...urlStableIdTwoAxisKey({
-      outerItems: () => groups.map((g) => ({ id: g.author.id })),
-      innerItems: (outer) =>
-        groups.find((g) => g.author.id === outer.id)?.stories ?? [],
+  // The controller reads the groups through a getter every time it needs
+  // them, so keep the getter current: a ref for a plain prop, or a signal.
+  const groupsRef = useRef(groups);
+  groupsRef.current = groups;
+
+  const [viewed] = useState(() =>
+    createStoriesViewedStateController({
+      storageKey: 'stories-seen',
+      groups: () => groupsRef.current,
     }),
-    ...twoAxisViewedTracking,
-  });
-  const viewed = useMemo(
-    () => createStoriesViewedState(seen, () => groups),
-    [seen, groups],
   );
 
   return (
     <>
-      {/* entries is a signal, so the rings repaint as stories are seen */}
-      <Observe signals={[seen.entries]}>
-        {() => (
-          <StoriesRingList
-            groups={groups}
-            viewedState={viewed.viewedCounts()}
-            onSelect={(index) => {
-              setGroup(index);
-              setOpen(true);
-            }}
-          />
-        )}
-      </Observe>
+      {/* The rings follow the controller by themselves. */}
+      <StoriesRingList
+        groups={groups}
+        viewed={viewed}
+        onSelect={(index) => {
+          setGroup(index);
+          setOpen(true);
+        }}
+      />
 
+      {/* The player resumes, records and draws its card rings from it. */}
       <StoriesOverlay
         isOpen={open}
         onClose={() => setOpen(false)}
         groups={groups}
         initialGroupIndex={group}
-        resumeStoryIndex={viewed.resumeStoryIndex}
-        onStoryViewed={viewed.markViewed}
+        viewed={viewed}
       />
     </>
   );

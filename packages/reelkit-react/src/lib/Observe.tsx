@@ -4,10 +4,14 @@ import { flushSync } from 'react-dom';
 import {
   reaction,
   animate,
+  type Dispose,
   type Signal,
   type Subscribable,
   type AnimatedValue,
 } from '@reelkit/core';
+
+const sameSignals = (a: Subscribable[], b: Subscribable[]) =>
+  a.length === b.length && a.every((signal, at) => signal === b[at]);
 
 /**
  * Subscribes to one or more reactive signals and re-renders its children
@@ -35,16 +39,36 @@ export const Observe = ({
   const rendered = useRef<unknown[]>([]);
   rendered.current = signals.map((signal) => signal.value);
 
+  // What is followed right now. Checked after every render, so a different
+  // signal handed over on a later render is followed and the one it replaced
+  // let go; the same signals coming back keep the one subscription.
+  const following = useRef<{ signals: Subscribable[]; stop: Dispose } | null>(
+    null,
+  );
+
   useEffect(() => {
-    const dispose = reaction(() => signals, rerender);
+    const current = following.current;
+    if (current && sameSignals(current.signals, signals)) return;
+
+    current?.stop();
+    following.current = {
+      signals,
+      stop: reaction(() => signals, rerender),
+    };
 
     const missed = signals.some(
       (signal, at) => signal.value !== rendered.current[at],
     );
     if (missed) rerender();
+  });
 
-    return dispose;
-  }, []);
+  useEffect(
+    () => () => {
+      following.current?.stop();
+      following.current = null;
+    },
+    [],
+  );
 
   return children();
 };

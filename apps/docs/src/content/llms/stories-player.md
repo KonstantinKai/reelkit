@@ -200,45 +200,36 @@ Takes every `StoriesOverlay` prop except the open-state trio (`isOpen`, `initial
 
 ## Remembering what was seen
 
-Rings show a gradient until a group is watched to the end, and a group reopens on the first story not yet seen. Both come from a `ViewedStateController` built from the same key the address bar uses, so a stored entry reads exactly like the parameter of a shared link.
+Rings show a gradient until a group is watched to the end, and a group reopens on the first story not yet seen. Both come from one `createStoriesViewedStateController` (from `@reelkit/stories-core`, re-exported here), created once where the feed lives and handed to the ring list and the player as `viewed`: they read the store, follow it and record what is shown by themselves. A stored entry names the author and the story by id, so it survives the feed being reordered; the same controller works in Vue and Angular. Options (`enabled`, `key`, `storage`) and the lower-level pieces: see [Stories Core](/docs/stories-core#viewed-controller).
 
 ```tsx
+import { useRef, useState } from 'react';
 import {
   StoriesOverlay,
   StoriesRingList,
-  useViewedState,
-  createStoriesViewedState,
-  urlStableIdTwoAxisKey,
-  twoAxisViewedTracking,
+  createStoriesViewedStateController,
 } from '@reelkit/react-stories-player';
-import { Observe } from '@reelkit/react';
 
-const seen = useViewedState({
-  storageKey: 'stories-seen',
-  ...urlStableIdTwoAxisKey({
-    outerItems: () => groups.map((g) => ({ id: g.author.id })),
-    innerItems: (outer) => groups.find((g) => g.author.id === outer.id)?.stories ?? [],
+// The controller reads the groups through a getter every time; keep it
+// current — a ref for a plain prop, or a signal.
+const groupsRef = useRef(groups);
+groupsRef.current = groups;
+
+const [viewed] = useState(() =>
+  createStoriesViewedStateController({
+    storageKey: 'stories-seen',
+    groups: () => groupsRef.current,
   }),
-  ...twoAxisViewedTracking,
-});
-const viewed = useMemo(
-  () => createStoriesViewedState(seen, () => groups),
-  [seen, groups],
 );
 
-<Observe signals={[seen.entries]}>
-  {() => (
-    <StoriesRingList groups={groups} viewedState={viewed.viewedCounts()} onSelect={open} />
-  )}
-</Observe>
+<StoriesRingList groups={groups} viewed={viewed} onSelect={open} />;
 
 <StoriesOverlay
   isOpen={isOpen}
   onClose={close}
   groups={groups}
   initialGroupIndex={group}
-  resumeStoryIndex={viewed.resumeStoryIndex}
-  onStoryViewed={viewed.markViewed}
+  viewed={viewed}
 />;
 ```
 
@@ -246,31 +237,28 @@ const viewed = useMemo(
 - `resumeStoryIndex` is consulted for every group reached for the first time this session, the one the player opens on included, unless `initialStoryIndex` names a story outright; a group already swiped through reopens where it was left.
 - With `StoriesUrlOverlay` the parameter decides where the player opens, whatever has been stored. Everywhere else the resume callback decides.
 - An entry names the furthest story reached, not a tally: adding a story to a watched group lights its ring again, removing one from the middle shortens the count.
-- Storage is pluggable (`createSessionStorageAdapter()`, or your own `StorageAdapter`); two open tabs stay in step through the browser's storage event.
+- Storage is pluggable (`storage: createSessionStorageAdapter()`, or your own `StorageAdapter`); two open tabs stay in step through the browser's storage event.
+- The player reads the store in an effect that runs while it is still closed. A player mounted only when it opens (`{open && <StoriesOverlay … />}`) has no such moment: call `viewed.attach()` yourself in an effect that returns its dispose.
 
 ## Desktop Carousel
 
-`desktopLayout="carousel"` lays the player out like the Instagram web viewer: the active story in the center at its usual size, up to two neighbouring groups per side as smaller dimmed cards. Clicking a card opens that group while the cards slide across. `viewedState` (same map as `StoriesRingList`) gives a watched group's card the muted ring.
+`desktopLayout="carousel"` lays the player out like the Instagram web viewer: the active story in the center at its usual size, up to two neighbouring groups per side as smaller dimmed cards. Clicking a card opens that group while the cards slide across. The same `viewed` controller `StoriesRingList` takes gives a watched group's card the muted ring. The cards follow it by themselves, so only they repaint when a story is marked seen and the player does not render again.
 
 ```tsx
-<Observe signals={[seen.entries]}>
-  {() => (
-    <StoriesOverlay
-      isOpen={open}
-      onClose={() => setOpen(false)}
-      groups={groups}
-      initialGroupIndex={group}
-      desktopLayout="carousel"
-      viewedState={viewed.viewedCounts()}
-      resumeStoryIndex={viewed.resumeStoryIndex}
-      onStoryViewed={viewed.markViewed}
-    />
-  )}
-</Observe>
+// The same controller the ring list takes: the cards draw the same rings and
+// repaint by themselves when a story is marked seen.
+<StoriesOverlay
+  isOpen={open}
+  onClose={() => setOpen(false)}
+  groups={groups}
+  initialGroupIndex={group}
+  desktopLayout="carousel"
+  viewed={viewed}
+/>
 ```
 
 - Up to 768px wide there are no cards and swipes use `groupTransition`, as with the default `'single'`; resizing across that width switches live.
-- A card previews the story the group opens on (left there this session, else `resumeStoryIndex`): video poster or image; a non-video story with neither is drawn by `renderSlide` at player size and scaled down; a video without a poster shows `--rk-stories-card-bg`.
+- A card previews the story the group opens on (left there this session, else `resumeStoryIndex`): video poster or image; a non-video story with neither is drawn by `renderSlide` at player size and scaled down; a video without a poster shows `--rk-stories-card-bg`. The preview calls `renderSlide` with `isActive: false` and is inert (no focus, no clicks); keep mount-time side effects (playback, analytics) behind `isActive`.
 - The timer does not run, and `onStoryViewed` does not fire for the opened story, until the slide ends. The slide runs regardless of `prefers-reduced-motion`.
 - Card click, `goToGroup` / `nextGroup` / `prevGroup`, and arrow keys past a group's end all slide; a touch swipe moves the player itself and gets no slide.
 - `renderGroupPreview` replaces a card's content; it gets `{ group, groupIndex, story, offset, viewedCount, onOpen }` (`GroupPreviewRenderProps<T>`), and the player still positions and slides the card.
@@ -280,25 +268,25 @@ const viewed = useMemo(
 
 `StoriesOverlayProps` — the controlled overlay's props. `onClose` is **required** here because you own the open state, so you must handle closing; the URL-driven `StoriesUrlOverlay` makes it optional (the URL drives closing).
 
-| Prop                      | Type                                   | Default                                         | Description                                                                       |
-| ------------------------- | -------------------------------------- | ----------------------------------------------- | --------------------------------------------------------------------------------- |
-| `isOpen`                  | `boolean`                              | required                                        | Overlay visibility. True = body scroll locked.                                    |
-| `groups`                  | `StoriesGroup<T>[]`                    | required                                        | Story groups to display                                                           |
-| `onClose`                 | `() => void`                           | required                                        | Close overlay callback                                                            |
-| `ariaLabel`               | `string`                               | `'Stories player'`                              | Dialog region accessible label                                                    |
-| `initialGroupIndex`       | `number`                               | `0`                                             | Zero-based initial group index                                                    |
-| `initialStoryIndex`       | `number`                               | `resumeStoryIndex(initialGroupIndex)`, else `0` | Zero-based initial story index in group. Naming one wins over anything remembered |
-| `resumeStoryIndex`        | `(groupIndex: number) => number`       | —                                               | Story a group opens on the first time it is reached                               |
-| `groupTransition`         | `TransitionTransformFn`                | `cubeTransition`                                | Outer (group) slider transition                                                   |
-| `defaultImageDuration`    | `number`                               | `5000`                                          | Default image auto-advance duration (ms)                                          |
-| `tapZoneSplit`            | `number`                               | `0.3`                                           | Tap zone split ratio (0–1). Left = prev, right = next.                            |
-| `hideUIOnPause`           | `boolean`                              | `true`                                          | Hide story UI (header, footer) on long-press pause                                |
-| `enableKeyboard`          | `boolean`                              | `true`                                          | Enable keyboard nav (arrows, Escape)                                              |
-| `innerTransitionDuration` | `number`                               | `200`                                           | Inner (story) transition duration (ms)                                            |
-| `minSegmentWidth`         | `number`                               | `8`                                             | Min progress bar segment width (px)                                               |
-| `apiRef`                  | `MutableRefObject<StoriesApi \| null>` | -                                               | Ref for imperative StoriesApi                                                     |
-| `desktopLayout`           | `'single' \| 'carousel'`               | `'single'`                                      | Desktop layout; `'carousel'` = neighbouring group cards + slide. Phones: single   |
-| `viewedState`             | `Map<string, number>`                  | -                                               | Stories seen per author id; carousel cards mute a watched group's ring            |
+| Prop                      | Type                                   | Default                                         | Description                                                                                                                                                                                                    |
+| ------------------------- | -------------------------------------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `isOpen`                  | `boolean`                              | required                                        | Overlay visibility. True = body scroll locked.                                                                                                                                                                 |
+| `groups`                  | `StoriesGroup<T>[]`                    | required                                        | Story groups to display                                                                                                                                                                                        |
+| `onClose`                 | `() => void`                           | required                                        | Close overlay callback                                                                                                                                                                                         |
+| `ariaLabel`               | `string`                               | `'Stories player'`                              | Dialog region accessible label                                                                                                                                                                                 |
+| `initialGroupIndex`       | `number`                               | `0`                                             | Zero-based initial group index                                                                                                                                                                                 |
+| `initialStoryIndex`       | `number`                               | `resumeStoryIndex(initialGroupIndex)`, else `0` | Zero-based initial story index in group. Naming one wins over anything remembered                                                                                                                              |
+| `resumeStoryIndex`        | `(groupIndex: number) => number`       | —                                               | Story a group opens on the first time it is reached                                                                                                                                                            |
+| `groupTransition`         | `TransitionTransformFn`                | `cubeTransition`                                | Outer (group) slider transition                                                                                                                                                                                |
+| `defaultImageDuration`    | `number`                               | `5000`                                          | Default image auto-advance duration (ms)                                                                                                                                                                       |
+| `tapZoneSplit`            | `number`                               | `0.3`                                           | Tap zone split ratio (0–1). Left = prev, right = next.                                                                                                                                                         |
+| `hideUIOnPause`           | `boolean`                              | `true`                                          | Hide story UI (header, footer) on long-press pause                                                                                                                                                             |
+| `enableKeyboard`          | `boolean`                              | `true`                                          | Enable keyboard nav (arrows, Escape)                                                                                                                                                                           |
+| `innerTransitionDuration` | `number`                               | `200`                                           | Inner (story) transition duration (ms)                                                                                                                                                                         |
+| `minSegmentWidth`         | `number`                               | `8`                                             | Min progress bar segment width (px)                                                                                                                                                                            |
+| `apiRef`                  | `MutableRefObject<StoriesApi \| null>` | -                                               | Ref for imperative StoriesApi                                                                                                                                                                                  |
+| `desktopLayout`           | `'single' \| 'carousel'`               | `'single'`                                      | Desktop layout; `'carousel'` = neighbouring group cards + slide. Phones: single. Type exported as `DesktopLayout`                                                                                              |
+| `viewed`                  | `StoriesViewedStateController`         | -                                               | From `createStoriesViewedStateController()`: groups resume on the first unseen story, every story shown is recorded, carousel cards mute a watched group's ring. Hand the same controller to `StoriesRingList` |
 
 ### Slot renderers
 
@@ -371,9 +359,11 @@ import {
   VideoStorySlide,
 } from '@reelkit/react-stories-player';
 
+// `viewed` is the same createStoriesViewedStateController the player takes; the
+// rings follow it by themselves.
 <StoriesRingList
   groups={groups}
-  viewedState={viewedMap}
+  viewed={viewed}
   onSelect={(groupIndex) => openStories(groupIndex)}
 />;
 ```

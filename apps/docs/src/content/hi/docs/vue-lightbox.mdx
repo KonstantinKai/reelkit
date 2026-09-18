@@ -234,6 +234,20 @@ URL में id को base64url में encode करने के लिए
 | `api-ready` | `LightboxApi` | स्लाइडर तैयार होते ही एक बार emit होता है और imperative API देता है |
 | `update:is-open` | `boolean` | बंद होने पर emit होता है; v-model:is-open संभव बनाता है |
 
+### LightboxApi [#lightboxapi]
+
+वह ऑब्जेक्ट जो `api-ready` emit करता है, और जो कंपोनेंट की template ref पर भी मिलता है। स्लाइडर सिर्फ़ तब तक रहता है जब तक overlay खुला है, इसलिए बंद होने पर स्लाइडर का हर मेथड कुछ नहीं करता; `close()` हमेशा काम करता है।
+
+| मेथड | टाइप | विवरण |
+| --- | --- | --- |
+| `next()` | `() => void` | एनिमेशन के साथ अगली slide पर जाता है। `loop` चालू न हो तो आख़िरी slide पर ही रुका रहता है। |
+| `prev()` | `() => void` | एनिमेशन के साथ पिछली slide पर जाता है। `loop` चालू न हो तो पहली slide पर ही रुका रहता है। |
+| `goTo(index, animate?)` | `(number, boolean?) => Promise<void>` | किसी slide पर कूदता है। `index` items की सीमा में रखा जाता है, `animate` डिफ़ॉल्ट रूप से false है। मूवमेंट पूरा होने पर resolve होता है। |
+| `adjust()` | `() => void` | ऐसे layout बदलाव के बाद slide की स्थिति फिर से निकालता है जिसे overlay ने खुद नहीं देखा |
+| `observe()` | `() => void` | `unobserve()` के बाद जेस्चर, कीबोर्ड और व्हील इनपुट फिर से सुनना शुरू करता है |
+| `unobserve()` | `() => void` | जेस्चर, कीबोर्ड और व्हील इनपुट सुनना बंद करता है; slides जहाँ हैं वहीं रहती हैं |
+| `close()` | `() => void` | lightbox बंद करता है, बंद बटन या Escape की तरह |
+
 ## LightboxItem इंटरफ़ेस [#lightboxitem-interface]
 
 | Field | टाइप | ज़रूरी | विवरण |

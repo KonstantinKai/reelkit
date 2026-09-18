@@ -9,7 +9,7 @@ import { languageRedirect, varyByLanguage } from './languageRedirect';
 
 /** The static assets binding, reduced to the one method this script calls. */
 export interface AssetsBinding {
-  fetch(request: Request): Promise<Response>;
+  fetch: (request: Request) => Promise<Response>;
 }
 
 export interface Env {

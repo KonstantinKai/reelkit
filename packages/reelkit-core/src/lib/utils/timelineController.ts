@@ -64,19 +64,19 @@ export interface TimelineController {
   progress: ComputedSignal<number>;
 
   /** Attach a video element; subscribes to playback events. */
-  attach(video: HTMLVideoElement): void;
+  attach: (video: HTMLVideoElement) => void;
 
   /** Detach from the current video and reset all signals. Safe to call repeatedly. */
-  detach(): void;
+  detach: () => void;
 
   /**
    * Wire pointer + keyboard handlers onto a DOM element (typically the
    * timeline track). Returns a disposer that removes all listeners.
    */
-  bindInteractions(target: HTMLElement): Disposer;
+  bindInteractions: (target: HTMLElement) => Disposer;
 
   /** Programmatic seek. Fires `onSeek`. */
-  seek(seconds: number): void;
+  seek: (seconds: number) => void;
 }
 
 const _kDefaultKeyboardStepSeconds = 5;

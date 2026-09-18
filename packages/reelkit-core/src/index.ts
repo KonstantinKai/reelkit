@@ -118,7 +118,10 @@ export {
 } from './lib/utils';
 
 // Gestures
-export { createGestureController } from './lib/gestures/gestureController';
+export {
+  createGestureController,
+  type GestureController,
+} from './lib/gestures/gestureController';
 export type {
   Offset,
   EventKind,
@@ -130,31 +133,35 @@ export type {
   GestureDragEndEvent,
   GestureControllerConfig,
   GestureControllerEvents,
-  GestureController,
 } from './lib/gestures/types';
 
 // Keyboard
-export { createKeyboardController } from './lib/keyboard/keyboardController';
+export {
+  createKeyboardController,
+  type KeyboardController,
+} from './lib/keyboard/keyboardController';
 export type {
   NavKey,
   KeyboardControllerConfig,
   KeyboardControllerEvents,
-  KeyboardController,
 } from './lib/keyboard/types';
 
 // Wheel
-export { createWheelController } from './lib/wheel/wheelController';
+export {
+  createWheelController,
+  type WheelController,
+} from './lib/wheel/wheelController';
 export type {
   WheelDirection,
   WheelControllerConfig,
   WheelControllerEvents,
-  WheelController,
 } from './lib/wheel/types';
 
 // Slider
 export {
   createSliderController,
   defaultRangeExtractor,
+  type SliderController,
 } from './lib/slider/sliderController';
 export { animate, type AnimationOptions } from './lib/slider/animate';
 export type {
@@ -163,7 +170,6 @@ export type {
   SliderConfig,
   SliderEvents,
   SliderState,
-  SliderController,
   SliderDirection,
 } from './lib/slider/types';
 

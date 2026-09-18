@@ -1,4 +1,7 @@
-export { createGestureController } from './gestureController';
+export {
+  createGestureController,
+  type GestureController,
+} from './gestureController';
 export type {
   Offset,
   EventKind,
@@ -10,5 +13,4 @@ export type {
   GestureDragEndEvent,
   GestureControllerConfig,
   GestureControllerEvents,
-  GestureController,
 } from './types';

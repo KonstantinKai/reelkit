@@ -73,19 +73,22 @@ const segments = getSegments(5, 2, 0.6);
 
 ### StoriesController
 
-| Method / Property        | Type              | Description                   |
-| ------------------------ | ----------------- | ----------------------------- |
-| `state.activeGroupIndex` | `Signal<number>`  | Current group index           |
-| `state.activeStoryIndex` | `Signal<number>`  | Current story index           |
-| `state.isPaused`         | `Signal<boolean>` | Paused state                  |
-| `nextStory()`            | `void`            | Advance to next story         |
-| `prevStory()`            | `void`            | Go to previous story          |
-| `nextGroup()`            | `void`            | Switch to next user group     |
-| `prevGroup()`            | `void`            | Switch to previous user group |
-| `goToGroup(index)`       | `void`            | Jump to specific group        |
-| `pause()`                | `void`            | Pause timer and auto-advance  |
-| `resume()`               | `void`            | Resume timer                  |
-| `dispose()`              | `void`            | Clean up subscriptions        |
+| Method / Property                           | Type              | Description                                                                |
+| ------------------------------------------- | ----------------- | -------------------------------------------------------------------------- |
+| `state.activeGroupIndex`                    | `Signal<number>`  | Current group index                                                        |
+| `state.activeStoryIndex`                    | `Signal<number>`  | Current story index                                                        |
+| `state.isPaused`                            | `Signal<boolean>` | Paused state                                                               |
+| `nextStory()`                               | `void`            | Advance to next story                                                      |
+| `prevStory()`                               | `void`            | Go to previous story                                                       |
+| `nextGroup()`                               | `void`            | Switch to next group, opening it where `getLastStoryIndex` says            |
+| `prevGroup()`                               | `void`            | Switch to previous group, opening it where `getLastStoryIndex` says        |
+| `goToGroup(index)`                          | `void`            | Jump to specific group                                                     |
+| `getLastStoryIndex(groupIndex)`             | `number`          | Where a group opens: the story left this session, else `resumeStoryIndex`  |
+| `reportInitialView()`                       | `void`            | Report the opening story as viewed, once; call after mounting              |
+| `updateConfig({ groupCount, storyCounts })` | `void`            | Replace the counts when the feed changes while open; fires no event        |
+| `pause()`                                   | `void`            | Pause timer and auto-advance                                               |
+| `resume()`                                  | `void`            | Resume timer                                                               |
+| `onStoryTimerComplete()`                    | `void`            | Call when the story timer finishes; fires `onStoryComplete`, then advances |
 
 ### Events
 

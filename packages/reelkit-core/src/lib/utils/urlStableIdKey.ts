@@ -71,7 +71,7 @@ export const base64UrlCodec: UrlCodec<string> = {
  * either verbatim (`?photo=post_42`) or run through `hashCodec`
  * (`?photo=cG9zdF80Mg` with {@link base64UrlCodec}). Blank text names nothing.
  * Exported alongside {@link createStableIdLocator} so you can pair a stable-id
- * wire with a locator of your own — the same way {@link indexCodec} pairs with
+ * wire with a locator of your own — the same way `indexCodec` pairs with
  * any locator — instead of taking the whole {@link urlStableIdKey}.
  *
  * @param hashCodec - Optional codec that transforms the id text on the wire.
@@ -102,7 +102,7 @@ export const createStableIdCodec = (
  * id is present, then return its index (or `null` when the feed has no such id).
  *
  * Exported alongside {@link createStableIdCodec} for the same reason
- * {@link createIndexLocator} is: build a stable-id key from the two halves by
+ * `createIndexLocator` is: build a stable-id key from the two halves by
  * hand when you need a wire or lookup {@link urlStableIdKey} does not cover.
  *
  * @typeParam T - The gallery's item type; needs only a stable `id`.
@@ -160,7 +160,7 @@ export interface UrlStableIdKeyOptions<T extends Identified> {
 /**
  * A key that addresses a gallery by each item's stable `id` instead of its
  * position: `?photo=<id>`. Spread it into `useOverlayUrlState` exactly like
- * {@link urlIndexKey} — `useOverlayUrlState({ param, ...urlStableIdKey({ items }) })`.
+ * `urlIndexKey` — `useOverlayUrlState({ param, ...urlStableIdKey({ items }) })`.
  *
  * Prefer this over an index key whenever the list can change under a shared
  * link. A bookmarked `?photo=3` names a different slide the moment an item is

@@ -29,17 +29,17 @@ export interface CanvasProgressRendererConfig {
 
 /** Framework-agnostic canvas progress bar renderer returned by {@link createCanvasProgressRenderer}. */
 export interface CanvasProgressRenderer {
-  /** Attach to a canvas element and start measuring its parent via ResizeObserver. */
-  attach(canvas: HTMLCanvasElement): void;
-
-  /** Draw the progress bar for the given state. */
-  draw(totalStories: number, activeIndex: number, progress: number): void;
-
   /** Current measured width in CSS pixels. */
   readonly width: number;
 
+  /** Attach to a canvas element and start measuring its parent via ResizeObserver. */
+  attach: (canvas: HTMLCanvasElement) => void;
+
+  /** Draw the progress bar for the given state. */
+  draw: (totalStories: number, activeIndex: number, progress: number) => void;
+
   /** Clean up ResizeObserver and internal state. */
-  dispose(): void;
+  dispose: () => void;
 }
 
 /**
