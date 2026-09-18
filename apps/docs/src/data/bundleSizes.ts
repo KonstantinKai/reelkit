@@ -25,8 +25,8 @@ export const kBundleSizes: BundleSize[] = [
   },
   {
     name: '@reelkit/react',
-    js: '13.4 kB',
-    gzip: '4.8 kB',
+    js: '13.5 kB',
+    gzip: '4.9 kB',
     css: '-',
     cssGzip: '-',
     framework: 'react',
@@ -49,10 +49,10 @@ export const kBundleSizes: BundleSize[] = [
   },
   {
     name: '@reelkit/react-stories-player',
-    js: '19.1 kB',
-    gzip: '5.8 kB',
-    css: '7.5 kB',
-    cssGzip: '1.7 kB',
+    js: '25.1 kB',
+    gzip: '7.7 kB',
+    css: '9.7 kB',
+    cssGzip: '2.0 kB',
     framework: 'react',
   },
   {
@@ -115,7 +115,7 @@ export interface LibraryWeight {
 export const kLibraryComparison: LibraryWeight[] = [
   {
     name: 'ReelKit (core + react)',
-    gzip: '14.9 kB',
+    gzip: '15.0 kB',
     virtualization: true,
   },
   {

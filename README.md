@@ -37,11 +37,11 @@
 | Package                                                                | Description                       | JS (gzip) |
 | ---------------------------------------------------------------------- | --------------------------------- | --------- |
 | [@reelkit/core](packages/reelkit-core)                                 | Framework-agnostic slider engine  | 10.1 kB   |
-| [@reelkit/react](packages/reelkit-react)                               | React components and hooks        | 4.8 kB    |
+| [@reelkit/react](packages/reelkit-react)                               | React components and hooks        | 4.9 kB    |
 | [@reelkit/react-reel-player](packages/reelkit-react-reel-player)       | Full-screen video reel player     | 5.4 kB    |
 | [@reelkit/react-lightbox](packages/reelkit-react-lightbox)             | Image & video gallery lightbox    | 3.4 kB    |
-| [@reelkit/stories-core](packages/reelkit-stories-core)                 | Framework-agnostic stories engine | 2.1 kB    |
-| [@reelkit/react-stories-player](packages/reelkit-react-stories-player) | Instagram-style stories player    | 5.8 kB    |
+| [@reelkit/stories-core](packages/reelkit-stories-core)                 | Framework-agnostic stories engine | 2.4 kB    |
+| [@reelkit/react-stories-player](packages/reelkit-react-stories-player) | Instagram-style stories player    | 7.7 kB    |
 | [@reelkit/angular](packages/reelkit-angular)                           | Angular standalone components     | 15.1 kB   |
 | [@reelkit/angular-reel-player](packages/reelkit-angular-reel-player)   | Full-screen video reel player     | 24.4 kB   |
 | [@reelkit/angular-lightbox](packages/reelkit-angular-lightbox)         | Image & video gallery lightbox    | 15.4 kB   |
