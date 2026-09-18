@@ -44,6 +44,7 @@ export const ptTitles: Record<string, string> = {
   // Sections
   'URL State': 'Estado na URL',
   'Viewed State': 'Itens já vistos',
+  'Viewed Controller': 'Controlador do que já foi visto',
   'Remembering What Was Seen': 'Lembrar o que já foi visto',
   Features: 'Recursos',
   'Quick Start': 'Início rápido',
@@ -68,6 +69,7 @@ export const ptTitles: Record<string, string> = {
   Fullscreen: 'Tela cheia',
   'LightboxOverlay Props': 'Props do LightboxOverlay',
   'LightboxOverlay Events': 'Eventos do LightboxOverlay',
+  LightboxApi: 'LightboxApi',
   'LightboxItem Interface': 'Interface LightboxItem',
   'Slot Scope Types': 'Tipos de escopo de slot',
   Transitions: 'Transições',

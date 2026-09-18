@@ -82,13 +82,13 @@ export { VideoStorySlide } from './lib/VideoStorySlide';
 export { SoundProvider, useSoundState } from '@reelkit/react';
 
 export {
-  createStoriesViewedState,
-  type StoriesViewedState,
+  createStoriesViewedStateController,
+  type StoriesViewedStateController,
+  type StoriesViewedStateControllerConfig,
 } from '@reelkit/stories-core';
 
 export {
   useOverlayUrlState,
-  useViewedState,
   createViewedStateController,
   twoAxisViewedTracking,
   createLocalStorageAdapter,
@@ -122,5 +122,7 @@ export type {
   ProgressBarRenderProps,
   LoadingRenderProps,
   ErrorRenderProps,
+  DesktopLayout,
+  GroupPreviewRenderProps,
   StoriesApi,
 } from './lib/types';

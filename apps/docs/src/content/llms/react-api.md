@@ -108,10 +108,10 @@ import { Observe } from '@reelkit/react';
 </Observe>;
 ```
 
-| Prop       | Type                         | Default  | Description                                                                                                                |
-| ---------- | ---------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `signals`  | `Subscribable[]`             | required | Signals to subscribe to. Any of them notifying re-runs the children fn — and only that fn, never the parent.               |
-| `children` | `() => ReactElement \| null` | required | Render fn, re-executed on each change. Read signal values inside it; a value read outside is captured once and goes stale. |
+| Prop       | Type                         | Default  | Description                                                                                                                                                                                   |
+| ---------- | ---------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `signals`  | `Subscribable[]`             | required | Signals to subscribe to. Any of them notifying re-runs the children fn — and only that fn, never the parent. A different signal on a later render is followed in place of the one it replaced |
+| `children` | `() => ReactElement \| null` | required | Render fn, re-executed on each change. Read signal values inside it; a value read outside is captured once and goes stale.                                                                    |
 
 ### AnimatedObserve
 
@@ -173,27 +173,6 @@ const photo = useOverlayUrlState({
   adapter,
   ...urlIndexKey(() => images.length),
 });
-```
-
-### useViewedState
-
-Type: `ViewedStateOptions`
-
-Remembers how far a viewer got through a gallery, persisted as the very text a URL parameter would carry. Created once, reads storage after mount (safe to prerender), stops following on unmount. Read `entries` through `Observe` so a ring repaints when a position is recorded, here or in another tab.
-
-```typescript
-import { useViewedState, twoAxisViewedTracking, Observe } from '@reelkit/react';
-
-const key = urlStableIdTwoAxisKey({ outerItems, innerItems });
-const seen = useViewedState({
-  storageKey: 'stories-seen',
-  ...key,
-  ...twoAxisViewedTracking,
-});
-
-<Observe signals={[seen.entries]}>
-  {() => <StoriesRingList groups={groups} viewedState={viewed.viewedCounts()} onSelect={open} />}
-</Observe>;
 ```
 
 ## Accessibility

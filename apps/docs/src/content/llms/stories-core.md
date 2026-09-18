@@ -27,7 +27,7 @@ npm i @reelkit/stories-core
 
 ## Stories Controller
 
-`createStoriesController(config, events?)` manage navigation across groups + stories. Track pause/resume, remember last viewed story per group, fire callbacks on each transition.
+`createStoriesController(config, events?)` return `StoriesController`: manage navigation across groups + stories. Track pause/resume, remember last viewed story per group, fire callbacks on each transition.
 
 ### Config (StoriesControllerConfig)
 
@@ -61,18 +61,19 @@ npm i @reelkit/stories-core
 
 ### Methods
 
-| Method                          | Type                 | Description                                                                                      |
-| ------------------------------- | -------------------- | ------------------------------------------------------------------------------------------------ |
-| `nextStory()`                   | `() => void`         | Advance within group; crosses boundary to next group                                             |
-| `prevStory()`                   | `() => void`         | Go back within group; crosses boundary to prev group                                             |
-| `nextGroup()`                   | `() => void`         | Switch to next group, resuming at last viewed story                                              |
-| `prevGroup()`                   | `() => void`         | Switch to previous group, resuming at last viewed story                                          |
-| `goToGroup(index)`              | `(number) => void`   | Jump to specific group by index                                                                  |
-| `pause()`                       | `() => void`         | Pause auto-advance                                                                               |
-| `resume()`                      | `() => void`         | Resume auto-advance                                                                              |
-| `onStoryTimerComplete()`        | `() => void`         | Called when timer finishes; fires onStoryComplete then advances                                  |
-| `getLastStoryIndex(groupIndex)` | `(number) => number` | Where a group opens: the story left on this session, else `resumeStoryIndex`                     |
-| `reportInitialView()`           | `() => void`         | Reports the story the player opened on as viewed, once. Call after mounting, not while rendering |
+| Method                                      | Type                 | Description                                                                                                                                                                                                                  |
+| ------------------------------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `nextStory()`                               | `() => void`         | Advance within group; crosses boundary to next group                                                                                                                                                                         |
+| `prevStory()`                               | `() => void`         | Go back within group; crosses boundary to prev group                                                                                                                                                                         |
+| `nextGroup()`                               | `() => void`         | Switch to next group, resuming at last viewed story                                                                                                                                                                          |
+| `prevGroup()`                               | `() => void`         | Switch to previous group, resuming at last viewed story                                                                                                                                                                      |
+| `goToGroup(index)`                          | `(number) => void`   | Jump to specific group by index                                                                                                                                                                                              |
+| `pause()`                                   | `() => void`         | Pause auto-advance                                                                                                                                                                                                           |
+| `resume()`                                  | `() => void`         | Resume auto-advance                                                                                                                                                                                                          |
+| `onStoryTimerComplete()`                    | `() => void`         | Called when timer finishes; fires onStoryComplete then advances                                                                                                                                                              |
+| `getLastStoryIndex(groupIndex)`             | `(number) => number` | Where a group opens: the story left on this session, else `resumeStoryIndex`                                                                                                                                                 |
+| `reportInitialView()`                       | `() => void`         | Reports the story the player opened on as viewed, once. Call after mounting, not while rendering                                                                                                                             |
+| `updateConfig({ groupCount, storyCounts })` | `(config) => void`   | Replaces the group and story counts when the feed changes while the player is open, so groups paged in later can be reached. Fires no event, keeps where each group was left, pulls positions back inside a feed that shrank |
 
 ### Example
 
@@ -252,43 +253,52 @@ cancelAnimationFrame(frameId);
 renderer.dispose();
 ```
 
-## Viewed State
+## Viewed Controller
 
-`createStoriesViewedState(controller, groups)` turns a core `ViewedStateController<TwoAxisPosition>` into the terms a stories player uses, returning a `StoriesViewedState`. Build the controller from the same `UrlKey` the address bar uses, tracked per group, so a stored entry reads exactly like a `?story=` link.
+`createStoriesViewedStateController(config)` is everything a feed needs to remember what was seen, from one call: ring counts, where each group resumes, and the recorder, over storage that survives a reload. It imports no framework, so React, Vue and Angular use it the same way: create it once where the feed lives and hand it to the ring list and the player (`viewed={viewed}`), which attach it and follow it themselves. It composes core's `createViewedStateController` + `urlStableIdTwoAxisKey` + `twoAxisViewedTracking`; use those directly when this does not fit. An entry names the furthest story reached, not a tally of views: a group's place survives the feed being reordered, while removing a story from the middle of a group shortens its count and lights its ring again.
 
-| Parameter    | Type                                     | Description                                                                                                                    |
-| ------------ | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `controller` | `ViewedStateController<TwoAxisPosition>` | Core store built from the same key the address bar uses, spread with `twoAxisViewedTracking` so each group keeps its own entry |
-| `groups`     | `() => StoriesGroup<T>[]`                | Reads the current groups. A getter, so a feed that pages in or reorders after setup is measured at call time.                  |
+### Config (StoriesViewedStateControllerConfig)
 
-### StoriesViewedState
+| Property     | Type                          | Default      | Description                                                                                                                                    |
+| ------------ | ----------------------------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `storageKey` | `string`                      | required     | Storage key the entries are written under                                                                                                      |
+| `groups`     | `() => StoriesGroup<T>[]`     | required     | Reads the current groups. A getter, called every time. Keep it current: a getter stuck on the first array miscounts every group loaded later   |
+| `key`        | `UrlKey<Id, TwoAxisPosition>` | stable ids   | How a position is spelled in storage (`<author.id>.<story.id>` by default). Pass the URL controller's key so an entry reads like a shared link |
+| `storage`    | `StorageAdapter`              | localStorage | Where the entries are kept; a custom adapter is also how a seen store of your own plugs in                                                     |
+| `ttlMs`      | `number`                      | never        | How long a group's entry stays remembered after it was last recorded; each group expires on its own clock                                      |
+| `maxTracks`  | `number`                      | all kept     | How many groups to keep; past it, the group recorded longest ago is dropped on the next write                                                  |
 
-| Method                               | Type                        | Description                                                                |
-| ------------------------------------ | --------------------------- | -------------------------------------------------------------------------- |
-| `viewedCounts()`                     | `() => Map<string, number>` | Stories seen per group, keyed by author id — `StoriesRingList.viewedState` |
-| `resumeStoryIndex(groupIndex)`       | `(number) => number`        | First unseen story, or `0` when the group has been watched to the end      |
-| `markViewed(groupIndex, storyIndex)` | `(number, number) => void`  | Records a story as seen. Wire it to `onStoryViewed`.                       |
+`storageKey`, `key` and `storage` are read once, at creation. To switch storage, create another controller (React: remount the owner with a `key`).
 
-An entry names the furthest story reached, not a tally of views: an id-addressed key keeps a group's place across the feed being reordered, while removing a story from the middle of a group shortens its count and lights its ring again.
+### StoriesViewedStateController
 
-```typescript
-import { createStoriesViewedState } from '@reelkit/stories-core';
-import {
-  createViewedStateController,
-  urlStableIdTwoAxisKey,
-  twoAxisViewedTracking,
-} from '@reelkit/core';
+| Member                               | Type                                     | Description                                                                                                                                     |
+| ------------------------------------ | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `viewedState`                        | `Subscribable<Map<string, number>>`      | Stories seen per author id, as a signal. Empty before `attach()`                                                                                |
+| `controller`                         | `ViewedStateController<TwoAxisPosition>` | The store underneath                                                                                                                            |
+| `resumeStoryIndex(groupIndex)`       | `(number) => number`                     | First unseen story, or `0` once the group has been watched to the end                                                                           |
+| `markViewed(groupIndex, storyIndex)` | `(number, number) => void`               | Records a story as seen; the player calls it for every story shown                                                                              |
+| `forget()`                           | `() => void`                             | Forgets everything seen, here and in storage                                                                                                    |
+| `attach()`                           | `() => Dispose`                          | Reads storage and follows other tabs. Counted: several components can attach and unmount in any order. The player components call it themselves |
 
-const seen = createViewedStateController({
+Nothing is read before `attach()`, so server render and hydration agree. A player mounted only at the moment it opens chooses its opening story before its own effects run; call `viewed.attach()` yourself in that case.
+
+```ts
+import { createStoriesViewedStateController } from '@reelkit/stories-core';
+
+const viewed = createStoriesViewedStateController({
   storageKey: 'stories-seen',
-  ...urlStableIdTwoAxisKey({ outerItems, innerItems }),
-  ...twoAxisViewedTracking,
+  groups: () => groups,
 });
-seen.attach();
 
-const viewed = createStoriesViewedState(seen, () => groups);
-viewed.viewedCounts(); // → Map { 'user_42' => 2 }
-viewed.resumeStoryIndex(0); // → 2, the first story not yet seen
+const detach = viewed.attach(); // the player components do this themselves
+
+viewed.viewedState.value; // Map { 'user_42' => 2 }, and a signal to follow
+viewed.resumeStoryIndex(0); // 2 — the first story not yet seen
+viewed.markViewed(0, 2); // furthest point wins; a rewatch never rewinds
+viewed.forget();
+
+detach();
 ```
 
 ## Utility Functions

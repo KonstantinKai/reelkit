@@ -282,7 +282,7 @@ const ReelIndicatorInner: FC<ReelIndicatorInnerProps> = (props) => {
  * normal-sized dots with smaller edge dots indicating overflow.
  * The window slides smoothly as the active index changes.
  *
- * When rendered inside a {@link Reel}, `active` and `count` are
+ * When rendered inside a `Reel`, `active` and `count` are
  * auto-connected from the parent slider's signals. Explicit props
  * take precedence when provided.
  */

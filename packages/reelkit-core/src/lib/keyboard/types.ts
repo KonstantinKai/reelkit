@@ -4,7 +4,7 @@
  */
 export type NavKey = 'up' | 'right' | 'down' | 'left';
 
-/** Configuration for a {@link KeyboardController}. */
+/** Configuration for a `KeyboardController`. */
 export interface KeyboardControllerConfig {
   /**
    * Restrict which navigation keys the controller responds to.
@@ -31,19 +31,4 @@ export interface KeyboardControllerEvents {
    * @param event - The underlying DOM keyboard event.
    */
   onKeyPress: (key: NavKey, event: KeyboardEvent) => void;
-}
-
-/**
- * Keyboard navigation controller that listens for arrow keys.
- * Created via {@link createKeyboardController}.
- */
-export interface KeyboardController {
-  /**
-   * Starts listening for `keydown` events on the given target.
-   * @param target - The event target. Defaults to `window`.
-   */
-  attach(target?: Window | HTMLElement): void;
-
-  /** Removes the `keydown` listener and detaches from the target. */
-  detach(): void;
 }

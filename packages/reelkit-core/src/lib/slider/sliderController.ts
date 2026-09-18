@@ -1,8 +1,6 @@
+import { createSignal, createComputed, batch } from '../signal/signal';
 import {
-  createSignal,
-  createComputed,
   createDeferred,
-  batch,
   clamp,
   extractRange,
   abs,
@@ -25,8 +23,100 @@ import type {
   SliderConfig,
   SliderEvents,
   SliderState,
-  SliderController,
 } from './types';
+
+/**
+ * Central controller for a one-item slider. Manages navigation state,
+ * animated transitions, and coordinates gesture/keyboard/wheel input.
+ * Created via {@link createSliderController}.
+ */
+export interface SliderController {
+  /** Reactive slider state (index, axisValue, indexes). */
+  readonly state: SliderState;
+
+  /** Current resolved configuration. */
+  readonly config: SliderConfig;
+
+  /**
+   * Returns the position of the active index within the visible range array.
+   * @returns Zero-based position in `state.indexes`.
+   */
+  getRangeIndex: () => number;
+
+  /**
+   * Animates to the next slide. No-op if already at the last slide
+   * (unless loop is enabled) or if an animation is in progress.
+   */
+  next: () => Promise<void>;
+
+  /**
+   * Animates to the previous slide. No-op if already at the first slide
+   * (unless loop is enabled) or if an animation is in progress.
+   */
+  prev: () => Promise<void>;
+
+  /**
+   * Navigates to a specific slide index.
+   *
+   * @param index - Target slide index (clamped to valid range).
+   * @param animate - When `true`, animates the transition. Default: `false`.
+   */
+  goTo: (index: number, animate?: boolean) => Promise<void>;
+
+  /**
+   * Recalculates the axis value for the current range index. Useful after
+   * a resize or layout change.
+   *
+   * @param duration - Optional transition duration in ms. Default: `0`.
+   */
+  adjust: (duration?: number) => void;
+
+  /**
+   * Updates the primary dimension size (width for horizontal, height for
+   * vertical sliders) used for position calculations.
+   *
+   * @param size - The new primary dimension in pixels.
+   */
+  setPrimarySize: (size: number) => void;
+
+  /**
+   * Merges new configuration into the current config. Automatically
+   * updates sub-controllers (e.g. gesture axis) as needed.
+   *
+   * @param config - Keys not named keep their current value. A new `direction`
+   * re-targets the gesture handlers; a changed `enableNavKeys` or
+   * `enableWheel` attaches or detaches that controller in place.
+   */
+  updateConfig: (config: Partial<SliderConfig>) => void;
+
+  /**
+   * Replaces event handlers. Existing handlers not included in the
+   * update are preserved.
+   *
+   * @param events - Keys not named keep their current handler; a key set to
+   * `undefined` clears it. A new `onAfterChange` replaces the subscription.
+   */
+  updateEvents: (events: Partial<SliderEvents>) => void;
+
+  /** Starts observing gesture, keyboard, and wheel input. */
+  observe: () => void;
+
+  /** Stops observing gesture, keyboard, and wheel input. */
+  unobserve: () => void;
+
+  /**
+   * Attaches the controller to a DOM element for gesture detection.
+   *
+   * @param element - The container element for touch/mouse events.
+   */
+  attach: (element: HTMLElement) => void;
+
+  /** Detaches DOM listeners (gestures, keyboard, wheel). Safe for re-attach via observe(). */
+  detach: () => void;
+
+  /** Disposes all resources permanently: detaches controllers and cleans up signal observers. */
+  dispose: () => void;
+}
 
 const _kDefaultTransitionDuration = 300;
 const _kDefaultSwipeDistanceFactor = 0.12;

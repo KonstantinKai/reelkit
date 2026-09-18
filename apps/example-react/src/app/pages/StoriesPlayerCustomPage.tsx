@@ -216,7 +216,6 @@ const btnStyle: React.CSSProperties = {
 function StoriesPlayerCustomPage() {
   const groups = useMemo(() => generateGroups(), []);
   const [activeDemo, setActiveDemo] = useState<DemoType>(null);
-  const [viewedState] = useState(() => new Map<string, number>());
 
   return (
     <div
@@ -303,11 +302,6 @@ function StoriesPlayerCustomPage() {
         isOpen={activeDemo === 'custom-header'}
         onClose={() => setActiveDemo(null)}
         groups={groups}
-        onStoryViewed={(gi, si) => {
-          const author = groups[gi].author;
-          const current = viewedState.get(author.id) ?? 0;
-          viewedState.set(author.id, Math.max(current, si + 1));
-        }}
         renderHeader={({
           author,
           onClose,

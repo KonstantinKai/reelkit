@@ -81,6 +81,10 @@ export default [
       '@typescript-eslint/no-empty-interface': 'off',
       '@typescript-eslint/no-empty-object-type': 'off',
       '@typescript-eslint/no-non-null-assertion': 'off',
+      // Nothing implements an interface with a class, so a callable member is
+      // a property holding a function, the same as an options callback. That
+      // also keeps `fields-before-callbacks` able to see every callable.
+      '@typescript-eslint/method-signature-style': ['error', 'property'],
       'react-hooks/exhaustive-deps': 'off',
     },
   },
@@ -94,6 +98,7 @@ export default [
       ],
       '@nx/workspace-fields-before-callbacks': 'error',
       '@nx/workspace-constant-naming': 'error',
+      '@nx/workspace-jsdoc-link-in-file': 'error',
     },
   },
   {

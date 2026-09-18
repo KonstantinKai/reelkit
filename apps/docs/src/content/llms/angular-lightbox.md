@@ -225,11 +225,10 @@ Outputs are the same `closed` and `slideChange`; the URL drives closing, so `clo
 
 ## Outputs
 
-| Output        | Type                        | Description                                     |
-| ------------- | --------------------------- | ----------------------------------------------- |
-| `apiReady`    | `EventEmitter<LightboxApi>` | Fires once slider ready, exposes imperative API |
-| `closed`      | `EventEmitter<void>`        | Fires when user closes lightbox                 |
-| `slideChange` | `EventEmitter<number>`      | Fires w/ new active slide index after change    |
+| Output        | Type                   | Description                                  |
+| ------------- | ---------------------- | -------------------------------------------- |
+| `closed`      | `EventEmitter<void>`   | Fires when user closes lightbox              |
+| `slideChange` | `EventEmitter<number>` | Fires w/ new active slide index after change |
 
 ## Template Slot Directives
 

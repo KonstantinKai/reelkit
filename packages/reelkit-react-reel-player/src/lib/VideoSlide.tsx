@@ -83,7 +83,7 @@ const useIsomorphicLayoutEffect =
  *
  * Shows a poster image and a wave loader while the video is buffering.
  *
- * Must be rendered inside a {@link SoundProvider}.
+ * Must be rendered inside a `SoundProvider`.
  *
  * @example
  * ```tsx

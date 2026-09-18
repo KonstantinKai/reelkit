@@ -63,7 +63,7 @@ export interface GestureDragEndEvent
     'primaryDelta' | 'primaryDistance' | 'primaryVelocity'
   > {}
 
-/** Configuration for a {@link GestureController}. */
+/** Configuration for a `GestureController`. */
 export interface GestureControllerConfig {
   /**
    * When `true`, only touch events are listened for (mouse events ignored).
@@ -137,31 +137,4 @@ export interface GestureControllerEvents {
 
   /** Fired on any drag end, regardless of axis. */
   onDragEnd?: (event: GestureDragEndEvent) => void;
-}
-
-/**
- * Touch and mouse gesture detector. Tracks drag interactions along
- * horizontal and vertical axes. Created via {@link createGestureController}.
- */
-export interface GestureController {
-  /**
-   * Binds the controller to a DOM element for gesture detection.
-   * @param element - The target element to listen on.
-   */
-  attach(element: HTMLElement): void;
-
-  /** Removes all event listeners and unbinds the element. */
-  detach(): void;
-
-  /** Starts listening for touch/mouse events on the attached element. */
-  observe(): void;
-
-  /** Stops listening for touch/mouse events (preserves the attachment). */
-  unobserve(): void;
-
-  /**
-   * Merges new event handlers into the current set.
-   * @param events - Partial event handlers to merge.
-   */
-  updateEvents(events: Partial<GestureControllerEvents>): void;
 }

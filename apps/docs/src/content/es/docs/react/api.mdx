@@ -7,7 +7,6 @@ import reelapiMethods from '../../../snippets/react-api/reelapi-methods.ts?raw';
 import observe from '../../../snippets/react-api/observe.tsx?raw';
 import animatedobserve from '../../../snippets/react-api/animatedobserve.tsx?raw';
 import usebodylock from '../../../snippets/react-api/usebodylock.ts?raw';
-import useviewedstate from '../../../snippets/react-api/useviewedstate.tsx?raw';
 import usereactrouterurladapter from '../../../snippets/react-api/usereactrouterurladapter.tsx?raw';
 import createdefaultkeyextractorforloop from '../../../snippets/react-api/createdefaultkeyextractorforloop.tsx?raw';
 
@@ -94,7 +93,7 @@ Conecta las señales del core con el renderizado de React sin re-renderizar al p
 
 | Prop | Tipo | Por defecto | Descripción |
 | --- | --- | --- | --- |
-| `signals` | `Subscribable[]` | `required` | Señales a las que suscribirse. Cuando cualquiera avisa, se vuelve a ejecutar la función children, y solo esa función, nunca el padre. |
+| `signals` | `Subscribable[]` | `required` | Señales a las que suscribirse. Cuando cualquiera avisa, se vuelve a ejecutar la función children, y solo esa función, nunca el padre. Una señal distinta en un renderizado posterior se sigue en lugar de la que sustituye. |
 | `children` | `() => ReactElement \| null` | `required` | Función de renderizado que se vuelve a ejecutar en cada cambio. Lee los valores de las señales dentro de ella; un valor leído fuera se captura una vez y queda desfasado. |
 
 ### AnimatedObserve [#animatedobserve]
@@ -130,14 +129,6 @@ Consulta [el estado en la URL en la guía de React](/docs/react/guide#url-state)
 | `adapter` | `UrlAdapter` | History API | Sistema de navegación con el que leer y escribir. En una aplicación con router, pasa un adaptador basado en el router para que su propia ubicación no quede desfasada. Se lee en el primer renderizado y queda fijo durante la vida del componente; vuelve a montarlo para cambiarlo. |
 | `codec` | `{ decode(raw) => Id \| null; encode(id) => string }` | obligatorio | Formato: texto del parámetro ↔ una identidad estable, sin conocer la colección. Va con locator como un par a juego que comparte el mismo Id: usa ...urlIndexKey(() => images.length) para la galería por índice ?photo=3 por defecto, o aporta uno propio (base64, slug) para que un marcador sobreviva a que la galería se reordene. Se lee en cada uso: el codec del último renderizado gestiona el siguiente decode o encode. |
 | `locator` | `{ locate(id) => number \| null; locateAsync?(id) => Promise<number \| null>; identify(index) => id }` | obligatorio | Convierte la identidad en una posición y decide su propia validez: locate (síncrono), locateAsync (alternativa asíncrona para una galería paginada), identify (escrituras). Para una galería por índice simple usa ...urlIndexKey(() => images.length): aporta este locator más el codec a juego y limita ?photo=3 con el recuento actual, así que un ?photo=99 desfasado se limpia de la URL en lugar de abrir un slide que nunca se nombró. Un feed paginado o una galería por identidad aporta su propio par de codec + locator. Se lee en cada uso: el locator del último renderizado responde a la siguiente búsqueda, y añadir o quitar locateAsync entre renderizados surte efecto en el siguiente fallo. |
-
-### useViewedState [#useviewedstate]
-
-<Caption>`ViewedStateOptions`</Caption>
-
-Recuerda hasta dónde llegó alguien en una galería y sigue el almacenamiento mientras el componente está montado. Pasa la misma clave que usa la barra de direcciones y una entrada guardada se leerá exactamente igual que el parámetro de un enlace compartido. Lee `entries` con `Observe` para que un anillo se repinte cuando se registra una posición, aquí o en otra pestaña.
-
-<CodeBlock code={useviewedstate} language="tsx" />
 
 ### useReactRouterUrlAdapter [#usereactrouterurladapter]
 

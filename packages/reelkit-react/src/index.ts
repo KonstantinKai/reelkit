@@ -5,7 +5,7 @@
  *
  * The main component is {@link Reel}: a virtualized, gesture-driven
  * slider that renders only the visible slides to the DOM. It wraps
- * `@reelkit/core`'s {@link createSliderController} and bridges its
+ * `@reelkit/core`'s `createSliderController` and bridges its
  * signal-based state into React via {@link Observe}.
  *
  * Also provides {@link ReelIndicator} (dot/bar pagination) and the
@@ -121,7 +121,6 @@ export {
   useOverlayUrlState,
   type OverlayUrlStateOptions,
 } from './lib/useOverlayUrlState';
-export { useViewedState } from './lib/useViewedState';
 export {
   createUrlStateController,
   createHistoryAdapter,

@@ -28,9 +28,25 @@ export {
   clamp,
   lerp,
   extractRange,
-  // DOM
-  observeDomEvent,
-  // Signals
+  // Deferred
+  createDeferred,
+  type Deferred,
+  // Disposable
+  createDisposableList,
+  type DisposableList,
+  type Disposer,
+  // Timeout
+  timeout,
+  type TimeoutFn,
+  // Noop
+  noop,
+  // LRU Cache
+  createLruCache,
+  type LruCache,
+} from './lib/utils';
+
+// Signals
+export {
   createSignal,
   createComputed,
   reaction,
@@ -40,7 +56,10 @@ export {
   type Subscribable,
   type Listener,
   type Dispose,
-  // URL state
+} from './lib/signal';
+
+// URL state
+export {
   createUrlStateController,
   createHistoryAdapter,
   indexCodec,
@@ -66,7 +85,10 @@ export {
   type UrlStableIdKeyOptions,
   type UrlStableIdTwoAxisKeyOptions,
   type UrlStableIdTwoAxisIdInnerOptions,
-  // Viewed state
+} from './lib/url';
+
+// Viewed state
+export {
   createViewedStateController,
   twoAxisViewedTracking,
   createLocalStorageAdapter,
@@ -75,18 +97,10 @@ export {
   type ViewedStateController,
   type ViewedStateOptions,
   type StorageAdapter,
-  // Deferred
-  createDeferred,
-  type Deferred,
-  // Disposable
-  createDisposableList,
-  type DisposableList,
-  type Disposer,
-  // Timeout
-  timeout,
-  type TimeoutFn,
-  // Noop
-  noop,
+} from './lib/viewed';
+
+// Media
+export {
   // Video
   captureFrame,
   createSharedVideo,
@@ -108,17 +122,20 @@ export {
   // Content Loading
   createContentLoadingController,
   type ContentLoadingController,
-  // LRU Cache
-  createLruCache,
-  type LruCache,
   // Content Preloader
   createContentPreloader,
   type ContentPreloader,
   type ContentPreloaderConfig,
-} from './lib/utils';
+} from './lib/media';
+
+// DOM
+export { observeDomEvent } from './lib/dom';
 
 // Gestures
-export { createGestureController } from './lib/gestures/gestureController';
+export {
+  createGestureController,
+  type GestureController,
+} from './lib/gestures/gestureController';
 export type {
   Offset,
   EventKind,
@@ -130,31 +147,35 @@ export type {
   GestureDragEndEvent,
   GestureControllerConfig,
   GestureControllerEvents,
-  GestureController,
 } from './lib/gestures/types';
 
 // Keyboard
-export { createKeyboardController } from './lib/keyboard/keyboardController';
+export {
+  createKeyboardController,
+  type KeyboardController,
+} from './lib/keyboard/keyboardController';
 export type {
   NavKey,
   KeyboardControllerConfig,
   KeyboardControllerEvents,
-  KeyboardController,
 } from './lib/keyboard/types';
 
 // Wheel
-export { createWheelController } from './lib/wheel/wheelController';
+export {
+  createWheelController,
+  type WheelController,
+} from './lib/wheel/wheelController';
 export type {
   WheelDirection,
   WheelControllerConfig,
   WheelControllerEvents,
-  WheelController,
 } from './lib/wheel/types';
 
 // Slider
 export {
   createSliderController,
   defaultRangeExtractor,
+  type SliderController,
 } from './lib/slider/sliderController';
 export { animate, type AnimationOptions } from './lib/slider/animate';
 export type {
@@ -163,7 +184,6 @@ export type {
   SliderConfig,
   SliderEvents,
   SliderState,
-  SliderController,
   SliderDirection,
 } from './lib/slider/types';
 
@@ -182,18 +202,14 @@ export type {
 } from './lib/slider/transitions';
 
 // Fullscreen
-export {
-  fullscreenSignal,
-  requestFullscreen,
-  exitFullscreen,
-} from './lib/utils';
+export { fullscreenSignal, requestFullscreen, exitFullscreen } from './lib/dom';
 
 // Body lock
-export { createBodyLock, sharedBodyLock, type BodyLock } from './lib/utils';
+export { createBodyLock, sharedBodyLock, type BodyLock } from './lib/dom';
 
 // Focus management
 export {
   captureFocusForReturn,
   createFocusTrap,
   getFocusableElements,
-} from './lib/utils';
+} from './lib/dom';

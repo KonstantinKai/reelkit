@@ -7,7 +7,6 @@ import reelapiMethods from '../../../snippets/react-api/reelapi-methods.ts?raw';
 import observe from '../../../snippets/react-api/observe.tsx?raw';
 import animatedobserve from '../../../snippets/react-api/animatedobserve.tsx?raw';
 import usebodylock from '../../../snippets/react-api/usebodylock.ts?raw';
-import useviewedstate from '../../../snippets/react-api/useviewedstate.tsx?raw';
 import usereactrouterurladapter from '../../../snippets/react-api/usereactrouterurladapter.tsx?raw';
 import createdefaultkeyextractorforloop from '../../../snippets/react-api/createdefaultkeyextractorforloop.tsx?raw';
 
@@ -94,7 +93,7 @@ core signals को React रेंडरिंग से जोड़ता ह
 
 | Prop | टाइप | डिफ़ॉल्ट | विवरण |
 | --- | --- | --- | --- |
-| `signals` | `Subscribable[]` | `required` | जिन signals को subscribe करना है। इनमें से किसी की भी सूचना children फ़ंक्शन को दोबारा चलाती है — और सिर्फ़ उसी को, parent को कभी नहीं। |
+| `signals` | `Subscribable[]` | `required` | जिन signals को subscribe करना है। इनमें से किसी की भी सूचना children फ़ंक्शन को दोबारा चलाती है — और सिर्फ़ उसी को, parent को कभी नहीं। बाद के render में दिया गया अलग signal, जिसकी जगह वह लेता है उसके बदले follow किया जाता है। |
 | `children` | `() => ReactElement \| null` | `required` | रेंडर फ़ंक्शन, जो हर बदलाव पर दोबारा चलता है। signal के मान इसके अंदर पढ़ें; बाहर पढ़ा गया मान एक बार पकड़ा जाता है और पुराना पड़ जाता है। |
 
 ### AnimatedObserve [#animatedobserve]
@@ -130,14 +129,6 @@ body का स्क्रॉल lock करता है और scrollbar क�
 | `adapter` | `UrlAdapter` | History API | पढ़ने और लिखने के लिए नेविगेशन सिस्टम। routing वाले ऐप में router पर आधारित adapter पास करें, ताकि router की अपनी location पुरानी न पड़े। पहले रेंडर पर पढ़ा जाता है और कंपोनेंट के पूरे जीवन में तय रहता है — बदलने के लिए दोबारा mount करें। |
 | `codec` | `{ decode(raw) => Id \| null; encode(id) => string }` | ज़रूरी | wire का रूप: parameter का टेक्स्ट ↔ स्थिर पहचान, collection से बेख़बर। एक ही Id साझा करने वाली मेल खाती जोड़ी के रूप में locator के साथ चलता है — डिफ़ॉल्ट ?photo=3 index गैलरी के लिए ...urlIndexKey(() => images.length) spread करें, या अपना (base64, slug) दें ताकि गैलरी का क्रम बदलने पर भी bookmark काम करे। हर बार ताज़ा पढ़ा जाता है: अगला decode या encode आख़िरी रेंडर का codec करता है। |
 | `locator` | `{ locate(id) => number \| null; locateAsync?(id) => Promise<number \| null>; identify(index) => id }` | ज़रूरी | पहचान को स्थिति से जोड़ता है और उसकी वैधता खुद संभालता है: locate (sync), locateAsync (पेज वाली गैलरी के लिए async विकल्प), identify (writes)। साधारण index गैलरी के लिए ...urlIndexKey(() => images.length) spread करें — यह यह locator और मेल खाता codec देता है और ?photo=3 को मौजूदा गिनती तक सीमित रखता है, इसलिए पुराना ?photo=99 कभी नाम न ली गई स्लाइड खोलने के बजाय URL से अपने-आप हट जाता है। पेज वाली फ़ीड या पहचान से key होने वाली गैलरी इसकी जगह अपनी मेल खाती codec + locator जोड़ी देती है। हर बार ताज़ा पढ़ा जाता है: अगली खोज का जवाब आख़िरी रेंडर का locator देता है, और रेंडरों के बीच locateAsync जोड़ना या हटाना अगली बार न मिलने पर लागू होता है। |
-
-### useViewedState [#useviewedstate]
-
-<Caption>`ViewedStateOptions`</Caption>
-
-याद रखता है कि दर्शक गैलरी में कहाँ तक पहुँचा, और जब तक कंपोनेंट मौजूद है, storage पर नज़र रखता है। वही key पास करें जो address bar इस्तेमाल करता है, तो सहेजी गई entry ठीक शेयर किए गए लिंक के parameter जैसी पढ़ी जाती है। `entries` को `Observe` के ज़रिए पढ़ें, ताकि यहाँ या किसी दूसरे tab में स्थिति दर्ज होने पर ring फिर से बने।
-
-<CodeBlock code={useviewedstate} language="tsx" />
 
 ### useReactRouterUrlAdapter [#usereactrouterurladapter]
 

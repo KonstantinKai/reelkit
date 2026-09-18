@@ -208,6 +208,31 @@ describe('createStoriesController', () => {
       expect(ctrl.state.activeStoryIndex.value).toBe(3);
     });
 
+    it('reopens a story left mid-way, not the first unseen one after it', () => {
+      const seen = new Map<number, number>();
+      const ctrl = makeController(
+        {
+          resumeStoryIndex: (groupIndex: number) =>
+            (seen.get(groupIndex) ?? -1) + 1,
+        },
+        {
+          onStoryViewed: (groupIndex: number, storyIndex: number) =>
+            seen.set(
+              groupIndex,
+              Math.max(seen.get(groupIndex) ?? -1, storyIndex),
+            ),
+        },
+      );
+
+      ctrl.reportInitialView();
+      ctrl.nextStory();
+      ctrl.goToGroup(1);
+      ctrl.goToGroup(0);
+
+      expect(ctrl.getLastStoryIndex(0)).toBe(1);
+      expect(ctrl.state.activeStoryIndex.value).toBe(1);
+    });
+
     it('bounds a suggestion the group cannot honour', () => {
       const ctrl = makeController({ resumeStoryIndex: () => 99 });
 
@@ -339,6 +364,128 @@ describe('createStoriesController', () => {
       ctrl.reportInitialView();
 
       expect(onStoryChange).not.toHaveBeenCalled();
+    });
+  });
+
+  // A feed that pages in more groups while the player is open. The counts are
+  // copied when the controller is created, so without an update every group
+  // past the first page stays out of reach.
+  describe('groups that arrive while the player is open', () => {
+    it('cannot reach a group it was never told about', () => {
+      const onGroupChange = vi.fn();
+      const ctrl = makeController({}, { onGroupChange });
+
+      ctrl.goToGroup(3);
+
+      expect(ctrl.state.activeGroupIndex.value).toBe(0);
+      expect(onGroupChange).not.toHaveBeenCalled();
+    });
+
+    it('reaches an added group by index once the counts are updated', () => {
+      const onGroupChange = vi.fn();
+      const ctrl = makeController({}, { onGroupChange });
+
+      ctrl.updateConfig({ groupCount: 4, storyCounts: [3, 2, 4, 2] });
+      ctrl.goToGroup(3);
+
+      expect(ctrl.state.activeGroupIndex.value).toBe(3);
+      expect(ctrl.state.activeStoryIndex.value).toBe(0);
+      expect(onGroupChange).toHaveBeenCalledWith(3);
+    });
+
+    it('moves on to an added group instead of closing after the old last one', () => {
+      const onClose = vi.fn();
+      const ctrl = makeController(
+        { initialGroupIndex: 2, initialStoryIndex: 3 },
+        { onClose },
+      );
+
+      ctrl.updateConfig({ groupCount: 4, storyCounts: [3, 2, 4, 2] });
+      ctrl.nextStory();
+
+      expect(onClose).not.toHaveBeenCalled();
+      expect(ctrl.state.activeGroupIndex.value).toBe(3);
+    });
+
+    it('reaches a story added to a group already open', () => {
+      const ctrl = makeController({
+        initialGroupIndex: 1,
+        initialStoryIndex: 1,
+      });
+
+      ctrl.updateConfig({ groupCount: 3, storyCounts: [3, 3, 4] });
+      ctrl.nextStory();
+
+      expect(ctrl.state.activeGroupIndex.value).toBe(1);
+      expect(ctrl.state.activeStoryIndex.value).toBe(2);
+    });
+
+    it('keeps where each group was left', () => {
+      const ctrl = makeController();
+      ctrl.nextStory();
+      ctrl.goToGroup(1);
+
+      ctrl.updateConfig({ groupCount: 4, storyCounts: [3, 2, 4, 2] });
+
+      expect(ctrl.getLastStoryIndex(0)).toBe(1);
+      expect(ctrl.state.activeGroupIndex.value).toBe(1);
+    });
+
+    it('announces nothing by itself', () => {
+      const events = {
+        onStoryChange: vi.fn(),
+        onGroupChange: vi.fn(),
+        onStoryViewed: vi.fn(),
+        onComplete: vi.fn(),
+        onClose: vi.fn(),
+      };
+      const ctrl = makeController({}, events);
+
+      ctrl.updateConfig({ groupCount: 4, storyCounts: [3, 2, 4, 2] });
+
+      for (const event of Object.values(events)) {
+        expect(event).not.toHaveBeenCalled();
+      }
+    });
+
+    it('is not affected by later changes to the array it was given', () => {
+      const ctrl = makeController({
+        initialGroupIndex: 2,
+        initialStoryIndex: 3,
+      });
+      const storyCounts = [3, 2, 4, 2];
+
+      ctrl.updateConfig({ groupCount: 4, storyCounts });
+      storyCounts[3] = 0;
+      ctrl.nextStory();
+      ctrl.nextStory();
+
+      expect(ctrl.state.activeGroupIndex.value).toBe(3);
+      expect(ctrl.state.activeStoryIndex.value).toBe(1);
+    });
+
+    // A feed can also lose groups and stories. The player stays on something
+    // that still exists rather than pointing past the end.
+    it('pulls the position back inside a feed that shrank', () => {
+      const ctrl = makeController({
+        initialGroupIndex: 2,
+        initialStoryIndex: 3,
+      });
+
+      ctrl.updateConfig({ groupCount: 2, storyCounts: [3, 2] });
+
+      expect(ctrl.state.activeGroupIndex.value).toBe(1);
+      expect(ctrl.state.activeStoryIndex.value).toBeLessThan(2);
+      expect(ctrl.getLastStoryIndex(1)).toBeLessThan(2);
+    });
+
+    it('pulls a remembered story back inside a group that lost stories', () => {
+      const ctrl = makeController({ initialStoryIndex: 2 });
+      ctrl.goToGroup(1);
+
+      ctrl.updateConfig({ groupCount: 3, storyCounts: [1, 2, 4] });
+
+      expect(ctrl.getLastStoryIndex(0)).toBe(0);
     });
   });
 });

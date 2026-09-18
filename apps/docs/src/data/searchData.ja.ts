@@ -44,6 +44,7 @@ export const jaTitles: Record<string, string> = {
   // Sections
   'URL State': 'URL の状態',
   'Viewed State': '既読の状態',
+  'Viewed Controller': '既読コントローラー',
   'Remembering What Was Seen': '見たところを覚えておく',
   Features: '機能',
   'Quick Start': 'クイックスタート',
@@ -67,6 +68,7 @@ export const jaTitles: Record<string, string> = {
   Fullscreen: 'フルスクリーン',
   'LightboxOverlay Props': 'LightboxOverlay の Props',
   'LightboxOverlay Events': 'LightboxOverlay のイベント',
+  LightboxApi: 'LightboxApi',
   'LightboxItem Interface': 'LightboxItem インターフェース',
   'Slot Scope Types': 'スロットスコープの型',
   Transitions: 'トランジション',

@@ -203,7 +203,7 @@ export const lightboxControlsProps = {
 } as const;
 
 /**
- * Default composed controls bar. Used internally by {@link LightboxOverlay}
+ * Default composed controls bar. Used internally by `LightboxOverlay`
  * when no `controls` slot is provided. Emits a Fragment so the counter +
  * fullscreen group and the close button can each own their absolute
  * positioning via CSS.

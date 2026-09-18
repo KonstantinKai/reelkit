@@ -1,5 +1,3 @@
-import type { Signal } from '@reelkit/core';
-
 export type MediaType = 'image' | 'video';
 
 export interface StoryItem {
@@ -108,60 +106,6 @@ export interface StoriesControllerEvents {
 
   /** Fired when the overlay should close. */
   onClose?: () => void;
-}
-
-export interface StoriesController {
-  /** Reactive state signals. */
-  readonly state: {
-    activeGroupIndex: Signal<number>;
-    activeStoryIndex: Signal<number>;
-    isPaused: Signal<boolean>;
-  };
-
-  /**
-   * Where a group opens: the story it was left on this session, or the one
-   * `resumeStoryIndex` names for a group not yet visited (its first story when
-   * nothing is configured).
-   */
-  getLastStoryIndex(groupIndex: number): number;
-
-  /**
-   * Reports the story the player opened on as viewed, once.
-   *
-   * Navigation is what normally marks a story viewed, so the very first story
-   * — the one already on screen before anything is tapped — would otherwise go
-   * unreported, and a group holding a single story could never be marked seen.
-   * Call this after mounting, not while rendering: it invokes `onStoryViewed`,
-   * and a consumer's handler is free to write state from it.
-   *
-   * A no-op once anything has been viewed, so calling it late or twice cannot
-   * double-count.
-   */
-  reportInitialView(): void;
-
-  /** Advance to the next story, switching groups at boundary. */
-  nextStory(): void;
-
-  /** Go to the previous story, switching groups at boundary. */
-  prevStory(): void;
-
-  /** Switch to the next group, resetting story to 0. */
-  nextGroup(): void;
-
-  /** Switch to the previous group, resetting story to 0. */
-  prevGroup(): void;
-
-  /** Jump to a specific group by index. */
-  goToGroup(index: number): void;
-
-  /** Pause auto-advance. */
-  pause(): void;
-
-  /** Resume auto-advance. */
-  resume(): void;
-
-  /** Called when the timer for the current story completes. */
-  onStoryTimerComplete(): void;
 }
 
 export type SegmentStatus = 'completed' | 'active' | 'upcoming';

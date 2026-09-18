@@ -8,7 +8,7 @@ import installation from '../../snippets/stories-core/installation.sh?raw';
 import controllerExample from '../../snippets/stories-core/controller-example.ts?raw';
 import timerExample from '../../snippets/stories-core/timer-example.ts?raw';
 import canvasExample from '../../snippets/stories-core/canvas-example.ts?raw';
-import viewedStateExample from '../../snippets/stories-core/viewed-state-example.ts?raw';
+import viewedControllerExample from '../../snippets/stories-core/viewed-controller-example.ts?raw';
 import typesCode from '../../snippets/stories-core/types-code.ts?raw';
 
 `@reelkit/react-stories-player` を支えるエンジンです。純粋な TypeScript で、フレームワークへの依存はありません。Angular、Vue、素の JavaScript でストーリープレイヤーを作るのに使います。
@@ -52,7 +52,7 @@ import typesCode from '../../snippets/stories-core/types-code.ts?raw';
 
 ## Stories コントローラー [#stories-controller]
 
-`createStoriesController(config, events?)` はグループとストーリーをまたいだナビゲーションを管理します。一時停止と再開の状態を追跡し、グループごとに最後に見たストーリーを覚え、切り替えのたびにコールバックを呼びます。
+`createStoriesController(config, events?)` は、グループとストーリーをまたいだナビゲーションを管理する `StoriesController` を返します。一時停止と再開の状態を追跡し、グループごとに最後に見たストーリーを覚え、切り替えのたびにコールバックを呼びます。
 
 ### 設定（StoriesControllerConfig） [#config-storiescontrollerconfig]
 
@@ -98,6 +98,7 @@ import typesCode from '../../snippets/stories-core/types-code.ts?raw';
 | `onStoryTimerComplete()` | `() => void` | タイマーが終わったときに呼ばれ、onStoryComplete を呼んでから進みます |
 | `getLastStoryIndex(groupIndex)` | `(number) => number` | グループが開く位置です。このセッションで離れたストーリー、なければ resumeStoryIndex が示すストーリー |
 | `reportInitialView()` | `() => void` | プレイヤーが開いたときのストーリーを、一度だけ既読として報告します。描画中ではなく、マウント後に呼んでください。 |
+| `updateConfig({ groupCount, storyCounts })` | `(config) => void` | プレイヤーを開いたままフィードが変わったときに、グループ数とストーリー数を置き換えます。後から読み込まれたグループにも移動できるようになります。イベントは発火せず、各グループを離れた位置は保たれ、フィードが縮んだ場合は位置をその範囲内に戻します。 |
 
 ### 例 [#example]
 
@@ -162,28 +163,37 @@ import typesCode from '../../snippets/stories-core/types-code.ts?raw';
 
 <CodeBlock code={canvasExample} />
 
-## 既読の状態 [#viewed-state]
+## 既読コントローラー [#viewed-controller]
 
-`createStoriesViewedState(controller, groups)` は、コアの `ViewedStateController` を、プレイヤーが使う言葉（グループ、作者、ストーリーのインデックス）で読みます。ストア自体はそれらを何も知らないままです。`StoriesViewedState` を返します。アドレスバーと同じキーを使い、グループごとに追跡してストアを作れば、保存されたエントリーは共有リンクのパラメーターとまったく同じになります。
+`createStoriesViewedStateController(config)` は、フィードが既読を覚えておくために必要なものを 1 回の呼び出しでまとめて用意します。リングのカウント、各グループの再開位置、既読の記録を、リロードしても残るストレージの上で扱います。フレームワークを一切インポートしないので、React、Vue、Angular のどれでも同じように使えます。フィードを持つ場所で一度だけ作成し、リング一覧とプレイヤーに渡してください。アタッチと追従はコンポーネント側が行います。コアの `createViewedStateController` と安定 id の 2 軸キーの上に組まれているので、これが合わない場合はそちらを直接使ってください。エントリーが表すのは閲覧回数の合計ではなく、到達したいちばん先のストーリーです。そのためフィードが並べ替えられてもグループの位置は保たれ、グループの途中からストーリーが削除されると件数が減ってリングがまた点灯します。
 
-| パラメーター | 型 | 説明 |
+### 設定（StoriesViewedStateControllerConfig） [#config-storiesviewedstatecontrollerconfig]
+
+| プロパティ | 型 | デフォルト | 説明 |
+| --- | --- | --- | --- |
+| `storageKey` | `string` | 必須 | エントリを書き込むストレージのキー |
+| `groups` | `() => StoriesGroup<T>[]` | 必須 | 現在のグループを読み取ります。getter で、必要になるたびに呼ばれるため、グループを追加で読み込むフィードはそれを返すだけで済みます。常に最新を返してください。最初の配列を返し続ける getter は、後から読み込まれたグループをすべて数え間違えます。 |
+| `key` | `UrlKey<Id, TwoAxisPosition>` | 安定した id | ストレージ内での位置の書き方。URL コントローラーと同じ key を渡すと、保存されたエントリは共有リンクと同じ形で読めます。 |
+| `storage` | `StorageAdapter` | localStorage | エントリの保存先。独自のアダプターは、自前の既読ストアを接続する手段でもあります。 |
+| `ttlMs` | `number` | 期限なし | グループのエントリを、最後に記録してからどれだけ覚えておくか。グループごとに独自の時計で期限切れになります。 |
+| `maxTracks` | `number` | すべて保持 | 保持するグループ数。超えると、記録が最も古いグループが次の書き込み時に捨てられます。 |
+
+`storageKey`、`key`、`storage` はコントローラーの作成時に一度だけ読み取られます。ストレージを切り替えるには、別のコントローラーを作成してください。
+
+### StoriesViewedStateController [#storiesviewedstatecontroller]
+
+| メンバー | 型 | 説明 |
 | --- | --- | --- |
-| `controller` | `ViewedStateController<TwoAxisPosition>` | アドレスバーと同じキーで作ったコアのストアです。各グループが自分のエントリーを持つよう、twoAxisViewedTracking と一緒に展開します |
-| `groups` | `() => StoriesGroup<T>[]` | 現在のグループを読みます。getter なので、設定のあとでページングされたり並べ替えられたりしたフィードも、呼び出し時点で計測されます。 |
-
-### StoriesViewedState [#storiesviewedstate]
-
-| メソッド | 型 | 説明 |
-| --- | --- | --- |
-| `viewedCounts()` | `() => Map<string, number>` | グループごとに見たストーリーの数で、キーは作者の id です。StoriesRingList が viewedState として受け取る形です |
+| `viewedState` | `Subscribable<Map<string, number>>` | 作成者 id ごとの既読ストーリー数をシグナルとして提供します。attach() の前は空です。 |
+| `controller` | `ViewedStateController<TwoAxisPosition>` | 土台となるストア。ここで扱っていない用途に使います |
 | `resumeStoryIndex(groupIndex)` | `(number) => number` | まだ見ていない最初のストーリー。グループを最後まで見ていれば 0 |
-| `markViewed(groupIndex, storyIndex)` | `(number, number) => void` | ストーリーを既読として記録します。onStoryViewed につないでください。 |
+| `markViewed(groupIndex, storyIndex)` | `(number, number) => void` | ストーリーを既読として記録します。プレイヤーが表示したストーリーごとに呼び出します。 |
+| `forget()` | `() => void` | ここでもストレージでも、既読をすべて消去します |
+| `attach()` | `() => Dispose` | ストレージを読み取り、他のタブの変更に追従します。参照カウント方式なので、リング一覧とプレイヤーはどの順序でアタッチしてもアンマウントしても構いません。プレイヤーのコンポーネントが自分で呼び出します。 |
 
 ### 例 [#example]
 
-<CodeBlock code={viewedStateExample} />
-
-エントリーが表すのは閲覧回数の合計ではなく、到達したいちばん先のストーリーです。そのため id で指すキーなら、フィードが並べ替えられてもグループの位置は保たれ、グループの途中からストーリーが削除されると件数が減ってリングがまた点灯します。
+<CodeBlock code={viewedControllerExample} />
 
 ## ユーティリティ関数 [#utility-functions]
 

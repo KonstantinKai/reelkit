@@ -44,6 +44,7 @@ export const ukTitles: Record<string, string> = {
   // Sections
   'URL State': 'Стан в URL',
   'Viewed State': 'Переглянуте',
+  'Viewed Controller': 'Контролер переглянутого',
   'Remembering What Was Seen': 'Запам’ятовування переглянутого',
   Features: 'Можливості',
   'Quick Start': 'Швидкий старт',
@@ -67,6 +68,7 @@ export const ukTitles: Record<string, string> = {
   Fullscreen: 'Повний екран',
   'LightboxOverlay Props': 'Властивості LightboxOverlay',
   'LightboxOverlay Events': 'Події LightboxOverlay',
+  LightboxApi: 'LightboxApi',
   'LightboxItem Interface': 'Інтерфейс LightboxItem',
   'Slot Scope Types': 'Типи області видимості слотів',
   Transitions: 'Переходи',

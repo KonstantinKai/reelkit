@@ -8,7 +8,7 @@ import installation from '../../snippets/stories-core/installation.sh?raw';
 import controllerExample from '../../snippets/stories-core/controller-example.ts?raw';
 import timerExample from '../../snippets/stories-core/timer-example.ts?raw';
 import canvasExample from '../../snippets/stories-core/canvas-example.ts?raw';
-import viewedStateExample from '../../snippets/stories-core/viewed-state-example.ts?raw';
+import viewedControllerExample from '../../snippets/stories-core/viewed-controller-example.ts?raw';
 import typesCode from '../../snippets/stories-core/types-code.ts?raw';
 
 `@reelkit/react-stories-player` के पीछे का इंजन। शुद्ध TypeScript, किसी फ़्रेमवर्क पर निर्भर नहीं। Angular, Vue या vanilla JS के लिए stories प्लेयर बनाने में इसका इस्तेमाल करें।
@@ -52,7 +52,7 @@ import typesCode from '../../snippets/stories-core/types-code.ts?raw';
 
 ## Stories कंट्रोलर [#stories-controller]
 
-`createStoriesController(config, events?)` ग्रुप और stories के बीच नेविगेशन संभालता है। यह pause/resume स्टेट पर नज़र रखता है, हर ग्रुप में आख़िरी देखी गई story याद रखता है, और हर बदलाव पर callbacks चलाता है।
+`createStoriesController(config, events?)` एक `StoriesController` लौटाता है, जो ग्रुप और stories के बीच नेविगेशन संभालता है। यह pause/resume स्टेट पर नज़र रखता है, हर ग्रुप में आख़िरी देखी गई story याद रखता है, और हर बदलाव पर callbacks चलाता है।
 
 ### कॉन्फ़िग (StoriesControllerConfig) [#config-storiescontrollerconfig]
 
@@ -98,6 +98,7 @@ import typesCode from '../../snippets/stories-core/types-code.ts?raw';
 | `onStoryTimerComplete()` | `() => void` | टाइमर पूरा होने पर कॉल होता है; पहले onStoryComplete चलाता है, फिर आगे बढ़ता है |
 | `getLastStoryIndex(groupIndex)` | `(number) => number` | ग्रुप कहाँ खुलेगा: इस सेशन में जिस story पर छोड़ा गया, नहीं तो वह जो resumeStoryIndex बताए |
 | `reportInitialView()` | `() => void` | प्लेयर जिस story पर खुला, उसे एक बार देखी गई के रूप में दर्ज करता है। mount के बाद कॉल करें, रेंडर के दौरान नहीं। |
+| `updateConfig({ groupCount, storyCounts })` | `(config) => void` | प्लेयर खुला रहते हुए feed बदलने पर groups और stories की गिनती बदल देता है, ताकि बाद में लोड हुए groups तक पहुँचा जा सके। कोई event नहीं भेजता, हर group जहाँ छोड़ा गया था वह याद रखता है, और feed छोटा होने पर positions को उसके भीतर ले आता है। |
 
 ### उदाहरण [#example]
 
@@ -162,28 +163,37 @@ import typesCode from '../../snippets/stories-core/types-code.ts?raw';
 
 <CodeBlock code={canvasExample} />
 
-## देखे गए आइटम की स्टेट [#viewed-state]
+## देखे गए आइटम का कंट्रोलर [#viewed-controller]
 
-`createStoriesViewedState(controller, groups)` core के `ViewedStateController` को प्लेयर की भाषा में पढ़ता है — ग्रुप, लेखक, story index — जबकि store खुद इनमें से किसी के बारे में नहीं जानता। यह `StoriesViewedState` लौटाता है। Store को उसी key से बनाएँ जो address bar इस्तेमाल करता है, हर ग्रुप के लिए अलग track करके, तो सहेजी गई entry ठीक शेयर किए गए लिंक के parameter जैसी पढ़ी जाती है।
+`createStoriesViewedStateController(config)` एक ही कॉल में वह सब देता है जो किसी feed को देखी गई चीज़ें याद रखने के लिए चाहिए: rings की गिनती, हर group कहाँ से दोबारा शुरू हो, और देखे जाने का रिकॉर्ड, ऐसे storage पर जो reload के बाद भी बना रहता है। यह कोई framework import नहीं करता, इसलिए React, Vue और Angular इसे एक ही तरह इस्तेमाल करते हैं: इसे वहाँ एक बार बनाएँ जहाँ feed रहता है, और ring list तथा player को दे दें, जो इसे खुद attach करते हैं और follow करते हैं। यह core के `createViewedStateController` और स्थिर ids वाली two-axis key पर बना है; जब यह फिट न हो तो सीधे उन्हें इस्तेमाल करें। Entry देखे जाने की गिनती नहीं, बल्कि सबसे दूर पहुँची story का नाम है, इसलिए फ़ीड का क्रम बदलने पर भी ग्रुप की जगह बनी रहती है, जबकि ग्रुप के बीच से हटाई गई story उसकी गिनती घटा देती है और उसकी ring फिर से जल उठती है।
 
-| पैरामीटर | टाइप | विवरण |
+### कॉन्फ़िग (StoriesViewedStateControllerConfig) [#config-storiesviewedstatecontrollerconfig]
+
+| प्रॉपर्टी | टाइप | डिफ़ॉल्ट | विवरण |
+| --- | --- | --- | --- |
+| `storageKey` | `string` | ज़रूरी | वह storage key जिसके नीचे entries लिखी जाती हैं |
+| `groups` | `() => StoriesGroup<T>[]` | ज़रूरी | मौजूदा groups पढ़ता है। यह getter है और हर बार कॉल होता है, इसलिए और groups लोड करने वाले feed को बस उन्हें लौटाना होता है। इसे ताज़ा रखें: पहले array पर अटका getter बाद में लोड हुए हर group की गिनती गलत करता है। |
+| `key` | `UrlKey<Id, TwoAxisPosition>` | स्थिर ids | storage में position कैसे लिखी जाती है। वही key पास करें जो URL कंट्रोलर इस्तेमाल करता है, तो स्टोर की गई entry शेयर किए गए लिंक जैसी पढ़ी जाती है। |
+| `storage` | `StorageAdapter` | localStorage | entries कहाँ रखी जाती हैं। अपना adapter देना, अपना देखे-गए का store जोड़ने का तरीका भी है। |
+| `ttlMs` | `number` | कभी नहीं | किसी group की entry आख़िरी बार दर्ज होने के बाद कितनी देर याद रहे। हर group अपनी घड़ी से expire होता है। |
+| `maxTracks` | `number` | सभी रहते हैं | कितने groups रखने हैं। इससे ऊपर, सबसे पुराना दर्ज group अगली बार लिखते समय हटा दिया जाता है। |
+
+`storageKey`, `key` और `storage` एक ही बार पढ़े जाते हैं, कंट्रोलर बनाते समय। storage बदलने के लिए दूसरा कंट्रोलर बनाएँ।
+
+### StoriesViewedStateController [#storiesviewedstatecontroller]
+
+| सदस्य | टाइप | विवरण |
 | --- | --- | --- |
-| `controller` | `ViewedStateController<TwoAxisPosition>` | address bar वाली key से बना core store, twoAxisViewedTracking के साथ spread किया गया ताकि हर ग्रुप की अपनी entry रहे |
-| `groups` | `() => StoriesGroup<T>[]` | मौजूदा ग्रुप पढ़ता है। यह getter है, इसलिए setup के बाद पेज लोड करने या क्रम बदलने वाली फ़ीड कॉल के समय नापी जाती है। |
-
-### StoriesViewedState [#storiesviewedstate]
-
-| मेथड | टाइप | विवरण |
-| --- | --- | --- |
-| `viewedCounts()` | `() => Map<string, number>` | हर ग्रुप में देखी गई stories, लेखक की id से — वही रूप जो StoriesRingList viewedState के रूप में लेता है |
+| `viewedState` | `Subscribable<Map<string, number>>` | हर author id के लिए देखी गई stories, signal के रूप में। attach() से पहले खाली। |
+| `controller` | `ViewedStateController<TwoAxisPosition>` | नीचे का store, उन ज़रूरतों के लिए जो यहाँ शामिल नहीं हैं |
 | `resumeStoryIndex(groupIndex)` | `(number) => number` | पहली न देखी गई story, या ग्रुप पूरा देख लेने पर 0 |
-| `markViewed(groupIndex, storyIndex)` | `(number, number) => void` | story को देखी गई के रूप में दर्ज करता है। इसे onStoryViewed से जोड़ें। |
+| `markViewed(groupIndex, storyIndex)` | `(number, number) => void` | story को देखी गई के रूप में दर्ज करता है। player हर दिखाई गई story के लिए इसे कॉल करता है। |
+| `forget()` | `() => void` | देखा हुआ सब भुला देता है, यहाँ भी और storage में भी |
+| `attach()` | `() => Dispose` | storage पढ़ता है और दूसरे tabs को follow करता है। गिनती रखता है, इसलिए ring list और player किसी भी क्रम में attach और unmount हो सकते हैं। player के components इसे खुद कॉल करते हैं। |
 
 ### उदाहरण [#example]
 
-<CodeBlock code={viewedStateExample} />
-
-Entry देखे जाने की गिनती नहीं, बल्कि सबसे दूर पहुँची story का नाम है, इसलिए id से पहचानने वाली key फ़ीड का क्रम बदलने पर भी ग्रुप की जगह बनाए रखती है, जबकि ग्रुप के बीच से हटाई गई story उसकी गिनती घटा देती है और उसकी ring फिर से जल उठती है।
+<CodeBlock code={viewedControllerExample} />
 
 ## यूटिलिटी फ़ंक्शन [#utility-functions]
 

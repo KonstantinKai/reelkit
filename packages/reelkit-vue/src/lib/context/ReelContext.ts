@@ -2,9 +2,9 @@ import { inject, type InjectionKey } from 'vue';
 import type { Signal } from '@reelkit/core';
 
 /**
- * Shape of the context a {@link Reel} component provides to descendants
+ * Shape of the context a `Reel` component provides to descendants
  * via `provide` / `inject`. Enables nested components (like
- * {@link ReelIndicator} or custom control buttons) to read live slider
+ * `ReelIndicator` or custom control buttons) to read live slider
  * state and drive navigation without prop drilling.
  */
 export interface ReelContextValue {
@@ -35,7 +35,7 @@ export interface ReelContextValue {
 }
 
 /**
- * Vue injection key used by {@link Reel} to expose its
+ * Vue injection key used by `Reel` to expose its
  * {@link ReelContextValue} to descendants. Prefer the
  * {@link useReelContext} composable over calling `inject(RK_REEL_KEY)`
  * directly — the composable returns a typed value or `null`.
@@ -45,7 +45,7 @@ export const RK_REEL_KEY: InjectionKey<ReelContextValue> =
 
 /**
  * Reads the {@link ReelContextValue} from the nearest ancestor
- * {@link Reel}, or returns `null` when called outside one.
+ * `Reel`, or returns `null` when called outside one.
  *
  * Typical usage is inside a descendant component that wants to reflect
  * or drive the parent slider's state:

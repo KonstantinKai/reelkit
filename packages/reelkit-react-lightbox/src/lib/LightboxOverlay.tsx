@@ -638,8 +638,8 @@ const LightboxContent: FC<LightboxContentProps> = (props) => {
  *
  * Customise controls, navigation, info overlay, and individual slides
  * via the `renderControls`, `renderNavigation`, `renderInfo`, and
- * `renderSlide` props. Reusable sub-components ({@link CloseButton},
- * {@link Counter}, {@link FullscreenButton}) are available for
+ * `renderSlide` props. Reusable sub-components (`CloseButton`,
+ * `Counter`, `FullscreenButton`) are available for
  * composition inside `renderControls`.
  */
 export const LightboxOverlay = (props: LightboxOverlayProps): ReactNode => {

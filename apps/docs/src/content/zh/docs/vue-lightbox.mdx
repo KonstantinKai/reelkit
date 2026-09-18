@@ -234,6 +234,20 @@ import themingCode from '../../snippets/vue-lightbox/theming-code.css?raw';
 | `api-ready` | `LightboxApi` | 滑动器就绪时发出一次，同时暴露命令式 API |
 | `update:is-open` | `boolean` | 关闭时发出；用于支持 v-model:is-open |
 
+### LightboxApi [#lightboxapi]
+
+`api-ready` 发出的对象，也可通过组件的模板 ref 获取。滑动器只在覆盖层打开期间存在，所以关闭时滑动器的每个方法都不做任何事；`close()` 始终有效。
+
+| 方法 | 类型 | 说明 |
+| --- | --- | --- |
+| `next()` | `() => void` | 带动画切换到下一张。除非开启了 `loop`，否则停在最后一张。 |
+| `prev()` | `() => void` | 带动画切换到上一张。除非开启了 `loop`，否则停在第一张。 |
+| `goTo(index, animate?)` | `(number, boolean?) => Promise<void>` | 跳到指定幻灯片。`index` 会被限制在条目范围内，`animate` 默认为 false。移动结束后 resolve。 |
+| `adjust()` | `() => void` | 在覆盖层自身未察觉的布局变化之后，重新计算幻灯片位置 |
+| `observe()` | `() => void` | 在 `unobserve()` 之后重新开始监听手势、键盘和滚轮输入 |
+| `unobserve()` | `() => void` | 停止监听手势、键盘和滚轮输入；幻灯片保持原位 |
+| `close()` | `() => void` | 关闭 lightbox，与关闭按钮或 Escape 相同 |
+
 ## LightboxItem 接口 [#lightboxitem-interface]
 
 | 字段 | 类型 | 必填 | 说明 |

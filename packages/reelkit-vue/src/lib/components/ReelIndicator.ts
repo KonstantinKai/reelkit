@@ -20,14 +20,14 @@ import { RK_REEL_KEY } from '../context/ReelContext';
 /** Props accepted by the {@link ReelIndicator} component. */
 const reelIndicatorProps = {
   /**
-   * Total number of slides. Auto-connected from the parent {@link Reel}
+   * Total number of slides. Auto-connected from the parent `Reel`
    * context when omitted inside a `<Reel>`; required otherwise.
    */
   count: { type: Number, default: undefined },
 
   /**
    * Currently active slide index. Auto-connected from the parent
-   * {@link Reel} context when omitted inside a `<Reel>`; required otherwise.
+   * `Reel` context when omitted inside a `<Reel>`; required otherwise.
    */
   active: { type: Number, default: undefined },
 
@@ -86,7 +86,7 @@ const reelIndicatorProps = {
   inactiveColor: { type: String, default: 'rgba(255, 255, 255, 0.5)' },
 
   /**
-   * Custom click handler. When omitted inside a {@link Reel}, defaults to
+   * Custom click handler. When omitted inside a `Reel`, defaults to
    * navigating the parent slider to the clicked dot's index via context.
    */
   onDotClick: {
@@ -111,7 +111,7 @@ export type ReelIndicatorProps = ExtractPropTypes<typeof reelIndicatorProps>;
  * Instagram-style scrolling dot indicator. Shows a sliding window of
  * normal-sized dots with smaller edge dots indicating overflow.
  *
- * When rendered inside a {@link Reel}, `active` and `count` are
+ * When rendered inside a `Reel`, `active` and `count` are
  * auto-connected from the parent slider's context. Explicit props
  * take precedence when provided.
  */

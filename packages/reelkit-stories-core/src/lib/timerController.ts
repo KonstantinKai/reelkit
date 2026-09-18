@@ -18,19 +18,19 @@ export interface TimerController {
   readonly isRunning: Signal<boolean>;
 
   /** Start (or restart) the timer with an optional duration override. */
-  start(duration?: number): void;
+  start: (duration?: number) => void;
 
   /** Freeze progress at the current position. */
-  pause(): void;
+  pause: () => void;
 
   /** Continue from the frozen position. */
-  resume(): void;
+  resume: () => void;
 
   /** Reset progress to 0 and stop. */
-  reset(): void;
+  reset: () => void;
 
   /** Clean up resources. */
-  dispose(): void;
+  dispose: () => void;
 }
 
 /**

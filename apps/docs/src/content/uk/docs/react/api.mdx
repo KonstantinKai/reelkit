@@ -7,7 +7,6 @@ import reelapiMethods from '../../../snippets/react-api/reelapi-methods.ts?raw';
 import observe from '../../../snippets/react-api/observe.tsx?raw';
 import animatedobserve from '../../../snippets/react-api/animatedobserve.tsx?raw';
 import usebodylock from '../../../snippets/react-api/usebodylock.ts?raw';
-import useviewedstate from '../../../snippets/react-api/useviewedstate.tsx?raw';
 import usereactrouterurladapter from '../../../snippets/react-api/usereactrouterurladapter.tsx?raw';
 import createdefaultkeyextractorforloop from '../../../snippets/react-api/createdefaultkeyextractorforloop.tsx?raw';
 
@@ -94,7 +93,7 @@ import createdefaultkeyextractorforloop from '../../../snippets/react-api/create
 
 | Prop | Тип | Типове значення | Опис |
 | --- | --- | --- | --- |
-| `signals` | `Subscribable[]` | `required` | Сигнали для підписки. Сповіщення від будь-якого з них перезапускає функцію children — і лише її, ніколи батьківський компонент. |
+| `signals` | `Subscribable[]` | `required` | Сигнали для підписки. Сповіщення від будь-якого з них перезапускає функцію children — і лише її, ніколи батьківський компонент. Інший сигнал, переданий у пізнішому рендері, відстежується замість того, який він замінив. |
 | `children` | `() => ReactElement \| null` | `required` | Функція рендерингу, що виконується заново на кожну зміну. Читайте значення сигналів усередині неї; прочитане ззовні захоплюється один раз і застаріває. |
 
 ### AnimatedObserve [#animatedobserve]
@@ -130,14 +129,6 @@ See [Стан в URL у посібнику для React](/docs/react/guide#url-s
 | `adapter` | `UrlAdapter` | History API | Система навігації, через яку читати й писати. У застосунку з роутером передайте адаптер на його базі, щоб власне місцеположення роутера не застаріло. Читається під час першого рендеру й не змінюється весь час життя компонента — щоб змінити, перемонтуйте його. |
 | `codec` | `{ decode(raw) => Id \| null; encode(id) => string }` | required | Формат передавання: текст параметра ↔ стабільна ідентичність, незалежно від колекції. Іде разом із локатором як узгоджена пара з однаковим Id — розгорніть ...urlIndexKey(() => images.length) для типової галереї з ?photo=3 або передайте власний (base64, slug), щоб закладка пережила зміну порядку галереї. Читається наживо: наступне декодування чи кодування виконує кодек з останнього рендеру. |
 | `locator` | `{ locate(id) => number \| null; locateAsync?(id) => Promise<number \| null>; identify(index) => id }` | required | Зіставляє ідентичність із позицією і сам відповідає за свою чинність: locate (синхронно), locateAsync (запасний варіант для посторінкової галереї), identify (для запису). Для звичайної галереї за індексом розгорніть ...urlIndexKey(() => images.length) — він дає цей локатор разом із відповідним кодеком і обмежує ?photo=3 живою кількістю, тож застарілий ?photo=99 сам зникає з URL замість того, щоб відкрити слайд, якого ніхто не називав. Посторінкова стрічка або галерея з адресацією за ідентичністю передає власну узгоджену пару кодек + локатор. Читається наживо: на наступний пошук відповідає локатор з останнього рендеру, а додавання чи прибирання locateAsync між рендерами діє з наступного промаху. |
-
-### useViewedState [#useviewedstate]
-
-<Caption>`ViewedStateOptions`</Caption>
-
-Запам’ятовує, як далеко глядач дійшов у галереї, і стежить за сховищем, доки живе компонент. Передайте той самий ключ, що й адресний рядок, — і збережений запис читатиметься точно як параметр спільного посилання. Читайте `entries` через `Observe`, щоб кільце перемальовувалося, коли позицію записано тут або в іншій вкладці.
-
-<CodeBlock code={useviewedstate} language="tsx" />
 
 ### useReactRouterUrlAdapter [#usereactrouterurladapter]
 

@@ -14,7 +14,7 @@ const _kPerspectivePx = 500;
  * `transform-origin` toggles between left and right edges depending on
  * scroll direction, matching the physical hinge of a cube face.
  *
- * Unlike {@link flipTransition}, cube uses linear rotation proportional to
+ * Unlike `flipTransition`, cube uses linear rotation proportional to
  * scroll position (not a bell curve), producing a more dramatic 3D effect.
  */
 export const cubeTransition = (

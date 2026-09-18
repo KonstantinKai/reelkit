@@ -34,7 +34,7 @@ export interface LightboxItem {
 }
 
 /**
- * Props passed to the {@link LightboxOverlay} `renderControls` callback.
+ * Props passed to the `LightboxOverlay` `renderControls` callback.
  */
 export interface ControlsRenderProps {
   /** The currently active lightbox item. */
@@ -57,7 +57,7 @@ export interface ControlsRenderProps {
 }
 
 /**
- * Props passed to the {@link LightboxOverlay} `renderNavigation` callback.
+ * Props passed to the `LightboxOverlay` `renderNavigation` callback.
  */
 export interface NavigationRenderProps {
   /** The currently active lightbox item. */
@@ -77,7 +77,7 @@ export interface NavigationRenderProps {
 }
 
 /**
- * Props passed to the {@link LightboxOverlay} `renderSlide` callback.
+ * Props passed to the `LightboxOverlay` `renderSlide` callback.
  */
 export interface SlideRenderProps {
   /** The lightbox item for this slide. */
@@ -103,7 +103,7 @@ export interface SlideRenderProps {
 }
 
 /**
- * Props passed to the {@link LightboxOverlay} `renderInfo` callback.
+ * Props passed to the `LightboxOverlay` `renderInfo` callback.
  */
 export interface InfoRenderProps {
   /** The currently active lightbox item. */

@@ -234,6 +234,20 @@ import themingCode from '../../snippets/vue-lightbox/theming-code.css?raw';
 | `api-ready` | `LightboxApi` | スライダーの準備ができたときに発行され、命令的な API を公開します |
 | `update:is-open` | `boolean` | 閉じるときに発行され、v-model:is-open を可能にします |
 
+### LightboxApi [#lightboxapi]
+
+`api-ready` が発行するオブジェクトで、コンポーネントのテンプレート ref からも取得できます。スライダーはオーバーレイが開いている間しか存在しないため、閉じている間はスライダーの各メソッドは何もしません。`close()` は常に動作します。
+
+| メソッド | 型 | 説明 |
+| --- | --- | --- |
+| `next()` | `() => void` | アニメーション付きで次のスライドへ移動します。`loop` が有効でなければ最後のスライドに留まります。 |
+| `prev()` | `() => void` | アニメーション付きで前のスライドへ移動します。`loop` が有効でなければ最初のスライドに留まります。 |
+| `goTo(index, animate?)` | `(number, boolean?) => Promise<void>` | 指定したスライドへジャンプします。`index` はアイテムの範囲に収められ、`animate` のデフォルトは false です。移動が終わると解決します。 |
+| `adjust()` | `() => void` | オーバーレイ自身が検知できなかったレイアウト変更のあとに、スライドの位置を計算し直します |
+| `observe()` | `() => void` | `unobserve()` のあとに、ジェスチャー・キーボード・ホイール入力の監視を再開します |
+| `unobserve()` | `() => void` | ジェスチャー・キーボード・ホイール入力の監視を止めます。スライドはそのままの位置に残ります |
+| `close()` | `() => void` | 閉じるボタンや Escape と同じように lightbox を閉じます |
+
 ## LightboxItem インターフェース [#lightboxitem-interface]
 
 | フィールド | 型 | 必須 | 説明 |

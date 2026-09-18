@@ -14,6 +14,7 @@ import urlState2 from '../../snippets/stories-player/url-state-2.tsx?raw';
 import urlState3 from '../../snippets/stories-player/url-state-3.tsx?raw';
 import urlState4 from '../../snippets/stories-player/url-state-4.tsx?raw';
 import rememberingWhatWasSeen from '../../snippets/stories-player/remembering-what-was-seen.tsx?raw';
+import desktopCarousel from '../../snippets/stories-player/desktop-carousel.tsx?raw';
 import transitions from '../../snippets/stories-player/transitions.tsx?raw';
 import renderheader from '../../snippets/stories-player/renderheader.tsx?raw';
 import renderfooter from '../../snippets/stories-player/renderfooter.tsx?raw';
@@ -22,6 +23,7 @@ import rendernavigation from '../../snippets/stories-player/rendernavigation.tsx
 import renderprogressbar from '../../snippets/stories-player/renderprogressbar.tsx?raw';
 import renderloading from '../../snippets/stories-player/renderloading.tsx?raw';
 import rendererror from '../../snippets/stories-player/rendererror.tsx?raw';
+import rendergrouppreview from '../../snippets/stories-player/rendergrouppreview.tsx?raw';
 import storiesapi from '../../snippets/stories-player/storiesapi.tsx?raw';
 import doubleTapLikes from '../../snippets/stories-player/double-tap-likes.tsx?raw';
 import customizingTheHeartAnimation from '../../snippets/stories-player/customizing-the-heart-animation.css?raw';
@@ -42,6 +44,7 @@ import navigationrenderprops from '../../snippets/stories-player/navigationrende
 import progressbarrenderpropsT from '../../snippets/stories-player/progressbarrenderprops-t.ts?raw';
 import loadingrenderpropsT from '../../snippets/stories-player/loadingrenderprops-t.ts?raw';
 import errorrenderpropsT from '../../snippets/stories-player/errorrenderprops-t.ts?raw';
+import grouppreviewrenderpropsT from '../../snippets/stories-player/grouppreviewrenderprops-t.ts?raw';
 import storiesapi2 from '../../snippets/stories-player/storiesapi-2.ts?raw';
 import customStoryTypes from '../../snippets/stories-player/custom-story-types.tsx?raw';
 import theming from '../../snippets/stories-player/theming.css?raw';
@@ -195,7 +198,7 @@ O componente `StoriesOverlay` renderiza um player de stories em tela cheia. Comb
 
 ## Lembrar o que já foi visto [#remembering-what-was-seen]
 
-Os anéis exibem o gradiente até o grupo ser assistido até o fim, e um grupo reabre no primeiro story que o leitor ainda não viu. As duas coisas vêm de um `ViewedStateController`, montado com a mesma chave da barra de endereços — então a entrada guardada fica idêntica ao parâmetro de um link compartilhado e sobrevive à reordenação do feed quando a chave é endereçada por id.
+Os anéis exibem o gradiente até o grupo ser assistido até o fim, e um grupo reabre no primeiro story que o leitor ainda não viu. As duas coisas vêm de um único `createStoriesViewedStateController`, criado uma vez onde o feed vive e passado para a lista de anéis e para o player como `viewed`: eles leem o repositório, o acompanham e registram o que é mostrado por conta própria. Uma entrada guardada nomeia o autor e o story por id, então sobrevive à reordenação do feed, e o mesmo controlador funciona em Vue e em Angular.
 
 <CodeBlock code={rememberingWhatWasSeen} language="tsx" />
 
@@ -203,7 +206,19 @@ Os anéis exibem o gradiente até o grupo ser assistido até o fim, e um grupo r
 - **Deslizar adiante também retoma.** `resumeStoryIndex` é consultado para todo grupo alcançado pela primeira vez na sessão, inclusive aquele em que o player abriu, a menos que `initialStoryIndex` nomeie um story diretamente; um grupo já percorrido reabre onde parou.
 - **O link ainda vence.** Com `StoriesUrlOverlay`, quem decide onde o player abre é o parâmetro, independentemente do que estiver guardado. Em todos os outros casos quem decide é o callback de retomada.
 - **A contagem é uma posição, não um total.** A entrada nomeia o story mais distante alcançado, então acrescentar um story a um grupo já assistido acende o anel de novo, e remover um do meio encurta a contagem. A mesma cura espontânea que um link compartilhado recebe.
-- **O armazenamento é trocável.** Passe `createSessionStorageAdapter()` para esquecer ao fechar a aba, ou o seu próprio `StorageAdapter`. Duas abas abertas ficam em sintonia pelo evento de armazenamento do navegador.
+- **O armazenamento é trocável.** Passe `storage: createSessionStorageAdapter()` para esquecer ao fechar a aba, ou o seu próprio `StorageAdapter`. Duas abas abertas ficam em sintonia pelo evento de armazenamento do navegador.
+- **Um player montado só na hora de abrir lê tarde demais.** O player lê o repositório em um efeito que roda enquanto ainda está fechado. Com `{open && <StoriesOverlay … />}` esse momento não existe, então chame `viewed.attach()` você mesmo em um efeito que devolva o seu dispose. As opções, e as peças de nível mais baixo que o compõem, estão na página do [Stories Core](/docs/stories-core#viewed-controller).
+
+## Carrossel no desktop [#desktop-carousel]
+
+Defina `desktopLayout="carousel"` para dispor o player como o Instagram na web: o story ativo fica no centro com o tamanho de sempre, e até dois grupos vizinhos ficam de cada lado como cards menores e escurecidos. Clicar em um card abre esse grupo, e os cards deslizam enquanto o grupo muda. Passe o mesmo controlador `viewed` que a lista de anéis recebe, e o card de um grupo já assistido ganha o anel apagado. Os cards o acompanham sozinhos, então só eles são redesenhados quando um story é marcado como visto e o player não é renderizado de novo.
+
+<CodeBlock code={desktopCarousel} language="tsx" />
+
+- **No celular o player continua simples.** Até 768px de largura os cards não são renderizados e os gestos de deslizar usam `groupTransition`, como no layout padrão `'single'`. Redimensionar a janela passando dessa largura troca o layout na hora.
+- **Cada card mostra onde o grupo abre**: o story em que ele foi deixado nesta sessão, ou então o que `resumeStoryIndex` retorna. O card exibe o pôster do vídeo ou a própria imagem. Um story sem nenhum dos dois, como um texto sobre um gradiente, é desenhado pelo seu `renderSlide` no tamanho do player e reduzido; um vídeo sem pôster mostra o fundo do card. Essa prévia chama `renderSlide` com `isActive: false` e é só uma imagem: nada dentro dela recebe foco ou cliques. Deixe atrás de `isActive` tudo o que um slide faz ao ser montado, como reprodução ou analytics.
+- **O timer espera o deslize.** O story não avança, e `onStoryViewed` não dispara para ele, até os cards pararem de se mover.
+- **Toda forma de trocar de grupo desliza**: clique em um card, `StoriesApi.goToGroup`, `nextGroup` e `prevGroup` e as setas do teclado depois do fim de um grupo. Um deslize com o dedo já move o próprio player, então não ganha outro deslize por cima.
 
 ## Referência da API [#api-reference]
 
@@ -228,6 +243,8 @@ Os anéis exibem o gradiente até o grupo ser assistido até o fim, e um grupo r
 | `innerTransitionDuration` | `number` | 200 | Duração, em milissegundos, da animação de transição interna (entre stories) |
 | `minSegmentWidth` | `number` | 8 | Largura mínima, em pixels, de um segmento da barra de progresso |
 | `apiRef` | `MutableRefObject<StoriesApi \| null>` | - | Ref para alcançar a StoriesApi imperativa |
+| `desktopLayout` | `'single' \| 'carousel'` | 'single' | Layout no desktop. 'carousel' mostra os grupos vizinhos como cards de prévia ao lado do story ativo e desliza entre grupos. No celular o story sempre aparece sozinho. O tipo é exportado como `DesktopLayout`. |
+| `viewed` | `StoriesViewedStateController` | - | O que o leitor já viu, vindo de createStoriesViewedStateController(). Os grupos são retomados no primeiro story não visto, cada story mostrado é registrado e os cards do carrossel apagam o anel de um grupo assistido até o fim. Passe o mesmo controlador para StoriesRingList. |
 | `renderHeader` | `(props: HeaderRenderProps<T>) => ReactNode` | - | Renderizador próprio do cabeçalho. Recebe autor, story e os estados de pausa e de som. |
 | `renderFooter` | `(props: FooterRenderProps<T>) => ReactNode` | - | Renderizador próprio do rodapé. Recebe os dados do autor e do story. |
 | `renderSlide` | `(props: SlideRenderProps<T>) => ReactNode` | - | Renderizador próprio do slide, no lugar dos slides padrão de imagem e vídeo. |
@@ -235,6 +252,7 @@ Os anéis exibem o gradiente até o grupo ser assistido até o fim, e um grupo r
 | `renderProgressBar` | `(props: ProgressBarRenderProps<T>) => ReactNode` | - | Barra de progresso própria. Substitui a barra padrão desenhada em canvas. |
 | `renderLoading` | `(props: LoadingRenderProps<T>) => ReactNode` | - | Renderizador próprio do carregamento. Sem ele, aparece o girador padrão no cabeçalho. |
 | `renderError` | `(props: ErrorRenderProps<T>) => ReactNode` | - | Renderizador próprio do erro. Sem ele, aparece a camada padrão com o ícone de erro. |
+| `renderGroupPreview` | `(props: GroupPreviewRenderProps<T>) => ReactNode` | - | Card próprio do carrossel no desktop. Substitui o conteúdo padrão do card. |
 
 ### StoriesUrlOverlayProps [#storiesurloverlayprops]
 
@@ -326,6 +344,12 @@ Indicador de carregamento próprio enquanto o conteúdo é buscado:
 Camada de erro própria para quando o conteúdo não carrega:
 
 <CodeBlock code={rendererror} language="tsx" />
+
+### renderGroupPreview [#rendergrouppreview]
+
+Substitua o conteúdo de um card do carrossel no desktop. O player continua posicionando, escalando e deslizando o card; chame `onOpen` para abrir o grupo:
+
+<CodeBlock code={rendergrouppreview} language="tsx" />
 
 ## StoriesApi [#storiesapi]
 
@@ -449,6 +473,10 @@ Camada animada de coração, disparada no toque duplo. Cresce e some ao longo de
 
 <CodeBlock code={errorrenderpropsT} language="typescript" />
 
+### GroupPreviewRenderProps\<T> [#grouppreviewrenderprops-t]
+
+<CodeBlock code={grouppreviewrenderpropsT} language="typescript" />
+
 ### StoriesApi [#storiesapi]
 
 <CodeBlock code={storiesapi2} language="typescript" />
@@ -497,6 +525,19 @@ Todas as classes CSS são simples (não são CSS modules), então dá para alcan
 | `.rk-stories-ring-list` | StoriesRingList | Contêiner da fileira horizontal de anéis |
 | `.rk-stories-ring-list-item` | StoriesRingList | Coluna com o anel e o nome |
 | `.rk-stories-ring-list-name` | StoriesRingList | Nome do autor abaixo de cada anel |
+| `.rk-stories-overlay--carousel` | Overlay | Overlay com o carrossel do desktop à mostra |
+| `.rk-stories-overlay--sliding` | Overlay | Deslize do carrossel em andamento; a tela do player fica oculta |
+| `.rk-stories-carousel` | Carousel | Camada de cards de prévia atrás do player |
+| `.rk-stories-carousel--instant` | Carousel | Primeiro quadro de um deslize, disposto sem transição |
+| `.rk-stories-card` | Carousel | Um card de prévia posicionado |
+| `.rk-stories-card--center` | Carousel | Card na posição central durante um deslize |
+| `.rk-stories-card--hidden` | Carousel | Card além dos dois mostrados de cada lado |
+| `.rk-stories-card-button` | Carousel | Conteúdo padrão do card (o botão que abre o grupo) |
+| `.rk-stories-card-image` | Carousel | Quadro de prévia (pôster ou imagem) |
+| `.rk-stories-card-scrim` | Carousel | Camada que escurece o quadro |
+| `.rk-stories-card-info` | Carousel | Coluna com anel, nome do autor e horário |
+| `.rk-stories-card-name` | Carousel | Nome do autor |
+| `.rk-stories-card-time` | Carousel | Texto de tempo relativo |
 
 ## Temas [#theming]
 
@@ -533,6 +574,15 @@ Cada cor, tamanho, z-index e transição vive em uma propriedade CSS. Sobrescrev
 | `--rk-stories-ring-list-gap` | `12px` | Espaço entre os anéis da fileira |
 | `--rk-stories-ring-list-padding` | `12px` | Respiro interno em volta da fileira de anéis |
 | `--rk-stories-ring-list-name-size` | `12px` | Tamanho da fonte do nome abaixo de cada anel |
+| `--rk-stories-card-bg` | `#262626` | Fundo do card do carrossel, visível quando não há quadro de prévia |
+| `--rk-stories-card-radius` | `8px` | Raio dos cantos do card do carrossel |
+| `--rk-stories-card-scrim` | `rgba(0, 0, 0, 0.45)` | Escurecimento sobre um card lateral |
+| `--rk-stories-card-fg` | `#fff` | Cor do texto do card |
+| `--rk-stories-card-name-size` | `14px` | Tamanho da fonte do nome do autor no card |
+| `--rk-stories-card-time-fg` | `rgba(255, 255, 255, 0.7)` | Cor do tempo relativo no card |
+| `--rk-stories-card-time-size` | `13px` | Tamanho da fonte do tempo relativo no card |
+| `--rk-stories-card-gap` | `6px` | Espaço entre anel, nome e horário no card |
+| `--rk-stories-card-transition` | `300ms` | Duração do deslize do carrossel |
 
 Cole o trecho abaixo em uma folha de estilo carregada depois de `@reelkit/react-stories-player/styles.css`.
 
@@ -543,6 +593,8 @@ Cole o trecho abaixo em uma folha de estilo carregada depois de `@reelkit/react-
 A raiz do overlay é um diálogo modal (`role="dialog"`, `aria-modal="true"`). Defina `ariaLabel` para mudar o que o leitor de tela anuncia; o padrão é "Stories player".
 
 O overlay captura o foco ao abrir e o devolve ao gatilho ao fechar. Tab e Shift+Tab percorrem os elementos focáveis lá dentro; um foco que escapa (clique fora, foco por código) é trazido de volta. Implementado com `captureFocusForReturn` e `createFocusTrap`, de `@reelkit/core`.
+
+No carrossel do desktop, cada card padrão é um botão com o rótulo "Open stories by" seguido do nome do autor. Os cards vêm depois dos controles do player na ordem do Tab e saem dela enquanto um deslize acontece.
 
 ## Atalhos de teclado [#keyboard-shortcuts]
 

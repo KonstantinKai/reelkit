@@ -14,6 +14,7 @@ import urlState2 from '../../snippets/stories-player/url-state-2.tsx?raw';
 import urlState3 from '../../snippets/stories-player/url-state-3.tsx?raw';
 import urlState4 from '../../snippets/stories-player/url-state-4.tsx?raw';
 import rememberingWhatWasSeen from '../../snippets/stories-player/remembering-what-was-seen.tsx?raw';
+import desktopCarousel from '../../snippets/stories-player/desktop-carousel.tsx?raw';
 import transitions from '../../snippets/stories-player/transitions.tsx?raw';
 import renderheader from '../../snippets/stories-player/renderheader.tsx?raw';
 import renderfooter from '../../snippets/stories-player/renderfooter.tsx?raw';
@@ -22,6 +23,7 @@ import rendernavigation from '../../snippets/stories-player/rendernavigation.tsx
 import renderprogressbar from '../../snippets/stories-player/renderprogressbar.tsx?raw';
 import renderloading from '../../snippets/stories-player/renderloading.tsx?raw';
 import rendererror from '../../snippets/stories-player/rendererror.tsx?raw';
+import rendergrouppreview from '../../snippets/stories-player/rendergrouppreview.tsx?raw';
 import storiesapi from '../../snippets/stories-player/storiesapi.tsx?raw';
 import doubleTapLikes from '../../snippets/stories-player/double-tap-likes.tsx?raw';
 import customizingTheHeartAnimation from '../../snippets/stories-player/customizing-the-heart-animation.css?raw';
@@ -42,6 +44,7 @@ import navigationrenderprops from '../../snippets/stories-player/navigationrende
 import progressbarrenderpropsT from '../../snippets/stories-player/progressbarrenderprops-t.ts?raw';
 import loadingrenderpropsT from '../../snippets/stories-player/loadingrenderprops-t.ts?raw';
 import errorrenderpropsT from '../../snippets/stories-player/errorrenderprops-t.ts?raw';
+import grouppreviewrenderpropsT from '../../snippets/stories-player/grouppreviewrenderprops-t.ts?raw';
 import storiesapi2 from '../../snippets/stories-player/storiesapi-2.ts?raw';
 import customStoryTypes from '../../snippets/stories-player/custom-story-types.tsx?raw';
 import theming from '../../snippets/stories-player/theming.css?raw';
@@ -195,7 +198,7 @@ The `StoriesOverlay` рендерить повноекранний плеєр і
 
 ## Пам’ять про переглянуте [#remembering-what-was-seen]
 
-Кільця показують градієнт, доки групу не переглянуто до кінця, а група знову відкривається на першій історії, якої глядач ще не бачив. Обидва беруться з `ViewedStateController`, побудованого з того самого ключа, що й адресний рядок, — тож збережений запис читається точно як параметр спільного посилання й переживає перевпорядкування стрічки, якщо ключ адресує за ідентифікатором.
+Кільця показують градієнт, доки групу не переглянуто до кінця, а група знову відкривається на першій історії, якої глядач ще не бачив. Обидва беруться з одного `createStoriesViewedStateController`, створеного один раз там, де живе стрічка, і переданого списку кілець та плеєру як `viewed`: вони самі читають сховище, стежать за ним і записують показане. Збережений запис називає автора та історію за id, тож переживає перевпорядкування стрічки, а той самий контролер працює у Vue та Angular.
 
 <CodeBlock code={rememberingWhatWasSeen} language="tsx" />
 
@@ -203,7 +206,19 @@ The `StoriesOverlay` рендерить повноекранний плеєр і
 - **Свайп далі теж відновлює.** `resumeStoryIndex` береться до уваги для кожної групи, досягнутої вперше в цій сесії, включно з тією, на якій відкрився плеєр, якщо тільки `initialStoryIndex` не називає історію явно; група, яку вже прогорнули, знову відкривається там, де її залишили.
 - **Посилання все одно переважає.** Зі `StoriesUrlOverlay` параметр вирішує, де відкривається плеєр, що б не було збережено. Скрізь інде вирішує колбек відновлення.
 - **Лічильник — це позиція, а не підрахунок.** Запис називає найдальшу досягнуту історію, тож додавання історії до переглянутої групи знову засвічує її кільце, а вилучення із середини скорочує лічильник. Те саме самовиправлення, яке отримує спільне посилання.
-- **Сховище замінне.** Передайте `createSessionStorageAdapter()`, щоб забувати при закритті вкладки, або власний `StorageAdapter`. Дві відкриті вкладки тримаються в ногу через подію storage браузера.
+- **Сховище замінне.** Передайте `storage: createSessionStorageAdapter()`, щоб забувати при закритті вкладки, або власний `StorageAdapter`. Дві відкриті вкладки тримаються в ногу через подію storage браузера.
+- **Плеєр, змонтований лише в момент відкриття, читає запізно.** Плеєр читає сховище в ефекті, який виконується, поки він ще закритий. З `{open && <StoriesOverlay … />}` такого моменту немає, тож викличте `viewed.attach()` самі в ефекті, що повертає свій dispose. Параметри та низькорівневі частини, з яких це зібрано, описано на сторінці [Stories Core](/docs/stories-core#viewed-controller).
+
+## Десктопна карусель [#desktop-carousel]
+
+Задайте `desktopLayout="carousel"`, щоб плеєр виглядав як вебверсія Instagram: активна історія лишається в центрі у звичному розмірі, а з кожного боку стоять до двох сусідніх груп у вигляді менших притемнених карток. Клік по картці відкриває цю групу, і картки ковзають убік, поки група змінюється. Передайте той самий контролер `viewed`, що й списку кілець, — і картка переглянутої групи отримає приглушене кільце. Картки стежать за ним самі, тож коли історію позначено переглянутою, перемальовуються лише вони, а плеєр повторно не рендериться.
+
+<CodeBlock code={desktopCarousel} language="tsx" />
+
+- **На телефонах плеєр звичайний.** До 768px завширшки картки не рендеряться, а свайпи використовують `groupTransition`, як і у стандартному макеті `'single'`. Зміна ширини вікна через цю межу перемикає макет одразу.
+- **Картка показує, де відкриється група**: історію, на якій її залишили в цій сесії, а інакше ту, яку повертає `resumeStoryIndex`. На картці постер відео або саме зображення. Історію без жодного з них, наприклад текст на градієнті, малює ваш `renderSlide` у розмірі плеєра зі зменшенням; відео без постера показує фон картки. Таке прев'ю викликає `renderSlide` з `isActive: false` і є лише зображенням: нічого в ньому не отримує ні фокуса, ні кліків. Усе, що слайд робить під час монтування, як-от відтворення чи аналітику, тримайте за перевіркою `isActive`.
+- **Таймер чекає на ковзання.** Історія не перемикається, і `onStoryViewed` для неї не спрацьовує, доки картки не зупиняться.
+- **Ковзання вмикає будь-яка зміна групи**: клік по картці, `StoriesApi.goToGroup`, `nextGroup` і `prevGroup` та клавіші-стрілки за межею групи. Свайп пальцем рухає сам плеєр, тож ковзання поверх нього немає.
 
 ## Довідник API [#api-reference]
 
@@ -228,6 +243,8 @@ The `StoriesOverlay` рендерить повноекранний плеєр і
 | `innerTransitionDuration` | `number` | 200 | Тривалість анімації внутрішнього переходу між історіями в мілісекундах |
 | `minSegmentWidth` | `number` | 8 | Мінімальна ширина сегмента смуги прогресу в пікселях |
 | `apiRef` | `MutableRefObject<StoriesApi \| null>` | - | Ref для доступу до імперативного StoriesApi |
+| `desktopLayout` | `'single' \| 'carousel'` | 'single' | Макет на десктопі. 'carousel' показує сусідні групи картками поруч з активною історією й ковзає між групами. На телефонах історія завжди показується сама. Тип експортується як `DesktopLayout`. |
+| `viewed` | `StoriesViewedStateController` | - | Що глядач уже бачив, із createStoriesViewedStateController(). Групи відновлюються на першій непереглянутій історії, кожну показану історію записано, а картки каруселі приглушують кільце групи, переглянутої до кінця. Передайте той самий контролер у StoriesRingList. |
 | `renderHeader` | `(props: HeaderRenderProps<T>) => ReactNode` | - | Власний рендерер шапки. Отримує автора, історію, стан паузи та звуку. |
 | `renderFooter` | `(props: FooterRenderProps<T>) => ReactNode` | - | Власний рендерер підвала. Отримує дані автора та історії. |
 | `renderSlide` | `(props: SlideRenderProps<T>) => ReactNode` | - | Власний рендерер слайда, що замінює стандартні слайди із зображенням і відео. |
@@ -235,6 +252,7 @@ The `StoriesOverlay` рендерить повноекранний плеєр і
 | `renderProgressBar` | `(props: ProgressBarRenderProps<T>) => ReactNode` | - | Власна смуга прогресу. Замінює стандартну смугу на canvas. |
 | `renderLoading` | `(props: LoadingRenderProps<T>) => ReactNode` | - | Власний рендерер стану завантаження. Якщо не задано, показується стандартний індикатор у шапці. |
 | `renderError` | `(props: ErrorRenderProps<T>) => ReactNode` | - | Власний рендерер стану помилки. Якщо не задано, показується стандартний значок помилки. |
+| `renderGroupPreview` | `(props: GroupPreviewRenderProps<T>) => ReactNode` | - | Власна картка десктопної каруселі. Замінює стандартний вміст картки. |
 
 ### StoriesUrlOverlayProps [#storiesurloverlayprops]
 
@@ -326,6 +344,12 @@ The `groupTransition` керує 3D-ефектом переходу під ча�
 Власний оверлей помилки, коли вміст не завантажився:
 
 <CodeBlock code={rendererror} language="tsx" />
+
+### renderGroupPreview [#rendergrouppreview]
+
+Замініть вміст картки десктопної каруселі. Плеєр і далі розміщує, масштабує й зсуває картку; викличте `onOpen`, щоб відкрити групу:
+
+<CodeBlock code={rendergrouppreview} language="tsx" />
 
 ## StoriesApi [#storiesapi]
 
@@ -449,6 +473,10 @@ The `groupTransition` керує 3D-ефектом переходу під ча�
 
 <CodeBlock code={errorrenderpropsT} language="typescript" />
 
+### GroupPreviewRenderProps\<T> [#grouppreviewrenderprops-t]
+
+<CodeBlock code={grouppreviewrenderpropsT} language="typescript" />
+
 ### StoriesApi [#storiesapi]
 
 <CodeBlock code={storiesapi2} language="typescript" />
@@ -497,6 +525,19 @@ Extend `StoryItem` власними полями й передайте пара�
 | `.rk-stories-ring-list` | StoriesRingList | Контейнер горизонтального списку кілець |
 | `.rk-stories-ring-list-item` | StoriesRingList | Колонка з кільцем та іменем |
 | `.rk-stories-ring-list-name` | StoriesRingList | Ім’я автора під кожним кільцем |
+| `.rk-stories-overlay--carousel` | Overlay | Оверлей із показаною десктопною каруселлю |
+| `.rk-stories-overlay--sliding` | Overlay | Триває ковзання каруселі; полотно плеєра приховане |
+| `.rk-stories-carousel` | Carousel | Шар карток-прев’ю позаду плеєра |
+| `.rk-stories-carousel--instant` | Carousel | Перший кадр ковзання, розкладений без переходу |
+| `.rk-stories-card` | Carousel | Одна розміщена картка-прев’ю |
+| `.rk-stories-card--center` | Carousel | Картка в центральному слоті під час ковзання |
+| `.rk-stories-card--hidden` | Carousel | Картка за межами двох, що видно з боку |
+| `.rk-stories-card-button` | Carousel | Стандартний вміст картки (кнопка, що відкриває групу) |
+| `.rk-stories-card-image` | Carousel | Кадр прев’ю (постер або зображення) |
+| `.rk-stories-card-scrim` | Carousel | Затемнення поверх кадру |
+| `.rk-stories-card-info` | Carousel | Колонка з кільцем, ім’ям автора й часом |
+| `.rk-stories-card-name` | Carousel | Ім’я автора |
+| `.rk-stories-card-time` | Carousel | Текст «скільки часу тому» |
 
 ## Theming [#theming]
 
@@ -533,6 +574,15 @@ Extend `StoryItem` власними полями й передайте пара�
 | `--rk-stories-ring-list-gap` | `12px` | Відстань між кільцями в списку |
 | `--rk-stories-ring-list-padding` | `12px` | Внутрішній відступ навколо списку кілець |
 | `--rk-stories-ring-list-name-size` | `12px` | Розмір шрифту імені автора під кожним кільцем |
+| `--rk-stories-card-bg` | `#262626` | Фон картки каруселі, видимий, коли кадру прев’ю немає |
+| `--rk-stories-card-radius` | `8px` | Радіус кутів картки каруселі |
+| `--rk-stories-card-scrim` | `rgba(0, 0, 0, 0.45)` | Затемнення бічної картки |
+| `--rk-stories-card-fg` | `#fff` | Колір тексту картки |
+| `--rk-stories-card-name-size` | `14px` | Розмір шрифту імені автора на картці |
+| `--rk-stories-card-time-fg` | `rgba(255, 255, 255, 0.7)` | Колір тексту часу на картці |
+| `--rk-stories-card-time-size` | `13px` | Розмір шрифту часу на картці |
+| `--rk-stories-card-gap` | `6px` | Відступ між кільцем, ім’ям і часом на картці |
+| `--rk-stories-card-transition` | `300ms` | Тривалість ковзання каруселі |
 
 Вставте фрагмент нижче в таблицю стилів, підключену після `@reelkit/react-stories-player/styles.css`.
 
@@ -543,6 +593,8 @@ Extend `StoryItem` власними полями й передайте пара�
 Корінь оверлея — модальний діалог (`role="dialog"`, `aria-modal="true"`). Set `ariaLabel` щоб змінити оголошення для екранного читача; типове значення — «Stories player».
 
 Оверлей захоплює фокус під час відкриття й повертає його на елемент-тригер після закриття. Tab і Shift+Tab циклічно проходять фокусовані елементи всередині; фокус, що вислизнув (клік поза оверлеєм, програмна установка), повертається назад. Реалізовано через `captureFocusForReturn` та `createFocusTrap` from `@reelkit/core`.
+
+У десктопній каруселі кожна стандартна картка — кнопка з підписом «Open stories by» та ім’ям автора. Картки йдуть у порядку Tab після елементів керування плеєра і випадають із нього, поки триває ковзання.
 
 ## Клавіатурні скорочення [#keyboard-shortcuts]
 

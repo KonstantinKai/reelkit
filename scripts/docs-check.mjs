@@ -14,6 +14,7 @@
 import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
 import { join, dirname, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { publicExportNames } from './lib/publicExports.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const configPath = join(root, 'scripts', 'docs-check.config.json');
@@ -73,42 +74,15 @@ const pageSource = (file) =>
  * reported rather than silently skipped.
  */
 function publicExports(file) {
-  const src = read(file);
-  const names = new Set();
+  const { names, hasStarExport } = publicExportNames(read(file));
 
-  if (/^\s*export\s+\*\s+from/m.test(src)) {
+  if (hasStarExport) {
     warnings.push(
       `${file}: has \`export * from\` — those re-exports are not enumerable, so coverage for them is not checked.`,
     );
   }
 
-  // export { a, type B, c as d } from '...'   /   export { a, b }
-  for (const block of src.matchAll(
-    /export\s*\{([^}]*)\}\s*(?:from\s*['"]([^'"]+)['"])?/g,
-  )) {
-    const from = block[2];
-    // Owned only when declared locally (no `from`) or re-exported from a
-    // relative module. A bare specifier means another package owns the docs.
-    if (from && !from.startsWith('.')) continue;
-    for (let spec of block[1].split(',')) {
-      spec = spec.trim();
-      if (!spec) continue;
-      spec = spec.replace(/^type\s+/, '');
-      // `a as b` publishes b
-      const as = spec.match(/\bas\s+([A-Za-z_$][\w$]*)$/);
-      names.add(as ? as[1] : spec);
-    }
-  }
-
-  // export const/function/class/interface/type/enum X
-  for (const m of src.matchAll(
-    /^\s*export\s+(?:declare\s+)?(?:const|let|var|function|class|interface|type|enum)\s+([A-Za-z_$][\w$]*)/gm,
-  )) {
-    names.add(m[1]);
-  }
-
-  names.delete('default');
-  return [...names].filter((n) => /^[A-Za-z_$][\w$]*$/.test(n)).sort();
+  return names;
 }
 
 const mentions = (haystack, symbol) =>

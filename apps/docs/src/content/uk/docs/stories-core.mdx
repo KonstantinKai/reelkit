@@ -8,7 +8,7 @@ import installation from '../../snippets/stories-core/installation.sh?raw';
 import controllerExample from '../../snippets/stories-core/controller-example.ts?raw';
 import timerExample from '../../snippets/stories-core/timer-example.ts?raw';
 import canvasExample from '../../snippets/stories-core/canvas-example.ts?raw';
-import viewedStateExample from '../../snippets/stories-core/viewed-state-example.ts?raw';
+import viewedControllerExample from '../../snippets/stories-core/viewed-controller-example.ts?raw';
 import typesCode from '../../snippets/stories-core/types-code.ts?raw';
 
 Рушій, на якому працює `@reelkit/react-stories-player`. Чистий TypeScript, без залежностей від фреймворків. Беріть його, щоб будувати плеєри історій для Angular, Vue чи звичайного JavaScript.
@@ -52,7 +52,7 @@ import typesCode from '../../snippets/stories-core/types-code.ts?raw';
 
 ## Контролер Stories [#stories-controller]
 
-`createStoriesController(config, events?)` керує навігацією між групами та історіями. Стежить за станом паузи, запам’ятовує останню переглянуту історію в кожній групі й викликає колбеки на кожному переході.
+`createStoriesController(config, events?)` повертає `StoriesController`, який керує навігацією між групами та історіями. Стежить за станом паузи, запам’ятовує останню переглянуту історію в кожній групі й викликає колбеки на кожному переході.
 
 ### Конфігурація (StoriesControllerConfig) [#config-storiescontrollerconfig]
 
@@ -98,6 +98,7 @@ import typesCode from '../../snippets/stories-core/types-code.ts?raw';
 | `onStoryTimerComplete()` | `() => void` | Викликається, коли таймер завершується; спрацьовує onStoryComplete, а потім відбувається перехід |
 | `getLastStoryIndex(groupIndex)` | `(number) => number` | Де відкривається група: історія, на якій її залишили в цій сесії, інакше та, що назве resumeStoryIndex |
 | `reportInitialView()` | `() => void` | Повідомляє історію, на якій відкрився плеєр, як переглянуту — один раз. Викликайте після монтування, а не під час рендерингу. |
+| `updateConfig({ groupCount, storyCounts })` | `(config) => void` | Замінює кількість груп та історій, коли стрічка змінюється при відкритому плеєрі, щоб можна було перейти до груп, завантажених пізніше. Не надсилає жодної події, зберігає місце, де залишили кожну групу, і повертає позиції в межі стрічки, яка скоротилася. |
 
 ### Example [#example]
 
@@ -162,28 +163,37 @@ import typesCode from '../../snippets/stories-core/types-code.ts?raw';
 
 <CodeBlock code={canvasExample} />
 
-## Переглянуте [#viewed-state]
+## Контролер переглянутого [#viewed-controller]
 
-`createStoriesViewedState(controller, groups)` читає `ViewedStateController` ядра в термінах плеєра — групи, автори, індекси історій, — лишаючи саме сховище про них необізнаним. Повертає `StoriesViewedState`. Побудуйте сховище з того самого ключа, що й адресний рядок, з відстеженням на групу — і збережений запис читатиметься точно як параметр спільного посилання.
+`createStoriesViewedStateController(config)` — це все, що потрібно стрічці, аби пам'ятати переглянуте, одним викликом: лічильники для кілець, місце, з якого відновлюється кожна група, і запис переглядів поверх сховища, яке переживає перезавантаження. Він не імпортує жодного фреймворку, тож React, Vue та Angular користуються ним однаково: створіть його один раз там, де живе стрічка, і передайте списку кілець та плеєру, які самі під'єднують його і стежать за ним. Він зібраний на `createViewedStateController` ядра з двовісним ключем за стабільними id; беріть їх напряму, коли це не підходить. Запис називає найдальшу досягнуту історію, а не підрахунок переглядів, тож місце групи переживає перевпорядкування стрічки, а вилучена із середини групи історія скорочує лічильник і знову засвічує кільце.
 
-| Параметр | Тип | Опис |
+### Конфігурація (StoriesViewedStateControllerConfig) [#config-storiesviewedstatecontrollerconfig]
+
+| Властивість | Тип | Типове значення | Опис |
+| --- | --- | --- | --- |
+| `storageKey` | `string` | обов'язково | Ключ сховища, під яким записуються записи |
+| `groups` | `() => StoriesGroup<T>[]` | обов'язково | Читає поточні групи. Це getter, він викликається щоразу, тож стрічці, яка довантажує групи, досить їх повертати. Тримайте його актуальним: getter, що застряг на першому масиві, неправильно рахує всі групи, завантажені пізніше. |
+| `key` | `UrlKey<Id, TwoAxisPosition>` | стабільні id | Як позиція записується у сховищі. Передайте ключ, яким користується контролер URL, і запис читатиметься як посилання, яким поділилися. |
+| `storage` | `StorageAdapter` | localStorage | Де зберігаються записи. Власний адаптер — це також спосіб під'єднати власне сховище переглянутого. |
+| `ttlMs` | `number` | не спливає | Скільки запис групи пам'ятається після останнього запису. Кожна група спливає за власним годинником. |
+| `maxTracks` | `number` | усі групи | Скільки груп зберігати. Понад це група, записана найдавніше, відкидається під час наступного запису. |
+
+`storageKey`, `key` і `storage` читаються один раз, під час створення контролера. Щоб змінити сховище, створіть інший контролер.
+
+### StoriesViewedStateController [#storiesviewedstatecontroller]
+
+| Член | Тип | Опис |
 | --- | --- | --- |
-| `controller` | `ViewedStateController<TwoAxisPosition>` | Сховище ядра, побудоване з того самого ключа, що й адресний рядок, розгорнуте з twoAxisViewedTracking, щоб кожна група мала власний запис |
-| `groups` | `() => StoriesGroup<T>[]` | Читає поточні групи. Гетер, тож стрічка, що довантажується або перевпорядковується після налаштування, вимірюється на момент виклику. |
-
-### StoriesViewedState [#storiesviewedstate]
-
-| Метод | Тип | Опис |
-| --- | --- | --- |
-| `viewedCounts()` | `() => Map<string, number>` | Переглянуті історії на групу, за id автора — форма, яку StoriesRingList приймає як viewedState |
+| `viewedState` | `Subscribable<Map<string, number>>` | Переглянуті історії за id автора, як сигнал. Порожній до attach(). |
+| `controller` | `ViewedStateController<TwoAxisPosition>` | Сховище під ним, для всього, чого це не охоплює |
 | `resumeStoryIndex(groupIndex)` | `(number) => number` | Перша непереглянута історія або 0, коли групу переглянуто до кінця |
-| `markViewed(groupIndex, storyIndex)` | `(number, number) => void` | Записує історію як переглянуту. Під'єднайте до onStoryViewed. |
+| `markViewed(groupIndex, storyIndex)` | `(number, number) => void` | Записує історію як переглянуту. Плеєр викликає це для кожної показаної історії. |
+| `forget()` | `() => void` | Забуває все переглянуте, тут і у сховищі |
+| `attach()` | `() => Dispose` | Читає сховище і стежить за іншими вкладками. Веде лік, тож список кілець і плеєр можуть під'єднуватися та розмонтовуватися в будь-якому порядку. Компоненти плеєра викликають його самі. |
 
 ### Приклад [#example]
 
-<CodeBlock code={viewedStateExample} />
-
-Запис називає найдальшу досягнуту історію, а не підрахунок переглядів, тож ключ за ідентифікатором зберігає місце групи попри перевпорядкування стрічки, а вилучена із середини групи історія скорочує лічильник і знову засвічує кільце.
+<CodeBlock code={viewedControllerExample} />
 
 ## Utility Functions [#utility-functions]
 

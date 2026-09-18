@@ -44,6 +44,7 @@ export const zhTitles: Record<string, string> = {
   // Sections
   'URL State': 'URL 状态',
   'Viewed State': '已观看状态',
+  'Viewed Controller': '已观看控制器',
   'Remembering What Was Seen': '记住已观看内容',
   Features: '特性',
   'Quick Start': '快速上手',
@@ -67,6 +68,7 @@ export const zhTitles: Record<string, string> = {
   Fullscreen: '全屏',
   'LightboxOverlay Props': 'LightboxOverlay 属性',
   'LightboxOverlay Events': 'LightboxOverlay 事件',
+  LightboxApi: 'LightboxApi',
   'LightboxItem Interface': 'LightboxItem 接口',
   'Slot Scope Types': '插槽作用域类型',
   Transitions: '过渡动画',

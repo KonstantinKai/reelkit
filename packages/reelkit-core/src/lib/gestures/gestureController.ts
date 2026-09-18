@@ -1,7 +1,8 @@
 import { createDisposableList } from '../utils/disposable';
 import { timeout } from '../utils/timeout';
-import { observeDomEvent } from '../utils/observeDomEvent';
-import { abs, first, last } from '../utils';
+import { observeDomEvent } from '../dom/observeDomEvent';
+import { abs } from '../utils/number';
+import { first, last } from '../utils/array';
 import type {
   Offset,
   EventKind,
@@ -12,8 +13,36 @@ import type {
   GestureDragEndEvent,
   GestureControllerConfig,
   GestureControllerEvents,
-  GestureController,
 } from './types';
+
+/**
+ * Touch and mouse gesture detector. Tracks drag interactions along
+ * horizontal and vertical axes. Created via {@link createGestureController}.
+ */
+export interface GestureController {
+  /**
+   * Binds the controller to a DOM element for gesture detection.
+   * @param element - Where the touch listeners go once `observe` runs;
+   * attaching alone adds none.
+   */
+  attach: (element: HTMLElement) => void;
+
+  /** Removes all event listeners and unbinds the element. */
+  detach: () => void;
+
+  /** Starts listening for touch/mouse events on the attached element. */
+  observe: () => void;
+
+  /** Stops listening for touch/mouse events (preserves the attachment). */
+  unobserve: () => void;
+
+  /**
+   * Merges new event handlers into the current set.
+   * @param events - Handlers not named keep their current value; a key set to
+   * `undefined` clears that handler.
+   */
+  updateEvents: (events: Partial<GestureControllerEvents>) => void;
+}
 
 const _kDefaultLongPressDurationMs = 800;
 const _kDefaultDoubleTapWindowMs = 200;

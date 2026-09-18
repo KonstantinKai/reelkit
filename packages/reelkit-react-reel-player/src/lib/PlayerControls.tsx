@@ -61,8 +61,8 @@ export interface SoundButtonProps {
  * Reusable mute/unmute toggle button rendered as an absolutely-positioned
  * circular icon in the bottom-right corner.
  *
- * Must be rendered inside a {@link SoundProvider} (automatically provided
- * by `ReelPlayerOverlay`). Reads mute state from {@link SoundState} context.
+ * Must be rendered inside a `SoundProvider` (automatically provided
+ * by `ReelPlayerOverlay`). Reads mute state from `SoundState` context.
  *
  * The button is hidden when `SoundState.disabled` is `true` (i.e. the
  * active slide has no video content).

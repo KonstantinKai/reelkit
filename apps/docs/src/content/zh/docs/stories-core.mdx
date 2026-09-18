@@ -8,7 +8,7 @@ import installation from '../../snippets/stories-core/installation.sh?raw';
 import controllerExample from '../../snippets/stories-core/controller-example.ts?raw';
 import timerExample from '../../snippets/stories-core/timer-example.ts?raw';
 import canvasExample from '../../snippets/stories-core/canvas-example.ts?raw';
-import viewedStateExample from '../../snippets/stories-core/viewed-state-example.ts?raw';
+import viewedControllerExample from '../../snippets/stories-core/viewed-controller-example.ts?raw';
 import typesCode from '../../snippets/stories-core/types-code.ts?raw';
 
 驱动 `@reelkit/react-stories-player`的引擎。纯 TypeScript，不依赖任何框架。可以用它为 Angular、Vue 或原生 JS 构建 Stories Player。
@@ -52,7 +52,7 @@ import typesCode from '../../snippets/stories-core/types-code.ts?raw';
 
 ## Stories 控制器 [#stories-controller]
 
-`createStoriesController(config, events?)` 负责在分组和 story 之间导航。它跟踪暂停 / 恢复状态，记住每个分组最后看到的 story，并在每次切换时触发回调。
+`createStoriesController(config, events?)` 返回一个 `StoriesController`，负责在分组和 story 之间导航。它跟踪暂停 / 恢复状态，记住每个分组最后看到的 story，并在每次切换时触发回调。
 
 ### 配置（StoriesControllerConfig） [#config-storiescontrollerconfig]
 
@@ -98,6 +98,7 @@ import typesCode from '../../snippets/stories-core/types-code.ts?raw';
 | `onStoryTimerComplete()` | `() => void` | 计时结束时调用；先触发 onStoryComplete 再前进 |
 | `getLastStoryIndex(groupIndex)` | `(number) => number` | 分组打开的位置：本次会话中离开时所在的 story，否则由 resumeStoryIndex 指定 |
 | `reportInitialView()` | `() => void` | 把播放器打开时所在的 story 报告为已观看，仅一次。挂载后调用，不要在渲染期间调用。 |
+| `updateConfig({ groupCount, storyCounts })` | `(config) => void` | 播放器打开期间 feed 发生变化时，替换分组数量和各组的 story 数量，让之后加载的分组也能到达。不触发任何事件，保留每个分组离开时的位置；feed 变短时会把位置拉回有效范围内。 |
 
 ### 示例 [#example]
 
@@ -162,28 +163,37 @@ import typesCode from '../../snippets/stories-core/types-code.ts?raw';
 
 <CodeBlock code={canvasExample} />
 
-## 已观看状态 [#viewed-state]
+## 已观看控制器 [#viewed-controller]
 
-`createStoriesViewedState(controller, groups)` 以播放器的语汇——分组、作者、story 索引——读取核心的 `ViewedStateController`，而存储本身对这些一无所知。它返回一个 `StoriesViewedState`。用地址栏所用的同一个键构建存储并按分组跟踪，已存记录读起来就与分享链接的参数完全一样。
+`createStoriesViewedStateController(config)` 用一次调用提供 feed 记住已观看内容所需的一切：圆环计数、每个分组从哪里续播，以及观看记录，并写入能经受刷新的存储。它不引入任何框架，所以 React、Vue 和 Angular 的用法完全一样：在 feed 所在的地方创建一次，然后交给圆环列表和播放器，它们会自己完成挂接并跟随它。它基于核心的 `createViewedStateController` 和稳定 id 的双轴键构建；当它不适用时，直接使用那些部件。记录记的是到达的最远一条 story，而不是观看次数，因此分组的位置在信息流重排后仍然保留，而从分组中间删掉一条 story 会让计数变短并重新点亮圆环。
 
-| 参数 | 类型 | 说明 |
+### 配置（StoriesViewedStateControllerConfig） [#config-storiesviewedstatecontrollerconfig]
+
+| 属性 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `storageKey` | `string` | 必填 | 条目写入时使用的存储键 |
+| `groups` | `() => StoriesGroup<T>[]` | 必填 | 读取当前的分组。它是一个 getter，每次都会被调用，所以 feed 加载更多分组时只需把它们返回即可。请让它保持最新：一直返回第一个数组的 getter 会把之后加载的所有分组都算错。 |
+| `key` | `UrlKey<Id, TwoAxisPosition>` | 稳定 id | 位置在存储中的写法。传入 URL 控制器使用的 key，存储的条目读起来就和分享链接一样。 |
+| `storage` | `StorageAdapter` | localStorage | 条目保存的位置。自定义适配器也是接入你自己的已观看存储的方式。 |
+| `ttlMs` | `number` | 永不过期 | 分组的记录在最后一次记录之后保留多久。每个分组按自己的时钟过期。 |
+| `maxTracks` | `number` | 全部保留 | 保留多少个分组。超出后，在下一次写入时丢弃记录时间最早的分组。 |
+
+`storageKey`、`key` 和 `storage` 只在控制器创建时读取一次。要切换存储，请另外创建一个控制器。
+
+### StoriesViewedStateController [#storiesviewedstatecontroller]
+
+| 成员 | 类型 | 说明 |
 | --- | --- | --- |
-| `controller` | `ViewedStateController<TwoAxisPosition>` | 由地址栏所用的同一个键构建的核心存储，并展开 twoAxisViewedTracking，让每个分组各有一条记录 |
-| `groups` | `() => StoriesGroup<T>[]` | 读取当前分组。是一个 getter，因此在设置之后才加载或重排的信息流，会在调用时按当前状态计量。 |
-
-### StoriesViewedState [#storiesviewedstate]
-
-| 方法 | 类型 | 说明 |
-| --- | --- | --- |
-| `viewedCounts()` | `() => Map<string, number>` | 每个分组已看的 story 数，按作者 id 索引——即 StoriesRingList 接受的 viewedState 形状 |
+| `viewedState` | `Subscribable<Map<string, number>>` | 按作者 id 统计的已看 story 数，以 signal 形式提供。attach() 之前为空。 |
+| `controller` | `ViewedStateController<TwoAxisPosition>` | 底层的存储，用于这里没有覆盖的需求 |
 | `resumeStoryIndex(groupIndex)` | `(number) => number` | 第一个未看的 story；分组已看完时为 0 |
-| `markViewed(groupIndex, storyIndex)` | `(number, number) => void` | 把某条 story 记为已看。接到 onStoryViewed 上。 |
+| `markViewed(groupIndex, storyIndex)` | `(number, number) => void` | 把某条 story 记为已看。播放器会为每条显示过的 story 调用它。 |
+| `forget()` | `() => void` | 清除所有已观看记录，包括存储中的 |
+| `attach()` | `() => Dispose` | 读取存储并跟随其他标签页。带引用计数，因此圆环列表和播放器可以以任意顺序挂接和卸载。播放器组件会自己调用它。 |
 
 ### 示例 [#example]
 
-<CodeBlock code={viewedStateExample} />
-
-记录记的是到达的最远一条 story，而不是观看次数，因此按 id 寻址的键在信息流重排后仍记得分组的位置，而从分组中间删掉一条 story 会让计数变短并重新点亮圆环。
+<CodeBlock code={viewedControllerExample} />
 
 ## 工具函数 [#utility-functions]
 

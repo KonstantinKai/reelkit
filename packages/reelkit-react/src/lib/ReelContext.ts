@@ -2,7 +2,7 @@ import { createContext, useContext } from 'react';
 import type { Signal } from '@reelkit/core';
 
 /**
- * Values exposed by a parent {@link Reel} component to its children
+ * Values exposed by a parent `Reel` component to its children
  * via React context. Use {@link useReelContext} to access.
  */
 export interface ReelContextValue {
@@ -21,7 +21,7 @@ export const ReelContext = createContext<ReelContextValue | null>(null);
 
 /**
  * Returns the {@link ReelContextValue} from the nearest parent
- * {@link Reel}, or `null` if none exists.
+ * `Reel`, or `null` if none exists.
  */
 export const useReelContext = (): ReelContextValue | null =>
   useContext(ReelContext);

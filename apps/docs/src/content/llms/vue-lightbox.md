@@ -267,6 +267,20 @@ Type: `LightboxUrlOverlayProps`
 | `api-ready`      | `LightboxApi` | Slider ready, exposes imperative API |
 | `update:is-open` | `boolean`     | On close; enables `v-model:is-open`  |
 
+## LightboxApi
+
+Object `api-ready` emits; also on the component's template ref. Slider exists only while overlay open ⇒ every slider method no-op while closed; `close()` always works.
+
+| Method                  | Type                                  | Description                                                                                   |
+| ----------------------- | ------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `next()`                | `() => void`                          | Next slide, animated; stays on last unless `loop`                                             |
+| `prev()`                | `() => void`                          | Previous slide, animated; stays on first unless `loop`                                        |
+| `goTo(index, animate?)` | `(number, boolean?) => Promise<void>` | Jump to slide; `index` clamped to items, `animate` default false; resolves when move finished |
+| `adjust()`              | `() => void`                          | Recompute slide position after layout change overlay did not see itself                       |
+| `observe()`             | `() => void`                          | Resume listening gesture / keyboard / wheel after `unobserve()`                               |
+| `unobserve()`           | `() => void`                          | Stop listening gesture / keyboard / wheel; slides stay put                                    |
+| `close()`               | `() => void`                          | Close lightbox, same as close button / Escape                                                 |
+
 ## Keyboard Shortcuts
 
 | Key          | Action                                        |

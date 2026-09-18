@@ -45,7 +45,7 @@ function formatLikes(count: number): string {
  * like count with a heart icon. Renders nothing when all props are omitted.
  *
  * This is the default overlay used by `ReelPlayerOverlay` when the content
- * items have `author`, `description`, and `likes` fields (i.e. {@link ContentItem}).
+ * items have `author`, `description`, and `likes` fields (i.e. `ContentItem`).
  * It can be replaced entirely via `renderSlideOverlay`, or hidden by passing
  * `renderSlideOverlay={() => null}`.
  *

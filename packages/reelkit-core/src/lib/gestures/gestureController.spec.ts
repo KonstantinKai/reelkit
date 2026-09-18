@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { createGestureController } from './gestureController';
-import type { GestureController } from './types';
+import type { GestureController } from './gestureController';
 
 const createMockElement = () => {
   const listeners = new Map<string, EventListener>();
@@ -234,6 +234,27 @@ describe('createGestureController — tap & double-tap', () => {
 
     vi.advanceTimersByTime(300);
     expect(onTap).toHaveBeenCalledTimes(1);
+  });
+
+  it('ignores mouse events when useTouchEventsOnly is true', () => {
+    const onTap = vi.fn();
+    const onHorizontalDragStart = vi.fn();
+    element = createMockElement();
+    controller = createGestureController(
+      { useTouchEventsOnly: true },
+      { onTap, onHorizontalDragStart },
+    );
+    controller.attach(element);
+    controller.observe();
+
+    element.dispatch('mousedown', { clientX: 300, clientY: 100, target: null });
+    element.dispatch('mousemove', { clientX: 200, clientY: 100, target: null });
+    element.dispatch('mousemove', { clientX: 50, clientY: 100, target: null });
+    element.dispatch('mouseup', { clientX: 50, clientY: 100, target: null });
+
+    vi.advanceTimersByTime(300);
+    expect(onHorizontalDragStart).not.toHaveBeenCalled();
+    expect(onTap).not.toHaveBeenCalled();
   });
 
   it('fires drag events on vertical swipe', () => {

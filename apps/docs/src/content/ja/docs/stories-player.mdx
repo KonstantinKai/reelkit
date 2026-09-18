@@ -14,6 +14,7 @@ import urlState2 from '../../snippets/stories-player/url-state-2.tsx?raw';
 import urlState3 from '../../snippets/stories-player/url-state-3.tsx?raw';
 import urlState4 from '../../snippets/stories-player/url-state-4.tsx?raw';
 import rememberingWhatWasSeen from '../../snippets/stories-player/remembering-what-was-seen.tsx?raw';
+import desktopCarousel from '../../snippets/stories-player/desktop-carousel.tsx?raw';
 import transitions from '../../snippets/stories-player/transitions.tsx?raw';
 import renderheader from '../../snippets/stories-player/renderheader.tsx?raw';
 import renderfooter from '../../snippets/stories-player/renderfooter.tsx?raw';
@@ -22,6 +23,7 @@ import rendernavigation from '../../snippets/stories-player/rendernavigation.tsx
 import renderprogressbar from '../../snippets/stories-player/renderprogressbar.tsx?raw';
 import renderloading from '../../snippets/stories-player/renderloading.tsx?raw';
 import rendererror from '../../snippets/stories-player/rendererror.tsx?raw';
+import rendergrouppreview from '../../snippets/stories-player/rendergrouppreview.tsx?raw';
 import storiesapi from '../../snippets/stories-player/storiesapi.tsx?raw';
 import doubleTapLikes from '../../snippets/stories-player/double-tap-likes.tsx?raw';
 import customizingTheHeartAnimation from '../../snippets/stories-player/customizing-the-heart-animation.css?raw';
@@ -42,6 +44,7 @@ import navigationrenderprops from '../../snippets/stories-player/navigationrende
 import progressbarrenderpropsT from '../../snippets/stories-player/progressbarrenderprops-t.ts?raw';
 import loadingrenderpropsT from '../../snippets/stories-player/loadingrenderprops-t.ts?raw';
 import errorrenderpropsT from '../../snippets/stories-player/errorrenderprops-t.ts?raw';
+import grouppreviewrenderpropsT from '../../snippets/stories-player/grouppreviewrenderprops-t.ts?raw';
 import storiesapi2 from '../../snippets/stories-player/storiesapi-2.ts?raw';
 import customStoryTypes from '../../snippets/stories-player/custom-story-types.tsx?raw';
 import theming from '../../snippets/stories-player/theming.css?raw';
@@ -195,7 +198,7 @@ import theming from '../../snippets/stories-player/theming.css?raw';
 
 ## 見たところを覚えておく [#remembering-what-was-seen]
 
-リングは、グループを最後まで見るまでグラデーションを表示し、グループは閲覧者がまだ見ていない最初のストーリーから開きます。どちらも、アドレスバーと同じキーで作った `ViewedStateController` によるものです。そのため保存されたエントリーは共有リンクのパラメーターとまったく同じになり、キーが id で指すものならフィードが並べ替えられても残ります。
+リングは、グループを最後まで見るまでグラデーションを表示し、グループは閲覧者がまだ見ていない最初のストーリーから開きます。どちらも 1 つの `createStoriesViewedStateController` によるものです。フィードを持つ場所で一度だけ作成し、`viewed` としてリング一覧とプレイヤーに渡すと、ストアの読み取り、追従、表示したものの記録をコンポーネント側が行います。保存されたエントリーは作成者とストーリーを id で記録するため、フィードが並べ替えられても残り、同じコントローラーが Vue と Angular でも使えます。
 
 <CodeBlock code={rememberingWhatWasSeen} language="tsx" />
 
@@ -203,7 +206,19 @@ import theming from '../../snippets/stories-player/theming.css?raw';
 - **スワイプで進んでも続きから再開します。** `resumeStoryIndex` は、このセッションで初めて到達したすべてのグループ（プレイヤーが開いたグループも含む）で参照されます。ただし `initialStoryIndex` がストーリーを直接指定している場合は別です。すでにスワイプで通過したグループは、離れたところから再び開きます。
 - **リンクが優先されます。** `StoriesUrlOverlay` では、何が保存されていても、プレイヤーがどこで開くかはパラメーターが決めます。それ以外では再開のコールバックが決めます。
 - **件数は合計ではなく位置です。** エントリーが表すのは到達したいちばん先のストーリーなので、見終えたグループにストーリーを追加するとリングがまた点灯し、途中から削除すると件数が減ります。共有リンクと同じ自己修復です。
-- **ストレージは差し替えられます。** タブを閉じたら忘れるには `createSessionStorageAdapter()` を、ほかには独自の `StorageAdapter` を渡してください。開いている 2 つのタブは、ブラウザーの storage イベントで同期します。
+- **ストレージは差し替えられます。** タブを閉じたら忘れるには `storage: createSessionStorageAdapter()` を、ほかには独自の `StorageAdapter` を渡してください。開いている 2 つのタブは、ブラウザーの storage イベントで同期します。
+- **開く瞬間にだけマウントされるプレイヤーは、読み取りが遅すぎます。** プレイヤーは、まだ閉じている間に動くエフェクトでストアを読み取ります。`{open && <StoriesOverlay … />}` ではその機会がないので、dispose を返すエフェクトの中で自分で `viewed.attach()` を呼んでください。オプションと、土台になっている低レベルの部品は [Stories Core](/docs/stories-core#viewed-controller) のページにあります。
+
+## デスクトップのカルーセル [#desktop-carousel]
+
+`desktopLayout="carousel"` を指定すると、プレーヤーが Instagram のウェブ版のようなレイアウトになります。アクティブなストーリーはいつもの大きさのまま中央に置かれ、その左右に隣のグループが最大 2 つずつ、小さく暗めのカードとして並びます。カードをクリックするとそのグループが開き、グループが切り替わる間カードが横へスライドします。リング一覧に渡すのと同じ `viewed` コントローラーを渡すと、見終えたグループのカードは控えめなリングになります。カードが自分でそれに追従するため、ストーリーが既読になったときに再描画されるのはカードだけで、プレーヤーは再レンダリングされません。
+
+<CodeBlock code={desktopCarousel} language="tsx" />
+
+- **スマートフォンでは通常のプレーヤーのままです。** 幅 768px までならカードは描画されず、スワイプにはデフォルトの `'single'` レイアウトと同じく `groupTransition` が使われます。ウィンドウの幅がこの境目をまたぐと、その場でレイアウトが切り替わります。
+- **カードにはグループが開く位置が表示されます**：このセッションで離れたときのストーリー、なければ `resumeStoryIndex` が返すストーリーです。動画のポスターか画像そのものを表示します。どちらもないストーリー（グラデーション上のテキストのストーリーなど）は、`renderSlide` がプレーヤーの大きさで描き、それを縮小して表示します。ポスターのない動画ではカードの背景が見えます。このプレビューは `renderSlide` を `isActive: false` で呼び出す、ただの画像です。中の要素にフォーカスもクリックも届きません。再生やアナリティクスなど、スライドがマウント時に行う処理は `isActive` のときだけ実行してください。
+- **タイマーはスライドを待ちます。** カードの動きが止まるまで、ストーリーは進まず、そのストーリーの `onStoryViewed` も呼ばれません。
+- **グループを切り替えるどの方法でもスライドします**：カードのクリック、`StoriesApi.goToGroup`、`nextGroup` と `prevGroup`、そしてグループの最後を越える矢印キーです。タッチのスワイプはプレーヤー自体を動かすので、その上にスライドは重なりません。
 
 ## API リファレンス [#api-reference]
 
@@ -228,6 +243,8 @@ import theming from '../../snippets/stories-player/theming.css?raw';
 | `innerTransitionDuration` | `number` | 200 | 内側（ストーリー）のトランジションのアニメーションの長さ（ミリ秒） |
 | `minSegmentWidth` | `number` | 8 | 進捗バーのセグメントの最小幅（ピクセル） |
 | `apiRef` | `MutableRefObject<StoriesApi \| null>` | - | 命令的な StoriesApi にアクセスするための ref |
+| `desktopLayout` | `'single' \| 'carousel'` | 'single' | デスクトップでのレイアウト。'carousel' ではアクティブなストーリーの横に隣のグループをプレビューカードで表示し、グループ間をスライドで切り替えます。スマートフォンでは常にストーリーだけを表示します。型は `DesktopLayout` として公開されています。 |
+| `viewed` | `StoriesViewedStateController` | - | 閲覧者が見たもの（createStoriesViewedStateController() から）。グループは最初の未読ストーリーから再開し、表示したストーリーはすべて記録され、カルーセルのカードは見終えたグループのリングを控えめにします。同じコントローラーを StoriesRingList にも渡してください。 |
 | `renderHeader` | `(props: HeaderRenderProps<T>) => ReactNode` | - | 独自のヘッダーレンダラー。作者、ストーリー、一時停止とミュートの状態を受け取ります。 |
 | `renderFooter` | `(props: FooterRenderProps<T>) => ReactNode` | - | 独自のフッターレンダラー。作者とストーリーの情報を受け取ります。 |
 | `renderSlide` | `(props: SlideRenderProps<T>) => ReactNode` | - | 独自のスライドレンダラー。デフォルトの画像と動画のスライドを置き換えます。 |
@@ -235,6 +252,7 @@ import theming from '../../snippets/stories-player/theming.css?raw';
 | `renderProgressBar` | `(props: ProgressBarRenderProps<T>) => ReactNode` | - | 独自の進捗バー。デフォルトの canvas の進捗バーを置き換えます。 |
 | `renderLoading` | `(props: LoadingRenderProps<T>) => ReactNode` | - | 独自の読み込み UI のレンダラー。指定しなければヘッダーのデフォルトのスピナーを表示します。 |
 | `renderError` | `(props: ErrorRenderProps<T>) => ReactNode` | - | 独自のエラー UI のレンダラー。指定しなければデフォルトのエラーアイコンのオーバーレイを表示します。 |
+| `renderGroupPreview` | `(props: GroupPreviewRenderProps<T>) => ReactNode` | - | デスクトップのカルーセル用の独自のカード。デフォルトのカードの中身を置き換えます。 |
 
 ### StoriesUrlOverlayProps [#storiesurloverlayprops]
 
@@ -326,6 +344,12 @@ UI 要素はすべてレンダープロップで置き換えられます。そ�
 コンテンツの読み込みに失敗したときの独自のエラーオーバーレイ：
 
 <CodeBlock code={rendererror} language="tsx" />
+
+### renderGroupPreview [#rendergrouppreview]
+
+デスクトップのカルーセルのカードの中身を置き換えます。カードの配置、拡大縮小、スライドは引き続きプレーヤーが担当します。グループを開くには `onOpen` を呼びます：
+
+<CodeBlock code={rendergrouppreview} language="tsx" />
 
 ## StoriesApi [#storiesapi]
 
@@ -449,6 +473,10 @@ Instagram 風のグラデーションのリングが付いた円形のアバタ�
 
 <CodeBlock code={errorrenderpropsT} language="typescript" />
 
+### GroupPreviewRenderProps\<T> [#grouppreviewrenderprops-t]
+
+<CodeBlock code={grouppreviewrenderpropsT} language="typescript" />
+
 ### StoriesApi [#storiesapi]
 
 <CodeBlock code={storiesapi2} language="typescript" />
@@ -497,6 +525,19 @@ CSS クラスはすべて通常のクラス（CSS Modules ではありません�
 | `.rk-stories-ring-list` | StoriesRingList | 横に並ぶリングのリストのコンテナー |
 | `.rk-stories-ring-list-item` | StoriesRingList | リングと名前の列 |
 | `.rk-stories-ring-list-name` | StoriesRingList | 各リングの下の作者の名前 |
+| `.rk-stories-overlay--carousel` | Overlay | デスクトップのカルーセルを表示中のオーバーレイ |
+| `.rk-stories-overlay--sliding` | Overlay | カルーセルのスライド中。プレーヤーのキャンバスは非表示 |
+| `.rk-stories-carousel` | Carousel | プレーヤーの背後にあるプレビューカードのレイヤー |
+| `.rk-stories-carousel--instant` | Carousel | スライドの最初のフレーム。トランジションなしで配置 |
+| `.rk-stories-card` | Carousel | 配置済みのプレビューカード 1 枚 |
+| `.rk-stories-card--center` | Carousel | スライド中に中央の位置にあるカード |
+| `.rk-stories-card--hidden` | Carousel | 片側に表示する 2 枚より外側のカード |
+| `.rk-stories-card-button` | Carousel | デフォルトのカードの中身（グループを開くボタン） |
+| `.rk-stories-card-image` | Carousel | プレビューの画像（ポスターまたは画像） |
+| `.rk-stories-card-scrim` | Carousel | 画像の上に重ねる暗いレイヤー |
+| `.rk-stories-card-info` | Carousel | リング、作成者名、時間を並べる列 |
+| `.rk-stories-card-name` | Carousel | 作成者名 |
+| `.rk-stories-card-time` | Carousel | 経過時間のテキスト |
 
 ## テーマ設定 [#theming]
 
@@ -533,6 +574,15 @@ CSS クラスはすべて通常のクラス（CSS Modules ではありません�
 | `--rk-stories-ring-list-gap` | `12px` | リスト内のリングの間隔 |
 | `--rk-stories-ring-list-padding` | `12px` | リングのリストの内側の余白 |
 | `--rk-stories-ring-list-name-size` | `12px` | 各リングの下の作者の名前の文字サイズ |
+| `--rk-stories-card-bg` | `#262626` | カルーセルのカードの背景。プレビュー画像がないときに見えます |
+| `--rk-stories-card-radius` | `8px` | カルーセルのカードの角丸 |
+| `--rk-stories-card-scrim` | `rgba(0, 0, 0, 0.45)` | 横のカードに重ねる暗さ |
+| `--rk-stories-card-fg` | `#fff` | カードの文字色 |
+| `--rk-stories-card-name-size` | `14px` | カードの作成者名の文字サイズ |
+| `--rk-stories-card-time-fg` | `rgba(255, 255, 255, 0.7)` | カードの経過時間の文字色 |
+| `--rk-stories-card-time-size` | `13px` | カードの経過時間の文字サイズ |
+| `--rk-stories-card-gap` | `6px` | カード上のリング、名前、時間の間隔 |
+| `--rk-stories-card-transition` | `300ms` | カルーセルのスライドの長さ |
 
 下のスニペットを、`@reelkit/react-stories-player/styles.css` のあとに読み込むスタイルシートに入れてください。
 
@@ -543,6 +593,8 @@ CSS クラスはすべて通常のクラス（CSS Modules ではありません�
 オーバーレイのルートはモーダルダイアログ（`role="dialog"`、`aria-modal="true"`）です。`ariaLabel` を指定すると、スクリーンリーダーの読み上げが変わります。デフォルトは「Stories player」です。
 
 オーバーレイは開くとフォーカスを取り込み、閉じるとトリガーに戻します。Tab と Shift+Tab は中のフォーカス可能な要素を循環し、外へ出たフォーカス（外側のクリック、プログラムからのフォーカス）は引き戻されます。`@reelkit/core` の `captureFocusForReturn` と `createFocusTrap` で実装されています。
+
+デスクトップのカルーセルでは、デフォルトのカードはそれぞれ「Open stories by」と作成者名のラベルを持つボタンです。カードは Tab の順序でプレーヤーの操作ボタンのあとに来て、スライドの間はその順序から外れます。
 
 ## キーボードショートカット [#keyboard-shortcuts]
 

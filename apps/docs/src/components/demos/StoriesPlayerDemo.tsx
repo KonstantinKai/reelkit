@@ -1,7 +1,9 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import {
   StoriesOverlay,
   StoriesRingList,
+  createMemoryStorageAdapter,
+  createStoriesViewedStateController,
   type StoriesGroup,
 } from '@reelkit/react-stories-player';
 import '@reelkit/react-stories-player/styles.css';
@@ -72,7 +74,14 @@ const groups: StoriesGroup[] = [
 export function StoriesPlayerDemo() {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState(0);
-  const viewedState = useMemo(() => new Map<string, number>(), []);
+  // What was seen, kept for this page view only: the demo forgets on reload.
+  const [viewed] = useState(() =>
+    createStoriesViewedStateController({
+      storageKey: 'docs-stories-demo-seen',
+      storage: createMemoryStorageAdapter(),
+      groups: () => groups,
+    }),
+  );
 
   const openStories = (groupIndex: number) => {
     setSelectedGroup(groupIndex);
@@ -81,22 +90,14 @@ export function StoriesPlayerDemo() {
 
   return (
     <div className="w-full h-full overflow-auto p-4 bg-slate-50 dark:bg-slate-900">
-      <StoriesRingList
-        groups={groups}
-        viewedState={viewedState}
-        onSelect={openStories}
-      />
+      <StoriesRingList groups={groups} viewed={viewed} onSelect={openStories} />
 
       <StoriesOverlay
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         groups={groups}
         initialGroupIndex={selectedGroup}
-        onStoryViewed={(gi, si) => {
-          const author = groups[gi].author;
-          const current = viewedState.get(author.id) ?? 0;
-          viewedState.set(author.id, Math.max(current, si + 1));
-        }}
+        viewed={viewed}
       />
     </div>
   );
