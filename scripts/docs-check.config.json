@@ -218,14 +218,19 @@
       "WheelControllerConfig",
       "WheelControllerEvents",
       "WheelDirection",
+      "abs",
       "clamp",
+      "createDeferred",
       "createGestureController",
       "createKeyboardController",
+      "createLruCache",
       "createWheelController",
       "extractRange",
       "generate",
       "isNegative",
-      "lerp"
+      "lerp",
+      "noop",
+      "timeout"
     ],
     "packages/reelkit-react/src/index.ts": [
       "ReelContext",

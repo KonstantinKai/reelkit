@@ -23,7 +23,12 @@ export function publicExportNames(src) {
   for (const block of src.matchAll(kReexportBlock)) {
     const from = block[2];
     if (from && !from.startsWith('.')) continue;
-    for (let spec of block[1].split(',')) {
+    // Blocks group their names under comments; left in, a comment glues
+    // itself to the next name and that name fails the identifier check.
+    const specs = block[1]
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/\/\/.*$/gm, '');
+    for (let spec of specs.split(',')) {
       spec = spec.trim();
       if (!spec) continue;
       spec = spec.replace(/^type\s+/, '');

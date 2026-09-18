@@ -25,6 +25,25 @@ describe('docs-check export enumeration', () => {
     expect(names).toEqual(['Options', 'create', 'publicName']);
   });
 
+  // The core index groups its re-exports under line comments. A name that
+  // follows one must count like any other, or it silently leaves the gate.
+  it('sees a name that follows a comment inside the block', () => {
+    const { names } = publicExportNames(
+      [
+        'export {',
+        '  // Array',
+        '  first,',
+        '  last,',
+        '  /* Number */ abs,',
+        '  // Signals',
+        '  type Signal,',
+        "} from './lib/utils';",
+      ].join('\n'),
+    );
+
+    expect(names).toEqual(['Signal', 'abs', 'first', 'last']);
+  });
+
   it('sees what the file declares itself', () => {
     const { names } = publicExportNames(
       `export interface Props {}\nexport const build = () => 1;`,
