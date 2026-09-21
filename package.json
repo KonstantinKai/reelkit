@@ -21,6 +21,8 @@
     "e2e": "pnpm exec nx run-many -t e2e --no-tui",
     "update-sizes": "node scripts/update-sizes.mjs",
     "update-coverage": "node scripts/update-coverage.mjs",
+    "sort-changelog": "node scripts/sort-changelog.mjs",
+    "release:prepare": "HUSKY=0 pnpm exec nx release --skip-publish && node scripts/sort-changelog.mjs --amend",
     "release:npm": "which op > /dev/null 2>&1 && op run --env-file=.env.op -- sh -c 'env \"pnpm_config_//registry.npmjs.org/:_authToken=$NPM_TOKEN\" pnpm exec nx release publish' || echo '1Password CLI (op) is not installed. Install it from https://1password.com/downloads/command-line/'"
   },
   "repository": {
