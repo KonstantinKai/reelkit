@@ -15,6 +15,7 @@ import {
 import { slotAsRender } from './utils';
 import { ChevronUp, ChevronDown } from 'lucide-vue-next';
 import {
+  Observe,
   Reel,
   SoundProvider,
   captureFrame,
@@ -227,7 +228,6 @@ const ReelPlayerContent = defineComponent({
     let videoPausedOnDrag = false;
     const soundState = useSoundState();
     const timelineState = useTimelineState();
-    const timelineDuration = toVueRef(timelineState.duration);
 
     const aspectRatio = toRef(props, 'aspectRatio');
     const size = useViewportSize(aspectRatio);
@@ -238,8 +238,6 @@ const ReelPlayerContent = defineComponent({
       props.initialIndex,
     );
     const innerMediaType = ref<'image' | 'video' | null>(null);
-    const loadingState = toVueRef(loadingCtrl.isLoading);
-    const errorState = toVueRef(loadingCtrl.isError);
 
     /**
      * Cache of stable functional components for each slide's `defaultContent`.
@@ -449,7 +447,7 @@ const ReelPlayerContent = defineComponent({
       if (w <= 0 || h0 <= 0) return null;
 
       const renderLoadingOverlay = () => {
-        if (errorState.value) {
+        if (loadingCtrl.isError.value) {
           const errSlot = slots['error'];
           if (errSlot) {
             const scope: LoadingSlotScope = {
@@ -460,7 +458,7 @@ const ReelPlayerContent = defineComponent({
           }
           return h(ErrorIndicator);
         }
-        if (loadingState.value) {
+        if (loadingCtrl.isLoading.value) {
           const loadSlot = slots['loading'];
           if (loadSlot) {
             const scope: LoadingSlotScope = {
@@ -515,7 +513,7 @@ const ReelPlayerContent = defineComponent({
           if (!anyVideo) return null;
         } else {
           if (!activeMediaIsVideo) return null;
-          if (timelineDuration.value < props.timelineMinDurationSeconds) {
+          if (timelineState.duration.value < props.timelineMinDurationSeconds) {
             return null;
           }
         }
@@ -739,9 +737,23 @@ const ReelPlayerContent = defineComponent({
                 },
               },
             ),
-            renderLoadingOverlay(),
+            // Loading, error and duration change several times per slide, and
+            // this render draws the Reel. Read here, each one redraws every
+            // slide with it; read inside an Observe, only the overlay
+            // underneath is drawn again. The regions stay functions: calling
+            // one here would read the signals in this scope and change
+            // nothing.
+            h(
+              Observe,
+              { signals: [loadingCtrl.isLoading, loadingCtrl.isError] },
+              { default: renderLoadingOverlay },
+            ),
             renderControlsNode(),
-            renderTimelineNode(),
+            h(
+              Observe,
+              { signals: [timelineState.duration] },
+              { default: renderTimelineNode },
+            ),
           ]),
           renderNavigationNode(),
         ],

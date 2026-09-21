@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { defineComponent, h, nextTick, ref } from 'vue';
+import { defineComponent, h, nextTick, ref, type Component } from 'vue';
 import {
   SwipeToClose,
   useOverlayUrlState,
@@ -9,6 +9,57 @@ import {
 } from '@reelkit/vue';
 import { LightboxOverlay, LightboxUrlOverlay } from './LightboxOverlay';
 import type { LightboxItem } from './types';
+
+// How many times the slider was asked to draw. The real Reel renders inside
+// the counter, so every test in this file still exercises the real thing.
+const reel = vi.hoisted(() => ({ renders: 0 }));
+
+vi.mock('@reelkit/vue', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@reelkit/vue')>();
+  const {
+    defineComponent: define,
+    h: render,
+    shallowRef,
+  } = await import('vue');
+  const RealReel = actual.Reel as unknown as Component;
+
+  return {
+    ...actual,
+    Reel: define({
+      name: 'CountedReel',
+      inheritAttrs: false,
+      setup(_, { attrs, slots, expose }) {
+        const inner = shallowRef<Record<string, unknown> | null>(null);
+
+        // The overlay keeps the slider's own api in a template ref and calls
+        // it, so the counter has to hand that api through untouched.
+        expose(
+          new Proxy(
+            {},
+            {
+              get: (_target, key) => inner.value?.[key as string],
+              has: (_target, key) =>
+                Boolean(inner.value) && key in inner.value!,
+            },
+          ),
+        );
+
+        return () => {
+          reel.renders++;
+          return render(
+            RealReel,
+            {
+              ...attrs,
+              ref: (el: unknown) =>
+                (inner.value = el as Record<string, unknown> | null),
+            },
+            slots,
+          );
+        };
+      },
+    }),
+  };
+});
 
 const sampleItems: LightboxItem[] = [
   {
@@ -351,5 +402,104 @@ describe('LightboxUrlOverlay', () => {
     await nextTick();
     expect(document.querySelector('.rk-lightbox-overlay')).toBeNull();
     expect(state.query()).not.toContain('photo=99');
+  });
+});
+
+describe('LightboxOverlay slider isolation', () => {
+  const openLightbox = () => {
+    const Host = defineComponent({
+      setup() {
+        return () =>
+          h(LightboxOverlay, {
+            isOpen: true,
+            items: sampleItems,
+            onClose: () => {
+              /* noop */
+            },
+          });
+      },
+    });
+
+    return mount(Host, { attachTo: document.body });
+  };
+
+  const settle = async () => {
+    await nextTick();
+    await nextTick();
+  };
+
+  const setFullscreenElement = (el: Element | null) => {
+    Object.defineProperty(document, 'fullscreenElement', {
+      configurable: true,
+      value: el,
+    });
+    document.dispatchEvent(new Event('fullscreenchange'));
+  };
+
+  beforeEach(() => {
+    reel.renders = 0;
+  });
+
+  afterEach(() => setFullscreenElement(null));
+
+  it('leaves the slider alone when a slide reports it is ready', async () => {
+    openLightbox();
+    await settle();
+
+    reel.renders = 0;
+    document.querySelector('img')?.dispatchEvent(new Event('load'));
+    await settle();
+
+    expect(reel.renders).toBe(0);
+  });
+
+  it('leaves the slider alone when a slide reports an error', async () => {
+    openLightbox();
+    await settle();
+
+    reel.renders = 0;
+    document.querySelector('img')?.dispatchEvent(new Event('error'));
+    await settle();
+
+    expect(reel.renders).toBe(0);
+  });
+
+  it('leaves the slider alone when the window enters fullscreen', async () => {
+    openLightbox();
+    await settle();
+
+    reel.renders = 0;
+    setFullscreenElement(
+      document.querySelector('.rk-lightbox-overlay') ?? document.body,
+    );
+    await settle();
+
+    expect(reel.renders).toBe(0);
+  });
+
+  // Drawing nothing again would also score zero, so each region has to be
+  // shown following the signal it was handed.
+  it('still shows the error state once a slide fails', async () => {
+    openLightbox();
+    await settle();
+    expect(document.querySelector('.rk-lightbox-error')).toBeNull();
+
+    document.querySelector('img')?.dispatchEvent(new Event('error'));
+    await settle();
+
+    expect(document.querySelector('.rk-lightbox-error')).not.toBeNull();
+  });
+
+  it('still swaps the fullscreen control when fullscreen is entered', async () => {
+    openLightbox();
+    await settle();
+    expect(document.querySelector('[title="Enter Fullscreen"]')).not.toBeNull();
+
+    setFullscreenElement(
+      document.querySelector('.rk-lightbox-overlay') ?? document.body,
+    );
+    await settle();
+
+    expect(document.querySelector('[title="Exit Fullscreen"]')).not.toBeNull();
   });
 });

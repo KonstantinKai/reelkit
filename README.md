@@ -14,7 +14,7 @@
   <img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License" />
   <img src="https://img.shields.io/badge/types-TypeScript-blue?logo=typescript&logoColor=white" alt="TypeScript" />
   <img src="https://img.shields.io/badge/core%20gzip-10.1%20kB-6366f1" alt="Bundle size" />
-  <img src="https://img.shields.io/badge/coverage-86%25-green" alt="Statement coverage across all packages" />
+  <img src="https://img.shields.io/badge/coverage-88%25-green" alt="Statement coverage across all packages" />
   <br/>
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
@@ -78,7 +78,6 @@ server-rendering setup end to end:
 | pnpm (repo default) | `pnpm exec nx dev example-next`         | `pnpm exec nx dev example-nuxt` |
 | npm                 | `npx nx dev example-next`               | `npx nx dev example-nuxt`       |
 | yarn                | `yarn nx dev example-next`              | `yarn nx dev example-nuxt`      |
-| bun                 | `bunx nx dev example-next`              | `bunx nx dev example-nuxt`      |
 
 The repo is pinned to pnpm 11 through `packageManager` in `package.json`, so that
 row is the path contributors take; the others work the same once dependencies are
