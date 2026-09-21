@@ -69,3 +69,42 @@ describe('docs-check export enumeration', () => {
     );
   });
 });
+
+// The README rule asks which capabilities a package hands a reader, so it
+// looks at what exists at runtime. A type carrying a capability's name — the
+// props of a component, the shape of a controller — is not the capability, and
+// counting it would demand a README list prop-type aliases to pass.
+describe('docs-check value export enumeration', () => {
+  it('leaves out a type-only block and an inline type specifier', () => {
+    const { valueNames } = publicExportNames(
+      [
+        `export type { LightboxUrlOverlayProps } from './lib/x';`,
+        `export { LightboxUrlOverlay, type SlideProps } from './lib/x';`,
+      ].join('\n'),
+    );
+
+    expect(valueNames).toEqual(['LightboxUrlOverlay']);
+  });
+
+  it('keeps the declarations that exist at runtime and drops the rest', () => {
+    const { valueNames } = publicExportNames(
+      [
+        'export interface Options {}',
+        'export type Mode = 1 | 2;',
+        'export const build = () => 1;',
+        'export function make() {}',
+        'export class Thing {}',
+      ].join('\n'),
+    );
+
+    expect(valueNames).toEqual(['Thing', 'build', 'make']);
+  });
+
+  it('keeps an alias under its published name', () => {
+    const { valueNames } = publicExportNames(
+      `export { internal as TimelineBar } from './lib/x';`,
+    );
+
+    expect(valueNames).toEqual(['TimelineBar']);
+  });
+});

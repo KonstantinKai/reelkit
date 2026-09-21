@@ -61,6 +61,19 @@
       "mirror": "apps/docs/src/content/llms/angular-reel-player.md"
     }
   ],
+  "readmeSurfaces": {
+    "reason": "a package README is what npm shows, and a reader who installs from there never sees the docs site; it must at least name the component or factory behind each headline capability",
+    "patterns": [
+      "UrlOverlay",
+      "UrlStateController",
+      "OverlayUrlState",
+      "ViewedStateController",
+      "TimelineBar",
+      "TimelineProvider",
+      "SwipeToClose"
+    ],
+    "allow": []
+  },
   "mirrorPairs": [
     {
       "page": "apps/docs/src/content/en/docs/core/api.mdx",

@@ -159,6 +159,40 @@ for (const s of config.surfaces) {
   freshBaseline[s.package] = gaps;
 }
 
+// The npm page is a separate surface, and the one most readers meet first: a
+// package README travels with the tarball, while the site is a link they may
+// never follow. Requiring every export there would demand each README restate
+// its whole reference table, so what is required is narrower — the exports
+// naming a headline capability. Those are the ones a README was found to omit
+// for entire releases, so a reader installing the package never learned the
+// feature existed.
+if (config.readmeSurfaces) {
+  const patterns = config.readmeSurfaces.patterns.map((p) => new RegExp(p));
+  const allow = new Set(config.readmeSurfaces.allow ?? []);
+
+  for (const s of config.surfaces) {
+    if (!existsSync(join(root, s.package))) continue;
+    const readme = s.package.replace(/\/src\/index\.ts$/, '/README.md');
+    if (!existsSync(join(root, readme))) {
+      errors.push(
+        `${readme}: published package has no README — npm shows the package with no page at all.`,
+      );
+      continue;
+    }
+
+    const src = read(readme);
+    const { valueNames } = publicExportNames(read(s.package));
+    for (const sym of valueNames) {
+      if (!patterns.some((p) => p.test(sym))) continue;
+      if (allow.has(`${readme}:${sym}`)) continue;
+      if (mentions(src, sym)) continue;
+      errors.push(
+        `${readme}: export \`${sym}\` is a headline capability the README never names — ${config.readmeSurfaces.reason}`,
+      );
+    }
+  }
+}
+
 // Mirrors are condensed, so the heading SETS legitimately differ. What must
 // hold is that headings present in both appear in the same relative order —
 // that is what catches a section moved on one surface but not the other.
