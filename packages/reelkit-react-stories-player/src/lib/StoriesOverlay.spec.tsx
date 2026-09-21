@@ -90,7 +90,7 @@ describe('StoriesOverlay', () => {
     vi.stubGlobal('requestAnimationFrame', (cb: () => void) =>
       setTimeout(cb, 0),
     );
-    vi.stubGlobal('cancelAnimationFrame', vi.fn());
+    vi.stubGlobal('cancelAnimationFrame', (id: number) => clearTimeout(id));
   });
 
   afterEach(() => {
@@ -428,7 +428,7 @@ describe('StoriesOverlay remembering where a viewer got to', () => {
     vi.stubGlobal('requestAnimationFrame', (cb: () => void) =>
       setTimeout(cb, 0),
     );
-    vi.stubGlobal('cancelAnimationFrame', vi.fn());
+    vi.stubGlobal('cancelAnimationFrame', (id: number) => clearTimeout(id));
   });
 
   afterEach(() => {
@@ -602,7 +602,7 @@ describe('StoriesUrlOverlay', () => {
     vi.stubGlobal('requestAnimationFrame', (cb: () => void) =>
       setTimeout(cb, 0),
     );
-    vi.stubGlobal('cancelAnimationFrame', vi.fn());
+    vi.stubGlobal('cancelAnimationFrame', (id: number) => clearTimeout(id));
   });
 
   afterEach(() => {
@@ -770,7 +770,7 @@ describe('StoriesOverlay size', () => {
     vi.stubGlobal('requestAnimationFrame', (cb: () => void) =>
       setTimeout(cb, 0),
     );
-    vi.stubGlobal('cancelAnimationFrame', vi.fn());
+    vi.stubGlobal('cancelAnimationFrame', (id: number) => clearTimeout(id));
   });
 
   afterEach(() => {
@@ -896,7 +896,7 @@ describe('StoriesOverlay desktop carousel', () => {
     vi.stubGlobal('requestAnimationFrame', (cb: () => void) =>
       setTimeout(cb, 0),
     );
-    vi.stubGlobal('cancelAnimationFrame', vi.fn());
+    vi.stubGlobal('cancelAnimationFrame', (id: number) => clearTimeout(id));
     setViewport(1440, 900);
   });
 

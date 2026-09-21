@@ -12,7 +12,7 @@ beforeEach(() => {
   mockVideo.play = playSpy;
   vi.spyOn(shared, 'getVideo').mockReturnValue(mockVideo);
   vi.stubGlobal('requestAnimationFrame', (cb: () => void) => setTimeout(cb, 0));
-  vi.stubGlobal('cancelAnimationFrame', vi.fn());
+  vi.stubGlobal('cancelAnimationFrame', (id: number) => clearTimeout(id));
 });
 
 afterEach(() => {

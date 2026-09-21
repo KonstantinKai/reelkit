@@ -13,7 +13,7 @@ describe('createTimerController', () => {
       frameCallbacks.push(cb);
       return frameCallbacks.length;
     });
-    vi.stubGlobal('cancelAnimationFrame', vi.fn());
+    vi.stubGlobal('cancelAnimationFrame', (id: number) => clearTimeout(id));
   });
 
   afterEach(() => {
