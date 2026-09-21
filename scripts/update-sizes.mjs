@@ -10,7 +10,7 @@
  *   node scripts/update-sizes.mjs --dry-run  # measure & print table only
  */
 
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -106,16 +106,20 @@ function measureNgPackagr(pkg) {
   const jsKB = (jsBuf.length / 1024).toFixed(1);
   const gzipKB = (gzipped.length / 1024).toFixed(1);
 
-  // Measure CSS if present
-  const cssPath = resolve(distDir, 'index.css');
+  // ng-packagr copies each stylesheet next to the bundle and leaves
+  // `styles.css` as nothing but `@import` lines, so what a consumer downloads
+  // is every stylesheet in the directory, not that one file.
   let cssKB = '-';
   let cssGzipKB = '-';
-  try {
-    const cssBuf = readFileSync(cssPath);
+  const stylesheets = readdirSync(distDir)
+    .filter((file) => file.endsWith('.css') && file !== 'styles.css')
+    .sort();
+  if (stylesheets.length > 0) {
+    const cssBuf = Buffer.concat(
+      stylesheets.map((file) => readFileSync(resolve(distDir, file))),
+    );
     cssKB = (cssBuf.length / 1024).toFixed(1);
     cssGzipKB = (gzipSync(cssBuf).length / 1024).toFixed(1);
-  } catch {
-    // no CSS file
   }
 
   return {
