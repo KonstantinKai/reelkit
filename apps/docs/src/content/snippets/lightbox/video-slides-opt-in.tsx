@@ -19,7 +19,7 @@ function Gallery() {
   const [index, setIndex] = useState<number | null>(null);
   const isOpen = index !== null;
   const { renderSlide, renderControls, SoundProvider } =
-    useVideoSlideRenderer(items, isOpen);
+    useVideoSlideRenderer(items);
 
   return (
     <SoundProvider>
