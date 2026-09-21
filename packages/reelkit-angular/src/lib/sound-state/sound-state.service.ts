@@ -1,15 +1,12 @@
 import { DestroyRef, Injectable, inject } from '@angular/core';
-import {
-  createSoundController,
-  toAngularSignal,
-  type SoundController,
-} from '@reelkit/angular';
+import { createSoundController, type SoundController } from '@reelkit/core';
+import { toAngularSignal } from '../signal-bridge/to-angular-signal';
 
 /**
  * Angular DI wrapper around core's {@link createSoundController}.
  *
- * Provided at the component level by `RkReelPlayerOverlayComponent` so that
- * each player instance has its own isolated sound state.
+ * Provided at the component level by each overlay that plays media, so every
+ * overlay instance has its own isolated sound state.
  */
 @Injectable()
 export class SoundStateService {

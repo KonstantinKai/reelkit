@@ -127,6 +127,8 @@ import theming from '../../snippets/angular-lightbox/theming.css?raw';
 
 動画スライドを使うには、`rkLightboxSlide` のテンプレートスロットと `RkLightboxVideoSlideComponent` でオプトインする必要があります。画像だけでよいギャラリーに動画プレイヤーをバンドルしないための設計です。
 
+組み込みのサウンドボタンは、`SoundStateService` が `<rk-lightbox-overlay>` の上で提供されているときだけ表示されます。スライドはあなたのテンプレートから描画されるので、その共有インスタンスだけが切り替えを動画まで届けます。ないときは `setLightboxVideoMuted` で要素を直接操作してください。
+
 <CodeBlock code={videoSupport} language="typescript" />
 
 ## フルスクリーン [#fullscreen]

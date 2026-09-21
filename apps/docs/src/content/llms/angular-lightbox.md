@@ -84,6 +84,8 @@ export class GalleryComponent {
 
 Video slides are opt-in via the `rkLightboxSlide` template slot plus `RkLightboxVideoSlideComponent` (selector `rk-lightbox-video-slide`). This keeps the video player out of the bundle for galleries that only need images.
 
+The built-in sound button appears only when a `SoundStateService` is provided above `<rk-lightbox-overlay>` — that shared instance is what lets a toggle reach the video, since the slide renders from your template. Without one, drive the element directly with `setLightboxVideoMuted`.
+
 ```html
 <rk-lightbox-overlay
   [isOpen]="isOpen"

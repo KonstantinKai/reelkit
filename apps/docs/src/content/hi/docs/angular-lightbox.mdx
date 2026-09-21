@@ -127,6 +127,8 @@ styles और standalone `RkLightboxOverlayComponent` कंपोनेंट �
 
 वीडियो स्लाइड के लिए `rkLightboxSlide` template slot और `RkLightboxVideoSlideComponent` से opt-in करना होता है। इस डिज़ाइन से जिन गैलरी को सिर्फ़ इमेज चाहिए, उनके बंडल में वीडियो प्लेयर नहीं जुड़ता।
 
+अंतर्निर्मित sound button तभी दिखता है जब `SoundStateService` को `<rk-lightbox-overlay>` के ऊपर provide किया गया हो — वही साझा instance toggle को वीडियो तक पहुँचाता है, क्योंकि slide आपके template से render होता है। इसके बिना `setLightboxVideoMuted` से element को सीधे चलाएँ।
+
 <CodeBlock code={videoSupport} language="typescript" />
 
 ## फ़ुलस्क्रीन [#fullscreen]

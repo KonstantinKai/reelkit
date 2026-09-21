@@ -7,6 +7,7 @@ import reelapiInterface from '../../../snippets/angular-api/reelapi-interface.ts
 import templateContext from '../../../snippets/angular-api/template-context.html?raw';
 import rkReelContext from '../../../snippets/angular-api/rk-reel-context.ts?raw';
 import bodylockservice from '../../../snippets/angular-api/bodylockservice.ts?raw';
+import soundstateservice from '../../../snippets/angular-api/soundstateservice.ts?raw';
 import signalBridgeUtilities from '../../../snippets/angular-api/signal-bridge-utilities.ts?raw';
 import createrouterurladapter from '../../../snippets/angular-api/createrouterurladapter.ts?raw';
 import packageExports from '../../../snippets/angular-api/package-exports.ts?raw';
@@ -127,6 +128,23 @@ An `InjectionToken<ReelContextValue>` який надає `rk-reel` своїм �
 | `locked` | `boolean (getter)` | Чи заблоковано body просто зараз |
 | `lock()` | `() => void` | Заблокувати прокручування body й компенсувати ширину смуги прокручування |
 | `unlock()` | `() => void` | Повернути початкові стилі прокручування body |
+
+## SoundStateService [#soundstateservice]
+
+Стан звуку — вимкнено та недоступно — для оверлея, що відтворює медіа, у вигляді сигналів Angular. Надавайте його на компоненті, який володіє медіа, а не в корені, щоб кожен екземпляр оверлея тримав власний стан. Ним користуються всі оверлеї reelkit для Angular — `@reelkit/angular-reel-player` реекспортує той самий клас, тож наявний імпорт звідти працює далі.
+
+Виняток — lightbox: надавайте сервіс **над** `<rk-lightbox-overlay>`, бо його відеослайд рендериться з вашого шаблону й інакше ніколи не побачить екземпляр усередині оверлея.
+
+<CodeBlock code={soundstateservice} language="typescript" />
+
+| Член | Тип | Опис |
+| --- | --- | --- |
+| `muted()` | `Signal<boolean>` | Чи вимкнено звук просто зараз. Початково вимкнено |
+| `disabled()` | `Signal<boolean>` | Істина, поки звуком не можна керувати, і кнопка звуку ховається. Значення задає оверлей — `RkReelPlayerOverlayComponent` піднімає його, поки слайд без відео або в переході |
+| `controller` | `SoundController (getter)` | Базовий `SoundController` із core — передайте його в `syncMutedToVideo`, щоб `<video>` тримався стану звуку |
+| `toggle()` | `() => void` | Перемикає вимкнення звуку |
+| `setDisabled()` | `(value: boolean) => void` | Задає, чи можна керувати звуком просто зараз |
+| `reset()` | `() => void` | Повертає початковий стан: звук вимкнено, керування доступне |
 
 ## Утиліти мосту сигналів [#signal-bridge-utilities]
 

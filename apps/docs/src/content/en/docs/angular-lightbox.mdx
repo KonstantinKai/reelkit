@@ -127,6 +127,8 @@ Four template slot directives allow full customization of the overlay UI without
 
 Video slides require opting in via the `rkLightboxSlide` template slot and the `RkLightboxVideoSlideComponent`. This design avoids bundling the video player for galleries that only need images.
 
+The built-in sound button appears only when a `SoundStateService` is provided above `<rk-lightbox-overlay>` — that shared instance is what lets a toggle reach the video, since the slide renders from your template. Without one, drive the element directly with `setLightboxVideoMuted`.
+
 <CodeBlock code={videoSupport} language="typescript" />
 
 ## Fullscreen [#fullscreen]

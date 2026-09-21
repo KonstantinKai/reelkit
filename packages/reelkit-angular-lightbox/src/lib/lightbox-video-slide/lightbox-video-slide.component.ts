@@ -17,6 +17,8 @@ import {
   captureFrame,
   observeDomEvent,
   createDisposableList,
+  syncMutedToVideo,
+  SoundStateService,
   type DisposableList,
 } from '@reelkit/angular';
 
@@ -29,11 +31,19 @@ const shared = createSharedVideo({
 });
 
 /**
- * Module-scoped muted state mirrored onto the shared video element.
- * Mutated exclusively through {@link setLightboxVideoMuted}.
+ * Module-scoped muted state mirrored onto the shared video element. Used when
+ * no `SoundStateService` is in play; otherwise the service holds the state and
+ * this follows it.
  */
 let currentMuted = true;
 let activeToken: symbol | null = null;
+
+/**
+ * Sound state of the slide currently holding the shared video, when the
+ * consumer provided one. Writing muted through it keeps the service and the
+ * element on the same value, so a later toggle does not revert a direct write.
+ */
+let activeSoundState: SoundStateService | null = null;
 
 /**
  * Set the muted state on the shared video element directly.
@@ -42,6 +52,9 @@ let activeToken: symbol | null = null;
 export const setLightboxVideoMuted = (muted: boolean): void => {
   currentMuted = muted;
   shared.getVideo().muted = muted;
+  if (activeSoundState) {
+    activeSoundState.controller.muted.value = muted;
+  }
 };
 
 /**
@@ -130,6 +143,15 @@ export const setLightboxVideoMuted = (muted: boolean): void => {
 })
 export class RkLightboxVideoSlideComponent implements OnDestroy {
   private readonly ngZone = inject(NgZone);
+
+  /**
+   * Sound state provided above the lightbox, when the consumer wired one. The
+   * overlay's sound button reads the same instance, which is what lets a
+   * toggle reach this element; without one the module-scoped muted value and
+   * `setLightboxVideoMuted` remain the only path.
+   */
+  private readonly _soundState = inject(SoundStateService, { optional: true });
+
   private readonly containerRef =
     viewChild<ElementRef<HTMLDivElement>>('container');
 
@@ -258,8 +280,21 @@ export class RkLightboxVideoSlideComponent implements OnDestroy {
 
     video.pause();
     video.src = src;
-    video.muted = currentMuted;
     video.style.objectFit = 'contain';
+
+    const soundState = this._soundState;
+    if (soundState) {
+      activeSoundState = soundState;
+      // Untracked, like every other signal read here: this runs inside the
+      // activation effect, and subscribing to muted would tear the slide
+      // down and rebuild it on each toggle. The element keeps up through
+      // `syncMutedToVideo`, which listens on the core signal instead.
+      currentMuted = untracked(() => soundState.muted());
+      disposables.push(syncMutedToVideo(soundState.controller, video));
+    } else {
+      video.muted = currentMuted;
+    }
+
     video.currentTime = shared.playbackPositions.get(slideKey) ?? 0;
 
     container.appendChild(video);
@@ -282,6 +317,9 @@ export class RkLightboxVideoSlideComponent implements OnDestroy {
       if (activeToken === token) {
         video.pause();
         activeToken = null;
+        if (activeSoundState === this._soundState) {
+          activeSoundState = null;
+        }
       }
 
       if (video.parentNode === container) {

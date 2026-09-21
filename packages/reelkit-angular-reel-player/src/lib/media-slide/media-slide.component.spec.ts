@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { RkMediaSlideComponent } from './media-slide.component';
-import { SoundStateService } from '../sound-state/sound-state.service';
+import { SoundStateService } from '@reelkit/angular';
 import type { BaseContentItem } from '../types';
 
 // ---------------------------------------------------------------------------
@@ -57,11 +57,18 @@ jest.mock('@reelkit/angular', () => {
     unlock = jest.fn();
   }
 
+  // The sound state service builds on core primitives directly, so mocking
+  // the binding module must not replace it — the specs exercise the real one.
+  const { SoundStateService } = jest.requireActual(
+    '../../../../reelkit-angular/src/lib/sound-state/sound-state.service',
+  ) as typeof import('@reelkit/angular');
+
   return {
     ReelComponent,
     ReelIndicatorComponent,
     RkReelItemDirective,
     BodyLockService,
+    SoundStateService,
     createSharedVideo: jest.fn(() => ({
       getVideo: jest.fn().mockReturnValue(
         Object.assign(document.createElement('video'), {

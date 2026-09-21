@@ -73,6 +73,7 @@ export class AppComponent {
 - `createOverlayUrlState` keeps the open overlay and its slide in the URL, so a link reopens the view
 - `toAngularSignal` / `animatedSignalBridge` bridge core signals into Angular signals
 - `BodyLockService` for scroll locking while an overlay is open
+- `SoundStateService` for muted state on an overlay that plays media
 - `ChangeDetectionStrategy.OnPush` by default
 - Typed with TypeScript
 

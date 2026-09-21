@@ -7,6 +7,7 @@ import reelapiInterface from '../../../snippets/angular-api/reelapi-interface.ts
 import templateContext from '../../../snippets/angular-api/template-context.html?raw';
 import rkReelContext from '../../../snippets/angular-api/rk-reel-context.ts?raw';
 import bodylockservice from '../../../snippets/angular-api/bodylockservice.ts?raw';
+import soundstateservice from '../../../snippets/angular-api/soundstateservice.ts?raw';
 import signalBridgeUtilities from '../../../snippets/angular-api/signal-bridge-utilities.ts?raw';
 import createrouterurladapter from '../../../snippets/angular-api/createrouterurladapter.ts?raw';
 import packageExports from '../../../snippets/angular-api/package-exports.ts?raw';
@@ -127,6 +128,23 @@ Bloqueo del scroll del body con recuento de referencias. Varios llamadores a la 
 | `locked` | `boolean (getter)` | Indica si el body está bloqueado |
 | `lock()` | `() => void` | Bloquea el scroll del body y compensa el ancho de la barra de desplazamiento |
 | `unlock()` | `() => void` | Restaura los estilos de scroll originales del body |
+
+## SoundStateService [#soundstateservice]
+
+Estado de silencio y de desactivado para un overlay que reproduce medios, como signals de Angular. Proporciónalo en el componente dueño del medio y no en la raíz, así cada overlay conserva su propio estado. Todos los overlays de Angular de reelkit lo usan: `@reelkit/angular-reel-player` reexporta la misma clase, de modo que un import que ya existiera desde allí sigue funcionando.
+
+El lightbox es la excepción: proporciónalo **por encima** de `<rk-lightbox-overlay>`, ya que su diapositiva de vídeo se renderiza desde tu propia plantilla y nunca vería la instancia de dentro del overlay.
+
+<CodeBlock code={soundstateservice} language="typescript" />
+
+| Miembro | Tipo | Descripción |
+| --- | --- | --- |
+| `muted()` | `Signal<boolean>` | Si el audio está silenciado ahora mismo. Empieza silenciado |
+| `disabled()` | `Signal<boolean>` | Verdadero mientras el sonido no se puede controlar, y el botón de sonido se oculta. Lo marca el overlay: `RkReelPlayerOverlayComponent` lo levanta mientras la diapositiva no tiene vídeo o está en transición |
+| `controller` | `SoundController (getter)` | El `SoundController` de core que hay debajo: pásalo a `syncMutedToVideo` para que un `<video>` siga el estado de silencio |
+| `toggle()` | `() => void` | Alterna el silencio |
+| `setDisabled()` | `(value: boolean) => void` | Define si el sonido se puede controlar ahora |
+| `reset()` | `() => void` | Vuelve al estado inicial: silenciado y sin desactivar |
 
 ## Utilidades del puente de señales [#signal-bridge-utilities]
 

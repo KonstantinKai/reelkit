@@ -7,7 +7,7 @@ import {
 import { By } from '@angular/platform-browser';
 import { signal, NgZone } from '@angular/core';
 import { RkVideoSlideComponent } from './video-slide.component';
-import { SoundStateService } from '../sound-state/sound-state.service';
+import { SoundStateService } from '@reelkit/angular';
 
 // ---------------------------------------------------------------------------
 // Mock @reelkit/angular — factory must not reference variables outside the
@@ -29,7 +29,14 @@ jest.mock('@reelkit/angular', () => {
     capturedFrames: new Map<string, string>(),
     playbackPositions: new Map<string, number>(),
   };
+  // The sound state service builds on core primitives directly, so mocking
+  // the binding module must not replace it — the specs exercise the real one.
+  const { SoundStateService } = jest.requireActual(
+    '../../../../reelkit-angular/src/lib/sound-state/sound-state.service',
+  ) as typeof import('@reelkit/angular');
+
   return {
+    SoundStateService,
     createSharedVideo: jest.fn(() => shared),
     captureFrame: jest.fn().mockReturnValue(null),
     observeDomEvent: jest.fn(

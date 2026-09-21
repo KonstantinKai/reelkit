@@ -127,6 +127,8 @@ import theming from '../../snippets/angular-lightbox/theming.css?raw';
 
 视频幻灯片需要通过 `rkLightboxSlide` 模板插槽和 `RkLightboxVideoSlideComponent`显式启用。这样设计是为了让只需要图片的画廊不必打包视频播放器。
 
+只有当 `SoundStateService` 提供在 `<rk-lightbox-overlay>` 之上时，内置声音按钮才会出现 —— 正是这个共享实例让切换能作用到视频，因为幻灯片由你的模板渲染。没有它就用 `setLightboxVideoMuted` 直接控制元素。
+
 <CodeBlock code={videoSupport} language="typescript" />
 
 ## 全屏 [#fullscreen]

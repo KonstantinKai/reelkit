@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   OnDestroy,
   effect,
+  inject,
   signal,
 } from '@angular/core';
 import {
@@ -21,7 +22,10 @@ import {
   slideTransition,
   type LightboxItem,
 } from '@reelkit/angular-lightbox';
-import type { TransitionTransformFn } from '@reelkit/angular';
+import {
+  SoundStateService,
+  type TransitionTransformFn,
+} from '@reelkit/angular';
 import { cdnUrl } from '@reelkit/example-data';
 
 const _kTransitions: { label: string; fn: TransitionTransformFn }[] = [
@@ -83,6 +87,10 @@ const sampleItems: LightboxItem[] = [
     RkFullscreenButtonComponent,
     RkSoundButtonComponent,
   ],
+  // Provided here, above the overlay: the video slide is rendered from this
+  // page's own template, so this is the one place both it and the lightbox's
+  // controls can reach the same sound state.
+  providers: [SoundStateService],
   styleUrls: ['../image-preview/image-preview-page.css'],
   template: `
     <div class="image-gallery-page">
@@ -172,7 +180,10 @@ const sampleItems: LightboxItem[] = [
               [isFullscreen]="isFullscreen"
               (toggled)="onToggleFullscreen()"
             />
-            <rk-sound-button [muted]="isMuted()" (toggled)="toggleMute()" />
+            <rk-sound-button
+              [muted]="soundState.muted()"
+              (toggled)="soundState.toggle()"
+            />
           </div>
           <rk-close-button (clicked)="onClose()" />
         </ng-template>
@@ -214,7 +225,9 @@ export class ImagePreviewVideoPageComponent implements OnDestroy {
   protected readonly previewIndex = signal<number | null>(null);
   protected readonly transitionFn =
     signal<TransitionTransformFn>(slideTransition);
-  protected readonly isMuted = signal(true);
+
+  /** Shared with `rk-lightbox-video-slide` through the provider above. */
+  protected readonly soundState = inject(SoundStateService);
 
   // Disable mobile pull-to-refresh while the lightbox is open so the
   // `swipeToCloseDirection: 'down'` gesture is not preempted.
@@ -231,18 +244,11 @@ export class ImagePreviewVideoPageComponent implements OnDestroy {
 
   protected onClose(): void {
     this.previewIndex.set(null);
-    // Reset to muted when lightbox closes so next open can autoplay.
-    this.isMuted.set(true);
-    setLightboxVideoMuted(true);
-  }
-
-  protected toggleMute(): void {
-    const next = !this.isMuted();
-    this.isMuted.set(next);
-    setLightboxVideoMuted(next);
   }
 
   ngOnDestroy(): void {
+    // Leaving the page drops the shared video too; mute so the next open
+    // starts silent and is allowed to autoplay.
     setLightboxVideoMuted(true);
   }
 

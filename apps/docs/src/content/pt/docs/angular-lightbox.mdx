@@ -127,6 +127,8 @@ Quatro diretivas de slot de template permitem personalizar por completo a interf
 
 Para ter slides de vídeo é preciso optar por eles, pelo slot de template `rkLightboxSlide` e pelo `RkLightboxVideoSlideComponent`. Esse desenho evita embutir o player de vídeo em galerias que só precisam de imagens.
 
+O botão de som embutido só aparece quando um `SoundStateService` é fornecido acima de `<rk-lightbox-overlay>`: é essa instância compartilhada que faz o toque chegar ao vídeo, já que o slide vem do seu template. Sem ela, controle o elemento direto com `setLightboxVideoMuted`.
+
 <CodeBlock code={videoSupport} language="typescript" />
 
 ## Tela cheia [#fullscreen]

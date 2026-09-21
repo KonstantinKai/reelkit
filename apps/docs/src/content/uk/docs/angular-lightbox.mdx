@@ -127,6 +127,8 @@ import theming from '../../snippets/angular-lightbox/theming.css?raw';
 
 Слайди-відео вмикаються через шаблонний слот `rkLightboxSlide` та `RkLightboxVideoSlideComponent`. Так відеоплеєр не потрапляє в бандл галерей, яким потрібні лише зображення.
 
+Вбудована кнопка звуку з'являється лише тоді, коли `SoundStateService` надано над `<rk-lightbox-overlay>`: саме цей спільний екземпляр дає перемиканню дістатися до відео, адже слайд рендериться з вашого шаблону. Без нього керуйте елементом напряму через `setLightboxVideoMuted`.
+
 <CodeBlock code={videoSupport} language="typescript" />
 
 ## Повний екран [#fullscreen]

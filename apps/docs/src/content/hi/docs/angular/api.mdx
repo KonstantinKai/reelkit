@@ -7,6 +7,7 @@ import reelapiInterface from '../../../snippets/angular-api/reelapi-interface.ts
 import templateContext from '../../../snippets/angular-api/template-context.html?raw';
 import rkReelContext from '../../../snippets/angular-api/rk-reel-context.ts?raw';
 import bodylockservice from '../../../snippets/angular-api/bodylockservice.ts?raw';
+import soundstateservice from '../../../snippets/angular-api/soundstateservice.ts?raw';
 import signalBridgeUtilities from '../../../snippets/angular-api/signal-bridge-utilities.ts?raw';
 import createrouterurladapter from '../../../snippets/angular-api/createrouterurladapter.ts?raw';
 import packageExports from '../../../snippets/angular-api/package-exports.ts?raw';
@@ -127,6 +128,23 @@ reference गिनने वाला body scroll lock। एक साथ क�
 | `locked` | `boolean (getter)` | body अभी lock है या नहीं |
 | `lock()` | `() => void` | body का स्क्रॉल lock करता है और scrollbar की चौड़ाई की भरपाई लगाता है |
 | `unlock()` | `() => void` | body के स्क्रॉल की मूल styles वापस लाता है |
+
+## SoundStateService [#soundstateservice]
+
+media चलाने वाले overlay की muted और disabled स्थिति, Angular signals के रूप में। इसे root पर नहीं, बल्कि उस component पर provide करें जिसके पास media है — तब हर overlay अपनी अलग स्थिति रखता है। reelkit का हर Angular overlay यही सेवा इस्तेमाल करता है — `@reelkit/angular-reel-player` भी वही class दोबारा export करता है, इसलिए वहाँ से किया गया पुराना import वैसे ही चलता रहता है।
+
+lightbox अपवाद है: सेवा को `<rk-lightbox-overlay>` के **ऊपर** provide करें, क्योंकि उसका video slide आपके अपने template से render होता है और overlay के भीतर बने instance को कभी नहीं देख पाएगा।
+
+<CodeBlock code={soundstateservice} language="typescript" />
+
+| सदस्य | टाइप | विवरण |
+| --- | --- | --- |
+| `muted()` | `Signal<boolean>` | अभी आवाज़ बंद है या नहीं। शुरुआत muted से होती है |
+| `disabled()` | `Signal<boolean>` | जब तक आवाज़ पर नियंत्रण संभव नहीं, तब तक true और sound button छिपा रहता है। इसे overlay तय करता है — `RkReelPlayerOverlayComponent` इसे तब उठाता है जब slide में वीडियो न हो या वह बदल रहा हो |
+| `controller` | `SoundController (getter)` | नीचे मौजूद core का `SoundController` — इसे `syncMutedToVideo` को दें ताकि `<video>` muted स्थिति के साथ चलता रहे |
+| `toggle()` | `() => void` | muted स्थिति बदलता है |
+| `setDisabled()` | `(value: boolean) => void` | तय करता है कि अभी आवाज़ पर नियंत्रण है या नहीं |
+| `reset()` | `() => void` | शुरुआती स्थिति लौटाता है: muted, disabled नहीं |
 
 ## सिग्नल ब्रिज यूटिलिटी [#signal-bridge-utilities]
 

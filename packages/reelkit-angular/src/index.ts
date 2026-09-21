@@ -6,8 +6,9 @@
  * {@link ReelComponent} is the slider itself — a virtualized, gesture-driven
  * carousel that renders only the slides around the active one. Everything else
  * here supports it: {@link ReelIndicatorComponent} for dots,
- * {@link RkReelItemDirective} for slide templates, {@link BodyLockService} and
- * {@link RkSwipeToCloseDirective} for overlay behaviour.
+ * {@link RkReelItemDirective} for slide templates, {@link BodyLockService},
+ * {@link SoundStateService} and {@link RkSwipeToCloseDirective} for overlay
+ * behaviour.
  *
  * Core is framework-agnostic and exposes its own reactive primitives, so
  * {@link toAngularSignal} bridges a core `Signal` into an Angular one. Read a
@@ -60,6 +61,7 @@ export {
 } from './lib/context/reel-context';
 
 export { BodyLockService } from './lib/body-lock/body-lock.service';
+export { SoundStateService } from './lib/sound-state/sound-state.service';
 
 export { toAngularSignal } from './lib/signal-bridge/to-angular-signal';
 export { animatedSignalBridge } from './lib/signal-bridge/animated-signal-bridge';

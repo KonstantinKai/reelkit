@@ -93,7 +93,7 @@
     "/docs/angular/api": {
       "source": "content/en/docs/angular/api.mdx",
       "translation": "content/uk/docs/angular/api.mdx",
-      "sha": "61f4c1b37f4bb9feca902c85c3916e33f098ccc9"
+      "sha": "2c1437092938b42c54fee52a06acc7221d71fa9f"
     },
     "/docs/angular-reel-player": {
       "source": "content/en/docs/angular-reel-player.mdx",
@@ -103,7 +103,7 @@
     "/docs/angular-lightbox": {
       "source": "content/en/docs/angular-lightbox.mdx",
       "translation": "content/uk/docs/angular-lightbox.mdx",
-      "sha": "d21ef62e76d636411f7d0e9756595c337f6915dd"
+      "sha": "2a69b73adc6458d72c07a7c979dd3f7934e70049"
     },
     "/docs/angular-stories-player": {
       "source": "content/en/docs/angular-stories-player.mdx",
@@ -215,7 +215,7 @@
     "/docs/angular/api": {
       "source": "content/en/docs/angular/api.mdx",
       "translation": "content/zh/docs/angular/api.mdx",
-      "sha": "61f4c1b37f4bb9feca902c85c3916e33f098ccc9"
+      "sha": "2c1437092938b42c54fee52a06acc7221d71fa9f"
     },
     "/docs/angular-reel-player": {
       "source": "content/en/docs/angular-reel-player.mdx",
@@ -225,7 +225,7 @@
     "/docs/angular-lightbox": {
       "source": "content/en/docs/angular-lightbox.mdx",
       "translation": "content/zh/docs/angular-lightbox.mdx",
-      "sha": "d21ef62e76d636411f7d0e9756595c337f6915dd"
+      "sha": "2a69b73adc6458d72c07a7c979dd3f7934e70049"
     },
     "/docs/angular-stories-player": {
       "source": "content/en/docs/angular-stories-player.mdx",
@@ -337,7 +337,7 @@
     "/docs/angular/api": {
       "source": "content/en/docs/angular/api.mdx",
       "translation": "content/pt/docs/angular/api.mdx",
-      "sha": "61f4c1b37f4bb9feca902c85c3916e33f098ccc9"
+      "sha": "2c1437092938b42c54fee52a06acc7221d71fa9f"
     },
     "/docs/angular-reel-player": {
       "source": "content/en/docs/angular-reel-player.mdx",
@@ -347,7 +347,7 @@
     "/docs/angular-lightbox": {
       "source": "content/en/docs/angular-lightbox.mdx",
       "translation": "content/pt/docs/angular-lightbox.mdx",
-      "sha": "d21ef62e76d636411f7d0e9756595c337f6915dd"
+      "sha": "2a69b73adc6458d72c07a7c979dd3f7934e70049"
     },
     "/docs/angular-stories-player": {
       "source": "content/en/docs/angular-stories-player.mdx",
@@ -459,7 +459,7 @@
     "/docs/angular/api": {
       "source": "content/en/docs/angular/api.mdx",
       "translation": "content/ja/docs/angular/api.mdx",
-      "sha": "61f4c1b37f4bb9feca902c85c3916e33f098ccc9"
+      "sha": "2c1437092938b42c54fee52a06acc7221d71fa9f"
     },
     "/docs/angular-reel-player": {
       "source": "content/en/docs/angular-reel-player.mdx",
@@ -469,7 +469,7 @@
     "/docs/angular-lightbox": {
       "source": "content/en/docs/angular-lightbox.mdx",
       "translation": "content/ja/docs/angular-lightbox.mdx",
-      "sha": "d21ef62e76d636411f7d0e9756595c337f6915dd"
+      "sha": "2a69b73adc6458d72c07a7c979dd3f7934e70049"
     },
     "/docs/angular-stories-player": {
       "source": "content/en/docs/angular-stories-player.mdx",
@@ -581,7 +581,7 @@
     "/docs/angular/api": {
       "source": "content/en/docs/angular/api.mdx",
       "translation": "content/hi/docs/angular/api.mdx",
-      "sha": "61f4c1b37f4bb9feca902c85c3916e33f098ccc9"
+      "sha": "2c1437092938b42c54fee52a06acc7221d71fa9f"
     },
     "/docs/angular-reel-player": {
       "source": "content/en/docs/angular-reel-player.mdx",
@@ -591,7 +591,7 @@
     "/docs/angular-lightbox": {
       "source": "content/en/docs/angular-lightbox.mdx",
       "translation": "content/hi/docs/angular-lightbox.mdx",
-      "sha": "d21ef62e76d636411f7d0e9756595c337f6915dd"
+      "sha": "2a69b73adc6458d72c07a7c979dd3f7934e70049"
     },
     "/docs/angular-stories-player": {
       "source": "content/en/docs/angular-stories-player.mdx",
@@ -703,7 +703,7 @@
     "/docs/angular/api": {
       "source": "content/en/docs/angular/api.mdx",
       "translation": "content/es/docs/angular/api.mdx",
-      "sha": "61f4c1b37f4bb9feca902c85c3916e33f098ccc9"
+      "sha": "2c1437092938b42c54fee52a06acc7221d71fa9f"
     },
     "/docs/angular-reel-player": {
       "source": "content/en/docs/angular-reel-player.mdx",
@@ -713,7 +713,7 @@
     "/docs/angular-lightbox": {
       "source": "content/en/docs/angular-lightbox.mdx",
       "translation": "content/es/docs/angular-lightbox.mdx",
-      "sha": "d21ef62e76d636411f7d0e9756595c337f6915dd"
+      "sha": "2a69b73adc6458d72c07a7c979dd3f7934e70049"
     },
     "/docs/angular-stories-player": {
       "source": "content/en/docs/angular-stories-player.mdx",

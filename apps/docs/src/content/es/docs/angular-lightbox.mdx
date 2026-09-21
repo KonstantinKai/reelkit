@@ -127,6 +127,8 @@ Las directivas de slots de plantilla permiten personalizar por completo la inter
 
 Los slides de vídeo se activan con el slot de plantilla `rkLightboxSlide` y el `RkLightboxVideoSlideComponent`. Así, las galerías que solo necesitan imágenes no incluyen el reproductor de vídeo en el bundle.
 
+El botón de sonido integrado solo aparece cuando hay un `SoundStateService` proporcionado por encima de `<rk-lightbox-overlay>`: esa instancia compartida es lo que permite que el cambio llegue al vídeo, porque la diapositiva viene de tu plantilla. Sin ella, controla el elemento directamente con `setLightboxVideoMuted`.
+
 <CodeBlock code={videoSupport} language="typescript" />
 
 ## Pantalla completa [#fullscreen]

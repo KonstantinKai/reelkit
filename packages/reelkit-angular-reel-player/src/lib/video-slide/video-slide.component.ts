@@ -20,8 +20,8 @@ import {
   observeDomEvent,
   createDisposableList,
   syncVideoObjectFit,
+  SoundStateService,
 } from '@reelkit/angular';
-import { SoundStateService } from '../sound-state/sound-state.service';
 import { TimelineStateService } from '../timeline-state/timeline-state.service';
 
 /**
