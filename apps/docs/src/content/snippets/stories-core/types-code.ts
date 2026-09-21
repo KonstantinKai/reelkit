@@ -36,3 +36,23 @@ interface VisibleWindow {
 }
 
 type TapAction = 'prev' | 'next';
+
+interface CarouselSlot {
+  x: number;
+  width: number;
+  height: number;
+}
+
+interface RingPresentationOptions {
+  totalStories: number;
+  viewedCount: number;
+  size: number; // px
+  gradientColors?: string[];
+  viewedColor?: string;
+}
+
+interface RingPresentation {
+  avatarSize: number;
+  className: string;
+  style: Record<string, string>;
+}

@@ -12,6 +12,7 @@ import usesoundstate from '../../../snippets/vue-api/usesoundstate.ts?raw';
 import usevuerouterurladapter from '../../../snippets/vue-api/usevuerouterurladapter.ts?raw';
 import tovueref from '../../../snippets/vue-api/tovueref.ts?raw';
 import soundprovider from '../../../snippets/vue-api/soundprovider.vue?raw';
+import observe from '../../../snippets/vue-api/observe.vue?raw';
 import packageExports from '../../../snippets/vue-api/package-exports.ts?raw';
 
 完整参考： `@reelkit/vue` 的组件、组合式函数与工具。
@@ -213,6 +214,22 @@ A `UrlAdapter` ，底层用 Vue Router。在带路由的应用里把它作为 `a
 订阅会通过 `onScopeDispose`自动销毁，因此必须在 Vue 的 `setup()` 或其他能感知 effect 作用域的上下文中调用。
 
 <CodeBlock code={tovueref} language="typescript" />
+
+## Observe [#observe]
+
+标签：`<Observe :signals="[…]">` —— 任一信号变化时只重新渲染它的默认插槽，周围的一切都不动。
+
+在渲染函数或模板里读取核心信号并不会自动订阅它。通常的做法是 [`toVueRef`](#tovueref)，但它把信号绑定到调用它的那个组件上，因此频繁变化的信号会让整个组件重新渲染。`Observe` 是更窄的边界：把它套在显示该值的那部分外面，组件的其余部分就原地不动。故事播放器正是用它来刷新头部和进度条，而不重绘两个滑块。
+
+| Prop | 类型 | 说明 |
+| --- | --- | --- |
+| `signals` | `readonly Subscribable[]` | 要跟随的信号。换成另一组会重新订阅，还是同一组则保持不变。卸载时全部释放。 |
+
+属性类型以 `ObserveProps` 导出。
+
+<CodeBlock code={observe} language="vue" />
+
+整个组件都跟随信号时用 `toVueRef`，只有其中一块跟随时用 `Observe`。
 
 ## SoundProvider [#soundprovider]
 

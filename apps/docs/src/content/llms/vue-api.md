@@ -183,6 +183,28 @@ const ctx = useReelContext();
 - `useFullscreen(options)` — manages the Fullscreen API with cross-browser support; exits fullscreen automatically on unmount. Takes `UseFullscreenOptions` (`elementRef`) and returns `UseFullscreenReturn`: `isFullscreen` (`Signal<boolean>`), `request()`, `exit()`, `toggle()`.
 - `useSoundState()` — reads the current `SoundController` from context. Must be called inside a `<SoundProvider>`; throws when called outside.
 
+## Observe
+
+`<Observe :signals="[…]">` — re-renders ONLY its default slot when one of the signals changes.
+
+Reading core signal in render/template does not subscribe. `toVueRef` binds signal to whole component → every change re-renders all of it. `Observe` = narrower boundary, region only. Stories player uses it to repaint header + progress bar without redrawing sliders.
+
+| Prop      | Type                      | Notes                                                                      |
+| --------- | ------------------------- | -------------------------------------------------------------------------- |
+| `signals` | `readonly Subscribable[]` | different set → subscription swapped; same set → kept; released on unmount |
+
+Props type exported `ObserveProps`.
+
+```vue
+<template>
+  <Observe :signals="[timer.progress]">
+    <progress :value="timer.progress.value" max="1" />
+  </Observe>
+</template>
+```
+
+Whole component follows signal → `toVueRef`. Only a region → `Observe`.
+
 ## SoundProvider
 
 `<SoundProvider>` creates a `SoundController` instance and provides it to descendants via `RK_SOUND_KEY`. Renders its default slot transparently.

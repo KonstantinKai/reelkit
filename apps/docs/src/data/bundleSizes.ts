@@ -49,8 +49,8 @@ export const kBundleSizes: BundleSize[] = [
   },
   {
     name: '@reelkit/react-stories-player',
-    js: '25.1 kB',
-    gzip: '7.7 kB',
+    js: '24.1 kB',
+    gzip: '7.1 kB',
     css: '9.7 kB',
     cssGzip: '2.0 kB',
     framework: 'react',
@@ -81,8 +81,8 @@ export const kBundleSizes: BundleSize[] = [
   },
   {
     name: '@reelkit/vue',
-    js: '14.4 kB',
-    gzip: '5.0 kB',
+    js: '14.8 kB',
+    gzip: '5.1 kB',
     css: '-',
     cssGzip: '-',
     framework: 'vue',
@@ -101,6 +101,14 @@ export const kBundleSizes: BundleSize[] = [
     gzip: '4.1 kB',
     css: '6.8 kB',
     cssGzip: '1.4 kB',
+    framework: 'vue',
+  },
+  {
+    name: '@reelkit/vue-stories-player',
+    js: '24.1 kB',
+    gzip: '7.4 kB',
+    css: '9.7 kB',
+    cssGzip: '2.0 kB',
     framework: 'vue',
   },
 ];
@@ -125,7 +133,7 @@ export const kLibraryComparison: LibraryWeight[] = [
   },
   {
     name: 'ReelKit (core + vue)',
-    gzip: '15.0 kB',
+    gzip: '15.1 kB',
     virtualization: true,
   },
   {

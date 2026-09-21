@@ -10,6 +10,12 @@
  * framework-agnostic canvas progress bar rendering, and pure functions
  * for tap zone detection ({@link getTapAction}) and progress bar
  * computation ({@link getSegments}, {@link getVisibleWindow}).
+ *
+ * The layout helpers every binding shares live here too: the story canvas
+ * size ({@link getStoriesSize}), the desktop carousel geometry
+ * ({@link getCarouselSlot} and its neighbours), the ring look
+ * ({@link getRingPresentation}) and the relative time label
+ * ({@link formatTimeAgo}).
  */
 
 export type {
@@ -50,3 +56,24 @@ export {
   type CanvasProgressRendererConfig,
   type CanvasProgressRenderer,
 } from './lib/canvasProgressRenderer';
+
+export {
+  getStoriesSize,
+  isMobileWidth,
+  parseDurationMs,
+  getCardSize,
+  getCarouselSlot,
+  getCardOffsets,
+  isCardShown,
+  getSlotOffset,
+  getSlideGroupIndexes,
+  type CarouselSlot,
+} from './lib/layout';
+
+export { formatTimeAgo } from './lib/timeAgo';
+
+export {
+  getRingPresentation,
+  type RingPresentationOptions,
+  type RingPresentation,
+} from './lib/ringPresentation';

@@ -46,6 +46,11 @@
       "mirror": "apps/docs/src/content/llms/vue-reel-player.md"
     },
     {
+      "package": "packages/reelkit-vue-stories-player/src/index.ts",
+      "page": "apps/docs/src/content/en/docs/vue-stories-player.mdx",
+      "mirror": "apps/docs/src/content/llms/vue-stories-player.md"
+    },
+    {
       "package": "packages/reelkit-angular/src/index.ts",
       "page": "apps/docs/src/content/en/docs/angular/api.mdx",
       "mirror": "apps/docs/src/content/llms/angular-api.md"
@@ -122,6 +127,10 @@
     {
       "page": "apps/docs/src/content/en/docs/vue-reel-player.mdx",
       "mirror": "apps/docs/src/content/llms/vue-reel-player.md"
+    },
+    {
+      "page": "apps/docs/src/content/en/docs/vue-stories-player.mdx",
+      "mirror": "apps/docs/src/content/llms/vue-stories-player.md"
     },
     {
       "page": "apps/docs/src/content/en/docs/angular/api.mdx",

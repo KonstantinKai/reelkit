@@ -14,6 +14,9 @@ const links = [
   { to: '/image-preview-url', label: 'URL Image Gallery' },
   { to: '/image-preview-custom', label: 'Custom Gallery' },
   { to: '/image-preview-video', label: 'Video Gallery' },
+  { to: '/stories-player', label: 'Stories Player' },
+  { to: '/stories-player-url', label: 'URL Stories Player' },
+  { to: '/stories-player-custom', label: 'Custom Stories' },
 ];
 </script>
 

@@ -205,8 +205,76 @@ Pure functions for tap zone detection and progress bar math.
 | `getSegments(totalStories, activeIndex, progress)` | `(number, number, number) => SegmentState[]` | Computes status and fill percentage of each segment in a progress bar |
 | `getVisibleWindow(totalStories, activeIndex, progress, containerWidth, minSegmentWidth?, gap?)` | `(number, number, number, number, number?, number?) => VisibleWindow` | Computes the visible sliding window of segments when total count exceeds container capacity |
 
+## Layout Helpers [#layout-helpers]
+
+Pure functions every binding's player shares, so the React, Vue and Angular players size and lay out identically. A binding calls them; an app only needs them when it builds a player of its own.
+
+### Sizing [#sizing]
+
+| Function | Type | Description |
+| --- | --- | --- |
+| `getStoriesSize()` | `() => [number, number]` | Size of the story canvas. A phone fills the screen; a desktop fills the window height less a 16px margin at 9:16, narrowing only when the canvas and both arrows would not fit across. Returns `[0, 0]` with no window, so server rendering is safe. |
+| `isMobileWidth(viewportWidth)` | `(number) => boolean` | Whether a viewport of this width uses the phone layout. 768 and below counts as a phone, matching the stylesheet. |
+| `parseDurationMs(value)` | `(string) => number` | Longest time in a computed `transition-duration` list, in milliseconds. Anything that is not a time counts as none. |
+
+### Desktop carousel geometry [#desktop-carousel-geometry]
+
+Offsets are relative to the active group: negative to the left, positive to the right, `0` for the active story itself.
+
+| Function | Type | Description |
+| --- | --- | --- |
+| `getCardSize(activeSize)` | `([number, number]) => [number, number]` | Side card size: 0.4 of the active story's height, at the same 9:16 shape. |
+| `getCarouselSlot(offset, activeSize)` | `(number, [number, number]) => CarouselSlot` | Where a card sits relative to the window center: `{ x, width, height }`. The first card on each side clears the arrow; each further one adds a card width and a gap. |
+| `getCardOffsets(activeGroupIndex, groupCount)` | `(number, number) => number[]` | Offsets of the cards drawn around the active group at rest, up to two a side, the active one excluded. |
+| `isCardShown(offset)` | `(number) => boolean` | Whether a card that far out is drawn rather than faded. |
+| `getSlotOffset(offset)` | `(number) => number` | Slot a card moves to, clamped one place past the shown ones, so a card slides in from beside the last visible one. |
+| `getSlideGroupIndexes(from, to, groupCount)` | `(number, number, number) => number[]` | Groups a slide between two groups draws: the cards around each end, in group order. The groups a far jump passes over are left out. |
+
+### Presentation [#presentation]
+
+| Function | Type | Description |
+| --- | --- | --- |
+| `getRingPresentation(options)` | `(RingPresentationOptions) => RingPresentation` | Class name, inline style and avatar size of a story ring, from `totalStories`, `viewedCount` and `size`. Anything left to watch gets the rotating conic gradient, a fully watched group a flat `viewedColor`, an empty group no ring. Sizes carry their `px` unit, so the style object works in any framework. |
+| `formatTimeAgo(date)` | `(string \| Date) => string` | Short relative time the header and the carousel cards show: `now`, `5m`, `3h`, `2d`, `2w`. |
+
+The `CarouselSlot`, `RingPresentation` and `RingPresentationOptions` types are exported alongside them.
+
 ## Types [#types]
 
 All type definitions exported from `@reelkit/stories-core`.
 
 <CodeBlock code={typesCode} />
+
+This package is the engine, not a player: it holds the state machine, the timer and the geometry, and leaves the rendering to a binding. Reach for a ready-made player first, and for the framework binding — the virtualized `Reel`, the signal bridge, the overlay helpers — when you build one of your own.
+
+<NextSteps
+        items={[
+          {
+            label: 'Stories Player',
+            path: {
+              react: '/docs/stories-player',
+              angular: '/docs/angular-stories-player',
+              vue: '/docs/vue-stories-player',
+            },
+            description: 'the ready-made player built on this engine',
+          },
+          {
+            label: 'Framework Guide',
+            path: {
+              react: '/docs/react/guide',
+              angular: '/docs/angular/guide',
+              vue: '/docs/vue/guide',
+            },
+            description: 'the binding a player of your own renders with',
+          },
+          {
+            label: 'Framework API Reference',
+            path: {
+              react: '/docs/react/api',
+              angular: '/docs/angular/api',
+              vue: '/docs/vue/api',
+            },
+            description: 'slider props, signal bridges, overlay helpers',
+          },
+        ]}
+      />

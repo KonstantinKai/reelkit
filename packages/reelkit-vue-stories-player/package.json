@@ -1,0 +1,64 @@
+{
+  "name": "@reelkit/vue-stories-player",
+  "version": "0.0.1",
+  "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./styles.css": "./dist/index.css"
+  },
+  "files": [
+    "dist",
+    "!dist/package.json",
+    "!dist/README.md",
+    "!**/*.tsbuildinfo"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KonstantinKai/reelkit.git",
+    "directory": "packages/reelkit-vue-stories-player"
+  },
+  "bugs": "https://github.com/KonstantinKai/reelkit/issues",
+  "homepage": "https://reelkit.dev/docs/vue-stories-player",
+  "funding": {
+    "type": "buymeacoffee",
+    "url": "https://buymeacoffee.com/konstantinkai"
+  },
+  "description": "Instagram-style stories player overlay for Vue 3 with cube transitions and auto-advance",
+  "license": "MIT",
+  "keywords": [
+    "vue",
+    "vue3",
+    "stories",
+    "instagram-stories",
+    "stories-player",
+    "fullscreen",
+    "swipe",
+    "touch",
+    "auto-advance",
+    "overlay",
+    "vue-component",
+    "typescript"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "@reelkit/vue": "workspace:^",
+    "vue": ">=3.0.0",
+    "lucide-vue-next": ">=0.400.0"
+  },
+  "dependencies": {
+    "@reelkit/stories-core": "workspace:^"
+  }
+}

@@ -35,6 +35,9 @@ import {
   createStoriesController,
   createTimerController,
   getTapAction,
+  getStoriesSize,
+  isMobileWidth,
+  parseDurationMs,
   type StoryItem,
   type StoriesGroup,
   type StoriesViewedStateController,
@@ -58,7 +61,6 @@ import { ImageStorySlide } from './ImageStorySlide';
 import { VideoStorySlide, shared as sharedVideo } from './VideoStorySlide';
 import { SwipeToClose, type GestureCommonEvent } from '@reelkit/react';
 import { HeartAnimation } from './HeartAnimation';
-import { getSize, isMobileWidth, parseDurationMs } from './layout';
 import { StoriesCarousel, type CarouselSlide } from './StoriesCarousel';
 import { useAttachViewedState } from './useAttachViewedState';
 import './StoriesOverlay.css';
@@ -485,7 +487,7 @@ function StoriesContent<T extends StoryItem = StoryItem>({
       onComplete: () => storiesCtrl.onStoryTimerComplete(),
     });
 
-    const sizeSignal = createSignal<[number, number]>(getSize());
+    const sizeSignal = createSignal<[number, number]>(getStoriesSize());
     const heartsSignal = createSignal<{ id: number }[]>([]);
     const longPressSignal = createSignal(false);
     const loadingCtrl = createContentLoadingController();
@@ -909,7 +911,7 @@ function StoriesContent<T extends StoryItem = StoryItem>({
         },
       ),
       observeDomEvent(window, 'resize', () => {
-        sizeSignal.value = getSize();
+        sizeSignal.value = getStoriesSize();
         updateCarouselActive();
         outerReelRef.current?.adjust();
       }),

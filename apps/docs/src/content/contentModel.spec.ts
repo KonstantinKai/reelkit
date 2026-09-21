@@ -46,6 +46,26 @@ describe('heading ids across locales', () => {
   });
 });
 
+// A binding page is written from its sibling, and the gate compares sections,
+// tables and code samples — not the callouts between them. The caveats are
+// exactly what a reader cannot infer from the API tables: that the player
+// preloads and remembers a broken URL, and that the heart cannot be replaced.
+// Dropped on the way across, they are missing where nothing else says them.
+describe('caveats shared by the stories player pages', () => {
+  const pages = ['stories-player.mdx', 'vue-stories-player.mdx'].map((page) =>
+    join(contentDir, kDefaultLocale, 'docs', page),
+  );
+
+  it.each([
+    ['preloading the next story', /preload the next story in the background/i],
+    ['the heart cannot be replaced', /heart animation cannot be replaced/i],
+  ])('every stories page carries the caveat about %s', (_, caveat) => {
+    for (const page of pages) {
+      expect(read(page), relative(repoRoot, page)).toMatch(caveat);
+    }
+  });
+});
+
 describe('locale parity configuration', () => {
   // `docs:check` compares every translated page against its English original.
   // Its locale list is hand-kept JSON, so a language added to the registry

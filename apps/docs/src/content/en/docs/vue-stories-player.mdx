@@ -1,10 +1,499 @@
 ---
 title: Vue Stories Player
-description: Vue 3 stories player overlay (in development). React version available now; Vue version will share @reelkit/stories-core engine for two-level navigation, RAF timer, and canvas progress.
+description: Instagram-style stories player overlay for Vue 3. Tap-to-advance navigation, cube transitions between users, auto-advance timer, viewed state, desktop carousel, URL-driven open state, scoped slots and theming tokens shared with the React stories player.
 ---
 
-Full-screen, Instagram-style stories player overlay for Vue with nested navigation, auto-advance timer, tap zones, and customizable slots.
+import { Zap, Play, Timer, Layout, Clock, Image, Layers, Heart, Monitor, Circle, Code, Settings, Link2, Eye } from 'lucide-react';
+import installation from '../../snippets/vue-stories-player/installation.sh?raw';
+import installation2 from '../../snippets/vue-stories-player/installation-2.ts?raw';
+import basicUsage from '../../snippets/vue-stories-player/basic-usage.vue?raw';
+import urlState from '../../snippets/vue-stories-player/url-state.vue?raw';
+import urlState2 from '../../snippets/vue-stories-player/url-state-2.ts?raw';
+import urlState3 from '../../snippets/vue-stories-player/url-state-3.ts?raw';
+import rememberingWhatWasSeen from '../../snippets/vue-stories-player/remembering-what-was-seen.vue?raw';
+import desktopCarousel from '../../snippets/vue-stories-player/desktop-carousel.vue?raw';
+import transitions from '../../snippets/vue-stories-player/transitions.vue?raw';
+import scopedSlots from '../../snippets/vue-stories-player/scoped-slots.vue?raw';
+import slideSlot from '../../snippets/vue-stories-player/slide-slot.vue?raw';
+import navigationSlot from '../../snippets/vue-stories-player/navigation-slot.vue?raw';
+import progressBarSlot from '../../snippets/vue-stories-player/progress-bar-slot.vue?raw';
+import loadingErrorSlots from '../../snippets/vue-stories-player/loading-error-slots.vue?raw';
+import groupPreviewSlot from '../../snippets/vue-stories-player/group-preview-slot.vue?raw';
+import storiesApi from '../../snippets/vue-stories-player/stories-api.vue?raw';
+import vModelIsOpen from '../../snippets/vue-stories-player/v-model-is-open.vue?raw';
+import doubleTapLikes from '../../snippets/vue-stories-player/double-tap-likes.vue?raw';
+import customizingTheHeartAnimation from '../../snippets/vue-stories-player/customizing-the-heart-animation.css?raw';
+import subComponents from '../../snippets/vue-stories-player/sub-components.vue?raw';
+import types from '../../snippets/vue-stories-player/types.ts?raw';
+import slotScopes from '../../snippets/vue-stories-player/slot-scopes.ts?raw';
+import customStoryTypes from '../../snippets/vue-stories-player/custom-story-types.vue?raw';
+import theming from '../../snippets/vue-stories-player/theming.css?raw';
 
-<Callout type="info" title="Coming Soon">
-  The Vue stories player is currently in development. The React version is available now at [@reelkit/react-stories-player](/docs/stories-player). The Vue version will follow the same architecture, using `@reelkit/stories-core` for the framework-agnostic state machine, timer, and canvas progress renderer.
+An Instagram-style stories player overlay for Vue 3 using `@reelkit/vue-stories-player`. It shares the `@reelkit/stories-core` engine with the React player, so the behaviour, the CSS classes and the theming tokens are the same.
+
+<DemoLink href="https://vue-demo.reelkit.dev/stories-player?utm_source=docs">View live demo →</DemoLink>
+
+## Features [#features]
+
+<FeatureGrid items={[
+              {
+                icon: Zap,
+                label: 'Nested Navigation',
+                desc: 'Tap to advance stories, swipe to switch groups',
+              },
+              {
+                icon: Play,
+                label: 'Video Stories',
+                desc: 'Autoplay with sound toggle',
+              },
+              {
+                icon: Timer,
+                label: 'Auto-Advance',
+                desc: 'Configurable timer per story',
+              },
+              {
+                icon: Layout,
+                label: '3D Transitions',
+                desc: 'Cube, flip, fade, zoom, slide',
+              },
+              {
+                icon: Clock,
+                label: 'Progress Bar',
+                desc: 'Canvas-based segmented progress',
+              },
+              {
+                icon: Image,
+                label: 'Image & Video',
+                desc: 'Handles both media types',
+              },
+              {
+                icon: Layers,
+                label: 'Virtualized',
+                desc: 'Only 3 slides in DOM',
+              },
+              {
+                icon: Heart,
+                label: 'Double-Tap Like',
+                desc: 'Heart animation on double-tap',
+              },
+              {
+                icon: Monitor,
+                label: 'Desktop Nav',
+                desc: 'Chevron buttons on desktop',
+              },
+              {
+                icon: Circle,
+                label: 'Story Rings',
+                desc: 'Instagram-style avatar rings',
+              },
+              {
+                icon: Code,
+                label: 'Generic Types',
+                desc: 'Extend StoryItem with custom data',
+              },
+              {
+                icon: Settings,
+                label: 'Scoped Slots',
+                desc: 'Customize every UI element',
+              },
+              {
+                icon: Link2,
+                label: 'URL State',
+                desc: 'Shareable ?story=group.story links',
+              },
+              {
+                icon: Eye,
+                label: 'Viewed State',
+                desc: 'Seen rings and resume survive reloads',
+              },
+            ]} />
+
+## Installation [#installation]
+
+<CodeBlock code={installation} language="bash" />
+
+Import the stylesheet once in your app entry (or any component):
+
+<CodeBlock code={installation2} language="typescript" />
+
+<Callout type="info" title="Icons">
+  The default header and navigation arrows use `lucide-vue-next` for icons. If you prefer a different icon library, replace them through the `#header` and `#navigation` scoped slots.
 </Callout>
+
+## Quick Start [#quick-start]
+
+`StoriesOverlay` renders the full-screen player. Pair it with `StoriesRingList` for the Instagram-style entry points, pass an array of `StoriesGroup` objects, and bind `v-model:is-open`.
+
+<CodeBlock code={basicUsage} language="vue" />
+
+## URL State [#url-state]
+
+<DemoLink href="https://vue-demo.reelkit.dev/stories-player-url?utm_source=docs">View live demo →</DemoLink>
+
+`StoriesUrlOverlay` is a separate component whose open state lives in the address bar. Both axes ride one parameter — `?story=<group>.<story>` — so the playing story has a link that can be shared, bookmarked, and closed with the back button. Build a controller with `useOverlayUrlState` and `urlIndexTwoAxisKey`, then hand it over as `controller`.
+
+<Callout type="info" title="Built-in keys">
+  Stories are two-axis, so spread a two-axis key into the controller: `urlIndexTwoAxisKey` (group and story by position) or `urlStableIdTwoAxisKey` (the group by a stable `id`) — both re-exported from `@reelkit/vue-stories-player`. See the [URL State guide](/docs/core/guide#url-state) and [Core API](/docs/core/api#url-state).
+</Callout>
+
+<CodeBlock code={urlState} language="vue" />
+
+- Opening pushes **one** history entry. Moving through stories *and* switching users both **replace** it, so N navigations add no entries and one back step always closes the player. Back closes; it does not step stories.
+- **Inner navigation is carried.** Advancing within a user's stories updates `?story=2.`*n*, so a deep link lands on the exact story.
+- Back closes only when the player was opened from within the app — the link pushed an entry. A shared link opened directly in a fresh tab has no history behind it, so browser-back leaves the site; the ✕ button or Escape removes the parameter in place and stays.
+- A parameter naming no group or story — a stale bookmark, a hand-edited value, a story past a group's end — is dropped from the URL rather than opening a neighbour.
+- A routed app should pass a router-backed adapter, so the router stays the single source of navigation truth. `useVueRouterUrlAdapter` from `@reelkit/vue/vue-router-url-adapter` is the ready-made one for Vue Router; writing history behind the router leaves its location stale and drops the parameter on the next navigation.
+
+**Stable links.** The group is positional by default, so a bookmarked `?story=2.0` opens a different user once the feed is reordered. Address the group by a stable id instead — `outerCodec` spells the id into the URL, `outerLocator` finds where it sits. The story half stays a plain index within the resolved group.
+
+<CodeBlock code={urlState2} language="typescript" />
+
+**Infinite feeds.** Paging is an `outerLocator` concern, independent of the codec. `locate` is synchronous, so it answers only for groups already loaded — a shared link to group 400 of a feed that has loaded 20 comes up empty. `locateAsync` is the fallback, called only when `locate` misses; the story is re-bounded against whichever group it settles on.
+
+<Callout type="info" title="Same locateAsync, outer axis">
+  This is the same `locateAsync` pager the single-axis keys take — on a two-axis key it rides the `outerLocator` you pass, so the group axis pages while the story stays a local index within the resolved group.
+</Callout>
+
+<CodeBlock code={urlState3} language="typescript" />
+
+- While `locateAsync` is pending the player stays closed and the parameter is left alone, so the deep link survives the fetch. A `null` or a rejection drops the parameter.
+- An answer arriving after the URL moved on, after a close, or after unmount is discarded — a slow fetch cannot open a story nobody asked for.
+- Full `useOverlayUrlState` options live in the [Vue API reference](/docs/vue/api#useoverlayurlstate).
+
+## Remembering What Was Seen [#remembering-what-was-seen]
+
+Rings show a gradient until a group has been watched to the end, and a group reopens on the first story the viewer has not seen. Both come from one `createStoriesViewedStateController`, created once where the feed lives and handed to the ring list and the player as `viewed`: they read the store, follow it and record what is shown by themselves. A stored entry names the author and the story by id, so it survives the feed being reordered, and the same controller works in React and Angular.
+
+<CodeBlock code={rememberingWhatWasSeen} language="vue" />
+
+- **The opening story counts.** The story already on screen is reported viewed once the player mounts, so opening a one-story group and closing marks it watched.
+- **Swiping onward resumes too.** `resumeStoryIndex` is consulted for every group reached for the first time this session, the one the player opens on included, unless `initialStoryIndex` names a story outright; a group already swiped through reopens where it was left.
+- **A link still wins.** With `StoriesUrlOverlay`, the parameter decides where the player opens, whatever has been stored. Everywhere else the resume callback decides.
+- **A count is a position, not a tally.** An entry names the furthest story reached, so adding a story to a watched group lights its ring again, and removing one from the middle shortens the count.
+- **Storage is pluggable.** Pass `storage: createSessionStorageAdapter()` to forget on tab close, or your own `StorageAdapter`. Two open tabs stay in step through the browser's storage event.
+- **A player mounted only when it opens reads too late.** The overlay reads the store once mounted, while it is still closed. With `v-if="open"` there is no such moment, so call `viewed.attach()` yourself from `onMounted` and call the dispose it returns from `onUnmounted`. The options, and the lower-level pieces this is built from, are on the [Stories Core](/docs/stories-core#viewed-controller) page.
+
+## Desktop Carousel [#desktop-carousel]
+
+Set `desktop-layout="carousel"` to lay the player out like the Instagram web viewer: the active story stays in the center at its usual size, and up to two neighbouring groups sit on each side as smaller, dimmed cards. Clicking a card opens that group, and the cards slide across while the group changes. Pass the same `viewed` controller the ring list takes, and a watched group's card gets the muted ring. The cards follow it by themselves, so only they repaint when a story is marked seen and the player does not render again.
+
+<CodeBlock code={desktopCarousel} language="vue" />
+
+- **Phones keep the plain player.** Up to 768px wide the cards are not rendered and swipes use `group-transition`, as with the default `'single'` layout. Resizing across that width switches live.
+- **Each card previews where the group opens**: the story it was left on this session, else what `resumeStoryIndex` returns. It shows the video poster or the image. A story with neither, like a text story on a gradient, is drawn by your `#slide` slot at the player's size and scaled down; a video without a poster shows the card background. That preview receives `isActive: false` and is only a picture: nothing in it can be focused or clicked. Keep whatever a slide does when it mounts, such as playback or analytics, behind `isActive`.
+- **The timer waits for the slide.** The story does not advance, and `story-viewed` does not fire for it, until the cards have finished moving.
+- **Every way of changing group slides**: a card click, `StoriesApi.goToGroup`, `nextGroup` and `prevGroup`, and the arrow keys past the end of a group. A touch swipe moves the player itself, so it gets no slide on top.
+
+## API Reference [#api-reference]
+
+### StoriesOverlay Props [#storiesoverlay-props]
+
+<Signature>StoriesOverlayProps</Signature>
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `aria-label` | `string` | `'Stories player'` | Accessible label for the dialog region; announced by screen readers when the overlay opens |
+| `default-image-duration` | `number` | `5000` | Auto-advance duration for an image story, in milliseconds |
+| `desktop-layout` | `'single' \| 'carousel'` | `'single'` | Desktop layout. `'carousel'` shows neighbouring groups as preview cards beside the active story and slides between groups. Phones always show the story alone. The type is exported as `DesktopLayout`. |
+| `enable-keyboard` | `boolean` | `true` | Enable keyboard navigation (left/right arrows, Escape) |
+| `groups` | `StoriesGroup<T>[]` | `required` | Story groups to display. Adding groups or stories while the player is open is picked up, whether the array is replaced or pushed into. |
+| `group-transition` | `TransitionTransformFn` | `cubeTransition` | Transition for the outer (group) slider. Ignored while the desktop carousel is showing, which slides instead. |
+| `hide-ui-on-pause` | `boolean` | `true` | Hide the progress bar and header while paused by a long press |
+| `initial-group-index` | `number` | `0` | Zero-based index of the initially visible group |
+| `initial-story-index` | `number` | resume, else `0` | Zero-based index of the initially visible story. Naming one wins over anything remembered; leave it out and the opening group resumes like every other. |
+| `inner-transition-duration` | `number` | `200` | Crossfade duration between stories, in milliseconds |
+| `is-open` | `boolean` | `required` | Controls visibility, and locks body scroll while open. Bind with `v-model:is-open`. |
+| `min-segment-width` | `number` | `8` | Minimum progress segment width in pixels, before the sliding window kicks in |
+| `resume-story-index` | `(groupIndex: number) => number` | — | Which story a group opens on the first time it is reached. Only consulted for a group not yet visited during this open, and it wins over `viewed`. |
+| `tap-zone-split` | `number` | `0.3` | Tap zone split ratio (0–1). The left portion goes back, the rest goes forward. |
+| `viewed` | `StoriesViewedStateController` | — | What the viewer has seen, from `createStoriesViewedStateController()`. Groups resume on their first unseen story, every story shown is recorded, and carousel cards mute the ring of a group watched to the end. Hand the same controller to `StoriesRingList`. |
+
+### StoriesUrlOverlay Props [#storiesurloverlay-props]
+
+<Signature>StoriesUrlOverlayProps</Signature>
+
+Takes every prop above except the open-state trio — `is-open`, `initial-group-index`, `initial-story-index` — supplied from the controller instead.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `controller` | `UrlStateController<TwoAxisPosition>` | `required` | Controller from `useOverlayUrlState` spread with `urlIndexTwoAxisKey`. Its `position` — a \{ outer, inner \} object — decides whether the player is open and where it opens; the overlay writes back on every navigation and on close. |
+
+### Events [#events]
+
+| Event | Payload | Description |
+| --- | --- | --- |
+| @api-ready | `StoriesApi` | Emitted once the player is mounted, with the imperative API |
+| @close | `void` | Emitted when the player closes. On `StoriesUrlOverlay` the parameter is already cleared by then. |
+| @double-tap | `groupIndex: number, storyIndex: number` | Emitted on a double-tap, alongside the heart animation |
+| @group-change | `groupIndex: number` | Emitted after the active group changes |
+| @pause | `void` | Emitted on a long press, or the header pause button |
+| @resume | `void` | Emitted on release, or the header play button |
+| @story-change | `groupIndex: number, storyIndex: number` | Emitted after the active story changes |
+| @story-complete | `groupIndex: number, storyIndex: number` | Emitted when a story's timer runs out |
+| @story-viewed | `groupIndex: number, storyIndex: number` | Emitted when a story becomes visible, the opening one included |
+| @update:is-open | `boolean` | Emitted on close; enables \`v-model:is-open\` |
+
+### v-model:is-open [#v-model-is-open]
+
+Use `v-model:is-open` to drive the overlay with a single binding. The `:is-open` + `@close` pair still works when you need the explicit event.
+
+<CodeBlock code={vModelIsOpen} language="vue" />
+
+## Scoped Slots [#scoped-slots]
+
+Eight scoped slots replace any part of the player. Each receives a typed scope object. A slot you leave out keeps the default — and so does one that renders nothing, so a `v-if` that goes false falls back rather than leaving a hole.
+
+| Slot | Scope | Description |
+| --- | --- | --- |
+| #error | `{ story, storyIndex, groupIndex }` | Replaces the built-in "Content unavailable" panel, drawn over the active story |
+| #footer | `{ author, story, storyIndex }` | Adds a footer under the active group's story |
+| #groupPreview | `{ group, groupIndex, story, offset, viewedCount, onOpen }` | Fills a desktop carousel card; the player still positions, scales and slides it |
+| #header | `{ author, story, storyIndex, isPaused, isMuted, isVideo, onToggleSound, onTogglePause, onClose }` | Replaces the default header (author, pause, sound, close) |
+| #loading | `{ story, storyIndex, groupIndex }` | Replaces the default header spinner while the active story loads |
+| #navigation | `{ onPrevStory, onNextStory, onPrevGroup, onNextGroup }` | Replaces both desktop arrows |
+| #progressBar | `{ totalStories, activeIndex, progress, group }` | Replaces the canvas progress bar. `activeIndex` and `progress` are core signals — bridge them with `toVueRef`. |
+| #slide | `{ story, index, groupIndex, isActive, size, activeGroupIndex, activeStoryIndex, onDurationReady, onReady, onWaiting, onError, onEnded }` | Replaces the default image and video slides |
+
+<CodeBlock code={scopedSlots} language="vue" />
+
+### Custom Slides [#custom-slides]
+
+Compose `ImageStorySlide` and `VideoStorySlide` inside `#slide` to keep autoplay, poster capture and sound sync while drawing your own layout. Call the lifecycle callbacks from the scope, or the timer never starts:
+
+| Callback | When to call |
+| --- | --- |
+| `onReady` | The image loaded, or the video started playing. Clears the loading state and starts the timer. |
+| `onWaiting` | The video is buffering mid-playback. Shows the spinner and pauses the timer. |
+| `onError` | The content failed to load. Shows the error state, and the URL is remembered as broken so reopening it skips the retry. |
+| `onDurationReady` | Report the real media length in milliseconds, so the timer runs for as long as the video does. |
+| `onEnded` | The media finished. Advances to the next story. |
+
+<CodeBlock code={slideSlot} language="vue" />
+
+<Callout type="info" title="Preloader caching">
+  The built-in `ImageStorySlide` and `VideoStorySlide` components preload the next story in the background. When a viewer reaches a preloaded story the content appears instantly, with no loading spinner. A URL that failed once is remembered too, so reopening a broken story shows the error straight away rather than retrying.
+</Callout>
+
+### Custom Navigation [#custom-navigation]
+
+<CodeBlock code={navigationSlot} language="vue" />
+
+### Custom Progress Bar [#custom-progress-bar]
+
+The scope carries core signals rather than plain numbers, so the timer can drive the bar without re-rendering the player. Bridge them with `toVueRef` from `@reelkit/vue`:
+
+<CodeBlock code={progressBarSlot} language="vue" />
+
+### Custom Loading & Error [#custom-loading-error]
+
+<CodeBlock code={loadingErrorSlots} language="vue" />
+
+### Custom Carousel Cards [#custom-carousel-cards]
+
+<CodeBlock code={groupPreviewSlot} language="vue" />
+
+## Transitions [#transitions]
+
+`group-transition` controls the 3D effect when switching between users. Import the transition functions from `@reelkit/vue`:
+
+<CodeBlock code={transitions} language="vue" />
+
+## StoriesApi [#storiesapi]
+
+Put a template ref on the overlay for imperative control, or take the API from the `@api-ready` event. Calls made while the player is closed do nothing.
+
+<CodeBlock code={storiesApi} language="vue" />
+
+### Methods [#methods]
+
+| Method | Type | Description |
+| --- | --- | --- |
+| `nextStory()` | `() => void` | Advance to the next story within the current group |
+| `prevStory()` | `() => void` | Go to the previous story within the current group |
+| `nextGroup()` | `() => void` | Switch to the next user group |
+| `prevGroup()` | `() => void` | Switch to the previous user group |
+| `goToGroup(index)` | `(index: number) => void` | Jump to a specific group by index |
+| `pause()` | `() => void` | Pause auto-advance and the progress timer |
+| `resume()` | `() => void` | Resume auto-advance and the progress timer |
+
+## Double-Tap & Likes [#double-tap-likes]
+
+A heart animation plays on double-tap, giving instant visual feedback. The `@double-tap` event fires with the group and story index so you can persist the like in your own state. The player keeps no like state itself.
+
+<CodeBlock code={doubleTapLikes} language="vue" />
+
+### Customizing the Heart Animation [#customizing-the-heart-animation]
+
+Tweak the speed with the `--rk-stories-heart-duration` token (see [Theming](#theming)). For colour, size, or hiding the heart entirely, target the `.rk-stories-heart` class. The `HeartAnimation` component is exported for standalone use.
+
+<CodeBlock code={customizingTheHeartAnimation} language="css" />
+
+<Callout type="info">
+  The built-in heart animation cannot be replaced through a slot yet. Restyle it with CSS, or hide it with `display: none` and run your own animation from the `@double-tap` event. If you need a `heart` slot, let us know via [GitHub Issues](https://github.com/KonstantinKai/reelkit/issues).
+</Callout>
+
+## Sub-Components [#sub-components]
+
+Exported building blocks, for composing inside the slots or using on their own: `StoriesRing`, `StoriesRingList`, `StoryHeader`, `CanvasProgressBar`, `ImageStorySlide`, `VideoStorySlide` and `HeartAnimation`.
+
+| Component | What it is |
+| --- | --- |
+| `CanvasProgressBar` | The canvas segmented progress bar, drawn straight from the timer signals. Handles a sliding window for groups with many stories. |
+| `HeartAnimation` | The double-tap heart. Emits `complete` when the animation ends, so the parent can remove it. |
+| `ImageStorySlide` | Full-bleed image slide with `object-fit: cover`, reporting load and error through callbacks. |
+| `StoriesRing` | Circular avatar with the gradient ring. Two states: anything left to watch rotates, fully watched goes flat. Emits `click`. |
+| `StoriesRingList` | Horizontal row of rings with author names, one per group. Emits `select` with the group index. |
+| `StoryHeader` | The default header: avatar, name, verified badge, relative time, pause, sound, close, and the loading spinner. |
+| `VideoStorySlide` | Video slide backed by the one shared `<video>` element, for iOS sound continuity. Handles autoplay, poster frames and duration reporting. |
+
+<CodeBlock code={subComponents} language="vue" />
+
+## Re-exports [#re-exports]
+
+Everything a consumer needs comes from this package, so a direct `@reelkit/core` import is never necessary.
+
+| From | Re-exported |
+| --- | --- |
+| `@reelkit/vue` | `Observe`, `SoundProvider`, `useSoundState`, `useOverlayUrlState`, `createViewedStateController`, `twoAxisViewedTracking`, `createLocalStorageAdapter`, `createSessionStorageAdapter`, `createMemoryStorageAdapter`, `urlIndexTwoAxisKey`, `urlStableIdTwoAxisKey`, `base64UrlCodec`, and the types `UrlAdapter`, `UrlCodec`, `UrlLocator`, `UrlKey`, `UrlStateController`, `TwoAxisPosition`, `TwoAxisIdentity`, `UrlIndexTwoAxisKeyOptions`, `ViewedStateController`, `ViewedStateOptions`, `StorageAdapter` |
+| `@reelkit/stories-core` | `createStoriesViewedStateController`, `StoriesViewedStateController`, `StoriesViewedStateControllerConfig`, and the content types `StoryItem`, `AuthorInfo`, `StoriesGroup`, `MediaType` |
+
+`Observe` is the render boundary the player uses internally: it re-renders only its slot when a core signal changes, which is how a story change repaints the header and the progress bar without redrawing the sliders. Use it in a custom slot when a whole component following the signal through `toVueRef` would be too coarse — see the [Vue API reference](/docs/vue/api#observe).
+
+Each component's props type is exported too: `StoriesOverlayProps`, `StoriesUrlOverlayProps`, `StoriesRingProps`, `StoriesRingListProps`, `StoryHeaderProps`, `CanvasProgressBarProps`, `ImageStorySlideProps` and `VideoStorySlideProps`.
+
+## Types [#types]
+
+### StoryItem, AuthorInfo, StoriesGroup [#storyitem-authorinfo-storiesgroup]
+
+<CodeBlock code={types} language="typescript" />
+
+### Slot scopes [#slot-scopes]
+
+Every scope type is exported, so a slot can be annotated where the compiler cannot infer it — `HeaderSlotScope`, `FooterSlotScope`, `SlideSlotScope`, `NavigationSlotScope`, `ProgressBarSlotScope`, `LoadingSlotScope`, `ErrorSlotScope` and `GroupPreviewSlotScope`, alongside `StoriesApi`:
+
+<CodeBlock code={slotScopes} language="typescript" />
+
+## Custom Story Types [#custom-story-types]
+
+Extend `StoryItem` with your own fields and type the groups with it. Annotate a slot scope to keep the extra fields visible inside the template:
+
+<CodeBlock code={customStoryTypes} language="vue" />
+
+## CSS Classes [#css-classes]
+
+Class names are plain (not scoped), so a stylesheet loaded after `@reelkit/vue-stories-player/styles.css` can override any of them. They are identical to `@reelkit/react-stories-player`, so a stylesheet written for one binding works for the other. For colours, sizes and z-indexes prefer the custom properties in [Theming](#theming).
+
+| Class | Component | Description |
+| --- | --- | --- |
+| `.rk-stories-overlay` | Overlay | Fixed full-screen backdrop (background, z-index) |
+| `.rk-stories-overlay--carousel` | Overlay | Overlay with the desktop carousel showing |
+| `.rk-stories-overlay--sliding` | Overlay | Carousel slide running; the player canvas is hidden |
+| `.rk-stories-swipe-wrapper` | Overlay | Swipe-to-close wrapper (hosts nav buttons + canvas) |
+| `.rk-stories-container` | Overlay | Rounded story canvas (position, overflow) |
+| `.rk-stories-ui-layer` | Overlay | UI overlay container (header, progress) |
+| `.rk-stories-ui-layer--hidden` | Overlay | UI hidden state (toggled by `hide-ui-on-pause`) |
+| `.rk-stories-error` | Overlay | Error state (centered icon + text) |
+| `.rk-stories-error-text` | Overlay | Error message text |
+| `.rk-stories-nav-btn` | Navigation | Desktop prev/next arrow |
+| `.rk-stories-progress-bar` | CanvasProgressBar | Canvas progress bar positioning wrapper |
+| `.rk-stories-slide-wrapper` | Group | One group of stories (outer slide) |
+| `.rk-stories-story` | Story | A single story (inner slide root) |
+| `.rk-stories-header` | StoryHeader | Header bar (avatar, name, actions) |
+| `.rk-stories-header--hidden` | StoryHeader | Header hidden state |
+| `.rk-stories-header-avatar` | StoryHeader | Author avatar image |
+| `.rk-stories-header-name` | StoryHeader | Author name text |
+| `.rk-stories-header-verified` | StoryHeader | Verified badge |
+| `.rk-stories-header-time` | StoryHeader | Time-ago text |
+| `.rk-stories-header-actions` | StoryHeader | Right-side actions (sound, pause, close) |
+| `.rk-stories-header-btn` | StoryHeader | Header action button |
+| `.rk-stories-header-spinner` | StoryHeader | Loading spinner |
+| `.rk-stories-image` | ImageStorySlide | Image story element |
+| `.rk-stories-video` | VideoStorySlide | Video story container |
+| `.rk-stories-video-element` | VideoStorySlide | The shared \<video> element |
+| `.rk-stories-video-poster` | VideoStorySlide | Video poster image (fades out on play) |
+| `.rk-stories-video-poster--visible` | VideoStorySlide | Poster visible state (pre-playback) |
+| `.rk-stories-heart` | HeartAnimation | Double-tap heart pop animation |
+| `.rk-stories-ring` | StoriesRing | Story ring (avatar with animated gradient border) |
+| `.rk-stories-ring--active` | StoriesRing | Ring with stories left to watch (animates) |
+| `.rk-stories-ring-avatar` | StoriesRing | Avatar image inside the ring |
+| `.rk-stories-ring-list` | StoriesRingList | Horizontal ring list container |
+| `.rk-stories-ring-list-item` | StoriesRingList | Ring + name column |
+| `.rk-stories-ring-list-name` | StoriesRingList | Author name below each ring |
+| `.rk-stories-carousel` | Carousel | Layer of preview cards behind the player |
+| `.rk-stories-carousel--instant` | Carousel | First frame of a slide, laid out without a transition |
+| `.rk-stories-card` | Carousel | One positioned preview card |
+| `.rk-stories-card--center` | Carousel | Card in the center slot during a slide |
+| `.rk-stories-card--hidden` | Carousel | Card past the two shown on a side |
+| `.rk-stories-card-button` | Carousel | Default card content (the button that opens the group) |
+| `.rk-stories-card-image` | Carousel | Preview frame (poster or image) |
+| `.rk-stories-card-scrim` | Carousel | Dimming layer over the frame |
+| `.rk-stories-card-info` | Carousel | Ring, author name and time column |
+| `.rk-stories-card-name` | Carousel | Author name |
+| `.rk-stories-card-time` | Carousel | Time-ago text |
+
+## Theming [#theming]
+
+Every colour, size, z-index and transition lives in a CSS custom property, with its default on `:root`. Override one or many at `:root`, or on any ancestor of the overlay, to retheme without touching component source. The tokens match `@reelkit/react-stories-player`, so a theme ports between bindings.
+
+| Token | Default | Controls |
+| --- | --- | --- |
+| `--rk-stories-overlay-bg` | `#000` | Full-screen backdrop color |
+| `--rk-stories-overlay-z` | `9999` | Overlay z-index |
+| `--rk-stories-container-radius` | `12px` | Rounded corners on the story canvas (desktop) |
+| `--rk-stories-swipe-gap` | `16px` | Gap between nav buttons and the story canvas |
+| `--rk-stories-top-shade-height` | `120px` | Top gradient scrim height behind the header |
+| `--rk-stories-top-shade-bg` | `linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%)` | Top gradient scrim color |
+| `--rk-stories-ui-transition` | `200ms` | Fade duration when `hide-ui-on-pause` toggles |
+| `--rk-stories-nav-size` | `44px` | Desktop prev/next button size |
+| `--rk-stories-nav-bg` | `rgba(255, 255, 255, 0.1)` | Desktop nav button background |
+| `--rk-stories-nav-bg-hover` | `rgba(255, 255, 255, 0.2)` | Desktop nav button hover background |
+| `--rk-stories-nav-fg` | `rgba(255, 255, 255, 0.7)` | Desktop nav button icon color |
+| `--rk-stories-nav-fg-hover` | `#fff` | Desktop nav button hover icon color |
+| `--rk-stories-error-bg` | `linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)` | Error state background gradient |
+| `--rk-stories-error-fg` | `rgba(255, 255, 255, 0.5)` | Error icon and text color |
+| `--rk-stories-error-text-size` | `13px` | Error message font size |
+| `--rk-stories-video-bg` | `#000` | Letterbox background behind \<video> |
+| `--rk-stories-video-poster-transition` | `200ms` | Poster fade duration when the video starts playing |
+| `--rk-stories-header-top` | `18px` | Vertical offset of the header from the top of the story |
+| `--rk-stories-header-padding` | `12px 16px` | Inner padding of the header row |
+| `--rk-stories-header-avatar-size` | `32px` | Avatar width/height |
+| `--rk-stories-header-name-fg` | `#fff` | Author name color |
+| `--rk-stories-header-name-size` | `14px` | Author name font size |
+| `--rk-stories-header-time-fg` | `rgba(255, 255, 255, 0.6)` | Time-ago text color |
+| `--rk-stories-header-btn-fg` | `#fff` | Header action icon color (close, mute, pause) |
+| `--rk-stories-heart-duration` | `800ms` | Pop-in/fade-out animation duration |
+| `--rk-stories-ring-spin-duration` | `4s` | Rotation duration of a ring with stories left to watch |
+| `--rk-stories-ring-list-gap` | `12px` | Spacing between rings in the list |
+| `--rk-stories-ring-list-padding` | `12px` | Inner padding around the ring list |
+| `--rk-stories-ring-list-name-size` | `12px` | Author name font size below each ring |
+| `--rk-stories-card-bg` | `#262626` | Carousel card background, shown when there is no preview frame |
+| `--rk-stories-card-radius` | `8px` | Carousel card corner radius |
+| `--rk-stories-card-scrim` | `rgba(0, 0, 0, 0.45)` | Dimming over a side card |
+| `--rk-stories-card-fg` | `#fff` | Card text color |
+| `--rk-stories-card-name-size` | `14px` | Card author name font size |
+| `--rk-stories-card-time-fg` | `rgba(255, 255, 255, 0.7)` | Card time-ago text color |
+| `--rk-stories-card-time-size` | `13px` | Card time-ago font size |
+| `--rk-stories-card-gap` | `6px` | Spacing between the ring, name and time on a card |
+| `--rk-stories-card-transition` | `300ms` | Carousel slide duration |
+
+<CodeBlock code={theming} language="css" />
+
+## Accessibility [#accessibility]
+
+The overlay root is a modal dialog (`role="dialog"`, `aria-modal="true"`). Set `aria-label` to change the screen-reader announcement; it defaults to "Stories player".
+
+The overlay captures focus on open and returns it to the trigger on close. Tab and Shift+Tab cycle through focusable elements inside; focus that escapes gets pulled back. Implemented with `captureFocusForReturn` and `createFocusTrap` from `@reelkit/core`.
+
+With the desktop carousel, each default card is a button labelled "Open stories by" and the author's name. The cards come after the player controls in the tab order, and are left out of it while a slide runs; a card that opens its group hands focus back to the dialog rather than dropping it on the page.
+
+## Server-Side Rendering [#server-side-rendering]
+
+The overlay renders nothing while closed, and `StoriesRingList` renders every ring unwatched on the server: the viewed store is read only after mount, so the server markup and the first client render agree. See the [SSR guide](/docs/ssr) for the wider picture.
+
+## Keyboard Shortcuts [#keyboard-shortcuts]
+
+| Key | Action |
+| --- | --- |
+| `ArrowLeft` | Previous story |
+| `ArrowRight` | Next story |
+| `Escape` | Close player |

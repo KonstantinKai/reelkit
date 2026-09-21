@@ -3,7 +3,7 @@
     "/": {
       "source": "pages/Home.tsx",
       "translation": "pages/uk/Home.tsx",
-      "sha": "83df82fc9b3ea6851c6c0b071043d2cd6aa4c3c8"
+      "sha": "8079cbd43caf6bf6e78f95376ad9a946f5876fde"
     },
     "/docs/getting-started": {
       "source": "content/en/docs/getting-started.mdx",
@@ -33,7 +33,7 @@
     "/docs/stories-core": {
       "source": "content/en/docs/stories-core.mdx",
       "translation": "content/uk/docs/stories-core.mdx",
-      "sha": "0ba11112b2df6ada8a9cdc19ebf4a7bcb9e759cc"
+      "sha": "cff8c8255ec8c2314f418e0f5770b656d5a7bf2c"
     },
     "/docs/react/guide": {
       "source": "content/en/docs/react/guide.mdx",
@@ -68,7 +68,7 @@
     "/docs/vue/api": {
       "source": "content/en/docs/vue/api.mdx",
       "translation": "content/uk/docs/vue/api.mdx",
-      "sha": "c3b191337cee187460b7f9d40f7cf890e0490372"
+      "sha": "253d2717d53189d18b9654ebc94569a664f618ec"
     },
     "/docs/vue-reel-player": {
       "source": "content/en/docs/vue-reel-player.mdx",
@@ -83,7 +83,7 @@
     "/docs/vue-stories-player": {
       "source": "content/en/docs/vue-stories-player.mdx",
       "translation": "content/uk/docs/vue-stories-player.mdx",
-      "sha": "dac5e5aae0b9137f579f64d732ea10405e7042f0"
+      "sha": "2e7a949d2d856b64e50dc70b6328124566ca13d6"
     },
     "/docs/angular/guide": {
       "source": "content/en/docs/angular/guide.mdx",
@@ -125,7 +125,7 @@
     "/": {
       "source": "pages/Home.tsx",
       "translation": "pages/zh/Home.tsx",
-      "sha": "83df82fc9b3ea6851c6c0b071043d2cd6aa4c3c8"
+      "sha": "8079cbd43caf6bf6e78f95376ad9a946f5876fde"
     },
     "/docs/getting-started": {
       "source": "content/en/docs/getting-started.mdx",
@@ -155,7 +155,7 @@
     "/docs/stories-core": {
       "source": "content/en/docs/stories-core.mdx",
       "translation": "content/zh/docs/stories-core.mdx",
-      "sha": "0ba11112b2df6ada8a9cdc19ebf4a7bcb9e759cc"
+      "sha": "cff8c8255ec8c2314f418e0f5770b656d5a7bf2c"
     },
     "/docs/react/guide": {
       "source": "content/en/docs/react/guide.mdx",
@@ -190,7 +190,7 @@
     "/docs/vue/api": {
       "source": "content/en/docs/vue/api.mdx",
       "translation": "content/zh/docs/vue/api.mdx",
-      "sha": "c3b191337cee187460b7f9d40f7cf890e0490372"
+      "sha": "253d2717d53189d18b9654ebc94569a664f618ec"
     },
     "/docs/vue-reel-player": {
       "source": "content/en/docs/vue-reel-player.mdx",
@@ -205,7 +205,7 @@
     "/docs/vue-stories-player": {
       "source": "content/en/docs/vue-stories-player.mdx",
       "translation": "content/zh/docs/vue-stories-player.mdx",
-      "sha": "dac5e5aae0b9137f579f64d732ea10405e7042f0"
+      "sha": "2e7a949d2d856b64e50dc70b6328124566ca13d6"
     },
     "/docs/angular/guide": {
       "source": "content/en/docs/angular/guide.mdx",
@@ -247,7 +247,7 @@
     "/": {
       "source": "pages/Home.tsx",
       "translation": "pages/pt/Home.tsx",
-      "sha": "83df82fc9b3ea6851c6c0b071043d2cd6aa4c3c8"
+      "sha": "8079cbd43caf6bf6e78f95376ad9a946f5876fde"
     },
     "/docs/getting-started": {
       "source": "content/en/docs/getting-started.mdx",
@@ -277,7 +277,7 @@
     "/docs/stories-core": {
       "source": "content/en/docs/stories-core.mdx",
       "translation": "content/pt/docs/stories-core.mdx",
-      "sha": "0ba11112b2df6ada8a9cdc19ebf4a7bcb9e759cc"
+      "sha": "cff8c8255ec8c2314f418e0f5770b656d5a7bf2c"
     },
     "/docs/react/guide": {
       "source": "content/en/docs/react/guide.mdx",
@@ -312,7 +312,7 @@
     "/docs/vue/api": {
       "source": "content/en/docs/vue/api.mdx",
       "translation": "content/pt/docs/vue/api.mdx",
-      "sha": "c3b191337cee187460b7f9d40f7cf890e0490372"
+      "sha": "253d2717d53189d18b9654ebc94569a664f618ec"
     },
     "/docs/vue-reel-player": {
       "source": "content/en/docs/vue-reel-player.mdx",
@@ -327,7 +327,7 @@
     "/docs/vue-stories-player": {
       "source": "content/en/docs/vue-stories-player.mdx",
       "translation": "content/pt/docs/vue-stories-player.mdx",
-      "sha": "dac5e5aae0b9137f579f64d732ea10405e7042f0"
+      "sha": "2e7a949d2d856b64e50dc70b6328124566ca13d6"
     },
     "/docs/angular/guide": {
       "source": "content/en/docs/angular/guide.mdx",
@@ -369,7 +369,7 @@
     "/": {
       "source": "pages/Home.tsx",
       "translation": "pages/ja/Home.tsx",
-      "sha": "83df82fc9b3ea6851c6c0b071043d2cd6aa4c3c8"
+      "sha": "8079cbd43caf6bf6e78f95376ad9a946f5876fde"
     },
     "/docs/getting-started": {
       "source": "content/en/docs/getting-started.mdx",
@@ -399,7 +399,7 @@
     "/docs/stories-core": {
       "source": "content/en/docs/stories-core.mdx",
       "translation": "content/ja/docs/stories-core.mdx",
-      "sha": "0ba11112b2df6ada8a9cdc19ebf4a7bcb9e759cc"
+      "sha": "cff8c8255ec8c2314f418e0f5770b656d5a7bf2c"
     },
     "/docs/react/guide": {
       "source": "content/en/docs/react/guide.mdx",
@@ -434,7 +434,7 @@
     "/docs/vue/api": {
       "source": "content/en/docs/vue/api.mdx",
       "translation": "content/ja/docs/vue/api.mdx",
-      "sha": "c3b191337cee187460b7f9d40f7cf890e0490372"
+      "sha": "253d2717d53189d18b9654ebc94569a664f618ec"
     },
     "/docs/vue-reel-player": {
       "source": "content/en/docs/vue-reel-player.mdx",
@@ -449,7 +449,7 @@
     "/docs/vue-stories-player": {
       "source": "content/en/docs/vue-stories-player.mdx",
       "translation": "content/ja/docs/vue-stories-player.mdx",
-      "sha": "dac5e5aae0b9137f579f64d732ea10405e7042f0"
+      "sha": "2e7a949d2d856b64e50dc70b6328124566ca13d6"
     },
     "/docs/angular/guide": {
       "source": "content/en/docs/angular/guide.mdx",
@@ -491,7 +491,7 @@
     "/": {
       "source": "pages/Home.tsx",
       "translation": "pages/hi/Home.tsx",
-      "sha": "83df82fc9b3ea6851c6c0b071043d2cd6aa4c3c8"
+      "sha": "8079cbd43caf6bf6e78f95376ad9a946f5876fde"
     },
     "/docs/getting-started": {
       "source": "content/en/docs/getting-started.mdx",
@@ -521,7 +521,7 @@
     "/docs/stories-core": {
       "source": "content/en/docs/stories-core.mdx",
       "translation": "content/hi/docs/stories-core.mdx",
-      "sha": "0ba11112b2df6ada8a9cdc19ebf4a7bcb9e759cc"
+      "sha": "cff8c8255ec8c2314f418e0f5770b656d5a7bf2c"
     },
     "/docs/react/guide": {
       "source": "content/en/docs/react/guide.mdx",
@@ -556,7 +556,7 @@
     "/docs/vue/api": {
       "source": "content/en/docs/vue/api.mdx",
       "translation": "content/hi/docs/vue/api.mdx",
-      "sha": "c3b191337cee187460b7f9d40f7cf890e0490372"
+      "sha": "253d2717d53189d18b9654ebc94569a664f618ec"
     },
     "/docs/vue-reel-player": {
       "source": "content/en/docs/vue-reel-player.mdx",
@@ -571,7 +571,7 @@
     "/docs/vue-stories-player": {
       "source": "content/en/docs/vue-stories-player.mdx",
       "translation": "content/hi/docs/vue-stories-player.mdx",
-      "sha": "dac5e5aae0b9137f579f64d732ea10405e7042f0"
+      "sha": "2e7a949d2d856b64e50dc70b6328124566ca13d6"
     },
     "/docs/angular/guide": {
       "source": "content/en/docs/angular/guide.mdx",
@@ -613,7 +613,7 @@
     "/": {
       "source": "pages/Home.tsx",
       "translation": "pages/es/Home.tsx",
-      "sha": "83df82fc9b3ea6851c6c0b071043d2cd6aa4c3c8"
+      "sha": "8079cbd43caf6bf6e78f95376ad9a946f5876fde"
     },
     "/docs/getting-started": {
       "source": "content/en/docs/getting-started.mdx",
@@ -643,7 +643,7 @@
     "/docs/stories-core": {
       "source": "content/en/docs/stories-core.mdx",
       "translation": "content/es/docs/stories-core.mdx",
-      "sha": "0ba11112b2df6ada8a9cdc19ebf4a7bcb9e759cc"
+      "sha": "cff8c8255ec8c2314f418e0f5770b656d5a7bf2c"
     },
     "/docs/react/guide": {
       "source": "content/en/docs/react/guide.mdx",
@@ -678,7 +678,7 @@
     "/docs/vue/api": {
       "source": "content/en/docs/vue/api.mdx",
       "translation": "content/es/docs/vue/api.mdx",
-      "sha": "c3b191337cee187460b7f9d40f7cf890e0490372"
+      "sha": "253d2717d53189d18b9654ebc94569a664f618ec"
     },
     "/docs/vue-reel-player": {
       "source": "content/en/docs/vue-reel-player.mdx",
@@ -693,7 +693,7 @@
     "/docs/vue-stories-player": {
       "source": "content/en/docs/vue-stories-player.mdx",
       "translation": "content/es/docs/vue-stories-player.mdx",
-      "sha": "dac5e5aae0b9137f579f64d732ea10405e7042f0"
+      "sha": "2e7a949d2d856b64e50dc70b6328124566ca13d6"
     },
     "/docs/angular/guide": {
       "source": "content/en/docs/angular/guide.mdx",

@@ -213,7 +213,7 @@ export const createComputed = <T>(
  * ```
  */
 export const reaction = (
-  deps: () => Subscribable[],
+  deps: () => readonly Subscribable[],
   effect: Listener,
 ): Dispose => {
   const disposers = deps().map((dep) => dep.observe(effect));

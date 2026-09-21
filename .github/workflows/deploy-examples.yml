@@ -59,6 +59,11 @@ jobs:
               - 'apps/example-vue/project.json'
               - 'packages/reelkit-core/**'
               - 'packages/reelkit-vue/**'
+              - 'packages/reelkit-vue-reel-player/**'
+              - 'packages/reelkit-vue-lightbox/**'
+              - 'packages/reelkit-vue-stories-player/**'
+              - 'packages/reelkit-stories-core/**'
+              - 'packages/reelkit-example-data/**'
 
   deploy-react:
     needs: changes

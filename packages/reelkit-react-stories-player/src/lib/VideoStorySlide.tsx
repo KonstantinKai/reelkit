@@ -17,22 +17,22 @@ import {
 
 /** Props for the {@link VideoStorySlide} component. */
 export interface VideoStorySlideProps {
-  /** Video source URL. */
+  /** Loaded only while this slide is the active one. */
   src: string;
 
-  /** Optional poster image URL shown before playback. */
+  /** Shown until playback starts. A frame captured from an earlier play wins. */
   poster?: string;
 
-  /** Group index this slide belongs to. */
+  /** Where this slide sits. Matched against the two signals below. */
   groupIndex: number;
 
-  /** Story index within the group. */
+  /** Where this slide sits. Matched against the two signals below. */
   storyIndex: number;
 
-  /** Active group index signal from the stories controller. */
+  /** Both signals equal to the pair above means this slide owns the video. */
   activeGroupIndex: Signal<number>;
 
-  /** Active story index signal from the stories controller. */
+  /** Both signals equal to the pair above means this slide owns the video. */
   activeStoryIndex: Signal<number>;
 
   /** Called when video metadata loads, reporting duration in milliseconds. */
@@ -44,10 +44,10 @@ export interface VideoStorySlideProps {
   /** Called when the video stalls (buffering mid-playback). */
   onWaiting?: () => void;
 
-  /** Called when the video reaches the end. */
+  /** The story is over; the player moves on rather than waiting for the timer. */
   onEnded?: () => void;
 
-  /** Called when the video fails to load or play. */
+  /** Covers a source that will not load and a play() the browser refused. */
   onError?: () => void;
 }
 

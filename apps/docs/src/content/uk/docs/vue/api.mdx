@@ -12,6 +12,7 @@ import usesoundstate from '../../../snippets/vue-api/usesoundstate.ts?raw';
 import usevuerouterurladapter from '../../../snippets/vue-api/usevuerouterurladapter.ts?raw';
 import tovueref from '../../../snippets/vue-api/tovueref.ts?raw';
 import soundprovider from '../../../snippets/vue-api/soundprovider.vue?raw';
+import observe from '../../../snippets/vue-api/observe.vue?raw';
 import packageExports from '../../../snippets/vue-api/package-exports.ts?raw';
 
 Повний довідник `@reelkit/vue` : компоненти, композабли та утиліти.
@@ -213,6 +214,22 @@ A `UrlAdapter` на базі Vue Router. Передайте його як опц
 Підписка звільняється автоматично через `onScopeDispose`, so this must be called inside a Vue `setup()` чи інший контекст, обізнаний про область ефектів.
 
 <CodeBlock code={tovueref} language="typescript" />
+
+## Observe [#observe]
+
+Тег: `<Observe :signals="[…]">` — перемальовує свій типовий слот, щойно змінюється один із сигналів, і більше нічого навколо.
+
+Читання сигналу ядра у функції рендеру чи в шаблоні само по собі не підписує на нього. Звична відповідь — [`toVueRef`](#tovueref), але він прив’язує сигнал до компонента, який його викликав, тож сигнал, що змінюється часто, перемальовує цілий компонент. `Observe` — вужча межа: обгорніть нею ту частину, що показує значення, і решта компонента лишиться на місці. Саме цим користується плеєр історій, щоб оновлювати заголовок і смугу прогресу, не перемальовуючи жоден зі слайдерів.
+
+| Prop | Тип | Опис |
+| --- | --- | --- |
+| `signals` | `readonly Subscribable[]` | Сигнали, за якими стежити. Інший набір змінює підписку, той самий — зберігає її. На демонтажі все звільняється. |
+
+Тип пропсів експортовано як `ObserveProps`.
+
+<CodeBlock code={observe} language="vue" />
+
+Беріть `toVueRef`, коли за сигналом стежить цілий компонент, і `Observe`, коли лише його частина.
 
 ## SoundProvider [#soundprovider]
 

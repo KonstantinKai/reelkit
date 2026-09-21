@@ -1,0 +1,16 @@
+:root {
+  /* Pop-in and fade-out duration. */
+  --rk-stories-heart-duration: 500ms;
+}
+
+/* Colour and size are plain CSS on the element itself. */
+.rk-stories-heart svg {
+  width: 72px;
+  height: 72px;
+  fill: #ff4d6d;
+}
+
+/* Or hide it and animate your own from the double-tap event. */
+.rk-stories-heart {
+  display: none;
+}

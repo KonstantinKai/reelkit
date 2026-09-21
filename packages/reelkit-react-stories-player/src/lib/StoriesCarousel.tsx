@@ -1,17 +1,18 @@
-import type { ReactNode, TransitionEvent } from 'react';
+import type { CSSProperties, ReactNode, TransitionEvent } from 'react';
 import { Observe, type Subscribable } from '@reelkit/react';
-import type { StoryItem, StoriesGroup } from '@reelkit/stories-core';
-import type { GroupPreviewRenderProps } from './types';
 import {
+  formatTimeAgo,
   getCardOffsets,
   getCardSize,
   getCarouselSlot,
+  getRingPresentation,
   getSlideGroupIndexes,
   getSlotOffset,
   isCardShown,
-} from './layout';
-import { getRingPresentation } from './StoriesRing';
-import { formatTimeAgo } from './timeAgo';
+  type StoryItem,
+  type StoriesGroup,
+} from '@reelkit/stories-core';
+import type { GroupPreviewRenderProps } from './types';
 import './StoriesCarousel.css';
 
 /**
@@ -182,7 +183,7 @@ function DefaultCard<T extends StoryItem>({
         ) : null}
         <span className="rk-stories-card-scrim" />
         <span className="rk-stories-card-info">
-          <span className={ring.className} style={ring.style}>
+          <span className={ring.className} style={ring.style as CSSProperties}>
             <img
               className="rk-stories-ring-avatar"
               src={group.author.avatar}

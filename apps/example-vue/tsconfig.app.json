@@ -17,6 +17,9 @@
       "path": "../../packages/reelkit-vue-reel-player/tsconfig.lib.json"
     },
     {
+      "path": "../../packages/reelkit-vue-stories-player/tsconfig.lib.json"
+    },
+    {
       "path": "../../packages/reelkit-vue/tsconfig.lib.json"
     },
     {

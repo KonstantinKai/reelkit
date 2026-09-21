@@ -2,12 +2,12 @@
 
 <p>
   <a href="https://www.npmjs.com/package/@reelkit/react-stories-player"><img src="https://img.shields.io/npm/v/@reelkit/react-stories-player?color=6366f1&label=npm" alt="npm" /></a>
-  <img src="https://img.shields.io/badge/gzip-7.7%20kB-6366f1" alt="Bundle size" />
-  <img src="https://img.shields.io/badge/coverage-77%25-yellow" alt="Statement coverage" />
+  <img src="https://img.shields.io/badge/gzip-7.1%20kB-6366f1" alt="Bundle size" />
+  <img src="https://img.shields.io/badge/coverage-74%25-yellow" alt="Statement coverage" />
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
 
-Instagram-style stories player for React. Full-screen overlay with tap-to-advance navigation, 3D cube transition between users, auto-advance timer, segmented progress bar, and double-tap heart animation. ~7.7 kB gzip.
+Instagram-style stories player for React. Full-screen overlay with tap-to-advance navigation, 3D cube transition between users, auto-advance timer, segmented progress bar, and double-tap heart animation. ~7.1 kB gzip.
 
 **[Live Demo](https://react-demo.reelkit.dev/stories-player?utm_source=npm)**
 

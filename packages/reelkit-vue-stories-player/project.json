@@ -1,0 +1,14 @@
+{
+  "name": "@reelkit/vue-stories-player",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/reelkit-vue-stories-player/src",
+  "projectType": "library",
+  "tags": ["scope:vue", "type:stories"],
+  "targets": {},
+  "release": {
+    "version": {
+      "currentVersionResolver": "git-tag",
+      "fallbackCurrentVersionResolver": "disk"
+    }
+  }
+}

@@ -1,4 +1,4 @@
-import { clamp, extractRange } from '@reelkit/react';
+import { clamp, extractRange } from '@reelkit/core';
 
 const _kMobileBreakpoint = 768;
 const _kAspectRatio = 9 / 16;
@@ -45,9 +45,10 @@ export const isMobileWidth = (viewportWidth: number) =>
  * fills the window height, less a margin above and below, at 9:16, and only
  * narrows when the canvas and both arrows would not fit across the window.
  * Widths up to and including 768 count as a phone, matching the stylesheet,
- * which hides the arrows and squares the corners at that width.
+ * which hides the arrows and squares the corners at that width. Without a
+ * window (server rendering) the size is `[0, 0]`.
  */
-export const getSize = (): [number, number] => {
+export const getStoriesSize = (): [number, number] => {
   if (typeof window === 'undefined') return [0, 0];
   const viewportWidth = window.innerWidth;
   const viewportHeight = window.innerHeight;

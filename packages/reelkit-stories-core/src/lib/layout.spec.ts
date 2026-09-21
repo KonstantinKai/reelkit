@@ -1,10 +1,11 @@
-import { describe, it, expect } from 'vitest';
+import { afterEach, describe, it, expect, vi } from 'vitest';
 import {
   getCardOffsets,
   getCardSize,
   getCarouselSlot,
   getSlideGroupIndexes,
   getSlotOffset,
+  getStoriesSize,
   isCardShown,
   isMobileWidth,
   parseDurationMs,
@@ -119,5 +120,34 @@ describe('desktop carousel layout', () => {
   it('treats 768 and below as a phone', () => {
     expect(isMobileWidth(768)).toBe(true);
     expect(isMobileWidth(769)).toBe(false);
+  });
+});
+
+describe('story canvas size', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  const setViewport = (width: number, height: number) => {
+    vi.stubGlobal('innerWidth', width);
+    vi.stubGlobal('innerHeight', height);
+  };
+
+  it('fills a phone screen', () => {
+    setViewport(390, 844);
+    expect(getStoriesSize()).toEqual([390, 844]);
+  });
+
+  it('fills the window height less the margins at 9:16 on a desktop', () => {
+    setViewport(1440, 900);
+    expect(getStoriesSize()).toEqual([488.25, 868]);
+  });
+
+  it('narrows when the canvas and both arrows would not fit across', () => {
+    setViewport(800, 1200);
+    const [width, height] = getStoriesSize();
+    // Both arrows with their gap and the margin on each side take 152 pixels.
+    expect(width).toBeCloseTo(648, 5);
+    expect(height).toBeCloseTo(648 / (9 / 16), 5);
   });
 });

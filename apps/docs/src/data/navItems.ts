@@ -107,7 +107,6 @@ export const navItems: NavSection[] = [
         key: 'storiesPlayer',
         path: '/docs/vue-stories-player',
         framework: 'vue',
-        comingSoon: true,
       },
     ],
   },

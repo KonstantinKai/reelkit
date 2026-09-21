@@ -1,7 +1,6 @@
 import type { FC } from 'react';
 import { X, Pause, Play, Volume2, VolumeX } from 'lucide-react';
-import type { AuthorInfo } from '@reelkit/stories-core';
-import { formatTimeAgo } from './timeAgo';
+import { formatTimeAgo, type AuthorInfo } from '@reelkit/stories-core';
 import './StoryHeader.css';
 
 /** Props for the {@link StoryHeader} component. */
@@ -15,7 +14,7 @@ export interface StoryHeaderProps {
   /** Whether the story is currently paused. Controls the pause/play icon. */
   isPaused?: boolean;
 
-  /** Whether audio is muted. */
+  /** Picks which sound icon is drawn; the header mutes nothing itself. */
   isMuted?: boolean;
 
   /** Whether the current story is a video (shows sound toggle). */
@@ -33,13 +32,13 @@ export interface StoryHeaderProps {
    */
   visible?: boolean;
 
-  /** Callback fired when the close button is clicked. */
+  /** Required — the close button is always drawn, so it always needs a home. */
   onClose: () => void;
 
-  /** Callback fired when the pause/play button is clicked. */
+  /** Left out, the pause button is not drawn at all. */
   onTogglePause?: () => void;
 
-  /** Callback fired when the sound toggle button is clicked. */
+  /** The sound button needs both this and `isVideo`; either missing hides it. */
   onToggleSound?: () => void;
 }
 

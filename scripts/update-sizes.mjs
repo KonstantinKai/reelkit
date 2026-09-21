@@ -49,7 +49,12 @@ const packages = [
   {
     name: '@reelkit/react-stories-player',
     dir: 'reelkit-react-stories-player',
-    externalize: ['@reelkit/core', '@reelkit/react', '@reelkit/stories-core'],
+    externalize: [
+      '@reelkit/core',
+      '@reelkit/react',
+      '@reelkit/stories-core',
+      'lucide-react',
+    ],
   },
   {
     name: '@reelkit/angular',
@@ -80,6 +85,16 @@ const packages = [
     name: '@reelkit/vue-lightbox',
     dir: 'reelkit-vue-lightbox',
     externalize: ['@reelkit/core', '@reelkit/vue', 'lucide-vue-next'],
+  },
+  {
+    name: '@reelkit/vue-stories-player',
+    dir: 'reelkit-vue-stories-player',
+    externalize: [
+      '@reelkit/core',
+      '@reelkit/vue',
+      '@reelkit/stories-core',
+      'lucide-vue-next',
+    ],
   },
 ];
 

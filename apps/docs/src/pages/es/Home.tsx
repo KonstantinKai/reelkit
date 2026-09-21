@@ -422,7 +422,6 @@ export default function Home() {
                   {
                     name: '@reelkit/vue-stories-player',
                     label: 'Stories Player',
-                    comingSoon: true,
                   },
                 ],
               },
