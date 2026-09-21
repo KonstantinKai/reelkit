@@ -2,7 +2,8 @@
 
 <p>
   <a href="https://www.npmjs.com/package/@reelkit/stories-core"><img src="https://img.shields.io/npm/v/@reelkit/stories-core?color=6366f1&label=npm" alt="npm" /></a>
-  <img src="https://img.shields.io/badge/stories--core%20gzip-2.0%20kB-6366f1" alt="Bundle size" />
+  <img src="https://img.shields.io/badge/gzip-2.4%20kB-6366f1" alt="Bundle size" />
+  <img src="https://img.shields.io/badge/coverage-96%25-brightgreen" alt="Statement coverage" />
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
 
@@ -55,6 +56,8 @@ const segments = getSegments(5, 2, 0.6);
 - Timer controller with `requestAnimationFrame` progress and pause/resume
 - Tap zone calculator (configurable left/right split ratio)
 - Segmented progress bar with sliding window overflow
+- Canvas progress renderer — one element for a group of any length
+- Viewed-state controller with resume, expiry and a cap on what is remembered
 - Zero dependencies beyond `@reelkit/core`
 - Pure functions, fully tree-shakeable
 
@@ -62,14 +65,14 @@ const segments = getSegments(5, 2, 0.6);
 
 ### createStoriesController
 
-| Config                 | Type       | Default  | Description               |
-| ---------------------- | ---------- | -------- | ------------------------- |
-| `groupCount`           | `number`   | required | Number of story groups    |
-| `storyCounts`          | `number[]` | required | Stories per group         |
-| `initialGroupIndex`    | `number`   | `0`      | Starting group index      |
-| `initialStoryIndex`    | `number`   | `0`      | Starting story index      |
-| `defaultImageDuration` | `number`   | `5000`   | Default auto-advance (ms) |
-| `tapZoneSplit`         | `number`   | `0.3`    | Left zone ratio (0-1)     |
+| Config                 | Type                     | Default  | Description                                      |
+| ---------------------- | ------------------------ | -------- | ------------------------------------------------ |
+| `groupCount`           | `number`                 | required | Number of story groups                           |
+| `storyCounts`          | `number[]`               | required | Stories per group                                |
+| `initialGroupIndex`    | `number`                 | `0`      | Starting group index                             |
+| `initialStoryIndex`    | `number`                 | `0`      | Starting story index                             |
+| `defaultImageDuration` | `number`                 | `5000`   | Default auto-advance (ms)                        |
+| `resumeStoryIndex`     | `(groupIndex) => number` | —        | Where a group opens when nothing was watched yet |
 
 ### StoriesController
 
@@ -99,6 +102,65 @@ const segments = getSegments(5, 2, 0.6);
 | `onStoryViewed` | `(groupIndex, storyIndex) => void` | Fired when a story is viewed          |
 | `onComplete`    | `() => void`                       | Last story of last group finished     |
 | `onClose`       | `() => void`                       | Close requested (boundary navigation) |
+
+### createTimerController
+
+Drives auto-advance: a requestAnimationFrame timer whose progress is a signal, so
+a progress bar can follow it without a re-render per frame.
+
+```ts
+function createTimerController(config: {
+  duration: number;
+  onComplete?: () => void;
+}): {
+  readonly progress: Signal<number>; // 0-1
+  readonly isRunning: Signal<boolean>;
+  start: (duration?: number) => void;
+  pause: () => void;
+  resume: () => void;
+  reset: () => void;
+  dispose: () => void;
+};
+```
+
+### createCanvasProgressRenderer
+
+Draws the segmented progress bar onto a canvas, so a 200-story group costs one
+element instead of 200.
+
+```ts
+function createCanvasProgressRenderer(config?: {
+  gap?: number;
+  barHeight?: number;
+  minSegmentWidth?: number;
+  bgColor?: string;
+  fillColor?: string;
+}): {
+  readonly width: number;
+  attach: (canvas: HTMLCanvasElement) => void;
+  draw: (totalStories: number, activeIndex: number, progress: number) => void;
+  dispose: () => void;
+};
+```
+
+### createStoriesViewedStateController
+
+Remembers which stories were watched, so rings dim and a group reopens where the
+reader left it. Storage-agnostic — `localStorage` by default.
+
+```ts
+function createStoriesViewedStateController(config: {
+  storageKey: string; // for example 'stories-seen'
+  groups: () => StoriesGroup[]; // getter, called whenever the counts are needed
+  storage?: StorageAdapter; // default: localStorage
+  key?: UrlKey; // how a position is spelled in storage
+  ttlMs?: number; // forget a group this long after it was last recorded
+  maxTracks?: number; // cap how many groups stay remembered
+}): StoriesViewedStateController;
+```
+
+Pass the returned controller to the player and to the ring list — both follow it
+by themselves.
 
 ### getTapAction
 
@@ -154,7 +216,7 @@ interface VisibleWindow {
 
 ## Documentation
 
-API reference and guides at **[reelkit.dev](https://reelkit.dev)**.
+Guide and API reference at **[reelkit.dev/docs/stories-core](https://reelkit.dev/docs/stories-core)**.
 
 ## Support
 

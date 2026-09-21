@@ -3,7 +3,7 @@
 <p>
   <a href="https://www.npmjs.com/package/@reelkit/core"><img src="https://img.shields.io/npm/v/@reelkit/core?color=6366f1&label=npm" alt="npm" /></a>
   <img src="https://img.shields.io/badge/gzip-10.1%20kB-6366f1" alt="Bundle size" />
-  <img src="https://img.shields.io/badge/coverage-95%25-brightgreen" alt="Coverage" />
+  <img src="https://img.shields.io/badge/coverage-94%25-brightgreen" alt="Statement coverage" />
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
 
@@ -45,15 +45,20 @@ slider.currentIndex.subscribe((index) => {
 - Zero dependencies, ~10.1 kB gzip
 - Factory functions over classes — `createSliderController`, `createGestureController`, `createKeyboardController`, `createWheelController`
 - Built-in `Signal`, `ComputedSignal`, and `reaction` primitives for reactive state
-- Touch gestures with momentum and configurable thresholds
+- Touch gestures with momentum and configurable thresholds — tap, double-tap and long press on the same recognizer
 - Keyboard and wheel navigation with debouncing
 - Infinite loop mode
 - Optional ResizeObserver-based auto-sizing
+- Transitions — `slideTransition`, `fadeTransition`, `flipTransition`, `cubeTransition`, `zoomTransition`; only the one you import ships
+- URL state — `createUrlStateController` with index, stable-id and two-axis keys, so a link reopens a slide
+- Viewed state — `createViewedStateController` over local, session or memory storage, with expiry and a cap
+- Media — content preloading, a shared `<video>` element for iOS sound continuity, sound and playback-timeline controllers
+- Fullscreen, body-scroll lock, focus trap and focus return for overlays
 - Strict TypeScript throughout
 
 ## Documentation
 
-API reference and guides at **[reelkit.dev](https://reelkit.dev)**.
+Guide at **[reelkit.dev/docs/core/guide](https://reelkit.dev/docs/core/guide)**, full API reference at **[reelkit.dev/docs/core/api](https://reelkit.dev/docs/core/api)**.
 
 ## Support
 

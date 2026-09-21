@@ -2,7 +2,8 @@
 
 <p>
   <a href="https://www.npmjs.com/package/@reelkit/angular-lightbox"><img src="https://img.shields.io/npm/v/@reelkit/angular-lightbox?color=6366f1&label=npm" alt="npm" /></a>
-  <img src="https://img.shields.io/badge/angular%20gzip-17.9%20kB-6366f1" alt="Bundle size" />
+  <img src="https://img.shields.io/badge/gzip-15.4%20kB-6366f1" alt="Bundle size" />
+  <img src="https://img.shields.io/badge/coverage-87%25-green" alt="Statement coverage" />
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
 
@@ -71,7 +72,9 @@ export class GalleryComponent {
 - Counter — "1 / 10" indicator
 - Info overlay — title and description with gradient
 - Template slots — `rkLightboxControls`, `rkLightboxNavigation`, `rkLightboxInfo`, `rkLightboxSlide` to override any part
-- Sub-components — `RkCloseButtonComponent`, `RkCounterComponent`, `RkFullscreenButtonComponent`, `RkSoundButtonComponent`
+- Sub-components — `RkCloseButtonComponent`, `RkCounterComponent`, `RkFullscreenButtonComponent`, `RkSoundButtonComponent`, `RkLightboxVideoSlideComponent`
+- Shareable URLs — `<rk-lightbox-url-overlay>` opens itself from the address bar
+- `rkSwipeToClose` directive for dismissing the overlay by swipe
 
 ## Template Slots
 
@@ -81,24 +84,28 @@ export class GalleryComponent {
 | `rkLightboxNavigation` | Custom prev/next navigation arrows                |
 | `rkLightboxInfo`       | Custom title/description overlay                  |
 | `rkLightboxSlide`      | Custom slide renderer (required for video slides) |
+| `rkLightboxLoading`    | Custom loading indicator                          |
+| `rkLightboxError`      | Custom error indicator                            |
 
 ## API Reference
 
 ### rk-lightbox-overlay Inputs
 
-| Input                 | Type                    | Default           | Description                              |
-| --------------------- | ----------------------- | ----------------- | ---------------------------------------- |
-| `isOpen`              | `boolean`               | required          | Controls lightbox visibility             |
-| `items`               | `LightboxItem[]`        | required          | Array of items to display                |
-| `initialIndex`        | `number`                | `0`               | Starting image index                     |
-| `transitionFn`        | `TransitionTransformFn` | `slideTransition` | Slide transition fn (built-in or custom) |
-| `showInfo`            | `boolean`               | `true`            | Show title/description                   |
-| `loop`                | `boolean`               | `false`           | Enable infinite loop                     |
-| `enableNavKeys`       | `boolean`               | `true`            | Enable keyboard navigation               |
-| `enableWheel`         | `boolean`               | `true`            | Enable mouse wheel                       |
-| `wheelDebounceMs`     | `number`                | `200`             | Wheel debounce (ms)                      |
-| `transitionDuration`  | `number`                | `300`             | Animation duration (ms)                  |
-| `swipeDistanceFactor` | `number`                | `0.12`            | Swipe threshold (0-1)                    |
+| Input                   | Type                    | Default           | Description                              |
+| ----------------------- | ----------------------- | ----------------- | ---------------------------------------- |
+| `isOpen`                | `boolean`               | required          | Controls lightbox visibility             |
+| `items`                 | `LightboxItem[]`        | required          | Array of items to display                |
+| `initialIndex`          | `number`                | `0`               | Starting image index                     |
+| `transitionFn`          | `TransitionTransformFn` | `slideTransition` | Slide transition fn (built-in or custom) |
+| `swipeToCloseDirection` | `SwipeToCloseDirection` | `'up'`            | Which way a swipe dismisses the lightbox |
+| `ariaLabel`             | `string`                | `'Image gallery'` | Dialog `aria-label`                      |
+| `showInfo`              | `boolean`               | `true`            | Show title/description                   |
+| `loop`                  | `boolean`               | `false`           | Enable infinite loop                     |
+| `enableNavKeys`         | `boolean`               | `true`            | Enable keyboard navigation               |
+| `enableWheel`           | `boolean`               | `true`            | Enable mouse wheel                       |
+| `wheelDebounceMs`       | `number`                | `200`             | Wheel debounce (ms)                      |
+| `transitionDuration`    | `number`                | `300`             | Animation duration (ms)                  |
+| `swipeDistanceFactor`   | `number`                | `0.12`            | Swipe threshold (0-1)                    |
 
 ### rk-lightbox-overlay Outputs
 
@@ -131,6 +138,45 @@ Use these inside custom `rkLightboxControls` templates:
 | `RkCounterComponent`          | "1 / 10" counter   |
 | `RkFullscreenButtonComponent` | Fullscreen toggle  |
 | `RkSoundButtonComponent`      | Mute/unmute toggle |
+
+## URL-driven lightbox
+
+`<rk-lightbox-url-overlay>` takes the same inputs except `isOpen` — the address
+bar owns the open state, so a shared link opens the gallery on the right image:
+
+```ts
+import { Component, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { RkLightboxUrlOverlayComponent } from '@reelkit/angular-lightbox';
+import { createOverlayUrlState, urlIndexKey } from '@reelkit/angular';
+
+@Component({
+  imports: [RkLightboxUrlOverlayComponent, RouterLink],
+  template: `
+    @for (image of images(); track image.src; let i = $index) {
+      <a [routerLink]="[]" [queryParams]="{ photo: i }">
+        <img [src]="image.src" alt="" />
+      </a>
+    }
+
+    <rk-lightbox-url-overlay [controller]="photo" [items]="images()" />
+  `,
+})
+export class GalleryComponent {
+  protected readonly images = signal(photos);
+
+  // Attaches now, releases on destroy.
+  protected readonly photo = createOverlayUrlState({
+    param: 'photo',
+    ...urlIndexKey(() => this.images().length),
+  });
+}
+```
+
+In a routed application pass `adapter: createRouterUrlAdapter()` from
+`@reelkit/angular/ng-router-url-adapter`, otherwise the router's own location
+goes stale. Swap `urlIndexKey` for `urlStableIdKey({ items: () => this.images() })`
+to key the URL by image id.
 
 ## Keyboard Shortcuts
 
@@ -170,11 +216,11 @@ All UI elements use CSS classes prefixed with `rk-lightbox-`:
 
 ### Theming via CSS custom properties
 
-Every visual value is exposed as a `--rk-lightbox-*` custom property with a sensible default. Override at `:root` (or any ancestor of `.rk-lightbox-overlay`) to retheme without touching component source — see the [Theming docs](https://reelkit.dev/docs/angular-lightbox#theming) for the full token table.
+Every visual value is exposed as a `--rk-lightbox-*` custom property with a sensible default. Override at `:root` (or any ancestor of `.rk-lightbox-overlay`) to retheme without touching component source — see the [Theming docs](https://reelkit.dev/docs/angular-lightbox?framework=angular#theming) for the full token table.
 
 ## Documentation
 
-Docs, demos, and customization examples at **[reelkit.dev/docs/angular-lightbox](https://reelkit.dev/docs/angular-lightbox)**.
+Docs, runnable StackBlitz examples, and customization guides at **[reelkit.dev/docs/angular-lightbox](https://reelkit.dev/docs/angular-lightbox?framework=angular)**.
 
 ## Support
 

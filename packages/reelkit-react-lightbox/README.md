@@ -3,7 +3,7 @@
 <p>
   <a href="https://www.npmjs.com/package/@reelkit/react-lightbox"><img src="https://img.shields.io/npm/v/@reelkit/react-lightbox?color=6366f1&label=npm" alt="npm" /></a>
   <img src="https://img.shields.io/badge/gzip-3.4%20kB-6366f1" alt="Bundle size" />
-  <img src="https://img.shields.io/badge/coverage-95%25-brightgreen" alt="Coverage" />
+  <img src="https://img.shields.io/badge/coverage-94%25-brightgreen" alt="Statement coverage" />
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
 
@@ -65,24 +65,34 @@ function App() {
 - Video slides (opt-in) — tree-shakeable video support via `useVideoSlideRenderer`
 - Counter — "1 / 10" indicator
 - Info overlay — title and description with gradient
-- Render props — `renderControls`, `renderNavigation`, `renderInfo`, `renderSlide` to override any part of the UI
+- Render props — `renderControls`, `renderNavigation`, `renderInfo`, `renderSlide`, `renderLoading`, `renderError` to override any part of the UI
 - Sub-components — `CloseButton`, `Counter`, `FullscreenButton`, `SoundButton` for composing custom controls
+- Shareable URLs — `LightboxUrlOverlay` opens itself from the address bar
 
 ## API Reference
 
 ### LightboxOverlay Props
 
-| Prop               | Type                                                 | Default           | Description                              |
-| ------------------ | ---------------------------------------------------- | ----------------- | ---------------------------------------- |
-| `isOpen`           | `boolean`                                            | required          | Controls lightbox visibility             |
-| `images`           | `LightboxItem[]`                                     | required          | Array of images to display               |
-| `initialIndex`     | `number`                                             | `0`               | Starting image index                     |
-| `transitionFn`     | `TransitionTransformFn`                              | `slideTransition` | Slide transition fn (built-in or custom) |
-| `apiRef`           | `MutableRefObject<ReelApi>`                          | -                 | Ref to access Reel API                   |
-| `renderControls`   | `(props) => ReactNode`                               | -                 | Custom controls                          |
-| `renderNavigation` | `(props) => ReactNode`                               | -                 | Custom navigation arrows                 |
-| `renderInfo`       | `(props) => ReactNode`                               | -                 | Custom info overlay                      |
-| `renderSlide`      | `(item, index, size, isActive) => ReactNode \| null` | -                 | Custom slide rendering                   |
+| Prop                    | Type                                | Default           | Description                                      |
+| ----------------------- | ----------------------------------- | ----------------- | ------------------------------------------------ |
+| `isOpen`                | `boolean`                           | required          | Controls lightbox visibility                     |
+| `images`                | `LightboxItem[]`                    | required          | Array of images to display                       |
+| `initialIndex`          | `number`                            | `0`               | Starting image index                             |
+| `transitionFn`          | `TransitionTransformFn`             | `slideTransition` | Slide transition fn (built-in or custom)         |
+| `swipeToCloseDirection` | `SwipeToCloseDirection`             | `'up'`            | Which way a swipe dismisses the lightbox         |
+| `ariaLabel`             | `string`                            | `'Image gallery'` | Accessible label announced when the dialog opens |
+| `apiRef`                | `MutableRefObject<ReelApi \| null>` | -                 | Ref to access Reel API                           |
+
+### Render Props
+
+| Prop               | Receives                | Replaces                                                       |
+| ------------------ | ----------------------- | -------------------------------------------------------------- |
+| `renderSlide`      | `SlideRenderProps`      | The slide itself; `null` falls back to the default image slide |
+| `renderControls`   | `ControlsRenderProps`   | Counter, fullscreen, sound, close                              |
+| `renderNavigation` | `NavigationRenderProps` | Previous/next arrows                                           |
+| `renderInfo`       | `InfoRenderProps`       | Title and description overlay                                  |
+| `renderLoading`    | `{ item, activeIndex }` | The loading indicator                                          |
+| `renderError`      | `{ item, activeIndex }` | The error indicator                                            |
 
 ### Callbacks
 
@@ -121,11 +131,9 @@ interface LightboxItem {
 Video support is tree-shakeable — image-only usage pays zero extra bundle cost. Import `useVideoSlideRenderer` and wire it into `LightboxOverlay` to enable video slides.
 
 ```tsx
+import { useState } from 'react';
 import {
   LightboxOverlay,
-  Counter,
-  CloseButton,
-  SoundButton,
   useVideoSlideRenderer,
   type LightboxItem,
 } from '@reelkit/react-lightbox';
@@ -144,11 +152,11 @@ const items: LightboxItem[] = [
 function Gallery() {
   const [index, setIndex] = useState<number | null>(null);
   const isOpen = index !== null;
-  const { renderSlide, isMuted, onToggleMute, hasVideo } =
-    useVideoSlideRenderer(items, isOpen);
+  const { renderSlide, renderControls, SoundProvider } =
+    useVideoSlideRenderer(items);
 
   return (
-    <>
+    <SoundProvider>
       {/* thumbnails… */}
       <LightboxOverlay
         isOpen={isOpen}
@@ -156,19 +164,9 @@ function Gallery() {
         initialIndex={index ?? 0}
         onClose={() => setIndex(null)}
         renderSlide={renderSlide}
-        renderControls={({ onClose, currentIndex, count }) => (
-          <>
-            <div className="rk-lightbox-controls-left">
-              <Counter currentIndex={currentIndex} count={count} />
-              {hasVideo && (
-                <SoundButton isMuted={isMuted} onToggle={onToggleMute} />
-              )}
-            </div>
-            <CloseButton onClick={onClose} />
-          </>
-        )}
+        renderControls={renderControls}
       />
-    </>
+    </SoundProvider>
   );
 }
 ```
@@ -176,18 +174,28 @@ function Gallery() {
 ### useVideoSlideRenderer
 
 ```ts
-function useVideoSlideRenderer(
-  items: LightboxItem[],
-  isOpen?: boolean,
-): {
-  renderSlide: (item, index, size, isActive) => ReactNode | null;
-  isMuted: boolean; // current mute state (default: true)
-  onToggleMute: () => void;
-  hasVideo: boolean; // true if items contain at least one video
+function useVideoSlideRenderer(items: LightboxItem[]): {
+  SoundProvider: FC<{ children: ReactNode }>; // wrap the lightbox in it — mute state lives here
+  renderSlide: (props: SlideRenderProps) => ReactNode | null; // video items only, null for images
+  renderControls: (props: ControlsRenderProps) => ReactNode; // counter, fullscreen, sound, close
+  hasVideo: boolean; // at least one item has `type: 'video'`
 };
 ```
 
-Pass `isOpen` to reset muted state when the lightbox closes (enables autoplay on reopen).
+The returned `renderControls` already includes the sound button when the gallery
+holds a video. Build your own from the sub-components when you need a different
+layout:
+
+```tsx
+renderControls={({ onClose, activeIndex, count }) => (
+  <>
+    <div className="rk-lightbox-controls-left">
+      <Counter currentIndex={activeIndex} count={count} />
+    </div>
+    <CloseButton onClick={onClose} />
+  </>
+)}
+```
 
 ### SoundButton
 
@@ -197,6 +205,36 @@ Pass `isOpen` to reset muted state when the lightbox closes (enables autoplay on
 | `onToggle`  | `() => void`    | Toggle callback                        |
 | `className` | `string`        | CSS class (default: `rk-lightbox-btn`) |
 | `style`     | `CSSProperties` | Inline styles                          |
+
+## URL-driven lightbox
+
+`LightboxUrlOverlay` takes the same props except `isOpen` — the address bar owns
+the open state, so a shared link opens the gallery on the right image:
+
+```tsx
+import { useOverlayUrlState, urlIndexKey } from '@reelkit/react';
+import { LightboxUrlOverlay } from '@reelkit/react-lightbox';
+import { Link } from 'react-router-dom';
+
+const photo = useOverlayUrlState({
+  param: 'photo',
+  ...urlIndexKey(() => images.length),
+});
+
+// Opening is a link — the overlay reads the URL and opens itself.
+{
+  images.map((image, i) => (
+    <Link key={image.src} to={`?photo=${i}`}>
+      <img src={image.src} />
+    </Link>
+  ));
+}
+
+<LightboxUrlOverlay controller={photo} images={images} />;
+```
+
+Swap `urlIndexKey` for `urlStableIdKey({ items: () => images })` to key the URL
+by image id, so a bookmark survives the gallery being reordered.
 
 ## Keyboard Shortcuts
 

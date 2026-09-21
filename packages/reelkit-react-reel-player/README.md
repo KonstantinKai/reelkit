@@ -3,7 +3,7 @@
 <p>
   <a href="https://www.npmjs.com/package/@reelkit/react-reel-player"><img src="https://img.shields.io/npm/v/@reelkit/react-reel-player?color=6366f1&label=npm" alt="npm" /></a>
   <img src="https://img.shields.io/badge/gzip-5.4%20kB-6366f1" alt="Bundle size" />
-  <img src="https://img.shields.io/badge/coverage-90%25-brightgreen" alt="Coverage" />
+  <img src="https://img.shields.io/badge/coverage-87%25-green" alt="Statement coverage" />
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
 
@@ -65,30 +65,98 @@ function App() {
 - Vertical swipe navigation (touch, mouse, keyboard, wheel)
 - Video autoplay with sound toggle
 - Multi-media posts with horizontal nested slider
+- Playback timeline bar over long videos, scrubbable, with buffered ranges
 - Instagram-style indicator dots
 - Keyboard navigation (Arrow keys, Escape)
 - Desktop navigation arrows
 - iOS sound continuity
 - Video position memory
+- Shareable URLs — `ReelPlayerUrlOverlay` opens itself from the address bar
+- Replaceable UI — a render prop for every part, or compose from the exported sub-components
+- Themeable — every visual value is a `--rk-reel-*` custom property
 
 ## API Reference
 
 ### ReelPlayerOverlay
 
-| Prop                  | Type                        | Default  | Description                   |
-| --------------------- | --------------------------- | -------- | ----------------------------- |
-| `isOpen`              | `boolean`                   | required | Controls overlay visibility   |
-| `onClose`             | `() => void`                | required | Called when player closes     |
-| `content`             | `ContentItem[]`             | required | Content items to display      |
-| `initialIndex`        | `number`                    | `0`      | Starting slide index          |
-| `onSlideChange`       | `(index: number) => void`   | -        | Callback after slide change   |
-| `apiRef`              | `MutableRefObject<ReelApi>` | -        | Ref to access Reel API        |
-| `loop`                | `boolean`                   | `false`  | Enable infinite loop          |
-| `enableNavKeys`       | `boolean`                   | `true`   | Enable keyboard navigation    |
-| `enableWheel`         | `boolean`                   | `true`   | Enable mouse wheel navigation |
-| `wheelDebounceMs`     | `number`                    | `200`    | Wheel debounce duration (ms)  |
-| `transitionDuration`  | `number`                    | `300`    | Transition duration (ms)      |
-| `swipeDistanceFactor` | `number`                    | `0.12`   | Swipe threshold (0-1)         |
+| Prop                         | Type                                | Default          | Description                                               |
+| ---------------------------- | ----------------------------------- | ---------------- | --------------------------------------------------------- |
+| `isOpen`                     | `boolean`                           | required         | Controls overlay visibility                               |
+| `onClose`                    | `() => void`                        | required         | Called when the player closes                             |
+| `content`                    | `T[]`                               | required         | Content items to display; `T` defaults to `ContentItem`   |
+| `initialIndex`               | `number`                            | `0`              | Starting slide index                                      |
+| `initialInnerIndex`          | `number`                            | `0`              | Inner media index for the first slide only                |
+| `aspectRatio`                | `number`                            | `0.5625`         | Desktop container ratio; mobile always fills the viewport |
+| `ariaLabel`                  | `string`                            | `'Video player'` | Accessible label announced when the dialog opens          |
+| `timeline`                   | `'auto' \| 'always' \| 'never'`     | `'auto'`         | When the built-in timeline bar renders                    |
+| `timelineMinDurationSeconds` | `number`                            | `30`             | Under `'auto'`, videos shorter than this get no bar       |
+| `apiRef`                     | `MutableRefObject<ReelApi \| null>` | -                | Ref to access the Reel API                                |
+| `loop`                       | `boolean`                           | `false`          | Enable infinite loop                                      |
+| `enableNavKeys`              | `boolean`                           | `true`           | Enable keyboard navigation                                |
+| `enableWheel`                | `boolean`                           | `true`           | Enable mouse wheel navigation                             |
+| `wheelDebounceMs`            | `number`                            | `200`            | Wheel debounce duration (ms)                              |
+| `transitionDuration`         | `number`                            | `300`            | Transition duration (ms)                                  |
+| `swipeDistanceFactor`        | `number`                            | `0.12`           | Swipe threshold (0-1)                                     |
+
+### Callbacks
+
+| Prop                 | Type                               | Description                                                         |
+| -------------------- | ---------------------------------- | ------------------------------------------------------------------- |
+| `onSlideChange`      | `(index: number) => void`          | Fired after the vertical slide changes                              |
+| `onInnerSlideChange` | `(outerIndex, innerIndex) => void` | Inner media changed, or a post activated at its current inner index |
+
+### Render Props
+
+Each one replaces a part of the default UI. Those receiving `defaultContent`
+let you wrap the built-in rendering instead of rebuilding it; returning `null`
+hides that part.
+
+| Prop                     | Receives                  | Replaces                                           |
+| ------------------------ | ------------------------- | -------------------------------------------------- |
+| `renderSlide`            | `SlideRenderProps<T>`     | The whole slide — video, image or nested slider    |
+| `renderSlideOverlay`     | `(item, index, isActive)` | The per-slide overlay (author, likes, description) |
+| `renderControls`         | `ControlsRenderProps<T>`  | Close and sound buttons                            |
+| `renderTimeline`         | `TimelineRenderProps<T>`  | The playback timeline bar                          |
+| `renderNavigation`       | `NavigationRenderProps`   | Desktop up/down arrows                             |
+| `renderNestedNavigation` | `NavigationRenderProps`   | Left/right arrows inside a multi-media post        |
+| `renderNestedSlide`      | `NestedSlideRenderProps`  | One item of a multi-media post                     |
+| `renderLoading`          | `{ item, activeIndex }`   | The wave loader                                    |
+| `renderError`            | `{ item, activeIndex }`   | The error icon                                     |
+
+### URL-driven player
+
+`ReelPlayerUrlOverlay` takes the same props except `isOpen` — the address bar
+owns the open state, so a shared link reopens the same post:
+
+```tsx
+import { ReelPlayerUrlOverlay } from '@reelkit/react-reel-player';
+import { useOverlayUrlState, urlIndexTwoAxisKey } from '@reelkit/react';
+
+function Feed() {
+  const reel = useOverlayUrlState({
+    param: 'reel',
+    ...urlIndexTwoAxisKey({
+      outerCount: () => content.length,
+      innerCounts: () => content.map((post) => post.media.length),
+    }),
+  });
+
+  return <ReelPlayerUrlOverlay controller={reel} content={content} />;
+}
+```
+
+A one-axis `urlIndexKey(() => content.length)` writes the post alone
+(`?reel=3`); the two-axis key above also writes the inner media index
+(`?reel=3.2`). The overlay reads which one it got from the position shape —
+there is no mode prop.
+
+### Sub-components
+
+For composing custom controls or slides rather than replacing the whole thing:
+`CloseButton`, `SoundButton`, `ImageSlide`, `VideoSlide`, `SlideOverlay`,
+`TimelineBar`, plus `TimelineProvider` with `useTimelineState` and
+`useTimelineStateOptional` to read playback state (progress, buffered ranges,
+duration) anywhere inside the player.
 
 ### Types
 
@@ -248,6 +316,18 @@ function Gallery() {
 | `.rk-reel-media-error`               | Error state container             |
 | `.rk-reel-media-error-text`          | Error message text                |
 | `.rk-reel-loader`                    | Wave loading overlay              |
+
+### Theming via CSS custom properties
+
+Every visual value is exposed as a `--rk-reel-*` custom property with a sensible default. Override at `:root` (or any ancestor of `.rk-reel-overlay`) to retheme without touching component source — see the [Theming docs](https://reelkit.dev/docs/reel-player#theming) for the full token table.
+
+```css
+:root {
+  --rk-reel-button-bg: rgba(0, 0, 0, 0.6);
+  --rk-reel-button-size: 44px;
+  --rk-reel-edge-padding: 20px;
+}
+```
 
 ## Documentation
 

@@ -2,7 +2,8 @@
 
 <p>
   <a href="https://www.npmjs.com/package/@reelkit/angular-reel-player"><img src="https://img.shields.io/npm/v/@reelkit/angular-reel-player?color=6366f1&label=npm" alt="npm" /></a>
-  <img src="https://img.shields.io/badge/angular%20gzip-15.8%20kB-6366f1" alt="Bundle size" />
+  <img src="https://img.shields.io/badge/gzip-24.4%20kB-6366f1" alt="Bundle size" />
+  <img src="https://img.shields.io/badge/coverage-84%25-green" alt="Statement coverage" />
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
 
@@ -69,6 +70,9 @@ export class AppComponent {
 - Desktop navigation arrows
 - iOS sound continuity via shared `<video>` element
 - Video position memory across slide changes
+- Playback timeline bar over long videos, scrubbable, with buffered ranges
+- Shareable URLs — `<rk-reel-player-url-overlay>` opens itself from the address bar
+- Sub-components — `RkCloseButtonComponent`, `RkSoundButtonComponent`, `RkImageSlideComponent`, `RkVideoSlideComponent`, `RkSlideOverlayComponent`, `RkTimelineBarComponent`
 
 ## Template Slots
 
@@ -82,22 +86,32 @@ Customization via `@ContentChild` template directives:
 | `rkPlayerNavigation`       | Custom prev/next navigation arrows             |
 | `rkPlayerNestedSlide`      | Custom nested horizontal slide content         |
 | `rkPlayerNestedNavigation` | Custom arrows for the inner slider             |
+| `rkPlayerTimeline`         | Custom playback timeline bar                   |
+| `rkPlayerLoading`          | Custom loading indicator                       |
+| `rkPlayerError`            | Custom error indicator                         |
+
+`PLAYER_TEMPLATE_SLOT_DIRECTIVES` imports all of them at once.
 
 ## API Reference
 
 ### rk-reel-player-overlay Inputs
 
-| Input                 | Type            | Default  | Description                   |
-| --------------------- | --------------- | -------- | ----------------------------- |
-| `isOpen`              | `boolean`       | required | Controls overlay visibility   |
-| `content`             | `ContentItem[]` | required | Content items to display      |
-| `initialIndex`        | `number`        | `0`      | Starting slide index          |
-| `loop`                | `boolean`       | `false`  | Enable infinite loop          |
-| `enableNavKeys`       | `boolean`       | `true`   | Enable keyboard navigation    |
-| `enableWheel`         | `boolean`       | `true`   | Enable mouse wheel navigation |
-| `wheelDebounceMs`     | `number`        | `200`    | Wheel debounce duration (ms)  |
-| `transitionDuration`  | `number`        | `300`    | Transition duration (ms)      |
-| `swipeDistanceFactor` | `number`        | `0.12`   | Swipe threshold (0-1)         |
+| Input                        | Type                            | Default          | Description                                         |
+| ---------------------------- | ------------------------------- | ---------------- | --------------------------------------------------- |
+| `isOpen`                     | `boolean`                       | required         | Controls overlay visibility                         |
+| `content`                    | `ContentItem[]`                 | required         | Content items to display                            |
+| `initialIndex`               | `number`                        | `0`              | Starting slide index                                |
+| `initialInnerIndex`          | `number`                        | -                | Inner media index for the first slide only          |
+| `aspectRatio`                | `number`                        | `9/16`           | Desktop container ratio                             |
+| `ariaLabel`                  | `string`                        | `'Video player'` | Accessible label announced when the overlay opens   |
+| `timeline`                   | `'auto' \| 'always' \| 'never'` | `'auto'`         | When the built-in timeline bar renders              |
+| `timelineMinDurationSeconds` | `number`                        | `30`             | Under `'auto'`, videos shorter than this get no bar |
+| `loop`                       | `boolean`                       | `false`          | Enable infinite loop                                |
+| `enableNavKeys`              | `boolean`                       | `true`           | Enable keyboard navigation                          |
+| `enableWheel`                | `boolean`                       | `true`           | Enable mouse wheel navigation                       |
+| `wheelDebounceMs`            | `number`                        | `200`            | Wheel debounce duration (ms)                        |
+| `transitionDuration`         | `number`                        | `300`            | Transition duration (ms)                            |
+| `swipeDistanceFactor`        | `number`                        | `0.12`           | Swipe threshold (0-1)                               |
 
 ### rk-reel-player-overlay Outputs
 
@@ -128,6 +142,51 @@ interface MediaItem {
   aspectRatio: number;
 }
 ```
+
+## URL-driven player
+
+`<rk-reel-player-url-overlay>` takes the same inputs except `isOpen` — the
+address bar owns the open state, so a shared link reopens the same post:
+
+```ts
+import { Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import {
+  RkReelPlayerUrlOverlayComponent,
+  type ContentItem,
+} from '@reelkit/angular-reel-player';
+import { createOverlayUrlState, urlIndexKey } from '@reelkit/angular';
+import { createRouterUrlAdapter } from '@reelkit/angular/ng-router-url-adapter';
+import '@reelkit/angular-reel-player/styles.css';
+
+@Component({
+  imports: [RkReelPlayerUrlOverlayComponent, RouterLink],
+  template: `
+    @for (post of content; track post.id; let i = $index) {
+      <a [routerLink]="[]" [queryParams]="{ reel: i }">{{ post.id }}</a>
+    }
+
+    <rk-reel-player-url-overlay [controller]="reel" [content]="content" />
+  `,
+})
+export class FeedComponent {
+  content: ContentItem[] = [
+    /* ... */
+  ];
+
+  // Attaches now, releases on destroy.
+  protected readonly reel = createOverlayUrlState({
+    param: 'reel',
+    adapter: createRouterUrlAdapter(),
+    ...urlIndexKey(() => this.content.length),
+  });
+}
+```
+
+Swap `urlIndexKey` for `urlIndexTwoAxisKey` to put the inner media index in the
+URL too (`?reel=3.2`), or `urlStableIdKey` to key it by post id so a bookmark
+survives the feed being reordered. Drop the adapter outside the Angular router —
+the History API is the default.
 
 ## Keyboard Shortcuts
 
@@ -172,11 +231,11 @@ interface MediaItem {
 
 ### Theming via CSS custom properties
 
-Every visual value is exposed as a `--rk-reel-*` custom property with a sensible default. Override at `:root` (or any ancestor of `.rk-reel-overlay`) to retheme without touching component source — see the [Theming docs](https://reelkit.dev/docs/angular-reel-player#theming) for the full token table.
+Every visual value is exposed as a `--rk-reel-*` custom property with a sensible default. Override at `:root` (or any ancestor of `.rk-reel-overlay`) to retheme without touching component source — see the [Theming docs](https://reelkit.dev/docs/angular-reel-player?framework=angular#theming) for the full token table.
 
 ## Documentation
 
-Docs and interactive demos at **[reelkit.dev/docs/angular-reel-player](https://reelkit.dev/docs/angular-reel-player)**.
+Docs, runnable StackBlitz examples, and customization guides at **[reelkit.dev/docs/angular-reel-player](https://reelkit.dev/docs/angular-reel-player?framework=angular)**.
 
 ## Support
 

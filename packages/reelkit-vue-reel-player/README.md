@@ -3,6 +3,7 @@
 <p>
   <a href="https://www.npmjs.com/package/@reelkit/vue-reel-player"><img src="https://img.shields.io/npm/v/@reelkit/vue-reel-player?color=6366f1&label=npm" alt="npm" /></a>
   <img src="https://img.shields.io/badge/gzip-6.2%20kB-6366f1" alt="Bundle size" />
+  <img src="https://img.shields.io/badge/coverage-61%25-orange" alt="Statement coverage" />
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
 
@@ -64,6 +65,9 @@ const content: ContentItem[] = [
 - Desktop navigation arrows
 - iOS sound continuity via shared `<video>` element
 - Video position memory across slide changes
+- Playback timeline bar over long videos, scrubbable, with buffered ranges
+- Shareable URLs — `ReelPlayerUrlOverlay` opens itself from the address bar
+- Themeable via `--rk-reel-*` CSS custom properties
 
 ## Scoped Slots
 
@@ -77,32 +81,37 @@ All of the player's UI is customizable via scoped slots:
 | `navigation`       | `item, activeIndex, count, onPrev, onNext`                 |
 | `nestedSlide`      | `item, media, index, size, isActive, isInnerActive, …`     |
 | `nestedNavigation` | `media, activeIndex, count, onPrev, onNext`                |
+| `timeline`         | `item, activeIndex, timelineState, defaultContent`         |
 | `loading`          | `item, activeIndex`                                        |
 | `error`            | `item, activeIndex`                                        |
 
 ## Props
 
-| Prop                  | Type            | Default  | Description                   |
-| --------------------- | --------------- | -------- | ----------------------------- |
-| `isOpen`              | `boolean`       | required | Controls overlay visibility   |
-| `content`             | `ContentItem[]` | required | Content items to display      |
-| `initialIndex`        | `number`        | `0`      | Starting slide index          |
-| `aspectRatio`         | `number`        | `9/16`   | Desktop container ratio       |
-| `loop`                | `boolean`       | `false`  | Enable infinite loop          |
-| `enableNavKeys`       | `boolean`       | `true`   | Enable keyboard navigation    |
-| `enableWheel`         | `boolean`       | `true`   | Enable mouse wheel navigation |
-| `wheelDebounceMs`     | `number`        | `200`    | Wheel debounce duration (ms)  |
-| `transitionDuration`  | `number`        | `300`    | Transition duration (ms)      |
-| `swipeDistanceFactor` | `number`        | `0.12`   | Swipe threshold (0-1)         |
+| Prop                         | Type                            | Default          | Description                                         |
+| ---------------------------- | ------------------------------- | ---------------- | --------------------------------------------------- |
+| `isOpen`                     | `boolean`                       | required         | Controls overlay visibility                         |
+| `content`                    | `ContentItem[]`                 | required         | Content items to display                            |
+| `initialIndex`               | `number`                        | `0`              | Starting slide index                                |
+| `initialInnerIndex`          | `number`                        | -                | Inner media index for the first slide only          |
+| `aspectRatio`                | `number`                        | `9/16`           | Desktop container ratio                             |
+| `ariaLabel`                  | `string`                        | `'Video player'` | Accessible label announced when the overlay opens   |
+| `timeline`                   | `'auto' \| 'always' \| 'never'` | `'auto'`         | When the built-in timeline bar renders              |
+| `timelineMinDurationSeconds` | `number`                        | `30`             | Under `'auto'`, videos shorter than this get no bar |
+| `loop`                       | `boolean`                       | `false`          | Enable infinite loop                                |
+| `enableNavKeys`              | `boolean`                       | `true`           | Enable keyboard navigation                          |
+| `enableWheel`                | `boolean`                       | `true`           | Enable mouse wheel navigation                       |
+| `wheelDebounceMs`            | `number`                        | `200`            | Wheel debounce duration (ms)                        |
+| `transitionDuration`         | `number`                        | `300`            | Transition duration (ms)                            |
+| `swipeDistanceFactor`        | `number`                        | `0.12`           | Swipe threshold (0-1)                               |
 
 ## Events
 
-| Event            | Payload   | Description                                  |
-| ---------------- | --------- | -------------------------------------------- |
-| `close`          | `void`    | Emitted when player closes                   |
-| `slide-change`   | `number`  | Emitted after slide change                   |
-| `api-ready`      | `ReelApi` | Emitted with imperative API                  |
-| `update:is-open` | `boolean` | Emitted on close — enables `v-model:is-open` |
+| Event            | Payload         | Description                                  |
+| ---------------- | --------------- | -------------------------------------------- |
+| `close`          | `void`          | Emitted when player closes                   |
+| `slide-change`   | `number`        | Emitted after slide change                   |
+| `api-ready`      | `ReelPlayerApi` | Emitted with the imperative player API       |
+| `update:is-open` | `boolean`       | Emitted on close — enables `v-model:is-open` |
 
 ### `v-model:is-open`
 
@@ -166,6 +175,58 @@ type (`SlideSlotScope`, `ControlsSlotScope`, `NavigationSlotScope`,
 `NestedSlideSlotScope`, `LoadingSlotScope`) and annotate the
 destructure.
 
+## URL-driven player
+
+`ReelPlayerUrlOverlay` takes the same props except `isOpen` — the address bar
+owns the open state, so a shared link reopens the same post:
+
+```vue
+<script setup lang="ts">
+import {
+  ReelPlayerUrlOverlay,
+  type ContentItem,
+} from '@reelkit/vue-reel-player';
+import { useOverlayUrlState, urlIndexKey } from '@reelkit/vue';
+import { useVueRouterUrlAdapter } from '@reelkit/vue/vue-router-url-adapter';
+import '@reelkit/vue-reel-player/styles.css';
+
+const props = defineProps<{ content: ContentItem[] }>();
+
+const reel = useOverlayUrlState({
+  param: 'reel',
+  adapter: useVueRouterUrlAdapter(),
+  ...urlIndexKey(() => props.content.length),
+});
+</script>
+
+<template>
+  <!-- Opening is a link — the overlay reads the URL and opens itself. -->
+  <RouterLink
+    v-for="(post, i) in props.content"
+    :key="post.id"
+    :to="`?reel=${i}`"
+  >
+    <img :src="post.media[0].src" />
+  </RouterLink>
+
+  <ReelPlayerUrlOverlay :controller="reel" :content="props.content" />
+</template>
+```
+
+Swap `urlIndexKey` for `urlIndexTwoAxisKey` to put the inner media index in the
+URL too (`?reel=3.2`), or `urlStableIdKey` to key it by post id so a bookmark
+survives the feed being reordered. Drop the adapter outside vue-router — the
+History API is the default.
+
+## Sub-components
+
+For composing your own controls or slides: `PlayerControls`, `CloseButton`,
+`SoundButton`, `ImageSlide`, `VideoSlide`, `SlideOverlay`, `TimelineBar`,
+`LoadingIndicator`, `ErrorIndicator`, plus `TimelineProvider` with
+`useTimelineState` /
+`useTimelineStateOptional` to read playback state and `useViewportSize` for the
+desktop/mobile split.
+
 ## Keyboard Shortcuts
 
 | Key          | Action                  |
@@ -178,7 +239,7 @@ destructure.
 
 ## Documentation
 
-Docs and interactive demos at **[reelkit.dev/docs/vue-reel-player](https://reelkit.dev/docs/vue-reel-player)**.
+Docs, runnable StackBlitz examples, and customization guides at **[reelkit.dev/docs/vue-reel-player](https://reelkit.dev/docs/vue-reel-player?framework=vue)**.
 
 ## Support
 

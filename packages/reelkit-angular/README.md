@@ -2,7 +2,8 @@
 
 <p>
   <a href="https://www.npmjs.com/package/@reelkit/angular"><img src="https://img.shields.io/npm/v/@reelkit/angular?color=6366f1&label=npm" alt="npm" /></a>
-  <img src="https://img.shields.io/badge/angular%20gzip-15.1%20kB-6366f1" alt="Bundle size" />
+  <img src="https://img.shields.io/badge/gzip-15.1%20kB-6366f1" alt="Bundle size" />
+  <img src="https://img.shields.io/badge/coverage-93%25-brightgreen" alt="Statement coverage" />
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
 
@@ -67,6 +68,11 @@ export class AppComponent {
 - Measures its own size via ResizeObserver — no explicit dimensions needed
 - Swipe with momentum and snap, keyboard arrows, mouse wheel
 - Loop mode for infinite circular scrolling
+- Tree-shakeable transitions (slide, cube, fade, flip, zoom)
+- `RkSwipeToCloseDirective` (`rkSwipeToClose`) for swipe-dismissed overlays
+- `createOverlayUrlState` keeps the open overlay and its slide in the URL, so a link reopens the view
+- `toAngularSignal` / `animatedSignalBridge` bridge core signals into Angular signals
+- `BodyLockService` for scroll locking while an overlay is open
 - `ChangeDetectionStrategy.OnPush` by default
 - Typed with TypeScript
 
@@ -107,16 +113,19 @@ export class AppComponent {
 
 ### ReelIndicator Inputs
 
-| Input       | Type     | Default | Description                    |
-| ----------- | -------- | ------- | ------------------------------ |
-| `direction` | `string` | -       | `'horizontal'` or `'vertical'` |
-| `radius`    | `number` | `3`     | Dot radius in pixels           |
-| `visible`   | `number` | `3`     | Number of visible dots         |
-| `gap`       | `number` | `4`     | Gap between dots in pixels     |
+| Input           | Type     | Default                      | Description                                      |
+| --------------- | -------- | ---------------------------- | ------------------------------------------------ |
+| `direction`     | `string` | `'vertical'`                 | `'horizontal'` or `'vertical'`                   |
+| `radius`        | `number` | `3`                          | Dot radius in pixels                             |
+| `visible`       | `number` | `5`                          | Full-size dots at once; the rest scale down      |
+| `gap`           | `number` | `4`                          | Gap between dots in pixels                       |
+| `activeColor`   | `string` | `'#fff'`                     | Color of the active dot                          |
+| `inactiveColor` | `string` | `'rgba(255, 255, 255, 0.5)'` | Color of the inactive dots                       |
+| `edgeScale`     | `number` | `0.5`                        | Scale applied to dots outside the visible window |
 
 ## Documentation
 
-API reference, demos, and guides at **[reelkit.dev](https://reelkit.dev)**.
+Guide at **[reelkit.dev/docs/angular/guide](https://reelkit.dev/docs/angular/guide?framework=angular)**, full API reference at **[reelkit.dev/docs/angular/api](https://reelkit.dev/docs/angular/api?framework=angular)**.
 
 ## Support
 

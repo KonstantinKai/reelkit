@@ -3,6 +3,7 @@
 <p>
   <a href="https://www.npmjs.com/package/@reelkit/vue"><img src="https://img.shields.io/npm/v/@reelkit/vue?color=6366f1&label=npm" alt="npm" /></a>
   <img src="https://img.shields.io/badge/gzip-5.0%20kB-6366f1" alt="Bundle size" />
+  <img src="https://img.shields.io/badge/coverage-92%25-brightgreen" alt="Statement coverage" />
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
 
@@ -45,6 +46,7 @@ import { Reel, ReelIndicator } from '@reelkit/vue';
 - Swipe with momentum and snap, keyboard arrows, mouse wheel
 - Loop mode for infinite circular scrolling
 - Tree-shakeable transitions (slide, cube, fade, flip, zoom)
+- Overlay building blocks — `SwipeToClose`, `SoundProvider`, `useFullscreen`, `useBodyLock`, `useOverlayUrlState`
 - Full WAI-ARIA carousel accessibility
 - Typed with TypeScript, no `@types` package needed
 
@@ -92,12 +94,16 @@ import { Reel, ReelIndicator } from '@reelkit/vue';
 
 ### Composables
 
-| Composable       | Description                                  |
-| ---------------- | -------------------------------------------- |
-| `useBodyLock`    | Lock body scroll for overlays                |
-| `useFullscreen`  | Fullscreen API with cross-browser support    |
-| `useSoundState`  | Access sound controller from `SoundProvider` |
-| `useReelContext` | Access parent Reel's index, count, and goTo  |
+| Composable           | Description                                                                 |
+| -------------------- | --------------------------------------------------------------------------- |
+| `useBodyLock`        | Lock body scroll for overlays                                               |
+| `useFullscreen`      | Fullscreen API with cross-browser support                                   |
+| `useSoundState`      | Access sound controller from `SoundProvider`                                |
+| `useReelContext`     | Access parent Reel's index, count, and goTo                                 |
+| `useOverlayUrlState` | Keeps the open overlay and its slide in the URL, so a link reopens the view |
+
+`toVueRef` wraps a core `Signal` as a Vue ref — reading `signal.value` straight
+in a template compiles to a static snapshot that never updates.
 
 ### Components
 
@@ -108,7 +114,7 @@ import { Reel, ReelIndicator } from '@reelkit/vue';
 
 ## Documentation
 
-API reference, demos, and guides at **[reelkit.dev](https://reelkit.dev)**.
+Guide at **[reelkit.dev/docs/vue/guide](https://reelkit.dev/docs/vue/guide?framework=vue)**, full API reference at **[reelkit.dev/docs/vue/api](https://reelkit.dev/docs/vue/api?framework=vue)**.
 
 ## Support
 

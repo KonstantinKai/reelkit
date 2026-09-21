@@ -3,7 +3,7 @@
 <p>
   <a href="https://www.npmjs.com/package/@reelkit/react-stories-player"><img src="https://img.shields.io/npm/v/@reelkit/react-stories-player?color=6366f1&label=npm" alt="npm" /></a>
   <img src="https://img.shields.io/badge/gzip-7.7%20kB-6366f1" alt="Bundle size" />
-  <img src="https://img.shields.io/badge/coverage-90%25-brightgreen" alt="Coverage" />
+  <img src="https://img.shields.io/badge/coverage-77%25-yellow" alt="Statement coverage" />
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
 
@@ -86,38 +86,44 @@ function App() {
 - Render props for header, footer, and slides
 - Desktop navigation arrows
 - Optional Instagram-style desktop carousel of neighbouring groups
+- Remembers what was seen — a viewed-state controller backed by local, session, or memory storage
+- Shareable URLs — `StoriesUrlOverlay` opens itself from the address bar, on the right story of the right group
 
 ## API Reference
 
 ### StoriesOverlay Props
 
-| Prop                      | Type                           | Default    | Description                                                                                            |
-| ------------------------- | ------------------------------ | ---------- | ------------------------------------------------------------------------------------------------------ |
-| `isOpen`                  | `boolean`                      | required   | Controls overlay visibility                                                                            |
-| `onClose`                 | `() => void`                   | required   | Called when overlay closes                                                                             |
-| `groups`                  | `StoriesGroup<T>[]`            | required   | Story groups to display                                                                                |
-| `initialGroupIndex`       | `number`                       | `0`        | Starting group index                                                                                   |
-| `initialStoryIndex`       | `number`                       | `0`        | Starting story index                                                                                   |
-| `groupTransition`         | `TransitionTransformFn`        | cube       | Transition between groups                                                                              |
-| `defaultImageDuration`    | `number`                       | `5000`     | Image auto-advance duration (ms)                                                                       |
-| `tapZoneSplit`            | `number`                       | `0.3`      | Left zone ratio (0-1)                                                                                  |
-| `hideUIOnPause`           | `boolean`                      | `true`     | Hide header/progress on hold                                                                           |
-| `enableKeyboard`          | `boolean`                      | `true`     | Enable keyboard navigation                                                                             |
-| `innerTransitionDuration` | `number`                       | `200`      | Story crossfade duration (ms)                                                                          |
-| `minSegmentWidth`         | `number`                       | `8`        | Min progress segment width (px)                                                                        |
-| `desktopLayout`           | `'single' \| 'carousel'`       | `'single'` | `'carousel'`: neighbouring groups as preview cards beside the story on desktop                         |
-| `viewed`                  | `StoriesViewedStateController` | —          | From `createStoriesViewedStateController()`: resume, recording and muted card rings for watched groups |
+| Prop                      | Type                                   | Default    | Description                                                                                            |
+| ------------------------- | -------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------ |
+| `isOpen`                  | `boolean`                              | required   | Controls overlay visibility                                                                            |
+| `onClose`                 | `() => void`                           | required   | Called when overlay closes                                                                             |
+| `groups`                  | `StoriesGroup<T>[]`                    | required   | Story groups to display                                                                                |
+| `initialGroupIndex`       | `number`                               | `0`        | Starting group index                                                                                   |
+| `initialStoryIndex`       | `number`                               | `0`        | Starting story index                                                                                   |
+| `groupTransition`         | `TransitionTransformFn`                | cube       | Transition between groups                                                                              |
+| `defaultImageDuration`    | `number`                               | `5000`     | Image auto-advance duration (ms)                                                                       |
+| `tapZoneSplit`            | `number`                               | `0.3`      | Left zone ratio (0-1)                                                                                  |
+| `hideUIOnPause`           | `boolean`                              | `true`     | Hide header/progress on hold                                                                           |
+| `enableKeyboard`          | `boolean`                              | `true`     | Enable keyboard navigation                                                                             |
+| `innerTransitionDuration` | `number`                               | `200`      | Story crossfade duration (ms)                                                                          |
+| `minSegmentWidth`         | `number`                               | `8`        | Min progress segment width (px)                                                                        |
+| `desktopLayout`           | `'single' \| 'carousel'`               | `'single'` | `'carousel'`: neighbouring groups as preview cards beside the story on desktop                         |
+| `viewed`                  | `StoriesViewedStateController`         | —          | From `createStoriesViewedStateController()`: resume, recording and muted card rings for watched groups |
+| `resumeStoryIndex`        | `(groupIndex) => number`               | —          | Where a group opens when nothing was watched this session                                              |
+| `ariaLabel`               | `string`                               | —          | Accessible label announced when the overlay opens                                                      |
+| `apiRef`                  | `MutableRefObject<StoriesApi \| null>` | —          | Imperative access to navigation and the timer                                                          |
 
 ### Callbacks
 
-| Prop            | Type                               | Description            |
-| --------------- | ---------------------------------- | ---------------------- |
-| `onStoryChange` | `(groupIndex, storyIndex) => void` | After story navigation |
-| `onGroupChange` | `(groupIndex) => void`             | After group switch     |
-| `onStoryViewed` | `(groupIndex, storyIndex) => void` | When a story is viewed |
-| `onDoubleTap`   | `(groupIndex, storyIndex) => void` | On double-tap (heart)  |
-| `onPause`       | `() => void`                       | On tap-and-hold        |
-| `onResume`      | `() => void`                       | On release             |
+| Prop              | Type                               | Description                   |
+| ----------------- | ---------------------------------- | ----------------------------- |
+| `onStoryChange`   | `(groupIndex, storyIndex) => void` | After story navigation        |
+| `onGroupChange`   | `(groupIndex) => void`             | After group switch            |
+| `onStoryViewed`   | `(groupIndex, storyIndex) => void` | When a story is viewed        |
+| `onStoryComplete` | `(groupIndex, storyIndex) => void` | When a story's timer runs out |
+| `onDoubleTap`     | `(groupIndex, storyIndex) => void` | On double-tap (heart)         |
+| `onPause`         | `() => void`                       | On tap-and-hold               |
+| `onResume`        | `() => void`                       | On release                    |
 
 ### Render Props
 
@@ -127,6 +133,10 @@ function App() {
 | `renderFooter`       | `(props: FooterRenderProps) => Node`       | Custom footer                        |
 | `renderSlide`        | `(props: SlideRenderProps) => Node`        | Custom slide rendering               |
 | `renderGroupPreview` | `(props: GroupPreviewRenderProps) => Node` | Custom desktop carousel card content |
+| `renderNavigation`   | `(props: NavigationRenderProps) => Node`   | Custom desktop arrows                |
+| `renderProgressBar`  | `(props: ProgressBarRenderProps) => Node`  | Custom segmented progress bar        |
+| `renderLoading`      | `(props: LoadingRenderProps) => Node`      | Custom loading indicator             |
+| `renderError`        | `(props: ErrorRenderProps) => Node`        | Custom error indicator               |
 
 ### StoriesRingList Props
 
@@ -161,6 +171,78 @@ interface StoriesGroup<T extends StoryItem = StoryItem> {
   stories: T[];
 }
 ```
+
+## Remembering what was seen
+
+`createStoriesViewedStateController` persists which stories were watched, so the
+rings dim and a group reopens where the reader left it:
+
+```tsx
+import {
+  StoriesOverlay,
+  StoriesRingList,
+  createStoriesViewedStateController,
+} from '@reelkit/react-stories-player';
+
+// The controller reads the groups through a getter, so a growing feed stays
+// current: a ref for a plain prop, or a signal.
+const groupsRef = useRef(groups);
+groupsRef.current = groups;
+
+const [viewed] = useState(() =>
+  createStoriesViewedStateController({
+    storageKey: 'stories-seen',
+    groups: () => groupsRef.current,
+  }),
+);
+
+<StoriesRingList groups={groups} viewed={viewed} onSelect={openGroup} />
+<StoriesOverlay isOpen={open} groups={groups} viewed={viewed} onClose={close} />;
+```
+
+It writes to `localStorage` by default; pass a `storage` adapter
+(`createSessionStorageAdapter()`, `createMemoryStorageAdapter()`) to keep it per
+tab or in memory. `ttlMs` forgets a group some time after it was last watched,
+and `maxTracks` caps how many groups are remembered at all.
+
+## URL-driven stories
+
+`StoriesUrlOverlay` takes the same props except `isOpen` — the address bar owns
+both axes, so a link names the group and the story inside it:
+
+```tsx
+import {
+  StoriesUrlOverlay,
+  useOverlayUrlState,
+  urlIndexTwoAxisKey,
+} from '@reelkit/react-stories-player';
+import { Link } from 'react-router-dom';
+
+const stories = useOverlayUrlState({
+  param: 'story',
+  ...urlIndexTwoAxisKey({
+    outerCount: () => groups.length,
+    innerCounts: () => groups.map((g) => g.stories.length),
+  }),
+});
+
+// Opening a user is a link — the overlay reads the URL and opens itself.
+{
+  groups.map((g, i) => (
+    <Link key={g.author.id} to={`?story=${i}.0`}>
+      {g.author.name}
+    </Link>
+  ));
+}
+
+<StoriesUrlOverlay controller={stories} groups={groups} />;
+```
+
+## Sub-components
+
+Exported for composing your own layout: `StoriesRing`, `CanvasProgressBar`,
+`StoryHeader`, `HeartAnimation`, `ImageStorySlide`, `VideoStorySlide`, plus
+`SoundProvider` and `useSoundState` re-exported from `@reelkit/react`.
 
 ## Keyboard Shortcuts
 
