@@ -235,6 +235,7 @@ import typesCode from '../../snippets/stories-core/types-code.ts?raw';
 | 関数 | 型 | 説明 |
 | --- | --- | --- |
 | `getRingPresentation(options)` | `(RingPresentationOptions) => RingPresentation` | `totalStories`、`viewedCount`、`size` から、ストーリーリングのクラス名・インラインスタイル・アバターの大きさを返します。未読が残っていれば回転する円錐グラデーション、見終わっていれば平坦な `viewedColor`、空のグループならリングなしです。大きさには `px` が付くので、このスタイルオブジェクトはどのフレームワークでもそのまま使えます。 |
+| `getPreviewSource(story)` | `(StoryItem \| undefined) => string \| undefined` | カルーセルのカードが見せる画像です。ストーリーの `poster`、画像であればその画像そのもの、ポスターのない動画なら何もありません。画像のないカードは、見せるものがないストーリー用の素のカードに戻ります。 |
 | `formatTimeAgo(date)` | `(string \| Date) => string` | ヘッダーとカルーセルのカードが出す短い相対時刻：`now`、`5m`、`3h`、`2d`、`2w`。 |
 
 `CarouselSlot`、`RingPresentation`、`RingPresentationOptions` の型も一緒に公開されています。

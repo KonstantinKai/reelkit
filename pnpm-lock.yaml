@@ -31,6 +31,9 @@ importers:
       '@reelkit/react':
         specifier: workspace:*
         version: link:packages/reelkit-react
+      '@reelkit/stories-core':
+        specifier: workspace:*
+        version: link:packages/reelkit-stories-core
       '@stackblitz/sdk':
         specifier: ^1.11.0
         version: 1.11.0
@@ -573,6 +576,24 @@ importers:
       '@reelkit/angular':
         specifier: workspace:^
         version: link:../reelkit-angular
+      lucide-angular:
+        specifier: '>=0.460.0'
+        version: 0.577.0(@angular/common@20.3.18(@angular/core@20.3.18(@angular/compiler@20.3.18)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2))(@angular/core@20.3.18(@angular/compiler@20.3.18)(rxjs@7.8.2)(zone.js@0.15.1))
+
+  packages/reelkit-angular-stories-player:
+    dependencies:
+      '@angular/common':
+        specifier: '>=19.0.0'
+        version: 20.3.18(@angular/core@20.3.18(@angular/compiler@20.3.18)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2)
+      '@angular/core':
+        specifier: '>=19.0.0'
+        version: 20.3.18(@angular/compiler@20.3.18)(rxjs@7.8.2)(zone.js@0.15.1)
+      '@reelkit/angular':
+        specifier: workspace:^
+        version: link:../reelkit-angular
+      '@reelkit/stories-core':
+        specifier: workspace:^
+        version: link:../reelkit-stories-core
       lucide-angular:
         specifier: '>=0.460.0'
         version: 0.577.0(@angular/common@20.3.18(@angular/core@20.3.18(@angular/compiler@20.3.18)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2))(@angular/core@20.3.18(@angular/compiler@20.3.18)(rxjs@7.8.2)(zone.js@0.15.1))

@@ -127,6 +127,8 @@ export {
   cubeTransition,
   zoomTransition,
   type GestureController,
+  type GestureEvent,
+  type GestureCommonEvent,
   type SliderController,
   type Signal as CoreSignal,
   type Subscribable,

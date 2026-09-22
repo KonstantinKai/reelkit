@@ -99,6 +99,33 @@ class BasicHostComponent {
 
 @Component({
   template: `
+    <rk-reel
+      [count]="3"
+      [size]="[400, 300]"
+      [transitionDuration]="0"
+      [interceptNavKeys]="intercept()"
+      (apiReady)="api = $event"
+      (tapped)="taps = taps + 1"
+      (navKeyPressed)="navKeys.push($event)"
+      (afterChange)="afterChanges.push($event.index)"
+    >
+      <ng-template rkReelItem let-index>
+        <div class="slide">{{ index }}</div>
+      </ng-template>
+    </rk-reel>
+  `,
+  imports: [ReelComponent, RkReelItemDirective],
+})
+class GestureHostComponent {
+  intercept: WritableSignal<boolean> = signal(false);
+  api: ReelApi | null = null;
+  taps = 0;
+  navKeys: number[] = [];
+  afterChanges: number[] = [];
+}
+
+@Component({
+  template: `
     <rk-reel [count]="3" [size]="explicitSize" [transitionDuration]="0">
       <ng-template rkReelItem let-index>
         <div class="slide">{{ index }}</div>
@@ -1156,6 +1183,47 @@ describe('ReelComponent', () => {
       const reel = fixture.debugElement.query(By.directive(ReelComponent))
         .componentInstance as ReelComponent;
       expect(reel.enableNavKeys()).toBe(false);
+    });
+  });
+
+  // Arrow-key interception is the one piece of this wiring that changes what
+  // the slider itself does, so it is the piece worth pinning here. Tap,
+  // double-tap and long-press forwarding is exercised where it is consumed,
+  // against a real gesture rather than a synthesised one.
+  describe('navigation-key interception', () => {
+    // The slider reads its events once, when it builds the controller, so a
+    // host that wants to intercept says so before the first render.
+    function createGestureFixture(
+      intercept = false,
+    ): ComponentFixture<GestureHostComponent> {
+      TestBed.configureTestingModule({ imports: [GestureHostComponent] });
+      const fixture = TestBed.createComponent(GestureHostComponent);
+      fixture.componentInstance.intercept.set(intercept);
+      fixture.detectChanges();
+      return fixture;
+    }
+
+    it('keeps arrow keys for itself by default', () => {
+      const fixture = createGestureFixture();
+
+      document.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }),
+      );
+      fixture.detectChanges();
+
+      expect(fixture.componentInstance.navKeys).toEqual([]);
+    });
+
+    it('hands arrow keys over once interceptNavKeys is set', () => {
+      const fixture = createGestureFixture(true);
+
+      document.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }),
+      );
+      fixture.detectChanges();
+
+      expect(fixture.componentInstance.navKeys).toEqual([1]);
+      expect(fixture.componentInstance.afterChanges).toEqual([]);
     });
   });
 });

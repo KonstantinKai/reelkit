@@ -1,0 +1,60 @@
+{
+  "name": "@reelkit/angular-stories-player",
+  "version": "0.0.1",
+  "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
+  "main": "./fesm2022/reelkit-angular-stories-player.mjs",
+  "module": "./fesm2022/reelkit-angular-stories-player.mjs",
+  "types": "./index.d.ts",
+  "exports": {
+    "./styles.css": "./styles.css"
+  },
+  "files": [
+    "esm2022",
+    "fesm2022",
+    "*.d.ts",
+    "*.d.ts.map",
+    "*.css",
+    "!**/*.tsbuildinfo"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KonstantinKai/reelkit.git",
+    "directory": "packages/reelkit-angular-stories-player"
+  },
+  "bugs": "https://github.com/KonstantinKai/reelkit/issues",
+  "homepage": "https://reelkit.dev/docs/angular-stories-player",
+  "funding": {
+    "type": "buymeacoffee",
+    "url": "https://buymeacoffee.com/konstantinkai"
+  },
+  "description": "Instagram-style stories player overlay for Angular with cube transitions and auto-advance",
+  "license": "MIT",
+  "keywords": [
+    "angular",
+    "stories",
+    "instagram-stories",
+    "stories-player",
+    "fullscreen",
+    "swipe",
+    "touch",
+    "auto-advance",
+    "overlay",
+    "angular-component",
+    "typescript"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "@reelkit/angular": "workspace:^",
+    "@angular/common": ">=19.0.0",
+    "@angular/core": ">=19.0.0",
+    "lucide-angular": ">=0.460.0"
+  },
+  "dependencies": {
+    "@reelkit/stories-core": "workspace:^"
+  }
+}

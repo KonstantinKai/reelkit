@@ -1,0 +1,19 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../dist/out-tsc",
+    "module": "commonjs",
+    "target": "es2016",
+    "types": ["jest", "node"],
+    "moduleResolution": "node10",
+    "baseUrl": ".",
+    "paths": {
+      "@reelkit/angular": ["../reelkit-angular/src/index.ts"],
+      "@reelkit/stories-core": ["../reelkit-stories-core/src/index.ts"],
+      "@reelkit/core/testing": ["../reelkit-core/src/testing/index.ts"],
+      "@reelkit/core": ["../reelkit-core/src/index.ts"]
+    }
+  },
+  "files": ["src/test-setup.ts"],
+  "include": ["src/**/*.spec.ts", "src/**/*.d.ts"]
+}

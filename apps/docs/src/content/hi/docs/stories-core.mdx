@@ -235,6 +235,7 @@ import typesCode from '../../snippets/stories-core/types-code.ts?raw';
 | फ़ंक्शन | टाइप | विवरण |
 | --- | --- | --- |
 | `getRingPresentation(options)` | `(RingPresentationOptions) => RingPresentation` | `totalStories`, `viewedCount` और `size` से स्टोरी रिंग का क्लास नाम, इनलाइन स्टाइल और अवतार का आकार। कुछ देखना बाक़ी हो तो घूमता हुआ शंक्वाकार ग्रेडिएंट, पूरा देख लेने पर सपाट `viewedColor`, और ख़ाली समूह पर कोई रिंग नहीं। आकार `px` इकाई के साथ आते हैं, इसलिए यह स्टाइल ऑब्जेक्ट किसी भी फ़्रेमवर्क में चलता है। |
+| `getPreviewSource(story)` | `(StoryItem \| undefined) => string \| undefined` | कैरोसेल कार्ड जो तस्वीर दिखाता है: स्टोरी का `poster`, तस्वीर होने पर वही तस्वीर, और बिना पोस्टर वाले वीडियो के लिए कुछ नहीं। बिना तस्वीर वाला कार्ड उसी सादे कार्ड पर लौट आता है जो दिखाने को कुछ न रखने वाली स्टोरी के लिए बनता है। |
 | `formatTimeAgo(date)` | `(string \| Date) => string` | हेडर और कैरोसेल कार्ड जो छोटा सापेक्ष समय दिखाते हैं: `now`, `5m`, `3h`, `2d`, `2w`। |
 
 इनके साथ `CarouselSlot`, `RingPresentation` और `RingPresentationOptions` टाइप भी एक्सपोर्ट होते हैं।

@@ -18,6 +18,9 @@
     },
     {
       "path": "./packages/reelkit-angular"
+    },
+    {
+      "path": "./packages/reelkit-angular-stories-player"
     }
   ]
 }

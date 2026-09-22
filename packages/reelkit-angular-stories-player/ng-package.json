@@ -1,0 +1,15 @@
+{
+  "$schema": "../../node_modules/ng-packagr/ng-package.schema.json",
+  "dest": "../../dist/packages/reelkit-angular-stories-player",
+  "lib": {
+    "entryFile": "src/index.ts"
+  },
+  "allowedNonPeerDependencies": ["@reelkit/stories-core"],
+  "assets": [
+    {
+      "glob": "*.css",
+      "input": "src/lib/styles",
+      "output": "."
+    }
+  ]
+}

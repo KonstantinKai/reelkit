@@ -395,4 +395,39 @@ describe('StoriesCarousel', () => {
       expect(props.onSlideEnd).toHaveBeenCalledOnce();
     });
   });
+  // A card whose picture will not load otherwise shows the browser's broken
+  // image mark, which is what a viewer sees on a dead link.
+  describe('a card whose picture will not load', () => {
+    const cardImages = () =>
+      Array.from(
+        document.querySelectorAll<HTMLImageElement>('.rk-stories-card-image'),
+      );
+
+    it('drops the picture rather than showing a broken one', async () => {
+      renderCarousel();
+      const image = cardImages()[0];
+      expect(image).toBeTruthy();
+      const source = image.getAttribute('src');
+
+      image.dispatchEvent(new Event('error'));
+      await nextTick();
+
+      expect(
+        cardImages().map((each) => each.getAttribute('src')),
+      ).not.toContain(source);
+    });
+
+    // What is left is the card drawn for a story with nothing to preview: the
+    // author, still reachable.
+    it('keeps the author and the card itself', async () => {
+      renderCarousel();
+      cardImages()[0].dispatchEvent(new Event('error'));
+      await nextTick();
+
+      expect(document.querySelector('.rk-stories-card-button')).not.toBeNull();
+      expect(
+        document.querySelectorAll('.rk-stories-card-name').length,
+      ).toBeGreaterThan(0);
+    });
+  });
 });

@@ -1,0 +1,27 @@
+module.exports = {
+  displayName: 'reelkit-angular-stories-player',
+  preset: '../../jest.preset.js',
+  moduleNameMapper: {
+    '^@reelkit/angular$': '<rootDir>/../reelkit-angular/src/index.ts',
+    '^@reelkit/stories-core$': '<rootDir>/../reelkit-stories-core/src/index.ts',
+    '^@reelkit/core/testing$': '<rootDir>/../reelkit-core/src/testing/index.ts',
+    '^@reelkit/core$': '<rootDir>/../reelkit-core/src/index.ts',
+  },
+  setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],
+  coverageDirectory: '../../coverage/packages/reelkit-angular-stories-player',
+  transform: {
+    '^.+\\.(ts|mjs|js|html)$': [
+      'jest-preset-angular',
+      {
+        tsconfig: '<rootDir>/tsconfig.spec.json',
+        stringifyContentPathRegex: '\\.(html|svg)$',
+      },
+    ],
+  },
+  transformIgnorePatterns: ['node_modules/(?!.*\\.mjs$)'],
+  snapshotSerializers: [
+    'jest-preset-angular/build/serializers/no-ng-attributes',
+    'jest-preset-angular/build/serializers/ng-snapshot',
+    'jest-preset-angular/build/serializers/html-comment',
+  ],
+};

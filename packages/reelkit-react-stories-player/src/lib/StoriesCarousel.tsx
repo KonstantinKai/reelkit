@@ -1,10 +1,12 @@
+import { useState } from 'react';
 import type { CSSProperties, ReactNode, TransitionEvent } from 'react';
-import { Observe, type Subscribable } from '@reelkit/react';
+import { Observe, createSignal, type Subscribable } from '@reelkit/react';
 import {
   formatTimeAgo,
   getCardOffsets,
   getCardSize,
   getCarouselSlot,
+  getPreviewSource,
   getRingPresentation,
   getSlideGroupIndexes,
   getSlotOffset,
@@ -144,10 +146,6 @@ const makeInert = (element: HTMLElement | null) => {
   element?.setAttribute('inert', '');
 };
 
-/** Image a card shows: the video poster, the image itself, or none. */
-const previewSource = (story: StoryItem | undefined) =>
-  story?.poster ?? (story?.mediaType === 'image' ? story.src : undefined);
-
 function DefaultCard<T extends StoryItem>({
   group,
   story,
@@ -159,7 +157,12 @@ function DefaultCard<T extends StoryItem>({
   focusable: boolean;
   renderFrame: () => ReactNode;
 }) {
-  const source = previewSource(story);
+  // A picture that will not load is treated as no picture at all, so the card
+  // falls back to the one drawn for a story with nothing to preview rather
+  // than to the browser's broken-image mark. The signal re-renders the card
+  // alone, the way the viewed state above it does.
+  const [{ failed }] = useState(() => ({ failed: createSignal(false) }));
+  const candidate = getPreviewSource(story);
   const ring = getRingPresentation({
     totalStories: group.stories.length,
     viewedCount,
@@ -167,40 +170,64 @@ function DefaultCard<T extends StoryItem>({
   });
 
   return (
-    <>
-      {/* Under the button, never inside it: a custom slide can hold buttons
-          and links of its own, and a control cannot sit inside another. */}
-      {source ? null : renderFrame()}
-      <button
-        type="button"
-        className="rk-stories-card-button"
-        aria-label={`Open stories by ${group.author.name}`}
-        tabIndex={focusable ? 0 : -1}
-        onClick={onOpen}
-      >
-        {source ? (
-          <img className="rk-stories-card-image" src={source} alt="" />
-        ) : null}
-        <span className="rk-stories-card-scrim" />
-        <span className="rk-stories-card-info">
-          <span className={ring.className} style={ring.style as CSSProperties}>
-            <img
-              className="rk-stories-ring-avatar"
-              src={group.author.avatar}
-              alt=""
-              width={ring.avatarSize}
-              height={ring.avatarSize}
-            />
-          </span>
-          <span className="rk-stories-card-name">{group.author.name}</span>
-          {story?.createdAt ? (
-            <span className="rk-stories-card-time">
-              {formatTimeAgo(story.createdAt)}
-            </span>
-          ) : null}
-        </span>
-      </button>
-    </>
+    <Observe signals={[failed]}>
+      {() => {
+        const source = failed.value ? undefined : candidate;
+
+        return (
+          <>
+            {/* Under the button, never inside it: a custom slide can hold
+                buttons and links of its own, and a control cannot sit inside
+                another. The frame is for a story with no picture of its own;
+                one whose picture failed falls back to the plain card, or the
+                slide would paint it in whatever it paints a story with
+                media. */}
+            {candidate ? null : renderFrame()}
+            <button
+              type="button"
+              className="rk-stories-card-button"
+              aria-label={`Open stories by ${group.author.name}`}
+              tabIndex={focusable ? 0 : -1}
+              onClick={onOpen}
+            >
+              {source ? (
+                <img
+                  className="rk-stories-card-image"
+                  src={source}
+                  alt=""
+                  onError={() => {
+                    failed.value = true;
+                  }}
+                />
+              ) : null}
+              <span className="rk-stories-card-scrim" />
+              <span className="rk-stories-card-info">
+                <span
+                  className={ring.className}
+                  style={ring.style as CSSProperties}
+                >
+                  <img
+                    className="rk-stories-ring-avatar"
+                    src={group.author.avatar}
+                    alt=""
+                    width={ring.avatarSize}
+                    height={ring.avatarSize}
+                  />
+                </span>
+                <span className="rk-stories-card-name">
+                  {group.author.name}
+                </span>
+                {story?.createdAt ? (
+                  <span className="rk-stories-card-time">
+                    {formatTimeAgo(story.createdAt)}
+                  </span>
+                ) : null}
+              </span>
+            </button>
+          </>
+        );
+      }}
+    </Observe>
   );
 }
 

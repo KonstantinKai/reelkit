@@ -5,12 +5,19 @@ import {
   type VNode,
   type VNodeChild,
 } from 'vue';
-import { Observe, hasRenderedNodes, type Subscribable } from '@reelkit/vue';
+import {
+  Observe,
+  createSignal,
+  hasRenderedNodes,
+  toVueRef,
+  type Subscribable,
+} from '@reelkit/vue';
 import {
   formatTimeAgo,
   getCardOffsets,
   getCardSize,
   getCarouselSlot,
+  getPreviewSource,
   getRingPresentation,
   getSlideGroupIndexes,
   getSlotOffset,
@@ -51,17 +58,20 @@ const makeInert = (element: unknown) => {
   (element as HTMLElement | null)?.setAttribute('inert', '');
 };
 
-/** Image a card shows: the video poster, the image itself, or none. */
-const previewSource = (story: StoryItem | undefined) =>
-  story?.poster ?? (story?.mediaType === 'image' ? story.src : undefined);
-
 const renderDefaultCard = (
   scope: GroupPreviewSlotScope,
   focusable: boolean,
   frame: VNode | null,
+  failed: ReadonlySet<string>,
+  onPreviewFailed: (source: string) => void,
 ): VNodeChild[] => {
   const { group, story, viewedCount, onOpen } = scope;
-  const source = previewSource(story);
+
+  // A picture that will not load is treated as no picture at all, so the card
+  // falls back to the one drawn for a story with nothing to preview rather
+  // than to the browser's broken-image mark.
+  const candidate = getPreviewSource(story);
+  const source = candidate && !failed.has(candidate) ? candidate : undefined;
   const ring = getRingPresentation({
     totalStories: group.stories.length,
     viewedCount,
@@ -70,8 +80,11 @@ const renderDefaultCard = (
 
   return [
     // Under the button, never inside it: a custom slide can hold buttons and
-    // links of its own, and a control cannot sit inside another.
-    source ? null : frame,
+    // links of its own, and a control cannot sit inside another. The frame is
+    // for a story with no picture of its own; one whose picture failed falls
+    // back to the plain card, or the slide would paint it in whatever it
+    // paints a story with media.
+    candidate ? null : frame,
     h(
       'button',
       {
@@ -83,7 +96,12 @@ const renderDefaultCard = (
       },
       [
         source
-          ? h('img', { class: 'rk-stories-card-image', src: source, alt: '' })
+          ? h('img', {
+              class: 'rk-stories-card-image',
+              src: source,
+              alt: '',
+              onError: () => onPreviewFailed(source),
+            })
           : null,
         h('span', { class: 'rk-stories-card-scrim' }),
         h('span', { class: 'rk-stories-card-info' }, [
@@ -209,6 +227,16 @@ export const StoriesCarousel = defineComponent({
     },
   },
   setup(props) {
+    // Sources that would not load, bridged into a ref so a failure redraws
+    // the cards. Kept by source rather than by group so a feed that grows or
+    // reorders carries the answer with it.
+    const failedSignal = createSignal<ReadonlySet<string>>(new Set());
+    const failedPreviews = toVueRef(failedSignal);
+    const onPreviewFailed = (source: string) => {
+      if (failedSignal.value.has(source)) return;
+      failedSignal.value = new Set(failedSignal.value).add(source);
+    };
+
     const onTransitionEnd = (event: TransitionEvent, groupIndex: number) => {
       const slide = props.slide;
       if (
@@ -302,6 +330,8 @@ export const StoriesCarousel = defineComponent({
                 scope,
                 slide === null && visible,
                 cardFrame(story, groupIndex),
+                failedPreviews.value,
+                onPreviewFailed,
               ),
         );
       };

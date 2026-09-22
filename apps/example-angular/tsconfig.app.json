@@ -17,6 +17,9 @@
   ],
   "references": [
     {
+      "path": "../../packages/reelkit-angular-stories-player/tsconfig.lib.json"
+    },
+    {
       "path": "../../packages/reelkit-angular-reel-player/tsconfig.lib.json"
     },
     {

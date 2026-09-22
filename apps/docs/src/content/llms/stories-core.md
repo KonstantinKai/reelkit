@@ -336,10 +336,11 @@ Desktop carousel geometry (offset relative to active group: negative left, posit
 
 Presentation:
 
-| Function                       | Type                                            | Notes                                                                                                                                                                                                                       |
-| ------------------------------ | ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `getRingPresentation(options)` | `(RingPresentationOptions) => RingPresentation` | `{ avatarSize, className, style }` from `totalStories`, `viewedCount`, `size`; unviewed → rotating conic gradient, fully viewed → flat `viewedColor`, empty group → none. Sizes carry `px`, so style works in any framework |
-| `formatTimeAgo(date)`          | `(string \| Date) => string`                    | `now`, `5m`, `3h`, `2d`, `2w`                                                                                                                                                                                               |
+| Function                       | Type                                              | Notes                                                                                                                                                                                                                       |
+| ------------------------------ | ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `getRingPresentation(options)` | `(RingPresentationOptions) => RingPresentation`   | `{ avatarSize, className, style }` from `totalStories`, `viewedCount`, `size`; unviewed → rotating conic gradient, fully viewed → flat `viewedColor`, empty group → none. Sizes carry `px`, so style works in any framework |
+| `getPreviewSource(story)`      | `(StoryItem \| undefined) => string \| undefined` | picture a carousel card previews: `poster`, else the image itself, else none (video without a poster)                                                                                                                       |
+| `formatTimeAgo(date)`          | `(string \| Date) => string`                      | `now`, `5m`, `3h`, `2d`, `2w`                                                                                                                                                                                               |
 
 Types exported alongside: `CarouselSlot`, `RingPresentation`, `RingPresentationOptions`.
 

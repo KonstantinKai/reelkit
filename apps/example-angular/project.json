@@ -24,7 +24,8 @@
           "apps/example-angular/src/styles.css",
           "packages/reelkit-angular-reel-player/src/lib/styles/styles.css",
           "packages/reelkit-angular-lightbox/src/lib/styles/lightbox-overlay.css",
-          "packages/reelkit-angular-lightbox/src/lib/styles/lightbox-video-slide.css"
+          "packages/reelkit-angular-lightbox/src/lib/styles/lightbox-video-slide.css",
+          "packages/reelkit-angular-stories-player/src/lib/styles/styles.css"
         ]
       },
       "configurations": {

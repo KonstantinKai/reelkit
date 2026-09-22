@@ -13,9 +13,9 @@
  *
  * The layout helpers every binding shares live here too: the story canvas
  * size ({@link getStoriesSize}), the desktop carousel geometry
- * ({@link getCarouselSlot} and its neighbours), the ring look
- * ({@link getRingPresentation}) and the relative time label
- * ({@link formatTimeAgo}).
+ * ({@link getCarouselSlot} and its neighbours), the picture a card previews
+ * ({@link getPreviewSource}), the ring look ({@link getRingPresentation}) and
+ * the relative time label ({@link formatTimeAgo}).
  */
 
 export type {
@@ -71,6 +71,8 @@ export {
 } from './lib/layout';
 
 export { formatTimeAgo } from './lib/timeAgo';
+
+export { getPreviewSource } from './lib/cardPreview';
 
 export {
   getRingPresentation,

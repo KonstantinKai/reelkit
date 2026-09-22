@@ -235,6 +235,7 @@ import typesCode from '../../snippets/stories-core/types-code.ts?raw';
 | Функція | Тип | Опис |
 | --- | --- | --- |
 | `getRingPresentation(options)` | `(RingPresentationOptions) => RingPresentation` | Клас, інлайн-стиль і розмір аватара кільця історії з `totalStories`, `viewedCount` і `size`. Якщо лишилося що дивитися — конічний градієнт, що обертається; додивлена група — рівний `viewedColor`; порожня — без кільця. Розміри несуть одиниці `px`, тож об’єкт стилю годиться для будь-якого фреймворку. |
+| `getPreviewSource(story)` | `(StoryItem \| undefined) => string \| undefined` | Зображення, яке показує картка каруселі: `poster` історії, сама картинка, якщо це зображення, і нічого для відео без постера. Картка без зображення повертається до простої картки, яку малюють для історії, що не має чого показати. |
 | `formatTimeAgo(date)` | `(string \| Date) => string` | Короткий відносний час, який показують заголовок і картки каруселі: `now`, `5m`, `3h`, `2d`, `2w`. |
 
 Поряд із ними експортовано типи `CarouselSlot`, `RingPresentation` і `RingPresentationOptions`.

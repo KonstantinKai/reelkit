@@ -235,6 +235,7 @@ Offsets are relative to the active group: negative to the left, positive to the 
 | Function | Type | Description |
 | --- | --- | --- |
 | `getRingPresentation(options)` | `(RingPresentationOptions) => RingPresentation` | Class name, inline style and avatar size of a story ring, from `totalStories`, `viewedCount` and `size`. Anything left to watch gets the rotating conic gradient, a fully watched group a flat `viewedColor`, an empty group no ring. Sizes carry their `px` unit, so the style object works in any framework. |
+| `getPreviewSource(story)` | `(StoryItem \| undefined) => string \| undefined` | Picture a carousel card previews: the story's `poster`, the image itself when it is an image, and nothing for a video without a poster. A card with no picture falls back to the plain card drawn for a story with nothing to preview. |
 | `formatTimeAgo(date)` | `(string \| Date) => string` | Short relative time the header and the carousel cards show: `now`, `5m`, `3h`, `2d`, `2w`. |
 
 The `CarouselSlot`, `RingPresentation` and `RingPresentationOptions` types are exported alongside them.
