@@ -18,6 +18,15 @@
  *   node scripts/sort-changelog.mjs --check   # exit 1 if that run is unsorted
  *   node scripts/sort-changelog.mjs --amend   # sort, then fold into the release commit
  *   node scripts/sort-changelog.mjs --file=x  # operate on another file (tests)
+ *   node scripts/sort-changelog.mjs --top=stories-player
+ *                                             # lead this run with that capability
+ *
+ * `--top` takes capability names, comma-separated, and moves them to the front
+ * for this run only — the release where a player is the headline leads with it
+ * without editing the default order every other release depends on. Frameworks
+ * keep their order inside a capability. It reaches the script through
+ * `pnpm release:prepare --top=stories-player`, since a run script forwards
+ * trailing arguments to its last command.
  */
 
 import { execFileSync } from 'node:child_process';
@@ -42,13 +51,46 @@ const file = resolve(root, fileArg ?? 'CHANGELOG.md');
  * all. Extend this when a new capability ships; anything unlisted sorts last,
  * where it is visible rather than silently mixed in.
  */
-const kCapabilityOrder = [
+const kDefaultCapabilityOrder = [
   'reel-player',
   'stories-player',
   'lightbox',
   'stories-core',
   'binding',
   'core',
+];
+
+/**
+ * The order this run sorts by: anything named in `--top` first, in the order
+ * given, then the rest of the default order untouched.
+ *
+ * A name that matches no capability is refused rather than ignored. Silently
+ * accepting it would print "already in order" and leave the release looking
+ * sorted, which is the one outcome worse than failing.
+ */
+const promoted = (
+  process.argv
+    .find((arg) => arg.startsWith('--top='))
+    ?.slice('--top='.length) ?? ''
+)
+  .split(',')
+  .map((name) => name.trim())
+  .filter(Boolean);
+
+const unknown = promoted.filter(
+  (name) => !kDefaultCapabilityOrder.includes(name),
+);
+if (unknown.length > 0) {
+  console.error(
+    `--top: ${unknown.map((n) => `"${n}"`).join(', ')} — no such capability.\n` +
+      `Known capabilities: ${kDefaultCapabilityOrder.join(', ')}.`,
+  );
+  process.exit(1);
+}
+
+const kCapabilityOrder = [
+  ...promoted,
+  ...kDefaultCapabilityOrder.filter((name) => !promoted.includes(name)),
 ];
 
 /** Frameworks in the order the documentation sidebar lists them. */
