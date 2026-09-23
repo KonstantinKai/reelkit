@@ -6,7 +6,7 @@ export default defineConfig({
   root: import.meta.dirname,
   cacheDir: '../../node_modules/.vite/apps/example-vue',
   server: {
-    port: 4200,
+    port: 4220,
     host: 'localhost',
     proxy: {
       '/cdn': {
@@ -19,14 +19,14 @@ export default defineConfig({
               'X-RK-Token',
               process.env['VITE_CDN_TOKEN'] || '',
             );
-            proxyReq.setHeader('Origin', 'http://localhost:4200');
+            proxyReq.setHeader('Origin', 'http://localhost:4220');
           });
         },
       },
     },
   },
   preview: {
-    port: 4300,
+    port: 4221,
     host: 'localhost',
   },
   plugins: [vue(), nxViteTsPaths()],

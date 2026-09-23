@@ -56,6 +56,7 @@
       "continuous": true,
       "executor": "@angular/build:dev-server",
       "options": {
+        "port": 4210,
         "proxyConfig": "apps/example-angular/proxy.conf.mjs"
       },
       "configurations": {
@@ -76,6 +77,7 @@
       "continuous": true,
       "executor": "@angular/build:dev-server",
       "options": {
+        "port": 4210,
         "buildTarget": "example-angular:build:development",
         "proxyConfig": "apps/example-angular/proxy.conf.mjs"
       }
@@ -103,7 +105,7 @@
       "executor": "@nx/web:file-server",
       "options": {
         "buildTarget": "example-angular:build",
-        "port": 4200,
+        "port": 4210,
         "staticFilePath": "dist/apps/example-angular/browser",
         "spa": true
       }
