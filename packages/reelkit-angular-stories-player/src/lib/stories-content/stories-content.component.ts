@@ -153,22 +153,6 @@ const _kSlideTimeoutMarginMs = 700;
       [attr.aria-label]="ariaLabel()"
       tabindex="-1"
     >
-      @if (carouselActive()) {
-        <rk-stories-carousel
-          [groups]="groups()"
-          [activeGroupIndex]="activeGroupIndex()"
-          [slide]="slide()"
-          [activeSize]="size()"
-          [storyIndexFor]="storyIndexForCard"
-          [viewedState]="viewedState()"
-          [previewTemplate]="groupPreviewTpl()"
-          [frameTemplate]="slideTpl() ?? undefined"
-          [frameContext]="cardFrameContext"
-          (opened)="storiesCtrl.goToGroup($event)"
-          (slideEnded)="endSlide()"
-        />
-      }
-
       <!-- The arrows are flex siblings of the player, not overlaid on it:
            that is the layout the stylesheet lays out, and it keeps them
            clear of the story on a wide screen. -->
@@ -436,6 +420,25 @@ const _kSlideTimeoutMarginMs = 700;
           </button>
         }
       </div>
+
+      <!-- Last in the dialog, so the keyboard reaches the player's own
+           controls before the cards. The stylesheet keeps the cards painted
+           beneath the player whatever the order. -->
+      @if (carouselActive()) {
+        <rk-stories-carousel
+          [groups]="groups()"
+          [activeGroupIndex]="activeGroupIndex()"
+          [slide]="slide()"
+          [activeSize]="size()"
+          [storyIndexFor]="storyIndexForCard"
+          [viewedState]="viewedState()"
+          [previewTemplate]="groupPreviewTpl()"
+          [frameTemplate]="slideTpl() ?? undefined"
+          [frameContext]="cardFrameContext"
+          (opened)="storiesCtrl.goToGroup($event)"
+          (slideEnded)="endSlide()"
+        />
+      }
     </div>
   `,
 })
@@ -1189,7 +1192,7 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
   protected onVideoWaiting(groupIndex: number, storyIndex: number): void {
     if (!this._isActive(groupIndex, storyIndex)) return;
     this.loadingCtrl.isLoading.value = true;
-    this.timerCtrl.pause();
+    this._pauseTimer();
   }
 
   protected onVideoEnded(groupIndex: number, storyIndex: number): void {
@@ -1204,7 +1207,7 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
     if (!this._isActive(groupIndex, storyIndex)) return;
     this.loadingCtrl.isLoading.value = false;
     this.loadingCtrl.isError.value = true;
-    this.timerCtrl.pause();
+    this._pauseTimer();
   }
 
   private _isActive(groupIndex: number, storyIndex: number): boolean {
@@ -1261,7 +1264,7 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
     const isVideo = this._activeStory()?.mediaType === 'video';
 
     if (this.storiesCtrl.state.isPaused.value) {
-      this.timerCtrl.pause();
+      this._pauseTimer();
       if (isVideo) sharedStoryVideo().pause();
       return;
     }
@@ -1336,6 +1339,22 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
   }
 
   /**
+   * Stopping the timer also withdraws whatever was waiting for the slide to
+   * end. Otherwise a start asked for first would outlive the reset, the pause
+   * or the failure that followed it, and run the timer over a story that is
+   * loading, paused or broken.
+   */
+  private _resetTimer(): void {
+    this._pendingTimerAction = null;
+    this.timerCtrl.reset();
+  }
+
+  private _pauseTimer(): void {
+    this._pendingTimerAction = null;
+    this.timerCtrl.pause();
+  }
+
+  /**
    * Ends a slide the player never came out of, on the way out: the story it
    * was opening was never on screen, so it is neither reported nor timed.
    */
@@ -1389,8 +1408,7 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
     // which would otherwise end the new slide early.
     clearTimeout(this._slideTimeout);
     cancelAnimationFrame(this._slideFrame);
-    this.timerCtrl.pause();
-    this._pendingTimerAction = null;
+    this._pauseTimer();
     this.slide.set({ from, to, phase: 'start' });
 
     this._slideFrame = requestAnimationFrame(() => {
@@ -1501,7 +1519,7 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
     const groupIndex = this.storiesCtrl.state.activeGroupIndex.value;
     const storyIndex = this.storiesCtrl.state.activeStoryIndex.value;
     this._timedGroupIndex = groupIndex;
-    this.timerCtrl.reset();
+    this._resetTimer();
     this._startOrDeferTimer(this.groups()[groupIndex]?.stories[storyIndex]);
   }
 
@@ -1542,7 +1560,7 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
     if (story?.mediaType === 'image' && story.src) {
       if (preloader.isLoaded(story.src)) {
         this.loadingCtrl.isLoading.value = false;
-        this.timerCtrl.start(this._durationOf(story));
+        this._runTimer(() => this.timerCtrl.start(this._durationOf(story)));
       } else {
         this.loadingCtrl.isLoading.value = true;
       }
@@ -1555,7 +1573,9 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
     }
 
     this.loadingCtrl.isLoading.value = false;
-    this.timerCtrl.start(story?.duration ?? this.defaultImageDuration());
+    this._runTimer(() =>
+      this.timerCtrl.start(story?.duration ?? this.defaultImageDuration()),
+    );
   }
 
   protected onNavKey(increment: -1 | 1): void {

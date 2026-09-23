@@ -125,7 +125,7 @@ export class RkVideoStorySlideComponent {
   );
 
   constructor() {
-    afterRenderEffect(() => {
+    afterRenderEffect((onCleanup) => {
       const src = this.src();
       const groupIndex = this.groupIndex();
       const storyIndex = this.storyIndex();
@@ -243,7 +243,10 @@ export class RkVideoStorySlideComponent {
         activate();
       }
 
-      return () => disposables.dispose();
+      // Angular ignores a function returned from this effect. Without the
+      // cleanup registered here, a destroyed slide keeps its listeners on the
+      // shared video and keeps holding the element in its detached container.
+      onCleanup(disposables.dispose);
     });
   }
 }

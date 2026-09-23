@@ -9,14 +9,28 @@ import { By } from '@angular/platform-browser';
 import {
   ReelComponent,
   SoundStateService,
+  createOverlayUrlState,
   cubeTransition,
   fadeTransition,
   slideTransition,
+  urlIndexTwoAxisKey,
+  type TwoAxisIdentity,
+  type TwoAxisPosition,
+  type UrlStateController,
 } from '@reelkit/angular';
-import type { StoriesGroup } from '@reelkit/stories-core';
+import {
+  createFakeStorageAdapter,
+  createFakeUrlAdapter,
+} from '@reelkit/core/testing';
+import {
+  createStoriesViewedStateController,
+  type StoriesGroup,
+  type StoriesViewedStateController,
+} from '@reelkit/stories-core';
 import type { ChromePlacement, DesktopLayout } from '../types';
 import { RkCanvasProgressBarComponent } from '../canvas-progress-bar/canvas-progress-bar.component';
 import { RkStoriesOverlayComponent } from './stories-overlay.component';
+import { RkStoriesUrlOverlayComponent } from './stories-url-overlay.component';
 import { RkStoriesContentComponent } from '../stories-content/stories-content.component';
 import {
   RkStoriesFooterDirective,
@@ -1134,20 +1148,6 @@ describe('RkStoriesOverlayComponent', () => {
       expect(waiting).not.toHaveBeenCalled();
     });
 
-    it('moves focus into the player when a card it came from slides away', () => {
-      const fixture = createCarouselHost();
-      const card = fixture.debugElement.query(
-        By.css('[aria-label="Open stories by Bo"]'),
-      ).nativeElement as HTMLElement;
-      card.focus();
-      card.click();
-      fixture.detectChanges();
-
-      slideInternalsOf(fixture).endSlide();
-
-      expect(document.activeElement?.classList).toContain('rk-stories-overlay');
-    });
-
     it('draws a footer for the active group only', () => {
       @Component({
         template: `
@@ -1219,5 +1219,821 @@ describe('RkStoriesOverlayComponent', () => {
 
       expect(start).not.toHaveBeenCalled();
     });
+  });
+});
+
+describe('RkStoriesOverlayComponent desktop carousel', () => {
+  interface StoryPosition {
+    groupIndex: number;
+    storyIndex: number;
+  }
+
+  const original = {
+    width: window.innerWidth,
+    height: window.innerHeight,
+    matchMedia: Object.getOwnPropertyDescriptor(window, 'matchMedia'),
+  };
+
+  const setViewport = (width: number, height: number) => {
+    Object.defineProperty(window, 'innerWidth', {
+      configurable: true,
+      value: width,
+    });
+    Object.defineProperty(window, 'innerHeight', {
+      configurable: true,
+      value: height,
+    });
+  };
+
+  const threeGroups: StoriesGroup[] = [
+    {
+      author: { id: '1', name: 'Alice', avatar: '/alice.jpg' },
+      stories: [
+        { id: 's1', mediaType: 'image', src: '/img1.jpg' },
+        { id: 's2', mediaType: 'image', src: '/img2.jpg' },
+      ],
+    },
+    {
+      author: { id: '2', name: 'Bob', avatar: '/bob.jpg' },
+      stories: [{ id: 's3', mediaType: 'image', src: '/img3.jpg' }],
+    },
+    {
+      author: { id: '3', name: 'Carol', avatar: '/carol.jpg' },
+      stories: [
+        { id: 's4', mediaType: 'image', src: '/img4.jpg' },
+        { id: 's5', mediaType: 'image', src: '/img5.jpg' },
+      ],
+    },
+  ];
+
+  // A feed that loads another page while the player is open.
+  const fourGroups: StoriesGroup[] = [
+    ...threeGroups,
+    {
+      author: { id: '4', name: 'Dave', avatar: '/dave.jpg' },
+      stories: [{ id: 's6', mediaType: 'image', src: '/img6.jpg' }],
+    },
+  ];
+
+  // A story with no source starts its timer straight away and runs for the
+  // given time; one with a source waits for an image that never loads here.
+  const quickStory = (id: string, duration?: number) => ({
+    id,
+    mediaType: 'image' as const,
+    src: '',
+    duration,
+  });
+  const quickGroups = (carolDuration?: number): StoriesGroup[] => [
+    threeGroups[0],
+    {
+      author: { id: '2', name: 'Bob', avatar: '/bob.jpg' },
+      stories: [quickStory('quick-bob', 300)],
+    },
+    {
+      author: { id: '3', name: 'Carol', avatar: '/carol.jpg' },
+      stories: [quickStory('quick-carol', carolDuration)],
+    },
+  ];
+
+  @Component({
+    template: `
+      <rk-stories-overlay
+        [isOpen]="isOpen()"
+        [groups]="groups()"
+        [desktopLayout]="desktopLayout()"
+        [initialGroupIndex]="initialGroupIndex"
+        [initialStoryIndex]="initialStoryIndex"
+        [resumeStoryIndex]="resumeStoryIndex"
+        [viewed]="viewed"
+        (closed)="closes = closes + 1"
+        (groupChanged)="groupChanges.push($event)"
+        (storyChanged)="storyChanges.push($event)"
+        (storyViewed)="viewedStories.push($event)"
+        (storyCompleted)="completedStories.push($event)"
+        (apiReady)="api = $event"
+      />
+    `,
+    imports: [RkStoriesOverlayComponent],
+  })
+  class CarouselHostComponent {
+    readonly isOpen = signal(true);
+    readonly groups = signal<StoriesGroup[]>(threeGroups);
+    readonly desktopLayout = signal<DesktopLayout>('carousel');
+    initialGroupIndex = 0;
+    initialStoryIndex: number | undefined = undefined;
+    resumeStoryIndex: ((groupIndex: number) => number) | undefined = undefined;
+    viewed: StoriesViewedStateController | undefined = undefined;
+    closes = 0;
+    groupChanges: number[] = [];
+    storyChanges: StoryPosition[] = [];
+    viewedStories: StoryPosition[] = [];
+    completedStories: StoryPosition[] = [];
+    api: StoriesApi | null = null;
+  }
+
+  @Component({
+    template: `
+      <rk-stories-url-overlay
+        [controller]="controller"
+        [groups]="groups"
+        [desktopLayout]="desktopLayout"
+        [viewed]="viewed"
+      />
+    `,
+    imports: [RkStoriesUrlOverlayComponent],
+  })
+  class UrlHostComponent {
+    controller!: UrlStateController<TwoAxisPosition>;
+    groups = threeGroups;
+    desktopLayout: DesktopLayout = 'carousel';
+    viewed: StoriesViewedStateController | undefined = undefined;
+  }
+
+  function createCarousel(
+    configure?: (host: CarouselHostComponent) => void,
+  ): ComponentFixture<CarouselHostComponent> {
+    const fixture = TestBed.createComponent(CarouselHostComponent);
+    configure?.(fixture.componentInstance);
+    fixture.detectChanges();
+    return fixture;
+  }
+
+  function createUrlOverlay(
+    search: string,
+    configure?: (host: UrlHostComponent) => void,
+  ): {
+    fixture: ComponentFixture<UrlHostComponent>;
+    url: ReturnType<typeof createFakeUrlAdapter>;
+  } {
+    const url = createFakeUrlAdapter(search);
+    const controller = TestBed.runInInjectionContext(() =>
+      createOverlayUrlState<TwoAxisIdentity<number, number>, TwoAxisPosition>({
+        param: 'story',
+        adapter: url.adapter,
+        ...urlIndexTwoAxisKey({
+          outerCount: () => threeGroups.length,
+          innerCounts: () => threeGroups.map((group) => group.stories.length),
+        }),
+      }),
+    ) as UrlStateController<TwoAxisPosition>;
+    const fixture = TestBed.createComponent(UrlHostComponent);
+    fixture.componentInstance.controller = controller;
+    configure?.(fixture.componentInstance);
+    fixture.detectChanges();
+    return { fixture, url };
+  }
+
+  const element = (fixture: ComponentFixture<unknown>): HTMLElement =>
+    fixture.nativeElement as HTMLElement;
+  const overlayOf = (fixture: ComponentFixture<unknown>) =>
+    element(fixture).querySelector('.rk-stories-overlay') as HTMLElement;
+  const cardsOf = (fixture: ComponentFixture<unknown>) =>
+    element(fixture).querySelectorAll('.rk-stories-card');
+  const cardNamesOf = (fixture: ComponentFixture<unknown>) =>
+    Array.from(
+      element(fixture).querySelectorAll('.rk-stories-card-button'),
+      (button) => button.getAttribute('aria-label'),
+    );
+  const cardButton = (fixture: ComponentFixture<unknown>, name: string) =>
+    element(fixture).querySelector(
+      `[aria-label="Open stories by ${name}"]`,
+    ) as HTMLElement;
+  const isSliding = (fixture: ComponentFixture<unknown>) =>
+    overlayOf(fixture).classList.contains('rk-stories-overlay--sliding');
+  const outerReelIn = (fixture: ComponentFixture<unknown>) =>
+    fixture.debugElement.query(By.directive(ReelComponent))
+      .componentInstance as ReelComponent;
+
+  const advance = (fixture: ComponentFixture<unknown>, ms: number) => {
+    jest.advanceTimersByTime(ms);
+    fixture.detectChanges();
+  };
+  // Two animation frames lay the cards out and then set them moving.
+  const nextFrames = (fixture: ComponentFixture<unknown>) =>
+    advance(fixture, 40);
+  // jsdom reports no transition duration, which leaves the time limit at its
+  // margin.
+  const endSlideOnTimeLimit = (fixture: ComponentFixture<unknown>) =>
+    advance(fixture, 800);
+
+  const openCard = (fixture: ComponentFixture<unknown>, name: string) => {
+    cardButton(fixture, name).click();
+    fixture.detectChanges();
+  };
+  const finishSlide = (fixture: ComponentFixture<unknown>, name: string) => {
+    const card = cardButton(fixture, name).closest('.rk-stories-card')!;
+    const event = new Event('transitionend', { bubbles: true });
+    Object.defineProperty(event, 'propertyName', { value: 'transform' });
+    card.dispatchEvent(event);
+    fixture.detectChanges();
+  };
+  const pausePlayer = (fixture: ComponentFixture<unknown>) => {
+    (
+      element(fixture).querySelector('[aria-label="Pause"]') as HTMLElement
+    ).click();
+    fixture.detectChanges();
+  };
+  const isPlaying = (fixture: ComponentFixture<unknown>) =>
+    element(fixture).querySelector('[aria-label="Pause"]') !== null;
+
+  beforeEach(() => {
+    // The story timer measures elapsed time through `performance` and paints
+    // on animation frames, so both run on the fake clock with the timeouts.
+    jest.useFakeTimers({ doNotFake: ['queueMicrotask', 'nextTick'] });
+    setViewport(1440, 900);
+    TestBed.configureTestingModule({
+      imports: [CarouselHostComponent, UrlHostComponent],
+    });
+  });
+
+  afterEach(() => {
+    // Torn down while the fake timers still stand in for animation frames;
+    // the player cancels its pending frames on the way out.
+    TestBed.resetTestingModule();
+    setViewport(original.width, original.height);
+    if (original.matchMedia) {
+      Object.defineProperty(window, 'matchMedia', original.matchMedia);
+    } else {
+      Reflect.deleteProperty(window, 'matchMedia');
+    }
+    jest.useRealTimers();
+    jest.restoreAllMocks();
+  });
+
+  it('shows no cards with the default layout', () => {
+    const fixture = createCarousel((host) => host.desktopLayout.set('single'));
+
+    expect(cardsOf(fixture)).toHaveLength(0);
+    expect(outerReelIn(fixture).transition()).not.toBe(slideTransition);
+  });
+
+  it('shows the neighbouring groups beside the player on a desktop screen', () => {
+    const fixture = createCarousel((host) => (host.initialGroupIndex = 1));
+
+    expect(cardNamesOf(fixture)).toEqual([
+      'Open stories by Alice',
+      'Open stories by Carol',
+    ]);
+    expect(overlayOf(fixture).classList).toContain(
+      'rk-stories-overlay--carousel',
+    );
+  });
+
+  it('keeps the plain player and its group transition on a phone', () => {
+    setViewport(768, 1024);
+    const fixture = createCarousel();
+
+    expect(cardsOf(fixture)).toHaveLength(0);
+    expect(outerReelIn(fixture).transition()).not.toBe(slideTransition);
+    expect(overlayOf(fixture).classList).not.toContain(
+      'rk-stories-overlay--carousel',
+    );
+  });
+
+  it('switches layout when the window crosses the phone breakpoint', () => {
+    const fixture = createCarousel();
+    expect(cardsOf(fixture).length).toBeGreaterThan(0);
+
+    setViewport(600, 900);
+    window.dispatchEvent(new Event('resize'));
+    fixture.detectChanges();
+    expect(cardsOf(fixture)).toHaveLength(0);
+
+    setViewport(1440, 900);
+    window.dispatchEvent(new Event('resize'));
+    fixture.detectChanges();
+    expect(cardsOf(fixture).length).toBeGreaterThan(0);
+  });
+
+  it('follows the layout input when it changes', () => {
+    const fixture = createCarousel((host) => host.desktopLayout.set('single'));
+    expect(cardsOf(fixture)).toHaveLength(0);
+
+    fixture.componentInstance.desktopLayout.set('carousel');
+    fixture.detectChanges();
+
+    expect(cardsOf(fixture).length).toBeGreaterThan(0);
+  });
+
+  it('opens a clicked group once, on the story it resumes from', async () => {
+    const fixture = createCarousel(
+      (host) =>
+        (host.resumeStoryIndex = (groupIndex) => (groupIndex === 2 ? 1 : 0)),
+    );
+    const host = fixture.componentInstance;
+    host.groupChanges = [];
+    host.storyChanges = [];
+    const content = fixture.debugElement.query(
+      By.directive(RkStoriesContentComponent),
+    ).componentInstance as unknown as {
+      _outerReel: { goTo: (index: number, animate: boolean) => unknown };
+    };
+    const goTo = jest.spyOn(content._outerReel, 'goTo');
+
+    openCard(fixture, 'Carol');
+    await jest.advanceTimersByTimeAsync(0);
+
+    expect(host.groupChanges).toEqual([2]);
+    expect(host.storyChanges.at(-1)).toEqual({ groupIndex: 2, storyIndex: 1 });
+    // The player jumps straight to the group; the cards carry the motion.
+    expect(goTo).toHaveBeenCalledWith(2, false);
+  });
+
+  it('writes the clicked group to the url', () => {
+    const { fixture, url } = createUrlOverlay('?story=0.0');
+
+    openCard(fixture, 'Bob');
+
+    expect(url.adapter.read()).toBe('?story=1.0');
+  });
+
+  it('reports the opened story as viewed only once the slide ends', () => {
+    const fixture = createCarousel();
+    const host = fixture.componentInstance;
+    host.viewedStories = [];
+
+    openCard(fixture, 'Bob');
+    nextFrames(fixture);
+    expect(isSliding(fixture)).toBe(true);
+    expect(host.viewedStories).toEqual([]);
+
+    finishSlide(fixture, 'Bob');
+    expect(host.viewedStories).toEqual([{ groupIndex: 1, storyIndex: 0 }]);
+    expect(isSliding(fixture)).toBe(false);
+  });
+
+  // Leaving from the second story changes the story index on the way to Bob's
+  // first; leaving from the first changes only the group, which asks nothing of
+  // the timer on its own.
+  it.each([
+    ['another story index', 1],
+    ['the same story index', 0],
+  ])('holds the story timer until the slide ends, from %s', (_, from) => {
+    // An image with no source starts its timer straight away, so the only
+    // thing holding it back is the slide.
+    const fixture = createCarousel((host) => {
+      host.groups.set([
+        threeGroups[0],
+        {
+          author: { id: '2', name: 'Bob', avatar: '/bob.jpg' },
+          stories: [quickStory('quick', 300)],
+        },
+        threeGroups[2],
+      ]);
+      host.initialStoryIndex = from;
+    });
+    const host = fixture.componentInstance;
+
+    // The story lasts 300ms, so without the slide holding the timer it would
+    // be over by now.
+    openCard(fixture, 'Bob');
+    advance(fixture, 600);
+    expect(isSliding(fixture)).toBe(true);
+    expect(host.completedStories).toEqual([]);
+
+    // No transition event arrives here, so the slide ends on its time limit.
+    advance(fixture, 200);
+    expect(isSliding(fixture)).toBe(false);
+    expect(host.completedStories).toEqual([]);
+
+    advance(fixture, 400);
+    expect(host.completedStories).toEqual([{ groupIndex: 1, storyIndex: 0 }]);
+  });
+
+  it('leaves the timer stopped after a slide into a story still loading', () => {
+    const fixture = createCarousel((host) => (host.initialStoryIndex = 1));
+
+    // Leaving a paused player asks the timer to resume during the slide, and
+    // the new story then resets it; the reset has to win.
+    pausePlayer(fixture);
+    openCard(fixture, 'Bob');
+    endSlideOnTimeLimit(fixture);
+    advance(fixture, 6000);
+
+    expect(fixture.componentInstance.completedStories).toEqual([]);
+  });
+
+  it('drops a timer start asked for during the slide when the story then fails', () => {
+    const fixture = createCarousel((host) => {
+      host.groups.set(quickGroups());
+      host.initialStoryIndex = 1;
+    });
+    const content = fixture.debugElement.query(
+      By.directive(RkStoriesContentComponent),
+    ).componentInstance as unknown as {
+      onContentError: (groupIndex: number, storyIndex: number) => void;
+    };
+
+    openCard(fixture, 'Bob');
+    nextFrames(fixture);
+    content.onContentError(1, 0);
+
+    endSlideOnTimeLimit(fixture);
+    advance(fixture, 1000);
+
+    expect(fixture.componentInstance.completedStories).toEqual([]);
+  });
+
+  it('starts the timer for the group opened last when a slide is interrupted', () => {
+    const fixture = createCarousel((host) => {
+      host.groups.set(quickGroups(5000));
+      host.initialStoryIndex = 1;
+    });
+    const host = fixture.componentInstance;
+    host.viewedStories = [];
+
+    openCard(fixture, 'Bob');
+    nextFrames(fixture);
+    openCard(fixture, 'Carol');
+    nextFrames(fixture);
+    finishSlide(fixture, 'Carol');
+
+    expect(host.viewedStories).toEqual([{ groupIndex: 2, storyIndex: 0 }]);
+
+    // Bob's 300ms start was asked for first and must not run on Carol's story.
+    advance(fixture, 1000);
+    expect(host.completedStories).toEqual([]);
+    advance(fixture, 4500);
+    expect(host.completedStories).toEqual([{ groupIndex: 2, storyIndex: 0 }]);
+  });
+
+  it.each([
+    ['another story index', 1],
+    ['the same story index', 0],
+  ])('resumes a paused player on a card click, from %s', (_, from) => {
+    const fixture = createCarousel((host) => {
+      host.groups.set(quickGroups());
+      host.initialStoryIndex = from;
+    });
+
+    pausePlayer(fixture);
+    openCard(fixture, 'Bob');
+    endSlideOnTimeLimit(fixture);
+    expect(isPlaying(fixture)).toBe(true);
+
+    advance(fixture, 400);
+    expect(fixture.componentInstance.completedStories).toContainEqual({
+      groupIndex: 1,
+      storyIndex: 0,
+    });
+  });
+
+  it('resumes a paused player on a group change without the carousel too', () => {
+    const fixture = createCarousel((host) => {
+      host.groups.set(quickGroups());
+      host.desktopLayout.set('single');
+    });
+
+    pausePlayer(fixture);
+    fixture.componentInstance.api!.goToGroup(1);
+    fixture.detectChanges();
+    expect(isPlaying(fixture)).toBe(true);
+
+    advance(fixture, 400);
+    expect(fixture.componentInstance.completedStories).toContainEqual({
+      groupIndex: 1,
+      storyIndex: 0,
+    });
+  });
+
+  // One controller does the whole viewed job for the player: card rings,
+  // where a group opens, and recording what was shown.
+  describe('given a viewed controller', () => {
+    const viewedFor = (stored: string | null = null) => {
+      const storage = createFakeStorageAdapter({ initial: stored });
+      const viewed = createStoriesViewedStateController({
+        storageKey: 'seen',
+        storage: storage.adapter,
+        groups: () => threeGroups,
+      });
+      return { storage, viewed };
+    };
+    const bobRing = (fixture: ComponentFixture<unknown>) =>
+      element(fixture).querySelector(
+        '[aria-label="Open stories by Bob"] .rk-stories-ring',
+      ) as HTMLElement;
+
+    it('draws the card rings from it and repaints them as stories are seen', () => {
+      const { viewed } = viewedFor();
+      const fixture = createCarousel((host) => (host.viewed = viewed));
+      expect(bobRing(fixture).classList).toContain('rk-stories-ring--active');
+
+      // Bob has one story, so one seen is the whole group.
+      viewed.markViewed(1, 0);
+      fixture.detectChanges();
+
+      expect(bobRing(fixture).classList).not.toContain(
+        'rk-stories-ring--active',
+      );
+    });
+
+    it('records every story shown and still tells the consumer', () => {
+      const { viewed, storage } = viewedFor();
+      const fixture = createCarousel((host) => {
+        host.viewed = viewed;
+        host.desktopLayout.set('single');
+      });
+
+      expect(storage.stored).toBe('["1.s1"]');
+      expect(fixture.componentInstance.viewedStories).toContainEqual({
+        groupIndex: 0,
+        storyIndex: 0,
+      });
+    });
+
+    it('opens a group where the controller says it was left', () => {
+      const { viewed } = viewedFor('["1.s1"]');
+      viewed.attach();
+      const fixture = createCarousel((host) => {
+        host.viewed = viewed;
+        host.desktopLayout.set('single');
+      });
+
+      expect(fixture.componentInstance.viewedStories).toContainEqual({
+        groupIndex: 0,
+        storyIndex: 1,
+      });
+    });
+
+    it('lets an explicit resumeStoryIndex win over the controller', () => {
+      const { viewed } = viewedFor('["1.s1"]');
+      viewed.attach();
+      const fixture = createCarousel((host) => {
+        host.viewed = viewed;
+        host.resumeStoryIndex = () => 0;
+        host.desktopLayout.set('single');
+      });
+
+      expect(fixture.componentInstance.viewedStories).toContainEqual({
+        groupIndex: 0,
+        storyIndex: 0,
+      });
+    });
+
+    // The player chooses its opening story while it first renders, so the
+    // store has to be read before that: by the overlay, which exists while
+    // the player is still closed, not by the player itself.
+    it('reads the store while still closed, so the first open resumes', () => {
+      const { viewed, storage } = viewedFor('["1.s1"]');
+      const fixture = createCarousel((host) => {
+        host.viewed = viewed;
+        host.desktopLayout.set('single');
+        host.isOpen.set(false);
+      });
+      expect(storage.counts.read).toBeGreaterThan(0);
+
+      fixture.componentInstance.isOpen.set(true);
+      fixture.detectChanges();
+
+      expect(fixture.componentInstance.viewedStories).toContainEqual({
+        groupIndex: 0,
+        storyIndex: 1,
+      });
+    });
+
+    it('stops following the store when it is destroyed', () => {
+      const { viewed, storage } = viewedFor();
+      const fixture = createCarousel((host) => {
+        host.viewed = viewed;
+        host.isOpen.set(false);
+      });
+      fixture.destroy();
+
+      storage.fireExternalChange('["2.s3"]');
+
+      expect(viewed.viewedState.value.get('2')).toBeUndefined();
+    });
+
+    it('is read by the url overlay while its player is closed', () => {
+      const { storage, viewed } = viewedFor('["1.s1"]');
+      createUrlOverlay('', (host) => (host.viewed = viewed));
+
+      expect(storage.counts.read).toBeGreaterThan(0);
+      expect(viewed.viewedState.value.get('1')).toBe(1);
+    });
+  });
+
+  it('opens a group that arrived after the player did, from its card', () => {
+    const fixture = createCarousel((host) => (host.initialGroupIndex = 2));
+    const host = fixture.componentInstance;
+    host.groups.set(fourGroups);
+    fixture.detectChanges();
+    host.viewedStories = [];
+
+    openCard(fixture, 'Dave');
+    nextFrames(fixture);
+    finishSlide(fixture, 'Dave');
+
+    expect(host.groupChanges).toEqual([3]);
+    expect(host.viewedStories).toContainEqual({ groupIndex: 3, storyIndex: 0 });
+  });
+
+  it('moves on to a group that arrived late instead of closing, without the carousel too', () => {
+    const fixture = createCarousel((host) => {
+      host.initialGroupIndex = 2;
+      host.desktopLayout.set('single');
+    });
+    const host = fixture.componentInstance;
+    host.groups.set(fourGroups);
+    fixture.detectChanges();
+
+    host.api!.nextGroup();
+
+    expect(host.closes).toBe(0);
+    expect(host.groupChanges).toContain(3);
+  });
+
+  // The story a late group opens on has no source, so its timer starts at
+  // once. It can only do that when the player reads the groups it has now.
+  it('times the story of a group that arrived late', () => {
+    const fixture = createCarousel((host) => {
+      host.initialGroupIndex = 2;
+      host.desktopLayout.set('single');
+    });
+    const host = fixture.componentInstance;
+    host.groups.set([
+      ...threeGroups,
+      {
+        author: { id: '4', name: 'Dave', avatar: '/dave.jpg' },
+        stories: [quickStory('quick-dave', 300)],
+      },
+    ]);
+    fixture.detectChanges();
+
+    host.api!.goToGroup(3);
+    advance(fixture, 400);
+
+    expect(host.completedStories).toContainEqual({
+      groupIndex: 3,
+      storyIndex: 0,
+    });
+  });
+
+  // jsdom resolves no stylesheet, so the duration a theme would give the cards
+  // is reported by hand. The time limit has to wait for it, not cut it short.
+  it('lets a slide themed longer than a second run to its end', () => {
+    const computed = window.getComputedStyle.bind(window);
+    jest
+      .spyOn(window, 'getComputedStyle')
+      .mockImplementation((target, pseudo) => {
+        const style = computed(target, pseudo);
+        return target.classList?.contains('rk-stories-card')
+          ? Object.assign(Object.create(style), {
+              transitionDuration: '1.5s, 1.5s',
+            })
+          : style;
+      });
+    const fixture = createCarousel();
+
+    openCard(fixture, 'Bob');
+    advance(fixture, 1400);
+    expect(isSliding(fixture)).toBe(true);
+
+    // Still no transition event: the limit ends the slide once the themed
+    // duration has passed.
+    advance(fixture, 1500);
+    expect(isSliding(fixture)).toBe(false);
+  });
+
+  // The opened group's card leaves the page when the slide ends. Focus left on
+  // it would fall to the document body, outside the dialog.
+  it('keeps focus in the dialog after opening a group from a focused card', () => {
+    const fixture = createCarousel();
+    cardButton(fixture, 'Bob').focus();
+
+    openCard(fixture, 'Bob');
+    nextFrames(fixture);
+    finishSlide(fixture, 'Bob');
+
+    expect(document.activeElement).toBe(overlayOf(fixture));
+  });
+
+  it('leaves focus alone after a slide when it was not on a card', () => {
+    const fixture = createCarousel();
+    const close = element(fixture).querySelector(
+      '[aria-label="Close"]',
+    ) as HTMLElement;
+    close.focus();
+
+    openCard(fixture, 'Bob');
+    nextFrames(fixture);
+    finishSlide(fixture, 'Bob');
+
+    expect(document.activeElement).toBe(close);
+  });
+
+  it('does not count a window resize as a slide', () => {
+    const fixture = createCarousel();
+
+    setViewport(1920, 1080);
+    window.dispatchEvent(new Event('resize'));
+    nextFrames(fixture);
+
+    expect(isSliding(fixture)).toBe(false);
+  });
+
+  // Deliberate: the carousel slide ignores prefers-reduced-motion. Do not
+  // add the check.
+  it('slides even when the viewer prefers less motion', () => {
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      value: (query: string) => ({
+        matches: query === '(prefers-reduced-motion: reduce)',
+        addEventListener: () => undefined,
+        removeEventListener: () => undefined,
+      }),
+    });
+    const fixture = createCarousel();
+    fixture.componentInstance.viewedStories = [];
+
+    openCard(fixture, 'Bob');
+    nextFrames(fixture);
+
+    expect(isSliding(fixture)).toBe(true);
+    expect(fixture.componentInstance.viewedStories).toEqual([]);
+  });
+
+  it('does not slide after a touch swipe has already moved the player', () => {
+    const fixture = createCarousel();
+    const host = fixture.componentInstance;
+    host.viewedStories = [];
+
+    outerReelIn(fixture).afterChange.emit({ index: 1, indexInRange: 1 });
+    nextFrames(fixture);
+
+    expect(isSliding(fixture)).toBe(false);
+    expect(host.viewedStories).toContainEqual({ groupIndex: 1, storyIndex: 0 });
+    expect(cardNamesOf(fixture)).toEqual([
+      'Open stories by Alice',
+      'Open stories by Carol',
+    ]);
+  });
+
+  it('previews a custom story with no image through the slide template, inactive', () => {
+    @Component({
+      template: `
+        <rk-stories-overlay
+          [isOpen]="true"
+          [groups]="groups"
+          desktopLayout="carousel"
+        >
+          <ng-template
+            rkStoriesSlide
+            let-story
+            let-isActive="isActive"
+            let-size="size"
+          >
+            <div
+              class="custom-slide"
+              [attr.data-story]="story.id"
+              [attr.data-active]="isActive"
+              [attr.data-size]="size.join('x')"
+            ></div>
+          </ng-template>
+        </rk-stories-overlay>
+      `,
+      imports: [RkStoriesOverlayComponent, RkStoriesSlideDirective],
+    })
+    class SlideHostComponent {
+      groups: StoriesGroup[] = [
+        threeGroups[0],
+        {
+          author: { id: '2', name: 'Bob', avatar: '/bob.jpg' },
+          stories: [{ id: 'tip', mediaType: 'image', src: '' }],
+        },
+      ];
+    }
+
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ imports: [SlideHostComponent] });
+    const fixture = TestBed.createComponent(SlideHostComponent);
+    fixture.detectChanges();
+
+    const slide = element(fixture).querySelector(
+      '.rk-stories-card [data-story="tip"]',
+    ) as HTMLElement;
+    expect(slide).not.toBeNull();
+    expect(slide.dataset['active']).toBe('false');
+    expect(slide.dataset['size']).toBe(outerReelIn(fixture).size()?.join('x'));
+  });
+
+  it('puts the cards after the player controls in the tab order', () => {
+    const fixture = createCarousel();
+
+    const isCard = Array.from(
+      overlayOf(fixture).querySelectorAll('button'),
+      (button) => button.classList.contains('rk-stories-card-button'),
+    );
+
+    expect(isCard).toContain(false);
+    expect(isCard.indexOf(true)).toBe(isCard.lastIndexOf(false) + 1);
+  });
+
+  it('still closes on Escape', () => {
+    const fixture = createCarousel();
+
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+
+    expect(fixture.componentInstance.closes).toBe(1);
   });
 });
