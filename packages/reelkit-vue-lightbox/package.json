@@ -29,7 +29,7 @@
     "directory": "packages/reelkit-vue-lightbox"
   },
   "bugs": "https://github.com/KonstantinKai/reelkit/issues",
-  "homepage": "https://reelkit.dev/docs/vue-lightbox",
+  "homepage": "https://reelkit.dev/docs/vue-lightbox?framework=vue",
   "funding": {
     "type": "buymeacoffee",
     "url": "https://buymeacoffee.com/konstantinkai"

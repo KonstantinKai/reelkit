@@ -247,6 +247,29 @@ for (const s of config.surfaces) {
   );
 }
 
+// `homepage` is the link npm puts on the package page, and it is the one link
+// a reader follows before installing anything. Pointing it at the site root
+// costs them the search; pointing it at another binding's page is worse — two
+// Angular packages sent readers to the React docs for their own component.
+for (const s of config.surfaces) {
+  const dir = s.package.replace(/\/src\/index\.ts$/, '');
+  const manifest = join(root, dir, 'package.json');
+  if (!existsSync(manifest)) continue;
+  const { name, homepage } = JSON.parse(readFileSync(manifest, 'utf8'));
+  // The section the package's own page lives in — `angular-lightbox` for an
+  // overlay, `angular` for a binding, whose guide and API reference are both
+  // its own docs and either of which is a fair landing page.
+  const section = s.page
+    .replace(/^apps\/docs\/src\/content\/en\/docs\//, '')
+    .replace(/\.mdx$/, '')
+    .split('/')[0];
+  const expected = `https://reelkit.dev/docs/${section}`;
+  if (homepage?.split('?')[0].startsWith(expected)) continue;
+  errors.push(
+    `${dir}/package.json: homepage is ${homepage ?? 'unset'}, which is not under ${expected} — npm links the package from its page, and ${name} is what the reader came for.`,
+  );
+}
+
 // The docs site reads `?framework=` to pick which binding's pages to show. A
 // link from an Angular or Vue package that omits it drops the reader on the
 // React view of their own component.

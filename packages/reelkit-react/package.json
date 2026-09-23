@@ -31,7 +31,7 @@
     "directory": "packages/reelkit-react"
   },
   "bugs": "https://github.com/KonstantinKai/reelkit/issues",
-  "homepage": "https://reelkit.dev",
+  "homepage": "https://reelkit.dev/docs/react/guide",
   "funding": {
     "type": "buymeacoffee",
     "url": "https://buymeacoffee.com/konstantinkai"

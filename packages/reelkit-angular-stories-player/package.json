@@ -25,7 +25,7 @@
     "directory": "packages/reelkit-angular-stories-player"
   },
   "bugs": "https://github.com/KonstantinKai/reelkit/issues",
-  "homepage": "https://reelkit.dev/docs/angular-stories-player",
+  "homepage": "https://reelkit.dev/docs/angular-stories-player?framework=angular",
   "funding": {
     "type": "buymeacoffee",
     "url": "https://buymeacoffee.com/konstantinkai"

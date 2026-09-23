@@ -157,6 +157,26 @@ describe('package README sections', () => {
     );
   });
 
+  // `homepage` is the link npm shows, followed before anything is installed.
+  // Two Angular packages pointed at the React docs for their own component,
+  // and the four bindings pointed at the site root.
+  it.each(readmes)('%s links npm at its own docs section', (readme) => {
+    const dir = readme.replace(/\/README\.md$/, '');
+    const manifest = join(root, dir, 'package.json');
+    if (!existsSync(manifest)) return;
+    const { name, homepage } = JSON.parse(readFileSync(manifest, 'utf8'));
+    const surface = config.surfaces.find(
+      (s: { package: string }) => s.package === `${dir}/src/index.ts`,
+    );
+    if (!surface) return;
+    const section = surface.page
+      .replace(/^apps\/docs\/src\/content\/en\/docs\//, '')
+      .replace(/\.mdx$/, '')
+      .split('/')[0];
+    expect(homepage, name).toBeDefined();
+    expect(homepage.split('?')[0]).toContain(`/docs/${section}`);
+  });
+
   // Without the parameter the docs site opens an Angular or Vue reader on the
   // React view of the very component they installed.
   it.each(readmes)('%s keeps its docs links on its own binding', (readme) => {

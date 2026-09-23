@@ -26,7 +26,7 @@
     "directory": "packages/reelkit-core"
   },
   "bugs": "https://github.com/KonstantinKai/reelkit/issues",
-  "homepage": "https://reelkit.dev",
+  "homepage": "https://reelkit.dev/docs/core/guide",
   "funding": {
     "type": "buymeacoffee",
     "url": "https://buymeacoffee.com/konstantinkai"

@@ -31,7 +31,7 @@
     "directory": "packages/reelkit-vue"
   },
   "bugs": "https://github.com/KonstantinKai/reelkit/issues",
-  "homepage": "https://reelkit.dev",
+  "homepage": "https://reelkit.dev/docs/vue/guide?framework=vue",
   "funding": {
     "type": "buymeacoffee",
     "url": "https://buymeacoffee.com/konstantinkai"

@@ -25,7 +25,7 @@
     "directory": "packages/reelkit-angular-lightbox"
   },
   "bugs": "https://github.com/KonstantinKai/reelkit/issues",
-  "homepage": "https://reelkit.dev/docs/lightbox",
+  "homepage": "https://reelkit.dev/docs/angular-lightbox?framework=angular",
   "funding": {
     "type": "buymeacoffee",
     "url": "https://buymeacoffee.com/konstantinkai"

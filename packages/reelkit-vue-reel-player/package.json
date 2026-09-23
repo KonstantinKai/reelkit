@@ -29,7 +29,7 @@
     "directory": "packages/reelkit-vue-reel-player"
   },
   "bugs": "https://github.com/KonstantinKai/reelkit/issues",
-  "homepage": "https://reelkit.dev/docs/vue-reel-player",
+  "homepage": "https://reelkit.dev/docs/vue-reel-player?framework=vue",
   "funding": {
     "type": "buymeacoffee",
     "url": "https://buymeacoffee.com/konstantinkai"

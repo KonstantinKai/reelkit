@@ -19,7 +19,7 @@
     "directory": "packages/reelkit-angular"
   },
   "bugs": "https://github.com/KonstantinKai/reelkit/issues",
-  "homepage": "https://reelkit.dev",
+  "homepage": "https://reelkit.dev/docs/angular/guide?framework=angular",
   "funding": {
     "type": "buymeacoffee",
     "url": "https://buymeacoffee.com/konstantinkai"
