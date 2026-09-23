@@ -20,6 +20,7 @@ type DemoType =
   | 'custom-progress'
   | 'custom-loading-error'
   | 'theming'
+  | 'custom-group-preview'
   | null;
 
 interface Demo {
@@ -64,6 +65,12 @@ const DEMOS: Demo[] = [
     title: 'Themed via CSS Tokens',
     description:
       'Rebrands the stories overlay by overriding --rk-stories-* CSS custom properties in a stylesheet. No component code changes.',
+  },
+  {
+    id: 'custom-group-preview',
+    title: 'Custom Carousel Cards',
+    description:
+      'Uses renderGroupPreview to draw the desktop carousel cards beside the story: the preview frame, the author and a story count. Needs a window wider than 768px.',
   },
 ];
 
@@ -558,6 +565,83 @@ function StoriesPlayerCustomPage() {
             <div style={{ fontSize: 48 }}>!</div>
             <div style={{ fontSize: 14 }}>Failed to load {story.mediaType}</div>
           </div>
+        )}
+      />
+
+      {/* Custom Carousel Cards */}
+      <StoriesOverlay
+        isOpen={activeDemo === 'custom-group-preview'}
+        onClose={() => setActiveDemo(null)}
+        groups={groups}
+        desktopLayout="carousel"
+        renderGroupPreview={({ group, story, onOpen }) => (
+          <button
+            type="button"
+            aria-label={`Open stories by ${group.author.name}`}
+            onClick={onOpen}
+            style={{
+              position: 'relative',
+              width: '100%',
+              height: '100%',
+              padding: 0,
+              border: '2px solid rgba(167,139,250,0.6)',
+              borderRadius: 16,
+              overflow: 'hidden',
+              cursor: 'pointer',
+              background: '#1e1b4b',
+            }}
+          >
+            {story && (
+              <img
+                src={story.mediaType === 'video' ? story.poster : story.src}
+                alt=""
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                }}
+              />
+            )}
+            <span
+              style={{
+                position: 'absolute',
+                inset: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'flex-end',
+                alignItems: 'flex-start',
+                gap: 6,
+                padding: 12,
+                background:
+                  'linear-gradient(transparent 40%, rgba(30,27,75,0.9))',
+              }}
+            >
+              <span
+                style={{
+                  padding: '2px 8px',
+                  borderRadius: 10,
+                  background: '#6366f1',
+                  color: '#fff',
+                  fontSize: 11,
+                }}
+              >
+                {group.stories.length}{' '}
+                {group.stories.length === 1 ? 'story' : 'stories'}
+              </span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <img
+                  src={group.author.avatar}
+                  alt=""
+                  style={{ width: 24, height: 24, borderRadius: '50%' }}
+                />
+                <span style={{ color: '#fff', fontSize: 13, fontWeight: 600 }}>
+                  {group.author.name}
+                </span>
+              </span>
+            </span>
+          </button>
         )}
       />
 

@@ -96,7 +96,8 @@ export interface CustomDemo {
     | 'custom-navigation'
     | 'custom-progress'
     | 'custom-loading-error'
-    | 'theming';
+    | 'theming'
+    | 'custom-group-preview';
   title: string;
   description: string;
 }
@@ -137,5 +138,11 @@ export const customDemos: CustomDemo[] = [
     title: 'Themed via CSS Tokens',
     description:
       'Rebrands the stories overlay by overriding --rk-stories-* CSS custom properties in a stylesheet. No component code changes.',
+  },
+  {
+    id: 'custom-group-preview',
+    title: 'Custom Carousel Cards',
+    description:
+      'Uses the group preview slot to draw the desktop carousel cards beside the story: the preview frame, the author and a story count. Needs a window wider than 768px.',
   },
 ];
