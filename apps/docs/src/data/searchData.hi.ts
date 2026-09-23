@@ -61,7 +61,6 @@ export const hiTitles: Record<string, string> = {
   Theming: 'थीमिंग',
   Accessibility: 'सुलभता',
   'Keyboard Shortcuts': 'कीबोर्ड शॉर्टकट',
-  'Basic Usage': 'बुनियादी इस्तेमाल',
   'Scoped Slots': 'Scoped स्लॉट',
   'Custom Content Types': 'कस्टम कंटेंट टाइप',
   'Video Support': 'वीडियो सपोर्ट',

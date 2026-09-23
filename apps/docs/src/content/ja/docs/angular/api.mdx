@@ -7,6 +7,7 @@ import reelapiInterface from '../../../snippets/angular-api/reelapi-interface.ts
 import templateContext from '../../../snippets/angular-api/template-context.html?raw';
 import rkReelContext from '../../../snippets/angular-api/rk-reel-context.ts?raw';
 import bodylockservice from '../../../snippets/angular-api/bodylockservice.ts?raw';
+import soundstateservice from '../../../snippets/angular-api/soundstateservice.ts?raw';
 import signalBridgeUtilities from '../../../snippets/angular-api/signal-bridge-utilities.ts?raw';
 import createrouterurladapter from '../../../snippets/angular-api/createrouterurladapter.ts?raw';
 import packageExports from '../../../snippets/angular-api/package-exports.ts?raw';
@@ -127,6 +128,23 @@ import packageExports from '../../../snippets/angular-api/package-exports.ts?raw
 | `locked` | `boolean (getter)` | body が現在ロックされているかどうか |
 | `lock()` | `() => void` | body のスクロールを止め、スクロールバーの幅を補正します |
 | `unlock()` | `() => void` | body の元のスクロールのスタイルに戻します |
+
+## SoundStateService [#soundstateservice]
+
+メディアを再生するオーバーレイのミュート状態と無効状態を、Angular のシグナルとして持ちます。ルートではなくメディアを持つコンポーネントで提供してください。そうすればオーバーレイごとに状態が分かれます。reelkit の Angular オーバーレイはすべてこれを使います。`@reelkit/angular-reel-player` も同じクラスを再エクスポートしているので、そちらからの既存のインポートはそのまま動きます。
+
+例外は lightbox です。ビデオスライドはあなた自身のテンプレートから描画されるため、オーバーレイの内側のインスタンスは見えません。`<rk-lightbox-overlay>` の**上**で提供してください。
+
+<CodeBlock code={soundstateservice} language="typescript" />
+
+| メンバー | 型 | 説明 |
+| --- | --- | --- |
+| `muted()` | `Signal<boolean>` | 現在ミュートかどうか。最初はミュートです |
+| `disabled()` | `Signal<boolean>` | 音を操作できない間は true になり、サウンドボタンが隠れます。値を立てるのはオーバーレイ側で、`RkReelPlayerOverlayComponent` はスライドに動画がないときや切り替え中に立てます |
+| `controller` | `SoundController (getter)` | 下地になっている core の `SoundController`。`syncMutedToVideo` に渡すと `<video>` がミュート状態に追従します |
+| `toggle()` | `() => void` | ミュートを切り替えます |
+| `setDisabled()` | `(value: boolean) => void` | いま音を操作できるかどうかを設定します |
+| `reset()` | `() => void` | 最初の状態に戻します。ミュートで、操作は可能です |
 
 ## シグナルブリッジのユーティリティ [#signal-bridge-utilities]
 

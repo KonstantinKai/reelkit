@@ -1,10 +1,408 @@
 ---
 title: Angular Stories Player
-description: Angular Stories 播放浮层：进度、手势与主题定制。
+description: 面向 Angular 的 Instagram 风格 Stories 播放浮层。点击翻页、作者之间的立方体转场、自动播放计时器、已看状态、桌面轮播、URL 驱动的开合状态、模板插槽，以及与 React、Vue 播放器共用的主题令牌。
 ---
 
-面向 Angular 的全屏 Instagram 风格 Stories 播放浮层，支持嵌套导航、自动播放计时、点击区域和可定制模板插槽。
+import { Zap, Play, Timer, Layout, Clock, Image, Layers, Heart, Monitor, Circle, Code, Settings, Link2, Eye } from 'lucide-react';
+import installation from '../../snippets/angular-stories-player/installation.sh?raw';
+import installation2 from '../../snippets/angular-stories-player/installation-2.ts?raw';
+import basicUsage from '../../snippets/angular-stories-player/basic-usage.ts?raw';
+import urlState from '../../snippets/angular-stories-player/url-state.ts?raw';
+import urlState2 from '../../snippets/angular-stories-player/url-state-2.ts?raw';
+import urlState3 from '../../snippets/angular-stories-player/url-state-3.ts?raw';
+import rememberingWhatWasSeen from '../../snippets/angular-stories-player/remembering-what-was-seen.ts?raw';
+import desktopCarousel from '../../snippets/angular-stories-player/desktop-carousel.ts?raw';
+import transitions from '../../snippets/angular-stories-player/transitions.ts?raw';
+import templateSlots from '../../snippets/angular-stories-player/template-slots.ts?raw';
+import slideSlot from '../../snippets/angular-stories-player/slide-slot.ts?raw';
+import navigationSlot from '../../snippets/angular-stories-player/navigation-slot.ts?raw';
+import progressBarSlot from '../../snippets/angular-stories-player/progress-bar-slot.ts?raw';
+import loadingErrorSlots from '../../snippets/angular-stories-player/loading-error-slots.ts?raw';
+import groupPreviewSlot from '../../snippets/angular-stories-player/group-preview-slot.ts?raw';
+import storiesApi from '../../snippets/angular-stories-player/stories-api.ts?raw';
+import doubleTapLikes from '../../snippets/angular-stories-player/double-tap-likes.ts?raw';
+import customizingTheHeartAnimation from '../../snippets/angular-stories-player/customizing-the-heart-animation.css?raw';
+import subComponents from '../../snippets/angular-stories-player/sub-components.ts?raw';
+import types from '../../snippets/angular-stories-player/types.ts?raw';
+import slotContexts from '../../snippets/angular-stories-player/slot-contexts.ts?raw';
+import customStoryTypes from '../../snippets/angular-stories-player/custom-story-types.ts?raw';
+import theming from '../../snippets/angular-stories-player/theming.css?raw';
 
-<Callout type="info" title="即将推出">
-  Angular 版 Stories Player仍在开发中。React 版现已可用： [@reelkit/react-stories-player](/docs/stories-player)。Angular 版会沿用同样的架构，用 `@reelkit/stories-core` 作为与框架无关的状态机、计时器和 canvas 进度渲染器。
+面向 Angular 的 Instagram 风格 Stories 播放浮层，使用 `@reelkit/angular-stories-player`。它与 React、Vue 播放器共用 `@reelkit/stories-core` 引擎，因此行为、CSS 类名和主题令牌完全一致。
+
+<DemoLink href="https://angular-demo.reelkit.dev/stories-player?utm_source=docs">查看在线演示 →</DemoLink>
+
+## 特性 [#features]
+
+<FeatureGrid items={[
+              {
+                icon: Zap,
+                label: '嵌套导航',
+                desc: '点击翻动 Story，滑动切换作者',
+              },
+              {
+                icon: Play,
+                label: '视频 Story',
+                desc: '自动播放并可切换声音',
+              },
+              {
+                icon: Timer,
+                label: '自动翻页',
+                desc: '每条 Story 的时长可配置',
+              },
+              {
+                icon: Layout,
+                label: '3D 转场',
+                desc: '立方体、翻转、淡入淡出、缩放、滑动',
+              },
+              {
+                icon: Clock,
+                label: '进度条',
+                desc: '基于 canvas 的分段进度',
+              },
+              {
+                icon: Image,
+                label: '图片与视频',
+                desc: '两种媒体类型都支持',
+              },
+              {
+                icon: Layers,
+                label: '模板插槽',
+                desc: '八个 ng-template 区域',
+              },
+              {
+                icon: Heart,
+                label: '双击点赞',
+                desc: '双击播放爱心动画',
+              },
+              {
+                icon: Monitor,
+                label: '桌面导航',
+                desc: '大屏上的左右箭头按钮',
+              },
+              {
+                icon: Circle,
+                label: 'Story 圆环',
+                desc: 'Instagram 风格的头像圆环',
+              },
+              {
+                icon: Code,
+                label: '泛型类型',
+                desc: '用自定义字段扩展 StoryItem',
+              },
+              {
+                icon: Settings,
+                label: '主题令牌',
+                desc: '仅靠 --rk-stories-* 换肤',
+              },
+              {
+                icon: Link2,
+                label: 'URL 状态',
+                desc: '可分享的 ?story=group.story 链接',
+              },
+              {
+                icon: Eye,
+                label: '已看状态',
+                desc: '已看圆环与续播位置在刷新后仍然保留',
+              },
+]} />
+
+## 安装 [#installation]
+
+<CodeBlock code={installation} language="bash" />
+
+样式表只需注册一次：
+
+<CodeBlock code={installation2} language="typescript" />
+
+<Callout type="info" title="图标">
+  默认的头部和导航箭头使用 `lucide-angular` 提供图标。如果你更喜欢别的图标库，可以通过 `rkStoriesHeader` 和 `rkStoriesNavigation` 模板插槽替换它们。
 </Callout>
+
+## 快速上手 [#quick-start]
+
+<CodeBlock code={basicUsage} language="typescript" />
+
+## URL 状态 [#url-state]
+
+<DemoLink href="https://angular-demo.reelkit.dev/stories-player-url?utm_source=docs">查看在线演示 →</DemoLink>
+
+`RkStoriesUrlOverlayComponent` 是一个独立组件，它的打开状态存放在地址栏里。两个轴共用一个参数 —— `?story=<group>.<story>` —— 因此正在播放的故事有一个可分享、可收藏、可用后退按钮关闭的链接。用 `createOverlayUrlState` 和 `urlIndexTwoAxisKey` 创建控制器，然后作为 `controller` 传入。
+
+<Callout type="info" title="内置 key">
+  故事是双轴的，所以要把双轴 key 展开到控制器里：`urlIndexTwoAxisKey`（按位置定位用户和故事）或 `urlStableIdTwoAxisKey`（用户按稳定 `id` 定位）—— 两者都从 `@reelkit/angular-stories-player` 重新导出。参见 [URL 状态指南](/docs/core/guide#url-state)和 [Core API](/docs/core/api#url-state)。
+</Callout>
+
+<CodeBlock code={urlState} language="typescript" />
+
+- 打开会压入**一条**历史记录。在故事之间移动*以及*切换用户都只是**替换**它，因此 N 次导航不会新增记录，一次后退始终关闭播放器。后退是关闭，而不是回到上一条故事。
+- **内层导航也会写进 URL。** 在同一用户的故事间前进会把 `?story=2.`*n* 更新掉，因此深层链接能落到确切的那条故事。
+- 只有当播放器是在应用内部打开时，后退才会关闭它 —— 那次跳转压入了一条记录。直接在新标签页打开的分享链接背后没有历史记录，后退会离开站点；✕ 按钮或 Escape 会就地移除参数并留在页面上。
+- 指向不存在的用户或故事的参数 —— 过期书签、手改的值、超出该用户故事数量的序号 —— 会从 URL 中移除，而不是打开相邻的一条。
+- 使用路由的应用应该传入基于路由器的适配器，让路由器始终是导航状态的唯一来源。`@reelkit/angular/ng-router-url-adapter` 中的 `createRouterUrlAdapter` 就是 Angular 路由器的现成适配器；绕过路由器直接写历史会让它的 location 过期，下一次导航就会丢掉参数。
+
+**稳定链接。** 用户默认按位置定位，因此收藏的 `?story=2.0` 在信息流重新排序后会打开另一个人。改用稳定 id 定位用户 —— `outerCodec` 负责把 id 写进 URL，`outerLocator` 负责找到它所在的位置。再传入 `innerCodec` 以及 `innerLocate`、`innerIdentify`，就能对分组内部的故事做同样的事；不传这三个，故事那一半仍然是分组内部的普通局部索引。
+
+<CodeBlock code={urlState2} language="typescript" />
+
+**无限信息流。** 分页属于 `outerLocator` 的职责，与编解码器无关。`locate` 是同步的，只能回答已加载的分组 —— 指向第 400 个分组、而只加载了 20 个的分享链接会落空。`locateAsync` 是兜底，只在 `locate` 未命中时调用；故事随后会按最终落到的那个分组重新约束。
+
+<Callout type="info" title="同一个 locateAsync，外层轴">
+  这与单轴 key 接受的 `locateAsync` 分页器是同一个 —— 在双轴 key 上它跟着你传入的 `outerLocator` 走，因此分页发生在用户这一轴，而故事仍是已解析分组内部的局部索引。
+</Callout>
+
+<CodeBlock code={urlState3} language="typescript" />
+
+- 在 `locateAsync` 等待期间，播放器保持关闭且参数原样保留，因此深层链接能熬过这次请求。返回 `null` 或拒绝则会移除参数。
+- 如果答复在 URL 已经变化之后、关闭之后或卸载之后才到达，就会被丢弃 —— 一次缓慢的请求无法打开没人再要求的故事。
+- `createOverlayUrlState` 的完整选项见 [Angular API 参考](/docs/angular/api#createoverlayurlstate)，逐步讲解见 [Angular 指南](/docs/angular/guide#url-state)。
+
+## 记住看过的内容 [#remembering-what-was-seen]
+
+`createStoriesViewedStateController` 会记录每一条展示过的 Story，并回答每位作者从哪里续播。把同一个控制器同时交给圆环列表和播放器，两者对"还剩什么没看"的判断就会一致。
+
+<CodeBlock code={rememberingWhatWasSeen} language="typescript" />
+
+## 桌面轮播 [#desktop-carousel]
+
+<CodeBlock code={desktopCarousel} language="typescript" />
+
+## 模板插槽 [#template-slots]
+
+八个 `ng-template` 指令可以替换播放器的任意部分。每个都会收到带类型的上下文，其中最常用的值作为隐式值——所以在头部插槽里，`let-author` 无需具名就能拿到作者。没有提供的插槽会保留内置的呈现。
+
+| 指令 | 类 | 上下文 | 说明 |
+| --- | --- | --- | --- |
+| `rkStoriesError` | `RkStoriesErrorDirective` | `{ $implicit: story, storyIndex, groupIndex }` | 替换内置的 "Content unavailable" 面板，绘制在当前 Story 之上 |
+| `rkStoriesFooter` | `RkStoriesFooterDirective` | `{ $implicit: story, author, storyIndex }` | 在当前 Story 下方加一个页脚；播放器本身不绘制页脚 |
+| `rkStoriesGroupPreview` | `RkStoriesGroupPreviewDirective` | `{ $implicit: group, groupIndex, story, offset, viewedCount, onOpen }` | 填充桌面轮播的卡片内容；定位、缩放和滑动仍由播放器负责 |
+| `rkStoriesHeader` | `RkStoriesHeaderDirective` | `{ $implicit: author, story, storyIndex, isPaused, isMuted, isVideo, onToggleSound, onTogglePause, onClose }` | 替换默认头部（作者、暂停、声音、关闭） |
+| `rkStoriesLoading` | `RkStoriesLoadingDirective` | `{ $implicit: story, storyIndex, groupIndex }` | 替换当前 Story 加载时头部显示的默认加载指示 |
+| `rkStoriesNavigation` | `RkStoriesNavigationDirective` | `{ $implicit: { onPrevStory, onNextStory, onPrevGroup, onNextGroup } }` | 同时替换桌面端的两个箭头 |
+| `rkStoriesProgressBar` | `RkStoriesProgressBarDirective` | `{ $implicit: group, totalStories, activeIndex, progress }` | 替换 canvas 进度条。`activeIndex` 和 `progress` 是内核信号，请用 `toAngularSignal` 桥接。 |
+| `rkStoriesSlide` | `RkStoriesSlideDirective` | `{ $implicit: story, index, groupIndex, isActive, size, activeGroupIndex, activeStoryIndex, onDurationReady, onReady, onWaiting, onError, onEnded }` | 替换默认的图片与视频幻灯片 |
+
+<CodeBlock code={templateSlots} language="typescript" />
+
+`STORIES_TEMPLATE_SLOT_DIRECTIVES` 把八个类导出为一个数组，方便一次导入多个的组件使用。
+
+每个插槽都通过播放器自身的注入器渲染，因此插槽里绘制的组件能解析到播放器的 provider——幻灯片模板中的 `rk-video-story-slide` 拿到的，正是头部按钮写入的那份声音状态。
+
+### 自定义幻灯片 [#custom-slides]
+
+<CodeBlock code={slideSlot} language="typescript" />
+
+<Callout type="info" title="预加载缓存">
+  内置的 `RkImageStorySlideComponent` 和 `RkVideoStorySlideComponent` 会在后台预加载下一条 Story。观众翻到已预加载的 Story 时，内容立即出现，不会有加载指示。失败过一次的 URL 也会被记住，所以重新打开损坏的 Story 会直接显示错误，而不是再试一次。
+</Callout>
+
+### 自定义导航 [#custom-navigation]
+
+<CodeBlock code={navigationSlot} language="typescript" />
+
+### 自定义进度条 [#custom-progress-bar]
+
+<CodeBlock code={progressBarSlot} language="typescript" />
+
+### 自定义加载与错误 [#custom-loading-error]
+
+<CodeBlock code={loadingErrorSlots} language="typescript" />
+
+### 自定义轮播卡片 [#custom-carousel-cards]
+
+<CodeBlock code={groupPreviewSlot} language="typescript" />
+
+## 转场 [#transitions]
+
+`groupTransition` 控制切换作者时的 3D 效果。转场函数从 `@reelkit/angular` 导入：
+
+<CodeBlock code={transitions} language="typescript" />
+
+## 双击与点赞 [#double-tap-likes]
+
+双击会播放爱心动画，给出即时的视觉反馈。`(doubleTapped)` 会带上分组与 Story 的索引，方便你把点赞保存到自己的状态里。播放器本身不保存任何点赞状态。
+
+<CodeBlock code={doubleTapLikes} language="typescript" />
+
+### 自定义爱心动画 [#customizing-the-heart-animation]
+
+用 `--rk-stories-heart-duration` 令牌调整速度（见[主题定制](#theming)）。要改颜色、大小，或者完全隐藏爱心，请针对 `.rk-stories-heart` 类。`RkHeartAnimationComponent` 也单独导出，可独立使用。
+
+<CodeBlock code={customizingTheHeartAnimation} language="css" />
+
+<Callout type="info">
+  内置的爱心动画目前还不能用插槽替换。可以用 CSS 重新设置样式，或用 `display: none` 隐藏它并从 `(doubleTapped)` 触发你自己的动画。如果你需要爱心插槽，请到 [GitHub Issues](https://github.com/KonstantinKai/reelkit/issues) 告诉我们。
+</Callout>
+
+## StoriesApi [#storiesapi]
+
+需要命令式控制时，从 `(apiReady)` 取得 API。播放器每次打开都会重建，所以上一次打开时保存的句柄已经过期——请使用最新的那个。
+
+<CodeBlock code={storiesApi} language="typescript" />
+
+### 方法 [#methods]
+
+| 方法 | 类型 | 说明 |
+| --- | --- | --- |
+| `nextStory()` | `() => void` | 在当前分组内前进到下一条 Story |
+| `prevStory()` | `() => void` | 在当前分组内回到上一条 Story |
+| `nextGroup()` | `() => void` | 切换到下一位作者的分组 |
+| `prevGroup()` | `() => void` | 切换到上一位作者的分组 |
+| `goToGroup(index)` | `(index: number) => void` | 按索引跳转到指定分组 |
+| `pause()` | `() => void` | 暂停自动翻页和进度计时器 |
+| `resume()` | `() => void` | 恢复自动翻页和进度计时器 |
+
+## 子组件 [#sub-components]
+
+导出的构件，可以在插槽内组合，也可以单独使用。
+
+| 组件 | 是什么 |
+| --- | --- |
+| `RkCanvasProgressBarComponent` | 直接由计时器信号绘制的 canvas 分段进度条。分组内 Story 很多时会处理滑动窗口。 |
+| `RkHeartAnimationComponent` | 双击的爱心。动画结束时发出 `(completed)`，父组件据此移除它。 |
+| `RkImageStorySlideComponent` | 使用 `object-fit: cover` 的整屏图片幻灯片，通过 output 上报加载与错误。 |
+| `RkStoriesRingComponent` | 带渐变圆环的圆形头像。两种状态：还有未看内容时旋转，全部看完后变为平直。发出 `(clicked)`。 |
+| `RkStoriesRingListComponent` | 带作者名的横向圆环列表，每个分组一个。发出 `(selected)` 并带上分组索引。 |
+| `RkStoryHeaderComponent` | 默认头部：头像、名称、认证标识、相对时间、暂停、声音、关闭以及加载指示。 |
+| `RkVideoStorySlideComponent` | 基于唯一共享 `<video>` 元素的视频幻灯片，用于在 iOS 上保持声音连续。处理自动播放、封面帧与时长上报。 |
+
+`RkStoriesCarouselComponent` 也随 `CarouselSlide` 类型一起导出，但它绘制所依赖的值都归浮层所有——想改卡片样式，请使用 `rkStoriesGroupPreview` 插槽，而不是自己挂载轮播。
+
+<CodeBlock code={subComponents} language="typescript" />
+
+## 自定义 Story 类型 [#custom-story-types]
+
+用自己的字段扩展 `StoryItem`，并用它给分组标注类型：
+
+<CodeBlock code={customStoryTypes} language="typescript" />
+
+## 重新导出 [#re-exports]
+
+使用者需要的一切都从本包导出，因此永远不必直接从 `@reelkit/core` 导入。
+
+| 来源 | 重新导出 |
+| --- | --- |
+| `@reelkit/angular` | `createOverlayUrlState`、`urlIndexTwoAxisKey`、`urlStableIdTwoAxisKey`、`base64UrlCodec`、`createViewedStateController`、`twoAxisViewedTracking`、`createLocalStorageAdapter`、`createSessionStorageAdapter`、`createMemoryStorageAdapter`，以及类型 `OverlayUrlStateOptions`、`UrlAdapter`、`UrlCodec`、`UrlLocator`、`UrlKey`、`UrlStateController`、`TwoAxisPosition`、`TwoAxisIdentity`、`UrlIndexTwoAxisKeyOptions`、`ViewedStateController`、`ViewedStateOptions`、`StorageAdapter` |
+| `@reelkit/stories-core` | `createStoriesViewedStateController`、`StoriesViewedStateController`、`StoriesViewedStateControllerConfig`，以及内容类型 `StoryItem`、`AuthorInfo`、`StoriesGroup`、`MediaType` |
+
+`attachViewedState` 同样导出，供自己持有已看状态控制器的组件使用，让它在该组件存活期间保持连接。
+
+## RkStoriesOverlayComponent 输入 [#rkstoriesoverlaycomponent-inputs]
+
+<Signature>rk-stories-overlay</Signature>
+
+| 输入 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `ariaLabel` | `string` | `'Stories player'` | 对话框区域的无障碍名称；浮层打开时由屏幕阅读器朗读 |
+| `defaultImageDuration` | `number` | `5000` | 图片 Story 的自动翻页时长，单位毫秒 |
+| `desktopLayout` | `'single' \| 'carousel'` | `'single'` | 桌面布局。`'carousel'` 会把相邻分组作为预览卡片排在当前 Story 两侧，并在分组之间滑动。手机上始终只显示当前 Story。该类型以 `DesktopLayout` 导出。 |
+| `enableKeyboard` | `boolean` | `true` | 启用键盘操作（左右方向键、Escape） |
+| `groups` | `StoriesGroup<T>[]` | `required` | 要展示的 Story 分组。播放器打开期间新增的分组或 Story 会被接纳，且不会丢失观众当前的位置。 |
+| `groupTransition` | `TransitionTransformFn` | `cubeTransition` | 作者之间的转场。桌面轮播显示时会被忽略，改为滑动。 |
+| `hideUIOnPause` | `boolean` | `true` | 长按暂停期间隐藏进度条和头部 |
+| `initialGroupIndex` | `number` | `0` | 播放器打开时所在分组的索引（从 0 开始） |
+| `initialStoryIndex` | `number` | 续播位置，否则 `0` | 播放器打开时所在 Story 的索引（从 0 开始）。显式指定会覆盖任何记住的位置；不指定时，首个分组与其他分组一样按续播位置打开。 |
+| `innerTransitionDuration` | `number` | `200` | 同一位作者的 Story 之间淡入淡出的时长，单位毫秒 |
+| `isOpen` | `boolean` | `false` | 为 true 时渲染播放器并锁定 body 滚动 |
+| `minSegmentWidth` | `number` | `8` | 进度分段的最小宽度，低于此值进度条会改为滚动一个分段窗口，单位像素 |
+| `resumeStoryIndex` | `(groupIndex: number) => number` | — | 首次到达某个分组时从哪条 Story 打开。只对本次打开期间尚未访问过的分组询问，且优先于 `viewed`。 |
+| `tapZoneSplit` | `number` | `0.3` | 点击区域的分割比例（0–1）。左侧后退，其余前进。 |
+| `viewed` | `StoriesViewedStateController` | — | 观众已看过的内容，来自 `createStoriesViewedStateController()`。分组从第一条未看的 Story 续播，每条展示过的 Story 都会记录，看完的分组在轮播卡片上圆环会变暗。请把同一个控制器也交给 `rk-stories-ring-list`。 |
+
+每个插槽还有对应的输入，供自己持有 `TemplateRef` 而非投影它的组件使用：`slideTemplate`、`headerTemplate`、`footerTemplate`、`progressBarTemplate`、`navigationTemplate`、`loadingTemplate`、`errorTemplate` 和 `groupPreviewTemplate`。以这种方式指定的模板优先于投影进播放器的模板。
+
+## RkStoriesOverlayComponent 输出 [#rkstoriesoverlaycomponent-outputs]
+
+| 输出 | 负载 | 说明 |
+| --- | --- | --- |
+| `(apiReady)` | `StoriesApi` | 播放器可以接受指令时发出，此后每次打开都会再次发出 |
+| `(closed)` | `void` | 观众关闭播放器时发出。播放器本身不动，由宿主决定。在 `rk-stories-url-overlay` 中，此时参数已被清除。 |
+| `(doubleTapped)` | `{ groupIndex, storyIndex }` | 双击时发出，同时播放爱心动画 |
+| `(groupChanged)` | `number` | 当前分组改变后发出 |
+| `(paused)` | `void` | 长按或点击头部暂停按钮时发出 |
+| `(resumed)` | `void` | 松开或点击头部播放按钮时发出 |
+| `(storyChanged)` | `{ groupIndex, storyIndex }` | 当前 Story 改变后发出 |
+| `(storyCompleted)` | `{ groupIndex, storyIndex }` | 某条 Story 的计时器走完时发出 |
+| `(storyViewed)` | `{ groupIndex, storyIndex }` | Story 出现在屏幕上时发出，包括打开时的第一条 |
+
+播放器只上报关闭而不自行关闭，因此 `(closed)` 覆盖了所有退出路径：✕ 按钮、向下滑动、Escape，以及最后一个分组的最后一条 Story 播放完毕。
+
+## RkStoriesUrlOverlayComponent 输入 [#rkstoriesurloverlaycomponent-inputs]
+
+<Signature>rk-stories-url-overlay</Signature>
+
+接受上面的所有输入，但开合状态三件套——`isOpen`、`initialGroupIndex`、`initialStoryIndex`——改由控制器提供。
+
+| 输入 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `controller` | `UrlStateController<TwoAxisPosition>` | `required` | 由 `createOverlayUrlState` 配合 `urlIndexTwoAxisKey` 展开得到的控制器。它的 position（一个 \{ outer, inner \} 对象）决定播放器是否打开以及从哪里打开；浮层会在每次导航和关闭时写回。 |
+
+## StoryItem、AuthorInfo 与 StoriesGroup 接口 [#storyitem-authorinfo-storiesgroup]
+
+<CodeBlock code={types} language="typescript" />
+
+## 模板插槽上下文类型 [#template-slot-context-types]
+
+所有上下文类型都已导出，便于在编译器无法推断的地方为插槽标注类型——`StoriesSlideContext`、`StoriesHeaderContext`、`StoriesFooterContext`、`StoriesProgressBarContext`、`StoriesNavigationContext`、`StoriesLoadingContext`、`StoriesErrorContext` 和 `StoriesGroupPreviewContext`，以及 `StoriesNavigationActions`、`DesktopLayout` 和 `StoriesApi`：
+
+<CodeBlock code={slotContexts} language="typescript" />
+
+## CSS 类名 [#css-classes]
+
+类名是普通名称（没有作用域），因此在 `@reelkit/angular-stories-player/styles.css` 之后加载的样式表可以覆盖其中任何一个。它们与 `@reelkit/react-stories-player`、`@reelkit/vue-stories-player` 完全相同，所以为某个绑定写的样式表在其他绑定上同样适用。颜色、尺寸和 z-index 建议优先使用[主题定制](#theming)中的自定义属性。
+
+| 类名 | 组件 | 说明 |
+| --- | --- | --- |
+| `.rk-stories-overlay` | Overlay | 覆盖全屏的固定背景（颜色、z-index） |
+| `.rk-stories-overlay--carousel` | Overlay | 正在显示桌面轮播的浮层 |
+| `.rk-stories-overlay--sliding` | Overlay | 轮播滑动进行中；播放器画布被隐藏 |
+| `.rk-stories-swipe-wrapper` | Overlay | 下滑关闭的包装层（内含箭头与画布） |
+| `.rk-stories-container` | Overlay | 圆角的 Story 画布（position、overflow） |
+| `.rk-stories-ui-layer` | Overlay | 播放器之上的单层界面（头部、进度、爱心） |
+| `.rk-stories-ui-layer--hidden` | Overlay | 界面隐藏状态（由 `hideUIOnPause` 切换） |
+| `.rk-stories-error` | Overlay | 错误状态（居中的图标与文字） |
+| `.rk-stories-error-text` | Overlay | 错误信息文字 |
+| `.rk-stories-nav-btn` | Overlay | 桌面端的上一个／下一个箭头 |
+| `.rk-stories-slide-wrapper` | Overlay | 一个分组的 Story（外层幻灯片） |
+| `.rk-stories-story` | Overlay | 单条 Story（内层幻灯片根元素） |
+| `.rk-stories-image` | ImageStorySlide | 整屏图片（`object-fit: cover`） |
+| `.rk-stories-video` | VideoStorySlide | 视频幻灯片容器 |
+| `.rk-stories-video-poster` | VideoStorySlide | 封面帧，播放开始前显示 |
+| `.rk-stories-heart` | HeartAnimation | 双击的爱心 |
+| `.rk-stories-header` | StoryHeader | 头部一行（头像、名称、时间、控件） |
+| `.rk-stories-header-btn` | StoryHeader | 暂停、声音和关闭按钮 |
+| `.rk-stories-header-spinner` | StoryHeader | 当前 Story 加载时的加载指示 |
+| `.rk-stories-ring` | StoriesRing | 带渐变圆环的圆形头像 |
+| `.rk-stories-ring--active` | StoriesRing | 仍有未看 Story 的圆环（渐变旋转） |
+| `.rk-stories-ring-avatar` | StoriesRing | 圆环内的头像图片 |
+| `.rk-stories-ring-list` | StoriesRingList | 横向排列的圆环列表 |
+| `.rk-stories-carousel` | Carousel | 桌面轮播图层 |
+| `.rk-stories-card` | Carousel | 播放器旁的一张预览卡片 |
+| `.rk-stories-card-image` | Carousel | 卡片的预览图片 |
+| `.rk-stories-card-frame` | Carousel | 作为卡片预览缩小绘制的幻灯片模板 |
+
+## 主题定制 [#theming]
+
+每一个颜色、尺寸、时长和 z-index 都是 `:root` 上的 `--rk-stories-*` 自定义属性，因此换肤只需一份样式表，而不必改动组件。这些令牌与 React、Vue 播放器共用。
+
+<CodeBlock code={theming} language="css" />
+
+## 无障碍 [#accessibility]
+
+浮层根元素是一个模态对话框（`role="dialog"`、`aria-modal="true"`）。设置 `ariaLabel` 可以改变屏幕阅读器的朗读内容，默认是 "Stories player"。
+
+浮层在打开时接管焦点，关闭时把焦点还给触发它的元素。Tab 与 Shift+Tab 在内部可聚焦元素之间循环，并在两端回绕；跑出去的焦点（点击外部、程序化聚焦）会被拉回来。播放器打开期间 body 滚动保持锁定。实现使用 `@reelkit/angular` 的 `captureFocusForReturn` 与 `createFocusTrap`。
+
+在桌面轮播中，每张默认卡片都是一个按钮，标签为 "Open stories by" 加作者名。卡片在 Tab 顺序中排在播放器控件之后，并在滑动进行时移出 Tab 顺序。
+
+## 服务端渲染 [#server-side-rendering]
+
+播放器在打开之前不渲染任何内容，构造期间也不读取任何浏览器 API，因此在 Angular SSR 下是安全的。已看状态在挂载之后读取，而不是在渲染过程中读取，这正是服务端渲染与首次客户端渲染保持一致的原因。
+
+## 键盘快捷键 [#keyboard-shortcuts]
+
+| 按键 | 操作 |
+| --- | --- |
+| `ArrowLeft` | 上一条 Story |
+| `ArrowRight` | 下一条 Story |
+| `Escape` | 关闭播放器 |

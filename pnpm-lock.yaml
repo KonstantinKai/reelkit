@@ -31,6 +31,9 @@ importers:
       '@reelkit/react':
         specifier: workspace:*
         version: link:packages/reelkit-react
+      '@reelkit/stories-core':
+        specifier: workspace:*
+        version: link:packages/reelkit-stories-core
       '@stackblitz/sdk':
         specifier: ^1.11.0
         version: 1.11.0
@@ -437,6 +440,9 @@ importers:
       '@reelkit/vue-reel-player':
         specifier: workspace:*
         version: link:../../packages/reelkit-vue-reel-player
+      '@reelkit/vue-stories-player':
+        specifier: workspace:*
+        version: link:../../packages/reelkit-vue-stories-player
       isbot:
         specifier: ^5
         version: 5.1.39
@@ -519,6 +525,9 @@ importers:
       '@reelkit/vue-reel-player':
         specifier: workspace:*
         version: link:../../packages/reelkit-vue-reel-player
+      '@reelkit/vue-stories-player':
+        specifier: workspace:*
+        version: link:../../packages/reelkit-vue-stories-player
       vue:
         specifier: ^3.5.13
         version: 3.5.33(typescript@5.9.3)
@@ -567,6 +576,24 @@ importers:
       '@reelkit/angular':
         specifier: workspace:^
         version: link:../reelkit-angular
+      lucide-angular:
+        specifier: '>=0.460.0'
+        version: 0.577.0(@angular/common@20.3.18(@angular/core@20.3.18(@angular/compiler@20.3.18)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2))(@angular/core@20.3.18(@angular/compiler@20.3.18)(rxjs@7.8.2)(zone.js@0.15.1))
+
+  packages/reelkit-angular-stories-player:
+    dependencies:
+      '@angular/common':
+        specifier: '>=19.0.0'
+        version: 20.3.18(@angular/core@20.3.18(@angular/compiler@20.3.18)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2)
+      '@angular/core':
+        specifier: '>=19.0.0'
+        version: 20.3.18(@angular/compiler@20.3.18)(rxjs@7.8.2)(zone.js@0.15.1)
+      '@reelkit/angular':
+        specifier: workspace:^
+        version: link:../reelkit-angular
+      '@reelkit/stories-core':
+        specifier: workspace:^
+        version: link:../reelkit-stories-core
       lucide-angular:
         specifier: '>=0.460.0'
         version: 0.577.0(@angular/common@20.3.18(@angular/core@20.3.18(@angular/compiler@20.3.18)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2))(@angular/core@20.3.18(@angular/compiler@20.3.18)(rxjs@7.8.2)(zone.js@0.15.1))
@@ -670,6 +697,21 @@ importers:
 
   packages/reelkit-vue-reel-player:
     dependencies:
+      '@reelkit/vue':
+        specifier: workspace:^
+        version: link:../reelkit-vue
+      lucide-vue-next:
+        specifier: '>=0.400.0'
+        version: 0.562.0(vue@3.5.33(typescript@5.9.3))
+      vue:
+        specifier: '>=3.0.0'
+        version: 3.5.33(typescript@5.9.3)
+
+  packages/reelkit-vue-stories-player:
+    dependencies:
+      '@reelkit/stories-core':
+        specifier: workspace:^
+        version: link:../reelkit-stories-core
       '@reelkit/vue':
         specifier: workspace:^
         version: link:../reelkit-vue
@@ -14837,7 +14879,7 @@ snapshots:
       '@babel/code-frame': 7.29.0
       '@babel/generator': 7.29.1
       '@babel/helper-compilation-targets': 7.28.6
-      '@babel/helper-module-transforms': 7.28.6(@babel/core@7.29.0(supports-color@10.2.2))(supports-color@10.2.2)
+      '@babel/helper-module-transforms': 7.28.6(@babel/core@7.29.0(supports-color@7.2.0))(supports-color@10.2.2)
       '@babel/helpers': 7.29.2
       '@babel/parser': 7.29.2
       '@babel/template': 7.28.6
@@ -15084,15 +15126,6 @@ snapshots:
       '@babel/helper-module-imports': 7.28.6(supports-color@7.2.0)
       '@babel/helper-validator-identifier': 7.28.5
       '@babel/traverse': 7.29.0(supports-color@7.2.0)
-    transitivePeerDependencies:
-      - supports-color
-
-  '@babel/helper-module-transforms@7.28.6(@babel/core@7.29.0(supports-color@10.2.2))(supports-color@10.2.2)':
-    dependencies:
-      '@babel/core': 7.29.0(supports-color@10.2.2)
-      '@babel/helper-module-imports': 7.28.6(supports-color@10.2.2)
-      '@babel/helper-validator-identifier': 7.28.5
-      '@babel/traverse': 7.29.0(supports-color@10.2.2)
     transitivePeerDependencies:
       - supports-color
 

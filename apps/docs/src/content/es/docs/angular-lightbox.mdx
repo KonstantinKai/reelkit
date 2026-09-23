@@ -5,6 +5,7 @@ description: Overlay de galería de imágenes a pantalla completa para Angular. 
 
 import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2 } from 'lucide-react';
 import installation from '../../snippets/angular-lightbox/installation.sh?raw';
+import installation2 from '../../snippets/angular-lightbox/installation-2.ts?raw';
 import basicUsage from '../../snippets/angular-lightbox/basic-usage.ts?raw';
 import templateSlots from '../../snippets/angular-lightbox/template-slots.ts?raw';
 import videoSupport from '../../snippets/angular-lightbox/video-support.ts?raw';
@@ -98,11 +99,15 @@ Lightbox de galería de imágenes y vídeos a pantalla completa para Angular, co
 
 <CodeBlock code={installation} language="bash" />
 
+Registra la hoja de estilos una sola vez:
+
+<CodeBlock code={installation2} language="typescript" />
+
 <Callout type="info" title="Iconos">
   Los controles por defecto usan `lucide-angular` para los iconos. Si prefieres otra librería de iconos, usa los slots de plantilla `rkLightboxControls` y `rkLightboxNavigation` para poner los tuyos.
 </Callout>
 
-## Uso básico [#basic-usage]
+## Inicio rápido [#quick-start]
 
 Importa los estilos y el componente standalone `RkLightboxOverlayComponent` en el array `imports` de tu componente.
 
@@ -126,6 +131,8 @@ Las directivas de slots de plantilla permiten personalizar por completo la inter
 ## Compatibilidad con vídeo [#video-support]
 
 Los slides de vídeo se activan con el slot de plantilla `rkLightboxSlide` y el `RkLightboxVideoSlideComponent`. Así, las galerías que solo necesitan imágenes no incluyen el reproductor de vídeo en el bundle.
+
+El botón de sonido integrado solo aparece cuando hay un `SoundStateService` proporcionado por encima de `<rk-lightbox-overlay>`: esa instancia compartida es lo que permite que el cambio llegue al vídeo, porque la diapositiva viene de tu plantilla. Sin ella, controla el elemento directamente con `setLightboxVideoMuted`.
 
 <CodeBlock code={videoSupport} language="typescript" />
 

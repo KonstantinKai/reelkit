@@ -38,6 +38,7 @@
     "@angular/router": "^20.3.18",
     "@reelkit/core": "workspace:*",
     "@reelkit/react": "workspace:*",
+    "@reelkit/stories-core": "workspace:*",
     "@stackblitz/sdk": "^1.11.0",
     "lucide-react": "^0.562.0",
     "next": "16.1.7",

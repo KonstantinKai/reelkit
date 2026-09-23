@@ -205,6 +205,41 @@ Funções puras para detectar as zonas de toque e para a matemática da barra de
 | `getSegments(totalStories, activeIndex, progress)` | `(number, number, number) => SegmentState[]` | Calcula o estado e a porcentagem preenchida de cada segmento da barra de progresso |
 | `getVisibleWindow(totalStories, activeIndex, progress, containerWidth, minSegmentWidth?, gap?)` | `(number, number, number, number, number?, number?) => VisibleWindow` | Calcula a janela deslizante de segmentos visíveis quando a quantidade total passa da capacidade do contêiner |
 
+## Funções de layout [#layout-helpers]
+
+Funções puras que o player de cada binding compartilha, para React, Vue e Angular calcularem tamanho e disposição do mesmo jeito. Quem as chama é o binding; a sua aplicação só precisa delas se for montar um player próprio.
+
+### Dimensionamento [#sizing]
+
+| Função | Tipo | Descrição |
+| --- | --- | --- |
+| `getStoriesSize()` | `() => [number, number]` | Tamanho da tela do story. No celular ocupa a tela inteira; no desktop ocupa a altura da janela menos uma margem de 16px, em 9:16, e só estreita quando a tela e as duas setas não cabem lado a lado. Sem window (renderização no servidor) devolve `[0, 0]`. |
+| `isMobileWidth(viewportWidth)` | `(number) => boolean` | Se uma viewport dessa largura usa o layout de celular. Até 768 conta como celular, igual à folha de estilos. |
+| `parseDurationMs(value)` | `(string) => number` | O maior tempo de uma lista de `transition-duration` calculada, em milissegundos. O que não for tempo conta como zero. |
+
+### Geometria do carrossel no desktop [#desktop-carousel-geometry]
+
+Os deslocamentos são relativos ao grupo ativo: negativos à esquerda, positivos à direita, `0` para o próprio story ativo.
+
+| Função | Tipo | Descrição |
+| --- | --- | --- |
+| `getCardSize(activeSize)` | `([number, number]) => [number, number]` | Tamanho de um cartão lateral: 0,4 da altura do story ativo, na mesma proporção 9:16. |
+| `getCarouselSlot(offset, activeSize)` | `(number, [number, number]) => CarouselSlot` | Onde um cartão fica em relação ao centro da janela: `{ x, width, height }`. O primeiro cartão de cada lado passa da seta; cada seguinte soma uma largura de cartão e um espaço. |
+| `getCardOffsets(activeGroupIndex, groupCount)` | `(number, number) => number[]` | Deslocamentos dos cartões desenhados ao redor do grupo ativo em repouso, até dois por lado, sem o próprio ativo. |
+| `isCardShown(offset)` | `(number) => boolean` | Se um cartão a essa distância é desenhado em vez de esmaecido. |
+| `getSlotOffset(offset)` | `(number) => number` | Posição para onde um cartão vai, limitada a uma casa além das visíveis, para o cartão entrar deslizando ao lado do último visível. |
+| `getSlideGroupIndexes(from, to, groupCount)` | `(number, number, number) => number[]` | Grupos que um deslize entre dois grupos desenha: os cartões em volta de cada ponta, em ordem de grupo. Os grupos por que um salto longo passa ficam de fora. |
+
+### Apresentação [#presentation]
+
+| Função | Tipo | Descrição |
+| --- | --- | --- |
+| `getRingPresentation(options)` | `(RingPresentationOptions) => RingPresentation` | Classe, estilo inline e tamanho do avatar de um anel de story, a partir de `totalStories`, `viewedCount` e `size`. Com algo por ver vira o gradiente cônico girando; visto até o fim fica um `viewedColor` liso; grupo vazio não ganha anel. Os tamanhos levam a unidade `px`, então o objeto de estilo serve em qualquer framework. |
+| `getPreviewSource(story)` | `(StoryItem \| undefined) => string \| undefined` | Imagem que um cartão do carrossel mostra: o `poster` do story, a própria imagem quando é uma imagem, e nada para um vídeo sem poster. Um cartão sem imagem cai no cartão simples desenhado para um story sem nada a mostrar. |
+| `formatTimeAgo(date)` | `(string \| Date) => string` | Tempo relativo curto que o cabeçalho e os cartões do carrossel mostram: `now`, `5m`, `3h`, `2d`, `2w`. |
+
+Os tipos `CarouselSlot`, `RingPresentation` e `RingPresentationOptions` são exportados junto com elas.
+
 ## Tipos [#types]
 
 Todas as definições de tipo exportadas por `@reelkit/stories-core`.

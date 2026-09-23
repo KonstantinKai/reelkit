@@ -31,6 +31,12 @@
   "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"],
   "references": [
     {
+      "path": "../../packages/reelkit-angular-stories-player/tsconfig.lib.json"
+    },
+    {
+      "path": "../../packages/reelkit-vue-stories-player/tsconfig.lib.json"
+    },
+    {
       "path": "../../packages/reelkit-vue-reel-player/tsconfig.lib.json"
     },
     {

@@ -58,6 +58,27 @@ export const appRoutes: Route[] = [
       ).then((m) => m.ImagePreviewVideoPageComponent),
   },
   {
+    path: 'stories-player',
+    loadComponent: () =>
+      import('./pages/stories-player/stories-player-page.component').then(
+        (m) => m.StoriesPlayerPageComponent,
+      ),
+  },
+  {
+    path: 'stories-player-custom',
+    loadComponent: () =>
+      import(
+        './pages/stories-player-custom/stories-player-custom-page.component'
+      ).then((m) => m.StoriesPlayerCustomPageComponent),
+  },
+  {
+    path: 'stories-player-url',
+    loadComponent: () =>
+      import(
+        './pages/stories-player-url/stories-player-url-page.component'
+      ).then((m) => m.StoriesPlayerUrlPageComponent),
+  },
+  {
     path: '**',
     loadComponent: () =>
       import('./pages/not-found/not-found.component').then(

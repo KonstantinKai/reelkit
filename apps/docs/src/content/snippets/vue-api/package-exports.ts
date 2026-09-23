@@ -4,6 +4,7 @@ import {
   ReelIndicator,
   SwipeToClose,
   SoundProvider,
+  Observe,
 } from '@reelkit/vue';
 
 // Types

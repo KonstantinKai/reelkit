@@ -1,10 +1,499 @@
 ---
-title: Vue Stories Player
-description: Vue Stories 播放浮层：进度、手势与主题定制。
+title: Vue 故事播放器
+description: Vue 3 的 Instagram 风格故事播放器覆盖层。点击翻页、用户之间的立方体转场、自动播放计时器、已看状态、桌面轮播、URL 驱动的打开状态、作用域插槽，以及与 React 故事播放器共享的主题令牌。
 ---
 
-面向 Vue 的全屏 Instagram 风格 Stories 播放浮层，支持嵌套导航、自动播放计时、点击区域和可定制插槽。
+import { Zap, Play, Timer, Layout, Clock, Image, Layers, Heart, Monitor, Circle, Code, Settings, Link2, Eye } from 'lucide-react';
+import installation from '../../snippets/vue-stories-player/installation.sh?raw';
+import installation2 from '../../snippets/vue-stories-player/installation-2.ts?raw';
+import basicUsage from '../../snippets/vue-stories-player/basic-usage.vue?raw';
+import urlState from '../../snippets/vue-stories-player/url-state.vue?raw';
+import urlState2 from '../../snippets/vue-stories-player/url-state-2.ts?raw';
+import urlState3 from '../../snippets/vue-stories-player/url-state-3.ts?raw';
+import rememberingWhatWasSeen from '../../snippets/vue-stories-player/remembering-what-was-seen.vue?raw';
+import desktopCarousel from '../../snippets/vue-stories-player/desktop-carousel.vue?raw';
+import transitions from '../../snippets/vue-stories-player/transitions.vue?raw';
+import scopedSlots from '../../snippets/vue-stories-player/scoped-slots.vue?raw';
+import slideSlot from '../../snippets/vue-stories-player/slide-slot.vue?raw';
+import navigationSlot from '../../snippets/vue-stories-player/navigation-slot.vue?raw';
+import progressBarSlot from '../../snippets/vue-stories-player/progress-bar-slot.vue?raw';
+import loadingErrorSlots from '../../snippets/vue-stories-player/loading-error-slots.vue?raw';
+import groupPreviewSlot from '../../snippets/vue-stories-player/group-preview-slot.vue?raw';
+import storiesApi from '../../snippets/vue-stories-player/stories-api.vue?raw';
+import vModelIsOpen from '../../snippets/vue-stories-player/v-model-is-open.vue?raw';
+import doubleTapLikes from '../../snippets/vue-stories-player/double-tap-likes.vue?raw';
+import customizingTheHeartAnimation from '../../snippets/vue-stories-player/customizing-the-heart-animation.css?raw';
+import subComponents from '../../snippets/vue-stories-player/sub-components.vue?raw';
+import types from '../../snippets/vue-stories-player/types.ts?raw';
+import slotScopes from '../../snippets/vue-stories-player/slot-scopes.ts?raw';
+import customStoryTypes from '../../snippets/vue-stories-player/custom-story-types.vue?raw';
+import theming from '../../snippets/vue-stories-player/theming.css?raw';
 
-<Callout type="info" title="即将推出">
-  Vue 版 Stories Player仍在开发中。React 版现已可用： [@reelkit/react-stories-player](/docs/stories-player)。Vue 版会沿用同样的架构，用 `@reelkit/stories-core` 作为与框架无关的状态机、计时器和 canvas 进度渲染器。
+基于 `@reelkit/vue-stories-player` 的 Vue 3 Instagram 风格故事播放器覆盖层。它与 React 版本共用 `@reelkit/stories-core` 引擎，因此行为、CSS 类名和主题令牌完全一致。
+
+<DemoLink href="https://vue-demo.reelkit.dev/stories-player?utm_source=docs">查看在线演示 →</DemoLink>
+
+## Features [#features]
+
+<FeatureGrid items={[
+              {
+                icon: Zap,
+                label: '嵌套导航',
+                desc: '点击切换故事，滑动切换用户',
+              },
+              {
+                icon: Play,
+                label: '视频故事',
+                desc: '自动播放并可切换声音',
+              },
+              {
+                icon: Timer,
+                label: '自动播放',
+                desc: '每条故事的计时器可配置',
+              },
+              {
+                icon: Layout,
+                label: '3D 转场',
+                desc: '立方体、翻转、淡入淡出、缩放、滑动',
+              },
+              {
+                icon: Clock,
+                label: '进度条',
+                desc: '基于 canvas 的分段进度条',
+              },
+              {
+                icon: Image,
+                label: '图片与视频',
+                desc: '两种媒体类型都支持',
+              },
+              {
+                icon: Layers,
+                label: '虚拟化',
+                desc: 'DOM 中仅保留 3 个幻灯片',
+              },
+              {
+                icon: Heart,
+                label: '双击点赞',
+                desc: '双击触发爱心动画',
+              },
+              {
+                icon: Monitor,
+                label: '桌面导航',
+                desc: '箭头按钮',
+              },
+              {
+                icon: Circle,
+                label: '故事头像环',
+                desc: 'Instagram 风格的头像圆环',
+              },
+              {
+                icon: Code,
+                label: '泛型类型',
+                desc: '用自定义字段扩展 StoryItem',
+              },
+              {
+                icon: Settings,
+                label: '作用域插槽',
+                desc: '可替换界面的任何部分',
+              },
+              {
+                icon: Link2,
+                label: 'URL 状态',
+                desc: '可分享的 ?story=group.story 链接',
+              },
+              {
+                icon: Eye,
+                label: '已看状态',
+                desc: '已看圆环与续播状态可跨刷新保留',
+              },
+            ]} />
+
+## 安装 [#installation]
+
+<CodeBlock code={installation} language="bash" />
+
+在应用入口（或任意组件）中引入一次样式表：
+
+<CodeBlock code={installation2} language="typescript" />
+
+<Callout type="info" title="图标">
+  默认头部和导航箭头使用 `lucide-vue-next` 的图标。如果你更喜欢别的图标库，可以通过 `#header` 和 `#navigation` 作用域插槽替换它们。
 </Callout>
+
+## 快速上手 [#quick-start]
+
+`StoriesOverlay` 渲染全屏播放器。把它和 `StoriesRingList` 搭配作为 Instagram 风格的入口，传入一组 `StoriesGroup` 对象，并绑定 `v-model:is-open`。
+
+<CodeBlock code={basicUsage} language="vue" />
+
+## URL 状态 [#url-state]
+
+<DemoLink href="https://vue-demo.reelkit.dev/stories-player-url?utm_source=docs">查看在线演示 →</DemoLink>
+
+`StoriesUrlOverlay` 是一个独立组件，它的打开状态存放在地址栏里。两个轴共用一个参数 —— `?story=<group>.<story>` —— 因此正在播放的故事有一个可分享、可收藏、可用后退按钮关闭的链接。用 `useOverlayUrlState` 和 `urlIndexTwoAxisKey` 创建控制器，然后作为 `controller` 传入。
+
+<Callout type="info" title="内置 key">
+  故事是双轴的，所以要把双轴 key 展开到控制器里：`urlIndexTwoAxisKey`（按位置定位用户和故事）或 `urlStableIdTwoAxisKey`（用户按稳定 `id` 定位）—— 两者都从 `@reelkit/vue-stories-player` 重新导出。参见 [URL 状态指南](/docs/core/guide#url-state)和 [Core API](/docs/core/api#url-state)。
+</Callout>
+
+<CodeBlock code={urlState} language="vue" />
+
+- 打开会压入**一条**历史记录。在故事之间移动*以及*切换用户都只是**替换**它，因此 N 次导航不会新增记录，一次后退始终关闭播放器。后退是关闭，而不是回到上一条故事。
+- **内层导航也会写进 URL。** 在同一用户的故事间前进会把 `?story=2.`*n* 更新掉，因此深层链接能落到确切的那条故事。
+- 只有当播放器是在应用内部打开时，后退才会关闭它 —— 那次跳转压入了一条记录。直接在新标签页打开的分享链接背后没有历史记录，后退会离开站点；✕ 按钮或 Escape 会就地移除参数并留在页面上。
+- 指向不存在的用户或故事的参数 —— 过期书签、手改的值、超出该用户故事数量的序号 —— 会从 URL 中移除，而不是打开相邻的一条。
+- 使用路由的应用应该传入基于路由器的适配器，让路由器始终是导航状态的唯一来源。`@reelkit/vue/vue-router-url-adapter` 中的 `useVueRouterUrlAdapter` 就是 Vue Router 的现成适配器；绕过路由器直接写历史会让它的 location 过期，下一次导航就会丢掉参数。
+
+**稳定链接。** 用户默认按位置定位，因此收藏的 `?story=2.0` 在信息流重新排序后会打开另一个人。改用稳定 id 定位用户 —— `outerCodec` 负责把 id 写进 URL，`outerLocator` 负责找到它所在的位置。故事那一半仍然是已解析分组内部的普通索引。
+
+<CodeBlock code={urlState2} language="typescript" />
+
+**无限信息流。** 分页属于 `outerLocator` 的职责，与编解码器无关。`locate` 是同步的，只能回答已加载的分组 —— 指向第 400 个分组、而只加载了 20 个的分享链接会落空。`locateAsync` 是兜底，只在 `locate` 未命中时调用；故事随后会按最终落到的那个分组重新约束。
+
+<Callout type="info" title="同一个 locateAsync，外层轴">
+  这与单轴 key 接受的 `locateAsync` 分页器是同一个 —— 在双轴 key 上它跟着你传入的 `outerLocator` 走，因此分页发生在用户这一轴，而故事仍是已解析分组内部的局部索引。
+</Callout>
+
+<CodeBlock code={urlState3} language="typescript" />
+
+- 在 `locateAsync` 等待期间，播放器保持关闭且参数原样保留，因此深层链接能熬过这次请求。返回 `null` 或拒绝则会移除参数。
+- 如果答复在 URL 已经变化之后、关闭之后或卸载之后才到达，就会被丢弃 —— 一次缓慢的请求无法打开没人再要求的故事。
+- `useOverlayUrlState` 的完整选项见 [Vue API 参考](/docs/vue/api#useoverlayurlstate)。
+
+## 记住看到哪里 [#remembering-what-was-seen]
+
+在一位用户的故事被看完之前，头像环一直是渐变色；而分组会从观众还没看过的第一条故事重新打开。两者都来自同一个 `createStoriesViewedStateController`：在信息流所在的地方创建一次，作为 `viewed` 交给头像环列表和播放器 —— 它们会自己读取存储、跟随它并记录已展示的内容。存储条目用 id 记录作者和故事，因此信息流重新排序后依然有效，同一个控制器在 React 和 Angular 中也同样可用。
+
+<CodeBlock code={rememberingWhatWasSeen} language="vue" />
+
+- **打开时那条故事也算。** 已经显示在屏幕上的故事会在播放器挂载后被标记为已看，因此打开只有一条故事的分组再关闭，就算看完了。
+- **继续往后滑同样会续播。** 本次会话中首次到达的每个分组都会询问 `resumeStoryIndex`，包括播放器最初打开的那个，除非 `initialStoryIndex` 明确指定了故事；已经滑过的分组会回到上次离开的位置。
+- **链接依然优先。** 使用 `StoriesUrlOverlay` 时，无论存储了什么，都由参数决定播放器从哪里打开。其他情况下由续播回调决定。
+- **计数是位置，不是总量。** 条目记录的是到达过的最远一条故事，因此给已看完的分组新增故事会让它的圆环重新亮起，从中间删掉一条则会让计数变短。
+- **存储可替换。** 传入 `storage: createSessionStorageAdapter()` 可在标签页关闭时忘记，或传入你自己的 `StorageAdapter`。两个打开的标签页通过浏览器的 storage 事件保持同步。
+- **只在打开时才挂载的播放器读得太晚。** 覆盖层在挂载之后、仍然关闭的状态下读取存储。用 `v-if="open"` 时没有这个时机，因此请自己在 `onMounted` 里调用 `viewed.attach()`，并在 `onUnmounted` 里调用它返回的清理函数。相关选项以及它所基于的底层构件都在 [Stories Core](/docs/stories-core#viewed-controller) 页面。
+
+## 桌面轮播 [#desktop-carousel]
+
+设置 `desktop-layout="carousel"`，播放器就会像 Instagram 网页版那样排布：当前故事以正常尺寸留在中间，两侧各有最多两个相邻分组作为更小、更暗的卡片。点击卡片会打开那个分组，切换分组时卡片会横向滑动。把交给头像环列表的同一个 `viewed` 控制器也传进来，已看完分组的卡片就会显示暗色圆环。卡片自己跟随它，因此某条故事被标记为已看时只有卡片重绘，播放器不会重新渲染。
+
+<CodeBlock code={desktopCarousel} language="vue" />
+
+- **手机上保持普通播放器。** 宽度在 768px 以内时不渲染卡片，滑动使用 `group-transition`，与默认的 `'single'` 布局一致。跨过这个宽度调整窗口会实时切换。
+- **每张卡片预览该分组将要打开的内容**：本次会话中离开时的那条故事，否则是 `resumeStoryIndex` 返回的那条。它会显示视频封面或图片。两者都没有的故事（例如渐变背景上的纯文字故事）会由你的 `#slide` 插槽按播放器尺寸绘制后缩小；没有封面的视频则显示卡片背景。该预览拿到的是 `isActive: false`，它只是一张图：其中的内容无法聚焦，也无法点击。请把幻灯片挂载时会做的事情（例如播放或埋点）放在 `isActive` 判断之后。
+- **计时器会等待滑动结束。** 在卡片停止移动之前，故事不会前进，`story-viewed` 也不会为它触发。
+- **每一种切换分组的方式都会触发滑动**：点击卡片、`StoriesApi.goToGroup`、`nextGroup` 与 `prevGroup`，以及在分组末尾继续按方向键。触摸滑动本身已经移动了播放器，因此不会再叠加一次滑动。
+
+## API 参考 [#api-reference]
+
+### StoriesOverlay 属性 [#storiesoverlay-props]
+
+<Signature>StoriesOverlayProps</Signature>
+
+| Prop | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `aria-label` | `string` | `'Stories player'` | 对话框区域的无障碍名称；覆盖层打开时由屏幕阅读器朗读 |
+| `default-image-duration` | `number` | `5000` | 图片故事的自动播放时长，单位毫秒 |
+| `desktop-layout` | `'single' \| 'carousel'` | `'single'` | 桌面布局。`'carousel'` 会把相邻分组作为预览卡片显示在当前故事两侧，并在分组之间滑动。手机上始终只显示故事本身。该类型以 `DesktopLayout` 导出。 |
+| `enable-keyboard` | `boolean` | `true` | 启用键盘导航（左右方向键、Escape） |
+| `groups` | `StoriesGroup<T>[]` | `required` | 要展示的故事分组。播放器打开期间新增分组或故事都会被接管，无论是替换数组还是往原数组里追加。 |
+| `group-transition` | `TransitionTransformFn` | `cubeTransition` | 外层（分组）滑块的转场。桌面轮播显示时会被忽略，改为滑动。 |
+| `hide-ui-on-pause` | `boolean` | `true` | 长按暂停期间隐藏进度条和头部 |
+| `initial-group-index` | `number` | `0` | 初始可见分组的下标，从 0 开始 |
+| `initial-story-index` | `number` | 续播，否则 `0` | 初始可见故事的下标，从 0 开始。明确指定时优先于任何已记住的位置；不传则该分组像其他分组一样续播。 |
+| `inner-transition-duration` | `number` | `200` | 故事之间的交叉淡入淡出时长，单位毫秒 |
+| `is-open` | `boolean` | `required` | 控制可见性，并在打开期间锁定页面滚动。用 `v-model:is-open` 绑定。 |
+| `min-segment-width` | `number` | `8` | 进度分段的最小宽度（像素），低于它就启用滑动窗口 |
+| `resume-story-index` | `(groupIndex: number) => number` | — | 某个分组第一次被到达时从哪条故事打开。只在本次打开期间尚未访问过的分组上询问，并且优先于 `viewed`。 |
+| `tap-zone-split` | `number` | `0.3` | 点击区域的分割比例（0–1）。左侧部分后退，其余部分前进。 |
+| `viewed` | `StoriesViewedStateController` | — | 观众已看过的内容，来自 `createStoriesViewedStateController()`。分组会从第一条未看过的故事续播，每条展示过的故事都会被记录，轮播卡片也会把已看完分组的圆环变暗。请把同一个控制器传给 `StoriesRingList`。 |
+
+### StoriesUrlOverlay 属性 [#storiesurloverlay-props]
+
+<Signature>StoriesUrlOverlayProps</Signature>
+
+接受上面的全部属性，除了打开状态三件套 —— `is-open`、`initial-group-index`、`initial-story-index` —— 它们改由控制器提供。
+
+| Prop | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `controller` | `UrlStateController<TwoAxisPosition>` | `required` | 来自 `useOverlayUrlState` 并展开了 `urlIndexTwoAxisKey` 的控制器。它的 `position` —— 一个 \{ outer, inner \} 对象 —— 决定播放器是否打开以及从哪里打开；覆盖层会在每次导航和关闭时写回。 |
+
+### 事件 [#events]
+
+| 事件 | 载荷 | 说明 |
+| --- | --- | --- |
+| @api-ready | `StoriesApi` | 播放器挂载后触发，附带命令式 API |
+| @close | `void` | 播放器关闭时触发。在 `StoriesUrlOverlay` 上，此时参数已经被清除。 |
+| @double-tap | `groupIndex: number, storyIndex: number` | 双击时触发，与爱心动画同时发生 |
+| @group-change | `groupIndex: number` | 当前分组变化后触发 |
+| @pause | `void` | 长按或点击头部暂停按钮时触发 |
+| @resume | `void` | 松开或点击头部播放按钮时触发 |
+| @story-change | `groupIndex: number, storyIndex: number` | 当前故事变化后触发 |
+| @story-complete | `groupIndex: number, storyIndex: number` | 故事的计时器走完时触发 |
+| @story-viewed | `groupIndex: number, storyIndex: number` | 故事变为可见时触发，包括打开时的那一条 |
+| @update:is-open | `boolean` | 关闭时触发；用于支持 \`v-model:is-open\` |
+
+### v-model:is-open [#v-model-is-open]
+
+用 `v-model:is-open` 以单个绑定驱动覆盖层。如果你需要显式事件，`:is-open` + `@close` 的组合依然可用。
+
+<CodeBlock code={vModelIsOpen} language="vue" />
+
+## 作用域插槽 [#scoped-slots]
+
+八个作用域插槽可以替换播放器的任何部分。每个插槽都会收到带类型的作用域对象。没有传的插槽保持默认 —— 渲染结果为空的插槽同样如此，因此变为 false 的 `v-if` 会回退到默认，而不是留下空洞。
+
+| 插槽 | 作用域 | 说明 |
+| --- | --- | --- |
+| #error | `{ story, storyIndex, groupIndex }` | 替换绘制在当前故事之上的内置「Content unavailable」面板 |
+| #footer | `{ author, story, storyIndex }` | 在当前分组的故事下方添加页脚 |
+| #groupPreview | `{ group, groupIndex, story, offset, viewedCount, onOpen }` | 填充桌面轮播卡片的内容；定位、缩放和滑动仍由播放器负责 |
+| #header | `{ author, story, storyIndex, isPaused, isMuted, isVideo, onToggleSound, onTogglePause, onClose }` | 替换默认头部（作者、暂停、声音、关闭） |
+| #loading | `{ story, storyIndex, groupIndex }` | 在当前故事加载时替换默认的头部加载指示 |
+| #navigation | `{ onPrevStory, onNextStory, onPrevGroup, onNextGroup }` | 替换两侧的桌面箭头 |
+| #progressBar | `{ totalStories, activeIndex, progress, group }` | 替换 canvas 进度条。`activeIndex` 和 `progress` 是核心信号 —— 请用 `toVueRef` 桥接。 |
+| #slide | `{ story, index, groupIndex, isActive, size, activeGroupIndex, activeStoryIndex, onDurationReady, onReady, onWaiting, onError, onEnded }` | 替换默认的图片与视频幻灯片 |
+
+<CodeBlock code={scopedSlots} language="vue" />
+
+### 自定义幻灯片 [#custom-slides]
+
+在 `#slide` 内组合 `ImageStorySlide` 和 `VideoStorySlide`，既能画出自己的布局，又能保留自动播放、封面抓帧和声音同步。请从作用域里调用生命周期回调，否则计时器永远不会启动：
+
+| 回调 | 何时调用 |
+| --- | --- |
+| `onReady` | 图片已加载，或视频开始播放。清除加载状态并启动计时器。 |
+| `onWaiting` | 视频在播放中缓冲。显示加载指示并暂停计时器。 |
+| `onError` | 内容加载失败。显示错误状态，并把该 URL 记为损坏，重新打开时不再重试。 |
+| `onDurationReady` | 上报真实的媒体时长（毫秒），让计时器与视频一样长。 |
+| `onEnded` | 媒体播放结束。前进到下一条故事。 |
+
+<CodeBlock code={slideSlot} language="vue" />
+
+<Callout type="info" title="预加载缓存">
+  内置的 `ImageStorySlide` 和 `VideoStorySlide` 会在后台预加载下一条故事。当观众到达已预加载的故事时，内容会立即出现，不显示加载指示。失败过一次的 URL 也会被记住，因此重新打开损坏的故事会直接显示错误，而不是再试一次。
+</Callout>
+
+### 自定义导航 [#custom-navigation]
+
+<CodeBlock code={navigationSlot} language="vue" />
+
+### 自定义进度条 [#custom-progress-bar]
+
+作用域携带的是核心信号而不是普通数字，因此计时器可以驱动进度条而不重新渲染播放器。请用 `@reelkit/vue` 的 `toVueRef` 桥接：
+
+<CodeBlock code={progressBarSlot} language="vue" />
+
+### 自定义加载与错误 [#custom-loading-error]
+
+<CodeBlock code={loadingErrorSlots} language="vue" />
+
+### 自定义轮播卡片 [#custom-carousel-cards]
+
+<CodeBlock code={groupPreviewSlot} language="vue" />
+
+## 转场 [#transitions]
+
+`group-transition` 控制切换用户时的 3D 效果。从 `@reelkit/vue` 导入转场函数：
+
+<CodeBlock code={transitions} language="vue" />
+
+## StoriesApi [#storiesapi]
+
+在覆盖层上放一个模板 ref 即可命令式控制，或者从 `@api-ready` 事件拿到 API。播放器关闭期间的调用不会有任何效果。
+
+<CodeBlock code={storiesApi} language="vue" />
+
+### 方法 [#methods]
+
+| 方法 | 类型 | 说明 |
+| --- | --- | --- |
+| `nextStory()` | `() => void` | 前进到当前分组内的下一条故事 |
+| `prevStory()` | `() => void` | 回到当前分组内的上一条故事 |
+| `nextGroup()` | `() => void` | 切换到下一个用户分组 |
+| `prevGroup()` | `() => void` | 切换到上一个用户分组 |
+| `goToGroup(index)` | `(index: number) => void` | 按下标跳转到指定分组 |
+| `pause()` | `() => void` | 暂停自动播放和进度计时器 |
+| `resume()` | `() => void` | 恢复自动播放和进度计时器 |
+
+## 双击与点赞 [#double-tap-likes]
+
+双击会播放爱心动画，给出即时的视觉反馈。`@double-tap` 事件带上分组与故事下标，你可以把点赞保存在自己的状态里。播放器本身不保存点赞状态。
+
+<CodeBlock code={doubleTapLikes} language="vue" />
+
+### 自定义爱心动画 [#customizing-the-heart-animation]
+
+用 `--rk-stories-heart-duration` 令牌调整速度（见[主题](#theming)）。要改颜色、大小或彻底隐藏爱心，直接作用于 `.rk-stories-heart` 类。`HeartAnimation` 组件也单独导出，可独立使用。
+
+<CodeBlock code={customizingTheHeartAnimation} language="css" />
+
+<Callout type="info">
+  内置的爱心动画目前还不能通过插槽替换。你可以用 CSS 重新设置样式，或用 `display: none` 隐藏它，再从 `@double-tap` 事件播放自己的动画。如果你需要 `heart` 插槽，欢迎通过 [GitHub Issues](https://github.com/KonstantinKai/reelkit/issues) 告诉我们。
+</Callout>
+
+## 子组件 [#sub-components]
+
+导出的构件，既可以在插槽内组合，也可以单独使用：`StoriesRing`、`StoriesRingList`、`StoryHeader`、`CanvasProgressBar`、`ImageStorySlide`、`VideoStorySlide` 和 `HeartAnimation`。
+
+| 组件 | 说明 |
+| --- | --- |
+| `CanvasProgressBar` | 基于 canvas 的分段进度条，直接由计时器信号绘制。故事很多的分组会启用滑动窗口。 |
+| `HeartAnimation` | 双击的爱心。动画结束时发出 `complete`，好让父组件把它移除。 |
+| `ImageStorySlide` | 使用 `object-fit: cover` 的满幅图片幻灯片，通过回调上报加载与错误。 |
+| `StoriesRing` | 带渐变圆环的圆形头像。两种状态：还有未看内容时旋转，全部看完后变为平色。发出 `click`。 |
+| `StoriesRingList` | 横向排列的头像环与作者名，每个分组一个。发出带分组下标的 `select`。 |
+| `StoryHeader` | 默认头部：头像、名称、认证标记、相对时间、暂停、声音、关闭，以及加载指示。 |
+| `VideoStorySlide` | 由唯一共享 `<video>` 元素驱动的视频幻灯片，用于 iOS 上的声音连续性。负责自动播放、封面帧和时长上报。 |
+
+<CodeBlock code={subComponents} language="vue" />
+
+## 重新导出 [#re-exports]
+
+使用者需要的一切都来自这个包，因此永远不必直接引入 `@reelkit/core`。
+
+| 来源 | 重新导出的内容 |
+| --- | --- |
+| `@reelkit/vue` | `Observe`、`SoundProvider`、`useSoundState`、`useOverlayUrlState`、`createViewedStateController`、`twoAxisViewedTracking`、`createLocalStorageAdapter`、`createSessionStorageAdapter`、`createMemoryStorageAdapter`、`urlIndexTwoAxisKey`、`urlStableIdTwoAxisKey`、`base64UrlCodec`，以及类型 `UrlAdapter`、`UrlCodec`、`UrlLocator`、`UrlKey`、`UrlStateController`、`TwoAxisPosition`、`TwoAxisIdentity`、`UrlIndexTwoAxisKeyOptions`、`ViewedStateController`、`ViewedStateOptions`、`StorageAdapter` |
+| `@reelkit/stories-core` | `createStoriesViewedStateController`、`StoriesViewedStateController`、`StoriesViewedStateControllerConfig`，以及内容类型 `StoryItem`、`AuthorInfo`、`StoriesGroup`、`MediaType` |
+
+`Observe` 是播放器内部使用的渲染边界：核心信号变化时它只重新渲染自己的插槽，故事切换正是这样只刷新头部和进度条，而不重绘两个滑块。当整个组件通过 `toVueRef` 跟随信号显得过粗时，就在自定义插槽里用它 —— 参见 [Vue API 参考](/docs/vue/api#observe)。
+
+每个组件的属性类型也都有导出：`StoriesOverlayProps`、`StoriesUrlOverlayProps`、`StoriesRingProps`、`StoriesRingListProps`、`StoryHeaderProps`、`CanvasProgressBarProps`、`ImageStorySlideProps` 和 `VideoStorySlideProps`。
+
+## 类型 [#types]
+
+### StoryItem、AuthorInfo、StoriesGroup [#storyitem-authorinfo-storiesgroup]
+
+<CodeBlock code={types} language="typescript" />
+
+### 插槽作用域 [#slot-scopes]
+
+每个作用域类型都有导出，因此在编译器无法推断时可以显式标注插槽 —— `HeaderSlotScope`、`FooterSlotScope`、`SlideSlotScope`、`NavigationSlotScope`、`ProgressBarSlotScope`、`LoadingSlotScope`、`ErrorSlotScope` 和 `GroupPreviewSlotScope`，以及 `StoriesApi`：
+
+<CodeBlock code={slotScopes} language="typescript" />
+
+## 自定义故事类型 [#custom-story-types]
+
+用你自己的字段扩展 `StoryItem`，并用它标注分组。给插槽作用域加上类型标注，额外字段在模板中就依然可见：
+
+<CodeBlock code={customStoryTypes} language="vue" />
+
+## CSS 类名 [#css-classes]
+
+类名是普通类名（非 scoped），因此在 `@reelkit/vue-stories-player/styles.css` 之后加载的样式表可以覆盖其中任何一个。它们与 `@reelkit/react-stories-player` 完全一致，所以为一种绑定写的样式表对另一种同样有效。颜色、尺寸和 z-index 请优先使用[主题](#theming)一节中的自定义属性。
+
+| 类名 | 组件 | 说明 |
+| --- | --- | --- |
+| `.rk-stories-overlay` | Overlay | 固定定位的全屏背景（背景色、z-index） |
+| `.rk-stories-overlay--carousel` | Overlay | 正在显示桌面轮播的覆盖层 |
+| `.rk-stories-overlay--sliding` | Overlay | 轮播滑动进行中；播放器画布被隐藏 |
+| `.rk-stories-swipe-wrapper` | Overlay | 下滑关闭的包装层（承载导航按钮与画布） |
+| `.rk-stories-container` | Overlay | 圆角的故事画布（定位、overflow） |
+| `.rk-stories-ui-layer` | Overlay | 界面容器（头部、进度） |
+| `.rk-stories-ui-layer--hidden` | Overlay | 界面隐藏状态（由 `hide-ui-on-pause` 切换） |
+| `.rk-stories-error` | Overlay | 错误状态（居中的图标与文字） |
+| `.rk-stories-error-text` | Overlay | 错误提示文字 |
+| `.rk-stories-nav-btn` | Navigation | 桌面端的前进/后退箭头 |
+| `.rk-stories-progress-bar` | CanvasProgressBar | canvas 进度条的定位包装层 |
+| `.rk-stories-slide-wrapper` | Group | 一个故事分组（外层幻灯片） |
+| `.rk-stories-story` | Story | 单条故事（内层幻灯片根节点） |
+| `.rk-stories-header` | StoryHeader | 头部栏（头像、名称、操作） |
+| `.rk-stories-header--hidden` | StoryHeader | 头部隐藏状态 |
+| `.rk-stories-header-avatar` | StoryHeader | 作者头像图片 |
+| `.rk-stories-header-name` | StoryHeader | 作者名称文字 |
+| `.rk-stories-header-verified` | StoryHeader | 认证标记 |
+| `.rk-stories-header-time` | StoryHeader | 相对时间文字 |
+| `.rk-stories-header-actions` | StoryHeader | 右侧操作（声音、暂停、关闭） |
+| `.rk-stories-header-btn` | StoryHeader | 头部操作按钮 |
+| `.rk-stories-header-spinner` | StoryHeader | 加载指示 |
+| `.rk-stories-image` | ImageStorySlide | 图片故事元素 |
+| `.rk-stories-video` | VideoStorySlide | 视频故事容器 |
+| `.rk-stories-video-element` | VideoStorySlide | 共享的 \<video> 元素 |
+| `.rk-stories-video-poster` | VideoStorySlide | 视频封面图（播放时淡出） |
+| `.rk-stories-video-poster--visible` | VideoStorySlide | 封面可见状态（播放开始前） |
+| `.rk-stories-heart` | HeartAnimation | 双击爱心的弹出动画 |
+| `.rk-stories-ring` | StoriesRing | 故事圆环（带动画渐变边框的头像） |
+| `.rk-stories-ring--active` | StoriesRing | 还有未看内容的圆环（会动） |
+| `.rk-stories-ring-avatar` | StoriesRing | 圆环内部的头像图片 |
+| `.rk-stories-ring-list` | StoriesRingList | 横向圆环列表容器 |
+| `.rk-stories-ring-list-item` | StoriesRingList | 圆环 + 名称的一列 |
+| `.rk-stories-ring-list-name` | StoriesRingList | 每个圆环下方的作者名称 |
+| `.rk-stories-carousel` | Carousel | 播放器背后的预览卡片层 |
+| `.rk-stories-carousel--instant` | Carousel | 滑动的第一帧，不带过渡地排布 |
+| `.rk-stories-card` | Carousel | 一张已定位的预览卡片 |
+| `.rk-stories-card--center` | Carousel | 滑动期间处于中间位置的卡片 |
+| `.rk-stories-card--hidden` | Carousel | 超出单侧两张之外的卡片 |
+| `.rk-stories-card-button` | Carousel | 卡片的默认内容（打开该分组的按钮） |
+| `.rk-stories-card-image` | Carousel | 预览画面（封面或图片） |
+| `.rk-stories-card-scrim` | Carousel | 画面上的压暗层 |
+| `.rk-stories-card-info` | Carousel | 圆环、作者名与时间的一列 |
+| `.rk-stories-card-name` | Carousel | 作者名称 |
+| `.rk-stories-card-time` | Carousel | 相对时间文字 |
+
+## 主题 [#theming]
+
+每个颜色、尺寸、z-index 和过渡都放在 CSS 自定义属性里，默认值定义在 `:root` 上。在 `:root` 或覆盖层的任意祖先上覆盖其中一个或多个，就能在不改组件源码的情况下换主题。这些令牌与 `@reelkit/react-stories-player` 一致，因此主题可以在两种绑定之间通用。
+
+| 令牌 | 默认值 | 控制 |
+| --- | --- | --- |
+| `--rk-stories-overlay-bg` | `#000` | 全屏背景颜色 |
+| `--rk-stories-overlay-z` | `9999` | 覆盖层 z-index |
+| `--rk-stories-container-radius` | `12px` | 故事画布的圆角（桌面端） |
+| `--rk-stories-swipe-gap` | `16px` | 导航按钮与故事画布之间的间距 |
+| `--rk-stories-top-shade-height` | `120px` | 头部背后顶部渐变遮罩的高度 |
+| `--rk-stories-top-shade-bg` | `linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%)` | 顶部渐变遮罩的颜色 |
+| `--rk-stories-ui-transition` | `200ms` | `hide-ui-on-pause` 切换时的淡入淡出时长 |
+| `--rk-stories-nav-size` | `44px` | 桌面端前进/后退按钮尺寸 |
+| `--rk-stories-nav-bg` | `rgba(255, 255, 255, 0.1)` | 桌面导航按钮背景 |
+| `--rk-stories-nav-bg-hover` | `rgba(255, 255, 255, 0.2)` | 桌面导航按钮悬停背景 |
+| `--rk-stories-nav-fg` | `rgba(255, 255, 255, 0.7)` | 桌面导航按钮图标颜色 |
+| `--rk-stories-nav-fg-hover` | `#fff` | 桌面导航按钮悬停图标颜色 |
+| `--rk-stories-error-bg` | `linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)` | 错误状态的背景渐变 |
+| `--rk-stories-error-fg` | `rgba(255, 255, 255, 0.5)` | 错误图标与文字颜色 |
+| `--rk-stories-error-text-size` | `13px` | 错误提示字号 |
+| `--rk-stories-video-bg` | `#000` | \<video> 背后的黑边背景 |
+| `--rk-stories-video-poster-transition` | `200ms` | 视频开始播放时封面的淡出时长 |
+| `--rk-stories-header-top` | `18px` | 头部距故事顶部的纵向偏移 |
+| `--rk-stories-header-padding` | `12px 16px` | 头部行的内边距 |
+| `--rk-stories-header-avatar-size` | `32px` | 头像的宽高 |
+| `--rk-stories-header-name-fg` | `#fff` | 作者名称颜色 |
+| `--rk-stories-header-name-size` | `14px` | 作者名称字号 |
+| `--rk-stories-header-time-fg` | `rgba(255, 255, 255, 0.6)` | 相对时间文字颜色 |
+| `--rk-stories-header-btn-fg` | `#fff` | 头部操作图标颜色（关闭、静音、暂停） |
+| `--rk-stories-heart-duration` | `800ms` | 爱心弹出与淡出的动画时长 |
+| `--rk-stories-ring-spin-duration` | `4s` | 还有未看内容时圆环的旋转时长 |
+| `--rk-stories-ring-list-gap` | `12px` | 列表中圆环之间的间距 |
+| `--rk-stories-ring-list-padding` | `12px` | 圆环列表周围的内边距 |
+| `--rk-stories-ring-list-name-size` | `12px` | 圆环下方作者名称的字号 |
+| `--rk-stories-card-bg` | `#262626` | 轮播卡片背景，没有预览画面时可见 |
+| `--rk-stories-card-radius` | `8px` | 轮播卡片的圆角 |
+| `--rk-stories-card-scrim` | `rgba(0, 0, 0, 0.45)` | 侧边卡片上的压暗 |
+| `--rk-stories-card-fg` | `#fff` | 卡片文字颜色 |
+| `--rk-stories-card-name-size` | `14px` | 卡片上作者名称的字号 |
+| `--rk-stories-card-time-fg` | `rgba(255, 255, 255, 0.7)` | 卡片上时间文字的颜色 |
+| `--rk-stories-card-time-size` | `13px` | 卡片上时间文字的字号 |
+| `--rk-stories-card-gap` | `6px` | 卡片上圆环、名称与时间之间的间距 |
+| `--rk-stories-card-transition` | `300ms` | 轮播滑动时长 |
+
+<CodeBlock code={theming} language="css" />
+
+## 无障碍 [#accessibility]
+
+覆盖层根节点是模态对话框（`role="dialog"`、`aria-modal="true"`）。设置 `aria-label` 可以改变屏幕阅读器朗读的内容，默认是「Stories player」。
+
+覆盖层在打开时捕获焦点，关闭时把焦点还给触发元素。Tab 与 Shift+Tab 在内部的可聚焦元素之间循环；跑到外面的焦点会被拉回来。实现基于 `@reelkit/core` 的 `captureFocusForReturn` 和 `createFocusTrap`。
+
+使用桌面轮播时，每张默认卡片都是一个按钮，标签为「Open stories by」加作者名。卡片在 Tab 顺序中排在播放器控件之后，滑动期间则被移出 Tab 顺序；打开自己分组的那张卡片会把焦点交还给对话框，而不是丢在页面上。
+
+## 服务端渲染 [#server-side-rendering]
+
+关闭状态下覆盖层什么也不渲染，`StoriesRingList` 在服务端把每个圆环都渲染成未看状态：已看存储只在挂载之后读取，因此服务端标记与首次客户端渲染一致。更完整的说明见 [SSR 指南](/docs/ssr)。
+
+## 键盘快捷键 [#keyboard-shortcuts]
+
+| 按键 | 操作 |
+| --- | --- |
+| `ArrowLeft` | 上一条故事 |
+| `ArrowRight` | 下一条故事 |
+| `Escape` | 关闭播放器 |

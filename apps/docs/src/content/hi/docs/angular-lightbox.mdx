@@ -5,6 +5,7 @@ description: Angular के लिए फ़ुलस्क्रीन इम�
 
 import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2 } from 'lucide-react';
 import installation from '../../snippets/angular-lightbox/installation.sh?raw';
+import installation2 from '../../snippets/angular-lightbox/installation-2.ts?raw';
 import basicUsage from '../../snippets/angular-lightbox/basic-usage.ts?raw';
 import templateSlots from '../../snippets/angular-lightbox/template-slots.ts?raw';
 import videoSupport from '../../snippets/angular-lightbox/video-support.ts?raw';
@@ -98,11 +99,15 @@ Angular के लिए फ़ुलस्क्रीन इमेज और �
 
 <CodeBlock code={installation} language="bash" />
 
+स्टाइलशीट को एक बार रजिस्टर करें:
+
+<CodeBlock code={installation2} language="typescript" />
+
 <Callout type="info" title="आइकन">
   डिफ़ॉल्ट कंट्रोल आइकन के लिए `lucide-angular` इस्तेमाल करते हैं। अगर आप कोई और आइकन लाइब्रेरी पसंद करते हैं, तो अपने देने के लिए `rkLightboxControls` और `rkLightboxNavigation` template slots इस्तेमाल करें।
 </Callout>
 
-## बुनियादी इस्तेमाल [#basic-usage]
+## क्विक स्टार्ट [#quick-start]
 
 styles और standalone `RkLightboxOverlayComponent` कंपोनेंट को अपने कंपोनेंट के `imports` array में import करें।
 
@@ -126,6 +131,8 @@ styles और standalone `RkLightboxOverlayComponent` कंपोनेंट �
 ## वीडियो सपोर्ट [#video-support]
 
 वीडियो स्लाइड के लिए `rkLightboxSlide` template slot और `RkLightboxVideoSlideComponent` से opt-in करना होता है। इस डिज़ाइन से जिन गैलरी को सिर्फ़ इमेज चाहिए, उनके बंडल में वीडियो प्लेयर नहीं जुड़ता।
+
+अंतर्निर्मित sound button तभी दिखता है जब `SoundStateService` को `<rk-lightbox-overlay>` के ऊपर provide किया गया हो — वही साझा instance toggle को वीडियो तक पहुँचाता है, क्योंकि slide आपके template से render होता है। इसके बिना `setLightboxVideoMuted` से element को सीधे चलाएँ।
 
 <CodeBlock code={videoSupport} language="typescript" />
 

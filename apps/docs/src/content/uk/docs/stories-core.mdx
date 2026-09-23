@@ -205,6 +205,41 @@ import typesCode from '../../snippets/stories-core/types-code.ts?raw';
 | `getSegments(totalStories, activeIndex, progress)` | `(number, number, number) => SegmentState[]` | Обчислює стан і відсоток заповнення кожного сегмента смуги прогресу |
 | `getVisibleWindow(totalStories, activeIndex, progress, containerWidth, minSegmentWidth?, gap?)` | `(number, number, number, number, number?, number?) => VisibleWindow` | Обчислює видиме рухоме вікно сегментів, коли їх більше, ніж уміщає контейнер |
 
+## Допоміжні функції розкладу [#layout-helpers]
+
+Чисті функції, які плеєр кожної прив’язки поділяє з іншими, тож React, Vue й Angular рахують розміри та розкладку однаково. Їх викликає прив’язка; застосунку вони потрібні лише тоді, коли він будує власний плеєр.
+
+### Розміри [#sizing]
+
+| Функція | Тип | Опис |
+| --- | --- | --- |
+| `getStoriesSize()` | `() => [number, number]` | Розмір полотна історії. Телефон заповнює екран; десктоп заповнює висоту вікна мінус поле 16px у пропорції 9:16 і вужчає лише тоді, коли полотно й обидві стрілки не вміщаються поперек. Без вікна (рендеринг на сервері) повертає `[0, 0]`. |
+| `isMobileWidth(viewportWidth)` | `(number) => boolean` | Чи користується вікно такої ширини розкладом для телефона. 768 і менше — телефон, як і в стилях. |
+| `parseDurationMs(value)` | `(string) => number` | Найдовший час зі списку обчисленого `transition-duration`, у мілісекундах. Усе, що не є часом, рахується як нуль. |
+
+### Геометрія десктопної каруселі [#desktop-carousel-geometry]
+
+Зсуви рахують від активної групи: від’ємні ліворуч, додатні праворуч, `0` — сама активна історія.
+
+| Функція | Тип | Опис |
+| --- | --- | --- |
+| `getCardSize(activeSize)` | `([number, number]) => [number, number]` | Розмір бічної картки: 0.4 висоти активної історії в тій самій пропорції 9:16. |
+| `getCarouselSlot(offset, activeSize)` | `(number, [number, number]) => CarouselSlot` | Де стоїть картка відносно центру вікна: `{ x, width, height }`. Перша картка з кожного боку обходить стрілку, кожна наступна додає ширину картки й проміжок. |
+| `getCardOffsets(activeGroupIndex, groupCount)` | `(number, number) => number[]` | Зсуви карток, намальованих навколо активної групи у спокої, до двох з боку, без самої активної. |
+| `isCardShown(offset)` | `(number) => boolean` | Чи картка на такій відстані малюється, а не згасає. |
+| `getSlotOffset(offset)` | `(number) => number` | Слот, до якого їде картка, обмежений на одне місце далі за показані, щоб картка в’їжджала збоку від останньої видимої. |
+| `getSlideGroupIndexes(from, to, groupCount)` | `(number, number, number) => number[]` | Групи, які малює з’їзд між двома групами: картки навколо обох кінців, у порядку груп. Групи, через які перестрибує далекий перехід, пропускаються. |
+
+### Вигляд [#presentation]
+
+| Функція | Тип | Опис |
+| --- | --- | --- |
+| `getRingPresentation(options)` | `(RingPresentationOptions) => RingPresentation` | Клас, інлайн-стиль і розмір аватара кільця історії з `totalStories`, `viewedCount` і `size`. Якщо лишилося що дивитися — конічний градієнт, що обертається; додивлена група — рівний `viewedColor`; порожня — без кільця. Розміри несуть одиниці `px`, тож об’єкт стилю годиться для будь-якого фреймворку. |
+| `getPreviewSource(story)` | `(StoryItem \| undefined) => string \| undefined` | Зображення, яке показує картка каруселі: `poster` історії, сама картинка, якщо це зображення, і нічого для відео без постера. Картка без зображення повертається до простої картки, яку малюють для історії, що не має чого показати. |
+| `formatTimeAgo(date)` | `(string \| Date) => string` | Короткий відносний час, який показують заголовок і картки каруселі: `now`, `5m`, `3h`, `2d`, `2w`. |
+
+Поряд із ними експортовано типи `CarouselSlot`, `RingPresentation` і `RingPresentationOptions`.
+
 ## Types [#types]
 
 Усі визначення типів, експортовані з `@reelkit/stories-core`.

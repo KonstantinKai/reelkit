@@ -205,6 +205,41 @@ import typesCode from '../../snippets/stories-core/types-code.ts?raw';
 | `getSegments(totalStories, activeIndex, progress)` | `(number, number, number) => SegmentState[]` | प्रोग्रेस बार के हर segment की स्थिति और भराव का प्रतिशत निकालता है |
 | `getVisibleWindow(totalStories, activeIndex, progress, containerWidth, minSegmentWidth?, gap?)` | `(number, number, number, number, number?, number?) => VisibleWindow` | कुल संख्या कंटेनर की क्षमता से ज़्यादा होने पर segments की दिखने वाली खिसकती विंडो निकालता है |
 
+## लेआउट हेल्पर [#layout-helpers]
+
+हर बाइंडिंग का प्लेयर इन्हीं शुद्ध फ़ंक्शन को साझा करता है, इसलिए React, Vue और Angular में आकार और सजावट एक जैसी रहती है। इन्हें बाइंडिंग बुलाती है; ऐप को इनकी ज़रूरत सिर्फ़ तब पड़ती है जब वह अपना प्लेयर बना रहा हो।
+
+### आकार [#sizing]
+
+| फ़ंक्शन | टाइप | विवरण |
+| --- | --- | --- |
+| `getStoriesSize()` | `() => [number, number]` | स्टोरी कैनवास का आकार। फ़ोन पर पूरी स्क्रीन; डेस्कटॉप पर विंडो की ऊँचाई में से 16px का हाशिया घटाकर 9:16 में, और तभी सँकरा होता है जब कैनवास तथा दोनों तीर आड़े में न समाएँ। window न हो (सर्वर रेंडरिंग) तो `[0, 0]` लौटाता है। |
+| `isMobileWidth(viewportWidth)` | `(number) => boolean` | इस चौड़ाई का व्यूपोर्ट फ़ोन वाला लेआउट इस्तेमाल करेगा या नहीं। 768 तक फ़ोन गिना जाता है, जैसा स्टाइलशीट में है। |
+| `parseDurationMs(value)` | `(string) => number` | गणना किए गए `transition-duration` की सूची में सबसे लंबा समय, मिलीसेकंड में। जो समय नहीं है वह शून्य गिना जाता है। |
+
+### डेस्कटॉप कैरोसेल की ज्यामिति [#desktop-carousel-geometry]
+
+ऑफ़सेट चल रहे समूह के सापेक्ष हैं: बाईं ओर ऋणात्मक, दाईं ओर धनात्मक, और `0` का मतलब चल रही स्टोरी ही।
+
+| फ़ंक्शन | टाइप | विवरण |
+| --- | --- | --- |
+| `getCardSize(activeSize)` | `([number, number]) => [number, number]` | बग़ल के कार्ड का आकार: चल रही स्टोरी की ऊँचाई का 0.4, उसी 9:16 अनुपात में। |
+| `getCarouselSlot(offset, activeSize)` | `(number, [number, number]) => CarouselSlot` | विंडो के केंद्र के सापेक्ष कार्ड कहाँ बैठता है: `{ x, width, height }`। हर ओर का पहला कार्ड तीर से आगे रहता है, और उसके बाद हर कार्ड एक कार्ड की चौड़ाई तथा एक अंतर और आगे। |
+| `getCardOffsets(activeGroupIndex, groupCount)` | `(number, number) => number[]` | ठहरी हुई स्थिति में चल रहे समूह के आसपास बनने वाले कार्डों के ऑफ़सेट, हर ओर अधिकतम दो, चल रहे समूह को छोड़कर। |
+| `isCardShown(offset)` | `(number) => boolean` | इतनी दूरी का कार्ड धुँधला होने के बजाय बनाया जाएगा या नहीं। |
+| `getSlotOffset(offset)` | `(number) => number` | कार्ड जिस जगह जाता है, दिखने वाली सीमा से एक क़दम आगे तक सीमित, ताकि कार्ड आख़िरी दिखते कार्ड के बग़ल से सरककर आए। |
+| `getSlideGroupIndexes(from, to, groupCount)` | `(number, number, number) => number[]` | दो समूहों के बीच सरकने पर कौन-से समूह बनते हैं: दोनों सिरों के आसपास के कार्ड, समूह के क्रम में। लंबी छलाँग जिन समूहों के ऊपर से गुज़रती है, वे छोड़ दिए जाते हैं। |
+
+### प्रस्तुति [#presentation]
+
+| फ़ंक्शन | टाइप | विवरण |
+| --- | --- | --- |
+| `getRingPresentation(options)` | `(RingPresentationOptions) => RingPresentation` | `totalStories`, `viewedCount` और `size` से स्टोरी रिंग का क्लास नाम, इनलाइन स्टाइल और अवतार का आकार। कुछ देखना बाक़ी हो तो घूमता हुआ शंक्वाकार ग्रेडिएंट, पूरा देख लेने पर सपाट `viewedColor`, और ख़ाली समूह पर कोई रिंग नहीं। आकार `px` इकाई के साथ आते हैं, इसलिए यह स्टाइल ऑब्जेक्ट किसी भी फ़्रेमवर्क में चलता है। |
+| `getPreviewSource(story)` | `(StoryItem \| undefined) => string \| undefined` | कैरोसेल कार्ड जो तस्वीर दिखाता है: स्टोरी का `poster`, तस्वीर होने पर वही तस्वीर, और बिना पोस्टर वाले वीडियो के लिए कुछ नहीं। बिना तस्वीर वाला कार्ड उसी सादे कार्ड पर लौट आता है जो दिखाने को कुछ न रखने वाली स्टोरी के लिए बनता है। |
+| `formatTimeAgo(date)` | `(string \| Date) => string` | हेडर और कैरोसेल कार्ड जो छोटा सापेक्ष समय दिखाते हैं: `now`, `5m`, `3h`, `2d`, `2w`। |
+
+इनके साथ `CarouselSlot`, `RingPresentation` और `RingPresentationOptions` टाइप भी एक्सपोर्ट होते हैं।
+
 ## टाइप [#types]
 
 `@reelkit/stories-core` से export होने वाली सभी टाइप डेफ़िनिशन।

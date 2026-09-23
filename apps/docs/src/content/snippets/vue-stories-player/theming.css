@@ -1,0 +1,20 @@
+/* Loaded after @reelkit/vue-stories-player/styles.css. Every token has a
+   default on :root, so override only what you want to change. The names
+   match @reelkit/react-stories-player, so a theme ports between bindings. */
+:root {
+  --rk-stories-overlay-bg: #0f172a;
+  --rk-stories-container-radius: 24px;
+
+  --rk-stories-nav-bg: rgba(99, 102, 241, 0.35);
+  --rk-stories-nav-bg-hover: rgba(168, 85, 247, 0.65);
+  --rk-stories-nav-fg: #fff;
+
+  --rk-stories-header-name-fg: #fef3c7;
+  --rk-stories-header-time-fg: rgba(254, 243, 199, 0.7);
+
+  --rk-stories-ring-spin-duration: 2s;
+  --rk-stories-heart-duration: 600ms;
+
+  --rk-stories-card-bg: #1e293b;
+  --rk-stories-card-transition: 260ms;
+}

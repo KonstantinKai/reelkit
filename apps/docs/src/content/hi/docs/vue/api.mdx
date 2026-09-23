@@ -12,6 +12,7 @@ import usesoundstate from '../../../snippets/vue-api/usesoundstate.ts?raw';
 import usevuerouterurladapter from '../../../snippets/vue-api/usevuerouterurladapter.ts?raw';
 import tovueref from '../../../snippets/vue-api/tovueref.ts?raw';
 import soundprovider from '../../../snippets/vue-api/soundprovider.vue?raw';
+import observe from '../../../snippets/vue-api/observe.vue?raw';
 import packageExports from '../../../snippets/vue-api/package-exports.ts?raw';
 
 `@reelkit/vue` के कंपोनेंट, composables और यूटिलिटी का पूरा रेफ़रेंस।
@@ -213,6 +214,22 @@ core के `Subscribable` (`@reelkit/core` का कोई भी `Signal`) �
 subscription `onScopeDispose` से अपने-आप हट जाता है, इसलिए इसे Vue के `setup()` या effect scope समझने वाले किसी दूसरे context के अंदर ही कॉल करें।
 
 <CodeBlock code={tovueref} language="typescript" />
+
+## Observe [#observe]
+
+टैग: `<Observe :signals="[…]">` — जब भी इनमें से कोई सिग्नल बदलता है, यह सिर्फ़ अपना डिफ़ॉल्ट स्लॉट दोबारा बनाता है, आसपास कुछ नहीं।
+
+रेंडर फ़ंक्शन या टेम्पलेट में core का सिग्नल पढ़ लेने भर से उसकी सदस्यता नहीं बनती। आम जवाब [`toVueRef`](#tovueref) है, लेकिन वह सिग्नल को उसी कंपोनेंट से बाँध देता है जिसने उसे बुलाया, इसलिए बार-बार बदलने वाला सिग्नल पूरे कंपोनेंट को दोबारा बनवाता है। `Observe` उससे सँकरी सीमा है: जो हिस्सा वह मान दिखाता है उसी को लपेट दें, बाक़ी कंपोनेंट अपनी जगह बना रहता है। Stories Player इसी तरह हेडर और प्रोग्रेस बार बदलता है और दोनों स्लाइडर दोबारा नहीं बनाता।
+
+| Prop | टाइप | विवरण |
+| --- | --- | --- |
+| `signals` | `readonly Subscribable[]` | जिन सिग्नलों का पीछा करना है। अलग समूह देने पर सदस्यता बदल जाती है, वही समूह देने पर बनी रहती है। अनमाउंट पर सब छोड़ दिया जाता है। |
+
+प्रॉप्स का टाइप `ObserveProps` के रूप में एक्सपोर्ट होता है।
+
+<CodeBlock code={observe} language="vue" />
+
+जब पूरा कंपोनेंट सिग्नल का पीछा करे तो `toVueRef` लें, और जब उसका सिर्फ़ एक हिस्सा करे तो `Observe`।
 
 ## SoundProvider [#soundprovider]
 

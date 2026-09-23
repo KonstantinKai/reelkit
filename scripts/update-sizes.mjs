@@ -49,7 +49,12 @@ const packages = [
   {
     name: '@reelkit/react-stories-player',
     dir: 'reelkit-react-stories-player',
-    externalize: ['@reelkit/core', '@reelkit/react', '@reelkit/stories-core'],
+    externalize: [
+      '@reelkit/core',
+      '@reelkit/react',
+      '@reelkit/stories-core',
+      'lucide-react',
+    ],
   },
   {
     name: '@reelkit/angular',
@@ -67,6 +72,11 @@ const packages = [
     ngPackagr: true,
   },
   {
+    name: '@reelkit/angular-stories-player',
+    dir: 'reelkit-angular-stories-player',
+    ngPackagr: true,
+  },
+  {
     name: '@reelkit/vue',
     dir: 'reelkit-vue',
     externalize: ['@reelkit/core'],
@@ -80,6 +90,16 @@ const packages = [
     name: '@reelkit/vue-lightbox',
     dir: 'reelkit-vue-lightbox',
     externalize: ['@reelkit/core', '@reelkit/vue', 'lucide-vue-next'],
+  },
+  {
+    name: '@reelkit/vue-stories-player',
+    dir: 'reelkit-vue-stories-player',
+    externalize: [
+      '@reelkit/core',
+      '@reelkit/vue',
+      '@reelkit/stories-core',
+      'lucide-vue-next',
+    ],
   },
 ];
 
@@ -208,9 +228,12 @@ function escapeRegex(str) {
  * Replaces size references for a given package in a file.
  *
  * Patterns matched:
- *   1. shields.io badge:  "gzip-3.7%20kB" or "core%20gzip-3.7%20kB"
- *   2. Inline text:       "~3.7 kB gzip"
- *   3. Table cell:        "| 3.7 kB" in the row containing the package name
+ *   1. shields.io badge:        "gzip-3.7%20kB" or "core%20gzip-3.7%20kB"
+ *   2. Inline text:             "~3.7 kB gzip"
+ *   3. Table row, two columns:  "| 3.7 kB | 1.6 kB |" — the JavaScript size
+ *      and the stylesheet beside it, both written
+ *   4. Table row, one column:   "| 3.7 kB" in the row containing the package
+ *      name, for a table that has no stylesheet column
  */
 function updateFile(filePath, sizesMap) {
   let content;
@@ -224,7 +247,8 @@ function updateFile(filePath, sizesMap) {
 
   const isSinglePackage = sizesMap.size === 1;
 
-  for (const [name, kB] of sizesMap) {
+  for (const [name, size] of sizesMap) {
+    const { kB } = size;
     const short = name.replace('@reelkit/', '');
 
     // shields.io badge with package-name prefix — e.g. "core%20gzip-3.7%20kB"
@@ -255,7 +279,18 @@ function updateFile(filePath, sizesMap) {
       content = content.replace(/~\d+\.\d+( kB gzip)(?!\s*\w)/g, `~${kB}$1`);
     }
 
-    // Table cell — match the row for this specific package
+    // Table row — this package's own row, JavaScript column then the CSS one
+    // beside it. The two-column form runs first: the single-column pattern
+    // below would stop at the JavaScript number and leave a stale stylesheet
+    // size behind it, which is how the root table drifted before. A package
+    // that ships no stylesheet keeps the em dash.
+    const cssCell = size.cssGzipKB === '-' ? '—' : `${size.cssGzipKB} kB`;
+    const twoColumnRow = new RegExp(
+      `(\\|[^|]*${escapeRegex(name)}[^|]*\\|[^|]*\\|\\s*)\\d+\\.\\d+ kB(\\s*\\|\\s*)(?:\\d+\\.\\d+ kB|—)(\\s*\\|)`,
+      'g',
+    );
+    content = content.replace(twoColumnRow, `$1${kB} kB$2${cssCell}$3`);
+
     const tableRowPattern = new RegExp(
       `(\\|[^|]*${escapeRegex(name)}[^|]*\\|[^|]*\\|\\s*)\\d+\\.\\d+( kB\\s*\\|)`,
       'g',
@@ -382,7 +417,7 @@ for (const r of results) {
 }
 console.log();
 
-const allSizes = new Map(results.map((r) => [r.name, r.kB]));
+const allSizes = new Map(results.map((r) => [r.name, r]));
 
 const filesToUpdate = [
   resolve(root, 'README.md'),
@@ -393,7 +428,7 @@ let changed = 0;
 for (const f of filesToUpdate) {
   const rel = f.replace(root + '/', '');
   const pkg = results.find((r) => f.includes(`/packages/${r.dir}/`));
-  const sizes = pkg ? new Map([[pkg.name, pkg.kB]]) : allSizes;
+  const sizes = pkg ? new Map([[pkg.name, pkg]]) : allSizes;
 
   if (updateFile(f, sizes)) {
     changed++;
@@ -414,18 +449,20 @@ for (const page of ['apps/docs/src/data/bundleSizes.ts']) {
   }
 }
 
-// The landing pages quote the core gzip figure in a sentence, once per
-// language. Prose is where a number goes stale unnoticed, so the digits are
-// rewritten in place and the wording around them is left to the translator.
+// The landing page quotes the core gzip figure in a sentence, once per
+// language. One page serves every locale now, so the sentences live in the
+// chrome dictionaries. Prose is where a number goes stale unnoticed, so the
+// digits are rewritten in place and the wording around them is left to the
+// translator.
 const core = results.find((r) => r.name === '@reelkit/core');
 for (const page of [
-  'apps/docs/src/pages/Home.tsx',
-  'apps/docs/src/pages/uk/Home.tsx',
-  'apps/docs/src/pages/zh/Home.tsx',
-  'apps/docs/src/pages/pt/Home.tsx',
-  'apps/docs/src/pages/ja/Home.tsx',
-  'apps/docs/src/pages/hi/Home.tsx',
-  'apps/docs/src/pages/es/Home.tsx',
+  'apps/docs/src/i18n/home/en.ts',
+  'apps/docs/src/i18n/home/uk.ts',
+  'apps/docs/src/i18n/home/zh.ts',
+  'apps/docs/src/i18n/home/pt.ts',
+  'apps/docs/src/i18n/home/ja.ts',
+  'apps/docs/src/i18n/home/hi.ts',
+  'apps/docs/src/i18n/home/es.ts',
 ]) {
   if (!core) break;
 

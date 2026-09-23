@@ -28,6 +28,17 @@ export interface SitePage {
   module?: string;
 
   /**
+   * The module serves every locale from one file, reading its strings from
+   * the chrome dictionary instead of being copied per language. Only for a
+   * page whose copy is short labels in a fixed layout — the copies of the
+   * home page drifted until one of them had lost a whole section.
+   *
+   * A shared module makes the default route id collide across locales, since
+   * that id is the module path, so `routes.ts` names these explicitly.
+   */
+  shared?: boolean;
+
+  /**
    * How the sitemap lists the page. A page without it is still routed and
    * prerendered, it is only left out of the sitemap.
    */
@@ -50,6 +61,7 @@ export const kSitePages: readonly SitePage[] = [
   {
     path: '',
     module: 'Home.tsx',
+    shared: true,
     sitemap: { changefreq: 'weekly', priority: '1.0' },
   },
   {

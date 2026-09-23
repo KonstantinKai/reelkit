@@ -2,16 +2,16 @@ import type { FC } from 'react';
 
 /** Props for the {@link ImageStorySlide} component. */
 export interface ImageStorySlideProps {
-  /** Image source URL. */
+  /** Drawn cover-fit, so a source of any shape fills the story canvas. */
   src: string;
 
-  /** Optional aspect ratio (width / height) for the image. */
+  /** Width over height. Reserves the box before the image arrives. */
   aspectRatio?: number;
 
-  /** Called when the image finishes loading. */
+  /** The player starts the auto-advance timer on this, not on mount. */
   onLoad?: () => void;
 
-  /** Called when the image fails to load. */
+  /** A broken image is hidden rather than shown; the player takes it from here. */
   onError?: () => void;
 }
 

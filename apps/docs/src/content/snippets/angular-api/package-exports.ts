@@ -34,7 +34,7 @@ import type {
 import { RK_REEL_CONTEXT } from '@reelkit/angular';
 
 // Services
-import { BodyLockService } from '@reelkit/angular';
+import { BodyLockService, SoundStateService } from '@reelkit/angular';
 
 // Signal bridges
 import { toAngularSignal, animatedSignalBridge } from '@reelkit/angular';

@@ -2,12 +2,12 @@
 
 <p>
   <a href="https://www.npmjs.com/package/@reelkit/angular-lightbox"><img src="https://img.shields.io/npm/v/@reelkit/angular-lightbox?color=6366f1&label=npm" alt="npm" /></a>
-  <img src="https://img.shields.io/badge/gzip-15.4%20kB-6366f1" alt="Bundle size" />
-  <img src="https://img.shields.io/badge/coverage-87%25-green" alt="Statement coverage" />
+  <img src="https://img.shields.io/badge/gzip-16.4%20kB-6366f1" alt="Bundle size" />
+  <img src="https://img.shields.io/badge/coverage-86%25-green" alt="Statement coverage" />
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
 
-Image gallery lightbox for Angular — opens full-screen with swipe navigation, keyboard controls, and transition effects. Every part of the UI is replaceable via template slots. ~15.4 kB gzip.
+Image gallery lightbox for Angular — opens full-screen with swipe navigation, keyboard controls, and transition effects. Every part of the UI is replaceable via template slots. ~16.4 kB gzip.
 
 **[Live Demo](https://angular-demo.reelkit.dev/image-preview?utm_source=npm)**
 
@@ -15,6 +15,17 @@ Image gallery lightbox for Angular — opens full-screen with swipe navigation, 
 
 ```bash
 npm install @reelkit/angular-lightbox @reelkit/angular lucide-angular
+```
+
+Register the stylesheet once, any of three equivalent ways:
+
+```typescript
+// Anywhere that runs at startup — main.ts, app.config.ts, a component file.
+import '@reelkit/angular-lightbox/styles.css';
+// Or, from a global stylesheet:
+//   @import '@reelkit/angular-lightbox/styles.css';
+// Or in angular.json:
+//   "styles": ["node_modules/@reelkit/angular-lightbox/styles.css"]
 ```
 
 ## Quick Start

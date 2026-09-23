@@ -11,6 +11,7 @@ import { By } from '@angular/platform-browser';
 import { RkLightboxOverlayComponent } from './lightbox-overlay.component';
 import {
   BodyLockService,
+  SoundStateService,
   captureFocusForReturn as mockedCaptureFocus,
   createFocusTrap as mockedCreateFocusTrap,
 } from '@reelkit/angular';
@@ -97,13 +98,12 @@ jest.mock('@reelkit/angular', () => {
     onError: jest.fn(),
     isError: { value: false, observe },
   };
-  const mockMutedSignal = { value: true, observe };
-  const mockDisabledSignal = { value: false, observe };
-  const mockSoundCtrl = {
-    muted: mockMutedSignal,
-    disabled: mockDisabledSignal,
-    toggle: jest.fn(),
-  };
+  // The sound state service builds on core primitives directly, so mocking
+  // the binding module must not replace it — the specs exercise the real one.
+  const { SoundStateService } = jest.requireActual(
+    '../../../../reelkit-angular/src/lib/sound-state/sound-state.service',
+  ) as typeof import('@reelkit/angular');
+
   const mockPreloader = {
     isLoaded: jest.fn(() => false),
     isErrored: jest.fn(() => false),
@@ -118,9 +118,6 @@ jest.mock('@reelkit/angular', () => {
     fullscreenSignal: mockFullscreenSignal,
     loadingSignal: mockLoadingSignal,
     loadingCtrl: mockLoadingCtrl,
-    mutedSignal: mockMutedSignal,
-    disabledSignal: mockDisabledSignal,
-    soundCtrl: mockSoundCtrl,
     preloader: mockPreloader,
   };
 
@@ -166,6 +163,7 @@ jest.mock('@reelkit/angular', () => {
 
   return {
     BodyLockService: MockBodyLockService,
+    SoundStateService,
     ReelComponent: MockReelComponent,
     RkReelItemDirective: MockRkReelItemDirective,
     RkSwipeToCloseDirective: MockRkSwipeToCloseDirective,
@@ -179,7 +177,6 @@ jest.mock('@reelkit/angular', () => {
     createGestureController: jest.fn(() => mockGestureController),
     createContentLoadingController: jest.fn(() => mockLoadingCtrl),
     createContentPreloader: jest.fn(() => mockPreloader),
-    createSoundController: jest.fn(() => mockSoundCtrl),
     fullscreenSignal: mockFullscreenSignal,
     requestFullscreen: jest.fn().mockResolvedValue(undefined),
     exitFullscreen: jest.fn().mockResolvedValue(undefined),
@@ -208,13 +205,6 @@ const mocks = (globalThis as unknown as Record<string, unknown>)[
     onReady: jest.Mock;
     onWaiting: jest.Mock;
     onError: jest.Mock;
-  };
-  mutedSignal: { value: boolean };
-  disabledSignal: { value: boolean };
-  soundCtrl: {
-    muted: { value: boolean };
-    disabled: { value: boolean };
-    toggle: jest.Mock;
   };
   preloader: {
     isLoaded: jest.Mock;
@@ -245,21 +235,45 @@ function createFixture(
   return fixture;
 }
 
+const VIDEO_ITEMS: LightboxItem[] = [
+  { src: 'https://example.com/a.mp4', type: 'video', title: 'Clip A' },
+];
+
+async function configure(providers: unknown[] = []): Promise<void> {
+  await TestBed.configureTestingModule({
+    imports: [RkLightboxOverlayComponent],
+    providers: providers as never,
+  })
+    .overrideComponent(RkLightboxOverlayComponent, {
+      set: {
+        schemas: [jest.requireActual('@angular/core').NO_ERRORS_SCHEMA],
+      },
+    })
+    .compileComponents();
+}
+
+/**
+ * Re-configures with a sound state above the overlay, the way a consumer
+ * provides one so the overlay and their video slide share it.
+ */
+async function configureWithProvidedSoundState(): Promise<void> {
+  TestBed.resetTestingModule();
+  await configure([SoundStateService]);
+}
+
+function soundStateOf(
+  fixture: ComponentFixture<RkLightboxOverlayComponent>,
+): SoundStateService {
+  return fixture.componentInstance['soundState'];
+}
+
 describe('RkLightboxOverlayComponent', () => {
   let bodyLock: BodyLockService;
 
   beforeEach(async () => {
     jest.clearAllMocks();
 
-    await TestBed.configureTestingModule({
-      imports: [RkLightboxOverlayComponent],
-    })
-      .overrideComponent(RkLightboxOverlayComponent, {
-        set: {
-          schemas: [jest.requireActual('@angular/core').NO_ERRORS_SCHEMA],
-        },
-      })
-      .compileComponents();
+    await configure();
 
     bodyLock = TestBed.inject(BodyLockService);
   });
@@ -463,6 +477,41 @@ describe('RkLightboxOverlayComponent', () => {
     });
   });
 
+  describe('sound state', () => {
+    it('builds its own sound state when nothing provides one', () => {
+      const fixture = createFixture(true, ITEMS, 0);
+      expect(TestBed.inject(SoundStateService, null)).toBeNull();
+      expect(soundStateOf(fixture)).toBeInstanceOf(SoundStateService);
+    });
+
+    it('uses the sound state provided above it', async () => {
+      await configureWithProvidedSoundState();
+      const fixture = createFixture(true, ITEMS, 0);
+      expect(soundStateOf(fixture)).toBe(TestBed.inject(SoundStateService));
+    });
+
+    it('starts muted', () => {
+      const fixture = createFixture(true, ITEMS, 0);
+      expect(soundStateOf(fixture).muted()).toBe(true);
+    });
+
+    // A video slide renders from the consumer's own template, so its injector
+    // is theirs. Without a shared instance a button here could not reach the
+    // element, and an unusable control is worse than none.
+    it('offers no sound button on a video slide when nothing provides sound state', () => {
+      const fixture = createFixture(true, VIDEO_ITEMS, 0);
+      expect(fixture.debugElement.query(By.css('rk-sound-button'))).toBeNull();
+    });
+
+    it('offers the sound button on a video slide once sound state is provided above it', async () => {
+      await configureWithProvidedSoundState();
+      const fixture = createFixture(true, VIDEO_ITEMS, 0);
+      expect(
+        fixture.debugElement.query(By.css('rk-sound-button')),
+      ).toBeTruthy();
+    });
+  });
+
   describe('closed output', () => {
     it('emits closed when handleClose is called', () => {
       const fixture = createFixture(true, ITEMS, 0);
@@ -474,13 +523,28 @@ describe('RkLightboxOverlayComponent', () => {
       expect(closedSpy).toHaveBeenCalledTimes(1);
     });
 
-    it('resets sound muted state on close', () => {
-      mocks.mutedSignal.value = false;
+    it('restores muted on close', () => {
       const fixture = createFixture(true, ITEMS, 0);
+      const soundState = soundStateOf(fixture);
+      soundState.toggle();
+      expect(soundState.muted()).toBe(false);
 
       fixture.componentInstance['handleClose']();
 
-      expect(mocks.mutedSignal.value).toBe(true);
+      expect(soundState.muted()).toBe(true);
+    });
+
+    // The instance can be the consumer's, shared with a reel player that
+    // drives `disabled` as live state. Closing a lightbox must not clear it.
+    it('leaves disabled untouched on close', async () => {
+      await configureWithProvidedSoundState();
+      const fixture = createFixture(true, ITEMS, 0);
+      const soundState = TestBed.inject(SoundStateService);
+      soundState.setDisabled(true);
+
+      fixture.componentInstance['handleClose']();
+
+      expect(soundState.disabled()).toBe(true);
     });
 
     it('emits closed when Escape key is pressed', () => {

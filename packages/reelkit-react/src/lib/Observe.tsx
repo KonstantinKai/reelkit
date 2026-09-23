@@ -10,7 +10,7 @@ import {
   type AnimatedValue,
 } from '@reelkit/core';
 
-const sameSignals = (a: Subscribable[], b: Subscribable[]) =>
+const sameSignals = (a: readonly Subscribable[], b: readonly Subscribable[]) =>
   a.length === b.length && a.every((signal, at) => signal === b[at]);
 
 /**
@@ -26,7 +26,7 @@ export const Observe = ({
   signals,
   children,
 }: {
-  signals: Subscribable[];
+  signals: readonly Subscribable[];
 
   children: () => ReactElement | null;
 }) => {
@@ -42,9 +42,10 @@ export const Observe = ({
   // What is followed right now. Checked after every render, so a different
   // signal handed over on a later render is followed and the one it replaced
   // let go; the same signals coming back keep the one subscription.
-  const following = useRef<{ signals: Subscribable[]; stop: Dispose } | null>(
-    null,
-  );
+  const following = useRef<{
+    signals: readonly Subscribable[];
+    stop: Dispose;
+  } | null>(null);
 
   useEffect(() => {
     const current = following.current;

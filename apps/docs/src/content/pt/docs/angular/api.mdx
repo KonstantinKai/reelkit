@@ -7,6 +7,7 @@ import reelapiInterface from '../../../snippets/angular-api/reelapi-interface.ts
 import templateContext from '../../../snippets/angular-api/template-context.html?raw';
 import rkReelContext from '../../../snippets/angular-api/rk-reel-context.ts?raw';
 import bodylockservice from '../../../snippets/angular-api/bodylockservice.ts?raw';
+import soundstateservice from '../../../snippets/angular-api/soundstateservice.ts?raw';
 import signalBridgeUtilities from '../../../snippets/angular-api/signal-bridge-utilities.ts?raw';
 import createrouterurladapter from '../../../snippets/angular-api/createrouterurladapter.ts?raw';
 import packageExports from '../../../snippets/angular-api/package-exports.ts?raw';
@@ -127,6 +128,23 @@ Trava de rolagem do corpo com contagem de referências. Vários chamadores simul
 | `locked` | `boolean (getter)` | Se o corpo está travado no momento |
 | `lock()` | `() => void` | Trava a rolagem do corpo e compensa a largura da barra de rolagem |
 | `unlock()` | `() => void` | Devolve ao corpo os estilos de rolagem originais |
+
+## SoundStateService [#soundstateservice]
+
+Estado de mudo e de indisponível para um overlay que reproduz mídia, em signals do Angular. Forneça-o no componente dono da mídia em vez da raiz, para que cada overlay guarde o próprio estado. Todo overlay Angular do reelkit usa este serviço — `@reelkit/angular-reel-player` reexporta a mesma classe, então um import já existente de lá continua valendo.
+
+O lightbox é a exceção: forneça o serviço **acima** de `<rk-lightbox-overlay>`, porque o slide de vídeo é renderizado pelo seu próprio template e nunca enxergaria a instância de dentro do overlay.
+
+<CodeBlock code={soundstateservice} language="typescript" />
+
+| Membro | Tipo | Descrição |
+| --- | --- | --- |
+| `muted()` | `Signal<boolean>` | Se o áudio está mudo no momento. Começa mudo |
+| `disabled()` | `Signal<boolean>` | Verdadeiro enquanto o som não pode ser controlado, e o botão de som some. Quem define é o overlay — `RkReelPlayerOverlayComponent` levanta a flag enquanto o slide não tem vídeo ou está em transição |
+| `controller` | `SoundController (getter)` | O `SoundController` do core por baixo — entregue-o a `syncMutedToVideo` para manter um `<video>` em dia com o estado de mudo |
+| `toggle()` | `() => void` | Alterna o estado de mudo |
+| `setDisabled()` | `(value: boolean) => void` | Define se o som pode ser controlado agora |
+| `reset()` | `() => void` | Volta ao estado inicial: mudo e controlável |
 
 ## Utilitários da ponte de sinais [#signal-bridge-utilities]
 

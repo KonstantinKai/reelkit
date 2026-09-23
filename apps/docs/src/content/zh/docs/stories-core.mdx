@@ -205,6 +205,41 @@ import typesCode from '../../snippets/stories-core/types-code.ts?raw';
 | `getSegments(totalStories, activeIndex, progress)` | `(number, number, number) => SegmentState[]` | 计算进度条中每个分段的状态和填充比例 |
 | `getVisibleWindow(totalStories, activeIndex, progress, containerWidth, minSegmentWidth?, gap?)` | `(number, number, number, number, number?, number?) => VisibleWindow` | 当分段总数超出容器容量时，计算可见的滑动窗口 |
 
+## 布局辅助函数 [#layout-helpers]
+
+每个绑定的播放器共用的纯函数，因此 React、Vue 和 Angular 的尺寸与布局完全一致。调用它们的是绑定本身；只有当你要自己写一个播放器时，应用才需要直接用到。
+
+### 尺寸 [#sizing]
+
+| 函数 | 类型 | 说明 |
+| --- | --- | --- |
+| `getStoriesSize()` | `() => [number, number]` | 故事画布的尺寸。手机占满屏幕；桌面按 9:16 占满窗口高度并留出上下各 16px 的边距，只有当画布和两侧箭头横向放不下时才会变窄。没有 window（服务端渲染）时返回 `[0, 0]`。 |
+| `isMobileWidth(viewportWidth)` | `(number) => boolean` | 该宽度的视口是否使用手机布局。768 及以下算手机，与样式表一致。 |
+| `parseDurationMs(value)` | `(string) => number` | 计算后的 `transition-duration` 列表中最长的时间，单位毫秒。不是时间的值按 0 计。 |
+
+### 桌面轮播的几何计算 [#desktop-carousel-geometry]
+
+偏移量相对当前分组：左侧为负，右侧为正，`0` 表示当前故事本身。
+
+| 函数 | 类型 | 说明 |
+| --- | --- | --- |
+| `getCardSize(activeSize)` | `([number, number]) => [number, number]` | 侧边卡片的尺寸：当前故事高度的 0.4，保持同样的 9:16 比例。 |
+| `getCarouselSlot(offset, activeSize)` | `(number, [number, number]) => CarouselSlot` | 卡片相对窗口中心的位置：`{ x, width, height }`。每侧第一张卡片让开箭头，之后每张再加一个卡片宽度和一个间距。 |
+| `getCardOffsets(activeGroupIndex, groupCount)` | `(number, number) => number[]` | 静止状态下围绕当前分组绘制的卡片偏移量，每侧最多两张，不含当前分组。 |
+| `isCardShown(offset)` | `(number) => boolean` | 该距离上的卡片是绘制出来还是淡出。 |
+| `getSlotOffset(offset)` | `(number) => number` | 卡片移动到的位置，最多夹到显示范围外一格，好让卡片从最后一张可见卡片旁边滑入。 |
+| `getSlideGroupIndexes(from, to, groupCount)` | `(number, number, number) => number[]` | 两个分组之间滑动时要绘制的分组：两端各自周围的卡片，按分组顺序排列。远距离跳转经过的分组不会绘制。 |
+
+### 呈现 [#presentation]
+
+| 函数 | 类型 | 说明 |
+| --- | --- | --- |
+| `getRingPresentation(options)` | `(RingPresentationOptions) => RingPresentation` | 根据 `totalStories`、`viewedCount` 和 `size` 得出故事圆环的类名、内联样式和头像尺寸。还有未看内容时是旋转的锥形渐变，全部看完是纯色 `viewedColor`，空分组则没有圆环。尺寸带 `px` 单位，因此这个样式对象在任何框架里都能用。 |
+| `getPreviewSource(story)` | `(StoryItem \| undefined) => string \| undefined` | 轮播卡片预览的图片：故事的 `poster`；若是图片就用图片本身；若是没有海报的视频则没有。没有图片的卡片会退回到为无可预览内容的故事绘制的朴素卡片。 |
+| `formatTimeAgo(date)` | `(string \| Date) => string` | 头部和轮播卡片显示的简短相对时间：`now`、`5m`、`3h`、`2d`、`2w`。 |
+
+与它们一同导出的还有 `CarouselSlot`、`RingPresentation` 和 `RingPresentationOptions` 类型。
+
 ## 类型 [#types]
 
 全部类型定义均导出自 `@reelkit/stories-core`.

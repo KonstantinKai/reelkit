@@ -23,22 +23,22 @@ export interface HeaderRenderProps<T extends StoryItem = StoryItem> {
   /** Zero-based index of the active story within the group. */
   storyIndex: number;
 
-  /** Whether the story is currently paused. */
+  /** True during a long press as well, not only an explicit pause. */
   isPaused: boolean;
 
-  /** Whether audio is muted. */
+  /** The sound setting every story shares, not this one's. */
   isMuted: boolean;
 
-  /** Whether the current story is a video. */
+  /** Gate a sound control on this: an image story has nothing to unmute. */
   isVideo: boolean;
 
-  /** Toggle mute/unmute. */
+  /** The same action the default header's sound button takes. */
   onToggleSound: () => void;
 
-  /** Toggle pause/resume. */
+  /** The same action the default header's pause button takes. */
   onTogglePause: () => void;
 
-  /** Callback to close the overlay. */
+  /** Closes the player the way Escape does, through the overlay's own path. */
   onClose: () => void;
 }
 

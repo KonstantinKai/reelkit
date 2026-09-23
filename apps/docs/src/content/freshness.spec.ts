@@ -29,6 +29,20 @@ function gitBlobSha(bytes: Buffer): string {
 }
 
 /**
+ * The string dictionaries, keyed like a page so they ride the same guard.
+ *
+ * A typecheck already catches a key added or removed — every locale fails to
+ * compile until it supplies one. What it cannot see is English reworded in
+ * place: the other six keep the old sentence and nothing says so. That is the
+ * half this covers, and it is the half the landing page lost when its
+ * per-locale files went away.
+ */
+const kDictionaries = [
+  { key: '@chrome', dir: 'i18n/messages' },
+  { key: '@home', dir: 'i18n/home' },
+] as const;
+
+/**
  * Every page a locale translates itself, keyed the way the record keys it.
  * A locale module that re-exports the English body has nothing to fall
  * behind on — the privacy notice, the terms and the changelog — so it is
@@ -39,12 +53,22 @@ function translatedPages(): Freshness {
   for (const locale of kLocales) {
     if (locale === kDefaultLocale) continue;
     for (const page of kSitePages) {
+      // A shared module has no per-locale file to fall behind: its copy lives
+      // in a dictionary, tracked below rather than here.
+      if (page.shared) continue;
       const translation = pageFile(page, locale);
       const body = readFileSync(join(appDir, translation), 'utf8');
       if (body.includes('export { default } from')) continue;
       (pages[locale] ??= {})[`/${page.path}`] = {
         source: pageFile(page, kDefaultLocale),
         translation,
+        sha: '',
+      };
+    }
+    for (const { key, dir } of kDictionaries) {
+      (pages[locale] ??= {})[key] = {
+        source: `${dir}/${kDefaultLocale}.ts`,
+        translation: `${dir}/${locale}.ts`,
         sha: '',
       };
     }

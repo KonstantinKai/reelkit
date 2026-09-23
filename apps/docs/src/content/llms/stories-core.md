@@ -311,6 +311,39 @@ Pure functions for tap zone detection + progress bar math.
 | `getSegments(totalStories, activeIndex, progress)`                                              | `(number, number, number) => SegmentState[]`    | Computes status and fill percentage of each segment in progress bar                            |
 | `getVisibleWindow(totalStories, activeIndex, progress, containerWidth, minSegmentWidth?, gap?)` | `(...) => VisibleWindow`                        | Computes visible sliding window of segments when total count exceeds container capacity        |
 
+## Layout Helpers
+
+Pure functions shared by every binding's player — React, Vue, Angular size + lay out identically. Apps need them only when building own player.
+
+Sizing:
+
+| Function                       | Type                     | Notes                                                                                                                                             |
+| ------------------------------ | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `getStoriesSize()`             | `() => [number, number]` | phone fills screen; desktop fills window height −2×16px at 9:16, narrows when canvas + both arrows would not fit. No window → `[0, 0]` (SSR safe) |
+| `isMobileWidth(viewportWidth)` | `(number) => boolean`    | ≤768 = phone, matches stylesheet                                                                                                                  |
+| `parseDurationMs(value)`       | `(string) => number`     | longest time in computed `transition-duration` list, ms; non-time → 0                                                                             |
+
+Desktop carousel geometry (offset relative to active group: negative left, positive right, 0 = active story):
+
+| Function                                       | Type                                         | Notes                                                                                                          |
+| ---------------------------------------------- | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `getCardSize(activeSize)`                      | `([number, number]) => [number, number]`     | 0.4 of active height, 9:16                                                                                     |
+| `getCarouselSlot(offset, activeSize)`          | `(number, [number, number]) => CarouselSlot` | `{ x, width, height }` relative window center; first card clears arrow, each further one adds card width + gap |
+| `getCardOffsets(activeGroupIndex, groupCount)` | `(number, number) => number[]`               | offsets drawn at rest, ≤2 per side, active excluded                                                            |
+| `isCardShown(offset)`                          | `(number) => boolean`                        | drawn vs faded                                                                                                 |
+| `getSlotOffset(offset)`                        | `(number) => number`                         | clamped one place past shown → card slides in from beside last visible                                         |
+| `getSlideGroupIndexes(from, to, groupCount)`   | `(number, number, number) => number[]`       | cards around both ends of a slide, group order; groups passed over left out                                    |
+
+Presentation:
+
+| Function                       | Type                                              | Notes                                                                                                                                                                                                                       |
+| ------------------------------ | ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `getRingPresentation(options)` | `(RingPresentationOptions) => RingPresentation`   | `{ avatarSize, className, style }` from `totalStories`, `viewedCount`, `size`; unviewed → rotating conic gradient, fully viewed → flat `viewedColor`, empty group → none. Sizes carry `px`, so style works in any framework |
+| `getPreviewSource(story)`      | `(StoryItem \| undefined) => string \| undefined` | picture a carousel card previews: `poster`, else the image itself, else none (video without a poster)                                                                                                                       |
+| `formatTimeAgo(date)`          | `(string \| Date) => string`                      | `now`, `5m`, `3h`, `2d`, `2w`                                                                                                                                                                                               |
+
+Types exported alongside: `CarouselSlot`, `RingPresentation`, `RingPresentationOptions`.
+
 ## Types
 
 All type definitions exported from `@reelkit/stories-core`.
@@ -354,4 +387,24 @@ interface VisibleWindow {
 }
 
 type TapAction = 'prev' | 'next';
+
+interface CarouselSlot {
+  x: number;
+  width: number;
+  height: number;
+}
+
+interface RingPresentationOptions {
+  totalStories: number;
+  viewedCount: number;
+  size: number; // px
+  gradientColors?: string[];
+  viewedColor?: string;
+}
+
+interface RingPresentation {
+  avatarSize: number;
+  className: string;
+  style: Record<string, string>;
+}
 ```

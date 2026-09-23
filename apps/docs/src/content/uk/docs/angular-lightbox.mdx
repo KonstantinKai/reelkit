@@ -5,6 +5,7 @@ description: 'Повноекранна галерея зображень для 
 
 import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2 } from 'lucide-react';
 import installation from '../../snippets/angular-lightbox/installation.sh?raw';
+import installation2 from '../../snippets/angular-lightbox/installation-2.ts?raw';
 import basicUsage from '../../snippets/angular-lightbox/basic-usage.ts?raw';
 import templateSlots from '../../snippets/angular-lightbox/template-slots.ts?raw';
 import videoSupport from '../../snippets/angular-lightbox/video-support.ts?raw';
@@ -98,11 +99,15 @@ import theming from '../../snippets/angular-lightbox/theming.css?raw';
 
 <CodeBlock code={installation} language="bash" />
 
+Зареєструйте таблицю стилів один раз:
+
+<CodeBlock code={installation2} language="typescript" />
+
 <Callout type="info" title="Icons">
   Стандартні елементи керування використовують `lucide-angular` for icons. If you prefer a different icon library, use the `rkLightboxControls` та `rkLightboxNavigation` щоб передати власні.
 </Callout>
 
-## Базове використання [#basic-usage]
+## Швидкий старт [#quick-start]
 
 Імпортуйте стилі та автономний компонент `RkLightboxOverlayComponent` у `imports` array.
 
@@ -126,6 +131,8 @@ import theming from '../../snippets/angular-lightbox/theming.css?raw';
 ## Підтримка відео [#video-support]
 
 Слайди-відео вмикаються через шаблонний слот `rkLightboxSlide` та `RkLightboxVideoSlideComponent`. Так відеоплеєр не потрапляє в бандл галерей, яким потрібні лише зображення.
+
+Вбудована кнопка звуку з'являється лише тоді, коли `SoundStateService` надано над `<rk-lightbox-overlay>`: саме цей спільний екземпляр дає перемиканню дістатися до відео, адже слайд рендериться з вашого шаблону. Без нього керуйте елементом напряму через `setLightboxVideoMuted`.
 
 <CodeBlock code={videoSupport} language="typescript" />
 

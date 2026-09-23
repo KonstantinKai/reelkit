@@ -1,8 +1,60 @@
 import { mount } from '@vue/test-utils';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { defineComponent, h, ref, nextTick } from 'vue';
+import { defineComponent, h, ref, nextTick, type Component } from 'vue';
 import { ReelPlayerOverlay } from './ReelPlayerOverlay';
+import { useTimelineState } from './useTimelineState';
 import type { ContentItem } from './types';
+
+// How many times the slider was asked to draw. The real Reel renders inside
+// the counter, so every test in this file still exercises the real thing.
+const reel = vi.hoisted(() => ({ renders: 0 }));
+
+vi.mock('@reelkit/vue', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@reelkit/vue')>();
+  const {
+    defineComponent: define,
+    h: render,
+    shallowRef,
+  } = await import('vue');
+  const RealReel = actual.Reel as unknown as Component;
+
+  return {
+    ...actual,
+    Reel: define({
+      name: 'CountedReel',
+      inheritAttrs: false,
+      setup(_, { attrs, slots, expose }) {
+        const inner = shallowRef<Record<string, unknown> | null>(null);
+
+        // The overlay keeps the slider's own api in a template ref and calls
+        // it, so the counter has to hand that api through untouched.
+        expose(
+          new Proxy(
+            {},
+            {
+              get: (_target, key) => inner.value?.[key as string],
+              has: (_target, key) =>
+                Boolean(inner.value) && key in inner.value!,
+            },
+          ),
+        );
+
+        return () => {
+          reel.renders++;
+          return render(
+            RealReel,
+            {
+              ...attrs,
+              ref: (el: unknown) =>
+                (inner.value = el as Record<string, unknown> | null),
+            },
+            slots,
+          );
+        };
+      },
+    }),
+  };
+});
 
 const sampleContent: ContentItem[] = [
   {
@@ -486,5 +538,143 @@ describe('ReelPlayerOverlay', () => {
         `Slide 1 of ${sampleContent.length}`,
       );
     });
+  });
+});
+
+describe('ReelPlayerOverlay slider isolation', () => {
+  // Grabs the timeline controller from inside the overlay, where the provider
+  // that owns it lives. A slot has to return a component for the injection to
+  // resolve: raw nodes are created in the test's scope, not the overlay's.
+  let timeline: ReturnType<typeof useTimelineState> | null = null;
+
+  const ControlsProbe = defineComponent({
+    name: 'ControlsProbe',
+    setup() {
+      timeline = useTimelineState();
+      return () => h('div');
+    },
+  });
+
+  // The timeline reads the duration only once the active media is a video —
+  // for an image it returns before the read, and nothing follows the signal.
+  const videoContent: ContentItem[] = [
+    {
+      id: 'v',
+      media: [
+        {
+          id: 'v-1',
+          type: 'video',
+          src: 'https://example.com/v.mp4',
+          aspectRatio: 9 / 16,
+        },
+      ],
+      author: { name: 'V', avatar: 'https://example.com/avatar-v.jpg' },
+      likes: 1,
+      description: 'v',
+    },
+  ];
+
+  const openPlayer = (content: ContentItem[] = sampleContent) => {
+    const Host = defineComponent({
+      setup() {
+        return () =>
+          h(
+            ReelPlayerOverlay,
+            {
+              isOpen: true,
+              content,
+              onClose: () => {
+                /* noop */
+              },
+            },
+            { controls: () => h(ControlsProbe) },
+          );
+      },
+    });
+
+    return mount(Host, { attachTo: document.body });
+  };
+
+  const settle = async () => {
+    await nextTick();
+    await nextTick();
+  };
+
+  beforeEach(() => {
+    timeline = null;
+    reel.renders = 0;
+    // jsdom leaves play() returning undefined, and the slide chains off it.
+    vi.spyOn(HTMLMediaElement.prototype, 'play').mockResolvedValue(undefined);
+  });
+
+  it('leaves the slider alone when a slide reports it is ready', async () => {
+    openPlayer();
+    await settle();
+
+    reel.renders = 0;
+    document.querySelector('img')?.dispatchEvent(new Event('load'));
+    await settle();
+
+    expect(reel.renders).toBe(0);
+  });
+
+  it('leaves the slider alone when a slide reports an error', async () => {
+    openPlayer();
+    await settle();
+
+    reel.renders = 0;
+    document.querySelector('img')?.dispatchEvent(new Event('error'));
+    await settle();
+
+    expect(reel.renders).toBe(0);
+  });
+
+  it('leaves the slider alone when the timeline duration arrives', async () => {
+    openPlayer(videoContent);
+    await settle();
+
+    reel.renders = 0;
+    timeline!.duration.value = 42;
+    await settle();
+
+    expect(reel.renders).toBe(0);
+  });
+
+  // Drawing nothing again would also score zero, so each region has to be
+  // shown following the signal it was handed.
+  it('still clears the loader once a slide is ready', async () => {
+    // Its own source: the preloader is module-scoped, so a source another
+    // test already reported as loaded opens without a loader to clear.
+    openPlayer([
+      {
+        ...sampleContent[0],
+        media: [
+          {
+            id: 'fresh-1',
+            type: 'image',
+            src: 'https://example.com/fresh.jpg',
+            aspectRatio: 9 / 16,
+          },
+        ],
+      },
+    ]);
+    await settle();
+    expect(document.querySelector('.rk-reel-loader')).not.toBeNull();
+
+    document.querySelector('img')?.dispatchEvent(new Event('load'));
+    await settle();
+
+    expect(document.querySelector('.rk-reel-loader')).toBeNull();
+  });
+
+  it('still shows the timeline once the duration arrives', async () => {
+    openPlayer(videoContent);
+    await settle();
+    expect(document.querySelector('.rk-reel-timeline')).toBeNull();
+
+    timeline!.duration.value = 42;
+    await settle();
+
+    expect(document.querySelector('.rk-reel-timeline')).not.toBeNull();
   });
 });

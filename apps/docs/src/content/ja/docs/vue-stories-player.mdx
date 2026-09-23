@@ -1,10 +1,499 @@
 ---
-title: Vue Stories Player
-description: Vue 3 用のストーリーのオーバーレイ（開発中）です。React 版はすでに利用でき、Vue 版は @reelkit/stories-core エンジンを共有して、2 階層のナビゲーション、RAF タイマー、canvas の進捗表示を備える予定です。
+title: Vue ストーリープレイヤー
+description: Vue 3 向けの Instagram 風ストーリープレイヤーのオーバーレイ。タップで送る操作、ユーザー間のキューブ転換、自動送りタイマー、既読状態、デスクトップのカルーセル、URL で開閉する状態、スコープ付きスロット、React 版と共通のテーマトークン。
 ---
 
-Vue 用の、Instagram 風のフルスクリーンのストーリーのオーバーレイです。ネストしたナビゲーション、自動送りのタイマー、タップゾーン、カスタマイズできるスロットを備えます。
+import { Zap, Play, Timer, Layout, Clock, Image, Layers, Heart, Monitor, Circle, Code, Settings, Link2, Eye } from 'lucide-react';
+import installation from '../../snippets/vue-stories-player/installation.sh?raw';
+import installation2 from '../../snippets/vue-stories-player/installation-2.ts?raw';
+import basicUsage from '../../snippets/vue-stories-player/basic-usage.vue?raw';
+import urlState from '../../snippets/vue-stories-player/url-state.vue?raw';
+import urlState2 from '../../snippets/vue-stories-player/url-state-2.ts?raw';
+import urlState3 from '../../snippets/vue-stories-player/url-state-3.ts?raw';
+import rememberingWhatWasSeen from '../../snippets/vue-stories-player/remembering-what-was-seen.vue?raw';
+import desktopCarousel from '../../snippets/vue-stories-player/desktop-carousel.vue?raw';
+import transitions from '../../snippets/vue-stories-player/transitions.vue?raw';
+import scopedSlots from '../../snippets/vue-stories-player/scoped-slots.vue?raw';
+import slideSlot from '../../snippets/vue-stories-player/slide-slot.vue?raw';
+import navigationSlot from '../../snippets/vue-stories-player/navigation-slot.vue?raw';
+import progressBarSlot from '../../snippets/vue-stories-player/progress-bar-slot.vue?raw';
+import loadingErrorSlots from '../../snippets/vue-stories-player/loading-error-slots.vue?raw';
+import groupPreviewSlot from '../../snippets/vue-stories-player/group-preview-slot.vue?raw';
+import storiesApi from '../../snippets/vue-stories-player/stories-api.vue?raw';
+import vModelIsOpen from '../../snippets/vue-stories-player/v-model-is-open.vue?raw';
+import doubleTapLikes from '../../snippets/vue-stories-player/double-tap-likes.vue?raw';
+import customizingTheHeartAnimation from '../../snippets/vue-stories-player/customizing-the-heart-animation.css?raw';
+import subComponents from '../../snippets/vue-stories-player/sub-components.vue?raw';
+import types from '../../snippets/vue-stories-player/types.ts?raw';
+import slotScopes from '../../snippets/vue-stories-player/slot-scopes.ts?raw';
+import customStoryTypes from '../../snippets/vue-stories-player/custom-story-types.vue?raw';
+import theming from '../../snippets/vue-stories-player/theming.css?raw';
 
-<Callout type="info" title="近日公開">
-  Vue 版のストーリープレイヤーは現在開発中です。React 版は [@reelkit/react-stories-player](/docs/stories-player) ですでに利用できます。Vue 版も同じアーキテクチャで、フレームワークに依存しない状態機械、タイマー、canvas の進捗レンダラーに `@reelkit/stories-core` を使う予定です。
+`@reelkit/vue-stories-player` による、Vue 3 向けの Instagram 風ストーリープレイヤーのオーバーレイです。React 版と同じ `@reelkit/stories-core` エンジンを使うので、挙動も CSS クラスもテーマトークンも同じです。
+
+<DemoLink href="https://vue-demo.reelkit.dev/stories-player?utm_source=docs">ライブデモを見る →</DemoLink>
+
+## Features [#features]
+
+<FeatureGrid items={[
+              {
+                icon: Zap,
+                label: '入れ子のナビゲーション',
+                desc: 'タップでストーリー、スワイプでユーザー',
+              },
+              {
+                icon: Play,
+                label: '動画ストーリー',
+                desc: '自動再生とサウンド切り替え',
+              },
+              {
+                icon: Timer,
+                label: '自動送り',
+                desc: 'ストーリーごとに設定できるタイマー',
+              },
+              {
+                icon: Layout,
+                label: '3D 転換',
+                desc: 'キューブ、フリップ、フェード、ズーム、スライド',
+              },
+              {
+                icon: Clock,
+                label: 'プログレスバー',
+                desc: 'canvas による分割プログレス',
+              },
+              {
+                icon: Image,
+                label: '画像と動画',
+                desc: 'どちらのメディアにも対応',
+              },
+              {
+                icon: Layers,
+                label: '仮想化',
+                desc: 'DOM 上は常に 3 スライドだけ',
+              },
+              {
+                icon: Heart,
+                label: 'ダブルタップでいいね',
+                desc: 'ダブルタップでハートのアニメーション',
+              },
+              {
+                icon: Monitor,
+                label: 'デスクトップの操作',
+                desc: '矢印ボタン',
+              },
+              {
+                icon: Circle,
+                label: 'ストーリーリング',
+                desc: 'Instagram 風のアバターリング',
+              },
+              {
+                icon: Code,
+                label: 'ジェネリック型',
+                desc: 'StoryItem を独自のフィールドで拡張',
+              },
+              {
+                icon: Settings,
+                label: 'スコープ付きスロット',
+                desc: 'UI のどの部分も差し替え可能',
+              },
+              {
+                icon: Link2,
+                label: 'URL の状態',
+                desc: '共有できる ?story=group.story リンク',
+              },
+              {
+                icon: Eye,
+                label: '既読状態',
+                desc: 'リングと再開位置がリロードをまたいで残る',
+              },
+            ]} />
+
+## インストール [#installation]
+
+<CodeBlock code={installation} language="bash" />
+
+アプリのエントリーポイント（またはどこかのコンポーネント）で、スタイルシートを一度だけ読み込みます。
+
+<CodeBlock code={installation2} language="typescript" />
+
+<Callout type="info" title="アイコン">
+  既定のヘッダーとナビゲーションの矢印は `lucide-vue-next` のアイコンを使います。別のアイコンライブラリを使いたい場合は、`#header` と `#navigation` のスコープ付きスロットで差し替えてください。
 </Callout>
+
+## クイックスタート [#quick-start]
+
+`StoriesOverlay` が全画面のプレイヤーを描画します。Instagram 風の入口として `StoriesRingList` と組み合わせ、`StoriesGroup` の配列を渡して `v-model:is-open` をバインドしてください。
+
+<CodeBlock code={basicUsage} language="vue" />
+
+## URL の状態 [#url-state]
+
+<DemoLink href="https://vue-demo.reelkit.dev/stories-player-url?utm_source=docs">ライブデモを見る →</DemoLink>
+
+`StoriesUrlOverlay` は、開いているかどうかをアドレスバーに置く別コンポーネントです。2 つの軸が 1 つのパラメーター `?story=<group>.<story>` に乗るので、再生中のストーリーには共有・ブックマークでき、戻るボタンで閉じられるリンクが付きます。`useOverlayUrlState` と `urlIndexTwoAxisKey` でコントローラーを作り、`controller` として渡してください。
+
+<Callout type="info" title="組み込みのキー">
+  ストーリーは 2 軸なので、2 軸のキーをコントローラーに展開します。`urlIndexTwoAxisKey`（ユーザーとストーリーを位置で指定）か `urlStableIdTwoAxisKey`（ユーザーを安定した `id` で指定）のどちらかで、いずれも `@reelkit/vue-stories-player` から再エクスポートされています。[URL 状態ガイド](/docs/core/guide#url-state)と [Core API](/docs/core/api#url-state) も参照してください。
+</Callout>
+
+<CodeBlock code={urlState} language="vue" />
+
+- 開くと履歴が **1 件** 積まれます。ストーリー間の移動*も*ユーザーの切り替えも、その 1 件を **置き換える** だけなので、何回操作しても履歴は増えず、戻る 1 回で必ずプレイヤーが閉じます。戻るは閉じる操作であって、ストーリーを 1 つ戻す操作ではありません。
+- **内側の移動も URL に乗ります。** 同じユーザーのストーリーを進めると `?story=2.`*n* が更新されるので、ディープリンクはそのストーリーちょうどに着きます。
+- 戻るで閉じるのは、アプリ内からプレイヤーを開いたときだけです。そのリンクが履歴を 1 件積んでいるからです。新しいタブで直接開いた共有リンクには背後に履歴がないので、ブラウザーの戻るはサイトの外へ出ます。✕ ボタンや Escape はその場でパラメーターを消し、ページにとどまります。
+- ユーザーもストーリーも指していないパラメーター（古いブックマーク、手で書き換えた値、グループの終わりを超えた番号）は、隣を開くのではなく URL から取り除かれます。
+- ルーターを使うアプリは、ルーター側のアダプターを渡してください。ナビゲーションの正となる場所をルーターに一本化するためです。`@reelkit/vue/vue-router-url-adapter` の `useVueRouterUrlAdapter` が Vue Router 用の既製アダプターです。ルーターの背後で履歴を書くと location が古いままになり、次のナビゲーションでパラメーターが落ちます。
+
+**安定したリンク。** ユーザーは既定では位置で指定されるため、ブックマークした `?story=2.0` はフィードの並びが変わると別の人を開きます。代わりに安定した id で指定してください。`outerCodec` が id を URL に書き、`outerLocator` がその位置を見つけます。ストーリー側は、解決されたグループ内の普通のインデックスのままです。
+
+<CodeBlock code={urlState2} language="typescript" />
+
+**無限フィード。** ページングは codec とは独立した `outerLocator` の仕事です。`locate` は同期なので、すでに読み込まれたグループにしか答えられません。20 件しか読み込んでいないフィードで 400 番目のグループを指す共有リンクは空振りします。`locateAsync` はその控えで、`locate` が外したときだけ呼ばれます。ストーリーはその後、落ち着いた先のグループに合わせて範囲が取り直されます。
+
+<Callout type="info" title="同じ locateAsync、外側の軸">
+  これは 1 軸のキーが受け取るのと同じ `locateAsync` ページャーです。2 軸のキーでは渡した `outerLocator` に乗るので、ページングはユーザーの軸で起こり、ストーリーは解決されたグループ内のローカルなインデックスのままです。
+</Callout>
+
+<CodeBlock code={urlState3} language="typescript" />
+
+- `locateAsync` が待機している間、プレイヤーは閉じたままでパラメーターもそのままなので、ディープリンクは取得をまたいで生き残ります。`null` や拒否ならパラメーターは取り除かれます。
+- URL が変わったあと、閉じたあと、アンマウントしたあとに届いた答えは破棄されます。遅い取得が、もう誰も求めていないストーリーを開くことはありません。
+- `useOverlayUrlState` の全オプションは [Vue API リファレンス](/docs/vue/api#useoverlayurlstate)にあります。
+
+## どこまで見たかを覚える [#remembering-what-was-seen]
+
+リングは、そのユーザーを最後まで見るまでグラデーションのままで、グループはまだ見ていない最初のストーリーから開き直します。どちらも 1 つの `createStoriesViewedStateController` から来ます。フィードのある場所で一度だけ作り、リング一覧とプレイヤーに `viewed` として渡せば、ストレージの読み取りも追従も、表示したストーリーの記録も自分でやります。保存される項目は作者とストーリーを id で記録するので、フィードの並べ替えにも耐え、同じコントローラーが React と Angular でも使えます。
+
+<CodeBlock code={rememberingWhatWasSeen} language="vue" />
+
+- **最初に開いたストーリーも数に入ります。** すでに画面に出ているストーリーは、プレイヤーがマウントした時点で既読として報告されます。ストーリーが 1 つだけのグループを開いて閉じれば、それで見終わった扱いです。
+- **先へ進んだ分も再開します。** `resumeStoryIndex` は、このセッションで初めて到達したすべてのグループに対して呼ばれます。プレイヤーが最初に開くグループも含みます（`initialStoryIndex` でストーリーを明示した場合を除く）。すでに見送ったグループは、離れた場所から開き直します。
+- **リンクのほうが強い。** `StoriesUrlOverlay` では、何が保存されていてもパラメーターが開く位置を決めます。それ以外の場面では再開コールバックが決めます。
+- **カウントは合計ではなく位置です。** 項目は到達した最も先のストーリーを指すので、見終わったグループにストーリーを足せばリングはまた点灯し、途中の 1 つを削ればカウントは縮みます。
+- **ストレージは差し替えられます。** タブを閉じたら忘れるなら `storage: createSessionStorageAdapter()` を、独自の保存先なら自作の `StorageAdapter` を渡してください。開いている 2 つのタブは、ブラウザーの storage イベントで足並みをそろえます。
+- **開くときだけマウントするプレイヤーは読むのが遅すぎます。** オーバーレイは、まだ閉じた状態のマウント後にストレージを読みます。`v-if="open"` ではその瞬間がないので、`onMounted` で自分で `viewed.attach()` を呼び、返ってきた後始末を `onUnmounted` で呼んでください。オプションと、これを組み立てている低レベルの部品は [Stories Core](/docs/stories-core#viewed-controller) のページにあります。
+
+## デスクトップのカルーセル [#desktop-carousel]
+
+`desktop-layout="carousel"` を指定すると、Instagram のウェブ版のような配置になります。表示中のストーリーはいつもの大きさで中央に残り、その両側に最大 2 つずつ、隣のユーザーが小さく暗いカードとして並びます。カードをクリックするとそのユーザーが開き、グループが変わる間はカードがスライドします。リング一覧に渡したのと同じ `viewed` コントローラーを渡せば、見終わったグループのカードのリングは暗くなります。カードは自分でコントローラーを追うので、ストーリーが既読になったときに描き直されるのはカードだけで、プレイヤーは再描画されません。
+
+<CodeBlock code={desktopCarousel} language="vue" />
+
+- **スマートフォンでは普通のプレイヤーのままです。** 幅 768px 以下ではカードは描画されず、スワイプは既定の `'single'` レイアウトと同じく `group-transition` を使います。その幅をまたいでリサイズすると、その場で切り替わります。
+- **各カードはグループが開く場所を映します。** このセッションで離れたストーリー、なければ `resumeStoryIndex` が返すストーリーです。動画のポスターか画像を表示します。そのどちらも持たないストーリー（グラデーション上のテキストストーリーなど）は、あなたの `#slide` スロットがプレイヤーの大きさで描いたものを縮小して使います。ポスターのない動画はカードの背景を見せます。このプレビューには `isActive: false` が渡り、ただの絵として扱われます。フォーカスもクリックもできません。再生や計測など、スライドがマウント時に行う処理は `isActive` の内側に置いてください。
+- **タイマーはスライドを待ちます。** カードが動き終わるまで、ストーリーは進まず、`story-viewed` もそのストーリーについては発行されません。
+- **グループを変えるどの操作でもスライドします。** カードのクリック、`StoriesApi.goToGroup`、`nextGroup` と `prevGroup`、グループの端を越える矢印キーです。タッチのスワイプはプレイヤー自体を動かすので、その上にスライドは重なりません。
+
+## API リファレンス [#api-reference]
+
+### StoriesOverlay のプロパティ [#storiesoverlay-props]
+
+<Signature>StoriesOverlayProps</Signature>
+
+| Prop | 型 | 既定値 | 説明 |
+| --- | --- | --- | --- |
+| `aria-label` | `string` | `'Stories player'` | ダイアログ領域のアクセシブルな名前。オーバーレイが開くとスクリーンリーダーが読み上げます |
+| `default-image-duration` | `number` | `5000` | 画像ストーリーの自動送り時間（ミリ秒） |
+| `desktop-layout` | `'single' \| 'carousel'` | `'single'` | デスクトップでのレイアウト。`'carousel'` は隣のグループを表示中のストーリーの横にカードとして並べ、グループ間をスライドします。スマートフォンでは常にストーリーだけを表示します。型は `DesktopLayout` として公開されています。 |
+| `enable-keyboard` | `boolean` | `true` | キーボード操作（左右の矢印、Escape）を有効にします |
+| `groups` | `StoriesGroup<T>[]` | `required` | 表示するストーリーグループ。プレイヤーを開いたままグループやストーリーを増やしても、配列を差し替えた場合も同じ配列に追加した場合も反映されます。 |
+| `group-transition` | `TransitionTransformFn` | `cubeTransition` | 外側（グループ）スライダーの転換。デスクトップのカルーセル表示中は無視され、代わりにスライドします。 |
+| `hide-ui-on-pause` | `boolean` | `true` | 長押しによる一時停止の間、プログレスバーとヘッダーを隠します |
+| `initial-group-index` | `number` | `0` | 最初に表示するグループの番号（0 始まり） |
+| `initial-story-index` | `number` | 再開位置、なければ `0` | 最初に表示するストーリーの番号（0 始まり）。明示した値は記憶よりも優先されます。省略すると、そのグループも他と同じように再開します。 |
+| `inner-transition-duration` | `number` | `200` | ストーリー間のクロスフェード時間（ミリ秒） |
+| `is-open` | `boolean` | `required` | 表示を制御し、開いている間はページのスクロールを固定します。`v-model:is-open` でバインドしてください。 |
+| `min-segment-width` | `number` | `8` | スライディングウィンドウに切り替わる前の、プログレス 1 区切りの最小幅（ピクセル） |
+| `resume-story-index` | `(groupIndex: number) => number` | — | グループに初めて到達したとき、どのストーリーから開くか。この表示中にまだ訪れていないグループにだけ問い合わせ、`viewed` よりも優先されます。 |
+| `tap-zone-split` | `number` | `0.3` | タップ領域の分割比（0–1）。左側が戻る、残りが進むです。 |
+| `viewed` | `StoriesViewedStateController` | — | 視聴者がすでに見た内容で、`createStoriesViewedStateController()` から得ます。グループは未読の最初のストーリーから再開し、表示したストーリーはすべて記録され、カルーセルのカードは見終わったグループのリングを暗くします。同じコントローラーを `StoriesRingList` にも渡してください。 |
+
+### StoriesUrlOverlay のプロパティ [#storiesurloverlay-props]
+
+<Signature>StoriesUrlOverlayProps</Signature>
+
+上記のプロパティをすべて受け取りますが、開閉位置の 3 つ（`is-open`、`initial-group-index`、`initial-story-index`）は例外で、これらはコントローラーから与えられます。
+
+| Prop | 型 | 既定値 | 説明 |
+| --- | --- | --- | --- |
+| `controller` | `UrlStateController<TwoAxisPosition>` | `required` | `urlIndexTwoAxisKey` を展開した `useOverlayUrlState` のコントローラー。その `position`（\{ outer, inner \} のオブジェクト）が、プレイヤーを開くかどうかとどこから開くかを決めます。オーバーレイは移動のたびと閉じるときに書き戻します。 |
+
+### イベント [#events]
+
+| イベント | ペイロード | 説明 |
+| --- | --- | --- |
+| @api-ready | `StoriesApi` | プレイヤーがマウントされた時点で、命令的な API とともに発行されます |
+| @close | `void` | プレイヤーが閉じたときに発行されます。`StoriesUrlOverlay` では、この時点でパラメーターはすでに消えています。 |
+| @double-tap | `groupIndex: number, storyIndex: number` | ダブルタップ時に、ハートのアニメーションと合わせて発行されます |
+| @group-change | `groupIndex: number` | 表示中のグループが変わったあとに発行されます |
+| @pause | `void` | 長押し、またはヘッダーの一時停止ボタンで発行されます |
+| @resume | `void` | 指を離したとき、またはヘッダーの再生ボタンで発行されます |
+| @story-change | `groupIndex: number, storyIndex: number` | 表示中のストーリーが変わったあとに発行されます |
+| @story-complete | `groupIndex: number, storyIndex: number` | ストーリーのタイマーが切れたときに発行されます |
+| @story-viewed | `groupIndex: number, storyIndex: number` | ストーリーが表示されたときに発行されます。最初に開いたものも含みます |
+| @update:is-open | `boolean` | 閉じるときに発行され、\`v-model:is-open\` を可能にします |
+
+### v-model:is-open [#v-model-is-open]
+
+`v-model:is-open` を使えば、1 つのバインディングでオーバーレイを操作できます。イベントそのものが必要なら、`:is-open` と `@close` の組み合わせもそのまま使えます。
+
+<CodeBlock code={vModelIsOpen} language="vue" />
+
+## スコープ付きスロット [#scoped-slots]
+
+8 つのスコープ付きスロットで、プレイヤーのどの部分も差し替えられます。それぞれ型の付いたスコープオブジェクトを受け取ります。渡さなかったスロットは既定のままで、何も描かなかったスロットも同じ扱いです。したがって false になった `v-if` は、穴を残すのではなく既定に戻ります。
+
+| スロット | スコープ | 説明 |
+| --- | --- | --- |
+| #error | `{ story, storyIndex, groupIndex }` | 表示中のストーリーの上に描かれる組み込みの「Content unavailable」パネルを差し替えます |
+| #footer | `{ author, story, storyIndex }` | 表示中のグループのストーリーの下にフッターを足します |
+| #groupPreview | `{ group, groupIndex, story, offset, viewedCount, onOpen }` | デスクトップのカルーセルのカードの中身を描きます。配置・拡縮・スライドは引き続きプレイヤーが行います |
+| #header | `{ author, story, storyIndex, isPaused, isMuted, isVideo, onToggleSound, onTogglePause, onClose }` | 既定のヘッダー（作者、一時停止、サウンド、閉じる）を差し替えます |
+| #loading | `{ story, storyIndex, groupIndex }` | 表示中のストーリーの読み込み中に出る、既定のヘッダーのスピナーを差し替えます |
+| #navigation | `{ onPrevStory, onNextStory, onPrevGroup, onNextGroup }` | デスクトップの左右の矢印をまとめて差し替えます |
+| #progressBar | `{ totalStories, activeIndex, progress, group }` | canvas のプログレスバーを差し替えます。`activeIndex` と `progress` は core のシグナルなので、`toVueRef` で橋渡ししてください。 |
+| #slide | `{ story, index, groupIndex, isActive, size, activeGroupIndex, activeStoryIndex, onDurationReady, onReady, onWaiting, onError, onEnded }` | 既定の画像・動画スライドを差し替えます |
+
+<CodeBlock code={scopedSlots} language="vue" />
+
+### スライドをカスタマイズする [#custom-slides]
+
+`#slide` の中で `ImageStorySlide` と `VideoStorySlide` を組み合わせれば、自動再生・ポスターの取得・サウンドの同期を保ったまま、自分のレイアウトを描けます。スコープのライフサイクルコールバックを呼んでください。呼ばないとタイマーは永遠に始まりません。
+
+| コールバック | 呼ぶタイミング |
+| --- | --- |
+| `onReady` | 画像を読み込んだ、または動画が再生を始めた。読み込み状態を解除してタイマーを開始します。 |
+| `onWaiting` | 再生の途中で動画がバッファリング中。スピナーを出してタイマーを止めます。 |
+| `onError` | コンテンツの読み込みに失敗した。エラー表示にし、その URL は壊れたものとして覚えるので、開き直しても再試行しません。 |
+| `onDurationReady` | メディアの実際の長さをミリ秒で伝えます。タイマーが動画と同じだけ動くようになります。 |
+| `onEnded` | メディアが終わった。次のストーリーへ進みます。 |
+
+<CodeBlock code={slideSlot} language="vue" />
+
+<Callout type="info" title="プリローダーのキャッシュ">
+  組み込みの `ImageStorySlide` と `VideoStorySlide` は、次のストーリーをバックグラウンドで先読みします。先読み済みのストーリーに進むと、読み込み表示なしで即座に中身が出ます。一度失敗した URL も覚えているので、壊れたストーリーを開き直すと、再試行せずにすぐエラーを出します。
+</Callout>
+
+### ナビゲーションをカスタマイズする [#custom-navigation]
+
+<CodeBlock code={navigationSlot} language="vue" />
+
+### プログレスバーをカスタマイズする [#custom-progress-bar]
+
+スコープが運ぶのはただの数値ではなく core のシグナルなので、タイマーはプレイヤーを再描画せずにバーを動かせます。`@reelkit/vue` の `toVueRef` で橋渡ししてください。
+
+<CodeBlock code={progressBarSlot} language="vue" />
+
+### 読み込みとエラーをカスタマイズする [#custom-loading-error]
+
+<CodeBlock code={loadingErrorSlots} language="vue" />
+
+### カルーセルのカードをカスタマイズする [#custom-carousel-cards]
+
+<CodeBlock code={groupPreviewSlot} language="vue" />
+
+## 転換 [#transitions]
+
+`group-transition` は、ユーザーを切り替えるときの 3D 効果を決めます。転換の関数は `@reelkit/vue` からインポートします。
+
+<CodeBlock code={transitions} language="vue" />
+
+## StoriesApi [#storiesapi]
+
+命令的に操作するには、オーバーレイにテンプレート参照を置くか、`@api-ready` イベントから API を受け取ります。プレイヤーが閉じている間の呼び出しは何もしません。
+
+<CodeBlock code={storiesApi} language="vue" />
+
+### メソッド [#methods]
+
+| メソッド | 型 | 説明 |
+| --- | --- | --- |
+| `nextStory()` | `() => void` | 現在のグループ内で次のストーリーへ進みます |
+| `prevStory()` | `() => void` | 現在のグループ内で前のストーリーへ戻ります |
+| `nextGroup()` | `() => void` | 次のユーザーのグループへ切り替えます |
+| `prevGroup()` | `() => void` | 前のユーザーのグループへ切り替えます |
+| `goToGroup(index)` | `(index: number) => void` | 番号で特定のグループへ移動します |
+| `pause()` | `() => void` | 自動送りとプログレスのタイマーを止めます |
+| `resume()` | `() => void` | 自動送りとプログレスのタイマーを再開します |
+
+## ダブルタップといいね [#double-tap-likes]
+
+ダブルタップでハートのアニメーションが再生され、その場で手応えが返ります。`@double-tap` イベントはグループとストーリーの番号とともに発行されるので、いいねは自分の状態として保存できます。プレイヤー自身はいいねの状態を持ちません。
+
+<CodeBlock code={doubleTapLikes} language="vue" />
+
+### ハートのアニメーションを調整する [#customizing-the-heart-animation]
+
+速さは `--rk-stories-heart-duration` トークンで調整します（[テーマ](#theming)を参照）。色や大きさ、あるいはハートを完全に隠したい場合は `.rk-stories-heart` クラスを直接指定してください。`HeartAnimation` コンポーネントは単体でも使えるように公開されています。
+
+<CodeBlock code={customizingTheHeartAnimation} language="css" />
+
+<Callout type="info">
+  組み込みのハートのアニメーションは、まだスロットでは差し替えられません。CSS でスタイルを変えるか、`display: none` で隠したうえで `@double-tap` イベントから独自のアニメーションを動かしてください。`heart` スロットが必要なら、[GitHub Issues](https://github.com/KonstantinKai/reelkit/issues) でお知らせください。
+</Callout>
+
+## サブコンポーネント [#sub-components]
+
+スロットの中で組み合わせても、単体で使ってもよい公開部品です。`StoriesRing`、`StoriesRingList`、`StoryHeader`、`CanvasProgressBar`、`ImageStorySlide`、`VideoStorySlide`、`HeartAnimation`。
+
+| コンポーネント | 説明 |
+| --- | --- |
+| `CanvasProgressBar` | タイマーのシグナルから直接描く、canvas の分割プログレスバー。ストーリーが多いグループではスライディングウィンドウを使います。 |
+| `HeartAnimation` | ダブルタップのハート。アニメーションが終わると `complete` を発行するので、親が取り除けます。 |
+| `ImageStorySlide` | `object-fit: cover` の全面画像スライド。読み込みとエラーをコールバックで知らせます。 |
+| `StoriesRing` | グラデーションのリングが付いた円形アバター。状態は 2 つで、未読が残っていれば回転し、見終わると平坦になります。`click` を発行します。 |
+| `StoriesRingList` | 作者名付きのリングを横に並べたもので、グループごとに 1 つ。グループ番号とともに `select` を発行します。 |
+| `StoryHeader` | 既定のヘッダー。アバター、名前、認証バッジ、相対時刻、一時停止、サウンド、閉じる、そして読み込み表示。 |
+| `VideoStorySlide` | 共有された 1 つの `<video>` 要素に支えられた動画スライドで、iOS でのサウンド継続のためのものです。自動再生、ポスターのフレーム、長さの報告を扱います。 |
+
+<CodeBlock code={subComponents} language="vue" />
+
+## 再エクスポート [#re-exports]
+
+利用側に必要なものはすべてこのパッケージから来るので、`@reelkit/core` を直接インポートする必要はありません。
+
+| 取得元 | 再エクスポートされるもの |
+| --- | --- |
+| `@reelkit/vue` | `Observe`、`SoundProvider`、`useSoundState`、`useOverlayUrlState`、`createViewedStateController`、`twoAxisViewedTracking`、`createLocalStorageAdapter`、`createSessionStorageAdapter`、`createMemoryStorageAdapter`、`urlIndexTwoAxisKey`、`urlStableIdTwoAxisKey`、`base64UrlCodec`、および型 `UrlAdapter`、`UrlCodec`、`UrlLocator`、`UrlKey`、`UrlStateController`、`TwoAxisPosition`、`TwoAxisIdentity`、`UrlIndexTwoAxisKeyOptions`、`ViewedStateController`、`ViewedStateOptions`、`StorageAdapter` |
+| `@reelkit/stories-core` | `createStoriesViewedStateController`、`StoriesViewedStateController`、`StoriesViewedStateControllerConfig`、およびコンテンツの型 `StoryItem`、`AuthorInfo`、`StoriesGroup`、`MediaType` |
+
+`Observe` は、プレイヤーが内部で使っている描画の境界です。core のシグナルが変わったときに自分のスロットだけを描き直すので、ストーリーが変わってもヘッダーとプログレスバーだけが更新され、2 つのスライダーは描き直されません。`toVueRef` でコンポーネント全体がシグナルを追うのでは粗すぎるとき、自作のスロットの中で使ってください。詳しくは [Vue API リファレンス](/docs/vue/api#observe)へ。
+
+各コンポーネントのプロパティ型も公開されています。`StoriesOverlayProps`、`StoriesUrlOverlayProps`、`StoriesRingProps`、`StoriesRingListProps`、`StoryHeaderProps`、`CanvasProgressBarProps`、`ImageStorySlideProps`、`VideoStorySlideProps`。
+
+## 型 [#types]
+
+### StoryItem、AuthorInfo、StoriesGroup [#storyitem-authorinfo-storiesgroup]
+
+<CodeBlock code={types} language="typescript" />
+
+### スロットのスコープ [#slot-scopes]
+
+スコープの型はすべて公開されているので、コンパイラーが推論できない場所ではスロットに型を付けられます。`HeaderSlotScope`、`FooterSlotScope`、`SlideSlotScope`、`NavigationSlotScope`、`ProgressBarSlotScope`、`LoadingSlotScope`、`ErrorSlotScope`、`GroupPreviewSlotScope`、そして `StoriesApi` です。
+
+<CodeBlock code={slotScopes} language="typescript" />
+
+## 独自のストーリー型 [#custom-story-types]
+
+`StoryItem` を自分のフィールドで拡張し、その型でグループを型付けします。スロットのスコープに型を付ければ、テンプレートの中でも追加フィールドが見えたままになります。
+
+<CodeBlock code={customStoryTypes} language="vue" />
+
+## CSS クラス [#css-classes]
+
+クラス名は素のもの（scoped ではありません）なので、`@reelkit/vue-stories-player/styles.css` のあとに読み込むスタイルシートでどれでも上書きできます。`@reelkit/react-stories-player` と同一なので、一方のバインディング向けに書いたスタイルシートがもう一方でもそのまま使えます。色・大きさ・z-index については、[テーマ](#theming)のカスタムプロパティを優先してください。
+
+| クラス | コンポーネント | 説明 |
+| --- | --- | --- |
+| `.rk-stories-overlay` | Overlay | 固定配置の全画面背景（背景色、z-index） |
+| `.rk-stories-overlay--carousel` | Overlay | デスクトップのカルーセルを表示中のオーバーレイ |
+| `.rk-stories-overlay--sliding` | Overlay | カルーセルのスライド中。プレイヤーの画面は隠れます |
+| `.rk-stories-swipe-wrapper` | Overlay | スワイプで閉じるためのラッパー（ナビゲーションボタンと画面を収めます） |
+| `.rk-stories-container` | Overlay | 角の丸いストーリーの画面（位置、overflow） |
+| `.rk-stories-ui-layer` | Overlay | UI のコンテナー（ヘッダー、プログレス） |
+| `.rk-stories-ui-layer--hidden` | Overlay | UI を隠した状態（`hide-ui-on-pause` が切り替えます） |
+| `.rk-stories-error` | Overlay | エラー状態（中央のアイコンとテキスト） |
+| `.rk-stories-error-text` | Overlay | エラーメッセージのテキスト |
+| `.rk-stories-nav-btn` | Navigation | デスクトップの前後の矢印 |
+| `.rk-stories-progress-bar` | CanvasProgressBar | canvas プログレスバーの配置用ラッパー |
+| `.rk-stories-slide-wrapper` | Group | 1 つのストーリーグループ（外側のスライド） |
+| `.rk-stories-story` | Story | 1 つのストーリー（内側のスライドのルート） |
+| `.rk-stories-header` | StoryHeader | ヘッダーの帯（アバター、名前、操作） |
+| `.rk-stories-header--hidden` | StoryHeader | ヘッダーを隠した状態 |
+| `.rk-stories-header-avatar` | StoryHeader | 作者のアバター画像 |
+| `.rk-stories-header-name` | StoryHeader | 作者名のテキスト |
+| `.rk-stories-header-verified` | StoryHeader | 認証バッジ |
+| `.rk-stories-header-time` | StoryHeader | 相対時刻のテキスト |
+| `.rk-stories-header-actions` | StoryHeader | 右側の操作（サウンド、一時停止、閉じる） |
+| `.rk-stories-header-btn` | StoryHeader | ヘッダーの操作ボタン |
+| `.rk-stories-header-spinner` | StoryHeader | 読み込み表示 |
+| `.rk-stories-image` | ImageStorySlide | 画像ストーリーの要素 |
+| `.rk-stories-video` | VideoStorySlide | 動画ストーリーのコンテナー |
+| `.rk-stories-video-element` | VideoStorySlide | 共有される \<video> 要素 |
+| `.rk-stories-video-poster` | VideoStorySlide | 動画のポスター画像（再生開始でフェードアウト） |
+| `.rk-stories-video-poster--visible` | VideoStorySlide | ポスターが見えている状態（再生前） |
+| `.rk-stories-heart` | HeartAnimation | ダブルタップのハートが弾むアニメーション |
+| `.rk-stories-ring` | StoriesRing | ストーリーのリング（アニメーションするグラデーション枠のアバター） |
+| `.rk-stories-ring--active` | StoriesRing | 未読が残っているリング（動きます） |
+| `.rk-stories-ring-avatar` | StoriesRing | リングの内側のアバター画像 |
+| `.rk-stories-ring-list` | StoriesRingList | 横並びリング一覧のコンテナー |
+| `.rk-stories-ring-list-item` | StoriesRingList | リングと名前の 1 列 |
+| `.rk-stories-ring-list-name` | StoriesRingList | 各リングの下の作者名 |
+| `.rk-stories-carousel` | Carousel | プレイヤーの背後にあるカードの層 |
+| `.rk-stories-carousel--instant` | Carousel | スライドの最初のフレーム。転換なしで配置されます |
+| `.rk-stories-card` | Carousel | 配置された 1 枚のカード |
+| `.rk-stories-card--center` | Carousel | スライド中に中央の位置にあるカード |
+| `.rk-stories-card--hidden` | Carousel | 片側に表示される 2 枚より外側のカード |
+| `.rk-stories-card-button` | Carousel | カードの既定の中身（そのグループを開くボタン） |
+| `.rk-stories-card-image` | Carousel | プレビューの絵（ポスターまたは画像） |
+| `.rk-stories-card-scrim` | Carousel | 絵の上に重なる暗さの層 |
+| `.rk-stories-card-info` | Carousel | リング・作者名・時刻の列 |
+| `.rk-stories-card-name` | Carousel | 作者名 |
+| `.rk-stories-card-time` | Carousel | 相対時刻のテキスト |
+
+## テーマ [#theming]
+
+色・大きさ・z-index・転換はすべて CSS カスタムプロパティにあり、既定値は `:root` に置かれています。`:root`、またはオーバーレイの祖先のどこかで 1 つでも複数でも上書きすれば、コンポーネントのソースに触れずにテーマを変えられます。トークンは `@reelkit/react-stories-player` と一致するので、テーマはバインディング間で持ち運べます。
+
+| トークン | 既定値 | 対象 |
+| --- | --- | --- |
+| `--rk-stories-overlay-bg` | `#000` | 全画面背景の色 |
+| `--rk-stories-overlay-z` | `9999` | オーバーレイの z-index |
+| `--rk-stories-container-radius` | `12px` | ストーリー画面の角の丸み（デスクトップ） |
+| `--rk-stories-swipe-gap` | `16px` | ナビゲーションボタンとストーリー画面の間隔 |
+| `--rk-stories-top-shade-height` | `120px` | ヘッダー背後の上部グラデーションの高さ |
+| `--rk-stories-top-shade-bg` | `linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%)` | 上部グラデーションの色 |
+| `--rk-stories-ui-transition` | `200ms` | `hide-ui-on-pause` が切り替わるときのフェード時間 |
+| `--rk-stories-nav-size` | `44px` | デスクトップの前後ボタンの大きさ |
+| `--rk-stories-nav-bg` | `rgba(255, 255, 255, 0.1)` | デスクトップのナビゲーションボタンの背景 |
+| `--rk-stories-nav-bg-hover` | `rgba(255, 255, 255, 0.2)` | ホバー時のナビゲーションボタンの背景 |
+| `--rk-stories-nav-fg` | `rgba(255, 255, 255, 0.7)` | ナビゲーションボタンのアイコンの色 |
+| `--rk-stories-nav-fg-hover` | `#fff` | ホバー時のアイコンの色 |
+| `--rk-stories-error-bg` | `linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)` | エラー状態の背景グラデーション |
+| `--rk-stories-error-fg` | `rgba(255, 255, 255, 0.5)` | エラーのアイコンとテキストの色 |
+| `--rk-stories-error-text-size` | `13px` | エラーメッセージの文字サイズ |
+| `--rk-stories-video-bg` | `#000` | \<video> の背後の余白の色 |
+| `--rk-stories-video-poster-transition` | `200ms` | 再生開始時のポスターのフェード時間 |
+| `--rk-stories-header-top` | `18px` | ストーリー上端からのヘッダーの位置 |
+| `--rk-stories-header-padding` | `12px 16px` | ヘッダー行の内側の余白 |
+| `--rk-stories-header-avatar-size` | `32px` | アバターの幅と高さ |
+| `--rk-stories-header-name-fg` | `#fff` | 作者名の色 |
+| `--rk-stories-header-name-size` | `14px` | 作者名の文字サイズ |
+| `--rk-stories-header-time-fg` | `rgba(255, 255, 255, 0.6)` | 相対時刻の文字色 |
+| `--rk-stories-header-btn-fg` | `#fff` | ヘッダーの操作アイコンの色（閉じる、ミュート、一時停止） |
+| `--rk-stories-heart-duration` | `800ms` | ハートが出て消えるまでの時間 |
+| `--rk-stories-ring-spin-duration` | `4s` | 未読が残るリングの回転時間 |
+| `--rk-stories-ring-list-gap` | `12px` | 一覧のリング同士の間隔 |
+| `--rk-stories-ring-list-padding` | `12px` | リング一覧の周りの余白 |
+| `--rk-stories-ring-list-name-size` | `12px` | 各リングの下の作者名の文字サイズ |
+| `--rk-stories-card-bg` | `#262626` | カードの背景。プレビューの絵がないときに見えます |
+| `--rk-stories-card-radius` | `8px` | カードの角の丸み |
+| `--rk-stories-card-scrim` | `rgba(0, 0, 0, 0.45)` | 横のカードにかかる暗さ |
+| `--rk-stories-card-fg` | `#fff` | カードの文字色 |
+| `--rk-stories-card-name-size` | `14px` | カードの作者名の文字サイズ |
+| `--rk-stories-card-time-fg` | `rgba(255, 255, 255, 0.7)` | カードの時刻の文字色 |
+| `--rk-stories-card-time-size` | `13px` | カードの時刻の文字サイズ |
+| `--rk-stories-card-gap` | `6px` | カード上のリング・名前・時刻の間隔 |
+| `--rk-stories-card-transition` | `300ms` | カルーセルのスライド時間 |
+
+<CodeBlock code={theming} language="css" />
+
+## アクセシビリティ [#accessibility]
+
+オーバーレイのルートはモーダルダイアログです（`role="dialog"`、`aria-modal="true"`）。スクリーンリーダーの読み上げを変えるには `aria-label` を設定してください。既定は「Stories player」です。
+
+オーバーレイは開くときにフォーカスを預かり、閉じるときに元の要素へ返します。Tab と Shift+Tab は内側のフォーカス可能な要素を巡り、外へ逃げたフォーカスは引き戻されます。`@reelkit/core` の `captureFocusForReturn` と `createFocusTrap` で実装しています。
+
+デスクトップのカルーセルでは、既定のカードはそれぞれ「Open stories by」と作者名のラベルを持つボタンです。カードはタブ順でプレイヤーの操作のあとに並び、スライド中はタブ順から外れます。自分のグループを開いたカードは、フォーカスをページに落とさずダイアログへ返します。
+
+## サーバーサイドレンダリング [#server-side-rendering]
+
+閉じている間、オーバーレイは何も描画しません。`StoriesRingList` はサーバー側ではすべてのリングを未読として描画します。既読のストレージはマウント後にしか読まないので、サーバーのマークアップと最初のクライアント描画が一致します。全体像は [SSR ガイド](/docs/ssr)にあります。
+
+## キーボードショートカット [#keyboard-shortcuts]
+
+| キー | 動作 |
+| --- | --- |
+| `ArrowLeft` | 前のストーリー |
+| `ArrowRight` | 次のストーリー |
+| `Escape` | プレイヤーを閉じる |

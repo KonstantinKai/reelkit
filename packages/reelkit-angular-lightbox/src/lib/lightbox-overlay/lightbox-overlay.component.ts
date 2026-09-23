@@ -23,16 +23,15 @@ import { NgTemplateOutlet } from '@angular/common';
 import {
   createContentLoadingController,
   createContentPreloader,
-  createSoundController,
   slideTransition,
   fullscreenSignal,
   requestFullscreen,
   exitFullscreen,
   ReelComponent,
   RkReelItemDirective,
+  SoundStateService,
   type ContentLoadingController,
   type ContentPreloader,
-  type SoundController,
   type TransitionTransformFn,
   type ReelApi,
 } from '@reelkit/angular';
@@ -180,10 +179,12 @@ const focusFirstFocusable = (container: HTMLElement): void => {
                 [isFullscreen]="isFullscreen()"
                 (toggled)="handleToggleFullscreen()"
               />
-              @if (isVideoSlide() && !isSoundDisabled()) {
+              @if (
+                isVideoSlide() && hasSharedSoundState && !soundState.disabled()
+              ) {
                 <rk-sound-button
-                  [muted]="isMuted()"
-                  (toggled)="soundCtrl.toggle()"
+                  [muted]="soundState.muted()"
+                  (toggled)="soundState.toggle()"
                 />
               }
             </div>
@@ -380,17 +381,22 @@ export class RkLightboxOverlayComponent {
     this._destroyRef,
   );
 
-  protected readonly soundCtrl: SoundController = createSoundController();
+  /**
+   * Sound state the consumer provided above this overlay, if any. A video
+   * slide is rendered from the consumer's own `rkLightboxSlide` template, so
+   * its injector is theirs, not this component's — an instance provided here
+   * would be invisible to the slide, and the button would move nothing. One
+   * provided above both is what lets the two meet.
+   */
+  private readonly _providedSoundState = inject(SoundStateService, {
+    optional: true,
+  });
 
-  protected readonly isMuted = toAngularSignal(
-    this.soundCtrl.muted,
-    this._destroyRef,
-  );
+  protected readonly soundState =
+    this._providedSoundState ?? new SoundStateService();
 
-  protected readonly isSoundDisabled = toAngularSignal(
-    this.soundCtrl.disabled,
-    this._destroyRef,
-  );
+  /** Whether a toggle can reach the video, and so whether to offer one. */
+  protected readonly hasSharedSoundState = this._providedSoundState !== null;
 
   protected readonly controlsSlot = contentChild(RkLightboxControlsDirective);
   protected readonly navigationSlot = contentChild(
@@ -614,7 +620,7 @@ export class RkLightboxOverlayComponent {
     if (fullscreenSignal.value) {
       exitFullscreen();
     }
-    this.soundCtrl.muted.value = true;
+    this.soundState.controller.muted.value = true;
     this.closed.emit();
   }
 
@@ -789,7 +795,7 @@ export class RkLightboxOverlayComponent {
     this._reelApi = null;
     this.imageLoadedIndexes.set(new Set());
     this.imageErrorIndexes.set(new Set());
-    this.soundCtrl.muted.value = true;
+    this.soundState.controller.muted.value = true;
     if (this._preloaderDispose) {
       this._preloaderDispose();
       this._preloaderDispose = null;

@@ -43,8 +43,8 @@ import {
   type ContentLoadingController,
   type ContentPreloader,
   observeDomEvent,
+  SoundStateService,
 } from '@reelkit/angular';
-import { SoundStateService } from '../sound-state/sound-state.service';
 import { TimelineStateService } from '../timeline-state/timeline-state.service';
 import { RkTimelineBarComponent } from '../timeline-bar/timeline-bar.component';
 import { RkMediaSlideComponent } from '../media-slide/media-slide.component';

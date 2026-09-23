@@ -22,6 +22,18 @@ const routes: RouteRecordRaw[] = [
     component: () => import('./pages/ReelPlayerUrlPage.vue'),
   },
   {
+    path: '/stories-player',
+    component: () => import('./pages/StoriesPlayerPage.vue'),
+  },
+  {
+    path: '/stories-player-custom',
+    component: () => import('./pages/StoriesPlayerCustomPage.vue'),
+  },
+  {
+    path: '/stories-player-url',
+    component: () => import('./pages/StoriesPlayerUrlPage.vue'),
+  },
+  {
     path: '/image-preview',
     component: () => import('./pages/ImagePreviewPage.vue'),
   },

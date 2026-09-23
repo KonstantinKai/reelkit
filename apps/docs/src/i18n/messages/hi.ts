@@ -1,0 +1,81 @@
+import type { Messages } from '../messages';
+
+export const hi: Messages = {
+  header: {
+    docs: 'डॉक्स',
+    search: 'खोजें',
+    githubLabel: 'GitHub पर ReelKit',
+    themeLabel: 'थीम बदलें',
+    themeLight: 'लाइट',
+    themeDark: 'डार्क',
+    themeSystem: 'सिस्टम',
+    menuLabel: 'नेविगेशन खोलें या बंद करें',
+    languageLabel: 'भाषा बदलें',
+  },
+  nav: {
+    sections: {
+      overview: 'परिचय',
+      core: 'Core',
+      react: 'React',
+      angular: 'Angular',
+      vue: 'Vue',
+      components: 'कंपोनेंट',
+      resources: 'संसाधन',
+    },
+    items: {
+      gettingStarted: 'शुरुआत',
+      installation: 'इंस्टॉलेशन',
+      ssr: 'SSR',
+      guide: 'गाइड',
+      apiReference: 'API रेफ़रेंस',
+      storiesCore: 'Stories Core',
+      reelPlayer: 'Reel Player',
+      lightbox: 'Lightbox',
+      storiesPlayer: 'Stories Player',
+      troubleshooting: 'समस्या निवारण',
+      llms: 'AI / LLM इंटीग्रेशन',
+      changelog: 'नया क्या है',
+    },
+    comingSoon: 'जल्द आ रहा है',
+  },
+  footer: {
+    tagline:
+      'Headless, वर्चुअलाइज़्ड और बिना dependency वाला स्लाइडर इंजन। 60 fps जेस्चर और सिर्फ़ 3 DOM नोड के साथ TikTok/Reels जैसी फ़ीड बनाएँ।',
+    documentation: 'डॉक्स',
+    gettingStarted: 'शुरुआत',
+    installation: 'इंस्टॉलेशन',
+    examples: 'उदाहरण',
+    community: 'समुदाय',
+    rights: (year) => `© ${year} ReelKit. All rights reserved.`,
+    privacy: 'निजता',
+    terms: 'शर्तें',
+  },
+  search: {
+    placeholder: 'डॉक्स में खोजें…',
+    empty: (query) => `"${query}" के लिए कोई नतीजा नहीं मिला`,
+    pagesGroup: (category) => `पेज · ${category}`,
+    sectionsGroup: (page) => `${page} · हिस्से`,
+    navigate: 'चुनें',
+    open: 'खोलें',
+    close: 'बंद करें',
+  },
+  whatsNew: {
+    title: 'नया क्या है',
+    since: (count) => `आपकी पिछली विज़िट के बाद ${count} नई रिलीज़`,
+    more: (count) => `+${count} और रिलीज़`,
+    dismiss: 'हटाएँ',
+    viewFull: 'बदलावों की पूरी सूची देखें',
+    close: 'बंद करें',
+    closeOverlay: 'नया क्या है वाली विंडो बंद करें',
+  },
+  nextSteps: {
+    title: 'अगले कदम',
+  },
+  notFound: {
+    title: 'पेज नहीं मिला',
+    description:
+      'आप जो पेज ढूँढ रहे हैं, वह मौजूद नहीं है या कहीं और चला गया है।',
+    home: 'होम',
+    docs: 'डॉक्स',
+  },
+};

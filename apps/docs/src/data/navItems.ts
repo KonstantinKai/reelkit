@@ -91,7 +91,6 @@ export const navItems: NavSection[] = [
         key: 'storiesPlayer',
         path: '/docs/angular-stories-player',
         framework: 'angular',
-        comingSoon: true,
       },
       {
         key: 'reelPlayer',
@@ -107,7 +106,6 @@ export const navItems: NavSection[] = [
         key: 'storiesPlayer',
         path: '/docs/vue-stories-player',
         framework: 'vue',
-        comingSoon: true,
       },
     ],
   },

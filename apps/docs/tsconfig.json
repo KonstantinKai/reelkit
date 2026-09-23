@@ -20,6 +20,9 @@
   "exclude": ["src/content/snippets"],
   "references": [
     {
+      "path": "../../packages/reelkit-angular-stories-player"
+    },
+    {
       "path": "../../packages/reelkit-react-reel-player"
     },
     {

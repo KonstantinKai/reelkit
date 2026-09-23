@@ -1,16 +1,16 @@
 import type { CSSProperties, FC } from 'react';
-import type { AuthorInfo } from '@reelkit/stories-core';
+import { getRingPresentation, type AuthorInfo } from '@reelkit/stories-core';
 import './StoriesRing.css';
 
 /** Props for the {@link StoriesRing} component. */
 export interface StoriesRingProps {
-  /** Author information (avatar, name). */
+  /** Only the avatar and the name are drawn; nothing keys on the id here. */
   author: AuthorInfo;
 
-  /** Total number of stories in the group. */
+  /** A group of 0 draws no ring at all, just the avatar. */
   totalStories: number;
 
-  /** Number of stories already viewed. */
+  /** Short of `totalStories` keeps the gradient; reaching it mutes the ring. */
   viewedCount: number;
 
   /**
@@ -31,58 +31,9 @@ export interface StoriesRingProps {
    */
   viewedColor?: string;
 
-  /** Callback fired when the ring is clicked. */
+  /** The ring is a button and nothing more — opening the player is yours. */
   onClick?: () => void;
 }
-
-const _kInstagramGradient = [
-  '#f09433',
-  '#e6683c',
-  '#dc2743',
-  '#cc2366',
-  '#bc1888',
-];
-
-const _kRingWidth = 2;
-const _kGap = 2;
-
-/**
- * Class name, inline style and avatar size of a ring, shared by
- * {@link StoriesRing} and the desktop carousel cards. A card is itself the
- * button, so it draws the ring from these rather than nesting a second
- * interactive element inside it.
- */
-export const getRingPresentation = ({
-  totalStories,
-  viewedCount,
-  size,
-  gradientColors = _kInstagramGradient,
-  viewedColor = 'rgba(255,255,255,0.25)',
-}: {
-  totalStories: number;
-  viewedCount: number;
-  size: number;
-  gradientColors?: string[];
-  viewedColor?: string;
-}) => {
-  const isEmpty = totalStories <= 0;
-  const hasUnviewed = !isEmpty && viewedCount < totalStories;
-  const palette = gradientColors.length ? gradientColors : _kInstagramGradient;
-
-  return {
-    avatarSize: size - (_kRingWidth + _kGap) * 2,
-    className: `rk-stories-ring${hasUnviewed ? ' rk-stories-ring--active' : ''}`,
-    style: {
-      width: size,
-      height: size,
-      '--rk-stories-ring-gradient': hasUnviewed
-        ? `conic-gradient(from 180deg, ${[...palette, palette[0]].join(', ')})`
-        : isEmpty
-          ? 'none'
-          : viewedColor,
-    } as CSSProperties,
-  };
-};
 
 /**
  * Circular avatar with a gradient ring. The ring has two states: a group with
@@ -96,8 +47,8 @@ export const StoriesRing: FC<StoriesRingProps> = ({
   viewedCount,
   size = 68,
   onClick,
-  gradientColors = _kInstagramGradient,
-  viewedColor = 'rgba(255,255,255,0.25)',
+  gradientColors,
+  viewedColor,
 }) => {
   const { avatarSize, className, style } = getRingPresentation({
     totalStories,
@@ -110,7 +61,7 @@ export const StoriesRing: FC<StoriesRingProps> = ({
   return (
     <div
       className={className}
-      style={style}
+      style={style as CSSProperties}
       onClick={onClick}
       role="button"
       tabIndex={0}

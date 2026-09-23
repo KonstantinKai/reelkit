@@ -13,6 +13,7 @@ import {
 } from 'vue';
 import { ImageOff } from 'lucide-vue-next';
 import {
+  Observe,
   Reel,
   SwipeToClose,
   captureFocusForReturn,
@@ -252,13 +253,10 @@ const LightboxContent = defineComponent({
       true,
       props.initialIndex,
     );
-    const isLoading = toVueRef(loadingCtrl.isLoading);
-    const isError = toVueRef(loadingCtrl.isError);
 
     useBodyLock(true);
 
     const fs = useFullscreen({ elementRef: containerRef });
-    const isFullscreen = toVueRef(fs.isFullscreen);
 
     const handleClose = () => emit('close');
 
@@ -314,7 +312,7 @@ const LightboxContent = defineComponent({
         observeDomEvent(window, 'keydown', (e) => {
           const event = e as KeyboardEvent;
           if (event.key !== 'Escape') return;
-          if (isFullscreen.value) {
+          if (fs.isFullscreen.value) {
             fs.exit().catch(() => undefined);
           } else {
             handleClose();
@@ -417,7 +415,7 @@ const LightboxContent = defineComponent({
         item,
         activeIndex: idx,
         count: items.length,
-        isFullscreen: isFullscreen.value,
+        isFullscreen: fs.isFullscreen.value,
         onClose: handleClose,
         onToggleFullscreen: handleToggleFullscreen,
       };
@@ -431,7 +429,7 @@ const LightboxContent = defineComponent({
       return h(LightboxControls, {
         currentIndex: idx,
         count: items.length,
-        isFullscreen: isFullscreen.value,
+        isFullscreen: fs.isFullscreen.value,
         onClose: handleClose,
         onToggleFullscreen: handleToggleFullscreen,
       });
@@ -499,7 +497,7 @@ const LightboxContent = defineComponent({
       const item = props.items[idx];
       if (!item) return null;
 
-      if (isError.value) {
+      if (loadingCtrl.isError.value) {
         const scope: ErrorSlotScope = { item, activeIndex: idx };
         const slot = slots['error'];
         if (slot) {
@@ -530,7 +528,7 @@ const LightboxContent = defineComponent({
         );
       }
 
-      if (isLoading.value) {
+      if (loadingCtrl.isLoading.value) {
         const scope: LoadingSlotScope = { item, activeIndex: idx };
         const slot = slots['loading'];
         if (slot) {
@@ -621,10 +619,23 @@ const LightboxContent = defineComponent({
             },
           ),
           h('div', { class: 'rk-lightbox-top-shade' }),
-          renderControlsLayer(),
+          // Fullscreen, loading and error change while the gallery stays put,
+          // and this render draws the Reel. Read here, each one redraws every
+          // slide with it; read inside an Observe, only the layer underneath
+          // is drawn again. The regions stay functions: calling one here would
+          // read the signals in this scope and change nothing.
+          h(
+            Observe,
+            { signals: [fs.isFullscreen] },
+            { default: renderControlsLayer },
+          ),
           renderNavigationLayer(),
           renderInfoLayer(),
-          renderLoadingError(),
+          h(
+            Observe,
+            { signals: [loadingCtrl.isLoading, loadingCtrl.isError] },
+            { default: renderLoadingError },
+          ),
         ],
       );
     };

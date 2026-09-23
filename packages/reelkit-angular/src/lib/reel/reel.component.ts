@@ -32,6 +32,8 @@ import {
   type SliderController,
   type TransitionTransformFn,
   type SlideTransformStyle,
+  type GestureEvent,
+  type GestureCommonEvent,
 } from '@reelkit/core';
 import { toAngularSignal } from '../signal-bridge/to-angular-signal';
 import { animatedSignalBridge } from '../signal-bridge/animated-signal-bridge';
@@ -213,6 +215,15 @@ export class ReelComponent implements OnInit, AfterViewInit {
   /** Enable touch/mouse gesture handling. */
   enableGestures = input<boolean>(true);
 
+  /**
+   * Hands arrow keys to {@link ReelComponent.navKeyPressed} rather than moving
+   * a slide. Off by default, so the slider keeps navigating itself.
+   *
+   * Read once, when the slider is built: the event wiring is fixed from then
+   * on, so set it before the slider first renders.
+   */
+  interceptNavKeys = input<boolean>(false);
+
   /** Optional CSS class applied to the root container element. */
   className = input<string>('');
 
@@ -241,6 +252,25 @@ export class ReelComponent implements OnInit, AfterViewInit {
 
   /** Emitted when a drag gesture is canceled (snap-back). */
   slideDragCanceled = output<number>();
+
+  /** Emitted on a tap that did not turn into a drag. */
+  tapped = output<GestureCommonEvent>();
+
+  /** Emitted on a second tap inside the double-tap window. */
+  doubleTapped = output<GestureCommonEvent>();
+
+  /** Emitted once a press has been held past the long-press threshold. */
+  longPressStarted = output<GestureCommonEvent>();
+
+  /** Emitted when that press is released. */
+  longPressEnded = output<GestureEvent>();
+
+  /**
+   * Emitted for an arrow key instead of moving a slide, and only while
+   * {@link ReelComponent.interceptNavKeys} is set. A player that owns two axes
+   * of movement decides what an arrow means; the slider cannot.
+   */
+  navKeyPressed = output<-1 | 1>();
 
   /** Emitted once the controller is ready, exposing the imperative API. */
   apiReady = output<ReelApi>();
@@ -422,6 +452,27 @@ export class ReelComponent implements OnInit, AfterViewInit {
         onDragCanceled: (index) => {
           if (!this._destroyed) this.slideDragCanceled.emit(index);
         },
+        onTap: (event) => {
+          if (!this._destroyed) this.tapped.emit(event);
+        },
+        onDoubleTap: (event) => {
+          if (!this._destroyed) this.doubleTapped.emit(event);
+        },
+        onLongPress: (event) => {
+          if (!this._destroyed) this.longPressStarted.emit(event);
+        },
+        onLongPressEnd: (event) => {
+          if (!this._destroyed) this.longPressEnded.emit(event);
+        },
+        // Passing this at all takes arrow keys away from the slider, so it
+        // goes in only when the consumer asked to own them.
+        ...(this.interceptNavKeys()
+          ? {
+              onNavKeyPress: (increment: -1 | 1) => {
+                if (!this._destroyed) this.navKeyPressed.emit(increment);
+              },
+            }
+          : {}),
       },
     );
   }

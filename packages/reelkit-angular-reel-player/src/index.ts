@@ -140,6 +140,6 @@ export { RkSlideOverlayComponent } from './lib/slide-overlay/slide-overlay.compo
 export { RkMediaSlideComponent } from './lib/media-slide/media-slide.component';
 export { RkNestedSliderComponent } from './lib/nested-slider/nested-slider.component';
 
-export { SoundStateService } from './lib/sound-state/sound-state.service';
+export { SoundStateService } from '@reelkit/angular';
 export { TimelineStateService } from './lib/timeline-state/timeline-state.service';
 export { RkTimelineBarComponent } from './lib/timeline-bar/timeline-bar.component';

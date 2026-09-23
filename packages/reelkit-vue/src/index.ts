@@ -8,8 +8,9 @@
  * `@reelkit/core`'s `createSliderController` and bridges its
  * signal-based state into Vue's reactivity system.
  *
- * Also provides {@link ReelIndicator} (dot/bar pagination) and
- * composables for body lock, fullscreen, and sound state.
+ * Also provides {@link ReelIndicator} (dot/bar pagination), {@link Observe}
+ * (a region that re-renders on core signal changes), and composables for
+ * body lock, fullscreen, and sound state.
  *
  * Core utilities (signals, math helpers, etc.) are re-exported for
  * convenience so consumers don't need a direct `@reelkit/core`
@@ -136,6 +137,7 @@ export {
   type ReelProps,
 } from './lib/components';
 export { ReelIndicator, type ReelIndicatorProps } from './lib/components';
+export { Observe, type ObserveProps } from './lib/components';
 export {
   SwipeToClose,
   type SwipeToCloseDirection,

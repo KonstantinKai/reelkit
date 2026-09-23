@@ -205,6 +205,41 @@ Funciones puras para detectar las zonas de toque y calcular la barra de progreso
 | `getSegments(totalStories, activeIndex, progress)` | `(number, number, number) => SegmentState[]` | Calcula el estado y el porcentaje de relleno de cada segmento de una barra de progreso |
 | `getVisibleWindow(totalStories, activeIndex, progress, containerWidth, minSegmentWidth?, gap?)` | `(number, number, number, number, number?, number?) => VisibleWindow` | Calcula la ventana deslizante de segmentos visibles cuando el total no cabe en el contenedor |
 
+## Funciones de disposición [#layout-helpers]
+
+Funciones puras que comparte el player de cada binding, de modo que React, Vue y Angular calculan tamaños y colocación igual. Quien las llama es el binding; tu aplicación solo las necesita si vas a construir un player propio.
+
+### Tamaños [#sizing]
+
+| Función | Tipo | Descripción |
+| --- | --- | --- |
+| `getStoriesSize()` | `() => [number, number]` | Tamaño del lienzo de la story. En el móvil ocupa toda la pantalla; en escritorio ocupa la altura de la ventana menos un margen de 16px, en 9:16, y solo se estrecha cuando el lienzo y las dos flechas no caben a lo ancho. Sin window (renderizado en el servidor) devuelve `[0, 0]`. |
+| `isMobileWidth(viewportWidth)` | `(number) => boolean` | Si una ventana de ese ancho usa la disposición de móvil. Hasta 768 cuenta como móvil, igual que en la hoja de estilos. |
+| `parseDurationMs(value)` | `(string) => number` | El tiempo más largo de una lista de `transition-duration` calculada, en milisegundos. Lo que no sea un tiempo cuenta como cero. |
+
+### Geometría del carrusel en escritorio [#desktop-carousel-geometry]
+
+Los desplazamientos son relativos al grupo activo: negativos a la izquierda, positivos a la derecha y `0` para la propia story activa.
+
+| Función | Tipo | Descripción |
+| --- | --- | --- |
+| `getCardSize(activeSize)` | `([number, number]) => [number, number]` | Tamaño de una tarjeta lateral: 0,4 de la altura de la story activa, con la misma proporción 9:16. |
+| `getCarouselSlot(offset, activeSize)` | `(number, [number, number]) => CarouselSlot` | Dónde se sitúa una tarjeta respecto al centro de la ventana: `{ x, width, height }`. La primera tarjeta de cada lado deja pasar la flecha; cada siguiente suma un ancho de tarjeta y un espacio. |
+| `getCardOffsets(activeGroupIndex, groupCount)` | `(number, number) => number[]` | Desplazamientos de las tarjetas que se dibujan alrededor del grupo activo en reposo, hasta dos por lado, sin contar la activa. |
+| `isCardShown(offset)` | `(number) => boolean` | Si una tarjeta a esa distancia se dibuja en lugar de atenuarse. |
+| `getSlotOffset(offset)` | `(number) => number` | Posición a la que se mueve una tarjeta, limitada a un hueco más allá de las visibles, para que entre deslizándose junto a la última que se ve. |
+| `getSlideGroupIndexes(from, to, groupCount)` | `(number, number, number) => number[]` | Grupos que dibuja un desplazamiento entre dos grupos: las tarjetas alrededor de cada extremo, en orden de grupo. Los grupos por los que pasa un salto largo se quedan fuera. |
+
+### Presentación [#presentation]
+
+| Función | Tipo | Descripción |
+| --- | --- | --- |
+| `getRingPresentation(options)` | `(RingPresentationOptions) => RingPresentation` | Clase, estilo en línea y tamaño del avatar de un anillo de story, a partir de `totalStories`, `viewedCount` y `size`. Si queda algo por ver, el degradado cónico giratorio; visto entero, un `viewedColor` liso; un grupo vacío, sin anillo. Los tamaños llevan su unidad `px`, así que el objeto de estilo sirve en cualquier framework. |
+| `getPreviewSource(story)` | `(StoryItem \| undefined) => string \| undefined` | Imagen que previsualiza una tarjeta del carrusel: el `poster` del story, la propia imagen cuando es una imagen, y nada para un vídeo sin póster. Una tarjeta sin imagen recae en la tarjeta simple que se dibuja para un story que no tiene nada que mostrar. |
+| `formatTimeAgo(date)` | `(string \| Date) => string` | El tiempo relativo corto que muestran la cabecera y las tarjetas del carrusel: `now`, `5m`, `3h`, `2d`, `2w`. |
+
+Junto a ellas se exportan los tipos `CarouselSlot`, `RingPresentation` y `RingPresentationOptions`.
+
 ## Tipos [#types]
 
 Todas las definiciones de tipos que exporta `@reelkit/stories-core`.

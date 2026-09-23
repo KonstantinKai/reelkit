@@ -7,6 +7,7 @@ import reelapiInterface from '../../../snippets/angular-api/reelapi-interface.ts
 import templateContext from '../../../snippets/angular-api/template-context.html?raw';
 import rkReelContext from '../../../snippets/angular-api/rk-reel-context.ts?raw';
 import bodylockservice from '../../../snippets/angular-api/bodylockservice.ts?raw';
+import soundstateservice from '../../../snippets/angular-api/soundstateservice.ts?raw';
 import signalBridgeUtilities from '../../../snippets/angular-api/signal-bridge-utilities.ts?raw';
 import createrouterurladapter from '../../../snippets/angular-api/createrouterurladapter.ts?raw';
 import packageExports from '../../../snippets/angular-api/package-exports.ts?raw';
@@ -127,6 +128,23 @@ An `InjectionToken<ReelContextValue>` 由 `rk-reel` 提供给后代组件。内�
 | `locked` | `boolean（getter）` | body 当前是否被锁住 |
 | `lock()` | `() => void` | 锁住 body 滚动并补偿滚动条宽度 |
 | `unlock()` | `() => void` | 恢复 body 原本的滚动样式 |
+
+## SoundStateService [#soundstateservice]
+
+覆盖层播放媒体时的静音与禁用状态，以 Angular signal 暴露。请在拥有媒体的组件上提供它，而不是在 root 级 —— 这样每个覆盖层实例各自保有状态。reelkit 的每个 Angular 覆盖层都用它 —— `@reelkit/angular-reel-player` 重新导出同一个类，因此原有的导入照常可用。
+
+lightbox 是例外：请把服务提供在 `<rk-lightbox-overlay>` **之上**，因为它的视频幻灯片由你自己的模板渲染，否则永远看不到覆盖层内部的实例。
+
+<CodeBlock code={soundstateservice} language="typescript" />
+
+| 成员 | 类型 | 说明 |
+| --- | --- | --- |
+| `muted()` | `Signal<boolean>` | 当前是否静音。初始为静音 |
+| `disabled()` | `Signal<boolean>` | 声音当前不可控制时为 true，声音按钮随之隐藏。该值由覆盖层设置 —— `RkReelPlayerOverlayComponent` 在幻灯片没有视频或正在切换时把它置为 true |
+| `controller` | `SoundController（getter）` | 底层的 core `SoundController` —— 交给 `syncMutedToVideo`，让 `<video>` 跟随静音状态 |
+| `toggle()` | `() => void` | 切换静音状态 |
+| `setDisabled()` | `(value: boolean) => void` | 设置当前声音是否可控 |
+| `reset()` | `() => void` | 回到初始状态：静音、未禁用 |
 
 ## Signal 桥接工具 [#signal-bridge-utilities]
 

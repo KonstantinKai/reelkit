@@ -12,6 +12,7 @@ import usesoundstate from '../../../snippets/vue-api/usesoundstate.ts?raw';
 import usevuerouterurladapter from '../../../snippets/vue-api/usevuerouterurladapter.ts?raw';
 import tovueref from '../../../snippets/vue-api/tovueref.ts?raw';
 import soundprovider from '../../../snippets/vue-api/soundprovider.vue?raw';
+import observe from '../../../snippets/vue-api/observe.vue?raw';
 import packageExports from '../../../snippets/vue-api/package-exports.ts?raw';
 
 Referencia completa de los componentes, los composables y las utilidades de `@reelkit/vue`.
@@ -213,6 +214,22 @@ Convierte un `Subscribable` del core (cualquier `Signal` de `@reelkit/core`) en 
 La suscripción se libera sola con `onScopeDispose`, así que hay que llamarlo dentro del `setup()` de Vue o de otro contexto con ámbito de efectos.
 
 <CodeBlock code={tovueref} language="typescript" />
+
+## Observe [#observe]
+
+Etiqueta: `<Observe :signals="[…]">` — vuelve a renderizar su slot por defecto cada vez que cambia una de las señales, y nada de lo que hay alrededor.
+
+Leer una señal del core en una función de render o en una plantilla no te suscribe a ella. La respuesta habitual es [`toVueRef`](#tovueref), pero ata la señal al componente que lo llamó, así que una señal que cambia a menudo vuelve a renderizar ese componente entero. `Observe` es la frontera más estrecha: envuelve con él la parte que muestra el valor y el resto del componente se queda quieto. Es lo que usa el player de stories para repintar la cabecera y la barra de progreso sin redibujar ninguno de los sliders.
+
+| Prop | Tipo | Descripción |
+| --- | --- | --- |
+| `signals` | `readonly Subscribable[]` | Señales a seguir. Un conjunto distinto cambia la suscripción; el mismo conjunto la mantiene. Todo se libera al desmontar. |
+
+El tipo de las props se exporta como `ObserveProps`.
+
+<CodeBlock code={observe} language="vue" />
+
+Usa `toVueRef` cuando el componente entero sigue la señal, y `Observe` cuando solo lo hace una parte.
 
 ## SoundProvider [#soundprovider]
 

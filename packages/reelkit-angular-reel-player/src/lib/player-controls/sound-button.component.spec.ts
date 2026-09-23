@@ -2,7 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { signal } from '@angular/core';
 import { RkSoundButtonComponent } from './sound-button.component';
-import { SoundStateService } from '../sound-state/sound-state.service';
+import { SoundStateService } from '@reelkit/angular';
+import { SoundStateService as ReExportedSoundStateService } from '../../index';
 
 function buildSoundState(muted = true, disabled = false): SoundStateService {
   const mutedSig = signal(muted);
@@ -42,6 +43,12 @@ describe('RkSoundButtonComponent', () => {
     const soundState = buildSoundState();
     const fixture = createFixture(soundState);
     expect(fixture.componentInstance).toBeTruthy();
+  });
+
+  // The service lives in the bindings package; the player re-exports it so a
+  // consumer importing it from either package gets the same injection token.
+  it('re-exports the sound state service from the bindings package', () => {
+    expect(ReExportedSoundStateService).toBe(SoundStateService);
   });
 
   it('injects SoundStateService', () => {

@@ -157,6 +157,41 @@ export class OverlayComponent {
 }
 ```
 
+## SoundStateService
+
+Muted and disabled state for an overlay that plays media, as Angular signals. Provide it on the component that owns the media rather than at root, so each overlay instance keeps its own state. Every reelkit Angular overlay uses it — `@reelkit/angular-reel-player` re-exports the same class, so an existing import from there keeps working.
+
+| Member          | Type                       | Description                                                                                                                                                                       |
+| --------------- | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `muted()`       | `Signal<boolean>`          | Whether audio is currently muted. Starts muted                                                                                                                                    |
+| `disabled()`    | `Signal<boolean>`          | True while sound cannot be controlled, and the sound button hides. The overlay sets it — `RkReelPlayerOverlayComponent` raises it while a slide has no video or is mid-transition |
+| `controller`    | `SoundController (getter)` | The core `SoundController` underneath — hand it to `syncMutedToVideo` to keep a `<video>` in step with the muted state                                                            |
+| `toggle()`      | `() => void`               | Toggles the muted state                                                                                                                                                           |
+| `setDisabled()` | `(value: boolean) => void` | Sets whether sound is controllable right now                                                                                                                                      |
+| `reset()`       | `() => void`               | Returns to the starting state: muted, not disabled                                                                                                                                |
+
+The lightbox is the exception: provide it **above** `<rk-lightbox-overlay>`, since its video slide renders from your own template and would otherwise never see the instance inside the overlay.
+
+```typescript
+import { inject } from '@angular/core';
+import { SoundStateService } from '@reelkit/angular';
+
+@Component({
+  // Provide it on the component that owns the media, so two overlays
+  // on one page never share a muted state.
+  providers: [SoundStateService],
+  // ...
+})
+export class OverlayComponent {
+  readonly soundState = inject(SoundStateService);
+
+  // Use in template:
+  // [muted]="soundState.muted()"
+  // [hidden]="soundState.disabled()"
+  // (click)="soundState.toggle()"
+}
+```
+
 ## RkSwipeToCloseDirective
 
 Attribute directive (`[rkSwipeToClose]`) that adds a vertical swipe-to-dismiss gesture to its host element. While enabled it translates the host along the swipe direction and fades it out, emits `dismissed` once the drag exceeds the threshold, and animates back when it does not.

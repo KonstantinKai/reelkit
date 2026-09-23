@@ -205,6 +205,41 @@ import typesCode from '../../snippets/stories-core/types-code.ts?raw';
 | `getSegments(totalStories, activeIndex, progress)` | `(number, number, number) => SegmentState[]` | 進捗バーの各セグメントの状態と塗りの割合を計算します |
 | `getVisibleWindow(totalStories, activeIndex, progress, containerWidth, minSegmentWidth?, gap?)` | `(number, number, number, number, number?, number?) => VisibleWindow` | 総数がコンテナーに収まらないときに、表示するセグメントのスライドするウィンドウを計算します |
 
+## レイアウトのヘルパー [#layout-helpers]
+
+どのバインディングのプレイヤーも共有する純粋な関数です。おかげで React でも Vue でも Angular でも、大きさと配置はまったく同じになります。呼ぶのはバインディング側で、アプリが直接使うのは自前のプレイヤーを作るときだけです。
+
+### サイズ [#sizing]
+
+| 関数 | 型 | 説明 |
+| --- | --- | --- |
+| `getStoriesSize()` | `() => [number, number]` | ストーリーの表示領域の大きさ。スマートフォンでは画面いっぱい、デスクトップでは上下 16px の余白を除いたウィンドウの高さに合わせて 9:16 にし、領域と左右の矢印が横に収まらないときだけ幅を詰めます。window がない（サーバーレンダリング）場合は `[0, 0]` を返します。 |
+| `isMobileWidth(viewportWidth)` | `(number) => boolean` | その幅のビューポートがスマートフォン向けの配置を使うかどうか。768 以下がスマートフォン扱いで、スタイルシートと同じ基準です。 |
+| `parseDurationMs(value)` | `(string) => number` | 計算された `transition-duration` のリストの中で最も長い時間をミリ秒で返します。時間でない値は 0 として扱います。 |
+
+### デスクトップのカルーセルの配置計算 [#desktop-carousel-geometry]
+
+オフセットは表示中のグループからの相対値です。左が負、右が正、`0` は表示中のストーリー自身です。
+
+| 関数 | 型 | 説明 |
+| --- | --- | --- |
+| `getCardSize(activeSize)` | `([number, number]) => [number, number]` | 横のカードの大きさ。表示中のストーリーの高さの 0.4 倍で、比率は同じ 9:16 です。 |
+| `getCarouselSlot(offset, activeSize)` | `(number, [number, number]) => CarouselSlot` | カードがウィンドウ中央から見てどこに置かれるか：`{ x, width, height }`。各側の最初のカードは矢印をよけ、それ以降はカード 1 枚分の幅と間隔ずつ外へ出ます。 |
+| `getCardOffsets(activeGroupIndex, groupCount)` | `(number, number) => number[]` | 静止時に表示中のグループの周りに描くカードのオフセット。片側最大 2 枚で、表示中のグループ自身は含みません。 |
+| `isCardShown(offset)` | `(number) => boolean` | その距離のカードを、薄く消すのではなく描画するかどうか。 |
+| `getSlotOffset(offset)` | `(number) => number` | カードが移動する位置。表示される範囲の 1 つ外までに丸めるので、カードは最後に見えているカードの横から滑り込みます。 |
+| `getSlideGroupIndexes(from, to, groupCount)` | `(number, number, number) => number[]` | 2 つのグループ間のスライドで描くグループ。両端それぞれの周りのカードを、グループ順に返します。大きく飛ぶときに通り過ぎるグループは含みません。 |
+
+### 見た目 [#presentation]
+
+| 関数 | 型 | 説明 |
+| --- | --- | --- |
+| `getRingPresentation(options)` | `(RingPresentationOptions) => RingPresentation` | `totalStories`、`viewedCount`、`size` から、ストーリーリングのクラス名・インラインスタイル・アバターの大きさを返します。未読が残っていれば回転する円錐グラデーション、見終わっていれば平坦な `viewedColor`、空のグループならリングなしです。大きさには `px` が付くので、このスタイルオブジェクトはどのフレームワークでもそのまま使えます。 |
+| `getPreviewSource(story)` | `(StoryItem \| undefined) => string \| undefined` | カルーセルのカードが見せる画像です。ストーリーの `poster`、画像であればその画像そのもの、ポスターのない動画なら何もありません。画像のないカードは、見せるものがないストーリー用の素のカードに戻ります。 |
+| `formatTimeAgo(date)` | `(string \| Date) => string` | ヘッダーとカルーセルのカードが出す短い相対時刻：`now`、`5m`、`3h`、`2d`、`2w`。 |
+
+`CarouselSlot`、`RingPresentation`、`RingPresentationOptions` の型も一緒に公開されています。
+
 ## 型 [#types]
 
 `@reelkit/stories-core` がエクスポートするすべての型定義です。

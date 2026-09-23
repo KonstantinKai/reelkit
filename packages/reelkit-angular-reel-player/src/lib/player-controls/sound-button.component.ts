@@ -12,7 +12,7 @@ import {
   Volume2,
   VolumeX,
 } from 'lucide-angular';
-import { SoundStateService } from '../sound-state/sound-state.service';
+import { SoundStateService } from '@reelkit/angular';
 
 /**
  * Reusable mute/unmute toggle button rendered as an absolutely-positioned

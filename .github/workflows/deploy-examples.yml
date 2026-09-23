@@ -52,6 +52,9 @@ jobs:
               - 'packages/reelkit-angular/**'
               - 'packages/reelkit-angular-reel-player/**'
               - 'packages/reelkit-angular-lightbox/**'
+              - 'packages/reelkit-angular-stories-player/**'
+              - 'packages/reelkit-stories-core/**'
+              - 'packages/reelkit-example-data/**'
             vue:
               - 'apps/example-vue/src/**'
               - 'apps/example-vue/public/**'
@@ -59,6 +62,11 @@ jobs:
               - 'apps/example-vue/project.json'
               - 'packages/reelkit-core/**'
               - 'packages/reelkit-vue/**'
+              - 'packages/reelkit-vue-reel-player/**'
+              - 'packages/reelkit-vue-lightbox/**'
+              - 'packages/reelkit-vue-stories-player/**'
+              - 'packages/reelkit-stories-core/**'
+              - 'packages/reelkit-example-data/**'
 
   deploy-react:
     needs: changes

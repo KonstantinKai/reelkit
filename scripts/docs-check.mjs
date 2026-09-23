@@ -126,6 +126,22 @@ for (const entry of readdirSync(join(root, 'packages'))) {
   );
 }
 
+// The module block at the top of an entry point is what an editor shows on
+// hover and what a reader meets first in `node_modules`, and a worked example
+// is the part of it they act on. Prose alone passes every other check here —
+// the exports are all documented, the page and the mirror agree — so a package
+// can ship a header that explains itself and still never show the reader a
+// line they can paste.
+const knownExampleless = new Set(config.knownMissingModuleExamples ?? []);
+for (const s of config.surfaces) {
+  if (!existsSync(join(root, s.package))) continue;
+  const header = read(s.package).match(/^\/\*\*[\s\S]*?\*\//)?.[0] ?? '';
+  if (/@example\b/.test(header) || knownExampleless.has(s.package)) continue;
+  errors.push(
+    `${s.package}: the module block carries no \`@example\` — add the worked examples a reader pastes, the way the sibling packages do, or list it in knownMissingModuleExamples.`,
+  );
+}
+
 // Every public export of a package must appear on that package's own API page
 // AND its llms mirror. A reference table belongs where the symbol is exported,
 // not where some other page happens to consume it.
@@ -190,6 +206,68 @@ if (config.readmeSurfaces) {
         `${readme}: export \`${sym}\` is a headline capability the README never names — ${config.readmeSurfaces.reason}`,
       );
     }
+  }
+}
+
+// A README is the package's whole page on npm, and the surfaces check above
+// only proves a few flagged exports are named somewhere in it — which an
+// otherwise empty stub does by mentioning them once. These sections are the
+// ones every other published package already carries, so a README without one
+// is short of what a reader gets from every sibling.
+if (config.readmeSections) {
+  for (const s of config.surfaces) {
+    const readme = s.package.replace(/\/src\/index\.ts$/, '/README.md');
+    if (!existsSync(join(root, readme))) continue;
+    const headings = new Set(
+      [...read(readme).matchAll(/^##\s+(.+?)\s*$/gm)].map((m) => m[1]),
+    );
+    const missing = config.readmeSections.filter((s) => !headings.has(s));
+    if (missing.length > 0) {
+      errors.push(
+        `${readme}: no ${missing.map((s) => `\`## ${s}\``).join(', ')} section — every other published package README has one.`,
+      );
+    }
+  }
+}
+
+// A package that ships a stylesheet is unstyled until the consumer loads it,
+// and the README is the only place that says so — the export map does not
+// announce itself. One README shipped with no mention of its stylesheet at
+// all, so a reader following it got an overlay with no styling.
+for (const s of config.surfaces) {
+  const dir = s.package.replace(/\/src\/index\.ts$/, '');
+  const manifest = join(root, dir, 'package.json');
+  const readme = join(root, dir, 'README.md');
+  if (!existsSync(manifest) || !existsSync(readme)) continue;
+  const { name, exports } = JSON.parse(readFileSync(manifest, 'utf8'));
+  if (!exports?.['./styles.css']) continue;
+  if (readFileSync(readme, 'utf8').includes(`${name}/styles.css`)) continue;
+  errors.push(
+    `${dir}/README.md: package exports \`./styles.css\` but the README never names \`${name}/styles.css\` — a reader following it gets the component unstyled.`,
+  );
+}
+
+// The docs site reads `?framework=` to pick which binding's pages to show. A
+// link from an Angular or Vue package that omits it drops the reader on the
+// React view of their own component.
+for (const s of config.surfaces) {
+  const dir = s.package.replace(/\/src\/index\.ts$/, '');
+  const manifest = join(root, dir, 'package.json');
+  const readme = join(root, dir, 'README.md');
+  if (!existsSync(manifest) || !existsSync(readme)) continue;
+  // The package name is what states the binding; the directory spells it too
+  // but with a separator that varies, which is how the first version of this
+  // rule matched nothing at all.
+  const { name } = JSON.parse(readFileSync(manifest, 'utf8'));
+  const framework = /^@reelkit\/(angular|vue)(-|$)/.exec(name);
+  if (!framework) continue;
+  for (const [link] of readFileSync(readme, 'utf8').matchAll(
+    /https:\/\/reelkit\.dev\/docs\/[^)"\s]+/g,
+  )) {
+    if (link.includes('framework=')) continue;
+    errors.push(
+      `${dir}/README.md: ${link} carries no \`?framework=${framework[1]}\` — the docs site opens it on the React view of the reader's own component.`,
+    );
   }
 }
 

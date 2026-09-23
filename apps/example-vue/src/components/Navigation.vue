@@ -8,12 +8,15 @@ const pathname = computed(() => route.path);
 const links = [
   { to: '/', label: 'Full Page Slider' },
   { to: '/reel-player', label: 'Reel Player' },
-  { to: '/reel-player-custom', label: 'Custom Player' },
   { to: '/reel-player-url', label: 'URL Reel Player' },
+  { to: '/reel-player-custom', label: 'Custom Player' },
   { to: '/image-preview', label: 'Image Gallery' },
   { to: '/image-preview-url', label: 'URL Image Gallery' },
   { to: '/image-preview-custom', label: 'Custom Gallery' },
   { to: '/image-preview-video', label: 'Video Gallery' },
+  { to: '/stories-player', label: 'Stories Player' },
+  { to: '/stories-player-url', label: 'URL Stories Player' },
+  { to: '/stories-player-custom', label: 'Custom Stories' },
 ];
 </script>
 
@@ -51,9 +54,11 @@ const links = [
     rgba(0, 0, 0, 0) 100%
   );
 }
+
 .topnav::-webkit-scrollbar {
   display: none;
 }
+
 .link {
   padding: 6px 12px;
   background-color: rgba(0, 0, 0, 0.5);
@@ -67,6 +72,7 @@ const links = [
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
+
 .link.active {
   background-color: rgba(255, 255, 255, 0.9);
   color: #000;

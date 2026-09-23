@@ -6,7 +6,7 @@ export default function Terms() {
       <div className="mb-12">
         <h1 className="text-4xl font-bold mb-4">Terms of Service</h1>
         <p className="text-sm text-slate-500 dark:text-slate-400">
-          Last updated: July 22, 2026
+          Last updated: September 21, 2026
         </p>
       </div>
 

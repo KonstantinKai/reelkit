@@ -53,6 +53,10 @@ export const publishedPackages: PublishedPackage[] = [
     description: 'Vertical-swipe video reel player for Vue 3',
   },
   {
+    name: '@reelkit/vue-stories-player',
+    description: 'Stories player overlay for Vue 3',
+  },
+  {
     name: '@reelkit/angular',
     description: 'Angular bindings',
   },
@@ -63,5 +67,9 @@ export const publishedPackages: PublishedPackage[] = [
   {
     name: '@reelkit/angular-reel-player',
     description: 'Vertical-swipe video reel player for Angular',
+  },
+  {
+    name: '@reelkit/angular-stories-player',
+    description: 'Instagram-style stories player for Angular',
   },
 ];

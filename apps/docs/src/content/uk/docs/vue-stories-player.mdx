@@ -1,10 +1,499 @@
 ---
 title: Stories Player для Vue
-description: 'Повноекранний Stories Player для Vue: прогрес, жести й темізація.'
+description: 'Повноекранний плеєр історій у стилі Instagram для Vue 3: перехід дотиком, кубічні переходи між авторами, таймер автопереходу, стан переглянутого, десктопна карусель, стан у URL, слоти з областю видимості та токени темізації, спільні з React.'
 ---
 
-Повноекранний оверлей плеєра історій у стилі Instagram для Vue: вкладена навігація, таймер автопереходу, зони дотику та налаштовні слоти.
+import { Zap, Play, Timer, Layout, Clock, Image, Layers, Heart, Monitor, Circle, Code, Settings, Link2, Eye } from 'lucide-react';
+import installation from '../../snippets/vue-stories-player/installation.sh?raw';
+import installation2 from '../../snippets/vue-stories-player/installation-2.ts?raw';
+import basicUsage from '../../snippets/vue-stories-player/basic-usage.vue?raw';
+import urlState from '../../snippets/vue-stories-player/url-state.vue?raw';
+import urlState2 from '../../snippets/vue-stories-player/url-state-2.ts?raw';
+import urlState3 from '../../snippets/vue-stories-player/url-state-3.ts?raw';
+import rememberingWhatWasSeen from '../../snippets/vue-stories-player/remembering-what-was-seen.vue?raw';
+import desktopCarousel from '../../snippets/vue-stories-player/desktop-carousel.vue?raw';
+import transitions from '../../snippets/vue-stories-player/transitions.vue?raw';
+import scopedSlots from '../../snippets/vue-stories-player/scoped-slots.vue?raw';
+import slideSlot from '../../snippets/vue-stories-player/slide-slot.vue?raw';
+import navigationSlot from '../../snippets/vue-stories-player/navigation-slot.vue?raw';
+import progressBarSlot from '../../snippets/vue-stories-player/progress-bar-slot.vue?raw';
+import loadingErrorSlots from '../../snippets/vue-stories-player/loading-error-slots.vue?raw';
+import groupPreviewSlot from '../../snippets/vue-stories-player/group-preview-slot.vue?raw';
+import storiesApi from '../../snippets/vue-stories-player/stories-api.vue?raw';
+import vModelIsOpen from '../../snippets/vue-stories-player/v-model-is-open.vue?raw';
+import doubleTapLikes from '../../snippets/vue-stories-player/double-tap-likes.vue?raw';
+import customizingTheHeartAnimation from '../../snippets/vue-stories-player/customizing-the-heart-animation.css?raw';
+import subComponents from '../../snippets/vue-stories-player/sub-components.vue?raw';
+import types from '../../snippets/vue-stories-player/types.ts?raw';
+import slotScopes from '../../snippets/vue-stories-player/slot-scopes.ts?raw';
+import customStoryTypes from '../../snippets/vue-stories-player/custom-story-types.vue?raw';
+import theming from '../../snippets/vue-stories-player/theming.css?raw';
 
-<Callout type="info" title="Скоро">
-  Плеєр історій для Vue зараз у розробці. Версія для React уже доступна — [@reelkit/react-stories-player](/docs/stories-player). Версія для Vue матиме ту саму архітектуру й використовуватиме `@reelkit/stories-core` як машину станів, таймер і рендерер прогресу на canvas без прив’язки до фреймворку.
+Повноекранний оверлей плеєра історій у стилі Instagram для Vue 3 на основі `@reelkit/vue-stories-player`. Він використовує той самий рушій `@reelkit/stories-core`, що й версія для React, тож поведінка, класи CSS і токени темізації збігаються.
+
+<DemoLink href="https://vue-demo.reelkit.dev/stories-player?utm_source=docs">Подивитися демо наживо →</DemoLink>
+
+## Features [#features]
+
+<FeatureGrid items={[
+              {
+                icon: Zap,
+                label: 'Вкладена навігація',
+                desc: 'Дотик гортає історії, свайп змінює автора',
+              },
+              {
+                icon: Play,
+                label: 'Відеоісторії',
+                desc: 'Автовідтворення з перемикачем звуку',
+              },
+              {
+                icon: Timer,
+                label: 'Автоперехід',
+                desc: 'Налаштовний таймер для кожної історії',
+              },
+              {
+                icon: Layout,
+                label: '3D-переходи',
+                desc: 'Куб, фліп, згасання, зум, зсув',
+              },
+              {
+                icon: Clock,
+                label: 'Смуга прогресу',
+                desc: 'Сегментована смуга на canvas',
+              },
+              {
+                icon: Image,
+                label: 'Фото й відео',
+                desc: 'Обидва типи медіа',
+              },
+              {
+                icon: Layers,
+                label: 'Віртуалізація',
+                desc: 'Лише 3 слайди в DOM',
+              },
+              {
+                icon: Heart,
+                label: 'Лайк подвійним дотиком',
+                desc: 'Анімація серця на подвійний дотик',
+              },
+              {
+                icon: Monitor,
+                label: 'Навігація на десктопі',
+                desc: 'Кнопки-стрілки',
+              },
+              {
+                icon: Circle,
+                label: 'Кільця історій',
+                desc: 'Аватари з кільцем у стилі Instagram',
+              },
+              {
+                icon: Code,
+                label: 'Власні типи',
+                desc: 'Розширюйте StoryItem своїми полями',
+              },
+              {
+                icon: Settings,
+                label: 'Слоти з областю видимості',
+                desc: 'Замінюйте будь-яку частину інтерфейсу',
+              },
+              {
+                icon: Link2,
+                label: 'Стан у URL',
+                desc: 'Посилання ?story=group.story, якими можна ділитися',
+              },
+              {
+                icon: Eye,
+                label: 'Стан переглянутого',
+                desc: 'Кільця й відновлення переживають перезавантаження',
+              },
+            ]} />
+
+## Встановлення [#installation]
+
+<CodeBlock code={installation} language="bash" />
+
+Імпортуйте стилі один раз у точці входу застосунку (або в будь-якому компоненті):
+
+<CodeBlock code={installation2} language="typescript" />
+
+<Callout type="info" title="Іконки">
+  Типовий заголовок і стрілки навігації беруть іконки з `lucide-vue-next`. Якщо ви віддаєте перевагу іншій бібліотеці іконок, замініть їх через слоти `#header` і `#navigation`.
 </Callout>
+
+## Швидкий старт [#quick-start]
+
+`StoriesOverlay` малює повноекранний плеєр. Поєднайте його зі `StoriesRingList` для точок входу в стилі Instagram, передайте масив об’єктів `StoriesGroup` і прив’яжіть `v-model:is-open`.
+
+<CodeBlock code={basicUsage} language="vue" />
+
+## Стан у URL [#url-state]
+
+<DemoLink href="https://vue-demo.reelkit.dev/stories-player-url?utm_source=docs">Подивитися демо наживо →</DemoLink>
+
+`StoriesUrlOverlay` — окремий компонент, стан відкриття якого живе в адресному рядку. Обидві осі їдуть в одному параметрі — `?story=<group>.<story>` — тож на відкриту історію є посилання, яким можна поділитися, зберегти в закладки й закрити кнопкою «Назад». Створіть контролер через `useOverlayUrlState` і `urlIndexTwoAxisKey`, а тоді передайте його як `controller`.
+
+<Callout type="info" title="Вбудовані ключі">
+  Історії двовісні, тож розгортайте в контролер двовісний ключ: `urlIndexTwoAxisKey` (автор і історія за позицією) або `urlStableIdTwoAxisKey` (автор за стабільним `id`) — обидва реекспортовані з `@reelkit/vue-stories-player`. Дивіться [посібник зі стану в URL](/docs/core/guide#url-state) і [Core API](/docs/core/api#url-state).
+</Callout>
+
+<CodeBlock code={urlState} language="vue" />
+
+- Відкриття додає **один** запис в історію. Перехід між історіями *і* зміна автора лише **замінюють** його, тож N переходів не додають записів, а один крок назад завжди закриває плеєр. «Назад» закриває, а не гортає історії.
+- **Внутрішня навігація теж їде в URL.** Перехід між історіями одного автора оновлює `?story=2.`*n*, тож пряме посилання веде саме на потрібну історію.
+- «Назад» закриває лише тоді, коли плеєр відкрили всередині застосунку — це посилання додало запис. У спільного посилання, відкритого в новій вкладці, історії позаду немає, тож «Назад» веде геть із сайту; кнопка ✕ або Escape прибирає параметр на місці й лишає вас тут.
+- Параметр, що не називає ані автора, ані історії — застаріла закладка, виправлене руками значення, історія за межами групи — прибирається з URL, а не відкриває сусідню.
+- Застосунок із роутером має передати адаптер на його основі, щоб роутер лишався єдиним джерелом правди про навігацію. `useVueRouterUrlAdapter` із `@reelkit/vue/vue-router-url-adapter` — готовий адаптер для Vue Router; запис в історію повз роутер лишає його локацію застарілою, і наступна навігація губить параметр.
+
+**Стабільні посилання.** Типово автор адресується за позицією, тож збережене `?story=2.0` відкриє іншу людину, щойно стрічку перевпорядкують. Адресуйте автора за стабільним id — `outerCodec` записує id в URL, а `outerLocator` знаходить, де він стоїть. Половина з історією лишається звичайним індексом усередині знайденої групи.
+
+<CodeBlock code={urlState2} language="typescript" />
+
+**Нескінченні стрічки.** Посторінкове завантаження — справа `outerLocator` і не залежить від кодека. `locate` синхронний, тож відповідає лише про вже завантажені групи: спільне посилання на групу 400 у стрічці, де завантажено 20, нічого не знайде. `locateAsync` — запасний шлях, який викликають лише тоді, коли `locate` не впорався; історія потім обмежується межами тієї групи, на якій усе зупинилося.
+
+<Callout type="info" title="Той самий locateAsync, зовнішня вісь">
+  Це той самий пейджер `locateAsync`, який приймають одновісні ключі — у двовісному ключі він їде у вашому `outerLocator`, тож сторінки гортає вісь авторів, а історія лишається локальним індексом усередині знайденої групи.
+</Callout>
+
+<CodeBlock code={urlState3} language="typescript" />
+
+- Поки `locateAsync` у процесі, плеєр лишається закритим, а параметр — недоторканим, тож пряме посилання переживає запит. `null` або відмова прибирає параметр.
+- Відповідь, що приходить після зміни URL, після закриття або після демонтажу, відкидається — повільний запит не відкриє історію, якої ніхто не просив.
+- Повний перелік опцій `useOverlayUrlState` є в [довіднику Vue API](/docs/vue/api#useoverlayurlstate).
+
+## Пам’ять про переглянуте [#remembering-what-was-seen]
+
+Кільця світяться градієнтом, доки автора не додивилися до кінця, а група відкривається на першій непереглянутій історії. І те, й те дає один `createStoriesViewedStateController`, створений там, де живе стрічка, і переданий списку кілець і плеєру як `viewed`: вони самі читають сховище, стежать за ним і записують показане. Збережений запис називає автора й історію за id, тож він переживає перевпорядкування стрічки, а той самий контролер працює в React та Angular.
+
+<CodeBlock code={rememberingWhatWasSeen} language="vue" />
+
+- **Історія, з якої все почалося, теж рахується.** Історію, що вже на екрані, позначають переглянутою після монтування, тож відкрити групу з однієї історії й закрити — означає додивитися її.
+- **Рух далі теж відновлюється.** `resumeStoryIndex` питають для кожної групи, до якої дійшли вперше за цей сеанс, зокрема для тієї, з якої плеєр відкрився, якщо `initialStoryIndex` не називає історію прямо; група, яку вже гортали, відкривається там, де її лишили.
+- **Посилання все одно головніше.** У `StoriesUrlOverlay` місце відкриття вирішує параметр, хай що збережено. Всюди інде вирішує колбек відновлення.
+- **Лічильник — це позиція, а не підсумок.** Запис називає найдальшу досягнуту історію, тож нова історія в додивленій групі знову засвічує кільце, а видалена з середини вкорочує лічильник.
+- **Сховище змінне.** Передайте `storage: createSessionStorageAdapter()`, щоб забувати після закриття вкладки, або власний `StorageAdapter`. Дві відкриті вкладки лишаються в такт завдяки події сховища.
+- **Плеєр, змонтований лише на відкриття, читає запізно.** Оверлей читає сховище після монтування, поки ще закритий. З `v-if="open"` такої миті немає, тож самі викличте `viewed.attach()` в `onMounted`, а те, що він повертає, — в `onUnmounted`. Опції та нижчий рівень, з якого це зібрано, описані на сторінці [Stories Core](/docs/stories-core#viewed-controller).
+
+## Десктопна карусель [#desktop-carousel]
+
+Поставте `desktop-layout="carousel"`, щоб розкласти плеєр як вебверсію Instagram: активна історія лишається в центрі у звичайному розмірі, а до двох сусідніх авторів стоять з боків меншими притемненими картками. Клік на картці відкриває того автора, і картки з’їжджають, поки змінюється група. Передайте той самий контролер `viewed`, що й списку кілець, — і картка додивленої групи отримає приглушене кільце. Картки стежать за ним самі, тож коли історію позначають переглянутою, перемальовуються лише вони, а плеєр не рендериться заново.
+
+<CodeBlock code={desktopCarousel} language="vue" />
+
+- **На телефонах лишається звичайний плеєр.** До 768px завширшки картки не малюються, а свайпи користуються `group-transition`, як і в типовому розкладі `'single'`. Зміна ширини через цю межу перемикає розклад наживо.
+- **Кожна картка показує те, з чого відкриється група**: історію, на якій її лишили цього сеансу, інакше — ту, що повертає `resumeStoryIndex`. Вона показує постер відео або зображення. Історію без обох, як-от текстову на градієнті, малює ваш слот `#slide` у розмірі плеєра й зменшує; відео без постера показує тло картки. Цей попередній перегляд отримує `isActive: false` і є лише картинкою: у ньому не можна нічого сфокусувати чи натиснути. Тримайте все, що слайд робить при монтуванні — відтворення чи аналітику — за перевіркою `isActive`.
+- **Таймер чекає на з’їзд карток.** Історія не гортається далі, а `story-viewed` для неї не спрацьовує, доки картки не доїхали.
+- **Кожен спосіб змінити групу дає з’їзд**: клік на картці, `StoriesApi.goToGroup`, `nextGroup` і `prevGroup`, а також стрілки за межею групи. Свайп рухає сам плеєр, тож з’їзду згори не отримує.
+
+## Довідник API [#api-reference]
+
+### Пропси StoriesOverlay [#storiesoverlay-props]
+
+<Signature>StoriesOverlayProps</Signature>
+
+| Prop | Тип | Типове значення | Опис |
+| --- | --- | --- | --- |
+| `aria-label` | `string` | `'Stories player'` | Доступна назва області діалогу; екранні читачі оголошують її, коли оверлей відкривається |
+| `default-image-duration` | `number` | `5000` | Тривалість автопереходу для історії-зображення, у мілісекундах |
+| `desktop-layout` | `'single' \| 'carousel'` | `'single'` | Розклад на десктопі. `'carousel'` показує сусідніх авторів картками поруч з активною історією і з’їжджає між групами. На телефонах історія завжди сама. Тип експортовано як `DesktopLayout`. |
+| `enable-keyboard` | `boolean` | `true` | Вмикає навігацію клавіатурою (стрілки вліво/вправо, Escape) |
+| `groups` | `StoriesGroup<T>[]` | `required` | Групи історій для показу. Групи чи історії, додані поки плеєр відкритий, підхоплюються — і коли масив замінили, і коли дописали в той самий. |
+| `group-transition` | `TransitionTransformFn` | `cubeTransition` | Перехід для зовнішнього слайдера (авторів). Ігнорується, поки показана десктопна карусель, яка натомість з’їжджає. |
+| `hide-ui-on-pause` | `boolean` | `true` | Ховає смугу прогресу й заголовок, поки триває пауза від довгого натискання |
+| `initial-group-index` | `number` | `0` | Індекс початково видимої групи, від нуля |
+| `initial-story-index` | `number` | відновлення, інакше `0` | Індекс початково видимої історії, від нуля. Названа історія головніша за будь-що збережене; не вказуйте її — і група відкриється з відновленням, як усі інші. |
+| `inner-transition-duration` | `number` | `200` | Тривалість згасання між історіями, у мілісекундах |
+| `is-open` | `boolean` | `required` | Керує видимістю й блокує прокручування сторінки, поки плеєр відкритий. Прив’язуйте через `v-model:is-open`. |
+| `min-segment-width` | `number` | `8` | Мінімальна ширина сегмента прогресу в пікселях, після якої вмикається рухоме вікно |
+| `resume-story-index` | `(groupIndex: number) => number` | — | З якої історії група відкривається, коли до неї доходять уперше. Питають лише про групу, ще не відвідану за це відкриття, і це головніше за `viewed`. |
+| `tap-zone-split` | `number` | `0.3` | Частка ширини для зони дотику (0–1). Ліва частина веде назад, решта — уперед. |
+| `viewed` | `StoriesViewedStateController` | — | Те, що глядач уже бачив, із `createStoriesViewedStateController()`. Групи відновлюються з першої непереглянутої історії, кожна показана історія записується, а картки каруселі приглушують кільце додивленої групи. Передайте той самий контролер у `StoriesRingList`. |
+
+### Пропси StoriesUrlOverlay [#storiesurloverlay-props]
+
+<Signature>StoriesUrlOverlayProps</Signature>
+
+Приймає всі пропси вище, крім трійці стану відкриття — `is-open`, `initial-group-index`, `initial-story-index`, — яку натомість дає контролер.
+
+| Prop | Тип | Типове значення | Опис |
+| --- | --- | --- | --- |
+| `controller` | `UrlStateController<TwoAxisPosition>` | `required` | Контролер із `useOverlayUrlState`, розгорнутий із `urlIndexTwoAxisKey`. Його `position` — об’єкт \{ outer, inner \} — вирішує, чи плеєр відкритий і де саме; оверлей пише назад на кожну навігацію та на закриття. |
+
+### Події [#events]
+
+| Подія | Дані | Опис |
+| --- | --- | --- |
+| @api-ready | `StoriesApi` | Спрацьовує, щойно плеєр змонтовано, і дає імперативний API |
+| @close | `void` | Спрацьовує, коли плеєр закривається. У `StoriesUrlOverlay` параметр на цей момент уже прибрано. |
+| @double-tap | `groupIndex: number, storyIndex: number` | Спрацьовує на подвійний дотик, разом з анімацією серця |
+| @group-change | `groupIndex: number` | Спрацьовує після зміни активної групи |
+| @pause | `void` | Спрацьовує на довге натискання або кнопку паузи в заголовку |
+| @resume | `void` | Спрацьовує на відпускання або кнопку відтворення в заголовку |
+| @story-change | `groupIndex: number, storyIndex: number` | Спрацьовує після зміни активної історії |
+| @story-complete | `groupIndex: number, storyIndex: number` | Спрацьовує, коли таймер історії добігає кінця |
+| @story-viewed | `groupIndex: number, storyIndex: number` | Спрацьовує, коли історія стає видимою, зокрема та, з якої плеєр відкрився |
+| @update:is-open | `boolean` | Спрацьовує на закриття; вмикає \`v-model:is-open\` |
+
+### v-model:is-open [#v-model-is-open]
+
+Використовуйте `v-model:is-open`, щоб керувати оверлеєм однією прив’язкою. Пара `:is-open` + `@close` теж працює, якщо вам потрібна сама подія.
+
+<CodeBlock code={vModelIsOpen} language="vue" />
+
+## Слоти з областю видимості [#scoped-slots]
+
+Вісім слотів замінюють будь-яку частину плеєра. Кожен отримує типізований об’єкт області видимості. Слот, який ви не передали, лишає типовий вигляд — так само як і той, що нічого не намалював, тож `v-if`, який став хибним, повертає типовий вміст, а не лишає дірку.
+
+| Слот | Область видимості | Опис |
+| --- | --- | --- |
+| #error | `{ story, storyIndex, groupIndex }` | Замінює вбудовану панель «Content unavailable», намальовану поверх активної історії |
+| #footer | `{ author, story, storyIndex }` | Додає підвал під історією активної групи |
+| #groupPreview | `{ group, groupIndex, story, offset, viewedCount, onOpen }` | Наповнює картку десктопної каруселі; плеєр і далі розміщує, масштабує та з’їжджає нею |
+| #header | `{ author, story, storyIndex, isPaused, isMuted, isVideo, onToggleSound, onTogglePause, onClose }` | Замінює типовий заголовок (автор, пауза, звук, закриття) |
+| #loading | `{ story, storyIndex, groupIndex }` | Замінює типовий індикатор у заголовку, поки активна історія вантажиться |
+| #navigation | `{ onPrevStory, onNextStory, onPrevGroup, onNextGroup }` | Замінює обидві десктопні стрілки |
+| #progressBar | `{ totalStories, activeIndex, progress, group }` | Замінює смугу прогресу на canvas. `activeIndex` і `progress` — сигнали ядра, тож проведіть їх через `toVueRef`. |
+| #slide | `{ story, index, groupIndex, isActive, size, activeGroupIndex, activeStoryIndex, onDurationReady, onReady, onWaiting, onError, onEnded }` | Замінює типові слайди із зображенням і відео |
+
+<CodeBlock code={scopedSlots} language="vue" />
+
+### Власні слайди [#custom-slides]
+
+Складайте `ImageStorySlide` і `VideoStorySlide` усередині `#slide`, щоб зберегти автовідтворення, захоплення постера й синхронізацію звуку, малюючи власний розклад. Викликайте колбеки життєвого циклу з області видимості, інакше таймер ніколи не стартує:
+
+| Колбек | Коли викликати |
+| --- | --- |
+| `onReady` | Зображення завантажилося або відео почало грати. Знімає стан завантаження й запускає таймер. |
+| `onWaiting` | Відео буферизується посеред відтворення. Показує індикатор і ставить таймер на паузу. |
+| `onError` | Вміст не завантажився. Показує стан помилки, а URL запам’ятовується як зламаний, тож повторне відкриття не робить нової спроби. |
+| `onDurationReady` | Повідомте справжню тривалість медіа в мілісекундах, щоб таймер тривав стільки ж, скільки відео. |
+| `onEnded` | Медіа скінчилося. Гортає до наступної історії. |
+
+<CodeBlock code={slideSlot} language="vue" />
+
+<Callout type="info" title="Кешування прелоадера">
+  Вбудовані компоненти `ImageStorySlide` і `VideoStorySlide` завантажують наступну історію у фоні. Коли глядач доходить до попередньо завантаженої історії, вміст з’являється миттєво, без індикатора. URL, що один раз не завантажився, теж запам’ятовується, тож повторне відкриття зламаної історії одразу показує помилку замість нової спроби.
+</Callout>
+
+### Власна навігація [#custom-navigation]
+
+<CodeBlock code={navigationSlot} language="vue" />
+
+### Власна смуга прогресу [#custom-progress-bar]
+
+Область видимості несе сигнали ядра, а не звичайні числа, тож таймер може рухати смугу, не перемальовуючи плеєр. Проведіть їх через `toVueRef` із `@reelkit/vue`:
+
+<CodeBlock code={progressBarSlot} language="vue" />
+
+### Власні стани завантаження й помилки [#custom-loading-error]
+
+<CodeBlock code={loadingErrorSlots} language="vue" />
+
+### Власні картки каруселі [#custom-carousel-cards]
+
+<CodeBlock code={groupPreviewSlot} language="vue" />
+
+## Переходи [#transitions]
+
+`group-transition` керує 3D-ефектом під час зміни автора. Імпортуйте функції переходів із `@reelkit/vue`:
+
+<CodeBlock code={transitions} language="vue" />
+
+## StoriesApi [#storiesapi]
+
+Поставте template ref на оверлей для імперативного керування або візьміть API з події `@api-ready`. Виклики, зроблені поки плеєр закритий, нічого не роблять.
+
+<CodeBlock code={storiesApi} language="vue" />
+
+### Методи [#methods]
+
+| Метод | Тип | Опис |
+| --- | --- | --- |
+| `nextStory()` | `() => void` | Перейти до наступної історії в поточній групі |
+| `prevStory()` | `() => void` | Повернутися до попередньої історії в поточній групі |
+| `nextGroup()` | `() => void` | Перейти до наступного автора |
+| `prevGroup()` | `() => void` | Перейти до попереднього автора |
+| `goToGroup(index)` | `(index: number) => void` | Перейти до конкретної групи за індексом |
+| `pause()` | `() => void` | Поставити автоперехід і таймер прогресу на паузу |
+| `resume()` | `() => void` | Продовжити автоперехід і таймер прогресу |
+
+## Подвійний дотик і лайки [#double-tap-likes]
+
+На подвійний дотик програється анімація серця — миттєвий візуальний відгук. Подія `@double-tap` дає індекси групи й історії, тож лайк ви зберігаєте у власному стані. Сам плеєр стану лайків не тримає.
+
+<CodeBlock code={doubleTapLikes} language="vue" />
+
+### Налаштування анімації серця [#customizing-the-heart-animation]
+
+Швидкість змінюється токеном `--rk-stories-heart-duration` (див. [Темізацію](#theming)). Для кольору, розміру чи повного приховування серця беріть клас `.rk-stories-heart`. Компонент `HeartAnimation` експортовано й для окремого використання.
+
+<CodeBlock code={customizingTheHeartAnimation} language="css" />
+
+<Callout type="info">
+  Вбудовану анімацію серця поки не можна замінити слотом. Перестилюйте її через CSS або сховайте за `display: none` і програвайте власну анімацію з події `@double-tap`. Якщо вам потрібен слот `heart`, напишіть нам через [GitHub Issues](https://github.com/KonstantinKai/reelkit/issues).
+</Callout>
+
+## Підкомпоненти [#sub-components]
+
+Експортовані будівельні блоки — для складання всередині слотів або для самостійного використання: `StoriesRing`, `StoriesRingList`, `StoryHeader`, `CanvasProgressBar`, `ImageStorySlide`, `VideoStorySlide` і `HeartAnimation`.
+
+| Компонент | Що це |
+| --- | --- |
+| `CanvasProgressBar` | Сегментована смуга прогресу на canvas, намальована просто з сигналів таймера. Тримає рухоме вікно для груп із багатьма історіями. |
+| `HeartAnimation` | Серце подвійного дотику. Випускає `complete`, коли анімація закінчується, щоб батьківський компонент його прибрав. |
+| `ImageStorySlide` | Слайд-зображення на весь екран з `object-fit: cover`, що повідомляє про завантаження й помилку колбеками. |
+| `StoriesRing` | Круглий аватар із градієнтним кільцем. Два стани: є що дивитися — кільце обертається, усе переглянуто — стає рівним. Випускає `click`. |
+| `StoriesRingList` | Горизонтальний ряд кілець з іменами авторів, по одному на групу. Випускає `select` з індексом групи. |
+| `StoryHeader` | Типовий заголовок: аватар, ім’я, значок підтвердження, відносний час, пауза, звук, закриття й індикатор завантаження. |
+| `VideoStorySlide` | Відеослайд на одному спільному елементі `<video>` — для безперервності звуку на iOS. Тримає автовідтворення, кадри-постери й повідомлення про тривалість. |
+
+<CodeBlock code={subComponents} language="vue" />
+
+## Реекспорти [#re-exports]
+
+Усе потрібне споживачеві приходить із цього пакета, тож прямий імпорт `@reelkit/core` не потрібен ніколи.
+
+| Звідки | Що реекспортовано |
+| --- | --- |
+| `@reelkit/vue` | `Observe`, `SoundProvider`, `useSoundState`, `useOverlayUrlState`, `createViewedStateController`, `twoAxisViewedTracking`, `createLocalStorageAdapter`, `createSessionStorageAdapter`, `createMemoryStorageAdapter`, `urlIndexTwoAxisKey`, `urlStableIdTwoAxisKey`, `base64UrlCodec`, а також типи `UrlAdapter`, `UrlCodec`, `UrlLocator`, `UrlKey`, `UrlStateController`, `TwoAxisPosition`, `TwoAxisIdentity`, `UrlIndexTwoAxisKeyOptions`, `ViewedStateController`, `ViewedStateOptions`, `StorageAdapter` |
+| `@reelkit/stories-core` | `createStoriesViewedStateController`, `StoriesViewedStateController`, `StoriesViewedStateControllerConfig`, а також типи вмісту `StoryItem`, `AuthorInfo`, `StoriesGroup`, `MediaType` |
+
+`Observe` — та межа рендеру, якою плеєр користується всередині: вона перемальовує лише свій слот, коли змінюється сигнал ядра, і саме так зміна історії оновлює заголовок і смугу прогресу, не перемальовуючи слайдери. Беріть її у власному слоті, коли цілий компонент, що стежить за сигналом через `toVueRef`, був би заширокою межею — див. [довідник Vue API](/docs/vue/api#observe).
+
+Тип пропсів кожного компонента теж експортовано: `StoriesOverlayProps`, `StoriesUrlOverlayProps`, `StoriesRingProps`, `StoriesRingListProps`, `StoryHeaderProps`, `CanvasProgressBarProps`, `ImageStorySlideProps` і `VideoStorySlideProps`.
+
+## Типи [#types]
+
+### StoryItem, AuthorInfo, StoriesGroup [#storyitem-authorinfo-storiesgroup]
+
+<CodeBlock code={types} language="typescript" />
+
+### Області видимості слотів [#slot-scopes]
+
+Кожен тип області видимості експортовано, тож слот можна анотувати там, де компілятор не виводить тип сам — `HeaderSlotScope`, `FooterSlotScope`, `SlideSlotScope`, `NavigationSlotScope`, `ProgressBarSlotScope`, `LoadingSlotScope`, `ErrorSlotScope` і `GroupPreviewSlotScope`, поряд зі `StoriesApi`:
+
+<CodeBlock code={slotScopes} language="typescript" />
+
+## Власні типи історій [#custom-story-types]
+
+Розширте `StoryItem` своїми полями й типізуйте ним групи. Анотуйте область видимості слота, щоб додаткові поля лишалися видимими всередині шаблону:
+
+<CodeBlock code={customStoryTypes} language="vue" />
+
+## Класи CSS [#css-classes]
+
+Класи звичайні (не scoped), тож стилі, завантажені після `@reelkit/vue-stories-player/styles.css`, можуть перекрити будь-який із них. Вони збігаються з `@reelkit/react-stories-player`, тож стилі, написані для однієї прив’язки, працюють і для іншої. Для кольорів, розмірів і z-index беріть радше кастомні властивості з розділу [Темізація](#theming).
+
+| Клас | Компонент | Опис |
+| --- | --- | --- |
+| `.rk-stories-overlay` | Overlay | Фіксоване повноекранне тло (колір, z-index) |
+| `.rk-stories-overlay--carousel` | Overlay | Оверлей із показаною десктопною каруселлю |
+| `.rk-stories-overlay--sliding` | Overlay | Триває з’їзд каруселі; полотно плеєра сховане |
+| `.rk-stories-swipe-wrapper` | Overlay | Обгортка свайпу для закриття (тримає кнопки навігації та полотно) |
+| `.rk-stories-container` | Overlay | Заокруглене полотно історії (позиція, overflow) |
+| `.rk-stories-ui-layer` | Overlay | Контейнер інтерфейсу (заголовок, прогрес) |
+| `.rk-stories-ui-layer--hidden` | Overlay | Схований стан інтерфейсу (перемикає `hide-ui-on-pause`) |
+| `.rk-stories-error` | Overlay | Стан помилки (іконка й текст по центру) |
+| `.rk-stories-error-text` | Overlay | Текст повідомлення про помилку |
+| `.rk-stories-nav-btn` | Navigation | Десктопна стрілка вперед/назад |
+| `.rk-stories-progress-bar` | CanvasProgressBar | Обгортка позиціювання смуги прогресу на canvas |
+| `.rk-stories-slide-wrapper` | Group | Одна група історій (зовнішній слайд) |
+| `.rk-stories-story` | Story | Одна історія (корінь внутрішнього слайда) |
+| `.rk-stories-header` | StoryHeader | Смуга заголовка (аватар, ім’я, дії) |
+| `.rk-stories-header--hidden` | StoryHeader | Схований стан заголовка |
+| `.rk-stories-header-avatar` | StoryHeader | Зображення аватара автора |
+| `.rk-stories-header-name` | StoryHeader | Текст імені автора |
+| `.rk-stories-header-verified` | StoryHeader | Значок підтвердження |
+| `.rk-stories-header-time` | StoryHeader | Текст відносного часу |
+| `.rk-stories-header-actions` | StoryHeader | Дії праворуч (звук, пауза, закриття) |
+| `.rk-stories-header-btn` | StoryHeader | Кнопка дії в заголовку |
+| `.rk-stories-header-spinner` | StoryHeader | Індикатор завантаження |
+| `.rk-stories-image` | ImageStorySlide | Елемент історії-зображення |
+| `.rk-stories-video` | VideoStorySlide | Контейнер історії-відео |
+| `.rk-stories-video-element` | VideoStorySlide | Спільний елемент \<video> |
+| `.rk-stories-video-poster` | VideoStorySlide | Постер відео (згасає на початку відтворення) |
+| `.rk-stories-video-poster--visible` | VideoStorySlide | Стан видимого постера (до відтворення) |
+| `.rk-stories-heart` | HeartAnimation | Анімація серця на подвійний дотик |
+| `.rk-stories-ring` | StoriesRing | Кільце історії (аватар з анімованою градієнтною рамкою) |
+| `.rk-stories-ring--active` | StoriesRing | Кільце, у якому лишилося що дивитися (анімується) |
+| `.rk-stories-ring-avatar` | StoriesRing | Зображення аватара всередині кільця |
+| `.rk-stories-ring-list` | StoriesRingList | Контейнер горизонтального списку кілець |
+| `.rk-stories-ring-list-item` | StoriesRingList | Стовпчик «кільце + ім’я» |
+| `.rk-stories-ring-list-name` | StoriesRingList | Ім’я автора під кільцем |
+| `.rk-stories-carousel` | Carousel | Шар карток попереднього перегляду за плеєром |
+| `.rk-stories-carousel--instant` | Carousel | Перший кадр з’їзду, розкладений без переходу |
+| `.rk-stories-card` | Carousel | Одна розміщена картка попереднього перегляду |
+| `.rk-stories-card--center` | Carousel | Картка в центральному слоті під час з’їзду |
+| `.rk-stories-card--hidden` | Carousel | Картка далі за дві показані з боку |
+| `.rk-stories-card-button` | Carousel | Типовий вміст картки (кнопка, що відкриває групу) |
+| `.rk-stories-card-image` | Carousel | Кадр попереднього перегляду (постер або зображення) |
+| `.rk-stories-card-scrim` | Carousel | Шар притемнення над кадром |
+| `.rk-stories-card-info` | Carousel | Стовпчик із кільцем, іменем автора й часом |
+| `.rk-stories-card-name` | Carousel | Ім’я автора |
+| `.rk-stories-card-time` | Carousel | Текст відносного часу |
+
+## Темізація [#theming]
+
+Кожен колір, розмір, z-index і перехід живе в кастомній властивості CSS, а її типове значення — на `:root`. Перекрийте одну чи багато на `:root` або на будь-якому предку оверлея, щоб перетемізувати, не чіпаючи код компонентів. Токени збігаються з `@reelkit/react-stories-player`, тож тема переноситься між прив’язками.
+
+| Токен | Типове значення | Що керує |
+| --- | --- | --- |
+| `--rk-stories-overlay-bg` | `#000` | Колір повноекранного тла |
+| `--rk-stories-overlay-z` | `9999` | z-index оверлея |
+| `--rk-stories-container-radius` | `12px` | Заокруглення полотна історії (десктоп) |
+| `--rk-stories-swipe-gap` | `16px` | Відступ між кнопками навігації та полотном історії |
+| `--rk-stories-top-shade-height` | `120px` | Висота верхнього градієнтного затемнення за заголовком |
+| `--rk-stories-top-shade-bg` | `linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%)` | Колір верхнього градієнтного затемнення |
+| `--rk-stories-ui-transition` | `200ms` | Тривалість згасання, коли перемикається `hide-ui-on-pause` |
+| `--rk-stories-nav-size` | `44px` | Розмір десктопної кнопки вперед/назад |
+| `--rk-stories-nav-bg` | `rgba(255, 255, 255, 0.1)` | Тло десктопної кнопки навігації |
+| `--rk-stories-nav-bg-hover` | `rgba(255, 255, 255, 0.2)` | Тло десктопної кнопки навігації під курсором |
+| `--rk-stories-nav-fg` | `rgba(255, 255, 255, 0.7)` | Колір іконки десктопної кнопки навігації |
+| `--rk-stories-nav-fg-hover` | `#fff` | Колір іконки кнопки навігації під курсором |
+| `--rk-stories-error-bg` | `linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)` | Градієнт тла стану помилки |
+| `--rk-stories-error-fg` | `rgba(255, 255, 255, 0.5)` | Колір іконки й тексту помилки |
+| `--rk-stories-error-text-size` | `13px` | Розмір шрифту повідомлення про помилку |
+| `--rk-stories-video-bg` | `#000` | Тло-леттербокс за \<video> |
+| `--rk-stories-video-poster-transition` | `200ms` | Тривалість згасання постера на початку відтворення |
+| `--rk-stories-header-top` | `18px` | Вертикальний відступ заголовка від верху історії |
+| `--rk-stories-header-padding` | `12px 16px` | Внутрішні відступи рядка заголовка |
+| `--rk-stories-header-avatar-size` | `32px` | Ширина й висота аватара |
+| `--rk-stories-header-name-fg` | `#fff` | Колір імені автора |
+| `--rk-stories-header-name-size` | `14px` | Розмір шрифту імені автора |
+| `--rk-stories-header-time-fg` | `rgba(255, 255, 255, 0.6)` | Колір тексту відносного часу |
+| `--rk-stories-header-btn-fg` | `#fff` | Колір іконок дій у заголовку (закриття, звук, пауза) |
+| `--rk-stories-heart-duration` | `800ms` | Тривалість появи й згасання серця |
+| `--rk-stories-ring-spin-duration` | `4s` | Тривалість обертання кільця, у якому лишилося що дивитися |
+| `--rk-stories-ring-list-gap` | `12px` | Відстань між кільцями у списку |
+| `--rk-stories-ring-list-padding` | `12px` | Внутрішні відступи навколо списку кілець |
+| `--rk-stories-ring-list-name-size` | `12px` | Розмір шрифту імені автора під кільцем |
+| `--rk-stories-card-bg` | `#262626` | Тло картки каруселі, видиме без кадру попереднього перегляду |
+| `--rk-stories-card-radius` | `8px` | Заокруглення кутів картки каруселі |
+| `--rk-stories-card-scrim` | `rgba(0, 0, 0, 0.45)` | Притемнення бічної картки |
+| `--rk-stories-card-fg` | `#fff` | Колір тексту на картці |
+| `--rk-stories-card-name-size` | `14px` | Розмір шрифту імені автора на картці |
+| `--rk-stories-card-time-fg` | `rgba(255, 255, 255, 0.7)` | Колір тексту часу на картці |
+| `--rk-stories-card-time-size` | `13px` | Розмір шрифту часу на картці |
+| `--rk-stories-card-gap` | `6px` | Відстань між кільцем, іменем і часом на картці |
+| `--rk-stories-card-transition` | `300ms` | Тривалість з’їзду каруселі |
+
+<CodeBlock code={theming} language="css" />
+
+## Доступність [#accessibility]
+
+Корінь оверлея — модальний діалог (`role="dialog"`, `aria-modal="true"`). Поставте `aria-label`, щоб змінити те, що оголосить екранний читач; типово це «Stories player».
+
+Оверлей захоплює фокус на відкритті й повертає його тригеру на закритті. Tab і Shift+Tab ходять по фокусованих елементах усередині; фокус, що втік, повертають назад. Зроблено на `captureFocusForReturn` і `createFocusTrap` із `@reelkit/core`.
+
+У десктопній каруселі кожна типова картка — кнопка з підписом «Open stories by» та іменем автора. Картки стоять у порядку табуляції після керування плеєром, і випадають із нього, поки триває з’їзд; картка, що відкриває свою групу, повертає фокус діалогу, а не лишає його на сторінці.
+
+## Рендеринг на сервері [#server-side-rendering]
+
+Закритий оверлей не малює нічого, а `StoriesRingList` малює на сервері всі кільця непереглянутими: сховище переглянутого читають лише після монтування, тож серверна розмітка збігається з першим клієнтським рендером. Ширший контекст — у [посібнику з SSR](/docs/ssr).
+
+## Клавіатурні скорочення [#keyboard-shortcuts]
+
+| Клавіша | Дія |
+| --- | --- |
+| `ArrowLeft` | Попередня історія |
+| `ArrowRight` | Наступна історія |
+| `Escape` | Закрити плеєр |

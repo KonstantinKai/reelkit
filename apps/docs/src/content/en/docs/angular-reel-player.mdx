@@ -5,6 +5,7 @@ description: Full-screen TikTok/Reels-style video reel player overlay for Angula
 
 import { Zap, Play, Volume2, Layout, Clock, Image, Layers, Ratio, Monitor, Code, Settings, Link2 } from 'lucide-react';
 import installation from '../../snippets/angular-reel-player/installation.sh?raw';
+import installation2 from '../../snippets/angular-reel-player/installation-2.ts?raw';
 import basicUsage from '../../snippets/angular-reel-player/basic-usage.ts?raw';
 import templateSlots from '../../snippets/angular-reel-player/template-slots.ts?raw';
 import nestedSliderMultiMedia from '../../snippets/angular-reel-player/nested-slider-multi-media.ts?raw';
@@ -91,11 +92,15 @@ Full-screen Instagram/TikTok-style vertical media player for Angular, built on `
 
 <CodeBlock code={installation} language="bash" />
 
+Register the stylesheet once:
+
+<CodeBlock code={installation2} language="typescript" />
+
 <Callout type="info" title="Icons">
   The default controls use `lucide-angular` for icons (close, sound, navigation arrows). If you prefer a different icon library, use the `rkPlayerControls` and `rkPlayerNavigation` template slots to provide your own.
 </Callout>
 
-## Basic Usage [#basic-usage]
+## Quick Start [#quick-start]
 
 Import the stylesheet and the standalone `RkReelPlayerOverlayComponent` into your component's `imports` array.
 

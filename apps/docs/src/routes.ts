@@ -19,6 +19,14 @@ import { pageFile } from './content/sitePages';
 function localeRoutes(locale: Locale) {
   const routes = kSitePages.map((page) => {
     const file = pageFile(page, locale);
+    // A shared module resolves to the same file in every locale, so the id it
+    // would default to is already taken by the locale routed before it.
+    if (page.shared) {
+      const options = { id: `${locale}-${page.module}` };
+      return page.path === ''
+        ? index(file, options)
+        : route(page.path, file, options);
+    }
     return page.path === '' ? index(file) : route(page.path, file);
   });
   return locale === kDefaultLocale

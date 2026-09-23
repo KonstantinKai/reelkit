@@ -22,7 +22,7 @@ export function pageFile(page: SitePage, locale: Locale): string {
       `Page "/${page.path}" names neither a content file nor a page module`,
     );
   }
-  return locale === kDefaultLocale
+  return locale === kDefaultLocale || page.shared
     ? `pages/${page.module}`
     : `pages/${locale}/${page.module}`;
 }

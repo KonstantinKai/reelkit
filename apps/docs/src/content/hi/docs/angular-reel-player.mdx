@@ -5,6 +5,7 @@ description: Angular के लिए फ़ुलस्क्रीन TikTok/R
 
 import { Zap, Play, Volume2, Layout, Clock, Image, Layers, Ratio, Monitor, Code, Settings, Link2 } from 'lucide-react';
 import installation from '../../snippets/angular-reel-player/installation.sh?raw';
+import installation2 from '../../snippets/angular-reel-player/installation-2.ts?raw';
 import basicUsage from '../../snippets/angular-reel-player/basic-usage.ts?raw';
 import templateSlots from '../../snippets/angular-reel-player/template-slots.ts?raw';
 import nestedSliderMultiMedia from '../../snippets/angular-reel-player/nested-slider-multi-media.ts?raw';
@@ -91,11 +92,15 @@ Angular के लिए फ़ुलस्क्रीन, Instagram/TikTok ज
 
 <CodeBlock code={installation} language="bash" />
 
+स्टाइलशीट को एक बार रजिस्टर करें:
+
+<CodeBlock code={installation2} language="typescript" />
+
 <Callout type="info" title="आइकन">
   डिफ़ॉल्ट कंट्रोल आइकन (बंद, साउंड, नेविगेशन तीर) के लिए `lucide-angular` इस्तेमाल करते हैं। अगर आप कोई और आइकन लाइब्रेरी पसंद करते हैं, तो अपने देने के लिए `rkPlayerControls` और `rkPlayerNavigation` template slots इस्तेमाल करें।
 </Callout>
 
-## बुनियादी इस्तेमाल [#basic-usage]
+## क्विक स्टार्ट [#quick-start]
 
 stylesheet और standalone `RkReelPlayerOverlayComponent` को अपने कंपोनेंट के `imports` array में import करें।
 

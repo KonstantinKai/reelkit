@@ -61,7 +61,6 @@ export const esTitles: Record<string, string> = {
   Theming: 'Temas',
   Accessibility: 'Accesibilidad',
   'Keyboard Shortcuts': 'Atajos de teclado',
-  'Basic Usage': 'Uso básico',
   'Scoped Slots': 'Slots con ámbito',
   'Custom Content Types': 'Tipos de contenido personalizados',
   'Video Support': 'Compatibilidad con vídeo',

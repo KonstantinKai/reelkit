@@ -61,7 +61,6 @@ export const jaTitles: Record<string, string> = {
   Theming: 'テーマ設定',
   Accessibility: 'アクセシビリティ',
   'Keyboard Shortcuts': 'キーボードショートカット',
-  'Basic Usage': '基本的な使い方',
   'Scoped Slots': 'スコープ付きスロット',
   'Custom Content Types': 'カスタムコンテンツ型',
   'Video Support': '動画のサポート',
