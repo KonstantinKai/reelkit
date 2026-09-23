@@ -1,10 +1,408 @@
 ---
 title: Angular Stories Player
-description: Angular के लिए stories प्लेयर overlay (अभी बन रहा है)। React वाला रूप अभी उपलब्ध है; Angular वाला रूप दो-स्तर के नेविगेशन, RAF टाइमर और canvas प्रोग्रेस के लिए वही @reelkit/stories-core इंजन साझा करेगा।
+description: Angular के लिए Instagram जैसा stories प्लेयर ओवरले। टैप से आगे बढ़ने वाला नेविगेशन, लेखकों के बीच क्यूब ट्रांज़िशन, ऑटो-एडवांस टाइमर, देखे जाने की स्थिति, डेस्कटॉप कैरोसेल, URL से नियंत्रित खुली स्थिति, टेम्पलेट स्लॉट और React व Vue प्लेयर के साथ साझा थीमिंग टोकन।
 ---
 
-Angular के लिए फ़ुलस्क्रीन, Instagram जैसा stories प्लेयर overlay, जिसमें nested नेविगेशन, अपने-आप आगे बढ़ने वाला टाइमर, टैप ज़ोन और कस्टमाइज़ होने वाले template slots हैं।
+import { Zap, Play, Timer, Layout, Clock, Image, Layers, Heart, Monitor, Circle, Code, Settings, Link2, Eye } from 'lucide-react';
+import installation from '../../snippets/angular-stories-player/installation.sh?raw';
+import installation2 from '../../snippets/angular-stories-player/installation-2.ts?raw';
+import basicUsage from '../../snippets/angular-stories-player/basic-usage.ts?raw';
+import urlState from '../../snippets/angular-stories-player/url-state.ts?raw';
+import urlState2 from '../../snippets/angular-stories-player/url-state-2.ts?raw';
+import urlState3 from '../../snippets/angular-stories-player/url-state-3.ts?raw';
+import rememberingWhatWasSeen from '../../snippets/angular-stories-player/remembering-what-was-seen.ts?raw';
+import desktopCarousel from '../../snippets/angular-stories-player/desktop-carousel.ts?raw';
+import transitions from '../../snippets/angular-stories-player/transitions.ts?raw';
+import templateSlots from '../../snippets/angular-stories-player/template-slots.ts?raw';
+import slideSlot from '../../snippets/angular-stories-player/slide-slot.ts?raw';
+import navigationSlot from '../../snippets/angular-stories-player/navigation-slot.ts?raw';
+import progressBarSlot from '../../snippets/angular-stories-player/progress-bar-slot.ts?raw';
+import loadingErrorSlots from '../../snippets/angular-stories-player/loading-error-slots.ts?raw';
+import groupPreviewSlot from '../../snippets/angular-stories-player/group-preview-slot.ts?raw';
+import storiesApi from '../../snippets/angular-stories-player/stories-api.ts?raw';
+import doubleTapLikes from '../../snippets/angular-stories-player/double-tap-likes.ts?raw';
+import customizingTheHeartAnimation from '../../snippets/angular-stories-player/customizing-the-heart-animation.css?raw';
+import subComponents from '../../snippets/angular-stories-player/sub-components.ts?raw';
+import types from '../../snippets/angular-stories-player/types.ts?raw';
+import slotContexts from '../../snippets/angular-stories-player/slot-contexts.ts?raw';
+import customStoryTypes from '../../snippets/angular-stories-player/custom-story-types.ts?raw';
+import theming from '../../snippets/angular-stories-player/theming.css?raw';
 
-<Callout type="info" title="जल्द आ रहा है">
-  Angular stories प्लेयर पर अभी काम चल रहा है। React वाला रूप [@reelkit/react-stories-player](/docs/stories-player) पर अभी उपलब्ध है। Angular वाला रूप भी वही आर्किटेक्चर अपनाएगा, और फ़्रेमवर्क से स्वतंत्र state machine, टाइमर और canvas प्रोग्रेस renderer के लिए `@reelkit/stories-core` इस्तेमाल करेगा।
+`@reelkit/angular-stories-player` का इस्तेमाल करते हुए Angular के लिए Instagram जैसा stories प्लेयर ओवरले। यह React और Vue प्लेयर के साथ वही `@reelkit/stories-core` इंजन साझा करता है, इसलिए व्यवहार, CSS क्लास और थीमिंग टोकन एक जैसे ही हैं।
+
+<DemoLink href="https://angular-demo.reelkit.dev/stories-player?utm_source=docs">लाइव डेमो देखें →</DemoLink>
+
+## फ़ीचर [#features]
+
+<FeatureGrid items={[
+              {
+                icon: Zap,
+                label: 'नेस्टेड नेविगेशन',
+                desc: 'टैप से stories आगे, स्वाइप से लेखक बदलें',
+              },
+              {
+                icon: Play,
+                label: 'वीडियो stories',
+                desc: 'ऑटोप्ले, साउंड टॉगल के साथ',
+              },
+              {
+                icon: Timer,
+                label: 'ऑटो-एडवांस',
+                desc: 'हर story के लिए समय तय करें',
+              },
+              {
+                icon: Layout,
+                label: '3D ट्रांज़िशन',
+                desc: 'क्यूब, फ़्लिप, फ़ेड, ज़ूम, स्लाइड',
+              },
+              {
+                icon: Clock,
+                label: 'प्रोग्रेस बार',
+                desc: 'canvas पर बना खंडों वाला प्रोग्रेस',
+              },
+              {
+                icon: Image,
+                label: 'इमेज और वीडियो',
+                desc: 'दोनों मीडिया प्रकार संभालता है',
+              },
+              {
+                icon: Layers,
+                label: 'टेम्पलेट स्लॉट',
+                desc: 'ng-template वाले आठ हिस्से',
+              },
+              {
+                icon: Heart,
+                label: 'डबल-टैप लाइक',
+                desc: 'डबल-टैप पर दिल का एनिमेशन',
+              },
+              {
+                icon: Monitor,
+                label: 'डेस्कटॉप नेविगेशन',
+                desc: 'बड़ी स्क्रीन पर दोनों ओर तीर',
+              },
+              {
+                icon: Circle,
+                label: 'Story रिंग',
+                desc: 'Instagram जैसे रिंग वाले अवतार',
+              },
+              {
+                icon: Code,
+                label: 'जेनेरिक टाइप',
+                desc: 'StoryItem को अपने फ़ील्ड से बढ़ाएँ',
+              },
+              {
+                icon: Settings,
+                label: 'थीमिंग टोकन',
+                desc: 'सिर्फ़ --rk-stories-* से ब्रांडिंग बदलें',
+              },
+              {
+                icon: Link2,
+                label: 'URL स्टेट',
+                desc: 'साझा करने योग्य ?story=group.story लिंक',
+              },
+              {
+                icon: Eye,
+                label: 'देखे जाने की स्थिति',
+                desc: 'देखी गई रिंग और जहाँ से आगे चलना है, रीलोड के बाद भी बनी रहती हैं',
+              },
+]} />
+
+## इंस्टॉलेशन [#installation]
+
+<CodeBlock code={installation} language="bash" />
+
+स्टाइलशीट एक बार रजिस्टर करें:
+
+<CodeBlock code={installation2} language="typescript" />
+
+<Callout type="info" title="आइकन">
+  डिफ़ॉल्ट हेडर और नेविगेशन तीर आइकन के लिए `lucide-angular` इस्तेमाल करते हैं। अगर आप कोई दूसरी आइकन लाइब्रेरी चाहते हैं, तो उन्हें `rkStoriesHeader` और `rkStoriesNavigation` टेम्पलेट स्लॉट से बदल दें।
 </Callout>
+
+## क्विक स्टार्ट [#quick-start]
+
+<CodeBlock code={basicUsage} language="typescript" />
+
+## URL स्टेट [#url-state]
+
+<DemoLink href="https://angular-demo.reelkit.dev/stories-player-url?utm_source=docs">लाइव डेमो देखें →</DemoLink>
+
+`RkStoriesUrlOverlayComponent` एक अलग कंपोनेंट है जिसकी खुली-बंद स्थिति एड्रेस बार में रहती है। दोनों अक्ष एक ही पैरामीटर — `?story=<group>.<story>` — में चलते हैं, इसलिए चल रही स्टोरी का एक ऐसा लिंक बनता है जिसे साझा किया जा सकता है, बुकमार्क किया जा सकता है और बैक बटन से बंद किया जा सकता है। `createOverlayUrlState` और `urlIndexTwoAxisKey` से कंट्रोलर बनाएँ और उसे `controller` के रूप में दें।
+
+<Callout type="info" title="तैयार कीज़">
+  स्टोरीज़ दो-अक्ष वाली हैं, इसलिए कंट्रोलर में दो-अक्ष वाली key फैलाएँ: `urlIndexTwoAxisKey` (उपयोगकर्ता और स्टोरी स्थिति से) या `urlStableIdTwoAxisKey` (उपयोगकर्ता स्थायी `id` से) — दोनों `@reelkit/angular-stories-player` से फिर से एक्सपोर्ट होती हैं। [URL स्थिति गाइड](/docs/core/guide#url-state) और [Core API](/docs/core/api#url-state) देखें।
+</Callout>
+
+<CodeBlock code={urlState} language="typescript" />
+
+- खुलने पर हिस्ट्री में **एक** एंट्री जुड़ती है। स्टोरीज़ के बीच बढ़ना *और* उपयोगकर्ता बदलना, दोनों उसी एंट्री को **बदलते** हैं, इसलिए कितनी भी नेविगेशन से एंट्री नहीं बढ़तीं और एक बार बैक दबाने पर प्लेयर हमेशा बंद हो जाता है। बैक बंद करता है, पिछली स्टोरी पर नहीं ले जाता।
+- **अंदरूनी नेविगेशन भी URL में जाती है।** एक ही उपयोगकर्ता की स्टोरीज़ में आगे बढ़ने पर `?story=2.`*n* अपडेट होता है, इसलिए डीप लिंक ठीक उसी स्टोरी पर पहुँचता है।
+- बैक तभी बंद करता है जब प्लेयर ऐप के भीतर से खोला गया हो — तब उस लिंक ने एक एंट्री जोड़ी थी। नए टैब में सीधे खोले गए साझा लिंक के पीछे कोई हिस्ट्री नहीं होती, इसलिए ब्राउज़र का बैक साइट से बाहर ले जाता है; ✕ बटन या Escape पैरामीटर को वहीं हटा देते हैं और पेज पर बनाए रखते हैं।
+- ऐसा पैरामीटर जो किसी उपयोगकर्ता या स्टोरी को नहीं बताता — पुराना बुकमार्क, हाथ से बदला मान, समूह के अंत से आगे की स्टोरी — पड़ोसी को खोलने के बजाय URL से हटा दिया जाता है।
+- राउटर वाले ऐप को राउटर पर आधारित अडैप्टर देना चाहिए, ताकि नेविगेशन का एकमात्र स्रोत राउटर ही रहे। `@reelkit/angular/ng-router-url-adapter` का `createRouterUrlAdapter` Angular राउटर के लिए तैयार अडैप्टर है; राउटर के पीछे से हिस्ट्री लिखने पर उसकी location पुरानी रह जाती है और अगली नेविगेशन पर पैरामीटर गिर जाता है।
+
+**स्थायी लिंक।** उपयोगकर्ता डिफ़ॉल्ट रूप से स्थिति से पहचाना जाता है, इसलिए बुकमार्क किया गया `?story=2.0` फ़ीड का क्रम बदलते ही किसी और को खोल देगा। इसके बजाय उसे स्थायी id से पहचानें — `outerCodec` id को URL में लिखता है और `outerLocator` बताता है कि वह कहाँ है। समूह के भीतर स्टोरी के साथ वही करने के लिए `innerCodec` को `innerLocate` और `innerIdentify` के साथ दें; न दें तो स्टोरी वाला आधा हिस्सा समूह के भीतर सामान्य स्थानीय इंडेक्स ही रहता है।
+
+<CodeBlock code={urlState2} language="typescript" />
+
+**अनंत फ़ीड।** पेजिंग `outerLocator` का काम है और codec से स्वतंत्र है। `locate` सिंक्रोनस है, इसलिए वह सिर्फ़ पहले से लोड समूहों के बारे में बता सकता है — 20 समूह लोड वाली फ़ीड में 400वें समूह का साझा लिंक खाली लौटता है। `locateAsync` इसका सहारा है और तभी चलता है जब `locate` चूक जाए; उसके बाद स्टोरी उसी समूह की सीमा में बाँध दी जाती है जिस पर बात रुकी।
+
+<Callout type="info" title="वही locateAsync, बाहरी अक्ष">
+  यह वही `locateAsync` पेजर है जो एक-अक्ष वाली कीज़ लेती हैं — दो-अक्ष वाली key में यह आपके दिए `outerLocator` पर चलता है, इसलिए पेजिंग उपयोगकर्ताओं वाले अक्ष पर होती है और स्टोरी हल हुए समूह के भीतर स्थानीय इंडेक्स बनी रहती है।
+</Callout>
+
+<CodeBlock code={urlState3} language="typescript" />
+
+- जब तक `locateAsync` चल रहा है, प्लेयर बंद रहता है और पैरामीटर वैसा का वैसा, इसलिए डीप लिंक फ़ेच के बाद भी बचा रहता है। `null` या अस्वीकृति पैरामीटर हटा देती है।
+- URL बदल जाने के बाद, बंद हो जाने के बाद या अनमाउंट के बाद आया जवाब छोड़ दिया जाता है — धीमा फ़ेच ऐसी स्टोरी नहीं खोल सकता जिसकी अब किसी ने माँग नहीं की।
+- `createOverlayUrlState` के सभी विकल्प [Angular API संदर्भ](/docs/angular/api#createoverlayurlstate) में हैं, और चरण-दर-चरण व्याख्या [Angular गाइड](/docs/angular/guide#url-state) में है।
+
+## जो देखा जा चुका है उसे याद रखना [#remembering-what-was-seen]
+
+`createStoriesViewedStateController` दिखाई गई हर story दर्ज करता है और बताता है कि हर लेखक कहाँ से आगे चलेगा। वही controller रिंग सूची और प्लेयर दोनों को दें, तो दोनों इस बात पर सहमत रहेंगे कि अभी क्या देखना बाकी है।
+
+<CodeBlock code={rememberingWhatWasSeen} language="typescript" />
+
+## डेस्कटॉप कैरोसेल [#desktop-carousel]
+
+<CodeBlock code={desktopCarousel} language="typescript" />
+
+## टेम्पलेट स्लॉट [#template-slots]
+
+आठ `ng-template` डायरेक्टिव प्लेयर के किसी भी हिस्से को बदल देते हैं। हर एक को टाइप किया हुआ कॉन्टेक्स्ट मिलता है, जिसमें सबसे काम का मान implicit होता है — इसलिए हेडर स्लॉट में `let-author` बिना नाम दिए ही लेखक दे देता है। जो स्लॉट आप नहीं देते, वहाँ डिफ़ॉल्ट प्रस्तुति बनी रहती है।
+
+| डायरेक्टिव | क्लास | कॉन्टेक्स्ट | विवरण |
+| --- | --- | --- | --- |
+| `rkStoriesError` | `RkStoriesErrorDirective` | `{ $implicit: story, storyIndex, groupIndex }` | अंतर्निहित "Content unavailable" पैनल को बदलता है, जो चालू story के ऊपर बनता है |
+| `rkStoriesFooter` | `RkStoriesFooterDirective` | `{ $implicit: story, author, storyIndex }` | चालू story के नीचे फ़ुटर जोड़ता है; प्लेयर खुद कोई फ़ुटर नहीं बनाता |
+| `rkStoriesGroupPreview` | `RkStoriesGroupPreviewDirective` | `{ $implicit: group, groupIndex, story, offset, viewedCount, onOpen }` | डेस्कटॉप कैरोसेल के कार्ड को भरता है; जगह, स्केल और स्लाइडिंग प्लेयर ही संभालता रहता है |
+| `rkStoriesHeader` | `RkStoriesHeaderDirective` | `{ $implicit: author, story, storyIndex, isPaused, isMuted, isVideo, onToggleSound, onTogglePause, onClose }` | डिफ़ॉल्ट हेडर (लेखक, पॉज़, साउंड, बंद करना) बदलता है |
+| `rkStoriesLoading` | `RkStoriesLoadingDirective` | `{ $implicit: story, storyIndex, groupIndex }` | चालू story लोड होते समय हेडर में दिखने वाले डिफ़ॉल्ट स्पिनर को बदलता है |
+| `rkStoriesNavigation` | `RkStoriesNavigationDirective` | `{ $implicit: { onPrevStory, onNextStory, onPrevGroup, onNextGroup } }` | डेस्कटॉप के दोनों तीर बदल देता है |
+| `rkStoriesProgressBar` | `RkStoriesProgressBarDirective` | `{ $implicit: group, totalStories, activeIndex, progress }` | canvas प्रोग्रेस बार को बदलता है। `activeIndex` और `progress` कोर सिग्नल हैं — उन्हें `toAngularSignal` से जोड़ें। |
+| `rkStoriesSlide` | `RkStoriesSlideDirective` | `{ $implicit: story, index, groupIndex, isActive, size, activeGroupIndex, activeStoryIndex, onDurationReady, onReady, onWaiting, onError, onEnded }` | डिफ़ॉल्ट इमेज और वीडियो स्लाइड बदलता है |
+
+<CodeBlock code={templateSlots} language="typescript" />
+
+`STORIES_TEMPLATE_SLOT_DIRECTIVES` आठों क्लास को एक ही array के रूप में एक्सपोर्ट करता है, उस कंपोनेंट के लिए जो कई स्लॉट इंपोर्ट करता है।
+
+हर स्लॉट प्लेयर के अपने injector से रेंडर होता है, इसलिए स्लॉट के भीतर बना कंपोनेंट प्लेयर के provider तक पहुँच पाता है — स्लाइड टेम्पलेट में रखा `rk-video-story-slide` वही साउंड स्टेट पाता है जिसे हेडर का बटन लिखता है।
+
+### कस्टम स्लाइड [#custom-slides]
+
+<CodeBlock code={slideSlot} language="typescript" />
+
+<Callout type="info" title="प्रीलोडर कैशिंग">
+  अंतर्निहित `RkImageStorySlideComponent` और `RkVideoStorySlideComponent` अगली story को पृष्ठभूमि में पहले से लोड कर लेते हैं। जब दर्शक पहले से लोड की गई story तक पहुँचता है, तो सामग्री तुरंत दिखती है, बिना किसी लोडिंग स्पिनर के। जो URL एक बार नाकाम हो गया वह भी याद रखा जाता है, इसलिए टूटी हुई story दोबारा खोलने पर फिर से कोशिश करने के बजाय सीधे त्रुटि दिखती है।
+</Callout>
+
+### कस्टम नेविगेशन [#custom-navigation]
+
+<CodeBlock code={navigationSlot} language="typescript" />
+
+### कस्टम प्रोग्रेस बार [#custom-progress-bar]
+
+<CodeBlock code={progressBarSlot} language="typescript" />
+
+### कस्टम लोडिंग और त्रुटि [#custom-loading-error]
+
+<CodeBlock code={loadingErrorSlots} language="typescript" />
+
+### कस्टम कैरोसेल कार्ड [#custom-carousel-cards]
+
+<CodeBlock code={groupPreviewSlot} language="typescript" />
+
+## ट्रांज़िशन [#transitions]
+
+`groupTransition` तय करता है कि लेखक बदलते समय कौन-सा 3D असर चले। ट्रांज़िशन फ़ंक्शन `@reelkit/angular` से इंपोर्ट करें:
+
+<CodeBlock code={transitions} language="typescript" />
+
+## डबल-टैप और लाइक [#double-tap-likes]
+
+डबल टैप पर दिल का एनिमेशन चलता है, जो तुरंत दृश्य प्रतिक्रिया देता है। `(doubleTapped)` समूह और story का इंडेक्स देता है ताकि आप लाइक अपनी स्थिति में सहेज सकें। प्लेयर खुद लाइक की कोई स्थिति नहीं रखता।
+
+<CodeBlock code={doubleTapLikes} language="typescript" />
+
+### दिल के एनिमेशन को अपनी तरह ढालना [#customizing-the-heart-animation]
+
+गति `--rk-stories-heart-duration` टोकन से बदलें ([थीमिंग](#theming) देखें)। रंग, आकार, या दिल को पूरी तरह छिपाने के लिए `.rk-stories-heart` क्लास पर निशाना लगाएँ। `RkHeartAnimationComponent` अलग से इस्तेमाल के लिए एक्सपोर्ट किया गया है।
+
+<CodeBlock code={customizingTheHeartAnimation} language="css" />
+
+<Callout type="info">
+  अंतर्निहित दिल का एनिमेशन अभी किसी स्लॉट से नहीं बदला जा सकता। इसे CSS से दोबारा स्टाइल करें, या `display: none` से छिपाकर `(doubleTapped)` से अपना एनिमेशन चलाएँ। अगर आपको दिल के लिए स्लॉट चाहिए, तो [GitHub Issues](https://github.com/KonstantinKai/reelkit/issues) पर बताएँ।
+</Callout>
+
+## StoriesApi [#storiesapi]
+
+इंपेरेटिव नियंत्रण के लिए API `(apiReady)` से लें। प्लेयर हर बार खुलने पर दोबारा बनता है, इसलिए पिछली बार का रखा हुआ handle पुराना पड़ जाता है — हमेशा सबसे नया इस्तेमाल करें।
+
+<CodeBlock code={storiesApi} language="typescript" />
+
+### मेथड [#methods]
+
+| मेथड | टाइप | विवरण |
+| --- | --- | --- |
+| `nextStory()` | `() => void` | मौजूदा समूह के भीतर अगली story पर जाएँ |
+| `prevStory()` | `() => void` | मौजूदा समूह के भीतर पिछली story पर लौटें |
+| `nextGroup()` | `() => void` | अगले लेखक के समूह पर जाएँ |
+| `prevGroup()` | `() => void` | पिछले लेखक के समूह पर जाएँ |
+| `goToGroup(index)` | `(index: number) => void` | इंडेक्स से किसी समूह पर सीधे जाएँ |
+| `pause()` | `() => void` | ऑटो-एडवांस और प्रोग्रेस टाइमर रोकें |
+| `resume()` | `() => void` | ऑटो-एडवांस और प्रोग्रेस टाइमर फिर चालू करें |
+
+## उप-कंपोनेंट [#sub-components]
+
+एक्सपोर्ट किए गए हिस्से, जिन्हें स्लॉट के भीतर जोड़ा जा सकता है या अलग से इस्तेमाल किया जा सकता है।
+
+| कंपोनेंट | यह क्या है |
+| --- | --- |
+| `RkCanvasProgressBarComponent` | canvas पर खंडों वाला प्रोग्रेस बार, सीधे टाइमर सिग्नल से बनाया गया। बहुत सारी stories वाले समूह के लिए खिसकती खिड़की संभालता है। |
+| `RkHeartAnimationComponent` | डबल-टैप वाला दिल। एनिमेशन खत्म होने पर `(completed)` भेजता है, ताकि माता-पिता कंपोनेंट उसे हटा सके। |
+| `RkImageStorySlideComponent` | `object-fit: cover` वाली पूरी चौड़ाई की इमेज स्लाइड, जो लोड और त्रुटि की सूचना output से देती है। |
+| `RkStoriesRingComponent` | ग्रेडिएंट रिंग वाला गोल अवतार। दो स्थितियाँ: कुछ देखना बाकी हो तो घूमता है, पूरा देख लेने पर सपाट हो जाता है। `(clicked)` भेजता है। |
+| `RkStoriesRingListComponent` | लेखकों के नाम के साथ रिंग की क्षैतिज पंक्ति, हर समूह के लिए एक। समूह के इंडेक्स के साथ `(selected)` भेजता है। |
+| `RkStoryHeaderComponent` | डिफ़ॉल्ट हेडर: अवतार, नाम, सत्यापित बैज, सापेक्ष समय, पॉज़, साउंड, बंद करना और लोडिंग स्पिनर। |
+| `RkVideoStorySlideComponent` | एक ही साझा `<video>` तत्व पर टिकी वीडियो स्लाइड, ताकि iOS पर आवाज़ टूटे नहीं। ऑटोप्ले, पोस्टर फ़्रेम और अवधि की सूचना संभालती है। |
+
+`RkStoriesCarouselComponent` भी अपने `CarouselSlide` टाइप के साथ एक्सपोर्ट होता है, लेकिन जिन मानों से वह बनता है वे सब ओवरले के पास हैं — कार्ड का रूप बदलना हो तो कैरोसेल खुद माउंट करने के बजाय `rkStoriesGroupPreview` स्लॉट इस्तेमाल करें।
+
+<CodeBlock code={subComponents} language="typescript" />
+
+## कस्टम story टाइप [#custom-story-types]
+
+`StoryItem` को अपने फ़ील्ड से बढ़ाएँ और उसी से समूहों को टाइप करें:
+
+<CodeBlock code={customStoryTypes} language="typescript" />
+
+## पुनः एक्सपोर्ट [#re-exports]
+
+उपभोक्ता को जो कुछ चाहिए वह सब इसी पैकेज से आता है, इसलिए `@reelkit/core` से सीधे इंपोर्ट करने की कभी ज़रूरत नहीं पड़ती।
+
+| कहाँ से | पुनः एक्सपोर्ट |
+| --- | --- |
+| `@reelkit/angular` | `createOverlayUrlState`, `urlIndexTwoAxisKey`, `urlStableIdTwoAxisKey`, `base64UrlCodec`, `createViewedStateController`, `twoAxisViewedTracking`, `createLocalStorageAdapter`, `createSessionStorageAdapter`, `createMemoryStorageAdapter`, और टाइप `OverlayUrlStateOptions`, `UrlAdapter`, `UrlCodec`, `UrlLocator`, `UrlKey`, `UrlStateController`, `TwoAxisPosition`, `TwoAxisIdentity`, `UrlIndexTwoAxisKeyOptions`, `ViewedStateController`, `ViewedStateOptions`, `StorageAdapter` |
+| `@reelkit/stories-core` | `createStoriesViewedStateController`, `StoriesViewedStateController`, `StoriesViewedStateControllerConfig`, और सामग्री टाइप `StoryItem`, `AuthorInfo`, `StoriesGroup`, `MediaType` |
+
+`attachViewedState` भी एक्सपोर्ट होता है, उस कंपोनेंट के लिए जो देखे जाने की स्थिति का controller खुद रखता है और उसे तब तक जुड़ा रखना चाहता है जब तक वह कंपोनेंट जीवित है।
+
+## RkStoriesOverlayComponent के इनपुट [#rkstoriesoverlaycomponent-inputs]
+
+<Signature>rk-stories-overlay</Signature>
+
+| इनपुट | टाइप | डिफ़ॉल्ट | विवरण |
+| --- | --- | --- | --- |
+| `ariaLabel` | `string` | `'Stories player'` | डायलॉग क्षेत्र का सुलभ नाम; ओवरले खुलने पर स्क्रीन रीडर इसे पढ़ते हैं |
+| `defaultImageDuration` | `number` | `5000` | इमेज story के ऑटो-एडवांस की अवधि, मिलीसेकंड में |
+| `desktopLayout` | `'single' \| 'carousel'` | `'single'` | डेस्कटॉप लेआउट। `'carousel'` पड़ोसी समूहों को चालू story के बगल में प्रीव्यू कार्ड की तरह दिखाता है और समूहों के बीच स्लाइड करता है। फ़ोन पर हमेशा अकेली story ही दिखती है। यह टाइप `DesktopLayout` के रूप में एक्सपोर्ट होता है। |
+| `enableKeyboard` | `boolean` | `true` | कीबोर्ड नेविगेशन चालू करता है (बाएँ/दाएँ तीर, Escape) |
+| `groups` | `StoriesGroup<T>[]` | `required` | दिखाने के लिए story समूह। प्लेयर खुले रहते जोड़े गए समूह या stories बिना दर्शक की जगह खोए शामिल हो जाते हैं। |
+| `groupTransition` | `TransitionTransformFn` | `cubeTransition` | लेखकों के बीच ट्रांज़िशन। डेस्कटॉप कैरोसेल दिखते समय इसे अनदेखा किया जाता है, तब स्लाइड होता है। |
+| `hideUIOnPause` | `boolean` | `true` | देर तक दबाए रखने से पॉज़ रहने पर प्रोग्रेस बार और हेडर छिपा देता है |
+| `initialGroupIndex` | `number` | `0` | जिस समूह से प्लेयर खुलता है उसका इंडेक्स (शून्य से) |
+| `initialStoryIndex` | `number` | जहाँ से आगे, वरना `0` | जिस story से प्लेयर खुलता है उसका इंडेक्स (शून्य से)। साफ़ बताने पर यह याद रखी गई जगह से ऊपर रहता है; न देने पर खुलने वाला समूह भी बाकी समूहों की तरह वहीं से आगे चलता है। |
+| `innerTransitionDuration` | `number` | `200` | एक ही लेखक की stories के बीच फ़ेड की अवधि, मिलीसेकंड में |
+| `isOpen` | `boolean` | `false` | true रहने तक प्लेयर रेंडर करता है और body का स्क्रॉल रोक देता है |
+| `minSegmentWidth` | `number` | `8` | प्रोग्रेस खंड की सबसे कम चौड़ाई, जिसके बाद बार खंडों की खिड़की खिसकाने लगता है, पिक्सेल में |
+| `resumeStoryIndex` | `(groupIndex: number) => number` | — | किसी समूह तक पहली बार पहुँचने पर वह किस story से खुले। सिर्फ़ उसी समूह के लिए पूछा जाता है जिसे इस बार अभी नहीं देखा गया, और यह `viewed` से ऊपर रहता है। |
+| `tapZoneSplit` | `number` | `0.3` | टैप क्षेत्र का अनुपात (0–1)। बायाँ हिस्सा पीछे ले जाता है, बाकी आगे। |
+| `viewed` | `StoriesViewedStateController` | — | दर्शक ने क्या देखा है, `createStoriesViewedStateController()` से। समूह अपनी पहली अनदेखी story से आगे चलते हैं, दिखाई गई हर story दर्ज होती है, और पूरा देख लिए गए समूह की रिंग कैरोसेल कार्ड पर बुझ जाती है। वही controller `rk-stories-ring-list` को भी दें। |
+
+हर स्लॉट का एक इनपुट भी है, उस कंपोनेंट के लिए जो `TemplateRef` को प्रोजेक्ट करने के बजाय खुद रखता है: `slideTemplate`, `headerTemplate`, `footerTemplate`, `progressBarTemplate`, `navigationTemplate`, `loadingTemplate`, `errorTemplate` और `groupPreviewTemplate`। इस तरह दिया गया टेम्पलेट प्लेयर में प्रोजेक्ट किए गए टेम्पलेट से ऊपर रहता है।
+
+## RkStoriesOverlayComponent के आउटपुट [#rkstoriesoverlaycomponent-outputs]
+
+| आउटपुट | पेलोड | विवरण |
+| --- | --- | --- |
+| `(apiReady)` | `StoriesApi` | जैसे ही प्लेयर आदेश लेने को तैयार होता है, और उसके बाद हर बार खुलने पर |
+| `(closed)` | `void` | जब दर्शक प्लेयर बंद करता है। प्लेयर अपनी जगह रहता है; फ़ैसला होस्ट करता है। `rk-stories-url-overlay` में तब तक पैरामीटर साफ़ हो चुका होता है। |
+| `(doubleTapped)` | `{ groupIndex, storyIndex }` | डबल टैप पर, दिल के एनिमेशन के साथ |
+| `(groupChanged)` | `number` | चालू समूह बदलने के बाद |
+| `(paused)` | `void` | देर तक दबाने पर, या हेडर के पॉज़ बटन से |
+| `(resumed)` | `void` | छोड़ने पर, या हेडर के प्ले बटन से |
+| `(storyChanged)` | `{ groupIndex, storyIndex }` | चालू story बदलने के बाद |
+| `(storyCompleted)` | `{ groupIndex, storyIndex }` | जब किसी story का टाइमर पूरा हो जाता है |
+| `(storyViewed)` | `{ groupIndex, storyIndex }` | जब कोई story स्क्रीन पर आती है, खुलने वाली पहली story भी शामिल |
+
+प्लेयर खुद बंद नहीं होता, बंद होने की सूचना देता है — इसलिए `(closed)` हर रास्ते को समेटता है: ✕ बटन, नीचे की ओर स्वाइप, Escape, और आखिरी समूह की आखिरी story पूरी हो जाना।
+
+## RkStoriesUrlOverlayComponent के इनपुट [#rkstoriesurloverlaycomponent-inputs]
+
+<Signature>rk-stories-url-overlay</Signature>
+
+ऊपर के सारे इनपुट लेता है, सिवाय खुली स्थिति की तिकड़ी — `isOpen`, `initialGroupIndex`, `initialStoryIndex` — के, जो controller से आते हैं।
+
+| इनपुट | टाइप | डिफ़ॉल्ट | विवरण |
+| --- | --- | --- | --- |
+| `controller` | `UrlStateController<TwoAxisPosition>` | `required` | `createOverlayUrlState` को `urlIndexTwoAxisKey` के साथ फैलाकर बना controller। इसकी position — एक \{ outer, inner \} ऑब्जेक्ट — तय करती है कि प्लेयर खुला है या नहीं और कहाँ से खुलता है; ओवरले हर नेविगेशन पर और बंद होने पर उसे वापस लिख देता है। |
+
+## StoryItem, AuthorInfo और StoriesGroup इंटरफ़ेस [#storyitem-authorinfo-storiesgroup]
+
+<CodeBlock code={types} language="typescript" />
+
+## टेम्पलेट स्लॉट के कॉन्टेक्स्ट टाइप [#template-slot-context-types]
+
+हर कॉन्टेक्स्ट टाइप एक्सपोर्ट किया गया है, ताकि जहाँ कंपाइलर अनुमान न लगा सके वहाँ स्लॉट पर टाइप लिखा जा सके — `StoriesSlideContext`, `StoriesHeaderContext`, `StoriesFooterContext`, `StoriesProgressBarContext`, `StoriesNavigationContext`, `StoriesLoadingContext`, `StoriesErrorContext` और `StoriesGroupPreviewContext`, साथ में `StoriesNavigationActions`, `DesktopLayout` और `StoriesApi`:
+
+<CodeBlock code={slotContexts} language="typescript" />
+
+## CSS क्लास [#css-classes]
+
+क्लास के नाम सादे हैं (किसी स्कोप में नहीं), इसलिए `@reelkit/angular-stories-player/styles.css` के बाद लोड होने वाली स्टाइलशीट इनमें से किसी को भी बदल सकती है। ये `@reelkit/react-stories-player` और `@reelkit/vue-stories-player` जैसे ही हैं, इसलिए एक बाइंडिंग के लिए लिखी स्टाइलशीट दूसरों पर भी चलती है। रंग, आकार और z-index के लिए [थीमिंग](#theming) वाली कस्टम प्रॉपर्टी बेहतर हैं।
+
+| क्लास | कंपोनेंट | विवरण |
+| --- | --- | --- |
+| `.rk-stories-overlay` | Overlay | पूरी स्क्रीन पर तय पृष्ठभूमि (रंग, z-index) |
+| `.rk-stories-overlay--carousel` | Overlay | डेस्कटॉप कैरोसेल दिखाता हुआ ओवरले |
+| `.rk-stories-overlay--sliding` | Overlay | कैरोसेल की स्लाइड चल रही है; प्लेयर का कैनवस छिपा रहता है |
+| `.rk-stories-swipe-wrapper` | Overlay | स्वाइप से बंद करने वाला रैपर (तीर और कैनवस इसी में) |
+| `.rk-stories-container` | Overlay | गोल किनारों वाला story कैनवस (position, overflow) |
+| `.rk-stories-ui-layer` | Overlay | प्लेयर के ऊपर इंटरफ़ेस की एक परत (हेडर, प्रोग्रेस, दिल) |
+| `.rk-stories-ui-layer--hidden` | Overlay | इंटरफ़ेस छिपी स्थिति (`hideUIOnPause` इसे बदलता है) |
+| `.rk-stories-error` | Overlay | त्रुटि की स्थिति (बीच में आइकन और पाठ) |
+| `.rk-stories-error-text` | Overlay | त्रुटि संदेश का पाठ |
+| `.rk-stories-nav-btn` | Overlay | डेस्कटॉप का पिछला/अगला तीर |
+| `.rk-stories-slide-wrapper` | Overlay | एक समूह की stories (बाहरी स्लाइड) |
+| `.rk-stories-story` | Overlay | अकेली story (भीतरी स्लाइड की जड़) |
+| `.rk-stories-image` | ImageStorySlide | पूरी चौड़ाई की इमेज (`object-fit: cover`) |
+| `.rk-stories-video` | VideoStorySlide | वीडियो स्लाइड का कंटेनर |
+| `.rk-stories-video-poster` | VideoStorySlide | पोस्टर फ़्रेम, प्लेबैक शुरू होने तक दिखता है |
+| `.rk-stories-heart` | HeartAnimation | डबल-टैप वाला दिल |
+| `.rk-stories-header` | StoryHeader | हेडर की पंक्ति (अवतार, नाम, समय, नियंत्रण) |
+| `.rk-stories-header-btn` | StoryHeader | पॉज़, साउंड और बंद करने के बटन |
+| `.rk-stories-header-spinner` | StoryHeader | चालू story लोड होते समय का स्पिनर |
+| `.rk-stories-ring` | StoriesRing | ग्रेडिएंट रिंग वाला गोल अवतार |
+| `.rk-stories-ring--active` | StoriesRing | जिसमें देखना बाकी है ऐसी रिंग (ग्रेडिएंट घूमता है) |
+| `.rk-stories-ring-avatar` | StoriesRing | रिंग के भीतर अवतार की इमेज |
+| `.rk-stories-ring-list` | StoriesRingList | रिंग की क्षैतिज पंक्ति |
+| `.rk-stories-carousel` | Carousel | डेस्कटॉप कैरोसेल की परत |
+| `.rk-stories-card` | Carousel | प्लेयर के बगल में एक प्रीव्यू कार्ड |
+| `.rk-stories-card-image` | Carousel | कार्ड की प्रीव्यू इमेज |
+| `.rk-stories-card-frame` | Carousel | कार्ड की प्रीव्यू के रूप में छोटा करके बनाया गया स्लाइड टेम्पलेट |
+
+## थीमिंग [#theming]
+
+हर रंग, आकार, अवधि और z-index `:root` पर एक `--rk-stories-*` कस्टम प्रॉपर्टी है, इसलिए ब्रांडिंग बदलना एक स्टाइलशीट का काम है, कंपोनेंट बदलने का नहीं। ये टोकन React और Vue प्लेयर के साथ साझा हैं।
+
+<CodeBlock code={theming} language="css" />
+
+## सुलभता [#accessibility]
+
+ओवरले की जड़ एक मोडल डायलॉग है (`role="dialog"`, `aria-modal="true"`)। स्क्रीन रीडर क्या पढ़े यह बदलने के लिए `ariaLabel` सेट करें; डिफ़ॉल्ट "Stories player" है।
+
+ओवरले खुलते समय फ़ोकस अपने पास ले लेता है और बंद होते समय उसे वापस उसी तत्व को लौटा देता है जिसने उसे खोला था। Tab और Shift+Tab भीतर के फ़ोकस-योग्य तत्वों पर घूमते हैं और दोनों सिरों पर लपेट जाते हैं; बाहर निकला फ़ोकस (बाहर क्लिक, प्रोग्राम से फ़ोकस) वापस खींच लिया जाता है। प्लेयर खुले रहने तक body का स्क्रॉल रुका रहता है। यह `@reelkit/angular` के `captureFocusForReturn` और `createFocusTrap` से बना है।
+
+डेस्कटॉप कैरोसेल में हर डिफ़ॉल्ट कार्ड एक बटन है जिसका लेबल "Open stories by" और लेखक का नाम होता है। Tab क्रम में कार्ड प्लेयर के नियंत्रणों के बाद आते हैं, और स्लाइड चलते समय उस क्रम से हट जाते हैं।
+
+## सर्वर-साइड रेंडरिंग [#server-side-rendering]
+
+प्लेयर खुलने तक कुछ भी रेंडर नहीं करता और बनते समय किसी ब्राउज़र API को नहीं पढ़ता, इसलिए Angular SSR के साथ सुरक्षित है। देखे जाने की स्थिति रेंडर के दौरान नहीं, माउंट होने के बाद पढ़ी जाती है — और यही सर्वर के रेंडर और पहले क्लाइंट रेंडर को आपस में मिलाकर रखता है।
+
+## कीबोर्ड शॉर्टकट [#keyboard-shortcuts]
+
+| कुंजी | क्रिया |
+| --- | --- |
+| `ArrowLeft` | पिछली story |
+| `ArrowRight` | अगली story |
+| `Escape` | प्लेयर बंद करें |

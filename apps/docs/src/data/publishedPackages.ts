@@ -68,4 +68,8 @@ export const publishedPackages: PublishedPackage[] = [
     name: '@reelkit/angular-reel-player',
     description: 'Vertical-swipe video reel player for Angular',
   },
+  {
+    name: '@reelkit/angular-stories-player',
+    description: 'Instagram-style stories player for Angular',
+  },
 ];

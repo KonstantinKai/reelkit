@@ -64,6 +64,11 @@
       "package": "packages/reelkit-angular-reel-player/src/index.ts",
       "page": "apps/docs/src/content/en/docs/angular-reel-player.mdx",
       "mirror": "apps/docs/src/content/llms/angular-reel-player.md"
+    },
+    {
+      "package": "packages/reelkit-angular-stories-player/src/index.ts",
+      "page": "apps/docs/src/content/en/docs/angular-stories-player.mdx",
+      "mirror": "apps/docs/src/content/llms/angular-stories-player.md"
     }
   ],
   "readmeSurfaces": {
@@ -143,6 +148,10 @@
     {
       "page": "apps/docs/src/content/en/docs/angular-reel-player.mdx",
       "mirror": "apps/docs/src/content/llms/angular-reel-player.md"
+    },
+    {
+      "page": "apps/docs/src/content/en/docs/angular-stories-player.mdx",
+      "mirror": "apps/docs/src/content/llms/angular-stories-player.md"
     }
   ],
   "forbidden": [
@@ -367,7 +376,32 @@
     ]
   },
   "exemptPackages": ["packages/reelkit-example-data/src/index.ts"],
+  "readmeSections": [
+    "Installation",
+    "Quick Start",
+    "Features",
+    "Documentation",
+    "Support",
+    "License"
+  ],
+  "knownMissingModuleExamples": [
+    "packages/reelkit-core/src/index.ts",
+    "packages/reelkit-stories-core/src/index.ts",
+    "packages/reelkit-vue/src/index.ts"
+  ],
   "parity": [
+    {
+      "token": "locateAsync",
+      "reason": "every stories url-state surface must teach the out-of-window case (a group the feed has not loaded yet) — the angular page shipped without it while react and vue both had it, because nothing held the three together the way the lightbox trio is held",
+      "files": [
+        "apps/docs/src/content/en/docs/stories-player.mdx",
+        "apps/docs/src/content/llms/stories-player.md",
+        "apps/docs/src/content/en/docs/vue-stories-player.mdx",
+        "apps/docs/src/content/llms/vue-stories-player.md",
+        "apps/docs/src/content/en/docs/angular-stories-player.mdx",
+        "apps/docs/src/content/llms/angular-stories-player.md"
+      ]
+    },
     {
       "token": "locateAsync",
       "reason": "every lightbox url-state surface must teach the out-of-window case (an item the feed has not loaded yet), not just the in-window one — angular pages added in a later task were never folded into this rule, so the example gap went unflagged",

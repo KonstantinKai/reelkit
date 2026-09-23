@@ -61,7 +61,6 @@ export const ukTitles: Record<string, string> = {
   Theming: 'Темізація',
   Accessibility: 'Доступність',
   'Keyboard Shortcuts': 'Клавіатурні скорочення',
-  'Basic Usage': 'Базове використання',
   'Scoped Slots': 'Слоти з областю видимості',
   'Custom Content Types': 'Власні типи вмісту',
   'Video Support': 'Підтримка відео',

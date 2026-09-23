@@ -91,7 +91,6 @@ export const navItems: NavSection[] = [
         key: 'storiesPlayer',
         path: '/docs/angular-stories-player',
         framework: 'angular',
-        comingSoon: true,
       },
       {
         key: 'reelPlayer',

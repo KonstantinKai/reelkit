@@ -61,7 +61,6 @@ export const zhTitles: Record<string, string> = {
   Theming: '主题定制',
   Accessibility: '无障碍',
   'Keyboard Shortcuts': '键盘快捷键',
-  'Basic Usage': '基本用法',
   'Scoped Slots': '作用域插槽',
   'Custom Content Types': '自定义内容类型',
   'Video Support': '视频支持',

@@ -2,12 +2,12 @@
 
 <p>
   <a href="https://www.npmjs.com/package/@reelkit/vue-stories-player"><img src="https://img.shields.io/npm/v/@reelkit/vue-stories-player?color=6366f1&label=npm" alt="npm" /></a>
-  <img src="https://img.shields.io/badge/gzip-7.4%20kB-6366f1" alt="Bundle size" />
+  <img src="https://img.shields.io/badge/gzip-7.5%20kB-6366f1" alt="Bundle size" />
   <img src="https://img.shields.io/badge/coverage-87%25-green" alt="Statement coverage" />
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
 
-Instagram-style stories player for Vue 3. Full-screen overlay with tap-to-advance navigation, 3D cube transition between users, auto-advance timer, segmented progress bar, and double-tap heart animation. ~7.4 kB gzip.
+Instagram-style stories player for Vue 3. Full-screen overlay with tap-to-advance navigation, 3D cube transition between users, auto-advance timer, segmented progress bar, and double-tap heart animation. ~7.5 kB gzip.
 
 **[Live Demo](https://vue-demo.reelkit.dev/stories-player?utm_source=npm)**
 
@@ -187,11 +187,11 @@ interface StoriesGroup<T extends StoryItem = StoryItem> {
 
 ## Styling
 
-Class names (`.rk-stories-*`) and theme tokens (`--rk-stories-*`) are the same as in `@reelkit/react-stories-player`, so one theme fits both. Override the tokens at `:root` (or any ancestor of `.rk-stories-overlay`) — see the [Theming docs](https://reelkit.dev/docs/vue-stories-player#theming) for the full token table.
+Class names (`.rk-stories-*`) and theme tokens (`--rk-stories-*`) are the same as in `@reelkit/react-stories-player`, so one theme fits both. Override the tokens at `:root` (or any ancestor of `.rk-stories-overlay`) — see the [Theming docs](https://reelkit.dev/docs/vue-stories-player?framework=vue#theming) for the full token table.
 
 ## Documentation
 
-Docs, demos, and customization examples at **[reelkit.dev/docs/vue-stories-player](https://reelkit.dev/docs/vue-stories-player)**.
+Docs, demos, and customization examples at **[reelkit.dev/docs/vue-stories-player](https://reelkit.dev/docs/vue-stories-player?framework=vue)**.
 
 ## Support
 

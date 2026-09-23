@@ -14,7 +14,7 @@
   <img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License" />
   <img src="https://img.shields.io/badge/types-TypeScript-blue?logo=typescript&logoColor=white" alt="TypeScript" />
   <img src="https://img.shields.io/badge/core%20gzip-10.1%20kB-6366f1" alt="Bundle size" />
-  <img src="https://img.shields.io/badge/coverage-88%25-green" alt="Statement coverage across all packages" />
+  <img src="https://img.shields.io/badge/coverage-86%25-green" alt="Statement coverage across all packages" />
   <br/>
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
@@ -41,21 +41,22 @@
 
 ## Packages
 
-| Package                                                                | Description                       | JS (gzip) | CSS (gzip) |
-| ---------------------------------------------------------------------- | --------------------------------- | --------- | ---------- |
-| [@reelkit/core](packages/reelkit-core)                                 | Framework-agnostic slider engine  | 10.1 kB   | —          |
-| [@reelkit/react](packages/reelkit-react)                               | React components and hooks        | 4.9 kB    | —          |
-| [@reelkit/react-reel-player](packages/reelkit-react-reel-player)       | Full-screen video reel player     | 5.4 kB    | 2.1 kB     |
-| [@reelkit/react-lightbox](packages/reelkit-react-lightbox)             | Image & video gallery lightbox    | 3.4 kB    | 1.6 kB     |
-| [@reelkit/stories-core](packages/reelkit-stories-core)                 | Framework-agnostic stories engine | 3.2 kB    | —          |
-| [@reelkit/react-stories-player](packages/reelkit-react-stories-player) | Instagram-style stories player    | 7.1 kB    | 2.0 kB     |
-| [@reelkit/angular](packages/reelkit-angular)                           | Angular standalone components     | 15.1 kB   | —          |
-| [@reelkit/angular-reel-player](packages/reelkit-angular-reel-player)   | Full-screen video reel player     | 24.4 kB   | 3.5 kB     |
-| [@reelkit/angular-lightbox](packages/reelkit-angular-lightbox)         | Image & video gallery lightbox    | 15.4 kB   | 2.2 kB     |
-| [@reelkit/vue](packages/reelkit-vue)                                   | Vue 3 components and composables  | 5.1 kB    | —          |
-| [@reelkit/vue-reel-player](packages/reelkit-vue-reel-player)           | Full-screen video reel player     | 6.2 kB    | 2.1 kB     |
-| [@reelkit/vue-lightbox](packages/reelkit-vue-lightbox)                 | Image & video gallery lightbox    | 4.1 kB    | 1.4 kB     |
-| [@reelkit/vue-stories-player](packages/reelkit-vue-stories-player)     | Instagram-style stories player    | 7.4 kB    | 2.0 kB     |
+| Package                                                                    | Description                       | JS (gzip) | CSS (gzip) |
+| -------------------------------------------------------------------------- | --------------------------------- | --------- | ---------- |
+| [@reelkit/core](packages/reelkit-core)                                     | Framework-agnostic slider engine  | 10.1 kB   | —          |
+| [@reelkit/react](packages/reelkit-react)                                   | React components and hooks        | 4.9 kB    | —          |
+| [@reelkit/react-reel-player](packages/reelkit-react-reel-player)           | Full-screen video reel player     | 5.4 kB    | 2.1 kB     |
+| [@reelkit/react-lightbox](packages/reelkit-react-lightbox)                 | Image & video gallery lightbox    | 3.4 kB    | 1.6 kB     |
+| [@reelkit/stories-core](packages/reelkit-stories-core)                     | Framework-agnostic stories engine | 3.2 kB    | —          |
+| [@reelkit/react-stories-player](packages/reelkit-react-stories-player)     | Instagram-style stories player    | 7.2 kB    | 2.0 kB     |
+| [@reelkit/angular](packages/reelkit-angular)                               | Angular standalone components     | 16.0 kB   | —          |
+| [@reelkit/angular-reel-player](packages/reelkit-angular-reel-player)       | Full-screen video reel player     | 24.4 kB   | 3.5 kB     |
+| [@reelkit/angular-lightbox](packages/reelkit-angular-lightbox)             | Image & video gallery lightbox    | 16.4 kB   | 2.2 kB     |
+| [@reelkit/angular-stories-player](packages/reelkit-angular-stories-player) | Instagram-style stories player    | 31.2 kB   | 3.0 kB     |
+| [@reelkit/vue](packages/reelkit-vue)                                       | Vue 3 components and composables  | 5.1 kB    | —          |
+| [@reelkit/vue-reel-player](packages/reelkit-vue-reel-player)               | Full-screen video reel player     | 6.2 kB    | 2.1 kB     |
+| [@reelkit/vue-lightbox](packages/reelkit-vue-lightbox)                     | Image & video gallery lightbox    | 4.2 kB    | 1.4 kB     |
+| [@reelkit/vue-stories-player](packages/reelkit-vue-stories-player)         | Instagram-style stories player    | 7.5 kB    | 2.0 kB     |
 
 Every overlay ships its stylesheet separately from the JavaScript — import the
 package CSS once, then theme it with `--rk-*` custom properties. Budget both

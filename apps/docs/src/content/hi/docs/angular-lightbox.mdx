@@ -5,6 +5,7 @@ description: Angular के लिए फ़ुलस्क्रीन इम�
 
 import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2 } from 'lucide-react';
 import installation from '../../snippets/angular-lightbox/installation.sh?raw';
+import installation2 from '../../snippets/angular-lightbox/installation-2.ts?raw';
 import basicUsage from '../../snippets/angular-lightbox/basic-usage.ts?raw';
 import templateSlots from '../../snippets/angular-lightbox/template-slots.ts?raw';
 import videoSupport from '../../snippets/angular-lightbox/video-support.ts?raw';
@@ -98,11 +99,15 @@ Angular के लिए फ़ुलस्क्रीन इमेज और �
 
 <CodeBlock code={installation} language="bash" />
 
+स्टाइलशीट को एक बार रजिस्टर करें:
+
+<CodeBlock code={installation2} language="typescript" />
+
 <Callout type="info" title="आइकन">
   डिफ़ॉल्ट कंट्रोल आइकन के लिए `lucide-angular` इस्तेमाल करते हैं। अगर आप कोई और आइकन लाइब्रेरी पसंद करते हैं, तो अपने देने के लिए `rkLightboxControls` और `rkLightboxNavigation` template slots इस्तेमाल करें।
 </Callout>
 
-## बुनियादी इस्तेमाल [#basic-usage]
+## क्विक स्टार्ट [#quick-start]
 
 styles और standalone `RkLightboxOverlayComponent` कंपोनेंट को अपने कंपोनेंट के `imports` array में import करें।
 

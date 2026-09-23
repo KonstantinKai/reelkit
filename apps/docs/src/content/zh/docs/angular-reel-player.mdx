@@ -5,6 +5,7 @@ description: Angular 全屏视频播放浮层：组件输入与输出、模板�
 
 import { Zap, Play, Volume2, Layout, Clock, Image, Layers, Ratio, Monitor, Code, Settings, Link2 } from 'lucide-react';
 import installation from '../../snippets/angular-reel-player/installation.sh?raw';
+import installation2 from '../../snippets/angular-reel-player/installation-2.ts?raw';
 import basicUsage from '../../snippets/angular-reel-player/basic-usage.ts?raw';
 import templateSlots from '../../snippets/angular-reel-player/template-slots.ts?raw';
 import nestedSliderMultiMedia from '../../snippets/angular-reel-player/nested-slider-multi-media.ts?raw';
@@ -91,11 +92,15 @@ import theming from '../../snippets/angular-reel-player/theming.css?raw';
 
 <CodeBlock code={installation} language="bash" />
 
+注册一次样式表：
+
+<CodeBlock code={installation2} language="typescript" />
+
 <Callout type="info" title="图标">
   默认控件使用 `lucide-angular` 作为图标（关闭、声音、导航箭头）。如果你想换一套图标库，可以用 `rkPlayerControls` 和 `rkPlayerNavigation` 模板插槽提供自己的实现。
 </Callout>
 
-## 基本用法 [#basic-usage]
+## 快速上手 [#quick-start]
 
 把样式表和独立组件 `RkReelPlayerOverlayComponent` 引入组件的 `imports` 数组。
 

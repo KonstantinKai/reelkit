@@ -17,6 +17,17 @@ Instagram Reels / TikTok-style video player for Angular. Opens as a full-screen 
 npm install @reelkit/angular-reel-player @reelkit/angular
 ```
 
+Register the stylesheet once, any of three equivalent ways:
+
+```typescript
+// Anywhere that runs at startup — main.ts, app.config.ts, a component file.
+import '@reelkit/angular-reel-player/styles.css';
+// Or, from a global stylesheet:
+//   @import '@reelkit/angular-reel-player/styles.css';
+// Or in angular.json:
+//   "styles": ["node_modules/@reelkit/angular-reel-player/styles.css"]
+```
+
 ## Quick Start
 
 ```typescript

@@ -1,10 +1,408 @@
 ---
 title: Angular Stories Player
-description: Overlay de stories para Angular (en desarrollo). La versión de React ya está disponible; la de Angular compartirá el motor @reelkit/stories-core para la navegación en dos niveles, el temporizador con RAF y el progreso en canvas.
+description: Overlay de stories al estilo Instagram para Angular. Navegación por toques, transiciones de cubo entre autores, temporizador automático, estado de visto, carrusel en escritorio, estado en la URL, slots de plantilla y tokens de tema compartidos con los players de React y Vue.
 ---
 
-Overlay de stories a pantalla completa al estilo de Instagram para Angular, con navegación anidada, temporizador de avance automático, zonas de toque y slots de plantilla personalizables.
+import { Zap, Play, Timer, Layout, Clock, Image, Layers, Heart, Monitor, Circle, Code, Settings, Link2, Eye } from 'lucide-react';
+import installation from '../../snippets/angular-stories-player/installation.sh?raw';
+import installation2 from '../../snippets/angular-stories-player/installation-2.ts?raw';
+import basicUsage from '../../snippets/angular-stories-player/basic-usage.ts?raw';
+import urlState from '../../snippets/angular-stories-player/url-state.ts?raw';
+import urlState2 from '../../snippets/angular-stories-player/url-state-2.ts?raw';
+import urlState3 from '../../snippets/angular-stories-player/url-state-3.ts?raw';
+import rememberingWhatWasSeen from '../../snippets/angular-stories-player/remembering-what-was-seen.ts?raw';
+import desktopCarousel from '../../snippets/angular-stories-player/desktop-carousel.ts?raw';
+import transitions from '../../snippets/angular-stories-player/transitions.ts?raw';
+import templateSlots from '../../snippets/angular-stories-player/template-slots.ts?raw';
+import slideSlot from '../../snippets/angular-stories-player/slide-slot.ts?raw';
+import navigationSlot from '../../snippets/angular-stories-player/navigation-slot.ts?raw';
+import progressBarSlot from '../../snippets/angular-stories-player/progress-bar-slot.ts?raw';
+import loadingErrorSlots from '../../snippets/angular-stories-player/loading-error-slots.ts?raw';
+import groupPreviewSlot from '../../snippets/angular-stories-player/group-preview-slot.ts?raw';
+import storiesApi from '../../snippets/angular-stories-player/stories-api.ts?raw';
+import doubleTapLikes from '../../snippets/angular-stories-player/double-tap-likes.ts?raw';
+import customizingTheHeartAnimation from '../../snippets/angular-stories-player/customizing-the-heart-animation.css?raw';
+import subComponents from '../../snippets/angular-stories-player/sub-components.ts?raw';
+import types from '../../snippets/angular-stories-player/types.ts?raw';
+import slotContexts from '../../snippets/angular-stories-player/slot-contexts.ts?raw';
+import customStoryTypes from '../../snippets/angular-stories-player/custom-story-types.ts?raw';
+import theming from '../../snippets/angular-stories-player/theming.css?raw';
 
-<Callout type="info" title="Próximamente">
-  El Stories Player para Angular está en desarrollo. La versión de React ya está disponible en [@reelkit/react-stories-player](/docs/stories-player). La versión de Angular seguirá la misma arquitectura y usará `@reelkit/stories-core` para la máquina de estados, el temporizador y el renderizador de progreso en canvas, independientes del framework.
+Overlay de stories al estilo Instagram para Angular, con `@reelkit/angular-stories-player`. Usa el mismo motor `@reelkit/stories-core` que los players de React y Vue, así que el comportamiento, las clases CSS y los tokens de tema son los mismos.
+
+<DemoLink href="https://angular-demo.reelkit.dev/stories-player?utm_source=docs">Ver demo en vivo →</DemoLink>
+
+## Características [#features]
+
+<FeatureGrid items={[
+              {
+                icon: Zap,
+                label: 'Navegación anidada',
+                desc: 'Toca para pasar stories, desliza para cambiar de autor',
+              },
+              {
+                icon: Play,
+                label: 'Stories en vídeo',
+                desc: 'Reproducción automática con control de sonido',
+              },
+              {
+                icon: Timer,
+                label: 'Avance automático',
+                desc: 'Duración configurable por story',
+              },
+              {
+                icon: Layout,
+                label: 'Transiciones 3D',
+                desc: 'Cubo, volteo, fundido, zoom, deslizamiento',
+              },
+              {
+                icon: Clock,
+                label: 'Barra de progreso',
+                desc: 'Progreso segmentado dibujado en canvas',
+              },
+              {
+                icon: Image,
+                label: 'Imagen y vídeo',
+                desc: 'Admite ambos tipos de medio',
+              },
+              {
+                icon: Layers,
+                label: 'Slots de plantilla',
+                desc: 'Ocho regiones con ng-template',
+              },
+              {
+                icon: Heart,
+                label: 'Doble toque',
+                desc: 'Animación de corazón al tocar dos veces',
+              },
+              {
+                icon: Monitor,
+                label: 'Navegación en escritorio',
+                desc: 'Flechas laterales en pantallas grandes',
+              },
+              {
+                icon: Circle,
+                label: 'Anillos de story',
+                desc: 'Avatares con anillo al estilo Instagram',
+              },
+              {
+                icon: Code,
+                label: 'Tipos genéricos',
+                desc: 'Extiende StoryItem con tus propios campos',
+              },
+              {
+                icon: Settings,
+                label: 'Tokens de tema',
+                desc: 'Cambia la marca solo con --rk-stories-*',
+              },
+              {
+                icon: Link2,
+                label: 'Estado en la URL',
+                desc: 'Enlaces compartibles ?story=grupo.story',
+              },
+              {
+                icon: Eye,
+                label: 'Estado de visto',
+                desc: 'Los anillos vistos y la reanudación sobreviven a una recarga',
+              },
+]} />
+
+## Instalación [#installation]
+
+<CodeBlock code={installation} language="bash" />
+
+Registra la hoja de estilos una sola vez:
+
+<CodeBlock code={installation2} language="typescript" />
+
+<Callout type="info" title="Iconos">
+  La cabecera y las flechas de navegación por defecto usan `lucide-angular` para los iconos. Si prefieres otra librería de iconos, sustitúyelas con los slots de plantilla `rkStoriesHeader` y `rkStoriesNavigation`.
 </Callout>
+
+## Inicio rápido [#quick-start]
+
+<CodeBlock code={basicUsage} language="typescript" />
+
+## Estado en la URL [#url-state]
+
+<DemoLink href="https://angular-demo.reelkit.dev/stories-player-url?utm_source=docs">Ver demo en vivo →</DemoLink>
+
+`RkStoriesUrlOverlayComponent` es un componente aparte cuyo estado de apertura vive en la barra de direcciones. Los dos ejes viajan en un solo parámetro — `?story=<group>.<story>` —, así que la story en reproducción tiene un enlace que se puede compartir, guardar en marcadores y cerrar con el botón atrás. Crea un controlador con `createOverlayUrlState` y `urlIndexTwoAxisKey`, y pásalo como `controller`.
+
+<Callout type="info" title="Claves incluidas">
+  Las stories tienen dos ejes, así que despliega una clave de dos ejes en el controlador: `urlIndexTwoAxisKey` (autor y story por posición) o `urlStableIdTwoAxisKey` (el autor por un `id` estable); las dos se reexportan desde `@reelkit/angular-stories-player`. Consulta la [guía de estado en la URL](/docs/core/guide#url-state) y la [Core API](/docs/core/api#url-state).
+</Callout>
+
+<CodeBlock code={urlState} language="typescript" />
+
+- Abrir añade **una** entrada al historial. Moverse por las stories *y* cambiar de autor solo la **sustituyen**, así que N navegaciones no añaden entradas y un paso atrás siempre cierra el player. Atrás cierra; no retrocede una story.
+- **La navegación interior también viaja en la URL.** Avanzar dentro de las stories de un autor actualiza `?story=2.`*n*, así que un enlace directo aterriza en la story exacta.
+- Atrás solo cierra cuando el player se abrió desde dentro de la aplicación, porque ese enlace añadió una entrada. Un enlace compartido y abierto en una pestaña nueva no tiene historial detrás, así que el atrás del navegador sale del sitio; el botón ✕ o Escape quitan el parámetro en el sitio y se quedan.
+- Un parámetro que no nombra ni autor ni story —un marcador viejo, un valor editado a mano, una story más allá del final del grupo— se elimina de la URL en lugar de abrir la vecina.
+- Una aplicación con enrutador debería pasar un adaptador basado en él, para que el enrutador siga siendo la única fuente de verdad de la navegación. `createRouterUrlAdapter`, de `@reelkit/angular/ng-router-url-adapter`, es el adaptador listo para el enrutador de Angular; escribir el historial por detrás del enrutador deja su location desactualizada y tira el parámetro en la siguiente navegación.
+
+**Enlaces estables.** El autor se direcciona por posición de forma predeterminada, así que un `?story=2.0` guardado abre a otra persona en cuanto se reordena el feed. Direcciónalo por un id estable: `outerCodec` escribe el id en la URL y `outerLocator` encuentra dónde está. Pasa `innerCodec` junto con `innerLocate` e `innerIdentify` para hacer lo mismo con la story dentro de su grupo; si los omites, la mitad de la story sigue siendo un índice local normal.
+
+<CodeBlock code={urlState2} language="typescript" />
+
+**Feeds infinitos.** Paginar es cosa de `outerLocator`, con independencia del códec. `locate` es síncrono, así que solo responde por los grupos ya cargados: un enlace compartido al grupo 400 de un feed que ha cargado 20 se queda sin respuesta. `locateAsync` es el recurso siguiente, y solo se llama cuando `locate` falla; la story se vuelve a acotar al grupo en el que todo acaba deteniéndose.
+
+<Callout type="info" title="El mismo locateAsync, eje exterior">
+  Es el mismo paginador `locateAsync` que aceptan las claves de un eje: en una clave de dos ejes viaja en el `outerLocator` que le pasas, así que la paginación ocurre en el eje de los autores mientras la story sigue siendo un índice local dentro del grupo resuelto.
+</Callout>
+
+<CodeBlock code={urlState3} language="typescript" />
+
+- Mientras `locateAsync` está pendiente, el player sigue cerrado y el parámetro intacto, así que el enlace directo sobrevive a la petición. Un `null` o un rechazo eliminan el parámetro.
+- Una respuesta que llega después de que la URL haya cambiado, después de cerrar o después de desmontar se descarta: una petición lenta no puede abrir una story que ya nadie pidió.
+- Todas las opciones de `createOverlayUrlState` están en la [referencia de la API de Angular](/docs/angular/api#createoverlayurlstate), y el recorrido paso a paso está en la [guía de Angular](/docs/angular/guide#url-state).
+
+## Recordar lo que ya se vio [#remembering-what-was-seen]
+
+`createStoriesViewedStateController` registra cada story mostrada y responde por dónde se reanuda cada autor. Pasa el mismo controlador a la lista de anillos y al player, y ambos coincidirán sobre lo que queda por ver.
+
+<CodeBlock code={rememberingWhatWasSeen} language="typescript" />
+
+## Carrusel en escritorio [#desktop-carousel]
+
+<CodeBlock code={desktopCarousel} language="typescript" />
+
+## Slots de plantilla [#template-slots]
+
+Ocho directivas `ng-template` sustituyen cualquier parte del player. Cada una recibe un contexto tipado, con el valor más útil como implícito: `let-author` toma el autor en el slot de cabecera sin nombrarlo. Un slot que no proporciones mantiene la presentación por defecto.
+
+| Directiva | Clase | Contexto | Descripción |
+| --- | --- | --- | --- |
+| `rkStoriesError` | `RkStoriesErrorDirective` | `{ $implicit: story, storyIndex, groupIndex }` | Sustituye el panel "Content unavailable" integrado, dibujado sobre la story activa |
+| `rkStoriesFooter` | `RkStoriesFooterDirective` | `{ $implicit: story, author, storyIndex }` | Añade un pie bajo la story activa; el player no dibuja ninguno propio |
+| `rkStoriesGroupPreview` | `RkStoriesGroupPreviewDirective` | `{ $implicit: group, groupIndex, story, offset, viewedCount, onOpen }` | Rellena una tarjeta del carrusel de escritorio; el player sigue colocándola, escalándola y deslizándola |
+| `rkStoriesHeader` | `RkStoriesHeaderDirective` | `{ $implicit: author, story, storyIndex, isPaused, isMuted, isVideo, onToggleSound, onTogglePause, onClose }` | Sustituye la cabecera por defecto (autor, pausa, sonido, cerrar) |
+| `rkStoriesLoading` | `RkStoriesLoadingDirective` | `{ $implicit: story, storyIndex, groupIndex }` | Sustituye el indicador de carga de la cabecera mientras la story activa carga |
+| `rkStoriesNavigation` | `RkStoriesNavigationDirective` | `{ $implicit: { onPrevStory, onNextStory, onPrevGroup, onNextGroup } }` | Sustituye ambas flechas de escritorio |
+| `rkStoriesProgressBar` | `RkStoriesProgressBarDirective` | `{ $implicit: group, totalStories, activeIndex, progress }` | Sustituye la barra de progreso en canvas. `activeIndex` y `progress` son señales del core: conéctalas con `toAngularSignal`. |
+| `rkStoriesSlide` | `RkStoriesSlideDirective` | `{ $implicit: story, index, groupIndex, isActive, size, activeGroupIndex, activeStoryIndex, onDurationReady, onReady, onWaiting, onError, onEnded }` | Sustituye las slides de imagen y vídeo por defecto |
+
+<CodeBlock code={templateSlots} language="typescript" />
+
+`STORIES_TEMPLATE_SLOT_DIRECTIVES` exporta las ocho clases como un único array, para un componente que importe varias.
+
+Cada slot se renderiza con el inyector del propio player, así que un componente dibujado dentro de uno resuelve los proveedores del player: un `rk-video-story-slide` en una plantilla de slide encuentra el mismo estado de sonido que escribe el botón de la cabecera.
+
+### Slides personalizadas [#custom-slides]
+
+<CodeBlock code={slideSlot} language="typescript" />
+
+<Callout type="info" title="Caché del precargador">
+  Los componentes integrados `RkImageStorySlideComponent` y `RkVideoStorySlideComponent` precargan la siguiente story en segundo plano. Cuando el espectador llega a una story precargada, el contenido aparece al instante, sin indicador de carga. Una URL que falló una vez también se recuerda, así que reabrir una story rota muestra el error de inmediato en lugar de reintentar.
+</Callout>
+
+### Navegación personalizada [#custom-navigation]
+
+<CodeBlock code={navigationSlot} language="typescript" />
+
+### Barra de progreso personalizada [#custom-progress-bar]
+
+<CodeBlock code={progressBarSlot} language="typescript" />
+
+### Carga y error personalizados [#custom-loading-error]
+
+<CodeBlock code={loadingErrorSlots} language="typescript" />
+
+### Tarjetas del carrusel personalizadas [#custom-carousel-cards]
+
+<CodeBlock code={groupPreviewSlot} language="typescript" />
+
+## Transiciones [#transitions]
+
+`groupTransition` controla el efecto 3D al cambiar de autor. Importa las funciones de transición desde `@reelkit/angular`:
+
+<CodeBlock code={transitions} language="typescript" />
+
+## Doble toque y "me gusta" [#double-tap-likes]
+
+Al tocar dos veces se reproduce una animación de corazón, como respuesta visual inmediata. `(doubleTapped)` emite el índice de grupo y de story para que guardes el "me gusta" en tu propio estado. El player no guarda ningún estado de "me gusta".
+
+<CodeBlock code={doubleTapLikes} language="typescript" />
+
+### Personalizar la animación del corazón [#customizing-the-heart-animation]
+
+Ajusta la velocidad con el token `--rk-stories-heart-duration` (ver [Temas](#theming)). Para el color, el tamaño o para ocultar el corazón por completo, apunta a la clase `.rk-stories-heart`. `RkHeartAnimationComponent` se exporta para usarlo por separado.
+
+<CodeBlock code={customizingTheHeartAnimation} language="css" />
+
+<Callout type="info">
+  La animación del corazón integrada todavía no puede sustituirse con un slot. Cámbiale el estilo con CSS, u ocúltala con `display: none` y lanza tu propia animación desde `(doubleTapped)`. Si necesitas un slot para el corazón, dínoslo en [GitHub Issues](https://github.com/KonstantinKai/reelkit/issues).
+</Callout>
+
+## StoriesApi [#storiesapi]
+
+Toma la API desde `(apiReady)` para controlar el player de forma imperativa. El player se reconstruye en cada apertura, así que un identificador guardado de una apertura anterior queda obsoleto: usa el más reciente.
+
+<CodeBlock code={storiesApi} language="typescript" />
+
+### Métodos [#methods]
+
+| Método | Tipo | Descripción |
+| --- | --- | --- |
+| `nextStory()` | `() => void` | Avanza a la siguiente story dentro del grupo actual |
+| `prevStory()` | `() => void` | Vuelve a la story anterior dentro del grupo actual |
+| `nextGroup()` | `() => void` | Cambia al siguiente grupo de autor |
+| `prevGroup()` | `() => void` | Cambia al grupo de autor anterior |
+| `goToGroup(index)` | `(index: number) => void` | Salta a un grupo concreto por índice |
+| `pause()` | `() => void` | Pausa el avance automático y el temporizador de progreso |
+| `resume()` | `() => void` | Reanuda el avance automático y el temporizador de progreso |
+
+## Subcomponentes [#sub-components]
+
+Piezas exportadas, para componer dentro de los slots o usarlas por separado.
+
+| Componente | Qué es |
+| --- | --- |
+| `RkCanvasProgressBarComponent` | La barra de progreso segmentada en canvas, dibujada directamente desde las señales del temporizador. Gestiona una ventana deslizante para grupos con muchas stories. |
+| `RkHeartAnimationComponent` | El corazón del doble toque. Emite `(completed)` cuando termina la animación, para que el padre lo retire. |
+| `RkImageStorySlideComponent` | Slide de imagen a sangre completa con `object-fit: cover`, que informa de la carga y del error mediante outputs. |
+| `RkStoriesRingComponent` | Avatar circular con el anillo degradado. Dos estados: si queda algo por ver rota, y si está todo visto queda plano. Emite `(clicked)`. |
+| `RkStoriesRingListComponent` | Fila horizontal de anillos con los nombres de los autores, uno por grupo. Emite `(selected)` con el índice del grupo. |
+| `RkStoryHeaderComponent` | La cabecera por defecto: avatar, nombre, insignia de verificado, tiempo relativo, pausa, sonido, cerrar y el indicador de carga. |
+| `RkVideoStorySlideComponent` | Slide de vídeo respaldada por el único elemento `<video>` compartido, para la continuidad del sonido en iOS. Gestiona la reproducción automática, los pósteres y el aviso de duración. |
+
+`RkStoriesCarouselComponent` también se exporta, junto con su tipo `CarouselSlide`, pero el overlay es dueño de todos los valores que dibuja: usa el slot `rkStoriesGroupPreview` para dar estilo a una tarjeta en lugar de montar el carrusel por tu cuenta.
+
+<CodeBlock code={subComponents} language="typescript" />
+
+## Tipos de story personalizados [#custom-story-types]
+
+Extiende `StoryItem` con tus propios campos y tipa los grupos con él:
+
+<CodeBlock code={customStoryTypes} language="typescript" />
+
+## Reexportaciones [#re-exports]
+
+Todo lo que necesita un consumidor sale de este paquete, así que nunca hace falta importar directamente de `@reelkit/core`.
+
+| Desde | Reexportado |
+| --- | --- |
+| `@reelkit/angular` | `createOverlayUrlState`, `urlIndexTwoAxisKey`, `urlStableIdTwoAxisKey`, `base64UrlCodec`, `createViewedStateController`, `twoAxisViewedTracking`, `createLocalStorageAdapter`, `createSessionStorageAdapter`, `createMemoryStorageAdapter`, y los tipos `OverlayUrlStateOptions`, `UrlAdapter`, `UrlCodec`, `UrlLocator`, `UrlKey`, `UrlStateController`, `TwoAxisPosition`, `TwoAxisIdentity`, `UrlIndexTwoAxisKeyOptions`, `ViewedStateController`, `ViewedStateOptions`, `StorageAdapter` |
+| `@reelkit/stories-core` | `createStoriesViewedStateController`, `StoriesViewedStateController`, `StoriesViewedStateControllerConfig`, y los tipos de contenido `StoryItem`, `AuthorInfo`, `StoriesGroup`, `MediaType` |
+
+`attachViewedState` también se exporta, para un componente que sea dueño de un controlador de estado de visto y quiera mantenerlo activo mientras ese componente exista.
+
+## Inputs de RkStoriesOverlayComponent [#rkstoriesoverlaycomponent-inputs]
+
+<Signature>rk-stories-overlay</Signature>
+
+| Input | Tipo | Por defecto | Descripción |
+| --- | --- | --- | --- |
+| `ariaLabel` | `string` | `'Stories player'` | Nombre accesible de la región de diálogo; los lectores de pantalla lo anuncian al abrirse el overlay |
+| `defaultImageDuration` | `number` | `5000` | Duración del avance automático de una story de imagen, en milisegundos |
+| `desktopLayout` | `'single' \| 'carousel'` | `'single'` | Disposición en escritorio. `'carousel'` muestra los grupos vecinos como tarjetas de vista previa junto a la story activa y desliza entre grupos. Los móviles siempre muestran la story sola. El tipo se exporta como `DesktopLayout`. |
+| `enableKeyboard` | `boolean` | `true` | Activa la navegación por teclado (flechas izquierda/derecha, Escape) |
+| `groups` | `StoriesGroup<T>[]` | `required` | Grupos de stories a mostrar. Los grupos o stories añadidos con el player abierto se recogen sin perder el punto en el que iba el espectador. |
+| `groupTransition` | `TransitionTransformFn` | `cubeTransition` | Transición entre autores. Se ignora mientras se muestra el carrusel de escritorio, que desliza en su lugar. |
+| `hideUIOnPause` | `boolean` | `true` | Oculta la barra de progreso y la cabecera mientras una pulsación larga mantiene la pausa |
+| `initialGroupIndex` | `number` | `0` | Índice (desde cero) del grupo con el que abre el player |
+| `initialStoryIndex` | `number` | reanudar, si no `0` | Índice (desde cero) de la story con la que abre el player. Indicar una gana sobre cualquier cosa recordada; si lo omites, el grupo de apertura se reanuda como cualquier otro. |
+| `innerTransitionDuration` | `number` | `200` | Duración del fundido entre stories de un mismo autor, en milisegundos |
+| `isOpen` | `boolean` | `false` | Renderiza el player y bloquea el desplazamiento del body mientras es true |
+| `minSegmentWidth` | `number` | `8` | Anchura mínima de un segmento de progreso antes de que la barra pase a desplazar una ventana de segmentos, en píxeles |
+| `resumeStoryIndex` | `(groupIndex: number) => number` | — | Con qué story abre un grupo la primera vez que se llega a él. Solo se consulta para un grupo aún no visitado en esta apertura, y gana sobre `viewed`. |
+| `tapZoneSplit` | `number` | `0.3` | Proporción de la zona de toque (0–1). La parte izquierda retrocede, el resto avanza. |
+| `viewed` | `StoriesViewedStateController` | — | Lo que el espectador ya ha visto, de `createStoriesViewedStateController()`. Los grupos se reanudan en su primera story sin ver, se registra cada story mostrada y las tarjetas del carrusel apagan el anillo de un grupo visto hasta el final. Pasa el mismo controlador a `rk-stories-ring-list`. |
+
+Cada slot tiene además un input, para un componente que guarde el `TemplateRef` en lugar de proyectarlo: `slideTemplate`, `headerTemplate`, `footerTemplate`, `progressBarTemplate`, `navigationTemplate`, `loadingTemplate`, `errorTemplate` y `groupPreviewTemplate`. Una plantilla indicada así gana sobre otra proyectada dentro del player.
+
+## Outputs de RkStoriesOverlayComponent [#rkstoriesoverlaycomponent-outputs]
+
+| Output | Carga | Descripción |
+| --- | --- | --- |
+| `(apiReady)` | `StoriesApi` | Se emite cuando el player está listo para recibir órdenes, y de nuevo en cada apertura |
+| `(closed)` | `void` | Se emite cuando el espectador cierra el player. El player no se mueve; decide el anfitrión. En `rk-stories-url-overlay` el parámetro ya está limpio para entonces. |
+| `(doubleTapped)` | `{ groupIndex, storyIndex }` | Se emite al tocar dos veces, junto con la animación del corazón |
+| `(groupChanged)` | `number` | Se emite después de cambiar el grupo activo |
+| `(paused)` | `void` | Se emite con una pulsación larga, o con el botón de pausa de la cabecera |
+| `(resumed)` | `void` | Se emite al soltar, o con el botón de reproducción de la cabecera |
+| `(storyChanged)` | `{ groupIndex, storyIndex }` | Se emite después de cambiar la story activa |
+| `(storyCompleted)` | `{ groupIndex, storyIndex }` | Se emite cuando se agota el temporizador de una story |
+| `(storyViewed)` | `{ groupIndex, storyIndex }` | Se emite cuando una story aparece en pantalla, incluida la de apertura |
+
+El player informa del cierre en lugar de cerrarse solo, así que `(closed)` cubre todas las salidas: el botón ✕, un deslizamiento hacia abajo, Escape y el final de la última story del último grupo.
+
+## Inputs de RkStoriesUrlOverlayComponent [#rkstoriesurloverlaycomponent-inputs]
+
+<Signature>rk-stories-url-overlay</Signature>
+
+Acepta todos los inputs anteriores salvo el trío de estado de apertura — `isOpen`, `initialGroupIndex`, `initialStoryIndex` — que vienen del controlador.
+
+| Input | Tipo | Por defecto | Descripción |
+| --- | --- | --- | --- |
+| `controller` | `UrlStateController<TwoAxisPosition>` | `required` | Controlador de `createOverlayUrlState` combinado con `urlIndexTwoAxisKey`. Su posición — un objeto \{ outer, inner \} — decide si el player está abierto y por dónde abre; el overlay la reescribe en cada navegación y al cerrar. |
+
+## Interfaces StoryItem, AuthorInfo y StoriesGroup [#storyitem-authorinfo-storiesgroup]
+
+<CodeBlock code={types} language="typescript" />
+
+## Tipos de contexto de los slots [#template-slot-context-types]
+
+Todos los tipos de contexto se exportan, para anotar un slot donde el compilador no pueda inferirlo: `StoriesSlideContext`, `StoriesHeaderContext`, `StoriesFooterContext`, `StoriesProgressBarContext`, `StoriesNavigationContext`, `StoriesLoadingContext`, `StoriesErrorContext` y `StoriesGroupPreviewContext`, junto con `StoriesNavigationActions`, `DesktopLayout` y `StoriesApi`:
+
+<CodeBlock code={slotContexts} language="typescript" />
+
+## Clases CSS [#css-classes]
+
+Los nombres de clase son planos (sin ámbito), así que una hoja de estilos cargada después de `@reelkit/angular-stories-player/styles.css` puede sobrescribir cualquiera. Son idénticos a los de `@reelkit/react-stories-player` y `@reelkit/vue-stories-player`, así que una hoja escrita para un binding sirve para los otros. Para colores, tamaños y z-index es mejor usar las propiedades personalizadas de [Temas](#theming).
+
+| Clase | Componente | Descripción |
+| --- | --- | --- |
+| `.rk-stories-overlay` | Overlay | Fondo fijo a pantalla completa (color, z-index) |
+| `.rk-stories-overlay--carousel` | Overlay | Overlay con el carrusel de escritorio visible |
+| `.rk-stories-overlay--sliding` | Overlay | Deslizamiento del carrusel en curso; el lienzo del player está oculto |
+| `.rk-stories-swipe-wrapper` | Overlay | Contenedor del deslizamiento para cerrar (aloja las flechas y el lienzo) |
+| `.rk-stories-container` | Overlay | Lienzo redondeado de la story (posición, overflow) |
+| `.rk-stories-ui-layer` | Overlay | Una capa de interfaz sobre el player (cabecera, progreso, corazones) |
+| `.rk-stories-ui-layer--hidden` | Overlay | Interfaz oculta (la alterna `hideUIOnPause`) |
+| `.rk-stories-error` | Overlay | Estado de error (icono y texto centrados) |
+| `.rk-stories-error-text` | Overlay | Texto del mensaje de error |
+| `.rk-stories-nav-btn` | Overlay | Flecha de anterior/siguiente en escritorio |
+| `.rk-stories-slide-wrapper` | Overlay | Un grupo de stories (slide exterior) |
+| `.rk-stories-story` | Overlay | Una sola story (raíz de la slide interior) |
+| `.rk-stories-image` | ImageStorySlide | Imagen a sangre completa (`object-fit: cover`) |
+| `.rk-stories-video` | VideoStorySlide | Contenedor de la slide de vídeo |
+| `.rk-stories-video-poster` | VideoStorySlide | Póster, visible hasta que arranca la reproducción |
+| `.rk-stories-heart` | HeartAnimation | El corazón del doble toque |
+| `.rk-stories-header` | StoryHeader | Fila de cabecera (avatar, nombre, tiempo, controles) |
+| `.rk-stories-header-btn` | StoryHeader | Botones de pausa, sonido y cerrar |
+| `.rk-stories-header-spinner` | StoryHeader | Indicador de carga mientras la story activa carga |
+| `.rk-stories-ring` | StoriesRing | Avatar circular con el anillo degradado |
+| `.rk-stories-ring--active` | StoriesRing | Anillo con stories por ver (degradado en rotación) |
+| `.rk-stories-ring-avatar` | StoriesRing | La imagen del avatar dentro del anillo |
+| `.rk-stories-ring-list` | StoriesRingList | Fila horizontal de anillos |
+| `.rk-stories-carousel` | Carousel | Capa del carrusel de escritorio |
+| `.rk-stories-card` | Carousel | Una tarjeta de vista previa junto al player |
+| `.rk-stories-card-image` | Carousel | La imagen de vista previa de la tarjeta |
+| `.rk-stories-card-frame` | Carousel | Una plantilla de slide dibujada como vista previa de la tarjeta, a escala reducida |
+
+## Temas [#theming]
+
+Cada color, tamaño, duración y z-index es una propiedad personalizada `--rk-stories-*` en `:root`, así que un cambio de marca es una hoja de estilos y no un cambio de componente. Los tokens se comparten con los players de React y Vue.
+
+<CodeBlock code={theming} language="css" />
+
+## Accesibilidad [#accessibility]
+
+La raíz del overlay es un diálogo modal (`role="dialog"`, `aria-modal="true"`). Usa `ariaLabel` para cambiar lo que anuncia el lector de pantalla; por defecto es "Stories player".
+
+El overlay captura el foco al abrirse y lo devuelve al disparador al cerrarse. Tab y Shift+Tab recorren los elementos enfocables de dentro, dando la vuelta en ambos extremos; el foco que se escapa (clic fuera, foco programático) vuelve a entrar. El desplazamiento del body queda bloqueado mientras el player está abierto. Implementado con `captureFocusForReturn` y `createFocusTrap` de `@reelkit/angular`.
+
+Con el carrusel de escritorio, cada tarjeta por defecto es un botón etiquetado "Open stories by" y el nombre del autor. Las tarjetas van después de los controles del player en el orden de tabulación, y salen de él mientras se ejecuta un deslizamiento.
+
+## Renderizado en servidor [#server-side-rendering]
+
+El player no renderiza nada hasta que está abierto y no lee ninguna API del navegador durante la construcción, así que es seguro con Angular SSR. El estado de visto se lee después del montaje y no durante el renderizado, y eso es lo que mantiene de acuerdo al render del servidor y al primer render del cliente.
+
+## Atajos de teclado [#keyboard-shortcuts]
+
+| Tecla | Acción |
+| --- | --- |
+| `ArrowLeft` | Story anterior |
+| `ArrowRight` | Story siguiente |
+| `Escape` | Cerrar el player |

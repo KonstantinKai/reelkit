@@ -62,7 +62,6 @@ export const ptTitles: Record<string, string> = {
   Theming: 'Temas',
   Accessibility: 'Acessibilidade',
   'Keyboard Shortcuts': 'Atalhos de teclado',
-  'Basic Usage': 'Uso básico',
   'Scoped Slots': 'Slots com escopo',
   'Custom Content Types': 'Tipos de conteúdo personalizados',
   'Video Support': 'Suporte a vídeo',

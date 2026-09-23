@@ -52,17 +52,87 @@ describe('heading ids across locales', () => {
 // preloads and remembers a broken URL, and that the heart cannot be replaced.
 // Dropped on the way across, they are missing where nothing else says them.
 describe('caveats shared by the stories player pages', () => {
-  const pages = ['stories-player.mdx', 'vue-stories-player.mdx'].map((page) =>
-    join(contentDir, kDefaultLocale, 'docs', page),
-  );
+  const pages = [
+    'stories-player.mdx',
+    'vue-stories-player.mdx',
+    'angular-stories-player.mdx',
+  ].map((page) => join(contentDir, kDefaultLocale, 'docs', page));
 
   it.each([
     ['preloading the next story', /preload the next story in the background/i],
     ['the heart cannot be replaced', /heart animation cannot be replaced/i],
+    // The accessibility section is prose the API tables never imply, so a
+    // port written from the structure alone comes out a paragraph long and
+    // reads complete. These three facts are what the other two ports say.
+    ['returning focus to the trigger', /returns it to the trigger on close/i],
+    ['how the focus trap is built', /captureFocusForReturn.*createFocusTrap/is],
+    ['the carousel card label', /button labelled "Open stories by"/i],
   ])('every stories page carries the caveat about %s', (_, caveat) => {
     for (const page of pages) {
       expect(read(page), relative(repoRoot, page)).toMatch(caveat);
     }
+  });
+});
+
+describe('feature cards', () => {
+  // A card is `{ icon, label, desc }`. Guess at `title`/`description` and MDX
+  // still compiles, the page still builds, every other check still passes —
+  // and the grid renders a row of empty cards, which only a human opening the
+  // page would notice.
+  const kCardKeys = new Set(['icon', 'label', 'desc']);
+
+  const gridsIn = (source: string) =>
+    [
+      ...source.matchAll(/<FeatureGrid[^>]*items=\{\[([\s\S]*?)\]\}\s*\/>/g),
+    ].map((match) => match[1]);
+
+  const pages = walk(join(contentDir, kDefaultLocale), (name) =>
+    name.endsWith('.mdx'),
+  );
+
+  it('are written with the keys the card component reads', () => {
+    const wrong: string[] = [];
+
+    for (const page of pages) {
+      for (const grid of gridsIn(read(page))) {
+        for (const [, key] of grid.matchAll(/^\s*(\w+):/gm)) {
+          if (!kCardKeys.has(key)) {
+            wrong.push(`${relative(repoRoot, page)}: ${key}`);
+          }
+        }
+      }
+    }
+
+    expect(wrong).toEqual([]);
+  });
+
+  // Guards the check itself: no grids found would pass on nothing.
+  it('are present on the pages that open with one', () => {
+    const withGrid = pages.filter((page) => gridsIn(read(page)).length > 0);
+    expect(withGrid.length).toBeGreaterThan(0);
+  });
+});
+
+describe('braces in content', () => {
+  // MDX reads a bare `{` as the start of an expression, so prose escapes it.
+  // A code span is verbatim, though: the escape is not consumed there, and
+  // the reader sees `\{ story \}` on the page. Both forms compile and the
+  // page builds either way, so only the rendered table shows the difference.
+  it('leaves an escaped brace out of code spans', () => {
+    const offenders: string[] = [];
+
+    for (const page of walk(contentDir, (name) => name.endsWith('.mdx'))) {
+      const lines = read(page).split('\n');
+      lines.forEach((line, index) => {
+        for (const [, span] of line.matchAll(/`([^`]+)`/g)) {
+          if (/\\[{}]/.test(span)) {
+            offenders.push(`${relative(repoRoot, page)}:${index + 1}`);
+          }
+        }
+      });
+    }
+
+    expect(offenders).toEqual([]);
   });
 });
 

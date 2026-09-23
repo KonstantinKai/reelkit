@@ -5,6 +5,7 @@ description: Full-screen image gallery lightbox overlay for Angular. LightboxIte
 
 import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2 } from 'lucide-react';
 import installation from '../../snippets/angular-lightbox/installation.sh?raw';
+import installation2 from '../../snippets/angular-lightbox/installation-2.ts?raw';
 import basicUsage from '../../snippets/angular-lightbox/basic-usage.ts?raw';
 import templateSlots from '../../snippets/angular-lightbox/template-slots.ts?raw';
 import videoSupport from '../../snippets/angular-lightbox/video-support.ts?raw';
@@ -98,11 +99,15 @@ Full-screen image & video gallery lightbox for Angular, built on `@reelkit/angul
 
 <CodeBlock code={installation} language="bash" />
 
+Register the stylesheet once:
+
+<CodeBlock code={installation2} language="typescript" />
+
 <Callout type="info" title="Icons">
   The default controls use `lucide-angular` for icons. If you prefer a different icon library, use the `rkLightboxControls` and `rkLightboxNavigation` template slots to provide your own.
 </Callout>
 
-## Basic Usage [#basic-usage]
+## Quick Start [#quick-start]
 
 Import the styles and the `RkLightboxOverlayComponent` standalone component into your component's `imports` array.
 
