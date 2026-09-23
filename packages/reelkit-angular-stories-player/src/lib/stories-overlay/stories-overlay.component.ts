@@ -97,8 +97,11 @@ import type {
   `,
 })
 export class RkStoriesOverlayComponent<T extends StoryItem = StoryItem> {
-  /** Renders the player and locks body scroll while true. */
-  readonly isOpen = input(false);
+  /**
+   * Renders the player and locks body scroll while true. Required, as in the
+   * react and vue players: the host owns the open state and always says it.
+   */
+  readonly isOpen = input.required<boolean>();
 
   /**
    * Accessible name of the dialog, announced when the player opens.

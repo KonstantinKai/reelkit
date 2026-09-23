@@ -141,18 +141,21 @@ export class RkStoryHeaderComponent {
   readonly visible = input(true);
 
   /**
-   * Draws the pause control. Off for a player that does not offer pausing.
+   * Draws the pause control. Off unless the host handles `(pauseToggled)`,
+   * the way the react and vue headers draw it only when given the handler.
+   * The player turns it on for its own header.
    *
-   * @default true
+   * @default false
    */
-  readonly showPauseButton = input(true);
+  readonly showPauseButton = input(false);
 
   /**
-   * Draws the sound control on a video story.
+   * Draws the sound control on a video story. Off unless the host handles
+   * `(soundToggled)`; the player turns it on for its own header.
    *
-   * @default true
+   * @default false
    */
-  readonly showSoundButton = input(true);
+  readonly showSoundButton = input(false);
 
   /** The close button is always drawn, so it always needs a home. */
   readonly closed = output<void>();

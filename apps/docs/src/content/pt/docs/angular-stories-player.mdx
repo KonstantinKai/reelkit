@@ -304,12 +304,12 @@ Peças exportadas, para compor dentro dos slots ou usar por conta própria.
 
 | Componente | O que é |
 | --- | --- |
-| `RkCanvasProgressBarComponent` | A barra de progresso segmentada em canvas, desenhada direto dos sinais do timer. Cuida de uma janela deslizante para grupos com muitas stories. Com `[live]="false"` só desenha quando os sinais mudam e depois de um redimensionamento, sem loop de animação. |
+| `RkCanvasProgressBarComponent` | A barra de progresso segmentada em canvas, desenhada direto dos sinais do timer. Cuida de uma janela deslizante para grupos com muitas stories. Com `[live]="false"` só desenha quando os sinais mudam e depois de um redimensionamento, sem loop de animação. Tamanhos e cores são inputs separados: `gap`, `barHeight`, `minSegmentWidth`, `bgColor`, `fillColor`. |
 | `RkHeartAnimationComponent` | O coração do toque duplo. Emite `(completed)` quando a animação termina, para o pai removê-lo. |
 | `RkImageStorySlideComponent` | Slide de imagem em tela cheia com `object-fit: cover`, informando carregamento e erro por outputs. |
 | `RkStoriesRingComponent` | Avatar circular com o anel em gradiente. Dois estados: se ainda há algo para ver ele gira, e quando tudo foi visto fica liso. Emite `(clicked)`. |
 | `RkStoriesRingListComponent` | Linha horizontal de anéis com os nomes dos autores, um por grupo. Emite `(selected)` com o índice do grupo. |
-| `RkStoryHeaderComponent` | O cabeçalho padrão: avatar, nome, selo de verificado, tempo relativo, pausa, som, fechar e o indicador de carregamento. |
+| `RkStoryHeaderComponent` | O cabeçalho padrão: avatar, nome, selo de verificado, tempo relativo, pausa, som, fechar e o indicador de carregamento. Os botões de pausa e som só aparecem com `[showPauseButton]` e `[showSoundButton]` definidos, como o player faz no próprio cabeçalho. |
 | `RkVideoStorySlideComponent` | Slide de vídeo apoiado no único elemento `<video>` compartilhado, para a continuidade do som no iOS. Cuida da reprodução automática, dos pôsteres e do aviso de duração. |
 
 `RkStoriesCarouselComponent` também é exportado, junto com seu tipo `CarouselSlide`, mas o overlay é dono de todos os valores que ele desenha — use o slot `rkStoriesGroupPreview` para estilizar um card em vez de montar o carrossel por conta própria.
@@ -350,7 +350,7 @@ Tudo o que um consumidor precisa sai deste pacote, então nunca é necessário i
 | `initialGroupIndex` | `number` | `0` | Índice (a partir de zero) do grupo com que o player abre |
 | `initialStoryIndex` | `number` | retomar, senão `0` | Índice (a partir de zero) da story com que o player abre. Indicar uma vence qualquer coisa lembrada; se você omitir, o grupo de abertura retoma como qualquer outro. |
 | `innerTransitionDuration` | `number` | `200` | Duração do fade entre stories de um mesmo autor, em milissegundos |
-| `isOpen` | `boolean` | `false` | Renderiza o player e trava a rolagem do body enquanto for true |
+| `isOpen` | `boolean` | `required` | Renderiza o player e trava a rolagem do body enquanto for true |
 | `minSegmentWidth` | `number` | `8` | Largura mínima de um segmento de progresso antes de a barra passar a rolar uma janela de segmentos, em pixels |
 | `resumeStoryIndex` | `(groupIndex: number) => number` | — | Com qual story um grupo abre na primeira vez que é alcançado. Só é consultado para um grupo ainda não visitado nesta abertura, e vence `viewed`. |
 | `tapZoneSplit` | `number` | `0.3` | Proporção da zona de toque (0–1). A parte esquerda volta, o resto avança. |

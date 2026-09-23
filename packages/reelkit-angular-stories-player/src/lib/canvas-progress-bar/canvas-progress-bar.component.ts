@@ -53,8 +53,33 @@ export class RkCanvasProgressBarComponent {
   /** Timer progress through that story, from 0 to 1. */
   readonly progress = input.required<CoreSignal<number>>();
 
-  /** Colours, sizes and spacing for the renderer. */
-  readonly config = input<CanvasProgressRendererConfig>({});
+  /**
+   * Gap in pixels between segments.
+   *
+   * @default 2
+   */
+  readonly gap = input<number | undefined>(undefined);
+
+  /**
+   * Bar height in pixels.
+   *
+   * @default 2
+   */
+  readonly barHeight = input<number | undefined>(undefined);
+
+  /**
+   * Narrowest a segment may get before the bar shows a sliding window of the
+   * group instead of every story at once.
+   *
+   * @default 8
+   */
+  readonly minSegmentWidth = input<number | undefined>(undefined);
+
+  /** Colour of the unfilled segments. */
+  readonly bgColor = input<string | undefined>(undefined);
+
+  /** Colour of the played and playing segments. */
+  readonly fillColor = input<string | undefined>(undefined);
 
   /**
    * Whether the bar redraws on every animation frame to follow a running
@@ -64,6 +89,17 @@ export class RkCanvasProgressBarComponent {
    * @default true
    */
   readonly live = input(true);
+
+  /** An input left unset reaches the renderer as undefined and takes its default. */
+  private _rendererConfig(): CanvasProgressRendererConfig {
+    return {
+      gap: this.gap(),
+      barHeight: this.barHeight(),
+      minSegmentWidth: this.minSegmentWidth(),
+      bgColor: this.bgColor(),
+      fillColor: this.fillColor(),
+    };
+  }
 
   constructor() {
     afterRenderEffect((onCleanup) => {
@@ -77,7 +113,7 @@ export class RkCanvasProgressBarComponent {
       const live = this.live();
       const canvas = untracked(() => this._canvasRef().nativeElement);
       const renderer = untracked(() =>
-        createCanvasProgressRenderer(this.config()),
+        createCanvasProgressRenderer(this._rendererConfig()),
       );
 
       renderer.attach(canvas);

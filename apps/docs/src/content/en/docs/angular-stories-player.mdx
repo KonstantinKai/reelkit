@@ -304,12 +304,12 @@ Exported building blocks, for composing inside the slots or using on their own.
 
 | Component | What it is |
 | --- | --- |
-| `RkCanvasProgressBarComponent` | The canvas segmented progress bar, drawn straight from the timer signals. Handles a sliding window for groups with many stories. With `[live]="false"` it draws only when its signals change and after a resize, with no animation loop. |
+| `RkCanvasProgressBarComponent` | The canvas segmented progress bar, drawn straight from the timer signals. Handles a sliding window for groups with many stories. With `[live]="false"` it draws only when its signals change and after a resize, with no animation loop. Sizes and colours are separate inputs: `gap`, `barHeight`, `minSegmentWidth`, `bgColor`, `fillColor`. |
 | `RkHeartAnimationComponent` | The double-tap heart. Emits `(completed)` when the animation ends, so the parent can remove it. |
 | `RkImageStorySlideComponent` | Full-bleed image slide with `object-fit: cover`, reporting load and error through outputs. |
 | `RkStoriesRingComponent` | Circular avatar with the gradient ring. Two states: anything left to watch rotates, fully watched goes flat. Emits `(clicked)`. |
 | `RkStoriesRingListComponent` | Horizontal row of rings with author names, one per group. Emits `(selected)` with the group index. |
-| `RkStoryHeaderComponent` | The default header: avatar, name, verified badge, relative time, pause, sound, close, and the loading spinner. |
+| `RkStoryHeaderComponent` | The default header: avatar, name, verified badge, relative time, pause, sound, close, and the loading spinner. The pause and sound buttons appear only with `[showPauseButton]` and `[showSoundButton]` set, as the player sets them for its own header. |
 | `RkVideoStorySlideComponent` | Video slide backed by the one shared `<video>` element, for iOS sound continuity. Handles autoplay, poster frames and duration reporting. |
 
 `RkStoriesCarouselComponent` is exported too, with its `CarouselSlide` type, but the overlay owns every value it draws from — reach for the `rkStoriesGroupPreview` slot to restyle a card rather than mounting the carousel yourself.
@@ -350,7 +350,7 @@ Everything a consumer needs comes from this package, so a direct `@reelkit/core`
 | `initialGroupIndex` | `number` | `0` | Zero-based index of the group the player opens on |
 | `initialStoryIndex` | `number` | resume, else `0` | Zero-based index of the story the player opens on. Naming one wins over anything remembered; leave it out and the opening group resumes like every other. |
 | `innerTransitionDuration` | `number` | `200` | Crossfade duration between stories of one user, in milliseconds |
-| `isOpen` | `boolean` | `false` | Renders the player and locks body scroll while true |
+| `isOpen` | `boolean` | `required` | Renders the player and locks body scroll while true |
 | `minSegmentWidth` | `number` | `8` | Narrowest a progress segment gets before the bar scrolls a window of them instead, in pixels |
 | `resumeStoryIndex` | `(groupIndex: number) => number` | — | Which story a group opens on the first time it is reached. Only consulted for a group not yet visited during this open, and it wins over `viewed`. |
 | `tapZoneSplit` | `number` | `0.3` | Tap zone split ratio (0–1). The left portion goes back, the rest goes forward. |

@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import {
   createOverlayUrlState,
+  cubeTransition,
   urlIndexTwoAxisKey,
   type TwoAxisIdentity,
   type TwoAxisPosition,
@@ -89,6 +90,17 @@ describe('RkStoriesUrlOverlayComponent', () => {
   });
 
   afterEach(() => TestBed.resetTestingModule());
+
+  // The same declared default as the plain overlay, so the input reads alike
+  // in both places and in the generated reference.
+  it('declares the cube as its default group transition', () => {
+    const { fixture } = createHost();
+    const overlay = fixture.debugElement.query(
+      By.directive(RkStoriesUrlOverlayComponent),
+    ).componentInstance as RkStoriesUrlOverlayComponent;
+
+    expect(overlay.groupTransition()).toBe(cubeTransition);
+  });
 
   it('stays closed while the parameter names nothing', () => {
     const { fixture } = createHost();

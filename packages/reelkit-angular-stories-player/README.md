@@ -114,7 +114,7 @@ finds the same sound state the header button writes.
 
 | Input                     | Type                             | Default            | Description                                                                                   |
 | ------------------------- | -------------------------------- | ------------------ | --------------------------------------------------------------------------------------------- |
-| `isOpen`                  | `boolean`                        | `false`            | Renders the player and locks body scroll                                                      |
+| `isOpen`                  | `boolean`                        | required           | Renders the player and locks body scroll                                                      |
 | `groups`                  | `StoriesGroup<T>[]`              | required           | Story groups; ones added while open are picked up                                             |
 | `initialGroupIndex`       | `number`                         | `0`                | Group the player opens on                                                                     |
 | `initialStoryIndex`       | `number \| undefined`            | resume, then `0`   | Story the player opens on; beats anything remembered                                          |

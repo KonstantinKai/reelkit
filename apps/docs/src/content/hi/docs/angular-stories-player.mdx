@@ -304,12 +304,12 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 
 | कंपोनेंट | यह क्या है |
 | --- | --- |
-| `RkCanvasProgressBarComponent` | canvas पर खंडों वाला प्रोग्रेस बार, सीधे टाइमर सिग्नल से बनाया गया। बहुत सारी stories वाले समूह के लिए खिसकती खिड़की संभालता है। `[live]="false"` के साथ यह बिना animation loop के सिर्फ़ सिग्नल बदलने पर और resize के बाद बनता है। |
+| `RkCanvasProgressBarComponent` | canvas पर खंडों वाला प्रोग्रेस बार, सीधे टाइमर सिग्नल से बनाया गया। बहुत सारी stories वाले समूह के लिए खिसकती खिड़की संभालता है। `[live]="false"` के साथ यह बिना animation loop के सिर्फ़ सिग्नल बदलने पर और resize के बाद बनता है। आकार और रंग अलग-अलग inputs हैं: `gap`, `barHeight`, `minSegmentWidth`, `bgColor`, `fillColor`। |
 | `RkHeartAnimationComponent` | डबल-टैप वाला दिल। एनिमेशन खत्म होने पर `(completed)` भेजता है, ताकि माता-पिता कंपोनेंट उसे हटा सके। |
 | `RkImageStorySlideComponent` | `object-fit: cover` वाली पूरी चौड़ाई की इमेज स्लाइड, जो लोड और त्रुटि की सूचना output से देती है। |
 | `RkStoriesRingComponent` | ग्रेडिएंट रिंग वाला गोल अवतार। दो स्थितियाँ: कुछ देखना बाकी हो तो घूमता है, पूरा देख लेने पर सपाट हो जाता है। `(clicked)` भेजता है। |
 | `RkStoriesRingListComponent` | लेखकों के नाम के साथ रिंग की क्षैतिज पंक्ति, हर समूह के लिए एक। समूह के इंडेक्स के साथ `(selected)` भेजता है। |
-| `RkStoryHeaderComponent` | डिफ़ॉल्ट हेडर: अवतार, नाम, सत्यापित बैज, सापेक्ष समय, पॉज़, साउंड, बंद करना और लोडिंग स्पिनर। |
+| `RkStoryHeaderComponent` | डिफ़ॉल्ट हेडर: अवतार, नाम, सत्यापित बैज, सापेक्ष समय, पॉज़, साउंड, बंद करना और लोडिंग स्पिनर। पॉज़ और साउंड बटन तभी दिखते हैं जब `[showPauseButton]` और `[showSoundButton]` सेट हों, जैसे प्लेयर अपने हेडर के लिए उन्हें सेट करता है। |
 | `RkVideoStorySlideComponent` | एक ही साझा `<video>` तत्व पर टिकी वीडियो स्लाइड, ताकि iOS पर आवाज़ टूटे नहीं। ऑटोप्ले, पोस्टर फ़्रेम और अवधि की सूचना संभालती है। |
 
 `RkStoriesCarouselComponent` भी अपने `CarouselSlide` टाइप के साथ एक्सपोर्ट होता है, लेकिन जिन मानों से वह बनता है वे सब ओवरले के पास हैं — कार्ड का रूप बदलना हो तो कैरोसेल खुद माउंट करने के बजाय `rkStoriesGroupPreview` स्लॉट इस्तेमाल करें।
@@ -350,7 +350,7 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 | `initialGroupIndex` | `number` | `0` | जिस समूह से प्लेयर खुलता है उसका इंडेक्स (शून्य से) |
 | `initialStoryIndex` | `number` | जहाँ से आगे, वरना `0` | जिस story से प्लेयर खुलता है उसका इंडेक्स (शून्य से)। साफ़ बताने पर यह याद रखी गई जगह से ऊपर रहता है; न देने पर खुलने वाला समूह भी बाकी समूहों की तरह वहीं से आगे चलता है। |
 | `innerTransitionDuration` | `number` | `200` | एक ही लेखक की stories के बीच फ़ेड की अवधि, मिलीसेकंड में |
-| `isOpen` | `boolean` | `false` | true रहने तक प्लेयर रेंडर करता है और body का स्क्रॉल रोक देता है |
+| `isOpen` | `boolean` | `required` | true रहने तक प्लेयर रेंडर करता है और body का स्क्रॉल रोक देता है |
 | `minSegmentWidth` | `number` | `8` | प्रोग्रेस खंड की सबसे कम चौड़ाई, जिसके बाद बार खंडों की खिड़की खिसकाने लगता है, पिक्सेल में |
 | `resumeStoryIndex` | `(groupIndex: number) => number` | — | किसी समूह तक पहली बार पहुँचने पर वह किस story से खुले। सिर्फ़ उसी समूह के लिए पूछा जाता है जिसे इस बार अभी नहीं देखा गया, और यह `viewed` से ऊपर रहता है। |
 | `tapZoneSplit` | `number` | `0.3` | टैप क्षेत्र का अनुपात (0–1)। बायाँ हिस्सा पीछे ले जाता है, बाकी आगे। |

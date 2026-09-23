@@ -304,12 +304,12 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 
 | コンポーネント | 何をするもの |
 | --- | --- |
-| `RkCanvasProgressBarComponent` | タイマーのシグナルから直接描く canvas の分割プログレスバー。ストーリーの多いグループではスライディングウィンドウを扱います。`[live]="false"` にすると、アニメーションのループを持たず、シグナルが変わったときとサイズが変わった後にだけ描画します。 |
+| `RkCanvasProgressBarComponent` | タイマーのシグナルから直接描く canvas の分割プログレスバー。ストーリーの多いグループではスライディングウィンドウを扱います。`[live]="false"` にすると、アニメーションのループを持たず、シグナルが変わったときとサイズが変わった後にだけ描画します。サイズと色は個別の input です：`gap`、`barHeight`、`minSegmentWidth`、`bgColor`、`fillColor`。 |
 | `RkHeartAnimationComponent` | ダブルタップのハート。アニメーションが終わると `(completed)` を発行するので、親が取り除けます。 |
 | `RkImageStorySlideComponent` | `object-fit: cover` の全面画像スライド。読み込みとエラーを output で通知します。 |
 | `RkStoriesRingComponent` | グラデーションリング付きの円形アバター。未視聴が残っていれば回転し、すべて見終わると平らになります。`(clicked)` を発行します。 |
 | `RkStoriesRingListComponent` | 著者名付きのリングを横一列に並べたもの（グループごとに 1 つ）。グループのインデックスとともに `(selected)` を発行します。 |
-| `RkStoryHeaderComponent` | 既定のヘッダー。アバター、名前、認証バッジ、相対時刻、一時停止、サウンド、閉じる、読み込みスピナー。 |
+| `RkStoryHeaderComponent` | 既定のヘッダー。アバター、名前、認証バッジ、相対時刻、一時停止、サウンド、閉じる、読み込みスピナー。一時停止とサウンドのボタンは `[showPauseButton]` と `[showSoundButton]` を設定したときだけ表示されます。プレーヤーは自身のヘッダーでこれらを設定しています。 |
 | `RkVideoStorySlideComponent` | 共有された 1 つの `<video>` 要素を使う動画スライド。iOS でサウンドを途切れさせないためのしくみで、自動再生・ポスター・再生時間の通知を扱います。 |
 
 `RkStoriesCarouselComponent` も `CarouselSlide` 型とともに公開されていますが、描画に使う値はすべてオーバーレイが持っています。カードの見た目を変えるならカルーセルを自分でマウントせず、`rkStoriesGroupPreview` スロットを使ってください。
@@ -350,7 +350,7 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 | `initialGroupIndex` | `number` | `0` | プレイヤーが開くグループのインデックス（0 起点） |
 | `initialStoryIndex` | `number` | 再開位置、なければ `0` | プレイヤーが開くストーリーのインデックス（0 起点）。明示すると記憶された位置より優先されます。省略すると、開くグループも他と同じように再開します。 |
 | `innerTransitionDuration` | `number` | `200` | 同じユーザーのストーリー間のクロスフェード時間（ミリ秒） |
-| `isOpen` | `boolean` | `false` | true の間プレイヤーを描画し、body のスクロールをロックします |
+| `isOpen` | `boolean` | `required` | true の間プレイヤーを描画し、body のスクロールをロックします |
 | `minSegmentWidth` | `number` | `8` | プログレスの 1 区切りがこの幅を下回ると、バーは区切りのウィンドウをスクロールし始めます（ピクセル） |
 | `resumeStoryIndex` | `(groupIndex: number) => number` | — | グループに初めて到達したとき、どのストーリーから開くか。この open でまだ訪れていないグループにだけ問い合わせ、`viewed` より優先されます。 |
 | `tapZoneSplit` | `number` | `0.3` | タップ領域の分割比（0〜1）。左側が戻る、残りが進むです。 |

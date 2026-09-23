@@ -176,6 +176,15 @@ describe('RkStoriesOverlayComponent', () => {
   afterEach(() => TestBed.resetTestingModule());
 
   describe('open state', () => {
+    // As with the react and vue players, the host always says whether the
+    // player is open; there is no silent closed default to forget about.
+    it('refuses to render without an isOpen binding', () => {
+      const fixture = TestBed.createComponent(RkStoriesOverlayComponent);
+      fixture.componentRef.setInput('groups', GROUPS);
+
+      expect(() => fixture.detectChanges()).toThrow(/NG0950/);
+    });
+
     it('renders nothing while closed', () => {
       const fixture = TestBed.createComponent(HostComponent);
       fixture.componentInstance.isOpen.set(false);
@@ -552,12 +561,12 @@ describe('RkStoriesOverlayComponent', () => {
         By.directive(RkCanvasProgressBarComponent),
       ).componentInstance as RkCanvasProgressBarComponent;
 
-      expect(bar.config().minSegmentWidth).toBe(8);
+      expect(bar.minSegmentWidth()).toBe(8);
 
       fixture.componentInstance.minSegmentWidth.set(24);
       fixture.detectChanges();
 
-      expect(bar.config().minSegmentWidth).toBe(24);
+      expect(bar.minSegmentWidth()).toBe(24);
     });
 
     it('follows the group the viewer moves to', () => {

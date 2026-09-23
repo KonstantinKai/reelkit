@@ -280,6 +280,25 @@ describe('RkStoriesCarouselComponent', () => {
   // around, and it is the same number in react and vue. Reading it off the
   // rendered element rather than the constant: a card draws the ring through
   // `getRingPresentation`, so only the element says what the viewer sees.
+  // The viewed controller hands over a plain subscribable, the same shape the
+  // react and vue carousels take, not necessarily a core signal.
+  it('draws rings from any subscribable viewed state', () => {
+    const viewedState = {
+      value: new Map([['a0', 2]]),
+      observe: () => () => undefined,
+    };
+    const fixture = createCarousel({ activeGroupIndex: 1, viewedState });
+    const ring = (name: string) =>
+      fixture.debugElement.query(
+        By.css(
+          `[aria-label="Open stories by ${name}"] [class*="rk-stories-ring"]`,
+        ),
+      ).nativeElement as HTMLElement;
+
+    expect(ring('Alice').classList).not.toContain('rk-stories-ring--active');
+    expect(ring('Cy').classList).toContain('rk-stories-ring--active');
+  });
+
   it('draws the card ring at the size the other players use', () => {
     const ring = createCarousel().debugElement.query(
       By.css('.rk-stories-card-info [class*="rk-stories-ring"]'),

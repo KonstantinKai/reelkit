@@ -11,7 +11,7 @@ import {
   type TemplateRef,
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
-import { toAngularSignal, type CoreSignal } from '@reelkit/angular';
+import { toAngularSignal, type Subscribable } from '@reelkit/angular';
 import {
   formatTimeAgo,
   getCardOffsets,
@@ -204,7 +204,7 @@ export class RkStoriesCarouselComponent<T extends StoryItem = StoryItem> {
   readonly storyIndexFor = input.required<(groupIndex: number) => number>();
 
   /** Stories seen per author, when the player was given a viewed controller. */
-  readonly viewedState = input<CoreSignal<Map<string, number>> | undefined>(
+  readonly viewedState = input<Subscribable<Map<string, number>> | undefined>(
     undefined,
   );
 

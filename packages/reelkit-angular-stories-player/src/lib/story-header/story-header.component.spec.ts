@@ -35,25 +35,51 @@ describe('RkStoryHeaderComponent', () => {
 
   // An image story has nothing to unmute, so offering the control would be a
   // button that does nothing.
+  // As in the react and vue headers, a control appears only once the host
+  // wires it: a pause or sound button nobody handles would do nothing.
+  it('draws no pause or sound button unless the host asks for them', () => {
+    const bare = labels(createHeader({ isVideo: true }));
+    const wired = labels(
+      createHeader({
+        isVideo: true,
+        showPauseButton: true,
+        showSoundButton: true,
+      }),
+    );
+
+    expect(bare).toEqual(['Close']);
+    expect(wired).toEqual(expect.arrayContaining(['Mute', 'Pause', 'Close']));
+  });
+
   it('offers sound only on a video story', () => {
-    const onImage = labels(createHeader({ isVideo: false }));
-    const onVideo = labels(createHeader({ isVideo: true }));
+    const onImage = labels(
+      createHeader({ isVideo: false, showSoundButton: true }),
+    );
+    const onVideo = labels(
+      createHeader({ isVideo: true, showSoundButton: true }),
+    );
     expect(onImage).not.toContain('Mute');
     expect(onVideo).toContain('Mute');
   });
 
   it('names the sound control for what it will do', () => {
-    expect(labels(createHeader({ isVideo: true, isMuted: true }))).toContain(
+    const sound = { isVideo: true, showSoundButton: true };
+    expect(labels(createHeader({ ...sound, isMuted: true }))).toContain(
       'Unmute',
     );
-    expect(labels(createHeader({ isVideo: true, isMuted: false }))).toContain(
+    expect(labels(createHeader({ ...sound, isMuted: false }))).toContain(
       'Mute',
     );
   });
 
   it('names the pause control for what it will do', () => {
-    expect(labels(createHeader({ isPaused: false }))).toContain('Pause');
-    expect(labels(createHeader({ isPaused: true }))).toContain('Play');
+    const pause = { showPauseButton: true };
+    expect(labels(createHeader({ ...pause, isPaused: false }))).toContain(
+      'Pause',
+    );
+    expect(labels(createHeader({ ...pause, isPaused: true }))).toContain(
+      'Play',
+    );
   });
 
   it('draws the verified badge only for a verified author', () => {
@@ -92,7 +118,11 @@ describe('RkStoryHeaderComponent', () => {
   });
 
   it('reports each control instead of acting on it', () => {
-    const fixture = createHeader({ isVideo: true });
+    const fixture = createHeader({
+      isVideo: true,
+      showPauseButton: true,
+      showSoundButton: true,
+    });
     const events: string[] = [];
     fixture.componentInstance.closed.subscribe(() => events.push('closed'));
     fixture.componentInstance.pauseToggled.subscribe(() =>

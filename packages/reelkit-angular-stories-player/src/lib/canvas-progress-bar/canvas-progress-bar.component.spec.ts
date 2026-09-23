@@ -7,11 +7,16 @@ const mockRenderer = {
   draw: jest.fn(),
   dispose: jest.fn(),
   width: 300,
+  /** Every configuration a renderer was created with, newest last. */
+  configs: [] as unknown[],
 };
 
 jest.mock('@reelkit/stories-core', () => ({
   ...jest.requireActual('@reelkit/stories-core'),
-  createCanvasProgressRenderer: () => mockRenderer,
+  createCanvasProgressRenderer: (config: unknown) => {
+    mockRenderer.configs.push(config);
+    return mockRenderer;
+  },
 }));
 
 let resizeCallbacks: (() => void)[] = [];
@@ -78,6 +83,30 @@ describe('RkCanvasProgressBarComponent', () => {
     globalThis.requestAnimationFrame = originalFrame;
     globalThis.cancelAnimationFrame = originalCancel;
     globalThis.ResizeObserver = originalObserver;
+  });
+
+  // The same separate inputs the react and vue bars take, rather than one
+  // configuration object.
+  it('hands its separate size and colour inputs to the renderer', () => {
+    mockRenderer.configs.length = 0;
+    createBar({
+      totalStories: 3,
+      activeIndex: createSignal(0),
+      progress: createSignal(0),
+      gap: 4,
+      barHeight: 6,
+      minSegmentWidth: 12,
+      bgColor: '#333',
+      fillColor: '#f0f',
+    });
+
+    expect(mockRenderer.configs.at(-1)).toEqual({
+      gap: 4,
+      barHeight: 6,
+      minSegmentWidth: 12,
+      bgColor: '#333',
+      fillColor: '#f0f',
+    });
   });
 
   it('keeps an animation loop running by default', () => {

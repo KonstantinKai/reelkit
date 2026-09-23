@@ -231,7 +231,7 @@ From `(apiReady)`. The player is rebuilt on every open, so keep the newest handl
 
 ## Sub-Components
 
-`RkStoriesRingComponent`, `RkStoriesRingListComponent`, `RkStoryHeaderComponent`, `RkCanvasProgressBarComponent` (`[live]="false"` draws only on signal change or resize), `RkImageStorySlideComponent`, `RkVideoStorySlideComponent`, `RkHeartAnimationComponent`. `RkStoriesCarouselComponent` and its `CarouselSlide` type are exported as well, but the overlay owns every value it draws from — use the `rkStoriesGroupPreview` slot to restyle a card rather than mounting it yourself. Every video story plays through one shared `<video>`, which is what keeps sound alive on iOS between stories.
+`RkStoriesRingComponent`, `RkStoriesRingListComponent`, `RkStoryHeaderComponent` (pause and sound buttons only with `[showPauseButton]` / `[showSoundButton]`, which the player sets), `RkCanvasProgressBarComponent` (`[live]="false"` draws only on signal change or resize; sizes and colours as separate inputs `gap`, `barHeight`, `minSegmentWidth`, `bgColor`, `fillColor`), `RkImageStorySlideComponent`, `RkVideoStorySlideComponent`, `RkHeartAnimationComponent`. `RkStoriesCarouselComponent` and its `CarouselSlide` type are exported as well, but the overlay owns every value it draws from — use the `rkStoriesGroupPreview` slot to restyle a card rather than mounting it yourself. Every video story plays through one shared `<video>`, which is what keeps sound alive on iOS between stories.
 
 ## Custom Story Types
 
@@ -247,7 +247,7 @@ From `@reelkit/stories-core`: `createStoriesViewedStateController`, `StoriesView
 
 ## RkStoriesOverlayComponent Inputs
 
-- `isOpen` (boolean, default `false`) — renders the player, locks body scroll
+- `isOpen` (boolean, required) — renders the player, locks body scroll
 - `groups` (`StoriesGroup<T>[]`, required) — groups added while open are picked up without losing the viewer's place
 - `initialGroupIndex` (number, default `0`)
 - `initialStoryIndex` (number, default resume then `0`) — naming one beats anything remembered

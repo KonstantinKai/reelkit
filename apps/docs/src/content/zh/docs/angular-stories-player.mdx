@@ -304,12 +304,12 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 
 | 组件 | 是什么 |
 | --- | --- |
-| `RkCanvasProgressBarComponent` | 直接由计时器信号绘制的 canvas 分段进度条。分组内 Story 很多时会处理滑动窗口。传入 `[live]="false"` 时只在信号变化和尺寸改变后重绘，没有动画循环。 |
+| `RkCanvasProgressBarComponent` | 直接由计时器信号绘制的 canvas 分段进度条。分组内 Story 很多时会处理滑动窗口。传入 `[live]="false"` 时只在信号变化和尺寸改变后重绘，没有动画循环。尺寸和颜色是独立的 input：`gap`、`barHeight`、`minSegmentWidth`、`bgColor`、`fillColor`。 |
 | `RkHeartAnimationComponent` | 双击的爱心。动画结束时发出 `(completed)`，父组件据此移除它。 |
 | `RkImageStorySlideComponent` | 使用 `object-fit: cover` 的整屏图片幻灯片，通过 output 上报加载与错误。 |
 | `RkStoriesRingComponent` | 带渐变圆环的圆形头像。两种状态：还有未看内容时旋转，全部看完后变为平直。发出 `(clicked)`。 |
 | `RkStoriesRingListComponent` | 带作者名的横向圆环列表，每个分组一个。发出 `(selected)` 并带上分组索引。 |
-| `RkStoryHeaderComponent` | 默认头部：头像、名称、认证标识、相对时间、暂停、声音、关闭以及加载指示。 |
+| `RkStoryHeaderComponent` | 默认头部：头像、名称、认证标识、相对时间、暂停、声音、关闭以及加载指示。暂停和声音按钮只有设置了 `[showPauseButton]` 和 `[showSoundButton]` 才会出现，播放器为自己的头部就是这样设置的。 |
 | `RkVideoStorySlideComponent` | 基于唯一共享 `<video>` 元素的视频幻灯片，用于在 iOS 上保持声音连续。处理自动播放、封面帧与时长上报。 |
 
 `RkStoriesCarouselComponent` 也随 `CarouselSlide` 类型一起导出，但它绘制所依赖的值都归浮层所有——想改卡片样式，请使用 `rkStoriesGroupPreview` 插槽，而不是自己挂载轮播。
@@ -350,7 +350,7 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 | `initialGroupIndex` | `number` | `0` | 播放器打开时所在分组的索引（从 0 开始） |
 | `initialStoryIndex` | `number` | 续播位置，否则 `0` | 播放器打开时所在 Story 的索引（从 0 开始）。显式指定会覆盖任何记住的位置；不指定时，首个分组与其他分组一样按续播位置打开。 |
 | `innerTransitionDuration` | `number` | `200` | 同一位作者的 Story 之间淡入淡出的时长，单位毫秒 |
-| `isOpen` | `boolean` | `false` | 为 true 时渲染播放器并锁定 body 滚动 |
+| `isOpen` | `boolean` | `required` | 为 true 时渲染播放器并锁定 body 滚动 |
 | `minSegmentWidth` | `number` | `8` | 进度分段的最小宽度，低于此值进度条会改为滚动一个分段窗口，单位像素 |
 | `resumeStoryIndex` | `(groupIndex: number) => number` | — | 首次到达某个分组时从哪条 Story 打开。只对本次打开期间尚未访问过的分组询问，且优先于 `viewed`。 |
 | `tapZoneSplit` | `number` | `0.3` | 点击区域的分割比例（0–1）。左侧后退，其余前进。 |

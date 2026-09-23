@@ -376,7 +376,7 @@ const _kSlideTimeoutMarginMs = 700;
                   [activeIndex]="bar.activeIndex"
                   [progress]="bar.progress"
                   [live]="bar.isActive"
-                  [config]="progressBarConfig()"
+                  [minSegmentWidth]="minSegmentWidth()"
                 />
               }
 
@@ -398,6 +398,8 @@ const _kSlideTimeoutMarginMs = 700;
                   [isVideo]="header.isVideo"
                   [isLoading]="header.isActive && isLoading()"
                   [isError]="header.isActive && isError()"
+                  [showPauseButton]="true"
+                  [showSoundButton]="true"
                   (closed)="closed.emit()"
                   (pauseToggled)="togglePause()"
                   (soundToggled)="soundState.toggle()"
@@ -722,10 +724,6 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
   protected progress!: Signal<number>;
 
   /** The interface steps aside while a press is held, if asked to. */
-  protected readonly progressBarConfig = computed(() => ({
-    minSegmentWidth: this.minSegmentWidth(),
-  }));
-
   protected readonly chromeVisible = computed(
     () => !(this.longPressed() && this.hideUIOnPause()),
   );

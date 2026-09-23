@@ -71,7 +71,7 @@ import type { ChromePlacement, DesktopLayout, StoriesApi } from '../types';
       [groups]="groups()"
       [initialGroupIndex]="position()?.outer ?? 0"
       [initialStoryIndex]="position()?.inner"
-      [groupTransition]="groupTransition() ?? cubeTransition"
+      [groupTransition]="groupTransition()"
       [defaultImageDuration]="defaultImageDuration()"
       [innerTransitionDuration]="innerTransitionDuration()"
       [minSegmentWidth]="minSegmentWidth()"
@@ -118,9 +118,7 @@ export class RkStoriesUrlOverlayComponent<T extends StoryItem = StoryItem> {
   /** The groups to play, in order. */
   readonly groups = input.required<StoriesGroup<T>[]>();
 
-  readonly groupTransition = input<TransitionTransformFn | undefined>(
-    undefined,
-  );
+  readonly groupTransition = input<TransitionTransformFn>(cubeTransition);
   readonly defaultImageDuration = input(5000);
   readonly innerTransitionDuration = input(200);
   readonly minSegmentWidth = input(8);
@@ -174,9 +172,6 @@ export class RkStoriesUrlOverlayComponent<T extends StoryItem = StoryItem> {
   );
 
   protected readonly position = signal<TwoAxisPosition | null>(null);
-
-  /** Default for the group transition, so the input stays optional. */
-  protected readonly cubeTransition = cubeTransition;
 
   constructor() {
     // The viewed store is read here as well as inside the player: this
