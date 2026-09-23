@@ -701,7 +701,9 @@ const StoriesContent = defineComponent({
     ) => {
       const story = latestGroups()[groupIndex]?.stories[storyIndex];
       if (story?.src) knownDurations.set(story.src, ms);
-      if (isActiveStory(groupIndex, storyIndex)) {
+      // A story that names its own duration keeps it, whatever the video
+      // reports.
+      if (!story?.duration && isActiveStory(groupIndex, storyIndex)) {
         runTimer(() => timerCtrl.start(ms));
       }
     };

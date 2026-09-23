@@ -1,5 +1,10 @@
 import { Component, signal, type WritableSignal } from '@angular/core';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  TestBed,
+  fakeAsync,
+  tick,
+} from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import {
   ReelComponent,
@@ -14,12 +19,16 @@ import { RkCanvasProgressBarComponent } from '../canvas-progress-bar/canvas-prog
 import { RkStoriesOverlayComponent } from './stories-overlay.component';
 import { RkStoriesContentComponent } from '../stories-content/stories-content.component';
 import {
+  RkStoriesFooterDirective,
   RkStoriesHeaderDirective,
   RkStoriesNavigationDirective,
   RkStoriesProgressBarDirective,
   RkStoriesSlideDirective,
 } from '../template-slots/stories-template-slots';
-import { RkVideoStorySlideComponent } from '../video-story-slide/video-story-slide.component';
+import {
+  RkVideoStorySlideComponent,
+  sharedStoryVideo,
+} from '../video-story-slide/video-story-slide.component';
 import type { StoriesApi } from '../types';
 
 /**
@@ -92,12 +101,14 @@ const GROUPS: StoriesGroup[] = [
       (paused)="events.push('paused')"
       (resumed)="events.push('resumed')"
       (doubleTapped)="doubleTaps = doubleTaps + 1"
+      (storyViewed)="viewedStories.push($event)"
       (apiReady)="api = $event"
     />
   `,
   imports: [RkStoriesOverlayComponent],
 })
 class HostComponent {
+  viewedStories: { groupIndex: number; storyIndex: number }[] = [];
   isOpen: WritableSignal<boolean> = signal(true);
   groups: WritableSignal<StoriesGroup[]> = signal(GROUPS);
   desktopLayout: WritableSignal<DesktopLayout> = signal('single');
@@ -1032,6 +1043,181 @@ describe('RkStoriesOverlayComponent', () => {
 
       (slide.querySelector('[aria-label="Close"]') as HTMLElement).click();
       expect(fixture.componentInstance.closed).toBe(1);
+    });
+  });
+
+  describe('behaving like the react and vue players', () => {
+    interface SlideInternals {
+      timerCtrl: { start: (duration?: number) => void };
+      _pendingTimerAction: (() => void) | null;
+      slide: () => unknown;
+      endSlide: () => void;
+      onDurationReady: (
+        groupIndex: number,
+        storyIndex: number,
+        durationMs: number,
+      ) => void;
+    }
+
+    function slideInternalsOf(
+      fixture: ComponentFixture<HostComponent>,
+    ): SlideInternals {
+      return contentOf(fixture) as unknown as SlideInternals;
+    }
+
+    function createCarouselHost(): ComponentFixture<HostComponent> {
+      const fixture = TestBed.createComponent(HostComponent);
+      fixture.componentInstance.desktopLayout.set('carousel');
+      fixture.detectChanges();
+      fixture.componentInstance.viewedStories = [];
+      return fixture;
+    }
+
+    it('plays the next story after a pause rather than keeping the header paused', () => {
+      const fixture = createHost();
+      fixture.componentInstance.api!.pause();
+      fixture.detectChanges();
+
+      fixture.componentInstance.api!.nextStory();
+      fixture.detectChanges();
+
+      expect(internalsOf(fixture).storiesCtrl.state.isPaused.value).toBe(false);
+      expect(
+        fixture.debugElement.query(By.css('[aria-label="Pause"]')),
+      ).not.toBeNull();
+    });
+
+    // Watched on the player itself: by the time it closes, the overlay that
+    // would pass the report on is already gone, but the viewed controller
+    // would still have recorded the story.
+    it('reports no story as viewed when it closes during a slide', () => {
+      const fixture = createCarouselHost();
+      const content = contentOf(fixture) as unknown as {
+        storyViewed: { emit: (value: unknown) => void };
+      };
+      const reported = jest.spyOn(content.storyViewed, 'emit');
+      internalsOf(fixture).storiesCtrl.goToGroup(1);
+      fixture.detectChanges();
+
+      fixture.componentInstance.isOpen.set(false);
+      fixture.detectChanges();
+
+      expect(reported).not.toHaveBeenCalled();
+    });
+
+    it('lets a slide started during another one run to its own end', fakeAsync(() => {
+      const fixture = createCarouselHost();
+      const content = slideInternalsOf(fixture);
+      internalsOf(fixture).storiesCtrl.goToGroup(1);
+      tick(500);
+      internalsOf(fixture).storiesCtrl.goToGroup(0);
+      tick(300);
+
+      expect(content.slide()).not.toBeNull();
+
+      tick(1000);
+      expect(content.slide()).toBeNull();
+      fixture.destroy();
+      tick(100);
+    }));
+
+    it('keeps a paused player paused when a slide ends', () => {
+      const fixture = createCarouselHost();
+      const content = slideInternalsOf(fixture);
+      internalsOf(fixture).storiesCtrl.goToGroup(1);
+      const waiting = jest.fn();
+      content._pendingTimerAction = waiting;
+      fixture.componentInstance.api!.pause();
+
+      content.endSlide();
+
+      expect(waiting).not.toHaveBeenCalled();
+    });
+
+    it('moves focus into the player when a card it came from slides away', () => {
+      const fixture = createCarouselHost();
+      const card = fixture.debugElement.query(
+        By.css('[aria-label="Open stories by Bo"]'),
+      ).nativeElement as HTMLElement;
+      card.focus();
+      card.click();
+      fixture.detectChanges();
+
+      slideInternalsOf(fixture).endSlide();
+
+      expect(document.activeElement?.classList).toContain('rk-stories-overlay');
+    });
+
+    it('draws a footer for the active group only', () => {
+      @Component({
+        template: `
+          <rk-stories-overlay [isOpen]="true" [groups]="groups">
+            <ng-template rkStoriesFooter let-story>
+              <p class="custom-footer">{{ story.id }}</p>
+            </ng-template>
+          </rk-stories-overlay>
+        `,
+        imports: [RkStoriesOverlayComponent, RkStoriesFooterDirective],
+      })
+      class FooterHostComponent {
+        groups = GROUPS;
+      }
+
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({ imports: [FooterHostComponent] });
+      const fixture = TestBed.createComponent(FooterHostComponent);
+      fixture.detectChanges();
+
+      expect(
+        fixture.debugElement.queryAll(By.css('.rk-stories-slide-wrapper'))
+          .length,
+      ).toBe(GROUPS.length);
+      expect(
+        fixture.debugElement.queryAll(By.css('.custom-footer')).length,
+      ).toBe(1);
+    });
+
+    it('pauses and resumes a playing video along with a drag', () => {
+      const fixture = createHost();
+      internalsOf(fixture).storiesCtrl.goToGroup(1);
+      fixture.detectChanges();
+      const video = sharedStoryVideo();
+      const pause = jest.spyOn(video, 'pause').mockImplementation(() => {
+        /* noop */
+      });
+      const play = jest.spyOn(video, 'play').mockResolvedValue(undefined);
+      const reel = outerReelOf(fixture) as unknown as {
+        slideDragStart: { emit: () => void };
+        slideDragEnd: { emit: () => void };
+      };
+
+      reel.slideDragStart.emit();
+      expect(pause).toHaveBeenCalled();
+
+      reel.slideDragEnd.emit();
+      expect(play).toHaveBeenCalled();
+    });
+
+    it('lets a story duration win over the one the video reports', () => {
+      const fixture = TestBed.createComponent(HostComponent);
+      fixture.componentInstance.groups.set([
+        {
+          author: { id: 'a1', name: 'Alice', avatar: '/alice.jpg' },
+          stories: [
+            { id: 'v1', src: '/v1.mp4', mediaType: 'video', duration: 3000 },
+            { id: 'v2', src: '/v2.mp4', mediaType: 'video' },
+          ],
+        },
+      ]);
+      fixture.detectChanges();
+      const content = slideInternalsOf(fixture);
+      content.timerCtrl.start(3000);
+      const start = jest.spyOn(content.timerCtrl, 'start');
+
+      content.onDurationReady(0, 0, 9000);
+      content.onDurationReady(0, 1, 9000);
+
+      expect(start).not.toHaveBeenCalled();
     });
   });
 });

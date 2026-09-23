@@ -334,6 +334,17 @@ describe('RkStoriesCarouselComponent', () => {
       expect(frame.hasAttribute('inert')).toBe(true);
     });
 
+    // A slide template can hold buttons and links of its own, and a control
+    // cannot sit inside another one.
+    it('draws it beside the card button, never inside it', () => {
+      const frame = createFramed().debugElement.query(
+        By.css('.rk-stories-card-frame'),
+      ).nativeElement as HTMLElement;
+
+      expect(frame.closest('button')).toBeNull();
+      expect(frame.parentElement?.classList).toContain('rk-stories-card');
+    });
+
     @Component({
       template: `
         <rk-stories-carousel

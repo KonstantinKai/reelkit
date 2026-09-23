@@ -1732,3 +1732,51 @@ describe('StoriesOverlay with the progress bar and header in each group', () => 
     expect(wrapper.emitted('close')).toHaveLength(1);
   });
 });
+
+describe('StoriesOverlay story duration', () => {
+  beforeEach(() => {
+    vi.useFakeTimers({
+      toFake: ['setTimeout', 'clearTimeout', 'Date', 'performance'],
+    });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('keeps a duration the story names over the one its video reports', () => {
+    let reportDuration: ((ms: number) => void) | undefined;
+    const wrapper = open(
+      {
+        groups: [
+          {
+            author: { id: '1', name: 'Alice', avatar: 'alice.jpg' },
+            stories: [{ id: 'v', mediaType: 'video', src: '', duration: 3000 }],
+          },
+        ],
+      },
+      {
+        slide: (scope: never) => {
+          reportDuration = (scope as SlideSlotScope).onDurationReady;
+          return h('div');
+        },
+      },
+    );
+    // The mocked Reel draws no slides, so the story is built by hand to get
+    // hold of the callbacks the player gives it.
+    const [group] = outerReel().slots['item']!({
+      index: 0,
+      indexInRange: 0,
+      size: [400, 700],
+    });
+    const storyReel = (group.children as VNode[])[0];
+    (storyReel.children as Record<string, (scope: unknown) => unknown>)['item'](
+      { index: 0, size: [400, 700] },
+    );
+
+    reportDuration!(10_000);
+    vi.advanceTimersByTime(3100);
+
+    expect(wrapper.emitted('storyComplete')).toContainEqual([0, 0]);
+  });
+});

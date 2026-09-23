@@ -266,7 +266,9 @@ const _kSlideTimeoutMarginMs = 700;
                             [activeStoryIndex]="
                               storiesCtrl.state.activeStoryIndex
                             "
-                            (durationReady)="onDurationReady(story.src, $event)"
+                            (durationReady)="
+                              onDurationReady(groupIndex, storyIndex, $event)
+                            "
                             (playbackStarted)="
                               onContentReady(groupIndex, storyIndex)
                             "
@@ -326,7 +328,9 @@ const _kSlideTimeoutMarginMs = 700;
                   </ng-template>
                 </rk-reel>
 
-                @if (footerTpl(); as tpl) {
+                <!-- The footer belongs to the story playing, so a neighbouring
+                     group seen mid-turn shows none. -->
+                @if (groupIndex === activeGroupIndex() && footerTpl(); as tpl) {
                   <ng-container
                     [ngTemplateOutlet]="tpl"
                     [ngTemplateOutletInjector]="slotInjector"
@@ -922,13 +926,14 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
       }),
       () => this.timerCtrl.dispose(),
     );
-    this._destroyRef.onDestroy(disposables.dispose);
 
     // The player runs for exactly as long as this component exists: the
     // overlay creates it on open and destroys it on close, the way react's
-    // `StoriesContent` and vue's render-null do.
+    // `StoriesContent` and vue's render-null do. It stops before the timer is
+    // disposed, since stopping may still touch the timer.
     this._start();
     this._destroyRef.onDestroy(() => this._stop());
+    this._destroyRef.onDestroy(disposables.dispose);
   }
 
   /** Whether this slide is the one the viewer is looking at. */
@@ -1053,10 +1058,7 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
       activeGroupIndex: this.storiesCtrl.state.activeGroupIndex,
       activeStoryIndex: this.storiesCtrl.state.activeStoryIndex,
       onDurationReady: (durationMs) =>
-        this.onDurationReady(
-          this.storiesOf(groupIndex)[storyIndex]?.src ?? '',
-          durationMs,
-        ),
+        this.onDurationReady(groupIndex, storyIndex, durationMs),
       onReady: () => this.onContentReady(groupIndex, storyIndex),
       onWaiting: () => this.onVideoWaiting(groupIndex, storyIndex),
       onError: () => this.onContentError(groupIndex, storyIndex),
@@ -1151,14 +1153,26 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
 
   protected onOuterDragStart(): void {
     this.timerCtrl.pause();
+    if (this._activeStory()?.mediaType === 'video') sharedStoryVideo().pause();
   }
 
   protected onOuterDragEnd(): void {
-    if (!this.storiesCtrl.state.isPaused.value) this.timerCtrl.resume();
+    if (this.storiesCtrl.state.isPaused.value) return;
+    this.timerCtrl.resume();
+    if (this._activeStory()?.mediaType === 'video') {
+      sharedStoryVideo().play().catch(noop);
+    }
   }
 
-  protected onDurationReady(src: string, durationMs: number): void {
-    this._knownDurations.set(src, durationMs);
+  // A story that names its own duration keeps it, whatever the video reports.
+  protected onDurationReady(
+    groupIndex: number,
+    storyIndex: number,
+    durationMs: number,
+  ): void {
+    const story = this.storiesOf(groupIndex)[storyIndex];
+    if (story?.src) this._knownDurations.set(story.src, durationMs);
+    if (!this._isActive(groupIndex, storyIndex) || story?.duration) return;
     if (this.timerCtrl.isRunning.value) this.timerCtrl.start(durationMs);
   }
 
@@ -1233,7 +1247,7 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
   }
 
   private _stop(): void {
-    this.endSlide();
+    this._cancelSlide();
     this.timerCtrl.reset();
     this._bodyLock.unlock();
     this._releaseFocusTrap?.();
@@ -1321,10 +1335,34 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
     else action();
   }
 
+  /**
+   * Ends a slide the player never came out of, on the way out: the story it
+   * was opening was never on screen, so it is neither reported nor timed.
+   */
+  private _cancelSlide(): void {
+    clearTimeout(this._slideTimeout);
+    cancelAnimationFrame(this._slideFrame);
+    this._pendingViewed = null;
+    this._pendingTimerAction = null;
+    this.slide.set(null);
+  }
+
   protected endSlide(): void {
     clearTimeout(this._slideTimeout);
     cancelAnimationFrame(this._slideFrame);
     if (!this.slide()) return;
+
+    // The card of the opened group leaves the page now. Focus left on a card
+    // would fall to the document body, outside the dialog, so it goes to the
+    // player the viewer just opened.
+    const overlay = this._overlayRef()?.nativeElement;
+    if (
+      overlay
+        ?.querySelector('.rk-stories-carousel')
+        ?.contains(document.activeElement)
+    ) {
+      overlay.focus({ preventScroll: true });
+    }
 
     this.slide.set(null);
 
@@ -1338,7 +1376,7 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
 
     const pendingAction = this._pendingTimerAction;
     this._pendingTimerAction = null;
-    pendingAction?.();
+    if (!this.storiesCtrl.state.isPaused.value) pendingAction?.();
   }
 
   /**
@@ -1347,6 +1385,10 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
    * hidden tab, a theme with no duration — ends the slide on a timer instead.
    */
   private _beginSlide(from: number, to: number): void {
+    // A slide that interrupts another one drops the first one's deadline,
+    // which would otherwise end the new slide early.
+    clearTimeout(this._slideTimeout);
+    cancelAnimationFrame(this._slideFrame);
     this.timerCtrl.pause();
     this._pendingTimerAction = null;
     this.slide.set({ from, to, phase: 'start' });
@@ -1405,6 +1447,9 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
   }
 
   private _followActiveStory(): void {
+    // A new story always plays. The timer restarts below either way, so a
+    // pause kept here would leave the header showing one nobody is holding.
+    if (this.storiesCtrl.state.isPaused.value) this.storiesCtrl.resume();
     this._queueSliderMove(() => {
       const groupIndex = this.storiesCtrl.state.activeGroupIndex.value;
       const storyIndex = this.storiesCtrl.state.activeStoryIndex.value;

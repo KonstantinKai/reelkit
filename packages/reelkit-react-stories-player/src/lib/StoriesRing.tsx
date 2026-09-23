@@ -63,6 +63,12 @@ export const StoriesRing: FC<StoriesRingProps> = ({
       className={className}
       style={style as CSSProperties}
       onClick={onClick}
+      onKeyDown={(event) => {
+        // A native button opens on Enter and Space; this one has to be told.
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        event.preventDefault();
+        onClick?.();
+      }}
       role="button"
       tabIndex={0}
       aria-label={`${author.name}'s stories`}

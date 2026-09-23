@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { render } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import { fireEvent, render } from '@testing-library/react';
 import { StoriesRing } from './StoriesRing';
 
 const author = { id: 'a1', name: 'Alice', avatar: '/alice.jpg' };
@@ -91,5 +91,24 @@ describe('StoriesRing', () => {
     expect(ring.style.getPropertyValue('--rk-stories-ring-gradient')).toBe(
       '#333',
     );
+  });
+
+  it('opens from the keyboard with Enter or Space, as a button does', () => {
+    const onClick = vi.fn();
+    const { container } = render(
+      <StoriesRing
+        author={author}
+        totalStories={3}
+        viewedCount={0}
+        onClick={onClick}
+      />,
+    );
+    const ring = container.querySelector('.rk-stories-ring') as HTMLElement;
+
+    fireEvent.keyDown(ring, { key: 'Enter' });
+    fireEvent.keyDown(ring, { key: ' ' });
+    fireEvent.keyDown(ring, { key: 'a' });
+
+    expect(onClick).toHaveBeenCalledTimes(2);
   });
 });

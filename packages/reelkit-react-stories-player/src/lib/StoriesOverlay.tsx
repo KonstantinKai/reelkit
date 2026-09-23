@@ -820,7 +820,10 @@ function StoriesContent<T extends StoryItem = StoryItem>({
       handleDurationReady(groupIndex: number, storyIndex: number, ms: number) {
         const story = latestGroups()[groupIndex]?.stories[storyIndex];
         if (story?.src) knownDurations.set(story.src, ms);
+        // A story that names its own duration keeps it, whatever the video
+        // reports.
         if (
+          !story?.duration &&
           groupIndex === storiesCtrl.state.activeGroupIndex.value &&
           storyIndex === storiesCtrl.state.activeStoryIndex.value
         ) {

@@ -112,6 +112,33 @@ interface CardView<T extends StoryItem> {
               [ngTemplateOutletContext]="previewContext(card)"
             />
           } @else {
+            <!-- A story with no picture of its own — text on a gradient, say —
+                 is drawn by the consumer's own slide template at the player's
+                 size and scaled down to the card. It is a picture of the
+                 story, so nothing in it is reachable. It sits under the
+                 button, never inside it: a slide template can hold buttons
+                 and links of its own, and a control cannot sit inside
+                 another. -->
+            @if (
+              !card.previewSource && card.showFrame && frameTemplate();
+              as tpl
+            ) {
+              @if (frameContext()(card.groupIndex); as context) {
+                <span
+                  class="rk-stories-card-frame"
+                  aria-hidden="true"
+                  inert
+                  [style.width.px]="activeSize()[0]"
+                  [style.height.px]="activeSize()[1]"
+                  [style.transform]="'scale(' + frameScale() + ')'"
+                >
+                  <ng-container
+                    [ngTemplateOutlet]="tpl"
+                    [ngTemplateOutletContext]="context"
+                  />
+                </span>
+              }
+            }
             <button
               type="button"
               class="rk-stories-card-button"
@@ -126,26 +153,6 @@ interface CardView<T extends StoryItem> {
                   alt=""
                   (error)="onPreviewFailed(card.previewSource)"
                 />
-              } @else if (card.showFrame && frameTemplate(); as tpl) {
-                <!-- A story with no picture of its own — text on a gradient,
-                     say — is drawn by the consumer's own slide template at the
-                     player's size and scaled down to the card. It is a
-                     picture of the story, so nothing in it is reachable. -->
-                @if (frameContext()(card.groupIndex); as context) {
-                  <span
-                    class="rk-stories-card-frame"
-                    aria-hidden="true"
-                    inert
-                    [style.width.px]="activeSize()[0]"
-                    [style.height.px]="activeSize()[1]"
-                    [style.transform]="'scale(' + frameScale() + ')'"
-                  >
-                    <ng-container
-                      [ngTemplateOutlet]="tpl"
-                      [ngTemplateOutletContext]="context"
-                    />
-                  </span>
-                }
               }
               <span class="rk-stories-card-scrim"></span>
               <span class="rk-stories-card-info">

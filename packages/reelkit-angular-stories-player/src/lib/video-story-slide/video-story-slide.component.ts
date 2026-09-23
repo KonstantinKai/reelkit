@@ -20,6 +20,7 @@ import {
   createSharedVideo,
   noop,
   observeDomEvent,
+  observeMediaLoading,
   reaction,
   syncMutedToVideo,
   type CoreSignal,
@@ -156,15 +157,11 @@ export class RkVideoStorySlideComponent {
               );
             }
           }),
-          observeDomEvent(video, 'canplay', () =>
-            this._ngZone.run(() => this.playbackStarted.emit()),
-          ),
-          observeDomEvent(video, 'waiting', () =>
-            this._ngZone.run(() => this.buffering.emit()),
-          ),
-          observeDomEvent(video, 'playing', () =>
-            this._ngZone.run(() => this.showPoster.set(false)),
-          ),
+          observeMediaLoading(video, {
+            onReady: () => this._ngZone.run(() => this.playbackStarted.emit()),
+            onWaiting: () => this._ngZone.run(() => this.buffering.emit()),
+            onPlaying: () => this._ngZone.run(() => this.showPoster.set(false)),
+          }),
           observeDomEvent(video, 'ended', () =>
             this._ngZone.run(() => this.finished.emit()),
           ),

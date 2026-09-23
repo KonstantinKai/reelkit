@@ -69,6 +69,12 @@ export const StoriesRing = defineComponent({
           tabindex: 0,
           'aria-label': `${props.author.name}'s stories`,
           onClick: () => emit('click'),
+          onKeydown: (event: KeyboardEvent) => {
+            // A native button opens on Enter and Space; this one has to be told.
+            if (event.key !== 'Enter' && event.key !== ' ') return;
+            event.preventDefault();
+            emit('click');
+          },
         },
         [
           h('img', {

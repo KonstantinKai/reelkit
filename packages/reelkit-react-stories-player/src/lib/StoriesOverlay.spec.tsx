@@ -2136,3 +2136,65 @@ describe('StoriesOverlay with the progress bar and header in each group', () => 
     expect(onClose).toHaveBeenCalled();
   });
 });
+
+describe('StoriesOverlay story duration', () => {
+  type Builder = (
+    index: number,
+    indexInRange: number,
+    size: [number, number],
+  ) => ReactElement<{ children: ReactElement<Record<string, unknown>>[] }>;
+
+  beforeEach(() => {
+    vi.useFakeTimers({
+      toFake: ['setTimeout', 'clearTimeout', 'Date', 'performance'],
+    });
+    lastReelProps = [];
+    vi.stubGlobal('requestAnimationFrame', (cb: () => void) =>
+      setTimeout(cb, 0),
+    );
+    vi.stubGlobal('cancelAnimationFrame', (id: number) => clearTimeout(id));
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  it('keeps a duration the story names over the one its video reports', () => {
+    const onStoryComplete = vi.fn();
+    let reportDuration: ((ms: number) => void) | undefined;
+    render(
+      <StoriesOverlay
+        isOpen
+        onClose={vi.fn()}
+        groups={[
+          {
+            author: { id: '1', name: 'Alice', avatar: 'alice.jpg' },
+            stories: [{ id: 'v', mediaType: 'video', src: '', duration: 3000 }],
+          },
+        ]}
+        onStoryComplete={onStoryComplete}
+        renderSlide={(props) => {
+          reportDuration = props.onDurationReady;
+          return null;
+        }}
+      />,
+    );
+    // The mocked Reel draws no slides, so the story is built by hand to get
+    // hold of the callbacks the player gives it.
+    const outer = lastReelProps.filter((props) => props['afterChange']).at(-1)!;
+    const group = (outer['itemBuilder'] as Builder)(0, 0, [400, 700]);
+    const storyReel = [group.props.children]
+      .flat()
+      .find((child) => child?.props?.['itemBuilder']);
+    (storyReel?.props['itemBuilder'] as Builder)(0, 0, [400, 700]);
+
+    act(() => reportDuration!(10_000));
+    act(() => {
+      vi.advanceTimersByTime(3100);
+    });
+
+    expect(onStoryComplete).toHaveBeenCalledWith(0, 0);
+  });
+});
