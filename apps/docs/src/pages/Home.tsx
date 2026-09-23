@@ -20,70 +20,85 @@ import {
 import { AnimatedLogo } from '../components/ui/AnimatedLogo';
 import { AnimatedWordmark } from '../components/ui/AnimatedWordmark';
 import { GitHubStarButton } from '../components/ui/GitHubStarButton';
+import { VirtualizationDemo } from '../components/demos/VirtualizationDemo';
+import { readLocaleFromPath } from '../i18n/locale';
+import { messages } from '../i18n/messages';
+import { localePageMeta } from '../i18n/pageMeta';
+import { useLocalePath, useMessages } from '../i18n/useLocale';
 
 export const links = heroSlidePreloadLinks;
 
-const highlights = [
-  {
-    stat: '3',
-    unit: 'in DOM',
-    title: 'Virtualized',
-    description: 'Handle 10,000+ items. Only 3 slides rendered at any time.',
-    color: 'text-primary-500',
-  },
-  {
-    stat: '0',
-    unit: 'deps',
-    title: 'Zero Dependencies',
-    description: 'No runtime dependencies. Core is ~10.1 kB gzipped.',
-    color: 'text-accent-500',
-  },
-  {
-    stat: '60',
-    unit: 'fps',
-    title: 'Touch First',
-    description: 'Native swipe gestures with momentum and snap points.',
-    color: 'text-emerald-500',
-  },
-];
+/**
+ * One page serves every language, so the locale comes from the URL the
+ * router is rendering rather than from which file was imported.
+ */
+export const meta = ({ location }: { location: { pathname: string } }) => {
+  const locale = readLocaleFromPath(location.pathname);
+  const { title, description } = messages[locale].home.meta;
+  return localePageMeta(locale, { path: '/', title, description });
+};
 
-const moreFeatures = [
+/**
+ * The look of each stat card, in the order the dictionary lists them. Colors
+ * are not translated, so they stay here rather than in seven dictionaries.
+ */
+const highlightColors = [
+  'text-primary-500',
+  'text-accent-500',
+  'text-emerald-500',
+] as const;
+
+/** Icon and color for each compact feature, positional against `more`. */
+const moreFeatureMarks = [
+  { icon: <Zap className="w-4 h-4" />, color: 'text-amber-500' },
+  { icon: <Keyboard className="w-4 h-4" />, color: 'text-primary-500' },
+  { icon: <Layers className="w-4 h-4" />, color: 'text-emerald-500' },
+  { icon: <Code2 className="w-4 h-4" />, color: 'text-sky-500' },
+  { icon: <Paintbrush className="w-4 h-4" />, color: 'text-accent-500' },
+  { icon: <Blocks className="w-4 h-4" />, color: 'text-rose-400' },
+  { icon: <Link2 className="w-4 h-4" />, color: 'text-violet-500' },
+] as const;
+
+/**
+ * Package names and the labels beside them are product names: they read the
+ * same in every language, so the tree is built here and only each binding's
+ * one-line description comes from the dictionary.
+ */
+const bindings = [
   {
-    icon: <Zap className="w-4 h-4" />,
-    title: 'Performant',
-    color: 'text-amber-500',
+    key: 'react',
+    framework: 'React',
+    pkg: '@reelkit/react',
+    color: 'sky',
+    extensions: [
+      { name: '@reelkit/react-reel-player', label: 'Reel Player' },
+      { name: '@reelkit/react-lightbox', label: 'Lightbox' },
+      { name: '@reelkit/react-stories-player', label: 'Stories Player' },
+    ],
   },
   {
-    icon: <Keyboard className="w-4 h-4" />,
-    title: 'Keyboard Navigation',
-    color: 'text-primary-500',
+    key: 'angular',
+    framework: 'Angular',
+    pkg: '@reelkit/angular',
+    color: 'rose',
+    extensions: [
+      { name: '@reelkit/angular-reel-player', label: 'Reel Player' },
+      { name: '@reelkit/angular-lightbox', label: 'Lightbox' },
+      { name: '@reelkit/angular-stories-player', label: 'Stories Player' },
+    ],
   },
   {
-    icon: <Layers className="w-4 h-4" />,
-    title: 'Framework Agnostic',
-    color: 'text-emerald-500',
+    key: 'vue',
+    framework: 'Vue',
+    pkg: '@reelkit/vue',
+    color: 'emerald',
+    extensions: [
+      { name: '@reelkit/vue-reel-player', label: 'Reel Player' },
+      { name: '@reelkit/vue-lightbox', label: 'Lightbox' },
+      { name: '@reelkit/vue-stories-player', label: 'Stories Player' },
+    ],
   },
-  {
-    icon: <Code2 className="w-4 h-4" />,
-    title: 'TypeScript First',
-    color: 'text-sky-500',
-  },
-  {
-    icon: <Paintbrush className="w-4 h-4" />,
-    title: 'Headless + Styled',
-    color: 'text-accent-500',
-  },
-  {
-    icon: <Blocks className="w-4 h-4" />,
-    title: 'Ready-made Components',
-    color: 'text-rose-400',
-  },
-  {
-    icon: <Link2 className="w-4 h-4" />,
-    title: 'Shareable URL State',
-    color: 'text-violet-500',
-  },
-];
+] as const;
 
 const codeExample = `import { Reel, ReelIndicator } from '@reelkit/react';
 
@@ -104,6 +119,12 @@ function App() {
 }`;
 
 export default function Home() {
+  const { home } = useMessages();
+  // Both calls to action point at the docs; a reader who arrived in Spanish
+  // should stay in Spanish when they follow one.
+  const localePath = useLocalePath();
+  const gettingStarted = localePath('/docs/getting-started');
+
   return (
     <div className="min-h-screen">
       {/* Hero Section — two columns: text + live demo */}
@@ -127,16 +148,15 @@ export default function Home() {
               </h1>
 
               <p className="text-xl md:text-2xl text-slate-600 dark:text-slate-300 mb-4 max-w-lg">
-                Single-item slider for{' '}
+                {home.hero.taglineLead ? `${home.hero.taglineLead} ` : ''}
                 <span className="text-primary-600 dark:text-primary-400 font-semibold">
-                  TikTok/Instagram Reels-style
-                </span>{' '}
-                experiences
+                  {home.hero.taglineHighlight}
+                </span>
+                {home.hero.taglineTail ? ` ${home.hero.taglineTail}` : ''}
               </p>
 
               <p className="text-base text-slate-500 dark:text-slate-400 mb-6 max-w-lg">
-                Framework-agnostic, virtualized, touch-first. Built for vertical
-                video feeds, story viewers, and fullscreen galleries.
+                {home.hero.subtitle}
               </p>
 
               <div className="flex items-center justify-center lg:justify-start gap-5 mb-8">
@@ -190,10 +210,10 @@ export default function Home() {
 
               <div className="flex flex-col sm:flex-row items-center lg:items-start gap-3">
                 <Link
-                  to="/docs/getting-started"
+                  to={gettingStarted}
                   className="btn-primary inline-flex items-center gap-2"
                 >
-                  Get Started
+                  {home.hero.getStarted}
                   <ArrowRight size={18} />
                 </Link>
                 <GitHubStarButton />
@@ -216,10 +236,57 @@ export default function Home() {
                 </div>
               </div>
               <p className="text-center text-xs text-slate-400 dark:text-slate-500 mt-3">
-                Live demo — use the arrows
+                {home.hero.demoCaption}
               </p>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section
+        className="border-b border-slate-200 bg-white py-20 dark:border-slate-800 dark:bg-slate-900"
+        aria-labelledby="virtualization-heading"
+      >
+        <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:gap-20 lg:px-8">
+          <div>
+            <p className="mb-4 text-sm font-semibold uppercase tracking-widest text-primary-600 dark:text-primary-400">
+              {home.virtualization.eyebrow}
+            </p>
+            <h2
+              id="virtualization-heading"
+              className="mb-6 text-3xl font-bold tracking-tight md:text-4xl"
+            >
+              {home.virtualization.headingLead}
+              <br />
+              <span className="bg-gradient-to-r from-primary-500 to-accent-500 bg-clip-text text-transparent">
+                {home.virtualization.headingHighlight}
+              </span>
+            </h2>
+            <p className="mb-8 text-lg leading-relaxed text-slate-600 dark:text-slate-400">
+              {home.virtualization.intro}
+            </p>
+            <ol className="space-y-6">
+              {home.virtualization.steps.map((step, index) => (
+                <li key={step.title} className="flex gap-4">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary-50 font-mono text-sm text-primary-600 dark:bg-primary-950 dark:text-primary-400">
+                    {index + 1}
+                  </span>
+                  <div>
+                    <h3 className="mb-1 font-semibold text-slate-900 dark:text-white">
+                      {step.title}
+                    </h3>
+                    <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+                      {step.description}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+            <p className="mt-8 text-sm text-slate-500 dark:text-slate-400">
+              {home.virtualization.footnote}
+            </p>
+          </div>
+          <VirtualizationDemo />
         </div>
       </section>
 
@@ -228,23 +295,23 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Built for performance
+              {home.features.heading}
             </h2>
             <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-              Virtualized rendering, zero dependencies, 60fps transitions
+              {home.features.subheading}
             </p>
           </div>
 
           {/* Top 3: Stat-driven highlight cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-            {highlights.map((feature) => (
+            {home.features.highlights.map((feature, index) => (
               <div
                 key={feature.title}
                 className="group p-6 rounded-2xl bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:shadow-slate-900/5 dark:hover:shadow-black/10"
               >
                 <div className="flex items-baseline gap-1 mb-3">
                   <span
-                    className={`text-4xl font-bold tabular-nums tracking-tight ${feature.color}`}
+                    className={`text-4xl font-bold tabular-nums tracking-tight ${highlightColors[index]}`}
                   >
                     {feature.stat}
                   </span>
@@ -264,13 +331,15 @@ export default function Home() {
 
           {/* Bottom 6: Compact inline features */}
           <div className="grid grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-4 max-w-3xl mx-auto">
-            {moreFeatures.map((feature) => (
+            {home.features.more.map((title, index) => (
               <div
-                key={feature.title}
+                key={title}
                 className="flex items-center gap-2.5 text-sm text-slate-600 dark:text-slate-400"
               >
-                <span className={feature.color}>{feature.icon}</span>
-                {feature.title}
+                <span className={moreFeatureMarks[index].color}>
+                  {moreFeatureMarks[index].icon}
+                </span>
+                {title}
               </div>
             ))}
           </div>
@@ -281,22 +350,19 @@ export default function Home() {
       <section className="py-24 bg-white dark:bg-slate-900">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Why "ReelKit"?
+            {home.why.heading}
           </h2>
           <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
             <span className="font-semibold text-slate-800 dark:text-slate-200">
-              Reel
+              {home.why.reelTerm}
             </span>{' '}
-            — vertical video feeds like Instagram Reels and TikTok. One piece of
-            content at a time, swipe to advance.
+            {home.why.reelBody}
           </p>
           <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
             <span className="font-semibold text-slate-800 dark:text-slate-200">
-              Kit
+              {home.why.kitTerm}
             </span>{' '}
-            — a modular set of packages. Use the headless core for full control,
-            framework bindings for quick setup, or ready-made overlays for video
-            players and image galleries.
+            {home.why.kitBody}
           </p>
         </div>
       </section>
@@ -305,9 +371,11 @@ export default function Home() {
       <section className="py-24 bg-slate-50 dark:bg-slate-800/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Simple API</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              {home.api.heading}
+            </h2>
             <p className="text-lg text-slate-600 dark:text-slate-400">
-              Get started with just a few lines of code
+              {home.api.subheading}
             </p>
           </div>
 
@@ -322,10 +390,10 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Available Packages
+              {home.packages.heading}
             </h2>
             <p className="text-lg text-slate-600 dark:text-slate-400">
-              A modular ecosystem — pick what you need
+              {home.packages.subheading}
             </p>
           </div>
 
@@ -333,7 +401,7 @@ export default function Home() {
           <div className="max-w-lg mx-auto mb-6">
             <div className="relative p-6 rounded-2xl border-2 border-primary-400 dark:border-primary-500 bg-gradient-to-br from-primary-50 to-accent-50 dark:from-primary-950/40 dark:to-accent-950/30 shadow-lg shadow-primary-500/10">
               <span className="absolute -top-3 left-6 px-3 py-0.5 text-[11px] font-semibold uppercase tracking-widest bg-primary-500 text-white rounded-full">
-                Core
+                {home.packages.coreBadge}
               </span>
               <div className="flex items-center gap-3 mb-2">
                 <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary-500/10 dark:bg-primary-400/10">
@@ -349,68 +417,14 @@ export default function Home() {
                 </a>
               </div>
               <p className="text-slate-600 dark:text-slate-400 text-sm ml-12">
-                Framework-agnostic slider engine — virtualization, gestures,
-                keyboard, wheel, signals. Zero dependencies.
+                {home.packages.coreDescription}
               </p>
             </div>
           </div>
 
           {/* Framework bindings — vertical stacked tree */}
           <div className="max-w-3xl mx-auto space-y-0">
-            {[
-              {
-                framework: 'React',
-                pkg: '@reelkit/react',
-                desc: 'Components, hooks, and signal bridges',
-                color: 'sky',
-                extensions: [
-                  { name: '@reelkit/react-reel-player', label: 'Reel Player' },
-                  { name: '@reelkit/react-lightbox', label: 'Lightbox' },
-                  {
-                    name: '@reelkit/react-stories-player',
-                    label: 'Stories Player',
-                  },
-                ],
-              },
-              {
-                framework: 'Angular',
-                pkg: '@reelkit/angular',
-                desc: 'Standalone components with signal-based reactivity',
-                color: 'rose',
-                extensions: [
-                  {
-                    name: '@reelkit/angular-reel-player',
-                    label: 'Reel Player',
-                  },
-                  { name: '@reelkit/angular-lightbox', label: 'Lightbox' },
-                  {
-                    name: '@reelkit/angular-stories-player',
-                    label: 'Stories Player',
-                    comingSoon: true,
-                  },
-                ],
-              },
-              {
-                framework: 'Vue',
-                pkg: '@reelkit/vue',
-                desc: 'Components and composables for Vue 3',
-                color: 'emerald',
-                extensions: [
-                  {
-                    name: '@reelkit/vue-reel-player',
-                    label: 'Reel Player',
-                  },
-                  {
-                    name: '@reelkit/vue-lightbox',
-                    label: 'Lightbox',
-                  },
-                  {
-                    name: '@reelkit/vue-stories-player',
-                    label: 'Stories Player',
-                  },
-                ],
-              },
-            ].map(({ framework, pkg, desc, color, extensions }, i, arr) => (
+            {bindings.map(({ key, framework, pkg, color, extensions }, i) => (
               <div key={framework}>
                 <div className="flex justify-center">
                   <div className="w-px h-6 bg-slate-300 dark:bg-slate-600" />
@@ -442,7 +456,7 @@ export default function Home() {
                     </div>
                     <span className="text-slate-500 dark:text-slate-400 text-sm ml-7 sm:ml-0">
                       <span className="hidden sm:inline">— </span>
-                      {desc}
+                      {home.packages.bindings[key]}
                     </span>
                   </div>
 
@@ -451,14 +465,10 @@ export default function Home() {
                     {extensions.map((ext) => (
                       <a
                         key={ext.name}
-                        href={
-                          'comingSoon' in ext && ext.comingSoon
-                            ? undefined
-                            : `https://www.npmjs.com/package/${ext.name}`
-                        }
+                        href={`https://www.npmjs.com/package/${ext.name}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-${color}-200 dark:border-${color}-800 bg-white dark:bg-slate-800/60 text-xs ${!('comingSoon' in ext && ext.comingSoon) ? `hover:border-${color}-400 dark:hover:border-${color}-600 transition-colors` : ''}`}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-${color}-200 dark:border-${color}-800 bg-white dark:bg-slate-800/60 text-xs hover:border-${color}-400 dark:hover:border-${color}-600 transition-colors`}
                       >
                         {ext.name.includes('player') ? (
                           <Film className={`w-3 h-3 text-${color}-500`} />
@@ -470,17 +480,12 @@ export default function Home() {
                         >
                           {ext.label}
                         </span>
-                        {'comingSoon' in ext && ext.comingSoon && (
-                          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400">
-                            soon
-                          </span>
-                        )}
                       </a>
                     ))}
                   </div>
                 </div>
 
-                {i < arr.length - 1 && (
+                {i < bindings.length - 1 && (
                   <div className="flex justify-center">
                     <div className="w-px h-2 bg-slate-300 dark:bg-slate-600" />
                   </div>
@@ -495,17 +500,15 @@ export default function Home() {
       <section className="py-20 bg-slate-900 dark:bg-slate-800/50 border-t border-slate-800 dark:border-slate-700">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Ready to get started?
+            {home.cta.heading}
           </h2>
-          <p className="text-slate-400 text-lg mb-8">
-            Check out the documentation and examples to build your first slider.
-          </p>
+          <p className="text-slate-400 text-lg mb-8">{home.cta.body}</p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
-              to="/docs/getting-started"
+              to={gettingStarted}
               className="px-8 py-4 bg-primary-600 text-white font-semibold rounded-xl hover:bg-primary-700 transition-colors"
             >
-              Read the Docs
+              {home.cta.readDocs}
             </Link>
             <GitHubStarButton variant="on-dark" />
           </div>

@@ -4,7 +4,6 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { glob } from 'node:fs/promises';
 import { BasicSliderDemo, heroSlidePreloadLinks } from './BasicSliderDemo';
-import { kLocales } from '../../i18n/locale';
 
 const appDir = join(import.meta.dirname, '../..');
 
@@ -59,17 +58,15 @@ describe('basic slider demo as prerendered', () => {
   });
 });
 
-describe('home pages', () => {
-  it('preload the hero slide and give the demo priority in every locale', async () => {
+describe('home page', () => {
+  // One page serves every locale, so the hero preload is declared once and a
+  // reader in any language gets it.
+  it('preloads the hero slide and gives the demo priority', async () => {
     const homes = await filesUnder('pages/{,*/}Home.tsx');
-    expect(homes).toHaveLength(kLocales.length);
-    for (const home of homes) {
-      const source = readFileSync(join(appDir, home), 'utf8');
-      expect(source, home).toContain(
-        'export const links = heroSlidePreloadLinks;',
-      );
-      expect(source, home).toContain('<BasicSliderDemo priority />');
-    }
+    expect(homes).toHaveLength(1);
+    const source = readFileSync(join(appDir, homes[0]), 'utf8');
+    expect(source).toContain('export const links = heroSlidePreloadLinks;');
+    expect(source).toContain('<BasicSliderDemo priority />');
   });
 
   it('leave the demo on the React guide without priority', async () => {

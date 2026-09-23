@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { glob } from 'node:fs/promises';
 import { kBundleSizes } from '../data/bundleSizes';
+import { kLocales } from './locale';
 
 const repoRoot = join(import.meta.dirname, '../../../..');
-const pagesDir = join(import.meta.dirname);
+const messagesDir = join(import.meta.dirname, 'messages');
 
 /**
  * `scripts/update-sizes.mjs` measures every package and rewrites the README
@@ -20,70 +20,62 @@ function measuredCoreGzip(): number {
   return Number(badge![1]);
 }
 
-describe('quoted bundle sizes', () => {
-  // The home page sells the number in prose, one translation per locale, none
-  // of which any build step reads.
-  it('quotes the measured core size on every home page', async () => {
-    const measured = measuredCoreGzip();
-    const homes = ['Home.tsx'];
-    for await (const entry of glob('*/Home.tsx', { cwd: pagesDir })) {
-      homes.push(entry);
-    }
+/** The chrome dictionaries, which hold the landing page copy per language. */
+const dictionaries = kLocales.map((locale) => `${locale}.ts`);
 
+describe('quoted bundle sizes', () => {
+  // The landing page sells the number in prose, one translation per locale,
+  // none of which any build step reads.
+  it('quotes the measured core size in every language', () => {
+    const measured = measuredCoreGzip();
     const quoted: string[] = [];
-    for (const home of homes) {
-      const source = readFileSync(join(pagesDir, home), 'utf8');
+
+    for (const dictionary of dictionaries) {
+      const source = readFileSync(join(messagesDir, dictionary), 'utf8');
       for (const [, value] of source.matchAll(/~?\s*([\d.]+)\s*(?:kB|кБ)/g)) {
-        quoted.push(`${home}: ${value}`);
+        quoted.push(`${dictionary}: ${value}`);
         expect(
           Math.abs(Number(value) - measured),
-          `${home} quotes ${value} kB, measured is ${measured} kB`,
+          `${dictionary} quotes ${value} kB, measured is ${measured} kB`,
         ).toBeLessThanOrEqual(0.5);
       }
     }
+
     // A silent pass because the wording changed and nothing matched would be
     // worse than a wrong number.
-    expect(quoted.length, 'no home page quotes a core size any more').toBe(
-      homes.length,
+    expect(quoted.length, 'no dictionary quotes a core size any more').toBe(
+      dictionaries.length,
     );
   });
 
-  // The refresh script rewrites the quoted size in each home page it names,
-  // and a page it does not name is left at whatever number it was written
-  // with. The script reports "no change" for a file it never reads, so a
-  // missing path reads exactly like an up-to-date one.
-  it('names every home page in the size refresh script', async () => {
+  // The refresh script rewrites the quoted size in each file it names, and a
+  // file it does not name is left at whatever number it was written with. The
+  // script reports "no change" for a file it never reads, so a missing path
+  // reads exactly like an up-to-date one.
+  it('names every dictionary in the size refresh script', () => {
     const script = readFileSync(
       join(repoRoot, 'scripts/update-sizes.mjs'),
       'utf8',
     );
-    const homes = ['Home.tsx'];
-    for await (const entry of glob('*/Home.tsx', { cwd: pagesDir })) {
-      homes.push(entry);
-    }
-    for (const home of homes) {
+    for (const dictionary of dictionaries) {
       expect(
         script,
-        `scripts/update-sizes.mjs never rewrites ${home}`,
-      ).toContain(`apps/docs/src/pages/${home}`);
+        `scripts/update-sizes.mjs never rewrites ${dictionary}`,
+      ).toContain(`apps/docs/src/i18n/messages/${dictionary}`);
     }
   });
 
-  // The rewrite is a regular expression over the page source: a single-quoted
+  // The rewrite is a regular expression over the source: a single-quoted
   // description holding a decimal size and an ASCII space before the unit. A
   // translation that writes 3,2 kB, or splits the string, silently stops
   // being updated — and only the next size bump would show it.
-  it('leaves every home page in the shape the refresh script rewrites', async () => {
+  it('leaves every dictionary in the shape the refresh script rewrites', () => {
     const rewrite = /(description:\s*'[^']*?)\d+\.\d+( (?:kB|кБ)[^']*')/;
-    const homes = ['Home.tsx'];
-    for await (const entry of glob('*/Home.tsx', { cwd: pagesDir })) {
-      homes.push(entry);
-    }
-    for (const home of homes) {
-      const source = readFileSync(join(pagesDir, home), 'utf8');
+    for (const dictionary of dictionaries) {
+      const source = readFileSync(join(messagesDir, dictionary), 'utf8');
       expect(
         rewrite.test(source),
-        `${home} quotes no size the refresh script can rewrite`,
+        `${dictionary} quotes no size the refresh script can rewrite`,
       ).toBe(true);
     }
   });

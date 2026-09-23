@@ -39,6 +39,9 @@ function translatedPages(): Freshness {
   for (const locale of kLocales) {
     if (locale === kDefaultLocale) continue;
     for (const page of kSitePages) {
+      // A shared module has no per-locale file to fall behind: its copy lives
+      // in the chrome dictionary, where a missing key fails the typecheck.
+      if (page.shared) continue;
       const translation = pageFile(page, locale);
       const body = readFileSync(join(appDir, translation), 'utf8');
       if (body.includes('export { default } from')) continue;

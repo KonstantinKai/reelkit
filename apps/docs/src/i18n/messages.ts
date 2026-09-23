@@ -1,10 +1,22 @@
 import type { Locale } from './locale';
+import { en } from './messages/en';
+import { es } from './messages/es';
+import { hi } from './messages/hi';
+import { ja } from './messages/ja';
+import { pt } from './messages/pt';
+import { uk } from './messages/uk';
+import { zh } from './messages/zh';
 
 /**
  * Every user-facing string rendered by the shared chrome — header, sidebar,
- * footer, command palette, dialogs and the not-found page. Long-form docs
- * prose is not routed through here; each locale gets its own page file so
- * translators edit readable markup instead of key soup.
+ * footer, command palette, dialogs and the not-found page — plus the landing
+ * page, whose copy is short labels inside a fixed layout rather than prose.
+ *
+ * Long-form docs prose is still not routed through here; each locale gets its
+ * own page file so translators edit readable markup instead of key soup. The
+ * landing page was the exception that proved costly: it was copied per locale
+ * and the copies fell behind, losing a whole demo section in every language
+ * but English before anyone noticed.
  */
 export interface Messages {
   header: {
@@ -83,588 +95,70 @@ export interface Messages {
     home: string;
     docs: string;
   };
+  /**
+   * The landing page, keyed by the section a reader sees rather than flatly,
+   * so a translator has the surrounding context while working.
+   *
+   * Product names — ReelKit, React, Angular, Vue, and the package labels
+   * beside each binding — are absent on purpose: they stay English in every
+   * locale, so they live in the component instead.
+   */
+  home: {
+    meta: { title: string; description: string };
+    hero: {
+      /** The tagline is one sentence with its middle clause emphasised. */
+      taglineLead: string;
+      taglineHighlight: string;
+      taglineTail: string;
+      subtitle: string;
+      getStarted: string;
+      demoCaption: string;
+    };
+    virtualization: {
+      eyebrow: string;
+      headingLead: string;
+      headingHighlight: string;
+      intro: string;
+      /** The three numbered steps, in the order they are walked through. */
+      steps: readonly { title: string; description: string }[];
+      footnote: string;
+    };
+    features: {
+      heading: string;
+      subheading: string;
+      /**
+       * The three stat cards. `stat` is a numeral and stays as written; the
+       * gzip figure inside the second `description` is rewritten by
+       * `scripts/update-sizes.mjs`, so that key keeps its name.
+       */
+      highlights: readonly {
+        stat: string;
+        unit: string;
+        title: string;
+        description: string;
+      }[];
+      /** The compact row beneath the cards — label only, no prose. */
+      more: readonly string[];
+    };
+    why: {
+      heading: string;
+      reelTerm: string;
+      reelBody: string;
+      kitTerm: string;
+      kitBody: string;
+    };
+    api: { heading: string; subheading: string };
+    packages: {
+      heading: string;
+      subheading: string;
+      coreBadge: string;
+      coreDescription: string;
+      /** One line per binding, in the order the tree renders them. */
+      bindings: { react: string; angular: string; vue: string };
+    };
+    cta: { heading: string; body: string; readDocs: string };
+  };
 }
-
-const en: Messages = {
-  header: {
-    docs: 'Docs',
-    search: 'Search',
-    githubLabel: 'ReelKit on GitHub',
-    themeLabel: 'Toggle theme',
-    themeLight: 'Light',
-    themeDark: 'Dark',
-    themeSystem: 'System',
-    menuLabel: 'Toggle navigation',
-    languageLabel: 'Change language',
-  },
-  nav: {
-    sections: {
-      overview: 'Overview',
-      core: 'Core',
-      react: 'React',
-      angular: 'Angular',
-      vue: 'Vue',
-      components: 'Components',
-      resources: 'Resources',
-    },
-    items: {
-      gettingStarted: 'Getting Started',
-      installation: 'Installation',
-      ssr: 'SSR',
-      guide: 'Guide',
-      apiReference: 'API Reference',
-      storiesCore: 'Stories Core',
-      reelPlayer: 'Reel Player',
-      lightbox: 'Lightbox',
-      storiesPlayer: 'Stories Player',
-      troubleshooting: 'Troubleshooting',
-      llms: 'AI / LLM Integration',
-      changelog: "What's New?",
-    },
-    comingSoon: 'Soon',
-  },
-  footer: {
-    tagline:
-      'Headless, virtualized, zero-dependency slider engine. Build TikTok/Reels-style feeds with 60fps gestures and only 3 DOM nodes.',
-    documentation: 'Documentation',
-    gettingStarted: 'Getting Started',
-    installation: 'Installation',
-    examples: 'Examples',
-    community: 'Community',
-    rights: (year) => `© ${year} ReelKit. All rights reserved.`,
-    privacy: 'Privacy',
-    terms: 'Terms',
-  },
-  search: {
-    placeholder: 'Search documentation...',
-    empty: (query) => `No results found for “${query}”`,
-    pagesGroup: (category) => `Pages · ${category}`,
-    sectionsGroup: (page) => `${page} · Sections`,
-    navigate: 'navigate',
-    open: 'open',
-    close: 'close',
-  },
-  whatsNew: {
-    title: 'What’s new',
-    since: (count) =>
-      count === 1
-        ? '1 new release since your last visit'
-        : `${count} new releases since your last visit`,
-    more: (count) => `+${count} more ${count === 1 ? 'release' : 'releases'}`,
-    dismiss: 'Dismiss',
-    viewFull: 'View full changelog',
-    close: 'Close',
-    closeOverlay: "Close what's new dialog",
-  },
-  nextSteps: {
-    title: 'Next Steps',
-  },
-  notFound: {
-    title: 'Page not found',
-    description: "The page you're looking for doesn't exist or has been moved.",
-    home: 'Home',
-    docs: 'Docs',
-  },
-};
-
-const zh: Messages = {
-  header: {
-    docs: '文档',
-    search: '搜索',
-    githubLabel: '在 GitHub 上查看 ReelKit',
-    themeLabel: '切换主题',
-    themeLight: '浅色',
-    themeDark: '深色',
-    themeSystem: '跟随系统',
-    menuLabel: '切换导航栏',
-    languageLabel: '切换语言',
-  },
-  nav: {
-    sections: {
-      overview: '概览',
-      core: '核心',
-      react: 'React',
-      angular: 'Angular',
-      vue: 'Vue',
-      components: '组件',
-      resources: '资源',
-    },
-    items: {
-      gettingStarted: '快速开始',
-      installation: '安装',
-      ssr: '服务端渲染',
-      guide: '指南',
-      apiReference: 'API 参考',
-      storiesCore: 'Stories Core',
-      reelPlayer: 'Reel Player',
-      lightbox: 'Lightbox',
-      storiesPlayer: 'Stories Player',
-      troubleshooting: '疑难排查',
-      llms: 'AI / 大模型集成',
-      changelog: '更新日志',
-    },
-    comingSoon: '即将推出',
-  },
-  footer: {
-    tagline:
-      '无头、虚拟化、零依赖的滑动引擎。用 60fps 手势和仅 3 个 DOM 节点，构建 TikTok / Reels 风格的信息流。',
-    documentation: '文档',
-    gettingStarted: '快速开始',
-    installation: '安装',
-    examples: '示例',
-    community: '社区',
-    rights: (year) => `© ${year} ReelKit。保留所有权利。`,
-    privacy: '隐私政策',
-    terms: '服务条款',
-  },
-  search: {
-    placeholder: '搜索文档…',
-    empty: (query) => `没有找到与“${query}”匹配的结果`,
-    pagesGroup: (category) => `页面 · ${category}`,
-    sectionsGroup: (page) => `${page} · 章节`,
-    navigate: '选择',
-    open: '打开',
-    close: '关闭',
-  },
-  whatsNew: {
-    title: '最新动态',
-    since: (count) => `自你上次访问以来有 ${count} 个新版本`,
-    more: (count) => `还有 ${count} 个版本`,
-    dismiss: '知道了',
-    viewFull: '查看完整更新日志',
-    close: '关闭',
-    closeOverlay: '关闭最新动态弹窗',
-  },
-  nextSteps: {
-    title: '下一步',
-  },
-  notFound: {
-    title: '页面不存在',
-    description: '你访问的页面不存在，或者已经被移动到别处。',
-    home: '首页',
-    docs: '文档',
-  },
-};
-
-/**
- * Ukrainian counts do not split in two the way English does. One form
- * follows 1, 21, 31 and so on, a second follows 2 through 4, and a third
- * covers everything else — including the teens, which look like the first
- * two groups but take the third form.
- */
-function ukPlural(count: number, one: string, few: string, many: string) {
-  const lastTwo = count % 100;
-  if (lastTwo >= 11 && lastTwo <= 14) return many;
-  const last = count % 10;
-  if (last === 1) return one;
-  if (last >= 2 && last <= 4) return few;
-  return many;
-}
-
-const uk: Messages = {
-  header: {
-    docs: 'Документація',
-    search: 'Пошук',
-    githubLabel: 'ReelKit на GitHub',
-    themeLabel: 'Перемкнути тему',
-    themeLight: 'Світла',
-    themeDark: 'Темна',
-    themeSystem: 'Системна',
-    menuLabel: 'Перемкнути навігацію',
-    languageLabel: 'Змінити мову',
-  },
-  nav: {
-    sections: {
-      overview: 'Огляд',
-      core: 'Ядро',
-      react: 'React',
-      angular: 'Angular',
-      vue: 'Vue',
-      components: 'Компоненти',
-      resources: 'Ресурси',
-    },
-    items: {
-      gettingStarted: 'Початок роботи',
-      installation: 'Встановлення',
-      // Read and searched as an acronym, so it stays in Latin script.
-      ssr: 'SSR',
-      guide: 'Посібник',
-      apiReference: 'Довідник API',
-      storiesCore: 'Stories Core',
-      reelPlayer: 'Reel Player',
-      lightbox: 'Lightbox',
-      storiesPlayer: 'Stories Player',
-      troubleshooting: 'Усунення несправностей',
-      llms: 'Інтеграція з AI / LLM',
-      changelog: 'Що нового?',
-    },
-    comingSoon: 'Скоро',
-  },
-  footer: {
-    tagline:
-      'Headless, віртуалізований рушій слайдера без залежностей. Стрічки у стилі TikTok / Reels із жестами на 60 fps і лише трьома вузлами DOM.',
-    documentation: 'Документація',
-    gettingStarted: 'Початок роботи',
-    installation: 'Встановлення',
-    examples: 'Приклади',
-    community: 'Спільнота',
-    rights: (year) => `© ${year} ReelKit. Усі права захищено.`,
-    privacy: 'Конфіденційність',
-    terms: 'Умови',
-  },
-  search: {
-    placeholder: 'Пошук у документації…',
-    empty: (query) => `Нічого не знайдено за запитом «${query}»`,
-    pagesGroup: (category) => `Сторінки · ${category}`,
-    sectionsGroup: (page) => `${page} · Розділи`,
-    navigate: 'навігація',
-    open: 'відкрити',
-    close: 'закрити',
-  },
-  whatsNew: {
-    title: 'Що нового',
-    since: (count) =>
-      `${count} ${ukPlural(count, 'новий реліз', 'нові релізи', 'нових релізів')} від вашого останнього візиту`,
-    more: (count) =>
-      `+${count} ${ukPlural(count, 'реліз', 'релізи', 'релізів')}`,
-    dismiss: 'Зрозуміло',
-    viewFull: 'Переглянути повний журнал змін',
-    close: 'Закрити',
-    closeOverlay: 'Закрити вікно «Що нового»',
-  },
-  nextSteps: {
-    title: 'Наступні кроки',
-  },
-  notFound: {
-    title: 'Сторінку не знайдено',
-    description: 'Сторінка, яку ви шукаєте, не існує або її перенесено.',
-    home: 'Головна',
-    docs: 'Документація',
-  },
-};
-
-const pt: Messages = {
-  header: {
-    docs: 'Documentação',
-    search: 'Buscar',
-    githubLabel: 'ReelKit no GitHub',
-    themeLabel: 'Alternar tema',
-    themeLight: 'Claro',
-    themeDark: 'Escuro',
-    themeSystem: 'Sistema',
-    menuLabel: 'Alternar navegação',
-    languageLabel: 'Mudar idioma',
-  },
-  nav: {
-    sections: {
-      overview: 'Visão geral',
-      core: 'Core',
-      react: 'React',
-      angular: 'Angular',
-      vue: 'Vue',
-      components: 'Componentes',
-      resources: 'Recursos',
-    },
-    items: {
-      gettingStarted: 'Primeiros passos',
-      installation: 'Instalação',
-      ssr: 'SSR',
-      guide: 'Guia',
-      apiReference: 'Referência da API',
-      storiesCore: 'Stories Core',
-      reelPlayer: 'Reel Player',
-      lightbox: 'Lightbox',
-      storiesPlayer: 'Stories Player',
-      troubleshooting: 'Solução de problemas',
-      llms: 'Integração com IA / LLM',
-      changelog: 'O que há de novo?',
-    },
-    comingSoon: 'Em breve',
-  },
-  footer: {
-    tagline:
-      'Motor de slider headless, virtualizado e sem dependências. Feeds no estilo TikTok / Reels com gestos a 60 fps e apenas três nós no DOM.',
-    documentation: 'Documentação',
-    gettingStarted: 'Primeiros passos',
-    installation: 'Instalação',
-    examples: 'Exemplos',
-    community: 'Comunidade',
-    rights: (year) => `© ${year} ReelKit. Todos os direitos reservados.`,
-    privacy: 'Privacidade',
-    terms: 'Termos',
-  },
-  search: {
-    placeholder: 'Buscar na documentação…',
-    empty: (query) => `Nenhum resultado para “${query}”`,
-    pagesGroup: (category) => `Páginas · ${category}`,
-    sectionsGroup: (page) => `${page} · Seções`,
-    navigate: 'navegar',
-    open: 'abrir',
-    close: 'fechar',
-  },
-  whatsNew: {
-    title: 'O que há de novo',
-    since: (count) =>
-      count === 1
-        ? '1 novo lançamento desde a sua última visita'
-        : `${count} novos lançamentos desde a sua última visita`,
-    more: (count) => `+${count} ${count === 1 ? 'lançamento' : 'lançamentos'}`,
-    dismiss: 'Entendi',
-    viewFull: 'Ver o histórico completo',
-    close: 'Fechar',
-    closeOverlay: 'Fechar a janela de novidades',
-  },
-  nextSteps: {
-    title: 'Próximos passos',
-  },
-  notFound: {
-    title: 'Página não encontrada',
-    description: 'A página que você procura não existe ou mudou de endereço.',
-    home: 'Início',
-    docs: 'Documentação',
-  },
-};
-
-const ja: Messages = {
-  header: {
-    docs: 'ドキュメント',
-    search: '検索',
-    githubLabel: 'GitHub の ReelKit',
-    themeLabel: 'テーマを切り替える',
-    themeLight: 'ライト',
-    themeDark: 'ダーク',
-    themeSystem: 'システム',
-    menuLabel: 'ナビゲーションを切り替える',
-    languageLabel: '言語を変更する',
-  },
-  nav: {
-    sections: {
-      overview: '概要',
-      core: 'Core',
-      react: 'React',
-      angular: 'Angular',
-      vue: 'Vue',
-      components: 'コンポーネント',
-      resources: 'リソース',
-    },
-    items: {
-      gettingStarted: 'はじめに',
-      installation: 'インストール',
-      ssr: 'SSR',
-      guide: 'ガイド',
-      apiReference: 'API リファレンス',
-      storiesCore: 'Stories Core',
-      reelPlayer: 'Reel Player',
-      lightbox: 'Lightbox',
-      storiesPlayer: 'Stories Player',
-      troubleshooting: 'トラブルシューティング',
-      llms: 'AI / LLM との連携',
-      changelog: '新着情報',
-    },
-    comingSoon: '近日公開',
-  },
-  footer: {
-    tagline:
-      'ヘッドレスで仮想化された、依存関係のないスライダーエンジン。60 fps のジェスチャーと 3 つの DOM ノードだけで、TikTok／Reels 風のフィードを作れます。',
-    documentation: 'ドキュメント',
-    gettingStarted: 'はじめに',
-    installation: 'インストール',
-    examples: '例',
-    community: 'コミュニティ',
-    rights: (year) => `© ${year} ReelKit. All rights reserved.`,
-    privacy: 'プライバシー',
-    terms: '利用規約',
-  },
-  search: {
-    placeholder: 'ドキュメントを検索…',
-    empty: (query) => `「${query}」に一致する結果はありません`,
-    pagesGroup: (category) => `ページ · ${category}`,
-    sectionsGroup: (page) => `${page} · セクション`,
-    navigate: '移動',
-    open: '開く',
-    close: '閉じる',
-  },
-  whatsNew: {
-    title: '新着情報',
-    since: (count) => `前回の訪問以降、${count} 件の新しいリリース`,
-    more: (count) => `ほか ${count} 件のリリース`,
-    dismiss: '閉じる',
-    viewFull: '変更履歴をすべて見る',
-    close: '閉じる',
-    closeOverlay: '新着情報のダイアログを閉じる',
-  },
-  nextSteps: {
-    title: '次のステップ',
-  },
-  notFound: {
-    title: 'ページが見つかりません',
-    description: 'お探しのページは存在しないか、移動した可能性があります。',
-    home: 'ホーム',
-    docs: 'ドキュメント',
-  },
-};
-
-const hi: Messages = {
-  header: {
-    docs: 'डॉक्स',
-    search: 'खोजें',
-    githubLabel: 'GitHub पर ReelKit',
-    themeLabel: 'थीम बदलें',
-    themeLight: 'लाइट',
-    themeDark: 'डार्क',
-    themeSystem: 'सिस्टम',
-    menuLabel: 'नेविगेशन खोलें या बंद करें',
-    languageLabel: 'भाषा बदलें',
-  },
-  nav: {
-    sections: {
-      overview: 'परिचय',
-      core: 'Core',
-      react: 'React',
-      angular: 'Angular',
-      vue: 'Vue',
-      components: 'कंपोनेंट',
-      resources: 'संसाधन',
-    },
-    items: {
-      gettingStarted: 'शुरुआत',
-      installation: 'इंस्टॉलेशन',
-      ssr: 'SSR',
-      guide: 'गाइड',
-      apiReference: 'API रेफ़रेंस',
-      storiesCore: 'Stories Core',
-      reelPlayer: 'Reel Player',
-      lightbox: 'Lightbox',
-      storiesPlayer: 'Stories Player',
-      troubleshooting: 'समस्या निवारण',
-      llms: 'AI / LLM इंटीग्रेशन',
-      changelog: 'नया क्या है',
-    },
-    comingSoon: 'जल्द आ रहा है',
-  },
-  footer: {
-    tagline:
-      'Headless, वर्चुअलाइज़्ड और बिना dependency वाला स्लाइडर इंजन। 60 fps जेस्चर और सिर्फ़ 3 DOM नोड के साथ TikTok/Reels जैसी फ़ीड बनाएँ।',
-    documentation: 'डॉक्स',
-    gettingStarted: 'शुरुआत',
-    installation: 'इंस्टॉलेशन',
-    examples: 'उदाहरण',
-    community: 'समुदाय',
-    rights: (year) => `© ${year} ReelKit. All rights reserved.`,
-    privacy: 'निजता',
-    terms: 'शर्तें',
-  },
-  search: {
-    placeholder: 'डॉक्स में खोजें…',
-    empty: (query) => `"${query}" के लिए कोई नतीजा नहीं मिला`,
-    pagesGroup: (category) => `पेज · ${category}`,
-    sectionsGroup: (page) => `${page} · हिस्से`,
-    navigate: 'चुनें',
-    open: 'खोलें',
-    close: 'बंद करें',
-  },
-  whatsNew: {
-    title: 'नया क्या है',
-    since: (count) => `आपकी पिछली विज़िट के बाद ${count} नई रिलीज़`,
-    more: (count) => `+${count} और रिलीज़`,
-    dismiss: 'हटाएँ',
-    viewFull: 'बदलावों की पूरी सूची देखें',
-    close: 'बंद करें',
-    closeOverlay: 'नया क्या है वाली विंडो बंद करें',
-  },
-  nextSteps: {
-    title: 'अगले कदम',
-  },
-  notFound: {
-    title: 'पेज नहीं मिला',
-    description:
-      'आप जो पेज ढूँढ रहे हैं, वह मौजूद नहीं है या कहीं और चला गया है।',
-    home: 'होम',
-    docs: 'डॉक्स',
-  },
-};
-
-const es: Messages = {
-  header: {
-    docs: 'Documentación',
-    search: 'Buscar',
-    githubLabel: 'ReelKit en GitHub',
-    themeLabel: 'Cambiar tema',
-    themeLight: 'Claro',
-    themeDark: 'Oscuro',
-    themeSystem: 'Sistema',
-    menuLabel: 'Mostrar u ocultar la navegación',
-    languageLabel: 'Cambiar idioma',
-  },
-  nav: {
-    sections: {
-      overview: 'Introducción',
-      core: 'Core',
-      react: 'React',
-      angular: 'Angular',
-      vue: 'Vue',
-      components: 'Componentes',
-      resources: 'Recursos',
-    },
-    items: {
-      gettingStarted: 'Primeros pasos',
-      installation: 'Instalación',
-      ssr: 'SSR',
-      guide: 'Guía',
-      apiReference: 'Referencia de la API',
-      storiesCore: 'Stories Core',
-      reelPlayer: 'Reel Player',
-      lightbox: 'Lightbox',
-      storiesPlayer: 'Stories Player',
-      troubleshooting: 'Solución de problemas',
-      llms: 'Integración con IA / LLM',
-      changelog: '¿Qué hay de nuevo?',
-    },
-    comingSoon: 'Pronto',
-  },
-  footer: {
-    tagline:
-      'Motor de slider headless, virtualizado y sin dependencias. Feeds al estilo de TikTok / Reels con gestos a 60 fps y solo tres nodos en el DOM.',
-    documentation: 'Documentación',
-    gettingStarted: 'Primeros pasos',
-    installation: 'Instalación',
-    examples: 'Ejemplos',
-    community: 'Comunidad',
-    rights: (year) => `© ${year} ReelKit. Todos los derechos reservados.`,
-    privacy: 'Privacidad',
-    terms: 'Condiciones',
-  },
-  search: {
-    placeholder: 'Buscar en la documentación…',
-    empty: (query) => `No hay resultados para «${query}»`,
-    pagesGroup: (category) => `Páginas · ${category}`,
-    sectionsGroup: (page) => `${page} · Secciones`,
-    navigate: 'navegar',
-    open: 'abrir',
-    close: 'cerrar',
-  },
-  whatsNew: {
-    title: 'Novedades',
-    since: (count) =>
-      count === 1
-        ? '1 nueva versión desde tu última visita'
-        : `${count} nuevas versiones desde tu última visita`,
-    more: (count) => `+${count} ${count === 1 ? 'versión' : 'versiones'} más`,
-    dismiss: 'Entendido',
-    viewFull: 'Ver el historial completo',
-    close: 'Cerrar',
-    closeOverlay: 'Cerrar la ventana de novedades',
-  },
-  nextSteps: {
-    title: 'Siguientes pasos',
-  },
-  notFound: {
-    title: 'Página no encontrada',
-    description: 'La página que buscas no existe o ha cambiado de dirección.',
-    home: 'Inicio',
-    docs: 'Documentación',
-  },
-};
 
 export const messages: Record<Locale, Messages> = {
   en,
