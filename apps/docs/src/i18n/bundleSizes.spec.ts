@@ -5,7 +5,7 @@ import { kBundleSizes } from '../data/bundleSizes';
 import { kLocales } from './locale';
 
 const repoRoot = join(import.meta.dirname, '../../../..');
-const messagesDir = join(import.meta.dirname, 'messages');
+const homeDir = join(import.meta.dirname, 'home');
 
 /**
  * `scripts/update-sizes.mjs` measures every package and rewrites the README
@@ -31,7 +31,7 @@ describe('quoted bundle sizes', () => {
     const quoted: string[] = [];
 
     for (const dictionary of dictionaries) {
-      const source = readFileSync(join(messagesDir, dictionary), 'utf8');
+      const source = readFileSync(join(homeDir, dictionary), 'utf8');
       for (const [, value] of source.matchAll(/~?\s*([\d.]+)\s*(?:kB|кБ)/g)) {
         quoted.push(`${dictionary}: ${value}`);
         expect(
@@ -61,7 +61,7 @@ describe('quoted bundle sizes', () => {
       expect(
         script,
         `scripts/update-sizes.mjs never rewrites ${dictionary}`,
-      ).toContain(`apps/docs/src/i18n/messages/${dictionary}`);
+      ).toContain(`apps/docs/src/i18n/home/${dictionary}`);
     }
   });
 
@@ -72,7 +72,7 @@ describe('quoted bundle sizes', () => {
   it('leaves every dictionary in the shape the refresh script rewrites', () => {
     const rewrite = /(description:\s*'[^']*?)\d+\.\d+( (?:kB|кБ)[^']*')/;
     for (const dictionary of dictionaries) {
-      const source = readFileSync(join(messagesDir, dictionary), 'utf8');
+      const source = readFileSync(join(homeDir, dictionary), 'utf8');
       expect(
         rewrite.test(source),
         `${dictionary} quotes no size the refresh script can rewrite`,

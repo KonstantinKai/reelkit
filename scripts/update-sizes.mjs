@@ -456,13 +456,13 @@ for (const page of ['apps/docs/src/data/bundleSizes.ts']) {
 // translator.
 const core = results.find((r) => r.name === '@reelkit/core');
 for (const page of [
-  'apps/docs/src/i18n/messages/en.ts',
-  'apps/docs/src/i18n/messages/uk.ts',
-  'apps/docs/src/i18n/messages/zh.ts',
-  'apps/docs/src/i18n/messages/pt.ts',
-  'apps/docs/src/i18n/messages/ja.ts',
-  'apps/docs/src/i18n/messages/hi.ts',
-  'apps/docs/src/i18n/messages/es.ts',
+  'apps/docs/src/i18n/home/en.ts',
+  'apps/docs/src/i18n/home/uk.ts',
+  'apps/docs/src/i18n/home/zh.ts',
+  'apps/docs/src/i18n/home/pt.ts',
+  'apps/docs/src/i18n/home/ja.ts',
+  'apps/docs/src/i18n/home/hi.ts',
+  'apps/docs/src/i18n/home/es.ts',
 ]) {
   if (!core) break;
 

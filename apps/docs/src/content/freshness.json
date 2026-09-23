@@ -114,6 +114,16 @@
       "source": "content/en/docs/llms.mdx",
       "translation": "content/uk/docs/llms.mdx",
       "sha": "d54e5e03e0fdf1428d4431151d6ac317d81aa89a"
+    },
+    "@chrome": {
+      "source": "i18n/messages/en.ts",
+      "translation": "i18n/messages/uk.ts",
+      "sha": "510b5a8e3233990156fb2eae31d20ea991490241"
+    },
+    "@home": {
+      "source": "i18n/home/en.ts",
+      "translation": "i18n/home/uk.ts",
+      "sha": "135d43274f49665587e094cab8e6ea53389d3bec"
     }
   },
   "zh": {
@@ -231,6 +241,16 @@
       "source": "content/en/docs/llms.mdx",
       "translation": "content/zh/docs/llms.mdx",
       "sha": "d54e5e03e0fdf1428d4431151d6ac317d81aa89a"
+    },
+    "@chrome": {
+      "source": "i18n/messages/en.ts",
+      "translation": "i18n/messages/zh.ts",
+      "sha": "510b5a8e3233990156fb2eae31d20ea991490241"
+    },
+    "@home": {
+      "source": "i18n/home/en.ts",
+      "translation": "i18n/home/zh.ts",
+      "sha": "135d43274f49665587e094cab8e6ea53389d3bec"
     }
   },
   "pt": {
@@ -348,6 +368,16 @@
       "source": "content/en/docs/llms.mdx",
       "translation": "content/pt/docs/llms.mdx",
       "sha": "d54e5e03e0fdf1428d4431151d6ac317d81aa89a"
+    },
+    "@chrome": {
+      "source": "i18n/messages/en.ts",
+      "translation": "i18n/messages/pt.ts",
+      "sha": "510b5a8e3233990156fb2eae31d20ea991490241"
+    },
+    "@home": {
+      "source": "i18n/home/en.ts",
+      "translation": "i18n/home/pt.ts",
+      "sha": "135d43274f49665587e094cab8e6ea53389d3bec"
     }
   },
   "ja": {
@@ -465,6 +495,16 @@
       "source": "content/en/docs/llms.mdx",
       "translation": "content/ja/docs/llms.mdx",
       "sha": "d54e5e03e0fdf1428d4431151d6ac317d81aa89a"
+    },
+    "@chrome": {
+      "source": "i18n/messages/en.ts",
+      "translation": "i18n/messages/ja.ts",
+      "sha": "510b5a8e3233990156fb2eae31d20ea991490241"
+    },
+    "@home": {
+      "source": "i18n/home/en.ts",
+      "translation": "i18n/home/ja.ts",
+      "sha": "135d43274f49665587e094cab8e6ea53389d3bec"
     }
   },
   "hi": {
@@ -582,6 +622,16 @@
       "source": "content/en/docs/llms.mdx",
       "translation": "content/hi/docs/llms.mdx",
       "sha": "d54e5e03e0fdf1428d4431151d6ac317d81aa89a"
+    },
+    "@chrome": {
+      "source": "i18n/messages/en.ts",
+      "translation": "i18n/messages/hi.ts",
+      "sha": "510b5a8e3233990156fb2eae31d20ea991490241"
+    },
+    "@home": {
+      "source": "i18n/home/en.ts",
+      "translation": "i18n/home/hi.ts",
+      "sha": "135d43274f49665587e094cab8e6ea53389d3bec"
     }
   },
   "es": {
@@ -699,6 +749,16 @@
       "source": "content/en/docs/llms.mdx",
       "translation": "content/es/docs/llms.mdx",
       "sha": "d54e5e03e0fdf1428d4431151d6ac317d81aa89a"
+    },
+    "@chrome": {
+      "source": "i18n/messages/en.ts",
+      "translation": "i18n/messages/es.ts",
+      "sha": "510b5a8e3233990156fb2eae31d20ea991490241"
+    },
+    "@home": {
+      "source": "i18n/home/en.ts",
+      "translation": "i18n/home/es.ts",
+      "sha": "135d43274f49665587e094cab8e6ea53389d3bec"
     }
   }
 }

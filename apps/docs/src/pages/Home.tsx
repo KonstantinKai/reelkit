@@ -22,9 +22,9 @@ import { AnimatedWordmark } from '../components/ui/AnimatedWordmark';
 import { GitHubStarButton } from '../components/ui/GitHubStarButton';
 import { VirtualizationDemo } from '../components/demos/VirtualizationDemo';
 import { readLocaleFromPath } from '../i18n/locale';
-import { messages } from '../i18n/messages';
+import { homeMessages } from '../i18n/home';
 import { localePageMeta } from '../i18n/pageMeta';
-import { useLocalePath, useMessages } from '../i18n/useLocale';
+import { useLocale, useLocalePath } from '../i18n/useLocale';
 
 export const links = heroSlidePreloadLinks;
 
@@ -34,7 +34,7 @@ export const links = heroSlidePreloadLinks;
  */
 export const meta = ({ location }: { location: { pathname: string } }) => {
   const locale = readLocaleFromPath(location.pathname);
-  const { title, description } = messages[locale].home.meta;
+  const { title, description } = homeMessages[locale].meta;
   return localePageMeta(locale, { path: '/', title, description });
 };
 
@@ -119,7 +119,9 @@ function App() {
 }`;
 
 export default function Home() {
-  const { home } = useMessages();
+  // The landing copy is its own dictionary, imported only here — the docs
+  // pages share the chrome bundle and should not carry this page's text.
+  const home = homeMessages[useLocale()];
   // Both calls to action point at the docs; a reader who arrived in Spanish
   // should stay in Spanish when they follow one.
   const localePath = useLocalePath();
