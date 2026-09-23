@@ -129,14 +129,24 @@ protected readonly viewed = createStoriesViewedStateController({
 
 Each user resumes on their first unseen story, every story shown is recorded, rings go flat once a user is watched to the end. Give the same controller to `rk-stories-ring-list` and the overlay.
 
+## Progress bar and header per group
+
+`chromePlacement="group"` — every group gets its own progress bar + header inside its slide, both turn with the group (Instagram). Default `'overlay'`: one copy above the player, switching after the group changes.
+
+- Neighbouring group shows the story it will open on, nothing played.
+- Group being left keeps its progress until the turn ends; one played to the end stays full.
+- `rkStoriesProgressBar` / `rkStoriesHeader` templates rendered for every group on screen, contexts carry `groupIndex` + `isActive`; neighbour → `isActive: false`, progress signals hold still.
+- `rkStoriesHeader` template sits in the swipe area: a tap moves between stories unless it hits a `button`, a link, or `role="button"`.
+- Desktop carousel: player hidden while cards slide, so the choice shows once the group is open.
+
 ## Template slots
 
 Eight `ng-template` directives, each with the most useful value as the implicit one. A slot left out keeps the built-in rendering. `STORIES_TEMPLATE_SLOT_DIRECTIVES` exports all eight as one array.
 
-- `rkStoriesHeader` (`RkStoriesHeaderDirective`, `StoriesHeaderContext`) — `{ $implicit: author, story, storyIndex, isPaused, isMuted, isVideo, onToggleSound, onTogglePause, onClose }`
+- `rkStoriesHeader` (`RkStoriesHeaderDirective`, `StoriesHeaderContext`) — `{ $implicit: author, story, storyIndex, isPaused, isMuted, isVideo, groupIndex, isActive, onToggleSound, onTogglePause, onClose }`
 - `rkStoriesFooter` (`RkStoriesFooterDirective`, `StoriesFooterContext`) — `{ $implicit: story, author, storyIndex }`
 - `rkStoriesSlide` (`RkStoriesSlideDirective`, `StoriesSlideContext`) — `{ $implicit: story, index, groupIndex, isActive, size, activeGroupIndex, activeStoryIndex, onDurationReady, onReady, onWaiting, onError, onEnded }`
-- `rkStoriesProgressBar` (`RkStoriesProgressBarDirective`, `StoriesProgressBarContext`) — `{ $implicit: group, totalStories, activeIndex, progress }`; `activeIndex` + `progress` are core signals, bridge with `toAngularSignal`
+- `rkStoriesProgressBar` (`RkStoriesProgressBarDirective`, `StoriesProgressBarContext`) — `{ $implicit: group, totalStories, activeIndex, progress, groupIndex, isActive }`; `activeIndex` + `progress` are core signals, bridge with `toAngularSignal`
 - `rkStoriesNavigation` (`RkStoriesNavigationDirective`, `StoriesNavigationContext`) — `{ $implicit: StoriesNavigationActions }` = `{ onPrevStory, onNextStory, onPrevGroup, onNextGroup }`
 - `rkStoriesGroupPreview` (`RkStoriesGroupPreviewDirective`, `StoriesGroupPreviewContext`) — `{ $implicit: group, groupIndex, story, offset, viewedCount, onOpen }`
 - `rkStoriesLoading` (`RkStoriesLoadingDirective`, `StoriesLoadingContext`) — `{ $implicit: story, storyIndex, groupIndex }`
@@ -162,7 +172,7 @@ From `(apiReady)`. The player is rebuilt on every open, so keep the newest handl
 
 ## Sub-components
 
-`RkStoriesRingComponent`, `RkStoriesRingListComponent`, `RkStoryHeaderComponent`, `RkCanvasProgressBarComponent`, `RkImageStorySlideComponent`, `RkVideoStorySlideComponent`, `RkHeartAnimationComponent`. `RkStoriesCarouselComponent` and its `CarouselSlide` type are exported as well, but the overlay owns every value it draws from — use the `rkStoriesGroupPreview` slot to restyle a card rather than mounting it yourself. Every video story plays through one shared `<video>`, which is what keeps sound alive on iOS between stories.
+`RkStoriesRingComponent`, `RkStoriesRingListComponent`, `RkStoryHeaderComponent`, `RkCanvasProgressBarComponent` (`[live]="false"` draws only on signal change or resize), `RkImageStorySlideComponent`, `RkVideoStorySlideComponent`, `RkHeartAnimationComponent`. `RkStoriesCarouselComponent` and its `CarouselSlide` type are exported as well, but the overlay owns every value it draws from — use the `rkStoriesGroupPreview` slot to restyle a card rather than mounting it yourself. Every video story plays through one shared `<video>`, which is what keeps sound alive on iOS between stories.
 
 ## Re-exports
 
@@ -187,6 +197,7 @@ From `@reelkit/stories-core`: `createStoriesViewedStateController`, `StoriesView
 - `hideUIOnPause` (boolean, default `true`)
 - `enableKeyboard` (boolean, default `true`)
 - `desktopLayout` (`DesktopLayout` = `'single' | 'carousel'`, default `'single'`) — phones always show the story alone
+- `chromePlacement` (`ChromePlacement` = `'overlay' | 'group'`, default `'overlay'`) — `'group'`: bar + header per group slide, turning with it
 - `viewed` (`StoriesViewedStateController`) — resume + record; hand the same one to the ring list
 - `resumeStoryIndex` (`(groupIndex: number) => number`) — consulted for a group not yet visited this open; beats `viewed`
 - Slot inputs, for a component holding the `TemplateRef` itself: `slideTemplate`, `headerTemplate`, `footerTemplate`, `progressBarTemplate`, `navigationTemplate`, `loadingTemplate`, `errorTemplate`, `groupPreviewTemplate`. A named template beats a projected one.

@@ -92,23 +92,24 @@ interface StoriesGroup<T extends StoryItem = StoryItem> {
 
 ## StoriesOverlay Props
 
-| Prop                        | Type                                       | Default                                          |
-| --------------------------- | ------------------------------------------ | ------------------------------------------------ |
-| `is-open`                   | `boolean`                                  | required, `v-model:is-open`                      |
-| `groups`                    | `StoriesGroup<T>[]`                        | required                                         |
-| `aria-label`                | `string`                                   | `'Stories player'`                               |
-| `initial-group-index`       | `number`                                   | `0`                                              |
-| `initial-story-index`       | `number`                                   | resume, else `0` — explicit wins over remembered |
-| `resume-story-index`        | `(groupIndex) => number`                   | — wins over `viewed`                             |
-| `viewed`                    | `StoriesViewedStateController`             | —                                                |
-| `desktop-layout`            | `DesktopLayout` (`'single' \| 'carousel'`) | `'single'`                                       |
-| `group-transition`          | `TransitionTransformFn`                    | `cubeTransition`                                 |
-| `inner-transition-duration` | `number`                                   | `200`                                            |
-| `default-image-duration`    | `number`                                   | `5000`                                           |
-| `tap-zone-split`            | `number`                                   | `0.3`                                            |
-| `hide-ui-on-pause`          | `boolean`                                  | `true`                                           |
-| `enable-keyboard`           | `boolean`                                  | `true`                                           |
-| `min-segment-width`         | `number`                                   | `8`                                              |
+| Prop                        | Type                                       | Default                                               |
+| --------------------------- | ------------------------------------------ | ----------------------------------------------------- |
+| `is-open`                   | `boolean`                                  | required, `v-model:is-open`                           |
+| `groups`                    | `StoriesGroup<T>[]`                        | required                                              |
+| `aria-label`                | `string`                                   | `'Stories player'`                                    |
+| `initial-group-index`       | `number`                                   | `0`                                                   |
+| `initial-story-index`       | `number`                                   | resume, else `0` — explicit wins over remembered      |
+| `resume-story-index`        | `(groupIndex) => number`                   | — wins over `viewed`                                  |
+| `viewed`                    | `StoriesViewedStateController`             | —                                                     |
+| `desktop-layout`            | `DesktopLayout` (`'single' \| 'carousel'`) | `'single'`                                            |
+| `chrome-placement`          | `ChromePlacement` (`'overlay' \| 'group'`) | `'overlay'` — `'group'`: bar + header per group slide |
+| `group-transition`          | `TransitionTransformFn`                    | `cubeTransition`                                      |
+| `inner-transition-duration` | `number`                                   | `200`                                                 |
+| `default-image-duration`    | `number`                                   | `5000`                                                |
+| `tap-zone-split`            | `number`                                   | `0.3`                                                 |
+| `hide-ui-on-pause`          | `boolean`                                  | `true`                                                |
+| `enable-keyboard`           | `boolean`                                  | `true`                                                |
+| `min-segment-width`         | `number`                                   | `8`                                                   |
 
 Props type exported `StoriesOverlayProps`.
 
@@ -223,17 +224,27 @@ Config type `StoriesViewedStateControllerConfig`; controller type `StoriesViewed
 - Timer + `@story-viewed` wait for slide end.
 - Card click, `goToGroup`, `nextGroup`/`prevGroup`, arrow keys past group end all slide. Touch swipe does not (player already moved).
 
+## Progress Bar and Header per Group
+
+`chrome-placement="group"` — every group gets its own progress bar + header inside its slide, both turn with the group (Instagram). Default `'overlay'`: one copy above the player, switching after the group changes.
+
+- Neighbouring group shows the story it will open on, nothing played.
+- Group being left keeps its progress until the turn ends; one played to the end stays full.
+- `#progressBar` / `#header` rendered for every group on screen, scopes carry `groupIndex` + `isActive`; neighbour → `isActive: false`, progress signals hold still.
+- `#header` sits in the swipe area: a tap moves between stories unless it hits a `button`, a link, or `role="button"`.
+- Desktop carousel: player hidden while cards slide, so the choice shows once the group is open.
+
 ## Scoped Slots
 
 Eight slots. Slot rendering nothing falls back to default.
 
 | Slot            | Scope                                                                                                                                                        |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `#header`       | `{ author, story, storyIndex, isPaused, isMuted, isVideo, onToggleSound, onTogglePause, onClose }` — `HeaderSlotScope`                                       |
+| `#header`       | `{ author, story, storyIndex, isPaused, isMuted, isVideo, groupIndex, isActive, onToggleSound, onTogglePause, onClose }` — `HeaderSlotScope`                 |
 | `#footer`       | `{ author, story, storyIndex }` — `FooterSlotScope`                                                                                                          |
 | `#slide`        | `{ story, index, groupIndex, isActive, size, activeGroupIndex, activeStoryIndex, onDurationReady, onReady, onWaiting, onError, onEnded }` — `SlideSlotScope` |
 | `#navigation`   | `{ onPrevStory, onNextStory, onPrevGroup, onNextGroup }` — `NavigationSlotScope`                                                                             |
-| `#progressBar`  | `{ totalStories, activeIndex, progress, group }` — `ProgressBarSlotScope`                                                                                    |
+| `#progressBar`  | `{ totalStories, activeIndex, progress, group, groupIndex, isActive }` — `ProgressBarSlotScope`                                                              |
 | `#loading`      | `{ story, storyIndex, groupIndex }` — `LoadingSlotScope`                                                                                                     |
 | `#error`        | `{ story, storyIndex, groupIndex }` — `ErrorSlotScope`                                                                                                       |
 | `#groupPreview` | `{ group, groupIndex, story, offset, viewedCount, onOpen }` — `GroupPreviewSlotScope`                                                                        |
@@ -311,15 +322,15 @@ Left `tap-zone-split` (default 0.3) of width → previous story; rest → next. 
 
 ## Sub-Components
 
-| Component           | Notes                                                                                                          |
-| ------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `StoriesRing`       | avatar + gradient ring; emits `click`. Props type `StoriesRingProps`                                           |
-| `StoriesRingList`   | row of rings + names; emits `select(groupIndex)`. Props type `StoriesRingListProps`                            |
-| `StoryHeader`       | default header (avatar, name, verified, time, sound, pause, close, spinner). Props type `StoryHeaderProps`     |
-| `CanvasProgressBar` | canvas segmented bar, drawn from signals, sliding window for many stories. Props type `CanvasProgressBarProps` |
-| `ImageStorySlide`   | full-bleed image, `object-fit: cover`. Props type `ImageStorySlideProps`                                       |
-| `VideoStorySlide`   | shared `<video>`, iOS sound continuity, poster frames. Props type `VideoStorySlideProps`                       |
-| `HeartAnimation`    | double-tap heart; emits `complete`                                                                             |
+| Component           | Notes                                                                                                                                                                                     |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `StoriesRing`       | avatar + gradient ring; emits `click`. Props type `StoriesRingProps`                                                                                                                      |
+| `StoriesRingList`   | row of rings + names; emits `select(groupIndex)`. Props type `StoriesRingListProps`                                                                                                       |
+| `StoryHeader`       | default header (avatar, name, verified, time, sound, pause, close, spinner). Props type `StoryHeaderProps`                                                                                |
+| `CanvasProgressBar` | canvas segmented bar, drawn from signals, sliding window for many stories. `:live="false"`: draws only on signal change or resize, no animation loop. Props type `CanvasProgressBarProps` |
+| `ImageStorySlide`   | full-bleed image, `object-fit: cover`. Props type `ImageStorySlideProps`                                                                                                                  |
+| `VideoStorySlide`   | shared `<video>`, iOS sound continuity, poster frames. Props type `VideoStorySlideProps`                                                                                                  |
+| `HeartAnimation`    | double-tap heart; emits `complete`                                                                                                                                                        |
 
 ## Re-exports
 

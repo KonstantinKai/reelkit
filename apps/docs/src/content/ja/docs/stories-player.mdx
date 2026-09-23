@@ -15,6 +15,7 @@ import urlState3 from '../../snippets/stories-player/url-state-3.tsx?raw';
 import urlState4 from '../../snippets/stories-player/url-state-4.tsx?raw';
 import rememberingWhatWasSeen from '../../snippets/stories-player/remembering-what-was-seen.tsx?raw';
 import desktopCarousel from '../../snippets/stories-player/desktop-carousel.tsx?raw';
+import chromePlacement from '../../snippets/stories-player/chrome-placement.tsx?raw';
 import transitions from '../../snippets/stories-player/transitions.tsx?raw';
 import renderheader from '../../snippets/stories-player/renderheader.tsx?raw';
 import renderfooter from '../../snippets/stories-player/renderfooter.tsx?raw';
@@ -220,6 +221,18 @@ import theming from '../../snippets/stories-player/theming.css?raw';
 - **タイマーはスライドを待ちます。** カードの動きが止まるまで、ストーリーは進まず、そのストーリーの `onStoryViewed` も呼ばれません。
 - **グループを切り替えるどの方法でもスライドします**：カードのクリック、`StoriesApi.goToGroup`、`nextGroup` と `prevGroup`、そしてグループの最後を越える矢印キーです。タッチのスワイプはプレーヤー自体を動かすので、その上にスライドは重なりません。
 
+## グループごとの進捗バーとヘッダー [#chrome-placement]
+
+デフォルトでは、進捗バーとヘッダーが 1 つずつプレーヤーの上にあり、グループが切り替わった後で新しいグループの表示に変わります。`chromePlacement="group"` を指定すると、各グループが自分のスライドの中に専用の進捗バーとヘッダーを持ち、Instagram と同じようにグループと一緒に回転します。
+
+<CodeBlock code={chromePlacement} language="tsx" />
+
+- **隣のグループは、どこまで見たかを表示します。** プレーヤーがそのグループへ回転している間、進捗バーとヘッダーは、そのグループが開くストーリーを、まだ何も再生していない状態で表示します。
+- **離れていくグループはそのままの状態を保ちます。** 回転が終わるまで進捗バーはそれまでの進み具合を保つので、最後まで見たグループは回転の途中で空にならず、満たされたままです。
+- **独自のレンダラーは画面上のグループそれぞれに対して呼ばれます。** `renderProgressBar` と `renderHeader` は `groupIndex` と `isActive` を受け取ります。隣のグループでは `isActive` が `false` になり、進捗のシグナルは変化しません。
+- **独自のヘッダーはスワイプ領域の中にあります。** ヘッダーをタップするとストーリーが切り替わります。ただし `button`、リンク、`role="button"` を持つ要素の上なら切り替わらないので、ヘッダー内の操作要素はすべてそのいずれかにしてください。
+- **デスクトップのカルーセルでは、スライド中の見た目は変わりません。** カードがスライドしている間はプレーヤーが隠れるため、この設定はグループが開いてから反映されます。
+
 ## API リファレンス [#api-reference]
 
 ### StoriesOverlayProps [#storiesoverlayprops]
@@ -244,8 +257,9 @@ import theming from '../../snippets/stories-player/theming.css?raw';
 | `minSegmentWidth` | `number` | 8 | 進捗バーのセグメントの最小幅（ピクセル） |
 | `apiRef` | `MutableRefObject<StoriesApi \| null>` | - | 命令的な StoriesApi にアクセスするための ref |
 | `desktopLayout` | `'single' \| 'carousel'` | 'single' | デスクトップでのレイアウト。'carousel' ではアクティブなストーリーの横に隣のグループをプレビューカードで表示し、グループ間をスライドで切り替えます。スマートフォンでは常にストーリーだけを表示します。型は `DesktopLayout` として公開されています。 |
+| `chromePlacement` | `'overlay' \| 'group'` | 'overlay' | 進捗バーとヘッダーを置く場所。'overlay' はプレーヤーの上に 1 つ描き、'group' はグループのスライドごとに 1 つ描くので、両方がグループと一緒に回転します。型は `ChromePlacement` として公開されています。 |
 | `viewed` | `StoriesViewedStateController` | - | 閲覧者が見たもの（createStoriesViewedStateController() から）。グループは最初の未読ストーリーから再開し、表示したストーリーはすべて記録され、カルーセルのカードは見終えたグループのリングを控えめにします。同じコントローラーを StoriesRingList にも渡してください。 |
-| `renderHeader` | `(props: HeaderRenderProps<T>) => ReactNode` | - | 独自のヘッダーレンダラー。作者、ストーリー、一時停止とミュートの状態を受け取ります。 |
+| `renderHeader` | `(props: HeaderRenderProps<T>) => ReactNode` | - | 独自のヘッダーレンダラー。作者、ストーリー、一時停止とミュートの状態を受け取ります。`chromePlacement="group"` ではヘッダーがスワイプ領域の中に入ります。[グループごとの進捗バーとヘッダー](/docs/stories-player#chrome-placement)を参照してください。 |
 | `renderFooter` | `(props: FooterRenderProps<T>) => ReactNode` | - | 独自のフッターレンダラー。作者とストーリーの情報を受け取ります。 |
 | `renderSlide` | `(props: SlideRenderProps<T>) => ReactNode` | - | 独自のスライドレンダラー。デフォルトの画像と動画のスライドを置き換えます。 |
 | `renderNavigation` | `(props: NavigationRenderProps) => ReactNode` | - | デスクトップ用の独自のナビゲーション。デフォルトの前後の矢印ボタンを置き換えます。 |
@@ -391,7 +405,7 @@ UI 要素はすべてレンダープロップで置き換えられます。そ�
 
 ### CanvasProgressBar [#canvasprogressbar]
 
-高性能な、canvas で描く分割された進捗バーです。ストーリーごとにセグメントを描き、アクティブなセグメントの塗りを `requestAnimationFrame` でアニメーションします。ストーリーの多いグループではスライドするウィンドウに対応します。
+高性能な、canvas で描く分割された進捗バーです。ストーリーごとにセグメントを描き、アクティブなセグメントの塗りを `requestAnimationFrame` でアニメーションします。ストーリーの多いグループではスライドするウィンドウに対応します。グループがどこまで進んだかを示すだけのバーには `live={false}` を渡してください。アニメーションのループを持たず、シグナルが変わったときとサイズが変わった後にだけ描画します。
 
 <CodeBlock code={canvasprogressbar} language="tsx" />
 
@@ -496,7 +510,7 @@ CSS クラスはすべて通常のクラス（CSS Modules ではありません�
 | `.rk-stories-overlay` | Overlay | 固定配置のフルスクリーンの背景（背景色、z-index） |
 | `.rk-stories-swipe-wrapper` | Overlay | スワイプで閉じるためのラッパー（ナビゲーションボタンと canvas を含みます） |
 | `.rk-stories-container` | Overlay | 角の丸いストーリーの表示領域（配置、はみ出し） |
-| `.rk-stories-ui-layer` | Overlay | UI オーバーレイのコンテナー（ヘッダー、進捗、ナビゲーション） |
+| `.rk-stories-ui-layer` | Overlay | UI オーバーレイのコンテナー（ヘッダー、進捗、ナビゲーション）。`chromePlacement="group"` では各グループのスライドの中にあります |
 | `.rk-stories-ui-layer--hidden` | Overlay | UI を隠した状態（hideUIOnPause で切り替わります） |
 | `.rk-stories-error` | Overlay | エラー状態（中央のアイコンとテキスト） |
 | `.rk-stories-error-text` | Overlay | エラーメッセージのテキスト |

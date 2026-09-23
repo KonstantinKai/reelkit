@@ -12,6 +12,7 @@ import urlState2 from '../../snippets/angular-stories-player/url-state-2.ts?raw'
 import urlState3 from '../../snippets/angular-stories-player/url-state-3.ts?raw';
 import rememberingWhatWasSeen from '../../snippets/angular-stories-player/remembering-what-was-seen.ts?raw';
 import desktopCarousel from '../../snippets/angular-stories-player/desktop-carousel.ts?raw';
+import chromePlacement from '../../snippets/angular-stories-player/chrome-placement.ts?raw';
 import transitions from '../../snippets/angular-stories-player/transitions.ts?raw';
 import templateSlots from '../../snippets/angular-stories-player/template-slots.ts?raw';
 import slideSlot from '../../snippets/angular-stories-player/slide-slot.ts?raw';
@@ -167,6 +168,18 @@ Registre a folha de estilos uma única vez:
 
 <CodeBlock code={desktopCarousel} language="typescript" />
 
+## Barra de progresso e cabeçalho em cada grupo [#chrome-placement]
+
+Por padrão, uma barra de progresso e um cabeçalho ficam acima do player e passam para o novo grupo depois que ele muda. Defina `chromePlacement="group"` para dar a cada grupo os seus, dentro do próprio slide, e os dois giram junto com o grupo, como no Instagram.
+
+<CodeBlock code={chromePlacement} language="typescript" />
+
+- **Um grupo vizinho mostra onde parou.** Enquanto o player gira até ele, a barra e o cabeçalho mostram a story em que ele vai abrir, sem nada reproduzido ainda.
+- **O grupo que sai fica como estava.** A barra dele mantém o progresso até o giro terminar, então um grupo visto até o fim continua cheio em vez de se esvaziar no meio do giro.
+- **Os templates são renderizados para cada grupo na tela.** Os contextos de `rkStoriesProgressBar` e `rkStoriesHeader` trazem `groupIndex` e `isActive`; para um grupo vizinho `isActive` é `false` e os sinais de progresso ficam parados.
+- **Um template `rkStoriesHeader` fica na área de swipe.** Um toque nele troca de story, a menos que caia em um `button`, um link ou um elemento com `role="button"`, então faça de cada controle um desses.
+- **O carrossel no desktop não muda durante o deslize.** O player fica oculto enquanto os cards deslizam, então a escolha aparece quando o grupo já está aberto.
+
 ## Slots de template [#template-slots]
 
 Oito diretivas `ng-template` substituem qualquer parte do player. Cada uma recebe um contexto tipado, com o valor mais útil como implícito — `let-author` pega o autor no slot de cabeçalho sem nomeá-lo. Um slot que você não fornecer mantém a apresentação padrão.
@@ -176,10 +189,10 @@ Oito diretivas `ng-template` substituem qualquer parte do player. Cada uma receb
 | `rkStoriesError` | `RkStoriesErrorDirective` | `{ $implicit: story, storyIndex, groupIndex }` | Substitui o painel "Content unavailable" embutido, desenhado sobre a story ativa |
 | `rkStoriesFooter` | `RkStoriesFooterDirective` | `{ $implicit: story, author, storyIndex }` | Adiciona um rodapé sob a story ativa; o player não desenha nenhum próprio |
 | `rkStoriesGroupPreview` | `RkStoriesGroupPreviewDirective` | `{ $implicit: group, groupIndex, story, offset, viewedCount, onOpen }` | Preenche um card do carrossel no desktop; o player continua posicionando, escalando e deslizando o card |
-| `rkStoriesHeader` | `RkStoriesHeaderDirective` | `{ $implicit: author, story, storyIndex, isPaused, isMuted, isVideo, onToggleSound, onTogglePause, onClose }` | Substitui o cabeçalho padrão (autor, pausa, som, fechar) |
+| `rkStoriesHeader` | `RkStoriesHeaderDirective` | `{ $implicit: author, story, storyIndex, isPaused, isMuted, isVideo, groupIndex, isActive, onToggleSound, onTogglePause, onClose }` | Substitui o cabeçalho padrão (autor, pausa, som, fechar). Com `chromePlacement="group"` ele fica na área de swipe; veja [Barra de progresso e cabeçalho em cada grupo](/docs/angular-stories-player#chrome-placement). |
 | `rkStoriesLoading` | `RkStoriesLoadingDirective` | `{ $implicit: story, storyIndex, groupIndex }` | Substitui o indicador de carregamento do cabeçalho enquanto a story ativa carrega |
 | `rkStoriesNavigation` | `RkStoriesNavigationDirective` | `{ $implicit: { onPrevStory, onNextStory, onPrevGroup, onNextGroup } }` | Substitui as duas setas do desktop |
-| `rkStoriesProgressBar` | `RkStoriesProgressBarDirective` | `{ $implicit: group, totalStories, activeIndex, progress }` | Substitui a barra de progresso em canvas. `activeIndex` e `progress` são sinais do core — conecte-os com `toAngularSignal`. |
+| `rkStoriesProgressBar` | `RkStoriesProgressBarDirective` | `{ $implicit: group, totalStories, activeIndex, progress, groupIndex, isActive }` | Substitui a barra de progresso em canvas. `activeIndex` e `progress` são sinais do core — conecte-os com `toAngularSignal`. |
 | `rkStoriesSlide` | `RkStoriesSlideDirective` | `{ $implicit: story, index, groupIndex, isActive, size, activeGroupIndex, activeStoryIndex, onDurationReady, onReady, onWaiting, onError, onEnded }` | Substitui os slides padrão de imagem e vídeo |
 
 <CodeBlock code={templateSlots} language="typescript" />
@@ -258,7 +271,7 @@ Peças exportadas, para compor dentro dos slots ou usar por conta própria.
 
 | Componente | O que é |
 | --- | --- |
-| `RkCanvasProgressBarComponent` | A barra de progresso segmentada em canvas, desenhada direto dos sinais do timer. Cuida de uma janela deslizante para grupos com muitas stories. |
+| `RkCanvasProgressBarComponent` | A barra de progresso segmentada em canvas, desenhada direto dos sinais do timer. Cuida de uma janela deslizante para grupos com muitas stories. Com `[live]="false"` só desenha quando os sinais mudam e depois de um redimensionamento, sem loop de animação. |
 | `RkHeartAnimationComponent` | O coração do toque duplo. Emite `(completed)` quando a animação termina, para o pai removê-lo. |
 | `RkImageStorySlideComponent` | Slide de imagem em tela cheia com `object-fit: cover`, informando carregamento e erro por outputs. |
 | `RkStoriesRingComponent` | Avatar circular com o anel em gradiente. Dois estados: se ainda há algo para ver ele gira, e quando tudo foi visto fica liso. Emite `(clicked)`. |
@@ -294,6 +307,7 @@ Tudo o que um consumidor precisa sai deste pacote, então nunca é necessário i
 | Input | Tipo | Padrão | Descrição |
 | --- | --- | --- | --- |
 | `ariaLabel` | `string` | `'Stories player'` | Nome acessível da região de diálogo; os leitores de tela o anunciam quando o overlay abre |
+| `chromePlacement` | `'overlay' \| 'group'` | `'overlay'` | Onde ficam a barra de progresso e o cabeçalho. `'overlay'` desenha uma cópia acima do player; `'group'` desenha uma em cada slide de grupo, e os dois giram junto com o grupo. O tipo é exportado como `ChromePlacement`. |
 | `defaultImageDuration` | `number` | `5000` | Duração do avanço automático de uma story de imagem, em milissegundos |
 | `desktopLayout` | `'single' \| 'carousel'` | `'single'` | Layout no desktop. `'carousel'` mostra os grupos vizinhos como cards de prévia ao lado da story ativa e desliza entre grupos. Celulares sempre mostram a story sozinha. O tipo é exportado como `DesktopLayout`. |
 | `enableKeyboard` | `boolean` | `true` | Ativa a navegação por teclado (setas esquerda/direita, Escape) |
@@ -343,7 +357,7 @@ Aceita todos os inputs acima menos o trio de estado de abertura — `isOpen`, `i
 
 ## Tipos de contexto dos slots [#template-slot-context-types]
 
-Todos os tipos de contexto são exportados, para anotar um slot onde o compilador não consegue inferir — `StoriesSlideContext`, `StoriesHeaderContext`, `StoriesFooterContext`, `StoriesProgressBarContext`, `StoriesNavigationContext`, `StoriesLoadingContext`, `StoriesErrorContext` e `StoriesGroupPreviewContext`, junto com `StoriesNavigationActions`, `DesktopLayout` e `StoriesApi`:
+Todos os tipos de contexto são exportados, para anotar um slot onde o compilador não consegue inferir — `StoriesSlideContext`, `StoriesHeaderContext`, `StoriesFooterContext`, `StoriesProgressBarContext`, `StoriesNavigationContext`, `StoriesLoadingContext`, `StoriesErrorContext` e `StoriesGroupPreviewContext`, junto com `StoriesNavigationActions`, `DesktopLayout`, `ChromePlacement` e `StoriesApi`:
 
 <CodeBlock code={slotContexts} language="typescript" />
 
@@ -358,7 +372,7 @@ Os nomes de classe são simples (sem escopo), então uma folha de estilos carreg
 | `.rk-stories-overlay--sliding` | Overlay | Deslize do carrossel em andamento; a tela do player fica escondida |
 | `.rk-stories-swipe-wrapper` | Overlay | Wrapper do deslize para fechar (abriga as setas e a tela) |
 | `.rk-stories-container` | Overlay | Tela arredondada da story (posição, overflow) |
-| `.rk-stories-ui-layer` | Overlay | Uma camada de interface sobre o player (cabeçalho, progresso, corações) |
+| `.rk-stories-ui-layer` | Overlay | Uma camada de interface sobre o player (cabeçalho, progresso, corações). Com `chromePlacement="group"`, uma dentro de cada slide de grupo (cabeçalho, progresso), e os corações ficam direto no player |
 | `.rk-stories-ui-layer--hidden` | Overlay | Interface escondida (alternada por `hideUIOnPause`) |
 | `.rk-stories-error` | Overlay | Estado de erro (ícone e texto centralizados) |
 | `.rk-stories-error-text` | Overlay | Texto da mensagem de erro |

@@ -15,6 +15,7 @@ import urlState3 from '../../snippets/stories-player/url-state-3.tsx?raw';
 import urlState4 from '../../snippets/stories-player/url-state-4.tsx?raw';
 import rememberingWhatWasSeen from '../../snippets/stories-player/remembering-what-was-seen.tsx?raw';
 import desktopCarousel from '../../snippets/stories-player/desktop-carousel.tsx?raw';
+import chromePlacement from '../../snippets/stories-player/chrome-placement.tsx?raw';
 import transitions from '../../snippets/stories-player/transitions.tsx?raw';
 import renderheader from '../../snippets/stories-player/renderheader.tsx?raw';
 import renderfooter from '../../snippets/stories-player/renderfooter.tsx?raw';
@@ -220,6 +221,18 @@ The `StoriesOverlay` рендерить повноекранний плеєр і
 - **Таймер чекає на ковзання.** Історія не перемикається, і `onStoryViewed` для неї не спрацьовує, доки картки не зупиняться.
 - **Ковзання вмикає будь-яка зміна групи**: клік по картці, `StoriesApi.goToGroup`, `nextGroup` і `prevGroup` та клавіші-стрілки за межею групи. Свайп пальцем рухає сам плеєр, тож ковзання поверх нього немає.
 
+## Смуга прогресу й шапка в кожній групі [#chrome-placement]
+
+Типово одна смуга прогресу й одна шапка лежать над плеєром і перемикаються на нову групу, щойно вона змінилася. Задайте `chromePlacement="group"`, щоб кожна група мала власні всередині свого слайда: тоді обидві повертаються разом із групою, як в Instagram.
+
+<CodeBlock code={chromePlacement} language="tsx" />
+
+- **Сусідня група показує, де вона зупинилася.** Поки плеєр повертається до неї, її смуга й шапка показують історію, з якої вона відкриється, ще без жодного перегляду.
+- **Група, яку покидають, лишається як була.** Її смуга тримає прогрес до кінця повороту, тож досмотрена група лишається заповненою, а не порожніє посеред повороту.
+- **Власні рендерери викликаються для кожної групи на екрані.** `renderProgressBar` і `renderHeader` отримують `groupIndex` та `isActive`; для сусідньої групи `isActive` дорівнює `false`, а сигнали прогресу не змінюються.
+- **Власна шапка лежить в області свайпу.** Дотик до неї перемикає історії, якщо він не влучив у `button`, посилання чи елемент із `role="button"`, тож усі елементи керування в ній мають бути саме такими.
+- **Десктопна карусель посеред ковзання не змінюється.** Поки картки ковзають, плеєр прихований, тож вибір видно, щойно група відкрилася.
+
 ## Довідник API [#api-reference]
 
 ### StoriesOverlayProps [#storiesoverlayprops]
@@ -244,8 +257,9 @@ The `StoriesOverlay` рендерить повноекранний плеєр і
 | `minSegmentWidth` | `number` | 8 | Мінімальна ширина сегмента смуги прогресу в пікселях |
 | `apiRef` | `MutableRefObject<StoriesApi \| null>` | - | Ref для доступу до імперативного StoriesApi |
 | `desktopLayout` | `'single' \| 'carousel'` | 'single' | Макет на десктопі. 'carousel' показує сусідні групи картками поруч з активною історією й ковзає між групами. На телефонах історія завжди показується сама. Тип експортується як `DesktopLayout`. |
+| `chromePlacement` | `'overlay' \| 'group'` | 'overlay' | Де живуть смуга прогресу й шапка. 'overlay' малює одну копію над плеєром; 'group' малює по одній у кожному слайді групи, тож обидві повертаються разом із групою. Тип експортується як `ChromePlacement`. |
 | `viewed` | `StoriesViewedStateController` | - | Що глядач уже бачив, із createStoriesViewedStateController(). Групи відновлюються на першій непереглянутій історії, кожну показану історію записано, а картки каруселі приглушують кільце групи, переглянутої до кінця. Передайте той самий контролер у StoriesRingList. |
-| `renderHeader` | `(props: HeaderRenderProps<T>) => ReactNode` | - | Власний рендерер шапки. Отримує автора, історію, стан паузи та звуку. |
+| `renderHeader` | `(props: HeaderRenderProps<T>) => ReactNode` | - | Власний рендерер шапки. Отримує автора, історію, стан паузи та звуку. З `chromePlacement="group"` шапка лежить в області свайпу; див. [Смуга прогресу й шапка в кожній групі](/docs/stories-player#chrome-placement). |
 | `renderFooter` | `(props: FooterRenderProps<T>) => ReactNode` | - | Власний рендерер підвала. Отримує дані автора та історії. |
 | `renderSlide` | `(props: SlideRenderProps<T>) => ReactNode` | - | Власний рендерер слайда, що замінює стандартні слайди із зображенням і відео. |
 | `renderNavigation` | `(props: NavigationRenderProps) => ReactNode` | - | Власна навігація для десктопа. Замінює стандартні кнопки-стрілки. |
@@ -391,7 +405,7 @@ The `groupTransition` керує 3D-ефектом переходу під ча�
 
 ### CanvasProgressBar [#canvasprogressbar]
 
-Швидка сегментована смуга прогресу на canvas. Рендерить сегмент для кожної історії й анімує заповнення активного через `requestAnimationFrame`. Підтримує рухоме вікно для груп із багатьма історіями.
+Швидка сегментована смуга прогресу на canvas. Рендерить сегмент для кожної історії й анімує заповнення активного через `requestAnimationFrame`. Підтримує рухоме вікно для груп із багатьма історіями. Передайте `live={false}` для смуги, яка лише показує, де зупинилася група: вона малюється, коли змінюються її сигнали, і після зміни розміру, без циклу анімації.
 
 <CodeBlock code={canvasprogressbar} language="tsx" />
 
@@ -496,7 +510,7 @@ Extend `StoryItem` власними полями й передайте пара�
 | `.rk-stories-overlay` | Overlay | Фіксоване повноекранне тло (фон, z-index) |
 | `.rk-stories-swipe-wrapper` | Overlay | Обгортка свайпу для закриття (містить кнопки навігації та canvas) |
 | `.rk-stories-container` | Overlay | Заокруглене полотно історії (позиція, переповнення) |
-| `.rk-stories-ui-layer` | Overlay | Контейнер інтерфейсу (шапка, прогрес, навігація) |
+| `.rk-stories-ui-layer` | Overlay | Контейнер інтерфейсу (шапка, прогрес, навігація). З `chromePlacement="group"` — у кожному слайді групи |
 | `.rk-stories-ui-layer--hidden` | Overlay | Стан прихованого інтерфейсу (перемикається через hideUIOnPause) |
 | `.rk-stories-error` | Overlay | Стан помилки (значок і текст по центру) |
 | `.rk-stories-error-text` | Overlay | Текст повідомлення про помилку |

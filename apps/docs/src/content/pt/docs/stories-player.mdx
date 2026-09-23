@@ -15,6 +15,7 @@ import urlState3 from '../../snippets/stories-player/url-state-3.tsx?raw';
 import urlState4 from '../../snippets/stories-player/url-state-4.tsx?raw';
 import rememberingWhatWasSeen from '../../snippets/stories-player/remembering-what-was-seen.tsx?raw';
 import desktopCarousel from '../../snippets/stories-player/desktop-carousel.tsx?raw';
+import chromePlacement from '../../snippets/stories-player/chrome-placement.tsx?raw';
 import transitions from '../../snippets/stories-player/transitions.tsx?raw';
 import renderheader from '../../snippets/stories-player/renderheader.tsx?raw';
 import renderfooter from '../../snippets/stories-player/renderfooter.tsx?raw';
@@ -220,6 +221,18 @@ Defina `desktopLayout="carousel"` para dispor o player como o Instagram na web: 
 - **O timer espera o deslize.** O story não avança, e `onStoryViewed` não dispara para ele, até os cards pararem de se mover.
 - **Toda forma de trocar de grupo desliza**: clique em um card, `StoriesApi.goToGroup`, `nextGroup` e `prevGroup` e as setas do teclado depois do fim de um grupo. Um deslize com o dedo já move o próprio player, então não ganha outro deslize por cima.
 
+## Barra de progresso e cabeçalho em cada grupo [#chrome-placement]
+
+Por padrão, uma barra de progresso e um cabeçalho ficam acima do player e passam para o novo grupo depois que ele muda. Defina `chromePlacement="group"` para dar a cada grupo os seus, dentro do próprio slide, e os dois giram junto com o grupo, como no Instagram.
+
+<CodeBlock code={chromePlacement} language="tsx" />
+
+- **Um grupo vizinho mostra onde parou.** Enquanto o player gira até ele, a barra e o cabeçalho mostram o story em que ele vai abrir, sem nada reproduzido ainda.
+- **O grupo que sai fica como estava.** A barra dele mantém o progresso até o giro terminar, então um grupo visto até o fim continua cheio em vez de se esvaziar no meio do giro.
+- **Renderizadores próprios são chamados para cada grupo na tela.** `renderProgressBar` e `renderHeader` recebem `groupIndex` e `isActive`; para um grupo vizinho `isActive` é `false` e os sinais de progresso ficam parados.
+- **Um cabeçalho próprio fica na área de swipe.** Um toque nele troca de story, a menos que caia em um `button`, um link ou um elemento com `role="button"`, então faça de cada controle um desses.
+- **O carrossel no desktop não muda durante o deslize.** O player fica oculto enquanto os cards deslizam, então a escolha aparece quando o grupo já está aberto.
+
 ## Referência da API [#api-reference]
 
 ### StoriesOverlayProps [#storiesoverlayprops]
@@ -244,8 +257,9 @@ Defina `desktopLayout="carousel"` para dispor o player como o Instagram na web: 
 | `minSegmentWidth` | `number` | 8 | Largura mínima, em pixels, de um segmento da barra de progresso |
 | `apiRef` | `MutableRefObject<StoriesApi \| null>` | - | Ref para alcançar a StoriesApi imperativa |
 | `desktopLayout` | `'single' \| 'carousel'` | 'single' | Layout no desktop. 'carousel' mostra os grupos vizinhos como cards de prévia ao lado do story ativo e desliza entre grupos. No celular o story sempre aparece sozinho. O tipo é exportado como `DesktopLayout`. |
+| `chromePlacement` | `'overlay' \| 'group'` | 'overlay' | Onde ficam a barra de progresso e o cabeçalho. 'overlay' desenha uma cópia acima do player; 'group' desenha uma em cada slide de grupo, e as duas giram junto com o grupo. O tipo é exportado como `ChromePlacement`. |
 | `viewed` | `StoriesViewedStateController` | - | O que o leitor já viu, vindo de createStoriesViewedStateController(). Os grupos são retomados no primeiro story não visto, cada story mostrado é registrado e os cards do carrossel apagam o anel de um grupo assistido até o fim. Passe o mesmo controlador para StoriesRingList. |
-| `renderHeader` | `(props: HeaderRenderProps<T>) => ReactNode` | - | Renderizador próprio do cabeçalho. Recebe autor, story e os estados de pausa e de som. |
+| `renderHeader` | `(props: HeaderRenderProps<T>) => ReactNode` | - | Renderizador próprio do cabeçalho. Recebe autor, story e os estados de pausa e de som. Com `chromePlacement="group"` o cabeçalho fica na área de swipe; veja [Barra de progresso e cabeçalho em cada grupo](/docs/stories-player#chrome-placement). |
 | `renderFooter` | `(props: FooterRenderProps<T>) => ReactNode` | - | Renderizador próprio do rodapé. Recebe os dados do autor e do story. |
 | `renderSlide` | `(props: SlideRenderProps<T>) => ReactNode` | - | Renderizador próprio do slide, no lugar dos slides padrão de imagem e vídeo. |
 | `renderNavigation` | `(props: NavigationRenderProps) => ReactNode` | - | Navegação própria no desktop. Substitui os botões padrão de avançar e voltar. |
@@ -391,7 +405,7 @@ Blocos reutilizáveis exportados para você compor dentro das suas render props:
 
 ### CanvasProgressBar [#canvasprogressbar]
 
-Barra de progresso segmentada em canvas, de alto desempenho. Desenha um segmento por story e anima o preenchimento do segmento ativo com `requestAnimationFrame`. Aceita uma janela deslizante para grupos com muitos stories.
+Barra de progresso segmentada em canvas, de alto desempenho. Desenha um segmento por story e anima o preenchimento do segmento ativo com `requestAnimationFrame`. Aceita uma janela deslizante para grupos com muitos stories. Passe `live={false}` para uma barra que só precisa mostrar onde um grupo parou: ela desenha quando os sinais mudam e depois de um redimensionamento, sem loop de animação.
 
 <CodeBlock code={canvasprogressbar} language="tsx" />
 
@@ -496,7 +510,7 @@ Todas as classes CSS são simples (não são CSS modules), então dá para alcan
 | `.rk-stories-overlay` | Overlay | Fundo fixo em tela cheia (cor de fundo, z-index) |
 | `.rk-stories-swipe-wrapper` | Overlay | Invólucro do deslizar para fechar (abriga os botões de navegação e o canvas) |
 | `.rk-stories-container` | Overlay | Área arredondada do story (posição, transbordo) |
-| `.rk-stories-ui-layer` | Overlay | Contêiner da interface sobreposta (cabeçalho, progresso, navegação) |
+| `.rk-stories-ui-layer` | Overlay | Contêiner da interface sobreposta (cabeçalho, progresso, navegação). Dentro de cada slide de grupo com `chromePlacement="group"` |
 | `.rk-stories-ui-layer--hidden` | Overlay | Estado de interface escondida (alternado por hideUIOnPause) |
 | `.rk-stories-error` | Overlay | Estado de erro (ícone e texto centralizados) |
 | `.rk-stories-error-text` | Overlay | Texto da mensagem de erro |

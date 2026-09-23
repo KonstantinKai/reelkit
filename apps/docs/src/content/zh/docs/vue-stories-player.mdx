@@ -12,6 +12,7 @@ import urlState2 from '../../snippets/vue-stories-player/url-state-2.ts?raw';
 import urlState3 from '../../snippets/vue-stories-player/url-state-3.ts?raw';
 import rememberingWhatWasSeen from '../../snippets/vue-stories-player/remembering-what-was-seen.vue?raw';
 import desktopCarousel from '../../snippets/vue-stories-player/desktop-carousel.vue?raw';
+import chromePlacement from '../../snippets/vue-stories-player/chrome-placement.vue?raw';
 import transitions from '../../snippets/vue-stories-player/transitions.vue?raw';
 import scopedSlots from '../../snippets/vue-stories-player/scoped-slots.vue?raw';
 import slideSlot from '../../snippets/vue-stories-player/slide-slot.vue?raw';
@@ -184,6 +185,18 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 - **计时器会等待滑动结束。** 在卡片停止移动之前，故事不会前进，`story-viewed` 也不会为它触发。
 - **每一种切换分组的方式都会触发滑动**：点击卡片、`StoriesApi.goToGroup`、`nextGroup` 与 `prevGroup`，以及在分组末尾继续按方向键。触摸滑动本身已经移动了播放器，因此不会再叠加一次滑动。
 
+## 每个分组自带进度条和头部 [#chrome-placement]
+
+默认情况下，播放器上方只有一个进度条和一个头部，分组切换完成后才换成新分组的内容。设置 `chrome-placement="group"` 后，每个分组都在自己的幻灯片里拥有一份，二者会像 Instagram 那样随分组一起转动。
+
+<CodeBlock code={chromePlacement} language="vue" />
+
+- **相邻分组显示它停在哪里。** 播放器转向它时，它的进度条和头部显示它将打开的那个故事，尚未播放任何部分。
+- **正在离开的分组保持原样。** 它的进度条在转动结束前保留原有进度，所以一个已播完的分组会保持填满，而不会在转动中途清空。
+- **屏幕上的每个分组都会渲染这些插槽。** `#progressBar` 和 `#header` 的作用域带有 `groupIndex` 和 `isActive`；对相邻分组，`isActive` 为 `false`，进度信号保持不变。
+- **`#header` 插槽位于滑动区域内。** 点击它会切换故事，除非点在 `button`、链接或带 `role="button"` 的元素上，所以其中的每个控件都应是这几类元素之一。
+- **桌面端轮播在滑动过程中不受影响。** 卡片滑动时播放器是隐藏的，因此这个选项在分组打开后才会显现。
+
 ## API 参考 [#api-reference]
 
 ### StoriesOverlay 属性 [#storiesoverlay-props]
@@ -193,6 +206,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 | Prop | 类型 | 默认值 | 说明 |
 | --- | --- | --- | --- |
 | `aria-label` | `string` | `'Stories player'` | 对话框区域的无障碍名称；覆盖层打开时由屏幕阅读器朗读 |
+| `chrome-placement` | `'overlay' \| 'group'` | `'overlay'` | 进度条和头部放在哪里。`'overlay'` 在播放器上方绘制一份；`'group'` 在每个分组的幻灯片里各绘制一份，二者随分组一起转动。该类型以 `ChromePlacement` 导出。 |
 | `default-image-duration` | `number` | `5000` | 图片故事的自动播放时长，单位毫秒 |
 | `desktop-layout` | `'single' \| 'carousel'` | `'single'` | 桌面布局。`'carousel'` 会把相邻分组作为预览卡片显示在当前故事两侧，并在分组之间滑动。手机上始终只显示故事本身。该类型以 `DesktopLayout` 导出。 |
 | `enable-keyboard` | `boolean` | `true` | 启用键盘导航（左右方向键、Escape） |
@@ -248,10 +262,10 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 | #error | `{ story, storyIndex, groupIndex }` | 替换绘制在当前故事之上的内置「Content unavailable」面板 |
 | #footer | `{ author, story, storyIndex }` | 在当前分组的故事下方添加页脚 |
 | #groupPreview | `{ group, groupIndex, story, offset, viewedCount, onOpen }` | 填充桌面轮播卡片的内容；定位、缩放和滑动仍由播放器负责 |
-| #header | `{ author, story, storyIndex, isPaused, isMuted, isVideo, onToggleSound, onTogglePause, onClose }` | 替换默认头部（作者、暂停、声音、关闭） |
+| #header | `{ author, story, storyIndex, isPaused, isMuted, isVideo, groupIndex, isActive, onToggleSound, onTogglePause, onClose }` | 替换默认头部（作者、暂停、声音、关闭）。使用 `chrome-placement="group"` 时它位于滑动区域内，参见[每个分组自带进度条和头部](/docs/vue-stories-player#chrome-placement)。 |
 | #loading | `{ story, storyIndex, groupIndex }` | 在当前故事加载时替换默认的头部加载指示 |
 | #navigation | `{ onPrevStory, onNextStory, onPrevGroup, onNextGroup }` | 替换两侧的桌面箭头 |
-| #progressBar | `{ totalStories, activeIndex, progress, group }` | 替换 canvas 进度条。`activeIndex` 和 `progress` 是核心信号 —— 请用 `toVueRef` 桥接。 |
+| #progressBar | `{ totalStories, activeIndex, progress, group, groupIndex, isActive }` | 替换 canvas 进度条。`activeIndex` 和 `progress` 是核心信号 —— 请用 `toVueRef` 桥接。 |
 | #slide | `{ story, index, groupIndex, isActive, size, activeGroupIndex, activeStoryIndex, onDurationReady, onReady, onWaiting, onError, onEnded }` | 替换默认的图片与视频幻灯片 |
 
 <CodeBlock code={scopedSlots} language="vue" />
@@ -338,7 +352,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 
 | 组件 | 说明 |
 | --- | --- |
-| `CanvasProgressBar` | 基于 canvas 的分段进度条，直接由计时器信号绘制。故事很多的分组会启用滑动窗口。 |
+| `CanvasProgressBar` | 基于 canvas 的分段进度条，直接由计时器信号绘制。故事很多的分组会启用滑动窗口。传入 `:live="false"` 时只在信号变化和尺寸改变后重绘，没有动画循环。 |
 | `HeartAnimation` | 双击的爱心。动画结束时发出 `complete`，好让父组件把它移除。 |
 | `ImageStorySlide` | 使用 `object-fit: cover` 的满幅图片幻灯片，通过回调上报加载与错误。 |
 | `StoriesRing` | 带渐变圆环的圆形头像。两种状态：还有未看内容时旋转，全部看完后变为平色。发出 `click`。 |
@@ -390,7 +404,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 | `.rk-stories-overlay--sliding` | Overlay | 轮播滑动进行中；播放器画布被隐藏 |
 | `.rk-stories-swipe-wrapper` | Overlay | 下滑关闭的包装层（承载导航按钮与画布） |
 | `.rk-stories-container` | Overlay | 圆角的故事画布（定位、overflow） |
-| `.rk-stories-ui-layer` | Overlay | 界面容器（头部、进度） |
+| `.rk-stories-ui-layer` | Overlay | 界面容器（头部、进度）。使用 `chrome-placement="group"` 时位于每个分组的幻灯片内 |
 | `.rk-stories-ui-layer--hidden` | Overlay | 界面隐藏状态（由 `hide-ui-on-pause` 切换） |
 | `.rk-stories-error` | Overlay | 错误状态（居中的图标与文字） |
 | `.rk-stories-error-text` | Overlay | 错误提示文字 |

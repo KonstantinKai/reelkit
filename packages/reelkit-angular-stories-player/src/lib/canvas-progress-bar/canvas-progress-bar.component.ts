@@ -56,14 +56,26 @@ export class RkCanvasProgressBarComponent {
   /** Colours, sizes and spacing for the renderer. */
   readonly config = input<CanvasProgressRendererConfig>({});
 
+  /**
+   * Whether the bar redraws on every animation frame to follow a running
+   * timer. A bar that is not live draws only when its signals change or its
+   * container resizes, which is all a bar showing a paused group needs.
+   *
+   * @default true
+   */
+  readonly live = input(true);
+
   constructor() {
-    afterRenderEffect(() => {
-      // Only the segment count reshapes the bar. The two signals are read
-      // inside the loop, untracked, so a tick never restarts it.
+    afterRenderEffect((onCleanup) => {
+      // The effect restarts only when the bar is handed another story count,
+      // other signals or a different `live`. A timer tick changes what a
+      // signal holds, never which signal the input holds, so it never
+      // restarts the effect.
       const totalStories = this.totalStories();
+      const activeIndex = this.activeIndex();
+      const progress = this.progress();
+      const live = this.live();
       const canvas = untracked(() => this._canvasRef().nativeElement);
-      const activeIndex = untracked(() => this.activeIndex());
-      const progress = untracked(() => this.progress());
       const renderer = untracked(() =>
         createCanvasProgressRenderer(this.config()),
       );
@@ -73,24 +85,44 @@ export class RkCanvasProgressBarComponent {
       const draw = (): void =>
         renderer.draw(totalStories, activeIndex.value, progress.value);
 
-      let frame = 0;
-      const loop = (): void => {
-        draw();
-        frame = requestAnimationFrame(loop);
-      };
-
       const disposables = createDisposableList();
-      disposables.push(
-        reaction(() => [activeIndex], draw),
-        () => cancelAnimationFrame(frame),
-        renderer.dispose,
-      );
 
-      this._ngZone.runOutsideAngular(() => {
-        frame = requestAnimationFrame(loop);
-      });
+      if (live) {
+        let frame = 0;
+        const loop = (): void => {
+          draw();
+          frame = requestAnimationFrame(loop);
+        };
 
-      return () => disposables.dispose();
+        disposables.push(
+          reaction(() => [activeIndex], draw),
+          () => cancelAnimationFrame(frame),
+        );
+
+        this._ngZone.runOutsideAngular(() => {
+          frame = requestAnimationFrame(loop);
+        });
+      } else {
+        // Resizing the canvas clears it. This observer is created after the
+        // renderer's own, and observers are notified in the order they were
+        // created, so the bar is repainted after the renderer has measured.
+        const resizeObserver = new ResizeObserver(draw);
+        if (canvas.parentElement) resizeObserver.observe(canvas.parentElement);
+
+        disposables.push(
+          reaction(() => [activeIndex, progress], draw),
+          () => resizeObserver.disconnect(),
+        );
+
+        draw();
+      }
+
+      disposables.push(renderer.dispose);
+
+      // Angular ignores a function returned from this effect; cleanup has to
+      // be registered here, or the previous animation loop keeps painting the
+      // canvas.
+      onCleanup(disposables.dispose);
     });
   }
 }

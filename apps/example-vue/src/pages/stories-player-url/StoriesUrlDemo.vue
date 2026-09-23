@@ -9,6 +9,7 @@ import {
   urlIndexTwoAxisKey,
   base64UrlCodec,
   type DesktopLayout,
+  type ChromePlacement,
   type StoriesGroup,
   type TwoAxisIdentity,
   type TwoAxisPosition,
@@ -42,6 +43,7 @@ const props = defineProps<{
   hash: boolean;
   rememberSeen: boolean;
   desktopLayout: DesktopLayout;
+  chromePlacement: ChromePlacement;
 }>();
 
 const loaded = defineModel<StoriesGroup[]>('loaded', { required: true });
@@ -203,6 +205,7 @@ const openGroup = (groupIndex: number) =>
     :controller="stories"
     :groups="loaded"
     :desktop-layout="desktopLayout"
+    :chrome-placement="chromePlacement"
     :viewed="rememberSeen ? viewed : undefined"
   />
 </template>

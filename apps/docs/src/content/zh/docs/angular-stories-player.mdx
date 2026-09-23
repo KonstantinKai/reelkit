@@ -12,6 +12,7 @@ import urlState2 from '../../snippets/angular-stories-player/url-state-2.ts?raw'
 import urlState3 from '../../snippets/angular-stories-player/url-state-3.ts?raw';
 import rememberingWhatWasSeen from '../../snippets/angular-stories-player/remembering-what-was-seen.ts?raw';
 import desktopCarousel from '../../snippets/angular-stories-player/desktop-carousel.ts?raw';
+import chromePlacement from '../../snippets/angular-stories-player/chrome-placement.ts?raw';
 import transitions from '../../snippets/angular-stories-player/transitions.ts?raw';
 import templateSlots from '../../snippets/angular-stories-player/template-slots.ts?raw';
 import slideSlot from '../../snippets/angular-stories-player/slide-slot.ts?raw';
@@ -167,6 +168,18 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 
 <CodeBlock code={desktopCarousel} language="typescript" />
 
+## 每个分组自带进度条和头部 [#chrome-placement]
+
+默认情况下，播放器上方只有一个进度条和一个头部，分组切换完成后才换成新分组的内容。设置 `chromePlacement="group"` 后，每个分组都在自己的幻灯片里拥有一份，二者会像 Instagram 那样随分组一起转动。
+
+<CodeBlock code={chromePlacement} language="typescript" />
+
+- **相邻分组显示它停在哪里。** 播放器转向它时，它的进度条和头部显示它将打开的那个 Story，尚未播放任何部分。
+- **正在离开的分组保持原样。** 它的进度条在转动结束前保留原有进度，所以一个已播完的分组会保持填满，而不会在转动中途清空。
+- **屏幕上的每个分组都会渲染这些模板。** `rkStoriesProgressBar` 和 `rkStoriesHeader` 的上下文带有 `groupIndex` 和 `isActive`；对相邻分组，`isActive` 为 `false`，进度信号保持不变。
+- **`rkStoriesHeader` 模板位于滑动区域内。** 点击它会切换 Story，除非点在 `button`、链接或带 `role="button"` 的元素上，所以其中的每个控件都应是这几类元素之一。
+- **桌面端轮播在滑动过程中不受影响。** 卡片滑动时播放器是隐藏的，因此这个选项在分组打开后才会显现。
+
 ## 模板插槽 [#template-slots]
 
 八个 `ng-template` 指令可以替换播放器的任意部分。每个都会收到带类型的上下文，其中最常用的值作为隐式值——所以在头部插槽里，`let-author` 无需具名就能拿到作者。没有提供的插槽会保留内置的呈现。
@@ -176,10 +189,10 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 | `rkStoriesError` | `RkStoriesErrorDirective` | `{ $implicit: story, storyIndex, groupIndex }` | 替换内置的 "Content unavailable" 面板，绘制在当前 Story 之上 |
 | `rkStoriesFooter` | `RkStoriesFooterDirective` | `{ $implicit: story, author, storyIndex }` | 在当前 Story 下方加一个页脚；播放器本身不绘制页脚 |
 | `rkStoriesGroupPreview` | `RkStoriesGroupPreviewDirective` | `{ $implicit: group, groupIndex, story, offset, viewedCount, onOpen }` | 填充桌面轮播的卡片内容；定位、缩放和滑动仍由播放器负责 |
-| `rkStoriesHeader` | `RkStoriesHeaderDirective` | `{ $implicit: author, story, storyIndex, isPaused, isMuted, isVideo, onToggleSound, onTogglePause, onClose }` | 替换默认头部（作者、暂停、声音、关闭） |
+| `rkStoriesHeader` | `RkStoriesHeaderDirective` | `{ $implicit: author, story, storyIndex, isPaused, isMuted, isVideo, groupIndex, isActive, onToggleSound, onTogglePause, onClose }` | 替换默认头部（作者、暂停、声音、关闭）。使用 `chromePlacement="group"` 时它位于滑动区域内，参见[每个分组自带进度条和头部](/docs/angular-stories-player#chrome-placement)。 |
 | `rkStoriesLoading` | `RkStoriesLoadingDirective` | `{ $implicit: story, storyIndex, groupIndex }` | 替换当前 Story 加载时头部显示的默认加载指示 |
 | `rkStoriesNavigation` | `RkStoriesNavigationDirective` | `{ $implicit: { onPrevStory, onNextStory, onPrevGroup, onNextGroup } }` | 同时替换桌面端的两个箭头 |
-| `rkStoriesProgressBar` | `RkStoriesProgressBarDirective` | `{ $implicit: group, totalStories, activeIndex, progress }` | 替换 canvas 进度条。`activeIndex` 和 `progress` 是内核信号，请用 `toAngularSignal` 桥接。 |
+| `rkStoriesProgressBar` | `RkStoriesProgressBarDirective` | `{ $implicit: group, totalStories, activeIndex, progress, groupIndex, isActive }` | 替换 canvas 进度条。`activeIndex` 和 `progress` 是内核信号，请用 `toAngularSignal` 桥接。 |
 | `rkStoriesSlide` | `RkStoriesSlideDirective` | `{ $implicit: story, index, groupIndex, isActive, size, activeGroupIndex, activeStoryIndex, onDurationReady, onReady, onWaiting, onError, onEnded }` | 替换默认的图片与视频幻灯片 |
 
 <CodeBlock code={templateSlots} language="typescript" />
@@ -258,7 +271,7 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 
 | 组件 | 是什么 |
 | --- | --- |
-| `RkCanvasProgressBarComponent` | 直接由计时器信号绘制的 canvas 分段进度条。分组内 Story 很多时会处理滑动窗口。 |
+| `RkCanvasProgressBarComponent` | 直接由计时器信号绘制的 canvas 分段进度条。分组内 Story 很多时会处理滑动窗口。传入 `[live]="false"` 时只在信号变化和尺寸改变后重绘，没有动画循环。 |
 | `RkHeartAnimationComponent` | 双击的爱心。动画结束时发出 `(completed)`，父组件据此移除它。 |
 | `RkImageStorySlideComponent` | 使用 `object-fit: cover` 的整屏图片幻灯片，通过 output 上报加载与错误。 |
 | `RkStoriesRingComponent` | 带渐变圆环的圆形头像。两种状态：还有未看内容时旋转，全部看完后变为平直。发出 `(clicked)`。 |
@@ -294,6 +307,7 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 | 输入 | 类型 | 默认值 | 说明 |
 | --- | --- | --- | --- |
 | `ariaLabel` | `string` | `'Stories player'` | 对话框区域的无障碍名称；浮层打开时由屏幕阅读器朗读 |
+| `chromePlacement` | `'overlay' \| 'group'` | `'overlay'` | 进度条和头部放在哪里。`'overlay'` 在播放器上方绘制一份；`'group'` 在每个分组的幻灯片里各绘制一份，二者随分组一起转动。该类型以 `ChromePlacement` 导出。 |
 | `defaultImageDuration` | `number` | `5000` | 图片 Story 的自动翻页时长，单位毫秒 |
 | `desktopLayout` | `'single' \| 'carousel'` | `'single'` | 桌面布局。`'carousel'` 会把相邻分组作为预览卡片排在当前 Story 两侧，并在分组之间滑动。手机上始终只显示当前 Story。该类型以 `DesktopLayout` 导出。 |
 | `enableKeyboard` | `boolean` | `true` | 启用键盘操作（左右方向键、Escape） |
@@ -343,7 +357,7 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 
 ## 模板插槽上下文类型 [#template-slot-context-types]
 
-所有上下文类型都已导出，便于在编译器无法推断的地方为插槽标注类型——`StoriesSlideContext`、`StoriesHeaderContext`、`StoriesFooterContext`、`StoriesProgressBarContext`、`StoriesNavigationContext`、`StoriesLoadingContext`、`StoriesErrorContext` 和 `StoriesGroupPreviewContext`，以及 `StoriesNavigationActions`、`DesktopLayout` 和 `StoriesApi`：
+所有上下文类型都已导出，便于在编译器无法推断的地方为插槽标注类型——`StoriesSlideContext`、`StoriesHeaderContext`、`StoriesFooterContext`、`StoriesProgressBarContext`、`StoriesNavigationContext`、`StoriesLoadingContext`、`StoriesErrorContext` 和 `StoriesGroupPreviewContext`，以及 `StoriesNavigationActions`、`DesktopLayout`、`ChromePlacement` 和 `StoriesApi`：
 
 <CodeBlock code={slotContexts} language="typescript" />
 
@@ -358,7 +372,7 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 | `.rk-stories-overlay--sliding` | Overlay | 轮播滑动进行中；播放器画布被隐藏 |
 | `.rk-stories-swipe-wrapper` | Overlay | 下滑关闭的包装层（内含箭头与画布） |
 | `.rk-stories-container` | Overlay | 圆角的 Story 画布（position、overflow） |
-| `.rk-stories-ui-layer` | Overlay | 播放器之上的单层界面（头部、进度、爱心） |
+| `.rk-stories-ui-layer` | Overlay | 播放器之上的单层界面（头部、进度、爱心）。使用 `chromePlacement="group"` 时改为每个分组的幻灯片内各一层（头部、进度），爱心直接位于播放器中 |
 | `.rk-stories-ui-layer--hidden` | Overlay | 界面隐藏状态（由 `hideUIOnPause` 切换） |
 | `.rk-stories-error` | Overlay | 错误状态（居中的图标与文字） |
 | `.rk-stories-error-text` | Overlay | 错误信息文字 |

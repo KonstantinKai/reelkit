@@ -1470,3 +1470,265 @@ describe('StoriesOverlay desktop carousel', () => {
     expect(wrapper.emitted('close')).toHaveLength(1);
   });
 });
+
+describe('StoriesOverlay with the progress bar and header in each group', () => {
+  const story = (id: string) => ({
+    id,
+    mediaType: 'image' as const,
+    src: '',
+    duration: 4000,
+  });
+  const groups: StoriesGroup[] = [
+    {
+      author: { id: '1', name: 'Alice', avatar: 'alice.jpg' },
+      stories: [story('a1'), story('a2')],
+    },
+    {
+      author: { id: '2', name: 'Bob', avatar: 'bob.jpg' },
+      stories: [story('b1'), story('b2')],
+    },
+    {
+      author: { id: '3', name: 'Carol', avatar: 'carol.jpg' },
+      stories: [story('c1')],
+    },
+  ];
+
+  type Scope = Record<string, unknown> & {
+    groupIndex: number;
+    isActive: boolean;
+    totalStories?: number;
+    storyIndex?: number;
+    isPaused?: boolean;
+  };
+
+  // A group slide built by hand renders its own story Reel, so the last Reel
+  // rendered is not always the group one.
+  const groupReel = () =>
+    reels.renders.filter((render) => render.attrs['onAfterChange']).at(-1)!;
+
+  // The mocked Reel draws no slides, so a group slide is built by hand from
+  // the item slot the player hands it.
+  const groupSlide = (groupIndex: number) => {
+    const [group] = groupReel().slots['item']!({
+      index: groupIndex,
+      indexInRange: 0,
+      size: [400, 700],
+    });
+    return mount({ render: () => group }, { attachTo: document.body })
+      .element as HTMLElement;
+  };
+
+  const recorder = () => {
+    const scopes: Scope[] = [];
+    const latestFor = (groupIndex: number) =>
+      scopes.filter((scope) => scope.groupIndex === groupIndex).at(-1)!;
+    return { scopes, latestFor };
+  };
+
+  const recordingSlots = () => {
+    const bars = recorder();
+    const headers = recorder();
+    const slots: Slots = {
+      progressBar: (scope: never) => {
+        bars.scopes.push(scope);
+        return h('div', { class: 'custom-bar' });
+      },
+      header: (scope: never) => {
+        headers.scopes.push(scope);
+        return h('div', { class: 'custom-header' });
+      },
+    };
+    return { bars, headers, slots };
+  };
+
+  const signalValue = (scope: Scope, key: string) =>
+    (scope[key] as { value: number }).value;
+
+  const advance = async (ms: number) => {
+    vi.advanceTimersByTime(ms);
+    await nextTick();
+  };
+
+  beforeEach(() => {
+    vi.useFakeTimers({
+      toFake: ['setTimeout', 'clearTimeout', 'Date', 'performance'],
+    });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('keeps one progress bar and header above the player by default', () => {
+    open({ groups });
+
+    expect(document.querySelectorAll('.rk-stories-ui-layer')).toHaveLength(1);
+    const slide = groupSlide(0);
+    expect(slide.querySelector('.rk-stories-ui-layer')).toBeNull();
+    expect(slide.querySelector('.rk-stories-progress-bar')).toBeNull();
+    expect(slide.querySelector('.rk-stories-header')).toBeNull();
+  });
+
+  it('tells slots above the player which group they draw, as active', () => {
+    const { bars, headers, slots } = recordingSlots();
+    open({ groups, initialGroupIndex: 1 }, slots);
+
+    expect(bars.latestFor(1).isActive).toBe(true);
+    expect(headers.latestFor(1).isActive).toBe(true);
+  });
+
+  it('draws a progress bar and header inside every group slide', () => {
+    open({ groups, chromePlacement: 'group' });
+
+    expect(document.querySelector('.rk-stories-ui-layer')).toBeNull();
+    for (const [groupIndex, name] of [
+      [0, 'Alice'],
+      [1, 'Bob'],
+    ] as const) {
+      const slide = groupSlide(groupIndex);
+      expect(slide.querySelectorAll('.rk-stories-progress-bar')).toHaveLength(
+        1,
+      );
+      expect(slide.querySelectorAll('.rk-stories-header')).toHaveLength(1);
+      expect(slide.querySelector('.rk-stories-header-name')?.textContent).toBe(
+        name,
+      );
+    }
+  });
+
+  it('shows a neighbouring group where it will resume, with nothing played', () => {
+    const { bars, headers, slots } = recordingSlots();
+    open(
+      {
+        groups,
+        chromePlacement: 'group',
+        resumeStoryIndex: (groupIndex: number) => (groupIndex === 1 ? 1 : 0),
+      },
+      slots,
+    );
+
+    groupSlide(1);
+
+    const bar = bars.latestFor(1);
+    expect(bar.isActive).toBe(false);
+    expect(bar.totalStories).toBe(2);
+    expect(signalValue(bar, 'activeIndex')).toBe(1);
+    expect(signalValue(bar, 'progress')).toBe(0);
+    const header = headers.latestFor(1);
+    expect(header).toMatchObject({
+      isActive: false,
+      storyIndex: 1,
+      story: { id: 'b2' },
+      isPaused: false,
+    });
+  });
+
+  it('follows the running story in the active group', async () => {
+    const { bars, headers, slots } = recordingSlots();
+    const wrapper = open({ groups, chromePlacement: 'group' }, slots);
+    groupSlide(0);
+
+    await advance(1000);
+    const bar = bars.latestFor(0);
+    expect(bar.isActive).toBe(true);
+    expect(signalValue(bar, 'progress')).toBeCloseTo(0.25, 1);
+
+    apiOf(wrapper).nextStory();
+    await nextTick();
+    expect(signalValue(bar, 'activeIndex')).toBe(1);
+    expect(headers.latestFor(0).storyIndex).toBe(1);
+
+    apiOf(wrapper).pause();
+    await nextTick();
+    expect(headers.latestFor(0).isPaused).toBe(true);
+  });
+
+  it('hides the chrome of the active group during a long press', async () => {
+    open({ groups, chromePlacement: 'group' });
+    const slide = groupSlide(0);
+    const layer = () => slide.querySelector('.rk-stories-ui-layer')!;
+
+    (groupReel().attrs['onLongPress'] as () => void)();
+    await nextTick();
+    expect(layer().classList).toContain('rk-stories-ui-layer--hidden');
+
+    (groupReel().attrs['onLongPressEnd'] as () => void)();
+    await nextTick();
+    expect(layer().classList).not.toContain('rk-stories-ui-layer--hidden');
+  });
+
+  it('hands the new group the running bar once the group changes', async () => {
+    const { bars, slots } = recordingSlots();
+    const wrapper = open({ groups, chromePlacement: 'group' }, slots);
+    groupSlide(0);
+    groupSlide(1);
+    const running = bars.latestFor(0)['progress'];
+
+    apiOf(wrapper).nextGroup();
+    await nextTick();
+
+    const incoming = bars.latestFor(1);
+    expect(incoming.isActive).toBe(true);
+    expect(incoming['progress']).toBe(running);
+    expect(signalValue(incoming, 'progress')).toBe(0);
+    const outgoing = bars.latestFor(0);
+    expect(outgoing.isActive).toBe(false);
+    expect(outgoing['progress']).not.toBe(running);
+  });
+
+  it('keeps the group being left as it was while the player turns away from it', async () => {
+    const { bars, headers, slots } = recordingSlots();
+    const wrapper = open({ groups, chromePlacement: 'group' }, slots);
+    let finishTurn = noop;
+    groupReel().api.goTo.mockImplementation(
+      () => new Promise<void>((resolve) => (finishTurn = resolve)),
+    );
+    groupSlide(0);
+    apiOf(wrapper).nextStory();
+    await nextTick();
+    await advance(1000);
+
+    apiOf(wrapper).nextGroup();
+    await nextTick();
+
+    const turning = bars.latestFor(0);
+    expect(turning.isActive).toBe(false);
+    expect(signalValue(turning, 'activeIndex')).toBe(1);
+    expect(signalValue(turning, 'progress')).toBeCloseTo(0.25, 1);
+    expect(headers.latestFor(0).storyIndex).toBe(1);
+
+    finishTurn();
+    await flushPromises();
+
+    const resting = bars.latestFor(0);
+    expect(signalValue(resting, 'activeIndex')).toBe(1);
+    expect(signalValue(resting, 'progress')).toBe(0);
+  });
+
+  it('shows a group that played to its end as complete while the player turns away', async () => {
+    const { bars, slots } = recordingSlots();
+    open({ groups, initialStoryIndex: 1, chromePlacement: 'group' }, slots);
+    groupReel().api.goTo.mockImplementation(() => new Promise<void>(noop));
+    groupSlide(0);
+
+    await advance(4100);
+
+    const done = bars.latestFor(0);
+    expect(done.isActive).toBe(false);
+    expect(signalValue(done, 'progress')).toBe(1);
+  });
+
+  // A tap on a button inside the swipe area never reaches the tap zones; the
+  // gesture controller in the core package ignores interactive elements.
+  it('closes and pauses from the default header inside a group slide', async () => {
+    const wrapper = open({ groups, chromePlacement: 'group' });
+    const slide = groupSlide(0);
+
+    (slide.querySelector('[aria-label="Pause"]') as HTMLElement).click();
+    await nextTick();
+    expect(wrapper.emitted('pause')).toHaveLength(1);
+
+    (slide.querySelector('[aria-label="Close"]') as HTMLElement).click();
+    expect(wrapper.emitted('close')).toHaveLength(1);
+  });
+});

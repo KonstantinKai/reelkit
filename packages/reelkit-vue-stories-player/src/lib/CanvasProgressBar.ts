@@ -4,6 +4,7 @@ import {
   onMounted,
   onUnmounted,
   shallowRef,
+  watch,
   type ExtractPropTypes,
   type PropType,
 } from 'vue';
@@ -53,6 +54,15 @@ const canvasProgressBarProps = {
 
   /** Fill color of completed and active segments. */
   fillColor: { type: String, default: undefined },
+
+  /**
+   * Whether the bar redraws on every animation frame to follow a running
+   * timer. A bar that is not live draws only when its signals change or its
+   * container resizes, which is all a bar showing a paused group needs.
+   *
+   * @default true
+   */
+  live: { type: Boolean, default: true },
 };
 
 /** Public props interface for the {@link CanvasProgressBar} component. */
@@ -80,37 +90,70 @@ export const CanvasProgressBar = defineComponent({
       bgColor: props.bgColor,
       fillColor: props.fillColor,
     });
-    const disposables = createDisposableList();
-    let frame = 0;
+    let drawing = createDisposableList();
+    let attached = false;
+
+    const draw = () =>
+      renderer.draw(
+        props.totalStories,
+        props.activeIndex.value,
+        props.progress.value,
+      );
+
+    // Called on mount and again whenever the bar is handed other signals,
+    // another story count or a different `live`, so a still bar never keeps
+    // drawing from the signals it was first given.
+    const startDrawing = () => {
+      const canvas = canvasRef.value;
+      if (!canvas) return;
+      drawing.dispose();
+      drawing = createDisposableList();
+
+      if (props.live) {
+        let frame = 0;
+        const loop = () => {
+          draw();
+          frame = requestAnimationFrame(loop);
+        };
+        drawing.push(
+          reaction(() => [props.activeIndex], draw),
+          () => cancelAnimationFrame(frame),
+        );
+        frame = requestAnimationFrame(loop);
+        return;
+      }
+
+      // Resizing the canvas clears it. This observer is created after the
+      // renderer's own, and observers are notified in the order they were
+      // created, so the bar is repainted after the renderer has measured.
+      const resizeObserver = new ResizeObserver(draw);
+      if (canvas.parentElement) resizeObserver.observe(canvas.parentElement);
+      drawing.push(
+        reaction(() => [props.activeIndex, props.progress], draw),
+        () => resizeObserver.disconnect(),
+      );
+      draw();
+    };
+
+    watch(
+      () => [props.activeIndex, props.progress, props.totalStories, props.live],
+      () => {
+        if (attached) startDrawing();
+      },
+    );
 
     onMounted(() => {
       const canvas = canvasRef.value;
       if (!canvas) return;
-
       renderer.attach(canvas);
-
-      const draw = () =>
-        renderer.draw(
-          props.totalStories,
-          props.activeIndex.value,
-          props.progress.value,
-        );
-
-      const loop = () => {
-        draw();
-        frame = requestAnimationFrame(loop);
-      };
-
-      disposables.push(
-        reaction(() => [props.activeIndex], draw),
-        () => cancelAnimationFrame(frame),
-        renderer.dispose,
-      );
-
-      frame = requestAnimationFrame(loop);
+      attached = true;
+      startDrawing();
     });
 
-    onUnmounted(disposables.dispose);
+    onUnmounted(() => {
+      drawing.dispose();
+      renderer.dispose();
+    });
 
     return () =>
       h('div', { class: 'rk-stories-progress-bar' }, [

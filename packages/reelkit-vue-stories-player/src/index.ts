@@ -153,6 +153,7 @@ export type {
   LoadingSlotScope,
   ErrorSlotScope,
   DesktopLayout,
+  ChromePlacement,
   GroupPreviewSlotScope,
   StoriesApi,
 } from './lib/types';

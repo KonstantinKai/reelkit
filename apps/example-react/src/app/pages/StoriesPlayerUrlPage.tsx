@@ -5,6 +5,7 @@ import {
   StoriesUrlOverlay,
   createStoriesViewedStateController,
   type DesktopLayout,
+  type ChromePlacement,
   type StoriesGroup,
   type StoryItem,
 } from '@reelkit/react-stories-player';
@@ -29,6 +30,7 @@ import { persistedSignal } from '../components/persistedSignal';
 import { Segmented } from '../components/Segmented';
 import { RememberSeenSwitch } from '../components/RememberSeenSwitch';
 import { DesktopLayoutSwitch } from '../components/DesktopLayoutSwitch';
+import { ChromePlacementSwitch } from '../components/ChromePlacementSwitch';
 import { cdnUrl } from '@reelkit/example-data';
 import '@reelkit/react-stories-player/styles.css';
 
@@ -105,6 +107,7 @@ export function StoriesPlayerUrlPage() {
       hash,
       rememberSeen,
       desktopLayout,
+      chromePlacement,
     },
   ] = useState(() => {
     const allGroups = generateGroups();
@@ -128,6 +131,10 @@ export function StoriesPlayerUrlPage() {
       desktopLayout: persistedSignal<DesktopLayout>(
         'reelkit-stories-player-url-desktop-layout',
         'single',
+      ),
+      chromePlacement: persistedSignal<ChromePlacement>(
+        'reelkit-stories-player-url-chrome-placement',
+        'overlay',
       ),
     };
   });
@@ -232,6 +239,7 @@ export function StoriesPlayerUrlPage() {
                   />
                   <RememberSeenSwitch signal={rememberSeen} />
                   <DesktopLayoutSwitch signal={desktopLayout} />
+                  <ChromePlacementSwitch signal={chromePlacement} />
                 </div>
 
                 {/* Remount when the key shape changes so `useOverlayUrlState`
@@ -246,6 +254,7 @@ export function StoriesPlayerUrlPage() {
                   hash={h}
                   rememberSeen={rememberSeen}
                   desktopLayout={desktopLayout}
+                  chromePlacement={chromePlacement}
                 />
               </>
             );
@@ -265,6 +274,7 @@ function StoriesUrlDemo({
   hash,
   rememberSeen,
   desktopLayout,
+  chromePlacement,
 }: {
   allGroups: StoriesGroup<StoryItem>[];
   loaded: Signal<StoriesGroup<StoryItem>[]>;
@@ -274,6 +284,7 @@ function StoriesUrlDemo({
   hash: boolean;
   rememberSeen: Signal<boolean>;
   desktopLayout: Signal<DesktopLayout>;
+  chromePlacement: Signal<ChromePlacement>;
 }) {
   const adapter = useReactRouterUrlAdapter();
   const navigate = useNavigate();
@@ -459,12 +470,13 @@ function StoriesUrlDemo({
       {/* The same controller as the ring list: the carousel cards draw the
           same rings, groups resume where they were left, and every story
           shown is recorded. */}
-      <Observe signals={[loaded, desktopLayout, rememberSeen]}>
+      <Observe signals={[loaded, desktopLayout, chromePlacement, rememberSeen]}>
         {() => (
           <StoriesUrlOverlay<StoryItem>
             controller={stories}
             groups={loaded.value}
             desktopLayout={desktopLayout.value}
+            chromePlacement={chromePlacement.value}
             viewed={rememberSeen.value ? viewed : undefined}
           />
         )}

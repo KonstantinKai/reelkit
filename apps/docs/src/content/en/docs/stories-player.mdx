@@ -15,6 +15,7 @@ import urlState3 from '../../snippets/stories-player/url-state-3.tsx?raw';
 import urlState4 from '../../snippets/stories-player/url-state-4.tsx?raw';
 import rememberingWhatWasSeen from '../../snippets/stories-player/remembering-what-was-seen.tsx?raw';
 import desktopCarousel from '../../snippets/stories-player/desktop-carousel.tsx?raw';
+import chromePlacement from '../../snippets/stories-player/chrome-placement.tsx?raw';
 import transitions from '../../snippets/stories-player/transitions.tsx?raw';
 import renderheader from '../../snippets/stories-player/renderheader.tsx?raw';
 import renderfooter from '../../snippets/stories-player/renderfooter.tsx?raw';
@@ -220,6 +221,18 @@ Set `desktopLayout="carousel"` to lay the player out like the Instagram web view
 - **The timer waits for the slide.** The story does not advance, and `onStoryViewed` does not fire for it, until the cards have finished moving.
 - **Every way of changing group slides**: a card click, `StoriesApi.goToGroup`, `nextGroup` and `prevGroup`, and the arrow keys past the end of a group. A touch swipe moves the player itself, so it gets no slide on top.
 
+## Progress Bar and Header per Group [#chrome-placement]
+
+By default one progress bar and one header sit above the player and switch to the new group once it has changed. Set `chromePlacement="group"` to give every group its own, drawn inside its slide, so both turn with the group the way they do on Instagram.
+
+<CodeBlock code={chromePlacement} language="tsx" />
+
+- **A neighbouring group shows where it stands.** While the player turns to it, its bar and header show the story it will open on, with nothing of it played yet.
+- **The group being left holds still.** Its bar keeps the progress it had until the turn ends, so a group played to the end stays full rather than emptying mid-turn.
+- **Custom renderers are called for every group on screen.** `renderProgressBar` and `renderHeader` get `groupIndex` and `isActive`; for a neighbouring group `isActive` is `false` and the progress signals hold still.
+- **A custom header sits in the swipe area.** A tap on it moves between stories unless it lands on a `button`, a link, or an element with `role="button"`, so make every control in it one of those.
+- **The desktop carousel is unaffected mid-slide.** The player is hidden while the cards slide, so the choice shows once the group is open.
+
 ## API Reference [#api-reference]
 
 ### StoriesOverlayProps [#storiesoverlayprops]
@@ -244,8 +257,9 @@ Set `desktopLayout="carousel"` to lay the player out like the Instagram web view
 | `minSegmentWidth` | `number` | 8 | Minimum segment width in pixels for the progress bar |
 | `apiRef` | `MutableRefObject<StoriesApi \| null>` | - | Ref to access the imperative StoriesApi |
 | `desktopLayout` | `'single' \| 'carousel'` | 'single' | Desktop layout. 'carousel' shows neighbouring groups as preview cards beside the active story and slides between groups. Phones always show the story alone. The type is exported as `DesktopLayout`. |
+| `chromePlacement` | `'overlay' \| 'group'` | 'overlay' | Where the progress bar and header live. 'overlay' draws one copy above the player; 'group' draws one inside every group slide, so both turn with the group. The type is exported as `ChromePlacement`. |
 | `viewed` | `StoriesViewedStateController` | - | What the viewer has seen, from createStoriesViewedStateController(). Groups resume on their first unseen story, every story shown is recorded, and carousel cards mute the ring of a group watched to the end. Hand the same controller to StoriesRingList. |
-| `renderHeader` | `(props: HeaderRenderProps<T>) => ReactNode` | - | Custom header renderer. Receives author, story, pause/mute state. |
+| `renderHeader` | `(props: HeaderRenderProps<T>) => ReactNode` | - | Custom header renderer. Receives author, story, pause/mute state. With `chromePlacement="group"` it sits in the swipe area; see [Progress Bar and Header per Group](/docs/stories-player#chrome-placement). |
 | `renderFooter` | `(props: FooterRenderProps<T>) => ReactNode` | - | Custom footer renderer. Receives author and story info. |
 | `renderSlide` | `(props: SlideRenderProps<T>) => ReactNode` | - | Custom slide renderer, replacing the default image/video slides. |
 | `renderNavigation` | `(props: NavigationRenderProps) => ReactNode` | - | Custom desktop navigation. Replaces default prev/next chevron buttons. |
@@ -391,7 +405,7 @@ Reusable building blocks exported for composition in custom render props:
 
 ### CanvasProgressBar [#canvasprogressbar]
 
-High-performance canvas-based segmented progress bar. Renders segments for each story and animates the active segment fill via `requestAnimationFrame`. Supports a sliding window for groups with many stories.
+High-performance canvas-based segmented progress bar. Renders segments for each story and animates the active segment fill via `requestAnimationFrame`. Supports a sliding window for groups with many stories. Pass `live={false}` for a bar that only needs to show where a group stands: it draws when its signals change and after a resize, with no animation loop.
 
 <CodeBlock code={canvasprogressbar} language="tsx" />
 
@@ -496,7 +510,7 @@ All CSS classes are plain (not CSS modules), so they can be targeted with higher
 | `.rk-stories-overlay` | Overlay | Fixed full-screen backdrop (background, z-index) |
 | `.rk-stories-swipe-wrapper` | Overlay | Swipe-to-close wrapper (hosts nav buttons + canvas) |
 | `.rk-stories-container` | Overlay | Rounded story canvas (position, overflow) |
-| `.rk-stories-ui-layer` | Overlay | UI overlay container (header, progress, navigation) |
+| `.rk-stories-ui-layer` | Overlay | UI overlay container (header, progress, navigation). Inside every group slide with `chromePlacement="group"` |
 | `.rk-stories-ui-layer--hidden` | Overlay | UI hidden state (toggled by hideUIOnPause) |
 | `.rk-stories-error` | Overlay | Error state (centered icon + text) |
 | `.rk-stories-error-text` | Overlay | Error message text |

@@ -12,6 +12,7 @@ import urlState2 from '../../snippets/vue-stories-player/url-state-2.ts?raw';
 import urlState3 from '../../snippets/vue-stories-player/url-state-3.ts?raw';
 import rememberingWhatWasSeen from '../../snippets/vue-stories-player/remembering-what-was-seen.vue?raw';
 import desktopCarousel from '../../snippets/vue-stories-player/desktop-carousel.vue?raw';
+import chromePlacement from '../../snippets/vue-stories-player/chrome-placement.vue?raw';
 import transitions from '../../snippets/vue-stories-player/transitions.vue?raw';
 import scopedSlots from '../../snippets/vue-stories-player/scoped-slots.vue?raw';
 import slideSlot from '../../snippets/vue-stories-player/slide-slot.vue?raw';
@@ -184,6 +185,18 @@ Use `desktop-layout="carousel"` para dispor o player como o visualizador web do 
 - **O timer espera o deslize.** O story não avança, e `story-viewed` não dispara para ele, enquanto os cartões não terminam de se mover.
 - **Toda forma de trocar de grupo desliza**: clique num cartão, `StoriesApi.goToGroup`, `nextGroup` e `prevGroup`, e as setas do teclado além do fim de um grupo. Um deslize de toque move o próprio player, então não ganha um deslize por cima.
 
+## Barra de progresso e cabeçalho em cada grupo [#chrome-placement]
+
+Por padrão, uma barra de progresso e um cabeçalho ficam acima do player e passam para o novo grupo depois que ele muda. Defina `chrome-placement="group"` para dar a cada grupo os seus, dentro do próprio slide, e os dois giram junto com o grupo, como no Instagram.
+
+<CodeBlock code={chromePlacement} language="vue" />
+
+- **Um grupo vizinho mostra onde parou.** Enquanto o player gira até ele, a barra e o cabeçalho mostram o story em que ele vai abrir, sem nada reproduzido ainda.
+- **O grupo que sai fica como estava.** A barra dele mantém o progresso até o giro terminar, então um grupo visto até o fim continua cheio em vez de se esvaziar no meio do giro.
+- **Os slots são renderizados para cada grupo na tela.** Os escopos de `#progressBar` e `#header` trazem `groupIndex` e `isActive`; para um grupo vizinho `isActive` é `false` e os sinais de progresso ficam parados.
+- **Um slot `#header` fica na área de swipe.** Um toque nele troca de story, a menos que caia em um `button`, um link ou um elemento com `role="button"`, então faça de cada controle um desses.
+- **O carrossel no desktop não muda durante o deslize.** O player fica oculto enquanto os cartões deslizam, então a escolha aparece quando o grupo já está aberto.
+
 ## Referência da API [#api-reference]
 
 ### Props de StoriesOverlay [#storiesoverlay-props]
@@ -193,6 +206,7 @@ Use `desktop-layout="carousel"` para dispor o player como o visualizador web do 
 | Prop | Tipo | Padrão | Descrição |
 | --- | --- | --- | --- |
 | `aria-label` | `string` | `'Stories player'` | Nome acessível da região de diálogo; anunciado por leitores de tela quando o overlay abre |
+| `chrome-placement` | `'overlay' \| 'group'` | `'overlay'` | Onde ficam a barra de progresso e o cabeçalho. `'overlay'` desenha uma cópia acima do player; `'group'` desenha uma em cada slide de grupo, e os dois giram junto com o grupo. O tipo é exportado como `ChromePlacement`. |
 | `default-image-duration` | `number` | `5000` | Duração do avanço automático de um story em imagem, em milissegundos |
 | `desktop-layout` | `'single' \| 'carousel'` | `'single'` | Layout no desktop. `'carousel'` mostra grupos vizinhos como cartões ao lado do story ativo e desliza entre grupos. No celular o story aparece sempre sozinho. O tipo é exportado como `DesktopLayout`. |
 | `enable-keyboard` | `boolean` | `true` | Ativa a navegação por teclado (setas esquerda/direita, Escape) |
@@ -248,10 +262,10 @@ Oito slots com escopo substituem qualquer parte do player. Cada um recebe um obj
 | #error | `{ story, storyIndex, groupIndex }` | Substitui o painel interno "Content unavailable", desenhado sobre o story ativo |
 | #footer | `{ author, story, storyIndex }` | Acrescenta um rodapé sob o story do grupo ativo |
 | #groupPreview | `{ group, groupIndex, story, offset, viewedCount, onOpen }` | Preenche um cartão do carrossel; o player continua posicionando, escalando e deslizando o cartão |
-| #header | `{ author, story, storyIndex, isPaused, isMuted, isVideo, onToggleSound, onTogglePause, onClose }` | Substitui o cabeçalho padrão (autor, pausa, som, fechar) |
+| #header | `{ author, story, storyIndex, isPaused, isMuted, isVideo, groupIndex, isActive, onToggleSound, onTogglePause, onClose }` | Substitui o cabeçalho padrão (autor, pausa, som, fechar). Com `chrome-placement="group"` ele fica na área de swipe; veja [Barra de progresso e cabeçalho em cada grupo](/docs/vue-stories-player#chrome-placement). |
 | #loading | `{ story, storyIndex, groupIndex }` | Substitui o indicador padrão do cabeçalho enquanto o story ativo carrega |
 | #navigation | `{ onPrevStory, onNextStory, onPrevGroup, onNextGroup }` | Substitui as duas setas do desktop |
-| #progressBar | `{ totalStories, activeIndex, progress, group }` | Substitui a barra de progresso em canvas. `activeIndex` e `progress` são sinais do core — converta-os com `toVueRef`. |
+| #progressBar | `{ totalStories, activeIndex, progress, group, groupIndex, isActive }` | Substitui a barra de progresso em canvas. `activeIndex` e `progress` são sinais do core — converta-os com `toVueRef`. |
 | #slide | `{ story, index, groupIndex, isActive, size, activeGroupIndex, activeStoryIndex, onDurationReady, onReady, onWaiting, onError, onEnded }` | Substitui os slides padrão de imagem e vídeo |
 
 <CodeBlock code={scopedSlots} language="vue" />
@@ -338,7 +352,7 @@ Blocos exportados, para compor dentro dos slots ou usar sozinhos: `StoriesRing`,
 
 | Componente | O que é |
 | --- | --- |
-| `CanvasProgressBar` | A barra de progresso segmentada em canvas, desenhada direto dos sinais do timer. Cuida da janela deslizante em grupos com muitos stories. |
+| `CanvasProgressBar` | A barra de progresso segmentada em canvas, desenhada direto dos sinais do timer. Cuida da janela deslizante em grupos com muitos stories. Com `:live="false"` só desenha quando os sinais mudam e depois de um redimensionamento, sem loop de animação. |
 | `HeartAnimation` | O coração do toque duplo. Emite `complete` quando a animação termina, para o pai removê-lo. |
 | `ImageStorySlide` | Slide de imagem em tela cheia com `object-fit: cover`, relatando carga e erro por callbacks. |
 | `StoriesRing` | Avatar circular com o anel em gradiente. Dois estados: com algo por ver ele gira, visto até o fim fica liso. Emite `click`. |
@@ -390,7 +404,7 @@ As classes são simples (não têm escopo), então uma folha de estilos carregad
 | `.rk-stories-overlay--sliding` | Overlay | Deslize do carrossel em andamento; a tela do player fica escondida |
 | `.rk-stories-swipe-wrapper` | Overlay | Wrapper do deslizar para fechar (abriga os botões de navegação e a tela) |
 | `.rk-stories-container` | Overlay | Tela arredondada do story (posição, overflow) |
-| `.rk-stories-ui-layer` | Overlay | Contêiner da interface (cabeçalho, progresso) |
+| `.rk-stories-ui-layer` | Overlay | Contêiner da interface (cabeçalho, progresso). Dentro de cada slide de grupo com `chrome-placement="group"` |
 | `.rk-stories-ui-layer--hidden` | Overlay | Estado escondido da interface (alternado por `hide-ui-on-pause`) |
 | `.rk-stories-error` | Overlay | Estado de erro (ícone e texto centralizados) |
 | `.rk-stories-error-text` | Overlay | Texto da mensagem de erro |

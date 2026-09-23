@@ -5,6 +5,7 @@ import {
   StoriesRingList,
   createStoriesViewedStateController,
   type DesktopLayout,
+  type ChromePlacement,
   type SlideSlotScope,
 } from '@reelkit/vue-stories-player';
 import {
@@ -44,6 +45,10 @@ const rememberSeen = persistedRef('reelkit-stories-player-remember-seen', true);
 const desktopLayout = persistedRef<DesktopLayout>(
   'reelkit-stories-player-desktop-layout',
   'single',
+);
+const chromePlacement = persistedRef<ChromePlacement>(
+  'reelkit-stories-player-chrome-placement',
+  'overlay',
 );
 
 // What was seen is one controller, handed to the ring list and the player:
@@ -102,6 +107,7 @@ const openStories = (groupIndex: number) => {
         <StoriesSwitches
           v-model:remember-seen="rememberSeen"
           v-model:desktop-layout="desktopLayout"
+          v-model:chrome-placement="chromePlacement"
         />
       </div>
 
@@ -123,6 +129,7 @@ const openStories = (groupIndex: number) => {
       :viewed="rememberSeen ? viewed : undefined"
       :group-transition="transition"
       :desktop-layout="desktopLayout"
+      :chrome-placement="chromePlacement"
     >
       <template #slide="scope">
         <CustomStorySlide :scope="scope as SlideSlotScope<CustomStory>" />

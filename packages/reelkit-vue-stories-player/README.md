@@ -103,6 +103,7 @@ const openGroup = (index: number) => {
 | `innerTransitionDuration` | `number`                       | `200`            | Story crossfade duration (ms)                                                                          |
 | `minSegmentWidth`         | `number`                       | `8`              | Min progress segment width (px)                                                                        |
 | `desktopLayout`           | `'single' \| 'carousel'`       | `'single'`       | `'carousel'`: neighbouring groups as preview cards beside the story on desktop                         |
+| `chromePlacement`         | `'overlay' \| 'group'`         | `'overlay'`      | `'group'`: each group carries its own progress bar and header, turning with it like Instagram          |
 | `viewed`                  | `StoriesViewedStateController` | —                | From `createStoriesViewedStateController()`: resume, recording and muted card rings for watched groups |
 | `resumeStoryIndex`        | `(groupIndex) => number`       | —                | Where an unvisited group opens; wins over `viewed`                                                     |
 

@@ -31,7 +31,7 @@ import {
   RkStoriesGroupPreviewDirective,
 } from '../template-slots/stories-template-slots';
 import { attachViewedState } from '../viewed-state/attach-viewed-state';
-import type { DesktopLayout, StoriesApi } from '../types';
+import type { ChromePlacement, DesktopLayout, StoriesApi } from '../types';
 
 /**
  * Stories player whose open state lives in the URL.
@@ -79,6 +79,7 @@ import type { DesktopLayout, StoriesApi } from '../types';
       [hideUIOnPause]="hideUIOnPause()"
       [enableKeyboard]="enableKeyboard()"
       [desktopLayout]="desktopLayout()"
+      [chromePlacement]="chromePlacement()"
       [ariaLabel]="ariaLabel()"
       [viewed]="viewed()"
       [resumeStoryIndex]="resumeStoryIndex()"
@@ -127,6 +128,7 @@ export class RkStoriesUrlOverlayComponent<T extends StoryItem = StoryItem> {
   readonly hideUIOnPause = input(true);
   readonly enableKeyboard = input(true);
   readonly desktopLayout = input<DesktopLayout>('single');
+  readonly chromePlacement = input<ChromePlacement>('overlay');
   readonly ariaLabel = input('Stories player');
   readonly viewed = input<StoriesViewedStateController | undefined>(undefined);
   readonly resumeStoryIndex = input<

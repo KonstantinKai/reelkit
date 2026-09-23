@@ -12,6 +12,7 @@ import urlState2 from '../../snippets/vue-stories-player/url-state-2.ts?raw';
 import urlState3 from '../../snippets/vue-stories-player/url-state-3.ts?raw';
 import rememberingWhatWasSeen from '../../snippets/vue-stories-player/remembering-what-was-seen.vue?raw';
 import desktopCarousel from '../../snippets/vue-stories-player/desktop-carousel.vue?raw';
+import chromePlacement from '../../snippets/vue-stories-player/chrome-placement.vue?raw';
 import transitions from '../../snippets/vue-stories-player/transitions.vue?raw';
 import scopedSlots from '../../snippets/vue-stories-player/scoped-slots.vue?raw';
 import slideSlot from '../../snippets/vue-stories-player/slide-slot.vue?raw';
@@ -184,6 +185,18 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 - **タイマーはスライドを待ちます。** カードが動き終わるまで、ストーリーは進まず、`story-viewed` もそのストーリーについては発行されません。
 - **グループを変えるどの操作でもスライドします。** カードのクリック、`StoriesApi.goToGroup`、`nextGroup` と `prevGroup`、グループの端を越える矢印キーです。タッチのスワイプはプレイヤー自体を動かすので、その上にスライドは重なりません。
 
+## グループごとのプログレスバーとヘッダー [#chrome-placement]
+
+デフォルトでは、プログレスバーとヘッダーが 1 つずつプレーヤーの上にあり、グループが切り替わった後で新しいグループの表示に変わります。`chrome-placement="group"` を指定すると、各グループが自分のスライドの中に専用のプログレスバーとヘッダーを持ち、Instagram と同じようにグループと一緒に回転します。
+
+<CodeBlock code={chromePlacement} language="vue" />
+
+- **隣のグループは、どこまで見たかを表示します。** プレーヤーがそのグループへ回転している間、プログレスバーとヘッダーは、そのグループが開くストーリーを、まだ何も再生していない状態で表示します。
+- **離れていくグループはそのままの状態を保ちます。** 回転が終わるまでプログレスバーはそれまでの進み具合を保つので、最後まで見たグループは回転の途中で空にならず、満たされたままです。
+- **スロットは画面上のグループそれぞれに対して描かれます。** `#progressBar` と `#header` のスコープには `groupIndex` と `isActive` が含まれます。隣のグループでは `isActive` が `false` になり、進捗のシグナルは変化しません。
+- **`#header` スロットはスワイプ領域の中にあります。** ヘッダーをタップするとストーリーが切り替わります。ただし `button`、リンク、`role="button"` を持つ要素の上なら切り替わらないので、ヘッダー内の操作要素はすべてそのいずれかにしてください。
+- **デスクトップのカルーセルでは、スライド中の見た目は変わりません。** カードがスライドしている間はプレーヤーが隠れるため、この設定はグループが開いてから反映されます。
+
 ## API リファレンス [#api-reference]
 
 ### StoriesOverlay のプロパティ [#storiesoverlay-props]
@@ -193,6 +206,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 | Prop | 型 | 既定値 | 説明 |
 | --- | --- | --- | --- |
 | `aria-label` | `string` | `'Stories player'` | ダイアログ領域のアクセシブルな名前。オーバーレイが開くとスクリーンリーダーが読み上げます |
+| `chrome-placement` | `'overlay' \| 'group'` | `'overlay'` | プログレスバーとヘッダーを置く場所。`'overlay'` はプレーヤーの上に 1 つ描き、`'group'` はグループのスライドごとに 1 つ描くので、両方がグループと一緒に回転します。型は `ChromePlacement` として公開されています。 |
 | `default-image-duration` | `number` | `5000` | 画像ストーリーの自動送り時間（ミリ秒） |
 | `desktop-layout` | `'single' \| 'carousel'` | `'single'` | デスクトップでのレイアウト。`'carousel'` は隣のグループを表示中のストーリーの横にカードとして並べ、グループ間をスライドします。スマートフォンでは常にストーリーだけを表示します。型は `DesktopLayout` として公開されています。 |
 | `enable-keyboard` | `boolean` | `true` | キーボード操作（左右の矢印、Escape）を有効にします |
@@ -248,10 +262,10 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 | #error | `{ story, storyIndex, groupIndex }` | 表示中のストーリーの上に描かれる組み込みの「Content unavailable」パネルを差し替えます |
 | #footer | `{ author, story, storyIndex }` | 表示中のグループのストーリーの下にフッターを足します |
 | #groupPreview | `{ group, groupIndex, story, offset, viewedCount, onOpen }` | デスクトップのカルーセルのカードの中身を描きます。配置・拡縮・スライドは引き続きプレイヤーが行います |
-| #header | `{ author, story, storyIndex, isPaused, isMuted, isVideo, onToggleSound, onTogglePause, onClose }` | 既定のヘッダー（作者、一時停止、サウンド、閉じる）を差し替えます |
+| #header | `{ author, story, storyIndex, isPaused, isMuted, isVideo, groupIndex, isActive, onToggleSound, onTogglePause, onClose }` | 既定のヘッダー（作者、一時停止、サウンド、閉じる）を差し替えます。`chrome-placement="group"` ではスワイプ領域の中に入ります。[グループごとのプログレスバーとヘッダー](/docs/vue-stories-player#chrome-placement)を参照してください。 |
 | #loading | `{ story, storyIndex, groupIndex }` | 表示中のストーリーの読み込み中に出る、既定のヘッダーのスピナーを差し替えます |
 | #navigation | `{ onPrevStory, onNextStory, onPrevGroup, onNextGroup }` | デスクトップの左右の矢印をまとめて差し替えます |
-| #progressBar | `{ totalStories, activeIndex, progress, group }` | canvas のプログレスバーを差し替えます。`activeIndex` と `progress` は core のシグナルなので、`toVueRef` で橋渡ししてください。 |
+| #progressBar | `{ totalStories, activeIndex, progress, group, groupIndex, isActive }` | canvas のプログレスバーを差し替えます。`activeIndex` と `progress` は core のシグナルなので、`toVueRef` で橋渡ししてください。 |
 | #slide | `{ story, index, groupIndex, isActive, size, activeGroupIndex, activeStoryIndex, onDurationReady, onReady, onWaiting, onError, onEnded }` | 既定の画像・動画スライドを差し替えます |
 
 <CodeBlock code={scopedSlots} language="vue" />
@@ -338,7 +352,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 
 | コンポーネント | 説明 |
 | --- | --- |
-| `CanvasProgressBar` | タイマーのシグナルから直接描く、canvas の分割プログレスバー。ストーリーが多いグループではスライディングウィンドウを使います。 |
+| `CanvasProgressBar` | タイマーのシグナルから直接描く、canvas の分割プログレスバー。ストーリーが多いグループではスライディングウィンドウを使います。`:live="false"` にすると、アニメーションのループを持たず、シグナルが変わったときとサイズが変わった後にだけ描画します。 |
 | `HeartAnimation` | ダブルタップのハート。アニメーションが終わると `complete` を発行するので、親が取り除けます。 |
 | `ImageStorySlide` | `object-fit: cover` の全面画像スライド。読み込みとエラーをコールバックで知らせます。 |
 | `StoriesRing` | グラデーションのリングが付いた円形アバター。状態は 2 つで、未読が残っていれば回転し、見終わると平坦になります。`click` を発行します。 |
@@ -390,7 +404,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 | `.rk-stories-overlay--sliding` | Overlay | カルーセルのスライド中。プレイヤーの画面は隠れます |
 | `.rk-stories-swipe-wrapper` | Overlay | スワイプで閉じるためのラッパー（ナビゲーションボタンと画面を収めます） |
 | `.rk-stories-container` | Overlay | 角の丸いストーリーの画面（位置、overflow） |
-| `.rk-stories-ui-layer` | Overlay | UI のコンテナー（ヘッダー、プログレス） |
+| `.rk-stories-ui-layer` | Overlay | UI のコンテナー（ヘッダー、プログレス）。`chrome-placement="group"` では各グループのスライドの中にあります |
 | `.rk-stories-ui-layer--hidden` | Overlay | UI を隠した状態（`hide-ui-on-pause` が切り替えます） |
 | `.rk-stories-error` | Overlay | エラー状態（中央のアイコンとテキスト） |
 | `.rk-stories-error-text` | Overlay | エラーメッセージのテキスト |

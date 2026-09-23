@@ -12,6 +12,7 @@ import urlState2 from '../../snippets/vue-stories-player/url-state-2.ts?raw';
 import urlState3 from '../../snippets/vue-stories-player/url-state-3.ts?raw';
 import rememberingWhatWasSeen from '../../snippets/vue-stories-player/remembering-what-was-seen.vue?raw';
 import desktopCarousel from '../../snippets/vue-stories-player/desktop-carousel.vue?raw';
+import chromePlacement from '../../snippets/vue-stories-player/chrome-placement.vue?raw';
 import transitions from '../../snippets/vue-stories-player/transitions.vue?raw';
 import scopedSlots from '../../snippets/vue-stories-player/scoped-slots.vue?raw';
 import slideSlot from '../../snippets/vue-stories-player/slide-slot.vue?raw';
@@ -184,6 +185,18 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 - **Таймер чекає на з’їзд карток.** Історія не гортається далі, а `story-viewed` для неї не спрацьовує, доки картки не доїхали.
 - **Кожен спосіб змінити групу дає з’їзд**: клік на картці, `StoriesApi.goToGroup`, `nextGroup` і `prevGroup`, а також стрілки за межею групи. Свайп рухає сам плеєр, тож з’їзду згори не отримує.
 
+## Смуга прогресу й заголовок у кожній групі [#chrome-placement]
+
+Типово одна смуга прогресу й один заголовок лежать над плеєром і перемикаються на нову групу, щойно вона змінилася. Задайте `chrome-placement="group"`, щоб кожна група мала власні всередині свого слайда: тоді обидва повертаються разом із групою, як в Instagram.
+
+<CodeBlock code={chromePlacement} language="vue" />
+
+- **Сусідня група показує, де вона зупинилася.** Поки плеєр повертається до неї, її смуга й заголовок показують історію, з якої вона відкриється, ще без жодного перегляду.
+- **Група, яку покидають, лишається як була.** Її смуга тримає прогрес до кінця повороту, тож досмотрена група лишається заповненою, а не порожніє посеред повороту.
+- **Слоти рендеряться для кожної групи на екрані.** Області видимості `#progressBar` і `#header` містять `groupIndex` та `isActive`; для сусідньої групи `isActive` дорівнює `false`, а сигнали прогресу не змінюються.
+- **Слот `#header` лежить в області свайпу.** Дотик до нього перемикає історії, якщо він не влучив у `button`, посилання чи елемент із `role="button"`, тож усі елементи керування в ньому мають бути саме такими.
+- **Десктопна карусель посеред ковзання не змінюється.** Поки картки ковзають, плеєр прихований, тож вибір видно, щойно група відкрилася.
+
 ## Довідник API [#api-reference]
 
 ### Пропси StoriesOverlay [#storiesoverlay-props]
@@ -193,6 +206,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 | Prop | Тип | Типове значення | Опис |
 | --- | --- | --- | --- |
 | `aria-label` | `string` | `'Stories player'` | Доступна назва області діалогу; екранні читачі оголошують її, коли оверлей відкривається |
+| `chrome-placement` | `'overlay' \| 'group'` | `'overlay'` | Де живуть смуга прогресу й заголовок. `'overlay'` малює одну копію над плеєром; `'group'` малює по одній у кожному слайді групи, тож обидва повертаються разом із групою. Тип експортується як `ChromePlacement`. |
 | `default-image-duration` | `number` | `5000` | Тривалість автопереходу для історії-зображення, у мілісекундах |
 | `desktop-layout` | `'single' \| 'carousel'` | `'single'` | Розклад на десктопі. `'carousel'` показує сусідніх авторів картками поруч з активною історією і з’їжджає між групами. На телефонах історія завжди сама. Тип експортовано як `DesktopLayout`. |
 | `enable-keyboard` | `boolean` | `true` | Вмикає навігацію клавіатурою (стрілки вліво/вправо, Escape) |
@@ -248,10 +262,10 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 | #error | `{ story, storyIndex, groupIndex }` | Замінює вбудовану панель «Content unavailable», намальовану поверх активної історії |
 | #footer | `{ author, story, storyIndex }` | Додає підвал під історією активної групи |
 | #groupPreview | `{ group, groupIndex, story, offset, viewedCount, onOpen }` | Наповнює картку десктопної каруселі; плеєр і далі розміщує, масштабує та з’їжджає нею |
-| #header | `{ author, story, storyIndex, isPaused, isMuted, isVideo, onToggleSound, onTogglePause, onClose }` | Замінює типовий заголовок (автор, пауза, звук, закриття) |
+| #header | `{ author, story, storyIndex, isPaused, isMuted, isVideo, groupIndex, isActive, onToggleSound, onTogglePause, onClose }` | Замінює типовий заголовок (автор, пауза, звук, закриття). З `chrome-placement="group"` він лежить в області свайпу; див. [Смуга прогресу й заголовок у кожній групі](/docs/vue-stories-player#chrome-placement). |
 | #loading | `{ story, storyIndex, groupIndex }` | Замінює типовий індикатор у заголовку, поки активна історія вантажиться |
 | #navigation | `{ onPrevStory, onNextStory, onPrevGroup, onNextGroup }` | Замінює обидві десктопні стрілки |
-| #progressBar | `{ totalStories, activeIndex, progress, group }` | Замінює смугу прогресу на canvas. `activeIndex` і `progress` — сигнали ядра, тож проведіть їх через `toVueRef`. |
+| #progressBar | `{ totalStories, activeIndex, progress, group, groupIndex, isActive }` | Замінює смугу прогресу на canvas. `activeIndex` і `progress` — сигнали ядра, тож проведіть їх через `toVueRef`. |
 | #slide | `{ story, index, groupIndex, isActive, size, activeGroupIndex, activeStoryIndex, onDurationReady, onReady, onWaiting, onError, onEnded }` | Замінює типові слайди із зображенням і відео |
 
 <CodeBlock code={scopedSlots} language="vue" />
@@ -338,7 +352,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 
 | Компонент | Що це |
 | --- | --- |
-| `CanvasProgressBar` | Сегментована смуга прогресу на canvas, намальована просто з сигналів таймера. Тримає рухоме вікно для груп із багатьма історіями. |
+| `CanvasProgressBar` | Сегментована смуга прогресу на canvas, намальована просто з сигналів таймера. Тримає рухоме вікно для груп із багатьма історіями. З `:live="false"` малюється лише при зміні сигналів і після зміни розміру, без циклу анімації. |
 | `HeartAnimation` | Серце подвійного дотику. Випускає `complete`, коли анімація закінчується, щоб батьківський компонент його прибрав. |
 | `ImageStorySlide` | Слайд-зображення на весь екран з `object-fit: cover`, що повідомляє про завантаження й помилку колбеками. |
 | `StoriesRing` | Круглий аватар із градієнтним кільцем. Два стани: є що дивитися — кільце обертається, усе переглянуто — стає рівним. Випускає `click`. |
@@ -390,7 +404,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 | `.rk-stories-overlay--sliding` | Overlay | Триває з’їзд каруселі; полотно плеєра сховане |
 | `.rk-stories-swipe-wrapper` | Overlay | Обгортка свайпу для закриття (тримає кнопки навігації та полотно) |
 | `.rk-stories-container` | Overlay | Заокруглене полотно історії (позиція, overflow) |
-| `.rk-stories-ui-layer` | Overlay | Контейнер інтерфейсу (заголовок, прогрес) |
+| `.rk-stories-ui-layer` | Overlay | Контейнер інтерфейсу (заголовок, прогрес). З `chrome-placement="group"` — у кожному слайді групи |
 | `.rk-stories-ui-layer--hidden` | Overlay | Схований стан інтерфейсу (перемикає `hide-ui-on-pause`) |
 | `.rk-stories-error` | Overlay | Стан помилки (іконка й текст по центру) |
 | `.rk-stories-error-text` | Overlay | Текст повідомлення про помилку |

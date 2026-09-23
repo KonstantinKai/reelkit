@@ -32,6 +32,16 @@ export interface HeaderRenderProps<T extends StoryItem = StoryItem> {
   /** Gate a sound control on this: an image story has nothing to unmute. */
   isVideo: boolean;
 
+  /** Zero-based index of the group this header belongs to. */
+  groupIndex: number;
+
+  /**
+   * False for the header of a neighbouring group, drawn while the player turns
+   * to it or away from it with `chromePlacement="group"`. Such a header shows
+   * where that group stands; its actions still act on the active story.
+   */
+  isActive: boolean;
+
   /** The same action the default header's sound button takes. */
   onToggleSound: () => void;
 
@@ -167,7 +177,25 @@ export interface ProgressBarRenderProps<T extends StoryItem = StoryItem> {
 
   /** Current group. */
   group: StoriesGroup<T>;
+
+  /** Zero-based index of that group. */
+  groupIndex: number;
+
+  /**
+   * False for the bar of a neighbouring group, drawn while the player turns to
+   * it or away from it with `chromePlacement="group"`. Its signals then hold
+   * still: the story the group stands on, and how far that story had played.
+   */
+  isActive: boolean;
 }
+
+/**
+ * Where the progress bar and the header live. `'overlay'` draws one copy above
+ * the player that switches to the new group when the group changes.
+ * `'group'` gives every group its own copy inside its slide, so both turn with
+ * the group the way they do on Instagram.
+ */
+export type ChromePlacement = 'overlay' | 'group';
 
 /**
  * How the player lays out on a desktop screen. `'single'` shows the active

@@ -38,6 +38,7 @@ describe('StoriesPlayerUrlPageComponent', () => {
       'Hash (stable id)',
       'Remember seen',
       'Desktop layout',
+      'Progress & header',
     ]);
   });
 

@@ -264,6 +264,27 @@ const [viewed] = useState(() =>
 - `renderGroupPreview` replaces a card's content; it gets `{ group, groupIndex, story, offset, viewedCount, onOpen }` (`GroupPreviewRenderProps<T>`), and the player still positions and slides the card.
 - Default cards are buttons labelled "Open stories by {name}", after the player controls in tab order, out of it during a slide.
 
+## Progress Bar and Header per Group
+
+Default: one progress bar and header above the player, switching to the new group once it has changed. `chromePlacement="group"` gives every group its own inside its slide, so both turn with the group (Instagram).
+
+```tsx
+// Every group carries its own progress bar and header, so both turn with the
+// group instead of switching above the player once it has changed.
+<StoriesOverlay
+  isOpen={open}
+  onClose={() => setOpen(false)}
+  groups={groups}
+  chromePlacement="group"
+/>
+```
+
+- A neighbouring group shows the story it will open on, nothing played.
+- The group being left keeps its progress until the turn ends; one played to the end stays full.
+- `renderProgressBar` / `renderHeader` are called for every group on screen and get `groupIndex` + `isActive`; for a neighbour `isActive` is `false` and the progress signals hold still.
+- A custom header sits in the swipe area: a tap on it moves between stories unless it hits a `button`, a link, or `role="button"`.
+- Desktop carousel: the player is hidden while cards slide, so the choice shows once the group is open.
+
 ## StoriesOverlay Props
 
 `StoriesOverlayProps` — the controlled overlay's props. `onClose` is **required** here because you own the open state, so you must handle closing; the URL-driven `StoriesUrlOverlay` makes it optional (the URL drives closing).
@@ -286,20 +307,21 @@ const [viewed] = useState(() =>
 | `minSegmentWidth`         | `number`                               | `8`                                             | Min progress bar segment width (px)                                                                                                                                                                            |
 | `apiRef`                  | `MutableRefObject<StoriesApi \| null>` | -                                               | Ref for imperative StoriesApi                                                                                                                                                                                  |
 | `desktopLayout`           | `'single' \| 'carousel'`               | `'single'`                                      | Desktop layout; `'carousel'` = neighbouring group cards + slide. Phones: single. Type exported as `DesktopLayout`                                                                                              |
+| `chromePlacement`         | `'overlay' \| 'group'`                 | `'overlay'`                                     | Where progress bar + header live; `'group'` = one per group slide, turning with it. Type exported as `ChromePlacement`                                                                                         |
 | `viewed`                  | `StoriesViewedStateController`         | -                                               | From `createStoriesViewedStateController()`: groups resume on the first unseen story, every story shown is recorded, carousel cards mute a watched group's ring. Hand the same controller to `StoriesRingList` |
 
 ### Slot renderers
 
-| Prop                 | Type                                               | Description                                              |
-| -------------------- | -------------------------------------------------- | -------------------------------------------------------- |
-| `renderHeader`       | `(props: HeaderRenderProps<T>) => ReactNode`       | Custom header. Gets author, story, pause/mute state.     |
-| `renderFooter`       | `(props: FooterRenderProps<T>) => ReactNode`       | Custom footer. Gets author + story info.                 |
-| `renderSlide`        | `(props: SlideRenderProps<T>) => ReactNode`        | Custom slide. Replaces default image/video slides.       |
-| `renderNavigation`   | `(props: NavigationRenderProps) => ReactNode`      | Custom desktop nav. Replaces default prev/next chevrons. |
-| `renderProgressBar`  | `(props: ProgressBarRenderProps<T>) => ReactNode`  | Custom progress bar. Replaces default canvas bar.        |
-| `renderLoading`      | `(props: LoadingRenderProps<T>) => ReactNode`      | Custom loading UI. Default = header spinner.             |
-| `renderError`        | `(props: ErrorRenderProps<T>) => ReactNode`        | Custom error UI. Default = error icon overlay.           |
-| `renderGroupPreview` | `(props: GroupPreviewRenderProps<T>) => ReactNode` | Custom desktop carousel card content.                    |
+| Prop                 | Type                                               | Description                                                                      |
+| -------------------- | -------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `renderHeader`       | `(props: HeaderRenderProps<T>) => ReactNode`       | Custom header. Gets author, story, pause/mute state, `groupIndex`, `isActive`.   |
+| `renderFooter`       | `(props: FooterRenderProps<T>) => ReactNode`       | Custom footer. Gets author + story info.                                         |
+| `renderSlide`        | `(props: SlideRenderProps<T>) => ReactNode`        | Custom slide. Replaces default image/video slides.                               |
+| `renderNavigation`   | `(props: NavigationRenderProps) => ReactNode`      | Custom desktop nav. Replaces default prev/next chevrons.                         |
+| `renderProgressBar`  | `(props: ProgressBarRenderProps<T>) => ReactNode`  | Custom progress bar. Replaces default canvas bar. Gets `groupIndex`, `isActive`. |
+| `renderLoading`      | `(props: LoadingRenderProps<T>) => ReactNode`      | Custom loading UI. Default = header spinner.                                     |
+| `renderError`        | `(props: ErrorRenderProps<T>) => ReactNode`        | Custom error UI. Default = error icon overlay.                                   |
+| `renderGroupPreview` | `(props: GroupPreviewRenderProps<T>) => ReactNode` | Custom desktop carousel card content.                                            |
 
 ## Callbacks
 
@@ -338,15 +360,15 @@ const [viewed] = useState(() =>
 
 Reusable building blocks exported for composition in custom render props.
 
-| Component           | Description                                                                                                                                                                                      |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `CanvasProgressBar` | Canvas-based segmented progress bar. Renders one segment per story and animates the active segment fill via `requestAnimationFrame`. Supports a sliding window for groups with many stories.     |
-| `StoryHeader`       | Default header with author avatar, name, verified badge, relative timestamp, pause/play toggle, mute/unmute toggle, loading spinner, and close button. Used when `renderHeader` is not provided. |
-| `ImageStorySlide`   | Full-bleed image slide with `object-fit: cover`. Reports load/error via callbacks for lifecycle tracking.                                                                                        |
-| `VideoStorySlide`   | Video slide using a shared `<video>` element for iOS sound continuity. Handles autoplay, poster frames, sound sync, and reports duration and playback lifecycle events.                          |
-| `StoriesRing`       | Circular avatar with an Instagram-style gradient ring. Two states: a group with stories left to watch gets the rotating gradient, a fully watched one gets a flat muted ring.                    |
-| `StoriesRingList`   | Horizontal scrollable row of `StoriesRing` components with author names. One ring per group.                                                                                                     |
-| `HeartAnimation`    | Animated heart overlay triggered on double-tap. Scales up and fades out over 800ms. Customise via CSS.                                                                                           |
+| Component           | Description                                                                                                                                                                                                                                                            |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CanvasProgressBar` | Canvas-based segmented progress bar. Renders one segment per story and animates the active segment fill via `requestAnimationFrame`. Supports a sliding window for groups with many stories. `live={false}`: draws only on signal change or resize, no animation loop. |
+| `StoryHeader`       | Default header with author avatar, name, verified badge, relative timestamp, pause/play toggle, mute/unmute toggle, loading spinner, and close button. Used when `renderHeader` is not provided.                                                                       |
+| `ImageStorySlide`   | Full-bleed image slide with `object-fit: cover`. Reports load/error via callbacks for lifecycle tracking.                                                                                                                                                              |
+| `VideoStorySlide`   | Video slide using a shared `<video>` element for iOS sound continuity. Handles autoplay, poster frames, sound sync, and reports duration and playback lifecycle events.                                                                                                |
+| `StoriesRing`       | Circular avatar with an Instagram-style gradient ring. Two states: a group with stories left to watch gets the rotating gradient, a fully watched one gets a flat muted ring.                                                                                          |
+| `StoriesRingList`   | Horizontal scrollable row of `StoriesRing` components with author names. One ring per group.                                                                                                                                                                           |
+| `HeartAnimation`    | Animated heart overlay triggered on double-tap. Scales up and fades out over 800ms. Customise via CSS.                                                                                                                                                                 |
 
 ```tsx
 import {

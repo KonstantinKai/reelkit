@@ -9,6 +9,10 @@ interface PageInternals {
     (): 'single' | 'carousel';
     set: (layout: 'single' | 'carousel') => void;
   };
+  chromePlacement: {
+    (): 'overlay' | 'group';
+    set: (placement: 'overlay' | 'group') => void;
+  };
   rememberSeen: { (): boolean; set: (remember: boolean) => void };
   groups: { (): unknown[] };
 }
@@ -71,6 +75,18 @@ describe('StoriesPlayerPageComponent', () => {
       TestBed.configureTestingModule({ imports: [StoriesPlayerPageComponent] });
 
       expect(createPage().page.desktopLayout()).toBe('carousel');
+    });
+
+    it('keeps where the progress bar and header live where it was left', () => {
+      const first = createPage();
+      first.page.chromePlacement.set('group');
+      first.fixture.detectChanges();
+      first.fixture.destroy();
+
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({ imports: [StoriesPlayerPageComponent] });
+
+      expect(createPage().page.chromePlacement()).toBe('group');
     });
   });
 

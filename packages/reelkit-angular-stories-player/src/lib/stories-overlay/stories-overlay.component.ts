@@ -27,6 +27,7 @@ import {
 import { attachViewedState } from '../viewed-state/attach-viewed-state';
 import type {
   DesktopLayout,
+  ChromePlacement,
   StoriesApi,
   StoriesErrorContext,
   StoriesGroupPreviewContext,
@@ -73,6 +74,7 @@ import type {
         [hideUIOnPause]="hideUIOnPause()"
         [enableKeyboard]="enableKeyboard()"
         [desktopLayout]="desktopLayout()"
+        [chromePlacement]="chromePlacement()"
         [slideTemplate]="slideTpl()"
         [headerTemplate]="headerTpl()"
         [footerTemplate]="footerTpl()"
@@ -200,6 +202,22 @@ export class RkStoriesOverlayComponent<T extends StoryItem = StoryItem> {
    * @default 'single'
    */
   readonly desktopLayout = input<DesktopLayout>('single');
+
+  /**
+   * Where the progress bar and the header live. `'overlay'` draws one copy
+   * above the player, which switches to the new group once the group changes.
+   * `'group'` gives each group its own copy inside its slide, so the bar and
+   * the header turn with the group, the way Instagram does it; a neighbouring
+   * group shows where it stands. The desktop carousel hides the player while
+   * its cards slide, so there the choice shows only once a group is open.
+   *
+   * With `'group'` a header template sits inside the swipe area, and a tap on
+   * it moves between stories unless it lands on a `button`, a link, or an
+   * element with `role="button"`.
+   *
+   * @default 'overlay'
+   */
+  readonly chromePlacement = input<ChromePlacement>('overlay');
 
   /**
    * The slide slot as a template rather than projected content. A wrapper

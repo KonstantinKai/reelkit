@@ -37,6 +37,7 @@ import {
   useSoundState,
   type GestureCommonEvent,
   type ReelExpose,
+  type Signal,
   type TransitionTransformFn,
   type TwoAxisPosition,
   type UrlStateController,
@@ -54,6 +55,7 @@ import {
 } from '@reelkit/stories-core';
 import type {
   DesktopLayout,
+  ChromePlacement,
   ErrorSlotScope,
   FooterSlotScope,
   GroupPreviewSlotScope,
@@ -155,6 +157,25 @@ const storiesSharedProps = {
   desktopLayout: {
     type: String as PropType<DesktopLayout>,
     default: 'single' as DesktopLayout,
+  },
+
+  /**
+   * Where the progress bar and the header live. `'overlay'` draws one copy
+   * above the player, which switches to the new group once the group changes.
+   * `'group'` gives each group its own copy inside its slide, so the bar and
+   * the header turn with the group, the way Instagram does it; a neighbouring
+   * group shows where it stands. The desktop carousel hides the player while
+   * its cards slide, so there the choice shows only once a group is open.
+   *
+   * With `'group'` a `header` slot sits inside the swipe area, and a tap on it
+   * moves between stories unless it lands on a `button`, a link, or an element
+   * with `role="button"`.
+   *
+   * @default 'overlay'
+   */
+  chromePlacement: {
+    type: String as PropType<ChromePlacement>,
+    default: 'overlay' as ChromePlacement,
   },
 
   /**
@@ -558,6 +579,12 @@ const StoriesContent = defineComponent({
       if (!carouselActive.value) endSlide();
     };
 
+    // How far the story of a group being turned away from had played, by
+    // group. The controller moves to the new group before the turn starts, and
+    // the timer resets right after, so a progress bar drawn inside the group
+    // being left would otherwise empty its segment while it is still in view.
+    const frozenProgress = createSignal<ReadonlyMap<number, number>>(new Map());
+
     // A touch swipe has already moved the player to the new group, so it gets
     // no slide on top.
     let changingByDrag = false;
@@ -568,7 +595,16 @@ const StoriesContent = defineComponent({
       activeGroupIndexNow = groupIndex;
 
       if (!carouselActive.value) {
-        outerReel?.goTo(groupIndex, true);
+        // A swipe has already turned the player, so only a turn still to come
+        // holds the group being left as it was.
+        const frozen: ReadonlyMap<number, number> =
+          previous !== groupIndex && !changingByDrag
+            ? new Map([[previous, timerCtrl.progress.value]])
+            : new Map();
+        frozenProgress.value = frozen;
+        outerReel?.goTo(groupIndex, true).then(() => {
+          if (frozenProgress.value === frozen) frozenProgress.value = new Map();
+        });
         return;
       }
 
@@ -1014,6 +1050,9 @@ const StoriesContent = defineComponent({
                 },
               )
             : null,
+          props.chromePlacement === 'group'
+            ? renderGroupChrome(groupIndex)
+            : null,
         ],
       );
 
@@ -1062,41 +1101,54 @@ const StoriesContent = defineComponent({
       );
     };
 
-    const renderProgress = () => {
-      const group = props.groups[activeGroupIndex.value];
+    const renderGroupProgress = (
+      groupIndex: number,
+      isActive: boolean,
+      activeIndex: Signal<number>,
+      progress: Signal<number>,
+    ) => {
+      const group = props.groups[groupIndex];
       if (!group) return null;
 
       const scope: ProgressBarSlotScope = {
         totalStories: group.stories.length,
-        activeIndex: activeStoryIndex,
-        progress: timerCtrl.progress,
+        activeIndex,
+        progress,
         group,
+        groupIndex,
+        isActive,
       };
       return slotOr('progressBar', scope, () =>
         h(CanvasProgressBar, {
           totalStories: group.stories.length,
-          activeIndex: activeStoryIndex,
-          progress: timerCtrl.progress,
+          activeIndex,
+          progress,
           minSegmentWidth: props.minSegmentWidth,
+          live: isActive,
         }),
       );
     };
 
-    const renderHeader = () => {
-      const groupIndex = activeGroupIndex.value;
-      const storyIndex = activeStoryIndex.value;
+    // A group that is not active shows the story it stands on, not playing.
+    const renderGroupHeader = (groupIndex: number, isActive: boolean) => {
       const group = props.groups[groupIndex];
       if (!group) return null;
+      const storyIndex = isActive
+        ? activeStoryIndex.value
+        : storiesCtrl.getLastStoryIndex(groupIndex);
       const story = group.stories[storyIndex];
       const isVideo = story?.mediaType === 'video';
+      const paused = isActive && isPaused.value;
 
       const scope: HeaderSlotScope = {
         author: group.author,
         story: story as StoryItem,
         storyIndex,
-        isPaused: isPaused.value,
+        isPaused: paused,
         isMuted: soundState.muted.value,
         isVideo,
+        groupIndex,
+        isActive,
         onToggleSound: soundState.toggle,
         onTogglePause: togglePause,
         onClose: close,
@@ -1106,16 +1158,75 @@ const StoriesContent = defineComponent({
           author: group.author,
           createdAt: story?.createdAt,
           onClose: close,
-          isPaused: isPaused.value,
+          isPaused: paused,
           onTogglePause: togglePause,
           isMuted: soundState.muted.value,
           onToggleSound: soundState.toggle,
           isVideo,
-          isLoading: loadingCtrl.isLoading.value,
-          isError: loadingCtrl.isError.value,
+          isLoading: isActive && loadingCtrl.isLoading.value,
+          isError: isActive && loadingCtrl.isError.value,
         }),
       );
     };
+
+    const renderProgress = () =>
+      renderGroupProgress(
+        activeGroupIndex.value,
+        true,
+        activeStoryIndex,
+        timerCtrl.progress,
+      );
+
+    const renderHeader = () => renderGroupHeader(activeGroupIndex.value, true);
+
+    const activeHeaderSignals = [
+      activeGroupIndex,
+      activeStoryIndex,
+      isPaused,
+      soundState.muted,
+      loadingCtrl.isLoading,
+      loadingCtrl.isError,
+    ];
+
+    const uiLayerClass = () => [
+      'rk-stories-ui-layer',
+      props.hideUiOnPause && longPressSignal.value
+        ? 'rk-stories-ui-layer--hidden'
+        : '',
+    ];
+
+    const renderGroupChrome = (groupIndex: number) =>
+      h(
+        Observe,
+        { signals: [longPressSignal, activeGroupIndex, frozenProgress] },
+        {
+          default: () => {
+            const isActive = activeGroupIndex.value === groupIndex;
+            return h('div', { class: uiLayerClass() }, [
+              isActive
+                ? renderGroupProgress(
+                    groupIndex,
+                    true,
+                    activeStoryIndex,
+                    timerCtrl.progress,
+                  )
+                : renderGroupProgress(
+                    groupIndex,
+                    false,
+                    createSignal(storiesCtrl.getLastStoryIndex(groupIndex)),
+                    createSignal(frozenProgress.value.get(groupIndex) ?? 0),
+                  ),
+              h(
+                Observe,
+                {
+                  signals: isActive ? activeHeaderSignals : [soundState.muted],
+                },
+                { default: () => renderGroupHeader(groupIndex, isActive) },
+              ),
+            ]);
+          },
+        },
+      );
 
     const renderCarousel = () => {
       if (!carouselActive.value) return null;
@@ -1212,45 +1323,27 @@ const StoriesContent = defineComponent({
                       { signals: [sizeSignal, carouselActive] },
                       { default: renderOuterReel },
                     ),
-                    h(
-                      Observe,
-                      { signals: [longPressSignal] },
-                      {
-                        default: () =>
-                          h(
-                            'div',
-                            {
-                              class: [
-                                'rk-stories-ui-layer',
-                                props.hideUiOnPause && longPressSignal.value
-                                  ? 'rk-stories-ui-layer--hidden'
-                                  : '',
-                              ],
-                            },
-                            [
-                              h(
-                                Observe,
-                                { signals: [activeGroupIndex] },
-                                { default: renderProgress },
-                              ),
-                              h(
-                                Observe,
-                                {
-                                  signals: [
-                                    activeGroupIndex,
-                                    activeStoryIndex,
-                                    isPaused,
-                                    soundState.muted,
-                                    loadingCtrl.isLoading,
-                                    loadingCtrl.isError,
-                                  ],
-                                },
-                                { default: renderHeader },
-                              ),
-                            ],
-                          ),
-                      },
-                    ),
+                    props.chromePlacement === 'overlay'
+                      ? h(
+                          Observe,
+                          { signals: [longPressSignal] },
+                          {
+                            default: () =>
+                              h('div', { class: uiLayerClass() }, [
+                                h(
+                                  Observe,
+                                  { signals: [activeGroupIndex] },
+                                  { default: renderProgress },
+                                ),
+                                h(
+                                  Observe,
+                                  { signals: activeHeaderSignals },
+                                  { default: renderHeader },
+                                ),
+                              ]),
+                          },
+                        )
+                      : null,
                     h(
                       Observe,
                       { signals: [heartsSignal] },

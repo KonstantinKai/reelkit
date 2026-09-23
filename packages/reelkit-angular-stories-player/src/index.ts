@@ -142,6 +142,7 @@ export type {
   StoriesErrorContext,
   StoriesGroupPreviewContext,
   DesktopLayout,
+  ChromePlacement,
   StoriesApi,
 } from './lib/types';
 

@@ -112,23 +112,24 @@ finds the same sound state the header button writes.
 
 ### rk-stories-overlay Inputs
 
-| Input                     | Type                             | Default            | Description                                                   |
-| ------------------------- | -------------------------------- | ------------------ | ------------------------------------------------------------- |
-| `isOpen`                  | `boolean`                        | `false`            | Renders the player and locks body scroll                      |
-| `groups`                  | `StoriesGroup<T>[]`              | required           | Story groups; ones added while open are picked up             |
-| `initialGroupIndex`       | `number`                         | `0`                | Group the player opens on                                     |
-| `initialStoryIndex`       | `number \| undefined`            | resume, then `0`   | Story the player opens on; beats anything remembered          |
-| `ariaLabel`               | `string`                         | `'Stories player'` | Accessible name of the dialog                                 |
-| `groupTransition`         | `TransitionTransformFn`          | `cubeTransition`   | Transition between authors; ignored while the carousel shows  |
-| `innerTransitionDuration` | `number`                         | `200`              | Crossfade between stories of one author (ms)                  |
-| `defaultImageDuration`    | `number`                         | `5000`             | Auto-advance duration for an image story (ms)                 |
-| `minSegmentWidth`         | `number`                         | `8`                | Below this the progress bar scrolls a window of segments (px) |
-| `tapZoneSplit`            | `number`                         | `0.3`              | Tap split (0–1); the left share goes back, the rest forward   |
-| `hideUIOnPause`           | `boolean`                        | `true`             | Hide progress bar and header while held paused                |
-| `enableKeyboard`          | `boolean`                        | `true`             | Arrow keys and Escape                                         |
-| `desktopLayout`           | `'single' \| 'carousel'`         | `'single'`         | Phones always show the story alone                            |
-| `viewed`                  | `StoriesViewedStateController`   | —                  | Resume and record; hand the same one to the ring list         |
-| `resumeStoryIndex`        | `(groupIndex: number) => number` | —                  | Where a group first opens; beats `viewed`                     |
+| Input                     | Type                             | Default            | Description                                                                                   |
+| ------------------------- | -------------------------------- | ------------------ | --------------------------------------------------------------------------------------------- |
+| `isOpen`                  | `boolean`                        | `false`            | Renders the player and locks body scroll                                                      |
+| `groups`                  | `StoriesGroup<T>[]`              | required           | Story groups; ones added while open are picked up                                             |
+| `initialGroupIndex`       | `number`                         | `0`                | Group the player opens on                                                                     |
+| `initialStoryIndex`       | `number \| undefined`            | resume, then `0`   | Story the player opens on; beats anything remembered                                          |
+| `ariaLabel`               | `string`                         | `'Stories player'` | Accessible name of the dialog                                                                 |
+| `groupTransition`         | `TransitionTransformFn`          | `cubeTransition`   | Transition between authors; ignored while the carousel shows                                  |
+| `innerTransitionDuration` | `number`                         | `200`              | Crossfade between stories of one author (ms)                                                  |
+| `defaultImageDuration`    | `number`                         | `5000`             | Auto-advance duration for an image story (ms)                                                 |
+| `minSegmentWidth`         | `number`                         | `8`                | Below this the progress bar scrolls a window of segments (px)                                 |
+| `tapZoneSplit`            | `number`                         | `0.3`              | Tap split (0–1); the left share goes back, the rest forward                                   |
+| `hideUIOnPause`           | `boolean`                        | `true`             | Hide progress bar and header while held paused                                                |
+| `enableKeyboard`          | `boolean`                        | `true`             | Arrow keys and Escape                                                                         |
+| `desktopLayout`           | `'single' \| 'carousel'`         | `'single'`         | Phones always show the story alone                                                            |
+| `chromePlacement`         | `'overlay' \| 'group'`           | `'overlay'`        | `'group'`: each group carries its own progress bar and header, turning with it like Instagram |
+| `viewed`                  | `StoriesViewedStateController`   | —                  | Resume and record; hand the same one to the ring list                                         |
+| `resumeStoryIndex`        | `(groupIndex: number) => number` | —                  | Where a group first opens; beats `viewed`                                                     |
 
 Every slot also has an input — `slideTemplate`, `headerTemplate`,
 `footerTemplate`, `progressBarTemplate`, `navigationTemplate`,

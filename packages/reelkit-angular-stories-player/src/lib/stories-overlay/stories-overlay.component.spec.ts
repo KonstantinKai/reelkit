@@ -9,7 +9,7 @@ import {
   slideTransition,
 } from '@reelkit/angular';
 import type { StoriesGroup } from '@reelkit/stories-core';
-import type { DesktopLayout } from '../types';
+import type { ChromePlacement, DesktopLayout } from '../types';
 import { RkCanvasProgressBarComponent } from '../canvas-progress-bar/canvas-progress-bar.component';
 import { RkStoriesOverlayComponent } from './stories-overlay.component';
 import { RkStoriesContentComponent } from '../stories-content/stories-content.component';
@@ -86,6 +86,7 @@ const GROUPS: StoriesGroup[] = [
       [isOpen]="isOpen()"
       [groups]="groups()"
       [desktopLayout]="desktopLayout()"
+      [chromePlacement]="chromePlacement()"
       [minSegmentWidth]="minSegmentWidth()"
       (closed)="closed = closed + 1"
       (paused)="events.push('paused')"
@@ -100,6 +101,7 @@ class HostComponent {
   isOpen: WritableSignal<boolean> = signal(true);
   groups: WritableSignal<StoriesGroup[]> = signal(GROUPS);
   desktopLayout: WritableSignal<DesktopLayout> = signal('single');
+  chromePlacement: WritableSignal<ChromePlacement> = signal('overlay');
   minSegmentWidth: WritableSignal<number> = signal(8);
   closed = 0;
   doubleTaps = 0;
@@ -842,6 +844,194 @@ describe('RkStoriesOverlayComponent', () => {
       fixture.detectChanges();
 
       expect(outerReelOf(fixture).transition()).toBe(slideTransition);
+    });
+  });
+
+  describe('with the progress bar and header in each group', () => {
+    interface ChromeContext {
+      groupIndex: number;
+      isActive: boolean;
+      storyIndex: number;
+      isPaused: boolean;
+      activeIndex: { value: number };
+      progress: { value: number };
+    }
+
+    interface GroupChromeInternals {
+      timerCtrl: { progress: { value: number } };
+      progressBarContext: (groupIndex: number) => ChromeContext;
+      headerContext: (groupIndex: number) => ChromeContext;
+    }
+
+    function createGroupHost(): ComponentFixture<HostComponent> {
+      const fixture = TestBed.createComponent(HostComponent);
+      fixture.componentInstance.chromePlacement.set('group');
+      fixture.detectChanges();
+      return fixture;
+    }
+
+    function chromeOf(
+      fixture: ComponentFixture<HostComponent>,
+    ): GroupChromeInternals {
+      return contentOf(fixture) as unknown as GroupChromeInternals;
+    }
+
+    function slides(fixture: ComponentFixture<HostComponent>): HTMLElement[] {
+      return fixture.debugElement
+        .queryAll(By.css('.rk-stories-slide-wrapper'))
+        .map((slide) => slide.nativeElement as HTMLElement);
+    }
+
+    it('draws a progress bar and header inside every group slide', () => {
+      const fixture = createGroupHost();
+
+      expect(
+        fixture.debugElement.queryAll(
+          By.css('.rk-stories-container > .rk-stories-ui-layer'),
+        ).length,
+      ).toBe(0);
+      const rendered = slides(fixture);
+      expect(rendered.length).toBe(GROUPS.length);
+      rendered.forEach((slide, groupIndex) => {
+        expect(slide.querySelectorAll('rk-canvas-progress-bar').length).toBe(1);
+        expect(
+          slide.querySelector('.rk-stories-header-name')?.textContent,
+        ).toContain(GROUPS[groupIndex].author.name);
+      });
+    });
+
+    it('still leaves a heart on a double tap', () => {
+      const fixture = createGroupHost();
+      internalsOf(fixture).onDoubleTap();
+      fixture.detectChanges();
+
+      expect(
+        fixture.debugElement.queryAll(By.css('rk-heart-animation')).length,
+      ).toBe(1);
+    });
+
+    it('shows a neighbouring group where it will resume, with nothing played', () => {
+      const fixture = createGroupHost();
+      const bar = chromeOf(fixture).progressBarContext(1);
+      const header = chromeOf(fixture).headerContext(1);
+
+      expect(bar.isActive).toBe(false);
+      expect(bar.groupIndex).toBe(1);
+      expect(bar.activeIndex.value).toBe(0);
+      expect(bar.progress.value).toBe(0);
+      expect(header).toMatchObject({
+        isActive: false,
+        storyIndex: 0,
+        isPaused: false,
+      });
+    });
+
+    // A template calls these on every change detection. A neighbour handed
+    // new signals each time would make its bar start over on every pass.
+    it('hands a neighbouring bar the same signals until its state changes', () => {
+      const fixture = createGroupHost();
+      const first = chromeOf(fixture).progressBarContext(1);
+      fixture.detectChanges();
+      const second = chromeOf(fixture).progressBarContext(1);
+
+      expect(second.activeIndex).toBe(first.activeIndex);
+      expect(second.progress).toBe(first.progress);
+    });
+
+    it('follows the running story in the active group', () => {
+      const fixture = createGroupHost();
+      const chrome = chromeOf(fixture);
+
+      expect(chrome.progressBarContext(0).isActive).toBe(true);
+      expect(chrome.progressBarContext(0).progress).toBe(
+        chrome.timerCtrl.progress,
+      );
+
+      fixture.componentInstance.api!.nextStory();
+      fixture.detectChanges();
+      expect(chrome.headerContext(0).storyIndex).toBe(1);
+
+      fixture.componentInstance.api!.pause();
+      fixture.detectChanges();
+      expect(chrome.headerContext(0).isPaused).toBe(true);
+    });
+
+    it('hides the chrome of the active group during a long press', () => {
+      const fixture = createGroupHost();
+      const layer = () =>
+        slides(fixture)[0].querySelector('.rk-stories-ui-layer')!;
+
+      internalsOf(fixture).onLongPressStart();
+      fixture.detectChanges();
+      expect(layer().classList).toContain('rk-stories-ui-layer--hidden');
+
+      internalsOf(fixture).onLongPressEnd();
+      fixture.detectChanges();
+      expect(layer().classList).not.toContain('rk-stories-ui-layer--hidden');
+    });
+
+    it('hands the new group the running bar once the group changes', () => {
+      const fixture = createGroupHost();
+      const chrome = chromeOf(fixture);
+
+      fixture.componentInstance.api!.nextGroup();
+      fixture.detectChanges();
+
+      expect(chrome.progressBarContext(1).isActive).toBe(true);
+      expect(chrome.progressBarContext(1).progress).toBe(
+        chrome.timerCtrl.progress,
+      );
+      expect(chrome.progressBarContext(0).isActive).toBe(false);
+      expect(chrome.progressBarContext(0).progress).not.toBe(
+        chrome.timerCtrl.progress,
+      );
+    });
+
+    it('keeps the group being left as it was while the player turns away from it', async () => {
+      const fixture = createGroupHost();
+      const chrome = chromeOf(fixture);
+      fixture.componentInstance.api!.nextStory();
+      fixture.detectChanges();
+      chrome.timerCtrl.progress.value = 0.4;
+
+      fixture.componentInstance.api!.nextGroup();
+      fixture.detectChanges();
+
+      const turning = chrome.progressBarContext(0);
+      expect(turning.activeIndex.value).toBe(1);
+      expect(turning.progress.value).toBeCloseTo(0.4);
+      expect(chrome.headerContext(0).storyIndex).toBe(1);
+
+      await settle();
+      fixture.detectChanges();
+
+      const resting = chrome.progressBarContext(0);
+      expect(resting.activeIndex.value).toBe(1);
+      expect(resting.progress.value).toBe(0);
+    });
+
+    it('shows a group that played to its end as complete while the player turns away', () => {
+      const fixture = createGroupHost();
+      const chrome = chromeOf(fixture);
+      chrome.timerCtrl.progress.value = 1;
+
+      fixture.componentInstance.api!.nextGroup();
+      fixture.detectChanges();
+
+      expect(chrome.progressBarContext(0).progress.value).toBe(1);
+    });
+
+    // A tap on a button inside the swipe area never reaches the tap zones; the
+    // gesture controller in the core package ignores interactive elements.
+    it('closes and pauses from the default header inside a group slide', () => {
+      const fixture = createGroupHost();
+      const slide = slides(fixture)[0];
+
+      (slide.querySelector('[aria-label="Pause"]') as HTMLElement).click();
+      expect(fixture.componentInstance.events).toContain('paused');
+
+      (slide.querySelector('[aria-label="Close"]') as HTMLElement).click();
+      expect(fixture.componentInstance.closed).toBe(1);
     });
   });
 });

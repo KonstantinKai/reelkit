@@ -12,6 +12,7 @@ import urlState2 from '../../snippets/vue-stories-player/url-state-2.ts?raw';
 import urlState3 from '../../snippets/vue-stories-player/url-state-3.ts?raw';
 import rememberingWhatWasSeen from '../../snippets/vue-stories-player/remembering-what-was-seen.vue?raw';
 import desktopCarousel from '../../snippets/vue-stories-player/desktop-carousel.vue?raw';
+import chromePlacement from '../../snippets/vue-stories-player/chrome-placement.vue?raw';
 import transitions from '../../snippets/vue-stories-player/transitions.vue?raw';
 import scopedSlots from '../../snippets/vue-stories-player/scoped-slots.vue?raw';
 import slideSlot from '../../snippets/vue-stories-player/slide-slot.vue?raw';
@@ -184,6 +185,18 @@ Set `desktop-layout="carousel"` to lay the player out like the Instagram web vie
 - **The timer waits for the slide.** The story does not advance, and `story-viewed` does not fire for it, until the cards have finished moving.
 - **Every way of changing group slides**: a card click, `StoriesApi.goToGroup`, `nextGroup` and `prevGroup`, and the arrow keys past the end of a group. A touch swipe moves the player itself, so it gets no slide on top.
 
+## Progress Bar and Header per Group [#chrome-placement]
+
+By default one progress bar and one header sit above the player and switch to the new group once it has changed. Set `chrome-placement="group"` to give every group its own, drawn inside its slide, so both turn with the group the way they do on Instagram.
+
+<CodeBlock code={chromePlacement} language="vue" />
+
+- **A neighbouring group shows where it stands.** While the player turns to it, its bar and header show the story it will open on, with nothing of it played yet.
+- **The group being left holds still.** Its bar keeps the progress it had until the turn ends, so a group played to the end stays full rather than emptying mid-turn.
+- **The slots are rendered for every group on screen.** The `#progressBar` and `#header` scopes carry `groupIndex` and `isActive`; for a neighbouring group `isActive` is `false` and the progress signals hold still.
+- **A `#header` slot sits in the swipe area.** A tap on it moves between stories unless it lands on a `button`, a link, or an element with `role="button"`, so make every control in it one of those.
+- **The desktop carousel is unaffected mid-slide.** The player is hidden while the cards slide, so the choice shows once the group is open.
+
 ## API Reference [#api-reference]
 
 ### StoriesOverlay Props [#storiesoverlay-props]
@@ -193,6 +206,7 @@ Set `desktop-layout="carousel"` to lay the player out like the Instagram web vie
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `aria-label` | `string` | `'Stories player'` | Accessible label for the dialog region; announced by screen readers when the overlay opens |
+| `chrome-placement` | `'overlay' \| 'group'` | `'overlay'` | Where the progress bar and header live. `'overlay'` draws one copy above the player; `'group'` draws one inside every group slide, so both turn with the group. The type is exported as `ChromePlacement`. |
 | `default-image-duration` | `number` | `5000` | Auto-advance duration for an image story, in milliseconds |
 | `desktop-layout` | `'single' \| 'carousel'` | `'single'` | Desktop layout. `'carousel'` shows neighbouring groups as preview cards beside the active story and slides between groups. Phones always show the story alone. The type is exported as `DesktopLayout`. |
 | `enable-keyboard` | `boolean` | `true` | Enable keyboard navigation (left/right arrows, Escape) |
@@ -248,10 +262,10 @@ Eight scoped slots replace any part of the player. Each receives a typed scope o
 | #error | `{ story, storyIndex, groupIndex }` | Replaces the built-in "Content unavailable" panel, drawn over the active story |
 | #footer | `{ author, story, storyIndex }` | Adds a footer under the active group's story |
 | #groupPreview | `{ group, groupIndex, story, offset, viewedCount, onOpen }` | Fills a desktop carousel card; the player still positions, scales and slides it |
-| #header | `{ author, story, storyIndex, isPaused, isMuted, isVideo, onToggleSound, onTogglePause, onClose }` | Replaces the default header (author, pause, sound, close) |
+| #header | `{ author, story, storyIndex, isPaused, isMuted, isVideo, groupIndex, isActive, onToggleSound, onTogglePause, onClose }` | Replaces the default header (author, pause, sound, close). With `chrome-placement="group"` it sits in the swipe area; see [Progress Bar and Header per Group](/docs/vue-stories-player#chrome-placement). |
 | #loading | `{ story, storyIndex, groupIndex }` | Replaces the default header spinner while the active story loads |
 | #navigation | `{ onPrevStory, onNextStory, onPrevGroup, onNextGroup }` | Replaces both desktop arrows |
-| #progressBar | `{ totalStories, activeIndex, progress, group }` | Replaces the canvas progress bar. `activeIndex` and `progress` are core signals — bridge them with `toVueRef`. |
+| #progressBar | `{ totalStories, activeIndex, progress, group, groupIndex, isActive }` | Replaces the canvas progress bar. `activeIndex` and `progress` are core signals — bridge them with `toVueRef`. |
 | #slide | `{ story, index, groupIndex, isActive, size, activeGroupIndex, activeStoryIndex, onDurationReady, onReady, onWaiting, onError, onEnded }` | Replaces the default image and video slides |
 
 <CodeBlock code={scopedSlots} language="vue" />
@@ -338,7 +352,7 @@ Exported building blocks, for composing inside the slots or using on their own: 
 
 | Component | What it is |
 | --- | --- |
-| `CanvasProgressBar` | The canvas segmented progress bar, drawn straight from the timer signals. Handles a sliding window for groups with many stories. |
+| `CanvasProgressBar` | The canvas segmented progress bar, drawn straight from the timer signals. Handles a sliding window for groups with many stories. With `:live="false"` it draws only when its signals change and after a resize, with no animation loop. |
 | `HeartAnimation` | The double-tap heart. Emits `complete` when the animation ends, so the parent can remove it. |
 | `ImageStorySlide` | Full-bleed image slide with `object-fit: cover`, reporting load and error through callbacks. |
 | `StoriesRing` | Circular avatar with the gradient ring. Two states: anything left to watch rotates, fully watched goes flat. Emits `click`. |
@@ -390,7 +404,7 @@ Class names are plain (not scoped), so a stylesheet loaded after `@reelkit/vue-s
 | `.rk-stories-overlay--sliding` | Overlay | Carousel slide running; the player canvas is hidden |
 | `.rk-stories-swipe-wrapper` | Overlay | Swipe-to-close wrapper (hosts nav buttons + canvas) |
 | `.rk-stories-container` | Overlay | Rounded story canvas (position, overflow) |
-| `.rk-stories-ui-layer` | Overlay | UI overlay container (header, progress) |
+| `.rk-stories-ui-layer` | Overlay | UI overlay container (header, progress). Inside every group slide with `chrome-placement="group"` |
 | `.rk-stories-ui-layer--hidden` | Overlay | UI hidden state (toggled by `hide-ui-on-pause`) |
 | `.rk-stories-error` | Overlay | Error state (centered icon + text) |
 | `.rk-stories-error-text` | Overlay | Error message text |

@@ -12,6 +12,7 @@ import urlState2 from '../../snippets/vue-stories-player/url-state-2.ts?raw';
 import urlState3 from '../../snippets/vue-stories-player/url-state-3.ts?raw';
 import rememberingWhatWasSeen from '../../snippets/vue-stories-player/remembering-what-was-seen.vue?raw';
 import desktopCarousel from '../../snippets/vue-stories-player/desktop-carousel.vue?raw';
+import chromePlacement from '../../snippets/vue-stories-player/chrome-placement.vue?raw';
 import transitions from '../../snippets/vue-stories-player/transitions.vue?raw';
 import scopedSlots from '../../snippets/vue-stories-player/scoped-slots.vue?raw';
 import slideSlot from '../../snippets/vue-stories-player/slide-slot.vue?raw';
@@ -184,6 +185,18 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 - **टाइमर सरकने का इंतज़ार करता है।** जब तक कार्ड चलना बंद नहीं करते, स्टोरी आगे नहीं बढ़ती और उसके लिए `story-viewed` भी नहीं चलता।
 - **समूह बदलने का हर तरीक़ा सरकाता है**: कार्ड पर क्लिक, `StoriesApi.goToGroup`, `nextGroup` और `prevGroup`, तथा समूह के अंत के आगे तीर कुंजियाँ। छूकर किया गया स्वाइप प्लेयर को खुद ही हिला देता है, इसलिए उसके ऊपर सरकना नहीं जुड़ता।
 
+## हर समूह का अपना प्रोग्रेस बार और हेडर [#chrome-placement]
+
+डिफ़ॉल्ट रूप से एक प्रोग्रेस बार और एक हेडर प्लेयर के ऊपर रहते हैं और समूह बदल जाने के बाद नए समूह पर आ जाते हैं। `chrome-placement="group"` सेट करने पर हर समूह को अपनी slide के अंदर अपना बार और हेडर मिलता है, और दोनों Instagram की तरह समूह के साथ घूमते हैं।
+
+<CodeBlock code={chromePlacement} language="vue" />
+
+- **पड़ोसी समूह दिखाता है कि वह कहाँ रुका है।** जब प्लेयर उसकी ओर घूमता है, उसका बार और हेडर वह स्टोरी दिखाते हैं जिस पर समूह खुलेगा, जिसका अभी कुछ भी नहीं चला है।
+- **छोड़ा जा रहा समूह जैसा था वैसा रहता है।** घुमाव ख़त्म होने तक उसका बार अपनी प्रोग्रेस बनाए रखता है, इसलिए अंत तक देखा गया समूह घुमाव के बीच ख़ाली नहीं होता, भरा ही रहता है।
+- **ये स्लॉट स्क्रीन पर मौजूद हर समूह के लिए बनते हैं।** `#progressBar` और `#header` के स्कोप में `groupIndex` और `isActive` होते हैं; पड़ोसी समूह के लिए `isActive` `false` होता है और प्रोग्रेस के सिग्नल नहीं बदलते।
+- **`#header` स्लॉट swipe क्षेत्र के अंदर होता है।** उस पर tap करने से स्टोरी बदलती है, जब तक tap किसी `button`, लिंक या `role="button"` वाले element पर न पड़े, इसलिए उसके हर control को इन्हीं में से एक बनाएँ।
+- **डेस्कटॉप कैरोसेल slide के दौरान नहीं बदलता।** कार्ड slide होते समय प्लेयर छिपा रहता है, इसलिए यह विकल्प समूह खुलने के बाद दिखता है।
+
 ## API संदर्भ [#api-reference]
 
 ### StoriesOverlay प्रॉप्स [#storiesoverlay-props]
@@ -193,6 +206,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 | Prop | टाइप | डिफ़ॉल्ट | विवरण |
 | --- | --- | --- | --- |
 | `aria-label` | `string` | `'Stories player'` | डायलॉग क्षेत्र का सुलभ नाम; ओवरले खुलने पर स्क्रीन रीडर इसे पढ़ता है |
+| `chrome-placement` | `'overlay' \| 'group'` | `'overlay'` | प्रोग्रेस बार और हेडर कहाँ रहते हैं। `'overlay'` प्लेयर के ऊपर एक कॉपी बनाता है; `'group'` हर समूह की slide में एक बनाता है, जिससे दोनों समूह के साथ घूमते हैं। यह टाइप `ChromePlacement` नाम से export होता है। |
 | `default-image-duration` | `number` | `5000` | इमेज स्टोरी के ऑटो-एडवांस की अवधि, मिलीसेकंड में |
 | `desktop-layout` | `'single' \| 'carousel'` | `'single'` | डेस्कटॉप लेआउट। `'carousel'` पड़ोसी समूहों को चल रही स्टोरी के बग़ल में कार्ड की तरह दिखाता है और समूहों के बीच सरकता है। फ़ोन पर स्टोरी हमेशा अकेली दिखती है। यह टाइप `DesktopLayout` के रूप में एक्सपोर्ट होता है। |
 | `enable-keyboard` | `boolean` | `true` | कीबोर्ड नेविगेशन चालू करता है (बाएँ/दाएँ तीर, Escape) |
@@ -248,10 +262,10 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 | #error | `{ story, storyIndex, groupIndex }` | चल रही स्टोरी के ऊपर बने अंतर्निर्मित «Content unavailable» पैनल की जगह लेता है |
 | #footer | `{ author, story, storyIndex }` | चल रहे समूह की स्टोरी के नीचे फ़ुटर जोड़ता है |
 | #groupPreview | `{ group, groupIndex, story, offset, viewedCount, onOpen }` | डेस्कटॉप कैरोसेल के कार्ड का भीतरी हिस्सा भरता है; जगह, आकार और सरकना प्लेयर ही सँभालता है |
-| #header | `{ author, story, storyIndex, isPaused, isMuted, isVideo, onToggleSound, onTogglePause, onClose }` | डिफ़ॉल्ट हेडर (लेखक, पॉज़, ध्वनि, बंद करना) की जगह लेता है |
+| #header | `{ author, story, storyIndex, isPaused, isMuted, isVideo, groupIndex, isActive, onToggleSound, onTogglePause, onClose }` | डिफ़ॉल्ट हेडर (लेखक, पॉज़, ध्वनि, बंद करना) की जगह लेता है। `chrome-placement="group"` के साथ यह swipe क्षेत्र के अंदर होता है; देखें [हर समूह का अपना प्रोग्रेस बार और हेडर](/docs/vue-stories-player#chrome-placement)। |
 | #loading | `{ story, storyIndex, groupIndex }` | चल रही स्टोरी के लोड होते समय दिखने वाले डिफ़ॉल्ट हेडर स्पिनर की जगह लेता है |
 | #navigation | `{ onPrevStory, onNextStory, onPrevGroup, onNextGroup }` | डेस्कटॉप के दोनों तीरों की जगह लेता है |
-| #progressBar | `{ totalStories, activeIndex, progress, group }` | canvas प्रोग्रेस बार की जगह लेता है। `activeIndex` और `progress` core के सिग्नल हैं — उन्हें `toVueRef` से जोड़ें। |
+| #progressBar | `{ totalStories, activeIndex, progress, group, groupIndex, isActive }` | canvas प्रोग्रेस बार की जगह लेता है। `activeIndex` और `progress` core के सिग्नल हैं — उन्हें `toVueRef` से जोड़ें। |
 | #slide | `{ story, index, groupIndex, isActive, size, activeGroupIndex, activeStoryIndex, onDurationReady, onReady, onWaiting, onError, onEnded }` | डिफ़ॉल्ट इमेज और वीडियो स्लाइड की जगह लेता है |
 
 <CodeBlock code={scopedSlots} language="vue" />
@@ -338,7 +352,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 
 | कंपोनेंट | यह क्या है |
 | --- | --- |
-| `CanvasProgressBar` | canvas पर बनी खंडों वाली प्रोग्रेस बार, जो सीधे टाइमर के सिग्नल से बनती है। बहुत सारी स्टोरीज़ वाले समूह के लिए स्लाइडिंग विंडो सँभालती है। |
+| `CanvasProgressBar` | canvas पर बनी खंडों वाली प्रोग्रेस बार, जो सीधे टाइमर के सिग्नल से बनती है। बहुत सारी स्टोरीज़ वाले समूह के लिए स्लाइडिंग विंडो सँभालती है। `:live="false"` के साथ यह बिना animation loop के सिर्फ़ सिग्नल बदलने पर और resize के बाद बनती है। |
 | `HeartAnimation` | डबल-टैप वाला दिल। एनिमेशन ख़त्म होने पर `complete` भेजता है, ताकि पैरेंट उसे हटा सके। |
 | `ImageStorySlide` | `object-fit: cover` वाली पूरी चौड़ाई की इमेज स्लाइड, जो लोड और त्रुटि की सूचना कॉलबैक से देती है। |
 | `StoriesRing` | ग्रेडिएंट रिंग वाला गोल अवतार। दो स्थितियाँ: कुछ देखना बाक़ी हो तो घूमता है, सब देख लेने पर सपाट हो जाता है। `click` भेजता है। |
@@ -390,7 +404,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 | `.rk-stories-overlay--sliding` | Overlay | कैरोसेल सरक रहा है; प्लेयर का कैनवास छिपा है |
 | `.rk-stories-swipe-wrapper` | Overlay | स्वाइप करके बंद करने का रैपर (नेविगेशन बटन और कैनवास रखता है) |
 | `.rk-stories-container` | Overlay | गोल कोनों वाला स्टोरी कैनवास (स्थिति, overflow) |
-| `.rk-stories-ui-layer` | Overlay | इंटरफ़ेस का कंटेनर (हेडर, प्रोग्रेस) |
+| `.rk-stories-ui-layer` | Overlay | इंटरफ़ेस का कंटेनर (हेडर, प्रोग्रेस)। `chrome-placement="group"` के साथ हर समूह की slide के अंदर |
 | `.rk-stories-ui-layer--hidden` | Overlay | इंटरफ़ेस छिपी अवस्था (`hide-ui-on-pause` बदलता है) |
 | `.rk-stories-error` | Overlay | त्रुटि की स्थिति (बीच में आइकन और पाठ) |
 | `.rk-stories-error-text` | Overlay | त्रुटि संदेश का पाठ |

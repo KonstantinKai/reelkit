@@ -11,7 +11,7 @@ import {
 import { createFakeUrlAdapter } from '@reelkit/core/testing';
 import type { StoriesGroup } from '@reelkit/stories-core';
 import { RkStoriesUrlOverlayComponent } from './stories-url-overlay.component';
-import type { StoriesApi } from '../types';
+import type { ChromePlacement, StoriesApi } from '../types';
 
 const GROUPS: StoriesGroup[] = [
   {
@@ -56,6 +56,7 @@ function createUrlState(initialSearch = ''): {
     <rk-stories-url-overlay
       [controller]="controller()"
       [groups]="groups"
+      [chromePlacement]="chromePlacement"
       (closed)="closes = closes + 1"
       (apiReady)="api = $event"
     />
@@ -65,6 +66,7 @@ function createUrlState(initialSearch = ''): {
 class HostComponent {
   controller!: WritableSignal<UrlStateController<TwoAxisPosition>>;
   groups = GROUPS;
+  chromePlacement: ChromePlacement = 'overlay';
   closes = 0;
   api: StoriesApi | null = null;
 }
@@ -93,6 +95,22 @@ describe('RkStoriesUrlOverlayComponent', () => {
     expect(
       fixture.debugElement.query(By.css('.rk-stories-overlay')),
     ).toBeNull();
+  });
+
+  // This overlay hands its inputs to the player one by one, so a new one
+  // reaches the player only if it is bound here too.
+  it('draws the progress bar and header inside each group when asked', () => {
+    const { controller } = createUrlState('?story=0.0');
+    const fixture = TestBed.createComponent(HostComponent);
+    fixture.componentInstance.controller = signal(controller);
+    fixture.componentInstance.chromePlacement = 'group';
+    fixture.detectChanges();
+
+    expect(
+      fixture.debugElement.queryAll(
+        By.css('.rk-stories-slide-wrapper .rk-stories-ui-layer'),
+      ).length,
+    ).toBe(GROUPS.length);
   });
 
   it('opens on the story the parameter names', () => {

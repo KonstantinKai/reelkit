@@ -15,6 +15,7 @@ import urlState3 from '../../snippets/stories-player/url-state-3.tsx?raw';
 import urlState4 from '../../snippets/stories-player/url-state-4.tsx?raw';
 import rememberingWhatWasSeen from '../../snippets/stories-player/remembering-what-was-seen.tsx?raw';
 import desktopCarousel from '../../snippets/stories-player/desktop-carousel.tsx?raw';
+import chromePlacement from '../../snippets/stories-player/chrome-placement.tsx?raw';
 import transitions from '../../snippets/stories-player/transitions.tsx?raw';
 import renderheader from '../../snippets/stories-player/renderheader.tsx?raw';
 import renderfooter from '../../snippets/stories-player/renderfooter.tsx?raw';
@@ -220,6 +221,18 @@ styles import करना न भूलें:
 - **टाइमर slide पूरी होने का इंतज़ार करता है।** जब तक कार्ड रुक नहीं जाते, story आगे नहीं बढ़ती और उसके लिए `onStoryViewed` नहीं चलता।
 - **group बदलने का हर तरीका slide करता है**: कार्ड पर क्लिक, `StoriesApi.goToGroup`, `nextGroup` और `prevGroup`, और group के आख़िर से आगे arrow keys। touch swipe खुद player को खिसकाता है, इसलिए उसके ऊपर कोई slide नहीं होती।
 
+## हर ग्रुप का अपना प्रोग्रेस बार और header [#chrome-placement]
+
+डिफ़ॉल्ट रूप से एक प्रोग्रेस बार और एक header प्लेयर के ऊपर रहते हैं और ग्रुप बदल जाने के बाद नए ग्रुप पर आ जाते हैं। `chromePlacement="group"` सेट करने पर हर ग्रुप को अपनी slide के अंदर अपना बार और header मिलता है, और दोनों Instagram की तरह ग्रुप के साथ घूमते हैं।
+
+<CodeBlock code={chromePlacement} language="tsx" />
+
+- **पड़ोसी ग्रुप दिखाता है कि वह कहाँ रुका है।** जब प्लेयर उसकी ओर घूमता है, उसका बार और header वह story दिखाते हैं जिस पर ग्रुप खुलेगा, जिसका अभी कुछ भी नहीं चला है।
+- **छोड़ा जा रहा ग्रुप जैसा था वैसा रहता है।** घुमाव ख़त्म होने तक उसका बार अपनी प्रोग्रेस बनाए रखता है, इसलिए अंत तक देखा गया ग्रुप घुमाव के बीच ख़ाली नहीं होता, भरा ही रहता है।
+- **कस्टम renderer स्क्रीन पर मौजूद हर ग्रुप के लिए बुलाए जाते हैं।** `renderProgressBar` और `renderHeader` को `groupIndex` और `isActive` मिलते हैं; पड़ोसी ग्रुप के लिए `isActive` `false` होता है और प्रोग्रेस के signals नहीं बदलते।
+- **कस्टम header swipe क्षेत्र के अंदर होता है।** उस पर tap करने से story बदलती है, जब तक tap किसी `button`, लिंक या `role="button"` वाले element पर न पड़े, इसलिए उसके हर control को इन्हीं में से एक बनाएँ।
+- **डेस्कटॉप कैरोसेल slide के दौरान नहीं बदलता।** कार्ड slide होते समय प्लेयर छिपा रहता है, इसलिए यह विकल्प ग्रुप खुलने के बाद दिखता है।
+
 ## API रेफ़रेंस [#api-reference]
 
 ### StoriesOverlayProps [#storiesoverlayprops]
@@ -244,8 +257,9 @@ styles import करना न भूलें:
 | `minSegmentWidth` | `number` | 8 | प्रोग्रेस बार के segment की पिक्सेल में न्यूनतम चौड़ाई |
 | `apiRef` | `MutableRefObject<StoriesApi \| null>` | - | imperative StoriesApi तक पहुँचने के लिए ref |
 | `desktopLayout` | `'single' \| 'carousel'` | 'single' | डेस्कटॉप layout। 'carousel' active story के बगल में पड़ोसी groups को preview कार्ड के रूप में दिखाता है और groups के बीच slide करता है। फ़ोन पर story हमेशा अकेली दिखती है। टाइप `DesktopLayout` नाम से export होता है। |
+| `chromePlacement` | `'overlay' \| 'group'` | 'overlay' | प्रोग्रेस बार और header कहाँ रहते हैं। 'overlay' प्लेयर के ऊपर एक कॉपी बनाता है; 'group' हर ग्रुप की slide में एक बनाता है, जिससे दोनों ग्रुप के साथ घूमते हैं। टाइप `ChromePlacement` नाम से export होता है। |
 | `viewed` | `StoriesViewedStateController` | - | दर्शक ने जो देखा है, createStoriesViewedStateController() से। group अपनी पहली न देखी गई story से दोबारा शुरू होते हैं, दिखाई गई हर story दर्ज होती है, और carousel कार्ड पूरे देखे गए group की ring फीकी कर देते हैं। वही कंट्रोलर StoriesRingList को भी दें। |
-| `renderHeader` | `(props: HeaderRenderProps<T>) => ReactNode` | - | कस्टम header renderer। लेखक, story और pause/mute स्टेट मिलती है। |
+| `renderHeader` | `(props: HeaderRenderProps<T>) => ReactNode` | - | कस्टम header renderer। लेखक, story और pause/mute स्टेट मिलती है। `chromePlacement="group"` के साथ header swipe क्षेत्र के अंदर होता है; देखें [हर ग्रुप का अपना प्रोग्रेस बार और header](/docs/stories-player#chrome-placement)। |
 | `renderFooter` | `(props: FooterRenderProps<T>) => ReactNode` | - | कस्टम footer renderer। लेखक और story की जानकारी मिलती है। |
 | `renderSlide` | `(props: SlideRenderProps<T>) => ReactNode` | - | कस्टम स्लाइड renderer, जो डिफ़ॉल्ट इमेज/वीडियो स्लाइड की जगह लेता है। |
 | `renderNavigation` | `(props: NavigationRenderProps) => ReactNode` | - | कस्टम डेस्कटॉप नेविगेशन। डिफ़ॉल्ट prev/next chevron बटन की जगह लेता है। |
@@ -391,7 +405,7 @@ imperative नियंत्रण के लिए `apiRef` prop इस्त�
 
 ### CanvasProgressBar [#canvasprogressbar]
 
-canvas पर आधारित तेज़ segmented प्रोग्रेस बार। हर story का segment बनाता है और सक्रिय segment का भराव `requestAnimationFrame` से एनिमेट करता है। कई stories वाले ग्रुप के लिए खिसकती विंडो का सपोर्ट है।
+canvas पर आधारित तेज़ segmented प्रोग्रेस बार। हर story का segment बनाता है और सक्रिय segment का भराव `requestAnimationFrame` से एनिमेट करता है। कई stories वाले ग्रुप के लिए खिसकती विंडो का सपोर्ट है। जिस बार को बस यह दिखाना है कि ग्रुप कहाँ रुका है, उसे `live={false}` दें: वह बिना animation loop के सिर्फ़ signals बदलने पर और resize के बाद बनता है।
 
 <CodeBlock code={canvasprogressbar} language="tsx" />
 
@@ -496,7 +510,7 @@ Instagram जैसी gradient ring वाला गोल avatar। दो स
 | `.rk-stories-overlay` | Overlay | तय फ़ुलस्क्रीन backdrop (background, z-index) |
 | `.rk-stories-swipe-wrapper` | Overlay | स्वाइप करके बंद करने वाला wrapper (नेविगेशन बटन + canvas रखता है) |
 | `.rk-stories-container` | Overlay | गोल कोनों वाला story canvas (position, overflow) |
-| `.rk-stories-ui-layer` | Overlay | UI overlay का कंटेनर (header, प्रोग्रेस, नेविगेशन) |
+| `.rk-stories-ui-layer` | Overlay | UI overlay का कंटेनर (header, प्रोग्रेस, नेविगेशन)। `chromePlacement="group"` के साथ हर ग्रुप की slide के अंदर |
 | `.rk-stories-ui-layer--hidden` | Overlay | UI की छिपी स्टेट (hideUIOnPause से बदलती है) |
 | `.rk-stories-error` | Overlay | एरर स्टेट (बीच में आइकन + टेक्स्ट) |
 | `.rk-stories-error-text` | Overlay | एरर संदेश का टेक्स्ट |

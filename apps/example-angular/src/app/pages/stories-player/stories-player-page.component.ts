@@ -4,6 +4,7 @@ import {
   RkStoriesRingListComponent,
   RkStoriesSlideDirective,
   createStoriesViewedStateController,
+  type ChromePlacement,
   type DesktopLayout,
 } from '@reelkit/angular-stories-player';
 import {
@@ -147,6 +148,12 @@ const _kTransitions: { label: string; fn: TransitionTransformFn }[] = [
             [value]="desktopLayout()"
             (picked)="desktopLayout.set($any($event))"
           />
+          <app-segmented
+            legend="Progress & header"
+            [options]="placementOptions"
+            [value]="chromePlacement()"
+            (picked)="chromePlacement.set($any($event))"
+          />
         </div>
 
         <rk-stories-ring-list
@@ -162,6 +169,7 @@ const _kTransitions: { label: string; fn: TransitionTransformFn }[] = [
         [initialGroupIndex]="selectedGroup()"
         [groupTransition]="transition()"
         [desktopLayout]="desktopLayout()"
+        [chromePlacement]="chromePlacement()"
         [viewed]="rememberSeen() ? viewed : undefined"
         (closed)="isOpen.set(false)"
       >
@@ -223,11 +231,16 @@ export class StoriesPlayerPageComponent {
     { label: 'Carousel', value: 'carousel' },
   ];
 
+  protected readonly placementOptions = [
+    { label: 'Overlay', value: 'overlay' },
+    { label: 'Group', value: 'group' },
+  ];
+
   protected readonly isOpen = signal(false);
   protected readonly selectedGroup = signal(0);
   protected readonly transition = signal<TransitionTransformFn>(cubeTransition);
   /**
-   * Both switches outlive a reload, the way every other switch in this app
+   * The switches outlive a reload, the way every other switch in this app
    * does: a demo gets flipped, refreshed and looked at again. The keys match
    * the react and vue demos, so the three read the same stored choice.
    */
@@ -239,6 +252,11 @@ export class StoriesPlayerPageComponent {
   protected readonly rememberSeen = persistedSignal(
     'reelkit-stories-player-remember-seen',
     true,
+  );
+
+  protected readonly chromePlacement = persistedSignal<ChromePlacement>(
+    'reelkit-stories-player-chrome-placement',
+    'overlay',
   );
 
   /**

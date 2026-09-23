@@ -123,6 +123,7 @@ export type {
   LoadingRenderProps,
   ErrorRenderProps,
   DesktopLayout,
+  ChromePlacement,
   GroupPreviewRenderProps,
   StoriesApi,
 } from './lib/types';

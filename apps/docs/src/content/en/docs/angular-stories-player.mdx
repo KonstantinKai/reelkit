@@ -12,6 +12,7 @@ import urlState2 from '../../snippets/angular-stories-player/url-state-2.ts?raw'
 import urlState3 from '../../snippets/angular-stories-player/url-state-3.ts?raw';
 import rememberingWhatWasSeen from '../../snippets/angular-stories-player/remembering-what-was-seen.ts?raw';
 import desktopCarousel from '../../snippets/angular-stories-player/desktop-carousel.ts?raw';
+import chromePlacement from '../../snippets/angular-stories-player/chrome-placement.ts?raw';
 import transitions from '../../snippets/angular-stories-player/transitions.ts?raw';
 import templateSlots from '../../snippets/angular-stories-player/template-slots.ts?raw';
 import slideSlot from '../../snippets/angular-stories-player/slide-slot.ts?raw';
@@ -167,6 +168,18 @@ Register the stylesheet once:
 
 <CodeBlock code={desktopCarousel} language="typescript" />
 
+## Progress Bar and Header per Group [#chrome-placement]
+
+By default one progress bar and one header sit above the player and switch to the new group once it has changed. Set `chromePlacement="group"` to give every group its own, drawn inside its slide, so both turn with the group the way they do on Instagram.
+
+<CodeBlock code={chromePlacement} language="typescript" />
+
+- **A neighbouring group shows where it stands.** While the player turns to it, its bar and header show the story it will open on, with nothing of it played yet.
+- **The group being left holds still.** Its bar keeps the progress it had until the turn ends, so a group played to the end stays full rather than emptying mid-turn.
+- **The templates are rendered for every group on screen.** The `rkStoriesProgressBar` and `rkStoriesHeader` contexts carry `groupIndex` and `isActive`; for a neighbouring group `isActive` is `false` and the progress signals hold still.
+- **An `rkStoriesHeader` template sits in the swipe area.** A tap on it moves between stories unless it lands on a `button`, a link, or an element with `role="button"`, so make every control in it one of those.
+- **The desktop carousel is unaffected mid-slide.** The player is hidden while the cards slide, so the choice shows once the group is open.
+
 ## Template Slots [#template-slots]
 
 Eight `ng-template` directives replace any part of the player. Each receives a typed context, with the most useful value as the implicit one — so `let-author` binds the author in the header slot without naming it. A slot you leave out keeps the built-in rendering.
@@ -176,10 +189,10 @@ Eight `ng-template` directives replace any part of the player. Each receives a t
 | `rkStoriesError` | `RkStoriesErrorDirective` | `{ $implicit: story, storyIndex, groupIndex }` | Replaces the built-in "Content unavailable" panel, drawn over the active story |
 | `rkStoriesFooter` | `RkStoriesFooterDirective` | `{ $implicit: story, author, storyIndex }` | Adds a footer under the active story; the player draws none of its own |
 | `rkStoriesGroupPreview` | `RkStoriesGroupPreviewDirective` | `{ $implicit: group, groupIndex, story, offset, viewedCount, onOpen }` | Fills a desktop carousel card; the player still positions, scales and slides it |
-| `rkStoriesHeader` | `RkStoriesHeaderDirective` | `{ $implicit: author, story, storyIndex, isPaused, isMuted, isVideo, onToggleSound, onTogglePause, onClose }` | Replaces the default header (author, pause, sound, close) |
+| `rkStoriesHeader` | `RkStoriesHeaderDirective` | `{ $implicit: author, story, storyIndex, isPaused, isMuted, isVideo, groupIndex, isActive, onToggleSound, onTogglePause, onClose }` | Replaces the default header (author, pause, sound, close). With `chromePlacement="group"` it sits in the swipe area; see [Progress Bar and Header per Group](/docs/angular-stories-player#chrome-placement). |
 | `rkStoriesLoading` | `RkStoriesLoadingDirective` | `{ $implicit: story, storyIndex, groupIndex }` | Replaces the default header spinner while the active story loads |
 | `rkStoriesNavigation` | `RkStoriesNavigationDirective` | `{ $implicit: { onPrevStory, onNextStory, onPrevGroup, onNextGroup } }` | Replaces both desktop arrows |
-| `rkStoriesProgressBar` | `RkStoriesProgressBarDirective` | `{ $implicit: group, totalStories, activeIndex, progress }` | Replaces the canvas progress bar. `activeIndex` and `progress` are core signals — bridge them with `toAngularSignal`. |
+| `rkStoriesProgressBar` | `RkStoriesProgressBarDirective` | `{ $implicit: group, totalStories, activeIndex, progress, groupIndex, isActive }` | Replaces the canvas progress bar. `activeIndex` and `progress` are core signals — bridge them with `toAngularSignal`. |
 | `rkStoriesSlide` | `RkStoriesSlideDirective` | `{ $implicit: story, index, groupIndex, isActive, size, activeGroupIndex, activeStoryIndex, onDurationReady, onReady, onWaiting, onError, onEnded }` | Replaces the default image and video slides |
 
 <CodeBlock code={templateSlots} language="typescript" />
@@ -258,7 +271,7 @@ Exported building blocks, for composing inside the slots or using on their own.
 
 | Component | What it is |
 | --- | --- |
-| `RkCanvasProgressBarComponent` | The canvas segmented progress bar, drawn straight from the timer signals. Handles a sliding window for groups with many stories. |
+| `RkCanvasProgressBarComponent` | The canvas segmented progress bar, drawn straight from the timer signals. Handles a sliding window for groups with many stories. With `[live]="false"` it draws only when its signals change and after a resize, with no animation loop. |
 | `RkHeartAnimationComponent` | The double-tap heart. Emits `(completed)` when the animation ends, so the parent can remove it. |
 | `RkImageStorySlideComponent` | Full-bleed image slide with `object-fit: cover`, reporting load and error through outputs. |
 | `RkStoriesRingComponent` | Circular avatar with the gradient ring. Two states: anything left to watch rotates, fully watched goes flat. Emits `(clicked)`. |
@@ -294,6 +307,7 @@ Everything a consumer needs comes from this package, so a direct `@reelkit/core`
 | Input | Type | Default | Description |
 | --- | --- | --- | --- |
 | `ariaLabel` | `string` | `'Stories player'` | Accessible label for the dialog region; announced by screen readers when the overlay opens |
+| `chromePlacement` | `'overlay' \| 'group'` | `'overlay'` | Where the progress bar and header live. `'overlay'` draws one copy above the player; `'group'` draws one inside every group slide, so both turn with the group. The type is exported as `ChromePlacement`. |
 | `defaultImageDuration` | `number` | `5000` | Auto-advance duration for an image story, in milliseconds |
 | `desktopLayout` | `'single' \| 'carousel'` | `'single'` | Desktop layout. `'carousel'` shows neighbouring groups as preview cards beside the active story and slides between groups. Phones always show the story alone. The type is exported as `DesktopLayout`. |
 | `enableKeyboard` | `boolean` | `true` | Enable keyboard navigation (left/right arrows, Escape) |
@@ -343,7 +357,7 @@ Takes every input above except the open-state trio — `isOpen`, `initialGroupIn
 
 ## Template Slot Context Types [#template-slot-context-types]
 
-Every context type is exported, so a slot can be annotated where the compiler cannot infer it — `StoriesSlideContext`, `StoriesHeaderContext`, `StoriesFooterContext`, `StoriesProgressBarContext`, `StoriesNavigationContext`, `StoriesLoadingContext`, `StoriesErrorContext` and `StoriesGroupPreviewContext`, alongside `StoriesNavigationActions`, `DesktopLayout` and `StoriesApi`:
+Every context type is exported, so a slot can be annotated where the compiler cannot infer it — `StoriesSlideContext`, `StoriesHeaderContext`, `StoriesFooterContext`, `StoriesProgressBarContext`, `StoriesNavigationContext`, `StoriesLoadingContext`, `StoriesErrorContext` and `StoriesGroupPreviewContext`, alongside `StoriesNavigationActions`, `DesktopLayout`, `ChromePlacement` and `StoriesApi`:
 
 <CodeBlock code={slotContexts} language="typescript" />
 
@@ -358,7 +372,7 @@ Class names are plain (not scoped), so a stylesheet loaded after `@reelkit/angul
 | `.rk-stories-overlay--sliding` | Overlay | Carousel slide running; the player canvas is hidden |
 | `.rk-stories-swipe-wrapper` | Overlay | Swipe-to-close wrapper (hosts nav buttons + canvas) |
 | `.rk-stories-container` | Overlay | Rounded story canvas (position, overflow) |
-| `.rk-stories-ui-layer` | Overlay | One chrome layer over the player (header, progress, hearts) |
+| `.rk-stories-ui-layer` | Overlay | One chrome layer over the player (header, progress, hearts). With `chromePlacement="group"` one inside every group slide instead (header, progress), and the hearts sit directly in the player |
 | `.rk-stories-ui-layer--hidden` | Overlay | Chrome hidden state (toggled by `hideUIOnPause`) |
 | `.rk-stories-error` | Overlay | Error state (centred icon + text) |
 | `.rk-stories-error-text` | Overlay | Error message text |

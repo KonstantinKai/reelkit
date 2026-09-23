@@ -15,6 +15,7 @@ import urlState3 from '../../snippets/stories-player/url-state-3.tsx?raw';
 import urlState4 from '../../snippets/stories-player/url-state-4.tsx?raw';
 import rememberingWhatWasSeen from '../../snippets/stories-player/remembering-what-was-seen.tsx?raw';
 import desktopCarousel from '../../snippets/stories-player/desktop-carousel.tsx?raw';
+import chromePlacement from '../../snippets/stories-player/chrome-placement.tsx?raw';
 import transitions from '../../snippets/stories-player/transitions.tsx?raw';
 import renderheader from '../../snippets/stories-player/renderheader.tsx?raw';
 import renderfooter from '../../snippets/stories-player/renderfooter.tsx?raw';
@@ -220,6 +221,18 @@ import theming from '../../snippets/stories-player/theming.css?raw';
 - **计时器会等滑动结束。** 卡片停止移动之前，故事不会前进，也不会为它触发 `onStoryViewed`。
 - **所有切换分组的方式都会滑动**：点击卡片、`StoriesApi.goToGroup`、`nextGroup` 和 `prevGroup`，以及在分组末尾继续按方向键。触摸滑动本身已经移动了播放器，因此不会再叠加滑动。
 
+## 每个分组自带进度条和页眉 [#chrome-placement]
+
+默认情况下，播放器上方只有一个进度条和一个页眉，分组切换完成后才换成新分组的内容。设置 `chromePlacement="group"` 后，每个分组都在自己的幻灯片里拥有一份，二者会像 Instagram 那样随分组一起转动。
+
+<CodeBlock code={chromePlacement} language="tsx" />
+
+- **相邻分组显示它停在哪里。** 播放器转向它时，它的进度条和页眉显示它将打开的那个 story，尚未播放任何部分。
+- **正在离开的分组保持原样。** 它的进度条在转动结束前保留原有进度，所以一个已播完的分组会保持填满，而不会在转动中途清空。
+- **屏幕上的每个分组都会调用自定义渲染器。** `renderProgressBar` 和 `renderHeader` 会收到 `groupIndex` 和 `isActive`；对相邻分组，`isActive` 为 `false`，进度信号保持不变。
+- **自定义页眉位于滑动区域内。** 点击它会切换 story，除非点在 `button`、链接或带 `role="button"` 的元素上，所以其中的每个控件都应是这几类元素之一。
+- **桌面端轮播在滑动过程中不受影响。** 卡片滑动时播放器是隐藏的，因此这个选项在分组打开后才会显现。
+
 ## API 参考 [#api-reference]
 
 ### StoriesOverlayProps [#storiesoverlayprops]
@@ -244,8 +257,9 @@ import theming from '../../snippets/stories-player/theming.css?raw';
 | `minSegmentWidth` | `number` | 8 | 进度条分段的最小宽度（像素） |
 | `apiRef` | `MutableRefObject<StoriesApi \| null>` | - | 用于访问命令式 StoriesApi 的 ref |
 | `desktopLayout` | `'single' \| 'carousel'` | 'single' | 桌面端布局。'carousel' 在当前故事两侧以预览卡片显示相邻分组，并在分组之间滑动。手机上始终只显示故事本身。类型以 `DesktopLayout` 导出。 |
+| `chromePlacement` | `'overlay' \| 'group'` | 'overlay' | 进度条和页眉放在哪里。'overlay' 在播放器上方绘制一份；'group' 在每个分组的幻灯片里各绘制一份，二者随分组一起转动。类型以 `ChromePlacement` 导出。 |
 | `viewed` | `StoriesViewedStateController` | - | 观看者已看过的内容，来自 createStoriesViewedStateController()。分组从第一个未看的 story 续播，每个显示过的 story 都会被记录，轮播卡片会为看完的分组显示灰色的环。把同一个控制器交给 StoriesRingList。 |
-| `renderHeader` | `(props: HeaderRenderProps<T>) => ReactNode` | - | 自定义页眉渲染器。接收作者、story 以及暂停 / 静音状态。 |
+| `renderHeader` | `(props: HeaderRenderProps<T>) => ReactNode` | - | 自定义页眉渲染器。接收作者、story 以及暂停 / 静音状态。使用 `chromePlacement="group"` 时页眉位于滑动区域内，参见[每个分组自带进度条和页眉](/docs/stories-player#chrome-placement)。 |
 | `renderFooter` | `(props: FooterRenderProps<T>) => ReactNode` | - | 自定义页脚渲染器。接收作者和 story 信息。 |
 | `renderSlide` | `(props: SlideRenderProps<T>) => ReactNode` | - | 自定义幻灯片渲染器，替换默认的图片 / 视频幻灯片。 |
 | `renderNavigation` | `(props: NavigationRenderProps) => ReactNode` | - | 自定义桌面端导航。替换默认的上一张 / 下一张箭头按钮。 |
@@ -391,7 +405,7 @@ Use the `apiRef` 属性做命令式控制：
 
 ### CanvasProgressBar [#canvasprogressbar]
 
-基于 canvas 的高性能分段进度条。为每个 story 渲染一段，并用 `requestAnimationFrame`为当前段做填充动画。story 很多的分组会启用滑动窗口。
+基于 canvas 的高性能分段进度条。为每个 story 渲染一段，并用 `requestAnimationFrame`为当前段做填充动画。story 很多的分组会启用滑动窗口。对只需显示分组停在哪里的进度条，传入 `live={false}`：它只在信号变化和尺寸改变后重绘，没有动画循环。
 
 <CodeBlock code={canvasprogressbar} language="tsx" />
 
@@ -496,7 +510,7 @@ Use the `apiRef` 属性做命令式控制：
 | `.rk-stories-overlay` | Overlay | 固定的全屏背景层（背景、z-index） |
 | `.rk-stories-swipe-wrapper` | Overlay | 滑动关闭的包装层（容纳导航按钮 + canvas） |
 | `.rk-stories-container` | Overlay | 圆角的 story 画布（定位、溢出） |
-| `.rk-stories-ui-layer` | Overlay | 界面浮层容器（页眉、进度、导航） |
+| `.rk-stories-ui-layer` | Overlay | 界面浮层容器（页眉、进度、导航）。使用 `chromePlacement="group"` 时位于每个分组的幻灯片内 |
 | `.rk-stories-ui-layer--hidden` | Overlay | 界面隐藏状态（由 hideUIOnPause 切换） |
 | `.rk-stories-error` | Overlay | 错误状态（居中图标 + 文字） |
 | `.rk-stories-error-text` | Overlay | 错误信息文字 |

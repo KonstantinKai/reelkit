@@ -12,6 +12,7 @@ import urlState2 from '../../snippets/angular-stories-player/url-state-2.ts?raw'
 import urlState3 from '../../snippets/angular-stories-player/url-state-3.ts?raw';
 import rememberingWhatWasSeen from '../../snippets/angular-stories-player/remembering-what-was-seen.ts?raw';
 import desktopCarousel from '../../snippets/angular-stories-player/desktop-carousel.ts?raw';
+import chromePlacement from '../../snippets/angular-stories-player/chrome-placement.ts?raw';
 import transitions from '../../snippets/angular-stories-player/transitions.ts?raw';
 import templateSlots from '../../snippets/angular-stories-player/template-slots.ts?raw';
 import slideSlot from '../../snippets/angular-stories-player/slide-slot.ts?raw';
@@ -167,6 +168,18 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 
 <CodeBlock code={desktopCarousel} language="typescript" />
 
+## हर समूह का अपना प्रोग्रेस बार और हेडर [#chrome-placement]
+
+डिफ़ॉल्ट रूप से एक प्रोग्रेस बार और एक हेडर प्लेयर के ऊपर रहते हैं और समूह बदल जाने के बाद नए समूह पर आ जाते हैं। `chromePlacement="group"` सेट करने पर हर समूह को अपनी slide के अंदर अपना बार और हेडर मिलता है, और दोनों Instagram की तरह समूह के साथ घूमते हैं।
+
+<CodeBlock code={chromePlacement} language="typescript" />
+
+- **पड़ोसी समूह दिखाता है कि वह कहाँ रुका है।** जब प्लेयर उसकी ओर घूमता है, उसका बार और हेडर वह story दिखाते हैं जिस पर समूह खुलेगा, जिसका अभी कुछ भी नहीं चला है।
+- **छोड़ा जा रहा समूह जैसा था वैसा रहता है।** घुमाव ख़त्म होने तक उसका बार अपनी प्रोग्रेस बनाए रखता है, इसलिए अंत तक देखा गया समूह घुमाव के बीच ख़ाली नहीं होता, भरा ही रहता है।
+- **ये टेम्पलेट स्क्रीन पर मौजूद हर समूह के लिए बनते हैं।** `rkStoriesProgressBar` और `rkStoriesHeader` के कॉन्टेक्स्ट में `groupIndex` और `isActive` होते हैं; पड़ोसी समूह के लिए `isActive` `false` होता है और प्रोग्रेस के सिग्नल नहीं बदलते।
+- **`rkStoriesHeader` टेम्पलेट swipe क्षेत्र के अंदर होता है।** उस पर tap करने से story बदलती है, जब तक tap किसी `button`, लिंक या `role="button"` वाले element पर न पड़े, इसलिए उसके हर control को इन्हीं में से एक बनाएँ।
+- **डेस्कटॉप कैरोसेल slide के दौरान नहीं बदलता।** कार्ड slide होते समय प्लेयर छिपा रहता है, इसलिए यह विकल्प समूह खुलने के बाद दिखता है।
+
 ## टेम्पलेट स्लॉट [#template-slots]
 
 आठ `ng-template` डायरेक्टिव प्लेयर के किसी भी हिस्से को बदल देते हैं। हर एक को टाइप किया हुआ कॉन्टेक्स्ट मिलता है, जिसमें सबसे काम का मान implicit होता है — इसलिए हेडर स्लॉट में `let-author` बिना नाम दिए ही लेखक दे देता है। जो स्लॉट आप नहीं देते, वहाँ डिफ़ॉल्ट प्रस्तुति बनी रहती है।
@@ -176,10 +189,10 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 | `rkStoriesError` | `RkStoriesErrorDirective` | `{ $implicit: story, storyIndex, groupIndex }` | अंतर्निहित "Content unavailable" पैनल को बदलता है, जो चालू story के ऊपर बनता है |
 | `rkStoriesFooter` | `RkStoriesFooterDirective` | `{ $implicit: story, author, storyIndex }` | चालू story के नीचे फ़ुटर जोड़ता है; प्लेयर खुद कोई फ़ुटर नहीं बनाता |
 | `rkStoriesGroupPreview` | `RkStoriesGroupPreviewDirective` | `{ $implicit: group, groupIndex, story, offset, viewedCount, onOpen }` | डेस्कटॉप कैरोसेल के कार्ड को भरता है; जगह, स्केल और स्लाइडिंग प्लेयर ही संभालता रहता है |
-| `rkStoriesHeader` | `RkStoriesHeaderDirective` | `{ $implicit: author, story, storyIndex, isPaused, isMuted, isVideo, onToggleSound, onTogglePause, onClose }` | डिफ़ॉल्ट हेडर (लेखक, पॉज़, साउंड, बंद करना) बदलता है |
+| `rkStoriesHeader` | `RkStoriesHeaderDirective` | `{ $implicit: author, story, storyIndex, isPaused, isMuted, isVideo, groupIndex, isActive, onToggleSound, onTogglePause, onClose }` | डिफ़ॉल्ट हेडर (लेखक, पॉज़, साउंड, बंद करना) बदलता है। `chromePlacement="group"` के साथ यह swipe क्षेत्र के अंदर होता है; देखें [हर समूह का अपना प्रोग्रेस बार और हेडर](/docs/angular-stories-player#chrome-placement)। |
 | `rkStoriesLoading` | `RkStoriesLoadingDirective` | `{ $implicit: story, storyIndex, groupIndex }` | चालू story लोड होते समय हेडर में दिखने वाले डिफ़ॉल्ट स्पिनर को बदलता है |
 | `rkStoriesNavigation` | `RkStoriesNavigationDirective` | `{ $implicit: { onPrevStory, onNextStory, onPrevGroup, onNextGroup } }` | डेस्कटॉप के दोनों तीर बदल देता है |
-| `rkStoriesProgressBar` | `RkStoriesProgressBarDirective` | `{ $implicit: group, totalStories, activeIndex, progress }` | canvas प्रोग्रेस बार को बदलता है। `activeIndex` और `progress` कोर सिग्नल हैं — उन्हें `toAngularSignal` से जोड़ें। |
+| `rkStoriesProgressBar` | `RkStoriesProgressBarDirective` | `{ $implicit: group, totalStories, activeIndex, progress, groupIndex, isActive }` | canvas प्रोग्रेस बार को बदलता है। `activeIndex` और `progress` कोर सिग्नल हैं — उन्हें `toAngularSignal` से जोड़ें। |
 | `rkStoriesSlide` | `RkStoriesSlideDirective` | `{ $implicit: story, index, groupIndex, isActive, size, activeGroupIndex, activeStoryIndex, onDurationReady, onReady, onWaiting, onError, onEnded }` | डिफ़ॉल्ट इमेज और वीडियो स्लाइड बदलता है |
 
 <CodeBlock code={templateSlots} language="typescript" />
@@ -258,7 +271,7 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 
 | कंपोनेंट | यह क्या है |
 | --- | --- |
-| `RkCanvasProgressBarComponent` | canvas पर खंडों वाला प्रोग्रेस बार, सीधे टाइमर सिग्नल से बनाया गया। बहुत सारी stories वाले समूह के लिए खिसकती खिड़की संभालता है। |
+| `RkCanvasProgressBarComponent` | canvas पर खंडों वाला प्रोग्रेस बार, सीधे टाइमर सिग्नल से बनाया गया। बहुत सारी stories वाले समूह के लिए खिसकती खिड़की संभालता है। `[live]="false"` के साथ यह बिना animation loop के सिर्फ़ सिग्नल बदलने पर और resize के बाद बनता है। |
 | `RkHeartAnimationComponent` | डबल-टैप वाला दिल। एनिमेशन खत्म होने पर `(completed)` भेजता है, ताकि माता-पिता कंपोनेंट उसे हटा सके। |
 | `RkImageStorySlideComponent` | `object-fit: cover` वाली पूरी चौड़ाई की इमेज स्लाइड, जो लोड और त्रुटि की सूचना output से देती है। |
 | `RkStoriesRingComponent` | ग्रेडिएंट रिंग वाला गोल अवतार। दो स्थितियाँ: कुछ देखना बाकी हो तो घूमता है, पूरा देख लेने पर सपाट हो जाता है। `(clicked)` भेजता है। |
@@ -294,6 +307,7 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 | इनपुट | टाइप | डिफ़ॉल्ट | विवरण |
 | --- | --- | --- | --- |
 | `ariaLabel` | `string` | `'Stories player'` | डायलॉग क्षेत्र का सुलभ नाम; ओवरले खुलने पर स्क्रीन रीडर इसे पढ़ते हैं |
+| `chromePlacement` | `'overlay' \| 'group'` | `'overlay'` | प्रोग्रेस बार और हेडर कहाँ रहते हैं। `'overlay'` प्लेयर के ऊपर एक कॉपी बनाता है; `'group'` हर समूह की slide में एक बनाता है, जिससे दोनों समूह के साथ घूमते हैं। यह टाइप `ChromePlacement` नाम से export होता है। |
 | `defaultImageDuration` | `number` | `5000` | इमेज story के ऑटो-एडवांस की अवधि, मिलीसेकंड में |
 | `desktopLayout` | `'single' \| 'carousel'` | `'single'` | डेस्कटॉप लेआउट। `'carousel'` पड़ोसी समूहों को चालू story के बगल में प्रीव्यू कार्ड की तरह दिखाता है और समूहों के बीच स्लाइड करता है। फ़ोन पर हमेशा अकेली story ही दिखती है। यह टाइप `DesktopLayout` के रूप में एक्सपोर्ट होता है। |
 | `enableKeyboard` | `boolean` | `true` | कीबोर्ड नेविगेशन चालू करता है (बाएँ/दाएँ तीर, Escape) |
@@ -343,7 +357,7 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 
 ## टेम्पलेट स्लॉट के कॉन्टेक्स्ट टाइप [#template-slot-context-types]
 
-हर कॉन्टेक्स्ट टाइप एक्सपोर्ट किया गया है, ताकि जहाँ कंपाइलर अनुमान न लगा सके वहाँ स्लॉट पर टाइप लिखा जा सके — `StoriesSlideContext`, `StoriesHeaderContext`, `StoriesFooterContext`, `StoriesProgressBarContext`, `StoriesNavigationContext`, `StoriesLoadingContext`, `StoriesErrorContext` और `StoriesGroupPreviewContext`, साथ में `StoriesNavigationActions`, `DesktopLayout` और `StoriesApi`:
+हर कॉन्टेक्स्ट टाइप एक्सपोर्ट किया गया है, ताकि जहाँ कंपाइलर अनुमान न लगा सके वहाँ स्लॉट पर टाइप लिखा जा सके — `StoriesSlideContext`, `StoriesHeaderContext`, `StoriesFooterContext`, `StoriesProgressBarContext`, `StoriesNavigationContext`, `StoriesLoadingContext`, `StoriesErrorContext` और `StoriesGroupPreviewContext`, साथ में `StoriesNavigationActions`, `DesktopLayout`, `ChromePlacement` और `StoriesApi`:
 
 <CodeBlock code={slotContexts} language="typescript" />
 
@@ -358,7 +372,7 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 | `.rk-stories-overlay--sliding` | Overlay | कैरोसेल की स्लाइड चल रही है; प्लेयर का कैनवस छिपा रहता है |
 | `.rk-stories-swipe-wrapper` | Overlay | स्वाइप से बंद करने वाला रैपर (तीर और कैनवस इसी में) |
 | `.rk-stories-container` | Overlay | गोल किनारों वाला story कैनवस (position, overflow) |
-| `.rk-stories-ui-layer` | Overlay | प्लेयर के ऊपर इंटरफ़ेस की एक परत (हेडर, प्रोग्रेस, दिल) |
+| `.rk-stories-ui-layer` | Overlay | प्लेयर के ऊपर इंटरफ़ेस की एक परत (हेडर, प्रोग्रेस, दिल)। `chromePlacement="group"` के साथ इसकी जगह हर समूह की slide में एक परत (हेडर, प्रोग्रेस), और दिल सीधे प्लेयर में रहते हैं |
 | `.rk-stories-ui-layer--hidden` | Overlay | इंटरफ़ेस छिपी स्थिति (`hideUIOnPause` इसे बदलता है) |
 | `.rk-stories-error` | Overlay | त्रुटि की स्थिति (बीच में आइकन और पाठ) |
 | `.rk-stories-error-text` | Overlay | त्रुटि संदेश का पाठ |

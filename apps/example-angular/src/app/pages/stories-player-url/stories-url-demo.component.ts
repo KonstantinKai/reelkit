@@ -13,6 +13,7 @@ import {
   RkStoriesRingListComponent,
   RkStoriesUrlOverlayComponent,
   createStoriesViewedStateController,
+  type ChromePlacement,
   type DesktopLayout,
   type StoriesGroup,
   type StoriesViewedStateController,
@@ -104,6 +105,7 @@ const _kButtonStyle =
       [controller]="stories"
       [groups]="loaded()"
       [desktopLayout]="desktopLayout()"
+      [chromePlacement]="chromePlacement()"
       [viewed]="rememberSeen() ? viewed : undefined"
     />
   `,
@@ -116,6 +118,7 @@ export class StoriesUrlDemoComponent implements OnInit {
   readonly hash = input.required<boolean>();
   readonly rememberSeen = input.required<boolean>();
   readonly desktopLayout = input.required<DesktopLayout>();
+  readonly chromePlacement = input.required<ChromePlacement>();
 
   private readonly _injector = inject(Injector);
   private readonly _router = inject(Router);
