@@ -122,6 +122,8 @@ Register the stylesheet once:
 
 ## Quick Start [#quick-start]
 
+`rk-stories-overlay` renders the full-screen player. Pair it with `rk-stories-ring-list` for the Instagram-style entry points: a ring emits `(selected)` with its group index, which the host keeps as `initialGroupIndex` before setting `isOpen`. The player never closes itself; it emits `(closed)`, and the host sets `isOpen` back to `false`.
+
 <CodeBlock code={basicUsage} language="typescript" />
 
 ## URL State [#url-state]
@@ -160,13 +162,28 @@ Register the stylesheet once:
 
 ## Remembering What Was Seen [#remembering-what-was-seen]
 
-`createStoriesViewedStateController` records every story shown and answers where a user resumes. Hand the same controller to the ring list and the player, and the two agree about what is left to watch.
+Rings show a gradient until a group has been watched to the end, and a group reopens on the first story the viewer has not seen. Both come from one `createStoriesViewedStateController`, created once where the feed lives and handed to the ring list and the player as `viewed`: they read the store, follow it and record what is shown by themselves. A stored entry names the author and the story by id, so it survives the feed being reordered, and the same controller works in React and Vue.
 
 <CodeBlock code={rememberingWhatWasSeen} language="typescript" />
 
+- **The opening story counts.** The story already on screen is reported viewed as the player opens, so opening a one-story group and closing marks it watched.
+- **Swiping onward resumes too.** `resumeStoryIndex` is consulted for every group reached for the first time this session, the one the player opens on included, unless `initialStoryIndex` names a story outright; a group already swiped through reopens where it was left. An explicit `resumeStoryIndex` input wins over the controller's answer.
+- **A link still wins.** With `rk-stories-url-overlay`, the parameter decides where the player opens, whatever has been stored. Everywhere else the resume callback decides.
+- **A count is a position, not a tally.** An entry names the furthest story reached, so adding a story to a watched group lights its ring again, and removing one from the middle shortens the count.
+- **Storage is pluggable.** Pass `storage: createSessionStorageAdapter()` to forget on tab close, or your own `StorageAdapter`. Two open tabs stay in step through the browser's storage event.
+- **A player created only when it opens reads too late.** `rk-stories-overlay` reads the store as soon as it exists, while it is still closed, and so does `rk-stories-ring-list`. Wrapped in `@if (open)` the overlay has no such moment: call `attachViewedState(() => this.viewed)` in the host's constructor, which attaches for as long as the host lives. The options, and the lower-level pieces this is built from, are on the [Stories Core](/docs/stories-core#viewed-controller) page.
+
 ## Desktop Carousel [#desktop-carousel]
 
+Set `desktopLayout="carousel"` to lay the player out like the Instagram web viewer: the active story stays in the centre at its usual size, and up to two neighbouring groups sit on each side as smaller, dimmed cards. Clicking a card opens that group, and the cards slide across while the group changes. Pass the same `viewed` controller the ring list takes, and a watched group's card gets the muted ring.
+
 <CodeBlock code={desktopCarousel} language="typescript" />
+
+- **Phones keep the plain player.** Up to 768px wide the cards are not rendered and swipes use `groupTransition`, as with the default `'single'` layout. Resizing across that width switches live. While the cards show, groups slide rather than turn, whatever `groupTransition` says.
+- **Each card previews where the group opens**: the story it was left on this session, else what `resumeStoryIndex` returns. It shows the video poster or the image. A story with neither, like a text story on a gradient, is drawn by your `rkStoriesSlide` template at the player's size and scaled down; a video without a poster shows the card background. That preview receives `isActive: false`, and its lifecycle callbacks do nothing, so it cannot drive the timer of the story on screen. Keep whatever a slide does when it is created, such as playback or analytics, behind `isActive`.
+- **The timer waits for the slide.** The story does not start its timer, and `(storyViewed)` does not fire for it, until the cards have finished moving.
+- **Every way of changing group slides**: a card click, `StoriesApi.goToGroup`, `nextGroup` and `prevGroup`, and the arrow keys past the end of a group. A touch swipe moves the player itself, so it gets no slide on top.
+- **Restyling a card** is the `rkStoriesGroupPreview` slot, shown under [Custom Carousel Cards](#custom-carousel-cards). The player still positions, scales and slides the card.
 
 ## Progress Bar and Header per Group [#chrome-placement]
 
@@ -204,6 +221,18 @@ Every slot renders through the player's own injector, so a component drawn insid
 ### Custom Slides [#custom-slides]
 
 <CodeBlock code={slideSlot} language="typescript" />
+
+A custom slide tells the player how its content is doing through callbacks in the `rkStoriesSlide` context. The player acts on them only for the story on screen; a call from any other slide is ignored.
+
+| Callback | When |
+| --- | --- |
+| `onReady` | Content is ready (image loaded, video playing). The progress timer starts, or waits for a carousel slide to end. |
+| `onWaiting` | Content stalls (video buffering mid-playback). The spinner shows and the timer pauses. |
+| `onError` | Content failed to load. The error panel is shown and the timer pauses. |
+| `onDurationReady` | Report the real media length in milliseconds, for example from video metadata, so the timer matches it. A `duration` set on the story wins over it. |
+| `onEnded` | The media finished on its own, for example a video played to its end. The player moves to the next story without waiting for the timer. |
+
+`rk-image-story-slide` emits `(loaded)` and `(failed)`, and `rk-video-story-slide` emits `(playbackStarted)`, `(buffering)`, `(failed)`, `(durationReady)` and `(finished)`, so a slide template that wraps them only has to pass each one on to the matching callback.
 
 <Callout type="info" title="Preloader caching">
   The built-in `RkImageStorySlideComponent` and `RkVideoStorySlideComponent` preload the next story in the background. When a viewer reaches a preloaded story the content appears instantly, with no loading spinner. A URL that failed once is remembered too, so reopening a broken story shows the error straight away rather than retrying.
@@ -377,27 +406,113 @@ Class names are plain (not scoped), so a stylesheet loaded after `@reelkit/angul
 | `.rk-stories-error` | Overlay | Error state (centred icon + text) |
 | `.rk-stories-error-text` | Overlay | Error message text |
 | `.rk-stories-nav-btn` | Overlay | Desktop prev/next arrow |
+| `.rk-stories-progress-bar` | ProgressBar | Canvas progress bar positioning wrapper |
 | `.rk-stories-slide-wrapper` | Overlay | One group of stories (outer slide) |
 | `.rk-stories-story` | Overlay | A single story (inner slide root) |
 | `.rk-stories-image` | ImageStorySlide | Full-bleed image (`object-fit: cover`) |
 | `.rk-stories-video` | VideoStorySlide | Video slide container |
+| `.rk-stories-video-element` | VideoStorySlide | The shared \<video> element |
 | `.rk-stories-video-poster` | VideoStorySlide | Poster frame, shown until playback starts |
+| `.rk-stories-video-poster--visible` | VideoStorySlide | Poster visible state (before playback) |
 | `.rk-stories-heart` | HeartAnimation | The double-tap heart |
 | `.rk-stories-header` | StoryHeader | Header row (avatar, name, time, controls) |
+| `.rk-stories-header--hidden` | StoryHeader | Header hidden state (`visible` input set to `false`) |
+| `.rk-stories-header-avatar` | StoryHeader | Author avatar image |
+| `.rk-stories-header-name` | StoryHeader | Author name text |
+| `.rk-stories-header-verified` | StoryHeader | Verified badge container |
+| `.rk-stories-header-time` | StoryHeader | Time-ago text |
+| `.rk-stories-header-actions` | StoryHeader | Right-side controls (sound, pause, close) |
 | `.rk-stories-header-btn` | StoryHeader | Pause, sound and close buttons |
+| `.rk-stories-header-btn--desktop` | StoryHeader | The pause button, shown only wider than 768px |
 | `.rk-stories-header-spinner` | StoryHeader | Loading spinner while the active story loads |
 | `.rk-stories-ring` | StoriesRing | Circular avatar with the gradient ring |
 | `.rk-stories-ring--active` | StoriesRing | Ring with stories left to watch (rotating gradient) |
 | `.rk-stories-ring-avatar` | StoriesRing | The avatar image inside the ring |
 | `.rk-stories-ring-list` | StoriesRingList | Horizontal row of rings |
-| `.rk-stories-carousel` | Carousel | Desktop carousel layer |
-| `.rk-stories-card` | Carousel | One preview card beside the player |
-| `.rk-stories-card-image` | Carousel | The card's preview picture |
+| `.rk-stories-ring-list-item` | StoriesRingList | Ring + name column |
+| `.rk-stories-ring-list-name` | StoriesRingList | Author name below each ring |
+| `.rk-stories-carousel` | Carousel | Layer of preview cards behind the player |
+| `.rk-stories-carousel--instant` | Carousel | First frame of a slide, laid out without a transition |
+| `.rk-stories-card` | Carousel | One positioned preview card |
+| `.rk-stories-card--center` | Carousel | Card in the centre slot during a slide |
+| `.rk-stories-card--hidden` | Carousel | Card past the two shown on a side |
+| `.rk-stories-card-button` | Carousel | Default card content (the button that opens the group) |
+| `.rk-stories-card-image` | Carousel | The card's preview picture (poster or image) |
 | `.rk-stories-card-frame` | Carousel | A slide template drawn as a card preview, scaled down |
+| `.rk-stories-card-scrim` | Carousel | Dimming layer over the preview |
+| `.rk-stories-card-info` | Carousel | Ring, author name and time column |
+| `.rk-stories-card-name` | Carousel | Author name |
+| `.rk-stories-card-time` | Carousel | Time-ago text |
 
 ## Theming [#theming]
 
 Every colour, size, duration and z-index is a `--rk-stories-*` custom property on `:root`, so a rebrand is a stylesheet rather than a component change. The tokens are shared with the React and Vue players.
+
+| Token | Default | Controls |
+| --- | --- | --- |
+| `--rk-stories-overlay-bg` | `#000` | Full-screen backdrop color |
+| `--rk-stories-overlay-z` | `9999` | Overlay z-index |
+| `--rk-stories-swipe-gap` | `16px` | Gap between nav buttons and the story canvas |
+| `--rk-stories-container-radius` | `12px` | Rounded corners on the story canvas (desktop) |
+| `--rk-stories-container-radius-mobile` | `0` | Corners on the story canvas on a phone |
+| `--rk-stories-ui-z` | `15` | Chrome layer z-index (header, progress bar) |
+| `--rk-stories-ui-transition` | `200ms` | Fade duration when `hideUIOnPause` toggles |
+| `--rk-stories-top-shade-height` | `120px` | Top gradient scrim height behind the header |
+| `--rk-stories-top-shade-bg` | `linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%)` | Top gradient scrim color |
+| `--rk-stories-error-z` | `5` | Error panel z-index |
+| `--rk-stories-error-bg` | `linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)` | Error state background gradient |
+| `--rk-stories-error-fg` | `rgba(255, 255, 255, 0.5)` | Error icon and text color |
+| `--rk-stories-error-gap` | `12px` | Space between the error icon and text |
+| `--rk-stories-error-text-size` | `13px` | Error message font size |
+| `--rk-stories-nav-z` | `20` | Desktop nav button z-index |
+| `--rk-stories-nav-size` | `44px` | Desktop prev/next button size |
+| `--rk-stories-nav-bg` | `rgba(255, 255, 255, 0.1)` | Desktop nav button background |
+| `--rk-stories-nav-bg-hover` | `rgba(255, 255, 255, 0.2)` | Desktop nav button hover background |
+| `--rk-stories-nav-fg` | `rgba(255, 255, 255, 0.7)` | Desktop nav button icon color |
+| `--rk-stories-nav-fg-hover` | `#fff` | Desktop nav button hover icon color |
+| `--rk-stories-nav-transition` | `150ms` | Desktop nav button hover transition |
+| `--rk-stories-video-bg` | `#000` | Letterbox background behind \<video> |
+| `--rk-stories-video-poster-transition` | `200ms` | Poster fade duration when the video starts playing |
+| `--rk-stories-progress-bar-z` | `10` | Progress bar z-index |
+| `--rk-stories-progress-bar-padding` | `8px 8px 0` | Space around the progress bar |
+| `--rk-stories-card-bg` | `#262626` | Carousel card background, shown when there is no preview frame |
+| `--rk-stories-card-radius` | `8px` | Carousel card corner radius |
+| `--rk-stories-card-scrim` | `rgba(0, 0, 0, 0.45)` | Dimming over a side card |
+| `--rk-stories-card-fg` | `#fff` | Card text color |
+| `--rk-stories-card-name-size` | `14px` | Card author name font size |
+| `--rk-stories-card-time-fg` | `rgba(255, 255, 255, 0.7)` | Card time-ago text color |
+| `--rk-stories-card-time-size` | `13px` | Card time-ago font size |
+| `--rk-stories-card-gap` | `6px` | Spacing between the ring, name and time on a card |
+| `--rk-stories-card-transition` | `300ms` | Carousel slide duration |
+| `--rk-stories-ring-spin-duration` | `4s` | Rotation duration of a ring with stories left to watch |
+| `--rk-stories-ring-active-scale` | `0.95` | Ring scale while pressed |
+| `--rk-stories-ring-gradient` | `none` | Internal: the ring component writes its gradient here on every render, so setting it has no effect |
+| `--rk-stories-ring-list-gap` | `12px` | Spacing between rings in the list |
+| `--rk-stories-ring-list-padding` | `12px` | Inner padding around the ring list |
+| `--rk-stories-ring-list-item-gap` | `4px` | Space between a ring and its name |
+| `--rk-stories-ring-list-name-size` | `12px` | Author name font size below each ring |
+| `--rk-stories-header-z` | `5` | Header z-index |
+| `--rk-stories-header-top` | `18px` | Vertical offset of the header from the top of the story |
+| `--rk-stories-header-padding` | `12px 16px` | Inner padding of the header row |
+| `--rk-stories-header-gap` | `8px` | Space between the items of the header row |
+| `--rk-stories-header-transition` | `200ms` | Header fade duration when it hides |
+| `--rk-stories-header-avatar-size` | `32px` | Avatar width/height |
+| `--rk-stories-header-name-fg` | `#fff` | Author name color |
+| `--rk-stories-header-name-size` | `14px` | Author name font size |
+| `--rk-stories-header-name-weight` | `600` | Author name font weight |
+| `--rk-stories-header-time-fg` | `rgba(255, 255, 255, 0.6)` | Time-ago text color |
+| `--rk-stories-header-time-size` | `12px` | Time-ago font size |
+| `--rk-stories-header-actions-gap` | `8px` | Space between the header buttons |
+| `--rk-stories-header-btn-fg` | `#fff` | Header action icon color (close, sound, pause) |
+| `--rk-stories-header-btn-padding` | `4px` | Header button padding |
+| `--rk-stories-header-spinner-size` | `20px` | Loading spinner size |
+| `--rk-stories-header-spinner-track` | `rgba(255, 255, 255, 0.3)` | Loading spinner track color |
+| `--rk-stories-header-spinner-fg` | `#fff` | Loading spinner arc color |
+| `--rk-stories-header-spinner-duration` | `0.8s` | One spinner rotation |
+| `--rk-stories-heart-z` | `20` | Double-tap heart z-index |
+| `--rk-stories-heart-duration` | `800ms` | Pop-in/fade-out animation duration |
+
+Drop the snippet below into a stylesheet loaded after `@reelkit/angular-stories-player/styles.css`.
 
 <CodeBlock code={theming} language="css" />
 
@@ -405,9 +520,9 @@ Every colour, size, duration and z-index is a `--rk-stories-*` custom property o
 
 The overlay root is a modal dialog (`role="dialog"`, `aria-modal="true"`). Set `ariaLabel` to change the screen-reader announcement; it defaults to "Stories player".
 
-The overlay captures focus on open and returns it to the trigger on close. Tab and Shift+Tab cycle through focusable elements inside, wrapping at either end; focus that escapes (click outside, programmatic focus) gets pulled back. Body scroll stays locked for as long as the player is open. Implemented with `captureFocusForReturn` and `createFocusTrap` from `@reelkit/angular`.
+The overlay captures focus on open and returns it to the trigger on close. Tab and Shift+Tab cycle through focusable elements inside, wrapping at either end; focus that escapes (click outside, programmatic focus) gets pulled back. Body scroll stays locked for as long as the player is open. Implemented with `captureFocusForReturn` and `createFocusTrap` from `@reelkit/core`, re-exported by `@reelkit/angular`.
 
-With the desktop carousel, each default card is a button labelled "Open stories by" and the author's name. The cards come after the player controls in the tab order, and are left out of it while a slide runs.
+With the desktop carousel, each default card is a button labelled "Open stories by" and the author's name. The cards come after the player controls in the tab order, and are left out of it while a slide runs; a card that opens its group hands focus back to the dialog rather than dropping it on the page.
 
 ## Server-Side Rendering [#server-side-rendering]
 
@@ -417,6 +532,6 @@ The player renders nothing until it is open, and reads no browser API during con
 
 | Key | Action |
 | --- | --- |
-| `ArrowLeft` | Previous story |
-| `ArrowRight` | Next story |
+| `ArrowLeft` | Previous story. On a group's first story, the previous group, opened where it was left; nothing on the first group. |
+| `ArrowRight` | Next story. On a group's last story, the next group; on the last group, the player closes. |
 | `Escape` | Close player |

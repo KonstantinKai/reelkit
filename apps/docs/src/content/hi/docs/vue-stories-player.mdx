@@ -145,7 +145,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 - ऐसा पैरामीटर जो किसी उपयोगकर्ता या स्टोरी को नहीं बताता — पुराना बुकमार्क, हाथ से बदला मान, समूह के अंत से आगे की स्टोरी — पड़ोसी को खोलने के बजाय URL से हटा दिया जाता है।
 - राउटर वाले ऐप को राउटर पर आधारित अडैप्टर देना चाहिए, ताकि नेविगेशन का एकमात्र स्रोत राउटर ही रहे। `@reelkit/vue/vue-router-url-adapter` का `useVueRouterUrlAdapter` Vue Router के लिए तैयार अडैप्टर है; राउटर के पीछे से हिस्ट्री लिखने पर उसकी location पुरानी रह जाती है और अगली नेविगेशन पर पैरामीटर गिर जाता है।
 
-**स्थायी लिंक।** उपयोगकर्ता डिफ़ॉल्ट रूप से स्थिति से पहचाना जाता है, इसलिए बुकमार्क किया गया `?story=2.0` फ़ीड का क्रम बदलते ही किसी और को खोल देगा। इसके बजाय उपयोगकर्ता को स्थायी id से पहचानें — `outerCodec` id को URL में लिखता है और `outerLocator` बताता है कि वह कहाँ है। स्टोरी वाला आधा हिस्सा हल हुए समूह के भीतर सामान्य इंडेक्स ही रहता है।
+**स्थायी लिंक।** उपयोगकर्ता डिफ़ॉल्ट रूप से स्थिति से पहचाना जाता है, इसलिए बुकमार्क किया गया `?story=2.0` फ़ीड का क्रम बदलते ही किसी और को खोल देगा। इसके बजाय उपयोगकर्ता को स्थायी id से पहचानें — `outerCodec` id को URL में लिखता है और `outerLocator` बताता है कि वह कहाँ है। समूह के भीतर स्टोरी के लिए भी यही करने को `innerCodec` के साथ `innerLocate` और `innerIdentify` दें; इन्हें छोड़ दें तो स्टोरी वाला आधा हिस्सा हल हुए समूह के भीतर सामान्य इंडेक्स ही रहता है। स्टोरी की id में `.` नहीं होना चाहिए, क्योंकि वही दोनों हिस्सों को अलग करता है।
 
 <CodeBlock code={urlState2} language="typescript" />
 
@@ -420,6 +420,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 | `.rk-stories-header-time` | StoryHeader | सापेक्ष समय का पाठ |
 | `.rk-stories-header-actions` | StoryHeader | दाईं ओर की क्रियाएँ (ध्वनि, पॉज़, बंद) |
 | `.rk-stories-header-btn` | StoryHeader | हेडर का क्रिया बटन |
+| `.rk-stories-header-btn--desktop` | StoryHeader | पॉज़ बटन, सिर्फ़ 768px से चौड़ी स्क्रीन पर दिखता है |
 | `.rk-stories-header-spinner` | StoryHeader | लोडिंग स्पिनर |
 | `.rk-stories-image` | ImageStorySlide | इमेज स्टोरी का एलिमेंट |
 | `.rk-stories-video` | VideoStorySlide | वीडियो स्टोरी का कंटेनर |
@@ -440,6 +441,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 | `.rk-stories-card--hidden` | Carousel | एक ओर दिखने वाले दो कार्ड से आगे का कार्ड |
 | `.rk-stories-card-button` | Carousel | कार्ड की डिफ़ॉल्ट सामग्री (समूह खोलने वाला बटन) |
 | `.rk-stories-card-image` | Carousel | झलक की तस्वीर (पोस्टर या इमेज) |
+| `.rk-stories-card-frame` | Carousel | बिना पोस्टर या इमेज वाली स्टोरी, जिसे `#slide` स्लॉट प्लेयर के आकार में बनाता है और फिर छोटा किया जाता है |
 | `.rk-stories-card-scrim` | Carousel | तस्वीर पर धुँधलेपन की परत |
 | `.rk-stories-card-info` | Carousel | रिंग, लेखक का नाम और समय वाला स्तंभ |
 | `.rk-stories-card-name` | Carousel | लेखक का नाम |
@@ -454,31 +456,54 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 | `--rk-stories-overlay-bg` | `#000` | पूरी स्क्रीन की पृष्ठभूमि का रंग |
 | `--rk-stories-overlay-z` | `9999` | ओवरले का z-index |
 | `--rk-stories-container-radius` | `12px` | स्टोरी कैनवास के गोल कोने (डेस्कटॉप) |
+| `--rk-stories-container-radius-mobile` | `0` | फ़ोन पर, 768px चौड़ाई तक, स्टोरी कैनवास के कोने |
 | `--rk-stories-swipe-gap` | `16px` | नेविगेशन बटन और स्टोरी कैनवास के बीच की दूरी |
 | `--rk-stories-top-shade-height` | `120px` | हेडर के पीछे ऊपरी ग्रेडिएंट की ऊँचाई |
 | `--rk-stories-top-shade-bg` | `linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%)` | ऊपरी ग्रेडिएंट का रंग |
 | `--rk-stories-ui-transition` | `200ms` | `hide-ui-on-pause` बदलने पर फ़ेड की अवधि |
+| `--rk-stories-ui-z` | `15` | UI परत (प्रोग्रेस बार और हेडर) का z-index |
 | `--rk-stories-nav-size` | `44px` | डेस्कटॉप के अगला/पिछला बटन का आकार |
 | `--rk-stories-nav-bg` | `rgba(255, 255, 255, 0.1)` | डेस्कटॉप नेविगेशन बटन की पृष्ठभूमि |
 | `--rk-stories-nav-bg-hover` | `rgba(255, 255, 255, 0.2)` | कर्सर के नीचे बटन की पृष्ठभूमि |
 | `--rk-stories-nav-fg` | `rgba(255, 255, 255, 0.7)` | नेविगेशन बटन के आइकन का रंग |
 | `--rk-stories-nav-fg-hover` | `#fff` | कर्सर के नीचे आइकन का रंग |
+| `--rk-stories-nav-transition` | `150ms` | कर्सर आने पर डेस्कटॉप नेविगेशन बटन के बदलाव की अवधि |
+| `--rk-stories-nav-z` | `20` | डेस्कटॉप नेविगेशन बटन का z-index |
 | `--rk-stories-error-bg` | `linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)` | त्रुटि की स्थिति की पृष्ठभूमि का ग्रेडिएंट |
 | `--rk-stories-error-fg` | `rgba(255, 255, 255, 0.5)` | त्रुटि के आइकन और पाठ का रंग |
 | `--rk-stories-error-text-size` | `13px` | त्रुटि संदेश का फ़ॉन्ट आकार |
+| `--rk-stories-error-gap` | `12px` | त्रुटि के आइकन और उसके पाठ के बीच की दूरी |
+| `--rk-stories-error-z` | `5` | त्रुटि की स्थिति का z-index |
 | `--rk-stories-video-bg` | `#000` | \<video> के पीछे की पट्टियों का रंग |
 | `--rk-stories-video-poster-transition` | `200ms` | वीडियो चलने पर पोस्टर के मिटने की अवधि |
+| `--rk-stories-progress-bar-padding` | `8px 8px 0` | प्रोग्रेस बार के चारों ओर का अंतर |
+| `--rk-stories-progress-bar-z` | `10` | प्रोग्रेस बार का z-index |
 | `--rk-stories-header-top` | `18px` | स्टोरी के ऊपर से हेडर की दूरी |
 | `--rk-stories-header-padding` | `12px 16px` | हेडर पंक्ति का भीतरी अंतर |
+| `--rk-stories-header-z` | `5` | हेडर का z-index |
+| `--rk-stories-header-transition` | `200ms` | छिपते समय हेडर के फ़ेड की अवधि |
+| `--rk-stories-header-gap` | `8px` | अवतार, नाम और समय के बीच की दूरी |
 | `--rk-stories-header-avatar-size` | `32px` | अवतार की चौड़ाई और ऊँचाई |
 | `--rk-stories-header-name-fg` | `#fff` | लेखक के नाम का रंग |
 | `--rk-stories-header-name-size` | `14px` | लेखक के नाम का फ़ॉन्ट आकार |
+| `--rk-stories-header-name-weight` | `600` | लेखक के नाम का फ़ॉन्ट भार |
 | `--rk-stories-header-time-fg` | `rgba(255, 255, 255, 0.6)` | सापेक्ष समय के पाठ का रंग |
+| `--rk-stories-header-time-size` | `12px` | सापेक्ष समय का फ़ॉन्ट आकार |
 | `--rk-stories-header-btn-fg` | `#fff` | हेडर की क्रिया आइकनों का रंग (बंद, म्यूट, पॉज़) |
+| `--rk-stories-header-btn-padding` | `4px` | हेडर के क्रिया बटन का भीतरी अंतर |
+| `--rk-stories-header-actions-gap` | `8px` | हेडर के क्रिया बटनों के बीच की दूरी |
+| `--rk-stories-header-spinner-size` | `20px` | लोडिंग स्पिनर का व्यास |
+| `--rk-stories-header-spinner-fg` | `#fff` | लोडिंग स्पिनर के चाप का रंग |
+| `--rk-stories-header-spinner-track` | `rgba(255, 255, 255, 0.3)` | लोडिंग स्पिनर के ट्रैक का रंग |
+| `--rk-stories-header-spinner-duration` | `0.8s` | लोडिंग स्पिनर के एक चक्कर की अवधि |
 | `--rk-stories-heart-duration` | `800ms` | दिल के उभरने और मिटने की अवधि |
+| `--rk-stories-heart-z` | `20` | डबल-टैप वाले दिल का z-index |
 | `--rk-stories-ring-spin-duration` | `4s` | जिस रिंग में देखना बाक़ी है उसके घूमने की अवधि |
+| `--rk-stories-ring-active-scale` | `0.95` | दबाए जाने के दौरान रिंग का पैमाना |
+| `--rk-stories-ring-gradient` | `none` | आंतरिक: रिंग हर रेंडर पर अपना ग्रेडिएंट यहाँ लिखती है, इसलिए इसे सेट करने का कोई असर नहीं होता |
 | `--rk-stories-ring-list-gap` | `12px` | सूची में रिंगों के बीच की दूरी |
 | `--rk-stories-ring-list-padding` | `12px` | रिंग सूची के चारों ओर का भीतरी अंतर |
+| `--rk-stories-ring-list-item-gap` | `4px` | रिंग और उसके नाम के बीच की दूरी |
 | `--rk-stories-ring-list-name-size` | `12px` | हर रिंग के नीचे नाम का फ़ॉन्ट आकार |
 | `--rk-stories-card-bg` | `#262626` | कार्ड की पृष्ठभूमि, जब झलक की तस्वीर न हो |
 | `--rk-stories-card-radius` | `8px` | कार्ड के कोनों की गोलाई |
@@ -496,7 +521,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 
 ओवरले की जड़ एक मोडल डायलॉग है (`role="dialog"`, `aria-modal="true"`)। स्क्रीन रीडर क्या बोले, यह बदलने के लिए `aria-label` सेट करें; डिफ़ॉल्ट «Stories player» है।
 
-ओवरले खुलते समय फ़ोकस अपने पास ले लेता है और बंद होते समय उसे वापस उसी तत्व को देता है जिससे वह खुला था। Tab और Shift+Tab भीतर के फ़ोकस योग्य तत्वों पर घूमते हैं; बाहर निकला फ़ोकस वापस खींच लिया जाता है। यह `@reelkit/core` के `captureFocusForReturn` और `createFocusTrap` से बना है।
+ओवरले खुलते समय फ़ोकस अपने पास ले लेता है और बंद होते समय उसे वापस उसी तत्व को देता है जिससे वह खुला था। Tab और Shift+Tab भीतर के फ़ोकस योग्य तत्वों पर घूमते हैं; बाहर निकला फ़ोकस वापस खींच लिया जाता है। यह `@reelkit/core` के `captureFocusForReturn` और `createFocusTrap` से बना है, जिन्हें `@reelkit/vue` फिर से एक्सपोर्ट करता है।
 
 डेस्कटॉप कैरोसेल में हर डिफ़ॉल्ट कार्ड एक बटन है, जिसका लेबल «Open stories by» और लेखक का नाम होता है। टैब क्रम में कार्ड प्लेयर के नियंत्रणों के बाद आते हैं, और सरकने के दौरान क्रम से बाहर रहते हैं; जो कार्ड अपना समूह खोलता है वह फ़ोकस पेज पर छोड़ने के बजाय डायलॉग को लौटा देता है।
 
@@ -508,6 +533,6 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 
 | कुंजी | क्रिया |
 | --- | --- |
-| `ArrowLeft` | पिछली स्टोरी |
-| `ArrowRight` | अगली स्टोरी |
+| `ArrowLeft` | पिछली स्टोरी। समूह की पहली स्टोरी पर यह पिछला समूह वहीं खोलता है जहाँ उसे छोड़ा गया था; पहले समूह पर कुछ नहीं करता। |
+| `ArrowRight` | अगली स्टोरी। समूह की आख़िरी स्टोरी के बाद यह अगला समूह खोलता है; आख़िरी समूह पर प्लेयर बंद कर देता है। |
 | `Escape` | प्लेयर बंद करें |

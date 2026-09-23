@@ -181,7 +181,7 @@ import theming from '../../snippets/stories-player/theming.css?raw';
 
 <CodeBlock code={urlState2} language="tsx" />
 
-**安定したリンク。** グループはデフォルトで位置なので、ブックマークした `?story=2.0` はフィードが並べ替えられると別のユーザーを開きます。代わりにグループを安定した id で指してください。`outerCodec` が id を URL に書き、`outerLocator` がその場所を探します。ストーリーの側は、解決されたグループ内の単純なインデックスのままです。
+**安定したリンク。** グループはデフォルトで位置なので、ブックマークした `?story=2.0` はフィードが並べ替えられると別のユーザーを開きます。代わりにグループを安定した id で指してください。`outerCodec` が id を URL に書き、`outerLocator` がその場所を探します。`innerCodec` を `innerLocate` と `innerIdentify` と一緒に渡すと、グループ内のストーリーにも同じことができます。省略すると、ストーリーの側は単純なローカルのインデックスのままです。
 
 <CodeBlock code={urlState3} language="tsx" />
 
@@ -445,6 +445,17 @@ Instagram 風のグラデーションのリングが付いた円形のアバタ�
 
 <CodeBlock code={heartanimation} language="tsx" />
 
+## 再エクスポート [#re-exports]
+
+利用者に必要なものはすべてこのパッケージから取得できるので、`@reelkit/core` を直接インポートする必要はありません。
+
+| 元のパッケージ | 再エクスポートされるもの |
+| --- | --- |
+| `@reelkit/react` | `SoundProvider`、`useSoundState`、`useOverlayUrlState`、`createViewedStateController`、`twoAxisViewedTracking`、`createLocalStorageAdapter`、`createSessionStorageAdapter`、`createMemoryStorageAdapter`、`urlIndexTwoAxisKey`、`urlStableIdTwoAxisKey`、`base64UrlCodec`、および型 `UrlAdapter`、`UrlCodec`、`UrlLocator`、`UrlKey`、`UrlStateController`、`TwoAxisPosition`、`TwoAxisIdentity`、`UrlIndexTwoAxisKeyOptions`、`ViewedStateController`、`ViewedStateOptions`、`StorageAdapter` |
+| `@reelkit/stories-core` | `createStoriesViewedStateController`、`StoriesViewedStateController`、`StoriesViewedStateControllerConfig`、およびコンテンツの型 `StoryItem`、`AuthorInfo`、`StoriesGroup`、`MediaType` |
+
+`SoundProvider` と `useSoundState` は、プレイヤーがスライドと共有するサウンドの状態を運びます。自分でメディアを再生するカスタムスライドは、`useSoundState` を通してミュートの切り替えを読み取ります。プレイヤーの中ではすでにプロバイダーが置かれています。それ以外の場所で描画する `VideoStorySlide` やカスタムスライドには、上に `SoundProvider` が必要で、ないと `useSoundState` が例外を投げます。
+
 ## 型 [#types]
 
 ### StoryItem [#storyitem]
@@ -526,6 +537,7 @@ CSS クラスはすべて通常のクラス（CSS Modules ではありません�
 | `.rk-stories-header-time` | StoryHeader | 「何分前」のテキスト |
 | `.rk-stories-header-actions` | StoryHeader | 右側の操作（閉じる、ミュート、一時停止） |
 | `.rk-stories-header-btn` | StoryHeader | ヘッダーの操作ボタン |
+| `.rk-stories-header-btn--desktop` | StoryHeader | 一時停止ボタン。幅 768px を超えるときだけ表示されます |
 | `.rk-stories-header-spinner` | StoryHeader | 動画のバッファリングのスピナー |
 | `.rk-stories-image` | ImageStorySlide | 画像のストーリーの要素 |
 | `.rk-stories-video` | VideoStorySlide | 動画のストーリーのコンテナー |
@@ -548,6 +560,7 @@ CSS クラスはすべて通常のクラス（CSS Modules ではありません�
 | `.rk-stories-card--hidden` | Carousel | 片側に表示する 2 枚より外側のカード |
 | `.rk-stories-card-button` | Carousel | デフォルトのカードの中身（グループを開くボタン） |
 | `.rk-stories-card-image` | Carousel | プレビューの画像（ポスターまたは画像） |
+| `.rk-stories-card-frame` | Carousel | 画像もポスターもないストーリーを `renderSlide` で縮小して描いたプレビュー。操作は受け付けません |
 | `.rk-stories-card-scrim` | Carousel | 画像の上に重ねる暗いレイヤー |
 | `.rk-stories-card-info` | Carousel | リング、作成者名、時間を並べる列 |
 | `.rk-stories-card-name` | Carousel | 作成者名 |
@@ -561,32 +574,55 @@ CSS クラスはすべて通常のクラス（CSS Modules ではありません�
 | --- | --- | --- |
 | `--rk-stories-overlay-bg` | `#000` | フルスクリーンの背景色 |
 | `--rk-stories-overlay-z` | `9999` | オーバーレイの z-index |
-| `--rk-stories-container-radius` | `12px` | ストーリーの表示領域の角丸（デスクトップ） |
 | `--rk-stories-swipe-gap` | `16px` | ナビゲーションボタンとストーリーの表示領域の間隔 |
+| `--rk-stories-container-radius` | `12px` | ストーリーの表示領域の角丸（デスクトップ） |
+| `--rk-stories-container-radius-mobile` | `0` | 幅 768px までのストーリーの表示領域の角 |
+| `--rk-stories-ui-z` | `15` | UI レイヤー（ヘッダー、進捗バー）の z-index |
+| `--rk-stories-ui-transition` | `200ms` | hideUIOnPause が切り替わるときのフェードの長さ |
 | `--rk-stories-top-shade-height` | `120px` | ヘッダーの後ろの上部のグラデーションの高さ |
 | `--rk-stories-top-shade-bg` | `linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%)` | 上部のグラデーションの色 |
-| `--rk-stories-ui-transition` | `200ms` | hideUIOnPause が切り替わるときのフェードの長さ |
+| `--rk-stories-error-z` | `5` | エラー状態の z-index |
+| `--rk-stories-error-bg` | `linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)` | エラー状態の背景のグラデーション |
+| `--rk-stories-error-fg` | `rgba(255, 255, 255, 0.5)` | エラーアイコンとテキストの色 |
+| `--rk-stories-error-gap` | `12px` | エラーアイコンとテキストの間隔 |
+| `--rk-stories-error-text-size` | `13px` | エラーメッセージの文字サイズ |
+| `--rk-stories-nav-z` | `20` | デスクトップのナビゲーションボタンの z-index |
 | `--rk-stories-nav-size` | `44px` | デスクトップの前後のボタンの大きさ |
 | `--rk-stories-nav-bg` | `rgba(255, 255, 255, 0.1)` | デスクトップのナビゲーションボタンの背景 |
 | `--rk-stories-nav-bg-hover` | `rgba(255, 255, 255, 0.2)` | デスクトップのナビゲーションボタンのホバー時の背景 |
 | `--rk-stories-nav-fg` | `rgba(255, 255, 255, 0.7)` | デスクトップのナビゲーションボタンのアイコンの色 |
 | `--rk-stories-nav-fg-hover` | `#fff` | デスクトップのナビゲーションボタンのホバー時のアイコンの色 |
-| `--rk-stories-error-bg` | `linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)` | エラー状態の背景のグラデーション |
-| `--rk-stories-error-fg` | `rgba(255, 255, 255, 0.5)` | エラーアイコンとテキストの色 |
-| `--rk-stories-error-text-size` | `13px` | エラーメッセージの文字サイズ |
+| `--rk-stories-nav-transition` | `150ms` | ナビゲーションボタンの背景と色のトランジション |
 | `--rk-stories-video-bg` | `#000` | \<video> の後ろのレターボックスの背景 |
 | `--rk-stories-video-poster-transition` | `200ms` | 動画の再生が始まるときのポスターのフェードの長さ |
+| `--rk-stories-progress-bar-z` | `10` | 進捗バーの z-index |
+| `--rk-stories-progress-bar-padding` | `8px 8px 0` | 進捗バーの周りの余白 |
+| `--rk-stories-header-z` | `5` | ヘッダーの z-index |
 | `--rk-stories-header-top` | `18px` | ストーリーの上端からのヘッダーの縦の位置 |
 | `--rk-stories-header-padding` | `12px 16px` | ヘッダーの行の内側の余白 |
+| `--rk-stories-header-gap` | `8px` | アバター、名前、時間の間隔 |
+| `--rk-stories-header-transition` | `200ms` | ヘッダーが隠れるときのフェード |
 | `--rk-stories-header-avatar-size` | `32px` | アバターの幅と高さ |
 | `--rk-stories-header-name-fg` | `#fff` | 作者の名前の色 |
 | `--rk-stories-header-name-size` | `14px` | 作者の名前の文字サイズ |
+| `--rk-stories-header-name-weight` | `600` | 作者の名前の文字の太さ |
 | `--rk-stories-header-time-fg` | `rgba(255, 255, 255, 0.6)` | 「何分前」のテキストの色 |
+| `--rk-stories-header-time-size` | `12px` | 「何分前」のテキストの文字サイズ |
+| `--rk-stories-header-actions-gap` | `8px` | ヘッダーの操作ボタンの間隔 |
 | `--rk-stories-header-btn-fg` | `#fff` | ヘッダーの操作アイコンの色（閉じる、ミュート、一時停止） |
+| `--rk-stories-header-btn-padding` | `4px` | ヘッダーの操作ボタンの内側の余白 |
+| `--rk-stories-header-spinner-size` | `20px` | 読み込み中のスピナーの大きさ |
+| `--rk-stories-header-spinner-track` | `rgba(255, 255, 255, 0.3)` | 読み込み中のスピナーのトラックの色 |
+| `--rk-stories-header-spinner-fg` | `#fff` | 読み込み中のスピナーの弧の色 |
+| `--rk-stories-header-spinner-duration` | `0.8s` | 読み込み中のスピナーが 1 回転する長さ |
+| `--rk-stories-heart-z` | `20` | ダブルタップのハートの z-index |
 | `--rk-stories-heart-duration` | `800ms` | 飛び出してフェードアウトするアニメーションの長さ |
 | `--rk-stories-ring-spin-duration` | `4s` | まだ見るストーリーが残っているリングの回転の長さ |
+| `--rk-stories-ring-active-scale` | `0.95` | 押している間のリングの拡大率 |
+| `--rk-stories-ring-gradient` | `none` | 内部用：リングのコンポーネントが描画のたびにここへグラデーションを書き込むため、上書きしても効果はありません |
 | `--rk-stories-ring-list-gap` | `12px` | リスト内のリングの間隔 |
 | `--rk-stories-ring-list-padding` | `12px` | リングのリストの内側の余白 |
+| `--rk-stories-ring-list-item-gap` | `4px` | リングとその名前の間隔 |
 | `--rk-stories-ring-list-name-size` | `12px` | 各リングの下の作者の名前の文字サイズ |
 | `--rk-stories-card-bg` | `#262626` | カルーセルのカードの背景。プレビュー画像がないときに見えます |
 | `--rk-stories-card-radius` | `8px` | カルーセルのカードの角丸 |
@@ -606,14 +642,18 @@ CSS クラスはすべて通常のクラス（CSS Modules ではありません�
 
 オーバーレイのルートはモーダルダイアログ（`role="dialog"`、`aria-modal="true"`）です。`ariaLabel` を指定すると、スクリーンリーダーの読み上げが変わります。デフォルトは「Stories player」です。
 
-オーバーレイは開くとフォーカスを取り込み、閉じるとトリガーに戻します。Tab と Shift+Tab は中のフォーカス可能な要素を循環し、外へ出たフォーカス（外側のクリック、プログラムからのフォーカス）は引き戻されます。`@reelkit/core` の `captureFocusForReturn` と `createFocusTrap` で実装されています。
+オーバーレイは開くとフォーカスを取り込み、閉じるとトリガーに戻します。Tab と Shift+Tab は中のフォーカス可能な要素を循環し、外へ出たフォーカス（外側のクリック、プログラムからのフォーカス）は引き戻されます。`@reelkit/core` の `captureFocusForReturn` と `createFocusTrap`（`@reelkit/react` が再エクスポート）で実装されています。
 
 デスクトップのカルーセルでは、デフォルトのカードはそれぞれ「Open stories by」と作成者名のラベルを持つボタンです。カードは Tab の順序でプレーヤーの操作ボタンのあとに来て、スライドの間はその順序から外れます。
+
+## サーバーサイドレンダリング [#server-side-rendering]
+
+オーバーレイは閉じている間は何も描画せず、開いたときに初めて `document.body` にポータルします。これはクライアントで起こります。`StoriesUrlOverlay` はマウント後のエフェクトでアドレスバーを読むので、サーバーでの描画で開くことはありません。`StoriesRingList` はサーバーではすべてのリングを未視聴として描画します。視聴済みのストアはマウント後にしか読まれないため、サーバーのマークアップとクライアントの最初の描画が一致します。全体像は [SSR ガイド](/docs/ssr) を参照してください。
 
 ## キーボードショートカット [#keyboard-shortcuts]
 
 | キー | 動作 |
 | --- | --- |
-| `ArrowLeft` | 前のストーリー |
-| `ArrowRight` | 次のストーリー |
+| `ArrowLeft` | 前のストーリー。グループの最初のストーリーでは前のグループへ移り、離れたときのストーリー（なければ再開位置のストーリー）を開きます。最初のグループでは何もしません |
+| `ArrowRight` | 次のストーリー。グループの最後のストーリーを過ぎると次のグループへ移り、最後のグループを過ぎるとプレイヤーが閉じます |
 | `Escape` | プレイヤーを閉じる |

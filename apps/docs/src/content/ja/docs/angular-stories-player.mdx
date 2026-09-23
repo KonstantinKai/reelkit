@@ -122,6 +122,8 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 
 ## クイックスタート [#quick-start]
 
+`rk-stories-overlay` が全画面のプレイヤーを描画します。Instagram 風の入口には `rk-stories-ring-list` を組み合わせてください。リングはグループのインデックスとともに `(selected)` を発行し、ホストはそれを `initialGroupIndex` として保持してから `isOpen` を設定します。プレイヤーは自分では閉じず、`(closed)` を発行するので、ホストが `isOpen` を `false` に戻します。
+
 <CodeBlock code={basicUsage} language="typescript" />
 
 ## URL の状態 [#url-state]
@@ -160,13 +162,28 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 
 ## 見たものを覚えておく [#remembering-what-was-seen]
 
-`createStoriesViewedStateController` は表示されたストーリーをすべて記録し、各ユーザーがどこから再開するかを答えます。同じコントローラーをリングリストとプレイヤーの両方に渡せば、残りの未視聴について両者の認識が一致します。
+リングはグループを最後まで見るまでグラデーションを表示し、グループは視聴者がまだ見ていない最初のストーリーから開き直します。どちらも 1 つの `createStoriesViewedStateController` から来ます。フィードのある場所で一度だけ作り、`viewed` としてリングリストとプレイヤーに渡してください。両者はストアを読み、変化に追従し、表示したものを自分で記録します。保存されるエントリーは著者とストーリーを id で指すので、フィードの並べ替えにも耐え、同じコントローラーが React と Vue でも動きます。
 
 <CodeBlock code={rememberingWhatWasSeen} language="typescript" />
 
+- **開いたときのストーリーも数えます。** プレイヤーが開くときに画面に出ているストーリーは視聴済みとして報告されるので、ストーリーが 1 つのグループを開いて閉じれば視聴済みになります。
+- **スワイプで先へ進んでも再開します。** `resumeStoryIndex` は、このセッションで初めて到達したすべてのグループについて問い合わせられます。プレイヤーが開くグループも含みますが、`initialStoryIndex` がストーリーを明示している場合は除きます。すでにスワイプで通ったグループは、離れたところから開き直します。明示した `resumeStoryIndex` 入力はコントローラーの答えより優先されます。
+- **リンクはそれでも優先されます。** `rk-stories-url-overlay` では、保存内容にかかわらずパラメーターがプレイヤーの開く場所を決めます。それ以外の場所では再開のコールバックが決めます。
+- **数は位置であって、集計ではありません。** エントリーは到達したいちばん先のストーリーを指すので、視聴済みのグループにストーリーを追加するとリングは再び光り、途中のストーリーを削除すると数は短くなります。
+- **ストレージは差し替えられます。** タブを閉じたら忘れるには `storage: createSessionStorageAdapter()` を、あるいは独自の `StorageAdapter` を渡してください。開いている 2 つのタブは、ブラウザーの storage イベントで同期されます。
+- **開いたときにだけ作られるプレイヤーでは、読み込みが遅すぎます。** `rk-stories-overlay` は、閉じている間でも存在した時点でストアを読み、`rk-stories-ring-list` も同様です。`@if (open)` で包んだオーバーレイにはその機会がないので、ホストのコンストラクターで `attachViewedState(() => this.viewed)` を呼んでください。ホストが存在する間、接続が続きます。オプションと、これを構成する低レベルの部品は [Stories Core](/docs/stories-core#viewed-controller) のページにあります。
+
 ## デスクトップのカルーセル [#desktop-carousel]
 
+`desktopLayout="carousel"` を指定すると、Instagram の Web ビューアーのようなレイアウトになります。表示中のストーリーは通常の大きさのまま中央にとどまり、両側に最大 2 つずつ隣のグループが小さく暗めのカードとして並びます。カードをクリックするとそのグループが開き、グループが変わる間カードは横へスライドします。リングリストが受け取るのと同じ `viewed` コントローラーを渡せば、視聴済みのグループのカードは控えめなリングになります。
+
 <CodeBlock code={desktopCarousel} language="typescript" />
+
+- **スマートフォンでは普通のプレイヤーのままです。** 幅 768px まではカードは描画されず、スワイプはデフォルトの `'single'` レイアウトと同じく `groupTransition` を使います。その幅をまたいでリサイズすると、その場で切り替わります。カードが表示されている間、グループは `groupTransition` の指定にかかわらず回転せずスライドします。
+- **各カードは、そのグループが開く場所をプレビューします**：このセッションで離れたときのストーリー、なければ `resumeStoryIndex` が返すものです。動画のポスターか画像を表示します。どちらもないストーリー（グラデーション上のテキストのストーリーなど）は、`rkStoriesSlide` テンプレートでプレイヤーの大きさに描いて縮小します。ポスターのない動画はカードの背景を表示します。このプレビューは `isActive: false` を受け取り、ライフサイクルのコールバックは何もしないので、画面上のストーリーのタイマーを動かすことはできません。スライドが作られたときに行う処理（再生や分析など）は `isActive` の後ろに置いてください。
+- **タイマーはスライドを待ちます。** カードの移動が終わるまで、ストーリーはタイマーを開始せず、`(storyViewed)` も発行されません。
+- **グループを変えるすべての方法でスライドします**：カードのクリック、`StoriesApi.goToGroup`、`nextGroup` と `prevGroup`、そしてグループの端を越える矢印キーです。タッチのスワイプはプレイヤー自体を動かすので、その上にスライドは加わりません。
+- **カードの見た目を変える**には `rkStoriesGroupPreview` スロットを使います。[カルーセルカードのカスタマイズ](#custom-carousel-cards)を参照してください。カードの配置・拡大縮小・スライドは引き続きプレイヤーが行います。
 
 ## グループごとのプログレスバーとヘッダー [#chrome-placement]
 
@@ -204,6 +221,18 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 ### スライドのカスタマイズ [#custom-slides]
 
 <CodeBlock code={slideSlot} language="typescript" />
+
+カスタムスライドは、`rkStoriesSlide` コンテキストのコールバックを通して、コンテンツの状態をプレイヤーに伝えます。プレイヤーが反応するのは画面上のストーリーからの呼び出しだけで、他のスライドからの呼び出しは無視されます。
+
+| コールバック | いつ |
+| --- | --- |
+| `onReady` | コンテンツの準備ができた（画像が読み込まれた、動画が再生中）。プログレスタイマーが始まるか、カルーセルのスライドが終わるのを待ちます。 |
+| `onWaiting` | コンテンツが止まった（再生途中の動画のバッファリング）。スピナーが表示され、タイマーは一時停止します。 |
+| `onError` | コンテンツの読み込みに失敗した。エラーパネルが表示され、タイマーは一時停止します。 |
+| `onDurationReady` | 実際のメディアの長さをミリ秒で報告します（たとえば動画のメタデータから）。タイマーがそれに合わせます。ストーリーに設定した `duration` のほうが優先されます。 |
+| `onEnded` | メディアが自然に終わった（たとえば動画が最後まで再生された）。プレイヤーはタイマーを待たずに次のストーリーへ進みます。 |
+
+`rk-image-story-slide` は `(loaded)` と `(failed)` を、`rk-video-story-slide` は `(playbackStarted)`、`(buffering)`、`(failed)`、`(durationReady)`、`(finished)` を発行するので、これらを包むスライドテンプレートは、それぞれを対応するコールバックに渡すだけで済みます。
 
 <Callout type="info" title="プリローダーのキャッシュ">
   組み込みの `RkImageStorySlideComponent` と `RkVideoStorySlideComponent` は次のストーリーをバックグラウンドで先読みします。先読み済みのストーリーに進むと、読み込み中の表示なしで即座にコンテンツが現れます。一度失敗した URL も記憶されるため、壊れたストーリーを開き直したときは再試行せずすぐにエラーを表示します。
@@ -377,27 +406,113 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 | `.rk-stories-error` | Overlay | エラー状態（中央のアイコンとテキスト） |
 | `.rk-stories-error-text` | Overlay | エラーメッセージのテキスト |
 | `.rk-stories-nav-btn` | Overlay | デスクトップの前へ／次へ矢印 |
+| `.rk-stories-progress-bar` | ProgressBar | canvas のプログレスバーを配置するラッパー |
 | `.rk-stories-slide-wrapper` | Overlay | 1 つのグループのストーリー（外側のスライド） |
 | `.rk-stories-story` | Overlay | 1 つのストーリー（内側スライドのルート） |
 | `.rk-stories-image` | ImageStorySlide | 全面の画像（`object-fit: cover`） |
 | `.rk-stories-video` | VideoStorySlide | 動画スライドのコンテナ |
+| `.rk-stories-video-element` | VideoStorySlide | 共有の \<video> 要素 |
 | `.rk-stories-video-poster` | VideoStorySlide | 再生が始まるまで表示されるポスター |
+| `.rk-stories-video-poster--visible` | VideoStorySlide | ポスターが表示されている状態（再生前） |
 | `.rk-stories-heart` | HeartAnimation | ダブルタップのハート |
 | `.rk-stories-header` | StoryHeader | ヘッダー行（アバター、名前、時刻、操作ボタン） |
+| `.rk-stories-header--hidden` | StoryHeader | ヘッダーを隠した状態（`visible` 入力が `false`） |
+| `.rk-stories-header-avatar` | StoryHeader | 著者のアバター画像 |
+| `.rk-stories-header-name` | StoryHeader | 著者名のテキスト |
+| `.rk-stories-header-verified` | StoryHeader | 認証バッジのコンテナ |
+| `.rk-stories-header-time` | StoryHeader | 相対時刻のテキスト |
+| `.rk-stories-header-actions` | StoryHeader | 右側の操作ボタン（サウンド、一時停止、閉じる） |
 | `.rk-stories-header-btn` | StoryHeader | 一時停止・サウンド・閉じるのボタン |
+| `.rk-stories-header-btn--desktop` | StoryHeader | 一時停止ボタン。幅 768px を超えるときだけ表示されます |
 | `.rk-stories-header-spinner` | StoryHeader | 表示中のストーリーの読み込みスピナー |
 | `.rk-stories-ring` | StoriesRing | グラデーションリング付きの円形アバター |
 | `.rk-stories-ring--active` | StoriesRing | 未視聴が残っているリング（グラデーションが回転） |
 | `.rk-stories-ring-avatar` | StoriesRing | リングの中のアバター画像 |
 | `.rk-stories-ring-list` | StoriesRingList | リングを横一列に並べたもの |
-| `.rk-stories-carousel` | Carousel | デスクトップのカルーセルのレイヤー |
-| `.rk-stories-card` | Carousel | プレイヤーの横に並ぶプレビューカード |
-| `.rk-stories-card-image` | Carousel | カードのプレビュー画像 |
+| `.rk-stories-ring-list-item` | StoriesRingList | リングと名前の縦の並び |
+| `.rk-stories-ring-list-name` | StoriesRingList | 各リングの下の著者名 |
+| `.rk-stories-carousel` | Carousel | プレイヤーの背後にあるプレビューカードのレイヤー |
+| `.rk-stories-carousel--instant` | Carousel | スライドの最初のフレーム。トランジションなしで配置されます |
+| `.rk-stories-card` | Carousel | 配置された 1 枚のプレビューカード |
+| `.rk-stories-card--center` | Carousel | スライド中に中央の位置にあるカード |
+| `.rk-stories-card--hidden` | Carousel | 片側に表示される 2 枚より外にあるカード |
+| `.rk-stories-card-button` | Carousel | 既定のカードの中身（グループを開くボタン） |
+| `.rk-stories-card-image` | Carousel | カードのプレビュー画像（ポスターまたは画像） |
 | `.rk-stories-card-frame` | Carousel | カードのプレビューとして縮小して描かれるスライドテンプレート |
+| `.rk-stories-card-scrim` | Carousel | プレビューに重ねる暗さのレイヤー |
+| `.rk-stories-card-info` | Carousel | リング・著者名・時刻の縦の並び |
+| `.rk-stories-card-name` | Carousel | 著者名 |
+| `.rk-stories-card-time` | Carousel | 相対時刻のテキスト |
 
 ## テーマ設定 [#theming]
 
 色・サイズ・時間・z-index はすべて `:root` 上の `--rk-stories-*` カスタムプロパティなので、ブランド変更はコンポーネントの変更ではなくスタイルシートで済みます。トークンは React・Vue のプレイヤーと共通です。
+
+| トークン | 既定値 | 制御するもの |
+| --- | --- | --- |
+| `--rk-stories-overlay-bg` | `#000` | 全画面背景の色 |
+| `--rk-stories-overlay-z` | `9999` | オーバーレイの z-index |
+| `--rk-stories-swipe-gap` | `16px` | ナビゲーションボタンとストーリーキャンバスの間隔 |
+| `--rk-stories-container-radius` | `12px` | ストーリーキャンバスの角の丸み（デスクトップ） |
+| `--rk-stories-container-radius-mobile` | `0` | スマートフォンでのストーリーキャンバスの角 |
+| `--rk-stories-ui-z` | `15` | UI レイヤー（ヘッダー、プログレスバー）の z-index |
+| `--rk-stories-ui-transition` | `200ms` | `hideUIOnPause` が切り替わるときのフェード時間 |
+| `--rk-stories-top-shade-height` | `120px` | ヘッダー背後の上部グラデーションの高さ |
+| `--rk-stories-top-shade-bg` | `linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%)` | 上部グラデーションの色 |
+| `--rk-stories-error-z` | `5` | エラーパネルの z-index |
+| `--rk-stories-error-bg` | `linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)` | エラー状態の背景グラデーション |
+| `--rk-stories-error-fg` | `rgba(255, 255, 255, 0.5)` | エラーのアイコンとテキストの色 |
+| `--rk-stories-error-gap` | `12px` | エラーのアイコンとテキストの間隔 |
+| `--rk-stories-error-text-size` | `13px` | エラーメッセージの文字サイズ |
+| `--rk-stories-nav-z` | `20` | デスクトップのナビゲーションボタンの z-index |
+| `--rk-stories-nav-size` | `44px` | デスクトップの前後ボタンの大きさ |
+| `--rk-stories-nav-bg` | `rgba(255, 255, 255, 0.1)` | デスクトップのナビゲーションボタンの背景 |
+| `--rk-stories-nav-bg-hover` | `rgba(255, 255, 255, 0.2)` | ホバー時のナビゲーションボタンの背景 |
+| `--rk-stories-nav-fg` | `rgba(255, 255, 255, 0.7)` | ナビゲーションボタンのアイコンの色 |
+| `--rk-stories-nav-fg-hover` | `#fff` | ホバー時のアイコンの色 |
+| `--rk-stories-nav-transition` | `150ms` | デスクトップのナビゲーションボタンのホバー時のトランジション |
+| `--rk-stories-video-bg` | `#000` | \<video> の背後の余白の色 |
+| `--rk-stories-video-poster-transition` | `200ms` | 再生開始時のポスターのフェード時間 |
+| `--rk-stories-progress-bar-z` | `10` | プログレスバーの z-index |
+| `--rk-stories-progress-bar-padding` | `8px 8px 0` | プログレスバーの周りの余白 |
+| `--rk-stories-card-bg` | `#262626` | カルーセルのカードの背景。プレビューがないときに見えます |
+| `--rk-stories-card-radius` | `8px` | カルーセルのカードの角の丸み |
+| `--rk-stories-card-scrim` | `rgba(0, 0, 0, 0.45)` | 横のカードにかかる暗さ |
+| `--rk-stories-card-fg` | `#fff` | カードの文字色 |
+| `--rk-stories-card-name-size` | `14px` | カードの著者名の文字サイズ |
+| `--rk-stories-card-time-fg` | `rgba(255, 255, 255, 0.7)` | カードの相対時刻の文字色 |
+| `--rk-stories-card-time-size` | `13px` | カードの相対時刻の文字サイズ |
+| `--rk-stories-card-gap` | `6px` | カード上のリング・名前・時刻の間隔 |
+| `--rk-stories-card-transition` | `300ms` | カルーセルのスライド時間 |
+| `--rk-stories-ring-spin-duration` | `4s` | 未視聴が残るリングの回転時間 |
+| `--rk-stories-ring-active-scale` | `0.95` | 押している間のリングの拡大率 |
+| `--rk-stories-ring-gradient` | `none` | 内部用：リングのコンポーネントが描画のたびにここへグラデーションを書き込むため、設定しても効果はありません |
+| `--rk-stories-ring-list-gap` | `12px` | 一覧のリング同士の間隔 |
+| `--rk-stories-ring-list-padding` | `12px` | リング一覧の周りの余白 |
+| `--rk-stories-ring-list-item-gap` | `4px` | リングとその名前の間隔 |
+| `--rk-stories-ring-list-name-size` | `12px` | 各リングの下の著者名の文字サイズ |
+| `--rk-stories-header-z` | `5` | ヘッダーの z-index |
+| `--rk-stories-header-top` | `18px` | ストーリー上端からのヘッダーの位置 |
+| `--rk-stories-header-padding` | `12px 16px` | ヘッダー行の内側の余白 |
+| `--rk-stories-header-gap` | `8px` | ヘッダー行の項目同士の間隔 |
+| `--rk-stories-header-transition` | `200ms` | ヘッダーが隠れるときのフェード時間 |
+| `--rk-stories-header-avatar-size` | `32px` | アバターの幅と高さ |
+| `--rk-stories-header-name-fg` | `#fff` | 著者名の色 |
+| `--rk-stories-header-name-size` | `14px` | 著者名の文字サイズ |
+| `--rk-stories-header-name-weight` | `600` | 著者名の文字の太さ |
+| `--rk-stories-header-time-fg` | `rgba(255, 255, 255, 0.6)` | 相対時刻の文字色 |
+| `--rk-stories-header-time-size` | `12px` | 相対時刻の文字サイズ |
+| `--rk-stories-header-actions-gap` | `8px` | ヘッダーのボタン同士の間隔 |
+| `--rk-stories-header-btn-fg` | `#fff` | ヘッダーの操作アイコンの色（閉じる、サウンド、一時停止） |
+| `--rk-stories-header-btn-padding` | `4px` | ヘッダーのボタンの内側の余白 |
+| `--rk-stories-header-spinner-size` | `20px` | 読み込みスピナーの大きさ |
+| `--rk-stories-header-spinner-track` | `rgba(255, 255, 255, 0.3)` | 読み込みスピナーのトラックの色 |
+| `--rk-stories-header-spinner-fg` | `#fff` | 読み込みスピナーの弧の色 |
+| `--rk-stories-header-spinner-duration` | `0.8s` | スピナーが 1 回転する時間 |
+| `--rk-stories-heart-z` | `20` | ダブルタップのハートの z-index |
+| `--rk-stories-heart-duration` | `800ms` | ハートが出て消えるまでの時間 |
+
+下のスニペットを、`@reelkit/angular-stories-player/styles.css` の後に読み込むスタイルシートに入れてください。
 
 <CodeBlock code={theming} language="css" />
 
@@ -405,9 +520,9 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 
 オーバーレイのルートはモーダルダイアログです（`role="dialog"`、`aria-modal="true"`）。スクリーンリーダーの読み上げを変えるには `ariaLabel` を設定してください。既定は "Stories player" です。
 
-オーバーレイは開いたときにフォーカスを取り込み、閉じたときに元の要素へ戻します。Tab と Shift+Tab は内部のフォーカス可能な要素を巡回し、両端で折り返します。外れたフォーカス（外側のクリック、プログラムによるフォーカス）は引き戻されます。プレイヤーが開いている間、body のスクロールはロックされます。`@reelkit/angular` の `captureFocusForReturn` と `createFocusTrap` で実装しています。
+オーバーレイは開いたときにフォーカスを取り込み、閉じたときに元の要素へ戻します。Tab と Shift+Tab は内部のフォーカス可能な要素を巡回し、両端で折り返します。外れたフォーカス（外側のクリック、プログラムによるフォーカス）は引き戻されます。プレイヤーが開いている間、body のスクロールはロックされます。`@reelkit/core` の `captureFocusForReturn` と `createFocusTrap`（`@reelkit/angular` が再エクスポート）で実装しています。
 
-デスクトップのカルーセルでは、既定のカードはそれぞれ "Open stories by" と著者名をラベルに持つボタンです。カードはタブ順でプレイヤーの操作ボタンより後に並び、スライド中はタブ順から外れます。
+デスクトップのカルーセルでは、既定のカードはそれぞれ "Open stories by" と著者名をラベルに持つボタンです。カードはタブ順でプレイヤーの操作ボタンより後に並び、スライド中はタブ順から外れます。自分のグループを開いたカードは、フォーカスをページに落とさずダイアログへ返します。
 
 ## サーバーサイドレンダリング [#server-side-rendering]
 
@@ -417,6 +532,6 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 
 | キー | 動作 |
 | --- | --- |
-| `ArrowLeft` | 前のストーリー |
-| `ArrowRight` | 次のストーリー |
+| `ArrowLeft` | 前のストーリー。グループの最初のストーリーでは前のグループを、離れたところから開きます。最初のグループでは何もしません。 |
+| `ArrowRight` | 次のストーリー。グループの最後のストーリーでは次のグループへ移り、最後のグループではプレイヤーが閉じます。 |
 | `Escape` | プレイヤーを閉じる |

@@ -10,11 +10,24 @@ desc: Instagram-style stories player overlay for React. StoriesGroup schema, two
 
 Instagram-style stories player overlay for React. Two-level nav (groups + stories), `requestAnimationFrame` auto-advance, canvas-rendered segmented progress bar, configurable tap zones, custom slot renderers, full theming via CSS custom properties.
 
-## Install
+## Features
+
+- Nested navigation: tap to advance stories, swipe to switch groups
+- Video stories with autoplay and a sound toggle
+- Auto-advance timer per story, canvas-based segmented progress bar
+- 3D group transitions: cube, flip, fade, zoom, slide
+- Virtualized: only 3 slides in the DOM
+- Double-tap heart animation, desktop chevron buttons, Instagram-style story rings
+- Generic `StoryItem` types, render props for every UI element
+- Shareable `?story=group.story` URLs; viewed state that survives reloads
+
+## Installation
 
 ```bash
-npm install @reelkit/react-stories-player
+npm install @reelkit/react-stories-player @reelkit/react lucide-react
 ```
+
+Peers: `@reelkit/react`, `react` and `react-dom` 18+, `lucide-react` (icons of the default header and navigation; replace them with `renderHeader` / `renderNavigation` to use another icon set).
 
 ```ts
 import { StoriesOverlay } from '@reelkit/react-stories-player';
@@ -57,31 +70,9 @@ export default function App() {
 }
 ```
 
-## StoriesGroup Schema
+## Live Demo
 
-```ts
-interface StoryItem {
-  id: string;
-  mediaType: 'image' | 'video';
-  src: string;
-  poster?: string;
-  duration?: number;
-  createdAt?: string | Date;
-  aspectRatio?: number;
-}
-
-interface AuthorInfo {
-  id: string;
-  name: string;
-  avatar: string;
-  verified?: boolean;
-}
-
-interface StoriesGroup<T extends StoryItem = StoryItem> {
-  author: AuthorInfo;
-  stories: T[];
-}
-```
+https://react-demo.reelkit.dev/stories-player — click a story ring to open the player; tap left/right sides to navigate, swipe to switch users.
 
 ## URL State (shareable links, back button)
 
@@ -144,7 +135,7 @@ const stories = useOverlayUrlState({
 <StoriesUrlOverlay controller={stories} groups={groups} />;
 ```
 
-**Stable links.** The group is positional by default — a bookmarked `?story=2.0` opens a different user once the feed is reordered. Address the group by a stable id instead: `outerCodec` spells the id into the URL, `outerLocator` finds where it sits. The story half stays a plain index within the resolved group.
+**Stable links.** The group is positional by default — a bookmarked `?story=2.0` opens a different user once the feed is reordered. Address the group by a stable id instead: `outerCodec` spells the id into the URL, `outerLocator` finds where it sits. Add `innerCodec` + `innerLocate` + `innerIdentify` to address the story by id too; omit them and the story half stays a local index within the resolved group. The inner id must not contain `.` (the wire splits on the last dot).
 
 ```tsx
 const stories = useOverlayUrlState({
@@ -158,6 +149,13 @@ const stories = useOverlayUrlState({
       locate: (id) => groups.findIndex((g) => g.author.id === id),
       identify: (index) => groups[index].author.id,
     },
+    // Optional: ?story=user_42.story_7 — the story by id too
+    innerCodec: { decode: (raw) => raw, encode: (id) => id },
+    innerLocate: (outer, id) => {
+      const index = groups[outer].stories.findIndex((s) => s.id === id);
+      return index === -1 ? null : index;
+    },
+    innerIdentify: (outer, index) => groups[outer].stories[index].id,
   }),
 });
 ```
@@ -188,15 +186,6 @@ const stories = useOverlayUrlState({
 
 - While `locateAsync` is pending the player stays closed and the parameter is left alone, so the deep link survives the fetch. A `null` or a rejection drops the parameter.
 - An answer arriving after the URL moved on, after a close, or after unmount is discarded — a slow fetch cannot open a story nobody asked for.
-
-### StoriesUrlOverlayProps
-
-Takes every `StoriesOverlay` prop except the open-state trio (`isOpen`, `initialGroupIndex`, `initialStoryIndex`), supplied from the controller instead.
-
-| Prop         | Type                                  | Default  | Description                                                                                                                                                                                                                   |
-| ------------ | ------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `controller` | `UrlStateController<TwoAxisPosition>` | required | Controller from `useOverlayUrlState` spread with `urlIndexTwoAxisKey`. Its `position` — a `{ outer, inner }` object — decides whether the player is open and where; the overlay writes back on every navigation and on close. |
-| `onClose`    | `() => void`                          | —        | Called after the player closes. The URL drives closing, not this.                                                                                                                                                             |
 
 ## Remembering what was seen
 
@@ -285,7 +274,9 @@ Default: one progress bar and header above the player, switching to the new grou
 - A custom header sits in the swipe area: a tap on it moves between stories unless it hits a `button`, a link, or `role="button"`.
 - Desktop carousel: the player is hidden while cards slide, so the choice shows once the group is open.
 
-## StoriesOverlay Props
+## API Reference
+
+### StoriesOverlayProps
 
 `StoriesOverlayProps` — the controlled overlay's props. `onClose` is **required** here because you own the open state, so you must handle closing; the URL-driven `StoriesUrlOverlay` makes it optional (the URL drives closing).
 
@@ -323,7 +314,16 @@ Default: one progress bar and header above the player, switching to the new grou
 | `renderError`        | `(props: ErrorRenderProps<T>) => ReactNode`        | Custom error UI. Default = error icon overlay.                                   |
 | `renderGroupPreview` | `(props: GroupPreviewRenderProps<T>) => ReactNode` | Custom desktop carousel card content.                                            |
 
-## Callbacks
+### StoriesUrlOverlayProps
+
+Takes every `StoriesOverlay` prop except the open-state trio (`isOpen`, `initialGroupIndex`, `initialStoryIndex`), supplied from the controller instead.
+
+| Prop         | Type                                  | Default  | Description                                                                                                                                                                                                                   |
+| ------------ | ------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `controller` | `UrlStateController<TwoAxisPosition>` | required | Controller from `useOverlayUrlState` spread with `urlIndexTwoAxisKey`. Its `position` — a `{ outer, inner }` object — decides whether the player is open and where; the overlay writes back on every navigation and on close. |
+| `onClose`    | `() => void`                          | —        | Called after the player closes. The URL drives closing, not this.                                                                                                                                                             |
+
+### Callbacks
 
 | Prop              | Type                               | Description                                                                                                                            |
 | ----------------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
@@ -336,7 +336,95 @@ Default: one progress bar and header above the player, switching to the new grou
 | `onPause`         | `() => void`                       | Player paused                                                                                                                          |
 | `onResume`        | `() => void`                       | Player resumed                                                                                                                         |
 
+## Transitions
+
+`groupTransition` sets the 3D effect between groups. Transition functions come from `@reelkit/react`: `cubeTransition` (default), `flipTransition`, `fadeTransition`, `zoomTransition`, `slideTransition`.
+
+```tsx
+import { flipTransition } from '@reelkit/react';
+
+<StoriesOverlay
+  isOpen={isOpen}
+  onClose={handleClose}
+  groups={groups}
+  groupTransition={flipTransition}
+/>;
+```
+
+## Content Loading Lifecycle
+
+Each slide reports its loading state through the callbacks in `SlideRenderProps`:
+
+| Callback          | When                                                                        |
+| ----------------- | --------------------------------------------------------------------------- |
+| `onReady`         | Content ready (image loaded, video playing). The progress timer starts.     |
+| `onWaiting`       | Content stalls (video buffering mid-playback). Spinner shows, timer pauses. |
+| `onError`         | Content failed to load. The error overlay shows.                            |
+| `onDurationReady` | Real media duration (from video metadata); restarts the timer with it.      |
+| `onEnded`         | Media ended (video finished). Advances to the next story.                   |
+
+The built-in `ImageStorySlide` and `VideoStorySlide` preload the next story, so a preloaded story appears without a spinner.
+
+## Render Props
+
+Every UI element can be replaced by a render prop (table under API Reference); each gets typed props with the state and callbacks it needs. `renderSlide` is usually built from `ImageStorySlide` / `VideoStorySlide`. `renderProgressBar` gets a `progress` signal emitting 0 to 1. `renderGroupPreview` replaces a carousel card's content; the player still positions, scales and slides the card, and `onOpen` opens the group.
+
+### renderHeader
+
+```tsx
+<StoriesOverlay
+  {...props}
+  renderHeader={({
+    author,
+    isPaused,
+    isMuted,
+    isVideo,
+    onToggleSound,
+    onTogglePause,
+    onClose,
+  }) => (
+    <header className="my-header">
+      <img src={author.avatar} alt="" />
+      <strong>{author.name}</strong>
+      {isVideo && (
+        <button onClick={onToggleSound}>{isMuted ? 'Unmute' : 'Mute'}</button>
+      )}
+      <button onClick={onTogglePause}>{isPaused ? 'Play' : 'Pause'}</button>
+      <button onClick={onClose}>×</button>
+    </header>
+  )}
+/>
+```
+
+### renderFooter (reply input)
+
+```tsx
+<StoriesOverlay
+  {...props}
+  renderFooter={({ author, story }) => (
+    <footer>
+      <input placeholder={`Reply to ${author.name}…`} />
+      <button>❤️</button>
+    </footer>
+  )}
+/>
+```
+
 ## StoriesApi (via apiRef)
+
+```tsx
+const apiRef = useRef<StoriesApi | null>(null);
+
+<StoriesOverlay
+  apiRef={apiRef}
+  groups={groups}
+  isOpen={isOpen}
+  onClose={() => setIsOpen(false)}
+/>;
+
+// Skip an entire group
+apiRef.current?.nextGroup();
+```
 
 | Method             | Type               | Description                 |
 | ------------------ | ------------------ | --------------------------- |
@@ -347,6 +435,23 @@ Default: one progress bar and header above the player, switching to the new grou
 | `goToGroup(index)` | `(number) => void` | Jump to group by index      |
 | `pause()`          | `() => void`       | Pause auto-advance + timer  |
 | `resume()`         | `() => void`       | Resume auto-advance + timer |
+
+## Double-Tap & Likes
+
+A built-in heart animation plays on double-tap. `onDoubleTap(groupIndex, storyIndex)` fires so you can persist the like yourself; the player keeps no like state.
+
+```tsx
+<StoriesOverlay
+  isOpen={isOpen}
+  onClose={() => setIsOpen(false)}
+  groups={groups}
+  onDoubleTap={(groupIndex, storyIndex) =>
+    toggleLike(groups[groupIndex].stories[storyIndex].id)
+  }
+/>
+```
+
+Speed: `--rk-stories-heart-duration`. Color, size, or hiding it: target `.rk-stories-heart` (`display: none` to hide and animate in `onDoubleTap` yourself). There is no render prop for the heart. `HeartAnimation` is exported for standalone use.
 
 ## Tap Zones (mobile)
 
@@ -390,91 +495,152 @@ import {
 />;
 ```
 
-## CSS Theming Tokens
+## Re-exports
 
-Common tokens (full list at `/docs/stories-player`):
+Everything a consumer needs comes from this package; no direct `@reelkit/core` import is necessary.
 
-| Token                          | Default                                         | Controls                    |
-| ------------------------------ | ----------------------------------------------- | --------------------------- |
-| `--rk-stories-overlay-bg`      | `#000`                                          | Full-screen backdrop color  |
-| `--rk-stories-overlay-z`       | `9999`                                          | Overlay z-index             |
-| `--rk-stories-progress-track`  | `rgba(255, 255, 255, 0.3)`                      | Progress segment background |
-| `--rk-stories-progress-fill`   | `#fff`                                          | Active progress fill color  |
-| `--rk-stories-header-bg`       | `linear-gradient(rgba(0,0,0,0.4), transparent)` | Header gradient scrim       |
-| `--rk-stories-button-bg`       | `rgba(0, 0, 0, 0.5)`                            | Button background           |
-| `--rk-stories-button-fg`       | `#fff`                                          | Button icon color           |
-| `--rk-stories-card-bg`         | `#262626`                                       | Carousel card background    |
-| `--rk-stories-card-scrim`      | `rgba(0, 0, 0, 0.45)`                           | Dimming over a side card    |
-| `--rk-stories-card-transition` | `300ms`                                         | Carousel slide duration     |
+- From `@reelkit/react`: `SoundProvider`, `useSoundState`, `useOverlayUrlState`, `createViewedStateController`, `twoAxisViewedTracking`, `createLocalStorageAdapter`, `createSessionStorageAdapter`, `createMemoryStorageAdapter`, `urlIndexTwoAxisKey`, `urlStableIdTwoAxisKey`, `base64UrlCodec`; types `UrlAdapter`, `UrlCodec`, `UrlLocator`, `UrlKey`, `UrlStateController`, `TwoAxisPosition`, `TwoAxisIdentity`, `UrlIndexTwoAxisKeyOptions`, `ViewedStateController`, `ViewedStateOptions`, `StorageAdapter`.
+- From `@reelkit/stories-core`: `createStoriesViewedStateController`, `StoriesViewedStateController`, `StoriesViewedStateControllerConfig`; content types `StoryItem`, `AuthorInfo`, `StoriesGroup`, `MediaType`.
+
+Inside the player a `SoundProvider` is already in place. A `VideoStorySlide` or custom slide rendered anywhere else needs one above it, or `useSoundState` throws.
+
+## Types
+
+```ts
+interface StoryItem {
+  id: string;
+  mediaType: 'image' | 'video';
+  src: string;
+  poster?: string;
+  duration?: number; // ms; images default to 5000, videos use their own length
+  createdAt?: string | Date;
+  aspectRatio?: number; // width / height
+}
+
+interface AuthorInfo {
+  id: string;
+  name: string;
+  avatar: string;
+  verified?: boolean;
+}
+
+interface StoriesGroup<T extends StoryItem = StoryItem> {
+  author: AuthorInfo;
+  stories: T[];
+}
+```
+
+Render prop types, all exported: `HeaderRenderProps<T>`, `FooterRenderProps<T>`, `SlideRenderProps<T>`, `NavigationRenderProps`, `ProgressBarRenderProps<T>`, `LoadingRenderProps<T>`, `ErrorRenderProps<T>`, `GroupPreviewRenderProps<T>`, plus `StoriesApi`, `DesktopLayout`, `ChromePlacement`.
+
+## Custom Story Types
+
+Extend `StoryItem` and pass the type parameter; every render prop receives the extended type.
+
+```tsx
+interface PromoStory extends StoryItem {
+  title: string;
+  ctaText?: string;
+}
+
+<StoriesOverlay<PromoStory>
+  isOpen={isOpen}
+  onClose={close}
+  groups={promoGroups}
+  renderSlide={({ story, size }) => <Promo story={story} size={size} />}
+/>;
+```
 
 ## CSS Classes
 
-- `.rk-stories-overlay` — root full-screen container
-- `.rk-stories-progress` — top progress bar canvas wrapper
-- `.rk-stories-header` — author + close header
-- `.rk-stories-author` — author row (avatar + name)
-- `.rk-stories-footer` — bottom interaction footer
-- `.rk-stories-slide` — story slide wrapper
-- `.rk-stories-tap-prev`, `.rk-stories-tap-next` — invisible tap zones
-- `.rk-stories-nav-prev`, `.rk-stories-nav-next` — desktop nav arrows
-- `.rk-stories-overlay--carousel`, `.rk-stories-overlay--sliding` — desktop carousel showing, slide running
-- `.rk-stories-carousel`, `.rk-stories-card` (`--center`, `--hidden`), `.rk-stories-card-button`, `.rk-stories-card-image`, `.rk-stories-card-scrim`, `.rk-stories-card-info`, `.rk-stories-card-name`, `.rk-stories-card-time` — desktop carousel cards
+Plain class names (not CSS modules); override in a stylesheet loaded after `@reelkit/react-stories-player/styles.css`. Prefer the tokens under Theming for color, size and z-index.
+
+- Overlay: `.rk-stories-overlay`, `.rk-stories-swipe-wrapper`, `.rk-stories-container`, `.rk-stories-ui-layer` (inside every group slide with `chromePlacement="group"`), `.rk-stories-ui-layer--hidden`, `.rk-stories-error`, `.rk-stories-error-text`
+- Structure: `.rk-stories-slide-wrapper` (one group), `.rk-stories-story` (one story), `.rk-stories-progress-bar`, `.rk-stories-nav-btn`
+- Header: `.rk-stories-header`, `.rk-stories-header--hidden`, `.rk-stories-header-avatar`, `.rk-stories-header-name`, `.rk-stories-header-verified`, `.rk-stories-header-time`, `.rk-stories-header-actions`, `.rk-stories-header-btn`, `.rk-stories-header-btn--desktop` (pause button, above 768px only), `.rk-stories-header-spinner`
+- Media: `.rk-stories-image`, `.rk-stories-video`, `.rk-stories-video-element`, `.rk-stories-video-poster`, `.rk-stories-video-poster--visible`, `.rk-stories-heart`
+- Rings: `.rk-stories-ring`, `.rk-stories-ring--active`, `.rk-stories-ring-avatar`, `.rk-stories-ring-list`, `.rk-stories-ring-list-item`, `.rk-stories-ring-list-name`
+- Desktop carousel: `.rk-stories-overlay--carousel`, `.rk-stories-overlay--sliding`, `.rk-stories-carousel`, `.rk-stories-carousel--instant`, `.rk-stories-card` (`--center`, `--hidden`), `.rk-stories-card-button`, `.rk-stories-card-image`, `.rk-stories-card-frame` (scaled-down `renderSlide` preview of a story with no image or poster; inert), `.rk-stories-card-scrim`, `.rk-stories-card-info`, `.rk-stories-card-name`, `.rk-stories-card-time`
+
+## Theming
+
+Every visual value is a `--rk-stories-*` custom property. Override at `:root` or any ancestor of the overlay.
+
+| Token                                  | Default                                                            | Controls                                                 |
+| -------------------------------------- | ------------------------------------------------------------------ | -------------------------------------------------------- |
+| `--rk-stories-overlay-bg`              | `#000`                                                             | Full-screen backdrop color                               |
+| `--rk-stories-overlay-z`               | `9999`                                                             | Overlay z-index                                          |
+| `--rk-stories-swipe-gap`               | `16px`                                                             | Gap between nav buttons and the story canvas             |
+| `--rk-stories-container-radius`        | `12px`                                                             | Story canvas corners (desktop)                           |
+| `--rk-stories-container-radius-mobile` | `0`                                                                | Story canvas corners up to 768px wide                    |
+| `--rk-stories-ui-z`                    | `15`                                                               | UI layer z-index                                         |
+| `--rk-stories-ui-transition`           | `200ms`                                                            | Fade when hideUIOnPause toggles                          |
+| `--rk-stories-top-shade-height`        | `120px`                                                            | Top scrim height behind the header                       |
+| `--rk-stories-top-shade-bg`            | `linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%)` | Top scrim color                                          |
+| `--rk-stories-error-z`                 | `5`                                                                | Error state z-index                                      |
+| `--rk-stories-error-bg`                | `linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)`   | Error state background                                   |
+| `--rk-stories-error-fg`                | `rgba(255, 255, 255, 0.5)`                                         | Error icon and text color                                |
+| `--rk-stories-error-gap`               | `12px`                                                             | Space between error icon and text                        |
+| `--rk-stories-error-text-size`         | `13px`                                                             | Error message font size                                  |
+| `--rk-stories-nav-z`                   | `20`                                                               | Nav button z-index                                       |
+| `--rk-stories-nav-size`                | `44px`                                                             | Nav button size                                          |
+| `--rk-stories-nav-bg`                  | `rgba(255, 255, 255, 0.1)`                                         | Nav button background                                    |
+| `--rk-stories-nav-bg-hover`            | `rgba(255, 255, 255, 0.2)`                                         | Nav button hover background                              |
+| `--rk-stories-nav-fg`                  | `rgba(255, 255, 255, 0.7)`                                         | Nav button icon color                                    |
+| `--rk-stories-nav-fg-hover`            | `#fff`                                                             | Nav button hover icon color                              |
+| `--rk-stories-nav-transition`          | `150ms`                                                            | Nav button background and color transition               |
+| `--rk-stories-video-bg`                | `#000`                                                             | Letterbox behind the video                               |
+| `--rk-stories-video-poster-transition` | `200ms`                                                            | Poster fade when the video starts                        |
+| `--rk-stories-progress-bar-z`          | `10`                                                               | Progress bar z-index                                     |
+| `--rk-stories-progress-bar-padding`    | `8px 8px 0`                                                        | Space around the progress bar                            |
+| `--rk-stories-header-z`                | `5`                                                                | Header z-index                                           |
+| `--rk-stories-header-top`              | `18px`                                                             | Header offset from the top of the story                  |
+| `--rk-stories-header-padding`          | `12px 16px`                                                        | Header row padding                                       |
+| `--rk-stories-header-gap`              | `8px`                                                              | Space between avatar, name and time                      |
+| `--rk-stories-header-transition`       | `200ms`                                                            | Header fade when hidden                                  |
+| `--rk-stories-header-avatar-size`      | `32px`                                                             | Avatar size                                              |
+| `--rk-stories-header-name-fg`          | `#fff`                                                             | Author name color                                        |
+| `--rk-stories-header-name-size`        | `14px`                                                             | Author name font size                                    |
+| `--rk-stories-header-name-weight`      | `600`                                                              | Author name font weight                                  |
+| `--rk-stories-header-time-fg`          | `rgba(255, 255, 255, 0.6)`                                         | Time-ago color                                           |
+| `--rk-stories-header-time-size`        | `12px`                                                             | Time-ago font size                                       |
+| `--rk-stories-header-actions-gap`      | `8px`                                                              | Space between header action buttons                      |
+| `--rk-stories-header-btn-fg`           | `#fff`                                                             | Header action icon color                                 |
+| `--rk-stories-header-btn-padding`      | `4px`                                                              | Header action button padding                             |
+| `--rk-stories-header-spinner-size`     | `20px`                                                             | Buffering spinner size                                   |
+| `--rk-stories-header-spinner-track`    | `rgba(255, 255, 255, 0.3)`                                         | Spinner track color                                      |
+| `--rk-stories-header-spinner-fg`       | `#fff`                                                             | Spinner arc color                                        |
+| `--rk-stories-header-spinner-duration` | `0.8s`                                                             | One spinner turn                                         |
+| `--rk-stories-heart-z`                 | `20`                                                               | Heart z-index                                            |
+| `--rk-stories-heart-duration`          | `800ms`                                                            | Heart pop-in/fade-out duration                           |
+| `--rk-stories-ring-spin-duration`      | `4s`                                                               | Rotation of a ring with stories left to watch            |
+| `--rk-stories-ring-active-scale`       | `0.95`                                                             | Ring scale while pressed                                 |
+| `--rk-stories-ring-gradient`           | `none`                                                             | Internal: written by the ring on every render; no effect |
+| `--rk-stories-ring-list-gap`           | `12px`                                                             | Space between rings                                      |
+| `--rk-stories-ring-list-padding`       | `12px`                                                             | Ring list padding                                        |
+| `--rk-stories-ring-list-item-gap`      | `4px`                                                              | Space between a ring and its name                        |
+| `--rk-stories-ring-list-name-size`     | `12px`                                                             | Name font size under a ring                              |
+| `--rk-stories-card-bg`                 | `#262626`                                                          | Card background when there is no preview frame           |
+| `--rk-stories-card-radius`             | `8px`                                                              | Card corner radius                                       |
+| `--rk-stories-card-scrim`              | `rgba(0, 0, 0, 0.45)`                                              | Dimming over a side card                                 |
+| `--rk-stories-card-fg`                 | `#fff`                                                             | Card text color                                          |
+| `--rk-stories-card-name-size`          | `14px`                                                             | Card author name font size                               |
+| `--rk-stories-card-time-fg`            | `rgba(255, 255, 255, 0.7)`                                         | Card time-ago color                                      |
+| `--rk-stories-card-time-size`          | `13px`                                                             | Card time-ago font size                                  |
+| `--rk-stories-card-gap`                | `6px`                                                              | Space between ring, name and time on a card              |
+| `--rk-stories-card-transition`         | `300ms`                                                            | Carousel slide duration                                  |
+
+## Accessibility
+
+Modal dialog (`role="dialog"`, `aria-modal="true"`), named by `ariaLabel` (default "Stories player"). Focus is captured on open and returned to the trigger on close; Tab / Shift+Tab cycle inside and escaping focus is pulled back. Implemented with `captureFocusForReturn` and `createFocusTrap` from `@reelkit/core`, re-exported by `@reelkit/react`. Carousel cards are buttons labelled "Open stories by {name}", after the player controls in tab order, out of it during a slide.
+
+## Server-Side Rendering
+
+The overlay renders nothing while closed and portals into `document.body` only once it opens, on the client. `StoriesUrlOverlay` reads the address bar in an effect after mount, so a server render never opens it. `StoriesRingList` renders every ring unwatched on the server; the viewed store is read after mount, so server markup and first client render agree. See `/docs/ssr`.
 
 ## Keyboard Shortcuts
 
-| Key          | Action         |
-| ------------ | -------------- |
-| `ArrowLeft`  | Previous story |
-| `ArrowRight` | Next story     |
-| `Escape`     | Close player   |
-| `Space`      | Pause / resume |
-
-## Custom Slot Examples
-
-### renderHeader
-
-```tsx
-<StoriesOverlay
-  {...props}
-  renderHeader={({ author, story, isPaused, close }) => (
-    <header className="my-header">
-      <img src={author.avatar} />
-      <div>
-        <strong>{author.name}</strong>
-        {isPaused && <span>Paused</span>}
-      </div>
-      <button onClick={close}>×</button>
-    </header>
-  )}
-/>
-```
-
-### renderFooter (reply input)
-
-```tsx
-<StoriesOverlay
-  {...props}
-  renderFooter={({ author, story }) => (
-    <footer>
-      <input placeholder={`Reply to ${author.name}…`} />
-      <button>❤️</button>
-    </footer>
-  )}
-/>
-```
-
-### Programmatic control via apiRef
-
-```tsx
-const apiRef = useRef<StoriesApi>(null);
-
-<StoriesOverlay
-  apiRef={apiRef}
-  groups={groups}
-  isOpen={isOpen}
-  onClose={() => setIsOpen(false)}
-/>;
-
-// Skip an entire group
-apiRef.current?.nextGroup();
-```
+| Key          | Action                                                                                                                                        |
+| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ArrowLeft`  | Previous story. On a group's first story, the previous group, on the story it was left on (else its resume story); nothing on the first group |
+| `ArrowRight` | Next story. Past a group's last story, the next group; past the last group, the player closes                                                 |
+| `Escape`     | Close player                                                                                                                                  |

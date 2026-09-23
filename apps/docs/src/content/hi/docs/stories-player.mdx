@@ -181,7 +181,7 @@ styles import करना न भूलें:
 
 <CodeBlock code={urlState2} language="tsx" />
 
-**स्थिर लिंक।** ग्रुप डिफ़ॉल्ट रूप से स्थिति पर आधारित है, इसलिए फ़ीड का क्रम बदलते ही bookmark किया गया `?story=2.0` कोई दूसरा यूज़र खोलता है। इसकी जगह ग्रुप को स्थिर id से पहचानें — `outerCodec` id को URL में लिखता है, `outerLocator` ढूँढता है कि वह कहाँ है। Story वाला हिस्सा मिले हुए ग्रुप के अंदर साधारण index ही रहता है।
+**स्थिर लिंक।** ग्रुप डिफ़ॉल्ट रूप से स्थिति पर आधारित है, इसलिए फ़ीड का क्रम बदलते ही bookmark किया गया `?story=2.0` कोई दूसरा यूज़र खोलता है। इसकी जगह ग्रुप को स्थिर id से पहचानें — `outerCodec` id को URL में लिखता है, `outerLocator` ढूँढता है कि वह कहाँ है। ग्रुप के अंदर story के लिए भी यही करने को `innerCodec` के साथ `innerLocate` और `innerIdentify` दें; इन्हें छोड़ दें तो story वाला हिस्सा साधारण स्थानीय index ही रहता है।
 
 <CodeBlock code={urlState3} language="tsx" />
 
@@ -445,6 +445,17 @@ Instagram जैसी gradient ring वाला गोल avatar। दो स
 
 <CodeBlock code={heartanimation} language="tsx" />
 
+## फिर से एक्सपोर्ट [#re-exports]
+
+उपभोक्ता को जो कुछ चाहिए, वह सब इसी पैकेज से मिलता है, इसलिए `@reelkit/core` से सीधा import कभी ज़रूरी नहीं होता।
+
+| कहाँ से | फिर से एक्सपोर्ट |
+| --- | --- |
+| `@reelkit/react` | `SoundProvider`, `useSoundState`, `useOverlayUrlState`, `createViewedStateController`, `twoAxisViewedTracking`, `createLocalStorageAdapter`, `createSessionStorageAdapter`, `createMemoryStorageAdapter`, `urlIndexTwoAxisKey`, `urlStableIdTwoAxisKey`, `base64UrlCodec`, और टाइप `UrlAdapter`, `UrlCodec`, `UrlLocator`, `UrlKey`, `UrlStateController`, `TwoAxisPosition`, `TwoAxisIdentity`, `UrlIndexTwoAxisKeyOptions`, `ViewedStateController`, `ViewedStateOptions`, `StorageAdapter` |
+| `@reelkit/stories-core` | `createStoriesViewedStateController`, `StoriesViewedStateController`, `StoriesViewedStateControllerConfig`, और कंटेंट टाइप `StoryItem`, `AuthorInfo`, `StoriesGroup`, `MediaType` |
+
+`SoundProvider` और `useSoundState` वह sound स्टेट रखते हैं जो player अपनी स्लाइडों के साथ साझा करता है। अपना media चलाने वाली कस्टम स्लाइड mute toggle को `useSoundState` से पढ़ती है। Player के अंदर provider पहले से मौजूद है; कहीं और render की गई `VideoStorySlide` या कस्टम स्लाइड के ऊपर `SoundProvider` होना चाहिए, वरना `useSoundState` एरर throw करता है।
+
 ## टाइप [#types]
 
 ### StoryItem [#storyitem]
@@ -526,6 +537,7 @@ Instagram जैसी gradient ring वाला गोल avatar। दो स
 | `.rk-stories-header-time` | StoryHeader | कितनी देर पहले का टेक्स्ट |
 | `.rk-stories-header-actions` | StoryHeader | दाईं ओर के actions (बंद, mute, pause) |
 | `.rk-stories-header-btn` | StoryHeader | Header का action बटन |
+| `.rk-stories-header-btn--desktop` | StoryHeader | Pause बटन, सिर्फ़ 768px से चौड़ी स्क्रीन पर दिखता है |
 | `.rk-stories-header-spinner` | StoryHeader | वीडियो buffer होने का spinner |
 | `.rk-stories-image` | ImageStorySlide | इमेज story एलिमेंट |
 | `.rk-stories-video` | VideoStorySlide | वीडियो story कंटेनर |
@@ -548,6 +560,7 @@ Instagram जैसी gradient ring वाला गोल avatar। दो स
 | `.rk-stories-card--hidden` | Carousel | एक तरफ़ दिखने वाले दो कार्ड से आगे का कार्ड |
 | `.rk-stories-card-button` | Carousel | डिफ़ॉल्ट कार्ड content (group खोलने वाला बटन) |
 | `.rk-stories-card-image` | Carousel | preview frame (poster या इमेज) |
+| `.rk-stories-card-frame` | Carousel | बिना इमेज या poster वाली story का छोटा किया गया `renderSlide` preview; निष्क्रिय |
 | `.rk-stories-card-scrim` | Carousel | frame के ऊपर धुंधली layer |
 | `.rk-stories-card-info` | Carousel | ring, author का नाम और समय वाला column |
 | `.rk-stories-card-name` | Carousel | author का नाम |
@@ -561,32 +574,55 @@ Instagram जैसी gradient ring वाला गोल avatar। दो स
 | --- | --- | --- |
 | `--rk-stories-overlay-bg` | `#000` | फ़ुलस्क्रीन backdrop का रंग |
 | `--rk-stories-overlay-z` | `9999` | Overlay का z-index |
-| `--rk-stories-container-radius` | `12px` | story canvas के गोल कोने (डेस्कटॉप) |
 | `--rk-stories-swipe-gap` | `16px` | नेविगेशन बटन और story canvas के बीच की दूरी |
+| `--rk-stories-container-radius` | `12px` | story canvas के गोल कोने (डेस्कटॉप) |
+| `--rk-stories-container-radius-mobile` | `0` | 768px चौड़ाई तक story canvas के कोने |
+| `--rk-stories-ui-z` | `15` | UI layer (header, प्रोग्रेस बार) का z-index |
+| `--rk-stories-ui-transition` | `200ms` | hideUIOnPause बदलने पर धुंधला होने की अवधि |
 | `--rk-stories-top-shade-height` | `120px` | header के पीछे ऊपर के gradient की ऊँचाई |
 | `--rk-stories-top-shade-bg` | `linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%)` | ऊपर के gradient का रंग |
-| `--rk-stories-ui-transition` | `200ms` | hideUIOnPause बदलने पर धुंधला होने की अवधि |
+| `--rk-stories-error-z` | `5` | एरर स्टेट का z-index |
+| `--rk-stories-error-bg` | `linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)` | एरर स्टेट का background gradient |
+| `--rk-stories-error-fg` | `rgba(255, 255, 255, 0.5)` | एरर आइकन और टेक्स्ट का रंग |
+| `--rk-stories-error-gap` | `12px` | एरर आइकन और उसके टेक्स्ट के बीच की दूरी |
+| `--rk-stories-error-text-size` | `13px` | एरर संदेश का font size |
+| `--rk-stories-nav-z` | `20` | डेस्कटॉप नेविगेशन बटन का z-index |
 | `--rk-stories-nav-size` | `44px` | डेस्कटॉप prev/next बटन का आकार |
 | `--rk-stories-nav-bg` | `rgba(255, 255, 255, 0.1)` | डेस्कटॉप नेविगेशन बटन का background |
 | `--rk-stories-nav-bg-hover` | `rgba(255, 255, 255, 0.2)` | डेस्कटॉप नेविगेशन बटन का hover background |
 | `--rk-stories-nav-fg` | `rgba(255, 255, 255, 0.7)` | डेस्कटॉप नेविगेशन बटन के आइकन का रंग |
 | `--rk-stories-nav-fg-hover` | `#fff` | डेस्कटॉप नेविगेशन बटन के आइकन का hover रंग |
-| `--rk-stories-error-bg` | `linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)` | एरर स्टेट का background gradient |
-| `--rk-stories-error-fg` | `rgba(255, 255, 255, 0.5)` | एरर आइकन और टेक्स्ट का रंग |
-| `--rk-stories-error-text-size` | `13px` | एरर संदेश का font size |
+| `--rk-stories-nav-transition` | `150ms` | नेविगेशन बटन के background और रंग का ट्रांज़िशन |
 | `--rk-stories-video-bg` | `#000` | \<video> के पीछे letterbox background |
 | `--rk-stories-video-poster-transition` | `200ms` | वीडियो चलना शुरू होने पर poster के धुंधला होने की अवधि |
+| `--rk-stories-progress-bar-z` | `10` | प्रोग्रेस बार का z-index |
+| `--rk-stories-progress-bar-padding` | `8px 8px 0` | प्रोग्रेस बार के चारों ओर की जगह |
+| `--rk-stories-header-z` | `5` | Header का z-index |
 | `--rk-stories-header-top` | `18px` | story के ऊपर से header की वर्टिकल दूरी |
 | `--rk-stories-header-padding` | `12px 16px` | header पंक्ति की अंदरूनी padding |
+| `--rk-stories-header-gap` | `8px` | avatar, नाम और समय के बीच की दूरी |
+| `--rk-stories-header-transition` | `200ms` | छिपने पर header के धुंधला होने की अवधि |
 | `--rk-stories-header-avatar-size` | `32px` | Avatar की चौड़ाई/ऊँचाई |
 | `--rk-stories-header-name-fg` | `#fff` | लेखक के नाम का रंग |
 | `--rk-stories-header-name-size` | `14px` | लेखक के नाम का font size |
+| `--rk-stories-header-name-weight` | `600` | लेखक के नाम का font weight |
 | `--rk-stories-header-time-fg` | `rgba(255, 255, 255, 0.6)` | कितनी देर पहले वाले टेक्स्ट का रंग |
+| `--rk-stories-header-time-size` | `12px` | कितनी देर पहले वाले टेक्स्ट का font size |
+| `--rk-stories-header-actions-gap` | `8px` | Header के action बटनों के बीच की दूरी |
 | `--rk-stories-header-btn-fg` | `#fff` | Header के action आइकन का रंग (बंद, mute, pause) |
+| `--rk-stories-header-btn-padding` | `4px` | Header के action बटन की padding |
+| `--rk-stories-header-spinner-size` | `20px` | buffering spinner का आकार |
+| `--rk-stories-header-spinner-track` | `rgba(255, 255, 255, 0.3)` | buffering spinner के track का रंग |
+| `--rk-stories-header-spinner-fg` | `#fff` | buffering spinner के चाप का रंग |
+| `--rk-stories-header-spinner-duration` | `0.8s` | buffering spinner का एक पूरा चक्कर |
+| `--rk-stories-heart-z` | `20` | डबल-टैप वाले दिल का z-index |
 | `--rk-stories-heart-duration` | `800ms` | उभरने/धुंधला होने के एनिमेशन की अवधि |
 | `--rk-stories-ring-spin-duration` | `4s` | देखने को stories बाकी होने वाली ring के घूमने की अवधि |
+| `--rk-stories-ring-active-scale` | `0.95` | दबाए जाने के दौरान ring का scale |
+| `--rk-stories-ring-gradient` | `none` | आंतरिक: ring कंपोनेंट हर render पर अपना gradient यहाँ लिखता है, इसलिए override का कोई असर नहीं होता |
 | `--rk-stories-ring-list-gap` | `12px` | सूची में rings के बीच की दूरी |
 | `--rk-stories-ring-list-padding` | `12px` | ring सूची के चारों ओर की अंदरूनी padding |
+| `--rk-stories-ring-list-item-gap` | `4px` | ring और उसके नाम के बीच की दूरी |
 | `--rk-stories-ring-list-name-size` | `12px` | हर ring के नीचे लेखक के नाम का font size |
 | `--rk-stories-card-bg` | `#262626` | carousel कार्ड का background, preview frame न होने पर दिखता है |
 | `--rk-stories-card-radius` | `8px` | carousel कार्ड के कोनों की गोलाई |
@@ -606,14 +642,18 @@ Instagram जैसी gradient ring वाला गोल avatar। दो स
 
 Overlay का root एक modal dialog है (`role="dialog"`, `aria-modal="true"`)। स्क्रीन रीडर की घोषणा बदलने के लिए `ariaLabel` सेट करें; डिफ़ॉल्ट "Stories player" है।
 
-Overlay खुलने पर फ़ोकस पकड़ता है और बंद होने पर उसे trigger पर लौटा देता है। Tab और Shift+Tab अंदर के फ़ोकस होने वाले एलिमेंट में घूमते हैं; बाहर निकला फ़ोकस (बाहर क्लिक, प्रोग्राम से फ़ोकस) वापस खींच लिया जाता है। यह `@reelkit/core` के `captureFocusForReturn` और `createFocusTrap` से बना है।
+Overlay खुलने पर फ़ोकस पकड़ता है और बंद होने पर उसे trigger पर लौटा देता है। Tab और Shift+Tab अंदर के फ़ोकस होने वाले एलिमेंट में घूमते हैं; बाहर निकला फ़ोकस (बाहर क्लिक, प्रोग्राम से फ़ोकस) वापस खींच लिया जाता है। यह `@reelkit/core` के `captureFocusForReturn` और `createFocusTrap` से बना है, जिन्हें `@reelkit/react` फिर से एक्सपोर्ट करता है।
 
 डेस्कटॉप carousel में हर डिफ़ॉल्ट कार्ड एक बटन है, जिसका label "Open stories by" और author का नाम है। Tab क्रम में कार्ड player के controls के बाद आते हैं, और slide चलने के दौरान उस क्रम से बाहर रहते हैं।
+
+## सर्वर-साइड रेंडरिंग [#server-side-rendering]
+
+बंद रहते हुए overlay कुछ भी render नहीं करता, और `document.body` में portal सिर्फ़ खुलने पर करता है, जो client पर होता है। `StoriesUrlOverlay` address bar को mount के बाद एक effect में पढ़ता है, इसलिए server render इसे कभी नहीं खोलता। `StoriesRingList` server पर हर ring को बिना देखी हुई render करता है: viewed store सिर्फ़ mount के बाद पढ़ा जाता है, इसलिए server का markup और client का पहला render एक जैसे रहते हैं। पूरी तस्वीर के लिए [SSR गाइड](/docs/ssr) देखें।
 
 ## कीबोर्ड शॉर्टकट [#keyboard-shortcuts]
 
 | कुंजी | क्रिया |
 | --- | --- |
-| `ArrowLeft` | पिछली story |
-| `ArrowRight` | अगली story |
+| `ArrowLeft` | पिछली story। ग्रुप की पहली story पर, पिछला ग्रुप, उसी story पर जहाँ उसे छोड़ा गया था (वरना उसकी resume story पर); पहले ग्रुप पर कुछ नहीं |
+| `ArrowRight` | अगली story। ग्रुप की आख़िरी story के बाद, अगला ग्रुप; आख़िरी ग्रुप के बाद player बंद हो जाता है |
 | `Escape` | प्लेयर बंद करें |

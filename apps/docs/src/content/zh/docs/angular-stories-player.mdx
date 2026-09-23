@@ -122,6 +122,8 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 
 ## 快速上手 [#quick-start]
 
+`rk-stories-overlay` 渲染全屏播放器。把它和 `rk-stories-ring-list` 搭配使用，就能得到 Instagram 风格的入口：圆环会带着分组索引发出 `(selected)`，宿主把它保存为 `initialGroupIndex`，再设置 `isOpen`。播放器从不自行关闭；它发出 `(closed)`，由宿主把 `isOpen` 设回 `false`。
+
 <CodeBlock code={basicUsage} language="typescript" />
 
 ## URL 状态 [#url-state]
@@ -160,13 +162,28 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 
 ## 记住看过的内容 [#remembering-what-was-seen]
 
-`createStoriesViewedStateController` 会记录每一条展示过的 Story，并回答每位作者从哪里续播。把同一个控制器同时交给圆环列表和播放器，两者对"还剩什么没看"的判断就会一致。
+在一个分组被完整看完之前，圆环会显示渐变；分组重新打开时，会停在观看者尚未看过的第一条 Story。两者都来自同一个 `createStoriesViewedStateController`：在信息流所在的地方创建一次，再作为 `viewed` 交给圆环列表和播放器，它们会自行读取存储、跟随其变化并记录展示过的内容。存储的条目按 id 指明作者和 Story，因此信息流重新排序后依然有效，同一个控制器在 React 和 Vue 中也能使用。
 
 <CodeBlock code={rememberingWhatWasSeen} language="typescript" />
 
+- **打开时的那条 Story 也算数。** 播放器打开时，屏幕上已有的那条 Story 会被报告为已看，所以打开一个只有一条 Story 的分组再关闭，它就会被标记为看完。
+- **往后滑同样会续播。** `resumeStoryIndex` 对本次会话中第一次到达的每个分组生效，包括播放器打开时所在的那个，除非 `initialStoryIndex` 显式指定了 Story；已经滑过的分组会在离开处重新打开。显式传入的 `resumeStoryIndex` 输入优先于控制器的答案。
+- **链接依然优先。** 使用 `rk-stories-url-overlay` 时，无论存储了什么，都由参数决定播放器在哪里打开。其他情况下由续播回调决定。
+- **计数是位置，不是累计。** 条目记录的是到达过的最远那条 Story，因此给已看完的分组新增一条 Story 会让它的圆环重新亮起，从中间删掉一条则会让计数变短。
+- **存储可插拔。** 传入 `storage: createSessionStorageAdapter()` 可在关闭标签页时遗忘，也可以传入你自己的 `StorageAdapter`。两个打开的标签页会通过浏览器的 storage 事件保持同步。
+- **只在打开时才创建的播放器读取得太晚。** `rk-stories-overlay` 一存在就会读取存储，即使仍处于关闭状态，`rk-stories-ring-list` 也是如此。如果把浮层包在 `@if (open)` 里，它就没有这个时机：请在宿主的构造函数中调用 `attachViewedState(() => this.viewed)`，它会在宿主存活期间一直保持关联。相关选项以及它所基于的底层构件见 [Stories Core](/docs/stories-core#viewed-controller) 页面。
+
 ## 桌面轮播 [#desktop-carousel]
 
+设置 `desktopLayout="carousel"`，播放器就会像 Instagram 网页版查看器那样布局：当前 Story 以正常尺寸留在中间，每侧最多各有两个相邻分组，以更小、压暗的卡片呈现。点击卡片会打开对应分组，切换分组时卡片会随之滑过。传入与圆环列表相同的 `viewed` 控制器，已看完分组的卡片就会显示灰色圆环。
+
 <CodeBlock code={desktopCarousel} language="typescript" />
+
+- **手机上仍是普通播放器。** 宽度不超过 768px 时不渲染卡片，滑动使用 `groupTransition`，与默认的 `'single'` 布局相同。跨过这个宽度调整窗口大小会实时切换。卡片显示时，分组是滑动而不是转动，无论 `groupTransition` 如何设置。
+- **每张卡片预览分组将要打开的位置**：本次会话中离开时所在的 Story，否则是 `resumeStoryIndex` 返回的 Story。卡片显示视频封面或图片。两者都没有的 Story（例如渐变背景上的文字 Story）会由你的 `rkStoriesSlide` 模板按播放器尺寸绘制后再缩小；没有封面的视频显示卡片背景。这个预览收到的是 `isActive: false`，其生命周期回调什么也不做，因此无法驱动屏幕上那条 Story 的计时器。幻灯片在创建时做的事情（例如播放或统计）请放在 `isActive` 判断之后。
+- **计时器会等幻灯片。** 在卡片移动结束之前，Story 不会启动计时器，也不会为它触发 `(storyViewed)`。
+- **每种切换分组的方式都会滑动**：点击卡片、`StoriesApi.goToGroup`、`nextGroup` 和 `prevGroup`，以及越过分组末尾时的方向键。触摸滑动本身就在移动播放器，所以不会再叠加一次滑动。
+- **重新设计卡片样式**用 `rkStoriesGroupPreview` 插槽，见[自定义轮播卡片](#custom-carousel-cards)。播放器仍然负责卡片的定位、缩放和滑动。
 
 ## 每个分组自带进度条和头部 [#chrome-placement]
 
@@ -204,6 +221,18 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 ### 自定义幻灯片 [#custom-slides]
 
 <CodeBlock code={slideSlot} language="typescript" />
+
+自定义幻灯片通过 `rkStoriesSlide` 上下文中的回调告诉播放器内容的状态。播放器只处理屏幕上那条 Story 的回调；其他幻灯片的调用会被忽略。
+
+| 回调 | 时机 |
+| --- | --- |
+| `onReady` | 内容已就绪（图片加载完成、视频开始播放）。进度计时器开始，或等待轮播滑动结束后再开始。 |
+| `onWaiting` | 内容卡住（视频播放中途缓冲）。显示加载圈，计时器暂停。 |
+| `onError` | 内容加载失败。显示错误面板，计时器暂停。 |
+| `onDurationReady` | 以毫秒报告媒体的真实时长（例如从视频元数据中读取），让计时器与之匹配。Story 上设置的 `duration` 优先于它。 |
+| `onEnded` | 媒体自行播放结束，例如视频播到了结尾。播放器不等计时器，直接进入下一条 Story。 |
+
+`rk-image-story-slide` 会发出 `(loaded)` 和 `(failed)`，`rk-video-story-slide` 会发出 `(playbackStarted)`、`(buffering)`、`(failed)`、`(durationReady)` 和 `(finished)`，因此包裹它们的幻灯片模板只需把每个事件转交给对应的回调。
 
 <Callout type="info" title="预加载缓存">
   内置的 `RkImageStorySlideComponent` 和 `RkVideoStorySlideComponent` 会在后台预加载下一条 Story。观众翻到已预加载的 Story 时，内容立即出现，不会有加载指示。失败过一次的 URL 也会被记住，所以重新打开损坏的 Story 会直接显示错误，而不是再试一次。
@@ -377,27 +406,113 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 | `.rk-stories-error` | Overlay | 错误状态（居中的图标与文字） |
 | `.rk-stories-error-text` | Overlay | 错误信息文字 |
 | `.rk-stories-nav-btn` | Overlay | 桌面端的上一个／下一个箭头 |
+| `.rk-stories-progress-bar` | ProgressBar | canvas 进度条的定位包装层 |
 | `.rk-stories-slide-wrapper` | Overlay | 一个分组的 Story（外层幻灯片） |
 | `.rk-stories-story` | Overlay | 单条 Story（内层幻灯片根元素） |
 | `.rk-stories-image` | ImageStorySlide | 整屏图片（`object-fit: cover`） |
 | `.rk-stories-video` | VideoStorySlide | 视频幻灯片容器 |
+| `.rk-stories-video-element` | VideoStorySlide | 共享的 \<video> 元素 |
 | `.rk-stories-video-poster` | VideoStorySlide | 封面帧，播放开始前显示 |
+| `.rk-stories-video-poster--visible` | VideoStorySlide | 封面可见状态（播放开始前） |
 | `.rk-stories-heart` | HeartAnimation | 双击的爱心 |
 | `.rk-stories-header` | StoryHeader | 头部一行（头像、名称、时间、控件） |
+| `.rk-stories-header--hidden` | StoryHeader | 头部隐藏状态（`visible` 输入设为 `false`） |
+| `.rk-stories-header-avatar` | StoryHeader | 作者头像图片 |
+| `.rk-stories-header-name` | StoryHeader | 作者名称文字 |
+| `.rk-stories-header-verified` | StoryHeader | 认证徽标容器 |
+| `.rk-stories-header-time` | StoryHeader | 相对时间文字 |
+| `.rk-stories-header-actions` | StoryHeader | 右侧控件（声音、暂停、关闭） |
 | `.rk-stories-header-btn` | StoryHeader | 暂停、声音和关闭按钮 |
+| `.rk-stories-header-btn--desktop` | StoryHeader | 暂停按钮，仅在宽度超过 768px 时显示 |
 | `.rk-stories-header-spinner` | StoryHeader | 当前 Story 加载时的加载指示 |
 | `.rk-stories-ring` | StoriesRing | 带渐变圆环的圆形头像 |
 | `.rk-stories-ring--active` | StoriesRing | 仍有未看 Story 的圆环（渐变旋转） |
 | `.rk-stories-ring-avatar` | StoriesRing | 圆环内的头像图片 |
 | `.rk-stories-ring-list` | StoriesRingList | 横向排列的圆环列表 |
-| `.rk-stories-carousel` | Carousel | 桌面轮播图层 |
-| `.rk-stories-card` | Carousel | 播放器旁的一张预览卡片 |
-| `.rk-stories-card-image` | Carousel | 卡片的预览图片 |
+| `.rk-stories-ring-list-item` | StoriesRingList | 圆环 + 名称的纵列 |
+| `.rk-stories-ring-list-name` | StoriesRingList | 每个圆环下方的作者名称 |
+| `.rk-stories-carousel` | Carousel | 播放器后方的预览卡片图层 |
+| `.rk-stories-carousel--instant` | Carousel | 滑动的第一帧，不带过渡地完成布局 |
+| `.rk-stories-card` | Carousel | 一张已定位的预览卡片 |
+| `.rk-stories-card--center` | Carousel | 滑动期间位于中间位置的卡片 |
+| `.rk-stories-card--hidden` | Carousel | 超出每侧所显示两张之外的卡片 |
+| `.rk-stories-card-button` | Carousel | 默认卡片内容（打开该分组的按钮） |
+| `.rk-stories-card-image` | Carousel | 卡片的预览图片（封面或图片） |
 | `.rk-stories-card-frame` | Carousel | 作为卡片预览缩小绘制的幻灯片模板 |
+| `.rk-stories-card-scrim` | Carousel | 预览上方的压暗层 |
+| `.rk-stories-card-info` | Carousel | 圆环、作者名称和时间的纵列 |
+| `.rk-stories-card-name` | Carousel | 作者名称 |
+| `.rk-stories-card-time` | Carousel | 相对时间文字 |
 
 ## 主题定制 [#theming]
 
 每一个颜色、尺寸、时长和 z-index 都是 `:root` 上的 `--rk-stories-*` 自定义属性，因此换肤只需一份样式表，而不必改动组件。这些令牌与 React、Vue 播放器共用。
+
+| 令牌 | 默认值 | 控制内容 |
+| --- | --- | --- |
+| `--rk-stories-overlay-bg` | `#000` | 全屏背景颜色 |
+| `--rk-stories-overlay-z` | `9999` | 浮层 z-index |
+| `--rk-stories-swipe-gap` | `16px` | 导航按钮与 Story 画布之间的间距 |
+| `--rk-stories-container-radius` | `12px` | Story 画布的圆角（桌面端） |
+| `--rk-stories-container-radius-mobile` | `0` | 手机上 Story 画布的圆角 |
+| `--rk-stories-ui-z` | `15` | 界面层（头部、进度条）的 z-index |
+| `--rk-stories-ui-transition` | `200ms` | `hideUIOnPause` 切换时的淡入淡出时长 |
+| `--rk-stories-top-shade-height` | `120px` | 头部后方顶部渐变遮罩的高度 |
+| `--rk-stories-top-shade-bg` | `linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%)` | 顶部渐变遮罩颜色 |
+| `--rk-stories-error-z` | `5` | 错误面板的 z-index |
+| `--rk-stories-error-bg` | `linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)` | 错误状态背景渐变 |
+| `--rk-stories-error-fg` | `rgba(255, 255, 255, 0.5)` | 错误图标和文字颜色 |
+| `--rk-stories-error-gap` | `12px` | 错误图标与文字之间的间距 |
+| `--rk-stories-error-text-size` | `13px` | 错误信息字号 |
+| `--rk-stories-nav-z` | `20` | 桌面端导航按钮的 z-index |
+| `--rk-stories-nav-size` | `44px` | 桌面端上一个／下一个按钮尺寸 |
+| `--rk-stories-nav-bg` | `rgba(255, 255, 255, 0.1)` | 桌面端导航按钮背景 |
+| `--rk-stories-nav-bg-hover` | `rgba(255, 255, 255, 0.2)` | 桌面端导航按钮悬停背景 |
+| `--rk-stories-nav-fg` | `rgba(255, 255, 255, 0.7)` | 桌面端导航按钮图标颜色 |
+| `--rk-stories-nav-fg-hover` | `#fff` | 桌面端导航按钮悬停图标颜色 |
+| `--rk-stories-nav-transition` | `150ms` | 桌面端导航按钮悬停的过渡时长 |
+| `--rk-stories-video-bg` | `#000` | \<video> 后方的留黑背景 |
+| `--rk-stories-video-poster-transition` | `200ms` | 视频开始播放时封面淡出的时长 |
+| `--rk-stories-progress-bar-z` | `10` | 进度条的 z-index |
+| `--rk-stories-progress-bar-padding` | `8px 8px 0` | 进度条周围的留白 |
+| `--rk-stories-card-bg` | `#262626` | 轮播卡片背景，没有预览画面时可见 |
+| `--rk-stories-card-radius` | `8px` | 轮播卡片圆角 |
+| `--rk-stories-card-scrim` | `rgba(0, 0, 0, 0.45)` | 侧边卡片上的压暗层 |
+| `--rk-stories-card-fg` | `#fff` | 卡片文字颜色 |
+| `--rk-stories-card-name-size` | `14px` | 卡片作者名称字号 |
+| `--rk-stories-card-time-fg` | `rgba(255, 255, 255, 0.7)` | 卡片相对时间文字颜色 |
+| `--rk-stories-card-time-size` | `13px` | 卡片相对时间字号 |
+| `--rk-stories-card-gap` | `6px` | 卡片上圆环、名称和时间之间的间距 |
+| `--rk-stories-card-transition` | `300ms` | 轮播滑动时长 |
+| `--rk-stories-ring-spin-duration` | `4s` | 仍有未看 Story 的圆环的旋转时长 |
+| `--rk-stories-ring-active-scale` | `0.95` | 圆环按下时的缩放比例 |
+| `--rk-stories-ring-gradient` | `none` | 内部使用：圆环组件每次渲染都会把渐变写到这里，因此设置它不会生效 |
+| `--rk-stories-ring-list-gap` | `12px` | 列表中圆环之间的间距 |
+| `--rk-stories-ring-list-padding` | `12px` | 圆环列表的内边距 |
+| `--rk-stories-ring-list-item-gap` | `4px` | 圆环与其名称之间的间距 |
+| `--rk-stories-ring-list-name-size` | `12px` | 每个圆环下方作者名称的字号 |
+| `--rk-stories-header-z` | `5` | 头部的 z-index |
+| `--rk-stories-header-top` | `18px` | 头部距 Story 顶部的垂直偏移 |
+| `--rk-stories-header-padding` | `12px 16px` | 头部行的内边距 |
+| `--rk-stories-header-gap` | `8px` | 头部行各项之间的间距 |
+| `--rk-stories-header-transition` | `200ms` | 头部隐藏时的淡出时长 |
+| `--rk-stories-header-avatar-size` | `32px` | 头像宽高 |
+| `--rk-stories-header-name-fg` | `#fff` | 作者名称颜色 |
+| `--rk-stories-header-name-size` | `14px` | 作者名称字号 |
+| `--rk-stories-header-name-weight` | `600` | 作者名称字重 |
+| `--rk-stories-header-time-fg` | `rgba(255, 255, 255, 0.6)` | 相对时间文字颜色 |
+| `--rk-stories-header-time-size` | `12px` | 相对时间字号 |
+| `--rk-stories-header-actions-gap` | `8px` | 头部按钮之间的间距 |
+| `--rk-stories-header-btn-fg` | `#fff` | 头部操作图标颜色（关闭、声音、暂停） |
+| `--rk-stories-header-btn-padding` | `4px` | 头部按钮的内边距 |
+| `--rk-stories-header-spinner-size` | `20px` | 加载指示的尺寸 |
+| `--rk-stories-header-spinner-track` | `rgba(255, 255, 255, 0.3)` | 加载指示的轨道颜色 |
+| `--rk-stories-header-spinner-fg` | `#fff` | 加载指示的弧线颜色 |
+| `--rk-stories-header-spinner-duration` | `0.8s` | 加载指示转一圈的时长 |
+| `--rk-stories-heart-z` | `20` | 双击爱心的 z-index |
+| `--rk-stories-heart-duration` | `800ms` | 弹出／淡出动画时长 |
+
+把下面这段放进一个在 `@reelkit/angular-stories-player/styles.css` 之后加载的样式表。
 
 <CodeBlock code={theming} language="css" />
 
@@ -405,9 +520,9 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 
 浮层根元素是一个模态对话框（`role="dialog"`、`aria-modal="true"`）。设置 `ariaLabel` 可以改变屏幕阅读器的朗读内容，默认是 "Stories player"。
 
-浮层在打开时接管焦点，关闭时把焦点还给触发它的元素。Tab 与 Shift+Tab 在内部可聚焦元素之间循环，并在两端回绕；跑出去的焦点（点击外部、程序化聚焦）会被拉回来。播放器打开期间 body 滚动保持锁定。实现使用 `@reelkit/angular` 的 `captureFocusForReturn` 与 `createFocusTrap`。
+浮层在打开时接管焦点，关闭时把焦点还给触发它的元素。Tab 与 Shift+Tab 在内部可聚焦元素之间循环，并在两端回绕；跑出去的焦点（点击外部、程序化聚焦）会被拉回来。播放器打开期间 body 滚动保持锁定。实现使用 `@reelkit/core` 的 `captureFocusForReturn` 与 `createFocusTrap`，并由 `@reelkit/angular` 重新导出。
 
-在桌面轮播中，每张默认卡片都是一个按钮，标签为 "Open stories by" 加作者名。卡片在 Tab 顺序中排在播放器控件之后，并在滑动进行时移出 Tab 顺序。
+在桌面轮播中，每张默认卡片都是一个按钮，标签为 "Open stories by" 加作者名。卡片在 Tab 顺序中排在播放器控件之后，并在滑动进行时移出 Tab 顺序；打开自己分组的那张卡片会把焦点交还给对话框，而不是丢在页面上。
 
 ## 服务端渲染 [#server-side-rendering]
 
@@ -417,6 +532,6 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 
 | 按键 | 操作 |
 | --- | --- |
-| `ArrowLeft` | 上一条 Story |
-| `ArrowRight` | 下一条 Story |
+| `ArrowLeft` | 上一条 Story。在分组的第一条 Story 上时，打开上一个分组，停在离开时的位置；在第一个分组上什么也不做。 |
+| `ArrowRight` | 下一条 Story。在分组的最后一条 Story 上时，打开下一个分组；在最后一个分组上则关闭播放器。 |
 | `Escape` | 关闭播放器 |

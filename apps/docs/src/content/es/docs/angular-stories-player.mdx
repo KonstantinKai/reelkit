@@ -122,6 +122,8 @@ Registra la hoja de estilos una sola vez:
 
 ## Inicio rápido [#quick-start]
 
+`rk-stories-overlay` renderiza el player a pantalla completa. Combínalo con `rk-stories-ring-list` para tener los puntos de entrada al estilo de Instagram: un anillo emite `(selected)` con el índice de su grupo, que el host guarda como `initialGroupIndex` antes de activar `isOpen`. El player nunca se cierra por sí solo; emite `(closed)` y el host vuelve a poner `isOpen` a `false`.
+
 <CodeBlock code={basicUsage} language="typescript" />
 
 ## Estado en la URL [#url-state]
@@ -160,13 +162,28 @@ Registra la hoja de estilos una sola vez:
 
 ## Recordar lo que ya se vio [#remembering-what-was-seen]
 
-`createStoriesViewedStateController` registra cada story mostrada y responde por dónde se reanuda cada autor. Pasa el mismo controlador a la lista de anillos y al player, y ambos coincidirán sobre lo que queda por ver.
+Los anillos muestran un degradado hasta que un grupo se ha visto hasta el final, y un grupo se reabre en la primera story que el espectador no ha visto. Las dos cosas salen de un único `createStoriesViewedStateController`, creado una vez donde vive el feed y pasado a la lista de anillos y al player como `viewed`: ellos leen el almacén, lo siguen y registran por sí mismos lo que se muestra. Una entrada guardada nombra al autor y a la story por su id, así que sobrevive a que el feed se reordene, y el mismo controlador funciona en React y en Vue.
 
 <CodeBlock code={rememberingWhatWasSeen} language="typescript" />
 
+- **La story inicial cuenta.** La story que ya está en pantalla se marca como vista al abrirse el player, así que abrir un grupo de una sola story y cerrarlo lo marca como visto.
+- **Deslizar hacia delante también reanuda.** Se consulta `resumeStoryIndex` para cada grupo al que se llega por primera vez en la sesión, incluido aquel en el que se abre el player, salvo que `initialStoryIndex` nombre una story de forma explícita; un grupo por el que ya se ha pasado se reabre donde se dejó. Un input `resumeStoryIndex` explícito tiene prioridad sobre la respuesta del controlador.
+- **Un enlace sigue mandando.** Con `rk-stories-url-overlay`, el parámetro decide dónde se abre el player, sea lo que sea lo guardado. En cualquier otro caso decide el callback de reanudación.
+- **Un recuento es una posición, no una suma.** Una entrada nombra la story más lejana a la que se llegó, así que añadir una story a un grupo ya visto vuelve a encender su anillo, y quitar una del medio acorta el recuento.
+- **El almacenamiento es intercambiable.** Pasa `storage: createSessionStorageAdapter()` para olvidarlo al cerrar la pestaña, o tu propio `StorageAdapter`. Dos pestañas abiertas se mantienen sincronizadas mediante el evento storage del navegador.
+- **Un player que solo se crea al abrirse lee demasiado tarde.** `rk-stories-overlay` lee el almacén en cuanto existe, aunque siga cerrado, y lo mismo hace `rk-stories-ring-list`. Envuelto en `@if (open)`, el overlay no tiene ese momento: llama a `attachViewedState(() => this.viewed)` en el constructor del host, que lo conecta mientras el host viva. Las opciones, y las piezas de más bajo nivel sobre las que se construye, están en la página de [Stories Core](/docs/stories-core#viewed-controller).
+
 ## Carrusel en escritorio [#desktop-carousel]
 
+Define `desktopLayout="carousel"` para distribuir el player como el visor web de Instagram: la story activa se queda en el centro con su tamaño habitual, y hasta dos grupos vecinos se colocan a cada lado como tarjetas más pequeñas y oscurecidas. Al hacer clic en una tarjeta se abre ese grupo, y las tarjetas se deslizan mientras cambia el grupo. Pasa el mismo controlador `viewed` que recibe la lista de anillos, y la tarjeta de un grupo ya visto lleva el anillo apagado.
+
 <CodeBlock code={desktopCarousel} language="typescript" />
+
+- **Los móviles mantienen el player simple.** Hasta 768px de ancho las tarjetas no se renderizan y los deslizamientos usan `groupTransition`, como con el diseño `'single'` por defecto. Redimensionar cruzando ese ancho cambia de uno a otro en vivo. Mientras se ven las tarjetas, los grupos se deslizan en lugar de girar, diga lo que diga `groupTransition`.
+- **Cada tarjeta muestra dónde se abrirá el grupo**: la story en la que se dejó durante esta sesión o, si no, lo que devuelva `resumeStoryIndex`. Muestra el póster del vídeo o la imagen. Una story sin ninguno de los dos, como una story de texto sobre un degradado, la dibuja tu plantilla `rkStoriesSlide` al tamaño del player y reducida; un vídeo sin póster muestra el fondo de la tarjeta. Esa vista previa recibe `isActive: false` y sus callbacks de ciclo de vida no hacen nada, así que no puede controlar el temporizador de la story en pantalla. Deja detrás de `isActive` todo lo que una slide haga al crearse, como la reproducción o la analítica.
+- **El temporizador espera a la slide.** La story no arranca su temporizador, y `(storyViewed)` no se emite para ella, hasta que las tarjetas terminan de moverse.
+- **Toda forma de cambiar de grupo se desliza**: un clic en una tarjeta, `StoriesApi.goToGroup`, `nextGroup` y `prevGroup`, y las flechas del teclado al pasar del final de un grupo. Un deslizamiento táctil mueve el propio player, así que no lleva un deslizamiento encima.
+- **Cambiar el estilo de una tarjeta** se hace con el slot `rkStoriesGroupPreview`, que se muestra en [Tarjetas del carrusel personalizadas](#custom-carousel-cards). El player sigue colocando, escalando y deslizando la tarjeta.
 
 ## Barra de progreso y cabecera en cada grupo [#chrome-placement]
 
@@ -204,6 +221,18 @@ Cada slot se renderiza con el inyector del propio player, así que un componente
 ### Slides personalizadas [#custom-slides]
 
 <CodeBlock code={slideSlot} language="typescript" />
+
+Una slide personalizada le cuenta al player cómo va su contenido mediante callbacks del contexto de `rkStoriesSlide`. El player solo actúa sobre ellos para la story en pantalla; una llamada desde cualquier otra slide se ignora.
+
+| Callback | Cuándo |
+| --- | --- |
+| `onReady` | El contenido está listo (imagen cargada, vídeo reproduciéndose). El temporizador de progreso arranca, o espera a que termine el deslizamiento del carrusel. |
+| `onWaiting` | El contenido se detiene (el vídeo se queda cargando a mitad de reproducción). Aparece el indicador de carga y el temporizador se pausa. |
+| `onError` | El contenido no se pudo cargar. Se muestra el panel de error y el temporizador se pausa. |
+| `onDurationReady` | Informa de la duración real del contenido en milisegundos, por ejemplo a partir de los metadatos del vídeo, para que el temporizador se ajuste a ella. Una `duration` definida en la story tiene prioridad. |
+| `onEnded` | El contenido terminó por sí solo, por ejemplo un vídeo que llegó al final. El player pasa a la siguiente story sin esperar al temporizador. |
+
+`rk-image-story-slide` emite `(loaded)` y `(failed)`, y `rk-video-story-slide` emite `(playbackStarted)`, `(buffering)`, `(failed)`, `(durationReady)` y `(finished)`, así que una plantilla de slide que los envuelva solo tiene que pasar cada uno al callback correspondiente.
 
 <Callout type="info" title="Caché del precargador">
   Los componentes integrados `RkImageStorySlideComponent` y `RkVideoStorySlideComponent` precargan la siguiente story en segundo plano. Cuando el espectador llega a una story precargada, el contenido aparece al instante, sin indicador de carga. Una URL que falló una vez también se recuerda, así que reabrir una story rota muestra el error de inmediato en lugar de reintentar.
@@ -377,27 +406,113 @@ Los nombres de clase son planos (sin ámbito), así que una hoja de estilos carg
 | `.rk-stories-error` | Overlay | Estado de error (icono y texto centrados) |
 | `.rk-stories-error-text` | Overlay | Texto del mensaje de error |
 | `.rk-stories-nav-btn` | Overlay | Flecha de anterior/siguiente en escritorio |
+| `.rk-stories-progress-bar` | ProgressBar | Contenedor que posiciona la barra de progreso en canvas |
 | `.rk-stories-slide-wrapper` | Overlay | Un grupo de stories (slide exterior) |
 | `.rk-stories-story` | Overlay | Una sola story (raíz de la slide interior) |
 | `.rk-stories-image` | ImageStorySlide | Imagen a sangre completa (`object-fit: cover`) |
 | `.rk-stories-video` | VideoStorySlide | Contenedor de la slide de vídeo |
+| `.rk-stories-video-element` | VideoStorySlide | El elemento \<video> compartido |
 | `.rk-stories-video-poster` | VideoStorySlide | Póster, visible hasta que arranca la reproducción |
+| `.rk-stories-video-poster--visible` | VideoStorySlide | Estado visible del póster (antes de reproducir) |
 | `.rk-stories-heart` | HeartAnimation | El corazón del doble toque |
 | `.rk-stories-header` | StoryHeader | Fila de cabecera (avatar, nombre, tiempo, controles) |
+| `.rk-stories-header--hidden` | StoryHeader | Estado oculto de la cabecera (input `visible` a `false`) |
+| `.rk-stories-header-avatar` | StoryHeader | Imagen del avatar del autor |
+| `.rk-stories-header-name` | StoryHeader | Texto con el nombre del autor |
+| `.rk-stories-header-verified` | StoryHeader | Contenedor de la insignia de verificado |
+| `.rk-stories-header-time` | StoryHeader | Texto con el tiempo transcurrido |
+| `.rk-stories-header-actions` | StoryHeader | Controles del lado derecho (sonido, pausa, cerrar) |
 | `.rk-stories-header-btn` | StoryHeader | Botones de pausa, sonido y cerrar |
+| `.rk-stories-header-btn--desktop` | StoryHeader | El botón de pausa, visible solo con más de 768px de ancho |
 | `.rk-stories-header-spinner` | StoryHeader | Indicador de carga mientras la story activa carga |
 | `.rk-stories-ring` | StoriesRing | Avatar circular con el anillo degradado |
 | `.rk-stories-ring--active` | StoriesRing | Anillo con stories por ver (degradado en rotación) |
 | `.rk-stories-ring-avatar` | StoriesRing | La imagen del avatar dentro del anillo |
 | `.rk-stories-ring-list` | StoriesRingList | Fila horizontal de anillos |
-| `.rk-stories-carousel` | Carousel | Capa del carrusel de escritorio |
-| `.rk-stories-card` | Carousel | Una tarjeta de vista previa junto al player |
-| `.rk-stories-card-image` | Carousel | La imagen de vista previa de la tarjeta |
+| `.rk-stories-ring-list-item` | StoriesRingList | Columna con anillo y nombre |
+| `.rk-stories-ring-list-name` | StoriesRingList | Nombre del autor debajo de cada anillo |
+| `.rk-stories-carousel` | Carousel | Capa de tarjetas de vista previa detrás del player |
+| `.rk-stories-carousel--instant` | Carousel | Primer fotograma de un deslizamiento, colocado sin transición |
+| `.rk-stories-card` | Carousel | Una tarjeta de vista previa ya colocada |
+| `.rk-stories-card--center` | Carousel | Tarjeta en la posición central durante un deslizamiento |
+| `.rk-stories-card--hidden` | Carousel | Tarjeta más allá de las dos que se ven a cada lado |
+| `.rk-stories-card-button` | Carousel | Contenido por defecto de la tarjeta (el botón que abre el grupo) |
+| `.rk-stories-card-image` | Carousel | La imagen de vista previa de la tarjeta (póster o imagen) |
 | `.rk-stories-card-frame` | Carousel | Una plantilla de slide dibujada como vista previa de la tarjeta, a escala reducida |
+| `.rk-stories-card-scrim` | Carousel | Capa que oscurece la vista previa |
+| `.rk-stories-card-info` | Carousel | Columna con el anillo, el nombre del autor y la hora |
+| `.rk-stories-card-name` | Carousel | Nombre del autor |
+| `.rk-stories-card-time` | Carousel | Texto con el tiempo transcurrido |
 
 ## Temas [#theming]
 
 Cada color, tamaño, duración y z-index es una propiedad personalizada `--rk-stories-*` en `:root`, así que un cambio de marca es una hoja de estilos y no un cambio de componente. Los tokens se comparten con los players de React y Vue.
+
+| Token | Por defecto | Controla |
+| --- | --- | --- |
+| `--rk-stories-overlay-bg` | `#000` | Color del fondo a pantalla completa |
+| `--rk-stories-overlay-z` | `9999` | z-index del overlay |
+| `--rk-stories-swipe-gap` | `16px` | Espacio entre los botones de navegación y el lienzo de la story |
+| `--rk-stories-container-radius` | `12px` | Esquinas redondeadas del lienzo de la story (escritorio) |
+| `--rk-stories-container-radius-mobile` | `0` | Esquinas del lienzo de la story en un móvil |
+| `--rk-stories-ui-z` | `15` | z-index de la capa de interfaz (cabecera, barra de progreso) |
+| `--rk-stories-ui-transition` | `200ms` | Duración del fundido cuando se alterna `hideUIOnPause` |
+| `--rk-stories-top-shade-height` | `120px` | Altura del degradado superior detrás de la cabecera |
+| `--rk-stories-top-shade-bg` | `linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%)` | Color del degradado superior |
+| `--rk-stories-error-z` | `5` | z-index del panel de error |
+| `--rk-stories-error-bg` | `linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)` | Degradado del fondo del estado de error |
+| `--rk-stories-error-fg` | `rgba(255, 255, 255, 0.5)` | Color del icono y el texto de error |
+| `--rk-stories-error-gap` | `12px` | Espacio entre el icono de error y el texto |
+| `--rk-stories-error-text-size` | `13px` | Tamaño de letra del mensaje de error |
+| `--rk-stories-nav-z` | `20` | z-index de los botones de navegación en escritorio |
+| `--rk-stories-nav-size` | `44px` | Tamaño de los botones de anterior y siguiente en escritorio |
+| `--rk-stories-nav-bg` | `rgba(255, 255, 255, 0.1)` | Fondo de los botones de navegación en escritorio |
+| `--rk-stories-nav-bg-hover` | `rgba(255, 255, 255, 0.2)` | Fondo de los botones de navegación en escritorio al pasar el ratón |
+| `--rk-stories-nav-fg` | `rgba(255, 255, 255, 0.7)` | Color del icono de los botones de navegación en escritorio |
+| `--rk-stories-nav-fg-hover` | `#fff` | Color del icono de los botones de navegación en escritorio al pasar el ratón |
+| `--rk-stories-nav-transition` | `150ms` | Transición de los botones de navegación en escritorio al pasar el ratón |
+| `--rk-stories-video-bg` | `#000` | Fondo de las bandas detrás del \<video> |
+| `--rk-stories-video-poster-transition` | `200ms` | Duración del fundido del póster cuando el vídeo empieza a reproducirse |
+| `--rk-stories-progress-bar-z` | `10` | z-index de la barra de progreso |
+| `--rk-stories-progress-bar-padding` | `8px 8px 0` | Espacio alrededor de la barra de progreso |
+| `--rk-stories-card-bg` | `#262626` | Fondo de la tarjeta del carrusel, visible cuando no hay imagen de vista previa |
+| `--rk-stories-card-radius` | `8px` | Radio de las esquinas de la tarjeta del carrusel |
+| `--rk-stories-card-scrim` | `rgba(0, 0, 0, 0.45)` | Oscurecimiento sobre una tarjeta lateral |
+| `--rk-stories-card-fg` | `#fff` | Color del texto de la tarjeta |
+| `--rk-stories-card-name-size` | `14px` | Tamaño de letra del nombre del autor en la tarjeta |
+| `--rk-stories-card-time-fg` | `rgba(255, 255, 255, 0.7)` | Color del tiempo transcurrido en la tarjeta |
+| `--rk-stories-card-time-size` | `13px` | Tamaño de letra del tiempo transcurrido en la tarjeta |
+| `--rk-stories-card-gap` | `6px` | Espacio entre el anillo, el nombre y la hora en la tarjeta |
+| `--rk-stories-card-transition` | `300ms` | Duración del deslizamiento del carrusel |
+| `--rk-stories-ring-spin-duration` | `4s` | Duración del giro de un anillo con stories por ver |
+| `--rk-stories-ring-active-scale` | `0.95` | Escala del anillo mientras se pulsa |
+| `--rk-stories-ring-gradient` | `none` | Interno: el componente del anillo escribe aquí su degradado en cada render, así que definirlo no tiene efecto |
+| `--rk-stories-ring-list-gap` | `12px` | Espacio entre los anillos de la lista |
+| `--rk-stories-ring-list-padding` | `12px` | Relleno interior alrededor de la lista de anillos |
+| `--rk-stories-ring-list-item-gap` | `4px` | Espacio entre un anillo y su nombre |
+| `--rk-stories-ring-list-name-size` | `12px` | Tamaño de letra del nombre del autor debajo de cada anillo |
+| `--rk-stories-header-z` | `5` | z-index de la cabecera |
+| `--rk-stories-header-top` | `18px` | Separación vertical de la cabecera desde la parte superior de la story |
+| `--rk-stories-header-padding` | `12px 16px` | Relleno interior de la fila de la cabecera |
+| `--rk-stories-header-gap` | `8px` | Espacio entre los elementos de la fila de la cabecera |
+| `--rk-stories-header-transition` | `200ms` | Duración del fundido de la cabecera cuando se oculta |
+| `--rk-stories-header-avatar-size` | `32px` | Ancho y alto del avatar |
+| `--rk-stories-header-name-fg` | `#fff` | Color del nombre del autor |
+| `--rk-stories-header-name-size` | `14px` | Tamaño de letra del nombre del autor |
+| `--rk-stories-header-name-weight` | `600` | Grosor de letra del nombre del autor |
+| `--rk-stories-header-time-fg` | `rgba(255, 255, 255, 0.6)` | Color del texto con el tiempo transcurrido |
+| `--rk-stories-header-time-size` | `12px` | Tamaño de letra del tiempo transcurrido |
+| `--rk-stories-header-actions-gap` | `8px` | Espacio entre los botones de la cabecera |
+| `--rk-stories-header-btn-fg` | `#fff` | Color de los iconos de acción de la cabecera (cerrar, sonido, pausa) |
+| `--rk-stories-header-btn-padding` | `4px` | Relleno de los botones de la cabecera |
+| `--rk-stories-header-spinner-size` | `20px` | Tamaño del indicador de carga |
+| `--rk-stories-header-spinner-track` | `rgba(255, 255, 255, 0.3)` | Color de la pista del indicador de carga |
+| `--rk-stories-header-spinner-fg` | `#fff` | Color del arco del indicador de carga |
+| `--rk-stories-header-spinner-duration` | `0.8s` | Una vuelta del indicador de carga |
+| `--rk-stories-heart-z` | `20` | z-index del corazón del doble toque |
+| `--rk-stories-heart-duration` | `800ms` | Duración de la animación de aparición y desvanecimiento |
+
+Pega el fragmento de abajo en una hoja de estilos cargada después de `@reelkit/angular-stories-player/styles.css`.
 
 <CodeBlock code={theming} language="css" />
 
@@ -405,9 +520,9 @@ Cada color, tamaño, duración y z-index es una propiedad personalizada `--rk-st
 
 La raíz del overlay es un diálogo modal (`role="dialog"`, `aria-modal="true"`). Usa `ariaLabel` para cambiar lo que anuncia el lector de pantalla; por defecto es "Stories player".
 
-El overlay captura el foco al abrirse y lo devuelve al disparador al cerrarse. Tab y Shift+Tab recorren los elementos enfocables de dentro, dando la vuelta en ambos extremos; el foco que se escapa (clic fuera, foco programático) vuelve a entrar. El desplazamiento del body queda bloqueado mientras el player está abierto. Implementado con `captureFocusForReturn` y `createFocusTrap` de `@reelkit/angular`.
+El overlay captura el foco al abrirse y lo devuelve al disparador al cerrarse. Tab y Shift+Tab recorren los elementos enfocables de dentro, dando la vuelta en ambos extremos; el foco que se escapa (clic fuera, foco programático) vuelve a entrar. El desplazamiento del body queda bloqueado mientras el player está abierto. Implementado con `captureFocusForReturn` y `createFocusTrap` de `@reelkit/core`, reexportados por `@reelkit/angular`.
 
-Con el carrusel de escritorio, cada tarjeta por defecto es un botón etiquetado "Open stories by" y el nombre del autor. Las tarjetas van después de los controles del player en el orden de tabulación, y salen de él mientras se ejecuta un deslizamiento.
+Con el carrusel de escritorio, cada tarjeta por defecto es un botón etiquetado "Open stories by" y el nombre del autor. Las tarjetas van después de los controles del player en el orden de tabulación, y salen de él mientras se ejecuta un deslizamiento; una tarjeta que abre su grupo devuelve el foco al diálogo en lugar de dejarlo caer en la página.
 
 ## Renderizado en servidor [#server-side-rendering]
 
@@ -417,6 +532,6 @@ El player no renderiza nada hasta que está abierto y no lee ninguna API del nav
 
 | Tecla | Acción |
 | --- | --- |
-| `ArrowLeft` | Story anterior |
-| `ArrowRight` | Story siguiente |
+| `ArrowLeft` | Story anterior. En la primera story de un grupo, el grupo anterior, abierto donde se dejó; en el primer grupo no hace nada. |
+| `ArrowRight` | Story siguiente. En la última story de un grupo, el grupo siguiente; en el último grupo, el player se cierra. |
 | `Escape` | Cerrar el player |

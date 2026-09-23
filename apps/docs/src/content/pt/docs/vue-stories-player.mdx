@@ -145,7 +145,7 @@ Importe a folha de estilos uma vez no ponto de entrada do app (ou em qualquer co
 - Um parâmetro que não nomeia autor nem story — um favorito velho, um valor editado à mão, um story além do fim do grupo — é removido da URL em vez de abrir o vizinho.
 - Um app com rotas deve passar um adaptador ligado ao roteador, para que ele continue sendo a única fonte de verdade da navegação. `useVueRouterUrlAdapter`, de `@reelkit/vue/vue-router-url-adapter`, é o adaptador pronto para o Vue Router; escrever no histórico por trás do roteador deixa a location dele desatualizada e derruba o parâmetro na navegação seguinte.
 
-**Links estáveis.** O autor é posicional por padrão, então um `?story=2.0` favoritado abre outra pessoa assim que o feed é reordenado. Enderece o autor por um id estável — `outerCodec` escreve o id na URL e `outerLocator` encontra onde ele está. A metade do story continua sendo um índice simples dentro do grupo resolvido.
+**Links estáveis.** O autor é posicional por padrão, então um `?story=2.0` favoritado abre outra pessoa assim que o feed é reordenado. Enderece o autor por um id estável — `outerCodec` escreve o id na URL e `outerLocator` encontra onde ele está. Passe `innerCodec` com `innerLocate` e `innerIdentify` para fazer o mesmo com o story dentro do grupo; sem eles, a metade do story continua sendo um índice simples dentro do grupo resolvido. Um id de story não pode conter `.`, o delimitador entre as duas metades.
 
 <CodeBlock code={urlState2} language="typescript" />
 
@@ -420,6 +420,7 @@ As classes são simples (não têm escopo), então uma folha de estilos carregad
 | `.rk-stories-header-time` | StoryHeader | Texto de tempo relativo |
 | `.rk-stories-header-actions` | StoryHeader | Ações à direita (som, pausa, fechar) |
 | `.rk-stories-header-btn` | StoryHeader | Botão de ação do cabeçalho |
+| `.rk-stories-header-btn--desktop` | StoryHeader | Botão de pausa, exibido só em telas com mais de 768px de largura |
 | `.rk-stories-header-spinner` | StoryHeader | Indicador de carregamento |
 | `.rk-stories-image` | ImageStorySlide | Elemento do story em imagem |
 | `.rk-stories-video` | VideoStorySlide | Contêiner do story em vídeo |
@@ -440,6 +441,7 @@ As classes são simples (não têm escopo), então uma folha de estilos carregad
 | `.rk-stories-card--hidden` | Carousel | Cartão além dos dois mostrados de cada lado |
 | `.rk-stories-card-button` | Carousel | Conteúdo padrão do cartão (o botão que abre o grupo) |
 | `.rk-stories-card-image` | Carousel | Imagem de prévia (poster ou imagem) |
+| `.rk-stories-card-frame` | Carousel | Um story sem poster nem imagem, desenhado pelo slot `#slide` no tamanho do player e reduzido |
 | `.rk-stories-card-scrim` | Carousel | Camada que escurece a prévia |
 | `.rk-stories-card-info` | Carousel | Coluna com anel, nome do autor e tempo |
 | `.rk-stories-card-name` | Carousel | Nome do autor |
@@ -454,31 +456,54 @@ Cada cor, tamanho, z-index e transição vive numa propriedade customizada de CS
 | `--rk-stories-overlay-bg` | `#000` | Cor do fundo em tela cheia |
 | `--rk-stories-overlay-z` | `9999` | z-index do overlay |
 | `--rk-stories-container-radius` | `12px` | Cantos arredondados da tela do story (desktop) |
+| `--rk-stories-container-radius-mobile` | `0` | Cantos da tela do story no celular, até 768px de largura |
 | `--rk-stories-swipe-gap` | `16px` | Espaço entre os botões de navegação e a tela do story |
 | `--rk-stories-top-shade-height` | `120px` | Altura do degradê superior atrás do cabeçalho |
 | `--rk-stories-top-shade-bg` | `linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%)` | Cor do degradê superior |
 | `--rk-stories-ui-transition` | `200ms` | Duração do fade quando `hide-ui-on-pause` alterna |
+| `--rk-stories-ui-z` | `15` | z-index da camada de interface (barra de progresso e cabeçalho) |
 | `--rk-stories-nav-size` | `44px` | Tamanho do botão de avançar/voltar no desktop |
 | `--rk-stories-nav-bg` | `rgba(255, 255, 255, 0.1)` | Fundo do botão de navegação no desktop |
 | `--rk-stories-nav-bg-hover` | `rgba(255, 255, 255, 0.2)` | Fundo do botão de navegação sob o cursor |
 | `--rk-stories-nav-fg` | `rgba(255, 255, 255, 0.7)` | Cor do ícone do botão de navegação |
 | `--rk-stories-nav-fg-hover` | `#fff` | Cor do ícone do botão sob o cursor |
+| `--rk-stories-nav-transition` | `150ms` | Transição do botão de navegação sob o cursor no desktop |
+| `--rk-stories-nav-z` | `20` | z-index do botão de navegação no desktop |
 | `--rk-stories-error-bg` | `linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)` | Degradê de fundo do estado de erro |
 | `--rk-stories-error-fg` | `rgba(255, 255, 255, 0.5)` | Cor do ícone e do texto de erro |
 | `--rk-stories-error-text-size` | `13px` | Tamanho da fonte da mensagem de erro |
+| `--rk-stories-error-gap` | `12px` | Espaço entre o ícone de erro e o texto |
+| `--rk-stories-error-z` | `5` | z-index do estado de erro |
 | `--rk-stories-video-bg` | `#000` | Fundo das bordas atrás do \<video> |
 | `--rk-stories-video-poster-transition` | `200ms` | Duração do fade do poster quando o vídeo começa |
+| `--rk-stories-progress-bar-padding` | `8px 8px 0` | Espaçamento em volta da barra de progresso |
+| `--rk-stories-progress-bar-z` | `10` | z-index da barra de progresso |
 | `--rk-stories-header-top` | `18px` | Deslocamento vertical do cabeçalho a partir do topo do story |
 | `--rk-stories-header-padding` | `12px 16px` | Espaçamento interno da linha do cabeçalho |
+| `--rk-stories-header-z` | `5` | z-index do cabeçalho |
+| `--rk-stories-header-transition` | `200ms` | Duração do fade do cabeçalho quando ele se esconde |
+| `--rk-stories-header-gap` | `8px` | Espaço entre o avatar, o nome e o tempo |
 | `--rk-stories-header-avatar-size` | `32px` | Largura e altura do avatar |
 | `--rk-stories-header-name-fg` | `#fff` | Cor do nome do autor |
 | `--rk-stories-header-name-size` | `14px` | Tamanho da fonte do nome do autor |
+| `--rk-stories-header-name-weight` | `600` | Peso da fonte do nome do autor |
 | `--rk-stories-header-time-fg` | `rgba(255, 255, 255, 0.6)` | Cor do texto de tempo relativo |
+| `--rk-stories-header-time-size` | `12px` | Tamanho da fonte do tempo relativo |
 | `--rk-stories-header-btn-fg` | `#fff` | Cor dos ícones de ação do cabeçalho (fechar, mudo, pausa) |
+| `--rk-stories-header-btn-padding` | `4px` | Espaçamento interno de um botão de ação do cabeçalho |
+| `--rk-stories-header-actions-gap` | `8px` | Espaço entre os botões de ação do cabeçalho |
+| `--rk-stories-header-spinner-size` | `20px` | Diâmetro do indicador de carregamento |
+| `--rk-stories-header-spinner-fg` | `#fff` | Cor do arco do indicador de carregamento |
+| `--rk-stories-header-spinner-track` | `rgba(255, 255, 255, 0.3)` | Cor do trilho do indicador de carregamento |
+| `--rk-stories-header-spinner-duration` | `0.8s` | Duração da rotação do indicador de carregamento |
 | `--rk-stories-heart-duration` | `800ms` | Duração da animação de entrada e saída do coração |
+| `--rk-stories-heart-z` | `20` | z-index do coração do toque duplo |
 | `--rk-stories-ring-spin-duration` | `4s` | Duração da rotação de um anel com stories por ver |
+| `--rk-stories-ring-active-scale` | `0.95` | Escala do anel enquanto é pressionado |
+| `--rk-stories-ring-gradient` | `none` | Interno: o anel escreve o degradê aqui a cada renderização, então defini-lo não tem efeito |
 | `--rk-stories-ring-list-gap` | `12px` | Espaço entre os anéis da lista |
 | `--rk-stories-ring-list-padding` | `12px` | Espaçamento interno ao redor da lista de anéis |
+| `--rk-stories-ring-list-item-gap` | `4px` | Espaço entre um anel e o nome |
 | `--rk-stories-ring-list-name-size` | `12px` | Tamanho da fonte do nome sob cada anel |
 | `--rk-stories-card-bg` | `#262626` | Fundo do cartão, visível quando não há imagem de prévia |
 | `--rk-stories-card-radius` | `8px` | Raio dos cantos do cartão |
@@ -496,7 +521,7 @@ Cada cor, tamanho, z-index e transição vive numa propriedade customizada de CS
 
 A raiz do overlay é um diálogo modal (`role="dialog"`, `aria-modal="true"`). Defina `aria-label` para mudar o que o leitor de tela anuncia; o padrão é "Stories player".
 
-O overlay captura o foco ao abrir e o devolve ao gatilho ao fechar. Tab e Shift+Tab circulam pelos elementos focáveis de dentro; um foco que escapa é trazido de volta. Feito com `captureFocusForReturn` e `createFocusTrap`, de `@reelkit/core`.
+O overlay captura o foco ao abrir e o devolve ao gatilho ao fechar. Tab e Shift+Tab circulam pelos elementos focáveis de dentro; um foco que escapa é trazido de volta. Feito com `captureFocusForReturn` e `createFocusTrap`, de `@reelkit/core`, reexportados por `@reelkit/vue`.
 
 Com o carrossel do desktop, cada cartão padrão é um botão rotulado "Open stories by" mais o nome do autor. Os cartões vêm depois dos controles do player na ordem de tabulação e ficam fora dela enquanto um deslize acontece; o cartão que abre o seu grupo devolve o foco ao diálogo em vez de largá-lo na página.
 
@@ -508,6 +533,6 @@ Fechado, o overlay não renderiza nada, e `StoriesRingList` renderiza todos os a
 
 | Tecla | Ação |
 | --- | --- |
-| `ArrowLeft` | Story anterior |
-| `ArrowRight` | Próximo story |
+| `ArrowLeft` | Story anterior. No primeiro story de um grupo, abre o grupo anterior onde ele foi deixado; no primeiro grupo, não faz nada. |
+| `ArrowRight` | Próximo story. Depois do último story de um grupo, abre o próximo grupo; no último grupo, fecha o player. |
 | `Escape` | Fechar o player |

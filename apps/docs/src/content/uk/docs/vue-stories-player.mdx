@@ -145,7 +145,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 - Параметр, що не називає ані автора, ані історії — застаріла закладка, виправлене руками значення, історія за межами групи — прибирається з URL, а не відкриває сусідню.
 - Застосунок із роутером має передати адаптер на його основі, щоб роутер лишався єдиним джерелом правди про навігацію. `useVueRouterUrlAdapter` із `@reelkit/vue/vue-router-url-adapter` — готовий адаптер для Vue Router; запис в історію повз роутер лишає його локацію застарілою, і наступна навігація губить параметр.
 
-**Стабільні посилання.** Типово автор адресується за позицією, тож збережене `?story=2.0` відкриє іншу людину, щойно стрічку перевпорядкують. Адресуйте автора за стабільним id — `outerCodec` записує id в URL, а `outerLocator` знаходить, де він стоїть. Половина з історією лишається звичайним індексом усередині знайденої групи.
+**Стабільні посилання.** Типово автор адресується за позицією, тож збережене `?story=2.0` відкриє іншу людину, щойно стрічку перевпорядкують. Адресуйте автора за стабільним id — `outerCodec` записує id в URL, а `outerLocator` знаходить, де він стоїть. Передайте `innerCodec` разом з `innerLocate` та `innerIdentify`, щоб так само адресувати історію всередині її групи; без них половина з історією лишається звичайним індексом усередині знайденої групи. Id історії не може містити `.` — це роздільник між двома половинами.
 
 <CodeBlock code={urlState2} language="typescript" />
 
@@ -420,6 +420,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 | `.rk-stories-header-time` | StoryHeader | Текст відносного часу |
 | `.rk-stories-header-actions` | StoryHeader | Дії праворуч (звук, пауза, закриття) |
 | `.rk-stories-header-btn` | StoryHeader | Кнопка дії в заголовку |
+| `.rk-stories-header-btn--desktop` | StoryHeader | Кнопка паузи, видима лише на екранах, ширших за 768px |
 | `.rk-stories-header-spinner` | StoryHeader | Індикатор завантаження |
 | `.rk-stories-image` | ImageStorySlide | Елемент історії-зображення |
 | `.rk-stories-video` | VideoStorySlide | Контейнер історії-відео |
@@ -440,6 +441,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 | `.rk-stories-card--hidden` | Carousel | Картка далі за дві показані з боку |
 | `.rk-stories-card-button` | Carousel | Типовий вміст картки (кнопка, що відкриває групу) |
 | `.rk-stories-card-image` | Carousel | Кадр попереднього перегляду (постер або зображення) |
+| `.rk-stories-card-frame` | Carousel | Історія без постера й зображення, намальована слотом `#slide` у розмірі плеєра й зменшена |
 | `.rk-stories-card-scrim` | Carousel | Шар притемнення над кадром |
 | `.rk-stories-card-info` | Carousel | Стовпчик із кільцем, іменем автора й часом |
 | `.rk-stories-card-name` | Carousel | Ім’я автора |
@@ -454,31 +456,54 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 | `--rk-stories-overlay-bg` | `#000` | Колір повноекранного тла |
 | `--rk-stories-overlay-z` | `9999` | z-index оверлея |
 | `--rk-stories-container-radius` | `12px` | Заокруглення полотна історії (десктоп) |
+| `--rk-stories-container-radius-mobile` | `0` | Заокруглення полотна історії на телефоні, до 768px завширшки |
 | `--rk-stories-swipe-gap` | `16px` | Відступ між кнопками навігації та полотном історії |
 | `--rk-stories-top-shade-height` | `120px` | Висота верхнього градієнтного затемнення за заголовком |
 | `--rk-stories-top-shade-bg` | `linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%)` | Колір верхнього градієнтного затемнення |
 | `--rk-stories-ui-transition` | `200ms` | Тривалість згасання, коли перемикається `hide-ui-on-pause` |
+| `--rk-stories-ui-z` | `15` | z-index шару інтерфейсу (смуга прогресу й заголовок) |
 | `--rk-stories-nav-size` | `44px` | Розмір десктопної кнопки вперед/назад |
 | `--rk-stories-nav-bg` | `rgba(255, 255, 255, 0.1)` | Тло десктопної кнопки навігації |
 | `--rk-stories-nav-bg-hover` | `rgba(255, 255, 255, 0.2)` | Тло десктопної кнопки навігації під курсором |
 | `--rk-stories-nav-fg` | `rgba(255, 255, 255, 0.7)` | Колір іконки десктопної кнопки навігації |
 | `--rk-stories-nav-fg-hover` | `#fff` | Колір іконки кнопки навігації під курсором |
+| `--rk-stories-nav-transition` | `150ms` | Перехід десктопної кнопки навігації під курсором |
+| `--rk-stories-nav-z` | `20` | z-index десктопної кнопки навігації |
 | `--rk-stories-error-bg` | `linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)` | Градієнт тла стану помилки |
 | `--rk-stories-error-fg` | `rgba(255, 255, 255, 0.5)` | Колір іконки й тексту помилки |
 | `--rk-stories-error-text-size` | `13px` | Розмір шрифту повідомлення про помилку |
+| `--rk-stories-error-gap` | `12px` | Відстань між іконкою помилки та її текстом |
+| `--rk-stories-error-z` | `5` | z-index стану помилки |
 | `--rk-stories-video-bg` | `#000` | Тло-леттербокс за \<video> |
 | `--rk-stories-video-poster-transition` | `200ms` | Тривалість згасання постера на початку відтворення |
+| `--rk-stories-progress-bar-padding` | `8px 8px 0` | Відступи навколо смуги прогресу |
+| `--rk-stories-progress-bar-z` | `10` | z-index смуги прогресу |
 | `--rk-stories-header-top` | `18px` | Вертикальний відступ заголовка від верху історії |
 | `--rk-stories-header-padding` | `12px 16px` | Внутрішні відступи рядка заголовка |
+| `--rk-stories-header-z` | `5` | z-index заголовка |
+| `--rk-stories-header-transition` | `200ms` | Тривалість згасання заголовка, коли він ховається |
+| `--rk-stories-header-gap` | `8px` | Відстань між аватаром, іменем і часом |
 | `--rk-stories-header-avatar-size` | `32px` | Ширина й висота аватара |
 | `--rk-stories-header-name-fg` | `#fff` | Колір імені автора |
 | `--rk-stories-header-name-size` | `14px` | Розмір шрифту імені автора |
+| `--rk-stories-header-name-weight` | `600` | Товщина шрифту імені автора |
 | `--rk-stories-header-time-fg` | `rgba(255, 255, 255, 0.6)` | Колір тексту відносного часу |
+| `--rk-stories-header-time-size` | `12px` | Розмір шрифту відносного часу |
 | `--rk-stories-header-btn-fg` | `#fff` | Колір іконок дій у заголовку (закриття, звук, пауза) |
+| `--rk-stories-header-btn-padding` | `4px` | Внутрішній відступ кнопки дії в заголовку |
+| `--rk-stories-header-actions-gap` | `8px` | Відстань між кнопками дій у заголовку |
+| `--rk-stories-header-spinner-size` | `20px` | Діаметр індикатора завантаження |
+| `--rk-stories-header-spinner-fg` | `#fff` | Колір дуги індикатора завантаження |
+| `--rk-stories-header-spinner-track` | `rgba(255, 255, 255, 0.3)` | Колір доріжки індикатора завантаження |
+| `--rk-stories-header-spinner-duration` | `0.8s` | Тривалість обертання індикатора завантаження |
 | `--rk-stories-heart-duration` | `800ms` | Тривалість появи й згасання серця |
+| `--rk-stories-heart-z` | `20` | z-index серця на подвійний дотик |
 | `--rk-stories-ring-spin-duration` | `4s` | Тривалість обертання кільця, у якому лишилося що дивитися |
+| `--rk-stories-ring-active-scale` | `0.95` | Масштаб кільця, поки його натиснуто |
+| `--rk-stories-ring-gradient` | `none` | Внутрішній: кільце записує сюди свій градієнт під час кожного рендеру, тож задавати його марно |
 | `--rk-stories-ring-list-gap` | `12px` | Відстань між кільцями у списку |
 | `--rk-stories-ring-list-padding` | `12px` | Внутрішні відступи навколо списку кілець |
+| `--rk-stories-ring-list-item-gap` | `4px` | Відстань між кільцем та іменем |
 | `--rk-stories-ring-list-name-size` | `12px` | Розмір шрифту імені автора під кільцем |
 | `--rk-stories-card-bg` | `#262626` | Тло картки каруселі, видиме без кадру попереднього перегляду |
 | `--rk-stories-card-radius` | `8px` | Заокруглення кутів картки каруселі |
@@ -496,7 +521,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 
 Корінь оверлея — модальний діалог (`role="dialog"`, `aria-modal="true"`). Поставте `aria-label`, щоб змінити те, що оголосить екранний читач; типово це «Stories player».
 
-Оверлей захоплює фокус на відкритті й повертає його тригеру на закритті. Tab і Shift+Tab ходять по фокусованих елементах усередині; фокус, що втік, повертають назад. Зроблено на `captureFocusForReturn` і `createFocusTrap` із `@reelkit/core`.
+Оверлей захоплює фокус на відкритті й повертає його тригеру на закритті. Tab і Shift+Tab ходять по фокусованих елементах усередині; фокус, що втік, повертають назад. Зроблено на `captureFocusForReturn` і `createFocusTrap` із `@reelkit/core`, які реекспортує `@reelkit/vue`.
 
 У десктопній каруселі кожна типова картка — кнопка з підписом «Open stories by» та іменем автора. Картки стоять у порядку табуляції після керування плеєром, і випадають із нього, поки триває з’їзд; картка, що відкриває свою групу, повертає фокус діалогу, а не лишає його на сторінці.
 
@@ -508,6 +533,6 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 
 | Клавіша | Дія |
 | --- | --- |
-| `ArrowLeft` | Попередня історія |
-| `ArrowRight` | Наступна історія |
+| `ArrowLeft` | Попередня історія. На першій історії групи відкриває попередню групу там, де її залишили; на першій групі нічого не робить. |
+| `ArrowRight` | Наступна історія. Після останньої історії групи відкриває наступну групу; на останній групі закриває плеєр. |
 | `Escape` | Закрити плеєр |

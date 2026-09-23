@@ -145,7 +145,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 - ユーザーもストーリーも指していないパラメーター（古いブックマーク、手で書き換えた値、グループの終わりを超えた番号）は、隣を開くのではなく URL から取り除かれます。
 - ルーターを使うアプリは、ルーター側のアダプターを渡してください。ナビゲーションの正となる場所をルーターに一本化するためです。`@reelkit/vue/vue-router-url-adapter` の `useVueRouterUrlAdapter` が Vue Router 用の既製アダプターです。ルーターの背後で履歴を書くと location が古いままになり、次のナビゲーションでパラメーターが落ちます。
 
-**安定したリンク。** ユーザーは既定では位置で指定されるため、ブックマークした `?story=2.0` はフィードの並びが変わると別の人を開きます。代わりに安定した id で指定してください。`outerCodec` が id を URL に書き、`outerLocator` がその位置を見つけます。ストーリー側は、解決されたグループ内の普通のインデックスのままです。
+**安定したリンク。** ユーザーは既定では位置で指定されるため、ブックマークした `?story=2.0` はフィードの並びが変わると別の人を開きます。代わりに安定した id で指定してください。`outerCodec` が id を URL に書き、`outerLocator` がその位置を見つけます。`innerCodec` を `innerLocate`・`innerIdentify` とともに渡せば、グループ内のストーリーにも同じことができます。渡さなければ、ストーリー側は解決されたグループ内の普通のインデックスのままです。ストーリーの id には、2 つの部分の区切りである `.` を含めてはいけません。
 
 <CodeBlock code={urlState2} language="typescript" />
 
@@ -420,6 +420,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 | `.rk-stories-header-time` | StoryHeader | 相対時刻のテキスト |
 | `.rk-stories-header-actions` | StoryHeader | 右側の操作（サウンド、一時停止、閉じる） |
 | `.rk-stories-header-btn` | StoryHeader | ヘッダーの操作ボタン |
+| `.rk-stories-header-btn--desktop` | StoryHeader | 一時停止ボタン。幅 768px を超える画面でだけ表示されます |
 | `.rk-stories-header-spinner` | StoryHeader | 読み込み表示 |
 | `.rk-stories-image` | ImageStorySlide | 画像ストーリーの要素 |
 | `.rk-stories-video` | VideoStorySlide | 動画ストーリーのコンテナー |
@@ -440,6 +441,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 | `.rk-stories-card--hidden` | Carousel | 片側に表示される 2 枚より外側のカード |
 | `.rk-stories-card-button` | Carousel | カードの既定の中身（そのグループを開くボタン） |
 | `.rk-stories-card-image` | Carousel | プレビューの絵（ポスターまたは画像） |
+| `.rk-stories-card-frame` | Carousel | ポスターも画像もないストーリー。`#slide` スロットがプレイヤーの大きさで描き、縮小したもの |
 | `.rk-stories-card-scrim` | Carousel | 絵の上に重なる暗さの層 |
 | `.rk-stories-card-info` | Carousel | リング・作者名・時刻の列 |
 | `.rk-stories-card-name` | Carousel | 作者名 |
@@ -454,31 +456,54 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 | `--rk-stories-overlay-bg` | `#000` | 全画面背景の色 |
 | `--rk-stories-overlay-z` | `9999` | オーバーレイの z-index |
 | `--rk-stories-container-radius` | `12px` | ストーリー画面の角の丸み（デスクトップ） |
+| `--rk-stories-container-radius-mobile` | `0` | 幅 768px までのスマートフォンでのストーリー画面の角 |
 | `--rk-stories-swipe-gap` | `16px` | ナビゲーションボタンとストーリー画面の間隔 |
 | `--rk-stories-top-shade-height` | `120px` | ヘッダー背後の上部グラデーションの高さ |
 | `--rk-stories-top-shade-bg` | `linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%)` | 上部グラデーションの色 |
 | `--rk-stories-ui-transition` | `200ms` | `hide-ui-on-pause` が切り替わるときのフェード時間 |
+| `--rk-stories-ui-z` | `15` | UI レイヤー（進捗バーとヘッダー）の z-index |
 | `--rk-stories-nav-size` | `44px` | デスクトップの前後ボタンの大きさ |
 | `--rk-stories-nav-bg` | `rgba(255, 255, 255, 0.1)` | デスクトップのナビゲーションボタンの背景 |
 | `--rk-stories-nav-bg-hover` | `rgba(255, 255, 255, 0.2)` | ホバー時のナビゲーションボタンの背景 |
 | `--rk-stories-nav-fg` | `rgba(255, 255, 255, 0.7)` | ナビゲーションボタンのアイコンの色 |
 | `--rk-stories-nav-fg-hover` | `#fff` | ホバー時のアイコンの色 |
+| `--rk-stories-nav-transition` | `150ms` | デスクトップのナビゲーションボタンのホバー時のトランジション |
+| `--rk-stories-nav-z` | `20` | デスクトップのナビゲーションボタンの z-index |
 | `--rk-stories-error-bg` | `linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)` | エラー状態の背景グラデーション |
 | `--rk-stories-error-fg` | `rgba(255, 255, 255, 0.5)` | エラーのアイコンとテキストの色 |
 | `--rk-stories-error-text-size` | `13px` | エラーメッセージの文字サイズ |
+| `--rk-stories-error-gap` | `12px` | エラーのアイコンとテキストの間隔 |
+| `--rk-stories-error-z` | `5` | エラー状態の z-index |
 | `--rk-stories-video-bg` | `#000` | \<video> の背後の余白の色 |
 | `--rk-stories-video-poster-transition` | `200ms` | 再生開始時のポスターのフェード時間 |
+| `--rk-stories-progress-bar-padding` | `8px 8px 0` | 進捗バーの周りの余白 |
+| `--rk-stories-progress-bar-z` | `10` | 進捗バーの z-index |
 | `--rk-stories-header-top` | `18px` | ストーリー上端からのヘッダーの位置 |
 | `--rk-stories-header-padding` | `12px 16px` | ヘッダー行の内側の余白 |
+| `--rk-stories-header-z` | `5` | ヘッダーの z-index |
+| `--rk-stories-header-transition` | `200ms` | ヘッダーが隠れるときのフェード時間 |
+| `--rk-stories-header-gap` | `8px` | アバター・名前・時刻の間隔 |
 | `--rk-stories-header-avatar-size` | `32px` | アバターの幅と高さ |
 | `--rk-stories-header-name-fg` | `#fff` | 作者名の色 |
 | `--rk-stories-header-name-size` | `14px` | 作者名の文字サイズ |
+| `--rk-stories-header-name-weight` | `600` | 作者名の文字の太さ |
 | `--rk-stories-header-time-fg` | `rgba(255, 255, 255, 0.6)` | 相対時刻の文字色 |
+| `--rk-stories-header-time-size` | `12px` | 相対時刻の文字サイズ |
 | `--rk-stories-header-btn-fg` | `#fff` | ヘッダーの操作アイコンの色（閉じる、ミュート、一時停止） |
+| `--rk-stories-header-btn-padding` | `4px` | ヘッダーの操作ボタンの内側の余白 |
+| `--rk-stories-header-actions-gap` | `8px` | ヘッダーの操作ボタン同士の間隔 |
+| `--rk-stories-header-spinner-size` | `20px` | 読み込みスピナーの直径 |
+| `--rk-stories-header-spinner-fg` | `#fff` | 読み込みスピナーの弧の色 |
+| `--rk-stories-header-spinner-track` | `rgba(255, 255, 255, 0.3)` | 読み込みスピナーのトラックの色 |
+| `--rk-stories-header-spinner-duration` | `0.8s` | 読み込みスピナーの回転時間 |
 | `--rk-stories-heart-duration` | `800ms` | ハートが出て消えるまでの時間 |
+| `--rk-stories-heart-z` | `20` | ダブルタップのハートの z-index |
 | `--rk-stories-ring-spin-duration` | `4s` | 未読が残るリングの回転時間 |
+| `--rk-stories-ring-active-scale` | `0.95` | 押している間のリングの拡大率 |
+| `--rk-stories-ring-gradient` | `none` | 内部用：リングが描画のたびにここへグラデーションを書き込むため、設定しても効果はありません |
 | `--rk-stories-ring-list-gap` | `12px` | 一覧のリング同士の間隔 |
 | `--rk-stories-ring-list-padding` | `12px` | リング一覧の周りの余白 |
+| `--rk-stories-ring-list-item-gap` | `4px` | リングとその名前の間隔 |
 | `--rk-stories-ring-list-name-size` | `12px` | 各リングの下の作者名の文字サイズ |
 | `--rk-stories-card-bg` | `#262626` | カードの背景。プレビューの絵がないときに見えます |
 | `--rk-stories-card-radius` | `8px` | カードの角の丸み |
@@ -496,7 +521,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 
 オーバーレイのルートはモーダルダイアログです（`role="dialog"`、`aria-modal="true"`）。スクリーンリーダーの読み上げを変えるには `aria-label` を設定してください。既定は「Stories player」です。
 
-オーバーレイは開くときにフォーカスを預かり、閉じるときに元の要素へ返します。Tab と Shift+Tab は内側のフォーカス可能な要素を巡り、外へ逃げたフォーカスは引き戻されます。`@reelkit/core` の `captureFocusForReturn` と `createFocusTrap` で実装しています。
+オーバーレイは開くときにフォーカスを預かり、閉じるときに元の要素へ返します。Tab と Shift+Tab は内側のフォーカス可能な要素を巡り、外へ逃げたフォーカスは引き戻されます。`@reelkit/core` の `captureFocusForReturn` と `createFocusTrap`（`@reelkit/vue` が再エクスポート）で実装しています。
 
 デスクトップのカルーセルでは、既定のカードはそれぞれ「Open stories by」と作者名のラベルを持つボタンです。カードはタブ順でプレイヤーの操作のあとに並び、スライド中はタブ順から外れます。自分のグループを開いたカードは、フォーカスをページに落とさずダイアログへ返します。
 
@@ -508,6 +533,6 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 
 | キー | 動作 |
 | --- | --- |
-| `ArrowLeft` | 前のストーリー |
-| `ArrowRight` | 次のストーリー |
+| `ArrowLeft` | 前のストーリー。グループの最初のストーリーでは前のグループを、離れたところから開きます。最初のグループでは何もしません。 |
+| `ArrowRight` | 次のストーリー。グループの最後のストーリーを過ぎると次のグループを開きます。最後のグループではプレイヤーを閉じます。 |
 | `Escape` | プレイヤーを閉じる |

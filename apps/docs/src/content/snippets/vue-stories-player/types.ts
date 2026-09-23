@@ -8,6 +8,8 @@ interface StoryItem {
   /** Overrides defaultImageDuration for this story, in milliseconds. */
   duration?: number;
   createdAt?: string | Date;
+  /** Media aspect ratio (width / height). */
+  aspectRatio?: number;
 }
 
 interface AuthorInfo {

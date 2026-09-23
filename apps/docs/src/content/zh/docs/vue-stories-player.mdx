@@ -145,7 +145,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 - 指向不存在的用户或故事的参数 —— 过期书签、手改的值、超出该用户故事数量的序号 —— 会从 URL 中移除，而不是打开相邻的一条。
 - 使用路由的应用应该传入基于路由器的适配器，让路由器始终是导航状态的唯一来源。`@reelkit/vue/vue-router-url-adapter` 中的 `useVueRouterUrlAdapter` 就是 Vue Router 的现成适配器；绕过路由器直接写历史会让它的 location 过期，下一次导航就会丢掉参数。
 
-**稳定链接。** 用户默认按位置定位，因此收藏的 `?story=2.0` 在信息流重新排序后会打开另一个人。改用稳定 id 定位用户 —— `outerCodec` 负责把 id 写进 URL，`outerLocator` 负责找到它所在的位置。故事那一半仍然是已解析分组内部的普通索引。
+**稳定链接。** 用户默认按位置定位，因此收藏的 `?story=2.0` 在信息流重新排序后会打开另一个人。改用稳定 id 定位用户 —— `outerCodec` 负责把 id 写进 URL，`outerLocator` 负责找到它所在的位置。同时传入 `innerCodec` 以及 `innerLocate` 和 `innerIdentify`，就能对分组内的故事做同样的事；不传的话，故事那一半仍然是已解析分组内部的普通索引。故事 id 不能包含 `.`，它是两半之间的分隔符。
 
 <CodeBlock code={urlState2} language="typescript" />
 
@@ -420,6 +420,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 | `.rk-stories-header-time` | StoryHeader | 相对时间文字 |
 | `.rk-stories-header-actions` | StoryHeader | 右侧操作（声音、暂停、关闭） |
 | `.rk-stories-header-btn` | StoryHeader | 头部操作按钮 |
+| `.rk-stories-header-btn--desktop` | StoryHeader | 暂停按钮，仅在宽度超过 768px 的屏幕上显示 |
 | `.rk-stories-header-spinner` | StoryHeader | 加载指示 |
 | `.rk-stories-image` | ImageStorySlide | 图片故事元素 |
 | `.rk-stories-video` | VideoStorySlide | 视频故事容器 |
@@ -440,6 +441,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 | `.rk-stories-card--hidden` | Carousel | 超出单侧两张之外的卡片 |
 | `.rk-stories-card-button` | Carousel | 卡片的默认内容（打开该分组的按钮） |
 | `.rk-stories-card-image` | Carousel | 预览画面（封面或图片） |
+| `.rk-stories-card-frame` | Carousel | 没有封面或图片的故事，由 `#slide` 插槽按播放器尺寸绘制后缩小 |
 | `.rk-stories-card-scrim` | Carousel | 画面上的压暗层 |
 | `.rk-stories-card-info` | Carousel | 圆环、作者名与时间的一列 |
 | `.rk-stories-card-name` | Carousel | 作者名称 |
@@ -454,31 +456,54 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 | `--rk-stories-overlay-bg` | `#000` | 全屏背景颜色 |
 | `--rk-stories-overlay-z` | `9999` | 覆盖层 z-index |
 | `--rk-stories-container-radius` | `12px` | 故事画布的圆角（桌面端） |
+| `--rk-stories-container-radius-mobile` | `0` | 手机上（宽度不超过 768px）故事画布的圆角 |
 | `--rk-stories-swipe-gap` | `16px` | 导航按钮与故事画布之间的间距 |
 | `--rk-stories-top-shade-height` | `120px` | 头部背后顶部渐变遮罩的高度 |
 | `--rk-stories-top-shade-bg` | `linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%)` | 顶部渐变遮罩的颜色 |
 | `--rk-stories-ui-transition` | `200ms` | `hide-ui-on-pause` 切换时的淡入淡出时长 |
+| `--rk-stories-ui-z` | `15` | UI 层（进度条和头部）的 z-index |
 | `--rk-stories-nav-size` | `44px` | 桌面端前进/后退按钮尺寸 |
 | `--rk-stories-nav-bg` | `rgba(255, 255, 255, 0.1)` | 桌面导航按钮背景 |
 | `--rk-stories-nav-bg-hover` | `rgba(255, 255, 255, 0.2)` | 桌面导航按钮悬停背景 |
 | `--rk-stories-nav-fg` | `rgba(255, 255, 255, 0.7)` | 桌面导航按钮图标颜色 |
 | `--rk-stories-nav-fg-hover` | `#fff` | 桌面导航按钮悬停图标颜色 |
+| `--rk-stories-nav-transition` | `150ms` | 桌面导航按钮悬停的过渡时长 |
+| `--rk-stories-nav-z` | `20` | 桌面导航按钮的 z-index |
 | `--rk-stories-error-bg` | `linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)` | 错误状态的背景渐变 |
 | `--rk-stories-error-fg` | `rgba(255, 255, 255, 0.5)` | 错误图标与文字颜色 |
 | `--rk-stories-error-text-size` | `13px` | 错误提示字号 |
+| `--rk-stories-error-gap` | `12px` | 错误图标与文字之间的间距 |
+| `--rk-stories-error-z` | `5` | 错误状态的 z-index |
 | `--rk-stories-video-bg` | `#000` | \<video> 背后的黑边背景 |
 | `--rk-stories-video-poster-transition` | `200ms` | 视频开始播放时封面的淡出时长 |
+| `--rk-stories-progress-bar-padding` | `8px 8px 0` | 进度条周围的内边距 |
+| `--rk-stories-progress-bar-z` | `10` | 进度条的 z-index |
 | `--rk-stories-header-top` | `18px` | 头部距故事顶部的纵向偏移 |
 | `--rk-stories-header-padding` | `12px 16px` | 头部行的内边距 |
+| `--rk-stories-header-z` | `5` | 头部的 z-index |
+| `--rk-stories-header-transition` | `200ms` | 头部隐藏时的淡出时长 |
+| `--rk-stories-header-gap` | `8px` | 头像、名称与时间之间的间距 |
 | `--rk-stories-header-avatar-size` | `32px` | 头像的宽高 |
 | `--rk-stories-header-name-fg` | `#fff` | 作者名称颜色 |
 | `--rk-stories-header-name-size` | `14px` | 作者名称字号 |
+| `--rk-stories-header-name-weight` | `600` | 作者名称字重 |
 | `--rk-stories-header-time-fg` | `rgba(255, 255, 255, 0.6)` | 相对时间文字颜色 |
+| `--rk-stories-header-time-size` | `12px` | 相对时间字号 |
 | `--rk-stories-header-btn-fg` | `#fff` | 头部操作图标颜色（关闭、静音、暂停） |
+| `--rk-stories-header-btn-padding` | `4px` | 头部操作按钮的内边距 |
+| `--rk-stories-header-actions-gap` | `8px` | 头部操作按钮之间的间距 |
+| `--rk-stories-header-spinner-size` | `20px` | 加载圈的直径 |
+| `--rk-stories-header-spinner-fg` | `#fff` | 加载圈的弧线颜色 |
+| `--rk-stories-header-spinner-track` | `rgba(255, 255, 255, 0.3)` | 加载圈的轨道颜色 |
+| `--rk-stories-header-spinner-duration` | `0.8s` | 加载圈的旋转时长 |
 | `--rk-stories-heart-duration` | `800ms` | 爱心弹出与淡出的动画时长 |
+| `--rk-stories-heart-z` | `20` | 双击爱心的 z-index |
 | `--rk-stories-ring-spin-duration` | `4s` | 还有未看内容时圆环的旋转时长 |
+| `--rk-stories-ring-active-scale` | `0.95` | 圆环被按下时的缩放比例 |
+| `--rk-stories-ring-gradient` | `none` | 内部使用：圆环每次渲染都会把渐变写到这里，因此设置它不会生效 |
 | `--rk-stories-ring-list-gap` | `12px` | 列表中圆环之间的间距 |
 | `--rk-stories-ring-list-padding` | `12px` | 圆环列表周围的内边距 |
+| `--rk-stories-ring-list-item-gap` | `4px` | 圆环与其名称之间的间距 |
 | `--rk-stories-ring-list-name-size` | `12px` | 圆环下方作者名称的字号 |
 | `--rk-stories-card-bg` | `#262626` | 轮播卡片背景，没有预览画面时可见 |
 | `--rk-stories-card-radius` | `8px` | 轮播卡片的圆角 |
@@ -496,7 +521,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 
 覆盖层根节点是模态对话框（`role="dialog"`、`aria-modal="true"`）。设置 `aria-label` 可以改变屏幕阅读器朗读的内容，默认是「Stories player」。
 
-覆盖层在打开时捕获焦点，关闭时把焦点还给触发元素。Tab 与 Shift+Tab 在内部的可聚焦元素之间循环；跑到外面的焦点会被拉回来。实现基于 `@reelkit/core` 的 `captureFocusForReturn` 和 `createFocusTrap`。
+覆盖层在打开时捕获焦点，关闭时把焦点还给触发元素。Tab 与 Shift+Tab 在内部的可聚焦元素之间循环；跑到外面的焦点会被拉回来。实现基于 `@reelkit/core` 的 `captureFocusForReturn` 和 `createFocusTrap`，并由 `@reelkit/vue` 重新导出。
 
 使用桌面轮播时，每张默认卡片都是一个按钮，标签为「Open stories by」加作者名。卡片在 Tab 顺序中排在播放器控件之后，滑动期间则被移出 Tab 顺序；打开自己分组的那张卡片会把焦点交还给对话框，而不是丢在页面上。
 
@@ -508,6 +533,6 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 
 | 按键 | 操作 |
 | --- | --- |
-| `ArrowLeft` | 上一条故事 |
-| `ArrowRight` | 下一条故事 |
+| `ArrowLeft` | 上一条故事。在分组的第一条故事上时，打开上一个分组，停在离开时的位置；在第一个分组上什么也不做。 |
+| `ArrowRight` | 下一条故事。越过分组的最后一条故事时，打开下一个分组；在最后一个分组上则关闭播放器。 |
 | `Escape` | 关闭播放器 |
