@@ -1,20 +1,6 @@
-## @reelkit/react-stories-player@0.5.1 (2026-09-23)
-
-### 🩹 Fixes
-
-- A carousel card whose preview picture fails to load now falls back to the plain card — the author, the ring and the time — instead of showing the browser's broken-image mark
-- The layout, ring and relative-time helpers now come from @reelkit/stories-core, so the player ships a little less code and lays out exactly like the Vue one
-- Editor hovers on the ring, header and slide props say what each one does to the player, in place of restating the prop's own name
-
-### 🧱 Updated Dependencies
-
-- Updated @reelkit/stories-core to 0.5.0
-- Updated @reelkit/react to 0.9.1
-- Updated @reelkit/core to 0.8.2
-
 ## @reelkit/vue-stories-player@0.1.0 (2026-09-23)
 
-### 🚀 Features
+### 🎉 Initial Release
 
 - Instagram-style stories player for Vue 3: StoriesOverlay opens full screen over the page, tap left or right moves through a user's stories, swipe switches user with a 3D cube transition, and an auto-advance timer drives the segmented progress bar
 - StoriesUrlOverlay puts the open group and story in one ?story=group.story parameter, so a playing story has a link that can be shared and bookmarked, and the back button closes it
@@ -26,15 +12,9 @@
 - A carousel card whose preview picture fails to load falls back to the plain card — the author, the ring and the time — rather than the browser's broken-image mark
 - Themed entirely through `--rk-stories-*` CSS custom properties; import @reelkit/vue-stories-player/styles.css once
 
-### 🧱 Updated Dependencies
-
-- Updated @reelkit/stories-core to 0.5.0
-- Updated @reelkit/core to 0.8.2
-- Updated @reelkit/vue to 0.7.0
-
 ## @reelkit/angular-stories-player@0.1.0 (2026-09-23)
 
-### 🚀 Features
+### 🎉 Initial Release
 
 - Instagram-style stories player for Angular: rk-stories-overlay opens full screen over the page, tap left or right moves through a user's stories, swipe switches user with a 3D cube transition, and an auto-advance timer drives the segmented progress bar
 - rk-stories-url-overlay puts the open group and story in one ?story=group.story parameter, so a playing story has a link that can be shared and bookmarked, and the back button closes it
@@ -48,10 +28,18 @@
 - Opening captures focus and closing returns it to the element that opened the player; Tab and Shift+Tab cycle inside and wrap, and body scroll is locked while it is open
 - Themed entirely through `--rk-stories-*` CSS custom properties; import @reelkit/angular-stories-player/styles.css once
 
+## @reelkit/react-stories-player@0.5.1 (2026-09-23)
+
+### 🩹 Fixes
+
+- A carousel card whose preview picture fails to load now falls back to the plain card — the author, the ring and the time — instead of showing the browser's broken-image mark
+- The layout, ring and relative-time helpers now come from @reelkit/stories-core, so the player ships a little less code and lays out exactly like the Vue one
+- Editor hovers on the ring, header and slide props say what each one does to the player, in place of restating the prop's own name
+
 ### 🧱 Updated Dependencies
 
 - Updated @reelkit/stories-core to 0.5.0
-- Updated @reelkit/angular to 0.7.0
+- Updated @reelkit/react to 0.9.1
 - Updated @reelkit/core to 0.8.2
 
 ## @reelkit/react-reel-player@0.6.3 (2026-09-23)
@@ -107,7 +95,7 @@
 - The service is shared with the reel player and the stories player, so a page holding more than one overlay keeps a single sound state
 - setLightboxVideoMuted still sets the shared video's muted value directly, and muted still starts true and returns to true when the lightbox closes
 
-### ⚠️  Breaking Changes
+### ⚠️ Breaking Changes
 
 - The lightbox sound button now appears only when a SoundStateService is provided above the overlay — provide one in the component that opens the lightbox to keep it. A video slide is rendered from your own rkLightboxSlide template, so it resolves against your injector rather than the overlay's; an instance the overlay provided itself would be invisible to the slide and the button would move nothing. One provided above both is what lets the two meet.
 
