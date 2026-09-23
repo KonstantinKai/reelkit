@@ -389,7 +389,7 @@ Todo tipo de escopo é exportado, então dá para anotar um slot onde o compilad
 
 ## Tipos de story personalizados [#custom-story-types]
 
-Estenda `StoryItem` com os seus campos e tipe os grupos com ele. Anote o escopo do slot para os campos extras continuarem visíveis dentro do template:
+Estenda `StoryItem` com os seus campos e tipe os grupos com ele. Ao contrário do player React, `StoriesOverlay` e `StoriesUrlOverlay` não são genéricos: o tipo de story de `groups` não chega aos slots, cujos escopos ficam sem tipo até você anotá-los. Anote o escopo do slot para os campos extras continuarem visíveis dentro do template. Nada confere a anotação com `groups`, então mantenha os dois em sintonia:
 
 <CodeBlock code={customStoryTypes} language="vue" />
 

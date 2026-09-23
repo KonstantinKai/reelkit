@@ -126,6 +126,10 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 
 <CodeBlock code={basicUsage} language="typescript" />
 
+<Callout type="info" title="ओवरले कहाँ रेंडर होता है">
+  React और Vue प्लेयर अपना ओवरले `document.body` के अंत में ले जाते हैं, पर `rk-stories-overlay` वहीं रेंडर होता है जहाँ आप उसे रखते हैं और `position: fixed` से पूरी स्क्रीन ढकता है। उसे ऐसे किसी पूर्वज के भीतर न रखें जिस पर `transform`, `perspective`, `filter` या `will-change: transform` हो: वह पूर्वज ओवरले का containing block बन जाता है, इसलिए प्लेयर व्यूपोर्ट की जगह उसी के आकार का हो जाता है और उसके `overflow` से कट जाता है। अपना स्टैकिंग कॉन्टेक्स्ट बनाने वाला पूर्वज भी सीमित करता है कि `--rk-stories-overlay-z` प्लेयर को कितना ऊपर उठा सकता है। बदले में, किसी भी पूर्वज पर सेट किए गए `--rk-stories-*` टोकन प्लेयर तक पहुँचते हैं।
+</Callout>
+
 ## URL स्टेट [#url-state]
 
 <DemoLink href="https://angular-demo.reelkit.dev/stories-player-url?utm_source=docs">लाइव डेमो देखें →</DemoLink>

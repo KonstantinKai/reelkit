@@ -359,7 +359,7 @@ Slot scope types exported: `HeaderSlotScope`, `FooterSlotScope`, `SlideSlotScope
 
 ## Custom Story Types
 
-Extend `StoryItem`, type groups as `StoriesGroup<PromoStory>[]`, annotate slot scope to keep extra fields typed in template:
+Extend `StoryItem`, type groups as `StoriesGroup<PromoStory>[]`. Unlike React, `StoriesOverlay` / `StoriesUrlOverlay` are not generic: the story type of `groups` does not reach the slots, whose scopes are untyped until annotated. Annotate the slot scope to keep extra fields typed in template; the annotation is not checked against `groups`:
 
 ```vue
 <template #slide="scope: SlideSlotScope<PromoStory>">

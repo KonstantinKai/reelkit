@@ -106,6 +106,10 @@ Importe a folha de estilo e o componente standalone `RkReelPlayerOverlayComponen
 
 <Sandbox code={basicUsage} language="typescript" title="reel-feed.component.ts" framework="angular" />
 
+<Callout type="info" title="Onde o overlay é renderizado">
+  Ao contrário dos players de React e Vue, que movem o overlay para o fim de `document.body`, o `rk-reel-player-overlay` é renderizado onde você o coloca e cobre a tela com `position: fixed`. Mantenha-o fora de qualquer ancestral com `transform`, `perspective`, `filter` ou `will-change: transform`: esse ancestral vira o bloco de contenção do overlay, então o player assume o tamanho dele em vez da viewport e é cortado pelo seu `overflow`. Um ancestral que cria o próprio contexto de empilhamento também limita o quanto `--rk-reel-overlay-z` consegue elevar o player. Em troca, os tokens `--rk-reel-*` definidos em qualquer ancestral chegam ao player.
+</Callout>
+
 ## Slots de template [#template-slots]
 
 Seis diretivas de slot de template permitem personalizar cada parte da interface do player. Cada uma recebe um objeto de contexto fortemente tipado. Informe apenas os slots que quiser trocar — nos demais valem os padrões.

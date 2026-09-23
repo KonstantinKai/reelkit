@@ -45,6 +45,8 @@ import '@reelkit/angular-stories-player/styles.css';
 
 `rk-stories-ring-list` emits `(selected)` with a group index → host keeps it as `initialGroupIndex`, sets `isOpen`. The player never closes itself: it emits `(closed)`, host sets `isOpen` back to `false`.
 
+Placement: unlike React/Vue (portal to `document.body`), `rk-stories-overlay` renders where placed, `position: fixed`. Keep it out of ancestors with `transform` / `perspective` / `filter` / `will-change: transform` — that ancestor becomes the containing block: player sized to it, clipped by its `overflow`. An ancestor stacking context caps `--rk-stories-overlay-z`. Upside: `--rk-stories-*` tokens on any ancestor reach the player.
+
 ```ts
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import {

@@ -126,6 +126,10 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 
 <CodeBlock code={basicUsage} language="typescript" />
 
+<Callout type="info" title="オーバーレイが描画される場所">
+  オーバーレイを `document.body` の末尾へ移す React と Vue のプレーヤーと違い、`rk-stories-overlay` は置いた場所に描画され、`position: fixed` で画面を覆います。`transform`、`perspective`、`filter`、`will-change: transform` を持つ祖先の中には置かないでください。その祖先がオーバーレイの包含ブロックになり、プレーヤーはビューポートではなくその祖先の大きさになり、祖先の `overflow` で切り取られます。独自のスタッキングコンテキストを作る祖先も、`--rk-stories-overlay-z` でプレーヤーをどこまで持ち上げられるかを制限します。その代わり、どの祖先に設定した `--rk-stories-*` トークンもプレーヤーに届きます。
+</Callout>
+
 ## URL の状態 [#url-state]
 
 <DemoLink href="https://angular-demo.reelkit.dev/stories-player-url?utm_source=docs">ライブデモを見る →</DemoLink>

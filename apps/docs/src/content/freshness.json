@@ -78,7 +78,7 @@
     "/docs/vue-stories-player": {
       "source": "content/en/docs/vue-stories-player.mdx",
       "translation": "content/uk/docs/vue-stories-player.mdx",
-      "sha": "ff3aaf9d17f22e8a5b6bdf7bd92c4bf2f6e7fbeb"
+      "sha": "0f0d3eee96b412e7ba995dd2f2d2c74cc9cfdcb4"
     },
     "/docs/angular/guide": {
       "source": "content/en/docs/angular/guide.mdx",
@@ -93,17 +93,17 @@
     "/docs/angular-reel-player": {
       "source": "content/en/docs/angular-reel-player.mdx",
       "translation": "content/uk/docs/angular-reel-player.mdx",
-      "sha": "c0486882b17bc72f8e587ba1784be668fb267b9c"
+      "sha": "5c00f6d7b0db8aa477eb43dc096e3e304b9c2252"
     },
     "/docs/angular-lightbox": {
       "source": "content/en/docs/angular-lightbox.mdx",
       "translation": "content/uk/docs/angular-lightbox.mdx",
-      "sha": "f97c8ab94814590987031a661f48c62e8130e8f9"
+      "sha": "02dee80ecfedc6c8a224c59fbf6d8ace4238e25c"
     },
     "/docs/angular-stories-player": {
       "source": "content/en/docs/angular-stories-player.mdx",
       "translation": "content/uk/docs/angular-stories-player.mdx",
-      "sha": "caa55ca72a7db656bf17a2ddd960dbf05165ac2c"
+      "sha": "454d4d4490dccff8184339dff910050eeb41cbf9"
     },
     "/docs/troubleshooting": {
       "source": "content/en/docs/troubleshooting.mdx",
@@ -205,7 +205,7 @@
     "/docs/vue-stories-player": {
       "source": "content/en/docs/vue-stories-player.mdx",
       "translation": "content/zh/docs/vue-stories-player.mdx",
-      "sha": "ff3aaf9d17f22e8a5b6bdf7bd92c4bf2f6e7fbeb"
+      "sha": "0f0d3eee96b412e7ba995dd2f2d2c74cc9cfdcb4"
     },
     "/docs/angular/guide": {
       "source": "content/en/docs/angular/guide.mdx",
@@ -220,17 +220,17 @@
     "/docs/angular-reel-player": {
       "source": "content/en/docs/angular-reel-player.mdx",
       "translation": "content/zh/docs/angular-reel-player.mdx",
-      "sha": "c0486882b17bc72f8e587ba1784be668fb267b9c"
+      "sha": "5c00f6d7b0db8aa477eb43dc096e3e304b9c2252"
     },
     "/docs/angular-lightbox": {
       "source": "content/en/docs/angular-lightbox.mdx",
       "translation": "content/zh/docs/angular-lightbox.mdx",
-      "sha": "f97c8ab94814590987031a661f48c62e8130e8f9"
+      "sha": "02dee80ecfedc6c8a224c59fbf6d8ace4238e25c"
     },
     "/docs/angular-stories-player": {
       "source": "content/en/docs/angular-stories-player.mdx",
       "translation": "content/zh/docs/angular-stories-player.mdx",
-      "sha": "caa55ca72a7db656bf17a2ddd960dbf05165ac2c"
+      "sha": "454d4d4490dccff8184339dff910050eeb41cbf9"
     },
     "/docs/troubleshooting": {
       "source": "content/en/docs/troubleshooting.mdx",
@@ -332,7 +332,7 @@
     "/docs/vue-stories-player": {
       "source": "content/en/docs/vue-stories-player.mdx",
       "translation": "content/pt/docs/vue-stories-player.mdx",
-      "sha": "ff3aaf9d17f22e8a5b6bdf7bd92c4bf2f6e7fbeb"
+      "sha": "0f0d3eee96b412e7ba995dd2f2d2c74cc9cfdcb4"
     },
     "/docs/angular/guide": {
       "source": "content/en/docs/angular/guide.mdx",
@@ -347,17 +347,17 @@
     "/docs/angular-reel-player": {
       "source": "content/en/docs/angular-reel-player.mdx",
       "translation": "content/pt/docs/angular-reel-player.mdx",
-      "sha": "c0486882b17bc72f8e587ba1784be668fb267b9c"
+      "sha": "5c00f6d7b0db8aa477eb43dc096e3e304b9c2252"
     },
     "/docs/angular-lightbox": {
       "source": "content/en/docs/angular-lightbox.mdx",
       "translation": "content/pt/docs/angular-lightbox.mdx",
-      "sha": "f97c8ab94814590987031a661f48c62e8130e8f9"
+      "sha": "02dee80ecfedc6c8a224c59fbf6d8ace4238e25c"
     },
     "/docs/angular-stories-player": {
       "source": "content/en/docs/angular-stories-player.mdx",
       "translation": "content/pt/docs/angular-stories-player.mdx",
-      "sha": "caa55ca72a7db656bf17a2ddd960dbf05165ac2c"
+      "sha": "454d4d4490dccff8184339dff910050eeb41cbf9"
     },
     "/docs/troubleshooting": {
       "source": "content/en/docs/troubleshooting.mdx",
@@ -459,7 +459,7 @@
     "/docs/vue-stories-player": {
       "source": "content/en/docs/vue-stories-player.mdx",
       "translation": "content/ja/docs/vue-stories-player.mdx",
-      "sha": "ff3aaf9d17f22e8a5b6bdf7bd92c4bf2f6e7fbeb"
+      "sha": "0f0d3eee96b412e7ba995dd2f2d2c74cc9cfdcb4"
     },
     "/docs/angular/guide": {
       "source": "content/en/docs/angular/guide.mdx",
@@ -474,17 +474,17 @@
     "/docs/angular-reel-player": {
       "source": "content/en/docs/angular-reel-player.mdx",
       "translation": "content/ja/docs/angular-reel-player.mdx",
-      "sha": "c0486882b17bc72f8e587ba1784be668fb267b9c"
+      "sha": "5c00f6d7b0db8aa477eb43dc096e3e304b9c2252"
     },
     "/docs/angular-lightbox": {
       "source": "content/en/docs/angular-lightbox.mdx",
       "translation": "content/ja/docs/angular-lightbox.mdx",
-      "sha": "f97c8ab94814590987031a661f48c62e8130e8f9"
+      "sha": "02dee80ecfedc6c8a224c59fbf6d8ace4238e25c"
     },
     "/docs/angular-stories-player": {
       "source": "content/en/docs/angular-stories-player.mdx",
       "translation": "content/ja/docs/angular-stories-player.mdx",
-      "sha": "caa55ca72a7db656bf17a2ddd960dbf05165ac2c"
+      "sha": "454d4d4490dccff8184339dff910050eeb41cbf9"
     },
     "/docs/troubleshooting": {
       "source": "content/en/docs/troubleshooting.mdx",
@@ -586,7 +586,7 @@
     "/docs/vue-stories-player": {
       "source": "content/en/docs/vue-stories-player.mdx",
       "translation": "content/hi/docs/vue-stories-player.mdx",
-      "sha": "ff3aaf9d17f22e8a5b6bdf7bd92c4bf2f6e7fbeb"
+      "sha": "0f0d3eee96b412e7ba995dd2f2d2c74cc9cfdcb4"
     },
     "/docs/angular/guide": {
       "source": "content/en/docs/angular/guide.mdx",
@@ -601,17 +601,17 @@
     "/docs/angular-reel-player": {
       "source": "content/en/docs/angular-reel-player.mdx",
       "translation": "content/hi/docs/angular-reel-player.mdx",
-      "sha": "c0486882b17bc72f8e587ba1784be668fb267b9c"
+      "sha": "5c00f6d7b0db8aa477eb43dc096e3e304b9c2252"
     },
     "/docs/angular-lightbox": {
       "source": "content/en/docs/angular-lightbox.mdx",
       "translation": "content/hi/docs/angular-lightbox.mdx",
-      "sha": "f97c8ab94814590987031a661f48c62e8130e8f9"
+      "sha": "02dee80ecfedc6c8a224c59fbf6d8ace4238e25c"
     },
     "/docs/angular-stories-player": {
       "source": "content/en/docs/angular-stories-player.mdx",
       "translation": "content/hi/docs/angular-stories-player.mdx",
-      "sha": "caa55ca72a7db656bf17a2ddd960dbf05165ac2c"
+      "sha": "454d4d4490dccff8184339dff910050eeb41cbf9"
     },
     "/docs/troubleshooting": {
       "source": "content/en/docs/troubleshooting.mdx",
@@ -713,7 +713,7 @@
     "/docs/vue-stories-player": {
       "source": "content/en/docs/vue-stories-player.mdx",
       "translation": "content/es/docs/vue-stories-player.mdx",
-      "sha": "ff3aaf9d17f22e8a5b6bdf7bd92c4bf2f6e7fbeb"
+      "sha": "0f0d3eee96b412e7ba995dd2f2d2c74cc9cfdcb4"
     },
     "/docs/angular/guide": {
       "source": "content/en/docs/angular/guide.mdx",
@@ -728,17 +728,17 @@
     "/docs/angular-reel-player": {
       "source": "content/en/docs/angular-reel-player.mdx",
       "translation": "content/es/docs/angular-reel-player.mdx",
-      "sha": "c0486882b17bc72f8e587ba1784be668fb267b9c"
+      "sha": "5c00f6d7b0db8aa477eb43dc096e3e304b9c2252"
     },
     "/docs/angular-lightbox": {
       "source": "content/en/docs/angular-lightbox.mdx",
       "translation": "content/es/docs/angular-lightbox.mdx",
-      "sha": "f97c8ab94814590987031a661f48c62e8130e8f9"
+      "sha": "02dee80ecfedc6c8a224c59fbf6d8ace4238e25c"
     },
     "/docs/angular-stories-player": {
       "source": "content/en/docs/angular-stories-player.mdx",
       "translation": "content/es/docs/angular-stories-player.mdx",
-      "sha": "caa55ca72a7db656bf17a2ddd960dbf05165ac2c"
+      "sha": "454d4d4490dccff8184339dff910050eeb41cbf9"
     },
     "/docs/troubleshooting": {
       "source": "content/en/docs/troubleshooting.mdx",

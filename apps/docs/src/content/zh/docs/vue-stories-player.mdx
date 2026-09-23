@@ -389,7 +389,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 
 ## 自定义故事类型 [#custom-story-types]
 
-用你自己的字段扩展 `StoryItem`，并用它标注分组。给插槽作用域加上类型标注，额外字段在模板中就依然可见：
+用你自己的字段扩展 `StoryItem`，并用它标注分组。与 React 播放器不同，`StoriesOverlay` 和 `StoriesUrlOverlay` 不是泛型组件：`groups` 的故事类型不会传到插槽，插槽作用域在你标注之前没有类型。给插槽作用域加上类型标注，额外字段在模板中就依然可见。这个标注不会与 `groups` 核对，所以请让两者保持一致：
 
 <CodeBlock code={customStoryTypes} language="vue" />
 

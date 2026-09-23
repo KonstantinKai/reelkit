@@ -113,6 +113,10 @@ import theming from '../../snippets/angular-lightbox/theming.css?raw';
 
 <Sandbox code={basicUsage} language="typescript" title="gallery.component.ts" framework="angular" />
 
+<Callout type="info" title="オーバーレイが描画される場所">
+  オーバーレイを `document.body` の末尾へ移す React と Vue の lightbox と違い、`rk-lightbox-overlay` は置いた場所に描画され、`position: fixed` で画面を覆います。`transform`、`perspective`、`filter`、`will-change: transform` を持つ祖先の中には置かないでください。その祖先がオーバーレイの包含ブロックになり、lightbox はビューポートではなくその祖先の大きさになり、祖先の `overflow` で切り取られます。独自のスタッキングコンテキストを作る祖先も、`--rk-lightbox-overlay-z` で lightbox をどこまで持ち上げられるかを制限します。その代わり、どの祖先に設定した `--rk-lightbox-*` トークンも lightbox に届きます。
+</Callout>
+
 ## テンプレートスロット [#template-slots]
 
 4 つのテンプレートスロットのディレクティブで、コンポーネントを複製せずにオーバーレイの UI を自由にカスタマイズできます。各スロットは厳密に型付けされたコンテキストのオブジェクトを受け取ります。

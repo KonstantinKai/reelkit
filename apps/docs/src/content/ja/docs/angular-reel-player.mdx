@@ -106,6 +106,10 @@ import theming from '../../snippets/angular-reel-player/theming.css?raw';
 
 <Sandbox code={basicUsage} language="typescript" title="reel-feed.component.ts" framework="angular" />
 
+<Callout type="info" title="オーバーレイが描画される場所">
+  オーバーレイを `document.body` の末尾へ移す React と Vue のプレーヤーと違い、`rk-reel-player-overlay` は置いた場所に描画され、`position: fixed` で画面を覆います。`transform`、`perspective`、`filter`、`will-change: transform` を持つ祖先の中には置かないでください。その祖先がオーバーレイの包含ブロックになり、プレーヤーはビューポートではなくその祖先の大きさになり、祖先の `overflow` で切り取られます。独自のスタッキングコンテキストを作る祖先も、`--rk-reel-overlay-z` でプレーヤーをどこまで持ち上げられるかを制限します。その代わり、どの祖先に設定した `--rk-reel-*` トークンもプレーヤーに届きます。
+</Callout>
+
 ## テンプレートスロット [#template-slots]
 
 6 つのテンプレートスロットのディレクティブで、プレイヤーの UI のあらゆる部分をカスタマイズできます。それぞれが厳密に型付けされたコンテキストのオブジェクトを受け取ります。上書きしたいスロットだけを渡してください。残りはデフォルトが使われます。

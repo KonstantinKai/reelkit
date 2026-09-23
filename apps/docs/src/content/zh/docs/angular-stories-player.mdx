@@ -126,6 +126,10 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 
 <CodeBlock code={basicUsage} language="typescript" />
 
+<Callout type="info" title="覆盖层渲染在哪里">
+  React 和 Vue 播放器会把覆盖层移到 `document.body` 末尾，而 `rk-stories-overlay` 就渲染在你放置它的位置，并用 `position: fixed` 铺满屏幕。不要把它放在带有 `transform`、`perspective`、`filter` 或 `will-change: transform` 的祖先元素里：这样的祖先会成为覆盖层的包含块，播放器的尺寸会跟随它而不是视口，并被它的 `overflow` 裁剪。创建了自身层叠上下文的祖先，也会限制 `--rk-stories-overlay-z` 能把播放器抬到多高。反过来，设置在任意祖先上的 `--rk-stories-*` 令牌都能作用到播放器。
+</Callout>
+
 ## URL 状态 [#url-state]
 
 <DemoLink href="https://angular-demo.reelkit.dev/stories-player-url?utm_source=docs">查看在线演示 →</DemoLink>

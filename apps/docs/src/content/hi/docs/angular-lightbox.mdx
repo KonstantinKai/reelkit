@@ -113,6 +113,10 @@ styles और standalone `RkLightboxOverlayComponent` कंपोनेंट �
 
 <Sandbox code={basicUsage} language="typescript" title="gallery.component.ts" framework="angular" />
 
+<Callout type="info" title="ओवरले कहाँ रेंडर होता है">
+  React और Vue के lightbox अपना ओवरले `document.body` के अंत में ले जाते हैं, पर `rk-lightbox-overlay` वहीं रेंडर होता है जहाँ आप उसे रखते हैं और `position: fixed` से पूरी स्क्रीन ढकता है। उसे ऐसे किसी पूर्वज के भीतर न रखें जिस पर `transform`, `perspective`, `filter` या `will-change: transform` हो: वह पूर्वज ओवरले का containing block बन जाता है, इसलिए lightbox व्यूपोर्ट की जगह उसी के आकार का हो जाता है और उसके `overflow` से कट जाता है। अपना स्टैकिंग कॉन्टेक्स्ट बनाने वाला पूर्वज भी सीमित करता है कि `--rk-lightbox-overlay-z` lightbox को कितना ऊपर उठा सकता है। बदले में, किसी भी पूर्वज पर सेट किए गए `--rk-lightbox-*` टोकन lightbox तक पहुँचते हैं।
+</Callout>
+
 ## टेम्पलेट स्लॉट [#template-slots]
 
 चार template slot directives से कंपोनेंट को fork किए बिना overlay UI पूरी तरह कस्टमाइज़ किया जा सकता है। हर slot को strongly-typed context object मिलता है।

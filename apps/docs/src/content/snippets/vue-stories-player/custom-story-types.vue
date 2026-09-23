@@ -1,10 +1,13 @@
 <script setup lang="ts">
+import { ref } from 'vue';
 import {
   StoriesOverlay,
   type SlideSlotScope,
   type StoriesGroup,
   type StoryItem,
 } from '@reelkit/vue-stories-player';
+
+const isOpen = ref(false);
 
 interface PromoStory extends StoryItem {
   title?: string;

@@ -389,7 +389,7 @@ Todos los tipos de ámbito se exportan, así que puedes anotar un slot donde el 
 
 ## Tipos de story propios [#custom-story-types]
 
-Amplía `StoryItem` con tus campos y tipa los grupos con él. Anota el ámbito del slot para que los campos añadidos sigan visibles dentro de la plantilla:
+Amplía `StoryItem` con tus campos y tipa los grupos con él. A diferencia del reproductor de React, `StoriesOverlay` y `StoriesUrlOverlay` no son genéricos: el tipo de story de `groups` no llega a los slots, cuyos ámbitos quedan sin tipo hasta que los anotas. Anota el ámbito del slot para que los campos añadidos sigan visibles dentro de la plantilla. Nada comprueba la anotación contra `groups`, así que mantén ambos al día:
 
 <CodeBlock code={customStoryTypes} language="vue" />
 

@@ -126,6 +126,10 @@ Registre a folha de estilos uma única vez:
 
 <CodeBlock code={basicUsage} language="typescript" />
 
+<Callout type="info" title="Onde o overlay é renderizado">
+  Ao contrário dos players de React e Vue, que movem o overlay para o fim de `document.body`, o `rk-stories-overlay` é renderizado onde você o coloca e cobre a tela com `position: fixed`. Mantenha-o fora de qualquer ancestral com `transform`, `perspective`, `filter` ou `will-change: transform`: esse ancestral vira o bloco de contenção do overlay, então o player assume o tamanho dele em vez da viewport e é cortado pelo seu `overflow`. Um ancestral que cria o próprio contexto de empilhamento também limita o quanto `--rk-stories-overlay-z` consegue elevar o player. Em troca, os tokens `--rk-stories-*` definidos em qualquer ancestral chegam ao player.
+</Callout>
+
 ## Estado na URL [#url-state]
 
 <DemoLink href="https://angular-demo.reelkit.dev/stories-player-url?utm_source=docs">Ver demo ao vivo →</DemoLink>

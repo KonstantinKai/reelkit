@@ -389,7 +389,7 @@ Every scope type is exported, so a slot can be annotated where the compiler cann
 
 ## Custom Story Types [#custom-story-types]
 
-Extend `StoryItem` with your own fields and type the groups with it. Annotate a slot scope to keep the extra fields visible inside the template:
+Extend `StoryItem` with your own fields and type the groups with it. Unlike the React player, `StoriesOverlay` and `StoriesUrlOverlay` are not generic: the story type of `groups` does not reach the slots, whose scopes stay untyped until you annotate them. Annotate a slot scope to keep the extra fields visible inside the template. Nothing checks the annotation against `groups`, so keep the two in step:
 
 <CodeBlock code={customStoryTypes} language="vue" />
 

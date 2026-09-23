@@ -389,7 +389,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 
 ## 独自のストーリー型 [#custom-story-types]
 
-`StoryItem` を自分のフィールドで拡張し、その型でグループを型付けします。スロットのスコープに型を付ければ、テンプレートの中でも追加フィールドが見えたままになります。
+`StoryItem` を自分のフィールドで拡張し、その型でグループを型付けします。React のプレーヤーと違い、`StoriesOverlay` と `StoriesUrlOverlay` はジェネリックではありません。`groups` のストーリー型はスロットまで届かず、スロットのスコープは型を付けるまで型なしのままです。スロットのスコープに型を付ければ、テンプレートの中でも追加フィールドが見えたままになります。この型注釈は `groups` と照合されないため、両者を揃えておいてください。
 
 <CodeBlock code={customStoryTypes} language="vue" />
 

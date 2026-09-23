@@ -126,6 +126,10 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 
 <CodeBlock code={basicUsage} language="typescript" />
 
+<Callout type="info" title="Де рендериться оверлей">
+  На відміну від плеєрів React і Vue, які переносять свій оверлей у кінець `document.body`, `rk-stories-overlay` рендериться там, де ви його розмістили, і накриває екран через `position: fixed`. Не кладіть його всередину предка з `transform`, `perspective`, `filter` або `will-change: transform`: такий предок стає блоком-контейнером оверлея, тож плеєр отримує розмір предка замість вікна й обрізається його `overflow`. Предок, що створює власний контекст накладання, також обмежує, наскільки високо `--rk-stories-overlay-z` може підняти плеєр. Натомість токени `--rk-stories-*`, задані на будь-якому предку, доходять до плеєра.
+</Callout>
+
 ## Стан в URL [#url-state]
 
 <DemoLink href="https://angular-demo.reelkit.dev/stories-player-url?utm_source=docs">Переглянути демо →</DemoLink>
