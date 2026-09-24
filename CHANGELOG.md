@@ -1,3 +1,54 @@
+## @reelkit/react-reel-player@0.6.4 (2026-09-24)
+
+### 🩹 Fixes
+
+- The README now opens with a looping clip of the package in action, linked to its live demo
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/react to 0.9.2
+- Updated @reelkit/core to 0.8.3
+
+## @reelkit/vue-reel-player@0.4.1 (2026-09-24)
+
+### 🩹 Fixes
+
+- The README now opens with a looping clip of the package in action, linked to its live demo
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.8.3
+- Updated @reelkit/vue to 0.7.1
+
+## @reelkit/angular-reel-player@0.6.2 (2026-09-24)
+
+### 🩹 Fixes
+
+- The README now opens with a looping clip of the package in action, linked to its live demo
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/angular to 0.8.1
+- Updated @reelkit/core to 0.8.3
+
+## @reelkit/angular-reel-player@0.6.1 (2026-09-24)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/angular to 0.8.0
+
+## @reelkit/react-stories-player@0.6.1 (2026-09-24)
+
+### 🩹 Fixes
+
+- The README now opens with a looping clip of the package in action, linked to its live demo
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/stories-core to 0.6.1
+- Updated @reelkit/react to 0.9.2
+- Updated @reelkit/core to 0.8.3
+
 ## @reelkit/react-stories-player@0.6.0 (2026-09-24)
 
 ### 🚀 Features
@@ -22,6 +73,18 @@
 
 - Updated @reelkit/stories-core to 0.6.0
 
+## @reelkit/vue-stories-player@0.2.1 (2026-09-24)
+
+### 🩹 Fixes
+
+- The README now opens with a looping clip of the package in action, linked to its live demo
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/stories-core to 0.6.1
+- Updated @reelkit/core to 0.8.3
+- Updated @reelkit/vue to 0.7.1
+
 ## @reelkit/vue-stories-player@0.2.0 (2026-09-24)
 
 ### 🚀 Features
@@ -45,6 +108,18 @@
 ### 🧱 Updated Dependencies
 
 - Updated @reelkit/stories-core to 0.6.0
+
+## @reelkit/angular-stories-player@0.2.1 (2026-09-24)
+
+### 🩹 Fixes
+
+- The README now opens with a looping clip of the package in action, linked to its live demo
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/stories-core to 0.6.1
+- Updated @reelkit/angular to 0.8.1
+- Updated @reelkit/core to 0.8.3
 
 ## @reelkit/angular-stories-player@0.2.0 (2026-09-24)
 
@@ -86,11 +161,37 @@
 - Updated @reelkit/stories-core to 0.6.0
 - Updated @reelkit/angular to 0.8.0
 
-## @reelkit/angular-reel-player@0.6.1 (2026-09-24)
+## @reelkit/react-lightbox@0.6.4 (2026-09-24)
+
+### 🩹 Fixes
+
+- The README now opens with a looping clip of the package in action, linked to its live demo
 
 ### 🧱 Updated Dependencies
 
-- Updated @reelkit/angular to 0.8.0
+- Updated @reelkit/react to 0.9.2
+- Updated @reelkit/core to 0.8.3
+
+## @reelkit/vue-lightbox@0.3.1 (2026-09-24)
+
+### 🩹 Fixes
+
+- The README now opens with a looping clip of the package in action, linked to its live demo
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/vue to 0.7.1
+
+## @reelkit/angular-lightbox@0.6.2 (2026-09-24)
+
+### 🩹 Fixes
+
+- The README now opens with a looping clip of the package in action, linked to its live demo
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/angular to 0.8.1
+- Updated @reelkit/core to 0.8.3
 
 ## @reelkit/angular-lightbox@0.6.1 (2026-09-24)
 
@@ -98,17 +199,63 @@
 
 - Updated @reelkit/angular to 0.8.0
 
+## @reelkit/stories-core@0.6.1 (2026-09-24)
+
+### 🩹 Fixes
+
+- The README now opens with a looping clip of the package in action, linked to its live demo
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.8.3
+
 ## @reelkit/stories-core@0.6.0 (2026-09-24)
 
 ### 🚀 Features
 
 - kStoriesRingSize, kStoriesRingListRingSize and kStoriesCardRingSize export the ring diameters every stories player draws by default (68, 64 and 52 pixels), so a custom ring can match them
 
+## @reelkit/react@0.9.2 (2026-09-24)
+
+### 🩹 Fixes
+
+- The README now opens with a looping clip of the package in action, linked to its live demo
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.8.3
+
+## @reelkit/vue@0.7.1 (2026-09-24)
+
+### 🩹 Fixes
+
+- The README now opens with a looping clip of the package in action, linked to its live demo
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.8.3
+
+## @reelkit/angular@0.8.1 (2026-09-24)
+
+### 🩹 Fixes
+
+- The README now opens with a looping clip of the package in action, linked to its live demo
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.8.3
+
 ## @reelkit/angular@0.8.0 (2026-09-24)
 
 ### 🚀 Features
 
 - observeMediaLoading is exported, as it already is from @reelkit/react and @reelkit/vue
+
+## @reelkit/core@0.8.3 (2026-09-24)
+
+### 🩹 Fixes
+
+- The README now opens with a looping clip of the package in action, linked to its live demo
 
 ## @reelkit/vue-stories-player@0.1.0 (2026-09-23)
 
