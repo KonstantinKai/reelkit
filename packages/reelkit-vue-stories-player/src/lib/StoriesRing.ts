@@ -1,5 +1,9 @@
 import { defineComponent, h, type ExtractPropTypes, type PropType } from 'vue';
-import { getRingPresentation, type AuthorInfo } from '@reelkit/stories-core';
+import {
+  getRingPresentation,
+  kStoriesRingSize,
+  type AuthorInfo,
+} from '@reelkit/stories-core';
 import './StoriesRing.css';
 
 /** Props accepted by the {@link StoriesRing} component. */
@@ -18,7 +22,7 @@ const storiesRingProps = {
    *
    * @default 68
    */
-  size: { type: Number, default: 68 },
+  size: { type: Number, default: kStoriesRingSize },
 
   /**
    * Gradient colors for a group with stories left to watch.

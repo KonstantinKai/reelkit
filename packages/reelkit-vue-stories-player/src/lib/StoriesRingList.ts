@@ -1,8 +1,9 @@
 import { defineComponent, h, type ExtractPropTypes, type PropType } from 'vue';
 import { Observe } from '@reelkit/vue';
-import type {
-  StoriesGroup,
-  StoriesViewedStateController,
+import {
+  kStoriesRingListRingSize,
+  type StoriesGroup,
+  type StoriesViewedStateController,
 } from '@reelkit/stories-core';
 import { StoriesRing } from './StoriesRing';
 import { useAttachViewedState } from './useAttachViewedState';
@@ -33,7 +34,7 @@ const storiesRingListProps = {
    *
    * @default 64
    */
-  ringSize: { type: Number, default: 64 },
+  ringSize: { type: Number, default: kStoriesRingListRingSize },
 };
 
 /** Public props interface for the {@link StoriesRingList} component. */

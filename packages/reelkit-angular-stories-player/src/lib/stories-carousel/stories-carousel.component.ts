@@ -22,13 +22,11 @@ import {
   getSlideGroupIndexes,
   getSlotOffset,
   isCardShown,
+  kStoriesCardRingSize,
   type StoryItem,
   type StoriesGroup,
 } from '@reelkit/stories-core';
 import type { StoriesGroupPreviewContext, StoriesSlideContext } from '../types';
-
-/** Ring diameter on a carousel card. */
-const _kCardRingSize = 52;
 
 /**
  * A group change in progress. `start` lays the cards out around the group
@@ -306,7 +304,7 @@ export class RkStoriesCarouselComponent<T extends StoryItem = StoryItem> {
       const ring = getRingPresentation({
         totalStories: group.stories.length,
         viewedCount,
-        size: _kCardRingSize,
+        size: kStoriesCardRingSize,
       });
 
       return [

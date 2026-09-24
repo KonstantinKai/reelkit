@@ -76,6 +76,9 @@ export { getPreviewSource } from './lib/cardPreview';
 
 export {
   getRingPresentation,
+  kStoriesRingSize,
+  kStoriesRingListRingSize,
+  kStoriesCardRingSize,
   type RingPresentationOptions,
   type RingPresentation,
 } from './lib/ringPresentation';

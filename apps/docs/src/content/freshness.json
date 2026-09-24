@@ -28,7 +28,7 @@
     "/docs/stories-core": {
       "source": "content/en/docs/stories-core.mdx",
       "translation": "content/uk/docs/stories-core.mdx",
-      "sha": "4b871f8e47144be9b9b789c8e6674d74fc986cec"
+      "sha": "def2edae8a53f83bd3d0b7c5477d74e0c6535fb8"
     },
     "/docs/react/guide": {
       "source": "content/en/docs/react/guide.mdx",
@@ -155,7 +155,7 @@
     "/docs/stories-core": {
       "source": "content/en/docs/stories-core.mdx",
       "translation": "content/zh/docs/stories-core.mdx",
-      "sha": "4b871f8e47144be9b9b789c8e6674d74fc986cec"
+      "sha": "def2edae8a53f83bd3d0b7c5477d74e0c6535fb8"
     },
     "/docs/react/guide": {
       "source": "content/en/docs/react/guide.mdx",
@@ -282,7 +282,7 @@
     "/docs/stories-core": {
       "source": "content/en/docs/stories-core.mdx",
       "translation": "content/pt/docs/stories-core.mdx",
-      "sha": "4b871f8e47144be9b9b789c8e6674d74fc986cec"
+      "sha": "def2edae8a53f83bd3d0b7c5477d74e0c6535fb8"
     },
     "/docs/react/guide": {
       "source": "content/en/docs/react/guide.mdx",
@@ -409,7 +409,7 @@
     "/docs/stories-core": {
       "source": "content/en/docs/stories-core.mdx",
       "translation": "content/ja/docs/stories-core.mdx",
-      "sha": "4b871f8e47144be9b9b789c8e6674d74fc986cec"
+      "sha": "def2edae8a53f83bd3d0b7c5477d74e0c6535fb8"
     },
     "/docs/react/guide": {
       "source": "content/en/docs/react/guide.mdx",
@@ -536,7 +536,7 @@
     "/docs/stories-core": {
       "source": "content/en/docs/stories-core.mdx",
       "translation": "content/hi/docs/stories-core.mdx",
-      "sha": "4b871f8e47144be9b9b789c8e6674d74fc986cec"
+      "sha": "def2edae8a53f83bd3d0b7c5477d74e0c6535fb8"
     },
     "/docs/react/guide": {
       "source": "content/en/docs/react/guide.mdx",
@@ -663,7 +663,7 @@
     "/docs/stories-core": {
       "source": "content/en/docs/stories-core.mdx",
       "translation": "content/es/docs/stories-core.mdx",
-      "sha": "4b871f8e47144be9b9b789c8e6674d74fc986cec"
+      "sha": "def2edae8a53f83bd3d0b7c5477d74e0c6535fb8"
     },
     "/docs/react/guide": {
       "source": "content/en/docs/react/guide.mdx",

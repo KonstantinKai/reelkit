@@ -1,8 +1,9 @@
 import type { FC } from 'react';
 import { Observe } from '@reelkit/react';
-import type {
-  StoriesGroup,
-  StoriesViewedStateController,
+import {
+  kStoriesRingListRingSize,
+  type StoriesGroup,
+  type StoriesViewedStateController,
 } from '@reelkit/stories-core';
 import { StoriesRing } from './StoriesRing';
 import { useAttachViewedState } from './useAttachViewedState';
@@ -41,7 +42,7 @@ export const StoriesRingList: FC<StoriesRingListProps> = ({
   groups,
   viewed,
   onSelect,
-  ringSize = 64,
+  ringSize = kStoriesRingListRingSize,
 }) => {
   useAttachViewedState(viewed);
 

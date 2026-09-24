@@ -48,6 +48,18 @@ const _kInstagramGradient = [
 const _kRingWidth = 2;
 const _kGap = 2;
 
+/** Default diameter, in pixels, of a single story ring. */
+export const kStoriesRingSize = 68;
+
+/** Default diameter, in pixels, of each ring in the ring list. */
+export const kStoriesRingListRingSize = 64;
+
+/**
+ * Diameter, in pixels, of the ring on a desktop carousel card. Fixed rather
+ * than configurable: the card lays its name and time out around it.
+ */
+export const kStoriesCardRingSize = 52;
+
 /**
  * Class name, inline style and avatar size of a story ring. A group with
  * anything left to watch gets a rotating conic gradient, a fully watched one a
