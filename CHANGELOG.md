@@ -1,9 +1,3 @@
-## @reelkit/angular-reel-player@0.6.1 (2026-09-24)
-
-### 🧱 Updated Dependencies
-
-- Updated @reelkit/angular to 0.8.0
-
 ## @reelkit/react-stories-player@0.6.0 (2026-09-24)
 
 ### 🚀 Features
@@ -20,9 +14,9 @@
 - A duration set on a video story now wins over the one the video reports
 - Story rings open from the keyboard with Enter or Space, the way a button does
 
-### ⚠️  Breaking Changes
+### ⚠️ Breaking Changes
 
-- The double-tap heart animation's keyframes are renamed from heart-pop to rk-stories-heart-pop, so an app's own heart-pop animation no longer replaces it. A stylesheet that restyled the heart by redefining @keyframes heart-pop, or code that checks for that animation name, must use rk-stories-heart-pop.
+- The double-tap heart animation's keyframes are renamed from heart-pop to rk-stories-heart-pop, so an app's own heart-pop animation no longer replaces it. A stylesheet that restyled the heart by redefining `@keyframes heart-pop`, or code that checks for that animation name, must use rk-stories-heart-pop.
 
 ### 🧱 Updated Dependencies
 
@@ -44,9 +38,9 @@
 - A duration set on a video story now wins over the one the video reports
 - Story rings open from the keyboard with Enter or Space, the way a button does
 
-### ⚠️  Breaking Changes
+### ⚠️ Breaking Changes
 
-- The double-tap heart animation's keyframes are renamed from heart-pop to rk-stories-heart-pop, so an app's own heart-pop animation no longer replaces it. A stylesheet that restyled the heart by redefining @keyframes heart-pop, or code that checks for that animation name, must use rk-stories-heart-pop.
+- The double-tap heart animation's keyframes are renamed from heart-pop to rk-stories-heart-pop, so an app's own heart-pop animation no longer replaces it. A stylesheet that restyled the heart by redefining `@keyframes heart-pop`, or code that checks for that animation name, must use rk-stories-heart-pop.
 
 ### 🧱 Updated Dependencies
 
@@ -80,9 +74,9 @@
 - The inner story slider no longer carries the rk-stories-stories class, which no stylesheet used and the React and Vue players never emitted
 - The icon-centring rules reach only the lucide-angular icon wrapper, so the error panel's message keeps its own layout
 
-### ⚠️  Breaking Changes
+### ⚠️ Breaking Changes
 
-- The double-tap heart animation's keyframes are renamed from heart-pop to rk-stories-heart-pop, so an app's own heart-pop animation no longer replaces it. A stylesheet that restyled the heart by redefining @keyframes heart-pop, or code that checks for that animation name, must use rk-stories-heart-pop.
+- The double-tap heart animation's keyframes are renamed from heart-pop to rk-stories-heart-pop, so an app's own heart-pop animation no longer replaces it. A stylesheet that restyled the heart by redefining `@keyframes heart-pop`, or code that checks for that animation name, must use rk-stories-heart-pop.
 - rk-stories-overlay requires isOpen, as the React and Vue players require it; an overlay written without [isOpen] now fails with Angular's required-input error. Bind it, [isOpen]="false" for a player that starts closed.
 - rk-story-header draws its pause and sound buttons only when showPauseButton and showSoundButton are true, the way the React and Vue headers draw them only when given a handler. The player's own header sets both; a header used on its own needs [showPauseButton]="true" and [showSoundButton]="true" to keep them.
 - rk-canvas-progress-bar takes gap, barHeight, minSegmentWidth, bgColor and fillColor as separate inputs, like the React and Vue bars, instead of one config object. Replace [config]="{ barHeight: 3 }" with [barHeight]="3".
@@ -90,6 +84,12 @@
 ### 🧱 Updated Dependencies
 
 - Updated @reelkit/stories-core to 0.6.0
+- Updated @reelkit/angular to 0.8.0
+
+## @reelkit/angular-reel-player@0.6.1 (2026-09-24)
+
+### 🧱 Updated Dependencies
+
 - Updated @reelkit/angular to 0.8.0
 
 ## @reelkit/angular-lightbox@0.6.1 (2026-09-24)
