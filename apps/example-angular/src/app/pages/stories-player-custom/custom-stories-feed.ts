@@ -11,7 +11,7 @@ const hoursAgo = (hours: number) =>
   new Date(Date.now() - hours * 3600_000).toISOString();
 
 /**
- * The page's own feed, matching the react and vue custom pages: three short
+ * The page's own feed, matching the React and Vue custom pages: three short
  * groups, one of them carrying a story that will not load so the loading and
  * error demo has something to show.
  */

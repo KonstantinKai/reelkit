@@ -91,7 +91,7 @@ describe('StoriesPlayerPageComponent', () => {
   });
 
   // The button belongs to the open player, not to the page under it: it sits
-  // in the corner of the carousel beside the cards, the way react's does.
+  // in the corner of the carousel beside the cards, the way React's does.
   // By text as well as by class: a page-level "Load more" of any shape is
   // the thing this rules out, not just one wearing the player's class.
   it('offers no load-more while the player is closed', () => {

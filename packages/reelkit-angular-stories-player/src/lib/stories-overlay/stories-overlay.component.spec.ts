@@ -179,7 +179,7 @@ describe('RkStoriesOverlayComponent', () => {
   afterEach(() => TestBed.resetTestingModule());
 
   describe('open state', () => {
-    // As with the react and vue players, the host always says whether the
+    // As with the React and Vue players, the host always says whether the
     // player is open; there is no silent closed default to forget about.
     it('refuses to render without an isOpen binding', () => {
       const fixture = TestBed.createComponent(RkStoriesOverlayComponent);
@@ -527,9 +527,9 @@ describe('RkStoriesOverlayComponent', () => {
 
   // Three groups render at a time. Chrome built inside a group slide is drawn
   // once per rendered group and turns with the group transition.
-  // The stylesheet and the docs are shared with the react and vue players,
+  // The stylesheet and the docs are shared with the React and Vue players,
   // so a class only Angular emits is one no theme can rely on.
-  it('emits no class the react and vue players do not', () => {
+  it('emits no class the React and Vue players do not', () => {
     const fixture = createHost();
 
     expect(
@@ -778,7 +778,7 @@ describe('RkStoriesOverlayComponent', () => {
     });
   });
 
-  // React and vue tear the player down when it closes, so their engine never
+  // React and Vue tear the player down when it closes, so their engine never
   // sees a second opening. This component stays alive, so reopening has to be
   // made to look like opening.
   describe('closing the player and opening it again', () => {
@@ -852,7 +852,7 @@ describe('RkStoriesOverlayComponent', () => {
       }
     });
 
-    // The react and vue slots name every value they hand over. The implicit
+    // The React and Vue slots name every value they hand over. The implicit
     // value stays too, for templates already written against it.
     it('names the main value of each slot beside the implicit one', () => {
       const overlay = contentOf(createHost()) as unknown as Record<
@@ -1140,7 +1140,7 @@ describe('RkStoriesOverlayComponent', () => {
     });
   });
 
-  describe('behaving like the react and vue players', () => {
+  describe('behaving like the React and Vue players', () => {
     interface SlideInternals {
       timerCtrl: { start: (duration?: number) => void };
       _pendingTimerAction: (() => void) | null;
@@ -2012,8 +2012,6 @@ describe('RkStoriesOverlayComponent desktop carousel', () => {
     expect(isSliding(fixture)).toBe(false);
   });
 
-  // Deliberate: the carousel slide ignores prefers-reduced-motion. Do not
-  // add the check.
   it('slides even when the viewer prefers less motion', () => {
     Object.defineProperty(window, 'matchMedia', {
       configurable: true,
@@ -2118,7 +2116,7 @@ describe('RkStoriesOverlayComponent desktop carousel', () => {
   });
 });
 
-// The cases the react and vue overlay specs prove about their inputs and
+// The cases the React and Vue overlay specs prove about their inputs and
 // outputs, proved here for the angular player.
 describe('RkStoriesOverlayComponent inputs and outputs', () => {
   interface StoryPosition {

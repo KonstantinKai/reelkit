@@ -85,7 +85,7 @@ describe('RkCanvasProgressBarComponent', () => {
     globalThis.ResizeObserver = originalObserver;
   });
 
-  // The same separate inputs the react and vue bars take, rather than one
+  // The same separate inputs the React and Vue bars take, rather than one
   // configuration object.
   it('hands its separate size and colour inputs to the renderer', () => {
     mockRenderer.configs.length = 0;

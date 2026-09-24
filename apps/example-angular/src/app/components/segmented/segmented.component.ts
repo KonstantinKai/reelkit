@@ -14,7 +14,7 @@ export interface SegmentedOption {
 
 /**
  * A labelled group of exclusive choices — the demo pages' switcher control,
- * matching the one the react and vue demos use so the three look alike.
+ * matching the one the React and Vue demos use so the three look alike.
  *
  * Purely presentational: the page owns the state and says which value is on.
  */

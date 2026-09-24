@@ -33,7 +33,7 @@ describe('StoriesPlayerCustomPageComponent', () => {
   afterEach(() => TestBed.resetTestingModule());
 
   // The page exists to show what a slot can replace. One card per slot, the
-  // same seven the react and vue pages carry, so the three read alike.
+  // same seven the React and Vue pages carry, so the three read alike.
   it('offers a card for every slot demo', () => {
     const { fixture } = createPage();
     const titles = fixture.debugElement

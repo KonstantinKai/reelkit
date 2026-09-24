@@ -242,7 +242,7 @@ export class StoriesPlayerPageComponent {
   /**
    * The switches outlive a reload, the way every other switch in this app
    * does: a demo gets flipped, refreshed and looked at again. The keys match
-   * the react and vue demos, so the three read the same stored choice.
+   * the React and Vue demos, so the three read the same stored choice.
    */
   protected readonly desktopLayout = persistedSignal<DesktopLayout>(
     'reelkit-stories-player-desktop-layout',

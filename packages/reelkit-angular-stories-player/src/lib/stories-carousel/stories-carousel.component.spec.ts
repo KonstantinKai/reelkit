@@ -280,10 +280,10 @@ describe('RkStoriesCarouselComponent', () => {
   });
 
   // The card ring is a fixed size the copied stylesheet lays the card out
-  // around, and it is the same number in react and vue. Reading it off the
+  // around, and it is the same number in React and Vue. Reading it off the
   // rendered element rather than the constant: a card draws the ring through
   // `getRingPresentation`, so only the element says what the viewer sees.
-  // The react and vue previews name the group; the implicit value stays for
+  // The React and Vue previews name the group; the implicit value stays for
   // templates already written against it.
   it('names the group a preview template receives', () => {
     const carousel = createCarousel().componentInstance as unknown as {
@@ -297,7 +297,7 @@ describe('RkStoriesCarouselComponent', () => {
   });
 
   // The viewed controller hands over a plain subscribable, the same shape the
-  // react and vue carousels take, not necessarily a core signal.
+  // React and Vue carousels take, not necessarily a core signal.
   it('draws rings from any subscribable viewed state', () => {
     const viewedState = {
       value: new Map([['a0', 2]]),
@@ -324,7 +324,7 @@ describe('RkStoriesCarouselComponent', () => {
     expect(ring.style.height).toBe('52px');
   });
 
-  // The layout, previews and rings the react and vue carousels draw, on a
+  // The layout, previews and rings the React and Vue carousels draw, on a
   // feed long enough to fill both sides.
   describe('laying out a feed', () => {
     const makeGroups = (count: number): StoriesGroup[] =>

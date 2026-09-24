@@ -2,7 +2,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * React and vue put an `<svg>` straight into a button, so the stylesheet's
+ * React and Vue put an `<svg>` straight into a button, so the stylesheet's
  * `align-items: center` centres it. Angular renders `<lucide-angular>`, an
  * element the stylesheet has never heard of, and an unknown element with a
  * default `display: inline` blockifies unpredictably as a flex item — the

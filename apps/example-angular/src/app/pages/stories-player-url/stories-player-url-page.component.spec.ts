@@ -31,7 +31,7 @@ describe('StoriesPlayerUrlPageComponent', () => {
 
   // The page's point is that the URL key is switchable; without the switches
   // it shows one shape and the demo says nothing the plain page does not.
-  it('offers every switch the react demo does', () => {
+  it('offers every switch the React demo does', () => {
     expect(legends(createPage())).toEqual([
       'Group addressing',
       'Story addressing',

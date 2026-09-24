@@ -63,7 +63,7 @@ describe('RkVideoStorySlideComponent', () => {
     expect(container).toBeTruthy();
   });
 
-  // The timer starts on media ready the way the react and vue slides decide
+  // The timer starts on media ready the way the React and Vue slides decide
   // it: a video that reports playing, or enough data to play through, is
   // ready even when no `canplay` came first.
   it.each(['canplay', 'playing', 'canplaythrough'])(

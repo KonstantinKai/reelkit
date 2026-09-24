@@ -114,8 +114,7 @@ const _kSlideTimeoutMarginMs = 700;
  *
  * @internal `RkStoriesOverlayComponent` is the player a consumer reaches for.
  * It creates this on open and destroys it on close, so the engine, the timer
- * and the sound setting last exactly as long as one viewing — the lifetime
- * react's `StoriesContent` and vue's equivalent get from mounting.
+ * and the sound setting last exactly as long as one viewing.
  */
 @Component({
   selector: 'rk-stories-content',
@@ -799,9 +798,8 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
    * Every slot template renders through this, so a component a slot draws
    * resolves services against the player rather than against the component
    * the template was written in. Angular's element injectors follow where a
-   * template was declared; react's context and vue's provide follow where it
-   * renders, which is why neither of them has to think about this and why a
-   * slot drawing an `rk-video-story-slide` would otherwise find no
+   * template was declared, not where it renders, so a slot drawing an
+   * `rk-video-story-slide` would otherwise find no
    * `SoundStateService` and be dropped without a word.
    */
   protected readonly slotInjector = this._injector;
@@ -928,9 +926,8 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
     );
 
     // The player runs for exactly as long as this component exists: the
-    // overlay creates it on open and destroys it on close, the way react's
-    // `StoriesContent` and vue's render-null do. It stops before the timer is
-    // disposed, since stopping may still touch the timer.
+    // overlay creates it on open and destroys it on close. It stops before the
+    // timer is disposed, since stopping may still touch the timer.
     this._start();
     this._destroyRef.onDestroy(() => this._stop());
     this._destroyRef.onDestroy(disposables.dispose);

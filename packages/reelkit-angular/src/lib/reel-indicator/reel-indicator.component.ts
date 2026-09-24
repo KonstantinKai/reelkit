@@ -155,8 +155,8 @@ export class ReelIndicatorComponent {
    * Start index of the visible window — the first normal-sized dot.
    *
    * Uses `linkedSignal` with a source/computation pair so the window slides
-   * incrementally (only when the active dot reaches a window edge), matching
-   * the React reference implementation. The `computation` receives the
+   * incrementally (only when the active dot reaches a window edge). The
+   * `computation` receives the
    * previous window position so changes to `count`/`visible` reset it while
    * changes to `active` alone apply the edge-sliding logic.
    */
@@ -246,8 +246,7 @@ export class ReelIndicatorComponent {
    * Vertical indicator:   ArrowUp / ArrowDown move between dots.
    *
    * IMPORTANT: Arrow / Home / End keys only move DOM focus — they do NOT
-   * call handleDotClick and do NOT trigger goTo(). This matches the React
-   * reference implementation.
+   * call handleDotClick and do NOT trigger goTo().
    */
   protected handleDotKeydown(event: KeyboardEvent, index: number): void {
     const count = this.resolvedCount();
@@ -311,7 +310,7 @@ export class ReelIndicatorComponent {
       hasLeadingSmall,
       visible,
     );
-    // Matches React: cursor is 'pointer' when an onDotClick handler is provided.
+    // Cursor is 'pointer' when an onDotClick handler is provided.
     const isClickable = this.reelContext !== null;
 
     return {

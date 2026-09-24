@@ -20,7 +20,7 @@ export interface StoriesHeaderContext<T extends StoryItem = StoryItem> {
   /** Author of the current group; the same value as `author`. */
   $implicit: AuthorInfo;
 
-  /** Author of the current group, by the name the react and vue headers use. */
+  /** Author of the current group, for `let-author="author"`. */
   author: AuthorInfo;
 
   /** Currently active story item. */
@@ -67,7 +67,7 @@ export interface StoriesFooterContext<T extends StoryItem = StoryItem> {
   /** Currently active story item; the same value as `story`. */
   $implicit: T;
 
-  /** Currently active story item, by the name the react and vue footers use. */
+  /** Currently active story item, for `let-story="story"`. */
   story: T;
 
   /** Author of the current group. */
@@ -87,7 +87,7 @@ export interface StoriesSlideContext<T extends StoryItem = StoryItem> {
   /** The story item to render; the same value as `story`. */
   $implicit: T;
 
-  /** The story item to render, by the name the react and vue slides use. */
+  /** The story item to render, for `let-story="story"`. */
   story: T;
 
   /** Zero-based index of the story within its group. */
@@ -105,7 +105,7 @@ export interface StoriesSlideContext<T extends StoryItem = StoryItem> {
   /**
    * Active group index, for a slide that renders across group changes. A core
    * signal, because what a slide template does with it is hand it back to
-   * `RkVideoStorySlideComponent`, which is what the react and vue slots do.
+   * `RkVideoStorySlideComponent`.
    */
   activeGroupIndex: CoreSignal<number>;
 
@@ -137,7 +137,7 @@ export interface StoriesProgressBarContext<T extends StoryItem = StoryItem> {
   /** The group being drawn; the same value as `group`. */
   $implicit: StoriesGroup<T>;
 
-  /** The group being drawn, by the name the react and vue bars use. */
+  /** The group being drawn, for `let-group="group"`. */
   group: StoriesGroup<T>;
 
   /** Number of stories in that group. */
@@ -179,8 +179,8 @@ export interface StoriesNavigationActions {
  * Context handed to a `[rkStoriesNavigation]` template, which replaces the
  * previous and next controls.
  *
- * The moves arrive both ways: flat, by the names the react and vue controls
- * use (`let-next="onNextStory"`), and grouped as the implicit value
+ * The moves arrive both ways: flat, each by its own name
+ * (`let-next="onNextStory"`), and grouped as the implicit value
  * (`let-nav`, then `nav.onNextStory()`).
  */
 export interface StoriesNavigationContext extends StoriesNavigationActions {
@@ -197,7 +197,7 @@ export interface StoriesLoadingContext<T extends StoryItem = StoryItem> {
   /** The story that is loading; the same value as `story`. */
   $implicit: T;
 
-  /** The story that is loading, by the name the react and vue slots use. */
+  /** The story that is loading, for `let-story="story"`. */
   story: T;
 
   /** Zero-based index of the story within its group. */
@@ -216,7 +216,7 @@ export interface StoriesErrorContext<T extends StoryItem = StoryItem> {
   /** The story that failed to load; the same value as `story`. */
   $implicit: T;
 
-  /** The story that failed to load, by the name the react and vue slots use. */
+  /** The story that failed to load, for `let-story="story"`. */
   story: T;
 
   /** Zero-based index of the story within its group. */
@@ -252,7 +252,7 @@ export interface StoriesGroupPreviewContext<T extends StoryItem = StoryItem> {
   /** The group the card previews; the same value as `group`. */
   $implicit: StoriesGroup<T>;
 
-  /** The group the card previews, by the name the react and vue cards use. */
+  /** The group the card previews, for `let-group="group"`. */
   group: StoriesGroup<T>;
 
   /** Zero-based index of that group. */

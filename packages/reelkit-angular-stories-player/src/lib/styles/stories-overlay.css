@@ -172,8 +172,7 @@
  * alignment centres the icon: without this, an unknown element with the
  * default `display: inline` can blockify unpredictably inside the box. Only
  * the wrapper is targeted, so the error panel's text keeps its own layout.
- * The other two Angular overlays carry the same rule; react and vue put the
- * SVG in directly and need none.
+ * The other two Angular overlays carry the same rule.
  */
 .rk-stories-nav-btn > lucide-angular,
 .rk-stories-error > lucide-angular {

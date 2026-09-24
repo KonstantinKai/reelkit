@@ -18,8 +18,8 @@ import {
 
 /**
  * One card per slot the player lets a page replace, each opening the player
- * with that slot filled and nothing else changed. The same seven the react and
- * vue demos show, so the three can be read side by side.
+ * with that slot filled and nothing else changed. The same seven the React and
+ * Vue demos show, so the three can be read side by side.
  */
 @Component({
   selector: 'app-stories-player-custom-page',

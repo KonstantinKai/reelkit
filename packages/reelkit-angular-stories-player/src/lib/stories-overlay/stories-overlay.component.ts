@@ -43,8 +43,7 @@ import type {
  * Instagram-style stories player.
  *
  * The player itself lives in a child this component creates when `isOpen`
- * turns true and destroys when it turns false, which is what react and vue
- * get from mounting and unmounting theirs. Everything with a memory — where
+ * turns true and destroys when it turns false. Everything with a memory — where
  * each group was left, whether the opening story was reported, the timer and
  * the sound setting — belongs to that child, so closing the player forgets it
  * and opening it again is an opening rather than a resume.
@@ -98,8 +97,8 @@ import type {
 })
 export class RkStoriesOverlayComponent<T extends StoryItem = StoryItem> {
   /**
-   * Renders the player and locks body scroll while true. Required, as in the
-   * react and vue players: the host owns the open state and always says it.
+   * Renders the player and locks body scroll while true. Required: the host
+   * owns the open state and always says it.
    */
   readonly isOpen = input.required<boolean>();
 
@@ -325,7 +324,7 @@ export class RkStoriesOverlayComponent<T extends StoryItem = StoryItem> {
   readonly apiReady = output<StoriesApi>();
 
   constructor() {
-    // Outside the open gate, as react's `useAttachViewedState` is: a ring list
+    // Outside the open gate: a ring list
     // beside a closed player still reads what has been seen.
     attachViewedState(this.viewed);
   }

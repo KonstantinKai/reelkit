@@ -142,8 +142,8 @@ export class RkStoryHeaderComponent {
 
   /**
    * Draws the pause control. Off unless the host handles `(pauseToggled)`,
-   * the way the react and vue headers draw it only when given the handler.
-   * The player turns it on for its own header.
+   * since a pause button nobody handles would do nothing. The player turns it
+   * on for its own header.
    *
    * @default false
    */

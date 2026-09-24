@@ -35,7 +35,7 @@ describe('RkStoryHeaderComponent', () => {
 
   // An image story has nothing to unmute, so offering the control would be a
   // button that does nothing.
-  // As in the react and vue headers, a control appears only once the host
+  // As in the React and Vue headers, a control appears only once the host
   // wires it: a pause or sound button nobody handles would do nothing.
   it('draws no pause or sound button unless the host asks for them', () => {
     const bare = labels(createHeader({ isVideo: true }));
