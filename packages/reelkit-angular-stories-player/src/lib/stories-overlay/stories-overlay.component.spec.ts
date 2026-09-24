@@ -164,7 +164,7 @@ function innerReelsOf(
   fixture: ComponentFixture<HostComponent>,
 ): ReelComponent[] {
   return fixture.debugElement
-    .queryAll(By.css('rk-reel.rk-stories-stories'))
+    .queryAll(By.css('.rk-stories-slide-wrapper > rk-reel'))
     .map((element) => element.componentInstance as ReelComponent);
 }
 
@@ -527,6 +527,16 @@ describe('RkStoriesOverlayComponent', () => {
 
   // Three groups render at a time. Chrome built inside a group slide is drawn
   // once per rendered group and turns with the group transition.
+  // The stylesheet and the docs are shared with the react and vue players,
+  // so a class only Angular emits is one no theme can rely on.
+  it('emits no class the react and vue players do not', () => {
+    const fixture = createHost();
+
+    expect(
+      fixture.debugElement.query(By.css('.rk-stories-stories')),
+    ).toBeNull();
+  });
+
   describe('where the chrome lives', () => {
     it('draws one interface layer for the whole player', () => {
       const layers = createHost().debugElement.queryAll(
@@ -753,7 +763,7 @@ describe('RkStoriesOverlayComponent', () => {
     it('is born on the story it was left on', async () => {
       const fixture = await walkAwayAndBack();
       const reel = fixture.debugElement
-        .queryAll(By.css('rk-reel.rk-stories-stories'))
+        .queryAll(By.css('.rk-stories-slide-wrapper > rk-reel'))
         .map(
           (element) =>
             element.componentInstance as unknown as {

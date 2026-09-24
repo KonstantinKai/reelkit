@@ -211,7 +211,6 @@ const _kSlideTimeoutMarginMs = 700;
                 [style.height.px]="size()[1]"
               >
                 <rk-reel
-                  class="rk-stories-stories"
                   [count]="storiesOf(groupIndex).length"
                   direction="horizontal"
                   [size]="size()"

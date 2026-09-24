@@ -90,7 +90,7 @@
 }
 
 /* Same reason as the navigation buttons: the icon wrapper is Angular's. */
-.rk-stories-header-btn > * {
+.rk-stories-header-btn > lucide-angular {
   display: inline-flex;
   align-items: center;
   justify-content: center;
