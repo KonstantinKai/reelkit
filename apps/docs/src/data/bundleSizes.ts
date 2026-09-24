@@ -98,7 +98,7 @@ export const kBundleSizes: BundleSize[] = [
   {
     name: '@reelkit/vue-lightbox',
     js: '14.5 kB',
-    gzip: '4.2 kB',
+    gzip: '4.1 kB',
     css: '6.8 kB',
     cssGzip: '1.4 kB',
     framework: 'vue',
