@@ -203,18 +203,18 @@ By default one progress bar and one header sit above the player and switch to th
 
 ## Template Slots [#template-slots]
 
-Eight `ng-template` directives replace any part of the player. Each receives a typed context, with the most useful value as the implicit one — so `let-author` binds the author in the header slot without naming it. A slot you leave out keeps the built-in rendering.
+Eight `ng-template` directives replace any part of the player. Each receives a typed context in which every value is named, by the names the React and Vue slots use, so `let-author="author"` binds the author in the header slot. The main value is the implicit one as well, so `let-author` alone does the same. A slot you leave out keeps the built-in rendering.
 
 | Directive | Class | Context | Description |
 | --- | --- | --- | --- |
-| `rkStoriesError` | `RkStoriesErrorDirective` | `{ $implicit: story, storyIndex, groupIndex }` | Replaces the built-in "Content unavailable" panel, drawn over the active story |
-| `rkStoriesFooter` | `RkStoriesFooterDirective` | `{ $implicit: story, author, storyIndex }` | Adds a footer under the active story; the player draws none of its own |
-| `rkStoriesGroupPreview` | `RkStoriesGroupPreviewDirective` | `{ $implicit: group, groupIndex, story, offset, viewedCount, onOpen }` | Fills a desktop carousel card; the player still positions, scales and slides it |
-| `rkStoriesHeader` | `RkStoriesHeaderDirective` | `{ $implicit: author, story, storyIndex, isPaused, isMuted, isVideo, groupIndex, isActive, onToggleSound, onTogglePause, onClose }` | Replaces the default header (author, pause, sound, close). With `chromePlacement="group"` it sits in the swipe area; see [Progress Bar and Header per Group](/docs/angular-stories-player#chrome-placement). |
-| `rkStoriesLoading` | `RkStoriesLoadingDirective` | `{ $implicit: story, storyIndex, groupIndex }` | Replaces the default header spinner while the active story loads |
-| `rkStoriesNavigation` | `RkStoriesNavigationDirective` | `{ $implicit: { onPrevStory, onNextStory, onPrevGroup, onNextGroup } }` | Replaces both desktop arrows |
-| `rkStoriesProgressBar` | `RkStoriesProgressBarDirective` | `{ $implicit: group, totalStories, activeIndex, progress, groupIndex, isActive }` | Replaces the canvas progress bar. `activeIndex` and `progress` are core signals — bridge them with `toAngularSignal`. |
-| `rkStoriesSlide` | `RkStoriesSlideDirective` | `{ $implicit: story, index, groupIndex, isActive, size, activeGroupIndex, activeStoryIndex, onDurationReady, onReady, onWaiting, onError, onEnded }` | Replaces the default image and video slides |
+| `rkStoriesError` | `RkStoriesErrorDirective` | `{ $implicit: story, story, storyIndex, groupIndex }` | Replaces the built-in "Content unavailable" panel, drawn over the active story |
+| `rkStoriesFooter` | `RkStoriesFooterDirective` | `{ $implicit: story, story, author, storyIndex }` | Adds a footer under the active story; the player draws none of its own |
+| `rkStoriesGroupPreview` | `RkStoriesGroupPreviewDirective` | `{ $implicit: group, group, groupIndex, story, offset, viewedCount, onOpen }` | Fills a desktop carousel card; the player still positions, scales and slides it |
+| `rkStoriesHeader` | `RkStoriesHeaderDirective` | `{ $implicit: author, author, story, storyIndex, isPaused, isMuted, isVideo, groupIndex, isActive, onToggleSound, onTogglePause, onClose }` | Replaces the default header (author, pause, sound, close). With `chromePlacement="group"` it sits in the swipe area; see [Progress Bar and Header per Group](/docs/angular-stories-player#chrome-placement). |
+| `rkStoriesLoading` | `RkStoriesLoadingDirective` | `{ $implicit: story, story, storyIndex, groupIndex }` | Replaces the default header spinner while the active story loads |
+| `rkStoriesNavigation` | `RkStoriesNavigationDirective` | `{ onPrevStory, onNextStory, onPrevGroup, onNextGroup, $implicit: { the same four } }` | Replaces both desktop arrows |
+| `rkStoriesProgressBar` | `RkStoriesProgressBarDirective` | `{ $implicit: group, group, totalStories, activeIndex, progress, groupIndex, isActive }` | Replaces the canvas progress bar. `activeIndex` and `progress` are core signals — bridge them with `toAngularSignal`. |
+| `rkStoriesSlide` | `RkStoriesSlideDirective` | `{ $implicit: story, story, index, groupIndex, isActive, size, activeGroupIndex, activeStoryIndex, onDurationReady, onReady, onWaiting, onError, onEnded }` | Replaces the default image and video slides |
 
 <CodeBlock code={templateSlots} language="typescript" />
 

@@ -17,8 +17,11 @@ export type { MediaType } from '@reelkit/stories-core';
  * @typeParam T - Story item type.
  */
 export interface StoriesHeaderContext<T extends StoryItem = StoryItem> {
-  /** Author of the current group. */
+  /** Author of the current group; the same value as `author`. */
   $implicit: AuthorInfo;
+
+  /** Author of the current group, by the name the react and vue headers use. */
+  author: AuthorInfo;
 
   /** Currently active story item. */
   story: T;
@@ -61,8 +64,11 @@ export interface StoriesHeaderContext<T extends StoryItem = StoryItem> {
  * @typeParam T - Story item type.
  */
 export interface StoriesFooterContext<T extends StoryItem = StoryItem> {
-  /** Currently active story item. */
+  /** Currently active story item; the same value as `story`. */
   $implicit: T;
+
+  /** Currently active story item, by the name the react and vue footers use. */
+  story: T;
 
   /** Author of the current group. */
   author: AuthorInfo;
@@ -78,8 +84,11 @@ export interface StoriesFooterContext<T extends StoryItem = StoryItem> {
  * @typeParam T - Story item type.
  */
 export interface StoriesSlideContext<T extends StoryItem = StoryItem> {
-  /** The story item to render. */
+  /** The story item to render; the same value as `story`. */
   $implicit: T;
+
+  /** The story item to render, by the name the react and vue slides use. */
+  story: T;
 
   /** Zero-based index of the story within its group. */
   index: number;
@@ -125,8 +134,11 @@ export interface StoriesSlideContext<T extends StoryItem = StoryItem> {
  * @typeParam T - Story item type.
  */
 export interface StoriesProgressBarContext<T extends StoryItem = StoryItem> {
-  /** The group being drawn. */
+  /** The group being drawn; the same value as `group`. */
   $implicit: StoriesGroup<T>;
+
+  /** The group being drawn, by the name the react and vue bars use. */
+  group: StoriesGroup<T>;
 
   /** Number of stories in that group. */
   totalStories: number;
@@ -167,11 +179,12 @@ export interface StoriesNavigationActions {
  * Context handed to a `[rkStoriesNavigation]` template, which replaces the
  * previous and next controls.
  *
- * The moves arrive as the implicit value, so `let-nav` is all a template
- * needs: `nav.onNextStory()`.
+ * The moves arrive both ways: flat, by the names the react and vue controls
+ * use (`let-next="onNextStory"`), and grouped as the implicit value
+ * (`let-nav`, then `nav.onNextStory()`).
  */
-export interface StoriesNavigationContext {
-  /** The moves the control can make. */
+export interface StoriesNavigationContext extends StoriesNavigationActions {
+  /** The same four moves, grouped. */
   $implicit: StoriesNavigationActions;
 }
 
@@ -181,8 +194,11 @@ export interface StoriesNavigationContext {
  * @typeParam T - Story item type.
  */
 export interface StoriesLoadingContext<T extends StoryItem = StoryItem> {
-  /** The story that is loading. */
+  /** The story that is loading; the same value as `story`. */
   $implicit: T;
+
+  /** The story that is loading, by the name the react and vue slots use. */
+  story: T;
 
   /** Zero-based index of the story within its group. */
   storyIndex: number;
@@ -197,8 +213,11 @@ export interface StoriesLoadingContext<T extends StoryItem = StoryItem> {
  * @typeParam T - Story item type.
  */
 export interface StoriesErrorContext<T extends StoryItem = StoryItem> {
-  /** The story that failed to load. */
+  /** The story that failed to load; the same value as `story`. */
   $implicit: T;
+
+  /** The story that failed to load, by the name the react and vue slots use. */
+  story: T;
 
   /** Zero-based index of the story within its group. */
   storyIndex: number;
@@ -230,8 +249,11 @@ export type ChromePlacement = 'overlay' | 'group';
  * @typeParam T - Story item type.
  */
 export interface StoriesGroupPreviewContext<T extends StoryItem = StoryItem> {
-  /** The group the card previews. */
+  /** The group the card previews; the same value as `group`. */
   $implicit: StoriesGroup<T>;
+
+  /** The group the card previews, by the name the react and vue cards use. */
+  group: StoriesGroup<T>;
 
   /** Zero-based index of that group. */
   groupIndex: number;

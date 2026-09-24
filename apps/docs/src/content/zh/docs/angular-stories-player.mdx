@@ -203,18 +203,18 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 
 ## 模板插槽 [#template-slots]
 
-八个 `ng-template` 指令可以替换播放器的任意部分。每个都会收到带类型的上下文，其中最常用的值作为隐式值——所以在头部插槽里，`let-author` 无需具名就能拿到作者。没有提供的插槽会保留内置的呈现。
+八个 `ng-template` 指令可以替换播放器的任意部分。每个都会收到带类型的上下文，其中每个值都有名字，与 React 和 Vue 插槽使用的名字相同，所以在头部插槽里 `let-author="author"` 能拿到作者。主值同时也是隐式值，所以只写 `let-author` 效果一样。没有提供的插槽会保留内置的呈现。
 
 | 指令 | 类 | 上下文 | 说明 |
 | --- | --- | --- | --- |
-| `rkStoriesError` | `RkStoriesErrorDirective` | `{ $implicit: story, storyIndex, groupIndex }` | 替换内置的 "Content unavailable" 面板，绘制在当前 Story 之上 |
-| `rkStoriesFooter` | `RkStoriesFooterDirective` | `{ $implicit: story, author, storyIndex }` | 在当前 Story 下方加一个页脚；播放器本身不绘制页脚 |
-| `rkStoriesGroupPreview` | `RkStoriesGroupPreviewDirective` | `{ $implicit: group, groupIndex, story, offset, viewedCount, onOpen }` | 填充桌面轮播的卡片内容；定位、缩放和滑动仍由播放器负责 |
-| `rkStoriesHeader` | `RkStoriesHeaderDirective` | `{ $implicit: author, story, storyIndex, isPaused, isMuted, isVideo, groupIndex, isActive, onToggleSound, onTogglePause, onClose }` | 替换默认头部（作者、暂停、声音、关闭）。使用 `chromePlacement="group"` 时它位于滑动区域内，参见[每个分组自带进度条和头部](/docs/angular-stories-player#chrome-placement)。 |
-| `rkStoriesLoading` | `RkStoriesLoadingDirective` | `{ $implicit: story, storyIndex, groupIndex }` | 替换当前 Story 加载时头部显示的默认加载指示 |
-| `rkStoriesNavigation` | `RkStoriesNavigationDirective` | `{ $implicit: { onPrevStory, onNextStory, onPrevGroup, onNextGroup } }` | 同时替换桌面端的两个箭头 |
-| `rkStoriesProgressBar` | `RkStoriesProgressBarDirective` | `{ $implicit: group, totalStories, activeIndex, progress, groupIndex, isActive }` | 替换 canvas 进度条。`activeIndex` 和 `progress` 是内核信号，请用 `toAngularSignal` 桥接。 |
-| `rkStoriesSlide` | `RkStoriesSlideDirective` | `{ $implicit: story, index, groupIndex, isActive, size, activeGroupIndex, activeStoryIndex, onDurationReady, onReady, onWaiting, onError, onEnded }` | 替换默认的图片与视频幻灯片 |
+| `rkStoriesError` | `RkStoriesErrorDirective` | `{ $implicit: story, story, storyIndex, groupIndex }` | 替换内置的 "Content unavailable" 面板，绘制在当前 Story 之上 |
+| `rkStoriesFooter` | `RkStoriesFooterDirective` | `{ $implicit: story, story, author, storyIndex }` | 在当前 Story 下方加一个页脚；播放器本身不绘制页脚 |
+| `rkStoriesGroupPreview` | `RkStoriesGroupPreviewDirective` | `{ $implicit: group, group, groupIndex, story, offset, viewedCount, onOpen }` | 填充桌面轮播的卡片内容；定位、缩放和滑动仍由播放器负责 |
+| `rkStoriesHeader` | `RkStoriesHeaderDirective` | `{ $implicit: author, author, story, storyIndex, isPaused, isMuted, isVideo, groupIndex, isActive, onToggleSound, onTogglePause, onClose }` | 替换默认头部（作者、暂停、声音、关闭）。使用 `chromePlacement="group"` 时它位于滑动区域内，参见[每个分组自带进度条和头部](/docs/angular-stories-player#chrome-placement)。 |
+| `rkStoriesLoading` | `RkStoriesLoadingDirective` | `{ $implicit: story, story, storyIndex, groupIndex }` | 替换当前 Story 加载时头部显示的默认加载指示 |
+| `rkStoriesNavigation` | `RkStoriesNavigationDirective` | `{ onPrevStory, onNextStory, onPrevGroup, onNextGroup, $implicit: { the same four } }` | 同时替换桌面端的两个箭头 |
+| `rkStoriesProgressBar` | `RkStoriesProgressBarDirective` | `{ $implicit: group, group, totalStories, activeIndex, progress, groupIndex, isActive }` | 替换 canvas 进度条。`activeIndex` 和 `progress` 是内核信号，请用 `toAngularSignal` 桥接。 |
+| `rkStoriesSlide` | `RkStoriesSlideDirective` | `{ $implicit: story, story, index, groupIndex, isActive, size, activeGroupIndex, activeStoryIndex, onDurationReady, onReady, onWaiting, onError, onEnded }` | 替换默认的图片与视频幻灯片 |
 
 <CodeBlock code={templateSlots} language="typescript" />
 

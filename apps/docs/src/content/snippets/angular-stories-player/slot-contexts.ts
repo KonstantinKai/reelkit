@@ -1,5 +1,6 @@
-// Every slot context in one place. The implicit value is what `let-x` with
-// no name binds; the rest are named.
+// Every slot context in one place. Every value is named, by the names the
+// react and vue slots use; the main one is also what `let-x` with no name
+// binds.
 import type {
   StoriesSlideContext,
   StoriesHeaderContext,

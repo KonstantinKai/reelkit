@@ -169,16 +169,16 @@ protected readonly viewed = createStoriesViewedStateController({
 
 ## Template Slots
 
-Eight `ng-template` directives, each with the most useful value as the implicit one. A slot left out keeps the built-in rendering. `STORIES_TEMPLATE_SLOT_DIRECTIVES` exports all eight as one array.
+Eight `ng-template` directives. Every context value is named, by the React/Vue names (`let-author="author"`); the main value is also the implicit one (`let-author`). A slot left out keeps the built-in rendering. `STORIES_TEMPLATE_SLOT_DIRECTIVES` exports all eight as one array.
 
-- `rkStoriesHeader` (`RkStoriesHeaderDirective`, `StoriesHeaderContext`) — `{ $implicit: author, story, storyIndex, isPaused, isMuted, isVideo, groupIndex, isActive, onToggleSound, onTogglePause, onClose }`
-- `rkStoriesFooter` (`RkStoriesFooterDirective`, `StoriesFooterContext`) — `{ $implicit: story, author, storyIndex }`
-- `rkStoriesSlide` (`RkStoriesSlideDirective`, `StoriesSlideContext`) — `{ $implicit: story, index, groupIndex, isActive, size, activeGroupIndex, activeStoryIndex, onDurationReady, onReady, onWaiting, onError, onEnded }`
-- `rkStoriesProgressBar` (`RkStoriesProgressBarDirective`, `StoriesProgressBarContext`) — `{ $implicit: group, totalStories, activeIndex, progress, groupIndex, isActive }`; `activeIndex` + `progress` are core signals, bridge with `toAngularSignal`
-- `rkStoriesNavigation` (`RkStoriesNavigationDirective`, `StoriesNavigationContext`) — `{ $implicit: StoriesNavigationActions }` = `{ onPrevStory, onNextStory, onPrevGroup, onNextGroup }`
-- `rkStoriesGroupPreview` (`RkStoriesGroupPreviewDirective`, `StoriesGroupPreviewContext`) — `{ $implicit: group, groupIndex, story, offset, viewedCount, onOpen }`
-- `rkStoriesLoading` (`RkStoriesLoadingDirective`, `StoriesLoadingContext`) — `{ $implicit: story, storyIndex, groupIndex }`
-- `rkStoriesError` (`RkStoriesErrorDirective`, `StoriesErrorContext`) — `{ $implicit: story, storyIndex, groupIndex }`
+- `rkStoriesHeader` (`RkStoriesHeaderDirective`, `StoriesHeaderContext`) — `{ $implicit: author, author, story, storyIndex, isPaused, isMuted, isVideo, groupIndex, isActive, onToggleSound, onTogglePause, onClose }`
+- `rkStoriesFooter` (`RkStoriesFooterDirective`, `StoriesFooterContext`) — `{ $implicit: story, story, author, storyIndex }`
+- `rkStoriesSlide` (`RkStoriesSlideDirective`, `StoriesSlideContext`) — `{ $implicit: story, story, index, groupIndex, isActive, size, activeGroupIndex, activeStoryIndex, onDurationReady, onReady, onWaiting, onError, onEnded }`
+- `rkStoriesProgressBar` (`RkStoriesProgressBarDirective`, `StoriesProgressBarContext`) — `{ $implicit: group, group, totalStories, activeIndex, progress, groupIndex, isActive }`; `activeIndex` + `progress` are core signals, bridge with `toAngularSignal`
+- `rkStoriesNavigation` (`RkStoriesNavigationDirective`, `StoriesNavigationContext`) — `{ onPrevStory, onNextStory, onPrevGroup, onNextGroup, $implicit: StoriesNavigationActions }`: the four moves flat, and grouped as the implicit value (`let-nav` → `nav.onNextStory()`)
+- `rkStoriesGroupPreview` (`RkStoriesGroupPreviewDirective`, `StoriesGroupPreviewContext`) — `{ $implicit: group, group, groupIndex, story, offset, viewedCount, onOpen }`
+- `rkStoriesLoading` (`RkStoriesLoadingDirective`, `StoriesLoadingContext`) — `{ $implicit: story, story, storyIndex, groupIndex }`
+- `rkStoriesError` (`RkStoriesErrorDirective`, `StoriesErrorContext`) — `{ $implicit: story, story, storyIndex, groupIndex }`
 
 ```ts
 <rk-stories-overlay [isOpen]="isOpen()" [groups]="groups" (closed)="isOpen.set(false)">

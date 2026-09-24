@@ -203,18 +203,18 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 
 ## टेम्पलेट स्लॉट [#template-slots]
 
-आठ `ng-template` डायरेक्टिव प्लेयर के किसी भी हिस्से को बदल देते हैं। हर एक को टाइप किया हुआ कॉन्टेक्स्ट मिलता है, जिसमें सबसे काम का मान implicit होता है — इसलिए हेडर स्लॉट में `let-author` बिना नाम दिए ही लेखक दे देता है। जो स्लॉट आप नहीं देते, वहाँ डिफ़ॉल्ट प्रस्तुति बनी रहती है।
+आठ `ng-template` डायरेक्टिव प्लेयर के किसी भी हिस्से को बदल देते हैं। हर एक को टाइप किया हुआ कॉन्टेक्स्ट मिलता है, जिसमें हर मान का नाम होता है — वही नाम जो React और Vue स्लॉट इस्तेमाल करते हैं — इसलिए हेडर स्लॉट में `let-author="author"` लेखक दे देता है। मुख्य मान implicit भी होता है, इसलिए सिर्फ़ `let-author` भी यही करता है। जो स्लॉट आप नहीं देते, वहाँ डिफ़ॉल्ट प्रस्तुति बनी रहती है।
 
 | डायरेक्टिव | क्लास | कॉन्टेक्स्ट | विवरण |
 | --- | --- | --- | --- |
-| `rkStoriesError` | `RkStoriesErrorDirective` | `{ $implicit: story, storyIndex, groupIndex }` | अंतर्निहित "Content unavailable" पैनल को बदलता है, जो चालू story के ऊपर बनता है |
-| `rkStoriesFooter` | `RkStoriesFooterDirective` | `{ $implicit: story, author, storyIndex }` | चालू story के नीचे फ़ुटर जोड़ता है; प्लेयर खुद कोई फ़ुटर नहीं बनाता |
-| `rkStoriesGroupPreview` | `RkStoriesGroupPreviewDirective` | `{ $implicit: group, groupIndex, story, offset, viewedCount, onOpen }` | डेस्कटॉप कैरोसेल के कार्ड को भरता है; जगह, स्केल और स्लाइडिंग प्लेयर ही संभालता रहता है |
-| `rkStoriesHeader` | `RkStoriesHeaderDirective` | `{ $implicit: author, story, storyIndex, isPaused, isMuted, isVideo, groupIndex, isActive, onToggleSound, onTogglePause, onClose }` | डिफ़ॉल्ट हेडर (लेखक, पॉज़, साउंड, बंद करना) बदलता है। `chromePlacement="group"` के साथ यह swipe क्षेत्र के अंदर होता है; देखें [हर समूह का अपना प्रोग्रेस बार और हेडर](/docs/angular-stories-player#chrome-placement)। |
-| `rkStoriesLoading` | `RkStoriesLoadingDirective` | `{ $implicit: story, storyIndex, groupIndex }` | चालू story लोड होते समय हेडर में दिखने वाले डिफ़ॉल्ट स्पिनर को बदलता है |
-| `rkStoriesNavigation` | `RkStoriesNavigationDirective` | `{ $implicit: { onPrevStory, onNextStory, onPrevGroup, onNextGroup } }` | डेस्कटॉप के दोनों तीर बदल देता है |
-| `rkStoriesProgressBar` | `RkStoriesProgressBarDirective` | `{ $implicit: group, totalStories, activeIndex, progress, groupIndex, isActive }` | canvas प्रोग्रेस बार को बदलता है। `activeIndex` और `progress` कोर सिग्नल हैं — उन्हें `toAngularSignal` से जोड़ें। |
-| `rkStoriesSlide` | `RkStoriesSlideDirective` | `{ $implicit: story, index, groupIndex, isActive, size, activeGroupIndex, activeStoryIndex, onDurationReady, onReady, onWaiting, onError, onEnded }` | डिफ़ॉल्ट इमेज और वीडियो स्लाइड बदलता है |
+| `rkStoriesError` | `RkStoriesErrorDirective` | `{ $implicit: story, story, storyIndex, groupIndex }` | अंतर्निहित "Content unavailable" पैनल को बदलता है, जो चालू story के ऊपर बनता है |
+| `rkStoriesFooter` | `RkStoriesFooterDirective` | `{ $implicit: story, story, author, storyIndex }` | चालू story के नीचे फ़ुटर जोड़ता है; प्लेयर खुद कोई फ़ुटर नहीं बनाता |
+| `rkStoriesGroupPreview` | `RkStoriesGroupPreviewDirective` | `{ $implicit: group, group, groupIndex, story, offset, viewedCount, onOpen }` | डेस्कटॉप कैरोसेल के कार्ड को भरता है; जगह, स्केल और स्लाइडिंग प्लेयर ही संभालता रहता है |
+| `rkStoriesHeader` | `RkStoriesHeaderDirective` | `{ $implicit: author, author, story, storyIndex, isPaused, isMuted, isVideo, groupIndex, isActive, onToggleSound, onTogglePause, onClose }` | डिफ़ॉल्ट हेडर (लेखक, पॉज़, साउंड, बंद करना) बदलता है। `chromePlacement="group"` के साथ यह swipe क्षेत्र के अंदर होता है; देखें [हर समूह का अपना प्रोग्रेस बार और हेडर](/docs/angular-stories-player#chrome-placement)। |
+| `rkStoriesLoading` | `RkStoriesLoadingDirective` | `{ $implicit: story, story, storyIndex, groupIndex }` | चालू story लोड होते समय हेडर में दिखने वाले डिफ़ॉल्ट स्पिनर को बदलता है |
+| `rkStoriesNavigation` | `RkStoriesNavigationDirective` | `{ onPrevStory, onNextStory, onPrevGroup, onNextGroup, $implicit: { the same four } }` | डेस्कटॉप के दोनों तीर बदल देता है |
+| `rkStoriesProgressBar` | `RkStoriesProgressBarDirective` | `{ $implicit: group, group, totalStories, activeIndex, progress, groupIndex, isActive }` | canvas प्रोग्रेस बार को बदलता है। `activeIndex` और `progress` कोर सिग्नल हैं — उन्हें `toAngularSignal` से जोड़ें। |
+| `rkStoriesSlide` | `RkStoriesSlideDirective` | `{ $implicit: story, story, index, groupIndex, isActive, size, activeGroupIndex, activeStoryIndex, onDurationReady, onReady, onWaiting, onError, onEnded }` | डिफ़ॉल्ट इमेज और वीडियो स्लाइड बदलता है |
 
 <CodeBlock code={templateSlots} language="typescript" />
 

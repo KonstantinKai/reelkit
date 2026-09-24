@@ -89,20 +89,22 @@ export class FeedComponent {
 
 ## Template Slots
 
-Each directive receives a typed context, with the most useful value as the
-implicit one. A slot left out keeps the built-in rendering, and
-`STORIES_TEMPLATE_SLOT_DIRECTIVES` exports all eight as one array.
+Each directive receives a typed context in which every value is named, by the
+names the React and Vue slots use (`let-author="author"`); the main value is
+the implicit one as well (`let-author`). A slot left out keeps the built-in
+rendering, and `STORIES_TEMPLATE_SLOT_DIRECTIVES` exports all eight as one
+array.
 
-| Directive               | Context                                                                                                                                                                                      | Description                                       |
-| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
-| `rkStoriesSlide`        | `StoriesSlideContext`: `$implicit` story, `index`, `groupIndex`, `isActive`, `size`, `activeGroupIndex`, `activeStoryIndex`, `onDurationReady`, `onReady`, `onWaiting`, `onError`, `onEnded` | Custom slide renderer, replacing image and video  |
-| `rkStoriesHeader`       | `StoriesHeaderContext`: `$implicit` author, `story`, `storyIndex`, `isPaused`, `isMuted`, `isVideo`, `groupIndex`, `isActive`, `onToggleSound`, `onTogglePause`, `onClose`                   | Author row, pause, sound and close controls       |
-| `rkStoriesFooter`       | `StoriesFooterContext`: `$implicit` story, `author`, `storyIndex`                                                                                                                            | Added below the story; there is no default footer |
-| `rkStoriesProgressBar`  | `StoriesProgressBarContext`: `$implicit` group, `totalStories`, `activeIndex`, `progress`, `groupIndex`, `isActive`                                                                          | Replaces the canvas progress bar                  |
-| `rkStoriesNavigation`   | `StoriesNavigationContext`: `$implicit` `{ onPrevStory, onNextStory, onPrevGroup, onNextGroup }`                                                                                             | Replaces both desktop arrows                      |
-| `rkStoriesGroupPreview` | `StoriesGroupPreviewContext`: `$implicit` group, `groupIndex`, `story`, `offset`, `viewedCount`, `onOpen`                                                                                    | Fills a desktop carousel card                     |
-| `rkStoriesLoading`      | `StoriesLoadingContext`: `$implicit` story, `storyIndex`, `groupIndex`                                                                                                                       | Replaces the spinner shown while a story loads    |
-| `rkStoriesError`        | `StoriesErrorContext`: `$implicit` story, `storyIndex`, `groupIndex`                                                                                                                         | Replaces the "Content unavailable" panel          |
+| Directive               | Context                                                                                                                                                                                            | Description                                       |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| `rkStoriesSlide`        | `StoriesSlideContext`: `$implicit` and `story`, `index`, `groupIndex`, `isActive`, `size`, `activeGroupIndex`, `activeStoryIndex`, `onDurationReady`, `onReady`, `onWaiting`, `onError`, `onEnded` | Custom slide renderer, replacing image and video  |
+| `rkStoriesHeader`       | `StoriesHeaderContext`: `$implicit` and `author`, `story`, `storyIndex`, `isPaused`, `isMuted`, `isVideo`, `groupIndex`, `isActive`, `onToggleSound`, `onTogglePause`, `onClose`                   | Author row, pause, sound and close controls       |
+| `rkStoriesFooter`       | `StoriesFooterContext`: `$implicit` and `story`, `author`, `storyIndex`                                                                                                                            | Added below the story; there is no default footer |
+| `rkStoriesProgressBar`  | `StoriesProgressBarContext`: `$implicit` and `group`, `totalStories`, `activeIndex`, `progress`, `groupIndex`, `isActive`                                                                          | Replaces the canvas progress bar                  |
+| `rkStoriesNavigation`   | `StoriesNavigationContext`: `onPrevStory`, `onNextStory`, `onPrevGroup`, `onNextGroup`, and the same four grouped as `$implicit`                                                                   | Replaces both desktop arrows                      |
+| `rkStoriesGroupPreview` | `StoriesGroupPreviewContext`: `$implicit` and `group`, `groupIndex`, `story`, `offset`, `viewedCount`, `onOpen`                                                                                    | Fills a desktop carousel card                     |
+| `rkStoriesLoading`      | `StoriesLoadingContext`: `$implicit` and `story`, `storyIndex`, `groupIndex`                                                                                                                       | Replaces the spinner shown while a story loads    |
+| `rkStoriesError`        | `StoriesErrorContext`: `$implicit` and `story`, `storyIndex`, `groupIndex`                                                                                                                         | Replaces the "Content unavailable" panel          |
 
 Slots render through the player's own injector, so a component drawn inside one
 resolves the player's providers — an `rk-video-story-slide` in a slide template

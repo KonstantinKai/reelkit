@@ -203,18 +203,18 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 
 ## Шаблонні слоти [#template-slots]
 
-Вісім директив `ng-template` замінюють будь-яку частину плеєра. Кожна отримує типізований контекст, де найкорисніше значення є неявним — `let-author` бере автора у слоті заголовка, не називаючи його. Слот, який ви не надали, лишає типове відображення.
+Вісім директив `ng-template` замінюють будь-яку частину плеєра. Кожна отримує типізований контекст, де кожне значення має ім'я — те саме, що в слотах React і Vue, — тож `let-author="author"` бере автора у слоті заголовка. Головне значення також є неявним, тож і сам `let-author` робить те саме. Слот, який ви не надали, лишає типове відображення.
 
 | Директива | Клас | Контекст | Опис |
 | --- | --- | --- | --- |
-| `rkStoriesError` | `RkStoriesErrorDirective` | `{ $implicit: story, storyIndex, groupIndex }` | Замінює вбудовану панель "Content unavailable", намальовану над активною сторіс |
-| `rkStoriesFooter` | `RkStoriesFooterDirective` | `{ $implicit: story, author, storyIndex }` | Додає підвал під активною сторіс; плеєр власного не малює |
-| `rkStoriesGroupPreview` | `RkStoriesGroupPreviewDirective` | `{ $implicit: group, groupIndex, story, offset, viewedCount, onOpen }` | Заповнює картку каруселі на десктопі; плеєр і далі розміщує, масштабує та рухає її |
-| `rkStoriesHeader` | `RkStoriesHeaderDirective` | `{ $implicit: author, story, storyIndex, isPaused, isMuted, isVideo, groupIndex, isActive, onToggleSound, onTogglePause, onClose }` | Замінює типовий заголовок (автор, пауза, звук, закриття). З `chromePlacement="group"` він лежить в області свайпу; див. [Смуга прогресу й заголовок у кожній групі](/docs/angular-stories-player#chrome-placement). |
-| `rkStoriesLoading` | `RkStoriesLoadingDirective` | `{ $implicit: story, storyIndex, groupIndex }` | Замінює типовий індикатор завантаження в заголовку, поки активна сторіс вантажиться |
-| `rkStoriesNavigation` | `RkStoriesNavigationDirective` | `{ $implicit: { onPrevStory, onNextStory, onPrevGroup, onNextGroup } }` | Замінює обидві десктопні стрілки |
-| `rkStoriesProgressBar` | `RkStoriesProgressBarDirective` | `{ $implicit: group, totalStories, activeIndex, progress, groupIndex, isActive }` | Замінює смугу прогресу на canvas. `activeIndex` і `progress` — сигнали ядра, підключіть їх через `toAngularSignal`. |
-| `rkStoriesSlide` | `RkStoriesSlideDirective` | `{ $implicit: story, index, groupIndex, isActive, size, activeGroupIndex, activeStoryIndex, onDurationReady, onReady, onWaiting, onError, onEnded }` | Замінює типові слайди зображення та відео |
+| `rkStoriesError` | `RkStoriesErrorDirective` | `{ $implicit: story, story, storyIndex, groupIndex }` | Замінює вбудовану панель "Content unavailable", намальовану над активною сторіс |
+| `rkStoriesFooter` | `RkStoriesFooterDirective` | `{ $implicit: story, story, author, storyIndex }` | Додає підвал під активною сторіс; плеєр власного не малює |
+| `rkStoriesGroupPreview` | `RkStoriesGroupPreviewDirective` | `{ $implicit: group, group, groupIndex, story, offset, viewedCount, onOpen }` | Заповнює картку каруселі на десктопі; плеєр і далі розміщує, масштабує та рухає її |
+| `rkStoriesHeader` | `RkStoriesHeaderDirective` | `{ $implicit: author, author, story, storyIndex, isPaused, isMuted, isVideo, groupIndex, isActive, onToggleSound, onTogglePause, onClose }` | Замінює типовий заголовок (автор, пауза, звук, закриття). З `chromePlacement="group"` він лежить в області свайпу; див. [Смуга прогресу й заголовок у кожній групі](/docs/angular-stories-player#chrome-placement). |
+| `rkStoriesLoading` | `RkStoriesLoadingDirective` | `{ $implicit: story, story, storyIndex, groupIndex }` | Замінює типовий індикатор завантаження в заголовку, поки активна сторіс вантажиться |
+| `rkStoriesNavigation` | `RkStoriesNavigationDirective` | `{ onPrevStory, onNextStory, onPrevGroup, onNextGroup, $implicit: { the same four } }` | Замінює обидві десктопні стрілки |
+| `rkStoriesProgressBar` | `RkStoriesProgressBarDirective` | `{ $implicit: group, group, totalStories, activeIndex, progress, groupIndex, isActive }` | Замінює смугу прогресу на canvas. `activeIndex` і `progress` — сигнали ядра, підключіть їх через `toAngularSignal`. |
+| `rkStoriesSlide` | `RkStoriesSlideDirective` | `{ $implicit: story, story, index, groupIndex, isActive, size, activeGroupIndex, activeStoryIndex, onDurationReady, onReady, onWaiting, onError, onEnded }` | Замінює типові слайди зображення та відео |
 
 <CodeBlock code={templateSlots} language="typescript" />
 

@@ -336,6 +336,7 @@ export class RkStoriesCarouselComponent<T extends StoryItem = StoryItem> {
   protected previewContext(card: CardView<T>): StoriesGroupPreviewContext<T> {
     return {
       $implicit: card.group,
+      group: card.group,
       groupIndex: card.groupIndex,
       story: card.story,
       offset: card.offset,

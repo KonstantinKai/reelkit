@@ -957,8 +957,10 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
       ? this.activeStoryIndex()
       : this.storiesCtrl.getLastStoryIndex(groupIndex);
     const story = this.storiesOf(groupIndex)[storyIndex];
+    const author = this.groups()[groupIndex].author;
     return {
-      $implicit: this.groups()[groupIndex].author,
+      $implicit: author,
+      author,
       story: story as T,
       storyIndex,
       isPaused: isActive && this.isPaused(),
@@ -973,8 +975,10 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
   }
 
   protected footerContext(groupIndex: number): StoriesFooterContext<T> {
+    const story = this.activeStoryOf(groupIndex) as T;
     return {
-      $implicit: this.activeStoryOf(groupIndex) as T,
+      $implicit: story,
+      story,
       author: this.groups()[groupIndex].author,
       storyIndex: this.activeStoryIndex(),
     };
@@ -985,8 +989,10 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
   ): StoriesProgressBarContext<T> {
     const isActive = groupIndex === this.activeGroupIndex();
     const still = isActive ? null : this._stillSignalsFor(groupIndex);
+    const group = this.groups()[groupIndex];
     return {
-      $implicit: this.groups()[groupIndex],
+      $implicit: group,
+      group,
       totalStories: this.storiesOf(groupIndex).length,
       activeIndex:
         still?.activeIndex ?? this.storiesCtrl.state.activeStoryIndex,
@@ -1026,19 +1032,20 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
   }
 
   protected navigationContext(): StoriesNavigationContext {
-    return {
-      $implicit: {
-        onPrevStory: () => this.storiesCtrl.prevStory(),
-        onNextStory: () => this.storiesCtrl.nextStory(),
-        onPrevGroup: () => this.storiesCtrl.prevGroup(),
-        onNextGroup: () => this.storiesCtrl.nextGroup(),
-      },
+    const moves = {
+      onPrevStory: () => this.storiesCtrl.prevStory(),
+      onNextStory: () => this.storiesCtrl.nextStory(),
+      onPrevGroup: () => this.storiesCtrl.prevGroup(),
+      onNextGroup: () => this.storiesCtrl.nextGroup(),
     };
+    return { $implicit: moves, ...moves };
   }
 
   protected statusContext(groupIndex: number): StoriesLoadingContext<T> {
+    const story = this.activeStoryOf(groupIndex) as T;
     return {
-      $implicit: this.activeStoryOf(groupIndex) as T,
+      $implicit: story,
+      story,
       storyIndex: this.activeStoryIndex(),
       groupIndex,
     };
@@ -1048,8 +1055,10 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
     groupIndex: number,
     storyIndex: number,
   ): StoriesSlideContext<T> {
+    const story = this.storiesOf(groupIndex)[storyIndex] as T;
     return {
-      $implicit: this.storiesOf(groupIndex)[storyIndex] as T,
+      $implicit: story,
+      story,
       index: storyIndex,
       groupIndex,
       isActive:

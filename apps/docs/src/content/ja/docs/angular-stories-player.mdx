@@ -203,18 +203,18 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 
 ## テンプレートスロット [#template-slots]
 
-8 つの `ng-template` ディレクティブがプレイヤーのどの部分でも差し替えます。それぞれ型付きのコンテキストを受け取り、いちばん使う値が暗黙値になります。たとえばヘッダースロットでは `let-author` だけで著者を受け取れます。渡さなかったスロットは既定の表示のままです。
+8 つの `ng-template` ディレクティブがプレイヤーのどの部分でも差し替えます。それぞれ型付きのコンテキストを受け取り、すべての値に React と Vue のスロットと同じ名前が付いています。たとえばヘッダースロットでは `let-author="author"` で著者を受け取れます。主な値は暗黙値でもあるので、`let-author` だけでも同じです。渡さなかったスロットは既定の表示のままです。
 
 | ディレクティブ | クラス | コンテキスト | 説明 |
 | --- | --- | --- | --- |
-| `rkStoriesError` | `RkStoriesErrorDirective` | `{ $implicit: story, storyIndex, groupIndex }` | 組み込みの "Content unavailable" パネルを差し替えます。表示中のストーリーの上に描かれます |
-| `rkStoriesFooter` | `RkStoriesFooterDirective` | `{ $implicit: story, author, storyIndex }` | 表示中のストーリーの下にフッターを追加します。プレイヤー自身はフッターを描きません |
-| `rkStoriesGroupPreview` | `RkStoriesGroupPreviewDirective` | `{ $implicit: group, groupIndex, story, offset, viewedCount, onOpen }` | デスクトップのカルーセルカードの中身を差し替えます。配置・拡大縮小・スライドはプレイヤーが引き続き行います |
-| `rkStoriesHeader` | `RkStoriesHeaderDirective` | `{ $implicit: author, story, storyIndex, isPaused, isMuted, isVideo, groupIndex, isActive, onToggleSound, onTogglePause, onClose }` | 既定のヘッダー（著者、一時停止、サウンド、閉じる）を差し替えます。`chromePlacement="group"` ではスワイプ領域の中に入ります。[グループごとのプログレスバーとヘッダー](/docs/angular-stories-player#chrome-placement)を参照してください。 |
-| `rkStoriesLoading` | `RkStoriesLoadingDirective` | `{ $implicit: story, storyIndex, groupIndex }` | 表示中のストーリーの読み込み中に出る、既定のヘッダーのスピナーを差し替えます |
-| `rkStoriesNavigation` | `RkStoriesNavigationDirective` | `{ $implicit: { onPrevStory, onNextStory, onPrevGroup, onNextGroup } }` | デスクトップの矢印を両方とも差し替えます |
-| `rkStoriesProgressBar` | `RkStoriesProgressBarDirective` | `{ $implicit: group, totalStories, activeIndex, progress, groupIndex, isActive }` | canvas のプログレスバーを差し替えます。`activeIndex` と `progress` はコアのシグナルなので、`toAngularSignal` で橋渡ししてください。 |
-| `rkStoriesSlide` | `RkStoriesSlideDirective` | `{ $implicit: story, index, groupIndex, isActive, size, activeGroupIndex, activeStoryIndex, onDurationReady, onReady, onWaiting, onError, onEnded }` | 既定の画像スライドと動画スライドを差し替えます |
+| `rkStoriesError` | `RkStoriesErrorDirective` | `{ $implicit: story, story, storyIndex, groupIndex }` | 組み込みの "Content unavailable" パネルを差し替えます。表示中のストーリーの上に描かれます |
+| `rkStoriesFooter` | `RkStoriesFooterDirective` | `{ $implicit: story, story, author, storyIndex }` | 表示中のストーリーの下にフッターを追加します。プレイヤー自身はフッターを描きません |
+| `rkStoriesGroupPreview` | `RkStoriesGroupPreviewDirective` | `{ $implicit: group, group, groupIndex, story, offset, viewedCount, onOpen }` | デスクトップのカルーセルカードの中身を差し替えます。配置・拡大縮小・スライドはプレイヤーが引き続き行います |
+| `rkStoriesHeader` | `RkStoriesHeaderDirective` | `{ $implicit: author, author, story, storyIndex, isPaused, isMuted, isVideo, groupIndex, isActive, onToggleSound, onTogglePause, onClose }` | 既定のヘッダー（著者、一時停止、サウンド、閉じる）を差し替えます。`chromePlacement="group"` ではスワイプ領域の中に入ります。[グループごとのプログレスバーとヘッダー](/docs/angular-stories-player#chrome-placement)を参照してください。 |
+| `rkStoriesLoading` | `RkStoriesLoadingDirective` | `{ $implicit: story, story, storyIndex, groupIndex }` | 表示中のストーリーの読み込み中に出る、既定のヘッダーのスピナーを差し替えます |
+| `rkStoriesNavigation` | `RkStoriesNavigationDirective` | `{ onPrevStory, onNextStory, onPrevGroup, onNextGroup, $implicit: { the same four } }` | デスクトップの矢印を両方とも差し替えます |
+| `rkStoriesProgressBar` | `RkStoriesProgressBarDirective` | `{ $implicit: group, group, totalStories, activeIndex, progress, groupIndex, isActive }` | canvas のプログレスバーを差し替えます。`activeIndex` と `progress` はコアのシグナルなので、`toAngularSignal` で橋渡ししてください。 |
+| `rkStoriesSlide` | `RkStoriesSlideDirective` | `{ $implicit: story, story, index, groupIndex, isActive, size, activeGroupIndex, activeStoryIndex, onDurationReady, onReady, onWaiting, onError, onEnded }` | 既定の画像スライドと動画スライドを差し替えます |
 
 <CodeBlock code={templateSlots} language="typescript" />
 

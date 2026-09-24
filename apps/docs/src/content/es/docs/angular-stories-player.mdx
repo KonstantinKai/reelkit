@@ -203,18 +203,18 @@ Por defecto, una barra de progreso y una cabecera quedan encima del reproductor 
 
 ## Slots de plantilla [#template-slots]
 
-Ocho directivas `ng-template` sustituyen cualquier parte del player. Cada una recibe un contexto tipado, con el valor más útil como implícito: `let-author` toma el autor en el slot de cabecera sin nombrarlo. Un slot que no proporciones mantiene la presentación por defecto.
+Ocho directivas `ng-template` sustituyen cualquier parte del player. Cada una recibe un contexto tipado en el que todo valor tiene nombre, los mismos que usan los slots de React y Vue, así que `let-author="author"` toma el autor en el slot de cabecera. El valor principal también es el implícito, así que `let-author` solo hace lo mismo. Un slot que no proporciones mantiene la presentación por defecto.
 
 | Directiva | Clase | Contexto | Descripción |
 | --- | --- | --- | --- |
-| `rkStoriesError` | `RkStoriesErrorDirective` | `{ $implicit: story, storyIndex, groupIndex }` | Sustituye el panel "Content unavailable" integrado, dibujado sobre la story activa |
-| `rkStoriesFooter` | `RkStoriesFooterDirective` | `{ $implicit: story, author, storyIndex }` | Añade un pie bajo la story activa; el player no dibuja ninguno propio |
-| `rkStoriesGroupPreview` | `RkStoriesGroupPreviewDirective` | `{ $implicit: group, groupIndex, story, offset, viewedCount, onOpen }` | Rellena una tarjeta del carrusel de escritorio; el player sigue colocándola, escalándola y deslizándola |
-| `rkStoriesHeader` | `RkStoriesHeaderDirective` | `{ $implicit: author, story, storyIndex, isPaused, isMuted, isVideo, groupIndex, isActive, onToggleSound, onTogglePause, onClose }` | Sustituye la cabecera por defecto (autor, pausa, sonido, cerrar). Con `chromePlacement="group"` está en la zona de deslizamiento; consulta [Barra de progreso y cabecera en cada grupo](/docs/angular-stories-player#chrome-placement). |
-| `rkStoriesLoading` | `RkStoriesLoadingDirective` | `{ $implicit: story, storyIndex, groupIndex }` | Sustituye el indicador de carga de la cabecera mientras la story activa carga |
-| `rkStoriesNavigation` | `RkStoriesNavigationDirective` | `{ $implicit: { onPrevStory, onNextStory, onPrevGroup, onNextGroup } }` | Sustituye ambas flechas de escritorio |
-| `rkStoriesProgressBar` | `RkStoriesProgressBarDirective` | `{ $implicit: group, totalStories, activeIndex, progress, groupIndex, isActive }` | Sustituye la barra de progreso en canvas. `activeIndex` y `progress` son señales del core: conéctalas con `toAngularSignal`. |
-| `rkStoriesSlide` | `RkStoriesSlideDirective` | `{ $implicit: story, index, groupIndex, isActive, size, activeGroupIndex, activeStoryIndex, onDurationReady, onReady, onWaiting, onError, onEnded }` | Sustituye las slides de imagen y vídeo por defecto |
+| `rkStoriesError` | `RkStoriesErrorDirective` | `{ $implicit: story, story, storyIndex, groupIndex }` | Sustituye el panel "Content unavailable" integrado, dibujado sobre la story activa |
+| `rkStoriesFooter` | `RkStoriesFooterDirective` | `{ $implicit: story, story, author, storyIndex }` | Añade un pie bajo la story activa; el player no dibuja ninguno propio |
+| `rkStoriesGroupPreview` | `RkStoriesGroupPreviewDirective` | `{ $implicit: group, group, groupIndex, story, offset, viewedCount, onOpen }` | Rellena una tarjeta del carrusel de escritorio; el player sigue colocándola, escalándola y deslizándola |
+| `rkStoriesHeader` | `RkStoriesHeaderDirective` | `{ $implicit: author, author, story, storyIndex, isPaused, isMuted, isVideo, groupIndex, isActive, onToggleSound, onTogglePause, onClose }` | Sustituye la cabecera por defecto (autor, pausa, sonido, cerrar). Con `chromePlacement="group"` está en la zona de deslizamiento; consulta [Barra de progreso y cabecera en cada grupo](/docs/angular-stories-player#chrome-placement). |
+| `rkStoriesLoading` | `RkStoriesLoadingDirective` | `{ $implicit: story, story, storyIndex, groupIndex }` | Sustituye el indicador de carga de la cabecera mientras la story activa carga |
+| `rkStoriesNavigation` | `RkStoriesNavigationDirective` | `{ onPrevStory, onNextStory, onPrevGroup, onNextGroup, $implicit: { the same four } }` | Sustituye ambas flechas de escritorio |
+| `rkStoriesProgressBar` | `RkStoriesProgressBarDirective` | `{ $implicit: group, group, totalStories, activeIndex, progress, groupIndex, isActive }` | Sustituye la barra de progreso en canvas. `activeIndex` y `progress` son señales del core: conéctalas con `toAngularSignal`. |
+| `rkStoriesSlide` | `RkStoriesSlideDirective` | `{ $implicit: story, story, index, groupIndex, isActive, size, activeGroupIndex, activeStoryIndex, onDurationReady, onReady, onWaiting, onError, onEnded }` | Sustituye las slides de imagen y vídeo por defecto |
 
 <CodeBlock code={templateSlots} language="typescript" />
 

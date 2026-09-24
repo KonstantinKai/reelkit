@@ -839,6 +839,64 @@ describe('RkStoriesOverlayComponent', () => {
       }
     });
 
+    // The react and vue slots name every value they hand over. The implicit
+    // value stays too, for templates already written against it.
+    it('names the main value of each slot beside the implicit one', () => {
+      const overlay = contentOf(createHost()) as unknown as Record<
+        string,
+        (...indexes: number[]) => Record<string, unknown>
+      >;
+
+      const header = overlay['headerContext'](0);
+      expect(header['author']).toBe(GROUPS[0].author);
+      expect(header['$implicit']).toBe(GROUPS[0].author);
+
+      const footer = overlay['footerContext'](0);
+      expect(footer['story']).toBe(GROUPS[0].stories[0]);
+      expect(footer['$implicit']).toBe(GROUPS[0].stories[0]);
+
+      const slide = overlay['slideContext'](0, 1);
+      expect(slide['story']).toBe(GROUPS[0].stories[1]);
+      expect(slide['$implicit']).toBe(GROUPS[0].stories[1]);
+
+      const bar = overlay['progressBarContext'](0);
+      expect(bar['group']).toBe(GROUPS[0]);
+      expect(bar['$implicit']).toBe(GROUPS[0]);
+
+      const status = overlay['statusContext'](0);
+      expect(status['story']).toBe(GROUPS[0].stories[0]);
+      expect(status['$implicit']).toBe(GROUPS[0].stories[0]);
+    });
+
+    it('hands navigation its moves flat as well as grouped', () => {
+      const fixture = createHost();
+      const context = (
+        contentOf(fixture) as unknown as {
+          navigationContext: () => {
+            $implicit: { onNextStory: () => void };
+            onNextStory: () => void;
+            onPrevStory: () => void;
+            onPrevGroup: () => void;
+            onNextGroup: () => void;
+          };
+        }
+      ).navigationContext();
+
+      expect(typeof context.$implicit.onNextStory).toBe('function');
+      context.onNextStory();
+
+      expect(
+        internalsOf(fixture).storiesCtrl.state.activeStoryIndex.value,
+      ).toBe(1);
+      for (const move of [
+        context.onPrevStory,
+        context.onPrevGroup,
+        context.onNextGroup,
+      ]) {
+        expect(typeof move).toBe('function');
+      }
+    });
+
     it('gives a progress bar template the signals the canvas bar takes', () => {
       const overlay = contentOf(createHost()) as unknown as {
         progressBarContext: (groupIndex: number) => {

@@ -280,6 +280,19 @@ describe('RkStoriesCarouselComponent', () => {
   // around, and it is the same number in react and vue. Reading it off the
   // rendered element rather than the constant: a card draws the ring through
   // `getRingPresentation`, so only the element says what the viewer sees.
+  // The react and vue previews name the group; the implicit value stays for
+  // templates already written against it.
+  it('names the group a preview template receives', () => {
+    const carousel = createCarousel().componentInstance as unknown as {
+      cards: () => unknown[];
+      previewContext: (card: unknown) => Record<string, unknown>;
+    };
+    const context = carousel.previewContext(carousel.cards()[0]);
+
+    expect(context['group']).toBe(context['$implicit']);
+    expect(context['group']).toBeDefined();
+  });
+
   // The viewed controller hands over a plain subscribable, the same shape the
   // react and vue carousels take, not necessarily a core signal.
   it('draws rings from any subscribable viewed state', () => {
