@@ -13,7 +13,7 @@
 
 Full-screen image and video gallery lightbox for Vue 3. Horizontal swipe navigation, fullscreen toggle, opt-in video support, and four built-in transitions. ~4.1 kB gzip.
 
-**[Live Demo](https://vue-demo.reelkit.dev/lightbox?utm_source=npm)**
+**[Live Demo](https://vue-demo.reelkit.dev/image-preview?utm_source=npm)**
 
 ## Installation
 
