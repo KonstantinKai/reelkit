@@ -1,3 +1,115 @@
+## @reelkit/angular-reel-player@0.6.1 (2026-09-24)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/angular to 0.8.0
+
+## @reelkit/react-stories-player@0.6.0 (2026-09-24)
+
+### 🚀 Features
+
+- New chromePlacement option: set it to 'group' and every group carries its own progress bar and header, which turn with the group the way they do on Instagram, while the default 'overlay' keeps one copy above the player
+- renderProgressBar and renderHeader now receive groupIndex and isActive, so a custom bar or header can tell a neighbouring group from the one playing
+- CanvasProgressBar takes live={false} to draw a still bar that repaints only when its signals change or it resizes, with no animation loop
+- useAttachViewedState is exported, for a page that mounts the player only once it opens and so has to read the viewed store itself
+- The props type of every sub-component is exported: CanvasProgressBarProps, StoryHeaderProps, ImageStorySlideProps, VideoStorySlideProps, StoriesRingProps, StoriesRingListProps and HeartAnimationProps
+- OverlayUrlStateOptions is re-exported beside useOverlayUrlState
+
+### 🩹 Fixes
+
+- A duration set on a video story now wins over the one the video reports
+- Story rings open from the keyboard with Enter or Space, the way a button does
+
+### ⚠️  Breaking Changes
+
+- The double-tap heart animation's keyframes are renamed from heart-pop to rk-stories-heart-pop, so an app's own heart-pop animation no longer replaces it. A stylesheet that restyled the heart by redefining @keyframes heart-pop, or code that checks for that animation name, must use rk-stories-heart-pop.
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/stories-core to 0.6.0
+
+## @reelkit/vue-stories-player@0.2.0 (2026-09-24)
+
+### 🚀 Features
+
+- New chrome-placement prop: set it to 'group' and every group carries its own progress bar and header, which turn with the group the way they do on Instagram, while the default 'overlay' keeps one copy above the player
+- The #progressBar and #header slot scopes now carry groupIndex and isActive, so a custom bar or header can tell a neighbouring group from the one playing
+- CanvasProgressBar takes :live="false" to draw a still bar that repaints only when its signals change or it resizes
+- useAttachViewedState is exported, for a page that mounts the player only once it opens and so has to read the viewed store itself
+- OverlayUrlStateOptions is re-exported beside useOverlayUrlState
+
+### 🩹 Fixes
+
+- CanvasProgressBar now draws from the signals and story count handed to it after mount, not only the ones it was first given
+- A duration set on a video story now wins over the one the video reports
+- Story rings open from the keyboard with Enter or Space, the way a button does
+
+### ⚠️  Breaking Changes
+
+- The double-tap heart animation's keyframes are renamed from heart-pop to rk-stories-heart-pop, so an app's own heart-pop animation no longer replaces it. A stylesheet that restyled the heart by redefining @keyframes heart-pop, or code that checks for that animation name, must use rk-stories-heart-pop.
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/stories-core to 0.6.0
+
+## @reelkit/angular-stories-player@0.2.0 (2026-09-24)
+
+### 🚀 Features
+
+- New chromePlacement input: set it to 'group' and every group carries its own progress bar and header, which turn with the group the way they do on Instagram, while the default 'overlay' keeps one copy above the player
+- The rkStoriesProgressBar and rkStoriesHeader template contexts now carry groupIndex and isActive, so a custom bar or header can tell a neighbouring group from the one playing
+- rk-canvas-progress-bar takes [live]="false" to draw a still bar that repaints only when its signals change or it resizes
+- Every template slot context names its main value the way the React and Vue slots do (author, story or group, as let-author="author"), beside the implicit value, and the navigation context also carries onPrevStory, onNextStory, onPrevGroup and onNextGroup flat
+- SoundStateService is re-exported, so a page that provides the sound state for a video slide drawn outside the player imports it from the stories package
+
+### 🩹 Fixes
+
+- The canvas progress bar no longer leaves its previous animation loop running when the group it shows changes
+- Closing the player no longer leaves the video story slides listening to the shared video element, so reopening it no longer stacks up their handlers
+- A story that is ready at once no longer starts its timer behind the sliding carousel cards, and a story that fails during the slide is not timed once it ends
+- The carousel cards come after the player's own controls in the keyboard order, as in the React and Vue players
+- Moving to the next story after a pause now plays it, instead of leaving the header showing a pause nobody is holding
+- Closing the player while the carousel cards slide no longer reports the story it was opening as viewed
+- Opening a second carousel card during a slide no longer cuts the second slide short, and a player paused mid-slide stays paused when the slide ends
+- The footer template renders under the playing story only, so a neighbouring group seen mid-turn shows none
+- A video pauses while the viewer drags between users and plays again when the drag ends
+- Opening a user from a carousel card moves keyboard focus into the player instead of leaving it on the page
+- A video story's timer starts on the same media-ready signals as the React and Vue players, and a duration set on the story wins over the one the video reports
+- A carousel card draws its slide-template preview beside the card button rather than inside it, so a slide with buttons or links of its own stays valid markup
+- The desktop carousel's viewedState input accepts any Subscribable, the same shape the React and Vue carousels take, rather than only a core signal
+- The inner story slider no longer carries the rk-stories-stories class, which no stylesheet used and the React and Vue players never emitted
+- The icon-centring rules reach only the lucide-angular icon wrapper, so the error panel's message keeps its own layout
+
+### ⚠️  Breaking Changes
+
+- The double-tap heart animation's keyframes are renamed from heart-pop to rk-stories-heart-pop, so an app's own heart-pop animation no longer replaces it. A stylesheet that restyled the heart by redefining @keyframes heart-pop, or code that checks for that animation name, must use rk-stories-heart-pop.
+- rk-stories-overlay requires isOpen, as the React and Vue players require it; an overlay written without [isOpen] now fails with Angular's required-input error. Bind it, [isOpen]="false" for a player that starts closed.
+- rk-story-header draws its pause and sound buttons only when showPauseButton and showSoundButton are true, the way the React and Vue headers draw them only when given a handler. The player's own header sets both; a header used on its own needs [showPauseButton]="true" and [showSoundButton]="true" to keep them.
+- rk-canvas-progress-bar takes gap, barHeight, minSegmentWidth, bgColor and fillColor as separate inputs, like the React and Vue bars, instead of one config object. Replace [config]="{ barHeight: 3 }" with [barHeight]="3".
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/stories-core to 0.6.0
+- Updated @reelkit/angular to 0.8.0
+
+## @reelkit/angular-lightbox@0.6.1 (2026-09-24)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/angular to 0.8.0
+
+## @reelkit/stories-core@0.6.0 (2026-09-24)
+
+### 🚀 Features
+
+- kStoriesRingSize, kStoriesRingListRingSize and kStoriesCardRingSize export the ring diameters every stories player draws by default (68, 64 and 52 pixels), so a custom ring can match them
+
+## @reelkit/angular@0.8.0 (2026-09-24)
+
+### 🚀 Features
+
+- observeMediaLoading is exported, as it already is from @reelkit/react and @reelkit/vue
+
 ## @reelkit/vue-stories-player@0.1.0 (2026-09-23)
 
 ### 🎉 Initial Release
