@@ -131,7 +131,9 @@ export interface StoriesOverlayProps<T extends StoryItem = StoryItem> {
   tapZoneSplit?: number;
 
   /**
-   * Whether to hide story UI (header, footer) when paused via long press.
+   * Hide the progress bar and header while paused by a long press. A footer
+   * from `renderFooter` stays.
+   *
    * @default true
    */
   hideUIOnPause?: boolean;

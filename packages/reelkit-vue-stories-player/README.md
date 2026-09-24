@@ -98,7 +98,7 @@ const openGroup = (index: number) => {
 | `groupTransition`         | `TransitionTransformFn`        | cube             | Transition between groups                                                                              |
 | `defaultImageDuration`    | `number`                       | `5000`           | Image auto-advance duration (ms)                                                                       |
 | `tapZoneSplit`            | `number`                       | `0.3`            | Left zone ratio (0-1)                                                                                  |
-| `hideUIOnPause`           | `boolean`                      | `true`           | Hide header/progress on hold                                                                           |
+| `hideUiOnPause`           | `boolean`                      | `true`           | Hide the progress bar and header while paused by a long press                                          |
 | `enableKeyboard`          | `boolean`                      | `true`           | Enable keyboard navigation                                                                             |
 | `innerTransitionDuration` | `number`                       | `200`            | Story crossfade duration (ms)                                                                          |
 | `minSegmentWidth`         | `number`                       | `8`              | Min progress segment width (px)                                                                        |

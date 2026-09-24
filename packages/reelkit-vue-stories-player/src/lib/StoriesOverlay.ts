@@ -212,8 +212,8 @@ const storiesSharedProps = {
   tapZoneSplit: { type: Number, default: 0.3 },
 
   /**
-   * Whether to hide the story interface (progress bar, header) while paused
-   * by a long press.
+   * Hide the progress bar and header while paused by a long press. A footer
+   * from the `footer` slot stays.
    *
    * @default true
    */

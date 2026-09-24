@@ -126,7 +126,7 @@ finds the same sound state the header button writes.
 | `defaultImageDuration`    | `number`                         | `5000`             | Auto-advance duration for an image story (ms)                                                 |
 | `minSegmentWidth`         | `number`                         | `8`                | Below this the progress bar scrolls a window of segments (px)                                 |
 | `tapZoneSplit`            | `number`                         | `0.3`              | Tap split (0–1); the left share goes back, the rest forward                                   |
-| `hideUIOnPause`           | `boolean`                        | `true`             | Hide progress bar and header while held paused                                                |
+| `hideUIOnPause`           | `boolean`                        | `true`             | Hide the progress bar and header while paused by a long press                                 |
 | `enableKeyboard`          | `boolean`                        | `true`             | Arrow keys and Escape                                                                         |
 | `desktopLayout`           | `'single' \| 'carousel'`         | `'single'`         | Phones always show the story alone                                                            |
 | `chromePlacement`         | `'overlay' \| 'group'`           | `'overlay'`        | `'group'`: each group carries its own progress bar and header, turning with it like Instagram |

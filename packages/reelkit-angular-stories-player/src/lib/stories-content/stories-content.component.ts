@@ -533,8 +533,8 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
   readonly tapZoneSplit = input(0.3);
 
   /**
-   * Hides the header and footer while a press is held, so the story is
-   * unobstructed.
+   * Hide the progress bar and header while paused by a long press. A footer
+   * from the `rkStoriesFooter` template stays.
    *
    * @default true
    */

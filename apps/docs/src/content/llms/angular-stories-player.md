@@ -257,7 +257,7 @@ From `@reelkit/stories-core`: `createStoriesViewedStateController`, `StoriesView
 - `defaultImageDuration` (number, default `5000`)
 - `minSegmentWidth` (number, default `8`) — below this the progress bar scrolls a window of segments
 - `tapZoneSplit` (number, default `0.3`) — left portion goes back, rest forward
-- `hideUIOnPause` (boolean, default `true`)
+- `hideUIOnPause` (boolean, default `true`) — hide the progress bar and header while paused by a long press
 - `enableKeyboard` (boolean, default `true`)
 - `desktopLayout` (`DesktopLayout` = `'single' | 'carousel'`, default `'single'`) — phones always show the story alone
 - `chromePlacement` (`ChromePlacement` = `'overlay' | 'group'`, default `'overlay'`) — `'group'`: bar + header per group slide, turning with it
