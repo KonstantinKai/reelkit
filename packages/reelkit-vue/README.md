@@ -7,6 +7,10 @@
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
 
+<p>
+  <a href="https://vue-demo.reelkit.dev/?utm_source=npm"><img src="https://raw.githubusercontent.com/KonstantinKai/reelkit/main/assets/slider.gif" width="240" alt="A bare vertical slider of 10,000 items on a phone: two swipes up move the counter from 1 to 3, a swipe sideways pages the slider nested in item 3, typing 5000 and tapping Go jumps straight to item 5,000, and a jump back returns to item 1." /></a>
+</p>
+
 Vue 3 bindings for `@reelkit/core`. Drop in a `<Reel>` component, give it a slide count and an item slot — it handles virtualization, gestures, and keyboard/wheel input. ~5.1 kB gzip.
 
 **[Live Demo](https://vue-demo.reelkit.dev/?utm_source=npm)** · **[Open in StackBlitz](https://stackblitz.com/github/KonstantinKai/reelkit-vue-starter)**
@@ -115,6 +119,10 @@ in a template compiles to a static snapshot that never updates.
 ## Documentation
 
 Guide at **[reelkit.dev/docs/vue/guide](https://reelkit.dev/docs/vue/guide?framework=vue)**, full API reference at **[reelkit.dev/docs/vue/api](https://reelkit.dev/docs/vue/api?framework=vue)**.
+
+## Contributing
+
+Issues and pull requests are welcome. The [contributing guide](https://github.com/KonstantinKai/reelkit/blob/main/CONTRIBUTING.md) covers setting up the workspace, making a change, and what a pull request needs.
 
 ## Support
 

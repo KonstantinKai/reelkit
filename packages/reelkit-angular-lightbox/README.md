@@ -7,6 +7,10 @@
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
 
+<p>
+  <a href="https://angular-demo.reelkit.dev/image-preview?utm_source=npm"><img src="https://raw.githubusercontent.com/KonstantinKai/reelkit/main/assets/lightbox.gif" width="240" alt="An image lightbox on a phone: tapping a gallery thumbnail opens it full screen, two sideways swipes page to the third photo, and a swipe up closes it back to the gallery." /></a>
+</p>
+
 Image gallery lightbox for Angular — opens full-screen with swipe navigation, keyboard controls, and transition effects. Every part of the UI is replaceable via template slots. ~16.4 kB gzip.
 
 **[Live Demo](https://angular-demo.reelkit.dev/image-preview?utm_source=npm)**

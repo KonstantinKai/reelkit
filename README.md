@@ -9,6 +9,19 @@
   Virtualized · Touch-first · Zero dependencies · Framework-agnostic
 </p>
 
+<table align="center">
+  <tr>
+    <th>Reels</th>
+    <th>Stories</th>
+    <th>Lightbox</th>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://react-demo.reelkit.dev/reel-player?utm_source=github"><img src="assets/reel.gif" width="240" alt="A full-screen reel player on a phone: a swipe up moves to a three-photo post, a swipe sideways shows its next photo, and a swipe down returns to the first post." /></a></td>
+    <td align="center"><a href="https://react-demo.reelkit.dev/stories-player?utm_source=github"><img src="assets/stories.gif" width="240" alt="An Instagram-style stories player on a phone: tapping a user's ring opens their stories, a tap moves to the next story, a swipe turns a cube to the next user, a double-tap likes the story with a heart, and closing returns to the rings." /></a></td>
+    <td align="center"><a href="https://react-demo.reelkit.dev/image-preview?utm_source=github"><img src="assets/lightbox.gif" width="240" alt="An image lightbox on a phone: tapping a gallery thumbnail opens it full screen, two sideways swipes page to the third photo, and a swipe up closes it back to the gallery." /></a></td>
+  </tr>
+</table>
+
 <p align="center">
   <a href="https://www.npmjs.com/package/@reelkit/core"><img src="https://img.shields.io/npm/v/@reelkit/core?color=6366f1&label=npm" alt="npm" /></a>
   <img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License" />

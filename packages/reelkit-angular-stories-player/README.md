@@ -7,6 +7,10 @@
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
 
+<p>
+  <a href="https://angular-demo.reelkit.dev/stories-player?utm_source=npm"><img src="https://raw.githubusercontent.com/KonstantinKai/reelkit/main/assets/stories.gif" width="240" alt="An Instagram-style stories player on a phone: tapping a user's ring opens their stories, a tap moves to the next story, a swipe turns a cube to the next user, a double-tap likes the story with a heart, and closing returns to the rings." /></a>
+</p>
+
 Instagram-style stories for Angular. Tap to move through a group, swipe or cube
 between groups, and an auto-advance timer drives the progress bar. Every region
 is replaceable through a template slot. ~34.0 kB gzip.
