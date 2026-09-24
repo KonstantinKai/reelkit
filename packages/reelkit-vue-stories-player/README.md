@@ -2,12 +2,12 @@
 
 <p>
   <a href="https://www.npmjs.com/package/@reelkit/vue-stories-player"><img src="https://img.shields.io/npm/v/@reelkit/vue-stories-player?color=6366f1&label=npm" alt="npm" /></a>
-  <img src="https://img.shields.io/badge/gzip-7.5%20kB-6366f1" alt="Bundle size" />
-  <img src="https://img.shields.io/badge/coverage-87%25-green" alt="Statement coverage" />
+  <img src="https://img.shields.io/badge/gzip-7.9%20kB-6366f1" alt="Bundle size" />
+  <img src="https://img.shields.io/badge/coverage-91%25-brightgreen" alt="Statement coverage" />
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
 
-Instagram-style stories player for Vue 3. Full-screen overlay with tap-to-advance navigation, 3D cube transition between users, auto-advance timer, segmented progress bar, and double-tap heart animation. ~7.5 kB gzip.
+Instagram-style stories player for Vue 3. Full-screen overlay with tap-to-advance navigation, 3D cube transition between users, auto-advance timer, segmented progress bar, and double-tap heart animation. ~7.9 kB gzip.
 
 **[Live Demo](https://vue-demo.reelkit.dev/stories-player?utm_source=npm)**
 

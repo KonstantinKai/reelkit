@@ -2,14 +2,14 @@
 
 <p>
   <a href="https://www.npmjs.com/package/@reelkit/angular-stories-player"><img src="https://img.shields.io/npm/v/@reelkit/angular-stories-player?color=6366f1&label=npm" alt="npm" /></a>
-  <img src="https://img.shields.io/badge/gzip-31.2%20kB-6366f1" alt="Bundle size" />
-  <img src="https://img.shields.io/badge/coverage-77%25-yellow" alt="Statement coverage" />
+  <img src="https://img.shields.io/badge/gzip-34.0%20kB-6366f1" alt="Bundle size" />
+  <img src="https://img.shields.io/badge/coverage-92%25-brightgreen" alt="Statement coverage" />
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
 
 Instagram-style stories for Angular. Tap to move through a group, swipe or cube
 between groups, and an auto-advance timer drives the progress bar. Every region
-is replaceable through a template slot. ~31.2 kB gzip.
+is replaceable through a template slot. ~34.0 kB gzip.
 
 **[Live Demo](https://angular-demo.reelkit.dev/stories-player?utm_source=npm)**
 
