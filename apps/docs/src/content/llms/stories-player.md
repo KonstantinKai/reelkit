@@ -227,7 +227,7 @@ const [viewed] = useState(() =>
 - With `StoriesUrlOverlay` the parameter decides where the player opens, whatever has been stored. Everywhere else the resume callback decides.
 - An entry names the furthest story reached, not a tally: adding a story to a watched group lights its ring again, removing one from the middle shortens the count.
 - Storage is pluggable (`storage: createSessionStorageAdapter()`, or your own `StorageAdapter`); two open tabs stay in step through the browser's storage event.
-- The player reads the store in an effect that runs while it is still closed. A player mounted only when it opens (`{open && <StoriesOverlay … />}`) has no such moment: call `viewed.attach()` yourself in an effect that returns its dispose.
+- The player reads the store in an effect that runs while it is still closed. A player mounted only when it opens (`{open && <StoriesOverlay … />}`) has no such moment: call `useAttachViewedState(viewed)` in the component that owns the controller (attaches on mount, lets go on unmount).
 
 ## Desktop Carousel
 
@@ -463,7 +463,7 @@ Speed: `--rk-stories-heart-duration`. Color, size, or hiding it: target `.rk-sto
 
 ## Sub-Components
 
-Reusable building blocks exported for composition in custom render props.
+Reusable building blocks exported for composition in custom render props. Each one's props type is exported beside it: `CanvasProgressBarProps`, `StoryHeaderProps`, `ImageStorySlideProps`, `VideoStorySlideProps`, `StoriesRingProps`, `StoriesRingListProps`, `HeartAnimationProps`.
 
 | Component           | Description                                                                                                                                                                                                                                                            |
 | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -499,7 +499,7 @@ import {
 
 Everything a consumer needs comes from this package; no direct `@reelkit/core` import is necessary.
 
-- From `@reelkit/react`: `SoundProvider`, `useSoundState`, `useOverlayUrlState`, `createViewedStateController`, `twoAxisViewedTracking`, `createLocalStorageAdapter`, `createSessionStorageAdapter`, `createMemoryStorageAdapter`, `urlIndexTwoAxisKey`, `urlStableIdTwoAxisKey`, `base64UrlCodec`; types `UrlAdapter`, `UrlCodec`, `UrlLocator`, `UrlKey`, `UrlStateController`, `TwoAxisPosition`, `TwoAxisIdentity`, `UrlIndexTwoAxisKeyOptions`, `ViewedStateController`, `ViewedStateOptions`, `StorageAdapter`.
+- From `@reelkit/react`: `SoundProvider`, `useSoundState`, `useOverlayUrlState`, `createViewedStateController`, `twoAxisViewedTracking`, `createLocalStorageAdapter`, `createSessionStorageAdapter`, `createMemoryStorageAdapter`, `urlIndexTwoAxisKey`, `urlStableIdTwoAxisKey`, `base64UrlCodec`; types `UrlAdapter`, `UrlCodec`, `UrlLocator`, `UrlKey`, `UrlStateController`, `TwoAxisPosition`, `TwoAxisIdentity`, `UrlIndexTwoAxisKeyOptions`, `OverlayUrlStateOptions`, `ViewedStateController`, `ViewedStateOptions`, `StorageAdapter`.
 - From `@reelkit/stories-core`: `createStoriesViewedStateController`, `StoriesViewedStateController`, `StoriesViewedStateControllerConfig`; content types `StoryItem`, `AuthorInfo`, `StoriesGroup`, `MediaType`.
 
 Inside the player a `SoundProvider` is already in place. A `VideoStorySlide` or custom slide rendered anywhere else needs one above it, or `useSoundState` throws.

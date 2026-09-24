@@ -208,7 +208,7 @@ styles import करना न भूलें:
 - **लिंक फिर भी ऊपर रहता है।** `StoriesUrlOverlay` के साथ parameter तय करता है कि प्लेयर कहाँ खुले, चाहे जो भी सहेजा गया हो। बाकी हर जगह resume callback तय करता है।
 - **गिनती एक स्थिति है, जोड़ नहीं।** Entry सबसे दूर पहुँची story का नाम है, इसलिए देखे जा चुके ग्रुप में story जोड़ने पर उसकी ring फिर से जल उठती है, और बीच से एक हटाने पर गिनती घट जाती है। वैसे ही जैसे शेयर किया गया लिंक खुद को ठीक कर लेता है।
 - **Storage बदला जा सकता है।** tab बंद होने पर भूलने के लिए `storage: createSessionStorageAdapter()` पास करें, या अपना `StorageAdapter`। दो खुले tabs ब्राउज़र के storage इवेंट से एक-दूसरे के साथ चलते हैं।
-- **सिर्फ़ खुलते समय mount होने वाला player बहुत देर से पढ़ता है।** player store को ऐसे effect में पढ़ता है जो उसके बंद रहते हुए ही चलता है। `{open && <StoriesOverlay … />}` में वह मौका नहीं होता, इसलिए `viewed.attach()` को खुद ऐसे effect में कॉल करें जो अपना dispose लौटाए। विकल्प, और जिन निचले स्तर के हिस्सों से यह बना है, वे [Stories Core](/docs/stories-core#viewed-controller) पेज पर हैं।
+- **सिर्फ़ खुलते समय mount होने वाला player बहुत देर से पढ़ता है।** player store को ऐसे effect में पढ़ता है जो उसके बंद रहते हुए ही चलता है। `{open && <StoriesOverlay … />}` में वह मौका नहीं होता, इसलिए controller रखने वाले component में `useAttachViewedState(viewed)` कॉल करें; यह mount पर जुड़ता है और unmount पर छोड़ देता है। विकल्प, और जिन निचले स्तर के हिस्सों से यह बना है, वे [Stories Core](/docs/stories-core#viewed-controller) पेज पर हैं।
 
 ## डेस्कटॉप कैरोसेल [#desktop-carousel]
 
@@ -401,7 +401,7 @@ imperative नियंत्रण के लिए `apiRef` prop इस्त�
 
 ## सब-कंपोनेंट [#sub-components]
 
-कस्टम render props में जोड़कर इस्तेमाल करने के लिए export किए गए, दोबारा इस्तेमाल होने वाले हिस्से:
+कस्टम render props में जोड़कर इस्तेमाल करने के लिए export किए गए, दोबारा इस्तेमाल होने वाले हिस्से। हर एक का props type भी साथ में export होता है — `CanvasProgressBarProps`, `StoryHeaderProps`, `ImageStorySlideProps`, `VideoStorySlideProps`, `StoriesRingProps`, `StoriesRingListProps` और `HeartAnimationProps` — किसी को लपेटने वाले component के लिए:
 
 ### CanvasProgressBar [#canvasprogressbar]
 
@@ -451,7 +451,7 @@ Instagram जैसी gradient ring वाला गोल avatar। दो स
 
 | कहाँ से | फिर से एक्सपोर्ट |
 | --- | --- |
-| `@reelkit/react` | `SoundProvider`, `useSoundState`, `useOverlayUrlState`, `createViewedStateController`, `twoAxisViewedTracking`, `createLocalStorageAdapter`, `createSessionStorageAdapter`, `createMemoryStorageAdapter`, `urlIndexTwoAxisKey`, `urlStableIdTwoAxisKey`, `base64UrlCodec`, और टाइप `UrlAdapter`, `UrlCodec`, `UrlLocator`, `UrlKey`, `UrlStateController`, `TwoAxisPosition`, `TwoAxisIdentity`, `UrlIndexTwoAxisKeyOptions`, `ViewedStateController`, `ViewedStateOptions`, `StorageAdapter` |
+| `@reelkit/react` | `SoundProvider`, `useSoundState`, `useOverlayUrlState`, `createViewedStateController`, `twoAxisViewedTracking`, `createLocalStorageAdapter`, `createSessionStorageAdapter`, `createMemoryStorageAdapter`, `urlIndexTwoAxisKey`, `urlStableIdTwoAxisKey`, `base64UrlCodec`, और टाइप `UrlAdapter`, `UrlCodec`, `UrlLocator`, `UrlKey`, `UrlStateController`, `TwoAxisPosition`, `TwoAxisIdentity`, `UrlIndexTwoAxisKeyOptions`, `OverlayUrlStateOptions`, `ViewedStateController`, `ViewedStateOptions`, `StorageAdapter` |
 | `@reelkit/stories-core` | `createStoriesViewedStateController`, `StoriesViewedStateController`, `StoriesViewedStateControllerConfig`, और कंटेंट टाइप `StoryItem`, `AuthorInfo`, `StoriesGroup`, `MediaType` |
 
 `SoundProvider` और `useSoundState` वह sound स्टेट रखते हैं जो player अपनी स्लाइडों के साथ साझा करता है। अपना media चलाने वाली कस्टम स्लाइड mute toggle को `useSoundState` से पढ़ती है। Player के अंदर provider पहले से मौजूद है; कहीं और render की गई `VideoStorySlide` या कस्टम स्लाइड के ऊपर `SoundProvider` होना चाहिए, वरना `useSoundState` एरर throw करता है।

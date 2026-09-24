@@ -172,7 +172,7 @@ Rings show a gradient until a group has been watched to the end, and a group reo
 - **A link still wins.** With `StoriesUrlOverlay`, the parameter decides where the player opens, whatever has been stored. Everywhere else the resume callback decides.
 - **A count is a position, not a tally.** An entry names the furthest story reached, so adding a story to a watched group lights its ring again, and removing one from the middle shortens the count.
 - **Storage is pluggable.** Pass `storage: createSessionStorageAdapter()` to forget on tab close, or your own `StorageAdapter`. Two open tabs stay in step through the browser's storage event.
-- **A player mounted only when it opens reads too late.** The overlay reads the store once mounted, while it is still closed. With `v-if="open"` there is no such moment, so call `viewed.attach()` yourself from `onMounted` and call the dispose it returns from `onUnmounted`. The options, and the lower-level pieces this is built from, are on the [Stories Core](/docs/stories-core#viewed-controller) page.
+- **A player mounted only when it opens reads too late.** The overlay reads the store once mounted, while it is still closed. With `v-if="open"` there is no such moment, so call `useAttachViewedState(() => viewed)` in the component that owns the controller; it attaches once mounted and lets go on unmount. The options, and the lower-level pieces this is built from, are on the [Stories Core](/docs/stories-core#viewed-controller) page.
 
 ## Desktop Carousel [#desktop-carousel]
 
@@ -368,7 +368,7 @@ Everything a consumer needs comes from this package, so a direct `@reelkit/core`
 
 | From | Re-exported |
 | --- | --- |
-| `@reelkit/vue` | `Observe`, `SoundProvider`, `useSoundState`, `useOverlayUrlState`, `createViewedStateController`, `twoAxisViewedTracking`, `createLocalStorageAdapter`, `createSessionStorageAdapter`, `createMemoryStorageAdapter`, `urlIndexTwoAxisKey`, `urlStableIdTwoAxisKey`, `base64UrlCodec`, and the types `UrlAdapter`, `UrlCodec`, `UrlLocator`, `UrlKey`, `UrlStateController`, `TwoAxisPosition`, `TwoAxisIdentity`, `UrlIndexTwoAxisKeyOptions`, `ViewedStateController`, `ViewedStateOptions`, `StorageAdapter` |
+| `@reelkit/vue` | `Observe`, `SoundProvider`, `useSoundState`, `useOverlayUrlState`, `createViewedStateController`, `twoAxisViewedTracking`, `createLocalStorageAdapter`, `createSessionStorageAdapter`, `createMemoryStorageAdapter`, `urlIndexTwoAxisKey`, `urlStableIdTwoAxisKey`, `base64UrlCodec`, and the types `UrlAdapter`, `UrlCodec`, `UrlLocator`, `UrlKey`, `UrlStateController`, `TwoAxisPosition`, `TwoAxisIdentity`, `UrlIndexTwoAxisKeyOptions`, `OverlayUrlStateOptions`, `ViewedStateController`, `ViewedStateOptions`, `StorageAdapter` |
 | `@reelkit/stories-core` | `createStoriesViewedStateController`, `StoriesViewedStateController`, `StoriesViewedStateControllerConfig`, and the content types `StoryItem`, `AuthorInfo`, `StoriesGroup`, `MediaType` |
 
 `Observe` is the render boundary the player uses internally: it re-renders only its slot when a core signal changes, which is how a story change repaints the header and the progress bar without redrawing the sliders. Use it in a custom slot when a whole component following the signal through `toVueRef` would be too coarse — see the [Vue API reference](/docs/vue/api#observe).

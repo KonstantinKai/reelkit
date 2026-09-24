@@ -172,7 +172,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 - **リンクのほうが強い。** `StoriesUrlOverlay` では、何が保存されていてもパラメーターが開く位置を決めます。それ以外の場面では再開コールバックが決めます。
 - **カウントは合計ではなく位置です。** 項目は到達した最も先のストーリーを指すので、見終わったグループにストーリーを足せばリングはまた点灯し、途中の 1 つを削ればカウントは縮みます。
 - **ストレージは差し替えられます。** タブを閉じたら忘れるなら `storage: createSessionStorageAdapter()` を、独自の保存先なら自作の `StorageAdapter` を渡してください。開いている 2 つのタブは、ブラウザーの storage イベントで足並みをそろえます。
-- **開くときだけマウントするプレイヤーは読むのが遅すぎます。** オーバーレイは、まだ閉じた状態のマウント後にストレージを読みます。`v-if="open"` ではその瞬間がないので、`onMounted` で自分で `viewed.attach()` を呼び、返ってきた後始末を `onUnmounted` で呼んでください。オプションと、これを組み立てている低レベルの部品は [Stories Core](/docs/stories-core#viewed-controller) のページにあります。
+- **開くときだけマウントするプレイヤーは読むのが遅すぎます。** オーバーレイは、まだ閉じた状態のマウント後にストレージを読みます。`v-if="open"` ではその瞬間がないので、コントローラーを持つコンポーネントで `useAttachViewedState(() => viewed)` を呼んでください。マウント後に接続し、アンマウント時に手放します。オプションと、これを組み立てている低レベルの部品は [Stories Core](/docs/stories-core#viewed-controller) のページにあります。
 
 ## デスクトップのカルーセル [#desktop-carousel]
 
@@ -368,7 +368,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 
 | 取得元 | 再エクスポートされるもの |
 | --- | --- |
-| `@reelkit/vue` | `Observe`、`SoundProvider`、`useSoundState`、`useOverlayUrlState`、`createViewedStateController`、`twoAxisViewedTracking`、`createLocalStorageAdapter`、`createSessionStorageAdapter`、`createMemoryStorageAdapter`、`urlIndexTwoAxisKey`、`urlStableIdTwoAxisKey`、`base64UrlCodec`、および型 `UrlAdapter`、`UrlCodec`、`UrlLocator`、`UrlKey`、`UrlStateController`、`TwoAxisPosition`、`TwoAxisIdentity`、`UrlIndexTwoAxisKeyOptions`、`ViewedStateController`、`ViewedStateOptions`、`StorageAdapter` |
+| `@reelkit/vue` | `Observe`、`SoundProvider`、`useSoundState`、`useOverlayUrlState`、`createViewedStateController`、`twoAxisViewedTracking`、`createLocalStorageAdapter`、`createSessionStorageAdapter`、`createMemoryStorageAdapter`、`urlIndexTwoAxisKey`、`urlStableIdTwoAxisKey`、`base64UrlCodec`、および型 `UrlAdapter`、`UrlCodec`、`UrlLocator`、`UrlKey`、`UrlStateController`、`TwoAxisPosition`、`TwoAxisIdentity`、`UrlIndexTwoAxisKeyOptions`、`OverlayUrlStateOptions`、`ViewedStateController`、`ViewedStateOptions`、`StorageAdapter` |
 | `@reelkit/stories-core` | `createStoriesViewedStateController`、`StoriesViewedStateController`、`StoriesViewedStateControllerConfig`、およびコンテンツの型 `StoryItem`、`AuthorInfo`、`StoriesGroup`、`MediaType` |
 
 `Observe` は、プレイヤーが内部で使っている描画の境界です。core のシグナルが変わったときに自分のスロットだけを描き直すので、ストーリーが変わってもヘッダーとプログレスバーだけが更新され、2 つのスライダーは描き直されません。`toVueRef` でコンポーネント全体がシグナルを追うのでは粗すぎるとき、自作のスロットの中で使ってください。詳しくは [Vue API リファレンス](/docs/vue/api#observe)へ。

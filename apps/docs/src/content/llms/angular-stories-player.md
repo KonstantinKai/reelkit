@@ -239,7 +239,7 @@ Extend `StoryItem`, type the groups as `StoriesGroup<PromoStory>[]`; slide templ
 
 ## Re-exports
 
-From `@reelkit/angular`: `createOverlayUrlState`, `urlIndexTwoAxisKey`, `urlStableIdTwoAxisKey`, `base64UrlCodec`, `createViewedStateController`, `twoAxisViewedTracking`, `createLocalStorageAdapter`, `createSessionStorageAdapter`, `createMemoryStorageAdapter`, plus the URL and viewed-state types.
+From `@reelkit/angular`: `SoundStateService`, `createOverlayUrlState`, `urlIndexTwoAxisKey`, `urlStableIdTwoAxisKey`, `base64UrlCodec`, `createViewedStateController`, `twoAxisViewedTracking`, `createLocalStorageAdapter`, `createSessionStorageAdapter`, `createMemoryStorageAdapter`, plus the URL and viewed-state types.
 
 From `@reelkit/stories-core`: `createStoriesViewedStateController`, `StoriesViewedStateController`, `StoriesViewedStateControllerConfig`, `StoryItem`, `AuthorInfo`, `StoriesGroup`, `MediaType`.
 

@@ -208,7 +208,7 @@ Los anillos muestran un degradado hasta que un grupo se ha visto hasta el final,
 - **Un enlace sigue mandando.** Con `StoriesUrlOverlay`, el parámetro decide dónde se abre el visor, se haya guardado lo que se haya guardado. En los demás casos decide el callback de reanudación.
 - **Una cuenta es una posición, no un recuento.** Una entrada indica la story más lejana a la que se llegó, así que añadir una story a un grupo visto vuelve a encender su anillo, y quitar una del medio acorta la cuenta. Es la misma corrección automática que tiene un enlace compartido.
 - **El almacenamiento es intercambiable.** Pasa `storage: createSessionStorageAdapter()` para olvidarlo al cerrar la pestaña, o tu propio `StorageAdapter`. Dos pestañas abiertas se mantienen sincronizadas con el evento storage del navegador.
-- **Un reproductor que se monta solo al abrirse lee demasiado tarde.** El reproductor lee el almacén en un efecto que se ejecuta mientras aún está cerrado. Con `{open && <StoriesOverlay … />}` ese momento no existe, así que llama tú a `viewed.attach()` en un efecto que devuelva su dispose. Las opciones, y las piezas de más bajo nivel con las que está construido, están en la página de [Stories Core](/docs/stories-core#viewed-controller).
+- **Un reproductor que se monta solo al abrirse lee demasiado tarde.** El reproductor lee el almacén en un efecto que se ejecuta mientras aún está cerrado. Con `{open && <StoriesOverlay … />}` ese momento no existe, así que llama a `useAttachViewedState(viewed)` en el componente dueño del controlador; se conecta al montar y lo suelta al desmontar. Las opciones, y las piezas de más bajo nivel con las que está construido, están en la página de [Stories Core](/docs/stories-core#viewed-controller).
 
 ## Carrusel en escritorio [#desktop-carousel]
 
@@ -401,7 +401,7 @@ Ajusta la velocidad de la animación con el token `--rk-stories-heart-duration` 
 
 ## Subcomponentes [#sub-components]
 
-Piezas reutilizables exportadas para combinarlas en render props propias:
+Piezas reutilizables exportadas para combinarlas en render props propias. El tipo de props de cada una se exporta a su lado — `CanvasProgressBarProps`, `StoryHeaderProps`, `ImageStorySlideProps`, `VideoStorySlideProps`, `StoriesRingProps`, `StoriesRingListProps` y `HeartAnimationProps` — para un componente que envuelva una:
 
 ### CanvasProgressBar [#canvasprogressbar]
 
@@ -451,7 +451,7 @@ Todo lo que necesita quien usa el paquete sale de aquí, así que nunca hace fal
 
 | Desde | Reexportado |
 | --- | --- |
-| `@reelkit/react` | `SoundProvider`, `useSoundState`, `useOverlayUrlState`, `createViewedStateController`, `twoAxisViewedTracking`, `createLocalStorageAdapter`, `createSessionStorageAdapter`, `createMemoryStorageAdapter`, `urlIndexTwoAxisKey`, `urlStableIdTwoAxisKey`, `base64UrlCodec` y los tipos `UrlAdapter`, `UrlCodec`, `UrlLocator`, `UrlKey`, `UrlStateController`, `TwoAxisPosition`, `TwoAxisIdentity`, `UrlIndexTwoAxisKeyOptions`, `ViewedStateController`, `ViewedStateOptions`, `StorageAdapter` |
+| `@reelkit/react` | `SoundProvider`, `useSoundState`, `useOverlayUrlState`, `createViewedStateController`, `twoAxisViewedTracking`, `createLocalStorageAdapter`, `createSessionStorageAdapter`, `createMemoryStorageAdapter`, `urlIndexTwoAxisKey`, `urlStableIdTwoAxisKey`, `base64UrlCodec` y los tipos `UrlAdapter`, `UrlCodec`, `UrlLocator`, `UrlKey`, `UrlStateController`, `TwoAxisPosition`, `TwoAxisIdentity`, `UrlIndexTwoAxisKeyOptions`, `OverlayUrlStateOptions`, `ViewedStateController`, `ViewedStateOptions`, `StorageAdapter` |
 | `@reelkit/stories-core` | `createStoriesViewedStateController`, `StoriesViewedStateController`, `StoriesViewedStateControllerConfig` y los tipos de contenido `StoryItem`, `AuthorInfo`, `StoriesGroup`, `MediaType` |
 
 `SoundProvider` y `useSoundState` llevan el estado del sonido que el reproductor comparte con sus slides. Un slide personalizado que reproduce su propio contenido multimedia lee el botón de silencio con `useSoundState`. Dentro del reproductor ya hay un provider; un `VideoStorySlide` o un slide personalizado que se renderice en cualquier otro sitio necesita un `SoundProvider` por encima, o `useSoundState` lanza un error.

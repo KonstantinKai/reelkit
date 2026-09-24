@@ -53,7 +53,7 @@
     "/docs/stories-player": {
       "source": "content/en/docs/stories-player.mdx",
       "translation": "content/uk/docs/stories-player.mdx",
-      "sha": "09873ecc61083ab03259d87593d2abff300fca76"
+      "sha": "d8188ce8767d4c73b43bfe660cdf7a89283d523e"
     },
     "/docs/vue/guide": {
       "source": "content/en/docs/vue/guide.mdx",
@@ -78,7 +78,7 @@
     "/docs/vue-stories-player": {
       "source": "content/en/docs/vue-stories-player.mdx",
       "translation": "content/uk/docs/vue-stories-player.mdx",
-      "sha": "0f0d3eee96b412e7ba995dd2f2d2c74cc9cfdcb4"
+      "sha": "a5c550041e092655a02e97733c08deef167cf31a"
     },
     "/docs/angular/guide": {
       "source": "content/en/docs/angular/guide.mdx",
@@ -103,7 +103,7 @@
     "/docs/angular-stories-player": {
       "source": "content/en/docs/angular-stories-player.mdx",
       "translation": "content/uk/docs/angular-stories-player.mdx",
-      "sha": "e92c82dbb9ec2bd331a7c5ce964dd536d30cc3cb"
+      "sha": "c5b47d378c8019520231935b8e9e002edfac8f3d"
     },
     "/docs/troubleshooting": {
       "source": "content/en/docs/troubleshooting.mdx",
@@ -180,7 +180,7 @@
     "/docs/stories-player": {
       "source": "content/en/docs/stories-player.mdx",
       "translation": "content/zh/docs/stories-player.mdx",
-      "sha": "09873ecc61083ab03259d87593d2abff300fca76"
+      "sha": "d8188ce8767d4c73b43bfe660cdf7a89283d523e"
     },
     "/docs/vue/guide": {
       "source": "content/en/docs/vue/guide.mdx",
@@ -205,7 +205,7 @@
     "/docs/vue-stories-player": {
       "source": "content/en/docs/vue-stories-player.mdx",
       "translation": "content/zh/docs/vue-stories-player.mdx",
-      "sha": "0f0d3eee96b412e7ba995dd2f2d2c74cc9cfdcb4"
+      "sha": "a5c550041e092655a02e97733c08deef167cf31a"
     },
     "/docs/angular/guide": {
       "source": "content/en/docs/angular/guide.mdx",
@@ -230,7 +230,7 @@
     "/docs/angular-stories-player": {
       "source": "content/en/docs/angular-stories-player.mdx",
       "translation": "content/zh/docs/angular-stories-player.mdx",
-      "sha": "e92c82dbb9ec2bd331a7c5ce964dd536d30cc3cb"
+      "sha": "c5b47d378c8019520231935b8e9e002edfac8f3d"
     },
     "/docs/troubleshooting": {
       "source": "content/en/docs/troubleshooting.mdx",
@@ -307,7 +307,7 @@
     "/docs/stories-player": {
       "source": "content/en/docs/stories-player.mdx",
       "translation": "content/pt/docs/stories-player.mdx",
-      "sha": "09873ecc61083ab03259d87593d2abff300fca76"
+      "sha": "d8188ce8767d4c73b43bfe660cdf7a89283d523e"
     },
     "/docs/vue/guide": {
       "source": "content/en/docs/vue/guide.mdx",
@@ -332,7 +332,7 @@
     "/docs/vue-stories-player": {
       "source": "content/en/docs/vue-stories-player.mdx",
       "translation": "content/pt/docs/vue-stories-player.mdx",
-      "sha": "0f0d3eee96b412e7ba995dd2f2d2c74cc9cfdcb4"
+      "sha": "a5c550041e092655a02e97733c08deef167cf31a"
     },
     "/docs/angular/guide": {
       "source": "content/en/docs/angular/guide.mdx",
@@ -357,7 +357,7 @@
     "/docs/angular-stories-player": {
       "source": "content/en/docs/angular-stories-player.mdx",
       "translation": "content/pt/docs/angular-stories-player.mdx",
-      "sha": "e92c82dbb9ec2bd331a7c5ce964dd536d30cc3cb"
+      "sha": "c5b47d378c8019520231935b8e9e002edfac8f3d"
     },
     "/docs/troubleshooting": {
       "source": "content/en/docs/troubleshooting.mdx",
@@ -434,7 +434,7 @@
     "/docs/stories-player": {
       "source": "content/en/docs/stories-player.mdx",
       "translation": "content/ja/docs/stories-player.mdx",
-      "sha": "09873ecc61083ab03259d87593d2abff300fca76"
+      "sha": "d8188ce8767d4c73b43bfe660cdf7a89283d523e"
     },
     "/docs/vue/guide": {
       "source": "content/en/docs/vue/guide.mdx",
@@ -459,7 +459,7 @@
     "/docs/vue-stories-player": {
       "source": "content/en/docs/vue-stories-player.mdx",
       "translation": "content/ja/docs/vue-stories-player.mdx",
-      "sha": "0f0d3eee96b412e7ba995dd2f2d2c74cc9cfdcb4"
+      "sha": "a5c550041e092655a02e97733c08deef167cf31a"
     },
     "/docs/angular/guide": {
       "source": "content/en/docs/angular/guide.mdx",
@@ -484,7 +484,7 @@
     "/docs/angular-stories-player": {
       "source": "content/en/docs/angular-stories-player.mdx",
       "translation": "content/ja/docs/angular-stories-player.mdx",
-      "sha": "e92c82dbb9ec2bd331a7c5ce964dd536d30cc3cb"
+      "sha": "c5b47d378c8019520231935b8e9e002edfac8f3d"
     },
     "/docs/troubleshooting": {
       "source": "content/en/docs/troubleshooting.mdx",
@@ -561,7 +561,7 @@
     "/docs/stories-player": {
       "source": "content/en/docs/stories-player.mdx",
       "translation": "content/hi/docs/stories-player.mdx",
-      "sha": "09873ecc61083ab03259d87593d2abff300fca76"
+      "sha": "d8188ce8767d4c73b43bfe660cdf7a89283d523e"
     },
     "/docs/vue/guide": {
       "source": "content/en/docs/vue/guide.mdx",
@@ -586,7 +586,7 @@
     "/docs/vue-stories-player": {
       "source": "content/en/docs/vue-stories-player.mdx",
       "translation": "content/hi/docs/vue-stories-player.mdx",
-      "sha": "0f0d3eee96b412e7ba995dd2f2d2c74cc9cfdcb4"
+      "sha": "a5c550041e092655a02e97733c08deef167cf31a"
     },
     "/docs/angular/guide": {
       "source": "content/en/docs/angular/guide.mdx",
@@ -611,7 +611,7 @@
     "/docs/angular-stories-player": {
       "source": "content/en/docs/angular-stories-player.mdx",
       "translation": "content/hi/docs/angular-stories-player.mdx",
-      "sha": "e92c82dbb9ec2bd331a7c5ce964dd536d30cc3cb"
+      "sha": "c5b47d378c8019520231935b8e9e002edfac8f3d"
     },
     "/docs/troubleshooting": {
       "source": "content/en/docs/troubleshooting.mdx",
@@ -688,7 +688,7 @@
     "/docs/stories-player": {
       "source": "content/en/docs/stories-player.mdx",
       "translation": "content/es/docs/stories-player.mdx",
-      "sha": "09873ecc61083ab03259d87593d2abff300fca76"
+      "sha": "d8188ce8767d4c73b43bfe660cdf7a89283d523e"
     },
     "/docs/vue/guide": {
       "source": "content/en/docs/vue/guide.mdx",
@@ -713,7 +713,7 @@
     "/docs/vue-stories-player": {
       "source": "content/en/docs/vue-stories-player.mdx",
       "translation": "content/es/docs/vue-stories-player.mdx",
-      "sha": "0f0d3eee96b412e7ba995dd2f2d2c74cc9cfdcb4"
+      "sha": "a5c550041e092655a02e97733c08deef167cf31a"
     },
     "/docs/angular/guide": {
       "source": "content/en/docs/angular/guide.mdx",
@@ -738,7 +738,7 @@
     "/docs/angular-stories-player": {
       "source": "content/en/docs/angular-stories-player.mdx",
       "translation": "content/es/docs/angular-stories-player.mdx",
-      "sha": "e92c82dbb9ec2bd331a7c5ce964dd536d30cc3cb"
+      "sha": "c5b47d378c8019520231935b8e9e002edfac8f3d"
     },
     "/docs/troubleshooting": {
       "source": "content/en/docs/troubleshooting.mdx",

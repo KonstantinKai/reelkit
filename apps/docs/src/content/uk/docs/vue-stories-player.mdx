@@ -172,7 +172,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 - **Посилання все одно головніше.** У `StoriesUrlOverlay` місце відкриття вирішує параметр, хай що збережено. Всюди інде вирішує колбек відновлення.
 - **Лічильник — це позиція, а не підсумок.** Запис називає найдальшу досягнуту історію, тож нова історія в додивленій групі знову засвічує кільце, а видалена з середини вкорочує лічильник.
 - **Сховище змінне.** Передайте `storage: createSessionStorageAdapter()`, щоб забувати після закриття вкладки, або власний `StorageAdapter`. Дві відкриті вкладки лишаються в такт завдяки події сховища.
-- **Плеєр, змонтований лише на відкриття, читає запізно.** Оверлей читає сховище після монтування, поки ще закритий. З `v-if="open"` такої миті немає, тож самі викличте `viewed.attach()` в `onMounted`, а те, що він повертає, — в `onUnmounted`. Опції та нижчий рівень, з якого це зібрано, описані на сторінці [Stories Core](/docs/stories-core#viewed-controller).
+- **Плеєр, змонтований лише на відкриття, читає запізно.** Оверлей читає сховище після монтування, поки ще закритий. З `v-if="open"` такої миті немає, тож викличте `useAttachViewedState(() => viewed)` у компоненті, який володіє контролером; він під'єднується після монтування й відпускає сховище під час демонтування. Опції та нижчий рівень, з якого це зібрано, описані на сторінці [Stories Core](/docs/stories-core#viewed-controller).
 
 ## Десктопна карусель [#desktop-carousel]
 
@@ -368,7 +368,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 
 | Звідки | Що реекспортовано |
 | --- | --- |
-| `@reelkit/vue` | `Observe`, `SoundProvider`, `useSoundState`, `useOverlayUrlState`, `createViewedStateController`, `twoAxisViewedTracking`, `createLocalStorageAdapter`, `createSessionStorageAdapter`, `createMemoryStorageAdapter`, `urlIndexTwoAxisKey`, `urlStableIdTwoAxisKey`, `base64UrlCodec`, а також типи `UrlAdapter`, `UrlCodec`, `UrlLocator`, `UrlKey`, `UrlStateController`, `TwoAxisPosition`, `TwoAxisIdentity`, `UrlIndexTwoAxisKeyOptions`, `ViewedStateController`, `ViewedStateOptions`, `StorageAdapter` |
+| `@reelkit/vue` | `Observe`, `SoundProvider`, `useSoundState`, `useOverlayUrlState`, `createViewedStateController`, `twoAxisViewedTracking`, `createLocalStorageAdapter`, `createSessionStorageAdapter`, `createMemoryStorageAdapter`, `urlIndexTwoAxisKey`, `urlStableIdTwoAxisKey`, `base64UrlCodec`, а також типи `UrlAdapter`, `UrlCodec`, `UrlLocator`, `UrlKey`, `UrlStateController`, `TwoAxisPosition`, `TwoAxisIdentity`, `UrlIndexTwoAxisKeyOptions`, `OverlayUrlStateOptions`, `ViewedStateController`, `ViewedStateOptions`, `StorageAdapter` |
 | `@reelkit/stories-core` | `createStoriesViewedStateController`, `StoriesViewedStateController`, `StoriesViewedStateControllerConfig`, а також типи вмісту `StoryItem`, `AuthorInfo`, `StoriesGroup`, `MediaType` |
 
 `Observe` — та межа рендеру, якою плеєр користується всередині: вона перемальовує лише свій слот, коли змінюється сигнал ядра, і саме так зміна історії оновлює заголовок і смугу прогресу, не перемальовуючи слайдери. Беріть її у власному слоті, коли цілий компонент, що стежить за сигналом через `toVueRef`, був би заширокою межею — див. [довідник Vue API](/docs/vue/api#observe).

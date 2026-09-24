@@ -208,7 +208,7 @@ The `StoriesOverlay` рендерить повноекранний плеєр і
 - **Посилання все одно переважає.** Зі `StoriesUrlOverlay` параметр вирішує, де відкривається плеєр, що б не було збережено. Скрізь інде вирішує колбек відновлення.
 - **Лічильник — це позиція, а не підрахунок.** Запис називає найдальшу досягнуту історію, тож додавання історії до переглянутої групи знову засвічує її кільце, а вилучення із середини скорочує лічильник. Те саме самовиправлення, яке отримує спільне посилання.
 - **Сховище замінне.** Передайте `storage: createSessionStorageAdapter()`, щоб забувати при закритті вкладки, або власний `StorageAdapter`. Дві відкриті вкладки тримаються в ногу через подію storage браузера.
-- **Плеєр, змонтований лише в момент відкриття, читає запізно.** Плеєр читає сховище в ефекті, який виконується, поки він ще закритий. З `{open && <StoriesOverlay … />}` такого моменту немає, тож викличте `viewed.attach()` самі в ефекті, що повертає свій dispose. Параметри та низькорівневі частини, з яких це зібрано, описано на сторінці [Stories Core](/docs/stories-core#viewed-controller).
+- **Плеєр, змонтований лише в момент відкриття, читає запізно.** Плеєр читає сховище в ефекті, який виконується, поки він ще закритий. З `{open && <StoriesOverlay … />}` такого моменту немає, тож викличте `useAttachViewedState(viewed)` у компоненті, який володіє контролером; він під'єднується під час монтування й відпускає сховище під час демонтування. Параметри та низькорівневі частини, з яких це зібрано, описано на сторінці [Stories Core](/docs/stories-core#viewed-controller).
 
 ## Десктопна карусель [#desktop-carousel]
 
@@ -401,7 +401,7 @@ The `groupTransition` керує 3D-ефектом переходу під ча�
 
 ## Sub-Components [#sub-components]
 
-Повторно використовувані блоки, експортовані для складання власних render props:
+Повторно використовувані блоки, експортовані для складання власних render props. Тип пропсів кожного експортовано поруч із ним — `CanvasProgressBarProps`, `StoryHeaderProps`, `ImageStorySlideProps`, `VideoStorySlideProps`, `StoriesRingProps`, `StoriesRingListProps` і `HeartAnimationProps` — для компонента, що обгортає один із них:
 
 ### CanvasProgressBar [#canvasprogressbar]
 
@@ -451,7 +451,7 @@ The `groupTransition` керує 3D-ефектом переходу під ча�
 
 | Звідки | Що реекспортовано |
 | --- | --- |
-| `@reelkit/react` | `SoundProvider`, `useSoundState`, `useOverlayUrlState`, `createViewedStateController`, `twoAxisViewedTracking`, `createLocalStorageAdapter`, `createSessionStorageAdapter`, `createMemoryStorageAdapter`, `urlIndexTwoAxisKey`, `urlStableIdTwoAxisKey`, `base64UrlCodec`, а також типи `UrlAdapter`, `UrlCodec`, `UrlLocator`, `UrlKey`, `UrlStateController`, `TwoAxisPosition`, `TwoAxisIdentity`, `UrlIndexTwoAxisKeyOptions`, `ViewedStateController`, `ViewedStateOptions`, `StorageAdapter` |
+| `@reelkit/react` | `SoundProvider`, `useSoundState`, `useOverlayUrlState`, `createViewedStateController`, `twoAxisViewedTracking`, `createLocalStorageAdapter`, `createSessionStorageAdapter`, `createMemoryStorageAdapter`, `urlIndexTwoAxisKey`, `urlStableIdTwoAxisKey`, `base64UrlCodec`, а також типи `UrlAdapter`, `UrlCodec`, `UrlLocator`, `UrlKey`, `UrlStateController`, `TwoAxisPosition`, `TwoAxisIdentity`, `UrlIndexTwoAxisKeyOptions`, `OverlayUrlStateOptions`, `ViewedStateController`, `ViewedStateOptions`, `StorageAdapter` |
 | `@reelkit/stories-core` | `createStoriesViewedStateController`, `StoriesViewedStateController`, `StoriesViewedStateControllerConfig`, а також типи вмісту `StoryItem`, `AuthorInfo`, `StoriesGroup`, `MediaType` |
 
 `SoundProvider` і `useSoundState` несуть стан звуку, який плеєр поділяє зі своїми слайдами. Власний слайд, що відтворює власне медіа, читає перемикач звуку через `useSoundState`. Усередині плеєра провайдер уже є; `VideoStorySlide` чи власному слайду, відрендереному деінде, потрібен `SoundProvider` вище за деревом, інакше `useSoundState` кидає помилку.

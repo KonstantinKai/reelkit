@@ -172,7 +172,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 - **लिंक फिर भी भारी पड़ता है।** `StoriesUrlOverlay` में, चाहे जो सहेजा हो, प्लेयर कहाँ खुलेगा यह पैरामीटर तय करता है। बाकी हर जगह यह फ़ैसला रिज़्यूम कॉलबैक करता है।
 - **गिनती स्थिति है, जोड़ नहीं।** प्रविष्टि सबसे दूर तक पहुँची स्टोरी बताती है, इसलिए देखे जा चुके समूह में नई स्टोरी जोड़ने पर उसका रिंग फिर जल उठता है, और बीच से एक हटाने पर गिनती छोटी हो जाती है।
 - **स्टोरेज बदला जा सकता है।** टैब बंद होते ही भूलने के लिए `storage: createSessionStorageAdapter()` दें, या अपना `StorageAdapter`। दो खुले टैब ब्राउज़र की storage इवेंट से एक साथ चलते रहते हैं।
-- **सिर्फ़ खुलने पर माउंट होने वाला प्लेयर बहुत देर से पढ़ता है।** ओवरले माउंट होने के बाद, बंद अवस्था में ही स्टोरेज पढ़ता है। `v-if="open"` में वह क्षण आता ही नहीं, इसलिए `onMounted` में खुद `viewed.attach()` बुलाएँ और जो सफ़ाई फ़ंक्शन मिले उसे `onUnmounted` में। विकल्प और वे निचले स्तर के हिस्से जिनसे यह बना है, [Stories Core](/docs/stories-core#viewed-controller) पेज पर हैं।
+- **सिर्फ़ खुलने पर माउंट होने वाला प्लेयर बहुत देर से पढ़ता है।** ओवरले माउंट होने के बाद, बंद अवस्था में ही स्टोरेज पढ़ता है। `v-if="open"` में वह क्षण आता ही नहीं, इसलिए controller रखने वाले component में `useAttachViewedState(() => viewed)` बुलाएँ; यह माउंट होने के बाद जुड़ता है और अनमाउंट पर छोड़ देता है। विकल्प और वे निचले स्तर के हिस्से जिनसे यह बना है, [Stories Core](/docs/stories-core#viewed-controller) पेज पर हैं।
 
 ## डेस्कटॉप कैरोसेल [#desktop-carousel]
 
@@ -368,7 +368,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 
 | स्रोत | फिर से एक्सपोर्ट किया गया |
 | --- | --- |
-| `@reelkit/vue` | `Observe`, `SoundProvider`, `useSoundState`, `useOverlayUrlState`, `createViewedStateController`, `twoAxisViewedTracking`, `createLocalStorageAdapter`, `createSessionStorageAdapter`, `createMemoryStorageAdapter`, `urlIndexTwoAxisKey`, `urlStableIdTwoAxisKey`, `base64UrlCodec`, तथा टाइप `UrlAdapter`, `UrlCodec`, `UrlLocator`, `UrlKey`, `UrlStateController`, `TwoAxisPosition`, `TwoAxisIdentity`, `UrlIndexTwoAxisKeyOptions`, `ViewedStateController`, `ViewedStateOptions`, `StorageAdapter` |
+| `@reelkit/vue` | `Observe`, `SoundProvider`, `useSoundState`, `useOverlayUrlState`, `createViewedStateController`, `twoAxisViewedTracking`, `createLocalStorageAdapter`, `createSessionStorageAdapter`, `createMemoryStorageAdapter`, `urlIndexTwoAxisKey`, `urlStableIdTwoAxisKey`, `base64UrlCodec`, तथा टाइप `UrlAdapter`, `UrlCodec`, `UrlLocator`, `UrlKey`, `UrlStateController`, `TwoAxisPosition`, `TwoAxisIdentity`, `UrlIndexTwoAxisKeyOptions`, `OverlayUrlStateOptions`, `ViewedStateController`, `ViewedStateOptions`, `StorageAdapter` |
 | `@reelkit/stories-core` | `createStoriesViewedStateController`, `StoriesViewedStateController`, `StoriesViewedStateControllerConfig`, तथा सामग्री के टाइप `StoryItem`, `AuthorInfo`, `StoriesGroup`, `MediaType` |
 
 `Observe` वही रेंडर सीमा है जिसे प्लेयर भीतर इस्तेमाल करता है: core का सिग्नल बदलने पर यह सिर्फ़ अपना स्लॉट दोबारा बनाता है, और इसी तरह स्टोरी बदलने पर हेडर तथा प्रोग्रेस बार ही बदलते हैं, दोनों स्लाइडर नहीं। जब `toVueRef` से पूरा कंपोनेंट सिग्नल का पीछा करना बहुत मोटा पड़े, तब इसे अपने स्लॉट में इस्तेमाल करें — देखें [Vue API संदर्भ](/docs/vue/api#observe)।

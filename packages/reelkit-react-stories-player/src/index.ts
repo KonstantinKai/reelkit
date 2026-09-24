@@ -72,14 +72,26 @@ export {
   type StoriesOverlayProps,
   type StoriesUrlOverlayProps,
 } from './lib/StoriesOverlay';
-export { StoriesRing } from './lib/StoriesRing';
-export { StoriesRingList } from './lib/StoriesRingList';
-export { CanvasProgressBar } from './lib/CanvasProgressBar';
-export { StoryHeader } from './lib/StoryHeader';
-export { HeartAnimation } from './lib/HeartAnimation';
-export { ImageStorySlide } from './lib/ImageStorySlide';
-export { VideoStorySlide } from './lib/VideoStorySlide';
-export { SoundProvider, useSoundState } from '@reelkit/react';
+export { StoriesRing, type StoriesRingProps } from './lib/StoriesRing';
+export {
+  StoriesRingList,
+  type StoriesRingListProps,
+} from './lib/StoriesRingList';
+export {
+  CanvasProgressBar,
+  type CanvasProgressBarProps,
+} from './lib/CanvasProgressBar';
+export { StoryHeader, type StoryHeaderProps } from './lib/StoryHeader';
+export { HeartAnimation, type HeartAnimationProps } from './lib/HeartAnimation';
+export {
+  ImageStorySlide,
+  type ImageStorySlideProps,
+} from './lib/ImageStorySlide';
+export {
+  VideoStorySlide,
+  type VideoStorySlideProps,
+} from './lib/VideoStorySlide';
+export { useAttachViewedState } from './lib/useAttachViewedState';
 
 export {
   createStoriesViewedStateController,
@@ -88,6 +100,8 @@ export {
 } from '@reelkit/stories-core';
 
 export {
+  SoundProvider,
+  useSoundState,
   useOverlayUrlState,
   createViewedStateController,
   twoAxisViewedTracking,
@@ -105,6 +119,7 @@ export {
   type TwoAxisPosition,
   type TwoAxisIdentity,
   type UrlIndexTwoAxisKeyOptions,
+  type OverlayUrlStateOptions,
   type ViewedStateController,
   type ViewedStateOptions,
   type StorageAdapter,

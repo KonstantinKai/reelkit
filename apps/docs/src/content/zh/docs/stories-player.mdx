@@ -208,7 +208,7 @@ import theming from '../../snippets/stories-player/theming.css?raw';
 - **链接仍然优先。** 使用 `StoriesUrlOverlay` 时，由参数决定播放器在哪里打开，无论存了什么。其他情况下由续播回调决定。
 - **计数是位置，不是次数。** 记录记的是到达的最远一条 story，因此给已看完的分组新增一条会重新点亮圆环，从中间删掉一条则会让计数变短。与分享链接得到的自愈相同。
 - **存储可替换。** 传入 `storage: createSessionStorageAdapter()` 在关闭标签页时遗忘，或使用自己的 `StorageAdapter`。两个打开的标签页通过浏览器的 storage 事件保持一致。
-- **只在打开时才挂载的播放器读取得太晚。** 播放器在一个效果中读取存储，而该效果在它仍然关闭时就已运行。使用 `{open && <StoriesOverlay … />}` 时没有这个时机，所以请自己在一个返回其 dispose 的效果中调用 `viewed.attach()`。各选项以及它所基于的底层部件，见 [Stories Core](/docs/stories-core#viewed-controller) 页面。
+- **只在打开时才挂载的播放器读取得太晚。** 播放器在一个效果中读取存储，而该效果在它仍然关闭时就已运行。使用 `{open && <StoriesOverlay … />}` 时没有这个时机，所以请在持有控制器的组件里调用 `useAttachViewedState(viewed)`；它在挂载时接入，在卸载时释放。各选项以及它所基于的底层部件，见 [Stories Core](/docs/stories-core#viewed-controller) 页面。
 
 ## 桌面端轮播 [#desktop-carousel]
 
@@ -401,7 +401,7 @@ Use the `apiRef` 属性做命令式控制：
 
 ## 子组件 [#sub-components]
 
-对外导出的可复用积木，用于在自定义 render props 中组合：
+对外导出的可复用积木，用于在自定义 render props 中组合。每个组件的 props 类型都一并导出——`CanvasProgressBarProps`、`StoryHeaderProps`、`ImageStorySlideProps`、`VideoStorySlideProps`、`StoriesRingProps`、`StoriesRingListProps` 和 `HeartAnimationProps`——方便包装它们的组件使用：
 
 ### CanvasProgressBar [#canvasprogressbar]
 
@@ -451,7 +451,7 @@ Use the `apiRef` 属性做命令式控制：
 
 | 来源 | 重新导出的内容 |
 | --- | --- |
-| `@reelkit/react` | `SoundProvider`、`useSoundState`、`useOverlayUrlState`、`createViewedStateController`、`twoAxisViewedTracking`、`createLocalStorageAdapter`、`createSessionStorageAdapter`、`createMemoryStorageAdapter`、`urlIndexTwoAxisKey`、`urlStableIdTwoAxisKey`、`base64UrlCodec`，以及类型 `UrlAdapter`、`UrlCodec`、`UrlLocator`、`UrlKey`、`UrlStateController`、`TwoAxisPosition`、`TwoAxisIdentity`、`UrlIndexTwoAxisKeyOptions`、`ViewedStateController`、`ViewedStateOptions`、`StorageAdapter` |
+| `@reelkit/react` | `SoundProvider`、`useSoundState`、`useOverlayUrlState`、`createViewedStateController`、`twoAxisViewedTracking`、`createLocalStorageAdapter`、`createSessionStorageAdapter`、`createMemoryStorageAdapter`、`urlIndexTwoAxisKey`、`urlStableIdTwoAxisKey`、`base64UrlCodec`，以及类型 `UrlAdapter`、`UrlCodec`、`UrlLocator`、`UrlKey`、`UrlStateController`、`TwoAxisPosition`、`TwoAxisIdentity`、`UrlIndexTwoAxisKeyOptions`、`OverlayUrlStateOptions`、`ViewedStateController`、`ViewedStateOptions`、`StorageAdapter` |
 | `@reelkit/stories-core` | `createStoriesViewedStateController`、`StoriesViewedStateController`、`StoriesViewedStateControllerConfig`，以及内容类型 `StoryItem`、`AuthorInfo`、`StoriesGroup`、`MediaType` |
 
 `SoundProvider` 和 `useSoundState` 承载播放器与其 slide 共享的声音状态。自己播放媒体的自定义 slide 通过 `useSoundState` 读取静音开关。在播放器内部已经有一个 provider；在其他任何地方渲染的 `VideoStorySlide` 或自定义 slide，上方都需要一个 `SoundProvider`，否则 `useSoundState` 会抛出异常。

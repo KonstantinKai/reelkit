@@ -208,7 +208,7 @@ Os anéis exibem o gradiente até o grupo ser assistido até o fim, e um grupo r
 - **O link ainda vence.** Com `StoriesUrlOverlay`, quem decide onde o player abre é o parâmetro, independentemente do que estiver guardado. Em todos os outros casos quem decide é o callback de retomada.
 - **A contagem é uma posição, não um total.** A entrada nomeia o story mais distante alcançado, então acrescentar um story a um grupo já assistido acende o anel de novo, e remover um do meio encurta a contagem. A mesma cura espontânea que um link compartilhado recebe.
 - **O armazenamento é trocável.** Passe `storage: createSessionStorageAdapter()` para esquecer ao fechar a aba, ou o seu próprio `StorageAdapter`. Duas abas abertas ficam em sintonia pelo evento de armazenamento do navegador.
-- **Um player montado só na hora de abrir lê tarde demais.** O player lê o repositório em um efeito que roda enquanto ainda está fechado. Com `{open && <StoriesOverlay … />}` esse momento não existe, então chame `viewed.attach()` você mesmo em um efeito que devolva o seu dispose. As opções, e as peças de nível mais baixo que o compõem, estão na página do [Stories Core](/docs/stories-core#viewed-controller).
+- **Um player montado só na hora de abrir lê tarde demais.** O player lê o repositório em um efeito que roda enquanto ainda está fechado. Com `{open && <StoriesOverlay … />}` esse momento não existe, então chame `useAttachViewedState(viewed)` no componente dono do controlador; ele se conecta ao montar e solta ao desmontar. As opções, e as peças de nível mais baixo que o compõem, estão na página do [Stories Core](/docs/stories-core#viewed-controller).
 
 ## Carrossel no desktop [#desktop-carousel]
 
@@ -401,7 +401,7 @@ Ajuste a velocidade da animação pelo token `--rk-stories-heart-duration` (veja
 
 ## Subcomponentes [#sub-components]
 
-Blocos reutilizáveis exportados para você compor dentro das suas render props:
+Blocos reutilizáveis exportados para você compor dentro das suas render props. O tipo de props de cada um é exportado junto — `CanvasProgressBarProps`, `StoryHeaderProps`, `ImageStorySlideProps`, `VideoStorySlideProps`, `StoriesRingProps`, `StoriesRingListProps` e `HeartAnimationProps` — para um componente que envolva um deles:
 
 ### CanvasProgressBar [#canvasprogressbar]
 
@@ -451,7 +451,7 @@ Tudo de que um consumidor precisa vem deste pacote, então nunca é necessário 
 
 | Origem | Reexportado |
 | --- | --- |
-| `@reelkit/react` | `SoundProvider`, `useSoundState`, `useOverlayUrlState`, `createViewedStateController`, `twoAxisViewedTracking`, `createLocalStorageAdapter`, `createSessionStorageAdapter`, `createMemoryStorageAdapter`, `urlIndexTwoAxisKey`, `urlStableIdTwoAxisKey`, `base64UrlCodec` e os tipos `UrlAdapter`, `UrlCodec`, `UrlLocator`, `UrlKey`, `UrlStateController`, `TwoAxisPosition`, `TwoAxisIdentity`, `UrlIndexTwoAxisKeyOptions`, `ViewedStateController`, `ViewedStateOptions`, `StorageAdapter` |
+| `@reelkit/react` | `SoundProvider`, `useSoundState`, `useOverlayUrlState`, `createViewedStateController`, `twoAxisViewedTracking`, `createLocalStorageAdapter`, `createSessionStorageAdapter`, `createMemoryStorageAdapter`, `urlIndexTwoAxisKey`, `urlStableIdTwoAxisKey`, `base64UrlCodec` e os tipos `UrlAdapter`, `UrlCodec`, `UrlLocator`, `UrlKey`, `UrlStateController`, `TwoAxisPosition`, `TwoAxisIdentity`, `UrlIndexTwoAxisKeyOptions`, `OverlayUrlStateOptions`, `ViewedStateController`, `ViewedStateOptions`, `StorageAdapter` |
 | `@reelkit/stories-core` | `createStoriesViewedStateController`, `StoriesViewedStateController`, `StoriesViewedStateControllerConfig` e os tipos de conteúdo `StoryItem`, `AuthorInfo`, `StoriesGroup`, `MediaType` |
 
 `SoundProvider` e `useSoundState` carregam o estado de som que o player compartilha com os seus slides. Um slide personalizado que toca a própria mídia lê o botão de mudo por `useSoundState`. Dentro do player já existe um provider; um `VideoStorySlide` ou slide personalizado renderizado em qualquer outro lugar precisa de um `SoundProvider` acima dele, senão `useSoundState` lança um erro.

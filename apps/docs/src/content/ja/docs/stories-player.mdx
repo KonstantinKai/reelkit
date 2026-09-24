@@ -208,7 +208,7 @@ import theming from '../../snippets/stories-player/theming.css?raw';
 - **リンクが優先されます。** `StoriesUrlOverlay` では、何が保存されていても、プレイヤーがどこで開くかはパラメーターが決めます。それ以外では再開のコールバックが決めます。
 - **件数は合計ではなく位置です。** エントリーが表すのは到達したいちばん先のストーリーなので、見終えたグループにストーリーを追加するとリングがまた点灯し、途中から削除すると件数が減ります。共有リンクと同じ自己修復です。
 - **ストレージは差し替えられます。** タブを閉じたら忘れるには `storage: createSessionStorageAdapter()` を、ほかには独自の `StorageAdapter` を渡してください。開いている 2 つのタブは、ブラウザーの storage イベントで同期します。
-- **開く瞬間にだけマウントされるプレイヤーは、読み取りが遅すぎます。** プレイヤーは、まだ閉じている間に動くエフェクトでストアを読み取ります。`{open && <StoriesOverlay … />}` ではその機会がないので、dispose を返すエフェクトの中で自分で `viewed.attach()` を呼んでください。オプションと、土台になっている低レベルの部品は [Stories Core](/docs/stories-core#viewed-controller) のページにあります。
+- **開く瞬間にだけマウントされるプレイヤーは、読み取りが遅すぎます。** プレイヤーは、まだ閉じている間に動くエフェクトでストアを読み取ります。`{open && <StoriesOverlay … />}` ではその機会がないので、コントローラーを持つコンポーネントで `useAttachViewedState(viewed)` を呼んでください。マウント時に接続し、アンマウント時に手放します。オプションと、土台になっている低レベルの部品は [Stories Core](/docs/stories-core#viewed-controller) のページにあります。
 
 ## デスクトップのカルーセル [#desktop-carousel]
 
@@ -401,7 +401,7 @@ UI 要素はすべてレンダープロップで置き換えられます。そ�
 
 ## サブコンポーネント [#sub-components]
 
-独自のレンダープロップで組み合わせるために公開されている、再利用できる部品です：
+独自のレンダープロップで組み合わせるために公開されている、再利用できる部品です。それぞれの props の型も一緒に公開されているので（`CanvasProgressBarProps`、`StoryHeaderProps`、`ImageStorySlideProps`、`VideoStorySlideProps`、`StoriesRingProps`、`StoriesRingListProps`、`HeartAnimationProps`）、部品を包むコンポーネントで使えます：
 
 ### CanvasProgressBar [#canvasprogressbar]
 
@@ -451,7 +451,7 @@ Instagram 風のグラデーションのリングが付いた円形のアバタ�
 
 | 元のパッケージ | 再エクスポートされるもの |
 | --- | --- |
-| `@reelkit/react` | `SoundProvider`、`useSoundState`、`useOverlayUrlState`、`createViewedStateController`、`twoAxisViewedTracking`、`createLocalStorageAdapter`、`createSessionStorageAdapter`、`createMemoryStorageAdapter`、`urlIndexTwoAxisKey`、`urlStableIdTwoAxisKey`、`base64UrlCodec`、および型 `UrlAdapter`、`UrlCodec`、`UrlLocator`、`UrlKey`、`UrlStateController`、`TwoAxisPosition`、`TwoAxisIdentity`、`UrlIndexTwoAxisKeyOptions`、`ViewedStateController`、`ViewedStateOptions`、`StorageAdapter` |
+| `@reelkit/react` | `SoundProvider`、`useSoundState`、`useOverlayUrlState`、`createViewedStateController`、`twoAxisViewedTracking`、`createLocalStorageAdapter`、`createSessionStorageAdapter`、`createMemoryStorageAdapter`、`urlIndexTwoAxisKey`、`urlStableIdTwoAxisKey`、`base64UrlCodec`、および型 `UrlAdapter`、`UrlCodec`、`UrlLocator`、`UrlKey`、`UrlStateController`、`TwoAxisPosition`、`TwoAxisIdentity`、`UrlIndexTwoAxisKeyOptions`、`OverlayUrlStateOptions`、`ViewedStateController`、`ViewedStateOptions`、`StorageAdapter` |
 | `@reelkit/stories-core` | `createStoriesViewedStateController`、`StoriesViewedStateController`、`StoriesViewedStateControllerConfig`、およびコンテンツの型 `StoryItem`、`AuthorInfo`、`StoriesGroup`、`MediaType` |
 
 `SoundProvider` と `useSoundState` は、プレイヤーがスライドと共有するサウンドの状態を運びます。自分でメディアを再生するカスタムスライドは、`useSoundState` を通してミュートの切り替えを読み取ります。プレイヤーの中ではすでにプロバイダーが置かれています。それ以外の場所で描画する `VideoStorySlide` やカスタムスライドには、上に `SoundProvider` が必要で、ないと `useSoundState` が例外を投げます。

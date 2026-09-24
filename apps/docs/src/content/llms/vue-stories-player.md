@@ -154,7 +154,7 @@ Config type `StoriesViewedStateControllerConfig`; controller type `StoriesViewed
 - URL param wins over both.
 - Count = position of furthest story reached, not a tally.
 - Storage pluggable: `createLocalStorageAdapter` (default), `createSessionStorageAdapter`, `createMemoryStorageAdapter`, or own `StorageAdapter`. Two tabs stay in step via storage event.
-- Player mounted only at open (`v-if="open"`) reads too late → call `viewed.attach()` in `onMounted`, dispose in `onUnmounted`.
+- Player mounted only at open (`v-if="open"`) reads too late → call `useAttachViewedState(() => viewed)` in the component that owns the controller (attaches once mounted, lets go on unmount).
 - Lower level: `createViewedStateController` + `twoAxisViewedTracking` (`ViewedStateController`, `ViewedStateOptions`).
 
 ## Desktop Carousel
@@ -321,7 +321,7 @@ Left `tap-zone-split` (default 0.3) of width → previous story; rest → next. 
 
 ## Re-exports
 
-From `@reelkit/vue`: `Observe`, `SoundProvider`, `useSoundState`, `useOverlayUrlState`, `createViewedStateController`, `twoAxisViewedTracking`, `createLocalStorageAdapter`, `createSessionStorageAdapter`, `createMemoryStorageAdapter`, `urlIndexTwoAxisKey`, `urlStableIdTwoAxisKey`, `base64UrlCodec`, types `UrlAdapter`, `UrlCodec`, `UrlLocator`, `UrlKey`, `UrlStateController`, `TwoAxisPosition`, `TwoAxisIdentity`, `UrlIndexTwoAxisKeyOptions`, `ViewedStateController`, `ViewedStateOptions`, `StorageAdapter`.
+From `@reelkit/vue`: `Observe`, `SoundProvider`, `useSoundState`, `useOverlayUrlState`, `createViewedStateController`, `twoAxisViewedTracking`, `createLocalStorageAdapter`, `createSessionStorageAdapter`, `createMemoryStorageAdapter`, `urlIndexTwoAxisKey`, `urlStableIdTwoAxisKey`, `base64UrlCodec`, types `UrlAdapter`, `UrlCodec`, `UrlLocator`, `UrlKey`, `UrlStateController`, `TwoAxisPosition`, `TwoAxisIdentity`, `UrlIndexTwoAxisKeyOptions`, `OverlayUrlStateOptions`, `ViewedStateController`, `ViewedStateOptions`, `StorageAdapter`.
 
 From `@reelkit/stories-core`: `createStoriesViewedStateController`, `StoriesViewedStateController`, `StoriesViewedStateControllerConfig`, `StoryItem`, `AuthorInfo`, `StoriesGroup`, `MediaType`.
 

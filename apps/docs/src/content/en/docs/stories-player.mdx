@@ -208,7 +208,7 @@ Rings show a gradient until a group has been watched to the end, and a group reo
 - **A link still wins.** With `StoriesUrlOverlay`, the parameter decides where the player opens, whatever has been stored. Everywhere else the resume callback decides.
 - **A count is a position, not a tally.** An entry names the furthest story reached, so adding a story to a watched group lights its ring again, and removing one from the middle shortens the count. The same self-healing a shared link gets.
 - **Storage is pluggable.** Pass `storage: createSessionStorageAdapter()` to forget on tab close, or your own `StorageAdapter`. Two open tabs stay in step through the browser's storage event.
-- **A player mounted only when it opens reads too late.** The player reads the store in an effect that runs while it is still closed. With `{open && <StoriesOverlay … />}` there is no such moment, so call `viewed.attach()` yourself in an effect that returns its dispose. The options, and the lower-level pieces this is built from, are on the [Stories Core](/docs/stories-core#viewed-controller) page.
+- **A player mounted only when it opens reads too late.** The player reads the store in an effect that runs while it is still closed. With `{open && <StoriesOverlay … />}` there is no such moment, so call `useAttachViewedState(viewed)` in the component that owns the controller; it attaches on mount and lets go on unmount. The options, and the lower-level pieces this is built from, are on the [Stories Core](/docs/stories-core#viewed-controller) page.
 
 ## Desktop Carousel [#desktop-carousel]
 
@@ -401,7 +401,7 @@ Tweak the animation speed via the `--rk-stories-heart-duration` token (see [Them
 
 ## Sub-Components [#sub-components]
 
-Reusable building blocks exported for composition in custom render props:
+Reusable building blocks exported for composition in custom render props. Each one's props type is exported beside it — `CanvasProgressBarProps`, `StoryHeaderProps`, `ImageStorySlideProps`, `VideoStorySlideProps`, `StoriesRingProps`, `StoriesRingListProps` and `HeartAnimationProps` — for a component that wraps one:
 
 ### CanvasProgressBar [#canvasprogressbar]
 
@@ -451,7 +451,7 @@ Everything a consumer needs comes from this package, so a direct `@reelkit/core`
 
 | From | Re-exported |
 | --- | --- |
-| `@reelkit/react` | `SoundProvider`, `useSoundState`, `useOverlayUrlState`, `createViewedStateController`, `twoAxisViewedTracking`, `createLocalStorageAdapter`, `createSessionStorageAdapter`, `createMemoryStorageAdapter`, `urlIndexTwoAxisKey`, `urlStableIdTwoAxisKey`, `base64UrlCodec`, and the types `UrlAdapter`, `UrlCodec`, `UrlLocator`, `UrlKey`, `UrlStateController`, `TwoAxisPosition`, `TwoAxisIdentity`, `UrlIndexTwoAxisKeyOptions`, `ViewedStateController`, `ViewedStateOptions`, `StorageAdapter` |
+| `@reelkit/react` | `SoundProvider`, `useSoundState`, `useOverlayUrlState`, `createViewedStateController`, `twoAxisViewedTracking`, `createLocalStorageAdapter`, `createSessionStorageAdapter`, `createMemoryStorageAdapter`, `urlIndexTwoAxisKey`, `urlStableIdTwoAxisKey`, `base64UrlCodec`, and the types `UrlAdapter`, `UrlCodec`, `UrlLocator`, `UrlKey`, `UrlStateController`, `TwoAxisPosition`, `TwoAxisIdentity`, `UrlIndexTwoAxisKeyOptions`, `OverlayUrlStateOptions`, `ViewedStateController`, `ViewedStateOptions`, `StorageAdapter` |
 | `@reelkit/stories-core` | `createStoriesViewedStateController`, `StoriesViewedStateController`, `StoriesViewedStateControllerConfig`, and the content types `StoryItem`, `AuthorInfo`, `StoriesGroup`, `MediaType` |
 
 `SoundProvider` and `useSoundState` carry the sound state the player shares with its slides. A custom slide that plays its own media reads the mute toggle through `useSoundState`. Inside the player a provider is already in place; a `VideoStorySlide` or custom slide rendered anywhere else needs a `SoundProvider` above it, or `useSoundState` throws.

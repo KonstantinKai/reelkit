@@ -153,6 +153,7 @@ export {
 } from '@reelkit/stories-core';
 
 export {
+  SoundStateService,
   createOverlayUrlState,
   urlIndexTwoAxisKey,
   urlStableIdTwoAxisKey,
