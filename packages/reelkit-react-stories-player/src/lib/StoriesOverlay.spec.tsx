@@ -372,6 +372,163 @@ describe('StoriesOverlay', () => {
           .getAttribute('aria-label'),
       ).toBe('Friend stories');
     });
+
+    it('labels the arrows', () => {
+      render(<StoriesOverlay isOpen onClose={vi.fn()} groups={mockGroups} />);
+
+      expect(
+        document.querySelector('[aria-label="Previous story"]'),
+      ).not.toBeNull();
+      expect(
+        document.querySelector('[aria-label="Next story"]'),
+      ).not.toBeNull();
+    });
+
+    it('takes focus when it opens and gives it back when it closes', () => {
+      const trigger = document.createElement('button');
+      document.body.appendChild(trigger);
+      trigger.focus();
+
+      const { rerender } = render(
+        <StoriesOverlay isOpen onClose={vi.fn()} groups={mockGroups} />,
+      );
+      expect(document.activeElement).toBe(
+        document.querySelector('.rk-stories-overlay'),
+      );
+
+      rerender(
+        <StoriesOverlay isOpen={false} onClose={vi.fn()} groups={mockGroups} />,
+      );
+      expect(document.activeElement).toBe(trigger);
+      trigger.remove();
+    });
+  });
+
+  // The Reel is mocked here, so the tap handler the player hands the group
+  // slider is called directly, at a point measured from the slider's width.
+  describe('tap zones', () => {
+    const tapAt = (fraction: number) => {
+      const outer = lastReelProps.find((props) => props['onTap'])!;
+      const [width] = outer['size'] as [number, number];
+      act(() => {
+        (outer['onTap'] as (event: unknown) => void)({
+          localPosition: [width * fraction, 100],
+        });
+      });
+    };
+
+    it('moves back on a tap in the left zone and on in the right', () => {
+      const onStoryChange = vi.fn();
+      render(
+        <StoriesOverlay
+          isOpen
+          onClose={vi.fn()}
+          groups={mockGroups}
+          onStoryChange={onStoryChange}
+        />,
+      );
+
+      tapAt(0.95);
+      expect(onStoryChange).toHaveBeenLastCalledWith(0, 1);
+
+      tapAt(0.05);
+      expect(onStoryChange).toHaveBeenLastCalledWith(0, 0);
+    });
+
+    it('moves the line between the zones with tapZoneSplit', () => {
+      const onStoryChange = vi.fn();
+      render(
+        <StoriesOverlay
+          isOpen
+          onClose={vi.fn()}
+          groups={mockGroups}
+          initialStoryIndex={1}
+          tapZoneSplit={0.8}
+          onStoryChange={onStoryChange}
+        />,
+      );
+
+      // Past the default line, but short of this one: still the back zone.
+      tapAt(0.5);
+      expect(onStoryChange).toHaveBeenLastCalledWith(0, 0);
+    });
+  });
+
+  it('closes after the last story of the last group', () => {
+    const apiRef = { current: null as StoriesApi | null };
+    const onClose = vi.fn();
+    render(
+      <StoriesOverlay
+        isOpen
+        onClose={onClose}
+        groups={mockGroups}
+        initialGroupIndex={1}
+        apiRef={apiRef}
+      />,
+    );
+
+    act(() => apiRef.current?.nextStory());
+
+    expect(onClose).toHaveBeenCalledOnce();
+  });
+
+  // The mocked Reel draws no slides, so the group and its stories are built by
+  // hand from the item builders the player hands the two sliders.
+  describe('a story that will not load', () => {
+    const failFirstStory = () => {
+      const failures: (() => void)[] = [];
+      render(
+        <StoriesOverlay
+          isOpen
+          onClose={vi.fn()}
+          groups={mockGroups}
+          renderSlide={({ onError }) => {
+            failures.push(onError);
+            return <div />;
+          }}
+        />,
+      );
+      const outer = lastReelProps.find((props) => props['onTap'])!;
+      const group = (
+        outer['itemBuilder'] as (
+          index: number,
+          indexInRange: number,
+          size: [number, number],
+        ) => ReactElement<{
+          children: ReactElement<Record<string, unknown>>[];
+        }>
+      )(0, 0, [400, 700]);
+      const storyReel = [group.props.children]
+        .flat()
+        .find((child) => child?.props?.['itemBuilder'])!;
+      const buildStory = storyReel.props['itemBuilder'] as (
+        index: number,
+        indexInRange: number,
+        size: [number, number],
+      ) => ReactElement;
+      render(
+        <>
+          {buildStory(0, 0, [400, 700])}
+          {buildStory(1, 1, [400, 700])}
+        </>,
+      );
+      act(() => failures[0]());
+    };
+
+    // The player keeps one loading state, so an error panel drawn per story
+    // would appear on every story slide at once.
+    it('reports it once, on the story that failed', () => {
+      failFirstStory();
+      expect(document.querySelectorAll('.rk-stories-error')).toHaveLength(1);
+    });
+
+    it('says what went wrong, not only the icon', () => {
+      failFirstStory();
+      const error = document.querySelector('.rk-stories-error')!;
+
+      expect(error.getAttribute('aria-label')).toBe('Content unavailable');
+      expect(error.textContent).toContain('Content unavailable');
+    });
   });
 
   describe('enableKeyboard', () => {

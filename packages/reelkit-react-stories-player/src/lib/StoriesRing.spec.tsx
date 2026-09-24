@@ -93,6 +93,42 @@ describe('StoriesRing', () => {
     );
   });
 
+  it('sizes the ring and the avatar in pixels', () => {
+    const { container } = render(
+      <StoriesRing
+        author={author}
+        totalStories={3}
+        viewedCount={0}
+        size={80}
+      />,
+    );
+    const ring = container.querySelector('.rk-stories-ring') as HTMLElement;
+
+    expect(ring.style.width).toBe('80px');
+    expect(ring.style.height).toBe('80px');
+    expect(ring.querySelector('img')?.getAttribute('width')).toBe('72');
+  });
+
+  it('is a labelled button that reports a click', () => {
+    const onClick = vi.fn();
+    const { container } = render(
+      <StoriesRing
+        author={author}
+        totalStories={3}
+        viewedCount={0}
+        onClick={onClick}
+      />,
+    );
+    const ring = container.querySelector('.rk-stories-ring') as HTMLElement;
+
+    expect(ring.getAttribute('role')).toBe('button');
+    expect(ring.getAttribute('tabindex')).toBe('0');
+    expect(ring.getAttribute('aria-label')).toBe("Alice's stories");
+
+    fireEvent.click(ring);
+    expect(onClick).toHaveBeenCalledTimes(1);
+  });
+
   it('opens from the keyboard with Enter or Space, as a button does', () => {
     const onClick = vi.fn();
     const { container } = render(

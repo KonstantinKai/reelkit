@@ -11,6 +11,15 @@ describe('RkHeartAnimationComponent', () => {
 
   afterEach(() => TestBed.resetTestingModule());
 
+  it('draws the heart for the stylesheet to centre and animate', () => {
+    const fixture = TestBed.createComponent(RkHeartAnimationComponent);
+    fixture.detectChanges();
+    const heart = fixture.debugElement.query(By.css('.rk-stories-heart'));
+
+    expect(heart).not.toBeNull();
+    expect(heart.query(By.css('svg'))).not.toBeNull();
+  });
+
   // The player keeps a heart in the DOM until it says it is done, so this
   // event is the only thing that ever removes one.
   it('reports the end of its animation so the player can drop it', () => {

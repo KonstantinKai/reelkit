@@ -1,6 +1,9 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { Component, type DebugElement } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { createSignal } from '@reelkit/angular';
 import type { StoriesGroup } from '@reelkit/stories-core';
 import {
   RkStoriesCarouselComponent,
@@ -319,6 +322,274 @@ describe('RkStoriesCarouselComponent', () => {
 
     expect(ring.style.width).toBe('52px');
     expect(ring.style.height).toBe('52px');
+  });
+
+  // The layout, previews and rings the react and vue carousels draw, on a
+  // feed long enough to fill both sides.
+  describe('laying out a feed', () => {
+    const makeGroups = (count: number): StoriesGroup[] =>
+      Array.from({ length: count }, (_, index) => ({
+        author: {
+          id: `g${index}`,
+          name: `Author ${index}`,
+          avatar: `/${index}.jpg`,
+        },
+        stories: [
+          {
+            id: `s${index}-0`,
+            mediaType: 'image' as const,
+            src: `/image-${index}.jpg`,
+          },
+          {
+            id: `s${index}-1`,
+            mediaType: 'image' as const,
+            src: `/image-${index}-1.jpg`,
+          },
+        ],
+      }));
+
+    const createFeed = (inputs: Record<string, unknown> = {}) =>
+      createCarousel({ groups: makeGroups(5), activeGroupIndex: 2, ...inputs });
+
+    type Fixture = ComponentFixture<RkStoriesCarouselComponent>;
+
+    const cardNames = (fixture: Fixture) =>
+      fixture.debugElement
+        .queryAll(By.css('.rk-stories-card-button'))
+        .map((button) => button.nativeElement.getAttribute('aria-label'));
+    const buttonOf = (fixture: Fixture, name: string) =>
+      fixture.debugElement.query(
+        By.css(`[aria-label="Open stories by ${name}"]`),
+      ).nativeElement as HTMLElement;
+    const ringOf = (fixture: Fixture, name: string) =>
+      buttonOf(fixture, name).querySelector(
+        '[class*="rk-stories-ring"]',
+      ) as HTMLElement;
+    const cardOf = (fixture: Fixture, name: string) =>
+      buttonOf(fixture, name).closest('.rk-stories-card') as HTMLElement;
+
+    it('shows up to two groups on each side of the active one', () => {
+      expect(cardNames(createFeed())).toEqual([
+        'Open stories by Author 0',
+        'Open stories by Author 1',
+        'Open stories by Author 3',
+        'Open stories by Author 4',
+      ]);
+    });
+
+    it('shows no cards before the first group or after the last', () => {
+      const fixture = createFeed({ activeGroupIndex: 0 });
+      expect(cardNames(fixture)).toEqual([
+        'Open stories by Author 1',
+        'Open stories by Author 2',
+      ]);
+
+      fixture.componentRef.setInput('activeGroupIndex', 4);
+      fixture.detectChanges();
+      expect(cardNames(fixture)).toEqual([
+        'Open stories by Author 2',
+        'Open stories by Author 3',
+      ]);
+    });
+
+    it('shows no cards for a single group', () => {
+      expect(
+        cards(createFeed({ groups: makeGroups(1), activeGroupIndex: 0 })),
+      ).toHaveLength(0);
+    });
+
+    it('previews the story each group would open on', () => {
+      const fixture = createFeed({
+        storyIndexFor: (groupIndex: number) => (groupIndex === 3 ? 1 : 0),
+      });
+      const image = buttonOf(fixture, 'Author 3').querySelector(
+        '.rk-stories-card-image',
+      );
+
+      expect(image?.getAttribute('src')).toBe('/image-3-1.jpg');
+    });
+
+    // Every video plays through one shared element that belongs to the story
+    // on screen, so a card never draws a video of its own.
+    it('uses the video poster, and no frame for a video without one', () => {
+      const groups: StoriesGroup[] = [
+        makeGroups(1)[0],
+        {
+          author: { id: 'p', name: 'Poster', avatar: '/p.jpg' },
+          stories: [
+            {
+              id: 'v1',
+              mediaType: 'video',
+              src: '/v1.mp4',
+              poster: '/v1.jpg',
+            },
+          ],
+        },
+        {
+          author: { id: 'n', name: 'Plain', avatar: '/n.jpg' },
+          stories: [{ id: 'v2', mediaType: 'video', src: '/v2.mp4' }],
+        },
+      ];
+      const fixture = createFeed({ groups, activeGroupIndex: 0 });
+      const frame = (name: string) =>
+        buttonOf(fixture, name).querySelector('.rk-stories-card-image');
+
+      expect(frame('Poster')?.getAttribute('src')).toBe('/v1.jpg');
+      expect(frame('Plain')).toBeNull();
+      expect(fixture.nativeElement.querySelector('video')).toBeNull();
+    });
+
+    it('mutes the ring of a group watched to the end, and follows the signal', () => {
+      const viewedState = createSignal(
+        new Map([
+          ['g1', 2],
+          ['g3', 1],
+        ]),
+      );
+      const fixture = createFeed({ viewedState });
+      expect(ringOf(fixture, 'Author 1').classList).not.toContain(
+        'rk-stories-ring--active',
+      );
+      expect(ringOf(fixture, 'Author 3').classList).toContain(
+        'rk-stories-ring--active',
+      );
+      expect(ringOf(fixture, 'Author 4').classList).toContain(
+        'rk-stories-ring--active',
+      );
+
+      viewedState.value = new Map([['g3', 2]]);
+      fixture.detectChanges();
+
+      expect(ringOf(fixture, 'Author 1').classList).toContain(
+        'rk-stories-ring--active',
+      );
+      expect(ringOf(fixture, 'Author 3').classList).not.toContain(
+        'rk-stories-ring--active',
+      );
+    });
+
+    it('follows a signal that replaced the one it was given first', () => {
+      const second = createSignal(new Map<string, number>());
+      const fixture = createFeed({
+        viewedState: createSignal(new Map<string, number>()),
+      });
+      fixture.componentRef.setInput('viewedState', second);
+      fixture.detectChanges();
+
+      second.value = new Map([['g1', 2]]);
+      fixture.detectChanges();
+
+      expect(ringOf(fixture, 'Author 1').classList).not.toContain(
+        'rk-stories-ring--active',
+      );
+    });
+
+    it('draws every ring unwatched without a viewed state', () => {
+      const rings = (
+        createFeed().nativeElement as HTMLElement
+      ).querySelectorAll('.rk-stories-card-info .rk-stories-ring');
+
+      expect(rings.length).toBeGreaterThan(0);
+      for (const ring of Array.from(rings)) {
+        expect(ring.classList).toContain('rk-stories-ring--active');
+      }
+    });
+
+    it('hands a preview template everything it needs', () => {
+      const fixture = createFeed({
+        storyIndexFor: () => 1,
+        viewedState: createSignal(new Map([['g1', 1]])),
+      });
+      const carousel = fixture.componentInstance as unknown as {
+        cards: () => { groupIndex: number }[];
+        previewContext: (card: unknown) => Record<string, unknown> & {
+          onOpen: () => void;
+        };
+      };
+      const opened: number[] = [];
+      fixture.componentInstance.opened.subscribe((index) => opened.push(index));
+      const context = carousel.previewContext(
+        carousel.cards().find((card) => card.groupIndex === 1),
+      );
+
+      expect(context).toMatchObject({
+        groupIndex: 1,
+        offset: -1,
+        viewedCount: 1,
+        story: { id: 's1-1' },
+      });
+      expect((context['group'] as StoriesGroup).author.id).toBe('g1');
+
+      context.onOpen();
+      expect(opened).toEqual([1]);
+    });
+
+    it('names the author on each card and keeps them in the tab order', () => {
+      const buttons = createFeed().debugElement.queryAll(
+        By.css('.rk-stories-card-button'),
+      );
+
+      expect(buttons.length).toBeGreaterThan(0);
+      for (const button of buttons) {
+        const element = button.nativeElement as HTMLElement;
+        expect(element.getAttribute('aria-label')).toMatch(/^Open stories by /);
+        expect(element.tabIndex).toBe(0);
+      }
+    });
+
+    it('moves the opened group into the centre', () => {
+      const fixture = createFeed({
+        activeGroupIndex: 3,
+        slide: { from: 2, to: 3, phase: 'run' } as CarouselSlide,
+      });
+
+      expect(cardOf(fixture, 'Author 3').classList).toContain(
+        'rk-stories-card--center',
+      );
+      // Three places left of the opened group, past the two a side shows.
+      expect(cardOf(fixture, 'Author 0').classList).toContain(
+        'rk-stories-card--hidden',
+      );
+      expect(cardOf(fixture, 'Author 1').classList).not.toContain(
+        'rk-stories-card--hidden',
+      );
+    });
+
+    it('draws only the cards around both ends of a far jump', () => {
+      const fixture = createFeed({
+        groups: makeGroups(200),
+        activeGroupIndex: 150,
+        slide: { from: 0, to: 150, phase: 'run' } as CarouselSlide,
+      });
+
+      expect(cardNames(fixture)).toEqual(
+        [0, 1, 2, 148, 149, 150, 151, 152].map(
+          (index) => `Open stories by Author ${index}`,
+        ),
+      );
+    });
+
+    // jsdom loads no stylesheet, so the rule itself is read: a card may only
+    // animate while the overlay is sliding. Anything else would ease the cards
+    // after a window resize or a touch swipe, behind a player that does not.
+    it('animates the cards only while the overlay slides', () => {
+      const carouselStyles = readFileSync(
+        join(__dirname, '..', 'styles', 'stories-carousel.css'),
+        'utf8',
+      );
+      const rules = carouselStyles
+        .replace(/\/\*[\s\S]*?\*\//g, '')
+        .split('}')
+        // The property itself, not the `--rk-stories-card-transition` token.
+        .filter((rule) => /(?<![\w-])transition\s*:(?!\s*none)/.test(rule));
+
+      expect(rules.length).toBeGreaterThan(0);
+      for (const rule of rules) {
+        for (const selector of rule.slice(0, rule.indexOf('{')).split(',')) {
+          expect(selector).toContain('.rk-stories-overlay--sliding');
+        }
+      }
+    });
   });
 
   // A story with nothing to preview — text on a gradient — leaves the card

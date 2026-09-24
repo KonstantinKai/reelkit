@@ -33,8 +33,11 @@ import { RkStoriesOverlayComponent } from './stories-overlay.component';
 import { RkStoriesUrlOverlayComponent } from './stories-url-overlay.component';
 import { RkStoriesContentComponent } from '../stories-content/stories-content.component';
 import {
+  RkStoriesErrorDirective,
   RkStoriesFooterDirective,
+  RkStoriesGroupPreviewDirective,
   RkStoriesHeaderDirective,
+  RkStoriesLoadingDirective,
   RkStoriesNavigationDirective,
   RkStoriesProgressBarDirective,
   RkStoriesSlideDirective,
@@ -2102,5 +2105,562 @@ describe('RkStoriesOverlayComponent desktop carousel', () => {
     window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
 
     expect(fixture.componentInstance.closes).toBe(1);
+  });
+});
+
+// The cases the react and vue overlay specs prove about their inputs and
+// outputs, proved here for the angular player.
+describe('RkStoriesOverlayComponent inputs and outputs', () => {
+  interface StoryPosition {
+    groupIndex: number;
+    storyIndex: number;
+  }
+
+  // Sources no other case in this file loads or fails, so the shared
+  // preloader holds nothing about them and every story here is still loading.
+  const groups: StoriesGroup[] = [
+    {
+      author: { id: 'io-1', name: 'Ann', avatar: '/io-ann.jpg' },
+      stories: [
+        { id: 'io-1-1', src: '/io-1-1.jpg', mediaType: 'image' },
+        { id: 'io-1-2', src: '/io-1-2.jpg', mediaType: 'image' },
+      ],
+    },
+    {
+      author: { id: 'io-2', name: 'Ben', avatar: '/io-ben.jpg' },
+      stories: [{ id: 'io-2-1', src: '/io-2-1.jpg', mediaType: 'image' }],
+    },
+    {
+      author: { id: 'io-3', name: 'Cat', avatar: '/io-cat.jpg' },
+      stories: [{ id: 'io-3-1', src: '/io-3-1.jpg', mediaType: 'image' }],
+    },
+  ];
+
+  @Component({
+    template: `
+      <rk-stories-overlay
+        [isOpen]="isOpen()"
+        [groups]="groups()"
+        [initialGroupIndex]="initialGroupIndex"
+        [initialStoryIndex]="initialStoryIndex"
+        [resumeStoryIndex]="resumeStoryIndex()"
+        [ariaLabel]="ariaLabel"
+        [enableKeyboard]="enableKeyboard()"
+        [hideUIOnPause]="hideUIOnPause"
+        (closed)="closes = closes + 1"
+        (paused)="events.push('paused')"
+        (resumed)="events.push('resumed')"
+        (storyChanged)="storyChanges.push($event)"
+        (groupChanged)="groupChanges.push($event)"
+        (storyViewed)="viewedStories.push($event)"
+        (storyCompleted)="completedStories.push($event)"
+        (apiReady)="api = $event"
+      />
+    `,
+    imports: [RkStoriesOverlayComponent],
+  })
+  class FullHostComponent {
+    readonly isOpen = signal(true);
+    readonly groups = signal<StoriesGroup[]>(groups);
+    readonly resumeStoryIndex = signal<
+      ((groupIndex: number) => number) | undefined
+    >(undefined);
+    readonly enableKeyboard = signal(true);
+    initialGroupIndex = 0;
+    initialStoryIndex: number | undefined = undefined;
+    ariaLabel = 'Stories player';
+    hideUIOnPause = true;
+    closes = 0;
+    events: string[] = [];
+    storyChanges: StoryPosition[] = [];
+    groupChanges: number[] = [];
+    viewedStories: StoryPosition[] = [];
+    completedStories: StoryPosition[] = [];
+    api: StoriesApi | null = null;
+  }
+
+  function create(
+    configure?: (host: FullHostComponent) => void,
+  ): ComponentFixture<FullHostComponent> {
+    const fixture = TestBed.createComponent(FullHostComponent);
+    configure?.(fixture.componentInstance);
+    fixture.detectChanges();
+    return fixture;
+  }
+
+  const element = (fixture: ComponentFixture<unknown>): HTMLElement =>
+    fixture.nativeElement as HTMLElement;
+  const dialogOf = (fixture: ComponentFixture<unknown>) =>
+    element(fixture).querySelector('.rk-stories-overlay') as HTMLElement;
+  const contentIn = (fixture: ComponentFixture<unknown>) =>
+    fixture.debugElement.query(By.directive(RkStoriesContentComponent))
+      .componentInstance as unknown as OverlayInternals & {
+      storiesCtrl: { onStoryTimerComplete: () => void };
+      onContentError: (groupIndex: number, storyIndex: number) => void;
+    };
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({ imports: [FullHostComponent] });
+  });
+
+  afterEach(() => TestBed.resetTestingModule());
+
+  describe('remembering where a viewer got to', () => {
+    it('reports the story it opened on as viewed', () => {
+      const fixture = create((host) => (host.initialGroupIndex = 1));
+
+      expect(fixture.componentInstance.viewedStories).toEqual([
+        { groupIndex: 1, storyIndex: 0 },
+      ]);
+    });
+
+    it('reports the opening story once, not again on the first navigation', () => {
+      const fixture = create();
+
+      fixture.componentInstance.api!.nextStory();
+
+      expect(fixture.componentInstance.viewedStories).toEqual([
+        { groupIndex: 0, storyIndex: 0 },
+        { groupIndex: 0, storyIndex: 1 },
+      ]);
+    });
+
+    it('opens the group it was given on the resumed story', () => {
+      const fixture = create((host) => host.resumeStoryIndex.set(() => 1));
+
+      expect(fixture.componentInstance.viewedStories).toEqual([
+        { groupIndex: 0, storyIndex: 1 },
+      ]);
+    });
+
+    // The timer is armed from the story the player actually opens on. Read
+    // from the raw input instead, it would be handed no story, fall through to
+    // the branch for a story with no media and count down over an image that
+    // has not loaded; the header spinner, which follows that wait, tells the
+    // two apart.
+    it('arms the timer against the resumed story, not an absent one', () => {
+      const fixture = create((host) => host.resumeStoryIndex.set(() => 1));
+
+      expect(
+        element(fixture).querySelector('.rk-stories-header-spinner'),
+      ).not.toBeNull();
+    });
+
+    it('lets an explicit opening story beat the resume callback', () => {
+      const fixture = create((host) => {
+        host.initialStoryIndex = 0;
+        host.resumeStoryIndex.set(() => 1);
+      });
+
+      expect(fixture.componentInstance.viewedStories).toEqual([
+        { groupIndex: 0, storyIndex: 0 },
+      ]);
+    });
+
+    it('opens an unvisited group where the resume callback points', () => {
+      const fixture = create((host) => {
+        host.initialGroupIndex = 1;
+        host.resumeStoryIndex.set((groupIndex) => (groupIndex === 0 ? 1 : 0));
+      });
+
+      fixture.componentInstance.api!.prevGroup();
+
+      expect(fixture.componentInstance.storyChanges).toContainEqual({
+        groupIndex: 0,
+        storyIndex: 1,
+      });
+    });
+
+    it('honours a resume callback swapped in after it opened', () => {
+      const fixture = create((host) => {
+        host.initialGroupIndex = 1;
+        host.resumeStoryIndex.set(() => 0);
+      });
+
+      fixture.componentInstance.resumeStoryIndex.set(() => 1);
+      fixture.detectChanges();
+      fixture.componentInstance.api!.prevGroup();
+
+      expect(fixture.componentInstance.storyChanges).toContainEqual({
+        groupIndex: 0,
+        storyIndex: 1,
+      });
+    });
+
+    it('leaves every group on its first story when no resume is given', () => {
+      const fixture = create((host) => (host.initialGroupIndex = 1));
+
+      fixture.componentInstance.api!.prevGroup();
+
+      expect(fixture.componentInstance.storyChanges).toContainEqual({
+        groupIndex: 0,
+        storyIndex: 0,
+      });
+    });
+  });
+
+  describe('size', () => {
+    const original = { width: window.innerWidth, height: window.innerHeight };
+    const setViewport = (width: number, height: number) => {
+      Object.defineProperty(window, 'innerWidth', {
+        configurable: true,
+        value: width,
+      });
+      Object.defineProperty(window, 'innerHeight', {
+        configurable: true,
+        value: height,
+      });
+    };
+    const sizeOf = (fixture: ComponentFixture<unknown>): [number, number] =>
+      (
+        fixture.debugElement.query(By.directive(ReelComponent))
+          .componentInstance as ReelComponent
+      ).size() as [number, number];
+    const openAt = (width: number, height: number) => {
+      setViewport(width, height);
+      return create();
+    };
+
+    afterEach(() => setViewport(original.width, original.height));
+
+    it.each([
+      [1280, 720, 387, 688],
+      [1440, 900, 488, 868],
+      [1920, 1080, 589, 1048],
+      [2560, 1440, 792, 1408],
+    ])(
+      'fills the height of a %ix%i desktop window at 9:16',
+      (width, height, expectedWidth, expectedHeight) => {
+        const [actualWidth, actualHeight] = sizeOf(openAt(width, height));
+
+        expect(Math.abs(actualWidth - expectedWidth)).toBeLessThanOrEqual(1);
+        expect(Math.abs(actualHeight - expectedHeight)).toBeLessThanOrEqual(1);
+      },
+    );
+
+    it('narrows to the room beside the arrows in a tall, narrow window', () => {
+      const [width, height] = sizeOf(openAt(800, 1400));
+
+      expect(width).toBe(648);
+      expect(height).toBeCloseTo(1152, 5);
+    });
+
+    it.each([
+      [768, 1024],
+      [390, 844],
+    ])('fills a %ix%i mobile screen', (width, height) => {
+      expect(sizeOf(openAt(width, height))).toEqual([width, height]);
+    });
+
+    it('follows the window when it is resized', () => {
+      const fixture = openAt(1440, 900);
+
+      setViewport(1440, 1100);
+      window.dispatchEvent(new Event('resize'));
+      fixture.detectChanges();
+
+      const [width, height] = sizeOf(fixture);
+      expect(height).toBe(1068);
+      expect(width).toBeCloseTo(1068 * (9 / 16), 5);
+    });
+  });
+
+  describe('keyboard', () => {
+    const pressEscape = () =>
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    const navKeysOf = (fixture: ComponentFixture<unknown>) =>
+      (
+        fixture.debugElement.query(By.directive(ReelComponent))
+          .componentInstance as ReelComponent
+      ).enableNavKeys();
+
+    it('handles the arrow keys and Escape by default', () => {
+      const fixture = create();
+
+      pressEscape();
+
+      expect(navKeysOf(fixture)).toBe(true);
+      expect(fixture.componentInstance.closes).toBe(1);
+    });
+
+    it('leaves the arrow keys and Escape alone when turned off', () => {
+      const fixture = create((host) => host.enableKeyboard.set(false));
+
+      pressEscape();
+
+      expect(navKeysOf(fixture)).toBe(false);
+      expect(fixture.componentInstance.closes).toBe(0);
+    });
+
+    it('follows the input when it changes while open', () => {
+      const fixture = create();
+
+      fixture.componentInstance.enableKeyboard.set(false);
+      fixture.detectChanges();
+      pressEscape();
+
+      expect(navKeysOf(fixture)).toBe(false);
+      expect(fixture.componentInstance.closes).toBe(0);
+    });
+  });
+
+  describe('accessibility', () => {
+    it('takes its label from ariaLabel', () => {
+      const fixture = create((host) => (host.ariaLabel = 'Friend stories'));
+
+      expect(dialogOf(fixture).getAttribute('aria-label')).toBe(
+        'Friend stories',
+      );
+      expect(dialogOf(fixture).getAttribute('tabindex')).toBe('-1');
+    });
+
+    it('labels the arrows', () => {
+      const fixture = create();
+
+      expect(
+        element(fixture).querySelector('[aria-label="Previous story"]'),
+      ).not.toBeNull();
+      expect(
+        element(fixture).querySelector('[aria-label="Next story"]'),
+      ).not.toBeNull();
+    });
+
+    it('takes focus when it opens and gives it back when it closes', () => {
+      const trigger = document.createElement('button');
+      document.body.appendChild(trigger);
+      trigger.focus();
+
+      const fixture = create();
+      expect(document.activeElement).toBe(dialogOf(fixture));
+
+      fixture.componentInstance.isOpen.set(false);
+      fixture.detectChanges();
+      expect(document.activeElement).toBe(trigger);
+      trigger.remove();
+    });
+  });
+
+  describe('outputs', () => {
+    it('reports a pause and a resume from the header button', () => {
+      const fixture = create();
+      const button = (label: string) =>
+        element(fixture).querySelector(
+          `[aria-label="${label}"]`,
+        ) as HTMLElement;
+
+      button('Pause').click();
+      fixture.detectChanges();
+      button('Play').click();
+
+      expect(fixture.componentInstance.events).toEqual(['paused', 'resumed']);
+    });
+
+    it('closes after the last story of the last group completes', () => {
+      const fixture = create((host) => (host.initialGroupIndex = 2));
+
+      contentIn(fixture).storiesCtrl.onStoryTimerComplete();
+
+      expect(fixture.componentInstance.completedStories).toEqual([
+        { groupIndex: 2, storyIndex: 0 },
+      ]);
+      expect(fixture.componentInstance.closes).toBe(1);
+    });
+  });
+
+  describe('interface', () => {
+    it('keeps the interface on screen during a long press with hideUIOnPause off', () => {
+      const fixture = create((host) => (host.hideUIOnPause = false));
+
+      contentIn(fixture).onLongPressStart();
+      fixture.detectChanges();
+
+      expect(
+        element(fixture).querySelector('.rk-stories-ui-layer')!.classList,
+      ).not.toContain('rk-stories-ui-layer--hidden');
+    });
+
+    it('moves a story on a click and a group on a long press of an arrow', fakeAsync(() => {
+      const fixture = create();
+      const next = element(fixture).querySelector(
+        '[aria-label="Next story"]',
+      ) as HTMLElement;
+
+      next.dispatchEvent(new Event('pointerdown'));
+      next.dispatchEvent(new Event('pointerup'));
+      expect(fixture.componentInstance.storyChanges).toContainEqual({
+        groupIndex: 0,
+        storyIndex: 1,
+      });
+
+      next.dispatchEvent(new Event('pointerdown'));
+      tick(500);
+      next.dispatchEvent(new Event('pointerup'));
+      expect(fixture.componentInstance.groupChanges).toEqual([1]);
+
+      fixture.destroy();
+      tick(1000);
+    }));
+
+    // Angular inputs follow a new array rather than a mutated one, so a feed
+    // that grows a group hands the player a copy with the story added.
+    it('reaches a story added to a group it already has', () => {
+      const fixture = create((host) => (host.initialGroupIndex = 1));
+
+      fixture.componentInstance.groups.set(
+        groups.map((group, index) =>
+          index === 1
+            ? {
+                ...group,
+                stories: [
+                  ...group.stories,
+                  { id: 'io-2-2', src: '/io-2-2.jpg', mediaType: 'image' },
+                ],
+              }
+            : group,
+        ),
+      );
+      fixture.detectChanges();
+      fixture.componentInstance.api!.nextStory();
+
+      expect(fixture.componentInstance.closes).toBe(0);
+      expect(fixture.componentInstance.storyChanges).toEqual([
+        { groupIndex: 1, storyIndex: 1 },
+      ]);
+    });
+  });
+
+  describe('template slots', () => {
+    function createSlotted<T>(component: new () => T): ComponentFixture<T> {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({ imports: [component] });
+      const fixture = TestBed.createComponent(component);
+      fixture.detectChanges();
+      return fixture;
+    }
+
+    it('shows the loading template while the active story loads', () => {
+      @Component({
+        template: `
+          <rk-stories-overlay [isOpen]="true" [groups]="groups">
+            <ng-template rkStoriesLoading let-story="story">
+              <p class="custom-loading">{{ story.id }}</p>
+            </ng-template>
+          </rk-stories-overlay>
+        `,
+        imports: [RkStoriesOverlayComponent, RkStoriesLoadingDirective],
+      })
+      class LoadingHostComponent {
+        groups = groups;
+      }
+
+      const fixture = createSlotted(LoadingHostComponent);
+
+      const loading = element(fixture).querySelectorAll('.custom-loading');
+      expect(loading).toHaveLength(1);
+      expect(loading[0].textContent?.trim()).toBe('io-1-1');
+    });
+
+    it('shows the error template once the active story fails', () => {
+      @Component({
+        template: `
+          <rk-stories-overlay [isOpen]="true" [groups]="groups">
+            <ng-template rkStoriesError let-story="story">
+              <p class="custom-error">{{ story.id }}</p>
+            </ng-template>
+          </rk-stories-overlay>
+        `,
+        imports: [RkStoriesOverlayComponent, RkStoriesErrorDirective],
+      })
+      class ErrorHostComponent {
+        groups = [
+          {
+            author: { id: 'io-e', name: 'Eve', avatar: '/io-eve.jpg' },
+            stories: [{ id: 'io-e-1', src: '/io-e-1.jpg', mediaType: 'image' }],
+          },
+        ] as StoriesGroup[];
+      }
+
+      const fixture = createSlotted(ErrorHostComponent);
+      expect(element(fixture).querySelector('.custom-error')).toBeNull();
+
+      contentIn(fixture).onContentError(0, 0);
+      fixture.detectChanges();
+
+      expect(
+        element(fixture).querySelector('.custom-error')?.textContent?.trim(),
+      ).toBe('io-e-1');
+      expect(element(fixture).querySelector('.rk-stories-error')).toBeNull();
+    });
+
+    it('draws the carousel cards from the group preview template', () => {
+      @Component({
+        template: `
+          <rk-stories-overlay
+            [isOpen]="true"
+            [groups]="groups"
+            desktopLayout="carousel"
+          >
+            <ng-template rkStoriesGroupPreview let-group="group">
+              <span class="custom-card">{{ group.author.name }}</span>
+            </ng-template>
+          </rk-stories-overlay>
+        `,
+        imports: [RkStoriesOverlayComponent, RkStoriesGroupPreviewDirective],
+      })
+      class PreviewHostComponent {
+        groups = groups;
+      }
+
+      const fixture = createSlotted(PreviewHostComponent);
+
+      expect(
+        Array.from(element(fixture).querySelectorAll('.custom-card'), (card) =>
+          card.textContent?.trim(),
+        ),
+      ).toEqual(['Ben', 'Cat']);
+      expect(
+        element(fixture).querySelector('.rk-stories-card-button'),
+      ).toBeNull();
+    });
+
+    it('tells a header and a bar above the player which group they draw, as active', () => {
+      @Component({
+        template: `
+          <rk-stories-overlay [isOpen]="true" [groups]="groups">
+            <ng-template
+              rkStoriesHeader
+              let-groupIndex="groupIndex"
+              let-isActive="isActive"
+            >
+              <p class="custom-header">{{ groupIndex }} {{ isActive }}</p>
+            </ng-template>
+            <ng-template
+              rkStoriesProgressBar
+              let-groupIndex="groupIndex"
+              let-isActive="isActive"
+            >
+              <p class="custom-bar">{{ groupIndex }} {{ isActive }}</p>
+            </ng-template>
+          </rk-stories-overlay>
+        `,
+        imports: [
+          RkStoriesOverlayComponent,
+          RkStoriesHeaderDirective,
+          RkStoriesProgressBarDirective,
+        ],
+      })
+      class FlagHostComponent {
+        groups = groups;
+      }
+
+      const fixture = createSlotted(FlagHostComponent);
+      const texts = (selector: string) =>
+        Array.from(element(fixture).querySelectorAll(selector), (node) =>
+          node.textContent?.trim(),
+        );
+
+      expect(texts('.custom-header')).toEqual(['0 true']);
+      expect(texts('.custom-bar')).toEqual(['0 true']);
+    });
   });
 });

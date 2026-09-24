@@ -95,6 +95,43 @@ describe('RkStoryHeaderComponent', () => {
     ).toBeTruthy();
   });
 
+  it('names the author and shows the avatar', () => {
+    const header = createHeader().nativeElement as HTMLElement;
+    const avatar = header.querySelector(
+      '.rk-stories-header-avatar',
+    ) as HTMLImageElement;
+
+    expect(header.querySelector('.rk-stories-header-name')?.textContent).toBe(
+      'Alice',
+    );
+    expect(avatar.src).toContain('/alice.jpg');
+    expect(avatar.alt).toBe('Alice');
+  });
+
+  it.each([
+    ['now', 0],
+    ['30m', 30 * 60_000],
+    ['2h', 2 * 3_600_000],
+    ['3d', 3 * 86_400_000],
+    ['2w', 14 * 86_400_000],
+  ])('shows %s for a story posted that long ago', (label, age) => {
+    const header = createHeader({
+      createdAt: new Date(Date.now() - age).toISOString(),
+    }).nativeElement as HTMLElement;
+
+    expect(header.querySelector('.rk-stories-header-time')?.textContent).toBe(
+      label,
+    );
+  });
+
+  it('shows no time for a story without a date', () => {
+    expect(
+      (createHeader().nativeElement as HTMLElement).querySelector(
+        '.rk-stories-header-time',
+      ),
+    ).toBeNull();
+  });
+
   it('spins while the media is still arriving, and stops once it fails', () => {
     const loading = createHeader({ isLoading: true });
     const failed = createHeader({ isLoading: true, isError: true });

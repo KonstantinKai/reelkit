@@ -9,8 +9,15 @@ import {
   type TwoAxisPosition,
   type UrlStateController,
 } from '@reelkit/angular';
-import { createFakeUrlAdapter } from '@reelkit/core/testing';
-import type { StoriesGroup } from '@reelkit/stories-core';
+import {
+  createFakeStorageAdapter,
+  createFakeUrlAdapter,
+} from '@reelkit/core/testing';
+import {
+  createStoriesViewedStateController,
+  type StoriesGroup,
+  type StoriesViewedStateController,
+} from '@reelkit/stories-core';
 import { RkStoriesUrlOverlayComponent } from './stories-url-overlay.component';
 import type { ChromePlacement, StoriesApi } from '../types';
 
@@ -72,6 +79,39 @@ class HostComponent {
   api: StoriesApi | null = null;
 }
 
+/** The overlay with the inputs that decide where a group opens. */
+@Component({
+  template: `
+    <rk-stories-url-overlay
+      [controller]="controller"
+      [groups]="groups"
+      [resumeStoryIndex]="resumeStoryIndex"
+      [viewed]="viewed"
+      (storyViewed)="viewedStories.push($event)"
+    />
+  `,
+  imports: [RkStoriesUrlOverlayComponent],
+})
+class ResumeHostComponent {
+  controller!: UrlStateController<TwoAxisPosition>;
+  groups = GROUPS;
+  resumeStoryIndex: ((groupIndex: number) => number) | undefined = undefined;
+  viewed: StoriesViewedStateController | undefined = undefined;
+  viewedStories: { groupIndex: number; storyIndex: number }[] = [];
+}
+
+function createResumeHost(
+  initialSearch: string,
+  configure: (host: ResumeHostComponent) => void,
+): ComponentFixture<ResumeHostComponent> {
+  const { controller } = createUrlState(initialSearch);
+  const fixture = TestBed.createComponent(ResumeHostComponent);
+  fixture.componentInstance.controller = controller;
+  configure(fixture.componentInstance);
+  fixture.detectChanges();
+  return fixture;
+}
+
 function createHost(initialSearch = ''): {
   fixture: ComponentFixture<HostComponent>;
   url: ReturnType<typeof createFakeUrlAdapter>;
@@ -86,7 +126,9 @@ function createHost(initialSearch = ''): {
 
 describe('RkStoriesUrlOverlayComponent', () => {
   beforeEach(() => {
-    TestBed.configureTestingModule({ imports: [HostComponent] });
+    TestBed.configureTestingModule({
+      imports: [HostComponent, ResumeHostComponent],
+    });
   });
 
   afterEach(() => TestBed.resetTestingModule());
@@ -159,6 +201,52 @@ describe('RkStoriesUrlOverlayComponent', () => {
     expect(
       fixture.debugElement.query(By.css('.rk-stories-overlay')),
     ).toBeNull();
+  });
+
+  it('closes by clearing the parameter on Escape', () => {
+    const { fixture, controller, url } = createHost('?story=0.0');
+
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    fixture.detectChanges();
+
+    expect(controller.position.value).toBeNull();
+    expect(fixture.componentInstance.closes).toBe(1);
+    expect(url.adapter.read()).not.toContain('story');
+    expect(
+      fixture.debugElement.query(By.css('.rk-stories-overlay')),
+    ).toBeNull();
+  });
+
+  // A shared link names the exact story; a remembered resume point must not
+  // move the viewer off it.
+  it('opens where the link points, whatever a resume callback suggests', () => {
+    const fixture = createResumeHost('?story=0.0', (host) => {
+      host.resumeStoryIndex = () => 1;
+    });
+
+    expect(fixture.componentInstance.viewedStories).toEqual([
+      { groupIndex: 0, storyIndex: 0 },
+    ]);
+  });
+
+  // The player picks its opening story while it first renders, so the store
+  // has to be read before a link opens it: by the overlay while it is closed.
+  it('reads the viewed store while its player is closed', () => {
+    const storage = createFakeStorageAdapter({ initial: '["a1.s1"]' });
+    const viewed = createStoriesViewedStateController({
+      storageKey: 'seen',
+      storage: storage.adapter,
+      groups: () => GROUPS,
+    });
+    const fixture = createResumeHost('', (host) => {
+      host.viewed = viewed;
+    });
+
+    expect(
+      fixture.debugElement.query(By.css('.rk-stories-overlay')),
+    ).toBeNull();
+    expect(storage.counts.read).toBeGreaterThan(0);
+    expect(viewed.viewedState.value.get('a1')).toBe(1);
   });
 
   // While the player is open it owns the position and the URL trails it, so

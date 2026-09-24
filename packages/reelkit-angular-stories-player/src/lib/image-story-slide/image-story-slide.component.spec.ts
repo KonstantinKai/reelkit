@@ -21,6 +21,17 @@ describe('RkImageStorySlideComponent', () => {
 
   afterEach(() => TestBed.resetTestingModule());
 
+  // A drag on the story moves the player; the browser's own image drag would
+  // steal it and float a ghost of the picture instead.
+  it('draws the story image with the shared class, never draggable', () => {
+    const img = createSlide().debugElement.query(By.css('img'))
+      .nativeElement as HTMLImageElement;
+
+    expect(img.getAttribute('src')).toBe('/story.jpg');
+    expect(img.classList).toContain('rk-stories-image');
+    expect(img.getAttribute('draggable')).toBe('false');
+  });
+
   it('reserves the box before the image arrives when given a ratio', () => {
     const fixture = createSlide({ aspectRatio: 0.5625 });
     const img = fixture.debugElement.query(By.css('img'))

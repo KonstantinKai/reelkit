@@ -483,6 +483,56 @@ describe('StoriesOverlay', () => {
     });
   });
 
+  // The mocked Reel draws no slides, so the group and its stories are built by
+  // hand from the item slots the player hands the two sliders.
+  describe('a story that will not load', () => {
+    const failFirstStory = async () => {
+      const failures: (() => void)[] = [];
+      open(
+        {},
+        {
+          slide: (scope: never) => {
+            failures.push((scope as SlideSlotScope).onError);
+            return h('div');
+          },
+        },
+      );
+      const [group] = outerReel().slots['item']!({
+        index: 0,
+        indexInRange: 0,
+        size: [400, 700],
+      });
+      mount({ render: () => group }, { attachTo: document.body });
+      const storyReel = reels.renders.at(-1)!;
+      const stories = [0, 1].map(
+        (index) =>
+          storyReel.slots['item']!({
+            index,
+            indexInRange: index,
+            size: [400, 700],
+          })[0],
+      );
+      mount({ render: () => stories }, { attachTo: document.body });
+      failures[0]();
+      await nextTick();
+    };
+
+    // The player keeps one loading state, so an error panel drawn per story
+    // would appear on every story slide at once.
+    it('reports it once, on the story that failed', async () => {
+      await failFirstStory();
+      expect(document.querySelectorAll('.rk-stories-error')).toHaveLength(1);
+    });
+
+    it('says what went wrong, not only the icon', async () => {
+      await failFirstStory();
+      const error = document.querySelector('.rk-stories-error')!;
+
+      expect(error.getAttribute('aria-label')).toBe('Content unavailable');
+      expect(error.textContent).toContain('Content unavailable');
+    });
+  });
+
   describe('a11y', () => {
     it('is a labelled modal dialog', () => {
       open();

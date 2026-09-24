@@ -73,6 +73,24 @@ describe('RkStoriesRingListComponent', () => {
     expect(ringCounts(fixture)[0]).toBe(1);
   });
 
+  it('follows a controller that replaced the first', () => {
+    const controller = () =>
+      createStoriesViewedStateController({
+        groups: () => groups,
+        storageKey: 'stories-spec',
+        storage: createFakeStorageAdapter().adapter,
+      });
+    const second = controller();
+    const fixture = createList({ viewed: controller() });
+    fixture.componentRef.setInput('viewed', second);
+    fixture.detectChanges();
+
+    second.markViewed(1, 0);
+    fixture.detectChanges();
+
+    expect(ringCounts(fixture)).toEqual([0, 1]);
+  });
+
   // The list is on screen before the player opens, and the player picks its
   // opening story from this store while it first renders.
   it('reads the store while it is on screen and releases it after', () => {
