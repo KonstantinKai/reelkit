@@ -168,14 +168,14 @@
 }
 
 /*
- * Collapse custom-element icon wrappers (e.g. <lucide-angular>) to their SVG
- * content so flex alignment centres the icon: without this, unknown elements
- * with default `display: inline` can blockify unpredictably inside the box.
- * The other two Angular overlays carry the same rule; react and vue put the
- * SVG in directly and need none.
+ * Collapse the <lucide-angular> icon wrapper to its SVG content so flex
+ * alignment centres the icon: without this, an unknown element with the
+ * default `display: inline` can blockify unpredictably inside the box. Only
+ * the wrapper is targeted, so the error panel's text keeps its own layout.
+ * The other two Angular overlays carry the same rule.
  */
-.rk-stories-nav-btn > *,
-.rk-stories-error > * {
+.rk-stories-nav-btn > lucide-angular,
+.rk-stories-error > lucide-angular {
   display: inline-flex;
   align-items: center;
   justify-content: center;

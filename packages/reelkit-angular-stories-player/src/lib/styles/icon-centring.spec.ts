@@ -2,7 +2,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * React and vue put an `<svg>` straight into a button, so the stylesheet's
+ * React and Vue put an `<svg>` straight into a button, so the stylesheet's
  * `align-items: center` centres it. Angular renders `<lucide-angular>`, an
  * element the stylesheet has never heard of, and an unknown element with a
  * default `display: inline` blockifies unpredictably as a flex item — the
@@ -47,7 +47,17 @@ describe('icon centring', () => {
     expect(boxes.length).toBeGreaterThan(0);
 
     for (const box of boxes) {
-      expect(css).toContain(`.${box} > *`);
+      expect(css).toContain(`.${box} > lucide-angular`);
+    }
+  });
+
+  // A catch-all child selector also reshapes whatever else sits in the box,
+  // such as the text beside the icon in the error panel.
+  it('reaches the icon wrapper only, not every child of the box', () => {
+    const css = stylesheets();
+
+    for (const box of boxesHoldingAnIcon()) {
+      expect(css).not.toContain(`.${box} > *`);
     }
   });
 });

@@ -14,6 +14,15 @@ export interface CanvasProgressBarProps extends CanvasProgressRendererConfig {
 
   /** Timer progress signal (0–1). */
   progress: Signal<number>;
+
+  /**
+   * Whether the bar redraws on every animation frame to follow a running
+   * timer. A bar that is not live draws only when its signals change or its
+   * container resizes, which is all a bar showing a paused group needs.
+   *
+   * @default true
+   */
+  live?: boolean;
 }
 
 /**
@@ -26,6 +35,7 @@ export const CanvasProgressBar: FC<CanvasProgressBarProps> = ({
   totalStories,
   activeIndex,
   progress,
+  live = true,
   ...config
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -44,21 +54,37 @@ export const CanvasProgressBar: FC<CanvasProgressBarProps> = ({
       renderer.draw(totalStories, activeIndex.value, progress.value);
     };
 
-    const loop = () => {
-      draw();
+    if (live) {
+      const loop = () => {
+        draw();
+        frameRef.current = requestAnimationFrame(loop);
+      };
+
+      disposables.push(
+        reaction(() => [activeIndex], draw),
+        () => cancelAnimationFrame(frameRef.current),
+      );
+
       frameRef.current = requestAnimationFrame(loop);
-    };
+    } else {
+      // Resizing the canvas clears it. This observer is created after the
+      // renderer's own, and observers are notified in the order they were
+      // created, so the bar is repainted after the renderer has measured.
+      const resizeObserver = new ResizeObserver(draw);
+      if (canvas.parentElement) resizeObserver.observe(canvas.parentElement);
 
-    disposables.push(
-      reaction(() => [activeIndex], draw),
-      () => cancelAnimationFrame(frameRef.current),
-      renderer.dispose,
-    );
+      disposables.push(
+        reaction(() => [activeIndex, progress], draw),
+        () => resizeObserver.disconnect(),
+      );
 
-    frameRef.current = requestAnimationFrame(loop);
+      draw();
+    }
+
+    disposables.push(renderer.dispose);
 
     return disposables.dispose;
-  }, [totalStories]);
+  }, [totalStories, activeIndex, progress, live]);
 
   return (
     <div className="rk-stories-progress-bar">

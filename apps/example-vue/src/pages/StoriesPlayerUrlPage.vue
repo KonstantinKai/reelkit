@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { computed, shallowRef } from 'vue';
-import type { DesktopLayout } from '@reelkit/vue-stories-player';
+import type {
+  ChromePlacement,
+  DesktopLayout,
+} from '@reelkit/vue-stories-player';
 import { persistedRef } from '../composables/persistedRef';
 import Segmented from '../components/Segmented.vue';
 import StoriesSwitches from '../components/StoriesSwitches.vue';
@@ -33,6 +36,10 @@ const rememberSeen = persistedRef(
 const desktopLayout = persistedRef<DesktopLayout>(
   'reelkit-stories-player-url-desktop-layout',
   'single',
+);
+const chromePlacement = persistedRef<ChromePlacement>(
+  'reelkit-stories-player-url-chrome-placement',
+  'overlay',
 );
 
 const hashable = computed(
@@ -111,6 +118,7 @@ const demoKey = computed(
         <StoriesSwitches
           v-model:remember-seen="rememberSeen"
           v-model:desktop-layout="desktopLayout"
+          v-model:chrome-placement="chromePlacement"
         />
       </div>
 
@@ -123,6 +131,7 @@ const demoKey = computed(
         :hash="hash"
         :remember-seen="rememberSeen"
         :desktop-layout="desktopLayout"
+        :chrome-placement="chromePlacement"
       />
     </div>
   </div>

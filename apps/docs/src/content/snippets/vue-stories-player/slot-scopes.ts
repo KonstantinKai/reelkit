@@ -6,6 +6,9 @@ interface HeaderSlotScope<T extends StoryItem = StoryItem> {
   isMuted: boolean;
   /** True while the active story is a video — gate your sound button on it. */
   isVideo: boolean;
+  groupIndex: number;
+  /** False for a neighbouring group's header with chrome-placement="group". */
+  isActive: boolean;
   onToggleSound: () => void;
   onTogglePause: () => void;
   onClose: () => void;
@@ -47,6 +50,9 @@ interface ProgressBarSlotScope<T extends StoryItem = StoryItem> {
   /** 0 to 1 for the active story. Bridge it with toVueRef. */
   progress: Signal<number>;
   group: StoriesGroup<T>;
+  groupIndex: number;
+  /** False: the signals hold still for a neighbouring group. */
+  isActive: boolean;
 }
 
 interface LoadingSlotScope<T extends StoryItem = StoryItem> {

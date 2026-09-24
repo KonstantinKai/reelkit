@@ -5,6 +5,8 @@ interface HeaderRenderProps<T extends StoryItem = StoryItem> {
   isPaused: boolean;
   isMuted: boolean;
   isVideo: boolean;
+  groupIndex: number;
+  isActive: boolean; // false for a neighbouring group's header
   onToggleSound: () => void;
   onTogglePause: () => void;
   onClose: () => void;

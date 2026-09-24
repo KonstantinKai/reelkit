@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { persistedSignal } from '../components/persistedSignal';
 import { RememberSeenSwitch } from '../components/RememberSeenSwitch';
 import { DesktopLayoutSwitch } from '../components/DesktopLayoutSwitch';
+import { ChromePlacementSwitch } from '../components/ChromePlacementSwitch';
 import {
   StoriesOverlay,
   StoriesRingList,
@@ -12,6 +13,7 @@ import {
   type StoryItem,
   type SlideRenderProps,
   type DesktopLayout,
+  type ChromePlacement,
 } from '@reelkit/react-stories-player';
 import {
   cubeTransition,
@@ -401,27 +403,39 @@ function StoriesPlayerPage() {
   // controller, handed to the ring list and the player: they attach it and
   // follow it themselves. It reads the groups through the signal, so groups
   // added later are counted too.
-  const [{ groups, transition, rememberSeen, desktopLayout, viewed }] =
-    useState(() => {
-      const groups = createSignal(generateGroups());
-      const rememberSeen = persistedSignal(
-        'reelkit-stories-player-remember-seen',
-        true,
-      );
-      return {
-        groups,
-        transition: createSignal<TransitionTransformFn>(cubeTransition),
-        rememberSeen,
-        desktopLayout: persistedSignal<DesktopLayout>(
-          'reelkit-stories-player-desktop-layout',
-          'single',
-        ),
-        viewed: createStoriesViewedStateController({
-          storageKey: 'reelkit-stories-player-seen',
-          groups: () => groups.value,
-        }),
-      };
-    });
+  const [
+    {
+      groups,
+      transition,
+      rememberSeen,
+      desktopLayout,
+      chromePlacement,
+      viewed,
+    },
+  ] = useState(() => {
+    const groups = createSignal(generateGroups());
+    const rememberSeen = persistedSignal(
+      'reelkit-stories-player-remember-seen',
+      true,
+    );
+    return {
+      groups,
+      transition: createSignal<TransitionTransformFn>(cubeTransition),
+      rememberSeen,
+      desktopLayout: persistedSignal<DesktopLayout>(
+        'reelkit-stories-player-desktop-layout',
+        'single',
+      ),
+      chromePlacement: persistedSignal<ChromePlacement>(
+        'reelkit-stories-player-chrome-placement',
+        'overlay',
+      ),
+      viewed: createStoriesViewedStateController({
+        storageKey: 'reelkit-stories-player-seen',
+        groups: () => groups.value,
+      }),
+    };
+  });
 
   // Stands in for fetching the next page of a feed. The new groups go on the
   // end, so every group already loaded keeps its index and its place.
@@ -540,6 +554,7 @@ function StoriesPlayerPage() {
         >
           <RememberSeenSwitch signal={rememberSeen} />
           <DesktopLayoutSwitch signal={desktopLayout} />
+          <ChromePlacementSwitch signal={chromePlacement} />
         </div>
 
         {/* The rings follow the viewed controller by themselves, so only the
@@ -559,7 +574,15 @@ function StoriesPlayerPage() {
       {/* The same controller as the ring list: the carousel cards draw the
           same rings, groups resume where they were left, and every story
           shown is recorded. */}
-      <Observe signals={[groups, transition, desktopLayout, rememberSeen]}>
+      <Observe
+        signals={[
+          groups,
+          transition,
+          desktopLayout,
+          chromePlacement,
+          rememberSeen,
+        ]}
+      >
         {() => (
           <StoriesOverlay<CustomStory>
             isOpen={isOpen}
@@ -569,6 +592,7 @@ function StoriesPlayerPage() {
             viewed={rememberSeen.value ? viewed : undefined}
             groupTransition={transition.value}
             desktopLayout={desktopLayout.value}
+            chromePlacement={chromePlacement.value}
             renderSlide={(props) => <CustomSlide {...props} />}
           />
         )}

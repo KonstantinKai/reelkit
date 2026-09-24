@@ -23,6 +23,8 @@ import '@reelkit/angular-reel-player/styles.css';
 
 ## Quick Start
 
+Placement: unlike React/Vue (portal to `document.body`), `rk-reel-player-overlay` renders where placed, `position: fixed`. Keep it out of ancestors with `transform` / `perspective` / `filter` / `will-change: transform` — that ancestor becomes the containing block: player sized to it, clipped by its `overflow`. An ancestor stacking context caps `--rk-reel-overlay-z`. Upside: `--rk-reel-*` tokens on any ancestor reach the player.
+
 ```typescript
 import { Component, signal } from '@angular/core';
 import { RkReelPlayerOverlayComponent } from '@reelkit/angular-reel-player';

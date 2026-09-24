@@ -235,6 +235,7 @@ Os deslocamentos são relativos ao grupo ativo: negativos à esquerda, positivos
 | Função | Tipo | Descrição |
 | --- | --- | --- |
 | `getRingPresentation(options)` | `(RingPresentationOptions) => RingPresentation` | Classe, estilo inline e tamanho do avatar de um anel de story, a partir de `totalStories`, `viewedCount` e `size`. Com algo por ver vira o gradiente cônico girando; visto até o fim fica um `viewedColor` liso; grupo vazio não ganha anel. Os tamanhos levam a unidade `px`, então o objeto de estilo serve em qualquer framework. |
+| `kStoriesRingSize`, `kStoriesRingListRingSize`, `kStoriesCardRingSize` | `number` | Diâmetros de anel que toda binding desenha por padrão, em pixels: 68 para um anel avulso, 64 na lista de anéis, 52 num card do carrossel de desktop. Passe um deles como `size` para ficar igual aos players. |
 | `getPreviewSource(story)` | `(StoryItem \| undefined) => string \| undefined` | Imagem que um cartão do carrossel mostra: o `poster` do story, a própria imagem quando é uma imagem, e nada para um vídeo sem poster. Um cartão sem imagem cai no cartão simples desenhado para um story sem nada a mostrar. |
 | `formatTimeAgo(date)` | `(string \| Date) => string` | Tempo relativo curto que o cabeçalho e os cartões do carrossel mostram: `now`, `5m`, `3h`, `2d`, `2w`. |
 

@@ -3,15 +3,23 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import {
   createOverlayUrlState,
+  cubeTransition,
   urlIndexTwoAxisKey,
   type TwoAxisIdentity,
   type TwoAxisPosition,
   type UrlStateController,
 } from '@reelkit/angular';
-import { createFakeUrlAdapter } from '@reelkit/core/testing';
-import type { StoriesGroup } from '@reelkit/stories-core';
+import {
+  createFakeStorageAdapter,
+  createFakeUrlAdapter,
+} from '@reelkit/core/testing';
+import {
+  createStoriesViewedStateController,
+  type StoriesGroup,
+  type StoriesViewedStateController,
+} from '@reelkit/stories-core';
 import { RkStoriesUrlOverlayComponent } from './stories-url-overlay.component';
-import type { StoriesApi } from '../types';
+import type { ChromePlacement, StoriesApi } from '../types';
 
 const GROUPS: StoriesGroup[] = [
   {
@@ -56,6 +64,7 @@ function createUrlState(initialSearch = ''): {
     <rk-stories-url-overlay
       [controller]="controller()"
       [groups]="groups"
+      [chromePlacement]="chromePlacement"
       (closed)="closes = closes + 1"
       (apiReady)="api = $event"
     />
@@ -65,8 +74,42 @@ function createUrlState(initialSearch = ''): {
 class HostComponent {
   controller!: WritableSignal<UrlStateController<TwoAxisPosition>>;
   groups = GROUPS;
+  chromePlacement: ChromePlacement = 'overlay';
   closes = 0;
   api: StoriesApi | null = null;
+}
+
+/** The overlay with the inputs that decide where a group opens. */
+@Component({
+  template: `
+    <rk-stories-url-overlay
+      [controller]="controller"
+      [groups]="groups"
+      [resumeStoryIndex]="resumeStoryIndex"
+      [viewed]="viewed"
+      (storyViewed)="viewedStories.push($event)"
+    />
+  `,
+  imports: [RkStoriesUrlOverlayComponent],
+})
+class ResumeHostComponent {
+  controller!: UrlStateController<TwoAxisPosition>;
+  groups = GROUPS;
+  resumeStoryIndex: ((groupIndex: number) => number) | undefined = undefined;
+  viewed: StoriesViewedStateController | undefined = undefined;
+  viewedStories: { groupIndex: number; storyIndex: number }[] = [];
+}
+
+function createResumeHost(
+  initialSearch: string,
+  configure: (host: ResumeHostComponent) => void,
+): ComponentFixture<ResumeHostComponent> {
+  const { controller } = createUrlState(initialSearch);
+  const fixture = TestBed.createComponent(ResumeHostComponent);
+  fixture.componentInstance.controller = controller;
+  configure(fixture.componentInstance);
+  fixture.detectChanges();
+  return fixture;
 }
 
 function createHost(initialSearch = ''): {
@@ -83,16 +126,45 @@ function createHost(initialSearch = ''): {
 
 describe('RkStoriesUrlOverlayComponent', () => {
   beforeEach(() => {
-    TestBed.configureTestingModule({ imports: [HostComponent] });
+    TestBed.configureTestingModule({
+      imports: [HostComponent, ResumeHostComponent],
+    });
   });
 
   afterEach(() => TestBed.resetTestingModule());
+
+  // The same declared default as the plain overlay, so the input reads alike
+  // in both places and in the generated reference.
+  it('declares the cube as its default group transition', () => {
+    const { fixture } = createHost();
+    const overlay = fixture.debugElement.query(
+      By.directive(RkStoriesUrlOverlayComponent),
+    ).componentInstance as RkStoriesUrlOverlayComponent;
+
+    expect(overlay.groupTransition()).toBe(cubeTransition);
+  });
 
   it('stays closed while the parameter names nothing', () => {
     const { fixture } = createHost();
     expect(
       fixture.debugElement.query(By.css('.rk-stories-overlay')),
     ).toBeNull();
+  });
+
+  // This overlay hands its inputs to the player one by one, so a new one
+  // reaches the player only if it is bound here too.
+  it('draws the progress bar and header inside each group when asked', () => {
+    const { controller } = createUrlState('?story=0.0');
+    const fixture = TestBed.createComponent(HostComponent);
+    fixture.componentInstance.controller = signal(controller);
+    fixture.componentInstance.chromePlacement = 'group';
+    fixture.detectChanges();
+
+    expect(
+      fixture.debugElement.queryAll(
+        By.css('.rk-stories-slide-wrapper .rk-stories-ui-layer'),
+      ).length,
+    ).toBe(GROUPS.length);
   });
 
   it('opens on the story the parameter names', () => {
@@ -129,6 +201,52 @@ describe('RkStoriesUrlOverlayComponent', () => {
     expect(
       fixture.debugElement.query(By.css('.rk-stories-overlay')),
     ).toBeNull();
+  });
+
+  it('closes by clearing the parameter on Escape', () => {
+    const { fixture, controller, url } = createHost('?story=0.0');
+
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    fixture.detectChanges();
+
+    expect(controller.position.value).toBeNull();
+    expect(fixture.componentInstance.closes).toBe(1);
+    expect(url.adapter.read()).not.toContain('story');
+    expect(
+      fixture.debugElement.query(By.css('.rk-stories-overlay')),
+    ).toBeNull();
+  });
+
+  // A shared link names the exact story; a remembered resume point must not
+  // move the viewer off it.
+  it('opens where the link points, whatever a resume callback suggests', () => {
+    const fixture = createResumeHost('?story=0.0', (host) => {
+      host.resumeStoryIndex = () => 1;
+    });
+
+    expect(fixture.componentInstance.viewedStories).toEqual([
+      { groupIndex: 0, storyIndex: 0 },
+    ]);
+  });
+
+  // The player picks its opening story while it first renders, so the store
+  // has to be read before a link opens it: by the overlay while it is closed.
+  it('reads the viewed store while its player is closed', () => {
+    const storage = createFakeStorageAdapter({ initial: '["a1.s1"]' });
+    const viewed = createStoriesViewedStateController({
+      storageKey: 'seen',
+      storage: storage.adapter,
+      groups: () => GROUPS,
+    });
+    const fixture = createResumeHost('', (host) => {
+      host.viewed = viewed;
+    });
+
+    expect(
+      fixture.debugElement.query(By.css('.rk-stories-overlay')),
+    ).toBeNull();
+    expect(storage.counts.read).toBeGreaterThan(0);
+    expect(viewed.viewedState.value.get('a1')).toBe(1);
   });
 
   // While the player is open it owns the position and the URL trails it, so

@@ -142,6 +142,7 @@ export type {
   StoriesErrorContext,
   StoriesGroupPreviewContext,
   DesktopLayout,
+  ChromePlacement,
   StoriesApi,
 } from './lib/types';
 
@@ -152,6 +153,7 @@ export {
 } from '@reelkit/stories-core';
 
 export {
+  SoundStateService,
   createOverlayUrlState,
   urlIndexTwoAxisKey,
   urlStableIdTwoAxisKey,

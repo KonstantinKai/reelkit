@@ -22,8 +22,8 @@ describe('NavigationComponent', () => {
 
   afterEach(() => TestBed.resetTestingModule());
 
-  // Every family reads plain, then URL, then custom — the order the react and
-  // vue demos use, so the three menus can be read against each other.
+  // Every family reads plain, then URL, then custom — the order the React and
+  // Vue demos use, so the three menus can be read against each other.
   it('lists each family as plain, then URL, then custom', () => {
     const paths = navPaths();
     const order = (path: string) => paths.indexOf(path);

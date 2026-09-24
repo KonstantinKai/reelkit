@@ -26,7 +26,11 @@ import {
   createFakeUrlAdapter,
 } from '@reelkit/core/testing';
 import { StoriesOverlay, StoriesUrlOverlay } from './StoriesOverlay';
-import type { StoriesApi } from './types';
+import type {
+  HeaderRenderProps,
+  ProgressBarRenderProps,
+  StoriesApi,
+} from './types';
 
 beforeAll(() => {
   globalThis.ResizeObserver = class {
@@ -367,6 +371,163 @@ describe('StoriesOverlay', () => {
           .querySelector('.rk-stories-overlay')!
           .getAttribute('aria-label'),
       ).toBe('Friend stories');
+    });
+
+    it('labels the arrows', () => {
+      render(<StoriesOverlay isOpen onClose={vi.fn()} groups={mockGroups} />);
+
+      expect(
+        document.querySelector('[aria-label="Previous story"]'),
+      ).not.toBeNull();
+      expect(
+        document.querySelector('[aria-label="Next story"]'),
+      ).not.toBeNull();
+    });
+
+    it('takes focus when it opens and gives it back when it closes', () => {
+      const trigger = document.createElement('button');
+      document.body.appendChild(trigger);
+      trigger.focus();
+
+      const { rerender } = render(
+        <StoriesOverlay isOpen onClose={vi.fn()} groups={mockGroups} />,
+      );
+      expect(document.activeElement).toBe(
+        document.querySelector('.rk-stories-overlay'),
+      );
+
+      rerender(
+        <StoriesOverlay isOpen={false} onClose={vi.fn()} groups={mockGroups} />,
+      );
+      expect(document.activeElement).toBe(trigger);
+      trigger.remove();
+    });
+  });
+
+  // The Reel is mocked here, so the tap handler the player hands the group
+  // slider is called directly, at a point measured from the slider's width.
+  describe('tap zones', () => {
+    const tapAt = (fraction: number) => {
+      const outer = lastReelProps.find((props) => props['onTap'])!;
+      const [width] = outer['size'] as [number, number];
+      act(() => {
+        (outer['onTap'] as (event: unknown) => void)({
+          localPosition: [width * fraction, 100],
+        });
+      });
+    };
+
+    it('moves back on a tap in the left zone and on in the right', () => {
+      const onStoryChange = vi.fn();
+      render(
+        <StoriesOverlay
+          isOpen
+          onClose={vi.fn()}
+          groups={mockGroups}
+          onStoryChange={onStoryChange}
+        />,
+      );
+
+      tapAt(0.95);
+      expect(onStoryChange).toHaveBeenLastCalledWith(0, 1);
+
+      tapAt(0.05);
+      expect(onStoryChange).toHaveBeenLastCalledWith(0, 0);
+    });
+
+    it('moves the line between the zones with tapZoneSplit', () => {
+      const onStoryChange = vi.fn();
+      render(
+        <StoriesOverlay
+          isOpen
+          onClose={vi.fn()}
+          groups={mockGroups}
+          initialStoryIndex={1}
+          tapZoneSplit={0.8}
+          onStoryChange={onStoryChange}
+        />,
+      );
+
+      // Past the default line, but short of this one: still the back zone.
+      tapAt(0.5);
+      expect(onStoryChange).toHaveBeenLastCalledWith(0, 0);
+    });
+  });
+
+  it('closes after the last story of the last group', () => {
+    const apiRef = { current: null as StoriesApi | null };
+    const onClose = vi.fn();
+    render(
+      <StoriesOverlay
+        isOpen
+        onClose={onClose}
+        groups={mockGroups}
+        initialGroupIndex={1}
+        apiRef={apiRef}
+      />,
+    );
+
+    act(() => apiRef.current?.nextStory());
+
+    expect(onClose).toHaveBeenCalledOnce();
+  });
+
+  // The mocked Reel draws no slides, so the group and its stories are built by
+  // hand from the item builders the player hands the two sliders.
+  describe('a story that will not load', () => {
+    const failFirstStory = () => {
+      const failures: (() => void)[] = [];
+      render(
+        <StoriesOverlay
+          isOpen
+          onClose={vi.fn()}
+          groups={mockGroups}
+          renderSlide={({ onError }) => {
+            failures.push(onError);
+            return <div />;
+          }}
+        />,
+      );
+      const outer = lastReelProps.find((props) => props['onTap'])!;
+      const group = (
+        outer['itemBuilder'] as (
+          index: number,
+          indexInRange: number,
+          size: [number, number],
+        ) => ReactElement<{
+          children: ReactElement<Record<string, unknown>>[];
+        }>
+      )(0, 0, [400, 700]);
+      const storyReel = [group.props.children]
+        .flat()
+        .find((child) => child?.props?.['itemBuilder'])!;
+      const buildStory = storyReel.props['itemBuilder'] as (
+        index: number,
+        indexInRange: number,
+        size: [number, number],
+      ) => ReactElement;
+      render(
+        <>
+          {buildStory(0, 0, [400, 700])}
+          {buildStory(1, 1, [400, 700])}
+        </>,
+      );
+      act(() => failures[0]());
+    };
+
+    // The player keeps one loading state, so an error panel drawn per story
+    // would appear on every story slide at once.
+    it('reports it once, on the story that failed', () => {
+      failFirstStory();
+      expect(document.querySelectorAll('.rk-stories-error')).toHaveLength(1);
+    });
+
+    it('says what went wrong, not only the icon', () => {
+      failFirstStory();
+      const error = document.querySelector('.rk-stories-error')!;
+
+      expect(error.getAttribute('aria-label')).toBe('Content unavailable');
+      expect(error.textContent).toContain('Content unavailable');
     });
   });
 
@@ -1808,5 +1969,389 @@ describe('StoriesOverlay desktop carousel', () => {
       window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
     });
     expect(onClose).toHaveBeenCalled();
+  });
+});
+
+describe('StoriesOverlay with the progress bar and header in each group', () => {
+  const story = (id: string) => ({
+    id,
+    mediaType: 'image' as const,
+    src: '',
+    duration: 4000,
+  });
+  const groups: StoriesGroup[] = [
+    {
+      author: { id: '1', name: 'Alice', avatar: 'alice.jpg' },
+      stories: [story('a1'), story('a2')],
+    },
+    {
+      author: { id: '2', name: 'Bob', avatar: 'bob.jpg' },
+      stories: [story('b1'), story('b2')],
+    },
+    {
+      author: { id: '3', name: 'Carol', avatar: 'carol.jpg' },
+      stories: [story('c1')],
+    },
+  ];
+
+  type ItemBuilder = (
+    index: number,
+    indexInRange: number,
+    size: [number, number],
+  ) => ReactElement;
+
+  const outerReel = () =>
+    lastReelProps.filter((props) => props['afterChange']).at(-1)!;
+
+  // The mocked Reel draws no slides, so a group slide is built by hand from
+  // the item builder the player hands it.
+  const groupSlide = (groupIndex: number) =>
+    render(
+      (outerReel()['itemBuilder'] as ItemBuilder)(groupIndex, 0, [400, 700]),
+    ).container;
+
+  const latestFor = <P extends { groupIndex: number }>(
+    spy: { mock: { calls: [P][] } },
+    groupIndex: number,
+  ) =>
+    spy.mock.calls
+      .map(([props]) => props)
+      .filter((props) => props.groupIndex === groupIndex)
+      .at(-1)!;
+
+  const progressSpy = () =>
+    vi.fn((_props: ProgressBarRenderProps) => <div className="custom-bar" />);
+  const headerSpy = () =>
+    vi.fn((_props: HeaderRenderProps) => <div className="custom-header" />);
+
+  const advance = (ms: number) =>
+    act(() => {
+      vi.advanceTimersByTime(ms);
+    });
+
+  beforeEach(() => {
+    vi.useFakeTimers({
+      toFake: ['setTimeout', 'clearTimeout', 'Date', 'performance'],
+    });
+    lastReelProps = [];
+    vi.stubGlobal('requestAnimationFrame', (cb: () => void) =>
+      setTimeout(cb, 0),
+    );
+    vi.stubGlobal('cancelAnimationFrame', (id: number) => clearTimeout(id));
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  it('keeps one progress bar and header above the player by default', () => {
+    render(<StoriesOverlay isOpen onClose={vi.fn()} groups={groups} />);
+
+    expect(document.querySelectorAll('.rk-stories-ui-layer')).toHaveLength(1);
+    const slide = groupSlide(0);
+    expect(slide.querySelector('.rk-stories-ui-layer')).toBeNull();
+    expect(slide.querySelector('.rk-stories-progress-bar')).toBeNull();
+    expect(slide.querySelector('.rk-stories-header')).toBeNull();
+  });
+
+  it('tells custom renderers above the player which group they draw, as active', () => {
+    const renderProgressBar = progressSpy();
+    const renderHeader = headerSpy();
+    render(
+      <StoriesOverlay
+        isOpen
+        onClose={vi.fn()}
+        groups={groups}
+        initialGroupIndex={1}
+        renderProgressBar={renderProgressBar}
+        renderHeader={renderHeader}
+      />,
+    );
+
+    expect(latestFor(renderProgressBar, 1).isActive).toBe(true);
+    expect(latestFor(renderHeader, 1).isActive).toBe(true);
+  });
+
+  it('draws a progress bar and header inside every group slide', () => {
+    render(
+      <StoriesOverlay
+        isOpen
+        onClose={vi.fn()}
+        groups={groups}
+        chromePlacement="group"
+      />,
+    );
+
+    expect(document.querySelector('.rk-stories-ui-layer')).toBeNull();
+    for (const [groupIndex, name] of [
+      [0, 'Alice'],
+      [1, 'Bob'],
+    ] as const) {
+      const slide = groupSlide(groupIndex);
+      expect(slide.querySelectorAll('.rk-stories-progress-bar')).toHaveLength(
+        1,
+      );
+      expect(slide.querySelectorAll('.rk-stories-header')).toHaveLength(1);
+      expect(slide.querySelector('.rk-stories-header-name')?.textContent).toBe(
+        name,
+      );
+    }
+  });
+
+  it('shows a neighbouring group where it will resume, with nothing played', () => {
+    const renderProgressBar = progressSpy();
+    const renderHeader = headerSpy();
+    render(
+      <StoriesOverlay
+        isOpen
+        onClose={vi.fn()}
+        groups={groups}
+        chromePlacement="group"
+        resumeStoryIndex={(groupIndex) => (groupIndex === 1 ? 1 : 0)}
+        renderProgressBar={renderProgressBar}
+        renderHeader={renderHeader}
+      />,
+    );
+
+    groupSlide(1);
+
+    const bar = latestFor(renderProgressBar, 1);
+    expect(bar.isActive).toBe(false);
+    expect(bar.totalStories).toBe(2);
+    expect(bar.activeIndex.value).toBe(1);
+    expect(bar.progress.value).toBe(0);
+    const header = latestFor(renderHeader, 1);
+    expect(header.isActive).toBe(false);
+    expect(header.storyIndex).toBe(1);
+    expect(header.story.id).toBe('b2');
+    expect(header.isPaused).toBe(false);
+  });
+
+  it('follows the running story in the active group', () => {
+    const renderProgressBar = progressSpy();
+    const renderHeader = headerSpy();
+    const apiRef = { current: null as StoriesApi | null };
+    render(
+      <StoriesOverlay
+        isOpen
+        onClose={vi.fn()}
+        groups={groups}
+        chromePlacement="group"
+        apiRef={apiRef}
+        renderProgressBar={renderProgressBar}
+        renderHeader={renderHeader}
+      />,
+    );
+    groupSlide(0);
+
+    advance(1000);
+    const bar = latestFor(renderProgressBar, 0);
+    expect(bar.isActive).toBe(true);
+    expect(bar.progress.value).toBeCloseTo(0.25, 1);
+
+    act(() => apiRef.current?.nextStory());
+    expect(bar.activeIndex.value).toBe(1);
+    expect(latestFor(renderHeader, 0).storyIndex).toBe(1);
+
+    act(() => apiRef.current?.pause());
+    expect(latestFor(renderHeader, 0).isPaused).toBe(true);
+  });
+
+  it('hides the chrome of the active group during a long press', () => {
+    render(
+      <StoriesOverlay
+        isOpen
+        onClose={vi.fn()}
+        groups={groups}
+        chromePlacement="group"
+      />,
+    );
+    const slide = groupSlide(0);
+    const layer = () => slide.querySelector('.rk-stories-ui-layer')!;
+
+    act(() => (outerReel()['onLongPress'] as () => void)());
+    expect(layer().classList).toContain('rk-stories-ui-layer--hidden');
+
+    act(() => (outerReel()['onLongPressEnd'] as () => void)());
+    expect(layer().classList).not.toContain('rk-stories-ui-layer--hidden');
+  });
+
+  it('hands the new group the running bar once the group changes', () => {
+    const renderProgressBar = progressSpy();
+    const apiRef = { current: null as StoriesApi | null };
+    render(
+      <StoriesOverlay
+        isOpen
+        onClose={vi.fn()}
+        groups={groups}
+        chromePlacement="group"
+        apiRef={apiRef}
+        renderProgressBar={renderProgressBar}
+      />,
+    );
+    groupSlide(0);
+    groupSlide(1);
+    const running = latestFor(renderProgressBar, 0).progress;
+
+    act(() => apiRef.current?.nextGroup());
+
+    const incoming = latestFor(renderProgressBar, 1);
+    expect(incoming.isActive).toBe(true);
+    expect(incoming.progress).toBe(running);
+    expect(incoming.progress.value).toBe(0);
+    const outgoing = latestFor(renderProgressBar, 0);
+    expect(outgoing.isActive).toBe(false);
+    expect(outgoing.progress).not.toBe(running);
+  });
+
+  it('keeps the group being left as it was while the player turns away from it', async () => {
+    const renderProgressBar = progressSpy();
+    const renderHeader = headerSpy();
+    const apiRef = { current: null as StoriesApi | null };
+    render(
+      <StoriesOverlay
+        isOpen
+        onClose={vi.fn()}
+        groups={groups}
+        chromePlacement="group"
+        apiRef={apiRef}
+        renderProgressBar={renderProgressBar}
+        renderHeader={renderHeader}
+      />,
+    );
+    let finishTurn = noop;
+    (outerReel()['apiRef'] as { current: { goTo: unknown } }).current.goTo =
+      vi.fn(() => new Promise<void>((resolve) => (finishTurn = resolve)));
+    groupSlide(0);
+    act(() => apiRef.current?.nextStory());
+    advance(1000);
+
+    act(() => apiRef.current?.nextGroup());
+
+    const turning = latestFor(renderProgressBar, 0);
+    expect(turning.isActive).toBe(false);
+    expect(turning.activeIndex.value).toBe(1);
+    expect(turning.progress.value).toBeCloseTo(0.25, 1);
+    expect(latestFor(renderHeader, 0).storyIndex).toBe(1);
+
+    await act(async () => finishTurn());
+
+    const resting = latestFor(renderProgressBar, 0);
+    expect(resting.activeIndex.value).toBe(1);
+    expect(resting.progress.value).toBe(0);
+  });
+
+  it('shows a group that played to its end as complete while the player turns away', () => {
+    const renderProgressBar = progressSpy();
+    render(
+      <StoriesOverlay
+        isOpen
+        onClose={vi.fn()}
+        groups={groups}
+        initialStoryIndex={1}
+        chromePlacement="group"
+        renderProgressBar={renderProgressBar}
+      />,
+    );
+    (outerReel()['apiRef'] as { current: { goTo: unknown } }).current.goTo =
+      vi.fn(() => new Promise<void>(noop));
+    groupSlide(0);
+
+    advance(4100);
+
+    const done = latestFor(renderProgressBar, 0);
+    expect(done.isActive).toBe(false);
+    expect(done.progress.value).toBe(1);
+  });
+
+  // A tap on a button inside the swipe area never reaches the tap zones; the
+  // gesture controller in the core package ignores interactive elements.
+  it('closes and pauses from the default header inside a group slide', () => {
+    const onClose = vi.fn();
+    const onPause = vi.fn();
+    render(
+      <StoriesOverlay
+        isOpen
+        onClose={onClose}
+        onPause={onPause}
+        groups={groups}
+        chromePlacement="group"
+      />,
+    );
+    const slide = groupSlide(0);
+
+    act(() => {
+      (slide.querySelector('[aria-label="Pause"]') as HTMLElement).click();
+    });
+    expect(onPause).toHaveBeenCalled();
+
+    act(() => {
+      (slide.querySelector('[aria-label="Close"]') as HTMLElement).click();
+    });
+    expect(onClose).toHaveBeenCalled();
+  });
+});
+
+describe('StoriesOverlay story duration', () => {
+  type Builder = (
+    index: number,
+    indexInRange: number,
+    size: [number, number],
+  ) => ReactElement<{ children: ReactElement<Record<string, unknown>>[] }>;
+
+  beforeEach(() => {
+    vi.useFakeTimers({
+      toFake: ['setTimeout', 'clearTimeout', 'Date', 'performance'],
+    });
+    lastReelProps = [];
+    vi.stubGlobal('requestAnimationFrame', (cb: () => void) =>
+      setTimeout(cb, 0),
+    );
+    vi.stubGlobal('cancelAnimationFrame', (id: number) => clearTimeout(id));
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  it('keeps a duration the story names over the one its video reports', () => {
+    const onStoryComplete = vi.fn();
+    let reportDuration: ((ms: number) => void) | undefined;
+    render(
+      <StoriesOverlay
+        isOpen
+        onClose={vi.fn()}
+        groups={[
+          {
+            author: { id: '1', name: 'Alice', avatar: 'alice.jpg' },
+            stories: [{ id: 'v', mediaType: 'video', src: '', duration: 3000 }],
+          },
+        ]}
+        onStoryComplete={onStoryComplete}
+        renderSlide={(props) => {
+          reportDuration = props.onDurationReady;
+          return null;
+        }}
+      />,
+    );
+    // The mocked Reel draws no slides, so the story is built by hand to get
+    // hold of the callbacks the player gives it.
+    const outer = lastReelProps.filter((props) => props['afterChange']).at(-1)!;
+    const group = (outer['itemBuilder'] as Builder)(0, 0, [400, 700]);
+    const storyReel = [group.props.children]
+      .flat()
+      .find((child) => child?.props?.['itemBuilder']);
+    (storyReel?.props['itemBuilder'] as Builder)(0, 0, [400, 700]);
+
+    act(() => reportDuration!(10_000));
+    act(() => {
+      vi.advanceTimersByTime(3100);
+    });
+
+    expect(onStoryComplete).toHaveBeenCalledWith(0, 0);
   });
 });

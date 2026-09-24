@@ -11,6 +11,7 @@ import {
   getSlideGroupIndexes,
   getSlotOffset,
   isCardShown,
+  kStoriesCardRingSize,
   type StoryItem,
   type StoriesGroup,
 } from '@reelkit/stories-core';
@@ -102,8 +103,6 @@ export interface StoriesCarouselProps<T extends StoryItem = StoryItem> {
   onSlideEnd: () => void;
 }
 
-const _kCardRingSize = 52;
-
 /**
  * The cards themselves, drawn under an `Observe` on the viewed signal. A story
  * being marked seen re-renders this component alone: the carousel around it,
@@ -166,7 +165,7 @@ function DefaultCard<T extends StoryItem>({
   const ring = getRingPresentation({
     totalStories: group.stories.length,
     viewedCount,
-    size: _kCardRingSize,
+    size: kStoriesCardRingSize,
   });
 
   return (

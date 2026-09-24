@@ -235,6 +235,7 @@ import typesCode from '../../snippets/stories-core/types-code.ts?raw';
 | 函数 | 类型 | 说明 |
 | --- | --- | --- |
 | `getRingPresentation(options)` | `(RingPresentationOptions) => RingPresentation` | 根据 `totalStories`、`viewedCount` 和 `size` 得出故事圆环的类名、内联样式和头像尺寸。还有未看内容时是旋转的锥形渐变，全部看完是纯色 `viewedColor`，空分组则没有圆环。尺寸带 `px` 单位，因此这个样式对象在任何框架里都能用。 |
+| `kStoriesRingSize`, `kStoriesRingListRingSize`, `kStoriesCardRingSize` | `number` | 各绑定默认绘制的圆环直径（像素）：单个圆环 68，圆环列表中 64，桌面轮播卡片上 52。把其中一个作为 `size` 传入即可与播放器一致。 |
 | `getPreviewSource(story)` | `(StoryItem \| undefined) => string \| undefined` | 轮播卡片预览的图片：故事的 `poster`；若是图片就用图片本身；若是没有海报的视频则没有。没有图片的卡片会退回到为无可预览内容的故事绘制的朴素卡片。 |
 | `formatTimeAgo(date)` | `(string \| Date) => string` | 头部和轮播卡片显示的简短相对时间：`now`、`5m`、`3h`、`2d`、`2w`。 |
 

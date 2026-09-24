@@ -27,6 +27,7 @@ import {
 import { attachViewedState } from '../viewed-state/attach-viewed-state';
 import type {
   DesktopLayout,
+  ChromePlacement,
   StoriesApi,
   StoriesErrorContext,
   StoriesGroupPreviewContext,
@@ -42,8 +43,7 @@ import type {
  * Instagram-style stories player.
  *
  * The player itself lives in a child this component creates when `isOpen`
- * turns true and destroys when it turns false, which is what react and vue
- * get from mounting and unmounting theirs. Everything with a memory — where
+ * turns true and destroys when it turns false. Everything with a memory — where
  * each group was left, whether the opening story was reported, the timer and
  * the sound setting — belongs to that child, so closing the player forgets it
  * and opening it again is an opening rather than a resume.
@@ -73,6 +73,7 @@ import type {
         [hideUIOnPause]="hideUIOnPause()"
         [enableKeyboard]="enableKeyboard()"
         [desktopLayout]="desktopLayout()"
+        [chromePlacement]="chromePlacement()"
         [slideTemplate]="slideTpl()"
         [headerTemplate]="headerTpl()"
         [footerTemplate]="footerTpl()"
@@ -95,8 +96,11 @@ import type {
   `,
 })
 export class RkStoriesOverlayComponent<T extends StoryItem = StoryItem> {
-  /** Renders the player and locks body scroll while true. */
-  readonly isOpen = input(false);
+  /**
+   * Renders the player and locks body scroll while true. Required: the host
+   * owns the open state and always says it.
+   */
+  readonly isOpen = input.required<boolean>();
 
   /**
    * Accessible name of the dialog, announced when the player opens.
@@ -178,8 +182,8 @@ export class RkStoriesOverlayComponent<T extends StoryItem = StoryItem> {
   readonly tapZoneSplit = input(0.3);
 
   /**
-   * Hides the header and footer while a press is held, so the story is
-   * unobstructed.
+   * Hide the progress bar and header while paused by a long press. A footer
+   * from the `rkStoriesFooter` template stays.
    *
    * @default true
    */
@@ -200,6 +204,22 @@ export class RkStoriesOverlayComponent<T extends StoryItem = StoryItem> {
    * @default 'single'
    */
   readonly desktopLayout = input<DesktopLayout>('single');
+
+  /**
+   * Where the progress bar and the header live. `'overlay'` draws one copy
+   * above the player, which switches to the new group once the group changes.
+   * `'group'` gives each group its own copy inside its slide, so the bar and
+   * the header turn with the group, the way Instagram does it; a neighbouring
+   * group shows where it stands. The desktop carousel hides the player while
+   * its cards slide, so there the choice shows only once a group is open.
+   *
+   * With `'group'` a header template sits inside the swipe area, and a tap on
+   * it moves between stories unless it lands on a `button`, a link, or an
+   * element with `role="button"`.
+   *
+   * @default 'overlay'
+   */
+  readonly chromePlacement = input<ChromePlacement>('overlay');
 
   /**
    * The slide slot as a template rather than projected content. A wrapper
@@ -304,7 +324,7 @@ export class RkStoriesOverlayComponent<T extends StoryItem = StoryItem> {
   readonly apiReady = output<StoriesApi>();
 
   constructor() {
-    // Outside the open gate, as react's `useAttachViewedState` is: a ring list
+    // Outside the open gate: a ring list
     // beside a closed player still reads what has been seen.
     attachViewedState(this.viewed);
   }

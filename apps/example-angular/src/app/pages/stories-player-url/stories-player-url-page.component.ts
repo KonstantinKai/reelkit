@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed } from '@angular/core';
 import type {
+  ChromePlacement,
   DesktopLayout,
   StoriesGroup,
   StoryItem,
@@ -202,6 +203,30 @@ const feed: StoriesGroup<StoryItem>[] = _kNames.map((name, i) => ({
               </button>
             </div>
           </fieldset>
+
+          <fieldset style="border: 0; padding: 0; margin: 0;">
+            <legend
+              style="color: rgba(255,255,255,0.5); font-size: 0.72rem; margin-bottom: 6px;"
+            >
+              Progress &amp; header
+            </legend>
+            <div style="display: flex; gap: 6px;">
+              <button
+                type="button"
+                [style]="segStyle(chromePlacement() === 'overlay')"
+                (click)="chromePlacement.set('overlay')"
+              >
+                Overlay
+              </button>
+              <button
+                type="button"
+                [style]="segStyle(chromePlacement() === 'group')"
+                (click)="chromePlacement.set('group')"
+              >
+                Group
+              </button>
+            </div>
+          </fieldset>
         </div>
 
         <!-- Remount when the key shape changes: createOverlayUrlState builds
@@ -217,6 +242,7 @@ const feed: StoriesGroup<StoryItem>[] = _kNames.map((name, i) => ({
             [hash]="hash()"
             [rememberSeen]="rememberSeen()"
             [desktopLayout]="desktopLayout()"
+            [chromePlacement]="chromePlacement()"
           />
         }
       </div>
@@ -246,6 +272,10 @@ export class StoriesPlayerUrlPageComponent {
   protected readonly desktopLayout = persistedSignal<DesktopLayout>(
     'reelkit-stories-player-url-desktop-layout',
     'single',
+  );
+  protected readonly chromePlacement = persistedSignal<ChromePlacement>(
+    'reelkit-stories-player-url-chrome-placement',
+    'overlay',
   );
 
   /** Hashing only means anything once an axis is addressed by id. */

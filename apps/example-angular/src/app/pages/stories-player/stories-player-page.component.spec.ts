@@ -9,6 +9,10 @@ interface PageInternals {
     (): 'single' | 'carousel';
     set: (layout: 'single' | 'carousel') => void;
   };
+  chromePlacement: {
+    (): 'overlay' | 'group';
+    set: (placement: 'overlay' | 'group') => void;
+  };
   rememberSeen: { (): boolean; set: (remember: boolean) => void };
   groups: { (): unknown[] };
 }
@@ -72,10 +76,22 @@ describe('StoriesPlayerPageComponent', () => {
 
       expect(createPage().page.desktopLayout()).toBe('carousel');
     });
+
+    it('keeps where the progress bar and header live where it was left', () => {
+      const first = createPage();
+      first.page.chromePlacement.set('group');
+      first.fixture.detectChanges();
+      first.fixture.destroy();
+
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({ imports: [StoriesPlayerPageComponent] });
+
+      expect(createPage().page.chromePlacement()).toBe('group');
+    });
   });
 
   // The button belongs to the open player, not to the page under it: it sits
-  // in the corner of the carousel beside the cards, the way react's does.
+  // in the corner of the carousel beside the cards, the way React's does.
   // By text as well as by class: a page-level "Load more" of any shape is
   // the thing this rules out, not just one wearing the player's class.
   it('offers no load-more while the player is closed', () => {

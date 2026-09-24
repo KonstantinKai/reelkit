@@ -113,6 +113,10 @@ Importa los estilos y el componente standalone `RkLightboxOverlayComponent` en e
 
 <Sandbox code={basicUsage} language="typescript" title="gallery.component.ts" framework="angular" />
 
+<Callout type="info" title="Dónde se renderiza el overlay">
+  A diferencia de los lightbox de React y Vue, que mueven su overlay al final de `document.body`, `rk-lightbox-overlay` se renderiza donde lo colocas y cubre la pantalla con `position: fixed`. Mantenlo fuera de cualquier ancestro con `transform`, `perspective`, `filter` o `will-change: transform`: ese ancestro pasa a ser el bloque contenedor del overlay, así que el lightbox toma su tamaño en lugar del del viewport y queda recortado por su `overflow`. Un ancestro que crea su propio contexto de apilamiento también limita cuánto puede elevar `--rk-lightbox-overlay-z` al lightbox. A cambio, los tokens `--rk-lightbox-*` definidos en cualquier ancestro llegan al lightbox.
+</Callout>
+
 ## Slots de plantilla [#template-slots]
 
 Las directivas de slots de plantilla permiten personalizar por completo la interfaz del overlay sin tener que copiar el componente. Cada slot recibe un objeto de contexto con tipos estrictos.

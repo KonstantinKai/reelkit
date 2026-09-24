@@ -11,7 +11,7 @@ import {
   type TemplateRef,
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
-import { toAngularSignal, type CoreSignal } from '@reelkit/angular';
+import { toAngularSignal, type Subscribable } from '@reelkit/angular';
 import {
   formatTimeAgo,
   getCardOffsets,
@@ -22,13 +22,11 @@ import {
   getSlideGroupIndexes,
   getSlotOffset,
   isCardShown,
+  kStoriesCardRingSize,
   type StoryItem,
   type StoriesGroup,
 } from '@reelkit/stories-core';
 import type { StoriesGroupPreviewContext, StoriesSlideContext } from '../types';
-
-/** Ring diameter on a carousel card. */
-const _kCardRingSize = 52;
 
 /**
  * A group change in progress. `start` lays the cards out around the group
@@ -112,6 +110,33 @@ interface CardView<T extends StoryItem> {
               [ngTemplateOutletContext]="previewContext(card)"
             />
           } @else {
+            <!-- A story with no picture of its own — text on a gradient, say —
+                 is drawn by the consumer's own slide template at the player's
+                 size and scaled down to the card. It is a picture of the
+                 story, so nothing in it is reachable. It sits under the
+                 button, never inside it: a slide template can hold buttons
+                 and links of its own, and a control cannot sit inside
+                 another. -->
+            @if (
+              !card.previewSource && card.showFrame && frameTemplate();
+              as tpl
+            ) {
+              @if (frameContext()(card.groupIndex); as context) {
+                <span
+                  class="rk-stories-card-frame"
+                  aria-hidden="true"
+                  inert
+                  [style.width.px]="activeSize()[0]"
+                  [style.height.px]="activeSize()[1]"
+                  [style.transform]="'scale(' + frameScale() + ')'"
+                >
+                  <ng-container
+                    [ngTemplateOutlet]="tpl"
+                    [ngTemplateOutletContext]="context"
+                  />
+                </span>
+              }
+            }
             <button
               type="button"
               class="rk-stories-card-button"
@@ -126,26 +151,6 @@ interface CardView<T extends StoryItem> {
                   alt=""
                   (error)="onPreviewFailed(card.previewSource)"
                 />
-              } @else if (card.showFrame && frameTemplate(); as tpl) {
-                <!-- A story with no picture of its own — text on a gradient,
-                     say — is drawn by the consumer's own slide template at the
-                     player's size and scaled down to the card. It is a
-                     picture of the story, so nothing in it is reachable. -->
-                @if (frameContext()(card.groupIndex); as context) {
-                  <span
-                    class="rk-stories-card-frame"
-                    aria-hidden="true"
-                    inert
-                    [style.width.px]="activeSize()[0]"
-                    [style.height.px]="activeSize()[1]"
-                    [style.transform]="'scale(' + frameScale() + ')'"
-                  >
-                    <ng-container
-                      [ngTemplateOutlet]="tpl"
-                      [ngTemplateOutletContext]="context"
-                    />
-                  </span>
-                }
               }
               <span class="rk-stories-card-scrim"></span>
               <span class="rk-stories-card-info">
@@ -197,7 +202,7 @@ export class RkStoriesCarouselComponent<T extends StoryItem = StoryItem> {
   readonly storyIndexFor = input.required<(groupIndex: number) => number>();
 
   /** Stories seen per author, when the player was given a viewed controller. */
-  readonly viewedState = input<CoreSignal<Map<string, number>> | undefined>(
+  readonly viewedState = input<Subscribable<Map<string, number>> | undefined>(
     undefined,
   );
 
@@ -299,7 +304,7 @@ export class RkStoriesCarouselComponent<T extends StoryItem = StoryItem> {
       const ring = getRingPresentation({
         totalStories: group.stories.length,
         viewedCount,
-        size: _kCardRingSize,
+        size: kStoriesCardRingSize,
       });
 
       return [
@@ -329,6 +334,7 @@ export class RkStoriesCarouselComponent<T extends StoryItem = StoryItem> {
   protected previewContext(card: CardView<T>): StoriesGroupPreviewContext<T> {
     return {
       $implicit: card.group,
+      group: card.group,
       groupIndex: card.groupIndex,
       story: card.story,
       offset: card.offset,

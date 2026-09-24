@@ -1,5 +1,9 @@
 import type { CSSProperties, FC } from 'react';
-import { getRingPresentation, type AuthorInfo } from '@reelkit/stories-core';
+import {
+  getRingPresentation,
+  kStoriesRingSize,
+  type AuthorInfo,
+} from '@reelkit/stories-core';
 import './StoriesRing.css';
 
 /** Props for the {@link StoriesRing} component. */
@@ -45,7 +49,7 @@ export const StoriesRing: FC<StoriesRingProps> = ({
   author,
   totalStories,
   viewedCount,
-  size = 68,
+  size = kStoriesRingSize,
   onClick,
   gradientColors,
   viewedColor,
@@ -63,6 +67,12 @@ export const StoriesRing: FC<StoriesRingProps> = ({
       className={className}
       style={style as CSSProperties}
       onClick={onClick}
+      onKeyDown={(event) => {
+        // A native button opens on Enter and Space; this one has to be told.
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        event.preventDefault();
+        onClick?.();
+      }}
       role="button"
       tabIndex={0}
       aria-label={`${author.name}'s stories`}

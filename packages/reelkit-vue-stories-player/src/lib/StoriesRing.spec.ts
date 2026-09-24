@@ -88,4 +88,12 @@ describe('StoriesRing', () => {
     await wrapper.trigger('click');
     expect(wrapper.emitted('click')).toHaveLength(1);
   });
+
+  it('opens from the keyboard with Enter or Space, as a button does', async () => {
+    const { wrapper } = renderRing(3, 0);
+    await wrapper.trigger('keydown', { key: 'Enter' });
+    await wrapper.trigger('keydown', { key: ' ' });
+    await wrapper.trigger('keydown', { key: 'a' });
+    expect(wrapper.emitted('click')).toHaveLength(2);
+  });
 });

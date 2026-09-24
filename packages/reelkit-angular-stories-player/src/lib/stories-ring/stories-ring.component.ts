@@ -6,7 +6,11 @@ import {
   input,
   output,
 } from '@angular/core';
-import { getRingPresentation, type AuthorInfo } from '@reelkit/stories-core';
+import {
+  getRingPresentation,
+  kStoriesRingSize,
+  type AuthorInfo,
+} from '@reelkit/stories-core';
 
 /**
  * Circular avatar with a gradient ring.
@@ -56,7 +60,7 @@ export class RkStoriesRingComponent {
    *
    * @default 68
    */
-  readonly size = input(68);
+  readonly size = input(kStoriesRingSize);
 
   /**
    * Gradient colours for a group with stories left to watch.

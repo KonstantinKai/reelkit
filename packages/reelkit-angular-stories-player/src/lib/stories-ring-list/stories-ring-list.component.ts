@@ -9,9 +9,10 @@ import {
   output,
 } from '@angular/core';
 import { toAngularSignal } from '@reelkit/angular';
-import type {
-  StoriesGroup,
-  StoriesViewedStateController,
+import {
+  kStoriesRingListRingSize,
+  type StoriesGroup,
+  type StoriesViewedStateController,
 } from '@reelkit/stories-core';
 import { RkStoriesRingComponent } from '../stories-ring/stories-ring.component';
 import { attachViewedState } from '../viewed-state/attach-viewed-state';
@@ -67,7 +68,7 @@ export class RkStoriesRingListComponent {
    *
    * @default 64
    */
-  readonly ringSize = input(64);
+  readonly ringSize = input(kStoriesRingListRingSize);
 
   /** Emitted with the group index when a ring is chosen. */
   readonly selected = output<number>();

@@ -20,6 +20,7 @@ import {
   createSharedVideo,
   noop,
   observeDomEvent,
+  observeMediaLoading,
   reaction,
   syncMutedToVideo,
   type CoreSignal,
@@ -124,7 +125,7 @@ export class RkVideoStorySlideComponent {
   );
 
   constructor() {
-    afterRenderEffect(() => {
+    afterRenderEffect((onCleanup) => {
       const src = this.src();
       const groupIndex = this.groupIndex();
       const storyIndex = this.storyIndex();
@@ -156,15 +157,11 @@ export class RkVideoStorySlideComponent {
               );
             }
           }),
-          observeDomEvent(video, 'canplay', () =>
-            this._ngZone.run(() => this.playbackStarted.emit()),
-          ),
-          observeDomEvent(video, 'waiting', () =>
-            this._ngZone.run(() => this.buffering.emit()),
-          ),
-          observeDomEvent(video, 'playing', () =>
-            this._ngZone.run(() => this.showPoster.set(false)),
-          ),
+          observeMediaLoading(video, {
+            onReady: () => this._ngZone.run(() => this.playbackStarted.emit()),
+            onWaiting: () => this._ngZone.run(() => this.buffering.emit()),
+            onPlaying: () => this._ngZone.run(() => this.showPoster.set(false)),
+          }),
           observeDomEvent(video, 'ended', () =>
             this._ngZone.run(() => this.finished.emit()),
           ),
@@ -246,7 +243,10 @@ export class RkVideoStorySlideComponent {
         activate();
       }
 
-      return () => disposables.dispose();
+      // Angular ignores a function returned from this effect. Without the
+      // cleanup registered here, a destroyed slide keeps its listeners on the
+      // shared video and keeps holding the element in its detached container.
+      onCleanup(disposables.dispose);
     });
   }
 }

@@ -106,6 +106,10 @@ stylesheet और standalone `RkReelPlayerOverlayComponent` को अपने 
 
 <Sandbox code={basicUsage} language="typescript" title="reel-feed.component.ts" framework="angular" />
 
+<Callout type="info" title="ओवरले कहाँ रेंडर होता है">
+  React और Vue प्लेयर अपना ओवरले `document.body` के अंत में ले जाते हैं, पर `rk-reel-player-overlay` वहीं रेंडर होता है जहाँ आप उसे रखते हैं और `position: fixed` से पूरी स्क्रीन ढकता है। उसे ऐसे किसी पूर्वज के भीतर न रखें जिस पर `transform`, `perspective`, `filter` या `will-change: transform` हो: वह पूर्वज ओवरले का containing block बन जाता है, इसलिए प्लेयर व्यूपोर्ट की जगह उसी के आकार का हो जाता है और उसके `overflow` से कट जाता है। अपना स्टैकिंग कॉन्टेक्स्ट बनाने वाला पूर्वज भी सीमित करता है कि `--rk-reel-overlay-z` प्लेयर को कितना ऊपर उठा सकता है। बदले में, किसी भी पूर्वज पर सेट किए गए `--rk-reel-*` टोकन प्लेयर तक पहुँचते हैं।
+</Callout>
+
 ## टेम्पलेट स्लॉट [#template-slots]
 
 छह template slot directives से आप प्लेयर UI का हर पहलू कस्टमाइज़ कर सकते हैं। हर एक को strongly-typed context object मिलता है। सिर्फ़ वही slots दें जिन्हें बदलना है — बाकी के लिए डिफ़ॉल्ट इस्तेमाल होते हैं।

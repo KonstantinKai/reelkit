@@ -107,6 +107,7 @@ export {
   VideoStorySlide,
   type VideoStorySlideProps,
 } from './lib/VideoStorySlide';
+export { useAttachViewedState } from './lib/useAttachViewedState';
 
 export {
   Observe,
@@ -129,6 +130,7 @@ export {
   type TwoAxisPosition,
   type TwoAxisIdentity,
   type UrlIndexTwoAxisKeyOptions,
+  type OverlayUrlStateOptions,
   type ViewedStateController,
   type ViewedStateOptions,
   type StorageAdapter,
@@ -153,6 +155,7 @@ export type {
   LoadingSlotScope,
   ErrorSlotScope,
   DesktopLayout,
+  ChromePlacement,
   GroupPreviewSlotScope,
   StoriesApi,
 } from './lib/types';

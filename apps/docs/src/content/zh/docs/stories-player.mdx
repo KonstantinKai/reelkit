@@ -15,6 +15,7 @@ import urlState3 from '../../snippets/stories-player/url-state-3.tsx?raw';
 import urlState4 from '../../snippets/stories-player/url-state-4.tsx?raw';
 import rememberingWhatWasSeen from '../../snippets/stories-player/remembering-what-was-seen.tsx?raw';
 import desktopCarousel from '../../snippets/stories-player/desktop-carousel.tsx?raw';
+import chromePlacement from '../../snippets/stories-player/chrome-placement.tsx?raw';
 import transitions from '../../snippets/stories-player/transitions.tsx?raw';
 import renderheader from '../../snippets/stories-player/renderheader.tsx?raw';
 import renderfooter from '../../snippets/stories-player/renderfooter.tsx?raw';
@@ -180,7 +181,7 @@ import theming from '../../snippets/stories-player/theming.css?raw';
 
 <CodeBlock code={urlState2} language="tsx" />
 
-**稳定的链接。** 分组默认是按位置的，所以收藏下来的 `?story=2.0` 在信息流重新排序后就会打开另一个用户。请改用稳定 id 来寻址分组 —— `outerCodec` 把 id 写进 URL， `outerLocator` 负责找到它在哪。story 那一半仍然是解析出的分组内的普通索引。
+**稳定的链接。** 分组默认是按位置的，所以收藏下来的 `?story=2.0` 在信息流重新排序后就会打开另一个用户。请改用稳定 id 来寻址分组 —— `outerCodec` 把 id 写进 URL， `outerLocator` 负责找到它在哪。同时传入 `innerCodec` 以及 `innerLocate` 和 `innerIdentify`，就能对分组内的 story 做同样的事；不传的话，story 那一半仍然是普通的局部索引。
 
 <CodeBlock code={urlState3} language="tsx" />
 
@@ -207,7 +208,7 @@ import theming from '../../snippets/stories-player/theming.css?raw';
 - **链接仍然优先。** 使用 `StoriesUrlOverlay` 时，由参数决定播放器在哪里打开，无论存了什么。其他情况下由续播回调决定。
 - **计数是位置，不是次数。** 记录记的是到达的最远一条 story，因此给已看完的分组新增一条会重新点亮圆环，从中间删掉一条则会让计数变短。与分享链接得到的自愈相同。
 - **存储可替换。** 传入 `storage: createSessionStorageAdapter()` 在关闭标签页时遗忘，或使用自己的 `StorageAdapter`。两个打开的标签页通过浏览器的 storage 事件保持一致。
-- **只在打开时才挂载的播放器读取得太晚。** 播放器在一个效果中读取存储，而该效果在它仍然关闭时就已运行。使用 `{open && <StoriesOverlay … />}` 时没有这个时机，所以请自己在一个返回其 dispose 的效果中调用 `viewed.attach()`。各选项以及它所基于的底层部件，见 [Stories Core](/docs/stories-core#viewed-controller) 页面。
+- **只在打开时才挂载的播放器读取得太晚。** 播放器在一个效果中读取存储，而该效果在它仍然关闭时就已运行。使用 `{open && <StoriesOverlay … />}` 时没有这个时机，所以请在持有控制器的组件里调用 `useAttachViewedState(viewed)`；它在挂载时接入，在卸载时释放。各选项以及它所基于的底层部件，见 [Stories Core](/docs/stories-core#viewed-controller) 页面。
 
 ## 桌面端轮播 [#desktop-carousel]
 
@@ -219,6 +220,18 @@ import theming from '../../snippets/stories-player/theming.css?raw';
 - **卡片预览分组将要打开的位置**：本次会话中离开时所在的故事，否则是 `resumeStoryIndex` 返回的故事。卡片显示视频封面或图片本身。两者都没有的故事（例如渐变背景上的文字故事）会由你的 `renderSlide` 按播放器尺寸绘制后再缩小；没有封面的视频显示卡片背景。这个预览以 `isActive: false` 调用 `renderSlide`，只是一张图：其中的任何内容都无法获得焦点或被点击。幻灯片在挂载时做的事情（例如播放或统计）请放在 `isActive` 判断之后。
 - **计时器会等滑动结束。** 卡片停止移动之前，故事不会前进，也不会为它触发 `onStoryViewed`。
 - **所有切换分组的方式都会滑动**：点击卡片、`StoriesApi.goToGroup`、`nextGroup` 和 `prevGroup`，以及在分组末尾继续按方向键。触摸滑动本身已经移动了播放器，因此不会再叠加滑动。
+
+## 每个分组自带进度条和页眉 [#chrome-placement]
+
+默认情况下，播放器上方只有一个进度条和一个页眉，分组切换完成后才换成新分组的内容。设置 `chromePlacement="group"` 后，每个分组都在自己的幻灯片里拥有一份，二者会像 Instagram 那样随分组一起转动。
+
+<CodeBlock code={chromePlacement} language="tsx" />
+
+- **相邻分组显示它停在哪里。** 播放器转向它时，它的进度条和页眉显示它将打开的那个 story，尚未播放任何部分。
+- **正在离开的分组保持原样。** 它的进度条在转动结束前保留原有进度，所以一个已播完的分组会保持填满，而不会在转动中途清空。
+- **屏幕上的每个分组都会调用自定义渲染器。** `renderProgressBar` 和 `renderHeader` 会收到 `groupIndex` 和 `isActive`；对相邻分组，`isActive` 为 `false`，进度信号保持不变。
+- **自定义页眉位于滑动区域内。** 点击它会切换 story，除非点在 `button`、链接或带 `role="button"` 的元素上，所以其中的每个控件都应是这几类元素之一。
+- **桌面端轮播在滑动过程中不受影响。** 卡片滑动时播放器是隐藏的，因此这个选项在分组打开后才会显现。
 
 ## API 参考 [#api-reference]
 
@@ -238,14 +251,15 @@ import theming from '../../snippets/stories-player/theming.css?raw';
 | `groupTransition` | `TransitionTransformFn` | cubeTransition | 外层（分组）滑动器的过渡效果 |
 | `defaultImageDuration` | `number` | 5000 | 图片类 story 的默认自动播放时长（毫秒） |
 | `tapZoneSplit` | `number` | 0.3 | 点击区域的分割比例（0–1）。左侧触发上一个，右侧触发下一个。 |
-| `hideUIOnPause` | `boolean` | true | 长按暂停时是否隐藏 story 界面（页眉、页脚） |
+| `hideUIOnPause` | `boolean` | true | 长按暂停期间隐藏进度条和头部 |
 | `enableKeyboard` | `boolean` | true | 启用键盘导航（左右方向键、Escape） |
 | `innerTransitionDuration` | `number` | 200 | 内层（story）过渡动画的时长（毫秒） |
 | `minSegmentWidth` | `number` | 8 | 进度条分段的最小宽度（像素） |
 | `apiRef` | `MutableRefObject<StoriesApi \| null>` | - | 用于访问命令式 StoriesApi 的 ref |
 | `desktopLayout` | `'single' \| 'carousel'` | 'single' | 桌面端布局。'carousel' 在当前故事两侧以预览卡片显示相邻分组，并在分组之间滑动。手机上始终只显示故事本身。类型以 `DesktopLayout` 导出。 |
+| `chromePlacement` | `'overlay' \| 'group'` | 'overlay' | 进度条和页眉放在哪里。'overlay' 在播放器上方绘制一份；'group' 在每个分组的幻灯片里各绘制一份，二者随分组一起转动。类型以 `ChromePlacement` 导出。 |
 | `viewed` | `StoriesViewedStateController` | - | 观看者已看过的内容，来自 createStoriesViewedStateController()。分组从第一个未看的 story 续播，每个显示过的 story 都会被记录，轮播卡片会为看完的分组显示灰色的环。把同一个控制器交给 StoriesRingList。 |
-| `renderHeader` | `(props: HeaderRenderProps<T>) => ReactNode` | - | 自定义页眉渲染器。接收作者、story 以及暂停 / 静音状态。 |
+| `renderHeader` | `(props: HeaderRenderProps<T>) => ReactNode` | - | 自定义页眉渲染器。接收作者、story 以及暂停 / 静音状态。使用 `chromePlacement="group"` 时页眉位于滑动区域内，参见[每个分组自带进度条和页眉](/docs/stories-player#chrome-placement)。 |
 | `renderFooter` | `(props: FooterRenderProps<T>) => ReactNode` | - | 自定义页脚渲染器。接收作者和 story 信息。 |
 | `renderSlide` | `(props: SlideRenderProps<T>) => ReactNode` | - | 自定义幻灯片渲染器，替换默认的图片 / 视频幻灯片。 |
 | `renderNavigation` | `(props: NavigationRenderProps) => ReactNode` | - | 自定义桌面端导航。替换默认的上一张 / 下一张箭头按钮。 |
@@ -387,11 +401,11 @@ Use the `apiRef` 属性做命令式控制：
 
 ## 子组件 [#sub-components]
 
-对外导出的可复用积木，用于在自定义 render props 中组合：
+对外导出的可复用积木，用于在自定义 render props 中组合。每个组件的 props 类型都一并导出——`CanvasProgressBarProps`、`StoryHeaderProps`、`ImageStorySlideProps`、`VideoStorySlideProps`、`StoriesRingProps`、`StoriesRingListProps` 和 `HeartAnimationProps`——方便包装它们的组件使用：
 
 ### CanvasProgressBar [#canvasprogressbar]
 
-基于 canvas 的高性能分段进度条。为每个 story 渲染一段，并用 `requestAnimationFrame`为当前段做填充动画。story 很多的分组会启用滑动窗口。
+基于 canvas 的高性能分段进度条。为每个 story 渲染一段，并用 `requestAnimationFrame`为当前段做填充动画。story 很多的分组会启用滑动窗口。对只需显示分组停在哪里的进度条，传入 `live={false}`：它只在信号变化和尺寸改变后重绘，没有动画循环。
 
 <CodeBlock code={canvasprogressbar} language="tsx" />
 
@@ -430,6 +444,17 @@ Use the `apiRef` 属性做命令式控制：
 双击触发的爱心动画浮层。在 800 毫秒内放大并淡出。可通过 CSS 定制（见“双击与点赞”一节）。
 
 <CodeBlock code={heartanimation} language="tsx" />
+
+## 重新导出 [#re-exports]
+
+使用方需要的一切都可以从这个包导入，因此永远不必直接从 `@reelkit/core` 导入。
+
+| 来源 | 重新导出的内容 |
+| --- | --- |
+| `@reelkit/react` | `SoundProvider`、`useSoundState`、`useOverlayUrlState`、`createViewedStateController`、`twoAxisViewedTracking`、`createLocalStorageAdapter`、`createSessionStorageAdapter`、`createMemoryStorageAdapter`、`urlIndexTwoAxisKey`、`urlStableIdTwoAxisKey`、`base64UrlCodec`，以及类型 `UrlAdapter`、`UrlCodec`、`UrlLocator`、`UrlKey`、`UrlStateController`、`TwoAxisPosition`、`TwoAxisIdentity`、`UrlIndexTwoAxisKeyOptions`、`OverlayUrlStateOptions`、`ViewedStateController`、`ViewedStateOptions`、`StorageAdapter` |
+| `@reelkit/stories-core` | `createStoriesViewedStateController`、`StoriesViewedStateController`、`StoriesViewedStateControllerConfig`，以及内容类型 `StoryItem`、`AuthorInfo`、`StoriesGroup`、`MediaType` |
+
+`SoundProvider` 和 `useSoundState` 承载播放器与其 slide 共享的声音状态。自己播放媒体的自定义 slide 通过 `useSoundState` 读取静音开关。在播放器内部已经有一个 provider；在其他任何地方渲染的 `VideoStorySlide` 或自定义 slide，上方都需要一个 `SoundProvider`，否则 `useSoundState` 会抛出异常。
 
 ## 类型 [#types]
 
@@ -496,7 +521,7 @@ Use the `apiRef` 属性做命令式控制：
 | `.rk-stories-overlay` | Overlay | 固定的全屏背景层（背景、z-index） |
 | `.rk-stories-swipe-wrapper` | Overlay | 滑动关闭的包装层（容纳导航按钮 + canvas） |
 | `.rk-stories-container` | Overlay | 圆角的 story 画布（定位、溢出） |
-| `.rk-stories-ui-layer` | Overlay | 界面浮层容器（页眉、进度、导航） |
+| `.rk-stories-ui-layer` | Overlay | 界面浮层容器（页眉、进度、导航）。使用 `chromePlacement="group"` 时位于每个分组的幻灯片内 |
 | `.rk-stories-ui-layer--hidden` | Overlay | 界面隐藏状态（由 hideUIOnPause 切换） |
 | `.rk-stories-error` | Overlay | 错误状态（居中图标 + 文字） |
 | `.rk-stories-error-text` | Overlay | 错误信息文字 |
@@ -512,6 +537,7 @@ Use the `apiRef` 属性做命令式控制：
 | `.rk-stories-header-time` | StoryHeader | 相对时间文字 |
 | `.rk-stories-header-actions` | StoryHeader | 右侧操作（关闭、静音、暂停） |
 | `.rk-stories-header-btn` | StoryHeader | 页眉操作按钮 |
+| `.rk-stories-header-btn--desktop` | StoryHeader | 暂停按钮，仅在宽度大于 768px 时显示 |
 | `.rk-stories-header-spinner` | StoryHeader | 视频缓冲转圈动画 |
 | `.rk-stories-image` | ImageStorySlide | 图片 story 元素 |
 | `.rk-stories-video` | VideoStorySlide | 视频 story 容器 |
@@ -534,6 +560,7 @@ Use the `apiRef` 属性做命令式控制：
 | `.rk-stories-card--hidden` | Carousel | 超出单侧显示的两张之外的卡片 |
 | `.rk-stories-card-button` | Carousel | 默认卡片内容（打开分组的按钮） |
 | `.rk-stories-card-image` | Carousel | 预览画面（封面或图片） |
+| `.rk-stories-card-frame` | Carousel | 没有图片或封面的 story 的缩小版 `renderSlide` 预览；不可交互 |
 | `.rk-stories-card-scrim` | Carousel | 覆盖在画面上的变暗层 |
 | `.rk-stories-card-info` | Carousel | 头像环、作者名和时间所在的列 |
 | `.rk-stories-card-name` | Carousel | 作者名 |
@@ -547,32 +574,55 @@ Use the `apiRef` 属性做命令式控制：
 | --- | --- | --- |
 | `--rk-stories-overlay-bg` | `#000` | 全屏背景颜色 |
 | `--rk-stories-overlay-z` | `9999` | 浮层 z-index |
-| `--rk-stories-container-radius` | `12px` | story 画布的圆角（桌面端） |
 | `--rk-stories-swipe-gap` | `16px` | 导航按钮与 story 画布之间的间距 |
+| `--rk-stories-container-radius` | `12px` | story 画布的圆角（桌面端） |
+| `--rk-stories-container-radius-mobile` | `0` | 宽度不超过 768px 时 story 画布的圆角 |
+| `--rk-stories-ui-z` | `15` | UI 层（头部、进度条）的 z-index |
+| `--rk-stories-ui-transition` | `200ms` | hideUIOnPause 切换时的淡入淡出时长 |
 | `--rk-stories-top-shade-height` | `120px` | 头部后方顶部渐变遮罩的高度 |
 | `--rk-stories-top-shade-bg` | `linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%)` | 顶部渐变遮罩颜色 |
-| `--rk-stories-ui-transition` | `200ms` | hideUIOnPause 切换时的淡入淡出时长 |
+| `--rk-stories-error-z` | `5` | 错误状态的 z-index |
+| `--rk-stories-error-bg` | `linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)` | 错误状态背景渐变 |
+| `--rk-stories-error-fg` | `rgba(255, 255, 255, 0.5)` | 错误图标和文字颜色 |
+| `--rk-stories-error-gap` | `12px` | 错误图标与文字之间的间距 |
+| `--rk-stories-error-text-size` | `13px` | 错误信息字号 |
+| `--rk-stories-nav-z` | `20` | 桌面端导航按钮的 z-index |
 | `--rk-stories-nav-size` | `44px` | 桌面端上一个 / 下一个按钮尺寸 |
 | `--rk-stories-nav-bg` | `rgba(255, 255, 255, 0.1)` | 桌面端导航按钮背景 |
 | `--rk-stories-nav-bg-hover` | `rgba(255, 255, 255, 0.2)` | 桌面端导航按钮悬停背景 |
 | `--rk-stories-nav-fg` | `rgba(255, 255, 255, 0.7)` | 桌面端导航按钮图标颜色 |
 | `--rk-stories-nav-fg-hover` | `#fff` | 桌面端导航按钮悬停图标颜色 |
-| `--rk-stories-error-bg` | `linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)` | 错误状态背景渐变 |
-| `--rk-stories-error-fg` | `rgba(255, 255, 255, 0.5)` | 错误图标和文字颜色 |
-| `--rk-stories-error-text-size` | `13px` | 错误信息字号 |
+| `--rk-stories-nav-transition` | `150ms` | 导航按钮背景和颜色的过渡时长 |
 | `--rk-stories-video-bg` | `#000` | \<video> 后方的留黑背景 |
 | `--rk-stories-video-poster-transition` | `200ms` | 视频开始播放时封面淡出的时长 |
+| `--rk-stories-progress-bar-z` | `10` | 进度条的 z-index |
+| `--rk-stories-progress-bar-padding` | `8px 8px 0` | 进度条周围的留白 |
+| `--rk-stories-header-z` | `5` | 头部的 z-index |
 | `--rk-stories-header-top` | `18px` | 头部距 story 顶部的垂直偏移 |
 | `--rk-stories-header-padding` | `12px 16px` | 头部行的内边距 |
+| `--rk-stories-header-gap` | `8px` | 头像、名称和时间之间的间距 |
+| `--rk-stories-header-transition` | `200ms` | 头部隐藏时的淡出时长 |
 | `--rk-stories-header-avatar-size` | `32px` | 头像宽高 |
 | `--rk-stories-header-name-fg` | `#fff` | 作者名称颜色 |
 | `--rk-stories-header-name-size` | `14px` | 作者名称字号 |
+| `--rk-stories-header-name-weight` | `600` | 作者名称字重 |
 | `--rk-stories-header-time-fg` | `rgba(255, 255, 255, 0.6)` | 发布时间文字颜色 |
+| `--rk-stories-header-time-size` | `12px` | 发布时间字号 |
+| `--rk-stories-header-actions-gap` | `8px` | 头部操作按钮之间的间距 |
 | `--rk-stories-header-btn-fg` | `#fff` | 头部操作图标颜色（关闭、静音、暂停） |
+| `--rk-stories-header-btn-padding` | `4px` | 头部操作按钮的内边距 |
+| `--rk-stories-header-spinner-size` | `20px` | 缓冲加载圈的尺寸 |
+| `--rk-stories-header-spinner-track` | `rgba(255, 255, 255, 0.3)` | 缓冲加载圈的轨道颜色 |
+| `--rk-stories-header-spinner-fg` | `#fff` | 缓冲加载圈的弧线颜色 |
+| `--rk-stories-header-spinner-duration` | `0.8s` | 缓冲加载圈转一圈的时长 |
+| `--rk-stories-heart-z` | `20` | 双击爱心的 z-index |
 | `--rk-stories-heart-duration` | `800ms` | 弹出 / 淡出动画时长 |
-| `--rk-stories-ring-spin-duration` | `4s` | 活动圆环渐变的旋转时长 |
+| `--rk-stories-ring-spin-duration` | `4s` | 仍有未看 story 的圆环的旋转时长 |
+| `--rk-stories-ring-active-scale` | `0.95` | 圆环按下时的缩放比例 |
+| `--rk-stories-ring-gradient` | `none` | 内部使用：圆环组件每次渲染都会把渐变写到这里，因此覆盖它不会生效 |
 | `--rk-stories-ring-list-gap` | `12px` | 列表中圆环之间的间距 |
 | `--rk-stories-ring-list-padding` | `12px` | 圆环列表的内边距 |
+| `--rk-stories-ring-list-item-gap` | `4px` | 圆环与其名称之间的间距 |
 | `--rk-stories-ring-list-name-size` | `12px` | 每个圆环下方作者名称的字号 |
 | `--rk-stories-card-bg` | `#262626` | 轮播卡片背景，没有预览画面时可见 |
 | `--rk-stories-card-radius` | `8px` | 轮播卡片圆角 |
@@ -584,7 +634,7 @@ Use the `apiRef` 属性做命令式控制：
 | `--rk-stories-card-gap` | `6px` | 卡片上头像环、名字和时间之间的间距 |
 | `--rk-stories-card-transition` | `300ms` | 轮播滑动时长 |
 
-把下面这段放进在 `@reelkit/react-stories-player/styles.css`.
+把下面这段放进一个在 `@reelkit/react-stories-player/styles.css` 之后加载的样式表。
 
 <CodeBlock code={theming} language="css" />
 
@@ -592,14 +642,18 @@ Use the `apiRef` 属性做命令式控制：
 
 浮层根节点是一个模态对话框（`role="dialog"`, `aria-modal="true"`）。设置 `ariaLabel` 可以改变屏幕阅读器的播报内容，默认是 “Stories player”。
 
-浮层打开时捕获焦点，关闭时把焦点还给触发元素。Tab 和 Shift+Tab 在内部的可聚焦元素之间循环；跑出去的焦点（点击外部、程序化聚焦）会被拉回来。实现基于 `captureFocusForReturn` 和 `createFocusTrap` from `@reelkit/core`.
+浮层打开时捕获焦点，关闭时把焦点还给触发元素。Tab 和 Shift+Tab 在内部的可聚焦元素之间循环；跑出去的焦点（点击外部、程序化聚焦）会被拉回来。实现基于 `@reelkit/core` 中的 `captureFocusForReturn` 和 `createFocusTrap`，并由 `@reelkit/react` 重新导出。
 
 在桌面端轮播中，每张默认卡片都是一个按钮，标签为 “Open stories by” 加上作者名。卡片在 Tab 顺序中排在播放器控件之后，滑动进行时会暂时移出 Tab 顺序。
+
+## 服务端渲染 [#server-side-rendering]
+
+浮层关闭时不渲染任何内容，只有在打开后才通过 portal 挂载到 `document.body`，而打开只会发生在客户端。`StoriesUrlOverlay` 在挂载后的 effect 中读取地址栏，因此服务端渲染永远不会打开它。`StoriesRingList` 在服务端把每个圆环都渲染为未观看：已观看存储只在挂载后才读取，所以服务端标记与客户端首次渲染保持一致。更完整的说明见 [SSR 指南](/docs/ssr)。
 
 ## 键盘快捷键 [#keyboard-shortcuts]
 
 | Key | 作用 |
 | --- | --- |
-| `ArrowLeft` | 上一个 story |
-| `ArrowRight` | 下一个 story |
+| `ArrowLeft` | 上一个 story。在分组的第一个 story 上时，切到上一个分组，停在离开时所在的 story（否则是它的续播 story）；在第一个分组上无动作 |
+| `ArrowRight` | 下一个 story。越过分组的最后一个 story 时，切到下一个分组；越过最后一个分组时，播放器关闭 |
 | `Escape` | 关闭播放器 |

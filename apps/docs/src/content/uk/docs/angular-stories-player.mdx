@@ -12,6 +12,7 @@ import urlState2 from '../../snippets/angular-stories-player/url-state-2.ts?raw'
 import urlState3 from '../../snippets/angular-stories-player/url-state-3.ts?raw';
 import rememberingWhatWasSeen from '../../snippets/angular-stories-player/remembering-what-was-seen.ts?raw';
 import desktopCarousel from '../../snippets/angular-stories-player/desktop-carousel.ts?raw';
+import chromePlacement from '../../snippets/angular-stories-player/chrome-placement.ts?raw';
 import transitions from '../../snippets/angular-stories-player/transitions.ts?raw';
 import templateSlots from '../../snippets/angular-stories-player/template-slots.ts?raw';
 import slideSlot from '../../snippets/angular-stories-player/slide-slot.ts?raw';
@@ -121,7 +122,13 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 
 ## Швидкий старт [#quick-start]
 
+`rk-stories-overlay` рендерить повноекранний плеєр. Поєднайте його з `rk-stories-ring-list`, щоб отримати точки входу в стилі Instagram: кільце емітує `(selected)` з індексом групи, який хост зберігає як `initialGroupIndex`, перш ніж задати `isOpen`. Плеєр ніколи не закривається сам: він емітує `(closed)`, а хост повертає `isOpen` у `false`.
+
 <CodeBlock code={basicUsage} language="typescript" />
+
+<Callout type="info" title="Де рендериться оверлей">
+  На відміну від плеєрів React і Vue, які переносять свій оверлей у кінець `document.body`, `rk-stories-overlay` рендериться там, де ви його розмістили, і накриває екран через `position: fixed`. Не кладіть його всередину предка з `transform`, `perspective`, `filter` або `will-change: transform`: такий предок стає блоком-контейнером оверлея, тож плеєр отримує розмір предка замість вікна й обрізається його `overflow`. Предок, що створює власний контекст накладання, також обмежує, наскільки високо `--rk-stories-overlay-z` може підняти плеєр. Натомість токени `--rk-stories-*`, задані на будь-якому предку, доходять до плеєра.
+</Callout>
 
 ## Стан в URL [#url-state]
 
@@ -159,28 +166,55 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 
 ## Запам’ятовування переглянутого [#remembering-what-was-seen]
 
-`createStoriesViewedStateController` фіксує кожну показану сторіс і відповідає, де відновлюється кожен автор. Передайте той самий контролер списку кілець і плеєру — і вони погоджуються щодо того, що лишилося переглянути.
+Кільця показують градієнт, доки групу не переглянуто до кінця, а група знову відкривається на першій сторіс, якої глядач ще не бачив. Обидва ефекти дає один `createStoriesViewedStateController`, створений один раз там, де живе стрічка, і переданий списку кілець і плеєру як `viewed`: вони читають сховище, стежать за ним і самі записують показане. Збережений запис називає автора й сторіс за id, тож переживає перевпорядкування стрічки, а той самий контролер працює і в React, і у Vue.
 
 <CodeBlock code={rememberingWhatWasSeen} language="typescript" />
 
+- **Початкова сторіс рахується.** Сторіс, яка вже на екрані, позначається переглянутою в момент відкриття плеєра, тож якщо відкрити групу з однією сторіс і закрити її, група вважається переглянутою.
+- **Гортання далі теж відновлює.** `resumeStoryIndex` питають для кожної групи, до якої вперше дійшли в цьому сеансі, включно з тією, на якій плеєр відкривається, — хіба що `initialStoryIndex` прямо називає сторіс; група, яку вже гортали, відкривається там, де її залишили. Явний input `resumeStoryIndex` перемагає відповідь контролера.
+- **Посилання все одно перемагає.** З `rk-stories-url-overlay` місце відкриття плеєра визначає параметр, хоч би що було збережено. Скрізь інше вирішує колбек відновлення.
+- **Лічильник — це позиція, а не підсумок.** Запис називає найдальшу сторіс, до якої дійшли, тож додана до переглянутої групи сторіс знову запалює її кільце, а видалена з середини — скорочує лічильник.
+- **Сховище підключається.** Передайте `storage: createSessionStorageAdapter()`, щоб забувати все після закриття вкладки, або власний `StorageAdapter`. Дві відкриті вкладки синхронізуються через подію storage браузера.
+- **Плеєр, створений лише в момент відкриття, читає надто пізно.** `rk-stories-overlay` читає сховище, щойно з’являється, ще закритим, і так само робить `rk-stories-ring-list`. Обгорнутий у `@if (open)` оверлей такого моменту не має: викличте `attachViewedState(() => this.viewed)` у конструкторі хоста — це під’єднує стан, доки живе хост. Опції та нижчорівневі складові, з яких це побудовано, описано на сторінці [Stories Core](/docs/stories-core#viewed-controller).
+
 ## Карусель на десктопі [#desktop-carousel]
+
+Задайте `desktopLayout="carousel"`, щоб розкласти плеєр як у вебпереглядачі Instagram: активна сторіс лишається по центру у звичному розмірі, а до двох сусідніх груп з кожного боку стоять меншими притемненими картками. Клік по картці відкриває цю групу, а картки ковзають, поки група змінюється. Передайте той самий контролер `viewed`, що й списку кілець, і картка переглянутої групи отримає приглушене кільце.
 
 <CodeBlock code={desktopCarousel} language="typescript" />
 
+- **Телефони лишають звичайний плеєр.** На ширині до 768px картки не рендеряться, а свайпи використовують `groupTransition`, як і з типовою розкладкою `'single'`. Зміна розміру через цю межу перемикає розкладку на льоту. Поки картки показано, групи ковзають, а не повертаються, хоч би що казав `groupTransition`.
+- **Кожна картка показує, де група відкриється**: сторіс, на якій її залишили в цьому сеансі, інакше ту, яку повертає `resumeStoryIndex`. Показується постер відео або зображення. Сторіс без жодного з них, як-от текстову на градієнті, малює ваш шаблон `rkStoriesSlide` у розмірі плеєра й зменшує; відео без постера показує тло картки. Такий попередній перегляд отримує `isActive: false`, а його колбеки життєвого циклу нічого не роблять, тож він не може керувати таймером сторіс на екрані. Усе, що слайд робить під час створення, як-от відтворення чи аналітику, тримайте за `isActive`.
+- **Таймер чекає на слайд.** Сторіс не запускає таймер, і `(storyViewed)` для неї не емітується, доки картки не завершать рух.
+- **Кожен спосіб змінити групу ковзає**: клік по картці, `StoriesApi.goToGroup`, `nextGroup` і `prevGroup` та стрілки на клавіатурі за межею групи. Сенсорний свайп рухає сам плеєр, тож ковзання поверх нього не додається.
+- **Перестилізувати картку** можна слотом `rkStoriesGroupPreview`, показаним у розділі [Власні картки каруселі](#custom-carousel-cards). Плеєр і далі розміщує, масштабує та рухає картку.
+
+## Смуга прогресу й заголовок у кожній групі [#chrome-placement]
+
+Типово одна смуга прогресу й один заголовок лежать над плеєром і перемикаються на нову групу, щойно вона змінилася. Задайте `chromePlacement="group"`, щоб кожна група мала власні всередині свого слайда: тоді обидва повертаються разом із групою, як в Instagram.
+
+<CodeBlock code={chromePlacement} language="typescript" />
+
+- **Сусідня група показує, де вона зупинилася.** Поки плеєр повертається до неї, її смуга й заголовок показують сторіс, з якої вона відкриється, ще без жодного перегляду.
+- **Група, яку покидають, лишається як була.** Її смуга тримає прогрес до кінця повороту, тож досмотрена група лишається заповненою, а не порожніє посеред повороту.
+- **Шаблони рендеряться для кожної групи на екрані.** Контексти `rkStoriesProgressBar` і `rkStoriesHeader` містять `groupIndex` та `isActive`; для сусідньої групи `isActive` дорівнює `false`, а сигнали прогресу не змінюються.
+- **Шаблон `rkStoriesHeader` лежить в області свайпу.** Дотик до нього перемикає сторіс, якщо він не влучив у `button`, посилання чи елемент із `role="button"`, тож усі елементи керування в ньому мають бути саме такими.
+- **Десктопна карусель посеред ковзання не змінюється.** Поки картки ковзають, плеєр прихований, тож вибір видно, щойно група відкрилася.
+
 ## Шаблонні слоти [#template-slots]
 
-Вісім директив `ng-template` замінюють будь-яку частину плеєра. Кожна отримує типізований контекст, де найкорисніше значення є неявним — `let-author` бере автора у слоті заголовка, не називаючи його. Слот, який ви не надали, лишає типове відображення.
+Вісім директив `ng-template` замінюють будь-яку частину плеєра. Кожна отримує типізований контекст, де кожне значення має ім'я — те саме, що в слотах React і Vue, — тож `let-author="author"` бере автора у слоті заголовка. Головне значення також є неявним, тож і сам `let-author` робить те саме. Слот, який ви не надали, лишає типове відображення.
 
 | Директива | Клас | Контекст | Опис |
 | --- | --- | --- | --- |
-| `rkStoriesError` | `RkStoriesErrorDirective` | `{ $implicit: story, storyIndex, groupIndex }` | Замінює вбудовану панель "Content unavailable", намальовану над активною сторіс |
-| `rkStoriesFooter` | `RkStoriesFooterDirective` | `{ $implicit: story, author, storyIndex }` | Додає підвал під активною сторіс; плеєр власного не малює |
-| `rkStoriesGroupPreview` | `RkStoriesGroupPreviewDirective` | `{ $implicit: group, groupIndex, story, offset, viewedCount, onOpen }` | Заповнює картку каруселі на десктопі; плеєр і далі розміщує, масштабує та рухає її |
-| `rkStoriesHeader` | `RkStoriesHeaderDirective` | `{ $implicit: author, story, storyIndex, isPaused, isMuted, isVideo, onToggleSound, onTogglePause, onClose }` | Замінює типовий заголовок (автор, пауза, звук, закриття) |
-| `rkStoriesLoading` | `RkStoriesLoadingDirective` | `{ $implicit: story, storyIndex, groupIndex }` | Замінює типовий індикатор завантаження в заголовку, поки активна сторіс вантажиться |
-| `rkStoriesNavigation` | `RkStoriesNavigationDirective` | `{ $implicit: { onPrevStory, onNextStory, onPrevGroup, onNextGroup } }` | Замінює обидві десктопні стрілки |
-| `rkStoriesProgressBar` | `RkStoriesProgressBarDirective` | `{ $implicit: group, totalStories, activeIndex, progress }` | Замінює смугу прогресу на canvas. `activeIndex` і `progress` — сигнали ядра, підключіть їх через `toAngularSignal`. |
-| `rkStoriesSlide` | `RkStoriesSlideDirective` | `{ $implicit: story, index, groupIndex, isActive, size, activeGroupIndex, activeStoryIndex, onDurationReady, onReady, onWaiting, onError, onEnded }` | Замінює типові слайди зображення та відео |
+| `rkStoriesError` | `RkStoriesErrorDirective` | `{ $implicit: story, story, storyIndex, groupIndex }` | Замінює вбудовану панель "Content unavailable", намальовану над активною сторіс |
+| `rkStoriesFooter` | `RkStoriesFooterDirective` | `{ $implicit: story, story, author, storyIndex }` | Додає підвал під активною сторіс; плеєр власного не малює |
+| `rkStoriesGroupPreview` | `RkStoriesGroupPreviewDirective` | `{ $implicit: group, group, groupIndex, story, offset, viewedCount, onOpen }` | Заповнює картку каруселі на десктопі; плеєр і далі розміщує, масштабує та рухає її |
+| `rkStoriesHeader` | `RkStoriesHeaderDirective` | `{ $implicit: author, author, story, storyIndex, isPaused, isMuted, isVideo, groupIndex, isActive, onToggleSound, onTogglePause, onClose }` | Замінює типовий заголовок (автор, пауза, звук, закриття). З `chromePlacement="group"` він лежить в області свайпу; див. [Смуга прогресу й заголовок у кожній групі](/docs/angular-stories-player#chrome-placement). |
+| `rkStoriesLoading` | `RkStoriesLoadingDirective` | `{ $implicit: story, story, storyIndex, groupIndex }` | Замінює типовий індикатор завантаження в заголовку, поки активна сторіс вантажиться |
+| `rkStoriesNavigation` | `RkStoriesNavigationDirective` | `{ onPrevStory, onNextStory, onPrevGroup, onNextGroup, $implicit: { the same four } }` | Замінює обидві десктопні стрілки |
+| `rkStoriesProgressBar` | `RkStoriesProgressBarDirective` | `{ $implicit: group, group, totalStories, activeIndex, progress, groupIndex, isActive }` | Замінює смугу прогресу на canvas. `activeIndex` і `progress` — сигнали ядра, підключіть їх через `toAngularSignal`. |
+| `rkStoriesSlide` | `RkStoriesSlideDirective` | `{ $implicit: story, story, index, groupIndex, isActive, size, activeGroupIndex, activeStoryIndex, onDurationReady, onReady, onWaiting, onError, onEnded }` | Замінює типові слайди зображення та відео |
 
 <CodeBlock code={templateSlots} language="typescript" />
 
@@ -191,6 +225,18 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 ### Власні слайди [#custom-slides]
 
 <CodeBlock code={slideSlot} language="typescript" />
+
+Власний слайд повідомляє плеєру, як ідуть справи з його вмістом, через колбеки в контексті `rkStoriesSlide`. Плеєр реагує на них лише для сторіс на екрані; виклик із будь-якого іншого слайда ігнорується.
+
+| Колбек | Коли |
+| --- | --- |
+| `onReady` | Вміст готовий (зображення завантажено, відео грає). Таймер прогресу запускається або чекає, доки завершиться ковзання каруселі. |
+| `onWaiting` | Вміст зависає (відео буферизується посеред відтворення). З’являється індикатор, таймер стає на паузу. |
+| `onError` | Вміст не завантажився. Показується панель помилки, таймер стає на паузу. |
+| `onDurationReady` | Повідомте справжню тривалість медіа в мілісекундах, наприклад із метаданих відео, щоб таймер їй відповідав. `duration`, заданий на сторіс, перемагає це значення. |
+| `onEnded` | Медіа завершилося саме, наприклад відео дограло до кінця. Плеєр переходить до наступної сторіс, не чекаючи таймера. |
+
+`rk-image-story-slide` емітує `(loaded)` і `(failed)`, а `rk-video-story-slide` — `(playbackStarted)`, `(buffering)`, `(failed)`, `(durationReady)` і `(finished)`, тож шаблону слайда, який їх обгортає, лишається лише передати кожну подію до відповідного колбека.
 
 <Callout type="info" title="Кеш попереднього завантаження">
   Вбудовані `RkImageStorySlideComponent` і `RkVideoStorySlideComponent` завантажують наступну сторіс у фоні. Коли глядач доходить до попередньо завантаженої сторіс, вміст з’являється миттєво, без індикатора завантаження. URL, який один раз не завантажився, теж запам’ятовується, тож повторне відкриття зламаної сторіс одразу показує помилку замість нової спроби.
@@ -258,12 +304,12 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 
 | Компонент | Що це |
 | --- | --- |
-| `RkCanvasProgressBarComponent` | Сегментована смуга прогресу на canvas, намальована прямо із сигналів таймера. Обробляє рухоме вікно для груп із багатьма сторіс. |
+| `RkCanvasProgressBarComponent` | Сегментована смуга прогресу на canvas, намальована прямо із сигналів таймера. Обробляє рухоме вікно для груп із багатьма сторіс. З `[live]="false"` малюється лише при зміні сигналів і після зміни розміру, без циклу анімації. Розміри й кольори — окремі inputs: `gap`, `barHeight`, `minSegmentWidth`, `bgColor`, `fillColor`. |
 | `RkHeartAnimationComponent` | Серце подвійного дотику. Емітує `(completed)`, коли анімація завершується, щоб батьківський компонент його прибрав. |
 | `RkImageStorySlideComponent` | Слайд зображення на весь екран із `object-fit: cover`, повідомляє про завантаження та помилку через outputs. |
 | `RkStoriesRingComponent` | Круглий аватар із градієнтним кільцем. Два стани: якщо є що дивитися — обертається, переглянуте до кінця — рівне. Емітує `(clicked)`. |
 | `RkStoriesRingListComponent` | Горизонтальний ряд кілець з іменами авторів, по одному на групу. Емітує `(selected)` з індексом групи. |
-| `RkStoryHeaderComponent` | Типовий заголовок: аватар, ім’я, позначка верифікації, відносний час, пауза, звук, закриття та індикатор завантаження. |
+| `RkStoryHeaderComponent` | Типовий заголовок: аватар, ім’я, позначка верифікації, відносний час, пауза, звук, закриття та індикатор завантаження. Кнопки паузи й звуку з'являються лише з `[showPauseButton]` і `[showSoundButton]`, як їх вмикає плеєр для власного заголовка. |
 | `RkVideoStorySlideComponent` | Відеослайд на єдиному спільному елементі `<video>` — заради неперервності звуку в iOS. Обробляє автовідтворення, постери та повідомлення про тривалість. |
 
 `RkStoriesCarouselComponent` теж експортовано разом із типом `CarouselSlide`, але оверлей володіє всіма значеннями, з яких малює карусель, — щоб змінити вигляд картки, беріть слот `rkStoriesGroupPreview`, а не монтуйте карусель самотужки.
@@ -282,7 +328,7 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 
 | Звідки | Реекспортовано |
 | --- | --- |
-| `@reelkit/angular` | `createOverlayUrlState`, `urlIndexTwoAxisKey`, `urlStableIdTwoAxisKey`, `base64UrlCodec`, `createViewedStateController`, `twoAxisViewedTracking`, `createLocalStorageAdapter`, `createSessionStorageAdapter`, `createMemoryStorageAdapter`, а також типи `OverlayUrlStateOptions`, `UrlAdapter`, `UrlCodec`, `UrlLocator`, `UrlKey`, `UrlStateController`, `TwoAxisPosition`, `TwoAxisIdentity`, `UrlIndexTwoAxisKeyOptions`, `ViewedStateController`, `ViewedStateOptions`, `StorageAdapter` |
+| `@reelkit/angular` | `SoundStateService`, `createOverlayUrlState`, `urlIndexTwoAxisKey`, `urlStableIdTwoAxisKey`, `base64UrlCodec`, `createViewedStateController`, `twoAxisViewedTracking`, `createLocalStorageAdapter`, `createSessionStorageAdapter`, `createMemoryStorageAdapter`, а також типи `OverlayUrlStateOptions`, `UrlAdapter`, `UrlCodec`, `UrlLocator`, `UrlKey`, `UrlStateController`, `TwoAxisPosition`, `TwoAxisIdentity`, `UrlIndexTwoAxisKeyOptions`, `ViewedStateController`, `ViewedStateOptions`, `StorageAdapter` |
 | `@reelkit/stories-core` | `createStoriesViewedStateController`, `StoriesViewedStateController`, `StoriesViewedStateControllerConfig`, а також типи вмісту `StoryItem`, `AuthorInfo`, `StoriesGroup`, `MediaType` |
 
 `attachViewedState` теж експортовано — для компонента, який володіє контролером стану переглянутого й хоче тримати його активним, доки живе цей компонент.
@@ -294,6 +340,7 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 | Input | Тип | Типове значення | Опис |
 | --- | --- | --- | --- |
 | `ariaLabel` | `string` | `'Stories player'` | Доступна назва діалогової області; програми читання з екрана озвучують її, коли оверлей відкривається |
+| `chromePlacement` | `'overlay' \| 'group'` | `'overlay'` | Де живуть смуга прогресу й заголовок. `'overlay'` малює одну копію над плеєром; `'group'` малює по одній у кожному слайді групи, тож обидва повертаються разом із групою. Тип експортується як `ChromePlacement`. |
 | `defaultImageDuration` | `number` | `5000` | Тривалість автопереходу для сторіс-зображення, у мілісекундах |
 | `desktopLayout` | `'single' \| 'carousel'` | `'single'` | Розкладка на десктопі. `'carousel'` показує сусідні групи як картки попереднього перегляду поруч з активною сторіс і рухає їх між групами. Телефони завжди показують сторіс саму. Тип експортовано як `DesktopLayout`. |
 | `enableKeyboard` | `boolean` | `true` | Вмикає навігацію з клавіатури (стрілки ліворуч/праворуч, Escape) |
@@ -303,7 +350,7 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 | `initialGroupIndex` | `number` | `0` | Індекс (від нуля) групи, з якої відкривається плеєр |
 | `initialStoryIndex` | `number` | відновлення, інакше `0` | Індекс (від нуля) сторіс, з якої відкривається плеєр. Явно вказана перемагає будь-що запам’ятоване; якщо не вказати, початкова група відновлюється, як будь-яка інша. |
 | `innerTransitionDuration` | `number` | `200` | Тривалість згасання між сторіс одного автора, у мілісекундах |
-| `isOpen` | `boolean` | `false` | Рендерить плеєр і блокує прокручування body, поки true |
+| `isOpen` | `boolean` | `required` | Рендерить плеєр і блокує прокручування body, поки true |
 | `minSegmentWidth` | `number` | `8` | Найменша ширина сегмента прогресу, після якої смуга починає прокручувати вікно сегментів, у пікселях |
 | `resumeStoryIndex` | `(groupIndex: number) => number` | — | З якої сторіс група відкривається, коли до неї доходять уперше. Питається лише для групи, ще не відвіданої в цьому відкритті, і перемагає `viewed`. |
 | `tapZoneSplit` | `number` | `0.3` | Співвідношення зон дотику (0–1). Ліва частина повертає назад, решта — вперед. |
@@ -343,7 +390,7 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 
 ## Типи контекстів шаблонних слотів [#template-slot-context-types]
 
-Усі типи контекстів експортовано, щоб анотувати слот там, де компілятор не може вивести тип, — `StoriesSlideContext`, `StoriesHeaderContext`, `StoriesFooterContext`, `StoriesProgressBarContext`, `StoriesNavigationContext`, `StoriesLoadingContext`, `StoriesErrorContext` і `StoriesGroupPreviewContext`, поряд зі `StoriesNavigationActions`, `DesktopLayout` і `StoriesApi`:
+Усі типи контекстів експортовано, щоб анотувати слот там, де компілятор не може вивести тип, — `StoriesSlideContext`, `StoriesHeaderContext`, `StoriesFooterContext`, `StoriesProgressBarContext`, `StoriesNavigationContext`, `StoriesLoadingContext`, `StoriesErrorContext` і `StoriesGroupPreviewContext`, поряд зі `StoriesNavigationActions`, `DesktopLayout`, `ChromePlacement` і `StoriesApi`:
 
 <CodeBlock code={slotContexts} language="typescript" />
 
@@ -358,32 +405,118 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 | `.rk-stories-overlay--sliding` | Overlay | Триває рух каруселі; полотно плеєра приховано |
 | `.rk-stories-swipe-wrapper` | Overlay | Обгортка свайпу для закриття (тримає стрілки та полотно) |
 | `.rk-stories-container` | Overlay | Заокруглене полотно сторіс (позиція, overflow) |
-| `.rk-stories-ui-layer` | Overlay | Один шар інтерфейсу над плеєром (заголовок, прогрес, серця) |
+| `.rk-stories-ui-layer` | Overlay | Один шар інтерфейсу над плеєром (заголовок, прогрес, серця). З `chromePlacement="group"` натомість по одному в кожному слайді групи (заголовок, прогрес), а серця лежать прямо в плеєрі |
 | `.rk-stories-ui-layer--hidden` | Overlay | Прихований інтерфейс (перемикає `hideUIOnPause`) |
 | `.rk-stories-error` | Overlay | Стан помилки (іконка й текст по центру) |
 | `.rk-stories-error-text` | Overlay | Текст повідомлення про помилку |
 | `.rk-stories-nav-btn` | Overlay | Десктопна стрілка назад/вперед |
+| `.rk-stories-progress-bar` | ProgressBar | Обгортка позиціювання смуги прогресу на canvas |
 | `.rk-stories-slide-wrapper` | Overlay | Одна група сторіс (зовнішній слайд) |
 | `.rk-stories-story` | Overlay | Одна сторіс (корінь внутрішнього слайда) |
 | `.rk-stories-image` | ImageStorySlide | Зображення на весь кадр (`object-fit: cover`) |
 | `.rk-stories-video` | VideoStorySlide | Контейнер відеослайда |
+| `.rk-stories-video-element` | VideoStorySlide | Спільний елемент \<video> |
 | `.rk-stories-video-poster` | VideoStorySlide | Постер, показаний до початку відтворення |
+| `.rk-stories-video-poster--visible` | VideoStorySlide | Стан видимого постера (до відтворення) |
 | `.rk-stories-heart` | HeartAnimation | Серце подвійного дотику |
 | `.rk-stories-header` | StoryHeader | Рядок заголовка (аватар, ім’я, час, елементи керування) |
+| `.rk-stories-header--hidden` | StoryHeader | Прихований заголовок (input `visible` задано як `false`) |
+| `.rk-stories-header-avatar` | StoryHeader | Зображення аватара автора |
+| `.rk-stories-header-name` | StoryHeader | Текст імені автора |
+| `.rk-stories-header-verified` | StoryHeader | Контейнер позначки верифікації |
+| `.rk-stories-header-time` | StoryHeader | Текст відносного часу |
+| `.rk-stories-header-actions` | StoryHeader | Елементи керування праворуч (звук, пауза, закриття) |
 | `.rk-stories-header-btn` | StoryHeader | Кнопки паузи, звуку та закриття |
+| `.rk-stories-header-btn--desktop` | StoryHeader | Кнопка паузи, видима лише на ширині понад 768px |
 | `.rk-stories-header-spinner` | StoryHeader | Індикатор завантаження, поки активна сторіс вантажиться |
 | `.rk-stories-ring` | StoriesRing | Круглий аватар із градієнтним кільцем |
 | `.rk-stories-ring--active` | StoriesRing | Кільце з непереглянутими сторіс (градієнт обертається) |
 | `.rk-stories-ring-avatar` | StoriesRing | Зображення аватара всередині кільця |
 | `.rk-stories-ring-list` | StoriesRingList | Горизонтальний ряд кілець |
-| `.rk-stories-carousel` | Carousel | Шар десктопної каруселі |
-| `.rk-stories-card` | Carousel | Одна картка попереднього перегляду поруч із плеєром |
-| `.rk-stories-card-image` | Carousel | Зображення попереднього перегляду на картці |
+| `.rk-stories-ring-list-item` | StoriesRingList | Колонка з кільцем та іменем |
+| `.rk-stories-ring-list-name` | StoriesRingList | Ім’я автора під кожним кільцем |
+| `.rk-stories-carousel` | Carousel | Шар карток попереднього перегляду позаду плеєра |
+| `.rk-stories-carousel--instant` | Carousel | Перший кадр руху, розкладений без переходу |
+| `.rk-stories-card` | Carousel | Одна розміщена картка попереднього перегляду |
+| `.rk-stories-card--center` | Carousel | Картка в центральному слоті під час руху |
+| `.rk-stories-card--hidden` | Carousel | Картка за межами двох, показаних з боку |
+| `.rk-stories-card-button` | Carousel | Типовий вміст картки (кнопка, що відкриває групу) |
+| `.rk-stories-card-image` | Carousel | Зображення попереднього перегляду на картці (постер або зображення) |
 | `.rk-stories-card-frame` | Carousel | Шаблон слайда, намальований як попередній перегляд картки, у зменшеному масштабі |
+| `.rk-stories-card-scrim` | Carousel | Притемнення поверх попереднього перегляду |
+| `.rk-stories-card-info` | Carousel | Колонка з кільцем, іменем автора й часом |
+| `.rk-stories-card-name` | Carousel | Ім’я автора |
+| `.rk-stories-card-time` | Carousel | Текст відносного часу |
 
 ## Theming [#theming]
 
 Кожен колір, розмір, тривалість і z-index — кастомна властивість `--rk-stories-*` на `:root`, тож ребрендинг — це таблиця стилів, а не зміна компонента. Токени спільні з плеєрами React і Vue.
+
+| Токен | Типове значення | Що задає |
+| --- | --- | --- |
+| `--rk-stories-overlay-bg` | `#000` | Колір повноекранного тла |
+| `--rk-stories-overlay-z` | `9999` | z-index оверлея |
+| `--rk-stories-swipe-gap` | `16px` | Відступ між кнопками навігації та полотном сторіс |
+| `--rk-stories-container-radius` | `12px` | Заокруглення полотна сторіс (десктоп) |
+| `--rk-stories-container-radius-mobile` | `0` | Заокруглення полотна сторіс на телефоні |
+| `--rk-stories-ui-z` | `15` | z-index шару інтерфейсу (заголовок, смуга прогресу) |
+| `--rk-stories-ui-transition` | `200ms` | Тривалість згасання, коли перемикається `hideUIOnPause` |
+| `--rk-stories-top-shade-height` | `120px` | Висота верхнього градієнтного затемнення за заголовком |
+| `--rk-stories-top-shade-bg` | `linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%)` | Колір верхнього градієнтного затемнення |
+| `--rk-stories-error-z` | `5` | z-index панелі помилки |
+| `--rk-stories-error-bg` | `linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)` | Градієнт тла стану помилки |
+| `--rk-stories-error-fg` | `rgba(255, 255, 255, 0.5)` | Колір іконки й тексту помилки |
+| `--rk-stories-error-gap` | `12px` | Відстань між іконкою помилки та текстом |
+| `--rk-stories-error-text-size` | `13px` | Розмір шрифту повідомлення про помилку |
+| `--rk-stories-nav-z` | `20` | z-index десктопної кнопки навігації |
+| `--rk-stories-nav-size` | `44px` | Розмір десктопної кнопки назад/вперед |
+| `--rk-stories-nav-bg` | `rgba(255, 255, 255, 0.1)` | Тло десктопної кнопки навігації |
+| `--rk-stories-nav-bg-hover` | `rgba(255, 255, 255, 0.2)` | Тло десктопної кнопки навігації під курсором |
+| `--rk-stories-nav-fg` | `rgba(255, 255, 255, 0.7)` | Колір іконки десктопної кнопки навігації |
+| `--rk-stories-nav-fg-hover` | `#fff` | Колір іконки десктопної кнопки навігації під курсором |
+| `--rk-stories-nav-transition` | `150ms` | Перехід десктопної кнопки навігації під курсором |
+| `--rk-stories-video-bg` | `#000` | Тло-леттербокс за \<video> |
+| `--rk-stories-video-poster-transition` | `200ms` | Тривалість згасання постера на початку відтворення |
+| `--rk-stories-progress-bar-z` | `10` | z-index смуги прогресу |
+| `--rk-stories-progress-bar-padding` | `8px 8px 0` | Відступ навколо смуги прогресу |
+| `--rk-stories-card-bg` | `#262626` | Тло картки каруселі, видиме без кадру попереднього перегляду |
+| `--rk-stories-card-radius` | `8px` | Заокруглення кутів картки каруселі |
+| `--rk-stories-card-scrim` | `rgba(0, 0, 0, 0.45)` | Притемнення бічної картки |
+| `--rk-stories-card-fg` | `#fff` | Колір тексту на картці |
+| `--rk-stories-card-name-size` | `14px` | Розмір шрифту імені автора на картці |
+| `--rk-stories-card-time-fg` | `rgba(255, 255, 255, 0.7)` | Колір тексту часу на картці |
+| `--rk-stories-card-time-size` | `13px` | Розмір шрифту часу на картці |
+| `--rk-stories-card-gap` | `6px` | Відстань між кільцем, іменем і часом на картці |
+| `--rk-stories-card-transition` | `300ms` | Тривалість руху каруселі |
+| `--rk-stories-ring-spin-duration` | `4s` | Тривалість обертання кільця, у якому лишилося що дивитися |
+| `--rk-stories-ring-active-scale` | `0.95` | Масштаб кільця під час натискання |
+| `--rk-stories-ring-gradient` | `none` | Внутрішній: компонент кільця записує сюди свій градієнт під час кожного рендеру, тож задавати його марно |
+| `--rk-stories-ring-list-gap` | `12px` | Відстань між кільцями у списку |
+| `--rk-stories-ring-list-padding` | `12px` | Внутрішні відступи навколо списку кілець |
+| `--rk-stories-ring-list-item-gap` | `4px` | Відстань між кільцем та іменем |
+| `--rk-stories-ring-list-name-size` | `12px` | Розмір шрифту імені автора під кільцем |
+| `--rk-stories-header-z` | `5` | z-index заголовка |
+| `--rk-stories-header-top` | `18px` | Вертикальний відступ заголовка від верху сторіс |
+| `--rk-stories-header-padding` | `12px 16px` | Внутрішні відступи рядка заголовка |
+| `--rk-stories-header-gap` | `8px` | Відстань між елементами рядка заголовка |
+| `--rk-stories-header-transition` | `200ms` | Тривалість згасання заголовка, коли він ховається |
+| `--rk-stories-header-avatar-size` | `32px` | Ширина й висота аватара |
+| `--rk-stories-header-name-fg` | `#fff` | Колір імені автора |
+| `--rk-stories-header-name-size` | `14px` | Розмір шрифту імені автора |
+| `--rk-stories-header-name-weight` | `600` | Товщина шрифту імені автора |
+| `--rk-stories-header-time-fg` | `rgba(255, 255, 255, 0.6)` | Колір тексту відносного часу |
+| `--rk-stories-header-time-size` | `12px` | Розмір шрифту відносного часу |
+| `--rk-stories-header-actions-gap` | `8px` | Відстань між кнопками заголовка |
+| `--rk-stories-header-btn-fg` | `#fff` | Колір іконок дій у заголовку (закриття, звук, пауза) |
+| `--rk-stories-header-btn-padding` | `4px` | Внутрішній відступ кнопки заголовка |
+| `--rk-stories-header-spinner-size` | `20px` | Розмір індикатора завантаження |
+| `--rk-stories-header-spinner-track` | `rgba(255, 255, 255, 0.3)` | Колір доріжки індикатора завантаження |
+| `--rk-stories-header-spinner-fg` | `#fff` | Колір дуги індикатора завантаження |
+| `--rk-stories-header-spinner-duration` | `0.8s` | Один оберт індикатора |
+| `--rk-stories-heart-z` | `20` | z-index серця подвійного дотику |
+| `--rk-stories-heart-duration` | `800ms` | Тривалість появи й згасання серця |
+
+Вставте фрагмент нижче в таблицю стилів, завантажену після `@reelkit/angular-stories-player/styles.css`.
 
 <CodeBlock code={theming} language="css" />
 
@@ -391,9 +524,9 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 
 Корінь оверлея — модальний діалог (`role="dialog"`, `aria-modal="true"`). Встановіть `ariaLabel`, щоб змінити те, що озвучує програма читання з екрана; типово це "Stories player".
 
-Оверлей захоплює фокус при відкритті й повертає його на елемент, що відкрив, при закритті. Tab і Shift+Tab обходять фокусовані елементи всередині, замикаючись на краях; фокус, що вислизає (клік поза межами, програмний фокус), повертається назад. Прокручування body заблоковано, доки плеєр відкритий. Реалізовано через `captureFocusForReturn` і `createFocusTrap` з `@reelkit/angular`.
+Оверлей захоплює фокус при відкритті й повертає його на елемент, що відкрив, при закритті. Tab і Shift+Tab обходять фокусовані елементи всередині, замикаючись на краях; фокус, що вислизає (клік поза межами, програмний фокус), повертається назад. Прокручування body заблоковано, доки плеєр відкритий. Реалізовано через `captureFocusForReturn` і `createFocusTrap` з `@reelkit/core`, які реекспортує `@reelkit/angular`.
 
-З десктопною каруселлю кожна типова картка — кнопка з підписом "Open stories by" та іменем автора. Картки йдуть після елементів керування плеєра в порядку табуляції й випадають із нього, поки триває рух каруселі.
+З десктопною каруселлю кожна типова картка — кнопка з підписом "Open stories by" та іменем автора. Картки йдуть після елементів керування плеєра в порядку табуляції й випадають із нього, поки триває рух каруселі; картка, що відкриває свою групу, повертає фокус діалогу, а не скидає його на сторінку.
 
 ## Рендеринг на сервері [#server-side-rendering]
 
@@ -403,6 +536,6 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 
 | Клавіша | Дія |
 | --- | --- |
-| `ArrowLeft` | Попередня сторіс |
-| `ArrowRight` | Наступна сторіс |
+| `ArrowLeft` | Попередня сторіс. На першій сторіс групи — попередня група, відкрита там, де її залишили; на першій групі нічого не відбувається. |
+| `ArrowRight` | Наступна сторіс. На останній сторіс групи — наступна група; на останній групі плеєр закривається. |
 | `Escape` | Закрити плеєр |

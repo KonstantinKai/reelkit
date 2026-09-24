@@ -14,8 +14,11 @@ Instagram-style stories player for React. Full-screen overlay with tap-to-advanc
 ## Installation
 
 ```bash
-npm install @reelkit/react-stories-player @reelkit/react
+npm install @reelkit/react-stories-player @reelkit/react lucide-react
 ```
+
+`react` and `react-dom` 18 or newer are peers too. The default header and
+navigation draw their icons with `lucide-react`.
 
 ## Quick Start
 
@@ -93,25 +96,26 @@ function App() {
 
 ### StoriesOverlay Props
 
-| Prop                      | Type                                   | Default    | Description                                                                                            |
-| ------------------------- | -------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------ |
-| `isOpen`                  | `boolean`                              | required   | Controls overlay visibility                                                                            |
-| `onClose`                 | `() => void`                           | required   | Called when overlay closes                                                                             |
-| `groups`                  | `StoriesGroup<T>[]`                    | required   | Story groups to display                                                                                |
-| `initialGroupIndex`       | `number`                               | `0`        | Starting group index                                                                                   |
-| `initialStoryIndex`       | `number`                               | `0`        | Starting story index                                                                                   |
-| `groupTransition`         | `TransitionTransformFn`                | cube       | Transition between groups                                                                              |
-| `defaultImageDuration`    | `number`                               | `5000`     | Image auto-advance duration (ms)                                                                       |
-| `tapZoneSplit`            | `number`                               | `0.3`      | Left zone ratio (0-1)                                                                                  |
-| `hideUIOnPause`           | `boolean`                              | `true`     | Hide header/progress on hold                                                                           |
-| `enableKeyboard`          | `boolean`                              | `true`     | Enable keyboard navigation                                                                             |
-| `innerTransitionDuration` | `number`                               | `200`      | Story crossfade duration (ms)                                                                          |
-| `minSegmentWidth`         | `number`                               | `8`        | Min progress segment width (px)                                                                        |
-| `desktopLayout`           | `'single' \| 'carousel'`               | `'single'` | `'carousel'`: neighbouring groups as preview cards beside the story on desktop                         |
-| `viewed`                  | `StoriesViewedStateController`         | —          | From `createStoriesViewedStateController()`: resume, recording and muted card rings for watched groups |
-| `resumeStoryIndex`        | `(groupIndex) => number`               | —          | Where a group opens when nothing was watched this session                                              |
-| `ariaLabel`               | `string`                               | —          | Accessible label announced when the overlay opens                                                      |
-| `apiRef`                  | `MutableRefObject<StoriesApi \| null>` | —          | Imperative access to navigation and the timer                                                          |
+| Prop                      | Type                                   | Default            | Description                                                                                            |
+| ------------------------- | -------------------------------------- | ------------------ | ------------------------------------------------------------------------------------------------------ |
+| `isOpen`                  | `boolean`                              | required           | Controls overlay visibility                                                                            |
+| `onClose`                 | `() => void`                           | required           | Called when overlay closes                                                                             |
+| `groups`                  | `StoriesGroup<T>[]`                    | required           | Story groups to display                                                                                |
+| `initialGroupIndex`       | `number`                               | `0`                | Starting group index                                                                                   |
+| `initialStoryIndex`       | `number`                               | resumed            | Starting story index; left out, the group opens on `resumeStoryIndex(initialGroupIndex)`, else `0`     |
+| `groupTransition`         | `TransitionTransformFn`                | cube               | Transition between groups                                                                              |
+| `defaultImageDuration`    | `number`                               | `5000`             | Image auto-advance duration (ms)                                                                       |
+| `tapZoneSplit`            | `number`                               | `0.3`              | Left zone ratio (0-1)                                                                                  |
+| `hideUIOnPause`           | `boolean`                              | `true`             | Hide the progress bar and header while paused by a long press                                          |
+| `enableKeyboard`          | `boolean`                              | `true`             | Enable keyboard navigation                                                                             |
+| `innerTransitionDuration` | `number`                               | `200`              | Story crossfade duration (ms)                                                                          |
+| `minSegmentWidth`         | `number`                               | `8`                | Min progress segment width (px)                                                                        |
+| `desktopLayout`           | `'single' \| 'carousel'`               | `'single'`         | `'carousel'`: neighbouring groups as preview cards beside the story on desktop                         |
+| `chromePlacement`         | `'overlay' \| 'group'`                 | `'overlay'`        | `'group'`: each group carries its own progress bar and header, turning with it like Instagram          |
+| `viewed`                  | `StoriesViewedStateController`         | —                  | From `createStoriesViewedStateController()`: resume, recording and muted card rings for watched groups |
+| `resumeStoryIndex`        | `(groupIndex) => number`               | —                  | Where a group opens when nothing was watched this session                                              |
+| `ariaLabel`               | `string`                               | `'Stories player'` | Accessible label announced when the overlay opens                                                      |
+| `apiRef`                  | `MutableRefObject<StoriesApi \| null>` | —                  | Imperative access to navigation and the timer                                                          |
 
 ### Callbacks
 
@@ -157,6 +161,7 @@ interface StoryItem {
   poster?: string;
   duration?: number;
   createdAt?: string | Date;
+  aspectRatio?: number; // media width / height
 }
 
 interface AuthorInfo {

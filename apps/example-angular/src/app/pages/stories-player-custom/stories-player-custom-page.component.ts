@@ -7,6 +7,7 @@ import {
   RkStoriesNavigationDirective,
   RkStoriesLoadingDirective,
   RkStoriesErrorDirective,
+  RkStoriesGroupPreviewDirective,
 } from '@reelkit/angular-stories-player';
 import { HtmlProgressBarComponent } from './html-progress-bar.component';
 import {
@@ -17,8 +18,8 @@ import {
 
 /**
  * One card per slot the player lets a page replace, each opening the player
- * with that slot filled and nothing else changed. The same six the react and
- * vue demos show, so the three can be read side by side.
+ * with that slot filled and nothing else changed. The same seven the React and
+ * Vue demos show, so the three can be read side by side.
  */
 @Component({
   selector: 'app-stories-player-custom-page',
@@ -32,6 +33,7 @@ import {
     RkStoriesNavigationDirective,
     RkStoriesLoadingDirective,
     RkStoriesErrorDirective,
+    RkStoriesGroupPreviewDirective,
     HtmlProgressBarComponent,
   ],
   styles: [
@@ -200,6 +202,61 @@ import {
 
       .error-panel .label {
         font-size: 14px;
+      }
+
+      .preview-card {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        padding: 0;
+        border: 2px solid rgba(167, 139, 250, 0.6);
+        border-radius: 16px;
+        overflow: hidden;
+        cursor: pointer;
+        background: #1e1b4b;
+      }
+
+      .preview-card .frame {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .preview-card .info {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        align-items: flex-start;
+        gap: 6px;
+        padding: 12px;
+        background: linear-gradient(transparent 40%, rgba(30, 27, 75, 0.9));
+      }
+
+      .preview-card .count {
+        padding: 2px 8px;
+        border-radius: 10px;
+        background: #6366f1;
+        color: #fff;
+        font-size: 11px;
+      }
+
+      .preview-card .author {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      .preview-card .author img {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
       }
 
       /* The tokens cascade into the overlay rendered inside this element, so
@@ -385,6 +442,46 @@ import {
             <div class="mark">!</div>
             <div class="label">Failed to load {{ story.mediaType }}</div>
           </div>
+        </ng-template>
+      </rk-stories-overlay>
+
+      <!-- Custom Carousel Cards -->
+      <rk-stories-overlay
+        [isOpen]="activeDemo() === 'custom-group-preview'"
+        [groups]="groups"
+        desktopLayout="carousel"
+        (closed)="activeDemo.set(null)"
+      >
+        <ng-template
+          rkStoriesGroupPreview
+          let-group
+          let-story="story"
+          let-onOpen="onOpen"
+        >
+          <button
+            type="button"
+            class="preview-card"
+            [attr.aria-label]="'Open stories by ' + group.author.name"
+            (click)="onOpen()"
+          >
+            @if (story) {
+              <img
+                class="frame"
+                [src]="story.mediaType === 'video' ? story.poster : story.src"
+                alt=""
+              />
+            }
+            <span class="info">
+              <span class="count">
+                {{ group.stories.length }}
+                {{ group.stories.length === 1 ? 'story' : 'stories' }}
+              </span>
+              <span class="author">
+                <img [src]="group.author.avatar" alt="" />
+                {{ group.author.name }}
+              </span>
+            </span>
+          </button>
         </ng-template>
       </rk-stories-overlay>
 

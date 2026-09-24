@@ -113,6 +113,10 @@ import theming from '../../snippets/angular-lightbox/theming.css?raw';
 
 <Sandbox code={basicUsage} language="typescript" title="gallery.component.ts" framework="angular" />
 
+<Callout type="info" title="Де рендериться оверлей">
+  На відміну від lightbox для React і Vue, які переносять свій оверлей у кінець `document.body`, `rk-lightbox-overlay` рендериться там, де ви його розмістили, і накриває екран через `position: fixed`. Не кладіть його всередину предка з `transform`, `perspective`, `filter` або `will-change: transform`: такий предок стає блоком-контейнером оверлея, тож lightbox отримує розмір предка замість вікна й обрізається його `overflow`. Предок, що створює власний контекст накладання, також обмежує, наскільки високо `--rk-lightbox-overlay-z` може підняти lightbox. Натомість токени `--rk-lightbox-*`, задані на будь-якому предку, доходять до lightbox.
+</Callout>
+
 ## Шаблонні слоти [#template-slots]
 
 Чотири директиви шаблонних слотів дають повністю налаштувати інтерфейс оверлея, не форкаючи компонент. Кожен слот отримує строго типізований об’єкт контексту.

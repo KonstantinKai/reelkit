@@ -22,6 +22,7 @@ import {
   getSlideGroupIndexes,
   getSlotOffset,
   isCardShown,
+  kStoriesCardRingSize,
   type StoryItem,
   type StoriesGroup,
 } from '@reelkit/stories-core';
@@ -49,8 +50,6 @@ export interface CarouselSlide {
   phase: 'start' | 'run';
 }
 
-const _kCardRingSize = 52;
-
 // Set on the element rather than bound as a property: `inert` is a boolean DOM
 // property, and older Vue versions would write an empty string into it, which
 // reads as false and leaves the frame interactive.
@@ -75,7 +74,7 @@ const renderDefaultCard = (
   const ring = getRingPresentation({
     totalStories: group.stories.length,
     viewedCount,
-    size: _kCardRingSize,
+    size: kStoriesCardRingSize,
   });
 
   return [

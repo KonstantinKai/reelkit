@@ -15,6 +15,7 @@ import urlState3 from '../../snippets/stories-player/url-state-3.tsx?raw';
 import urlState4 from '../../snippets/stories-player/url-state-4.tsx?raw';
 import rememberingWhatWasSeen from '../../snippets/stories-player/remembering-what-was-seen.tsx?raw';
 import desktopCarousel from '../../snippets/stories-player/desktop-carousel.tsx?raw';
+import chromePlacement from '../../snippets/stories-player/chrome-placement.tsx?raw';
 import transitions from '../../snippets/stories-player/transitions.tsx?raw';
 import renderheader from '../../snippets/stories-player/renderheader.tsx?raw';
 import renderfooter from '../../snippets/stories-player/renderfooter.tsx?raw';
@@ -180,7 +181,7 @@ The `StoriesOverlay` рендерить повноекранний плеєр і
 
 <CodeBlock code={urlState2} language="tsx" />
 
-**Стабільні посилання.** Група типово адресується за позицією, тож збережений у закладках `?story=2.0` відкриє іншого користувача, щойно стрічку перевпорядкують. Адресуйте групу за стабільним id — `outerCodec` записує id в URL, `outerLocator` знаходить, де він лежить. Половина з історією лишається звичайним індексом усередині знайденої групи.
+**Стабільні посилання.** Група типово адресується за позицією, тож збережений у закладках `?story=2.0` відкриє іншого користувача, щойно стрічку перевпорядкують. Адресуйте групу за стабільним id — `outerCodec` записує id в URL, `outerLocator` знаходить, де він лежить. Передайте `innerCodec` разом з `innerLocate` та `innerIdentify`, щоб так само адресувати історію всередині її групи; без них половина з історією лишається звичайним локальним індексом.
 
 <CodeBlock code={urlState3} language="tsx" />
 
@@ -207,7 +208,7 @@ The `StoriesOverlay` рендерить повноекранний плеєр і
 - **Посилання все одно переважає.** Зі `StoriesUrlOverlay` параметр вирішує, де відкривається плеєр, що б не було збережено. Скрізь інде вирішує колбек відновлення.
 - **Лічильник — це позиція, а не підрахунок.** Запис називає найдальшу досягнуту історію, тож додавання історії до переглянутої групи знову засвічує її кільце, а вилучення із середини скорочує лічильник. Те саме самовиправлення, яке отримує спільне посилання.
 - **Сховище замінне.** Передайте `storage: createSessionStorageAdapter()`, щоб забувати при закритті вкладки, або власний `StorageAdapter`. Дві відкриті вкладки тримаються в ногу через подію storage браузера.
-- **Плеєр, змонтований лише в момент відкриття, читає запізно.** Плеєр читає сховище в ефекті, який виконується, поки він ще закритий. З `{open && <StoriesOverlay … />}` такого моменту немає, тож викличте `viewed.attach()` самі в ефекті, що повертає свій dispose. Параметри та низькорівневі частини, з яких це зібрано, описано на сторінці [Stories Core](/docs/stories-core#viewed-controller).
+- **Плеєр, змонтований лише в момент відкриття, читає запізно.** Плеєр читає сховище в ефекті, який виконується, поки він ще закритий. З `{open && <StoriesOverlay … />}` такого моменту немає, тож викличте `useAttachViewedState(viewed)` у компоненті, який володіє контролером; він під'єднується під час монтування й відпускає сховище під час демонтування. Параметри та низькорівневі частини, з яких це зібрано, описано на сторінці [Stories Core](/docs/stories-core#viewed-controller).
 
 ## Десктопна карусель [#desktop-carousel]
 
@@ -219,6 +220,18 @@ The `StoriesOverlay` рендерить повноекранний плеєр і
 - **Картка показує, де відкриється група**: історію, на якій її залишили в цій сесії, а інакше ту, яку повертає `resumeStoryIndex`. На картці постер відео або саме зображення. Історію без жодного з них, наприклад текст на градієнті, малює ваш `renderSlide` у розмірі плеєра зі зменшенням; відео без постера показує фон картки. Таке прев'ю викликає `renderSlide` з `isActive: false` і є лише зображенням: нічого в ньому не отримує ні фокуса, ні кліків. Усе, що слайд робить під час монтування, як-от відтворення чи аналітику, тримайте за перевіркою `isActive`.
 - **Таймер чекає на ковзання.** Історія не перемикається, і `onStoryViewed` для неї не спрацьовує, доки картки не зупиняться.
 - **Ковзання вмикає будь-яка зміна групи**: клік по картці, `StoriesApi.goToGroup`, `nextGroup` і `prevGroup` та клавіші-стрілки за межею групи. Свайп пальцем рухає сам плеєр, тож ковзання поверх нього немає.
+
+## Смуга прогресу й шапка в кожній групі [#chrome-placement]
+
+Типово одна смуга прогресу й одна шапка лежать над плеєром і перемикаються на нову групу, щойно вона змінилася. Задайте `chromePlacement="group"`, щоб кожна група мала власні всередині свого слайда: тоді обидві повертаються разом із групою, як в Instagram.
+
+<CodeBlock code={chromePlacement} language="tsx" />
+
+- **Сусідня група показує, де вона зупинилася.** Поки плеєр повертається до неї, її смуга й шапка показують історію, з якої вона відкриється, ще без жодного перегляду.
+- **Група, яку покидають, лишається як була.** Її смуга тримає прогрес до кінця повороту, тож досмотрена група лишається заповненою, а не порожніє посеред повороту.
+- **Власні рендерери викликаються для кожної групи на екрані.** `renderProgressBar` і `renderHeader` отримують `groupIndex` та `isActive`; для сусідньої групи `isActive` дорівнює `false`, а сигнали прогресу не змінюються.
+- **Власна шапка лежить в області свайпу.** Дотик до неї перемикає історії, якщо він не влучив у `button`, посилання чи елемент із `role="button"`, тож усі елементи керування в ній мають бути саме такими.
+- **Десктопна карусель посеред ковзання не змінюється.** Поки картки ковзають, плеєр прихований, тож вибір видно, щойно група відкрилася.
 
 ## Довідник API [#api-reference]
 
@@ -238,14 +251,15 @@ The `StoriesOverlay` рендерить повноекранний плеєр і
 | `groupTransition` | `TransitionTransformFn` | cubeTransition | Ефект переходу для зовнішнього слайдера груп |
 | `defaultImageDuration` | `number` | 5000 | Типова тривалість автопереходу для історій-зображень у мілісекундах |
 | `tapZoneSplit` | `number` | 0.3 | Співвідношення зон дотику (0–1). Ліва частина гортає назад, права — уперед. |
-| `hideUIOnPause` | `boolean` | true | Чи ховати інтерфейс історії (шапку, підвал) на паузі від довгого натискання |
+| `hideUIOnPause` | `boolean` | true | Ховає смугу прогресу й заголовок, поки триває пауза від довгого натискання |
 | `enableKeyboard` | `boolean` | true | Вмикає навігацію з клавіатури (стрілки ліворуч і праворуч, Escape) |
 | `innerTransitionDuration` | `number` | 200 | Тривалість анімації внутрішнього переходу між історіями в мілісекундах |
 | `minSegmentWidth` | `number` | 8 | Мінімальна ширина сегмента смуги прогресу в пікселях |
 | `apiRef` | `MutableRefObject<StoriesApi \| null>` | - | Ref для доступу до імперативного StoriesApi |
 | `desktopLayout` | `'single' \| 'carousel'` | 'single' | Макет на десктопі. 'carousel' показує сусідні групи картками поруч з активною історією й ковзає між групами. На телефонах історія завжди показується сама. Тип експортується як `DesktopLayout`. |
+| `chromePlacement` | `'overlay' \| 'group'` | 'overlay' | Де живуть смуга прогресу й шапка. 'overlay' малює одну копію над плеєром; 'group' малює по одній у кожному слайді групи, тож обидві повертаються разом із групою. Тип експортується як `ChromePlacement`. |
 | `viewed` | `StoriesViewedStateController` | - | Що глядач уже бачив, із createStoriesViewedStateController(). Групи відновлюються на першій непереглянутій історії, кожну показану історію записано, а картки каруселі приглушують кільце групи, переглянутої до кінця. Передайте той самий контролер у StoriesRingList. |
-| `renderHeader` | `(props: HeaderRenderProps<T>) => ReactNode` | - | Власний рендерер шапки. Отримує автора, історію, стан паузи та звуку. |
+| `renderHeader` | `(props: HeaderRenderProps<T>) => ReactNode` | - | Власний рендерер шапки. Отримує автора, історію, стан паузи та звуку. З `chromePlacement="group"` шапка лежить в області свайпу; див. [Смуга прогресу й шапка в кожній групі](/docs/stories-player#chrome-placement). |
 | `renderFooter` | `(props: FooterRenderProps<T>) => ReactNode` | - | Власний рендерер підвала. Отримує дані автора та історії. |
 | `renderSlide` | `(props: SlideRenderProps<T>) => ReactNode` | - | Власний рендерер слайда, що замінює стандартні слайди із зображенням і відео. |
 | `renderNavigation` | `(props: NavigationRenderProps) => ReactNode` | - | Власна навігація для десктопа. Замінює стандартні кнопки-стрілки. |
@@ -387,11 +401,11 @@ The `groupTransition` керує 3D-ефектом переходу під ча�
 
 ## Sub-Components [#sub-components]
 
-Повторно використовувані блоки, експортовані для складання власних render props:
+Повторно використовувані блоки, експортовані для складання власних render props. Тип пропсів кожного експортовано поруч із ним — `CanvasProgressBarProps`, `StoryHeaderProps`, `ImageStorySlideProps`, `VideoStorySlideProps`, `StoriesRingProps`, `StoriesRingListProps` і `HeartAnimationProps` — для компонента, що обгортає один із них:
 
 ### CanvasProgressBar [#canvasprogressbar]
 
-Швидка сегментована смуга прогресу на canvas. Рендерить сегмент для кожної історії й анімує заповнення активного через `requestAnimationFrame`. Підтримує рухоме вікно для груп із багатьма історіями.
+Швидка сегментована смуга прогресу на canvas. Рендерить сегмент для кожної історії й анімує заповнення активного через `requestAnimationFrame`. Підтримує рухоме вікно для груп із багатьма історіями. Передайте `live={false}` для смуги, яка лише показує, де зупинилася група: вона малюється, коли змінюються її сигнали, і після зміни розміру, без циклу анімації.
 
 <CodeBlock code={canvasprogressbar} language="tsx" />
 
@@ -430,6 +444,17 @@ The `groupTransition` керує 3D-ефектом переходу під ча�
 Анімований оверлей сердечка, що спрацьовує на подвійний дотик. Збільшується й згасає за 800 мс. Налаштовується засобами CSS (дивіться розділ про подвійний дотик і лайки).
 
 <CodeBlock code={heartanimation} language="tsx" />
+
+## Реекспорти [#re-exports]
+
+Усе, що потрібно споживачеві, надходить із цього пакета, тож прямий імпорт з `@reelkit/core` ніколи не знадобиться.
+
+| Звідки | Що реекспортовано |
+| --- | --- |
+| `@reelkit/react` | `SoundProvider`, `useSoundState`, `useOverlayUrlState`, `createViewedStateController`, `twoAxisViewedTracking`, `createLocalStorageAdapter`, `createSessionStorageAdapter`, `createMemoryStorageAdapter`, `urlIndexTwoAxisKey`, `urlStableIdTwoAxisKey`, `base64UrlCodec`, а також типи `UrlAdapter`, `UrlCodec`, `UrlLocator`, `UrlKey`, `UrlStateController`, `TwoAxisPosition`, `TwoAxisIdentity`, `UrlIndexTwoAxisKeyOptions`, `OverlayUrlStateOptions`, `ViewedStateController`, `ViewedStateOptions`, `StorageAdapter` |
+| `@reelkit/stories-core` | `createStoriesViewedStateController`, `StoriesViewedStateController`, `StoriesViewedStateControllerConfig`, а також типи вмісту `StoryItem`, `AuthorInfo`, `StoriesGroup`, `MediaType` |
+
+`SoundProvider` і `useSoundState` несуть стан звуку, який плеєр поділяє зі своїми слайдами. Власний слайд, що відтворює власне медіа, читає перемикач звуку через `useSoundState`. Усередині плеєра провайдер уже є; `VideoStorySlide` чи власному слайду, відрендереному деінде, потрібен `SoundProvider` вище за деревом, інакше `useSoundState` кидає помилку.
 
 ## Types [#types]
 
@@ -496,7 +521,7 @@ Extend `StoryItem` власними полями й передайте пара�
 | `.rk-stories-overlay` | Overlay | Фіксоване повноекранне тло (фон, z-index) |
 | `.rk-stories-swipe-wrapper` | Overlay | Обгортка свайпу для закриття (містить кнопки навігації та canvas) |
 | `.rk-stories-container` | Overlay | Заокруглене полотно історії (позиція, переповнення) |
-| `.rk-stories-ui-layer` | Overlay | Контейнер інтерфейсу (шапка, прогрес, навігація) |
+| `.rk-stories-ui-layer` | Overlay | Контейнер інтерфейсу (шапка, прогрес, навігація). З `chromePlacement="group"` — у кожному слайді групи |
 | `.rk-stories-ui-layer--hidden` | Overlay | Стан прихованого інтерфейсу (перемикається через hideUIOnPause) |
 | `.rk-stories-error` | Overlay | Стан помилки (значок і текст по центру) |
 | `.rk-stories-error-text` | Overlay | Текст повідомлення про помилку |
@@ -512,6 +537,7 @@ Extend `StoryItem` власними полями й передайте пара�
 | `.rk-stories-header-time` | StoryHeader | Текст «скільки часу тому» |
 | `.rk-stories-header-actions` | StoryHeader | Дії праворуч (закрити, вимкнути звук, пауза) |
 | `.rk-stories-header-btn` | StoryHeader | Кнопка дії в шапці |
+| `.rk-stories-header-btn--desktop` | StoryHeader | Кнопка паузи, видима лише на ширині понад 768px |
 | `.rk-stories-header-spinner` | StoryHeader | Індикатор буферизації відео |
 | `.rk-stories-image` | ImageStorySlide | Елемент історії-зображення |
 | `.rk-stories-video` | VideoStorySlide | Контейнер історії-відео |
@@ -534,6 +560,7 @@ Extend `StoryItem` власними полями й передайте пара�
 | `.rk-stories-card--hidden` | Carousel | Картка за межами двох, що видно з боку |
 | `.rk-stories-card-button` | Carousel | Стандартний вміст картки (кнопка, що відкриває групу) |
 | `.rk-stories-card-image` | Carousel | Кадр прев’ю (постер або зображення) |
+| `.rk-stories-card-frame` | Carousel | Зменшене прев’ю `renderSlide` для історії без зображення чи постера; неінтерактивне |
 | `.rk-stories-card-scrim` | Carousel | Затемнення поверх кадру |
 | `.rk-stories-card-info` | Carousel | Колонка з кільцем, ім’ям автора й часом |
 | `.rk-stories-card-name` | Carousel | Ім’я автора |
@@ -547,32 +574,55 @@ Extend `StoryItem` власними полями й передайте пара�
 | --- | --- | --- |
 | `--rk-stories-overlay-bg` | `#000` | Колір повноекранного фону |
 | `--rk-stories-overlay-z` | `9999` | z-index оверлею |
-| `--rk-stories-container-radius` | `12px` | Заокруглені кути полотна історії (десктоп) |
 | `--rk-stories-swipe-gap` | `16px` | Відстань між кнопками навігації та полотном історії |
+| `--rk-stories-container-radius` | `12px` | Заокруглені кути полотна історії (десктоп) |
+| `--rk-stories-container-radius-mobile` | `0` | Кути полотна історії на ширині до 768px |
+| `--rk-stories-ui-z` | `15` | z-index шару інтерфейсу (шапка, смуга прогресу) |
+| `--rk-stories-ui-transition` | `200ms` | Тривалість згасання, коли перемикається hideUIOnPause |
 | `--rk-stories-top-shade-height` | `120px` | Висота верхнього градієнтного затемнення під шапкою |
 | `--rk-stories-top-shade-bg` | `linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%)` | Колір верхнього градієнтного затемнення |
-| `--rk-stories-ui-transition` | `200ms` | Тривалість згасання, коли перемикається hideUIOnPause |
+| `--rk-stories-error-z` | `5` | z-index стану помилки |
+| `--rk-stories-error-bg` | `linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)` | Градієнт фону в стані помилки |
+| `--rk-stories-error-fg` | `rgba(255, 255, 255, 0.5)` | Колір іконки й тексту помилки |
+| `--rk-stories-error-gap` | `12px` | Відстань між іконкою помилки та її текстом |
+| `--rk-stories-error-text-size` | `13px` | Розмір шрифту повідомлення про помилку |
+| `--rk-stories-nav-z` | `20` | z-index кнопок навігації на десктопі |
 | `--rk-stories-nav-size` | `44px` | Розмір кнопок «назад» і «далі» на десктопі |
 | `--rk-stories-nav-bg` | `rgba(255, 255, 255, 0.1)` | Фон кнопки навігації на десктопі |
 | `--rk-stories-nav-bg-hover` | `rgba(255, 255, 255, 0.2)` | Фон кнопки навігації на десктопі під час наведення |
 | `--rk-stories-nav-fg` | `rgba(255, 255, 255, 0.7)` | Колір іконки кнопки навігації на десктопі |
 | `--rk-stories-nav-fg-hover` | `#fff` | Колір іконки кнопки навігації на десктопі під час наведення |
-| `--rk-stories-error-bg` | `linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)` | Градієнт фону в стані помилки |
-| `--rk-stories-error-fg` | `rgba(255, 255, 255, 0.5)` | Колір іконки й тексту помилки |
-| `--rk-stories-error-text-size` | `13px` | Розмір шрифту повідомлення про помилку |
+| `--rk-stories-nav-transition` | `150ms` | Перехід фону й кольору кнопки навігації |
 | `--rk-stories-video-bg` | `#000` | Фон смуг навколо \<video> |
 | `--rk-stories-video-poster-transition` | `200ms` | Тривалість згасання постера, коли починається відтворення відео |
+| `--rk-stories-progress-bar-z` | `10` | z-index смуги прогресу |
+| `--rk-stories-progress-bar-padding` | `8px 8px 0` | Відступ навколо смуги прогресу |
+| `--rk-stories-header-z` | `5` | z-index шапки |
 | `--rk-stories-header-top` | `18px` | Вертикальний відступ шапки від верху історії |
 | `--rk-stories-header-padding` | `12px 16px` | Внутрішній відступ рядка шапки |
+| `--rk-stories-header-gap` | `8px` | Відстань між аватаром, іменем і часом |
+| `--rk-stories-header-transition` | `200ms` | Згасання шапки, коли її приховано |
 | `--rk-stories-header-avatar-size` | `32px` | Ширина й висота аватара |
 | `--rk-stories-header-name-fg` | `#fff` | Колір імені автора |
 | `--rk-stories-header-name-size` | `14px` | Розмір шрифту імені автора |
+| `--rk-stories-header-name-weight` | `600` | Товщина шрифту імені автора |
 | `--rk-stories-header-time-fg` | `rgba(255, 255, 255, 0.6)` | Колір тексту часу публікації |
+| `--rk-stories-header-time-size` | `12px` | Розмір шрифту часу публікації |
+| `--rk-stories-header-actions-gap` | `8px` | Відстань між кнопками дій у шапці |
 | `--rk-stories-header-btn-fg` | `#fff` | Колір іконок дій у шапці (закриття, звук, пауза) |
+| `--rk-stories-header-btn-padding` | `4px` | Внутрішній відступ кнопки дії в шапці |
+| `--rk-stories-header-spinner-size` | `20px` | Розмір індикатора буферизації |
+| `--rk-stories-header-spinner-track` | `rgba(255, 255, 255, 0.3)` | Колір доріжки індикатора буферизації |
+| `--rk-stories-header-spinner-fg` | `#fff` | Колір дуги індикатора буферизації |
+| `--rk-stories-header-spinner-duration` | `0.8s` | Один оберт індикатора буферизації |
+| `--rk-stories-heart-z` | `20` | z-index сердечка на подвійний дотик |
 | `--rk-stories-heart-duration` | `800ms` | Тривалість анімації появи та згасання |
 | `--rk-stories-ring-spin-duration` | `4s` | Тривалість обертання градієнта активного кільця |
+| `--rk-stories-ring-active-scale` | `0.95` | Масштаб кільця під час натискання |
+| `--rk-stories-ring-gradient` | `none` | Внутрішній: компонент кільця записує сюди свій градієнт під час кожного рендеру, тож перевизначення нічого не дає |
 | `--rk-stories-ring-list-gap` | `12px` | Відстань між кільцями в списку |
 | `--rk-stories-ring-list-padding` | `12px` | Внутрішній відступ навколо списку кілець |
+| `--rk-stories-ring-list-item-gap` | `4px` | Відстань між кільцем та іменем під ним |
 | `--rk-stories-ring-list-name-size` | `12px` | Розмір шрифту імені автора під кожним кільцем |
 | `--rk-stories-card-bg` | `#262626` | Фон картки каруселі, видимий, коли кадру прев’ю немає |
 | `--rk-stories-card-radius` | `8px` | Радіус кутів картки каруселі |
@@ -592,14 +642,18 @@ Extend `StoryItem` власними полями й передайте пара�
 
 Корінь оверлея — модальний діалог (`role="dialog"`, `aria-modal="true"`). Set `ariaLabel` щоб змінити оголошення для екранного читача; типове значення — «Stories player».
 
-Оверлей захоплює фокус під час відкриття й повертає його на елемент-тригер після закриття. Tab і Shift+Tab циклічно проходять фокусовані елементи всередині; фокус, що вислизнув (клік поза оверлеєм, програмна установка), повертається назад. Реалізовано через `captureFocusForReturn` та `createFocusTrap` from `@reelkit/core`.
+Оверлей захоплює фокус під час відкриття й повертає його на елемент-тригер після закриття. Tab і Shift+Tab циклічно проходять фокусовані елементи всередині; фокус, що вислизнув (клік поза оверлеєм, програмна установка), повертається назад. Реалізовано через `captureFocusForReturn` та `createFocusTrap` з `@reelkit/core`, які реекспортує `@reelkit/react`.
 
 У десктопній каруселі кожна стандартна картка — кнопка з підписом «Open stories by» та ім’ям автора. Картки йдуть у порядку Tab після елементів керування плеєра і випадають із нього, поки триває ковзання.
+
+## Рендеринг на сервері [#server-side-rendering]
+
+Закритий оверлей не малює нічого й монтується порталом у `document.body` лише після відкриття, а це відбувається на клієнті. `StoriesUrlOverlay` читає адресний рядок в ефекті після монтування, тож серверний рендер ніколи його не відкриває. `StoriesRingList` малює на сервері всі кільця непереглянутими: сховище переглянутого читають лише після монтування, тож серверна розмітка збігається з першим клієнтським рендером. Ширший контекст — у [посібнику з SSR](/docs/ssr).
 
 ## Клавіатурні скорочення [#keyboard-shortcuts]
 
 | Key | Action |
 | --- | --- |
-| `ArrowLeft` | Попередня історія |
-| `ArrowRight` | Наступна історія |
+| `ArrowLeft` | Попередня історія. На першій історії групи — попередня група, на тій історії, де її залишили (інакше на історії для продовження); на першій групі нічого не відбувається |
+| `ArrowRight` | Наступна історія. Після останньої історії групи — наступна група; після останньої групи плеєр закривається |
 | `Escape` | Закрити плеєр |

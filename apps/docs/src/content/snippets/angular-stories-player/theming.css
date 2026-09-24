@@ -1,6 +1,6 @@
-/* Loaded after @reelkit/vue-stories-player/styles.css. Every token has a
+/* Loaded after @reelkit/angular-stories-player/styles.css. Every token has a
    default on :root, so override only what you want to change. The names
-   match @reelkit/react-stories-player, so a theme ports between bindings. */
+   match the React and Vue players, so a theme ports between bindings. */
 :root {
   --rk-stories-overlay-bg: #0f172a;
   --rk-stories-container-radius: 24px;

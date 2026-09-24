@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { RkHeartAnimationComponent } from './heart-animation.component';
@@ -8,6 +10,15 @@ describe('RkHeartAnimationComponent', () => {
   });
 
   afterEach(() => TestBed.resetTestingModule());
+
+  it('draws the heart for the stylesheet to centre and animate', () => {
+    const fixture = TestBed.createComponent(RkHeartAnimationComponent);
+    fixture.detectChanges();
+    const heart = fixture.debugElement.query(By.css('.rk-stories-heart'));
+
+    expect(heart).not.toBeNull();
+    expect(heart.query(By.css('svg'))).not.toBeNull();
+  });
 
   // The player keeps a heart in the DOM until it says it is done, so this
   // event is the only thing that ever removes one.
@@ -22,5 +33,20 @@ describe('RkHeartAnimationComponent', () => {
       .nativeElement.dispatchEvent(new Event('animationend'));
 
     expect(completed).toBe(1);
+  });
+
+  // Keyframes names are global to the page, so an app declaring its own
+  // animation under the same bare name would replace the heart's.
+  it('names its animation under the package prefix', () => {
+    const heartStyles = readFileSync(
+      join(__dirname, '..', 'styles', 'heart-animation.css'),
+      'utf8',
+    );
+    const names = [...heartStyles.matchAll(/@keyframes\s+([\w-]+)/g)].map(
+      (match) => match[1],
+    );
+
+    expect(names).not.toHaveLength(0);
+    for (const name of names) expect(name).toMatch(/^rk-stories-/);
   });
 });

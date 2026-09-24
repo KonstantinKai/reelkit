@@ -1,16 +1,24 @@
 <script setup lang="ts">
-import type { DesktopLayout } from '@reelkit/vue-stories-player';
+import type {
+  ChromePlacement,
+  DesktopLayout,
+} from '@reelkit/vue-stories-player';
 import Segmented from './Segmented.vue';
 
 /**
- * The two switches every stories demo shares. "Remember seen" off makes a
- * page behave as if nothing had ever been seen: rings all unseen, every group
+ * The switches every stories demo shares. "Remember seen" off makes a page
+ * behave as if nothing had ever been seen: rings all unseen, every group
  * opens on its first story, nothing recorded. The store stays attached, so
  * switching back on shows what was stored all along. "Desktop layout" picks
- * the single story or the carousel of neighbouring groups.
+ * the single story or the carousel of neighbouring groups. "Progress &
+ * header" picks one copy above the player or one inside every group, which
+ * turns with the group the way Instagram does it.
  */
 const rememberSeen = defineModel<boolean>('rememberSeen', { required: true });
 const desktopLayout = defineModel<DesktopLayout>('desktopLayout', {
+  required: true,
+});
+const chromePlacement = defineModel<ChromePlacement>('chromePlacement', {
   required: true,
 });
 </script>
@@ -33,6 +41,16 @@ const desktopLayout = defineModel<DesktopLayout>('desktopLayout', {
         label: layout === 'single' ? 'Single' : 'Carousel',
         active: desktopLayout === layout,
         onClick: () => (desktopLayout = layout),
+      }))
+    "
+  />
+  <Segmented
+    legend="Progress & header"
+    :options="
+      (['overlay', 'group'] as const).map((placement) => ({
+        label: placement === 'overlay' ? 'Overlay' : 'Group',
+        active: chromePlacement === placement,
+        onClick: () => (chromePlacement = placement),
       }))
     "
   />

@@ -31,7 +31,7 @@ import {
   RkStoriesGroupPreviewDirective,
 } from '../template-slots/stories-template-slots';
 import { attachViewedState } from '../viewed-state/attach-viewed-state';
-import type { DesktopLayout, StoriesApi } from '../types';
+import type { ChromePlacement, DesktopLayout, StoriesApi } from '../types';
 
 /**
  * Stories player whose open state lives in the URL.
@@ -71,7 +71,7 @@ import type { DesktopLayout, StoriesApi } from '../types';
       [groups]="groups()"
       [initialGroupIndex]="position()?.outer ?? 0"
       [initialStoryIndex]="position()?.inner"
-      [groupTransition]="groupTransition() ?? cubeTransition"
+      [groupTransition]="groupTransition()"
       [defaultImageDuration]="defaultImageDuration()"
       [innerTransitionDuration]="innerTransitionDuration()"
       [minSegmentWidth]="minSegmentWidth()"
@@ -79,6 +79,7 @@ import type { DesktopLayout, StoriesApi } from '../types';
       [hideUIOnPause]="hideUIOnPause()"
       [enableKeyboard]="enableKeyboard()"
       [desktopLayout]="desktopLayout()"
+      [chromePlacement]="chromePlacement()"
       [ariaLabel]="ariaLabel()"
       [viewed]="viewed()"
       [resumeStoryIndex]="resumeStoryIndex()"
@@ -117,9 +118,7 @@ export class RkStoriesUrlOverlayComponent<T extends StoryItem = StoryItem> {
   /** The groups to play, in order. */
   readonly groups = input.required<StoriesGroup<T>[]>();
 
-  readonly groupTransition = input<TransitionTransformFn | undefined>(
-    undefined,
-  );
+  readonly groupTransition = input<TransitionTransformFn>(cubeTransition);
   readonly defaultImageDuration = input(5000);
   readonly innerTransitionDuration = input(200);
   readonly minSegmentWidth = input(8);
@@ -127,6 +126,7 @@ export class RkStoriesUrlOverlayComponent<T extends StoryItem = StoryItem> {
   readonly hideUIOnPause = input(true);
   readonly enableKeyboard = input(true);
   readonly desktopLayout = input<DesktopLayout>('single');
+  readonly chromePlacement = input<ChromePlacement>('overlay');
   readonly ariaLabel = input('Stories player');
   readonly viewed = input<StoriesViewedStateController | undefined>(undefined);
   readonly resumeStoryIndex = input<
@@ -172,9 +172,6 @@ export class RkStoriesUrlOverlayComponent<T extends StoryItem = StoryItem> {
   );
 
   protected readonly position = signal<TwoAxisPosition | null>(null);
-
-  /** Default for the group transition, so the input stays optional. */
-  protected readonly cubeTransition = cubeTransition;
 
   constructor() {
     // The viewed store is read here as well as inside the player: this

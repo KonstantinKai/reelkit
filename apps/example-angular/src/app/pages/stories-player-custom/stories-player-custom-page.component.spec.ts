@@ -33,7 +33,7 @@ describe('StoriesPlayerCustomPageComponent', () => {
   afterEach(() => TestBed.resetTestingModule());
 
   // The page exists to show what a slot can replace. One card per slot, the
-  // same six the react and vue pages carry, so the three read alike.
+  // same seven the React and Vue pages carry, so the three read alike.
   it('offers a card for every slot demo', () => {
     const { fixture } = createPage();
     const titles = fixture.debugElement
@@ -137,6 +137,20 @@ describe('StoriesPlayerCustomPageComponent', () => {
       ).not.toBeNull();
       expect(
         fixture.debugElement.query(By.css('rk-canvas-progress-bar')),
+      ).toBeNull();
+    });
+
+    // The test window is wider than the phone breakpoint, so the carousel is
+    // the layout in use and its cards are drawn from the page's template.
+    it('draws the carousel cards from the page template', () => {
+      const fixture = open('custom-group-preview');
+
+      expect(
+        fixture.debugElement.queryAll(By.css('.rk-stories-card .preview-card'))
+          .length,
+      ).toBeGreaterThan(0);
+      expect(
+        fixture.debugElement.query(By.css('.rk-stories-card-button')),
       ).toBeNull();
     });
 

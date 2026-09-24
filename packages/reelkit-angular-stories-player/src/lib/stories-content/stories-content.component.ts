@@ -39,6 +39,7 @@ import {
   toAngularSignal,
   type ContentLoadingController,
   type GestureCommonEvent,
+  type CoreSignal,
   type ReelApi,
   type TransitionTransformFn,
 } from '@reelkit/angular';
@@ -78,6 +79,7 @@ import {
 } from '../video-story-slide/video-story-slide.component';
 import type {
   DesktopLayout,
+  ChromePlacement,
   StoriesApi,
   StoriesErrorContext,
   StoriesGroupPreviewContext,
@@ -112,8 +114,7 @@ const _kSlideTimeoutMarginMs = 700;
  *
  * @internal `RkStoriesOverlayComponent` is the player a consumer reaches for.
  * It creates this on open and destroys it on close, so the engine, the timer
- * and the sound setting last exactly as long as one viewing — the lifetime
- * react's `StoriesContent` and vue's equivalent get from mounting.
+ * and the sound setting last exactly as long as one viewing.
  */
 @Component({
   selector: 'rk-stories-content',
@@ -151,22 +152,6 @@ const _kSlideTimeoutMarginMs = 700;
       [attr.aria-label]="ariaLabel()"
       tabindex="-1"
     >
-      @if (carouselActive()) {
-        <rk-stories-carousel
-          [groups]="groups()"
-          [activeGroupIndex]="activeGroupIndex()"
-          [slide]="slide()"
-          [activeSize]="size()"
-          [storyIndexFor]="storyIndexForCard"
-          [viewedState]="viewedState()"
-          [previewTemplate]="groupPreviewTpl()"
-          [frameTemplate]="slideTpl() ?? undefined"
-          [frameContext]="cardFrameContext"
-          (opened)="storiesCtrl.goToGroup($event)"
-          (slideEnded)="endSlide()"
-        />
-      }
-
       <!-- The arrows are flex siblings of the player, not overlaid on it:
            that is the layout the stylesheet lays out, and it keeps them
            clear of the story on a wide screen. -->
@@ -225,7 +210,6 @@ const _kSlideTimeoutMarginMs = 700;
                 [style.height.px]="size()[1]"
               >
                 <rk-reel
-                  class="rk-stories-stories"
                   [count]="storiesOf(groupIndex).length"
                   direction="horizontal"
                   [size]="size()"
@@ -264,7 +248,9 @@ const _kSlideTimeoutMarginMs = 700;
                             [activeStoryIndex]="
                               storiesCtrl.state.activeStoryIndex
                             "
-                            (durationReady)="onDurationReady(story.src, $event)"
+                            (durationReady)="
+                              onDurationReady(groupIndex, storyIndex, $event)
+                            "
                             (playbackStarted)="
                               onContentReady(groupIndex, storyIndex)
                             "
@@ -324,68 +310,101 @@ const _kSlideTimeoutMarginMs = 700;
                   </ng-template>
                 </rk-reel>
 
-                @if (footerTpl(); as tpl) {
+                <!-- The footer belongs to the story playing, so a neighbouring
+                     group seen mid-turn shows none. -->
+                @if (groupIndex === activeGroupIndex() && footerTpl(); as tpl) {
                   <ng-container
                     [ngTemplateOutlet]="tpl"
                     [ngTemplateOutletInjector]="slotInjector"
                     [ngTemplateOutletContext]="footerContext(groupIndex)"
                   />
                 }
+
+                @if (chromePlacement() === 'group') {
+                  <div
+                    class="rk-stories-ui-layer"
+                    [class.rk-stories-ui-layer--hidden]="!chromeVisible()"
+                  >
+                    <ng-container
+                      [ngTemplateOutlet]="chrome"
+                      [ngTemplateOutletContext]="{ $implicit: groupIndex }"
+                    />
+                  </div>
+                }
               </div>
             </ng-template>
           </rk-reel>
 
-          <!-- One chrome layer over the whole player, the way react and vue
-               build it. Inside the group slides it would turn with the cube
-               on every group change, and there would be one copy per
-               rendered group. -->
-          <div
-            class="rk-stories-ui-layer"
-            [class.rk-stories-ui-layer--hidden]="!chromeVisible()"
-          >
-            @let groupIndex = activeGroupIndex();
+          <!-- The progress bar and the header are drawn either once over the
+               whole player, switching to the new group after it changes, or
+               once inside every group slide above, turning with the group.
+               The hearts belong to the player either way, never to a group. -->
+          @if (chromePlacement() === 'overlay') {
+            <div
+              class="rk-stories-ui-layer"
+              [class.rk-stories-ui-layer--hidden]="!chromeVisible()"
+            >
+              <ng-container
+                [ngTemplateOutlet]="chrome"
+                [ngTemplateOutletContext]="{ $implicit: activeGroupIndex() }"
+              />
+
+              @for (heart of hearts(); track heart) {
+                <rk-heart-animation (completed)="removeHeart(heart)" />
+              }
+            </div>
+          } @else {
+            @for (heart of hearts(); track heart) {
+              <rk-heart-animation (completed)="removeHeart(heart)" />
+            }
+          }
+
+          <ng-template #chrome let-groupIndex>
             @if (groups()[groupIndex]; as group) {
+              @let bar = progressBarContext(groupIndex);
               @if (progressBarTpl(); as tpl) {
                 <ng-container
                   [ngTemplateOutlet]="tpl"
                   [ngTemplateOutletInjector]="slotInjector"
-                  [ngTemplateOutletContext]="progressBarContext(groupIndex)"
+                  [ngTemplateOutletContext]="bar"
                 />
               } @else {
                 <rk-canvas-progress-bar
-                  [totalStories]="group.stories.length"
-                  [activeIndex]="storiesCtrl.state.activeStoryIndex"
-                  [progress]="timerCtrl.progress"
-                  [config]="progressBarConfig()"
+                  [totalStories]="bar.totalStories"
+                  [activeIndex]="bar.activeIndex"
+                  [progress]="bar.progress"
+                  [live]="bar.isActive"
+                  [minSegmentWidth]="minSegmentWidth()"
                 />
               }
 
+              @let header = headerContext(groupIndex);
               @if (headerTpl(); as tpl) {
                 <ng-container
                   [ngTemplateOutlet]="tpl"
                   [ngTemplateOutletInjector]="slotInjector"
-                  [ngTemplateOutletContext]="headerContext(groupIndex)"
+                  [ngTemplateOutletContext]="header"
                 />
               } @else {
                 <rk-story-header
                   [author]="group.author"
-                  [createdAt]="activeStoryOf(groupIndex)?.createdAt"
-                  [isPaused]="isPaused()"
-                  [isMuted]="soundState.muted()"
-                  [isVideo]="activeStoryOf(groupIndex)?.mediaType === 'video'"
-                  [isLoading]="isLoading()"
-                  [isError]="isError()"
+                  [createdAt]="
+                    header.story ? header.story.createdAt : undefined
+                  "
+                  [isPaused]="header.isPaused"
+                  [isMuted]="header.isMuted"
+                  [isVideo]="header.isVideo"
+                  [isLoading]="header.isActive && isLoading()"
+                  [isError]="header.isActive && isError()"
+                  [showPauseButton]="true"
+                  [showSoundButton]="true"
                   (closed)="closed.emit()"
                   (pauseToggled)="togglePause()"
                   (soundToggled)="soundState.toggle()"
                 />
               }
             }
-
-            @for (heart of hearts(); track heart) {
-              <rk-heart-animation (completed)="removeHeart(heart)" />
-            }
-          </div>
+          </ng-template>
         </div>
 
         @if (!navigationTpl()) {
@@ -401,6 +420,25 @@ const _kSlideTimeoutMarginMs = 700;
           </button>
         }
       </div>
+
+      <!-- Last in the dialog, so the keyboard reaches the player's own
+           controls before the cards. The stylesheet keeps the cards painted
+           beneath the player whatever the order. -->
+      @if (carouselActive()) {
+        <rk-stories-carousel
+          [groups]="groups()"
+          [activeGroupIndex]="activeGroupIndex()"
+          [slide]="slide()"
+          [activeSize]="size()"
+          [storyIndexFor]="storyIndexForCard"
+          [viewedState]="viewedState()"
+          [previewTemplate]="groupPreviewTpl()"
+          [frameTemplate]="slideTpl() ?? undefined"
+          [frameContext]="cardFrameContext"
+          (opened)="storiesCtrl.goToGroup($event)"
+          (slideEnded)="endSlide()"
+        />
+      }
     </div>
   `,
 })
@@ -493,8 +531,8 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
   readonly tapZoneSplit = input(0.3);
 
   /**
-   * Hides the header and footer while a press is held, so the story is
-   * unobstructed.
+   * Hide the progress bar and header while paused by a long press. A footer
+   * from the `rkStoriesFooter` template stays.
    *
    * @default true
    */
@@ -515,6 +553,14 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
    * @default 'single'
    */
   readonly desktopLayout = input<DesktopLayout>('single');
+
+  /**
+   * Where the progress bar and the header live: one copy above the player, or
+   * one inside every group slide.
+   *
+   * @default 'overlay'
+   */
+  readonly chromePlacement = input<ChromePlacement>('overlay');
 
   /**
    * The slide slot as a template rather than projected content. A wrapper
@@ -644,6 +690,22 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
   /** Serialises slider moves; see `_queueSliderMove`. */
   private _sliderQueue: Promise<void> = Promise.resolve();
 
+  /**
+   * How far the story of a group being turned away from had played, by
+   * group. The controller moves to the new group before the turn starts, and
+   * the timer resets right after, so a progress bar drawn inside the group
+   * being left would otherwise empty its segment while it is still in view.
+   */
+  protected readonly frozenProgress = signal<ReadonlyMap<number, number>>(
+    new Map(),
+  );
+
+  /** Signals of the bars of groups that are not playing; see `_stillSignalsFor`. */
+  private readonly _stillSignals = new Map<
+    number,
+    { activeIndex: CoreSignal<number>; progress: CoreSignal<number> }
+  >();
+
   /** Set while a swipe is what moved the player, so it gets no slide on top. */
   private _changingByDrag = false;
 
@@ -660,10 +722,6 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
   protected progress!: Signal<number>;
 
   /** The interface steps aside while a press is held, if asked to. */
-  protected readonly progressBarConfig = computed(() => ({
-    minSegmentWidth: this.minSegmentWidth(),
-  }));
-
   protected readonly chromeVisible = computed(
     () => !(this.longPressed() && this.hideUIOnPause()),
   );
@@ -740,9 +798,8 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
    * Every slot template renders through this, so a component a slot draws
    * resolves services against the player rather than against the component
    * the template was written in. Angular's element injectors follow where a
-   * template was declared; react's context and vue's provide follow where it
-   * renders, which is why neither of them has to think about this and why a
-   * slot drawing an `rk-video-story-slide` would otherwise find no
+   * template was declared, not where it renders, so a slot drawing an
+   * `rk-video-story-slide` would otherwise find no
    * `SoundStateService` and be dropped without a word.
    */
   protected readonly slotInjector = this._injector;
@@ -867,13 +924,13 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
       }),
       () => this.timerCtrl.dispose(),
     );
-    this._destroyRef.onDestroy(disposables.dispose);
 
     // The player runs for exactly as long as this component exists: the
-    // overlay creates it on open and destroys it on close, the way react's
-    // `StoriesContent` and vue's render-null do.
+    // overlay creates it on open and destroys it on close. It stops before the
+    // timer is disposed, since stopping may still touch the timer.
     this._start();
     this._destroyRef.onDestroy(() => this._stop());
+    this._destroyRef.onDestroy(disposables.dispose);
   }
 
   /** Whether this slide is the one the viewer is looking at. */
@@ -889,15 +946,24 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
     return this.storiesOf(groupIndex)[this.activeStoryIndex()];
   }
 
+  // A group that is not active shows the story it stands on, not playing.
   protected headerContext(groupIndex: number): StoriesHeaderContext<T> {
-    const story = this.activeStoryOf(groupIndex);
+    const isActive = groupIndex === this.activeGroupIndex();
+    const storyIndex = isActive
+      ? this.activeStoryIndex()
+      : this.storiesCtrl.getLastStoryIndex(groupIndex);
+    const story = this.storiesOf(groupIndex)[storyIndex];
+    const author = this.groups()[groupIndex].author;
     return {
-      $implicit: this.groups()[groupIndex].author,
+      $implicit: author,
+      author,
       story: story as T,
-      storyIndex: this.activeStoryIndex(),
-      isPaused: this.isPaused(),
+      storyIndex,
+      isPaused: isActive && this.isPaused(),
       isMuted: this.soundState.muted(),
       isVideo: story?.mediaType === 'video',
+      groupIndex,
+      isActive,
       onToggleSound: () => this.soundState.toggle(),
       onTogglePause: () => this.togglePause(),
       onClose: () => this.closed.emit(),
@@ -905,8 +971,10 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
   }
 
   protected footerContext(groupIndex: number): StoriesFooterContext<T> {
+    const story = this.activeStoryOf(groupIndex) as T;
     return {
-      $implicit: this.activeStoryOf(groupIndex) as T,
+      $implicit: story,
+      story,
       author: this.groups()[groupIndex].author,
       storyIndex: this.activeStoryIndex(),
     };
@@ -915,28 +983,65 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
   protected progressBarContext(
     groupIndex: number,
   ): StoriesProgressBarContext<T> {
+    const isActive = groupIndex === this.activeGroupIndex();
+    const still = isActive ? null : this._stillSignalsFor(groupIndex);
+    const group = this.groups()[groupIndex];
     return {
-      $implicit: this.groups()[groupIndex],
+      $implicit: group,
+      group,
       totalStories: this.storiesOf(groupIndex).length,
-      activeIndex: this.storiesCtrl.state.activeStoryIndex,
-      progress: this.timerCtrl.progress,
+      activeIndex:
+        still?.activeIndex ?? this.storiesCtrl.state.activeStoryIndex,
+      progress: still?.progress ?? this.timerCtrl.progress,
+      groupIndex,
+      isActive,
     };
+  }
+
+  /**
+   * The signals a group that is not playing draws its bar from: the story it
+   * stands on, and how far that story played if the player is turning away
+   * from it. The template asks on every change detection, so the same signals
+   * come back until one of those two numbers moves; new ones every time would
+   * restart the bar on every pass.
+   */
+  private _stillSignalsFor(groupIndex: number): {
+    activeIndex: CoreSignal<number>;
+    progress: CoreSignal<number>;
+  } {
+    const storyIndex = this.storiesCtrl.getLastStoryIndex(groupIndex);
+    const progress = this.frozenProgress().get(groupIndex) ?? 0;
+    const known = this._stillSignals.get(groupIndex);
+    if (
+      known &&
+      known.activeIndex.value === storyIndex &&
+      known.progress.value === progress
+    ) {
+      return known;
+    }
+    const fresh = {
+      activeIndex: createSignal(storyIndex),
+      progress: createSignal(progress),
+    };
+    this._stillSignals.set(groupIndex, fresh);
+    return fresh;
   }
 
   protected navigationContext(): StoriesNavigationContext {
-    return {
-      $implicit: {
-        onPrevStory: () => this.storiesCtrl.prevStory(),
-        onNextStory: () => this.storiesCtrl.nextStory(),
-        onPrevGroup: () => this.storiesCtrl.prevGroup(),
-        onNextGroup: () => this.storiesCtrl.nextGroup(),
-      },
+    const moves = {
+      onPrevStory: () => this.storiesCtrl.prevStory(),
+      onNextStory: () => this.storiesCtrl.nextStory(),
+      onPrevGroup: () => this.storiesCtrl.prevGroup(),
+      onNextGroup: () => this.storiesCtrl.nextGroup(),
     };
+    return { $implicit: moves, ...moves };
   }
 
   protected statusContext(groupIndex: number): StoriesLoadingContext<T> {
+    const story = this.activeStoryOf(groupIndex) as T;
     return {
-      $implicit: this.activeStoryOf(groupIndex) as T,
+      $implicit: story,
+      story,
       storyIndex: this.activeStoryIndex(),
       groupIndex,
     };
@@ -946,8 +1051,10 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
     groupIndex: number,
     storyIndex: number,
   ): StoriesSlideContext<T> {
+    const story = this.storiesOf(groupIndex)[storyIndex] as T;
     return {
-      $implicit: this.storiesOf(groupIndex)[storyIndex] as T,
+      $implicit: story,
+      story,
       index: storyIndex,
       groupIndex,
       isActive:
@@ -957,10 +1064,7 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
       activeGroupIndex: this.storiesCtrl.state.activeGroupIndex,
       activeStoryIndex: this.storiesCtrl.state.activeStoryIndex,
       onDurationReady: (durationMs) =>
-        this.onDurationReady(
-          this.storiesOf(groupIndex)[storyIndex]?.src ?? '',
-          durationMs,
-        ),
+        this.onDurationReady(groupIndex, storyIndex, durationMs),
       onReady: () => this.onContentReady(groupIndex, storyIndex),
       onWaiting: () => this.onVideoWaiting(groupIndex, storyIndex),
       onError: () => this.onContentError(groupIndex, storyIndex),
@@ -1055,14 +1159,26 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
 
   protected onOuterDragStart(): void {
     this.timerCtrl.pause();
+    if (this._activeStory()?.mediaType === 'video') sharedStoryVideo().pause();
   }
 
   protected onOuterDragEnd(): void {
-    if (!this.storiesCtrl.state.isPaused.value) this.timerCtrl.resume();
+    if (this.storiesCtrl.state.isPaused.value) return;
+    this.timerCtrl.resume();
+    if (this._activeStory()?.mediaType === 'video') {
+      sharedStoryVideo().play().catch(noop);
+    }
   }
 
-  protected onDurationReady(src: string, durationMs: number): void {
-    this._knownDurations.set(src, durationMs);
+  // A story that names its own duration keeps it, whatever the video reports.
+  protected onDurationReady(
+    groupIndex: number,
+    storyIndex: number,
+    durationMs: number,
+  ): void {
+    const story = this.storiesOf(groupIndex)[storyIndex];
+    if (story?.src) this._knownDurations.set(story.src, durationMs);
+    if (!this._isActive(groupIndex, storyIndex) || story?.duration) return;
     if (this.timerCtrl.isRunning.value) this.timerCtrl.start(durationMs);
   }
 
@@ -1079,7 +1195,7 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
   protected onVideoWaiting(groupIndex: number, storyIndex: number): void {
     if (!this._isActive(groupIndex, storyIndex)) return;
     this.loadingCtrl.isLoading.value = true;
-    this.timerCtrl.pause();
+    this._pauseTimer();
   }
 
   protected onVideoEnded(groupIndex: number, storyIndex: number): void {
@@ -1094,7 +1210,7 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
     if (!this._isActive(groupIndex, storyIndex)) return;
     this.loadingCtrl.isLoading.value = false;
     this.loadingCtrl.isError.value = true;
-    this.timerCtrl.pause();
+    this._pauseTimer();
   }
 
   private _isActive(groupIndex: number, storyIndex: number): boolean {
@@ -1137,7 +1253,7 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
   }
 
   private _stop(): void {
-    this.endSlide();
+    this._cancelSlide();
     this.timerCtrl.reset();
     this._bodyLock.unlock();
     this._releaseFocusTrap?.();
@@ -1151,7 +1267,7 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
     const isVideo = this._activeStory()?.mediaType === 'video';
 
     if (this.storiesCtrl.state.isPaused.value) {
-      this.timerCtrl.pause();
+      this._pauseTimer();
       if (isVideo) sharedStoryVideo().pause();
       return;
     }
@@ -1225,10 +1341,50 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
     else action();
   }
 
+  /**
+   * Stopping the timer also withdraws whatever was waiting for the slide to
+   * end. Otherwise a start asked for first would outlive the reset, the pause
+   * or the failure that followed it, and run the timer over a story that is
+   * loading, paused or broken.
+   */
+  private _resetTimer(): void {
+    this._pendingTimerAction = null;
+    this.timerCtrl.reset();
+  }
+
+  private _pauseTimer(): void {
+    this._pendingTimerAction = null;
+    this.timerCtrl.pause();
+  }
+
+  /**
+   * Ends a slide the player never came out of, on the way out: the story it
+   * was opening was never on screen, so it is neither reported nor timed.
+   */
+  private _cancelSlide(): void {
+    clearTimeout(this._slideTimeout);
+    cancelAnimationFrame(this._slideFrame);
+    this._pendingViewed = null;
+    this._pendingTimerAction = null;
+    this.slide.set(null);
+  }
+
   protected endSlide(): void {
     clearTimeout(this._slideTimeout);
     cancelAnimationFrame(this._slideFrame);
     if (!this.slide()) return;
+
+    // The card of the opened group leaves the page now. Focus left on a card
+    // would fall to the document body, outside the dialog, so it goes to the
+    // player the viewer just opened.
+    const overlay = this._overlayRef()?.nativeElement;
+    if (
+      overlay
+        ?.querySelector('.rk-stories-carousel')
+        ?.contains(document.activeElement)
+    ) {
+      overlay.focus({ preventScroll: true });
+    }
 
     this.slide.set(null);
 
@@ -1242,7 +1398,7 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
 
     const pendingAction = this._pendingTimerAction;
     this._pendingTimerAction = null;
-    pendingAction?.();
+    if (!this.storiesCtrl.state.isPaused.value) pendingAction?.();
   }
 
   /**
@@ -1251,8 +1407,11 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
    * hidden tab, a theme with no duration — ends the slide on a timer instead.
    */
   private _beginSlide(from: number, to: number): void {
-    this.timerCtrl.pause();
-    this._pendingTimerAction = null;
+    // A slide that interrupts another one drops the first one's deadline,
+    // which would otherwise end the new slide early.
+    clearTimeout(this._slideTimeout);
+    cancelAnimationFrame(this._slideFrame);
+    this._pauseTimer();
     this.slide.set({ from, to, phase: 'start' });
 
     this._slideFrame = requestAnimationFrame(() => {
@@ -1286,7 +1445,19 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
     this._lastGroupIndex = groupIndex;
 
     if (!this.carouselActive()) {
-      this._queueSliderMove(() => this._outerReel?.goTo(groupIndex, true));
+      // A swipe has already turned the player, so only a turn still to come
+      // holds the group being left as it was.
+      const frozen: ReadonlyMap<number, number> =
+        previous !== groupIndex && !this._changingByDrag
+          ? new Map([[previous, this.timerCtrl.progress.value]])
+          : new Map();
+      this.frozenProgress.set(frozen);
+      this._queueSliderMove(() => this._outerReel?.goTo(groupIndex, true)).then(
+        () => {
+          if (this.frozenProgress() === frozen)
+            this.frozenProgress.set(new Map());
+        },
+      );
       return;
     }
 
@@ -1297,6 +1468,9 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
   }
 
   private _followActiveStory(): void {
+    // A new story always plays. The timer restarts below either way, so a
+    // pause kept here would leave the header showing one nobody is holding.
+    if (this.storiesCtrl.state.isPaused.value) this.storiesCtrl.resume();
     this._queueSliderMove(() => {
       const groupIndex = this.storiesCtrl.state.activeGroupIndex.value;
       const storyIndex = this.storiesCtrl.state.activeStoryIndex.value;
@@ -1314,8 +1488,12 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
    * for good. Queueing instead re-reads where the engine *now* is when the
    * previous move finishes, so the slider catches up in one step and skips the
    * stories the viewer already went past.
+   *
+   * The returned promise settles once this move has finished.
    */
-  private _queueSliderMove(move: () => Promise<void> | undefined): void {
+  private _queueSliderMove(
+    move: () => Promise<void> | undefined,
+  ): Promise<void> {
     this._sliderQueue = this._sliderQueue.then(async () => {
       try {
         await move();
@@ -1323,6 +1501,7 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
         // A slider torn down mid-move is not worth stopping the queue for.
       }
     });
+    return this._sliderQueue;
   }
 
   /**
@@ -1343,7 +1522,7 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
     const groupIndex = this.storiesCtrl.state.activeGroupIndex.value;
     const storyIndex = this.storiesCtrl.state.activeStoryIndex.value;
     this._timedGroupIndex = groupIndex;
-    this.timerCtrl.reset();
+    this._resetTimer();
     this._startOrDeferTimer(this.groups()[groupIndex]?.stories[storyIndex]);
   }
 
@@ -1384,7 +1563,7 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
     if (story?.mediaType === 'image' && story.src) {
       if (preloader.isLoaded(story.src)) {
         this.loadingCtrl.isLoading.value = false;
-        this.timerCtrl.start(this._durationOf(story));
+        this._runTimer(() => this.timerCtrl.start(this._durationOf(story)));
       } else {
         this.loadingCtrl.isLoading.value = true;
       }
@@ -1397,7 +1576,9 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
     }
 
     this.loadingCtrl.isLoading.value = false;
-    this.timerCtrl.start(story?.duration ?? this.defaultImageDuration());
+    this._runTimer(() =>
+      this.timerCtrl.start(story?.duration ?? this.defaultImageDuration()),
+    );
   }
 
   protected onNavKey(increment: -1 | 1): void {

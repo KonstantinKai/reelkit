@@ -17,8 +17,11 @@ export type { MediaType } from '@reelkit/stories-core';
  * @typeParam T - Story item type.
  */
 export interface StoriesHeaderContext<T extends StoryItem = StoryItem> {
-  /** Author of the current group. */
+  /** Author of the current group; the same value as `author`. */
   $implicit: AuthorInfo;
+
+  /** Author of the current group, for `let-author="author"`. */
+  author: AuthorInfo;
 
   /** Currently active story item. */
   story: T;
@@ -34,6 +37,16 @@ export interface StoriesHeaderContext<T extends StoryItem = StoryItem> {
 
   /** Gate a sound control on this: an image story has nothing to unmute. */
   isVideo: boolean;
+
+  /** Zero-based index of the group this header belongs to. */
+  groupIndex: number;
+
+  /**
+   * False for the header of a neighbouring group, drawn while the player turns
+   * to it or away from it with `chromePlacement="group"`. Such a header shows
+   * where that group stands; its actions still act on the active story.
+   */
+  isActive: boolean;
 
   /** The same action the default header's sound button takes. */
   onToggleSound: () => void;
@@ -51,8 +64,11 @@ export interface StoriesHeaderContext<T extends StoryItem = StoryItem> {
  * @typeParam T - Story item type.
  */
 export interface StoriesFooterContext<T extends StoryItem = StoryItem> {
-  /** Currently active story item. */
+  /** Currently active story item; the same value as `story`. */
   $implicit: T;
+
+  /** Currently active story item, for `let-story="story"`. */
+  story: T;
 
   /** Author of the current group. */
   author: AuthorInfo;
@@ -68,8 +84,11 @@ export interface StoriesFooterContext<T extends StoryItem = StoryItem> {
  * @typeParam T - Story item type.
  */
 export interface StoriesSlideContext<T extends StoryItem = StoryItem> {
-  /** The story item to render. */
+  /** The story item to render; the same value as `story`. */
   $implicit: T;
+
+  /** The story item to render, for `let-story="story"`. */
+  story: T;
 
   /** Zero-based index of the story within its group. */
   index: number;
@@ -86,7 +105,7 @@ export interface StoriesSlideContext<T extends StoryItem = StoryItem> {
   /**
    * Active group index, for a slide that renders across group changes. A core
    * signal, because what a slide template does with it is hand it back to
-   * `RkVideoStorySlideComponent`, which is what the react and vue slots do.
+   * `RkVideoStorySlideComponent`.
    */
   activeGroupIndex: CoreSignal<number>;
 
@@ -115,8 +134,11 @@ export interface StoriesSlideContext<T extends StoryItem = StoryItem> {
  * @typeParam T - Story item type.
  */
 export interface StoriesProgressBarContext<T extends StoryItem = StoryItem> {
-  /** The group being drawn. */
+  /** The group being drawn; the same value as `group`. */
   $implicit: StoriesGroup<T>;
+
+  /** The group being drawn, for `let-group="group"`. */
+  group: StoriesGroup<T>;
 
   /** Number of stories in that group. */
   totalStories: number;
@@ -126,6 +148,16 @@ export interface StoriesProgressBarContext<T extends StoryItem = StoryItem> {
 
   /** Timer progress through the active story, from 0 to 1. */
   progress: CoreSignal<number>;
+
+  /** Zero-based index of that group. */
+  groupIndex: number;
+
+  /**
+   * False for the bar of a neighbouring group, drawn while the player turns to
+   * it or away from it with `chromePlacement="group"`. Its signals then hold
+   * still: the story the group stands on, and how far that story had played.
+   */
+  isActive: boolean;
 }
 
 /** The four moves a navigation control can make. */
@@ -147,11 +179,12 @@ export interface StoriesNavigationActions {
  * Context handed to a `[rkStoriesNavigation]` template, which replaces the
  * previous and next controls.
  *
- * The moves arrive as the implicit value, so `let-nav` is all a template
- * needs: `nav.onNextStory()`.
+ * The moves arrive both ways: flat, each by its own name
+ * (`let-next="onNextStory"`), and grouped as the implicit value
+ * (`let-nav`, then `nav.onNextStory()`).
  */
-export interface StoriesNavigationContext {
-  /** The moves the control can make. */
+export interface StoriesNavigationContext extends StoriesNavigationActions {
+  /** The same four moves, grouped. */
   $implicit: StoriesNavigationActions;
 }
 
@@ -161,8 +194,11 @@ export interface StoriesNavigationContext {
  * @typeParam T - Story item type.
  */
 export interface StoriesLoadingContext<T extends StoryItem = StoryItem> {
-  /** The story that is loading. */
+  /** The story that is loading; the same value as `story`. */
   $implicit: T;
+
+  /** The story that is loading, for `let-story="story"`. */
+  story: T;
 
   /** Zero-based index of the story within its group. */
   storyIndex: number;
@@ -177,8 +213,11 @@ export interface StoriesLoadingContext<T extends StoryItem = StoryItem> {
  * @typeParam T - Story item type.
  */
 export interface StoriesErrorContext<T extends StoryItem = StoryItem> {
-  /** The story that failed to load. */
+  /** The story that failed to load; the same value as `story`. */
   $implicit: T;
+
+  /** The story that failed to load, for `let-story="story"`. */
+  story: T;
 
   /** Zero-based index of the story within its group. */
   storyIndex: number;
@@ -196,14 +235,25 @@ export interface StoriesErrorContext<T extends StoryItem = StoryItem> {
 export type DesktopLayout = 'single' | 'carousel';
 
 /**
+ * Where the progress bar and the header live. `'overlay'` draws one copy above
+ * the player that switches to the new group when the group changes.
+ * `'group'` gives every group its own copy inside its slide, so both turn with
+ * the group the way they do on Instagram.
+ */
+export type ChromePlacement = 'overlay' | 'group';
+
+/**
  * Context handed to a `[rkStoriesGroupPreview]` template, which draws one side
  * card of the desktop carousel.
  *
  * @typeParam T - Story item type.
  */
 export interface StoriesGroupPreviewContext<T extends StoryItem = StoryItem> {
-  /** The group the card previews. */
+  /** The group the card previews; the same value as `group`. */
   $implicit: StoriesGroup<T>;
+
+  /** The group the card previews, for `let-group="group"`. */
+  group: StoriesGroup<T>;
 
   /** Zero-based index of that group. */
   groupIndex: number;

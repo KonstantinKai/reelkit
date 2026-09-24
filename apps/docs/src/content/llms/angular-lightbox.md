@@ -23,6 +23,8 @@ import '@reelkit/angular-lightbox/styles.css';
 
 ## Quick Start
 
+Placement: unlike React/Vue (portal to `document.body`), `rk-lightbox-overlay` renders where placed, `position: fixed`. Keep it out of ancestors with `transform` / `perspective` / `filter` / `will-change: transform` — that ancestor becomes the containing block: lightbox sized to it, clipped by its `overflow`. An ancestor stacking context caps `--rk-lightbox-overlay-z`. Upside: `--rk-lightbox-*` tokens on any ancestor reach the lightbox.
+
 ```typescript
 import { Component, signal } from '@angular/core';
 import {

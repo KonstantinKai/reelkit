@@ -98,11 +98,12 @@ const openGroup = (index: number) => {
 | `groupTransition`         | `TransitionTransformFn`        | cube             | Transition between groups                                                                              |
 | `defaultImageDuration`    | `number`                       | `5000`           | Image auto-advance duration (ms)                                                                       |
 | `tapZoneSplit`            | `number`                       | `0.3`            | Left zone ratio (0-1)                                                                                  |
-| `hideUIOnPause`           | `boolean`                      | `true`           | Hide header/progress on hold                                                                           |
+| `hideUiOnPause`           | `boolean`                      | `true`           | Hide the progress bar and header while paused by a long press                                          |
 | `enableKeyboard`          | `boolean`                      | `true`           | Enable keyboard navigation                                                                             |
 | `innerTransitionDuration` | `number`                       | `200`            | Story crossfade duration (ms)                                                                          |
 | `minSegmentWidth`         | `number`                       | `8`              | Min progress segment width (px)                                                                        |
 | `desktopLayout`           | `'single' \| 'carousel'`       | `'single'`       | `'carousel'`: neighbouring groups as preview cards beside the story on desktop                         |
+| `chromePlacement`         | `'overlay' \| 'group'`         | `'overlay'`      | `'group'`: each group carries its own progress bar and header, turning with it like Instagram          |
 | `viewed`                  | `StoriesViewedStateController` | —                | From `createStoriesViewedStateController()`: resume, recording and muted card rings for watched groups |
 | `resumeStoryIndex`        | `(groupIndex) => number`       | —                | Where an unvisited group opens; wins over `viewed`                                                     |
 
@@ -125,16 +126,16 @@ The same `StoriesApi` (`nextStory`, `prevStory`, `nextGroup`, `prevGroup`, `goTo
 
 ### Scoped Slots
 
-| Slot           | Scope                                                                                    |
-| -------------- | ---------------------------------------------------------------------------------------- |
-| `header`       | `author, story, storyIndex, isPaused, isMuted, isVideo, onToggleSound, onTogglePause, …` |
-| `footer`       | `author, story, storyIndex`                                                              |
-| `slide`        | `story, index, groupIndex, isActive, size, onReady, onWaiting, onError, onEnded, …`      |
-| `navigation`   | `onPrevStory, onNextStory, onPrevGroup, onNextGroup`                                     |
-| `progressBar`  | `totalStories, activeIndex, progress, group`                                             |
-| `loading`      | `story, storyIndex, groupIndex`                                                          |
-| `error`        | `story, storyIndex, groupIndex`                                                          |
-| `groupPreview` | `group, groupIndex, story, offset, viewedCount, onOpen`                                  |
+| Slot           | Scope                                                                                                                                 |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `header`       | `author, story, storyIndex, isPaused, isMuted, isVideo, groupIndex, isActive, onToggleSound, onTogglePause, onClose`                  |
+| `footer`       | `author, story, storyIndex`                                                                                                           |
+| `slide`        | `story, index, groupIndex, isActive, size, activeGroupIndex, activeStoryIndex, onDurationReady, onReady, onWaiting, onError, onEnded` |
+| `navigation`   | `onPrevStory, onNextStory, onPrevGroup, onNextGroup`                                                                                  |
+| `progressBar`  | `totalStories, activeIndex, progress, group, groupIndex, isActive`                                                                    |
+| `loading`      | `story, storyIndex, groupIndex`                                                                                                       |
+| `error`        | `story, storyIndex, groupIndex`                                                                                                       |
+| `groupPreview` | `group, groupIndex, story, offset, viewedCount, onOpen`                                                                               |
 
 A slot that renders nothing falls back to the default.
 
@@ -162,6 +163,8 @@ interface StoryItem {
   poster?: string;
   duration?: number;
   createdAt?: string | Date;
+  /** Media aspect ratio (width / height). */
+  aspectRatio?: number;
 }
 
 interface AuthorInfo {
@@ -179,11 +182,11 @@ interface StoriesGroup<T extends StoryItem = StoryItem> {
 
 ## Keyboard Shortcuts
 
-| Key          | Action         |
-| ------------ | -------------- |
-| `ArrowLeft`  | Previous story |
-| `ArrowRight` | Next story     |
-| `Escape`     | Close overlay  |
+| Key          | Action                                                                         |
+| ------------ | ------------------------------------------------------------------------------ |
+| `ArrowLeft`  | Previous story; on a group's first story, the previous group where it was left |
+| `ArrowRight` | Next story; past a group's last story, the next group (the last group closes)  |
+| `Escape`     | Close overlay                                                                  |
 
 ## Styling
 

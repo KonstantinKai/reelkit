@@ -12,6 +12,7 @@ import urlState2 from '../../snippets/vue-stories-player/url-state-2.ts?raw';
 import urlState3 from '../../snippets/vue-stories-player/url-state-3.ts?raw';
 import rememberingWhatWasSeen from '../../snippets/vue-stories-player/remembering-what-was-seen.vue?raw';
 import desktopCarousel from '../../snippets/vue-stories-player/desktop-carousel.vue?raw';
+import chromePlacement from '../../snippets/vue-stories-player/chrome-placement.vue?raw';
 import transitions from '../../snippets/vue-stories-player/transitions.vue?raw';
 import scopedSlots from '../../snippets/vue-stories-player/scoped-slots.vue?raw';
 import slideSlot from '../../snippets/vue-stories-player/slide-slot.vue?raw';
@@ -144,7 +145,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 - Параметр, що не називає ані автора, ані історії — застаріла закладка, виправлене руками значення, історія за межами групи — прибирається з URL, а не відкриває сусідню.
 - Застосунок із роутером має передати адаптер на його основі, щоб роутер лишався єдиним джерелом правди про навігацію. `useVueRouterUrlAdapter` із `@reelkit/vue/vue-router-url-adapter` — готовий адаптер для Vue Router; запис в історію повз роутер лишає його локацію застарілою, і наступна навігація губить параметр.
 
-**Стабільні посилання.** Типово автор адресується за позицією, тож збережене `?story=2.0` відкриє іншу людину, щойно стрічку перевпорядкують. Адресуйте автора за стабільним id — `outerCodec` записує id в URL, а `outerLocator` знаходить, де він стоїть. Половина з історією лишається звичайним індексом усередині знайденої групи.
+**Стабільні посилання.** Типово автор адресується за позицією, тож збережене `?story=2.0` відкриє іншу людину, щойно стрічку перевпорядкують. Адресуйте автора за стабільним id — `outerCodec` записує id в URL, а `outerLocator` знаходить, де він стоїть. Передайте `innerCodec` разом з `innerLocate` та `innerIdentify`, щоб так само адресувати історію всередині її групи; без них половина з історією лишається звичайним індексом усередині знайденої групи. Id історії не може містити `.` — це роздільник між двома половинами.
 
 <CodeBlock code={urlState2} language="typescript" />
 
@@ -171,7 +172,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 - **Посилання все одно головніше.** У `StoriesUrlOverlay` місце відкриття вирішує параметр, хай що збережено. Всюди інде вирішує колбек відновлення.
 - **Лічильник — це позиція, а не підсумок.** Запис називає найдальшу досягнуту історію, тож нова історія в додивленій групі знову засвічує кільце, а видалена з середини вкорочує лічильник.
 - **Сховище змінне.** Передайте `storage: createSessionStorageAdapter()`, щоб забувати після закриття вкладки, або власний `StorageAdapter`. Дві відкриті вкладки лишаються в такт завдяки події сховища.
-- **Плеєр, змонтований лише на відкриття, читає запізно.** Оверлей читає сховище після монтування, поки ще закритий. З `v-if="open"` такої миті немає, тож самі викличте `viewed.attach()` в `onMounted`, а те, що він повертає, — в `onUnmounted`. Опції та нижчий рівень, з якого це зібрано, описані на сторінці [Stories Core](/docs/stories-core#viewed-controller).
+- **Плеєр, змонтований лише на відкриття, читає запізно.** Оверлей читає сховище після монтування, поки ще закритий. З `v-if="open"` такої миті немає, тож викличте `useAttachViewedState(() => viewed)` у компоненті, який володіє контролером; він під'єднується після монтування й відпускає сховище під час демонтування. Опції та нижчий рівень, з якого це зібрано, описані на сторінці [Stories Core](/docs/stories-core#viewed-controller).
 
 ## Десктопна карусель [#desktop-carousel]
 
@@ -184,6 +185,18 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 - **Таймер чекає на з’їзд карток.** Історія не гортається далі, а `story-viewed` для неї не спрацьовує, доки картки не доїхали.
 - **Кожен спосіб змінити групу дає з’їзд**: клік на картці, `StoriesApi.goToGroup`, `nextGroup` і `prevGroup`, а також стрілки за межею групи. Свайп рухає сам плеєр, тож з’їзду згори не отримує.
 
+## Смуга прогресу й заголовок у кожній групі [#chrome-placement]
+
+Типово одна смуга прогресу й один заголовок лежать над плеєром і перемикаються на нову групу, щойно вона змінилася. Задайте `chrome-placement="group"`, щоб кожна група мала власні всередині свого слайда: тоді обидва повертаються разом із групою, як в Instagram.
+
+<CodeBlock code={chromePlacement} language="vue" />
+
+- **Сусідня група показує, де вона зупинилася.** Поки плеєр повертається до неї, її смуга й заголовок показують історію, з якої вона відкриється, ще без жодного перегляду.
+- **Група, яку покидають, лишається як була.** Її смуга тримає прогрес до кінця повороту, тож досмотрена група лишається заповненою, а не порожніє посеред повороту.
+- **Слоти рендеряться для кожної групи на екрані.** Області видимості `#progressBar` і `#header` містять `groupIndex` та `isActive`; для сусідньої групи `isActive` дорівнює `false`, а сигнали прогресу не змінюються.
+- **Слот `#header` лежить в області свайпу.** Дотик до нього перемикає історії, якщо він не влучив у `button`, посилання чи елемент із `role="button"`, тож усі елементи керування в ньому мають бути саме такими.
+- **Десктопна карусель посеред ковзання не змінюється.** Поки картки ковзають, плеєр прихований, тож вибір видно, щойно група відкрилася.
+
 ## Довідник API [#api-reference]
 
 ### Пропси StoriesOverlay [#storiesoverlay-props]
@@ -193,6 +206,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 | Prop | Тип | Типове значення | Опис |
 | --- | --- | --- | --- |
 | `aria-label` | `string` | `'Stories player'` | Доступна назва області діалогу; екранні читачі оголошують її, коли оверлей відкривається |
+| `chrome-placement` | `'overlay' \| 'group'` | `'overlay'` | Де живуть смуга прогресу й заголовок. `'overlay'` малює одну копію над плеєром; `'group'` малює по одній у кожному слайді групи, тож обидва повертаються разом із групою. Тип експортується як `ChromePlacement`. |
 | `default-image-duration` | `number` | `5000` | Тривалість автопереходу для історії-зображення, у мілісекундах |
 | `desktop-layout` | `'single' \| 'carousel'` | `'single'` | Розклад на десктопі. `'carousel'` показує сусідніх авторів картками поруч з активною історією і з’їжджає між групами. На телефонах історія завжди сама. Тип експортовано як `DesktopLayout`. |
 | `enable-keyboard` | `boolean` | `true` | Вмикає навігацію клавіатурою (стрілки вліво/вправо, Escape) |
@@ -248,10 +262,10 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 | #error | `{ story, storyIndex, groupIndex }` | Замінює вбудовану панель «Content unavailable», намальовану поверх активної історії |
 | #footer | `{ author, story, storyIndex }` | Додає підвал під історією активної групи |
 | #groupPreview | `{ group, groupIndex, story, offset, viewedCount, onOpen }` | Наповнює картку десктопної каруселі; плеєр і далі розміщує, масштабує та з’їжджає нею |
-| #header | `{ author, story, storyIndex, isPaused, isMuted, isVideo, onToggleSound, onTogglePause, onClose }` | Замінює типовий заголовок (автор, пауза, звук, закриття) |
+| #header | `{ author, story, storyIndex, isPaused, isMuted, isVideo, groupIndex, isActive, onToggleSound, onTogglePause, onClose }` | Замінює типовий заголовок (автор, пауза, звук, закриття). З `chrome-placement="group"` він лежить в області свайпу; див. [Смуга прогресу й заголовок у кожній групі](/docs/vue-stories-player#chrome-placement). |
 | #loading | `{ story, storyIndex, groupIndex }` | Замінює типовий індикатор у заголовку, поки активна історія вантажиться |
 | #navigation | `{ onPrevStory, onNextStory, onPrevGroup, onNextGroup }` | Замінює обидві десктопні стрілки |
-| #progressBar | `{ totalStories, activeIndex, progress, group }` | Замінює смугу прогресу на canvas. `activeIndex` і `progress` — сигнали ядра, тож проведіть їх через `toVueRef`. |
+| #progressBar | `{ totalStories, activeIndex, progress, group, groupIndex, isActive }` | Замінює смугу прогресу на canvas. `activeIndex` і `progress` — сигнали ядра, тож проведіть їх через `toVueRef`. |
 | #slide | `{ story, index, groupIndex, isActive, size, activeGroupIndex, activeStoryIndex, onDurationReady, onReady, onWaiting, onError, onEnded }` | Замінює типові слайди із зображенням і відео |
 
 <CodeBlock code={scopedSlots} language="vue" />
@@ -338,7 +352,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 
 | Компонент | Що це |
 | --- | --- |
-| `CanvasProgressBar` | Сегментована смуга прогресу на canvas, намальована просто з сигналів таймера. Тримає рухоме вікно для груп із багатьма історіями. |
+| `CanvasProgressBar` | Сегментована смуга прогресу на canvas, намальована просто з сигналів таймера. Тримає рухоме вікно для груп із багатьма історіями. З `:live="false"` малюється лише при зміні сигналів і після зміни розміру, без циклу анімації. |
 | `HeartAnimation` | Серце подвійного дотику. Випускає `complete`, коли анімація закінчується, щоб батьківський компонент його прибрав. |
 | `ImageStorySlide` | Слайд-зображення на весь екран з `object-fit: cover`, що повідомляє про завантаження й помилку колбеками. |
 | `StoriesRing` | Круглий аватар із градієнтним кільцем. Два стани: є що дивитися — кільце обертається, усе переглянуто — стає рівним. Випускає `click`. |
@@ -354,7 +368,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 
 | Звідки | Що реекспортовано |
 | --- | --- |
-| `@reelkit/vue` | `Observe`, `SoundProvider`, `useSoundState`, `useOverlayUrlState`, `createViewedStateController`, `twoAxisViewedTracking`, `createLocalStorageAdapter`, `createSessionStorageAdapter`, `createMemoryStorageAdapter`, `urlIndexTwoAxisKey`, `urlStableIdTwoAxisKey`, `base64UrlCodec`, а також типи `UrlAdapter`, `UrlCodec`, `UrlLocator`, `UrlKey`, `UrlStateController`, `TwoAxisPosition`, `TwoAxisIdentity`, `UrlIndexTwoAxisKeyOptions`, `ViewedStateController`, `ViewedStateOptions`, `StorageAdapter` |
+| `@reelkit/vue` | `Observe`, `SoundProvider`, `useSoundState`, `useOverlayUrlState`, `createViewedStateController`, `twoAxisViewedTracking`, `createLocalStorageAdapter`, `createSessionStorageAdapter`, `createMemoryStorageAdapter`, `urlIndexTwoAxisKey`, `urlStableIdTwoAxisKey`, `base64UrlCodec`, а також типи `UrlAdapter`, `UrlCodec`, `UrlLocator`, `UrlKey`, `UrlStateController`, `TwoAxisPosition`, `TwoAxisIdentity`, `UrlIndexTwoAxisKeyOptions`, `OverlayUrlStateOptions`, `ViewedStateController`, `ViewedStateOptions`, `StorageAdapter` |
 | `@reelkit/stories-core` | `createStoriesViewedStateController`, `StoriesViewedStateController`, `StoriesViewedStateControllerConfig`, а також типи вмісту `StoryItem`, `AuthorInfo`, `StoriesGroup`, `MediaType` |
 
 `Observe` — та межа рендеру, якою плеєр користується всередині: вона перемальовує лише свій слот, коли змінюється сигнал ядра, і саме так зміна історії оновлює заголовок і смугу прогресу, не перемальовуючи слайдери. Беріть її у власному слоті, коли цілий компонент, що стежить за сигналом через `toVueRef`, був би заширокою межею — див. [довідник Vue API](/docs/vue/api#observe).
@@ -375,7 +389,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 
 ## Власні типи історій [#custom-story-types]
 
-Розширте `StoryItem` своїми полями й типізуйте ним групи. Анотуйте область видимості слота, щоб додаткові поля лишалися видимими всередині шаблону:
+Розширте `StoryItem` своїми полями й типізуйте ним групи. На відміну від React-плеєра, `StoriesOverlay` і `StoriesUrlOverlay` не узагальнені: тип сторіз із `groups` не доходить до слотів, і їхні області видимості лишаються нетипізованими, доки ви їх не анотуєте. Анотуйте область видимості слота, щоб додаткові поля лишалися видимими всередині шаблону. Анотацію ніщо не звіряє з `groups`, тож тримайте їх узгодженими:
 
 <CodeBlock code={customStoryTypes} language="vue" />
 
@@ -390,7 +404,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 | `.rk-stories-overlay--sliding` | Overlay | Триває з’їзд каруселі; полотно плеєра сховане |
 | `.rk-stories-swipe-wrapper` | Overlay | Обгортка свайпу для закриття (тримає кнопки навігації та полотно) |
 | `.rk-stories-container` | Overlay | Заокруглене полотно історії (позиція, overflow) |
-| `.rk-stories-ui-layer` | Overlay | Контейнер інтерфейсу (заголовок, прогрес) |
+| `.rk-stories-ui-layer` | Overlay | Контейнер інтерфейсу (заголовок, прогрес). З `chrome-placement="group"` — у кожному слайді групи |
 | `.rk-stories-ui-layer--hidden` | Overlay | Схований стан інтерфейсу (перемикає `hide-ui-on-pause`) |
 | `.rk-stories-error` | Overlay | Стан помилки (іконка й текст по центру) |
 | `.rk-stories-error-text` | Overlay | Текст повідомлення про помилку |
@@ -406,6 +420,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 | `.rk-stories-header-time` | StoryHeader | Текст відносного часу |
 | `.rk-stories-header-actions` | StoryHeader | Дії праворуч (звук, пауза, закриття) |
 | `.rk-stories-header-btn` | StoryHeader | Кнопка дії в заголовку |
+| `.rk-stories-header-btn--desktop` | StoryHeader | Кнопка паузи, видима лише на екранах, ширших за 768px |
 | `.rk-stories-header-spinner` | StoryHeader | Індикатор завантаження |
 | `.rk-stories-image` | ImageStorySlide | Елемент історії-зображення |
 | `.rk-stories-video` | VideoStorySlide | Контейнер історії-відео |
@@ -426,6 +441,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 | `.rk-stories-card--hidden` | Carousel | Картка далі за дві показані з боку |
 | `.rk-stories-card-button` | Carousel | Типовий вміст картки (кнопка, що відкриває групу) |
 | `.rk-stories-card-image` | Carousel | Кадр попереднього перегляду (постер або зображення) |
+| `.rk-stories-card-frame` | Carousel | Історія без постера й зображення, намальована слотом `#slide` у розмірі плеєра й зменшена |
 | `.rk-stories-card-scrim` | Carousel | Шар притемнення над кадром |
 | `.rk-stories-card-info` | Carousel | Стовпчик із кільцем, іменем автора й часом |
 | `.rk-stories-card-name` | Carousel | Ім’я автора |
@@ -440,31 +456,54 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 | `--rk-stories-overlay-bg` | `#000` | Колір повноекранного тла |
 | `--rk-stories-overlay-z` | `9999` | z-index оверлея |
 | `--rk-stories-container-radius` | `12px` | Заокруглення полотна історії (десктоп) |
+| `--rk-stories-container-radius-mobile` | `0` | Заокруглення полотна історії на телефоні, до 768px завширшки |
 | `--rk-stories-swipe-gap` | `16px` | Відступ між кнопками навігації та полотном історії |
 | `--rk-stories-top-shade-height` | `120px` | Висота верхнього градієнтного затемнення за заголовком |
 | `--rk-stories-top-shade-bg` | `linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%)` | Колір верхнього градієнтного затемнення |
 | `--rk-stories-ui-transition` | `200ms` | Тривалість згасання, коли перемикається `hide-ui-on-pause` |
+| `--rk-stories-ui-z` | `15` | z-index шару інтерфейсу (смуга прогресу й заголовок) |
 | `--rk-stories-nav-size` | `44px` | Розмір десктопної кнопки вперед/назад |
 | `--rk-stories-nav-bg` | `rgba(255, 255, 255, 0.1)` | Тло десктопної кнопки навігації |
 | `--rk-stories-nav-bg-hover` | `rgba(255, 255, 255, 0.2)` | Тло десктопної кнопки навігації під курсором |
 | `--rk-stories-nav-fg` | `rgba(255, 255, 255, 0.7)` | Колір іконки десктопної кнопки навігації |
 | `--rk-stories-nav-fg-hover` | `#fff` | Колір іконки кнопки навігації під курсором |
+| `--rk-stories-nav-transition` | `150ms` | Перехід десктопної кнопки навігації під курсором |
+| `--rk-stories-nav-z` | `20` | z-index десктопної кнопки навігації |
 | `--rk-stories-error-bg` | `linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)` | Градієнт тла стану помилки |
 | `--rk-stories-error-fg` | `rgba(255, 255, 255, 0.5)` | Колір іконки й тексту помилки |
 | `--rk-stories-error-text-size` | `13px` | Розмір шрифту повідомлення про помилку |
+| `--rk-stories-error-gap` | `12px` | Відстань між іконкою помилки та її текстом |
+| `--rk-stories-error-z` | `5` | z-index стану помилки |
 | `--rk-stories-video-bg` | `#000` | Тло-леттербокс за \<video> |
 | `--rk-stories-video-poster-transition` | `200ms` | Тривалість згасання постера на початку відтворення |
+| `--rk-stories-progress-bar-padding` | `8px 8px 0` | Відступи навколо смуги прогресу |
+| `--rk-stories-progress-bar-z` | `10` | z-index смуги прогресу |
 | `--rk-stories-header-top` | `18px` | Вертикальний відступ заголовка від верху історії |
 | `--rk-stories-header-padding` | `12px 16px` | Внутрішні відступи рядка заголовка |
+| `--rk-stories-header-z` | `5` | z-index заголовка |
+| `--rk-stories-header-transition` | `200ms` | Тривалість згасання заголовка, коли він ховається |
+| `--rk-stories-header-gap` | `8px` | Відстань між аватаром, іменем і часом |
 | `--rk-stories-header-avatar-size` | `32px` | Ширина й висота аватара |
 | `--rk-stories-header-name-fg` | `#fff` | Колір імені автора |
 | `--rk-stories-header-name-size` | `14px` | Розмір шрифту імені автора |
+| `--rk-stories-header-name-weight` | `600` | Товщина шрифту імені автора |
 | `--rk-stories-header-time-fg` | `rgba(255, 255, 255, 0.6)` | Колір тексту відносного часу |
+| `--rk-stories-header-time-size` | `12px` | Розмір шрифту відносного часу |
 | `--rk-stories-header-btn-fg` | `#fff` | Колір іконок дій у заголовку (закриття, звук, пауза) |
+| `--rk-stories-header-btn-padding` | `4px` | Внутрішній відступ кнопки дії в заголовку |
+| `--rk-stories-header-actions-gap` | `8px` | Відстань між кнопками дій у заголовку |
+| `--rk-stories-header-spinner-size` | `20px` | Діаметр індикатора завантаження |
+| `--rk-stories-header-spinner-fg` | `#fff` | Колір дуги індикатора завантаження |
+| `--rk-stories-header-spinner-track` | `rgba(255, 255, 255, 0.3)` | Колір доріжки індикатора завантаження |
+| `--rk-stories-header-spinner-duration` | `0.8s` | Тривалість обертання індикатора завантаження |
 | `--rk-stories-heart-duration` | `800ms` | Тривалість появи й згасання серця |
+| `--rk-stories-heart-z` | `20` | z-index серця на подвійний дотик |
 | `--rk-stories-ring-spin-duration` | `4s` | Тривалість обертання кільця, у якому лишилося що дивитися |
+| `--rk-stories-ring-active-scale` | `0.95` | Масштаб кільця, поки його натиснуто |
+| `--rk-stories-ring-gradient` | `none` | Внутрішній: кільце записує сюди свій градієнт під час кожного рендеру, тож задавати його марно |
 | `--rk-stories-ring-list-gap` | `12px` | Відстань між кільцями у списку |
 | `--rk-stories-ring-list-padding` | `12px` | Внутрішні відступи навколо списку кілець |
+| `--rk-stories-ring-list-item-gap` | `4px` | Відстань між кільцем та іменем |
 | `--rk-stories-ring-list-name-size` | `12px` | Розмір шрифту імені автора під кільцем |
 | `--rk-stories-card-bg` | `#262626` | Тло картки каруселі, видиме без кадру попереднього перегляду |
 | `--rk-stories-card-radius` | `8px` | Заокруглення кутів картки каруселі |
@@ -482,7 +521,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 
 Корінь оверлея — модальний діалог (`role="dialog"`, `aria-modal="true"`). Поставте `aria-label`, щоб змінити те, що оголосить екранний читач; типово це «Stories player».
 
-Оверлей захоплює фокус на відкритті й повертає його тригеру на закритті. Tab і Shift+Tab ходять по фокусованих елементах усередині; фокус, що втік, повертають назад. Зроблено на `captureFocusForReturn` і `createFocusTrap` із `@reelkit/core`.
+Оверлей захоплює фокус на відкритті й повертає його тригеру на закритті. Tab і Shift+Tab ходять по фокусованих елементах усередині; фокус, що втік, повертають назад. Зроблено на `captureFocusForReturn` і `createFocusTrap` із `@reelkit/core`, які реекспортує `@reelkit/vue`.
 
 У десктопній каруселі кожна типова картка — кнопка з підписом «Open stories by» та іменем автора. Картки стоять у порядку табуляції після керування плеєром, і випадають із нього, поки триває з’їзд; картка, що відкриває свою групу, повертає фокус діалогу, а не лишає його на сторінці.
 
@@ -494,6 +533,6 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 
 | Клавіша | Дія |
 | --- | --- |
-| `ArrowLeft` | Попередня історія |
-| `ArrowRight` | Наступна історія |
+| `ArrowLeft` | Попередня історія. На першій історії групи відкриває попередню групу там, де її залишили; на першій групі нічого не робить. |
+| `ArrowRight` | Наступна історія. Після останньої історії групи відкриває наступну групу; на останній групі закриває плеєр. |
 | `Escape` | Закрити плеєр |

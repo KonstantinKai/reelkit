@@ -1,5 +1,33 @@
 import { describe, it, expect } from 'vitest';
-import { getRingPresentation } from './ringPresentation';
+import {
+  getRingPresentation,
+  kStoriesCardRingSize,
+  kStoriesRingListRingSize,
+  kStoriesRingSize,
+} from './ringPresentation';
+
+// Every binding draws its rings at these sizes, so a change here reaches the
+// React, Vue and Angular players at once.
+describe('shared ring sizes', () => {
+  it('keeps the sizes the players have always drawn', () => {
+    expect(kStoriesRingSize).toBe(68);
+    expect(kStoriesRingListRingSize).toBe(64);
+    expect(kStoriesCardRingSize).toBe(52);
+  });
+
+  it('leaves room for an avatar inside every one', () => {
+    for (const size of [
+      kStoriesRingSize,
+      kStoriesRingListRingSize,
+      kStoriesCardRingSize,
+    ]) {
+      expect(
+        getRingPresentation({ totalStories: 1, viewedCount: 0, size })
+          .avatarSize,
+      ).toBeGreaterThan(0);
+    }
+  });
+});
 
 describe('getRingPresentation', () => {
   it('sizes the ring with pixel units so any framework can use the style', () => {

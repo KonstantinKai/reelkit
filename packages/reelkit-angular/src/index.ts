@@ -106,6 +106,7 @@ export {
   noop,
   defaultRangeExtractor,
   observeDomEvent,
+  observeMediaLoading,
   createDisposableList,
   createContentLoadingController,
   createContentPreloader,

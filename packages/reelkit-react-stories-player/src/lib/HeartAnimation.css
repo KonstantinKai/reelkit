@@ -7,7 +7,7 @@
   --rk-stories-heart-duration: 800ms;
 }
 
-@keyframes heart-pop {
+@keyframes rk-stories-heart-pop {
   0% {
     transform: translate(-50%, -50%) scale(0);
     opacity: 1;
@@ -29,5 +29,6 @@
   transform: translate(-50%, -50%);
   pointer-events: none;
   z-index: var(--rk-stories-heart-z);
-  animation: heart-pop var(--rk-stories-heart-duration) ease-out forwards;
+  animation: rk-stories-heart-pop var(--rk-stories-heart-duration) ease-out
+    forwards;
 }

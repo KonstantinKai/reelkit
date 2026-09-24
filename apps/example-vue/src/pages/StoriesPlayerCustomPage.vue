@@ -11,7 +11,8 @@ type DemoId =
   | 'custom-navigation'
   | 'custom-progress'
   | 'custom-loading-error'
-  | 'theming';
+  | 'theming'
+  | 'custom-group-preview';
 
 const _kDemos: { id: DemoId; title: string; description: string }[] = [
   {
@@ -49,6 +50,12 @@ const _kDemos: { id: DemoId; title: string; description: string }[] = [
     title: 'Themed via CSS Tokens',
     description:
       'Rebrands the stories overlay by overriding --rk-stories-* CSS custom properties in a stylesheet. No component code changes.',
+  },
+  {
+    id: 'custom-group-preview',
+    title: 'Custom Carousel Cards',
+    description:
+      'Uses the groupPreview slot to draw the desktop carousel cards beside the story: the preview frame, the author and a story count. Needs a window wider than 768px.',
   },
 ];
 
@@ -261,6 +268,39 @@ const close = () => {
       </template>
     </StoriesOverlay>
 
+    <StoriesOverlay
+      :is-open="activeDemo === 'custom-group-preview'"
+      :groups="groups"
+      desktop-layout="carousel"
+      @close="close"
+    >
+      <template #groupPreview="{ group, story, onOpen }">
+        <button
+          type="button"
+          class="preview-card"
+          :aria-label="`Open stories by ${group.author.name}`"
+          @click="onOpen"
+        >
+          <img
+            v-if="story"
+            class="preview-card-frame"
+            :src="story.mediaType === 'video' ? story.poster : story.src"
+            alt=""
+          />
+          <span class="preview-card-info">
+            <span class="preview-card-count">
+              {{ group.stories.length }}
+              {{ group.stories.length === 1 ? 'story' : 'stories' }}
+            </span>
+            <span class="preview-card-author">
+              <img :src="group.author.avatar" alt="" />
+              {{ group.author.name }}
+            </span>
+          </span>
+        </button>
+      </template>
+    </StoriesOverlay>
+
     <!-- Rethemed by the unscoped style at the bottom, which matches this
          overlay by its label. -->
     <StoriesOverlay
@@ -466,5 +506,60 @@ h1 {
 
 .custom-error-mark {
   font-size: 48px;
+}
+
+.preview-card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 2px solid rgba(167, 139, 250, 0.6);
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  background: #1e1b4b;
+}
+
+.preview-card-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.preview-card-info {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 12px;
+  background: linear-gradient(transparent 40%, rgba(30, 27, 75, 0.9));
+}
+
+.preview-card-count {
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: #6366f1;
+  color: #fff;
+  font-size: 11px;
+}
+
+.preview-card-author {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.preview-card-author img {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
 }
 </style>

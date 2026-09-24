@@ -10,7 +10,11 @@ desc: Instagram-style stories player overlay for Vue 3. Groups schema, props, em
 
 Instagram-style stories player overlay Vue 3. Built on `@reelkit/stories-core`, same engine React player. CSS classes + theming tokens identical `@reelkit/react-stories-player` (classes `.rk-stories-*`, tokens `--rk-stories-*`) — theme ports between bindings.
 
-## Install
+## Features
+
+Nested navigation (tap stories, swipe groups), video stories with sound toggle, auto-advance timer, 3D group transitions (cube, flip, fade, zoom, slide), canvas segmented progress bar, image + video, virtualized (3 slides in DOM), double-tap heart, desktop nav arrows, story rings, generic story types, scoped slots, URL state (`?story=group.story`), viewed state that survives reloads.
+
+## Installation
 
 ```bash
 npm install @reelkit/vue-stories-player @reelkit/vue lucide-vue-next
@@ -20,6 +24,8 @@ npm install @reelkit/vue-stories-player @reelkit/vue lucide-vue-next
 import { StoriesOverlay } from '@reelkit/vue-stories-player';
 import '@reelkit/vue-stories-player/styles.css';
 ```
+
+Default header + nav arrows use `lucide-vue-next` icons; swap icon library through `#header` / `#navigation` slots.
 
 ## Quick Start
 
@@ -65,72 +71,9 @@ const groupIndex = ref(0);
 </template>
 ```
 
-## Content Schema
-
-```ts
-interface StoryItem {
-  id: string;
-  mediaType: 'image' | 'video'; // MediaType
-  src: string;
-  poster?: string; // video poster, also the carousel card preview
-  duration?: number; // ms, overrides defaultImageDuration
-  createdAt?: string | Date;
-}
-
-interface AuthorInfo {
-  id: string; // viewed state + stable-id URLs key on it
-  name: string;
-  avatar: string;
-  verified?: boolean;
-}
-
-interface StoriesGroup<T extends StoryItem = StoryItem> {
-  author: AuthorInfo;
-  stories: T[];
-}
-```
-
-## StoriesOverlay Props
-
-| Prop                        | Type                                       | Default                                          |
-| --------------------------- | ------------------------------------------ | ------------------------------------------------ |
-| `is-open`                   | `boolean`                                  | required, `v-model:is-open`                      |
-| `groups`                    | `StoriesGroup<T>[]`                        | required                                         |
-| `aria-label`                | `string`                                   | `'Stories player'`                               |
-| `initial-group-index`       | `number`                                   | `0`                                              |
-| `initial-story-index`       | `number`                                   | resume, else `0` — explicit wins over remembered |
-| `resume-story-index`        | `(groupIndex) => number`                   | — wins over `viewed`                             |
-| `viewed`                    | `StoriesViewedStateController`             | —                                                |
-| `desktop-layout`            | `DesktopLayout` (`'single' \| 'carousel'`) | `'single'`                                       |
-| `group-transition`          | `TransitionTransformFn`                    | `cubeTransition`                                 |
-| `inner-transition-duration` | `number`                                   | `200`                                            |
-| `default-image-duration`    | `number`                                   | `5000`                                           |
-| `tap-zone-split`            | `number`                                   | `0.3`                                            |
-| `hide-ui-on-pause`          | `boolean`                                  | `true`                                           |
-| `enable-keyboard`           | `boolean`                                  | `true`                                           |
-| `min-segment-width`         | `number`                                   | `8`                                              |
-
-Props type exported `StoriesOverlayProps`.
-
-Groups may grow while open — replaced array or push into same array both picked up.
-
-## Events
-
-| Event                | Payload                                           |
-| -------------------- | ------------------------------------------------- |
-| `@update:is-open`    | `boolean`                                         |
-| `@close`             | —                                                 |
-| `@story-change`      | `groupIndex, storyIndex`                          |
-| `@group-change`      | `groupIndex`                                      |
-| `@story-viewed`      | `groupIndex, storyIndex` (opening story included) |
-| `@story-complete`    | `groupIndex, storyIndex`                          |
-| `@double-tap`        | `groupIndex, storyIndex`                          |
-| `@pause` / `@resume` | —                                                 |
-| `@api-ready`         | `StoriesApi`                                      |
-
 ## URL State
 
-`StoriesUrlOverlay` — open state in address bar, one param both axes: `?story=<group>.<story>`. Props = `StoriesOverlayProps` minus `is-open` / `initial-group-index` / `initial-story-index`, plus `controller`. Props type exported `StoriesUrlOverlayProps`.
+`StoriesUrlOverlay` — open state in address bar, one param both axes: `?story=<group>.<story>`.
 
 ```vue
 <script setup lang="ts">
@@ -170,7 +113,7 @@ const stories = useOverlayUrlState({
 - Back closes only when opened from within app. Shared link opened in fresh tab has no history behind it — browser-back leaves site; ✕ or Escape removes param in place.
 - Param naming no group/story dropped from URL, never opens neighbour.
 - Routed app: pass router adapter (`useVueRouterUrlAdapter`), else router location goes stale and next navigation drops param.
-- Stable group ids: `urlStableIdTwoAxisKey`, or `outerCodec` + `outerLocator` on `urlIndexTwoAxisKey`. `base64UrlCodec` obscures id on wire (reversible, not a hash).
+- Stable ids: `urlStableIdTwoAxisKey`, or `outerCodec` + `outerLocator` on `urlIndexTwoAxisKey`. Add `innerCodec` + `innerLocate` + `innerIdentify` to address the story by id too; omit them and the story half stays a local index. Story id must not contain `.` (the delimiter between halves). `base64UrlCodec` obscures id on wire (reversible, not a hash).
 - Infinite feeds: `locateAsync` on `outerLocator`, called only when sync `locate` misses. Pending → player stays closed, param left alone; `null`/rejection drops param. Same pager single-axis keys take — on two-axis key it rides `outerLocator`, group axis pages while story stays local index in resolved group.
 
 ## Remembering what was seen
@@ -211,7 +154,7 @@ Config type `StoriesViewedStateControllerConfig`; controller type `StoriesViewed
 - URL param wins over both.
 - Count = position of furthest story reached, not a tally.
 - Storage pluggable: `createLocalStorageAdapter` (default), `createSessionStorageAdapter`, `createMemoryStorageAdapter`, or own `StorageAdapter`. Two tabs stay in step via storage event.
-- Player mounted only at open (`v-if="open"`) reads too late → call `viewed.attach()` in `onMounted`, dispose in `onUnmounted`.
+- Player mounted only at open (`v-if="open"`) reads too late → call `useAttachViewedState(() => viewed)` in the component that owns the controller (attaches once mounted, lets go on unmount).
 - Lower level: `createViewedStateController` + `twoAxisViewedTracking` (`ViewedStateController`, `ViewedStateOptions`).
 
 ## Desktop Carousel
@@ -223,17 +166,72 @@ Config type `StoriesViewedStateControllerConfig`; controller type `StoriesViewed
 - Timer + `@story-viewed` wait for slide end.
 - Card click, `goToGroup`, `nextGroup`/`prevGroup`, arrow keys past group end all slide. Touch swipe does not (player already moved).
 
+## Progress Bar and Header per Group
+
+`chrome-placement="group"` — every group gets its own progress bar + header inside its slide, both turn with the group (Instagram). Default `'overlay'`: one copy above the player, switching after the group changes.
+
+- Neighbouring group shows the story it will open on, nothing played.
+- Group being left keeps its progress until the turn ends; one played to the end stays full.
+- `#progressBar` / `#header` rendered for every group on screen, scopes carry `groupIndex` + `isActive`; neighbour → `isActive: false`, progress signals hold still.
+- `#header` sits in the swipe area: a tap moves between stories unless it hits a `button`, a link, or `role="button"`.
+- Desktop carousel: player hidden while cards slide, so the choice shows once the group is open.
+
+## API Reference
+
+### StoriesOverlay Props
+
+| Prop                        | Type                                       | Default                                               |
+| --------------------------- | ------------------------------------------ | ----------------------------------------------------- |
+| `is-open`                   | `boolean`                                  | required, `v-model:is-open`                           |
+| `groups`                    | `StoriesGroup<T>[]`                        | required                                              |
+| `aria-label`                | `string`                                   | `'Stories player'`                                    |
+| `initial-group-index`       | `number`                                   | `0`                                                   |
+| `initial-story-index`       | `number`                                   | resume, else `0` — explicit wins over remembered      |
+| `resume-story-index`        | `(groupIndex) => number`                   | — wins over `viewed`                                  |
+| `viewed`                    | `StoriesViewedStateController`             | —                                                     |
+| `desktop-layout`            | `DesktopLayout` (`'single' \| 'carousel'`) | `'single'`                                            |
+| `chrome-placement`          | `ChromePlacement` (`'overlay' \| 'group'`) | `'overlay'` — `'group'`: bar + header per group slide |
+| `group-transition`          | `TransitionTransformFn`                    | `cubeTransition`                                      |
+| `inner-transition-duration` | `number`                                   | `200`                                                 |
+| `default-image-duration`    | `number`                                   | `5000`                                                |
+| `tap-zone-split`            | `number`                                   | `0.3`                                                 |
+| `hide-ui-on-pause`          | `boolean`                                  | `true`                                                |
+| `enable-keyboard`           | `boolean`                                  | `true`                                                |
+| `min-segment-width`         | `number`                                   | `8`                                                   |
+
+Props type exported `StoriesOverlayProps`.
+
+Groups may grow while open — replaced array or push into same array both picked up.
+
+### StoriesUrlOverlay Props
+
+Every `StoriesOverlay` prop minus `is-open` / `initial-group-index` / `initial-story-index`, plus `controller` (`UrlStateController<TwoAxisPosition>` from `useOverlayUrlState` spread with `urlIndexTwoAxisKey`). Props type exported `StoriesUrlOverlayProps`.
+
+### Events
+
+| Event                | Payload                                           |
+| -------------------- | ------------------------------------------------- |
+| `@update:is-open`    | `boolean`                                         |
+| `@close`             | —                                                 |
+| `@story-change`      | `groupIndex, storyIndex`                          |
+| `@group-change`      | `groupIndex`                                      |
+| `@story-viewed`      | `groupIndex, storyIndex` (opening story included) |
+| `@story-complete`    | `groupIndex, storyIndex`                          |
+| `@double-tap`        | `groupIndex, storyIndex`                          |
+| `@pause` / `@resume` | —                                                 |
+| `@api-ready`         | `StoriesApi`                                      |
+
 ## Scoped Slots
 
 Eight slots. Slot rendering nothing falls back to default.
 
 | Slot            | Scope                                                                                                                                                        |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `#header`       | `{ author, story, storyIndex, isPaused, isMuted, isVideo, onToggleSound, onTogglePause, onClose }` — `HeaderSlotScope`                                       |
+| `#header`       | `{ author, story, storyIndex, isPaused, isMuted, isVideo, groupIndex, isActive, onToggleSound, onTogglePause, onClose }` — `HeaderSlotScope`                 |
 | `#footer`       | `{ author, story, storyIndex }` — `FooterSlotScope`                                                                                                          |
 | `#slide`        | `{ story, index, groupIndex, isActive, size, activeGroupIndex, activeStoryIndex, onDurationReady, onReady, onWaiting, onError, onEnded }` — `SlideSlotScope` |
 | `#navigation`   | `{ onPrevStory, onNextStory, onPrevGroup, onNextGroup }` — `NavigationSlotScope`                                                                             |
-| `#progressBar`  | `{ totalStories, activeIndex, progress, group }` — `ProgressBarSlotScope`                                                                                    |
+| `#progressBar`  | `{ totalStories, activeIndex, progress, group, groupIndex, isActive }` — `ProgressBarSlotScope`                                                              |
 | `#loading`      | `{ story, storyIndex, groupIndex }` — `LoadingSlotScope`                                                                                                     |
 | `#error`        | `{ story, storyIndex, groupIndex }` — `ErrorSlotScope`                                                                                                       |
 | `#groupPreview` | `{ group, groupIndex, story, offset, viewedCount, onOpen }` — `GroupPreviewSlotScope`                                                                        |
@@ -301,7 +299,7 @@ interface StoriesApi {
 }
 ```
 
-## Double-tap
+## Double-Tap & Likes
 
 Heart animation built in; `@double-tap` gives `groupIndex, storyIndex` — persist like yourself. Speed via `--rk-stories-heart-duration`; colour/size via `.rk-stories-heart`. Cannot be replaced through a slot yet — restyle with CSS, or `display: none` + own animation from `@double-tap`.
 
@@ -311,19 +309,19 @@ Left `tap-zone-split` (default 0.3) of width → previous story; rest → next. 
 
 ## Sub-Components
 
-| Component           | Notes                                                                                                          |
-| ------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `StoriesRing`       | avatar + gradient ring; emits `click`. Props type `StoriesRingProps`                                           |
-| `StoriesRingList`   | row of rings + names; emits `select(groupIndex)`. Props type `StoriesRingListProps`                            |
-| `StoryHeader`       | default header (avatar, name, verified, time, sound, pause, close, spinner). Props type `StoryHeaderProps`     |
-| `CanvasProgressBar` | canvas segmented bar, drawn from signals, sliding window for many stories. Props type `CanvasProgressBarProps` |
-| `ImageStorySlide`   | full-bleed image, `object-fit: cover`. Props type `ImageStorySlideProps`                                       |
-| `VideoStorySlide`   | shared `<video>`, iOS sound continuity, poster frames. Props type `VideoStorySlideProps`                       |
-| `HeartAnimation`    | double-tap heart; emits `complete`                                                                             |
+| Component           | Notes                                                                                                                                                                                     |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `StoriesRing`       | avatar + gradient ring; emits `click`. Props type `StoriesRingProps`                                                                                                                      |
+| `StoriesRingList`   | row of rings + names; emits `select(groupIndex)`. Props type `StoriesRingListProps`                                                                                                       |
+| `StoryHeader`       | default header (avatar, name, verified, time, sound, pause, close, spinner). Props type `StoryHeaderProps`                                                                                |
+| `CanvasProgressBar` | canvas segmented bar, drawn from signals, sliding window for many stories. `:live="false"`: draws only on signal change or resize, no animation loop. Props type `CanvasProgressBarProps` |
+| `ImageStorySlide`   | full-bleed image, `object-fit: cover`. Props type `ImageStorySlideProps`                                                                                                                  |
+| `VideoStorySlide`   | shared `<video>`, iOS sound continuity, poster frames. Props type `VideoStorySlideProps`                                                                                                  |
+| `HeartAnimation`    | double-tap heart; emits `complete`                                                                                                                                                        |
 
 ## Re-exports
 
-From `@reelkit/vue`: `Observe`, `SoundProvider`, `useSoundState`, `useOverlayUrlState`, `createViewedStateController`, `twoAxisViewedTracking`, `createLocalStorageAdapter`, `createSessionStorageAdapter`, `createMemoryStorageAdapter`, `urlIndexTwoAxisKey`, `urlStableIdTwoAxisKey`, `base64UrlCodec`, types `UrlAdapter`, `UrlCodec`, `UrlLocator`, `UrlKey`, `UrlStateController`, `TwoAxisPosition`, `TwoAxisIdentity`, `UrlIndexTwoAxisKeyOptions`, `ViewedStateController`, `ViewedStateOptions`, `StorageAdapter`.
+From `@reelkit/vue`: `Observe`, `SoundProvider`, `useSoundState`, `useOverlayUrlState`, `createViewedStateController`, `twoAxisViewedTracking`, `createLocalStorageAdapter`, `createSessionStorageAdapter`, `createMemoryStorageAdapter`, `urlIndexTwoAxisKey`, `urlStableIdTwoAxisKey`, `base64UrlCodec`, types `UrlAdapter`, `UrlCodec`, `UrlLocator`, `UrlKey`, `UrlStateController`, `TwoAxisPosition`, `TwoAxisIdentity`, `UrlIndexTwoAxisKeyOptions`, `OverlayUrlStateOptions`, `ViewedStateController`, `ViewedStateOptions`, `StorageAdapter`.
 
 From `@reelkit/stories-core`: `createStoriesViewedStateController`, `StoriesViewedStateController`, `StoriesViewedStateControllerConfig`, `StoryItem`, `AuthorInfo`, `StoriesGroup`, `MediaType`.
 
@@ -331,24 +329,132 @@ Own types: `StoriesOverlayProps`, `StoriesUrlOverlayProps`, `StoriesRingProps`, 
 
 Consumer never needs a direct `@reelkit/core` import.
 
-## CSS Theming Tokens
+## Types
 
-Defaults on `:root`, override at `:root` or any ancestor of overlay.
+```ts
+interface StoryItem {
+  id: string;
+  mediaType: 'image' | 'video'; // MediaType
+  src: string;
+  poster?: string; // video poster, also the carousel card preview
+  duration?: number; // ms, overrides defaultImageDuration
+  createdAt?: string | Date;
+  aspectRatio?: number; // media width / height
+}
 
-`--rk-stories-overlay-bg` `#000`, `--rk-stories-overlay-z` `9999`, `--rk-stories-container-radius` `12px`, `--rk-stories-swipe-gap` `16px`, `--rk-stories-top-shade-height` `120px`, `--rk-stories-top-shade-bg`, `--rk-stories-ui-transition` `200ms`, `--rk-stories-nav-size` `44px`, `--rk-stories-nav-bg`, `--rk-stories-nav-bg-hover`, `--rk-stories-nav-fg`, `--rk-stories-nav-fg-hover`, `--rk-stories-error-bg`, `--rk-stories-error-fg`, `--rk-stories-error-text-size`, `--rk-stories-video-bg`, `--rk-stories-video-poster-transition`, `--rk-stories-header-top`, `--rk-stories-header-padding`, `--rk-stories-header-avatar-size`, `--rk-stories-header-name-fg`, `--rk-stories-header-name-size`, `--rk-stories-header-time-fg`, `--rk-stories-header-btn-fg`, `--rk-stories-heart-duration` `800ms`, `--rk-stories-ring-spin-duration` `4s`, `--rk-stories-ring-list-gap`, `--rk-stories-ring-list-padding`, `--rk-stories-ring-list-name-size`, `--rk-stories-card-bg`, `--rk-stories-card-radius`, `--rk-stories-card-scrim`, `--rk-stories-card-fg`, `--rk-stories-card-name-size`, `--rk-stories-card-time-fg`, `--rk-stories-card-time-size`, `--rk-stories-card-gap`, `--rk-stories-card-transition` `300ms`.
+interface AuthorInfo {
+  id: string; // viewed state + stable-id URLs key on it
+  name: string;
+  avatar: string;
+  verified?: boolean;
+}
+
+interface StoriesGroup<T extends StoryItem = StoryItem> {
+  author: AuthorInfo;
+  stories: T[];
+}
+```
+
+Slot scope types exported: `HeaderSlotScope`, `FooterSlotScope`, `SlideSlotScope`, `NavigationSlotScope`, `ProgressBarSlotScope`, `LoadingSlotScope`, `ErrorSlotScope`, `GroupPreviewSlotScope`, plus `StoriesApi`.
+
+## Custom Story Types
+
+Extend `StoryItem`, type groups as `StoriesGroup<PromoStory>[]`. Unlike React, `StoriesOverlay` / `StoriesUrlOverlay` are not generic: the story type of `groups` does not reach the slots, whose scopes are untyped until annotated. Annotate the slot scope to keep extra fields typed in template; the annotation is not checked against `groups`:
+
+```vue
+<template #slide="scope: SlideSlotScope<PromoStory>">
+  <h2>{{ scope.story.title }}</h2>
+</template>
+```
 
 ## CSS Classes
 
-`.rk-stories-overlay` (+ `--carousel`, `--sliding`), `.rk-stories-swipe-wrapper`, `.rk-stories-container`, `.rk-stories-ui-layer` (+ `--hidden`), `.rk-stories-error`, `.rk-stories-error-text`, `.rk-stories-nav-btn`, `.rk-stories-progress-bar`, `.rk-stories-slide-wrapper`, `.rk-stories-story`, `.rk-stories-image`, `.rk-stories-video`, `.rk-stories-video-element`, `.rk-stories-video-poster` (+ `--visible`), `.rk-stories-header` (+ `--hidden`, `-avatar`, `-name`, `-verified`, `-time`, `-actions`, `-btn`, `-spinner`), `.rk-stories-heart`, `.rk-stories-ring` (+ `--active`, `-avatar`), `.rk-stories-ring-list` (+ `-item`, `-name`), `.rk-stories-carousel` (+ `--instant`), `.rk-stories-card` (+ `--center`, `--hidden`, `-button`, `-image`, `-scrim`, `-info`, `-name`, `-time`).
+`.rk-stories-overlay` (+ `--carousel`, `--sliding`), `.rk-stories-swipe-wrapper`, `.rk-stories-container`, `.rk-stories-ui-layer` (+ `--hidden`), `.rk-stories-error`, `.rk-stories-error-text`, `.rk-stories-nav-btn`, `.rk-stories-progress-bar`, `.rk-stories-slide-wrapper`, `.rk-stories-story`, `.rk-stories-image`, `.rk-stories-video`, `.rk-stories-video-element`, `.rk-stories-video-poster` (+ `--visible`), `.rk-stories-header` (+ `--hidden`, `-avatar`, `-name`, `-verified`, `-time`, `-actions`, `-btn`, `-btn--desktop` (pause button, only wider than 768px), `-spinner`), `.rk-stories-heart`, `.rk-stories-ring` (+ `--active`, `-avatar`), `.rk-stories-ring-list` (+ `-item`, `-name`), `.rk-stories-carousel` (+ `--instant`), `.rk-stories-card` (+ `--center`, `--hidden`, `-button`, `-image`, `-frame` (story with no poster/image drawn by `#slide` at player size, scaled down), `-scrim`, `-info`, `-name`, `-time`).
+
+## Theming
+
+Defaults on `:root`, override at `:root` or any ancestor of overlay. All 61 tokens:
+
+| Token                                  | Default                                                            |
+| -------------------------------------- | ------------------------------------------------------------------ |
+| `--rk-stories-overlay-bg`              | `#000`                                                             |
+| `--rk-stories-overlay-z`               | `9999`                                                             |
+| `--rk-stories-container-radius`        | `12px`                                                             |
+| `--rk-stories-container-radius-mobile` | `0`                                                                |
+| `--rk-stories-swipe-gap`               | `16px`                                                             |
+| `--rk-stories-top-shade-height`        | `120px`                                                            |
+| `--rk-stories-top-shade-bg`            | `linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%)` |
+| `--rk-stories-ui-transition`           | `200ms`                                                            |
+| `--rk-stories-ui-z`                    | `15`                                                               |
+| `--rk-stories-nav-size`                | `44px`                                                             |
+| `--rk-stories-nav-bg`                  | `rgba(255, 255, 255, 0.1)`                                         |
+| `--rk-stories-nav-bg-hover`            | `rgba(255, 255, 255, 0.2)`                                         |
+| `--rk-stories-nav-fg`                  | `rgba(255, 255, 255, 0.7)`                                         |
+| `--rk-stories-nav-fg-hover`            | `#fff`                                                             |
+| `--rk-stories-nav-transition`          | `150ms`                                                            |
+| `--rk-stories-nav-z`                   | `20`                                                               |
+| `--rk-stories-error-bg`                | `linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)`   |
+| `--rk-stories-error-fg`                | `rgba(255, 255, 255, 0.5)`                                         |
+| `--rk-stories-error-text-size`         | `13px`                                                             |
+| `--rk-stories-error-gap`               | `12px`                                                             |
+| `--rk-stories-error-z`                 | `5`                                                                |
+| `--rk-stories-video-bg`                | `#000`                                                             |
+| `--rk-stories-video-poster-transition` | `200ms`                                                            |
+| `--rk-stories-progress-bar-padding`    | `8px 8px 0`                                                        |
+| `--rk-stories-progress-bar-z`          | `10`                                                               |
+| `--rk-stories-header-top`              | `18px`                                                             |
+| `--rk-stories-header-padding`          | `12px 16px`                                                        |
+| `--rk-stories-header-z`                | `5`                                                                |
+| `--rk-stories-header-transition`       | `200ms`                                                            |
+| `--rk-stories-header-gap`              | `8px`                                                              |
+| `--rk-stories-header-avatar-size`      | `32px`                                                             |
+| `--rk-stories-header-name-fg`          | `#fff`                                                             |
+| `--rk-stories-header-name-size`        | `14px`                                                             |
+| `--rk-stories-header-name-weight`      | `600`                                                              |
+| `--rk-stories-header-time-fg`          | `rgba(255, 255, 255, 0.6)`                                         |
+| `--rk-stories-header-time-size`        | `12px`                                                             |
+| `--rk-stories-header-btn-fg`           | `#fff`                                                             |
+| `--rk-stories-header-btn-padding`      | `4px`                                                              |
+| `--rk-stories-header-actions-gap`      | `8px`                                                              |
+| `--rk-stories-header-spinner-size`     | `20px`                                                             |
+| `--rk-stories-header-spinner-fg`       | `#fff`                                                             |
+| `--rk-stories-header-spinner-track`    | `rgba(255, 255, 255, 0.3)`                                         |
+| `--rk-stories-header-spinner-duration` | `0.8s`                                                             |
+| `--rk-stories-heart-duration`          | `800ms`                                                            |
+| `--rk-stories-heart-z`                 | `20`                                                               |
+| `--rk-stories-ring-spin-duration`      | `4s`                                                               |
+| `--rk-stories-ring-active-scale`       | `0.95`                                                             |
+| `--rk-stories-ring-gradient`           | `none`                                                             |
+| `--rk-stories-ring-list-gap`           | `12px`                                                             |
+| `--rk-stories-ring-list-padding`       | `12px`                                                             |
+| `--rk-stories-ring-list-item-gap`      | `4px`                                                              |
+| `--rk-stories-ring-list-name-size`     | `12px`                                                             |
+| `--rk-stories-card-bg`                 | `#262626`                                                          |
+| `--rk-stories-card-radius`             | `8px`                                                              |
+| `--rk-stories-card-scrim`              | `rgba(0, 0, 0, 0.45)`                                              |
+| `--rk-stories-card-fg`                 | `#fff`                                                             |
+| `--rk-stories-card-name-size`          | `14px`                                                             |
+| `--rk-stories-card-time-fg`            | `rgba(255, 255, 255, 0.7)`                                         |
+| `--rk-stories-card-time-size`          | `13px`                                                             |
+| `--rk-stories-card-gap`                | `6px`                                                              |
+| `--rk-stories-card-transition`         | `300ms`                                                            |
+
+`--rk-stories-ring-gradient` is internal: ring writes it every render, setting it has no effect.
 
 ## Accessibility
 
-Root `role="dialog"`, `aria-modal="true"`, `aria-label` from prop. Focus captured on open, trapped inside, returned on close. Nav arrows labelled "Previous story" / "Next story". Carousel card = button "Open stories by {name}", after player controls in tab order, out of tab order while sliding, focus returned to dialog when its group opens.
+Root `role="dialog"`, `aria-modal="true"`, `aria-label` from prop. Focus captured on open, trapped inside, returned on close — `captureFocusForReturn` + `createFocusTrap` from `@reelkit/core`, re-exported by `@reelkit/vue`. Nav arrows labelled "Previous story" / "Next story". Carousel card = button "Open stories by {name}", after player controls in tab order, out of tab order while sliding, focus returned to dialog when its group opens.
 
-## SSR
+## Server-Side Rendering
 
 Closed overlay renders nothing; `StoriesRingList` renders every ring unwatched on server — viewed store read only after mount, so server markup matches first client render.
 
-## Keyboard
+## Keyboard Shortcuts
 
-`ArrowLeft` previous story, `ArrowRight` next story, `Escape` close. All gated by `enable-keyboard`.
+| Key          | Action                                                                                             |
+| ------------ | -------------------------------------------------------------------------------------------------- |
+| `ArrowLeft`  | Previous story; on group's first story → previous group where it was left (nothing on first group) |
+| `ArrowRight` | Next story; past group's last story → next group (last group closes player)                        |
+| `Escape`     | Close player                                                                                       |
+
+All gated by `enable-keyboard`.

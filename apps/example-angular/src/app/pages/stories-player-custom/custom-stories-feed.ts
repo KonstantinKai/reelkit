@@ -11,7 +11,7 @@ const hoursAgo = (hours: number) =>
   new Date(Date.now() - hours * 3600_000).toISOString();
 
 /**
- * The page's own feed, matching the react and vue custom pages: three short
+ * The page's own feed, matching the React and Vue custom pages: three short
  * groups, one of them carrying a story that will not load so the loading and
  * error demo has something to show.
  */
@@ -96,7 +96,8 @@ export interface CustomDemo {
     | 'custom-navigation'
     | 'custom-progress'
     | 'custom-loading-error'
-    | 'theming';
+    | 'theming'
+    | 'custom-group-preview';
   title: string;
   description: string;
 }
@@ -137,5 +138,11 @@ export const customDemos: CustomDemo[] = [
     title: 'Themed via CSS Tokens',
     description:
       'Rebrands the stories overlay by overriding --rk-stories-* CSS custom properties in a stylesheet. No component code changes.',
+  },
+  {
+    id: 'custom-group-preview',
+    title: 'Custom Carousel Cards',
+    description:
+      'Uses the group preview slot to draw the desktop carousel cards beside the story: the preview frame, the author and a story count. Needs a window wider than 768px.',
   },
 ];

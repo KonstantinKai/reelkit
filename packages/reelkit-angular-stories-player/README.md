@@ -89,20 +89,22 @@ export class FeedComponent {
 
 ## Template Slots
 
-Each directive receives a typed context, with the most useful value as the
-implicit one. A slot left out keeps the built-in rendering, and
-`STORIES_TEMPLATE_SLOT_DIRECTIVES` exports all eight as one array.
+Each directive receives a typed context in which every value is named, by the
+names the React and Vue slots use (`let-author="author"`); the main value is
+the implicit one as well (`let-author`). A slot left out keeps the built-in
+rendering, and `STORIES_TEMPLATE_SLOT_DIRECTIVES` exports all eight as one
+array.
 
-| Directive               | Description                                       |
-| ----------------------- | ------------------------------------------------- |
-| `rkStoriesSlide`        | Custom slide renderer, replacing image and video  |
-| `rkStoriesHeader`       | Author row, pause, sound and close controls       |
-| `rkStoriesFooter`       | Added below the story; there is no default footer |
-| `rkStoriesProgressBar`  | Replaces the canvas progress bar                  |
-| `rkStoriesNavigation`   | Replaces both desktop arrows                      |
-| `rkStoriesGroupPreview` | Fills a desktop carousel card                     |
-| `rkStoriesLoading`      | Replaces the spinner shown while a story loads    |
-| `rkStoriesError`        | Replaces the "Content unavailable" panel          |
+| Directive               | Context                                                                                                                                                                                            | Description                                       |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| `rkStoriesSlide`        | `StoriesSlideContext`: `$implicit` and `story`, `index`, `groupIndex`, `isActive`, `size`, `activeGroupIndex`, `activeStoryIndex`, `onDurationReady`, `onReady`, `onWaiting`, `onError`, `onEnded` | Custom slide renderer, replacing image and video  |
+| `rkStoriesHeader`       | `StoriesHeaderContext`: `$implicit` and `author`, `story`, `storyIndex`, `isPaused`, `isMuted`, `isVideo`, `groupIndex`, `isActive`, `onToggleSound`, `onTogglePause`, `onClose`                   | Author row, pause, sound and close controls       |
+| `rkStoriesFooter`       | `StoriesFooterContext`: `$implicit` and `story`, `author`, `storyIndex`                                                                                                                            | Added below the story; there is no default footer |
+| `rkStoriesProgressBar`  | `StoriesProgressBarContext`: `$implicit` and `group`, `totalStories`, `activeIndex`, `progress`, `groupIndex`, `isActive`                                                                          | Replaces the canvas progress bar                  |
+| `rkStoriesNavigation`   | `StoriesNavigationContext`: `onPrevStory`, `onNextStory`, `onPrevGroup`, `onNextGroup`, and the same four grouped as `$implicit`                                                                   | Replaces both desktop arrows                      |
+| `rkStoriesGroupPreview` | `StoriesGroupPreviewContext`: `$implicit` and `group`, `groupIndex`, `story`, `offset`, `viewedCount`, `onOpen`                                                                                    | Fills a desktop carousel card                     |
+| `rkStoriesLoading`      | `StoriesLoadingContext`: `$implicit` and `story`, `storyIndex`, `groupIndex`                                                                                                                       | Replaces the spinner shown while a story loads    |
+| `rkStoriesError`        | `StoriesErrorContext`: `$implicit` and `story`, `storyIndex`, `groupIndex`                                                                                                                         | Replaces the "Content unavailable" panel          |
 
 Slots render through the player's own injector, so a component drawn inside one
 resolves the player's providers — an `rk-video-story-slide` in a slide template
@@ -112,23 +114,24 @@ finds the same sound state the header button writes.
 
 ### rk-stories-overlay Inputs
 
-| Input                     | Type                             | Default            | Description                                                   |
-| ------------------------- | -------------------------------- | ------------------ | ------------------------------------------------------------- |
-| `isOpen`                  | `boolean`                        | `false`            | Renders the player and locks body scroll                      |
-| `groups`                  | `StoriesGroup<T>[]`              | required           | Story groups; ones added while open are picked up             |
-| `initialGroupIndex`       | `number`                         | `0`                | Group the player opens on                                     |
-| `initialStoryIndex`       | `number \| undefined`            | resume, then `0`   | Story the player opens on; beats anything remembered          |
-| `ariaLabel`               | `string`                         | `'Stories player'` | Accessible name of the dialog                                 |
-| `groupTransition`         | `TransitionTransformFn`          | `cubeTransition`   | Transition between authors; ignored while the carousel shows  |
-| `innerTransitionDuration` | `number`                         | `200`              | Crossfade between stories of one author (ms)                  |
-| `defaultImageDuration`    | `number`                         | `5000`             | Auto-advance duration for an image story (ms)                 |
-| `minSegmentWidth`         | `number`                         | `8`                | Below this the progress bar scrolls a window of segments (px) |
-| `tapZoneSplit`            | `number`                         | `0.3`              | Tap split (0–1); the left share goes back, the rest forward   |
-| `hideUIOnPause`           | `boolean`                        | `true`             | Hide progress bar and header while held paused                |
-| `enableKeyboard`          | `boolean`                        | `true`             | Arrow keys and Escape                                         |
-| `desktopLayout`           | `'single' \| 'carousel'`         | `'single'`         | Phones always show the story alone                            |
-| `viewed`                  | `StoriesViewedStateController`   | —                  | Resume and record; hand the same one to the ring list         |
-| `resumeStoryIndex`        | `(groupIndex: number) => number` | —                  | Where a group first opens; beats `viewed`                     |
+| Input                     | Type                             | Default            | Description                                                                                   |
+| ------------------------- | -------------------------------- | ------------------ | --------------------------------------------------------------------------------------------- |
+| `isOpen`                  | `boolean`                        | required           | Renders the player and locks body scroll                                                      |
+| `groups`                  | `StoriesGroup<T>[]`              | required           | Story groups; ones added while open are picked up                                             |
+| `initialGroupIndex`       | `number`                         | `0`                | Group the player opens on                                                                     |
+| `initialStoryIndex`       | `number \| undefined`            | resume, then `0`   | Story the player opens on; beats anything remembered                                          |
+| `ariaLabel`               | `string`                         | `'Stories player'` | Accessible name of the dialog                                                                 |
+| `groupTransition`         | `TransitionTransformFn`          | `cubeTransition`   | Transition between authors; ignored while the carousel shows                                  |
+| `innerTransitionDuration` | `number`                         | `200`              | Crossfade between stories of one author (ms)                                                  |
+| `defaultImageDuration`    | `number`                         | `5000`             | Auto-advance duration for an image story (ms)                                                 |
+| `minSegmentWidth`         | `number`                         | `8`                | Below this the progress bar scrolls a window of segments (px)                                 |
+| `tapZoneSplit`            | `number`                         | `0.3`              | Tap split (0–1); the left share goes back, the rest forward                                   |
+| `hideUIOnPause`           | `boolean`                        | `true`             | Hide the progress bar and header while paused by a long press                                 |
+| `enableKeyboard`          | `boolean`                        | `true`             | Arrow keys and Escape                                                                         |
+| `desktopLayout`           | `'single' \| 'carousel'`         | `'single'`         | Phones always show the story alone                                                            |
+| `chromePlacement`         | `'overlay' \| 'group'`           | `'overlay'`        | `'group'`: each group carries its own progress bar and header, turning with it like Instagram |
+| `viewed`                  | `StoriesViewedStateController`   | —                  | Resume and record; hand the same one to the ring list                                         |
+| `resumeStoryIndex`        | `(groupIndex: number) => number` | —                  | Where a group first opens; beats `viewed`                                                     |
 
 Every slot also has an input — `slideTemplate`, `headerTemplate`,
 `footerTemplate`, `progressBarTemplate`, `navigationTemplate`,
@@ -148,6 +151,30 @@ that holds the `TemplateRef` itself. A named template beats a projected one.
 | `groupChanged`   | `number`                     | After the active group changes                       |
 | `paused`         | `void`                       | On a long press, or the header's pause button        |
 | `resumed`        | `void`                       | On release, or the header's play button              |
+
+### rk-stories-url-overlay Inputs
+
+Takes every `rk-stories-overlay` input and output except the open-state trio —
+`isOpen`, `initialGroupIndex`, `initialStoryIndex` — which come from the
+controller. Its slots are projected `ng-template`s, as on the overlay.
+
+| Input        | Type                                  | Default  | Description                                                                                                                                                                            |
+| ------------ | ------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `controller` | `UrlStateController<TwoAxisPosition>` | required | From `createOverlayUrlState` spread with `urlIndexTwoAxisKey`; its position decides whether the player is open and where, and the overlay writes back on every navigation and on close |
+| `groups`     | `StoriesGroup<T>[]`                   | required | Story groups to play, in order                                                                                                                                                         |
+
+`(closed)` fires after the player closes; the parameter is already cleared by
+then, so the URL, not this output, drives closing.
+
+### rk-stories-ring-list Inputs
+
+| Input      | Type                           | Default  | Description                                                                                                                          |
+| ---------- | ------------------------------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `groups`   | `StoriesGroup[]`               | required | One ring per group, in order                                                                                                         |
+| `viewed`   | `StoriesViewedStateController` | —        | Mutes the ring of a group watched to the end; the list reads the store while it is on screen. Hand the same controller to the player |
+| `ringSize` | `number`                       | `64`     | Diameter of each ring in pixels                                                                                                      |
+
+`(selected)` emits the group index of the ring chosen.
 
 ### StoriesApi
 
