@@ -172,6 +172,12 @@
 - Updated @reelkit/react to 0.9.2
 - Updated @reelkit/core to 0.8.3
 
+## @reelkit/vue-lightbox@0.3.2 (2026-09-24)
+
+### 🩹 Fixes
+
+- The README's Live Demo link opens the lightbox demo instead of a page that does not exist
+
 ## @reelkit/vue-lightbox@0.3.1 (2026-09-24)
 
 ### 🩹 Fixes
