@@ -144,9 +144,12 @@ describe('useFullscreen', () => {
     expect(calls).toEqual(['exit', 'request']);
 
     fullscreenSignal.value = prev;
-    delete (HTMLElement.prototype as unknown as Record<string, unknown>)
-      .requestFullscreen;
-    delete (document as unknown as Record<string, unknown>).exitFullscreen;
-    delete (document as unknown as Record<string, unknown>).fullscreenElement;
+    delete (HTMLElement.prototype as unknown as Record<string, unknown>)[
+      'requestFullscreen'
+    ];
+    delete (document as unknown as Record<string, unknown>)['exitFullscreen'];
+    delete (document as unknown as Record<string, unknown>)[
+      'fullscreenElement'
+    ];
   });
 });

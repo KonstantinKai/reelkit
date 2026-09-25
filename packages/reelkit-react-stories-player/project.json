@@ -4,7 +4,12 @@
   "sourceRoot": "packages/reelkit-react-stories-player/src",
   "projectType": "library",
   "tags": ["scope:react", "type:stories"],
-  "targets": {},
+  "targets": {
+    "typecheck-spec": {
+      "command": "tsc -b tsconfig.spec.json --emitDeclarationOnly",
+      "options": { "cwd": "{projectRoot}" }
+    }
+  },
   "release": {
     "version": {
       "currentVersionResolver": "git-tag",

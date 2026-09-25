@@ -98,6 +98,16 @@
     "test": {
       "dependsOn": ["^build"]
     },
+    "typecheck-spec": {
+      "cache": true,
+      "dependsOn": ["^build"],
+      "inputs": [
+        "default",
+        "^production",
+        { "externalDependencies": ["typescript", "vue-tsc"] }
+      ],
+      "outputs": []
+    },
     "@nx/angular:package": {
       "cache": true,
       "dependsOn": ["^build"],

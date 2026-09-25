@@ -4,7 +4,12 @@
   "sourceRoot": "packages/reelkit-vue-stories-player/src",
   "projectType": "library",
   "tags": ["scope:vue", "type:stories"],
-  "targets": {},
+  "targets": {
+    "typecheck-spec": {
+      "command": "vue-tsc -b tsconfig.spec.json --emitDeclarationOnly",
+      "options": { "cwd": "{projectRoot}" }
+    }
+  },
   "release": {
     "version": {
       "currentVersionResolver": "git-tag",

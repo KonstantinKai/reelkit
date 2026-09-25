@@ -28,5 +28,10 @@
     "src/**/*.d.ts",
     "src/**/*.ts",
     "src/**/*.tsx"
+  ],
+  "references": [
+    {
+      "path": "../reelkit-core/tsconfig.lib.json"
+    }
   ]
 }

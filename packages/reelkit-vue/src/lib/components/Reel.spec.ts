@@ -1,13 +1,29 @@
-import { mount } from '@vue/test-utils';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { mount, type VueWrapper } from '@vue/test-utils';
+import {
+  describe,
+  it,
+  expect,
+  vi,
+  beforeEach,
+  afterEach,
+  type Mock,
+} from 'vitest';
 import { h, inject, defineComponent, nextTick } from 'vue';
-import { Reel, createDefaultKeyExtractorForLoop } from './Reel';
+import {
+  Reel,
+  createDefaultKeyExtractorForLoop,
+  type ReelExpose,
+} from './Reel';
 import { RK_REEL_KEY } from '../context/ReelContext';
 
 type ResizeCallback = ResizeObserverCallback;
 let resizeObserverCallback: ResizeCallback | null = null;
 let observedElements: Element[] = [];
-let disconnectSpy: ReturnType<typeof vi.fn>;
+let disconnectSpy: Mock<() => void> | undefined;
+
+// `wrapper.vm` is typed from the props alone; the slider methods come from
+// `expose()`, which the mount typing cannot see.
+const reelApi = (wrapper: VueWrapper) => wrapper.vm as unknown as ReelExpose;
 
 class MockResizeObserver {
   constructor(callback: ResizeCallback) {
@@ -149,7 +165,7 @@ describe('Reel', () => {
         slots: { item: itemSlot },
       });
 
-      const api = wrapper.vm;
+      const api = reelApi(wrapper);
       expect(api.next).toBeTypeOf('function');
       expect(api.prev).toBeTypeOf('function');
       expect(api.goTo).toBeTypeOf('function');
@@ -164,7 +180,7 @@ describe('Reel', () => {
         slots: { item: itemSlot },
       });
 
-      const result = wrapper.vm.goTo(1, false);
+      const result = reelApi(wrapper).goTo(1, false);
       expect(result).toBeInstanceOf(Promise);
     });
   });
@@ -458,7 +474,7 @@ describe('Reel', () => {
         slots: { item: itemSlot },
       });
 
-      await wrapper.vm.goTo(1, false);
+      await reelApi(wrapper).goTo(1, false);
       await nextTick();
 
       expect(wrapper.emitted('afterChange')).toBeTruthy();
@@ -470,7 +486,7 @@ describe('Reel', () => {
         slots: { item: itemSlot },
       });
 
-      await wrapper.vm.goTo(1, false);
+      await reelApi(wrapper).goTo(1, false);
       await nextTick();
 
       expect(wrapper.emitted('beforeChange')).toBeTruthy();
@@ -506,9 +522,11 @@ describe('Reel', () => {
       });
 
       let resolvedBefore = false;
-      const pendingGoTo = wrapper.vm.goTo(1, false).then(() => {
-        resolvedBefore = true;
-      });
+      const pendingGoTo = reelApi(wrapper)
+        .goTo(1, false)
+        .then(() => {
+          resolvedBefore = true;
+        });
       // One microtask flush should be enough; a setTimeout(0) would need a
       // macrotask and this would still be false.
       await Promise.resolve();
@@ -686,7 +704,7 @@ describe('Reel', () => {
         slots: { item: itemSlot },
       });
 
-      await wrapper.vm.goTo(1, false);
+      await reelApi(wrapper).goTo(1, false);
       await nextTick();
       await nextTick();
 

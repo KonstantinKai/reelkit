@@ -11,10 +11,8 @@ import {
   Router,
   provideRouter,
   type ActivatedRouteSnapshot,
-  type Event,
 } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
-import type { Subject } from 'rxjs';
 import {
   createUrlStateController,
   urlIndexKey,
@@ -129,7 +127,11 @@ describe('createRouterUrlAdapter', () => {
     TestBed.configureTestingModule({
       providers: [provideRouter([]), provideLocationMocks()],
     });
-    const events = TestBed.inject(Router).events as Subject<Event>;
+    // The router's events are a Subject underneath; `observed` is what shows
+    // whether anyone still listens.
+    const events = TestBed.inject(Router).events as unknown as {
+      observed: boolean;
+    };
     const injector = createEnvironmentInjector(
       [],
       TestBed.inject(EnvironmentInjector),

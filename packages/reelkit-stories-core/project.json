@@ -10,5 +10,10 @@
     }
   },
   "tags": ["scope:core", "type:stories"],
-  "targets": {}
+  "targets": {
+    "typecheck-spec": {
+      "command": "tsc -b tsconfig.spec.json --emitDeclarationOnly",
+      "options": { "cwd": "{projectRoot}" }
+    }
+  }
 }

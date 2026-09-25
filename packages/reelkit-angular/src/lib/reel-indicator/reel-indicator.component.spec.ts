@@ -7,7 +7,7 @@ import { RkReelItemDirective } from '../reel/reel-item.directive';
 import type { ReelApi } from '../reel/reel.types';
 
 function installResizeObserverMock(): void {
-  (globalThis as unknown as Record<string, unknown>).ResizeObserver = jest
+  (globalThis as unknown as Record<string, unknown>)['ResizeObserver'] = jest
     .fn()
     .mockImplementation((cb: (entries: ResizeObserverEntry[]) => void) => ({
       observe: jest.fn().mockImplementation(() => {
@@ -485,8 +485,6 @@ describe('ReelIndicatorComponent', () => {
     }));
   });
 
-  // ─── Bug regression tests ──────────────────────────────────────────────────
-
   describe('Bug 4: Arrow keys only move focus — they do NOT call goTo()', () => {
     let fixture: ComponentFixture<StandaloneHostComponent>;
     let host: StandaloneHostComponent;
@@ -595,9 +593,9 @@ describe('ReelIndicatorComponent', () => {
       ).componentInstance as ReelIndicatorComponent;
 
       // Forcibly put the component into the "navigating" state.
-      (
-        component as unknown as Record<string, WritableSignal<boolean>>
-      )._isNavigating.set(true);
+      (component as unknown as Record<string, WritableSignal<boolean>>)[
+        '_isNavigating'
+      ].set(true);
       fixture.detectChanges();
 
       const clicks: number[] = [];
@@ -612,8 +610,6 @@ describe('ReelIndicatorComponent', () => {
       expect(clicks).toContain(2);
     }));
   });
-
-  // ─── Bug 6: _isNavigating.set() must not be called after destroy ─────────────
 
   describe('Bug 6: _isNavigating not set after component destruction', () => {
     it('does not throw when the goTo Promise resolves after the component is destroyed', fakeAsync(() => {
@@ -633,18 +629,18 @@ describe('ReelIndicatorComponent', () => {
       });
       const origGoTo = (
         component as unknown as Record<string, Record<string, unknown>>
-      ).reelContext.goTo;
-      (
-        component as unknown as Record<string, Record<string, unknown>>
-      ).reelContext.goTo = () => slowPromise;
+      )['reelContext']['goTo'];
+      (component as unknown as Record<string, Record<string, unknown>>)[
+        'reelContext'
+      ]['goTo'] = () => slowPromise;
 
       // Click a dot to start navigation (sets _isNavigating = true).
       getDots(fixture)[1].click();
       fixture.detectChanges();
       expect(
-        (
-          component as unknown as Record<string, WritableSignal<boolean>>
-        )._isNavigating(),
+        (component as unknown as Record<string, WritableSignal<boolean>>)[
+          '_isNavigating'
+        ](),
       ).toBe(true);
 
       // Destroy the component BEFORE the Promise resolves.
@@ -654,9 +650,9 @@ describe('ReelIndicatorComponent', () => {
       expect(() => resolveGoTo()).not.toThrow();
 
       // Restore original goTo.
-      (
-        component as unknown as Record<string, Record<string, unknown>>
-      ).reelContext.goTo = origGoTo;
+      (component as unknown as Record<string, Record<string, unknown>>)[
+        'reelContext'
+      ]['goTo'] = origGoTo;
     }));
   });
 });

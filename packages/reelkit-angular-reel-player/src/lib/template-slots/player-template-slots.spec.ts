@@ -15,13 +15,10 @@ import type {
   PlayerNestedSlideContext,
   PlayerNestedNavigationContext,
   PlayerSoundState,
-  ContentItem,
+  BaseContentItem,
 } from '../types';
 
-// ---------------------------------------------------------------------------
-// Host components: one per directive, expose directive via viewChild
-// ---------------------------------------------------------------------------
-
+// One host per directive; each exposes its directive through viewChild.
 @Component({
   imports: [RkPlayerSlideDirective],
   template: `<ng-template rkPlayerSlide></ng-template>`,
@@ -70,9 +67,6 @@ class NestedNavigationHost {
   readonly dir = viewChild(RkPlayerNestedNavigationDirective);
 }
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
 function getDirectiveFromHost<T>(
   fixture: ComponentFixture<{ dir: () => T | undefined }>,
 ): T {
@@ -86,9 +80,6 @@ function getDirectiveFromHost<T>(
   return dir;
 }
 
-// ---------------------------------------------------------------------------
-// Tests
-// ---------------------------------------------------------------------------
 describe('Player template slot directives', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -103,9 +94,6 @@ describe('Player template slot directives', () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // RkPlayerSlideDirective
-  // ---------------------------------------------------------------------------
   describe('RkPlayerSlideDirective', () => {
     let fixture: ComponentFixture<SlideHost>;
 
@@ -137,7 +125,7 @@ describe('Player template slot directives', () => {
         /* noop */
       };
       const ctx: unknown = {
-        $implicit: { id: 'x', media: [] } as ContentItem,
+        $implicit: { id: 'x', media: [] } satisfies BaseContentItem,
         index: 0,
         size: [375, 812] as [number, number],
         isActive: true,
@@ -154,9 +142,6 @@ describe('Player template slot directives', () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // RkPlayerSlideOverlayDirective
-  // ---------------------------------------------------------------------------
   describe('RkPlayerSlideOverlayDirective', () => {
     let fixture: ComponentFixture<SlideOverlayHost>;
 
@@ -184,9 +169,6 @@ describe('Player template slot directives', () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // RkPlayerControlsDirective
-  // ---------------------------------------------------------------------------
   describe('RkPlayerControlsDirective', () => {
     let fixture: ComponentFixture<ControlsHost>;
 
@@ -232,7 +214,7 @@ describe('Player template slot directives', () => {
         onClose: () => {
           /* noop */
         },
-      } satisfies PlayerControlsContext;
+      } satisfies PlayerControlsContext<BaseContentItem>;
       expect(
         RkPlayerControlsDirective.ngTemplateContextGuard(
           {} as RkPlayerControlsDirective,
@@ -242,9 +224,6 @@ describe('Player template slot directives', () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // RkPlayerNavigationDirective
-  // ---------------------------------------------------------------------------
   describe('RkPlayerNavigationDirective', () => {
     let fixture: ComponentFixture<NavigationHost>;
 
@@ -292,9 +271,6 @@ describe('Player template slot directives', () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // RkPlayerNestedSlideDirective
-  // ---------------------------------------------------------------------------
   describe('RkPlayerNestedSlideDirective', () => {
     let fixture: ComponentFixture<NestedSlideHost>;
 
@@ -344,9 +320,6 @@ describe('Player template slot directives', () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // RkPlayerNestedNavigationDirective
-  // ---------------------------------------------------------------------------
   describe('RkPlayerNestedNavigationDirective', () => {
     let fixture: ComponentFixture<NestedNavigationHost>;
 
@@ -394,9 +367,6 @@ describe('Player template slot directives', () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // PLAYER_TEMPLATE_SLOT_DIRECTIVES barrel
-  // ---------------------------------------------------------------------------
   describe('PLAYER_TEMPLATE_SLOT_DIRECTIVES', () => {
     it('exports all 7 slot directives', () => {
       expect(PLAYER_TEMPLATE_SLOT_DIRECTIVES).toHaveLength(7);

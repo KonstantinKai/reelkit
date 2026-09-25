@@ -27,9 +27,6 @@ describe('RkSlideOverlayComponent', () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // Author / avatar
-  // ---------------------------------------------------------------------------
   it('shows author name when author input is provided', () => {
     const fixture = createFixture({
       author: { name: 'Jane Doe', avatar: 'https://example.com/avatar.jpg' },
@@ -122,9 +119,6 @@ describe('RkSlideOverlayComponent', () => {
     );
   });
 
-  // ---------------------------------------------------------------------------
-  // Description
-  // ---------------------------------------------------------------------------
   it('shows description text when provided', () => {
     const fixture = createFixture({
       description: 'This is a cool reel #nature',
@@ -145,9 +139,6 @@ describe('RkSlideOverlayComponent', () => {
     expect(desc).toBeNull();
   });
 
-  // ---------------------------------------------------------------------------
-  // Likes formatting
-  // ---------------------------------------------------------------------------
   it('shows raw number for likes under 1K', () => {
     const fixture = createFixture({ likes: 999 });
     const likes = fixture.debugElement.query(
@@ -204,9 +195,6 @@ describe('RkSlideOverlayComponent', () => {
     expect(likes.nativeElement.getAttribute('aria-label')).toBe('42 likes');
   });
 
-  // ---------------------------------------------------------------------------
-  // Empty state
-  // ---------------------------------------------------------------------------
   it('renders nothing when all inputs are omitted', () => {
     const fixture = createFixture({});
     const overlay = fixture.debugElement.query(

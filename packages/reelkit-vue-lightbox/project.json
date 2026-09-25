@@ -4,7 +4,12 @@
   "sourceRoot": "packages/reelkit-vue-lightbox/src",
   "projectType": "library",
   "tags": ["scope:vue", "type:lightbox"],
-  "targets": {},
+  "targets": {
+    "typecheck-spec": {
+      "command": "vue-tsc -b tsconfig.spec.json --emitDeclarationOnly",
+      "options": { "cwd": "{projectRoot}" }
+    }
+  },
   "release": {
     "version": {
       "currentVersionResolver": "git-tag",

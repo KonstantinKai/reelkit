@@ -48,7 +48,9 @@ describe('ReelIndicator', () => {
       });
 
       const activeDot = wrapper.find('[data-reel-indicator="1"] span');
-      expect(activeDot.element.style.backgroundColor).toBe('rgb(255, 0, 0)');
+      expect((activeDot.element as HTMLElement).style.backgroundColor).toBe(
+        'rgb(255, 0, 0)',
+      );
     });
 
     it('renders with explicit props without context', () => {

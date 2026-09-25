@@ -4,7 +4,11 @@ import {
   type BufferedRange,
 } from './timelineController';
 
-type MockVideo = HTMLVideoElement & {
+// A real video's duration and paused state are read-only; the tests drive them
+// directly to stand in for the browser.
+type MockVideo = Omit<HTMLVideoElement, 'duration' | 'paused'> & {
+  duration: number;
+  paused: boolean;
   fireEvent: (type: string) => void;
   setBuffered: (ranges: Array<[number, number]>) => void;
 };

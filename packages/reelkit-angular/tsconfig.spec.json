@@ -6,6 +6,10 @@
     "target": "es2016",
     "types": ["jest", "node"],
     "moduleResolution": "node10",
+    "composite": false,
+    "declaration": false,
+    "declarationMap": false,
+    "baseUrl": ".",
     "paths": {
       "@reelkit/core": ["../reelkit-core/src/index.ts"]
     }

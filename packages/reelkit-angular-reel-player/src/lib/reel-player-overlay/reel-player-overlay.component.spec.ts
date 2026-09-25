@@ -252,7 +252,9 @@ function makeImageItems(count: number): ContentItem[] {
 function createFixture(
   inputs: { isOpen?: boolean; content?: ContentItem[] } = {},
 ): ComponentFixture<RkReelPlayerOverlayComponent> {
-  const fixture = TestBed.createComponent(RkReelPlayerOverlayComponent);
+  const fixture = TestBed.createComponent(
+    RkReelPlayerOverlayComponent<ContentItem>,
+  );
   fixture.componentRef.setInput('isOpen', inputs.isOpen ?? true);
   fixture.componentRef.setInput('content', inputs.content ?? makeItems(3));
   fixture.detectChanges();
@@ -598,8 +600,6 @@ describe('RkReelPlayerOverlayComponent', () => {
     );
   });
 
-  // ─── Bug A: aspectRatio edge cases produce degenerate sizes ─────────────
-
   it('_getSize falls back to 9/16 when aspectRatio is 0', () => {
     const fixture = TestBed.createComponent(RkReelPlayerOverlayComponent);
     fixture.componentRef.setInput('isOpen', true);
@@ -658,7 +658,6 @@ describe('RkReelPlayerOverlayComponent', () => {
     expect(height).toBeGreaterThan(0);
   });
 
-  // ─── Angular >=19 linkedSignal requirement ───────────────────────────────
   // linkedSignal() was introduced in Angular 19.0.0. The package.json
   // peerDependencies must declare ">=19.0.0" for all three Angular packages.
   // These tests exercise the linkedSignal-backed _activeIndex directly so
@@ -693,9 +692,10 @@ describe('RkReelPlayerOverlayComponent', () => {
     function getLoadingCtrl(
       fixture: ComponentFixture<RkReelPlayerOverlayComponent>,
     ) {
-      return fixture.componentInstance['_loadingCtrl'] as {
+      return fixture.componentInstance['_loadingCtrl'] as unknown as {
         onReady: jest.Mock;
         onWaiting: jest.Mock;
+        onError: jest.Mock;
         setActiveIndex: jest.Mock;
       };
     }
@@ -703,8 +703,10 @@ describe('RkReelPlayerOverlayComponent', () => {
     function getPreloader(
       fixture: ComponentFixture<RkReelPlayerOverlayComponent>,
     ) {
-      return fixture.componentInstance['_preloader'] as {
+      return fixture.componentInstance['_preloader'] as unknown as {
         markLoaded: jest.Mock;
+        markErrored: jest.Mock;
+        isErrored: jest.Mock;
       };
     }
 

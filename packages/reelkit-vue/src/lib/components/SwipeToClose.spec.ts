@@ -32,7 +32,7 @@ class MockTouch {
 
 beforeAll(() => {
   if (typeof globalThis.Touch === 'undefined') {
-    (globalThis as unknown as Record<string, unknown>).Touch = MockTouch;
+    (globalThis as unknown as Record<string, unknown>)['Touch'] = MockTouch;
   }
 });
 

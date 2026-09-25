@@ -4,9 +4,6 @@ import { RkMediaSlideComponent } from './media-slide.component';
 import { SoundStateService } from '@reelkit/angular';
 import type { BaseContentItem } from '../types';
 
-// ---------------------------------------------------------------------------
-// Mock @reelkit/angular
-// ---------------------------------------------------------------------------
 jest.mock('@reelkit/angular', () => {
   const { Component, Directive, EventEmitter, Input, Output } =
     require('@angular/core') as typeof import('@angular/core');
@@ -106,9 +103,6 @@ jest.mock('@reelkit/angular', () => {
   };
 });
 
-// ---------------------------------------------------------------------------
-// Test data
-// ---------------------------------------------------------------------------
 function singleImage(): BaseContentItem {
   return {
     id: 'img-1',
@@ -166,9 +160,6 @@ function createFixture(
   return fixture;
 }
 
-// ---------------------------------------------------------------------------
-// Tests
-// ---------------------------------------------------------------------------
 describe('RkMediaSlideComponent', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -260,9 +251,6 @@ describe('RkMediaSlideComponent', () => {
     expect(emitted).toContain(null);
   });
 
-  // ---------------------------------------------------------------------------
-  // Bug 3: Host element display:block
-  // ---------------------------------------------------------------------------
   it('host element has display:block style', () => {
     const fixture = createFixture(singleVideo());
     const hostEl: HTMLElement = fixture.nativeElement;
