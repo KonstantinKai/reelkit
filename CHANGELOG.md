@@ -1,3 +1,117 @@
+## @reelkit/react-reel-player@0.6.5 (2026-09-25)
+
+### 🩹 Fixes
+
+- A multi-media post whose media changes now starts again from its first item
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/react to 0.9.3
+- Updated @reelkit/core to 0.8.4
+
+## @reelkit/vue-reel-player@0.4.2 (2026-09-25)
+
+### 🩹 Fixes
+
+- Opening the player moves keyboard focus into the dialog and keeps Tab inside it
+- A multi-media post whose media changes now shows its first item, instead of the carousel dots and arrows pointing at the first item while the old one stayed on screen
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.8.4
+- Updated @reelkit/vue to 0.7.2
+
+## @reelkit/angular-reel-player@0.6.3 (2026-09-25)
+
+### 🩹 Fixes
+
+- `RkNestedSliderComponent.mediaAt` returns the item at the index it is given; it no longer falls back to the first item for an index past the end, which the slider no longer asks for
+- A multi-media post whose media changes now shows its first item, instead of the carousel dots and arrows pointing at the first item while the old one stayed on screen
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/angular to 0.8.2
+- Updated @reelkit/core to 0.8.4
+
+## @reelkit/react-stories-player@0.6.2 (2026-09-25)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/stories-core to 0.6.2
+- Updated @reelkit/react to 0.9.3
+- Updated @reelkit/core to 0.8.4
+
+## @reelkit/vue-stories-player@0.2.2 (2026-09-25)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/stories-core to 0.6.2
+- Updated @reelkit/core to 0.8.4
+- Updated @reelkit/vue to 0.7.2
+
+## @reelkit/angular-stories-player@0.2.2 (2026-09-25)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/stories-core to 0.6.2
+- Updated @reelkit/angular to 0.8.2
+- Updated @reelkit/core to 0.8.4
+
+## @reelkit/react-lightbox@0.6.5 (2026-09-25)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/react to 0.9.3
+- Updated @reelkit/core to 0.8.4
+
+## @reelkit/vue-lightbox@0.3.3 (2026-09-25)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/vue to 0.7.2
+
+## @reelkit/angular-lightbox@0.6.3 (2026-09-25)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/angular to 0.8.2
+- Updated @reelkit/core to 0.8.4
+
+## @reelkit/stories-core@0.6.2 (2026-09-25)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.8.4
+
+## @reelkit/react@0.9.3 (2026-09-25)
+
+### 🩹 Fixes
+
+- `Reel` no longer calls `itemBuilder` for slides removed by a smaller `count`
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.8.4
+
+## @reelkit/vue@0.7.2 (2026-09-25)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.8.4
+
+## @reelkit/angular@0.8.2 (2026-09-25)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.8.4
+
+## @reelkit/core@0.8.4 (2026-09-25)
+
+### 🩹 Fixes
+
+- Removing slides so the active one no longer exists now moves the slider to the new last slide instead of rendering a slide that is gone
+- Changing the slide count, loop or range extractor now refreshes which slides are rendered straight away, not only on the next navigation
+
 ## @reelkit/react-reel-player@0.6.4 (2026-09-24)
 
 ### 🩹 Fixes
