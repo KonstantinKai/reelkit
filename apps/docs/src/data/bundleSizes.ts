@@ -18,8 +18,8 @@ export interface BundleSize {
 export const kBundleSizes: BundleSize[] = [
   {
     name: '@reelkit/core',
-    js: '26.7 kB',
-    gzip: '10.1 kB',
+    js: '27.0 kB',
+    gzip: '10.2 kB',
     css: '-',
     cssGzip: '-',
   },
@@ -33,8 +33,8 @@ export const kBundleSizes: BundleSize[] = [
   },
   {
     name: '@reelkit/react-reel-player',
-    js: '17.0 kB',
-    gzip: '5.4 kB',
+    js: '17.2 kB',
+    gzip: '5.5 kB',
     css: '9.7 kB',
     cssGzip: '2.1 kB',
     framework: 'react',
@@ -65,8 +65,8 @@ export const kBundleSizes: BundleSize[] = [
   },
   {
     name: '@reelkit/angular-reel-player',
-    js: '148.0 kB',
-    gzip: '24.4 kB',
+    js: '148.3 kB',
+    gzip: '24.5 kB',
     css: '15.0 kB',
     cssGzip: '3.5 kB',
     framework: 'angular',
@@ -89,7 +89,7 @@ export const kBundleSizes: BundleSize[] = [
   },
   {
     name: '@reelkit/vue-reel-player',
-    js: '21.1 kB',
+    js: '21.2 kB',
     gzip: '6.2 kB',
     css: '9.7 kB',
     cssGzip: '2.1 kB',
@@ -123,17 +123,17 @@ export interface LibraryWeight {
 export const kLibraryComparison: LibraryWeight[] = [
   {
     name: 'ReelKit (core + react)',
-    gzip: '15.0 kB',
+    gzip: '15.1 kB',
     virtualization: true,
   },
   {
     name: 'ReelKit (core + angular)',
-    gzip: '26.1 kB',
+    gzip: '26.2 kB',
     virtualization: true,
   },
   {
     name: 'ReelKit (core + vue)',
-    gzip: '15.1 kB',
+    gzip: '15.2 kB',
     virtualization: true,
   },
   {

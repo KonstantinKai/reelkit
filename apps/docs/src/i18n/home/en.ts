@@ -56,7 +56,7 @@ export const en: HomeMessages = {
         stat: '0',
         unit: 'deps',
         title: 'Zero Dependencies',
-        description: 'No runtime dependencies. Core is ~10.1 kB gzipped.',
+        description: 'No runtime dependencies. Core is ~10.2 kB gzipped.',
       },
       {
         stat: '60',

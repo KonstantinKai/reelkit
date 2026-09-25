@@ -57,7 +57,7 @@ export const ja: HomeMessages = {
         unit: '依存関係',
         title: '依存関係ゼロ',
         description:
-          '実行時の依存関係はありません。コアは gzip 後で約 10.1 kB です。',
+          '実行時の依存関係はありません。コアは gzip 後で約 10.2 kB です。',
       },
       {
         stat: '60',

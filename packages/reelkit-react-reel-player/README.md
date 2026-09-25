@@ -2,7 +2,7 @@
 
 <p>
   <a href="https://www.npmjs.com/package/@reelkit/react-reel-player"><img src="https://img.shields.io/npm/v/@reelkit/react-reel-player?color=6366f1&label=npm" alt="npm" /></a>
-  <img src="https://img.shields.io/badge/gzip-5.4%20kB-6366f1" alt="Bundle size" />
+  <img src="https://img.shields.io/badge/gzip-5.5%20kB-6366f1" alt="Bundle size" />
   <img src="https://img.shields.io/badge/coverage-95%25-brightgreen" alt="Statement coverage" />
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
@@ -11,7 +11,7 @@
   <a href="https://react-demo.reelkit.dev/reel-player?utm_source=npm"><img src="https://raw.githubusercontent.com/KonstantinKai/reelkit/main/assets/reel.gif" width="240" alt="A full-screen reel player on a phone: a swipe up moves to a three-photo post, a swipe sideways shows its next photo, and a swipe down returns to the first post." /></a>
 </p>
 
-Drop-in Instagram Reels / TikTok-style video player for React. Opens as a full-screen overlay with vertical swipe navigation. Handles video autoplay, sound continuity on iOS, and multi-media posts. ~5.4 kB gzip.
+Drop-in Instagram Reels / TikTok-style video player for React. Opens as a full-screen overlay with vertical swipe navigation. Handles video autoplay, sound continuity on iOS, and multi-media posts. ~5.5 kB gzip.
 
 **[Live Demo](https://react-demo.reelkit.dev/reel-player?utm_source=npm)**
 

@@ -58,7 +58,7 @@ export const hi: HomeMessages = {
         unit: 'dependency',
         title: 'कोई dependency नहीं',
         description:
-          'कोई runtime dependency नहीं। gzip के बाद core लगभग 10.1 kB का है।',
+          'कोई runtime dependency नहीं। gzip के बाद core लगभग 10.2 kB का है।',
       },
       {
         stat: '60',
