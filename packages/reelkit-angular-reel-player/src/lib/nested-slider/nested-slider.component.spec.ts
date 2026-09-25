@@ -157,6 +157,27 @@ describe('RkNestedSliderComponent', () => {
     expect(fixture.componentInstance.innerActiveIndex()).toBe(0);
   });
 
+  it('moves the slider back to the first item when the media changes', () => {
+    const fixture = createFixture(makeMedia(3));
+    const api = {
+      goTo: jest.fn().mockResolvedValue(undefined),
+      prev: jest.fn(),
+      next: jest.fn(),
+      adjust: jest.fn(),
+      observe: jest.fn(),
+      unobserve: jest.fn(),
+    };
+    fixture.componentInstance.onInnerApiReady(api as never);
+    fixture.componentInstance.onAfterChange({ index: 2 });
+    fixture.detectChanges();
+    expect(api.goTo).not.toHaveBeenCalled();
+
+    fixture.componentRef.setInput('media', makeMedia(3));
+    fixture.detectChanges();
+
+    expect(api.goTo).toHaveBeenCalledWith(0, false);
+  });
+
   it('onAfterChange updates innerActiveIndex', () => {
     const fixture = createFixture(makeMedia(3));
     fixture.componentInstance.onAfterChange({ index: 1 });
@@ -289,13 +310,11 @@ describe('RkNestedSliderComponent', () => {
     expect(mockVideoEl.pause).not.toHaveBeenCalled();
   });
 
-  it('mediaAt() returns first item as fallback for out-of-bounds index', () => {
+  it('mediaAt() returns the item at the given index', () => {
     const fixture = createFixture(makeMedia(2));
-    const firstItem = fixture.componentInstance.media()[0];
-    expect(fixture.componentInstance.mediaAt(999)).toBe(firstItem);
+    const secondItem = fixture.componentInstance.media()[1];
+    expect(fixture.componentInstance.mediaAt(1)).toBe(secondItem);
   });
-
-  // ─── Bug regression: Bug 2 (Player) – stale _videoEl on inner navigation ─
 
   it('onVideoRef(null) is forwarded as videoRef output even when coming from a non-inner-active slide', () => {
     // The template condition `isInnerActive || !$event` ensures that a null

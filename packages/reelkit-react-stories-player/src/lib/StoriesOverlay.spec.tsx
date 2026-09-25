@@ -1,5 +1,5 @@
 import { StrictMode, type ReactElement } from 'react';
-import { render, act, cleanup } from '@testing-library/react';
+import { render, act, cleanup, fireEvent } from '@testing-library/react';
 import {
   describe,
   it,
@@ -12,6 +12,7 @@ import {
 import {
   noop,
   slideTransition,
+  SoundProvider,
   createUrlStateController,
   urlIndexTwoAxisKey,
   type TwoAxisIdentity,
@@ -2353,5 +2354,681 @@ describe('StoriesOverlay story duration', () => {
     });
 
     expect(onStoryComplete).toHaveBeenCalledWith(0, 0);
+  });
+});
+
+describe('StoriesOverlay controls and slides', () => {
+  type Builder = (
+    index: number,
+    indexInRange: number,
+    size: [number, number],
+  ) => ReactElement<{ children: ReactElement<Record<string, unknown>>[] }>;
+
+  let sourceSequence = 0;
+
+  // The preloader is module-scoped, so a source another test reported as
+  // loaded would open here without a loader; each group gets fresh ones.
+  const freshGroups = (
+    firstStory: Partial<StoriesGroup['stories'][number]> = {},
+  ): StoriesGroup[] => {
+    const tag = ++sourceSequence;
+    return [
+      {
+        author: { id: '1', name: 'Alice', avatar: 'alice.jpg' },
+        stories: [
+          {
+            id: `a1-${tag}`,
+            mediaType: 'image',
+            src: `a1-${tag}.jpg`,
+            ...firstStory,
+          },
+          { id: `a2-${tag}`, mediaType: 'image', src: `a2-${tag}.jpg` },
+        ],
+      },
+      {
+        author: { id: '2', name: 'Bob', avatar: 'bob.jpg' },
+        stories: [
+          { id: `b1-${tag}`, mediaType: 'image', src: `b1-${tag}.jpg` },
+        ],
+      },
+    ];
+  };
+
+  const outerReel = () =>
+    lastReelProps.filter((props) => props['afterChange']).at(-1)!;
+
+  // The mocked Reel draws no slides, so a group and its stories are built by
+  // hand from the item builders the player hands the two sliders.
+  const buildGroup = (groupIndex: number) =>
+    (outerReel()['itemBuilder'] as Builder)(groupIndex, 0, [400, 700]);
+
+  const storyReelOf = (group: ReturnType<Builder>) =>
+    [group.props.children]
+      .flat()
+      .find((child) => child?.props?.['itemBuilder'])!;
+
+  const renderStories = (groupIndex: number, storyIndexes: number[]) => {
+    const group = buildGroup(groupIndex);
+    const storyReel = storyReelOf(group);
+    const buildStory = storyReel.props['itemBuilder'] as Builder;
+    // Drawn apart from the player, so the video slides need a sound provider
+    // of their own.
+    render(
+      <SoundProvider>
+        {storyIndexes.map((index) => buildStory(index, index, [400, 700]))}
+      </SoundProvider>,
+    );
+    return { group, storyReel };
+  };
+
+  const pointer = (
+    element: Element,
+    type: 'pointerDown' | 'pointerUp' | 'pointerLeave',
+  ) => fireEvent[type](element);
+
+  beforeEach(() => {
+    vi.useFakeTimers({
+      toFake: ['setTimeout', 'clearTimeout', 'Date', 'performance'],
+    });
+    lastReelProps = [];
+    vi.stubGlobal('requestAnimationFrame', (cb: () => void) =>
+      setTimeout(cb, 0),
+    );
+    vi.stubGlobal('cancelAnimationFrame', (id: number) => clearTimeout(id));
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  describe('navigation buttons', () => {
+    const navButton = (label: string) =>
+      document.querySelector(`[aria-label="${label}"]`) as HTMLButtonElement;
+
+    it('steps one story forward and back on a short press', () => {
+      const onStoryChange = vi.fn();
+      render(
+        <StoriesOverlay
+          isOpen
+          onClose={vi.fn()}
+          groups={freshGroups()}
+          onStoryChange={onStoryChange}
+        />,
+      );
+
+      pointer(navButton('Next story'), 'pointerDown');
+      pointer(navButton('Next story'), 'pointerUp');
+      expect(onStoryChange).toHaveBeenLastCalledWith(0, 1);
+
+      pointer(navButton('Previous story'), 'pointerDown');
+      pointer(navButton('Previous story'), 'pointerUp');
+      expect(onStoryChange).toHaveBeenLastCalledWith(0, 0);
+    });
+
+    it('jumps a whole group on a long press without also stepping a story', () => {
+      const onGroupChange = vi.fn();
+      const onStoryChange = vi.fn();
+      render(
+        <StoriesOverlay
+          isOpen
+          onClose={vi.fn()}
+          groups={freshGroups()}
+          onGroupChange={onGroupChange}
+          onStoryChange={onStoryChange}
+        />,
+      );
+
+      pointer(navButton('Next story'), 'pointerDown');
+      act(() => {
+        vi.advanceTimersByTime(600);
+      });
+      pointer(navButton('Next story'), 'pointerUp');
+
+      expect(onGroupChange).toHaveBeenLastCalledWith(1);
+      expect(onStoryChange).toHaveBeenLastCalledWith(1, 0);
+
+      pointer(navButton('Previous story'), 'pointerDown');
+      act(() => {
+        vi.advanceTimersByTime(600);
+      });
+      pointer(navButton('Previous story'), 'pointerUp');
+
+      expect(onGroupChange).toHaveBeenLastCalledWith(0);
+    });
+
+    it('drops a press when the pointer leaves the button', () => {
+      const onGroupChange = vi.fn();
+      render(
+        <StoriesOverlay
+          isOpen
+          onClose={vi.fn()}
+          groups={freshGroups()}
+          onGroupChange={onGroupChange}
+        />,
+      );
+
+      pointer(navButton('Next story'), 'pointerDown');
+      pointer(navButton('Next story'), 'pointerLeave');
+      act(() => {
+        vi.advanceTimersByTime(600);
+      });
+
+      expect(onGroupChange).not.toHaveBeenCalled();
+    });
+
+    it('hands custom navigation every way to move', () => {
+      const onStoryChange = vi.fn();
+      const onGroupChange = vi.fn();
+      let nav:
+        | {
+            onPrevStory: () => void;
+            onNextStory: () => void;
+            onPrevGroup: () => void;
+            onNextGroup: () => void;
+          }
+        | undefined;
+      render(
+        <StoriesOverlay
+          isOpen
+          onClose={vi.fn()}
+          groups={freshGroups()}
+          onStoryChange={onStoryChange}
+          onGroupChange={onGroupChange}
+          renderNavigation={(props) => {
+            nav = props;
+            return null;
+          }}
+        />,
+      );
+
+      act(() => nav!.onNextStory());
+      expect(onStoryChange).toHaveBeenLastCalledWith(0, 1);
+      act(() => nav!.onPrevStory());
+      expect(onStoryChange).toHaveBeenLastCalledWith(0, 0);
+      act(() => nav!.onNextGroup());
+      expect(onGroupChange).toHaveBeenLastCalledWith(1);
+      act(() => nav!.onPrevGroup());
+      expect(onGroupChange).toHaveBeenLastCalledWith(0);
+    });
+  });
+
+  it('steps back a story through the imperative api', () => {
+    const apiRef = { current: null as StoriesApi | null };
+    const onStoryChange = vi.fn();
+    render(
+      <StoriesOverlay
+        isOpen
+        onClose={vi.fn()}
+        groups={freshGroups()}
+        apiRef={apiRef}
+        onStoryChange={onStoryChange}
+      />,
+    );
+
+    act(() => apiRef.current!.nextStory());
+    act(() => apiRef.current!.prevStory());
+
+    expect(onStoryChange).toHaveBeenLastCalledWith(0, 0);
+  });
+
+  it('shows a heart and reports a double tap, then clears the heart once it has played', () => {
+    const onDoubleTap = vi.fn();
+    render(
+      <StoriesOverlay
+        isOpen
+        onClose={vi.fn()}
+        groups={freshGroups()}
+        onDoubleTap={onDoubleTap}
+      />,
+    );
+
+    act(() => (outerReel()['onDoubleTap'] as () => void)());
+
+    expect(onDoubleTap).toHaveBeenCalledWith(0, 0);
+    const heart = document.querySelector('.rk-stories-heart')!;
+    expect(heart).not.toBeNull();
+
+    act(() => {
+      heart.dispatchEvent(new Event('animationend', { bubbles: true }));
+    });
+
+    expect(document.querySelector('.rk-stories-heart')).toBeNull();
+  });
+
+  it('pauses and resumes from the header button', () => {
+    const onPause = vi.fn();
+    const onResume = vi.fn();
+    render(
+      <StoriesOverlay
+        isOpen
+        onClose={vi.fn()}
+        groups={freshGroups()}
+        onPause={onPause}
+        onResume={onResume}
+      />,
+    );
+
+    act(() =>
+      (document.querySelector('[aria-label="Pause"]') as HTMLElement).click(),
+    );
+    expect(onPause).toHaveBeenCalledTimes(1);
+
+    act(() =>
+      (document.querySelector('[aria-label="Play"]') as HTMLElement).click(),
+    );
+    expect(onResume).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps the browser menu off the story area', () => {
+    render(<StoriesOverlay isOpen onClose={vi.fn()} groups={freshGroups()} />);
+    const event = new MouseEvent('contextmenu', {
+      bubbles: true,
+      cancelable: true,
+    });
+
+    document.querySelector('.rk-stories-container')!.dispatchEvent(event);
+
+    expect(event.defaultPrevented).toBe(true);
+  });
+
+  describe('a video story', () => {
+    const videoGroups = () =>
+      freshGroups({ mediaType: 'video', src: `clip-${sourceSequence}.mp4` });
+
+    // jsdom has no media playback, and the slide pauses its video on unmount.
+    beforeEach(() => {
+      vi.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(noop);
+    });
+
+    it('pauses and resumes the video with the player', () => {
+      const pause = vi
+        .spyOn(HTMLMediaElement.prototype, 'pause')
+        .mockImplementation(noop);
+      const play = vi
+        .spyOn(HTMLMediaElement.prototype, 'play')
+        .mockResolvedValue(undefined);
+      const apiRef = { current: null as StoriesApi | null };
+      render(
+        <StoriesOverlay
+          isOpen
+          onClose={vi.fn()}
+          groups={videoGroups()}
+          apiRef={apiRef}
+        />,
+      );
+      play.mockClear();
+
+      act(() => apiRef.current!.pause());
+      expect(pause).toHaveBeenCalled();
+
+      act(() => apiRef.current!.resume());
+      expect(play).toHaveBeenCalled();
+    });
+
+    it('holds the video while the groups are dragged and plays it again after', () => {
+      const pause = vi
+        .spyOn(HTMLMediaElement.prototype, 'pause')
+        .mockImplementation(noop);
+      const play = vi
+        .spyOn(HTMLMediaElement.prototype, 'play')
+        .mockResolvedValue(undefined);
+      render(
+        <StoriesOverlay isOpen onClose={vi.fn()} groups={videoGroups()} />,
+      );
+      play.mockClear();
+
+      act(() => (outerReel()['onSlideDragStart'] as () => void)());
+      expect(pause).toHaveBeenCalledTimes(1);
+
+      act(() => (outerReel()['onSlideDragEnd'] as () => void)());
+      expect(play).toHaveBeenCalledTimes(1);
+    });
+
+    it('keeps a paused player paused when a drag ends', () => {
+      const play = vi
+        .spyOn(HTMLMediaElement.prototype, 'play')
+        .mockResolvedValue(undefined);
+      vi.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(noop);
+      const apiRef = { current: null as StoriesApi | null };
+      render(
+        <StoriesOverlay
+          isOpen
+          onClose={vi.fn()}
+          groups={videoGroups()}
+          apiRef={apiRef}
+        />,
+      );
+      act(() => apiRef.current!.pause());
+      play.mockClear();
+
+      act(() => (outerReel()['onSlideDragStart'] as () => void)());
+      act(() => (outerReel()['onSlideDragEnd'] as () => void)());
+
+      expect(play).not.toHaveBeenCalled();
+    });
+
+    it('moves on when the video reaches its end', () => {
+      vi.spyOn(HTMLMediaElement.prototype, 'play').mockResolvedValue(undefined);
+      const onStoryChange = vi.fn();
+      render(
+        <StoriesOverlay
+          isOpen
+          onClose={vi.fn()}
+          groups={videoGroups()}
+          onStoryChange={onStoryChange}
+        />,
+      );
+      renderStories(0, [0]);
+
+      act(() => {
+        document.querySelector('video')!.dispatchEvent(new Event('ended'));
+      });
+
+      expect(onStoryChange).toHaveBeenLastCalledWith(0, 1);
+    });
+
+    it('shows the loader while the video buffers and clears it once it plays', () => {
+      vi.spyOn(HTMLMediaElement.prototype, 'play').mockResolvedValue(undefined);
+      render(
+        <StoriesOverlay
+          isOpen
+          onClose={vi.fn()}
+          groups={videoGroups()}
+          renderLoading={() => <div className="custom-loading" />}
+        />,
+      );
+      const video = () => document.querySelector('video')!;
+      renderStories(0, [0]);
+      expect(document.querySelector('.custom-loading')).not.toBeNull();
+
+      act(() => {
+        video().dispatchEvent(new Event('playing'));
+      });
+      expect(document.querySelector('.custom-loading')).toBeNull();
+
+      act(() => {
+        video().dispatchEvent(new Event('waiting'));
+      });
+      expect(document.querySelector('.custom-loading')).not.toBeNull();
+    });
+
+    it('reports an error the video raises', () => {
+      vi.spyOn(HTMLMediaElement.prototype, 'play').mockResolvedValue(undefined);
+      render(
+        <StoriesOverlay isOpen onClose={vi.fn()} groups={videoGroups()} />,
+      );
+      renderStories(0, [0]);
+      const video = document.querySelector('video')!;
+      Object.defineProperty(video, 'error', {
+        configurable: true,
+        value: { code: 4 },
+      });
+
+      act(() => {
+        video.dispatchEvent(new Event('error'));
+      });
+      delete (video as unknown as Record<string, unknown>)['error'];
+
+      expect(document.querySelector('.rk-stories-error')).not.toBeNull();
+    });
+
+    it('times the story by the duration its video reports', () => {
+      vi.spyOn(HTMLMediaElement.prototype, 'play').mockResolvedValue(undefined);
+      const onStoryComplete = vi.fn();
+      render(
+        <StoriesOverlay
+          isOpen
+          onClose={vi.fn()}
+          groups={videoGroups()}
+          onStoryComplete={onStoryComplete}
+        />,
+      );
+      renderStories(0, [0]);
+      const video = document.querySelector('video')!;
+      Object.defineProperty(video, 'duration', {
+        configurable: true,
+        value: 2,
+      });
+
+      act(() => {
+        video.dispatchEvent(new Event('loadedmetadata'));
+      });
+      act(() => {
+        vi.advanceTimersByTime(2100);
+      });
+      delete (video as unknown as Record<string, unknown>)['duration'];
+
+      expect(onStoryComplete).toHaveBeenCalledWith(0, 0);
+    });
+  });
+
+  describe('an image story', () => {
+    it('starts its timer once the image loads', () => {
+      const onStoryComplete = vi.fn();
+      render(
+        <StoriesOverlay
+          isOpen
+          onClose={vi.fn()}
+          groups={freshGroups({ duration: 1000 })}
+          onStoryComplete={onStoryComplete}
+        />,
+      );
+      renderStories(0, [0]);
+      act(() => {
+        vi.advanceTimersByTime(1500);
+      });
+      expect(onStoryComplete).not.toHaveBeenCalled();
+
+      act(() => {
+        document
+          .querySelector('.rk-stories-image')!
+          .dispatchEvent(new Event('load'));
+      });
+      act(() => {
+        vi.advanceTimersByTime(1100);
+      });
+
+      expect(onStoryComplete).toHaveBeenCalledWith(0, 0);
+    });
+
+    it('shows the error state when the image fails', () => {
+      render(
+        <StoriesOverlay isOpen onClose={vi.fn()} groups={freshGroups()} />,
+      );
+      renderStories(0, [0]);
+
+      act(() => {
+        document
+          .querySelector('.rk-stories-image')!
+          .dispatchEvent(new Event('error'));
+      });
+
+      expect(document.querySelector('.rk-stories-error')).not.toBeNull();
+    });
+
+    it('opens without a loader on an image that already loaded', () => {
+      const groups = freshGroups({ duration: 1000 });
+      render(
+        <StoriesOverlay
+          isOpen
+          onClose={vi.fn()}
+          groups={groups}
+          renderLoading={() => <div className="custom-loading" />}
+        />,
+      );
+      renderStories(0, [0]);
+      act(() => {
+        document
+          .querySelector('.rk-stories-image')!
+          .dispatchEvent(new Event('load'));
+      });
+      cleanup();
+      lastReelProps = [];
+
+      const onStoryComplete = vi.fn();
+      render(
+        <StoriesOverlay
+          isOpen
+          onClose={vi.fn()}
+          groups={groups}
+          onStoryComplete={onStoryComplete}
+          renderLoading={() => <div className="custom-loading" />}
+        />,
+      );
+      renderStories(0, [0]);
+
+      expect(document.querySelector('.custom-loading')).toBeNull();
+      act(() => {
+        vi.advanceTimersByTime(1100);
+      });
+      expect(onStoryComplete).toHaveBeenCalledWith(0, 0);
+    });
+  });
+
+  describe('custom slides', () => {
+    it('holds the timer while a custom slide buffers', () => {
+      const onStoryComplete = vi.fn();
+      let slide:
+        | { onReady: () => void; onWaiting: () => void; onEnded: () => void }
+        | undefined;
+      render(
+        <StoriesOverlay
+          isOpen
+          onClose={vi.fn()}
+          groups={freshGroups({ duration: 1000 })}
+          onStoryComplete={onStoryComplete}
+          renderSlide={(props) => {
+            if (props.isActive) slide = props;
+            return <div />;
+          }}
+        />,
+      );
+      renderStories(0, [0]);
+
+      act(() => slide!.onReady());
+      act(() => slide!.onWaiting());
+      act(() => {
+        vi.advanceTimersByTime(1500);
+      });
+
+      expect(onStoryComplete).not.toHaveBeenCalled();
+    });
+
+    it('moves on when a custom slide says it ended', () => {
+      const onStoryChange = vi.fn();
+      let slide: { onEnded: () => void } | undefined;
+      render(
+        <StoriesOverlay
+          isOpen
+          onClose={vi.fn()}
+          groups={freshGroups()}
+          onStoryChange={onStoryChange}
+          renderSlide={(props) => {
+            if (props.isActive) slide = props;
+            return <div />;
+          }}
+        />,
+      );
+      renderStories(0, [0]);
+
+      act(() => slide!.onEnded());
+
+      expect(onStoryChange).toHaveBeenLastCalledWith(0, 1);
+    });
+
+    it('ignores ready, buffering and errors from a story that is not on screen', () => {
+      const onStoryComplete = vi.fn();
+      const slides: Array<{
+        storyIndex: number;
+        onReady: () => void;
+        onWaiting: () => void;
+        onError: () => void;
+      }> = [];
+      render(
+        <StoriesOverlay
+          isOpen
+          onClose={vi.fn()}
+          groups={freshGroups({ duration: 1000 })}
+          onStoryComplete={onStoryComplete}
+          renderSlide={(props) => {
+            slides.push({ ...props, storyIndex: props.index });
+            return <div />;
+          }}
+        />,
+      );
+      renderStories(0, [0, 1]);
+      const offscreen = slides.find((slide) => slide.storyIndex === 1)!;
+
+      act(() => offscreen.onReady());
+      act(() => offscreen.onWaiting());
+      act(() => offscreen.onError());
+      act(() => {
+        vi.advanceTimersByTime(1500);
+      });
+
+      expect(onStoryComplete).not.toHaveBeenCalled();
+      expect(document.querySelector('.rk-stories-error')).toBeNull();
+    });
+  });
+
+  describe('footer', () => {
+    it('renders the footer for the story on screen', () => {
+      const groups = freshGroups();
+      render(
+        <StoriesOverlay
+          isOpen
+          onClose={vi.fn()}
+          groups={groups}
+          renderFooter={({ author, story, storyIndex }) => (
+            <div className="custom-footer">
+              {author.name}:{story.id}:{storyIndex}
+            </div>
+          )}
+        />,
+      );
+
+      render(<>{buildGroup(0)}</>);
+
+      expect(document.querySelector('.custom-footer')?.textContent).toBe(
+        `Alice:${groups[0].stories[0].id}:0`,
+      );
+    });
+
+    it('leaves the footer out of a group that is not active', () => {
+      render(
+        <StoriesOverlay
+          isOpen
+          onClose={vi.fn()}
+          groups={freshGroups()}
+          renderFooter={() => <div className="custom-footer" />}
+        />,
+      );
+
+      render(<>{buildGroup(1)}</>);
+
+      expect(document.querySelector('.custom-footer')).toBeNull();
+    });
+  });
+
+  it('slides the story reel of the active group to each new story', () => {
+    const apiRef = { current: null as StoriesApi | null };
+    render(
+      <StoriesOverlay
+        isOpen
+        onClose={vi.fn()}
+        groups={freshGroups()}
+        apiRef={apiRef}
+      />,
+    );
+    const storyReel = storyReelOf(buildGroup(0));
+    const goTo = vi.fn();
+    (storyReel.props['apiRef'] as (api: unknown) => void)({ goTo });
+
+    act(() => apiRef.current!.nextStory());
+
+    expect(goTo).toHaveBeenCalledWith(1, true);
   });
 });

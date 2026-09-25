@@ -31,7 +31,7 @@ let resizeObserverInstance: {
 } | null = null;
 
 function mockResizeObserver(width: number, height: number): void {
-  (globalThis as unknown as Record<string, unknown>).ResizeObserver = jest
+  (globalThis as unknown as Record<string, unknown>)['ResizeObserver'] = jest
     .fn()
     .mockImplementation((cb: ResizeCallback) => {
       resizeCallback = cb;
@@ -393,6 +393,28 @@ describe('ReelComponent', () => {
       expect(activeSlide?.nativeElement?.getAttribute('data-index')).toBe('2');
     }));
 
+    // An item template that looks its slide up by index would read past the
+    // end of the array if a removed slide were ever rendered.
+    it('renders only slides that still exist after the count shrinks under the active one', fakeAsync(() => {
+      const fixture = createBasicFixture();
+      fixture.componentInstance.api!.goTo(4, false);
+      fixture.detectChanges();
+
+      fixture.componentInstance.count.set(3);
+      fixture.detectChanges();
+
+      const rendered = fixture.debugElement
+        .queryAll(By.css('.test-slide'))
+        .map((slide) => Number(slide.nativeElement.getAttribute('data-index')));
+      expect(rendered.length).toBeGreaterThan(0);
+      expect(rendered.every((index) => index < 3)).toBe(true);
+      const activeSlide = fixture.debugElement.query(
+        By.css('[role="group"]:not([aria-hidden])'),
+      );
+      expect(activeSlide?.nativeElement?.getAttribute('data-index')).toBe('2');
+      expect(fixture.componentInstance.afterChanges.at(-1)?.index).toBe(2);
+    }));
+
     it('next() returns a Promise and does not throw', fakeAsync(() => {
       const fixture = createBasicFixture();
       const api = fixture.componentInstance.api!;
@@ -524,10 +546,11 @@ describe('ReelComponent', () => {
       fixture.detectChanges(); // apply measuredSize signal changes from ngAfterViewInit/ResizeObserver
 
       expect(capturedContext).toBeTruthy();
-      expect(typeof capturedContext.index).toBe('function');
-      expect(typeof capturedContext.count).toBe('function');
-      expect(typeof capturedContext.goTo).toBe('function');
-      expect(capturedContext.count()).toBe(4);
+      const ctx = capturedContext!;
+      expect(typeof ctx.index).toBe('function');
+      expect(typeof ctx.count).toBe('function');
+      expect(typeof ctx.goTo).toBe('function');
+      expect(ctx.count()).toBe(4);
     }));
 
     it('context index updates after goTo(2)', fakeAsync(() => {
@@ -570,12 +593,13 @@ describe('ReelComponent', () => {
       fixture.detectChanges(); // apply measuredSize signal changes from ngAfterViewInit/ResizeObserver
 
       const api: ReelApi = fixture.componentInstance.api!;
-      expect(capturedContext.index()).toBe(0);
+      const ctx = capturedContext!;
+      expect(ctx.index()).toBe(0);
 
       api.goTo(2, false);
       fixture.detectChanges();
 
-      expect(capturedContext.index()).toBe(2);
+      expect(ctx.index()).toBe(2);
     }));
   });
 
@@ -632,8 +656,6 @@ describe('ReelComponent', () => {
     }));
   });
 
-  // ─── Bug regression tests ────────────────────────────────────────────────────
-
   describe('Bug 1: ResizeObserver CD tick', () => {
     beforeEach(() => {
       TestBed.configureTestingModule({ imports: [BasicHostComponent] });
@@ -686,13 +708,13 @@ describe('ReelComponent', () => {
         () => unknown
       >;
 
-      expect(() => reelComp.visibleIndexes()).not.toThrow();
-      expect(() => reelComp.animatedValue()).not.toThrow();
-      expect(() => reelComp.indexSignal()).not.toThrow();
+      expect(() => reelComp['visibleIndexes']()).not.toThrow();
+      expect(() => reelComp['animatedValue']()).not.toThrow();
+      expect(() => reelComp['indexSignal']()).not.toThrow();
 
-      expect(Array.isArray(reelComp.visibleIndexes())).toBe(true);
-      expect(typeof reelComp.animatedValue()).toBe('number');
-      expect(typeof reelComp.indexSignal()).toBe('number');
+      expect(Array.isArray(reelComp['visibleIndexes']())).toBe(true);
+      expect(typeof reelComp['animatedValue']()).toBe('number');
+      expect(typeof reelComp['indexSignal']()).toBe('number');
     }));
   });
 
@@ -743,8 +765,6 @@ describe('ReelComponent', () => {
     }));
   });
 
-  // ─── Bug 6: SSR — ResizeObserver must not be created on the server ──────────
-
   describe('Bug 6: SSR — ResizeObserver skipped on server platform', () => {
     it('does not create a ResizeObserver when PLATFORM_ID is "server"', fakeAsync(() => {
       @Component({
@@ -760,7 +780,7 @@ describe('ReelComponent', () => {
       class SsrHostComponent {}
 
       const resizeObserverSpy = jest.fn();
-      (globalThis as unknown as Record<string, unknown>).ResizeObserver =
+      (globalThis as unknown as Record<string, unknown>)['ResizeObserver'] =
         resizeObserverSpy;
 
       TestBed.configureTestingModule({
@@ -776,8 +796,6 @@ describe('ReelComponent', () => {
       expect(resizeObserverSpy).not.toHaveBeenCalled();
     }));
   });
-
-  // ─── Bug 7: @for duplicate track keys in loop mode with count=2 ─────────────
 
   describe('Bug 7: createDefaultKeyExtractorForLoop — no duplicate @for track keys', () => {
     it('createDefaultKeyExtractorForLoop produces unique keys for loop count=2', () => {
@@ -845,8 +863,6 @@ describe('ReelComponent', () => {
       expect(getSlides(fixture).length).toBeGreaterThan(0);
     }));
   });
-
-  // ─── Race: component destroyed during goTo animation ─────────────────────────
 
   describe('Race: destroy during animated goTo — Promise must settle', () => {
     beforeEach(() => {
@@ -964,8 +980,6 @@ describe('ReelComponent', () => {
     }));
   });
 
-  // ─── Scenario: count=1 with loop=true ────────────────────────────────────────
-
   describe('count=1 with loop=true — no crash', () => {
     it('renders a single slide without crashing when count=1 and loop=true', fakeAsync(() => {
       @Component({
@@ -1032,8 +1046,6 @@ describe('ReelComponent', () => {
     }));
   });
 
-  // ─── Scenario: goTo(-1) and goTo(Infinity) are clamped ───────────────────────
-
   describe('goTo bounds clamping', () => {
     beforeEach(() => {
       TestBed.configureTestingModule({ imports: [BasicHostComponent] });
@@ -1075,8 +1087,6 @@ describe('ReelComponent', () => {
       expect(() => api.goTo(NaN, false)).not.toThrow();
     }));
   });
-
-  // ─── Scenario: measuredSize update avoids re-renders on same dimensions ───────
 
   describe('measuredSize signal equality avoids spurious re-renders', () => {
     beforeEach(() => {

@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { defineComponent, h, nextTick } from 'vue';
+import { defineComponent, h, nextTick, ref } from 'vue';
 import {
   useOverlayUrlState,
   urlIndexKey,
@@ -126,6 +126,53 @@ describe('ReelPlayerUrlOverlay', () => {
     await nextTick();
     expect(document.querySelector('.rk-reel-overlay')).toBeNull();
     expect(state.adapter.read()).not.toContain('reel');
+  });
+
+  it('exposes a template-ref api that is safe while closed and drives the player once open', async () => {
+    const state = createFakeUrlAdapter('');
+    const player = ref<ReelPlayerApi | null>(null);
+    const Host = defineComponent({
+      setup() {
+        const controller = useOverlayUrlState({
+          param: 'reel',
+          adapter: state.adapter,
+          ...urlIndexKey(() => sampleContent.length),
+        });
+        return () =>
+          h(ReelPlayerUrlOverlay, {
+            ref: player,
+            content: sampleContent,
+            controller,
+          });
+      },
+    });
+    mount(Host, { attachTo: document.body });
+
+    player.value!.next();
+    player.value!.prev();
+    player.value!.adjust();
+    player.value!.observe();
+    player.value!.unobserve();
+    await expect(player.value!.goTo(1)).resolves.toBeUndefined();
+    expect(state.adapter.read()).not.toContain('reel');
+
+    state.adapter.push('?reel=0', null);
+    await nextTick();
+    await nextTick();
+
+    await player.value!.goTo(1, false);
+    await nextTick();
+    expect(state.adapter.read()).toContain('reel=1');
+    player.value!.prev();
+    player.value!.next();
+    player.value!.unobserve();
+    player.value!.observe();
+    player.value!.adjust();
+
+    player.value!.close();
+    await nextTick();
+    await nextTick();
+    expect(document.querySelector('.rk-reel-overlay')).toBeNull();
   });
 
   it('drops a parameter that names no slide instead of opening it', async () => {

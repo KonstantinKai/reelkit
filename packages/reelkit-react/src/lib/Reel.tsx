@@ -381,7 +381,10 @@ const Element = ({
     };
 
     const builder = (i: number, indexInRange: number) => {
-      const { keyExtractor, itemBuilder, size } = propsRef.current;
+      const { keyExtractor, itemBuilder, size, count } = propsRef.current;
+      // A new count reaches the controller in an effect, after this render, so
+      // for one render the range can still name slides that were just removed.
+      if (i >= count) return null;
       const isActive = i === ctrl.state.index.value;
       return (
         <div

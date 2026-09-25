@@ -9,11 +9,8 @@ import { signal, NgZone } from '@angular/core';
 import { RkVideoSlideComponent } from './video-slide.component';
 import { SoundStateService } from '@reelkit/angular';
 
-// ---------------------------------------------------------------------------
-// Mock @reelkit/angular — factory must not reference variables outside the
-// factory because jest.mock() is hoisted before variable declarations.
-// We keep a module-level reference object that the factory populates lazily.
-// ---------------------------------------------------------------------------
+// The factory must not reference variables outside it, because jest.mock() is
+// hoisted above every declaration; the mocks it builds are read back below.
 jest.mock('@reelkit/angular', () => {
   const mockVid = document.createElement('video');
   Object.assign(mockVid, {
@@ -103,9 +100,6 @@ const mockVideo = coreModule.__mockVideo as HTMLVideoElement & {
 const mockCapturedFrames = mockSharedInstance.capturedFrames;
 const mockPlaybackPositions = mockSharedInstance.playbackPositions;
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
 function buildSoundStateSpy(mutedValue = true): SoundStateService {
   const mutedSig = signal(mutedValue);
   const disabledSig = signal(false);
@@ -127,6 +121,9 @@ function createFixture(
     isActive?: boolean;
     isInnerActive?: boolean;
     slideKey?: string;
+    onReady?: () => void;
+    onWaiting?: () => void;
+    onError?: () => void;
   } = {},
   soundState: SoundStateService = buildSoundStateSpy(),
 ): ComponentFixture<RkVideoSlideComponent> {
@@ -142,13 +139,13 @@ function createFixture(
   if (inputs.isActive !== undefined) ref.setInput('isActive', inputs.isActive);
   if (inputs.isInnerActive !== undefined)
     ref.setInput('isInnerActive', inputs.isInnerActive);
+  if (inputs.onReady) ref.setInput('onReady', inputs.onReady);
+  if (inputs.onWaiting) ref.setInput('onWaiting', inputs.onWaiting);
+  if (inputs.onError) ref.setInput('onError', inputs.onError);
   fixture.detectChanges();
   return fixture;
 }
 
-// ---------------------------------------------------------------------------
-// Tests
-// ---------------------------------------------------------------------------
 describe('RkVideoSlideComponent', () => {
   beforeEach(() => {
     // Reset mock state before each test
@@ -305,9 +302,7 @@ describe('RkVideoSlideComponent', () => {
     expect(container).toBeTruthy();
   });
 
-  // ---------------------------------------------------------------------------
-  // Bug: pause() must be called before DOM removal to prevent audio bleed
-  // ---------------------------------------------------------------------------
+  // Removing a playing video from the page does not stop its audio.
   it('calls pause() on the shared video during cleanup (deactivation)', fakeAsync(() => {
     const fixture = createFixture({ isActive: true });
     tick();
@@ -318,9 +313,7 @@ describe('RkVideoSlideComponent', () => {
     expect(mockVideo.pause).toHaveBeenCalled();
   }));
 
-  // ---------------------------------------------------------------------------
-  // Bug 2: Infinite effect loop — muted change must NOT re-run playback effect
-  // ---------------------------------------------------------------------------
+  // A playback effect that re-ran on every mute toggle once looped forever.
   it('changing muted while video is playing does not re-run the playback setup/cleanup cycle', fakeAsync(() => {
     const mutedSig = signal(false);
     const disabledSig = signal(false);
@@ -365,12 +358,110 @@ describe('RkVideoSlideComponent', () => {
     removeListenerSpy.mockRestore();
   }));
 
-  // ---------------------------------------------------------------------------
-  // Bug 3: Host element display:block
-  // ---------------------------------------------------------------------------
   it('host element has display:block style', () => {
     const fixture = createFixture();
     const hostEl: HTMLElement = fixture.nativeElement;
     expect(hostEl.style.display).toBe('block');
+  });
+
+  describe('media events', () => {
+    const loader = (fixture: ComponentFixture<RkVideoSlideComponent>) =>
+      fixture.nativeElement.querySelector('.rk-reel-video-loader');
+    const poster = (fixture: ComponentFixture<RkVideoSlideComponent>) =>
+      fixture.nativeElement.querySelector('.rk-reel-video-poster');
+
+    it('clears the loader and reports ready once the video can play', fakeAsync(() => {
+      const onReady = jest.fn();
+      const fixture = createFixture({ isActive: true, onReady });
+      tick();
+      // Activation runs after the first render, so the view catches up here.
+      fixture.detectChanges();
+      expect(loader(fixture).classList).toContain('rk-visible');
+
+      mockVideo.dispatchEvent(new Event('canplay'));
+      fixture.detectChanges();
+
+      expect(onReady).toHaveBeenCalledTimes(1);
+      expect(loader(fixture).classList).not.toContain('rk-visible');
+    }));
+
+    it('shows the loader again and reports buffering when the video stalls', fakeAsync(() => {
+      const onWaiting = jest.fn();
+      const fixture = createFixture({ isActive: true, onWaiting });
+      tick();
+      mockVideo.dispatchEvent(new Event('canplay'));
+      fixture.detectChanges();
+
+      mockVideo.dispatchEvent(new Event('waiting'));
+      fixture.detectChanges();
+
+      expect(onWaiting).toHaveBeenCalledTimes(1);
+      expect(loader(fixture).classList).toContain('rk-visible');
+    }));
+
+    it('hides the poster once playback starts', fakeAsync(() => {
+      const onReady = jest.fn();
+      const fixture = createFixture({
+        isActive: true,
+        poster: 'https://example.com/poster.jpg',
+        onReady,
+      });
+      tick();
+      fixture.detectChanges();
+      expect(poster(fixture).classList).toContain('rk-visible');
+
+      mockVideo.dispatchEvent(new Event('playing'));
+      fixture.detectChanges();
+
+      expect(onReady).toHaveBeenCalledTimes(1);
+      expect(poster(fixture).classList).not.toContain('rk-visible');
+    }));
+
+    it('keeps the poster up and drops the loader when the video fails', fakeAsync(() => {
+      const onError = jest.fn();
+      const fixture = createFixture({
+        isActive: true,
+        poster: 'https://example.com/poster.jpg',
+        onError,
+      });
+      tick();
+
+      mockVideo.dispatchEvent(new Event('error'));
+      fixture.detectChanges();
+
+      expect(onError).toHaveBeenCalledTimes(1);
+      expect(loader(fixture)).toBeNull();
+      expect(poster(fixture).classList).toContain('rk-visible');
+    }));
+
+    it('reports an error when playback is refused', fakeAsync(() => {
+      (mockVideo.play as jest.Mock).mockRejectedValueOnce(
+        new Error('NotAllowedError'),
+      );
+      const onError = jest.fn();
+      const fixture = createFixture({ isActive: true, onError });
+      tick();
+      fixture.detectChanges();
+
+      expect(onError).toHaveBeenCalledTimes(1);
+      expect(loader(fixture)).toBeNull();
+    }));
+
+    it('keeps the last frame as the poster when it leaves', fakeAsync(() => {
+      const { captureFrame } = require('@reelkit/angular') as {
+        captureFrame: jest.Mock;
+      };
+      captureFrame.mockReturnValueOnce('data:image/png;base64,frame');
+      const fixture = createFixture({ isActive: true, slideKey: 'framed' });
+      tick();
+
+      fixture.componentRef.setInput('isActive', false);
+      fixture.detectChanges();
+      tick();
+
+      expect(mockCapturedFrames.get('framed')).toBe(
+        'data:image/png;base64,frame',
+      );
+    }));
   });
 });

@@ -890,7 +890,9 @@ describe('ReelPlayerOverlay', () => {
   });
 
   describe('drag handlers', () => {
-    it('fires onSlideDragStart through Reel', () => {
+    // The active slide hands the player its video; a stand-in records what
+    // the player asks of it.
+    const openWithVideo = (paused: boolean) => {
       render(
         <ReelPlayerOverlay
           isOpen={true}
@@ -898,32 +900,115 @@ describe('ReelPlayerOverlay', () => {
           content={mockContent}
         />,
       );
+      const video = {
+        paused,
+        pause: vi.fn(),
+        play: vi.fn().mockResolvedValue(undefined),
+        dataset: { slideKey: 'c1' },
+      } as unknown as HTMLVideoElement;
+      act(() =>
+        (lastMediaSlideProps['onVideoRef'] as (v: HTMLVideoElement) => void)(
+          video,
+        ),
+      );
+      return video;
+    };
 
-      expect(lastReelProps.onSlideDragStart).toBeTypeOf('function');
+    it('pauses the playing video on drag start and resumes it when the drag is cancelled', () => {
+      const video = openWithVideo(false);
+
+      act(() => lastReelProps.onSlideDragStart?.(0));
+      expect(video.pause).toHaveBeenCalledTimes(1);
+
+      act(() => lastReelProps.onSlideDragEnd?.(0));
+      act(() => lastReelProps.onSlideDragCanceled?.(0));
+      expect(video.play).toHaveBeenCalledTimes(1);
     });
 
-    it('fires onSlideDragEnd through Reel', () => {
-      render(
-        <ReelPlayerOverlay
-          isOpen={true}
-          onClose={vi.fn()}
-          content={mockContent}
-        />,
-      );
+    it('does not resume a video that was already paused before the drag', () => {
+      const video = openWithVideo(true);
 
-      expect(lastReelProps.onSlideDragEnd).toBeTypeOf('function');
+      act(() => lastReelProps.onSlideDragStart?.(0));
+      act(() => lastReelProps.onSlideDragCanceled?.(0));
+
+      expect(video.pause).not.toHaveBeenCalled();
+      expect(video.play).not.toHaveBeenCalled();
     });
 
-    it('fires onSlideDragCanceled through Reel', () => {
+    it('pauses the video before the slide changes', () => {
+      const video = openWithVideo(false);
+
+      act(() => lastReelProps.beforeChange?.(0, 1, 0));
+
+      expect(video.pause).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('timeline modes', () => {
+    const timeline = () => document.querySelector('.rk-reel-timeline');
+
+    it('renders the bar for a video in always mode', () => {
       render(
         <ReelPlayerOverlay
           isOpen={true}
           onClose={vi.fn()}
           content={mockContent}
+          timeline="always"
         />,
       );
 
-      expect(lastReelProps.onSlideDragCanceled).toBeTypeOf('function');
+      expect(timeline()).not.toBeNull();
+    });
+
+    it('never renders the bar in never mode', () => {
+      render(
+        <ReelPlayerOverlay
+          isOpen={true}
+          onClose={vi.fn()}
+          content={mockContent}
+          timeline="never"
+        />,
+      );
+
+      expect(timeline()).toBeNull();
+    });
+
+    it('leaves an image post without a bar in always mode', () => {
+      render(
+        <ReelPlayerOverlay
+          isOpen={true}
+          onClose={vi.fn()}
+          content={[mockContent[1]]}
+          timeline="always"
+        />,
+      );
+
+      expect(timeline()).toBeNull();
+    });
+
+    it('hands renderTimeline the default bar to reuse', () => {
+      const renderTimeline = vi.fn(
+        ({ defaultContent }: { defaultContent: React.ReactNode }) => (
+          <div className="custom-timeline">{defaultContent}</div>
+        ),
+      );
+      render(
+        <ReelPlayerOverlay
+          isOpen={true}
+          onClose={vi.fn()}
+          content={mockContent}
+          timeline="always"
+          renderTimeline={renderTimeline}
+        />,
+      );
+
+      const custom = document.querySelector('.custom-timeline');
+      expect(custom).not.toBeNull();
+      expect(custom!.querySelector('.rk-reel-timeline')).not.toBeNull();
+      expect(renderTimeline.mock.calls.at(-1)?.[0]).toMatchObject({
+        activeIndex: 0,
+        item: mockContent[0],
+      });
     });
   });
 
@@ -1302,7 +1387,7 @@ describe('ReelPlayerOverlay', () => {
       // Both axes come from one position read — outer to the vertical slider,
       // inner to the post's nested slider.
       expect(lastReelProps.initialIndex).toBe(0);
-      expect(lastMediaSlideProps.initialInnerIndex).toBe(0);
+      expect(lastMediaSlideProps['initialInnerIndex']).toBe(0);
     });
 
     it('opens at the named outer post of a multi-media deep link', () => {
@@ -1321,7 +1406,7 @@ describe('ReelPlayerOverlay', () => {
       const { fake } = render2Axis('?reel=0.0');
 
       act(() =>
-        (lastMediaSlideProps.onInnerIndexChange as (i: number) => void)(1),
+        (lastMediaSlideProps['onInnerIndexChange'] as (i: number) => void)(1),
       );
 
       expect(fake.adapter.read()).toBe('?reel=0.1');
@@ -1343,7 +1428,7 @@ describe('ReelPlayerOverlay', () => {
       expect(fake.counts.push).toBe(1);
 
       act(() =>
-        (lastMediaSlideProps.onInnerIndexChange as (i: number) => void)(1),
+        (lastMediaSlideProps['onInnerIndexChange'] as (i: number) => void)(1),
       );
       slideTo(1);
 

@@ -312,6 +312,74 @@ describe('createSliderController', () => {
       expect(mockGesture.updateEvents).toHaveBeenCalled();
       ctrl.dispose();
     });
+
+    // The item builder is only ever asked for an index the range holds, so
+    // a range that outlives the count hands it slides that no longer exist.
+    it('steps back to the last slide when the count shrinks below the index', () => {
+      const onBeforeChange = vi.fn();
+      const onAfterChange = vi.fn();
+      const ctrl = createSliderController(
+        { count: 5, initialIndex: 4 },
+        { onBeforeChange, onAfterChange },
+      );
+      ctrl.setPrimarySize(400);
+
+      ctrl.updateConfig({ count: 3 });
+
+      expect(ctrl.state.index.value).toBe(2);
+      expect(ctrl.state.indexes.value).toEqual([1, 2]);
+      expect(ctrl.state.axisValue.value.value).toBe(-400);
+      expect(onBeforeChange).toHaveBeenCalledWith(4, 2, expect.any(Number));
+      expect(onAfterChange).toHaveBeenCalledWith(2, 1);
+      ctrl.dispose();
+    });
+
+    it('drops slides past the new end from the range while the index stays', () => {
+      const onAfterChange = vi.fn();
+      const ctrl = createSliderController(
+        { count: 3, initialIndex: 1 },
+        { onAfterChange },
+      );
+
+      expect(ctrl.state.indexes.value).toEqual([0, 1, 2]);
+      ctrl.updateConfig({ count: 2 });
+
+      expect(ctrl.state.index.value).toBe(1);
+      expect(ctrl.state.indexes.value).toEqual([0, 1]);
+      expect(onAfterChange).not.toHaveBeenCalled();
+      ctrl.dispose();
+    });
+
+    it('adds the next slide to the range when the count grows', () => {
+      const ctrl = createSliderController({ count: 1 });
+
+      expect(ctrl.state.indexes.value).toEqual([0]);
+      ctrl.updateConfig({ count: 3 });
+
+      expect(ctrl.state.indexes.value).toEqual([0, 1]);
+      ctrl.dispose();
+    });
+
+    it('re-positions the track when turning loop on changes the range', () => {
+      const ctrl = createSliderController({ count: 5 });
+      ctrl.setPrimarySize(400);
+      expect(ctrl.state.indexes.value).toEqual([0, 1]);
+
+      ctrl.updateConfig({ loop: true });
+
+      expect(ctrl.state.indexes.value).toEqual([4, 0, 1]);
+      expect(ctrl.state.axisValue.value.value).toBe(-400);
+      ctrl.dispose();
+    });
+
+    it('leaves the index alone when the count drops to zero', () => {
+      const ctrl = createSliderController({ count: 3, initialIndex: 2 });
+
+      ctrl.updateConfig({ count: 0 });
+
+      expect(ctrl.state.index.value).toBe(2);
+      ctrl.dispose();
+    });
   });
 
   describe('updateEvents', () => {

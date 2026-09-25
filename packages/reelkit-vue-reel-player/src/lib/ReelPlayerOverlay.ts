@@ -4,6 +4,7 @@ import {
   h,
   onMounted,
   onUnmounted,
+  onUpdated,
   ref,
   shallowRef,
   toRef,
@@ -348,6 +349,19 @@ const ReelPlayerContent = defineComponent({
       }
     };
 
+    // The viewport size is measured on mount, so the first render draws
+    // nothing and the dialog element only exists after the next one. Focus
+    // moves in, and the trap goes up, on whichever render first has it.
+    let focusTrapped = false;
+    const trapFocus = () => {
+      if (focusTrapped || !overlayEl) return;
+      focusTrapped = true;
+      overlayEl.focus({ preventScroll: true });
+      disposables.push(createFocusTrap(overlayEl));
+    };
+
+    onUpdated(trapFocus);
+
     onMounted(() => {
       disposables.push(
         observeDomEvent(window, 'keydown', (e) => {
@@ -356,10 +370,7 @@ const ReelPlayerContent = defineComponent({
       );
 
       disposables.push(captureFocusForReturn());
-      if (overlayEl) {
-        overlayEl.focus({ preventScroll: true });
-        disposables.push(createFocusTrap(overlayEl));
-      }
+      trapFocus();
 
       const initialSrc = props.content[activeIndex.value]?.media[0]?.src;
       if (initialSrc) {

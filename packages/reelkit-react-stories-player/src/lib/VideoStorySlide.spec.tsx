@@ -1,10 +1,18 @@
 import { render, act } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { createSignal, SoundProvider } from '@reelkit/react';
+import {
+  describe,
+  it,
+  expect,
+  vi,
+  beforeEach,
+  afterEach,
+  type Mock,
+} from 'vitest';
+import { createSignal, noop, SoundProvider } from '@reelkit/react';
 import { VideoStorySlide, shared } from './VideoStorySlide';
 
 let mockVideo: HTMLVideoElement;
-let playSpy: ReturnType<typeof vi.fn>;
+let playSpy: Mock<() => Promise<void>>;
 
 beforeEach(() => {
   mockVideo = document.createElement('video');
@@ -128,5 +136,99 @@ describe('VideoStorySlide', () => {
     const img = container.querySelector('img');
     expect(img).toBeTruthy();
     expect(img!.src).toContain('poster.jpg');
+  });
+
+  it('reports the duration straight away when the metadata is already loaded', () => {
+    Object.defineProperty(mockVideo, 'readyState', {
+      value: 1,
+      configurable: true,
+    });
+    Object.defineProperty(mockVideo, 'duration', {
+      value: 12,
+      configurable: true,
+    });
+    const onDurationReady = vi.fn();
+
+    renderSlide({ onDurationReady });
+
+    expect(onDurationReady).toHaveBeenCalledWith(12_000);
+  });
+
+  it('stays out of the way until its story becomes active', () => {
+    const activeStoryIndex = createSignal(1);
+    const { container } = render(
+      <SoundProvider>
+        <VideoStorySlide
+          src="video.mp4"
+          groupIndex={0}
+          storyIndex={0}
+          activeGroupIndex={createSignal(0)}
+          activeStoryIndex={activeStoryIndex}
+        />
+      </SoundProvider>,
+    );
+    const wrapper = container.firstElementChild!;
+    expect(wrapper.contains(mockVideo)).toBe(false);
+
+    act(() => {
+      activeStoryIndex.value = 0;
+    });
+
+    expect(wrapper.contains(mockVideo)).toBe(true);
+    expect(playSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('pauses and gives up the video when another story becomes active', () => {
+    const pause = vi.spyOn(mockVideo, 'pause').mockImplementation(noop);
+    const activeStoryIndex = createSignal(0);
+    const onPlaying = vi.fn();
+    const { container } = render(
+      <SoundProvider>
+        <VideoStorySlide
+          src="video.mp4"
+          groupIndex={0}
+          storyIndex={0}
+          activeGroupIndex={createSignal(0)}
+          activeStoryIndex={activeStoryIndex}
+          onPlaying={onPlaying}
+        />
+      </SoundProvider>,
+    );
+    const wrapper = container.firstElementChild!;
+
+    act(() => {
+      activeStoryIndex.value = 1;
+    });
+
+    expect(pause).toHaveBeenCalledTimes(1);
+    expect(wrapper.contains(mockVideo)).toBe(false);
+    // Listeners go with it: the next story's events are not this one's.
+    mockVideo.dispatchEvent(new Event('playing'));
+    expect(onPlaying).not.toHaveBeenCalled();
+  });
+
+  it('leaves the video alone when another slide already took it', () => {
+    const pause = vi.spyOn(mockVideo, 'pause').mockImplementation(noop);
+    const activeStoryIndex = createSignal(0);
+    render(
+      <SoundProvider>
+        <VideoStorySlide
+          src="video.mp4"
+          groupIndex={0}
+          storyIndex={0}
+          activeGroupIndex={createSignal(0)}
+          activeStoryIndex={activeStoryIndex}
+        />
+      </SoundProvider>,
+    );
+    const elsewhere = document.createElement('div');
+    elsewhere.appendChild(mockVideo);
+
+    act(() => {
+      activeStoryIndex.value = 1;
+    });
+
+    expect(pause).not.toHaveBeenCalled();
+    expect(elsewhere.contains(mockVideo)).toBe(true);
   });
 });

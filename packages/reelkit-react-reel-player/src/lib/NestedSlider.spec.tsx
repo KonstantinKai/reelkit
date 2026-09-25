@@ -161,6 +161,63 @@ describe('NestedSlider', () => {
     expect(lastReelProps.direction).toBe('horizontal');
   });
 
+  describe('media swap', () => {
+    const renderNested = (media: MediaItem[]) => (
+      <NestedSlider
+        media={media}
+        isParentActive={true}
+        size={_kSize}
+        contentItem={mockContentItem}
+        contentId="c1"
+        innerSliderRef={innerSliderRef}
+      />
+    );
+
+    it('leaves the slider where the seed put it on the first mount', () => {
+      render(renderNested(imageMedia));
+
+      expect(lastReelApiRef!.current!.goTo).not.toHaveBeenCalled();
+    });
+
+    // StrictMode runs mount effects twice; the second run must not read as a
+    // media swap, or a deep link to an inner item lands on the first one.
+    it('keeps the seeded item when StrictMode runs the mount effects twice', () => {
+      const { container } = render(
+        <React.StrictMode>
+          <NestedSlider
+            media={imageMedia}
+            isParentActive={true}
+            size={_kSize}
+            contentItem={mockContentItem}
+            contentId="c1"
+            innerSliderRef={innerSliderRef}
+            initialIndex={2}
+          />
+        </React.StrictMode>,
+      );
+
+      expect(lastReelApiRef!.current!.goTo).not.toHaveBeenCalled();
+      expect(
+        container
+          .querySelector('[data-testid="mock-indicator"]')!
+          .getAttribute('data-active'),
+      ).toBe('2');
+    });
+
+    it('moves both the index and the slider back to the first item', () => {
+      const { container, rerender } = render(renderNested(imageMedia));
+      act(() => lastReelProps.afterChange?.(2, 1));
+      const indicator = () =>
+        container.querySelector('[data-testid="mock-indicator"]')!;
+      expect(indicator().getAttribute('data-active')).toBe('2');
+
+      rerender(renderNested([...imageMedia]));
+
+      expect(lastReelApiRef!.current!.goTo).toHaveBeenCalledWith(0, false);
+      expect(indicator().getAttribute('data-active')).toBe('0');
+    });
+  });
+
   it('passes correct count to Reel', () => {
     render(
       <NestedSlider

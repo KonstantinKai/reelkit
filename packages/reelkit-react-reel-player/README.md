@@ -3,7 +3,7 @@
 <p>
   <a href="https://www.npmjs.com/package/@reelkit/react-reel-player"><img src="https://img.shields.io/npm/v/@reelkit/react-reel-player?color=6366f1&label=npm" alt="npm" /></a>
   <img src="https://img.shields.io/badge/gzip-5.4%20kB-6366f1" alt="Bundle size" />
-  <img src="https://img.shields.io/badge/coverage-87%25-green" alt="Statement coverage" />
+  <img src="https://img.shields.io/badge/coverage-95%25-brightgreen" alt="Statement coverage" />
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
 

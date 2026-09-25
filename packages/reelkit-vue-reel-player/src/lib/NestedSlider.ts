@@ -223,10 +223,14 @@ export const NestedSlider = defineComponent({
       },
     );
 
+    // New media starts from its first item, and the slider has to move there
+    // too, or the dots and arrows would describe a different item than the
+    // one on screen.
     watch(
       () => props.media,
       () => {
         innerIndex.value = 0;
+        void localSlider?.goTo(0, false);
       },
     );
 

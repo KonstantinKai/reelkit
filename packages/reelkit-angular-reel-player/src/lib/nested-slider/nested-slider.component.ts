@@ -270,6 +270,19 @@ export class RkNestedSliderComponent {
       }
     });
 
+    // New media starts from its first item, and the slider has to move there
+    // too, or the dots and arrows would describe a different item than the
+    // one on screen. The first run is the initial media, which the seed owns.
+    let mediaSeen = false;
+    effect(() => {
+      this.media();
+      if (!mediaSeen) {
+        mediaSeen = true;
+        return;
+      }
+      untracked(() => void this._innerApi?.goTo(0, false));
+    });
+
     // On activation, report the retained inner index so a URL following the
     // player names the media actually on screen — the seed on a fresh mount,
     // the retained index while this post stayed in the window. Depends on
@@ -283,10 +296,9 @@ export class RkNestedSliderComponent {
   }
 
   mediaAt(index: number): MediaItem {
-    // Guard against transient out-of-bounds access during media array changes.
-    // The linkedSignal resets innerActiveIndex to 0 on media change, but the
-    // virtual reel may still request the old index in the same render cycle.
-    return this.media()[index] ?? this.media()[0];
+    // The reel clamps its index when the media shrinks, so it only ever asks
+    // for an item that exists.
+    return this.media()[index];
   }
 
   onInnerApiReady(api: ReelApi): void {

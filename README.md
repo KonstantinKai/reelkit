@@ -27,7 +27,7 @@
   <img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License" />
   <img src="https://img.shields.io/badge/types-TypeScript-blue?logo=typescript&logoColor=white" alt="TypeScript" />
   <img src="https://img.shields.io/badge/core%20gzip-10.1%20kB-6366f1" alt="Bundle size" />
-  <img src="https://img.shields.io/badge/coverage-89%25-green" alt="Statement coverage across all packages" />
+  <img src="https://img.shields.io/badge/coverage-94%25-brightgreen" alt="Statement coverage across all packages" />
   <br/>
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>

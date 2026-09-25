@@ -1,5 +1,5 @@
-import { render } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
+import { fireEvent, render } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
 import ImageSlide from './ImageSlide';
 
 describe('ImageSlide', () => {
@@ -121,5 +121,22 @@ describe('ImageSlide', () => {
       const img = container.querySelector('img')!;
       expect(img.style.objectFit).toBe('contain');
     });
+  });
+
+  it('hides an image that fails to load and still reports the error', () => {
+    const onError = vi.fn();
+    const { container } = render(
+      <ImageSlide
+        src="https://example.com/broken.jpg"
+        size={[400, 600]}
+        imageProps={{ onError }}
+      />,
+    );
+    const img = container.querySelector('img')!;
+
+    fireEvent.error(img);
+
+    expect(img.style.display).toBe('none');
+    expect(onError).toHaveBeenCalledTimes(1);
   });
 });

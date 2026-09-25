@@ -185,6 +185,19 @@ const NestedSlider: React.FC<NestedSliderProps> = (props) => {
     };
   }, [innerSliderRef]);
 
+  // New media starts from its first item, and the slider moves there with the
+  // index, so the dots and arrows describe the item on screen. The initial
+  // media is the seed's to place. Compared by reference rather than counted,
+  // because StrictMode runs this effect twice on mount with the same media.
+  const lastMediaRef = useRef(media);
+  useEffect(() => {
+    if (lastMediaRef.current === media) return;
+    lastMediaRef.current = media;
+    indexSignal.value = 0;
+    void localSliderRef.current?.goTo(0, false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [media]);
+
   useEffect(() => {
     if (isParentActive) {
       // On activation, report the live inner index so a URL following the

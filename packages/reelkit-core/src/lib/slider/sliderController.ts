@@ -188,6 +188,10 @@ export const createSliderController = (
   // Override for animated goTo - temporarily replaces adjacent slide with target
   const goToOverride = createSignal<number | null>(null);
 
+  // Bumped when a setting the visible range depends on changes, since the
+  // range otherwise recomputes only when the index moves.
+  const rangeVersion = createSignal(0);
+
   const indexes = createComputed(
     () => {
       const override = goToOverride.value;
@@ -207,7 +211,7 @@ export const createSliderController = (
       const start = clamp(pos - 1, 0, range.length - _kMaxVisibleSlides);
       return range.slice(start, start + _kMaxVisibleSlides);
     },
-    () => [index, goToOverride],
+    () => [index, goToOverride, rangeVersion],
   );
 
   const state: SliderState = { index, axisValue, indexes };
@@ -516,7 +520,30 @@ export const createSliderController = (
     updateConfig(newConfig: Partial<SliderConfig>) {
       const prevNavKeys = config.enableNavKeys;
       const prevWheel = config.enableWheel;
+      const rangeChanged =
+        (newConfig.count !== undefined && newConfig.count !== config.count) ||
+        (newConfig.loop !== undefined && newConfig.loop !== config.loop) ||
+        (newConfig.rangeExtractor !== undefined &&
+          newConfig.rangeExtractor !== config.rangeExtractor);
       config = { ...config, ...newConfig };
+
+      if (rangeChanged) {
+        // A slide past the new end no longer exists, so the slider steps back
+        // to the last one before anything renders the old index.
+        const lastIndex = config.count - 1;
+        if (lastIndex >= 0 && index.value > lastIndex) {
+          events.onBeforeChange?.(index.value, lastIndex, getRangeIndex());
+          batch(() => {
+            index.value = lastIndex;
+            rangeVersion.value++;
+          });
+          setAxisValueForCurrentRangeIndex(0);
+          events.onAfterChange?.(index.value, getRangeIndex());
+        } else {
+          rangeVersion.value++;
+          if (!animating) setAxisValueForCurrentRangeIndex(0);
+        }
+      }
 
       const horizontal = config.direction === 'horizontal';
       gestureController.updateEvents({

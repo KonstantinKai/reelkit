@@ -15,7 +15,13 @@ import {
   captureFocusForReturn as mockedCaptureFocus,
   createFocusTrap as mockedCreateFocusTrap,
 } from '@reelkit/angular';
-import { RkLightboxControlsDirective } from '../template-slots/lightbox-template-slots';
+import {
+  RkLightboxControlsDirective,
+  RkLightboxErrorDirective,
+  RkLightboxInfoDirective,
+  RkLightboxLoadingDirective,
+  RkLightboxNavigationDirective,
+} from '../template-slots/lightbox-template-slots';
 import type { LightboxItem } from '../types';
 
 // Mock @reelkit/angular — provide a mock BodyLockService and stub the signal
@@ -774,8 +780,6 @@ describe('RkLightboxOverlayComponent', () => {
     });
   });
 
-  // ─── Bug regression tests ─────────────────────────────────────────────────
-
   describe('Bug 4 (Lightbox): focus moves to container on open', () => {
     it('container element is focused (or focus is requested) after opening', fakeAsync(() => {
       const fixture = createFixture(true, ITEMS, 0);
@@ -820,8 +824,6 @@ describe('RkLightboxOverlayComponent', () => {
     }));
   });
 
-  // ─── SSR guard tests ───────────────────────────────────────────────────────
-
   describe('SSR safety: resize listener guarded by typeof window', () => {
     it('does not throw when window is available (normal browser)', () => {
       expect(() => createFixture(true, ITEMS, 0)).not.toThrow();
@@ -850,8 +852,6 @@ describe('RkLightboxOverlayComponent', () => {
       );
     });
   });
-
-  // ─── Bug: handleClose exits fullscreen before emitting closed ─────────────
 
   describe('handleClose exits fullscreen before emitting closed', () => {
     const { exitFullscreen } = require('@reelkit/angular');
@@ -996,6 +996,366 @@ describe('RkLightboxOverlayComponent', () => {
     it('detects errorSlot via contentChild', () => {
       const fixture = createFixture(true, ITEMS, 0);
       expect(fixture.componentInstance['errorSlot']).toBeDefined();
+    });
+  });
+
+  describe('driven by the slider', () => {
+    const reelApi = () => ({
+      next: jest.fn(),
+      prev: jest.fn(),
+      goTo: jest.fn(),
+      adjust: jest.fn(),
+      observe: jest.fn(),
+      unobserve: jest.fn(),
+    });
+
+    const reelOf = (fixture: ComponentFixture<unknown>) =>
+      fixture.debugElement.query(By.css('rk-reel')).componentInstance as {
+        apiReady: { emit: (api: unknown) => void };
+        afterChange: { emit: (event: { index: number }) => void };
+      };
+
+    const desktopFixture = (initialIndex = 0) => {
+      const fixture = createFixture(true, ITEMS, initialIndex);
+      fixture.componentInstance['isMobile'].set(false);
+      fixture.detectChanges();
+      return fixture;
+    };
+
+    it('moves the counter, arrows and info with the slider and reports the change', () => {
+      const fixture = desktopFixture();
+      const changes: number[] = [];
+      fixture.componentInstance.slideChange.subscribe((index: number) =>
+        changes.push(index),
+      );
+
+      reelOf(fixture).afterChange.emit({ index: 1 });
+      fixture.detectChanges();
+
+      expect(changes).toEqual([1]);
+      expect(mocks.loadingCtrl.setActiveIndex).toHaveBeenLastCalledWith(1);
+      expect(
+        fixture.debugElement.query(By.css('.rk-lightbox-nav-prev')),
+      ).toBeTruthy();
+      expect(fixture.nativeElement.textContent).toContain('Image B');
+    });
+
+    it('shows the error straight away on a slide whose image already failed', () => {
+      const fixture = desktopFixture();
+      mocks.preloader.isErrored.mockImplementation(
+        (src: string) => src === ITEMS[2].src,
+      );
+
+      reelOf(fixture).afterChange.emit({ index: 2 });
+
+      expect(mocks.loadingCtrl.onError).toHaveBeenCalledWith(2);
+      mocks.preloader.isErrored.mockImplementation(() => false);
+    });
+
+    it('skips the spinner on a slide whose image already loaded', () => {
+      const fixture = desktopFixture();
+      mocks.preloader.isLoaded.mockImplementation(
+        (src: string) => src === ITEMS[1].src,
+      );
+
+      reelOf(fixture).afterChange.emit({ index: 1 });
+
+      expect(mocks.loadingCtrl.onReady).toHaveBeenCalledWith(1);
+      mocks.preloader.isLoaded.mockImplementation(() => false);
+    });
+
+    it('drives the slider from the arrows once the slider is ready', () => {
+      const fixture = desktopFixture(1);
+      const api = reelApi();
+      reelOf(fixture).apiReady.emit(api);
+
+      fixture.debugElement
+        .query(By.css('.rk-lightbox-nav-next'))
+        .nativeElement.click();
+      fixture.debugElement
+        .query(By.css('.rk-lightbox-nav-prev'))
+        .nativeElement.click();
+
+      expect(api.next).toHaveBeenCalledTimes(1);
+      expect(api.prev).toHaveBeenCalledTimes(1);
+    });
+
+    it('follows a window resize and re-measures the slider', () => {
+      const { observeDomEvent } = jest.requireMock('@reelkit/angular') as {
+        observeDomEvent: jest.Mock;
+      };
+      const fixture = desktopFixture();
+      const api = reelApi();
+      reelOf(fixture).apiReady.emit(api);
+      const resize = observeDomEvent.mock.calls.find(
+        (call) => call[1] === 'resize',
+      )?.[2] as (() => void) | undefined;
+      expect(resize).toBeDefined();
+
+      Object.defineProperty(window, 'innerWidth', {
+        configurable: true,
+        value: 640,
+      });
+      resize!();
+
+      expect(fixture.componentInstance['size']()[0]).toBe(640);
+      expect(api.adjust).toHaveBeenCalledTimes(1);
+    });
+
+    it('labels each slide by its title and position, or by position alone', () => {
+      const fixture = createFixture(true, [
+        { src: 'https://example.com/titled.jpg', title: 'Sunset' },
+        { src: 'https://example.com/plain.jpg' },
+      ]);
+      const label = (index: number) =>
+        fixture.componentInstance['slideAriaLabel'](index);
+
+      expect(label(0)).toBe('Sunset, 1 of 2');
+      expect(label(1)).toBe('Image 2 of 2');
+    });
+  });
+
+  describe('fullscreen button', () => {
+    const { requestFullscreen, exitFullscreen } = jest.requireMock(
+      '@reelkit/angular',
+    ) as { requestFullscreen: jest.Mock; exitFullscreen: jest.Mock };
+
+    const toggle = (fixture: ComponentFixture<RkLightboxOverlayComponent>) =>
+      fixture.debugElement
+        .query(By.css('rk-fullscreen-button'))
+        .triggerEventHandler('toggled');
+
+    afterEach(() => {
+      mocks.fullscreenSignal.value = false;
+    });
+
+    it('asks for fullscreen on the gallery', () => {
+      const fixture = createFixture();
+
+      toggle(fixture);
+
+      expect(requestFullscreen).toHaveBeenCalledWith(
+        fixture.debugElement.query(By.css('.rk-lightbox-overlay'))
+          .nativeElement,
+      );
+    });
+
+    it('leaves fullscreen when it is already on', () => {
+      const fixture = createFixture();
+      mocks.fullscreenSignal.value = true;
+
+      toggle(fixture);
+
+      expect(exitFullscreen).toHaveBeenCalledTimes(1);
+      expect(requestFullscreen).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('opening on a known image', () => {
+    afterEach(() => {
+      mocks.preloader.isErrored.mockImplementation(() => false);
+      mocks.preloader.isLoaded.mockImplementation(() => false);
+    });
+
+    it('opens on the error state for an image that already failed', () => {
+      mocks.preloader.isErrored.mockImplementation(
+        (src: string) => src === ITEMS[0].src,
+      );
+
+      createFixture();
+
+      expect(mocks.loadingCtrl.onError).toHaveBeenCalledWith(0);
+      expect(mocks.preloader.onLoaded).not.toHaveBeenCalled();
+    });
+
+    it('opens without a spinner for an image that already loaded', () => {
+      mocks.preloader.isLoaded.mockImplementation(
+        (src: string) => src === ITEMS[0].src,
+      );
+
+      createFixture();
+
+      expect(mocks.loadingCtrl.onReady).toHaveBeenCalledWith(0);
+      expect(mocks.preloader.onLoaded).not.toHaveBeenCalled();
+    });
+
+    it('stops waiting for the first image once it closes', () => {
+      const stopWaiting = jest.fn();
+      mocks.preloader.onLoaded.mockReturnValueOnce(stopWaiting);
+      const fixture = createFixture();
+
+      fixture.componentRef.setInput('isOpen', false);
+      fixture.detectChanges();
+
+      expect(stopWaiting).toHaveBeenCalledTimes(1);
+    });
+
+    it('leaves fullscreen when it closes in fullscreen', () => {
+      const { exitFullscreen } = jest.requireMock('@reelkit/angular') as {
+        exitFullscreen: jest.Mock;
+      };
+      const fixture = createFixture();
+      mocks.fullscreenSignal.value = true;
+
+      fixture.componentRef.setInput('isOpen', false);
+      fixture.detectChanges();
+      mocks.fullscreenSignal.value = false;
+
+      expect(exitFullscreen).toHaveBeenCalled();
+    });
+  });
+
+  describe('template slots with their handlers', () => {
+    @Component({
+      template: `
+        <rk-lightbox-overlay
+          [isOpen]="true"
+          [items]="items"
+          (closed)="closed = closed + 1"
+        >
+          <ng-template
+            rkLightboxControls
+            let-onClose="onClose"
+            let-onToggleFullscreen="onToggleFullscreen"
+          >
+            <button class="custom-close" (click)="onClose()">Close</button>
+            <button class="custom-full" (click)="onToggleFullscreen()">
+              Fullscreen
+            </button>
+          </ng-template>
+          <ng-template
+            rkLightboxNavigation
+            let-onPrev="onPrev"
+            let-onNext="onNext"
+            let-activeIndex="activeIndex"
+          >
+            <button class="custom-prev" (click)="onPrev()">Previous</button>
+            <button class="custom-next" (click)="onNext()">
+              {{ activeIndex }}
+            </button>
+          </ng-template>
+          <ng-template rkLightboxInfo let-item let-index="index">
+            <div class="custom-info">{{ item.title }}#{{ index }}</div>
+          </ng-template>
+          <ng-template rkLightboxLoading let-index let-item="item">
+            <div class="custom-loading">{{ item.title }}@{{ index }}</div>
+          </ng-template>
+        </rk-lightbox-overlay>
+      `,
+      imports: [
+        RkLightboxOverlayComponent,
+        RkLightboxControlsDirective,
+        RkLightboxNavigationDirective,
+        RkLightboxInfoDirective,
+        RkLightboxLoadingDirective,
+      ],
+    })
+    class SlotsHost {
+      items = ITEMS;
+      closed = 0;
+    }
+
+    let host: ComponentFixture<SlotsHost>;
+    const overlay = () =>
+      host.debugElement.query(By.directive(RkLightboxOverlayComponent))
+        .componentInstance as RkLightboxOverlayComponent;
+
+    beforeEach(() => {
+      mocks.loadingSignal.value = true;
+      host = TestBed.createComponent(SlotsHost);
+      host.detectChanges();
+      overlay()['isMobile'].set(false);
+      host.detectChanges();
+    });
+
+    const click = (selector: string) =>
+      host.debugElement.query(By.css(selector)).nativeElement.click();
+
+    it('closes from the custom controls', () => {
+      click('.custom-close');
+
+      expect(host.componentInstance.closed).toBe(1);
+    });
+
+    it('toggles fullscreen from the custom controls', () => {
+      const { requestFullscreen } = jest.requireMock('@reelkit/angular') as {
+        requestFullscreen: jest.Mock;
+      };
+
+      click('.custom-full');
+
+      expect(requestFullscreen).toHaveBeenCalledTimes(1);
+    });
+
+    it('drives the slider from the custom navigation', () => {
+      const api = {
+        next: jest.fn(),
+        prev: jest.fn(),
+        adjust: jest.fn(),
+      };
+      host.debugElement
+        .query(By.css('rk-reel'))
+        .componentInstance.apiReady.emit(api);
+
+      click('.custom-next');
+      click('.custom-prev');
+
+      expect(api.next).toHaveBeenCalledTimes(1);
+      expect(api.prev).toHaveBeenCalledTimes(1);
+      expect(
+        host.debugElement.query(By.css('.rk-lightbox-nav-next')),
+      ).toBeNull();
+    });
+
+    it('renders the custom info with the active item', () => {
+      expect(
+        host.debugElement.query(By.css('.custom-info')).nativeElement
+          .textContent,
+      ).toContain('Image A#0');
+    });
+
+    it('renders the custom loading state in place of the spinner', () => {
+      expect(
+        host.debugElement.query(By.css('.custom-loading')).nativeElement
+          .textContent,
+      ).toContain('Image A@0');
+      expect(
+        host.debugElement.query(By.css('.rk-lightbox-spinner')),
+      ).toBeNull();
+    });
+  });
+
+  describe('custom error slot', () => {
+    @Component({
+      template: `
+        <rk-lightbox-overlay [isOpen]="true" [items]="items">
+          <ng-template rkLightboxError let-index let-item="item">
+            <div class="custom-error">{{ item.title }}!{{ index }}</div>
+          </ng-template>
+        </rk-lightbox-overlay>
+      `,
+      imports: [RkLightboxOverlayComponent, RkLightboxErrorDirective],
+    })
+    class ErrorHost {
+      items = ITEMS;
+    }
+
+    const errorSignal = () =>
+      (mocks.loadingCtrl as unknown as { isError: { value: boolean } }).isError;
+
+    afterEach(() => {
+      errorSignal().value = false;
+    });
+
+    it('renders the custom error once the image fails', () => {
+      errorSignal().value = true;
+      const host = TestBed.createComponent(ErrorHost);
+      host.detectChanges();
+
+      expect(
+        host.debugElement.query(By.css('.custom-error')).nativeElement
+          .textContent,
+      ).toContain('Image A!0');
     });
   });
 });

@@ -321,6 +321,45 @@ describe('Reel', () => {
       expect(afterChange).toHaveBeenCalled();
       vi.useRealTimers();
     });
+
+    // An item builder that looks its slide up by index would read past the
+    // end of the array if a removed slide were ever built, even for one render.
+    it('never builds a removed slide when the count shrinks under the active one', async () => {
+      const afterChange = vi.fn();
+      const apiRef =
+        React.createRef<ReelApi>() as React.MutableRefObject<ReelApi | null>;
+      let items = ['a', 'b', 'c', 'd', 'e'];
+      const built: number[] = [];
+      const itemBuilder = (i: number) => {
+        built.push(i);
+        return <div key={i}>{items[i].toUpperCase()}</div>;
+      };
+      const { rerender } = render(
+        <Reel
+          count={items.length}
+          size={[400, 600]}
+          apiRef={apiRef}
+          afterChange={afterChange}
+          itemBuilder={itemBuilder}
+        />,
+      );
+      await act(() => apiRef.current!.goTo(4, false));
+
+      items = ['a', 'b', 'c'];
+      built.length = 0;
+      rerender(
+        <Reel
+          count={items.length}
+          size={[400, 600]}
+          apiRef={apiRef}
+          afterChange={afterChange}
+          itemBuilder={itemBuilder}
+        />,
+      );
+
+      expect(built.every((index) => index < 3)).toBe(true);
+      expect(afterChange).toHaveBeenLastCalledWith(2, expect.any(Number));
+    });
   });
 
   describe('controller lifecycle', () => {
