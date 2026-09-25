@@ -117,7 +117,7 @@ function measureNgPackagr(pkg) {
     jsBuf = readFileSync(bundlePath);
   } catch {
     console.error(
-      `  ✗ ${pkg.name}: fesm2022 bundle not found — run "npx nx run-many -t build" first`,
+      `  ✗ ${pkg.name}: fesm2022 bundle not found — run "pnpm exec nx run-many -t build" first`,
     );
     process.exit(1);
   }
@@ -209,15 +209,17 @@ async function measure(pkg) {
     };
   } catch (err) {
     console.error(
-      `  ✗ ${pkg.name}: measurement failed — run "npx nx run-many -t build" first`,
+      `  ✗ ${pkg.name}: measurement failed — run "pnpm exec nx run-many -t build" first`,
     );
     console.error(`    ${err.message}`);
-    process.exit(1);
   } finally {
     if (patched) {
       writeFileSync(pkgJsonPath, original, 'utf8');
     }
   }
+  // Only a failed measurement gets here. Exiting inside the catch would skip
+  // the finally and leave the package.json with its dependencies moved.
+  process.exit(1);
 }
 
 function escapeRegex(str) {
