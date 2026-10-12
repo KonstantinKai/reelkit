@@ -1,3 +1,46 @@
+## @reelkit/vue-reel-player@0.5.0 (2026-10-12)
+
+### 🚀 Features
+
+- ReelPlayerOverlay and ReelPlayerUrlOverlay take the item type from `content`: pass your own item type that extends BaseContentItem and the overlay keeps its fields, while items of any other shape fail to compile
+- Export ReelPlayerOverlayProps
+
+### ⚠️  Breaking Changes
+
+- Requires Vue 3.3 or later. The overlays are generic components, and an older Vue runtime drops their props and events
+- ReelPlayerOverlayProps and ReelPlayerUrlOverlayProps now describe the props a parent passes, so props with a default are optional: reading `loop` from the type gives `boolean | undefined`, not `boolean`
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/vue to 0.8.0
+
+## @reelkit/vue-stories-player@0.3.0 (2026-10-12)
+
+### 🚀 Features
+
+- StoriesOverlay and StoriesUrlOverlay take the story type from `groups`: pass your own story type that extends StoryItem and the overlay keeps its fields, while groups of any other shape fail to compile
+
+### ⚠️  Breaking Changes
+
+- Requires Vue 3.3 or later. The overlays are generic components, and an older Vue runtime drops their props and events
+- StoriesOverlayProps and StoriesUrlOverlayProps now describe the props a parent passes, so props with a default are optional: reading `enableKeyboard` from the type gives `boolean | undefined`, not `boolean`
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/vue to 0.8.0
+
+## @reelkit/vue-lightbox@0.3.4 (2026-10-12)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/vue to 0.8.0
+
+## @reelkit/vue@0.8.0 (2026-10-12)
+
+### 🚀 Features
+
+- Export asGenericPropKeys, for building components that are generic over the items they receive while keeping runtime prop defaults, validation and boolean casting
+
 ## @reelkit/react-reel-player@0.6.5 (2026-09-25)
 
 ### 🩹 Fixes
