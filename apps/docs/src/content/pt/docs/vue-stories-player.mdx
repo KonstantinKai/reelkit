@@ -121,6 +121,10 @@ Importe a folha de estilos uma vez no ponto de entrada do app (ou em qualquer co
   O cabeçalho padrão e as setas de navegação usam ícones do `lucide-vue-next`. Se você prefere outra biblioteca de ícones, substitua-os pelos slots com escopo `#header` e `#navigation`.
 </Callout>
 
+<Callout type="info" title="Vue 3.3 ou mais recente">
+  Os overlays são componentes genéricos, que o Vue suporta a partir da 3.3. Num Vue mais antigo o runtime descarta as props e os eventos deles, por isso o pacote exige `vue` 3.3 ou mais recente como peer dependency.
+</Callout>
+
 ## Início rápido [#quick-start]
 
 `StoriesOverlay` renderiza o player em tela cheia. Combine-o com `StoriesRingList` para os pontos de entrada no estilo Instagram, passe um array de objetos `StoriesGroup` e use `v-model:is-open`.
@@ -201,7 +205,7 @@ Por padrão, uma barra de progresso e um cabeçalho ficam acima do player e pass
 
 ### Props de StoriesOverlay [#storiesoverlay-props]
 
-<Signature>StoriesOverlayProps</Signature>
+<Signature>StoriesOverlayProps\<T></Signature>
 
 | Prop | Tipo | Padrão | Descrição |
 | --- | --- | --- | --- |
@@ -224,7 +228,7 @@ Por padrão, uma barra de progresso e um cabeçalho ficam acima do player e pass
 
 ### Props de StoriesUrlOverlay [#storiesurloverlay-props]
 
-<Signature>StoriesUrlOverlayProps</Signature>
+<Signature>StoriesUrlOverlayProps\<T></Signature>
 
 Aceita todas as props acima, menos o trio do estado de abertura — `is-open`, `initial-group-index`, `initial-story-index` —, que vem do controlador.
 
@@ -389,7 +393,7 @@ Todo tipo de escopo é exportado, então dá para anotar um slot onde o compilad
 
 ## Tipos de story personalizados [#custom-story-types]
 
-Estenda `StoryItem` com os seus campos e tipe os grupos com ele. Ao contrário do player React, `StoriesOverlay` e `StoriesUrlOverlay` não são genéricos: o tipo de story de `groups` não chega aos slots, cujos escopos ficam sem tipo até você anotá-los. Anote o escopo do slot para os campos extras continuarem visíveis dentro do template. Nada confere a anotação com `groups`, então mantenha os dois em sintonia:
+Estenda `StoryItem` com os seus campos e tipe os grupos com ele. `StoriesOverlay` e `StoriesUrlOverlay` são genéricos, como o player React: o tipo de story é inferido de `groups`, então grupos cujas stories não correspondem a `StoryItem` falham na checagem de tipos. No Vue os slots não conseguem carregar esse tipo, então os escopos ficam sem tipo até você anotá-los. Anote o escopo do slot para os campos extras continuarem visíveis dentro do template. Nada confere a anotação com `groups`, então mantenha os dois em sintonia:
 
 <CodeBlock code={customStoryTypes} language="vue" />
 

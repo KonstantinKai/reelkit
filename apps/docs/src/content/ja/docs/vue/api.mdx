@@ -14,6 +14,7 @@ import tovueref from '../../../snippets/vue-api/tovueref.ts?raw';
 import soundprovider from '../../../snippets/vue-api/soundprovider.vue?raw';
 import observe from '../../../snippets/vue-api/observe.vue?raw';
 import packageExports from '../../../snippets/vue-api/package-exports.ts?raw';
+import asgenericpropkeys from '../../../snippets/vue-api/asgenericpropkeys.ts?raw';
 
 `@reelkit/vue` のコンポーネント、コンポーザブル、ユーティリティの完全なリファレンスです。
 
@@ -236,6 +237,14 @@ Vue Router に連動した `UrlAdapter` です。ルーターを使うアプリ�
 タグ：`<SoundProvider>` — `SoundController` のインスタンスを作り、`RK_SOUND_KEY` を通じて子孫に提供するコンテキストプロバイダーです。デフォルトスロットをそのまま描画します。
 
 <CodeBlock code={soundprovider} language="vue" />
+
+## asGenericPropKeys [#asgenericpropkeys]
+
+受け取るアイテムについてジェネリックなコンポーネントを作ります。`ReelPlayerOverlay` や `StoriesOverlay` と同じ仕組みです。Vue 3.3 は型パラメーター付きの setup 関数 `defineComponent(<T>(props: Props<T>) => …, options)` を受け付けますが、そのパラメーターが保たれるのは `options.props` が prop 名を列挙している場合だけです。props オブジェクトを渡すと Vue はオブジェクトから prop の型を読み戻すため、`T` が失われます。`asGenericPropKeys` は props オブジェクトをそのまま渡しつつ、型チェッカーには名前のリストとして見せます。`T` は親がバインドした値から推論され、既定値、バリデーション、boolean への変換は実行時にもそのまま働きます。
+
+型引数には基底のアイテムを使った props の型を渡し、コンポーネントには Vue 3.3 以降が必要です。スロットとイベントは `T` を使えません。スロットのスコープを型付けするには、テンプレートで型注釈を付けてください。
+
+<CodeBlock code={asgenericpropkeys} language="typescript" />
 
 ## アクセシビリティ [#accessibility]
 

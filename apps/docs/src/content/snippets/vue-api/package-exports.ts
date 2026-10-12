@@ -28,6 +28,9 @@ import {
   toVueRef,
 } from '@reelkit/vue';
 
+// Generic components
+import { asGenericPropKeys } from '@reelkit/vue';
+
 // Utilities (re-exported from @reelkit/core)
 import {
   createDefaultKeyExtractorForLoop,

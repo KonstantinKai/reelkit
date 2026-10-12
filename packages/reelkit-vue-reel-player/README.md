@@ -21,6 +21,8 @@ Instagram Reels / TikTok-style video player for Vue 3. Opens as a full-screen ov
 npm install @reelkit/vue-reel-player @reelkit/vue lucide-vue-next
 ```
 
+Requires Vue 3.3 or later.
+
 ## Quick Start
 
 ```vue
@@ -138,9 +140,12 @@ The legacy `:is-open` + `@close` pattern still works.
 
 ## Custom content types
 
-`ReelPlayerOverlay` is generic over your content item shape. Extend
-`BaseContentItem` to use any data type, and import the slot-scope types
-to keep slot bindings strongly typed:
+`ReelPlayerOverlay` and `ReelPlayerUrlOverlay` are generic over your content
+item shape. Extend `BaseContentItem` to use any data type: the item type is
+inferred from `content`, so passing anything else is a type error. Vue does not
+carry that type into a scoped slot, so annotate the slot binding with the
+exported slot-scope type to keep it strongly typed, for example
+`#slideOverlay="{ item }: SlideOverlaySlotScope<MyItem>"`:
 
 ```vue
 <script setup lang="ts">

@@ -70,6 +70,7 @@ export {
   ReelPlayerOverlay,
   ReelPlayerUrlOverlay,
   type ReelPlayerApi,
+  type ReelPlayerOverlayProps,
   type ReelPlayerUrlOverlayProps,
 } from './lib/ReelPlayerOverlay';
 

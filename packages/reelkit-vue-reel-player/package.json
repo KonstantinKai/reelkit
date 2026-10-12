@@ -55,7 +55,7 @@
   },
   "peerDependencies": {
     "@reelkit/vue": "workspace:^",
-    "vue": ">=3.0.0",
+    "vue": ">=3.3.0",
     "lucide-vue-next": ">=0.400.0"
   }
 }

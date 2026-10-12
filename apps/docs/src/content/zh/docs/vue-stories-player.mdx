@@ -121,6 +121,10 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
   默认头部和导航箭头使用 `lucide-vue-next` 的图标。如果你更喜欢别的图标库，可以通过 `#header` 和 `#navigation` 作用域插槽替换它们。
 </Callout>
 
+<Callout type="info" title="Vue 3.3 或更高版本">
+  这些覆盖层是泛型组件，Vue 从 3.3 起才支持。在更旧的 Vue 上，运行时会丢掉它们的 props 和事件，所以本包把 `vue` 3.3 或更高版本列为 peer 依赖。
+</Callout>
+
 ## 快速上手 [#quick-start]
 
 `StoriesOverlay` 渲染全屏播放器。把它和 `StoriesRingList` 搭配作为 Instagram 风格的入口，传入一组 `StoriesGroup` 对象，并绑定 `v-model:is-open`。
@@ -201,7 +205,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 
 ### StoriesOverlay 属性 [#storiesoverlay-props]
 
-<Signature>StoriesOverlayProps</Signature>
+<Signature>StoriesOverlayProps\<T></Signature>
 
 | Prop | 类型 | 默认值 | 说明 |
 | --- | --- | --- | --- |
@@ -224,7 +228,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 
 ### StoriesUrlOverlay 属性 [#storiesurloverlay-props]
 
-<Signature>StoriesUrlOverlayProps</Signature>
+<Signature>StoriesUrlOverlayProps\<T></Signature>
 
 接受上面的全部属性，除了打开状态三件套 —— `is-open`、`initial-group-index`、`initial-story-index` —— 它们改由控制器提供。
 
@@ -389,7 +393,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 
 ## 自定义故事类型 [#custom-story-types]
 
-用你自己的字段扩展 `StoryItem`，并用它标注分组。与 React 播放器不同，`StoriesOverlay` 和 `StoriesUrlOverlay` 不是泛型组件：`groups` 的故事类型不会传到插槽，插槽作用域在你标注之前没有类型。给插槽作用域加上类型标注，额外字段在模板中就依然可见。这个标注不会与 `groups` 核对，所以请让两者保持一致：
+用你自己的字段扩展 `StoryItem`，并用它标注分组。`StoriesOverlay` 和 `StoriesUrlOverlay` 是泛型组件，与 React 播放器一致：故事类型从 `groups` 推断，所以故事不符合 `StoryItem` 的分组无法通过类型检查。在 Vue 中插槽无法携带这个类型，插槽作用域在你标注之前没有类型。给插槽作用域加上类型标注，额外字段在模板中就依然可见。这个标注不会与 `groups` 核对，所以请让两者保持一致：
 
 <CodeBlock code={customStoryTypes} language="vue" />
 

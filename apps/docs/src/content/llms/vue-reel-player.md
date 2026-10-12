@@ -21,6 +21,8 @@ import { ReelPlayerOverlay } from '@reelkit/vue-reel-player';
 import '@reelkit/vue-reel-player/styles.css';
 ```
 
+Requires Vue ≥3.3 (peer `vue >=3.3.0`): overlays are generic setup-function components; older runtime drops their props + events.
+
 ## Quick Start
 
 ```vue
@@ -109,6 +111,38 @@ interface TimelineBarProps {
 | `slide`            | `{ item, index, size, isActive, slideKey, defaultContent, onReady, onWaiting, onError }`                       | Fully custom slide content (falls back to default if omitted)                            |
 | `slideOverlay`     | `{ item, index, isActive }`                                                                                    | Per-slide overlay (author info, likes, description, etc.)                                |
 | `timeline`         | `{ item, activeIndex, timelineState, defaultContent }`                                                         | Custom playback timeline bar. Use `defaultContent()` to wrap built-in `<TimelineBar />`. |
+
+## Custom Content Types
+
+`ReelPlayerOverlay` / `ReelPlayerUrlOverlay` generic over item type (React parity). Extend `BaseContentItem`; `T` inferred from `content`, non-item feed fails type check. Slot scopes untyped until annotated (Vue slots cannot carry `T`); annotate with matching scope type (`SlideOverlaySlotScope<T>`, `SlideSlotScope<T>`, `ControlsSlotScope<T>`, `NavigationSlotScope<T>`, `NestedSlideSlotScope<T>`, `LoadingSlotScope<T>`). Annotation not checked against `content` — keep in step:
+
+```vue
+<script setup lang="ts">
+import { ref } from 'vue';
+import {
+  ReelPlayerOverlay,
+  type BaseContentItem,
+  type SlideOverlaySlotScope,
+} from '@reelkit/vue-reel-player';
+
+interface MyItem extends BaseContentItem {
+  title: string;
+}
+
+const open = ref(false);
+const items: MyItem[] = [
+  /* ... */
+];
+</script>
+
+<template>
+  <ReelPlayerOverlay v-model:is-open="open" :content="items">
+    <template #slideOverlay="{ item }: SlideOverlaySlotScope<MyItem>">
+      <h2>{{ item.title }}</h2>
+    </template>
+  </ReelPlayerOverlay>
+</template>
+```
 
 ## URL State
 
@@ -234,6 +268,8 @@ While `locateAsync` is pending the player stays closed and the param is left alo
 
 ## ReelPlayerOverlay Props
 
+Type: `ReelPlayerOverlayProps<T>`
+
 | Prop                         | Type                            | Default          | Description                                                                                                                                                              |
 | ---------------------------- | ------------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `isOpen`                     | `boolean`                       | required         | Controls overlay visibility; false = overlay removed from DOM                                                                                                            |
@@ -253,7 +289,7 @@ While `locateAsync` is pending the player stays closed and the param is left alo
 
 ## ReelPlayerUrlOverlay Props
 
-Type: `ReelPlayerUrlOverlayProps`
+Type: `ReelPlayerUrlOverlayProps<T>`
 
 Takes every `ReelPlayerOverlay` prop except `is-open`, replaced by a `controller`. Emits `close`, `slide-change`, `api-ready` — but no `update:is-open`. `initial-index` is ignored — the controller's position picks the slide, so a value passed alongside it is overwritten on every open.
 
@@ -356,13 +392,4 @@ CSS custom properties + classes shared with `@reelkit/react-reel-player`. See [R
     </template>
   </ReelPlayerOverlay>
 </template>
-```
-
-### Generic ContentItem
-
-```vue
-<script setup lang="ts" generic="T extends ContentItem">
-import type { ContentItem } from '@reelkit/vue-reel-player';
-defineProps<{ content: T[] }>();
-</script>
 ```

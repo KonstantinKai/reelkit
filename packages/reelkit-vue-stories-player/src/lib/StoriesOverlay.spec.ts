@@ -10,6 +10,7 @@ import {
   beforeEach,
   describe,
   expect,
+  expectTypeOf,
   it,
   vi,
 } from 'vitest';
@@ -21,16 +22,23 @@ import {
   urlIndexTwoAxisKey,
   type TwoAxisIdentity,
   type TwoAxisPosition,
+  type UrlStateController,
 } from '@reelkit/vue';
 import {
   createStoriesViewedStateController,
   type StoriesGroup,
+  type StoryItem,
 } from '@reelkit/stories-core';
 import {
   createFakeStorageAdapter,
   createFakeUrlAdapter,
 } from '@reelkit/core/testing';
-import { StoriesOverlay, StoriesUrlOverlay } from './StoriesOverlay';
+import {
+  StoriesOverlay,
+  StoriesUrlOverlay,
+  type StoriesOverlayProps,
+  type StoriesUrlOverlayProps,
+} from './StoriesOverlay';
 import type { SlideSlotScope, StoriesApi } from './types';
 
 interface ReelRender {
@@ -1828,5 +1836,64 @@ describe('StoriesOverlay story duration', () => {
     vi.advanceTimersByTime(3100);
 
     expect(wrapper.emitted('storyComplete')).toContainEqual([0, 0]);
+  });
+});
+
+describe('StoriesOverlay story type', () => {
+  interface PollStory extends StoryItem {
+    question: string;
+  }
+
+  const pollGroups: StoriesGroup<PollStory>[] = [
+    {
+      author: { id: 'a', name: 'Alice', avatar: 'a.jpg' },
+      stories: [
+        { id: 's1', mediaType: 'image', src: 's1.jpg', question: 'Yes?' },
+      ],
+    },
+  ];
+
+  const controller = {} as UrlStateController<TwoAxisPosition>;
+
+  // Mirror what vue-tsc emits for a template: the component is constructed
+  // from the bound props, so the story type is inferred from `groups`. The
+  // functions are only inspected by the type checker, never called.
+  const constructOverlay = () =>
+    new StoriesOverlay({ isOpen: true, groups: pollGroups });
+  const constructUrlOverlay = () =>
+    new StoriesUrlOverlay({ groups: pollGroups, controller });
+
+  it('infers the story type from the groups it is given', () => {
+    expectTypeOf<
+      ReturnType<typeof constructOverlay>['$props']['groups']
+    >().toEqualTypeOf<StoriesGroup<PollStory>[]>();
+    expectTypeOf<
+      ReturnType<typeof constructUrlOverlay>['$props']['groups']
+    >().toEqualTypeOf<StoriesGroup<PollStory>[]>();
+  });
+
+  it('defaults the story type to StoryItem, matching the React player', () => {
+    expectTypeOf<StoriesOverlayProps['groups']>().toEqualTypeOf<
+      StoriesGroup<StoryItem>[]
+    >();
+    expectTypeOf<StoriesUrlOverlayProps['groups']>().toEqualTypeOf<
+      StoriesGroup<StoryItem>[]
+    >();
+  });
+
+  it('rejects groups that are not story groups', () => {
+    const reject = () => [
+      // @ts-expect-error numbers are not story groups
+      new StoriesOverlay({ isOpen: true, groups: [1, 2] }),
+      // @ts-expect-error numbers are not story groups
+      new StoriesUrlOverlay({ groups: [1, 2], controller }),
+    ];
+    expectTypeOf(reject).toBeFunction();
+  });
+
+  it('needs only the required props from the consumer', () => {
+    expectTypeOf({ isOpen: true, groups: pollGroups }).toExtend<
+      StoriesOverlayProps<PollStory>
+    >();
   });
 });

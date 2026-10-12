@@ -164,3 +164,4 @@ export {
 } from './lib/composables';
 
 export { hasRenderedNodes } from './lib/utils/slots';
+export { asGenericPropKeys } from './lib/utils/props';

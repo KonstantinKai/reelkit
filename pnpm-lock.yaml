@@ -704,7 +704,7 @@ importers:
         specifier: '>=0.400.0'
         version: 0.562.0(vue@3.5.33(typescript@5.9.3))
       vue:
-        specifier: '>=3.0.0'
+        specifier: '>=3.3.0'
         version: 3.5.33(typescript@5.9.3)
 
   packages/reelkit-vue-stories-player:
@@ -719,7 +719,7 @@ importers:
         specifier: '>=0.400.0'
         version: 0.562.0(vue@3.5.33(typescript@5.9.3))
       vue:
-        specifier: '>=3.0.0'
+        specifier: '>=3.3.0'
         version: 3.5.33(typescript@5.9.3)
 
 packages:

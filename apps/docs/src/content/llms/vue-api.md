@@ -228,6 +228,39 @@ const items = [];
 </template>
 ```
 
+## asGenericPropKeys
+
+Generic setup-function components (Vue ≥3.3). `defineComponent(<T>(props: Props<T>) => …, options)` keeps `T` only when `options.props` is a list of prop names; a props object makes Vue read types from the object and `T` is lost. `asGenericPropKeys<Props<Base>>(propsObject)` returns the object unchanged, typed as the key list → `T` inferred from the bound prop, runtime defaults / validation / boolean casting kept. Slots + emits cannot use `T` — annotate slot scopes in the template. Used by `ReelPlayerOverlay` and `StoriesOverlay`.
+
+```ts
+import { defineComponent, h, type PropType } from 'vue';
+import { asGenericPropKeys } from '@reelkit/vue';
+
+interface Item {
+  id: string;
+}
+
+interface FeedProps<T extends Item> {
+  items: T[];
+  loop?: boolean;
+}
+
+const feedProps = {
+  items: { type: Array as PropType<Item[]>, required: true as const },
+  loop: { type: Boolean, default: false },
+};
+
+export const Feed = defineComponent(
+  <T extends Item = Item>(props: FeedProps<T>) =>
+    () =>
+      h(
+        'ul',
+        props.items.map((item) => h('li', item.id)),
+      ),
+  { name: 'Feed', props: asGenericPropKeys<FeedProps<Item>>(feedProps) },
+);
+```
+
 ## Helpers re-exported from core
 
 `@reelkit/vue` re-exports core helpers for SSR-safe use in Vue:

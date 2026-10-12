@@ -121,6 +121,10 @@ Import the stylesheet once in your app entry (or any component):
   The default header and navigation arrows use `lucide-vue-next` for icons. If you prefer a different icon library, replace them through the `#header` and `#navigation` scoped slots.
 </Callout>
 
+<Callout type="info" title="Vue 3.3 or later">
+  The overlays are generic components, which Vue supports from 3.3. On an older Vue the runtime drops their props and events, so the package requires `vue` 3.3 or later as a peer dependency.
+</Callout>
+
 ## Quick Start [#quick-start]
 
 `StoriesOverlay` renders the full-screen player. Pair it with `StoriesRingList` for the Instagram-style entry points, pass an array of `StoriesGroup` objects, and bind `v-model:is-open`.
@@ -201,7 +205,7 @@ By default one progress bar and one header sit above the player and switch to th
 
 ### StoriesOverlay Props [#storiesoverlay-props]
 
-<Signature>StoriesOverlayProps</Signature>
+<Signature>StoriesOverlayProps\<T></Signature>
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -224,7 +228,7 @@ By default one progress bar and one header sit above the player and switch to th
 
 ### StoriesUrlOverlay Props [#storiesurloverlay-props]
 
-<Signature>StoriesUrlOverlayProps</Signature>
+<Signature>StoriesUrlOverlayProps\<T></Signature>
 
 Takes every prop above except the open-state trio — `is-open`, `initial-group-index`, `initial-story-index` — supplied from the controller instead.
 
@@ -389,7 +393,7 @@ Every scope type is exported, so a slot can be annotated where the compiler cann
 
 ## Custom Story Types [#custom-story-types]
 
-Extend `StoryItem` with your own fields and type the groups with it. Unlike the React player, `StoriesOverlay` and `StoriesUrlOverlay` are not generic: the story type of `groups` does not reach the slots, whose scopes stay untyped until you annotate them. Annotate a slot scope to keep the extra fields visible inside the template. Nothing checks the annotation against `groups`, so keep the two in step:
+Extend `StoryItem` with your own fields and type the groups with it. `StoriesOverlay` and `StoriesUrlOverlay` are generic, like the React player: the story type is inferred from `groups`, so groups whose stories do not match `StoryItem` fail the type check. Slots cannot carry that type in Vue, so their scopes stay untyped until you annotate them. Annotate a slot scope to keep the extra fields visible inside the template. Nothing checks the annotation against `groups`, so keep the two in step:
 
 <CodeBlock code={customStoryTypes} language="vue" />
 

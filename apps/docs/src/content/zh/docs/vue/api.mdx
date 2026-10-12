@@ -14,6 +14,7 @@ import tovueref from '../../../snippets/vue-api/tovueref.ts?raw';
 import soundprovider from '../../../snippets/vue-api/soundprovider.vue?raw';
 import observe from '../../../snippets/vue-api/observe.vue?raw';
 import packageExports from '../../../snippets/vue-api/package-exports.ts?raw';
+import asgenericpropkeys from '../../../snippets/vue-api/asgenericpropkeys.ts?raw';
 
 完整参考： `@reelkit/vue` 的组件、组合式函数与工具。
 
@@ -236,6 +237,14 @@ A `UrlAdapter` ，底层用 Vue Router。在带路由的应用里把它作为 `a
 标签： `<SoundProvider>` —— 上下文提供者，它会创建一个 `SoundController` 实例并通过 `RK_SOUND_KEY`提供给后代。默认插槽会被透明渲染。
 
 <CodeBlock code={soundprovider} language="vue" />
+
+## asGenericPropKeys [#asgenericpropkeys]
+
+构建一个对所接收条目泛型的组件，就像 `ReelPlayerOverlay` 和 `StoriesOverlay` 那样。Vue 3.3 接受带类型参数的 setup 函数 `defineComponent(<T>(props: Props<T>) => …, options)`，但只有当 `options.props` 列出 prop 名称时才保留这个参数。如果传入 props 对象，Vue 会从对象反推 prop 类型，`T` 就丢失了。`asGenericPropKeys` 原样传递 props 对象，而类型检查器看到的是名称列表：`T` 从父组件绑定的值推断，默认值、校验和布尔转换在运行时依然生效。
+
+类型参数是使用基础条目的 props 类型，组件需要 Vue 3.3 或更高版本。插槽和事件无法使用 `T`：要为插槽作用域加类型，请在模板中标注它。
+
+<CodeBlock code={asgenericpropkeys} language="typescript" />
 
 ## 无障碍 [#accessibility]
 

@@ -27,6 +27,8 @@ import '@reelkit/vue-stories-player/styles.css';
 
 Default header + nav arrows use `lucide-vue-next` icons; swap icon library through `#header` / `#navigation` slots.
 
+Requires Vue ≥3.3 (peer `vue >=3.3.0`): overlays are generic setup-function components; older runtime drops their props + events.
+
 ## Quick Start
 
 ```vue
@@ -199,13 +201,13 @@ Config type `StoriesViewedStateControllerConfig`; controller type `StoriesViewed
 | `enable-keyboard`           | `boolean`                                  | `true`                                                |
 | `min-segment-width`         | `number`                                   | `8`                                                   |
 
-Props type exported `StoriesOverlayProps`.
+Props type exported `StoriesOverlayProps<T>`.
 
 Groups may grow while open — replaced array or push into same array both picked up.
 
 ### StoriesUrlOverlay Props
 
-Every `StoriesOverlay` prop minus `is-open` / `initial-group-index` / `initial-story-index`, plus `controller` (`UrlStateController<TwoAxisPosition>` from `useOverlayUrlState` spread with `urlIndexTwoAxisKey`). Props type exported `StoriesUrlOverlayProps`.
+Every `StoriesOverlay` prop minus `is-open` / `initial-group-index` / `initial-story-index`, plus `controller` (`UrlStateController<TwoAxisPosition>` from `useOverlayUrlState` spread with `urlIndexTwoAxisKey`). Props type exported `StoriesUrlOverlayProps<T>`.
 
 ### Events
 
@@ -359,7 +361,7 @@ Slot scope types exported: `HeaderSlotScope`, `FooterSlotScope`, `SlideSlotScope
 
 ## Custom Story Types
 
-Extend `StoryItem`, type groups as `StoriesGroup<PromoStory>[]`. Unlike React, `StoriesOverlay` / `StoriesUrlOverlay` are not generic: the story type of `groups` does not reach the slots, whose scopes are untyped until annotated. Annotate the slot scope to keep extra fields typed in template; the annotation is not checked against `groups`:
+Extend `StoryItem`, type groups as `StoriesGroup<PromoStory>[]`. `StoriesOverlay` / `StoriesUrlOverlay` generic (React parity): story type inferred from `groups`, non-story groups fail type check. Slots cannot carry the type in Vue → scopes untyped until annotated. Annotate the slot scope to keep extra fields typed in template; the annotation is not checked against `groups`:
 
 ```vue
 <template #slide="scope: SlideSlotScope<PromoStory>">

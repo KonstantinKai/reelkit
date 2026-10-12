@@ -121,6 +121,10 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
   डिफ़ॉल्ट हेडर और नेविगेशन तीर `lucide-vue-next` के आइकन इस्तेमाल करते हैं। अगर आप कोई और आइकन लाइब्रेरी पसंद करते हैं, तो `#header` और `#navigation` स्कोप्ड स्लॉट से उन्हें बदल दें।
 </Callout>
 
+<Callout type="info" title="Vue 3.3 या नया">
+  ओवरले जेनेरिक कंपोनेंट हैं, जिन्हें Vue 3.3 से सपोर्ट करता है। पुराने Vue पर runtime उनके props और events छोड़ देता है, इसलिए यह पैकेज peer dependency के रूप में `vue` 3.3 या नया माँगता है।
+</Callout>
+
 ## क्विक स्टार्ट [#quick-start]
 
 `StoriesOverlay` पूरा स्क्रीन घेरने वाला प्लेयर दिखाता है। Instagram जैसे एंट्री पॉइंट के लिए इसे `StoriesRingList` के साथ रखें, `StoriesGroup` ऑब्जेक्ट की सूची दें और `v-model:is-open` बाइंड करें।
@@ -201,7 +205,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 
 ### StoriesOverlay प्रॉप्स [#storiesoverlay-props]
 
-<Signature>StoriesOverlayProps</Signature>
+<Signature>StoriesOverlayProps\<T></Signature>
 
 | Prop | टाइप | डिफ़ॉल्ट | विवरण |
 | --- | --- | --- | --- |
@@ -224,7 +228,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 
 ### StoriesUrlOverlay प्रॉप्स [#storiesurloverlay-props]
 
-<Signature>StoriesUrlOverlayProps</Signature>
+<Signature>StoriesUrlOverlayProps\<T></Signature>
 
 ऊपर के सभी प्रॉप्स लेता है, सिवाय खुलने की स्थिति वाली तिकड़ी — `is-open`, `initial-group-index`, `initial-story-index` — जो कंट्रोलर से आती है।
 
@@ -389,7 +393,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 
 ## अपने स्टोरी टाइप [#custom-story-types]
 
-`StoryItem` को अपने फ़ील्ड से बढ़ाएँ और उसी टाइप से समूहों को टाइप करें। React प्लेयर के विपरीत, `StoriesOverlay` और `StoriesUrlOverlay` जेनेरिक नहीं हैं: `groups` का स्टोरी टाइप स्लॉट तक नहीं पहुँचता, और जब तक आप टाइप न लिखें, स्लॉट के स्कोप बिना टाइप के रहते हैं। स्लॉट के स्कोप पर टाइप लिखें, ताकि टेम्पलेट के भीतर भी अतिरिक्त फ़ील्ड दिखते रहें। यह टाइप `groups` से मिलाकर जाँचा नहीं जाता, इसलिए दोनों को एक जैसा रखें:
+`StoryItem` को अपने फ़ील्ड से बढ़ाएँ और उसी टाइप से समूहों को टाइप करें। `StoriesOverlay` और `StoriesUrlOverlay` React प्लेयर की तरह जेनेरिक हैं: स्टोरी टाइप `groups` से निकाला जाता है, इसलिए जिन समूहों की स्टोरी `StoryItem` से मेल नहीं खातीं, वे टाइप जाँच में फ़ेल होते हैं। Vue में स्लॉट यह टाइप नहीं ले जा सकते, इसलिए जब तक आप टाइप न लिखें, स्लॉट के स्कोप बिना टाइप के रहते हैं। स्लॉट के स्कोप पर टाइप लिखें, ताकि टेम्पलेट के भीतर भी अतिरिक्त फ़ील्ड दिखते रहें। यह टाइप `groups` से मिलाकर जाँचा नहीं जाता, इसलिए दोनों को एक जैसा रखें:
 
 <CodeBlock code={customStoryTypes} language="vue" />
 

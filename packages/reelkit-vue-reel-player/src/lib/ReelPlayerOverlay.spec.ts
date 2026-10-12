@@ -1,9 +1,20 @@
 import { mount } from '@vue/test-utils';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import {
+  describe,
+  it,
+  expect,
+  expectTypeOf,
+  vi,
+  beforeEach,
+  afterEach,
+} from 'vitest';
 import { defineComponent, h, ref, nextTick, type Component } from 'vue';
-import { ReelPlayerOverlay } from './ReelPlayerOverlay';
+import {
+  ReelPlayerOverlay,
+  type ReelPlayerOverlayProps,
+} from './ReelPlayerOverlay';
 import { useTimelineState } from './useTimelineState';
-import type { ContentItem } from './types';
+import type { BaseContentItem, ContentItem } from './types';
 
 // How many times the slider was asked to draw. The real Reel renders inside
 // the counter, so every test in this file still exercises the real thing.
@@ -1282,5 +1293,65 @@ describe('ReelPlayerOverlay behaviour', () => {
 
     player.value!.close();
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('ReelPlayerOverlay item type', () => {
+  interface ProductItem extends BaseContentItem {
+    sku: string;
+  }
+
+  const products: ProductItem[] = [
+    {
+      id: 'p1',
+      sku: 'A-1',
+      media: [{ id: 'm1', type: 'image', src: 'a.jpg', aspectRatio: 1 }],
+    },
+  ];
+
+  // Mirrors what vue-tsc emits for a template: the component is constructed
+  // from the bound props, so the item type is inferred from `content`. The
+  // function is only inspected by the type checker, never called.
+  const construct = () =>
+    new ReelPlayerOverlay({ isOpen: true, content: products });
+
+  it('infers the item type from the content it is given', () => {
+    expectTypeOf<
+      ReturnType<typeof construct>['$props']['content']
+    >().toEqualTypeOf<ProductItem[]>();
+  });
+
+  it('defaults the item type to ContentItem, matching the React player', () => {
+    expectTypeOf<ReelPlayerOverlayProps['content']>().toEqualTypeOf<
+      ContentItem[]
+    >();
+  });
+
+  it('rejects content that is not a list of items', () => {
+    const reject = () =>
+      // @ts-expect-error numbers are not content items
+      new ReelPlayerOverlay({ isOpen: true, content: [1, 2] });
+    expectTypeOf(reject).toBeFunction();
+  });
+
+  it('needs only the required props from the consumer', () => {
+    expectTypeOf({ isOpen: true, content: products }).toExtend<
+      ReelPlayerOverlayProps<ProductItem>
+    >();
+  });
+
+  it('still casts a bare boolean attribute to true at runtime', async () => {
+    mount(
+      defineComponent({
+        setup: () => () =>
+          h(ReelPlayerOverlay, {
+            isOpen: '' as unknown as boolean,
+            content: products,
+          }),
+      }),
+      { attachTo: document.body },
+    );
+    await nextTick();
+    expect(document.querySelector('.rk-reel-overlay')).not.toBeNull();
   });
 });

@@ -14,6 +14,7 @@ import tovueref from '../../../snippets/vue-api/tovueref.ts?raw';
 import soundprovider from '../../../snippets/vue-api/soundprovider.vue?raw';
 import observe from '../../../snippets/vue-api/observe.vue?raw';
 import packageExports from '../../../snippets/vue-api/package-exports.ts?raw';
+import asgenericpropkeys from '../../../snippets/vue-api/asgenericpropkeys.ts?raw';
 
 Referência completa dos componentes, dos composables e dos utilitários de `@reelkit/vue`.
 
@@ -236,6 +237,14 @@ Use `toVueRef` quando o componente inteiro acompanha o sinal, e `Observe` quando
 Tag: `<SoundProvider>` — provedor de contexto que cria uma instância de `SoundController` e a entrega aos descendentes por `RK_SOUND_KEY`. Renderiza o slot padrão de forma transparente.
 
 <CodeBlock code={soundprovider} language="vue" />
+
+## asGenericPropKeys [#asgenericpropkeys]
+
+Cria um componente genérico em relação aos itens que recebe, como `ReelPlayerOverlay` e `StoriesOverlay`. O Vue 3.3 aceita uma função setup com parâmetro de tipo, `defineComponent(<T>(props: Props<T>) => …, options)`, mas só mantém esse parâmetro quando `options.props` lista nomes de props. Passe um objeto de props e o Vue lê os tipos das props de volta a partir do objeto, então `T` se perde. `asGenericPropKeys` repassa o objeto de props intacto enquanto o verificador de tipos vê uma lista de nomes: `T` é inferido do que o componente pai vincula, e os valores padrão, a validação e a conversão de booleanos continuam valendo em tempo de execução.
+
+O argumento de tipo é o tipo das props com o item base, e o componente precisa do Vue 3.3 ou mais recente. Slots e eventos não podem usar `T`: para tipar o escopo de um slot, anote-o no template.
+
+<CodeBlock code={asgenericpropkeys} language="typescript" />
 
 ## Acessibilidade [#accessibility]
 

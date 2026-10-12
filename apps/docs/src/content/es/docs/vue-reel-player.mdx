@@ -109,6 +109,10 @@ Importa la hoja de estilos una vez en la entrada de tu aplicación (o en cualqui
   Los controles por defecto usan `lucide-vue-next` para los iconos (cerrar, sonido, flechas de navegación). Si prefieres otra librería de iconos, usa los scoped slots `#controls` y `#navigation` para poner los tuyos.
 </Callout>
 
+<Callout type="info" title="Vue 3.3 o posterior">
+  Los overlays son componentes genéricos, que Vue admite desde la 3.3. En un Vue más antiguo el runtime descarta sus props y eventos, así que el paquete exige `vue` 3.3 o posterior como peer dependency.
+</Callout>
+
 ## Inicio rápido [#quick-start]
 
 Renderiza una cuadrícula de miniaturas y abre el overlay en el índice pulsado. Al enlazar `v-model:is-open`, el `ref` del padre se mantiene sincronizado cuando el usuario cierra el reproductor con el botón, con un gesto o con Escape.
@@ -141,7 +145,7 @@ Sustituye la barra de reproducción incluida por tu propia interfaz de arrastre 
 
 ## Tipos de contenido propios [#custom-content-types]
 
-`ReelPlayerOverlay` es genérico respecto a la forma de tus elementos de contenido. Extiende `BaseContentItem` para usar cualquier modelo de datos e importa el tipo de ámbito del slot que corresponda para mantener los tipos estrictos en los slots:
+`ReelPlayerOverlay` y `ReelPlayerUrlOverlay` son genéricos respecto a la forma de tus elementos de contenido, como el reproductor de React. Extiende `BaseContentItem` para usar cualquier modelo de datos: el tipo del elemento se infiere de `content`, así que un feed que no encaje con `BaseContentItem` no pasa la comprobación de tipos. En Vue los slots no pueden llevar ese tipo, así que sus ámbitos quedan sin tipo hasta que los anotas. Importa el tipo de ámbito del slot que corresponda y anota la desestructuración para que los campos añadidos sigan tipados dentro de la plantilla. Nada comprueba la anotación contra `content`, así que mantén ambos al día:
 
 <CodeBlock code={customContentTypes} language="vue" />
 
@@ -209,7 +213,7 @@ Si usas otro campo como clave (un `slug`) o paginas un feed infinito con `locate
 
 ### Props de ReelPlayerOverlay [#reelplayeroverlay-props]
 
-<Signature>ReelPlayerOverlayProps</Signature>
+<Signature>ReelPlayerOverlayProps\<T></Signature>
 
 | Prop | Tipo | Por defecto | Descripción |
 | --- | --- | --- | --- |
@@ -230,7 +234,7 @@ Si usas otro campo como clave (un `slug`) o paginas un feed infinito con `locate
 
 ### Props de ReelPlayerUrlOverlay [#reelplayerurloverlay-props]
 
-<Signature>ReelPlayerUrlOverlayProps</Signature>
+<Signature>ReelPlayerUrlOverlayProps\<T></Signature>
 
 Acepta todas las props de arriba salvo `is-open`, que se sustituye por `controller`. `initial-index` se ignora: la posición del controlador elige el slide, así que un valor pasado junto a él se sobrescribe en cada apertura.
 
