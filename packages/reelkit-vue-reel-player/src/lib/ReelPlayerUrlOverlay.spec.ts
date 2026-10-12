@@ -1,15 +1,27 @@
 import { mount } from '@vue/test-utils';
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import {
+  describe,
+  it,
+  expect,
+  expectTypeOf,
+  beforeEach,
+  afterEach,
+} from 'vitest';
 import { defineComponent, h, nextTick, ref } from 'vue';
 import {
   useOverlayUrlState,
   urlIndexKey,
   urlIndexTwoAxisKey,
   type UrlAdapter,
+  type UrlStateController,
 } from '@reelkit/vue';
 import { createFakeUrlAdapter } from '@reelkit/core/testing';
-import { ReelPlayerUrlOverlay, type ReelPlayerApi } from './ReelPlayerOverlay';
-import type { ContentItem } from './types';
+import {
+  ReelPlayerUrlOverlay,
+  type ReelPlayerApi,
+  type ReelPlayerUrlOverlayProps,
+} from './ReelPlayerOverlay';
+import type { BaseContentItem, ContentItem } from './types';
 
 const sampleContent: ContentItem[] = [
   {
@@ -357,5 +369,46 @@ describe('ReelPlayerUrlOverlay (two-axis)', () => {
     await nextTick();
     expect(document.querySelector('.rk-reel-overlay')).toBeNull();
     expect(state.adapter.read()).not.toContain('reel');
+  });
+});
+
+describe('ReelPlayerUrlOverlay item type', () => {
+  interface ProductItem extends BaseContentItem {
+    sku: string;
+  }
+
+  const products: ProductItem[] = [
+    {
+      id: 'p1',
+      sku: 'A-1',
+      media: [{ id: 'm1', type: 'image', src: 'a.jpg', aspectRatio: 1 }],
+    },
+  ];
+
+  const controller = {} as UrlStateController<number>;
+
+  // Mirrors what vue-tsc emits for a template: the component is constructed
+  // from the bound props, so the item type is inferred from `content`. The
+  // function is only inspected by the type checker, never called.
+  const construct = () =>
+    new ReelPlayerUrlOverlay({ content: products, controller });
+
+  it('infers the item type from the content it is given', () => {
+    expectTypeOf<
+      ReturnType<typeof construct>['$props']['content']
+    >().toEqualTypeOf<ProductItem[]>();
+  });
+
+  it('defaults the item type to ContentItem, matching the React player', () => {
+    expectTypeOf<ReelPlayerUrlOverlayProps['content']>().toEqualTypeOf<
+      ContentItem[]
+    >();
+  });
+
+  it('rejects content that is not a list of items', () => {
+    const reject = () =>
+      // @ts-expect-error numbers are not content items
+      new ReelPlayerUrlOverlay({ content: [1, 2], controller });
+    expectTypeOf(reject).toBeFunction();
   });
 });

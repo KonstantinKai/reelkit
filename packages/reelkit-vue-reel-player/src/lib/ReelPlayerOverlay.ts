@@ -9,8 +9,9 @@ import {
   shallowRef,
   toRef,
   watch,
-  type ExtractPropTypes,
+  type ExtractPublicPropTypes,
   type PropType,
+  type SetupContext,
   type VNode,
 } from 'vue';
 import { slotAsRender } from './utils';
@@ -18,6 +19,7 @@ import { ChevronUp, ChevronDown } from 'lucide-vue-next';
 import {
   Observe,
   Reel,
+  asGenericPropKeys,
   SoundProvider,
   captureFrame,
   captureFocusForReturn,
@@ -199,10 +201,17 @@ const reelPlayerOverlayProps = {
   ...reelPlayerSharedProps,
 };
 
-/** Public props interface for the {@link ReelPlayerOverlay} component. */
-export type ReelPlayerOverlayProps = ExtractPropTypes<
-  typeof reelPlayerOverlayProps
->;
+/**
+ * Public props interface for the {@link ReelPlayerOverlay} component.
+ * `content` carries the consumer's own item type: a custom item extending
+ * {@link BaseContentItem} keeps its own fields, and an array of any other
+ * shape fails to compile.
+ */
+export type ReelPlayerOverlayProps<T extends BaseContentItem = ContentItem> =
+  Omit<ExtractPublicPropTypes<typeof reelPlayerOverlayProps>, 'content'> & {
+    /** Array of content items to display as vertical slides. */
+    content: T[];
+  };
 
 /**
  * Inner content of the overlay. Created as its own component so that
@@ -785,6 +794,21 @@ const renderPlayerWrapper = (content: VNode): VNode =>
     }),
   ]);
 
+const reelPlayerUrlOverlayEmits = {
+  close: () => true,
+  slideChange: (_: number) => true,
+  innerSlideChange: (_outer: number, _inner: number) => true,
+  apiReady: (_: ReelPlayerApi) => true,
+};
+
+const reelPlayerOverlayEmits = {
+  ...reelPlayerUrlOverlayEmits,
+  // Emitted alongside `close` so consumers can drive the overlay via
+  // `v-model:is-open="..."`. The legacy `:is-open` + `@close` API
+  // continues to work.
+  'update:isOpen': (_: boolean) => true,
+};
+
 /**
  * Full-screen, Instagram/TikTok-style vertical reel player overlay for Vue 3.
  *
@@ -796,22 +820,16 @@ const renderPlayerWrapper = (content: VNode): VNode =>
  *
  * Wraps content in a `SoundProvider` (from `@reelkit/vue`) for scoped
  * mute/unmute state. Locks body scroll while open. Closes on `Escape`.
+ *
+ * Generic over the item type, inferred from `content`. Vue does not carry it
+ * into scoped slots, so annotate a slot binding with its exported scope type,
+ * such as `#slideOverlay="{ item }: SlideOverlaySlotScope<MyItem>"`.
  */
-export const ReelPlayerOverlay = defineComponent({
-  name: 'ReelPlayerOverlay',
-  inheritAttrs: false,
-  props: reelPlayerOverlayProps,
-  emits: {
-    close: () => true,
-    slideChange: (_: number) => true,
-    innerSlideChange: (_outer: number, _inner: number) => true,
-    apiReady: (_: ReelPlayerApi) => true,
-    // Emitted alongside `close` so consumers can drive the overlay via
-    // `v-model:is-open="..."`. The legacy `:is-open` + `@close` API
-    // continues to work.
-    'update:isOpen': (_: boolean) => true,
-  },
-  setup(props, { emit, slots, expose }) {
+export const ReelPlayerOverlay = defineComponent(
+  <T extends BaseContentItem = ContentItem>(
+    props: ReelPlayerOverlayProps<T>,
+    { emit, slots, expose }: SetupContext<typeof reelPlayerOverlayEmits>,
+  ) => {
     // Forward the inner ReelPlayerContent's exposed API up so consumers
     // can use a single template ref on `<ReelPlayerOverlay>` regardless
     // of the isOpen wrapping. When closed the calls are safely no-op.
@@ -859,7 +877,15 @@ export const ReelPlayerOverlay = defineComponent({
       );
     };
   },
-});
+  {
+    name: 'ReelPlayerOverlay',
+    inheritAttrs: false,
+    props: asGenericPropKeys<ReelPlayerOverlayProps<BaseContentItem>>(
+      reelPlayerOverlayProps,
+    ),
+    emits: reelPlayerOverlayEmits,
+  },
+);
 
 /** Props accepted by the public {@link ReelPlayerUrlOverlay} component. */
 const reelPlayerUrlOverlayProps = {
@@ -885,10 +911,16 @@ const reelPlayerUrlOverlayProps = {
   },
 } as const;
 
-/** Public props interface for the {@link ReelPlayerUrlOverlay} component. */
-export type ReelPlayerUrlOverlayProps = ExtractPropTypes<
-  typeof reelPlayerUrlOverlayProps
->;
+/**
+ * Public props interface for the {@link ReelPlayerUrlOverlay} component.
+ * `content` carries the consumer's own item type, as on
+ * {@link ReelPlayerOverlayProps}.
+ */
+export type ReelPlayerUrlOverlayProps<T extends BaseContentItem = ContentItem> =
+  Omit<ExtractPublicPropTypes<typeof reelPlayerUrlOverlayProps>, 'content'> & {
+    /** Array of content items to display as vertical slides. */
+    content: T[];
+  };
 
 /**
  * Reel player whose open state lives in the URL. Build the controller with
@@ -910,17 +942,11 @@ export type ReelPlayerUrlOverlayProps = ExtractPropTypes<
  * components on purpose: each carries exactly one open-state driver, so there is
  * no mutually-exclusive prop to police.
  */
-export const ReelPlayerUrlOverlay = defineComponent({
-  name: 'ReelPlayerUrlOverlay',
-  inheritAttrs: false,
-  props: reelPlayerUrlOverlayProps,
-  emits: {
-    close: () => true,
-    slideChange: (_: number) => true,
-    innerSlideChange: (_outer: number, _inner: number) => true,
-    apiReady: (_: ReelPlayerApi) => true,
-  },
-  setup(props, { emit, slots, expose }) {
+export const ReelPlayerUrlOverlay = defineComponent(
+  <T extends BaseContentItem = ContentItem>(
+    props: ReelPlayerUrlOverlayProps<T>,
+    { emit, slots, expose }: SetupContext<typeof reelPlayerUrlOverlayEmits>,
+  ) => {
     const innerApi = shallowRef<ReelPlayerApi | null>(null);
 
     // The controller's position shape is the single source of truth for its
@@ -1005,6 +1031,14 @@ export const ReelPlayerUrlOverlay = defineComponent({
       );
     };
   },
-});
+  {
+    name: 'ReelPlayerUrlOverlay',
+    inheritAttrs: false,
+    props: asGenericPropKeys<ReelPlayerUrlOverlayProps<BaseContentItem>>(
+      reelPlayerUrlOverlayProps,
+    ),
+    emits: reelPlayerUrlOverlayEmits,
+  },
+);
 
 export type { ContentItem };

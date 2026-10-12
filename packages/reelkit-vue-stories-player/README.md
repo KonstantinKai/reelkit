@@ -21,6 +21,8 @@ Instagram-style stories player for Vue 3. Full-screen overlay with tap-to-advanc
 npm install @reelkit/vue-stories-player @reelkit/vue lucide-vue-next
 ```
 
+Requires Vue 3.3 or later.
+
 ## Quick Start
 
 ```vue
@@ -158,6 +160,12 @@ Takes every `StoriesOverlay` prop except `isOpen`, `initialGroupIndex` and `init
 Emits `select` with the group index when a ring is tapped.
 
 ### Types
+
+`StoriesOverlay` and `StoriesUrlOverlay` are generic over the story shape:
+extend `StoryItem` with your own fields and the type is inferred from `groups`,
+so passing anything else is a type error. Vue does not carry that type into a
+scoped slot, so annotate a slot binding with its exported scope type, for
+example `#header="{ story }: HeaderSlotScope<MyStory>"`.
 
 ```ts
 interface StoryItem {

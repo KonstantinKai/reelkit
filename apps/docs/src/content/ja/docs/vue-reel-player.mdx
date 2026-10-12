@@ -109,6 +109,10 @@ import theming from '../../snippets/vue-reel-player/theming.css?raw';
   デフォルトのコントロールはアイコン（閉じる、サウンド、ナビゲーションの矢印）に `lucide-vue-next` を使います。別のアイコンライブラリを使いたい場合は、スコープ付きスロットの `#controls` と `#navigation` で独自のものを渡してください。
 </Callout>
 
+<Callout type="info" title="Vue 3.3 以降">
+  オーバーレイはジェネリックなコンポーネントで、Vue は 3.3 からこれをサポートしています。古い Vue ではランタイムが props とイベントを捨ててしまうため、このパッケージは peer dependency として `vue` 3.3 以降を必要とします。
+</Callout>
+
 ## クイックスタート [#quick-start]
 
 サムネイルのグリッドを描画し、クリックしたインデックスでオーバーレイを開きます。`v-model:is-open` をバインドすると、ユーザーがボタン、ジェスチャー、Escape でプレイヤーを閉じたときにも、親の `ref` が同期されます。
@@ -141,7 +145,7 @@ import theming from '../../snippets/vue-reel-player/theming.css?raw';
 
 ## 独自のコンテンツ型 [#custom-content-types]
 
-`ReelPlayerOverlay` は、コンテンツのアイテムの形についてジェネリックです。`BaseContentItem` を拡張すれば任意のデータモデルを使え、対応するスロットのスコープの型をインポートすれば、スロットのバインディングも厳密に型付けされます：
+`ReelPlayerOverlay` と `ReelPlayerUrlOverlay` は、React のプレーヤーと同じく、コンテンツのアイテムの形についてジェネリックです。`BaseContentItem` を拡張すれば任意のデータモデルを使えます。アイテムの型は `content` から推論されるため、`BaseContentItem` に合わないフィードは型チェックで弾かれます。Vue ではスロットがこの型を運べないので、スロットのスコープは型を付けるまで型なしのままです。対応するスロットのスコープの型をインポートして分割代入に型を付ければ、テンプレートの中でも追加フィールドが型付けされたままになります。この型注釈は `content` と照合されないため、両者を揃えておいてください：
 
 <CodeBlock code={customContentTypes} language="vue" />
 
@@ -209,7 +213,7 @@ import theming from '../../snippets/vue-reel-player/theming.css?raw';
 
 ### ReelPlayerOverlay の Props [#reelplayeroverlay-props]
 
-<Signature>ReelPlayerOverlayProps</Signature>
+<Signature>ReelPlayerOverlayProps\<T></Signature>
 
 | Prop | 型 | デフォルト | 説明 |
 | --- | --- | --- | --- |
@@ -230,7 +234,7 @@ import theming from '../../snippets/vue-reel-player/theming.css?raw';
 
 ### ReelPlayerUrlOverlay の Props [#reelplayerurloverlay-props]
 
-<Signature>ReelPlayerUrlOverlayProps</Signature>
+<Signature>ReelPlayerUrlOverlayProps\<T></Signature>
 
 上の props をすべて受け取りますが、`is-open` の代わりに `controller` を使います。`initial-index` は無視されます。スライドはコントローラーの位置で決まるので、一緒に渡した値は開くたびに上書きされます。
 

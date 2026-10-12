@@ -109,6 +109,10 @@ stylesheet को अपने ऐप के entry (या किसी भी �
   डिफ़ॉल्ट कंट्रोल आइकन (बंद, साउंड, नेविगेशन तीर) के लिए `lucide-vue-next` इस्तेमाल करते हैं। अगर आप कोई और आइकन लाइब्रेरी पसंद करते हैं, तो अपने देने के लिए `#controls` और `#navigation` scoped slots इस्तेमाल करें।
 </Callout>
 
+<Callout type="info" title="Vue 3.3 या नया">
+  ओवरले जेनेरिक कंपोनेंट हैं, जिन्हें Vue 3.3 से सपोर्ट करता है। पुराने Vue पर runtime उनके props और events छोड़ देता है, इसलिए यह पैकेज peer dependency के रूप में `vue` 3.3 या नया माँगता है।
+</Callout>
+
 ## क्विक स्टार्ट [#quick-start]
 
 थंबनेल का grid रेंडर करें और क्लिक किए index पर overlay खोलें। `v-model:is-open` bind करने का मतलब है कि यूज़र बटन, जेस्चर या Escape से प्लेयर बंद करे, तो parent का `ref` भी साथ में बदल जाता है।
@@ -141,7 +145,7 @@ stylesheet को अपने ऐप के entry (या किसी भी �
 
 ## कस्टम कंटेंट टाइप [#custom-content-types]
 
-`ReelPlayerOverlay` आपके कंटेंट आइटम के रूप पर generic है। कोई भी डेटा मॉडल इस्तेमाल करने के लिए `BaseContentItem` extend करें, और slot bindings को strongly typed रखने के लिए मेल खाता slot-scope टाइप import करें:
+`ReelPlayerOverlay` और `ReelPlayerUrlOverlay` React प्लेयर की तरह आपके कंटेंट आइटम के रूप पर generic हैं। कोई भी डेटा मॉडल इस्तेमाल करने के लिए `BaseContentItem` extend करें: आइटम का टाइप `content` से निकाला जाता है, इसलिए जो फ़ीड `BaseContentItem` से मेल नहीं खाता, वह टाइप जाँच में फ़ेल होता है। Vue में slots यह टाइप नहीं ले जा सकते, इसलिए जब तक आप टाइप न लिखें, उनके स्कोप बिना टाइप के रहते हैं। मेल खाता slot-scope टाइप import करें और destructure पर टाइप लिखें, ताकि टेम्पलेट के भीतर भी अतिरिक्त फ़ील्ड typed रहें। यह टाइप `content` से मिलाकर जाँचा नहीं जाता, इसलिए दोनों को एक जैसा रखें:
 
 <CodeBlock code={customContentTypes} language="vue" />
 
@@ -209,7 +213,7 @@ URL में id को base64url में encode करने के लिए
 
 ### ReelPlayerOverlay के props [#reelplayeroverlay-props]
 
-<Signature>ReelPlayerOverlayProps</Signature>
+<Signature>ReelPlayerOverlayProps\<T></Signature>
 
 | Prop | टाइप | डिफ़ॉल्ट | विवरण |
 | --- | --- | --- | --- |
@@ -230,7 +234,7 @@ URL में id को base64url में encode करने के लिए
 
 ### ReelPlayerUrlOverlay के props [#reelplayerurloverlay-props]
 
-<Signature>ReelPlayerUrlOverlayProps</Signature>
+<Signature>ReelPlayerUrlOverlayProps\<T></Signature>
 
 ऊपर के सारे props लेता है, सिवाय `is-open` के, जिसकी जगह `controller` है। `initial-index` अनदेखा होता है — स्लाइड कंट्रोलर की स्थिति चुनती है, इसलिए साथ में दी गई value हर बार खुलने पर बदल दी जाती है।
 

@@ -16,6 +16,7 @@ import {
   CloseButton,
   SoundButton,
   type ContentItem,
+  type SlideOverlaySlotScope,
 } from '@reelkit/vue-reel-player';
 import '@reelkit/vue-reel-player/styles.css';
 import { cdnUrl, generateContent, getContentItem } from '@reelkit/example-data';
@@ -90,6 +91,19 @@ const DEMOS: { id: DemoId; title: string; description: string }[] = [
 const activeDemo = ref<DemoId | null>(null);
 
 const content = computed<ContentItem[]>(() => generateContent(_kContentCount));
+
+// A feed item with a field of the app's own. The overlay infers this type from
+// `content`, so a feed of anything else fails to compile.
+interface BrandedItem extends ContentItem {
+  badge: string;
+}
+
+const brandedContent = computed<BrandedItem[]>(() =>
+  content.value.map((item, index) => ({
+    ...item,
+    badge: index % 3 === 0 ? 'Sponsored' : 'Trending',
+  })),
+);
 
 function getMultiMediaFirstContent(count: number): ContentItem[] {
   const all = generateContent(count + 20);
@@ -394,12 +408,13 @@ const closePlayer = () => {
     <ReelPlayerOverlay
       v-if="activeDemo === 'custom-overlay'"
       :is-open="true"
-      :content="content"
+      :content="brandedContent"
       :initial-index="0"
       @close="closePlayer"
     >
-      <template #slideOverlay="{ item }">
+      <template #slideOverlay="{ item }: SlideOverlaySlotScope<BrandedItem>">
         <div class="custom-overlay" data-testid="custom-overlay">
+          <div class="custom-overlay-badge">{{ item.badge }}</div>
           <div class="custom-overlay-name">
             {{ item.author.name }}
           </div>
@@ -627,6 +642,17 @@ h1 {
   color: #fff;
   pointer-events: none;
   z-index: 5;
+}
+.custom-overlay-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  margin-bottom: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.2);
 }
 .custom-overlay-name {
   font-size: 16px;

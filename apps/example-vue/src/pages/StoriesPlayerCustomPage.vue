@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { shallowRef } from 'vue';
-import { StoriesOverlay, type StoriesGroup } from '@reelkit/vue-stories-player';
+import {
+  StoriesOverlay,
+  type FooterSlotScope,
+  type StoriesGroup,
+  type StoryItem,
+} from '@reelkit/vue-stories-player';
 import { cdnUrl } from '@reelkit/example-data';
 import '@reelkit/vue-stories-player/styles.css';
 import HtmlProgressBar from './stories-player/HtmlProgressBar.vue';
@@ -25,7 +30,7 @@ const _kDemos: { id: DemoId; title: string; description: string }[] = [
     id: 'custom-footer',
     title: 'Custom Footer',
     description:
-      'Uses the footer slot to add a reply input and action buttons below each story.',
+      'Uses the footer slot to add a reply input below each story, and shows a caption field the stories carry on top of the built-in ones.',
   },
   {
     id: 'custom-navigation',
@@ -68,24 +73,33 @@ const _kAvatars = [
 const hoursAgo = (hours: number) =>
   new Date(Date.now() - hours * 3600_000).toISOString();
 
-const groups: StoriesGroup[] = [
+// A story with a field of the app's own. The overlay infers this type from
+// `groups`, so groups of anything else fail to compile.
+interface CaptionedStory extends StoryItem {
+  caption: string;
+}
+
+const groups: StoriesGroup<CaptionedStory>[] = [
   {
     author: { id: 'u1', name: 'Travel', avatar: _kAvatars[0], verified: true },
     stories: [
       {
         id: 'c1',
+        caption: 'Sunrise over the bay',
         mediaType: 'image',
         src: cdnUrl('samples/images/image-01.jpg'),
         createdAt: hoursAgo(1),
       },
       {
         id: 'c2',
+        caption: 'Old town walk',
         mediaType: 'image',
         src: cdnUrl('samples/images/image-02.jpg'),
         createdAt: hoursAgo(2),
       },
       {
         id: 'c3',
+        caption: 'Ferry ride home',
         mediaType: 'video',
         src: cdnUrl('samples/videos/video-01.mp4'),
         poster: cdnUrl('samples/videos/video-poster-01.jpg'),
@@ -98,18 +112,21 @@ const groups: StoriesGroup[] = [
     stories: [
       {
         id: 'c4',
+        caption: 'Breakfast spread',
         mediaType: 'image',
         src: cdnUrl('samples/images/image-03.jpg'),
         createdAt: hoursAgo(1),
       },
       {
         id: 'c5',
+        caption: 'Lost in the oven',
         mediaType: 'image',
         src: 'https://broken.invalid/does-not-exist.jpg',
         createdAt: hoursAgo(2),
       },
       {
         id: 'c6',
+        caption: 'Dessert first',
         mediaType: 'image',
         src: cdnUrl('samples/images/image-04.jpg'),
         createdAt: hoursAgo(3),
@@ -121,6 +138,7 @@ const groups: StoriesGroup[] = [
     stories: [
       {
         id: 'c7',
+        caption: 'Soundcheck',
         mediaType: 'video',
         src: cdnUrl('samples/videos/video-02.mp4'),
         poster: cdnUrl('samples/videos/video-poster-02.jpg'),
@@ -128,6 +146,7 @@ const groups: StoriesGroup[] = [
       },
       {
         id: 'c8',
+        caption: 'Front row',
         mediaType: 'image',
         src: cdnUrl('samples/images/image-05.jpg'),
         createdAt: hoursAgo(2),
@@ -206,10 +225,13 @@ const close = () => {
       :groups="groups"
       @close="close"
     >
-      <template #footer="{ author }">
+      <template #footer="{ author, story }: FooterSlotScope<CaptionedStory>">
         <div class="custom-footer">
-          <input type="text" :placeholder="`Reply to ${author.name}...`" />
-          <button type="button" class="pill">Send</button>
+          <div class="custom-footer-caption">{{ story.caption }}</div>
+          <div class="custom-footer-reply">
+            <input type="text" :placeholder="`Reply to ${author.name}...`" />
+            <button type="button" class="pill">Send</button>
+          </div>
         </div>
       </template>
     </StoriesOverlay>
@@ -448,10 +470,22 @@ h1 {
   padding: 16px 12px;
   background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
   display: flex;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  gap: 10px;
   z-index: 10;
   pointer-events: auto;
+}
+
+.custom-footer-caption {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.custom-footer-reply {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .custom-footer input {

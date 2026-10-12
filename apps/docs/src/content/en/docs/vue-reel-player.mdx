@@ -109,6 +109,10 @@ Import the stylesheet once in your app entry (or any component):
   The default controls use `lucide-vue-next` for icons (close, sound, navigation arrows). If you prefer a different icon library, use the `#controls` and `#navigation` scoped slots to provide your own.
 </Callout>
 
+<Callout type="info" title="Vue 3.3 or later">
+  The overlays are generic components, which Vue supports from 3.3. On an older Vue the runtime drops their props and events, so the package requires `vue` 3.3 or later as a peer dependency.
+</Callout>
+
 ## Quick Start [#quick-start]
 
 Render a grid of thumbnails and open the overlay at the clicked index. Binding `v-model:is-open` means the parent `ref` stays in sync when the user closes the player via button, gesture, or Escape.
@@ -141,7 +145,7 @@ Replace the built-in playback bar with your own scrub UI via the `#timeline` slo
 
 ## Custom Content Types [#custom-content-types]
 
-`ReelPlayerOverlay` is generic over your content item shape. Extend `BaseContentItem` to use any data model, and import the matching slot-scope type to keep slot bindings strongly typed:
+`ReelPlayerOverlay` and `ReelPlayerUrlOverlay` are generic over your content item shape, like the React player. Extend `BaseContentItem` to use any data model: the item type is inferred from `content`, so a feed that does not match `BaseContentItem` fails the type check. Slots cannot carry that type in Vue, so their scopes stay untyped until you annotate them. Import the matching slot-scope type and annotate the destructure to keep the extra fields typed inside the template. Nothing checks the annotation against `content`, so keep the two in step:
 
 <CodeBlock code={customContentTypes} language="vue" />
 
@@ -209,7 +213,7 @@ Key by a different field (a `slug`), or page an infinite feed with `locateAsync`
 
 ### ReelPlayerOverlay Props [#reelplayeroverlay-props]
 
-<Signature>ReelPlayerOverlayProps</Signature>
+<Signature>ReelPlayerOverlayProps\<T></Signature>
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -230,7 +234,7 @@ Key by a different field (a `slug`), or page an infinite feed with `locateAsync`
 
 ### ReelPlayerUrlOverlay Props [#reelplayerurloverlay-props]
 
-<Signature>ReelPlayerUrlOverlayProps</Signature>
+<Signature>ReelPlayerUrlOverlayProps\<T></Signature>
 
 Takes every prop above except `is-open`, replaced by a `controller`. `initial-index` is ignored — the controller's position picks the slide, so a value passed alongside it is overwritten on every open.
 

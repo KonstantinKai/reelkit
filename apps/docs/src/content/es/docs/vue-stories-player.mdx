@@ -121,6 +121,10 @@ Importa la hoja de estilos una vez en el punto de entrada de la aplicación (o e
   La cabecera y las flechas de navegación por defecto usan iconos de `lucide-vue-next`. Si prefieres otra biblioteca de iconos, sustitúyelos con los slots con ámbito `#header` y `#navigation`.
 </Callout>
 
+<Callout type="info" title="Vue 3.3 o posterior">
+  Los overlays son componentes genéricos, que Vue admite desde la 3.3. En un Vue más antiguo el runtime descarta sus props y eventos, así que el paquete exige `vue` 3.3 o posterior como peer dependency.
+</Callout>
+
 ## Inicio rápido [#quick-start]
 
 `StoriesOverlay` dibuja el player a pantalla completa. Combínalo con `StoriesRingList` como entrada al estilo Instagram, pásale un array de objetos `StoriesGroup` y enlaza `v-model:is-open`.
@@ -201,7 +205,7 @@ Por defecto, una barra de progreso y una cabecera quedan encima del reproductor 
 
 ### Props de StoriesOverlay [#storiesoverlay-props]
 
-<Signature>StoriesOverlayProps</Signature>
+<Signature>StoriesOverlayProps\<T></Signature>
 
 | Prop | Tipo | Valor por defecto | Descripción |
 | --- | --- | --- | --- |
@@ -224,7 +228,7 @@ Por defecto, una barra de progreso y una cabecera quedan encima del reproductor 
 
 ### Props de StoriesUrlOverlay [#storiesurloverlay-props]
 
-<Signature>StoriesUrlOverlayProps</Signature>
+<Signature>StoriesUrlOverlayProps\<T></Signature>
 
 Acepta todas las props anteriores salvo el trío del estado de apertura — `is-open`, `initial-group-index`, `initial-story-index` —, que viene del controlador.
 
@@ -389,7 +393,7 @@ Todos los tipos de ámbito se exportan, así que puedes anotar un slot donde el 
 
 ## Tipos de story propios [#custom-story-types]
 
-Amplía `StoryItem` con tus campos y tipa los grupos con él. A diferencia del reproductor de React, `StoriesOverlay` y `StoriesUrlOverlay` no son genéricos: el tipo de story de `groups` no llega a los slots, cuyos ámbitos quedan sin tipo hasta que los anotas. Anota el ámbito del slot para que los campos añadidos sigan visibles dentro de la plantilla. Nada comprueba la anotación contra `groups`, así que mantén ambos al día:
+Amplía `StoryItem` con tus campos y tipa los grupos con él. `StoriesOverlay` y `StoriesUrlOverlay` son genéricos, como el reproductor de React: el tipo de story se infiere de `groups`, así que los grupos cuyas stories no encajen con `StoryItem` no pasan la comprobación de tipos. En Vue los slots no pueden llevar ese tipo, así que sus ámbitos quedan sin tipo hasta que los anotas. Anota el ámbito del slot para que los campos añadidos sigan visibles dentro de la plantilla. Nada comprueba la anotación contra `groups`, así que mantén ambos al día:
 
 <CodeBlock code={customStoryTypes} language="vue" />
 

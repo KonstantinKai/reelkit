@@ -62,7 +62,11 @@ describe('StoriesRingList', () => {
   // controller. A map prop beside it would be a second, silently slower path.
   it('takes viewed state through the controller only', () => {
     for (const component of [StoriesRingList, StoriesOverlay]) {
-      const props = Object.keys(component['props']);
+      // The generic overlay's type does not carry its props option; at
+      // runtime it is still the props object, whose keys are the prop names.
+      const props = Object.keys(
+        (component as unknown as { props: object }).props,
+      );
       expect(props).toContain('viewed');
       expect(props).not.toContain('viewedState');
     }

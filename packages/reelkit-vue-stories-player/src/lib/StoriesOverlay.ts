@@ -7,8 +7,9 @@ import {
   onUnmounted,
   shallowRef,
   watch,
-  type ExtractPropTypes,
+  type ExtractPublicPropTypes,
   type PropType,
+  type SetupContext,
   type Slots,
   type VNode,
   type VNodeChild,
@@ -18,6 +19,7 @@ import {
   Observe,
   Reel,
   SoundProvider,
+  asGenericPropKeys,
   SwipeToClose,
   captureFocusForReturn,
   createContentLoadingController,
@@ -1443,8 +1445,25 @@ const storiesOverlayProps = {
   ...storiesContentProps,
 };
 
-/** Public props interface for the {@link StoriesOverlay} component. */
-export type StoriesOverlayProps = ExtractPropTypes<typeof storiesOverlayProps>;
+/**
+ * Public props interface for the {@link StoriesOverlay} component. `groups`
+ * carries the consumer's own story type: a custom story extending `StoryItem`
+ * keeps its own fields, and groups of any other shape fail to compile.
+ */
+export type StoriesOverlayProps<T extends StoryItem = StoryItem> = Omit<
+  ExtractPublicPropTypes<typeof storiesOverlayProps>,
+  'groups'
+> & {
+  /** Array of story groups to display. */
+  groups: StoriesGroup<T>[];
+};
+
+const storiesOverlayEmits = {
+  ...storiesEmits,
+  // Emitted alongside `close` so the overlay can be driven through
+  // `v-model:is-open`.
+  'update:isOpen': (_isOpen: boolean) => true,
+};
 
 /**
  * Full-screen, Instagram-style stories player overlay for Vue 3.
@@ -1458,18 +1477,16 @@ export type StoriesOverlayProps = ExtractPropTypes<typeof storiesOverlayProps>;
  * Controlled: bind `v-model:is-open`, or pass `is-open` and handle `close`.
  * Customize through the scoped slots `header`, `footer`, `slide`,
  * `navigation`, `progressBar`, `loading`, `error` and `groupPreview`.
+ *
+ * Generic over the story type, inferred from `groups`. Vue does not carry it
+ * into scoped slots, so annotate a slot binding with its exported scope type,
+ * such as `#footer="{ story }: FooterSlotScope<MyStory>"`.
  */
-export const StoriesOverlay = defineComponent({
-  name: 'StoriesOverlay',
-  inheritAttrs: false,
-  props: storiesOverlayProps,
-  emits: {
-    ...storiesEmits,
-    // Emitted alongside `close` so the overlay can be driven through
-    // `v-model:is-open`.
-    'update:isOpen': (_isOpen: boolean) => true,
-  },
-  setup(props, { emit, slots, expose }) {
+export const StoriesOverlay = defineComponent(
+  <T extends StoryItem = StoryItem>(
+    props: StoriesOverlayProps<T>,
+    { emit, slots, expose }: SetupContext<typeof storiesOverlayEmits>,
+  ) => {
     useAttachViewedState(() => props.viewed);
 
     const forwardedApi = useForwardedApi(expose, (api) =>
@@ -1514,7 +1531,13 @@ export const StoriesOverlay = defineComponent({
       );
     };
   },
-});
+  {
+    name: 'StoriesOverlay',
+    inheritAttrs: false,
+    props: asGenericPropKeys<StoriesOverlayProps>(storiesOverlayProps),
+    emits: storiesOverlayEmits,
+  },
+);
 
 /** Props accepted by the public {@link StoriesUrlOverlay} component. */
 const storiesUrlOverlayProps = {
@@ -1533,10 +1556,17 @@ const storiesUrlOverlayProps = {
   },
 };
 
-/** Public props interface for the {@link StoriesUrlOverlay} component. */
-export type StoriesUrlOverlayProps = ExtractPropTypes<
-  typeof storiesUrlOverlayProps
->;
+/**
+ * Public props interface for the {@link StoriesUrlOverlay} component. `groups`
+ * carries the consumer's own story type, as on {@link StoriesOverlayProps}.
+ */
+export type StoriesUrlOverlayProps<T extends StoryItem = StoryItem> = Omit<
+  ExtractPublicPropTypes<typeof storiesUrlOverlayProps>,
+  'groups'
+> & {
+  /** Array of story groups to display. */
+  groups: StoriesGroup<T>[];
+};
 
 /**
  * URL-driven stories player. The address bar owns the open state: the player
@@ -1550,12 +1580,11 @@ export type StoriesUrlOverlayProps = ExtractPropTypes<
  * the parameter is cleared. Every scoped slot of {@link StoriesOverlay} works
  * the same here.
  */
-export const StoriesUrlOverlay = defineComponent({
-  name: 'StoriesUrlOverlay',
-  inheritAttrs: false,
-  props: storiesUrlOverlayProps,
-  emits: storiesEmits,
-  setup(props, { emit, slots, expose }) {
+export const StoriesUrlOverlay = defineComponent(
+  <T extends StoryItem = StoryItem>(
+    props: StoriesUrlOverlayProps<T>,
+    { emit, slots, expose }: SetupContext<typeof storiesEmits>,
+  ) => {
     useAttachViewedState(() => props.viewed);
 
     const forwardedApi = useForwardedApi(expose, (api) =>
@@ -1613,4 +1642,10 @@ export const StoriesUrlOverlay = defineComponent({
       );
     };
   },
-});
+  {
+    name: 'StoriesUrlOverlay',
+    inheritAttrs: false,
+    props: asGenericPropKeys<StoriesUrlOverlayProps>(storiesUrlOverlayProps),
+    emits: storiesEmits,
+  },
+);

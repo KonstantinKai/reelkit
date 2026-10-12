@@ -14,6 +14,7 @@ import tovueref from '../../../snippets/vue-api/tovueref.ts?raw';
 import soundprovider from '../../../snippets/vue-api/soundprovider.vue?raw';
 import observe from '../../../snippets/vue-api/observe.vue?raw';
 import packageExports from '../../../snippets/vue-api/package-exports.ts?raw';
+import asgenericpropkeys from '../../../snippets/vue-api/asgenericpropkeys.ts?raw';
 
 Complete reference for `@reelkit/vue` components, composables, and utilities.
 
@@ -236,6 +237,14 @@ Reach for `toVueRef` when the whole component follows the signal, and `Observe` 
 Tag: `<SoundProvider>` — Context provider that creates a `SoundController` instance and provides it to descendants via `RK_SOUND_KEY`. Renders its default slot transparently.
 
 <CodeBlock code={soundprovider} language="vue" />
+
+## asGenericPropKeys [#asgenericpropkeys]
+
+Builds a component that is generic over the items it receives, the way `ReelPlayerOverlay` and `StoriesOverlay` are. Vue 3.3 accepts a setup function with a type parameter, `defineComponent(<T>(props: Props<T>) => …, options)`, but keeps that parameter only when `options.props` lists prop names. Hand it a props object and Vue reads the prop types back from the object, so `T` is lost. `asGenericPropKeys` passes the props object through untouched while the type checker sees a list of names: `T` is inferred from what the parent binds, and defaults, validation and boolean casting still apply at runtime.
+
+The type argument is the props type with the base item, and the component needs Vue 3.3 or later. Slots and emits cannot use `T`: annotate a slot scope in the template to type it.
+
+<CodeBlock code={asgenericpropkeys} language="typescript" />
 
 ## Accessibility [#accessibility]
 

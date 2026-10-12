@@ -14,6 +14,7 @@ import tovueref from '../../../snippets/vue-api/tovueref.ts?raw';
 import soundprovider from '../../../snippets/vue-api/soundprovider.vue?raw';
 import observe from '../../../snippets/vue-api/observe.vue?raw';
 import packageExports from '../../../snippets/vue-api/package-exports.ts?raw';
+import asgenericpropkeys from '../../../snippets/vue-api/asgenericpropkeys.ts?raw';
 
 `@reelkit/vue` के कंपोनेंट, composables और यूटिलिटी का पूरा रेफ़रेंस।
 
@@ -236,6 +237,14 @@ subscription `onScopeDispose` से अपने-आप हट जाता ह
 टैग: `<SoundProvider>` — context provider, जो `SoundController` instance बनाता है और उसे `RK_SOUND_KEY` के ज़रिए descendants को देता है। अपना default slot बिना कुछ जोड़े रेंडर करता है।
 
 <CodeBlock code={soundprovider} language="vue" />
+
+## asGenericPropKeys [#asgenericpropkeys]
+
+ऐसा कंपोनेंट बनाता है जो मिलने वाले आइटम पर जेनेरिक हो, जैसे `ReelPlayerOverlay` और `StoriesOverlay` हैं। Vue 3.3 टाइप पैरामीटर वाला setup फ़ंक्शन `defineComponent(<T>(props: Props<T>) => …, options)` स्वीकार करता है, पर वह पैरामीटर तभी बचता है जब `options.props` में prop के नाम हों। props ऑब्जेक्ट देने पर Vue ऑब्जेक्ट से ही prop के टाइप पढ़ लेता है, और `T` खो जाता है। `asGenericPropKeys` props ऑब्जेक्ट को बिना बदले आगे देता है, जबकि टाइप चेकर उसे नामों की सूची के रूप में देखता है: `T` पैरेंट के bind किए मान से निकलता है, और runtime पर default, validation और boolean casting पहले की तरह काम करते हैं।
+
+टाइप आर्ग्युमेंट बेस आइटम वाला props टाइप है, और कंपोनेंट को Vue 3.3 या नया चाहिए। स्लॉट और events `T` का इस्तेमाल नहीं कर सकते: स्लॉट के स्कोप को टाइप करने के लिए टेम्पलेट में उस पर टाइप लिखें।
+
+<CodeBlock code={asgenericpropkeys} language="typescript" />
 
 ## सुलभता [#accessibility]
 

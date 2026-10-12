@@ -117,6 +117,10 @@ import theming from '../../snippets/vue-reel-player/theming.css?raw';
   Стандартні елементи керування використовують `lucide-vue-next` для іконок (закриття, звук, стрілки навігації). Якщо ви віддаєте перевагу іншій бібліотеці іконок, скористайтеся слотами `#controls` та `#navigation` з областю видимості, щоб передати власні.
 </Callout>
 
+<Callout type="info" title="Vue 3.3 або новіша">
+  Оверлеї — узагальнені компоненти, які Vue підтримує починаючи з 3.3. На старішій Vue рантайм відкидає їхні пропси й події, тож пакет вимагає `vue` 3.3 або новішу як peer-залежність.
+</Callout>
+
 ## Швидкий старт [#quick-start]
 
 Покажіть сітку мініатюр і відкривайте оверлей на натиснутому індексі. Прив’язка `v-model:is-open` означає, що батьківський `ref` лишається синхронним, коли користувач закриває плеєр кнопкою, жестом або клавішею Escape.
@@ -149,7 +153,7 @@ import theming from '../../snippets/vue-reel-player/theming.css?raw';
 
 ## Власні типи вмісту [#custom-content-types]
 
-`ReelPlayerOverlay` узагальнений за формою вашого елемента вмісту. Розширте `BaseContentItem` щоб узяти будь-яку модель даних, і імпортуйте відповідний тип області слота, щоб прив’язки лишалися строго типізованими:
+`ReelPlayerOverlay` і `ReelPlayerUrlOverlay` узагальнені за формою вашого елемента вмісту, як і React-плеєр. Розширте `BaseContentItem`, щоб узяти будь-яку модель даних: тип елемента виводиться з `content`, тож стрічка, що не відповідає `BaseContentItem`, не проходить перевірку типів. У Vue слоти не можуть нести цей тип, тому їхні області видимості лишаються нетипізованими, доки ви їх не анотуєте. Імпортуйте відповідний тип області слота й анотуйте деструктуризацію, щоб додаткові поля лишалися типізованими всередині шаблону. Анотацію ніщо не звіряє з `content`, тож тримайте їх узгодженими:
 
 <CodeBlock code={customContentTypes} language="vue" />
 
@@ -217,7 +221,7 @@ Pass `hashCodec: base64UrlCodec` щоб закодувати id в URL у base64
 
 ### Пропси ReelPlayerOverlay [#reelplayeroverlay-props]
 
-<Signature>ReelPlayerOverlayProps</Signature>
+<Signature>ReelPlayerOverlayProps\<T></Signature>
 
 | Prop | Тип | Типове значення | Опис |
 | --- | --- | --- | --- |
@@ -238,7 +242,7 @@ Pass `hashCodec: base64UrlCodec` щоб закодувати id в URL у base64
 
 ### Пропси ReelPlayerUrlOverlay [#reelplayerurloverlay-props]
 
-<Signature>ReelPlayerUrlOverlayProps</Signature>
+<Signature>ReelPlayerUrlOverlayProps\<T></Signature>
 
 Приймає всі пропси вище, крім `is-open`, replaced by a `controller`. `initial-index` ігнорується — слайд обирає position контролера, тож передане поруч значення перезаписується на кожному відкритті.
 

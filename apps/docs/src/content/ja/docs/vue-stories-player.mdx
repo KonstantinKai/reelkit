@@ -121,6 +121,10 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
   既定のヘッダーとナビゲーションの矢印は `lucide-vue-next` のアイコンを使います。別のアイコンライブラリを使いたい場合は、`#header` と `#navigation` のスコープ付きスロットで差し替えてください。
 </Callout>
 
+<Callout type="info" title="Vue 3.3 以降">
+  オーバーレイはジェネリックなコンポーネントで、Vue は 3.3 からこれをサポートしています。古い Vue ではランタイムが props とイベントを捨ててしまうため、このパッケージは peer dependency として `vue` 3.3 以降を必要とします。
+</Callout>
+
 ## クイックスタート [#quick-start]
 
 `StoriesOverlay` が全画面のプレイヤーを描画します。Instagram 風の入口として `StoriesRingList` と組み合わせ、`StoriesGroup` の配列を渡して `v-model:is-open` をバインドしてください。
@@ -201,7 +205,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 
 ### StoriesOverlay のプロパティ [#storiesoverlay-props]
 
-<Signature>StoriesOverlayProps</Signature>
+<Signature>StoriesOverlayProps\<T></Signature>
 
 | Prop | 型 | 既定値 | 説明 |
 | --- | --- | --- | --- |
@@ -224,7 +228,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 
 ### StoriesUrlOverlay のプロパティ [#storiesurloverlay-props]
 
-<Signature>StoriesUrlOverlayProps</Signature>
+<Signature>StoriesUrlOverlayProps\<T></Signature>
 
 上記のプロパティをすべて受け取りますが、開閉位置の 3 つ（`is-open`、`initial-group-index`、`initial-story-index`）は例外で、これらはコントローラーから与えられます。
 
@@ -389,7 +393,7 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 
 ## 独自のストーリー型 [#custom-story-types]
 
-`StoryItem` を自分のフィールドで拡張し、その型でグループを型付けします。React のプレーヤーと違い、`StoriesOverlay` と `StoriesUrlOverlay` はジェネリックではありません。`groups` のストーリー型はスロットまで届かず、スロットのスコープは型を付けるまで型なしのままです。スロットのスコープに型を付ければ、テンプレートの中でも追加フィールドが見えたままになります。この型注釈は `groups` と照合されないため、両者を揃えておいてください。
+`StoryItem` を自分のフィールドで拡張し、その型でグループを型付けします。`StoriesOverlay` と `StoriesUrlOverlay` は React のプレーヤーと同じくジェネリックです。ストーリー型は `groups` から推論されるため、ストーリーが `StoryItem` に合わないグループは型チェックで弾かれます。Vue ではスロットがこの型を運べないので、スロットのスコープは型を付けるまで型なしのままです。スロットのスコープに型を付ければ、テンプレートの中でも追加フィールドが見えたままになります。この型注釈は `groups` と照合されないため、両者を揃えておいてください。
 
 <CodeBlock code={customStoryTypes} language="vue" />
 

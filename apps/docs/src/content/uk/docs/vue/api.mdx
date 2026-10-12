@@ -14,6 +14,7 @@ import tovueref from '../../../snippets/vue-api/tovueref.ts?raw';
 import soundprovider from '../../../snippets/vue-api/soundprovider.vue?raw';
 import observe from '../../../snippets/vue-api/observe.vue?raw';
 import packageExports from '../../../snippets/vue-api/package-exports.ts?raw';
+import asgenericpropkeys from '../../../snippets/vue-api/asgenericpropkeys.ts?raw';
 
 Повний довідник `@reelkit/vue` : компоненти, композабли та утиліти.
 
@@ -236,6 +237,14 @@ A `UrlAdapter` на базі Vue Router. Передайте його як опц
 Тег: `<SoundProvider>` — постачальник контексту, що створює екземпляр `SoundController` і надає його нащадкам через `RK_SOUND_KEY`. Свій типовий слот рендерить прозоро.
 
 <CodeBlock code={soundprovider} language="vue" />
+
+## asGenericPropKeys [#asgenericpropkeys]
+
+Створює компонент, узагальнений за елементами, які він отримує, — так, як `ReelPlayerOverlay` і `StoriesOverlay`. Vue 3.3 приймає setup-функцію з параметром типу, `defineComponent(<T>(props: Props<T>) => …, options)`, але зберігає цей параметр лише тоді, коли `options.props` перелічує назви пропсів. Передайте їй об’єкт пропсів — і Vue прочитає типи пропсів назад з об’єкта, тож `T` втрачається. `asGenericPropKeys` передає об’єкт пропсів без змін, а перевірка типів бачить список назв: `T` виводиться з того, що прив’язує батьківський компонент, а значення за замовчуванням, валідація й приведення boolean і далі працюють під час виконання.
+
+Аргумент типу — це тип пропсів із базовим елементом, а компонент потребує Vue 3.3 або новішої. Слоти й події не можуть використовувати `T`: щоб типізувати область видимості слота, анотуйте її в шаблоні.
+
+<CodeBlock code={asgenericpropkeys} language="typescript" />
 
 ## Accessibility [#accessibility]
 
