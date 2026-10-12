@@ -67,7 +67,7 @@
 | [@reelkit/angular-lightbox](packages/reelkit-angular-lightbox)             | Image & video gallery lightbox    | 16.4 kB   | 2.2 kB     |
 | [@reelkit/angular-stories-player](packages/reelkit-angular-stories-player) | Instagram-style stories player    | 34.0 kB   | 3.0 kB     |
 | [@reelkit/vue](packages/reelkit-vue)                                       | Vue 3 components and composables  | 5.1 kB    | —          |
-| [@reelkit/vue-reel-player](packages/reelkit-vue-reel-player)               | Full-screen video reel player     | 6.2 kB    | 2.1 kB     |
+| [@reelkit/vue-reel-player](packages/reelkit-vue-reel-player)               | Full-screen video reel player     | 6.3 kB    | 2.1 kB     |
 | [@reelkit/vue-lightbox](packages/reelkit-vue-lightbox)                     | Image & video gallery lightbox    | 4.2 kB    | 1.4 kB     |
 | [@reelkit/vue-stories-player](packages/reelkit-vue-stories-player)         | Instagram-style stories player    | 7.9 kB    | 2.0 kB     |
 
