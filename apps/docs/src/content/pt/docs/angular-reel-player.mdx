@@ -255,7 +255,7 @@ Estenda `BaseContentItem` para usar o seu próprio modelo de domínio. O compone
 | Input | Tipo | Padrão | Descrição |
 | --- | --- | --- | --- |
 | `ariaLabel` | `string` | 'Video player' | Rótulo acessível da região do diálogo |
-| `aspectRatio` | `number \| undefined` | undefined | Proporção entre largura e altura do contêiner no desktop. O padrão é 9/16. No celular o player ocupa a tela inteira. |
+| `aspectRatio` | `number \| undefined` | undefined | Proporção entre largura e altura do contêiner no desktop. O padrão é 9/16, que também substitui um valor zero, negativo ou não finito. Com 768px de largura ou menos o player ocupa a tela inteira. |
 | `content` | `T[] (extends BaseContentItem)` | obrigatório | Array de itens de conteúdo a exibir no player |
 | `enableNavKeys` | `boolean` | true | Liga a navegação pelas setas do teclado |
 | `enableWheel` | `boolean` | true | Liga a navegação pela roda do mouse |
@@ -323,7 +323,7 @@ Todas as classes CSS são simples (sem escopo), então dá para alcançá-las co
 | `.rk-reel-button` | Controls | Botão circular de ícone compartilhado (fechar, som, setas) |
 | `.rk-reel-close-btn` | Controls | Botão de fechar |
 | `.rk-reel-sound-btn` | Controls | Botão de alternar o som |
-| `.rk-reel-nav-arrows` | Navigation | Contêiner das setas, só no desktop (escondido abaixo de 768px) |
+| `.rk-reel-nav-arrows` | Navigation | Contêiner das setas, só no desktop (escondido com 768px de largura ou menos) |
 | `.rk-reel-nav-btn` | Navigation | Cada seta de avançar e voltar |
 | `.rk-reel-slide-wrapper` | Slide | Invólucro em volta da mídia e da camada sobreposta |
 | `.rk-reel-slide-overlay` | SlideOverlay | Contêiner da camada em gradiente |
@@ -338,7 +338,7 @@ Todas as classes CSS são simples (sem escopo), então dá para alcançá-las co
 | `.rk-reel-video-loader` | VideoSlide | Animação de onda do carregamento |
 | `.rk-reel-video-poster.rk-visible` | VideoSlide | Modificador de estado aplicado ao pôster enquanto o vídeo está pausado ou carregando |
 | `.rk-reel-nested-indicator` | NestedSlider | Pontinhos de paginação sob os slides com várias mídias (a posição muda entre desktop e toque) |
-| `.rk-reel-nested-nav` | NestedSlider | Setas do carrossel horizontal (escondidas abaixo de 768px) |
+| `.rk-reel-nested-nav` | NestedSlider | Setas do carrossel horizontal (escondidas com 768px de largura ou menos) |
 | `.rk-reel-nested-nav-next` | NestedSlider | Posição da seta de avançar aninhada |
 | `.rk-reel-nested-nav-prev` | NestedSlider | Posição da seta de voltar aninhada |
 | `.rk-reel-nested-slider-inner` | NestedSlider | Raiz do slider horizontal aninhado |

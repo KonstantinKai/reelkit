@@ -104,6 +104,7 @@ export const hiTitles: Record<string, string> = {
   'Content Loading': 'कंटेंट लोडिंग',
   Sound: 'साउंड',
   'DOM & Cleanup Utilities': 'DOM और cleanup यूटिलिटी',
+  'Size Detection': 'साइज़ पहचान',
   'Focus Management': 'फ़ोकस मैनेजमेंट',
   'Video Utilities': 'वीडियो यूटिलिटी',
   'Architecture Overview': 'आर्किटेक्चर का परिचय',

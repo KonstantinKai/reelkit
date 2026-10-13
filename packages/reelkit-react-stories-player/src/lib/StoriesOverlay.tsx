@@ -15,6 +15,9 @@ import {
   createContentLoadingController,
   reaction,
   observeDomEvent,
+  observeViewportSize,
+  getViewportSize,
+  isMobileWidth,
   captureFocusForReturn,
   createFocusTrap,
   Reel,
@@ -37,7 +40,6 @@ import {
   createTimerController,
   getTapAction,
   getStoriesSize,
-  isMobileWidth,
   parseDurationMs,
   type StoryItem,
   type StoriesGroup,
@@ -451,7 +453,7 @@ function StoriesContent<T extends StoryItem = StoryItem>({
   } = useState(() => {
     const isCarouselLayout = () =>
       propsRef.current.desktopLayout === 'carousel' &&
-      !isMobileWidth(window.innerWidth);
+      !isMobileWidth(getViewportSize()[0]);
     const carouselActive = createSignal(isCarouselLayout());
     const slideSignal = createSignal<CarouselSlide | null>(null);
     // The newest story the viewer reached while a slide was running. It is not
@@ -1086,7 +1088,7 @@ function StoriesContent<T extends StoryItem = StoryItem>({
           }
         },
       ),
-      observeDomEvent(window, 'resize', () => {
+      observeViewportSize(() => {
         sizeSignal.value = getStoriesSize();
         updateCarouselActive();
         outerReelRef.current?.adjust();

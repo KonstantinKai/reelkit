@@ -60,7 +60,7 @@
   right: var(--rk-reel-nested-edge-padding);
 }
 
-@media (min-width: 768px) {
+@media (min-width: 769px) {
   .rk-reel-nested-nav {
     display: flex;
   }

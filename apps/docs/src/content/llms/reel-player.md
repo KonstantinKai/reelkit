@@ -251,7 +251,7 @@ Nothing is rendered while pending; the page already owns that loading state, so 
 | `initialInnerIndex`          | `number`                                                 | `0`              | Inner media index to open at, for the initially visible post only — lets a two-axis URL deep-link into a specific image of a multi-media post. Ignored once the user navigates.                                          |
 | `apiRef`                     | `MutableRefObject<ReelApi>`                              | -                | Ref to Reel API                                                                                                                                                                                                          |
 | `ariaLabel`                  | `string`                                                 | `'Video player'` | Dialog region label; screen reader announce on overlay open                                                                                                                                                              |
-| `aspectRatio`                | `number`                                                 | `9/16 (0.5625)`  | Width/height ratio, desktop player container. Mobile = full viewport.                                                                                                                                                    |
+| `aspectRatio`                | `number`                                                 | `9/16 (0.5625)`  | Width/height ratio, desktop player container. ≤768px wide = full viewport. Zero/negative/non-finite → 9/16.                                                                                                              |
 | `timeline`                   | `'auto' \| 'always' \| 'never'`                          | `'auto'`         | Built-in timeline bar gating. `'auto'` = render only videos longer than `timelineMinDurationSeconds`. `'always'` = whenever active slide video. `'never'` = disable built-in (use `renderTimeline` for custom).          |
 | `timelineMinDurationSeconds` | `number`                                                 | `30`             | Min video duration (s) for `timeline='auto'` render. Short loops below threshold suppressed.                                                                                                                             |
 | `renderControls`             | `(props: ControlsRenderProps) => ReactNode`              | -                | Custom controls. Replace default close + sound.                                                                                                                                                                          |
@@ -429,7 +429,7 @@ All CSS custom properties on `:root` — app-level overrides stick. Set on highe
 
 ### Navigation
 
-- `.rk-reel-nav-arrows` — desktop-only arrow container (hidden below 768px)
+- `.rk-reel-nav-arrows` — desktop-only arrow container (hidden at ≤768px wide)
 - `.rk-reel-nav-button` — individual prev/next nav arrow
 
 ### Slide
@@ -452,7 +452,7 @@ All CSS custom properties on `:root` — app-level overrides stick. Set on highe
 ### NestedSlider (multi-media posts)
 
 - `.rk-reel-nested-indicator` — dot pagination
-- `.rk-reel-nested-nav` — horizontal carousel arrows (hidden below 768px)
+- `.rk-reel-nested-nav` — horizontal carousel arrows (hidden at ≤768px wide)
 - `.rk-reel-nested-nav-next`, `.rk-reel-nested-nav-prev`
 
 ### TimelineBar

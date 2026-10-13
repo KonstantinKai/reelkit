@@ -35,8 +35,13 @@ function blobSha(file) {
     .digest('hex');
 }
 
-const normalisePage = (page) =>
-  page === '/' || page === 'home' ? '/' : `/${page.replace(/^\/+/, '')}`;
+// Pages that are not mdx routes (the home dictionary, the shared chrome) are
+// recorded under an `@` name, so those keys pass through as they are.
+const normalisePage = (page) => {
+  if (page === '/' || page === 'home') return '@home';
+  if (page.startsWith('@')) return page;
+  return `/${page.replace(/^\/+/, '')}`;
+};
 
 function fail(message) {
   console.error(`docs-i18n: ${message}`);

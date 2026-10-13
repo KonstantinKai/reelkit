@@ -7,7 +7,6 @@ import {
   getSlotOffset,
   getStoriesSize,
   isCardShown,
-  isMobileWidth,
   parseDurationMs,
 } from './layout';
 
@@ -116,11 +115,6 @@ describe('desktop carousel layout', () => {
   ])('reads a transition duration of "%s" as %i milliseconds', (value, ms) => {
     expect(parseDurationMs(value)).toBe(ms);
   });
-
-  it('treats 768 and below as a phone', () => {
-    expect(isMobileWidth(768)).toBe(true);
-    expect(isMobileWidth(769)).toBe(false);
-  });
 });
 
 describe('story canvas size', () => {
@@ -136,6 +130,14 @@ describe('story canvas size', () => {
   it('fills a phone screen', () => {
     setViewport(390, 844);
     expect(getStoriesSize()).toEqual([390, 844]);
+  });
+
+  it('treats 768 and below as a phone, matching the stylesheet', () => {
+    setViewport(768, 1024);
+    expect(getStoriesSize()).toEqual([768, 1024]);
+
+    setViewport(769, 1024);
+    expect(getStoriesSize()).not.toEqual([769, 1024]);
   });
 
   it('fills the window height less the margins at 9:16 on a desktop', () => {

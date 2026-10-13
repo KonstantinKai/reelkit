@@ -186,6 +186,19 @@ DOM इवेंट प्रबंधन और तय क्रम में �
 | `createBodyLock` | `() => BodyLock` | reference गिनने वाला body scroll lock। कई consumers एक साथ lock कर सकते हैं; सबके unlock करने पर स्क्रॉल वापस आता है। |
 | `sharedBodyLock` | `BodyLock` | module स्तर का singleton instance। जब ऐप के कई कंपोनेंट को एक ही reference counter साझा करना हो ताकि nested modals/overlays सही क्रम में चलें, तब इस्तेमाल करें। फ़्रेमवर्क bindings (`@reelkit/react`, `@reelkit/vue`, `@reelkit/angular`) अंदर से यही इस्तेमाल करती हैं। |
 
+## साइज़ पहचान [#size-detection]
+
+हर binding और overlay अपना कंटेनर और विंडो इसी तरह नापते हैं। `size` न देने पर `Reel` `observeElementSize` इस्तेमाल करता है; reel player, lightbox और stories player अपना साइज़ विंडो से तय करते हैं। SSR के लिए सुरक्षित: window या `ResizeObserver` न होने पर getters `[0, 0]` या `false` लौटाते हैं और observers कुछ न करने वाला disposer लौटाते हैं।
+
+| Export | टाइप | विवरण |
+| --- | --- | --- |
+| `observeElementSize` | `(element: Element, callback: (size: [number, number]) => void) => Disposer` | एलिमेंट का padding box (`clientWidth` × `clientHeight`) हर बार बदलने पर बताता है। जिस साइज़ की कोई भुजा शून्य हो (छिपा हुआ या अभी लेआउट नहीं हुआ) और जो साइज़ पिछली बार बताए गए साइज़ के बराबर हो, उन्हें छोड़ देता है। |
+| `getViewportSize` | `() => [number, number]` | विंडो का साइज़ `[innerWidth, innerHeight]` के रूप में। |
+| `observeViewportSize` | `(callback: (size: [number, number]) => void) => Disposer` | हर `resize` इवेंट पर विंडो का साइज़ callback को देता है, उस इवेंट पर भी जिससे साइज़ नहीं बदलता (डिवाइस एम्युलेशन उन्हीं आयामों वाले touch डिवाइस पर स्विच कर सकता है)। अगर सिर्फ़ बदलाव मायने रखता है, तो साइज़ की तुलना खुद करें। |
+| `isMobileWidth` | `(viewportWidth: number) => boolean` | इतनी चौड़ी विंडो को फ़ोन वाला लेआउट मिलेगा या नहीं: 768px और उससे कम। हर overlay और उसकी स्टाइलशीट इसी चौड़ाई पर बदलते हैं। |
+| `fitAspectRatio` | `(viewport: [number, number], aspectRatio?: number) => [number, number]` | किसी विंडो के लिए overlay का साइज़। फ़ोन की चौड़ाई पर यह पूरी विंडो है; वरना `aspectRatio` पर विंडो की पूरी ऊँचाई, और फ़िट न होने पर विंडो की चौड़ाई तक सिकुड़ा हुआ। अनुपात न होने, शून्य, ऋणात्मक या non-finite होने पर 9/16 इस्तेमाल होता है। |
+| `isTouchDevice` | `() => boolean` | डिवाइस touch input लेता है या नहीं (`ontouchstart` या `maxTouchPoints`)। यह क्षमता की जाँच है, स्क्रीन साइज़ की नहीं: touch वाला लैपटॉप गिना जाता है, संकरी डेस्कटॉप विंडो नहीं। |
+
 ## फ़ोकस मैनेजमेंट [#focus-management]
 
 फ़्रेमवर्क से स्वतंत्र dialog सुलभता primitives। Overlay पैकेज इनसे बंद होने पर फ़ोकस trigger पर लौटाते हैं और खुले रहने तक Tab / Shift+Tab को overlay के अंदर रोके रखते हैं। SSR के लिए सुरक्षित: ब्राउज़र के बाहर हर helper कुछ न करने वाला disposer लौटाता है।

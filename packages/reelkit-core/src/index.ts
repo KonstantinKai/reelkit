@@ -131,6 +131,16 @@ export {
 // DOM
 export { observeDomEvent } from './lib/dom';
 
+// Size
+export {
+  observeElementSize,
+  getViewportSize,
+  observeViewportSize,
+  isMobileWidth,
+  fitAspectRatio,
+  isTouchDevice,
+} from './lib/dom';
+
 // Gestures
 export {
   createGestureController,

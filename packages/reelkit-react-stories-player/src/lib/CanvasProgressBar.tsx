@@ -40,7 +40,14 @@ export const CanvasProgressBar: FC<CanvasProgressBarProps> = ({
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const frameRef = useRef(0);
-  const [renderer] = useState(() => createCanvasProgressRenderer(config));
+  // Resizing the canvas clears it; a bar that is not live repaints on resize.
+  const repaintRef = useRef<(() => void) | null>(null);
+  const [renderer] = useState(() =>
+    createCanvasProgressRenderer({
+      ...config,
+      onResize: () => repaintRef.current?.(),
+    }),
+  );
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -67,15 +74,13 @@ export const CanvasProgressBar: FC<CanvasProgressBarProps> = ({
 
       frameRef.current = requestAnimationFrame(loop);
     } else {
-      // Resizing the canvas clears it. This observer is created after the
-      // renderer's own, and observers are notified in the order they were
-      // created, so the bar is repainted after the renderer has measured.
-      const resizeObserver = new ResizeObserver(draw);
-      if (canvas.parentElement) resizeObserver.observe(canvas.parentElement);
+      repaintRef.current = draw;
 
       disposables.push(
         reaction(() => [activeIndex, progress], draw),
-        () => resizeObserver.disconnect(),
+        () => {
+          repaintRef.current = null;
+        },
       );
 
       draw();

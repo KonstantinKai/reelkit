@@ -19,8 +19,6 @@ jest.mock('@reelkit/stories-core', () => ({
   },
 }));
 
-let resizeCallbacks: (() => void)[] = [];
-
 function createBar(
   inputs: Record<string, unknown>,
 ): ComponentFixture<RkCanvasProgressBarComponent> {
@@ -51,10 +49,8 @@ describe('RkCanvasProgressBarComponent', () => {
   };
   const originalFrame = globalThis.requestAnimationFrame;
   const originalCancel = globalThis.cancelAnimationFrame;
-  const originalObserver = globalThis.ResizeObserver;
 
   beforeEach(() => {
-    resizeCallbacks = [];
     frames = new Map();
     mockRenderer.attach.mockClear();
     mockRenderer.draw.mockClear();
@@ -62,17 +58,6 @@ describe('RkCanvasProgressBarComponent', () => {
     frame.mockClear();
     globalThis.requestAnimationFrame = frame;
     globalThis.cancelAnimationFrame = cancelFrame;
-    globalThis.ResizeObserver = class {
-      constructor(callback: () => void) {
-        resizeCallbacks.push(callback);
-      }
-      observe() {
-        /* noop */
-      }
-      disconnect() {
-        /* noop */
-      }
-    } as unknown as typeof ResizeObserver;
     TestBed.configureTestingModule({
       imports: [RkCanvasProgressBarComponent],
     });
@@ -82,7 +67,6 @@ describe('RkCanvasProgressBarComponent', () => {
     TestBed.resetTestingModule();
     globalThis.requestAnimationFrame = originalFrame;
     globalThis.cancelAnimationFrame = originalCancel;
-    globalThis.ResizeObserver = originalObserver;
   });
 
   // The same separate inputs the React and Vue bars take, rather than one
@@ -106,6 +90,7 @@ describe('RkCanvasProgressBarComponent', () => {
       minSegmentWidth: 12,
       bgColor: '#333',
       fillColor: '#f0f',
+      onResize: expect.any(Function),
     });
   });
 
@@ -156,7 +141,9 @@ describe('RkCanvasProgressBarComponent', () => {
     });
     mockRenderer.draw.mockClear();
 
-    resizeCallbacks.forEach((callback) => callback());
+    // The renderer owns the observer and reports a re-measure through onResize.
+    const config = mockRenderer.configs.at(-1) as { onResize?: () => void };
+    config.onResize?.();
 
     expect(mockRenderer.draw).toHaveBeenCalledWith(3, 1, 0.5);
   });

@@ -138,7 +138,7 @@ import typesCode from '../../snippets/stories-core/types-code.ts?raw';
 
 ## Canvas プログレスレンダラー [#canvas-progress-renderer]
 
-`createCanvasProgressRenderer(config?)` は分割された進捗バーを canvas に描きます。Retina ディスプレイに合わせて拡大し、ResizeObserver でコンテナーを計測し、セグメントが収まらないときはスライドするウィンドウを使います。
+`createCanvasProgressRenderer(config?)` は分割された進捗バーを canvas に描きます。Retina ディスプレイに合わせて拡大し、`@reelkit/core` の `observeElementSize` でコンテナーの幅に追従し、セグメントが収まらないときはスライドするウィンドウを使います。
 
 ### 設定（CanvasProgressRendererConfig） [#config-canvasprogressrendererconfig]
 
@@ -149,15 +149,16 @@ import typesCode from '../../snippets/stories-core/types-code.ts?raw';
 | `minSegmentWidth` | `number` | 8 | スライドするウィンドウに切り替わる前のセグメントの最小幅 |
 | `bgColor` | `string` | 'rgba(255,255,255,0.3)' | 塗られていないセグメントの背景色 |
 | `fillColor` | `string` | '#ffffff' | 完了したセグメントとアクティブなセグメントの塗りの色 |
+| `onResize` | `() => void` | - | コンテナーの大きさが変わり、canvas を測り直したあとに呼ばれます。canvas の大きさを変えると中身が消えるので、ここで描き直してください。 |
 
 ### メソッド [#methods]
 
 | メンバー | 型 | 説明 |
 | --- | --- | --- |
-| `attach(canvas)` | `(HTMLCanvasElement) => void` | canvas 要素に接続し、親要素で ResizeObserver を開始します |
+| `attach(canvas)` | `(HTMLCanvasElement) => void` | canvas 要素に接続し、親要素の大きさの監視を始めます |
 | `draw(totalStories, activeIndex, progress)` | `(number, number, number) => void` | 指定した状態で進捗バーを描きます |
 | `width` | `number (readonly)` | 現在計測されている幅（CSS ピクセル） |
-| `dispose()` | `() => void` | ResizeObserver と内部の状態を片付けます |
+| `dispose()` | `() => void` | 親要素の大きさの監視をやめ、内部の状態を片付けます |
 
 ### 例 [#example]
 
@@ -214,8 +215,9 @@ import typesCode from '../../snippets/stories-core/types-code.ts?raw';
 | 関数 | 型 | 説明 |
 | --- | --- | --- |
 | `getStoriesSize()` | `() => [number, number]` | ストーリーの表示領域の大きさ。スマートフォンでは画面いっぱい、デスクトップでは上下 16px の余白を除いたウィンドウの高さに合わせて 9:16 にし、領域と左右の矢印が横に収まらないときだけ幅を詰めます。window がない（サーバーレンダリング）場合は `[0, 0]` を返します。 |
-| `isMobileWidth(viewportWidth)` | `(number) => boolean` | その幅のビューポートがスマートフォン向けの配置を使うかどうか。768 以下がスマートフォン扱いで、スタイルシートと同じ基準です。 |
 | `parseDurationMs(value)` | `(string) => number` | 計算された `transition-duration` のリストの中で最も長い時間をミリ秒で返します。時間でない値は 0 として扱います。 |
+
+`getStoriesSize` が使うスマートフォンの境界は `isMobileWidth` で、`@reelkit/core` とすべてのバインディングからエクスポートされています。768px 以下がスマートフォンです。[サイズの検出](/docs/core/api#size-detection)を参照してください。
 
 ### デスクトップのカルーセルの配置計算 [#desktop-carousel-geometry]
 

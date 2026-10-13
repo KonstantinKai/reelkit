@@ -296,3 +296,121 @@ export const createFakeStorageAdapter = (
     notify: (raw) => listeners.forEach((listener) => listener(raw)),
   };
 };
+
+/** What {@link installResizeObserverStub} hands back. */
+export interface ResizeObserverStub {
+  /** Elements currently observed, across every stub observer. */
+  readonly observed: readonly Element[];
+
+  /** How many observers were created since the stub was installed. */
+  readonly created: number;
+
+  /** How many observers were disconnected since the stub was installed. */
+  readonly disconnected: number;
+
+  /**
+   * Gives every observed element this `clientWidth` / `clientHeight` and runs
+   * the observer callbacks, as a real layout change would.
+   */
+  resize: (width: number, height: number) => void;
+
+  /**
+   * Size an element receives the moment it is observed, with the callback run
+   * straight away — a container that already has a layout when mounted. Pass
+   * `null` to observe without measuring.
+   */
+  setSizeOnObserve: (size: [number, number] | null) => void;
+
+  /** Puts the original `ResizeObserver` back. */
+  restore: () => void;
+}
+
+const setClientSize = (element: Element, width: number, height: number) => {
+  Object.defineProperty(element, 'clientWidth', {
+    value: width,
+    configurable: true,
+  });
+  Object.defineProperty(element, 'clientHeight', {
+    value: height,
+    configurable: true,
+  });
+};
+
+/**
+ * Replaces the global `ResizeObserver` with a controllable stand-in.
+ *
+ * jsdom has no layout, so `clientWidth` is always 0 and no observer ever
+ * fires. Size code measures the element itself rather than the observer entry,
+ * so the stub sets `clientWidth` / `clientHeight` on the observed element
+ * before running the callback; firing the callback alone would report zeros.
+ *
+ * @param sizeOnObserve - Size given to an element as soon as it is observed,
+ * or `null` (the default) to wait for {@link ResizeObserverStub.resize}.
+ * @returns Controls for driving resizes and counters for asserting teardown.
+ */
+export const installResizeObserverStub = (
+  sizeOnObserve: [number, number] | null = null,
+): ResizeObserverStub => {
+  const original = globalThis.ResizeObserver;
+  const callbacks = new Map<object, () => void>();
+  let observed: Element[] = [];
+  let created = 0;
+  let disconnected = 0;
+  let initialSize = sizeOnObserve;
+
+  class StubResizeObserver {
+    private readonly targets: Element[] = [];
+
+    constructor(callback: ResizeObserverCallback) {
+      created++;
+      callbacks.set(this, () =>
+        callback([], this as unknown as ResizeObserver),
+      );
+    }
+
+    observe(element: Element) {
+      this.targets.push(element);
+      observed.push(element);
+      if (initialSize) {
+        setClientSize(element, initialSize[0], initialSize[1]);
+        callbacks.get(this)?.();
+      }
+    }
+
+    unobserve(element: Element) {
+      observed = observed.filter((target) => target !== element);
+    }
+
+    disconnect() {
+      disconnected++;
+      observed = observed.filter((target) => !this.targets.includes(target));
+      this.targets.length = 0;
+      callbacks.delete(this);
+    }
+  }
+
+  globalThis.ResizeObserver =
+    StubResizeObserver as unknown as typeof ResizeObserver;
+
+  return {
+    get observed() {
+      return observed;
+    },
+    get created() {
+      return created;
+    },
+    get disconnected() {
+      return disconnected;
+    },
+    resize: (width, height) => {
+      observed.forEach((element) => setClientSize(element, width, height));
+      [...callbacks.values()].forEach((run) => run());
+    },
+    setSizeOnObserve: (size) => {
+      initialSize = size;
+    },
+    restore: () => {
+      globalThis.ResizeObserver = original;
+    },
+  };
+};

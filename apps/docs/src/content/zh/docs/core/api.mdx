@@ -186,6 +186,19 @@ import usage from '../../../snippets/core-api/usage.ts?raw';
 | `createBodyLock` | `() => BodyLock` | 带引用计数的 body 滚动锁。多个使用方可以同时上锁，全部解锁后才恢复滚动。 |
 | `sharedBodyLock` | `BodyLock` | 模块级的单例实例。当应用里多个组件需要共用同一个引用计数、让嵌套的弹窗 / 浮层正确叠加时使用。各框架绑定（`@reelkit/react`, `@reelkit/vue`, `@reelkit/angular`）内部用的就是它。 |
 
+## 尺寸检测 [#size-detection]
+
+各个绑定和浮层如何测量自己的容器和窗口。没有传入 `size` 时，`Reel` 使用 `observeElementSize`；reel 播放器、lightbox 和 stories 播放器则按窗口确定自身尺寸。服务端安全：没有 window 或 `ResizeObserver` 时，getter 返回 `[0, 0]` 或 `false`，观察函数返回空操作的销毁函数。
+
+| 导出 | 类型 | 说明 |
+| --- | --- | --- |
+| `observeElementSize` | `(element: Element, callback: (size: [number, number]) => void) => Disposer` | 每当元素的内边距盒（`clientWidth` × `clientHeight`）变化时报告它。会跳过有一边为零的尺寸（元素被隐藏或尚未布局），以及与上一次报告相同的尺寸。 |
+| `getViewportSize` | `() => [number, number]` | 窗口尺寸，形式为 `[innerWidth, innerHeight]`。 |
+| `observeViewportSize` | `(callback: (size: [number, number]) => void) => Disposer` | 每次 `resize` 事件都回调窗口尺寸，包括尺寸没有变化的那次（设备模拟可能切换到尺寸相同的触屏设备）。如果只关心变化，请自己比较尺寸。 |
+| `isMobileWidth` | `(viewportWidth: number) => boolean` | 这个宽度的窗口是否使用手机布局：768px 及以下。所有浮层及其样式表都在这个宽度切换。 |
+| `fitAspectRatio` | `(viewport: [number, number], aspectRatio?: number) => [number, number]` | 给定窗口下的浮层尺寸。手机宽度下占满整个窗口；否则按 `aspectRatio` 占满窗口高度，放不下时收窄到窗口宽度。缺失、为零、为负或非有限的比例会回退到 9/16。 |
+| `isTouchDevice` | `() => boolean` | 设备是否支持触摸输入（`ontouchstart` 或 `maxTouchPoints`）。这是能力检测，不是屏幕尺寸：触屏笔记本算，窄的桌面窗口不算。 |
+
 ## 焦点管理 [#focus-management]
 
 与框架无关的对话框无障碍原语。浮层包用它们在关闭时把焦点还给触发元素，并在打开期间把 Tab / Shift+Tab 锁在浮层内部。服务端安全：在非浏览器环境下每个工具都返回空操作的销毁函数。

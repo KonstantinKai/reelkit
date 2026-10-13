@@ -27,6 +27,7 @@ import {
   defaultRangeExtractor,
   first,
   last,
+  observeElementSize,
   slideTransition,
   type RangeExtractor,
   type SliderController,
@@ -599,27 +600,16 @@ export class ReelComponent implements OnInit, AfterViewInit {
       effect((onCleanup) => {
         if (this.size() !== undefined) return;
 
-        const observer = new ResizeObserver((entries) =>
-          this.measureAndUpdateSize(hostElement, entries),
+        onCleanup(
+          observeElementSize(hostElement, (size) =>
+            this.updateMeasuredSize(size),
+          ),
         );
-        observer.observe(hostElement);
-
-        onCleanup(() => observer.disconnect());
       });
     });
   }
 
-  private measureAndUpdateSize(
-    hostElement: HTMLElement,
-    entries?: ResizeObserverEntry[],
-  ): void {
-    // Prefer contentRect from the ResizeObserver entry for accuracy in all environments
-    // (including jsdom where clientWidth/clientHeight may be 0).
-    const entry = entries?.[0];
-    const width = entry ? entry.contentRect.width : hostElement.clientWidth;
-    const height = entry ? entry.contentRect.height : hostElement.clientHeight;
-    if (width <= 0 || height <= 0) return;
-
+  private updateMeasuredSize([width, height]: [number, number]): void {
     // ResizeObserver callbacks fire outside Angular's zone in production.
     // We must use zone.run() (not just markForCheck()) so that Angular
     // schedules a new CD cycle. With OnPush, markForCheck() alone from

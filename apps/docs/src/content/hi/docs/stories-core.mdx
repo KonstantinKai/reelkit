@@ -138,7 +138,7 @@ import typesCode from '../../snippets/stories-core/types-code.ts?raw';
 
 ## Canvas प्रोग्रेस रेंडरर [#canvas-progress-renderer]
 
-`createCanvasProgressRenderer(config?)` canvas पर segmented प्रोग्रेस बार बनाता है। यह Retina डिस्प्ले के हिसाब से स्केल होता है, ResizeObserver से अपना कंटेनर नापता है, और segments न समाने पर खिसकती विंडो इस्तेमाल करता है।
+`createCanvasProgressRenderer(config?)` canvas पर segmented प्रोग्रेस बार बनाता है। यह Retina डिस्प्ले के हिसाब से स्केल होता है, `@reelkit/core` के `observeElementSize` से अपने कंटेनर की चौड़ाई पर नज़र रखता है, और segments न समाने पर खिसकती विंडो इस्तेमाल करता है।
 
 ### कॉन्फ़िग (CanvasProgressRendererConfig) [#config-canvasprogressrendererconfig]
 
@@ -149,15 +149,16 @@ import typesCode from '../../snippets/stories-core/types-code.ts?raw';
 | `minSegmentWidth` | `number` | 8 | segment की न्यूनतम चौड़ाई, जिसके बाद खिसकती विंडो शुरू होती है |
 | `bgColor` | `string` | 'rgba(255,255,255,0.3)' | न भरे segments का बैकग्राउंड रंग |
 | `fillColor` | `string` | '#ffffff' | पूरे/सक्रिय segments का भरने वाला रंग |
+| `onResize` | `() => void` | - | कंटेनर का साइज़ बदलने और canvas के दोबारा नापे जाने के बाद कॉल होता है। canvas का साइज़ बदलने से वह साफ़ हो जाता है, इसलिए यहाँ दोबारा ड्रॉ करें। |
 
 ### मेथड [#methods]
 
 | सदस्य | टाइप | विवरण |
 | --- | --- | --- |
-| `attach(canvas)` | `(HTMLCanvasElement) => void` | canvas एलिमेंट से जुड़ता है; parent पर ResizeObserver शुरू करता है |
+| `attach(canvas)` | `(HTMLCanvasElement) => void` | canvas एलिमेंट से जुड़ता है; parent के साइज़ पर नज़र रखना शुरू करता है |
 | `draw(totalStories, activeIndex, progress)` | `(number, number, number) => void` | दी गई स्टेट के लिए प्रोग्रेस बार बनाता है |
 | `width` | `number (readonly)` | CSS पिक्सेल में अभी नापी गई चौड़ाई |
-| `dispose()` | `() => void` | ResizeObserver और अंदरूनी स्टेट साफ़ करता है |
+| `dispose()` | `() => void` | parent के साइज़ पर नज़र रखना बंद करता है और अंदरूनी स्टेट साफ़ करता है |
 
 ### उदाहरण [#example]
 
@@ -214,8 +215,9 @@ import typesCode from '../../snippets/stories-core/types-code.ts?raw';
 | फ़ंक्शन | टाइप | विवरण |
 | --- | --- | --- |
 | `getStoriesSize()` | `() => [number, number]` | स्टोरी कैनवास का आकार। फ़ोन पर पूरी स्क्रीन; डेस्कटॉप पर विंडो की ऊँचाई में से 16px का हाशिया घटाकर 9:16 में, और तभी सँकरा होता है जब कैनवास तथा दोनों तीर आड़े में न समाएँ। window न हो (सर्वर रेंडरिंग) तो `[0, 0]` लौटाता है। |
-| `isMobileWidth(viewportWidth)` | `(number) => boolean` | इस चौड़ाई का व्यूपोर्ट फ़ोन वाला लेआउट इस्तेमाल करेगा या नहीं। 768 तक फ़ोन गिना जाता है, जैसा स्टाइलशीट में है। |
 | `parseDurationMs(value)` | `(string) => number` | गणना किए गए `transition-duration` की सूची में सबसे लंबा समय, मिलीसेकंड में। जो समय नहीं है वह शून्य गिना जाता है। |
+
+`getStoriesSize` जिस फ़ोन breakpoint का इस्तेमाल करता है वह `isMobileWidth` है, जो `@reelkit/core` और हर binding से export होता है: 768px और उससे कम फ़ोन है। देखें [साइज़ पहचान](/docs/core/api#size-detection)।
 
 ### डेस्कटॉप कैरोसेल की ज्यामिति [#desktop-carousel-geometry]
 

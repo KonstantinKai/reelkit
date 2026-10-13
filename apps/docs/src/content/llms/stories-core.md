@@ -197,26 +197,27 @@ timer.dispose();
 
 ## Canvas Progress Renderer
 
-`createCanvasProgressRenderer(config?)` draw segmented progress bars on canvas. Scale for Retina displays, measure container via ResizeObserver, use sliding window when segments don't fit.
+`createCanvasProgressRenderer(config?)` draw segmented progress bars on canvas. Scale for Retina displays, follow container width via `observeElementSize` from `@reelkit/core`, use sliding window when segments don't fit.
 
 ### Config (CanvasProgressRendererConfig)
 
-| Property          | Type     | Default                   | Description                                          |
-| ----------------- | -------- | ------------------------- | ---------------------------------------------------- |
-| `gap`             | `number` | `2`                       | Gap in pixels between segments                       |
-| `barHeight`       | `number` | `2`                       | Bar height in pixels                                 |
-| `minSegmentWidth` | `number` | `8`                       | Minimum segment width before sliding window kicks in |
-| `bgColor`         | `string` | `'rgba(255,255,255,0.3)'` | Background color of unfilled segments                |
-| `fillColor`       | `string` | `'#ffffff'`               | Fill color of completed/active segments              |
+| Property          | Type         | Default                   | Description                                                                                   |
+| ----------------- | ------------ | ------------------------- | --------------------------------------------------------------------------------------------- |
+| `gap`             | `number`     | `2`                       | Gap in pixels between segments                                                                |
+| `barHeight`       | `number`     | `2`                       | Bar height in pixels                                                                          |
+| `minSegmentWidth` | `number`     | `8`                       | Minimum segment width before sliding window kicks in                                          |
+| `bgColor`         | `string`     | `'rgba(255,255,255,0.3)'` | Background color of unfilled segments                                                         |
+| `fillColor`       | `string`     | `'#ffffff'`               | Fill color of completed/active segments                                                       |
+| `onResize`        | `() => void` | -                         | Called after container changed size + canvas re-measured. Resize clears canvas → redraw here. |
 
 ### Methods
 
-| Member                                      | Type                               | Description                                               |
-| ------------------------------------------- | ---------------------------------- | --------------------------------------------------------- |
-| `attach(canvas)`                            | `(HTMLCanvasElement) => void`      | Attach to canvas element; starts ResizeObserver on parent |
-| `draw(totalStories, activeIndex, progress)` | `(number, number, number) => void` | Draw progress bar for given state                         |
-| `width`                                     | `number (readonly)`                | Current measured width in CSS pixels                      |
-| `dispose()`                                 | `() => void`                       | Clean up ResizeObserver and internal state                |
+| Member                                      | Type                               | Description                                           |
+| ------------------------------------------- | ---------------------------------- | ----------------------------------------------------- |
+| `attach(canvas)`                            | `(HTMLCanvasElement) => void`      | Attach to canvas element; starts watching parent size |
+| `draw(totalStories, activeIndex, progress)` | `(number, number, number) => void` | Draw progress bar for given state                     |
+| `width`                                     | `number (readonly)`                | Current measured width in CSS pixels                  |
+| `dispose()`                                 | `() => void`                       | Stop watching parent size, clear internal state       |
 
 ### Example
 
@@ -317,11 +318,12 @@ Pure functions shared by every binding's player — React, Vue, Angular size + l
 
 Sizing:
 
-| Function                       | Type                     | Notes                                                                                                                                             |
-| ------------------------------ | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `getStoriesSize()`             | `() => [number, number]` | phone fills screen; desktop fills window height −2×16px at 9:16, narrows when canvas + both arrows would not fit. No window → `[0, 0]` (SSR safe) |
-| `isMobileWidth(viewportWidth)` | `(number) => boolean`    | ≤768 = phone, matches stylesheet                                                                                                                  |
-| `parseDurationMs(value)`       | `(string) => number`     | longest time in computed `transition-duration` list, ms; non-time → 0                                                                             |
+| Function                 | Type                     | Notes                                                                                                                                             |
+| ------------------------ | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `getStoriesSize()`       | `() => [number, number]` | phone fills screen; desktop fills window height −2×16px at 9:16, narrows when canvas + both arrows would not fit. No window → `[0, 0]` (SSR safe) |
+| `parseDurationMs(value)` | `(string) => number`     | longest time in computed `transition-duration` list, ms; non-time → 0                                                                             |
+
+Phone breakpoint = `isMobileWidth` from `@reelkit/core` / any binding: ≤768px = phone. Not exported from stories-core.
 
 Desktop carousel geometry (offset relative to active group: negative left, positive right, 0 = active story):
 

@@ -138,7 +138,7 @@ El motor de `@reelkit/react-stories-player`. TypeScript puro, sin dependencias d
 
 ## Renderizador de progreso en Canvas [#canvas-progress-renderer]
 
-`createCanvasProgressRenderer(config?)` dibuja barras de progreso segmentadas en un canvas. Se adapta a pantallas Retina, mide su contenedor con ResizeObserver y usa una ventana deslizante cuando los segmentos no caben.
+`createCanvasProgressRenderer(config?)` dibuja barras de progreso segmentadas en un canvas. Se adapta a pantallas Retina, sigue el ancho de su contenedor mediante `observeElementSize` de `@reelkit/core` y usa una ventana deslizante cuando los segmentos no caben.
 
 ### Configuración (CanvasProgressRendererConfig) [#config-canvasprogressrendererconfig]
 
@@ -149,15 +149,16 @@ El motor de `@reelkit/react-stories-player`. TypeScript puro, sin dependencias d
 | `minSegmentWidth` | `number` | 8 | Ancho mínimo de un segmento antes de que entre en juego la ventana deslizante |
 | `bgColor` | `string` | 'rgba(255,255,255,0.3)' | Color de fondo de los segmentos sin rellenar |
 | `fillColor` | `string` | '#ffffff' | Color de relleno de los segmentos completados o activos |
+| `onResize` | `() => void` | - | Se llama después de que el contenedor cambie de tamaño y el canvas se vuelva a medir. Redimensionar un canvas lo borra, así que vuelve a dibujar aquí. |
 
 ### Métodos [#methods]
 
 | Miembro | Tipo | Descripción |
 | --- | --- | --- |
-| `attach(canvas)` | `(HTMLCanvasElement) => void` | Se conecta a un elemento canvas e inicia ResizeObserver en su padre |
+| `attach(canvas)` | `(HTMLCanvasElement) => void` | Se conecta a un elemento canvas y empieza a vigilar el tamaño de su padre |
 | `draw(totalStories, activeIndex, progress)` | `(number, number, number) => void` | Dibuja la barra de progreso para el estado indicado |
 | `width` | `number (readonly)` | Ancho medido actual en píxeles CSS |
-| `dispose()` | `() => void` | Limpia ResizeObserver y el estado interno |
+| `dispose()` | `() => void` | Deja de vigilar el tamaño del padre y limpia el estado interno |
 
 ### Ejemplo [#example]
 
@@ -214,8 +215,9 @@ Funciones puras que comparte el player de cada binding, de modo que React, Vue y
 | Función | Tipo | Descripción |
 | --- | --- | --- |
 | `getStoriesSize()` | `() => [number, number]` | Tamaño del lienzo de la story. En el móvil ocupa toda la pantalla; en escritorio ocupa la altura de la ventana menos un margen de 16px, en 9:16, y solo se estrecha cuando el lienzo y las dos flechas no caben a lo ancho. Sin window (renderizado en el servidor) devuelve `[0, 0]`. |
-| `isMobileWidth(viewportWidth)` | `(number) => boolean` | Si una ventana de ese ancho usa la disposición de móvil. Hasta 768 cuenta como móvil, igual que en la hoja de estilos. |
 | `parseDurationMs(value)` | `(string) => number` | El tiempo más largo de una lista de `transition-duration` calculada, en milisegundos. Lo que no sea un tiempo cuenta como cero. |
+
+El punto de corte de móvil que usa `getStoriesSize` es `isMobileWidth`, exportado desde `@reelkit/core` y desde cada binding: 768px o menos es un móvil. Consulta [Detección de tamaño](/docs/core/api#size-detection).
 
 ### Geometría del carrusel en escritorio [#desktop-carousel-geometry]
 

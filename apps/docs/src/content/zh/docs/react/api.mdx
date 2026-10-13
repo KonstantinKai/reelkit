@@ -153,3 +153,7 @@ A `UrlAdapter` ，底层用 React Router。在带路由的应用里把它作为 
 创建一个 key 提取器，处理开启 `loop` 时出现的重复索引。
 
 <CodeBlock code={createdefaultkeyextractorforloop} language="tsx" />
+
+### 尺寸检测 [#size-detection]
+
+`observeElementSize`、`getViewportSize`、`observeViewportSize`、`isMobileWidth`、`fitAspectRatio` 和 `isTouchDevice` 都从 `@reelkit/react` 重新导出，供需要像 reelkit 自带浮层那样确定自身尺寸的自定义浮层使用。参见核心 API 中的[尺寸检测](/docs/core/api#size-detection)。

@@ -23,6 +23,9 @@ import {
   createFocusTrap,
   hasRenderedNodes,
   observeDomEvent,
+  observeViewportSize,
+  getViewportSize,
+  isTouchDevice,
   slideTransition,
   toVueRef,
   useBodyLock,
@@ -103,11 +106,6 @@ export interface LightboxApi {
 const _kPreloadRange = 2;
 
 const preloader = createContentPreloader({ maxCacheSize: 1000 });
-
-const isTouchDevice = (): boolean => {
-  if (typeof window === 'undefined') return false;
-  return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-};
 
 /**
  * Shared prop definitions reused by both public wrappers — `LightboxOverlay`
@@ -241,11 +239,7 @@ const LightboxContent = defineComponent({
     const containerRef = shallowRef<HTMLDivElement | null>(null);
     const sliderRef = shallowRef<ReelExpose | null>(null);
 
-    const size = shallowRef<[number, number]>(
-      typeof window !== 'undefined'
-        ? [window.innerWidth, window.innerHeight]
-        : [0, 0],
-    );
+    const size = shallowRef<[number, number]>(getViewportSize());
     const isMobile = ref(isTouchDevice());
     const activeIndex = ref(props.initialIndex);
 
@@ -305,8 +299,8 @@ const LightboxContent = defineComponent({
       }
 
       disposables.push(
-        observeDomEvent(window, 'resize', () => {
-          size.value = [window.innerWidth, window.innerHeight];
+        observeViewportSize((next) => {
+          size.value = next;
           isMobile.value = isTouchDevice();
         }),
         observeDomEvent(window, 'keydown', (e) => {

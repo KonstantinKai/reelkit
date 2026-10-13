@@ -2,6 +2,7 @@ module.exports = {
   displayName: 'reelkit-angular',
   preset: '../../jest.preset.js',
   moduleNameMapper: {
+    '^@reelkit/core/testing$': '<rootDir>/../reelkit-core/src/testing/index.ts',
     '^@reelkit/core$': '<rootDir>/../reelkit-core/src/index.ts',
   },
   setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],

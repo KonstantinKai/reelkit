@@ -138,7 +138,7 @@ import typesCode from '../../snippets/stories-core/types-code.ts?raw';
 
 ## Рендерер прогресу на Canvas [#canvas-progress-renderer]
 
-`createCanvasProgressRenderer(config?)` малює сегментовані смуги прогресу на canvas. Масштабується під дисплеї Retina, вимірює свій контейнер через ResizeObserver і вмикає рухоме вікно, коли сегменти не вміщаються.
+`createCanvasProgressRenderer(config?)` малює сегментовані смуги прогресу на canvas. Масштабується під дисплеї Retina, стежить за шириною свого контейнера через `observeElementSize` з `@reelkit/core` і вмикає рухоме вікно, коли сегменти не вміщаються.
 
 ### Config (CanvasProgressRendererConfig) [#config-canvasprogressrendererconfig]
 
@@ -149,15 +149,16 @@ import typesCode from '../../snippets/stories-core/types-code.ts?raw';
 | `minSegmentWidth` | `number` | 8 | Мінімальна ширина сегмента, після якої вмикається рухоме вікно |
 | `bgColor` | `string` | 'rgba(255,255,255,0.3)' | Колір тла незаповнених сегментів |
 | `fillColor` | `string` | '#ffffff' | Колір заповнення завершених та активних сегментів |
+| `onResize` | `() => void` | - | Викликається після того, як контейнер змінив розмір і canvas переміряно. Зміна розміру canvas очищає його, тож перемальовуйте тут. |
 
 ### Методи [#methods]
 
 | Член | Тип | Опис |
 | --- | --- | --- |
-| `attach(canvas)` | `(HTMLCanvasElement) => void` | Підключає до елемента canvas; запускає ResizeObserver на батьківському елементі |
+| `attach(canvas)` | `(HTMLCanvasElement) => void` | Підключає до елемента canvas; починає стежити за розміром батьківського елемента |
 | `draw(totalStories, activeIndex, progress)` | `(number, number, number) => void` | Малює смугу прогресу для заданого стану |
 | `width` | `number (readonly)` | Поточна виміряна ширина в пікселях CSS |
-| `dispose()` | `() => void` | Прибирає ResizeObserver і внутрішній стан |
+| `dispose()` | `() => void` | Припиняє стежити за розміром батьківського елемента й очищає внутрішній стан |
 
 ### Example [#example]
 
@@ -214,8 +215,9 @@ import typesCode from '../../snippets/stories-core/types-code.ts?raw';
 | Функція | Тип | Опис |
 | --- | --- | --- |
 | `getStoriesSize()` | `() => [number, number]` | Розмір полотна історії. Телефон заповнює екран; десктоп заповнює висоту вікна мінус поле 16px у пропорції 9:16 і вужчає лише тоді, коли полотно й обидві стрілки не вміщаються поперек. Без вікна (рендеринг на сервері) повертає `[0, 0]`. |
-| `isMobileWidth(viewportWidth)` | `(number) => boolean` | Чи користується вікно такої ширини розкладом для телефона. 768 і менше — телефон, як і в стилях. |
 | `parseDurationMs(value)` | `(string) => number` | Найдовший час зі списку обчисленого `transition-duration`, у мілісекундах. Усе, що не є часом, рахується як нуль. |
+
+Межа телефона, яку використовує `getStoriesSize`, — це `isMobileWidth`, що експортується з `@reelkit/core` і з кожної прив’язки: 768px і вужче — телефон. Див. [Визначення розміру](/docs/core/api#size-detection).
 
 ### Геометрія десктопної каруселі [#desktop-carousel-geometry]
 

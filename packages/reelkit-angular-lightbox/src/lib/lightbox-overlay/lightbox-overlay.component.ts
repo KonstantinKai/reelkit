@@ -48,7 +48,9 @@ import {
   captureFocusForReturn,
   createFocusTrap,
   getFocusableElements,
-  observeDomEvent,
+  observeViewportSize,
+  getViewportSize,
+  isTouchDevice,
 } from '@reelkit/angular';
 import {
   RkLightboxControlsDirective,
@@ -85,10 +87,6 @@ const _kDefaultWheelDebounceMs = 200;
 const preloader: ContentPreloader = createContentPreloader({
   maxCacheSize: 1000,
 });
-
-const isTouchDevice = (): boolean =>
-  typeof window !== 'undefined' &&
-  ('ontouchstart' in window || navigator.maxTouchPoints > 0);
 
 /**
  * Moves keyboard focus into `container`. Prefers the first naturally
@@ -530,11 +528,7 @@ export class RkLightboxOverlayComponent {
     this.isOpen() ? this.safeInitialIndex() : 0,
   );
 
-  protected readonly size = signal<[number, number]>(
-    typeof window !== 'undefined'
-      ? [window.innerWidth, window.innerHeight]
-      : [0, 0],
-  );
+  protected readonly size = signal<[number, number]>(getViewportSize());
 
   protected readonly isMobile = signal(isTouchDevice());
 
@@ -575,15 +569,9 @@ export class RkLightboxOverlayComponent {
   private _stopObservingResize: (() => void) | null = null;
 
   constructor() {
-    if (typeof window !== 'undefined') {
-      this._ngZone.runOutsideAngular(() => {
-        this._stopObservingResize = observeDomEvent(
-          window,
-          'resize',
-          this._handleResize,
-        );
-      });
-    }
+    this._ngZone.runOutsideAngular(() => {
+      this._stopObservingResize = observeViewportSize(this._handleResize);
+    });
     this._destroyRef.onDestroy(() => {
       this._stopObservingResize?.();
       this._bodyLock.unlock();
@@ -752,9 +740,9 @@ export class RkLightboxOverlayComponent {
     return item?.title ? `${item.title}, ${position}` : `Image ${position}`;
   }
 
-  private readonly _handleResize = (): void => {
+  private readonly _handleResize = (size: [number, number]): void => {
     this._ngZone.run(() => {
-      this.size.set([window.innerWidth, window.innerHeight]);
+      this.size.set(size);
       this.isMobile.set(isTouchDevice());
       this._reelApi?.adjust();
     });

@@ -1,3 +1,4 @@
+import { observeElementSize, type Disposer } from '@reelkit/core';
 import { getVisibleWindow } from './progress';
 
 /** Configuration for {@link createCanvasProgressRenderer}. */
@@ -25,6 +26,13 @@ export interface CanvasProgressRendererConfig {
 
   /** Fill color of completed/active segments. */
   fillColor?: string;
+
+  /**
+   * Called each time the container's size changes, after the canvas has
+   * been re-measured. Resizing a canvas clears it, so a bar that does not
+   * redraw every frame repaints here.
+   */
+  onResize?: () => void;
 }
 
 /** Framework-agnostic canvas progress bar renderer returned by {@link createCanvasProgressRenderer}. */
@@ -60,7 +68,7 @@ export function createCanvasProgressRenderer(
 
   let _canvas: HTMLCanvasElement | null = null;
   let _ctx: CanvasRenderingContext2D | null = null;
-  let _observer: ResizeObserver | null = null;
+  let _stopObserving: Disposer | null = null;
   let _width = 0;
 
   const getDpr = (): number =>
@@ -96,10 +104,14 @@ export function createCanvasProgressRenderer(
 
       measure();
 
+      // The observer reports the parent's padding box; the bar spans its
+      // content box, so `measure` subtracts the padding itself.
       const parent = canvas.parentElement;
       if (parent) {
-        _observer = new ResizeObserver(measure);
-        _observer.observe(parent);
+        _stopObserving = observeElementSize(parent, () => {
+          measure();
+          config?.onResize?.();
+        });
       }
     },
 
@@ -160,8 +172,8 @@ export function createCanvasProgressRenderer(
     },
 
     dispose(): void {
-      _observer?.disconnect();
-      _observer = null;
+      _stopObserving?.();
+      _stopObserving = null;
       _canvas = null;
       _ctx = null;
       _width = 0;

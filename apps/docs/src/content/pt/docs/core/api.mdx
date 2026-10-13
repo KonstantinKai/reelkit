@@ -186,6 +186,19 @@ Auxiliares de baixo nível para gerenciar eventos do DOM e garantir uma limpeza 
 | `createBodyLock` | `() => BodyLock` | Trava de rolagem do corpo com contagem de referências. Vários consumidores podem travar ao mesmo tempo; a rolagem volta quando todos destravam. |
 | `sharedBodyLock` | `BodyLock` | Instância única em nível de módulo. Use quando vários componentes do seu app precisam compartilhar um único contador, para que modais e overlays aninhados se intercalem direito. Os bindings de framework (`@reelkit/react`, `@reelkit/vue`, `@reelkit/angular`) usam esta instância por baixo dos panos. |
 
+## Detecção de tamanho [#size-detection]
+
+Como cada binding e cada overlay medem o contêiner e a janela. O `Reel` usa `observeElementSize` quando nenhum `size` é passado; o reel player, o lightbox e o stories player se dimensionam pela janela. Seguras no SSR: sem window ou sem `ResizeObserver`, as funções de leitura devolvem `[0, 0]` ou `false` e as de observação devolvem uma função de descarte que não faz nada.
+
+| Export | Tipo | Descrição |
+| --- | --- | --- |
+| `observeElementSize` | `(element: Element, callback: (size: [number, number]) => void) => Disposer` | Informa a caixa de padding do elemento (`clientWidth` × `clientHeight`) sempre que ela muda. Ignora um tamanho com um lado zero (elemento escondido ou ainda sem layout) e um tamanho igual ao último informado. |
+| `getViewportSize` | `() => [number, number]` | O tamanho da janela como `[innerWidth, innerHeight]`. |
+| `observeViewportSize` | `(callback: (size: [number, number]) => void) => Disposer` | Chama o callback com o tamanho da janela a cada evento `resize`, inclusive quando o tamanho não muda (a emulação de dispositivo pode trocar para um aparelho de toque com as mesmas dimensões). Compare os tamanhos você mesmo se só a mudança importar. |
+| `isMobileWidth` | `(viewportWidth: number) => boolean` | Se uma janela dessa largura recebe o layout de celular: 768px ou menos. Todos os overlays e as suas folhas de estilos trocam de layout nessa largura. |
+| `fitAspectRatio` | `(viewport: [number, number], aspectRatio?: number) => [number, number]` | Tamanho do overlay para uma janela. Em largura de celular é a janela inteira; fora disso, a altura inteira da janela na proporção `aspectRatio`, estreitada até a largura da janela quando não couber. Uma proporção ausente, zero, negativa ou não finita volta para 9/16. |
+| `isTouchDevice` | `() => boolean` | Se o dispositivo aceita entrada por toque (`ontouchstart` ou `maxTouchPoints`). É uma checagem de capacidade, não de tamanho de tela: um notebook com tela de toque conta, uma janela estreita no desktop não. |
+
 ## Gerenciamento de foco [#focus-management]
 
 Primitivas de acessibilidade de diálogo, independentes de framework. Os pacotes de overlay as usam para devolver o foco ao gatilho ao fechar e para prender Tab / Shift+Tab dentro do overlay enquanto ele está aberto. Seguras no SSR: fora do navegador, cada auxiliar devolve uma função de descarte que não faz nada.

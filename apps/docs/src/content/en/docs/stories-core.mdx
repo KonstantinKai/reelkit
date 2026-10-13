@@ -138,7 +138,7 @@ The engine behind `@reelkit/react-stories-player`. Pure TypeScript, no framework
 
 ## Canvas Progress Renderer [#canvas-progress-renderer]
 
-`createCanvasProgressRenderer(config?)` draws segmented progress bars on a canvas. Scales for Retina displays, measures its container via ResizeObserver, and uses a sliding window when segments don't fit.
+`createCanvasProgressRenderer(config?)` draws segmented progress bars on a canvas. Scales for Retina displays, follows its container's width through `observeElementSize` from `@reelkit/core`, and uses a sliding window when segments don't fit.
 
 ### Config (CanvasProgressRendererConfig) [#config-canvasprogressrendererconfig]
 
@@ -149,15 +149,16 @@ The engine behind `@reelkit/react-stories-player`. Pure TypeScript, no framework
 | `minSegmentWidth` | `number` | 8 | Minimum segment width before the sliding window kicks in |
 | `bgColor` | `string` | 'rgba(255,255,255,0.3)' | Background color of unfilled segments |
 | `fillColor` | `string` | '#ffffff' | Fill color of completed/active segments |
+| `onResize` | `() => void` | - | Called after the container changed size and the canvas was re-measured. Resizing a canvas clears it, so redraw here. |
 
 ### Methods [#methods]
 
 | Member | Type | Description |
 | --- | --- | --- |
-| `attach(canvas)` | `(HTMLCanvasElement) => void` | Attach to a canvas element; starts ResizeObserver on parent |
+| `attach(canvas)` | `(HTMLCanvasElement) => void` | Attach to a canvas element; starts watching its parent's size |
 | `draw(totalStories, activeIndex, progress)` | `(number, number, number) => void` | Draw the progress bar for the given state |
 | `width` | `number (readonly)` | Current measured width in CSS pixels |
-| `dispose()` | `() => void` | Clean up ResizeObserver and internal state |
+| `dispose()` | `() => void` | Stop watching the parent's size and clear internal state |
 
 ### Example [#example]
 
@@ -214,8 +215,9 @@ Pure functions every binding's player shares, so the React, Vue and Angular play
 | Function | Type | Description |
 | --- | --- | --- |
 | `getStoriesSize()` | `() => [number, number]` | Size of the story canvas. A phone fills the screen; a desktop fills the window height less a 16px margin at 9:16, narrowing only when the canvas and both arrows would not fit across. Returns `[0, 0]` with no window, so server rendering is safe. |
-| `isMobileWidth(viewportWidth)` | `(number) => boolean` | Whether a viewport of this width uses the phone layout. 768 and below counts as a phone, matching the stylesheet. |
 | `parseDurationMs(value)` | `(string) => number` | Longest time in a computed `transition-duration` list, in milliseconds. Anything that is not a time counts as none. |
+
+The phone breakpoint `getStoriesSize` uses is `isMobileWidth`, exported from `@reelkit/core` and every binding: 768px and narrower is a phone. See [Size Detection](/docs/core/api#size-detection).
 
 ### Desktop carousel geometry [#desktop-carousel-geometry]
 

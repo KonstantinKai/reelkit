@@ -267,7 +267,7 @@ URL में id को base64url में encode करने के लिए
 | --- | --- | --- | --- |
 | `apiRef` | `MutableRefObject<ReelApi>` | - | Reel API तक पहुँचने के लिए ref |
 | `ariaLabel` | `string` | 'Video player' | dialog क्षेत्र का सुलभ लेबल; overlay खुलने पर स्क्रीन रीडर इसे बोलते हैं |
-| `aspectRatio` | `number` | 9/16 (0.5625) | डेस्कटॉप पर प्लेयर कंटेनर का चौड़ाई/ऊँचाई अनुपात। मोबाइल पर प्लेयर हमेशा पूरा viewport लेता है। |
+| `aspectRatio` | `number` | 9/16 (0.5625) | डेस्कटॉप पर प्लेयर कंटेनर का चौड़ाई/ऊँचाई अनुपात। 768px या उससे कम चौड़ाई पर प्लेयर हमेशा पूरा viewport लेता है। शून्य, ऋणात्मक या non-finite मान होने पर 9/16 इस्तेमाल होता है। |
 | `content` | `T[]` | ज़रूरी | कंटेंट आइटम का array (generic, डिफ़ॉल्ट ContentItem) |
 | `initialIndex` | `number` | 0 | शुरुआती स्लाइड index |
 | `initialInnerIndex` | `number` | 0 | अंदरूनी मीडिया index जिस पर खोलना है, सिर्फ़ शुरू में दिखने वाली पोस्ट के लिए — इससे दो-अक्ष वाला URL मल्टी-मीडिया पोस्ट की किसी खास इमेज पर सीधे ले जा सकता है। प्लेयर खुलने और यूज़र के नेविगेट करने के बाद अनदेखा होता है। |
@@ -479,7 +479,7 @@ Overlay सक्रिय वीडियो के ऊपर एक बिल�
 | `.rk-reel-button` | Controls | साझा गोल आइकन बटन (बंद, साउंड, नेविगेशन तीर) |
 | `.rk-reel-close-btn` | Controls | बंद करने का बटन |
 | `.rk-reel-sound-btn` | Controls | साउंड टॉगल बटन |
-| `.rk-reel-nav-arrows` | Navigation | सिर्फ़ डेस्कटॉप वाला तीरों का कंटेनर (768px से कम पर छिपा) |
+| `.rk-reel-nav-arrows` | Navigation | सिर्फ़ डेस्कटॉप वाला तीरों का कंटेनर (768px या उससे कम चौड़ाई पर छिपा) |
 | `.rk-reel-nav-button` | Navigation | अलग prev/next नेविगेशन तीर |
 | `.rk-reel-slide-wrapper` | Slide | मीडिया + overlay के चारों ओर का wrapper |
 | `.rk-reel-slide-overlay` | SlideOverlay | gradient overlay का कंटेनर |
@@ -493,7 +493,7 @@ Overlay सक्रिय वीडियो के ऊपर एक बिल�
 | `.rk-reel-video-poster` | VideoSlide | poster इमेज (चलने पर धुंधली होकर गायब) |
 | `.rk-reel-video-poster.rk-visible` | VideoSlide | वीडियो रुका/लोड होते समय poster पर लगने वाला स्टेट modifier |
 | `.rk-reel-nested-indicator` | NestedSlider | मल्टी-मीडिया स्लाइड के नीचे बिंदु वाला pagination (डेस्कटॉप और टच पर स्थिति अलग) |
-| `.rk-reel-nested-nav` | NestedSlider | हॉरिज़ॉन्टल carousel के तीर (768px से कम पर छिपे) |
+| `.rk-reel-nested-nav` | NestedSlider | हॉरिज़ॉन्टल carousel के तीर (768px या उससे कम चौड़ाई पर छिपे) |
 | `.rk-reel-nested-nav-next` | NestedSlider | nested अगले तीर की स्थिति |
 | `.rk-reel-nested-nav-prev` | NestedSlider | nested पिछले तीर की स्थिति |
 | `.rk-reel-timeline` | TimelineBar | scrub bar का wrapper। नीचे से सटी स्थिति, safe-area padding और टच डिवाइस पर स्लाइड overlay से दूरी पाने के लिए कस्टम \`renderTimeline\` roots पर दोबारा इस्तेमाल करें। |

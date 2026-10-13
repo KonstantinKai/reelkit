@@ -10,6 +10,9 @@ import {
   createDisposableList,
   reaction,
   observeDomEvent,
+  observeViewportSize,
+  getViewportSize,
+  fitAspectRatio,
   captureFocusForReturn,
   createFocusTrap,
   captureFrame,
@@ -71,7 +74,8 @@ export interface ReelPlayerOverlayBaseProps<
 > extends ReelProxyProps {
   /**
    * Aspect ratio (width / height) for the player container on desktop.
-   * On mobile (< 768px viewport), the player always uses full viewport.
+   * On mobile (viewport 768px wide and narrower), the player always uses the
+   * full viewport. A zero, negative or non-finite ratio falls back to 9:16.
    *
    * @default 0.5625 (9:16)
    * @example
@@ -254,8 +258,6 @@ export type ReelPlayerUrlOverlayProps<T extends BaseContentItem = ContentItem> =
 type ReelPlayerContentProps<T extends BaseContentItem = ContentItem> =
   ReelPlayerOverlayBaseProps<T> & { onClose: () => void };
 
-const _kDefaultAspectRatio = 9 / 16;
-const _kMobileBreakpoint = 768;
 const _kPreloadRange = 2;
 const _kDefaultTimelineMinDurationSeconds = 30;
 
@@ -302,26 +304,8 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>(
       itemBuilder,
     },
   ] = useState(() => {
-    const getSize = (): [number, number] => {
-      if (typeof window === 'undefined') return [0, 0];
-      const ratio = propsRef.current.aspectRatio ?? _kDefaultAspectRatio;
-      const windowWidth = window.innerWidth;
-      const windowHeight = window.innerHeight;
-
-      if (windowWidth < _kMobileBreakpoint) {
-        return [windowWidth, windowHeight];
-      }
-
-      let width = windowHeight * ratio;
-      let height = windowHeight;
-
-      if (width > windowWidth) {
-        width = windowWidth;
-        height = windowWidth / ratio;
-      }
-
-      return [width, height];
-    };
+    const getSize = (): [number, number] =>
+      fitAspectRatio(getViewportSize(), propsRef.current.aspectRatio);
 
     const sizeSignal = createSignal<[number, number]>(getSize());
     const loadingCtrl = createContentLoadingController(true, initialIndex);
@@ -573,7 +557,7 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>(
     };
 
     disposables.push(
-      observeDomEvent(window, 'resize', () => {
+      observeViewportSize(() => {
         sizeSignal.value = getSize();
         sliderRef.current?.adjust();
       }),
@@ -597,6 +581,16 @@ function ReelPlayerContent<T extends BaseContentItem = ContentItem>(
 
     return disposables.dispose;
   }, []);
+
+  // The size is otherwise only recomputed on a window resize, so a new ratio
+  // would wait for the user to resize before taking effect.
+  useEffect(() => {
+    const next = getSize();
+    const current = sizeSignal.value;
+    if (next[0] === current[0] && next[1] === current[1]) return;
+    sizeSignal.value = next;
+    sliderRef.current?.adjust();
+  }, [props.aspectRatio]);
 
   return createPortal(
     <div

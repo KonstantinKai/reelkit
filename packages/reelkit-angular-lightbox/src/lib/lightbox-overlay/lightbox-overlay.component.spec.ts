@@ -86,6 +86,9 @@ jest.mock('@reelkit/angular', () => {
     output,
     signal: angSignal,
   } = jest.requireActual('@angular/core') as typeof import('@angular/core');
+  const core = jest.requireActual(
+    '@reelkit/core',
+  ) as typeof import('@reelkit/core');
 
   const noop = () => {
     /* noop */
@@ -196,6 +199,10 @@ jest.mock('@reelkit/angular', () => {
     createFocusTrap: jest.fn(() => jest.fn()),
     getFocusableElements: jest.fn(() => []),
     observeDomEvent: jest.fn(() => jest.fn()),
+    // Real viewport helpers, so the resize spec drives an actual window event.
+    getViewportSize: core.getViewportSize,
+    observeViewportSize: core.observeViewportSize,
+    isTouchDevice: core.isTouchDevice,
   };
 });
 
@@ -1081,22 +1088,15 @@ describe('RkLightboxOverlayComponent', () => {
     });
 
     it('follows a window resize and re-measures the slider', () => {
-      const { observeDomEvent } = jest.requireMock('@reelkit/angular') as {
-        observeDomEvent: jest.Mock;
-      };
       const fixture = desktopFixture();
       const api = reelApi();
       reelOf(fixture).apiReady.emit(api);
-      const resize = observeDomEvent.mock.calls.find(
-        (call) => call[1] === 'resize',
-      )?.[2] as (() => void) | undefined;
-      expect(resize).toBeDefined();
 
       Object.defineProperty(window, 'innerWidth', {
         configurable: true,
         value: 640,
       });
-      resize!();
+      window.dispatchEvent(new Event('resize'));
 
       expect(fixture.componentInstance['size']()[0]).toBe(640);
       expect(api.adjust).toHaveBeenCalledTimes(1);

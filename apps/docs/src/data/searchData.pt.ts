@@ -106,6 +106,7 @@ export const ptTitles: Record<string, string> = {
   'Content Loading': 'Carregamento de conteúdo',
   Sound: 'Som',
   'DOM & Cleanup Utilities': 'Utilitários de DOM e limpeza',
+  'Size Detection': 'Detecção de tamanho',
   'Focus Management': 'Gerenciamento de foco',
   'Video Utilities': 'Utilitários de vídeo',
   'Architecture Overview': 'Visão geral da arquitetura',

@@ -43,6 +43,9 @@ import {
   type ContentLoadingController,
   type ContentPreloader,
   observeDomEvent,
+  observeViewportSize,
+  getViewportSize,
+  fitAspectRatio,
   SoundStateService,
 } from '@reelkit/angular';
 import { TimelineStateService } from '../timeline-state/timeline-state.service';
@@ -81,8 +84,6 @@ import type {
   TimelineMode,
 } from '../types';
 
-const _kDefaultAspectRatio = 9 / 16;
-const _kMobileBreakpointPx = 768;
 const _kDefaultTimelineMinDurationSeconds = 30;
 
 /**
@@ -381,7 +382,8 @@ export class RkReelPlayerOverlayComponent<
 
   /**
    * Aspect ratio (width / height) for the player container on desktop.
-   * Defaults to 9/16. On mobile (< 768px), the player uses the full viewport.
+   * Defaults to 9/16. On mobile (768px wide and narrower), the player uses the
+   * full viewport. A zero, negative or non-finite ratio falls back to 9/16.
    */
   readonly aspectRatio = input<number | undefined>(undefined);
 
@@ -792,34 +794,15 @@ export class RkReelPlayerOverlayComponent<
   }
 
   private _getSize(): [number, number] {
-    const win = this._document.defaultView;
-    if (!win) return [0, 0];
+    return fitAspectRatio(getViewportSize(), this.aspectRatio());
+  }
 
-    // Guard against degenerate aspect ratios (0, NaN, Infinity, negative).
-    // Any such value would produce a zero-width or infinite-height container,
-    // breaking layout entirely. Fall back to the default 9:16 ratio.
-    const rawRatio = this.aspectRatio() ?? _kDefaultAspectRatio;
-    const ratio =
-      Number.isFinite(rawRatio) && rawRatio > 0
-        ? rawRatio
-        : _kDefaultAspectRatio;
-
-    const windowWidth = win.innerWidth;
-    const windowHeight = win.innerHeight;
-
-    if (windowWidth < _kMobileBreakpointPx) {
-      return [windowWidth, windowHeight];
-    }
-
-    let width = windowHeight * ratio;
-    let height = windowHeight;
-
-    if (width > windowWidth) {
-      width = windowWidth;
-      height = windowWidth / ratio;
-    }
-
-    return [width, height];
+  /** Applies a new size and realigns the slider, skipping an unchanged one. */
+  private _applySize(next: [number, number]): void {
+    const [width, height] = this._sizeSignal();
+    if (next[0] === width && next[1] === height) return;
+    this._sizeSignal.set(next);
+    this._reelApi?.adjust();
   }
 
   private _listenToEscape(): void {
@@ -835,13 +818,15 @@ export class RkReelPlayerOverlayComponent<
   };
 
   private _listenToResize(): void {
-    const win = this._document.defaultView;
-    if (!win) return;
-
     this._zone.runOutsideAngular(() => {
-      this._destroyRef.onDestroy(
-        observeDomEvent(win, 'resize', this._onResize),
-      );
+      this._destroyRef.onDestroy(observeViewportSize(this._onResize));
+    });
+
+    // The size is otherwise only recomputed on a window resize, so a new
+    // ratio would wait for the user to resize before taking effect.
+    effect(() => {
+      const next = fitAspectRatio(getViewportSize(), this.aspectRatio());
+      untracked(() => this._applySize(next));
     });
   }
 

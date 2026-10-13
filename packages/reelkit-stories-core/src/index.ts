@@ -59,7 +59,6 @@ export {
 
 export {
   getStoriesSize,
-  isMobileWidth,
   parseDurationMs,
   getCardSize,
   getCarouselSlot,

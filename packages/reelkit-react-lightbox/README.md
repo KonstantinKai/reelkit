@@ -2,7 +2,7 @@
 
 <p>
   <a href="https://www.npmjs.com/package/@reelkit/react-lightbox"><img src="https://img.shields.io/npm/v/@reelkit/react-lightbox?color=6366f1&label=npm" alt="npm" /></a>
-  <img src="https://img.shields.io/badge/gzip-3.4%20kB-6366f1" alt="Bundle size" />
+  <img src="https://img.shields.io/badge/gzip-3.3%20kB-6366f1" alt="Bundle size" />
   <img src="https://img.shields.io/badge/coverage-94%25-brightgreen" alt="Statement coverage" />
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
@@ -11,7 +11,7 @@
   <a href="https://react-demo.reelkit.dev/image-preview?utm_source=npm"><img src="https://raw.githubusercontent.com/KonstantinKai/reelkit/main/assets/lightbox.gif" width="240" alt="An image lightbox on a phone: tapping a gallery thumbnail opens it full screen, two sideways swipes page to the third photo, and a swipe up closes it back to the gallery." /></a>
 </p>
 
-Image gallery lightbox for React — opens full-screen with swipe navigation, keyboard controls, and transition effects. Everything is replaceable via render props if the defaults don't fit. ~3.4 kB gzip.
+Image gallery lightbox for React — opens full-screen with swipe navigation, keyboard controls, and transition effects. Everything is replaceable via render props if the defaults don't fit. ~3.3 kB gzip.
 
 **[Live Demo](https://react-demo.reelkit.dev/image-preview?utm_source=npm)**
 

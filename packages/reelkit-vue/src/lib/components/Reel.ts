@@ -20,7 +20,9 @@ import {
   last,
   noop,
   defaultRangeExtractor,
+  observeElementSize,
   slideTransition,
+  type Disposer,
   type RangeExtractor,
   type SliderDirection,
   type TransitionTransformFn,
@@ -409,30 +411,23 @@ export const Reel = defineComponent({
       { flush: 'post' },
     );
 
-    let resizeObserver: ResizeObserver | null = null;
+    let stopObservingSize: Disposer | null = null;
 
     const startResizeObserver = () => {
       stopResizeObserver();
       const el = containerRef.value;
       if (!el) return;
-      resizeObserver = new ResizeObserver(() => {
-        const w = el.clientWidth;
-        const h = el.clientHeight;
-        if (w > 0 && h > 0) {
-          const prev = measuredSize.value;
-          if (prev[0] !== w || prev[1] !== h) {
-            measuredSize.value = [w, h];
-          }
+      stopObservingSize = observeElementSize(el, (size) => {
+        const prev = measuredSize.value;
+        if (prev[0] !== size[0] || prev[1] !== size[1]) {
+          measuredSize.value = size;
         }
       });
-      resizeObserver.observe(el);
     };
 
     const stopResizeObserver = () => {
-      if (resizeObserver) {
-        resizeObserver.disconnect();
-        resizeObserver = null;
-      }
+      stopObservingSize?.();
+      stopObservingSize = null;
     };
 
     watch(

@@ -112,8 +112,14 @@ export class RkCanvasProgressBarComponent {
       const progress = this.progress();
       const live = this.live();
       const canvas = untracked(() => this._canvasRef().nativeElement);
+      // Resizing the canvas clears it; a bar that is not live repaints on
+      // resize.
+      let repaint: (() => void) | null = null;
       const renderer = untracked(() =>
-        createCanvasProgressRenderer(this._rendererConfig()),
+        createCanvasProgressRenderer({
+          ...this._rendererConfig(),
+          onResize: () => repaint?.(),
+        }),
       );
 
       renderer.attach(canvas);
@@ -139,15 +145,13 @@ export class RkCanvasProgressBarComponent {
           frame = requestAnimationFrame(loop);
         });
       } else {
-        // Resizing the canvas clears it. This observer is created after the
-        // renderer's own, and observers are notified in the order they were
-        // created, so the bar is repainted after the renderer has measured.
-        const resizeObserver = new ResizeObserver(draw);
-        if (canvas.parentElement) resizeObserver.observe(canvas.parentElement);
+        repaint = draw;
 
         disposables.push(
           reaction(() => [activeIndex, progress], draw),
-          () => resizeObserver.disconnect(),
+          () => {
+            repaint = null;
+          },
         );
 
         draw();

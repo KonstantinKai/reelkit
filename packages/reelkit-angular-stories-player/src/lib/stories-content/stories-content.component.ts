@@ -4,6 +4,7 @@ import {
   DestroyRef,
   ElementRef,
   Injector,
+  NgZone,
   type OnInit,
   ViewEncapsulation,
   afterNextRender,
@@ -34,6 +35,9 @@ import {
   fadeTransition,
   noop,
   observeDomEvent,
+  observeViewportSize,
+  getViewportSize,
+  isMobileWidth,
   reaction,
   slideTransition,
   toAngularSignal,
@@ -48,7 +52,6 @@ import {
   createTimerController,
   getStoriesSize,
   getTapAction,
-  isMobileWidth,
   parseDurationMs,
   type StoriesController,
   type StoryItem,
@@ -446,6 +449,7 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
   implements OnInit
 {
   private readonly _destroyRef = inject(DestroyRef);
+  private readonly _zone = inject(NgZone);
   private readonly _bodyLock = inject(BodyLockService);
 
   private readonly _overlayRef =
@@ -913,11 +917,17 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
         ],
         () => this._preloadAhead(),
       ),
-      observeDomEvent(window, 'resize', () => {
-        this.sizeSignal.value = getStoriesSize();
-        this._updateCarouselActive();
-        this._outerReel?.adjust();
-      }),
+      // A resize fires many times a second while dragging a window edge, so the
+      // listener runs outside the zone and only re-enters it to apply a size.
+      this._zone.runOutsideAngular(() =>
+        observeViewportSize(() =>
+          this._zone.run(() => {
+            this.sizeSignal.value = getStoriesSize();
+            this._updateCarouselActive();
+            this._outerReel?.adjust();
+          }),
+        ),
+      ),
       observeDomEvent(window, 'keydown', (event) => {
         if (!this.enableKeyboard()) return;
         if ((event as KeyboardEvent).key === 'Escape') this.closed.emit();
@@ -1434,7 +1444,8 @@ export class RkStoriesContentComponent<T extends StoryItem = StoryItem>
 
   private _updateCarouselActive(): void {
     const active =
-      this.desktopLayout() === 'carousel' && !isMobileWidth(window.innerWidth);
+      this.desktopLayout() === 'carousel' &&
+      !isMobileWidth(getViewportSize()[0]);
     this.carouselActive.set(active);
     if (!active) this.endSlide();
   }

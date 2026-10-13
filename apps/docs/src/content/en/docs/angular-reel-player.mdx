@@ -255,7 +255,7 @@ Extend `BaseContentItem` to use your own domain model. The component is generic:
 | Input | Type | Default | Description |
 | --- | --- | --- | --- |
 | `ariaLabel` | `string` | 'Video player' | Accessible label for the dialog region |
-| `aspectRatio` | `number \| undefined` | undefined | Width/height ratio for desktop container. Defaults to 9/16. On mobile the player uses full viewport. |
+| `aspectRatio` | `number \| undefined` | undefined | Width/height ratio for desktop container. Defaults to 9/16, which also replaces a zero, negative or non-finite value. At 768px wide and narrower the player uses the full viewport. |
 | `content` | `T[] (extends BaseContentItem)` | required | Array of content items to display in the player |
 | `enableNavKeys` | `boolean` | true | Enable keyboard arrow key navigation |
 | `enableWheel` | `boolean` | true | Enable mouse wheel navigation |
@@ -323,7 +323,7 @@ All CSS classes are plain (not scoped), so they can be targeted with higher-spec
 | `.rk-reel-button` | Controls | Shared circular icon button (close, sound, nav arrows) |
 | `.rk-reel-close-btn` | Controls | Close button |
 | `.rk-reel-sound-btn` | Controls | Sound toggle button |
-| `.rk-reel-nav-arrows` | Navigation | Desktop-only arrow container (hidden below 768px) |
+| `.rk-reel-nav-arrows` | Navigation | Desktop-only arrow container (hidden at 768px wide and narrower) |
 | `.rk-reel-nav-btn` | Navigation | Individual prev/next nav arrow |
 | `.rk-reel-slide-wrapper` | Slide | Wrapper around media + overlay |
 | `.rk-reel-slide-overlay` | SlideOverlay | Gradient overlay container |
@@ -338,7 +338,7 @@ All CSS classes are plain (not scoped), so they can be targeted with higher-spec
 | `.rk-reel-video-loader` | VideoSlide | Wave loading animation |
 | `.rk-reel-video-poster.rk-visible` | VideoSlide | State modifier applied to the poster while the video is paused/loading |
 | `.rk-reel-nested-indicator` | NestedSlider | Dot pagination under multi-media slides (position varies desktop vs. touch) |
-| `.rk-reel-nested-nav` | NestedSlider | Horizontal carousel arrows (hidden below 768px) |
+| `.rk-reel-nested-nav` | NestedSlider | Horizontal carousel arrows (hidden at 768px wide and narrower) |
 | `.rk-reel-nested-nav-next` | NestedSlider | Nested next arrow position |
 | `.rk-reel-nested-nav-prev` | NestedSlider | Nested prev arrow position |
 | `.rk-reel-nested-slider-inner` | NestedSlider | Nested horizontal slider root |

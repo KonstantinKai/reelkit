@@ -263,7 +263,7 @@ Extend `BaseContentItem` щоб узяти власну доменну моде�
 | Input | Тип | Типове значення | Опис |
 | --- | --- | --- | --- |
 | `ariaLabel` | `string` | 'Video player' | Доступна назва області діалогу |
-| `aspectRatio` | `number \| undefined` | undefined | Співвідношення ширини до висоти контейнера на десктопі. Типово 9/16. На мобільних плеєр займає всю область перегляду. |
+| `aspectRatio` | `number \| undefined` | undefined | Співвідношення ширини до висоти контейнера на десктопі. Типово 9/16; це ж значення замінює нульове, від’ємне чи нескінченне. На ширині 768px і вужче плеєр займає всю область перегляду. |
 | `content` | `T[] (extends BaseContentItem)` | required | Масив елементів вмісту для показу в плеєрі |
 | `enableNavKeys` | `boolean` | true | Вмикає навігацію стрілками клавіатури |
 | `enableWheel` | `boolean` | true | Вмикає навігацію колесом миші |
@@ -331,7 +331,7 @@ Extend `BaseContentItem` щоб узяти власну доменну моде�
 | `.rk-reel-button` | Controls | Спільна кругла кнопка з іконкою (закриття, звук, стрілки) |
 | `.rk-reel-close-btn` | Controls | Кнопка закриття |
 | `.rk-reel-sound-btn` | Controls | Кнопка перемикання звуку |
-| `.rk-reel-nav-arrows` | Навігація | Контейнер стрілок лише для десктопа (прихований до 768px) |
+| `.rk-reel-nav-arrows` | Навігація | Контейнер стрілок лише для десктопа (прихований на ширині 768px і вужче) |
 | `.rk-reel-nav-btn` | Навігація | Окрема стрілка вперед або назад |
 | `.rk-reel-slide-wrapper` | Slide | Обгортка навколо медіа та оверлея |
 | `.rk-reel-slide-overlay` | SlideOverlay | Контейнер градієнтного оверлея |
@@ -346,7 +346,7 @@ Extend `BaseContentItem` щоб узяти власну доменну моде�
 | `.rk-reel-video-loader` | VideoSlide | Хвильова анімація завантаження |
 | `.rk-reel-video-poster.rk-visible` | VideoSlide | Модифікатор стану постера, поки відео на паузі або вантажиться |
 | `.rk-reel-nested-indicator` | NestedSlider | Пагінація точками під мультимедійними слайдами (позиція різна на десктопі й на дотикових пристроях) |
-| `.rk-reel-nested-nav` | NestedSlider | Стрілки горизонтальної каруселі (приховані до 768px) |
+| `.rk-reel-nested-nav` | NestedSlider | Стрілки горизонтальної каруселі (приховані на ширині 768px і вужче) |
 | `.rk-reel-nested-nav-next` | NestedSlider | Позиція вкладеної стрілки вперед |
 | `.rk-reel-nested-nav-prev` | NestedSlider | Позиція вкладеної стрілки назад |
 | `.rk-reel-nested-slider-inner` | NestedSlider | Корінь вкладеного горизонтального слайдера |

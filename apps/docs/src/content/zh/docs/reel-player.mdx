@@ -267,7 +267,7 @@ import theming from '../../snippets/reel-player/theming.css?raw';
 | --- | --- | --- | --- |
 | `apiRef` | `MutableRefObject<ReelApi>` | - | 用于访问 Reel API 的 ref |
 | `ariaLabel` | `string` | 'Video player' | 对话框区域的无障碍标签；浮层打开时由屏幕阅读器播报 |
-| `aspectRatio` | `number` | 9/16 (0.5625) | 桌面端播放器容器的宽高比。移动端播放器始终占满视口。 |
+| `aspectRatio` | `number` | 9/16 (0.5625) | 桌面端播放器容器的宽高比。宽度在 768px 及以下时，播放器始终占满整个视口。为零、为负或非有限的值会回退到 9/16。 |
 | `content` | `T[]` | 必填 | 内容条目数组（泛型，默认为 ContentItem） |
 | `initialIndex` | `number` | 0 | 起始幻灯片索引 |
 | `initialInnerIndex` | `number` | 0 | 打开时定位的内层媒体索引，只对最初可见的那条帖子生效 —— 让双轴 URL 能直达多媒体帖子里的某一张图。播放器打开后用户一开始导航就会忽略它。 |
@@ -479,7 +479,7 @@ import theming from '../../snippets/reel-player/theming.css?raw';
 | `.rk-reel-button` | 控制内容 | 共用的圆形图标按钮（关闭、声音、导航箭头） |
 | `.rk-reel-close-btn` | 控制内容 | 关闭按钮 |
 | `.rk-reel-sound-btn` | 控制内容 | 声音开关按钮 |
-| `.rk-reel-nav-arrows` | 导航 | 仅桌面端的箭头容器（小于 768px 时隐藏） |
+| `.rk-reel-nav-arrows` | 导航 | 仅桌面端的箭头容器（宽度在 768px 及以下时隐藏） |
 | `.rk-reel-nav-button` | 导航 | 单个上一张 / 下一张导航箭头 |
 | `.rk-reel-slide-wrapper` | Slide | 媒体 + 浮层的包装层 |
 | `.rk-reel-slide-overlay` | SlideOverlay | 渐变浮层容器 |
@@ -493,7 +493,7 @@ import theming from '../../snippets/reel-player/theming.css?raw';
 | `.rk-reel-video-poster` | VideoSlide | 封面图（播放时淡出） |
 | `.rk-reel-video-poster.rk-visible` | VideoSlide | 视频暂停 / 加载时施加在封面图上的状态修饰类 |
 | `.rk-reel-nested-indicator` | NestedSlider | 多媒体幻灯片下方的圆点分页（桌面端与触摸端位置不同） |
-| `.rk-reel-nested-nav` | NestedSlider | 横向轮播箭头（小于 768px 时隐藏） |
+| `.rk-reel-nested-nav` | NestedSlider | 横向轮播箭头（宽度在 768px 及以下时隐藏） |
 | `.rk-reel-nested-nav-next` | NestedSlider | 嵌套的下一张箭头位置 |
 | `.rk-reel-nested-nav-prev` | NestedSlider | 嵌套的上一张箭头位置 |
 | `.rk-reel-timeline` | TimelineBar | 拖动条包装层。在自定义的  \`renderTimeline\`  根元素上复用它，即可继承贴底定位、安全区内边距，以及触摸设备上为幻灯片浮层预留的空间。 |

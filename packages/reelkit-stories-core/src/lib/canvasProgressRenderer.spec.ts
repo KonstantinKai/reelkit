@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { installResizeObserverStub } from '@reelkit/core/testing';
 import { createCanvasProgressRenderer } from './canvasProgressRenderer';
 
 function createMockCanvas(parentWidth = 300): {
@@ -142,6 +143,42 @@ describe('createCanvasProgressRenderer', () => {
     renderer.attach(canvas);
     renderer.dispose();
     expect(disconnectSpy).toHaveBeenCalled();
+  });
+
+  it('calls onResize after re-measuring a resized container', () => {
+    const stub = installResizeObserverStub();
+    try {
+      const { canvas } = createMockCanvas(300);
+      const widths: number[] = [];
+      const renderer = createCanvasProgressRenderer({
+        onResize: () => widths.push(renderer.width),
+      });
+      renderer.attach(canvas);
+      expect(widths).toEqual([]);
+
+      stub.resize(420, 20);
+
+      expect(widths).toEqual([420]);
+    } finally {
+      stub.restore();
+    }
+  });
+
+  it('skips onResize when the container is observed at an unchanged size', () => {
+    const stub = installResizeObserverStub();
+    try {
+      const { canvas } = createMockCanvas(300);
+      const onResize = vi.fn();
+      const renderer = createCanvasProgressRenderer({ onResize });
+      renderer.attach(canvas);
+
+      stub.resize(420, 20);
+      stub.resize(420, 20);
+
+      expect(onResize).toHaveBeenCalledTimes(1);
+    } finally {
+      stub.restore();
+    }
   });
 
   it('accepts custom gap and barHeight', () => {

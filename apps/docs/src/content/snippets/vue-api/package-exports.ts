@@ -59,6 +59,10 @@ import {
   // DOM & cleanup
   observeDomEvent, createDisposableList, createBodyLock, sharedBodyLock,
 
+  // Size detection
+  observeElementSize, getViewportSize, observeViewportSize,
+  isMobileWidth, fitAspectRatio, isTouchDevice,
+
   // Focus management
   captureFocusForReturn, createFocusTrap, getFocusableElements,
 

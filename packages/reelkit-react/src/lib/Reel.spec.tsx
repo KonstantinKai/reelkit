@@ -1,5 +1,9 @@
 import { render, renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import {
+  installResizeObserverStub,
+  type ResizeObserverStub,
+} from '@reelkit/core/testing';
 import { Reel, type ReelApi } from './Reel';
 import { useReelContext } from './ReelContext';
 import React from 'react';
@@ -8,44 +12,6 @@ import React from 'react';
 // its bundled reaction() breaks when the module is mocked via vi.mock.
 
 const defaultItemBuilder = (i: number) => <div key={i}>Slide {i}</div>;
-
-// ResizeObserver mock for auto-size tests
-type ResizeCallback = (
-  entries: { contentRect: { width: number; height: number } }[],
-) => void;
-let resizeObserverCallback: ResizeCallback | null = null;
-let observedElements: Element[] = [];
-
-class MockResizeObserver {
-  constructor(callback: ResizeCallback) {
-    resizeObserverCallback = callback;
-  }
-  observe(el: Element) {
-    observedElements.push(el);
-  }
-  unobserve() {
-    /* noop */
-  }
-  disconnect() {
-    observedElements = [];
-    resizeObserverCallback = null;
-  }
-}
-
-const triggerResize = (width: number, height: number) => {
-  // Stub clientWidth/clientHeight on observed elements
-  for (const el of observedElements) {
-    Object.defineProperty(el, 'clientWidth', {
-      value: width,
-      configurable: true,
-    });
-    Object.defineProperty(el, 'clientHeight', {
-      value: height,
-      configurable: true,
-    });
-  }
-  resizeObserverCallback?.([{ contentRect: { width, height } }]);
-};
 
 describe('Reel', () => {
   describe('rendering', () => {
@@ -597,18 +563,14 @@ describe('Reel', () => {
   });
 
   describe('auto-size (no size prop)', () => {
-    let originalResizeObserver: typeof ResizeObserver;
+    let resizeObserver: ResizeObserverStub;
 
     beforeEach(() => {
-      originalResizeObserver = globalThis.ResizeObserver;
-      globalThis.ResizeObserver =
-        MockResizeObserver as unknown as typeof ResizeObserver;
-      observedElements = [];
-      resizeObserverCallback = null;
+      resizeObserver = installResizeObserverStub();
     });
 
     afterEach(() => {
-      globalThis.ResizeObserver = originalResizeObserver;
+      resizeObserver.restore();
     });
 
     it('does not set inline width/height when size is omitted', () => {
@@ -640,7 +602,7 @@ describe('Reel', () => {
       );
 
       act(() => {
-        triggerResize(400, 600);
+        resizeObserver.resize(400, 600);
       });
 
       expect(itemBuilder).toHaveBeenCalled();
@@ -661,7 +623,7 @@ describe('Reel', () => {
       );
 
       act(() => {
-        triggerResize(320, 480);
+        resizeObserver.resize(320, 480);
       });
 
       expect(itemBuilder).toHaveBeenCalledWith(
@@ -675,7 +637,7 @@ describe('Reel', () => {
     it('observes the container element', () => {
       render(<Reel count={3} itemBuilder={defaultItemBuilder} />);
 
-      expect(observedElements).toHaveLength(1);
+      expect(resizeObserver.observed).toHaveLength(1);
     });
 
     it('disconnects on unmount', () => {
@@ -683,9 +645,9 @@ describe('Reel', () => {
         <Reel count={3} itemBuilder={defaultItemBuilder} />,
       );
 
-      expect(observedElements).toHaveLength(1);
+      expect(resizeObserver.observed).toHaveLength(1);
       unmount();
-      expect(observedElements).toHaveLength(0);
+      expect(resizeObserver.observed).toHaveLength(0);
     });
 
     it('still renders children before measurement', () => {
