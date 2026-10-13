@@ -186,6 +186,19 @@ Low-level helpers for DOM event management and deterministic cleanup. Used inter
 | `createBodyLock` | `() => BodyLock` | Reference-counted body scroll lock. Multiple consumers can lock simultaneously; scroll is restored when all unlock. |
 | `sharedBodyLock` | `BodyLock` | Module-level singleton instance. Use when multiple components across your app should share a single reference counter so nested modals/overlays interleave correctly. Framework bindings (`@reelkit/react`, `@reelkit/vue`, `@reelkit/angular`) use this under the hood. |
 
+## Size Detection [#size-detection]
+
+How every binding and overlay measures its container and the window. `Reel` uses `observeElementSize` when no `size` is passed; the reel player, lightbox and stories player size themselves from the window. SSR-safe: without a window or `ResizeObserver` the getters return `[0, 0]` or `false` and the observers return a no-op disposer.
+
+| Export | Type | Description |
+| --- | --- | --- |
+| `observeElementSize` | `(element: Element, callback: (size: [number, number]) => void) => Disposer` | Reports the element's padding box (`clientWidth` × `clientHeight`) whenever it changes. Skips a size with a zero side (hidden or not laid out yet) and a size equal to the last one reported. |
+| `getViewportSize` | `() => [number, number]` | The window size as `[innerWidth, innerHeight]`. |
+| `observeViewportSize` | `(callback: (size: [number, number]) => void) => Disposer` | Calls back with the window size on every `resize` event, including one that leaves the size unchanged (device emulation can switch to a touch device of the same dimensions). Compare sizes yourself if only a change matters. |
+| `isMobileWidth` | `(viewportWidth: number) => boolean` | Whether a window this wide gets the phone layout: 768px and narrower. Every overlay and its stylesheet switch at this width. |
+| `fitAspectRatio` | `(viewport: [number, number], aspectRatio?: number) => [number, number]` | Overlay size for a window. On a phone width it is the whole window; otherwise the full window height at `aspectRatio`, narrowed to the window width when that would not fit. A missing, zero, negative or non-finite ratio falls back to 9/16. |
+| `isTouchDevice` | `() => boolean` | Whether the device takes touch input (`ontouchstart` or `maxTouchPoints`). A capability check, not a screen size: a touch laptop counts, a narrow desktop window does not. |
+
 ## Focus Management [#focus-management]
 
 Framework-agnostic dialog a11y primitives. The overlay packages use them to return focus to the trigger on close and trap Tab / Shift+Tab inside the overlay while it's open. SSR-safe: each helper returns a no-op disposer in non-browser environments.

@@ -32,6 +32,9 @@ import {
   hasRenderedNodes,
   noop,
   observeDomEvent,
+  observeViewportSize,
+  getViewportSize,
+  isMobileWidth,
   reaction,
   slideTransition,
   toVueRef,
@@ -49,7 +52,6 @@ import {
   createTimerController,
   getStoriesSize,
   getTapAction,
-  isMobileWidth,
   parseDurationMs,
   type StoriesGroup,
   type StoriesViewedStateController,
@@ -355,7 +357,8 @@ const StoriesContent = defineComponent({
     };
 
     const isCarouselLayout = () =>
-      props.desktopLayout === 'carousel' && !isMobileWidth(window.innerWidth);
+      props.desktopLayout === 'carousel' &&
+      !isMobileWidth(getViewportSize()[0]);
     const carouselActive = createSignal(isCarouselLayout());
     const slideSignal = createSignal<CarouselSlide | null>(null);
     // The newest story the viewer reached while a slide was running. It is not
@@ -830,7 +833,7 @@ const StoriesContent = defineComponent({
             }
           },
         ),
-        observeDomEvent(window, 'resize', () => {
+        observeViewportSize(() => {
           sizeSignal.value = getStoriesSize();
           updateCarouselActive();
           outerReel?.adjust();

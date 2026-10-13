@@ -218,7 +218,7 @@ Si usas otro campo como clave (un `slug`) o paginas un feed infinito con `locate
 | Prop | Tipo | Por defecto | Descripción |
 | --- | --- | --- | --- |
 | `ariaLabel` | `string` | `'Video player'` | Etiqueta accesible de la región del diálogo; los lectores de pantalla la anuncian al abrirse el overlay |
-| `aspectRatio` | `number` | `9 / 16` | Relación entre ancho y alto del contenedor en escritorio. En móvil se usa todo el viewport. |
+| `aspectRatio` | `number` | `9 / 16` | Relación entre ancho y alto del contenedor en escritorio. Con 768px de ancho o menos el reproductor ocupa todo el viewport. Un valor cero, negativo o no finito vuelve a 9/16. |
 | `content` | `T[] (extends BaseContentItem)` | `required` | Array de elementos de contenido que mostrar en el reproductor |
 | `enableNavKeys` | `boolean` | `true` | Activa la navegación con las teclas de flecha |
 | `enableWheel` | `boolean` | `true` | Activa la navegación con la rueda del ratón |
@@ -388,7 +388,7 @@ Las clases CSS son normales (no scoped). Una hoja de estilos cargada después de
 | `.rk-reel-button` | Controls | Botón circular de icono compartido (cerrar, sonido, flechas de navegación) |
 | `.rk-reel-close-btn` | Controls | Botón de cerrar |
 | `.rk-reel-sound-btn` | Controls | Botón de sonido |
-| `.rk-reel-nav-arrows` | Navigation | Contenedor de flechas solo para escritorio (oculto por debajo de 768px) |
+| `.rk-reel-nav-arrows` | Navigation | Contenedor de flechas solo para escritorio (oculto con 768px de ancho o menos) |
 | `.rk-reel-nav-button` | Navigation | Cada flecha de navegación de anterior o siguiente |
 | `.rk-reel-slide-wrapper` | Slide | Envoltorio alrededor del medio y el overlay |
 | `.rk-reel-slide-overlay` | SlideOverlay | Contenedor del overlay con degradado |
@@ -402,7 +402,7 @@ Las clases CSS son normales (no scoped). Una hoja de estilos cargada después de
 | `.rk-reel-video-poster` | VideoSlide | Imagen del póster (se desvanece al reproducir) |
 | `.rk-reel-video-poster.rk-visible` | VideoSlide | Modificador de estado que se aplica al póster mientras el vídeo está en pausa o cargando |
 | `.rk-reel-nested-indicator` | NestedSlider | Paginación con puntos bajo los slides con varios medios (su posición cambia entre escritorio y táctil) |
-| `.rk-reel-nested-nav` | NestedSlider | Flechas del carrusel horizontal (ocultas por debajo de 768px) |
+| `.rk-reel-nested-nav` | NestedSlider | Flechas del carrusel horizontal (ocultas con 768px de ancho o menos) |
 | `.rk-reel-nested-nav-next` | NestedSlider | Posición de la flecha anidada de siguiente |
 | `.rk-reel-nested-nav-prev` | NestedSlider | Posición de la flecha anidada de anterior |
 | `.rk-reel-timeline` | TimelineBar | Envoltorio de la barra de arrastre. Reutilízalo en las raíces de un slot \`#timeline\` propio para heredar la posición pegada al borde inferior, el relleno de la zona segura y el espacio que deja al overlay del slide en dispositivos táctiles. |

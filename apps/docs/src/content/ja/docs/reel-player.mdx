@@ -267,7 +267,7 @@ import theming from '../../snippets/reel-player/theming.css?raw';
 | --- | --- | --- | --- |
 | `apiRef` | `MutableRefObject<ReelApi>` | - | Reel の API にアクセスするための ref |
 | `ariaLabel` | `string` | 'Video player' | ダイアログ領域のアクセシブルなラベル。オーバーレイが開くとスクリーンリーダーが読み上げます |
-| `aspectRatio` | `number` | 9/16 (0.5625) | デスクトップでのプレイヤーのコンテナーの幅と高さの比。モバイルでは常に全画面を使います。 |
+| `aspectRatio` | `number` | 9/16 (0.5625) | デスクトップでのプレイヤーのコンテナーの幅と高さの比。幅 768px 以下ではプレイヤーは常に全画面を使います。0、負の値、有限でない値は 9/16 になります。 |
 | `content` | `T[]` | 必須 | コンテンツアイテムの配列（ジェネリックで、デフォルトは ContentItem） |
 | `initialIndex` | `number` | 0 | 開始時のスライドのインデックス |
 | `initialInnerIndex` | `number` | 0 | 最初に表示する投稿でだけ使う、内側のメディアのインデックス。二軸の URL で、複数メディアの投稿の特定の画像へ直接リンクできます。プレイヤーが開いてユーザーが移動したあとは無視されます。 |
@@ -479,7 +479,7 @@ CSS クラスはすべて通常のクラス（CSS Modules ではありません�
 | `.rk-reel-button` | Controls | 共通の円形アイコンボタン（閉じる、サウンド、ナビゲーションの矢印） |
 | `.rk-reel-close-btn` | Controls | 閉じるボタン |
 | `.rk-reel-sound-btn` | Controls | サウンド切り替えボタン |
-| `.rk-reel-nav-arrows` | Navigation | デスクトップ専用の矢印のコンテナー（768px 未満では非表示） |
+| `.rk-reel-nav-arrows` | Navigation | デスクトップ専用の矢印のコンテナー（幅 768px 以下では非表示） |
 | `.rk-reel-nav-button` | Navigation | 個々の前後のナビゲーション矢印 |
 | `.rk-reel-slide-wrapper` | Slide | メディアとオーバーレイを包むラッパー |
 | `.rk-reel-slide-overlay` | SlideOverlay | グラデーションのオーバーレイのコンテナー |
@@ -493,7 +493,7 @@ CSS クラスはすべて通常のクラス（CSS Modules ではありません�
 | `.rk-reel-video-poster` | VideoSlide | ポスター画像（再生でフェードアウト） |
 | `.rk-reel-video-poster.rk-visible` | VideoSlide | 動画が一時停止中か読み込み中のあいだ、ポスターに付く状態のモディファイア |
 | `.rk-reel-nested-indicator` | NestedSlider | 複数メディアのスライドの下のドットのページネーション（デスクトップとタッチで位置が変わります） |
-| `.rk-reel-nested-nav` | NestedSlider | 横方向のカルーセルの矢印（768px 未満では非表示） |
+| `.rk-reel-nested-nav` | NestedSlider | 横方向のカルーセルの矢印（幅 768px 以下では非表示） |
 | `.rk-reel-nested-nav-next` | NestedSlider | ネストした「次へ」の矢印の位置 |
 | `.rk-reel-nested-nav-prev` | NestedSlider | ネストした「前へ」の矢印の位置 |
 | `.rk-reel-timeline` | TimelineBar | シークバーのラッパー。独自の \`renderTimeline\` のルートで使えば、下端に沿った配置、セーフエリアの余白、タッチ端末でのスライドオーバーレイとの間隔を引き継げます。 |

@@ -83,12 +83,15 @@ export const CanvasProgressBar = defineComponent({
   props: canvasProgressBarProps,
   setup(props) {
     const canvasRef = shallowRef<HTMLCanvasElement | null>(null);
+    // Resizing the canvas clears it; a bar that is not live repaints on resize.
+    let repaint: (() => void) | null = null;
     const renderer = createCanvasProgressRenderer({
       gap: props.gap,
       barHeight: props.barHeight,
       minSegmentWidth: props.minSegmentWidth,
       bgColor: props.bgColor,
       fillColor: props.fillColor,
+      onResize: () => repaint?.(),
     });
     let drawing = createDisposableList();
     let attached = false;
@@ -123,14 +126,12 @@ export const CanvasProgressBar = defineComponent({
         return;
       }
 
-      // Resizing the canvas clears it. This observer is created after the
-      // renderer's own, and observers are notified in the order they were
-      // created, so the bar is repainted after the renderer has measured.
-      const resizeObserver = new ResizeObserver(draw);
-      if (canvas.parentElement) resizeObserver.observe(canvas.parentElement);
+      repaint = draw;
       drawing.push(
         reaction(() => [props.activeIndex, props.progress], draw),
-        () => resizeObserver.disconnect(),
+        () => {
+          repaint = null;
+        },
       );
       draw();
     };

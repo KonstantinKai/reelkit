@@ -67,6 +67,12 @@ jest.mock('@reelkit/angular', () => {
     '../../../../reelkit-angular/src/lib/sound-state/sound-state.service',
   ) as typeof import('@reelkit/angular');
 
+  // The overlay's size comes from the real viewport helpers, so the size
+  // specs measure the overlay rather than a stand-in.
+  const core = jest.requireActual(
+    '@reelkit/core',
+  ) as typeof import('@reelkit/core');
+
   return {
     ReelComponent,
     ReelIndicatorComponent,
@@ -206,6 +212,9 @@ jest.mock('@reelkit/angular', () => {
         return () => el.removeEventListener(event, handler);
       },
     ),
+    getViewportSize: core.getViewportSize,
+    observeViewportSize: core.observeViewportSize,
+    fitAspectRatio: core.fitAspectRatio,
   };
 });
 
@@ -656,6 +665,59 @@ describe('RkReelPlayerOverlayComponent', () => {
     const [width, height] = fixture.componentInstance.size();
     expect(width).toBeGreaterThan(0);
     expect(height).toBeGreaterThan(0);
+  });
+
+  describe('size against a 1024×768 window', () => {
+    const setViewport = (width: number, height: number) => {
+      Object.defineProperty(window, 'innerWidth', {
+        value: width,
+        configurable: true,
+      });
+      Object.defineProperty(window, 'innerHeight', {
+        value: height,
+        configurable: true,
+      });
+    };
+
+    const openWithRatio = (aspectRatio: number | undefined) => {
+      const fixture = TestBed.createComponent(RkReelPlayerOverlayComponent);
+      fixture.componentRef.setInput('isOpen', true);
+      fixture.componentRef.setInput('content', makeItems(3));
+      fixture.componentRef.setInput('aspectRatio', aspectRatio);
+      fixture.detectChanges();
+      return fixture;
+    };
+
+    beforeEach(() => setViewport(1024, 768));
+
+    it('applies the given aspect ratio on open', () => {
+      const fixture = openWithRatio(3 / 4);
+      expect(fixture.componentInstance.size()).toEqual([576, 768]);
+    });
+
+    it('applies a changed aspect ratio without waiting for a window resize', () => {
+      const fixture = openWithRatio(undefined);
+      expect(fixture.componentInstance.size()).toEqual([432, 768]);
+
+      fixture.componentRef.setInput('aspectRatio', 3 / 4);
+      fixture.detectChanges();
+
+      expect(fixture.componentInstance.size()).toEqual([576, 768]);
+    });
+
+    it('falls back to 9:16 for an aspect ratio that would break the layout', () => {
+      for (const aspectRatio of [0, -1, NaN, Infinity]) {
+        const fixture = openWithRatio(aspectRatio);
+        expect(fixture.componentInstance.size()).toEqual([432, 768]);
+        fixture.destroy();
+      }
+    });
+
+    it('fills a 768px wide viewport, the widest one treated as a phone', () => {
+      setViewport(768, 1024);
+      const fixture = openWithRatio(undefined);
+      expect(fixture.componentInstance.size()).toEqual([768, 1024]);
+    });
   });
 
   // linkedSignal() was introduced in Angular 19.0.0. The package.json

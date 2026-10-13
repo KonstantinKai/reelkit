@@ -10,38 +10,29 @@ const renderer = vi.hoisted(() => ({
   width: 300,
 }));
 
-vi.mock('@reelkit/stories-core', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@reelkit/stories-core')>()),
-  createCanvasProgressRenderer: () => renderer,
+const rendererConfig = vi.hoisted(() => ({
+  onResize: undefined as (() => void) | undefined,
 }));
 
-let resizeCallbacks: (() => void)[] = [];
+vi.mock('@reelkit/stories-core', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@reelkit/stories-core')>()),
+  createCanvasProgressRenderer: (config?: { onResize?: () => void }) => {
+    rendererConfig.onResize = config?.onResize;
+    return renderer;
+  },
+}));
 
 describe('CanvasProgressBar', () => {
   const frame = vi.fn((_cb: FrameRequestCallback) => 1);
 
   beforeEach(() => {
-    resizeCallbacks = [];
+    rendererConfig.onResize = undefined;
     renderer.attach.mockClear();
     renderer.draw.mockClear();
     renderer.dispose.mockClear();
     frame.mockClear();
     vi.stubGlobal('requestAnimationFrame', frame);
     vi.stubGlobal('cancelAnimationFrame', vi.fn());
-    vi.stubGlobal(
-      'ResizeObserver',
-      class {
-        constructor(callback: () => void) {
-          resizeCallbacks.push(callback);
-        }
-        observe() {
-          /* noop */
-        }
-        disconnect() {
-          /* noop */
-        }
-      },
-    );
   });
 
   afterEach(() => {
@@ -112,7 +103,8 @@ describe('CanvasProgressBar', () => {
     );
     renderer.draw.mockClear();
 
-    act(() => resizeCallbacks.forEach((callback) => callback()));
+    // The renderer owns the observer and reports a re-measure through onResize.
+    act(() => rendererConfig.onResize?.());
 
     expect(renderer.draw).toHaveBeenCalledWith(3, 1, 0.5);
   });

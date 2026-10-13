@@ -186,6 +186,19 @@ DOM イベントの管理と、確実な後片付けのための低レベルの�
 | `createBodyLock` | `() => BodyLock` | 参照カウント付きで body のスクロールを止めます。複数の利用者が同時に止められ、全員が解除するとスクロールが戻ります。 |
 | `sharedBodyLock` | `BodyLock` | モジュールレベルのシングルトンインスタンスです。入れ子になったモーダルやオーバーレイが正しく噛み合うように、アプリ内の複数のコンポーネントで 1 つの参照カウンターを共有したいときに使います。フレームワークのバインディング（`@reelkit/react`、`@reelkit/vue`、`@reelkit/angular`）は内部でこれを使っています。 |
 
+## サイズの検出 [#size-detection]
+
+すべてのバインディングとオーバーレイが、コンテナーとウィンドウの大きさをどう測っているかを示します。`Reel` は `size` が渡されないときに `observeElementSize` を使い、Reel Player、Lightbox、Stories Player はウィンドウから自分の大きさを決めます。SSR に安全で、window や `ResizeObserver` がなければ getter は `[0, 0]` か `false` を返し、observer は何もしない破棄関数を返します。
+
+| Export | 型 | 説明 |
+| --- | --- | --- |
+| `observeElementSize` | `(element: Element, callback: (size: [number, number]) => void) => Disposer` | 要素のパディングボックス（`clientWidth` × `clientHeight`）が変わるたびに通知します。一辺が 0 のサイズ（非表示、またはまだレイアウトされていない）と、前回通知したものと同じサイズは飛ばします。 |
+| `getViewportSize` | `() => [number, number]` | ウィンドウの大きさを `[innerWidth, innerHeight]` で返します。 |
+| `observeViewportSize` | `(callback: (size: [number, number]) => void) => Disposer` | `resize` イベントのたびにウィンドウの大きさを渡してコールバックを呼びます。大きさが変わらないイベントも含みます（デバイスのエミュレーションで、同じ寸法のタッチデバイスに切り替わることがあるため）。変化だけが必要なら、大きさは自分で比較してください。 |
+| `isMobileWidth` | `(viewportWidth: number) => boolean` | この幅のウィンドウがスマートフォン向けの配置になるかどうか。768px 以下が該当します。どのオーバーレイとそのスタイルシートも、この幅で切り替わります。 |
+| `fitAspectRatio` | `(viewport: [number, number], aspectRatio?: number) => [number, number]` | ウィンドウに対するオーバーレイの大きさ。スマートフォンの幅ではウィンドウ全体、それ以外ではウィンドウの高さいっぱいで `aspectRatio` の比にし、収まらないときはウィンドウの幅まで狭めます。比が未指定、0、負の値、有限でない値のときは 9/16 になります。 |
+| `isTouchDevice` | `() => boolean` | デバイスがタッチ入力を受け付けるかどうか（`ontouchstart` または `maxTouchPoints`）。画面の大きさではなく機能の判定です。タッチ対応のノート PC は該当し、幅の狭いデスクトップのウィンドウは該当しません。 |
+
 ## フォーカス管理 [#focus-management]
 
 フレームワークに依存しない、ダイアログのアクセシビリティのためのプリミティブです。オーバーレイのパッケージは、閉じたときにトリガーへフォーカスを戻し、開いているあいだは Tab／Shift+Tab をオーバーレイ内に閉じ込めるためにこれらを使います。SSR に安全で、ブラウザー以外の環境ではどのヘルパーも何もしない破棄関数を返します。

@@ -1,6 +1,10 @@
-import { clamp, extractRange } from '@reelkit/core';
+import {
+  clamp,
+  extractRange,
+  getViewportSize,
+  isMobileWidth,
+} from '@reelkit/core';
 
-const _kMobileBreakpoint = 768;
 const _kAspectRatio = 9 / 16;
 const _kDesktopMargin = 16;
 // One arrow and its gap, matching the default `--rk-stories-nav-size` and
@@ -36,10 +40,6 @@ export const parseDurationMs = (value: string): number =>
     }),
   );
 
-/** Whether a viewport of this width uses the phone layout. */
-export const isMobileWidth = (viewportWidth: number) =>
-  viewportWidth <= _kMobileBreakpoint;
-
 /**
  * Size of the story canvas. A phone fills the screen. On a desktop the story
  * fills the window height, less a margin above and below, at 9:16, and only
@@ -49,9 +49,7 @@ export const isMobileWidth = (viewportWidth: number) =>
  * window (server rendering) the size is `[0, 0]`.
  */
 export const getStoriesSize = (): [number, number] => {
-  if (typeof window === 'undefined') return [0, 0];
-  const viewportWidth = window.innerWidth;
-  const viewportHeight = window.innerHeight;
+  const [viewportWidth, viewportHeight] = getViewportSize();
   if (isMobileWidth(viewportWidth)) {
     return [viewportWidth, viewportHeight];
   }

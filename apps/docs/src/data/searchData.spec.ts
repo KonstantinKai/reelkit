@@ -15,6 +15,7 @@ import {
   kDefaultLocale,
   kLocales,
   localePrefix,
+  withLocale,
   type Locale,
 } from './../i18n/locale';
 
@@ -269,4 +270,29 @@ describe('palette matching', () => {
     expect(pathsIn('es', 'guia')).toContain('/es/docs/react/guide');
     expect(pathsIn('en', 'espanol')).toEqual([]);
   });
+
+  // A helper is looked up by the name a reader saw in an import or a changelog,
+  // so each one must lead to the section that documents it, in every language.
+  it.each(kLocales)(
+    'finds the size detection helpers by name in "%s"',
+    (locale) => {
+      const helpers = [
+        'observeElementSize',
+        'getViewportSize',
+        'observeViewportSize',
+        'isMobileWidth',
+        'fitAspectRatio',
+        'isTouchDevice',
+      ];
+      for (const helper of helpers) {
+        const hits = searchItemsFor(locale).filter((item) =>
+          matchesSearch(item, helper),
+        );
+        expect(
+          hits.map((item) => `${item.path}#${item.sectionAnchor}`),
+          `"${helper}" in ${locale}`,
+        ).toContain(`${withLocale(locale, '/docs/core/api')}#size-detection`);
+      }
+    },
+  );
 });

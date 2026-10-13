@@ -255,7 +255,7 @@ import theming from '../../snippets/angular-reel-player/theming.css?raw';
 | 入力 | 型 | デフォルト | 説明 |
 | --- | --- | --- | --- |
 | `ariaLabel` | `string` | 'Video player' | ダイアログ領域のアクセシブルなラベル |
-| `aspectRatio` | `number \| undefined` | undefined | デスクトップのコンテナーの幅と高さの比。デフォルトは 9/16 です。モバイルではプレイヤーが全画面を使います。 |
+| `aspectRatio` | `number \| undefined` | undefined | デスクトップのコンテナーの幅と高さの比。デフォルトは 9/16 で、0、負の値、有限でない値もこれに置き換わります。幅 768px 以下ではプレイヤーが全画面を使います。 |
 | `content` | `T[] (extends BaseContentItem)` | 必須 | プレイヤーに表示するコンテンツアイテムの配列 |
 | `enableNavKeys` | `boolean` | true | キーボードの矢印キーによる操作を有効にします |
 | `enableWheel` | `boolean` | true | マウスホイールでの操作を有効にします |
@@ -323,7 +323,7 @@ CSS クラスはすべて通常のクラス（スコープなし）なので、`
 | `.rk-reel-button` | Controls | 共通の円形アイコンボタン（閉じる、サウンド、ナビゲーションの矢印） |
 | `.rk-reel-close-btn` | Controls | 閉じるボタン |
 | `.rk-reel-sound-btn` | Controls | サウンド切り替えボタン |
-| `.rk-reel-nav-arrows` | Navigation | デスクトップ専用の矢印のコンテナー（768px 未満では非表示） |
+| `.rk-reel-nav-arrows` | Navigation | デスクトップ専用の矢印のコンテナー（幅 768px 以下では非表示） |
 | `.rk-reel-nav-btn` | Navigation | 個々の前後のナビゲーション矢印 |
 | `.rk-reel-slide-wrapper` | Slide | メディアとオーバーレイを包むラッパー |
 | `.rk-reel-slide-overlay` | SlideOverlay | グラデーションのオーバーレイのコンテナー |
@@ -338,7 +338,7 @@ CSS クラスはすべて通常のクラス（スコープなし）なので、`
 | `.rk-reel-video-loader` | VideoSlide | 波の読み込みアニメーション |
 | `.rk-reel-video-poster.rk-visible` | VideoSlide | 動画が一時停止中か読み込み中のあいだ、ポスターに付く状態のモディファイア |
 | `.rk-reel-nested-indicator` | NestedSlider | 複数メディアのスライドの下のドットのページネーション（デスクトップとタッチで位置が変わります） |
-| `.rk-reel-nested-nav` | NestedSlider | 横方向のカルーセルの矢印（768px 未満では非表示） |
+| `.rk-reel-nested-nav` | NestedSlider | 横方向のカルーセルの矢印（幅 768px 以下では非表示） |
 | `.rk-reel-nested-nav-next` | NestedSlider | ネストした「次へ」の矢印の位置 |
 | `.rk-reel-nested-nav-prev` | NestedSlider | ネストした「前へ」の矢印の位置 |
 | `.rk-reel-nested-slider-inner` | NestedSlider | ネストした横方向のスライダーのルート |

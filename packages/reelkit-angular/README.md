@@ -2,7 +2,7 @@
 
 <p>
   <a href="https://www.npmjs.com/package/@reelkit/angular"><img src="https://img.shields.io/npm/v/@reelkit/angular?color=6366f1&label=npm" alt="npm" /></a>
-  <img src="https://img.shields.io/badge/gzip-16.0%20kB-6366f1" alt="Bundle size" />
+  <img src="https://img.shields.io/badge/gzip-15.8%20kB-6366f1" alt="Bundle size" />
   <img src="https://img.shields.io/badge/coverage-92%25-brightgreen" alt="Statement coverage" />
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
@@ -11,7 +11,7 @@
   <a href="https://angular-demo.reelkit.dev/?utm_source=npm"><img src="https://raw.githubusercontent.com/KonstantinKai/reelkit/main/assets/slider.gif" width="240" alt="A bare vertical slider of 10,000 items on a phone: two swipes up move the counter from 1 to 3, a swipe sideways pages the slider nested in item 3, typing 5000 and tapping Go jumps straight to item 5,000, and a jump back returns to item 1." /></a>
 </p>
 
-Angular bindings for `@reelkit/core`. Add a `<rk-reel>` component with a count and a template — it handles virtualization, gestures, and keyboard/wheel input. ~16.0 kB gzip.
+Angular bindings for `@reelkit/core`. Add a `<rk-reel>` component with a count and a template — it handles virtualization, gestures, and keyboard/wheel input. ~15.8 kB gzip.
 
 **[Live Demo](https://angular-demo.reelkit.dev/?utm_source=npm)** · **[Open in StackBlitz](https://stackblitz.com/github/KonstantinKai/reelkit-angular-starter)**
 

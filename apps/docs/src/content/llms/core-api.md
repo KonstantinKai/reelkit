@@ -189,6 +189,19 @@ Low-level helpers for DOM event management + deterministic cleanup. Used interna
 | `createBodyLock`       | `() => BodyLock`                                   | Ref-counted body scroll lock. Multiple consumers lock at once; scroll restored when all unlock.                                                                                                                           |
 | `sharedBodyLock`       | `BodyLock`                                         | Module-level singleton. Use when multiple components share one ref counter so nested modals/overlays interleave right. Framework bindings (`@reelkit/react`, `@reelkit/vue`, `@reelkit/angular`) use this under the hood. |
 
+## Size Detection
+
+How every binding + overlay measures container + window. `Reel` uses `observeElementSize` when no `size` passed; reel player, lightbox, stories player size from window. SSR-safe: no window / `ResizeObserver` → getters return `[0, 0]` / `false`, observers return no-op disposer.
+
+| Export                | Type                                                                         | Description                                                                                                                                                                       |
+| --------------------- | ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `observeElementSize`  | `(element: Element, callback: (size: [number, number]) => void) => Disposer` | Reports padding box (`clientWidth` × `clientHeight`) on change. Skips size with a zero side + size equal to last reported.                                                        |
+| `getViewportSize`     | `() => [number, number]`                                                     | Window size `[innerWidth, innerHeight]`.                                                                                                                                          |
+| `observeViewportSize` | `(callback: (size: [number, number]) => void) => Disposer`                   | Window size on every `resize` event, unchanged size included (device emulation can switch to touch at same dims). Compare yourself if only change matters.                        |
+| `isMobileWidth`       | `(viewportWidth: number) => boolean`                                         | Phone layout: 768px and narrower. Every overlay + stylesheet switch at this width.                                                                                                |
+| `fitAspectRatio`      | `(viewport: [number, number], aspectRatio?: number) => [number, number]`     | Overlay size for window. Phone width → whole window; else full height at `aspectRatio`, narrowed to window width when too wide. Missing, zero, negative, non-finite ratio → 9/16. |
+| `isTouchDevice`       | `() => boolean`                                                              | Device takes touch input (`ontouchstart` / `maxTouchPoints`). Capability, not screen size.                                                                                        |
+
 ## Focus Management
 
 Framework-agnostic dialog a11y primitives. Overlay packages use them to return focus to trigger on close + trap Tab/Shift+Tab inside overlay while open. SSR-safe: each helper returns no-op disposer in non-browser env.

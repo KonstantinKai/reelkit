@@ -13,6 +13,10 @@ import {
   flushMicrotasks,
 } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import {
+  installResizeObserverStub,
+  type ResizeObserverStub,
+} from '@reelkit/core/testing';
 import { ReelComponent } from './reel.component';
 import { RkReelItemDirective } from './reel-item.directive';
 import {
@@ -22,33 +26,15 @@ import {
 import { createDefaultKeyExtractorForLoop } from './reel.types';
 import type { ReelApi } from './reel.types';
 
-type ResizeCallback = (entries: ResizeObserverEntry[]) => void;
+let resizeObserverStub: ResizeObserverStub | null = null;
 
-let resizeCallback: ResizeCallback | null = null;
-let resizeObserverInstance: {
-  observe: jest.Mock;
-  disconnect: jest.Mock;
-} | null = null;
-
+/**
+ * Replace ResizeObserver with a stub that measures every observed element at
+ * the given size as soon as it is observed.
+ */
 function mockResizeObserver(width: number, height: number): void {
-  (globalThis as unknown as Record<string, unknown>)['ResizeObserver'] = jest
-    .fn()
-    .mockImplementation((cb: ResizeCallback) => {
-      resizeCallback = cb;
-      resizeObserverInstance = {
-        observe: jest.fn().mockImplementation(() => {
-          // Fire immediately to simulate a measured element.
-          cb([
-            {
-              contentRect: { width, height },
-              target: document.createElement('div'),
-            } as unknown as ResizeObserverEntry,
-          ]);
-        }),
-        disconnect: jest.fn(),
-      };
-      return resizeObserverInstance;
-    });
+  resizeObserverStub?.restore();
+  resizeObserverStub = installResizeObserverStub([width, height]);
 }
 
 /**
@@ -56,12 +42,7 @@ function mockResizeObserver(width: number, height: number): void {
  * given dimensions. Requires a call to `mockResizeObserver` first.
  */
 function triggerResize(width: number, height: number): void {
-  resizeCallback?.([
-    {
-      contentRect: { width, height },
-      target: document.createElement('div'),
-    } as unknown as ResizeObserverEntry,
-  ]);
+  resizeObserverStub?.resize(width, height);
 }
 
 @Component({
@@ -209,8 +190,6 @@ function createBasicFixture(): ComponentFixture<BasicHostComponent> {
 
 describe('ReelComponent', () => {
   beforeEach(() => {
-    resizeCallback = null;
-    resizeObserverInstance = null;
     mockResizeObserver(400, 300);
     // Suppress NG0956 warning — the mock signal bridge creates new array
     // references on every emit, triggering Angular's @for identity tracking
@@ -222,6 +201,8 @@ describe('ReelComponent', () => {
 
   afterEach(() => {
     jest.restoreAllMocks();
+    resizeObserverStub?.restore();
+    resizeObserverStub = null;
   });
 
   describe('rendering', () => {
@@ -335,7 +316,7 @@ describe('ReelComponent', () => {
 
     it('sets up ResizeObserver on the host element after render', fakeAsync(() => {
       createBasicFixture();
-      expect(resizeObserverInstance?.observe).toHaveBeenCalled();
+      expect(resizeObserverStub?.observed).toHaveLength(1);
     }));
 
     it('renders slides once ResizeObserver fires with non-zero dimensions', fakeAsync(() => {

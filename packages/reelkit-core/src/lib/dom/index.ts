@@ -1,4 +1,12 @@
 export { observeDomEvent } from './observeDomEvent';
+export { observeElementSize } from './observeElementSize';
+export {
+  getViewportSize,
+  observeViewportSize,
+  isMobileWidth,
+  fitAspectRatio,
+  isTouchDevice,
+} from './viewportSize';
 
 export {
   fullscreenSignal,

@@ -1240,6 +1240,44 @@ describe('ReelPlayerOverlay behaviour', () => {
 
       expect(slideSize()).toEqual(['600px', '768px']);
     });
+
+    it('applies a changed aspect ratio without waiting for a window resize', async () => {
+      const aspectRatio = ref(9 / 16);
+      await openPlayer({
+        // The spread in the host's render reads the getter, so the host
+        // re-renders when the ref changes.
+        props: {
+          get aspectRatio() {
+            return aspectRatio.value;
+          },
+        },
+      });
+      expect(slideSize()).toEqual(['432px', '768px']);
+
+      aspectRatio.value = 3 / 4;
+      await settle();
+
+      expect(slideSize()).toEqual(['576px', '768px']);
+    });
+
+    it('falls back to 9:16 for an aspect ratio that would break the layout', async () => {
+      for (const aspectRatio of [0, -1, Number.NaN, Number.POSITIVE_INFINITY]) {
+        const { wrapper } = await openPlayer({ props: { aspectRatio } });
+
+        expect(slideSize()).toEqual(['432px', '768px']);
+        wrapper.unmount();
+      }
+    });
+
+    it('fills a 768px wide viewport, the widest one treated as a phone', async () => {
+      Object.defineProperty(window, 'innerWidth', {
+        value: 768,
+        configurable: true,
+      });
+      await openPlayer();
+
+      expect(slideSize()).toEqual(['768px', '768px']);
+    });
   });
 
   it('exposes a template-ref api that is safe while closed and drives the slider when open', async () => {

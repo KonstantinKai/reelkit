@@ -103,6 +103,7 @@ export const ukTitles: Record<string, string> = {
   'Content Loading': 'Завантаження вмісту',
   Sound: 'Звук',
   'DOM & Cleanup Utilities': 'Утиліти DOM та очищення',
+  'Size Detection': 'Визначення розміру',
   'Focus Management': 'Керування фокусом',
   'Video Utilities': 'Відеоутиліти',
   'Architecture Overview': 'Огляд архітектури',

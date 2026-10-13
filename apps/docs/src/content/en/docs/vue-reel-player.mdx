@@ -218,7 +218,7 @@ Key by a different field (a `slug`), or page an infinite feed with `locateAsync`
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `ariaLabel` | `string` | `'Video player'` | Accessible label for the dialog region; announced by screen readers when the overlay opens |
-| `aspectRatio` | `number` | `9 / 16` | Width/height ratio for the desktop container. Mobile uses the full viewport. |
+| `aspectRatio` | `number` | `9 / 16` | Width/height ratio for the desktop container. At 768px wide and narrower the player uses the full viewport. A zero, negative or non-finite value falls back to 9/16. |
 | `content` | `T[] (extends BaseContentItem)` | `required` | Array of content items to display in the player |
 | `enableNavKeys` | `boolean` | `true` | Enable keyboard arrow-key navigation |
 | `enableWheel` | `boolean` | `true` | Enable mouse-wheel navigation |
@@ -388,7 +388,7 @@ CSS classes are plain (not scoped). A stylesheet loaded after `@reelkit/vue-reel
 | `.rk-reel-button` | Controls | Shared circular icon button (close, sound, nav arrows) |
 | `.rk-reel-close-btn` | Controls | Close button |
 | `.rk-reel-sound-btn` | Controls | Sound toggle button |
-| `.rk-reel-nav-arrows` | Navigation | Desktop-only arrow container (hidden below 768px) |
+| `.rk-reel-nav-arrows` | Navigation | Desktop-only arrow container (hidden at 768px wide and narrower) |
 | `.rk-reel-nav-button` | Navigation | Individual prev/next nav arrow |
 | `.rk-reel-slide-wrapper` | Slide | Wrapper around media + overlay |
 | `.rk-reel-slide-overlay` | SlideOverlay | Gradient overlay container |
@@ -402,7 +402,7 @@ CSS classes are plain (not scoped). A stylesheet loaded after `@reelkit/vue-reel
 | `.rk-reel-video-poster` | VideoSlide | Poster image (fades out on play) |
 | `.rk-reel-video-poster.rk-visible` | VideoSlide | State modifier applied to the poster while the video is paused/loading |
 | `.rk-reel-nested-indicator` | NestedSlider | Dot pagination under multi-media slides (position varies desktop vs. touch) |
-| `.rk-reel-nested-nav` | NestedSlider | Horizontal carousel arrows (hidden below 768px) |
+| `.rk-reel-nested-nav` | NestedSlider | Horizontal carousel arrows (hidden at 768px wide and narrower) |
 | `.rk-reel-nested-nav-next` | NestedSlider | Nested next arrow position |
 | `.rk-reel-nested-nav-prev` | NestedSlider | Nested prev arrow position |
 | `.rk-reel-timeline` | TimelineBar | Scrub-bar wrapper. Reuse on custom \`#timeline\` slot roots to inherit flush-bottom positioning, safe-area padding, and touch-device slide-overlay clearance. |

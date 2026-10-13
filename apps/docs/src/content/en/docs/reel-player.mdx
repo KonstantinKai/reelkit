@@ -267,7 +267,7 @@ Key by a different field (a `slug`), or page an infinite feed with `locateAsync`
 | --- | --- | --- | --- |
 | `apiRef` | `MutableRefObject<ReelApi>` | - | Ref to access Reel API |
 | `ariaLabel` | `string` | 'Video player' | Accessible label for the dialog region; announced by screen readers when the overlay opens |
-| `aspectRatio` | `number` | 9/16 (0.5625) | Width/height ratio for the player container on desktop. On mobile the player always uses full viewport. |
+| `aspectRatio` | `number` | 9/16 (0.5625) | Width/height ratio for the player container on desktop. At 768px wide and narrower the player always uses the full viewport. A zero, negative or non-finite value falls back to 9/16. |
 | `content` | `T[]` | required | Array of content items (generic, defaults to ContentItem) |
 | `initialIndex` | `number` | 0 | Starting slide index |
 | `initialInnerIndex` | `number` | 0 | Inner media index to open at, for the initially visible post only — lets a two-axis URL deep-link into a specific image of a multi-media post. Ignored once the player is open and the user navigates. |
@@ -479,7 +479,7 @@ All CSS classes are plain (not CSS modules), so they can be targeted with higher
 | `.rk-reel-button` | Controls | Shared circular icon button (close, sound, nav arrows) |
 | `.rk-reel-close-btn` | Controls | Close button |
 | `.rk-reel-sound-btn` | Controls | Sound toggle button |
-| `.rk-reel-nav-arrows` | Navigation | Desktop-only arrow container (hidden below 768px) |
+| `.rk-reel-nav-arrows` | Navigation | Desktop-only arrow container (hidden at 768px wide and narrower) |
 | `.rk-reel-nav-button` | Navigation | Individual prev/next nav arrow |
 | `.rk-reel-slide-wrapper` | Slide | Wrapper around media + overlay |
 | `.rk-reel-slide-overlay` | SlideOverlay | Gradient overlay container |
@@ -493,7 +493,7 @@ All CSS classes are plain (not CSS modules), so they can be targeted with higher
 | `.rk-reel-video-poster` | VideoSlide | Poster image (fades out on play) |
 | `.rk-reel-video-poster.rk-visible` | VideoSlide | State modifier applied to the poster while the video is paused/loading |
 | `.rk-reel-nested-indicator` | NestedSlider | Dot pagination under multi-media slides (position varies desktop vs. touch) |
-| `.rk-reel-nested-nav` | NestedSlider | Horizontal carousel arrows (hidden below 768px) |
+| `.rk-reel-nested-nav` | NestedSlider | Horizontal carousel arrows (hidden at 768px wide and narrower) |
 | `.rk-reel-nested-nav-next` | NestedSlider | Nested next arrow position |
 | `.rk-reel-nested-nav-prev` | NestedSlider | Nested prev arrow position |
 | `.rk-reel-timeline` | TimelineBar | Scrub-bar wrapper. Reuse on custom \`renderTimeline\` roots to inherit flush-bottom positioning, safe-area padding, and touch-device slide-overlay clearance. |

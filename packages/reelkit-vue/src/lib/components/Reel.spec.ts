@@ -1,14 +1,10 @@
 import { mount, type VueWrapper } from '@vue/test-utils';
-import {
-  describe,
-  it,
-  expect,
-  vi,
-  beforeEach,
-  afterEach,
-  type Mock,
-} from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { h, inject, defineComponent, nextTick } from 'vue';
+import {
+  installResizeObserverStub,
+  type ResizeObserverStub,
+} from '@reelkit/core/testing';
 import {
   Reel,
   createDefaultKeyExtractorForLoop,
@@ -16,48 +12,9 @@ import {
 } from './Reel';
 import { RK_REEL_KEY } from '../context/ReelContext';
 
-type ResizeCallback = ResizeObserverCallback;
-let resizeObserverCallback: ResizeCallback | null = null;
-let observedElements: Element[] = [];
-let disconnectSpy: Mock<() => void> | undefined;
-
 // `wrapper.vm` is typed from the props alone; the slider methods come from
 // `expose()`, which the mount typing cannot see.
 const reelApi = (wrapper: VueWrapper) => wrapper.vm as unknown as ReelExpose;
-
-class MockResizeObserver {
-  constructor(callback: ResizeCallback) {
-    resizeObserverCallback = callback;
-  }
-  observe(el: Element) {
-    observedElements.push(el);
-  }
-  unobserve() {
-    /* noop */
-  }
-  disconnect() {
-    observedElements = [];
-    resizeObserverCallback = null;
-    disconnectSpy?.();
-  }
-}
-
-const triggerResize = (width: number, height: number) => {
-  for (const el of observedElements) {
-    Object.defineProperty(el, 'clientWidth', {
-      value: width,
-      configurable: true,
-    });
-    Object.defineProperty(el, 'clientHeight', {
-      value: height,
-      configurable: true,
-    });
-  }
-  resizeObserverCallback?.(
-    [{ contentRect: { width, height } }] as ResizeObserverEntry[],
-    null as unknown as ResizeObserver,
-  );
-};
 
 const itemSlot = ({ index, size }: { index: number; size: [number, number] }) =>
   h('div', {}, `Slide ${index} (${size[0]}x${size[1]})`);
@@ -285,19 +242,14 @@ describe('Reel', () => {
   });
 
   describe('auto-size', () => {
-    let originalRO: typeof ResizeObserver;
+    let resizeObserver: ResizeObserverStub;
 
     beforeEach(() => {
-      originalRO = globalThis.ResizeObserver;
-      disconnectSpy = vi.fn();
-      globalThis.ResizeObserver =
-        MockResizeObserver as unknown as typeof ResizeObserver;
-      observedElements = [];
-      resizeObserverCallback = null;
+      resizeObserver = installResizeObserverStub();
     });
 
     afterEach(() => {
-      globalThis.ResizeObserver = originalRO;
+      resizeObserver.restore();
     });
 
     it('sets 100% width/height when size is omitted', () => {
@@ -329,7 +281,7 @@ describe('Reel', () => {
         slots: { item: spy },
       });
 
-      triggerResize(400, 600);
+      resizeObserver.resize(400, 600);
       await wrapper.vm.$nextTick();
 
       expect(spy).toHaveBeenCalled();
@@ -343,7 +295,7 @@ describe('Reel', () => {
         slots: { item: spy },
       });
 
-      triggerResize(0, 0);
+      resizeObserver.resize(0, 0);
       await wrapper.vm.$nextTick();
       expect(spy).not.toHaveBeenCalled();
     });
@@ -354,11 +306,11 @@ describe('Reel', () => {
         slots: { item: itemSlot },
       });
 
-      triggerResize(400, 600);
+      resizeObserver.resize(400, 600);
       await wrapper.vm.$nextTick();
 
       const slidesBefore = wrapper.findAll('[data-index]').length;
-      triggerResize(400, 600);
+      resizeObserver.resize(400, 600);
       await wrapper.vm.$nextTick();
 
       expect(wrapper.findAll('[data-index]').length).toBe(slidesBefore);
@@ -370,10 +322,10 @@ describe('Reel', () => {
         slots: { item: itemSlot },
       });
 
-      expect(observedElements.length).toBe(0);
+      expect(resizeObserver.observed.length).toBe(0);
 
       await wrapper.setProps({ size: undefined });
-      expect(observedElements.length).toBe(1);
+      expect(resizeObserver.observed.length).toBe(1);
     });
 
     it('disconnects ResizeObserver when switching from auto to explicit', async () => {
@@ -382,12 +334,12 @@ describe('Reel', () => {
         slots: { item: itemSlot },
       });
 
-      triggerResize(400, 600);
+      resizeObserver.resize(400, 600);
       await wrapper.vm.$nextTick();
-      expect(observedElements.length).toBe(1);
+      expect(resizeObserver.observed.length).toBe(1);
 
       await wrapper.setProps({ size: [400, 600] as [number, number] });
-      expect(disconnectSpy).toHaveBeenCalled();
+      expect(resizeObserver.disconnected).toBeGreaterThan(0);
     });
   });
 

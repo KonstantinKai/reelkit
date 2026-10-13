@@ -105,6 +105,7 @@ export const esTitles: Record<string, string> = {
   'Content Loading': 'Carga de contenido',
   Sound: 'Sonido',
   'DOM & Cleanup Utilities': 'Utilidades de DOM y limpieza',
+  'Size Detection': 'Detección de tamaño',
   'Focus Management': 'Gestión del foco',
   'Video Utilities': 'Utilidades de vídeo',
   'Architecture Overview': 'Visión general de la arquitectura',

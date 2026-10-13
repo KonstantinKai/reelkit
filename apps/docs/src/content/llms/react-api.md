@@ -200,3 +200,7 @@ import { createDefaultKeyExtractorForLoop } from '@reelkit/react';
   itemBuilder={...}
 />
 ```
+
+### Size detection
+
+`observeElementSize`, `getViewportSize`, `observeViewportSize`, `isMobileWidth`, `fitAspectRatio`, `isTouchDevice` re-exported from `@reelkit/react` — custom overlay sizes itself like reelkit ones. See core API Size Detection.

@@ -186,6 +186,19 @@ Ayudantes de bajo nivel para gestionar eventos del DOM y limpiar de forma determ
 | `createBodyLock` | `() => BodyLock` | Bloqueo del scroll del body con recuento de referencias. Varios consumidores pueden bloquearlo a la vez; el scroll vuelve cuando todos lo liberan. |
 | `sharedBodyLock` | `BodyLock` | Instancia única a nivel de módulo. Úsala cuando varios componentes de tu aplicación deban compartir un solo contador para que los modales y overlays anidados se intercalen bien. Los bindings de los frameworks (`@reelkit/react`, `@reelkit/vue`, `@reelkit/angular`) la usan por debajo. |
 
+## Detección de tamaño [#size-detection]
+
+Cómo miden su contenedor y la ventana todos los bindings y overlays. `Reel` usa `observeElementSize` cuando no se le pasa `size`; el reel player, el lightbox y el stories player toman su tamaño de la ventana. Seguras en SSR: sin window o sin `ResizeObserver`, los getters devuelven `[0, 0]` o `false` y los observadores devuelven una función de limpieza que no hace nada.
+
+| Export | Tipo | Descripción |
+| --- | --- | --- |
+| `observeElementSize` | `(element: Element, callback: (size: [number, number]) => void) => Disposer` | Informa del padding box del elemento (`clientWidth` × `clientHeight`) cada vez que cambia. Omite un tamaño con algún lado a cero (oculto o aún sin maquetar) y un tamaño igual al último que informó. |
+| `getViewportSize` | `() => [number, number]` | El tamaño de la ventana como `[innerWidth, innerHeight]`. |
+| `observeViewportSize` | `(callback: (size: [number, number]) => void) => Disposer` | Llama al callback con el tamaño de la ventana en cada evento `resize`, incluso en uno que deja el tamaño igual (la emulación de dispositivos puede cambiar a un dispositivo táctil con las mismas dimensiones). Compara los tamaños tú mismo si solo te importa un cambio. |
+| `isMobileWidth` | `(viewportWidth: number) => boolean` | Si una ventana de ese ancho recibe la disposición de móvil: 768px o menos. Todos los overlays y su hoja de estilos cambian en ese ancho. |
+| `fitAspectRatio` | `(viewport: [number, number], aspectRatio?: number) => [number, number]` | Tamaño del overlay para una ventana. Con ancho de móvil es la ventana entera; si no, toda la altura de la ventana con la relación `aspectRatio`, estrechada al ancho de la ventana cuando no cabría. Una relación ausente, cero, negativa o no finita vuelve a 9/16. |
+| `isTouchDevice` | `() => boolean` | Si el dispositivo admite entrada táctil (`ontouchstart` o `maxTouchPoints`). Comprueba una capacidad, no un tamaño de pantalla: un portátil táctil cuenta, una ventana estrecha de escritorio no. |
+
 ## Gestión del foco [#focus-management]
 
 Primitivas de accesibilidad para diálogos, independientes del framework. Los paquetes de overlay las usan para devolver el foco al disparador al cerrar y para mantener Tab / Mayús+Tab dentro del overlay mientras está abierto. Seguras en SSR: fuera del navegador, cada ayudante devuelve una función de limpieza que no hace nada.

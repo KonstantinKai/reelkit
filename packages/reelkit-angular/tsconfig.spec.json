@@ -11,6 +11,7 @@
     "declarationMap": false,
     "baseUrl": ".",
     "paths": {
+      "@reelkit/core/testing": ["../reelkit-core/src/testing/index.ts"],
       "@reelkit/core": ["../reelkit-core/src/index.ts"]
     }
   },

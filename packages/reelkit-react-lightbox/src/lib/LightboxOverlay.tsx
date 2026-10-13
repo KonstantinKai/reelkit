@@ -15,6 +15,9 @@ import {
   createDisposableList,
   reaction,
   observeDomEvent,
+  observeViewportSize,
+  getViewportSize,
+  isTouchDevice,
   captureFocusForReturn,
   createFocusTrap,
   slideTransition,
@@ -265,18 +268,10 @@ const LightboxContent: FC<LightboxContentProps> = (props) => {
       itemBuilder,
     },
   ] = useState(() => {
-    const sizeSignal = createSignal<[number, number]>(
-      typeof window !== 'undefined'
-        ? [window.innerWidth, window.innerHeight]
-        : [0, 0],
-    );
+    const sizeSignal = createSignal<[number, number]>(getViewportSize());
     const loadingCtrl = createContentLoadingController(true, initialIndex);
     const indexSignal = createSignal(initialIndex);
-    const isMobileSignal = createSignal(
-      typeof window !== 'undefined'
-        ? 'ontouchstart' in window || navigator.maxTouchPoints > 0
-        : false,
-    );
+    const isMobileSignal = createSignal(isTouchDevice());
 
     const imageErrors = new Set<number>();
     const errorVersion = createSignal(0);
@@ -403,10 +398,9 @@ const LightboxContent: FC<LightboxContentProps> = (props) => {
     }
 
     disposables.push(
-      observeDomEvent(window, 'resize', () => {
-        sizeSignal.value = [window.innerWidth, window.innerHeight];
-        isMobileSignal.value =
-          'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      observeViewportSize((size) => {
+        sizeSignal.value = size;
+        isMobileSignal.value = isTouchDevice();
       }),
       observeDomEvent(window, 'keydown', (e) => {
         if (e.key === 'Escape') {

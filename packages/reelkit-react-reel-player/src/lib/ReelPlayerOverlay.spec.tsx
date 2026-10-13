@@ -485,6 +485,65 @@ describe('ReelPlayerOverlay', () => {
       expect(size[0]).toBe(1024);
       expect(size[1]).toBeCloseTo(576, 0);
     });
+
+    it('applies a changed aspect ratio without waiting for a window resize', () => {
+      const { rerender } = render(
+        <ReelPlayerOverlay
+          isOpen={true}
+          onClose={vi.fn()}
+          content={mockContent}
+        />,
+      );
+
+      rerender(
+        <ReelPlayerOverlay
+          isOpen={true}
+          onClose={vi.fn()}
+          content={mockContent}
+          aspectRatio={3 / 4}
+        />,
+      );
+
+      const size = lastReelProps.size as [number, number];
+      expect(size[0]).toBeCloseTo(576, 0);
+      expect(size[1]).toBe(768);
+    });
+
+    it('falls back to 9:16 for an aspect ratio that would break the layout', () => {
+      for (const aspectRatio of [0, -1, Number.NaN, Number.POSITIVE_INFINITY]) {
+        const { unmount } = render(
+          <ReelPlayerOverlay
+            isOpen={true}
+            onClose={vi.fn()}
+            content={mockContent}
+            aspectRatio={aspectRatio}
+          />,
+        );
+
+        const size = lastReelProps.size as [number, number];
+        expect(size[0]).toBeCloseTo(432, 0);
+        expect(size[1]).toBe(768);
+        unmount();
+      }
+    });
+
+    it('fills a 768px wide viewport, the widest one treated as a phone', () => {
+      Object.defineProperty(window, 'innerWidth', {
+        value: 768,
+        writable: true,
+        configurable: true,
+      });
+
+      render(
+        <ReelPlayerOverlay
+          isOpen={true}
+          onClose={vi.fn()}
+          content={mockContent}
+        />,
+      );
+
+      expect(lastReelProps.size).toEqual([768, 768]);
+    });
   });
 
   describe('resize handling', () => {

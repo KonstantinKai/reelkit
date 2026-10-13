@@ -2,7 +2,7 @@
 
 <p>
   <a href="https://www.npmjs.com/package/@reelkit/angular-lightbox"><img src="https://img.shields.io/npm/v/@reelkit/angular-lightbox?color=6366f1&label=npm" alt="npm" /></a>
-  <img src="https://img.shields.io/badge/gzip-16.4%20kB-6366f1" alt="Bundle size" />
+  <img src="https://img.shields.io/badge/gzip-16.2%20kB-6366f1" alt="Bundle size" />
   <img src="https://img.shields.io/badge/coverage-94%25-brightgreen" alt="Statement coverage" />
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
@@ -11,7 +11,7 @@
   <a href="https://angular-demo.reelkit.dev/image-preview?utm_source=npm"><img src="https://raw.githubusercontent.com/KonstantinKai/reelkit/main/assets/lightbox.gif" width="240" alt="An image lightbox on a phone: tapping a gallery thumbnail opens it full screen, two sideways swipes page to the third photo, and a swipe up closes it back to the gallery." /></a>
 </p>
 
-Image gallery lightbox for Angular — opens full-screen with swipe navigation, keyboard controls, and transition effects. Every part of the UI is replaceable via template slots. ~16.4 kB gzip.
+Image gallery lightbox for Angular — opens full-screen with swipe navigation, keyboard controls, and transition effects. Every part of the UI is replaceable via template slots. ~16.2 kB gzip.
 
 **[Live Demo](https://angular-demo.reelkit.dev/image-preview?utm_source=npm)**
 

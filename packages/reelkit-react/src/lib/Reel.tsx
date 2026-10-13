@@ -16,6 +16,7 @@ import {
   defaultRangeExtractor,
   first,
   last,
+  observeElementSize,
   slideTransition,
   type RangeExtractor,
   type AnimatedValue,
@@ -467,22 +468,7 @@ const Element = ({
   // first measurement callback arrives as early as possible.
   useLayoutEffect(() => {
     if (!autoSize || !ref.current) return;
-
-    const el = ref.current;
-    const measure = () => {
-      const w = el.clientWidth;
-      const h = el.clientHeight;
-      if (w > 0 && h > 0) {
-        setMeasuredSize((prev) =>
-          prev[0] === w && prev[1] === h ? prev : [w, h],
-        );
-      }
-    };
-
-    const observer = new ResizeObserver(measure);
-    observer.observe(el);
-
-    return () => observer.disconnect();
+    return observeElementSize(ref.current, setMeasuredSize);
   }, [autoSize]);
 
   const rootStyle: CSSProperties = {

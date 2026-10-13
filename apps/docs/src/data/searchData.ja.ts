@@ -103,6 +103,7 @@ export const jaTitles: Record<string, string> = {
   'Content Loading': 'コンテンツの読み込み',
   Sound: 'サウンド',
   'DOM & Cleanup Utilities': 'DOM とクリーンアップのユーティリティ',
+  'Size Detection': 'サイズの検出',
   'Focus Management': 'フォーカス管理',
   'Video Utilities': '動画ユーティリティ',
   'Architecture Overview': 'アーキテクチャの概要',
