@@ -18,14 +18,14 @@ export interface BundleSize {
 export const kBundleSizes: BundleSize[] = [
   {
     name: '@reelkit/core',
-    js: '27.6 kB',
-    gzip: '10.4 kB',
+    js: '29.8 kB',
+    gzip: '11.2 kB',
     css: '-',
     cssGzip: '-',
   },
   {
     name: '@reelkit/react',
-    js: '13.6 kB',
+    js: '13.8 kB',
     gzip: '4.9 kB',
     css: '-',
     cssGzip: '-',
@@ -41,9 +41,9 @@ export const kBundleSizes: BundleSize[] = [
   },
   {
     name: '@reelkit/react-lightbox',
-    js: '9.8 kB',
-    gzip: '3.3 kB',
-    css: '7.7 kB',
+    js: '12.7 kB',
+    gzip: '4.1 kB',
+    css: '7.9 kB',
     cssGzip: '1.6 kB',
     framework: 'react',
   },
@@ -57,7 +57,7 @@ export const kBundleSizes: BundleSize[] = [
   },
   {
     name: '@reelkit/angular',
-    js: '70.1 kB',
+    js: '70.2 kB',
     gzip: '15.8 kB',
     css: '-',
     cssGzip: '-',
@@ -73,15 +73,15 @@ export const kBundleSizes: BundleSize[] = [
   },
   {
     name: '@reelkit/angular-lightbox',
-    js: '95.5 kB',
-    gzip: '16.2 kB',
-    css: '10.0 kB',
+    js: '113.6 kB',
+    gzip: '19.1 kB',
+    css: '10.2 kB',
     cssGzip: '2.2 kB',
     framework: 'angular',
   },
   {
     name: '@reelkit/vue',
-    js: '15.0 kB',
+    js: '15.2 kB',
     gzip: '5.1 kB',
     css: '-',
     cssGzip: '-',
@@ -97,9 +97,9 @@ export const kBundleSizes: BundleSize[] = [
   },
   {
     name: '@reelkit/vue-lightbox',
-    js: '14.4 kB',
-    gzip: '4.1 kB',
-    css: '6.8 kB',
+    js: '18.2 kB',
+    gzip: '4.9 kB',
+    css: '7.0 kB',
     cssGzip: '1.4 kB',
     framework: 'vue',
   },
@@ -123,17 +123,17 @@ export interface LibraryWeight {
 export const kLibraryComparison: LibraryWeight[] = [
   {
     name: 'ReelKit (core + react)',
-    gzip: '15.3 kB',
+    gzip: '16.1 kB',
     virtualization: true,
   },
   {
     name: 'ReelKit (core + angular)',
-    gzip: '26.3 kB',
+    gzip: '27.0 kB',
     virtualization: true,
   },
   {
     name: 'ReelKit (core + vue)',
-    gzip: '15.5 kB',
+    gzip: '16.3 kB',
     virtualization: true,
   },
   {

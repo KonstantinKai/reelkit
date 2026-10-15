@@ -80,7 +80,8 @@
       "ViewedStateController",
       "TimelineBar",
       "TimelineProvider",
-      "SwipeToClose"
+      "SwipeToClose",
+      "DownloadButton"
     ],
     "allow": []
   },

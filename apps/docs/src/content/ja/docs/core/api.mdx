@@ -1,6 +1,6 @@
 ---
 title: Core API リファレンス
-description: '@reelkit/core の完全なリファレンスです。設定、コールバック、メソッド、状態、シグナル、トランジション、コンテンツの読み込み、サウンド、タイムライン、フルスクリーン、DOM ユーティリティ、フォーカス管理、動画ユーティリティを扱います。'
+description: '@reelkit/core の完全なリファレンスです。設定、コールバック、メソッド、状態、シグナル、トランジション、コンテンツの読み込み、サウンド、タイムライン、フルスクリーン、DOM ユーティリティ、サイズの検出、自動再生のタイマー、ファイルのダウンロード、フォーカス管理、動画ユーティリティを扱います。'
 ---
 
 import usage from '../../../snippets/core-api/usage.ts?raw';
@@ -198,6 +198,59 @@ DOM イベントの管理と、確実な後片付けのための低レベルの�
 | `isMobileWidth` | `(viewportWidth: number) => boolean` | この幅のウィンドウがスマートフォン向けの配置になるかどうか。768px 以下が該当します。どのオーバーレイとそのスタイルシートも、この幅で切り替わります。 |
 | `fitAspectRatio` | `(viewport: [number, number], aspectRatio?: number) => [number, number]` | ウィンドウに対するオーバーレイの大きさ。スマートフォンの幅ではウィンドウ全体、それ以外ではウィンドウの高さいっぱいで `aspectRatio` の比にし、収まらないときはウィンドウの幅まで狭めます。比が未指定、0、負の値、有限でない値のときは 9/16 になります。 |
 | `isTouchDevice` | `() => boolean` | デバイスがタッチ入力を受け付けるかどうか（`ontouchstart` または `maxTouchPoints`）。画面の大きさではなく機能の判定です。タッチ対応のノート PC は該当し、幅の狭いデスクトップのウィンドウは該当しません。 |
+
+## 自動再生 [#autoplay]
+
+ひとりでに進むもののためのタイマーです。動き方と組み込み方は[自動再生ガイド](/docs/core/guide#autoplay)にあります。
+
+| Export | 型 | 説明 |
+| --- | --- | --- |
+| `createTimerController` | `(config: TimerControllerConfig) => TimerController` | 1 つの長さを 0 から 1 まで数え、終わるとコールバックを呼びます。Stories Player の各ストーリーを動かします。 |
+| `createSlideshowController` | `(config: SlideshowControllerConfig) => SlideshowController` | ひとりでに進むギャラリーの裏にあるステートマシンです。Lightbox の `autoAdvance` を動かします。 |
+
+### createTimerController [#createtimercontroller]
+
+| `TimerControllerConfig` | 型 | 説明 |
+| --- | --- | --- |
+| `duration` | `number` | 既定の長さ（ミリ秒）。`start()` に長さが渡されないときに使います |
+| `onComplete` | `() => void` | 進み具合が 1 に達したときに呼ばれます |
+
+| `TimerController` | 型 | 説明 |
+| --- | --- | --- |
+| `progress` | `Signal<number>` | 0 から 1 までの進み具合。プログレスバーを動かします |
+| `isRunning` | `Signal<boolean>` | タイマーが数えているかどうか |
+| `start(duration?)` | `(number?) => void` | 0 からやり直します。その回だけ別の長さを渡すこともできます |
+| `pause()` | `() => void` | 現在の進み具合で止めます |
+| `resume()` | `() => void` | 止めた進み具合から続けます |
+| `reset()` | `() => void` | 0 に戻して止めます |
+| `dispose()` | `() => void` | 予約中のフレームを取り消します |
+
+### createSlideshowController [#createslideshowcontroller]
+
+| `SlideshowControllerConfig` | 型 | 説明 |
+| --- | --- | --- |
+| `interval` | `number` | 画像を表示しておく長さ（ミリ秒）。読み込みが終わった時点から数えます |
+| `onAdvance` | `() => void` | アクティブなスライドが終わりました。次のスライドへ進むか、最後のスライドなら `pause()` を呼びます |
+
+| `SlideshowController` | 型 | 説明 |
+| --- | --- | --- |
+| `isPlaying` | `Signal<boolean>` | スライドショーがオンかどうか。一時的な停止（hold）では変わりません |
+| `progress` | `Signal<number>` | アクティブな画像の間隔がどこまで進んだか（0 から 1） |
+| `play()` / `pause()` / `toggle()` | `() => void` | オンとオフを切り替えます。アクティブなスライドは進み具合を保ちます |
+| `setInterval(ms)` | `(number) => void` | 次の画像から間隔を変えます |
+| `setSlide(kind)` | `(SlideshowSlideKind) => void` | 新しいスライドがアクティブになりました。進み具合は 0 からやり直し、`ready()` か `ended()` を待ちます。`SlideshowSlideKind` は `'image' \| 'video'` です |
+| `ready()` | `() => void` | アクティブな画像の読み込みが終わった、または失敗しました。その間隔が始まります |
+| `ended()` | `() => void` | アクティブな動画が終わりました。すぐに、または何にも止められていなくなった時点で進みます |
+| `hold(reason)` / `release(reason)` | `(string) => void` | `'hover'` や `'drag'` などの理由で時計を止めます。複数の hold は重ねられます |
+| `dispose()` | `() => void` | 時計とページの表示状態のリスナーを止めます |
+
+## ダウンロード [#download]
+
+URL からファイルを保存します。別オリジンのものも含みます。どのような代替手段を取るかは[ダウンロードガイド](/docs/core/guide#download)にあります。
+
+| Export | 型 | 説明 |
+| --- | --- | --- |
+| `downloadFile` | `(url: string, filename?: string) => Promise<void>` | ファイルを `filename` という名前で保存します。既定は URL のパスの最後の部分です。別オリジンのリンクでは `download` 属性が無視されるため、ファイルを fetch して blob を保存します。fetch が失敗したりサーバーがエラーを返したりしたとき（よくあるのは CORS ヘッダーのない別オリジンのサーバーです）は、代わりに URL を新しいタブで開きます。reject することはなく、ウィンドウがなければ何もしません。 |
 
 ## フォーカス管理 [#focus-management]
 

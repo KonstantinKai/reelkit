@@ -1162,6 +1162,242 @@ describe('LightboxOverlay on a desktop pointer', () => {
       vi.unstubAllGlobals();
     }
   });
+
+  // The slideshow timing itself is covered by the core slideshow controller
+  // tests; these check only how the lightbox feeds it and shows it.
+  describe('slideshow and download', () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+      vi.restoreAllMocks();
+    });
+
+    // The shared preloader remembers every image across tests, so each test
+    // names its own.
+    const itemsFor = (name: string): LightboxItem[] => [
+      { src: `https://example.com/${name}-1.jpg`, title: 'One' },
+      { src: `https://example.com/${name}-2.jpg`, title: 'Two' },
+      { src: `https://example.com/${name}-3.jpg`, title: 'Three' },
+    ];
+
+    const loadImage = async (src: string) => {
+      document
+        .querySelector(`img[src="${src}"]`)
+        ?.dispatchEvent(new Event('load'));
+      await settle();
+    };
+
+    const elapse = async (milliseconds: number) => {
+      vi.advanceTimersByTime(milliseconds);
+      await settle();
+    };
+
+    const playPause = () =>
+      document.querySelector('.rk-lightbox-play-pause') as HTMLButtonElement;
+
+    // jsdom has no PointerEvent, so a mouse event carries the pointer type.
+    const mouseOver = async (target: Element) => {
+      const event = new MouseEvent('pointerover', { bubbles: true });
+      Object.defineProperty(event, 'pointerType', { value: 'mouse' });
+      target.dispatchEvent(event);
+      await settle();
+    };
+
+    // The same field names exist in the React and Angular lightboxes; a
+    // rename here fails the spec type check before it can drift from them.
+    it('names the slideshow and download fields the way every binding does', () => {
+      const controls: (keyof ControlsSlotScope)[] = [
+        'isAutoAdvancing',
+        'onToggleAutoAdvance',
+        'isDownloading',
+        'onDownload',
+      ];
+      const slide: (keyof SlideSlotScope)[] = ['autoAdvance', 'onEnded'];
+      const item: (keyof LightboxItem)[] = ['downloadUrl', 'downloadName'];
+      const api: (keyof LightboxApi)[] = ['play', 'pause'];
+
+      expect([...controls, ...slide, ...item, ...api]).toHaveLength(10);
+    });
+
+    it('adds no slideshow or download button and never advances by default', async () => {
+      const items = itemsFor('off');
+      const { onSlideChange } = await openLightbox({ items });
+      await loadImage(items[0].src);
+      await elapse(20_000);
+
+      expect(playPause()).toBeNull();
+      expect(document.querySelector('.rk-lightbox-download')).toBeNull();
+      expect(onSlideChange).not.toHaveBeenCalled();
+    });
+
+    it('moves to the next slide once the loaded image has had its interval', async () => {
+      const items = itemsFor('advance');
+      const { onSlideChange } = await openLightbox({
+        items,
+        props: { autoAdvance: true, autoAdvanceInterval: 3000 },
+      });
+
+      await elapse(10_000);
+      expect(onSlideChange).not.toHaveBeenCalled();
+
+      await loadImage(items[0].src);
+      await elapse(3100);
+      await elapse(1000);
+      expect(onSlideChange).toHaveBeenCalledWith(1);
+    });
+
+    it('shows a pressed pause button while playing and stops when it is clicked', async () => {
+      const items = itemsFor('toggle');
+      const { onSlideChange } = await openLightbox({
+        items,
+        props: { autoAdvance: true },
+      });
+      await loadImage(items[0].src);
+      expect(playPause().getAttribute('aria-pressed')).toBe('true');
+
+      playPause().click();
+      await settle();
+      await elapse(20_000);
+
+      expect(playPause().getAttribute('aria-pressed')).toBe('false');
+      expect(onSlideChange).not.toHaveBeenCalled();
+    });
+
+    it('stops on the last slide without loop and shows the play button again', async () => {
+      const items = itemsFor('last');
+      const { onSlideChange } = await openLightbox({
+        items,
+        props: { autoAdvance: true, initialIndex: 2 },
+      });
+      await loadImage(items[2].src);
+      await elapse(6000);
+
+      expect(onSlideChange).not.toHaveBeenCalled();
+      expect(playPause().getAttribute('aria-pressed')).toBe('false');
+    });
+
+    it('waits while the mouse rests on a control, not on the picture', async () => {
+      const items = itemsFor('hover');
+      const { onSlideChange } = await openLightbox({
+        items,
+        props: { autoAdvance: true },
+      });
+      await loadImage(items[0].src);
+
+      await mouseOver(document.querySelector('[title="Close (Esc)"]')!);
+      await elapse(20_000);
+      expect(onSlideChange).not.toHaveBeenCalled();
+
+      await mouseOver(document.querySelector(`img[src="${items[0].src}"]`)!);
+      await elapse(6000);
+      expect(onSlideChange).toHaveBeenCalledWith(1);
+    });
+
+    it('lets the api pause and play the slideshow', async () => {
+      const items = itemsFor('api');
+      const { api, onSlideChange } = await openLightbox({
+        items,
+        props: { autoAdvance: true },
+      });
+      await loadImage(items[0].src);
+
+      api().pause();
+      await elapse(20_000);
+      expect(onSlideChange).not.toHaveBeenCalled();
+
+      api().play();
+      await elapse(6000);
+      expect(onSlideChange).toHaveBeenCalledWith(1);
+    });
+
+    it('advances when a video slide reports its end, and asks it not to loop', async () => {
+      const scopes: SlideSlotScope[] = [];
+      const { onSlideChange } = await openLightbox({
+        items: [
+          { src: 'https://example.com/ends.mp4', type: 'video' },
+          { src: 'https://example.com/after-video.jpg' },
+        ],
+        props: { autoAdvance: true },
+        slots: {
+          slide: (scope: never) => {
+            scopes.push(scope);
+            return h('div', { class: 'custom-video' });
+          },
+        },
+      });
+      const active = scopes.filter((scope) => scope.isActive).at(-1)!;
+      expect(active.autoAdvance).toBe(true);
+
+      await elapse(20_000);
+      expect(onSlideChange).not.toHaveBeenCalled();
+
+      active.onEnded();
+      await elapse(1000);
+      expect(onSlideChange).toHaveBeenCalledWith(1);
+    });
+
+    it('hands the slideshow state and toggle to a custom controls slot only when it is on', async () => {
+      const scopes: ControlsSlotScope[] = [];
+      const controls = (scope: never) => {
+        scopes.push(scope);
+        return h('div', { class: 'custom-controls' });
+      };
+
+      await openLightbox({ items: itemsFor('slot-off'), slots: { controls } });
+      expect(scopes.at(-1)).toMatchObject({
+        isAutoAdvancing: false,
+        onToggleAutoAdvance: undefined,
+        isDownloading: false,
+        onDownload: undefined,
+      });
+
+      document.body.innerHTML = '';
+      await openLightbox({
+        items: itemsFor('slot-on'),
+        props: { autoAdvance: true, showDownload: true },
+        slots: { controls },
+      });
+      expect(scopes.at(-1)).toMatchObject({
+        isAutoAdvancing: true,
+        onToggleAutoAdvance: expect.any(Function),
+        onDownload: expect.any(Function),
+      });
+    });
+
+    it('downloads the active item from its download URL under its download name', async () => {
+      const fetch = vi.fn(() => new Promise<Response>(() => undefined));
+      vi.stubGlobal('fetch', fetch);
+      try {
+        await openLightbox({
+          items: [
+            {
+              src: 'https://example.com/preview.jpg',
+              downloadUrl: 'https://example.com/original.jpg',
+              downloadName: 'beach.jpg',
+            },
+          ],
+          props: { showDownload: true },
+        });
+        const button = document.querySelector(
+          '.rk-lightbox-download',
+        ) as HTMLButtonElement;
+
+        button.click();
+        await settle();
+        button.click();
+        await settle();
+
+        expect(fetch).toHaveBeenCalledTimes(1);
+        expect(fetch).toHaveBeenCalledWith('https://example.com/original.jpg');
+        expect(button.disabled).toBe(true);
+      } finally {
+        vi.unstubAllGlobals();
+      }
+    });
+  });
 });
 
 describe('LightboxUrlOverlay slide changes', () => {

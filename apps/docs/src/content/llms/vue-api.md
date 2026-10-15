@@ -271,6 +271,7 @@ export const Feed = defineComponent(
 - `createDefaultKeyExtractorForLoop` — key extractor that handles duplicate indexes when `loop` is enabled
 - `captureFocusForReturn`, `createFocusTrap`, `getFocusableElements`
 - Size detection: `observeElementSize`, `getViewportSize`, `observeViewportSize`, `isMobileWidth`, `fitAspectRatio`, `isTouchDevice`
+- Autoplay & download: `createTimerController`, `createSlideshowController`, `downloadFile`
 - `hasRenderedNodes` — Vue slot helper, detect rendered children before fallback to default
 
 ## Vue Reactive Bridges

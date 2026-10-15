@@ -3,7 +3,7 @@ title: Angular Lightbox
 description: Angular 用の、フルスクリーンの画像ギャラリーのオーバーレイです。LightboxItem のスキーマ、入力、出力、テンプレートスロットのディレクティブ、ツリーシェイキングできる transitionFn、スワイプで閉じる操作、React 版と共通のテーマ設定を扱います。
 ---
 
-import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2 } from 'lucide-react';
+import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2, Play, Download } from 'lucide-react';
 import installation from '../../snippets/angular-lightbox/installation.sh?raw';
 import installation2 from '../../snippets/angular-lightbox/installation-2.ts?raw';
 import basicUsage from '../../snippets/angular-lightbox/basic-usage.ts?raw';
@@ -20,6 +20,8 @@ import wiringCallbacksInRklightboxslide from '../../snippets/angular-lightbox/wi
 import customLoadingTemplate from '../../snippets/angular-lightbox/custom-loading-template.html?raw';
 import customErrorTemplate from '../../snippets/angular-lightbox/custom-error-template.html?raw';
 import theming from '../../snippets/angular-lightbox/theming.css?raw';
+import autoAdvance from '../../snippets/angular-lightbox/auto-advance.ts?raw';
+import download from '../../snippets/angular-lightbox/download.ts?raw';
 
 `@reelkit/angular-lightbox` で作られた、Angular 用のフルスクリーンの画像と動画のギャラリーです。
 
@@ -92,6 +94,16 @@ import theming from '../../snippets/angular-lightbox/theming.css?raw';
                 icon: Link2,
                 label: 'URL の状態',
                 desc: '共有もブックマークもできるリンク',
+              },
+              {
+                icon: Play,
+                label: 'スライドショー',
+                desc: 'オプトインの自動送り、再生と一時停止に対応',
+              },
+              {
+                icon: Download,
+                label: 'ダウンロード',
+                desc: 'アクティブなアイテムを保存するオプトインのボタン',
               },
             ]} />
 
@@ -188,6 +200,37 @@ import theming from '../../snippets/angular-lightbox/theming.css?raw';
 
 <CodeBlock code={urlState5} language="typescript" />
 
+## 自動送り [#auto-advance]
+
+`[autoAdvance]="true"` を指定すると、ギャラリーが開いたときにスライドショーとして再生します。デフォルトではオフなので、既存の Lightbox の描画と動作は変わりません。
+
+- **画像**は `autoAdvanceInterval`（デフォルトは 5000 ms）のあいだ表示されます。画像の読み込みが終わった時点から数えるので、遅い画像が誰にも見られないまま飛ばされることはありません。読み込みに失敗した画像は、そのエラーの時点から数えます。
+- **動画**はループせずに 1 回だけ再生し、終わると次へ進みます。`rkLightboxSlide` テンプレートでは、[動画のサポート](#video-support)のように `rk-lightbox-video-slide` に `[loop]="!autoAdvance"` と `[onEnded]="onEnded"` をバインドしてください。
+- **待機する**のは、マウスがコントロール（ボタン、リンク、キャプション）の上にあるあいだ、スワイプ中、ページが非表示のあいだです。そのあとは止まったところから続けます。
+- **手で移動する**と（矢印、キー、ホイール、スワイプ）、新しいスライドの間隔は 0 から始まります。スライドショーはオンのままです。
+- **最後のスライド**では、`loop` が指定されていない限り止まります。コントロールの再生／一時停止ボタンが状態を示し、閲覧者が切り替えられます。
+
+スライドショーは Angular のゾーンの外で動くので、そのアニメーションフレームは変更検知を起こしません。独自の `rkLightboxControls` テンプレートは `isAutoAdvancing` を受け取り、`autoAdvance` がオンのときだけ `onToggleAutoAdvance` も受け取ります。それがあるときは `rk-play-pause-button` を描画してください。タイミング自体は `@reelkit/core` の `createSlideshowController` です。[自動再生ガイド](/docs/core/guide#autoplay)と [Core API](/docs/core/api#autoplay) を参照してください。
+
+<CodeBlock code={autoAdvance} language="typescript" />
+
+## ダウンロード [#download]
+
+`[showDownload]="true"` を指定すると、コントロールにダウンロードボタンが加わります。アクティブなアイテムを `downloadUrl`（なければ `src`）から、`downloadName`（なければ URL の最後の部分）という名前で保存します。
+
+ファイルは fetch してから保存します。別オリジンのリンクでは、ブラウザーは `download` 属性を無視してファイルを開いてしまうからです。fetch が失敗したとき（よくあるのは CORS ヘッダーを送らない別オリジンのサーバーです）は、ファイルを新しいタブで開くので、閲覧者はそこから保存できます。ワンクリックで保存できるようにするには、ファイルを `Access-Control-Allow-Origin` 付きで配信してください。ダウンロード中はボタンが無効になります。
+
+独自の `rkLightboxControls` テンプレートは `isDownloading` を受け取り、`showDownload` がオンのときだけ `onDownload` も受け取ります。それがあるときは `rk-download-button` を描画してください。ヘルパーは `@reelkit/core` の `downloadFile` です。[ダウンロードガイド](/docs/core/guide#download)を参照してください。
+
+<CodeBlock code={download} language="typescript" />
+
+### コントロールのボタン [#control-buttons]
+
+| コンポーネント | セレクター | 入力／出力 | 説明 |
+| --- | --- | --- | --- |
+| `RkPlayPauseButtonComponent` | `rk-play-pause-button` | `[playing]`, `(toggled)` | スライドショーの切り替えボタン（Play／Pause のアイコン、再生中は `aria-pressed`）。`autoAdvance` のときにデフォルトのコントロールが表示します。 |
+| `RkDownloadButtonComponent` | `rk-download-button` | `[downloading]`, `(pressed)` | ダウンロードボタン。`downloading` のあいだは無効になります。`showDownload` のときにデフォルトのコントロールが表示します。 |
+
 ## RkLightboxUrlOverlayComponent の入力 [#rklightboxurloverlaycomponent-inputs]
 
 `rk-lightbox-overlay` の入力をすべて受け取りますが、`isOpen` の代わりにコントローラーを使います。出力は同じ `closed` と `slideChange` です。閉じるのは URL が行うので、`closed` は仕組みではなく通知です。
@@ -214,6 +257,9 @@ import theming from '../../snippets/angular-lightbox/theming.css?raw';
 | `enableNavKeys` | `boolean` | true | キーボードの矢印キーによる操作を有効にします |
 | `enableWheel` | `boolean` | true | マウスホイールでの操作を有効にします |
 | `wheelDebounceMs` | `number` | 200 | ホイールイベントのデバウンス時間（ms） |
+| `autoAdvance` | `boolean` | false | ギャラリーをスライドショーとして再生します。[自動送り](#auto-advance)を参照してください。 |
+| `autoAdvanceInterval` | `number` | 5000 | スライドショーで各画像を表示しておく長さ（ms）。読み込みが終わった時点から数えます |
+| `showDownload` | `boolean` | false | アクティブなアイテムのダウンロードボタンを加えます。[ダウンロード](#download)を参照してください。 |
 | `ariaLabel` | `string` | 'Image gallery' | ダイアログ領域のアクセシブルなラベル |
 
 ## RkLightboxOverlayComponent の出力 [#rklightboxoverlaycomponent-outputs]
@@ -234,15 +280,17 @@ import theming from '../../snippets/angular-lightbox/theming.css?raw';
 | `description` | `string` | いいえ | タイトルの下に表示する説明 |
 | `width` | `number` | いいえ | 画像の本来の幅（ピクセル） |
 | `height` | `number` | いいえ | 画像の本来の高さ（ピクセル） |
+| `downloadUrl` | `string` | いいえ | ダウンロードボタンが保存するもの。デフォルトは `src` |
+| `downloadName` | `string` | いいえ | 保存するファイル名。デフォルトは URL のパスの最後の部分 |
 
 ## テンプレートスロットのコンテキスト型 [#template-slot-context-types]
 
 | 型 | フィールド |
 | --- | --- |
-| `LightboxControlsContext` | `{ item, onClose, activeIndex, count, isFullscreen, onToggleFullscreen }` |
+| `LightboxControlsContext` | `{ item, activeIndex, count, isFullscreen, isAutoAdvancing, isDownloading, onClose, onToggleFullscreen, onToggleAutoAdvance?, onDownload? }` |
 | `LightboxNavContext` | `{ item, onPrev, onNext, activeIndex, count }` |
 | `LightboxInfoContext` | `{ $implicit: LightboxItem, index }` |
-| `LightboxSlideContext` | `{ $implicit: LightboxItem, index, size: [number, number], isActive, onReady, onWaiting, onError }` |
+| `LightboxSlideContext` | `{ $implicit: LightboxItem, index, size: [number, number], isActive, autoAdvance, onReady, onWaiting, onError, onEnded }` |
 
 ## トランジション [#transitions]
 
@@ -300,6 +348,8 @@ CSS クラスはすべて通常のクラス（スコープなし）なので、`
 | `.rk-lightbox-empty` | Overlay | 空の状態のテキスト |
 | `.rk-lightbox-controls-left` | Controls | 左上のコントロールのコンテナー |
 | `.rk-lightbox-btn` | Controls | コントロールのボタン（フルスクリーンなど） |
+| `.rk-lightbox-play-pause` | Controls | スライドショーの再生／一時停止ボタン（`.rk-lightbox-btn` と併用） |
+| `.rk-lightbox-download` | Controls | ダウンロードボタン（`.rk-lightbox-btn` と併用） |
 | `.rk-lightbox-close` | Controls | 閉じるボタン |
 | `.rk-lightbox-counter` | Controls | 画像のカウンターのチップ |
 | `.rk-lightbox-nav` | Navigation | ナビゲーションの矢印（前へ・次への両方） |
@@ -333,6 +383,7 @@ CSS クラスはすべて通常のクラス（スコープなし）なので、`
 | `--rk-lightbox-btn-bg-hover` | `rgba(255, 255, 255, 0.2)` | 閉じる、ナビゲーション、小さいボタンのホバー時の背景 |
 | `--rk-lightbox-btn-fg` | `#fff` | 閉じる、ナビゲーション、小さいボタンのアイコンの色 |
 | `--rk-lightbox-btn-size` | `36px` | 小さいボタンの大きさ（フルスクリーン切り替えなど） |
+| `--rk-lightbox-btn-disabled-opacity` | `0.5` | 無効になった小さいボタンの不透明度（ダウンロード中） |
 | `--rk-lightbox-close-size` | `40px` | 閉じるボタンの大きさ |
 | `--rk-lightbox-nav-size` | `48px` | 前後の矢印の大きさ |
 | `--rk-lightbox-nav-opacity` | `0.7` | 前後の矢印の通常時の不透明度 |

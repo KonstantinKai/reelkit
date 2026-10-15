@@ -11,6 +11,8 @@ import virtualization from '../../../snippets/core-guide/virtualization.ts?raw';
 import signals from '../../../snippets/core-guide/signals.ts?raw';
 import controllerState from '../../../snippets/core-guide/controller-state.ts?raw';
 import timelineController from '../../../snippets/core-guide/timeline-controller.ts?raw';
+import timerExample from '../../../snippets/core-guide/timer-example.ts?raw';
+import slideshowExample from '../../../snippets/core-guide/slideshow-example.ts?raw';
 import howItWorks from '../../../snippets/core-guide/how-it-works.ts?raw';
 import howItWorks2 from '../../../snippets/core-guide/how-it-works-2.ts?raw';
 
@@ -128,6 +130,28 @@ import howItWorks2 from '../../../snippets/core-guide/how-it-works-2.ts?raw';
 デフォルトでは `localStorage` に保存します。`createSessionStorageAdapter()` はタブを閉じると忘れ、独自の `StorageAdapter` を使えば同期的に扱える任意の場所に保存できます。`attach()` までは何も読まないので、サーバーでの描画とクライアントでの最初の描画が一致します。
 
 エントリーは明示的に忘れるまで残ります。代わりに `ttlMs` を渡すと期限切れにできます。期限はトラックごとで、スライドする時計なので、まだ見られている場所が放置された場所と一緒に古くなることはありません。書き込まれる内容は変わり、各エントリーが `[wire, timestamp]` の組になりますが、読み込みはオプションに関係なくどちらの形式も扱えるので、有効にする前に保存されたエントリーは削除されずに新しいものとして数えられます。`maxTracks` は期間ではなく件数を制限します。上限を超えると、次の書き込みで記録がいちばん古いトラックが削除されます。トラックを記録すると、すでに通過した位置であっても、そのトラックは列の最後尾に移ります。すべてのオプションは [Core API リファレンス](/docs/core/api#viewed-state) にあります。
+
+## 自動再生 [#autoplay]
+
+ひとりでに進むもののためのタイミングです。Stories Player は各ストーリーを `createTimerController` で動かし、Lightbox はそれを土台にした `createSlideshowController` でスライドショーを動かします。どちらも `requestAnimationFrame` で進み、一時停止しても進み具合は正確に保たれます。
+
+### createTimerController [#createtimercontroller]
+
+1 つの長さを 0 から 1 まで数え、終わるとコールバックを呼びます。`start()` は常に 0 から始まり、その回だけ別の長さを渡すこともできます。`pause()` と `resume()` は位置を正確に保ちます。
+
+<CodeBlock code={timerExample} language="typescript" />
+
+### createSlideshowController [#createslideshowcontroller]
+
+ひとりでに進むギャラリーの裏にあるステートマシンです。オンになっていて、何にも止められておらず、ページが表示されている間だけ動きます。ページの表示状態は自分で監視し、それ以外はあなたが伝えます。画像は読み込みが終わった時点から間隔を数えるので、遅い画像が見られないまま飛ばされることはありません。動画は終わったときに進むので、ループではなく 1 回だけ再生する必要があります。何かがスライドショーを止めている間に終わった動画は、それが解除されたときに進みます。
+
+<CodeBlock code={slideshowExample} language="typescript" />
+
+設定、状態、メソッドの全体は [Core API リファレンス](/docs/core/api#autoplay)にあります。
+
+## ダウンロード [#download]
+
+`downloadFile(url, filename?)` はファイルを `filename` という名前で保存します。既定は URL のパスの最後の部分です。別オリジンのリンクでは `download` 属性が無視されるため、ファイルを fetch して blob を保存します。fetch が失敗したりサーバーがエラーを返したりしたとき(よくあるのは CORS ヘッダーのない別オリジンのサーバーです)は、URL を新しいタブで開くので、読者はそれでもファイルを手に入れられます。reject することはなく、ウィンドウがなければ何もしません。[Core API リファレンス](/docs/core/api#download)を参照してください。
 
 <NextSteps
         items={[

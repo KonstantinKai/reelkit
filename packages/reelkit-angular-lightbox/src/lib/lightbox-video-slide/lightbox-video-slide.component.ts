@@ -170,6 +170,15 @@ export class RkLightboxVideoSlideComponent implements OnDestroy {
   /** Unique key for persisting playback position and captured frames. */
   readonly slideKey = input.required<string>();
 
+  /**
+   * Whether the video starts over when it ends. Turn it off to have
+   * `onEnded` called, which a looping video never does. Bind it to
+   * `!autoAdvance` from the slide context.
+   *
+   * @default true
+   */
+  readonly loop = input<boolean>(true);
+
   /** Notify that the video content is ready (loaded). */
   readonly onReady = input<(() => void) | undefined>(undefined);
 
@@ -178,6 +187,9 @@ export class RkLightboxVideoSlideComponent implements OnDestroy {
 
   /** Notify that the video content failed to load. */
   readonly onError = input<(() => void) | undefined>(undefined);
+
+  /** Notify that a video that does not loop played to its end. */
+  readonly onEnded = input<(() => void) | undefined>(undefined);
 
   protected readonly isLoading = signal(false);
   protected readonly showPoster = signal(true);
@@ -193,6 +205,7 @@ export class RkLightboxVideoSlideComponent implements OnDestroy {
       const src = this.src();
       const slideKey = this.slideKey();
       const poster = this.poster();
+      const loop = this.loop();
 
       this.runDeactivation();
 
@@ -200,7 +213,7 @@ export class RkLightboxVideoSlideComponent implements OnDestroy {
         // Read the view-child ref outside the reactive context so changes to
         // the ViewChild signal (e.g. after a re-render) do not cause the effect
         // to re-execute and trigger an extra activate/deactivate cycle.
-        this.activate(src, slideKey, poster);
+        this.activate(src, slideKey, poster, loop);
       }
     });
   }
@@ -220,6 +233,7 @@ export class RkLightboxVideoSlideComponent implements OnDestroy {
     src: string,
     slideKey: string,
     poster: string | undefined,
+    loop: boolean,
   ): void {
     // Read the view-child ref outside the reactive context so this method
     // (called from an effect) doesn't subscribe to containerRef changes.
@@ -239,6 +253,7 @@ export class RkLightboxVideoSlideComponent implements OnDestroy {
     const readyFn = untracked(() => this.onReady());
     const waitingFn = untracked(() => this.onWaiting());
     const errorFn = untracked(() => this.onError());
+    const endedFn = untracked(() => this.onEnded());
 
     const onCanPlay = (): void => {
       this.ngZone.run(() => {
@@ -276,9 +291,12 @@ export class RkLightboxVideoSlideComponent implements OnDestroy {
           errorFn?.();
         });
       }),
+      observeDomEvent(video, 'ended', () => endedFn?.()),
     );
 
     video.pause();
+    // The element is shared by every slide, so each activation sets it.
+    video.loop = loop;
     video.src = src;
     video.style.objectFit = 'contain';
 

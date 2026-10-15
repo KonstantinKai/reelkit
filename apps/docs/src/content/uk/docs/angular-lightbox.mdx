@@ -3,7 +3,7 @@ title: Lightbox для Angular
 description: 'Повноекранна галерея зображень для Angular: входи та виходи компонента, типи контексту шаблонних слотів, завантаження вмісту й темізація.'
 ---
 
-import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2 } from 'lucide-react';
+import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2, Play, Download } from 'lucide-react';
 import installation from '../../snippets/angular-lightbox/installation.sh?raw';
 import installation2 from '../../snippets/angular-lightbox/installation-2.ts?raw';
 import basicUsage from '../../snippets/angular-lightbox/basic-usage.ts?raw';
@@ -20,6 +20,8 @@ import wiringCallbacksInRklightboxslide from '../../snippets/angular-lightbox/wi
 import customLoadingTemplate from '../../snippets/angular-lightbox/custom-loading-template.html?raw';
 import customErrorTemplate from '../../snippets/angular-lightbox/custom-error-template.html?raw';
 import theming from '../../snippets/angular-lightbox/theming.css?raw';
+import autoAdvance from '../../snippets/angular-lightbox/auto-advance.ts?raw';
+import download from '../../snippets/angular-lightbox/download.ts?raw';
 
 Повноекранний Lightbox-галерея зображень і відео для Angular на основі `@reelkit/angular-lightbox`.
 
@@ -92,6 +94,16 @@ import theming from '../../snippets/angular-lightbox/theming.css?raw';
                 icon: Link2,
                 label: 'Стан в URL',
                 desc: 'Посилання, якими можна ділитися й зберігати в закладки',
+              },
+              {
+                icon: Play,
+                label: 'Слайдшоу',
+                desc: 'Автоперехід за бажанням, із відтворенням і паузою',
+              },
+              {
+                icon: Download,
+                label: 'Завантаження',
+                desc: 'Кнопка за бажанням, що зберігає активний елемент',
               },
             ]} />
 
@@ -188,6 +200,37 @@ Pass `hashCodec: base64UrlCodec` щоб закодувати id в URL у base64
 
 <CodeBlock code={urlState5} language="typescript" />
 
+## Автоперехід [#auto-advance]
+
+Задайте `[autoAdvance]="true"`, щоб галерея після відкриття гралася як слайдшоу. Типово вимкнено, тож наявний Lightbox рендериться й поводиться як раніше.
+
+- **Зображення** лишаються на екрані `autoAdvanceInterval` (типово 5000 мс), відлічуваних із моменту, коли зображення завантажилося, тож повільне зображення ніколи не пропускається, перш ніж його хтось побачив. Для зображення, що не завантажилося, відлік іде від помилки.
+- **Відео** програються один раз замість циклу й переходять далі, коли закінчуються. У шаблоні `rkLightboxSlide` прив’яжіть `[loop]="!autoAdvance"` і `[onEnded]="onEnded"` на `rk-lightbox-video-slide`, як у розділі [Підтримка відео](#video-support).
+- **Воно чекає**, поки миша лежить на елементі керування (кнопці, посиланні чи підписі), під час свайпу і поки сторінка прихована, а потім продовжує з місця зупинки.
+- **Ручне перемикання** (стрілки, клавіші, колесо, свайп) запускає інтервал нового слайда з нуля; слайдшоу лишається увімкненим.
+- **На останньому слайді** воно зупиняється, якщо не задано `loop`. Кнопка відтворення й паузи серед елементів керування показує стан і дає глядачеві його перемкнути.
+
+Слайдшоу працює поза зоною Angular, тож його кадри анімації не запускають виявлення змін. Власний шаблон `rkLightboxControls` отримує `isAutoAdvancing` і, лише коли `autoAdvance` увімкнено, `onToggleAutoAdvance` — рендерте `rk-play-pause-button`, коли він є. Сам таймінг — це `createSlideshowController` з `@reelkit/core`; див. [посібник з автовідтворення](/docs/core/guide#autoplay) і [API ядра](/docs/core/api#autoplay).
+
+<CodeBlock code={autoAdvance} language="typescript" />
+
+## Завантаження [#download]
+
+Задайте `[showDownload]="true"`, щоб додати до елементів керування кнопку завантаження. Вона зберігає активний елемент за його `downloadUrl`, а якщо його немає — за `src`, під іменем `downloadName`, а якщо його немає — під останнім сегментом URL.
+
+Файл завантажується через fetch і зберігається, бо браузер ігнорує атрибут `download` на посиланні на інше джерело й відкрив би файл замість збереження. Коли fetch не вдається — зазвичай це сервер на іншому джерелі, що не надсилає заголовків CORS, — файл відкривається в новій вкладці, де глядач усе ще може його зберегти. Віддавайте файли з `Access-Control-Allow-Origin`, щоб зберігати одним кліком. Поки триває завантаження, кнопка вимкнена.
+
+Власний шаблон `rkLightboxControls` отримує `isDownloading` і, лише коли `showDownload` увімкнено, `onDownload` — рендерте `rk-download-button`, коли він є. Помічник — це `downloadFile` з `@reelkit/core`; див. [посібник із завантаження](/docs/core/guide#download).
+
+<CodeBlock code={download} language="typescript" />
+
+### Кнопки керування [#control-buttons]
+
+| Компонент | Селектор | Входи / виходи | Опис |
+| --- | --- | --- | --- |
+| `RkPlayPauseButtonComponent` | `rk-play-pause-button` | `[playing]`, `(toggled)` | Перемикач слайдшоу (іконка Play або Pause, `aria-pressed` під час відтворення). Стандартні елементи керування показують його з `autoAdvance`. |
+| `RkDownloadButtonComponent` | `rk-download-button` | `[downloading]`, `(pressed)` | Кнопка завантаження, вимкнена, поки `downloading`. Стандартні елементи керування показують її з `showDownload`. |
+
 ## Входи RkLightboxUrlOverlayComponent [#rklightboxurloverlaycomponent-inputs]
 
 Приймає всі входи `rk-lightbox-overlay` except `isOpen`, replaced by a controller. Outputs are the same `closed` та `slideChange`; the URL drives closing, so `closed` тут радше сповіщення, ніж механізм.
@@ -214,6 +257,9 @@ Pass `hashCodec: base64UrlCodec` щоб закодувати id в URL у base64
 | `enableNavKeys` | `boolean` | true | Вмикає навігацію стрілками клавіатури |
 | `enableWheel` | `boolean` | true | Вмикає навігацію колесом миші |
 | `wheelDebounceMs` | `number` | 200 | Тривалість дебаунсу подій колеса в мілісекундах |
+| `autoAdvance` | `boolean` | false | Грати галерею як слайдшоу. Див. [Автоперехід](#auto-advance). |
+| `autoAdvanceInterval` | `number` | 5000 | Скільки кожне зображення лишається на екрані під час слайдшоу, у мілісекундах, з моменту його завантаження |
+| `showDownload` | `boolean` | false | Додає кнопку завантаження для активного елемента. Див. [Завантаження](#download). |
 | `ariaLabel` | `string` | 'Image gallery' | Доступна назва області діалогу |
 
 ## Виходи RkLightboxOverlayComponent [#rklightboxoverlaycomponent-outputs]
@@ -234,15 +280,17 @@ Pass `hashCodec: base64UrlCodec` щоб закодувати id в URL у base64
 | `description` | `string` | no | Опис під заголовком |
 | `width` | `number` | no | Власна ширина зображення в пікселях |
 | `height` | `number` | no | Власна висота зображення в пікселях |
+| `downloadUrl` | `string` | no | Що зберігає кнопка завантаження. Типово — `src` |
+| `downloadName` | `string` | no | Ім’я файлу для збереження. Типово — останній сегмент шляху URL |
 
 ## Типи контексту шаблонних слотів [#template-slot-context-types]
 
 | Тип | Fields |
 | --- | --- |
-| `LightboxControlsContext` | `{ item, onClose, activeIndex, count, isFullscreen, onToggleFullscreen }` |
+| `LightboxControlsContext` | `{ item, activeIndex, count, isFullscreen, isAutoAdvancing, isDownloading, onClose, onToggleFullscreen, onToggleAutoAdvance?, onDownload? }` |
 | `LightboxNavContext` | `{ item, onPrev, onNext, activeIndex, count }` |
 | `LightboxInfoContext` | `{ $implicit: LightboxItem, index }` |
-| `LightboxSlideContext` | `{ $implicit: LightboxItem, index, size: [number, number], isActive, onReady, onWaiting, onError }` |
+| `LightboxSlideContext` | `{ $implicit: LightboxItem, index, size: [number, number], isActive, autoAdvance, onReady, onWaiting, onError, onEnded }` |
 
 ## Переходи [#transitions]
 
@@ -300,6 +348,8 @@ Pass `hashCodec: base64UrlCodec` щоб закодувати id в URL у base64
 | `.rk-lightbox-empty` | Overlay | Текст порожнього стану |
 | `.rk-lightbox-controls-left` | Controls | Контейнер елементів керування вгорі ліворуч |
 | `.rk-lightbox-btn` | Controls | Кнопка керування (повний екран тощо) |
+| `.rk-lightbox-play-pause` | Controls | Кнопка відтворення й паузи слайдшоу (разом із `.rk-lightbox-btn`) |
+| `.rk-lightbox-download` | Controls | Кнопка завантаження (разом із `.rk-lightbox-btn`) |
 | `.rk-lightbox-close` | Controls | Кнопка закриття |
 | `.rk-lightbox-counter` | Controls | Значок лічильника зображень |
 | `.rk-lightbox-nav` | Навігація | Стрілка навігації (і вперед, і назад) |
@@ -333,6 +383,7 @@ Pass `hashCodec: base64UrlCodec` щоб закодувати id в URL у base64
 | `--rk-lightbox-btn-bg-hover` | `rgba(255, 255, 255, 0.2)` | Фон кнопок закриття, навігації та малих кнопок під час наведення |
 | `--rk-lightbox-btn-fg` | `#fff` | Колір іконок кнопок закриття, навігації та малих кнопок |
 | `--rk-lightbox-btn-size` | `36px` | Розмір малої кнопки (перемикач повноекранного режиму тощо) |
+| `--rk-lightbox-btn-disabled-opacity` | `0.5` | Непрозорість вимкненої малої кнопки (під час завантаження) |
 | `--rk-lightbox-close-size` | `40px` | Розмір кнопки закриття |
 | `--rk-lightbox-nav-size` | `48px` | Розмір стрілок «назад» і «далі» |
 | `--rk-lightbox-nav-opacity` | `0.7` | Непрозорість стрілок «назад» і «далі» у спокої |

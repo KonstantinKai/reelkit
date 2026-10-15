@@ -18,17 +18,17 @@
     "/docs/core/guide": {
       "source": "content/en/docs/core/guide.mdx",
       "translation": "content/uk/docs/core/guide.mdx",
-      "sha": "09e7084926c5a7d2916cc3b983d0e90f441ecc8d"
+      "sha": "5c3a8de85f74a330b7f9ff1c579aaae716498f06"
     },
     "/docs/core/api": {
       "source": "content/en/docs/core/api.mdx",
       "translation": "content/uk/docs/core/api.mdx",
-      "sha": "e57075d1154efa711de691a4dd54ca59cb5aeb1c"
+      "sha": "260257b0abb95ce079e7f155f8c69db3388e9a21"
     },
     "/docs/stories-core": {
       "source": "content/en/docs/stories-core.mdx",
       "translation": "content/uk/docs/stories-core.mdx",
-      "sha": "00e2eb3b43bd2dfe15799c7349907314d4284360"
+      "sha": "713c991a94b93e22504ce901ccfc3b5ff1075cf6"
     },
     "/docs/react/guide": {
       "source": "content/en/docs/react/guide.mdx",
@@ -38,7 +38,7 @@
     "/docs/react/api": {
       "source": "content/en/docs/react/api.mdx",
       "translation": "content/uk/docs/react/api.mdx",
-      "sha": "e110c0dda9058f594d789d9093d8573eb4bdd21d"
+      "sha": "f15b2de78173cf0bc2e1f99f26d56d22aa3cd1ab"
     },
     "/docs/reel-player": {
       "source": "content/en/docs/reel-player.mdx",
@@ -48,7 +48,7 @@
     "/docs/lightbox": {
       "source": "content/en/docs/lightbox.mdx",
       "translation": "content/uk/docs/lightbox.mdx",
-      "sha": "873d4b3bbd365d8c65445aff2e4bc2933a9caf85"
+      "sha": "6553f63737142b3e800b0f045b5bdf1604d392be"
     },
     "/docs/stories-player": {
       "source": "content/en/docs/stories-player.mdx",
@@ -73,7 +73,7 @@
     "/docs/vue-lightbox": {
       "source": "content/en/docs/vue-lightbox.mdx",
       "translation": "content/uk/docs/vue-lightbox.mdx",
-      "sha": "9efdaf6bdd0cf52386e40561dd72beb17982598a"
+      "sha": "d0825f42e7a7be441c8d6dd98b92252e31153204"
     },
     "/docs/vue-stories-player": {
       "source": "content/en/docs/vue-stories-player.mdx",
@@ -98,7 +98,7 @@
     "/docs/angular-lightbox": {
       "source": "content/en/docs/angular-lightbox.mdx",
       "translation": "content/uk/docs/angular-lightbox.mdx",
-      "sha": "02dee80ecfedc6c8a224c59fbf6d8ace4238e25c"
+      "sha": "0cff32258c42729cd8951a0b76cd0062c7b31b44"
     },
     "/docs/angular-stories-player": {
       "source": "content/en/docs/angular-stories-player.mdx",
@@ -123,7 +123,7 @@
     "@home": {
       "source": "i18n/home/en.ts",
       "translation": "i18n/home/uk.ts",
-      "sha": "10600916ca058ae23b1e35b55318905dc569d01d"
+      "sha": "1ab91fbe76b7ee4dc666fde51d5c4a161406f214"
     }
   },
   "zh": {
@@ -145,17 +145,17 @@
     "/docs/core/guide": {
       "source": "content/en/docs/core/guide.mdx",
       "translation": "content/zh/docs/core/guide.mdx",
-      "sha": "09e7084926c5a7d2916cc3b983d0e90f441ecc8d"
+      "sha": "5c3a8de85f74a330b7f9ff1c579aaae716498f06"
     },
     "/docs/core/api": {
       "source": "content/en/docs/core/api.mdx",
       "translation": "content/zh/docs/core/api.mdx",
-      "sha": "e57075d1154efa711de691a4dd54ca59cb5aeb1c"
+      "sha": "260257b0abb95ce079e7f155f8c69db3388e9a21"
     },
     "/docs/stories-core": {
       "source": "content/en/docs/stories-core.mdx",
       "translation": "content/zh/docs/stories-core.mdx",
-      "sha": "00e2eb3b43bd2dfe15799c7349907314d4284360"
+      "sha": "713c991a94b93e22504ce901ccfc3b5ff1075cf6"
     },
     "/docs/react/guide": {
       "source": "content/en/docs/react/guide.mdx",
@@ -165,7 +165,7 @@
     "/docs/react/api": {
       "source": "content/en/docs/react/api.mdx",
       "translation": "content/zh/docs/react/api.mdx",
-      "sha": "e110c0dda9058f594d789d9093d8573eb4bdd21d"
+      "sha": "f15b2de78173cf0bc2e1f99f26d56d22aa3cd1ab"
     },
     "/docs/reel-player": {
       "source": "content/en/docs/reel-player.mdx",
@@ -175,7 +175,7 @@
     "/docs/lightbox": {
       "source": "content/en/docs/lightbox.mdx",
       "translation": "content/zh/docs/lightbox.mdx",
-      "sha": "873d4b3bbd365d8c65445aff2e4bc2933a9caf85"
+      "sha": "6553f63737142b3e800b0f045b5bdf1604d392be"
     },
     "/docs/stories-player": {
       "source": "content/en/docs/stories-player.mdx",
@@ -200,7 +200,7 @@
     "/docs/vue-lightbox": {
       "source": "content/en/docs/vue-lightbox.mdx",
       "translation": "content/zh/docs/vue-lightbox.mdx",
-      "sha": "9efdaf6bdd0cf52386e40561dd72beb17982598a"
+      "sha": "d0825f42e7a7be441c8d6dd98b92252e31153204"
     },
     "/docs/vue-stories-player": {
       "source": "content/en/docs/vue-stories-player.mdx",
@@ -225,7 +225,7 @@
     "/docs/angular-lightbox": {
       "source": "content/en/docs/angular-lightbox.mdx",
       "translation": "content/zh/docs/angular-lightbox.mdx",
-      "sha": "02dee80ecfedc6c8a224c59fbf6d8ace4238e25c"
+      "sha": "0cff32258c42729cd8951a0b76cd0062c7b31b44"
     },
     "/docs/angular-stories-player": {
       "source": "content/en/docs/angular-stories-player.mdx",
@@ -250,7 +250,7 @@
     "@home": {
       "source": "i18n/home/en.ts",
       "translation": "i18n/home/zh.ts",
-      "sha": "10600916ca058ae23b1e35b55318905dc569d01d"
+      "sha": "1ab91fbe76b7ee4dc666fde51d5c4a161406f214"
     }
   },
   "pt": {
@@ -272,17 +272,17 @@
     "/docs/core/guide": {
       "source": "content/en/docs/core/guide.mdx",
       "translation": "content/pt/docs/core/guide.mdx",
-      "sha": "09e7084926c5a7d2916cc3b983d0e90f441ecc8d"
+      "sha": "5c3a8de85f74a330b7f9ff1c579aaae716498f06"
     },
     "/docs/core/api": {
       "source": "content/en/docs/core/api.mdx",
       "translation": "content/pt/docs/core/api.mdx",
-      "sha": "e57075d1154efa711de691a4dd54ca59cb5aeb1c"
+      "sha": "260257b0abb95ce079e7f155f8c69db3388e9a21"
     },
     "/docs/stories-core": {
       "source": "content/en/docs/stories-core.mdx",
       "translation": "content/pt/docs/stories-core.mdx",
-      "sha": "00e2eb3b43bd2dfe15799c7349907314d4284360"
+      "sha": "713c991a94b93e22504ce901ccfc3b5ff1075cf6"
     },
     "/docs/react/guide": {
       "source": "content/en/docs/react/guide.mdx",
@@ -292,7 +292,7 @@
     "/docs/react/api": {
       "source": "content/en/docs/react/api.mdx",
       "translation": "content/pt/docs/react/api.mdx",
-      "sha": "e110c0dda9058f594d789d9093d8573eb4bdd21d"
+      "sha": "f15b2de78173cf0bc2e1f99f26d56d22aa3cd1ab"
     },
     "/docs/reel-player": {
       "source": "content/en/docs/reel-player.mdx",
@@ -302,7 +302,7 @@
     "/docs/lightbox": {
       "source": "content/en/docs/lightbox.mdx",
       "translation": "content/pt/docs/lightbox.mdx",
-      "sha": "873d4b3bbd365d8c65445aff2e4bc2933a9caf85"
+      "sha": "6553f63737142b3e800b0f045b5bdf1604d392be"
     },
     "/docs/stories-player": {
       "source": "content/en/docs/stories-player.mdx",
@@ -327,7 +327,7 @@
     "/docs/vue-lightbox": {
       "source": "content/en/docs/vue-lightbox.mdx",
       "translation": "content/pt/docs/vue-lightbox.mdx",
-      "sha": "9efdaf6bdd0cf52386e40561dd72beb17982598a"
+      "sha": "d0825f42e7a7be441c8d6dd98b92252e31153204"
     },
     "/docs/vue-stories-player": {
       "source": "content/en/docs/vue-stories-player.mdx",
@@ -352,7 +352,7 @@
     "/docs/angular-lightbox": {
       "source": "content/en/docs/angular-lightbox.mdx",
       "translation": "content/pt/docs/angular-lightbox.mdx",
-      "sha": "02dee80ecfedc6c8a224c59fbf6d8ace4238e25c"
+      "sha": "0cff32258c42729cd8951a0b76cd0062c7b31b44"
     },
     "/docs/angular-stories-player": {
       "source": "content/en/docs/angular-stories-player.mdx",
@@ -377,7 +377,7 @@
     "@home": {
       "source": "i18n/home/en.ts",
       "translation": "i18n/home/pt.ts",
-      "sha": "10600916ca058ae23b1e35b55318905dc569d01d"
+      "sha": "1ab91fbe76b7ee4dc666fde51d5c4a161406f214"
     }
   },
   "ja": {
@@ -399,17 +399,17 @@
     "/docs/core/guide": {
       "source": "content/en/docs/core/guide.mdx",
       "translation": "content/ja/docs/core/guide.mdx",
-      "sha": "09e7084926c5a7d2916cc3b983d0e90f441ecc8d"
+      "sha": "5c3a8de85f74a330b7f9ff1c579aaae716498f06"
     },
     "/docs/core/api": {
       "source": "content/en/docs/core/api.mdx",
       "translation": "content/ja/docs/core/api.mdx",
-      "sha": "e57075d1154efa711de691a4dd54ca59cb5aeb1c"
+      "sha": "260257b0abb95ce079e7f155f8c69db3388e9a21"
     },
     "/docs/stories-core": {
       "source": "content/en/docs/stories-core.mdx",
       "translation": "content/ja/docs/stories-core.mdx",
-      "sha": "00e2eb3b43bd2dfe15799c7349907314d4284360"
+      "sha": "713c991a94b93e22504ce901ccfc3b5ff1075cf6"
     },
     "/docs/react/guide": {
       "source": "content/en/docs/react/guide.mdx",
@@ -419,7 +419,7 @@
     "/docs/react/api": {
       "source": "content/en/docs/react/api.mdx",
       "translation": "content/ja/docs/react/api.mdx",
-      "sha": "e110c0dda9058f594d789d9093d8573eb4bdd21d"
+      "sha": "f15b2de78173cf0bc2e1f99f26d56d22aa3cd1ab"
     },
     "/docs/reel-player": {
       "source": "content/en/docs/reel-player.mdx",
@@ -429,7 +429,7 @@
     "/docs/lightbox": {
       "source": "content/en/docs/lightbox.mdx",
       "translation": "content/ja/docs/lightbox.mdx",
-      "sha": "873d4b3bbd365d8c65445aff2e4bc2933a9caf85"
+      "sha": "6553f63737142b3e800b0f045b5bdf1604d392be"
     },
     "/docs/stories-player": {
       "source": "content/en/docs/stories-player.mdx",
@@ -454,7 +454,7 @@
     "/docs/vue-lightbox": {
       "source": "content/en/docs/vue-lightbox.mdx",
       "translation": "content/ja/docs/vue-lightbox.mdx",
-      "sha": "9efdaf6bdd0cf52386e40561dd72beb17982598a"
+      "sha": "d0825f42e7a7be441c8d6dd98b92252e31153204"
     },
     "/docs/vue-stories-player": {
       "source": "content/en/docs/vue-stories-player.mdx",
@@ -479,7 +479,7 @@
     "/docs/angular-lightbox": {
       "source": "content/en/docs/angular-lightbox.mdx",
       "translation": "content/ja/docs/angular-lightbox.mdx",
-      "sha": "02dee80ecfedc6c8a224c59fbf6d8ace4238e25c"
+      "sha": "0cff32258c42729cd8951a0b76cd0062c7b31b44"
     },
     "/docs/angular-stories-player": {
       "source": "content/en/docs/angular-stories-player.mdx",
@@ -504,7 +504,7 @@
     "@home": {
       "source": "i18n/home/en.ts",
       "translation": "i18n/home/ja.ts",
-      "sha": "10600916ca058ae23b1e35b55318905dc569d01d"
+      "sha": "1ab91fbe76b7ee4dc666fde51d5c4a161406f214"
     }
   },
   "hi": {
@@ -526,17 +526,17 @@
     "/docs/core/guide": {
       "source": "content/en/docs/core/guide.mdx",
       "translation": "content/hi/docs/core/guide.mdx",
-      "sha": "09e7084926c5a7d2916cc3b983d0e90f441ecc8d"
+      "sha": "5c3a8de85f74a330b7f9ff1c579aaae716498f06"
     },
     "/docs/core/api": {
       "source": "content/en/docs/core/api.mdx",
       "translation": "content/hi/docs/core/api.mdx",
-      "sha": "e57075d1154efa711de691a4dd54ca59cb5aeb1c"
+      "sha": "260257b0abb95ce079e7f155f8c69db3388e9a21"
     },
     "/docs/stories-core": {
       "source": "content/en/docs/stories-core.mdx",
       "translation": "content/hi/docs/stories-core.mdx",
-      "sha": "00e2eb3b43bd2dfe15799c7349907314d4284360"
+      "sha": "713c991a94b93e22504ce901ccfc3b5ff1075cf6"
     },
     "/docs/react/guide": {
       "source": "content/en/docs/react/guide.mdx",
@@ -546,7 +546,7 @@
     "/docs/react/api": {
       "source": "content/en/docs/react/api.mdx",
       "translation": "content/hi/docs/react/api.mdx",
-      "sha": "e110c0dda9058f594d789d9093d8573eb4bdd21d"
+      "sha": "f15b2de78173cf0bc2e1f99f26d56d22aa3cd1ab"
     },
     "/docs/reel-player": {
       "source": "content/en/docs/reel-player.mdx",
@@ -556,7 +556,7 @@
     "/docs/lightbox": {
       "source": "content/en/docs/lightbox.mdx",
       "translation": "content/hi/docs/lightbox.mdx",
-      "sha": "873d4b3bbd365d8c65445aff2e4bc2933a9caf85"
+      "sha": "6553f63737142b3e800b0f045b5bdf1604d392be"
     },
     "/docs/stories-player": {
       "source": "content/en/docs/stories-player.mdx",
@@ -581,7 +581,7 @@
     "/docs/vue-lightbox": {
       "source": "content/en/docs/vue-lightbox.mdx",
       "translation": "content/hi/docs/vue-lightbox.mdx",
-      "sha": "9efdaf6bdd0cf52386e40561dd72beb17982598a"
+      "sha": "d0825f42e7a7be441c8d6dd98b92252e31153204"
     },
     "/docs/vue-stories-player": {
       "source": "content/en/docs/vue-stories-player.mdx",
@@ -606,7 +606,7 @@
     "/docs/angular-lightbox": {
       "source": "content/en/docs/angular-lightbox.mdx",
       "translation": "content/hi/docs/angular-lightbox.mdx",
-      "sha": "02dee80ecfedc6c8a224c59fbf6d8ace4238e25c"
+      "sha": "0cff32258c42729cd8951a0b76cd0062c7b31b44"
     },
     "/docs/angular-stories-player": {
       "source": "content/en/docs/angular-stories-player.mdx",
@@ -631,7 +631,7 @@
     "@home": {
       "source": "i18n/home/en.ts",
       "translation": "i18n/home/hi.ts",
-      "sha": "10600916ca058ae23b1e35b55318905dc569d01d"
+      "sha": "1ab91fbe76b7ee4dc666fde51d5c4a161406f214"
     }
   },
   "es": {
@@ -653,17 +653,17 @@
     "/docs/core/guide": {
       "source": "content/en/docs/core/guide.mdx",
       "translation": "content/es/docs/core/guide.mdx",
-      "sha": "09e7084926c5a7d2916cc3b983d0e90f441ecc8d"
+      "sha": "5c3a8de85f74a330b7f9ff1c579aaae716498f06"
     },
     "/docs/core/api": {
       "source": "content/en/docs/core/api.mdx",
       "translation": "content/es/docs/core/api.mdx",
-      "sha": "e57075d1154efa711de691a4dd54ca59cb5aeb1c"
+      "sha": "260257b0abb95ce079e7f155f8c69db3388e9a21"
     },
     "/docs/stories-core": {
       "source": "content/en/docs/stories-core.mdx",
       "translation": "content/es/docs/stories-core.mdx",
-      "sha": "00e2eb3b43bd2dfe15799c7349907314d4284360"
+      "sha": "713c991a94b93e22504ce901ccfc3b5ff1075cf6"
     },
     "/docs/react/guide": {
       "source": "content/en/docs/react/guide.mdx",
@@ -673,7 +673,7 @@
     "/docs/react/api": {
       "source": "content/en/docs/react/api.mdx",
       "translation": "content/es/docs/react/api.mdx",
-      "sha": "e110c0dda9058f594d789d9093d8573eb4bdd21d"
+      "sha": "f15b2de78173cf0bc2e1f99f26d56d22aa3cd1ab"
     },
     "/docs/reel-player": {
       "source": "content/en/docs/reel-player.mdx",
@@ -683,7 +683,7 @@
     "/docs/lightbox": {
       "source": "content/en/docs/lightbox.mdx",
       "translation": "content/es/docs/lightbox.mdx",
-      "sha": "873d4b3bbd365d8c65445aff2e4bc2933a9caf85"
+      "sha": "6553f63737142b3e800b0f045b5bdf1604d392be"
     },
     "/docs/stories-player": {
       "source": "content/en/docs/stories-player.mdx",
@@ -708,7 +708,7 @@
     "/docs/vue-lightbox": {
       "source": "content/en/docs/vue-lightbox.mdx",
       "translation": "content/es/docs/vue-lightbox.mdx",
-      "sha": "9efdaf6bdd0cf52386e40561dd72beb17982598a"
+      "sha": "d0825f42e7a7be441c8d6dd98b92252e31153204"
     },
     "/docs/vue-stories-player": {
       "source": "content/en/docs/vue-stories-player.mdx",
@@ -733,7 +733,7 @@
     "/docs/angular-lightbox": {
       "source": "content/en/docs/angular-lightbox.mdx",
       "translation": "content/es/docs/angular-lightbox.mdx",
-      "sha": "02dee80ecfedc6c8a224c59fbf6d8ace4238e25c"
+      "sha": "0cff32258c42729cd8951a0b76cd0062c7b31b44"
     },
     "/docs/angular-stories-player": {
       "source": "content/en/docs/angular-stories-player.mdx",
@@ -758,7 +758,7 @@
     "@home": {
       "source": "i18n/home/en.ts",
       "translation": "i18n/home/es.ts",
-      "sha": "10600916ca058ae23b1e35b55318905dc569d01d"
+      "sha": "1ab91fbe76b7ee4dc666fde51d5c4a161406f214"
     }
   }
 }

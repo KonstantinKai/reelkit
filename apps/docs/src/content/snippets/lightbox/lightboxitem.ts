@@ -6,4 +6,6 @@ interface LightboxItem {
   description?: string;
   width?: number;
   height?: number;
+  downloadUrl?: string;       // what the download button saves; defaults to src
+  downloadName?: string;      // file name; defaults to the URL's last segment
 }

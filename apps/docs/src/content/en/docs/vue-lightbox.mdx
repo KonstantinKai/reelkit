@@ -3,7 +3,7 @@ title: Vue Lightbox
 description: Full-screen image gallery lightbox overlay for Vue 3. LightboxItem schema, props, emits, scoped slots, tree-shakable transitionFn, swipe-to-close, theming shared with React lightbox.
 ---
 
-import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2 } from 'lucide-react';
+import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2, Play, Download } from 'lucide-react';
 import installation from '../../snippets/vue-lightbox/installation.sh?raw';
 import installation2 from '../../snippets/vue-lightbox/installation-2.ts?raw';
 import basicUsageCode from '../../snippets/vue-lightbox/basic-usage-code.vue?raw';
@@ -20,6 +20,8 @@ import lifecycleSlideCode from '../../snippets/vue-lightbox/lifecycle-slide-code
 import customLoadingCode from '../../snippets/vue-lightbox/custom-loading-code.vue?raw';
 import customErrorCode from '../../snippets/vue-lightbox/custom-error-code.vue?raw';
 import themingCode from '../../snippets/vue-lightbox/theming-code.css?raw';
+import autoAdvanceCode from '../../snippets/vue-lightbox/auto-advance.vue?raw';
+import downloadCode from '../../snippets/vue-lightbox/download.vue?raw';
 
 Full-screen image & video gallery lightbox for Vue 3, built on `@reelkit/vue-lightbox`.
 
@@ -92,6 +94,16 @@ Full-screen image & video gallery lightbox for Vue 3, built on `@reelkit/vue-lig
                 icon: Link2,
                 label: 'URL State',
                 desc: 'Shareable, bookmarkable links',
+              },
+              {
+                icon: Play,
+                label: 'Slideshow',
+                desc: 'Opt-in auto-advance with play/pause',
+              },
+              {
+                icon: Download,
+                label: 'Download',
+                desc: 'Opt-in button that saves the active item',
               },
             ]} />
 
@@ -191,6 +203,37 @@ Key by a different field (a `slug`), or page an infinite feed with `locateAsync`
 
 While it is pending the lightbox stays closed and the parameter is left alone, so the deep link survives the fetch. `null` or a rejection drops the parameter. An answer arriving after the URL moved on, after a close, or after unmount is discarded, so a slow fetch cannot open a slide nobody asked for. Whatever it returns is authoritative — it reports the index of data it just fetched, and the lightbox takes it as-is rather than re-reading `items`, which Vue has not re-rendered yet.
 
+## Auto-advance [#auto-advance]
+
+Set `auto-advance` to play the gallery as a slideshow when it opens. Off by default, so an existing lightbox renders and behaves as before.
+
+<CodeBlock code={autoAdvanceCode} language="vue" />
+
+- **Images** stay for `auto-advance-interval` (5000 ms by default), counted from the moment the image has loaded, so a slow image is never skipped before anyone saw it. An image that fails to load counts from its error.
+- **Videos** play once instead of looping and move on when they end. `VideoSlideRenderer` does this for you; a custom `#slide` reads `autoAdvance` from its scope and reports the end through `onEnded`.
+- **It waits** while the mouse rests on a control (a button, a link or the caption), during a swipe, and while the page is hidden, then continues from where it stopped.
+- **Moving by hand** (arrows, keys, wheel, swipe) starts the new slide's interval from zero; the slideshow stays on.
+- **On the last slide** it stops, unless `loop` is set. The play/pause button in the controls shows the state and lets the viewer switch it; `play()` and `pause()` on the [LightboxApi](#lightboxapi) do the same from code.
+
+A custom `#controls` slot receives `isAutoAdvancing` and, only when `auto-advance` is on, `onToggleAutoAdvance` — render a `PlayPauseButton` when it is there. The timing itself is `createSlideshowController` from `@reelkit/core`; see the [Autoplay guide](/docs/core/guide#autoplay) and [Core API](/docs/core/api#autoplay).
+
+## Download [#download]
+
+Set `show-download` to add a download button to the controls. It saves the active item from its `downloadUrl`, falling back to `src`, under its `downloadName`, falling back to the last segment of the URL.
+
+<CodeBlock code={downloadCode} language="vue" />
+
+The file is fetched and saved, because a browser ignores the `download` attribute on a cross-origin link and would open the file instead. When the fetch fails — usually a server on another origin that sends no CORS headers — the file opens in a new tab, where the viewer can still save it. Serve the files with `Access-Control-Allow-Origin` for a one-click save. The button is disabled while a download is in progress.
+
+A custom `#controls` slot receives `isDownloading` and, only when `show-download` is on, `onDownload` — render a `DownloadButton` when it is there. The helper is `downloadFile` from `@reelkit/core`; see the [Download guide](/docs/core/guide#download).
+
+### Control buttons [#control-buttons]
+
+| Component | Props | Description |
+| --- | --- | --- |
+| `PlayPauseButton` | `PlayPauseButtonProps`: `isPlaying`, `onPress`, `className?` | Slideshow toggle (Play/Pause icon, `aria-pressed` while playing). Shown by the default controls with `auto-advance`. |
+| `DownloadButton` | `DownloadButtonProps`: `isDownloading`, `onPress`, `className?` | Download button, disabled while `isDownloading`. Shown by the default controls with `show-download`. |
+
 ## API Reference [#api-reference]
 
 ### LightboxOverlay Props [#lightboxoverlay-props]
@@ -213,6 +256,9 @@ While it is pending the lightbox stays closed and the parameter is left alone, s
 | `enableNavKeys` | `boolean` | true | Enable keyboard arrow-key navigation |
 | `enableWheel` | `boolean` | true | Enable mouse-wheel navigation |
 | `wheelDebounceMs` | `number` | 200 | Debounce duration for wheel events in ms |
+| `autoAdvance` | `boolean` | false | Play the gallery as a slideshow. See [Auto-advance](#auto-advance). |
+| `autoAdvanceInterval` | `number` | 5000 | How long each image stays during a slideshow, in ms, counted once it has loaded |
+| `showDownload` | `boolean` | false | Add a download button for the active item. See [Download](#download). |
 | `ariaLabel` | `string` | 'Image gallery' | Accessible label for the dialog region |
 
 ### LightboxUrlOverlay Props [#lightboxurloverlay-props]
@@ -247,6 +293,8 @@ The object `api-ready` emits, also exposed on the component's template ref. The 
 | `observe()` | `() => void` | Starts listening for gesture, keyboard and wheel input again after `unobserve()` |
 | `unobserve()` | `() => void` | Stops listening for gesture, keyboard and wheel input; the slides stay where they are |
 | `close()` | `() => void` | Closes the lightbox, the same as the close button or Escape |
+| `play()` | `() => void` | Starts the slideshow, continuing the active slide where it stopped. No-op without `auto-advance`. |
+| `pause()` | `() => void` | Stops the slideshow; the active slide keeps its progress. No-op without `auto-advance`. |
 
 ## LightboxItem Interface [#lightboxitem-interface]
 
@@ -259,13 +307,15 @@ The object `api-ready` emits, also exposed on the component's template ref. The 
 | `description` | `string` | no | Description shown below the title |
 | `width` | `number` | no | Intrinsic image width in pixels |
 | `height` | `number` | no | Intrinsic image height in pixels |
+| `downloadUrl` | `string` | no | What the download button saves. Defaults to `src` |
+| `downloadName` | `string` | no | File name to save under. Defaults to the last segment of the URL's path |
 
 ## Slot Scope Types [#slot-scope-types]
 
 | Type | Fields |
 | --- | --- |
-| `SlideSlotScope` | `{ item, index, size: [number, number], isActive, onReady, onWaiting, onError }` |
-| `ControlsSlotScope` | `{ item, activeIndex, count, isFullscreen, onClose, onToggleFullscreen }` |
+| `SlideSlotScope` | `{ item, index, size: [number, number], isActive, autoAdvance, onReady, onWaiting, onError, onEnded }` |
+| `ControlsSlotScope` | `{ item, activeIndex, count, isFullscreen, isAutoAdvancing, isDownloading, onClose, onToggleFullscreen, onToggleAutoAdvance?, onDownload? }` |
 | `NavigationSlotScope` | `{ item, activeIndex, count, onPrev, onNext }` |
 | `InfoSlotScope` | `{ item, index }` |
 | `LoadingSlotScope` | `{ item, activeIndex }` |
@@ -325,6 +375,8 @@ All CSS classes are plain (not scoped), so they can be targeted with higher-spec
 | `.rk-lightbox-error-text` | Overlay | Error state text label |
 | `.rk-lightbox-controls-left` | Controls | Top-left controls container |
 | `.rk-lightbox-btn` | Controls | Control button (fullscreen, sound, etc.) |
+| `.rk-lightbox-play-pause` | Controls | Slideshow play/pause button (with `.rk-lightbox-btn`) |
+| `.rk-lightbox-download` | Controls | Download button (with `.rk-lightbox-btn`) |
 | `.rk-lightbox-close` | Controls | Close button |
 | `.rk-lightbox-counter` | Controls | Image counter chip |
 | `.rk-lightbox-nav` | Navigation | Navigation arrow (both prev and next) |
@@ -354,6 +406,7 @@ Override any `--rk-lightbox-*` CSS custom property on `:root` (or any ancestor o
 | `--rk-lightbox-btn-bg-hover` | `rgba(255, 255, 255, 0.2)` | Hover background for close / nav / small buttons |
 | `--rk-lightbox-btn-fg` | `#fff` | Icon color for close / nav / small buttons |
 | `--rk-lightbox-btn-size` | `36px` | Small button size (fullscreen toggle, etc.) |
+| `--rk-lightbox-btn-disabled-opacity` | `0.5` | Opacity of a disabled small button (download in progress) |
 | `--rk-lightbox-close-size` | `40px` | Close button size |
 | `--rk-lightbox-nav-size` | `48px` | Prev / next arrow size |
 | `--rk-lightbox-nav-opacity` | `0.7` | Idle opacity of prev / next arrows |

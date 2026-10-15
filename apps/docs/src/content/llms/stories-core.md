@@ -14,7 +14,7 @@ Engine behind `@reelkit/react-stories-player`. Pure TypeScript, zero framework d
 
 - Framework-Agnostic — pure TypeScript, zero DOM framework deps
 - Two-Level Navigation — groups + stories within each group
-- RAF Timer — `requestAnimationFrame` auto-advance with pause/resume
+- Story Timing — auto-advance on the core timer, with pause/resume
 - Canvas Progress — Retina-ready segmented progress bar with sliding window
 - Tap Zones — configurable left/right tap detection
 - Reactive Signals — built on `@reelkit/core` signal primitives
@@ -78,11 +78,8 @@ npm i @reelkit/stories-core
 ### Example
 
 ```typescript
-import {
-  createStoriesController,
-  createTimerController,
-} from '@reelkit/stories-core';
-import { reaction } from '@reelkit/core';
+import { createStoriesController } from '@reelkit/stories-core';
+import { createTimerController, reaction } from '@reelkit/core';
 
 const groups = [{ stories: ['s1', 's2', 's3'] }, { stories: ['s4', 's5'] }];
 
@@ -132,68 +129,7 @@ timer.dispose();
 
 ## Timer Controller
 
-`createTimerController(config)` drive auto-advance with `requestAnimationFrame` loop. Progress signal (0 to 1) feed progress bar. Pause + resume preserve exact position.
-
-### Config (TimerControllerConfig)
-
-| Property     | Type         | Default     | Description                      |
-| ------------ | ------------ | ----------- | -------------------------------- |
-| `duration`   | `number`     | required    | Default duration in milliseconds |
-| `onComplete` | `() => void` | `undefined` | Called when timer reaches 100%   |
-
-### State
-
-| Signal      | Type              | Description                        |
-| ----------- | ----------------- | ---------------------------------- |
-| `progress`  | `Signal<number>`  | Progress signal (0 to 1)           |
-| `isRunning` | `Signal<boolean>` | Whether timer is currently running |
-
-### Methods
-
-| Method             | Type                | Description                                              |
-| ------------------ | ------------------- | -------------------------------------------------------- |
-| `start(duration?)` | `(number?) => void` | Start (or restart) timer with optional duration override |
-| `pause()`          | `() => void`        | Freeze progress at current position                      |
-| `resume()`         | `() => void`        | Continue from frozen position                            |
-| `reset()`          | `() => void`        | Reset progress to 0 and stop                             |
-| `dispose()`        | `() => void`        | Clean up resources                                       |
-
-### Example
-
-```typescript
-import { createTimerController } from '@reelkit/stories-core';
-import { reaction } from '@reelkit/core';
-
-const timer = createTimerController({
-  duration: 5000,
-  onComplete: () => console.log('Timer finished!'),
-});
-
-// Observe progress (0 to 1)
-const dispose = reaction(
-  () => [timer.progress],
-  () => {
-    console.log('Progress:', timer.progress.value);
-  },
-);
-
-// Start with default duration
-timer.start();
-
-// Or override duration for a specific story
-timer.start(8000);
-
-// Pause/resume preserves exact position
-timer.pause();
-timer.resume();
-
-// Reset to 0
-timer.reset();
-
-// Cleanup
-dispose();
-timer.dispose();
-```
+Story timer = `createTimerController` in `@reelkit/core`, shared with lightbox slideshow. Import from `@reelkit/core` or binding (`@reelkit/react`, `@reelkit/vue`, `@reelkit/angular`); stories-core no longer exports it. Config, state, methods: core API → Autoplay. Wiring to `onStoryTimerComplete`: Stories Controller example above.
 
 ## Canvas Progress Renderer
 

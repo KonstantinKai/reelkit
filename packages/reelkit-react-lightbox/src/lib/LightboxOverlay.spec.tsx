@@ -12,13 +12,21 @@ import {
   type UrlStateController,
 } from '@reelkit/react';
 import { createFakeUrlAdapter } from '@reelkit/core/testing';
-import type { LightboxItem } from './types';
+import type {
+  ControlsRenderProps,
+  LightboxItem,
+  SlideRenderProps,
+} from './types';
 import { lightboxFadeTransition } from './lightboxFadeTransition';
 import { lightboxZoomTransition } from './lightboxZoomTransition';
 import { LightboxOverlay, LightboxUrlOverlay } from './LightboxOverlay';
 
 // Track Reel props
 let lastReelProps: Partial<ReelProps> = {};
+
+const { mockDownloadFile } = vi.hoisted(() => ({
+  mockDownloadFile: vi.fn((_url: string, _name?: string) => Promise.resolve()),
+}));
 
 const {
   mockPreloader,
@@ -65,6 +73,7 @@ vi.mock('@reelkit/react', async (importOriginal) => {
   return {
     ...actual,
     createContentPreloader: () => mockPreloader,
+    downloadFile: mockDownloadFile,
     Reel: (props: ReelProps) => {
       lastReelProps = props;
       if (props.apiRef) {
@@ -136,6 +145,9 @@ vi.mock('lucide-react', () => ({
   Volume2: () => <span>Volume2</span>,
   VolumeX: () => <span>VolumeX</span>,
   ImageOff: () => <span>ImageOff</span>,
+  Play: () => <span>Play</span>,
+  Pause: () => <span>Pause</span>,
+  Download: () => <span>Download</span>,
 }));
 
 const mockImages: LightboxItem[] = [
@@ -1592,5 +1604,372 @@ describe('LightboxOverlay', () => {
       expect(isOpen()).toBe(true);
       expect(lastReelProps.initialIndex).toBe(2);
     });
+  });
+});
+
+// The slideshow timing itself is covered by the core slideshow controller
+// tests; these check only how the lightbox feeds it and shows it.
+describe('LightboxOverlay slideshow and download', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    lastReelProps = {};
+    mockPreloaderLoaded.clear();
+    mockPreloaderOnLoadedCallbacks.clear();
+    mockDownloadFile.mockClear();
+    delete (window as unknown as Record<string, unknown>)['ontouchstart'];
+    Object.defineProperty(navigator, 'maxTouchPoints', {
+      value: 0,
+      configurable: true,
+    });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+
+  const reelApi = () =>
+    (
+      lastReelProps.apiRef as unknown as {
+        current: { next: ReturnType<typeof vi.fn> };
+      }
+    ).current;
+
+  // jsdom has no PointerEvent, so a mouse event carries the pointer type.
+  const mouseOver = (target: Element) => {
+    const event = new MouseEvent('pointerover', { bubbles: true });
+    Object.defineProperty(event, 'pointerType', { value: 'mouse' });
+    act(() => {
+      target.dispatchEvent(event);
+    });
+  };
+
+  const loadActiveImage = () => {
+    const img = document.querySelector('.rk-lightbox-img') as HTMLImageElement;
+    act(() => {
+      fireEvent.load(img);
+    });
+  };
+
+  const elapse = (milliseconds: number) =>
+    act(() => {
+      vi.advanceTimersByTime(milliseconds);
+    });
+
+  const playPause = () =>
+    document.querySelector('.rk-lightbox-play-pause') as HTMLButtonElement;
+
+  // The same field names exist in the Vue and Angular lightboxes; a rename
+  // here fails the spec type check before it can drift from them.
+  it('names the slideshow and download fields the way every binding does', () => {
+    const controls: (keyof ControlsRenderProps)[] = [
+      'isAutoAdvancing',
+      'onToggleAutoAdvance',
+      'isDownloading',
+      'onDownload',
+    ];
+    const slide: (keyof SlideRenderProps)[] = ['autoAdvance', 'onEnded'];
+    const item: (keyof LightboxItem)[] = ['downloadUrl', 'downloadName'];
+
+    expect([...controls, ...slide, ...item]).toHaveLength(8);
+  });
+
+  it('adds no slideshow or download button and never advances by default', () => {
+    render(
+      <LightboxOverlay isOpen={true} images={mockImages} onClose={vi.fn()} />,
+    );
+    loadActiveImage();
+    elapse(20_000);
+
+    expect(playPause()).toBeNull();
+    expect(document.querySelector('.rk-lightbox-download')).toBeNull();
+    expect(reelApi().next).not.toHaveBeenCalled();
+  });
+
+  it('moves to the next slide once the loaded image has had its interval', () => {
+    render(
+      <LightboxOverlay
+        isOpen={true}
+        images={mockImages}
+        onClose={vi.fn()}
+        autoAdvance
+        autoAdvanceInterval={3000}
+      />,
+    );
+
+    elapse(10_000);
+    expect(reelApi().next).not.toHaveBeenCalled();
+
+    loadActiveImage();
+    elapse(3100);
+    expect(reelApi().next).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows a pressed pause button while playing and stops when it is clicked', () => {
+    render(
+      <LightboxOverlay
+        isOpen={true}
+        images={mockImages}
+        onClose={vi.fn()}
+        autoAdvance
+      />,
+    );
+    loadActiveImage();
+    expect(playPause().getAttribute('aria-pressed')).toBe('true');
+    expect(playPause().title).toBe('Pause slideshow');
+
+    act(() => {
+      fireEvent.click(playPause());
+    });
+    elapse(20_000);
+
+    expect(playPause().getAttribute('aria-pressed')).toBe('false');
+    expect(reelApi().next).not.toHaveBeenCalled();
+  });
+
+  it('stops on the last slide without loop and shows the play button again', () => {
+    render(
+      <LightboxOverlay
+        isOpen={true}
+        images={mockImages}
+        initialIndex={2}
+        onClose={vi.fn()}
+        autoAdvance
+      />,
+    );
+    mockPreloaderLoaded.add('img3.jpg');
+    act(() => lastReelProps.afterChange?.(2, 0));
+    elapse(5100);
+
+    expect(reelApi().next).not.toHaveBeenCalled();
+    expect(playPause().getAttribute('aria-pressed')).toBe('false');
+  });
+
+  it('wraps to the first slide from the last one with loop', () => {
+    render(
+      <LightboxOverlay
+        isOpen={true}
+        images={mockImages}
+        initialIndex={2}
+        onClose={vi.fn()}
+        autoAdvance
+        loop
+      />,
+    );
+    mockPreloaderLoaded.add('img3.jpg');
+    act(() => lastReelProps.afterChange?.(2, 0));
+    elapse(5100);
+
+    expect(reelApi().next).toHaveBeenCalledTimes(1);
+  });
+
+  it('waits during a swipe and continues after it', () => {
+    render(
+      <LightboxOverlay
+        isOpen={true}
+        images={mockImages}
+        onClose={vi.fn()}
+        autoAdvance
+      />,
+    );
+    loadActiveImage();
+
+    act(() => lastReelProps.onSlideDragStart?.(0));
+    elapse(20_000);
+    expect(reelApi().next).not.toHaveBeenCalled();
+
+    act(() => lastReelProps.onSlideDragEnd?.(0));
+    elapse(5100);
+    expect(reelApi().next).toHaveBeenCalledTimes(1);
+  });
+
+  it('waits while the mouse rests on a control, not on the picture', () => {
+    render(
+      <LightboxOverlay
+        isOpen={true}
+        images={mockImages}
+        onClose={vi.fn()}
+        autoAdvance
+      />,
+    );
+    loadActiveImage();
+
+    mouseOver(screen.getByTitle('Close (Esc)'));
+    elapse(20_000);
+    expect(reelApi().next).not.toHaveBeenCalled();
+
+    mouseOver(document.querySelector('.rk-lightbox-img')!);
+    elapse(5100);
+    expect(reelApi().next).toHaveBeenCalledTimes(1);
+  });
+
+  it('starts the interval again when a slide is reached by hand', () => {
+    render(
+      <LightboxOverlay
+        isOpen={true}
+        images={mockImages}
+        onClose={vi.fn()}
+        autoAdvance
+      />,
+    );
+    loadActiveImage();
+    elapse(4000);
+
+    act(() => lastReelProps.afterChange?.(1, 0));
+    mockPreloaderLoaded.add('img2.jpg');
+    act(() => lastReelProps.afterChange?.(1, 0));
+    elapse(4000);
+    expect(reelApi().next).not.toHaveBeenCalled();
+
+    elapse(1100);
+    expect(reelApi().next).toHaveBeenCalledTimes(1);
+  });
+
+  it('advances when a video slide reports its end, and asks it not to loop', () => {
+    const videos: LightboxItem[] = [
+      { src: 'clip.mp4', type: 'video' },
+      { src: 'img2.jpg' },
+    ];
+    const renderSlide = vi.fn(() => <div data-testid="video-slide" />);
+    render(
+      <LightboxOverlay
+        isOpen={true}
+        images={videos}
+        onClose={vi.fn()}
+        autoAdvance
+        renderSlide={renderSlide}
+      />,
+    );
+    const [{ onEnded, autoAdvance }] = renderSlide.mock.calls[0] as unknown as [
+      { onEnded: () => void; autoAdvance: boolean },
+    ];
+    expect(autoAdvance).toBe(true);
+
+    elapse(20_000);
+    expect(reelApi().next).not.toHaveBeenCalled();
+
+    act(() => onEnded());
+    expect(reelApi().next).toHaveBeenCalledTimes(1);
+  });
+
+  it('stops advancing once the lightbox closes', () => {
+    const { rerender } = render(
+      <LightboxOverlay
+        isOpen={true}
+        images={mockImages}
+        onClose={vi.fn()}
+        autoAdvance
+      />,
+    );
+    loadActiveImage();
+    const api = reelApi();
+
+    rerender(
+      <LightboxOverlay
+        isOpen={false}
+        images={mockImages}
+        onClose={vi.fn()}
+        autoAdvance
+      />,
+    );
+    elapse(20_000);
+
+    expect(api.next).not.toHaveBeenCalled();
+  });
+
+  it('hands the slideshow state and toggle to custom controls only when it is on', () => {
+    const renderControls = vi.fn(() => <div />);
+    const { rerender } = render(
+      <LightboxOverlay
+        isOpen={true}
+        images={mockImages}
+        onClose={vi.fn()}
+        renderControls={renderControls}
+      />,
+    );
+    expect(renderControls).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        isAutoAdvancing: false,
+        onToggleAutoAdvance: undefined,
+        isDownloading: false,
+        onDownload: undefined,
+      }),
+    );
+
+    rerender(
+      <LightboxOverlay
+        isOpen={true}
+        images={mockImages}
+        onClose={vi.fn()}
+        renderControls={renderControls}
+        autoAdvance
+        showDownload
+      />,
+    );
+    expect(renderControls).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        isAutoAdvancing: true,
+        onToggleAutoAdvance: expect.any(Function),
+        onDownload: expect.any(Function),
+      }),
+    );
+  });
+
+  it('downloads the active item from its download URL under its download name', () => {
+    const items: LightboxItem[] = [
+      {
+        src: 'preview.jpg',
+        downloadUrl: 'original.jpg',
+        downloadName: 'beach.jpg',
+      },
+      { src: 'img2.jpg' },
+    ];
+    render(
+      <LightboxOverlay
+        isOpen={true}
+        images={items}
+        onClose={vi.fn()}
+        showDownload
+      />,
+    );
+
+    act(() => {
+      fireEvent.click(screen.getByTitle('Download'));
+    });
+
+    expect(mockDownloadFile).toHaveBeenCalledWith('original.jpg', 'beach.jpg');
+  });
+
+  it('falls back to the item source and disables the button until the download settles', async () => {
+    const pending = createDeferred<void>();
+    mockDownloadFile.mockReturnValueOnce(pending.promise);
+    render(
+      <LightboxOverlay
+        isOpen={true}
+        images={mockImages}
+        onClose={vi.fn()}
+        showDownload
+      />,
+    );
+    const button = screen.getByTitle('Download') as HTMLButtonElement;
+
+    act(() => {
+      fireEvent.click(button);
+    });
+    expect(mockDownloadFile).toHaveBeenCalledWith('img1.jpg', undefined);
+    expect(button.disabled).toBe(true);
+
+    act(() => {
+      fireEvent.click(button);
+    });
+    expect(mockDownloadFile).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      pending.resolve();
+      await pending.promise;
+    });
+    expect((screen.getByTitle('Download') as HTMLButtonElement).disabled).toBe(
+      false,
+    );
   });
 });

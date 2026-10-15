@@ -12,7 +12,9 @@ import LightboxVideoSlide from './LightboxVideoSlide';
 import {
   Counter,
   CloseButton,
+  DownloadButton,
   FullscreenButton,
+  PlayPauseButton,
   SoundButton,
 } from './LightboxControls';
 
@@ -82,6 +84,10 @@ const VideoLightboxControls: FC<
   count,
   isFullscreen,
   onToggleFullscreen,
+  isAutoAdvancing,
+  onToggleAutoAdvance,
+  isDownloading,
+  onDownload,
   isVideoSlide,
 }) => {
   const soundState = useSoundState();
@@ -111,6 +117,15 @@ const VideoLightboxControls: FC<
             )}
           </Observe>
         )}
+        {onToggleAutoAdvance && (
+          <PlayPauseButton
+            isPlaying={isAutoAdvancing}
+            onToggle={onToggleAutoAdvance}
+          />
+        )}
+        {onDownload && (
+          <DownloadButton isDownloading={isDownloading} onClick={onDownload} />
+        )}
       </div>
       <CloseButton onClick={onClose} />
     </>
@@ -134,6 +149,8 @@ export function useVideoSlideRenderer(
       onReady,
       onWaiting,
       onError,
+      onEnded,
+      autoAdvance,
     }: SlideRenderProps): ReactNode | null => {
       if ((item.type ?? 'image') !== 'video') return null;
 
@@ -147,6 +164,8 @@ export function useVideoSlideRenderer(
           onPlaying={onReady}
           onWaiting={onWaiting}
           onError={onError}
+          loop={!autoAdvance}
+          onEnded={onEnded}
         />
       );
     },

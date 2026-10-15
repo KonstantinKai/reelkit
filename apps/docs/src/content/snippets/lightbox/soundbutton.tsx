@@ -8,7 +8,7 @@ function CustomControls({ onClose }) {
   return (
     <div>
       <SoundButton
-        muted={soundState.muted.value}
+        isMuted={soundState.muted.value}
         onToggle={soundState.toggle}
       />
       <button onClick={onClose}>Close</button>

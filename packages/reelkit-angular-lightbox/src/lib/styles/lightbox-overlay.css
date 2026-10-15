@@ -27,6 +27,7 @@
   --rk-lightbox-btn-bg-hover: rgba(255, 255, 255, 0.2);
   --rk-lightbox-btn-fg: #fff;
   --rk-lightbox-btn-size: 36px;
+  --rk-lightbox-btn-disabled-opacity: 0.5;
   --rk-lightbox-close-size: 40px;
   --rk-lightbox-nav-size: 48px;
   --rk-lightbox-nav-opacity: 0.7;
@@ -152,6 +153,13 @@
 .rk-lightbox-btn {
   width: var(--rk-lightbox-btn-size);
   height: var(--rk-lightbox-btn-size);
+}
+
+.rk-lightbox-btn:disabled {
+  background: var(--rk-lightbox-btn-bg);
+  opacity: var(--rk-lightbox-btn-disabled-opacity);
+  cursor: default;
+  transform: none;
 }
 
 /* Top shade behind controls */

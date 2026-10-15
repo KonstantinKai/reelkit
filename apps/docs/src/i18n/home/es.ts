@@ -58,7 +58,7 @@ export const es: HomeMessages = {
         unit: 'dependencias',
         title: 'Sin dependencias',
         description:
-          'Ninguna dependencia en tiempo de ejecución. El core ocupa ~10.4 kB con gzip.',
+          'Ninguna dependencia en tiempo de ejecución. El core ocupa ~11.2 kB con gzip.',
       },
       {
         stat: '60',

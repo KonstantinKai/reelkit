@@ -9,7 +9,7 @@ import {
 /**
  * Reactive `[width, height]` sized for an overlay that keeps the configured
  * aspect ratio on desktop and fills the viewport on mobile (768px wide and
- * narrower). A zero, negative or non-finite ratio falls back to 9:16.
+ * narrower). A zero, negative or non-finite ratio falls back to 9/16.
  *
  * Updates on `window.resize`. Safe to call during SSR (returns `[0, 0]` until mounted).
  */

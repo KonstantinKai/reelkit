@@ -51,6 +51,11 @@ import {
   observeViewportSize,
   getViewportSize,
   isTouchDevice,
+  createDisposableList,
+  createSlideshowController,
+  downloadFile,
+  observeDomEvent,
+  type SlideshowController,
 } from '@reelkit/angular';
 import {
   RkLightboxControlsDirective,
@@ -70,6 +75,8 @@ import { RkCloseButtonComponent } from '../lightbox-controls/close-button.compon
 import { RkCounterComponent } from '../lightbox-controls/counter.component';
 import { RkFullscreenButtonComponent } from '../lightbox-controls/fullscreen-button.component';
 import { RkSoundButtonComponent } from '../lightbox-controls/sound-button.component';
+import { RkPlayPauseButtonComponent } from '../lightbox-controls/play-pause-button.component';
+import { RkDownloadButtonComponent } from '../lightbox-controls/download-button.component';
 import type {
   LightboxItem,
   ReelProxyProps,
@@ -83,6 +90,12 @@ const _kPreloadRange = 2;
 const _kDefaultTransitionDuration = 300;
 const _kDefaultSwipeDistanceFactor = 0.12;
 const _kDefaultWheelDebounceMs = 200;
+const _kDefaultAutoAdvanceInterval = 5000;
+
+// What a mouse rests on when it reaches for a control. The overlay itself
+// covers the viewport, so holding on any hover would stop every slideshow
+// for a mouse user.
+const _kHoverHoldSelector = 'button, a, .rk-lightbox-info';
 
 const preloader: ContentPreloader = createContentPreloader({
   maxCacheSize: 1000,
@@ -143,6 +156,8 @@ const focusFirstFocusable = (container: HTMLElement): void => {
     RkCounterComponent,
     RkFullscreenButtonComponent,
     RkSoundButtonComponent,
+    RkPlayPauseButtonComponent,
+    RkDownloadButtonComponent,
   ],
   template: `
     @if (isOpen()) {
@@ -183,6 +198,18 @@ const focusFirstFocusable = (container: HTMLElement): void => {
                 <rk-sound-button
                   [muted]="soundState.muted()"
                   (toggled)="soundState.toggle()"
+                />
+              }
+              @if (autoAdvance()) {
+                <rk-play-pause-button
+                  [playing]="isAutoAdvancing()"
+                  (toggled)="handleToggleAutoAdvance()"
+                />
+              }
+              @if (showDownload()) {
+                <rk-download-button
+                  [downloading]="isDownloading()"
+                  (pressed)="handleDownload()"
                 />
               }
             </div>
@@ -260,6 +287,9 @@ const focusFirstFocusable = (container: HTMLElement): void => {
               [transition]="resolvedTransitionFn()"
               (apiReady)="onApiReady($event)"
               (afterChange)="onAfterChange($event)"
+              (slideDragStart)="handleDragStart()"
+              (slideDragEnd)="handleDragEnd()"
+              (slideDragCanceled)="handleDragEnd()"
             >
               <ng-template rkReelItem let-idx let-itemSize="size">
                 @let item = items()[idx];
@@ -496,6 +526,34 @@ export class RkLightboxOverlayComponent {
   readonly swipeToCloseDirection = input<SwipeToCloseDirection>('up');
 
   /**
+   * Play the gallery as a slideshow when it opens. An image stays for
+   * `autoAdvanceInterval` once it has loaded; a video plays once and then
+   * moves on. The slideshow waits while the mouse is over a control, during
+   * a swipe and while the page is hidden, stops on the last slide unless
+   * `loop` is set, and adds a play/pause button to the default controls.
+   *
+   * @default false
+   */
+  readonly autoAdvance = input<boolean>(false);
+
+  /**
+   * How long each image stays on screen during a slideshow, in milliseconds.
+   *
+   * @default 5000
+   */
+  readonly autoAdvanceInterval = input<number>(_kDefaultAutoAdvanceInterval);
+
+  /**
+   * Add a download button to the default controls. It saves the active item
+   * from its `downloadUrl` (or `src`) under its `downloadName`; when the file
+   * cannot be fetched, as with a cross-origin server that sends no CORS
+   * headers, it opens in a new tab instead.
+   *
+   * @default false
+   */
+  readonly showDownload = input<boolean>(false);
+
+  /**
    * Accessible label for the dialog, announced by screen readers when the
    * overlay opens. Override when the gallery has a more specific name.
    * @default 'Image gallery'
@@ -562,6 +620,14 @@ export class RkLightboxOverlayComponent {
   protected readonly ChevronLeftIcon = ChevronLeft;
   protected readonly ChevronRightIcon = ChevronRight;
 
+  /** Whether the slideshow is running. */
+  protected readonly isAutoAdvancing = signal(false);
+
+  /** Whether the active item is being downloaded. */
+  protected readonly isDownloading = signal(false);
+
+  private _slideshow: SlideshowController | null = null;
+  private readonly _slideshowDisposables = createDisposableList();
   private _reelApi: ReelApi | null = null;
   private _preloaderDispose: (() => void) | null = null;
   private _restoreFocus: (() => void) | null = null;
@@ -573,6 +639,7 @@ export class RkLightboxOverlayComponent {
       this._stopObservingResize = observeViewportSize(this._handleResize);
     });
     this._destroyRef.onDestroy(() => {
+      this._stopSlideshow();
       this._stopObservingResize?.();
       this._bodyLock.unlock();
     });
@@ -583,6 +650,19 @@ export class RkLightboxOverlayComponent {
       } else {
         this.onOverlayClosed();
       }
+    });
+
+    effect(() => {
+      const shouldRun = this.isOpen() && this.autoAdvance();
+      untracked(() => {
+        if (shouldRun) this._startSlideshow();
+        else this._stopSlideshow();
+      });
+    });
+
+    effect(() => {
+      const interval = this.autoAdvanceInterval();
+      untracked(() => this._withSlideshow((s) => s.setInterval(interval)));
     });
 
     effect(() => {
@@ -646,8 +726,33 @@ export class RkLightboxOverlayComponent {
     this._reelApi = api;
   }
 
+  protected handleToggleAutoAdvance(): void {
+    this._withSlideshow((s) => s.toggle());
+  }
+
+  protected handleDragStart(): void {
+    this._withSlideshow((s) => s.hold('drag'));
+  }
+
+  protected handleDragEnd(): void {
+    this._withSlideshow((s) => s.release('drag'));
+  }
+
+  protected async handleDownload(): Promise<void> {
+    if (this.isDownloading()) return;
+    const item = this.currentItem();
+    if (!item) return;
+    this.isDownloading.set(true);
+    try {
+      await downloadFile(item.downloadUrl ?? item.src, item.downloadName);
+    } finally {
+      this.isDownloading.set(false);
+    }
+  }
+
   protected onAfterChange(event: { index: number }): void {
     const index = event.index;
+    this._withSlideshow((s) => s.setSlide(this._slideKind(index)));
     this.loadingCtrl.setActiveIndex(index);
     const src = this.items()[index]?.src;
     if (src && preloader.isErrored(src)) {
@@ -682,8 +787,14 @@ export class RkLightboxOverlayComponent {
       activeIndex: this.currentIndex(),
       count: this.items().length,
       isFullscreen: this.isFullscreen(),
+      isAutoAdvancing: this.isAutoAdvancing(),
+      isDownloading: this.isDownloading(),
       onClose: () => this.handleClose(),
       onToggleFullscreen: () => this.handleToggleFullscreen(),
+      onToggleAutoAdvance: this.autoAdvance()
+        ? () => this.handleToggleAutoAdvance()
+        : undefined,
+      onDownload: this.showDownload() ? () => this.handleDownload() : undefined,
     }),
   );
 
@@ -716,6 +827,7 @@ export class RkLightboxOverlayComponent {
       index,
       size: this.size(),
       isActive: index === this.currentIndex(),
+      autoAdvance: this.autoAdvance(),
       onReady: () => {
         this.loadingCtrl.onReady(index);
         const src = this.items()[index]?.src;
@@ -726,6 +838,10 @@ export class RkLightboxOverlayComponent {
         const src = this.items()[index]?.src;
         if (src) preloader.markErrored(src);
         this.loadingCtrl.onError(index);
+      },
+      onEnded: () => {
+        if (index === this.currentIndex())
+          this._withSlideshow((s) => s.ended());
       },
     };
   }
@@ -738,6 +854,88 @@ export class RkLightboxOverlayComponent {
     const item = this.items()[index];
     const position = `${index + 1} of ${this.items().length}`;
     return item?.title ? `${item.title}, ${position}` : `Image ${position}`;
+  }
+
+  private _slideKind(index: number): 'image' | 'video' {
+    return this.items()[index]?.type === 'video' ? 'video' : 'image';
+  }
+
+  /**
+   * Runs an action on the slideshow outside Angular. The slideshow ticks on
+   * animation frames, and a frame scheduled inside the zone would run change
+   * detection on every one of them.
+   */
+  private _withSlideshow(action: (slideshow: SlideshowController) => void) {
+    const slideshow = this._slideshow;
+    if (slideshow) this._ngZone.runOutsideAngular(() => action(slideshow));
+  }
+
+  private _startSlideshow(): void {
+    this._stopSlideshow();
+
+    const controller = createSlideshowController({
+      interval: this.autoAdvanceInterval(),
+      onAdvance: () => {
+        const count = this.items().length;
+        if (count <= 1 || (!this.loop() && this.currentIndex() >= count - 1)) {
+          controller.pause();
+          return;
+        }
+        this._ngZone.run(() => this._reelApi?.next());
+      },
+    });
+    this._slideshow = controller;
+
+    this._slideshowDisposables.push(
+      controller.isPlaying.observe(() =>
+        this._ngZone.run(() =>
+          this.isAutoAdvancing.set(controller.isPlaying.value),
+        ),
+      ),
+      this.loadingCtrl.isLoading.observe(() => {
+        if (!this.loadingCtrl.isLoading.value) {
+          this._withSlideshow((s) => s.ready());
+        }
+      }),
+      controller.dispose,
+      () => {
+        this._slideshow = null;
+        this.isAutoAdvancing.set(false);
+      },
+    );
+
+    this._withSlideshow((s) => {
+      s.setSlide(this._slideKind(this.currentIndex()));
+      if (!this.loadingCtrl.isLoading.value) s.ready();
+      s.play();
+    });
+
+    afterNextRender(
+      () => {
+        const container = this._containerRef()?.nativeElement;
+        if (!container || this._slideshow !== controller) return;
+        this._ngZone.runOutsideAngular(() => {
+          this._slideshowDisposables.push(
+            observeDomEvent(container, 'pointerover', (e) => {
+              if (e.pointerType !== 'mouse') return;
+              if ((e.target as Element).closest(_kHoverHoldSelector)) {
+                controller.hold('hover');
+              } else {
+                controller.release('hover');
+              }
+            }),
+            observeDomEvent(container, 'pointerleave', () =>
+              controller.release('hover'),
+            ),
+          );
+        });
+      },
+      { injector: this._injector },
+    );
+  }
+
+  private _stopSlideshow(): void {
+    this._slideshowDisposables.dispose();
   }
 
   private readonly _handleResize = (size: [number, number]): void => {

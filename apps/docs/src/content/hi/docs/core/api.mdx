@@ -1,6 +1,6 @@
 ---
 title: Core API रेफ़रेंस
-description: '@reelkit/core के कॉन्फ़िगरेशन, callbacks, मेथड, स्टेट, सिग्नल, ट्रांज़िशन, कंटेंट लोडिंग, साउंड, टाइमलाइन, फ़ुलस्क्रीन, DOM यूटिलिटी, फ़ोकस मैनेजमेंट और वीडियो यूटिलिटी का पूरा रेफ़रेंस।'
+description: '@reelkit/core के कॉन्फ़िगरेशन, callbacks, मेथड, स्टेट, सिग्नल, ट्रांज़िशन, कंटेंट लोडिंग, साउंड, टाइमलाइन, फ़ुलस्क्रीन, DOM यूटिलिटी, साइज़ पहचान, ऑटोप्ले टाइमर, फ़ाइल डाउनलोड, फ़ोकस मैनेजमेंट और वीडियो यूटिलिटी का पूरा रेफ़रेंस।'
 ---
 
 import usage from '../../../snippets/core-api/usage.ts?raw';
@@ -198,6 +198,59 @@ DOM इवेंट प्रबंधन और तय क्रम में �
 | `isMobileWidth` | `(viewportWidth: number) => boolean` | इतनी चौड़ी विंडो को फ़ोन वाला लेआउट मिलेगा या नहीं: 768px और उससे कम। हर overlay और उसकी स्टाइलशीट इसी चौड़ाई पर बदलते हैं। |
 | `fitAspectRatio` | `(viewport: [number, number], aspectRatio?: number) => [number, number]` | किसी विंडो के लिए overlay का साइज़। फ़ोन की चौड़ाई पर यह पूरी विंडो है; वरना `aspectRatio` पर विंडो की पूरी ऊँचाई, और फ़िट न होने पर विंडो की चौड़ाई तक सिकुड़ा हुआ। अनुपात न होने, शून्य, ऋणात्मक या non-finite होने पर 9/16 इस्तेमाल होता है। |
 | `isTouchDevice` | `() => boolean` | डिवाइस touch input लेता है या नहीं (`ontouchstart` या `maxTouchPoints`)। यह क्षमता की जाँच है, स्क्रीन साइज़ की नहीं: touch वाला लैपटॉप गिना जाता है, संकरी डेस्कटॉप विंडो नहीं। |
+
+## ऑटोप्ले [#autoplay]
+
+उन सब चीज़ों के टाइमर जो अपने आप आगे बढ़ती हैं। ये कैसे काम करते हैं और इन्हें कैसे जोड़ें, यह [ऑटोप्ले गाइड](/docs/core/guide#autoplay) में है।
+
+| Export | टाइप | विवरण |
+| --- | --- | --- |
+| `createTimerController` | `(config: TimerControllerConfig) => TimerController` | एक अवधि को 0 से 1 तक गिनता है और पूरा होने पर callback कॉल करता है। stories players में हर story इसी से चलती है। |
+| `createSlideshowController` | `(config: SlideshowControllerConfig) => SlideshowController` | अपने आप आगे बढ़ने वाली गैलरी के पीछे की state machine। lightbox का `autoAdvance` इसी से चलता है। |
+
+### createTimerController [#createtimercontroller]
+
+| `TimerControllerConfig` | टाइप | विवरण |
+| --- | --- | --- |
+| `duration` | `number` | मिलीसेकंड में डिफ़ॉल्ट अवधि, जब `start()` को कोई अवधि न मिले तब इस्तेमाल होती है |
+| `onComplete` | `() => void` | प्रगति 1 पर पहुँचने पर कॉल होता है |
+
+| `TimerController` | टाइप | विवरण |
+| --- | --- | --- |
+| `progress` | `Signal<number>` | 0 से 1 तक प्रगति; progress bar इसी से चलता है |
+| `isRunning` | `Signal<boolean>` | टाइमर गिन रहा है या नहीं |
+| `start(duration?)` | `(number?) => void` | 0 से फिर शुरू करें, चाहें तो इस बार के लिए दूसरी अवधि के साथ |
+| `pause()` | `() => void` | मौजूदा प्रगति पर रोक दें |
+| `resume()` | `() => void` | रुकी हुई प्रगति से आगे चलाएँ |
+| `reset()` | `() => void` | वापस 0 पर, रुका हुआ |
+| `dispose()` | `() => void` | बाकी फ़्रेम रद्द करें |
+
+### createSlideshowController [#createslideshowcontroller]
+
+| `SlideshowControllerConfig` | टाइप | विवरण |
+| --- | --- | --- |
+| `interval` | `number` | एक इमेज मिलीसेकंड में कितनी देर रहती है, उसके लोड होने के बाद से गिना जाता है |
+| `onAdvance` | `() => void` | सक्रिय स्लाइड पूरी हो गई। अगली स्लाइड पर जाएँ, या आख़िरी स्लाइड पर `pause()` कॉल करें |
+
+| `SlideshowController` | टाइप | विवरण |
+| --- | --- | --- |
+| `isPlaying` | `Signal<boolean>` | स्लाइडशो चालू है या नहीं। holds इसे नहीं बदलते |
+| `progress` | `Signal<number>` | सक्रिय इमेज का interval कितना चल चुका है, 0 से 1 तक |
+| `play()` / `pause()` / `toggle()` | `() => void` | इसे चालू या बंद करें; सक्रिय स्लाइड अपनी प्रगति रखती है |
+| `setInterval(ms)` | `(number) => void` | अगली इमेज से interval बदलें |
+| `setSlide(kind)` | `(SlideshowSlideKind) => void` | एक नई स्लाइड सक्रिय हुई: प्रगति फिर शुरू होती है और `ready()` या `ended()` का इंतज़ार करती है। `SlideshowSlideKind` `'image' \| 'video'` है |
+| `ready()` | `() => void` | सक्रिय इमेज लोड हुई या लोड नहीं हो पाई; उसका interval शुरू होता है |
+| `ended()` | `() => void` | सक्रिय वीडियो ख़त्म हुआ; अभी आगे बढ़ता है, या तब जब कुछ भी उसे न रोके |
+| `hold(reason)` / `release(reason)` | `(string) => void` | `'hover'` या `'drag'` जैसे किसी कारण से घड़ी रोकें। holds जुड़ते जाते हैं |
+| `dispose()` | `() => void` | घड़ी और visibility listener बंद करें |
+
+## डाउनलोड [#download]
+
+किसी URL से फ़ाइल सेव करना, cross-origin भी। यह कौन-सा fallback लेता है, यह [डाउनलोड गाइड](/docs/core/guide#download) में है।
+
+| Export | टाइप | विवरण |
+| --- | --- | --- |
+| `downloadFile` | `(url: string, filename?: string) => Promise<void>` | फ़ाइल को `filename` नाम से सेव करता है, डिफ़ॉल्ट रूप से URL के path का आख़िरी हिस्सा। यह फ़ाइल fetch करके blob सेव करता है, क्योंकि cross-origin लिंक पर `download` attribute को नज़रअंदाज़ किया जाता है। fetch विफल होने पर या सर्वर के error लौटाने पर (आम तौर पर CORS headers के बिना कोई cross-origin सर्वर), URL इसके बजाय नए टैब में खुलता है। कभी reject नहीं होता; window न होने पर कुछ नहीं करता। |
 
 ## फ़ोकस मैनेजमेंट [#focus-management]
 

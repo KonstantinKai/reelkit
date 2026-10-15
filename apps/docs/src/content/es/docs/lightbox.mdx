@@ -3,7 +3,7 @@ title: Lightbox
 description: Overlay de galería de imágenes a pantalla completa para React. Esquema de LightboxItem, props, transiciones que admiten tree-shaking (slideTransition, lightboxFadeTransition, flipTransition, lightboxZoomTransition), atajos de teclado, tokens de tema, clases CSS y renderizadores de slots.
 ---
 
-import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2 } from 'lucide-react';
+import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2, Play, Download } from 'lucide-react';
 import { LightboxDemo } from '../../../components/demos/LightboxDemo';
 import installation from '../../snippets/lightbox/installation.sh?raw';
 import installation2 from '../../snippets/lightbox/installation-2.ts?raw';
@@ -36,6 +36,10 @@ import usefullscreen from '../../snippets/lightbox/usefullscreen.tsx?raw';
 import transitions from '../../snippets/lightbox/transitions.tsx?raw';
 import customTransitionFunction from '../../snippets/lightbox/custom-transition-function.tsx?raw';
 import theming from '../../snippets/lightbox/theming.css?raw';
+import autoAdvance from '../../snippets/lightbox/auto-advance.tsx?raw';
+import download from '../../snippets/lightbox/download.tsx?raw';
+import playpausebutton from '../../snippets/lightbox/playpausebutton.tsx?raw';
+import downloadbutton from '../../snippets/lightbox/downloadbutton.tsx?raw';
 
 Un componente lightbox de galería de imágenes y vídeos a pantalla completa, con `@reelkit/react-lightbox`.
 
@@ -108,6 +112,16 @@ Un componente lightbox de galería de imágenes y vídeos a pantalla completa, c
                 icon: Link2,
                 label: 'Estado en la URL',
                 desc: 'Enlaces que se pueden compartir y guardar',
+              },
+              {
+                icon: Play,
+                label: 'Pase de diapositivas',
+                desc: 'Avance automático opcional con reproducir/pausar',
+              },
+              {
+                icon: Download,
+                label: 'Descarga',
+                desc: 'Botón opcional que guarda el elemento activo',
               },
             ]} />
 
@@ -261,6 +275,30 @@ Si usas otro campo como clave (un `slug`) o paginas un feed infinito con `locate
 - No hay tiempo límite: el lightbox no puede saber lo larga que es la galería. Resuelve con `null` cuando se agote la paginación, o el overlay seguirá cerrado indefinidamente.
 - Lo que devuelva `locateAsync` manda: es el índice de los datos que acaba de cargar y se usa tal cual, sin volver a leer `images`.
 
+## Avance automático [#auto-advance]
+
+Activa `autoAdvance` para reproducir la galería como un pase de diapositivas al abrirse. Está desactivado por defecto, así que un lightbox existente se renderiza y se comporta como antes.
+
+<CodeBlock code={autoAdvance} language="tsx" />
+
+- **Las imágenes** se quedan `autoAdvanceInterval` (5000 ms por defecto), contados desde que la imagen ha cargado, así que una imagen lenta nunca se salta antes de que nadie la vea. Una imagen que no carga cuenta desde su error.
+- **Los vídeos** se reproducen una vez en lugar de en bucle y pasan al siguiente cuando terminan. Con `useVideoSlideRenderer` ya viene conectado; un `renderSlide` propio lee `autoAdvance` de sus props e informa del final con `onEnded`.
+- **Espera** mientras el ratón reposa sobre un control (un botón, un enlace o el pie), durante un deslizamiento y mientras la página está oculta, y después continúa desde donde se detuvo.
+- **Al moverse a mano** (flechas, teclas, rueda, deslizamiento) el intervalo del nuevo slide empieza desde cero; el pase de diapositivas sigue activo.
+- **En el último slide** se detiene, salvo que `loop` esté activado. El botón de reproducir/pausar de los controles muestra el estado y permite cambiarlo.
+
+Un `renderControls` propio recibe `isAutoAdvancing` y, solo cuando `autoAdvance` está activado, `onToggleAutoAdvance`: renderiza un [PlayPauseButton](#playpausebutton) cuando esté presente. El cálculo de los tiempos es `createSlideshowController` de `@reelkit/core`; consulta la [guía de reproducción automática](/docs/core/guide#autoplay) para llevar el mismo comportamiento a tu propio reproductor, y la [API del core](/docs/core/api#autoplay) para sus métodos.
+
+## Descarga [#download]
+
+Activa `showDownload` para añadir un botón de descarga a los controles. Guarda el elemento activo desde su `downloadUrl`, o `src` si no lo tiene, con el nombre `downloadName`, o el último segmento de la URL si no lo tiene.
+
+<CodeBlock code={download} language="tsx" />
+
+El archivo se descarga con fetch y se guarda, porque el navegador ignora el atributo `download` en un enlace de otro origen y abriría el archivo en su lugar. Cuando el fetch falla —normalmente un servidor de otro origen que no envía cabeceras CORS—, el archivo se abre en una pestaña nueva, donde se puede guardar igualmente. Sirve los archivos con `Access-Control-Allow-Origin` para guardarlos con un solo clic. El botón está desactivado mientras hay una descarga en curso.
+
+Un `renderControls` propio recibe `isDownloading` y, solo cuando `showDownload` está activado, `onDownload`: renderiza un [DownloadButton](#downloadbutton) cuando esté presente. El ayudante es `downloadFile` de `@reelkit/core`; consulta la [guía de descarga](/docs/core/guide#download).
+
 ## Referencia de la API [#api-reference]
 
 ### Props de LightboxOverlay [#lightboxoverlay-props]
@@ -274,11 +312,14 @@ Si usas otro campo como clave (un `slug`) o paginas un feed infinito con `locate
 | `ariaLabel` | `string` | 'Image gallery' | Etiqueta accesible de la región del diálogo; los lectores de pantalla la anuncian al abrirse el lightbox |
 | `initialIndex` | `number` | 0 | Índice de la imagen inicial |
 | `transitionFn` | `TransitionTransformFn` | slideTransition | Función de transición entre slides. Importa una incluida (slideTransition, flipTransition, lightboxFadeTransition, lightboxZoomTransition) o pasa una propia. Si se omite, se usa slideTransition. |
+| `autoAdvance` | `boolean` | false | Reproduce la galería como un pase de diapositivas. Consulta [Avance automático](#auto-advance). |
+| `autoAdvanceInterval` | `number` | 5000 | Cuánto tiempo se queda cada imagen durante un pase de diapositivas, en milisegundos, contado desde que ha cargado |
+| `showDownload` | `boolean` | false | Añade un botón de descarga para el elemento activo. Consulta [Descarga](#download). |
 | `apiRef` | `MutableRefObject<ReelApi>` | - | Ref para acceder a la API de Reel |
 | `renderControls` | `(props: ControlsRenderProps) => ReactNode` | - | Controles propios; sustituyen el botón de cerrar, el contador y el botón de pantalla completa por defecto |
 | `renderNavigation` | `(props: NavigationRenderProps) => ReactNode` | - | Navegación propia; sustituye las flechas de anterior y siguiente por defecto |
 | `renderInfo` | `(props: InfoRenderProps) => ReactNode` | - | Overlay de información propio; sustituye el degradado por defecto con el título y la descripción. Devuelve null para ocultarlo. |
-| `renderSlide` | `(props: SlideRenderProps) => ReactNode \| null` | - | Renderizado propio del slide. Recibe \{ item, index, size, isActive, onReady, onWaiting, onError \}. Devuelve null para usar el slide por defecto. |
+| `renderSlide` | `(props: SlideRenderProps) => ReactNode \| null` | - | Renderizado propio del slide. Recibe \{ item, index, size, isActive, autoAdvance, onReady, onWaiting, onError, onEnded \}. Devuelve null para usar el slide por defecto. |
 | `renderLoading` | `(props: { item: LightboxItem; activeIndex: number }) => ReactNode` | - | Indicador de carga propio; sustituye el spinner por defecto |
 | `renderError` | `(props: { item: LightboxItem; activeIndex: number }) => ReactNode` | - | Indicador de error propio; sustituye el icono de error por defecto |
 
@@ -363,6 +404,18 @@ Botón de silencio para los slides de vídeo (icono Volume2/VolumeX). Se incluye
 
 <CodeBlock code={soundbutton} language="tsx" />
 
+### PlayPauseButton [#playpausebutton]
+
+Interruptor del pase de diapositivas (icono Play/Pause, `aria-pressed` mientras se reproduce). Props (`PlayPauseButtonProps`): `isPlaying`, `onToggle`, y opcionalmente `className` y `style`. Los controles por defecto lo muestran cuando `autoAdvance` está activado.
+
+<CodeBlock code={playpausebutton} language="tsx" />
+
+### DownloadButton [#downloadbutton]
+
+Botón de descarga (icono Download), desactivado mientras `isDownloading`. Props (`DownloadButtonProps`): `isDownloading`, `onClick`, y opcionalmente `className` y `style`. Los controles por defecto lo muestran cuando `showDownload` está activado.
+
+<CodeBlock code={downloadbutton} language="tsx" />
+
 ## Hooks [#hooks]
 
 ### useVideoSlideRenderer [#usevideosliderenderer]
@@ -372,10 +425,6 @@ Hook para el vídeo opcional. Devuelve `renderSlide`, `renderControls` y `SoundP
 <CodeBlock code={usevideosliderenderer} language="typescript" />
 
 ### useFullscreen [#usefullscreen]
-
-<Callout type="warning" title="Se ha movido">
-  `useFullscreen` se eliminó de `@reelkit/react-lightbox`. Impórtalo desde `@reelkit/react`.
-</Callout>
 
 Hook para gestionar el estado de pantalla completa, compatible con todos los navegadores.
 
@@ -413,6 +462,8 @@ Todos los elementos de la interfaz usan clases CSS normales (no CSS modules) a l
 | `.rk-lightbox-swipe-hint` | Overlay | Pista de deslizamiento en móvil |
 | `.rk-lightbox-controls-left` | Controls | Contenedor de los controles de arriba a la izquierda |
 | `.rk-lightbox-btn` | Controls | Botones de control (pantalla completa, etc.) |
+| `.rk-lightbox-play-pause` | Controls | Botón de reproducir/pausar del pase de diapositivas (con `.rk-lightbox-btn`) |
+| `.rk-lightbox-download` | Controls | Botón de descarga (con `.rk-lightbox-btn`) |
 | `.rk-lightbox-close` | Controls | Botón de cerrar |
 | `.rk-lightbox-counter` | Controls | Chip del contador de imágenes |
 | `.rk-lightbox-nav` | Navigation | Flechas de navegación (las dos) |
@@ -445,6 +496,7 @@ Cada color, tamaño, z-index y transición vive en una propiedad personalizada d
 | `--rk-lightbox-btn-bg-hover` | `rgba(255, 255, 255, 0.2)` | Fondo al pasar el ratón de los botones de cerrar, navegación y pequeños |
 | `--rk-lightbox-btn-fg` | `#fff` | Color del icono de los botones de cerrar, navegación y pequeños |
 | `--rk-lightbox-btn-size` | `36px` | Tamaño de los botones pequeños (pantalla completa, etc.) |
+| `--rk-lightbox-btn-disabled-opacity` | `0.5` | Opacidad de un botón pequeño desactivado (descarga en curso) |
 | `--rk-lightbox-close-size` | `40px` | Tamaño del botón de cerrar |
 | `--rk-lightbox-nav-size` | `48px` | Tamaño de las flechas de anterior y siguiente |
 | `--rk-lightbox-nav-opacity` | `0.7` | Opacidad en reposo de las flechas de anterior y siguiente |

@@ -1,12 +1,11 @@
 /**
  * @module @reelkit/stories-core
  *
- * Framework-agnostic stories state machine, timer, and utilities for
- * building Instagram-style stories players.
+ * Framework-agnostic stories state machine and utilities for building
+ * Instagram-style stories players.
  *
  * Provides {@link createStoriesController} for two-axis navigation
- * (stories within a group and groups), {@link createTimerController}
- * for auto-advance timing, {@link createCanvasProgressRenderer} for
+ * (stories within a group and groups), {@link createCanvasProgressRenderer} for
  * framework-agnostic canvas progress bar rendering, and pure functions
  * for tap zone detection ({@link getTapAction}) and progress bar
  * computation ({@link getSegments}, {@link getVisibleWindow}).
@@ -41,12 +40,6 @@ export {
   type StoriesViewedStateController,
   type StoriesViewedStateControllerConfig,
 } from './lib/storiesViewedState';
-
-export {
-  createTimerController,
-  type TimerControllerConfig,
-  type TimerController,
-} from './lib/timerController';
 
 export { getTapAction } from './lib/tapZone';
 export { getSegments, getVisibleWindow } from './lib/progress';

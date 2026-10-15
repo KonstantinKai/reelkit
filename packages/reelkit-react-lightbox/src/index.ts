@@ -117,12 +117,16 @@ export {
   Counter,
   FullscreenButton,
   SoundButton,
+  PlayPauseButton,
+  DownloadButton,
 } from './lib/LightboxControls';
 export type {
   CloseButtonProps,
   CounterProps,
   FullscreenButtonProps,
   SoundButtonProps,
+  PlayPauseButtonProps,
+  DownloadButtonProps,
 } from './lib/LightboxControls';
 
 export { default as LightboxVideoSlide } from './lib/LightboxVideoSlide';

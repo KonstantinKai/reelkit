@@ -2,7 +2,7 @@
 
 <p>
   <a href="https://www.npmjs.com/package/@reelkit/vue-lightbox"><img src="https://img.shields.io/npm/v/@reelkit/vue-lightbox?color=6366f1&label=npm" alt="npm" /></a>
-  <img src="https://img.shields.io/badge/gzip-4.1%20kB-6366f1" alt="Bundle size" />
+  <img src="https://img.shields.io/badge/gzip-4.9%20kB-6366f1" alt="Bundle size" />
   <img src="https://img.shields.io/badge/coverage-97%25-brightgreen" alt="Statement coverage" />
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
@@ -11,7 +11,7 @@
   <a href="https://vue-demo.reelkit.dev/image-preview?utm_source=npm"><img src="https://raw.githubusercontent.com/KonstantinKai/reelkit/main/assets/lightbox.gif" width="240" alt="An image lightbox on a phone: tapping a gallery thumbnail opens it full screen, two sideways swipes page to the third photo, and a swipe up closes it back to the gallery." /></a>
 </p>
 
-Full-screen image and video gallery lightbox for Vue 3. Horizontal swipe navigation, fullscreen toggle, opt-in video support, and four built-in transitions. ~4.1 kB gzip.
+Full-screen image and video gallery lightbox for Vue 3. Horizontal swipe navigation, fullscreen toggle, opt-in video support, and four built-in transitions. ~4.9 kB gzip.
 
 **[Live Demo](https://vue-demo.reelkit.dev/image-preview?utm_source=npm)**
 
@@ -54,6 +54,8 @@ const items: LightboxItem[] = [
 - Fullscreen toggle with two-step Escape (exit fullscreen → close)
 - Swipe-up-to-close on mobile
 - Opt-in video support via `useVideoSlideRenderer`
+- Opt-in slideshow — `auto-advance` plays the gallery on its own, with a `PlayPauseButton` and `play()` / `pause()` on the api
+- Opt-in download — `show-download` adds a `DownloadButton` that saves the active item, from `downloadUrl` when the preview is a resized copy
 - Desktop prev/next arrows with boundary hiding
 - Dialog a11y: `role="dialog"`, `aria-modal`, focus trap + return
 - Themeable via `--rk-lightbox-*` CSS custom properties
@@ -61,34 +63,37 @@ const items: LightboxItem[] = [
 
 ## Scoped Slots
 
-| Slot         | Scope                                                                 |
-| ------------ | --------------------------------------------------------------------- |
-| `slide`      | `item, index, size, isActive, onReady, onWaiting, onError`            |
-| `controls`   | `item, activeIndex, count, isFullscreen, onClose, onToggleFullscreen` |
-| `navigation` | `item, activeIndex, count, onPrev, onNext`                            |
-| `info`       | `item, index`                                                         |
-| `loading`    | `item, activeIndex`                                                   |
-| `error`      | `item, activeIndex`                                                   |
+| Slot         | Scope                                                                                                                                    |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `slide`      | `item, index, size, isActive, autoAdvance, onReady, onWaiting, onError, onEnded`                                                         |
+| `controls`   | `item, activeIndex, count, isFullscreen, isAutoAdvancing, isDownloading, onClose, onToggleFullscreen, onToggleAutoAdvance?, onDownload?` |
+| `navigation` | `item, activeIndex, count, onPrev, onNext`                                                                                               |
+| `info`       | `item, index`                                                                                                                            |
+| `loading`    | `item, activeIndex`                                                                                                                      |
+| `error`      | `item, activeIndex`                                                                                                                      |
 
 ## Props
 
-| Prop                    | Type                    | Default           | Description                              |
-| ----------------------- | ----------------------- | ----------------- | ---------------------------------------- |
-| `isOpen`                | `boolean`               | required          | Controls overlay visibility              |
-| `items`                 | `LightboxItem[]`        | required          | Images/videos to display                 |
-| `initialIndex`          | `number`                | `0`               | Starting slide index                     |
-| `ariaLabel`             | `string`                | `'Image gallery'` | Dialog `aria-label`                      |
-| `transitionFn`          | `TransitionTransformFn` | `slideTransition` | Slide transition fn (built-in or custom) |
-| `swipeToCloseDirection` | `SwipeToCloseDirection` | `'up'`            | Which way a swipe dismisses the lightbox |
-| `loop`                  | `boolean`               | `false`           | Enable infinite loop                     |
-| `enableNavKeys`         | `boolean`               | `true`            | Arrow-key navigation                     |
-| `enableWheel`           | `boolean`               | `true`            | Wheel navigation                         |
-| `wheelDebounceMs`       | `number`                | `200`             | Wheel debounce duration (ms)             |
-| `transitionDuration`    | `number`                | `300`             | Animation duration (ms)                  |
-| `swipeDistanceFactor`   | `number`                | `0.12`            | Swipe threshold (0-1)                    |
-| `showInfo`              | `boolean`               | `true`            | Show title/description overlay           |
-| `showControls`          | `boolean`               | `true`            | Show controls bar                        |
-| `showNavigation`        | `boolean`               | `true`            | Show prev/next arrows on desktop         |
+| Prop                    | Type                    | Default           | Description                               |
+| ----------------------- | ----------------------- | ----------------- | ----------------------------------------- |
+| `isOpen`                | `boolean`               | required          | Controls overlay visibility               |
+| `items`                 | `LightboxItem[]`        | required          | Images/videos to display                  |
+| `initialIndex`          | `number`                | `0`               | Starting slide index                      |
+| `ariaLabel`             | `string`                | `'Image gallery'` | Dialog `aria-label`                       |
+| `transitionFn`          | `TransitionTransformFn` | `slideTransition` | Slide transition fn (built-in or custom)  |
+| `swipeToCloseDirection` | `SwipeToCloseDirection` | `'up'`            | Which way a swipe dismisses the lightbox  |
+| `loop`                  | `boolean`               | `false`           | Enable infinite loop                      |
+| `enableNavKeys`         | `boolean`               | `true`            | Arrow-key navigation                      |
+| `enableWheel`           | `boolean`               | `true`            | Wheel navigation                          |
+| `wheelDebounceMs`       | `number`                | `200`             | Wheel debounce duration (ms)              |
+| `transitionDuration`    | `number`                | `300`             | Animation duration (ms)                   |
+| `swipeDistanceFactor`   | `number`                | `0.12`            | Swipe threshold (0-1)                     |
+| `showInfo`              | `boolean`               | `true`            | Show title/description overlay            |
+| `showControls`          | `boolean`               | `true`            | Show controls bar                         |
+| `showNavigation`        | `boolean`               | `true`            | Show prev/next arrows on desktop          |
+| `autoAdvance`           | `boolean`               | `false`           | Play the gallery as a slideshow           |
+| `autoAdvanceInterval`   | `number`                | `5000`            | Image time in a slideshow (ms), from load |
+| `showDownload`          | `boolean`               | `false`           | Add a download button                     |
 
 ## Events
 
@@ -98,6 +103,32 @@ const items: LightboxItem[] = [
 | `slide-change`   | `number`      | Emitted after the active slide changes       |
 | `api-ready`      | `LightboxApi` | Emitted with the imperative lightbox API     |
 | `update:is-open` | `boolean`     | Emitted on close — enables `v-model:is-open` |
+
+The `LightboxApi` from `api-ready` (also on the template ref) has `next()`,
+`prev()`, `goTo()`, `adjust()`, `observe()`, `unobserve()`, `close()`, and
+`play()` / `pause()` for the slideshow.
+
+## Slideshow and download (opt-in)
+
+```vue
+<LightboxOverlay
+  v-model:is-open="open"
+  :items="items"
+  auto-advance
+  :auto-advance-interval="4000"
+  show-download
+/>
+```
+
+`auto-advance` counts each image's interval from the moment it has loaded,
+plays a video once and moves on when it ends, waits while the mouse rests on a
+control, during a swipe and while the page is hidden, and stops on the last
+slide unless `loop` is set. A `PlayPauseButton` joins the controls.
+
+`show-download` adds a `DownloadButton` that saves the active item from
+`downloadUrl` (or `src`) under `downloadName`; a `LightboxItem` takes both as
+optional fields. The file is fetched so a cross-origin link still downloads;
+when the server sends no CORS headers it opens in a new tab instead.
 
 ## Video support (opt-in)
 
@@ -116,7 +147,7 @@ const items: LightboxItem[] = [
   { src: '/image.jpg' },
   { type: 'video', src: '/clip.mp4', poster: '/clip.jpg' },
 ];
-const { renderSlide, renderControls, SoundProvider } =
+const { VideoSlideRenderer, VideoControlsRenderer, SoundProvider } =
   useVideoSlideRenderer(items);
 </script>
 
@@ -124,10 +155,10 @@ const { renderSlide, renderControls, SoundProvider } =
   <SoundProvider>
     <LightboxOverlay v-model:is-open="open" :items="items">
       <template #slide="scope">
-        <component :is="renderSlide(scope)" />
+        <VideoSlideRenderer v-bind="scope" />
       </template>
       <template #controls="scope">
-        <component :is="renderControls(scope)" />
+        <VideoControlsRenderer v-bind="scope" />
       </template>
     </LightboxOverlay>
   </SoundProvider>
@@ -175,8 +206,8 @@ key the URL by image id.
 ## Sub-components
 
 For composing your own controls or slides: `CloseButton`, `Counter`,
-`FullscreenButton`, `SoundButton`, `LightboxNavigation`, `ImageSlide`,
-`LightboxVideoSlide`.
+`FullscreenButton`, `SoundButton`, `PlayPauseButton`, `DownloadButton`,
+`LightboxNavigation`, `ImageSlide`, `LightboxVideoSlide`.
 
 ## Keyboard Shortcuts
 

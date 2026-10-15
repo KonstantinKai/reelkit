@@ -11,6 +11,8 @@ import virtualization from '../../../snippets/core-guide/virtualization.ts?raw';
 import signals from '../../../snippets/core-guide/signals.ts?raw';
 import controllerState from '../../../snippets/core-guide/controller-state.ts?raw';
 import timelineController from '../../../snippets/core-guide/timeline-controller.ts?raw';
+import timerExample from '../../../snippets/core-guide/timer-example.ts?raw';
+import slideshowExample from '../../../snippets/core-guide/slideshow-example.ts?raw';
 import howItWorks from '../../../snippets/core-guide/how-it-works.ts?raw';
 import howItWorks2 from '../../../snippets/core-guide/how-it-works-2.ts?raw';
 
@@ -128,6 +130,28 @@ La lectura es solo síncrona. Una entrada cuyos elementos aún no se han cargado
 Por defecto el almacén usa `localStorage`; `createSessionStorageAdapter()` lo olvida al cerrar la pestaña, y un `StorageAdapter` propio lo guarda en cualquier sitio síncrono. No se lee nada hasta `attach()`, así que el renderizado en el servidor y el primer renderizado en el cliente coinciden.
 
 Las entradas se guardan hasta que se olvidan de forma explícita. Pasa `ttlMs` para que caduquen: por pista y con un reloj deslizante, así que algo que se sigue viendo nunca caduca junto a algo abandonado. Cambia lo que se escribe, porque cada entrada pasa a ser un par `[wire, timestamp]`, pero la lectura admite las dos formas diga lo que diga la opción, así que una entrada guardada antes de activarla cuenta como reciente en lugar de borrarse. `maxTracks` limita la cantidad en lugar de la antigüedad: al superarlo, en la siguiente escritura se descarta la pista registrada hace más tiempo, y registrar una pista, aunque sea una posición anterior, la mueve al final de la cola. Todas las opciones están en la [referencia de la API del core](/docs/core/api#viewed-state).
+
+## Reproducción automática [#autoplay]
+
+Temporización para todo lo que avanza solo. Stories Player ejecuta cada story con `createTimerController`; Lightbox ejecuta su presentación con `createSlideshowController`, que se apoya en él. Los dos avanzan con `requestAnimationFrame`, y cada pausa conserva el progreso exacto.
+
+### createTimerController [#createtimercontroller]
+
+Cuenta una duración de 0 a 1 y avisa al terminar. `start()` siempre empieza desde 0, opcionalmente con otra duración para esa ejecución; `pause()` y `resume()` conservan la posición exacta.
+
+<CodeBlock code={timerExample} language="typescript" />
+
+### createSlideshowController [#createslideshowcontroller]
+
+La máquina de estados detrás de una galería que avanza sola. Solo corre mientras está activada, nada la retiene y la página está visible; vigila la visibilidad de la página por sí misma, y tú le das el resto. Una imagen cuenta su intervalo desde que termina de cargar, así que una lenta nunca se salta sin verse. Un vídeo avanza cuando termina, así que debe reproducirse una vez en lugar de en bucle. Un vídeo que termina mientras algo retiene la presentación avanza al liberarse.
+
+<CodeBlock code={slideshowExample} language="typescript" />
+
+La configuración, el estado y los métodos completos están en la [referencia de la API del core](/docs/core/api#autoplay).
+
+## Descarga [#download]
+
+`downloadFile(url, filename?)` guarda un archivo con el nombre `filename`, por defecto el último segmento de la ruta de la URL. Un enlace de otro origen ignora el atributo `download`, así que descarga el archivo con fetch y guarda el blob. Cuando el fetch falla o el servidor responde con un error —lo habitual es un servidor de otro origen sin cabeceras CORS—, la URL se abre en una pestaña nueva, así que el lector igual obtiene el archivo. Nunca rechaza y no hace nada sin una ventana. Consulta la [referencia de la API del core](/docs/core/api#download).
 
 <NextSteps
         items={[

@@ -11,6 +11,8 @@ import virtualization from '../../../snippets/core-guide/virtualization.ts?raw';
 import signals from '../../../snippets/core-guide/signals.ts?raw';
 import controllerState from '../../../snippets/core-guide/controller-state.ts?raw';
 import timelineController from '../../../snippets/core-guide/timeline-controller.ts?raw';
+import timerExample from '../../../snippets/core-guide/timer-example.ts?raw';
+import slideshowExample from '../../../snippets/core-guide/slideshow-example.ts?raw';
 import howItWorks from '../../../snippets/core-guide/how-it-works.ts?raw';
 import howItWorks2 from '../../../snippets/core-guide/how-it-works-2.ts?raw';
 
@@ -128,6 +130,28 @@ Reading is synchronous only. An entry whose items have not loaded yet reads as a
 `localStorage` backs the store by default; `createSessionStorageAdapter()` forgets on tab close, and a `StorageAdapter` of your own puts it anywhere synchronous. Nothing is read until `attach()`, so a server render and the first client render agree.
 
 Entries are kept until forgotten explicitly. Pass `ttlMs` to expire them instead — per track, on a sliding clock, so somewhere still being watched never goes stale beside somewhere abandoned. It changes what is written, each entry becoming a `[wire, timestamp]` pair, but reading copes with either shape whatever the option says, so an entry stored before you turned it on counts as fresh rather than being deleted. `maxTracks` bounds count instead of age: past it, the least recently recorded track is dropped on the next write, and recording a track, even a position already behind, moves it to the back of the line. Full options live on the [Core API reference](/docs/core/api#viewed-state).
+
+## Autoplay [#autoplay]
+
+Timing for anything that advances on its own. The stories players run each story on `createTimerController`; the lightboxes run their slideshow on `createSlideshowController`, which builds on it. Both tick on `requestAnimationFrame`, and every pause keeps the exact progress.
+
+### createTimerController [#createtimercontroller]
+
+Counts one duration from 0 to 1 and calls back when it is done. `start()` always begins from 0, optionally with another duration for that run; `pause()` and `resume()` keep the exact position.
+
+<CodeBlock code={timerExample} language="typescript" />
+
+### createSlideshowController [#createslideshowcontroller]
+
+The state machine behind a gallery that advances on its own. It runs only while it is switched on, nothing holds it and the page is visible; it watches page visibility itself, and you feed it the rest. An image counts its interval from the moment it has loaded, so a slow one is never skipped unseen. A video advances when it ends, so it has to play once rather than loop. A video that ends while something holds the slideshow advances on release.
+
+<CodeBlock code={slideshowExample} language="typescript" />
+
+Full config, state and methods live on the [Core API reference](/docs/core/api#autoplay).
+
+## Download [#download]
+
+`downloadFile(url, filename?)` saves a file under `filename`, by default the last segment of the URL's path. A `download` attribute is ignored on a cross-origin link, so it fetches the file and saves the blob instead. When the fetch fails or the server answers with an error — a cross-origin server without CORS headers is the usual case — the URL opens in a new tab, so the reader still gets the file. It never rejects, and does nothing without a window. See the [Core API reference](/docs/core/api#download).
 
 <NextSteps
         items={[

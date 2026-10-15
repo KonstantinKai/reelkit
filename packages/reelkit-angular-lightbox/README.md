@@ -2,7 +2,7 @@
 
 <p>
   <a href="https://www.npmjs.com/package/@reelkit/angular-lightbox"><img src="https://img.shields.io/npm/v/@reelkit/angular-lightbox?color=6366f1&label=npm" alt="npm" /></a>
-  <img src="https://img.shields.io/badge/gzip-16.2%20kB-6366f1" alt="Bundle size" />
+  <img src="https://img.shields.io/badge/gzip-19.1%20kB-6366f1" alt="Bundle size" />
   <img src="https://img.shields.io/badge/coverage-94%25-brightgreen" alt="Statement coverage" />
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
@@ -11,7 +11,7 @@
   <a href="https://angular-demo.reelkit.dev/image-preview?utm_source=npm"><img src="https://raw.githubusercontent.com/KonstantinKai/reelkit/main/assets/lightbox.gif" width="240" alt="An image lightbox on a phone: tapping a gallery thumbnail opens it full screen, two sideways swipes page to the third photo, and a swipe up closes it back to the gallery." /></a>
 </p>
 
-Image gallery lightbox for Angular — opens full-screen with swipe navigation, keyboard controls, and transition effects. Every part of the UI is replaceable via template slots. ~16.2 kB gzip.
+Image gallery lightbox for Angular — opens full-screen with swipe navigation, keyboard controls, and transition effects. Every part of the UI is replaceable via template slots. ~19.1 kB gzip.
 
 **[Live Demo](https://angular-demo.reelkit.dev/image-preview?utm_source=npm)**
 
@@ -87,7 +87,9 @@ export class GalleryComponent {
 - Counter — "1 / 10" indicator
 - Info overlay — title and description with gradient
 - Template slots — `rkLightboxControls`, `rkLightboxNavigation`, `rkLightboxInfo`, `rkLightboxSlide` to override any part
-- Sub-components — `RkCloseButtonComponent`, `RkCounterComponent`, `RkFullscreenButtonComponent`, `RkSoundButtonComponent`, `RkLightboxVideoSlideComponent`
+- Slideshow (opt-in) — `autoAdvance` plays the gallery on its own: images after they load, videos when they end, paused while the mouse is on a control
+- Download (opt-in) — `showDownload` adds a button that saves the active item, from `downloadUrl` when the preview is a resized copy
+- Sub-components — `RkCloseButtonComponent`, `RkCounterComponent`, `RkFullscreenButtonComponent`, `RkSoundButtonComponent`, `RkPlayPauseButtonComponent`, `RkDownloadButtonComponent`, `RkLightboxVideoSlideComponent`
 - Shareable URLs — `<rk-lightbox-url-overlay>` opens itself from the address bar
 - `rkSwipeToClose` directive for dismissing the overlay by swipe
 
@@ -106,21 +108,24 @@ export class GalleryComponent {
 
 ### rk-lightbox-overlay Inputs
 
-| Input                   | Type                    | Default           | Description                              |
-| ----------------------- | ----------------------- | ----------------- | ---------------------------------------- |
-| `isOpen`                | `boolean`               | required          | Controls lightbox visibility             |
-| `items`                 | `LightboxItem[]`        | required          | Array of items to display                |
-| `initialIndex`          | `number`                | `0`               | Starting image index                     |
-| `transitionFn`          | `TransitionTransformFn` | `slideTransition` | Slide transition fn (built-in or custom) |
-| `swipeToCloseDirection` | `SwipeToCloseDirection` | `'up'`            | Which way a swipe dismisses the lightbox |
-| `ariaLabel`             | `string`                | `'Image gallery'` | Dialog `aria-label`                      |
-| `showInfo`              | `boolean`               | `true`            | Show title/description                   |
-| `loop`                  | `boolean`               | `false`           | Enable infinite loop                     |
-| `enableNavKeys`         | `boolean`               | `true`            | Enable keyboard navigation               |
-| `enableWheel`           | `boolean`               | `true`            | Enable mouse wheel                       |
-| `wheelDebounceMs`       | `number`                | `200`             | Wheel debounce (ms)                      |
-| `transitionDuration`    | `number`                | `300`             | Animation duration (ms)                  |
-| `swipeDistanceFactor`   | `number`                | `0.12`            | Swipe threshold (0-1)                    |
+| Input                   | Type                    | Default           | Description                               |
+| ----------------------- | ----------------------- | ----------------- | ----------------------------------------- |
+| `isOpen`                | `boolean`               | required          | Controls lightbox visibility              |
+| `items`                 | `LightboxItem[]`        | required          | Array of items to display                 |
+| `initialIndex`          | `number`                | `0`               | Starting image index                      |
+| `transitionFn`          | `TransitionTransformFn` | `slideTransition` | Slide transition fn (built-in or custom)  |
+| `swipeToCloseDirection` | `SwipeToCloseDirection` | `'up'`            | Which way a swipe dismisses the lightbox  |
+| `ariaLabel`             | `string`                | `'Image gallery'` | Dialog `aria-label`                       |
+| `showInfo`              | `boolean`               | `true`            | Show title/description                    |
+| `loop`                  | `boolean`               | `false`           | Enable infinite loop                      |
+| `enableNavKeys`         | `boolean`               | `true`            | Enable keyboard navigation                |
+| `enableWheel`           | `boolean`               | `true`            | Enable mouse wheel                        |
+| `wheelDebounceMs`       | `number`                | `200`             | Wheel debounce (ms)                       |
+| `transitionDuration`    | `number`                | `300`             | Animation duration (ms)                   |
+| `swipeDistanceFactor`   | `number`                | `0.12`            | Swipe threshold (0-1)                     |
+| `autoAdvance`           | `boolean`               | `false`           | Play the gallery as a slideshow           |
+| `autoAdvanceInterval`   | `number`                | `5000`            | Image time in a slideshow (ms), from load |
+| `showDownload`          | `boolean`               | `false`           | Add a download button                     |
 
 ### rk-lightbox-overlay Outputs
 
@@ -140,19 +145,52 @@ interface LightboxItem {
   description?: string;
   width?: number;
   height?: number;
+  downloadUrl?: string; // what the download button saves; defaults to src
+  downloadName?: string; // file name; defaults to the URL's last segment
 }
 ```
+
+The `rkLightboxControls` context also carries `isAutoAdvancing` and
+`isDownloading`, plus `onToggleAutoAdvance` and `onDownload` only when the
+feature is on. The `rkLightboxSlide` context carries `autoAdvance` and
+`onEnded`: bind `[loop]="!autoAdvance"` and `[onEnded]="onEnded"` on
+`rk-lightbox-video-slide` so a video plays once and moves the slideshow on.
 
 ### Sub-components
 
 Use these inside custom `rkLightboxControls` templates:
 
-| Component                     | Description        |
-| ----------------------------- | ------------------ |
-| `RkCloseButtonComponent`      | Close button       |
-| `RkCounterComponent`          | "1 / 10" counter   |
-| `RkFullscreenButtonComponent` | Fullscreen toggle  |
-| `RkSoundButtonComponent`      | Mute/unmute toggle |
+| Component                     | Description                                   |
+| ----------------------------- | --------------------------------------------- |
+| `RkCloseButtonComponent`      | Close button                                  |
+| `RkCounterComponent`          | "1 / 10" counter                              |
+| `RkFullscreenButtonComponent` | Fullscreen toggle                             |
+| `RkSoundButtonComponent`      | Mute/unmute toggle                            |
+| `RkPlayPauseButtonComponent`  | Slideshow toggle; `[playing]`, `(toggled)`    |
+| `RkDownloadButtonComponent`   | Download button; `[downloading]`, `(pressed)` |
+
+## Slideshow and download (opt-in)
+
+```html
+<rk-lightbox-overlay
+  [isOpen]="isOpen()"
+  [items]="images"
+  [autoAdvance]="true"
+  [autoAdvanceInterval]="4000"
+  [showDownload]="true"
+  (closed)="isOpen.set(false)"
+/>
+```
+
+`autoAdvance` counts each image's interval from the moment it has loaded,
+plays a video once and moves on when it ends, waits while the mouse rests on a
+control, during a swipe and while the page is hidden, and stops on the last
+slide unless `loop` is set. It runs outside the Angular zone. A play/pause
+button joins the controls.
+
+`showDownload` adds a button that saves the active item from `downloadUrl` (or
+`src`) under `downloadName`. The file is fetched so a cross-origin link still
+downloads; when the server sends no CORS headers it opens in a new tab instead.
 
 ## URL-driven lightbox
 
@@ -214,6 +252,8 @@ All UI elements use CSS classes prefixed with `rk-lightbox-`:
 | `.rk-lightbox-nav-next`        | Next arrow                  |
 | `.rk-lightbox-counter`         | Image counter               |
 | `.rk-lightbox-btn`             | Control buttons             |
+| `.rk-lightbox-play-pause`      | Slideshow play/pause button |
+| `.rk-lightbox-download`        | Download button             |
 | `.rk-lightbox-info`            | Title/description container |
 | `.rk-lightbox-title`           | Image title                 |
 | `.rk-lightbox-description`     | Image description           |

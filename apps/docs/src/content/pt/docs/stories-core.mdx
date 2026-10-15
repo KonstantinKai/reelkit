@@ -6,7 +6,6 @@ description: O motor por trás de @reelkit/react-stories-player. TypeScript puro
 import { Cpu, Layers, Timer, Minus, MousePointerClick, Cog } from 'lucide-react';
 import installation from '../../snippets/stories-core/installation.sh?raw';
 import controllerExample from '../../snippets/stories-core/controller-example.ts?raw';
-import timerExample from '../../snippets/stories-core/timer-example.ts?raw';
 import canvasExample from '../../snippets/stories-core/canvas-example.ts?raw';
 import viewedControllerExample from '../../snippets/stories-core/viewed-controller-example.ts?raw';
 import typesCode from '../../snippets/stories-core/types-code.ts?raw';
@@ -26,8 +25,8 @@ O motor por trás de `@reelkit/react-stories-player`. TypeScript puro, sem depen
   },
   {
     icon: Timer,
-    label: 'Timer com RAF',
-    desc: 'Avanço automático por requestAnimationFrame, com pausa e retomada',
+    label: 'Tempo dos stories',
+    desc: 'Avanço automático sobre o timer do core, com pausa e retomada',
   },
   {
     icon: Minus,
@@ -106,35 +105,7 @@ O motor por trás de `@reelkit/react-stories-player`. TypeScript puro, sem depen
 
 ## Controlador de timer [#timer-controller]
 
-`createTimerController(config)` conduz o avanço automático com um laço de `requestAnimationFrame`. O sinal de progresso (de 0 a 1) alimenta a barra. Pausar e retomar preservam a posição exata.
-
-### Configuração (TimerControllerConfig) [#config-timercontrollerconfig]
-
-| Propriedade | Tipo | Padrão | Descrição |
-| --- | --- | --- | --- |
-| `duration` | `number` | obrigatório | Duração padrão em milissegundos |
-| `onComplete` | `() => void` | undefined | Chamado quando o timer chega a 100% |
-
-### Estado [#state]
-
-| Sinal | Tipo | Descrição |
-| --- | --- | --- |
-| `progress` | `Signal<number>` | Sinal de progresso (de 0 a 1) |
-| `isRunning` | `Signal<boolean>` | Se o timer está rodando agora |
-
-### Métodos [#methods]
-
-| Método | Tipo | Descrição |
-| --- | --- | --- |
-| `start(duration?)` | `(number?) => void` | Inicia (ou reinicia) o timer, com duração alternativa opcional |
-| `pause()` | `() => void` | Congela o progresso na posição atual |
-| `resume()` | `() => void` | Continua da posição congelada |
-| `reset()` | `() => void` | Zera o progresso e para |
-| `dispose()` | `() => void` | Libera os recursos |
-
-### Exemplo [#example]
-
-<CodeBlock code={timerExample} />
+O timer que conduz o progresso de cada story fica em `@reelkit/core` como `createTimerController`, compartilhado com a apresentação do lightbox. Importe-o de `@reelkit/core` ou da sua binding (`@reelkit/react`, `@reelkit/vue`, `@reelkit/angular`); este pacote não o exporta mais. Veja [Reprodução automática](/docs/core/api#autoplay) na API do core para sua configuração, estado e métodos, e o [exemplo do Stories Controller](#example) acima para ligá-lo a `onStoryTimerComplete`.
 
 ## Renderizador de progresso em Canvas [#canvas-progress-renderer]
 

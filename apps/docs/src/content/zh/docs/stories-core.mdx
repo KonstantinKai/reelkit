@@ -6,7 +6,6 @@ description: 框架无关的 Stories 引擎：Stories 控制器、计时控制�
 import { Cpu, Layers, Timer, Minus, MousePointerClick, Cog } from 'lucide-react';
 import installation from '../../snippets/stories-core/installation.sh?raw';
 import controllerExample from '../../snippets/stories-core/controller-example.ts?raw';
-import timerExample from '../../snippets/stories-core/timer-example.ts?raw';
 import canvasExample from '../../snippets/stories-core/canvas-example.ts?raw';
 import viewedControllerExample from '../../snippets/stories-core/viewed-controller-example.ts?raw';
 import typesCode from '../../snippets/stories-core/types-code.ts?raw';
@@ -26,8 +25,8 @@ import typesCode from '../../snippets/stories-core/types-code.ts?raw';
   },
   {
     icon: Timer,
-    label: 'RAF 计时器',
-    desc: '基于 requestAnimationFrame 的自动播放，支持暂停 / 恢复',
+    label: 'Story 计时',
+    desc: '基于核心计时器的自动播放，支持暂停与恢复',
   },
   {
     icon: Minus,
@@ -106,35 +105,7 @@ import typesCode from '../../snippets/stories-core/types-code.ts?raw';
 
 ## 计时控制器 [#timer-controller]
 
-`createTimerController(config)` 用 `requestAnimationFrame` 循环驱动自动播放。进度信号（0 到 1）供给进度条。暂停和恢复会精确保留位置。
-
-### 配置（TimerControllerConfig） [#config-timercontrollerconfig]
-
-| 属性 | 类型 | 默认值 | 说明 |
-| --- | --- | --- | --- |
-| `duration` | `number` | 必填 | 默认时长（毫秒） |
-| `onComplete` | `() => void` | undefined | 计时到达 100% 时调用 |
-
-### 状态 [#state]
-
-| Signal | 类型 | 说明 |
-| --- | --- | --- |
-| `progress` | `Signal<number>` | 进度信号（0 到 1） |
-| `isRunning` | `Signal<boolean>` | 计时器当前是否在运行 |
-
-### 方法 [#methods]
-
-| 方法 | 类型 | 说明 |
-| --- | --- | --- |
-| `start(duration?)` | `(number?) => void` | 启动（或重启）计时器，可选地覆盖时长 |
-| `pause()` | `() => void` | 把进度冻结在当前位置 |
-| `resume()` | `() => void` | 从冻结的位置继续 |
-| `reset()` | `() => void` | 把进度重置为 0 并停止 |
-| `dispose()` | `() => void` | 清理资源 |
-
-### 示例 [#example]
-
-<CodeBlock code={timerExample} />
+驱动每个 story 进度的计时器位于 `@reelkit/core`，名为 `createTimerController`，与 lightbox 幻灯片共用。从 `@reelkit/core` 或你的绑定（`@reelkit/react`、`@reelkit/vue`、`@reelkit/angular`）导入它；本包不再导出它。它的配置、状态和方法见核心 API 中的[自动播放](/docs/core/api#autoplay)，把它接到 `onStoryTimerComplete` 的方式见上方的 [Stories 控制器示例](#example)。
 
 ## Canvas 进度渲染器 [#canvas-progress-renderer]
 

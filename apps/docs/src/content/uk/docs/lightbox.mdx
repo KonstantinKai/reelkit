@@ -3,7 +3,7 @@ title: Lightbox
 description: 'Повноекранна галерея зображень: двовісний URL, підкомпоненти, завантаження вмісту й обробка помилок, переходи та класи CSS.'
 ---
 
-import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2 } from 'lucide-react';
+import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2, Play, Download } from 'lucide-react';
 import { LightboxDemo } from '../../../components/demos/LightboxDemo';
 import installation from '../../snippets/lightbox/installation.sh?raw';
 import installation2 from '../../snippets/lightbox/installation-2.ts?raw';
@@ -36,6 +36,10 @@ import usefullscreen from '../../snippets/lightbox/usefullscreen.tsx?raw';
 import transitions from '../../snippets/lightbox/transitions.tsx?raw';
 import customTransitionFunction from '../../snippets/lightbox/custom-transition-function.tsx?raw';
 import theming from '../../snippets/lightbox/theming.css?raw';
+import autoAdvance from '../../snippets/lightbox/auto-advance.tsx?raw';
+import download from '../../snippets/lightbox/download.tsx?raw';
+import playpausebutton from '../../snippets/lightbox/playpausebutton.tsx?raw';
+import downloadbutton from '../../snippets/lightbox/downloadbutton.tsx?raw';
 
 Повноекранний компонент Lightbox-галереї зображень і відео на основі `@reelkit/react-lightbox`.
 
@@ -108,6 +112,16 @@ import theming from '../../snippets/lightbox/theming.css?raw';
                 icon: Link2,
                 label: 'Стан в URL',
                 desc: 'Посилання, якими можна ділитися й зберігати в закладки',
+              },
+              {
+                icon: Play,
+                label: 'Слайдшоу',
+                desc: 'Автоперехід за бажанням, із відтворенням і паузою',
+              },
+              {
+                icon: Download,
+                label: 'Завантаження',
+                desc: 'Кнопка за бажанням, що зберігає активний елемент',
               },
             ]} />
 
@@ -261,6 +275,30 @@ Pass `hashCodec: base64UrlCodec` щоб закодувати id в URL у base64
 - Тайм-ауту немає — Lightbox не може знати, яка галерея завдовжки. Завершуйте значенням `null` коли сторінки скінчилися, інакше оверлей лишиться закритим назавжди.
 - Whatever `locateAsync` є остаточним — це індекс щойно завантажених даних, узятий як є, без повторного читання `images`.
 
+## Автоперехід [#auto-advance]
+
+Задайте `autoAdvance`, щоб галерея після відкриття гралася як слайдшоу. Типово вимкнено, тож наявний Lightbox рендериться й поводиться як раніше.
+
+<CodeBlock code={autoAdvance} language="tsx" />
+
+- **Зображення** лишаються на екрані `autoAdvanceInterval` (типово 5000 мс), відлічуваних із моменту, коли зображення завантажилося, тож повільне зображення ніколи не пропускається, перш ніж його хтось побачив. Для зображення, що не завантажилося, відлік іде від помилки.
+- **Відео** програються один раз замість циклу й переходять далі, коли закінчуються. З `useVideoSlideRenderer` це під’єднано за вас; власний `renderSlide` читає `autoAdvance` зі своїх пропсів і повідомляє про кінець через `onEnded`.
+- **Воно чекає**, поки миша лежить на елементі керування (кнопці, посиланні чи підписі), під час свайпу і поки сторінка прихована, а потім продовжує з місця зупинки.
+- **Ручне перемикання** (стрілки, клавіші, колесо, свайп) запускає інтервал нового слайда з нуля; слайдшоу лишається увімкненим.
+- **На останньому слайді** воно зупиняється, якщо не задано `loop`. Кнопка відтворення й паузи серед елементів керування показує стан і дає глядачеві його перемкнути.
+
+Власний `renderControls` отримує `isAutoAdvancing` і, лише коли `autoAdvance` увімкнено, `onToggleAutoAdvance` — рендерте [PlayPauseButton](#playpausebutton), коли він є. Сам таймінг — це `createSlideshowController` з `@reelkit/core`; див. [посібник з автовідтворення](/docs/core/guide#autoplay), щоб вбудувати ту саму поведінку у власний плеєр, і [API ядра](/docs/core/api#autoplay) щодо його методів.
+
+## Завантаження [#download]
+
+Задайте `showDownload`, щоб додати до елементів керування кнопку завантаження. Вона зберігає активний елемент за його `downloadUrl`, а якщо його немає — за `src`, під іменем `downloadName`, а якщо його немає — під останнім сегментом URL.
+
+<CodeBlock code={download} language="tsx" />
+
+Файл завантажується через fetch і зберігається, бо браузер ігнорує атрибут `download` на посиланні на інше джерело й відкрив би файл замість збереження. Коли fetch не вдається — зазвичай це сервер на іншому джерелі, що не надсилає заголовків CORS, — файл відкривається в новій вкладці, де глядач усе ще може його зберегти. Віддавайте файли з `Access-Control-Allow-Origin`, щоб зберігати одним кліком. Поки триває завантаження, кнопка вимкнена.
+
+Власний `renderControls` отримує `isDownloading` і, лише коли `showDownload` увімкнено, `onDownload` — рендерте [DownloadButton](#downloadbutton), коли він є. Помічник — це `downloadFile` з `@reelkit/core`; див. [посібник із завантаження](/docs/core/guide#download).
+
 ## Довідник API [#api-reference]
 
 ### Пропси LightboxOverlay [#lightboxoverlay-props]
@@ -274,11 +312,14 @@ Pass `hashCodec: base64UrlCodec` щоб закодувати id в URL у base64
 | `ariaLabel` | `string` | 'Image gallery' | Доступна назва області діалогу; екранні читачі оголошують її, коли Lightbox відкривається |
 | `initialIndex` | `number` | 0 | Початковий індекс зображення |
 | `transitionFn` | `TransitionTransformFn` | slideTransition | Функція переходу між слайдами. Імпортуйте вбудовану (slideTransition, flipTransition, lightboxFadeTransition, lightboxZoomTransition) або передайте власну. Якщо не задано, використовується slideTransition. |
+| `autoAdvance` | `boolean` | false | Грати галерею як слайдшоу. Див. [Автоперехід](#auto-advance). |
+| `autoAdvanceInterval` | `number` | 5000 | Скільки кожне зображення лишається на екрані під час слайдшоу, у мілісекундах, з моменту його завантаження |
+| `showDownload` | `boolean` | false | Додає кнопку завантаження для активного елемента. Див. [Завантаження](#download). |
 | `apiRef` | `MutableRefObject<ReelApi>` | - | Ref для доступу до API Reel |
 | `renderControls` | `(props: ControlsRenderProps) => ReactNode` | - | Власні елементи керування, замінюють стандартну кнопку закриття, лічильник і перемикач повного екрана |
 | `renderNavigation` | `(props: NavigationRenderProps) => ReactNode` | - | Власна навігація, замінює стандартні стрілки вперед і назад |
 | `renderInfo` | `(props: InfoRenderProps) => ReactNode` | - | Власний інформаційний оверлей, замінює стандартний градієнт із заголовком та описом. Поверніть null, щоб сховати. |
-| `renderSlide` | `(props: SlideRenderProps) => ReactNode \| null` | - | Власний рендеринг слайда. Отримує \{ item, index, size, isActive, onReady, onWaiting, onError \}. Поверніть null, щоб лишити стандартний. |
+| `renderSlide` | `(props: SlideRenderProps) => ReactNode \| null` | - | Власний рендеринг слайда. Отримує \{ item, index, size, isActive, autoAdvance, onReady, onWaiting, onError, onEnded \}. Поверніть null, щоб лишити стандартний. |
 | `renderLoading` | `(props: { item: LightboxItem; activeIndex: number }) => ReactNode` | - | Власний індикатор завантаження, замінює стандартний |
 | `renderError` | `(props: { item: LightboxItem; activeIndex: number }) => ReactNode` | - | Власний індикатор помилки, замінює стандартний значок |
 
@@ -363,6 +404,18 @@ Pass `hashCodec: base64UrlCodec` щоб закодувати id в URL у base64
 
 <CodeBlock code={soundbutton} language="tsx" />
 
+### PlayPauseButton [#playpausebutton]
+
+Перемикач слайдшоу (іконка Play або Pause, `aria-pressed` під час відтворення). Пропси (`PlayPauseButtonProps`): `isPlaying`, `onToggle`, необов’язкові `className` і `style`. Стандартні елементи керування показують її, коли `autoAdvance` увімкнено.
+
+<CodeBlock code={playpausebutton} language="tsx" />
+
+### DownloadButton [#downloadbutton]
+
+Кнопка завантаження (іконка Download), вимкнена, поки `isDownloading`. Пропси (`DownloadButtonProps`): `isDownloading`, `onClick`, необов’язкові `className` і `style`. Стандартні елементи керування показують її, коли `showDownload` увімкнено.
+
+<CodeBlock code={downloadbutton} language="tsx" />
+
 ## Hooks [#hooks]
 
 ### useVideoSlideRenderer [#usevideosliderenderer]
@@ -372,10 +425,6 @@ Pass `hashCodec: base64UrlCodec` щоб закодувати id в URL у base64
 <CodeBlock code={usevideosliderenderer} language="typescript" />
 
 ### useFullscreen [#usefullscreen]
-
-<Callout type="warning" title="Moved">
-  `useFullscreen` прибрано з `@reelkit/react-lightbox`. Import it from `@reelkit/react` instead.
-</Callout>
 
 Хук для керування станом повного екрана з кросбраузерною підтримкою.
 
@@ -413,6 +462,8 @@ Pass `hashCodec: base64UrlCodec` щоб закодувати id в URL у base64
 | `.rk-lightbox-swipe-hint` | Overlay | Підказка про свайп на мобільних |
 | `.rk-lightbox-controls-left` | Controls | Контейнер елементів керування вгорі ліворуч |
 | `.rk-lightbox-btn` | Controls | Кнопки керування (повний екран тощо) |
+| `.rk-lightbox-play-pause` | Controls | Кнопка відтворення й паузи слайдшоу (разом із `.rk-lightbox-btn`) |
+| `.rk-lightbox-download` | Controls | Кнопка завантаження (разом із `.rk-lightbox-btn`) |
 | `.rk-lightbox-close` | Controls | Кнопка закриття |
 | `.rk-lightbox-counter` | Controls | Значок лічильника зображень |
 | `.rk-lightbox-nav` | Навігація | Стрілки навігації (обидві) |
@@ -445,6 +496,7 @@ Pass `hashCodec: base64UrlCodec` щоб закодувати id в URL у base64
 | `--rk-lightbox-btn-bg-hover` | `rgba(255, 255, 255, 0.2)` | Фон кнопок закриття, навігації та малих кнопок під час наведення |
 | `--rk-lightbox-btn-fg` | `#fff` | Колір іконок кнопок закриття, навігації та малих кнопок |
 | `--rk-lightbox-btn-size` | `36px` | Розмір малої кнопки (перемикач повноекранного режиму тощо) |
+| `--rk-lightbox-btn-disabled-opacity` | `0.5` | Непрозорість вимкненої малої кнопки (під час завантаження) |
 | `--rk-lightbox-close-size` | `40px` | Розмір кнопки закриття |
 | `--rk-lightbox-nav-size` | `48px` | Розмір стрілок «назад» і «далі» |
 | `--rk-lightbox-nav-opacity` | `0.7` | Непрозорість стрілок «назад» і «далі» у спокої |

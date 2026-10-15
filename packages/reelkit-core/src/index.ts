@@ -45,6 +45,17 @@ export {
   type LruCache,
 } from './lib/utils';
 
+// Autoplay
+export {
+  createTimerController,
+  type TimerController,
+  type TimerControllerConfig,
+  createSlideshowController,
+  type SlideshowController,
+  type SlideshowControllerConfig,
+  type SlideshowSlideKind,
+} from './lib/autoplay';
+
 // Signals
 export {
   createSignal,
@@ -140,6 +151,9 @@ export {
   fitAspectRatio,
   isTouchDevice,
 } from './lib/dom';
+
+// Download
+export { downloadFile } from './lib/dom';
 
 // Gestures
 export {

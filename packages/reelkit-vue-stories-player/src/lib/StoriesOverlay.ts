@@ -40,6 +40,7 @@ import {
   toVueRef,
   useBodyLock,
   useSoundState,
+  createTimerController,
   type GestureCommonEvent,
   type ReelExpose,
   type Signal,
@@ -49,7 +50,6 @@ import {
 } from '@reelkit/vue';
 import {
   createStoriesController,
-  createTimerController,
   getStoriesSize,
   getTapAction,
   parseDurationMs,

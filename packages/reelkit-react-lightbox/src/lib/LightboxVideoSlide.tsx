@@ -31,6 +31,15 @@ export interface LightboxVideoSlideProps {
   /** Unique key for persisting playback position and captured frames. */
   slideKey: string;
 
+  /**
+   * Whether the video starts over when it ends. Turn it off to have
+   * {@link LightboxVideoSlideProps.onEnded | onEnded} called, which a looping
+   * video never does.
+   *
+   * @default true
+   */
+  loop?: boolean;
+
   /** Called when the video starts playing (buffering complete). */
   onPlaying?: () => void;
 
@@ -39,6 +48,9 @@ export interface LightboxVideoSlideProps {
 
   /** Called when the video fails to load or play. */
   onError?: () => void;
+
+  /** Called when a video that does not loop plays to its end. */
+  onEnded?: () => void;
 }
 
 const shared = createSharedVideo({
@@ -67,12 +79,14 @@ const LightboxVideoSlide: React.FC<LightboxVideoSlideProps> = ({
   onPlaying,
   onWaiting,
   onError,
+  loop = true,
+  onEnded,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const soundState = useSoundState();
   const [showPoster] = useState(() => createSignal(true));
-  const callbacksRef = useRef({ onPlaying, onWaiting, onError });
-  callbacksRef.current = { onPlaying, onWaiting, onError };
+  const callbacksRef = useRef({ onPlaying, onWaiting, onError, onEnded });
+  callbacksRef.current = { onPlaying, onWaiting, onError, onEnded };
 
   useIsomorphicLayoutEffect(() => {
     if (!isActive || !containerRef.current) return;
@@ -98,8 +112,13 @@ const LightboxVideoSlide: React.FC<LightboxVideoSlideProps> = ({
       observeDomEvent(video, 'error', () => {
         if (video.error) callbacksRef.current.onError?.();
       }),
+      observeDomEvent(video, 'ended', () => {
+        callbacksRef.current.onEnded?.();
+      }),
     );
 
+    // The element is shared by every slide, so each activation sets it.
+    video.loop = loop;
     video.src = src;
     video.muted = soundState.muted.value;
     disposables.push(syncMutedToVideo(soundState, video));
@@ -127,7 +146,7 @@ const LightboxVideoSlide: React.FC<LightboxVideoSlideProps> = ({
     });
 
     return disposables.dispose;
-  }, [isActive, src, slideKey]);
+  }, [isActive, src, slideKey, loop]);
 
   return (
     <div

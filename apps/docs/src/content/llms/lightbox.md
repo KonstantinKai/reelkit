@@ -77,6 +77,8 @@ interface LightboxItem {
   height?: number;
   type?: 'image' | 'video';
   poster?: string; // video only
+  downloadUrl?: string; // what the download button saves; default src
+  downloadName?: string; // file name; default last URL path segment
 }
 ```
 
@@ -212,22 +214,74 @@ Nothing is rendered while pending; the page already owns that loading state, so 
 
 Whatever `locateAsync` returns is authoritative — it reports the index of data it just fetched, and the lightbox takes it as-is rather than re-reading `images`, which React has not re-rendered yet.
 
+## Auto-advance
+
+`autoAdvance` → gallery plays as slideshow on open. Off by default.
+
+```tsx
+<LightboxOverlay
+  isOpen={index !== null}
+  images={images}
+  initialIndex={index ?? 0}
+  onClose={() => setIndex(null)}
+  autoAdvance
+  autoAdvanceInterval={4000}
+/>
+```
+
+- Images stay `autoAdvanceInterval` (default 5000 ms), counted from load — slow image never skipped unseen. Failed image counts from error.
+- Videos play once (no loop), advance on end. `useVideoSlideRenderer` wires it; custom `renderSlide` reads `autoAdvance`, reports end via `onEnded`.
+- Waits while mouse rests on a control (button, link, caption), during swipe, while page hidden; continues from same progress.
+- Manual nav (arrows, keys, wheel, swipe) restarts new slide's interval; slideshow stays on.
+- Stops on last slide unless `loop`. Play/pause button in controls shows + switches state.
+- Custom `renderControls` gets `isAutoAdvancing` + `onToggleAutoAdvance` (only when `autoAdvance` on) → render `PlayPauseButton` when present.
+- Timing = `createSlideshowController` from `@reelkit/core` ([Autoplay guide](/docs/core/guide#autoplay), [Core API](/docs/core/api#autoplay)).
+
+## Download
+
+`showDownload` → download button in controls. Saves active item from `downloadUrl` (else `src`) as `downloadName` (else last URL path segment).
+
+```tsx
+const images: LightboxItem[] = [
+  {
+    src: 'https://cdn.example.com/beach-1600.jpg',
+    downloadUrl: 'https://cdn.example.com/beach-original.jpg',
+    downloadName: 'beach.jpg',
+  },
+];
+
+<LightboxOverlay
+  isOpen={index !== null}
+  images={images}
+  onClose={close}
+  showDownload
+/>;
+```
+
+- Fetch → blob → save, since browsers ignore `download` attr on cross-origin link. Fetch fails (cross-origin w/o CORS usual) → file opens in new tab. Serve with `Access-Control-Allow-Origin` for one-click save.
+- Button disabled while downloading.
+- Custom `renderControls` gets `isDownloading` + `onDownload` (only when `showDownload` on) → render `DownloadButton` when present.
+- Helper = `downloadFile` from `@reelkit/core` ([Download guide](/docs/core/guide#download)).
+
 ## LightboxOverlay Props
 
-| Prop               | Type                                             | Default           | Description                                                                                                                                                                |
-| ------------------ | ------------------------------------------------ | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `isOpen`           | `boolean`                                        | required          | Control lightbox visibility. For URL-driven open state, use the separate `LightboxUrlOverlay` — see URL State.                                                             |
-| `images`           | `LightboxItem[]`                                 | required          | Image array to display                                                                                                                                                     |
-| `ariaLabel`        | `string`                                         | `'Image gallery'` | Accessible label for dialog region; announced on open                                                                                                                      |
-| `initialIndex`     | `number`                                         | `0`               | Starting image index                                                                                                                                                       |
-| `transitionFn`     | `TransitionTransformFn`                          | `slideTransition` | Slide transition fn. Import from `@reelkit/react-lightbox` (`slideTransition`, `flipTransition`, `lightboxFadeTransition`, `lightboxZoomTransition`) or pass a custom one. |
-| `apiRef`           | `MutableRefObject<ReelApi>`                      | -                 | Ref to Reel API                                                                                                                                                            |
-| `renderControls`   | `(props: ControlsRenderProps) => ReactNode`      | -                 | Custom controls, replace default close button, counter, fullscreen toggle                                                                                                  |
-| `renderNavigation` | `(props: NavigationRenderProps) => ReactNode`    | -                 | Custom nav, replace default prev/next arrows                                                                                                                               |
-| `renderInfo`       | `(props: InfoRenderProps) => ReactNode`          | -                 | Custom info overlay, replace default title + description gradient. Return null to hide.                                                                                    |
-| `renderSlide`      | `(props: SlideRenderProps) => ReactNode \| null` | -                 | Custom slide render. Receive `{ item, index, size, isActive, onReady, onWaiting, onError }`. Return null = fall back to default.                                           |
-| `renderLoading`    | `(props: { item, activeIndex }) => ReactNode`    | -                 | Custom loading indicator, replace default spinner                                                                                                                          |
-| `renderError`      | `(props: { item, activeIndex }) => ReactNode`    | -                 | Custom error indicator, replace default error icon                                                                                                                         |
+| Prop                  | Type                                             | Default           | Description                                                                                                                                                                |
+| --------------------- | ------------------------------------------------ | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `isOpen`              | `boolean`                                        | required          | Control lightbox visibility. For URL-driven open state, use the separate `LightboxUrlOverlay` — see URL State.                                                             |
+| `images`              | `LightboxItem[]`                                 | required          | Image array to display                                                                                                                                                     |
+| `ariaLabel`           | `string`                                         | `'Image gallery'` | Accessible label for dialog region; announced on open                                                                                                                      |
+| `initialIndex`        | `number`                                         | `0`               | Starting image index                                                                                                                                                       |
+| `transitionFn`        | `TransitionTransformFn`                          | `slideTransition` | Slide transition fn. Import from `@reelkit/react-lightbox` (`slideTransition`, `flipTransition`, `lightboxFadeTransition`, `lightboxZoomTransition`) or pass a custom one. |
+| `autoAdvance`         | `boolean`                                        | `false`           | Play gallery as slideshow (see Auto-advance)                                                                                                                               |
+| `autoAdvanceInterval` | `number`                                         | `5000`            | Image time during slideshow, ms, counted once loaded                                                                                                                       |
+| `showDownload`        | `boolean`                                        | `false`           | Download button for active item (see Download)                                                                                                                             |
+| `apiRef`              | `MutableRefObject<ReelApi>`                      | -                 | Ref to Reel API                                                                                                                                                            |
+| `renderControls`      | `(props: ControlsRenderProps) => ReactNode`      | -                 | Custom controls, replace default close button, counter, fullscreen toggle                                                                                                  |
+| `renderNavigation`    | `(props: NavigationRenderProps) => ReactNode`    | -                 | Custom nav, replace default prev/next arrows                                                                                                                               |
+| `renderInfo`          | `(props: InfoRenderProps) => ReactNode`          | -                 | Custom info overlay, replace default title + description gradient. Return null to hide.                                                                                    |
+| `renderSlide`         | `(props: SlideRenderProps) => ReactNode \| null` | -                 | Custom slide render. Receive `{ item, index, size, isActive, autoAdvance, onReady, onWaiting, onError, onEnded }`. Return null = fall back to default.                     |
+| `renderLoading`       | `(props: { item, activeIndex }) => ReactNode`    | -                 | Custom loading indicator, replace default spinner                                                                                                                          |
+| `renderError`         | `(props: { item, activeIndex }) => ReactNode`    | -                 | Custom error indicator, replace default error icon                                                                                                                         |
 
 ### Reel-Forwarded Props
 
@@ -266,12 +320,24 @@ Reusable sub-components for composing custom controls via `renderControls`.
 | `Counter`          | Image counter pill showing "1 / 3".                                                                                                                                                                               |
 | `FullscreenButton` | Fullscreen toggle button (Maximize/Minimize icon).                                                                                                                                                                |
 | `SoundButton`      | Mute/unmute toggle for video slides (Volume2/VolumeX icon). Included automatically in the `renderControls` from `useVideoSlideRenderer`. Standalone inside custom controls, read sound state via `useSoundState`. |
+| `PlayPauseButton`  | Slideshow toggle (Play/Pause icon, `aria-pressed` while playing). `PlayPauseButtonProps`: `isPlaying`, `onToggle`, `className?`, `style?`. Default controls show it when `autoAdvance` on.                        |
+| `DownloadButton`   | Download button (Download icon), disabled while downloading. `DownloadButtonProps`: `isDownloading`, `onClick`, `className?`, `style?`. Default controls show it when `showDownload` on.                          |
 
 ```tsx
-import { CloseButton, Counter, FullscreenButton } from '@reelkit/react-lightbox';
+import {
+  CloseButton,
+  Counter,
+  FullscreenButton,
+  PlayPauseButton,
+  DownloadButton,
+} from '@reelkit/react-lightbox';
 
 <Counter currentIndex={activeIndex} count={count} />
 <FullscreenButton isFullscreen={isFullscreen} onToggle={onToggleFullscreen} />
+{onToggleAutoAdvance && (
+  <PlayPauseButton isPlaying={isAutoAdvancing} onToggle={onToggleAutoAdvance} />
+)}
+{onDownload && <DownloadButton isDownloading={isDownloading} onClick={onDownload} />}
 <CloseButton onClick={onClose} />
 ```
 
@@ -285,14 +351,15 @@ Hook for opt-in video support. Returns `renderSlide`, `renderControls`, and `Sou
 import { useVideoSlideRenderer } from '@reelkit/react-lightbox';
 
 const { renderSlide, renderControls, SoundProvider, hasVideo } =
-  useVideoSlideRenderer(items, isOpen);
+  useVideoSlideRenderer(items);
 
 // SoundProvider  — wrap LightboxOverlay in this for mute/unmute support
-// renderSlide    — pass to LightboxOverlay's renderSlide prop
+// renderSlide    — pass to LightboxOverlay's renderSlide prop; with
+//                  autoAdvance a video plays once and reports its end
 // renderControls — pass to LightboxOverlay's renderControls prop
-//                  (includes Counter, FullscreenButton, SoundButton, CloseButton)
+//                  (Counter, FullscreenButton, SoundButton, CloseButton, plus
+//                  PlayPauseButton / DownloadButton when those are switched on)
 // hasVideo       — true if items contain at least one video
-// isOpen param   — resets mute to true on close (enables autoplay on reopen)
 ```
 
 ## CSS Theming Tokens
@@ -317,15 +384,16 @@ const { renderSlide, renderControls, SoundProvider, hasVideo } =
 
 ### Buttons
 
-| Token                        | Default                    | Controls                                    |
-| ---------------------------- | -------------------------- | ------------------------------------------- |
-| `--rk-lightbox-btn-bg`       | `rgba(0, 0, 0, 0.5)`       | Default bg for close, nav, small buttons    |
-| `--rk-lightbox-btn-bg-hover` | `rgba(255, 255, 255, 0.2)` | Hover bg for close, nav, small buttons      |
-| `--rk-lightbox-btn-fg`       | `#fff`                     | Icon color for close, nav, small buttons    |
-| `--rk-lightbox-btn-size`     | `36px`                     | Small button size (fullscreen toggle, etc.) |
-| `--rk-lightbox-close-size`   | `40px`                     | Close button size                           |
-| `--rk-lightbox-nav-size`     | `48px`                     | Prev/next arrow size                        |
-| `--rk-lightbox-nav-opacity`  | `0.7`                      | Idle opacity of prev/next arrows            |
+| Token                                | Default                    | Controls                                                |
+| ------------------------------------ | -------------------------- | ------------------------------------------------------- |
+| `--rk-lightbox-btn-bg`               | `rgba(0, 0, 0, 0.5)`       | Default bg for close, nav, small buttons                |
+| `--rk-lightbox-btn-bg-hover`         | `rgba(255, 255, 255, 0.2)` | Hover bg for close, nav, small buttons                  |
+| `--rk-lightbox-btn-fg`               | `#fff`                     | Icon color for close, nav, small buttons                |
+| `--rk-lightbox-btn-size`             | `36px`                     | Small button size (fullscreen toggle, etc.)             |
+| `--rk-lightbox-btn-disabled-opacity` | `0.5`                      | Opacity of disabled small button (download in progress) |
+| `--rk-lightbox-close-size`           | `40px`                     | Close button size                                       |
+| `--rk-lightbox-nav-size`             | `48px`                     | Prev/next arrow size                                    |
+| `--rk-lightbox-nav-opacity`          | `0.7`                      | Idle opacity of prev/next arrows                        |
 
 ### Counter
 
@@ -381,6 +449,8 @@ const { renderSlide, renderControls, SoundProvider, hasVideo } =
 
 - `.rk-lightbox-controls-left` — top-left controls container
 - `.rk-lightbox-btn` — control buttons (fullscreen, etc.)
+- `.rk-lightbox-play-pause` — slideshow play/pause button (with `.rk-lightbox-btn`)
+- `.rk-lightbox-download` — download button (with `.rk-lightbox-btn`)
 - `.rk-lightbox-close` — close button
 - `.rk-lightbox-counter` — image counter chip
 
@@ -408,17 +478,17 @@ const { renderSlide, renderControls, SoundProvider, hasVideo } =
   {...props}
   renderControls={({
     activeIndex,
-    total,
+    count,
     isFullscreen,
-    toggleFullscreen,
-    close,
+    onToggleFullscreen,
+    onClose,
   }) => (
     <div className="my-controls">
-      <button onClick={close}>×</button>
+      <button onClick={onClose}>×</button>
       <span>
-        {activeIndex + 1} / {total}
+        {activeIndex + 1} / {count}
       </span>
-      <button onClick={toggleFullscreen}>{isFullscreen ? '⤡' : '⤢'}</button>
+      <button onClick={onToggleFullscreen}>{isFullscreen ? '⤡' : '⤢'}</button>
     </div>
   )}
 />

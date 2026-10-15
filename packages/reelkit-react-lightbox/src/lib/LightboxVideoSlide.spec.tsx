@@ -218,4 +218,41 @@ describe('LightboxVideoSlide', () => {
       expect(video.style.objectFit).toBe('contain');
     });
   });
+
+  describe('end of playback', () => {
+    it('loops by default', () => {
+      const { container } = renderWithSound(
+        <LightboxVideoSlide
+          src="video.mp4"
+          isActive={true}
+          size={[1024, 768]}
+          slideKey="test-loop-1"
+        />,
+      );
+
+      expect(container.querySelector('video')!.loop).toBe(true);
+    });
+
+    it('plays once and reports the end when looping is off', () => {
+      const onEnded = vi.fn();
+      const { container } = renderWithSound(
+        <LightboxVideoSlide
+          src="video.mp4"
+          isActive={true}
+          size={[1024, 768]}
+          slideKey="test-loop-2"
+          loop={false}
+          onEnded={onEnded}
+        />,
+      );
+      const video = container.querySelector('video')!;
+
+      act(() => {
+        video.dispatchEvent(new Event('ended'));
+      });
+
+      expect(video.loop).toBe(false);
+      expect(onEnded).toHaveBeenCalledOnce();
+    });
+  });
 });

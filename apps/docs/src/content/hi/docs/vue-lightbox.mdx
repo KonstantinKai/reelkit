@@ -3,7 +3,7 @@ title: Vue Lightbox
 description: Vue 3 के लिए फ़ुलस्क्रीन इमेज गैलरी lightbox overlay। LightboxItem schema, props, emits, scoped slots, tree-shake होने वाला transitionFn, स्वाइप करके बंद करना और React lightbox के साथ साझा थीमिंग।
 ---
 
-import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2 } from 'lucide-react';
+import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2, Play, Download } from 'lucide-react';
 import installation from '../../snippets/vue-lightbox/installation.sh?raw';
 import installation2 from '../../snippets/vue-lightbox/installation-2.ts?raw';
 import basicUsageCode from '../../snippets/vue-lightbox/basic-usage-code.vue?raw';
@@ -20,6 +20,8 @@ import lifecycleSlideCode from '../../snippets/vue-lightbox/lifecycle-slide-code
 import customLoadingCode from '../../snippets/vue-lightbox/custom-loading-code.vue?raw';
 import customErrorCode from '../../snippets/vue-lightbox/custom-error-code.vue?raw';
 import themingCode from '../../snippets/vue-lightbox/theming-code.css?raw';
+import autoAdvanceCode from '../../snippets/vue-lightbox/auto-advance.vue?raw';
+import downloadCode from '../../snippets/vue-lightbox/download.vue?raw';
 
 Vue 3 के लिए फ़ुलस्क्रीन इमेज और वीडियो गैलरी lightbox, जो `@reelkit/vue-lightbox` पर बना है।
 
@@ -92,6 +94,16 @@ Vue 3 के लिए फ़ुलस्क्रीन इमेज और व
                 icon: Link2,
                 label: 'URL स्टेट',
                 desc: 'शेयर और bookmark करने लायक लिंक',
+              },
+              {
+                icon: Play,
+                label: 'स्लाइडशो',
+                desc: 'play/pause के साथ opt-in अपने-आप आगे बढ़ना',
+              },
+              {
+                icon: Download,
+                label: 'डाउनलोड',
+                desc: 'सक्रिय आइटम सेव करने वाला opt-in बटन',
               },
             ]} />
 
@@ -191,6 +203,37 @@ URL में id को base64url में encode करने के लिए
 
 इसके pending रहने तक lightbox बंद रहता है और parameter को छुआ नहीं जाता, इसलिए सीधा लिंक fetch के बाद भी बना रहता है। `null` या rejection parameter हटा देता है। URL आगे बढ़ जाने, बंद होने या unmount के बाद आया जवाब फेंक दिया जाता है, इसलिए धीमा fetch ऐसी स्लाइड नहीं खोल सकता जो किसी ने माँगी ही नहीं। यह जो भी लौटाए, वही अंतिम है — यह अभी fetch किए डेटा का index बताता है, और lightbox `items` को दोबारा पढ़ने के बजाय उसे जैसा है वैसा लेता है, क्योंकि Vue ने उसे अभी दोबारा रेंडर नहीं किया है।
 
+## अपने-आप आगे बढ़ना [#auto-advance]
+
+खुलते ही गैलरी को स्लाइडशो की तरह चलाने के लिए `auto-advance` सेट करें। यह डिफ़ॉल्ट रूप से बंद है, इसलिए मौजूदा lightbox पहले की तरह ही रेंडर होता और चलता है।
+
+<CodeBlock code={autoAdvanceCode} language="vue" />
+
+- **इमेज** `auto-advance-interval` (डिफ़ॉल्ट 5000 ms) तक रहती हैं, जो इमेज लोड होने के पल से गिना जाता है, इसलिए धीमी इमेज किसी के देखने से पहले कभी नहीं छूटती। जो इमेज लोड नहीं हो पाती, उसकी गिनती उसके error से होती है।
+- **वीडियो** loop की जगह एक बार चलते हैं और ख़त्म होने पर आगे बढ़ते हैं। `VideoSlideRenderer` यह आपके लिए करता है; कस्टम `#slide` अपने scope से `autoAdvance` पढ़ता है और अंत की सूचना `onEnded` से देता है।
+- **यह रुका रहता है** जब माउस किसी कंट्रोल (बटन, लिंक या कैप्शन) पर टिका हो, swipe के दौरान, और जब पेज छिपा हो, फिर वहीं से आगे चलता है जहाँ रुका था।
+- **हाथ से आगे बढ़ना** (तीर, keys, wheel, swipe) नई स्लाइड का interval शून्य से शुरू करता है; स्लाइडशो चालू रहता है।
+- **आख़िरी स्लाइड पर** यह रुक जाता है, जब तक `loop` सेट न हो। कंट्रोल में play/pause बटन स्टेट दिखाता है और दर्शक को इसे बदलने देता है; [LightboxApi](#lightboxapi) पर `play()` और `pause()` कोड से यही करते हैं।
+
+कस्टम `#controls` slot को `isAutoAdvancing` मिलता है और, सिर्फ़ `auto-advance` चालू होने पर, `onToggleAutoAdvance` — जब यह मौजूद हो तो `PlayPauseButton` रेंडर करें। टाइमिंग ख़ुद `@reelkit/core` का `createSlideshowController` है; [ऑटोप्ले गाइड](/docs/core/guide#autoplay) और [Core API](/docs/core/api#autoplay) देखें।
+
+## डाउनलोड [#download]
+
+कंट्रोल में डाउनलोड बटन जोड़ने के लिए `show-download` सेट करें। यह सक्रिय आइटम को उसके `downloadUrl` से सेव करता है, जो न हो तो `src` से, उसके `downloadName` नाम से, जो न हो तो URL के आख़िरी हिस्से के नाम से।
+
+<CodeBlock code={downloadCode} language="vue" />
+
+फ़ाइल fetch करके सेव की जाती है, क्योंकि ब्राउज़र cross-origin लिंक पर `download` attribute को नज़रअंदाज़ करता है और फ़ाइल को खोल देता। जब fetch विफल हो — आम तौर पर दूसरे origin का ऐसा सर्वर जो CORS headers नहीं भेजता — तो फ़ाइल नए टैब में खुलती है, जहाँ दर्शक उसे फिर भी सेव कर सकता है। एक क्लिक में सेव के लिए फ़ाइलें `Access-Control-Allow-Origin` के साथ serve करें। डाउनलोड चलते समय बटन disabled रहता है।
+
+कस्टम `#controls` slot को `isDownloading` मिलता है और, सिर्फ़ `show-download` चालू होने पर, `onDownload` — जब यह मौजूद हो तो `DownloadButton` रेंडर करें। helper `@reelkit/core` का `downloadFile` है; [डाउनलोड गाइड](/docs/core/guide#download) देखें।
+
+### कंट्रोल बटन [#control-buttons]
+
+| कंपोनेंट | Props | विवरण |
+| --- | --- | --- |
+| `PlayPauseButton` | `PlayPauseButtonProps`: `isPlaying`, `onPress`, `className?` | स्लाइडशो टॉगल (Play/Pause आइकन, चलते समय `aria-pressed`)। `auto-advance` के साथ डिफ़ॉल्ट कंट्रोल इसे दिखाते हैं। |
+| `DownloadButton` | `DownloadButtonProps`: `isDownloading`, `onPress`, `className?` | डाउनलोड बटन, `isDownloading` के दौरान disabled। `show-download` के साथ डिफ़ॉल्ट कंट्रोल इसे दिखाते हैं। |
+
 ## API रेफ़रेंस [#api-reference]
 
 ### LightboxOverlay के props [#lightboxoverlay-props]
@@ -213,6 +256,9 @@ URL में id को base64url में encode करने के लिए
 | `enableNavKeys` | `boolean` | true | कीबोर्ड की तीर वाली कुंजियों से नेविगेशन चालू करता है |
 | `enableWheel` | `boolean` | true | माउस व्हील से नेविगेशन चालू करता है |
 | `wheelDebounceMs` | `number` | 200 | ms में व्हील इवेंट के debounce की अवधि |
+| `autoAdvance` | `boolean` | false | गैलरी को स्लाइडशो की तरह चलाएँ। [अपने-आप आगे बढ़ना](#auto-advance) देखें। |
+| `autoAdvanceInterval` | `number` | 5000 | स्लाइडशो के दौरान हर इमेज कितनी देर रहती है, ms में, लोड होने के बाद से गिना जाता है |
+| `showDownload` | `boolean` | false | सक्रिय आइटम के लिए डाउनलोड बटन जोड़ें। [डाउनलोड](#download) देखें। |
 | `ariaLabel` | `string` | 'Image gallery' | dialog क्षेत्र का सुलभ लेबल |
 
 ### LightboxUrlOverlay के props [#lightboxurloverlay-props]
@@ -247,6 +293,8 @@ URL में id को base64url में encode करने के लिए
 | `observe()` | `() => void` | `unobserve()` के बाद जेस्चर, कीबोर्ड और व्हील इनपुट फिर से सुनना शुरू करता है |
 | `unobserve()` | `() => void` | जेस्चर, कीबोर्ड और व्हील इनपुट सुनना बंद करता है; slides जहाँ हैं वहीं रहती हैं |
 | `close()` | `() => void` | lightbox बंद करता है, बंद बटन या Escape की तरह |
+| `play()` | `() => void` | स्लाइडशो शुरू करता है, सक्रिय स्लाइड को वहीं से आगे चलाते हुए जहाँ वह रुकी थी। `auto-advance` के बिना कुछ नहीं करता। |
+| `pause()` | `() => void` | स्लाइडशो रोकता है; सक्रिय स्लाइड अपनी प्रगति रखती है। `auto-advance` के बिना कुछ नहीं करता। |
 
 ## LightboxItem इंटरफ़ेस [#lightboxitem-interface]
 
@@ -259,13 +307,15 @@ URL में id को base64url में encode करने के लिए
 | `description` | `string` | नहीं | शीर्षक के नीचे दिखने वाला विवरण |
 | `width` | `number` | नहीं | पिक्सेल में इमेज की असली चौड़ाई |
 | `height` | `number` | नहीं | पिक्सेल में इमेज की असली ऊँचाई |
+| `downloadUrl` | `string` | नहीं | डाउनलोड बटन क्या सेव करता है। डिफ़ॉल्ट `src` |
+| `downloadName` | `string` | नहीं | किस फ़ाइल नाम से सेव करना है। डिफ़ॉल्ट URL के path का आख़िरी हिस्सा |
 
 ## स्लॉट scope के टाइप [#slot-scope-types]
 
 | टाइप | Fields |
 | --- | --- |
-| `SlideSlotScope` | `{ item, index, size: [number, number], isActive, onReady, onWaiting, onError }` |
-| `ControlsSlotScope` | `{ item, activeIndex, count, isFullscreen, onClose, onToggleFullscreen }` |
+| `SlideSlotScope` | `{ item, index, size: [number, number], isActive, autoAdvance, onReady, onWaiting, onError, onEnded }` |
+| `ControlsSlotScope` | `{ item, activeIndex, count, isFullscreen, isAutoAdvancing, isDownloading, onClose, onToggleFullscreen, onToggleAutoAdvance?, onDownload? }` |
 | `NavigationSlotScope` | `{ item, activeIndex, count, onPrev, onNext }` |
 | `InfoSlotScope` | `{ item, index }` |
 | `LoadingSlotScope` | `{ item, activeIndex }` |
@@ -325,6 +375,8 @@ URL में id को base64url में encode करने के लिए
 | `.rk-lightbox-error-text` | Overlay | एरर स्टेट का टेक्स्ट लेबल |
 | `.rk-lightbox-controls-left` | Controls | ऊपर-बाएँ कंट्रोल का कंटेनर |
 | `.rk-lightbox-btn` | Controls | कंट्रोल बटन (फ़ुलस्क्रीन, साउंड वगैरह) |
+| `.rk-lightbox-play-pause` | Controls | स्लाइडशो play/pause बटन (`.rk-lightbox-btn` के साथ) |
+| `.rk-lightbox-download` | Controls | डाउनलोड बटन (`.rk-lightbox-btn` के साथ) |
 | `.rk-lightbox-close` | Controls | बंद करने का बटन |
 | `.rk-lightbox-counter` | Controls | इमेज काउंटर chip |
 | `.rk-lightbox-nav` | Navigation | नेविगेशन तीर (prev और next दोनों) |
@@ -354,6 +406,7 @@ URL में id को base64url में encode करने के लिए
 | `--rk-lightbox-btn-bg-hover` | `rgba(255, 255, 255, 0.2)` | बंद / नेविगेशन / छोटे बटन का hover background |
 | `--rk-lightbox-btn-fg` | `#fff` | बंद / नेविगेशन / छोटे बटन के आइकन का रंग |
 | `--rk-lightbox-btn-size` | `36px` | छोटे बटन का आकार (फ़ुलस्क्रीन टॉगल वगैरह) |
+| `--rk-lightbox-btn-disabled-opacity` | `0.5` | disabled छोटे बटन की opacity (डाउनलोड चलते समय) |
 | `--rk-lightbox-close-size` | `40px` | बंद करने के बटन का आकार |
 | `--rk-lightbox-nav-size` | `48px` | prev / next तीर का आकार |
 | `--rk-lightbox-nav-opacity` | `0.7` | आराम की हालत में prev / next तीरों की opacity |

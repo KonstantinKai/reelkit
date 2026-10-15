@@ -1,8 +1,5 @@
-import {
-  createStoriesController,
-  createTimerController,
-} from '@reelkit/stories-core';
-import { reaction } from '@reelkit/core';
+import { createStoriesController } from '@reelkit/stories-core';
+import { createTimerController, reaction } from '@reelkit/core';
 
 const groups = [
   { stories: ['s1', 's2', 's3'] },

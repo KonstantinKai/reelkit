@@ -295,4 +295,33 @@ describe('palette matching', () => {
       }
     },
   );
+
+  it.each(kLocales)(
+    'finds the slideshow and download API by name in "%s"',
+    (locale) => {
+      const expectations: [string, string][] = [
+        ['createTimerController', '/docs/core/api#autoplay'],
+        ['createSlideshowController', '/docs/core/api#autoplay'],
+        ['downloadFile', '/docs/core/api#download'],
+        ['autoAdvance', '/docs/lightbox#auto-advance'],
+        ['PlayPauseButton', '/docs/lightbox#auto-advance'],
+        ['showDownload', '/docs/lightbox#download'],
+        ['downloadUrl', '/docs/lightbox#download'],
+        ['DownloadButton', '/docs/lightbox#download'],
+        ['autoAdvance', '/docs/vue-lightbox#auto-advance'],
+        ['DownloadButton', '/docs/vue-lightbox#download'],
+        ['RkPlayPauseButtonComponent', '/docs/angular-lightbox#auto-advance'],
+        ['RkDownloadButtonComponent', '/docs/angular-lightbox#download'],
+      ];
+      for (const [name, target] of expectations) {
+        const [path, anchor] = target.split('#');
+        const hits = searchItemsFor(locale)
+          .filter((item) => matchesSearch(item, name))
+          .map((item) => `${item.path}#${item.sectionAnchor}`);
+        expect(hits, `"${name}" in ${locale}`).toContain(
+          `${withLocale(locale, path)}#${anchor}`,
+        );
+      }
+    },
+  );
 });

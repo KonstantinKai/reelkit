@@ -64,6 +64,9 @@ import {
   observeElementSize, getViewportSize, observeViewportSize,
   isMobileWidth, fitAspectRatio, isTouchDevice,
 
+  // Autoplay & download
+  createTimerController, createSlideshowController, downloadFile,
+
   // Focus management
   captureFocusForReturn, createFocusTrap, getFocusableElements,
 

@@ -1,5 +1,14 @@
 import React from 'react';
-import { X, Maximize, Minimize, Volume2, VolumeX } from 'lucide-react';
+import {
+  X,
+  Maximize,
+  Minimize,
+  Volume2,
+  VolumeX,
+  Play,
+  Pause,
+  Download,
+} from 'lucide-react';
 
 /**
  * Props for the {@link CloseButton} sub-component.
@@ -161,17 +170,115 @@ export const SoundButton: React.FC<SoundButtonProps> = ({
   </button>
 );
 
+/**
+ * Props for the slideshow toggle. In a custom `renderControls`, render it only
+ * when `onToggleAutoAdvance` is present and pass `isAutoAdvancing` through.
+ */
+export interface PlayPauseButtonProps {
+  /** Whether the slideshow is running. Shows Pause when it is, Play when not. */
+  isPlaying: boolean;
+
+  /** Optional CSS class. Defaults to `"rk-lightbox-btn rk-lightbox-play-pause"`. */
+  className?: string;
+
+  /** Optional inline styles. */
+  style?: React.CSSProperties;
+
+  /** Switch the slideshow on or off. */
+  onToggle: () => void;
+}
+
+/**
+ * Slideshow play/pause toggle. The default controls show it when
+ * `autoAdvance` is on; in a custom `renderControls`, render it when
+ * `onToggleAutoAdvance` is present.
+ *
+ * @example
+ * ```tsx
+ * renderControls={({ isAutoAdvancing, onToggleAutoAdvance }) =>
+ *   onToggleAutoAdvance && (
+ *     <PlayPauseButton
+ *       isPlaying={isAutoAdvancing}
+ *       onToggle={onToggleAutoAdvance}
+ *     />
+ *   )
+ * }
+ * ```
+ */
+export const PlayPauseButton: React.FC<PlayPauseButtonProps> = ({
+  isPlaying,
+  onToggle,
+  className = 'rk-lightbox-btn rk-lightbox-play-pause',
+  style,
+}) => (
+  <button
+    className={className}
+    onClick={onToggle}
+    title={isPlaying ? 'Pause slideshow' : 'Play slideshow'}
+    aria-pressed={isPlaying}
+    style={style}
+  >
+    {isPlaying ? <Pause size={20} /> : <Play size={20} />}
+  </button>
+);
+
+/**
+ * Props for the download button. In a custom `renderControls`, render it only
+ * when `onDownload` is present and pass `isDownloading` through.
+ */
+export interface DownloadButtonProps {
+  /** Whether a download is in progress. The button is disabled meanwhile. */
+  isDownloading: boolean;
+
+  /** Optional CSS class. Defaults to `"rk-lightbox-btn rk-lightbox-download"`. */
+  className?: string;
+
+  /** Optional inline styles. */
+  style?: React.CSSProperties;
+
+  /** Start downloading the active item. */
+  onClick: () => void;
+}
+
+/**
+ * Download button for the active item. The default controls show it when
+ * `showDownload` is on; in a custom `renderControls`, render it when
+ * `onDownload` is present.
+ */
+export const DownloadButton: React.FC<DownloadButtonProps> = ({
+  isDownloading,
+  onClick,
+  className = 'rk-lightbox-btn rk-lightbox-download',
+  style,
+}) => (
+  <button
+    className={className}
+    onClick={onClick}
+    title="Download"
+    disabled={isDownloading}
+    aria-busy={isDownloading}
+    style={style}
+  >
+    <Download size={20} />
+  </button>
+);
+
 /** @internal */
 interface LightboxControlsProps {
   currentIndex: number;
   count: number;
   isFullscreen: boolean;
+  isAutoAdvancing: boolean;
+  isDownloading: boolean;
   onClose: () => void;
   onToggleFullscreen: () => void;
+  onToggleAutoAdvance?: () => void;
+  onDownload?: () => void;
 }
 
 /**
- * Default lightbox controls. Composes CloseButton, Counter, and FullscreenButton.
+ * Default lightbox controls. Composes Counter, FullscreenButton, the
+ * slideshow and download buttons when they are switched on, and CloseButton.
  * Used internally when no `renderControls` is provided.
  * @internal
  */
@@ -181,6 +288,10 @@ const LightboxControls: React.FC<LightboxControlsProps> = ({
   count,
   isFullscreen,
   onToggleFullscreen,
+  isAutoAdvancing,
+  onToggleAutoAdvance,
+  isDownloading,
+  onDownload,
 }) => (
   <>
     <div className="rk-lightbox-controls-left">
@@ -189,6 +300,15 @@ const LightboxControls: React.FC<LightboxControlsProps> = ({
         isFullscreen={isFullscreen}
         onToggle={onToggleFullscreen}
       />
+      {onToggleAutoAdvance && (
+        <PlayPauseButton
+          isPlaying={isAutoAdvancing}
+          onToggle={onToggleAutoAdvance}
+        />
+      )}
+      {onDownload && (
+        <DownloadButton isDownloading={isDownloading} onClick={onDownload} />
+      )}
     </div>
     <CloseButton onClick={onClose} />
   </>

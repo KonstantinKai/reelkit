@@ -3,7 +3,7 @@ title: Vue Lightbox
 description: Overlay de galería de imágenes a pantalla completa para Vue 3. Esquema de LightboxItem, props, emits, scoped slots, transitionFn con tree-shaking, deslizar para cerrar y temas compartidos con el lightbox de React.
 ---
 
-import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2 } from 'lucide-react';
+import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2, Play, Download } from 'lucide-react';
 import installation from '../../snippets/vue-lightbox/installation.sh?raw';
 import installation2 from '../../snippets/vue-lightbox/installation-2.ts?raw';
 import basicUsageCode from '../../snippets/vue-lightbox/basic-usage-code.vue?raw';
@@ -20,6 +20,8 @@ import lifecycleSlideCode from '../../snippets/vue-lightbox/lifecycle-slide-code
 import customLoadingCode from '../../snippets/vue-lightbox/custom-loading-code.vue?raw';
 import customErrorCode from '../../snippets/vue-lightbox/custom-error-code.vue?raw';
 import themingCode from '../../snippets/vue-lightbox/theming-code.css?raw';
+import autoAdvanceCode from '../../snippets/vue-lightbox/auto-advance.vue?raw';
+import downloadCode from '../../snippets/vue-lightbox/download.vue?raw';
 
 Lightbox de galería de imágenes y vídeos a pantalla completa para Vue 3, con `@reelkit/vue-lightbox`.
 
@@ -92,6 +94,16 @@ Lightbox de galería de imágenes y vídeos a pantalla completa para Vue 3, con 
                 icon: Link2,
                 label: 'Estado en la URL',
                 desc: 'Enlaces que se pueden compartir y guardar',
+              },
+              {
+                icon: Play,
+                label: 'Pase de diapositivas',
+                desc: 'Avance automático opcional con reproducir/pausar',
+              },
+              {
+                icon: Download,
+                label: 'Descarga',
+                desc: 'Botón opcional que guarda el elemento activo',
               },
             ]} />
 
@@ -191,6 +203,37 @@ Si usas otro campo como clave (un `slug`) o paginas un feed infinito con `locate
 
 Mientras está pendiente, el lightbox sigue cerrado y el parámetro no se toca, así que el enlace directo sobrevive a la carga. `null` o un rechazo quitan el parámetro. Una respuesta que llega después de que la URL haya cambiado, después de cerrar o después de desmontar se descarta, así que una carga lenta no puede abrir un slide que nadie ha pedido. Lo que devuelva manda: indica el índice de los datos que acaba de cargar, y el lightbox lo usa tal cual en lugar de volver a leer `items`, que Vue todavía no ha vuelto a renderizar.
 
+## Avance automático [#auto-advance]
+
+Activa `auto-advance` para reproducir la galería como un pase de diapositivas al abrirse. Está desactivado por defecto, así que un lightbox existente se renderiza y se comporta como antes.
+
+<CodeBlock code={autoAdvanceCode} language="vue" />
+
+- **Las imágenes** se quedan `auto-advance-interval` (5000 ms por defecto), contados desde que la imagen ha cargado, así que una imagen lenta nunca se salta antes de que nadie la vea. Una imagen que no carga cuenta desde su error.
+- **Los vídeos** se reproducen una vez en lugar de en bucle y pasan al siguiente cuando terminan. `VideoSlideRenderer` lo hace por ti; un `#slide` propio lee `autoAdvance` de su ámbito e informa del final con `onEnded`.
+- **Espera** mientras el ratón reposa sobre un control (un botón, un enlace o el pie), durante un deslizamiento y mientras la página está oculta, y después continúa desde donde se detuvo.
+- **Al moverse a mano** (flechas, teclas, rueda, deslizamiento) el intervalo del nuevo slide empieza desde cero; el pase de diapositivas sigue activo.
+- **En el último slide** se detiene, salvo que `loop` esté activado. El botón de reproducir/pausar de los controles muestra el estado y permite cambiarlo; `play()` y `pause()` de la [LightboxApi](#lightboxapi) hacen lo mismo desde código.
+
+Un slot `#controls` propio recibe `isAutoAdvancing` y, solo cuando `auto-advance` está activado, `onToggleAutoAdvance`: renderiza un `PlayPauseButton` cuando esté presente. El cálculo de los tiempos es `createSlideshowController` de `@reelkit/core`; consulta la [guía de reproducción automática](/docs/core/guide#autoplay) y la [API del core](/docs/core/api#autoplay).
+
+## Descarga [#download]
+
+Activa `show-download` para añadir un botón de descarga a los controles. Guarda el elemento activo desde su `downloadUrl`, o `src` si no lo tiene, con el nombre `downloadName`, o el último segmento de la URL si no lo tiene.
+
+<CodeBlock code={downloadCode} language="vue" />
+
+El archivo se descarga con fetch y se guarda, porque el navegador ignora el atributo `download` en un enlace de otro origen y abriría el archivo en su lugar. Cuando el fetch falla —normalmente un servidor de otro origen que no envía cabeceras CORS—, el archivo se abre en una pestaña nueva, donde se puede guardar igualmente. Sirve los archivos con `Access-Control-Allow-Origin` para guardarlos con un solo clic. El botón está desactivado mientras hay una descarga en curso.
+
+Un slot `#controls` propio recibe `isDownloading` y, solo cuando `show-download` está activado, `onDownload`: renderiza un `DownloadButton` cuando esté presente. El ayudante es `downloadFile` de `@reelkit/core`; consulta la [guía de descarga](/docs/core/guide#download).
+
+### Botones de control [#control-buttons]
+
+| Componente | Props | Descripción |
+| --- | --- | --- |
+| `PlayPauseButton` | `PlayPauseButtonProps`: `isPlaying`, `onPress`, `className?` | Interruptor del pase de diapositivas (icono Play/Pause, `aria-pressed` mientras se reproduce). Lo muestran los controles por defecto con `auto-advance`. |
+| `DownloadButton` | `DownloadButtonProps`: `isDownloading`, `onPress`, `className?` | Botón de descarga, desactivado mientras `isDownloading`. Lo muestran los controles por defecto con `show-download`. |
+
 ## Referencia de la API [#api-reference]
 
 ### Props de LightboxOverlay [#lightboxoverlay-props]
@@ -213,6 +256,9 @@ Mientras está pendiente, el lightbox sigue cerrado y el parámetro no se toca, 
 | `enableNavKeys` | `boolean` | true | Activa la navegación con las teclas de flecha |
 | `enableWheel` | `boolean` | true | Activa la navegación con la rueda del ratón |
 | `wheelDebounceMs` | `number` | 200 | Duración del debounce de los eventos de la rueda en ms |
+| `autoAdvance` | `boolean` | false | Reproduce la galería como un pase de diapositivas. Consulta [Avance automático](#auto-advance). |
+| `autoAdvanceInterval` | `number` | 5000 | Cuánto tiempo se queda cada imagen durante un pase de diapositivas, en ms, contado desde que ha cargado |
+| `showDownload` | `boolean` | false | Añade un botón de descarga para el elemento activo. Consulta [Descarga](#download). |
 | `ariaLabel` | `string` | 'Image gallery' | Etiqueta accesible de la región del diálogo |
 
 ### Props de LightboxUrlOverlay [#lightboxurloverlay-props]
@@ -247,6 +293,8 @@ El objeto que emite `api-ready`, expuesto también en la ref de plantilla del co
 | `observe()` | `() => void` | Vuelve a escuchar gestos, teclado y rueda del ratón después de `unobserve()` |
 | `unobserve()` | `() => void` | Deja de escuchar gestos, teclado y rueda del ratón; las slides se quedan donde están |
 | `close()` | `() => void` | Cierra el lightbox, igual que el botón de cerrar o Escape |
+| `play()` | `() => void` | Inicia el pase de diapositivas y continúa el slide activo donde se detuvo. No hace nada sin `auto-advance`. |
+| `pause()` | `() => void` | Detiene el pase de diapositivas; el slide activo conserva su progreso. No hace nada sin `auto-advance`. |
 
 ## Interfaz LightboxItem [#lightboxitem-interface]
 
@@ -259,13 +307,15 @@ El objeto que emite `api-ready`, expuesto también en la ref de plantilla del co
 | `description` | `string` | no | Descripción que se muestra debajo del título |
 | `width` | `number` | no | Ancho intrínseco de la imagen en píxeles |
 | `height` | `number` | no | Alto intrínseco de la imagen en píxeles |
+| `downloadUrl` | `string` | no | Lo que guarda el botón de descarga. Por defecto es `src` |
+| `downloadName` | `string` | no | Nombre con el que se guarda el archivo. Por defecto es el último segmento de la ruta de la URL |
 
 ## Tipos del ámbito de slot [#slot-scope-types]
 
 | Tipo | Campos |
 | --- | --- |
-| `SlideSlotScope` | `{ item, index, size: [number, number], isActive, onReady, onWaiting, onError }` |
-| `ControlsSlotScope` | `{ item, activeIndex, count, isFullscreen, onClose, onToggleFullscreen }` |
+| `SlideSlotScope` | `{ item, index, size: [number, number], isActive, autoAdvance, onReady, onWaiting, onError, onEnded }` |
+| `ControlsSlotScope` | `{ item, activeIndex, count, isFullscreen, isAutoAdvancing, isDownloading, onClose, onToggleFullscreen, onToggleAutoAdvance?, onDownload? }` |
 | `NavigationSlotScope` | `{ item, activeIndex, count, onPrev, onNext }` |
 | `InfoSlotScope` | `{ item, index }` |
 | `LoadingSlotScope` | `{ item, activeIndex }` |
@@ -325,6 +375,8 @@ Todas las clases CSS son normales (no scoped), así que puedes apuntar a ellas c
 | `.rk-lightbox-error-text` | Overlay | Texto del estado de error |
 | `.rk-lightbox-controls-left` | Controls | Contenedor de los controles de arriba a la izquierda |
 | `.rk-lightbox-btn` | Controls | Botón de control (pantalla completa, sonido, etc.) |
+| `.rk-lightbox-play-pause` | Controls | Botón de reproducir/pausar del pase de diapositivas (con `.rk-lightbox-btn`) |
+| `.rk-lightbox-download` | Controls | Botón de descarga (con `.rk-lightbox-btn`) |
 | `.rk-lightbox-close` | Controls | Botón de cerrar |
 | `.rk-lightbox-counter` | Controls | Chip del contador de imágenes |
 | `.rk-lightbox-nav` | Navigation | Flecha de navegación (anterior y siguiente) |
@@ -354,6 +406,7 @@ Sobrescribe cualquier propiedad personalizada de CSS `--rk-lightbox-*` en `:root
 | `--rk-lightbox-btn-bg-hover` | `rgba(255, 255, 255, 0.2)` | Fondo al pasar el ratón de los botones de cerrar / navegación / pequeños |
 | `--rk-lightbox-btn-fg` | `#fff` | Color del icono de los botones de cerrar / navegación / pequeños |
 | `--rk-lightbox-btn-size` | `36px` | Tamaño de los botones pequeños (pantalla completa, etc.) |
+| `--rk-lightbox-btn-disabled-opacity` | `0.5` | Opacidad de un botón pequeño desactivado (descarga en curso) |
 | `--rk-lightbox-close-size` | `40px` | Tamaño del botón de cerrar |
 | `--rk-lightbox-nav-size` | `48px` | Tamaño de las flechas de anterior / siguiente |
 | `--rk-lightbox-nav-opacity` | `0.7` | Opacidad en reposo de las flechas de anterior / siguiente |
