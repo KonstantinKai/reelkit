@@ -1,3 +1,172 @@
+## @reelkit/react-lightbox@0.7.0 (2026-10-15)
+
+### 🚀 Features
+
+- autoAdvance plays the gallery as a slideshow: an image stays for autoAdvanceInterval (5 seconds by default) once it has loaded, a video plays once and moves on when it ends, and the slideshow waits while the mouse rests on a control, during a swipe and while the page is hidden
+- The slideshow stops on the last slide unless loop is set, and a play/pause button joins the default controls
+- showDownload adds a download button that saves the active item; LightboxItem takes downloadUrl and downloadName for a full-resolution original or a file name of your own
+- PlayPauseButton and DownloadButton are exported for custom controls, and ControlsRenderProps carries isAutoAdvancing, isDownloading, onToggleAutoAdvance and onDownload
+- SlideRenderProps carries autoAdvance and onEnded, and LightboxVideoSlide takes loop and onEnded, so a custom video slide can play once and report its end
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/react to 0.10.0
+- Updated @reelkit/core to 0.9.0
+
+## @reelkit/vue-lightbox@0.4.0 (2026-10-15)
+
+### 🚀 Features
+
+- auto-advance plays the gallery as a slideshow: an image stays for auto-advance-interval (5 seconds by default) once it has loaded, a video plays once and moves on when it ends, and the slideshow waits while the mouse rests on a control, during a swipe and while the page is hidden
+- The slideshow stops on the last slide unless loop is set, a play/pause button joins the default controls, and LightboxApi gains play() and pause()
+- show-download adds a download button that saves the active item; LightboxItem takes downloadUrl and downloadName for a full-resolution original or a file name of your own
+- PlayPauseButton and DownloadButton are exported for custom controls, and the controls slot scope carries isAutoAdvancing, isDownloading, onToggleAutoAdvance and onDownload
+- The slide slot scope carries autoAdvance and onEnded, and LightboxVideoSlide takes loop and onEnded, so a custom video slide can play once and report its end
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/vue to 0.9.0
+
+## @reelkit/angular-lightbox@0.7.0 (2026-10-15)
+
+### 🚀 Features
+
+- The autoAdvance input plays the gallery as a slideshow: an image stays for autoAdvanceInterval (5 seconds by default) once it has loaded, a video plays once and moves on when it ends, and the slideshow waits while the mouse rests on a control, during a swipe and while the page is hidden
+- The slideshow stops on the last slide unless loop is set, runs outside the Angular zone, and adds a play/pause button to the default controls
+- The showDownload input adds a download button that saves the active item; LightboxItem takes downloadUrl and downloadName for a full-resolution original or a file name of your own
+- RkPlayPauseButtonComponent and RkDownloadButtonComponent are exported for custom controls, and LightboxControlsContext carries isAutoAdvancing, isDownloading, onToggleAutoAdvance and onDownload
+- LightboxSlideContext carries autoAdvance and onEnded, and rk-lightbox-video-slide takes loop and onEnded inputs, so a custom video slide can play once and report its end
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/angular to 0.9.0
+- Updated @reelkit/core to 0.9.0
+
+## @reelkit/react-reel-player@0.6.6 (2026-10-15)
+
+### 🩹 Fixes
+
+- Changing aspectRatio resizes the open player straight away, instead of on the next window resize
+- A window exactly 768px wide now gets the phone layout, the same breakpoint as the stories player
+- An aspectRatio that is zero, negative or not finite falls back to 9/16 instead of breaking the player's size
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/react to 0.10.0
+- Updated @reelkit/core to 0.9.0
+
+## @reelkit/vue-reel-player@0.5.1 (2026-10-15)
+
+### 🩹 Fixes
+
+- A window exactly 768px wide now gets the phone layout, the same breakpoint as the stories player
+- An aspectRatio that is zero, negative or not finite falls back to 9/16 instead of breaking the player's size
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.9.0
+- Updated @reelkit/vue to 0.9.0
+
+## @reelkit/angular-reel-player@0.6.4 (2026-10-15)
+
+### 🩹 Fixes
+
+- Changing aspectRatio resizes the open player straight away, instead of on the next window resize
+- A window exactly 768px wide now gets the phone layout, the same breakpoint as the stories player
+- An aspectRatio that is zero, negative or not finite falls back to 9/16 instead of breaking the player's size
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/angular to 0.9.0
+- Updated @reelkit/core to 0.9.0
+
+## @reelkit/react-stories-player@0.6.3 (2026-10-15)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/stories-core to 0.7.0
+- Updated @reelkit/react to 0.10.0
+- Updated @reelkit/core to 0.9.0
+
+## @reelkit/vue-stories-player@0.3.1 (2026-10-15)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/stories-core to 0.7.0
+- Updated @reelkit/core to 0.9.0
+- Updated @reelkit/vue to 0.9.0
+
+## @reelkit/angular-stories-player@0.2.3 (2026-10-15)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/stories-core to 0.7.0
+- Updated @reelkit/angular to 0.9.0
+- Updated @reelkit/core to 0.9.0
+
+## @reelkit/stories-core@0.7.0 (2026-10-15)
+
+### 🚀 Features
+
+
+- createCanvasProgressRenderer takes an onResize callback, called after the container changes size and the canvas is measured again, so the bar can be redrawn
+
+### ⚠️  Breaking Changes
+
+- createTimerController, TimerController and TimerControllerConfig are no longer exported from @reelkit/stories-core. Import them from @reelkit/core or from your binding (@reelkit/react, @reelkit/vue or @reelkit/angular); the timer behaves the same
+- isMobileWidth is no longer exported from @reelkit/stories-core. Import it from @reelkit/core or from your binding (@reelkit/react, @reelkit/vue or @reelkit/angular); it behaves the same
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.9.0
+
+## @reelkit/react@0.10.0 (2026-10-15)
+
+### 🚀 Features
+
+- Re-exports observeElementSize, getViewportSize, observeViewportSize, isMobileWidth, fitAspectRatio and isTouchDevice from @reelkit/core, so a custom overlay can size itself the way the reelkit ones do
+- Re-exports createTimerController, createSlideshowController and downloadFile from @reelkit/core
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.9.0
+
+## @reelkit/vue@0.9.0 (2026-10-15)
+
+### 🚀 Features
+
+- Re-exports observeElementSize, getViewportSize, observeViewportSize, isMobileWidth, fitAspectRatio and isTouchDevice from @reelkit/core, so a custom overlay can size itself the way the reelkit ones do
+- Re-exports createTimerController, createSlideshowController and downloadFile from @reelkit/core
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.9.0
+
+## @reelkit/angular@0.9.0 (2026-10-15)
+
+### 🚀 Features
+
+- Re-exports observeElementSize, getViewportSize, observeViewportSize, isMobileWidth, fitAspectRatio and isTouchDevice from @reelkit/core, so a custom overlay can size itself the way the reelkit ones do
+- rk-reel without a size input now measures its host including padding, as the React and Vue Reel do, so slides in a padded host fill it instead of overflowing it
+- Re-exports createTimerController, createSlideshowController and downloadFile from @reelkit/core
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.9.0
+
+## @reelkit/core@0.9.0 (2026-10-15)
+
+### 🚀 Features
+
+- createSlideshowController drives a gallery that advances on its own: an image counts its interval from the moment it has loaded, a video moves on when it ends, and the slideshow waits while anything holds it or the page is hidden, then continues from the same progress
+- createTimerController, the timer behind the stories players, now lives in @reelkit/core
+- downloadFile saves a file under a given name, fetching it so a cross-origin link still downloads, and opens it in a new tab when the server does not allow the fetch
+- observeElementSize reports an element's size whenever it changes, measuring the padding box the way the slider lays out its slides, and skipping hidden elements and unchanged sizes
+- getViewportSize and observeViewportSize read and follow the window size, safe to call during server rendering
+- isMobileWidth is the phone breakpoint every overlay shares: 768px wide and narrower
+- fitAspectRatio sizes an overlay for the window: the whole window on a phone, the full height at a given aspect ratio on a desktop, falling back to 9/16 for a ratio that is zero, negative or not finite
+- isTouchDevice tells whether the device takes touch input
+
 ## @reelkit/vue-reel-player@0.5.0 (2026-10-12)
 
 ### 🚀 Features
