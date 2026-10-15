@@ -95,10 +95,14 @@ export {
   Counter,
   FullscreenButton,
   SoundButton,
+  PlayPauseButton,
+  DownloadButton,
   type CloseButtonProps,
   type CounterProps,
   type FullscreenButtonProps,
   type SoundButtonProps,
+  type PlayPauseButtonProps,
+  type DownloadButtonProps,
 } from './lib/LightboxControls';
 
 export {

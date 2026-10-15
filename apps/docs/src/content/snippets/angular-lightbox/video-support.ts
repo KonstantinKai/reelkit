@@ -18,13 +18,23 @@ import {
     <rk-lightbox-overlay [isOpen]="isOpen" [items]="items" (closed)="isOpen = false">
       <ng-template rkLightboxSlide
                    let-item
+                   let-index="index"
                    let-size="size"
-                   let-isActive="isActive">
+                   let-isActive="isActive"
+                   let-autoAdvance="autoAdvance"
+                   let-onReady="onReady"
+                   let-onEnded="onEnded">
         @if (item.type === 'video') {
+          <!-- With autoAdvance the video plays once and reports its end -->
           <rk-lightbox-video-slide
-            [item]="item"
+            [src]="item.src"
+            [poster]="item.poster"
+            [slideKey]="'lightbox-' + index"
             [size]="size"
             [isActive]="isActive"
+            [loop]="!autoAdvance"
+            [onReady]="onReady"
+            [onEnded]="onEnded"
           />
         } @else {
           <img [src]="item.src"

@@ -1,9 +1,4 @@
-import {
-  Component,
-  ChangeDetectionStrategy,
-  effect,
-  signal,
-} from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal } from '@angular/core';
 import {
   RkLightboxOverlayComponent,
   flipTransition,
@@ -17,6 +12,7 @@ import type {
   TransitionTransformFn,
 } from '@reelkit/angular';
 import { cdnUrl } from '@reelkit/example-data';
+import { persistedSignal } from '../../util/persisted-signal';
 
 const _kTransitions: { label: string; fn: TransitionTransformFn }[] = [
   { label: 'slide', fn: slideTransition },
@@ -25,6 +21,7 @@ const _kTransitions: { label: string; fn: TransitionTransformFn }[] = [
   { label: 'zoom-in', fn: lightboxZoomTransition },
 ];
 const _kSwipeDirections: SwipeToCloseDirection[] = ['up', 'down'];
+const _kAutoAdvanceInterval = 3000;
 
 const sampleImages: LightboxItem[] = [
   {
@@ -162,6 +159,19 @@ const sampleImages: LightboxItem[] = [
             </button>
           }
         </div>
+        <div class="transition-selector">
+          <span>Slideshow:</span>
+          @for (on of slideshowOptions; track on) {
+            <button
+              [class]="
+                'transition-btn' + (autoAdvance() === on ? ' active' : '')
+              "
+              (click)="autoAdvance.set(on)"
+            >
+              {{ on ? 'on' : 'off' }}
+            </button>
+          }
+        </div>
       </div>
 
       <div class="gallery-grid">
@@ -228,6 +238,9 @@ const sampleImages: LightboxItem[] = [
         [initialIndex]="previewIndex() ?? 0"
         [transitionFn]="transitionFn()"
         [swipeToCloseDirection]="swipeDirection()"
+        [autoAdvance]="autoAdvance()"
+        [autoAdvanceInterval]="autoAdvanceInterval"
+        [showDownload]="true"
         (closed)="previewIndex.set(null)"
       />
     </div>
@@ -242,21 +255,14 @@ export class ImagePreviewPageComponent {
   protected readonly transitionFn =
     signal<TransitionTransformFn>(slideTransition);
   protected readonly swipeDirection = signal<SwipeToCloseDirection>('up');
+  protected readonly slideshowOptions = [false, true];
+  protected readonly autoAdvance = persistedSignal(
+    'reelkit-image-preview-auto-advance',
+    false,
+  );
+  protected readonly autoAdvanceInterval = _kAutoAdvanceInterval;
 
   protected readonly thumbErrors = signal<Set<number>>(new Set());
-
-  // Disable mobile pull-to-refresh while the lightbox is open so the
-  // `swipeToCloseDirection: 'down'` gesture is not preempted.
-  private readonly _overscrollEffect = effect((onCleanup) => {
-    if (this.previewIndex() === null) return;
-    if (typeof document === 'undefined') return;
-    const html = document.documentElement;
-    const prev = html.style.overscrollBehaviorY;
-    html.style.overscrollBehaviorY = 'contain';
-    onCleanup(() => {
-      html.style.overscrollBehaviorY = prev;
-    });
-  });
 
   protected onThumbError(index: number): void {
     this.thumbErrors.update((prev) => new Set([...prev, index]));

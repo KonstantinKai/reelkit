@@ -21,6 +21,8 @@ import {
   createContentPreloader,
   createDisposableList,
   createFocusTrap,
+  createSlideshowController,
+  downloadFile,
   hasRenderedNodes,
   observeDomEvent,
   observeViewportSize,
@@ -31,6 +33,7 @@ import {
   useBodyLock,
   useFullscreen,
   type ReelExpose,
+  type SlideshowController,
   type SwipeToCloseDirection,
   type TransitionTransformFn,
   type UrlStateController,
@@ -97,6 +100,18 @@ export interface LightboxApi {
 
   /** Closes the lightbox, the same as the close button or Escape. */
   close: () => void;
+
+  /**
+   * Starts the slideshow, continuing the active slide where it stopped. Does
+   * nothing without `auto-advance`.
+   */
+  play: () => void;
+
+  /**
+   * Stops the slideshow; the active slide keeps its progress. Does nothing
+   * without `auto-advance`.
+   */
+  pause: () => void;
 }
 
 /**
@@ -104,6 +119,13 @@ export interface LightboxApi {
  * Matches the React + Angular implementations.
  */
 const _kPreloadRange = 2;
+
+const _kDefaultAutoAdvanceInterval = 5000;
+
+// What a mouse rests on when it reaches for a control. The overlay itself
+// covers the viewport, so holding on any hover would stop every slideshow
+// for a mouse user.
+const _kHoverHoldSelector = 'button, a, .rk-lightbox-info';
 
 const preloader = createContentPreloader({ maxCacheSize: 1000 });
 
@@ -206,6 +228,31 @@ const lightboxSharedProps = {
    * @default true
    */
   showNavigation: { type: Boolean, default: true },
+  /**
+   * Play the gallery as a slideshow when it opens. An image stays for
+   * `auto-advance-interval` once it has loaded; a video plays once and then
+   * moves on. The slideshow waits while the mouse is over a control, during
+   * a swipe and while the page is hidden, stops on the last slide unless
+   * `loop` is set, and adds a play/pause button to the default controls.
+   *
+   * @default false
+   */
+  autoAdvance: { type: Boolean, default: false },
+  /**
+   * How long each image stays on screen during a slideshow, in milliseconds.
+   *
+   * @default 5000
+   */
+  autoAdvanceInterval: { type: Number, default: _kDefaultAutoAdvanceInterval },
+  /**
+   * Add a download button to the default controls. It saves the active item
+   * from its `downloadUrl` (or `src`) under its `downloadName`; when the file
+   * cannot be fetched, as with a cross-origin server that sends no CORS
+   * headers, it opens in a new tab instead.
+   *
+   * @default false
+   */
+  showDownload: { type: Boolean, default: false },
 } as const;
 
 const lightboxOverlayProps = {
@@ -259,7 +306,89 @@ const LightboxContent = defineComponent({
     const handlePrev = () => sliderRef.value?.prev();
     const handleNext = () => sliderRef.value?.next();
 
+    // Swapped whole while `auto-advance` turns on and off, never mutated.
+    const slideshow = shallowRef<SlideshowController | null>(null);
+    const isAutoAdvancing = ref(false);
+    const isDownloading = ref(false);
+
+    const slideKind = (index: number) =>
+      props.items[index]?.type === 'video' ? 'video' : 'image';
+
+    const handleToggleAutoAdvance = () => slideshow.value?.toggle();
+
+    const handleDownload = async () => {
+      if (isDownloading.value) return;
+      const item = props.items[activeIndex.value];
+      if (!item) return;
+      isDownloading.value = true;
+      try {
+        await downloadFile(item.downloadUrl ?? item.src, item.downloadName);
+      } finally {
+        isDownloading.value = false;
+      }
+    };
+
+    const handleDragStart = () => slideshow.value?.hold('drag');
+    const handleDragEnd = () => slideshow.value?.release('drag');
+
+    const slideshowDisposables = createDisposableList();
+
+    const stopSlideshow = slideshowDisposables.dispose;
+
+    const startSlideshow = () => {
+      stopSlideshow();
+      const controller = createSlideshowController({
+        interval: props.autoAdvanceInterval,
+        onAdvance: () => {
+          const count = props.items.length;
+          if (count <= 1 || (!props.loop && activeIndex.value >= count - 1)) {
+            controller.pause();
+            return;
+          }
+          sliderRef.value?.next();
+        },
+      });
+
+      controller.setSlide(slideKind(activeIndex.value));
+      if (!loadingCtrl.isLoading.value) controller.ready();
+
+      slideshowDisposables.push(
+        controller.isPlaying.observe(() => {
+          isAutoAdvancing.value = controller.isPlaying.value;
+        }),
+        loadingCtrl.isLoading.observe(() => {
+          if (!loadingCtrl.isLoading.value) controller.ready();
+        }),
+      );
+
+      const el = containerRef.value;
+      if (el) {
+        slideshowDisposables.push(
+          observeDomEvent(el, 'pointerover', (e) => {
+            if (e.pointerType !== 'mouse') return;
+            if ((e.target as Element).closest(_kHoverHoldSelector)) {
+              controller.hold('hover');
+            } else {
+              controller.release('hover');
+            }
+          }),
+          observeDomEvent(el, 'pointerleave', () =>
+            controller.release('hover'),
+          ),
+        );
+      }
+
+      slideshowDisposables.push(controller.dispose, () => {
+        slideshow.value = null;
+        isAutoAdvancing.value = false;
+      });
+
+      slideshow.value = controller;
+      controller.play();
+    };
+
     const handleAfterChange = (index: number) => {
+      slideshow.value?.setSlide(slideKind(index));
       loadingCtrl.setActiveIndex(index);
       const src = props.items[index]?.src;
       if (src && preloader.isErrored(src)) {
@@ -322,7 +451,22 @@ const LightboxContent = defineComponent({
           ),
         );
       }
+
+      if (props.autoAdvance) startSlideshow();
     });
+
+    watch(
+      () => props.autoAdvance,
+      (on) => {
+        if (on) startSlideshow();
+        else stopSlideshow();
+      },
+    );
+
+    watch(
+      () => props.autoAdvanceInterval,
+      (interval) => slideshow.value?.setInterval(interval),
+    );
 
     watch([activeIndex, () => props.items], preloadNeighbors, {
       immediate: true,
@@ -333,7 +477,10 @@ const LightboxContent = defineComponent({
       () => sliderRef.value?.adjust(),
     );
 
-    onUnmounted(disposables.dispose);
+    onUnmounted(() => {
+      stopSlideshow();
+      disposables.dispose();
+    });
 
     const makeApi = (): LightboxApi => ({
       next: () => sliderRef.value?.next(),
@@ -344,6 +491,8 @@ const LightboxContent = defineComponent({
       observe: () => sliderRef.value?.observe(),
       unobserve: () => sliderRef.value?.unobserve(),
       close: handleClose,
+      play: () => slideshow.value?.play(),
+      pause: () => slideshow.value?.pause(),
     });
 
     watch(
@@ -368,6 +517,9 @@ const LightboxContent = defineComponent({
         preloader.markErrored(item.src);
         loadingCtrl.onError(index);
       };
+      const onEnded = () => {
+        if (index === activeIndex.value) slideshow.value?.ended();
+      };
 
       const slideSlot = slots['slide'];
       if (slideSlot) {
@@ -376,9 +528,11 @@ const LightboxContent = defineComponent({
           index,
           size: itemSize,
           isActive,
+          autoAdvance: props.autoAdvance,
           onReady,
           onWaiting,
           onError,
+          onEnded,
         };
         const nodes = slideSlot(scope);
         if (hasRenderedNodes(nodes as VNode[] | null | undefined)) {
@@ -405,13 +559,21 @@ const LightboxContent = defineComponent({
       const item = items[idx];
       if (!item) return null;
 
+      const onToggleAutoAdvance = props.autoAdvance
+        ? handleToggleAutoAdvance
+        : undefined;
+      const onDownload = props.showDownload ? handleDownload : undefined;
       const scope: ControlsSlotScope = {
         item,
         activeIndex: idx,
         count: items.length,
         isFullscreen: fs.isFullscreen.value,
+        isAutoAdvancing: isAutoAdvancing.value,
+        isDownloading: isDownloading.value,
         onClose: handleClose,
         onToggleFullscreen: handleToggleFullscreen,
+        onToggleAutoAdvance,
+        onDownload,
       };
       const slot = slots['controls'];
       if (slot) {
@@ -424,8 +586,12 @@ const LightboxContent = defineComponent({
         currentIndex: idx,
         count: items.length,
         isFullscreen: fs.isFullscreen.value,
+        isAutoAdvancing: isAutoAdvancing.value,
+        isDownloading: isDownloading.value,
         onClose: handleClose,
         onToggleFullscreen: handleToggleFullscreen,
+        onToggleAutoAdvance,
+        onDownload,
       });
     };
 
@@ -584,6 +750,9 @@ const LightboxContent = defineComponent({
                       sliderRef.value = (el as ReelExpose | null) ?? null;
                     },
                     onAfterChange: handleAfterChange,
+                    onSlideDragStart: handleDragStart,
+                    onSlideDragEnd: handleDragEnd,
+                    onSlideDragCanceled: handleDragEnd,
                   },
                   {
                     item: ({
@@ -678,6 +847,8 @@ export const LightboxOverlay = defineComponent({
       observe: () => innerApi.value?.observe(),
       unobserve: () => innerApi.value?.unobserve(),
       close: requestClose,
+      play: () => innerApi.value?.play(),
+      pause: () => innerApi.value?.pause(),
     } satisfies LightboxApi);
 
     return () => {
@@ -703,6 +874,9 @@ export const LightboxOverlay = defineComponent({
             showInfo: props.showInfo,
             showControls: props.showControls,
             showNavigation: props.showNavigation,
+            autoAdvance: props.autoAdvance,
+            autoAdvanceInterval: props.autoAdvanceInterval,
+            showDownload: props.showDownload,
             onClose: requestClose,
             onSlideChange: (i: number) => emit('slideChange', i),
             onApiReady: (api: LightboxApi) => {
@@ -775,6 +949,8 @@ export const LightboxUrlOverlay = defineComponent({
       observe: () => innerApi.value?.observe(),
       unobserve: () => innerApi.value?.unobserve(),
       close: requestClose,
+      play: () => innerApi.value?.play(),
+      pause: () => innerApi.value?.pause(),
     } satisfies LightboxApi);
 
     return () => {
@@ -800,6 +976,9 @@ export const LightboxUrlOverlay = defineComponent({
             showInfo: props.showInfo,
             showControls: props.showControls,
             showNavigation: props.showNavigation,
+            autoAdvance: props.autoAdvance,
+            autoAdvanceInterval: props.autoAdvanceInterval,
+            showDownload: props.showDownload,
             onClose: requestClose,
             onSlideChange: (i: number) => {
               props.controller.set(i);

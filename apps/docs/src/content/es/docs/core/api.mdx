@@ -1,6 +1,6 @@
 ---
 title: Referencia de la API del core
-description: Referencia completa de @reelkit/core con la configuración, callbacks, métodos, estado, señales, transiciones, carga de contenido, sonido, línea de tiempo, pantalla completa, utilidades del DOM, gestión del foco y utilidades de vídeo.
+description: Referencia completa de @reelkit/core con la configuración, callbacks, métodos, estado, señales, transiciones, carga de contenido, sonido, línea de tiempo, pantalla completa, utilidades del DOM, detección de tamaño, temporizadores de reproducción automática, descarga de archivos, gestión del foco y utilidades de vídeo.
 ---
 
 import usage from '../../../snippets/core-api/usage.ts?raw';
@@ -198,6 +198,59 @@ Cómo miden su contenedor y la ventana todos los bindings y overlays. `Reel` usa
 | `isMobileWidth` | `(viewportWidth: number) => boolean` | Si una ventana de ese ancho recibe la disposición de móvil: 768px o menos. Todos los overlays y su hoja de estilos cambian en ese ancho. |
 | `fitAspectRatio` | `(viewport: [number, number], aspectRatio?: number) => [number, number]` | Tamaño del overlay para una ventana. Con ancho de móvil es la ventana entera; si no, toda la altura de la ventana con la relación `aspectRatio`, estrechada al ancho de la ventana cuando no cabría. Una relación ausente, cero, negativa o no finita vuelve a 9/16. |
 | `isTouchDevice` | `() => boolean` | Si el dispositivo admite entrada táctil (`ontouchstart` o `maxTouchPoints`). Comprueba una capacidad, no un tamaño de pantalla: un portátil táctil cuenta, una ventana estrecha de escritorio no. |
+
+## Reproducción automática [#autoplay]
+
+Temporizadores para todo lo que avanza solo. Cómo se comportan y cómo conectarlos está en la [guía de reproducción automática](/docs/core/guide#autoplay).
+
+| Export | Tipo | Descripción |
+| --- | --- | --- |
+| `createTimerController` | `(config: TimerControllerConfig) => TimerController` | Cuenta una duración de 0 a 1 y llama al callback cuando termina. Mueve cada story en los stories players. |
+| `createSlideshowController` | `(config: SlideshowControllerConfig) => SlideshowController` | La máquina de estados detrás de una galería que avanza sola. Mueve el `autoAdvance` del lightbox. |
+
+### createTimerController [#createtimercontroller]
+
+| `TimerControllerConfig` | Tipo | Descripción |
+| --- | --- | --- |
+| `duration` | `number` | Duración por defecto en milisegundos, usada cuando `start()` no recibe ninguna |
+| `onComplete` | `() => void` | Se llama cuando el progreso llega a 1 |
+
+| `TimerController` | Tipo | Descripción |
+| --- | --- | --- |
+| `progress` | `Signal<number>` | Progreso de 0 a 1; mueve una barra de progreso |
+| `isRunning` | `Signal<boolean>` | Si el temporizador está contando |
+| `start(duration?)` | `(number?) => void` | Empieza de nuevo desde 0, opcionalmente con otra duración para esta vuelta |
+| `pause()` | `() => void` | Congela el progreso actual |
+| `resume()` | `() => void` | Continúa desde el progreso congelado |
+| `reset()` | `() => void` | Vuelve a 0, detenido |
+| `dispose()` | `() => void` | Cancela el fotograma pendiente |
+
+### createSlideshowController [#createslideshowcontroller]
+
+| `SlideshowControllerConfig` | Tipo | Descripción |
+| --- | --- | --- |
+| `interval` | `number` | Cuánto tiempo se queda una imagen, en milisegundos, contado desde que ha cargado |
+| `onAdvance` | `() => void` | La diapositiva activa ha terminado. Pasa a la siguiente, o llama a `pause()` en la última |
+
+| `SlideshowController` | Tipo | Descripción |
+| --- | --- | --- |
+| `isPlaying` | `Signal<boolean>` | Si el pase de diapositivas está activado. Las retenciones no lo cambian |
+| `progress` | `Signal<number>` | Cuánto ha corrido el intervalo de la imagen activa, de 0 a 1 |
+| `play()` / `pause()` / `toggle()` | `() => void` | Lo activa o desactiva; la diapositiva activa conserva su progreso |
+| `setInterval(ms)` | `(number) => void` | Cambia el intervalo a partir de la siguiente imagen |
+| `setSlide(kind)` | `(SlideshowSlideKind) => void` | Una nueva diapositiva pasó a estar activa: el progreso empieza de nuevo y espera a `ready()` o `ended()`. `SlideshowSlideKind` es `'image' \| 'video'` |
+| `ready()` | `() => void` | La imagen activa cargó o no pudo cargar; empieza su intervalo |
+| `ended()` | `() => void` | El vídeo activo terminó; avanza ya, o en cuanto nada lo retenga |
+| `hold(reason)` / `release(reason)` | `(string) => void` | Detiene el reloj por un motivo como `'hover'` o `'drag'`. Las retenciones se acumulan |
+| `dispose()` | `() => void` | Detiene el reloj y el listener de visibilidad |
+
+## Descarga [#download]
+
+Guardar un archivo desde una URL, también de otro origen. La alternativa que toma está en la [guía de descarga](/docs/core/guide#download).
+
+| Export | Tipo | Descripción |
+| --- | --- | --- |
+| `downloadFile` | `(url: string, filename?: string) => Promise<void>` | Guarda un archivo con el nombre `filename`, por defecto el último segmento de la ruta de la URL. Descarga el archivo con fetch y guarda el blob, porque el atributo `download` se ignora en un enlace de otro origen. Cuando el fetch falla o el servidor responde con un error (un servidor de otro origen sin cabeceras CORS es el caso habitual), la URL se abre en una pestaña nueva. Nunca rechaza; no hace nada sin window. |
 
 ## Gestión del foco [#focus-management]
 

@@ -1,4 +1,4 @@
-import { createSignal, type Signal } from '@reelkit/core';
+import { createSignal, type Signal } from '../signal/signal';
 
 /** Configuration for {@link createTimerController}. */
 export interface TimerControllerConfig {

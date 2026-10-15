@@ -3,7 +3,7 @@ title: Vue Lightbox
 description: Vue 全屏图片画廊浮层：LightboxOverlay 属性与事件、插槽作用域类型、内容加载与主题定制。
 ---
 
-import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2 } from 'lucide-react';
+import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2, Play, Download } from 'lucide-react';
 import installation from '../../snippets/vue-lightbox/installation.sh?raw';
 import installation2 from '../../snippets/vue-lightbox/installation-2.ts?raw';
 import basicUsageCode from '../../snippets/vue-lightbox/basic-usage-code.vue?raw';
@@ -20,6 +20,8 @@ import lifecycleSlideCode from '../../snippets/vue-lightbox/lifecycle-slide-code
 import customLoadingCode from '../../snippets/vue-lightbox/custom-loading-code.vue?raw';
 import customErrorCode from '../../snippets/vue-lightbox/custom-error-code.vue?raw';
 import themingCode from '../../snippets/vue-lightbox/theming-code.css?raw';
+import autoAdvanceCode from '../../snippets/vue-lightbox/auto-advance.vue?raw';
+import downloadCode from '../../snippets/vue-lightbox/download.vue?raw';
 
 面向 Vue 3 的全屏图片与视频画廊Lightbox，基于 `@reelkit/vue-lightbox`.
 
@@ -92,6 +94,16 @@ import themingCode from '../../snippets/vue-lightbox/theming-code.css?raw';
                 icon: Link2,
                 label: 'URL 状态',
                 desc: '可分享、可收藏的链接',
+              },
+              {
+                icon: Play,
+                label: '幻灯片播放',
+                desc: '按需开启的自动前进，可播放 / 暂停',
+              },
+              {
+                icon: Download,
+                label: '下载',
+                desc: '按需开启的按钮，保存当前项',
               },
             ]} />
 
@@ -191,6 +203,37 @@ import themingCode from '../../snippets/vue-lightbox/theming-code.css?raw';
 
 在它未完成期间，Lightbox保持关闭，参数也不动，因此深链能熬过这次请求。 `null` 或请求被拒绝则会移除参数。如果结果在 URL 已经变化、Lightbox已关闭或组件已卸载之后才到达，就会被丢弃，因此慢请求不能打开一张没人要的幻灯片。它返回什么都以它为准 —— 它报告的是自己刚取到的数据的索引，Lightbox会直接采用，而不是再去读一遍 `items`，那里 Vue 还没有重新渲染。
 
+## 自动前进 [#auto-advance]
+
+设置 `auto-advance`，Lightbox 打开时就会以幻灯片方式播放画廊。默认关闭，因此现有的 Lightbox 渲染和行为都与以前一样。
+
+<CodeBlock code={autoAdvanceCode} language="vue" />
+
+- **图片** 停留 `auto-advance-interval`（默认 5000 ms），从图片加载完成的那一刻开始计算，所以加载慢的图片绝不会在没人看到之前被跳过。加载失败的图片从出错时开始计算。
+- **视频** 只播放一次而不循环，播放结束后前进。`VideoSlideRenderer` 会替你处理；自定义的 `#slide` 从作用域中读取 `autoAdvance`，并通过 `onEnded` 报告结束。
+- **它会等待**：鼠标停在控件（按钮、链接或说明文字）上时、滑动过程中以及页面隐藏时，之后从停下的地方继续。
+- **手动切换**（箭头、按键、滚轮、滑动）会让新幻灯片的间隔从零开始；幻灯片播放保持开启。
+- **在最后一张** 时停止，除非设置了 `loop`。控件中的播放 / 暂停按钮显示当前状态，并让观看者切换它；[LightboxApi](#lightboxapi) 上的 `play()` 和 `pause()` 可以在代码中做同样的事。
+
+自定义的 `#controls` 插槽会收到 `isAutoAdvancing`，并且仅在 `auto-advance` 开启时收到 `onToggleAutoAdvance` —— 有它时就渲染一个 `PlayPauseButton`。计时本身是 `@reelkit/core` 中的 `createSlideshowController`；见[自动播放指南](/docs/core/guide#autoplay)和[核心 API](/docs/core/api#autoplay)。
+
+## 下载 [#download]
+
+设置 `show-download`，即可在控件中添加下载按钮。它从当前项的 `downloadUrl`（没有时回退到 `src`）保存文件，文件名取 `downloadName`，没有时回退到 URL 的最后一段。
+
+<CodeBlock code={downloadCode} language="vue" />
+
+文件会先被获取再保存，因为浏览器会忽略跨域链接上的 `download` 属性，转而直接打开文件。获取失败时 —— 通常是另一个源上的服务器没有发送 CORS 头 —— 文件会在新标签页中打开，观看者仍可在那里保存。为文件配置 `Access-Control-Allow-Origin` 即可一键保存。下载进行期间按钮处于禁用状态。
+
+自定义的 `#controls` 插槽会收到 `isDownloading`，并且仅在 `show-download` 开启时收到 `onDownload` —— 有它时就渲染一个 `DownloadButton`。工具函数是 `@reelkit/core` 中的 `downloadFile`；见[下载指南](/docs/core/guide#download)。
+
+### 控件按钮 [#control-buttons]
+
+| 组件 | 属性 | 说明 |
+| --- | --- | --- |
+| `PlayPauseButton` | `PlayPauseButtonProps`: `isPlaying`, `onPress`, `className?` | 幻灯片播放开关（Play/Pause 图标，播放时带 `aria-pressed`）。设置 `auto-advance` 时由默认控件显示。 |
+| `DownloadButton` | `DownloadButtonProps`: `isDownloading`, `onPress`, `className?` | 下载按钮，`isDownloading` 时处于禁用状态。设置 `show-download` 时由默认控件显示。 |
+
 ## API 参考 [#api-reference]
 
 ### LightboxOverlay 属性 [#lightboxoverlay-props]
@@ -213,6 +256,9 @@ import themingCode from '../../snippets/vue-lightbox/theming-code.css?raw';
 | `enableNavKeys` | `boolean` | true | 启用键盘方向键导航 |
 | `enableWheel` | `boolean` | true | 启用鼠标滚轮导航 |
 | `wheelDebounceMs` | `number` | 200 | 滚轮事件的防抖时长（毫秒） |
+| `autoAdvance` | `boolean` | false | 以幻灯片方式播放画廊。见[自动前进](#auto-advance)。 |
+| `autoAdvanceInterval` | `number` | 5000 | 幻灯片播放期间每张图片停留的时长（毫秒），从图片加载完成后开始计算 |
+| `showDownload` | `boolean` | false | 为当前项添加下载按钮。见[下载](#download)。 |
 | `ariaLabel` | `string` | 'Image gallery' | 对话框区域的无障碍标签 |
 
 ### LightboxUrlOverlay 属性 [#lightboxurloverlay-props]
@@ -247,6 +293,8 @@ import themingCode from '../../snippets/vue-lightbox/theming-code.css?raw';
 | `observe()` | `() => void` | 在 `unobserve()` 之后重新开始监听手势、键盘和滚轮输入 |
 | `unobserve()` | `() => void` | 停止监听手势、键盘和滚轮输入；幻灯片保持原位 |
 | `close()` | `() => void` | 关闭 lightbox，与关闭按钮或 Escape 相同 |
+| `play()` | `() => void` | 开始幻灯片播放，当前幻灯片从停下的地方继续。没有 `auto-advance` 时不做任何事。 |
+| `pause()` | `() => void` | 停止幻灯片播放；当前幻灯片保留其进度。没有 `auto-advance` 时不做任何事。 |
 
 ## LightboxItem 接口 [#lightboxitem-interface]
 
@@ -259,13 +307,15 @@ import themingCode from '../../snippets/vue-lightbox/theming-code.css?raw';
 | `description` | `string` | no | 标题下方显示的描述 |
 | `width` | `number` | no | 图片固有宽度（像素） |
 | `height` | `number` | no | 图片固有高度（像素） |
+| `downloadUrl` | `string` | no | 下载按钮保存的内容。默认为 `src` |
+| `downloadName` | `string` | no | 保存时使用的文件名。默认为 URL 路径的最后一段 |
 
 ## 插槽作用域类型 [#slot-scope-types]
 
 | 类型 | 字段 |
 | --- | --- |
-| `SlideSlotScope` | `{ item, index, size: [number, number], isActive, onReady, onWaiting, onError }` |
-| `ControlsSlotScope` | `{ item, activeIndex, count, isFullscreen, onClose, onToggleFullscreen }` |
+| `SlideSlotScope` | `{ item, index, size: [number, number], isActive, autoAdvance, onReady, onWaiting, onError, onEnded }` |
+| `ControlsSlotScope` | `{ item, activeIndex, count, isFullscreen, isAutoAdvancing, isDownloading, onClose, onToggleFullscreen, onToggleAutoAdvance?, onDownload? }` |
 | `NavigationSlotScope` | `{ item, activeIndex, count, onPrev, onNext }` |
 | `InfoSlotScope` | `{ item, index }` |
 | `LoadingSlotScope` | `{ item, activeIndex }` |
@@ -325,6 +375,8 @@ Use the `#error` 插槽替换默认的图片损坏图标。
 | `.rk-lightbox-error-text` | Overlay | 错误状态文字标签 |
 | `.rk-lightbox-controls-left` | 控制内容 | 左上角控件容器 |
 | `.rk-lightbox-btn` | 控制内容 | 控制按钮（全屏、声音等） |
+| `.rk-lightbox-play-pause` | 控制内容 | 幻灯片播放 / 暂停按钮（与 `.rk-lightbox-btn` 一起使用） |
+| `.rk-lightbox-download` | 控制内容 | 下载按钮（与 `.rk-lightbox-btn` 一起使用） |
 | `.rk-lightbox-close` | 控制内容 | 关闭按钮 |
 | `.rk-lightbox-counter` | 控制内容 | 图片计数标签 |
 | `.rk-lightbox-nav` | 导航 | 导航箭头（上一张和下一张） |
@@ -354,6 +406,7 @@ Use the `#error` 插槽替换默认的图片损坏图标。
 | `--rk-lightbox-btn-bg-hover` | `rgba(255, 255, 255, 0.2)` | 关闭、导航和小按钮的悬停背景 |
 | `--rk-lightbox-btn-fg` | `#fff` | 关闭、导航和小按钮的图标颜色 |
 | `--rk-lightbox-btn-size` | `36px` | 小按钮尺寸（全屏切换等） |
+| `--rk-lightbox-btn-disabled-opacity` | `0.5` | 禁用状态下小按钮的不透明度（下载进行中） |
 | `--rk-lightbox-close-size` | `40px` | 关闭按钮尺寸 |
 | `--rk-lightbox-nav-size` | `48px` | 上一个 / 下一个箭头尺寸 |
 | `--rk-lightbox-nav-opacity` | `0.7` | 上一个 / 下一个箭头的空闲不透明度 |

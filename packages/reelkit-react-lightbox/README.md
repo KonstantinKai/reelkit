@@ -2,7 +2,7 @@
 
 <p>
   <a href="https://www.npmjs.com/package/@reelkit/react-lightbox"><img src="https://img.shields.io/npm/v/@reelkit/react-lightbox?color=6366f1&label=npm" alt="npm" /></a>
-  <img src="https://img.shields.io/badge/gzip-3.3%20kB-6366f1" alt="Bundle size" />
+  <img src="https://img.shields.io/badge/gzip-4.1%20kB-6366f1" alt="Bundle size" />
   <img src="https://img.shields.io/badge/coverage-94%25-brightgreen" alt="Statement coverage" />
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
@@ -11,7 +11,7 @@
   <a href="https://react-demo.reelkit.dev/image-preview?utm_source=npm"><img src="https://raw.githubusercontent.com/KonstantinKai/reelkit/main/assets/lightbox.gif" width="240" alt="An image lightbox on a phone: tapping a gallery thumbnail opens it full screen, two sideways swipes page to the third photo, and a swipe up closes it back to the gallery." /></a>
 </p>
 
-Image gallery lightbox for React — opens full-screen with swipe navigation, keyboard controls, and transition effects. Everything is replaceable via render props if the defaults don't fit. ~3.3 kB gzip.
+Image gallery lightbox for React — opens full-screen with swipe navigation, keyboard controls, and transition effects. Everything is replaceable via render props if the defaults don't fit. ~4.1 kB gzip.
 
 **[Live Demo](https://react-demo.reelkit.dev/image-preview?utm_source=npm)**
 
@@ -70,7 +70,9 @@ function App() {
 - Counter — "1 / 10" indicator
 - Info overlay — title and description with gradient
 - Render props — `renderControls`, `renderNavigation`, `renderInfo`, `renderSlide`, `renderLoading`, `renderError` to override any part of the UI
-- Sub-components — `CloseButton`, `Counter`, `FullscreenButton`, `SoundButton` for composing custom controls
+- Slideshow (opt-in) — `autoAdvance` plays the gallery on its own: images after they load, videos when they end, paused while the mouse is on a control
+- Download (opt-in) — `showDownload` adds a button that saves the active item, from `downloadUrl` when the preview is a resized copy
+- Sub-components — `CloseButton`, `Counter`, `FullscreenButton`, `SoundButton`, `PlayPauseButton`, `DownloadButton` for composing custom controls
 - Shareable URLs — `LightboxUrlOverlay` opens itself from the address bar
 
 ## API Reference
@@ -85,6 +87,9 @@ function App() {
 | `transitionFn`          | `TransitionTransformFn`             | `slideTransition` | Slide transition fn (built-in or custom)         |
 | `swipeToCloseDirection` | `SwipeToCloseDirection`             | `'up'`            | Which way a swipe dismisses the lightbox         |
 | `ariaLabel`             | `string`                            | `'Image gallery'` | Accessible label announced when the dialog opens |
+| `autoAdvance`           | `boolean`                           | `false`           | Play the gallery as a slideshow                  |
+| `autoAdvanceInterval`   | `number`                            | `5000`            | Image time in a slideshow (ms), from load        |
+| `showDownload`          | `boolean`                           | `false`           | Add a download button for the active item        |
 | `apiRef`                | `MutableRefObject<ReelApi \| null>` | -                 | Ref to access Reel API                           |
 
 ### Render Props
@@ -92,7 +97,7 @@ function App() {
 | Prop               | Receives                | Replaces                                                       |
 | ------------------ | ----------------------- | -------------------------------------------------------------- |
 | `renderSlide`      | `SlideRenderProps`      | The slide itself; `null` falls back to the default image slide |
-| `renderControls`   | `ControlsRenderProps`   | Counter, fullscreen, sound, close                              |
+| `renderControls`   | `ControlsRenderProps`   | Counter, fullscreen, sound, slideshow, download, close         |
 | `renderNavigation` | `NavigationRenderProps` | Previous/next arrows                                           |
 | `renderInfo`       | `InfoRenderProps`       | Title and description overlay                                  |
 | `renderLoading`    | `{ item, activeIndex }` | The loading indicator                                          |
@@ -127,8 +132,37 @@ interface LightboxItem {
   description?: string;
   width?: number;
   height?: number;
+  downloadUrl?: string; // what the download button saves; defaults to src
+  downloadName?: string; // file name; defaults to the URL's last segment
 }
 ```
+
+## Slideshow and download (opt-in)
+
+```tsx
+<LightboxOverlay
+  isOpen={index !== null}
+  images={images}
+  initialIndex={index ?? 0}
+  onClose={() => setIndex(null)}
+  autoAdvance
+  autoAdvanceInterval={4000}
+  showDownload
+/>
+```
+
+`autoAdvance` counts each image's interval from the moment it has loaded,
+plays a video once and moves on when it ends, waits while the mouse rests on a
+control, during a swipe and while the page is hidden, and stops on the last
+slide unless `loop` is set. A play/pause button joins the controls.
+
+`showDownload` adds a button that saves the active item from `downloadUrl` (or
+`src`) under `downloadName`. The file is fetched so a cross-origin link still
+downloads; when the server sends no CORS headers it opens in a new tab instead.
+
+A custom `renderControls` receives `isAutoAdvancing` and `isDownloading`, plus
+`onToggleAutoAdvance` and `onDownload` only when the feature is on. A custom
+`renderSlide` receives `autoAdvance` and `onEnded` for its video.
 
 ## Video Slides (Opt-in)
 
@@ -181,7 +215,7 @@ function Gallery() {
 function useVideoSlideRenderer(items: LightboxItem[]): {
   SoundProvider: FC<{ children: ReactNode }>; // wrap the lightbox in it — mute state lives here
   renderSlide: (props: SlideRenderProps) => ReactNode | null; // video items only, null for images
-  renderControls: (props: ControlsRenderProps) => ReactNode; // counter, fullscreen, sound, close
+  renderControls: (props: ControlsRenderProps) => ReactNode; // counter, fullscreen, sound, close (+ play/pause, download when on)
   hasVideo: boolean; // at least one item has `type: 'video'`
 };
 ```
@@ -209,6 +243,24 @@ renderControls={({ onClose, activeIndex, count }) => (
 | `onToggle`  | `() => void`    | Toggle callback                        |
 | `className` | `string`        | CSS class (default: `rk-lightbox-btn`) |
 | `style`     | `CSSProperties` | Inline styles                          |
+
+### PlayPauseButton
+
+| Prop        | Type            | Description                                                   |
+| ----------- | --------------- | ------------------------------------------------------------- |
+| `isPlaying` | `boolean`       | Whether the slideshow runs; shows Pause when it does          |
+| `onToggle`  | `() => void`    | Toggle callback                                               |
+| `className` | `string`        | CSS class (default: `rk-lightbox-btn rk-lightbox-play-pause`) |
+| `style`     | `CSSProperties` | Inline styles                                                 |
+
+### DownloadButton
+
+| Prop            | Type            | Description                                                 |
+| --------------- | --------------- | ----------------------------------------------------------- |
+| `isDownloading` | `boolean`       | Disables the button while a download runs                   |
+| `onClick`       | `() => void`    | Download callback                                           |
+| `className`     | `string`        | CSS class (default: `rk-lightbox-btn rk-lightbox-download`) |
+| `style`         | `CSSProperties` | Inline styles                                               |
 
 ## URL-driven lightbox
 
@@ -261,6 +313,8 @@ All UI elements use CSS classes prefixed with `rk-lightbox-` that can be overrid
 | `.rk-lightbox-nav-next`        | Next arrow                  |
 | `.rk-lightbox-counter`         | Image counter               |
 | `.rk-lightbox-btn`             | Control buttons             |
+| `.rk-lightbox-play-pause`      | Slideshow play/pause button |
+| `.rk-lightbox-download`        | Download button             |
 | `.rk-lightbox-info`            | Title/description container |
 | `.rk-lightbox-title`           | Image title                 |
 | `.rk-lightbox-description`     | Image description           |

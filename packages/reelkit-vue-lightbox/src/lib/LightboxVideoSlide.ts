@@ -65,6 +65,17 @@ export const lightboxVideoSlideProps = {
     required: true as const,
   },
 
+  /**
+   * Whether the video starts over when it ends. Turn it off to have
+   * `onEnded` called, which a looping video never does.
+   *
+   * @default true
+   */
+  loop: {
+    type: Boolean,
+    default: true,
+  },
+
   /** Fired when the video starts playing (buffering complete). */
   onPlaying: {
     type: Function as PropType<() => void>,
@@ -79,6 +90,12 @@ export const lightboxVideoSlideProps = {
 
   /** Fired when the video fails to load or play. */
   onLoadError: {
+    type: Function as PropType<() => void>,
+    default: undefined,
+  },
+
+  /** Fired when a video that does not loop plays to its end. */
+  onEnded: {
     type: Function as PropType<() => void>,
     default: undefined,
   },
@@ -125,8 +142,11 @@ export const LightboxVideoSlide = defineComponent({
         observeDomEvent(video, 'error', () => {
           if (video.error) props.onLoadError?.();
         }),
+        observeDomEvent(video, 'ended', () => props.onEnded?.()),
       );
 
+      // The element is shared by every slide, so each activation sets it.
+      video.loop = props.loop;
       video.src = props.src;
       video.muted = soundState.muted.value;
       disposables.push(syncMutedToVideo(soundState, video));
@@ -155,7 +175,7 @@ export const LightboxVideoSlide = defineComponent({
     onUnmounted(disposables.dispose);
 
     watch(
-      () => [props.isActive, props.src, props.slideKey] as const,
+      () => [props.isActive, props.src, props.slideKey, props.loop] as const,
       ([active]) => {
         if (active) {
           activate();

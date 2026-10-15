@@ -68,6 +68,9 @@ import type { SwipeToCloseDirection } from '@reelkit/angular';
       [enableWheel]="enableWheel()"
       [wheelDebounceMs]="wheelDebounceMs()"
       [swipeToCloseDirection]="swipeToCloseDirection()"
+      [autoAdvance]="autoAdvance()"
+      [autoAdvanceInterval]="autoAdvanceInterval()"
+      [showDownload]="showDownload()"
       [ariaLabel]="ariaLabel()"
       [controlsTemplate]="controlsSlot()?.templateRef"
       [navigationTemplate]="navigationSlot()?.templateRef"
@@ -107,6 +110,9 @@ export class RkLightboxUrlOverlayComponent {
   readonly enableWheel = input<ReelProxyProps['enableWheel']>(true);
   readonly wheelDebounceMs = input<ReelProxyProps['wheelDebounceMs']>(200);
   readonly swipeToCloseDirection = input<SwipeToCloseDirection>('up');
+  readonly autoAdvance = input<boolean>(false);
+  readonly autoAdvanceInterval = input<number>(5000);
+  readonly showDownload = input<boolean>(false);
   readonly ariaLabel = input<string>('Image gallery');
 
   /** Emitted after the gallery closes. The URL drives closing, not this. */

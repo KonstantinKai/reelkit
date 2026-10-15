@@ -50,6 +50,22 @@ vi.mock('./LightboxControls', () => ({
       {isMuted ? 'Unmute' : 'Mute'}
     </button>
   ),
+  PlayPauseButton: ({
+    isPlaying,
+    onToggle,
+  }: {
+    isPlaying: boolean;
+    onToggle: () => void;
+  }) => (
+    <button data-testid="play-pause-btn" onClick={onToggle}>
+      {isPlaying ? 'Pause' : 'Play'}
+    </button>
+  ),
+  DownloadButton: ({ onClick }: { onClick: () => void }) => (
+    <button data-testid="download-btn" onClick={onClick}>
+      Download
+    </button>
+  ),
 }));
 
 const imageItems: LightboxItem[] = [
@@ -130,9 +146,11 @@ describe('useVideoSlideRenderer', () => {
         index: 0,
         size: [1024, 768],
         isActive: true,
+        autoAdvance: false,
         onReady: vi.fn(),
         onWaiting: vi.fn(),
         onError: vi.fn(),
+        onEnded: vi.fn(),
       });
       expect(output).toBeNull();
     });
@@ -146,12 +164,46 @@ describe('useVideoSlideRenderer', () => {
         index: 1,
         size: [1024, 768],
         isActive: true,
+        autoAdvance: false,
         onReady: vi.fn(),
         onWaiting: vi.fn(),
         onError: vi.fn(),
+        onEnded: vi.fn(),
       });
       expect(output).not.toBeNull();
     });
+
+    it.each([
+      [false, true],
+      [true, false],
+    ])(
+      'loops the video slide when auto-advance is %s: %s',
+      (autoAdvance, loop) => {
+        const { result } = renderHook(() => useVideoSlideRenderer(mixedItems), {
+          wrapper,
+        });
+        render(
+          <>
+            {result.current.renderSlide({
+              item: mixedItems[1],
+              index: 1,
+              size: [1024, 768],
+              isActive: true,
+              autoAdvance,
+              onReady: vi.fn(),
+              onWaiting: vi.fn(),
+              onError: vi.fn(),
+              onEnded: vi.fn(),
+            })}
+          </>,
+        );
+
+        const props = JSON.parse(
+          screen.getByTestId('mock-video-slide').dataset['props'] ?? '{}',
+        );
+        expect(props.loop).toBe(loop);
+      },
+    );
   });
 
   describe('renderControls', () => {
@@ -161,8 +213,42 @@ describe('useVideoSlideRenderer', () => {
       activeIndex: 2,
       count: 5,
       isFullscreen: false,
+      isAutoAdvancing: false,
+      isDownloading: false,
       onToggleFullscreen: vi.fn(),
     };
+
+    it('shows the slideshow and download buttons only when their handlers are given', () => {
+      const { result } = renderHook(() => useVideoSlideRenderer(mixedItems), {
+        wrapper,
+      });
+      const { rerender } = render(
+        <SoundProvider>
+          {result.current.renderControls(controlsProps)}
+        </SoundProvider>,
+      );
+      expect(screen.queryByTestId('play-pause-btn')).toBeNull();
+      expect(screen.queryByTestId('download-btn')).toBeNull();
+
+      const onToggleAutoAdvance = vi.fn();
+      const onDownload = vi.fn();
+      rerender(
+        <SoundProvider>
+          {result.current.renderControls({
+            ...controlsProps,
+            isAutoAdvancing: true,
+            onToggleAutoAdvance,
+            onDownload,
+          })}
+        </SoundProvider>,
+      );
+      fireEvent.click(screen.getByTestId('play-pause-btn'));
+      fireEvent.click(screen.getByTestId('download-btn'));
+
+      expect(screen.getByTestId('play-pause-btn').textContent).toBe('Pause');
+      expect(onToggleAutoAdvance).toHaveBeenCalledOnce();
+      expect(onDownload).toHaveBeenCalledOnce();
+    });
 
     it('renders Counter with correct props', () => {
       const { result } = renderHook(() => useVideoSlideRenderer(mixedItems), {

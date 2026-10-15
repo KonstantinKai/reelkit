@@ -11,6 +11,8 @@ import virtualization from '../../../snippets/core-guide/virtualization.ts?raw';
 import signals from '../../../snippets/core-guide/signals.ts?raw';
 import controllerState from '../../../snippets/core-guide/controller-state.ts?raw';
 import timelineController from '../../../snippets/core-guide/timeline-controller.ts?raw';
+import timerExample from '../../../snippets/core-guide/timer-example.ts?raw';
+import slideshowExample from '../../../snippets/core-guide/slideshow-example.ts?raw';
 import howItWorks from '../../../snippets/core-guide/how-it-works.ts?raw';
 import howItWorks2 from '../../../snippets/core-guide/how-it-works-2.ts?raw';
 
@@ -128,6 +130,28 @@ The `@reelkit/core` містить логіку слайдера без прив
 Типово сховище стоїть на `localStorage`; `createSessionStorageAdapter()` забуває при закритті вкладки, а власний `StorageAdapter` кладе його будь-куди синхронно. Нічого не читається до `attach()`, тож серверний рендер і перший клієнтський збігаються.
 
 Записи зберігаються, доки їх явно не забути. Передайте `ttlMs`, щоб натомість вони закінчувалися — на трек, за ковзним годинником, тож те, що ще дивляться, не застаріває поруч із покинутим. Це змінює запис: кожен елемент стає парою `[wire, timestamp]`, але читання приймає обидві форми незалежно від опції, тож запис, збережений до її ввімкнення, вважається свіжим, а не видаляється. `maxTracks` обмежує кількість, а не вік: понад ліміт найдавніше записаний трек вилучається під час наступного запису, а запис треку, навіть позиції позаду, переставляє його в кінець черги. Повний перелік опцій — у [довіднику API ядра](/docs/core/api#viewed-state).
+
+## Автовідтворення [#autoplay]
+
+Відлік часу для всього, що перемикається саме. Stories Player веде кожну story на `createTimerController`; Lightbox веде слайдшоу на `createSlideshowController`, побудованому на ньому. Обидва працюють на `requestAnimationFrame`, і кожна пауза зберігає точний прогрес.
+
+### createTimerController [#createtimercontroller]
+
+Відлічує одну тривалість від 0 до 1 і викликає колбек, коли закінчує. `start()` завжди починає з 0, за бажанням з іншою тривалістю для цього запуску; `pause()` і `resume()` зберігають точну позицію.
+
+<CodeBlock code={timerExample} language="typescript" />
+
+### createSlideshowController [#createslideshowcontroller]
+
+Машина станів за галереєю, що гортається сама. Вона працює, лише поки увімкнена, ніщо її не тримає і сторінка видима; за видимістю сторінки вона стежить сама, решту передаєте ви. Зображення відлічує свій інтервал від моменту завантаження, тож повільне ніколи не пропускається непоміченим. Відео перемикається, коли закінчується, тож має програватися один раз, а не по колу. Відео, що закінчилося, поки щось тримає слайдшоу, перемикається після звільнення.
+
+<CodeBlock code={slideshowExample} language="typescript" />
+
+Повна конфігурація, стан і методи — у [довіднику API core](/docs/core/api#autoplay).
+
+## Завантаження [#download]
+
+`downloadFile(url, filename?)` зберігає файл під ім’ям `filename`, за замовчуванням — останнім сегментом шляху URL. Посилання на інше джерело ігнорує атрибут `download`, тому функція завантажує файл через fetch і зберігає blob. Коли fetch не вдається або сервер відповідає помилкою — зазвичай це сервер з іншого джерела без заголовків CORS, — URL відкривається в новій вкладці, тож читач однаково отримує файл. Ніколи не відхиляє проміс і нічого не робить без вікна. Див. [довідник API core](/docs/core/api#download).
 
 <NextSteps
         items={[

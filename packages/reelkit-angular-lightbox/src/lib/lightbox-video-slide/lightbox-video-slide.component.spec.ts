@@ -59,6 +59,7 @@ function sharedVideo(): HTMLVideoElement {
 
 async function createFixture(
   providers: unknown[] = [],
+  inputs: Record<string, unknown> = {},
 ): Promise<ComponentFixture<RkLightboxVideoSlideComponent>> {
   TestBed.resetTestingModule();
   await TestBed.configureTestingModule({
@@ -71,6 +72,9 @@ async function createFixture(
   fixture.componentRef.setInput('isActive', true);
   fixture.componentRef.setInput('size', [640, 480]);
   fixture.componentRef.setInput('slideKey', 'slide-0');
+  for (const [name, value] of Object.entries(inputs)) {
+    fixture.componentRef.setInput(name, value);
+  }
   fixture.detectChanges();
   await fixture.whenStable();
   return fixture;
@@ -132,5 +136,21 @@ describe('RkLightboxVideoSlideComponent', () => {
 
     expect(soundState.muted()).toBe(false);
     expect(sharedVideo().muted).toBe(false);
+  });
+
+  it('loops by default', async () => {
+    await createFixture();
+
+    expect(sharedVideo().loop).toBe(true);
+  });
+
+  it('plays once and reports the end when looping is off', async () => {
+    const onEnded = jest.fn();
+    await createFixture([], { loop: false, onEnded });
+
+    sharedVideo().dispatchEvent(new Event('ended'));
+
+    expect(sharedVideo().loop).toBe(false);
+    expect(onEnded).toHaveBeenCalledTimes(1);
   });
 });

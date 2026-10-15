@@ -20,6 +20,8 @@ import {
   isTouchDevice,
   captureFocusForReturn,
   createFocusTrap,
+  createSlideshowController,
+  downloadFile,
   slideTransition,
   Reel,
   Observe,
@@ -28,6 +30,7 @@ import {
   SwipeToClose,
   type ReelApi,
   type ReelProps,
+  type SlideshowController,
   type SwipeToCloseDirection,
   type TransitionTransformFn,
   type UrlStateController,
@@ -129,6 +132,34 @@ export interface LightboxOverlayBaseProps extends ReelProxyProps {
   swipeToCloseDirection?: SwipeToCloseDirection;
 
   /**
+   * Play the gallery as a slideshow when it opens. An image stays for
+   * `autoAdvanceInterval` once it has loaded; a video plays once and then
+   * moves on. The slideshow waits while the mouse is over a control, during
+   * a swipe and while the page is hidden, stops on the last slide unless
+   * `loop` is set, and adds a play/pause button to the default controls.
+   *
+   * @default false
+   */
+  autoAdvance?: boolean;
+
+  /**
+   * How long each image stays on screen during a slideshow, in milliseconds.
+   *
+   * @default 5000
+   */
+  autoAdvanceInterval?: number;
+
+  /**
+   * Add a download button to the default controls. It saves the active item
+   * from its `downloadUrl` (or `src`) under its `downloadName`; when the file
+   * cannot be fetched, as with a cross-origin server that sends no CORS
+   * headers, it opens in a new tab instead.
+   *
+   * @default false
+   */
+  showDownload?: boolean;
+
+  /**
    * Callback fired after slide change
    */
   onSlideChange?: (index: number) => void;
@@ -223,6 +254,13 @@ type LightboxContentProps = LightboxOverlayBaseProps & { onClose: () => void };
 /** Number of images to preload before and after the current index. */
 const _kPreloadRange = 2;
 
+const _kDefaultAutoAdvanceInterval = 5000;
+
+// What a mouse rests on when it reaches for a control. The overlay itself
+// covers the viewport, so holding on any hover would stop every slideshow
+// for a mouse user.
+const _kHoverHoldSelector = 'button, a, .rk-lightbox-info';
+
 const preloader = createContentPreloader({ maxCacheSize: 1000 });
 
 /**
@@ -247,6 +285,8 @@ const LightboxContent: FC<LightboxContentProps> = (props) => {
     transitionDuration,
     swipeDistanceFactor,
     swipeToCloseDirection = 'up',
+    autoAdvance = false,
+    autoAdvanceInterval = _kDefaultAutoAdvanceInterval,
   } = props;
 
   const propsRef = useRef(props);
@@ -262,9 +302,17 @@ const LightboxContent: FC<LightboxContentProps> = (props) => {
       loadingCtrl,
       indexSignal,
       isMobileSignal,
+      slideshow,
+      isAutoAdvancing,
+      isDownloading,
+      slideKind,
       handleAfterChange,
       handlePrev,
       handleNext,
+      handleToggleAutoAdvance,
+      handleDownload,
+      handleDragStart,
+      handleDragEnd,
       itemBuilder,
     },
   ] = useState(() => {
@@ -272,18 +320,29 @@ const LightboxContent: FC<LightboxContentProps> = (props) => {
     const loadingCtrl = createContentLoadingController(true, initialIndex);
     const indexSignal = createSignal(initialIndex);
     const isMobileSignal = createSignal(isTouchDevice());
+    const slideshow = createSignal<SlideshowController | null>(null);
+    const isAutoAdvancing = createSignal(false);
+    const isDownloading = createSignal(false);
 
     const imageErrors = new Set<number>();
     const errorVersion = createSignal(0);
+
+    const slideKind = (index: number) =>
+      propsRef.current.images[index]?.type === 'video' ? 'video' : 'image';
 
     return {
       sizeSignal,
       loadingCtrl,
       indexSignal,
       isMobileSignal,
+      slideshow,
+      isAutoAdvancing,
+      isDownloading,
       imageErrors,
       errorVersion,
+      slideKind,
       handleAfterChange: (index: number) => {
+        slideshow.value?.setSlide(slideKind(index));
         loadingCtrl.setActiveIndex(index);
         const src = propsRef.current.images[index]?.src;
         if (src && preloader.isErrored(src)) {
@@ -300,6 +359,20 @@ const LightboxContent: FC<LightboxContentProps> = (props) => {
       handleNext: () => {
         sliderRef.current?.next();
       },
+      handleToggleAutoAdvance: () => slideshow.value?.toggle(),
+      handleDownload: async () => {
+        if (isDownloading.value) return;
+        const item = propsRef.current.images[indexSignal.value];
+        if (!item) return;
+        isDownloading.value = true;
+        try {
+          await downloadFile(item.downloadUrl ?? item.src, item.downloadName);
+        } finally {
+          isDownloading.value = false;
+        }
+      },
+      handleDragStart: () => slideshow.value?.hold('drag'),
+      handleDragEnd: () => slideshow.value?.release('drag'),
       itemBuilder: (
         index: number,
         _indexInRange: number,
@@ -314,6 +387,9 @@ const LightboxContent: FC<LightboxContentProps> = (props) => {
           preloader.markErrored(image.src);
           loadingCtrl.onError(index);
         };
+        const onEnded = () => {
+          if (index === indexSignal.value) slideshow.value?.ended();
+        };
 
         if (renderSlide) {
           const custom = renderSlide({
@@ -324,6 +400,8 @@ const LightboxContent: FC<LightboxContentProps> = (props) => {
             onReady,
             onWaiting,
             onError,
+            onEnded,
+            autoAdvance: propsRef.current.autoAdvance ?? false,
           });
           if (custom !== null) {
             return (
@@ -438,8 +516,71 @@ const LightboxContent: FC<LightboxContentProps> = (props) => {
     }
 
     return disposables.dispose;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (!autoAdvance) return;
+
+    const controller = createSlideshowController({
+      interval:
+        propsRef.current.autoAdvanceInterval ?? _kDefaultAutoAdvanceInterval,
+      onAdvance: () => {
+        const { images: items, loop: isLooping = false } = propsRef.current;
+        if (
+          items.length <= 1 ||
+          (!isLooping && indexSignal.value >= items.length - 1)
+        ) {
+          controller.pause();
+          return;
+        }
+        sliderRef.current?.next();
+      },
+    });
+    const disposables = createDisposableList();
+
+    controller.setSlide(slideKind(indexSignal.value));
+    if (!loadingCtrl.isLoading.value) controller.ready();
+    slideshow.value = controller;
+
+    disposables.push(
+      controller.isPlaying.observe(() => {
+        isAutoAdvancing.value = controller.isPlaying.value;
+      }),
+      loadingCtrl.isLoading.observe(() => {
+        if (!loadingCtrl.isLoading.value) controller.ready();
+      }),
+    );
+
+    const containerEl = containerRef.current;
+    if (containerEl) {
+      disposables.push(
+        observeDomEvent(containerEl, 'pointerover', (e) => {
+          if (e.pointerType !== 'mouse') return;
+          if ((e.target as Element).closest(_kHoverHoldSelector)) {
+            controller.hold('hover');
+          } else {
+            controller.release('hover');
+          }
+        }),
+        observeDomEvent(containerEl, 'pointerleave', () =>
+          controller.release('hover'),
+        ),
+      );
+    }
+
+    disposables.push(controller.dispose, () => {
+      slideshow.value = null;
+      isAutoAdvancing.value = false;
+    });
+
+    controller.play();
+
+    return disposables.dispose;
+  }, [autoAdvance]);
+
+  useEffect(() => {
+    slideshow.value?.setInterval(autoAdvanceInterval);
+  }, [autoAdvanceInterval]);
 
   return createPortal(
     <div
@@ -450,14 +591,22 @@ const LightboxContent: FC<LightboxContentProps> = (props) => {
       aria-label={props.ariaLabel ?? 'Image gallery'}
       tabIndex={-1}
     >
-      <Observe signals={[isFullscreen, indexSignal]}>
+      <Observe
+        signals={[isFullscreen, indexSignal, isAutoAdvancing, isDownloading]}
+      >
         {() => {
           const idx = indexSignal.value;
           const {
             renderControls: renderCtrl,
             onClose: close,
             images: items,
+            autoAdvance: hasAutoAdvance,
+            showDownload,
           } = propsRef.current;
+          const onToggleAutoAdvance = hasAutoAdvance
+            ? handleToggleAutoAdvance
+            : undefined;
+          const onDownload = showDownload ? handleDownload : undefined;
           return (
             <>
               {renderCtrl ? (
@@ -468,6 +617,10 @@ const LightboxContent: FC<LightboxContentProps> = (props) => {
                   count: items.length,
                   isFullscreen: isFullscreen.value,
                   onToggleFullscreen: toggleFullscreen,
+                  isAutoAdvancing: isAutoAdvancing.value,
+                  onToggleAutoAdvance,
+                  isDownloading: isDownloading.value,
+                  onDownload,
                 })
               ) : (
                 <LightboxControls
@@ -476,6 +629,10 @@ const LightboxContent: FC<LightboxContentProps> = (props) => {
                   count={items.length}
                   isFullscreen={isFullscreen.value}
                   onToggleFullscreen={toggleFullscreen}
+                  isAutoAdvancing={isAutoAdvancing.value}
+                  onToggleAutoAdvance={onToggleAutoAdvance}
+                  isDownloading={isDownloading.value}
+                  onDownload={onDownload}
                 />
               )}
             </>
@@ -537,6 +694,9 @@ const LightboxContent: FC<LightboxContentProps> = (props) => {
               enableNavKeys={enableNavKeys}
               enableWheel={enableWheel}
               wheelDebounceMs={wheelDebounceMs}
+              onSlideDragStart={handleDragStart}
+              onSlideDragEnd={handleDragEnd}
+              onSlideDragCanceled={handleDragEnd}
               itemBuilder={itemBuilder}
             />
           </SwipeToClose>

@@ -1,5 +1,4 @@
-import { createTimerController } from '@reelkit/stories-core';
-import { reaction } from '@reelkit/core';
+import { createTimerController, reaction } from '@reelkit/core';
 
 const timer = createTimerController({
   duration: 5000,

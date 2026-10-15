@@ -1,6 +1,6 @@
 ---
 title: Core API Reference
-description: Complete reference for @reelkit/core configuration, callbacks, methods, state, signals, transitions, content loading, sound, timeline, fullscreen, DOM utilities, focus management, and video utilities.
+description: Complete reference for @reelkit/core configuration, callbacks, methods, state, signals, transitions, content loading, sound, timeline, fullscreen, DOM utilities, size detection, autoplay timers, file download, focus management, and video utilities.
 ---
 
 import usage from '../../../snippets/core-api/usage.ts?raw';
@@ -198,6 +198,59 @@ How every binding and overlay measures its container and the window. `Reel` uses
 | `isMobileWidth` | `(viewportWidth: number) => boolean` | Whether a window this wide gets the phone layout: 768px and narrower. Every overlay and its stylesheet switch at this width. |
 | `fitAspectRatio` | `(viewport: [number, number], aspectRatio?: number) => [number, number]` | Overlay size for a window. On a phone width it is the whole window; otherwise the full window height at `aspectRatio`, narrowed to the window width when that would not fit. A missing, zero, negative or non-finite ratio falls back to 9/16. |
 | `isTouchDevice` | `() => boolean` | Whether the device takes touch input (`ontouchstart` or `maxTouchPoints`). A capability check, not a screen size: a touch laptop counts, a narrow desktop window does not. |
+
+## Autoplay [#autoplay]
+
+Timers for anything that advances on its own. How they behave and how to wire them is in the [Autoplay guide](/docs/core/guide#autoplay).
+
+| Export | Type | Description |
+| --- | --- | --- |
+| `createTimerController` | `(config: TimerControllerConfig) => TimerController` | Counts one duration from 0 to 1 and calls back when it is done. Drives each story in the stories players. |
+| `createSlideshowController` | `(config: SlideshowControllerConfig) => SlideshowController` | The state machine behind a gallery that advances on its own. Drives the lightbox `autoAdvance`. |
+
+### createTimerController [#createtimercontroller]
+
+| `TimerControllerConfig` | Type | Description |
+| --- | --- | --- |
+| `duration` | `number` | Default duration in milliseconds, used when `start()` gets none |
+| `onComplete` | `() => void` | Called when progress reaches 1 |
+
+| `TimerController` | Type | Description |
+| --- | --- | --- |
+| `progress` | `Signal<number>` | Progress from 0 to 1; drives a progress bar |
+| `isRunning` | `Signal<boolean>` | Whether the timer is counting |
+| `start(duration?)` | `(number?) => void` | Start over from 0, optionally with another duration for this run |
+| `pause()` | `() => void` | Freeze at the current progress |
+| `resume()` | `() => void` | Continue from the frozen progress |
+| `reset()` | `() => void` | Back to 0, stopped |
+| `dispose()` | `() => void` | Cancel the pending frame |
+
+### createSlideshowController [#createslideshowcontroller]
+
+| `SlideshowControllerConfig` | Type | Description |
+| --- | --- | --- |
+| `interval` | `number` | How long an image stays, in milliseconds, counted once it has loaded |
+| `onAdvance` | `() => void` | The active slide is done. Move to the next slide, or call `pause()` on the last one |
+
+| `SlideshowController` | Type | Description |
+| --- | --- | --- |
+| `isPlaying` | `Signal<boolean>` | Whether the slideshow is switched on. Holds do not change it |
+| `progress` | `Signal<number>` | How far the active image's interval has run, from 0 to 1 |
+| `play()` / `pause()` / `toggle()` | `() => void` | Switch it on or off; the active slide keeps its progress |
+| `setInterval(ms)` | `(number) => void` | Change the interval from the next image |
+| `setSlide(kind)` | `(SlideshowSlideKind) => void` | A new slide became active: progress starts over and waits for `ready()` or `ended()`. `SlideshowSlideKind` is `'image' \| 'video'` |
+| `ready()` | `() => void` | The active image loaded or failed to; its interval starts |
+| `ended()` | `() => void` | The active video ended; advances now, or once nothing holds |
+| `hold(reason)` / `release(reason)` | `(string) => void` | Stop the clock for a reason such as `'hover'` or `'drag'`. Holds stack |
+| `dispose()` | `() => void` | Stop the clock and the visibility listener |
+
+## Download [#download]
+
+Saving a file from a URL, cross-origin included. The fallback it takes is in the [Download guide](/docs/core/guide#download).
+
+| Export | Type | Description |
+| --- | --- | --- |
+| `downloadFile` | `(url: string, filename?: string) => Promise<void>` | Saves a file under `filename`, by default the last segment of the URL's path. It fetches the file and saves the blob, because the `download` attribute is ignored on a cross-origin link. When the fetch fails or the server answers with an error (a cross-origin server without CORS headers is the usual case), the URL opens in a new tab instead. Never rejects; does nothing without a window. |
 
 ## Focus Management [#focus-management]
 

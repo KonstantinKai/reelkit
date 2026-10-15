@@ -11,6 +11,8 @@ import virtualization from '../../../snippets/core-guide/virtualization.ts?raw';
 import signals from '../../../snippets/core-guide/signals.ts?raw';
 import controllerState from '../../../snippets/core-guide/controller-state.ts?raw';
 import timelineController from '../../../snippets/core-guide/timeline-controller.ts?raw';
+import timerExample from '../../../snippets/core-guide/timer-example.ts?raw';
+import slideshowExample from '../../../snippets/core-guide/slideshow-example.ts?raw';
 import howItWorks from '../../../snippets/core-guide/how-it-works.ts?raw';
 import howItWorks2 from '../../../snippets/core-guide/how-it-works-2.ts?raw';
 
@@ -128,6 +130,28 @@ Store अपनी तरफ़ से कोई मरम्मत नहीं
 डिफ़ॉल्ट रूप से store `localStorage` पर चलता है; `createSessionStorageAdapter()` tab बंद होने पर भूल जाता है, और आपका अपना `StorageAdapter` इसे किसी भी synchronous जगह रख सकता है। `attach()` से पहले कुछ भी नहीं पढ़ा जाता, इसलिए सर्वर रेंडर और क्लाइंट का पहला रेंडर एक जैसे रहते हैं।
 
 Entries तब तक रखी जाती हैं जब तक उन्हें साफ़ तौर पर भुलाया न जाए। उन्हें समाप्त करने के लिए `ttlMs` पास करें — हर track के लिए अलग, खिसकती घड़ी पर, ताकि जो चीज़ अभी भी देखी जा रही है वह छोड़ी गई चीज़ के साथ पुरानी न पड़े। इससे लिखा जाने वाला रूप बदलता है — हर entry `[wire, timestamp]` जोड़ी बन जाती है — लेकिन विकल्प कुछ भी हो, पढ़ना दोनों रूप संभाल लेता है, इसलिए विकल्प चालू करने से पहले सहेजी गई entry मिटाई नहीं जाती बल्कि ताज़ा मानी जाती है। `maxTracks` उम्र की जगह गिनती सीमित करता है: सीमा पार होने पर अगली बार लिखते समय सबसे पहले दर्ज किया गया track हटा दिया जाता है, और किसी track को दर्ज करना — भले ही स्थिति पीछे की हो — उसे कतार के आख़िर में भेज देता है। सारे विकल्प [Core API रेफ़रेंस](/docs/core/api#viewed-state) में हैं।
+
+## ऑटोप्ले [#autoplay]
+
+हर उस चीज़ की टाइमिंग जो अपने आप आगे बढ़ती है। Stories Player हर story को `createTimerController` पर चलाता है; Lightbox अपना स्लाइडशो `createSlideshowController` पर चलाते हैं, जो उसी पर बना है। दोनों `requestAnimationFrame` पर चलते हैं, और हर pause सटीक प्रगति बचाए रखता है।
+
+### createTimerController [#createtimercontroller]
+
+एक अवधि को 0 से 1 तक गिनता है और पूरा होने पर callback बुलाता है। `start()` हमेशा 0 से शुरू होता है, चाहें तो उस बार के लिए दूसरी अवधि के साथ; `pause()` और `resume()` सटीक स्थिति बचाए रखते हैं।
+
+<CodeBlock code={timerExample} language="typescript" />
+
+### createSlideshowController [#createslideshowcontroller]
+
+अपने आप आगे बढ़ने वाली गैलरी के पीछे की state machine। यह तभी चलती है जब चालू हो, कोई इसे रोके न हो और पेज दिख रहा हो; पेज के दिखने पर यह खुद नज़र रखती है, बाकी आप बताते हैं। इमेज अपना interval लोड होने के पल से गिनती है, इसलिए धीमी इमेज बिना देखे कभी नहीं छूटती। वीडियो खत्म होने पर आगे बढ़ता है, इसलिए उसे loop की जगह एक बार चलना चाहिए। जो वीडियो स्लाइडशो के रुके रहने के दौरान खत्म हो, वह रोक हटने पर आगे बढ़ता है।
+
+<CodeBlock code={slideshowExample} language="typescript" />
+
+पूरा config, स्टेट और methods [Core API रेफ़रेंस](/docs/core/api#autoplay) में हैं।
+
+## डाउनलोड [#download]
+
+`downloadFile(url, filename?)` फ़ाइल को `filename` नाम से सहेजता है, जो डिफ़ॉल्ट रूप से URL के path का आख़िरी हिस्सा है। दूसरे origin के लिंक पर `download` attribute अनदेखा हो जाता है, इसलिए यह फ़ाइल को fetch करके blob सहेजता है। जब fetch विफल हो या सर्वर error लौटाए — आम तौर पर बिना CORS headers वाला दूसरे origin का सर्वर — तो URL नए टैब में खुलता है, जिससे पाठक को फ़ाइल फिर भी मिल जाती है। यह कभी reject नहीं होता, और window के बिना कुछ नहीं करता। देखें [Core API रेफ़रेंस](/docs/core/api#download)।
 
 <NextSteps
         items={[

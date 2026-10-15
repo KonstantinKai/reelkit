@@ -204,3 +204,7 @@ import { createDefaultKeyExtractorForLoop } from '@reelkit/react';
 ### Size detection
 
 `observeElementSize`, `getViewportSize`, `observeViewportSize`, `isMobileWidth`, `fitAspectRatio`, `isTouchDevice` re-exported from `@reelkit/react` — custom overlay sizes itself like reelkit ones. See core API Size Detection.
+
+### Autoplay and download
+
+`createTimerController`, `createSlideshowController`, `downloadFile` re-exported from `@reelkit/react`: timer behind stories players, slideshow behind lightbox `autoAdvance`, helper behind its download button. See core API Autoplay + Download.

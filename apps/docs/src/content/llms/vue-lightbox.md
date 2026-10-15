@@ -67,15 +67,17 @@ const items = [
 
 ## LightboxItem Schema
 
-| Field         | Type                 | Required | Description                  |
-| ------------- | -------------------- | -------- | ---------------------------- |
-| `src`         | `string`             | yes      | URL of image or video        |
-| `type`        | `'image' \| 'video'` | no       | Item type. Default `'image'` |
-| `poster`      | `string`             | no       | Thumbnail for video items    |
-| `title`       | `string`             | no       | Title in info overlay        |
-| `description` | `string`             | no       | Description below title      |
-| `width`       | `number`             | no       | Intrinsic image width px     |
-| `height`      | `number`             | no       | Intrinsic image height px    |
+| Field          | Type                 | Required | Description                               |
+| -------------- | -------------------- | -------- | ----------------------------------------- |
+| `src`          | `string`             | yes      | URL of image or video                     |
+| `type`         | `'image' \| 'video'` | no       | Item type. Default `'image'`              |
+| `poster`       | `string`             | no       | Thumbnail for video items                 |
+| `title`        | `string`             | no       | Title in info overlay                     |
+| `description`  | `string`             | no       | Description below title                   |
+| `width`        | `number`             | no       | Intrinsic image width px                  |
+| `height`       | `number`             | no       | Intrinsic image height px                 |
+| `downloadUrl`  | `string`             | no       | What download button saves; default `src` |
+| `downloadName` | `string`             | no       | File name; default last URL path segment  |
 
 ## Scoped Slots
 
@@ -90,14 +92,14 @@ const items = [
 
 ### Slot Scope Types
 
-| Name                  | Fields                                                                           |
-| --------------------- | -------------------------------------------------------------------------------- |
-| `SlideSlotScope`      | `{ item, index, size: [number, number], isActive, onReady, onWaiting, onError }` |
-| `ControlsSlotScope`   | `{ item, activeIndex, count, isFullscreen, onClose, onToggleFullscreen }`        |
-| `NavigationSlotScope` | `{ item, activeIndex, count, onPrev, onNext }`                                   |
-| `InfoSlotScope`       | `{ item, index }`                                                                |
-| `LoadingSlotScope`    | `{ item, activeIndex }`                                                          |
-| `ErrorSlotScope`      | `{ item, activeIndex }`                                                          |
+| Name                  | Fields                                                                                                                                       |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SlideSlotScope`      | `{ item, index, size: [number, number], isActive, autoAdvance, onReady, onWaiting, onError, onEnded }`                                       |
+| `ControlsSlotScope`   | `{ item, activeIndex, count, isFullscreen, isAutoAdvancing, isDownloading, onClose, onToggleFullscreen, onToggleAutoAdvance?, onDownload? }` |
+| `NavigationSlotScope` | `{ item, activeIndex, count, onPrev, onNext }`                                                                                               |
+| `InfoSlotScope`       | `{ item, index }`                                                                                                                            |
+| `LoadingSlotScope`    | `{ item, activeIndex }`                                                                                                                      |
+| `ErrorSlotScope`      | `{ item, activeIndex }`                                                                                                                      |
 
 ## Video Support
 
@@ -226,6 +228,54 @@ While it is pending the lightbox stays closed and the parameter is left alone, s
 
 Full `useOverlayUrlState` options (`param`, `adapter`, `codec`, `locator`): see the [Vue API reference](/docs/vue/api#useoverlayurlstate).
 
+## Auto-advance
+
+`auto-advance` → slideshow on open. Off by default.
+
+```vue
+<LightboxOverlay
+  ref="lightbox"
+  v-model:is-open="open"
+  :items="items"
+  auto-advance
+  :auto-advance-interval="4000"
+/>
+<!-- lightbox?.pause() / lightbox?.play() from code -->
+```
+
+- Images stay `auto-advance-interval` (default 5000 ms), counted from load; failed image counts from error.
+- Videos play once (no loop), advance on end. `VideoSlideRenderer` wires it; custom `#slide` reads `autoAdvance`, reports end via `onEnded`.
+- Waits while mouse rests on a control (button, link, caption), during swipe, while page hidden; continues from same progress.
+- Manual nav restarts new slide's interval; slideshow stays on. Stops on last slide unless `loop`.
+- Custom `#controls` gets `isAutoAdvancing` + `onToggleAutoAdvance` (only with `auto-advance`) → render `PlayPauseButton` when present.
+- Timing = `createSlideshowController` from `@reelkit/core` ([Autoplay guide](/docs/core/guide#autoplay), [Core API](/docs/core/api#autoplay)).
+
+## Download
+
+`show-download` → download button in controls. Saves active item from `downloadUrl` (else `src`) as `downloadName` (else last URL path segment).
+
+```vue
+<LightboxOverlay v-model:is-open="open" :items="items" show-download>
+  <template #controls="{ onClose, isDownloading, onDownload }">
+    <DownloadButton v-if="onDownload" :is-downloading="isDownloading" :on-press="onDownload" />
+    <CloseButton :on-press="onClose" />
+  </template>
+</LightboxOverlay>
+```
+
+- Fetch → blob → save (browsers ignore `download` attr cross-origin). Fetch fails (no CORS usual) → new tab. Serve with `Access-Control-Allow-Origin` for one-click save.
+- Button disabled while downloading. Custom `#controls` gets `isDownloading` + `onDownload` (only with `show-download`).
+- Helper = `downloadFile` from `@reelkit/core` ([Download guide](/docs/core/guide#download)).
+
+### Control buttons
+
+| Component         | Props                                                           | Description                                    |
+| ----------------- | --------------------------------------------------------------- | ---------------------------------------------- |
+| `PlayPauseButton` | `PlayPauseButtonProps`: `isPlaying`, `onPress`, `className?`    | Slideshow toggle, `aria-pressed` while playing |
+| `DownloadButton`  | `DownloadButtonProps`: `isDownloading`, `onPress`, `className?` | Download button, disabled while downloading    |
+
+Classes `.rk-lightbox-play-pause`, `.rk-lightbox-download` (with `.rk-lightbox-btn`); token `--rk-lightbox-btn-disabled-opacity` (`0.5`).
+
 ## LightboxOverlay Props
 
 Type: `LightboxOverlayProps`
@@ -246,6 +296,9 @@ Type: `LightboxOverlayProps`
 | `enableNavKeys`         | `boolean`               | `true`            | Keyboard arrow-key nav                                                                                                                                                   |
 | `enableWheel`           | `boolean`               | `true`            | Mouse-wheel nav                                                                                                                                                          |
 | `wheelDebounceMs`       | `number`                | `200`             | Wheel debounce ms                                                                                                                                                        |
+| `autoAdvance`           | `boolean`               | `false`           | Slideshow (see Auto-advance)                                                                                                                                             |
+| `autoAdvanceInterval`   | `number`                | `5000`            | Image time during slideshow, ms, from load                                                                                                                               |
+| `showDownload`          | `boolean`               | `false`           | Download button (see Download)                                                                                                                                           |
 | `ariaLabel`             | `string`                | `'Image gallery'` | Accessible label dialog region                                                                                                                                           |
 
 ## RkLightboxUrlOverlay Props
@@ -280,6 +333,8 @@ Object `api-ready` emits; also on the component's template ref. Slider exists on
 | `observe()`             | `() => void`                          | Resume listening gesture / keyboard / wheel after `unobserve()`                               |
 | `unobserve()`           | `() => void`                          | Stop listening gesture / keyboard / wheel; slides stay put                                    |
 | `close()`               | `() => void`                          | Close lightbox, same as close button / Escape                                                 |
+| `play()`                | `() => void`                          | Start slideshow from saved progress; no-op without `auto-advance`                             |
+| `pause()`               | `() => void`                          | Stop slideshow, keep progress; no-op without `auto-advance`                                   |
 
 ## Keyboard Shortcuts
 

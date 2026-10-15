@@ -1,5 +1,6 @@
 export { observeDomEvent } from './observeDomEvent';
 export { observeElementSize } from './observeElementSize';
+export { downloadFile } from './download';
 export {
   getViewportSize,
   observeViewportSize,

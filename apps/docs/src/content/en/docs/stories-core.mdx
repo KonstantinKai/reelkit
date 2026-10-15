@@ -6,7 +6,6 @@ description: Engine behind @reelkit/react-stories-player. Pure TypeScript, no fr
 import { Cpu, Layers, Timer, Minus, MousePointerClick, Cog } from 'lucide-react';
 import installation from '../../snippets/stories-core/installation.sh?raw';
 import controllerExample from '../../snippets/stories-core/controller-example.ts?raw';
-import timerExample from '../../snippets/stories-core/timer-example.ts?raw';
 import canvasExample from '../../snippets/stories-core/canvas-example.ts?raw';
 import viewedControllerExample from '../../snippets/stories-core/viewed-controller-example.ts?raw';
 import typesCode from '../../snippets/stories-core/types-code.ts?raw';
@@ -26,8 +25,8 @@ The engine behind `@reelkit/react-stories-player`. Pure TypeScript, no framework
   },
   {
     icon: Timer,
-    label: 'RAF Timer',
-    desc: 'requestAnimationFrame auto-advance with pause/resume',
+    label: 'Story Timing',
+    desc: 'Auto-advance on the core timer, with pause and resume',
   },
   {
     icon: Minus,
@@ -106,35 +105,7 @@ The engine behind `@reelkit/react-stories-player`. Pure TypeScript, no framework
 
 ## Timer Controller [#timer-controller]
 
-`createTimerController(config)` drives auto-advance with a `requestAnimationFrame` loop. The progress signal (0 to 1) feeds the progress bar. Pause and resume preserve the exact position.
-
-### Config (TimerControllerConfig) [#config-timercontrollerconfig]
-
-| Property | Type | Default | Description |
-| --- | --- | --- | --- |
-| `duration` | `number` | required | Default duration in milliseconds |
-| `onComplete` | `() => void` | undefined | Called when the timer reaches 100% |
-
-### State [#state]
-
-| Signal | Type | Description |
-| --- | --- | --- |
-| `progress` | `Signal<number>` | Progress signal (0 to 1) |
-| `isRunning` | `Signal<boolean>` | Whether the timer is currently running |
-
-### Methods [#methods]
-
-| Method | Type | Description |
-| --- | --- | --- |
-| `start(duration?)` | `(number?) => void` | Start (or restart) the timer with an optional duration override |
-| `pause()` | `() => void` | Freeze progress at the current position |
-| `resume()` | `() => void` | Continue from the frozen position |
-| `reset()` | `() => void` | Reset progress to 0 and stop |
-| `dispose()` | `() => void` | Clean up resources |
-
-### Example [#example]
-
-<CodeBlock code={timerExample} />
+The timer that drives each story's progress lives in `@reelkit/core` as `createTimerController`, shared with the lightbox slideshow. Import it from `@reelkit/core` or from your binding (`@reelkit/react`, `@reelkit/vue`, `@reelkit/angular`); this package no longer exports it. See [Autoplay](/docs/core/api#autoplay) in the core API for its config, state and methods, and the [Stories Controller example](#example) above for wiring it to `onStoryTimerComplete`.
 
 ## Canvas Progress Renderer [#canvas-progress-renderer]
 
@@ -249,7 +220,7 @@ All type definitions exported from `@reelkit/stories-core`.
 
 <CodeBlock code={typesCode} />
 
-This package is the engine, not a player: it holds the state machine, the timer and the geometry, and leaves the rendering to a binding. Reach for a ready-made player first, and for the framework binding — the virtualized `Reel`, the signal bridge, the overlay helpers — when you build one of your own.
+This package is the engine, not a player: it holds the state machine and the geometry, and leaves the rendering to a binding. Reach for a ready-made player first, and for the framework binding — the virtualized `Reel`, the signal bridge, the overlay helpers — when you build one of your own.
 
 <NextSteps
         items={[

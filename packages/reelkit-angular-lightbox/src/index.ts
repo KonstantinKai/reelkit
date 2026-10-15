@@ -110,6 +110,8 @@ export { RkCloseButtonComponent } from './lib/lightbox-controls/close-button.com
 export { RkCounterComponent } from './lib/lightbox-controls/counter.component';
 export { RkFullscreenButtonComponent } from './lib/lightbox-controls/fullscreen-button.component';
 export { RkSoundButtonComponent } from './lib/lightbox-controls/sound-button.component';
+export { RkPlayPauseButtonComponent } from './lib/lightbox-controls/play-pause-button.component';
+export { RkDownloadButtonComponent } from './lib/lightbox-controls/download-button.component';
 
 export { RkSwipeToCloseDirective } from '@reelkit/angular';
 

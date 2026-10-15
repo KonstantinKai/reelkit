@@ -29,6 +29,7 @@ import {
   cubeTransition,
   fadeTransition,
   slideTransition,
+  createTimerController,
   type ReelApi,
   type Signal,
   type UrlStateController,
@@ -37,7 +38,6 @@ import {
 } from '@reelkit/react';
 import {
   createStoriesController,
-  createTimerController,
   getTapAction,
   getStoriesSize,
   parseDurationMs,

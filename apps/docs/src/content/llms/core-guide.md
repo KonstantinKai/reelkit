@@ -288,3 +288,82 @@ Reading is synchronous only. An entry whose items have not loaded yet reads as a
 `localStorage` backs the store by default; `createSessionStorageAdapter()` forgets on tab close, and a `StorageAdapter` of your own puts it anywhere synchronous. Nothing is read until `attach()`, so a server render and the first client render agree.
 
 Entries are kept until forgotten explicitly. Pass `ttlMs` to expire them instead — per track, on a sliding clock, so somewhere still being watched never goes stale beside somewhere abandoned. It changes what is written, each entry becoming a `[wire, timestamp]` pair, but reading copes with either shape whatever the option says, so an entry stored before you turned it on counts as fresh rather than being deleted. `maxTracks` bounds count instead of age: past it, the least recently recorded track is dropped on the next write, and recording a track, even a position already behind, moves it to the back of the line. Full options live on the [Core API reference](/docs/core/api#viewed-state).
+
+## Autoplay
+
+Timing for anything that advances on its own. Stories players run each story on `createTimerController`; lightboxes run slideshow on `createSlideshowController`, built on it. Both tick on `requestAnimationFrame`; every pause keeps exact progress.
+
+### createTimerController
+
+Count one duration 0 → 1, call back when done. `start()` always from 0, optional duration for that run; `pause()` / `resume()` keep exact position.
+
+```typescript
+import { createTimerController, reaction } from '@reelkit/core';
+
+const timer = createTimerController({
+  duration: 5000,
+  onComplete: () => console.log('Timer finished!'),
+});
+
+const dispose = reaction(
+  () => [timer.progress],
+  () => console.log('Progress:', timer.progress.value),
+);
+
+timer.start(); // default duration
+timer.start(8000); // override for this run
+timer.pause();
+timer.resume(); // continues from same progress
+timer.reset();
+
+dispose();
+timer.dispose();
+```
+
+### createSlideshowController
+
+State machine behind auto-advancing gallery. Runs only while switched on ∧ nothing holds ∧ page visible (watches visibility itself; caller feeds the rest). Image counts interval from load, so slow image never skipped unseen. Video advances on end → must play once, not loop. Video ending during hold advances on release.
+
+```typescript
+import {
+  createSlideshowController,
+  createSliderController,
+} from '@reelkit/core';
+
+const items = [{ type: 'image' }, { type: 'video' }, { type: 'image' }];
+
+const slider = createSliderController(
+  { count: items.length, direction: 'horizontal' },
+  { onAfterChange: (index) => onSlideChange(index) },
+);
+
+const slideshow = createSlideshowController({
+  interval: 5000,
+  onAdvance: () => {
+    if (slider.state.index.value >= items.length - 1) slideshow.pause();
+    else slider.next();
+  },
+});
+
+function onSlideChange(index: number) {
+  slideshow.setSlide(items[index].type === 'video' ? 'video' : 'image');
+}
+
+// From slide: image loaded/failed → ready(); video ended → ended()
+const onImageSettled = () => slideshow.ready();
+const onVideoEnded = () => slideshow.ended();
+
+// Holds stack
+const onControlsEnter = () => slideshow.hold('hover');
+const onControlsLeave = () => slideshow.release('hover');
+
+onSlideChange(0);
+slideshow.play();
+slideshow.dispose(); // later
+```
+
+Full config, state, methods: [Core API](/docs/core/api#autoplay).
+
+## Download
+
+`downloadFile(url, filename?)` saves file under `filename` (default: last URL path segment). `download` attr ignored on cross-origin link → fetch file, save blob. Fetch fails / error status (cross-origin w/o CORS usual) → URL opens in new tab, reader still gets file. Never rejects; no-op without window. See [Core API](/docs/core/api#download).

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { ImageOff } from 'lucide-react';
 import {
   LightboxOverlay,
@@ -8,11 +8,14 @@ import {
   slideTransition,
   type LightboxItem,
 } from '@reelkit/react-lightbox';
-import type {
-  SwipeToCloseDirection,
-  TransitionTransformFn,
+import {
+  Observe,
+  createSignal,
+  type SwipeToCloseDirection,
+  type TransitionTransformFn,
 } from '@reelkit/react';
 import { cdnUrl } from '@reelkit/example-data';
+import { persistedSignal } from '../components/persistedSignal';
 import '@reelkit/react-lightbox/styles.css';
 import './ImagePreviewPage.css';
 
@@ -23,6 +26,7 @@ const _kTransitions: { label: string; fn: TransitionTransformFn }[] = [
   { label: 'zoom-in', fn: lightboxZoomTransition },
 ];
 const _kSwipeDirections: SwipeToCloseDirection[] = ['up', 'down'];
+const _kAutoAdvanceInterval = 3000;
 
 const sampleImages: LightboxItem[] = [
   {
@@ -150,33 +154,60 @@ const GalleryThumb: React.FC<{ src: string; alt: string }> = ({ src, alt }) => {
 };
 
 function ImagePreviewPage() {
-  const [previewIndex, setPreviewIndex] = useState<number | null>(null);
-  const [transitionFn, setTransitionFn] = useState<TransitionTransformFn>(
-    () => slideTransition,
-  );
-  const [swipeDirection, setSwipeDirection] =
-    useState<SwipeToCloseDirection>('up');
-
-  const handleImageClick = useCallback((index: number) => {
-    setPreviewIndex(index);
-  }, []);
-
-  const handleClose = useCallback(() => {
-    setPreviewIndex(null);
-  }, []);
+  const [
+    {
+      previewIndex,
+      transitionFn,
+      swipeDirection,
+      autoAdvance,
+      handleImageClick,
+      handleImageKeyDown,
+      handleClose,
+    },
+  ] = useState(() => {
+    const previewIndex = createSignal<number | null>(null);
+    return {
+      previewIndex,
+      transitionFn: createSignal<TransitionTransformFn>(slideTransition),
+      swipeDirection: createSignal<SwipeToCloseDirection>('up'),
+      autoAdvance: persistedSignal('reelkit-image-preview-auto-advance', false),
+      handleImageClick: (index: number) => {
+        previewIndex.value = index;
+      },
+      handleImageKeyDown: (e: React.KeyboardEvent, index: number) => {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        e.preventDefault();
+        previewIndex.value = index;
+      },
+      handleClose: () => {
+        previewIndex.value = null;
+      },
+    };
+  });
 
   // Disable mobile pull-to-refresh while the lightbox is open so the
   // `swipeToCloseDirection: 'down'` gesture is not preempted by the
   // browser. Scoped to the open window only — leaves regular scrolling
   // untouched the rest of the time.
   useEffect(() => {
-    if (previewIndex === null) return;
-    const prev = document.documentElement.style.overscrollBehaviorY;
-    document.documentElement.style.overscrollBehaviorY = 'contain';
-    return () => {
-      document.documentElement.style.overscrollBehaviorY = prev;
+    const html = document.documentElement;
+    let restore: (() => void) | null = null;
+    const sync = () => {
+      restore?.();
+      restore = null;
+      if (previewIndex.value === null) return;
+      const prev = html.style.overscrollBehaviorY;
+      html.style.overscrollBehaviorY = 'contain';
+      restore = () => {
+        html.style.overscrollBehaviorY = prev;
+      };
     };
-  }, [previewIndex]);
+    const dispose = previewIndex.observe(sync);
+    return () => {
+      dispose();
+      restore?.();
+    };
+  }, []);
 
   return (
     <div className="image-gallery-page">
@@ -186,30 +217,54 @@ function ImagePreviewPage() {
           Click on any image to open the preview. Use arrow keys or swipe to
           navigate.
         </p>
-        <div className="transition-selector">
-          <span>Transition:</span>
-          {_kTransitions.map((t) => (
-            <button
-              key={t.label}
-              className={`transition-btn ${transitionFn === t.fn ? 'active' : ''}`}
-              onClick={() => setTransitionFn(() => t.fn)}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
-        <div className="transition-selector">
-          <span>Swipe-to-close:</span>
-          {_kSwipeDirections.map((d) => (
-            <button
-              key={d}
-              className={`transition-btn ${swipeDirection === d ? 'active' : ''}`}
-              onClick={() => setSwipeDirection(d)}
-            >
-              {d}
-            </button>
-          ))}
-        </div>
+        <Observe signals={[transitionFn]}>
+          {() => (
+            <div className="transition-selector">
+              <span>Transition:</span>
+              {_kTransitions.map((t) => (
+                <button
+                  key={t.label}
+                  className={`transition-btn ${transitionFn.value === t.fn ? 'active' : ''}`}
+                  onClick={() => (transitionFn.value = t.fn)}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </Observe>
+        <Observe signals={[swipeDirection]}>
+          {() => (
+            <div className="transition-selector">
+              <span>Swipe-to-close:</span>
+              {_kSwipeDirections.map((d) => (
+                <button
+                  key={d}
+                  className={`transition-btn ${swipeDirection.value === d ? 'active' : ''}`}
+                  onClick={() => (swipeDirection.value = d)}
+                >
+                  {d}
+                </button>
+              ))}
+            </div>
+          )}
+        </Observe>
+        <Observe signals={[autoAdvance]}>
+          {() => (
+            <div className="transition-selector">
+              <span>Slideshow:</span>
+              {[false, true].map((on) => (
+                <button
+                  key={String(on)}
+                  className={`transition-btn ${autoAdvance.value === on ? 'active' : ''}`}
+                  onClick={() => (autoAdvance.value = on)}
+                >
+                  {on ? 'on' : 'off'}
+                </button>
+              ))}
+            </div>
+          )}
+        </Observe>
       </div>
 
       <div className="gallery-grid">
@@ -220,12 +275,7 @@ function ImagePreviewPage() {
             onClick={() => handleImageClick(index)}
             role="button"
             tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                handleImageClick(index);
-              }
-            }}
+            onKeyDown={(e) => handleImageKeyDown(e, index)}
           >
             <GalleryThumb
               src={image.src}
@@ -240,14 +290,23 @@ function ImagePreviewPage() {
         ))}
       </div>
 
-      <LightboxOverlay
-        isOpen={previewIndex !== null}
-        images={sampleImages}
-        initialIndex={previewIndex ?? 0}
-        onClose={handleClose}
-        transitionFn={transitionFn}
-        swipeToCloseDirection={swipeDirection}
-      />
+      <Observe
+        signals={[previewIndex, transitionFn, swipeDirection, autoAdvance]}
+      >
+        {() => (
+          <LightboxOverlay
+            isOpen={previewIndex.value !== null}
+            images={sampleImages}
+            initialIndex={previewIndex.value ?? 0}
+            onClose={handleClose}
+            transitionFn={transitionFn.value}
+            swipeToCloseDirection={swipeDirection.value}
+            autoAdvance={autoAdvance.value}
+            autoAdvanceInterval={_kAutoAdvanceInterval}
+            showDownload
+          />
+        )}
+      </Observe>
     </div>
   );
 }

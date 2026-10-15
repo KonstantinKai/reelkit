@@ -1,6 +1,6 @@
 ---
 title: 核心 API 参考
-description: '@reelkit/core 完整 API：配置项、回调、方法、状态属性、信号、URL 状态与视频工具。'
+description: '@reelkit/core 完整参考：配置项、回调、方法、状态、信号、过渡动画、内容加载、声音、时间轴、全屏、DOM 工具、尺寸检测、自动播放计时器、文件下载、焦点管理与视频工具。'
 ---
 
 import usage from '../../../snippets/core-api/usage.ts?raw';
@@ -198,6 +198,59 @@ import usage from '../../../snippets/core-api/usage.ts?raw';
 | `isMobileWidth` | `(viewportWidth: number) => boolean` | 这个宽度的窗口是否使用手机布局：768px 及以下。所有浮层及其样式表都在这个宽度切换。 |
 | `fitAspectRatio` | `(viewport: [number, number], aspectRatio?: number) => [number, number]` | 给定窗口下的浮层尺寸。手机宽度下占满整个窗口；否则按 `aspectRatio` 占满窗口高度，放不下时收窄到窗口宽度。缺失、为零、为负或非有限的比例会回退到 9/16。 |
 | `isTouchDevice` | `() => boolean` | 设备是否支持触摸输入（`ontouchstart` 或 `maxTouchPoints`）。这是能力检测，不是屏幕尺寸：触屏笔记本算，窄的桌面窗口不算。 |
+
+## 自动播放 [#autoplay]
+
+用于一切自行前进的内容的计时器。它们的行为以及如何接入，见[自动播放指南](/docs/core/guide#autoplay)。
+
+| 导出 | 类型 | 说明 |
+| --- | --- | --- |
+| `createTimerController` | `(config: TimerControllerConfig) => TimerController` | 把一段时长从 0 计到 1，结束时回调。驱动 stories 播放器中的每个 story。 |
+| `createSlideshowController` | `(config: SlideshowControllerConfig) => SlideshowController` | 自动前进画廊背后的状态机。驱动 lightbox 的 `autoAdvance`。 |
+
+### createTimerController [#createtimercontroller]
+
+| `TimerControllerConfig` | 类型 | 说明 |
+| --- | --- | --- |
+| `duration` | `number` | 默认时长（毫秒），`start()` 未传入时长时使用 |
+| `onComplete` | `() => void` | 进度到达 1 时调用 |
+
+| `TimerController` | 类型 | 说明 |
+| --- | --- | --- |
+| `progress` | `Signal<number>` | 从 0 到 1 的进度；驱动进度条 |
+| `isRunning` | `Signal<boolean>` | 计时器是否正在计时 |
+| `start(duration?)` | `(number?) => void` | 从 0 重新开始，可为本次运行指定另一个时长 |
+| `pause()` | `() => void` | 冻结在当前进度 |
+| `resume()` | `() => void` | 从冻结的进度继续 |
+| `reset()` | `() => void` | 回到 0 并停止 |
+| `dispose()` | `() => void` | 取消待执行的帧 |
+
+### createSlideshowController [#createslideshowcontroller]
+
+| `SlideshowControllerConfig` | 类型 | 说明 |
+| --- | --- | --- |
+| `interval` | `number` | 一张图片停留的时长（毫秒），从图片加载完成后开始计算 |
+| `onAdvance` | `() => void` | 当前幻灯片已结束。前进到下一张，或在最后一张上调用 `pause()` |
+
+| `SlideshowController` | 类型 | 说明 |
+| --- | --- | --- |
+| `isPlaying` | `Signal<boolean>` | 幻灯片播放是否开启。挂起（hold）不会改变它 |
+| `progress` | `Signal<number>` | 当前图片的间隔已走过多少，从 0 到 1 |
+| `play()` / `pause()` / `toggle()` | `() => void` | 开启或关闭；当前幻灯片保留其进度 |
+| `setInterval(ms)` | `(number) => void` | 从下一张图片起更改间隔 |
+| `setSlide(kind)` | `(SlideshowSlideKind) => void` | 有新的幻灯片成为当前项：进度从头开始，并等待 `ready()` 或 `ended()`。`SlideshowSlideKind` 为 `'image' \| 'video'` |
+| `ready()` | `() => void` | 当前图片已加载或加载失败；开始计算它的间隔 |
+| `ended()` | `() => void` | 当前视频已结束；立即前进，或在没有任何挂起时前进 |
+| `hold(reason)` / `release(reason)` | `(string) => void` | 因某个原因（例如 `'hover'` 或 `'drag'`）暂停计时。挂起可以叠加 |
+| `dispose()` | `() => void` | 停止计时并移除可见性监听 |
+
+## 下载 [#download]
+
+从 URL 保存文件，包括跨域文件。它采用的回退方式见[下载指南](/docs/core/guide#download)。
+
+| 导出 | 类型 | 说明 |
+| --- | --- | --- |
+| `downloadFile` | `(url: string, filename?: string) => Promise<void>` | 以 `filename` 保存文件，默认取 URL 路径的最后一段。它会先获取文件再保存 blob，因为跨域链接上的 `download` 属性会被忽略。当获取失败或服务器返回错误时（通常是没有 CORS 头的跨域服务器），改为在新标签页中打开该 URL。永不 reject；没有 window 时什么也不做。 |
 
 ## 焦点管理 [#focus-management]
 

@@ -218,9 +218,11 @@ describe('RkLightboxSlideDirective', () => {
       index: 0,
       size: [800, 600] as [number, number],
       isActive: true,
+      autoAdvance: false,
       onReady: noop,
       onWaiting: noop,
       onError: noop,
+      onEnded: noop,
     } satisfies LightboxSlideContext;
 
     expect(

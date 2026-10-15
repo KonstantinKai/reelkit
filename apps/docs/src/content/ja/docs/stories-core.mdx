@@ -6,7 +6,6 @@ description: '@reelkit/react-stories-player を支えるエンジンです。純
 import { Cpu, Layers, Timer, Minus, MousePointerClick, Cog } from 'lucide-react';
 import installation from '../../snippets/stories-core/installation.sh?raw';
 import controllerExample from '../../snippets/stories-core/controller-example.ts?raw';
-import timerExample from '../../snippets/stories-core/timer-example.ts?raw';
 import canvasExample from '../../snippets/stories-core/canvas-example.ts?raw';
 import viewedControllerExample from '../../snippets/stories-core/viewed-controller-example.ts?raw';
 import typesCode from '../../snippets/stories-core/types-code.ts?raw';
@@ -26,8 +25,8 @@ import typesCode from '../../snippets/stories-core/types-code.ts?raw';
   },
   {
     icon: Timer,
-    label: 'RAF タイマー',
-    desc: 'requestAnimationFrame による自動送り、一時停止と再開にも対応',
+    label: 'ストーリーのタイミング',
+    desc: 'core のタイマーによる自動送り、一時停止と再開にも対応',
   },
   {
     icon: Minus,
@@ -106,35 +105,7 @@ import typesCode from '../../snippets/stories-core/types-code.ts?raw';
 
 ## タイマーコントローラー [#timer-controller]
 
-`createTimerController(config)` は `requestAnimationFrame` のループで自動送りを動かします。進捗のシグナル（0 から 1）が進捗バーに使われます。一時停止と再開では正確な位置が保たれます。
-
-### 設定（TimerControllerConfig） [#config-timercontrollerconfig]
-
-| プロパティ | 型 | デフォルト | 説明 |
-| --- | --- | --- | --- |
-| `duration` | `number` | 必須 | デフォルトの長さ（ミリ秒） |
-| `onComplete` | `() => void` | undefined | タイマーが 100% に達したときに呼ばれます |
-
-### 状態 [#state]
-
-| シグナル | 型 | 説明 |
-| --- | --- | --- |
-| `progress` | `Signal<number>` | 進捗のシグナル（0 から 1） |
-| `isRunning` | `Signal<boolean>` | タイマーが動いているかどうか |
-
-### メソッド [#methods]
-
-| メソッド | 型 | 説明 |
-| --- | --- | --- |
-| `start(duration?)` | `(number?) => void` | タイマーを開始（または再開始）します。長さを上書きすることもできます |
-| `pause()` | `() => void` | 現在の位置で進捗を止めます |
-| `resume()` | `() => void` | 止めた位置から続けます |
-| `reset()` | `() => void` | 進捗を 0 に戻して止めます |
-| `dispose()` | `() => void` | リソースを片付けます |
-
-### 例 [#example]
-
-<CodeBlock code={timerExample} />
+各ストーリーの進捗を動かすタイマーは、`@reelkit/core` の `createTimerController` にあり、Lightbox のスライドショーと共有しています。`@reelkit/core` か、お使いのバインディング（`@reelkit/react`、`@reelkit/vue`、`@reelkit/angular`）からインポートしてください。このパッケージからはもうエクスポートされていません。設定、状態、メソッドは core API の[自動再生](/docs/core/api#autoplay)を、`onStoryTimerComplete` への組み込み方は上の [Stories Controller の例](#example)を参照してください。
 
 ## Canvas プログレスレンダラー [#canvas-progress-renderer]
 

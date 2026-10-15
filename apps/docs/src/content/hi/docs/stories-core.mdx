@@ -6,7 +6,6 @@ description: '@reelkit/react-stories-player के पीछे का इंज
 import { Cpu, Layers, Timer, Minus, MousePointerClick, Cog } from 'lucide-react';
 import installation from '../../snippets/stories-core/installation.sh?raw';
 import controllerExample from '../../snippets/stories-core/controller-example.ts?raw';
-import timerExample from '../../snippets/stories-core/timer-example.ts?raw';
 import canvasExample from '../../snippets/stories-core/canvas-example.ts?raw';
 import viewedControllerExample from '../../snippets/stories-core/viewed-controller-example.ts?raw';
 import typesCode from '../../snippets/stories-core/types-code.ts?raw';
@@ -26,8 +25,8 @@ import typesCode from '../../snippets/stories-core/types-code.ts?raw';
   },
   {
     icon: Timer,
-    label: 'RAF टाइमर',
-    desc: 'pause/resume के साथ requestAnimationFrame से अपने-आप आगे बढ़ना',
+    label: 'Story की टाइमिंग',
+    desc: 'core टाइमर पर अपने-आप आगे बढ़ना, pause और resume के साथ',
   },
   {
     icon: Minus,
@@ -106,35 +105,7 @@ import typesCode from '../../snippets/stories-core/types-code.ts?raw';
 
 ## टाइमर कंट्रोलर [#timer-controller]
 
-`createTimerController(config)` एक `requestAnimationFrame` loop से अपने-आप आगे बढ़ना चलाता है। प्रोग्रेस signal (0 से 1) प्रोग्रेस बार को भरता है। Pause और resume ठीक वही स्थिति बनाए रखते हैं।
-
-### कॉन्फ़िग (TimerControllerConfig) [#config-timercontrollerconfig]
-
-| प्रॉपर्टी | टाइप | डिफ़ॉल्ट | विवरण |
-| --- | --- | --- | --- |
-| `duration` | `number` | ज़रूरी | मिलीसेकंड में डिफ़ॉल्ट अवधि |
-| `onComplete` | `() => void` | undefined | टाइमर 100% पर पहुँचने पर कॉल होता है |
-
-### स्टेट [#state]
-
-| सिग्नल | टाइप | विवरण |
-| --- | --- | --- |
-| `progress` | `Signal<number>` | प्रोग्रेस signal (0 से 1) |
-| `isRunning` | `Signal<boolean>` | टाइमर अभी चल रहा है या नहीं |
-
-### मेथड [#methods]
-
-| मेथड | टाइप | विवरण |
-| --- | --- | --- |
-| `start(duration?)` | `(number?) => void` | टाइमर शुरू (या दोबारा शुरू) करता है, वैकल्पिक रूप से अलग अवधि के साथ |
-| `pause()` | `() => void` | प्रोग्रेस को मौजूदा स्थिति पर रोक देता है |
-| `resume()` | `() => void` | रुकी हुई स्थिति से आगे चलता है |
-| `reset()` | `() => void` | प्रोग्रेस को 0 पर लाकर रोक देता है |
-| `dispose()` | `() => void` | संसाधन साफ़ करता है |
-
-### उदाहरण [#example]
-
-<CodeBlock code={timerExample} />
+हर story की प्रोग्रेस चलाने वाला टाइमर `@reelkit/core` में `createTimerController` के रूप में रहता है, और lightbox स्लाइडशो के साथ साझा है। इसे `@reelkit/core` से या अपनी binding (`@reelkit/react`, `@reelkit/vue`, `@reelkit/angular`) से import करें; यह पैकेज अब इसे export नहीं करता। इसके config, स्टेट और मेथड के लिए core API में [ऑटोप्ले](/docs/core/api#autoplay) देखें, और इसे `onStoryTimerComplete` से जोड़ने के लिए ऊपर का [Stories कंट्रोलर उदाहरण](#example) देखें।
 
 ## Canvas प्रोग्रेस रेंडरर [#canvas-progress-renderer]
 
@@ -248,3 +219,37 @@ import typesCode from '../../snippets/stories-core/types-code.ts?raw';
 `@reelkit/stories-core` से export होने वाली सभी टाइप डेफ़िनिशन।
 
 <CodeBlock code={typesCode} />
+
+यह पैकेज इंजन है, प्लेयर नहीं: इसमें state machine और ज्यामिति है, और रेंडरिंग binding पर छोड़ दी जाती है। पहले कोई तैयार प्लेयर आज़माएँ, और अपना प्लेयर बनाते समय फ़्रेमवर्क binding का सहारा लें — virtualized `Reel`, signal bridge, overlay helpers।
+
+<NextSteps
+        items={[
+          {
+            label: 'Stories Player',
+            path: {
+              react: '/docs/stories-player',
+              angular: '/docs/angular-stories-player',
+              vue: '/docs/vue-stories-player',
+            },
+            description: 'इसी इंजन पर बना तैयार प्लेयर',
+          },
+          {
+            label: 'फ़्रेमवर्क गाइड',
+            path: {
+              react: '/docs/react/guide',
+              angular: '/docs/angular/guide',
+              vue: '/docs/vue/guide',
+            },
+            description: 'वह binding जिससे आपका अपना प्लेयर रेंडर होता है',
+          },
+          {
+            label: 'फ़्रेमवर्क API रेफ़रेंस',
+            path: {
+              react: '/docs/react/api',
+              angular: '/docs/angular/api',
+              vue: '/docs/vue/api',
+            },
+            description: 'slider props, signal bridges, overlay helpers',
+          },
+        ]}
+      />

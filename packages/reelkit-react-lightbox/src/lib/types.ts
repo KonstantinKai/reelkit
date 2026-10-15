@@ -31,6 +31,21 @@ export interface LightboxItem {
 
   /** Intrinsic height of the image in pixels. Currently unused by the lightbox. */
   height?: number;
+
+  /**
+   * Address the download button saves, when it differs from `src`, such as
+   * a full-resolution original behind a resized preview.
+   *
+   * @default src
+   */
+  downloadUrl?: string;
+
+  /**
+   * File name the download button saves under.
+   *
+   * @default the last segment of the download URL's path
+   */
+  downloadName?: string;
 }
 
 /**
@@ -49,11 +64,29 @@ export interface ControlsRenderProps {
   /** Whether the lightbox is currently in fullscreen mode. */
   isFullscreen: boolean;
 
+  /** Whether the slideshow is running. Always `false` without `autoAdvance`. */
+  isAutoAdvancing: boolean;
+
+  /** Whether the active item is being downloaded. */
+  isDownloading: boolean;
+
   /** Callback to close the lightbox. */
   onClose: () => void;
 
   /** Toggle fullscreen mode. */
   onToggleFullscreen: () => void;
+
+  /**
+   * Switch the slideshow on or off. Present only when `autoAdvance` is on,
+   * so a custom renderer shows a play/pause button only when it does
+   * something.
+   */
+  onToggleAutoAdvance?: () => void;
+
+  /**
+   * Download the active item. Present only when `showDownload` is on.
+   */
+  onDownload?: () => void;
 }
 
 /**
@@ -92,6 +125,12 @@ export interface SlideRenderProps {
   /** Whether this is the currently active slide. */
   isActive: boolean;
 
+  /**
+   * Whether the lightbox auto-advances. A video slide should then play once
+   * rather than loop, because a looping video never ends.
+   */
+  autoAdvance: boolean;
+
   /** Notify that the slide content is ready (loaded). Clears the spinner. */
   onReady: () => void;
 
@@ -100,6 +139,12 @@ export interface SlideRenderProps {
 
   /** Notify that the slide content failed to load. Shows error icon. */
   onError: () => void;
+
+  /**
+   * Notify that a video slide played to its end. With auto-advance on, the
+   * lightbox moves to the next slide; otherwise nothing happens.
+   */
+  onEnded: () => void;
 }
 
 /**

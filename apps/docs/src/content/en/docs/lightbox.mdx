@@ -3,7 +3,7 @@ title: Lightbox
 description: Full-screen image gallery lightbox overlay for React. LightboxItem schema, props, tree-shakable transitions (slideTransition, lightboxFadeTransition, flipTransition, lightboxZoomTransition), keyboard shortcuts, theming tokens, CSS classes, slot renderers.
 ---
 
-import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2 } from 'lucide-react';
+import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2, Play, Download } from 'lucide-react';
 import { LightboxDemo } from '../../../components/demos/LightboxDemo';
 import installation from '../../snippets/lightbox/installation.sh?raw';
 import installation2 from '../../snippets/lightbox/installation-2.ts?raw';
@@ -36,6 +36,10 @@ import usefullscreen from '../../snippets/lightbox/usefullscreen.tsx?raw';
 import transitions from '../../snippets/lightbox/transitions.tsx?raw';
 import customTransitionFunction from '../../snippets/lightbox/custom-transition-function.tsx?raw';
 import theming from '../../snippets/lightbox/theming.css?raw';
+import autoAdvance from '../../snippets/lightbox/auto-advance.tsx?raw';
+import download from '../../snippets/lightbox/download.tsx?raw';
+import playpausebutton from '../../snippets/lightbox/playpausebutton.tsx?raw';
+import downloadbutton from '../../snippets/lightbox/downloadbutton.tsx?raw';
 
 A full-screen image and video gallery lightbox component using `@reelkit/react-lightbox`.
 
@@ -108,6 +112,16 @@ A full-screen image and video gallery lightbox component using `@reelkit/react-l
                 icon: Link2,
                 label: 'URL State',
                 desc: 'Shareable, bookmarkable links',
+              },
+              {
+                icon: Play,
+                label: 'Slideshow',
+                desc: 'Opt-in auto-advance with play/pause',
+              },
+              {
+                icon: Download,
+                label: 'Download',
+                desc: 'Opt-in button that saves the active item',
               },
             ]} />
 
@@ -261,6 +275,30 @@ Key by a different field (a `slug`), or page an infinite feed with `locateAsync`
 - There is no timeout — the lightbox cannot know how long the gallery is. Settle with `null` when pagination is exhausted, or the overlay stays closed indefinitely.
 - Whatever `locateAsync` returns is authoritative — the index of data it just fetched, taken as-is without re-reading `images`.
 
+## Auto-advance [#auto-advance]
+
+Set `autoAdvance` to play the gallery as a slideshow when it opens. Off by default, so an existing lightbox renders and behaves as before.
+
+<CodeBlock code={autoAdvance} language="tsx" />
+
+- **Images** stay for `autoAdvanceInterval` (5000 ms by default), counted from the moment the image has loaded, so a slow image is never skipped before anyone saw it. An image that fails to load counts from its error.
+- **Videos** play once instead of looping and move on when they end. With `useVideoSlideRenderer` this is wired for you; a custom `renderSlide` reads `autoAdvance` from its props and reports the end through `onEnded`.
+- **It waits** while the mouse rests on a control (a button, a link or the caption), during a swipe, and while the page is hidden, then continues from where it stopped.
+- **Moving by hand** (arrows, keys, wheel, swipe) starts the new slide's interval from zero; the slideshow stays on.
+- **On the last slide** it stops, unless `loop` is set. The play/pause button in the controls shows the state and lets the viewer switch it.
+
+A custom `renderControls` receives `isAutoAdvancing` and, only when `autoAdvance` is on, `onToggleAutoAdvance` — render a [PlayPauseButton](#playpausebutton) when it is there. The timing itself is `createSlideshowController` from `@reelkit/core`; see the [Autoplay guide](/docs/core/guide#autoplay) to build the same behaviour into your own player, and the [Core API](/docs/core/api#autoplay) for its methods.
+
+## Download [#download]
+
+Set `showDownload` to add a download button to the controls. It saves the active item from its `downloadUrl`, falling back to `src`, under its `downloadName`, falling back to the last segment of the URL.
+
+<CodeBlock code={download} language="tsx" />
+
+The file is fetched and saved, because a browser ignores the `download` attribute on a cross-origin link and would open the file instead. When the fetch fails — usually a server on another origin that sends no CORS headers — the file opens in a new tab, where the viewer can still save it. Serve the files with `Access-Control-Allow-Origin` for a one-click save. The button is disabled while a download is in progress.
+
+A custom `renderControls` receives `isDownloading` and, only when `showDownload` is on, `onDownload` — render a [DownloadButton](#downloadbutton) when it is there. The helper is `downloadFile` from `@reelkit/core`; see the [Download guide](/docs/core/guide#download).
+
 ## API Reference [#api-reference]
 
 ### LightboxOverlay Props [#lightboxoverlay-props]
@@ -274,11 +312,14 @@ Key by a different field (a `slug`), or page an infinite feed with `locateAsync`
 | `ariaLabel` | `string` | 'Image gallery' | Accessible label for the dialog region; announced by screen readers when the lightbox opens |
 | `initialIndex` | `number` | 0 | Starting image index |
 | `transitionFn` | `TransitionTransformFn` | slideTransition | Slide transition function. Import a built-in (slideTransition, flipTransition, lightboxFadeTransition, lightboxZoomTransition) or pass a custom one. Defaults to slideTransition when omitted. |
+| `autoAdvance` | `boolean` | false | Play the gallery as a slideshow. See [Auto-advance](#auto-advance). |
+| `autoAdvanceInterval` | `number` | 5000 | How long each image stays during a slideshow, in milliseconds, counted once it has loaded |
+| `showDownload` | `boolean` | false | Add a download button for the active item. See [Download](#download). |
 | `apiRef` | `MutableRefObject<ReelApi>` | - | Ref to access Reel API |
 | `renderControls` | `(props: ControlsRenderProps) => ReactNode` | - | Custom controls, replaces default close button, counter, and fullscreen toggle |
 | `renderNavigation` | `(props: NavigationRenderProps) => ReactNode` | - | Custom navigation, replaces default prev/next arrows |
 | `renderInfo` | `(props: InfoRenderProps) => ReactNode` | - | Custom info overlay, replaces default title + description gradient. Return null to hide. |
-| `renderSlide` | `(props: SlideRenderProps) => ReactNode \| null` | - | Custom slide rendering. Receives \{ item, index, size, isActive, onReady, onWaiting, onError \}. Return null to fall back to default. |
+| `renderSlide` | `(props: SlideRenderProps) => ReactNode \| null` | - | Custom slide rendering. Receives \{ item, index, size, isActive, autoAdvance, onReady, onWaiting, onError, onEnded \}. Return null to fall back to default. |
 | `renderLoading` | `(props: { item: LightboxItem; activeIndex: number }) => ReactNode` | - | Custom loading indicator, replaces default spinner |
 | `renderError` | `(props: { item: LightboxItem; activeIndex: number }) => ReactNode` | - | Custom error indicator, replaces default error icon |
 
@@ -363,6 +404,18 @@ Mute/unmute toggle button for video slides (Volume2/VolumeX icon). Included auto
 
 <CodeBlock code={soundbutton} language="tsx" />
 
+### PlayPauseButton [#playpausebutton]
+
+Slideshow toggle (Play/Pause icon, `aria-pressed` while playing). Props (`PlayPauseButtonProps`): `isPlaying`, `onToggle`, optional `className` and `style`. The default controls show it when `autoAdvance` is on.
+
+<CodeBlock code={playpausebutton} language="tsx" />
+
+### DownloadButton [#downloadbutton]
+
+Download button (Download icon), disabled while `isDownloading`. Props (`DownloadButtonProps`): `isDownloading`, `onClick`, optional `className` and `style`. The default controls show it when `showDownload` is on.
+
+<CodeBlock code={downloadbutton} language="tsx" />
+
 ## Hooks [#hooks]
 
 ### useVideoSlideRenderer [#usevideosliderenderer]
@@ -372,10 +425,6 @@ Hook for opt-in video support. Returns `renderSlide`, `renderControls`, and `Sou
 <CodeBlock code={usevideosliderenderer} language="typescript" />
 
 ### useFullscreen [#usefullscreen]
-
-<Callout type="warning" title="Moved">
-  `useFullscreen` was removed from `@reelkit/react-lightbox`. Import it from `@reelkit/react` instead.
-</Callout>
 
 Hook for managing fullscreen state with cross-browser support.
 
@@ -413,6 +462,8 @@ All UI elements use plain CSS classes (not CSS modules) that can be targeted wit
 | `.rk-lightbox-swipe-hint` | Overlay | Mobile swipe hint |
 | `.rk-lightbox-controls-left` | Controls | Top-left controls container |
 | `.rk-lightbox-btn` | Controls | Control buttons (fullscreen, etc.) |
+| `.rk-lightbox-play-pause` | Controls | Slideshow play/pause button (with `.rk-lightbox-btn`) |
+| `.rk-lightbox-download` | Controls | Download button (with `.rk-lightbox-btn`) |
 | `.rk-lightbox-close` | Controls | Close button |
 | `.rk-lightbox-counter` | Controls | Image counter chip |
 | `.rk-lightbox-nav` | Navigation | Navigation arrows (both) |
@@ -445,6 +496,7 @@ Every color, size, z-index, and transition lives in a CSS custom property. Overr
 | `--rk-lightbox-btn-bg-hover` | `rgba(255, 255, 255, 0.2)` | Hover background for close, nav, small buttons |
 | `--rk-lightbox-btn-fg` | `#fff` | Icon color for close, nav, small buttons |
 | `--rk-lightbox-btn-size` | `36px` | Small button size (fullscreen toggle, etc.) |
+| `--rk-lightbox-btn-disabled-opacity` | `0.5` | Opacity of a disabled small button (download in progress) |
 | `--rk-lightbox-close-size` | `40px` | Close button size |
 | `--rk-lightbox-nav-size` | `48px` | Prev/next arrow size |
 | `--rk-lightbox-nav-opacity` | `0.7` | Idle opacity of prev/next arrows |

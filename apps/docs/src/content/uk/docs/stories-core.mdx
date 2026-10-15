@@ -6,7 +6,6 @@ description: 'Рушій Stories без прив’язки до фреймво�
 import { Cpu, Layers, Timer, Minus, MousePointerClick, Cog } from 'lucide-react';
 import installation from '../../snippets/stories-core/installation.sh?raw';
 import controllerExample from '../../snippets/stories-core/controller-example.ts?raw';
-import timerExample from '../../snippets/stories-core/timer-example.ts?raw';
 import canvasExample from '../../snippets/stories-core/canvas-example.ts?raw';
 import viewedControllerExample from '../../snippets/stories-core/viewed-controller-example.ts?raw';
 import typesCode from '../../snippets/stories-core/types-code.ts?raw';
@@ -26,8 +25,8 @@ import typesCode from '../../snippets/stories-core/types-code.ts?raw';
   },
   {
     icon: Timer,
-    label: 'Таймер на requestAnimationFrame',
-    desc: 'Автоперехід на requestAnimationFrame із паузою та відновленням',
+    label: 'Таймінг історій',
+    desc: 'Автоперехід на таймері з ядра, з паузою та відновленням',
   },
   {
     icon: Minus,
@@ -106,35 +105,7 @@ import typesCode from '../../snippets/stories-core/types-code.ts?raw';
 
 ## Контролер таймера [#timer-controller]
 
-`createTimerController(config)` керує автопереходом через цикл `requestAnimationFrame` . Сигнал прогресу (від 0 до 1) живить смугу прогресу. Пауза й відновлення зберігають точну позицію.
-
-### Конфігурація (TimerControllerConfig) [#config-timercontrollerconfig]
-
-| Властивість | Тип | Типове значення | Опис |
-| --- | --- | --- | --- |
-| `duration` | `number` | required | Типова тривалість у мілісекундах |
-| `onComplete` | `() => void` | undefined | Викликається, коли таймер доходить до 100% |
-
-### State [#state]
-
-| Signal | Тип | Опис |
-| --- | --- | --- |
-| `progress` | `Signal<number>` | Сигнал прогресу (від 0 до 1) |
-| `isRunning` | `Signal<boolean>` | Чи таймер зараз працює |
-
-### Методи [#methods]
-
-| Метод | Тип | Опис |
-| --- | --- | --- |
-| `start(duration?)` | `(number?) => void` | Запускає (або перезапускає) таймер із необов’язковою заміною тривалості |
-| `pause()` | `() => void` | Заморожує прогрес на поточній позиції |
-| `resume()` | `() => void` | Продовжує із замороженої позиції |
-| `reset()` | `() => void` | Скидає прогрес до 0 і зупиняє |
-| `dispose()` | `() => void` | Звільняє ресурси |
-
-### Example [#example]
-
-<CodeBlock code={timerExample} />
+Таймер, що веде прогрес кожної історії, живе в `@reelkit/core` як `createTimerController` і спільний зі слайдшоу Lightbox. Імпортуйте його з `@reelkit/core` або з вашої прив’язки (`@reelkit/react`, `@reelkit/vue`, `@reelkit/angular`); цей пакет його більше не експортує. Його конфігурацію, стан і методи див. в розділі [Автовідтворення](/docs/core/api#autoplay) API ядра, а як під’єднати його до `onStoryTimerComplete` — у [прикладі контролера Stories](#example) вище.
 
 ## Рендерер прогресу на Canvas [#canvas-progress-renderer]
 

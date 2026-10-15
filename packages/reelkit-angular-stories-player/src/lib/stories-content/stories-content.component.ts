@@ -41,15 +41,16 @@ import {
   reaction,
   slideTransition,
   toAngularSignal,
+  createTimerController,
   type ContentLoadingController,
   type GestureCommonEvent,
   type CoreSignal,
   type ReelApi,
+  type TimerController,
   type TransitionTransformFn,
 } from '@reelkit/angular';
 import {
   createStoriesController,
-  createTimerController,
   getStoriesSize,
   getTapAction,
   parseDurationMs,
@@ -57,7 +58,6 @@ import {
   type StoryItem,
   type StoriesGroup,
   type StoriesViewedStateController,
-  type TimerController,
 } from '@reelkit/stories-core';
 import { NgTemplateOutlet } from '@angular/common';
 import {

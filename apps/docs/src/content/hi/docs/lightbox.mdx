@@ -3,7 +3,7 @@ title: Lightbox
 description: React के लिए फ़ुलस्क्रीन इमेज गैलरी lightbox overlay। LightboxItem schema, props, tree-shake होने वाले ट्रांज़िशन (slideTransition, lightboxFadeTransition, flipTransition, lightboxZoomTransition), कीबोर्ड शॉर्टकट, थीमिंग tokens, CSS क्लास और slot renderers।
 ---
 
-import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2 } from 'lucide-react';
+import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2, Play, Download } from 'lucide-react';
 import { LightboxDemo } from '../../../components/demos/LightboxDemo';
 import installation from '../../snippets/lightbox/installation.sh?raw';
 import installation2 from '../../snippets/lightbox/installation-2.ts?raw';
@@ -36,6 +36,10 @@ import usefullscreen from '../../snippets/lightbox/usefullscreen.tsx?raw';
 import transitions from '../../snippets/lightbox/transitions.tsx?raw';
 import customTransitionFunction from '../../snippets/lightbox/custom-transition-function.tsx?raw';
 import theming from '../../snippets/lightbox/theming.css?raw';
+import autoAdvance from '../../snippets/lightbox/auto-advance.tsx?raw';
+import download from '../../snippets/lightbox/download.tsx?raw';
+import playpausebutton from '../../snippets/lightbox/playpausebutton.tsx?raw';
+import downloadbutton from '../../snippets/lightbox/downloadbutton.tsx?raw';
 
 `@reelkit/react-lightbox` से बना फ़ुलस्क्रीन इमेज और वीडियो गैलरी lightbox कंपोनेंट।
 
@@ -108,6 +112,16 @@ import theming from '../../snippets/lightbox/theming.css?raw';
                 icon: Link2,
                 label: 'URL स्टेट',
                 desc: 'शेयर और bookmark करने लायक लिंक',
+              },
+              {
+                icon: Play,
+                label: 'स्लाइडशो',
+                desc: 'play/pause के साथ opt-in अपने-आप आगे बढ़ना',
+              },
+              {
+                icon: Download,
+                label: 'डाउनलोड',
+                desc: 'सक्रिय आइटम सेव करने वाला opt-in बटन',
               },
             ]} />
 
@@ -261,6 +275,30 @@ URL में id को base64url में encode करने के लिए
 - कोई timeout नहीं है — lightbox नहीं जान सकता कि गैलरी कितनी लंबी है। पेज ख़त्म होने पर `null` से निपटाएँ, नहीं तो overlay हमेशा बंद रहेगा।
 - `locateAsync` जो भी लौटाए, वही अंतिम है — अभी fetch किए डेटा का index, `images` दोबारा पढ़े बिना जैसा है वैसा लिया जाता है।
 
+## अपने-आप आगे बढ़ना [#auto-advance]
+
+खुलते ही गैलरी को स्लाइडशो की तरह चलाने के लिए `autoAdvance` सेट करें। यह डिफ़ॉल्ट रूप से बंद है, इसलिए मौजूदा lightbox पहले की तरह ही रेंडर होता और चलता है।
+
+<CodeBlock code={autoAdvance} language="tsx" />
+
+- **इमेज** `autoAdvanceInterval` (डिफ़ॉल्ट 5000 ms) तक रहती हैं, जो इमेज लोड होने के पल से गिना जाता है, इसलिए धीमी इमेज किसी के देखने से पहले कभी नहीं छूटती। जो इमेज लोड नहीं हो पाती, उसकी गिनती उसके error से होती है।
+- **वीडियो** loop की जगह एक बार चलते हैं और ख़त्म होने पर आगे बढ़ते हैं। `useVideoSlideRenderer` के साथ यह आपके लिए जुड़ा हुआ है; कस्टम `renderSlide` अपने props से `autoAdvance` पढ़ता है और अंत की सूचना `onEnded` से देता है।
+- **यह रुका रहता है** जब माउस किसी कंट्रोल (बटन, लिंक या कैप्शन) पर टिका हो, swipe के दौरान, और जब पेज छिपा हो, फिर वहीं से आगे चलता है जहाँ रुका था।
+- **हाथ से आगे बढ़ना** (तीर, keys, wheel, swipe) नई स्लाइड का interval शून्य से शुरू करता है; स्लाइडशो चालू रहता है।
+- **आख़िरी स्लाइड पर** यह रुक जाता है, जब तक `loop` सेट न हो। कंट्रोल में play/pause बटन स्टेट दिखाता है और दर्शक को इसे बदलने देता है।
+
+कस्टम `renderControls` को `isAutoAdvancing` मिलता है और, सिर्फ़ `autoAdvance` चालू होने पर, `onToggleAutoAdvance` — जब यह मौजूद हो तो [PlayPauseButton](#playpausebutton) रेंडर करें। टाइमिंग ख़ुद `@reelkit/core` का `createSlideshowController` है; अपने प्लेयर में यही व्यवहार बनाने के लिए [ऑटोप्ले गाइड](/docs/core/guide#autoplay) देखें, और इसके मेथड के लिए [Core API](/docs/core/api#autoplay)।
+
+## डाउनलोड [#download]
+
+कंट्रोल में डाउनलोड बटन जोड़ने के लिए `showDownload` सेट करें। यह सक्रिय आइटम को उसके `downloadUrl` से सेव करता है, जो न हो तो `src` से, उसके `downloadName` नाम से, जो न हो तो URL के आख़िरी हिस्से के नाम से।
+
+<CodeBlock code={download} language="tsx" />
+
+फ़ाइल fetch करके सेव की जाती है, क्योंकि ब्राउज़र cross-origin लिंक पर `download` attribute को नज़रअंदाज़ करता है और फ़ाइल को खोल देता। जब fetch विफल हो — आम तौर पर दूसरे origin का ऐसा सर्वर जो CORS headers नहीं भेजता — तो फ़ाइल नए टैब में खुलती है, जहाँ दर्शक उसे फिर भी सेव कर सकता है। एक क्लिक में सेव के लिए फ़ाइलें `Access-Control-Allow-Origin` के साथ serve करें। डाउनलोड चलते समय बटन disabled रहता है।
+
+कस्टम `renderControls` को `isDownloading` मिलता है और, सिर्फ़ `showDownload` चालू होने पर, `onDownload` — जब यह मौजूद हो तो [DownloadButton](#downloadbutton) रेंडर करें। helper `@reelkit/core` का `downloadFile` है; [डाउनलोड गाइड](/docs/core/guide#download) देखें।
+
 ## API रेफ़रेंस [#api-reference]
 
 ### LightboxOverlay के props [#lightboxoverlay-props]
@@ -274,11 +312,14 @@ URL में id को base64url में encode करने के लिए
 | `ariaLabel` | `string` | 'Image gallery' | dialog क्षेत्र का सुलभ लेबल; lightbox खुलने पर स्क्रीन रीडर इसे बोलते हैं |
 | `initialIndex` | `number` | 0 | शुरुआती इमेज index |
 | `transitionFn` | `TransitionTransformFn` | slideTransition | स्लाइड ट्रांज़िशन फ़ंक्शन। कोई बिल्ट-इन (slideTransition, flipTransition, lightboxFadeTransition, lightboxZoomTransition) import करें या अपना पास करें। छोड़ने पर slideTransition लगता है। |
+| `autoAdvance` | `boolean` | false | गैलरी को स्लाइडशो की तरह चलाएँ। [अपने-आप आगे बढ़ना](#auto-advance) देखें। |
+| `autoAdvanceInterval` | `number` | 5000 | स्लाइडशो के दौरान हर इमेज कितनी देर रहती है, मिलीसेकंड में, लोड होने के बाद से गिना जाता है |
+| `showDownload` | `boolean` | false | सक्रिय आइटम के लिए डाउनलोड बटन जोड़ें। [डाउनलोड](#download) देखें। |
 | `apiRef` | `MutableRefObject<ReelApi>` | - | Reel API तक पहुँचने के लिए ref |
 | `renderControls` | `(props: ControlsRenderProps) => ReactNode` | - | कस्टम कंट्रोल, डिफ़ॉल्ट बंद करने के बटन, काउंटर और फ़ुलस्क्रीन टॉगल की जगह लेते हैं |
 | `renderNavigation` | `(props: NavigationRenderProps) => ReactNode` | - | कस्टम नेविगेशन, डिफ़ॉल्ट prev/next तीरों की जगह लेता है |
 | `renderInfo` | `(props: InfoRenderProps) => ReactNode` | - | कस्टम जानकारी overlay, डिफ़ॉल्ट शीर्षक + विवरण gradient की जगह लेता है। छिपाने के लिए null लौटाएँ। |
-| `renderSlide` | `(props: SlideRenderProps) => ReactNode \| null` | - | कस्टम स्लाइड रेंडरिंग। \{ item, index, size, isActive, onReady, onWaiting, onError \} मिलता है। डिफ़ॉल्ट पर लौटने के लिए null लौटाएँ। |
+| `renderSlide` | `(props: SlideRenderProps) => ReactNode \| null` | - | कस्टम स्लाइड रेंडरिंग। \{ item, index, size, isActive, autoAdvance, onReady, onWaiting, onError, onEnded \} मिलता है। डिफ़ॉल्ट पर लौटने के लिए null लौटाएँ। |
 | `renderLoading` | `(props: { item: LightboxItem; activeIndex: number }) => ReactNode` | - | कस्टम लोडिंग इंडिकेटर, डिफ़ॉल्ट spinner की जगह लेता है |
 | `renderError` | `(props: { item: LightboxItem; activeIndex: number }) => ReactNode` | - | कस्टम एरर इंडिकेटर, डिफ़ॉल्ट एरर आइकन की जगह लेता है |
 
@@ -363,6 +404,18 @@ URL में id को base64url में encode करने के लिए
 
 <CodeBlock code={soundbutton} language="tsx" />
 
+### PlayPauseButton [#playpausebutton]
+
+स्लाइडशो टॉगल (Play/Pause आइकन, चलते समय `aria-pressed`)। Props (`PlayPauseButtonProps`): `isPlaying`, `onToggle`, वैकल्पिक `className` और `style`। `autoAdvance` चालू होने पर डिफ़ॉल्ट कंट्रोल इसे दिखाते हैं।
+
+<CodeBlock code={playpausebutton} language="tsx" />
+
+### DownloadButton [#downloadbutton]
+
+डाउनलोड बटन (Download आइकन), `isDownloading` के दौरान disabled। Props (`DownloadButtonProps`): `isDownloading`, `onClick`, वैकल्पिक `className` और `style`। `showDownload` चालू होने पर डिफ़ॉल्ट कंट्रोल इसे दिखाते हैं।
+
+<CodeBlock code={downloadbutton} language="tsx" />
+
 ## Hooks [#hooks]
 
 ### useVideoSlideRenderer [#usevideosliderenderer]
@@ -372,10 +425,6 @@ opt-in वीडियो सपोर्ट का hook। `renderSlide`, `rend
 <CodeBlock code={usevideosliderenderer} language="typescript" />
 
 ### useFullscreen [#usefullscreen]
-
-<Callout type="warning" title="जगह बदली">
-  `useFullscreen` को `@reelkit/react-lightbox` से हटा दिया गया है। इसकी जगह इसे `@reelkit/react` से import करें।
-</Callout>
 
 सभी ब्राउज़र के सपोर्ट के साथ फ़ुलस्क्रीन स्टेट संभालने का hook।
 
@@ -413,6 +462,8 @@ opt-in वीडियो सपोर्ट का hook। `renderSlide`, `rend
 | `.rk-lightbox-swipe-hint` | Overlay | मोबाइल पर स्वाइप का संकेत |
 | `.rk-lightbox-controls-left` | Controls | ऊपर-बाएँ कंट्रोल का कंटेनर |
 | `.rk-lightbox-btn` | Controls | कंट्रोल बटन (फ़ुलस्क्रीन वगैरह) |
+| `.rk-lightbox-play-pause` | Controls | स्लाइडशो play/pause बटन (`.rk-lightbox-btn` के साथ) |
+| `.rk-lightbox-download` | Controls | डाउनलोड बटन (`.rk-lightbox-btn` के साथ) |
 | `.rk-lightbox-close` | Controls | बंद करने का बटन |
 | `.rk-lightbox-counter` | Controls | इमेज काउंटर chip |
 | `.rk-lightbox-nav` | Navigation | नेविगेशन तीर (दोनों) |
@@ -445,6 +496,7 @@ opt-in वीडियो सपोर्ट का hook। `renderSlide`, `rend
 | `--rk-lightbox-btn-bg-hover` | `rgba(255, 255, 255, 0.2)` | बंद, नेविगेशन और छोटे बटन का hover background |
 | `--rk-lightbox-btn-fg` | `#fff` | बंद, नेविगेशन और छोटे बटन के आइकन का रंग |
 | `--rk-lightbox-btn-size` | `36px` | छोटे बटन का आकार (फ़ुलस्क्रीन टॉगल वगैरह) |
+| `--rk-lightbox-btn-disabled-opacity` | `0.5` | disabled छोटे बटन की opacity (डाउनलोड चलते समय) |
 | `--rk-lightbox-close-size` | `40px` | बंद करने के बटन का आकार |
 | `--rk-lightbox-nav-size` | `48px` | prev/next तीर का आकार |
 | `--rk-lightbox-nav-opacity` | `0.7` | आराम की हालत में prev/next तीरों की opacity |

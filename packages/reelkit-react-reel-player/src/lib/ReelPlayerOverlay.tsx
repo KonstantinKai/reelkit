@@ -75,15 +75,15 @@ export interface ReelPlayerOverlayBaseProps<
   /**
    * Aspect ratio (width / height) for the player container on desktop.
    * On mobile (viewport 768px wide and narrower), the player always uses the
-   * full viewport. A zero, negative or non-finite ratio falls back to 9:16.
+   * full viewport. A zero, negative or non-finite ratio falls back to 9/16.
    *
-   * @default 0.5625 (9:16)
+   * @default 0.5625 (9/16)
    * @example
    * ```tsx
-   * // Standard 9:16 (default)
+   * // Standard 9/16 (default)
    * <ReelPlayerOverlay aspectRatio={9 / 16} ... />
    *
-   * // Wider 3:4
+   * // Wider 3/4
    * <ReelPlayerOverlay aspectRatio={3 / 4} ... />
    * ```
    */

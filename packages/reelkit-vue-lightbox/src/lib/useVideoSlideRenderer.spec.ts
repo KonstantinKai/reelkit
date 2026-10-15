@@ -211,9 +211,11 @@ describe('LightboxVideoSlide through VideoSlideRenderer', () => {
     options: {
       isActive?: boolean;
       index?: number;
+      autoAdvance?: boolean;
       onReady?: () => void;
       onWaiting?: () => void;
       onError?: () => void;
+      onEnded?: () => void;
     } = {},
   ) => {
     const isActive = ref(options.isActive ?? true);
@@ -229,9 +231,11 @@ describe('LightboxVideoSlide through VideoSlideRenderer', () => {
                 index: options.index ?? 1,
                 size: [100, 100] as [number, number],
                 isActive: isActive.value,
+                autoAdvance: options.autoAdvance ?? false,
                 onReady: options.onReady ?? (() => undefined),
                 onWaiting: options.onWaiting ?? (() => undefined),
                 onError: options.onError ?? (() => undefined),
+                onEnded: options.onEnded,
               }),
             ],
           });
@@ -338,5 +342,21 @@ describe('LightboxVideoSlide through VideoSlideRenderer', () => {
     await nextTick();
     expect(video()).toBe(element);
     expect(element.currentTime).toBe(12);
+  });
+
+  it('loops the video without auto-advance', () => {
+    const { video } = mountVideo();
+
+    expect(video()!.loop).toBe(true);
+  });
+
+  it('plays the video once and reports its end with auto-advance', () => {
+    const onEnded = vi.fn();
+    const { video } = mountVideo({ autoAdvance: true, onEnded });
+
+    video()!.dispatchEvent(new Event('ended'));
+
+    expect(video()!.loop).toBe(false);
+    expect(onEnded).toHaveBeenCalledTimes(1);
   });
 });

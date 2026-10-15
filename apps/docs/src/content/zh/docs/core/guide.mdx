@@ -11,6 +11,8 @@ import virtualization from '../../../snippets/core-guide/virtualization.ts?raw';
 import signals from '../../../snippets/core-guide/signals.ts?raw';
 import controllerState from '../../../snippets/core-guide/controller-state.ts?raw';
 import timelineController from '../../../snippets/core-guide/timeline-controller.ts?raw';
+import timerExample from '../../../snippets/core-guide/timer-example.ts?raw';
+import slideshowExample from '../../../snippets/core-guide/slideshow-example.ts?raw';
 import howItWorks from '../../../snippets/core-guide/how-it-works.ts?raw';
 import howItWorks2 from '../../../snippets/core-guide/how-it-works-2.ts?raw';
 
@@ -128,6 +130,28 @@ import howItWorks2 from '../../../snippets/core-guide/how-it-works-2.ts?raw';
 存储默认由 `localStorage` 支撑；`createSessionStorageAdapter()` 在关闭标签页时遗忘，自定义 `StorageAdapter` 则可以放到任何同步的地方。在 `attach()` 之前不会读取任何内容，因此服务端渲染与首次客户端渲染保持一致。
 
 记录会一直保留，直到被显式遗忘。传入 `ttlMs` 让它们过期——按轨道、按滑动时钟计算，因此仍在观看的内容不会与早已放弃的内容一起过时。它会改变写入的内容，每条记录变成一对 `[wire, timestamp]`，但无论选项如何设置，读取都能接受两种形状，所以在开启之前存下的记录会被视为新鲜，而不是被删除。`maxTracks` 限制的是数量而非时长：超出后，最久未记录的轨道会在下次写入时被丢弃，而记录某条轨道（即使位置落后）会把它移到队尾。完整选项见 [核心 API 参考](/docs/core/api#viewed-state)。
+
+## 自动播放 [#autoplay]
+
+为一切自动前进的内容计时。Stories Player 用 `createTimerController` 驱动每条 story；Lightbox 用建立在它之上的 `createSlideshowController` 驱动幻灯片播放。两者都基于 `requestAnimationFrame` 推进，每次暂停都会保留精确的进度。
+
+### createTimerController [#createtimercontroller]
+
+把一段时长从 0 数到 1，结束时调用回调。`start()` 总是从 0 开始，也可以为这一次传入另一段时长；`pause()` 和 `resume()` 会保留精确的位置。
+
+<CodeBlock code={timerExample} language="typescript" />
+
+### createSlideshowController [#createslideshowcontroller]
+
+自动前进的图库背后的状态机。只有在开启、没有被任何原因按住、并且页面可见时才会运行；页面可见性由它自己监听，其余的由你告诉它。图片从加载完成那一刻开始计算间隔，所以加载慢的图片不会在没人看到时被跳过。视频在结束时前进，所以它必须只播放一次而不是循环。在幻灯片被按住期间结束的视频，会在释放后前进。
+
+<CodeBlock code={slideshowExample} language="typescript" />
+
+完整的配置、状态和方法见 [Core API 参考](/docs/core/api#autoplay)。
+
+## 下载 [#download]
+
+`downloadFile(url, filename?)` 以 `filename` 为名保存文件，默认是 URL 路径的最后一段。跨源链接会忽略 `download` 属性，所以它会用 fetch 获取文件并保存 blob。当 fetch 失败或服务器返回错误时（最常见的是没有 CORS 头的跨源服务器），URL 会在新标签页中打开，读者仍然能拿到文件。它从不 reject，没有 window 时什么也不做。参见 [Core API 参考](/docs/core/api#download)。
 
 <NextSteps
         items={[

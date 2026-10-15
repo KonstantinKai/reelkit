@@ -14,7 +14,9 @@ import { LightboxVideoSlide } from './LightboxVideoSlide';
 import {
   CloseButton,
   Counter,
+  DownloadButton,
   FullscreenButton,
+  PlayPauseButton,
   SoundButton,
 } from './LightboxControls';
 
@@ -46,6 +48,11 @@ const slideRendererProps = {
     required: true as const,
   },
 
+  autoAdvance: {
+    type: Boolean,
+    default: false,
+  },
+
   onReady: {
     type: Function as PropType<() => void>,
     required: true as const,
@@ -59,6 +66,11 @@ const slideRendererProps = {
   onError: {
     type: Function as PropType<() => void>,
     required: true as const,
+  },
+
+  onEnded: {
+    type: Function as PropType<() => void>,
+    default: undefined,
   },
 } as const;
 
@@ -94,6 +106,16 @@ const controlsRendererProps = {
     required: true as const,
   },
 
+  isAutoAdvancing: {
+    type: Boolean,
+    default: false,
+  },
+
+  isDownloading: {
+    type: Boolean,
+    default: false,
+  },
+
   onClose: {
     type: Function as PropType<() => void>,
     required: true as const,
@@ -102,6 +124,16 @@ const controlsRendererProps = {
   onToggleFullscreen: {
     type: Function as PropType<() => void>,
     required: true as const,
+  },
+
+  onToggleAutoAdvance: {
+    type: Function as PropType<() => void>,
+    default: undefined,
+  },
+
+  onDownload: {
+    type: Function as PropType<() => void>,
+    default: undefined,
   },
 } as const;
 
@@ -132,9 +164,11 @@ export const VideoSlideRenderer = defineComponent({
           isActive: props.isActive,
           size: props.size,
           slideKey: `lightbox-${props.index}`,
+          loop: !props.autoAdvance,
           onPlaying: props.onReady,
           onWaiting: props.onWaiting,
           onLoadError: props.onError,
+          onEnded: props.onEnded,
         })
       : h(ImageSlide, {
           src: props.item.src,
@@ -179,6 +213,18 @@ export const VideoControlsRenderer = defineComponent({
           ? h(SoundButton, {
               isMuted: muted.value,
               onPress: soundState.toggle,
+            })
+          : null,
+        props.onToggleAutoAdvance
+          ? h(PlayPauseButton, {
+              isPlaying: props.isAutoAdvancing,
+              onPress: props.onToggleAutoAdvance,
+            })
+          : null,
+        props.onDownload
+          ? h(DownloadButton, {
+              isDownloading: props.isDownloading,
+              onPress: props.onDownload,
             })
           : null,
       ]),

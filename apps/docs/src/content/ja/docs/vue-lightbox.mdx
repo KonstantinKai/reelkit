@@ -3,7 +3,7 @@ title: Vue Lightbox
 description: Vue 3 用の、フルスクリーンの画像ギャラリーのオーバーレイです。LightboxItem のスキーマ、props、emits、スコープ付きスロット、ツリーシェイキングできる transitionFn、スワイプで閉じる操作、React 版と共通のテーマ設定を扱います。
 ---
 
-import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2 } from 'lucide-react';
+import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2, Play, Download } from 'lucide-react';
 import installation from '../../snippets/vue-lightbox/installation.sh?raw';
 import installation2 from '../../snippets/vue-lightbox/installation-2.ts?raw';
 import basicUsageCode from '../../snippets/vue-lightbox/basic-usage-code.vue?raw';
@@ -20,6 +20,8 @@ import lifecycleSlideCode from '../../snippets/vue-lightbox/lifecycle-slide-code
 import customLoadingCode from '../../snippets/vue-lightbox/custom-loading-code.vue?raw';
 import customErrorCode from '../../snippets/vue-lightbox/custom-error-code.vue?raw';
 import themingCode from '../../snippets/vue-lightbox/theming-code.css?raw';
+import autoAdvanceCode from '../../snippets/vue-lightbox/auto-advance.vue?raw';
+import downloadCode from '../../snippets/vue-lightbox/download.vue?raw';
 
 `@reelkit/vue-lightbox` で作られた、Vue 3 用のフルスクリーンの画像と動画のギャラリーです。
 
@@ -92,6 +94,16 @@ import themingCode from '../../snippets/vue-lightbox/theming-code.css?raw';
                 icon: Link2,
                 label: 'URL の状態',
                 desc: '共有もブックマークもできるリンク',
+              },
+              {
+                icon: Play,
+                label: 'スライドショー',
+                desc: 'オプトインの自動送り、再生と一時停止に対応',
+              },
+              {
+                icon: Download,
+                label: 'ダウンロード',
+                desc: 'アクティブなアイテムを保存するオプトインのボタン',
               },
             ]} />
 
@@ -191,6 +203,37 @@ import themingCode from '../../snippets/vue-lightbox/theming-code.css?raw';
 
 保留中のあいだギャラリーは閉じたままで、パラメーターはそのまま残るので、ディープリンクは取得のあいだも失われません。`null` か reject でパラメーターは取り除かれます。URL が変わったあと、閉じたあと、アンマウントしたあとに届いた答えは破棄されるので、遅い取得が誰も求めていないスライドを開くことはありません。返したものが正です。取得したばかりのデータのインデックスを伝えるもので、ギャラリーは Vue がまだ再描画していない `items` を読み直さずに、それをそのまま使います。
 
+## 自動送り [#auto-advance]
+
+`auto-advance` を指定すると、ギャラリーが開いたときにスライドショーとして再生します。デフォルトではオフなので、既存の Lightbox の描画と動作は変わりません。
+
+<CodeBlock code={autoAdvanceCode} language="vue" />
+
+- **画像**は `auto-advance-interval`（デフォルトは 5000 ms）のあいだ表示されます。画像の読み込みが終わった時点から数えるので、遅い画像が誰にも見られないまま飛ばされることはありません。読み込みに失敗した画像は、そのエラーの時点から数えます。
+- **動画**はループせずに 1 回だけ再生し、終わると次へ進みます。`VideoSlideRenderer` がこれを自動で行います。独自の `#slide` ではスコープから `autoAdvance` を読み、終わったことを `onEnded` で伝えてください。
+- **待機する**のは、マウスがコントロール（ボタン、リンク、キャプション）の上にあるあいだ、スワイプ中、ページが非表示のあいだです。そのあとは止まったところから続けます。
+- **手で移動する**と（矢印、キー、ホイール、スワイプ）、新しいスライドの間隔は 0 から始まります。スライドショーはオンのままです。
+- **最後のスライド**では、`loop` が指定されていない限り止まります。コントロールの再生／一時停止ボタンが状態を示し、閲覧者が切り替えられます。[LightboxApi](#lightboxapi) の `play()` と `pause()` で、同じことをコードから行えます。
+
+独自の `#controls` スロットは `isAutoAdvancing` を受け取り、`auto-advance` がオンのときだけ `onToggleAutoAdvance` も受け取ります。それがあるときは `PlayPauseButton` を描画してください。タイミング自体は `@reelkit/core` の `createSlideshowController` です。[自動再生ガイド](/docs/core/guide#autoplay)と [Core API](/docs/core/api#autoplay) を参照してください。
+
+## ダウンロード [#download]
+
+`show-download` を指定すると、コントロールにダウンロードボタンが加わります。アクティブなアイテムを `downloadUrl`（なければ `src`）から、`downloadName`（なければ URL の最後の部分）という名前で保存します。
+
+<CodeBlock code={downloadCode} language="vue" />
+
+ファイルは fetch してから保存します。別オリジンのリンクでは、ブラウザーは `download` 属性を無視してファイルを開いてしまうからです。fetch が失敗したとき（よくあるのは CORS ヘッダーを送らない別オリジンのサーバーです）は、ファイルを新しいタブで開くので、閲覧者はそこから保存できます。ワンクリックで保存できるようにするには、ファイルを `Access-Control-Allow-Origin` 付きで配信してください。ダウンロード中はボタンが無効になります。
+
+独自の `#controls` スロットは `isDownloading` を受け取り、`show-download` がオンのときだけ `onDownload` も受け取ります。それがあるときは `DownloadButton` を描画してください。ヘルパーは `@reelkit/core` の `downloadFile` です。[ダウンロードガイド](/docs/core/guide#download)を参照してください。
+
+### コントロールのボタン [#control-buttons]
+
+| コンポーネント | Props | 説明 |
+| --- | --- | --- |
+| `PlayPauseButton` | `PlayPauseButtonProps`: `isPlaying`, `onPress`, `className?` | スライドショーの切り替えボタン（Play／Pause のアイコン、再生中は `aria-pressed`）。`auto-advance` のときにデフォルトのコントロールが表示します。 |
+| `DownloadButton` | `DownloadButtonProps`: `isDownloading`, `onPress`, `className?` | ダウンロードボタン。`isDownloading` のあいだは無効になります。`show-download` のときにデフォルトのコントロールが表示します。 |
+
 ## API リファレンス [#api-reference]
 
 ### LightboxOverlay の Props [#lightboxoverlay-props]
@@ -213,6 +256,9 @@ import themingCode from '../../snippets/vue-lightbox/theming-code.css?raw';
 | `enableNavKeys` | `boolean` | true | キーボードの矢印キーによる操作を有効にします |
 | `enableWheel` | `boolean` | true | マウスホイールでの操作を有効にします |
 | `wheelDebounceMs` | `number` | 200 | ホイールイベントのデバウンス時間（ms） |
+| `autoAdvance` | `boolean` | false | ギャラリーをスライドショーとして再生します。[自動送り](#auto-advance)を参照してください。 |
+| `autoAdvanceInterval` | `number` | 5000 | スライドショーで各画像を表示しておく長さ（ms）。読み込みが終わった時点から数えます |
+| `showDownload` | `boolean` | false | アクティブなアイテムのダウンロードボタンを加えます。[ダウンロード](#download)を参照してください。 |
 | `ariaLabel` | `string` | 'Image gallery' | ダイアログ領域のアクセシブルなラベル |
 
 ### LightboxUrlOverlay の Props [#lightboxurloverlay-props]
@@ -247,6 +293,8 @@ import themingCode from '../../snippets/vue-lightbox/theming-code.css?raw';
 | `observe()` | `() => void` | `unobserve()` のあとに、ジェスチャー・キーボード・ホイール入力の監視を再開します |
 | `unobserve()` | `() => void` | ジェスチャー・キーボード・ホイール入力の監視を止めます。スライドはそのままの位置に残ります |
 | `close()` | `() => void` | 閉じるボタンや Escape と同じように lightbox を閉じます |
+| `play()` | `() => void` | スライドショーを始めます。アクティブなスライドは止まったところから続きます。`auto-advance` がなければ何もしません。 |
+| `pause()` | `() => void` | スライドショーを止めます。アクティブなスライドは進み具合を保ちます。`auto-advance` がなければ何もしません。 |
 
 ## LightboxItem インターフェース [#lightboxitem-interface]
 
@@ -259,13 +307,15 @@ import themingCode from '../../snippets/vue-lightbox/theming-code.css?raw';
 | `description` | `string` | いいえ | タイトルの下に表示する説明 |
 | `width` | `number` | いいえ | 画像の本来の幅（ピクセル） |
 | `height` | `number` | いいえ | 画像の本来の高さ（ピクセル） |
+| `downloadUrl` | `string` | いいえ | ダウンロードボタンが保存するもの。デフォルトは `src` |
+| `downloadName` | `string` | いいえ | 保存するファイル名。デフォルトは URL のパスの最後の部分 |
 
 ## スロットスコープの型 [#slot-scope-types]
 
 | 型 | フィールド |
 | --- | --- |
-| `SlideSlotScope` | `{ item, index, size: [number, number], isActive, onReady, onWaiting, onError }` |
-| `ControlsSlotScope` | `{ item, activeIndex, count, isFullscreen, onClose, onToggleFullscreen }` |
+| `SlideSlotScope` | `{ item, index, size: [number, number], isActive, autoAdvance, onReady, onWaiting, onError, onEnded }` |
+| `ControlsSlotScope` | `{ item, activeIndex, count, isFullscreen, isAutoAdvancing, isDownloading, onClose, onToggleFullscreen, onToggleAutoAdvance?, onDownload? }` |
 | `NavigationSlotScope` | `{ item, activeIndex, count, onPrev, onNext }` |
 | `InfoSlotScope` | `{ item, index }` |
 | `LoadingSlotScope` | `{ item, activeIndex }` |
@@ -325,6 +375,8 @@ CSS クラスはすべて通常のクラス（スコープなし）なので、`
 | `.rk-lightbox-error-text` | Overlay | エラー状態のテキストラベル |
 | `.rk-lightbox-controls-left` | Controls | 左上のコントロールのコンテナー |
 | `.rk-lightbox-btn` | Controls | コントロールのボタン（フルスクリーン、サウンドなど） |
+| `.rk-lightbox-play-pause` | Controls | スライドショーの再生／一時停止ボタン（`.rk-lightbox-btn` と併用） |
+| `.rk-lightbox-download` | Controls | ダウンロードボタン（`.rk-lightbox-btn` と併用） |
 | `.rk-lightbox-close` | Controls | 閉じるボタン |
 | `.rk-lightbox-counter` | Controls | 画像のカウンターのチップ |
 | `.rk-lightbox-nav` | Navigation | ナビゲーションの矢印（前へ・次への両方） |
@@ -354,6 +406,7 @@ CSS クラスはすべて通常のクラス（スコープなし）なので、`
 | `--rk-lightbox-btn-bg-hover` | `rgba(255, 255, 255, 0.2)` | 閉じる、ナビゲーション、小さいボタンのホバー時の背景 |
 | `--rk-lightbox-btn-fg` | `#fff` | 閉じる、ナビゲーション、小さいボタンのアイコンの色 |
 | `--rk-lightbox-btn-size` | `36px` | 小さいボタンの大きさ（フルスクリーン切り替えなど） |
+| `--rk-lightbox-btn-disabled-opacity` | `0.5` | 無効になった小さいボタンの不透明度（ダウンロード中） |
 | `--rk-lightbox-close-size` | `40px` | 閉じるボタンの大きさ |
 | `--rk-lightbox-nav-size` | `48px` | 前後の矢印の大きさ |
 | `--rk-lightbox-nav-opacity` | `0.7` | 前後の矢印の通常時の不透明度 |

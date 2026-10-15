@@ -1,6 +1,15 @@
 import { defineComponent, Fragment, h } from 'vue';
 import type { ExtractPropTypes, PropType } from 'vue';
-import { X, Maximize, Minimize, Volume2, VolumeX } from 'lucide-vue-next';
+import {
+  X,
+  Maximize,
+  Minimize,
+  Volume2,
+  VolumeX,
+  Play,
+  Pause,
+  Download,
+} from 'lucide-vue-next';
 
 /**
  * Props for {@link CloseButton}.
@@ -175,6 +184,106 @@ export const SoundButton = defineComponent({
 });
 
 /**
+ * Props for the slideshow toggle. In a custom `controls` slot, render it only
+ * when `onToggleAutoAdvance` is present and pass `isAutoAdvancing` through.
+ */
+export const playPauseButtonProps = {
+  /** Whether the slideshow is running. Shows Pause when it is, Play when not. */
+  isPlaying: { type: Boolean, required: true as const },
+
+  /**
+   * Optional CSS class applied to the `<button>` element.
+   *
+   * @default 'rk-lightbox-btn rk-lightbox-play-pause'
+   */
+  className: {
+    type: String,
+    default: 'rk-lightbox-btn rk-lightbox-play-pause',
+  },
+
+  /** Fired when the button is clicked. */
+  onPress: {
+    type: Function as PropType<() => void>,
+    required: true as const,
+  },
+} as const;
+
+export type PlayPauseButtonProps = ExtractPropTypes<
+  typeof playPauseButtonProps
+>;
+
+/**
+ * Slideshow play/pause toggle. The default controls show it when
+ * `auto-advance` is on; in a custom `controls` slot, render it when
+ * `onToggleAutoAdvance` is present.
+ */
+export const PlayPauseButton = defineComponent({
+  name: 'LightboxPlayPauseButton',
+  props: playPauseButtonProps,
+  setup(props) {
+    return () =>
+      h(
+        'button',
+        {
+          class: props.className,
+          title: props.isPlaying ? 'Pause slideshow' : 'Play slideshow',
+          'aria-pressed': props.isPlaying ? 'true' : 'false',
+          onClick: props.onPress,
+        },
+        [h(props.isPlaying ? Pause : Play, { size: 20 })],
+      );
+  },
+});
+
+/**
+ * Props for the download button. In a custom `controls` slot, render it only
+ * when `onDownload` is present and pass `isDownloading` through.
+ */
+export const downloadButtonProps = {
+  /** Whether a download is in progress. The button is disabled meanwhile. */
+  isDownloading: { type: Boolean, required: true as const },
+
+  /**
+   * Optional CSS class applied to the `<button>` element.
+   *
+   * @default 'rk-lightbox-btn rk-lightbox-download'
+   */
+  className: { type: String, default: 'rk-lightbox-btn rk-lightbox-download' },
+
+  /** Fired when the button is clicked. */
+  onPress: {
+    type: Function as PropType<() => void>,
+    required: true as const,
+  },
+} as const;
+
+export type DownloadButtonProps = ExtractPropTypes<typeof downloadButtonProps>;
+
+/**
+ * Download button for the active item. The default controls show it when
+ * `show-download` is on; in a custom `controls` slot, render it when
+ * `onDownload` is present.
+ */
+export const DownloadButton = defineComponent({
+  name: 'LightboxDownloadButton',
+  props: downloadButtonProps,
+  setup(props) {
+    return () =>
+      h(
+        'button',
+        {
+          class: props.className,
+          title: 'Download',
+          disabled: props.isDownloading,
+          'aria-busy': props.isDownloading ? 'true' : 'false',
+          onClick: props.onPress,
+        },
+        [h(Download, { size: 20 })],
+      );
+  },
+});
+
+/**
  * Props for the internal {@link LightboxControls} composed bar.
  *
  * @internal
@@ -189,6 +298,12 @@ export const lightboxControlsProps = {
   /** Whether the overlay is currently in fullscreen. */
   isFullscreen: { type: Boolean, required: true as const },
 
+  /** Whether the slideshow is running. */
+  isAutoAdvancing: { type: Boolean, default: false },
+
+  /** Whether the active item is being downloaded. */
+  isDownloading: { type: Boolean, default: false },
+
   /** Close handler passed to the embedded {@link CloseButton}. */
   onClose: {
     type: Function as PropType<() => void>,
@@ -199,6 +314,18 @@ export const lightboxControlsProps = {
   onToggleFullscreen: {
     type: Function as PropType<() => void>,
     required: true as const,
+  },
+
+  /** Slideshow toggle; the play/pause button shows only when it is given. */
+  onToggleAutoAdvance: {
+    type: Function as PropType<() => void>,
+    default: undefined,
+  },
+
+  /** Download handler; the download button shows only when it is given. */
+  onDownload: {
+    type: Function as PropType<() => void>,
+    default: undefined,
   },
 } as const;
 
@@ -225,6 +352,18 @@ export const LightboxControls = defineComponent({
             isFullscreen: props.isFullscreen,
             onPress: props.onToggleFullscreen,
           }),
+          props.onToggleAutoAdvance
+            ? h(PlayPauseButton, {
+                isPlaying: props.isAutoAdvancing,
+                onPress: props.onToggleAutoAdvance,
+              })
+            : null,
+          props.onDownload
+            ? h(DownloadButton, {
+                isDownloading: props.isDownloading,
+                onPress: props.onDownload,
+              })
+            : null,
         ]),
         h(CloseButton, { onPress: props.onClose }),
       ]);

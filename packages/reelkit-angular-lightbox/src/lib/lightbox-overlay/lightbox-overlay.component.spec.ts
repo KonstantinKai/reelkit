@@ -22,7 +22,11 @@ import {
   RkLightboxLoadingDirective,
   RkLightboxNavigationDirective,
 } from '../template-slots/lightbox-template-slots';
-import type { LightboxItem } from '../types';
+import type {
+  LightboxControlsContext,
+  LightboxItem,
+  LightboxSlideContext,
+} from '../types';
 
 // Mock @reelkit/angular — provide a mock BodyLockService and stub the signal
 // bridge helpers so no RAF loops run in tests.
@@ -96,7 +100,8 @@ jest.mock('@reelkit/angular', () => {
   const observe = jest.fn(() => noop);
 
   const mockFullscreenSignal = { value: false, observe };
-  const mockLoadingSignal = { value: true, observe };
+  // A real signal, so the slideshow hears the active slide finish loading.
+  const mockLoadingSignal = core.createSignal(true);
   const mockLoadingCtrl = {
     isLoading: mockLoadingSignal,
     setActiveIndex: jest.fn(),
@@ -122,12 +127,15 @@ jest.mock('@reelkit/angular', () => {
     onLoaded: jest.fn(() => noop),
   };
 
+  const mockDownloadFile = jest.fn(() => Promise.resolve());
+
   // Expose mock objects for test assertions via globalThis.
   (globalThis as unknown as Record<string, unknown>)['__lightboxMocks'] = {
     fullscreenSignal: mockFullscreenSignal,
     loadingSignal: mockLoadingSignal,
     loadingCtrl: mockLoadingCtrl,
     preloader: mockPreloader,
+    downloadFile: mockDownloadFile,
   };
 
   @Injectable({ providedIn: 'root' })
@@ -154,6 +162,9 @@ jest.mock('@reelkit/angular', () => {
     @Input() transition: unknown = undefined;
     @Output() apiReady = new EventEmitter<unknown>();
     @Output() afterChange = new EventEmitter<{ index: number }>();
+    @Output() slideDragStart = new EventEmitter<number>();
+    @Output() slideDragEnd = new EventEmitter<number>();
+    @Output() slideDragCanceled = new EventEmitter<number>();
   }
 
   @Directive({ selector: '[rkReelItem]' })
@@ -198,11 +209,15 @@ jest.mock('@reelkit/angular', () => {
     captureFocusForReturn: jest.fn(() => jest.fn()),
     createFocusTrap: jest.fn(() => jest.fn()),
     getFocusableElements: jest.fn(() => []),
-    observeDomEvent: jest.fn(() => jest.fn()),
+    observeDomEvent: core.observeDomEvent,
     // Real viewport helpers, so the resize spec drives an actual window event.
     getViewportSize: core.getViewportSize,
     observeViewportSize: core.observeViewportSize,
     isTouchDevice: core.isTouchDevice,
+    // The real slideshow, so the wiring specs run its actual timing.
+    createDisposableList: core.createDisposableList,
+    createSlideshowController: core.createSlideshowController,
+    downloadFile: mockDownloadFile,
   };
 });
 
@@ -227,6 +242,7 @@ const mocks = (globalThis as unknown as Record<string, unknown>)[
     preloadRange: jest.Mock;
     onLoaded: jest.Mock;
   };
+  downloadFile: jest.Mock;
 };
 
 const ITEMS: LightboxItem[] = [
@@ -1357,5 +1373,261 @@ describe('RkLightboxOverlayComponent', () => {
           .textContent,
       ).toContain('Image A!0');
     });
+  });
+});
+
+// The slideshow timing itself is covered by the core slideshow controller
+// tests; these check only how the lightbox feeds it and shows it.
+describe('RkLightboxOverlayComponent slideshow and download', () => {
+  const reelApi = { next: jest.fn(), prev: jest.fn(), adjust: jest.fn() };
+
+  beforeEach(async () => {
+    jest.clearAllMocks();
+    jest.useFakeTimers();
+    mocks.loadingSignal.value = false;
+    await configure();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+    mocks.loadingSignal.value = true;
+  });
+
+  const open = (inputs: Record<string, unknown> = {}, items = ITEMS) => {
+    const fixture = TestBed.createComponent(RkLightboxOverlayComponent);
+    fixture.componentRef.setInput('isOpen', true);
+    fixture.componentRef.setInput('items', items);
+    for (const [name, value] of Object.entries(inputs)) {
+      fixture.componentRef.setInput(name, value);
+    }
+    fixture.detectChanges();
+    const reel = fixture.debugElement.query(
+      By.css('rk-reel'),
+    ).componentInstance;
+    reel.apiReady.emit(reelApi);
+    return { fixture, reel };
+  };
+
+  const elapse = (
+    fixture: ComponentFixture<RkLightboxOverlayComponent>,
+    milliseconds: number,
+  ) => {
+    jest.advanceTimersByTime(milliseconds);
+    fixture.detectChanges();
+  };
+
+  const playPause = (fixture: ComponentFixture<RkLightboxOverlayComponent>) =>
+    fixture.debugElement.query(By.css('.rk-lightbox-play-pause'))
+      ?.nativeElement as HTMLButtonElement | undefined;
+
+  // jsdom has no PointerEvent, so a mouse event carries the pointer type.
+  const mouseOver = (target: Element) => {
+    const event = new MouseEvent('pointerover', { bubbles: true });
+    Object.defineProperty(event, 'pointerType', { value: 'mouse' });
+    target.dispatchEvent(event);
+  };
+
+  // The same field names exist in the React and Vue lightboxes; a rename
+  // here fails the spec type check before it can drift from them.
+  it('names the slideshow and download fields the way every binding does', () => {
+    const controls: (keyof LightboxControlsContext)[] = [
+      'isAutoAdvancing',
+      'onToggleAutoAdvance',
+      'isDownloading',
+      'onDownload',
+    ];
+    const slide: (keyof LightboxSlideContext)[] = ['autoAdvance', 'onEnded'];
+    const item: (keyof LightboxItem)[] = ['downloadUrl', 'downloadName'];
+
+    expect([...controls, ...slide, ...item]).toHaveLength(8);
+  });
+
+  it('adds no slideshow or download button and never advances by default', () => {
+    const { fixture } = open();
+    elapse(fixture, 20_000);
+
+    expect(playPause(fixture)).toBeUndefined();
+    expect(
+      fixture.debugElement.query(By.css('.rk-lightbox-download')),
+    ).toBeNull();
+    expect(reelApi.next).not.toHaveBeenCalled();
+  });
+
+  it('moves to the next slide once the loaded image has had its interval', () => {
+    const { fixture } = open({ autoAdvance: true, autoAdvanceInterval: 3000 });
+
+    elapse(fixture, 2900);
+    expect(reelApi.next).not.toHaveBeenCalled();
+    elapse(fixture, 200);
+    expect(reelApi.next).toHaveBeenCalledTimes(1);
+  });
+
+  it('waits for the active image to load before counting', () => {
+    mocks.loadingSignal.value = true;
+    const { fixture } = open({ autoAdvance: true });
+
+    elapse(fixture, 20_000);
+
+    expect(reelApi.next).not.toHaveBeenCalled();
+  });
+
+  it('shows a pressed pause button while playing and stops when it is clicked', () => {
+    const { fixture } = open({ autoAdvance: true });
+    expect(playPause(fixture)?.getAttribute('aria-pressed')).toBe('true');
+
+    playPause(fixture)!.click();
+    elapse(fixture, 20_000);
+
+    expect(playPause(fixture)?.getAttribute('aria-pressed')).toBe('false');
+    expect(reelApi.next).not.toHaveBeenCalled();
+  });
+
+  it('stops on the last slide without loop and shows the play button again', () => {
+    const { fixture } = open({ autoAdvance: true, initialIndex: 2 });
+    elapse(fixture, 6000);
+
+    expect(reelApi.next).not.toHaveBeenCalled();
+    expect(playPause(fixture)?.getAttribute('aria-pressed')).toBe('false');
+  });
+
+  it('wraps from the last slide with loop', () => {
+    const { fixture } = open({
+      autoAdvance: true,
+      initialIndex: 2,
+      loop: true,
+    });
+    elapse(fixture, 6000);
+
+    expect(reelApi.next).toHaveBeenCalledTimes(1);
+  });
+
+  it('waits during a swipe and continues after it', () => {
+    const { fixture, reel } = open({ autoAdvance: true });
+
+    reel.slideDragStart.emit(0);
+    elapse(fixture, 20_000);
+    expect(reelApi.next).not.toHaveBeenCalled();
+
+    reel.slideDragEnd.emit(0);
+    elapse(fixture, 6000);
+    expect(reelApi.next).toHaveBeenCalledTimes(1);
+  });
+
+  it('waits while the mouse rests on a control, not on the picture', () => {
+    const { fixture } = open({ autoAdvance: true });
+    TestBed.tick();
+
+    mouseOver(
+      fixture.debugElement.query(By.css('.rk-lightbox-play-pause'))
+        .nativeElement,
+    );
+    elapse(fixture, 20_000);
+    expect(reelApi.next).not.toHaveBeenCalled();
+
+    mouseOver(
+      fixture.debugElement.query(By.css('.rk-lightbox-overlay')).nativeElement,
+    );
+    elapse(fixture, 6000);
+    expect(reelApi.next).toHaveBeenCalledTimes(1);
+  });
+
+  it('starts the interval again when a slide is reached by hand', () => {
+    const { fixture, reel } = open({ autoAdvance: true });
+    elapse(fixture, 4000);
+
+    mocks.loadingSignal.value = true;
+    reel.afterChange.emit({ index: 1 });
+    mocks.loadingCtrl.onReady(1);
+    elapse(fixture, 4000);
+    expect(reelApi.next).not.toHaveBeenCalled();
+
+    elapse(fixture, 1100);
+    expect(reelApi.next).toHaveBeenCalledTimes(1);
+  });
+
+  it('stops advancing once the lightbox closes', () => {
+    const { fixture } = open({ autoAdvance: true });
+
+    fixture.componentRef.setInput('isOpen', false);
+    fixture.detectChanges();
+    elapse(fixture, 20_000);
+
+    expect(reelApi.next).not.toHaveBeenCalled();
+  });
+
+  it('hands the slide template the auto-advance flag and an end callback', () => {
+    const { fixture } = open({ autoAdvance: true }, [
+      ...VIDEO_ITEMS,
+      { src: 'https://example.com/after-video.jpg' },
+    ]);
+    const context = fixture.componentInstance['slideContext'](0);
+    expect(context.autoAdvance).toBe(true);
+
+    elapse(fixture, 20_000);
+    expect(reelApi.next).not.toHaveBeenCalled();
+
+    context.onEnded();
+    expect(reelApi.next).toHaveBeenCalledTimes(1);
+  });
+
+  it('hands the slideshow state and toggle to a custom controls template only when it is on', () => {
+    const off = open();
+    expect(off.fixture.componentInstance['controlsContext']()).toMatchObject({
+      isAutoAdvancing: false,
+      onToggleAutoAdvance: undefined,
+      isDownloading: false,
+      onDownload: undefined,
+    });
+
+    const on = open({ autoAdvance: true, showDownload: true });
+    expect(on.fixture.componentInstance['controlsContext']()).toMatchObject({
+      isAutoAdvancing: true,
+      onToggleAutoAdvance: expect.any(Function),
+      onDownload: expect.any(Function),
+    });
+  });
+
+  it('downloads the active item from its download URL under its download name', () => {
+    const { fixture } = open({ showDownload: true }, [
+      {
+        src: 'https://example.com/preview.jpg',
+        downloadUrl: 'https://example.com/original.jpg',
+        downloadName: 'beach.jpg',
+      },
+    ]);
+
+    fixture.debugElement
+      .query(By.css('.rk-lightbox-download'))
+      .nativeElement.click();
+
+    expect(mocks.downloadFile).toHaveBeenCalledWith(
+      'https://example.com/original.jpg',
+      'beach.jpg',
+    );
+  });
+
+  it('disables the download button until the download settles', async () => {
+    let settle: () => void = () => undefined;
+    mocks.downloadFile.mockReturnValueOnce(
+      new Promise<void>((resolve) => (settle = resolve)),
+    );
+    const { fixture } = open({ showDownload: true });
+    const button = () =>
+      fixture.debugElement.query(By.css('.rk-lightbox-download'))
+        .nativeElement as HTMLButtonElement;
+
+    button().click();
+    fixture.detectChanges();
+    expect(button().disabled).toBe(true);
+    expect(mocks.downloadFile).toHaveBeenCalledWith(
+      'https://example.com/a.jpg',
+      undefined,
+    );
+
+    settle();
+    await Promise.resolve();
+    await Promise.resolve();
+    fixture.detectChanges();
+    expect(button().disabled).toBe(false);
   });
 });

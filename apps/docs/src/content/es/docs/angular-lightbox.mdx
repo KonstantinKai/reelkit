@@ -3,7 +3,7 @@ title: Angular Lightbox
 description: Overlay de galería de imágenes a pantalla completa para Angular. Esquema de LightboxItem, inputs, outputs, directivas de slots de plantilla, transitionFn con tree-shaking, deslizar para cerrar y temas compartidos con el lightbox de React.
 ---
 
-import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2 } from 'lucide-react';
+import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2, Play, Download } from 'lucide-react';
 import installation from '../../snippets/angular-lightbox/installation.sh?raw';
 import installation2 from '../../snippets/angular-lightbox/installation-2.ts?raw';
 import basicUsage from '../../snippets/angular-lightbox/basic-usage.ts?raw';
@@ -20,6 +20,8 @@ import wiringCallbacksInRklightboxslide from '../../snippets/angular-lightbox/wi
 import customLoadingTemplate from '../../snippets/angular-lightbox/custom-loading-template.html?raw';
 import customErrorTemplate from '../../snippets/angular-lightbox/custom-error-template.html?raw';
 import theming from '../../snippets/angular-lightbox/theming.css?raw';
+import autoAdvance from '../../snippets/angular-lightbox/auto-advance.ts?raw';
+import download from '../../snippets/angular-lightbox/download.ts?raw';
 
 Lightbox de galería de imágenes y vídeos a pantalla completa para Angular, con `@reelkit/angular-lightbox`.
 
@@ -92,6 +94,16 @@ Lightbox de galería de imágenes y vídeos a pantalla completa para Angular, co
                 icon: Link2,
                 label: 'Estado en la URL',
                 desc: 'Enlaces que se pueden compartir y guardar',
+              },
+              {
+                icon: Play,
+                label: 'Pase de diapositivas',
+                desc: 'Avance automático opcional con reproducir/pausar',
+              },
+              {
+                icon: Download,
+                label: 'Descarga',
+                desc: 'Botón opcional que guarda el elemento activo',
               },
             ]} />
 
@@ -188,6 +200,37 @@ Si usas otro campo como clave (un `slug`) o paginas un feed infinito con `locate
 
 <CodeBlock code={urlState5} language="typescript" />
 
+## Avance automático [#auto-advance]
+
+Activa `[autoAdvance]="true"` para reproducir la galería como un pase de diapositivas al abrirse. Está desactivado por defecto, así que un lightbox existente se renderiza y se comporta como antes.
+
+- **Las imágenes** se quedan `autoAdvanceInterval` (5000 ms por defecto), contados desde que la imagen ha cargado, así que una imagen lenta nunca se salta antes de que nadie la vea. Una imagen que no carga cuenta desde su error.
+- **Los vídeos** se reproducen una vez en lugar de en bucle y pasan al siguiente cuando terminan. En una plantilla `rkLightboxSlide`, enlaza `[loop]="!autoAdvance"` y `[onEnded]="onEnded"` en `rk-lightbox-video-slide`, como en [Compatibilidad con vídeo](#video-support).
+- **Espera** mientras el ratón reposa sobre un control (un botón, un enlace o el pie), durante un deslizamiento y mientras la página está oculta, y después continúa desde donde se detuvo.
+- **Al moverse a mano** (flechas, teclas, rueda, deslizamiento) el intervalo del nuevo slide empieza desde cero; el pase de diapositivas sigue activo.
+- **En el último slide** se detiene, salvo que `loop` esté activado. El botón de reproducir/pausar de los controles muestra el estado y permite cambiarlo.
+
+El pase de diapositivas se ejecuta fuera de la zona de Angular, así que sus fotogramas de animación no lanzan la detección de cambios. Una plantilla `rkLightboxControls` propia recibe `isAutoAdvancing` y, solo cuando `autoAdvance` está activado, `onToggleAutoAdvance`: renderiza `rk-play-pause-button` cuando esté presente. El cálculo de los tiempos es `createSlideshowController` de `@reelkit/core`; consulta la [guía de reproducción automática](/docs/core/guide#autoplay) y la [API del core](/docs/core/api#autoplay).
+
+<CodeBlock code={autoAdvance} language="typescript" />
+
+## Descarga [#download]
+
+Activa `[showDownload]="true"` para añadir un botón de descarga a los controles. Guarda el elemento activo desde su `downloadUrl`, o `src` si no lo tiene, con el nombre `downloadName`, o el último segmento de la URL si no lo tiene.
+
+El archivo se descarga con fetch y se guarda, porque el navegador ignora el atributo `download` en un enlace de otro origen y abriría el archivo en su lugar. Cuando el fetch falla —normalmente un servidor de otro origen que no envía cabeceras CORS—, el archivo se abre en una pestaña nueva, donde se puede guardar igualmente. Sirve los archivos con `Access-Control-Allow-Origin` para guardarlos con un solo clic. El botón está desactivado mientras hay una descarga en curso.
+
+Una plantilla `rkLightboxControls` propia recibe `isDownloading` y, solo cuando `showDownload` está activado, `onDownload`: renderiza `rk-download-button` cuando esté presente. El ayudante es `downloadFile` de `@reelkit/core`; consulta la [guía de descarga](/docs/core/guide#download).
+
+<CodeBlock code={download} language="typescript" />
+
+### Botones de control [#control-buttons]
+
+| Componente | Selector | Inputs / outputs | Descripción |
+| --- | --- | --- | --- |
+| `RkPlayPauseButtonComponent` | `rk-play-pause-button` | `[playing]`, `(toggled)` | Interruptor del pase de diapositivas (icono Play/Pause, `aria-pressed` mientras se reproduce). Lo muestran los controles por defecto con `autoAdvance`. |
+| `RkDownloadButtonComponent` | `rk-download-button` | `[downloading]`, `(pressed)` | Botón de descarga, desactivado mientras `downloading`. Lo muestran los controles por defecto con `showDownload`. |
+
 ## Inputs de RkLightboxUrlOverlayComponent [#rklightboxurloverlaycomponent-inputs]
 
 Acepta todos los inputs de `rk-lightbox-overlay` salvo `isOpen`, que se sustituye por un controlador. Los outputs son los mismos `closed` y `slideChange`; la URL controla el cierre, así que `closed` es un aviso y no el mecanismo.
@@ -214,6 +257,9 @@ Acepta todos los inputs de `rk-lightbox-overlay` salvo `isOpen`, que se sustituy
 | `enableNavKeys` | `boolean` | true | Activa la navegación con las teclas de flecha |
 | `enableWheel` | `boolean` | true | Activa la navegación con la rueda del ratón |
 | `wheelDebounceMs` | `number` | 200 | Duración del debounce de los eventos de la rueda en ms |
+| `autoAdvance` | `boolean` | false | Reproduce la galería como un pase de diapositivas. Consulta [Avance automático](#auto-advance). |
+| `autoAdvanceInterval` | `number` | 5000 | Cuánto tiempo se queda cada imagen durante un pase de diapositivas, en ms, contado desde que ha cargado |
+| `showDownload` | `boolean` | false | Añade un botón de descarga para el elemento activo. Consulta [Descarga](#download). |
 | `ariaLabel` | `string` | 'Image gallery' | Etiqueta accesible de la región del diálogo |
 
 ## Outputs de RkLightboxOverlayComponent [#rklightboxoverlaycomponent-outputs]
@@ -234,15 +280,17 @@ Acepta todos los inputs de `rk-lightbox-overlay` salvo `isOpen`, que se sustituy
 | `description` | `string` | no | Descripción que se muestra debajo del título |
 | `width` | `number` | no | Ancho intrínseco de la imagen en píxeles |
 | `height` | `number` | no | Alto intrínseco de la imagen en píxeles |
+| `downloadUrl` | `string` | no | Lo que guarda el botón de descarga. Por defecto es `src` |
+| `downloadName` | `string` | no | Nombre con el que se guarda el archivo. Por defecto es el último segmento de la ruta de la URL |
 
 ## Tipos de contexto de los slots de plantilla [#template-slot-context-types]
 
 | Tipo | Campos |
 | --- | --- |
-| `LightboxControlsContext` | `{ item, onClose, activeIndex, count, isFullscreen, onToggleFullscreen }` |
+| `LightboxControlsContext` | `{ item, activeIndex, count, isFullscreen, isAutoAdvancing, isDownloading, onClose, onToggleFullscreen, onToggleAutoAdvance?, onDownload? }` |
 | `LightboxNavContext` | `{ item, onPrev, onNext, activeIndex, count }` |
 | `LightboxInfoContext` | `{ $implicit: LightboxItem, index }` |
-| `LightboxSlideContext` | `{ $implicit: LightboxItem, index, size: [number, number], isActive, onReady, onWaiting, onError }` |
+| `LightboxSlideContext` | `{ $implicit: LightboxItem, index, size: [number, number], isActive, autoAdvance, onReady, onWaiting, onError, onEnded }` |
 
 ## Transiciones [#transitions]
 
@@ -300,6 +348,8 @@ Todas las clases CSS son normales (no scoped), así que puedes apuntar a ellas c
 | `.rk-lightbox-empty` | Overlay | Texto del estado vacío |
 | `.rk-lightbox-controls-left` | Controls | Contenedor de los controles de arriba a la izquierda |
 | `.rk-lightbox-btn` | Controls | Botón de control (pantalla completa, etc.) |
+| `.rk-lightbox-play-pause` | Controls | Botón de reproducir/pausar del pase de diapositivas (con `.rk-lightbox-btn`) |
+| `.rk-lightbox-download` | Controls | Botón de descarga (con `.rk-lightbox-btn`) |
 | `.rk-lightbox-close` | Controls | Botón de cerrar |
 | `.rk-lightbox-counter` | Controls | Chip del contador de imágenes |
 | `.rk-lightbox-nav` | Navigation | Flecha de navegación (anterior y siguiente) |
@@ -333,6 +383,7 @@ Cada color, tamaño, z-index y transición vive en una propiedad personalizada d
 | `--rk-lightbox-btn-bg-hover` | `rgba(255, 255, 255, 0.2)` | Fondo al pasar el ratón de los botones de cerrar, navegación y pequeños |
 | `--rk-lightbox-btn-fg` | `#fff` | Color del icono de los botones de cerrar, navegación y pequeños |
 | `--rk-lightbox-btn-size` | `36px` | Tamaño de los botones pequeños (pantalla completa, etc.) |
+| `--rk-lightbox-btn-disabled-opacity` | `0.5` | Opacidad de un botón pequeño desactivado (descarga en curso) |
 | `--rk-lightbox-close-size` | `40px` | Tamaño del botón de cerrar |
 | `--rk-lightbox-nav-size` | `48px` | Tamaño de las flechas de anterior y siguiente |
 | `--rk-lightbox-nav-opacity` | `0.7` | Opacidad en reposo de las flechas de anterior y siguiente |

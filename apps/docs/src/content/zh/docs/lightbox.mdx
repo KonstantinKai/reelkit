@@ -3,7 +3,7 @@ title: Lightbox
 description: 全屏图片画廊浮层：双轴 URL、子组件、内容加载与错误处理、过渡动画与 CSS 类名。
 ---
 
-import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2 } from 'lucide-react';
+import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2, Play, Download } from 'lucide-react';
 import { LightboxDemo } from '../../../components/demos/LightboxDemo';
 import installation from '../../snippets/lightbox/installation.sh?raw';
 import installation2 from '../../snippets/lightbox/installation-2.ts?raw';
@@ -36,6 +36,10 @@ import usefullscreen from '../../snippets/lightbox/usefullscreen.tsx?raw';
 import transitions from '../../snippets/lightbox/transitions.tsx?raw';
 import customTransitionFunction from '../../snippets/lightbox/custom-transition-function.tsx?raw';
 import theming from '../../snippets/lightbox/theming.css?raw';
+import autoAdvance from '../../snippets/lightbox/auto-advance.tsx?raw';
+import download from '../../snippets/lightbox/download.tsx?raw';
+import playpausebutton from '../../snippets/lightbox/playpausebutton.tsx?raw';
+import downloadbutton from '../../snippets/lightbox/downloadbutton.tsx?raw';
 
 一个全屏的图片与视频画廊Lightbox组件，基于 `@reelkit/react-lightbox`.
 
@@ -108,6 +112,16 @@ import theming from '../../snippets/lightbox/theming.css?raw';
                 icon: Link2,
                 label: 'URL 状态',
                 desc: '可分享、可收藏的链接',
+              },
+              {
+                icon: Play,
+                label: '幻灯片播放',
+                desc: '按需开启的自动前进，可播放 / 暂停',
+              },
+              {
+                icon: Download,
+                label: '下载',
+                desc: '按需开启的按钮，保存当前项',
               },
             ]} />
 
@@ -261,6 +275,30 @@ Lightbox会逐张跟踪加载和错误状态。内容加载时显示转圈动画
 - 没有超时机制 —— Lightbox无从得知画廊有多长。分页用尽时请以 `null` 结束，否则浮层会一直关着。
 - 无论 `locateAsync` 返回什么都以它为准 —— 就是它刚取到的数据的索引，直接采用，不会再去读一遍 `images`.
 
+## 自动前进 [#auto-advance]
+
+设置 `autoAdvance`，Lightbox 打开时就会以幻灯片方式播放画廊。默认关闭，因此现有的 Lightbox 渲染和行为都与以前一样。
+
+<CodeBlock code={autoAdvance} language="tsx" />
+
+- **图片** 停留 `autoAdvanceInterval`（默认 5000 ms），从图片加载完成的那一刻开始计算，所以加载慢的图片绝不会在没人看到之前被跳过。加载失败的图片从出错时开始计算。
+- **视频** 只播放一次而不循环，播放结束后前进。使用 `useVideoSlideRenderer` 时这些都已接好；自定义的 `renderSlide` 从 props 中读取 `autoAdvance`，并通过 `onEnded` 报告结束。
+- **它会等待**：鼠标停在控件（按钮、链接或说明文字）上时、滑动过程中以及页面隐藏时，之后从停下的地方继续。
+- **手动切换**（箭头、按键、滚轮、滑动）会让新幻灯片的间隔从零开始；幻灯片播放保持开启。
+- **在最后一张** 时停止，除非设置了 `loop`。控件中的播放 / 暂停按钮显示当前状态，并让观看者切换它。
+
+自定义的 `renderControls` 会收到 `isAutoAdvancing`，并且仅在 `autoAdvance` 开启时收到 `onToggleAutoAdvance` —— 有它时就渲染一个 [PlayPauseButton](#playpausebutton)。计时本身是 `@reelkit/core` 中的 `createSlideshowController`；想在你自己的播放器里实现同样的行为，见[自动播放指南](/docs/core/guide#autoplay)，它的方法见[核心 API](/docs/core/api#autoplay)。
+
+## 下载 [#download]
+
+设置 `showDownload`，即可在控件中添加下载按钮。它从当前项的 `downloadUrl`（没有时回退到 `src`）保存文件，文件名取 `downloadName`，没有时回退到 URL 的最后一段。
+
+<CodeBlock code={download} language="tsx" />
+
+文件会先被获取再保存，因为浏览器会忽略跨域链接上的 `download` 属性，转而直接打开文件。获取失败时 —— 通常是另一个源上的服务器没有发送 CORS 头 —— 文件会在新标签页中打开，观看者仍可在那里保存。为文件配置 `Access-Control-Allow-Origin` 即可一键保存。下载进行期间按钮处于禁用状态。
+
+自定义的 `renderControls` 会收到 `isDownloading`，并且仅在 `showDownload` 开启时收到 `onDownload` —— 有它时就渲染一个 [DownloadButton](#downloadbutton)。工具函数是 `@reelkit/core` 中的 `downloadFile`；见[下载指南](/docs/core/guide#download)。
+
 ## API 参考 [#api-reference]
 
 ### LightboxOverlay 属性 [#lightboxoverlay-props]
@@ -274,11 +312,14 @@ Lightbox会逐张跟踪加载和错误状态。内容加载时显示转圈动画
 | `ariaLabel` | `string` | 'Image gallery' | 对话框区域的无障碍标签；Lightbox打开时由屏幕阅读器播报 |
 | `initialIndex` | `number` | 0 | 起始图片索引 |
 | `transitionFn` | `TransitionTransformFn` | slideTransition | 幻灯片过渡函数。可以引入内置的（slideTransition、flipTransition、lightboxFadeTransition、lightboxZoomTransition），也可以传自定义的。省略时默认为 slideTransition。 |
+| `autoAdvance` | `boolean` | false | 以幻灯片方式播放画廊。见[自动前进](#auto-advance)。 |
+| `autoAdvanceInterval` | `number` | 5000 | 幻灯片播放期间每张图片停留的时长（毫秒），从图片加载完成后开始计算 |
+| `showDownload` | `boolean` | false | 为当前项添加下载按钮。见[下载](#download)。 |
 | `apiRef` | `MutableRefObject<ReelApi>` | - | 用于访问 Reel API 的 ref |
 | `renderControls` | `(props: ControlsRenderProps) => ReactNode` | - | 自定义控件，替换默认的关闭按钮、计数器和全屏开关 |
 | `renderNavigation` | `(props: NavigationRenderProps) => ReactNode` | - | 自定义导航，替换默认的上一张 / 下一张箭头 |
 | `renderInfo` | `(props: InfoRenderProps) => ReactNode` | - | 自定义信息浮层，替换默认的标题 + 描述渐变层。返回 null 则隐藏。 |
-| `renderSlide` | `(props: SlideRenderProps) => ReactNode \| null` | - | 自定义幻灯片渲染。接收 \{ item, index, size, isActive, onReady, onWaiting, onError \}。返回 null 则回退到默认实现。 |
+| `renderSlide` | `(props: SlideRenderProps) => ReactNode \| null` | - | 自定义幻灯片渲染。接收 \{ item, index, size, isActive, autoAdvance, onReady, onWaiting, onError, onEnded \}。返回 null 则回退到默认实现。 |
 | `renderLoading` | `(props: { item: LightboxItem; activeIndex: number }) => ReactNode` | - | 自定义加载提示，替换默认的转圈动画 |
 | `renderError` | `(props: { item: LightboxItem; activeIndex: number }) => ReactNode` | - | 自定义错误提示，替换默认的错误图标 |
 
@@ -363,6 +404,18 @@ Lightbox会逐张跟踪加载和错误状态。内容加载时显示转圈动画
 
 <CodeBlock code={soundbutton} language="tsx" />
 
+### PlayPauseButton [#playpausebutton]
+
+幻灯片播放开关（Play/Pause 图标，播放时带 `aria-pressed`）。属性（`PlayPauseButtonProps`）：`isPlaying`、`onToggle`，以及可选的 `className` 和 `style`。`autoAdvance` 开启时默认控件会显示它。
+
+<CodeBlock code={playpausebutton} language="tsx" />
+
+### DownloadButton [#downloadbutton]
+
+下载按钮（Download 图标），`isDownloading` 时处于禁用状态。属性（`DownloadButtonProps`）：`isDownloading`、`onClick`，以及可选的 `className` 和 `style`。`showDownload` 开启时默认控件会显示它。
+
+<CodeBlock code={downloadbutton} language="tsx" />
+
 ## Hooks [#hooks]
 
 ### useVideoSlideRenderer [#usevideosliderenderer]
@@ -372,10 +425,6 @@ Lightbox会逐张跟踪加载和错误状态。内容加载时显示转圈动画
 <CodeBlock code={usevideosliderenderer} language="typescript" />
 
 ### useFullscreen [#usefullscreen]
-
-<Callout type="warning" title="已迁移">
-  `useFullscreen` 已从 `@reelkit/react-lightbox`中移除。请改从 `@reelkit/react` 引入。
-</Callout>
 
 管理全屏状态的 Hook，跨浏览器可用。
 
@@ -413,6 +462,8 @@ Lightbox会逐张跟踪加载和错误状态。内容加载时显示转圈动画
 | `.rk-lightbox-swipe-hint` | Overlay | 移动端滑动提示 |
 | `.rk-lightbox-controls-left` | 控制内容 | 左上角控件容器 |
 | `.rk-lightbox-btn` | 控制内容 | 控制按钮（全屏等） |
+| `.rk-lightbox-play-pause` | 控制内容 | 幻灯片播放 / 暂停按钮（与 `.rk-lightbox-btn` 一起使用） |
+| `.rk-lightbox-download` | 控制内容 | 下载按钮（与 `.rk-lightbox-btn` 一起使用） |
 | `.rk-lightbox-close` | 控制内容 | 关闭按钮 |
 | `.rk-lightbox-counter` | 控制内容 | 图片计数标签 |
 | `.rk-lightbox-nav` | 导航 | 导航箭头（两侧） |
@@ -445,6 +496,7 @@ Lightbox会逐张跟踪加载和错误状态。内容加载时显示转圈动画
 | `--rk-lightbox-btn-bg-hover` | `rgba(255, 255, 255, 0.2)` | 关闭、导航和小按钮的悬停背景 |
 | `--rk-lightbox-btn-fg` | `#fff` | 关闭、导航和小按钮的图标颜色 |
 | `--rk-lightbox-btn-size` | `36px` | 小按钮尺寸（全屏切换等） |
+| `--rk-lightbox-btn-disabled-opacity` | `0.5` | 禁用状态下小按钮的不透明度（下载进行中） |
 | `--rk-lightbox-close-size` | `40px` | 关闭按钮尺寸 |
 | `--rk-lightbox-nav-size` | `48px` | 上一个 / 下一个箭头尺寸 |
 | `--rk-lightbox-nav-opacity` | `0.7` | 上一个 / 下一个箭头的空闲不透明度 |

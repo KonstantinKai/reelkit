@@ -14,6 +14,7 @@ import type {
 } from '@reelkit/vue';
 import { cdnUrl } from '@reelkit/example-data';
 import Thumbnail from '../components/Thumbnail.vue';
+import { persistedRef } from '../composables/persistedRef';
 import '@reelkit/vue-lightbox/styles.css';
 
 const _kTransitions: { label: string; fn: TransitionTransformFn }[] = [
@@ -23,6 +24,7 @@ const _kTransitions: { label: string; fn: TransitionTransformFn }[] = [
   { label: 'zoom-in', fn: lightboxZoomTransition },
 ];
 const _kSwipeDirections: SwipeToCloseDirection[] = ['up', 'down'];
+const _kAutoAdvanceInterval = 3000;
 
 const sampleImages: LightboxItem[] = [
   {
@@ -124,6 +126,7 @@ const open = ref(false);
 const initialIndex = ref(0);
 const transitionFn = ref<TransitionTransformFn>(slideTransition);
 const swipeDirection = ref<SwipeToCloseDirection>('up');
+const autoAdvance = persistedRef('reelkit-image-preview-auto-advance', false);
 
 const openAt = (index: number) => {
   initialIndex.value = index;
@@ -182,6 +185,18 @@ watch(open, (isOpen, _, onCleanup) => {
           {{ d }}
         </button>
       </div>
+      <div class="transition-selector">
+        <span>Slideshow:</span>
+        <button
+          v-for="on in [false, true]"
+          :key="String(on)"
+          class="transition-btn"
+          :class="{ active: autoAdvance === on }"
+          @click="autoAdvance = on"
+        >
+          {{ on ? 'on' : 'off' }}
+        </button>
+      </div>
     </header>
 
     <div class="gallery-grid">
@@ -209,6 +224,9 @@ watch(open, (isOpen, _, onCleanup) => {
       :initial-index="initialIndex"
       :transition-fn="transitionFn"
       :swipe-to-close-direction="swipeDirection"
+      :auto-advance="autoAdvance"
+      :auto-advance-interval="_kAutoAdvanceInterval"
+      show-download
     />
   </div>
 </template>

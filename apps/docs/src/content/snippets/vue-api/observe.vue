@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { Observe, toVueRef } from '@reelkit/vue';
-import { createTimerController } from '@reelkit/stories-core';
+import { Observe, createTimerController, toVueRef } from '@reelkit/vue';
 
 const timer = createTimerController({ duration: 5000 });
 

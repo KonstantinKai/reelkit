@@ -32,6 +32,21 @@ export interface LightboxItem {
 
   /** Intrinsic height of the image in pixels. Currently unused by the layout. */
   height?: number;
+
+  /**
+   * Address the download button saves, when it differs from `src`, such as
+   * a full-resolution original behind a resized preview.
+   *
+   * @default src
+   */
+  downloadUrl?: string;
+
+  /**
+   * File name the download button saves under.
+   *
+   * @default the last segment of the download URL's path
+   */
+  downloadName?: string;
 }
 
 /**
@@ -50,11 +65,26 @@ export interface ControlsSlotScope {
   /** Whether the lightbox is currently in fullscreen mode. */
   isFullscreen: boolean;
 
+  /** Whether the slideshow is running. Always `false` without `auto-advance`. */
+  isAutoAdvancing: boolean;
+
+  /** Whether the active item is being downloaded. */
+  isDownloading: boolean;
+
   /** Close the overlay. */
   onClose: () => void;
 
   /** Toggle fullscreen on/off. */
   onToggleFullscreen: () => void;
+
+  /**
+   * Switch the slideshow on or off. Present only when `auto-advance` is on,
+   * so a custom slot shows a play/pause button only when it does something.
+   */
+  onToggleAutoAdvance?: () => void;
+
+  /** Download the active item. Present only when `show-download` is on. */
+  onDownload?: () => void;
 }
 
 /**
@@ -94,6 +124,12 @@ export interface SlideSlotScope {
   /** Whether this is the currently active slide. */
   isActive: boolean;
 
+  /**
+   * Whether the lightbox auto-advances. A video slide should then play once
+   * rather than loop, because a looping video never ends.
+   */
+  autoAdvance: boolean;
+
   /** Notify that the slide content is ready (loaded). Clears the spinner. */
   onReady: () => void;
 
@@ -102,6 +138,12 @@ export interface SlideSlotScope {
 
   /** Notify that the slide content failed to load. Shows the error indicator. */
   onError: () => void;
+
+  /**
+   * Notify that a video slide played to its end. With auto-advance on, the
+   * lightbox moves to the next slide; otherwise nothing happens.
+   */
+  onEnded: () => void;
 }
 
 /**

@@ -254,4 +254,5 @@ protected readonly photo = createOverlayUrlState({
 - Key extractor: `createDefaultKeyExtractorForLoop` — handles duplicate indexes when `loop` is enabled
 - Focus: `captureFocusForReturn`, `createFocusTrap`, `getFocusableElements`
 - Size detection: `observeElementSize`, `getViewportSize`, `observeViewportSize`, `isMobileWidth`, `fitAspectRatio`, `isTouchDevice`
+- Autoplay & download: `createTimerController`, `createSlideshowController`, `downloadFile`
 - Signals: `Signal`, `ComputedSignal`, `createSignal`, `createComputed`, `reaction`, `batch`

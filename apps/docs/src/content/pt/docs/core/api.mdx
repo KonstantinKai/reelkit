@@ -1,6 +1,6 @@
 ---
 title: Referência da API do core
-description: Referência completa do @reelkit/core — configuração, callbacks, métodos, estado, sinais, transições, carregamento de conteúdo, som, linha do tempo, tela cheia, utilitários de DOM, gerenciamento de foco e utilitários de vídeo.
+description: Referência completa do @reelkit/core — configuração, callbacks, métodos, estado, sinais, transições, carregamento de conteúdo, som, linha do tempo, tela cheia, utilitários de DOM, detecção de tamanho, timers de reprodução automática, download de arquivos, gerenciamento de foco e utilitários de vídeo.
 ---
 
 import usage from '../../../snippets/core-api/usage.ts?raw';
@@ -198,6 +198,59 @@ Como cada binding e cada overlay medem o contêiner e a janela. O `Reel` usa `ob
 | `isMobileWidth` | `(viewportWidth: number) => boolean` | Se uma janela dessa largura recebe o layout de celular: 768px ou menos. Todos os overlays e as suas folhas de estilos trocam de layout nessa largura. |
 | `fitAspectRatio` | `(viewport: [number, number], aspectRatio?: number) => [number, number]` | Tamanho do overlay para uma janela. Em largura de celular é a janela inteira; fora disso, a altura inteira da janela na proporção `aspectRatio`, estreitada até a largura da janela quando não couber. Uma proporção ausente, zero, negativa ou não finita volta para 9/16. |
 | `isTouchDevice` | `() => boolean` | Se o dispositivo aceita entrada por toque (`ontouchstart` ou `maxTouchPoints`). É uma checagem de capacidade, não de tamanho de tela: um notebook com tela de toque conta, uma janela estreita no desktop não. |
+
+## Reprodução automática [#autoplay]
+
+Timers para tudo o que avança sozinho. Como eles se comportam e como ligá-los está no [guia de reprodução automática](/docs/core/guide#autoplay).
+
+| Export | Tipo | Descrição |
+| --- | --- | --- |
+| `createTimerController` | `(config: TimerControllerConfig) => TimerController` | Conta uma duração de 0 a 1 e chama de volta quando termina. Conduz cada story nos players de stories. |
+| `createSlideshowController` | `(config: SlideshowControllerConfig) => SlideshowController` | A máquina de estados por trás de uma galeria que avança sozinha. Conduz o `autoAdvance` do lightbox. |
+
+### createTimerController [#createtimercontroller]
+
+| `TimerControllerConfig` | Tipo | Descrição |
+| --- | --- | --- |
+| `duration` | `number` | Duração padrão em milissegundos, usada quando `start()` não recebe nenhuma |
+| `onComplete` | `() => void` | Chamado quando o progresso chega a 1 |
+
+| `TimerController` | Tipo | Descrição |
+| --- | --- | --- |
+| `progress` | `Signal<number>` | Progresso de 0 a 1; conduz uma barra de progresso |
+| `isRunning` | `Signal<boolean>` | Se o timer está contando |
+| `start(duration?)` | `(number?) => void` | Recomeça do 0, opcionalmente com outra duração para esta execução |
+| `pause()` | `() => void` | Congela no progresso atual |
+| `resume()` | `() => void` | Continua a partir do progresso congelado |
+| `reset()` | `() => void` | Volta ao 0, parado |
+| `dispose()` | `() => void` | Cancela o frame pendente |
+
+### createSlideshowController [#createslideshowcontroller]
+
+| `SlideshowControllerConfig` | Tipo | Descrição |
+| --- | --- | --- |
+| `interval` | `number` | Quanto tempo uma imagem fica, em milissegundos, contado a partir do momento em que ela carregou |
+| `onAdvance` | `() => void` | O slide ativo terminou. Avance para o próximo slide ou chame `pause()` no último |
+
+| `SlideshowController` | Tipo | Descrição |
+| --- | --- | --- |
+| `isPlaying` | `Signal<boolean>` | Se a apresentação está ligada. As retenções não o alteram |
+| `progress` | `Signal<number>` | Quanto do intervalo da imagem ativa já passou, de 0 a 1 |
+| `play()` / `pause()` / `toggle()` | `() => void` | Liga ou desliga; o slide ativo mantém seu progresso |
+| `setInterval(ms)` | `(number) => void` | Muda o intervalo a partir da próxima imagem |
+| `setSlide(kind)` | `(SlideshowSlideKind) => void` | Um novo slide ficou ativo: o progresso recomeça e espera por `ready()` ou `ended()`. `SlideshowSlideKind` é `'image' \| 'video'` |
+| `ready()` | `() => void` | A imagem ativa carregou ou falhou ao carregar; seu intervalo começa |
+| `ended()` | `() => void` | O vídeo ativo terminou; avança agora ou assim que nada mais o retiver |
+| `hold(reason)` / `release(reason)` | `(string) => void` | Para o relógio por um motivo como `'hover'` ou `'drag'`. As retenções se acumulam |
+| `dispose()` | `() => void` | Para o relógio e o listener de visibilidade |
+
+## Download [#download]
+
+Salvar um arquivo a partir de uma URL, inclusive de outra origem. O fallback que ele usa está no [guia de download](/docs/core/guide#download).
+
+| Export | Tipo | Descrição |
+| --- | --- | --- |
+| `downloadFile` | `(url: string, filename?: string) => Promise<void>` | Salva um arquivo com o nome `filename`, por padrão o último segmento do caminho da URL. Ele busca o arquivo e salva o blob, porque o atributo `download` é ignorado num link de outra origem. Quando a busca falha ou o servidor responde com erro (um servidor de outra origem sem cabeçalhos CORS é o caso mais comum), a URL abre numa nova aba. Nunca rejeita; não faz nada sem uma janela. |
 
 ## Gerenciamento de foco [#focus-management]
 

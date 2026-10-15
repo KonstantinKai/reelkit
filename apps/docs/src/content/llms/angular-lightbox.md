@@ -72,15 +72,17 @@ export class GalleryComponent {
 
 ## LightboxItem Schema
 
-| Field         | Type                 | Required | Description                  |
-| ------------- | -------------------- | -------- | ---------------------------- |
-| `src`         | `string`             | yes      | URL of image/video           |
-| `type`        | `'image' \| 'video'` | no       | Item type. Default `'image'` |
-| `poster`      | `string`             | no       | Thumbnail for video items    |
-| `title`       | `string`             | no       | Title in info overlay        |
-| `description` | `string`             | no       | Description below title      |
-| `width`       | `number`             | no       | Intrinsic image width px     |
-| `height`      | `number`             | no       | Intrinsic image height px    |
+| Field          | Type                 | Required | Description                               |
+| -------------- | -------------------- | -------- | ----------------------------------------- |
+| `src`          | `string`             | yes      | URL of image/video                        |
+| `type`         | `'image' \| 'video'` | no       | Item type. Default `'image'`              |
+| `poster`       | `string`             | no       | Thumbnail for video items                 |
+| `title`        | `string`             | no       | Title in info overlay                     |
+| `description`  | `string`             | no       | Description below title                   |
+| `width`        | `number`             | no       | Intrinsic image width px                  |
+| `height`       | `number`             | no       | Intrinsic image height px                 |
+| `downloadUrl`  | `string`             | no       | What download button saves; default `src` |
+| `downloadName` | `string`             | no       | File name; default last URL path segment  |
 
 ## Video Support
 
@@ -94,12 +96,27 @@ The built-in sound button appears only when a `SoundStateService` is provided ab
   [items]="items"
   (closed)="isOpen = false"
 >
-  <ng-template rkLightboxSlide let-item let-size="size" let-isActive="isActive">
+  <ng-template
+    rkLightboxSlide
+    let-item
+    let-index="index"
+    let-size="size"
+    let-isActive="isActive"
+    let-autoAdvance="autoAdvance"
+    let-onReady="onReady"
+    let-onEnded="onEnded"
+  >
     @if (item.type === 'video') {
+    <!-- With autoAdvance the video plays once and reports its end -->
     <rk-lightbox-video-slide
-      [item]="item"
+      [src]="item.src"
+      [poster]="item.poster"
+      [slideKey]="'lightbox-' + index"
       [size]="size"
       [isActive]="isActive"
+      [loop]="!autoAdvance"
+      [onReady]="onReady"
+      [onEnded]="onEnded"
     />
     } @else {
     <img
@@ -197,6 +214,67 @@ const photo = createOverlayUrlState({
 
 An answer arriving after the URL moved on, after a close, or after destroy is discarded. Whatever it returns is authoritative — the lightbox takes it as-is rather than re-reading `images`, which Angular has not re-rendered yet.
 
+## Auto-advance
+
+`[autoAdvance]="true"` → slideshow on open. Off by default.
+
+- Images stay `autoAdvanceInterval` (default 5000 ms), counted from load; failed image counts from error.
+- Videos play once (no loop), advance on end. In `rkLightboxSlide` bind `[loop]="!autoAdvance"` + `[onEnded]="onEnded"` on `rk-lightbox-video-slide` (see Video Support).
+- Waits while mouse rests on a control (button, link, caption), during swipe, while page hidden; continues from same progress.
+- Manual nav restarts new slide's interval; slideshow stays on. Stops on last slide unless `loop`.
+- Runs outside Angular zone → no change detection per frame.
+- Custom `rkLightboxControls` gets `isAutoAdvancing` + `onToggleAutoAdvance` (only with `autoAdvance`) → render `rk-play-pause-button` when present.
+- Timing = `createSlideshowController` from `@reelkit/core` ([Autoplay guide](/docs/core/guide#autoplay), [Core API](/docs/core/api#autoplay)).
+
+```html
+<rk-lightbox-overlay
+  [isOpen]="isOpen"
+  [items]="items"
+  [autoAdvance]="true"
+  [autoAdvanceInterval]="4000"
+  (closed)="isOpen = false"
+>
+  <ng-template rkLightboxControls let-ctx>
+    @if (ctx.onToggleAutoAdvance) {
+    <rk-play-pause-button
+      [playing]="ctx.isAutoAdvancing"
+      (toggled)="ctx.onToggleAutoAdvance()"
+    />
+    }
+    <rk-close-button (clicked)="ctx.onClose()" />
+  </ng-template>
+</rk-lightbox-overlay>
+```
+
+## Download
+
+`[showDownload]="true"` → download button in controls. Saves active item from `downloadUrl` (else `src`) as `downloadName` (else last URL path segment).
+
+- Fetch → blob → save (browsers ignore `download` attr cross-origin). Fetch fails (no CORS usual) → new tab. Serve with `Access-Control-Allow-Origin` for one-click save.
+- Button disabled while downloading. Custom `rkLightboxControls` gets `isDownloading` + `onDownload` (only with `showDownload`) → render `rk-download-button` when present.
+- Helper = `downloadFile` from `@reelkit/core` ([Download guide](/docs/core/guide#download)).
+
+```html
+<rk-lightbox-overlay
+  [isOpen]="isOpen"
+  [items]="items"
+  [showDownload]="true"
+  (closed)="isOpen = false"
+>
+  <ng-template rkLightboxControls let-ctx>
+    @if (ctx.onDownload) {
+    <rk-download-button
+      [downloading]="ctx.isDownloading"
+      (pressed)="ctx.onDownload()"
+    />
+    }
+    <rk-close-button (clicked)="ctx.onClose()" />
+  </ng-template>
+</rk-lightbox-overlay>
+```
+
+Classes `.rk-lightbox-play-pause`, `.rk-lightbox-download` (with `.rk-lightbox-btn`); token `--rk-lightbox-btn-disabled-opacity` (`0.5`).
+
 ## RkLightboxUrlOverlayComponent Inputs
 
 Takes every input of `rk-lightbox-overlay` except `isOpen`, replaced by `controller`.
@@ -225,6 +303,9 @@ Outputs are the same `closed` and `slideChange`; the URL drives closing, so `clo
 | `enableNavKeys`         | `boolean`               | `true`            | Keyboard arrow-key nav                                                                                                                                                       |
 | `enableWheel`           | `boolean`               | `true`            | Mouse-wheel nav                                                                                                                                                              |
 | `wheelDebounceMs`       | `number`                | `200`             | Wheel event debounce ms                                                                                                                                                      |
+| `autoAdvance`           | `boolean`               | `false`           | Slideshow (see Auto-advance)                                                                                                                                                 |
+| `autoAdvanceInterval`   | `number`                | `5000`            | Image time during slideshow, ms, from load                                                                                                                                   |
+| `showDownload`          | `boolean`               | `false`           | Download button (see Download)                                                                                                                                               |
 | `ariaLabel`             | `string`                | `'Image gallery'` | Accessible label for dialog region                                                                                                                                           |
 
 ## Outputs
@@ -249,11 +330,13 @@ Outputs are the same `closed` and `slideChange`; the URL drives closing, so `clo
 
 Standalone components to compose inside an `rkLightboxControls` template. Import each into the host component's `imports`.
 
-| Component                     | Selector               | Description                                        |
-| ----------------------------- | ---------------------- | -------------------------------------------------- |
-| `RkCloseButtonComponent`      | `rk-close-button`      | Default close button                               |
-| `RkCounterComponent`          | `rk-counter`           | Counter chip; takes `[currentIndex]` and `[count]` |
-| `RkFullscreenButtonComponent` | `rk-fullscreen-button` | Fullscreen toggle button                           |
+| Component                     | Selector               | Description                                                               |
+| ----------------------------- | ---------------------- | ------------------------------------------------------------------------- |
+| `RkCloseButtonComponent`      | `rk-close-button`      | Default close button                                                      |
+| `RkCounterComponent`          | `rk-counter`           | Counter chip; takes `[currentIndex]` and `[count]`                        |
+| `RkFullscreenButtonComponent` | `rk-fullscreen-button` | Fullscreen toggle button                                                  |
+| `RkPlayPauseButtonComponent`  | `rk-play-pause-button` | Slideshow toggle; `[playing]`, `(toggled)`; `aria-pressed` while playing  |
+| `RkDownloadButtonComponent`   | `rk-download-button`   | Download button; `[downloading]`, `(pressed)`; disabled while downloading |
 
 ```html
 <ng-template
@@ -275,14 +358,14 @@ Standalone components to compose inside an `rkLightboxControls` template. Import
 
 ### Slot Context Types
 
-| Name                      | Fields                                                                                      |
-| ------------------------- | ------------------------------------------------------------------------------------------- |
-| `LightboxSlideContext`    | `{ $implicit: item, index, size: [number, number], isActive, onReady, onWaiting, onError }` |
-| `LightboxControlsContext` | `{ $implicit: void, item, activeIndex, count, isFullscreen, onClose, onToggleFullscreen }`  |
-| `LightboxNavContext`      | `{ $implicit: void, item, activeIndex, count, onPrev, onNext }`                             |
-| `LightboxInfoContext`     | `{ $implicit: item, index }`                                                                |
-| `LightboxLoadingContext`  | `{ $implicit: activeIndex, item }`                                                          |
-| `LightboxErrorContext`    | `{ $implicit: activeIndex, item }`                                                          |
+| Name                      | Fields                                                                                                                                                        |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `LightboxSlideContext`    | `{ $implicit: item, index, size: [number, number], isActive, autoAdvance, onReady, onWaiting, onError, onEnded }`                                             |
+| `LightboxControlsContext` | `{ $implicit: void, item, activeIndex, count, isFullscreen, isAutoAdvancing, isDownloading, onClose, onToggleFullscreen, onToggleAutoAdvance?, onDownload? }` |
+| `LightboxNavContext`      | `{ $implicit: void, item, activeIndex, count, onPrev, onNext }`                                                                                               |
+| `LightboxInfoContext`     | `{ $implicit: item, index }`                                                                                                                                  |
+| `LightboxLoadingContext`  | `{ $implicit: activeIndex, item }`                                                                                                                            |
+| `LightboxErrorContext`    | `{ $implicit: activeIndex, item }`                                                                                                                            |
 
 ## Keyboard Shortcuts
 
