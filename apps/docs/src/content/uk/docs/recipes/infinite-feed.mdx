@@ -1,0 +1,71 @@
+---
+title: Нескінченна стрічка
+description: Вертикальна стрічка, що завантажує наступну сторінку, коли глядач наближається до кінця, зі слайдами завантаження й помилки, скасуванням запитів і попереднім завантаженням.
+---
+
+import { InfiniteFeedDemo } from '../../../../components/demos/InfiniteFeedDemo';
+import reactCode from '../../../snippets/recipes/infinite-feed/react.tsx?raw';
+import vueCode from '../../../snippets/recipes/infinite-feed/vue.vue?raw';
+import angularCode from '../../../snippets/recipes/infinite-feed/angular.ts?raw';
+import apiCode from '../../../snippets/recipes/infinite-feed/api.ts?raw';
+
+Стрічка, що ніколи не закінчується, мусить завантажувати дані, поки глядач дивиться: досить рано, щоб наступний допис уже був на місці, з чимось на екрані, поки сторінка в дорозі чи не завантажилася, і без запиту, що лишився працювати після того, як стрічки вже немає.
+
+## Спробуйте [#try-it]
+
+Кожна версія імпортує `./api`, що заміняє ваш бекенд: `fetchPosts(page, signal)` повертає одну сторінку дописів і зупиняється, коли сигнал скасовано. Замініть його викликом вашого API й приберіть `failNextRequest`, який лише керує перемикачем збою в демо.
+
+<CodeBlock code={apiCode} language="typescript" />
+
+<Callout type="warning" title="Зразкові медіа працюють лише на reelkit.dev">
+  `cdnUrl` будує посилання на cdn.reelkit.dev, який віддає файли лише сайтам ReelKit. У вашому застосунку ці зображення не завантажаться, тож перш ніж копіювати цей файл, спрямуйте `image` на власні медіа.
+</Callout>
+
+<FrameworkVariant for="react">
+<Sandbox code={reactCode} title="InfiniteFeed.tsx" height={560}>
+  <InfiniteFeedDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+<Sandbox code={vueCode} language="vue" framework="vue" title="InfiniteFeed.vue" height={560}>
+  <InfiniteFeedDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+<Sandbox code={angularCode} language="typescript" framework="angular" title="infinite-feed.component.ts" height={560}>
+  <InfiniteFeedDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<Caption>Гортайте вгору або натисніть ↓: нова сторінка надходить за три дописи до кінця. Натисніть «Fail next request», щоб побачити слайд помилки та його кнопку Retry.</Caption>
+
+## Чому це працює [#why-it-works]
+
+- **Кількість росте, слайдів не більшає.** `count` — це кількість дописів плюс один, а в DOM завжди лише три слайди, тож стрічка з тисяч дописів коштує стільки ж, скільки з десяти. Див. [віртуалізацію](/docs/core/guide#virtualization).
+- **Останній слайд показує стан.** Додатковий слайд після дописів показує «Loading…», поки сторінка в дорозі, і помилку з Retry, коли вона не завантажилася, тож глядач ніколи не гортає в порожнечу. Це ще один випадок у [itemBuilder](/docs/react/guide#itembuilder-pattern), який рендерить усе, що стоїть за індексом.
+- **Завантаження наперед, від зміни слайда.** `afterChange` просить наступну сторінку, щойно глядач опиняється за три дописи до кінця. Сторінка, що не завантажилася, чекає на Retry, тож гортання туди й назад не повторює запит, що падає. Цей колбек описано разом з іншими подіями для [React](/docs/react/api#callbacks), [Vue](/docs/vue/api#events) та [Angular](/docs/angular/api#outputs).
+- **Ключі йдуть за дописами.** `keyExtractor` повертає id кожного допису, тож слайд зберігає свій елемент, коли позаду нього зʼявляється нова сторінка, а не перебудовується за індексом. Це пропс у [React](/docs/react/api#reel-props), [Vue](/docs/vue/api#props) та [Angular](/docs/angular/api#inputs) однаково.
+- **Зображення вантажаться раніше за свій слайд.** Слайд нижче ще не змонтовано, бо змонтовано лише видимий діапазон, як пояснює [віртуалізація](/docs/core/guide#virtualization). Тож зображення кожної нової сторінки запитуються щойно вона надходить і беруться з кешу браузера, коли їхній слайд монтується.
+- **Клавіші й колесо вимкнено навмисно.** `enableNavKeys` слухає все вікно, а `enableWheel` перехоплює прокручування сторінки, поки вказівник над стрічкою. Обидва пасують стрічці на весь екран і заважають сторінці, у яку стрічку вбудовано, як тут, тож вони вимкнені, а дві кнопки натомість викликають `prev()` і `next()` з [Reel API](/docs/react/api#reelapi-methods). Свайп працює в будь-якому разі.
+- **Ніщо не переживає стрічку.** Кожен запит має [`AbortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController), який скасовується, коли стрічка демонтується, тож пізня відповідь ніколи не пише в стрічку, якої вже немає.
+
+<NextSteps
+  items={[
+    {
+      label: 'Від сітки до плеєра',
+      path: '/docs/recipes/grid-to-player',
+      description: 'відкрийте повноекранний плеєр із сітки мініатюр і поверніться туди, де зупинилися',
+    },
+    {
+      label: 'Посібник з фреймворку',
+      path: {
+        react: '/docs/react/guide',
+        vue: '/docs/vue/guide',
+        angular: '/docs/angular/guide',
+      },
+      description: 'кожен пропс Reel і патерн, на яких стоїть цей рецепт',
+    },
+  ]}
+/>

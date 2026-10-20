@@ -1,0 +1,71 @@
+---
+title: Infinite Feed
+description: A vertical feed that loads the next page as the viewer nears the end, with loading and error slides, request cancellation, and preloading.
+---
+
+import { InfiniteFeedDemo } from '../../../../components/demos/InfiniteFeedDemo';
+import reactCode from '../../../snippets/recipes/infinite-feed/react.tsx?raw';
+import vueCode from '../../../snippets/recipes/infinite-feed/vue.vue?raw';
+import angularCode from '../../../snippets/recipes/infinite-feed/angular.ts?raw';
+import apiCode from '../../../snippets/recipes/infinite-feed/api.ts?raw';
+
+A feed that never ends has to fetch while the viewer watches: early enough that the next post is already there, with something to show while a page is on its way or has failed, and without a request left running after the feed is gone.
+
+## Try it [#try-it]
+
+Every version imports `./api`, which stands in for your backend: `fetchPosts(page, signal)` returns one page of posts and stops when the signal aborts. Replace it with a call to your API, and drop `failNextRequest`, which only drives the demo's failure switch.
+
+<CodeBlock code={apiCode} language="typescript" />
+
+<Callout type="warning" title="The sample media works only on reelkit.dev">
+  `cdnUrl` builds links to cdn.reelkit.dev, which serves its files only to the ReelKit sites. In your app those images fail to load, so point `image` at your own media before you copy this file.
+</Callout>
+
+<FrameworkVariant for="react">
+<Sandbox code={reactCode} title="InfiniteFeed.tsx" height={560}>
+  <InfiniteFeedDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+<Sandbox code={vueCode} language="vue" framework="vue" title="InfiniteFeed.vue" height={560}>
+  <InfiniteFeedDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+<Sandbox code={angularCode} language="typescript" framework="angular" title="infinite-feed.component.ts" height={560}>
+  <InfiniteFeedDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<Caption>Swipe up or press ↓: a new page arrives three posts before the end. Press "Fail next request" to see the error slide and its Retry.</Caption>
+
+## Why it works [#why-it-works]
+
+- **The count grows, the slides do not.** `count` is the number of posts plus one, and only three slides are ever in the DOM, so a feed of thousands costs the same as a feed of ten. See [virtualization](/docs/core/guide#virtualization).
+- **The last slide is the status.** The extra slide past the posts shows "Loading…" while a page is on its way and the error with Retry when it failed, so the viewer never swipes into nothing. It is one more case in the [itemBuilder](/docs/react/guide#itembuilder-pattern), which renders whatever the index stands for.
+- **Fetch ahead, from the slide change.** `afterChange` asks for the next page once the viewer is three posts from the end. A failed page waits for Retry, so swiping back and forth does not repeat a failing request. The callback is listed with the other events for [React](/docs/react/api#callbacks), [Vue](/docs/vue/api#events), and [Angular](/docs/angular/api#outputs).
+- **Keys follow the posts.** `keyExtractor` returns each post's id, so a slide keeps its element when a page lands behind it instead of being rebuilt from its index. It is a prop of [React](/docs/react/api#reel-props), [Vue](/docs/vue/api#props), and [Angular](/docs/angular/api#inputs) alike.
+- **Images load before their slide.** A slide further down is not mounted yet, because only the visible range is, as [virtualization](/docs/core/guide#virtualization) explains. So each new page's images are requested as soon as the page arrives and come from the browser cache when their slide mounts.
+- **Keys and wheel are off on purpose.** `enableNavKeys` listens on the whole window and `enableWheel` holds the page's scroll while the pointer is over the feed. Both suit a feed that fills the screen and fight a page that holds one, as this one does, so here they stay off and two buttons call `prev()` and `next()` on the [Reel API](/docs/react/api#reelapi-methods) instead. Swiping works either way.
+- **Nothing outlives the feed.** Each request carries an [`AbortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController), aborted when the feed unmounts, so a late response never writes into a feed that is gone.
+
+<NextSteps
+  items={[
+    {
+      label: 'Grid to Player',
+      path: '/docs/recipes/grid-to-player',
+      description: 'open the full-screen player from a thumbnail grid and come back to where you were',
+    },
+    {
+      label: 'Framework Guide',
+      path: {
+        react: '/docs/react/guide',
+        vue: '/docs/vue/guide',
+        angular: '/docs/angular/guide',
+      },
+      description: 'every Reel prop and pattern behind this recipe',
+    },
+  ]}
+/>

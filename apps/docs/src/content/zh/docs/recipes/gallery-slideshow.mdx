@@ -1,0 +1,69 @@
+---
+title: 图库幻灯片
+description: 在 Lightbox 中以幻灯片播放、并可下载每张照片原始文件的相册。
+---
+
+import { GallerySlideshowDemo } from '../../../../components/demos/GallerySlideshowDemo';
+import reactCode from '../../../snippets/recipes/gallery-slideshow/react.tsx?raw';
+import vueCode from '../../../snippets/recipes/gallery-slideshow/vue.vue?raw';
+import angularCode from '../../../snippets/recipes/gallery-slideshow/angular.ts?raw';
+import apiCode from '../../../snippets/recipes/gallery-slideshow/api.ts?raw';
+
+相册全屏打开后会自己一张接一张地播放，直到用户暂停。任何一张照片都可以保存，保存下来的是带着合适文件名的原始文件，而不是屏幕上显示的缩小副本。
+
+## 试一试 [#try-it]
+
+每个版本都导入 `./api`，它代替你的后端：`photos` 是一个相册，形状与 Lightbox 的 `LightboxItem` 相同，每张照片都带有要显示的地址、要下载的文件和保存时使用的文件名。把它换成你自己的相册。
+
+<CodeBlock code={apiCode} language="typescript" />
+
+<Callout type="warning" title="示例媒体只能在 reelkit.dev 上使用">
+  `cdnUrl` 生成指向 cdn.reelkit.dev 的链接，而它只向 ReelKit 站点提供文件。在你的应用里这些照片既无法加载也无法下载，所以复制这个文件之前，先把 `src` 和 `downloadUrl` 指向你自己的文件。
+</Callout>
+
+<FrameworkVariant for="react">
+<Sandbox code={reactCode} title="GallerySlideshow.tsx" height={560}>
+  <GallerySlideshowDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+<Sandbox code={vueCode} language="vue" framework="vue" title="GallerySlideshow.vue" height={560}>
+  <GallerySlideshowDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+<Sandbox code={angularCode} language="typescript" framework="angular" title="gallery-slideshow.component.ts" height={560}>
+  <GallerySlideshowDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<Caption>打开一张照片：幻灯片立即开始，每三秒切换一次。可以在工具栏上暂停，或用下载按钮保存照片。</Caption>
+
+## 原理 [#why-it-works]
+
+- **两个属性把 Lightbox 变成带下载的幻灯片** —— `autoAdvance` 让 Lightbox 一打开就开始播放，`showDownload` 添加保存当前照片的按钮。默认工具栏会自动加上播放/暂停按钮和下载按钮。这两个属性在 [React](/docs/lightbox#auto-advance)、[Vue](/docs/vue-lightbox#auto-advance) 和 [Angular](/docs/angular-lightbox#auto-advance) 中都有说明，每个页面紧接着就是下载部分。
+- **幻灯片会等待每张照片** —— `autoAdvanceInterval` 从照片加载完成的那一刻开始计算，所以网速慢时也不会在没人看到之前跳过任何照片。计时来自核心的 `createSlideshowController`，见[自动播放指南](/docs/core/guide#autoplay)。
+- **始终由用户掌控** —— 滑动或按键会手动切换，并让下一张照片的间隔从零开始，幻灯片保持开启。[PlayPauseButton](/docs/lightbox#playpausebutton) 用来停止和继续播放；指针停在按钮或说明文字上时，播放会一直暂停到指针移开。播放到最后一张照片时会停止，除非设置了 `loop`。
+- **显示小副本，保存原始文件** —— `src` 是屏幕上显示的内容，所以用缩小的副本能让图库保持流畅。`downloadUrl` 是按钮保存的文件，`downloadName` 是它得到的文件名，于是用户保存的是完整照片，文件名也能说明内容。示例 CDN 只提供一种尺寸，所以这里两者指向同一个文件。这些字段见 [LightboxItem 类型](/docs/lightbox#lightboxitem)。
+- **跨源下载需要 CORS** —— 指向另一个源的链接会忽略 `download` 属性，所以 Lightbox 会先获取文件再保存。这要求文件所在的服务器为你的站点返回 `Access-Control-Allow-Origin`。如果没有返回，照片会改为在新标签页中打开，用户仍然可以保存它。参见 [`downloadFile`](/docs/core/guide#download)。
+
+<NextSteps
+  items={[
+    {
+      label: '快拍栏',
+      path: '/docs/recipes/stories-tray',
+      description: '一排圆环，打开快拍播放器并记住已看过的内容',
+    },
+    {
+      label: 'Lightbox',
+      path: {
+        react: '/docs/lightbox',
+        vue: '/docs/vue-lightbox',
+        angular: '/docs/angular-lightbox',
+      },
+      description: 'Lightbox 的每个属性、插槽和组成部分',
+    },
+  ]}
+/>

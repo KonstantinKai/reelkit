@@ -4,7 +4,6 @@ description: Overlay de galería de imágenes a pantalla completa para React. Es
 ---
 
 import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2, Play, Download } from 'lucide-react';
-import { LightboxDemo } from '../../../components/demos/LightboxDemo';
 import installation from '../../snippets/lightbox/installation.sh?raw';
 import installation2 from '../../snippets/lightbox/installation-2.ts?raw';
 import quickStart from '../../snippets/lightbox/quick-start.tsx?raw';
@@ -143,19 +142,14 @@ El componente `LightboxOverlay` muestra imágenes a pantalla completa. Pásale u
 
 <CodeBlock code={quickStart} language="tsx" />
 
-## Demo en vivo [#live-demo]
-
 <Sandbox
   code={fullCode}
   title="LightboxPage.tsx"
-  height={500}
   stackblitzDeps={['@reelkit/react-lightbox']}
   stackblitzExtraDeps={{ 'lucide-react': '^0.562.0' }}
->
-  <LightboxDemo />
-</Sandbox>
+/>
 
-<Caption>Pulsa una miniatura para abrir el lightbox. Usa las flechas o desliza para navegar.</Caption>
+Para reproducir una galería como presentación y guardar el original de cada foto, consulta la [receta Galería con presentación](/docs/recipes/gallery-slideshow).
 
 ## Slides de vídeo (opcionales) [#video-slides-opt-in]
 

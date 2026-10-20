@@ -1,0 +1,37 @@
+---
+title: Receitas
+description: Guias práticos que combinam várias peças do reelkit em um recurso completo, com demo ao vivo e código para React, Vue e Angular.
+---
+
+import { InfinityIcon, LayoutGrid, Images, CircleDashed } from 'lucide-react';
+
+Os guias e as páginas de API explicam uma peça de cada vez. Uma receita parte de algo que você quer entregar e junta as peças: uma demo ao vivo para testar primeiro, o código completo para o seu framework e o motivo de cada parte estar ali.
+
+<RecipeCards items={[
+  {
+    icon: InfinityIcon,
+    label: 'Feed infinito',
+    desc: 'Carregue a próxima página quando o usuário se aproxima do fim, com slides de carregamento e erro, requisições canceladas e mídia pré-carregada.',
+    path: '/docs/recipes/infinite-feed',
+  },
+  {
+    icon: LayoutGrid,
+    label: 'Da grade ao player',
+    desc: 'Abra o reel player em tela cheia a partir de uma grade de miniaturas e leve o usuário de volta ao último item que assistiu.',
+    path: '/docs/recipes/grid-to-player',
+  },
+  {
+    icon: Images,
+    label: 'Galeria com apresentação',
+    desc: 'Rode uma galeria de fotos como apresentação de slides no Lightbox e baixe o arquivo original de cada foto.',
+    path: '/docs/recipes/gallery-slideshow',
+  },
+  {
+    icon: CircleDashed,
+    label: 'Bandeja de stories',
+    desc: 'Abra o Stories Player a partir de uma fileira de anéis e lembre o que o usuário já viu, mesmo após recarregar.',
+    path: '/docs/recipes/stories-tray',
+  },
+]} />
+
+Cada demo roda o código React mostrado ao lado. As versões Vue e Angular fazem o mesmo com os seus próprios bindings.

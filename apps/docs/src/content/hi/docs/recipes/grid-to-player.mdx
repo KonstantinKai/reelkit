@@ -1,0 +1,70 @@
+---
+title: ग्रिड से प्लेयर तक
+description: थंबनेल ग्रिड जो टैप किए गए आइटम पर फ़ुल-स्क्रीन प्लेयर खोलता है और दर्शक को आख़िरी देखे गए आइटम पर लौटाता है।
+---
+
+import { GridToPlayerDemo } from '../../../../components/demos/GridToPlayerDemo';
+import reactCode from '../../../snippets/recipes/grid-to-player/react.tsx?raw';
+import vueCode from '../../../snippets/recipes/grid-to-player/vue.vue?raw';
+import angularCode from '../../../snippets/recipes/grid-to-player/angular.ts?raw';
+import apiCode from '../../../snippets/recipes/grid-to-player/api.ts?raw';
+
+प्रोफ़ाइल पेज या सर्च रिज़ल्ट पोस्ट को थंबनेल के ग्रिड में दिखाते हैं। किसी एक पर टैप करने से वह फ़ुल स्क्रीन में खुलनी चाहिए, दर्शक बाक़ी पोस्ट पर स्वाइप करता रह सके, और प्लेयर बंद करने पर वह उस पोस्ट पर रहे जहाँ रुका था, न कि जहाँ से शुरू किया था।
+
+## आज़माएँ [#try-it]
+
+हर वर्ज़न `./api` इम्पोर्ट करता है, जो आपके बैकएंड की जगह खड़ा है: `posts` वह सूची है जो कोई प्रोफ़ाइल या सर्च लोड करती, प्लेयर के `ContentItem` के आकार में, और `thumbnailOf` चुनता है कि ग्रिड का सेल कौन-सी तस्वीर दिखाए। दोनों की जगह अपना डेटा लगाएँ।
+
+<CodeBlock code={apiCode} language="typescript" />
+
+<Callout type="warning" title="सैंपल मीडिया सिर्फ़ reelkit.dev पर चलता है">
+  `cdnUrl` cdn.reelkit.dev के लिंक बनाता है, जो अपनी फ़ाइलें सिर्फ़ ReelKit साइटों को देता है। आपके ऐप में ये इमेज और वीडियो लोड नहीं होंगे, इसलिए यह फ़ाइल कॉपी करने से पहले `media` और `avatar` को अपनी फ़ाइलों पर पॉइंट करें।
+</Callout>
+
+<FrameworkVariant for="react">
+<Sandbox code={reactCode} title="GridToPlayer.tsx" height={560}>
+  <GridToPlayerDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+<Sandbox code={vueCode} language="vue" framework="vue" title="GridToPlayer.vue" height={560}>
+  <GridToPlayerDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+<Sandbox code={angularCode} language="typescript" framework="angular" title="grid-to-player.component.ts" height={560}>
+  <GridToPlayerDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<Caption>कोई पोस्ट खोलें, कुछ बार स्वाइप करें या ↓ दबाएँ, फिर Escape से बंद करें: ग्रिड उस पोस्ट तक स्क्रॉल हो जाता है जहाँ आप रुके थे, और फ़ोकस उसके थंबनेल पर होता है।</Caption>
+
+## यह क्यों काम करता है [#why-it-works]
+
+- **प्लेयर वहीं खुलता है जहाँ दर्शक ने टैप किया।** `initialIndex` थंबनेल का index लेता है, और पूरी सूची `content` में जाती है, ताकि दर्शक चुनी हुई पोस्ट से आगे भी स्वाइप कर सके। दोनों [React](/docs/reel-player#reelplayeroverlayprops-props), [Vue](/docs/vue-reel-player#reelplayeroverlay-props) और [Angular](/docs/angular-reel-player#rkreelplayeroverlaycomponent-inputs) में प्लेयर के prop हैं।
+- **ग्रिड जानता है कि दर्शक कहाँ रुका।** स्लाइड बदलने का कॉलबैक दर्शक की पहुँची हर पोस्ट बताता है, और रेसिपी आख़िरी वाली याद रखती है। यह प्लेयर के [कॉलबैक](/docs/reel-player#callbacks), [इवेंट](/docs/vue-reel-player#events) और [आउटपुट](/docs/angular-reel-player#rkreelplayeroverlaycomponent-outputs) में सूचीबद्ध है।
+- **फ़ोकस सही थंबनेल पर लौटता है।** बंद होते समय प्लेयर फ़ोकस उसी एलिमेंट को लौटा देता है जिसने उसे खोला था, यह उसका [ऐक्सेसिबिलिटी](/docs/reel-player#accessibility) वादा है। यह वापसी close हैंडलर चलने के बाद होती है, इसलिए हैंडलर के अंदर सेट किया गया फ़ोकस पलट जाएगा। रेसिपी एक टास्क रुकती है, फिर आख़िरी पोस्ट के थंबनेल को स्क्रॉल करके दिखाती है और उस पर फ़ोकस करती है।
+- **थंबनेल बटन हैं।** हर सेल लेबल वाला `<button>` है, इसलिए ग्रिड Tab और Enter से चलता है, स्क्रीन रीडर उस पोस्ट का नाम बताता है जो वह खोलता है, और प्लेयर के पास फ़ोकस लौटाने के लिए एक फ़ोकस होने लायक एलिमेंट होता है, जैसा उसका [ऐक्सेसिबिलिटी](/docs/reel-player#accessibility) सेक्शन बताता है।
+- **ग्रिड के सेल को तस्वीर चाहिए, वीडियो नहीं।** `thumbnailOf` वीडियो का `poster` लेता है, जो [MediaItem](/docs/reel-player#mediaitem) का एक फ़ील्ड है, और इमेज को जैसी है वैसी, इसलिए ग्रिड कभी ऐसा वीडियो लोड नहीं करता जिसे वह चलाता नहीं।
+- **खुली पोस्ट एड्रेस बार में चाहिए?** [URL स्टेट](/docs/reel-player#url-state) वाला प्लेयर दिख रही पोस्ट को URL में रखता है, ताकि उसे शेयर किया जा सके और बैक बटन से बंद किया जा सके।
+
+<NextSteps
+  items={[
+    {
+      label: 'गैलरी स्लाइडशो',
+      path: '/docs/recipes/gallery-slideshow',
+      description: 'वही ग्रिड, जो स्लाइडशो की तरह चलने वाला Lightbox खोलता है',
+    },
+    {
+      label: 'Reel Player',
+      path: {
+        react: '/docs/reel-player',
+        vue: '/docs/vue-reel-player',
+        angular: '/docs/angular-reel-player',
+      },
+      description: 'प्लेयर के सभी prop, स्लॉट और हिस्से',
+    },
+  ]}
+/>

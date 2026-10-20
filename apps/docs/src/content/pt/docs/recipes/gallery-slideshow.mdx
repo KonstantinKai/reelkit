@@ -1,0 +1,69 @@
+---
+title: Galeria com apresentação
+description: Uma galeria de fotos no lightbox que roda como apresentação de slides e baixa o arquivo original de cada foto.
+---
+
+import { GallerySlideshowDemo } from '../../../../components/demos/GallerySlideshowDemo';
+import reactCode from '../../../snippets/recipes/gallery-slideshow/react.tsx?raw';
+import vueCode from '../../../snippets/recipes/gallery-slideshow/vue.vue?raw';
+import angularCode from '../../../snippets/recipes/gallery-slideshow/angular.ts?raw';
+import apiCode from '../../../snippets/recipes/gallery-slideshow/api.ts?raw';
+
+Um álbum abre em tela cheia e roda sozinho, uma foto depois da outra, até o usuário pausar. Qualquer foto pode ser salva, e o que se salva é o arquivo original com um nome adequado, não a cópia reduzida que aparece na tela.
+
+## Experimente [#try-it]
+
+Todas as versões importam `./api`, que faz o papel do seu backend: `photos` é um álbum no formato do `LightboxItem` do Lightbox, cada foto com o endereço para mostrar, o arquivo para baixar e o nome com que ele é salvo. Troque pelo seu próprio álbum.
+
+<CodeBlock code={apiCode} language="typescript" />
+
+<Callout type="warning" title="A mídia de exemplo só funciona em reelkit.dev">
+  `cdnUrl` monta links para cdn.reelkit.dev, que só entrega seus arquivos aos sites do ReelKit. No seu app essas fotos não carregam nem são baixadas, então aponte `src` e `downloadUrl` para os seus próprios arquivos antes de copiar este arquivo.
+</Callout>
+
+<FrameworkVariant for="react">
+<Sandbox code={reactCode} title="GallerySlideshow.tsx" height={560}>
+  <GallerySlideshowDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+<Sandbox code={vueCode} language="vue" framework="vue" title="GallerySlideshow.vue" height={560}>
+  <GallerySlideshowDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+<Sandbox code={angularCode} language="typescript" framework="angular" title="gallery-slideshow.component.ts" height={560}>
+  <GallerySlideshowDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<Caption>Abra uma foto: a apresentação começa na hora e avança a cada três segundos. Pause pela barra ou salve a foto com o botão de download.</Caption>
+
+## Por que funciona [#why-it-works]
+
+- **Duas props transformam o Lightbox numa apresentação com downloads.** `autoAdvance` começa a tocar assim que o Lightbox abre, e `showDownload` adiciona o botão que salva a foto atual. A barra padrão ganha sozinha o botão de play e pausa e o botão de download. As duas props são explicadas para [React](/docs/lightbox#auto-advance), [Vue](/docs/vue-lightbox#auto-advance) e [Angular](/docs/angular-lightbox#auto-advance), cada página com uma seção de download logo depois.
+- **A apresentação espera cada foto.** `autoAdvanceInterval` é contado a partir do momento em que a foto carregou, então uma conexão lenta nunca pula uma imagem antes de alguém vê-la. A temporização é o `createSlideshowController` do core, descrito no [guia de autoplay](/docs/core/guide#autoplay).
+- **O usuário continua no controle.** Deslizar ou apertar uma tecla avança à mão e reinicia do zero o intervalo da próxima foto, com a apresentação ainda ligada. O [PlayPauseButton](/docs/lightbox#playpausebutton) para e retoma a apresentação, e um ponteiro parado sobre um botão ou sobre a legenda a segura enquanto estiver ali. Na última foto ela para, a não ser que `loop` esteja ligado.
+- **Mostre uma cópia pequena, salve o original.** `src` é o que a tela mostra, então uma cópia redimensionada deixa a galeria rápida. `downloadUrl` é o que o botão salva, e `downloadName` é o nome que o arquivo recebe, então o usuário fica com a foto inteira sob um nome que diz o que ela é. O CDN de exemplo serve um só tamanho, então aqui os dois apontam para o mesmo arquivo. Os campos estão no [tipo LightboxItem](/docs/lightbox#lightboxitem).
+- **Downloads de outra origem precisam de CORS.** O atributo `download` é ignorado num link para outra origem, então o Lightbox busca o arquivo e o salva. Para isso o servidor do arquivo precisa responder com `Access-Control-Allow-Origin` para o seu site. Quando não responde, a foto abre numa nova aba, para o usuário ainda conseguir salvá-la. Veja [`downloadFile`](/docs/core/guide#download).
+
+<NextSteps
+  items={[
+    {
+      label: 'Bandeja de stories',
+      path: '/docs/recipes/stories-tray',
+      description: 'uma fileira de anéis que abre o Stories Player e lembra o que já foi visto',
+    },
+    {
+      label: 'Lightbox',
+      path: {
+        react: '/docs/lightbox',
+        vue: '/docs/vue-lightbox',
+        angular: '/docs/angular-lightbox',
+      },
+      description: 'todas as props, slots e partes do Lightbox',
+    },
+  ]}
+/>

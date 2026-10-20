@@ -4,7 +4,6 @@ description: React 用の、Instagram 風のストーリーのオーバーレイ
 ---
 
 import { Zap, Play, Timer, Layout, Clock, Image, Layers, Heart, Monitor, Circle, Code, Settings, Link2, Eye } from 'lucide-react';
-import { StoriesPlayerDemo } from '../../../components/demos/StoriesPlayerDemo';
 import installation from '../../snippets/stories-player/installation.sh?raw';
 import installation2 from '../../snippets/stories-player/installation-2.ts?raw';
 import fullCode from '../../snippets/stories-player/full-code.tsx?raw';
@@ -147,18 +146,13 @@ import theming from '../../snippets/stories-player/theming.css?raw';
 
 <CodeBlock code={fullCode} language="tsx" />
 
-## ライブデモ [#live-demo]
-
 <Sandbox
   code={fullCode2}
   title="StoriesPlayer.tsx"
-  height={200}
   stackblitzDeps={['@reelkit/react-stories-player', '@reelkit/react']}
->
-  <StoriesPlayerDemo />
-</Sandbox>
+/>
 
-<Caption>ストーリーのリングをクリックするとプレイヤーが開きます。左右をタップして移動し、スワイプでユーザーを切り替えます。</Caption>
+再読み込み後も視聴済みを覚えているリングの列は[ストーリーズトレイのレシピ](/docs/recipes/stories-tray)を参照してください。
 
 ## URL の状態 [#url-state]
 

@@ -4,7 +4,6 @@ description: Overlay de stories al estilo de Instagram para React. Esquema de St
 ---
 
 import { Zap, Play, Timer, Layout, Clock, Image, Layers, Heart, Monitor, Circle, Code, Settings, Link2, Eye } from 'lucide-react';
-import { StoriesPlayerDemo } from '../../../components/demos/StoriesPlayerDemo';
 import installation from '../../snippets/stories-player/installation.sh?raw';
 import installation2 from '../../snippets/stories-player/installation-2.ts?raw';
 import fullCode from '../../snippets/stories-player/full-code.tsx?raw';
@@ -147,18 +146,13 @@ El componente `StoriesOverlay` renderiza un visor de stories a pantalla completa
 
 <CodeBlock code={fullCode} language="tsx" />
 
-## Demo en vivo [#live-demo]
-
 <Sandbox
   code={fullCode2}
   title="StoriesPlayer.tsx"
-  height={200}
   stackblitzDeps={['@reelkit/react-stories-player', '@reelkit/react']}
->
-  <StoriesPlayerDemo />
-</Sandbox>
+/>
 
-<Caption>Pulsa un anillo de stories para abrir el visor. Toca los lados izquierdo o derecho para navegar y desliza para cambiar de usuario.</Caption>
+Para una fila de anillos que recuerda lo que el usuario ya vio, incluso tras recargar, consulta la [receta Bandeja de historias](/docs/recipes/stories-tray).
 
 ## Estado en la URL [#url-state]
 

@@ -1,0 +1,70 @@
+---
+title: 从网格到播放器
+description: 缩略图网格，在点击的项目处打开全屏播放器，关闭后回到最后观看的项目。
+---
+
+import { GridToPlayerDemo } from '../../../../components/demos/GridToPlayerDemo';
+import reactCode from '../../../snippets/recipes/grid-to-player/react.tsx?raw';
+import vueCode from '../../../snippets/recipes/grid-to-player/vue.vue?raw';
+import angularCode from '../../../snippets/recipes/grid-to-player/angular.ts?raw';
+import apiCode from '../../../snippets/recipes/grid-to-player/api.ts?raw';
+
+个人主页或搜索结果把帖子显示成缩略图网格。点击其中一个应当全屏打开它，让用户继续滑过其余的帖子；关闭播放器后，应当把用户留在他停下的那条帖子上，而不是他开始的那条。
+
+## 试一试 [#try-it]
+
+每个版本都导入 `./api`，它代替你的后端：`posts` 是个人主页或搜索会加载的列表，形状与播放器的 `ContentItem` 相同；`thumbnailOf` 选出网格单元显示的图片。把两者都换成你自己的数据。
+
+<CodeBlock code={apiCode} language="typescript" />
+
+<Callout type="warning" title="示例媒体只能在 reelkit.dev 上使用">
+  `cdnUrl` 生成指向 cdn.reelkit.dev 的链接，而它只向 ReelKit 站点提供文件。在你的应用里这些图片和视频会加载失败，所以复制这个文件之前，先把 `media` 和 `avatar` 指向你自己的文件。
+</Callout>
+
+<FrameworkVariant for="react">
+<Sandbox code={reactCode} title="GridToPlayer.tsx" height={560}>
+  <GridToPlayerDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+<Sandbox code={vueCode} language="vue" framework="vue" title="GridToPlayer.vue" height={560}>
+  <GridToPlayerDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+<Sandbox code={angularCode} language="typescript" framework="angular" title="grid-to-player.component.ts" height={560}>
+  <GridToPlayerDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<Caption>打开一条帖子，滑动或按几次 ↓，再按 Escape 关闭：网格会滚动到你停下的那条帖子，它的缩略图获得焦点。</Caption>
+
+## 原理 [#why-it-works]
+
+- **播放器在用户点击的位置打开** —— `initialIndex` 接收缩略图的索引，整个列表传给 `content`，所以用户可以继续滑过他选中的帖子。两者都是播放器的属性，见 [React](/docs/reel-player#reelplayeroverlayprops-props)、[Vue](/docs/vue-reel-player#reelplayeroverlay-props) 和 [Angular](/docs/angular-reel-player#rkreelplayeroverlaycomponent-inputs)。
+- **网格知道用户停在哪里** —— 切换幻灯片的回调会报告用户到达的每一条帖子，示例保留最后一条。它列在播放器的[回调](/docs/reel-player#callbacks)、[事件](/docs/vue-reel-player#events)和[输出](/docs/angular-reel-player#rkreelplayeroverlaycomponent-outputs)中。
+- **焦点回到正确的缩略图** —— 播放器关闭时会把焦点还给打开它的元素，这是它在[无障碍](/docs/reel-player#accessibility)方面的约定。这次归还发生在关闭处理函数运行之后，所以在处理函数里设置的焦点会被覆盖。示例先等待一个任务，再把最后那条帖子的缩略图滚动到可见区域并让它获得焦点。
+- **缩略图是按钮** —— 每个单元都是带标签的 `<button>`，所以网格可以用 Tab 和 Enter 操作，屏幕阅读器会读出它打开的帖子，播放器也有一个可获得焦点的元素来归还焦点，正如它的[无障碍](/docs/reel-player#accessibility)部分所述。
+- **网格单元需要图片，而不是视频** —— `thumbnailOf` 对视频使用它的 `poster`（[MediaItem](/docs/reel-player#mediaitem) 的一个字段），对图片则直接使用图片本身，所以网格永远不会加载它不播放的视频。
+- **想把打开的帖子放进地址栏？** 使用 [URL 状态](/docs/reel-player#url-state)播放器，它把当前显示的帖子写进 URL，于是可以分享，也可以用返回键关闭。
+
+<NextSteps
+  items={[
+    {
+      label: '图库幻灯片',
+      path: '/docs/recipes/gallery-slideshow',
+      description: '同样的网格，打开一个以幻灯片播放的 Lightbox',
+    },
+    {
+      label: 'Reel Player',
+      path: {
+        react: '/docs/reel-player',
+        vue: '/docs/vue-reel-player',
+        angular: '/docs/angular-reel-player',
+      },
+      description: '播放器的每个属性、插槽和组成部分',
+    },
+  ]}
+/>

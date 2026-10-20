@@ -1,0 +1,71 @@
+---
+title: 無限フィード
+description: 終わりに近づくと次のページを読み込む縦型フィード。読み込み中とエラーのスライド、リクエストの中断、プリロードに対応。
+---
+
+import { InfiniteFeedDemo } from '../../../../components/demos/InfiniteFeedDemo';
+import reactCode from '../../../snippets/recipes/infinite-feed/react.tsx?raw';
+import vueCode from '../../../snippets/recipes/infinite-feed/vue.vue?raw';
+import angularCode from '../../../snippets/recipes/infinite-feed/angular.ts?raw';
+import apiCode from '../../../snippets/recipes/infinite-feed/api.ts?raw';
+
+終わりのないフィードは、見ているあいだに次を取得しなければなりません。次の投稿が届く前に視聴者が追いつかないよう早めに読み込み、ページを待っているあいだや失敗したときには何かを表示し、フィードがなくなったあとにリクエストを残さないことが必要です。
+
+## 試してみる [#try-it]
+
+どのバージョンも `./api` をインポートしています。これはバックエンドの代わりで、`fetchPosts(page, signal)` は 1 ページ分の投稿を返し、シグナルが中断されると止まります。お使いの API の呼び出しに置き換え、デモの失敗スイッチを動かすためだけの `failNextRequest` は削除してください。
+
+<CodeBlock code={apiCode} language="typescript" />
+
+<Callout type="warning" title="サンプルのメディアは reelkit.dev でしか使えません">
+  `cdnUrl` が作るのは cdn.reelkit.dev へのリンクで、このサーバーは ReelKit のサイトにしかファイルを返しません。お使いのアプリでは画像を読み込めないので、このファイルをコピーする前に `image` を自分のメディアに向けてください。
+</Callout>
+
+<FrameworkVariant for="react">
+<Sandbox code={reactCode} title="InfiniteFeed.tsx" height={560}>
+  <InfiniteFeedDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+<Sandbox code={vueCode} language="vue" framework="vue" title="InfiniteFeed.vue" height={560}>
+  <InfiniteFeedDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+<Sandbox code={angularCode} language="typescript" framework="angular" title="infinite-feed.component.ts" height={560}>
+  <InfiniteFeedDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<Caption>上へスワイプするか ↓ を押してください。終わりの 3 件手前で次のページが届きます。「Fail next request」を押すと、エラーのスライドと Retry を確認できます。</Caption>
+
+## 仕組み [#why-it-works]
+
+- **件数は増えても、スライドは増えません。** `count` は投稿数に 1 を足した値で、DOM にあるスライドは常に 3 枚だけなので、数千件のフィードも 10 件のフィードと同じ負荷で済みます。[仮想化](/docs/core/guide#virtualization)を参照してください。
+- **最後のスライドは状態の表示です。** 投稿の後ろにある 1 枚は、ページを待っているあいだは「Loading…」を、失敗したときはエラーと Retry を表示するので、スワイプした先が空になることはありません。インデックスが表すものを描画する [itemBuilder](/docs/react/guide#itembuilder-pattern) の、ケースが 1 つ増えただけです。
+- **スライドの切り替えから先読みします。** `afterChange` は、終わりまで 3 件になった時点で次のページを要求します。失敗したページは Retry を待つので、行ったり来たりスワイプしても失敗するリクエストを繰り返しません。このコールバックは、[React](/docs/react/api#callbacks)、[Vue](/docs/vue/api#events)、[Angular](/docs/angular/api#outputs) のほかのイベントと一緒に載っています。
+- **キーは投稿に付いていきます。** `keyExtractor` は各投稿の id を返すので、後ろにページが追加されてもスライドは要素を保ち、インデックスから作り直されることはありません。[React](/docs/react/api#reel-props)、[Vue](/docs/vue/api#props)、[Angular](/docs/angular/api#inputs) のどれでも使えるプロパティです。
+- **画像はスライドより先に読み込みます。** [仮想化](/docs/core/guide#virtualization)の説明どおり、マウントされるのは表示範囲だけなので、先のスライドはまだ存在しません。そこで新しいページが届いた時点でその画像を要求しておき、スライドがマウントされたときにはブラウザーのキャッシュから表示します。
+- **キー操作とホイールはあえてオフです。** `enableNavKeys` はウィンドウ全体で入力を受け取り、`enableWheel` はポインターがフィードの上にあるあいだページのスクロールを止めます。どちらも画面いっぱいのフィードには合いますが、このようにページの中に置いたフィードではページとぶつかるので、ここではオフにして、代わりに 2 つのボタンで [Reel API](/docs/react/api#reelapi-methods) の `prev()` と `next()` を呼びます。スワイプはどちらでも使えます。
+- **フィードより長く生きるものはありません。** 各リクエストは [`AbortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController) を持ち、フィードのアンマウント時に中断されるので、遅れて届いたレスポンスがなくなったフィードに書き込むことはありません。
+
+<NextSteps
+  items={[
+    {
+      label: 'グリッドからプレーヤーへ',
+      path: '/docs/recipes/grid-to-player',
+      description: 'サムネイルのグリッドから全画面プレーヤーを開き、元の位置へ戻る',
+    },
+    {
+      label: 'フレームワークガイド',
+      path: {
+        react: '/docs/react/guide',
+        vue: '/docs/vue/guide',
+        angular: '/docs/angular/guide',
+      },
+      description: 'このレシピを支える Reel のプロパティとパターンのすべて',
+    },
+  ]}
+/>

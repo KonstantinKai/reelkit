@@ -101,6 +101,40 @@ function FeatureGrid({
   );
 }
 
+interface RecipeCardItem extends FeatureCardItem {
+  path: string;
+}
+
+/**
+ * Cards on the recipes index. Unlike the feature cards, each one is a link,
+ * so the whole card is the click target and keeps the reader's locale.
+ */
+function RecipeCards({ items }: { items: RecipeCardItem[] }) {
+  const localePath = useLocalePath();
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+      {items.map((item) => (
+        <Link
+          key={item.path}
+          to={localePath(item.path)}
+          className="group flex gap-4 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary-500/10 hover:border-primary-300 dark:hover:border-primary-700"
+        >
+          <item.icon className="w-6 h-6 shrink-0 mt-0.5 text-primary-500 transition-transform duration-200 group-hover:scale-110" />
+          <span>
+            <span className="flex items-center gap-1 font-semibold text-slate-900 dark:text-slate-100">
+              {item.label}
+              <ArrowRight className="w-4 h-4 opacity-0 -translate-x-1 transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-0" />
+            </span>
+            <span className="block mt-1 text-sm text-slate-500 dark:text-slate-400">
+              {item.desc}
+            </span>
+          </span>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
 /** Small note under a live demo. */
 function Caption({ children }: { children: ReactNode }) {
   return <p className="docs-caption">{children}</p>;
@@ -302,6 +336,7 @@ const mdxComponents = {
     </div>
   ),
   FeatureGrid,
+  RecipeCards,
   Caption,
   Signature,
   DemoLink,

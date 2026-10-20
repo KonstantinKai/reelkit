@@ -4,7 +4,6 @@ description: 全屏 Instagram / TikTok 风格的视频播放浮层：URL 状态�
 ---
 
 import { Zap, Play, Volume2, Layout, Clock, Image, Layers, Ratio, Monitor, Code, Settings, Link2 } from 'lucide-react';
-import { ReelPlayerDemo } from '../../../components/demos/ReelPlayerDemo';
 import installation from '../../snippets/reel-player/installation.sh?raw';
 import installation2 from '../../snippets/reel-player/installation-2.ts?raw';
 import quickStart from '../../snippets/reel-player/quick-start.tsx?raw';
@@ -135,19 +134,14 @@ import theming from '../../snippets/reel-player/theming.css?raw';
 
 <CodeBlock code={quickStart} language="tsx" />
 
-## 在线演示 [#live-demo]
-
 <Sandbox
   code={fullCode}
   title="ReelPlayerPage.tsx"
-  height={500}
   stackblitzDeps={['@reelkit/react-reel-player']}
   stackblitzExtraDeps={{ 'lucide-react': '^0.562.0' }}
->
-  <ReelPlayerDemo />
-</Sandbox>
+/>
 
-<Caption>点缩略图打开全屏播放器。按 Escape 或点关闭按钮返回。</Caption>
+完整流程，即从缩略图网格打开播放器、关闭后回到用户停下的位置，请查看[从网格到播放器示例](/docs/recipes/grid-to-player)。
 
 ## 自定义 [#customization]
 

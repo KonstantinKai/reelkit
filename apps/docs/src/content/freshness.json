@@ -33,7 +33,7 @@
     "/docs/react/guide": {
       "source": "content/en/docs/react/guide.mdx",
       "translation": "content/uk/docs/react/guide.mdx",
-      "sha": "c2499a27506137ed3e180a1096a3d79eecb32570"
+      "sha": "93f4c1eb4fdff551054e6cfcbcd0ace19685be01"
     },
     "/docs/react/api": {
       "source": "content/en/docs/react/api.mdx",
@@ -43,17 +43,17 @@
     "/docs/reel-player": {
       "source": "content/en/docs/reel-player.mdx",
       "translation": "content/uk/docs/reel-player.mdx",
-      "sha": "17b101cf8173295e211d3cd6730656b05cbfc67e"
+      "sha": "0c5d7685a5a94d0c10fe76cdf4aea01e7e5f27c5"
     },
     "/docs/lightbox": {
       "source": "content/en/docs/lightbox.mdx",
       "translation": "content/uk/docs/lightbox.mdx",
-      "sha": "6553f63737142b3e800b0f045b5bdf1604d392be"
+      "sha": "bb88571ef62594f03f5deb3dbd995b7c20bc8903"
     },
     "/docs/stories-player": {
       "source": "content/en/docs/stories-player.mdx",
       "translation": "content/uk/docs/stories-player.mdx",
-      "sha": "d8188ce8767d4c73b43bfe660cdf7a89283d523e"
+      "sha": "4f2e0a9678e6ea8184c417c1ba70875e0b0d3d4f"
     },
     "/docs/vue/guide": {
       "source": "content/en/docs/vue/guide.mdx",
@@ -105,6 +105,31 @@
       "translation": "content/uk/docs/angular-stories-player.mdx",
       "sha": "c5b47d378c8019520231935b8e9e002edfac8f3d"
     },
+    "/docs/recipes": {
+      "source": "content/en/docs/recipes.mdx",
+      "translation": "content/uk/docs/recipes.mdx",
+      "sha": "c6a0e31f7bdc7ad51504f7b336ed3b9c0b6ddb90"
+    },
+    "/docs/recipes/infinite-feed": {
+      "source": "content/en/docs/recipes/infinite-feed.mdx",
+      "translation": "content/uk/docs/recipes/infinite-feed.mdx",
+      "sha": "12c4e3417f98ab48118b5c3645dfb17cbfb2ae3e"
+    },
+    "/docs/recipes/grid-to-player": {
+      "source": "content/en/docs/recipes/grid-to-player.mdx",
+      "translation": "content/uk/docs/recipes/grid-to-player.mdx",
+      "sha": "4928bf07195a670379dbeaa2e6b8c9ea9e440fec"
+    },
+    "/docs/recipes/gallery-slideshow": {
+      "source": "content/en/docs/recipes/gallery-slideshow.mdx",
+      "translation": "content/uk/docs/recipes/gallery-slideshow.mdx",
+      "sha": "3f358238d05607a0059ae8a2bf72174f89c6a065"
+    },
+    "/docs/recipes/stories-tray": {
+      "source": "content/en/docs/recipes/stories-tray.mdx",
+      "translation": "content/uk/docs/recipes/stories-tray.mdx",
+      "sha": "078c855f0fb2889877d81148191813bc2b9ba796"
+    },
     "/docs/troubleshooting": {
       "source": "content/en/docs/troubleshooting.mdx",
       "translation": "content/uk/docs/troubleshooting.mdx",
@@ -118,7 +143,7 @@
     "@chrome": {
       "source": "i18n/messages/en.ts",
       "translation": "i18n/messages/uk.ts",
-      "sha": "510b5a8e3233990156fb2eae31d20ea991490241"
+      "sha": "361f5fd1c9f39464195b399f48c312b7be8f5092"
     },
     "@home": {
       "source": "i18n/home/en.ts",
@@ -160,7 +185,7 @@
     "/docs/react/guide": {
       "source": "content/en/docs/react/guide.mdx",
       "translation": "content/zh/docs/react/guide.mdx",
-      "sha": "c2499a27506137ed3e180a1096a3d79eecb32570"
+      "sha": "93f4c1eb4fdff551054e6cfcbcd0ace19685be01"
     },
     "/docs/react/api": {
       "source": "content/en/docs/react/api.mdx",
@@ -170,17 +195,17 @@
     "/docs/reel-player": {
       "source": "content/en/docs/reel-player.mdx",
       "translation": "content/zh/docs/reel-player.mdx",
-      "sha": "17b101cf8173295e211d3cd6730656b05cbfc67e"
+      "sha": "0c5d7685a5a94d0c10fe76cdf4aea01e7e5f27c5"
     },
     "/docs/lightbox": {
       "source": "content/en/docs/lightbox.mdx",
       "translation": "content/zh/docs/lightbox.mdx",
-      "sha": "6553f63737142b3e800b0f045b5bdf1604d392be"
+      "sha": "bb88571ef62594f03f5deb3dbd995b7c20bc8903"
     },
     "/docs/stories-player": {
       "source": "content/en/docs/stories-player.mdx",
       "translation": "content/zh/docs/stories-player.mdx",
-      "sha": "d8188ce8767d4c73b43bfe660cdf7a89283d523e"
+      "sha": "4f2e0a9678e6ea8184c417c1ba70875e0b0d3d4f"
     },
     "/docs/vue/guide": {
       "source": "content/en/docs/vue/guide.mdx",
@@ -232,6 +257,31 @@
       "translation": "content/zh/docs/angular-stories-player.mdx",
       "sha": "c5b47d378c8019520231935b8e9e002edfac8f3d"
     },
+    "/docs/recipes": {
+      "source": "content/en/docs/recipes.mdx",
+      "translation": "content/zh/docs/recipes.mdx",
+      "sha": "c6a0e31f7bdc7ad51504f7b336ed3b9c0b6ddb90"
+    },
+    "/docs/recipes/infinite-feed": {
+      "source": "content/en/docs/recipes/infinite-feed.mdx",
+      "translation": "content/zh/docs/recipes/infinite-feed.mdx",
+      "sha": "12c4e3417f98ab48118b5c3645dfb17cbfb2ae3e"
+    },
+    "/docs/recipes/grid-to-player": {
+      "source": "content/en/docs/recipes/grid-to-player.mdx",
+      "translation": "content/zh/docs/recipes/grid-to-player.mdx",
+      "sha": "4928bf07195a670379dbeaa2e6b8c9ea9e440fec"
+    },
+    "/docs/recipes/gallery-slideshow": {
+      "source": "content/en/docs/recipes/gallery-slideshow.mdx",
+      "translation": "content/zh/docs/recipes/gallery-slideshow.mdx",
+      "sha": "3f358238d05607a0059ae8a2bf72174f89c6a065"
+    },
+    "/docs/recipes/stories-tray": {
+      "source": "content/en/docs/recipes/stories-tray.mdx",
+      "translation": "content/zh/docs/recipes/stories-tray.mdx",
+      "sha": "078c855f0fb2889877d81148191813bc2b9ba796"
+    },
     "/docs/troubleshooting": {
       "source": "content/en/docs/troubleshooting.mdx",
       "translation": "content/zh/docs/troubleshooting.mdx",
@@ -245,7 +295,7 @@
     "@chrome": {
       "source": "i18n/messages/en.ts",
       "translation": "i18n/messages/zh.ts",
-      "sha": "510b5a8e3233990156fb2eae31d20ea991490241"
+      "sha": "361f5fd1c9f39464195b399f48c312b7be8f5092"
     },
     "@home": {
       "source": "i18n/home/en.ts",
@@ -287,7 +337,7 @@
     "/docs/react/guide": {
       "source": "content/en/docs/react/guide.mdx",
       "translation": "content/pt/docs/react/guide.mdx",
-      "sha": "c2499a27506137ed3e180a1096a3d79eecb32570"
+      "sha": "93f4c1eb4fdff551054e6cfcbcd0ace19685be01"
     },
     "/docs/react/api": {
       "source": "content/en/docs/react/api.mdx",
@@ -297,17 +347,17 @@
     "/docs/reel-player": {
       "source": "content/en/docs/reel-player.mdx",
       "translation": "content/pt/docs/reel-player.mdx",
-      "sha": "17b101cf8173295e211d3cd6730656b05cbfc67e"
+      "sha": "0c5d7685a5a94d0c10fe76cdf4aea01e7e5f27c5"
     },
     "/docs/lightbox": {
       "source": "content/en/docs/lightbox.mdx",
       "translation": "content/pt/docs/lightbox.mdx",
-      "sha": "6553f63737142b3e800b0f045b5bdf1604d392be"
+      "sha": "bb88571ef62594f03f5deb3dbd995b7c20bc8903"
     },
     "/docs/stories-player": {
       "source": "content/en/docs/stories-player.mdx",
       "translation": "content/pt/docs/stories-player.mdx",
-      "sha": "d8188ce8767d4c73b43bfe660cdf7a89283d523e"
+      "sha": "4f2e0a9678e6ea8184c417c1ba70875e0b0d3d4f"
     },
     "/docs/vue/guide": {
       "source": "content/en/docs/vue/guide.mdx",
@@ -359,6 +409,31 @@
       "translation": "content/pt/docs/angular-stories-player.mdx",
       "sha": "c5b47d378c8019520231935b8e9e002edfac8f3d"
     },
+    "/docs/recipes": {
+      "source": "content/en/docs/recipes.mdx",
+      "translation": "content/pt/docs/recipes.mdx",
+      "sha": "c6a0e31f7bdc7ad51504f7b336ed3b9c0b6ddb90"
+    },
+    "/docs/recipes/infinite-feed": {
+      "source": "content/en/docs/recipes/infinite-feed.mdx",
+      "translation": "content/pt/docs/recipes/infinite-feed.mdx",
+      "sha": "12c4e3417f98ab48118b5c3645dfb17cbfb2ae3e"
+    },
+    "/docs/recipes/grid-to-player": {
+      "source": "content/en/docs/recipes/grid-to-player.mdx",
+      "translation": "content/pt/docs/recipes/grid-to-player.mdx",
+      "sha": "4928bf07195a670379dbeaa2e6b8c9ea9e440fec"
+    },
+    "/docs/recipes/gallery-slideshow": {
+      "source": "content/en/docs/recipes/gallery-slideshow.mdx",
+      "translation": "content/pt/docs/recipes/gallery-slideshow.mdx",
+      "sha": "3f358238d05607a0059ae8a2bf72174f89c6a065"
+    },
+    "/docs/recipes/stories-tray": {
+      "source": "content/en/docs/recipes/stories-tray.mdx",
+      "translation": "content/pt/docs/recipes/stories-tray.mdx",
+      "sha": "078c855f0fb2889877d81148191813bc2b9ba796"
+    },
     "/docs/troubleshooting": {
       "source": "content/en/docs/troubleshooting.mdx",
       "translation": "content/pt/docs/troubleshooting.mdx",
@@ -372,7 +447,7 @@
     "@chrome": {
       "source": "i18n/messages/en.ts",
       "translation": "i18n/messages/pt.ts",
-      "sha": "510b5a8e3233990156fb2eae31d20ea991490241"
+      "sha": "361f5fd1c9f39464195b399f48c312b7be8f5092"
     },
     "@home": {
       "source": "i18n/home/en.ts",
@@ -414,7 +489,7 @@
     "/docs/react/guide": {
       "source": "content/en/docs/react/guide.mdx",
       "translation": "content/ja/docs/react/guide.mdx",
-      "sha": "c2499a27506137ed3e180a1096a3d79eecb32570"
+      "sha": "93f4c1eb4fdff551054e6cfcbcd0ace19685be01"
     },
     "/docs/react/api": {
       "source": "content/en/docs/react/api.mdx",
@@ -424,17 +499,17 @@
     "/docs/reel-player": {
       "source": "content/en/docs/reel-player.mdx",
       "translation": "content/ja/docs/reel-player.mdx",
-      "sha": "17b101cf8173295e211d3cd6730656b05cbfc67e"
+      "sha": "0c5d7685a5a94d0c10fe76cdf4aea01e7e5f27c5"
     },
     "/docs/lightbox": {
       "source": "content/en/docs/lightbox.mdx",
       "translation": "content/ja/docs/lightbox.mdx",
-      "sha": "6553f63737142b3e800b0f045b5bdf1604d392be"
+      "sha": "bb88571ef62594f03f5deb3dbd995b7c20bc8903"
     },
     "/docs/stories-player": {
       "source": "content/en/docs/stories-player.mdx",
       "translation": "content/ja/docs/stories-player.mdx",
-      "sha": "d8188ce8767d4c73b43bfe660cdf7a89283d523e"
+      "sha": "4f2e0a9678e6ea8184c417c1ba70875e0b0d3d4f"
     },
     "/docs/vue/guide": {
       "source": "content/en/docs/vue/guide.mdx",
@@ -486,6 +561,31 @@
       "translation": "content/ja/docs/angular-stories-player.mdx",
       "sha": "c5b47d378c8019520231935b8e9e002edfac8f3d"
     },
+    "/docs/recipes": {
+      "source": "content/en/docs/recipes.mdx",
+      "translation": "content/ja/docs/recipes.mdx",
+      "sha": "c6a0e31f7bdc7ad51504f7b336ed3b9c0b6ddb90"
+    },
+    "/docs/recipes/infinite-feed": {
+      "source": "content/en/docs/recipes/infinite-feed.mdx",
+      "translation": "content/ja/docs/recipes/infinite-feed.mdx",
+      "sha": "12c4e3417f98ab48118b5c3645dfb17cbfb2ae3e"
+    },
+    "/docs/recipes/grid-to-player": {
+      "source": "content/en/docs/recipes/grid-to-player.mdx",
+      "translation": "content/ja/docs/recipes/grid-to-player.mdx",
+      "sha": "4928bf07195a670379dbeaa2e6b8c9ea9e440fec"
+    },
+    "/docs/recipes/gallery-slideshow": {
+      "source": "content/en/docs/recipes/gallery-slideshow.mdx",
+      "translation": "content/ja/docs/recipes/gallery-slideshow.mdx",
+      "sha": "3f358238d05607a0059ae8a2bf72174f89c6a065"
+    },
+    "/docs/recipes/stories-tray": {
+      "source": "content/en/docs/recipes/stories-tray.mdx",
+      "translation": "content/ja/docs/recipes/stories-tray.mdx",
+      "sha": "078c855f0fb2889877d81148191813bc2b9ba796"
+    },
     "/docs/troubleshooting": {
       "source": "content/en/docs/troubleshooting.mdx",
       "translation": "content/ja/docs/troubleshooting.mdx",
@@ -499,7 +599,7 @@
     "@chrome": {
       "source": "i18n/messages/en.ts",
       "translation": "i18n/messages/ja.ts",
-      "sha": "510b5a8e3233990156fb2eae31d20ea991490241"
+      "sha": "361f5fd1c9f39464195b399f48c312b7be8f5092"
     },
     "@home": {
       "source": "i18n/home/en.ts",
@@ -541,7 +641,7 @@
     "/docs/react/guide": {
       "source": "content/en/docs/react/guide.mdx",
       "translation": "content/hi/docs/react/guide.mdx",
-      "sha": "c2499a27506137ed3e180a1096a3d79eecb32570"
+      "sha": "93f4c1eb4fdff551054e6cfcbcd0ace19685be01"
     },
     "/docs/react/api": {
       "source": "content/en/docs/react/api.mdx",
@@ -551,17 +651,17 @@
     "/docs/reel-player": {
       "source": "content/en/docs/reel-player.mdx",
       "translation": "content/hi/docs/reel-player.mdx",
-      "sha": "17b101cf8173295e211d3cd6730656b05cbfc67e"
+      "sha": "0c5d7685a5a94d0c10fe76cdf4aea01e7e5f27c5"
     },
     "/docs/lightbox": {
       "source": "content/en/docs/lightbox.mdx",
       "translation": "content/hi/docs/lightbox.mdx",
-      "sha": "6553f63737142b3e800b0f045b5bdf1604d392be"
+      "sha": "bb88571ef62594f03f5deb3dbd995b7c20bc8903"
     },
     "/docs/stories-player": {
       "source": "content/en/docs/stories-player.mdx",
       "translation": "content/hi/docs/stories-player.mdx",
-      "sha": "d8188ce8767d4c73b43bfe660cdf7a89283d523e"
+      "sha": "4f2e0a9678e6ea8184c417c1ba70875e0b0d3d4f"
     },
     "/docs/vue/guide": {
       "source": "content/en/docs/vue/guide.mdx",
@@ -613,6 +713,31 @@
       "translation": "content/hi/docs/angular-stories-player.mdx",
       "sha": "c5b47d378c8019520231935b8e9e002edfac8f3d"
     },
+    "/docs/recipes": {
+      "source": "content/en/docs/recipes.mdx",
+      "translation": "content/hi/docs/recipes.mdx",
+      "sha": "c6a0e31f7bdc7ad51504f7b336ed3b9c0b6ddb90"
+    },
+    "/docs/recipes/infinite-feed": {
+      "source": "content/en/docs/recipes/infinite-feed.mdx",
+      "translation": "content/hi/docs/recipes/infinite-feed.mdx",
+      "sha": "12c4e3417f98ab48118b5c3645dfb17cbfb2ae3e"
+    },
+    "/docs/recipes/grid-to-player": {
+      "source": "content/en/docs/recipes/grid-to-player.mdx",
+      "translation": "content/hi/docs/recipes/grid-to-player.mdx",
+      "sha": "4928bf07195a670379dbeaa2e6b8c9ea9e440fec"
+    },
+    "/docs/recipes/gallery-slideshow": {
+      "source": "content/en/docs/recipes/gallery-slideshow.mdx",
+      "translation": "content/hi/docs/recipes/gallery-slideshow.mdx",
+      "sha": "3f358238d05607a0059ae8a2bf72174f89c6a065"
+    },
+    "/docs/recipes/stories-tray": {
+      "source": "content/en/docs/recipes/stories-tray.mdx",
+      "translation": "content/hi/docs/recipes/stories-tray.mdx",
+      "sha": "078c855f0fb2889877d81148191813bc2b9ba796"
+    },
     "/docs/troubleshooting": {
       "source": "content/en/docs/troubleshooting.mdx",
       "translation": "content/hi/docs/troubleshooting.mdx",
@@ -626,7 +751,7 @@
     "@chrome": {
       "source": "i18n/messages/en.ts",
       "translation": "i18n/messages/hi.ts",
-      "sha": "510b5a8e3233990156fb2eae31d20ea991490241"
+      "sha": "361f5fd1c9f39464195b399f48c312b7be8f5092"
     },
     "@home": {
       "source": "i18n/home/en.ts",
@@ -668,7 +793,7 @@
     "/docs/react/guide": {
       "source": "content/en/docs/react/guide.mdx",
       "translation": "content/es/docs/react/guide.mdx",
-      "sha": "c2499a27506137ed3e180a1096a3d79eecb32570"
+      "sha": "93f4c1eb4fdff551054e6cfcbcd0ace19685be01"
     },
     "/docs/react/api": {
       "source": "content/en/docs/react/api.mdx",
@@ -678,17 +803,17 @@
     "/docs/reel-player": {
       "source": "content/en/docs/reel-player.mdx",
       "translation": "content/es/docs/reel-player.mdx",
-      "sha": "17b101cf8173295e211d3cd6730656b05cbfc67e"
+      "sha": "0c5d7685a5a94d0c10fe76cdf4aea01e7e5f27c5"
     },
     "/docs/lightbox": {
       "source": "content/en/docs/lightbox.mdx",
       "translation": "content/es/docs/lightbox.mdx",
-      "sha": "6553f63737142b3e800b0f045b5bdf1604d392be"
+      "sha": "bb88571ef62594f03f5deb3dbd995b7c20bc8903"
     },
     "/docs/stories-player": {
       "source": "content/en/docs/stories-player.mdx",
       "translation": "content/es/docs/stories-player.mdx",
-      "sha": "d8188ce8767d4c73b43bfe660cdf7a89283d523e"
+      "sha": "4f2e0a9678e6ea8184c417c1ba70875e0b0d3d4f"
     },
     "/docs/vue/guide": {
       "source": "content/en/docs/vue/guide.mdx",
@@ -740,6 +865,31 @@
       "translation": "content/es/docs/angular-stories-player.mdx",
       "sha": "c5b47d378c8019520231935b8e9e002edfac8f3d"
     },
+    "/docs/recipes": {
+      "source": "content/en/docs/recipes.mdx",
+      "translation": "content/es/docs/recipes.mdx",
+      "sha": "c6a0e31f7bdc7ad51504f7b336ed3b9c0b6ddb90"
+    },
+    "/docs/recipes/infinite-feed": {
+      "source": "content/en/docs/recipes/infinite-feed.mdx",
+      "translation": "content/es/docs/recipes/infinite-feed.mdx",
+      "sha": "12c4e3417f98ab48118b5c3645dfb17cbfb2ae3e"
+    },
+    "/docs/recipes/grid-to-player": {
+      "source": "content/en/docs/recipes/grid-to-player.mdx",
+      "translation": "content/es/docs/recipes/grid-to-player.mdx",
+      "sha": "4928bf07195a670379dbeaa2e6b8c9ea9e440fec"
+    },
+    "/docs/recipes/gallery-slideshow": {
+      "source": "content/en/docs/recipes/gallery-slideshow.mdx",
+      "translation": "content/es/docs/recipes/gallery-slideshow.mdx",
+      "sha": "3f358238d05607a0059ae8a2bf72174f89c6a065"
+    },
+    "/docs/recipes/stories-tray": {
+      "source": "content/en/docs/recipes/stories-tray.mdx",
+      "translation": "content/es/docs/recipes/stories-tray.mdx",
+      "sha": "078c855f0fb2889877d81148191813bc2b9ba796"
+    },
     "/docs/troubleshooting": {
       "source": "content/en/docs/troubleshooting.mdx",
       "translation": "content/es/docs/troubleshooting.mdx",
@@ -753,7 +903,7 @@
     "@chrome": {
       "source": "i18n/messages/en.ts",
       "translation": "i18n/messages/es.ts",
-      "sha": "510b5a8e3233990156fb2eae31d20ea991490241"
+      "sha": "361f5fd1c9f39464195b399f48c312b7be8f5092"
     },
     "@home": {
       "source": "i18n/home/en.ts",

@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { RkStoriesRingComponent } from './stories-ring.component';
@@ -132,5 +134,17 @@ describe('RkStoriesRingComponent', () => {
       .nativeElement as HTMLImageElement;
     expect(Number(avatar.getAttribute('width'))).toBeGreaterThan(0);
     expect(avatar.getAttribute('width')).toBe(avatar.getAttribute('height'));
+  });
+
+  // A page reset such as `img { height: auto }` drops the height attribute,
+  // and a portrait or landscape avatar then bends the ring into an oval.
+  it('keeps the avatar square whatever the page does to its height', () => {
+    const css = readFileSync(
+      join(__dirname, '../styles/stories-ring.css'),
+      'utf8',
+    );
+    const avatarRule = css.match(/\.rk-stories-ring-avatar\s*\{[^}]*\}/)?.[0];
+
+    expect(avatarRule).toMatch(/aspect-ratio:\s*1\s*;/);
   });
 });

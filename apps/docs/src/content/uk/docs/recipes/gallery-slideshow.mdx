@@ -1,0 +1,69 @@
+---
+title: Галерея зі слайдшоу
+description: Фотогалерея в Lightbox, що відтворюється як слайдшоу й завантажує оригінальний файл кожного фото.
+---
+
+import { GallerySlideshowDemo } from '../../../../components/demos/GallerySlideshowDemo';
+import reactCode from '../../../snippets/recipes/gallery-slideshow/react.tsx?raw';
+import vueCode from '../../../snippets/recipes/gallery-slideshow/vue.vue?raw';
+import angularCode from '../../../snippets/recipes/gallery-slideshow/angular.ts?raw';
+import apiCode from '../../../snippets/recipes/gallery-slideshow/api.ts?raw';
+
+Альбом відкривається на весь екран і сам відтворюється, фото за фото, поки глядач його не зупинить. Будь-яке фото можна зберегти, і зберігається оригінальний файл під зрозумілою назвою, а не зменшена копія, яку показує екран.
+
+## Спробуйте [#try-it]
+
+Кожна версія імпортує `./api`, що заміняє ваш бекенд: `photos` — альбом у формі `LightboxItem` з Lightbox, де в кожного фото є адреса для показу, файл для завантаження й назва, під якою його зберегти. Замініть його власним альбомом.
+
+<CodeBlock code={apiCode} language="typescript" />
+
+<Callout type="warning" title="Зразкові медіа працюють лише на reelkit.dev">
+  `cdnUrl` будує посилання на cdn.reelkit.dev, який віддає файли лише сайтам ReelKit. У вашому застосунку ці фото не завантажаться й не збережуться, тож перш ніж копіювати цей файл, спрямуйте `src` та `downloadUrl` на власні файли.
+</Callout>
+
+<FrameworkVariant for="react">
+<Sandbox code={reactCode} title="GallerySlideshow.tsx" height={560}>
+  <GallerySlideshowDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+<Sandbox code={vueCode} language="vue" framework="vue" title="GallerySlideshow.vue" height={560}>
+  <GallerySlideshowDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+<Sandbox code={angularCode} language="typescript" framework="angular" title="gallery-slideshow.component.ts" height={560}>
+  <GallerySlideshowDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<Caption>Відкрийте фото: слайдшоу одразу стартує й перемикає кадр кожні три секунди. Зупиніть його з панелі або збережіть фото кнопкою завантаження.</Caption>
+
+## Чому це працює [#why-it-works]
+
+- **Два пропси перетворюють Lightbox на слайдшоу із завантаженням.** `autoAdvance` запускає відтворення щойно Lightbox відкривається, а `showDownload` додає кнопку, що зберігає поточне фото. Стандартна панель сама отримує кнопку відтворення й паузи та кнопку завантаження. Обидва пропси описано для [React](/docs/lightbox#auto-advance), [Vue](/docs/vue-lightbox#auto-advance) та [Angular](/docs/angular-lightbox#auto-advance), і на кожній сторінці одразу за цим іде розділ про завантаження.
+- **Слайдшоу чекає на кожне фото.** `autoAdvanceInterval` відлічується з моменту, коли фото завантажилося, тож повільне зʼєднання ніколи не пропускає кадр, якого ще ніхто не побачив. Таймінг — це `createSlideshowController` з ядра, описаний у [посібнику з автовідтворення](/docs/core/guide#autoplay).
+- **Глядач лишається головним.** Свайп чи натискання клавіші перемикає кадр вручну й запускає інтервал наступного фото з нуля, а слайдшоу лишається ввімкненим. [PlayPauseButton](/docs/lightbox#playpausebutton) зупиняє й відновлює його, а вказівник, що лежить на кнопці чи підписі, притримує його, доки там лежить. На останньому фото воно зупиняється, якщо не задано `loop`.
+- **Показуйте малу копію, зберігайте оригінал.** `src` — те, що показує екран, тож зменшена копія тримає галерею швидкою. `downloadUrl` — те, що зберігає кнопка, а `downloadName` — назва файлу, тож глядач отримує повне фото під назвою, яка каже, що це. Зразковий CDN віддає лише один розмір, тож тут обидва вказують на один файл. Поля описано в [типі LightboxItem](/docs/lightbox#lightboxitem).
+- **Завантаження з іншого джерела потребує CORS.** Атрибут `download` ігнорується в посиланні на інше джерело, тож Lightbox завантажує файл і зберігає його сам. Для цього сервер файлу має відповідати заголовком `Access-Control-Allow-Origin` для вашого сайту. Якщо ні, фото натомість відкривається в новій вкладці, тож глядач усе одно може його зберегти. Див. [`downloadFile`](/docs/core/guide#download).
+
+<NextSteps
+  items={[
+    {
+      label: 'Панель історій',
+      path: '/docs/recipes/stories-tray',
+      description: 'ряд кілець, що відкриває плеєр історій і памʼятає переглянуте',
+    },
+    {
+      label: 'Lightbox',
+      path: {
+        react: '/docs/lightbox',
+        vue: '/docs/vue-lightbox',
+        angular: '/docs/angular-lightbox',
+      },
+      description: 'кожен пропс, слот і частина Lightbox',
+    },
+  ]}
+/>

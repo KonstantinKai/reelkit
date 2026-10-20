@@ -27,6 +27,7 @@ const _kLlmsSectionOrder = [
   'React',
   'Vue',
   'Angular',
+  'Recipes',
   'Meta',
 ];
 

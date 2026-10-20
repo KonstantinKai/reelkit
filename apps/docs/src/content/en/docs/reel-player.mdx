@@ -4,7 +4,6 @@ description: Full-screen TikTok/Reels-style video reel player overlay for React.
 ---
 
 import { Zap, Play, Volume2, Layout, Clock, Image, Layers, Ratio, Monitor, Code, Settings, Link2 } from 'lucide-react';
-import { ReelPlayerDemo } from '../../../components/demos/ReelPlayerDemo';
 import installation from '../../snippets/reel-player/installation.sh?raw';
 import installation2 from '../../snippets/reel-player/installation-2.ts?raw';
 import quickStart from '../../snippets/reel-player/quick-start.tsx?raw';
@@ -135,19 +134,14 @@ The `ReelPlayerOverlay` component renders a full-screen player overlay. Pass an 
 
 <CodeBlock code={quickStart} language="tsx" />
 
-## Live Demo [#live-demo]
-
 <Sandbox
   code={fullCode}
   title="ReelPlayerPage.tsx"
-  height={500}
   stackblitzDeps={['@reelkit/react-reel-player']}
   stackblitzExtraDeps={{ 'lucide-react': '^0.562.0' }}
->
-  <ReelPlayerDemo />
-</Sandbox>
+/>
 
-<Caption>Click a thumbnail to open the full-screen player. Press Escape or the close button to return.</Caption>
+For the whole flow, a thumbnail grid that opens the player and brings the viewer back to where they stopped, see the [Grid to Player recipe](/docs/recipes/grid-to-player).
 
 ## Customization [#customization]
 

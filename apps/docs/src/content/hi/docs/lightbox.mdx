@@ -4,7 +4,6 @@ description: React के लिए फ़ुलस्क्रीन इमे�
 ---
 
 import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2, Play, Download } from 'lucide-react';
-import { LightboxDemo } from '../../../components/demos/LightboxDemo';
 import installation from '../../snippets/lightbox/installation.sh?raw';
 import installation2 from '../../snippets/lightbox/installation-2.ts?raw';
 import quickStart from '../../snippets/lightbox/quick-start.tsx?raw';
@@ -143,19 +142,14 @@ styles import करना न भूलें:
 
 <CodeBlock code={quickStart} language="tsx" />
 
-## लाइव डेमो [#live-demo]
-
 <Sandbox
   code={fullCode}
   title="LightboxPage.tsx"
-  height={500}
   stackblitzDeps={['@reelkit/react-lightbox']}
   stackblitzExtraDeps={{ 'lucide-react': '^0.562.0' }}
->
-  <LightboxDemo />
-</Sandbox>
+/>
 
-<Caption>lightbox खोलने के लिए किसी थंबनेल पर क्लिक करें। आगे-पीछे जाने के लिए तीर वाली कुंजियाँ या स्वाइप इस्तेमाल करें।</Caption>
+गैलरी को स्लाइडशो की तरह चलाने और हर फ़ोटो की मूल फ़ाइल सेव करने के लिए [गैलरी स्लाइडशो रेसिपी](/docs/recipes/gallery-slideshow) देखें।
 
 ## वीडियो स्लाइड (opt-in) [#video-slides-opt-in]
 

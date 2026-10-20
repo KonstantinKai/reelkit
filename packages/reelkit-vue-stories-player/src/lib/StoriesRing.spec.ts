@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { mount } from '@vue/test-utils';
 import { describe, it, expect } from 'vitest';
 import { StoriesRing } from './StoriesRing';
@@ -95,5 +97,17 @@ describe('StoriesRing', () => {
     await wrapper.trigger('keydown', { key: ' ' });
     await wrapper.trigger('keydown', { key: 'a' });
     expect(wrapper.emitted('click')).toHaveLength(2);
+  });
+
+  // A page reset such as `img { height: auto }` drops the height attribute,
+  // and a portrait or landscape avatar then bends the ring into an oval.
+  it('keeps the avatar square whatever the page does to its height', () => {
+    const css = readFileSync(
+      join(import.meta.dirname, 'StoriesRing.css'),
+      'utf8',
+    );
+    const avatarRule = css.match(/\.rk-stories-ring-avatar\s*\{[^}]*\}/)?.[0];
+
+    expect(avatarRule).toMatch(/aspect-ratio:\s*1\s*;/);
   });
 });

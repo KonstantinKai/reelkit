@@ -296,6 +296,34 @@ describe('palette matching', () => {
     },
   );
 
+  // A recipe is the page a reader wants when they type what they are building
+  // or the API it is built on, in their own language as much as in English.
+  it.each(kLocales)(
+    'finds each recipe by its title and by the API it uses in "%s"',
+    (locale) => {
+      const expectations: [string, string][] = [
+        ['/docs/recipes', 'recipe'],
+        ['/docs/recipes/infinite-feed', 'keyExtractor'],
+        ['/docs/recipes/grid-to-player', 'ReelPlayerOverlay'],
+        ['/docs/recipes/gallery-slideshow', 'showDownload'],
+        ['/docs/recipes/stories-tray', 'createStoriesViewedStateController'],
+      ];
+      const items = searchItemsFor(locale);
+      for (const [path, apiName] of expectations) {
+        const target = withLocale(locale, path);
+        const page = items.find((item) => item.path === target);
+        expect(page, `${path} is not in the ${locale} index`).toBeTruthy();
+
+        for (const query of [page!.title, apiName]) {
+          const hits = items
+            .filter((item) => matchesSearch(item, query))
+            .map((item) => item.path);
+          expect(hits, `"${query}" in ${locale}`).toContain(target);
+        }
+      }
+    },
+  );
+
   it.each(kLocales)(
     'finds the slideshow and download API by name in "%s"',
     (locale) => {

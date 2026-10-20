@@ -70,9 +70,7 @@ export default function App() {
 }
 ```
 
-## Live Demo
-
-https://react-demo.reelkit.dev/stories-player — click a story ring to open the player; tap left/right sides to navigate, swipe to switch users.
+Hosted demo: https://react-demo.reelkit.dev/stories-player. Ring row that remembers what was seen across reloads: Stories Tray recipe, https://reelkit.dev/docs/recipes/stories-tray.
 
 ## URL State (shareable links, back button)
 

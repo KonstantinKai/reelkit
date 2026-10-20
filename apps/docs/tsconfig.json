@@ -17,7 +17,10 @@
     "noFallthroughCasesInSwitch": true
   },
   "include": ["src"],
-  "exclude": ["src/content/snippets"],
+  "exclude": [
+    "src/content/snippets/*/*.*",
+    "src/content/snippets/recipes/**/angular.ts"
+  ],
   "references": [
     {
       "path": "../../packages/reelkit-angular-stories-player"
