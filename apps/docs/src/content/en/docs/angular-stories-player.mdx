@@ -490,7 +490,9 @@ Every colour, size, duration and z-index is a `--rk-stories-*` custom property o
 | `--rk-stories-card-transition` | `300ms` | Carousel slide duration |
 | `--rk-stories-ring-spin-duration` | `4s` | Rotation duration of a ring with stories left to watch |
 | `--rk-stories-ring-active-scale` | `0.95` | Ring scale while pressed |
-| `--rk-stories-ring-gradient` | `none` | Internal: the ring component writes its gradient here on every render, so setting it has no effect |
+| `--rk-stories-ring-active-gradient` | `conic-gradient(from 180deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888, #f09433)` | What a ring with stories left to watch shows, any CSS image or colour. On a light page set it on `.rk-stories-ring-list`, not `:root`, so the player's carousel keeps its own |
+| `--rk-stories-ring-viewed-color` | `rgba(255, 255, 255, 0.25)` | What a fully watched ring shows, made for a dark page. On a light page set it on `.rk-stories-ring-list`, not `:root` |
+| `--rk-stories-ring-gradient` | `none` | Internal: the ring writes it on every render, pointing at the two tokens above unless the ring is given `gradientColors` or `viewedColor` |
 | `--rk-stories-ring-list-gap` | `12px` | Spacing between rings in the list |
 | `--rk-stories-ring-list-padding` | `12px` | Inner padding around the ring list |
 | `--rk-stories-ring-list-item-gap` | `4px` | Space between a ring and its name |

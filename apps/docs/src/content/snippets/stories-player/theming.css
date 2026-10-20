@@ -12,3 +12,9 @@
   --rk-stories-header-name-fg: #fef3c7;
   --rk-stories-ring-spin-duration: 2s;
 }
+
+/* Rings on a light page. Set on the ring list, not :root, so the rings of the
+   player's own carousel keep the colours made for its dark backdrop. */
+.rk-stories-ring-list {
+  --rk-stories-ring-viewed-color: #d4d4d8;
+}

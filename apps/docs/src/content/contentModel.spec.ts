@@ -240,6 +240,64 @@ describe('recipe pages', () => {
   });
 });
 
+// The ring colours are tokens a page themes from CSS, and each binding ships
+// its own stylesheet. Declared on an element instead of :root, a default would
+// shadow the page's override; differing between bindings, a page moving from
+// one framework to another would see its rings change.
+describe('story ring colour tokens', () => {
+  const stylesheets = [
+    'packages/reelkit-react-stories-player/src/lib/StoriesRing.css',
+    'packages/reelkit-vue-stories-player/src/lib/StoriesRing.css',
+    'packages/reelkit-angular-stories-player/src/lib/styles/stories-ring.css',
+  ].map((path) => ({ path, css: read(join(repoRoot, path)) }));
+
+  const rootBlock = (css: string) => css.match(/:root\s*\{[^}]*\}/)?.[0] ?? '';
+
+  it.each(stylesheets)(
+    '$path declares both colour tokens on :root with the default look',
+    ({ css }) => {
+      const root = rootBlock(css).replace(/\s+/g, ' ');
+      expect(root).toContain(
+        '--rk-stories-ring-active-gradient: conic-gradient( from 180deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888, #f09433 );',
+      );
+      expect(root).toContain(
+        '--rk-stories-ring-viewed-color: rgba(255, 255, 255, 0.25);',
+      );
+    },
+  );
+
+  it.each(stylesheets)(
+    '$path sets the colour tokens nowhere but :root',
+    ({ css }) => {
+      const outsideRoot = css.replace(rootBlock(css), '');
+      expect(outsideRoot).not.toMatch(
+        /--rk-stories-ring-(active-gradient|viewed-color)\s*:/,
+      );
+    },
+  );
+
+  // The player's desktop carousel draws rings with the same tokens on its dark
+  // backdrop. An example that sets them page-wide teaches readers to repaint
+  // those too, so examples scope the colours to the ring list.
+  it('leaves ring colours off :root in every docs example', () => {
+    const samples = walk(contentDir, (name) =>
+      /\.(css|mdx|md|tsx|ts|vue)$/.test(name),
+    ).filter((path) => !path.endsWith('.spec.ts'));
+    const offenders = samples.filter((path) =>
+      [...read(path).matchAll(/(?::root|\bhtml|\bbody)\s*\{[^}]*\}/g)].some(
+        ([block]) =>
+          /--rk-stories-ring-(active-gradient|viewed-color)\s*:/.test(block),
+      ),
+    );
+    expect(offenders.map((path) => relative(repoRoot, path))).toEqual([]);
+  });
+
+  it('gives every binding the same token block', () => {
+    const [first, ...rest] = stylesheets.map(({ css }) => rootBlock(css));
+    for (const block of rest) expect(block).toBe(first);
+  });
+});
+
 describe('locale parity configuration', () => {
   // `docs:check` compares every translated page against its English original.
   // Its locale list is hand-kept JSON, so a language added to the registry

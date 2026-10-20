@@ -28,7 +28,7 @@
     "/docs/stories-core": {
       "source": "content/en/docs/stories-core.mdx",
       "translation": "content/uk/docs/stories-core.mdx",
-      "sha": "713c991a94b93e22504ce901ccfc3b5ff1075cf6"
+      "sha": "2fd37e09c35fc236a7cf5b081f836cb8be1384df"
     },
     "/docs/react/guide": {
       "source": "content/en/docs/react/guide.mdx",
@@ -53,7 +53,7 @@
     "/docs/stories-player": {
       "source": "content/en/docs/stories-player.mdx",
       "translation": "content/uk/docs/stories-player.mdx",
-      "sha": "4f2e0a9678e6ea8184c417c1ba70875e0b0d3d4f"
+      "sha": "6e517803f49644ba9db847e38f35db996cc7ff6b"
     },
     "/docs/vue/guide": {
       "source": "content/en/docs/vue/guide.mdx",
@@ -78,7 +78,7 @@
     "/docs/vue-stories-player": {
       "source": "content/en/docs/vue-stories-player.mdx",
       "translation": "content/uk/docs/vue-stories-player.mdx",
-      "sha": "1a744ebaa3b2f2bced1d5f015f542327859bc093"
+      "sha": "f3f1676fa97ede7c79bd5c808ca743f97017dc71"
     },
     "/docs/angular/guide": {
       "source": "content/en/docs/angular/guide.mdx",
@@ -103,7 +103,7 @@
     "/docs/angular-stories-player": {
       "source": "content/en/docs/angular-stories-player.mdx",
       "translation": "content/uk/docs/angular-stories-player.mdx",
-      "sha": "c5b47d378c8019520231935b8e9e002edfac8f3d"
+      "sha": "023c3c7e3ded019d9602c5c116d7e0b97c9762e2"
     },
     "/docs/recipes": {
       "source": "content/en/docs/recipes.mdx",
@@ -128,7 +128,7 @@
     "/docs/recipes/stories-tray": {
       "source": "content/en/docs/recipes/stories-tray.mdx",
       "translation": "content/uk/docs/recipes/stories-tray.mdx",
-      "sha": "078c855f0fb2889877d81148191813bc2b9ba796"
+      "sha": "c1e788e8e07a75fe72ec545684dd67aef99c1d46"
     },
     "/docs/troubleshooting": {
       "source": "content/en/docs/troubleshooting.mdx",
@@ -180,7 +180,7 @@
     "/docs/stories-core": {
       "source": "content/en/docs/stories-core.mdx",
       "translation": "content/zh/docs/stories-core.mdx",
-      "sha": "713c991a94b93e22504ce901ccfc3b5ff1075cf6"
+      "sha": "2fd37e09c35fc236a7cf5b081f836cb8be1384df"
     },
     "/docs/react/guide": {
       "source": "content/en/docs/react/guide.mdx",
@@ -205,7 +205,7 @@
     "/docs/stories-player": {
       "source": "content/en/docs/stories-player.mdx",
       "translation": "content/zh/docs/stories-player.mdx",
-      "sha": "4f2e0a9678e6ea8184c417c1ba70875e0b0d3d4f"
+      "sha": "6e517803f49644ba9db847e38f35db996cc7ff6b"
     },
     "/docs/vue/guide": {
       "source": "content/en/docs/vue/guide.mdx",
@@ -230,7 +230,7 @@
     "/docs/vue-stories-player": {
       "source": "content/en/docs/vue-stories-player.mdx",
       "translation": "content/zh/docs/vue-stories-player.mdx",
-      "sha": "1a744ebaa3b2f2bced1d5f015f542327859bc093"
+      "sha": "f3f1676fa97ede7c79bd5c808ca743f97017dc71"
     },
     "/docs/angular/guide": {
       "source": "content/en/docs/angular/guide.mdx",
@@ -255,7 +255,7 @@
     "/docs/angular-stories-player": {
       "source": "content/en/docs/angular-stories-player.mdx",
       "translation": "content/zh/docs/angular-stories-player.mdx",
-      "sha": "c5b47d378c8019520231935b8e9e002edfac8f3d"
+      "sha": "023c3c7e3ded019d9602c5c116d7e0b97c9762e2"
     },
     "/docs/recipes": {
       "source": "content/en/docs/recipes.mdx",
@@ -280,7 +280,7 @@
     "/docs/recipes/stories-tray": {
       "source": "content/en/docs/recipes/stories-tray.mdx",
       "translation": "content/zh/docs/recipes/stories-tray.mdx",
-      "sha": "078c855f0fb2889877d81148191813bc2b9ba796"
+      "sha": "c1e788e8e07a75fe72ec545684dd67aef99c1d46"
     },
     "/docs/troubleshooting": {
       "source": "content/en/docs/troubleshooting.mdx",
@@ -332,7 +332,7 @@
     "/docs/stories-core": {
       "source": "content/en/docs/stories-core.mdx",
       "translation": "content/pt/docs/stories-core.mdx",
-      "sha": "713c991a94b93e22504ce901ccfc3b5ff1075cf6"
+      "sha": "2fd37e09c35fc236a7cf5b081f836cb8be1384df"
     },
     "/docs/react/guide": {
       "source": "content/en/docs/react/guide.mdx",
@@ -357,7 +357,7 @@
     "/docs/stories-player": {
       "source": "content/en/docs/stories-player.mdx",
       "translation": "content/pt/docs/stories-player.mdx",
-      "sha": "4f2e0a9678e6ea8184c417c1ba70875e0b0d3d4f"
+      "sha": "6e517803f49644ba9db847e38f35db996cc7ff6b"
     },
     "/docs/vue/guide": {
       "source": "content/en/docs/vue/guide.mdx",
@@ -382,7 +382,7 @@
     "/docs/vue-stories-player": {
       "source": "content/en/docs/vue-stories-player.mdx",
       "translation": "content/pt/docs/vue-stories-player.mdx",
-      "sha": "1a744ebaa3b2f2bced1d5f015f542327859bc093"
+      "sha": "f3f1676fa97ede7c79bd5c808ca743f97017dc71"
     },
     "/docs/angular/guide": {
       "source": "content/en/docs/angular/guide.mdx",
@@ -407,7 +407,7 @@
     "/docs/angular-stories-player": {
       "source": "content/en/docs/angular-stories-player.mdx",
       "translation": "content/pt/docs/angular-stories-player.mdx",
-      "sha": "c5b47d378c8019520231935b8e9e002edfac8f3d"
+      "sha": "023c3c7e3ded019d9602c5c116d7e0b97c9762e2"
     },
     "/docs/recipes": {
       "source": "content/en/docs/recipes.mdx",
@@ -432,7 +432,7 @@
     "/docs/recipes/stories-tray": {
       "source": "content/en/docs/recipes/stories-tray.mdx",
       "translation": "content/pt/docs/recipes/stories-tray.mdx",
-      "sha": "078c855f0fb2889877d81148191813bc2b9ba796"
+      "sha": "c1e788e8e07a75fe72ec545684dd67aef99c1d46"
     },
     "/docs/troubleshooting": {
       "source": "content/en/docs/troubleshooting.mdx",
@@ -484,7 +484,7 @@
     "/docs/stories-core": {
       "source": "content/en/docs/stories-core.mdx",
       "translation": "content/ja/docs/stories-core.mdx",
-      "sha": "713c991a94b93e22504ce901ccfc3b5ff1075cf6"
+      "sha": "2fd37e09c35fc236a7cf5b081f836cb8be1384df"
     },
     "/docs/react/guide": {
       "source": "content/en/docs/react/guide.mdx",
@@ -509,7 +509,7 @@
     "/docs/stories-player": {
       "source": "content/en/docs/stories-player.mdx",
       "translation": "content/ja/docs/stories-player.mdx",
-      "sha": "4f2e0a9678e6ea8184c417c1ba70875e0b0d3d4f"
+      "sha": "6e517803f49644ba9db847e38f35db996cc7ff6b"
     },
     "/docs/vue/guide": {
       "source": "content/en/docs/vue/guide.mdx",
@@ -534,7 +534,7 @@
     "/docs/vue-stories-player": {
       "source": "content/en/docs/vue-stories-player.mdx",
       "translation": "content/ja/docs/vue-stories-player.mdx",
-      "sha": "1a744ebaa3b2f2bced1d5f015f542327859bc093"
+      "sha": "f3f1676fa97ede7c79bd5c808ca743f97017dc71"
     },
     "/docs/angular/guide": {
       "source": "content/en/docs/angular/guide.mdx",
@@ -559,7 +559,7 @@
     "/docs/angular-stories-player": {
       "source": "content/en/docs/angular-stories-player.mdx",
       "translation": "content/ja/docs/angular-stories-player.mdx",
-      "sha": "c5b47d378c8019520231935b8e9e002edfac8f3d"
+      "sha": "023c3c7e3ded019d9602c5c116d7e0b97c9762e2"
     },
     "/docs/recipes": {
       "source": "content/en/docs/recipes.mdx",
@@ -584,7 +584,7 @@
     "/docs/recipes/stories-tray": {
       "source": "content/en/docs/recipes/stories-tray.mdx",
       "translation": "content/ja/docs/recipes/stories-tray.mdx",
-      "sha": "078c855f0fb2889877d81148191813bc2b9ba796"
+      "sha": "c1e788e8e07a75fe72ec545684dd67aef99c1d46"
     },
     "/docs/troubleshooting": {
       "source": "content/en/docs/troubleshooting.mdx",
@@ -636,7 +636,7 @@
     "/docs/stories-core": {
       "source": "content/en/docs/stories-core.mdx",
       "translation": "content/hi/docs/stories-core.mdx",
-      "sha": "713c991a94b93e22504ce901ccfc3b5ff1075cf6"
+      "sha": "2fd37e09c35fc236a7cf5b081f836cb8be1384df"
     },
     "/docs/react/guide": {
       "source": "content/en/docs/react/guide.mdx",
@@ -661,7 +661,7 @@
     "/docs/stories-player": {
       "source": "content/en/docs/stories-player.mdx",
       "translation": "content/hi/docs/stories-player.mdx",
-      "sha": "4f2e0a9678e6ea8184c417c1ba70875e0b0d3d4f"
+      "sha": "6e517803f49644ba9db847e38f35db996cc7ff6b"
     },
     "/docs/vue/guide": {
       "source": "content/en/docs/vue/guide.mdx",
@@ -686,7 +686,7 @@
     "/docs/vue-stories-player": {
       "source": "content/en/docs/vue-stories-player.mdx",
       "translation": "content/hi/docs/vue-stories-player.mdx",
-      "sha": "1a744ebaa3b2f2bced1d5f015f542327859bc093"
+      "sha": "f3f1676fa97ede7c79bd5c808ca743f97017dc71"
     },
     "/docs/angular/guide": {
       "source": "content/en/docs/angular/guide.mdx",
@@ -711,7 +711,7 @@
     "/docs/angular-stories-player": {
       "source": "content/en/docs/angular-stories-player.mdx",
       "translation": "content/hi/docs/angular-stories-player.mdx",
-      "sha": "c5b47d378c8019520231935b8e9e002edfac8f3d"
+      "sha": "023c3c7e3ded019d9602c5c116d7e0b97c9762e2"
     },
     "/docs/recipes": {
       "source": "content/en/docs/recipes.mdx",
@@ -736,7 +736,7 @@
     "/docs/recipes/stories-tray": {
       "source": "content/en/docs/recipes/stories-tray.mdx",
       "translation": "content/hi/docs/recipes/stories-tray.mdx",
-      "sha": "078c855f0fb2889877d81148191813bc2b9ba796"
+      "sha": "c1e788e8e07a75fe72ec545684dd67aef99c1d46"
     },
     "/docs/troubleshooting": {
       "source": "content/en/docs/troubleshooting.mdx",
@@ -788,7 +788,7 @@
     "/docs/stories-core": {
       "source": "content/en/docs/stories-core.mdx",
       "translation": "content/es/docs/stories-core.mdx",
-      "sha": "713c991a94b93e22504ce901ccfc3b5ff1075cf6"
+      "sha": "2fd37e09c35fc236a7cf5b081f836cb8be1384df"
     },
     "/docs/react/guide": {
       "source": "content/en/docs/react/guide.mdx",
@@ -813,7 +813,7 @@
     "/docs/stories-player": {
       "source": "content/en/docs/stories-player.mdx",
       "translation": "content/es/docs/stories-player.mdx",
-      "sha": "4f2e0a9678e6ea8184c417c1ba70875e0b0d3d4f"
+      "sha": "6e517803f49644ba9db847e38f35db996cc7ff6b"
     },
     "/docs/vue/guide": {
       "source": "content/en/docs/vue/guide.mdx",
@@ -838,7 +838,7 @@
     "/docs/vue-stories-player": {
       "source": "content/en/docs/vue-stories-player.mdx",
       "translation": "content/es/docs/vue-stories-player.mdx",
-      "sha": "1a744ebaa3b2f2bced1d5f015f542327859bc093"
+      "sha": "f3f1676fa97ede7c79bd5c808ca743f97017dc71"
     },
     "/docs/angular/guide": {
       "source": "content/en/docs/angular/guide.mdx",
@@ -863,7 +863,7 @@
     "/docs/angular-stories-player": {
       "source": "content/en/docs/angular-stories-player.mdx",
       "translation": "content/es/docs/angular-stories-player.mdx",
-      "sha": "c5b47d378c8019520231935b8e9e002edfac8f3d"
+      "sha": "023c3c7e3ded019d9602c5c116d7e0b97c9762e2"
     },
     "/docs/recipes": {
       "source": "content/en/docs/recipes.mdx",
@@ -888,7 +888,7 @@
     "/docs/recipes/stories-tray": {
       "source": "content/en/docs/recipes/stories-tray.mdx",
       "translation": "content/es/docs/recipes/stories-tray.mdx",
-      "sha": "078c855f0fb2889877d81148191813bc2b9ba796"
+      "sha": "c1e788e8e07a75fe72ec545684dd67aef99c1d46"
     },
     "/docs/troubleshooting": {
       "source": "content/en/docs/troubleshooting.mdx",

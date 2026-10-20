@@ -504,7 +504,9 @@ Cada cor, tamanho, z-index e transição vive numa propriedade customizada de CS
 | `--rk-stories-heart-z` | `20` | z-index do coração do toque duplo |
 | `--rk-stories-ring-spin-duration` | `4s` | Duração da rotação de um anel com stories por ver |
 | `--rk-stories-ring-active-scale` | `0.95` | Escala do anel enquanto é pressionado |
-| `--rk-stories-ring-gradient` | `none` | Interno: o anel escreve o degradê aqui a cada renderização, então defini-lo não tem efeito |
+| `--rk-stories-ring-active-gradient` | `conic-gradient(from 180deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888, #f09433)` | O que um anel com stories por ver mostra: qualquer imagem ou cor CSS. Numa página clara, defina-o em `.rk-stories-ring-list`, não em `:root`, para o carrossel do player manter o seu |
+| `--rk-stories-ring-viewed-color` | `rgba(255, 255, 255, 0.25)` | O que um anel visto até o fim mostra, pensado para uma página escura. Numa página clara, defina-o em `.rk-stories-ring-list`, não em `:root` |
+| `--rk-stories-ring-gradient` | `none` | Interno: o anel o escreve a cada renderização e aponta para os dois tokens acima, a menos que o anel receba `gradientColors` ou `viewedColor` |
 | `--rk-stories-ring-list-gap` | `12px` | Espaço entre os anéis da lista |
 | `--rk-stories-ring-list-padding` | `12px` | Espaçamento interno ao redor da lista de anéis |
 | `--rk-stories-ring-list-item-gap` | `4px` | Espaço entre um anel e o nome |

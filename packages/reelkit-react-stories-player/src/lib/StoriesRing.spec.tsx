@@ -25,14 +25,15 @@ function renderRing(totalStories: number, viewedCount: number) {
 describe('StoriesRing', () => {
   it('paints the ring through a custom property, not the element background', () => {
     const { ring, gradient } = renderRing(6, 0);
-    expect(gradient).toContain('conic-gradient');
+    expect(gradient).not.toBe('');
     expect(ring.style.background).toBe('');
   });
 
-  it('closes the gradient on the color it opened with', () => {
-    const { gradient } = renderRing(6, 0);
-    expect(gradient).toBe(
-      'conic-gradient(from 180deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888, #f09433)',
+  // The stylesheet holds the colours as tokens on :root, so a page themes
+  // every ring from CSS; the ring only points at them.
+  it('follows the active gradient token while stories are left', () => {
+    expect(renderRing(6, 0).gradient).toBe(
+      'var(--rk-stories-ring-active-gradient)',
     );
   });
 
@@ -49,14 +50,16 @@ describe('StoriesRing', () => {
     );
   });
 
-  it('shows a flat muted ring once the group is fully watched', () => {
+  it('follows the viewed color token once the group is fully watched', () => {
     const { ring, gradient } = renderRing(6, 6);
-    expect(gradient).toBe('rgba(255,255,255,0.25)');
+    expect(gradient).toBe('var(--rk-stories-ring-viewed-color)');
     expect(ring.className).toBe('rk-stories-ring');
   });
 
   it('stays muted when the viewed count overshoots', () => {
-    expect(renderRing(6, 9).gradient).toBe('rgba(255,255,255,0.25)');
+    expect(renderRing(6, 9).gradient).toBe(
+      'var(--rk-stories-ring-viewed-color)',
+    );
   });
 
   it('renders nothing for an empty group', () => {

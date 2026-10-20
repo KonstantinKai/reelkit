@@ -613,7 +613,9 @@ CSS クラスはすべて通常のクラス（CSS Modules ではありません�
 | `--rk-stories-heart-duration` | `800ms` | 飛び出してフェードアウトするアニメーションの長さ |
 | `--rk-stories-ring-spin-duration` | `4s` | まだ見るストーリーが残っているリングの回転の長さ |
 | `--rk-stories-ring-active-scale` | `0.95` | 押している間のリングの拡大率 |
-| `--rk-stories-ring-gradient` | `none` | 内部用：リングのコンポーネントが描画のたびにここへグラデーションを書き込むため、上書きしても効果はありません |
+| `--rk-stories-ring-active-gradient` | `conic-gradient(from 180deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888, #f09433)` | 未読のストーリーが残っているリングの表示。CSS の画像か色を指定できます。明るいページでは `:root` ではなく `.rk-stories-ring-list` に設定してください。プレーヤーのカルーセルの色が保たれます |
+| `--rk-stories-ring-viewed-color` | `rgba(255, 255, 255, 0.25)` | すべて見終えたリングの表示で、暗いページ向けの値です。明るいページでは `:root` ではなく `.rk-stories-ring-list` に設定してください |
+| `--rk-stories-ring-gradient` | `none` | 内部用：リングが描画のたびに書き込み、リングに `gradientColors` や `viewedColor` が渡されない限り上の 2 つのトークンを参照します |
 | `--rk-stories-ring-list-gap` | `12px` | リスト内のリングの間隔 |
 | `--rk-stories-ring-list-padding` | `12px` | リングのリストの内側の余白 |
 | `--rk-stories-ring-list-item-gap` | `4px` | リングとその名前の間隔 |

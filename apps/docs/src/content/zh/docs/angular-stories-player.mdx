@@ -490,7 +490,9 @@ import theming from '../../snippets/angular-stories-player/theming.css?raw';
 | `--rk-stories-card-transition` | `300ms` | 轮播滑动时长 |
 | `--rk-stories-ring-spin-duration` | `4s` | 仍有未看 Story 的圆环的旋转时长 |
 | `--rk-stories-ring-active-scale` | `0.95` | 圆环按下时的缩放比例 |
-| `--rk-stories-ring-gradient` | `none` | 内部使用：圆环组件每次渲染都会把渐变写到这里，因此设置它不会生效 |
+| `--rk-stories-ring-active-gradient` | `conic-gradient(from 180deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888, #f09433)` | 还有未看快拍时圆环显示的内容，可以是任意 CSS 图像或颜色。浅色页面请把它设在 `.rk-stories-ring-list` 上而不是 `:root`，这样播放器的轮播会保留自己的颜色 |
+| `--rk-stories-ring-viewed-color` | `rgba(255, 255, 255, 0.25)` | 全部看完的圆环显示的内容，默认值适合深色页面。浅色页面请把它设在 `.rk-stories-ring-list` 上而不是 `:root` |
+| `--rk-stories-ring-gradient` | `none` | 内部使用：圆环每次渲染都会写入它，并指向上面两个令牌，除非给圆环传了 `gradientColors` 或 `viewedColor` |
 | `--rk-stories-ring-list-gap` | `12px` | 列表中圆环之间的间距 |
 | `--rk-stories-ring-list-padding` | `12px` | 圆环列表的内边距 |
 | `--rk-stories-ring-list-item-gap` | `4px` | 圆环与其名称之间的间距 |

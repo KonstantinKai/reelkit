@@ -44,7 +44,7 @@ import { groups } from './api';
       padding: 6px 14px;
       border: none;
       border-radius: 8px;
-      background: rgba(255, 255, 255, 0.12);
+      background: rgba(127, 127, 127, 0.18);
       color: inherit;
       font-size: 13px;
       cursor: pointer;

@@ -258,6 +258,11 @@ React and Vue players, so a stylesheet written for one works for the others.
 Colors, sizes and durations are `--rk-stories-*` custom properties on `:root` —
 prefer those over overriding a class.
 
+Story rings take their colours from `--rk-stories-ring-active-gradient` (stories
+left to watch) and `--rk-stories-ring-viewed-color` (everything seen). The
+defaults suit a dark page; on a light one, set them on `.rk-stories-ring-list`
+rather than `:root`, so the rings of the player's own carousel keep theirs.
+
 ## Documentation
 
 Full reference, live demos and the template slot catalogue:

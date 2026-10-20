@@ -1,12 +1,26 @@
 /*
  * Theme tokens for the stories ring (avatar with animated gradient border).
- * Override at :root or any ancestor of `.rk-stories-ring`.
+ * Override at :root or any ancestor of `.rk-stories-ring`. The two colours are
+ * also drawn by the cards of the player's desktop carousel, on its dark
+ * backdrop, so a page that is light sets them on `.rk-stories-ring-list`
+ * rather than :root.
  * `--rk-stories-ring-gradient` is internal: the component writes the ring into
- * it on every render.
+ * it on every render, pointing at the two colour tokens unless a ring is given
+ * its own colours.
  */
 :root {
   --rk-stories-ring-spin-duration: 4s;
   --rk-stories-ring-active-scale: 0.95;
+  --rk-stories-ring-active-gradient: conic-gradient(
+    from 180deg,
+    #f09433,
+    #e6683c,
+    #dc2743,
+    #cc2366,
+    #bc1888,
+    #f09433
+  );
+  --rk-stories-ring-viewed-color: rgba(255, 255, 255, 0.25);
   --rk-stories-ring-gradient: none;
 }
 

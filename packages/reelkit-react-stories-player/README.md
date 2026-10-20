@@ -306,6 +306,8 @@ Exported for composing your own layout: `StoriesRing`, `CanvasProgressBar`,
 
 Every visual value is exposed as a `--rk-stories-*` custom property with a sensible default. Override at `:root` (or any ancestor of `.rk-stories-overlay`) to retheme without touching component source — see the [Theming docs](https://reelkit.dev/docs/stories-player#theming) for the full token table.
 
+Story rings take their colours from `--rk-stories-ring-active-gradient` (stories left to watch) and `--rk-stories-ring-viewed-color` (everything seen). The defaults suit a dark page; on a light one, set them on `.rk-stories-ring-list` rather than `:root`, so the rings of the player's own carousel keep theirs.
+
 ## Documentation
 
 Docs, demos, and customization examples at **[reelkit.dev/docs/stories-player](https://reelkit.dev/docs/stories-player)**.

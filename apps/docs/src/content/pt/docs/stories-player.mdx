@@ -613,7 +613,9 @@ Cada cor, tamanho, z-index e transição vive em uma propriedade CSS. Sobrescrev
 | `--rk-stories-heart-duration` | `800ms` | Duração da animação do coração, do salto ao desaparecimento |
 | `--rk-stories-ring-spin-duration` | `4s` | Duração de uma volta do anel com stories por assistir |
 | `--rk-stories-ring-active-scale` | `0.95` | Escala do anel enquanto é pressionado |
-| `--rk-stories-ring-gradient` | `none` | Interno: o componente do anel escreve o gradiente aqui a cada renderização, então sobrescrever não tem efeito |
+| `--rk-stories-ring-active-gradient` | `conic-gradient(from 180deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888, #f09433)` | O que um anel com stories por ver mostra: qualquer imagem ou cor CSS. Numa página clara, defina-o em `.rk-stories-ring-list`, não em `:root`, para o carrossel do player manter o seu |
+| `--rk-stories-ring-viewed-color` | `rgba(255, 255, 255, 0.25)` | O que um anel visto até o fim mostra, pensado para uma página escura. Numa página clara, defina-o em `.rk-stories-ring-list`, não em `:root` |
+| `--rk-stories-ring-gradient` | `none` | Interno: o anel o escreve a cada renderização e aponta para os dois tokens acima, a menos que o anel receba `gradientColors` ou `viewedColor` |
 | `--rk-stories-ring-list-gap` | `12px` | Espaço entre os anéis da fileira |
 | `--rk-stories-ring-list-padding` | `12px` | Respiro interno em volta da fileira de anéis |
 | `--rk-stories-ring-list-item-gap` | `4px` | Espaço entre um anel e o nome |
