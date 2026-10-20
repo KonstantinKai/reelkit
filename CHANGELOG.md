@@ -1,3 +1,55 @@
+## @reelkit/react-stories-player@0.7.0 (2026-10-20)
+
+### 🚀 Features
+
+- Story ring colours are CSS custom properties: --rk-stories-ring-active-gradient for a person with stories left to watch, --rk-stories-ring-viewed-color once everything is seen; the defaults keep today's look
+- On a light page, set them on .rk-stories-ring-list rather than :root, so the player's desktop carousel keeps its colours on its dark backdrop
+
+### 🩹 Fixes
+
+- Story ring avatars stay round when the page's CSS resets image heights (for example Tailwind's img { height: auto }); a portrait or landscape avatar used to stretch the ring into an oval
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/stories-core to 0.8.0
+
+## @reelkit/vue-stories-player@0.4.0 (2026-10-20)
+
+### 🚀 Features
+
+- Story ring colours are CSS custom properties: --rk-stories-ring-active-gradient for a person with stories left to watch, --rk-stories-ring-viewed-color once everything is seen; the defaults keep today's look
+- On a light page, set them on .rk-stories-ring-list rather than :root, so the player's desktop carousel keeps its colours on its dark backdrop
+
+### 🩹 Fixes
+
+- Story ring avatars stay round when the page's CSS resets image heights (for example Tailwind's img { height: auto }); a portrait or landscape avatar used to stretch the ring into an oval
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/stories-core to 0.8.0
+
+## @reelkit/angular-stories-player@0.3.0 (2026-10-20)
+
+### 🚀 Features
+
+- Story ring colours are CSS custom properties: --rk-stories-ring-active-gradient for a person with stories left to watch, --rk-stories-ring-viewed-color once everything is seen; the defaults keep today's look
+- On a light page, set them on .rk-stories-ring-list rather than :root, so the player's desktop carousel keeps its colours on its dark backdrop
+
+### 🩹 Fixes
+
+- Story ring avatars stay round when the page's CSS resets image heights (for example Tailwind's img { height: auto }); a portrait or landscape avatar used to stretch the ring into an oval
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/stories-core to 0.8.0
+
+## @reelkit/stories-core@0.8.0 (2026-10-20)
+
+### 🚀 Features
+
+- getRingPresentation points a ring at the --rk-stories-ring-active-gradient and --rk-stories-ring-viewed-color tokens instead of writing its colours inline, so a page can theme every story ring from CSS
+- gradientColors and viewedColor still give one ring its own colours, as before
+
 ## @reelkit/react-lightbox@0.7.0 (2026-10-15)
 
 ### 🚀 Features
