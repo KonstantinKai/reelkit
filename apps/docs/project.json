@@ -6,6 +6,30 @@
   "tags": [],
   "// targets": "to see all targets run: nx show project docs --web",
   "targets": {
+    "test": {
+      "inputs": [
+        "default",
+        "^production",
+        {
+          "fileset": "{projectRoot}/tsconfig.spec.json",
+          "dependencies": true
+        },
+        {
+          "json": "{workspaceRoot}/tsconfig.json",
+          "fields": ["compilerOptions"]
+        },
+        { "externalDependencies": ["vitest"] },
+        { "env": "CI" },
+        { "dependentTasksOutputFiles": "**/*.js", "transitive": true },
+        "{workspaceRoot}/scripts/**/*",
+        "{workspaceRoot}/apps/example-react/index.html",
+        "{workspaceRoot}/apps/example-react/vite.config.ts",
+        "{workspaceRoot}/apps/example-vue/index.html",
+        "{workspaceRoot}/apps/example-vue/vite.config.mts",
+        "{workspaceRoot}/apps/example-angular/project.json",
+        "{workspaceRoot}/apps/example-angular/src/index*.html"
+      ]
+    },
     "typecheck": {
       "executor": "nx:run-commands",
       "cache": true,

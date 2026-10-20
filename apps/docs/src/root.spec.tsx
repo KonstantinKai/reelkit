@@ -1,5 +1,7 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { kLocaleTags, kLocales } from './i18n/locale';
 
 // `Meta`, `Links` and `Scripts` read the framework router context, which a
@@ -132,7 +134,64 @@ describe('connection hints', () => {
   it('keeps the hints to the few that speed up what readers see', () => {
     expect(preconnects().length).toBeLessThanOrEqual(4);
     const hosts = preconnects().map((link) => new URL(link.href).host);
-    expect(hosts).not.toContain('plausible.k-kai.dev');
+    expect(hosts).not.toContain('static.cloudflareinsights.com');
     expect(hosts).not.toContain('cdn.reelkit.dev');
+  });
+});
+
+describe('analytics', () => {
+  const markup = () =>
+    renderToStaticMarkup(
+      <MemoryRouter initialEntries={['/docs/ssr']}>
+        <Layout>
+          <div />
+        </Layout>
+      </MemoryRouter>,
+    );
+  const beacons = (html: string) =>
+    html.match(
+      /<script[^>]*src="https:\/\/static\.cloudflareinsights\.com\/beacon\.min\.js"[^>]*>/g,
+    ) ?? [];
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('loads the Cloudflare beacon once in a production build', () => {
+    vi.stubEnv('PROD', true);
+    const [beacon, ...more] = beacons(markup());
+
+    expect(more).toHaveLength(0);
+    expect(beacon).toContain('type="module"');
+    expect(beacon).toContain(
+      'data-cf-beacon="{&quot;token&quot;: &quot;67429e0d8e34477fb8e53f782d74f10a&quot;}"',
+    );
+  });
+
+  // A dev server would otherwise report every local session to the live site.
+  it('leaves the beacon out of the dev server', () => {
+    vi.stubEnv('PROD', false);
+    expect(beacons(markup())).toEqual([]);
+  });
+
+  // The privacy page is the reader's account of what the beacon does, so it
+  // has to name the service and the host a blocker would stop.
+  it('is the analytics the privacy page describes', () => {
+    const privacy = readFileSync(
+      join(import.meta.dirname, 'pages/Privacy.tsx'),
+      'utf8',
+    );
+    expect(privacy).toContain('Cloudflare Web Analytics');
+    expect(privacy).toContain('static.cloudflareinsights.com');
+    expect(privacy).toContain('Core Web Vitals');
+    expect(privacy.toLowerCase()).not.toContain('plausible');
+    expect(privacy).not.toContain('StackBlitz Open');
+  });
+
+  it('carries nothing of the analytics it replaced', () => {
+    vi.stubEnv('PROD', true);
+    const html = markup();
+    expect(html).not.toContain('plausible');
+    expect(html).not.toContain('/js/p.js');
   });
 });

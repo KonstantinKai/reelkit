@@ -298,6 +298,64 @@ describe('story ring colour tokens', () => {
   });
 });
 
+// The demos count their views with Cloudflare Web Analytics, but only from the
+// built site: their dev servers, which the e2e suites run too, must never
+// report to the live dashboard.
+describe('example app analytics', () => {
+  const beaconTag = (token: string) =>
+    new RegExp(
+      `<script[^>]*type="module"[^>]*src="https://static\\.cloudflareinsights\\.com/beacon\\.min\\.js"[^>]*data-cf-beacon='\\{"token": "${token}"\\}'`,
+    );
+  const sources = [
+    'apps/example-react/index.html',
+    'apps/example-vue/index.html',
+    'apps/example-angular/src/index.html',
+  ];
+
+  it.each(sources)('%s served in development has no analytics', (path) => {
+    const html = read(join(repoRoot, path));
+    expect(html).not.toContain('cloudflareinsights');
+    expect(html.toLowerCase()).not.toContain('plausible');
+  });
+
+  it.each([
+    ['apps/example-react/vite.config.ts', 'f2f501d1210741028328ae5eb6f9bee6'],
+    ['apps/example-vue/vite.config.mts', '7fe214528af24d1d8a7c57df77a1939a'],
+  ])('%s adds the beacon to the build only', (path, token) => {
+    const config = read(join(repoRoot, path));
+    expect(config).toContain("apply: 'build'");
+    expect(config).toContain(`'{"token": "${token}"}'`);
+    expect(config).toMatch(/plugins: \[[^\]]*cloudflareWebAnalytics\(\)/);
+  });
+
+  // Angular has no hook into index.html, so its production build swaps in a
+  // second file. That copy must stay the development page plus the beacon.
+  it('builds the Angular demo from the development page plus the beacon', () => {
+    const project = JSON.parse(
+      read(join(repoRoot, 'apps/example-angular/project.json')),
+    );
+    expect(project.targets.build.configurations.production.index).toEqual({
+      input: 'apps/example-angular/src/index.prod.html',
+      output: 'index.html',
+    });
+
+    const development = read(
+      join(repoRoot, 'apps/example-angular/src/index.html'),
+    );
+    const production = read(
+      join(repoRoot, 'apps/example-angular/src/index.prod.html'),
+    );
+    expect(production.replace(/\n\s*\n/g, '\n')).toMatch(
+      beaconTag('41e75c70ee7d4e23a6f3c48bad27ec3e'),
+    );
+    const withoutBeacon = production.replace(
+      /\s*<!--[\s\S]*?-->\s*<script[\s\S]*?<\/script>/,
+      '',
+    );
+    expect(withoutBeacon).toBe(development);
+  });
+});
+
 describe('locale parity configuration', () => {
   // `docs:check` compares every translated page against its English original.
   // Its locale list is hand-kept JSON, so a language added to the registry

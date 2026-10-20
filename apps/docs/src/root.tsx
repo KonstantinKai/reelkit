@@ -130,6 +130,11 @@ const _kBootstrapScript = `(function () {
 const _kWebMcpOriginTrialToken =
   'Au91fum1KEuQZb5u5g8Vns0m6VppOUgpOqOv9oSyLkjAFvds19Sgq2nQOO3oIU4WDuc8xhgeFC5dd1iw1lBFtwwAAABLeyJvcmlnaW4iOiJodHRwczovL3JlZWxraXQuZGV2OjQ0MyIsImZlYXR1cmUiOiJXZWJNQ1AiLCJleHBpcnkiOjE3OTQ4NzM2MDB9';
 
+// Cloudflare Web Analytics site token for reelkit.dev, written the way the
+// dashboard issues the snippet. Like the trial token above it is public: it
+// only names which site the page views are counted for.
+const _kCloudflareBeacon = '{"token": "67429e0d8e34477fb8e53f782d74f10a"}';
+
 const _kStructuredData = JSON.stringify({
   '@context': 'https://schema.org',
   '@type': 'SoftwareSourceCode',
@@ -188,14 +193,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
           dangerouslySetInnerHTML={{ __html: _kStructuredData }}
         />
         <script dangerouslySetInnerHTML={{ __html: _kBootstrapScript }} />
-        {/* Privacy-friendly analytics by Plausible (self-hosted) */}
-        <script async src="/js/p.js" />
-        <script
-          dangerouslySetInnerHTML={{
-            __html:
-              "window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};plausible.init({ domain: 'reelkit.dev', endpoint: 'https://plausible.k-kai.dev/api/event', outboundLinks: true })",
-          }}
-        />
+        {/* Cookieless Cloudflare Web Analytics, in production builds only so a
+            dev server never reports its sessions to the live site. */}
+        {import.meta.env.PROD && (
+          <script
+            type="module"
+            src="https://static.cloudflareinsights.com/beacon.min.js"
+            data-cf-beacon={_kCloudflareBeacon}
+          />
+        )}
       </head>
       <body>
         {children}
