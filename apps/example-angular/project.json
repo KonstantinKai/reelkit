@@ -42,7 +42,11 @@
               "maximumError": "8kb"
             }
           ],
-          "outputHashing": "all"
+          "outputHashing": "all",
+          "index": {
+            "input": "apps/example-angular/src/index.prod.html",
+            "output": "index.html"
+          }
         },
         "development": {
           "optimization": false,

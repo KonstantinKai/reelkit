@@ -6,7 +6,7 @@ export default function Privacy() {
       <div className="mb-12">
         <h1 className="text-4xl font-bold mb-4">Privacy Policy</h1>
         <p className="text-sm text-slate-500 dark:text-slate-400">
-          Last updated: September 21, 2026
+          Last updated: October 20, 2026
         </p>
       </div>
 
@@ -27,49 +27,62 @@ export default function Privacy() {
           <p className="text-slate-600 dark:text-slate-400 mb-4">
             This site runs{' '}
             <a
-              href="https://plausible.io/privacy-focused-web-analytics"
+              href="https://www.cloudflare.com/web-analytics/"
               target="_blank"
               rel="noopener noreferrer"
               className="text-primary-600 dark:text-primary-400 hover:underline"
             >
-              Plausible
+              Cloudflare Web Analytics
             </a>
-            , a cookieless analytics script, on our own server rather than
-            through a third-party analytics provider. It sends:
+            , a cookieless analytics script loaded from{' '}
+            <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+              static.cloudflareinsights.com
+            </code>
+            . When a page loads, it sends Cloudflare:
           </p>
           <ul className="list-disc pl-6 space-y-2 text-slate-600 dark:text-slate-400">
             <li>The page URL you visited and the referring page, if any</li>
             <li>
-              How far down the page you scrolled and how long you stayed on it
+              Your browser and operating system, as your browser names them
             </li>
-            <li>The destination of any outbound link you click</li>
             <li>
-              An event when you open a code example in StackBlitz, recording the
-              example's title and framework
+              The country you are browsing from, worked out from your IP
+              address, which is not stored
+            </li>
+            <li>
+              How quickly the page loaded and settled, the measurements known as
+              Core Web Vitals
             </li>
           </ul>
           <p className="text-slate-600 dark:text-slate-400 mt-4">
-            No cookie is set and no visitor identifier is sent with these
-            measurements, so nothing here follows you across other sites. The
-            result is a visitor count and a list of popular pages, which is what
-            we use to decide what to document next.
+            No cookie is set, nothing is stored in your browser, and no visitor
+            identifier is sent, so nothing here follows you across other sites
+            or from one visit to the next. The result is a visitor count, a list
+            of popular pages and how fast they load, which is what we use to
+            decide what to document and what to speed up. Cloudflare processes
+            the measurements on our behalf, subject to{' '}
+            <a
+              href="https://www.cloudflare.com/privacypolicy/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary-600 dark:text-primary-400 hover:underline"
+            >
+              Cloudflare's Privacy Policy
+            </a>
+            .
           </p>
         </section>
 
         <section>
           <h2 className="text-2xl font-bold mb-4">Opting Out</h2>
-          <p className="text-slate-600 dark:text-slate-400 mb-4">
-            The analytics script skips any browser that carries an opt-out flag.
-            To set it, run this once in your browser's developer console:
-          </p>
-          <pre className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4 overflow-x-auto text-sm">
-            <code className="font-mono text-slate-800 dark:text-slate-200">
-              localStorage.plausible_ignore = 'true'
+          <p className="text-slate-600 dark:text-slate-400">
+            The script has no opt-out switch of its own. Any content blocker
+            that blocks{' '}
+            <code className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-sm font-mono">
+              static.cloudflareinsights.com
             </code>
-          </pre>
-          <p className="text-slate-600 dark:text-slate-400 mt-4">
-            The flag is stored in your browser and applies to this site only. A
-            content blocker that blocks analytics requests works equally well.
+            , as most do by default, stops it from loading, and the site works
+            the same without it.
           </p>
         </section>
 
@@ -133,8 +146,8 @@ export default function Privacy() {
         <section>
           <h2 className="text-2xl font-bold mb-4">Third-Party Services</h2>
           <p className="text-slate-600 dark:text-slate-400 mb-4">
-            This website is served as a static site. Beyond the analytics
-            endpoint described above, your browser reaches these origins:
+            This website is served as a static site. Beyond the analytics script
+            described above, your browser reaches these origins:
           </p>
           <ul className="list-disc pl-6 space-y-2 text-slate-600 dark:text-slate-400">
             <li>

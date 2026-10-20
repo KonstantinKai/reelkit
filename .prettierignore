@@ -8,9 +8,6 @@ pnpm-lock.yaml
 .angular
 apps/example-next/next-env.d.ts
 
-# Vendored (minified) self-hosted Plausible analytics script
-apps/*/public/js/p.js
-
 .nx/self-healing
 
 # Prettier only knows MDX version 1 and reflows markdown inside JSX blocks — a

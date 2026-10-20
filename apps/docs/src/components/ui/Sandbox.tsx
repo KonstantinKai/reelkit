@@ -82,10 +82,6 @@ export function Sandbox({
     if (!result) return;
     const [project, openFile] = result;
 
-    window.plausible?.('StackBlitz Open', {
-      props: { title: title ?? 'Untitled', framework },
-    });
-
     sdk.default.openProject(project, {
       openFile,
       newWindow: true,
