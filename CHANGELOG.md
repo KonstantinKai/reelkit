@@ -50,6 +50,14 @@
 - getRingPresentation points a ring at the --rk-stories-ring-active-gradient and --rk-stories-ring-viewed-color tokens instead of writing its colours inline, so a page can theme every story ring from CSS
 - gradientColors and viewedColor still give one ring its own colours, as before
 
+## Documentation (2026-10-20)
+
+### 📖 Documentation
+
+- New [Recipes](https://reelkit.dev/docs/recipes) section with four task-shaped pages — Infinite Feed, Grid to Player, Gallery Slideshow and Stories Tray — each with a live demo, the full React, Vue and Angular code including the data helper it imports, and links to the guide pages that explain why it works, in all seven languages and in the command palette and llms.txt
+- The recipes load their media from the sample CDN through `cdnUrl`, and a callout on each page says to swap it for your own media before shipping
+- The React guide and the reel player, lightbox and stories player pages no longer run their own live demos; the sandbox with its code and StackBlitz link moves under Quick Start, and each page links to the recipe that covers it
+
 ## @reelkit/react-lightbox@0.7.0 (2026-10-15)
 
 ### 🚀 Features
@@ -160,10 +168,9 @@
 
 ### 🚀 Features
 
-
 - createCanvasProgressRenderer takes an onResize callback, called after the container changes size and the canvas is measured again, so the bar can be redrawn
 
-### ⚠️  Breaking Changes
+### ⚠️ Breaking Changes
 
 - createTimerController, TimerController and TimerControllerConfig are no longer exported from @reelkit/stories-core. Import them from @reelkit/core or from your binding (@reelkit/react, @reelkit/vue or @reelkit/angular); the timer behaves the same
 - isMobileWidth is no longer exported from @reelkit/stories-core. Import it from @reelkit/core or from your binding (@reelkit/react, @reelkit/vue or @reelkit/angular); it behaves the same
@@ -226,7 +233,7 @@
 - ReelPlayerOverlay and ReelPlayerUrlOverlay take the item type from `content`: pass your own item type that extends BaseContentItem and the overlay keeps its fields, while items of any other shape fail to compile
 - Export ReelPlayerOverlayProps
 
-### ⚠️  Breaking Changes
+### ⚠️ Breaking Changes
 
 - Requires Vue 3.3 or later. The overlays are generic components, and an older Vue runtime drops their props and events
 - ReelPlayerOverlayProps and ReelPlayerUrlOverlayProps now describe the props a parent passes, so props with a default are optional: reading `loop` from the type gives `boolean | undefined`, not `boolean`
@@ -241,7 +248,7 @@
 
 - StoriesOverlay and StoriesUrlOverlay take the story type from `groups`: pass your own story type that extends StoryItem and the overlay keeps its fields, while groups of any other shape fail to compile
 
-### ⚠️  Breaking Changes
+### ⚠️ Breaking Changes
 
 - Requires Vue 3.3 or later. The overlays are generic components, and an older Vue runtime drops their props and events
 - StoriesOverlayProps and StoriesUrlOverlayProps now describe the props a parent passes, so props with a default are optional: reading `enableKeyboard` from the type gives `boolean | undefined`, not `boolean`
