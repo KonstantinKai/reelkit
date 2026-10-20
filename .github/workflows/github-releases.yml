@@ -1,0 +1,41 @@
+name: GitHub Releases
+
+# A release commit is the only push to main that adds entries to CHANGELOG.md.
+# Tags cannot trigger this: GitHub sends no tag push event when one push
+# carries more than three tags, and a release pushes ten or more.
+on:
+  push:
+    branches: [main]
+    paths: [CHANGELOG.md]
+  workflow_dispatch:
+    inputs:
+      base:
+        description: Commit to compare CHANGELOG.md against; every entry added since gets a release
+        required: false
+        default: HEAD^
+
+permissions:
+  contents: write
+
+concurrency:
+  group: github-releases
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Create releases from the changelog
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 25
+
+      - name: Create releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE: ${{ github.event_name == 'push' && github.event.before || inputs.base }}
+        run: node scripts/github-releases.mjs --base="$BASE"
