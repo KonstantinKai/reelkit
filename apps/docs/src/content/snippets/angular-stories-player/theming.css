@@ -18,3 +18,9 @@
   --rk-stories-card-bg: #1e293b;
   --rk-stories-card-transition: 260ms;
 }
+
+/* Rings on a light page. Set on the ring list, not :root, so the rings of the
+   player's own carousel keep the colours made for its dark backdrop. */
+.rk-stories-ring-list {
+  --rk-stories-ring-viewed-color: #d4d4d8;
+}

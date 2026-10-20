@@ -46,6 +46,7 @@ import apiCode from '../../../snippets/recipes/stories-tray/api.ts?raw';
 - **一个控制器同时为两者记忆** —— `createStoriesViewedStateController` 只创建一次，作为 `viewed` 传给圆环列表和播放器。圆环从中读取，播放器把显示过的每条快拍记录进去，控制器再把它保存在 `localStorage` 的 `storageKey` 之下，所以刷新不会改变任何东西。参见“记住已看内容”：[React](/docs/stories-player#remembering-what-was-seen)、[Vue](/docs/vue-stories-player#remembering-what-was-seen) 和 [Angular](/docs/angular-stories-player#remembering-what-was-seen)。
 - **播放器从用户停下的地方继续** —— 有了 `viewed`，播放器会从某人第一条还没看过的快拍开始；如果全部看过，则从头开始。示例只传入是哪个人，从不传快拍索引；这个问题由控制器的 `resumeStoryIndex` 回答，见[它的参考文档](/docs/stories-core#storiesviewedstatecontroller)。
 - **圆环只有两种状态** —— 还有内容可看时是彩色的，某人被看完后变暗。某人内部的进度显示在播放器的进度条上，而不是圆环上。参见 [StoriesRing](/docs/stories-player#storiesring)。
+- **圆环颜色跟随页面** —— 两种状态分别是 `--rk-stories-ring-active-gradient` 和 `--rk-stories-ring-viewed-color` 令牌，看完状态默认是为深色页面准备的淡白色。浅色页面请把它设在 `.rk-stories-ring-list` 上（本演示在浅色主题下就是这样做的），不要设在 `:root`：播放器的桌面轮播会在深色背景上用同样的令牌绘制圆环。令牌见[主题表](/docs/stories-player#theming)。
 - **控制器不需要额外接线** —— 播放器始终被渲染，用 `isOpen` 打开，所以它会在选择第一条快拍之前自己读取保存的状态。如果只在打开时才挂载它，页面就必须先接上控制器，[控制器参考文档](/docs/stories-core#storiesviewedstatecontroller)对此有说明。
 - **焦点回到正确的圆环** —— 播放器关闭时会把焦点还给打开它的圆环，正如它的[无障碍](/docs/stories-player#accessibility)部分所述。这发生在关闭处理函数运行之后，所以示例先等待一个任务，再把最后观看的那个人的圆环滚动到可见区域并让它获得焦点。
 - **还能保存在别处** —— `storage` 接受你自己的适配器，例如服务器，这样已看内容就能在不同设备间跟随用户。`ttlMs` 让某个人的记录过期，`maxTracks` 限制保留的人数。它们都在[控制器配置](/docs/stories-core#config-storiesviewedstatecontrollerconfig)中。

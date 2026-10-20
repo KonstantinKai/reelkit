@@ -613,7 +613,9 @@ Cada color, tamaño, z-index y transición vive en una propiedad personalizada d
 | `--rk-stories-heart-duration` | `800ms` | Duración de la animación de aparición y desvanecimiento |
 | `--rk-stories-ring-spin-duration` | `4s` | Duración del giro de un anillo con stories por ver |
 | `--rk-stories-ring-active-scale` | `0.95` | Escala del anillo mientras se pulsa |
-| `--rk-stories-ring-gradient` | `none` | Interno: el componente del anillo escribe aquí su degradado en cada render, así que sobrescribirlo no tiene efecto |
+| `--rk-stories-ring-active-gradient` | `conic-gradient(from 180deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888, #f09433)` | Lo que muestra un anillo con stories por ver: cualquier imagen o color CSS. En una página clara, defínelo en `.rk-stories-ring-list` y no en `:root`, para que el carrusel del reproductor conserve el suyo |
+| `--rk-stories-ring-viewed-color` | `rgba(255, 255, 255, 0.25)` | Lo que muestra un anillo visto entero, pensado para una página oscura. En una clara, defínelo en `.rk-stories-ring-list` y no en `:root` |
+| `--rk-stories-ring-gradient` | `none` | Interno: el anillo lo escribe en cada render y apunta a los dos tokens de arriba, salvo que el anillo reciba `gradientColors` o `viewedColor` |
 | `--rk-stories-ring-list-gap` | `12px` | Espacio entre los anillos de la lista |
 | `--rk-stories-ring-list-padding` | `12px` | Relleno interior alrededor de la lista de anillos |
 | `--rk-stories-ring-list-item-gap` | `4px` | Espacio entre un anillo y su nombre |

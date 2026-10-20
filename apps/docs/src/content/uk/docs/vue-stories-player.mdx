@@ -504,7 +504,9 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 | `--rk-stories-heart-z` | `20` | z-index серця на подвійний дотик |
 | `--rk-stories-ring-spin-duration` | `4s` | Тривалість обертання кільця, у якому лишилося що дивитися |
 | `--rk-stories-ring-active-scale` | `0.95` | Масштаб кільця, поки його натиснуто |
-| `--rk-stories-ring-gradient` | `none` | Внутрішній: кільце записує сюди свій градієнт під час кожного рендеру, тож задавати його марно |
+| `--rk-stories-ring-active-gradient` | `conic-gradient(from 180deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888, #f09433)` | Що показує кільце, коли лишилися історії: будь-яке CSS-зображення чи колір. На світлій сторінці задавайте його на `.rk-stories-ring-list`, а не на `:root`, щоб карусель плеєра зберегла свій |
+| `--rk-stories-ring-viewed-color` | `rgba(255, 255, 255, 0.25)` | Що показує повністю переглянуте кільце; розраховано на темну сторінку. На світлій задавайте його на `.rk-stories-ring-list`, а не на `:root` |
+| `--rk-stories-ring-gradient` | `none` | Внутрішній: кільце записує його під час кожного рендеру й посилається на два токени вище, якщо кільцю не передали `gradientColors` чи `viewedColor` |
 | `--rk-stories-ring-list-gap` | `12px` | Відстань між кільцями у списку |
 | `--rk-stories-ring-list-padding` | `12px` | Внутрішні відступи навколо списку кілець |
 | `--rk-stories-ring-list-item-gap` | `4px` | Відстань між кільцем та іменем |

@@ -204,6 +204,8 @@ interface StoriesGroup<T extends StoryItem = StoryItem> {
 
 Class names (`.rk-stories-*`) and theme tokens (`--rk-stories-*`) are the same as in `@reelkit/react-stories-player`, so one theme fits both. Override the tokens at `:root` (or any ancestor of `.rk-stories-overlay`) — see the [Theming docs](https://reelkit.dev/docs/vue-stories-player?framework=vue#theming) for the full token table.
 
+Story rings take their colours from `--rk-stories-ring-active-gradient` (stories left to watch) and `--rk-stories-ring-viewed-color` (everything seen). The defaults suit a dark page; on a light one, set them on `.rk-stories-ring-list` rather than `:root`, so the rings of the player's own carousel keep theirs.
+
 ## Documentation
 
 Docs, demos, and customization examples at **[reelkit.dev/docs/vue-stories-player](https://reelkit.dev/docs/vue-stories-player?framework=vue)**.

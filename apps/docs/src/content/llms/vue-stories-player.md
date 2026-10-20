@@ -377,71 +377,73 @@ Extend `StoryItem`, type groups as `StoriesGroup<PromoStory>[]`. `StoriesOverlay
 
 Defaults on `:root`, override at `:root` or any ancestor of overlay. All 61 tokens:
 
-| Token                                  | Default                                                            |
-| -------------------------------------- | ------------------------------------------------------------------ |
-| `--rk-stories-overlay-bg`              | `#000`                                                             |
-| `--rk-stories-overlay-z`               | `9999`                                                             |
-| `--rk-stories-container-radius`        | `12px`                                                             |
-| `--rk-stories-container-radius-mobile` | `0`                                                                |
-| `--rk-stories-swipe-gap`               | `16px`                                                             |
-| `--rk-stories-top-shade-height`        | `120px`                                                            |
-| `--rk-stories-top-shade-bg`            | `linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%)` |
-| `--rk-stories-ui-transition`           | `200ms`                                                            |
-| `--rk-stories-ui-z`                    | `15`                                                               |
-| `--rk-stories-nav-size`                | `44px`                                                             |
-| `--rk-stories-nav-bg`                  | `rgba(255, 255, 255, 0.1)`                                         |
-| `--rk-stories-nav-bg-hover`            | `rgba(255, 255, 255, 0.2)`                                         |
-| `--rk-stories-nav-fg`                  | `rgba(255, 255, 255, 0.7)`                                         |
-| `--rk-stories-nav-fg-hover`            | `#fff`                                                             |
-| `--rk-stories-nav-transition`          | `150ms`                                                            |
-| `--rk-stories-nav-z`                   | `20`                                                               |
-| `--rk-stories-error-bg`                | `linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)`   |
-| `--rk-stories-error-fg`                | `rgba(255, 255, 255, 0.5)`                                         |
-| `--rk-stories-error-text-size`         | `13px`                                                             |
-| `--rk-stories-error-gap`               | `12px`                                                             |
-| `--rk-stories-error-z`                 | `5`                                                                |
-| `--rk-stories-video-bg`                | `#000`                                                             |
-| `--rk-stories-video-poster-transition` | `200ms`                                                            |
-| `--rk-stories-progress-bar-padding`    | `8px 8px 0`                                                        |
-| `--rk-stories-progress-bar-z`          | `10`                                                               |
-| `--rk-stories-header-top`              | `18px`                                                             |
-| `--rk-stories-header-padding`          | `12px 16px`                                                        |
-| `--rk-stories-header-z`                | `5`                                                                |
-| `--rk-stories-header-transition`       | `200ms`                                                            |
-| `--rk-stories-header-gap`              | `8px`                                                              |
-| `--rk-stories-header-avatar-size`      | `32px`                                                             |
-| `--rk-stories-header-name-fg`          | `#fff`                                                             |
-| `--rk-stories-header-name-size`        | `14px`                                                             |
-| `--rk-stories-header-name-weight`      | `600`                                                              |
-| `--rk-stories-header-time-fg`          | `rgba(255, 255, 255, 0.6)`                                         |
-| `--rk-stories-header-time-size`        | `12px`                                                             |
-| `--rk-stories-header-btn-fg`           | `#fff`                                                             |
-| `--rk-stories-header-btn-padding`      | `4px`                                                              |
-| `--rk-stories-header-actions-gap`      | `8px`                                                              |
-| `--rk-stories-header-spinner-size`     | `20px`                                                             |
-| `--rk-stories-header-spinner-fg`       | `#fff`                                                             |
-| `--rk-stories-header-spinner-track`    | `rgba(255, 255, 255, 0.3)`                                         |
-| `--rk-stories-header-spinner-duration` | `0.8s`                                                             |
-| `--rk-stories-heart-duration`          | `800ms`                                                            |
-| `--rk-stories-heart-z`                 | `20`                                                               |
-| `--rk-stories-ring-spin-duration`      | `4s`                                                               |
-| `--rk-stories-ring-active-scale`       | `0.95`                                                             |
-| `--rk-stories-ring-gradient`           | `none`                                                             |
-| `--rk-stories-ring-list-gap`           | `12px`                                                             |
-| `--rk-stories-ring-list-padding`       | `12px`                                                             |
-| `--rk-stories-ring-list-item-gap`      | `4px`                                                              |
-| `--rk-stories-ring-list-name-size`     | `12px`                                                             |
-| `--rk-stories-card-bg`                 | `#262626`                                                          |
-| `--rk-stories-card-radius`             | `8px`                                                              |
-| `--rk-stories-card-scrim`              | `rgba(0, 0, 0, 0.45)`                                              |
-| `--rk-stories-card-fg`                 | `#fff`                                                             |
-| `--rk-stories-card-name-size`          | `14px`                                                             |
-| `--rk-stories-card-time-fg`            | `rgba(255, 255, 255, 0.7)`                                         |
-| `--rk-stories-card-time-size`          | `13px`                                                             |
-| `--rk-stories-card-gap`                | `6px`                                                              |
-| `--rk-stories-card-transition`         | `300ms`                                                            |
+| Token                                  | Default                                                                             |
+| -------------------------------------- | ----------------------------------------------------------------------------------- |
+| `--rk-stories-overlay-bg`              | `#000`                                                                              |
+| `--rk-stories-overlay-z`               | `9999`                                                                              |
+| `--rk-stories-container-radius`        | `12px`                                                                              |
+| `--rk-stories-container-radius-mobile` | `0`                                                                                 |
+| `--rk-stories-swipe-gap`               | `16px`                                                                              |
+| `--rk-stories-top-shade-height`        | `120px`                                                                             |
+| `--rk-stories-top-shade-bg`            | `linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%)`                  |
+| `--rk-stories-ui-transition`           | `200ms`                                                                             |
+| `--rk-stories-ui-z`                    | `15`                                                                                |
+| `--rk-stories-nav-size`                | `44px`                                                                              |
+| `--rk-stories-nav-bg`                  | `rgba(255, 255, 255, 0.1)`                                                          |
+| `--rk-stories-nav-bg-hover`            | `rgba(255, 255, 255, 0.2)`                                                          |
+| `--rk-stories-nav-fg`                  | `rgba(255, 255, 255, 0.7)`                                                          |
+| `--rk-stories-nav-fg-hover`            | `#fff`                                                                              |
+| `--rk-stories-nav-transition`          | `150ms`                                                                             |
+| `--rk-stories-nav-z`                   | `20`                                                                                |
+| `--rk-stories-error-bg`                | `linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)`                    |
+| `--rk-stories-error-fg`                | `rgba(255, 255, 255, 0.5)`                                                          |
+| `--rk-stories-error-text-size`         | `13px`                                                                              |
+| `--rk-stories-error-gap`               | `12px`                                                                              |
+| `--rk-stories-error-z`                 | `5`                                                                                 |
+| `--rk-stories-video-bg`                | `#000`                                                                              |
+| `--rk-stories-video-poster-transition` | `200ms`                                                                             |
+| `--rk-stories-progress-bar-padding`    | `8px 8px 0`                                                                         |
+| `--rk-stories-progress-bar-z`          | `10`                                                                                |
+| `--rk-stories-header-top`              | `18px`                                                                              |
+| `--rk-stories-header-padding`          | `12px 16px`                                                                         |
+| `--rk-stories-header-z`                | `5`                                                                                 |
+| `--rk-stories-header-transition`       | `200ms`                                                                             |
+| `--rk-stories-header-gap`              | `8px`                                                                               |
+| `--rk-stories-header-avatar-size`      | `32px`                                                                              |
+| `--rk-stories-header-name-fg`          | `#fff`                                                                              |
+| `--rk-stories-header-name-size`        | `14px`                                                                              |
+| `--rk-stories-header-name-weight`      | `600`                                                                               |
+| `--rk-stories-header-time-fg`          | `rgba(255, 255, 255, 0.6)`                                                          |
+| `--rk-stories-header-time-size`        | `12px`                                                                              |
+| `--rk-stories-header-btn-fg`           | `#fff`                                                                              |
+| `--rk-stories-header-btn-padding`      | `4px`                                                                               |
+| `--rk-stories-header-actions-gap`      | `8px`                                                                               |
+| `--rk-stories-header-spinner-size`     | `20px`                                                                              |
+| `--rk-stories-header-spinner-fg`       | `#fff`                                                                              |
+| `--rk-stories-header-spinner-track`    | `rgba(255, 255, 255, 0.3)`                                                          |
+| `--rk-stories-header-spinner-duration` | `0.8s`                                                                              |
+| `--rk-stories-heart-duration`          | `800ms`                                                                             |
+| `--rk-stories-heart-z`                 | `20`                                                                                |
+| `--rk-stories-ring-spin-duration`      | `4s`                                                                                |
+| `--rk-stories-ring-active-scale`       | `0.95`                                                                              |
+| `--rk-stories-ring-active-gradient`    | `conic-gradient(from 180deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888, #f09433)` |
+| `--rk-stories-ring-viewed-color`       | `rgba(255, 255, 255, 0.25)`                                                         |
+| `--rk-stories-ring-gradient`           | `none`                                                                              |
+| `--rk-stories-ring-list-gap`           | `12px`                                                                              |
+| `--rk-stories-ring-list-padding`       | `12px`                                                                              |
+| `--rk-stories-ring-list-item-gap`      | `4px`                                                                               |
+| `--rk-stories-ring-list-name-size`     | `12px`                                                                              |
+| `--rk-stories-card-bg`                 | `#262626`                                                                           |
+| `--rk-stories-card-radius`             | `8px`                                                                               |
+| `--rk-stories-card-scrim`              | `rgba(0, 0, 0, 0.45)`                                                               |
+| `--rk-stories-card-fg`                 | `#fff`                                                                              |
+| `--rk-stories-card-name-size`          | `14px`                                                                              |
+| `--rk-stories-card-time-fg`            | `rgba(255, 255, 255, 0.7)`                                                          |
+| `--rk-stories-card-time-size`          | `13px`                                                                              |
+| `--rk-stories-card-gap`                | `6px`                                                                               |
+| `--rk-stories-card-transition`         | `300ms`                                                                             |
 
-`--rk-stories-ring-gradient` is internal: ring writes it every render, setting it has no effect.
+`--rk-stories-ring-gradient` is internal: ring writes it every render, pointing at `--rk-stories-ring-active-gradient` / `--rk-stories-ring-viewed-color` unless `gradientColors` / `viewedColor` given. Light page → set the two colour tokens on `.rk-stories-ring-list`, not `:root`, so the player's carousel (dark backdrop) keeps its own.
 
 ## Accessibility
 

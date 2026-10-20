@@ -6,7 +6,11 @@ import {
   screen,
 } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { StoriesTrayDemo } from './StoriesTrayDemo';
+import {
+  StoriesTrayDemo,
+  kStoriesTrayDarkRings,
+  kStoriesTrayLightRings,
+} from './StoriesTrayDemo';
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -132,6 +136,22 @@ describe('stories tray recipe demo', () => {
     await openStories('Alex');
 
     expect(currentStory()).toContain('story-003');
+  });
+
+  // A watched ring's default colour is meant for a dark page. On the light
+  // theme the demo recolours it on the ring list only, never on :root, where
+  // it would repaint the rings of the player's dark carousel too.
+  it('sets the watched ring colour on the ring list, not the page root', () => {
+    const { container } = render(<StoriesTrayDemo />);
+    const wrapper = container.firstElementChild!;
+
+    expect(wrapper.classList).toContain(kStoriesTrayLightRings);
+    expect(wrapper.classList).toContain(kStoriesTrayDarkRings);
+    expect(
+      document.documentElement.style.getPropertyValue(
+        '--rk-stories-ring-viewed-color',
+      ),
+    ).toBe('');
   });
 
   it('forgets what was seen on request', async () => {

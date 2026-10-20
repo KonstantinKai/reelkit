@@ -504,7 +504,9 @@ import theming from '../../snippets/vue-stories-player/theming.css?raw';
 | `--rk-stories-heart-z` | `20` | डबल-टैप वाले दिल का z-index |
 | `--rk-stories-ring-spin-duration` | `4s` | जिस रिंग में देखना बाक़ी है उसके घूमने की अवधि |
 | `--rk-stories-ring-active-scale` | `0.95` | दबाए जाने के दौरान रिंग का पैमाना |
-| `--rk-stories-ring-gradient` | `none` | आंतरिक: रिंग हर रेंडर पर अपना ग्रेडिएंट यहाँ लिखती है, इसलिए इसे सेट करने का कोई असर नहीं होता |
+| `--rk-stories-ring-active-gradient` | `conic-gradient(from 180deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888, #f09433)` | जिस रिंग में देखने को स्टोरी बाक़ी हों, वह क्या दिखाए: कोई भी CSS इमेज या रंग। हल्के पेज पर इसे `:root` के बजाय `.rk-stories-ring-list` पर सेट करें, ताकि प्लेयर का कैरोसेल अपना रंग रखे |
+| `--rk-stories-ring-viewed-color` | `rgba(255, 255, 255, 0.25)` | पूरी देखी जा चुकी रिंग क्या दिखाए; यह मान गहरे पेज के लिए है। हल्के पेज पर इसे `:root` के बजाय `.rk-stories-ring-list` पर सेट करें |
+| `--rk-stories-ring-gradient` | `none` | आंतरिक: रिंग हर रेंडर पर इसे लिखती है और ऊपर के दोनों टोकन की ओर इशारा करती है, जब तक रिंग को `gradientColors` या `viewedColor` न दिया जाए |
 | `--rk-stories-ring-list-gap` | `12px` | सूची में रिंगों के बीच की दूरी |
 | `--rk-stories-ring-list-padding` | `12px` | रिंग सूची के चारों ओर का भीतरी अंतर |
 | `--rk-stories-ring-list-item-gap` | `4px` | रिंग और उसके नाम के बीच की दूरी |

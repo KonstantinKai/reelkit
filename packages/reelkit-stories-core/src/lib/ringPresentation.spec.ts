@@ -47,27 +47,53 @@ describe('getRingPresentation', () => {
     ).toBe(60);
   });
 
-  it('closes the gradient on the color it opened with', () => {
+  // The colours come from CSS custom properties with their defaults on :root,
+  // so a page can theme every ring from its stylesheet. The inline value only
+  // points at them, and a ring drawn by hand from this output keeps working.
+  it('points a ring with stories left at the active gradient token', () => {
     const { style, className } = getRingPresentation({
       totalStories: 6,
       viewedCount: 5,
       size: 64,
     });
     expect(style['--rk-stories-ring-gradient']).toBe(
-      'conic-gradient(from 180deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888, #f09433)',
+      'var(--rk-stories-ring-active-gradient)',
     );
     expect(className).toBe('rk-stories-ring rk-stories-ring--active');
   });
 
-  it('shows the viewed color once the group is fully watched', () => {
+  it('points a fully watched ring at the viewed color token', () => {
     const { style, className } = getRingPresentation({
       totalStories: 6,
       viewedCount: 9,
       size: 64,
-      viewedColor: '#333',
     });
-    expect(style['--rk-stories-ring-gradient']).toBe('#333');
+    expect(style['--rk-stories-ring-gradient']).toBe(
+      'var(--rk-stories-ring-viewed-color)',
+    );
     expect(className).toBe('rk-stories-ring');
+  });
+
+  it('uses a viewed color given for this ring over the token', () => {
+    expect(
+      getRingPresentation({
+        totalStories: 6,
+        viewedCount: 6,
+        size: 64,
+        viewedColor: '#333',
+      }).style['--rk-stories-ring-gradient'],
+    ).toBe('#333');
+  });
+
+  it('closes gradient colors given for this ring on the one it opened with', () => {
+    expect(
+      getRingPresentation({
+        totalStories: 2,
+        viewedCount: 0,
+        size: 64,
+        gradientColors: ['#111', '#222'],
+      }).style['--rk-stories-ring-gradient'],
+    ).toBe('conic-gradient(from 180deg, #111, #222, #111)');
   });
 
   it('draws no ring for an empty group', () => {
@@ -78,7 +104,7 @@ describe('getRingPresentation', () => {
     ).toBe('none');
   });
 
-  it('falls back to the default palette when given no colors', () => {
+  it('treats an empty list of gradient colors as no override', () => {
     expect(
       getRingPresentation({
         totalStories: 2,
@@ -86,6 +112,6 @@ describe('getRingPresentation', () => {
         size: 64,
         gradientColors: [],
       }).style['--rk-stories-ring-gradient'],
-    ).toContain('#f09433');
+    ).toBe('var(--rk-stories-ring-active-gradient)');
   });
 });
