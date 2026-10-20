@@ -2,7 +2,7 @@
 
 <p>
   <a href="https://www.npmjs.com/package/@reelkit/stories-core"><img src="https://img.shields.io/npm/v/@reelkit/stories-core?color=6366f1&label=npm" alt="npm" /></a>
-  <img src="https://img.shields.io/badge/gzip-3.1%20kB-6366f1" alt="Bundle size" />
+  <img src="https://img.shields.io/badge/gzip-3.0%20kB-6366f1" alt="Bundle size" />
   <img src="https://img.shields.io/badge/coverage-97%25-brightgreen" alt="Statement coverage" />
   <a href="https://github.com/KonstantinKai/reelkit"><img src="https://img.shields.io/github/stars/KonstantinKai/reelkit?style=social" alt="Star on GitHub" /></a>
 </p>
@@ -11,7 +11,7 @@
   <a href="https://react-demo.reelkit.dev/stories-player?utm_source=npm"><img src="https://raw.githubusercontent.com/KonstantinKai/reelkit/main/assets/stories.gif" width="240" alt="An Instagram-style stories player on a phone: tapping a user's ring opens their stories, a tap moves to the next story, a swipe turns a cube to the next user, a double-tap likes the story with a heart, and closing returns to the rings." /></a>
 </p>
 
-Framework-agnostic stories state machine for ReelKit. Story and group navigation (tap to advance within a group, swipe to switch between users), auto-advance timer with pause/resume, tap zone detection, and segmented progress bar with sliding window for 50+ stories. ~3.1 kB gzip.
+Framework-agnostic stories state machine for ReelKit. Story and group navigation (tap to advance within a group, swipe to switch between users), auto-advance timer with pause/resume, tap zone detection, and segmented progress bar with sliding window for 50+ stories. ~3.0 kB gzip.
 
 ## Installation
 

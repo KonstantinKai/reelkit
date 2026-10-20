@@ -60,16 +60,16 @@
 | [@reelkit/react](packages/reelkit-react)                                   | React components and hooks        | 4.9 kB    | —          |
 | [@reelkit/react-reel-player](packages/reelkit-react-reel-player)           | Full-screen video reel player     | 5.4 kB    | 2.1 kB     |
 | [@reelkit/react-lightbox](packages/reelkit-react-lightbox)                 | Image & video gallery lightbox    | 4.1 kB    | 1.6 kB     |
-| [@reelkit/stories-core](packages/reelkit-stories-core)                     | Framework-agnostic stories engine | 3.1 kB    | —          |
-| [@reelkit/react-stories-player](packages/reelkit-react-stories-player)     | Instagram-style stories player    | 7.5 kB    | 2.0 kB     |
+| [@reelkit/stories-core](packages/reelkit-stories-core)                     | Framework-agnostic stories engine | 3.0 kB    | —          |
+| [@reelkit/react-stories-player](packages/reelkit-react-stories-player)     | Instagram-style stories player    | 7.5 kB    | 2.1 kB     |
 | [@reelkit/angular](packages/reelkit-angular)                               | Angular standalone components     | 15.8 kB   | —          |
 | [@reelkit/angular-reel-player](packages/reelkit-angular-reel-player)       | Full-screen video reel player     | 24.4 kB   | 3.5 kB     |
 | [@reelkit/angular-lightbox](packages/reelkit-angular-lightbox)             | Image & video gallery lightbox    | 19.1 kB   | 2.2 kB     |
-| [@reelkit/angular-stories-player](packages/reelkit-angular-stories-player) | Instagram-style stories player    | 34.0 kB   | 3.0 kB     |
+| [@reelkit/angular-stories-player](packages/reelkit-angular-stories-player) | Instagram-style stories player    | 34.0 kB   | 3.3 kB     |
 | [@reelkit/vue](packages/reelkit-vue)                                       | Vue 3 components and composables  | 5.1 kB    | —          |
 | [@reelkit/vue-reel-player](packages/reelkit-vue-reel-player)               | Full-screen video reel player     | 6.2 kB    | 2.1 kB     |
 | [@reelkit/vue-lightbox](packages/reelkit-vue-lightbox)                     | Image & video gallery lightbox    | 4.9 kB    | 1.4 kB     |
-| [@reelkit/vue-stories-player](packages/reelkit-vue-stories-player)         | Instagram-style stories player    | 7.9 kB    | 2.0 kB     |
+| [@reelkit/vue-stories-player](packages/reelkit-vue-stories-player)         | Instagram-style stories player    | 7.9 kB    | 2.1 kB     |
 
 Every overlay ships its stylesheet separately from the JavaScript — import the
 package CSS once, then theme it with `--rk-*` custom properties. Budget both

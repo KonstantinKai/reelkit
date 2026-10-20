@@ -51,8 +51,8 @@ export const kBundleSizes: BundleSize[] = [
     name: '@reelkit/react-stories-player',
     js: '25.3 kB',
     gzip: '7.5 kB',
-    css: '9.8 kB',
-    cssGzip: '2.0 kB',
+    css: '9.9 kB',
+    cssGzip: '2.1 kB',
     framework: 'react',
   },
   {
@@ -107,8 +107,8 @@ export const kBundleSizes: BundleSize[] = [
     name: '@reelkit/vue-stories-player',
     js: '25.4 kB',
     gzip: '7.9 kB',
-    css: '9.8 kB',
-    cssGzip: '2.0 kB',
+    css: '9.9 kB',
+    cssGzip: '2.1 kB',
     framework: 'vue',
   },
 ];
