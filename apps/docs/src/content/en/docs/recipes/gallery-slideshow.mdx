@@ -1,0 +1,69 @@
+---
+title: Gallery Slideshow
+description: A photo gallery in the lightbox that plays as a slideshow and downloads the original file of each photo.
+---
+
+import { GallerySlideshowDemo } from '../../../../components/demos/GallerySlideshowDemo';
+import reactCode from '../../../snippets/recipes/gallery-slideshow/react.tsx?raw';
+import vueCode from '../../../snippets/recipes/gallery-slideshow/vue.vue?raw';
+import angularCode from '../../../snippets/recipes/gallery-slideshow/angular.ts?raw';
+import apiCode from '../../../snippets/recipes/gallery-slideshow/api.ts?raw';
+
+An album opens full screen and plays on its own, one photo after another, until the viewer pauses it. Any photo can be saved, and what is saved is the original file under a proper name, not the resized copy the screen shows.
+
+## Try it [#try-it]
+
+Every version imports `./api`, which stands in for your backend: `photos` is an album in the shape of the lightbox's `LightboxItem`, each with the address to show, the file to download, and the name to save it under. Replace it with your own album.
+
+<CodeBlock code={apiCode} language="typescript" />
+
+<Callout type="warning" title="The sample media works only on reelkit.dev">
+  `cdnUrl` builds links to cdn.reelkit.dev, which serves its files only to the ReelKit sites. In your app those photos fail to load and download, so point `src` and `downloadUrl` at your own files before you copy this file.
+</Callout>
+
+<FrameworkVariant for="react">
+<Sandbox code={reactCode} title="GallerySlideshow.tsx" height={560}>
+  <GallerySlideshowDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+<Sandbox code={vueCode} language="vue" framework="vue" title="GallerySlideshow.vue" height={560}>
+  <GallerySlideshowDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+<Sandbox code={angularCode} language="typescript" framework="angular" title="gallery-slideshow.component.ts" height={560}>
+  <GallerySlideshowDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<Caption>Open a photo: the slideshow starts at once and moves on every three seconds. Pause it from the bar, or save the photo with the download button.</Caption>
+
+## Why it works [#why-it-works]
+
+- **Two props turn the lightbox into a slideshow with downloads.** `autoAdvance` starts playing as soon as the lightbox opens, and `showDownload` adds the button that saves the current photo. The default bar gains the play and pause button and the download button on its own. Both props are covered for [React](/docs/lightbox#auto-advance), [Vue](/docs/vue-lightbox#auto-advance), and [Angular](/docs/angular-lightbox#auto-advance), each page with a download section right after.
+- **The slideshow waits for each photo.** `autoAdvanceInterval` is counted from the moment a photo has loaded, so a slow connection never skips a picture before anyone saw it. The timing is `createSlideshowController` from core, described in the [autoplay guide](/docs/core/guide#autoplay).
+- **The viewer stays in charge.** Swiping or pressing a key moves on by hand and starts the next photo's interval from zero, with the slideshow still on. The [PlayPauseButton](/docs/lightbox#playpausebutton) stops and resumes it, and a pointer resting on a button or the caption holds it for as long as it rests there. On the last photo it stops, unless `loop` is set.
+- **Show a small copy, save the original.** `src` is what the screen shows, so a resized copy keeps the gallery fast. `downloadUrl` is what the button saves, and `downloadName` is the file name it gets, so the viewer keeps the full photo under a name that says what it is. The sample CDN serves one size, so here both point at one file. The fields are in the [LightboxItem type](/docs/lightbox#lightboxitem).
+- **Downloads from another origin need CORS.** A `download` attribute is ignored on a link to another origin, so the lightbox fetches the file and saves it. That needs the file's server to answer with `Access-Control-Allow-Origin` for your site. When it does not, the photo opens in a new tab instead, so the viewer can still save it. See [`downloadFile`](/docs/core/guide#download).
+
+<NextSteps
+  items={[
+    {
+      label: 'Stories Tray',
+      path: '/docs/recipes/stories-tray',
+      description: 'a row of rings that opens the stories player and remembers what was seen',
+    },
+    {
+      label: 'Lightbox',
+      path: {
+        react: '/docs/lightbox',
+        vue: '/docs/vue-lightbox',
+        angular: '/docs/angular-lightbox',
+      },
+      description: 'every prop, slot, and part of the lightbox',
+    },
+  ]}
+/>

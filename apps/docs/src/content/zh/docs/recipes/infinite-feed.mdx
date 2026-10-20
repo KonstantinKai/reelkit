@@ -1,0 +1,71 @@
+---
+title: 无限信息流
+description: 在用户接近末尾时加载下一页的竖向信息流，包含加载与错误幻灯片、请求取消和预加载。
+---
+
+import { InfiniteFeedDemo } from '../../../../components/demos/InfiniteFeedDemo';
+import reactCode from '../../../snippets/recipes/infinite-feed/react.tsx?raw';
+import vueCode from '../../../snippets/recipes/infinite-feed/vue.vue?raw';
+import angularCode from '../../../snippets/recipes/infinite-feed/angular.ts?raw';
+import apiCode from '../../../snippets/recipes/infinite-feed/api.ts?raw';
+
+永无尽头的信息流必须在用户观看时就去拉取数据：要足够早，让下一条帖子已经就位；在某一页加载中或加载失败时要有内容可显示；信息流消失后也不能留下仍在运行的请求。
+
+## 试一试 [#try-it]
+
+每个版本都导入 `./api`，它代替你的后端：`fetchPosts(page, signal)` 返回一页帖子，信号中止时停止。把它换成对你自己 API 的调用，并删掉只用来驱动演示失败开关的 `failNextRequest`。
+
+<CodeBlock code={apiCode} language="typescript" />
+
+<Callout type="warning" title="示例媒体只能在 reelkit.dev 上使用">
+  `cdnUrl` 生成指向 cdn.reelkit.dev 的链接，而它只向 ReelKit 站点提供文件。在你的应用里这些图片会加载失败，所以复制这个文件之前，先把 `image` 指向你自己的媒体。
+</Callout>
+
+<FrameworkVariant for="react">
+<Sandbox code={reactCode} title="InfiniteFeed.tsx" height={560}>
+  <InfiniteFeedDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+<Sandbox code={vueCode} language="vue" framework="vue" title="InfiniteFeed.vue" height={560}>
+  <InfiniteFeedDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+<Sandbox code={angularCode} language="typescript" framework="angular" title="infinite-feed.component.ts" height={560}>
+  <InfiniteFeedDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<Caption>向上滑动或按 ↓：在离末尾还有三条帖子时，新的一页就会到达。点击 "Fail next request" 可以看到错误幻灯片和它的 Retry。</Caption>
+
+## 原理 [#why-it-works]
+
+- **数量在增长，幻灯片不会** —— `count` 是帖子数加一，而 DOM 里始终只有三张幻灯片，所以上千条的信息流和十条的开销相同。参见[虚拟化](/docs/core/guide#virtualization)。
+- **最后一张幻灯片显示状态** —— 帖子之后多出的那一张，在某页加载中时显示 "Loading…"，加载失败时显示错误和 Retry，用户永远不会滑进一片空白。它只是 [itemBuilder](/docs/react/guide#itembuilder-pattern) 里多出的一种情况，itemBuilder 会渲染索引所代表的任何内容。
+- **从切换幻灯片时开始预取** —— 用户离末尾还有三条帖子时，`afterChange` 就请求下一页。失败的页面会等待 Retry，所以来回滑动不会反复发起失败的请求。这个回调和其他事件一起列在 [React](/docs/react/api#callbacks)、[Vue](/docs/vue/api#events) 和 [Angular](/docs/angular/api#outputs) 的文档中。
+- **key 跟着帖子走** —— `keyExtractor` 返回每条帖子的 id，所以新的一页在后面落下时，幻灯片保留自己的元素，而不是按索引重建。它在 [React](/docs/react/api#reel-props)、[Vue](/docs/vue/api#props) 和 [Angular](/docs/angular/api#inputs) 中同样都是一个属性。
+- **图片先于幻灯片加载** —— 更靠后的幻灯片还没有挂载，因为只有可见范围才会挂载，[虚拟化](/docs/core/guide#virtualization)对此有说明。所以新一页一到，它的图片就立即请求，等对应的幻灯片挂载时再从浏览器缓存中取出。
+- **有意关闭按键和滚轮** —— `enableNavKeys` 在整个窗口上监听，`enableWheel` 在指针位于信息流上方时会占用页面的滚动。两者都适合占满屏幕的信息流，却会与容纳信息流的页面相冲突，这里正是这种情况，所以它们保持关闭，改由两个按钮调用 [Reel API](/docs/react/api#reelapi-methods) 的 `prev()` 和 `next()`。滑动在两种情况下都可用。
+- **信息流消失后不留下任何东西** —— 每个请求都带一个 [`AbortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController)，信息流卸载时将其中止，所以迟到的响应永远不会写进已经消失的信息流。
+
+<NextSteps
+  items={[
+    {
+      label: '从网格到播放器',
+      path: '/docs/recipes/grid-to-player',
+      description: '从缩略图网格打开全屏播放器，关闭后回到原来的位置',
+    },
+    {
+      label: '框架指南',
+      path: {
+        react: '/docs/react/guide',
+        vue: '/docs/vue/guide',
+        angular: '/docs/angular/guide',
+      },
+      description: '这个示例背后的每个 Reel 属性和模式',
+    },
+  ]}
+/>

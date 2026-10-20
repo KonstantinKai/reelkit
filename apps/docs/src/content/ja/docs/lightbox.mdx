@@ -4,7 +4,6 @@ description: React 用の、フルスクリーンの画像ギャラリーのオ�
 ---
 
 import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2, Play, Download } from 'lucide-react';
-import { LightboxDemo } from '../../../components/demos/LightboxDemo';
 import installation from '../../snippets/lightbox/installation.sh?raw';
 import installation2 from '../../snippets/lightbox/installation-2.ts?raw';
 import quickStart from '../../snippets/lightbox/quick-start.tsx?raw';
@@ -143,19 +142,14 @@ import downloadbutton from '../../snippets/lightbox/downloadbutton.tsx?raw';
 
 <CodeBlock code={quickStart} language="tsx" />
 
-## ライブデモ [#live-demo]
-
 <Sandbox
   code={fullCode}
   title="LightboxPage.tsx"
-  height={500}
   stackblitzDeps={['@reelkit/react-lightbox']}
   stackblitzExtraDeps={{ 'lucide-react': '^0.562.0' }}
->
-  <LightboxDemo />
-</Sandbox>
+/>
 
-<Caption>サムネイルをクリックするとギャラリーが開きます。矢印キーかスワイプで移動してください。</Caption>
+ギャラリーをスライドショーとして再生し、各写真の元ファイルを保存する方法は[ギャラリーのスライドショーのレシピ](/docs/recipes/gallery-slideshow)を参照してください。
 
 ## 動画スライド（オプトイン） [#video-slides-opt-in]
 

@@ -1,4 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { fireEvent, render } from '@testing-library/react';
 import { StoriesRing } from './StoriesRing';
 
@@ -146,5 +148,17 @@ describe('StoriesRing', () => {
     fireEvent.keyDown(ring, { key: 'a' });
 
     expect(onClick).toHaveBeenCalledTimes(2);
+  });
+
+  // A page reset such as `img { height: auto }` drops the height attribute,
+  // and a portrait or landscape avatar then bends the ring into an oval.
+  it('keeps the avatar square whatever the page does to its height', () => {
+    const css = readFileSync(
+      join(import.meta.dirname, 'StoriesRing.css'),
+      'utf8',
+    );
+    const avatarRule = css.match(/\.rk-stories-ring-avatar\s*\{[^}]*\}/)?.[0];
+
+    expect(avatarRule).toMatch(/aspect-ratio:\s*1\s*;/);
   });
 });

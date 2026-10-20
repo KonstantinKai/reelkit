@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { kDefaultLocale, kLocales } from '../i18n/locale';
 
@@ -133,6 +133,110 @@ describe('braces in content', () => {
     }
 
     expect(offenders).toEqual([]);
+  });
+});
+
+describe('recipe pages', () => {
+  const recipesDir = join(contentDir, 'snippets/recipes');
+  const recipes = readdirSync(recipesDir, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name);
+  const frameworkFiles = (recipe: string) =>
+    ['react.tsx', 'vue.vue', 'angular.ts']
+      .map((name) => join(recipesDir, recipe, name))
+      .filter(existsSync);
+
+  // Guards the checks below: no recipe found would pass on nothing.
+  it('are found', () => {
+    expect(recipes.length).toBeGreaterThan(0);
+  });
+
+  // A reader copies the code shown on the page. A module the framework code
+  // imports but the page never shows leaves that copy unable to run.
+  it.each(recipes)(
+    '%s shows every module of its own that the code imports',
+    (recipe) => {
+      const page = read(
+        join(contentDir, kDefaultLocale, 'docs/recipes', `${recipe}.mdx`),
+      );
+      const missing = frameworkFiles(recipe).flatMap((path) =>
+        [...read(path).matchAll(/from '\.\/([\w-]+)'/g)]
+          .map((match) => match[1])
+          .filter(
+            (module) =>
+              !new RegExp(
+                `snippets/recipes/${recipe}/${module}\\.ts\\?raw'`,
+              ).test(page),
+          ),
+      );
+      expect(missing).toEqual([]);
+    },
+  );
+
+  // cdn.reelkit.dev serves its files to the ReelKit sites only, so a reader
+  // who copies a recipe that builds links with `cdnUrl` gets images that never
+  // load. The page has to say so where the code is shown.
+  it.each(recipes)(
+    '%s warns that the sample media works only here',
+    (recipe) => {
+      const usesCdn = readdirSync(join(recipesDir, recipe)).some((name) =>
+        read(join(recipesDir, recipe, name)).includes('cdnUrl'),
+      );
+      if (!usesCdn) return;
+      const page = read(
+        join(contentDir, kDefaultLocale, 'docs/recipes', `${recipe}.mdx`),
+      );
+      expect(page).toMatch(
+        /<Callout type="warning"[^>]*>[\s\S]*?cdn\.reelkit\.dev[\s\S]*?<\/Callout>/,
+      );
+    },
+  );
+
+  // A "Why it works" point names a part of the API or a behaviour of it; the
+  // reader who wants the whole of it follows the link instead of finding the
+  // reference restated in the recipe.
+  it.each(recipes)('%s links every "Why it works" point', (recipe) => {
+    const page = read(
+      join(contentDir, kDefaultLocale, 'docs/recipes', `${recipe}.mdx`),
+    );
+    const section =
+      page.split('[#why-it-works]')[1]?.split('<NextSteps')[0] ?? '';
+    const points = section.split('\n').filter((line) => line.startsWith('- '));
+    expect(points.length).toBeGreaterThan(0);
+    expect(points.filter((point) => !/\]\([^)]+\)/.test(point))).toEqual([]);
+  });
+
+  // Most apps reset buttons with their CSS (Tailwind's base does), and a bare
+  // button then reads as a line of text. Every button in recipe code carries
+  // its own look, inline or through a class.
+  it.each(recipes)('%s styles every button it renders', (recipe) => {
+    const bare = frameworkFiles(recipe).flatMap((path) =>
+      [...read(path).matchAll(/<button(?:=>|[^>])*>/g)]
+        .map((match) => match[0])
+        .filter((tag) => !/\s(style|class|:class|\[class\])=/.test(tag))
+        .map(
+          (tag) => `${relative(contentDir, path)}: ${tag.replace(/\s+/g, ' ')}`,
+        ),
+    );
+    expect(bare).toEqual([]);
+  });
+
+  // A recipe demo sits inside a docs page that scrolls. Arrow keys are heard
+  // window-wide and the wheel holds the page's scroll, so the code shown, which
+  // is also the code the demo runs, steps through the reel with buttons.
+  it.each(recipes)('%s leaves wheel and arrow keys to the page', (recipe) => {
+    for (const path of frameworkFiles(recipe)) {
+      const source = read(path);
+      // The reel itself, not an overlay built on it (`ReelPlayerOverlay`,
+      // `rk-reel-player-overlay`), which fills the screen and owns its keys.
+      if (!/<Reel[\s>]|<rk-reel[\s>]/.test(source)) continue;
+      expect(source, path).not.toMatch(
+        /\benableWheel\b(?!=\{false\}|\]="false")|\benable-wheel\b(?!="false")/,
+      );
+      expect(source, path).toMatch(
+        /enableNavKeys=\{false\}|:enable-nav-keys="false"|\[enableNavKeys\]="false"/,
+      );
+    }
   });
 });
 

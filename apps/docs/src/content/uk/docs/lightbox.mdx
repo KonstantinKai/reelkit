@@ -4,7 +4,6 @@ description: 'Повноекранна галерея зображень: дво
 ---
 
 import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2, Play, Download } from 'lucide-react';
-import { LightboxDemo } from '../../../components/demos/LightboxDemo';
 import installation from '../../snippets/lightbox/installation.sh?raw';
 import installation2 from '../../snippets/lightbox/installation-2.ts?raw';
 import quickStart from '../../snippets/lightbox/quick-start.tsx?raw';
@@ -143,19 +142,14 @@ The `LightboxOverlay` показує зображення на весь екра
 
 <CodeBlock code={quickStart} language="tsx" />
 
-## Демо наживо [#live-demo]
-
 <Sandbox
   code={fullCode}
   title="LightboxPage.tsx"
-  height={500}
   stackblitzDeps={['@reelkit/react-lightbox']}
   stackblitzExtraDeps={{ 'lucide-react': '^0.562.0' }}
->
-  <LightboxDemo />
-</Sandbox>
+/>
 
-<Caption>Натисніть мініатюру, щоб відкрити Lightbox. Гортайте стрілками або свайпом.</Caption>
+Щоб показати галерею як слайдшоу й зберігати оригінал кожного фото, дивіться [рецепт «Галерея зі слайдшоу»](/docs/recipes/gallery-slideshow).
 
 ## Слайди-відео (за бажанням) [#video-slides-opt-in]
 

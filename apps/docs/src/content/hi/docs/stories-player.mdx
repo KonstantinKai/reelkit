@@ -4,7 +4,6 @@ description: React के लिए Instagram जैसा stories प्ले�
 ---
 
 import { Zap, Play, Timer, Layout, Clock, Image, Layers, Heart, Monitor, Circle, Code, Settings, Link2, Eye } from 'lucide-react';
-import { StoriesPlayerDemo } from '../../../components/demos/StoriesPlayerDemo';
 import installation from '../../snippets/stories-player/installation.sh?raw';
 import installation2 from '../../snippets/stories-player/installation-2.ts?raw';
 import fullCode from '../../snippets/stories-player/full-code.tsx?raw';
@@ -147,18 +146,13 @@ styles import करना न भूलें:
 
 <CodeBlock code={fullCode} language="tsx" />
 
-## लाइव डेमो [#live-demo]
-
 <Sandbox
   code={fullCode2}
   title="StoriesPlayer.tsx"
-  height={200}
   stackblitzDeps={['@reelkit/react-stories-player', '@reelkit/react']}
->
-  <StoriesPlayerDemo />
-</Sandbox>
+/>
 
-<Caption>प्लेयर खोलने के लिए किसी story ring पर क्लिक करें। आगे-पीछे जाने के लिए बाएँ/दाएँ हिस्से पर टैप करें, यूज़र बदलने के लिए स्वाइप करें।</Caption>
+ऐसी रिंग पंक्ति के लिए जो रीलोड के बाद भी याद रखे कि दर्शक ने क्या देखा, [स्टोरीज़ ट्रे रेसिपी](/docs/recipes/stories-tray) देखें।
 
 ## URL स्टेट [#url-state]
 

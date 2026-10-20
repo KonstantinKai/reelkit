@@ -44,6 +44,10 @@
   object-fit: cover;
   display: block;
   max-width: none;
+  /* The size comes from the width and height attributes. A page reset that
+     sets every image's height to auto drops the height and lets the photo's
+     own shape back in, so a portrait avatar would turn the ring into an oval. */
+  aspect-ratio: 1;
 }
 
 @keyframes rk-stories-ring-spin {

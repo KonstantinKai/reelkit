@@ -1,0 +1,70 @@
+---
+title: De la cuadrícula al reproductor
+description: Una cuadrícula de miniaturas que abre el reproductor a pantalla completa en el elemento pulsado y devuelve al usuario al último elemento que vio.
+---
+
+import { GridToPlayerDemo } from '../../../../components/demos/GridToPlayerDemo';
+import reactCode from '../../../snippets/recipes/grid-to-player/react.tsx?raw';
+import vueCode from '../../../snippets/recipes/grid-to-player/vue.vue?raw';
+import angularCode from '../../../snippets/recipes/grid-to-player/angular.ts?raw';
+import apiCode from '../../../snippets/recipes/grid-to-player/api.ts?raw';
+
+Una página de perfil o un resultado de búsqueda muestran las publicaciones como una cuadrícula de miniaturas. Al pulsar una, debería abrirse a pantalla completa, dejar que el usuario siga deslizando por el resto y, al cerrar el reproductor, dejarlo en la publicación donde se quedó y no en la que empezó.
+
+## Pruébalo [#try-it]
+
+Todas las versiones importan `./api`, que sustituye a tu backend: `posts` es la lista que cargaría un perfil o una búsqueda, con la forma del `ContentItem` del reproductor, y `thumbnailOf` elige la imagen que muestra cada celda. Cambia ambos por tus propios datos.
+
+<CodeBlock code={apiCode} language="typescript" />
+
+<Callout type="warning" title="Los medios de ejemplo solo funcionan en reelkit.dev">
+  `cdnUrl` crea enlaces a cdn.reelkit.dev, que solo sirve sus archivos a los sitios de ReelKit. En tu app esas imágenes y vídeos no cargan, así que apunta `media` y `avatar` a tus propios archivos antes de copiar este archivo.
+</Callout>
+
+<FrameworkVariant for="react">
+<Sandbox code={reactCode} title="GridToPlayer.tsx" height={560}>
+  <GridToPlayerDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+<Sandbox code={vueCode} language="vue" framework="vue" title="GridToPlayer.vue" height={560}>
+  <GridToPlayerDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+<Sandbox code={angularCode} language="typescript" framework="angular" title="grid-to-player.component.ts" height={560}>
+  <GridToPlayerDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<Caption>Abre una publicación, desliza o pulsa ↓ unas cuantas veces y cierra con Escape: la cuadrícula se desplaza hasta la publicación donde te quedaste y su miniatura tiene el foco.</Caption>
+
+## Por qué funciona [#why-it-works]
+
+- **El reproductor se abre donde pulsó el usuario.** `initialIndex` recibe el índice de la miniatura y la lista entera va a `content`, así el usuario puede seguir deslizando más allá de la publicación que eligió. Ambas son props del reproductor en [React](/docs/reel-player#reelplayeroverlayprops-props), [Vue](/docs/vue-reel-player#reelplayeroverlay-props) y [Angular](/docs/angular-reel-player#rkreelplayeroverlaycomponent-inputs).
+- **La cuadrícula sabe dónde se quedó el usuario.** El callback de cambio de slide informa de cada publicación a la que llega el usuario, y la receta guarda la última. Aparece entre los [callbacks](/docs/reel-player#callbacks), los [eventos](/docs/vue-reel-player#events) y los [outputs](/docs/angular-reel-player#rkreelplayeroverlaycomponent-outputs) del reproductor.
+- **El foco vuelve a la miniatura correcta.** Al cerrarse, el reproductor devuelve el foco al elemento que lo abrió, como marca su sección de [accesibilidad](/docs/reel-player#accessibility). Esa devolución ocurre después de ejecutarse el handler de cierre, así que un foco puesto dentro del handler se desharía. La receta espera una tarea y luego desplaza hasta la miniatura de la última publicación y le da el foco.
+- **Las miniaturas son botones.** Cada celda es un `<button>` con etiqueta, así la cuadrícula funciona con Tab y Enter, un lector de pantalla nombra la publicación que abre y el reproductor tiene un elemento enfocable al que devolver el foco, como describe su sección de [accesibilidad](/docs/reel-player#accessibility).
+- **Una celda necesita una imagen, no un vídeo.** `thumbnailOf` usa el `poster` de un vídeo, un campo de [MediaItem](/docs/reel-player#mediaitem), y una imagen tal cual, así la cuadrícula nunca carga un vídeo que no reproduce.
+- **¿Quieres la publicación abierta en la barra de direcciones?** El reproductor con [estado en la URL](/docs/reel-player#url-state) pone la publicación visible en la URL, así se puede compartir y cerrar con el botón Atrás.
+
+<NextSteps
+  items={[
+    {
+      label: 'Galería con presentación',
+      path: '/docs/recipes/gallery-slideshow',
+      description: 'la misma cuadrícula abriendo un lightbox que se reproduce como presentación',
+    },
+    {
+      label: 'Reel Player',
+      path: {
+        react: '/docs/reel-player',
+        vue: '/docs/vue-reel-player',
+        angular: '/docs/angular-reel-player',
+      },
+      description: 'cada prop, slot y parte del reproductor',
+    },
+  ]}
+/>

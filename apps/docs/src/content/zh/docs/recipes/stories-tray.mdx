@@ -1,0 +1,70 @@
+---
+title: 快拍栏
+description: 一排快拍圆环，点击打开快拍播放器，并在刷新后仍记住已看过的内容。
+---
+
+import { StoriesTrayDemo } from '../../../../components/demos/StoriesTrayDemo';
+import reactCode from '../../../snippets/recipes/stories-tray/react.tsx?raw';
+import vueCode from '../../../snippets/recipes/stories-tray/vue.vue?raw';
+import angularCode from '../../../snippets/recipes/stories-tray/angular.ts?raw';
+import apiCode from '../../../snippets/recipes/stories-tray/api.ts?raw';
+
+信息流顶部的一排圆环：每人一个，有新内容时是彩色的，用户全部看完后变暗。点击圆环会从第一条还没看过的快拍开始播放；下次访问时，即使刷新过页面，也会记得用户看到了哪里。
+
+## 试一试 [#try-it]
+
+每个版本都导入 `./api`，它代替你的后端：`groups` 是用户关注的人以及每人发布的快拍，形状与播放器的 `StoriesGroup` 相同。把它换成你自己的信息流。
+
+<CodeBlock code={apiCode} language="typescript" />
+
+<Callout type="warning" title="示例媒体只能在 reelkit.dev 上使用">
+  `cdnUrl` 生成指向 cdn.reelkit.dev 的链接，而它只向 ReelKit 站点提供文件。在你的应用里这些头像和快拍会加载失败，所以复制这个文件之前，先把 `avatar` 和 `src` 指向你自己的文件。
+</Callout>
+
+<FrameworkVariant for="react">
+<Sandbox code={reactCode} title="StoriesTray.tsx" height={560}>
+  <StoriesTrayDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+<Sandbox code={vueCode} language="vue" framework="vue" title="StoriesTray.vue" height={560}>
+  <StoriesTrayDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+<Sandbox code={angularCode} language="typescript" framework="angular" title="stories-tray.component.ts" height={560}>
+  <StoriesTrayDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<Caption>把某个人的快拍看完再关闭播放器：他的圆环会变暗，焦点落在你最后观看的那个人上，刷新后两者都会保留。"Forget what was seen" 会从头开始。</Caption>
+
+## 原理 [#why-it-works]
+
+- **一个控制器同时为两者记忆** —— `createStoriesViewedStateController` 只创建一次，作为 `viewed` 传给圆环列表和播放器。圆环从中读取，播放器把显示过的每条快拍记录进去，控制器再把它保存在 `localStorage` 的 `storageKey` 之下，所以刷新不会改变任何东西。参见“记住已看内容”：[React](/docs/stories-player#remembering-what-was-seen)、[Vue](/docs/vue-stories-player#remembering-what-was-seen) 和 [Angular](/docs/angular-stories-player#remembering-what-was-seen)。
+- **播放器从用户停下的地方继续** —— 有了 `viewed`，播放器会从某人第一条还没看过的快拍开始；如果全部看过，则从头开始。示例只传入是哪个人，从不传快拍索引；这个问题由控制器的 `resumeStoryIndex` 回答，见[它的参考文档](/docs/stories-core#storiesviewedstatecontroller)。
+- **圆环只有两种状态** —— 还有内容可看时是彩色的，某人被看完后变暗。某人内部的进度显示在播放器的进度条上，而不是圆环上。参见 [StoriesRing](/docs/stories-player#storiesring)。
+- **控制器不需要额外接线** —— 播放器始终被渲染，用 `isOpen` 打开，所以它会在选择第一条快拍之前自己读取保存的状态。如果只在打开时才挂载它，页面就必须先接上控制器，[控制器参考文档](/docs/stories-core#storiesviewedstatecontroller)对此有说明。
+- **焦点回到正确的圆环** —— 播放器关闭时会把焦点还给打开它的圆环，正如它的[无障碍](/docs/stories-player#accessibility)部分所述。这发生在关闭处理函数运行之后，所以示例先等待一个任务，再把最后观看的那个人的圆环滚动到可见区域并让它获得焦点。
+- **还能保存在别处** —— `storage` 接受你自己的适配器，例如服务器，这样已看内容就能在不同设备间跟随用户。`ttlMs` 让某个人的记录过期，`maxTracks` 限制保留的人数。它们都在[控制器配置](/docs/stories-core#config-storiesviewedstatecontrollerconfig)中。
+
+<NextSteps
+  items={[
+    {
+      label: '无限信息流',
+      path: '/docs/recipes/infinite-feed',
+      description: '用户接近信息流末尾时加载更多',
+    },
+    {
+      label: 'Stories Player',
+      path: {
+        react: '/docs/stories-player',
+        vue: '/docs/vue-stories-player',
+        angular: '/docs/angular-stories-player',
+      },
+      description: '播放器的每个属性、插槽和组成部分',
+    },
+  ]}
+/>

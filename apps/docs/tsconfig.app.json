@@ -14,7 +14,11 @@
     ]
   },
   "exclude": [
-    "src/content/snippets",
+    // Code samples sit one folder deep and are often fragments. A recipe's
+    // React code and data sit two deep, because its demo runs them; its
+    // Vue and Angular versions go to tsconfig.recipes.json instead.
+    "src/content/snippets/*/*.*",
+    "src/content/snippets/recipes/**/angular.ts",
     "src/**/*.spec.ts",
     "src/**/*.test.ts",
     "src/**/*.spec.tsx",

@@ -4,7 +4,6 @@ description: React के लिए फ़ुलस्क्रीन TikTok/Ree
 ---
 
 import { Zap, Play, Volume2, Layout, Clock, Image, Layers, Ratio, Monitor, Code, Settings, Link2 } from 'lucide-react';
-import { ReelPlayerDemo } from '../../../components/demos/ReelPlayerDemo';
 import installation from '../../snippets/reel-player/installation.sh?raw';
 import installation2 from '../../snippets/reel-player/installation-2.ts?raw';
 import quickStart from '../../snippets/reel-player/quick-start.tsx?raw';
@@ -135,19 +134,14 @@ styles import करना न भूलें:
 
 <CodeBlock code={quickStart} language="tsx" />
 
-## लाइव डेमो [#live-demo]
-
 <Sandbox
   code={fullCode}
   title="ReelPlayerPage.tsx"
-  height={500}
   stackblitzDeps={['@reelkit/react-reel-player']}
   stackblitzExtraDeps={{ 'lucide-react': '^0.562.0' }}
->
-  <ReelPlayerDemo />
-</Sandbox>
+/>
 
-<Caption>फ़ुलस्क्रीन प्लेयर खोलने के लिए किसी थंबनेल पर क्लिक करें। वापस आने के लिए Escape या बंद करने का बटन दबाएँ।</Caption>
+पूरे फ़्लो के लिए, यानी थंबनेल ग्रिड जो प्लेयर खोलता है और दर्शक को वहीं लौटाता है जहाँ वह रुका था, [ग्रिड से प्लेयर तक रेसिपी](/docs/recipes/grid-to-player) देखें।
 
 ## कस्टमाइज़ेशन [#customization]
 

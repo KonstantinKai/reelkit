@@ -4,7 +4,6 @@ description: 'Повноекранний Stories Player: StoriesApi, лайк п
 ---
 
 import { Zap, Play, Timer, Layout, Clock, Image, Layers, Heart, Monitor, Circle, Code, Settings, Link2, Eye } from 'lucide-react';
-import { StoriesPlayerDemo } from '../../../components/demos/StoriesPlayerDemo';
 import installation from '../../snippets/stories-player/installation.sh?raw';
 import installation2 from '../../snippets/stories-player/installation-2.ts?raw';
 import fullCode from '../../snippets/stories-player/full-code.tsx?raw';
@@ -147,18 +146,13 @@ The `StoriesOverlay` рендерить повноекранний плеєр і
 
 <CodeBlock code={fullCode} language="tsx" />
 
-## Демо наживо [#live-demo]
-
 <Sandbox
   code={fullCode2}
   title="StoriesPlayer.tsx"
-  height={200}
   stackblitzDeps={['@reelkit/react-stories-player', '@reelkit/react']}
->
-  <StoriesPlayerDemo />
-</Sandbox>
+/>
 
-<Caption>Натисніть кільце історії, щоб відкрити плеєр. Дотик ліворуч або праворуч гортає, свайп перемикає користувачів.</Caption>
+Ряд кілець, що памʼятає переглянуте навіть після перезавантаження, показує [рецепт «Панель історій»](/docs/recipes/stories-tray).
 
 ## Стан в URL [#url-state]
 

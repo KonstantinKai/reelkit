@@ -39,6 +39,7 @@ export interface Messages {
       angular: string;
       vue: string;
       components: string;
+      recipes: string;
       resources: string;
     };
     items: {
@@ -51,6 +52,11 @@ export interface Messages {
       reelPlayer: string;
       lightbox: string;
       storiesPlayer: string;
+      recipesOverview: string;
+      infiniteFeed: string;
+      gridToPlayer: string;
+      gallerySlideshow: string;
+      storiesTray: string;
       troubleshooting: string;
       llms: string;
       changelog: string;

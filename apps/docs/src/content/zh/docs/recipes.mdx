@@ -1,0 +1,37 @@
+---
+title: 实战示例
+description: 将多个 reelkit 组件组合成完整功能的实战指南，附带在线演示以及 React、Vue 和 Angular 代码。
+---
+
+import { InfinityIcon, LayoutGrid, Images, CircleDashed } from 'lucide-react';
+
+指南和 API 页面一次讲一个部分。实战示例则从你想上线的功能出发，把这些部分组合起来：先试一试的在线演示、适用于你所用框架的完整代码，以及每一部分为什么在那里。
+
+<RecipeCards items={[
+  {
+    icon: InfinityIcon,
+    label: '无限信息流',
+    desc: '用户接近末尾时加载下一页，带加载与错误幻灯片、请求取消和媒体预加载。',
+    path: '/docs/recipes/infinite-feed',
+  },
+  {
+    icon: LayoutGrid,
+    label: '从网格到播放器',
+    desc: '从缩略图网格打开全屏 Reel Player，关闭后把用户带回最后观看的项目。',
+    path: '/docs/recipes/grid-to-player',
+  },
+  {
+    icon: Images,
+    label: '图库幻灯片',
+    desc: '在 Lightbox 中把相册当作幻灯片播放，并下载每张照片的原始文件。',
+    path: '/docs/recipes/gallery-slideshow',
+  },
+  {
+    icon: CircleDashed,
+    label: '快拍栏',
+    desc: '从一排圆环打开 Stories Player，并在刷新后仍记住用户已看过的内容。',
+    path: '/docs/recipes/stories-tray',
+  },
+]} />
+
+每个演示运行的都是旁边展示的 React 代码。Vue 和 Angular 版本用各自的绑定做同样的事。

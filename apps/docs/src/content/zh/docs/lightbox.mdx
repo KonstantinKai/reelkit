@@ -4,7 +4,6 @@ description: 全屏图片画廊浮层：双轴 URL、子组件、内容加载与
 ---
 
 import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2, Play, Download } from 'lucide-react';
-import { LightboxDemo } from '../../../components/demos/LightboxDemo';
 import installation from '../../snippets/lightbox/installation.sh?raw';
 import installation2 from '../../snippets/lightbox/installation-2.ts?raw';
 import quickStart from '../../snippets/lightbox/quick-start.tsx?raw';
@@ -143,19 +142,14 @@ import downloadbutton from '../../snippets/lightbox/downloadbutton.tsx?raw';
 
 <CodeBlock code={quickStart} language="tsx" />
 
-## 在线演示 [#live-demo]
-
 <Sandbox
   code={fullCode}
   title="LightboxPage.tsx"
-  height={500}
   stackblitzDeps={['@reelkit/react-lightbox']}
   stackblitzExtraDeps={{ 'lucide-react': '^0.562.0' }}
->
-  <LightboxDemo />
-</Sandbox>
+/>
 
-<Caption>点缩略图打开Lightbox。用方向键或滑动翻页。</Caption>
+想把图库以幻灯片播放并保存每张照片的原始文件，请查看[图库幻灯片示例](/docs/recipes/gallery-slideshow)。
 
 ## 视频幻灯片（按需开启） [#video-slides-opt-in]
 

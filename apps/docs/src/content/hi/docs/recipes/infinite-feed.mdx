@@ -1,0 +1,71 @@
+---
+title: इनफ़िनिट फ़ीड
+description: एक वर्टिकल फ़ीड जो दर्शक के अंत के पास पहुँचते ही अगला पेज लोड करती है, लोडिंग और एरर स्लाइड, रिक्वेस्ट रद्द करने और प्रीलोडिंग के साथ।
+---
+
+import { InfiniteFeedDemo } from '../../../../components/demos/InfiniteFeedDemo';
+import reactCode from '../../../snippets/recipes/infinite-feed/react.tsx?raw';
+import vueCode from '../../../snippets/recipes/infinite-feed/vue.vue?raw';
+import angularCode from '../../../snippets/recipes/infinite-feed/angular.ts?raw';
+import apiCode from '../../../snippets/recipes/infinite-feed/api.ts?raw';
+
+जो फ़ीड कभी ख़त्म नहीं होती, उसे दर्शक के देखते-देखते डेटा लाना पड़ता है: इतनी जल्दी कि अगली पोस्ट पहले से तैयार हो, जब कोई पेज आ रहा हो या फ़ेल हो जाए तब दिखाने के लिए कुछ हो, और फ़ीड हटने के बाद कोई रिक्वेस्ट चलती न रहे।
+
+## आज़माएँ [#try-it]
+
+हर वर्ज़न `./api` इम्पोर्ट करता है, जो आपके बैकएंड की जगह खड़ा है: `fetchPosts(page, signal)` पोस्ट का एक पेज लौटाता है और सिग्नल abort होते ही रुक जाता है। इसकी जगह अपने API का कॉल लगाएँ, और `failNextRequest` हटा दें, जो सिर्फ़ डेमो का फ़ेल-स्विच चलाता है।
+
+<CodeBlock code={apiCode} language="typescript" />
+
+<Callout type="warning" title="सैंपल मीडिया सिर्फ़ reelkit.dev पर चलता है">
+  `cdnUrl` cdn.reelkit.dev के लिंक बनाता है, जो अपनी फ़ाइलें सिर्फ़ ReelKit साइटों को देता है। आपके ऐप में ये इमेज लोड नहीं होंगी, इसलिए यह फ़ाइल कॉपी करने से पहले `image` को अपने मीडिया पर पॉइंट करें।
+</Callout>
+
+<FrameworkVariant for="react">
+<Sandbox code={reactCode} title="InfiniteFeed.tsx" height={560}>
+  <InfiniteFeedDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+<Sandbox code={vueCode} language="vue" framework="vue" title="InfiniteFeed.vue" height={560}>
+  <InfiniteFeedDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+<Sandbox code={angularCode} language="typescript" framework="angular" title="infinite-feed.component.ts" height={560}>
+  <InfiniteFeedDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<Caption>ऊपर स्वाइप करें या ↓ दबाएँ: अंत से तीन पोस्ट पहले नया पेज आ जाता है। एरर स्लाइड और उसका Retry देखने के लिए "Fail next request" दबाएँ।</Caption>
+
+## यह क्यों काम करता है [#why-it-works]
+
+- **गिनती बढ़ती है, स्लाइड नहीं।** `count` पोस्ट की संख्या से एक ज़्यादा है, और DOM में हमेशा सिर्फ़ तीन स्लाइड रहती हैं, इसलिए हज़ारों पोस्ट वाली फ़ीड की लागत दस पोस्ट वाली फ़ीड जितनी ही है। देखें [वर्चुअलाइज़ेशन](/docs/core/guide#virtualization)।
+- **आख़िरी स्लाइड स्टेटस है।** पोस्ट के बाद वाली अतिरिक्त स्लाइड पेज आते समय "Loading…" दिखाती है और फ़ेल होने पर Retry के साथ एरर, ताकि दर्शक कभी ख़ाली जगह में स्वाइप न करे। यह [itemBuilder](/docs/react/guide#itembuilder-pattern) का बस एक और केस है, जो वही रेंडर करता है जो index के पीछे है।
+- **स्लाइड बदलने पर पहले से डेटा लाना।** दर्शक के अंत से तीन पोस्ट दूर पहुँचते ही `afterChange` अगला पेज माँगता है। फ़ेल हुआ पेज Retry का इंतज़ार करता है, इसलिए आगे-पीछे स्वाइप करने से फ़ेल होने वाली रिक्वेस्ट दोबारा नहीं जाती। यह कॉलबैक [React](/docs/react/api#callbacks), [Vue](/docs/vue/api#events) और [Angular](/docs/angular/api#outputs) के बाक़ी इवेंट के साथ सूचीबद्ध है।
+- **key पोस्ट के साथ चलती है।** `keyExtractor` हर पोस्ट का id लौटाता है, इसलिए पीछे नया पेज जुड़ने पर स्लाइड अपना एलिमेंट बनाए रखती है, index के आधार पर दोबारा नहीं बनती। यह [React](/docs/react/api#reel-props), [Vue](/docs/vue/api#props) और [Angular](/docs/angular/api#inputs) तीनों में एक prop है।
+- **इमेज अपनी स्लाइड से पहले लोड होती हैं।** आगे वाली स्लाइड अभी माउंट नहीं होती, क्योंकि सिर्फ़ दिखने वाली रेंज माउंट होती है, जैसा [वर्चुअलाइज़ेशन](/docs/core/guide#virtualization) बताता है। इसलिए हर नए पेज की इमेज पेज आते ही माँग ली जाती हैं, और स्लाइड माउंट होने पर ब्राउज़र कैश से आती हैं।
+- **कुंजियाँ और व्हील जान-बूझकर बंद हैं।** `enableNavKeys` पूरी विंडो पर सुनता है और `enableWheel` पॉइंटर फ़ीड पर रहने तक पेज का स्क्रॉल रोक लेता है। दोनों पूरी स्क्रीन वाली फ़ीड के लिए ठीक हैं और किसी पेज के अंदर रखी फ़ीड से टकराते हैं, जैसी यह है, इसलिए यहाँ ये बंद हैं और दो बटन [Reel API](/docs/react/api#reelapi-methods) पर `prev()` और `next()` कॉल करते हैं। स्वाइप दोनों हालात में काम करता है।
+- **फ़ीड के बाद कुछ नहीं बचता।** हर रिक्वेस्ट के साथ एक [`AbortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController) जाता है, जो फ़ीड अनमाउंट होने पर abort हो जाता है, इसलिए देर से आया जवाब कभी हट चुकी फ़ीड में नहीं लिखता।
+
+<NextSteps
+  items={[
+    {
+      label: 'ग्रिड से प्लेयर तक',
+      path: '/docs/recipes/grid-to-player',
+      description: 'थंबनेल ग्रिड से फ़ुल-स्क्रीन प्लेयर खोलें और वहीं लौटें जहाँ आप थे',
+    },
+    {
+      label: 'फ़्रेमवर्क गाइड',
+      path: {
+        react: '/docs/react/guide',
+        vue: '/docs/vue/guide',
+        angular: '/docs/angular/guide',
+      },
+      description: 'इस रेसिपी के पीछे के सभी Reel prop और पैटर्न',
+    },
+  ]}
+/>

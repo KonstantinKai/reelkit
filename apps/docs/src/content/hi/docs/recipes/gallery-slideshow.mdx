@@ -1,0 +1,69 @@
+---
+title: गैलरी स्लाइडशो
+description: Lightbox में फ़ोटो गैलरी जो स्लाइडशो की तरह चलती है और हर फ़ोटो की मूल फ़ाइल डाउनलोड करती है।
+---
+
+import { GallerySlideshowDemo } from '../../../../components/demos/GallerySlideshowDemo';
+import reactCode from '../../../snippets/recipes/gallery-slideshow/react.tsx?raw';
+import vueCode from '../../../snippets/recipes/gallery-slideshow/vue.vue?raw';
+import angularCode from '../../../snippets/recipes/gallery-slideshow/angular.ts?raw';
+import apiCode from '../../../snippets/recipes/gallery-slideshow/api.ts?raw';
+
+एल्बम फ़ुल स्क्रीन में खुलता है और अपने-आप चलता है, एक के बाद एक फ़ोटो, जब तक दर्शक उसे रोक न दे। कोई भी फ़ोटो सेव की जा सकती है, और सेव होती है सही नाम वाली मूल फ़ाइल, न कि स्क्रीन पर दिखने वाली छोटी कॉपी।
+
+## आज़माएँ [#try-it]
+
+हर वर्ज़न `./api` इम्पोर्ट करता है, जो आपके बैकएंड की जगह खड़ा है: `photos` Lightbox के `LightboxItem` के आकार में एक एल्बम है, हर फ़ोटो के साथ दिखाने का पता, डाउनलोड होने वाली फ़ाइल और सेव करने का नाम। इसकी जगह अपना एल्बम लगाएँ।
+
+<CodeBlock code={apiCode} language="typescript" />
+
+<Callout type="warning" title="सैंपल मीडिया सिर्फ़ reelkit.dev पर चलता है">
+  `cdnUrl` cdn.reelkit.dev के लिंक बनाता है, जो अपनी फ़ाइलें सिर्फ़ ReelKit साइटों को देता है। आपके ऐप में ये फ़ोटो न लोड होंगी न डाउनलोड, इसलिए यह फ़ाइल कॉपी करने से पहले `src` और `downloadUrl` को अपनी फ़ाइलों पर पॉइंट करें।
+</Callout>
+
+<FrameworkVariant for="react">
+<Sandbox code={reactCode} title="GallerySlideshow.tsx" height={560}>
+  <GallerySlideshowDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+<Sandbox code={vueCode} language="vue" framework="vue" title="GallerySlideshow.vue" height={560}>
+  <GallerySlideshowDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+<Sandbox code={angularCode} language="typescript" framework="angular" title="gallery-slideshow.component.ts" height={560}>
+  <GallerySlideshowDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<Caption>कोई फ़ोटो खोलें: स्लाइडशो तुरंत शुरू होता है और हर तीन सेकंड में आगे बढ़ता है। बार से उसे रोकें, या डाउनलोड बटन से फ़ोटो सेव करें।</Caption>
+
+## यह क्यों काम करता है [#why-it-works]
+
+- **दो prop से Lightbox डाउनलोड वाला स्लाइडशो बन जाता है।** `autoAdvance` Lightbox खुलते ही चलाना शुरू कर देता है, और `showDownload` वह बटन जोड़ता है जो मौजूदा फ़ोटो सेव करता है। डिफ़ॉल्ट बार में play/pause बटन और डाउनलोड बटन अपने-आप आ जाते हैं। दोनों prop [React](/docs/lightbox#auto-advance), [Vue](/docs/vue-lightbox#auto-advance) और [Angular](/docs/angular-lightbox#auto-advance) के लिए समझाए गए हैं, हर पेज पर ठीक बाद डाउनलोड का सेक्शन है।
+- **स्लाइडशो हर फ़ोटो का इंतज़ार करता है।** `autoAdvanceInterval` उस पल से गिना जाता है जब फ़ोटो लोड हो चुकी हो, इसलिए धीमा कनेक्शन कोई तस्वीर किसी के देखने से पहले नहीं छोड़ता। टाइमिंग core का `createSlideshowController` है, जो [ऑटोप्ले गाइड](/docs/core/guide#autoplay) में बताया गया है।
+- **कंट्रोल दर्शक के हाथ में रहता है।** स्वाइप करने या कोई कुंजी दबाने से हाथ से आगे बढ़ते हैं और अगली फ़ोटो का इंटरवल शून्य से शुरू होता है, स्लाइडशो चालू रहता है। [PlayPauseButton](/docs/lightbox#playpausebutton) उसे रोकता और फिर चलाता है, और किसी बटन या कैप्शन पर टिका पॉइंटर उसे तब तक रोके रखता है जब तक वहाँ टिका है। आख़िरी फ़ोटो पर यह रुक जाता है, जब तक `loop` सेट न हो।
+- **छोटी कॉपी दिखाएँ, मूल फ़ाइल सेव करें।** `src` वह है जो स्क्रीन दिखाती है, इसलिए छोटी की हुई कॉपी गैलरी को तेज़ रखती है। `downloadUrl` वह है जो बटन सेव करता है, और `downloadName` फ़ाइल का नाम, ताकि दर्शक के पास पूरी फ़ोटो ऐसे नाम से रहे जो बताए कि वह क्या है। सैंपल CDN एक ही साइज़ देता है, इसलिए यहाँ दोनों एक ही फ़ाइल की ओर इशारा करते हैं। ये फ़ील्ड [LightboxItem टाइप](/docs/lightbox#lightboxitem) में हैं।
+- **दूसरे origin से डाउनलोड के लिए CORS चाहिए।** दूसरे origin के लिंक पर `download` एट्रिब्यूट अनदेखा हो जाता है, इसलिए Lightbox फ़ाइल fetch करके सेव करता है। इसके लिए फ़ाइल के सर्वर को आपकी साइट के लिए `Access-Control-Allow-Origin` के साथ जवाब देना होगा। ऐसा न होने पर फ़ोटो नए टैब में खुलती है, ताकि दर्शक फिर भी उसे सेव कर सके। देखें [`downloadFile`](/docs/core/guide#download)।
+
+<NextSteps
+  items={[
+    {
+      label: 'स्टोरीज़ ट्रे',
+      path: '/docs/recipes/stories-tray',
+      description: 'रिंग की पंक्ति जो Stories Player खोलती है और याद रखती है कि क्या देखा गया',
+    },
+    {
+      label: 'Lightbox',
+      path: {
+        react: '/docs/lightbox',
+        vue: '/docs/vue-lightbox',
+        angular: '/docs/angular-lightbox',
+      },
+      description: 'Lightbox के सभी prop, स्लॉट और हिस्से',
+    },
+  ]}
+/>

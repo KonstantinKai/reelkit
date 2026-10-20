@@ -1,0 +1,69 @@
+---
+title: ギャラリーのスライドショー
+description: スライドショーとして再生でき、各写真の元ファイルをダウンロードできる Lightbox のフォトギャラリー。
+---
+
+import { GallerySlideshowDemo } from '../../../../components/demos/GallerySlideshowDemo';
+import reactCode from '../../../snippets/recipes/gallery-slideshow/react.tsx?raw';
+import vueCode from '../../../snippets/recipes/gallery-slideshow/vue.vue?raw';
+import angularCode from '../../../snippets/recipes/gallery-slideshow/angular.ts?raw';
+import apiCode from '../../../snippets/recipes/gallery-slideshow/api.ts?raw';
+
+アルバムを全画面で開くと、視聴者が一時停止するまで写真が 1 枚ずつ自動で再生されます。どの写真も保存でき、保存されるのは画面に表示している縮小版ではなく、わかりやすい名前を付けた元のファイルです。
+
+## 試してみる [#try-it]
+
+どのバージョンも `./api` をインポートしています。これはバックエンドの代わりで、`photos` は Lightbox の `LightboxItem` の形にしたアルバムです。各写真には、表示するアドレス、ダウンロードするファイル、保存するときの名前が入っています。自分のアルバムに置き換えてください。
+
+<CodeBlock code={apiCode} language="typescript" />
+
+<Callout type="warning" title="サンプルのメディアは reelkit.dev でしか使えません">
+  `cdnUrl` が作るのは cdn.reelkit.dev へのリンクで、このサーバーは ReelKit のサイトにしかファイルを返しません。お使いのアプリでは写真の表示もダウンロードもできないので、このファイルをコピーする前に `src` と `downloadUrl` を自分のファイルに向けてください。
+</Callout>
+
+<FrameworkVariant for="react">
+<Sandbox code={reactCode} title="GallerySlideshow.tsx" height={560}>
+  <GallerySlideshowDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+<Sandbox code={vueCode} language="vue" framework="vue" title="GallerySlideshow.vue" height={560}>
+  <GallerySlideshowDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+<Sandbox code={angularCode} language="typescript" framework="angular" title="gallery-slideshow.component.ts" height={560}>
+  <GallerySlideshowDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<Caption>写真を開くと、すぐにスライドショーが始まり、3 秒ごとに次へ進みます。バーから一時停止するか、ダウンロードボタンで写真を保存してください。</Caption>
+
+## 仕組み [#why-it-works]
+
+- **2 つのプロパティで、Lightbox がダウンロード付きのスライドショーになります。** `autoAdvance` は Lightbox が開いた瞬間に再生を始め、`showDownload` は表示中の写真を保存するボタンを加えます。デフォルトのバーには、再生・一時停止ボタンとダウンロードボタンが自動で加わります。どちらのプロパティも [React](/docs/lightbox#auto-advance)、[Vue](/docs/vue-lightbox#auto-advance)、[Angular](/docs/angular-lightbox#auto-advance) で説明しており、各ページのすぐ後ろにダウンロードの項があります。
+- **スライドショーは写真ごとに待ちます。** `autoAdvanceInterval` は写真の読み込みが終わった時点から数えるので、接続が遅くても、誰も見ていない写真が飛ばされることはありません。タイミングを決めているのは core の `createSlideshowController` で、[自動再生のガイド](/docs/core/guide#autoplay)で説明しています。
+- **主導権は視聴者にあります。** スワイプやキー操作で手動で進むと、スライドショーは続いたまま、次の写真の間隔が 0 から数え直されます。[PlayPauseButton](/docs/lightbox#playpausebutton) で止めたり再開したりでき、ポインターがボタンやキャプションの上にあるあいだは待機します。`loop` を設定していなければ、最後の写真で止まります。
+- **小さなコピーを表示し、元のファイルを保存します。** `src` は画面に表示するものなので、縮小版にすればギャラリーは軽くなります。`downloadUrl` はボタンが保存するもの、`downloadName` は保存されるファイル名なので、視聴者は内容のわかる名前で元の写真を手元に残せます。サンプルの CDN は 1 つのサイズしか配信しないので、ここでは両方が同じファイルを指しています。これらのフィールドは [LightboxItem 型](/docs/lightbox#lightboxitem)に載っています。
+- **別オリジンからのダウンロードには CORS が必要です。** 別オリジンへのリンクでは `download` 属性が無視されるので、Lightbox はファイルを取得して保存します。そのためには、ファイルのサーバーがお使いのサイトに対して `Access-Control-Allow-Origin` を返す必要があります。返さない場合は代わりに写真を新しいタブで開くので、視聴者はそこから保存できます。[`downloadFile`](/docs/core/guide#download) を参照してください。
+
+<NextSteps
+  items={[
+    {
+      label: 'ストーリーズトレイ',
+      path: '/docs/recipes/stories-tray',
+      description: 'Stories Player を開き、視聴済みを覚えておくリングの列',
+    },
+    {
+      label: 'Lightbox',
+      path: {
+        react: '/docs/lightbox',
+        vue: '/docs/vue-lightbox',
+        angular: '/docs/angular-lightbox',
+      },
+      description: 'Lightbox のプロパティ、スロット、部品のすべて',
+    },
+  ]}
+/>

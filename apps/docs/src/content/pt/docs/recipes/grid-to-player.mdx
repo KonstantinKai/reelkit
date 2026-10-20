@@ -1,0 +1,70 @@
+---
+title: Da grade ao player
+description: Uma grade de miniaturas que abre o player em tela cheia no item tocado e leva o usuário de volta ao último item que assistiu.
+---
+
+import { GridToPlayerDemo } from '../../../../components/demos/GridToPlayerDemo';
+import reactCode from '../../../snippets/recipes/grid-to-player/react.tsx?raw';
+import vueCode from '../../../snippets/recipes/grid-to-player/vue.vue?raw';
+import angularCode from '../../../snippets/recipes/grid-to-player/angular.ts?raw';
+import apiCode from '../../../snippets/recipes/grid-to-player/api.ts?raw';
+
+Uma página de perfil ou um resultado de busca mostra os posts como uma grade de miniaturas. Tocar em uma deve abri-la em tela cheia, deixar o usuário seguir deslizando pelo resto e, quando ele fechar o player, deixá-lo no post em que parou, não no post em que começou.
+
+## Experimente [#try-it]
+
+Todas as versões importam `./api`, que faz o papel do seu backend: `posts` é a lista que um perfil ou uma busca carregaria, no formato do `ContentItem` do player, e `thumbnailOf` escolhe a imagem que uma célula da grade mostra. Troque os dois pelos seus próprios dados.
+
+<CodeBlock code={apiCode} language="typescript" />
+
+<Callout type="warning" title="A mídia de exemplo só funciona em reelkit.dev">
+  `cdnUrl` monta links para cdn.reelkit.dev, que só entrega seus arquivos aos sites do ReelKit. No seu app essas imagens e vídeos não carregam, então aponte `media` e `avatar` para os seus próprios arquivos antes de copiar este arquivo.
+</Callout>
+
+<FrameworkVariant for="react">
+<Sandbox code={reactCode} title="GridToPlayer.tsx" height={560}>
+  <GridToPlayerDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+<Sandbox code={vueCode} language="vue" framework="vue" title="GridToPlayer.vue" height={560}>
+  <GridToPlayerDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+<Sandbox code={angularCode} language="typescript" framework="angular" title="grid-to-player.component.ts" height={560}>
+  <GridToPlayerDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<Caption>Abra um post, deslize ou aperte ↓ algumas vezes e feche com Escape: a grade rola até o post em que você parou e a miniatura dele recebe o foco.</Caption>
+
+## Por que funciona [#why-it-works]
+
+- **O player abre onde o usuário tocou.** `initialIndex` recebe o índice da miniatura e a lista inteira vai para `content`, então o usuário pode continuar deslizando além do post que escolheu. As duas são props do player em [React](/docs/reel-player#reelplayeroverlayprops-props), [Vue](/docs/vue-reel-player#reelplayeroverlay-props) e [Angular](/docs/angular-reel-player#rkreelplayeroverlaycomponent-inputs).
+- **A grade sabe onde o usuário parou.** O callback de troca de slide informa cada post que o usuário alcança, e a receita guarda o último. Ele aparece entre os [callbacks](/docs/reel-player#callbacks), [eventos](/docs/vue-reel-player#events) e [outputs](/docs/angular-reel-player#rkreelplayeroverlaycomponent-outputs) do player.
+- **O foco volta para a miniatura certa.** Ao fechar, o player devolve o foco ao elemento que o abriu, como manda a sua [acessibilidade](/docs/reel-player#accessibility). Essa devolução acontece depois que o handler de fechamento rodou, então um foco definido dentro do handler seria desfeito. A receita espera uma tarefa, rola a miniatura do último post até ficar visível e coloca o foco nela.
+- **As miniaturas são botões.** Cada célula é um `<button>` com rótulo, então a grade funciona com Tab e Enter, um leitor de tela anuncia o post que ela abre e o player tem um elemento focável para devolver o foco, como descreve a seção de [acessibilidade](/docs/reel-player#accessibility).
+- **Uma célula da grade precisa de imagem, não de vídeo.** `thumbnailOf` usa o `poster` de um vídeo, um campo de [MediaItem](/docs/reel-player#mediaitem), e uma imagem como ela é, então a grade nunca carrega um vídeo que não vai tocar.
+- **Quer o post aberto na barra de endereço?** O player com [estado na URL](/docs/reel-player#url-state) coloca o post visível na URL, para ele poder ser compartilhado e fechado com o botão voltar.
+
+<NextSteps
+  items={[
+    {
+      label: 'Galeria com apresentação',
+      path: '/docs/recipes/gallery-slideshow',
+      description: 'a mesma grade abrindo um Lightbox que roda como apresentação de slides',
+    },
+    {
+      label: 'Reel Player',
+      path: {
+        react: '/docs/reel-player',
+        vue: '/docs/vue-reel-player',
+        angular: '/docs/angular-reel-player',
+      },
+      description: 'todas as props, slots e partes do player',
+    },
+  ]}
+/>

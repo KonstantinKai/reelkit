@@ -1,0 +1,70 @@
+---
+title: Grid to Player
+description: A thumbnail grid that opens the full-screen reel player at the tapped item and returns the viewer to the last item they watched.
+---
+
+import { GridToPlayerDemo } from '../../../../components/demos/GridToPlayerDemo';
+import reactCode from '../../../snippets/recipes/grid-to-player/react.tsx?raw';
+import vueCode from '../../../snippets/recipes/grid-to-player/vue.vue?raw';
+import angularCode from '../../../snippets/recipes/grid-to-player/angular.ts?raw';
+import apiCode from '../../../snippets/recipes/grid-to-player/api.ts?raw';
+
+A profile page or a search result shows posts as a grid of thumbnails. Tapping one should open it full screen, let the viewer swipe on through the rest, and, when they close the player, leave them at the post they stopped at rather than the one they started from.
+
+## Try it [#try-it]
+
+Every version imports `./api`, which stands in for your backend: `posts` is the list a profile or a search would load, in the shape of the player's `ContentItem`, and `thumbnailOf` picks the picture a grid cell shows. Replace both with your own data.
+
+<CodeBlock code={apiCode} language="typescript" />
+
+<Callout type="warning" title="The sample media works only on reelkit.dev">
+  `cdnUrl` builds links to cdn.reelkit.dev, which serves its files only to the ReelKit sites. In your app those images and videos fail to load, so point `media` and `avatar` at your own files before you copy this file.
+</Callout>
+
+<FrameworkVariant for="react">
+<Sandbox code={reactCode} title="GridToPlayer.tsx" height={560}>
+  <GridToPlayerDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+<Sandbox code={vueCode} language="vue" framework="vue" title="GridToPlayer.vue" height={560}>
+  <GridToPlayerDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+<Sandbox code={angularCode} language="typescript" framework="angular" title="grid-to-player.component.ts" height={560}>
+  <GridToPlayerDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<Caption>Open a post, swipe or press ↓ a few times, then close with Escape: the grid scrolls to the post you stopped at and its thumbnail has focus.</Caption>
+
+## Why it works [#why-it-works]
+
+- **The player opens where the viewer tapped.** `initialIndex` takes the index of the thumbnail, and the whole list goes to `content`, so the viewer can keep swiping past the post they chose. Both are props of the player in [React](/docs/reel-player#reelplayeroverlayprops-props), [Vue](/docs/vue-reel-player#reelplayeroverlay-props), and [Angular](/docs/angular-reel-player#rkreelplayeroverlaycomponent-inputs).
+- **The grid knows where the viewer stopped.** The slide change callback reports every post the viewer reaches, and the recipe keeps the last one. It is listed with the player's [callbacks](/docs/reel-player#callbacks), [events](/docs/vue-reel-player#events), and [outputs](/docs/angular-reel-player#rkreelplayeroverlaycomponent-outputs).
+- **Focus comes back to the right thumbnail.** As it closes, the player returns focus to the element that opened it, which is its [accessibility](/docs/reel-player#accessibility) contract. That return happens after the close handler has run, so focus set inside the handler would be undone. The recipe waits one task, then scrolls the last post's thumbnail into view and focuses it.
+- **Thumbnails are buttons.** Each cell is a `<button>` with a label, so the grid works with Tab and Enter, a screen reader names the post it opens, and the player has a focusable element to hand focus back to, as its [accessibility](/docs/reel-player#accessibility) section describes.
+- **A grid cell needs a picture, not a video.** `thumbnailOf` uses a video's `poster`, a field of [MediaItem](/docs/reel-player#mediaitem), and an image as it is, so the grid never loads a video it does not play.
+- **Want the open post in the address bar?** The [URL state](/docs/reel-player#url-state) player puts the visible post in the URL, so it can be shared and closed with the back button.
+
+<NextSteps
+  items={[
+    {
+      label: 'Gallery Slideshow',
+      path: '/docs/recipes/gallery-slideshow',
+      description: 'the same grid opening a lightbox that plays as a slideshow',
+    },
+    {
+      label: 'Reel Player',
+      path: {
+        react: '/docs/reel-player',
+        vue: '/docs/vue-reel-player',
+        angular: '/docs/angular-reel-player',
+      },
+      description: 'every prop, slot, and part of the player',
+    },
+  ]}
+/>

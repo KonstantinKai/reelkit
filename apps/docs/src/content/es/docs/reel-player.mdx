@@ -4,7 +4,6 @@ description: Overlay de reproductor de vídeo a pantalla completa al estilo de T
 ---
 
 import { Zap, Play, Volume2, Layout, Clock, Image, Layers, Ratio, Monitor, Code, Settings, Link2 } from 'lucide-react';
-import { ReelPlayerDemo } from '../../../components/demos/ReelPlayerDemo';
 import installation from '../../snippets/reel-player/installation.sh?raw';
 import installation2 from '../../snippets/reel-player/installation-2.ts?raw';
 import quickStart from '../../snippets/reel-player/quick-start.tsx?raw';
@@ -135,19 +134,14 @@ El componente `ReelPlayerOverlay` renderiza un overlay de reproductor a pantalla
 
 <CodeBlock code={quickStart} language="tsx" />
 
-## Demo en vivo [#live-demo]
-
 <Sandbox
   code={fullCode}
   title="ReelPlayerPage.tsx"
-  height={500}
   stackblitzDeps={['@reelkit/react-reel-player']}
   stackblitzExtraDeps={{ 'lucide-react': '^0.562.0' }}
->
-  <ReelPlayerDemo />
-</Sandbox>
+/>
 
-<Caption>Pulsa una miniatura para abrir el reproductor a pantalla completa. Pulsa Escape o el botón de cerrar para volver.</Caption>
+Para el flujo completo, una cuadrícula de miniaturas que abre el reproductor y devuelve al usuario adonde se quedó, consulta la [receta De la cuadrícula al reproductor](/docs/recipes/grid-to-player).
 
 ## Personalización [#customization]
 

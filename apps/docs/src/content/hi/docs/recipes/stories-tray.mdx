@@ -1,0 +1,70 @@
+---
+title: स्टोरीज़ ट्रे
+description: स्टोरी रिंग की पंक्ति जो Stories Player खोलती है और रीलोड के बाद भी याद रखती है कि दर्शक ने क्या देखा।
+---
+
+import { StoriesTrayDemo } from '../../../../components/demos/StoriesTrayDemo';
+import reactCode from '../../../snippets/recipes/stories-tray/react.tsx?raw';
+import vueCode from '../../../snippets/recipes/stories-tray/vue.vue?raw';
+import angularCode from '../../../snippets/recipes/stories-tray/angular.ts?raw';
+import apiCode from '../../../snippets/recipes/stories-tray/api.ts?raw';
+
+फ़ीड के ऊपर रिंग की पंक्ति: हर व्यक्ति की एक, चमकीली जब तक उसके पास कुछ नया है, और फीकी जब दर्शक सब देख चुका हो। रिंग दबाने पर स्टोरीज़ पहली अनदेखी स्टोरी से खुलती हैं, और अगली बार, रीलोड के बाद भी, याद रहता है कि दर्शक कहाँ तक पहुँचा था।
+
+## आज़माएँ [#try-it]
+
+हर वर्ज़न `./api` इम्पोर्ट करता है, जो आपके बैकएंड की जगह खड़ा है: `groups` वे लोग हैं जिन्हें दर्शक फ़ॉलो करता है, हर एक की पोस्ट की गई स्टोरीज़ के साथ, प्लेयर के `StoriesGroup` के आकार में। इसकी जगह अपनी फ़ीड लगाएँ।
+
+<CodeBlock code={apiCode} language="typescript" />
+
+<Callout type="warning" title="सैंपल मीडिया सिर्फ़ reelkit.dev पर चलता है">
+  `cdnUrl` cdn.reelkit.dev के लिंक बनाता है, जो अपनी फ़ाइलें सिर्फ़ ReelKit साइटों को देता है। आपके ऐप में ये अवतार और स्टोरीज़ लोड नहीं होंगी, इसलिए यह फ़ाइल कॉपी करने से पहले `avatar` और `src` को अपनी फ़ाइलों पर पॉइंट करें।
+</Callout>
+
+<FrameworkVariant for="react">
+<Sandbox code={reactCode} title="StoriesTray.tsx" height={560}>
+  <StoriesTrayDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+<Sandbox code={vueCode} language="vue" framework="vue" title="StoriesTray.vue" height={560}>
+  <StoriesTrayDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+<Sandbox code={angularCode} language="typescript" framework="angular" title="stories-tray.component.ts" height={560}>
+  <StoriesTrayDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<Caption>किसी को अंत तक देखें और प्लेयर बंद करें: उसकी रिंग फीकी हो जाती है, फ़ोकस आख़िरी देखे गए व्यक्ति पर आता है, और दोनों रीलोड के बाद भी बने रहते हैं। "Forget what was seen" से सब फिर से शुरू होता है।</Caption>
+
+## यह क्यों काम करता है [#why-it-works]
+
+- **एक कंट्रोलर दोनों के लिए याद रखता है।** `createStoriesViewedStateController` एक बार बनता है और `viewed` के रूप में रिंग लिस्ट और प्लेयर दोनों को जाता है। रिंग उससे पढ़ती हैं, प्लेयर दिखाई गई हर स्टोरी उसमें दर्ज करता है, और वह यह सब `localStorage` में `storageKey` के तहत रखता है, इसलिए रीलोड से कुछ नहीं बदलता। देखी गई चीज़ें याद रखना: [React](/docs/stories-player#remembering-what-was-seen), [Vue](/docs/vue-stories-player#remembering-what-was-seen) और [Angular](/docs/angular-stories-player#remembering-what-was-seen)।
+- **प्लेयर वहीं से शुरू करता है जहाँ दर्शक ने छोड़ा था।** `viewed` मिलने पर प्लेयर व्यक्ति को उसकी पहली अनदेखी स्टोरी पर खोलता है, या सब देख लिया हो तो शुरू से। रेसिपी सिर्फ़ व्यक्ति देती है, कभी स्टोरी का index नहीं; उसका जवाब कंट्रोलर का `resumeStoryIndex` देता है, देखें [उसका रेफ़रेंस](/docs/stories-core#storiesviewedstatecontroller)।
+- **रिंग की दो हालतें होती हैं।** चमकीली जब तक देखने को कुछ बचा है, फीकी जब व्यक्ति को अंत तक देख लिया गया हो। व्यक्ति के अंदर की प्रगति प्लेयर का प्रोग्रेस बार दिखाता है, रिंग नहीं। देखें [StoriesRing](/docs/stories-player#storiesring)।
+- **कंट्रोलर के लिए कोई अतिरिक्त वायरिंग नहीं।** प्लेयर हमेशा रेंडर होता है और `isOpen` से खुलता है, इसलिए पहली स्टोरी चुनने से पहले वह सहेजी हुई स्टेट ख़ुद पढ़ लेता है। उसे सिर्फ़ खुले रहने तक माउंट करें, तो पेज को पहले कंट्रोलर अटैच करना होगा, जैसा [कंट्रोलर का रेफ़रेंस](/docs/stories-core#storiesviewedstatecontroller) बताता है।
+- **फ़ोकस सही रिंग पर लौटता है।** बंद होते समय प्लेयर फ़ोकस उस रिंग को लौटा देता है जिसने उसे खोला था, जैसा उसका [ऐक्सेसिबिलिटी](/docs/stories-player#accessibility) सेक्शन बताता है। यह close हैंडलर चलने के बाद होता है, इसलिए रेसिपी एक टास्क रुकती है, फिर आख़िरी देखे गए व्यक्ति की रिंग को स्क्रॉल करके दिखाती है और उस पर फ़ोकस करती है।
+- **इसे और कहाँ रखा जा सकता है।** `storage` आपका अपना अडैप्टर लेता है, जैसे कोई सर्वर, ताकि देखी गई चीज़ें दर्शक के साथ हर डिवाइस पर चलें। `ttlMs` किसी व्यक्ति की एंट्री को एक्सपायर होने देता है, और `maxTracks` तय करता है कि कितने लोग रखे जाएँ। ये [कंट्रोलर कॉन्फ़िग](/docs/stories-core#config-storiesviewedstatecontrollerconfig) में हैं।
+
+<NextSteps
+  items={[
+    {
+      label: 'इनफ़िनिट फ़ीड',
+      path: '/docs/recipes/infinite-feed',
+      description: 'फ़ीड के अंत के पास पहुँचते ही और लोड करें',
+    },
+    {
+      label: 'Stories Player',
+      path: {
+        react: '/docs/stories-player',
+        vue: '/docs/vue-stories-player',
+        angular: '/docs/angular-stories-player',
+      },
+      description: 'प्लेयर के सभी prop, स्लॉट और हिस्से',
+    },
+  ]}
+/>

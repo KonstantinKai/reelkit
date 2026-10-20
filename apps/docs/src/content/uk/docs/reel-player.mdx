@@ -4,7 +4,6 @@ description: 'Повноекранний відеоплеєр у стилі Inst
 ---
 
 import { Zap, Play, Volume2, Layout, Clock, Image, Layers, Ratio, Monitor, Code, Settings, Link2 } from 'lucide-react';
-import { ReelPlayerDemo } from '../../../components/demos/ReelPlayerDemo';
 import installation from '../../snippets/reel-player/installation.sh?raw';
 import installation2 from '../../snippets/reel-player/installation-2.ts?raw';
 import quickStart from '../../snippets/reel-player/quick-start.tsx?raw';
@@ -143,19 +142,14 @@ The `ReelPlayerOverlay` рендерить повноекранний оверл
 
 <CodeBlock code={quickStart} language="tsx" />
 
-## Демо наживо [#live-demo]
-
 <Sandbox
   code={fullCode}
   title="ReelPlayerPage.tsx"
-  height={500}
   stackblitzDeps={['@reelkit/react-reel-player']}
   stackblitzExtraDeps={{ 'lucide-react': '^0.562.0' }}
->
-  <ReelPlayerDemo />
-</Sandbox>
+/>
 
-<Caption>Натисніть мініатюру, щоб відкрити повноекранний плеєр. Escape або кнопка закриття повертають назад.</Caption>
+Повний сценарій, сітку мініатюр, що відкриває плеєр і повертає глядача туди, де він зупинився, показує [рецепт «Від сітки до плеєра»](/docs/recipes/grid-to-player).
 
 ## Customization [#customization]
 

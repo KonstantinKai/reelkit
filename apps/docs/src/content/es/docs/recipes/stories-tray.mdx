@@ -1,0 +1,70 @@
+---
+title: Bandeja de historias
+description: Una fila de anillos de historias que abre el reproductor y recuerda lo que el usuario ya vio, incluso tras recargar.
+---
+
+import { StoriesTrayDemo } from '../../../../components/demos/StoriesTrayDemo';
+import reactCode from '../../../snippets/recipes/stories-tray/react.tsx?raw';
+import vueCode from '../../../snippets/recipes/stories-tray/vue.vue?raw';
+import angularCode from '../../../snippets/recipes/stories-tray/angular.ts?raw';
+import apiCode from '../../../snippets/recipes/stories-tray/api.ts?raw';
+
+La fila de anillos en lo alto de un feed: uno por persona, brillante mientras tiene algo nuevo y apagado cuando el usuario ya lo ha visto todo. Al pulsar un anillo, las stories se abren en la primera que aún no se ha visto, y la siguiente visita, incluso tras recargar, recuerda hasta dónde llegó el usuario.
+
+## Pruébalo [#try-it]
+
+Todas las versiones importan `./api`, que sustituye a tu backend: `groups` son las personas que sigue el usuario con las stories que publicó cada una, con la forma del `StoriesGroup` del reproductor. Cámbialo por tu propio feed.
+
+<CodeBlock code={apiCode} language="typescript" />
+
+<Callout type="warning" title="Los medios de ejemplo solo funcionan en reelkit.dev">
+  `cdnUrl` crea enlaces a cdn.reelkit.dev, que solo sirve sus archivos a los sitios de ReelKit. En tu app esos avatares y stories no cargan, así que apunta `avatar` y `src` a tus propios archivos antes de copiar este archivo.
+</Callout>
+
+<FrameworkVariant for="react">
+<Sandbox code={reactCode} title="StoriesTray.tsx" height={560}>
+  <StoriesTrayDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+<Sandbox code={vueCode} language="vue" framework="vue" title="StoriesTray.vue" height={560}>
+  <StoriesTrayDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+<Sandbox code={angularCode} language="typescript" framework="angular" title="stories-tray.component.ts" height={560}>
+  <StoriesTrayDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<Caption>Mira a alguien hasta el final y cierra el reproductor: su anillo se apaga, el foco cae en la última persona que viste y ambas cosas sobreviven a una recarga. "Forget what was seen" empieza de cero.</Caption>
+
+## Por qué funciona [#why-it-works]
+
+- **Un controlador recuerda para ambos.** `createStoriesViewedStateController` se crea una vez y va a la lista de anillos y al reproductor como `viewed`. Los anillos leen de él, el reproductor anota en él cada story que muestra y lo guarda en `localStorage` bajo `storageKey`, así una recarga no cambia nada. Consulta cómo recordar lo visto en [React](/docs/stories-player#remembering-what-was-seen), [Vue](/docs/vue-stories-player#remembering-what-was-seen) y [Angular](/docs/angular-stories-player#remembering-what-was-seen).
+- **El reproductor sigue donde lo dejó el usuario.** Con `viewed`, el reproductor abre a una persona en su primera story aún no vista, o desde el principio cuando ya lo vio todo. La receta solo pasa la persona, nunca un índice de story; eso lo responde el `resumeStoryIndex` del controlador, consulta [su referencia](/docs/stories-core#storiesviewedstatecontroller).
+- **Un anillo tiene dos estados.** Brillante mientras queda algo por ver, apagado cuando una persona se ha visto hasta el final. El progreso dentro de una persona es la barra de progreso del reproductor, no el anillo. Consulta [StoriesRing](/docs/stories-player#storiesring).
+- **Sin conexiones extra para el controlador.** El reproductor se renderiza siempre y se abre con `isOpen`, así lee el estado guardado por sí mismo antes de elegir la primera story. Si lo montas solo mientras está abierto, la página tiene que conectar antes el controlador, como explica [la referencia del controlador](/docs/stories-core#storiesviewedstatecontroller).
+- **El foco vuelve al anillo correcto.** Al cerrarse, el reproductor devuelve el foco al anillo que lo abrió, como describe su sección de [accesibilidad](/docs/stories-player#accessibility). Eso ocurre después de ejecutarse el handler de cierre, así que la receta espera una tarea y luego desplaza hasta el anillo de la última persona vista y le da el foco.
+- **Dónde más se puede guardar.** `storage` acepta tu propio adaptador, un servidor por ejemplo, para que lo visto siga al usuario entre dispositivos. `ttlMs` hace que la entrada de una persona caduque y `maxTracks` limita cuántas personas se guardan. Están en la [configuración del controlador](/docs/stories-core#config-storiesviewedstatecontrollerconfig).
+
+<NextSteps
+  items={[
+    {
+      label: 'Feed infinito',
+      path: '/docs/recipes/infinite-feed',
+      description: 'carga más contenido cuando el usuario se acerca al final de un feed',
+    },
+    {
+      label: 'Stories Player',
+      path: {
+        react: '/docs/stories-player',
+        vue: '/docs/vue-stories-player',
+        angular: '/docs/angular-stories-player',
+      },
+      description: 'cada prop, slot y parte del reproductor',
+    },
+  ]}
+/>

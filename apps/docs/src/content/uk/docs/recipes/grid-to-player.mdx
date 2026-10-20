@@ -1,0 +1,70 @@
+---
+title: Від сітки до плеєра
+description: Сітка мініатюр, що відкриває повноекранний плеєр на вибраному елементі й повертає глядача до останнього переглянутого.
+---
+
+import { GridToPlayerDemo } from '../../../../components/demos/GridToPlayerDemo';
+import reactCode from '../../../snippets/recipes/grid-to-player/react.tsx?raw';
+import vueCode from '../../../snippets/recipes/grid-to-player/vue.vue?raw';
+import angularCode from '../../../snippets/recipes/grid-to-player/angular.ts?raw';
+import apiCode from '../../../snippets/recipes/grid-to-player/api.ts?raw';
+
+Сторінка профілю чи результати пошуку показують дописи сіткою мініатюр. Натискання на мініатюру має відкрити допис на весь екран, дати глядачеві гортати далі решту й, коли він закриє плеєр, залишити його на дописі, де він зупинився, а не на тому, з якого почав.
+
+## Спробуйте [#try-it]
+
+Кожна версія імпортує `./api`, що заміняє ваш бекенд: `posts` — список, який завантажив би профіль чи пошук, у формі `ContentItem` плеєра, а `thumbnailOf` вибирає зображення для клітинки сітки. Замініть обидва власними даними.
+
+<CodeBlock code={apiCode} language="typescript" />
+
+<Callout type="warning" title="Зразкові медіа працюють лише на reelkit.dev">
+  `cdnUrl` будує посилання на cdn.reelkit.dev, який віддає файли лише сайтам ReelKit. У вашому застосунку ці зображення й відео не завантажаться, тож перш ніж копіювати цей файл, спрямуйте `media` та `avatar` на власні файли.
+</Callout>
+
+<FrameworkVariant for="react">
+<Sandbox code={reactCode} title="GridToPlayer.tsx" height={560}>
+  <GridToPlayerDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+<Sandbox code={vueCode} language="vue" framework="vue" title="GridToPlayer.vue" height={560}>
+  <GridToPlayerDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+<Sandbox code={angularCode} language="typescript" framework="angular" title="grid-to-player.component.ts" height={560}>
+  <GridToPlayerDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<Caption>Відкрийте допис, кілька разів погортайте чи натисніть ↓, тоді закрийте клавішею Escape: сітка прокрутиться до допису, де ви зупинилися, і фокус буде на його мініатюрі.</Caption>
+
+## Чому це працює [#why-it-works]
+
+- **Плеєр відкривається там, куди натиснув глядач.** `initialIndex` отримує індекс мініатюри, а весь список іде в `content`, тож глядач може гортати й далі за вибраний допис. Обидва — пропси плеєра в [React](/docs/reel-player#reelplayeroverlayprops-props), [Vue](/docs/vue-reel-player#reelplayeroverlay-props) та [Angular](/docs/angular-reel-player#rkreelplayeroverlaycomponent-inputs).
+- **Сітка знає, де глядач зупинився.** Колбек зміни слайда повідомляє про кожен допис, до якого дійшов глядач, а рецепт запамʼятовує останній. Його описано серед [колбеків](/docs/reel-player#callbacks), [подій](/docs/vue-reel-player#events) та [виходів](/docs/angular-reel-player#rkreelplayeroverlaycomponent-outputs) плеєра.
+- **Фокус повертається до потрібної мініатюри.** Закриваючись, плеєр повертає фокус елементу, що його відкрив, — це його контракт [доступності](/docs/reel-player#accessibility). Таке повернення відбувається вже після обробника закриття, тож фокус, виставлений в обробнику, було б скасовано. Рецепт чекає одну задачу, тоді прокручує мініатюру останнього допису в поле зору й фокусує її.
+- **Мініатюри — це кнопки.** Кожна клітинка — `<button>` із підписом, тож сітка працює з Tab та Enter, екранний диктор називає допис, який вона відкриває, а плеєр має елемент із фокусом, якому можна повернути фокус, як описує його розділ про [доступність](/docs/reel-player#accessibility).
+- **Клітинці сітки потрібне зображення, а не відео.** `thumbnailOf` бере `poster` відео — поле [MediaItem](/docs/reel-player#mediaitem) — а зображення як є, тож сітка ніколи не вантажить відео, яке не відтворює.
+- **Хочете бачити відкритий допис в адресному рядку?** Плеєр зі [станом в URL](/docs/reel-player#url-state) записує видимий допис в URL, тож ним можна поділитися й закрити кнопкою «Назад».
+
+<NextSteps
+  items={[
+    {
+      label: 'Галерея зі слайдшоу',
+      path: '/docs/recipes/gallery-slideshow',
+      description: 'та сама сітка, що відкриває Lightbox, який відтворюється як слайдшоу',
+    },
+    {
+      label: 'Reel Player',
+      path: {
+        react: '/docs/reel-player',
+        vue: '/docs/vue-reel-player',
+        angular: '/docs/angular-reel-player',
+      },
+      description: 'кожен пропс, слот і частина плеєра',
+    },
+  ]}
+/>

@@ -4,7 +4,6 @@ description: React 用の、TikTok／Reels 風のフルスクリーン動画プ�
 ---
 
 import { Zap, Play, Volume2, Layout, Clock, Image, Layers, Ratio, Monitor, Code, Settings, Link2 } from 'lucide-react';
-import { ReelPlayerDemo } from '../../../components/demos/ReelPlayerDemo';
 import installation from '../../snippets/reel-player/installation.sh?raw';
 import installation2 from '../../snippets/reel-player/installation-2.ts?raw';
 import quickStart from '../../snippets/reel-player/quick-start.tsx?raw';
@@ -135,19 +134,14 @@ import theming from '../../snippets/reel-player/theming.css?raw';
 
 <CodeBlock code={quickStart} language="tsx" />
 
-## ライブデモ [#live-demo]
-
 <Sandbox
   code={fullCode}
   title="ReelPlayerPage.tsx"
-  height={500}
   stackblitzDeps={['@reelkit/react-reel-player']}
   stackblitzExtraDeps={{ 'lucide-react': '^0.562.0' }}
->
-  <ReelPlayerDemo />
-</Sandbox>
+/>
 
-<Caption>サムネイルをクリックするとフルスクリーンのプレイヤーが開きます。Escape か閉じるボタンで戻ります。</Caption>
+サムネイルのグリッドからプレーヤーを開き、見終えた位置に戻すまでの流れは[グリッドからプレーヤーへのレシピ](/docs/recipes/grid-to-player)を参照してください。
 
 ## カスタマイズ [#customization]
 

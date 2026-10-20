@@ -1,0 +1,69 @@
+---
+title: Galería con presentación
+description: Una galería de fotos en el lightbox que se reproduce como presentación y descarga el archivo original de cada foto.
+---
+
+import { GallerySlideshowDemo } from '../../../../components/demos/GallerySlideshowDemo';
+import reactCode from '../../../snippets/recipes/gallery-slideshow/react.tsx?raw';
+import vueCode from '../../../snippets/recipes/gallery-slideshow/vue.vue?raw';
+import angularCode from '../../../snippets/recipes/gallery-slideshow/angular.ts?raw';
+import apiCode from '../../../snippets/recipes/gallery-slideshow/api.ts?raw';
+
+Un álbum se abre a pantalla completa y se reproduce solo, una foto tras otra, hasta que el usuario lo pausa. Cualquier foto se puede guardar, y lo que se guarda es el archivo original con un nombre adecuado, no la copia redimensionada que muestra la pantalla.
+
+## Pruébalo [#try-it]
+
+Todas las versiones importan `./api`, que sustituye a tu backend: `photos` es un álbum con la forma del `LightboxItem` del lightbox, cada foto con la dirección que se muestra, el archivo que se descarga y el nombre con el que se guarda. Cámbialo por tu propio álbum.
+
+<CodeBlock code={apiCode} language="typescript" />
+
+<Callout type="warning" title="Los medios de ejemplo solo funcionan en reelkit.dev">
+  `cdnUrl` crea enlaces a cdn.reelkit.dev, que solo sirve sus archivos a los sitios de ReelKit. En tu app esas fotos no cargan ni se descargan, así que apunta `src` y `downloadUrl` a tus propios archivos antes de copiar este archivo.
+</Callout>
+
+<FrameworkVariant for="react">
+<Sandbox code={reactCode} title="GallerySlideshow.tsx" height={560}>
+  <GallerySlideshowDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+<Sandbox code={vueCode} language="vue" framework="vue" title="GallerySlideshow.vue" height={560}>
+  <GallerySlideshowDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+<Sandbox code={angularCode} language="typescript" framework="angular" title="gallery-slideshow.component.ts" height={560}>
+  <GallerySlideshowDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<Caption>Abre una foto: la presentación empieza al momento y avanza cada tres segundos. Páusala desde la barra o guarda la foto con el botón de descarga.</Caption>
+
+## Por qué funciona [#why-it-works]
+
+- **Dos props convierten el lightbox en una presentación con descargas.** `autoAdvance` empieza a reproducir en cuanto se abre el lightbox, y `showDownload` añade el botón que guarda la foto actual. La barra por defecto incorpora por sí sola el botón de reproducir y pausar y el de descarga. Ambas props se explican para [React](/docs/lightbox#auto-advance), [Vue](/docs/vue-lightbox#auto-advance) y [Angular](/docs/angular-lightbox#auto-advance), cada página con una sección de descarga justo después.
+- **La presentación espera a cada foto.** `autoAdvanceInterval` se cuenta desde que la foto ha cargado, así una conexión lenta nunca salta una imagen antes de que nadie la vea. El tiempo lo lleva `createSlideshowController` del core, descrito en la [guía de reproducción automática](/docs/core/guide#autoplay).
+- **El usuario sigue al mando.** Deslizar o pulsar una tecla avanza a mano y reinicia desde cero el intervalo de la siguiente foto, con la presentación aún activa. El [PlayPauseButton](/docs/lightbox#playpausebutton) la detiene y la reanuda, y un puntero apoyado en un botón o en el pie de foto la retiene mientras siga ahí. En la última foto se detiene, salvo que `loop` esté activo.
+- **Muestra una copia pequeña, guarda el original.** `src` es lo que muestra la pantalla, así una copia redimensionada mantiene la galería rápida. `downloadUrl` es lo que guarda el botón y `downloadName` el nombre de archivo que recibe, así el usuario conserva la foto completa con un nombre que dice qué es. El CDN de ejemplo sirve un solo tamaño, así que aquí ambos apuntan al mismo archivo. Los campos están en el [tipo LightboxItem](/docs/lightbox#lightboxitem).
+- **Las descargas desde otro origen necesitan CORS.** Un atributo `download` se ignora en un enlace a otro origen, así que el lightbox descarga el archivo con fetch y lo guarda. Para eso, el servidor del archivo debe responder con `Access-Control-Allow-Origin` para tu sitio. Si no lo hace, la foto se abre en una pestaña nueva, para que el usuario aún pueda guardarla. Consulta [`downloadFile`](/docs/core/guide#download).
+
+<NextSteps
+  items={[
+    {
+      label: 'Bandeja de historias',
+      path: '/docs/recipes/stories-tray',
+      description: 'una fila de anillos que abre el Stories Player y recuerda lo que ya se vio',
+    },
+    {
+      label: 'Lightbox',
+      path: {
+        react: '/docs/lightbox',
+        vue: '/docs/vue-lightbox',
+        angular: '/docs/angular-lightbox',
+      },
+      description: 'cada prop, slot y parte del lightbox',
+    },
+  ]}
+/>

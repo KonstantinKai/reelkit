@@ -4,7 +4,6 @@ description: 全屏 Stories 播放浮层：StoriesApi、双击点赞、自定义
 ---
 
 import { Zap, Play, Timer, Layout, Clock, Image, Layers, Heart, Monitor, Circle, Code, Settings, Link2, Eye } from 'lucide-react';
-import { StoriesPlayerDemo } from '../../../components/demos/StoriesPlayerDemo';
 import installation from '../../snippets/stories-player/installation.sh?raw';
 import installation2 from '../../snippets/stories-player/installation-2.ts?raw';
 import fullCode from '../../snippets/stories-player/full-code.tsx?raw';
@@ -147,18 +146,13 @@ import theming from '../../snippets/stories-player/theming.css?raw';
 
 <CodeBlock code={fullCode} language="tsx" />
 
-## 在线演示 [#live-demo]
-
 <Sandbox
   code={fullCode2}
   title="StoriesPlayer.tsx"
-  height={200}
   stackblitzDeps={['@reelkit/react-stories-player', '@reelkit/react']}
->
-  <StoriesPlayerDemo />
-</Sandbox>
+/>
 
-<Caption>点圆环打开播放器。点左右两侧切换 story，滑动切换用户。</Caption>
+想要一排在刷新后仍记得已看内容的圆环，请查看[快拍栏示例](/docs/recipes/stories-tray)。
 
 ## URL 状态 [#url-state]
 

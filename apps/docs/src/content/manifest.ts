@@ -170,6 +170,31 @@ export const kSitePages: readonly SitePage[] = [
     sitemap: monthly('0.8'),
   },
   {
+    path: 'docs/recipes',
+    content: 'docs/recipes',
+    sitemap: monthly('0.7'),
+  },
+  {
+    path: 'docs/recipes/infinite-feed',
+    content: 'docs/recipes/infinite-feed',
+    sitemap: monthly('0.7'),
+  },
+  {
+    path: 'docs/recipes/grid-to-player',
+    content: 'docs/recipes/grid-to-player',
+    sitemap: monthly('0.7'),
+  },
+  {
+    path: 'docs/recipes/gallery-slideshow',
+    content: 'docs/recipes/gallery-slideshow',
+    sitemap: monthly('0.7'),
+  },
+  {
+    path: 'docs/recipes/stories-tray',
+    content: 'docs/recipes/stories-tray',
+    sitemap: monthly('0.7'),
+  },
+  {
     path: 'docs/troubleshooting',
     content: 'docs/troubleshooting',
     sitemap: monthly('0.5'),

@@ -1,0 +1,70 @@
+---
+title: Stories Tray
+description: A row of story rings that opens the stories player and remembers what the viewer has seen across reloads.
+---
+
+import { StoriesTrayDemo } from '../../../../components/demos/StoriesTrayDemo';
+import reactCode from '../../../snippets/recipes/stories-tray/react.tsx?raw';
+import vueCode from '../../../snippets/recipes/stories-tray/vue.vue?raw';
+import angularCode from '../../../snippets/recipes/stories-tray/angular.ts?raw';
+import apiCode from '../../../snippets/recipes/stories-tray/api.ts?raw';
+
+The row of rings at the top of a feed: one per person, bright while they have something new, muted once the viewer has seen it all. Pressing a ring opens the stories at the first one not yet seen, and the next visit, even after a reload, remembers where the viewer got to.
+
+## Try it [#try-it]
+
+Every version imports `./api`, which stands in for your backend: `groups` is the people a viewer follows with the stories each posted, in the shape of the player's `StoriesGroup`. Replace it with your own feed.
+
+<CodeBlock code={apiCode} language="typescript" />
+
+<Callout type="warning" title="The sample media works only on reelkit.dev">
+  `cdnUrl` builds links to cdn.reelkit.dev, which serves its files only to the ReelKit sites. In your app those avatars and stories fail to load, so point `avatar` and `src` at your own files before you copy this file.
+</Callout>
+
+<FrameworkVariant for="react">
+<Sandbox code={reactCode} title="StoriesTray.tsx" height={560}>
+  <StoriesTrayDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+<Sandbox code={vueCode} language="vue" framework="vue" title="StoriesTray.vue" height={560}>
+  <StoriesTrayDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+<Sandbox code={angularCode} language="typescript" framework="angular" title="stories-tray.component.ts" height={560}>
+  <StoriesTrayDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<Caption>Watch someone to the end and close the player: their ring turns muted, focus lands on the last person you watched, and both survive a reload. "Forget what was seen" starts over.</Caption>
+
+## Why it works [#why-it-works]
+
+- **One controller remembers for both.** `createStoriesViewedStateController` is created once and goes to the ring list and the player as `viewed`. The rings read from it, the player records every story it shows into it, and it keeps that in `localStorage` under `storageKey`, so a reload changes nothing. See remembering what was seen for [React](/docs/stories-player#remembering-what-was-seen), [Vue](/docs/vue-stories-player#remembering-what-was-seen), and [Angular](/docs/angular-stories-player#remembering-what-was-seen).
+- **The player picks up where the viewer left off.** Given `viewed`, the player opens a person on their first story not yet seen, or from the start once everything was seen. The recipe only passes the person, never a story index; the controller's `resumeStoryIndex` answers that, see [its reference](/docs/stories-core#storiesviewedstatecontroller).
+- **A ring shows two states.** Bright while there is something left to watch, muted once a person was watched to the end. Progress inside a person is the player's progress bar, not the ring. See [StoriesRing](/docs/stories-player#storiesring).
+- **No extra wiring for the controller.** The player is always rendered and opened with `isOpen`, so it reads the stored state itself before it chooses the first story. Mount it only while it is open and the page has to attach the controller first, as [the controller reference](/docs/stories-core#storiesviewedstatecontroller) explains.
+- **Focus comes back to the right ring.** As it closes, the player returns focus to the ring that opened it, as its [accessibility](/docs/stories-player#accessibility) section describes. That happens after the close handler has run, so the recipe waits one task, then scrolls the ring of the last person watched into view and focuses it.
+- **Where else it can be kept.** `storage` takes your own adapter, a server for instance, so what was seen follows the viewer across devices. `ttlMs` lets a person's entry expire, and `maxTracks` caps how many people are kept. They are in the [controller config](/docs/stories-core#config-storiesviewedstatecontrollerconfig).
+
+<NextSteps
+  items={[
+    {
+      label: 'Infinite Feed',
+      path: '/docs/recipes/infinite-feed',
+      description: 'load more as the viewer nears the end of a feed',
+    },
+    {
+      label: 'Stories Player',
+      path: {
+        react: '/docs/stories-player',
+        vue: '/docs/vue-stories-player',
+        angular: '/docs/angular-stories-player',
+      },
+      description: 'every prop, slot, and part of the player',
+    },
+  ]}
+/>

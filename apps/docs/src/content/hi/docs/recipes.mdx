@@ -1,0 +1,37 @@
+---
+title: रेसिपी
+description: कई reelkit हिस्सों को जोड़कर पूरा फ़ीचर बनाने वाली व्यावहारिक गाइड, लाइव डेमो और React, Vue व Angular के कोड के साथ।
+---
+
+import { InfinityIcon, LayoutGrid, Images, CircleDashed } from 'lucide-react';
+
+गाइड और API पेज एक बार में एक हिस्सा समझाते हैं। रेसिपी उस चीज़ से शुरू होती है जिसे आप शिप करना चाहते हैं और सारे हिस्सों को जोड़ती है: पहले आज़माने के लिए लाइव डेमो, आपके फ़्रेमवर्क का पूरा कोड, और यह कि हर हिस्सा वहाँ क्यों है।
+
+<RecipeCards items={[
+  {
+    icon: InfinityIcon,
+    label: 'इनफ़िनिट फ़ीड',
+    desc: 'दर्शक के अंत के पास पहुँचते ही अगला पेज लोड करें, लोडिंग और एरर स्लाइड, रद्द होने वाली रिक्वेस्ट और पहले से लोड मीडिया के साथ।',
+    path: '/docs/recipes/infinite-feed',
+  },
+  {
+    icon: LayoutGrid,
+    label: 'ग्रिड से प्लेयर तक',
+    desc: 'थंबनेल ग्रिड से फ़ुल-स्क्रीन Reel Player खोलें और दर्शक को आख़िरी देखे गए आइटम पर वापस लाएँ।',
+    path: '/docs/recipes/grid-to-player',
+  },
+  {
+    icon: Images,
+    label: 'गैलरी स्लाइडशो',
+    desc: 'Lightbox में फ़ोटो गैलरी को स्लाइडशो की तरह चलाएँ और हर फ़ोटो की मूल फ़ाइल डाउनलोड करें।',
+    path: '/docs/recipes/gallery-slideshow',
+  },
+  {
+    icon: CircleDashed,
+    label: 'स्टोरीज़ ट्रे',
+    desc: 'रिंग की पंक्ति से Stories Player खोलें और रीलोड के बाद भी याद रखें कि दर्शक क्या देख चुका है।',
+    path: '/docs/recipes/stories-tray',
+  },
+]} />
+
+हर डेमो बगल में दिखाया गया React कोड ही चलाता है। Vue और Angular वर्ज़न अपने बाइंडिंग से यही काम करते हैं।

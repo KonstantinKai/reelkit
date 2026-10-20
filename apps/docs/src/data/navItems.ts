@@ -110,6 +110,16 @@ export const navItems: NavSection[] = [
     ],
   },
   {
+    key: 'recipes',
+    items: [
+      { key: 'recipesOverview', path: '/docs/recipes' },
+      { key: 'infiniteFeed', path: '/docs/recipes/infinite-feed' },
+      { key: 'gridToPlayer', path: '/docs/recipes/grid-to-player' },
+      { key: 'gallerySlideshow', path: '/docs/recipes/gallery-slideshow' },
+      { key: 'storiesTray', path: '/docs/recipes/stories-tray' },
+    ],
+  },
+  {
     key: 'resources',
     items: [
       { key: 'troubleshooting', path: '/docs/troubleshooting' },

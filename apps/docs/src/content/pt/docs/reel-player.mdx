@@ -4,7 +4,6 @@ description: Overlay de player de vídeo em tela cheia no estilo TikTok/Reels pa
 ---
 
 import { Zap, Play, Volume2, Layout, Clock, Image, Layers, Ratio, Monitor, Code, Settings, Link2 } from 'lucide-react';
-import { ReelPlayerDemo } from '../../../components/demos/ReelPlayerDemo';
 import installation from '../../snippets/reel-player/installation.sh?raw';
 import installation2 from '../../snippets/reel-player/installation-2.ts?raw';
 import quickStart from '../../snippets/reel-player/quick-start.tsx?raw';
@@ -135,19 +134,14 @@ O componente `ReelPlayerOverlay` renderiza um player em tela cheia. Passe um arr
 
 <CodeBlock code={quickStart} language="tsx" />
 
-## Demonstração ao vivo [#live-demo]
-
 <Sandbox
   code={fullCode}
   title="ReelPlayerPage.tsx"
-  height={500}
   stackblitzDeps={['@reelkit/react-reel-player']}
   stackblitzExtraDeps={{ 'lucide-react': '^0.562.0' }}
->
-  <ReelPlayerDemo />
-</Sandbox>
+/>
 
-<Caption>Clique em uma miniatura para abrir o player em tela cheia. Pressione Escape ou o botão de fechar para voltar.</Caption>
+Para o fluxo completo, uma grade de miniaturas que abre o player e leva o usuário de volta aonde parou, veja a [receita Da grade ao player](/docs/recipes/grid-to-player).
 
 ## Personalização [#customization]
 

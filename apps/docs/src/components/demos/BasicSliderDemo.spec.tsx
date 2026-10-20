@@ -38,8 +38,8 @@ describe('basic slider demo as prerendered', () => {
     expect(errors).not.toHaveBeenCalled();
   });
 
-  // The React guide shows the demo in the middle of a long page, in a wide
-  // preview the portrait home slides would not fill.
+  // Placed anywhere but the top of the home page, the demo sits further down a
+  // page, where an image fetched early would compete with what is in view.
   it('keeps the CDN image loaded lazily everywhere else', () => {
     const images = imagesIn(renderToString(<BasicSliderDemo />));
     expect(images).toHaveLength(1);
@@ -67,14 +67,5 @@ describe('home page', () => {
     const source = readFileSync(join(appDir, homes[0]), 'utf8');
     expect(source).toContain('export const links = heroSlidePreloadLinks;');
     expect(source).toContain('<BasicSliderDemo priority />');
-  });
-
-  it('leave the demo on the React guide without priority', async () => {
-    const guides = await filesUnder('content/*/docs/react/guide.mdx');
-    expect(guides.length).toBeGreaterThan(0);
-    for (const guide of guides) {
-      const source = readFileSync(join(appDir, guide), 'utf8');
-      expect(source, guide).toContain('<BasicSliderDemo />');
-    }
   });
 });

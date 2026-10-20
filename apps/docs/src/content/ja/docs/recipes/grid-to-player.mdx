@@ -1,0 +1,70 @@
+---
+title: グリッドからプレーヤーへ
+description: タップしたサムネイルから全画面プレーヤーを開き、閉じると最後に見たアイテムへ戻るグリッド。
+---
+
+import { GridToPlayerDemo } from '../../../../components/demos/GridToPlayerDemo';
+import reactCode from '../../../snippets/recipes/grid-to-player/react.tsx?raw';
+import vueCode from '../../../snippets/recipes/grid-to-player/vue.vue?raw';
+import angularCode from '../../../snippets/recipes/grid-to-player/angular.ts?raw';
+import apiCode from '../../../snippets/recipes/grid-to-player/api.ts?raw';
+
+プロフィールページや検索結果では、投稿をサムネイルのグリッドで並べます。1 つをタップすると全画面で開き、そのまま残りをスワイプでき、プレーヤーを閉じたときには、見始めた投稿ではなく見終えた投稿の位置に戻っていることが求められます。
+
+## 試してみる [#try-it]
+
+どのバージョンも `./api` をインポートしています。これはバックエンドの代わりで、`posts` はプロフィールや検索で読み込む投稿の一覧をプレーヤーの `ContentItem` の形にしたもの、`thumbnailOf` はグリッドのセルに表示する画像を選ぶ関数です。どちらも自分のデータに置き換えてください。
+
+<CodeBlock code={apiCode} language="typescript" />
+
+<Callout type="warning" title="サンプルのメディアは reelkit.dev でしか使えません">
+  `cdnUrl` が作るのは cdn.reelkit.dev へのリンクで、このサーバーは ReelKit のサイトにしかファイルを返しません。お使いのアプリでは画像も動画も読み込めないので、このファイルをコピーする前に `media` と `avatar` を自分のファイルに向けてください。
+</Callout>
+
+<FrameworkVariant for="react">
+<Sandbox code={reactCode} title="GridToPlayer.tsx" height={560}>
+  <GridToPlayerDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+<Sandbox code={vueCode} language="vue" framework="vue" title="GridToPlayer.vue" height={560}>
+  <GridToPlayerDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+<Sandbox code={angularCode} language="typescript" framework="angular" title="grid-to-player.component.ts" height={560}>
+  <GridToPlayerDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<Caption>投稿を開き、スワイプするか ↓ を何回か押してから Escape で閉じてください。グリッドは見終えた投稿までスクロールし、そのサムネイルにフォーカスが移ります。</Caption>
+
+## 仕組み [#why-it-works]
+
+- **プレーヤーはタップした位置で開きます。** `initialIndex` にサムネイルのインデックスを渡し、`content` には一覧全体を渡すので、選んだ投稿のあとも続けてスワイプできます。どちらも [React](/docs/reel-player#reelplayeroverlayprops-props)、[Vue](/docs/vue-reel-player#reelplayeroverlay-props)、[Angular](/docs/angular-reel-player#rkreelplayeroverlaycomponent-inputs) のプレーヤーのプロパティです。
+- **グリッドは視聴者が止まった位置を知っています。** スライド切り替えのコールバックが視聴者のたどり着いた投稿をすべて知らせ、レシピは最後の 1 件を覚えておきます。プレーヤーの[コールバック](/docs/reel-player#callbacks)、[イベント](/docs/vue-reel-player#events)、[出力](/docs/angular-reel-player#rkreelplayeroverlaycomponent-outputs)に載っています。
+- **フォーカスは正しいサムネイルに戻ります。** 閉じるとき、プレーヤーは自分を開いた要素にフォーカスを戻します。これはプレーヤーの[アクセシビリティ](/docs/reel-player#accessibility)上の約束です。この戻しは閉じるハンドラーが動いたあとに行われるので、ハンドラーの中で設定したフォーカスは取り消されます。そこでレシピは 1 タスク待ってから、最後の投稿のサムネイルをスクロールして表示し、フォーカスを移します。
+- **サムネイルはボタンです。** 各セルはラベル付きの `<button>` なので、グリッドは Tab と Enter で操作でき、スクリーンリーダーは開く投稿を読み上げ、プレーヤーにはフォーカスを戻せる要素があります。プレーヤーの[アクセシビリティ](/docs/reel-player#accessibility)の項で説明しているとおりです。
+- **グリッドのセルに必要なのは動画ではなく画像です。** `thumbnailOf` は動画なら [MediaItem](/docs/reel-player#mediaitem) のフィールドである `poster` を、画像ならそのまま使うので、グリッドが再生しない動画を読み込むことはありません。
+- **開いている投稿をアドレスバーに出したいなら。** [URL 状態](/docs/reel-player#url-state)のプレーヤーは表示中の投稿を URL に入れるので、共有でき、戻るボタンで閉じられます。
+
+<NextSteps
+  items={[
+    {
+      label: 'ギャラリーのスライドショー',
+      path: '/docs/recipes/gallery-slideshow',
+      description: '同じグリッドから、スライドショーとして再生する Lightbox を開く',
+    },
+    {
+      label: 'Reel Player',
+      path: {
+        react: '/docs/reel-player',
+        vue: '/docs/vue-reel-player',
+        angular: '/docs/angular-reel-player',
+      },
+      description: 'プレーヤーのプロパティ、スロット、部品のすべて',
+    },
+  ]}
+/>
