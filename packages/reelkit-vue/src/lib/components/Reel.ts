@@ -59,6 +59,45 @@ export type ReelExpose = {
 
 const defaultKeyExtractor = (index: number) => index.toString();
 
+type Style = Record<string, string | number>;
+
+const _kSlideWrapperStyle: Style = {
+  position: 'absolute',
+  top: '0',
+  left: '0',
+  width: '100%',
+  height: '100%',
+};
+
+const _kLiveRegionStyle: Style = {
+  position: 'absolute',
+  width: '1px',
+  height: '1px',
+  padding: '0',
+  margin: '-1px',
+  overflow: 'hidden',
+  clip: 'rect(0, 0, 0, 0)',
+  whiteSpace: 'nowrap',
+  border: '0',
+};
+
+// The server render and the client render share this, because hydration keeps
+// the attributes the server sent: a root rendered without it stays at zero
+// height, and an auto-sized reel then measures nothing and shows no slides.
+const rootStyleFor = (
+  size: [number, number] | undefined,
+  reelStyle: Style | undefined,
+): Style => ({
+  userSelect: 'none',
+  WebkitUserSelect: 'none',
+  position: 'relative',
+  overflow: 'hidden',
+  ...(size === undefined
+    ? { width: '100%', height: '100%' }
+    : { width: `${first(size)}px`, height: `${last(size)}px` }),
+  ...(reelStyle ?? {}),
+});
+
 /** Props accepted by the {@link Reel} component. */
 const reelProps = {
   /** Total number of slides. */
@@ -266,13 +305,24 @@ export const Reel = defineComponent({
         unobserve: noop,
       } satisfies ReelExpose);
       return () =>
-        h('div', {
-          class: props.reelClass,
-          style: props.reelStyle,
-          role: 'region',
-          'aria-roledescription': 'carousel',
-          'aria-label': props.ariaLabel,
-        });
+        h(
+          'div',
+          {
+            class: props.reelClass,
+            role: 'region',
+            'aria-roledescription': 'carousel',
+            'aria-label': props.ariaLabel,
+            style: rootStyleFor(props.size, props.reelStyle),
+          },
+          [
+            h('div', { style: _kSlideWrapperStyle }),
+            h('div', {
+              'aria-live': 'polite',
+              'aria-atomic': 'true',
+              style: _kLiveRegionStyle,
+            }),
+          ],
+        );
     }
 
     const containerRef = ref<HTMLElement | null>(null);
@@ -485,26 +535,9 @@ export const Reel = defineComponent({
       const currentTransitionFn = transitionFn();
       const currentKeyExtractor = keyExtractorFn();
 
-      const rootStyle: Record<string, string | number> = {
-        userSelect: 'none',
-        WebkitUserSelect: 'none',
-        position: 'relative',
-        overflow: 'hidden',
-        ...(isAutoSize()
-          ? { width: '100%', height: '100%' }
-          : { width: `${first(size)}px`, height: `${last(size)}px` }),
-        ...(props.reelStyle ?? {}),
-      };
+      const rootStyle = rootStyleFor(props.size, props.reelStyle);
 
       const children: VNode[] = [];
-
-      const slideWrapperStyle = {
-        position: 'absolute',
-        top: '0',
-        left: '0',
-        width: '100%',
-        height: '100%',
-      };
 
       const itemSlot = slots['item'];
       if (hasMeasured && itemSlot) {
@@ -559,9 +592,9 @@ export const Reel = defineComponent({
           );
         }
 
-        children.push(h('div', { style: slideWrapperStyle }, slideNodes));
+        children.push(h('div', { style: _kSlideWrapperStyle }, slideNodes));
       } else {
-        children.push(h('div', { style: slideWrapperStyle }));
+        children.push(h('div', { style: _kSlideWrapperStyle }));
       }
 
       children.push(
@@ -570,17 +603,7 @@ export const Reel = defineComponent({
           {
             'aria-live': 'polite',
             'aria-atomic': 'true',
-            style: {
-              position: 'absolute',
-              width: '1px',
-              height: '1px',
-              padding: '0',
-              margin: '-1px',
-              overflow: 'hidden',
-              clip: 'rect(0, 0, 0, 0)',
-              whiteSpace: 'nowrap',
-              border: '0',
-            },
+            style: _kLiveRegionStyle,
           },
           liveText.value,
         ),
