@@ -107,6 +107,23 @@ Se suscribe a señales de valores animados e interpola con suavidad usando `requ
 | `signal` | `Signal<AnimatedValue>` | `required` | Señal que emite \{ value, duration, done? \}. Una duración mayor que 0 interpola del valor actual al nuevo; con 0 salta directamente. |
 | `children` | `(value: number) => ReactElement` | `required` | Función de renderizado que recibe el valor interpolado del fotograma actual y se aplica de forma síncrona para que el DOM siga el ritmo de la animación. |
 
+## SwipeToClose [#swipetoclose]
+
+`<SwipeToClose>` envuelve a sus hijos en un contenedor que sigue un deslizamiento vertical y llama a `onClose` cuando el deslizamiento supera el umbral: el gesto para cerrar de la Lightbox y del Stories Player, para un overlay propio. `SwipeToCloseProps` tipa sus props; `SwipeToCloseDirection` es `'up' | 'down'`.
+
+| Prop | Tipo | Por defecto | Descripción |
+| --- | --- | --- | --- |
+| `direction` | `SwipeToCloseDirection` | obligatorio | `'up'` cierra como la Lightbox, `'down'` como el Stories Player |
+| `onClose` | `() => void` | obligatorio | Se llama cuando el deslizamiento supera el umbral y termina la animación de salida |
+| `enabled` | `boolean` | `true` | Desactiva el gesto sin desmontar |
+| `threshold` | `number` | `0.2` | Fracción de la altura del viewport que debe recorrer el deslizamiento |
+| `className` | `string` | — | Clase del `<div>` exterior |
+| `children` | `ReactNode` | obligatorio | Contenido que se mueve con el deslizamiento |
+
+## SoundProvider [#soundprovider]
+
+`<SoundProvider>` crea un `SoundController`, silenciado al principio, y se lo entrega a sus hijos a través de `useSoundState`. Los overlays renderizan uno por ti; añade el tuyo solo alrededor de un reproductor propio cuyos controles compartan el estado de silencio.
+
 ## Hooks [#hooks]
 
 ### useBodyLock [#usebodylock]
@@ -137,6 +154,31 @@ Un `UrlAdapter` basado en React Router. Pásalo como opción `adapter` de `useOv
 Se publica en su propia subruta, así que una aplicación sin router nunca mete `react-router-dom` en su bundle. `react-router-dom` es una peer dependency opcional.
 
 <CodeBlock code={usereactrouterurladapter} language="tsx" />
+
+### useReelContext [#usereelcontext]
+
+`useReelContext()` lee el `ReelContextValue` del `<Reel>` padre más cercano, o devuelve `null` fuera de uno. `<ReelIndicator>` lo usa para conectarse; úsalo en tus propios controles renderizados como hijos de `<Reel>`, para que sigan al slider sin props. `ReelContext` es el objeto de contexto que hay detrás: proporciona un valor propio solo en un test o en un wrapper personalizado.
+
+| Propiedad | Tipo | Descripción |
+| --- | --- | --- |
+| `index` | `Signal<number>` | Índice del slide activo; lee `.value` dentro de `Observe` |
+| `count` | `Signal<number>` | Número total de slides |
+| `goTo` | `(index: number, animate?: boolean) => Promise<void>` | Va a un slide, con o sin animación |
+
+### useSoundState [#usesoundstate]
+
+`useSoundState()` lee el `SoundController` del `<SoundProvider>` más cercano y lanza un error fuera de uno. El Reel Player, la Lightbox y el Stories Player envuelven su contenido en un proveedor, así que los controles propios que pasas por sus render props pueden llamarlo para leer o alternar el silencio.
+
+### useFullscreen [#usefullscreen]
+
+`useFullscreen({ ref })` controla la Fullscreen API para el elemento de `ref` y sale de la pantalla completa cuando el componente se desmonta. `UseFullscreenProps` es su argumento; `UseFullscreenResult` es la tupla que devuelve.
+
+| Índice | Tipo | Descripción |
+| --- | --- | --- |
+| `[0]` | `Signal<boolean>` | Si la página está en pantalla completa; lee `.value` dentro de `Observe` |
+| `[1]` | `() => Promise<void>` | Pide la pantalla completa para el elemento, saliendo antes de otro elemento a pantalla completa |
+| `[2]` | `() => Promise<void>` | Sale de la pantalla completa |
+| `[3]` | `() => Promise<void>` | Alterna entre ambos estados |
 
 ## Accesibilidad [#accessibility]
 

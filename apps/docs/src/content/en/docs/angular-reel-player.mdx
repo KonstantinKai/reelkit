@@ -116,17 +116,31 @@ Six template slot directives let you customize every aspect of the player's UI. 
 
 | Directive | Context Type | Description |
 | --- | --- | --- |
-| \[rkPlayerControls\] | `PlayerControlsContext<T>` | Custom global controls bar (close, sound toggle, etc.) |
-| \[rkPlayerError\] | `{ $implicit: activeIndex, item, innerActiveIndex }` | Custom error indicator template slot |
-| \[rkPlayerLoading\] | `{ $implicit: activeIndex, item, innerActiveIndex }` | Custom loading indicator template slot |
-| \[rkPlayerNavigation\] | `PlayerNavigationContext` | Custom prev/next navigation arrows |
-| \[rkPlayerNestedNavigation\] | `PlayerNestedNavigationContext` | Custom navigation arrows for the inner horizontal slider |
-| \[rkPlayerNestedSlide\] | `PlayerNestedSlideContext` | Custom content for each slide inside the inner horizontal slider |
-| \[rkPlayerSlide\] | `PlayerSlideContext<T>` | Fully custom slide content replacing the default media slide |
-| \[rkPlayerSlideOverlay\] | `PlayerSlideOverlayContext<T>` | Per-slide overlay (author info, likes, description, etc.) |
-| \[rkPlayerTimeline\] | `PlayerTimelineContext<T>` | Custom playback timeline bar. Rendered only when the gate (timeline mode + min duration) would render the default bar (same auto/always/never logic). |
+| \[rkPlayerControls\] | `PlayerControlsContext<T>` | Custom global controls bar (close, sound toggle, etc.); the directive class is `RkPlayerControlsDirective` |
+| \[rkPlayerError\] | `PlayerErrorContext` | Custom error indicator template slot; the directive class is `RkPlayerErrorDirective` |
+| \[rkPlayerLoading\] | `PlayerLoadingContext` | Custom loading indicator template slot; the directive class is `RkPlayerLoadingDirective` |
+| \[rkPlayerNavigation\] | `PlayerNavigationContext` | Custom prev/next navigation arrows; the directive class is `RkPlayerNavigationDirective` |
+| \[rkPlayerNestedNavigation\] | `PlayerNestedNavigationContext` | Custom navigation arrows for the inner horizontal slider; the directive class is `RkPlayerNestedNavigationDirective` |
+| \[rkPlayerNestedSlide\] | `PlayerNestedSlideContext` | Custom content for each slide inside the inner horizontal slider; the directive class is `RkPlayerNestedSlideDirective` |
+| \[rkPlayerSlide\] | `PlayerSlideContext<T>` | Fully custom slide content replacing the default media slide; the directive class is `RkPlayerSlideDirective` |
+| \[rkPlayerSlideOverlay\] | `PlayerSlideOverlayContext<T>` | Per-slide overlay (author info, likes, description, etc.); the directive class is `RkPlayerSlideOverlayDirective` |
+| \[rkPlayerTimeline\] | `PlayerTimelineContext<T>` | Custom playback timeline bar. Rendered only when the gate (timeline mode + min duration) would render the default bar (same auto/always/never logic). The directive class is `RkPlayerTimelineDirective` |
+
+`PLAYER_TEMPLATE_SLOT_DIRECTIVES` collects every one of these directives, so a component can spread them into its `imports` in one go.
 
 <CodeBlock code={templateSlots} language="typescript" />
+
+### Default Slide Components [#default-slide-components]
+
+The pieces the default slide is built from. Each is a standalone component; use one inside your own template to keep part of the default look.
+
+| Component | Selector | Description |
+| --- | --- | --- |
+| `RkMediaSlideComponent` | `rk-media-slide` | The default slide. Renders `rk-image-slide`, `rk-video-slide` or `rk-nested-slider` from the content item's `media`; use it in an `rkPlayerSlide` template to keep the default media and add your own layer on top. |
+| `RkImageSlideComponent` | `rk-image-slide` | One image with `object-fit: cover`, showing its `poster` until it loads and calling `onReady`, `onWaiting` or `onError`. |
+| `RkVideoSlideComponent` | `rk-video-slide` | One video on the shared `<video>` element. It needs the `SoundStateService` the overlay provides, so render it inside the player only. |
+| `RkNestedSliderComponent` | `rk-nested-slider` | The horizontal slider, with indicator dots, for a content item that has several `media` entries. |
+| `RkSlideOverlayComponent` | `rk-slide-overlay` | The default bottom overlay: author avatar and name, description and likes, from its `author`, `description` and `likes` inputs. Use it in an `rkPlayerSlideOverlay` template to keep the default look. |
 
 ### Custom Timeline [#custom-timeline]
 
@@ -264,7 +278,7 @@ Extend `BaseContentItem` to use your own domain model. The component is generic:
 | `isOpen` | `boolean` | required | Controls overlay visibility; when false the overlay is removed from the DOM |
 | `loop` | `boolean` | false | Enable infinite loop between slides |
 | `swipeDistanceFactor` | `number` | 0.12 | Minimum swipe distance fraction to trigger slide change |
-| `timeline` | `'auto' \| 'always' \| 'never'` | 'auto' | Gating strategy for the built-in playback timeline bar. 'auto' renders only for videos longer than timelineMinDurationSeconds; 'always' renders whenever the active slide has a video; 'never' disables the built-in bar (use rkPlayerTimeline template slot for a fully custom replacement). |
+| `timeline` | `TimelineMode` (`'auto' \| 'always' \| 'never'`) | 'auto' | Gating strategy for the built-in playback timeline bar. 'auto' renders only for videos longer than timelineMinDurationSeconds; 'always' renders whenever the active slide has a video; 'never' disables the built-in bar (use rkPlayerTimeline template slot for a fully custom replacement). |
 | `timelineMinDurationSeconds` | `number` | 30 | Minimum video duration (seconds) for timeline='auto' to render the built-in bar. Short looping clips below this threshold are suppressed. |
 | `transitionDuration` | `number` | 300 | Slide animation duration in ms |
 | `wheelDebounceMs` | `number` | 200 | Debounce duration for wheel events in ms |
@@ -291,7 +305,7 @@ Takes every input above except `isOpen` and `initialIndex`, replaced by a `contr
 | Field | Type | Description |
 | --- | --- | --- |
 | `id` | `string` | Unique identifier for the media item |
-| `type` | `'image' \| 'video'` | Media type |
+| `type` | `MediaType` | Media type: `'image' \| 'video'` |
 | `src` | `string` | URL of the media asset |
 | `poster` | `string?` | Poster thumbnail URL for video items |
 | `aspectRatio` | `number` | width/height ratio. Values \< 1 indicate vertical (cover), > 1 horizontal (contain) |
@@ -308,6 +322,9 @@ Takes every input above except `isOpen` and `initialIndex`, replaced by a `contr
 | `PlayerSlideOverlayContext<T>` | `{ $implicit: T, index, isActive }` |
 | `PlayerTimelineContext<T>` | `{ $implicit: T, activeIndex, timelineState: PlayerTimelineState }` |
 | `PlayerTimelineState` | `{ duration(), currentTime(), progress(), bufferedRanges(), isScrubbing(), seek(t), bindInteractions(el) }` |
+| `PlayerBufferedRange` | `{ start, end }` in seconds — one entry of `bufferedRanges()` |
+| `PlayerLoadingContext` | `{ $implicit: activeIndex, item, innerActiveIndex }` — what the `rkPlayerLoading` template receives; `innerActiveIndex` is `null` outside a nested slider |
+| `PlayerErrorContext` | `{ $implicit: activeIndex, item, innerActiveIndex }` — what the `rkPlayerError` template receives |
 
 ## CSS Classes [#css-classes]
 

@@ -142,7 +142,7 @@ import downloadCode from '../../snippets/vue-lightbox/download.vue?raw';
 
 ## 動画のサポート [#video-support]
 
-動画スライドはオプトインなので、デフォルトのバンドルには音声や動画の処理が入りません。`useVideoSlideRenderer(items)` を呼び、返された `VideoSlideRenderer`／`VideoControlsRenderer` をオーバーレイの `#slide` と `#controls` のスロットに渡してください。組み込みのサウンド切り替えがコンテキストを持てるよう、返された `SoundProvider` でオーバーレイを包みます。
+動画スライドはオプトインなので、デフォルトのバンドルには音声や動画の処理が入りません。`useVideoSlideRenderer(items)` を呼び、返された `VideoSlideRenderer`／`VideoControlsRenderer` をオーバーレイの `#slide` と `#controls` のスロットに渡してください。組み込みのサウンド切り替えがコンテキストを持てるよう、返された `SoundProvider` でオーバーレイを包みます。返されるオブジェクトの型は `UseVideoSlideRendererResult` で、`SoundProvider`、`hasVideo`、`VideoSlideRenderer`、`VideoControlsRenderer` を持ちます。
 
 <CodeBlock code={videoOptInCode} language="vue" />
 
@@ -233,6 +233,18 @@ import downloadCode from '../../snippets/vue-lightbox/download.vue?raw';
 | --- | --- | --- |
 | `PlayPauseButton` | `PlayPauseButtonProps`: `isPlaying`, `onPress`, `className?` | スライドショーの切り替えボタン（Play／Pause のアイコン、再生中は `aria-pressed`）。`auto-advance` のときにデフォルトのコントロールが表示します。 |
 | `DownloadButton` | `DownloadButtonProps`: `isDownloading`, `onPress`, `className?` | ダウンロードボタン。`isDownloading` のあいだは無効になります。`show-download` のときにデフォルトのコントロールが表示します。 |
+| `CloseButton` | `CloseButtonProps`: `onPress`, `className?` | コントロールバーが描画するデフォルトの閉じるボタン。組み込みの見た目を保つには、独自の `#controls` スロットの中に置きます。 |
+| `Counter` | `CounterProps`: `currentIndex`, `count`, `className?` | デフォルトの「3 / 10」のカウンター。組み込みの見た目を保つには、独自の `#controls` スロットの中に置きます。 |
+| `FullscreenButton` | `FullscreenButtonProps`: `isFullscreen`, `onPress`, `className?` | デフォルトのフルスクリーン切り替え。アイコンは `isFullscreen` に従います。 |
+| `SoundButton` | `SoundButtonProps`: `isMuted`, `onPress`, `className?` | 動画の要素向けのデフォルトのミュート切り替え。アイコンは `isMuted` に従います。 |
+
+### スライドとナビゲーションの部品 [#slide-parts]
+
+| コンポーネント | Props | 説明 |
+| --- | --- | --- |
+| `ImageSlide` | `ImageSlideProps`: `src`, `alt?`, `isActive`, `onReady?`, `onLoadError?` | オーバーレイが描画するデフォルトの画像スライド。画像の要素で組み込みの見た目を保つには、独自の `#slide` スロットの中に置きます。 |
+| `LightboxVideoSlide` | `LightboxVideoSlideProps`: `src`, `poster?`, `isActive`, `size`, `slideKey`, `loop?`, `onPlaying?`, `onWaiting?`, `onLoadError?` | 共有の `<video>` 要素で再生するデフォルトの動画スライド。`useVideoSlideRenderer` が描画してくれます。 |
+| `LightboxNavigation` | `LightboxNavigationProps`: `activeIndex`, `count`, `loop?`, `onPrev`, `onNext` | デフォルトの前後の矢印。組み込みの見た目を保つには、独自の `#navigation` スロットの中に置きます。 |
 
 ## API リファレンス [#api-reference]
 

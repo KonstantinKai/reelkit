@@ -257,6 +257,8 @@ Willst du ein anderes Feld als Schlüssel (einen `slug`) oder einen endlosen Fee
 
 <Signature>ReelPlayerOverlayProps\<T></Signature>
 
+`ReelPlayerOverlayProps` ist `ReelPlayerOverlayBaseProps` (die Props für Darstellung und Verhalten, die beide Overlays teilen) verbunden mit `ReelPlayerControlledProps` (`isOpen` und `onClose`). Typisiere mit dem Basistyp einen Wrapper, der eines der beiden Overlays rendert.
+
 | Prop | Typ | Standard | Beschreibung |
 | --- | --- | --- | --- |
 | `apiRef` | `MutableRefObject<ReelApi>` | - | Ref für den Zugriff auf die Reel-API |
@@ -282,7 +284,7 @@ Willst du ein anderes Feld als Schlüssel (einen `slug`) oder einen endlosen Fee
 
 <Signature>ReelPlayerUrlOverlayProps\<T></Signature>
 
-Nimmt jedes Prop für Darstellung und Verhalten von oben außer `isOpen`, das durch einen `controller` ersetzt wird. `initialIndex` wird ignoriert – die Position des Controllers bestimmt den Slide, ein zusätzlich übergebener Wert wird also bei jedem Öffnen überschrieben.
+Nimmt jedes Prop für Darstellung und Verhalten von oben außer `isOpen`, das durch einen `controller` ersetzt wird: Der Typ ist `ReelPlayerOverlayBaseProps` verbunden mit `ReelPlayerUrlControlledProps`. `initialIndex` wird ignoriert – die Position des Controllers bestimmt den Slide, ein zusätzlich übergebener Wert wird also bei jedem Öffnen überschrieben.
 
 | Prop | Typ | Standard | Beschreibung |
 | --- | --- | --- | --- |
@@ -298,7 +300,7 @@ Nimmt jedes Prop für Darstellung und Verhalten von oben außer `isOpen`, das du
 
 ### Props von Reel (durchgereicht) [#reel-props-proxied]
 
-Diese Props werden an die darunterliegende Komponente [Reel](/docs/react/api#reel-props) weitergegeben.
+Diese Props werden an die darunterliegende Komponente [Reel](/docs/react/api#reel-props) weitergegeben. Ihr Typ ist `ReelProxyProps`, die Teilmenge der Props von Reel, die das Overlay durchreicht; typisiere damit einen Wrapper, der sie weitergibt.
 
 | Prop | Typ | Standard | Beschreibung |
 | --- | --- | --- | --- |
@@ -443,7 +445,7 @@ Ersetze den Standard-Wellenlader und das Fehlericon durch eigene Komponenten:
 
 ## Timeline [#timeline]
 
-Das Overlay rendert eine eingebaute Wiedergabeleiste über dem aktiven Video. Das Prop `timeline` steuert, wann sie erscheint:
+Das Overlay rendert eine eingebaute Wiedergabeleiste über dem aktiven Video. Das Prop `timeline` vom Typ `TimelineMode` steuert, wann sie erscheint:
 
 - `'auto'` (Standard): rendert, wenn das aktive Medium ein Video ist, dessen Dauer `timelineMinDurationSeconds` überschreitet (Standard 30). Funktioniert für Slides mit einem einzelnen Video und für Karussells mit mehreren Medien; die Leiste folgt dem aktiven verschachtelten Eintrag und verschwindet bei Bildern.
 - `'always'`: rendert immer, wenn der aktive Slide ein Video hat.
@@ -452,6 +454,8 @@ Das Overlay rendert eine eingebaute Wiedergabeleiste über dem aktiven Video. Da
 <CodeBlock code={timeline} language="tsx" />
 
 Gestalte sie über die CSS Custom Properties `--rk-reel-timeline-*` (Höhe, Farben, Größe des Griffs). Für eine komplett eigene Leiste zum Spulen, einen Timecode oder eine Fortschrittsanzeige nutzt du `renderTimeline`; der Callback bekommt einen `timelineState`, hinter dem der zugrunde liegende `TimelineController` steht.
+
+Eine Komponente, die im Overlay gerendert wird, kann denselben Controller selbst lesen: `useTimelineState()` holt ihn aus dem nächsten `TimelineProvider` (den das Overlay mountet) und wirft außerhalb davon einen Fehler; `useTimelineStateOptional()` gibt dort stattdessen `null` zurück, für Komponenten, die auch außerhalb des Players gerendert werden.
 
 ## Ton-Context [#sound-context]
 

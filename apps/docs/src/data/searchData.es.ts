@@ -109,6 +109,7 @@ export const esTitles: Record<string, string> = {
   'Signal API': 'Signal API',
   'Content Loading': 'Carga de contenido',
   Sound: 'Sonido',
+  'Input Controllers': 'Controladores de entrada',
   'DOM & Cleanup Utilities': 'Utilidades de DOM y limpieza',
   'Size Detection': 'Detección de tamaño',
   Autoplay: 'Reproducción automática',

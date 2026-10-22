@@ -23,7 +23,7 @@ import usage from '../../../snippets/core-api/usage.ts?raw';
 | --- | --- | --- | --- |
 | `count` | `number` | 必須 | アイテムの総数 |
 | `initialIndex` | `number` | 0 | 開始時のインデックス |
-| `direction` | `'vertical' \| 'horizontal'` | 'vertical' | スクロールの方向 |
+| `direction` | `SliderDirection` | 'vertical' | スクロールの方向。`'vertical' \| 'horizontal'` |
 | `enableGestures` | `boolean` | true | タッチやマウスのドラッグによる操作を有効にします。false のときジェスチャーコントローラーは取り付けられません。 |
 | `enableNavKeys` | `boolean` | true | キーボードの矢印キーによる操作を有効にします |
 | `enableWheel` | `boolean` | false | マウスホイールを有効にします |
@@ -31,7 +31,7 @@ import usage from '../../../snippets/core-api/usage.ts?raw';
 | `loop` | `boolean` | false | ループするナビゲーション |
 | `transitionDuration` | `number` | 300 | アニメーションの長さ（ms） |
 | `swipeDistanceFactor` | `number` | 0.12 | スワイプのしきい値（0-1） |
-| `rangeExtractor` | `(index: number, count: number, loop: boolean) => number[]` | defaultRangeExtractor | 描画するインデックスを決める独自の関数 |
+| `rangeExtractor` | `RangeExtractor` | defaultRangeExtractor | 描画するインデックスを決める独自の関数 |
 
 ### コールバック [#callbacks]
 
@@ -68,6 +68,8 @@ import usage from '../../../snippets/core-api/usage.ts?raw';
 
 ## 状態プロパティ [#state-properties]
 
+コントローラーの `state` フィールドは `SliderState` で、下の 3 つのシグナルからなります。これを受け取る値の型には `SliderState` を使います。
+
 | プロパティ | 型 | 説明 |
 | --- | --- | --- |
 | `index` | `Signal<number>` | 現在のスライドのインデックス |
@@ -78,7 +80,8 @@ import usage from '../../../snippets/core-api/usage.ts?raw';
 
 | Export | 型 | 説明 |
 | --- | --- | --- |
-| `defaultRangeExtractor` | `(index: number, count: number, loop: boolean) => number[]` | 現在のインデックスの前後 3 つを描画するデフォルトのエクストラクター |
+| `defaultRangeExtractor` | `RangeExtractor` | 現在のインデックスの前後 3 つを描画するデフォルトのエクストラクター |
+| `RangeExtractor` | `(current: number, count: number, loop: boolean) => number[]` | レンジエクストラクターのシグネチャです。独自の `rangeExtractor` の型付けに使います。 |
 
 ## Signal API [#signal-api]
 
@@ -99,6 +102,8 @@ import usage from '../../../snippets/core-api/usage.ts?raw';
 | `createComputed` | `<T>(fn: () => T, deps: () => Subscribable[]) => ComputedSignal<T>` | 派生した計算シグナルを作ります。2 つ目の引数は、追跡するシグナルを返す依存関係のファクトリーです。 |
 | `reaction` | `(deps: () => Subscribable[], effect: () => void) => () => void` | 依存するシグナルのどれかが変わったときに副作用を実行し、破棄関数を返します。シグナルの値はエフェクトのコールバック内で読んでください。 |
 | `batch` | `(fn: () => void) => void` | 複数のシグナル更新を 1 回の通知にまとめます。入れ子にできます |
+| `Listener` | `() => void` | `observe` が受け取るコールバックです。別に宣言するシグナルのオブザーバーの型付けに使います。 |
+| `Dispose` | `() => void` | `observe` と `reaction` が返すもので、呼ぶと監視をやめます。保存しておく購読の型付けに使います。 |
 
 ## トランジション [#transitions]
 
@@ -113,6 +118,46 @@ import usage from '../../../snippets/core-api/usage.ts?raw';
 | `flipTransition` | `TransitionTransformFn` | 3D でカードをめくるトランジション |
 | `cubeTransition` | `TransitionTransformFn` | 3D で立方体を回すトランジション |
 | `zoomTransition` | `TransitionTransformFn` | 拡大縮小するトランジション |
+| `SlideTransformStyle` | `{ transform?; transformOrigin?; opacity?; zIndex? }` | `TransitionTransformFn` が 1 枚のスライドに返すものです。独自のトランジションから返します。 |
+
+## 入力コントローラー [#input-controllers]
+
+スライダーコントローラーは、`enableGestures`、`enableNavKeys`、`enableWheel` のオプションからこの 3 つを自分で作ります。独自の統合を書くとき、あるいはスライダーではない要素でジェスチャーや矢印キー、ホイールが必要なときは、直接作成してください。
+
+### ジェスチャーコントローラー [#gesture-controller]
+
+| Export | 型 | 説明 |
+| --- | --- | --- |
+| `createGestureController` | `(config?: GestureControllerConfig, events?: GestureControllerEvents) => GestureController` | 要素上のタップ、ダブルタップ、長押し、ドラッグを検出し、各ドラッグを主な軸に固定します。 |
+| `GestureController` | `{ attach; detach; observe; unobserve; updateEvents }` | `createGestureController` が返すオブジェクトです。`attach(element)` で要素を結び付け、`observe()` でリスナーを追加し、`unobserve()` は要素を保ったままリスナーを外し、`detach()` はすべてを外します。`updateEvents(events)` は新しいハンドラーをマージします。 |
+| `GestureControllerConfig` | `{ useTouchEventsOnly?; longPressDurationMs?; doubleTapWindowMs? }` | `createGestureController` のオプションです。マウスを無視するか（デフォルト `false`）、長押しの時間（デフォルト `800` ms）、ダブルタップの判定時間（デフォルト `200` ms）。 |
+| `GestureControllerEvents` | `{ onTap?; onDoubleTap?; onTapDown?; onTapUp?; onLongPress?; onLongPressEnd?; onHorizontalDragStart?; onHorizontalDragUpdate?; onHorizontalDragEnd?; onVerticalDragStart?; onVerticalDragUpdate?; onVerticalDragEnd?; onDragEnd? }` | `createGestureController` が呼ぶコールバックです。ドラッグは主な軸に応じて横または縦のハンドラーに渡り、`onDragEnd` はどちらでも発火します。 |
+| `GestureAxisDragUpdateEvent` | `GestureEvent & { delta; distance; primaryDelta; primaryDistance; cancel }` | `onHorizontalDragUpdate` と `onVerticalDragUpdate` のペイロードです。前回の更新からの移動量、合計の距離、主な軸に沿った同じ値、ドラッグを元に戻す `cancel()` を持ちます。 |
+| `GestureAxisDragEndEvent` | `cancel` を除いた `GestureAxisDragUpdateEvent` と `{ velocity; primaryVelocity }` | `onHorizontalDragEnd` と `onVerticalDragEnd` のペイロードで、指を離したときの速度（ピクセル毎秒）を持ちます。 |
+| `GestureDragEndEvent` | `primary` のフィールドを除いた `GestureAxisDragEndEvent` | `onDragEnd` のペイロードです。ドラッグの軸を気にしないハンドラー向けです。 |
+| `Offset` | `[x: number, y: number]` | ピクセルの組です。ジェスチャーイベントの位置、移動量、距離、速度はすべてこれを使います。 |
+| `EventKind` | `'touch' \| 'mouse'` | ジェスチャーの入力元で、`GestureCommonEvent` の `kind` フィールドに入ります。 |
+| `DragAxis` | `'horizontal' \| 'vertical' \| null` | ドラッグの主な軸です。最初の移動で決まるまでは `null` です。 |
+
+### キーボードコントローラー [#keyboard-controller]
+
+| Export | 型 | 説明 |
+| --- | --- | --- |
+| `createKeyboardController` | `(config: KeyboardControllerConfig, events: KeyboardControllerEvents) => KeyboardController` | 矢印キーの入力を `NavKey` のコールバックに変えます。 |
+| `KeyboardController` | `{ attach; detach }` | `createKeyboardController` が返すオブジェクトです。`attach(target?)` は対象（デフォルトは `window`）の `keydown` を監視し、`detach()` で止めます。 |
+| `KeyboardControllerConfig` | `{ filter?; throttleMs? }` | `createKeyboardController` のオプションです。反応するキー（デフォルトは 4 つすべて）と、2 回の入力の最小間隔（デフォルト `0`、間引きなし）。 |
+| `KeyboardControllerEvents` | `{ onKeyPress: (key: NavKey, event: KeyboardEvent) => void }` | 受け付けたキー入力ごとに `createKeyboardController` が呼ぶコールバックです。 |
+| `NavKey` | `'up' \| 'right' \| 'down' \| 'left'` | 押された矢印キーで、キーボードコントローラーが報告し、絞り込みに使う値です。 |
+
+### ホイールコントローラー [#wheel-controller]
+
+| Export | 型 | 説明 |
+| --- | --- | --- |
+| `createWheelController` | `(config: WheelControllerConfig, events: WheelControllerEvents) => WheelController` | マウスホイールのスクロールを、ジェスチャーごとに 1 回の方向のコールバックに変えます。1 回のスクロールで生じる連続したイベントをまとめます。 |
+| `WheelController` | `{ attach; detach }` | `createWheelController` が返すオブジェクトです。`attach(target?)` は対象（デフォルトは `window`）の `wheel` を監視し、`detach()` は監視を止めて保留中のコールバックを捨てます。 |
+| `WheelControllerConfig` | `{ debounceMs?; deltaThreshold? }` | `createWheelController` のオプションです。ジェスチャーの終わりとみなす静止時間（デフォルト `200` ms）と、数に入れる最小の移動量（デフォルト `10` px）。 |
+| `WheelControllerEvents` | `{ onWheel: (direction: WheelDirection, event: WheelEvent) => void }` | スクロールのジェスチャーごとに 1 回 `createWheelController` が呼ぶコールバックです。 |
+| `WheelDirection` | `'up' \| 'down' \| 'left' \| 'right'` | ホイールのジェスチャーの方向です。 |
 
 ## コンテンツの読み込み [#content-loading]
 
@@ -185,6 +230,28 @@ DOM イベントの管理と、確実な後片付けのための低レベルの�
 | `createDisposableList` | `() => DisposableList` | 破棄関数を集めるための組み合わせ可能なリストです。dispose() を呼ぶとまとめて実行します。 |
 | `createBodyLock` | `() => BodyLock` | 参照カウント付きで body のスクロールを止めます。複数の利用者が同時に止められ、全員が解除するとスクロールが戻ります。 |
 | `sharedBodyLock` | `BodyLock` | モジュールレベルのシングルトンインスタンスです。入れ子になったモーダルやオーバーレイが正しく噛み合うように、アプリ内の複数のコンポーネントで 1 つの参照カウンターを共有したいときに使います。フレームワークのバインディング（`@reelkit/react`、`@reelkit/vue`、`@reelkit/angular`）は内部でこれを使っています。 |
+
+## ユーティリティ [#utilities]
+
+コントローラーを組み立てている小さなヘルパーです。フレームワークのバインディングが再エクスポートしているので、独自のスライドやトランジション、統合でも同じものを使えます。
+
+| Export | 型 | 説明 |
+| --- | --- | --- |
+| `first` | `<T>(arr: readonly T[]) => T` | 配列の最初の要素です。`Offset` の x やサイズの幅などに使います。 |
+| `last` | `<T>(arr: readonly T[]) => T` | 配列の最後の要素です。`Offset` の y やサイズの高さなどに使います。 |
+| `generate` | `<G>(count: number, generator: (i: number) => G) => G[]` | インデックスから `count` 個の要素の配列を作ります。たとえばデモデータには `generate(10, (i) => i)`。 |
+| `abs` | `(value: number) => number` | 絶対値です。 |
+| `isNegative` | `(value: number) => boolean` | 数が 0 より小さいかどうかです。たとえば後ろ向きのドラッグと前向きのドラッグを見分けるのに使います。 |
+| `clamp` | `(value: number, min: number, max: number) => number` | 数を `min` と `max` の範囲（両端を含む）に収めます。 |
+| `lerp` | `(t: number, a: number, b: number) => number` | 線形補間です。`t = 0` で `a`、`t = 1` で `b` になります。独自のトランジションでスライドの進み具合を値に対応させるのに使います。 |
+| `extractRange` | `(count, start, end?, overscan?, loop?) => number[]` | `start` から `end`（デフォルトは `start`）までのインデックスに、両側の `overscan`（デフォルト `1`）を加えたものです。`loop` が true なら端で折り返します。独自の `RangeExtractor` を作るのに使います。 |
+| `noop` | `() => void` | 何もしない関数で、デフォルトのコールバックに使います。 |
+| `createDeferred` | `<T = void>() => Deferred<T>` | Promise と、それを解決する `resolve` の組です。コールバックの API を `await` につなぐのに使います。 |
+| `Deferred` | `{ promise: Promise<T>; resolve: (value?: T) => void }` | `createDeferred` が返すオブジェクトです。 |
+| `createLruCache` | `<V>(maxSize: number, onEvict?: (value: V, key: string) => void) => LruCache<V>` | 最近設定した `maxSize` 件を保持し、それを超えると最も古いものを捨てる `Map` です。`onEvict` は捨てた要素ごとに呼ばれ、`URL.revokeObjectURL` などの後片付けに使います。 |
+| `LruCache` | `Map<string, V>` | `createLruCache` が返すオブジェクトです。本物の `Map` で、違うのは `set` だけです。 |
+| `animate` | `(options: AnimationOptions) => () => void` | 数値を `from` から `to` までイーズインアウトの曲線で動かし、フレームごとに `onUpdate` を呼びます。アニメーションを取り消す関数を返します。 |
+| `AnimationOptions` | `{ from; to; duration; onUpdate; onComplete? }` | `animate` のオプションです。開始と終了の値、ミリ秒単位の長さ、フレームごとのコールバック、終了時の任意のコールバック。 |
 
 ## サイズの検出 [#size-detection]
 

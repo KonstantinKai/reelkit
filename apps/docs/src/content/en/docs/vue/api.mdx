@@ -140,6 +140,28 @@ Tag: `<SwipeToClose>` — Wraps its default slot in a touch-aware container that
 | --- | --- |
 | `default` | Content to wrap with swipe-to-close gesture handling |
 
+## Observe [#observe]
+
+Tag: `<Observe :signals="[…]">` — re-renders its default slot whenever one of the signals changes, and nothing around it.
+
+Reading a core signal in a render function or template does not subscribe to it. [`toVueRef`](#tovueref) is the usual answer, but it binds the signal to the component that calls it, so a signal that changes often re-renders that whole component. `Observe` is the narrower boundary: put it around the part that shows the value, and the rest of the component stays put. It is what the stories player uses to repaint its header and progress bar without redrawing either slider.
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `signals` | `readonly Subscribable[]` | Signals to follow. Handing over a different set swaps the subscription; the same set keeps it. Everything is released on unmount. |
+
+The props type is exported as `ObserveProps`.
+
+<CodeBlock code={observe} language="vue" />
+
+Reach for `toVueRef` when the whole component follows the signal, and `Observe` when only a region of it does.
+
+## SoundProvider [#soundprovider]
+
+Tag: `<SoundProvider>` — Context provider that creates a `SoundController` instance and provides it to descendants via `RK_SOUND_KEY`. Renders its default slot transparently.
+
+<CodeBlock code={soundprovider} language="vue" />
+
 ## RK_REEL_KEY & useReelContext [#rk-reel-key-usereelcontext]
 
 An `InjectionKey<ReelContextValue>` provided by `<Reel>` to its descendants. Used internally by `<ReelIndicator>` for auto-connect behavior. Use `useReelContext()` in custom components that need slider context.
@@ -216,28 +238,6 @@ The subscription is auto-disposed via `onScopeDispose`, so this must be called i
 
 <CodeBlock code={tovueref} language="typescript" />
 
-## Observe [#observe]
-
-Tag: `<Observe :signals="[…]">` — re-renders its default slot whenever one of the signals changes, and nothing around it.
-
-Reading a core signal in a render function or template does not subscribe to it. [`toVueRef`](#tovueref) is the usual answer, but it binds the signal to the component that calls it, so a signal that changes often re-renders that whole component. `Observe` is the narrower boundary: put it around the part that shows the value, and the rest of the component stays put. It is what the stories player uses to repaint its header and progress bar without redrawing either slider.
-
-| Prop | Type | Description |
-| --- | --- | --- |
-| `signals` | `readonly Subscribable[]` | Signals to follow. Handing over a different set swaps the subscription; the same set keeps it. Everything is released on unmount. |
-
-The props type is exported as `ObserveProps`.
-
-<CodeBlock code={observe} language="vue" />
-
-Reach for `toVueRef` when the whole component follows the signal, and `Observe` when only a region of it does.
-
-## SoundProvider [#soundprovider]
-
-Tag: `<SoundProvider>` — Context provider that creates a `SoundController` instance and provides it to descendants via `RK_SOUND_KEY`. Renders its default slot transparently.
-
-<CodeBlock code={soundprovider} language="vue" />
-
 ## asGenericPropKeys [#asgenericpropkeys]
 
 Builds a component that is generic over the items it receives, the way `ReelPlayerOverlay` and `StoriesOverlay` are. Vue 3.3 accepts a setup function with a type parameter, `defineComponent(<T>(props: Props<T>) => …, options)`, but keeps that parameter only when `options.props` lists prop names. Hand it a props object and Vue reads the prop types back from the object, so `T` is lost. `asGenericPropKeys` passes the props object through untouched while the type checker sees a list of names: `T` is inferred from what the parent binds, and defaults, validation and boolean casting still apply at runtime.
@@ -245,6 +245,10 @@ Builds a component that is generic over the items it receives, the way `ReelPlay
 The type argument is the props type with the base item, and the component needs Vue 3.3 or later. Slots and emits cannot use `T`: annotate a slot scope in the template to type it.
 
 <CodeBlock code={asgenericpropkeys} language="typescript" />
+
+### hasRenderedNodes [#hasrenderednodes]
+
+`hasRenderedNodes(nodes)` tells whether a slot result will put anything on the page, for a component that falls back to its own rendering when the parent leaves a slot empty, as the overlays do. A slot whose content sits behind a false `v-if` still returns a comment node, so checking the array length would treat it as filled and drop the fallback. `hasRenderedNodes` unwraps fragments, ignores comment nodes, and returns `false` for `null` or `undefined`, so `hasRenderedNodes(slots.controls?.(scope))` is the test to branch on.
 
 ## Accessibility [#accessibility]
 

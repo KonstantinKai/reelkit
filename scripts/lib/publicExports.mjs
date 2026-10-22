@@ -62,3 +62,80 @@ export function publicExportNames(src) {
     hasStarExport: /^\s*export\s+\*\s+from/m.test(src),
   };
 }
+
+/** Each specifier of a relative re-export block: the local and published name. */
+function relativeSpecifiers(src) {
+  const specs = [];
+  for (const block of src.matchAll(kReexportBlock)) {
+    const from = block[2];
+    if (!from || !from.startsWith('.')) continue;
+    const body = block[1]
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/\/\/.*$/gm, '');
+    for (let spec of body.split(',')) {
+      spec = spec.trim().replace(/^type\s+/, '');
+      if (!spec) continue;
+      const [local, published = local] = spec.split(/\s+as\s+/);
+      specs.push({ local, published, from });
+    }
+  }
+  return specs;
+}
+
+/** Whether the doc block directly above `name`'s declaration carries `@internal`. */
+function declaresInternal(src, name) {
+  const declaration = new RegExp(
+    `(\\/\\*\\*(?:(?!\\*\\/)[\\s\\S])*\\*\\/)\\s*export\\s+(?:declare\\s+)?(?:const|let|var|function|class|interface|type|enum)\\s+${name.replace(/\$/g, '\\$')}\\b`,
+  );
+  const match = src.match(declaration);
+  return match ? /@internal\b/.test(match[1]) : false;
+}
+
+/** Whether the module declares `name` itself, documented or not. */
+const declares = (src, name) =>
+  new RegExp(
+    `^\\s*export\\s+(?:declare\\s+)?(?:const|let|var|function|class|interface|type|enum)\\s+${name.replace(/\$/g, '\\$')}\\b`,
+    'm',
+  ).test(src);
+
+/**
+ * Published names whose declaration is tagged `@internal`. The tag sits on the
+ * declaration, which a package index rarely holds itself: it re-exports from
+ * a module, and that module may in turn re-export from another. So the lookup
+ * follows the name through up to two relative hops before reading the doc
+ * block directly above its declaration.
+ *
+ * @param {string} indexSrc - The package index's source text.
+ * @param {(fromDir: string, specifier: string) => { src: string; dir: string } | null} resolve
+ * Loads the module a relative specifier points at, seen from a directory;
+ * null when it cannot be found. Injected so the lookup runs without a disk.
+ * @param {string} indexDir - Directory the index lives in.
+ * @returns {string[]} The published names to leave out of the docs gate, sorted.
+ */
+export function internalExportNames(indexSrc, resolve, indexDir) {
+  const internal = new Set();
+
+  for (const m of indexSrc.matchAll(kOwnDeclaration)) {
+    if (declaresInternal(indexSrc, m[1])) internal.add(m[1]);
+  }
+
+  const isInternal = (name, fromDir, specifier, hops) => {
+    const module = resolve(fromDir, specifier);
+    if (!module) return false;
+    if (declares(module.src, name)) return declaresInternal(module.src, name);
+    if (hops === 0) return false;
+    const next = relativeSpecifiers(module.src).find(
+      (s) => s.published === name,
+    );
+    return next
+      ? isInternal(next.local, module.dir, next.from, hops - 1)
+      : false;
+  };
+
+  for (const spec of relativeSpecifiers(indexSrc)) {
+    if (isInternal(spec.local, indexDir, spec.from, 1)) {
+      internal.add(spec.published);
+    }
+  }
+  return [...internal].sort();
+}

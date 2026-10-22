@@ -140,6 +140,28 @@ Tag: `<SwipeToClose>` — envolve o slot padrão em um contêiner sensível ao t
 | --- | --- |
 | `default` | Conteúdo a envolver com o gesto de deslizar para fechar |
 
+## Observe [#observe]
+
+Tag: `<Observe :signals="[…]">` — re-renderiza o seu slot padrão sempre que um dos sinais muda, e nada ao redor.
+
+Ler um sinal do core numa função de render ou num template não inscreve você nele. A resposta de sempre é [`toVueRef`](#tovueref), mas ele amarra o sinal ao componente que o chamou, então um sinal que muda com frequência re-renderiza o componente inteiro. `Observe` é a fronteira mais estreita: coloque-o em volta da parte que mostra o valor e o resto do componente fica parado. É assim que o player de stories repinta o cabeçalho e a barra de progresso sem redesenhar nenhum dos sliders.
+
+| Prop | Tipo | Descrição |
+| --- | --- | --- |
+| `signals` | `readonly Subscribable[]` | Sinais a acompanhar. Um conjunto diferente troca a inscrição; o mesmo conjunto a mantém. Tudo é liberado na desmontagem. |
+
+O tipo das props é exportado como `ObserveProps`.
+
+<CodeBlock code={observe} language="vue" />
+
+Use `toVueRef` quando o componente inteiro acompanha o sinal, e `Observe` quando só um pedaço dele acompanha.
+
+## SoundProvider [#soundprovider]
+
+Tag: `<SoundProvider>` — provedor de contexto que cria uma instância de `SoundController` e a entrega aos descendentes por `RK_SOUND_KEY`. Renderiza o slot padrão de forma transparente.
+
+<CodeBlock code={soundprovider} language="vue" />
+
 ## RK_REEL_KEY e useReelContext [#rk-reel-key-usereelcontext]
 
 Uma `InjectionKey<ReelContextValue>` que o `<Reel>` fornece aos seus descendentes. Usada internamente pelo `<ReelIndicator>` para se ligar sozinho. Use `useReelContext()` em componentes seus que precisem do contexto do slider.
@@ -216,28 +238,6 @@ A assinatura é descartada sozinha por `onScopeDispose`, então isto precisa ser
 
 <CodeBlock code={tovueref} language="typescript" />
 
-## Observe [#observe]
-
-Tag: `<Observe :signals="[…]">` — re-renderiza o seu slot padrão sempre que um dos sinais muda, e nada ao redor.
-
-Ler um sinal do core numa função de render ou num template não inscreve você nele. A resposta de sempre é [`toVueRef`](#tovueref), mas ele amarra o sinal ao componente que o chamou, então um sinal que muda com frequência re-renderiza o componente inteiro. `Observe` é a fronteira mais estreita: coloque-o em volta da parte que mostra o valor e o resto do componente fica parado. É assim que o player de stories repinta o cabeçalho e a barra de progresso sem redesenhar nenhum dos sliders.
-
-| Prop | Tipo | Descrição |
-| --- | --- | --- |
-| `signals` | `readonly Subscribable[]` | Sinais a acompanhar. Um conjunto diferente troca a inscrição; o mesmo conjunto a mantém. Tudo é liberado na desmontagem. |
-
-O tipo das props é exportado como `ObserveProps`.
-
-<CodeBlock code={observe} language="vue" />
-
-Use `toVueRef` quando o componente inteiro acompanha o sinal, e `Observe` quando só um pedaço dele acompanha.
-
-## SoundProvider [#soundprovider]
-
-Tag: `<SoundProvider>` — provedor de contexto que cria uma instância de `SoundController` e a entrega aos descendentes por `RK_SOUND_KEY`. Renderiza o slot padrão de forma transparente.
-
-<CodeBlock code={soundprovider} language="vue" />
-
 ## asGenericPropKeys [#asgenericpropkeys]
 
 Cria um componente genérico em relação aos itens que recebe, como `ReelPlayerOverlay` e `StoriesOverlay`. O Vue 3.3 aceita uma função setup com parâmetro de tipo, `defineComponent(<T>(props: Props<T>) => …, options)`, mas só mantém esse parâmetro quando `options.props` lista nomes de props. Passe um objeto de props e o Vue lê os tipos das props de volta a partir do objeto, então `T` se perde. `asGenericPropKeys` repassa o objeto de props intacto enquanto o verificador de tipos vê uma lista de nomes: `T` é inferido do que o componente pai vincula, e os valores padrão, a validação e a conversão de booleanos continuam valendo em tempo de execução.
@@ -245,6 +245,10 @@ Cria um componente genérico em relação aos itens que recebe, como `ReelPlayer
 O argumento de tipo é o tipo das props com o item base, e o componente precisa do Vue 3.3 ou mais recente. Slots e eventos não podem usar `T`: para tipar o escopo de um slot, anote-o no template.
 
 <CodeBlock code={asgenericpropkeys} language="typescript" />
+
+### hasRenderedNodes [#hasrenderednodes]
+
+`hasRenderedNodes(nodes)` diz se o resultado de um slot vai colocar algo na página, para um componente que volta à própria renderização quando o pai deixa um slot vazio, como fazem os overlays. Um slot cujo conteúdo está atrás de um `v-if` falso ainda devolve um nó de comentário, então checar o tamanho do array o trataria como preenchido e descartaria o fallback. `hasRenderedNodes` desembrulha fragmentos, ignora nós de comentário e devolve `false` para `null` ou `undefined`, então `hasRenderedNodes(slots.controls?.(scope))` é o teste em que se basear.
 
 ## Acessibilidade [#accessibility]
 

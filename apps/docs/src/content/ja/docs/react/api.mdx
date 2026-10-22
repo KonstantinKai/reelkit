@@ -107,6 +107,23 @@ import createdefaultkeyextractorforloop from '../../../snippets/react-api/create
 | `signal` | `Signal<AnimatedValue>` | `必須` | \{ value, duration, done? \} を出すシグナル。duration が 0 より大きければ現在の値から新しい値へ補間し、0 ならすぐその値になります。 |
 | `children` | `(value: number) => ReactElement` | `必須` | 現在のフレームの補間された値を受け取る描画関数。DOM がアニメーションに遅れないよう、同期的に反映されます。 |
 
+## SwipeToClose [#swipetoclose]
+
+`<SwipeToClose>` は子要素を縦のスワイプに追従するコンテナーで包み、スワイプがしきい値を超えると `onClose` を呼びます。Lightbox と Stories Player の閉じるジェスチャーを、自分の独自のオーバーレイで使うためのものです。`SwipeToCloseProps` はそのプロップの型で、`SwipeToCloseDirection` は `'up' | 'down'` です。
+
+| プロップ | 型 | デフォルト | 説明 |
+| --- | --- | --- | --- |
+| `direction` | `SwipeToCloseDirection` | 必須 | `'up'` は Lightbox のように、`'down'` は Stories Player のように閉じます |
+| `onClose` | `() => void` | 必須 | スワイプがしきい値を超え、退場アニメーションが終わったあとに呼ばれます |
+| `enabled` | `boolean` | `true` | アンマウントせずにジェスチャーを無効にします |
+| `threshold` | `number` | `0.2` | スワイプが移動しなければならないビューポートの高さの割合 |
+| `className` | `string` | — | 外側の `<div>` に付けるクラス |
+| `children` | `ReactNode` | 必須 | スワイプと一緒に動く中身 |
+
+## SoundProvider [#soundprovider]
+
+`<SoundProvider>` は最初はミュートの `SoundController` を 1 つ作り、`useSoundState` を通して子に渡します。オーバーレイは自分で 1 つ描画するので、独自のプロバイダーを足すのは、コントロールがミュートの状態を共有する独自のプレイヤーを囲むときだけです。
+
 ## フック [#hooks]
 
 ### useBodyLock [#usebodylock]
@@ -137,6 +154,31 @@ React Router に連動した `UrlAdapter` です。ルーターを使うアプ�
 独自のサブパスから提供されるので、ルーターを使わないアプリのバンドルに `react-router-dom` が入ることはありません。`react-router-dom` は任意の peer dependency です。
 
 <CodeBlock code={usereactrouterurladapter} language="tsx" />
+
+### useReelContext [#usereelcontext]
+
+`useReelContext()` は最も近い親の `<Reel>` の `ReelContextValue` を読み、外側では `null` を返します。`<ReelIndicator>` はこれで自分を接続します。`<Reel>` の子として描画する独自のコントロールで使えば、プロップなしでスライダーに追従します。`ReelContext` はその裏にあるコンテキストオブジェクトです。自分の値を渡すのはテストや独自のラッパーの中だけにしてください。
+
+| プロパティ | 型 | 説明 |
+| --- | --- | --- |
+| `index` | `Signal<number>` | アクティブなスライドのインデックス。`.value` は `Observe` の中で読みます |
+| `count` | `Signal<number>` | スライドの総数 |
+| `goTo` | `(index: number, animate?: boolean) => Promise<void>` | スライドへ移動します。アニメーションの有無を選べます |
+
+### useSoundState [#usesoundstate]
+
+`useSoundState()` は最も近い `<SoundProvider>` から `SoundController` を読み、外側では例外を投げます。Reel Player、Lightbox、Stories Player は中身をプロバイダーで包んでいるので、レンダープロップで渡す独自のコントロールからこれを呼んで、ミュートの状態を読んだり切り替えたりできます。
+
+### useFullscreen [#usefullscreen]
+
+`useFullscreen({ ref })` は `ref` の要素に対して Fullscreen API を操作し、コンポーネントがアンマウントされるとフルスクリーンを終了します。`UseFullscreenProps` はその引数、`UseFullscreenResult` は返すタプルです。
+
+| インデックス | 型 | 説明 |
+| --- | --- | --- |
+| `[0]` | `Signal<boolean>` | ページがフルスクリーンかどうか。`.value` は `Observe` の中で読みます |
+| `[1]` | `() => Promise<void>` | 要素のフルスクリーンを要求します。別の要素がフルスクリーンなら先に抜けます |
+| `[2]` | `() => Promise<void>` | フルスクリーンを終了します |
+| `[3]` | `() => Promise<void>` | 2 つの状態を切り替えます |
 
 ## アクセシビリティ [#accessibility]
 

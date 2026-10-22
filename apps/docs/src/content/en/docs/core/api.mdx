@@ -23,7 +23,7 @@ The framework-agnostic core. One factory builds a controller from a config and o
 | --- | --- | --- | --- |
 | `count` | `number` | required | Total number of items |
 | `initialIndex` | `number` | 0 | Starting index |
-| `direction` | `'vertical' \| 'horizontal'` | 'vertical' | Scroll direction |
+| `direction` | `SliderDirection` | 'vertical' | Scroll direction, `'vertical' \| 'horizontal'` |
 | `enableGestures` | `boolean` | true | Enable touch/mouse drag navigation. When false, the gesture controller is not attached. |
 | `enableNavKeys` | `boolean` | true | Enable keyboard arrow key navigation |
 | `enableWheel` | `boolean` | false | Enable mouse wheel |
@@ -31,7 +31,7 @@ The framework-agnostic core. One factory builds a controller from a config and o
 | `loop` | `boolean` | false | Loop navigation |
 | `transitionDuration` | `number` | 300 | Animation duration in ms |
 | `swipeDistanceFactor` | `number` | 0.12 | Swipe threshold (0-1) |
-| `rangeExtractor` | `(index: number, count: number, loop: boolean) => number[]` | defaultRangeExtractor | Custom function to determine which indexes are rendered |
+| `rangeExtractor` | `RangeExtractor` | defaultRangeExtractor | Custom function to determine which indexes are rendered |
 
 ### Callbacks [#callbacks]
 
@@ -68,6 +68,8 @@ The framework-agnostic core. One factory builds a controller from a config and o
 
 ## State Properties [#state-properties]
 
+The controller's `state` field is a `SliderState`, the three signals below. Type a value that receives it with `SliderState`.
+
 | Property | Type | Description |
 | --- | --- | --- |
 | `index` | `Signal<number>` | Current slide index |
@@ -78,7 +80,8 @@ The framework-agnostic core. One factory builds a controller from a config and o
 
 | Export | Type | Description |
 | --- | --- | --- |
-| `defaultRangeExtractor` | `(index: number, count: number, loop: boolean) => number[]` | Default extractor that renders 3 items around current index |
+| `defaultRangeExtractor` | `RangeExtractor` | Default extractor that renders 3 items around current index |
+| `RangeExtractor` | `(current: number, count: number, loop: boolean) => number[]` | Signature of a range extractor. Type your own `rangeExtractor` with it. |
 
 ## Signal API [#signal-api]
 
@@ -99,6 +102,8 @@ Lightweight reactive primitives used throughout the core.
 | `createComputed` | `<T>(fn: () => T, deps: () => Subscribable[]) => ComputedSignal<T>` | Create a derived computed signal. The second argument is a deps factory that returns the signals to track. |
 | `reaction` | `(deps: () => Subscribable[], effect: () => void) => () => void` | Run side effect when any dependency signal changes; returns dispose function. Read signal values inside the effect callback. |
 | `batch` | `(fn: () => void) => void` | Group multiple signal updates into a single notification pass; supports nesting |
+| `Listener` | `() => void` | The callback `observe` takes. Type a signal observer you declare separately with it. |
+| `Dispose` | `() => void` | What `observe` and `reaction` return: call it to stop listening. Type a stored subscription with it. |
 
 ## Transitions [#transitions]
 
@@ -113,6 +118,46 @@ Built-in transition functions that compute per-slide CSS transforms during anima
 | `flipTransition` | `TransitionTransformFn` | 3D card-flip transition |
 | `cubeTransition` | `TransitionTransformFn` | 3D cube rotation transition |
 | `zoomTransition` | `TransitionTransformFn` | Scale/zoom transition |
+| `SlideTransformStyle` | `{ transform?; transformOrigin?; opacity?; zIndex? }` | What a `TransitionTransformFn` returns for one slide. Return it from a custom transition. |
+
+## Input Controllers [#input-controllers]
+
+The slider controller builds these three itself from its `enableGestures`, `enableNavKeys` and `enableWheel` options. Create one directly when you write your own integration, or need gestures, arrow keys or the wheel on an element that is not a slider.
+
+### Gesture Controller [#gesture-controller]
+
+| Export | Type | Description |
+| --- | --- | --- |
+| `createGestureController` | `(config?: GestureControllerConfig, events?: GestureControllerEvents) => GestureController` | Detects taps, double taps, long presses and drags on an element, and locks each drag to its dominant axis. |
+| `GestureController` | `{ attach; detach; observe; unobserve; updateEvents }` | Object `createGestureController` returns. `attach(element)` binds the element, `observe()` adds the listeners, `unobserve()` removes them and keeps the element, `detach()` removes everything; `updateEvents(events)` merges new handlers in. |
+| `GestureControllerConfig` | `{ useTouchEventsOnly?; longPressDurationMs?; doubleTapWindowMs? }` | Options of `createGestureController`: ignore the mouse (default `false`), long-press time (default `800` ms), double-tap window (default `200` ms). |
+| `GestureControllerEvents` | `{ onTap?; onDoubleTap?; onTapDown?; onTapUp?; onLongPress?; onLongPressEnd?; onHorizontalDragStart?; onHorizontalDragUpdate?; onHorizontalDragEnd?; onVerticalDragStart?; onVerticalDragUpdate?; onVerticalDragEnd?; onDragEnd? }` | Callbacks `createGestureController` calls. A drag goes to the horizontal or vertical handlers by its dominant axis; `onDragEnd` fires for both. |
+| `GestureAxisDragUpdateEvent` | `GestureEvent & { delta; distance; primaryDelta; primaryDistance; cancel }` | Payload of `onHorizontalDragUpdate` and `onVerticalDragUpdate`: movement since the last update, total distance, the same along the dominant axis, and `cancel()` to snap the drag back. |
+| `GestureAxisDragEndEvent` | `GestureAxisDragUpdateEvent` without `cancel`, plus `{ velocity; primaryVelocity }` | Payload of `onHorizontalDragEnd` and `onVerticalDragEnd`, with the release speed in pixels per second. |
+| `GestureDragEndEvent` | `GestureAxisDragEndEvent` without the `primary` fields | Payload of `onDragEnd`, for a handler that does not care which axis the drag took. |
+| `Offset` | `[x: number, y: number]` | A pixel pair, used for every position, delta, distance and velocity in a gesture event. |
+| `EventKind` | `'touch' \| 'mouse'` | The input a gesture came from, in the `kind` field of `GestureCommonEvent`. |
+| `DragAxis` | `'horizontal' \| 'vertical' \| null` | The dominant axis of a drag, `null` until the first movement decides it. |
+
+### Keyboard Controller [#keyboard-controller]
+
+| Export | Type | Description |
+| --- | --- | --- |
+| `createKeyboardController` | `(config: KeyboardControllerConfig, events: KeyboardControllerEvents) => KeyboardController` | Turns arrow key presses into `NavKey` callbacks. |
+| `KeyboardController` | `{ attach; detach }` | Object `createKeyboardController` returns. `attach(target?)` listens for `keydown` on the target (default `window`), `detach()` stops. |
+| `KeyboardControllerConfig` | `{ filter?; throttleMs? }` | Options of `createKeyboardController`: the keys to react to (default: all four) and the minimum time between two presses (default `0`, no throttling). |
+| `KeyboardControllerEvents` | `{ onKeyPress: (key: NavKey, event: KeyboardEvent) => void }` | Callback `createKeyboardController` calls for each accepted key press. |
+| `NavKey` | `'up' \| 'right' \| 'down' \| 'left'` | The arrow key pressed, as the keyboard controller reports and filters it. |
+
+### Wheel Controller [#wheel-controller]
+
+| Export | Type | Description |
+| --- | --- | --- |
+| `createWheelController` | `(config: WheelControllerConfig, events: WheelControllerEvents) => WheelController` | Turns mouse wheel scrolling into one direction callback per gesture, collapsing the burst of events a single scroll produces. |
+| `WheelController` | `{ attach; detach }` | Object `createWheelController` returns. `attach(target?)` listens for `wheel` on the target (default `window`), `detach()` stops and drops a pending callback. |
+| `WheelControllerConfig` | `{ debounceMs?; deltaThreshold? }` | Options of `createWheelController`: the quiet time that ends a gesture (default `200` ms) and the smallest delta that counts (default `10` px). |
+| `WheelControllerEvents` | `{ onWheel: (direction: WheelDirection, event: WheelEvent) => void }` | Callback `createWheelController` calls once per scroll gesture. |
+| `WheelDirection` | `'up' \| 'down' \| 'left' \| 'right'` | The direction of a wheel gesture. |
 
 ## Content Loading [#content-loading]
 
@@ -185,6 +230,28 @@ Low-level helpers for DOM event management and deterministic cleanup. Used inter
 | `createDisposableList` | `() => DisposableList` | Composable list for collecting disposer functions. Call dispose() to run all at once. |
 | `createBodyLock` | `() => BodyLock` | Reference-counted body scroll lock. Multiple consumers can lock simultaneously; scroll is restored when all unlock. |
 | `sharedBodyLock` | `BodyLock` | Module-level singleton instance. Use when multiple components across your app should share a single reference counter so nested modals/overlays interleave correctly. Framework bindings (`@reelkit/react`, `@reelkit/vue`, `@reelkit/angular`) use this under the hood. |
+
+## Utilities [#utilities]
+
+Small helpers the controllers are built from. The framework bindings re-export them, so a custom slide, transition or integration can use the same ones.
+
+| Export | Type | Description |
+| --- | --- | --- |
+| `first` | `<T>(arr: readonly T[]) => T` | First element of an array, such as the x of an `Offset` or the width of a size. |
+| `last` | `<T>(arr: readonly T[]) => T` | Last element of an array, such as the y of an `Offset` or the height of a size. |
+| `generate` | `<G>(count: number, generator: (i: number) => G) => G[]` | Builds an array of `count` items from their index, for example `generate(10, (i) => i)` for demo data. |
+| `abs` | `(value: number) => number` | Absolute value. |
+| `isNegative` | `(value: number) => boolean` | Whether a number is below zero, for example to tell a backward drag from a forward one. |
+| `clamp` | `(value: number, min: number, max: number) => number` | Keeps a number within `min` and `max`, inclusive. |
+| `lerp` | `(t: number, a: number, b: number) => number` | Linear interpolation: `a` at `t = 0`, `b` at `t = 1`. Use it in a custom transition to map slide progress to a value. |
+| `extractRange` | `(count, start, end?, overscan?, loop?) => number[]` | Indexes from `start` to `end` (default `start`) plus `overscan` on each side (default `1`), wrapped around the ends when `loop` is true. Build a custom `RangeExtractor` with it. |
+| `noop` | `() => void` | A function that does nothing, for a default callback. |
+| `createDeferred` | `<T = void>() => Deferred<T>` | A promise together with the `resolve` that settles it, for bridging a callback API to `await`. |
+| `Deferred` | `{ promise: Promise<T>; resolve: (value?: T) => void }` | Object `createDeferred` returns. |
+| `createLruCache` | `<V>(maxSize: number, onEvict?: (value: V, key: string) => void) => LruCache<V>` | A `Map` that keeps the `maxSize` most recently set entries and drops the oldest past that. `onEvict` runs for each dropped entry, for cleanup such as `URL.revokeObjectURL`. |
+| `LruCache` | `Map<string, V>` | Object `createLruCache` returns. It is a real `Map`; only `set` differs. |
+| `animate` | `(options: AnimationOptions) => () => void` | Animates a number from `from` to `to` with an ease-in-out curve, calling `onUpdate` each frame. Returns a function that cancels the animation. |
+| `AnimationOptions` | `{ from; to; duration; onUpdate; onComplete? }` | Options of `animate`: start and end value, duration in milliseconds, the per-frame callback and an optional callback when it finishes. |
 
 ## Size Detection [#size-detection]
 

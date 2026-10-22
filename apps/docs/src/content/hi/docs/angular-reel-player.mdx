@@ -116,17 +116,31 @@ stylesheet और standalone `RkReelPlayerOverlayComponent` को अपने 
 
 | Directive | Context टाइप | विवरण |
 | --- | --- | --- |
-| \[rkPlayerControls\] | `PlayerControlsContext<T>` | कस्टम global कंट्रोल बार (बंद, साउंड टॉगल वगैरह) |
-| \[rkPlayerError\] | `{ $implicit: activeIndex, item, innerActiveIndex }` | कस्टम एरर इंडिकेटर का template slot |
-| \[rkPlayerLoading\] | `{ $implicit: activeIndex, item, innerActiveIndex }` | कस्टम लोडिंग इंडिकेटर का template slot |
-| \[rkPlayerNavigation\] | `PlayerNavigationContext` | कस्टम prev/next नेविगेशन तीर |
-| \[rkPlayerNestedNavigation\] | `PlayerNestedNavigationContext` | अंदरूनी हॉरिज़ॉन्टल स्लाइडर के कस्टम नेविगेशन तीर |
-| \[rkPlayerNestedSlide\] | `PlayerNestedSlideContext` | अंदरूनी हॉरिज़ॉन्टल स्लाइडर की हर स्लाइड के लिए कस्टम कंटेंट |
-| \[rkPlayerSlide\] | `PlayerSlideContext<T>` | डिफ़ॉल्ट मीडिया स्लाइड की जगह पूरी तरह कस्टम स्लाइड कंटेंट |
-| \[rkPlayerSlideOverlay\] | `PlayerSlideOverlayContext<T>` | हर स्लाइड का overlay (लेखक की जानकारी, लाइक, विवरण वगैरह) |
-| \[rkPlayerTimeline\] | `PlayerTimelineContext<T>` | कस्टम प्लेबैक टाइमलाइन बार। सिर्फ़ तब रेंडर होता है जब नियम (timeline मोड + न्यूनतम अवधि) डिफ़ॉल्ट बार रेंडर करते (वही auto/always/never logic)। |
+| \[rkPlayerControls\] | `PlayerControlsContext<T>` | कस्टम global कंट्रोल बार (बंद, साउंड टॉगल वगैरह); directive class `RkPlayerControlsDirective` है |
+| \[rkPlayerError\] | `PlayerErrorContext` | कस्टम एरर इंडिकेटर का template slot; directive class `RkPlayerErrorDirective` है |
+| \[rkPlayerLoading\] | `PlayerLoadingContext` | कस्टम लोडिंग इंडिकेटर का template slot; directive class `RkPlayerLoadingDirective` है |
+| \[rkPlayerNavigation\] | `PlayerNavigationContext` | कस्टम prev/next नेविगेशन तीर; directive class `RkPlayerNavigationDirective` है |
+| \[rkPlayerNestedNavigation\] | `PlayerNestedNavigationContext` | अंदरूनी हॉरिज़ॉन्टल स्लाइडर के कस्टम नेविगेशन तीर; directive class `RkPlayerNestedNavigationDirective` है |
+| \[rkPlayerNestedSlide\] | `PlayerNestedSlideContext` | अंदरूनी हॉरिज़ॉन्टल स्लाइडर की हर स्लाइड के लिए कस्टम कंटेंट; directive class `RkPlayerNestedSlideDirective` है |
+| \[rkPlayerSlide\] | `PlayerSlideContext<T>` | डिफ़ॉल्ट मीडिया स्लाइड की जगह पूरी तरह कस्टम स्लाइड कंटेंट; directive class `RkPlayerSlideDirective` है |
+| \[rkPlayerSlideOverlay\] | `PlayerSlideOverlayContext<T>` | हर स्लाइड का overlay (लेखक की जानकारी, लाइक, विवरण वगैरह); directive class `RkPlayerSlideOverlayDirective` है |
+| \[rkPlayerTimeline\] | `PlayerTimelineContext<T>` | कस्टम प्लेबैक टाइमलाइन बार। सिर्फ़ तब रेंडर होता है जब नियम (timeline मोड + न्यूनतम अवधि) डिफ़ॉल्ट बार रेंडर करते (वही auto/always/never logic)। directive class `RkPlayerTimelineDirective` है |
+
+`PLAYER_TEMPLATE_SLOT_DIRECTIVES` इन सभी directives को एक साथ रखता है, ताकि कोई कंपोनेंट इन्हें एक बार में अपने `imports` में फैला सके।
 
 <CodeBlock code={templateSlots} language="typescript" />
+
+### डिफ़ॉल्ट स्लाइड कंपोनेंट [#default-slide-components]
+
+वे हिस्से जिनसे डिफ़ॉल्ट स्लाइड बनती है। हर एक standalone कंपोनेंट है; डिफ़ॉल्ट रूप का कोई हिस्सा बनाए रखने के लिए अपने template के अंदर इनमें से किसी का इस्तेमाल करें।
+
+| कंपोनेंट | Selector | विवरण |
+| --- | --- | --- |
+| `RkMediaSlideComponent` | `rk-media-slide` | डिफ़ॉल्ट स्लाइड। कंटेंट आइटम के `media` से `rk-image-slide`, `rk-video-slide` या `rk-nested-slider` रेंडर करती है; डिफ़ॉल्ट मीडिया रखते हुए ऊपर अपनी परत जोड़ने के लिए इसे `rkPlayerSlide` template में इस्तेमाल करें। |
+| `RkImageSlideComponent` | `rk-image-slide` | `object-fit: cover` वाली एक इमेज, जो लोड होने तक अपना `poster` दिखाती है और `onReady`, `onWaiting` या `onError` कॉल करती है। |
+| `RkVideoSlideComponent` | `rk-video-slide` | साझा `<video>` एलिमेंट पर एक वीडियो। इसे overlay का दिया `SoundStateService` चाहिए, इसलिए इसे सिर्फ़ प्लेयर के अंदर रेंडर करें। |
+| `RkNestedSliderComponent` | `rk-nested-slider` | कई `media` एंट्री वाले कंटेंट आइटम के लिए, indicator बिंदुओं के साथ हॉरिज़ॉन्टल स्लाइडर। |
+| `RkSlideOverlayComponent` | `rk-slide-overlay` | डिफ़ॉल्ट निचला overlay: लेखक का avatar और नाम, विवरण और लाइक, इसके `author`, `description` और `likes` inputs से। डिफ़ॉल्ट रूप बनाए रखने के लिए इसे `rkPlayerSlideOverlay` template में इस्तेमाल करें। |
 
 ### कस्टम टाइमलाइन [#custom-timeline]
 
@@ -264,7 +278,7 @@ URL में id को base64url में encode करने के लिए
 | `isOpen` | `boolean` | ज़रूरी | overlay का दिखना नियंत्रित करता है; false होने पर overlay DOM से हट जाता है |
 | `loop` | `boolean` | false | स्लाइडों के बीच अनंत लूप चालू करता है |
 | `swipeDistanceFactor` | `number` | 0.12 | स्लाइड बदलने के लिए स्वाइप दूरी का न्यूनतम हिस्सा |
-| `timeline` | `'auto' \| 'always' \| 'never'` | 'auto' | बिल्ट-इन प्लेबैक टाइमलाइन बार दिखाने का नियम। 'auto' सिर्फ़ timelineMinDurationSeconds से लंबे वीडियो पर रेंडर करता है; 'always' जब भी सक्रिय स्लाइड में वीडियो हो; 'never' बिल्ट-इन बार बंद करता है (पूरी तरह कस्टम बार के लिए rkPlayerTimeline template slot इस्तेमाल करें)। |
+| `timeline` | `TimelineMode` (`'auto' \| 'always' \| 'never'`) | 'auto' | बिल्ट-इन प्लेबैक टाइमलाइन बार दिखाने का नियम। 'auto' सिर्फ़ timelineMinDurationSeconds से लंबे वीडियो पर रेंडर करता है; 'always' जब भी सक्रिय स्लाइड में वीडियो हो; 'never' बिल्ट-इन बार बंद करता है (पूरी तरह कस्टम बार के लिए rkPlayerTimeline template slot इस्तेमाल करें)। |
 | `timelineMinDurationSeconds` | `number` | 30 | timeline='auto' में बिल्ट-इन बार दिखाने के लिए वीडियो की न्यूनतम अवधि (सेकंड)। इससे छोटी लूप होने वाली क्लिप पर बार नहीं दिखता। |
 | `transitionDuration` | `number` | 300 | ms में स्लाइड एनिमेशन की अवधि |
 | `wheelDebounceMs` | `number` | 200 | ms में व्हील इवेंट के debounce की अवधि |
@@ -291,7 +305,7 @@ URL में id को base64url में encode करने के लिए
 | Field | टाइप | विवरण |
 | --- | --- | --- |
 | `id` | `string` | मीडिया आइटम की अनोखी पहचान |
-| `type` | `'image' \| 'video'` | मीडिया का प्रकार |
+| `type` | `MediaType` | मीडिया का प्रकार: `'image' \| 'video'` |
 | `src` | `string` | मीडिया का URL |
 | `poster` | `string?` | वीडियो आइटम के poster थंबनेल का URL |
 | `aspectRatio` | `number` | चौड़ाई/ऊँचाई अनुपात। \< 1 मतलब वर्टिकल (cover), > 1 हॉरिज़ॉन्टल (contain) |
@@ -308,6 +322,9 @@ URL में id को base64url में encode करने के लिए
 | `PlayerSlideOverlayContext<T>` | `{ $implicit: T, index, isActive }` |
 | `PlayerTimelineContext<T>` | `{ $implicit: T, activeIndex, timelineState: PlayerTimelineState }` |
 | `PlayerTimelineState` | `{ duration(), currentTime(), progress(), bufferedRanges(), isScrubbing(), seek(t), bindInteractions(el) }` |
+| `PlayerBufferedRange` | सेकंड में `{ start, end }` — `bufferedRanges()` की एक एंट्री |
+| `PlayerLoadingContext` | `{ $implicit: activeIndex, item, innerActiveIndex }` — `rkPlayerLoading` template को जो मिलता है; nested स्लाइडर के बाहर `innerActiveIndex` `null` होता है |
+| `PlayerErrorContext` | `{ $implicit: activeIndex, item, innerActiveIndex }` — `rkPlayerError` template को जो मिलता है |
 
 ## CSS क्लास [#css-classes]
 

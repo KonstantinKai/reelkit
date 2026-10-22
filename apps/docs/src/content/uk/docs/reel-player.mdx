@@ -265,6 +265,8 @@ Pass `hashCodec: base64UrlCodec` щоб закодувати id в URL у base64
 
 <Signature>ReelPlayerOverlayProps\<T></Signature>
 
+`ReelPlayerOverlayProps` — це `ReelPlayerOverlayBaseProps` (візуальні та поведінкові пропси, спільні для обох оверлеїв), поєднаний із `ReelPlayerControlledProps` (`isOpen` і `onClose`). Базовим типом типізуйте обгортку, що рендерить будь-який з оверлеїв.
+
 | Prop | Тип | Типове значення | Опис |
 | --- | --- | --- | --- |
 | `apiRef` | `MutableRefObject<ReelApi>` | - | Ref для доступу до API Reel |
@@ -290,7 +292,7 @@ Pass `hashCodec: base64UrlCodec` щоб закодувати id в URL у base64
 
 <Signature>ReelPlayerUrlOverlayProps\<T></Signature>
 
-Приймає всі візуальні та поведінкові пропси вище, крім `isOpen`, replaced by a `controller`. `initialIndex` ігнорується — слайд обирає position контролера, тож передане поруч значення перезаписується на кожному відкритті.
+Приймає всі візуальні та поведінкові пропси вище, крім `isOpen`, замість якого приходить `controller`: тип — `ReelPlayerOverlayBaseProps`, поєднаний із `ReelPlayerUrlControlledProps`. `initialIndex` ігнорується — слайд обирає position контролера, тож передане поруч значення перезаписується на кожному відкритті.
 
 | Prop | Тип | Типове значення | Опис |
 | --- | --- | --- | --- |
@@ -306,7 +308,7 @@ Pass `hashCodec: base64UrlCodec` щоб закодувати id в URL у base64
 
 ### Пропси Reel (передані далі) [#reel-props-proxied]
 
-Ці пропси передаються далі в [Reel](/docs/react/api#reel-props) component.
+Ці пропси передаються далі в компонент [Reel](/docs/react/api#reel-props). Їхній тип — `ReelProxyProps`, підмножина пропсів Reel, яку оверлей передає далі; типізуйте ним обгортку, що їх прокидає.
 
 | Prop | Тип | Типове значення | Опис |
 | --- | --- | --- | --- |
@@ -451,7 +453,7 @@ Pass `hashCodec: base64UrlCodec` щоб закодувати id в URL у base64
 
 ## Таймлайн [#timeline]
 
-Оверлей показує вбудовану смугу таймлайну відтворення над активним відео. Пропс `timeline` визначає, коли її показувати:
+Оверлей показує вбудовану смугу таймлайну відтворення над активним відео. Пропс `timeline` типу `TimelineMode` визначає, коли її показувати:
 
 - `'auto'` (типово): показується, коли активне медіа — відео, тривалість якого перевищує `timelineMinDurationSeconds` (типово 30). Працює і для слайдів з одним відео, і для мультимедійних каруселей; смуга слідує за активним вкладеним елементом і ховається на зображеннях.
 - `'always'`: показується, щойно на активному слайді є відео.
@@ -460,6 +462,8 @@ Pass `hashCodec: base64UrlCodec` щоб закодувати id в URL у base64
 <CodeBlock code={timeline} language="tsx" />
 
 Тему задавайте через власні властивості CSS `--rk-reel-timeline-*` (висота, кольори, розмір повзунка). Для повністю власної смуги перемотування, таймкоду чи індикатора прогресу беріть `renderTimeline`; the callback receives a `timelineState` на основі `TimelineController`.
+
+Компонент, відрендерений усередині оверлея, може сам прочитати той самий контролер: `useTimelineState()` повертає його з найближчого `TimelineProvider` (його монтує оверлей) і кидає помилку поза ним; `useTimelineStateOptional()` натомість повертає там `null` — для компонентів, які можуть рендеритися й поза плеєром.
 
 ## Контекст звуку [#sound-context]
 

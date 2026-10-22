@@ -142,7 +142,7 @@ Six named scoped slots allow full customisation of the overlay surfaces. Omit th
 
 ## Video Support [#video-support]
 
-Video slides are opt-in so the default bundle stays free of audio/video wiring. Call `useVideoSlideRenderer(items)` and forward the returned `VideoSlideRenderer` / `VideoControlsRenderer` into the overlay's `#slide` and `#controls` slots. Wrap the overlay in the returned `SoundProvider` so the built-in sound toggle has a context.
+Video slides are opt-in so the default bundle stays free of audio/video wiring. Call `useVideoSlideRenderer(items)` and forward the returned `VideoSlideRenderer` / `VideoControlsRenderer` into the overlay's `#slide` and `#controls` slots. Wrap the overlay in the returned `SoundProvider` so the built-in sound toggle has a context. The returned object is typed `UseVideoSlideRendererResult`: `SoundProvider`, `hasVideo`, `VideoSlideRenderer` and `VideoControlsRenderer`.
 
 <CodeBlock code={videoOptInCode} language="vue" />
 
@@ -233,6 +233,18 @@ A custom `#controls` slot receives `isDownloading` and, only when `show-download
 | --- | --- | --- |
 | `PlayPauseButton` | `PlayPauseButtonProps`: `isPlaying`, `onPress`, `className?` | Slideshow toggle (Play/Pause icon, `aria-pressed` while playing). Shown by the default controls with `auto-advance`. |
 | `DownloadButton` | `DownloadButtonProps`: `isDownloading`, `onPress`, `className?` | Download button, disabled while `isDownloading`. Shown by the default controls with `show-download`. |
+| `CloseButton` | `CloseButtonProps`: `onPress`, `className?` | Default close button the controls bar renders; place it inside your own `#controls` slot to keep the built-in look. |
+| `Counter` | `CounterProps`: `currentIndex`, `count`, `className?` | Default "3 / 10" counter chip; place it inside your own `#controls` slot to keep the built-in look. |
+| `FullscreenButton` | `FullscreenButtonProps`: `isFullscreen`, `onPress`, `className?` | Default fullscreen toggle; its icon follows `isFullscreen`. |
+| `SoundButton` | `SoundButtonProps`: `isMuted`, `onPress`, `className?` | Default mute toggle for video items; its icon follows `isMuted`. |
+
+### Slide and navigation parts [#slide-parts]
+
+| Component | Props | Description |
+| --- | --- | --- |
+| `ImageSlide` | `ImageSlideProps`: `src`, `alt?`, `isActive`, `onReady?`, `onLoadError?` | Default image slide the overlay renders; place it inside your own `#slide` slot to keep the built-in look for image items. |
+| `LightboxVideoSlide` | `LightboxVideoSlideProps`: `src`, `poster?`, `isActive`, `size`, `slideKey`, `loop?`, `onPlaying?`, `onWaiting?`, `onLoadError?` | Default video slide, playing through the shared `<video>` element; `useVideoSlideRenderer` renders it for you. |
+| `LightboxNavigation` | `LightboxNavigationProps`: `activeIndex`, `count`, `loop?`, `onPrev`, `onNext` | Default prev/next arrows; place it inside your own `#navigation` slot to keep the built-in look. |
 
 ## API Reference [#api-reference]
 

@@ -139,8 +139,8 @@ import download from '../../snippets/angular-lightbox/download.ts?raw';
 | \[rkLightboxNavigation\] | `LightboxNavContext` | 替换上一张 / 下一张导航箭头 |
 | \[rkLightboxInfo\] | `LightboxInfoContext` | 替换底部的标题 / 描述渐变浮层 |
 | \[rkLightboxSlide\] | `LightboxSlideContext` | 替换单张幻灯片的内容（视频幻灯片必须提供） |
-| \[rkLightboxLoading\] | `{ $implicit: activeIndex, item }` | 自定义加载提示 |
-| \[rkLightboxError\] | `{ $implicit: activeIndex, item }` | 自定义错误提示 |
+| \[rkLightboxLoading\] | `LightboxLoadingContext` | 自定义加载提示；指令类为 `RkLightboxLoadingDirective` |
+| \[rkLightboxError\] | `LightboxErrorContext` | 自定义错误提示；指令类为 `RkLightboxErrorDirective` |
 
 <CodeBlock code={templateSlots} language="typescript" />
 
@@ -230,6 +230,7 @@ import download from '../../snippets/angular-lightbox/download.ts?raw';
 | --- | --- | --- | --- |
 | `RkPlayPauseButtonComponent` | `rk-play-pause-button` | `[playing]`, `(toggled)` | 幻灯片播放开关（Play/Pause 图标，播放时带 `aria-pressed`）。设置 `autoAdvance` 时由默认控件显示。 |
 | `RkDownloadButtonComponent` | `rk-download-button` | `[downloading]`, `(pressed)` | 下载按钮，`downloading` 时处于禁用状态。设置 `showDownload` 时由默认控件显示。 |
+| `RkSoundButtonComponent` | `rk-sound-button` | `[muted]`, `(toggled)` | 视频条目的静音开关。在视频幻灯片上由默认控件显示；放进你自己的 `rkLightboxControls` 模板即可保留它。 |
 
 ## RkLightboxUrlOverlayComponent 输入 [#rklightboxurloverlaycomponent-inputs]
 
@@ -262,6 +263,8 @@ import download from '../../snippets/angular-lightbox/download.ts?raw';
 | `showDownload` | `boolean` | false | 为当前项添加下载按钮。见[下载](#download)。 |
 | `ariaLabel` | `string` | 'Image gallery' | 对话框区域的无障碍标签 |
 
+上面的滑动器输入（`transitionDuration`、`swipeDistanceFactor`、`loop`、`enableNavKeys`、`enableWheel`、`wheelDebounceMs`）的类型是 `ReelProxyProps`。为把它们转发给 Lightbox 的包装组件标注类型时使用它。
+
 ## RkLightboxOverlayComponent 输出 [#rklightboxoverlaycomponent-outputs]
 
 | 输出 | 类型 | 说明 |
@@ -291,6 +294,8 @@ import download from '../../snippets/angular-lightbox/download.ts?raw';
 | `LightboxNavContext` | `{ item, onPrev, onNext, activeIndex, count }` |
 | `LightboxInfoContext` | `{ $implicit: LightboxItem, index }` |
 | `LightboxSlideContext` | `{ $implicit: LightboxItem, index, size: [number, number], isActive, autoAdvance, onReady, onWaiting, onError, onEnded }` |
+| `LightboxLoadingContext` | `{ $implicit: activeIndex, item }` —— `rkLightboxLoading` 模板收到的上下文 |
+| `LightboxErrorContext` | `{ $implicit: activeIndex, item }` —— `rkLightboxError` 模板收到的上下文 |
 
 ## 过渡动画 [#transitions]
 

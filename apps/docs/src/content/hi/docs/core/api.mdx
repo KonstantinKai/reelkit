@@ -23,7 +23,7 @@ import usage from '../../../snippets/core-api/usage.ts?raw';
 | --- | --- | --- | --- |
 | `count` | `number` | ज़रूरी | आइटम की कुल संख्या |
 | `initialIndex` | `number` | 0 | शुरुआती index |
-| `direction` | `'vertical' \| 'horizontal'` | 'vertical' | स्क्रॉल की दिशा |
+| `direction` | `SliderDirection` | 'vertical' | स्क्रॉल की दिशा, `'vertical' \| 'horizontal'` |
 | `enableGestures` | `boolean` | true | टच/माउस से खींचकर नेविगेशन चालू करता है। false होने पर gesture कंट्रोलर नहीं जुड़ता। |
 | `enableNavKeys` | `boolean` | true | कीबोर्ड की तीर वाली कुंजियों से नेविगेशन चालू करता है |
 | `enableWheel` | `boolean` | false | माउस व्हील चालू करता है |
@@ -31,7 +31,7 @@ import usage from '../../../snippets/core-api/usage.ts?raw';
 | `loop` | `boolean` | false | लूप में नेविगेशन |
 | `transitionDuration` | `number` | 300 | ms में एनिमेशन की अवधि |
 | `swipeDistanceFactor` | `number` | 0.12 | स्वाइप की सीमा (0-1) |
-| `rangeExtractor` | `(index: number, count: number, loop: boolean) => number[]` | defaultRangeExtractor | कौन-से index रेंडर हों, यह तय करने वाला कस्टम फ़ंक्शन |
+| `rangeExtractor` | `RangeExtractor` | defaultRangeExtractor | कौन-से index रेंडर हों, यह तय करने वाला कस्टम फ़ंक्शन |
 
 ### Callbacks [#callbacks]
 
@@ -68,6 +68,8 @@ import usage from '../../../snippets/core-api/usage.ts?raw';
 
 ## स्टेट प्रॉपर्टी [#state-properties]
 
+कंट्रोलर की `state` फ़ील्ड एक `SliderState` है, यानी नीचे दिए तीन signals। इसे पाने वाले किसी मान को `SliderState` से टाइप करें।
+
 | प्रॉपर्टी | टाइप | विवरण |
 | --- | --- | --- |
 | `index` | `Signal<number>` | मौजूदा स्लाइड का index |
@@ -78,7 +80,8 @@ import usage from '../../../snippets/core-api/usage.ts?raw';
 
 | Export | टाइप | विवरण |
 | --- | --- | --- |
-| `defaultRangeExtractor` | `(index: number, count: number, loop: boolean) => number[]` | डिफ़ॉल्ट extractor, जो मौजूदा index के आसपास 3 आइटम रेंडर करता है |
+| `defaultRangeExtractor` | `RangeExtractor` | डिफ़ॉल्ट extractor, जो मौजूदा index के आसपास 3 आइटम रेंडर करता है |
+| `RangeExtractor` | `(current: number, count: number, loop: boolean) => number[]` | range extractor का signature। अपने `rangeExtractor` को इसी से टाइप करें। |
 
 ## Signal API [#signal-api]
 
@@ -99,6 +102,8 @@ import usage from '../../../snippets/core-api/usage.ts?raw';
 | `createComputed` | `<T>(fn: () => T, deps: () => Subscribable[]) => ComputedSignal<T>` | व्युत्पन्न computed signal बनाता है। दूसरा argument deps factory है, जो ट्रैक किए जाने वाले signals लौटाती है। |
 | `reaction` | `(deps: () => Subscribable[], effect: () => void) => () => void` | किसी भी dependency signal के बदलने पर side effect चलाता है; dispose फ़ंक्शन लौटाता है। signal के मान effect callback के अंदर पढ़ें। |
 | `batch` | `(fn: () => void) => void` | कई signal अपडेट को सूचना के एक ही दौर में समेटता है; nesting का समर्थन करता है |
+| `Listener` | `() => void` | वह callback जो `observe` लेता है। अलग से घोषित signal observer को इसी से टाइप करें। |
+| `Dispose` | `() => void` | `observe` और `reaction` जो लौटाते हैं: सुनना बंद करने के लिए इसे कॉल करें। रखी गई subscription को इसी से टाइप करें। |
 
 ## ट्रांज़िशन [#transitions]
 
@@ -113,6 +118,46 @@ import usage from '../../../snippets/core-api/usage.ts?raw';
 | `flipTransition` | `TransitionTransformFn` | 3D कार्ड पलटने वाला ट्रांज़िशन |
 | `cubeTransition` | `TransitionTransformFn` | 3D क्यूब घूमने वाला ट्रांज़िशन |
 | `zoomTransition` | `TransitionTransformFn` | scale/zoom ट्रांज़िशन |
+| `SlideTransformStyle` | `{ transform?; transformOrigin?; opacity?; zIndex? }` | एक स्लाइड के लिए `TransitionTransformFn` जो लौटाता है। कस्टम ट्रांज़िशन से इसे लौटाएँ। |
+
+## इनपुट कंट्रोलर [#input-controllers]
+
+स्लाइडर कंट्रोलर ये तीनों अपने `enableGestures`, `enableNavKeys` और `enableWheel` विकल्पों से ख़ुद बनाता है। जब आप अपना इंटीग्रेशन लिखें, या ऐसे एलिमेंट पर जेस्चर, तीर वाली कुंजियाँ या व्हील चाहिए जो स्लाइडर नहीं है, तब इनमें से किसी को सीधे बनाएँ।
+
+### Gesture कंट्रोलर [#gesture-controller]
+
+| Export | टाइप | विवरण |
+| --- | --- | --- |
+| `createGestureController` | `(config?: GestureControllerConfig, events?: GestureControllerEvents) => GestureController` | किसी एलिमेंट पर टैप, डबल टैप, लंबा दबाव और खींचना पहचानता है, और हर खींचने को उसके मुख्य अक्ष पर टिका देता है। |
+| `GestureController` | `{ attach; detach; observe; unobserve; updateEvents }` | `createGestureController` जो ऑब्जेक्ट लौटाता है। `attach(element)` एलिमेंट जोड़ता है, `observe()` listeners लगाता है, `unobserve()` उन्हें हटाता है पर एलिमेंट रखता है, `detach()` सब कुछ हटाता है; `updateEvents(events)` नए हैंडलर मिला देता है। |
+| `GestureControllerConfig` | `{ useTouchEventsOnly?; longPressDurationMs?; doubleTapWindowMs? }` | `createGestureController` के विकल्प: माउस को अनदेखा करना (डिफ़ॉल्ट `false`), लंबे दबाव का समय (डिफ़ॉल्ट `800` ms), डबल टैप की विंडो (डिफ़ॉल्ट `200` ms)। |
+| `GestureControllerEvents` | `{ onTap?; onDoubleTap?; onTapDown?; onTapUp?; onLongPress?; onLongPressEnd?; onHorizontalDragStart?; onHorizontalDragUpdate?; onHorizontalDragEnd?; onVerticalDragStart?; onVerticalDragUpdate?; onVerticalDragEnd?; onDragEnd? }` | वे callbacks जिन्हें `createGestureController` कॉल करता है। खींचना अपने मुख्य अक्ष के हिसाब से horizontal या vertical हैंडलर में जाता है; `onDragEnd` दोनों के लिए चलता है। |
+| `GestureAxisDragUpdateEvent` | `GestureEvent & { delta; distance; primaryDelta; primaryDistance; cancel }` | `onHorizontalDragUpdate` और `onVerticalDragUpdate` का payload: पिछले अपडेट से हुई हलचल, कुल दूरी, मुख्य अक्ष पर यही दोनों, और खींचने को वापस छोड़ देने के लिए `cancel()`। |
+| `GestureAxisDragEndEvent` | `cancel` के बिना `GestureAxisDragUpdateEvent`, साथ में `{ velocity; primaryVelocity }` | `onHorizontalDragEnd` और `onVerticalDragEnd` का payload, छोड़ते समय की रफ़्तार पिक्सल प्रति सेकंड में। |
+| `GestureDragEndEvent` | `primary` फ़ील्ड के बिना `GestureAxisDragEndEvent` | `onDragEnd` का payload, उस हैंडलर के लिए जिसे फ़र्क नहीं पड़ता कि खींचना किस अक्ष पर हुआ। |
+| `Offset` | `[x: number, y: number]` | पिक्सल की जोड़ी, जो gesture इवेंट में हर स्थिति, delta, दूरी और रफ़्तार के लिए इस्तेमाल होती है। |
+| `EventKind` | `'touch' \| 'mouse'` | gesture किस इनपुट से आया, `GestureCommonEvent` की `kind` फ़ील्ड में। |
+| `DragAxis` | `'horizontal' \| 'vertical' \| null` | खींचने का मुख्य अक्ष; पहली हलचल तय करने तक `null`। |
+
+### Keyboard कंट्रोलर [#keyboard-controller]
+
+| Export | टाइप | विवरण |
+| --- | --- | --- |
+| `createKeyboardController` | `(config: KeyboardControllerConfig, events: KeyboardControllerEvents) => KeyboardController` | तीर वाली कुंजियों के दबाव को `NavKey` callbacks में बदलता है। |
+| `KeyboardController` | `{ attach; detach }` | `createKeyboardController` जो ऑब्जेक्ट लौटाता है। `attach(target?)` target पर `keydown` सुनता है (डिफ़ॉल्ट `window`), `detach()` रोकता है। |
+| `KeyboardControllerConfig` | `{ filter?; throttleMs? }` | `createKeyboardController` के विकल्प: किन कुंजियों पर प्रतिक्रिया हो (डिफ़ॉल्ट: चारों) और दो दबावों के बीच कम से कम समय (डिफ़ॉल्ट `0`, कोई throttling नहीं)। |
+| `KeyboardControllerEvents` | `{ onKeyPress: (key: NavKey, event: KeyboardEvent) => void }` | वह callback जिसे `createKeyboardController` हर स्वीकार किए गए दबाव पर कॉल करता है। |
+| `NavKey` | `'up' \| 'right' \| 'down' \| 'left'` | दबाई गई तीर वाली कुंजी, जैसी keyboard कंट्रोलर बताता और छाँटता है। |
+
+### Wheel कंट्रोलर [#wheel-controller]
+
+| Export | टाइप | विवरण |
+| --- | --- | --- |
+| `createWheelController` | `(config: WheelControllerConfig, events: WheelControllerEvents) => WheelController` | माउस व्हील की स्क्रॉलिंग को हर gesture पर एक दिशा वाले callback में बदलता है, ताकि एक स्क्रॉल से निकले ढेर सारे इवेंट एक हो जाएँ। |
+| `WheelController` | `{ attach; detach }` | `createWheelController` जो ऑब्जेक्ट लौटाता है। `attach(target?)` target पर `wheel` सुनता है (डिफ़ॉल्ट `window`), `detach()` रोकता है और रुका हुआ callback छोड़ देता है। |
+| `WheelControllerConfig` | `{ debounceMs?; deltaThreshold? }` | `createWheelController` के विकल्प: gesture ख़त्म करने वाला शांत समय (डिफ़ॉल्ट `200` ms) और गिना जाने वाला सबसे छोटा delta (डिफ़ॉल्ट `10` px)। |
+| `WheelControllerEvents` | `{ onWheel: (direction: WheelDirection, event: WheelEvent) => void }` | वह callback जिसे `createWheelController` हर स्क्रॉल gesture पर एक बार कॉल करता है। |
+| `WheelDirection` | `'up' \| 'down' \| 'left' \| 'right'` | व्हील gesture की दिशा। |
 
 ## कंटेंट लोडिंग [#content-loading]
 
@@ -185,6 +230,28 @@ DOM इवेंट प्रबंधन और तय क्रम में �
 | `createDisposableList` | `() => DisposableList` | disposer फ़ंक्शन इकट्ठा करने वाली सूची। सबको एक साथ चलाने के लिए dispose() कॉल करें। |
 | `createBodyLock` | `() => BodyLock` | reference गिनने वाला body scroll lock। कई consumers एक साथ lock कर सकते हैं; सबके unlock करने पर स्क्रॉल वापस आता है। |
 | `sharedBodyLock` | `BodyLock` | module स्तर का singleton instance। जब ऐप के कई कंपोनेंट को एक ही reference counter साझा करना हो ताकि nested modals/overlays सही क्रम में चलें, तब इस्तेमाल करें। फ़्रेमवर्क bindings (`@reelkit/react`, `@reelkit/vue`, `@reelkit/angular`) अंदर से यही इस्तेमाल करती हैं। |
+
+## यूटिलिटी [#utilities]
+
+छोटे helpers, जिनसे कंट्रोलर बने हैं। फ़्रेमवर्क bindings इन्हें फिर से export करती हैं, ताकि कस्टम स्लाइड, ट्रांज़िशन या इंटीग्रेशन भी इन्हीं का इस्तेमाल कर सके।
+
+| Export | टाइप | विवरण |
+| --- | --- | --- |
+| `first` | `<T>(arr: readonly T[]) => T` | array का पहला एलिमेंट, जैसे किसी `Offset` का x या किसी साइज़ की चौड़ाई। |
+| `last` | `<T>(arr: readonly T[]) => T` | array का आख़िरी एलिमेंट, जैसे किसी `Offset` का y या किसी साइज़ की ऊँचाई। |
+| `generate` | `<G>(count: number, generator: (i: number) => G) => G[]` | index से `count` आइटम का array बनाता है, जैसे डेमो डेटा के लिए `generate(10, (i) => i)`। |
+| `abs` | `(value: number) => number` | निरपेक्ष मान। |
+| `isNegative` | `(value: number) => boolean` | संख्या शून्य से कम है या नहीं, जैसे पीछे की ओर खींचने को आगे की ओर से अलग पहचानने के लिए। |
+| `clamp` | `(value: number, min: number, max: number) => number` | संख्या को `min` और `max` के भीतर रखता है, दोनों शामिल। |
+| `lerp` | `(t: number, a: number, b: number) => number` | linear interpolation: `t = 0` पर `a`, `t = 1` पर `b`। कस्टम ट्रांज़िशन में स्लाइड की प्रगति को किसी मान में बदलने के लिए इस्तेमाल करें। |
+| `extractRange` | `(count, start, end?, overscan?, loop?) => number[]` | `start` से `end` तक (डिफ़ॉल्ट `start`) के index, हर तरफ़ `overscan` (डिफ़ॉल्ट `1`) जोड़कर; `loop` true होने पर सिरों पर घूमकर। इससे कस्टम `RangeExtractor` बनाएँ। |
+| `noop` | `() => void` | कुछ न करने वाला फ़ंक्शन, डिफ़ॉल्ट callback के लिए। |
+| `createDeferred` | `<T = void>() => Deferred<T>` | एक promise, साथ में उसे पूरा करने वाला `resolve`, ताकि callback API को `await` से जोड़ा जा सके। |
+| `Deferred` | `{ promise: Promise<T>; resolve: (value?: T) => void }` | `createDeferred` जो ऑब्जेक्ट लौटाता है। |
+| `createLruCache` | `<V>(maxSize: number, onEvict?: (value: V, key: string) => void) => LruCache<V>` | एक `Map`, जो सबसे हाल में सेट हुई `maxSize` एंट्री रखता है और उससे आगे सबसे पुरानी हटा देता है। `onEvict` हर हटाई गई एंट्री के लिए चलता है, `URL.revokeObjectURL` जैसी सफ़ाई के लिए। |
+| `LruCache` | `Map<string, V>` | `createLruCache` जो ऑब्जेक्ट लौटाता है। यह असली `Map` है; सिर्फ़ `set` अलग है। |
+| `animate` | `(options: AnimationOptions) => () => void` | किसी संख्या को ease-in-out curve से `from` से `to` तक एनिमेट करता है और हर फ़्रेम पर `onUpdate` कॉल करता है। एनिमेशन रद्द करने वाला फ़ंक्शन लौटाता है। |
+| `AnimationOptions` | `{ from; to; duration; onUpdate; onComplete? }` | `animate` के विकल्प: शुरुआती और आख़िरी मान, मिलीसेकंड में अवधि, हर फ़्रेम का callback और पूरा होने पर वैकल्पिक callback। |
 
 ## साइज़ पहचान [#size-detection]
 

@@ -77,9 +77,11 @@ export class FeedComponent {
 Same shape as React/Vue reel player.
 
 ```ts
+type MediaType = 'image' | 'video';
+
 interface MediaItem {
   id: string;
-  type: 'image' | 'video';
+  type: MediaType;
   src: string;
   poster?: string;
   aspectRatio: number; // < 1 vertical (cover), > 1 horizontal (contain)
@@ -252,22 +254,22 @@ protected readonly reel = createOverlayUrlState({
 
 ## RkReelPlayerOverlayComponent Inputs
 
-| Input                        | Type                            | Default                          | Description                                                                                                                                                              |
-| ---------------------------- | ------------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `isOpen`                     | `boolean`                       | required                         | Overlay visibility; false → removed from DOM                                                                                                                             |
-| `content`                    | `T[] (extends BaseContentItem)` | required                         | Content items to display                                                                                                                                                 |
-| `ariaLabel`                  | `string`                        | `'Video player'`                 | Accessible label for dialog region                                                                                                                                       |
-| `aspectRatio`                | `number \| undefined`           | `undefined` (defaults to `9/16`) | Width/height ratio for desktop container. ≤768px wide = full viewport. Zero/negative/non-finite → 9/16.                                                                  |
-| `enableNavKeys`              | `boolean`                       | `true`                           | Keyboard arrow key navigation                                                                                                                                            |
-| `enableWheel`                | `boolean`                       | `true`                           | Mouse wheel navigation                                                                                                                                                   |
-| `initialIndex`               | `number`                        | `0`                              | Zero-based index of initially visible item                                                                                                                               |
-| `initialInnerIndex`          | `number`                        | `0`                              | Inner media index to open at, for the initially visible post only — two-axis URL deep-link into a specific image of a multi-media post. Ignored once the user navigates. |
-| `loop`                       | `boolean`                       | `false`                          | Infinite loop between slides                                                                                                                                             |
-| `swipeDistanceFactor`        | `number`                        | `0.12`                           | Min swipe distance fraction to trigger slide change                                                                                                                      |
-| `timeline`                   | `'auto' \| 'always' \| 'never'` | `'auto'`                         | Gating strategy for built-in playback timeline bar                                                                                                                       |
-| `timelineMinDurationSeconds` | `number`                        | `30`                             | Min video duration (seconds) for `timeline='auto'` to render bar                                                                                                         |
-| `transitionDuration`         | `number`                        | `300`                            | Slide animation duration in ms                                                                                                                                           |
-| `wheelDebounceMs`            | `number`                        | `200`                            | Debounce duration for wheel events in ms                                                                                                                                 |
+| Input                        | Type                                             | Default                          | Description                                                                                                                                                              |
+| ---------------------------- | ------------------------------------------------ | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `isOpen`                     | `boolean`                                        | required                         | Overlay visibility; false → removed from DOM                                                                                                                             |
+| `content`                    | `T[] (extends BaseContentItem)`                  | required                         | Content items to display                                                                                                                                                 |
+| `ariaLabel`                  | `string`                                         | `'Video player'`                 | Accessible label for dialog region                                                                                                                                       |
+| `aspectRatio`                | `number \| undefined`                            | `undefined` (defaults to `9/16`) | Width/height ratio for desktop container. ≤768px wide = full viewport. Zero/negative/non-finite → 9/16.                                                                  |
+| `enableNavKeys`              | `boolean`                                        | `true`                           | Keyboard arrow key navigation                                                                                                                                            |
+| `enableWheel`                | `boolean`                                        | `true`                           | Mouse wheel navigation                                                                                                                                                   |
+| `initialIndex`               | `number`                                         | `0`                              | Zero-based index of initially visible item                                                                                                                               |
+| `initialInnerIndex`          | `number`                                         | `0`                              | Inner media index to open at, for the initially visible post only — two-axis URL deep-link into a specific image of a multi-media post. Ignored once the user navigates. |
+| `loop`                       | `boolean`                                        | `false`                          | Infinite loop between slides                                                                                                                                             |
+| `swipeDistanceFactor`        | `number`                                         | `0.12`                           | Min swipe distance fraction to trigger slide change                                                                                                                      |
+| `timeline`                   | `TimelineMode` (`'auto' \| 'always' \| 'never'`) | `'auto'`                         | Gating strategy for built-in playback timeline bar                                                                                                                       |
+| `timelineMinDurationSeconds` | `number`                                         | `30`                             | Min video duration (seconds) for `timeline='auto'` to render bar                                                                                                         |
+| `transitionDuration`         | `number`                                         | `300`                            | Slide animation duration in ms                                                                                                                                           |
+| `wheelDebounceMs`            | `number`                                         | `200`                            | Debounce duration for wheel events in ms                                                                                                                                 |
 
 ## Outputs
 
@@ -292,17 +294,31 @@ Takes every `RkReelPlayerOverlayComponent` input except `isOpen` and `initialInd
 
 Use these structural directives on `<ng-template>` for custom content:
 
-| Directive                  | Class                               | Context                                              | Description                                                            |
-| -------------------------- | ----------------------------------- | ---------------------------------------------------- | ---------------------------------------------------------------------- |
-| `rkPlayerControls`         | `RkPlayerControlsDirective`         | `PlayerControlsContext<T>`                           | Custom global controls bar (close, sound toggle, etc.)                 |
-| `rkPlayerError`            | `RkPlayerErrorDirective`            | `{ $implicit: activeIndex, item, innerActiveIndex }` | Custom error indicator slot                                            |
-| `rkPlayerLoading`          | `RkPlayerLoadingDirective`          | `{ $implicit: activeIndex, item, innerActiveIndex }` | Custom loading indicator slot                                          |
-| `rkPlayerNavigation`       | `RkPlayerNavigationDirective`       | `PlayerNavigationContext`                            | Custom prev/next nav arrows                                            |
-| `rkPlayerNestedNavigation` | `RkPlayerNestedNavigationDirective` | `PlayerNestedNavigationContext`                      | Custom nav arrows for inner horizontal slider                          |
-| `rkPlayerNestedSlide`      | `RkPlayerNestedSlideDirective`      | `PlayerNestedSlideContext`                           | Custom content for each slide in inner horizontal slider               |
-| `rkPlayerSlide`            | `RkPlayerSlideDirective`            | `PlayerSlideContext<T>`                              | Fully custom slide replacing default media slide                       |
-| `rkPlayerSlideOverlay`     | `RkPlayerSlideOverlayDirective`     | `PlayerSlideOverlayContext<T>`                       | Per-slide overlay (author info, likes, description, etc.)              |
-| `rkPlayerTimeline`         | `RkPlayerTimelineDirective`         | `PlayerTimelineContext<T>`                           | Custom timeline bar. Rendered only when gate would render default bar. |
+| Directive                  | Class                               | Context                         | Description                                                            |
+| -------------------------- | ----------------------------------- | ------------------------------- | ---------------------------------------------------------------------- |
+| `rkPlayerControls`         | `RkPlayerControlsDirective`         | `PlayerControlsContext<T>`      | Custom global controls bar (close, sound toggle, etc.)                 |
+| `rkPlayerError`            | `RkPlayerErrorDirective`            | `PlayerErrorContext`            | Custom error indicator slot                                            |
+| `rkPlayerLoading`          | `RkPlayerLoadingDirective`          | `PlayerLoadingContext`          | Custom loading indicator slot                                          |
+| `rkPlayerNavigation`       | `RkPlayerNavigationDirective`       | `PlayerNavigationContext`       | Custom prev/next nav arrows                                            |
+| `rkPlayerNestedNavigation` | `RkPlayerNestedNavigationDirective` | `PlayerNestedNavigationContext` | Custom nav arrows for inner horizontal slider                          |
+| `rkPlayerNestedSlide`      | `RkPlayerNestedSlideDirective`      | `PlayerNestedSlideContext`      | Custom content for each slide in inner horizontal slider               |
+| `rkPlayerSlide`            | `RkPlayerSlideDirective`            | `PlayerSlideContext<T>`         | Fully custom slide replacing default media slide                       |
+| `rkPlayerSlideOverlay`     | `RkPlayerSlideOverlayDirective`     | `PlayerSlideOverlayContext<T>`  | Per-slide overlay (author info, likes, description, etc.)              |
+| `rkPlayerTimeline`         | `RkPlayerTimelineDirective`         | `PlayerTimelineContext<T>`      | Custom timeline bar. Rendered only when gate would render default bar. |
+
+`PLAYER_TEMPLATE_SLOT_DIRECTIVES` = all of these — spread into a component's `imports` in one go.
+
+### Default Slide Components
+
+Building blocks of the default slide; standalone, usable inside your own templates.
+
+| Component                 | Selector           | Description                                                                                                                                                         |
+| ------------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `RkMediaSlideComponent`   | `rk-media-slide`   | Default slide; renders `rk-image-slide`, `rk-video-slide` or `rk-nested-slider` from the item's `media`. Use in `rkPlayerSlide` to keep default media + add a layer |
+| `RkImageSlideComponent`   | `rk-image-slide`   | One image, `object-fit: cover`, `poster` until loaded, calls `onReady` / `onWaiting` / `onError`                                                                    |
+| `RkVideoSlideComponent`   | `rk-video-slide`   | One video on the shared `<video>` element; needs the overlay's `SoundStateService` → inside the player only                                                         |
+| `RkNestedSliderComponent` | `rk-nested-slider` | Horizontal slider with dots for an item with several `media` entries                                                                                                |
+| `RkSlideOverlayComponent` | `rk-slide-overlay` | Default bottom overlay: author, description, likes (`author`, `description`, `likes` inputs). Use in `rkPlayerSlideOverlay` to keep default look                    |
 
 ### Control Components
 
@@ -326,15 +342,19 @@ Standalone components to compose inside an `rkPlayerControls` template. Import e
 
 ### Slot Context Types
 
-| Name                            | Fields                                                                                             |
-| ------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `PlayerControlsContext<T>`      | `{ $implicit: onClose, activeIndex, content: T[], soundState: PlayerSoundState }`                  |
-| `PlayerNavigationContext`       | `{ $implicit: onPrev, onNext, activeIndex, count }`                                                |
-| `PlayerNestedNavigationContext` | `{ $implicit: onPrev, onNext, activeIndex, count }`                                                |
-| `PlayerNestedSlideContext`      | `{ $implicit: MediaItem, index, size, isActive, isInnerActive, slideKey }`                         |
-| `PlayerSlideContext<T>`         | `{ $implicit: T, index, size: [number, number], isActive, slideKey, onReady, onWaiting, onError }` |
-| `PlayerSlideOverlayContext<T>`  | `{ $implicit: T, index, isActive }`                                                                |
-| `PlayerTimelineContext<T>`      | `{ $implicit: timelineState, item, activeIndex }`                                                  |
+| Name                            | Fields                                                                                                                               |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `PlayerControlsContext<T>`      | `{ $implicit: onClose, activeIndex, content: T[], soundState: PlayerSoundState }`                                                    |
+| `PlayerNavigationContext`       | `{ $implicit: onPrev, onNext, activeIndex, count }`                                                                                  |
+| `PlayerNestedNavigationContext` | `{ $implicit: onPrev, onNext, activeIndex, count }`                                                                                  |
+| `PlayerNestedSlideContext`      | `{ $implicit: MediaItem, index, size, isActive, isInnerActive, slideKey }`                                                           |
+| `PlayerSlideContext<T>`         | `{ $implicit: T, index, size: [number, number], isActive, slideKey, onReady, onWaiting, onError }`                                   |
+| `PlayerSlideOverlayContext<T>`  | `{ $implicit: T, index, isActive }`                                                                                                  |
+| `PlayerTimelineContext<T>`      | `{ $implicit: timelineState, item, activeIndex }`                                                                                    |
+| `PlayerTimelineState`           | `{ duration(), currentTime(), progress(), bufferedRanges(), isScrubbing(), seek(t), bindInteractions(el) }`                          |
+| `PlayerBufferedRange`           | `{ start, end }` in seconds — one entry of `bufferedRanges()`                                                                        |
+| `PlayerLoadingContext`          | `{ $implicit: activeIndex, item, innerActiveIndex }` — `rkPlayerLoading` template; `innerActiveIndex` `null` outside a nested slider |
+| `PlayerErrorContext`            | `{ $implicit: activeIndex, item, innerActiveIndex }` — `rkPlayerError` template                                                      |
 
 ## Keyboard Shortcuts
 

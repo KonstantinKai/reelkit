@@ -257,6 +257,8 @@ import theming from '../../snippets/reel-player/theming.css?raw';
 
 <Signature>ReelPlayerOverlayProps\<T></Signature>
 
+`ReelPlayerOverlayProps` は `ReelPlayerOverlayBaseProps`（両方のオーバーレイが共有する見た目と挙動の props）と `ReelPlayerControlledProps`（`isOpen` と `onClose`）を合わせたものです。どちらのオーバーレイも描画するラッパーの型付けには、ベースの型を使います。
+
 | Prop | 型 | デフォルト | 説明 |
 | --- | --- | --- | --- |
 | `apiRef` | `MutableRefObject<ReelApi>` | - | Reel の API にアクセスするための ref |
@@ -282,7 +284,7 @@ import theming from '../../snippets/reel-player/theming.css?raw';
 
 <Signature>ReelPlayerUrlOverlayProps\<T></Signature>
 
-上の見た目と挙動の props をすべて受け取りますが、`isOpen` の代わりに `controller` を使います。`initialIndex` は無視されます。スライドはコントローラーの位置で決まるので、一緒に渡した値は開くたびに上書きされます。
+上の見た目と挙動の props をすべて受け取りますが、`isOpen` の代わりに `controller` を使います。型は `ReelPlayerOverlayBaseProps` と `ReelPlayerUrlControlledProps` を合わせたものです。`initialIndex` は無視されます。スライドはコントローラーの位置で決まるので、一緒に渡した値は開くたびに上書きされます。
 
 | Prop | 型 | デフォルト | 説明 |
 | --- | --- | --- | --- |
@@ -298,7 +300,7 @@ import theming from '../../snippets/reel-player/theming.css?raw';
 
 ### Reel の Props（引き継ぎ） [#reel-props-proxied]
 
-これらの props は、内部の [Reel](/docs/react/api#reel-props) コンポーネントに渡されます。
+これらの props は、内部の [Reel](/docs/react/api#reel-props) コンポーネントに渡されます。型は `ReelProxyProps` で、オーバーレイが引き継ぐ Reel の props の一部です。それらを転送するラッパーの型付けに使います。
 
 | Prop | 型 | デフォルト | 説明 |
 | --- | --- | --- | --- |
@@ -443,7 +445,7 @@ iOS で音声を途切れさせないための共有 `<video>` 要素、ポス�
 
 ## タイムライン [#timeline]
 
-オーバーレイは、アクティブな動画の上に組み込みの再生タイムラインバーを描画します。`timeline` プロップで表示条件を決めます：
+オーバーレイは、アクティブな動画の上に組み込みの再生タイムラインバーを描画します。`TimelineMode` 型の `timeline` プロップで表示条件を決めます：
 
 - `'auto'`（デフォルト）：アクティブなメディアが `timelineMinDurationSeconds`（デフォルト 30）より長い動画のときに表示します。単一動画のスライドにも複数メディアのカルーセルにも使え、バーはアクティブなネストしたアイテムに追従し、画像では非表示になります。
 - `'always'`：アクティブなスライドに動画があれば常に表示します。
@@ -452,6 +454,8 @@ iOS で音声を途切れさせないための共有 `<video>` 要素、ポス�
 <CodeBlock code={timeline} language="tsx" />
 
 `--rk-reel-timeline-*` の CSS カスタムプロパティ（高さ、色、カーソルの大きさ）でテーマを変えます。完全に独自のシークバー、タイムコード、進捗表示を作るには `renderTimeline` を使います。コールバックは、内部の `TimelineController` に支えられた `timelineState` を受け取ります。
+
+オーバーレイの中で描画するコンポーネントは、同じコントローラーを自分で読めます。`useTimelineState()` は（オーバーレイがマウントする）最も近い `TimelineProvider` からそれを返し、外側では例外を投げます。`useTimelineStateOptional()` は外側では代わりに `null` を返すので、プレイヤーの外でも描画されることがあるコンポーネントに向いています。
 
 ## サウンドコンテキスト [#sound-context]
 

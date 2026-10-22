@@ -139,8 +139,8 @@ Four template slot directives allow full customization of the overlay UI without
 | \[rkLightboxNavigation\] | `LightboxNavContext` | Replace the prev/next navigation arrows |
 | \[rkLightboxInfo\] | `LightboxInfoContext` | Replace the bottom title/description gradient overlay |
 | \[rkLightboxSlide\] | `LightboxSlideContext` | Replace individual slide content (required for video slides) |
-| \[rkLightboxLoading\] | `{ $implicit: activeIndex, item }` | Custom loading indicator |
-| \[rkLightboxError\] | `{ $implicit: activeIndex, item }` | Custom error indicator |
+| \[rkLightboxLoading\] | `LightboxLoadingContext` | Custom loading indicator; the directive class is `RkLightboxLoadingDirective` |
+| \[rkLightboxError\] | `LightboxErrorContext` | Custom error indicator; the directive class is `RkLightboxErrorDirective` |
 
 <CodeBlock code={templateSlots} language="typescript" />
 
@@ -230,6 +230,7 @@ A custom `rkLightboxControls` template receives `isDownloading` and, only when `
 | --- | --- | --- | --- |
 | `RkPlayPauseButtonComponent` | `rk-play-pause-button` | `[playing]`, `(toggled)` | Slideshow toggle (Play/Pause icon, `aria-pressed` while playing). Shown by the default controls with `autoAdvance`. |
 | `RkDownloadButtonComponent` | `rk-download-button` | `[downloading]`, `(pressed)` | Download button, disabled while `downloading`. Shown by the default controls with `showDownload`. |
+| `RkSoundButtonComponent` | `rk-sound-button` | `[muted]`, `(toggled)` | Mute toggle for video items. Shown by the default controls on a video slide; place it in your own `rkLightboxControls` template to keep it. |
 
 ## RkLightboxUrlOverlayComponent Inputs [#rklightboxurloverlaycomponent-inputs]
 
@@ -262,6 +263,8 @@ Takes every input of `rk-lightbox-overlay` except `isOpen`, replaced by a contro
 | `showDownload` | `boolean` | false | Add a download button for the active item. See [Download](#download). |
 | `ariaLabel` | `string` | 'Image gallery' | Accessible label for the dialog region |
 
+The slider inputs above (`transitionDuration`, `swipeDistanceFactor`, `loop`, `enableNavKeys`, `enableWheel`, `wheelDebounceMs`) are typed by `ReelProxyProps`. Use it to type a wrapper component that forwards them to the lightbox.
+
 ## RkLightboxOverlayComponent Outputs [#rklightboxoverlaycomponent-outputs]
 
 | Output | Type | Description |
@@ -291,6 +294,8 @@ Takes every input of `rk-lightbox-overlay` except `isOpen`, replaced by a contro
 | `LightboxNavContext` | `{ item, onPrev, onNext, activeIndex, count }` |
 | `LightboxInfoContext` | `{ $implicit: LightboxItem, index }` |
 | `LightboxSlideContext` | `{ $implicit: LightboxItem, index, size: [number, number], isActive, autoAdvance, onReady, onWaiting, onError, onEnded }` |
+| `LightboxLoadingContext` | `{ $implicit: activeIndex, item }` — what the `rkLightboxLoading` template receives |
+| `LightboxErrorContext` | `{ $implicit: activeIndex, item }` — what the `rkLightboxError` template receives |
 
 ## Transitions [#transitions]
 

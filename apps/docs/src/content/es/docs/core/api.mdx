@@ -23,7 +23,7 @@ El core independiente del framework. Una sola factoría crea un controlador a pa
 | --- | --- | --- | --- |
 | `count` | `number` | obligatorio | Número total de elementos |
 | `initialIndex` | `number` | 0 | Índice inicial |
-| `direction` | `'vertical' \| 'horizontal'` | 'vertical' | Dirección del desplazamiento |
+| `direction` | `SliderDirection` | 'vertical' | Dirección del desplazamiento, `'vertical' \| 'horizontal'` |
 | `enableGestures` | `boolean` | true | Activa la navegación arrastrando con el dedo o el ratón. Con false, el controlador de gestos no se conecta. |
 | `enableNavKeys` | `boolean` | true | Activa la navegación con las teclas de flecha |
 | `enableWheel` | `boolean` | false | Activa la rueda del ratón |
@@ -31,7 +31,7 @@ El core independiente del framework. Una sola factoría crea un controlador a pa
 | `loop` | `boolean` | false | Navegación en bucle |
 | `transitionDuration` | `number` | 300 | Duración de la animación en ms |
 | `swipeDistanceFactor` | `number` | 0.12 | Umbral del deslizamiento (0-1) |
-| `rangeExtractor` | `(index: number, count: number, loop: boolean) => number[]` | defaultRangeExtractor | Función propia que decide qué índices se renderizan |
+| `rangeExtractor` | `RangeExtractor` | defaultRangeExtractor | Función propia que decide qué índices se renderizan |
 
 ### Callbacks [#callbacks]
 
@@ -68,6 +68,8 @@ El core independiente del framework. Una sola factoría crea un controlador a pa
 
 ## Propiedades de estado [#state-properties]
 
+El campo `state` del controlador es un `SliderState`, las tres señales de abajo. Tipa con `SliderState` un valor que lo reciba.
+
 | Propiedad | Tipo | Descripción |
 | --- | --- | --- |
 | `index` | `Signal<number>` | Índice del slide actual |
@@ -78,7 +80,8 @@ El core independiente del framework. Una sola factoría crea un controlador a pa
 
 | Export | Tipo | Descripción |
 | --- | --- | --- |
-| `defaultRangeExtractor` | `(index: number, count: number, loop: boolean) => number[]` | Extractor por defecto que renderiza 3 elementos alrededor del índice actual |
+| `defaultRangeExtractor` | `RangeExtractor` | Extractor por defecto que renderiza 3 elementos alrededor del índice actual |
+| `RangeExtractor` | `(current: number, count: number, loop: boolean) => number[]` | Firma de un extractor de rango. Tipa con ella tu propio `rangeExtractor`. |
 
 ## Signal API [#signal-api]
 
@@ -99,6 +102,8 @@ Primitivas reactivas ligeras que usa todo el core.
 | `createComputed` | `<T>(fn: () => T, deps: () => Subscribable[]) => ComputedSignal<T>` | Crea una señal calculada derivada. El segundo argumento es una factoría de dependencias que devuelve las señales que hay que seguir. |
 | `reaction` | `(deps: () => Subscribable[], effect: () => void) => () => void` | Ejecuta un efecto secundario cuando cambia cualquier señal de la que depende y devuelve una función para desmontarlo. Lee los valores de las señales dentro del callback del efecto. |
 | `batch` | `(fn: () => void) => void` | Agrupa varias actualizaciones de señales en una sola ronda de avisos; admite anidación |
+| `Listener` | `() => void` | El callback que recibe `observe`. Tipa con él un observador de señal que declares aparte. |
+| `Dispose` | `() => void` | Lo que devuelven `observe` y `reaction`: llámalo para dejar de escuchar. Tipa con él una suscripción guardada. |
 
 ## Transiciones [#transitions]
 
@@ -113,6 +118,46 @@ Funciones de transición incluidas que calculan las transformaciones CSS de cada
 | `flipTransition` | `TransitionTransformFn` | Transición 3D de volteo de tarjeta |
 | `cubeTransition` | `TransitionTransformFn` | Transición 3D con rotación de cubo |
 | `zoomTransition` | `TransitionTransformFn` | Transición de escala y zoom |
+| `SlideTransformStyle` | `{ transform?; transformOrigin?; opacity?; zIndex? }` | Lo que devuelve una `TransitionTransformFn` para un slide. Devuélvelo desde una transición propia. |
+
+## Controladores de entrada [#input-controllers]
+
+El controlador del slider crea estos tres por sí mismo a partir de sus opciones `enableGestures`, `enableNavKeys` y `enableWheel`. Crea uno directamente cuando escribas tu propia integración o necesites gestos, flechas o la rueda en un elemento que no es un slider.
+
+### Controlador de gestos [#gesture-controller]
+
+| Export | Tipo | Descripción |
+| --- | --- | --- |
+| `createGestureController` | `(config?: GestureControllerConfig, events?: GestureControllerEvents) => GestureController` | Detecta toques, dobles toques, pulsaciones largas y arrastres sobre un elemento, y fija cada arrastre a su eje dominante. |
+| `GestureController` | `{ attach; detach; observe; unobserve; updateEvents }` | Objeto que devuelve `createGestureController`. `attach(element)` enlaza el elemento, `observe()` añade los listeners, `unobserve()` los quita y conserva el elemento, `detach()` lo quita todo; `updateEvents(events)` incorpora manejadores nuevos. |
+| `GestureControllerConfig` | `{ useTouchEventsOnly?; longPressDurationMs?; doubleTapWindowMs? }` | Opciones de `createGestureController`: ignorar el ratón (por defecto `false`), duración de la pulsación larga (por defecto `800` ms), ventana del doble toque (por defecto `200` ms). |
+| `GestureControllerEvents` | `{ onTap?; onDoubleTap?; onTapDown?; onTapUp?; onLongPress?; onLongPressEnd?; onHorizontalDragStart?; onHorizontalDragUpdate?; onHorizontalDragEnd?; onVerticalDragStart?; onVerticalDragUpdate?; onVerticalDragEnd?; onDragEnd? }` | Callbacks a los que llama `createGestureController`. Un arrastre va a los manejadores horizontales o verticales según su eje dominante; `onDragEnd` se dispara en ambos casos. |
+| `GestureAxisDragUpdateEvent` | `GestureEvent & { delta; distance; primaryDelta; primaryDistance; cancel }` | Datos de `onHorizontalDragUpdate` y `onVerticalDragUpdate`: movimiento desde la última actualización, distancia total, lo mismo en el eje dominante y `cancel()` para devolver el arrastre a su sitio. |
+| `GestureAxisDragEndEvent` | `GestureAxisDragUpdateEvent` sin `cancel`, más `{ velocity; primaryVelocity }` | Datos de `onHorizontalDragEnd` y `onVerticalDragEnd`, con la velocidad al soltar en píxeles por segundo. |
+| `GestureDragEndEvent` | `GestureAxisDragEndEvent` sin los campos `primary` | Datos de `onDragEnd`, para un manejador al que no le importa por qué eje fue el arrastre. |
+| `Offset` | `[x: number, y: number]` | Un par de píxeles, usado para cada posición, delta, distancia y velocidad de un evento de gesto. |
+| `EventKind` | `'touch' \| 'mouse'` | La entrada de la que vino un gesto, en el campo `kind` de `GestureCommonEvent`. |
+| `DragAxis` | `'horizontal' \| 'vertical' \| null` | El eje dominante de un arrastre, `null` hasta que el primer movimiento lo decide. |
+
+### Controlador de teclado [#keyboard-controller]
+
+| Export | Tipo | Descripción |
+| --- | --- | --- |
+| `createKeyboardController` | `(config: KeyboardControllerConfig, events: KeyboardControllerEvents) => KeyboardController` | Convierte las pulsaciones de las flechas en callbacks con un `NavKey`. |
+| `KeyboardController` | `{ attach; detach }` | Objeto que devuelve `createKeyboardController`. `attach(target?)` escucha `keydown` en el destino (por defecto `window`), `detach()` deja de hacerlo. |
+| `KeyboardControllerConfig` | `{ filter?; throttleMs? }` | Opciones de `createKeyboardController`: las teclas a las que reaccionar (por defecto las cuatro) y el tiempo mínimo entre dos pulsaciones (por defecto `0`, sin limitación). |
+| `KeyboardControllerEvents` | `{ onKeyPress: (key: NavKey, event: KeyboardEvent) => void }` | Callback al que llama `createKeyboardController` en cada pulsación aceptada. |
+| `NavKey` | `'up' \| 'right' \| 'down' \| 'left'` | La flecha pulsada, tal como la notifica y filtra el controlador de teclado. |
+
+### Controlador de rueda [#wheel-controller]
+
+| Export | Tipo | Descripción |
+| --- | --- | --- |
+| `createWheelController` | `(config: WheelControllerConfig, events: WheelControllerEvents) => WheelController` | Convierte el desplazamiento con la rueda del ratón en un callback de dirección por gesto, agrupando la ráfaga de eventos que produce un solo desplazamiento. |
+| `WheelController` | `{ attach; detach }` | Objeto que devuelve `createWheelController`. `attach(target?)` escucha `wheel` en el destino (por defecto `window`), `detach()` deja de hacerlo y descarta un callback pendiente. |
+| `WheelControllerConfig` | `{ debounceMs?; deltaThreshold? }` | Opciones de `createWheelController`: el tiempo de calma que termina un gesto (por defecto `200` ms) y el delta mínimo que cuenta (por defecto `10` px). |
+| `WheelControllerEvents` | `{ onWheel: (direction: WheelDirection, event: WheelEvent) => void }` | Callback al que llama `createWheelController` una vez por gesto de rueda. |
+| `WheelDirection` | `'up' \| 'down' \| 'left' \| 'right'` | La dirección de un gesto de rueda. |
 
 ## Carga de contenido [#content-loading]
 
@@ -185,6 +230,28 @@ Ayudantes de bajo nivel para gestionar eventos del DOM y limpiar de forma determ
 | `createDisposableList` | `() => DisposableList` | Lista combinable para reunir funciones de limpieza. Llama a dispose() para ejecutarlas todas a la vez. |
 | `createBodyLock` | `() => BodyLock` | Bloqueo del scroll del body con recuento de referencias. Varios consumidores pueden bloquearlo a la vez; el scroll vuelve cuando todos lo liberan. |
 | `sharedBodyLock` | `BodyLock` | Instancia única a nivel de módulo. Úsala cuando varios componentes de tu aplicación deban compartir un solo contador para que los modales y overlays anidados se intercalen bien. Los bindings de los frameworks (`@reelkit/react`, `@reelkit/vue`, `@reelkit/angular`) la usan por debajo. |
+
+## Utilidades [#utilities]
+
+Pequeñas utilidades con las que están hechos los controladores. Los bindings de los frameworks las reexportan, así que un slide, una transición o una integración propios pueden usar las mismas.
+
+| Export | Tipo | Descripción |
+| --- | --- | --- |
+| `first` | `<T>(arr: readonly T[]) => T` | Primer elemento de un array, como la x de un `Offset` o el ancho de un tamaño. |
+| `last` | `<T>(arr: readonly T[]) => T` | Último elemento de un array, como la y de un `Offset` o el alto de un tamaño. |
+| `generate` | `<G>(count: number, generator: (i: number) => G) => G[]` | Crea un array de `count` elementos a partir de su índice, por ejemplo `generate(10, (i) => i)` para datos de demo. |
+| `abs` | `(value: number) => number` | Valor absoluto. |
+| `isNegative` | `(value: number) => boolean` | Si un número es menor que cero, por ejemplo para distinguir un arrastre hacia atrás de uno hacia delante. |
+| `clamp` | `(value: number, min: number, max: number) => number` | Mantiene un número entre `min` y `max`, ambos incluidos. |
+| `lerp` | `(t: number, a: number, b: number) => number` | Interpolación lineal: `a` con `t = 0`, `b` con `t = 1`. Úsala en una transición propia para convertir el progreso del slide en un valor. |
+| `extractRange` | `(count, start, end?, overscan?, loop?) => number[]` | Índices de `start` a `end` (por defecto `start`) más `overscan` a cada lado (por defecto `1`), dando la vuelta en los extremos cuando `loop` es true. Construye con ella un `RangeExtractor` propio. |
+| `noop` | `() => void` | Una función que no hace nada, para un callback por defecto. |
+| `createDeferred` | `<T = void>() => Deferred<T>` | Una promesa junto con el `resolve` que la resuelve, para unir una API de callbacks con `await`. |
+| `Deferred` | `{ promise: Promise<T>; resolve: (value?: T) => void }` | Objeto que devuelve `createDeferred`. |
+| `createLruCache` | `<V>(maxSize: number, onEvict?: (value: V, key: string) => void) => LruCache<V>` | Un `Map` que conserva las `maxSize` entradas guardadas más recientemente y descarta la más antigua a partir de ahí. `onEvict` se ejecuta por cada entrada descartada, para limpiezas como `URL.revokeObjectURL`. |
+| `LruCache` | `Map<string, V>` | Objeto que devuelve `createLruCache`. Es un `Map` real; solo cambia `set`. |
+| `animate` | `(options: AnimationOptions) => () => void` | Anima un número de `from` a `to` con una curva ease-in-out y llama a `onUpdate` en cada fotograma. Devuelve una función que cancela la animación. |
+| `AnimationOptions` | `{ from; to; duration; onUpdate; onComplete? }` | Opciones de `animate`: valor inicial y final, duración en milisegundos, el callback de cada fotograma y un callback opcional al terminar. |
 
 ## Detección de tamaño [#size-detection]
 

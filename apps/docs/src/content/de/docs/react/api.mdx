@@ -107,6 +107,23 @@ Abonniert Signals mit animierten Werten und interpoliert sie weich per `requestA
 | `signal` | `Signal<AnimatedValue>` | `required` | Signal, das \{ value, duration, done? \} ausgibt. Eine Dauer über 0 interpoliert vom aktuellen Wert zum neuen; bei 0 springt der Wert direkt dorthin. |
 | `children` | `(value: number) => ReactElement` | `required` | Render-Funktion, die den interpolierten Wert für den aktuellen Frame bekommt. Er wird synchron übernommen, damit das DOM mit der Animation Schritt hält. |
 
+## SwipeToClose [#swipetoclose]
+
+`<SwipeToClose>` legt seine Kinder in einen Container, der einem vertikalen Wischen folgt und `onClose` aufruft, sobald das Wischen die Schwelle überschreitet — die Geste zum Schließen der Lightbox und des Stories Player, für ein eigenes Overlay. `SwipeToCloseProps` typisiert seine Props; `SwipeToCloseDirection` ist `'up' | 'down'`.
+
+| Prop | Typ | Standard | Beschreibung |
+| --- | --- | --- | --- |
+| `direction` | `SwipeToCloseDirection` | Pflicht | `'up'` schließt wie die Lightbox, `'down'` wie der Stories Player |
+| `onClose` | `() => void` | Pflicht | Wird aufgerufen, nachdem das Wischen die Schwelle überschritten hat und die Animation zum Schließen endet |
+| `enabled` | `boolean` | `true` | Schaltet die Geste ab, ohne auszuhängen |
+| `threshold` | `number` | `0.2` | Anteil der Höhe des Viewports, den das Wischen zurücklegen muss |
+| `className` | `string` | — | Klasse am äußeren `<div>` |
+| `children` | `ReactNode` | Pflicht | Inhalt, der sich mit dem Wischen bewegt |
+
+## SoundProvider [#soundprovider]
+
+`<SoundProvider>` erstellt einen `SoundController`, anfangs stumm, und reicht ihn über `useSoundState` an seine Kinder weiter. Die Overlays rendern selbst einen; füge deinen eigenen nur um einen eigenen Player hinzu, dessen Bedienelemente sich eine Stummschaltung teilen.
+
 ## Hooks [#hooks]
 
 ### useBodyLock [#usebodylock]
@@ -137,6 +154,31 @@ Ein `UrlAdapter` auf Basis von React Router. Übergib ihn in einer App mit Route
 Kommt aus einem eigenen Subpfad, damit eine App ohne Router nie `react-router-dom` in ihr Bundle zieht. `react-router-dom` ist eine optionale Peer-Abhängigkeit.
 
 <CodeBlock code={usereactrouterurladapter} language="tsx" />
+
+### useReelContext [#usereelcontext]
+
+`useReelContext()` liest den `ReelContextValue` des nächsten übergeordneten `<Reel>` oder gibt außerhalb davon `null` zurück. `<ReelIndicator>` verbindet sich darüber selbst; nutze es in deinen eigenen Bedienelementen, die du als Kinder von `<Reel>` renderst, damit sie dem Slider ohne Props folgen. `ReelContext` ist das Context-Objekt dahinter — stelle nur in einem Test oder einem eigenen Wrapper einen eigenen Wert bereit.
+
+| Eigenschaft | Typ | Beschreibung |
+| --- | --- | --- |
+| `index` | `Signal<number>` | Index des aktiven Slides; lies `.value` innerhalb von `Observe` |
+| `count` | `Signal<number>` | Gesamtzahl der Slides |
+| `goTo` | `(index: number, animate?: boolean) => Promise<void>` | Geht zu einem Slide, animiert oder nicht |
+
+### useSoundState [#usesoundstate]
+
+`useSoundState()` liest den `SoundController` aus dem nächsten `<SoundProvider>` und wirft außerhalb davon einen Fehler. Der Reel Player, die Lightbox und der Stories Player legen einen Provider um ihren Inhalt, sodass eigene Bedienelemente, die du über ihre Render-Props übergibst, damit die Stummschaltung lesen oder umschalten können.
+
+### useFullscreen [#usefullscreen]
+
+`useFullscreen({ ref })` steuert die Fullscreen-API für das Element in `ref` und beendet das Vollbild, wenn die Komponente ausgehängt wird. `UseFullscreenProps` ist sein Argument; `UseFullscreenResult` ist das Tupel, das es zurückgibt.
+
+| Index | Typ | Beschreibung |
+| --- | --- | --- |
+| `[0]` | `Signal<boolean>` | Ob die Seite im Vollbild ist; lies `.value` innerhalb von `Observe` |
+| `[1]` | `() => Promise<void>` | Fordert das Vollbild für das Element an und verlässt vorher ein anderes Element im Vollbild |
+| `[2]` | `() => Promise<void>` | Beendet das Vollbild |
+| `[3]` | `() => Promise<void>` | Wechselt zwischen beidem |
 
 ## Barrierefreiheit [#accessibility]
 

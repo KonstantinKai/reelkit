@@ -336,7 +336,7 @@ Takes every visual and behaviour prop above except `isOpen`, and replaces it wit
 
 ### Reel Props (proxied) [#reel-props-proxied]
 
-These props are forwarded to the underlying [Reel](/docs/react/api#reel-props) component.
+These props are forwarded to the underlying [Reel](/docs/react/api#reel-props) component. Their type is `ReelProxyProps`, the subset of the Reel props the overlay passes through; use it to type a wrapper that forwards them.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -376,25 +376,25 @@ Reusable sub-components for composing custom controls via `renderControls`.
 
 ### CloseButton [#closebutton]
 
-Default X close button.
+Default X close button. Props (`CloseButtonProps`): `onClick`, optional `className` and `style`.
 
 <CodeBlock code={closebutton} language="tsx" />
 
 ### Counter [#counter]
 
-Image counter pill showing "1 / 3".
+Image counter pill showing "1 / 3". Props (`CounterProps`): `currentIndex` (zero-based), `count`, optional `className` and `style`.
 
 <CodeBlock code={counter} language="tsx" />
 
 ### FullscreenButton [#fullscreenbutton]
 
-Fullscreen toggle button (Maximize/Minimize icon).
+Fullscreen toggle button (Maximize/Minimize icon). Props (`FullscreenButtonProps`): `isFullscreen`, `onToggle`, optional `className` and `style`.
 
 <CodeBlock code={fullscreenbutton} language="tsx" />
 
 ### SoundButton [#soundbutton]
 
-Mute/unmute toggle button for video slides (Volume2/VolumeX icon). Included automatically in `renderControls` from `useVideoSlideRenderer`. For standalone use inside custom controls, access sound state via `useSoundState`.
+Mute/unmute toggle button for video slides (Volume2/VolumeX icon). Included automatically in `renderControls` from `useVideoSlideRenderer`. For standalone use inside custom controls, access sound state via `useSoundState`. Props (`SoundButtonProps`): `isMuted`, `onToggle`, optional `className` and `style`.
 
 <CodeBlock code={soundbutton} language="tsx" />
 
@@ -414,7 +414,9 @@ Download button (Download icon), disabled while `isDownloading`. Props (`Downloa
 
 ### useVideoSlideRenderer [#usevideosliderenderer]
 
-Hook for opt-in video support. Returns `renderSlide`, `renderControls`, and `SoundProvider` — wrap the overlay in SoundProvider and pass the render functions.
+Hook for opt-in video support. Returns `renderSlide`, `renderControls`, and `SoundProvider` — wrap the overlay in SoundProvider and pass the render functions. The return type is `UseVideoSlideRendererResult`, which also carries `hasVideo`, true when any item has `type: 'video'`.
+
+Its `renderSlide` draws video items with `LightboxVideoSlide`, a video slide that plays through one shared `<video>` element, so sound keeps working on iOS, and remembers each video's position. Render it yourself only from a custom `renderSlide`. Its props (`LightboxVideoSlideProps`) are `src`, `poster`, `isActive`, `size`, `slideKey` (keys the saved position and captured frame), `loop` (default true) and the `onPlaying`, `onWaiting`, `onError`, `onEnded` callbacks.
 
 <CodeBlock code={usevideosliderenderer} language="typescript" />
 

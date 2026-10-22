@@ -140,6 +140,28 @@ import asgenericpropkeys from '../../../snippets/vue-api/asgenericpropkeys.ts?ra
 | --- | --- |
 | `default` | 需要套上滑动关闭手势的内容 |
 
+## Observe [#observe]
+
+标签：`<Observe :signals="[…]">` —— 任一信号变化时只重新渲染它的默认插槽，周围的一切都不动。
+
+在渲染函数或模板里读取核心信号并不会自动订阅它。通常的做法是 [`toVueRef`](#tovueref)，但它把信号绑定到调用它的那个组件上，因此频繁变化的信号会让整个组件重新渲染。`Observe` 是更窄的边界：把它套在显示该值的那部分外面，组件的其余部分就原地不动。故事播放器正是用它来刷新头部和进度条，而不重绘两个滑块。
+
+| Prop | 类型 | 说明 |
+| --- | --- | --- |
+| `signals` | `readonly Subscribable[]` | 要跟随的信号。换成另一组会重新订阅，还是同一组则保持不变。卸载时全部释放。 |
+
+属性类型以 `ObserveProps` 导出。
+
+<CodeBlock code={observe} language="vue" />
+
+整个组件都跟随信号时用 `toVueRef`，只有其中一块跟随时用 `Observe`。
+
+## SoundProvider [#soundprovider]
+
+标签： `<SoundProvider>` —— 上下文提供者，它会创建一个 `SoundController` 实例并通过 `RK_SOUND_KEY`提供给后代。默认插槽会被透明渲染。
+
+<CodeBlock code={soundprovider} language="vue" />
+
 ## RK_REEL_KEY & useReelContext [#rk-reel-key-usereelcontext]
 
 An `InjectionKey<ReelContextValue>` 由 `<Reel>` 提供给后代组件。内部被 `<ReelIndicator>` 用于自动连接。在需要滑动器上下文的自定义组件里用 `useReelContext()` 。
@@ -216,28 +238,6 @@ A `UrlAdapter` ，底层用 Vue Router。在带路由的应用里把它作为 `a
 
 <CodeBlock code={tovueref} language="typescript" />
 
-## Observe [#observe]
-
-标签：`<Observe :signals="[…]">` —— 任一信号变化时只重新渲染它的默认插槽，周围的一切都不动。
-
-在渲染函数或模板里读取核心信号并不会自动订阅它。通常的做法是 [`toVueRef`](#tovueref)，但它把信号绑定到调用它的那个组件上，因此频繁变化的信号会让整个组件重新渲染。`Observe` 是更窄的边界：把它套在显示该值的那部分外面，组件的其余部分就原地不动。故事播放器正是用它来刷新头部和进度条，而不重绘两个滑块。
-
-| Prop | 类型 | 说明 |
-| --- | --- | --- |
-| `signals` | `readonly Subscribable[]` | 要跟随的信号。换成另一组会重新订阅，还是同一组则保持不变。卸载时全部释放。 |
-
-属性类型以 `ObserveProps` 导出。
-
-<CodeBlock code={observe} language="vue" />
-
-整个组件都跟随信号时用 `toVueRef`，只有其中一块跟随时用 `Observe`。
-
-## SoundProvider [#soundprovider]
-
-标签： `<SoundProvider>` —— 上下文提供者，它会创建一个 `SoundController` 实例并通过 `RK_SOUND_KEY`提供给后代。默认插槽会被透明渲染。
-
-<CodeBlock code={soundprovider} language="vue" />
-
 ## asGenericPropKeys [#asgenericpropkeys]
 
 构建一个对所接收条目泛型的组件，就像 `ReelPlayerOverlay` 和 `StoriesOverlay` 那样。Vue 3.3 接受带类型参数的 setup 函数 `defineComponent(<T>(props: Props<T>) => …, options)`，但只有当 `options.props` 列出 prop 名称时才保留这个参数。如果传入 props 对象，Vue 会从对象反推 prop 类型，`T` 就丢失了。`asGenericPropKeys` 原样传递 props 对象，而类型检查器看到的是名称列表：`T` 从父组件绑定的值推断，默认值、校验和布尔转换在运行时依然生效。
@@ -245,6 +245,10 @@ A `UrlAdapter` ，底层用 Vue Router。在带路由的应用里把它作为 `a
 类型参数是使用基础条目的 props 类型，组件需要 Vue 3.3 或更高版本。插槽和事件无法使用 `T`：要为插槽作用域加类型，请在模板中标注它。
 
 <CodeBlock code={asgenericpropkeys} language="typescript" />
+
+### hasRenderedNodes [#hasrenderednodes]
+
+`hasRenderedNodes(nodes)` 判断一个插槽的结果是否真的会在页面上渲染出内容，适用于父组件留空插槽时回退到自身渲染的组件，浮层就是这样做的。内容处在为 false 的 `v-if` 后面的插槽仍会返回一个注释节点，所以只检查数组长度会把它当成已填充，从而丢掉回退内容。`hasRenderedNodes` 会展开 fragment、忽略注释节点，并在 `null` 或 `undefined` 时返回 `false`，因此应该用 `hasRenderedNodes(slots.controls?.(scope))` 来做分支判断。
 
 ## 无障碍 [#accessibility]
 

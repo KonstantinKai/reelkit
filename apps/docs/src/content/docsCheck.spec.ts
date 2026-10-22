@@ -4,7 +4,16 @@ import { join } from 'node:path';
 // The script under test lives with the other repo scripts, outside any
 // project; this is the only place in the workspace that can run it.
 // eslint-disable-next-line @nx/enforce-module-boundaries
-import { publicExportNames } from '../../../../scripts/lib/publicExports.mjs';
+import {
+  internalExportNames,
+  publicExportNames,
+} from '../../../../scripts/lib/publicExports.mjs';
+// eslint-disable-next-line @nx/enforce-module-boundaries
+import {
+  componentsAfterHooks,
+  mentionsAsCode,
+  strippedInternals,
+} from '../../../../scripts/lib/docsRules.mjs';
 
 // docs-check requires every export of a package index to appear on its docs
 // page. That guarantee is only as wide as the enumeration: a re-export form
@@ -69,6 +78,139 @@ describe('docs-check export enumeration', () => {
     expect(publicExportNames(`export { a } from './lib';`).hasStarExport).toBe(
       false,
     );
+  });
+});
+
+// The tag lives on the declaration, and an index usually re-exports from a
+// module that may re-export again, so the lookup has to follow the name.
+describe('docs-check internal exports', () => {
+  const modules: Record<string, string> = {
+    'pkg/lib/utils/index.ts': [
+      "export { timeout, type TimeoutFn } from './timeout';",
+      "export { clamp } from './number';",
+    ].join('\n'),
+    'pkg/lib/utils/timeout.ts': [
+      '/** Delay with cancel. @internal Plumbing for the controllers. */',
+      'export const timeout = () => 0;',
+      '/**',
+      ' * Callable with cancel.',
+      ' * @internal',
+      ' */',
+      'export type TimeoutFn = () => void;',
+    ].join('\n'),
+    'pkg/lib/utils/number.ts': [
+      '/** Keeps a value in range. */',
+      'export const clamp = (v: number) => v;',
+    ].join('\n'),
+    'pkg/lib/context.ts': [
+      '/** @internal */',
+      'export const RawContext = 1;',
+      'export const useContextValue = () => 1;',
+    ].join('\n'),
+  };
+  const resolve = (fromDir: string, specifier: string) => {
+    const base = join(fromDir, specifier);
+    for (const path of [`${base}.ts`, join(base, 'index.ts')]) {
+      if (path in modules) return { src: modules[path], dir: join(path, '..') };
+    }
+    return null;
+  };
+
+  it('finds a tag through a module that re-exports the name again', () => {
+    const index = `export { timeout, type TimeoutFn, clamp } from './lib/utils';`;
+    expect(internalExportNames(index, resolve, 'pkg')).toEqual([
+      'TimeoutFn',
+      'timeout',
+    ]);
+  });
+
+  it('counts an untagged neighbour in the same export block', () => {
+    const index = `export { RawContext, useContextValue } from './lib/context';`;
+    expect(internalExportNames(index, resolve, 'pkg')).toEqual(['RawContext']);
+  });
+
+  it('reads a tag on a declaration the index makes itself', () => {
+    const index = [
+      '/** @internal Wiring only. */',
+      'export const wiring = 1;',
+      '/** Public. */',
+      'export const api = 1;',
+    ].join('\n');
+    expect(internalExportNames(index, resolve, 'pkg')).toEqual(['wiring']);
+  });
+
+  it('publishes an alias under its exported name', () => {
+    const index = `export { RawContext as Context } from './lib/context';`;
+    expect(internalExportNames(index, resolve, 'pkg')).toEqual(['Context']);
+  });
+
+  // With stripInternal the tag deletes the published type, so the gate has to
+  // refuse it rather than quietly skip the symbol.
+  it('refuses a tag in a package that strips internals', () => {
+    expect(
+      strippedInternals({ compilerOptions: { stripInternal: true } }, ['A']),
+    ).toEqual(['A']);
+    expect(strippedInternals({ compilerOptions: {} }, ['A'])).toEqual([]);
+  });
+});
+
+// An API page reads from what a reader renders to what they call, so a
+// component filed below the hooks, under utilities, is out of place.
+describe('docs-check component order', () => {
+  const values = ['Reel', 'SwipeToClose', 'useSoundState', 'createThing'];
+
+  it('reports a component documented after the hooks section', () => {
+    const page = [
+      '## Reel [#reel]',
+      '## Hooks [#hooks]',
+      '### useSoundState [#usesoundstate]',
+      '## Utilities [#utilities]',
+      '### SwipeToClose [#swipetoclose]',
+    ].join('\n');
+    expect(componentsAfterHooks(page, values)).toEqual(['SwipeToClose']);
+  });
+
+  it('accepts components above the hooks and the mirror heading form', () => {
+    const mirror = [
+      '## Reel',
+      '## SwipeToClose',
+      '## Composables',
+      '### useSoundState',
+      '### createThing',
+    ].join('\n');
+    expect(componentsAfterHooks(mirror, values)).toEqual([]);
+  });
+
+  it('ignores a styling group named after a component', () => {
+    const page = [
+      '## Hooks',
+      '### useSoundState',
+      '## CSS Theming Tokens',
+      '### SwipeToClose',
+    ].join('\n');
+    expect(componentsAfterHooks(page, values)).toEqual([]);
+  });
+
+  it('leaves a page without a hooks section alone', () => {
+    expect(componentsAfterHooks('## Utilities\n### Reel', values)).toEqual([]);
+  });
+});
+
+// A translation drops ordinary words such as "first" but must keep the
+// identifier, so only a mention written as code counts toward it.
+describe('docs-check mentions written as code', () => {
+  it('counts backticks, a component tag and a call', () => {
+    expect(mentionsAsCode('Use `first` to read it.', 'first')).toBe(true);
+    expect(mentionsAsCode('<Counter class="x" />', 'Counter')).toBe(true);
+    expect(mentionsAsCode('const c = clamp(1, 0, 2);', 'clamp')).toBe(true);
+    expect(
+      mentionsAsCode('const g = useTimeline<Item>();', 'useTimeline'),
+    ).toBe(true);
+  });
+
+  it('ignores the same name as a plain word', () => {
+    expect(mentionsAsCode('The first slide opens.', 'first')).toBe(false);
+    expect(mentionsAsCode('A counter in the corner.', 'Counter')).toBe(false);
   });
 });
 

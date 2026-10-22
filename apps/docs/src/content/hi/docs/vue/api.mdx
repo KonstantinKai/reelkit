@@ -140,6 +140,28 @@ template ref के ज़रिए मिलने वाला imperative API:
 | --- | --- |
 | `default` | स्वाइप करके बंद करने वाले जेस्चर से लपेटा जाने वाला कंटेंट |
 
+## Observe [#observe]
+
+टैग: `<Observe :signals="[…]">` — जब भी इनमें से कोई सिग्नल बदलता है, यह सिर्फ़ अपना डिफ़ॉल्ट स्लॉट दोबारा बनाता है, आसपास कुछ नहीं।
+
+रेंडर फ़ंक्शन या टेम्पलेट में core का सिग्नल पढ़ लेने भर से उसकी सदस्यता नहीं बनती। आम जवाब [`toVueRef`](#tovueref) है, लेकिन वह सिग्नल को उसी कंपोनेंट से बाँध देता है जिसने उसे बुलाया, इसलिए बार-बार बदलने वाला सिग्नल पूरे कंपोनेंट को दोबारा बनवाता है। `Observe` उससे सँकरी सीमा है: जो हिस्सा वह मान दिखाता है उसी को लपेट दें, बाक़ी कंपोनेंट अपनी जगह बना रहता है। Stories Player इसी तरह हेडर और प्रोग्रेस बार बदलता है और दोनों स्लाइडर दोबारा नहीं बनाता।
+
+| Prop | टाइप | विवरण |
+| --- | --- | --- |
+| `signals` | `readonly Subscribable[]` | जिन सिग्नलों का पीछा करना है। अलग समूह देने पर सदस्यता बदल जाती है, वही समूह देने पर बनी रहती है। अनमाउंट पर सब छोड़ दिया जाता है। |
+
+प्रॉप्स का टाइप `ObserveProps` के रूप में एक्सपोर्ट होता है।
+
+<CodeBlock code={observe} language="vue" />
+
+जब पूरा कंपोनेंट सिग्नल का पीछा करे तो `toVueRef` लें, और जब उसका सिर्फ़ एक हिस्सा करे तो `Observe`।
+
+## SoundProvider [#soundprovider]
+
+टैग: `<SoundProvider>` — context provider, जो `SoundController` instance बनाता है और उसे `RK_SOUND_KEY` के ज़रिए descendants को देता है। अपना default slot बिना कुछ जोड़े रेंडर करता है।
+
+<CodeBlock code={soundprovider} language="vue" />
+
 ## RK_REEL_KEY और useReelContext [#rk-reel-key-usereelcontext]
 
 `<Reel>` अपने descendants को जो `InjectionKey<ReelContextValue>` देता है। `<ReelIndicator>` अपने-आप जुड़ने के लिए अंदर से इसे इस्तेमाल करता है। जिन कस्टम कंपोनेंट को स्लाइडर context चाहिए, उनमें `useReelContext()` इस्तेमाल करें।
@@ -216,28 +238,6 @@ subscription `onScopeDispose` से अपने-आप हट जाता ह
 
 <CodeBlock code={tovueref} language="typescript" />
 
-## Observe [#observe]
-
-टैग: `<Observe :signals="[…]">` — जब भी इनमें से कोई सिग्नल बदलता है, यह सिर्फ़ अपना डिफ़ॉल्ट स्लॉट दोबारा बनाता है, आसपास कुछ नहीं।
-
-रेंडर फ़ंक्शन या टेम्पलेट में core का सिग्नल पढ़ लेने भर से उसकी सदस्यता नहीं बनती। आम जवाब [`toVueRef`](#tovueref) है, लेकिन वह सिग्नल को उसी कंपोनेंट से बाँध देता है जिसने उसे बुलाया, इसलिए बार-बार बदलने वाला सिग्नल पूरे कंपोनेंट को दोबारा बनवाता है। `Observe` उससे सँकरी सीमा है: जो हिस्सा वह मान दिखाता है उसी को लपेट दें, बाक़ी कंपोनेंट अपनी जगह बना रहता है। Stories Player इसी तरह हेडर और प्रोग्रेस बार बदलता है और दोनों स्लाइडर दोबारा नहीं बनाता।
-
-| Prop | टाइप | विवरण |
-| --- | --- | --- |
-| `signals` | `readonly Subscribable[]` | जिन सिग्नलों का पीछा करना है। अलग समूह देने पर सदस्यता बदल जाती है, वही समूह देने पर बनी रहती है। अनमाउंट पर सब छोड़ दिया जाता है। |
-
-प्रॉप्स का टाइप `ObserveProps` के रूप में एक्सपोर्ट होता है।
-
-<CodeBlock code={observe} language="vue" />
-
-जब पूरा कंपोनेंट सिग्नल का पीछा करे तो `toVueRef` लें, और जब उसका सिर्फ़ एक हिस्सा करे तो `Observe`।
-
-## SoundProvider [#soundprovider]
-
-टैग: `<SoundProvider>` — context provider, जो `SoundController` instance बनाता है और उसे `RK_SOUND_KEY` के ज़रिए descendants को देता है। अपना default slot बिना कुछ जोड़े रेंडर करता है।
-
-<CodeBlock code={soundprovider} language="vue" />
-
 ## asGenericPropKeys [#asgenericpropkeys]
 
 ऐसा कंपोनेंट बनाता है जो मिलने वाले आइटम पर जेनेरिक हो, जैसे `ReelPlayerOverlay` और `StoriesOverlay` हैं। Vue 3.3 टाइप पैरामीटर वाला setup फ़ंक्शन `defineComponent(<T>(props: Props<T>) => …, options)` स्वीकार करता है, पर वह पैरामीटर तभी बचता है जब `options.props` में prop के नाम हों। props ऑब्जेक्ट देने पर Vue ऑब्जेक्ट से ही prop के टाइप पढ़ लेता है, और `T` खो जाता है। `asGenericPropKeys` props ऑब्जेक्ट को बिना बदले आगे देता है, जबकि टाइप चेकर उसे नामों की सूची के रूप में देखता है: `T` पैरेंट के bind किए मान से निकलता है, और runtime पर default, validation और boolean casting पहले की तरह काम करते हैं।
@@ -245,6 +245,10 @@ subscription `onScopeDispose` से अपने-आप हट जाता ह
 टाइप आर्ग्युमेंट बेस आइटम वाला props टाइप है, और कंपोनेंट को Vue 3.3 या नया चाहिए। स्लॉट और events `T` का इस्तेमाल नहीं कर सकते: स्लॉट के स्कोप को टाइप करने के लिए टेम्पलेट में उस पर टाइप लिखें।
 
 <CodeBlock code={asgenericpropkeys} language="typescript" />
+
+### hasRenderedNodes [#hasrenderednodes]
+
+`hasRenderedNodes(nodes)` बताता है कि किसी स्लॉट का नतीजा पेज पर कुछ रखेगा या नहीं। यह उस कंपोनेंट के लिए है जो पैरेंट के स्लॉट खाली छोड़ने पर अपनी रेंडरिंग पर लौट आता है, जैसा ओवरले करते हैं। जिस स्लॉट का कंटेंट किसी false `v-if` के पीछे है, वह फिर भी एक comment node लौटाता है, इसलिए array की लंबाई जाँचने से वह भरा हुआ लगेगा और फ़ॉलबैक हट जाएगा। `hasRenderedNodes` fragments को खोलता है, comment nodes को अनदेखा करता है, और `null` या `undefined` के लिए `false` लौटाता है, इसलिए शाखा बनाने के लिए सही जाँच `hasRenderedNodes(slots.controls?.(scope))` है।
 
 ## सुलभता [#accessibility]
 

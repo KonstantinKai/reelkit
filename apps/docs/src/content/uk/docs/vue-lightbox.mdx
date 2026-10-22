@@ -142,7 +142,7 @@ import downloadCode from '../../snippets/vue-lightbox/download.vue?raw';
 
 ## Підтримка відео [#video-support]
 
-Слайди-відео вмикаються за бажанням, тож типовий бандл лишається без обв’язки для аудіо та відео. Викличте `useVideoSlideRenderer(items)` і передайте повернені `VideoSlideRenderer` / `VideoControlsRenderer` в слоти оверлея `#slide` та `#controls` . Загорніть оверлей у повернений `SoundProvider` щоб вбудований перемикач звуку мав контекст.
+Слайди-відео вмикаються за бажанням, тож типовий бандл лишається без обв’язки для аудіо та відео. Викличте `useVideoSlideRenderer(items)` і передайте повернені `VideoSlideRenderer` / `VideoControlsRenderer` в слоти оверлея `#slide` та `#controls` . Загорніть оверлей у повернений `SoundProvider` щоб вбудований перемикач звуку мав контекст. Повернений об’єкт має тип `UseVideoSlideRendererResult`: `SoundProvider`, `hasVideo`, `VideoSlideRenderer` і `VideoControlsRenderer`.
 
 <CodeBlock code={videoOptInCode} language="vue" />
 
@@ -233,6 +233,18 @@ Pass `hashCodec: base64UrlCodec` щоб закодувати id в URL у base64
 | --- | --- | --- |
 | `PlayPauseButton` | `PlayPauseButtonProps`: `isPlaying`, `onPress`, `className?` | Перемикач слайдшоу (іконка Play або Pause, `aria-pressed` під час відтворення). Стандартні елементи керування показують її з `auto-advance`. |
 | `DownloadButton` | `DownloadButtonProps`: `isDownloading`, `onPress`, `className?` | Кнопка завантаження, вимкнена, поки `isDownloading`. Стандартні елементи керування показують її з `show-download`. |
+| `CloseButton` | `CloseButtonProps`: `onPress`, `className?` | Стандартна кнопка закриття, яку рендерить панель керування; розмістіть її у власному слоті `#controls`, щоб зберегти вбудований вигляд. |
+| `Counter` | `CounterProps`: `currentIndex`, `count`, `className?` | Стандартна плашка лічильника «3 / 10»; розмістіть її у власному слоті `#controls`, щоб зберегти вбудований вигляд. |
+| `FullscreenButton` | `FullscreenButtonProps`: `isFullscreen`, `onPress`, `className?` | Стандартний перемикач повного екрана; його іконка йде за `isFullscreen`. |
+| `SoundButton` | `SoundButtonProps`: `isMuted`, `onPress`, `className?` | Стандартний перемикач звуку для відео-елементів; його іконка йде за `isMuted`. |
+
+### Частини слайда та навігації [#slide-parts]
+
+| Компонент | Пропси | Опис |
+| --- | --- | --- |
+| `ImageSlide` | `ImageSlideProps`: `src`, `alt?`, `isActive`, `onReady?`, `onLoadError?` | Стандартний слайд-зображення, який рендерить оверлей; розмістіть його у власному слоті `#slide`, щоб зберегти вбудований вигляд для зображень. |
+| `LightboxVideoSlide` | `LightboxVideoSlideProps`: `src`, `poster?`, `isActive`, `size`, `slideKey`, `loop?`, `onPlaying?`, `onWaiting?`, `onLoadError?` | Стандартний слайд-відео, що грає через спільний елемент `<video>`; `useVideoSlideRenderer` рендерить його за вас. |
+| `LightboxNavigation` | `LightboxNavigationProps`: `activeIndex`, `count`, `loop?`, `onPrev`, `onNext` | Стандартні стрілки «назад» і «вперед»; розмістіть їх у власному слоті `#navigation`, щоб зберегти вбудований вигляд. |
 
 ## Довідник API [#api-reference]
 

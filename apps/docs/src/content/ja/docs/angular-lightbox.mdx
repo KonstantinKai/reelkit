@@ -139,8 +139,8 @@ import download from '../../snippets/angular-lightbox/download.ts?raw';
 | \[rkLightboxNavigation\] | `LightboxNavContext` | 前後のナビゲーション矢印を置き換えます |
 | \[rkLightboxInfo\] | `LightboxInfoContext` | 下部のタイトルと説明のグラデーションのオーバーレイを置き換えます |
 | \[rkLightboxSlide\] | `LightboxSlideContext` | 個々のスライドの内容を置き換えます（動画スライドに必要） |
-| \[rkLightboxLoading\] | `{ $implicit: activeIndex, item }` | 独自の読み込み表示 |
-| \[rkLightboxError\] | `{ $implicit: activeIndex, item }` | 独自のエラー表示 |
+| \[rkLightboxLoading\] | `LightboxLoadingContext` | 独自の読み込み表示。ディレクティブのクラスは `RkLightboxLoadingDirective` です |
+| \[rkLightboxError\] | `LightboxErrorContext` | 独自のエラー表示。ディレクティブのクラスは `RkLightboxErrorDirective` です |
 
 <CodeBlock code={templateSlots} language="typescript" />
 
@@ -230,6 +230,7 @@ import download from '../../snippets/angular-lightbox/download.ts?raw';
 | --- | --- | --- | --- |
 | `RkPlayPauseButtonComponent` | `rk-play-pause-button` | `[playing]`, `(toggled)` | スライドショーの切り替えボタン（Play／Pause のアイコン、再生中は `aria-pressed`）。`autoAdvance` のときにデフォルトのコントロールが表示します。 |
 | `RkDownloadButtonComponent` | `rk-download-button` | `[downloading]`, `(pressed)` | ダウンロードボタン。`downloading` のあいだは無効になります。`showDownload` のときにデフォルトのコントロールが表示します。 |
+| `RkSoundButtonComponent` | `rk-sound-button` | `[muted]`, `(toggled)` | 動画の要素向けのミュート切り替え。動画スライドではデフォルトのコントロールが表示します。残すには、独自の `rkLightboxControls` テンプレートに置きます。 |
 
 ## RkLightboxUrlOverlayComponent の入力 [#rklightboxurloverlaycomponent-inputs]
 
@@ -262,6 +263,8 @@ import download from '../../snippets/angular-lightbox/download.ts?raw';
 | `showDownload` | `boolean` | false | アクティブなアイテムのダウンロードボタンを加えます。[ダウンロード](#download)を参照してください。 |
 | `ariaLabel` | `string` | 'Image gallery' | ダイアログ領域のアクセシブルなラベル |
 
+上のスライダーの入力（`transitionDuration`、`swipeDistanceFactor`、`loop`、`enableNavKeys`、`enableWheel`、`wheelDebounceMs`）の型は `ReelProxyProps` です。それらを Lightbox に転送するラッパーコンポーネントの型付けに使います。
+
 ## RkLightboxOverlayComponent の出力 [#rklightboxoverlaycomponent-outputs]
 
 | 出力 | 型 | 説明 |
@@ -291,6 +294,8 @@ import download from '../../snippets/angular-lightbox/download.ts?raw';
 | `LightboxNavContext` | `{ item, onPrev, onNext, activeIndex, count }` |
 | `LightboxInfoContext` | `{ $implicit: LightboxItem, index }` |
 | `LightboxSlideContext` | `{ $implicit: LightboxItem, index, size: [number, number], isActive, autoAdvance, onReady, onWaiting, onError, onEnded }` |
+| `LightboxLoadingContext` | `{ $implicit: activeIndex, item }`。`rkLightboxLoading` テンプレートが受け取るもの |
+| `LightboxErrorContext` | `{ $implicit: activeIndex, item }`。`rkLightboxError` テンプレートが受け取るもの |
 
 ## トランジション [#transitions]
 

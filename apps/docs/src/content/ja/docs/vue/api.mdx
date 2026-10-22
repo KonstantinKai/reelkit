@@ -140,6 +140,28 @@ import asgenericpropkeys from '../../../snippets/vue-api/asgenericpropkeys.ts?ra
 | --- | --- |
 | `default` | スワイプで閉じるジェスチャーで包む内容 |
 
+## Observe [#observe]
+
+タグ: `<Observe :signals="[…]">` — いずれかのシグナルが変わったとき、既定のスロットだけを描き直し、周りには手を触れません。
+
+レンダー関数やテンプレートで core のシグナルを読んでも、それだけでは購読になりません。ふつうは [`toVueRef`](#tovueref) を使いますが、これは呼び出したコンポーネントにシグナルを結び付けるため、よく変わるシグナルではそのコンポーネント全体が描き直されます。`Observe` はより狭い境界です。値を見せている部分だけを包めば、残りはそのまま動きません。ストーリープレイヤーがヘッダーとプログレスバーを更新しつつ、どちらのスライダーも描き直さずに済ませているのがこの仕組みです。
+
+| Prop | 型 | 説明 |
+| --- | --- | --- |
+| `signals` | `readonly Subscribable[]` | 追いかけるシグナル。別の組を渡すと購読が張り替わり、同じ組ならそのまま保たれます。アンマウント時にはすべて解放されます。 |
+
+プロパティの型は `ObserveProps` として公開されています。
+
+<CodeBlock code={observe} language="vue" />
+
+コンポーネント全体がシグナルを追うなら `toVueRef`、その一部だけなら `Observe` を選んでください。
+
+## SoundProvider [#soundprovider]
+
+タグ：`<SoundProvider>` — `SoundController` のインスタンスを作り、`RK_SOUND_KEY` を通じて子孫に提供するコンテキストプロバイダーです。デフォルトスロットをそのまま描画します。
+
+<CodeBlock code={soundprovider} language="vue" />
+
 ## RK_REEL_KEY と useReelContext [#rk-reel-key-usereelcontext]
 
 `<Reel>` が子孫に提供する `InjectionKey<ReelContextValue>` です。`<ReelIndicator>` の自動接続に内部で使われています。スライダーのコンテキストが必要な独自のコンポーネントでは `useReelContext()` を使ってください。
@@ -216,28 +238,6 @@ Vue Router に連動した `UrlAdapter` です。ルーターを使うアプリ�
 
 <CodeBlock code={tovueref} language="typescript" />
 
-## Observe [#observe]
-
-タグ: `<Observe :signals="[…]">` — いずれかのシグナルが変わったとき、既定のスロットだけを描き直し、周りには手を触れません。
-
-レンダー関数やテンプレートで core のシグナルを読んでも、それだけでは購読になりません。ふつうは [`toVueRef`](#tovueref) を使いますが、これは呼び出したコンポーネントにシグナルを結び付けるため、よく変わるシグナルではそのコンポーネント全体が描き直されます。`Observe` はより狭い境界です。値を見せている部分だけを包めば、残りはそのまま動きません。ストーリープレイヤーがヘッダーとプログレスバーを更新しつつ、どちらのスライダーも描き直さずに済ませているのがこの仕組みです。
-
-| Prop | 型 | 説明 |
-| --- | --- | --- |
-| `signals` | `readonly Subscribable[]` | 追いかけるシグナル。別の組を渡すと購読が張り替わり、同じ組ならそのまま保たれます。アンマウント時にはすべて解放されます。 |
-
-プロパティの型は `ObserveProps` として公開されています。
-
-<CodeBlock code={observe} language="vue" />
-
-コンポーネント全体がシグナルを追うなら `toVueRef`、その一部だけなら `Observe` を選んでください。
-
-## SoundProvider [#soundprovider]
-
-タグ：`<SoundProvider>` — `SoundController` のインスタンスを作り、`RK_SOUND_KEY` を通じて子孫に提供するコンテキストプロバイダーです。デフォルトスロットをそのまま描画します。
-
-<CodeBlock code={soundprovider} language="vue" />
-
 ## asGenericPropKeys [#asgenericpropkeys]
 
 受け取るアイテムについてジェネリックなコンポーネントを作ります。`ReelPlayerOverlay` や `StoriesOverlay` と同じ仕組みです。Vue 3.3 は型パラメーター付きの setup 関数 `defineComponent(<T>(props: Props<T>) => …, options)` を受け付けますが、そのパラメーターが保たれるのは `options.props` が prop 名を列挙している場合だけです。props オブジェクトを渡すと Vue はオブジェクトから prop の型を読み戻すため、`T` が失われます。`asGenericPropKeys` は props オブジェクトをそのまま渡しつつ、型チェッカーには名前のリストとして見せます。`T` は親がバインドした値から推論され、既定値、バリデーション、boolean への変換は実行時にもそのまま働きます。
@@ -245,6 +245,10 @@ Vue Router に連動した `UrlAdapter` です。ルーターを使うアプリ�
 型引数には基底のアイテムを使った props の型を渡し、コンポーネントには Vue 3.3 以降が必要です。スロットとイベントは `T` を使えません。スロットのスコープを型付けするには、テンプレートで型注釈を付けてください。
 
 <CodeBlock code={asgenericpropkeys} language="typescript" />
+
+### hasRenderedNodes [#hasrenderednodes]
+
+`hasRenderedNodes(nodes)` は、スロットの結果がページに何かを描画するかどうかを判定します。親がスロットを空にしたときに自分の描画に戻るコンポーネント向けで、オーバーレイもそうしています。false の `v-if` の後ろに中身があるスロットもコメントノードを返すので、配列の長さで判定すると埋まっているとみなしてフォールバックを捨ててしまいます。`hasRenderedNodes` はフラグメントを展開し、コメントノードを無視し、`null` や `undefined` には `false` を返します。分岐の判定には `hasRenderedNodes(slots.controls?.(scope))` を使ってください。
 
 ## アクセシビリティ [#accessibility]
 

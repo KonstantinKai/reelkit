@@ -288,6 +288,13 @@ import theming from '../../snippets/vue-reel-player/theming.css?raw';
 | `poster` | `string?` | 视频条目的封面缩略图 URL |
 | `aspectRatio` | `number` | 宽高比。小于 1 表示竖向（cover），大于等于 1 表示横向（contain）。 |
 
+### 联合类型 [#unions]
+
+| 类型 | 取值 | 说明 |
+| --- | --- | --- |
+| `MediaType` | `'image' \| 'video'` | `MediaItem` 的种类，决定幻灯片渲染 `ImageSlide` 还是 `VideoSlide`。 |
+| `TimelineMode` | `'auto' \| 'always' \| 'never'` | `timeline` 属性的取值：`'auto'` 只为时长超过 `timelineMinDurationSeconds` 的视频显示进度条，`'always'` 为所有视频显示，`'never'` 隐藏它。 |
+
 ## 子组件 [#sub-components]
 
 把它们放进你自定义的 `#controls`, `#slide`, or `#slideOverlay` 模板里。请把插槽作用域里的尺寸和回调透传下去，这样自动播放、封面抽帧和声音同步才能继续工作。
@@ -303,6 +310,14 @@ import theming from '../../snippets/vue-reel-player/theming.css?raw';
 静音开关。请把它渲染在 `SoundProvider` (`ReelPlayerOverlay` 会自动提供一个）。当前幻灯片没有视频时会隐藏。
 
 <CodeBlock code={soundbutton} language="vue" />
+
+### PlayerControls [#playercontrols]
+
+未提供 `#controls` 插槽时浮层渲染的默认控件：一个 `CloseButton`，开启 `show-sound` 时再加一个 `SoundButton`。属性：`showSound`、`soundDisabled`（让声音按钮变暗）和 `onClose`。放进你自己的 `#controls` 插槽，即可在额外按钮旁保留内置外观。
+
+### LoadingIndicator 与 ErrorIndicator [#loading-and-error-indicators]
+
+`LoadingIndicator` 是媒体缓冲时显示的全幻灯片波浪加载动画；`ErrorIndicator` 是媒体加载失败时显示的默认提示。两者都不接收属性。在你自己的 `#loading` 或 `#error` 插槽里渲染它们，即可在额外内容周围保留内置外观。
 
 ### TimelineBar [#timelinebar]
 
@@ -363,6 +378,15 @@ import theming from '../../snippets/vue-reel-player/theming.css?raw';
 <CodeBlock code={timeline} language="vue" />
 
 通过 `--rk-reel-timeline-*` CSS 自定义属性。
+
+在插槽之外，可以用组合式函数读取同一个控制器：
+
+| 导出 | 说明 |
+| --- | --- |
+| `useTimelineState()` | 返回最近的 `TimelineController`；在 `TimelineProvider`（由浮层挂载）外部会抛出错误。 |
+| `useTimelineStateOptional()` | 与 `useTimelineState` 相同，但在 `TimelineProvider` 外部返回 `null` 而不是抛出错误——适合可能在浮层外部渲染的组件。 |
+| `RK_TIMELINE_KEY` | 两个组合式函数读取的注入键；自己 `provide` 它，即可用你自己的控制器驱动 `TimelineBar`。 |
+| `useViewportSize(aspectRatio)` | 浮层用来确定自身尺寸的响应式 `[width, height]`：桌面端按给定宽高比，宽度 768px 及以下时占满整个视口。挂载前返回 `[0, 0]`，因此在 SSR 期间也是安全的。 |
 
 ## 声音上下文 [#sound-context]
 

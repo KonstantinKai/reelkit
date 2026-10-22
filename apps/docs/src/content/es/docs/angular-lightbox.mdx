@@ -139,8 +139,8 @@ Las directivas de slots de plantilla permiten personalizar por completo la inter
 | \[rkLightboxNavigation\] | `LightboxNavContext` | Sustituye las flechas de anterior y siguiente |
 | \[rkLightboxInfo\] | `LightboxInfoContext` | Sustituye el overlay inferior con degradado del título y la descripción |
 | \[rkLightboxSlide\] | `LightboxSlideContext` | Sustituye el contenido de cada slide (necesario para los slides de vídeo) |
-| \[rkLightboxLoading\] | `{ $implicit: activeIndex, item }` | Indicador de carga propio |
-| \[rkLightboxError\] | `{ $implicit: activeIndex, item }` | Indicador de error propio |
+| \[rkLightboxLoading\] | `LightboxLoadingContext` | Indicador de carga propio; la clase de la directiva es `RkLightboxLoadingDirective` |
+| \[rkLightboxError\] | `LightboxErrorContext` | Indicador de error propio; la clase de la directiva es `RkLightboxErrorDirective` |
 
 <CodeBlock code={templateSlots} language="typescript" />
 
@@ -230,6 +230,7 @@ Una plantilla `rkLightboxControls` propia recibe `isDownloading` y, solo cuando 
 | --- | --- | --- | --- |
 | `RkPlayPauseButtonComponent` | `rk-play-pause-button` | `[playing]`, `(toggled)` | Interruptor del pase de diapositivas (icono Play/Pause, `aria-pressed` mientras se reproduce). Lo muestran los controles por defecto con `autoAdvance`. |
 | `RkDownloadButtonComponent` | `rk-download-button` | `[downloading]`, `(pressed)` | Botón de descarga, desactivado mientras `downloading`. Lo muestran los controles por defecto con `showDownload`. |
+| `RkSoundButtonComponent` | `rk-sound-button` | `[muted]`, `(toggled)` | Botón de silencio para los elementos de vídeo. Lo muestran los controles por defecto en un slide de vídeo; colócalo en tu propia plantilla `rkLightboxControls` para conservarlo. |
 
 ## Inputs de RkLightboxUrlOverlayComponent [#rklightboxurloverlaycomponent-inputs]
 
@@ -262,6 +263,8 @@ Acepta todos los inputs de `rk-lightbox-overlay` salvo `isOpen`, que se sustituy
 | `showDownload` | `boolean` | false | Añade un botón de descarga para el elemento activo. Consulta [Descarga](#download). |
 | `ariaLabel` | `string` | 'Image gallery' | Etiqueta accesible de la región del diálogo |
 
+Los inputs del slider de arriba (`transitionDuration`, `swipeDistanceFactor`, `loop`, `enableNavKeys`, `enableWheel`, `wheelDebounceMs`) tienen el tipo `ReelProxyProps`. Úsalo para tipar un componente wrapper que se los reenvíe al lightbox.
+
 ## Outputs de RkLightboxOverlayComponent [#rklightboxoverlaycomponent-outputs]
 
 | Output | Tipo | Descripción |
@@ -291,6 +294,8 @@ Acepta todos los inputs de `rk-lightbox-overlay` salvo `isOpen`, que se sustituy
 | `LightboxNavContext` | `{ item, onPrev, onNext, activeIndex, count }` |
 | `LightboxInfoContext` | `{ $implicit: LightboxItem, index }` |
 | `LightboxSlideContext` | `{ $implicit: LightboxItem, index, size: [number, number], isActive, autoAdvance, onReady, onWaiting, onError, onEnded }` |
+| `LightboxLoadingContext` | `{ $implicit: activeIndex, item }`: lo que recibe la plantilla `rkLightboxLoading` |
+| `LightboxErrorContext` | `{ $implicit: activeIndex, item }`: lo que recibe la plantilla `rkLightboxError` |
 
 ## Transiciones [#transitions]
 

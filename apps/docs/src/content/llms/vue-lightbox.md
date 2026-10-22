@@ -103,7 +103,7 @@ const items = [
 
 ## Video Support
 
-Video slides are opt-in so the default bundle stays free of audio/video wiring. Call `useVideoSlideRenderer(items)` and forward the returned `VideoSlideRenderer` / `VideoControlsRenderer` into the overlay's `#slide` and `#controls` slots. Wrap the overlay in the returned `SoundProvider` so the built-in sound toggle has a context.
+Video slides are opt-in so the default bundle stays free of audio/video wiring. Call `useVideoSlideRenderer(items)` and forward the returned `VideoSlideRenderer` / `VideoControlsRenderer` into the overlay's `#slide` and `#controls` slots. Wrap the overlay in the returned `SoundProvider` so the built-in sound toggle has a context. Return type `UseVideoSlideRendererResult`: `SoundProvider`, `hasVideo`, `VideoSlideRenderer`, `VideoControlsRenderer`.
 
 ```vue
 <script setup lang="ts">
@@ -269,10 +269,22 @@ Full `useOverlayUrlState` options (`param`, `adapter`, `codec`, `locator`): see 
 
 ### Control buttons
 
-| Component         | Props                                                           | Description                                    |
-| ----------------- | --------------------------------------------------------------- | ---------------------------------------------- |
-| `PlayPauseButton` | `PlayPauseButtonProps`: `isPlaying`, `onPress`, `className?`    | Slideshow toggle, `aria-pressed` while playing |
-| `DownloadButton`  | `DownloadButtonProps`: `isDownloading`, `onPress`, `className?` | Download button, disabled while downloading    |
+| Component          | Props                                                            | Description                                                 |
+| ------------------ | ---------------------------------------------------------------- | ----------------------------------------------------------- |
+| `PlayPauseButton`  | `PlayPauseButtonProps`: `isPlaying`, `onPress`, `className?`     | Slideshow toggle, `aria-pressed` while playing              |
+| `DownloadButton`   | `DownloadButtonProps`: `isDownloading`, `onPress`, `className?`  | Download button, disabled while downloading                 |
+| `CloseButton`      | `CloseButtonProps`: `onPress`, `className?`                      | Default close button; reuse inside own `#controls`          |
+| `Counter`          | `CounterProps`: `currentIndex`, `count`, `className?`            | Default "3 / 10" counter chip; reuse inside own `#controls` |
+| `FullscreenButton` | `FullscreenButtonProps`: `isFullscreen`, `onPress`, `className?` | Default fullscreen toggle, icon follows `isFullscreen`      |
+| `SoundButton`      | `SoundButtonProps`: `isMuted`, `onPress`, `className?`           | Default mute toggle for video items, icon follows `isMuted` |
+
+### Slide and navigation parts
+
+| Component            | Props                                                                                                                            | Description                                                                     |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `ImageSlide`         | `ImageSlideProps`: `src`, `alt?`, `isActive`, `onReady?`, `onLoadError?`                                                         | Default image slide; reuse inside own `#slide` for image items                  |
+| `LightboxVideoSlide` | `LightboxVideoSlideProps`: `src`, `poster?`, `isActive`, `size`, `slideKey`, `loop?`, `onPlaying?`, `onWaiting?`, `onLoadError?` | Default video slide on the shared `<video>`; `useVideoSlideRenderer` renders it |
+| `LightboxNavigation` | `LightboxNavigationProps`: `activeIndex`, `count`, `loop?`, `onPrev`, `onNext`                                                   | Default prev/next arrows; reuse inside own `#navigation`                        |
 
 Classes `.rk-lightbox-play-pause`, `.rk-lightbox-download` (with `.rk-lightbox-btn`); token `--rk-lightbox-btn-disabled-opacity` (`0.5`).
 

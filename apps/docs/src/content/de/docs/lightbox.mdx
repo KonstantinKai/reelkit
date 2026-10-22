@@ -336,7 +336,7 @@ Nimmt jedes Darstellungs- und Verhaltens-Prop von oben außer `isOpen` und erset
 
 ### Reel-Props (durchgereicht) [#reel-props-proxied]
 
-Diese Props werden an die zugrunde liegende Komponente [Reel](/docs/react/api#reel-props) weitergegeben.
+Diese Props werden an die zugrunde liegende Komponente [Reel](/docs/react/api#reel-props) weitergegeben. Ihr Typ ist `ReelProxyProps`, die Teilmenge der Props von Reel, die das Overlay durchreicht; typisiere damit einen Wrapper, der sie weitergibt.
 
 | Prop | Typ | Standard | Beschreibung |
 | --- | --- | --- | --- |
@@ -376,25 +376,25 @@ Wiederverwendbare Unterkomponenten, mit denen du über `renderControls` eigene C
 
 ### CloseButton [#closebutton]
 
-Standard-Schließen-Button mit X.
+Standard-Schließen-Button mit X. Props (`CloseButtonProps`): `onClick`, optional `className` und `style`.
 
 <CodeBlock code={closebutton} language="tsx" />
 
 ### Counter [#counter]
 
-Zähler für die Bilder als Pille, zeigt "1 / 3".
+Zähler für die Bilder als Pille, zeigt "1 / 3". Props (`CounterProps`): `currentIndex` (ab null gezählt), `count`, optional `className` und `style`.
 
 <CodeBlock code={counter} language="tsx" />
 
 ### FullscreenButton [#fullscreenbutton]
 
-Schalter für das Vollbild (Icon Maximize/Minimize).
+Schalter für das Vollbild (Icon Maximize/Minimize). Props (`FullscreenButtonProps`): `isFullscreen`, `onToggle`, optional `className` und `style`.
 
 <CodeBlock code={fullscreenbutton} language="tsx" />
 
 ### SoundButton [#soundbutton]
 
-Schalter für den Ton auf Video-Slides (Icon Volume2/VolumeX). Ist in `renderControls` aus `useVideoSlideRenderer` automatisch enthalten. Für den eigenständigen Einsatz in eigenen Controls greifst du über `useSoundState` auf den Tonzustand zu.
+Schalter für den Ton auf Video-Slides (Icon Volume2/VolumeX). Ist in `renderControls` aus `useVideoSlideRenderer` automatisch enthalten. Für den eigenständigen Einsatz in eigenen Controls greifst du über `useSoundState` auf den Tonzustand zu. Props (`SoundButtonProps`): `isMuted`, `onToggle`, optional `className` und `style`.
 
 <CodeBlock code={soundbutton} language="tsx" />
 
@@ -414,7 +414,9 @@ Download-Button (Icon Download), deaktiviert während `isDownloading`. Props (`D
 
 ### useVideoSlideRenderer [#usevideosliderenderer]
 
-Hook für die optionale Video-Unterstützung. Gibt `renderSlide`, `renderControls` und `SoundProvider` zurück: Umschließe das Overlay mit SoundProvider und übergib die Render-Funktionen.
+Hook für die optionale Video-Unterstützung. Gibt `renderSlide`, `renderControls` und `SoundProvider` zurück: Umschließe das Overlay mit SoundProvider und übergib die Render-Funktionen. Der Rückgabetyp ist `UseVideoSlideRendererResult`, der außerdem `hasVideo` enthält, true, wenn ein Element `type: 'video'` hat.
+
+Sein `renderSlide` zeichnet Video-Elemente mit `LightboxVideoSlide`, einem Video-Slide, der über ein gemeinsames `<video>`-Element abspielt, damit der Ton auf iOS funktioniert, und sich die Position jedes Videos merkt. Rendere ihn nur aus einem eigenen `renderSlide` selbst. Seine Props (`LightboxVideoSlideProps`) sind `src`, `poster`, `isActive`, `size`, `slideKey` (Schlüssel für die gespeicherte Position und das aufgenommene Bild), `loop` (Standard true) und die Callbacks `onPlaying`, `onWaiting`, `onError`, `onEnded`.
 
 <CodeBlock code={usevideosliderenderer} language="typescript" />
 

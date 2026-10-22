@@ -5,6 +5,8 @@
  * pending timeout scheduled by {@link timeout}.
  *
  * @typeParam F - The original callback signature.
+ * @internal Scheduling for the core controllers, kept out of the documented
+ * API; a consumer's own delays belong to their framework or `setTimeout`.
  */
 export type TimeoutFn<F extends (...args: any[]) => any> = F & {
   cancel: () => void;
@@ -14,6 +16,8 @@ export type TimeoutFn<F extends (...args: any[]) => any> = F & {
  * Wraps a callback in a timeout with cancel capability.
  * @param callback - Function to call after timeout
  * @param timeoutMs - Delay in milliseconds (default: 0)
+ * @internal Scheduling for the core controllers, kept out of the documented
+ * API; a consumer's own delays belong to their framework or `setTimeout`.
  */
 export const timeout = <F extends (...args: any[]) => any>(
   callback: F,

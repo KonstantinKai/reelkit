@@ -98,6 +98,10 @@ interface TimelineBarProps {
 }
 ```
 
+- `MediaType` = `'image' | 'video'` — kind of a `MediaItem`, picks `ImageSlide` or `VideoSlide`.
+- `TimelineMode` = `'auto' | 'always' | 'never'` — value of `timeline` prop; `'auto'` = videos longer than `timelineMinDurationSeconds`.
+- `TimelineSlotScope<T>` — scope of `#timeline`: `{ item, activeIndex, timelineState, defaultContent }`.
+
 ## Scoped Slots
 
 | Slot               | Scope                                                                                                          | Description                                                                              |
@@ -321,6 +325,16 @@ Drop these into custom `#controls`, `#slide`, or `#slideOverlay` templates. Pass
 | `SlideOverlay`      | Default gradient overlay showing author, description, and likes. Renders when content carries those fields. Replace or hide via `#slideOverlay`.                                                 |
 | `ImageSlide`        | Image slide with lazy loading and `object-fit: cover` by default. Compose inside `#slide` to customise image rendering while keeping built-in behaviour.                                         |
 | `VideoSlide`        | Video slide backed by a shared `<video>` element. Handles iOS sound continuity, poster frames, and position memory. Render inside a `SoundProvider`.                                             |
+| `PlayerControls`    | Default controls when no `#controls` slot: `CloseButton` + (with `show-sound`) `SoundButton`. Props `showSound`, `soundDisabled`, `onClose`.                                                     |
+| `LoadingIndicator`  | Full-slide wave loader while media buffers. No props; reuse inside own `#loading`.                                                                                                               |
+| `ErrorIndicator`    | Default message when media fails to load. No props; reuse inside own `#error`.                                                                                                                   |
+
+Timeline composables (outside `#timeline`):
+
+- `useTimelineState()` — nearest `TimelineController`; throws outside a `TimelineProvider`.
+- `useTimelineStateOptional()` — same, `null` outside a provider.
+- `RK_TIMELINE_KEY` — injection key both read; `provide` own controller to drive a `TimelineBar`.
+- `useViewportSize(aspectRatio)` — reactive `[width, height]`: aspect ratio on desktop, full viewport ≤ 768px; `[0, 0]` until mounted (SSR safe).
 
 ```vue
 <script setup lang="ts">

@@ -124,17 +124,31 @@ import theming from '../../snippets/angular-reel-player/theming.css?raw';
 
 | Directive | Тип контексту | Опис |
 | --- | --- | --- |
-| \[rkPlayerControls\] | `PlayerControlsContext<T>` | Власна загальна смуга керування (закриття, перемикач звуку тощо) |
-| \[rkPlayerError\] | `{ $implicit: activeIndex, item, innerActiveIndex }` | Шаблонний слот власного індикатора помилки |
-| \[rkPlayerLoading\] | `{ $implicit: activeIndex, item, innerActiveIndex }` | Шаблонний слот власного індикатора завантаження |
-| \[rkPlayerNavigation\] | `PlayerNavigationContext` | Власні стрілки навігації вперед і назад |
-| \[rkPlayerNestedNavigation\] | `PlayerNestedNavigationContext` | Власні стрілки навігації для внутрішнього горизонтального слайдера |
-| \[rkPlayerNestedSlide\] | `PlayerNestedSlideContext` | Власний вміст кожного слайда всередині внутрішнього горизонтального слайдера |
-| \[rkPlayerSlide\] | `PlayerSlideContext<T>` | Повністю власний вміст слайда, що замінює стандартний медіаслайд |
-| \[rkPlayerSlideOverlay\] | `PlayerSlideOverlayContext<T>` | Оверлей для кожного слайда (дані автора, лайки, опис тощо) |
-| \[rkPlayerTimeline\] | `PlayerTimelineContext<T>` | Власна смуга таймлайну відтворення. Показується лише тоді, коли за правилом (режим timeline плюс мінімальна тривалість) вивелася б стандартна смуга — логіка auto/always/never та сама. |
+| \[rkPlayerControls\] | `PlayerControlsContext<T>` | Власна загальна смуга керування (закриття, перемикач звуку тощо); клас директиви — `RkPlayerControlsDirective` |
+| \[rkPlayerError\] | `PlayerErrorContext` | Шаблонний слот власного індикатора помилки; клас директиви — `RkPlayerErrorDirective` |
+| \[rkPlayerLoading\] | `PlayerLoadingContext` | Шаблонний слот власного індикатора завантаження; клас директиви — `RkPlayerLoadingDirective` |
+| \[rkPlayerNavigation\] | `PlayerNavigationContext` | Власні стрілки навігації вперед і назад; клас директиви — `RkPlayerNavigationDirective` |
+| \[rkPlayerNestedNavigation\] | `PlayerNestedNavigationContext` | Власні стрілки навігації для внутрішнього горизонтального слайдера; клас директиви — `RkPlayerNestedNavigationDirective` |
+| \[rkPlayerNestedSlide\] | `PlayerNestedSlideContext` | Власний вміст кожного слайда всередині внутрішнього горизонтального слайдера; клас директиви — `RkPlayerNestedSlideDirective` |
+| \[rkPlayerSlide\] | `PlayerSlideContext<T>` | Повністю власний вміст слайда, що замінює стандартний медіаслайд; клас директиви — `RkPlayerSlideDirective` |
+| \[rkPlayerSlideOverlay\] | `PlayerSlideOverlayContext<T>` | Оверлей для кожного слайда (дані автора, лайки, опис тощо); клас директиви — `RkPlayerSlideOverlayDirective` |
+| \[rkPlayerTimeline\] | `PlayerTimelineContext<T>` | Власна смуга таймлайну відтворення. Показується лише тоді, коли за правилом (режим timeline плюс мінімальна тривалість) вивелася б стандартна смуга — логіка auto/always/never та сама. Клас директиви — `RkPlayerTimelineDirective` |
+
+`PLAYER_TEMPLATE_SLOT_DIRECTIVES` збирає всі ці директиви, тож компонент може одним махом розгорнути їх у свої `imports`.
 
 <CodeBlock code={templateSlots} language="typescript" />
+
+### Стандартні компоненти слайда [#default-slide-components]
+
+Частини, з яких складено стандартний слайд. Кожна — самостійний компонент; використайте його у власному шаблоні, щоб зберегти частину стандартного вигляду.
+
+| Компонент | Селектор | Опис |
+| --- | --- | --- |
+| `RkMediaSlideComponent` | `rk-media-slide` | Стандартний слайд. Рендерить `rk-image-slide`, `rk-video-slide` або `rk-nested-slider` залежно від `media` елемента вмісту; використайте його в шаблоні `rkPlayerSlide`, щоб зберегти стандартне медіа й додати поверх власний шар. |
+| `RkImageSlideComponent` | `rk-image-slide` | Одне зображення з `object-fit: cover`: показує свій `poster`, доки завантажується, і викликає `onReady`, `onWaiting` або `onError`. |
+| `RkVideoSlideComponent` | `rk-video-slide` | Одне відео на спільному елементі `<video>`. Потребує `SoundStateService`, який надає оверлей, тож рендерте його лише всередині плеєра. |
+| `RkNestedSliderComponent` | `rk-nested-slider` | Горизонтальний слайдер з точками-індикаторами для елемента вмісту з кількома записами `media`. |
+| `RkSlideOverlayComponent` | `rk-slide-overlay` | Стандартний нижній оверлей: аватар та ім’я автора, опис і лайки з його входів `author`, `description` і `likes`. Використайте його в шаблоні `rkPlayerSlideOverlay`, щоб зберегти стандартний вигляд. |
 
 ### Власний таймлайн [#custom-timeline]
 
@@ -272,7 +286,7 @@ Extend `BaseContentItem` щоб узяти власну доменну моде�
 | `isOpen` | `boolean` | required | Керує видимістю оверлея; якщо false, оверлей прибирається з DOM |
 | `loop` | `boolean` | false | Вмикає нескінченний цикл між слайдами |
 | `swipeDistanceFactor` | `number` | 0.12 | Мінімальна частка відстані свайпу, щоб змінити слайд |
-| `timeline` | `'auto' \| 'always' \| 'never'` | 'auto' | Правило показу вбудованої смуги таймлайну. 'auto' показує її лише для відео, довших за timelineMinDurationSeconds; 'always' — щойно на активному слайді є відео; 'never' вимикає вбудовану смугу (для повної заміни беріть шаблонний слот rkPlayerTimeline). |
+| `timeline` | `TimelineMode` (`'auto' \| 'always' \| 'never'`) | 'auto' | Правило показу вбудованої смуги таймлайну. 'auto' показує її лише для відео, довших за timelineMinDurationSeconds; 'always' — щойно на активному слайді є відео; 'never' вимикає вбудовану смугу (для повної заміни беріть шаблонний слот rkPlayerTimeline). |
 | `timelineMinDurationSeconds` | `number` | 30 | Мінімальна тривалість відео (у секундах), за якої timeline='auto' показує вбудовану смугу. Короткі зациклені кліпи нижче цього порогу не показують її. |
 | `transitionDuration` | `number` | 300 | Тривалість анімації слайда в мілісекундах |
 | `wheelDebounceMs` | `number` | 200 | Тривалість дебаунсу подій колеса в мілісекундах |
@@ -299,7 +313,7 @@ Extend `BaseContentItem` щоб узяти власну доменну моде�
 | Field | Тип | Опис |
 | --- | --- | --- |
 | `id` | `string` | Унікальний ідентифікатор медіаелемента |
-| `type` | `'image' \| 'video'` | Тип медіа |
+| `type` | `MediaType` | Тип медіа: `'image' \| 'video'` |
 | `src` | `string` | URL медіафайлу |
 | `poster` | `string?` | URL мініатюри-постера для елементів-відео |
 | `aspectRatio` | `number` | співвідношення ширини до висоти. Значення \< 1 означають вертикальне (cover), > 1 — горизонтальне (contain) |
@@ -316,6 +330,9 @@ Extend `BaseContentItem` щоб узяти власну доменну моде�
 | `PlayerSlideOverlayContext<T>` | `{ $implicit: T, index, isActive }` |
 | `PlayerTimelineContext<T>` | `{ $implicit: T, activeIndex, timelineState: PlayerTimelineState }` |
 | `PlayerTimelineState` | `{ duration(), currentTime(), progress(), bufferedRanges(), isScrubbing(), seek(t), bindInteractions(el) }` |
+| `PlayerBufferedRange` | `{ start, end }` у секундах — один запис `bufferedRanges()` |
+| `PlayerLoadingContext` | `{ $implicit: activeIndex, item, innerActiveIndex }` — що отримує шаблон `rkPlayerLoading`; `innerActiveIndex` дорівнює `null` поза вкладеним слайдером |
+| `PlayerErrorContext` | `{ $implicit: activeIndex, item, innerActiveIndex }` — що отримує шаблон `rkPlayerError` |
 
 ## Класи CSS [#css-classes]
 
