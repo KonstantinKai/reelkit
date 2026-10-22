@@ -10,6 +10,36 @@
 - Every public export is now documented on its package's reference page in all eight languages: the core gesture, keyboard and wheel controllers and utilities, the React context, sound and fullscreen hooks and SwipeToClose, the lightbox and reel player prop types and slot parts, and the Angular template-slot directives with their context types
 - The SSR page covers every package: the Vue and Angular overlays join the table, Angular is described as Angular SSR (`@angular/ssr`) with what the components actually do on the server, the Vue section explains when `Reel` needs `<ClientOnly>` in Nuxt and that the overlays need no wrapper, and `StoriesOverlay` joins the React overlay section
 
+## @reelkit/vue@0.9.1 (2026-10-22)
+
+### 🩹 Fixes
+
+- Fixed a Reel rendered on the server (Nuxt) without a fixed size showing no slides: the server now sends the same root size and styles as the browser, so the reel measures its parent after hydration instead of staying zero pixels tall
+
+## @reelkit/vue-reel-player@0.5.2 (2026-10-22)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/vue to 0.9.1
+
+## @reelkit/angular-reel-player@0.6.5 (2026-10-22)
+
+### 🩹 Fixes
+
+- PLAYER_TEMPLATE_SLOT_DIRECTIVES now includes RkPlayerLoadingDirective and RkPlayerErrorDirective, so spreading it into a component's imports enables every template slot
+
+## @reelkit/vue-stories-player@0.4.1 (2026-10-22)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/vue to 0.9.1
+
+## @reelkit/vue-lightbox@0.4.1 (2026-10-22)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/vue to 0.9.1
+
 ## @reelkit/react-stories-player@0.7.0 (2026-10-20)
 
 ### 🚀 Features
