@@ -33,6 +33,11 @@ import pnpmVue from '../../snippets/installation/pnpm-vue.sh?raw';
       <td>与框架无关的核心</td>
       <td>自定义集成</td>
     </tr>
+    <tr>
+      <td>`@reelkit/stories-core`</td>
+      <td>与框架无关的 Stories 引擎</td>
+      <td>自定义 Stories 集成</td>
+    </tr>
     <tr data-rk-fw="react">
       <td>`@reelkit/react`</td>
       <td>React 组件</td>
@@ -56,7 +61,7 @@ import pnpmVue from '../../snippets/installation/pnpm-vue.sh?raw';
     <tr data-rk-fw="angular">
       <td>`@reelkit/angular`</td>
       <td>Angular 独立组件</td>
-      <td>Angular 17+ 应用</td>
+      <td>Angular 19+ 应用</td>
     </tr>
     <tr data-rk-fw="angular">
       <td>`@reelkit/angular-reel-player`</td>
@@ -67,6 +72,11 @@ import pnpmVue from '../../snippets/installation/pnpm-vue.sh?raw';
       <td>`@reelkit/angular-lightbox`</td>
       <td>图片画廊Lightbox</td>
       <td>全屏图片预览</td>
+    </tr>
+    <tr data-rk-fw="angular">
+      <td>`@reelkit/angular-stories-player`</td>
+      <td>Instagram 风格 Stories Player</td>
+      <td>带自动播放与手势的 Stories</td>
     </tr>
     <tr data-rk-fw="vue">
       <td>`@reelkit/vue`</td>
@@ -82,6 +92,11 @@ import pnpmVue from '../../snippets/installation/pnpm-vue.sh?raw';
       <td>`@reelkit/vue-lightbox`</td>
       <td>图片画廊Lightbox</td>
       <td>全屏图片预览</td>
+    </tr>
+    <tr data-rk-fw="vue">
+      <td>`@reelkit/vue-stories-player`</td>
+      <td>Instagram 风格 Stories Player</td>
+      <td>带自动播放与手势的 Stories</td>
     </tr>
   </tbody>
 </Table>
@@ -195,20 +210,29 @@ ReelKit 任何时候只往 DOM 里渲染 **3 张幻灯片**，可以扛住 10,00
 
 ### @reelkit/angular [#reelkit-angular]
 
-- `@angular/core` >= 17.0.0
-- `@angular/common` >= 17.0.0
+- `@angular/core` >= 19.0.0
+- `@angular/common` >= 19.0.0
 
 ### @reelkit/angular-reel-player [#reelkit-angular-reel-player]
 
 - `@reelkit/angular`
 - `@angular/core` >= 19.0.0
+- `@angular/common` >= 19.0.0
 - `lucide-angular` >= 0.460.0
 
 ### @reelkit/angular-lightbox [#reelkit-angular-lightbox]
 
 - `@reelkit/angular`
-- `@angular/core` >= 17.0.0
-- `lucide-angular` >= 0.400.0
+- `@angular/core` >= 19.0.0
+- `@angular/common` >= 19.0.0
+- `lucide-angular` >= 0.460.0
+
+### @reelkit/angular-stories-player [#reelkit-angular-stories-player]
+
+- `@reelkit/angular`
+- `@angular/core` >= 19.0.0
+- `@angular/common` >= 19.0.0
+- `lucide-angular` >= 0.460.0
 
 </FrameworkVariant>
 
@@ -218,12 +242,30 @@ ReelKit 任何时候只往 DOM 里渲染 **3 张幻灯片**，可以扛住 10,00
 
 - `vue` >= 3.0.0
 
+### @reelkit/vue-reel-player [#reelkit-vue-reel-player]
+
+- `@reelkit/vue`
+- `vue` >= 3.3.0
+- `lucide-vue-next` >= 0.400.0
+
+### @reelkit/vue-lightbox [#reelkit-vue-lightbox]
+
+- `@reelkit/vue`
+- `vue` >= 3.0.0
+- `lucide-vue-next` >= 0.400.0
+
+### @reelkit/vue-stories-player [#reelkit-vue-stories-player]
+
+- `@reelkit/vue`
+- `vue` >= 3.3.0
+- `lucide-vue-next` >= 0.400.0
+
 </FrameworkVariant>
 
 <FrameworkVariant for="react">
 
 <Callout type="info">
-  `lucide-react` 只用于默认的控制图标。如果你通过 `renderControls` 提供自己的控件，就可以不装它。
+  `lucide-react` 只用于默认图标。如果你通过 `renderControls` 和 `renderNavigation`（Stories Player 上是 `renderHeader` 和 `renderNavigation`）提供自己的控件和导航，就可以不装它。
 </Callout>
 
 </FrameworkVariant>
@@ -231,7 +273,15 @@ ReelKit 任何时候只往 DOM 里渲染 **3 张幻灯片**，可以扛住 10,00
 <FrameworkVariant for="angular">
 
 <Callout type="info">
-  `lucide-angular` 只用于默认的控制图标。如果你通过 `rkPlayerControls` 提供自己的控件，就可以不装它。
+  `lucide-angular` 只用于默认图标。如果你通过模板插槽（`rkPlayerControls` 和 `rkPlayerNavigation`、`rkLightboxControls` 和 `rkLightboxNavigation`、`rkStoriesHeader` 和 `rkStoriesNavigation`）提供自己的控件和导航，就可以不装它。
+</Callout>
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+<Callout type="info">
+  `lucide-vue-next` 只用于默认图标。如果你通过作用域插槽 `#controls` 和 `#navigation`（Stories Player 上是 `#header` 和 `#navigation`）提供自己的控件和导航，就可以不装它。
 </Callout>
 
 </FrameworkVariant>

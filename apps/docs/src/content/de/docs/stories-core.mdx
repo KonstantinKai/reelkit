@@ -1,0 +1,255 @@
+---
+title: Stories Core
+description: Die Engine hinter @reelkit/react-stories-player. Reines TypeScript ohne Abhängigkeiten von einem Framework, für eigene Stories Player in Angular, Vue oder Vanilla JS.
+---
+
+import { Cpu, Layers, Timer, Minus, MousePointerClick, Cog } from 'lucide-react';
+import installation from '../../snippets/stories-core/installation.sh?raw';
+import controllerExample from '../../snippets/stories-core/controller-example.ts?raw';
+import canvasExample from '../../snippets/stories-core/canvas-example.ts?raw';
+import viewedControllerExample from '../../snippets/stories-core/viewed-controller-example.ts?raw';
+import typesCode from '../../snippets/stories-core/types-code.ts?raw';
+
+Die Engine hinter `@reelkit/react-stories-player`. Reines TypeScript ohne Abhängigkeiten von einem Framework. Nutze sie, um Stories Player für Angular, Vue oder Vanilla JS zu bauen.
+
+<FeatureGrid columns={3} items={[
+  {
+    icon: Cpu,
+    label: 'Unabhängig vom Framework',
+    desc: 'Reines TypeScript, keine Abhängigkeiten von einem DOM-Framework',
+  },
+  {
+    icon: Layers,
+    label: 'Navigation auf zwei Ebenen',
+    desc: 'Gruppen und die Stories innerhalb jeder Gruppe',
+  },
+  {
+    icon: Timer,
+    label: 'Timing der Stories',
+    desc: 'Automatisches Weiterschalten über den Timer des Core, mit Pause und Fortsetzen',
+  },
+  {
+    icon: Minus,
+    label: 'Fortschritt auf Canvas',
+    desc: 'Segmentierte Fortschrittsleiste für Retina mit gleitendem Fenster',
+  },
+  {
+    icon: MousePointerClick,
+    label: 'Tippzonen',
+    desc: 'Einstellbare Erkennung von Tippen links und rechts',
+  },
+  {
+    icon: Cog,
+    label: 'Reaktive Signals',
+    desc: 'Gebaut auf den Signal-Bausteinen von @reelkit/core',
+  },
+]} />
+
+## Installation [#installation]
+
+<CodeBlock code={installation} language="bash" />
+
+## Stories-Controller [#stories-controller]
+
+`createStoriesController(config, events?)` gibt einen `StoriesController` zurück, der die Navigation über Gruppen und Stories verwaltet. Er verfolgt den Zustand von Pause und Fortsetzen, merkt sich pro Gruppe die zuletzt angesehene Story und löst bei jedem Übergang Callbacks aus.
+
+### Konfiguration (StoriesControllerConfig) [#config-storiescontrollerconfig]
+
+| Eigenschaft | Typ | Standard | Beschreibung |
+| --- | --- | --- | --- |
+| `groupCount` | `number` | Pflicht | Gesamtzahl der Story-Gruppen |
+| `storyCounts` | `number[]` | Pflicht | Anzahl der Stories in jeder Gruppe |
+| `initialGroupIndex` | `number` | 0 | Index der Startgruppe |
+| `initialStoryIndex` | `number` | resumeStoryIndex(initialGroupIndex), sonst 0 | Index der Start-Story innerhalb der Gruppe. Eine Angabe hier gewinnt gegen alles Gemerkte; lässt du sie weg, macht die Startgruppe weiter wie jede andere. |
+| `defaultImageDuration` | `number` | 5000 | Standarddauer für das automatische Weiterschalten bei Bild-Stories in ms |
+| `resumeStoryIndex` | `(groupIndex: number) => number` | undefined | Story, bei der eine noch nicht besuchte Gruppe öffnet, begrenzt auf eine Story, die es in der Gruppe gibt |
+
+### Events (StoriesControllerEvents) [#events-storiescontrollerevents]
+
+| Event | Typ | Beschreibung |
+| --- | --- | --- |
+| `onStoryChange` | `(groupIndex, storyIndex) => void` | Wird ausgelöst, wenn sich die aktive Story ändert |
+| `onGroupChange` | `(groupIndex) => void` | Wird ausgelöst, wenn sich die aktive Gruppe ändert |
+| `onStoryViewed` | `(groupIndex, storyIndex) => void` | Wird ausgelöst, wenn eine Story sichtbar wird |
+| `onStoryComplete` | `(groupIndex, storyIndex) => void` | Wird ausgelöst, wenn der Timer einer Story abgelaufen ist (vor dem Weiterschalten) |
+| `onComplete` | `() => void` | Wird ausgelöst, wenn die letzte Story der letzten Gruppe zu Ende ist |
+| `onClose` | `() => void` | Wird ausgelöst, wenn sich das Overlay schließen soll |
+
+### Zustand (reaktive Signals) [#state-reactive-signals]
+
+| Signal | Typ | Beschreibung |
+| --- | --- | --- |
+| `state.activeGroupIndex` | `Signal<number>` | Index der aktuell aktiven Gruppe |
+| `state.activeStoryIndex` | `Signal<number>` | Index der aktuell aktiven Story innerhalb der Gruppe |
+| `state.isPaused` | `Signal<boolean>` | Ob das automatische Weiterschalten pausiert ist |
+
+### Methoden [#methods]
+
+| Methode | Typ | Beschreibung |
+| --- | --- | --- |
+| `nextStory()` | `() => void` | Geht innerhalb der Gruppe weiter; überschreitet die Grenze zur nächsten Gruppe |
+| `prevStory()` | `() => void` | Geht innerhalb der Gruppe zurück; überschreitet die Grenze zur vorherigen Gruppe |
+| `nextGroup()` | `() => void` | Wechselt zur nächsten Gruppe und macht bei der zuletzt angesehenen Story weiter |
+| `prevGroup()` | `() => void` | Wechselt zur vorherigen Gruppe und macht bei der zuletzt angesehenen Story weiter |
+| `goToGroup(index)` | `(number) => void` | Springt über den Index zu einer bestimmten Gruppe |
+| `pause()` | `() => void` | Pausiert das automatische Weiterschalten |
+| `resume()` | `() => void` | Setzt das automatische Weiterschalten fort |
+| `onStoryTimerComplete()` | `() => void` | Wird aufgerufen, wenn der Timer abgelaufen ist; löst onStoryComplete aus und schaltet dann weiter |
+| `getLastStoryIndex(groupIndex)` | `(number) => number` | Wo eine Gruppe öffnet: bei der Story, an der sie in dieser Sitzung verlassen wurde, sonst bei der, die resumeStoryIndex nennt |
+| `reportInitialView()` | `() => void` | Meldet die Story, bei der der Player geöffnet hat, einmal als angesehen. Nach dem Mounten aufrufen, nicht während des Renderns. |
+| `updateConfig({ groupCount, storyCounts })` | `(config) => void` | Ersetzt die Anzahl der Gruppen und Stories, wenn sich der Feed ändert, während der Player offen ist, sodass später nachgeladene Gruppen erreichbar sind. Löst kein Event aus, behält, wo jede Gruppe verlassen wurde, und holt Positionen in einen geschrumpften Feed zurück. |
+
+### Beispiel [#example]
+
+<CodeBlock code={controllerExample} />
+
+## Timer-Controller [#timer-controller]
+
+Der Timer, der den Fortschritt jeder Story antreibt, liegt in `@reelkit/core` als `createTimerController` und wird mit der Diashow der Lightbox geteilt. Importiere ihn aus `@reelkit/core` oder aus deinem Binding (`@reelkit/react`, `@reelkit/vue`, `@reelkit/angular`); dieses Paket exportiert ihn nicht mehr. Konfiguration, Zustand und Methoden findest du unter [Autoplay](/docs/core/api#autoplay) in der Core-API, und das [Beispiel des Stories-Controllers](#example) oben zeigt, wie er mit `onStoryTimerComplete` verbunden wird.
+
+## Canvas-Renderer für den Fortschritt [#canvas-progress-renderer]
+
+`createCanvasProgressRenderer(config?)` zeichnet segmentierte Fortschrittsleisten auf ein Canvas. Er skaliert für Retina-Displays, folgt der Breite seines Containers über `observeElementSize` aus `@reelkit/core` und nutzt ein gleitendes Fenster, wenn die Segmente nicht hineinpassen.
+
+### Konfiguration (CanvasProgressRendererConfig) [#config-canvasprogressrendererconfig]
+
+| Eigenschaft | Typ | Standard | Beschreibung |
+| --- | --- | --- | --- |
+| `gap` | `number` | 2 | Abstand in Pixeln zwischen den Segmenten |
+| `barHeight` | `number` | 2 | Höhe der Leiste in Pixeln |
+| `minSegmentWidth` | `number` | 8 | Mindestbreite eines Segments, bevor das gleitende Fenster greift |
+| `bgColor` | `string` | 'rgba(255,255,255,0.3)' | Hintergrundfarbe der nicht gefüllten Segmente |
+| `fillColor` | `string` | '#ffffff' | Füllfarbe der abgeschlossenen und aktiven Segmente |
+| `onResize` | `() => void` | - | Wird aufgerufen, nachdem sich die Größe des Containers geändert hat und das Canvas neu gemessen wurde. Eine Größenänderung leert ein Canvas, also zeichne hier neu. |
+
+### Methoden [#methods]
+
+| Member | Typ | Beschreibung |
+| --- | --- | --- |
+| `attach(canvas)` | `(HTMLCanvasElement) => void` | Hängt sich an ein Canvas-Element und beginnt, die Größe des Elternelements zu beobachten |
+| `draw(totalStories, activeIndex, progress)` | `(number, number, number) => void` | Zeichnet die Fortschrittsleiste für den angegebenen Zustand |
+| `width` | `number (readonly)` | Aktuell gemessene Breite in CSS-Pixeln |
+| `dispose()` | `() => void` | Beendet die Beobachtung der Größe des Elternelements und leert den internen Zustand |
+
+### Beispiel [#example]
+
+<CodeBlock code={canvasExample} />
+
+## Controller für den Gesehen-Status [#viewed-controller]
+
+`createStoriesViewedStateController(config)` ist alles, was ein Feed braucht, um sich das Gesehene zu merken, mit einem einzigen Aufruf: die Zählungen für die Ringe, wo jede Gruppe weitermacht, und das Erfassen, über einen Speicher, der ein Neuladen übersteht. Er importiert kein Framework, also nutzen React, Vue und Angular ihn gleich: Erstelle ihn einmal dort, wo der Feed lebt, und gib ihn an die Ringliste und den Player, die ihn selbst anhängen und ihm folgen. Er baut auf `createViewedStateController` aus dem Core mit dem Key für stabile IDs auf zwei Achsen auf; greif direkt darauf zurück, wenn das hier nicht passt. Ein Eintrag benennt die weiteste erreichte Story und keine Zahl von Aufrufen, sodass die Stelle einer Gruppe eine Neusortierung des Feeds übersteht, während eine aus der Mitte einer Gruppe entfernte Story deren Zählung verkürzt und ihren Ring wieder leuchten lässt.
+
+### Konfiguration (StoriesViewedStateControllerConfig) [#config-storiesviewedstatecontrollerconfig]
+
+| Eigenschaft | Typ | Standard | Beschreibung |
+| --- | --- | --- | --- |
+| `storageKey` | `string` | Pflicht | Schlüssel im Speicher, unter dem die Einträge geschrieben werden |
+| `groups` | `() => StoriesGroup<T>[]` | Pflicht | Liest die aktuellen Gruppen. Ein Getter, der jedes Mal aufgerufen wird, sodass ein Feed, der weitere Gruppen nachlädt, sie nur zurückgeben muss. Halte ihn aktuell: Ein Getter, der am ersten Array hängt, zählt jede später geladene Gruppe falsch. |
+| `key` | `UrlKey<Id, TwoAxisPosition>` | stabile IDs | Wie eine Position im Speicher geschrieben wird. Übergib den Key, den der URL-Controller nutzt, und ein gespeicherter Eintrag liest sich wie ein geteilter Link. |
+| `storage` | `StorageAdapter` | localStorage | Wo die Einträge liegen. Über einen eigenen Adapter lässt sich auch ein eigener Speicher für das Gesehene einbinden. |
+| `ttlMs` | `number` | läuft nie ab | Wie lange der Eintrag einer Gruppe nach seiner letzten Erfassung gemerkt bleibt. Jede Gruppe läuft nach ihrer eigenen Uhr ab. |
+| `maxTracks` | `number` | jede Gruppe bleibt | Wie viele Gruppen behalten werden. Darüber hinaus wird beim nächsten Schreiben die am längsten nicht erfasste Gruppe entfernt. |
+
+`storageKey`, `key` und `storage` werden einmal gelesen, wenn der Controller erstellt wird. Um den Speicher zu wechseln, erstelle einen neuen Controller.
+
+### StoriesViewedStateController [#storiesviewedstatecontroller]
+
+| Member | Typ | Beschreibung |
+| --- | --- | --- |
+| `viewedState` | `Subscribable<Map<string, number>>` | Gesehene Stories pro Autor-ID, als Signal. Leer vor attach(). |
+| `controller` | `ViewedStateController<TwoAxisPosition>` | Der Speicher darunter, für alles, was dieser Controller nicht abdeckt |
+| `resumeStoryIndex(groupIndex)` | `(number) => number` | Erste nicht gesehene Story oder 0, sobald die Gruppe bis zum Ende angesehen wurde |
+| `markViewed(groupIndex, storyIndex)` | `(number, number) => void` | Erfasst eine Story als gesehen. Der Player ruft es für jede gezeigte Story auf. |
+| `forget()` | `() => void` | Vergisst alles Gesehene, hier und im Speicher |
+| `attach()` | `() => Dispose` | Liest den Speicher und folgt anderen Tabs. Gezählt, sodass eine Ringliste und ein Player beide anhängen und in beliebiger Reihenfolge unmounten können. Die Player-Komponenten rufen es selbst auf. |
+
+### Beispiel [#example]
+
+<CodeBlock code={viewedControllerExample} />
+
+## Hilfsfunktionen [#utility-functions]
+
+Reine Funktionen für die Erkennung von Tippzonen und die Rechnung der Fortschrittsleiste.
+
+| Funktion | Typ | Beschreibung |
+| --- | --- | --- |
+| `getTapAction(tapX, containerWidth, splitRatio?)` | `(number, number, number?) => 'prev' \| 'next'` | Bestimmt anhand der Position, ob ein Tippen 'prev' oder 'next' auslöst. Der Standard für splitRatio ist 0.3. |
+| `getSegments(totalStories, activeIndex, progress)` | `(number, number, number) => SegmentState[]` | Berechnet Status und Füllgrad in Prozent für jedes Segment einer Fortschrittsleiste |
+| `getVisibleWindow(totalStories, activeIndex, progress, containerWidth, minSegmentWidth?, gap?)` | `(number, number, number, number, number?, number?) => VisibleWindow` | Berechnet das sichtbare gleitende Fenster der Segmente, wenn ihre Gesamtzahl die Kapazität des Containers übersteigt |
+
+## Layout-Helfer [#layout-helpers]
+
+Reine Funktionen, die der Player jedes Bindings teilt, damit die Player für React, Vue und Angular gleich groß sind und gleich aufgebaut werden. Ein Binding ruft sie auf; eine App braucht sie nur, wenn sie einen eigenen Player baut.
+
+### Größe [#sizing]
+
+| Funktion | Typ | Beschreibung |
+| --- | --- | --- |
+| `getStoriesSize()` | `() => [number, number]` | Größe der Fläche für die Story. Auf dem Smartphone füllt sie den Bildschirm; auf dem Desktop füllt sie die Fensterhöhe abzüglich eines Rands von 16px im Format 9:16 und wird nur schmaler, wenn die Fläche und beide Pfeile nicht nebeneinanderpassen. Gibt ohne Fenster `[0, 0]` zurück, also ist Server-Rendering sicher. |
+| `parseDurationMs(value)` | `(string) => number` | Längste Zeit in einer berechneten Liste für `transition-duration`, in Millisekunden. Alles, was keine Zeitangabe ist, zählt als keine. |
+
+Die Grenze für Smartphones, die `getStoriesSize` nutzt, ist `isMobileWidth`, exportiert aus `@reelkit/core` und jedem Binding: 768px und schmaler ist ein Smartphone. Siehe [Größenerkennung](/docs/core/api#size-detection).
+
+### Geometrie des Desktop-Karussells [#desktop-carousel-geometry]
+
+Die Versätze sind relativ zur aktiven Gruppe: negativ nach links, positiv nach rechts, `0` für die aktive Story selbst.
+
+| Funktion | Typ | Beschreibung |
+| --- | --- | --- |
+| `getCardSize(activeSize)` | `([number, number]) => [number, number]` | Größe einer seitlichen Karte: 0.4 der Höhe der aktiven Story, im selben Format 9:16. |
+| `getCarouselSlot(offset, activeSize)` | `(number, [number, number]) => CarouselSlot` | Wo eine Karte relativ zur Mitte des Fensters sitzt: `{ x, width, height }`. Die erste Karte auf jeder Seite hält Abstand zum Pfeil; jede weitere fügt eine Kartenbreite und einen Abstand hinzu. |
+| `getCardOffsets(activeGroupIndex, groupCount)` | `(number, number) => number[]` | Versätze der Karten, die im Ruhezustand um die aktive Gruppe gezeichnet werden, bis zu zwei pro Seite, ohne die aktive. |
+| `isCardShown(offset)` | `(number) => boolean` | Ob eine so weit entfernte Karte gezeichnet statt ausgeblendet wird. |
+| `getSlotOffset(offset)` | `(number) => number` | Platz, zu dem eine Karte wandert, begrenzt auf einen Platz hinter den gezeigten, sodass eine Karte von neben der letzten sichtbaren hereingleitet. |
+| `getSlideGroupIndexes(from, to, groupCount)` | `(number, number, number) => number[]` | Gruppen, die ein Übergang zwischen zwei Gruppen zeichnet: die Karten um beide Enden, in der Reihenfolge der Gruppen. Die Gruppen, über die ein weiter Sprung hinweggeht, bleiben weg. |
+
+### Darstellung [#presentation]
+
+| Funktion | Typ | Beschreibung |
+| --- | --- | --- |
+| `getRingPresentation(options)` | `(RingPresentationOptions) => RingPresentation` | Klassenname, Inline-Style und Avatargröße eines Story-Rings aus `totalStories`, `viewedCount` und `size`. Bleibt noch etwas anzuschauen, gibt es das rotierende `--rk-stories-ring-active-gradient`, eine komplett angesehene Gruppe bekommt das flache `--rk-stories-ring-viewed-color`, eine leere Gruppe keinen Ring; der Style verweist auf diese Tokens, sodass eine Seite jeden Ring über CSS gestalten kann, und `gradientColors` oder `viewedColor` setzen die Farbe für einen einzelnen Ring. Größen tragen ihre Einheit `px`, sodass das Style-Objekt in jedem Framework funktioniert. |
+| `kStoriesRingSize`, `kStoriesRingListRingSize`, `kStoriesCardRingSize` | `number` | Ringdurchmesser, die jedes Binding standardmäßig zeichnet, in Pixeln: 68 für einen einzelnen Ring, 64 in der Ringliste, 52 auf einer Karte des Desktop-Karussells. Übergib einen davon als `size`, um zu den Playern zu passen. |
+| `getPreviewSource(story)` | `(StoryItem \| undefined) => string \| undefined` | Bild, das eine Karussellkarte als Vorschau zeigt: das `poster` der Story, das Bild selbst, wenn es ein Bild ist, und nichts bei einem Video ohne Poster. Eine Karte ohne Bild fällt auf die einfache Karte zurück, die für eine Story ohne Vorschau gezeichnet wird. |
+| `formatTimeAgo(date)` | `(string \| Date) => string` | Kurze relative Zeit, die der Header und die Karussellkarten zeigen: `now`, `5m`, `3h`, `2d`, `2w`. |
+
+Die Typen `CarouselSlot`, `RingPresentation` und `RingPresentationOptions` werden mit ihnen exportiert.
+
+## Typen [#types]
+
+Alle Typdefinitionen, die `@reelkit/stories-core` exportiert.
+
+<CodeBlock code={typesCode} />
+
+Dieses Paket ist die Engine, kein Player: Es hält die Zustandsmaschine und die Geometrie und überlässt das Rendern einem Binding. Greif zuerst zu einem fertigen Player und zum Binding deines Frameworks — dem virtualisierten `Reel`, der Brücke für Signals, den Overlay-Helfern —, wenn du einen eigenen baust.
+
+<NextSteps
+        items={[
+          {
+            label: 'Stories Player',
+            path: {
+              react: '/docs/stories-player',
+              angular: '/docs/angular-stories-player',
+              vue: '/docs/vue-stories-player',
+            },
+            description: 'der fertige Player, der auf dieser Engine aufbaut',
+          },
+          {
+            label: 'Framework-Guide',
+            path: {
+              react: '/docs/react/guide',
+              angular: '/docs/angular/guide',
+              vue: '/docs/vue/guide',
+            },
+            description: 'das Binding, mit dem ein eigener Player rendert',
+          },
+          {
+            label: 'Framework-API-Referenz',
+            path: {
+              react: '/docs/react/api',
+              angular: '/docs/angular/api',
+              vue: '/docs/vue/api',
+            },
+            description: 'Slider-Props, Brücken für Signals, Overlay-Helfer',
+          },
+        ]}
+      />

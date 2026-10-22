@@ -133,7 +133,7 @@ export const zhTitles: Record<string, string> = {
   'Next.js Pages Router': 'Next.js Pages Router',
   'Responsive Size with SSR': '服务端渲染下的响应式尺寸',
   'Overlay Components': '浮层组件',
-  'Angular Universal / SSR': 'Angular Universal / 服务端渲染',
+  'Angular SSR': 'Angular 服务端渲染',
   'Nuxt 3': 'Nuxt 3',
   'Using Core Directly': '直接使用核心包',
   Summary: '小结',

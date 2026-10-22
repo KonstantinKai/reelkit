@@ -1,0 +1,217 @@
+---
+title: Rendern auf dem Server
+description: Alle Pakete von reelkit laufen auf dem Server. Du kannst sie mit Next.js, Remix, Angular SSR, Nuxt 3 oder jedem anderen SSR-Setup importieren und rendern.
+---
+
+import nextAppRouter from '../../snippets/ssr/next-app-router.tsx?raw';
+import nextAppRouterPage from '../../snippets/ssr/next-app-router-page.tsx?raw';
+import nextPagesRouter from '../../snippets/ssr/next-pages-router.tsx?raw';
+import nextAutoSize from '../../snippets/ssr/next-auto-size.tsx?raw';
+import nextExplicitSize from '../../snippets/ssr/next-explicit-size.tsx?raw';
+import nextOverlay from '../../snippets/ssr/next-overlay.tsx?raw';
+import angularUniversal from '../../snippets/ssr/angular-universal.ts?raw';
+import nuxtPage from '../../snippets/ssr/nuxt-page.vue?raw';
+import nuxtFeed from '../../snippets/ssr/nuxt-feed.vue?raw';
+import nuxtAutoSize from '../../snippets/ssr/nuxt-auto-size.vue?raw';
+import coreDirect from '../../snippets/ssr/core-direct.ts?raw';
+
+Alle Pakete von reelkit laufen auf dem Server. Du kannst sie mit Next.js, Remix, Angular SSR, Nuxt 3 oder jedem anderen SSR-Setup importieren und rendern.
+
+## So funktioniert es [#how-it-works]
+
+Der Slider-Controller im Core ist reine Logik und greift beim Erstellen nicht auf das DOM zu. Gesten-Listener, Tastatur-Events und Animationen werden erst in den Lifecycle-Hooks auf dem Client angehängt.
+
+<FrameworkVariant for="react">
+
+Beim SSR rendert `Reel` für React einen statischen Container mit den anfangs sichtbaren Slides (meist 3: vorheriger, aktueller, nächster), wenn es ein `size` hat, und einen leeren Container, wenn es sich selbst misst. Bei der Hydration hängt es die Controller für Gesten, Tastatur und Mausrad an und macht damit alles interaktiv.
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+`Reel` für Vue rendert auf dem Server einen leeren Container und zeichnet seine Slides erst nach der Hydration. Mit einer `size` passt dieser Container nicht zu dem, was der Client zuerst rendert. In Nuxt gehört es dann in `<ClientOnly>` (siehe [Nuxt 3](#nuxt-3)).
+
+</FrameworkVariant>
+
+<Table boxed>
+  <thead>
+    <tr>
+      <th>Paket</th>
+      <th>SSR-sicher</th>
+      <th>Hinweise</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>`@reelkit/core`</td>
+      <td><Ok>Ja</Ok></td>
+      <td>Reine Logik, keine Browser-APIs beim Import oder Erstellen</td>
+    </tr>
+    <tr data-rk-fw="react">
+      <td>`@reelkit/react`</td>
+      <td><Ok>Ja</Ok></td>
+      <td>Reel und ReelIndicator rendern auf dem Server gültiges HTML</td>
+    </tr>
+    <tr data-rk-fw="angular">
+      <td>`@reelkit/angular`</td>
+      <td><Ok>Ja</Ok></td>
+      <td>Standalone-Komponenten, SSR-kompatibel mit Angular SSR (`@angular/ssr`)</td>
+    </tr>
+    <tr data-rk-fw="vue">
+      <td>`@reelkit/vue`</td>
+      <td><Ok>Ja</Ok></td>
+      <td>Lässt sich auf dem Server importieren und rendern; mit einer `size` gehört `Reel` in Nuxt 3 in `<ClientOnly>`</td>
+    </tr>
+    <tr data-rk-fw="react">
+      <td>`@reelkit/react-reel-player`</td>
+      <td><Ok>Ja</Ok></td>
+      <td>Rendert im geschlossenen Zustand nichts (`isOpen=false`)</td>
+    </tr>
+    <tr data-rk-fw="react">
+      <td>`@reelkit/react-lightbox`</td>
+      <td><Ok>Ja</Ok></td>
+      <td>Rendert im geschlossenen Zustand nichts (`isOpen=false`)</td>
+    </tr>
+    <tr data-rk-fw="angular">
+      <td>`@reelkit/angular-reel-player`</td>
+      <td><Ok>Ja</Ok></td>
+      <td>Rendert im geschlossenen Zustand nichts (`isOpen=false`)</td>
+    </tr>
+    <tr data-rk-fw="angular">
+      <td>`@reelkit/angular-lightbox`</td>
+      <td><Ok>Ja</Ok></td>
+      <td>Rendert im geschlossenen Zustand nichts (`isOpen=false`)</td>
+    </tr>
+    <tr data-rk-fw="vue">
+      <td>`@reelkit/vue-reel-player`</td>
+      <td><Ok>Ja</Ok></td>
+      <td>Rendert im geschlossenen Zustand nichts (`isOpen=false`)</td>
+    </tr>
+    <tr data-rk-fw="vue">
+      <td>`@reelkit/vue-lightbox`</td>
+      <td><Ok>Ja</Ok></td>
+      <td>Rendert im geschlossenen Zustand nichts (`isOpen=false`)</td>
+    </tr>
+    <tr>
+      <td>`@reelkit/stories-core`</td>
+      <td><Ok>Ja</Ok></td>
+      <td>Unabhängig vom Framework, kein Zugriff auf das DOM</td>
+    </tr>
+    <tr data-rk-fw="react">
+      <td>`@reelkit/react-stories-player`</td>
+      <td><Ok>Ja</Ok></td>
+      <td>Rendert im geschlossenen Zustand nichts (`isOpen=false`)</td>
+    </tr>
+    <tr data-rk-fw="angular">
+      <td>`@reelkit/angular-stories-player`</td>
+      <td><Ok>Ja</Ok></td>
+      <td>Rendert im geschlossenen Zustand nichts (`isOpen=false`)</td>
+    </tr>
+    <tr data-rk-fw="vue">
+      <td>`@reelkit/vue-stories-player`</td>
+      <td><Ok>Ja</Ok></td>
+      <td>Rendert im geschlossenen Zustand nichts (`isOpen=false`)</td>
+    </tr>
+  </tbody>
+</Table>
+
+<FrameworkVariant for="react">
+
+## Next.js App Router [#next-js-app-router]
+
+Reel nutzt Browser-Events und Refs und läuft deshalb als Client Component. Setze die Direktive `"use client"` an den Anfang der Datei, die `Reel` verwendet:
+
+<CodeBlock code={nextAppRouter} language="tsx" />
+
+Die Daten kannst du in einer Server Component laden und nach unten weitergeben:
+
+<CodeBlock code={nextAppRouterPage} language="tsx" />
+
+## Next.js Pages Router [#next-js-pages-router]
+
+Der Pages Router funktioniert ohne zusätzliche Konfiguration. Die Komponente wird beim SSR gerendert und auf dem Client hydriert:
+
+<CodeBlock code={nextPagesRouter} language="tsx" />
+
+## Responsive Größe mit SSR [#responsive-size-with-ssr]
+
+Lass das Prop `size` ganz weg. Ohne `size` misst Reel seinen Container auf dem Client selbst über `ResizeObserver`. Beim SSR rendert der Slider einen leeren Container; bei der Hydration misst er und rendert die Slides sofort:
+
+<CodeBlock code={nextAutoSize} language="tsx" />
+
+<Callout type="info" title="So funktioniert die automatische Größe">
+  Ohne `size` muss die Größe des Containers per CSS festgelegt sein (Flex- oder Grid-Elternelement, feste Breite und Höhe oder Prozentwerte). Der Slider rendert nichts, bis die erste Messung fertig ist, füllt danach die gemessene Fläche und reagiert auch auf spätere Größenänderungen automatisch.
+</Callout>
+
+### Feste Größe (manueller Weg) [#explicit-size-manual-approach]
+
+Für Kontrolle auf den Pixel genau übergibst du ein festes Prop `size`. Da `window.innerWidth` beim SSR nicht verfügbar ist, gib einen Standardwert vor und aktualisiere ihn beim Mounten:
+
+<CodeBlock code={nextExplicitSize} language="tsx" />
+
+<Callout type="info" title="Tipp">
+  Wähle als Standard die Größe, die zu deinem häufigsten Viewport passt (zum Beispiel Mobile First). Weicht der tatsächliche Viewport ab, passt sich der Slider bei der Hydration sofort an.
+</Callout>
+
+## Overlay-Komponenten [#overlay-components]
+
+`ReelPlayerOverlay`, `LightboxOverlay` und `StoriesOverlay` rendern bei `isOpen={false}` nichts und sind damit von Haus aus SSR-sicher. Ihr Portal mounten sie erst beim Öffnen (meist nach einer Interaktion auf dem Client):
+
+<CodeBlock code={nextOverlay} language="tsx" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+
+## Angular SSR [#angular-universal-ssr]
+
+Alle Angular-Komponenten sind mit `@angular/ssr` SSR-sicher. Der Slider-Controller entsteht in `ngOnInit`, und die Arbeit, die einen Browser braucht, etwa das Messen des Containers, wird auf dem Server über `isPlatformBrowser` übersprungen. Overlay-Komponenten rendern bei `isOpen=false` nichts und erzeugen beim Server-Rendering daher kein Markup.
+
+<CodeBlock code={angularUniversal} language="typescript" />
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+## Nuxt 3 [#nuxt-3]
+
+Die Vue-Komponenten von ReelKit lassen sich ohne Fehler auf dem Server importieren und rendern. `Reel` schickt vom Server einen leeren Container und zeichnet seine Slides erst nach der Hydration. Wenn sich `Reel` selbst misst, wird dieser Container ab `@reelkit/vue` 0.9.1 ohne Abweichung hydriert; in früheren Versionen hatte er keine Höhe, sodass keine Slides erschienen. Mit einer festen `size` enthält schon der erste Render auf dem Client Slides, und das ergibt eine Abweichung bei der Hydration. In diesem Fall oder mit einer früheren Version umschließe `Reel` mit einer Komponente `<ClientOnly>` oder verwende die Endung `.client.vue`:
+
+<CodeBlock code={nuxtPage} language="vue" />
+
+Die Komponente Feed verwendet Reel ganz normal:
+
+<CodeBlock code={nuxtFeed} language="vue" />
+
+## Responsive Größe mit SSR [#responsive-size-with-ssr]
+
+Lass das Prop `size` weg, um die automatische Messung zu nutzen. Reel nimmt dann 100 % seines Elternelements ein und braucht ab `@reelkit/vue` 0.9.1 kein `<ClientOnly>`: Der Server schickt einen leeren Container in voller Größe, und der Client misst ihn und rendert die Slides. Das Beispiel behält die Hülle, weil sie auch mit früheren Versionen funktioniert:
+
+<CodeBlock code={nuxtAutoSize} language="vue" />
+
+## Overlay-Komponenten [#overlay-components]
+
+`ReelPlayerOverlay`, `LightboxOverlay` und `StoriesOverlay` rendern nichts, solange `isOpen` false ist. Sie brauchen daher kein `<ClientOnly>` und erzeugen beim Server-Rendering kein Markup. Ihren Inhalt teleportieren sie erst in den Body, wenn sie auf dem Client geöffnet werden.
+
+</FrameworkVariant>
+
+## Den Core direkt nutzen [#using-core-directly]
+
+Wenn du `@reelkit/core` direkt für eine eigene Framework-Integration nutzt, kannst du den Controller auf dem Server erstellen. `attach()` und `observe()` rufst du auf dem Client auf:
+
+<CodeBlock code={coreDirect} language="typescript" />
+
+## Zusammenfassung [#summary]
+
+<Callout type="success" title="Was ohne weitere Einrichtung funktioniert">
+  - Jedes Paket von reelkit auf dem Server importieren
+  - Slider-Komponenten beim SSR rendern (ergibt gültiges statisches HTML)
+  - Controller auf dem Server erstellen
+  - Overlay-Komponenten bei `isOpen=false`
+</Callout>
+
+<Callout type="warning" title="Worauf du achten solltest">
+  - Lass `size` für die automatische Messung weg oder gib einen Standardwert vor, wenn die Maße vom Viewport abhängen
+  - Rendere `Reel` für Vue in Nuxt innerhalb von `<ClientOnly>`, wenn es eine `size` hat oder du `@reelkit/vue` vor 0.9.1 nutzt
+  - Ruf `attach()`/`observe()` nicht auf dem Server auf, wenn du den Core direkt nutzt
+</Callout>

@@ -33,6 +33,11 @@ reelkit के पैकेज इंस्टॉल करें और अप�
       <td>फ़्रेमवर्क से स्वतंत्र core</td>
       <td>कस्टम इंटीग्रेशन</td>
     </tr>
+    <tr>
+      <td>`@reelkit/stories-core`</td>
+      <td>फ़्रेमवर्क से स्वतंत्र stories इंजन</td>
+      <td>stories के कस्टम इंटीग्रेशन</td>
+    </tr>
     <tr data-rk-fw="react">
       <td>`@reelkit/react`</td>
       <td>React कंपोनेंट</td>
@@ -56,7 +61,7 @@ reelkit के पैकेज इंस्टॉल करें और अप�
     <tr data-rk-fw="angular">
       <td>`@reelkit/angular`</td>
       <td>Angular standalone कंपोनेंट</td>
-      <td>Angular 17+ ऐप्लिकेशन</td>
+      <td>Angular 19+ ऐप्लिकेशन</td>
     </tr>
     <tr data-rk-fw="angular">
       <td>`@reelkit/angular-reel-player`</td>
@@ -67,6 +72,11 @@ reelkit के पैकेज इंस्टॉल करें और अप�
       <td>`@reelkit/angular-lightbox`</td>
       <td>इमेज गैलरी lightbox</td>
       <td>फ़ुलस्क्रीन इमेज प्रीव्यू</td>
+    </tr>
+    <tr data-rk-fw="angular">
+      <td>`@reelkit/angular-stories-player`</td>
+      <td>Instagram जैसा stories प्लेयर</td>
+      <td>अपने-आप आगे बढ़ने और जेस्चर वाली stories</td>
     </tr>
     <tr data-rk-fw="vue">
       <td>`@reelkit/vue`</td>
@@ -82,6 +92,11 @@ reelkit के पैकेज इंस्टॉल करें और अप�
       <td>`@reelkit/vue-lightbox`</td>
       <td>इमेज गैलरी lightbox</td>
       <td>फ़ुलस्क्रीन इमेज प्रीव्यू</td>
+    </tr>
+    <tr data-rk-fw="vue">
+      <td>`@reelkit/vue-stories-player`</td>
+      <td>Instagram जैसा stories प्लेयर</td>
+      <td>अपने-आप आगे बढ़ने और जेस्चर वाली stories</td>
     </tr>
   </tbody>
 </Table>
@@ -195,20 +210,29 @@ ReelKit किसी भी समय **DOM में सिर्फ़ 3 स�
 
 ### @reelkit/angular [#reelkit-angular]
 
-- `@angular/core` >= 17.0.0
-- `@angular/common` >= 17.0.0
+- `@angular/core` >= 19.0.0
+- `@angular/common` >= 19.0.0
 
 ### @reelkit/angular-reel-player [#reelkit-angular-reel-player]
 
 - `@reelkit/angular`
 - `@angular/core` >= 19.0.0
+- `@angular/common` >= 19.0.0
 - `lucide-angular` >= 0.460.0
 
 ### @reelkit/angular-lightbox [#reelkit-angular-lightbox]
 
 - `@reelkit/angular`
-- `@angular/core` >= 17.0.0
-- `lucide-angular` >= 0.400.0
+- `@angular/core` >= 19.0.0
+- `@angular/common` >= 19.0.0
+- `lucide-angular` >= 0.460.0
+
+### @reelkit/angular-stories-player [#reelkit-angular-stories-player]
+
+- `@reelkit/angular`
+- `@angular/core` >= 19.0.0
+- `@angular/common` >= 19.0.0
+- `lucide-angular` >= 0.460.0
 
 </FrameworkVariant>
 
@@ -218,12 +242,30 @@ ReelKit किसी भी समय **DOM में सिर्फ़ 3 स�
 
 - `vue` >= 3.0.0
 
+### @reelkit/vue-reel-player [#reelkit-vue-reel-player]
+
+- `@reelkit/vue`
+- `vue` >= 3.3.0
+- `lucide-vue-next` >= 0.400.0
+
+### @reelkit/vue-lightbox [#reelkit-vue-lightbox]
+
+- `@reelkit/vue`
+- `vue` >= 3.0.0
+- `lucide-vue-next` >= 0.400.0
+
+### @reelkit/vue-stories-player [#reelkit-vue-stories-player]
+
+- `@reelkit/vue`
+- `vue` >= 3.3.0
+- `lucide-vue-next` >= 0.400.0
+
 </FrameworkVariant>
 
 <FrameworkVariant for="react">
 
 <Callout type="info">
-  `lucide-react` सिर्फ़ डिफ़ॉल्ट कंट्रोल आइकन के लिए चाहिए। अगर आप `renderControls` के ज़रिए अपने कंट्रोल देते हैं, तो इसे इंस्टॉल करने की ज़रूरत नहीं।
+  `lucide-react` सिर्फ़ डिफ़ॉल्ट आइकन के लिए चाहिए। अगर आप `renderControls` और `renderNavigation` (stories प्लेयर पर `renderHeader` और `renderNavigation`) के ज़रिए अपने कंट्रोल और नेविगेशन देते हैं, तो इसे इंस्टॉल करने की ज़रूरत नहीं।
 </Callout>
 
 </FrameworkVariant>
@@ -231,7 +273,15 @@ ReelKit किसी भी समय **DOM में सिर्फ़ 3 स�
 <FrameworkVariant for="angular">
 
 <Callout type="info">
-  `lucide-angular` सिर्फ़ डिफ़ॉल्ट कंट्रोल आइकन के लिए चाहिए। अगर आप `rkPlayerControls` के ज़रिए अपने कंट्रोल देते हैं, तो इसे इंस्टॉल करने की ज़रूरत नहीं।
+  `lucide-angular` सिर्फ़ डिफ़ॉल्ट आइकन के लिए चाहिए। अगर आप template slots (`rkPlayerControls` और `rkPlayerNavigation`, `rkLightboxControls` और `rkLightboxNavigation`, `rkStoriesHeader` और `rkStoriesNavigation`) के ज़रिए अपने कंट्रोल और नेविगेशन देते हैं, तो इसे इंस्टॉल करने की ज़रूरत नहीं।
+</Callout>
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+<Callout type="info">
+  `lucide-vue-next` सिर्फ़ डिफ़ॉल्ट आइकन के लिए चाहिए। अगर आप `#controls` और `#navigation` scoped slots (stories प्लेयर पर `#header` और `#navigation`) के ज़रिए अपने कंट्रोल और नेविगेशन देते हैं, तो इसे इंस्टॉल करने की ज़रूरत नहीं।
 </Callout>
 
 </FrameworkVariant>

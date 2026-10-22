@@ -134,7 +134,7 @@ export const jaTitles: Record<string, string> = {
   'Next.js Pages Router': 'Next.js Pages Router',
   'Responsive Size with SSR': 'SSR でのレスポンシブなサイズ',
   'Overlay Components': 'オーバーレイコンポーネント',
-  'Angular Universal / SSR': 'Angular Universal / SSR',
+  'Angular SSR': 'Angular の SSR',
   'Nuxt 3': 'Nuxt 3',
   'Using Core Directly': 'Core を直接使う',
   Summary: 'まとめ',

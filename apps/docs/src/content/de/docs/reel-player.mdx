@@ -1,0 +1,563 @@
+---
+title: Reel Player
+description: Videoplayer als Vollbild-Overlay im Stil von TikTok/Reels für React. Das Schema von ContentItem, Props, Callbacks, Render-Funktionen für Slots, Tastenkürzel, Theming-Tokens und CSS-Klassen.
+---
+
+import { Zap, Play, Volume2, Layout, Clock, Image, Layers, Ratio, Monitor, Code, Settings, Link2 } from 'lucide-react';
+import installation from '../../snippets/reel-player/installation.sh?raw';
+import installation2 from '../../snippets/reel-player/installation-2.ts?raw';
+import quickStart from '../../snippets/reel-player/quick-start.tsx?raw';
+import fullCode from '../../snippets/reel-player/full-code.tsx?raw';
+import genericContentType from '../../snippets/reel-player/generic-content-type.tsx?raw';
+import customSlideOverlay from '../../snippets/reel-player/custom-slide-overlay.tsx?raw';
+import nonMediaSlides from '../../snippets/reel-player/non-media-slides.tsx?raw';
+import customControls from '../../snippets/reel-player/custom-controls.tsx?raw';
+import customTimeline from '../../snippets/reel-player/custom-timeline.tsx?raw';
+import customNavigation from '../../snippets/reel-player/custom-navigation.tsx?raw';
+import customNestedNavigation from '../../snippets/reel-player/custom-nested-navigation.tsx?raw';
+import customNestedSlides from '../../snippets/reel-player/custom-nested-slides.tsx?raw';
+import urlState from '../../snippets/reel-player/url-state.tsx?raw';
+import oneKeyOrTwo from '../../snippets/reel-player/one-key-or-two.tsx?raw';
+import oneKeyOrTwo2 from '../../snippets/reel-player/one-key-or-two-2.tsx?raw';
+import oneKeyOrTwo3 from '../../snippets/reel-player/one-key-or-two-3.tsx?raw';
+import oneKeyOrTwo4 from '../../snippets/reel-player/one-key-or-two-4.tsx?raw';
+import oneKeyOrTwo5 from '../../snippets/reel-player/one-key-or-two-5.tsx?raw';
+import basecontentitem from '../../snippets/reel-player/basecontentitem.ts?raw';
+import contentitem from '../../snippets/reel-player/contentitem.ts?raw';
+import mediaitem from '../../snippets/reel-player/mediaitem.ts?raw';
+import mediatype from '../../snippets/reel-player/mediatype.ts?raw';
+import controlsrenderpropsT from '../../snippets/reel-player/controlsrenderprops-t.ts?raw';
+import navigationrenderprops from '../../snippets/reel-player/navigationrenderprops.ts?raw';
+import sliderenderpropsT from '../../snippets/reel-player/sliderenderprops-t.ts?raw';
+import nestedsliderenderprops from '../../snippets/reel-player/nestedsliderenderprops.ts?raw';
+import slideoverlayprops from '../../snippets/reel-player/slideoverlayprops.ts?raw';
+import imageslideprops from '../../snippets/reel-player/imageslideprops.ts?raw';
+import videoslideprops from '../../snippets/reel-player/videoslideprops.ts?raw';
+import closebuttonprops from '../../snippets/reel-player/closebuttonprops.ts?raw';
+import soundbuttonprops from '../../snippets/reel-player/soundbuttonprops.ts?raw';
+import timelinebarprops from '../../snippets/reel-player/timelinebarprops.ts?raw';
+import timelinerenderpropsT from '../../snippets/reel-player/timelinerenderprops-t.ts?raw';
+import closebutton from '../../snippets/reel-player/closebutton.tsx?raw';
+import soundbutton from '../../snippets/reel-player/soundbutton.tsx?raw';
+import timelinebar from '../../snippets/reel-player/timelinebar.tsx?raw';
+import slideoverlay from '../../snippets/reel-player/slideoverlay.tsx?raw';
+import imageslide from '../../snippets/reel-player/imageslide.tsx?raw';
+import videoslide from '../../snippets/reel-player/videoslide.tsx?raw';
+import videoslide2 from '../../snippets/reel-player/videoslide-2.tsx?raw';
+import lifecycleCallbacks from '../../snippets/reel-player/lifecycle-callbacks.tsx?raw';
+import customLoadingErrorUi from '../../snippets/reel-player/custom-loading-error-ui.tsx?raw';
+import timeline from '../../snippets/reel-player/timeline.tsx?raw';
+import soundContext from '../../snippets/reel-player/sound-context.tsx?raw';
+import theming from '../../snippets/reel-player/theming.css?raw';
+
+Eine Komponente für einen Videoplayer im Vollbild im Stil von Instagram Reels und TikTok, gebaut mit `@reelkit/react-reel-player`.
+
+<DemoLink href="https://react-demo.reelkit.dev/reel-player?utm_source=docs">Live-Demo ansehen →</DemoLink>
+
+## Funktionen [#features]
+
+<FeatureGrid items={[
+              {
+                icon: Zap,
+                label: 'Vertikal wischen',
+                desc: 'Touch, Ziehen, Tastatur, Mausrad',
+              },
+              {
+                icon: Play,
+                label: 'Video-Autoplay',
+                desc: 'Spielt, sobald sichtbar',
+              },
+              { icon: Volume2, label: 'Ton umschalten', desc: 'Durchgehend auf iOS' },
+              {
+                icon: Layout,
+                label: 'Mehrere Medien',
+                desc: 'Verschachtelte horizontale Karussells',
+              },
+              {
+                icon: Clock,
+                label: 'Position merken',
+                desc: 'Macht dort weiter, wo du warst',
+              },
+              {
+                icon: Image,
+                label: 'Frame-Erfassung',
+                desc: 'Überblendung vom Poster zum Video',
+              },
+              {
+                icon: Layers,
+                label: 'Virtualisiert',
+                desc: 'Nur 3 Slides im DOM',
+              },
+              {
+                icon: Ratio,
+                label: 'Seitenverhältnis',
+                desc: '9:16 am Desktop, mobil im Vollbild',
+              },
+              { icon: Monitor, label: 'Desktop-Navigation', desc: 'Pfeil-Buttons' },
+              {
+                icon: Code,
+                label: 'Generische Typen',
+                desc: 'Eigene Datenmodelle für Inhalte',
+              },
+              {
+                icon: Settings,
+                label: 'Anpassbar',
+                desc: 'Render-Props für alles',
+              },
+              {
+                icon: Zap,
+                label: 'Slide-Overlay',
+                desc: 'Autor, Likes, Beschreibung',
+              },
+              {
+                icon: Link2,
+                label: 'URL-State',
+                desc: 'Links zum Teilen und Speichern',
+              },
+            ]} />
+
+## Installation [#installation]
+
+<CodeBlock code={installation} language="bash" />
+
+Vergiss nicht, die Styles zu importieren:
+
+<CodeBlock code={installation2} language="typescript" />
+
+<Callout type="info" title="Icons">
+  Die Standard-Steuerelemente nutzen `lucide-react` für die Icons. Willst du eine andere Icon-Bibliothek, bring mit `renderControls` und `renderNavigation` deine eigenen mit.
+</Callout>
+
+## Schnellstart [#quick-start]
+
+Die Komponente `ReelPlayerOverlay` rendert ein Player-Overlay im Vollbild. Übergib ein Array von `ContentItem`-Objekten und steuere die Sichtbarkeit mit `isOpen`.
+
+<CodeBlock code={quickStart} language="tsx" />
+
+<Sandbox
+  code={fullCode}
+  title="ReelPlayerPage.tsx"
+  stackblitzDeps={['@reelkit/react-reel-player']}
+  stackblitzExtraDeps={{ 'lucide-react': '^0.562.0' }}
+/>
+
+Den ganzen Ablauf, ein Raster aus Vorschaubildern, das den Player öffnet und die Zuschauer dorthin zurückbringt, wo sie aufgehört haben, zeigt das [Rezept „Vom Raster zum Player“](/docs/recipes/grid-to-player).
+
+## Anpassung [#customization]
+
+### Generischer Inhaltstyp [#generic-content-type]
+
+Eigene Datentypen nutzt du, indem du `BaseContentItem` erweiterst:
+
+<CodeBlock code={genericContentType} language="tsx" />
+
+### Eigenes Slide-Overlay [#custom-slide-overlay]
+
+Ersetze das eingebaute Slide-Overlay durch eigene Inhalte pro Slide:
+
+<CodeBlock code={customSlideOverlay} language="tsx" />
+
+### Slides ohne Medien [#non-media-slides]
+
+Mit `renderSlide` fügst du eigene Inhalte ein (zum Beispiel CTA-Karten). Gib `null` zurück, um auf die Standarddarstellung zurückzufallen:
+
+<CodeBlock code={nonMediaSlides} language="tsx" />
+
+### Eigene Steuerelemente [#custom-controls]
+
+Setze wiederverwendbare Unterkomponenten mit deinen eigenen Ergänzungen zusammen:
+
+<CodeBlock code={customControls} language="tsx" />
+
+### Eigene Timeline [#custom-timeline]
+
+Ersetze die eingebaute Wiedergabeleiste über `renderTimeline` durch deine eigene Oberfläche zum Spulen. Der Callback wird nur aufgerufen, wenn die Regeln des Overlays die Standardleiste rendern würden (dieselbe Logik aus dem Modus `timeline` und `timelineMinDurationSeconds`), du musst sie also nicht nachbauen. Verwende die Klasse `.rk-reel-timeline` auf deinem Wurzelelement wieder, um die bündige Position am unteren Rand, das Padding für den Safe Area und den Abstand zum Slide-Overlay auf Touch-Geräten zu übernehmen.
+
+<CodeBlock code={customTimeline} language="tsx" />
+
+### Eigene Navigation [#custom-navigation]
+
+<CodeBlock code={customNavigation} language="tsx" />
+
+### Eigene verschachtelte Navigation [#custom-nested-navigation]
+
+Ersetze die Pfeile nach links und rechts in Slides mit mehreren Medien (horizontales Karussell) durch eine eigene Navigation:
+
+<CodeBlock code={customNestedNavigation} language="tsx" />
+
+### Eigene verschachtelte Slides [#custom-nested-slides]
+
+Passe einzelne Slides in Karussells mit mehreren Medien mit `renderNestedSlide` an. Mit `props.defaultContent` umschließt du das Standard-ImageSlide/VideoSlide, oder du ersetzt es ganz:
+
+<CodeBlock code={customNestedSlides} language="tsx" />
+
+## URL-State [#url-state]
+
+<DemoLink href="https://react-demo.reelkit.dev/reel-player-url?utm_source=docs">Live-Demo ansehen →</DemoLink>
+
+`ReelPlayerUrlOverlay` ist eine eigene Komponente, deren Öffnungszustand in der Adressleiste liegt. Baue mit `useOverlayUrlState` aus `@reelkit/react` einen Controller und übergib ihn als `controller`: Der Player öffnet sich selbst, wenn der Parameter einen Slide nennt, und schließt, wenn er verschwindet. Links lassen sich teilen, und der Zurück-Button schließt den Player, statt die Seite zu verlassen.
+
+<Callout type="info" title="Eingebaute Schlüssel">
+  Slides kannst du mit einem eingebauten Schlüssel ansprechen – spreize `urlIndexKey` (nach Position) oder `urlStableIdKey` (nach einer stabilen `id`) in den Controller –, beide werden aus `@reelkit/react` erneut exportiert. Siehe den [Leitfaden zum URL-State](/docs/core/guide#url-state) und die [Core-API](/docs/core/api#url-state).
+</Callout>
+
+<CodeBlock code={urlState} language="tsx" />
+
+Alle Optionen von `useOverlayUrlState` – `param`, `adapter`, `codec`, `locator` – stehen in der [React-API-Referenz](/docs/react/api#useoverlayurlstate). Die Schritt-für-Schritt-Erklärung steht im [React-Leitfaden](/docs/react/guide#url-state).
+
+- Das Öffnen legt **einen** Eintrag im Verlauf an. Das Wischen durch den Feed **ersetzt** ihn, N Wischgesten fügen also keine Einträge hinzu, und ein Schritt zurück verlässt immer den Player. Zurück schließt; es blättert nicht durch die Slides.
+- Zurück schließt nur, wenn der Player innerhalb der App geöffnet wurde – der Link hat einen Eintrag angelegt. Ein geteilter Link, der direkt in einem neuen Tab geöffnet wird, hat keinen Verlauf hinter sich, daher verlässt Zurück im Browser die Seite; der Button ✕ oder Escape entfernt den Parameter an Ort und Stelle und bleibt.
+- Ein Deep Link `?reel=3` öffnet den Player beim Laden auf diesem Slide.
+- Ein Parameter, der keinen Slide nennt – ein veraltetes Lesezeichen, ein von Hand geänderter Wert –, wird aus der URL entfernt, statt die Adressleiste einen Slide behaupten zu lassen, der sich nicht öffnen lässt.
+- Standardmäßig spricht der Parameter nur den **vertikalen** Beitrag an (`?reel=3`). Mit einem Schlüssel für zwei Achsen trägt er auch den inneren Medienindex eines Karussells mit mehreren Medien – siehe unten.
+
+### Ein Schlüssel oder zwei: wähle die Tiefe der URL [#one-key-or-two-pick-your-url-depth]
+
+Dasselbe `ReelPlayerUrlOverlay` bedient beide Formen; es unterscheidet zur Laufzeit anhand der Position des Controllers, daher gibt es kein Prop für den Modus. Den Schlüssel wählst du, wenn du den Controller baust:
+
+| Schlüssel | Format | Trägt |
+| --- | --- | --- |
+| `urlIndexKey(…)` | `?reel=3` | Nur den vertikalen Beitrag. |
+| `urlIndexTwoAxisKey(…)` | `?reel=3.2` | Den Beitrag *und* den inneren Medienindex eines Karussells. |
+
+Die beiden Formate sind bewusst verschieden – ein Schlüssel für zwei Achsen hat immer einen Punkt (`3.0`, nie ein einfaches `3`), sodass ein einfacher Link für eine Achse nicht als der andere decodiert wird. Wechselt eine App den Schlüssel, werden deshalb alle zuvor geteilten Links ungültig. Wähle eine Form und bleib dabei.
+
+<CodeBlock code={oneKeyOrTwo} language="tsx" />
+
+**App mit Router – übergib einen Adapter.** Wer am Router vorbei `history.pushState` schreibt, lässt dessen Location veralten, und seine nächste Navigation verliert den Parameter:
+
+<CodeBlock code={oneKeyOrTwo2} language="tsx" />
+
+**Stabile Links.** Der Index richtet sich nach der Position, ein gespeichertes `?reel=3` öffnet also einen anderen Beitrag, sobald der Feed umsortiert wird – für einen Feed ist das der Normalfall, nicht die Ausnahme. `urlStableIdKey` verwendet die stabile `id` jedes Beitrags als Schlüssel und durchsucht den aktuellen Feed – ein Aufruf deckt den üblichen Fall ab.
+
+<CodeBlock code={oneKeyOrTwo3} language="tsx" />
+
+Übergib `hashCodec: base64UrlCodec`, um die id in der URL als base64url zu codieren – eine umkehrbare Verschleierung, kein kryptografischer Hash.
+
+Willst du ein anderes Feld als Schlüssel (einen `slug`) oder einen endlosen Feed mit `locateAsync` nachladen, baust du `codec`/`locator` selbst. Das sind zwei getrennte Aufgaben: `codec` schreibt die Identität in die URL, `locator` findet, wo diese Identität liegt.
+
+<CodeBlock code={oneKeyOrTwo4} language="tsx" />
+
+**Endlose Feeds.** `locate` ist synchron und kann deshalb nur für bereits geladene Beiträge antworten – ein geteilter Link auf Beitrag 400 eines Feeds, der erst 20 geladen hat, geht ins Leere. `locateAsync` ist der Fallback und wird nur aufgerufen, wenn `locate` nichts findet.
+
+<Callout type="info" title="Abkürzung">
+  Du verwendest die `id` des Eintrags als Schlüssel? Spar dir den selbst gebauten codec und locator – übergib `locateAsync` direkt an `urlStableIdKey({ items, locateAsync })` (es lädt bei einem Fehlschlag nach und gibt dann den Index zurück). Die ausführlichere Variante unten ist für ein anderes Feld als Schlüssel oder für volle Kontrolle.
+</Callout>
+
+<CodeBlock code={oneKeyOrTwo5} language="tsx" />
+
+- Solange `locateAsync` läuft, bleibt der Player geschlossen und der Parameter unangetastet, damit der Deep Link das Laden übersteht. `null` oder eine Ablehnung entfernt den Parameter.
+- Eine Antwort, die eintrifft, nachdem die URL sich weiterbewegt hat, nach dem Schließen oder nach dem Unmount, wird verworfen – ein langsames Laden kann keinen Slide öffnen, nach dem niemand gefragt hat.
+- Während des Wartens wird nichts gerendert; den Ladezustand besitzt bereits die Seite, rendere also dein eigenes Skeleton.
+- Es gibt kein Timeout – der Player kann nicht wissen, wie lang der Feed ist. Antworte mit `null`, wenn die Paginierung erschöpft ist, sonst bleibt das Overlay auf unbestimmte Zeit geschlossen.
+
+## API-Referenz [#api-reference]
+
+### Props von ReelPlayerOverlayProps [#reelplayeroverlayprops-props]
+
+<Signature>ReelPlayerOverlayProps\<T></Signature>
+
+| Prop | Typ | Standard | Beschreibung |
+| --- | --- | --- | --- |
+| `apiRef` | `MutableRefObject<ReelApi>` | - | Ref für den Zugriff auf die Reel-API |
+| `ariaLabel` | `string` | 'Video player' | Zugängliche Beschriftung der Dialog-Region; Screenreader lesen sie vor, wenn sich das Overlay öffnet |
+| `aspectRatio` | `number` | 9/16 (0.5625) | Verhältnis von Breite zu Höhe des Player-Containers am Desktop. Bei 768px Breite und schmaler nutzt der Player immer den ganzen Viewport. Ein Wert von null, ein negativer oder ein nicht endlicher Wert fällt auf 9/16 zurück. |
+| `content` | `T[]` | Pflicht | Array der Inhaltseinträge (generisch, Standard ist ContentItem) |
+| `initialIndex` | `number` | 0 | Index des Slides zum Start |
+| `initialInnerIndex` | `number` | 0 | Innerer Medienindex, bei dem geöffnet wird, nur für den anfangs sichtbaren Beitrag – damit kann eine URL mit zwei Achsen per Deep Link auf ein bestimmtes Bild eines Beitrags mit mehreren Medien zeigen. Wird ignoriert, sobald der Player offen ist und der Nutzer navigiert. |
+| `isOpen` | `boolean` | Pflicht | Steuert die Sichtbarkeit des Overlays. Soll die URL steuern, ob der Player offen ist, greif stattdessen zum eigenen ReelPlayerUrlOverlay – siehe URL-State oben. |
+| `timeline` | `'auto' \| 'always' \| 'never'` | 'auto' | Strategie, wann die eingebaute Wiedergabeleiste erscheint. 'auto' rendert sie nur für Videos, die länger als timelineMinDurationSeconds sind; 'always' rendert sie immer, wenn der aktive Slide ein Video hat; 'never' schaltet die eingebaute Leiste ab (für einen komplett eigenen Ersatz nimm renderTimeline). |
+| `timelineMinDurationSeconds` | `number` | 30 | Mindestdauer des Videos (Sekunden), ab der timeline='auto' die eingebaute Leiste rendert. Kurze Clips in Schleife unter dieser Schwelle bekommen keine. |
+| `renderControls` | `(props: ControlsRenderProps) => ReactNode` | - | Eigene Steuerelemente, ersetzt die Standard-Buttons zum Schließen und für den Ton |
+| `renderError` | `(props: { item: T; activeIndex: number }) => ReactNode` | - | Eigene Fehleranzeige, ersetzt das Standard-Fehlericon |
+| `renderLoading` | `(props: { item: T; activeIndex: number }) => ReactNode` | - | Eigene Ladeanzeige, ersetzt den Standard-Wellenlader |
+| `renderNavigation` | `(props: NavigationRenderProps) => ReactNode` | - | Eigene Navigation, ersetzt die Standard-Pfeile nach oben und unten |
+| `renderNestedNavigation` | `(props: NavigationRenderProps) => ReactNode` | - | Eigene Navigation für den verschachtelten horizontalen Slider (Beiträge mit mehreren Medien), ersetzt die Standard-Pfeile nach links und rechts |
+| `renderNestedSlide` | `(props: NestedSlideRenderProps) => ReactNode` | - | Eigener Renderer für die Einträge des verschachtelten horizontalen Sliders. Mit props.defaultContent umschließt oder bettest du das Standard-ImageSlide/VideoSlide ein. Anders als bei renderSlide gilt null hier nicht als Rückfall. |
+| `renderSlide` | `(props: SlideRenderProps) => ReactNode \| null` | - | Eigenes Rendern der Slides. Gib null zurück, um auf die Standarddarstellung zurückzufallen. Mit props.defaultContent umschließt oder bettest du den Standard-Slide ein. |
+| `renderSlideOverlay` | `(item, index, isActive) => ReactNode` | - | Eigenes Overlay pro Slide, ersetzt das Standard-SlideOverlay. Gib null zurück, um es auszublenden. |
+| `renderTimeline` | `(props: TimelineRenderProps) => ReactNode` | - | Eigene Wiedergabeleiste. Wird nur aufgerufen, wenn die Regeln die Standardleiste rendern würden (dieselbe Logik aus auto/always/never und timelineMinDurationSeconds). Mit props.defaultContent umschließt du das eingebaute \<TimelineBar />; gib null zurück, um sie auszublenden. |
+
+### Props von ReelPlayerUrlOverlay [#reelplayerurloverlay-props]
+
+<Signature>ReelPlayerUrlOverlayProps\<T></Signature>
+
+Nimmt jedes Prop für Darstellung und Verhalten von oben außer `isOpen`, das durch einen `controller` ersetzt wird. `initialIndex` wird ignoriert – die Position des Controllers bestimmt den Slide, ein zusätzlich übergebener Wert wird also bei jedem Öffnen überschrieben.
+
+| Prop | Typ | Standard | Beschreibung |
+| --- | --- | --- | --- |
+| `controller` | `UrlStateController` | `required` | Controller aus useOverlayUrlState. Seine Position entscheidet, ob das Overlay offen ist und welchen Slide es zeigt; beim Slide-Wechsel und beim Schließen schreibt das Overlay über ihn zurück. |
+
+### Callbacks [#callbacks]
+
+| Prop | Typ | Beschreibung |
+| --- | --- | --- |
+| `onClose` | `() => void` | Wird aufgerufen, wenn der Player schließt. Pflicht bei ReelPlayerOverlay (du steuerst, ob er offen ist, und musst das Schließen also selbst behandeln); optional bei ReelPlayerUrlOverlay, wo die URL das Schließen steuert – übergib ihn nur, um nach dem Schließen zu reagieren. |
+| `onSlideChange` | `(index: number) => void` | Wird nach dem Slide-Wechsel aufgerufen |
+| `onInnerSlideChange` | `(outerIndex: number, innerIndex: number) => void` | Wird aufgerufen, wenn sich der innere Medienindex des aktiven Beitrags ändert – bei der inneren Navigation in einem Beitrag mit mehreren Medien und beim Aktivieren eines äußeren Beitrags, dann mit dessen aktuellem inneren Index (0 für einen Beitrag mit nur einem Medium). |
+
+### Props von Reel (durchgereicht) [#reel-props-proxied]
+
+Diese Props werden an die darunterliegende Komponente [Reel](/docs/react/api#reel-props) weitergegeben.
+
+| Prop | Typ | Standard | Beschreibung |
+| --- | --- | --- | --- |
+| `enableNavKeys` | `boolean` | true | Schaltet die Tastaturnavigation ein |
+| `enableWheel` | `boolean` | true | Schaltet die Navigation mit dem Mausrad ein |
+| `loop` | `boolean` | false | Schaltet die Endlosschleife ein |
+| `swipeDistanceFactor` | `number` | 0.12 | Schwelle für das Wischen (0-1) |
+| `transitionDuration` | `number` | 300 | Dauer der Übergangsanimation (ms) |
+| `wheelDebounceMs` | `number` | 200 | Dauer des Debounce für das Mausrad (ms) |
+
+## Typen [#types]
+
+### BaseContentItem [#basecontentitem]
+
+Der Typ für die generische Einschränkung. Erweitere ihn, um eigene Datentypen mit ReelPlayerOverlay zu nutzen.
+
+<CodeBlock code={basecontentitem} language="typescript" />
+
+### ContentItem [#contentitem]
+
+<CodeBlock code={contentitem} language="typescript" />
+
+### MediaItem [#mediaitem]
+
+<CodeBlock code={mediaitem} language="typescript" />
+
+### MediaType [#mediatype]
+
+<CodeBlock code={mediatype} language="typescript" />
+
+### ControlsRenderProps\<T> [#controlsrenderprops-t]
+
+<CodeBlock code={controlsrenderpropsT} language="typescript" />
+
+### NavigationRenderProps [#navigationrenderprops]
+
+<CodeBlock code={navigationrenderprops} language="typescript" />
+
+### SlideRenderProps\<T> [#sliderenderprops-t]
+
+<CodeBlock code={sliderenderpropsT} language="typescript" />
+
+### NestedSlideRenderProps [#nestedsliderenderprops]
+
+<CodeBlock code={nestedsliderenderprops} language="typescript" />
+
+### SlideOverlayProps [#slideoverlayprops]
+
+<CodeBlock code={slideoverlayprops} language="typescript" />
+
+### ImageSlideProps [#imageslideprops]
+
+<CodeBlock code={imageslideprops} language="typescript" />
+
+### VideoSlideProps [#videoslideprops]
+
+<CodeBlock code={videoslideprops} language="typescript" />
+
+### CloseButtonProps [#closebuttonprops]
+
+<CodeBlock code={closebuttonprops} language="typescript" />
+
+### SoundButtonProps [#soundbuttonprops]
+
+<CodeBlock code={soundbuttonprops} language="typescript" />
+
+### TimelineBarProps [#timelinebarprops]
+
+<CodeBlock code={timelinebarprops} language="typescript" />
+
+### TimelineRenderProps\<T> [#timelinerenderprops-t]
+
+<CodeBlock code={timelinerenderpropsT} language="typescript" />
+
+## Unterkomponenten [#sub-components]
+
+Wiederverwendbare Bausteine, exportiert zum Zusammensetzen in eigenen Render-Props:
+
+### CloseButton [#closebutton]
+
+Eigenständiger Button zum Schließen im Standardstil des Players. Zur Verwendung in `renderControls`.
+
+<CodeBlock code={closebutton} language="tsx" />
+
+### SoundButton [#soundbutton]
+
+Eigenständiger Schalter für den Ton. Muss in einem `SoundProvider` liegen (den ReelPlayerOverlay automatisch bereitstellt).
+
+<CodeBlock code={soundbutton} language="tsx" />
+
+### TimelineBar [#timelinebar]
+
+Standardleiste zum Spulen der Wiedergabe. Liest aus dem nächsten `TimelineProvider` (der in `ReelPlayerOverlay` automatisch gemountet ist) und rendert die Spur, die gepufferten Bereiche, die Fortschrittsfüllung und den Griff zum Spulen. Gestalte sie über die Custom Properties `--rk-reel-timeline-*`, oder ersetze sie über `renderTimeline`.
+
+<CodeBlock code={timelinebar} language="tsx" />
+
+### SlideOverlay [#slideoverlay]
+
+Das Standard-Overlay mit Verlauf, das Autor, Beschreibung und Likes zeigt. Wird automatisch gerendert, wenn der Inhalt die nötigen Felder hat. Mit `renderSlideOverlay` ersetzt oder versteckst du es.
+
+<CodeBlock code={slideoverlay} language="tsx" />
+
+### ImageSlide [#imageslide]
+
+Bild-Slide mit Lazy Loading und standardmäßig `object-fit: cover`. Zur Verwendung in `renderSlide`, um eigene Bild-Slides mit deinen eigenen Styles zusammenzusetzen.
+
+<CodeBlock code={imageslide} language="tsx" />
+
+### VideoSlide [#videoslide]
+
+Video-Slide mit gemeinsamem `<video>`-Element für durchgehenden Ton auf iOS, Poster-Frames, Positionsgedächtnis und Ladeanzeige. Muss in einem `SoundProvider` liegen (den ReelPlayerOverlay automatisch bereitstellt).
+
+<CodeBlock code={videoslide} language="tsx" />
+
+<Callout type="info" title="Eigene Slides zusammensetzen">
+  Nutze `renderSlide` mit `ImageSlide` / `VideoSlide`, um das Rendern der Medien anzupassen und dabei das ganze eingebaute Verhalten zu behalten (Autoplay, Poster-Erfassung, Ton-Synchronisierung).
+</Callout>
+
+<CodeBlock code={videoslide2} language="tsx" />
+
+## Laden von Inhalten und Fehlerbehandlung [#content-loading-error-handling]
+
+Der Player verfolgt Lade- und Fehlerzustände pro Slide. Während Inhalte laden, erscheint ein Wellenlader; bei defekten Medien ein Fehlericon. Fehlerhafte URLs werden zwischengespeichert, sodass ein erneuter Besuch den Fehler sofort zeigt, ohne es noch einmal zu versuchen.
+
+### Callbacks für den Lebenszyklus [#lifecycle-callbacks]
+
+Wenn du `renderSlide` nutzt, rufst du diese Callbacks auf, um die Ladeanzeige zu steuern:
+
+| Callback | Wann aufrufen |
+| --- | --- |
+| `onReady` | Das Bild ist geladen oder das Video spielt. Setzt Lade- und Fehlerzustand zurück. |
+| `onWaiting` | Das Video puffert mitten in der Wiedergabe. Zeigt die Ladeanzeige. |
+| `onError` | Der Inhalt ließ sich nicht laden. Zeigt das Fehler-Overlay und merkt sich die URL als defekt. |
+
+<CodeBlock code={lifecycleCallbacks} language="tsx" />
+
+### Eigene Oberfläche für Laden und Fehler [#custom-loading-error-ui]
+
+Ersetze den Standard-Wellenlader und das Fehlericon durch eigene Komponenten:
+
+<CodeBlock code={customLoadingErrorUi} language="tsx" />
+
+## Timeline [#timeline]
+
+Das Overlay rendert eine eingebaute Wiedergabeleiste über dem aktiven Video. Das Prop `timeline` steuert, wann sie erscheint:
+
+- `'auto'` (Standard): rendert, wenn das aktive Medium ein Video ist, dessen Dauer `timelineMinDurationSeconds` überschreitet (Standard 30). Funktioniert für Slides mit einem einzelnen Video und für Karussells mit mehreren Medien; die Leiste folgt dem aktiven verschachtelten Eintrag und verschwindet bei Bildern.
+- `'always'`: rendert immer, wenn der aktive Slide ein Video hat.
+- `'never'`: rendert nie. Eine eigene Leiste baust du über `renderTimeline`.
+
+<CodeBlock code={timeline} language="tsx" />
+
+Gestalte sie über die CSS Custom Properties `--rk-reel-timeline-*` (Höhe, Farben, Größe des Griffs). Für eine komplett eigene Leiste zum Spulen, einen Timecode oder eine Fortschrittsanzeige nutzt du `renderTimeline`; der Callback bekommt einen `timelineState`, hinter dem der zugrunde liegende `TimelineController` steht.
+
+## Ton-Context [#sound-context]
+
+Für eigene Implementierungen kannst du auf den Zustand des Tons zugreifen:
+
+<CodeBlock code={soundContext} language="tsx" />
+
+## CSS-Klassen [#css-classes]
+
+Alle CSS-Klassen sind einfache Klassen (keine CSS Modules), du kannst sie also mit spezifischeren Selektoren in einem Stylesheet ansprechen, das nach `@reelkit/react-reel-player/styles.css` geladen wird. Für Änderungen an Farbe, Größe und z-index nimm lieber die CSS Custom Properties aus dem Abschnitt [Theming](#theming) unten – genau dafür sind sie gemacht.
+
+| Klasse | Komponente | Beschreibung |
+| --- | --- | --- |
+| `.rk-reel-overlay` | Overlay | Fester Hintergrund im Vollbild (Hintergrund, z-index) |
+| `.rk-reel-container` | Overlay | Container des Players (Position, Overflow) |
+| `.rk-reel-loader` | Overlay | Overlay mit der Wellen-Ladeanimation |
+| `.rk-reel-media-error` | Overlay | Overlay für den Fehlerzustand (zentriertes Icon + Text) |
+| `.rk-reel-media-error-text` | Overlay | Text der Fehlermeldung |
+| `.rk-reel-button` | Controls | Gemeinsamer runder Icon-Button (Schließen, Ton, Navigationspfeile) |
+| `.rk-reel-close-btn` | Controls | Button zum Schließen |
+| `.rk-reel-sound-btn` | Controls | Button zum Umschalten des Tons |
+| `.rk-reel-nav-arrows` | Navigation | Container der Pfeile, nur am Desktop (versteckt bei 768px Breite und schmaler) |
+| `.rk-reel-nav-button` | Navigation | Einzelner Navigationspfeil für vorher/weiter |
+| `.rk-reel-slide-wrapper` | Slide | Hülle um Medium + Overlay |
+| `.rk-reel-slide-overlay` | SlideOverlay | Container des Overlays mit Verlauf |
+| `.rk-reel-slide-overlay-author` | SlideOverlay | Zeile mit dem Autor (Avatar + Name) |
+| `.rk-reel-slide-overlay-avatar` | SlideOverlay | Avatarbild des Autors |
+| `.rk-reel-slide-overlay-name` | SlideOverlay | Text mit dem Namen des Autors |
+| `.rk-reel-slide-overlay-description` | SlideOverlay | Text der Beschreibung |
+| `.rk-reel-slide-overlay-likes` | SlideOverlay | Zeile mit den Likes (Herz + Anzahl) |
+| `.rk-reel-video-container` | VideoSlide | Hülle des Videos (Hintergrund, Overflow) |
+| `.rk-reel-video-element` | VideoSlide | Das Element \<video> |
+| `.rk-reel-video-poster` | VideoSlide | Posterbild (blendet bei der Wiedergabe aus) |
+| `.rk-reel-video-poster.rk-visible` | VideoSlide | Zustands-Modifier auf dem Poster, solange das Video pausiert oder lädt |
+| `.rk-reel-nested-indicator` | NestedSlider | Punkt-Paginierung unter Slides mit mehreren Medien (Position je nach Desktop oder Touch) |
+| `.rk-reel-nested-nav` | NestedSlider | Pfeile des horizontalen Karussells (versteckt bei 768px Breite und schmaler) |
+| `.rk-reel-nested-nav-next` | NestedSlider | Position des verschachtelten Pfeils weiter |
+| `.rk-reel-nested-nav-prev` | NestedSlider | Position des verschachtelten Pfeils zurück |
+| `.rk-reel-timeline` | TimelineBar | Hülle der Leiste zum Spulen. Auf den Wurzelelementen eines eigenen \`renderTimeline\` wiederverwenden, um die bündige Position am unteren Rand, das Padding für den Safe Area und den Abstand zum Slide-Overlay auf Touch-Geräten zu übernehmen. |
+| `.rk-reel-timeline-track` | TimelineBar | Spur (noch nicht gespielter Bereich) |
+| `.rk-reel-timeline-buffered` | TimelineBar | Ebene der gepufferten Abschnitte |
+| `.rk-reel-timeline-fill` | TimelineBar | Füllung für den gespielten Fortschritt |
+| `.rk-reel-timeline-cursor` | TimelineBar | Griff zum Spulen (schwebt über der Spur) |
+
+## Theming [#theming]
+
+Jede Farbe, Größe, jeder z-index und jeder Übergang liegt in einer CSS Custom Property. Überschreibe eine oder mehrere auf `:root` (oder einem beliebigen Vorfahren des Overlays), um das Theme zu ändern, ohne den Quellcode der Komponente anzufassen.
+
+| Token | Standard | Steuert |
+| --- | --- | --- |
+| `--rk-reel-overlay-bg` | `#000` | Farbe des Hintergrunds im Vollbild |
+| `--rk-reel-overlay-z` | `1000` | z-index des Overlays |
+| `--rk-reel-button-bg` | `rgba(0, 0, 0, 0.5)` | Hintergrund des runden Standard-Buttons |
+| `--rk-reel-button-bg-hover` | `rgba(255, 255, 255, 0.1)` | Hintergrund der Navigationspfeile (und Basis für den Hover-Zustand) |
+| `--rk-reel-button-bg-hover-strong` | `rgba(255, 255, 255, 0.2)` | Hintergrund der Navigationspfeile beim Hover |
+| `--rk-reel-button-fg` | `#fff` | Farbe der Button-Icons |
+| `--rk-reel-button-size` | `44px` | Breite / Höhe der Buttons |
+| `--rk-reel-button-radius` | `50%` | border-radius der Buttons |
+| `--rk-reel-ui-z` | `10` | z-index von Schließen / Ton / Navigation |
+| `--rk-reel-edge-padding` | `16px` | Abstand zum Rand für Schließen / Ton / Navigationspfeile |
+| `--rk-reel-nav-gap` | `8px` | Abstand zwischen den übereinanderliegenden Navigationspfeilen |
+| `--rk-reel-transition` | `0.2s` | Dauer des Hover-Übergangs |
+| `--rk-reel-loader-color` | `rgba(255, 255, 255, 0.12)` | Farbe des Verlaufs im Wellenlader |
+| `--rk-reel-loader-duration` | `1.8s` | Dauer der Animation des Wellenladers |
+| `--rk-reel-error-fg` | `rgba(255, 255, 255, 0.4)` | Farbe von Fehlericon und -text |
+| `--rk-reel-error-text-size` | `13px` | Schriftgröße der Fehlermeldung |
+| `--rk-reel-slide-overlay-bg` | `linear-gradient(transparent, rgba(0, 0, 0, 0.7))` | Verlauf hinter der Bildunterschrift |
+| `--rk-reel-slide-overlay-padding` | `48px 16px 16px` | Innenabstand der Bildunterschrift |
+| `--rk-reel-slide-overlay-name-color` | `#fff` | Farbe des Autorennamens |
+| `--rk-reel-slide-overlay-description-color` | `rgba(255, 255, 255, 0.9)` | Farbe des Beschreibungstexts |
+| `--rk-reel-slide-overlay-likes-color` | `rgba(255, 255, 255, 0.8)` | Textfarbe der Zeile mit den Likes |
+| `--rk-reel-video-bg` | `#000` | Hintergrund der Letterbox hinter \<video> |
+| `--rk-reel-nested-button-bg` | `rgba(0, 0, 0, 0.5)` | Hintergrund der verschachtelten Pfeile |
+| `--rk-reel-nested-button-bg-hover` | `rgba(255, 255, 255, 0.2)` | Hintergrund der verschachtelten Pfeile beim Hover |
+| `--rk-reel-nested-button-size` | `36px` | Größe der verschachtelten Pfeile |
+| `--rk-reel-nested-edge-padding` | `12px` | Abstand der verschachtelten Pfeile zum Rand |
+| `--rk-reel-timeline-track` | `rgba(255, 255, 255, 0.22)` | Hintergrund der Spur (noch nicht gespielter Bereich) |
+| `--rk-reel-timeline-buffered` | `rgba(255, 255, 255, 0.4)` | Farbe der gepufferten Abschnitte |
+| `--rk-reel-timeline-fill` | `#fff` | Farbe der Füllung für den gespielten Fortschritt |
+| `--rk-reel-timeline-cursor` | `#fff` | Farbe des Griffs zum Spulen |
+| `--rk-reel-timeline-height` | `3px` | Höhe der Spur in Ruhe |
+| `--rk-reel-timeline-height-active` | `6px` | Höhe der Spur bei Hover / Fokus / Spulen |
+| `--rk-reel-timeline-cursor-width` | `10px` | Breite des Griffs in Ruhe |
+| `--rk-reel-timeline-cursor-width-active` | `14px` | Breite des Griffs beim Spulen |
+| `--rk-reel-timeline-cursor-height` | `24px` | Höhe des Griffs in Ruhe |
+| `--rk-reel-timeline-cursor-height-active` | `32px` | Höhe des Griffs beim Spulen |
+| `--rk-reel-timeline-hitbox` | `16px` | Zusätzliche Trefferfläche für den Zeiger über der Spur |
+| `--rk-reel-timeline-transition` | `0.15s ease-out` | Animation für das Wachsen und Schrumpfen von Spur und Griff |
+| `--rk-reel-timeline-z` | `11` | z-index der Timeline (über der Standardebene der UI) |
+
+Füge das Snippet unten in ein Stylesheet ein, das nach `@reelkit/react-reel-player/styles.css` geladen wird.
+
+<CodeBlock code={theming} language="css" />
+
+## Barrierefreiheit [#accessibility]
+
+Das Wurzelelement des Overlays ist ein modaler Dialog (`role="dialog"`, `aria-modal="true"`). Mit `ariaLabel` änderst du die Ansage für Screenreader; standardmäßig lautet sie "Video player". Jeder Slide trägt `role="group"`, `aria-roledescription="slide"` und ein `aria-label="Slide N of M"`, sodass beim Wischen die Position in der Abfolge angesagt wird.
+
+Das Overlay fängt beim Öffnen den Fokus ein und gibt ihn beim Schließen an den Auslöser zurück. Tab und Shift+Tab wandern durch die fokussierbaren Elemente darin; Fokus, der entkommt (Klick nach außen, Fokus aus dem Code), wird zurückgeholt. Umgesetzt mit `captureFocusForReturn` und `createFocusTrap` aus `@reelkit/core`.
+
+## Tastenkürzel [#keyboard-shortcuts]
+
+| Taste | Aktion |
+| --- | --- |
+| `ArrowUp` | Vorheriger Slide |
+| `ArrowDown` | Nächster Slide |
+| `ArrowLeft` | Vorheriges Medium (im verschachtelten Slider) |
+| `ArrowRight` | Nächstes Medium (im verschachtelten Slider) |
+| `Escape` | Player schließen |

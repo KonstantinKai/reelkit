@@ -1,0 +1,261 @@
+---
+title: Vue-API-Referenz
+description: Die vollständige Referenz für die Komponenten von @reelkit/vue, ihre Props, Emits und bereitgestellten Methoden, für ReelIndicator, useSwipeToClose, useOverlayUrlState und die Form des Kontexts aus provide/inject.
+---
+
+import slots from '../../../snippets/vue-api/slots.vue?raw';
+import reelexpose from '../../../snippets/vue-api/reelexpose.vue?raw';
+import rkReelKeyUsereelcontext from '../../../snippets/vue-api/rk-reel-key-usereelcontext.vue?raw';
+import usebodylock from '../../../snippets/vue-api/usebodylock.ts?raw';
+import usefullscreen from '../../../snippets/vue-api/usefullscreen.ts?raw';
+import usesoundstate from '../../../snippets/vue-api/usesoundstate.ts?raw';
+import usevuerouterurladapter from '../../../snippets/vue-api/usevuerouterurladapter.ts?raw';
+import tovueref from '../../../snippets/vue-api/tovueref.ts?raw';
+import soundprovider from '../../../snippets/vue-api/soundprovider.vue?raw';
+import observe from '../../../snippets/vue-api/observe.vue?raw';
+import packageExports from '../../../snippets/vue-api/package-exports.ts?raw';
+import asgenericpropkeys from '../../../snippets/vue-api/asgenericpropkeys.ts?raw';
+
+Die vollständige Referenz für die Komponenten, Composables und Hilfsfunktionen von `@reelkit/vue`.
+
+## Reel [#reel]
+
+Tag: `<Reel>`
+
+### Props [#props]
+
+<Caption>`ReelProps`</Caption>
+
+| Prop | Typ | Standard | Beschreibung |
+| --- | --- | --- | --- |
+| `count` | `number` | Pflicht | Gesamtzahl der Slides |
+| `direction` | `'vertical' \| 'horizontal'` | 'vertical' | Scrollrichtung |
+| `size` | `[number, number] \| undefined` | undefined | Breite und Höhe als \[width, height\]. Fehlt es, wird per ResizeObserver automatisch gemessen |
+| `initialIndex` | `number` | 0 | Index des ersten Slides |
+| `loop` | `boolean` | false | Schaltet die Endlosschleife ein |
+| `transition` | `TransitionTransformFn` | slideTransition | Funktion für den Übergangseffekt. Eingebaut: slideTransition, fadeTransition, flipTransition, cubeTransition, zoomTransition |
+| `transitionDuration` | `number` | 300 | Dauer der Animation in ms |
+| `swipeDistanceFactor` | `number` | 0.12 | Schwelle für das Wischen (0-1) |
+| `enableGestures` | `boolean` | true | Schaltet die Navigation per Touch und Ziehen mit der Maus ein |
+| `enableNavKeys` | `boolean` | true | Schaltet die Navigation mit den Pfeiltasten ein |
+| `enableWheel` | `boolean` | false | Schaltet die Navigation mit dem Mausrad ein |
+| `wheelDebounceMs` | `number` | 200 | Debounce für Mausrad-Events in ms |
+| `rangeExtractor` | `(index: number, count: number) => number[]` | defaultRangeExtractor | Eigene Funktion, die bestimmt, welche Indizes gerendert werden |
+| `keyExtractor` | `(index: number, indexInRange: number) => string` | index => index.toString() | Eigene Key-Funktion für das Rendern der Slides (nützlich mit loop) |
+| `ariaLabel` | `string` | undefined | Zugängliche Bezeichnung für die Karussell-Region |
+| `reelStyle` | `Record<string, string \| number>` | undefined | Inline-Styles für das Wurzelelement des Containers |
+| `reelClass` | `string \| Array \| Object` | undefined | CSS-Klasse(n) für das Wurzelelement des Containers |
+| `onNavKeyPress` | `(increment: -1 \| 1) => void` | undefined | Callback-Prop, das die Standardnavigation mit ArrowUp/ArrowDown ersetzt. Ist es gesetzt, implementierst du die Navigation selbst (zum Beispiel mit reelRef.value.next()). Lass es weg für das Standardverhalten. |
+
+### Events [#events]
+
+| Event | Daten | Beschreibung |
+| --- | --- | --- |
+| `beforeChange` | `(index: number, nextIndex: number, indexInRange: number)` | Wird gesendet, bevor der Übergang zum Slide beginnt |
+| `afterChange` | `(index: number, indexInRange: number)` | Wird gesendet, nachdem der Übergang zum Slide fertig ist |
+| `slideDragStart` | `(index: number)` | Wird gesendet, wenn eine Ziehgeste beginnt |
+| `slideDragEnd` | `(index: number)` | Wird gesendet, wenn eine Ziehgeste endet (losgelassen) |
+| `slideDragCanceled` | `(index: number)` | Wird gesendet, wenn eine Ziehgeste abgebrochen wird (Zurückschnappen) |
+| `tap` | `(event: GestureCommonEvent)` | Wird bei einem einfachen Tippen gesendet |
+| `doubleTap` | `(event: GestureCommonEvent)` | Wird bei einem doppelten Tippen gesendet |
+| `longPress` | `(event: GestureCommonEvent)` | Wird gesendet, wenn ein langes Drücken beginnt |
+| `longPressEnd` | `(event: GestureEvent)` | Wird gesendet, wenn ein langes Drücken endet |
+
+### Slots [#slots]
+
+<CodeBlock code={slots} language="vue-html" />
+
+| Slot | Scope-Props | Beschreibung |
+| --- | --- | --- |
+| `#item` | `{ index: number, indexInRange: number, size: [number, number] }` | Rendert jeden sichtbaren Slide. Wird für jeden Index im virtualisierten Bereich aufgerufen |
+| `default` | `none` | Overlay-Inhalt über allen Slides (Indikatoren, Bedienelemente und so weiter) |
+
+## ReelExpose [#reelexpose]
+
+Die imperative API, bereitgestellt über ein Template-Ref:
+
+<CodeBlock code={reelexpose} language="vue" />
+
+| Methode | Typ | Beschreibung |
+| --- | --- | --- |
+| `next()` | `() => void` | Geht zum nächsten Slide |
+| `prev()` | `() => void` | Geht zum vorherigen Slide |
+| `goTo(index, animate?)` | `(number, boolean?) => Promise<void>` | Navigiert zu einem bestimmten Slide-Index |
+| `adjust()` | `() => void` | Berechnet die Positionen der Slides neu (nützlich nach einer Layoutänderung) |
+| `observe()` | `() => void` | Beginnt, auf Gesten, Tastatur und Mausrad zu hören |
+| `unobserve()` | `() => void` | Hört auf, auf Gesten, Tastatur und Mausrad zu hören |
+
+## ReelIndicator [#reelindicator]
+
+Tag: `<ReelIndicator>`
+
+### Props [#props]
+
+<Caption>`ReelIndicatorProps`</Caption>
+
+| Prop | Typ | Standard | Beschreibung |
+| --- | --- | --- | --- |
+| `count` | `number \| undefined` | auto | Gesamtzahl der Elemente. Verbindet sich innerhalb eines Reel selbst mit dessen Kontext; übergib den Wert ausdrücklich, wenn du die Komponente allein nutzt |
+| `active` | `number \| undefined` | auto | Aktuell aktiver Index. Verbindet sich innerhalb eines Reel selbst mit dessen Kontext; übergib den Wert ausdrücklich, wenn du die Komponente allein nutzt |
+| `direction` | `'vertical' \| 'horizontal'` | 'vertical' | Ausrichtung des Indikators |
+| `radius` | `number` | 3 | Radius der Punkte in Pixeln |
+| `visible` | `number` | 5 | Höchstzahl gleichzeitig sichtbarer Punkte in normaler Größe |
+| `gap` | `number` | 4 | Abstand zwischen den Punkten in Pixeln |
+| `activeColor` | `string` | '#fff' | Farbe des aktiven Punkts |
+| `inactiveColor` | `string` | 'rgba(255, 255, 255, 0.5)' | Farbe der inaktiven Punkte |
+| `edgeScale` | `number` | 0.5 | Skalierung der überzähligen Punkte am Rand |
+| `onDotClick` | `(index: number) => void` | undefined | Eigener Klick-Handler. Fehlt er innerhalb eines Reel, navigiert ein Klick standardmäßig zum Index des Punkts |
+| `indicatorClass` | `string \| Array \| Object` | undefined | CSS-Klasse(n) für das Wurzelelement der Tablist |
+| `indicatorStyle` | `CSSProperties` | undefined | Inline-Styles, die in das Wurzelelement der Tablist übernommen werden |
+
+### Events [#events]
+
+| Event | Daten | Beschreibung |
+| --- | --- | --- |
+| `dotClick` | `(index: number)` | Wird beim Klick auf einen Punkt gesendet und liefert dessen Index |
+
+## SwipeToClose [#swipetoclose]
+
+Tag: `<SwipeToClose>` — umschließt seinen Default-Slot mit einem Container, der auf Touch reagiert und sich wegwischen lässt.
+
+### Props [#props]
+
+<Caption>`SwipeToCloseProps`</Caption>
+
+| Prop | Typ | Standard | Beschreibung |
+| --- | --- | --- | --- |
+| `direction` | `'up' \| 'down'` | Pflicht | Wischrichtung, die das Schließen auslöst. Nimm "up", um eine Lightbox zu schließen, und "down" für Stories |
+| `enabled` | `boolean` | true | Ob die Geste zum Wegwischen aktiv ist |
+| `threshold` | `number` | 0.2 | Anteil der Viewport-Höhe, der zum Schließen nötig ist (0-1) |
+
+### Events [#events]
+
+| Event | Daten | Beschreibung |
+| --- | --- | --- |
+| `close` | `()` | Wird gesendet, wenn die Wischgeste die Schwelle überschreitet und die Animation zum Schließen fertig ist |
+
+### Slots [#slots]
+
+| Slot | Beschreibung |
+| --- | --- |
+| `default` | Inhalt, der mit der Geste zum Wegwischen umschlossen wird |
+
+## RK_REEL_KEY & useReelContext [#rk-reel-key-usereelcontext]
+
+Ein `InjectionKey<ReelContextValue>`, den `<Reel>` seinen Nachfahren bereitstellt. `<ReelIndicator>` nutzt ihn intern, um sich selbst zu verbinden. Rufe `useReelContext()` in eigenen Komponenten auf, die den Kontext des Sliders brauchen.
+
+<CodeBlock code={rkReelKeyUsereelcontext} language="vue" />
+
+| Eigenschaft | Typ | Beschreibung |
+| --- | --- | --- |
+| `index` | `Signal<number>` | Reaktiver Index des aktuellen Slides |
+| `count` | `Signal<number>` | Reaktive Gesamtzahl der Elemente |
+| `goTo` | `(index: number, animate?: boolean) => Promise<void>` | Navigiert im Code zu einem Slide |
+
+## Composables [#composables]
+
+### useBodyLock [#usebodylock]
+
+Sperrt das Scrollen des Dokument-Body, solange der übergebene Wert `true` ist. Zählt die Referenzen mit, sodass mehrere gleichzeitige Aufrufer unabhängig voneinander sperren und entsperren können. Entsperrt beim Unmount automatisch.
+
+<CodeBlock code={usebodylock} language="typescript" />
+
+| Parameter | Typ | Beschreibung |
+| --- | --- | --- |
+| `locked` | `Ref<boolean> \| boolean` | Ob das Scrollen des Body gesperrt sein soll. Nimmt ein reaktives Ref oder einen festen Boolean |
+
+### useFullscreen [#usefullscreen]
+
+<Caption>`UseFullscreenOptions` → `UseFullscreenReturn`</Caption>
+
+Ein Composable für die Fullscreen API mit Unterstützung für alle Browser. Verlässt den Vollbildmodus beim Unmount automatisch.
+
+<CodeBlock code={usefullscreen} language="typescript" />
+
+| Rückgabe | Typ | Beschreibung |
+| --- | --- | --- |
+| `isFullscreen` | `Signal<boolean>` | Core-Signal mit dem aktuellen Vollbildzustand (lies `.value`) |
+| `request` | `() => Promise<void>` | Fordert den Vollbildmodus für das referenzierte Element an. Ist schon ein anderes Element im Vollbild, wird dieses zuerst verlassen (mit await). |
+| `exit` | `() => Promise<void>` | Verlässt den Vollbildmodus |
+| `toggle` | `() => Promise<void>` | Schaltet den Vollbildmodus um |
+
+### useSoundState [#usesoundstate]
+
+Liefert den aktuellen `SoundController` aus dem Kontext. Muss innerhalb eines `<SoundProvider>` aufgerufen werden, außerhalb wirft es einen Fehler.
+
+<CodeBlock code={usesoundstate} language="typescript" />
+
+### useOverlayUrlState [#useoverlayurlstate]
+
+<Caption>`OverlayUrlStateOptions`</Caption>
+
+Baut einen URL-State-Controller für ein Overlay, den du einem `<LightboxUrlOverlay>` als Prop `:controller` übergibst.
+
+Den Ablauf und Beispiele findest du unter [URL-State im Vue-Leitfaden](/docs/vue/guide#url-state).
+
+| Option | Typ | Standard | Beschreibung |
+| --- | --- | --- | --- |
+| `param` | `string` | Pflicht | Query-Parameter, der den aktiven Slide trägt, zum Beispiel "photo". |
+| `adapter` | `UrlAdapter` | History API | Das Navigationssystem, über das gelesen und geschrieben wird. Übergib in einer App mit Router einen Adapter auf Basis des Routers, damit dessen eigene Location nicht veraltet. |
+| `codec` | `{ decode(raw) => Id \| null; encode(id) => string }` | Pflicht | Format auf der Leitung: Parametertext ↔ eine stabile Identität, ohne Wissen über die Sammlung. Bildet mit locator ein zusammengehöriges Paar mit demselben Id — verteile ...urlIndexKey(() => props.images.length) für die Standardgalerie mit Index wie ?photo=3, oder liefere ein eigenes (base64, Slug), damit ein Lesezeichen eine neu sortierte Galerie übersteht. |
+| `locator` | `{ locate(id) => number \| null; locateAsync?(id) => Promise<number \| null>; identify(index) => id }` | Pflicht | Bildet die Identität auf eine Position ab und ist selbst für deren Gültigkeit zuständig: locate (synchron), locateAsync (asynchroner Rückfall für eine seitenweise geladene Galerie), identify (Schreiben). Für eine einfache Galerie mit Index verteilst du ...urlIndexKey(() => props.images.length) — das liefert diesen Locator samt passendem Codec und prüft ?photo=3 gegen die aktuelle Anzahl, sodass ein veraltetes ?photo=99 aus der URL verschwindet, statt einen Slide zu öffnen, den nie jemand gemeint hat. Übergib einen Getter, keine Zahl, denn ein setup in Vue läuft nur einmal, und eine dort festgehaltene Länge veraltet, sobald ein seitenweise geladener Feed wächst. Ein seitenweise geladener Feed oder eine Galerie mit Schlüsseln nach Identität liefert stattdessen ein eigenes Paar aus codec + locator. |
+
+### useVueRouterUrlAdapter [#usevuerouterurladapter]
+
+Ein `UrlAdapter` auf Basis von Vue Router. Übergib ihn in einer App mit Router als Option `adapter` an `useOverlayUrlState`, damit der Router die einzige Quelle der Wahrheit für die Navigation bleibt — wer `history.pushState` am Router vorbei schreibt, lässt dessen Location veralten, und die nächste Navigation verliert den Parameter. Geschrieben wird nur in die Query, also bleiben Pfad, Hash und wiederholte Schlüssel wie `?tag=a&tag=b` unberührt. Jede Änderung meldet, ob der Router auf derselben Seite einen Eintrag angelegt, ersetzt oder im Verlauf geblättert hat, sodass eine aus einem `<router-link>` geöffnete Galerie mit einem Schritt zurück schließt.
+
+Er kommt aus einem eigenen Unterpfad, sodass eine App ohne Router `vue-router` nie in ihr Bundle zieht. `vue-router` ist eine optionale Peer-Abhängigkeit ab Version 4.1: Der Adapter trägt seinen Besitzstempel über die Navigationsoption `state` des Routers, die ältere Versionen ignorieren. Mit einem älteren Router bricht nichts — das Schließen entfernt den Parameter dann nur an Ort und Stelle, statt einen Schritt zurückzugehen.
+
+<CodeBlock code={usevuerouterurladapter} language="typescript" />
+
+### toVueRef [#tovueref]
+
+Verbindet ein `Subscribable` aus dem Core (jedes `Signal` aus `@reelkit/core`) mit einem schreibgeschützten `Ref` von Vue. Nutze es immer dann, wenn der Wert eines Core-Signals ein Re-Render in Vue auslösen soll — ein direktes Lesen von `signal.value` in Render-Funktionen oder Templates ist für sich allein **nicht** reaktiv.
+
+Das Abonnement wird über `onScopeDispose` automatisch aufgeräumt, darum muss es innerhalb von `setup()` in Vue oder einem anderen Kontext mit Effect-Scope aufgerufen werden.
+
+<CodeBlock code={tovueref} language="typescript" />
+
+## Observe [#observe]
+
+Tag: `<Observe :signals="[…]">` — rendert seinen Default-Slot neu, sobald sich eines der Signale ändert, und sonst nichts darum herum.
+
+Das Lesen eines Core-Signals in einer Render-Funktion oder einem Template abonniert es nicht. [`toVueRef`](#tovueref) ist die übliche Antwort, bindet das Signal aber an die Komponente, die es aufruft; ein Signal, das sich oft ändert, rendert also die ganze Komponente neu. `Observe` ist die engere Grenze: Lege es um den Teil, der den Wert zeigt, und der Rest der Komponente bleibt, wie er ist. So zeichnet der Stories Player seinen Header und seinen Fortschrittsbalken neu, ohne einen der beiden Slider neu zu zeichnen.
+
+| Prop | Typ | Beschreibung |
+| --- | --- | --- |
+| `signals` | `readonly Subscribable[]` | Die Signale, denen gefolgt wird. Eine andere Menge tauscht das Abonnement aus, dieselbe Menge behält es. Beim Unmount wird alles freigegeben. |
+
+Der Typ der Props wird als `ObserveProps` exportiert.
+
+<CodeBlock code={observe} language="vue" />
+
+Greif zu `toVueRef`, wenn die ganze Komponente dem Signal folgt, und zu `Observe`, wenn das nur ein Bereich davon tut.
+
+## SoundProvider [#soundprovider]
+
+Tag: `<SoundProvider>` — ein Kontext-Provider, der eine Instanz von `SoundController` erzeugt und sie über `RK_SOUND_KEY` an die Nachfahren weitergibt. Rendert seinen Default-Slot unverändert.
+
+<CodeBlock code={soundprovider} language="vue" />
+
+## asGenericPropKeys [#asgenericpropkeys]
+
+Baut eine Komponente, die generisch über die Elemente ist, die sie bekommt, so wie `ReelPlayerOverlay` und `StoriesOverlay`. Vue 3.3 akzeptiert eine Setup-Funktion mit Typparameter, `defineComponent(<T>(props: Props<T>) => …, options)`, behält diesen Parameter aber nur, wenn `options.props` Namen von Props auflistet. Übergibst du ein Props-Objekt, liest Vue die Typen der Props aus dem Objekt zurück, und `T` geht verloren. `asGenericPropKeys` reicht das Props-Objekt unverändert durch, während der Typchecker eine Liste von Namen sieht: `T` wird aus dem abgeleitet, was die Elternkomponente bindet, und Standardwerte, Validierung und die Umwandlung in Boolean greifen zur Laufzeit weiterhin.
+
+Das Typargument ist der Props-Typ mit dem Basiselement, und die Komponente braucht Vue 3.3 oder neuer. Slots und Emits können `T` nicht nutzen: Typisiere einen Slot-Scope, indem du ihn im Template annotierst.
+
+<CodeBlock code={asgenericpropkeys} language="typescript" />
+
+## Barrierefreiheit [#accessibility]
+
+`<Reel>` wird als `role="region"` mit `aria-roledescription="carousel"` gerendert. Übergib `aria-label` (in TS heißt das Prop `ariaLabel`), um der Region einen Namen für Screenreader zu geben. Eine höfliche Live-Region kündigt bei jedem Wechsel "Slide N of M" an. Inaktive Slides bekommen das Attribut `inert`, damit Fokus und Navigation mit Hilfstechnik sie überspringen.
+
+`<ReelIndicator>` wird als `role="tablist"` gerendert, mit wanderndem Tabindex auf den Punkten; die Pfeiltasten bewegen den Fokus, und Enter oder Leertaste aktivieren den Slide.
+
+Baust du ein eigenes Modal um `<Reel>`? `captureFocusForReturn`, `createFocusTrap` und `getFocusableElements` werden aus `@reelkit/vue` erneut exportiert, für die Rückgabe des Fokus und die Fokusfalle.
+
+## Exporte des Pakets [#package-exports]
+
+Alle öffentlichen Exporte von `@reelkit/vue`:
+
+<CodeBlock code={packageExports} language="typescript" />

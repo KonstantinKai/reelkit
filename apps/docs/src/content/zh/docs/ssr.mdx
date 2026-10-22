@@ -1,6 +1,6 @@
 ---
 title: 服务端渲染
-description: 在 Next.js、Nuxt 3 与 Angular Universal 中使用 ReelKit：水合、响应式尺寸与浮层组件的注意事项。
+description: 在 Next.js、Nuxt 3 与 Angular SSR 中使用 ReelKit：水合、响应式尺寸与浮层组件的注意事项。
 ---
 
 import nextAppRouter from '../../snippets/ssr/next-app-router.tsx?raw';
@@ -15,13 +15,23 @@ import nuxtFeed from '../../snippets/ssr/nuxt-feed.vue?raw';
 import nuxtAutoSize from '../../snippets/ssr/nuxt-auto-size.vue?raw';
 import coreDirect from '../../snippets/ssr/core-direct.ts?raw';
 
-所有 reelkit 包都能在服务端运行。可以在 Next.js、Remix、Angular Universal 或任何服务端渲染方案里直接引入和渲染。
+所有 reelkit 包都能在服务端运行。可以在 Next.js、Remix、Angular SSR、Nuxt 3 或任何服务端渲染方案里直接引入和渲染。
 
 ## 工作原理 [#how-it-works]
 
 核心的滑动控制器是纯逻辑，构造时不碰 DOM。 手势监听、键盘事件和动画只会在客户端的生命周期钩子里挂载。
 
-服务端渲染时， `Reel` 组件会渲染一个静态容器，里面是初始可见的幻灯片（通常是 3 张：上一张、当前、下一张）。水合之后，它会挂上手势、键盘和滚轮控制器， 让一切变得可交互。
+<FrameworkVariant for="react">
+
+服务端渲染时，React 的 `Reel` 在有 `size` 时会渲染一个静态容器，里面是初始可见的幻灯片（通常是 3 张：上一张、当前、下一张）；自行测量时则渲染一个空容器。水合之后，它会挂上手势、键盘和滚轮控制器， 让一切变得可交互。
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+Vue 的 `Reel` 在服务端渲染一个空容器，水合之后才绘制幻灯片。传了 `size` 时，这个容器和客户端的首次渲染对不上，所以在 Nuxt 里要把它放进 `<ClientOnly>`（见 [Nuxt 3](#nuxt-3)）。
+
+</FrameworkVariant>
 
 <Table boxed>
   <thead>
@@ -45,12 +55,12 @@ import coreDirect from '../../snippets/ssr/core-direct.ts?raw';
     <tr data-rk-fw="angular">
       <td>@reelkit/angular</td>
       <td>是</td>
-      <td>独立组件，兼容 Angular Universal 的服务端渲染</td>
+      <td>独立组件，兼容 Angular SSR（`@angular/ssr`）的服务端渲染</td>
     </tr>
     <tr data-rk-fw="vue">
       <td>@reelkit/vue</td>
       <td>是</td>
-      <td>组件与组合式函数，兼容 Nuxt 3 的服务端渲染</td>
+      <td>可以在服务端安全导入和渲染；传了 `size` 时，在 Nuxt 3 里请把 `Reel` 放进 `<ClientOnly>`</td>
     </tr>
     <tr data-rk-fw="react">
       <td>@reelkit/react-reel-player</td>
@@ -72,6 +82,16 @@ import coreDirect from '../../snippets/ssr/core-direct.ts?raw';
       <td>是</td>
       <td>关闭时（`isOpen=false`）什么都不渲染</td>
     </tr>
+    <tr data-rk-fw="vue">
+      <td>@reelkit/vue-reel-player</td>
+      <td>是</td>
+      <td>关闭时（`isOpen=false`）什么都不渲染</td>
+    </tr>
+    <tr data-rk-fw="vue">
+      <td>@reelkit/vue-lightbox</td>
+      <td>是</td>
+      <td>关闭时（`isOpen=false`）什么都不渲染</td>
+    </tr>
     <tr>
       <td>@reelkit/stories-core</td>
       <td>是</td>
@@ -79,6 +99,16 @@ import coreDirect from '../../snippets/ssr/core-direct.ts?raw';
     </tr>
     <tr data-rk-fw="react">
       <td>@reelkit/react-stories-player</td>
+      <td>是</td>
+      <td>关闭时（`isOpen=false`）什么都不渲染</td>
+    </tr>
+    <tr data-rk-fw="angular">
+      <td>@reelkit/angular-stories-player</td>
+      <td>是</td>
+      <td>关闭时（`isOpen=false`）什么都不渲染</td>
+    </tr>
+    <tr data-rk-fw="vue">
+      <td>@reelkit/vue-stories-player</td>
       <td>是</td>
       <td>关闭时（`isOpen=false`）什么都不渲染</td>
     </tr>
@@ -125,7 +155,7 @@ Pages Router 不需要额外配置。组件会在服务端渲染，然后在客�
 
 ## 浮层组件 [#overlay-components]
 
-`ReelPlayerOverlay` 和 `LightboxOverlay` 在 `isOpen={false}` 时什么都不渲染，所以默认就是服务端安全的。 只有被打开时（通常来自客户端的用户交互）才会挂载它们的 portal：
+`ReelPlayerOverlay`、`LightboxOverlay` 和 `StoriesOverlay` 在 `isOpen={false}` 时什么都不渲染，所以默认就是服务端安全的。 只有被打开时（通常来自客户端的用户交互）才会挂载它们的 portal：
 
 <CodeBlock code={nextOverlay} language="tsx" />
 
@@ -133,9 +163,9 @@ Pages Router 不需要额外配置。组件会在服务端渲染，然后在客�
 
 <FrameworkVariant for="angular">
 
-## Angular Universal / 服务端渲染 [#angular-universal-ssr]
+## Angular SSR [#angular-universal-ssr]
 
-所有 Angular 组件都是服务端安全的。滑动控制器把浏览器 API 的访问推迟到 `afterRenderEffect` 里。浮层组件在 `isOpen=false` 时什么都不渲染，因此服务端渲染阶段不会产出任何标记。
+配合 `@angular/ssr`，所有 Angular 组件都是服务端安全的。滑动控制器在 `ngOnInit` 里创建，需要浏览器的工作（比如测量容器）在服务端会通过 `isPlatformBrowser` 跳过。浮层组件在 `isOpen=false` 时什么都不渲染，因此服务端渲染阶段不会产出任何标记。
 
 <CodeBlock code={angularUniversal} language="typescript" />
 
@@ -145,7 +175,7 @@ Pages Router 不需要额外配置。组件会在服务端渲染，然后在客�
 
 ## Nuxt 3 [#nuxt-3]
 
-ReelKit 的 Vue 组件在 Nuxt 3 里开箱即用。由于 Reel 会用到浏览器 API（触摸事件、ResizeObserver），请把它包在 `<ClientOnly>` 组件里，或者用 `.client.vue` 后缀：
+ReelKit 的 Vue 组件可以在服务端正常导入和渲染，不会报错。`Reel` 从服务端发出一个空容器，水合之后才绘制幻灯片。当 `Reel` 自行测量尺寸时，从 `@reelkit/vue` 0.9.1 起这个容器可以干净地完成水合；更早的版本里容器没有高度，幻灯片根本不出现。传了明确的 `size` 时，客户端首次渲染就已经带有幻灯片，水合会出现不匹配。遇到这种情况，或者使用更早的版本时，请把 `Reel` 包在 `<ClientOnly>` 组件里，或者用 `.client.vue` 后缀：
 
 <CodeBlock code={nuxtPage} language="vue" />
 
@@ -155,9 +185,13 @@ Feed 组件里照常使用 Reel：
 
 ## 服务端渲染下的响应式尺寸 [#responsive-size-with-ssr]
 
-省略 `size` 属性即可启用自动测量。Reel 会自动撑满父级的 100%。服务端渲染阶段它渲染一个空容器；水合之后测量并渲染幻灯片：
+省略 `size` 属性即可启用自动测量。Reel 会自动撑满父级的 100%，从 `@reelkit/vue` 0.9.1 起不再需要 `<ClientOnly>`：服务端发出一个占满尺寸的空容器，客户端测量它并渲染幻灯片。示例保留了这层包裹，因为它在更早的版本上同样可用：
 
 <CodeBlock code={nuxtAutoSize} language="vue" />
+
+## 浮层组件 [#overlay-components]
+
+`ReelPlayerOverlay`、`LightboxOverlay` 和 `StoriesOverlay` 在 `isOpen` 为 false 时什么都不渲染，所以不需要 `<ClientOnly>`，服务端渲染阶段也不会产出任何标记。只有在客户端被打开后，它们才会把内容 teleport 到 body。
 
 </FrameworkVariant>
 
@@ -178,5 +212,6 @@ Feed 组件里照常使用 Reel：
 
 <Callout type="warning" title="需要留意的地方">
   - 省略 `size` 以启用自动测量；如果要用基于视口的尺寸，请给一个默认值
+  - 在 Nuxt 里，传了 `size` 或使用 0.9.1 之前的 `@reelkit/vue` 时，把 Vue 的 `Reel` 放在 `<ClientOnly>` 里渲染
   - 直接使用核心包时，不要在服务端调用 `attach()`/`observe()`
 </Callout>

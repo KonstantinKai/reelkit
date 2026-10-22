@@ -1,3 +1,14 @@
+## Documentation (2026-10-22)
+
+### 📖 Documentation
+
+- The docs site now reads in eight languages: German joins at [reelkit.dev/de](https://reelkit.dev/de), covering every documentation page, the recipes, the home page and the header, sidebar, footer, command palette and not-found page
+- The German translation is machine-produced and has not yet been reviewed by native speakers, so wording may be rough in places — corrections are welcome at [GitHub Issues](https://github.com/KonstantinKai/reelkit/issues) or as [pull requests](https://github.com/KonstantinKai/reelkit/pulls); English remains the source of truth
+- A first visit to an English page from a browser that prefers German, from Germany, Austria or Switzerland, opens the German page; a language picked in the switcher still always wins
+- Search in the command palette finds a word with `ß` when you type `ss`, so `grosse` finds `Größe`
+- The installation page lists `@reelkit/stories-core` and the Angular and Vue stories players, and its peer dependencies now match what the packages require: Angular 19 or later with `@angular/common`, and Vue 3.3 or later for the Vue reel and stories players, each with `lucide-vue-next`
+- The SSR page covers every package: the Vue and Angular overlays join the table, Angular is described as Angular SSR (`@angular/ssr`) with what the components actually do on the server, the Vue section explains when `Reel` needs `<ClientOnly>` in Nuxt and that the overlays need no wrapper, and `StoriesOverlay` joins the React overlay section
+
 ## @reelkit/react-stories-player@0.7.0 (2026-10-20)
 
 ### 🚀 Features

@@ -1,0 +1,314 @@
+---
+title: Core-API-Referenz
+description: Vollständige Referenz für @reelkit/core mit Konfiguration, Callbacks, Methoden, Zustand, Signals, Übergängen, Laden von Inhalten, Ton, Zeitleiste, Vollbild, DOM-Hilfsfunktionen, Größenerkennung, Autoplay-Timern, Datei-Download, Fokusverwaltung und Video-Hilfsfunktionen.
+---
+
+import usage from '../../../snippets/core-api/usage.ts?raw';
+
+Vollständige Referenz für Konfiguration, Callbacks, Methoden und Zustand von `@reelkit/core`.
+
+## SliderController-API [#slidercontroller-api]
+
+Der Core, unabhängig vom Framework. Eine Factory baut einen Controller aus einer Konfiguration und optionalen Events: Die **Konfigurationsoptionen** sind die Konfiguration, die **Callbacks** die Events, und die **Methoden** sind das, was der zurückgegebene Controller bereitstellt.
+
+### Factory-Funktion [#factory-function]
+
+| Export | Typ | Beschreibung |
+| --- | --- | --- |
+| `createSliderController` | `(config: SliderConfig, events?: SliderEvents) => SliderController` | Baut einen Slider-Controller. `config` ist erforderlich (Optionen unten); `events` ist optional (Callbacks unten). Gibt den Controller zurück, dessen Methoden ihn steuern. |
+
+### Konfigurationsoptionen [#config-options]
+
+| Eigenschaft | Typ | Standard | Beschreibung |
+| --- | --- | --- | --- |
+| `count` | `number` | Pflicht | Gesamtzahl der Elemente |
+| `initialIndex` | `number` | 0 | Startindex |
+| `direction` | `'vertical' \| 'horizontal'` | 'vertical' | Scrollrichtung |
+| `enableGestures` | `boolean` | true | Aktiviert die Navigation durch Ziehen mit Finger oder Maus. Bei false wird der Gesture-Controller nicht angehängt. |
+| `enableNavKeys` | `boolean` | true | Aktiviert die Navigation mit den Pfeiltasten |
+| `enableWheel` | `boolean` | false | Aktiviert das Mausrad |
+| `wheelDebounceMs` | `number` | 200 | Debounce-Zeit des Mausrads |
+| `loop` | `boolean` | false | Navigation in Schleife |
+| `transitionDuration` | `number` | 300 | Dauer der Animation in ms |
+| `swipeDistanceFactor` | `number` | 0.12 | Schwelle für das Wischen (0-1) |
+| `rangeExtractor` | `(index: number, count: number, loop: boolean) => number[]` | defaultRangeExtractor | Eigene Funktion, die bestimmt, welche Indizes gerendert werden |
+
+### Callbacks [#callbacks]
+
+| Callback | Typ | Beschreibung |
+| --- | --- | --- |
+| `onBeforeChange` | `(index, nextIndex, rangeIndex) => void` | Vor dem Slidewechsel |
+| `onAfterChange` | `(index, rangeIndex) => void` | Nach dem Slidewechsel |
+| `onDragStart` | `(index) => void` | Ziehen hat begonnen |
+| `onDragEnd` | `(index) => void` | Ziehen ist beendet |
+| `onDragCanceled` | `(index) => void` | Ziehen wurde abgebrochen |
+| `onTap` | `(event: GestureCommonEvent) => void` | Einfaches Tippen (verzögert um das Fenster für Doppeltippen) |
+| `onDoubleTap` | `(event: GestureCommonEvent) => void` | Doppeltippen erkannt |
+| `onLongPress` | `(event: GestureCommonEvent) => void` | Langes Drücken erkannt |
+| `onLongPressEnd` | `(event: GestureEvent) => void` | Zeiger nach langem Drücken losgelassen |
+| `onNavKeyPress` | `(increment: -1 \| 1) => void` | Eigener Handler für die Navigation mit Pfeiltasten. Ersetzt das Standardverhalten für vorherigen und nächsten Slide. |
+
+### Methoden [#methods]
+
+| Methode | Typ | Beschreibung |
+| --- | --- | --- |
+| `attach(element)` | `(HTMLElement) => void` | Verbindet den Controller für die Gestenerkennung mit einem DOM-Element |
+| `detach()` | `() => void` | Entfernt die DOM-Listener (Gesten, Tastatur, Mausrad). Sicher für ein erneutes Anhängen über observe(). Für das Aufräumen von React-Effects. |
+| `dispose()` | `() => void` | Endgültiger Abbau: hängt alle Controller ab und räumt die Signal-Observer auf. Für onDestroy in Angular. |
+| `observe()` | `() => void` | Startet die Beobachtung von Gesten, Tastatur und Mausrad. Beachtet die Konfigurationsflags enableGestures, enableNavKeys und enableWheel. |
+| `unobserve()` | `() => void` | Beendet die Beobachtung von Gesten, Tastatur und Mausrad |
+| `next()` | `() => Promise<void>` | Geht zum nächsten Slide |
+| `prev()` | `() => Promise<void>` | Geht zum vorherigen Slide |
+| `goTo(index, animate?)` | `(number, boolean?) => Promise<void>` | Geht zu einem bestimmten Slide |
+| `adjust(duration?)` | `(number?) => void` | Berechnet die Positionen der Slides neu |
+| `setPrimarySize(size)` | `(number) => void` | Aktualisiert die Größe des Containers |
+| `updateConfig(config)` | `(Partial<SliderConfig>) => void` | Aktualisiert Konfigurationsoptionen |
+| `updateEvents(events)` | `(Partial<SliderEvents>) => void` | Ersetzt Event-Handler (nicht übergebene Handler bleiben erhalten) |
+| `getRangeIndex()` | `() => number` | Gibt die Position des aktiven Index im Array des sichtbaren Bereichs zurück |
+
+## Zustandseigenschaften [#state-properties]
+
+| Eigenschaft | Typ | Beschreibung |
+| --- | --- | --- |
+| `index` | `Signal<number>` | Index des aktuellen Slides |
+| `axisValue` | `Signal<AnimatedValue>` | Aktuelle Position auf der Achse (animiert) |
+| `indexes` | `ComputedSignal<number[]>` | Sichtbare Indizes für die Virtualisierung |
+
+## Range-Extractor [#range-extractor]
+
+| Export | Typ | Beschreibung |
+| --- | --- | --- |
+| `defaultRangeExtractor` | `(index: number, count: number, loop: boolean) => number[]` | Standard-Extractor, der 3 Elemente um den aktuellen Index rendert |
+
+## Signal-API [#signal-api]
+
+Schlanke reaktive Grundbausteine, die im ganzen Core verwendet werden.
+
+### Signal-Interface [#signal-interface]
+
+| Member | Typ | Beschreibung |
+| --- | --- | --- |
+| `value` | `T` | Liest oder setzt den aktuellen Wert. Das Setzen benachrichtigt die Observer, wenn sich der Wert geändert hat. |
+| `observe(callback)` | `(callback: () => void) => () => void` | Registriert einen Listener, der bei jeder Wertänderung aufgerufen wird. Gibt eine Dispose-Funktion zurück, die den Listener entfernt. |
+
+### Factory-Funktionen [#factory-functions]
+
+| Export | Typ | Beschreibung |
+| --- | --- | --- |
+| `createSignal` | `<T>(initial: T) => Signal<T>` | Erstellt ein veränderbares reaktives Signal |
+| `createComputed` | `<T>(fn: () => T, deps: () => Subscribable[]) => ComputedSignal<T>` | Erstellt ein abgeleitetes Computed-Signal. Das zweite Argument ist eine Factory für die Abhängigkeiten, die die zu verfolgenden Signals zurückgibt. |
+| `reaction` | `(deps: () => Subscribable[], effect: () => void) => () => void` | Führt einen Seiteneffekt aus, wenn sich ein abhängiges Signal ändert; gibt eine Dispose-Funktion zurück. Lies die Werte der Signals im Effect-Callback. |
+| `batch` | `(fn: () => void) => void` | Fasst mehrere Signal-Updates zu einer einzigen Benachrichtigung zusammen; lässt sich verschachteln |
+
+## Übergänge [#transitions]
+
+Eingebaute Übergangsfunktionen, die während der animierten Navigation CSS-Transforms pro Slide berechnen. Übergib eine davon als Prop `transitionTransformFn` an die Komponente des Frameworks.
+
+| Export | Typ | Beschreibung |
+| --- | --- | --- |
+| `TransitionTransformFn` | `type` | Signatur für eigene Übergangsfunktionen |
+| `getSlideProgress` | `(axisValue: number, slideIndex: number, primarySize: number) => number` | Gibt einen normierten Versatz (-1 bis 1) eines Slides relativ zum Viewport zurück. Für eigene Übergangsfunktionen. |
+| `slideTransition` | `TransitionTransformFn` | Standardübergang als Verschiebung (translateX/Y) |
+| `fadeTransition` | `TransitionTransformFn` | Überblendung über die Deckkraft |
+| `flipTransition` | `TransitionTransformFn` | 3D-Übergang, bei dem die Karte umgedreht wird |
+| `cubeTransition` | `TransitionTransformFn` | 3D-Übergang als rotierender Würfel |
+| `zoomTransition` | `TransitionTransformFn` | Übergang durch Skalieren und Zoomen |
+
+## Laden von Inhalten [#content-loading]
+
+Hilfsfunktionen, die Lade- und Fehlerzustände pro Slide verfolgen und Medien vorladen. Der Loading-Controller nutzt eine Prüfung des Index, um veraltete Callbacks von zuvor aktiven Slides abzuweisen. Der Preloader nutzt einen LRU-Cache (standardmäßig 200 geladene, 100 fehlerhafte), sodass ein erneuter Besuch einer kaputten URL den Fehler sofort und ohne neuen Versuch zeigt.
+
+| Export | Typ | Beschreibung |
+| --- | --- | --- |
+| `createContentLoadingController` | `() => ContentLoadingController` | Verfolgt Lade- und Fehlerzustände pro Slide |
+| `createContentPreloader` | `(config: ContentPreloaderConfig) => ContentPreloader` | Preloader für Medien mit LRU-Cache, der auch Fehler zwischenspeichert |
+| `observeMediaLoading` | `(video: HTMLVideoElement, callbacks: MediaLoadingCallbacks) => () => void` | Beobachtet den Ladezustand eines Videos (playing, canplaythrough, waiting). Gibt einen Disposer zurück. |
+
+### ContentLoadingController [#contentloadingcontroller]
+
+| Export | Typ | Beschreibung |
+| --- | --- | --- |
+| `isLoading` | `Signal<boolean>` | Ob der aktive Slide gerade lädt |
+| `isError` | `Signal<boolean>` | Ob beim aktiven Slide ein Fehler aufgetreten ist |
+| `setActiveIndex` | `(index: number) => void` | Aktualisiert den aktiven Index und setzt den Lade- und Fehlerzustand zurück |
+| `onReady` | `(index: number) => void` | Markiert einen Slide als bereit (ignoriert, wenn der Index nicht der aktive ist) |
+| `onWaiting` | `(index: number) => void` | Markiert einen Slide als ladend (ignoriert, wenn der Index nicht der aktive ist) |
+| `onError` | `(index: number) => void` | Markiert einen Slide als fehlerhaft (ignoriert, wenn der Index nicht der aktive ist) |
+
+### ContentPreloader [#contentpreloader]
+
+| Export | Typ | Beschreibung |
+| --- | --- | --- |
+| `preload` | `(src: string, type?: "image" \| "video") => void` | Beginnt, eine Medien-URL vorzuladen |
+| `isLoaded` | `(src: string) => boolean` | Prüft, ob die URL im LRU-Cache der geladenen Medien liegt (höchstens 200) |
+| `isErrored` | `(src: string) => boolean` | Prüft, ob die URL im LRU-Cache der Fehler liegt (höchstens 100) |
+| `markLoaded` | `(src: string) => void` | Markiert eine URL von Hand als geladen |
+| `markErrored` | `(src: string) => void` | Markiert eine URL von Hand als fehlerhaft |
+| `onLoaded` | `(src: string, cb: () => void) => () => void` | Abonniert das Ende des Ladens; gibt einen Disposer zurück |
+
+## Ton [#sound]
+
+Gemeinsamer Zustand für Stumm und Laut bei der Medienwiedergabe. Der Sound-Controller stellt ein reaktives Signal für die Stummschaltung bereit, das sich mit Videoelementen synchronisieren und über eigene Bedienelemente umschalten lässt.
+
+| Export | Typ | Beschreibung |
+| --- | --- | --- |
+| `createSoundController` | `() => SoundController` | Controller für den gemeinsamen Zustand der Stummschaltung |
+| `syncMutedToVideo` | `(video: HTMLVideoElement, sound: SoundController) => () => void` | Synchronisiert das Signal der Stummschaltung mit einem Videoelement. Gibt einen Disposer zurück. |
+
+## Zeitleiste [#timeline]
+
+Controller für die Zeitleiste der Wiedergabe zum Spulen in Videos. Verfolgt Dauer, aktuelle Zeit, gepufferte Bereiche und den Spulzustand des Nutzers als reaktive Signals. Ein einziger Aufruf verbindet Pointer- und Tastatur-Interaktionen mit einem beliebigen DOM-Element, sodass es sich wie eine native Zeitleiste verhält, mit Pointer-Capture, Live-Spulen und voller Tastaturunterstützung (Pfeiltasten, Pos1/Ende, Bild auf/Bild ab).
+
+| Export | Typ | Beschreibung |
+| --- | --- | --- |
+| `createTimelineController` | `(config?: TimelineControllerConfig) => TimelineController` | Factory für einen Controller mit den Signals `duration`, `currentTime`, `progress`, `bufferedRanges` und `isScrubbing` sowie den Methoden `attach`, `detach`, `bindInteractions` und `seek`. |
+| `TimelineControllerConfig` | `interface` | `keyboardStepSeconds` (Standard 5), `keyboardPageFraction` (Standard 0.1) und die Callbacks `onSeek`, `onScrubStart`, `onScrubEnd`. |
+| `BufferedRange` | `{ start: number; end: number }` | Ein einzelner zusammenhängender gepufferter Bereich als Anteile von 0 bis 1 der Gesamtdauer. Sortiert und ohne Überlappung ausgegeben. |
+
+## Vollbild [#fullscreen]
+
+Hilfsfunktionen für das Vollbild über Browser hinweg, mit Absicherung der Präfixe für Safari. Das Signal für das Vollbild ist ein lazy erzeugtes Singleton, das den Vollbildzustand reaktiv verfolgt.
+
+| Export | Typ | Beschreibung |
+| --- | --- | --- |
+| `fullscreenSignal` | `Signal<boolean>` | Reaktives Signal, das verfolgt, ob das Dokument im Vollbildmodus ist |
+| `requestFullscreen` | `(element: HTMLElement) => Promise<void>` | Schaltet das übergebene Element in den Vollbildmodus |
+| `exitFullscreen` | `() => Promise<void>` | Beendet den Vollbildmodus |
+
+## DOM- und Aufräum-Hilfsfunktionen [#dom-cleanup-utilities]
+
+Einfache Helfer für die Verwaltung von DOM-Events und ein deterministisches Aufräumen. Intern von allen Controllern genutzt und für eigene Integrationen verfügbar.
+
+| Export | Typ | Beschreibung |
+| --- | --- | --- |
+| `observeDomEvent` | `(target, event, handler, options?) => () => void` | Fügt einen DOM-Event-Listener hinzu und gibt einen Disposer zurück, der ihn entfernt |
+| `createDisposableList` | `() => DisposableList` | Zusammensetzbare Liste zum Sammeln von Disposer-Funktionen. Rufe dispose() auf, um alle auf einmal auszuführen. |
+| `createBodyLock` | `() => BodyLock` | Scroll-Sperre für den Body mit Referenzzählung. Mehrere Nutzer können gleichzeitig sperren; das Scrollen kehrt zurück, wenn alle entsperrt haben. |
+| `sharedBodyLock` | `BodyLock` | Singleton-Instanz auf Modulebene. Nutze sie, wenn mehrere Komponenten deiner App einen einzigen Referenzzähler teilen sollen, damit verschachtelte Modals und Overlays richtig ineinandergreifen. Die Bindings der Frameworks (`@reelkit/react`, `@reelkit/vue`, `@reelkit/angular`) nutzen sie intern. |
+
+## Größenerkennung [#size-detection]
+
+Wie jedes Binding und jedes Overlay seinen Container und das Fenster misst. `Reel` nutzt `observeElementSize`, wenn kein `size` übergeben wird; der Reel Player, die Lightbox und der Stories Player richten ihre Größe nach dem Fenster. Sicher für SSR: Ohne Fenster oder `ResizeObserver` geben die Getter `[0, 0]` oder `false` zurück, und die Observer geben einen Disposer zurück, der nichts tut.
+
+| Export | Typ | Beschreibung |
+| --- | --- | --- |
+| `observeElementSize` | `(element: Element, callback: (size: [number, number]) => void) => Disposer` | Meldet die Padding-Box des Elements (`clientWidth` × `clientHeight`), wann immer sie sich ändert. Überspringt eine Größe mit einer Seite von null (versteckt oder noch nicht gelayoutet) und eine Größe, die der zuletzt gemeldeten gleicht. |
+| `getViewportSize` | `() => [number, number]` | Die Größe des Fensters als `[innerWidth, innerHeight]`. |
+| `observeViewportSize` | `(callback: (size: [number, number]) => void) => Disposer` | Ruft bei jedem `resize`-Event mit der Fenstergröße zurück, auch bei einem, das die Größe nicht ändert (die Geräteemulation kann zu einem Touch-Gerät mit denselben Maßen wechseln). Vergleiche die Größen selbst, wenn nur eine Änderung zählt. |
+| `isMobileWidth` | `(viewportWidth: number) => boolean` | Ob ein so breites Fenster das Smartphone-Layout bekommt: 768px und schmaler. Jedes Overlay und sein Stylesheet wechseln bei dieser Breite. |
+| `fitAspectRatio` | `(viewport: [number, number], aspectRatio?: number) => [number, number]` | Größe des Overlays für ein Fenster. Bei Smartphone-Breite ist es das ganze Fenster; sonst die volle Fensterhöhe im Seitenverhältnis `aspectRatio`, auf die Fensterbreite verschmälert, wenn es sonst nicht passt. Ein fehlendes, negatives, unendliches oder auf null gesetztes Verhältnis fällt auf 9/16 zurück. |
+| `isTouchDevice` | `() => boolean` | Ob das Gerät Touch-Eingaben annimmt (`ontouchstart` oder `maxTouchPoints`). Eine Prüfung der Fähigkeit, nicht der Bildschirmgröße: Ein Laptop mit Touchscreen zählt, ein schmales Desktop-Fenster nicht. |
+
+## Autoplay [#autoplay]
+
+Timer für alles, was von selbst weitergeht. Wie sie sich verhalten und wie du sie verbindest, steht im [Autoplay-Guide](/docs/core/guide#autoplay).
+
+| Export | Typ | Beschreibung |
+| --- | --- | --- |
+| `createTimerController` | `(config: TimerControllerConfig) => TimerController` | Zählt eine Dauer von 0 bis 1 und ruft zurück, wenn sie vorbei ist. Treibt jede Story in den Stories Playern an. |
+| `createSlideshowController` | `(config: SlideshowControllerConfig) => SlideshowController` | Die Zustandsmaschine hinter einer Galerie, die von selbst weitergeht. Treibt `autoAdvance` der Lightbox an. |
+
+### createTimerController [#createtimercontroller]
+
+| `TimerControllerConfig` | Typ | Beschreibung |
+| --- | --- | --- |
+| `duration` | `number` | Standarddauer in Millisekunden, genutzt, wenn `start()` keine bekommt |
+| `onComplete` | `() => void` | Wird aufgerufen, wenn der Fortschritt 1 erreicht |
+
+| `TimerController` | Typ | Beschreibung |
+| --- | --- | --- |
+| `progress` | `Signal<number>` | Fortschritt von 0 bis 1; treibt eine Fortschrittsleiste an |
+| `isRunning` | `Signal<boolean>` | Ob der Timer zählt |
+| `start(duration?)` | `(number?) => void` | Beginnt neu bei 0, optional mit einer anderen Dauer für diesen Lauf |
+| `pause()` | `() => void` | Hält beim aktuellen Fortschritt an |
+| `resume()` | `() => void` | Macht beim angehaltenen Fortschritt weiter |
+| `reset()` | `() => void` | Zurück auf 0, angehalten |
+| `dispose()` | `() => void` | Bricht den ausstehenden Frame ab |
+
+### createSlideshowController [#createslideshowcontroller]
+
+| `SlideshowControllerConfig` | Typ | Beschreibung |
+| --- | --- | --- |
+| `interval` | `number` | Wie lange ein Bild bleibt, in Millisekunden, gezählt ab dem Laden |
+| `onAdvance` | `() => void` | Der aktive Slide ist fertig. Gehe zum nächsten Slide oder rufe beim letzten `pause()` auf |
+
+| `SlideshowController` | Typ | Beschreibung |
+| --- | --- | --- |
+| `isPlaying` | `Signal<boolean>` | Ob die Diashow eingeschaltet ist. Anhaltegründe ändern das nicht |
+| `progress` | `Signal<number>` | Wie weit das Intervall des aktiven Bilds gelaufen ist, von 0 bis 1 |
+| `play()` / `pause()` / `toggle()` | `() => void` | Schaltet sie ein oder aus; der aktive Slide behält seinen Fortschritt |
+| `setInterval(ms)` | `(number) => void` | Ändert das Intervall ab dem nächsten Bild |
+| `setSlide(kind)` | `(SlideshowSlideKind) => void` | Ein neuer Slide ist aktiv: Der Fortschritt beginnt neu und wartet auf `ready()` oder `ended()`. `SlideshowSlideKind` ist `'image' \| 'video'` |
+| `ready()` | `() => void` | Das aktive Bild ist geladen oder konnte nicht laden; sein Intervall beginnt |
+| `ended()` | `() => void` | Das aktive Video ist zu Ende; geht jetzt weiter oder sobald nichts mehr anhält |
+| `hold(reason)` / `release(reason)` | `(string) => void` | Hält die Uhr aus einem Grund wie `'hover'` oder `'drag'` an. Gründe stapeln sich |
+| `dispose()` | `() => void` | Hält die Uhr und den Listener für die Sichtbarkeit an |
+
+## Download [#download]
+
+Eine Datei von einer URL speichern, auch von einem anderen Origin. Der Fallback, den es nimmt, steht im [Download-Guide](/docs/core/guide#download).
+
+| Export | Typ | Beschreibung |
+| --- | --- | --- |
+| `downloadFile` | `(url: string, filename?: string) => Promise<void>` | Speichert eine Datei unter `filename`, standardmäßig unter dem letzten Segment des Pfads der URL. Holt die Datei und speichert den Blob, weil das Attribut `download` bei einem Link auf einen anderen Origin ignoriert wird. Schlägt der Abruf fehl oder antwortet der Server mit einem Fehler (üblicherweise ein fremder Server ohne CORS-Header), öffnet sich stattdessen die URL in einem neuen Tab. Lehnt nie ab; tut nichts ohne ein Fenster. |
+
+## Fokusverwaltung [#focus-management]
+
+Bausteine für die Barrierefreiheit von Dialogen, unabhängig vom Framework. Die Overlay-Pakete nutzen sie, um den Fokus beim Schließen an den Auslöser zurückzugeben und Tab / Umschalt+Tab im Overlay zu halten, solange es offen ist. Sicher für SSR: Jeder Helfer gibt außerhalb des Browsers einen Disposer zurück, der nichts tut.
+
+| Export | Typ | Beschreibung |
+| --- | --- | --- |
+| `captureFocusForReturn` | `() => Disposer` | Merkt sich das aktuell fokussierte Element und gibt einen Disposer zurück, der es wieder fokussiert. Nach bestem Bemühen: Der Disposer tut nichts, wenn das gemerkte Element inzwischen aus dem DOM entfernt wurde. |
+| `createFocusTrap` | `(container: HTMLElement) => Disposer` | Hält Tab/Umschalt+Tab in `container`. Tab auf dem letzten fokussierbaren Element springt zum ersten; Umschalt+Tab auf dem ersten springt zum letzten; ein Fokus, der aus dem Container entkommt (Klick außerhalb, programmatischer Fokus), wird zurückgeholt. Verschiebt den Fokus beim Aktivieren nicht in den Container — das entscheidet der Aufrufer. |
+| `getFocusableElements` | `(container: HTMLElement) => HTMLElement[]` | Gibt jedes per Tastatur fokussierbare Nachfahrenelement in DOM-Reihenfolge zurück und überspringt deaktivierte, versteckte und Elemente mit `tabindex="-1"`. |
+
+### Verwendung [#usage]
+
+<CodeBlock code={usage} language="typescript" />
+
+## Video-Hilfsfunktionen [#video-utilities]
+
+Hilfsfunktionen für eine gemeinsame Videowiedergabe über Slides hinweg, unabhängig vom Framework. Intern von `@reelkit/react-reel-player` und `@reelkit/react-lightbox` genutzt und für eigene Bindings von Frameworks verfügbar.
+
+| Export | Typ | Beschreibung |
+| --- | --- | --- |
+| `captureFrame` | `(video: HTMLVideoElement) => string \| null` | Hält den aktuellen Videoframe als JPEG-Data-URL fest. Gibt bei Fehlern durch einen fremden Origin null zurück. |
+| `createSharedVideo` | `(config: SharedVideoConfig) => SharedVideoInstance` | Erstellt ein abgegrenztes gemeinsames Video-Singleton mit Maps für Wiedergabeposition und festgehaltene Frames. Jeder Nutzer bekommt eine eigene Instanz, damit der Ton auf iOS durchgehend bleibt. |
+| `syncVideoObjectFit` | `(video: HTMLVideoElement, fallbackIsVertical: boolean) => Disposer` | Hält `video.style.objectFit` mit der echten Ausrichtung des Videos synchron. Wendet den Fallback (aus dem angegebenen Seitenverhältnis) sofort an, liest dann bei `loadedmetadata` die echten Werte `videoWidth` / `videoHeight` und wechselt bei Hochformat zu `'cover'`, bei Querformat zu `'contain'`. Robust gegen falsch angegebene Metadaten. |
+
+## URL-State [#url-state]
+
+Spiegelt einen Query-Parameter in ein Signal und zurück. Zwei Achsen mit je einer Aufgabe: Ein `codec` ist das Format in der URL (Text des Parameters ↔ eine stabile Identität), ein `locator` ist die Suche (wo diese Identität in der Sammlung steht).
+
+| Export | Typ | Beschreibung |
+| --- | --- | --- |
+| `createUrlStateController` | `({ param, adapter?, codec?, locator? }) => UrlStateController` | Spiegelt einen Query-Parameter in ein Signal und schreibt Änderungen zurück in die URL. Das erste Schreiben eines fehlenden Parameters legt einen Eintrag im Verlauf an; jedes Schreiben danach ersetzt ihn. Mit einem `codec` oder `locator` leitet er auch `position: Signal<Pos \| null>` ab, wendet die Sperre für Öffnen und Schließen an und entfernt einen Parameter, der keinen Slide benennt, selbst — so abonniert jedes Binding, statt neu abzuleiten. Das Schreiben einer Position im geschlossenen Zustand öffnet sofort, ohne darauf zu warten, dass der Adapter das Schreiben zurückmeldet; `UrlChange` sagt, ob ein Schließen einen Schritt zurückgeht oder an Ort und Stelle leert. |
+| `createHistoryAdapter` | `() => UrlAdapter` | Standardadapter über die History-API. Eine Anwendung mit Router sollte stattdessen einen eigenen übergeben, sonst veraltet die Location des Routers und seine nächste Navigation verliert den Parameter. |
+| `indexCodec` | `UrlCodec<number>` | Liest `?photo=3` als Slide 3. Übergib ihn, um die Ableitung über den Index zu nutzen, ohne einen eigenen Codec zu schreiben. Für eine endlose oder seitenweise Liste übergib stattdessen `locator` — der Parameter überlebt, solange das Promise aussteht, sodass ein Deep Link in eine noch nicht geladene Seite nicht mitten im Abruf gelöscht wird. |
+| `createIndexLocator` | `(countGetter: () => number) => UrlLocator<number>` | Der Standard-Locator für Indizes: Eine Slide-Position steht für sich selbst, begrenzt durch die aktuelle Anzahl, die der Getter liefert. Ein Index außerhalb des Bereichs wird zu `null`, sodass sich ein veraltetes `?photo=99` selbst aus der URL entfernt — er lehnt ab, statt auf den nächsten Slide zu runden, was einen Slide öffnen würde, den die URL nie benannt hat. Ein Getter statt einer Zahl, damit die Grenze beim Nachschlagen die aktuelle Größe liest, während eine seitenweise Galerie wächst. |
+| `urlIndexKey` | `(countGetter, locateAsync?) => UrlKey<number>` | Das passende Paar für eine Galerie, die über Indizes adressiert wird — `indexCodec` plus ein `createIndexLocator`, der an die Größe der Galerie gebunden ist. Übergib es per Spread (`{ param, ...urlIndexKey(() => count) }`), damit der Codec nicht vom Locator abweicht. Übergib ein zweites Argument `locateAsync`, um einen seitenweisen Feed zu fenstern — bei einem Fehltreffer bis zum gesuchten Index nachladen und ihn dann zurückgeben. |
+| `urlIndexTwoAxisKey` | `(opts) => UrlKey<TwoAxisIdentity, TwoAxisPosition>` | Wie `urlIndexKey`, aber für einen Player mit zwei Achsen: ein strikt mit Punkt getrennter Parameter `?p=<outer>.<inner>`, der zu einer `TwoAxisPosition` `{ outer, inner }` aufgelöst wird. Optionen (`UrlIndexTwoAxisKeyOptions`): `outerCount`, `innerCounts`, optional `outerCodec`/`outerLocator` für die äußere Achse und `innerCodec`/`innerLocate`/`innerIdentify`, um auch die innere Achse über IDs zu adressieren. Jede Achse nutzt standardmäßig eine einfache Grenze über den Index. Treibt den Stories Player mit URL-Steuerung an. |
+| `createStableIdCodec` | `(hashCodec?: UrlCodec<string>) => UrlCodec<string>` | Das **Format** für stabile IDs, exportiert zum Kombinieren — der Text des Parameters ist die `id` des Elements, roh geschrieben oder durch `hashCodec` umgewandelt (übergib `base64UrlCodec` für umkehrbares base64url). Das Gegenstück zu `indexCodec` für stabile IDs: Kombiniere es mit einem eigenen Locator, statt den ganzen `urlStableIdKey` zu nehmen. |
+| `base64UrlCodec` | `UrlCodec<string>` | Der fertige Mechanismus zum Verschleiern für einen Key über stabile IDs: umkehrbares base64url (URL-sicheres Alphabet, kein Padding, UTF-8) — **kein** kryptografischer Hash. Übergib ihn als `hashCodec`, um die ID in der URL zu verschleiern, oder implementiere einen eigenen `UrlCodec<string>` für ein anderes Verfahren. |
+| `createStableIdLocator` | `(items, locateAsync?) => UrlLocator<string, number>` | Die **Suche** für stabile IDs, exportiert zum Kombinieren — durchsucht `items()` nach einer passenden `id`; eine verschwundene ID wird zu `null` und entfernt sich selbst. Das optionale `locateAsync` fenstert einen seitenweisen Feed. Das Gegenstück zu `createIndexLocator` für stabile IDs. |
+| `urlStableIdKey` | `(opts) => UrlKey<string, number>` | Adressiert eine Galerie über die stabile `id` jedes Elements — `?photo=<id>` — statt über die Position, sodass ein Lesezeichen eine Neusortierung der Liste übersteht. Optionen (`UrlStableIdKeyOptions`): `items` (ein Getter auf die aktuelle Liste), optional `hashCodec` (übergib `base64UrlCodec`), um die ID in der URL umzuwandeln, optional `locateAsync`, um einen seitenweisen Feed zu fenstern (bei einem Fehltreffer laden, bis die ID da ist, dann ihren Index zurückgeben). Ziehe ihn `urlIndexKey` vor, wann immer sich die Liste unter einem geteilten Link ändern kann. |
+| `urlStableIdTwoAxisKey` | `(opts) => UrlKey<TwoAxisIdentity<string>, TwoAxisPosition>` | Das Gegenstück mit zwei Achsen: die äußere Achse über eine stabile ID, die innere über einen lokalen Index — `?story=user_42.3`. Übergib `innerItems` statt `innerCounts`, um auch die innere Achse über IDs zu adressieren (`?story=user_42.photo_7`); `hashCodec` (zum Beispiel `base64UrlCodec`) wandelt beide IDs um. Optionen `UrlStableIdTwoAxisKeyOptions` (innerer Index) oder `UrlStableIdTwoAxisIdInnerOptions` (innere ID); Elementtypen erfüllen `Identified` (`{ id: string }`). |
+| `UrlCodec<Id>` | `{ decode(raw) => Id \| null; encode(id) => string }` | Das Format in der URL: Text des Parameters ↔ eine stabile Identität, ohne Kenntnis der Sammlung. Gibt `decode` `null` zurück, ist der Text fehlerhaft. |
+| `UrlLocator<Id>` | `{ locate(id) => number \| null; locateAsync?(id) => Promise<number \| null>; identify(index) => id }` | Die Suche: wo die Identität in der Sammlung steht. `locate` ist synchron, `locateAsync` sein Fallback für eine seitenweise Liste, und `identify` macht aus einem Index für das Schreiben wieder eine Identität. |
+| `UrlKey<Id>` | `{ codec: UrlCodec<Id>; locator: UrlLocator<Id> }` | Das passende Paar aus Codec und Locator für einen Parameter. Sie teilen dasselbe `Id` und gehören immer zusammen — der Codec schreibt die Identität in die URL, der Locator findet, wo sie steht —, und sie als Paar zu bauen ist das, was sie davon abhält, sich zu widersprechen. |
+| `UrlAdapter` | `{ read, subscribe, push, replace, getState, goBack }` | Der Einstiegspunkt für einen Router. Eine Anwendung mit Router muss einen übergeben, sonst veraltet die eigene Location des Routers. Der Listener von `subscribe` nimmt ein optionales `UrlChange`; ein Aufruf ohne Argument ist immer gültig und bedeutet, dass der Adapter nicht sagen kann, wie der Eintrag aktuell wurde. |
+| `UrlChange` | `{ kind?: 'push' \| 'replace' \| 'pop' }` | Was ein Adapter über die Navigation weiß, die gerade angekommen ist. Melde `push` nur für eine Navigation, die der Router selbst auf derselben Seite gemacht hat; das ist der einzige Fall, in dem das Schließen den Eintrag entfernen darf. Ohne Beleg wird der Eintrag nie beansprucht, und das Schließen leert den Parameter an Ort und Stelle, sodass ein Duplikat der Seite im Verlauf bleibt, statt einen Schritt aus der Website hinaus zu riskieren. |
+| `UrlStateOptions<Id>` | `{ param: string; adapter?: UrlAdapter; codec?: UrlCodec<Id>; locator?: UrlLocator<Id> }` | Die Optionen, die `createUrlStateController` nimmt — exportiert, damit ein Nutzer eine separat zusammengestellte Konfiguration typisieren kann, bevor er sie übergibt. |
+
+## Gesehen-Status [#viewed-state]
+
+Speichert, wie weit ein Nutzer gekommen ist, mit demselben Key wie die Adresszeile: Ein Eintrag ist der Text des Parameters selbst und wird über denselben `codec` und `locator` zurückgelesen.
+
+| Export | Typ | Beschreibung |
+| --- | --- | --- |
+| `createViewedStateController` | `(options) => ViewedStateController<Pos>` | Merkt sich, wie weit ein Nutzer gekommen ist, gespeichert als genau der Text, den ein URL-Parameter tragen würde. Nimmt dasselbe Paar `codec`/`locator`, das die Adresszeile nutzt, dazu `storageKey`, optional `storage`, `trackOf` (ein Eintrag pro Gruppe) und `progressOf`. Liest nichts vor `attach()` und ist deshalb sicher fürs Prerendering. |
+| `twoAxisViewedTracking` | `{ trackOf, progressOf }` | Das Tracking-Paar für einen Player mit zwei Achsen: ein Eintrag pro äußerem Platz, der innere Index misst den Fortschritt darin. Übergib es per Spread neben einem Key mit zwei Achsen. |
+| `createLocalStorageAdapter` | `() => StorageAdapter` | Der Standardspeicher. Dazu `createSessionStorageAdapter` für einen Zustand, der den Tab nicht überdauern soll, und `createMemoryStorageAdapter` für Tests und Server-Rendering. Jeder fängt seine eigenen Fehler ab — ein erschöpftes Kontingent verliert diesen einen Schreibvorgang und nicht mehr. |
+| `ViewedStateController<Pos>` | `{ entries; resolve(track); record(position); forget(track?); attach() }` | `entries` ist ein Signal von Track → gespeichertem Text, sodass ein Ring neu zeichnet, wenn hier oder in einem anderen Tab eine Position erfasst wird. `resolve` durchläuft bei jedem Aufruf den vollen Ablauf des Keys. |
+| `ViewedStateOptions<Id, Pos>` | `{ storageKey; codec; locator; storage?; trackOf?; progressOf; ttlMs?; maxTracks? }` | Die Optionen, die `createViewedStateController` nimmt — exportiert, damit ein Nutzer eine separat zusammengestellte Konfiguration typisieren kann, bevor er sie übergibt. `progressOf` ist nur für eine einfache Position über den Index optional, die selbst ihr Maß für den Fortschritt ist; jede andere Position muss sagen, welche Zahl verglichen wird, und der Typ verlangt es. `ttlMs` schaltet den Ablauf ein: Ein Track wird so lange nach seiner letzten Erfassung vergessen, und eine erneute Erfassung startet seine Uhr neu. `maxTracks` behält höchstens so viele Tracks und entfernt beim nächsten Schreiben den am längsten nicht erfassten. |
+| `StorageAdapter` | `{ read(key); write(key, value); subscribe?(key, listener) }` | Der Einstiegspunkt für eine Speicherschicht. Lässt du `subscribe` weg, läuft der Speicher einfach ohne Synchronisation zwischen Tabs. |

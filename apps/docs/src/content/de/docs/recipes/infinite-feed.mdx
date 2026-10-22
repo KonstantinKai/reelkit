@@ -1,0 +1,71 @@
+---
+title: Endloser Feed
+description: Ein vertikaler Feed, der die nächste Seite lädt, wenn der Nutzer sich dem Ende nähert, mit Lade- und Fehlerslides, Abbruch von Anfragen und Vorladen.
+---
+
+import { InfiniteFeedDemo } from '../../../../components/demos/InfiniteFeedDemo';
+import reactCode from '../../../snippets/recipes/infinite-feed/react.tsx?raw';
+import vueCode from '../../../snippets/recipes/infinite-feed/vue.vue?raw';
+import angularCode from '../../../snippets/recipes/infinite-feed/angular.ts?raw';
+import apiCode from '../../../snippets/recipes/infinite-feed/api.ts?raw';
+
+Ein Feed, der nie endet, muss laden, während der Nutzer zuschaut: früh genug, dass der nächste Beitrag schon da ist, mit etwas zum Anzeigen, solange eine Seite unterwegs ist oder fehlgeschlagen ist, und ohne dass eine Anfrage weiterläuft, wenn der Feed schon weg ist.
+
+## Ausprobieren [#try-it]
+
+Jede Version importiert `./api`, das für dein Backend steht: `fetchPosts(page, signal)` liefert eine Seite mit Beiträgen und bricht ab, sobald das Signal abbricht. Ersetze es durch einen Aufruf deiner API und entferne `failNextRequest`, das nur den Fehlerschalter der Demo steuert.
+
+<CodeBlock code={apiCode} language="typescript" />
+
+<Callout type="warning" title="Die Beispielmedien funktionieren nur auf reelkit.dev">
+  `cdnUrl` baut Links zu cdn.reelkit.dev, das seine Dateien nur an die Seiten von ReelKit ausliefert. In deiner App laden diese Bilder nicht, also lass `image` auf deine eigenen Medien zeigen, bevor du diese Datei kopierst.
+</Callout>
+
+<FrameworkVariant for="react">
+<Sandbox code={reactCode} title="InfiniteFeed.tsx" height={560}>
+  <InfiniteFeedDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+<Sandbox code={vueCode} language="vue" framework="vue" title="InfiniteFeed.vue" height={560}>
+  <InfiniteFeedDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+<Sandbox code={angularCode} language="typescript" framework="angular" title="infinite-feed.component.ts" height={560}>
+  <InfiniteFeedDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<Caption>Wische nach oben oder drücke ↓: Eine neue Seite kommt drei Beiträge vor dem Ende an. Drücke „Fail next request“, um den Fehlerslide und sein Retry zu sehen.</Caption>
+
+## Warum es funktioniert [#why-it-works]
+
+- **Die Anzahl wächst, die Slides nicht.** `count` ist die Zahl der Beiträge plus eins, und es sind immer nur drei Slides im DOM, also kostet ein Feed mit Tausenden Beiträgen so viel wie einer mit zehn. Siehe [Virtualisierung](/docs/core/guide#virtualization).
+- **Der letzte Slide ist der Status.** Der zusätzliche Slide hinter den Beiträgen zeigt „Loading…“, solange eine Seite unterwegs ist, und den Fehler mit Retry, wenn sie fehlgeschlagen ist, sodass der Nutzer nie ins Leere wischt. Er ist nur ein weiterer Fall im [itemBuilder](/docs/react/guide#itembuilder-pattern), der rendert, wofür der Index gerade steht.
+- **Vorausladen beim Slidewechsel.** `afterChange` fordert die nächste Seite an, sobald der Nutzer drei Beiträge vor dem Ende ist. Eine fehlgeschlagene Seite wartet auf Retry, sodass Hin- und Herwischen eine fehlschlagende Anfrage nicht wiederholt. Der Callback steht bei den anderen Events für [React](/docs/react/api#callbacks), [Vue](/docs/vue/api#events) und [Angular](/docs/angular/api#outputs).
+- **Die Keys folgen den Beiträgen.** `keyExtractor` liefert die ID jedes Beitrags, sodass ein Slide sein Element behält, wenn hinter ihm eine Seite ankommt, statt aus seinem Index neu gebaut zu werden. Es ist ein Prop von [React](/docs/react/api#reel-props), [Vue](/docs/vue/api#props) und [Angular](/docs/angular/api#inputs) gleichermaßen.
+- **Bilder laden vor ihrem Slide.** Ein Slide weiter unten ist noch nicht gemountet, denn nur der sichtbare Bereich ist es, wie die [Virtualisierung](/docs/core/guide#virtualization) erklärt. Deshalb werden die Bilder jeder neuen Seite angefordert, sobald die Seite ankommt, und kommen aus dem Browser-Cache, wenn ihr Slide gemountet wird.
+- **Tasten und Mausrad sind absichtlich aus.** `enableNavKeys` lauscht auf dem ganzen Fenster, und `enableWheel` hält das Scrollen der Seite fest, solange der Zeiger über dem Feed ist. Beides passt zu einem Feed, der den Bildschirm füllt, und stört eine Seite, die einen enthält, wie diese hier. Deshalb bleiben sie hier aus, und zwei Buttons rufen stattdessen `prev()` und `next()` der [Reel-API](/docs/react/api#reelapi-methods) auf. Wischen funktioniert in beiden Fällen.
+- **Nichts überlebt den Feed.** Jede Anfrage trägt einen [`AbortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController), der beim Unmount des Feeds abgebrochen wird, sodass eine späte Antwort nie in einen Feed schreibt, den es nicht mehr gibt.
+
+<NextSteps
+  items={[
+    {
+      label: 'Vom Raster zum Player',
+      path: '/docs/recipes/grid-to-player',
+      description: 'den Vollbild-Player aus einem Raster von Vorschaubildern öffnen und dorthin zurückkehren, wo du warst',
+    },
+    {
+      label: 'Framework-Guide',
+      path: {
+        react: '/docs/react/guide',
+        vue: '/docs/vue/guide',
+        angular: '/docs/angular/guide',
+      },
+      description: 'jedes Reel-Prop und jedes Muster hinter diesem Rezept',
+    },
+  ]}
+/>

@@ -135,7 +135,7 @@ export const hiTitles: Record<string, string> = {
   'Next.js Pages Router': 'Next.js Pages Router',
   'Responsive Size with SSR': 'SSR के साथ रिस्पॉन्सिव साइज़',
   'Overlay Components': 'Overlay कंपोनेंट',
-  'Angular Universal / SSR': 'Angular Universal / SSR',
+  'Angular SSR': 'Angular के साथ SSR',
   'Nuxt 3': 'Nuxt 3',
   'Using Core Directly': 'Core को सीधे इस्तेमाल करना',
   Summary: 'सारांश',

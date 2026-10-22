@@ -1,6 +1,6 @@
 ---
 title: Renderização no servidor
-description: Todos os pacotes do reelkit funcionam no servidor. Importe e renderize com Next.js, Remix, Angular Universal, Nuxt 3 ou qualquer configuração de SSR.
+description: Todos os pacotes do reelkit funcionam no servidor. Importe e renderize com Next.js, Remix, Angular SSR, Nuxt 3 ou qualquer configuração de SSR.
 ---
 
 import nextAppRouter from '../../snippets/ssr/next-app-router.tsx?raw';
@@ -15,13 +15,23 @@ import nuxtFeed from '../../snippets/ssr/nuxt-feed.vue?raw';
 import nuxtAutoSize from '../../snippets/ssr/nuxt-auto-size.vue?raw';
 import coreDirect from '../../snippets/ssr/core-direct.ts?raw';
 
-Todos os pacotes do reelkit funcionam no servidor. Importe e renderize com Next.js, Remix, Angular Universal ou qualquer configuração de SSR.
+Todos os pacotes do reelkit funcionam no servidor. Importe e renderize com Next.js, Remix, Angular SSR, Nuxt 3 ou qualquer configuração de SSR.
 
 ## Como funciona [#how-it-works]
 
 O controlador do slider é lógica pura, sem nenhum acesso ao DOM na construção. Escutas de gesto, eventos de teclado e animações só entram nos ciclos de vida do lado do cliente.
 
-Durante o SSR, o componente `Reel` renderiza um contêiner estático com os slides visíveis iniciais (normalmente 3: anterior, atual, próximo). Na hidratação, ele conecta os controladores de gesto, teclado e roda do mouse, deixando tudo interativo.
+<FrameworkVariant for="react">
+
+Durante o SSR, o `Reel` do React renderiza um contêiner estático com os slides visíveis iniciais (normalmente 3: anterior, atual, próximo) quando recebe `size`, e um contêiner vazio quando mede a si mesmo. Na hidratação, ele conecta os controladores de gesto, teclado e roda do mouse, deixando tudo interativo.
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+O `Reel` do Vue renderiza um contêiner vazio no servidor e desenha os slides depois da hidratação. Com um `size`, esse contêiner não bate com a primeira renderização no cliente, então no Nuxt ele vai dentro de `<ClientOnly>` (veja [Nuxt 3](#nuxt-3)).
+
+</FrameworkVariant>
 
 <Table boxed>
   <thead>
@@ -45,12 +55,12 @@ Durante o SSR, o componente `Reel` renderiza um contêiner estático com os slid
     <tr data-rk-fw="angular">
       <td>`@reelkit/angular`</td>
       <td><Ok>Sim</Ok></td>
-      <td>Componentes standalone, compatíveis com Angular Universal</td>
+      <td>Componentes standalone, compatíveis com Angular SSR (`@angular/ssr`)</td>
     </tr>
     <tr data-rk-fw="vue">
       <td>`@reelkit/vue`</td>
       <td><Ok>Sim</Ok></td>
-      <td>Componentes e composables, compatíveis com Nuxt 3</td>
+      <td>Seguro para importar e renderizar no servidor; com um `size`, no Nuxt 3 coloque o `Reel` dentro de `<ClientOnly>`</td>
     </tr>
     <tr data-rk-fw="react">
       <td>`@reelkit/react-reel-player`</td>
@@ -72,6 +82,16 @@ Durante o SSR, o componente `Reel` renderiza um contêiner estático com os slid
       <td><Ok>Sim</Ok></td>
       <td>Não renderiza nada quando fechado (`isOpen=false`)</td>
     </tr>
+    <tr data-rk-fw="vue">
+      <td>`@reelkit/vue-reel-player`</td>
+      <td><Ok>Sim</Ok></td>
+      <td>Não renderiza nada quando fechado (`isOpen=false`)</td>
+    </tr>
+    <tr data-rk-fw="vue">
+      <td>`@reelkit/vue-lightbox`</td>
+      <td><Ok>Sim</Ok></td>
+      <td>Não renderiza nada quando fechado (`isOpen=false`)</td>
+    </tr>
     <tr>
       <td>`@reelkit/stories-core`</td>
       <td><Ok>Sim</Ok></td>
@@ -79,6 +99,16 @@ Durante o SSR, o componente `Reel` renderiza um contêiner estático com os slid
     </tr>
     <tr data-rk-fw="react">
       <td>`@reelkit/react-stories-player`</td>
+      <td><Ok>Sim</Ok></td>
+      <td>Não renderiza nada quando fechado (`isOpen=false`)</td>
+    </tr>
+    <tr data-rk-fw="angular">
+      <td>`@reelkit/angular-stories-player`</td>
+      <td><Ok>Sim</Ok></td>
+      <td>Não renderiza nada quando fechado (`isOpen=false`)</td>
+    </tr>
+    <tr data-rk-fw="vue">
+      <td>`@reelkit/vue-stories-player`</td>
       <td><Ok>Sim</Ok></td>
       <td>Não renderiza nada quando fechado (`isOpen=false`)</td>
     </tr>
@@ -125,7 +155,7 @@ Para controle no nível do pixel, passe a prop `size` explicitamente. Como `wind
 
 ## Componentes de overlay [#overlay-components]
 
-`ReelPlayerOverlay` e `LightboxOverlay` não renderizam nada quando `isOpen={false}`, então já são seguros no SSR. Eles só montam seu portal ao abrir, o que normalmente parte de uma interação no cliente:
+`ReelPlayerOverlay`, `LightboxOverlay` e `StoriesOverlay` não renderizam nada quando `isOpen={false}`, então já são seguros no SSR. Eles só montam seu portal ao abrir, o que normalmente parte de uma interação no cliente:
 
 <CodeBlock code={nextOverlay} language="tsx" />
 
@@ -133,9 +163,9 @@ Para controle no nível do pixel, passe a prop `size` explicitamente. Como `wind
 
 <FrameworkVariant for="angular">
 
-## Angular Universal / SSR [#angular-universal-ssr]
+## Angular SSR [#angular-universal-ssr]
 
-Todos os componentes Angular são seguros no SSR. O controlador do slider adia o acesso às APIs do navegador para `afterRenderEffect`. Componentes de overlay não renderizam nada quando `isOpen=false`, então não produzem marcação alguma no servidor.
+Todos os componentes Angular são seguros no SSR com `@angular/ssr`. O controlador do slider é criado em `ngOnInit`, e o trabalho que precisa do navegador, como medir o contêiner, é pulado no servidor via `isPlatformBrowser`. Componentes de overlay não renderizam nada quando `isOpen=false`, então não produzem marcação alguma no servidor.
 
 <CodeBlock code={angularUniversal} language="typescript" />
 
@@ -145,7 +175,7 @@ Todos os componentes Angular são seguros no SSR. O controlador do slider adia o
 
 ## Nuxt 3 [#nuxt-3]
 
-Os componentes Vue do ReelKit funcionam com Nuxt 3 sem ajustes. Como o Reel usa APIs do navegador (eventos de toque, ResizeObserver), envolva-o em um `<ClientOnly>` ou use o sufixo `.client.vue`:
+Os componentes Vue do ReelKit são importados e renderizados no servidor sem erros. O `Reel` envia do servidor um contêiner vazio e desenha os slides depois da hidratação. Quando o `Reel` mede a si mesmo, esse contêiner hidrata sem divergência a partir do `@reelkit/vue` 0.9.1; nas versões anteriores ele ficava sem altura e nenhum slide aparecia. Com um `size` explícito, a primeira renderização no cliente já traz slides, o que gera uma divergência na hidratação. Nesse caso, ou numa versão anterior, envolva o `Reel` em um `<ClientOnly>` ou use o sufixo `.client.vue`:
 
 <CodeBlock code={nuxtPage} language="vue" />
 
@@ -155,9 +185,13 @@ O componente Feed usa o Reel normalmente:
 
 ## Tamanho responsivo com SSR [#responsive-size-with-ssr]
 
-Não passe a prop `size` e deixe a medição automática agir. O Reel ocupa 100% do elemento pai. Durante o SSR ele renderiza um contêiner vazio; na hidratação mede e exibe os slides:
+Não passe a prop `size` e deixe a medição automática agir. O Reel ocupa 100% do elemento pai e, a partir do `@reelkit/vue` 0.9.1, dispensa o `<ClientOnly>`: o servidor envia um contêiner vazio no tamanho total, e o cliente o mede e exibe os slides. O exemplo mantém o wrapper, que também funciona nas versões anteriores:
 
 <CodeBlock code={nuxtAutoSize} language="vue" />
+
+## Componentes de overlay [#overlay-components]
+
+`ReelPlayerOverlay`, `LightboxOverlay` e `StoriesOverlay` não renderizam nada quando `isOpen` é falso, então não precisam de `<ClientOnly>` e não produzem marcação alguma no servidor. Eles só teleportam o conteúdo para o body depois de abertos no cliente.
 
 </FrameworkVariant>
 
@@ -178,5 +212,6 @@ Ao usar `@reelkit/core` direto para integrar um framework próprio, você pode c
 
 <Callout type="warning" title="O que exige atenção">
   - Omita `size` para medir automaticamente, ou defina um padrão ao usar dimensões baseadas na janela
+  - No Nuxt, renderize o `Reel` do Vue dentro de `<ClientOnly>` quando ele tiver um `size` ou no `@reelkit/vue` anterior a 0.9.1
   - Não chame `attach()`/`observe()` no servidor ao usar o core diretamente
 </Callout>

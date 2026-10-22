@@ -8,7 +8,16 @@
  * hreflang set and the canonical builder all read from these, so none of them
  * grows a branch per language.
  */
-export const kLocales = ['en', 'uk', 'zh', 'pt', 'ja', 'hi', 'es'] as const;
+export const kLocales = [
+  'en',
+  'uk',
+  'zh',
+  'pt',
+  'ja',
+  'hi',
+  'es',
+  'de',
+] as const;
 
 export type Locale = (typeof kLocales)[number];
 
@@ -24,7 +33,9 @@ export const kDefaultLocale: Locale = 'en';
  * enough, and the tag is what picks a Devanagari font and a Hindi voice for
  * screen readers. Spanish stays unregioned as well: the pages are written in
  * Spain Spanish, but `es-ES` would scope them to one country when they are
- * meant for anyone who reads the language.
+ * meant for anyone who reads the language. German follows the same rule: the
+ * text uses Germany's spelling, but `de-DE` would scope the pages to Germany
+ * when they are written for Austria and Switzerland too.
  */
 export const kLocaleTags: Record<Locale, string> = {
   en: 'en',
@@ -34,6 +45,7 @@ export const kLocaleTags: Record<Locale, string> = {
   ja: 'ja',
   hi: 'hi',
   es: 'es',
+  de: 'de',
 };
 
 /** Name of each language, written in that language. */
@@ -45,6 +57,7 @@ export const kLocaleNames: Record<Locale, string> = {
   ja: '日本語',
   hi: 'हिन्दी',
   es: 'Español',
+  de: 'Deutsch',
 };
 
 const _kPrefixes: Record<Locale, string> = {
@@ -55,6 +68,7 @@ const _kPrefixes: Record<Locale, string> = {
   ja: '/ja',
   hi: '/hi',
   es: '/es',
+  de: '/de',
 };
 
 /** URL prefix for a locale — empty for English, the language code otherwise. */

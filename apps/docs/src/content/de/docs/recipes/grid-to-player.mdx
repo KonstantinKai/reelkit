@@ -1,0 +1,70 @@
+---
+title: Vom Raster zum Player
+description: Ein Raster von Vorschaubildern, das den Vollbild-Player am angetippten Element öffnet und den Nutzer zum zuletzt angesehenen Element zurückbringt.
+---
+
+import { GridToPlayerDemo } from '../../../../components/demos/GridToPlayerDemo';
+import reactCode from '../../../snippets/recipes/grid-to-player/react.tsx?raw';
+import vueCode from '../../../snippets/recipes/grid-to-player/vue.vue?raw';
+import angularCode from '../../../snippets/recipes/grid-to-player/angular.ts?raw';
+import apiCode from '../../../snippets/recipes/grid-to-player/api.ts?raw';
+
+Eine Profilseite oder ein Suchergebnis zeigt Beiträge als Raster von Vorschaubildern. Ein Tippen auf eines sollte es im Vollbild öffnen, den Nutzer durch den Rest weiterwischen lassen und ihn beim Schließen des Players bei dem Beitrag lassen, an dem er aufgehört hat, statt bei dem, mit dem er angefangen hat.
+
+## Ausprobieren [#try-it]
+
+Jede Version importiert `./api`, das für dein Backend steht: `posts` ist die Liste, die ein Profil oder eine Suche laden würde, in der Form von `ContentItem` des Players, und `thumbnailOf` wählt das Bild, das eine Rasterzelle zeigt. Ersetze beides durch deine eigenen Daten.
+
+<CodeBlock code={apiCode} language="typescript" />
+
+<Callout type="warning" title="Die Beispielmedien funktionieren nur auf reelkit.dev">
+  `cdnUrl` baut Links zu cdn.reelkit.dev, das seine Dateien nur an die Seiten von ReelKit ausliefert. In deiner App laden diese Bilder und Videos nicht, also lass `media` und `avatar` auf deine eigenen Dateien zeigen, bevor du diese Datei kopierst.
+</Callout>
+
+<FrameworkVariant for="react">
+<Sandbox code={reactCode} title="GridToPlayer.tsx" height={560}>
+  <GridToPlayerDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+<Sandbox code={vueCode} language="vue" framework="vue" title="GridToPlayer.vue" height={560}>
+  <GridToPlayerDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+<Sandbox code={angularCode} language="typescript" framework="angular" title="grid-to-player.component.ts" height={560}>
+  <GridToPlayerDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<Caption>Öffne einen Beitrag, wische ein paarmal oder drücke ↓ und schließe dann mit Escape: Das Raster scrollt zu dem Beitrag, bei dem du aufgehört hast, und sein Vorschaubild hat den Fokus.</Caption>
+
+## Warum es funktioniert [#why-it-works]
+
+- **Der Player öffnet dort, wo der Nutzer getippt hat.** `initialIndex` nimmt den Index des Vorschaubilds, und die ganze Liste geht an `content`, sodass der Nutzer über den gewählten Beitrag hinaus weiterwischen kann. Beides sind Props des Players in [React](/docs/reel-player#reelplayeroverlayprops-props), [Vue](/docs/vue-reel-player#reelplayeroverlay-props) und [Angular](/docs/angular-reel-player#rkreelplayeroverlaycomponent-inputs).
+- **Das Raster weiß, wo der Nutzer aufgehört hat.** Der Callback für den Slidewechsel meldet jeden Beitrag, den der Nutzer erreicht, und das Rezept behält den letzten. Er steht bei den [Callbacks](/docs/reel-player#callbacks), [Events](/docs/vue-reel-player#events) und [Outputs](/docs/angular-reel-player#rkreelplayeroverlaycomponent-outputs) des Players.
+- **Der Fokus kommt zum richtigen Vorschaubild zurück.** Beim Schließen gibt der Player den Fokus an das Element zurück, das ihn geöffnet hat; das ist sein Vertrag zur [Barrierefreiheit](/docs/reel-player#accessibility). Diese Rückgabe passiert erst, nachdem der Close-Handler gelaufen ist, also würde ein im Handler gesetzter Fokus wieder rückgängig gemacht. Das Rezept wartet einen Task, scrollt dann das Vorschaubild des letzten Beitrags ins Bild und fokussiert es.
+- **Vorschaubilder sind Buttons.** Jede Zelle ist ein `<button>` mit Label, sodass das Raster mit Tab und Enter funktioniert, ein Screenreader den Beitrag nennt, den sie öffnet, und der Player ein fokussierbares Element hat, an das er den Fokus zurückgeben kann, wie sein Abschnitt zur [Barrierefreiheit](/docs/reel-player#accessibility) beschreibt.
+- **Eine Rasterzelle braucht ein Bild, kein Video.** `thumbnailOf` nimmt bei einem Video das `poster`, ein Feld von [MediaItem](/docs/reel-player#mediaitem), und ein Bild so, wie es ist, sodass das Raster nie ein Video lädt, das es nicht abspielt.
+- **Soll der geöffnete Beitrag in der Adresszeile stehen?** Der Player mit [URL-State](/docs/reel-player#url-state) schreibt den sichtbaren Beitrag in die URL, sodass er sich teilen und mit der Zurück-Taste schließen lässt.
+
+<NextSteps
+  items={[
+    {
+      label: 'Galerie als Diashow',
+      path: '/docs/recipes/gallery-slideshow',
+      description: 'dasselbe Raster öffnet eine Lightbox, die als Diashow abläuft',
+    },
+    {
+      label: 'Reel Player',
+      path: {
+        react: '/docs/reel-player',
+        vue: '/docs/vue-reel-player',
+        angular: '/docs/angular-reel-player',
+      },
+      description: 'jedes Prop, jeder Slot und jeder Teil des Players',
+    },
+  ]}
+/>

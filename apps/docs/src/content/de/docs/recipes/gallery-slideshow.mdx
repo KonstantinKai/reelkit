@@ -1,0 +1,69 @@
+---
+title: Galerie als Diashow
+description: Eine Fotogalerie in der Lightbox, die als Diashow abläuft und die Originaldatei jedes Fotos herunterlädt.
+---
+
+import { GallerySlideshowDemo } from '../../../../components/demos/GallerySlideshowDemo';
+import reactCode from '../../../snippets/recipes/gallery-slideshow/react.tsx?raw';
+import vueCode from '../../../snippets/recipes/gallery-slideshow/vue.vue?raw';
+import angularCode from '../../../snippets/recipes/gallery-slideshow/angular.ts?raw';
+import apiCode from '../../../snippets/recipes/gallery-slideshow/api.ts?raw';
+
+Ein Album öffnet sich im Vollbild und läuft von selbst ab, ein Foto nach dem anderen, bis der Nutzer pausiert. Jedes Foto lässt sich speichern, und gespeichert wird die Originaldatei unter einem passenden Namen, nicht die verkleinerte Kopie, die der Bildschirm zeigt.
+
+## Ausprobieren [#try-it]
+
+Jede Version importiert `./api`, das für dein Backend steht: `photos` ist ein Album in der Form von `LightboxItem` der Lightbox, jedes Foto mit der Adresse zum Anzeigen, der Datei zum Herunterladen und dem Namen, unter dem es gespeichert wird. Ersetze es durch dein eigenes Album.
+
+<CodeBlock code={apiCode} language="typescript" />
+
+<Callout type="warning" title="Die Beispielmedien funktionieren nur auf reelkit.dev">
+  `cdnUrl` baut Links zu cdn.reelkit.dev, das seine Dateien nur an die Seiten von ReelKit ausliefert. In deiner App lassen sich diese Fotos weder laden noch herunterladen, also lass `src` und `downloadUrl` auf deine eigenen Dateien zeigen, bevor du diese Datei kopierst.
+</Callout>
+
+<FrameworkVariant for="react">
+<Sandbox code={reactCode} title="GallerySlideshow.tsx" height={560}>
+  <GallerySlideshowDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+<Sandbox code={vueCode} language="vue" framework="vue" title="GallerySlideshow.vue" height={560}>
+  <GallerySlideshowDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+<Sandbox code={angularCode} language="typescript" framework="angular" title="gallery-slideshow.component.ts" height={560}>
+  <GallerySlideshowDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<Caption>Öffne ein Foto: Die Diashow startet sofort und geht alle drei Sekunden weiter. Pausiere sie über die Leiste oder speichere das Foto mit dem Download-Button.</Caption>
+
+## Warum es funktioniert [#why-it-works]
+
+- **Zwei Props machen aus der Lightbox eine Diashow mit Downloads.** `autoAdvance` startet die Wiedergabe, sobald sich die Lightbox öffnet, und `showDownload` fügt den Button hinzu, der das aktuelle Foto speichert. Die Standardleiste bekommt den Play/Pause-Button und den Download-Button von selbst. Beide Props sind für [React](/docs/lightbox#auto-advance), [Vue](/docs/vue-lightbox#auto-advance) und [Angular](/docs/angular-lightbox#auto-advance) beschrieben, jeweils mit einem Abschnitt zum Download direkt danach.
+- **Die Diashow wartet auf jedes Foto.** `autoAdvanceInterval` zählt ab dem Moment, in dem ein Foto geladen ist, sodass eine langsame Verbindung nie ein Bild überspringt, bevor es jemand gesehen hat. Das Timing kommt von `createSlideshowController` aus dem Core, beschrieben im [Autoplay-Guide](/docs/core/guide#autoplay).
+- **Der Nutzer behält die Kontrolle.** Wischen oder ein Tastendruck geht von Hand weiter und startet das Intervall des nächsten Fotos bei null, während die Diashow an bleibt. Der [PlayPauseButton](/docs/lightbox#playpausebutton) hält sie an und setzt sie fort, und ein Zeiger, der auf einem Button oder der Bildunterschrift ruht, hält sie an, solange er dort bleibt. Beim letzten Foto stoppt sie, außer `loop` ist gesetzt.
+- **Eine kleine Kopie zeigen, das Original speichern.** `src` ist das, was der Bildschirm zeigt, also hält eine verkleinerte Kopie die Galerie schnell. `downloadUrl` ist das, was der Button speichert, und `downloadName` ist der Dateiname, den es bekommt, sodass der Nutzer das volle Foto unter einem Namen behält, der sagt, was es ist. Das Beispiel-CDN liefert nur eine Größe, deshalb zeigen hier beide auf eine Datei. Die Felder stehen im [Typ LightboxItem](/docs/lightbox#lightboxitem).
+- **Downloads von einem anderen Origin brauchen CORS.** Ein `download`-Attribut wird bei einem Link auf einen anderen Origin ignoriert, deshalb holt die Lightbox die Datei selbst und speichert sie. Dafür muss der Server der Datei mit `Access-Control-Allow-Origin` für deine Seite antworten. Tut er das nicht, öffnet sich das Foto stattdessen in einem neuen Tab, sodass der Nutzer es trotzdem speichern kann. Siehe [`downloadFile`](/docs/core/guide#download).
+
+<NextSteps
+  items={[
+    {
+      label: 'Stories-Leiste',
+      path: '/docs/recipes/stories-tray',
+      description: 'eine Reihe von Ringen, die den Stories Player öffnet und sich merkt, was gesehen wurde',
+    },
+    {
+      label: 'Lightbox',
+      path: {
+        react: '/docs/lightbox',
+        vue: '/docs/vue-lightbox',
+        angular: '/docs/angular-lightbox',
+      },
+      description: 'jedes Prop, jeder Slot und jeder Teil der Lightbox',
+    },
+  ]}
+/>

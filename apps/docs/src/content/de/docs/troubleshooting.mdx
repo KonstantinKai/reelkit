@@ -1,0 +1,94 @@
+---
+title: Fehlerbehebung
+description: Lösungen für Eigenheiten von iOS Safari, die Wiedergabe von Videos, das Vollbild, die Tastaturnavigation und die automatische Größe.
+---
+
+import viewportDoesntFillScreen from '../../snippets/troubleshooting/viewport-doesnt-fill-screen.css?raw';
+import horizontalScrollContentOverflow from '../../snippets/troubleshooting/horizontal-scroll-content-overflow.css?raw';
+import pullToRefreshRubber from '../../snippets/troubleshooting/pull-to-refresh-rubber.css?raw';
+import pullToRefreshRubber2 from '../../snippets/troubleshooting/pull-to-refresh-rubber-2.tsx?raw';
+import pinchToZoomInterferes from '../../snippets/troubleshooting/pinch-to-zoom-interferes.html?raw';
+import layoutBrokenAfterKeyboard from '../../snippets/troubleshooting/layout-broken-after-keyboard.tsx?raw';
+import slidesRenderAt0 from '../../snippets/troubleshooting/slides-render-at-0.css?raw';
+import videoThumbnailFrameCapture from '../../snippets/troubleshooting/video-thumbnail-frame-capture.txt?raw';
+import arrowKeysDontNavigate from '../../snippets/troubleshooting/arrow-keys-dont-navigate.tsx?raw';
+
+Lösungen für Eigenheiten von iOS Safari, die Wiedergabe von Videos, das Vollbild und die Tastaturnavigation.
+
+## iOS Safari [#ios-safari]
+
+### Der Viewport füllt den Bildschirm nicht / schwarzer Streifen unten [#viewport-doesn-t-fill-screen-bottom-black-space]
+
+Durch die einklappbare Adressleiste von Safari ist `100vh` höher als der sichtbare Bereich. Nutze `100dvh`:
+
+<CodeBlock code={viewportDoesntFillScreen} language="css" />
+
+### Horizontales Scrollen / Inhalt läuft über [#horizontal-scroll-content-overflow]
+
+Unter iOS enthält `100vw` die Breite der Scrollleiste und schiebt den Inhalt über den Rand hinaus. Nutze `100%` und sperre den horizontalen Overflow:
+
+<CodeBlock code={horizontalScrollContentOverflow} language="css" />
+
+### Pull-to-Refresh / elastisches Nachfedern [#pull-to-refresh-rubber-band-bounce]
+
+Pull-to-Refresh und das elastische Nachfedern von Safari kommen den vertikalen Wischgesten in die Quere. Setze `overscroll-behavior: none` **nicht** auf `html, body`. Damit funktioniert das normale Scrollen der Seite nicht mehr. ReelPlayerOverlay, LightboxOverlay und StoriesPlayerOverlay regeln das in ihren eigenen Containern. Bei eigenen Layouts begrenzt du es auf den Bereich:
+
+<CodeBlock code={pullToRefreshRubber} language="css" />
+
+**Sonderfall SwipeToClose nach unten.** Jedes `SwipeToClose` mit `direction="down"` (Lightbox, Stories Player, eigene Overlays) wird unter iOS Safari ausgebremst: Der Browser löst Pull-to-Refresh auf Ebene des Dokuments aus, bevor der Wrapper die Berührung sieht. Das Overlay sperrt das Scrollen des Body, doch das vertikale Verschieben an der Wurzel behält der Browser. Setze `overscroll-behavior-y: contain` nur auf `<html>`, solange das Overlay offen ist, und stelle den Wert beim Schließen wieder her:
+
+<CodeBlock code={pullToRefreshRubber2} language="tsx" />
+
+### Pinch-to-Zoom stört die Gesten [#pinch-to-zoom-interferes-with-gestures]
+
+Deaktiviere den Zoom, damit Pinch und Doppeltippen beim Wischen nicht ausgelöst werden:
+
+<CodeBlock code={pinchToZoomInterferes} language="html" />
+
+<Caption>`viewport-fit=cover` erweitert dein Layout in den sicheren Bereich von Dynamic Island und Notch.</Caption>
+
+### Layout ist kaputt, nachdem die Tastatur verschwindet [#layout-broken-after-keyboard-dismisses]
+
+Safari lässt den Viewport manchmal gestaucht, nachdem sich die Tastatur geschlossen hat. Erzwinge beim Blur ein Zurücksetzen:
+
+<CodeBlock code={layoutBrokenAfterKeyboard} language="tsx" />
+
+## Allgemein [#general]
+
+### Slides werden mit 0×0 gerendert [#slides-render-at-0-0-size]
+
+Ohne die Prop `size` liest der Slider die Maße seines Containers über `ResizeObserver`. Ein Container ohne CSS-Höhe misst 0×0, also wird nichts gerendert. Übergib `size` oder gib dem Container Maße:
+
+<CodeBlock code={slidesRenderAt0} language="css" />
+
+## Video [#video]
+
+### Das Video startet nicht automatisch [#video-doesn-t-autoplay]
+
+Browser blockieren Autoplay mit Ton. ReelKit setzt `muted` und `playsInline` auf jedes Video-Element. Videos starten stumm; nach einem Tippen schalten die Nutzer den Ton über den Sound-Schalter ein. Prüfe, ob du diese Attribute in einem eigenen Slide überschreibst.
+
+### Vorschaubild / Frame-Capture des Videos bleibt leer [#video-thumbnail-frame-capture-is-blank]
+
+Frame-Capture zeichnet das Video auf ein `<canvas>`. Videos von einem anderen Origin machen das Canvas unbrauchbar, und das Zeichnen schlägt still fehl. Dein Video-CDN muss CORS-Header zurückgeben:
+
+<CodeBlock code={videoThumbnailFrameCapture} language="text" />
+
+<Caption>ReelKit setzt standardmäßig `crossOrigin="anonymous"`. Wenn du ein eigenes Video-Element verwendest, ergänze es selbst.</Caption>
+
+## Vollbild [#fullscreen]
+
+### Der Vollbild-Button tut in Safari nichts [#fullscreen-button-does-nothing-on-safari]
+
+ReelKit deaktiviert die Fullscreen API in Safari. iOS Safari erlaubt Vollbild nur für `<video>`-Elemente. Desktop-Safari bringt Overlays mit `position: fixed` im Vollbild durcheinander: Elemente verlieren ihren Stacking-Kontext oder verschwinden. `requestFullscreen()` wird in Safari ohne Wirkung aufgelöst.
+
+## Tastaturnavigation [#keyboard-navigation]
+
+### Pfeiltasten navigieren nicht mehr, sobald onNavKeyPress gesetzt ist [#arrow-keys-don-t-navigate-after-providing-onnavkeypress]
+
+`onNavKeyPress` **ersetzt** die Standardnavigation per Tastatur. ReelKit ruft `next()`/`prev()` nicht mehr auf und übergibt dir die Kontrolle. Rufe sie selbst auf:
+
+<CodeBlock code={arrowKeysDontNavigate} language="tsx" />
+
+### Escape schließt das Overlay nicht [#escape-key-doesn-t-close-the-overlay]
+
+Der Tastatur-Controller verarbeitet nur die Pfeiltasten. ReelPlayerOverlay und LightboxOverlay lauschen getrennt auf Escape. Wenn du ein eigenes Overlay baust, ergänze einen eigenen Handler für Escape in `onClose`.

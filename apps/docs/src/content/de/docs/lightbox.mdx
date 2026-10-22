@@ -1,0 +1,534 @@
+---
+title: Lightbox
+description: Die Lightbox ist ein Vollbild-Overlay für Bildergalerien in React. Hier findest du das LightboxItem-Schema, die Props, Transitions mit Tree-Shaking (slideTransition, lightboxFadeTransition, flipTransition, lightboxZoomTransition), Tastenkürzel, Theming-Tokens, CSS-Klassen und Slot-Renderer.
+---
+
+import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2, Play, Download } from 'lucide-react';
+import installation from '../../snippets/lightbox/installation.sh?raw';
+import installation2 from '../../snippets/lightbox/installation-2.ts?raw';
+import quickStart from '../../snippets/lightbox/quick-start.tsx?raw';
+import fullCode from '../../snippets/lightbox/full-code.tsx?raw';
+import videoSlidesOptIn from '../../snippets/lightbox/video-slides-opt-in.tsx?raw';
+import customControls from '../../snippets/lightbox/custom-controls.tsx?raw';
+import customInfoOverlay from '../../snippets/lightbox/custom-info-overlay.tsx?raw';
+import customNavigation from '../../snippets/lightbox/custom-navigation.tsx?raw';
+import customSlide from '../../snippets/lightbox/custom-slide.tsx?raw';
+import lifecycleCallbacks from '../../snippets/lightbox/lifecycle-callbacks.tsx?raw';
+import customLoadingErrorUi from '../../snippets/lightbox/custom-loading-error-ui.tsx?raw';
+import urlState from '../../snippets/lightbox/url-state.tsx?raw';
+import urlState2 from '../../snippets/lightbox/url-state-2.tsx?raw';
+import urlState3 from '../../snippets/lightbox/url-state-3.tsx?raw';
+import urlState4 from '../../snippets/lightbox/url-state-4.tsx?raw';
+import urlState5 from '../../snippets/lightbox/url-state-5.tsx?raw';
+import urlState6 from '../../snippets/lightbox/url-state-6.tsx?raw';
+import lightboxitem from '../../snippets/lightbox/lightboxitem.ts?raw';
+import controlsrenderprops from '../../snippets/lightbox/controlsrenderprops.ts?raw';
+import navigationrenderprops from '../../snippets/lightbox/navigationrenderprops.ts?raw';
+import sliderenderprops from '../../snippets/lightbox/sliderenderprops.ts?raw';
+import inforenderprops from '../../snippets/lightbox/inforenderprops.ts?raw';
+import closebutton from '../../snippets/lightbox/closebutton.tsx?raw';
+import counter from '../../snippets/lightbox/counter.tsx?raw';
+import fullscreenbutton from '../../snippets/lightbox/fullscreenbutton.tsx?raw';
+import soundbutton from '../../snippets/lightbox/soundbutton.tsx?raw';
+import usevideosliderenderer from '../../snippets/lightbox/usevideosliderenderer.ts?raw';
+import usefullscreen from '../../snippets/lightbox/usefullscreen.tsx?raw';
+import transitions from '../../snippets/lightbox/transitions.tsx?raw';
+import customTransitionFunction from '../../snippets/lightbox/custom-transition-function.tsx?raw';
+import theming from '../../snippets/lightbox/theming.css?raw';
+import autoAdvance from '../../snippets/lightbox/auto-advance.tsx?raw';
+import download from '../../snippets/lightbox/download.tsx?raw';
+import playpausebutton from '../../snippets/lightbox/playpausebutton.tsx?raw';
+import downloadbutton from '../../snippets/lightbox/downloadbutton.tsx?raw';
+
+Eine Komponente für Bild- und Videogalerien im Vollbild, die Lightbox aus `@reelkit/react-lightbox`.
+
+<DemoLink href="https://react-demo.reelkit.dev/image-preview?utm_source=docs">Live-Demo ansehen →</DemoLink>
+
+## Funktionen [#features]
+
+<FeatureGrid items={[
+              {
+                icon: Image,
+                label: 'Bilder und Video',
+                desc: 'Video-Slides eingebaut',
+              },
+              {
+                icon: MousePointer,
+                label: 'Touch-Gesten',
+                desc: 'Wischen zum Navigieren',
+              },
+              {
+                icon: X,
+                label: 'Wischen zum Schließen',
+                desc: 'Nach oben wischen zum Schließen',
+              },
+              {
+                icon: Keyboard,
+                label: 'Tastaturnavigation',
+                desc: 'Pfeiltasten + Escape',
+              },
+              {
+                icon: Maximize2,
+                label: 'Vollbild',
+                desc: 'Browserübergreifende API',
+              },
+              {
+                icon: Hash,
+                label: 'Transitions',
+                desc: 'Slide, Fade, Flip, Zoom-in',
+              },
+              {
+                icon: Zap,
+                label: 'Vorladen',
+                desc: 'Benachbarte Bilder werden vorab geladen',
+              },
+              {
+                icon: Volume2,
+                label: 'Ton an/aus',
+                desc: 'Stummschalten pro Slide',
+              },
+              {
+                icon: Loader,
+                label: 'Ladezustände',
+                desc: 'Spinner + eigenes Rendering',
+              },
+              {
+                icon: AlertTriangle,
+                label: 'Fehlerbehandlung',
+                desc: 'Fehlersymbol + eigenes Rendering',
+              },
+              {
+                icon: Layers,
+                label: 'Render Props',
+                desc: '6 anpassbare Render-Bereiche',
+              },
+              {
+                icon: Layers,
+                label: 'Hooks',
+                desc: 'useVideoSlideRenderer + useFullscreen',
+              },
+              {
+                icon: Link2,
+                label: 'URL-State',
+                desc: 'Teilbare Links mit Lesezeichen',
+              },
+              {
+                icon: Play,
+                label: 'Diashow',
+                desc: 'Optionales Weiterblättern mit Play/Pause',
+              },
+              {
+                icon: Download,
+                label: 'Download',
+                desc: 'Optionaler Button, der das aktive Element speichert',
+              },
+            ]} />
+
+## Installation [#installation]
+
+<CodeBlock code={installation} language="bash" />
+
+Vergiss nicht, die Styles zu importieren:
+
+<CodeBlock code={installation2} language="typescript" />
+
+<Callout type="info" title="Icons">
+  Die Standard-Controls nutzen `lucide-react` für die Icons. Wenn du eine andere Icon-Bibliothek bevorzugst, gib mit `renderControls` und `renderNavigation` deine eigenen vor.
+</Callout>
+
+## Schnellstart [#quick-start]
+
+Die Komponente `LightboxOverlay` zeigt Bilder im Vollbild an. Übergib ein Array von `LightboxItem`-Objekten und steuere die Sichtbarkeit über einen Index, der auch `null` sein kann.
+
+<CodeBlock code={quickStart} language="tsx" />
+
+<Sandbox
+  code={fullCode}
+  title="LightboxPage.tsx"
+  stackblitzDeps={['@reelkit/react-lightbox']}
+  stackblitzExtraDeps={{ 'lucide-react': '^0.562.0' }}
+/>
+
+Wie du eine Galerie als Diashow abspielst und das Original jedes Fotos speicherst, zeigt das [Rezept „Galerie als Diashow“](/docs/recipes/gallery-slideshow).
+
+## Video-Slides (optional) [#video-slides-opt-in]
+
+Die Video-Unterstützung ist komplett optional und per Tree-Shaking entfernbar: Wer nur Bilder zeigt, zahlt keinen Byte mehr im Bundle. Importiere `useVideoSlideRenderer` und gib seine Rückgabewerte an `LightboxOverlay` weiter. Der Hook kümmert sich automatisch um Ladezustände, den Ton und den Lebenszyklus der Videos.
+
+<CodeBlock code={videoSlidesOptIn} language="tsx" />
+
+<Callout type="info" title="So funktioniert es">
+  - Der Hook gibt `SoundProvider` zurück: Umschließe dein Overlay damit, damit das Stummschalten funktioniert
+  - Videos starten automatisch (standardmäßig stumm), sobald die Slide aktiv wird
+  - Ein gemeinsames Video-Element wird über alle Slides wiederverwendet, damit der Ton auf iOS nicht abreißt
+  - Der Ton-Button erscheint auf Video-Slides von selbst, mit einem reaktiven Schalter für den Ton
+  - Elemente ohne `type: 'video'` werden als Bilder gerendert (abwärtskompatibel)
+</Callout>
+
+## Anpassung [#customization]
+
+### Eigene Controls [#custom-controls]
+
+Mit `renderControls` ersetzt du den Standard-Schließen-Button, den Zähler und den Vollbild-Schalter. Kombiniere dafür die exportierten Unterkomponenten:
+
+<CodeBlock code={customControls} language="tsx" />
+
+### Eigenes Info-Overlay [#custom-info-overlay]
+
+Mit `renderInfo` ersetzt du den Standard-Verlauf mit Titel und Beschreibung, oder du übergibst `renderInfo={() => null}`, um ihn ganz auszublenden:
+
+<CodeBlock code={customInfoOverlay} language="tsx" />
+
+### Eigene Navigation [#custom-navigation]
+
+Mit `renderNavigation` ersetzt du die Standard-Pfeile für zurück und weiter:
+
+<CodeBlock code={customNavigation} language="tsx" />
+
+### Eigene Slide [#custom-slide]
+
+Mit `renderSlide` gestaltest du den Inhalt einer Slide komplett selbst. Gib `null` zurück, um auf die Standard-Bild-Slide zurückzufallen:
+
+<CodeBlock code={customSlide} language="tsx" />
+
+## Laden von Inhalten und Fehlerbehandlung [#content-loading-error-handling]
+
+Die Lightbox verfolgt den Lade- und Fehlerzustand jeder Slide. Ein Spinner erscheint, solange der Inhalt lädt; ein Symbol für ein kaputtes Bild erscheint bei Medien, die nicht geladen werden konnten. Fehlerhafte URLs werden gemerkt, sodass ein erneuter Besuch den Fehler sofort zeigt, ohne es noch einmal zu versuchen.
+
+### Lebenszyklus-Callbacks [#lifecycle-callbacks]
+
+Wenn du `renderSlide` verwendest, rufst du diese Callbacks auf, um die Ladeanzeige zu steuern:
+
+| Callback | Wann aufrufen |
+| --- | --- |
+| `onReady` | Das Bild ist geladen oder das Video spielt. Setzt Lade- und Fehlerzustand zurück. |
+| `onWaiting` | Das Video puffert während der Wiedergabe. Zeigt die Ladeanzeige. |
+| `onError` | Der Inhalt konnte nicht geladen werden. Zeigt das Fehler-Overlay und merkt sich die URL als defekt. |
+
+<CodeBlock code={lifecycleCallbacks} language="tsx" />
+
+### Eigene Lade- und Fehleranzeige [#custom-loading-error-ui]
+
+Ersetze den Standard-Spinner und das Fehlersymbol durch eigene Komponenten:
+
+<CodeBlock code={customLoadingErrorUi} language="tsx" />
+
+## URL-State [#url-state]
+
+<DemoLink href="https://react-demo.reelkit.dev/image-preview-url?utm_source=docs">Live-Demo ansehen →</DemoLink>
+
+`LightboxUrlOverlay` ist eine eigene Komponente, deren Öffnungszustand in der Adressleiste steht. Erstelle mit `useOverlayUrlState` aus `@reelkit/react` einen Controller und übergib ihn als `controller`: Die Galerie öffnet sich selbst, wenn der Parameter eine Slide benennt, und schließt sich, wenn er verschwindet. Links lassen sich teilen, und der Zurück-Button schließt die Galerie, statt die Seite zu verlassen.
+
+<Callout type="info" title="Eingebaute Schlüssel">
+  Du kannst Slides mit einem eingebauten Schlüssel ansprechen: Übergib `urlIndexKey` (nach Position) oder `urlStableIdKey` (nach einer stabilen `id`) per Spread an den Controller. Beide werden von `@reelkit/react` re-exportiert. Mehr dazu im [Guide zum URL-State](/docs/core/guide#url-state) und in der [Core API](/docs/core/api#url-state).
+</Callout>
+
+<CodeBlock code={urlState} language="tsx" />
+
+Der Hook nimmt ein Options-Objekt und gibt einen `UrlStateController` zurück (mit `set`, `index`, `value`). Behalte ihn für die Steuerung per Code: `set` ist der Schreibzugriff auf unterster Ebene, den das Overlay intern nutzt (Slide-Wechsel, und `set(null)` zum Schließen). Damit steuerst du das Overlay auch per Code: `set(index)` öffnet es, genau wie das Navigieren zum Parameter. Zum Öffnen ist ein Link trotzdem die bessere Wahl: Der href lässt sich teilen, öffnet sich in einem neuen Tab, und der Zurück-Button schließt es wieder, alles ohne Handler.
+
+Alle Optionen von `useOverlayUrlState` (`param`, `adapter`, `codec`, `locator`) findest du in der [React-API-Referenz](/docs/react/api#useoverlayurlstate).
+
+`LightboxUrlOverlay` selbst nimmt nur `controller` (erforderlich), ein optionales `onClose` und dazu jedes Darstellungs- und Verhaltens-Prop, das auch `LightboxOverlay` nimmt (`images`, `ariaLabel`, `transitionFn`, die Render Props und so weiter), aber kein `isOpen`.
+
+- Das Öffnen kostet einen Eintrag im Verlauf. Das Blättern durch Slides ersetzt ihn, sodass hundert Wischbewegungen keinen einzigen hinzufügen: Ein Schritt zurück verlässt die Galerie immer. Zurück schließt; es blättert nicht durch die Fotos.
+- Ein geteilter Link wie `?photo=3` öffnet die Galerie an dieser Slide. Wird ein Link geschlossen, der mit der Seite ankam, entfernt das den Parameter an Ort und Stelle, statt von deiner Website weg zu navigieren.
+- **Zurück schließt nur, wenn du aus der App heraus geöffnet hast**: Der Link hat einen Eintrag angelegt, also führt Zurück wieder zur Galerie. Ein geteilter Link, der direkt in einem frischen Tab geöffnet wird, hat keinen Verlauf hinter sich, daher verlässt Zurück im Browser die Website; der Schließen-Button oder Escape entfernt den Parameter an Ort und Stelle und lässt dich auf der Galerie. Die mitgelieferten Router-Adapter bestätigen einen Link-Push auf derselben Seite; ein eigener Adapter, der nicht sagen kann, wie der Eintrag zustande kam, bekommt ebenfalls das Schließen an Ort und Stelle. Das hinterlässt eine Kopie der Seite im Verlauf: Ein Schritt zurück sieht dann aus, als wäre nichts passiert, aber es öffnet sich nichts wieder.
+- Ein Parameter, der keine Slide benennt (ein veraltetes Lesezeichen, ein von Hand geänderter Wert), wird aus der URL entfernt, statt in der Adressleiste eine Slide zu behaupten, die sich nicht öffnen lässt.
+
+**In einer App mit Router übergibst du einen Adapter.** Wer direkt in den Verlauf schreibt, lässt den Router mit einer veralteten Location zurück, und seine nächste Navigation verwirft den Parameter.
+
+<CodeBlock code={urlState2} language="tsx" />
+
+**Öffnen ist ein Link.** Weil in der URL steht, ob die Galerie offen ist, ist ein Vorschaubild ein ganz normaler Link ohne Klick-Handler, und das Verhalten des Browsers gibt es gratis dazu: in einem neuen Tab öffnen, die Adresse kopieren, beim Überfahren eine Vorschau sehen. In einer App mit Router nimmst du den Link des Routers, damit alles clientseitig bleibt.
+
+<CodeBlock code={urlState3} language="tsx" />
+
+**Nimm für teilbare Links eine stabile Identität.** Der Index ist eine Position, daher öffnet ein gespeichertes `?photo=3` ein anderes Bild, sobald die Liste umsortiert wird. `urlStableIdKey` verwendet die stabile `id` jedes Elements und durchsucht die aktuelle Liste: Ein einziger Aufruf deckt den üblichen Fall ab.
+
+<CodeBlock code={urlState4} language="tsx" />
+
+Übergib `hashCodec: base64UrlCodec`, um die id in der URL als base64url zu kodieren. Das ist eine umkehrbare Verschleierung, kein kryptografischer Hash.
+
+Für ein anderes Feld als Schlüssel (einen `slug`) oder zum Nachladen eines endlosen Feeds mit `locateAsync` baust du `codec`/`locator` selbst:
+
+<CodeBlock code={urlState5} language="tsx" />
+
+**Endlose oder seitenweise geladene Galerien.** Das synchrone `locate` kann nur für bereits geladene Bilder antworten: Ein geteilter Link auf Bild 400 eines Feeds, der erst 20 geladen hat, findet nichts. `locateAsync` ist der Fallback und wird nur aufgerufen, wenn `locate` nichts findet.
+
+<Callout type="info" title="Abkürzung">
+  Ist die `id` des Elements dein Schlüssel? Dann spar dir den selbst geschriebenen Codec und Locator und übergib `locateAsync` direkt an `urlStableIdKey({ items, locateAsync })` (es lädt nach, wenn nichts gefunden wird, und gibt dann den Index zurück). Die ausführliche Version unten ist für einen anderen Schlüssel oder für die volle Kontrolle gedacht.
+</Callout>
+
+<CodeBlock code={urlState6} language="tsx" />
+
+- Wie du nachlädst, entscheidest du: Lade zusammenhängende Seiten bis zum Ziel oder nur das eine Bild und hänge es an. Die URL verwendet die Identität, nicht die Position, daher gibt `findIndex` zurück, wo auch immer das Element landet.
+- Solange `locateAsync` läuft, bleibt die Lightbox geschlossen und der Parameter unangetastet, damit der Deep Link das Laden übersteht. `null` oder eine Ablehnung entfernt den Parameter.
+- Eine Antwort, die erst eintrifft, nachdem sich die URL geändert hat, nach dem Schließen oder nach dem Unmount, wird verworfen: Ein langsames Laden kann keine Slide öffnen, nach der niemand gefragt hat.
+- Während des Wartens wird nichts gerendert; die Seite hat diesen Ladezustand ohnehin schon, also rendere dein eigenes Skeleton.
+- Es gibt kein Timeout: Die Lightbox kann nicht wissen, wie lang die Galerie ist. Antworte mit `null`, wenn keine Seiten mehr kommen, sonst bleibt das Overlay auf Dauer geschlossen.
+- Was `locateAsync` zurückgibt, gilt: der Index der gerade geladenen Daten, unverändert übernommen, ohne `images` noch einmal zu lesen.
+
+## Automatisches Weiterblättern [#auto-advance]
+
+Setze `autoAdvance`, um die Galerie beim Öffnen als Diashow abzuspielen. Standardmäßig ist es aus, sodass eine bestehende Lightbox wie bisher rendert und sich wie bisher verhält.
+
+<CodeBlock code={autoAdvance} language="tsx" />
+
+- **Bilder** bleiben für `autoAdvanceInterval` stehen (standardmäßig 5000 ms), gezählt ab dem Moment, in dem das Bild geladen ist, sodass ein langsames Bild nie übersprungen wird, bevor es jemand gesehen hat. Bei einem Bild, das nicht lädt, zählt die Zeit ab dem Fehler.
+- **Videos** laufen einmal, statt zu loopen, und es geht weiter, wenn sie enden. Mit `useVideoSlideRenderer` ist das für dich verdrahtet; ein eigenes `renderSlide` liest `autoAdvance` aus seinen Props und meldet das Ende über `onEnded`.
+- **Es wartet**, solange die Maus auf einem Control ruht (einem Button, einem Link oder der Bildunterschrift), während einer Wischbewegung und solange die Seite verborgen ist, und läuft dann dort weiter, wo es aufgehört hat.
+- **Blätterst du von Hand** (Pfeile, Tasten, Mausrad, Wischen), beginnt das Intervall der neuen Slide bei null; die Diashow bleibt an.
+- **Auf der letzten Slide** hält es an, außer `loop` ist gesetzt. Der Play/Pause-Button in den Controls zeigt den Zustand und lässt die Betrachtenden umschalten.
+
+Ein eigenes `renderControls` bekommt `isAutoAdvancing` und, nur wenn `autoAdvance` an ist, `onToggleAutoAdvance`. Rendere einen [PlayPauseButton](#playpausebutton), wenn es vorhanden ist. Das Timing selbst übernimmt `createSlideshowController` aus `@reelkit/core`; im [Guide zu Autoplay](/docs/core/guide#autoplay) baust du dasselbe Verhalten in deinen eigenen Player ein, und die [Core API](/docs/core/api#autoplay) beschreibt seine Methoden.
+
+## Download [#download]
+
+Setze `showDownload`, um den Controls einen Download-Button hinzuzufügen. Er speichert das aktive Element von seiner `downloadUrl`, ersatzweise von `src`, unter seinem `downloadName`, ersatzweise unter dem letzten Abschnitt der URL.
+
+<CodeBlock code={download} language="tsx" />
+
+Die Datei wird geladen und gespeichert, weil ein Browser das Attribut `download` bei einem Link auf einen anderen Origin ignoriert und die Datei stattdessen öffnen würde. Schlägt das Laden fehl (meist ein Server auf einem anderen Origin, der keine CORS-Header sendet), öffnet sich die Datei in einem neuen Tab, wo man sie trotzdem speichern kann. Liefere die Dateien mit `Access-Control-Allow-Origin` aus, damit ein Klick zum Speichern reicht. Während ein Download läuft, ist der Button deaktiviert.
+
+Ein eigenes `renderControls` bekommt `isDownloading` und, nur wenn `showDownload` an ist, `onDownload`. Rendere einen [DownloadButton](#downloadbutton), wenn es vorhanden ist. Die Hilfsfunktion ist `downloadFile` aus `@reelkit/core`; mehr dazu im [Guide zu Downloads](/docs/core/guide#download).
+
+## API-Referenz [#api-reference]
+
+### Props von LightboxOverlay [#lightboxoverlay-props]
+
+<Signature>LightboxOverlayProps</Signature>
+
+| Prop | Typ | Standard | Beschreibung |
+| --- | --- | --- | --- |
+| `isOpen` | `boolean` | Pflicht | Steuert die Sichtbarkeit der Lightbox. Soll die URL steuern, ob sie offen ist, nimm stattdessen die eigene Komponente LightboxUrlOverlay; siehe den URL-State weiter oben. |
+| `images` | `LightboxItem[]` | Pflicht | Array der anzuzeigenden Bilder |
+| `ariaLabel` | `string` | 'Image gallery' | Zugängliche Beschriftung des Dialogbereichs; Screenreader lesen sie vor, wenn sich die Lightbox öffnet |
+| `initialIndex` | `number` | 0 | Index des ersten Bildes |
+| `transitionFn` | `TransitionTransformFn` | slideTransition | Funktion für den Slide-Übergang. Importiere eine eingebaute (slideTransition, flipTransition, lightboxFadeTransition, lightboxZoomTransition) oder übergib eine eigene. Ohne Angabe gilt slideTransition. |
+| `autoAdvance` | `boolean` | false | Spielt die Galerie als Diashow ab. Siehe [Automatisches Weiterblättern](#auto-advance). |
+| `autoAdvanceInterval` | `number` | 5000 | Wie lange jedes Bild in einer Diashow stehen bleibt, in Millisekunden, gezählt ab dem Laden |
+| `showDownload` | `boolean` | false | Fügt einen Download-Button für das aktive Element hinzu. Siehe [Download](#download). |
+| `apiRef` | `MutableRefObject<ReelApi>` | - | Ref für den Zugriff auf die Reel-API |
+| `renderControls` | `(props: ControlsRenderProps) => ReactNode` | - | Eigene Controls, ersetzt den Standard-Schließen-Button, den Zähler und den Vollbild-Schalter |
+| `renderNavigation` | `(props: NavigationRenderProps) => ReactNode` | - | Eigene Navigation, ersetzt die Standard-Pfeile für zurück und weiter |
+| `renderInfo` | `(props: InfoRenderProps) => ReactNode` | - | Eigenes Info-Overlay, ersetzt den Standard-Verlauf mit Titel und Beschreibung. Gib null zurück, um es auszublenden. |
+| `renderSlide` | `(props: SlideRenderProps) => ReactNode \| null` | - | Eigenes Rendering der Slide. Bekommt \{ item, index, size, isActive, autoAdvance, onReady, onWaiting, onError, onEnded \}. Gib null zurück, um auf den Standard zurückzufallen. |
+| `renderLoading` | `(props: { item: LightboxItem; activeIndex: number }) => ReactNode` | - | Eigene Ladeanzeige, ersetzt den Standard-Spinner |
+| `renderError` | `(props: { item: LightboxItem; activeIndex: number }) => ReactNode` | - | Eigene Fehleranzeige, ersetzt das Standard-Fehlersymbol |
+
+### Props von LightboxUrlOverlay [#lightboxurloverlay-props]
+
+<Signature>LightboxUrlOverlayProps</Signature>
+
+Nimmt jedes Darstellungs- und Verhaltens-Prop von oben außer `isOpen` und ersetzt es durch einen `controller`. `initialIndex` wird hier ignoriert: Die Position des Controllers bestimmt die Slide, daher würde ein zusätzlich übergebener Wert bei jedem Öffnen überschrieben.
+
+| Prop | Typ | Standard | Beschreibung |
+| --- | --- | --- | --- |
+| `controller` | `UrlStateController` | Pflicht | Controller aus useOverlayUrlState. Seine Position entscheidet, ob das Overlay offen ist und welche Slide es zeigt; das Overlay schreibt beim Slide-Wechsel und beim Schließen über ihn zurück. |
+
+### Callbacks [#callbacks]
+
+| Prop | Typ | Beschreibung |
+| --- | --- | --- |
+| `onClose` | `() => void` | Wird aufgerufen, wenn sich die Lightbox schließt. Erforderlich bei LightboxOverlay (du steuerst, ob sie offen ist, also musst du das Schließen behandeln); optional bei LightboxUrlOverlay, wo die URL das Schließen steuert. Übergib es dort nur, um nach dem Schließen zu reagieren. |
+| `onSlideChange` | `(index: number) => void` | Wird nach einem Slide-Wechsel aufgerufen |
+
+### Reel-Props (durchgereicht) [#reel-props-proxied]
+
+Diese Props werden an die zugrunde liegende Komponente [Reel](/docs/react/api#reel-props) weitergegeben.
+
+| Prop | Typ | Standard | Beschreibung |
+| --- | --- | --- | --- |
+| `loop` | `boolean` | false | Aktiviert die Endlosschleife |
+| `enableNavKeys` | `boolean` | true | Aktiviert die Tastaturnavigation |
+| `enableWheel` | `boolean` | true | Aktiviert die Navigation mit dem Mausrad |
+| `wheelDebounceMs` | `number` | 200 | Debounce-Dauer für das Mausrad (ms) |
+| `transitionDuration` | `number` | 300 | Dauer der Übergangsanimation (ms) |
+| `swipeDistanceFactor` | `number` | 0.12 | Schwelle für das Wischen (0-1) |
+| `swipeToCloseDirection` | `'up' \| 'down'` | 'up' | Richtung der Geste zum Schließen auf Mobilgeräten |
+
+## Typen [#types]
+
+### LightboxItem [#lightboxitem]
+
+<CodeBlock code={lightboxitem} language="typescript" />
+
+### ControlsRenderProps [#controlsrenderprops]
+
+<CodeBlock code={controlsrenderprops} language="typescript" />
+
+### NavigationRenderProps [#navigationrenderprops]
+
+<CodeBlock code={navigationrenderprops} language="typescript" />
+
+### SlideRenderProps [#sliderenderprops]
+
+<CodeBlock code={sliderenderprops} language="typescript" />
+
+### InfoRenderProps [#inforenderprops]
+
+<CodeBlock code={inforenderprops} language="typescript" />
+
+## Unterkomponenten [#sub-components]
+
+Wiederverwendbare Unterkomponenten, mit denen du über `renderControls` eigene Controls zusammenstellst.
+
+### CloseButton [#closebutton]
+
+Standard-Schließen-Button mit X.
+
+<CodeBlock code={closebutton} language="tsx" />
+
+### Counter [#counter]
+
+Zähler für die Bilder als Pille, zeigt "1 / 3".
+
+<CodeBlock code={counter} language="tsx" />
+
+### FullscreenButton [#fullscreenbutton]
+
+Schalter für das Vollbild (Icon Maximize/Minimize).
+
+<CodeBlock code={fullscreenbutton} language="tsx" />
+
+### SoundButton [#soundbutton]
+
+Schalter für den Ton auf Video-Slides (Icon Volume2/VolumeX). Ist in `renderControls` aus `useVideoSlideRenderer` automatisch enthalten. Für den eigenständigen Einsatz in eigenen Controls greifst du über `useSoundState` auf den Tonzustand zu.
+
+<CodeBlock code={soundbutton} language="tsx" />
+
+### PlayPauseButton [#playpausebutton]
+
+Schalter für die Diashow (Icon Play/Pause, `aria-pressed` während der Wiedergabe). Props (`PlayPauseButtonProps`): `isPlaying`, `onToggle`, optional `className` und `style`. Die Standard-Controls zeigen ihn, wenn `autoAdvance` an ist.
+
+<CodeBlock code={playpausebutton} language="tsx" />
+
+### DownloadButton [#downloadbutton]
+
+Download-Button (Icon Download), deaktiviert während `isDownloading`. Props (`DownloadButtonProps`): `isDownloading`, `onClick`, optional `className` und `style`. Die Standard-Controls zeigen ihn, wenn `showDownload` an ist.
+
+<CodeBlock code={downloadbutton} language="tsx" />
+
+## Hooks [#hooks]
+
+### useVideoSlideRenderer [#usevideosliderenderer]
+
+Hook für die optionale Video-Unterstützung. Gibt `renderSlide`, `renderControls` und `SoundProvider` zurück: Umschließe das Overlay mit SoundProvider und übergib die Render-Funktionen.
+
+<CodeBlock code={usevideosliderenderer} language="typescript" />
+
+### useFullscreen [#usefullscreen]
+
+Hook für den Vollbild-Zustand mit browserübergreifender Unterstützung.
+
+<CodeBlock code={usefullscreen} language="tsx" />
+
+## Transitions [#transitions]
+
+Übergib eine beliebige `TransitionTransformFn` über das Prop `transitionFn`. Importierst du nur die Transition, die du nutzt, kann der Bundler den Rest per Tree-Shaking entfernen. Ohne Angabe gilt `slideTransition`.
+
+| Funktion | Aus | Beschreibung |
+| --- | --- | --- |
+| `slideTransition` | `@reelkit/react-lightbox` | Normaler horizontaler Slide (Standard) |
+| `lightboxFadeTransition` | `@reelkit/react-lightbox` | Überblendung zwischen den Bildern |
+| `flipTransition` | `@reelkit/react-lightbox` | Effekt einer umgedrehten 3D-Karte |
+| `lightboxZoomTransition` | `@reelkit/react-lightbox` | Zoomt von kleiner auf normale Größe |
+
+<CodeBlock code={transitions} language="tsx" />
+
+### Eigene Transition-Funktion [#custom-transition-function]
+
+Schreib deine eigene `TransitionTransformFn` und übergib sie über `transitionFn`. Die Signatur entspricht den Transitions des Core-Sliders.
+
+<CodeBlock code={customTransitionFunction} language="tsx" />
+
+## CSS-Klassen [#css-classes]
+
+Alle UI-Elemente verwenden einfache CSS-Klassen (keine CSS Modules), die du mit spezifischeren Selektoren in einem Stylesheet ansprechen kannst, das nach `@reelkit/react-lightbox/styles.css` geladen wird. Für Änderungen an Farbe, Größe und z-index nimm lieber die CSS Custom Properties, die unten im Abschnitt [Theming](#theming) beschrieben sind.
+
+| Klasse | Komponente | Beschreibung |
+| --- | --- | --- |
+| `.rk-lightbox-overlay` | Overlay | Root-Container (Vollbild-Hintergrund) |
+| `.rk-lightbox-spinner` | Overlay | Standard-Spinner beim Laden |
+| `.rk-lightbox-img-error` | Overlay | Container für den Fehlerzustand (kaputtes Bild oder Video) |
+| `.rk-lightbox-img-error-text` | Overlay | Textlabel für den Fehlerzustand |
+| `.rk-lightbox-swipe-hint` | Overlay | Wisch-Hinweis auf Mobilgeräten |
+| `.rk-lightbox-controls-left` | Controls | Container der Controls oben links |
+| `.rk-lightbox-btn` | Controls | Buttons der Controls (Vollbild und so weiter) |
+| `.rk-lightbox-play-pause` | Controls | Play/Pause-Button der Diashow (mit `.rk-lightbox-btn`) |
+| `.rk-lightbox-download` | Controls | Download-Button (mit `.rk-lightbox-btn`) |
+| `.rk-lightbox-close` | Controls | Schließen-Button |
+| `.rk-lightbox-counter` | Controls | Chip mit dem Bildzähler |
+| `.rk-lightbox-nav` | Navigation | Navigationspfeile (beide) |
+| `.rk-lightbox-nav-prev` | Navigation | Pfeil zurück |
+| `.rk-lightbox-nav-next` | Navigation | Pfeil weiter |
+| `.rk-lightbox-info` | Info | Container für Titel und Beschreibung |
+| `.rk-lightbox-title` | Info | Titel des Bildes |
+| `.rk-lightbox-description` | Info | Beschreibung des Bildes |
+| `.rk-lightbox-slide` | Slide | Container der Slide |
+| `.rk-lightbox-img` | Slide | Bild-Element |
+| `.rk-lightbox-video-container` | VideoSlide | Container der Video-Slide (optional) |
+| `.rk-lightbox-video-element` | VideoSlide | Video-Element (optional) |
+| `.rk-lightbox-video-poster` | VideoSlide | Posterbild des Videos (optional) |
+
+## Theming [#theming]
+
+Jede Farbe, Größe, jeder z-index und jede Transition steckt in einer CSS Custom Property. Überschreibe eine oder mehrere auf `:root` (oder einem beliebigen Vorfahren der Lightbox), um das Aussehen zu ändern, ohne den Quellcode der Komponente anzufassen.
+
+| Token | Standard | Steuert |
+| --- | --- | --- |
+| `--rk-lightbox-overlay-bg` | `#000` | Farbe des Vollbild-Hintergrunds |
+| `--rk-lightbox-overlay-z` | `9999` | z-index des Overlays |
+| `--rk-lightbox-top-shade-height` | `80px` | Höhe des Verlaufs oben |
+| `--rk-lightbox-top-shade-bg` | `linear-gradient(rgba(0,0,0,0.6), transparent)` | Farbe des Verlaufs oben |
+| `--rk-lightbox-edge-padding` | `16px` | Randabstand für Schließen, Navigation und die Controls oben links |
+| `--rk-lightbox-controls-gap` | `12px` | Abstand zwischen den Controls oben links |
+| `--rk-lightbox-transition` | `0.2s` | Dauer der Hover-Transition der Buttons |
+| `--rk-lightbox-blur` | `8px` | Radius der Hintergrund-Unschärfe für Buttons und Chips |
+| `--rk-lightbox-btn-bg` | `rgba(0, 0, 0, 0.5)` | Standard-Hintergrund für Schließen, Navigation und kleine Buttons |
+| `--rk-lightbox-btn-bg-hover` | `rgba(255, 255, 255, 0.2)` | Hover-Hintergrund für Schließen, Navigation und kleine Buttons |
+| `--rk-lightbox-btn-fg` | `#fff` | Icon-Farbe für Schließen, Navigation und kleine Buttons |
+| `--rk-lightbox-btn-size` | `36px` | Größe der kleinen Buttons (Vollbild-Schalter und so weiter) |
+| `--rk-lightbox-btn-disabled-opacity` | `0.5` | Deckkraft eines deaktivierten kleinen Buttons (laufender Download) |
+| `--rk-lightbox-close-size` | `40px` | Größe des Schließen-Buttons |
+| `--rk-lightbox-nav-size` | `48px` | Größe der Pfeile für zurück und weiter |
+| `--rk-lightbox-nav-opacity` | `0.7` | Deckkraft der Pfeile im Ruhezustand |
+| `--rk-lightbox-counter-fg` | `#fff` | Textfarbe des Zählers |
+| `--rk-lightbox-counter-bg` | `rgba(0, 0, 0, 0.5)` | Hintergrund des Zähler-Chips |
+| `--rk-lightbox-counter-size` | `14px` | Schriftgröße des Zählers |
+| `--rk-lightbox-counter-padding` | `6px 12px` | Innenabstand des Zähler-Chips |
+| `--rk-lightbox-counter-radius` | `20px` | Eckenradius des Zähler-Chips |
+| `--rk-lightbox-spinner-size` | `28px` | Breite und Höhe des Standard-Spinners |
+| `--rk-lightbox-spinner-track` | `rgba(255, 255, 255, 0.2)` | Farbe der Spinner-Spur |
+| `--rk-lightbox-spinner-fg` | `#fff` | Farbe der Spinner-Anzeige |
+| `--rk-lightbox-spinner-duration` | `0.8s` | Dauer einer Spinner-Umdrehung |
+| `--rk-lightbox-error-fg` | `rgba(255, 255, 255, 0.4)` | Farbe von Fehlersymbol und Fehlertext |
+| `--rk-lightbox-error-text-size` | `13px` | Schriftgröße der Fehlermeldung |
+| `--rk-lightbox-info-bg` | `linear-gradient(transparent, rgba(0,0,0,0.8))` | Verlauf hinter der Bildunterschrift |
+| `--rk-lightbox-info-padding` | `24px` | Innenabstand der Bildunterschrift |
+| `--rk-lightbox-title-size` | `18px` | Schriftgröße des Titels |
+| `--rk-lightbox-description-size` | `14px` | Schriftgröße der Beschreibung |
+| `--rk-lightbox-info-fg` | `#fff` | Textfarbe der Bildunterschrift |
+| `--rk-lightbox-hint-fg` | `rgba(255, 255, 255, 0.5)` | Textfarbe des Wisch-Hinweises |
+| `--rk-lightbox-hint-bg` | `rgba(0, 0, 0, 0.3)` | Hintergrund des Chips mit dem Wisch-Hinweis |
+| `--rk-lightbox-hint-duration` | `3s` | Gesamtdauer für das Ein- und Ausblenden des Wisch-Hinweises |
+| `--rk-lightbox-video-bg` | `#000` | Letterbox-Hintergrund hinter \<video> |
+
+Füge das Snippet unten in ein Stylesheet ein, das nach `@reelkit/react-lightbox/styles.css` geladen wird.
+
+<CodeBlock code={theming} language="css" />
+
+## Barrierefreiheit [#accessibility]
+
+Die Wurzel des Overlays ist ein modaler Dialog (`role="dialog"`, `aria-modal="true"`). Mit `ariaLabel` änderst du, was der Screenreader ansagt; standardmäßig ist es "Image gallery". Jede Slide trägt `role="group"`, `aria-roledescription="slide"` und `aria-label="Image N of M"`.
+
+Die Lightbox holt beim Öffnen den Fokus und gibt ihn beim Schließen an den Auslöser zurück. Tab und Umschalt+Tab wechseln zwischen den fokussierbaren Elementen darin; Fokus, der entwischt (ein Klick daneben, ein Fokus per Code), wird zurückgeholt. Umgesetzt mit `captureFocusForReturn` und `createFocusTrap` aus `@reelkit/core`.
+
+## Tastenkürzel [#keyboard-shortcuts]
+
+| Taste | Aktion |
+| --- | --- |
+| `ArrowLeft` | Vorheriges Bild |
+| `ArrowRight` | Nächstes Bild |
+| `Escape` | Schließt die Lightbox (oder beendet das Vollbild, falls aktiv) |

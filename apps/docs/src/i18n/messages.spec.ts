@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { kLocales } from './locale';
+import { homeMessages } from './home';
+import { kLocales, type Locale } from './locale';
 import { messages } from './messages';
 
 /**
@@ -84,5 +85,40 @@ describe('chrome dictionaries', () => {
     expect(since(2)).toContain('2 nuevas versiones');
     expect(messages.es.whatsNew.more(1)).toBe('+1 versión más');
     expect(messages.es.whatsNew.more(3)).toBe('+3 versiones más');
+  });
+
+  // German splits counts two ways: one, and everything else.
+  it('picks the German plural form for each count', () => {
+    const since = messages.de.whatsNew.since;
+    expect(since(1)).toContain('1 neue Version ');
+    expect(since(2)).toContain('2 neue Versionen');
+    expect(messages.de.whatsNew.more(1)).toBe('+1 weitere Version');
+    expect(messages.de.whatsNew.more(3)).toBe('+3 weitere Versionen');
+  });
+});
+
+describe('landing page dictionaries', () => {
+  // A dictionary copied over from English compiles and has the right shape,
+  // and the freshness record only notices English changing later. These are
+  // the lines a reader meets first, none of them a product name.
+  it('translates the headline copy in every locale', () => {
+    const headline = (locale: Locale) => {
+      const home = homeMessages[locale];
+      return [
+        home.meta.description,
+        home.hero.subtitle,
+        ...home.virtualization.steps.map((step) => step.title),
+        ...home.features.highlights.map((highlight) => highlight.title),
+      ];
+    };
+    const english = headline('en');
+    for (const locale of kLocales) {
+      if (locale === 'en') continue;
+      headline(locale).forEach((line, index) =>
+        expect(line, `${locale} keeps the English "${line}"`).not.toBe(
+          english[index],
+        ),
+      );
+    }
   });
 });

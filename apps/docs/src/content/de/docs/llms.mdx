@@ -1,0 +1,92 @@
+---
+title: KI- / LLM-Integration
+description: Maschinenlesbare Dokumentation für KI-Assistenten beim Programmieren — llms.txt, llms-full.txt, das Context7-Manifest und die WebMCP-Tools.
+---
+
+import { FileText, Sparkles, Bot, Globe } from 'lucide-react';
+import agentPrompt from '../../snippets/llms/agent-prompt.txt?raw';
+import directIngestion from '../../snippets/llms/direct-ingestion.sh?raw';
+
+Maschinenlesbare Dokumentation für KI-Assistenten beim Programmieren.
+
+<FeatureGrid columns={4} items={[
+            {
+              icon: FileText,
+              label: 'llms.txt',
+              desc: 'Kompakter Index der Links. Jede Seite der Dokumentation in einer Datei. Wird bei jedem Build aktualisiert.',
+            },
+            {
+              icon: Sparkles,
+              label: 'llms-full.txt',
+              desc: 'Vollständiger Korpus mit einer Zusammenfassung pro Seite. Der ganze Kontext mit einer einzigen Anfrage.',
+            },
+            {
+              icon: Bot,
+              label: 'context7',
+              desc: 'Live indexiertes Manifest. Nutze es mit dem MCP-Server @context7.',
+            },
+            {
+              icon: Globe,
+              label: 'WebMCP',
+              desc: 'Browser-Tools für Agenten: Seiten auflisten, durchsuchen, lesen und öffnen.',
+            },
+          ]} />
+
+<Callout type="info">
+  Beide \`.txt\`-Endpunkte werden bei jedem Build der Dokumentation neu erzeugt. Der Korpus folgt der veröffentlichten Website.
+</Callout>
+
+## Endpunkte [#endpoints]
+
+| Endpunkt | Wofür |
+| --- | --- |
+| [`/llms.txt`](https://reelkit.dev/llms.txt) | Indexierte Liste der Links zu jeder Seite der Dokumentation. Füge sie in den Kontext eines beliebigen LLM ein. |
+| [`/llms-full.txt`](https://reelkit.dev/llms-full.txt) | Derselbe Index, ergänzt um die Zusammenfassung jeder Seite. Der vollständige Korpus mit einer einzigen Anfrage. |
+| [`context7.com/websites/reelkit_dev`](https://context7.com/websites/reelkit_dev) | Live indexiertes Manifest von Context7. Binde es über den MCP-Server @context7 ein. |
+
+## Schnellstart [#quick-start]
+
+### Prompt für den Agenten [#agent-prompt]
+
+Füge die URL eines Endpunkts in den Agenten ein, damit er seine Antworten auf die aktuelle Dokumentation stützt.
+
+<CodeBlock code={agentPrompt} language="text" />
+
+### MCP-Server von Context7 [#context7-mcp-server]
+
+Installiere den MCP-Server [@context7](https://github.com/upstash/context7). Der Agent findet das Manifest von ReelKit selbst und lädt die Dokumentation, wenn er sie braucht. Erwähne `reelkit` in deinem Prompt.
+
+### Direkt einlesen [#direct-ingestion]
+
+Programmatisch abrufen:
+
+<CodeBlock code={directIngestion} language="bash" />
+
+## Agenten im Browser (WebMCP) [#webmcp]
+
+Jede Seite auf reelkit.dev registriert [WebMCP](https://webmachinelearning.github.io/webmcp/)-Tools. Ein KI-Agent, der in deinem Browser läuft, liest die Dokumentation also direkt, statt die gerenderte Seite auszulesen.
+
+| Tool | Wofür |
+| --- | --- |
+| `list_pages` | Jede Seite der Dokumentation mit Titel, URL und Gruppe. |
+| `search_docs` | Die Suche der Website über `query`, optional mit `locale` und `framework`. Bis zu 20 Treffer, Anker der Abschnitte inklusive. |
+| `get_page` | Eine Seite als Markdown: der englische Text, den `llms-full.txt` für sie enthält. |
+| `open_page` | Öffnet eine Seite im aktuellen Tab, in der Sprache, in der du gerade liest, auf Wunsch an einem bestimmten Abschnitt. |
+
+<Callout type="info">
+  WebMCP ist ein Entwurf für einen Standard. Auf reelkit.dev funktioniert es in Chrome 149 bis 156 über einen Origin Trial; anderswo braucht Chrome `chrome://flags/#enable-webmcp-testing`. Browser ohne WebMCP laden nichts zusätzlich. Die Tools lesen nur die öffentliche Dokumentation: keine Cookies, kein Speicher, keine Anfragen an andere Websites.
+</Callout>
+
+## Was indexiert wird [#what-gets-indexed]
+
+- Erste Schritte + Installation
+- Leitfaden und API der Core-Engine
+- Bindings für React, Vue und Angular (Leitfaden + API + Reel Player + Lightbox + Stories Player)
+- Engine von Stories Core
+- Hinweise zu SSR
+- Fehlerbehebung
+- Versionshistorie
+
+## Warum? [#why]
+
+KI-Assistenten hinken Änderungen an Bibliotheken hinterher. Generierter Code verweist auf veraltete APIs. Diese Endpunkte werden mit jedem Release der Dokumentation aktualisiert, sodass die Vorschläge zum aktuellen Verhalten passen und nicht zu dem des letzten Quartals.

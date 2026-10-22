@@ -6,6 +6,7 @@ import { ptCategories, ptKeywords, ptTitles } from './searchData.pt';
 import { jaCategories, jaKeywords, jaTitles } from './searchData.ja';
 import { hiCategories, hiKeywords, hiTitles } from './searchData.hi';
 import { esCategories, esKeywords, esTitles } from './searchData.es';
+import { deCategories, deKeywords, deTitles } from './searchData.de';
 
 export interface SearchItem {
   title: string;
@@ -2601,7 +2602,7 @@ export const searchItems: SearchItem[] = [
     path: '/docs/ssr',
     category: 'Overview',
     framework: 'angular',
-    sectionTitle: 'Angular Universal / SSR',
+    sectionTitle: 'Angular SSR',
     sectionAnchor: 'angular-universal-ssr',
     keywords: ['angular', 'universal', 'ssr'],
   },
@@ -3257,6 +3258,10 @@ export const searchItems: SearchItem[] = [
  * accents come off, which is what lets `instalacao` find `Instalação` on a
  * keyboard without a cedilla.
  *
+ * `ß` is a letter of its own rather than a marked `s`, so no decomposition
+ * reaches it. It becomes `ss`, the spelling German falls back to without the
+ * key, after lowercasing so the capital `ẞ` goes the same way.
+ *
  * Only the Latin combining range is stripped. `\p{M}` would take the dakuten
  * with it and fold `ダ` into `タ`, turning two different kana into one and
  * matching words nobody searched for.
@@ -3270,7 +3275,8 @@ export function foldForSearch(text: string): string {
     .normalize('NFKC')
     .normalize('NFD')
     .replace(_kLatinCombiningMarks, '')
-    .toLowerCase();
+    .toLowerCase()
+    .replaceAll('ß', 'ss');
 }
 
 /** Whether one index entry answers a query, both sides folded. */
@@ -3336,6 +3342,7 @@ const _kDictionaries: Partial<Record<Locale, SearchDictionary>> = {
   ja: { titles: jaTitles, categories: jaCategories, keywords: jaKeywords },
   hi: { titles: hiTitles, categories: hiCategories, keywords: hiKeywords },
   es: { titles: esTitles, categories: esCategories, keywords: esKeywords },
+  de: { titles: deTitles, categories: deCategories, keywords: deKeywords },
 };
 
 const _kLocalisedItems = new Map<Locale, SearchItem[]>();

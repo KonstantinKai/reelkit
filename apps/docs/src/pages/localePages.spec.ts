@@ -66,6 +66,10 @@ const localeMarkers: Record<Exclude<Locale, 'en'>, RegExp> = {
   // Chinese carries none, so a page copied over from the Chinese tree fails.
   ja: /[\u3040-\u30ff]/,
   hi: /[\u0900-\u097f]/,
+  // German shares its letters with English, so the marker is a word no
+  // English sentence uses. `die` is an English verb and `mit` is the MIT
+  // licence, so both stay out.
+  de: /(?<!\p{L})(der|den|dem|und|oder|ist|f\u00fcr|eine?|wird|nicht|auf)(?!\p{L})/iu,
 };
 
 const markerFor = (locale: Locale) =>
@@ -138,7 +142,42 @@ const translatedProductNames = [
   'reproductor de historias',
   'Núcleo de Stories',
   'núcleo de stories',
+  // German joins nouns into one word, which pulls a product name into a
+  // hyphenated compound such as `Reel-Player-Overlay`. The name stays two
+  // separate words, so the hyphenated forms are what a slip looks like.
+  'Reel-Player',
+  'Reels-Player',
+  'Reel Spieler',
+  'Leuchtkasten',
+  'Lichtbox',
+  'Stories-Player',
+  'Story-Player',
+  'Geschichten-Player',
+  'Stories-Kern',
+  'Stories Kern',
+  'Lightbox-Komponente',
 ];
+
+// A page copied over from any other tree must not pass as German.
+describe('German marker', () => {
+  it.each(kLocales.filter((locale) => locale !== 'de'))(
+    'matches no %s page description',
+    async (locale) => {
+      const matched: string[] = [];
+      for (const file of await filesUnder(
+        join(contentDir, locale),
+        '**/*.mdx',
+      )) {
+        const source = read(join(contentDir, locale, file));
+        const description = frontmatterValue(source, 'description');
+        if (localeMarkers.de.test(withoutCode(description))) {
+          matched.push(`${locale}/${file}: ${description}`);
+        }
+      }
+      expect(matched, matched.join('\n')).toEqual([]);
+    },
+  );
+});
 
 // A page copied over from the English or the Portuguese tree must not pass as
 // Spanish, so the Spanish marker may not match a single description there.
@@ -153,6 +192,21 @@ describe('Spanish marker', () => {
       }
     }
     expect(matched, matched.join('\n')).toEqual([]);
+  });
+});
+
+// The landing page and the site chrome keep their copy in dictionaries
+// rather than page modules, so the page checks below never read them.
+describe.each(translated)('%s dictionaries', (locale) => {
+  it('leaves the product names in English', () => {
+    const offenders: string[] = [];
+    for (const dictionary of [`home/${locale}.ts`, `messages/${locale}.ts`]) {
+      const source = read(join(appDir, 'i18n', dictionary));
+      for (const name of translatedProductNames) {
+        if (source.includes(name)) offenders.push(`${dictionary}: ${name}`);
+      }
+    }
+    expect(offenders, offenders.join('\n')).toEqual([]);
   });
 });
 

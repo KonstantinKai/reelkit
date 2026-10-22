@@ -161,6 +161,16 @@ describe('locale helpers', () => {
     );
   });
 
+  // German is written with Germany's spelling, but a bare tag keeps the pages
+  // open to readers in Austria and Switzerland.
+  it('tags German without a region', () => {
+    expect(kLocaleTags.de).toBe('de');
+    expect(readLocaleFromPath('/de/docs/ssr')).toBe('de');
+    expect(localeUrl('de', '/docs/ssr')).toBe(
+      'https://reelkit.dev/de/docs/ssr',
+    );
+  });
+
   it('gives every non-English locale its own prefix', () => {
     const prefixes = kLocales
       .filter((locale) => locale !== 'en')

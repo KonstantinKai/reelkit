@@ -155,6 +155,26 @@ test('horizontal keyboard navigation in nested slider', async ({ page }) => {
   await expect(page.locator('h1', { hasText: 'Slide 3.2' })).toBeVisible();
 });
 
+test('nested slider arrows move only the nested slider', async ({ page }) => {
+  const slider = new SliderPage(page);
+  await slider.clickNext();
+  await slider.waitForAnimation();
+  await slider.clickNext();
+  await slider.waitForAnimation();
+
+  await page.getByTestId('nested-next').click();
+  await slider.waitForAnimation();
+  await expect(page.locator('h1', { hasText: 'Slide 3.2' })).toBeInViewport();
+
+  await page.getByTestId('nested-prev').click();
+  await slider.waitForAnimation();
+  // Exact match: the looped nested slider also renders Slide 3.10 beside it.
+  await expect(
+    page.locator('h1', { hasText: /^\s*Slide 3\.1\s*$/ }),
+  ).toBeInViewport();
+  await expect(page.locator('text=3 / 10,000')).toBeVisible();
+});
+
 test('auto-size mode toggle', async ({ page }) => {
   const sizeBtn = page.locator('button', { hasText: /size:/ });
   await expect(sizeBtn).toContainText('[');

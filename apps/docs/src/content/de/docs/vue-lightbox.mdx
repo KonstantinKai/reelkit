@@ -1,0 +1,434 @@
+---
+title: Vue Lightbox
+description: Die Lightbox ist ein Vollbild-Overlay für Bildergalerien in Vue 3. Schema von LightboxItem, Props, Emits, Scoped Slots, tree-shakebare transitionFn, Wischen zum Schließen und dasselbe Theming wie die Lightbox für React.
+---
+
+import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2, Play, Download } from 'lucide-react';
+import installation from '../../snippets/vue-lightbox/installation.sh?raw';
+import installation2 from '../../snippets/vue-lightbox/installation-2.ts?raw';
+import basicUsageCode from '../../snippets/vue-lightbox/basic-usage-code.vue?raw';
+import slotsExampleCode from '../../snippets/vue-lightbox/slots-example-code.vue?raw';
+import videoOptInCode from '../../snippets/vue-lightbox/video-opt-in-code.vue?raw';
+import fullscreenCode from '../../snippets/vue-lightbox/fullscreen-code.vue?raw';
+import urlState from '../../snippets/vue-lightbox/url-state.vue?raw';
+import urlState2 from '../../snippets/vue-lightbox/url-state-2.vue?raw';
+import urlState3 from '../../snippets/vue-lightbox/url-state-3.vue?raw';
+import urlState4 from '../../snippets/vue-lightbox/url-state-4.vue?raw';
+import urlState5 from '../../snippets/vue-lightbox/url-state-5.vue?raw';
+import customTransitionCode from '../../snippets/vue-lightbox/custom-transition-code.vue?raw';
+import lifecycleSlideCode from '../../snippets/vue-lightbox/lifecycle-slide-code.vue?raw';
+import customLoadingCode from '../../snippets/vue-lightbox/custom-loading-code.vue?raw';
+import customErrorCode from '../../snippets/vue-lightbox/custom-error-code.vue?raw';
+import themingCode from '../../snippets/vue-lightbox/theming-code.css?raw';
+import autoAdvanceCode from '../../snippets/vue-lightbox/auto-advance.vue?raw';
+import downloadCode from '../../snippets/vue-lightbox/download.vue?raw';
+
+Lightbox für Bilder- und Videogalerien im Vollbild für Vue 3, gebaut auf `@reelkit/vue-lightbox`.
+
+<DemoLink href="https://vue-demo.reelkit.dev/image-preview?utm_source=docs">Live-Demo ansehen →</DemoLink>
+
+## Funktionen [#features]
+
+<FeatureGrid items={[
+              {
+                icon: Image,
+                label: 'Bilder und Video',
+                desc: 'Video-Slides eingebaut',
+              },
+              {
+                icon: MousePointer,
+                label: 'Touch-Gesten',
+                desc: 'Wischen zum Navigieren',
+              },
+              {
+                icon: X,
+                label: 'Wischen zum Schließen',
+                desc: 'Nach oben wischen zum Schließen',
+              },
+              {
+                icon: Keyboard,
+                label: 'Tastatur',
+                desc: 'Pfeiltasten + Escape',
+              },
+              {
+                icon: Maximize2,
+                label: 'Vollbild',
+                desc: 'API für alle Browser',
+              },
+              {
+                icon: Hash,
+                label: 'Übergänge',
+                desc: 'Slide, Fade, Flip, Zoom-in',
+              },
+              {
+                icon: Zap,
+                label: 'Vorladen',
+                desc: '±2 Nachbarn vorab geladen',
+              },
+              {
+                icon: Volume2,
+                label: 'Ton an/aus',
+                desc: 'Stummschalten pro Slide',
+              },
+              {
+                icon: Loader,
+                label: 'Ladezustände',
+                desc: 'Spinner + eigener Slot',
+              },
+              {
+                icon: AlertTriangle,
+                label: 'Fehlerbehandlung',
+                desc: 'Fehlersymbol + eigener Slot',
+              },
+              {
+                icon: Layers,
+                label: 'Scoped Slots',
+                desc: '6 anpassbare Slot-Bereiche',
+              },
+              {
+                icon: Layers,
+                label: 'v-model',
+                desc: 'Zwei-Wege-Bindung mit v-model:is-open',
+              },
+              {
+                icon: Link2,
+                label: 'URL-State',
+                desc: 'Teilbare Links mit Lesezeichen',
+              },
+              {
+                icon: Play,
+                label: 'Diashow',
+                desc: 'Optionales Weiterschalten mit Play/Pause',
+              },
+              {
+                icon: Download,
+                label: 'Download',
+                desc: 'Optionaler Button, der das aktive Element speichert',
+              },
+            ]} />
+
+## Installation [#installation]
+
+<CodeBlock code={installation} language="bash" />
+
+Vergiss nicht, die Styles zu importieren:
+
+<CodeBlock code={installation2} language="typescript" />
+
+<Callout type="info" title="Icons">
+  Die Standard-Controls nutzen `lucide-vue-next` für die Icons. Wenn du lieber eine andere Icon-Bibliothek verwendest, liefere mit den Scoped Slots `#controls` und `#navigation` deine eigenen.
+</Callout>
+
+## Schnellstart [#quick-start]
+
+Importiere das Stylesheet und die Komponente `LightboxOverlay` und steuere Öffnen und Schließen mit `v-model:is-open`.
+
+<Sandbox code={basicUsageCode} language="vue" title="App.vue" framework="vue" stackblitzDeps={['@reelkit/vue-lightbox']} stackblitzExtraDeps={{ 'lucide-vue-next': '>=0.460.0' }} />
+
+## Scoped Slots [#scoped-slots]
+
+Mit sechs benannten Scoped Slots lässt sich jede Fläche des Overlays anpassen. Lass einen Slot weg, um den eingebauten Standard zu behalten; gib im Slot nichts aus (zum Beispiel mit `v-if="false"`), um diesen Bereich ganz auszublenden.
+
+| Slot | Scope | Beschreibung |
+| --- | --- | --- |
+| #slide | `SlideSlotScope` | Ersetzt den Inhalt einzelner Slides (für Video-Slides nötig) |
+| #controls | `ControlsSlotScope` | Ersetzt die obere Leiste mit Schließen, Zähler und Vollbild |
+| #navigation | `NavigationSlotScope` | Ersetzt die Pfeile für zurück und weiter |
+| #info | `InfoSlotScope` | Ersetzt das untere Verlaufs-Overlay mit Titel und Beschreibung |
+| #loading | `LoadingSlotScope` | Eigene Ladeanzeige |
+| #error | `ErrorSlotScope` | Eigene Fehleranzeige |
+
+<CodeBlock code={slotsExampleCode} language="vue" />
+
+## Video-Unterstützung [#video-support]
+
+Video-Slides sind optional, damit das Standard-Bundle frei von Audio- und Video-Logik bleibt. Rufe `useVideoSlideRenderer(items)` auf und gib die zurückgegebenen `VideoSlideRenderer` / `VideoControlsRenderer` an die Slots `#slide` und `#controls` des Overlays weiter. Umschließe das Overlay mit dem zurückgegebenen `SoundProvider`, damit der eingebaute Ton-Schalter einen Kontext hat.
+
+<CodeBlock code={videoOptInCode} language="vue" />
+
+<Callout type="info">
+  Das gemeinsame `<video>`-Element hinter den Video-Slides folgt demselben Muster wie der Reel Player für Vue — die Wiedergabe läuft unter iOS über Slide-Wechsel hinweg weiter, ohne eine Nutzergeste pro Slide zu verlangen.
+</Callout>
+
+## Vollbild [#fullscreen]
+
+Mit `useFullscreen` aus `@reelkit/vue` beobachtest oder schaltest du den Vollbildzustand eines referenzierten Elements. Die Lightbox steuert ihren eingebauten Vollbild-Button über dasselbe Composable.
+
+<CodeBlock code={fullscreenCode} language="vue" />
+
+## URL-State [#url-state]
+
+<DemoLink href="https://vue-demo.reelkit.dev/image-preview-url?utm_source=docs">Live-Demo ansehen →</DemoLink>
+
+Erzeuge mit `useOverlayUrlState` aus `@reelkit/vue` einen Controller und gib ihn als `controller` an `LightboxUrlOverlay`, dann gehört die Galerie der Adresszeile: Die Galerie öffnet sich, sobald der Parameter einen Slide nennt, und schließt sich, wenn der Parameter verschwindet. Links lassen sich teilen, und der Zurück-Button schließt die Galerie. Die Komponente ist von `LightboxOverlay` getrennt, damit jede genau einen Treiber für den Öffnungszustand hat — das Model `is-open` oder den URL-`controller`, nie beide.
+
+<Callout type="info" title="Eingebaute Keys">
+  Du kannst Slides mit einem eingebauten Key ansprechen — verteile `urlIndexKey` (nach Position) oder `urlStableIdKey` (nach einer stabilen `id`) in den Controller —, beide werden aus `@reelkit/vue` re-exportiert. Siehe den [Leitfaden zum URL-State](/docs/core/guide#url-state) und die [Core-API](/docs/core/api#url-state).
+</Callout>
+
+Zurück schließt nur, wenn du aus der App heraus geöffnet hast — der Link hat einen Eintrag angelegt, also führt Zurück wieder zur Galerie. Ein geteilter Link, der direkt in einem neuen Tab geöffnet wird, hat keinen Verlauf dahinter, also verlässt Zurück im Browser die Seite; der Schließen-Button oder Escape entfernt den Parameter an Ort und Stelle und lässt dich auf der Galerie.
+
+<CodeBlock code={urlState} language="vue" />
+
+Das Composable nimmt ein Options-Objekt und gibt einen `UrlStateController` zurück (mit `set`, `index`, `value`). Behalte ihn für die Steuerung aus dem Code: `set` ist der Schreibzugriff auf unterster Ebene, den das Overlay intern nutzt (Slide-Wechsel und `set(null)` zum Schließen). Damit steuerst du das Overlay auch selbst — `set(index)` öffnet es, genau wie die Navigation zum Parameter. Zum Öffnen ist ein Link trotzdem besser: Der href lässt sich teilen, öffnet sich in einem neuen Tab, und der Zurück-Button schließt ihn — alles ohne Handler.
+
+Alle Optionen von `useOverlayUrlState` (`param`, `adapter`, `codec`, `locator`): siehe die [API-Referenz für Vue](/docs/vue/api#useoverlayurlstate).
+
+`LightboxUrlOverlay` selbst nimmt nur `:controller` (Pflicht), ein Emit `@close` sowie jedes Prop für Darstellung und Verhalten, das `LightboxOverlay` weitergibt (`items`, `transition-fn`, die Scoped Slots und so weiter) — aber kein `is-open`.
+
+- Das Öffnen kostet einen Verlaufseintrag; das Blättern ersetzt ihn, also fügen hundert Wischgesten keinen hinzu — ein Schritt zurück verlässt die Galerie immer.
+- Ein geteilter Link wie `?photo=3` öffnet die Galerie bei diesem Slide. Ein Parameter, der keinen Slide nennt, wird aus der URL entfernt, statt einen Slide zu behaupten, der sich nicht öffnen lässt.
+
+**In einer App mit Router übergib einen Adapter.** Wer direkt in den Verlauf schreibt, lässt die Location des Routers veralten, und seine nächste Navigation verwirft den Parameter.
+
+<CodeBlock code={urlState2} language="vue" />
+
+**Stabile Links.** Der Index ist positionsbasiert, also öffnet ein Lesezeichen ein anderes Bild, sobald die Liste neu sortiert wird. `urlStableIdKey` verwendet die stabile `id` jedes Elements und durchsucht die aktuelle Liste — ein Aufruf deckt den üblichen Fall ab.
+
+<CodeBlock code={urlState3} language="vue" />
+
+Übergib `hashCodec: base64UrlCodec`, um die id in der URL als base64url zu kodieren — eine umkehrbare Verschleierung, kein kryptografischer Hash.
+
+Willst du nach einem anderen Feld (einem `slug`) adressieren oder einen endlosen Feed mit `locateAsync` nachladen, baust du `codec`/`locator` selbst: `codec` schreibt die Identität in die URL, `locator` findet, wo sie jetzt steht.
+
+<CodeBlock code={urlState4} language="vue" />
+
+**Endlose / paginierte Galerien.** `locate` ist synchron und kann daher nur für bereits geladene Elemente antworten — ein geteilter Link auf Bild 400 eines Feeds, der 20 geladen hat, findet nichts. `locateAsync` ist der Rückfall, der nur bei einem Fehlschlag aufgerufen wird: Lade die Seiten, die du brauchst, und gib dann den Index zurück, den die Identität tatsächlich hat.
+
+<Callout type="info" title="Abkürzung">
+  Adressierst du über die `id` des Elements? Dann spar dir Codec und Locator von Hand — übergib `locateAsync` direkt an `urlStableIdKey({ items, locateAsync })` (es lädt bei einem Fehlschlag nach und gibt dann den Index zurück). Die ausführlichere Version unten ist für ein anderes Feld oder für volle Kontrolle.
+</Callout>
+
+<CodeBlock code={urlState5} language="vue" />
+
+Solange die Antwort aussteht, bleibt die Lightbox geschlossen und der Parameter unangetastet, damit der Deep Link das Laden übersteht. `null` oder eine Ablehnung entfernt den Parameter. Eine Antwort, die eintrifft, nachdem die URL weitergewandert ist, nach dem Schließen oder nach dem Unmount, wird verworfen, damit ein langsamer Abruf keinen Slide öffnet, den niemand angefragt hat. Was sie zurückgibt, ist maßgeblich — sie meldet den Index von Daten, die sie gerade geladen hat, und die Lightbox übernimmt ihn unverändert, statt `items` erneut zu lesen, das Vue noch nicht neu gerendert hat.
+
+## Automatisches Weiterschalten [#auto-advance]
+
+Setze `auto-advance`, damit die Galerie beim Öffnen als Diashow läuft. Standardmäßig aus, also rendert und verhält sich eine bestehende Lightbox wie bisher.
+
+<CodeBlock code={autoAdvanceCode} language="vue" />
+
+- **Bilder** bleiben für `auto-advance-interval` stehen (standardmäßig 5000 ms), gezählt ab dem Moment, in dem das Bild geladen ist, damit ein langsames Bild nie übersprungen wird, bevor es jemand gesehen hat. Ein Bild, das nicht lädt, zählt ab seinem Fehler.
+- **Videos** laufen einmal statt in Schleife und schalten weiter, wenn sie enden. `VideoSlideRenderer` erledigt das für dich; ein eigener `#slide` liest `autoAdvance` aus seinem Scope und meldet das Ende über `onEnded`.
+- **Sie wartet**, solange die Maus auf einem Control ruht (einem Button, einem Link oder der Bildunterschrift), während einer Wischgeste und solange die Seite verborgen ist, und läuft dann dort weiter, wo sie angehalten hat.
+- **Wechselst du von Hand** (Pfeile, Tasten, Mausrad, Wischen), beginnt das Intervall des neuen Slides bei null; die Diashow bleibt an.
+- **Auf dem letzten Slide** hält sie an, außer `loop` ist gesetzt. Der Play/Pause-Button in den Controls zeigt den Zustand und lässt die Betrachtenden ihn umschalten; `play()` und `pause()` an der [LightboxApi](#lightboxapi) tun dasselbe aus dem Code.
+
+Ein eigener Slot `#controls` erhält `isAutoAdvancing` und, nur wenn `auto-advance` an ist, `onToggleAutoAdvance` — rendere einen `PlayPauseButton`, wenn es vorhanden ist. Das Timing selbst ist `createSlideshowController` aus `@reelkit/core`; siehe den [Leitfaden zu Autoplay](/docs/core/guide#autoplay) und die [Core-API](/docs/core/api#autoplay).
+
+## Download [#download]
+
+Setze `show-download`, um den Controls einen Download-Button hinzuzufügen. Er speichert das aktive Element aus seiner `downloadUrl`, ersatzweise aus `src`, unter seinem `downloadName`, ersatzweise unter dem letzten Segment der URL.
+
+<CodeBlock code={downloadCode} language="vue" />
+
+Die Datei wird abgerufen und gespeichert, weil ein Browser das Attribut `download` an einem Link auf einen anderen Origin ignoriert und die Datei stattdessen öffnen würde. Schlägt der Abruf fehl — meist ein Server auf einem anderen Origin, der keine CORS-Header sendet —, öffnet sich die Datei in einem neuen Tab, wo man sie trotzdem speichern kann. Liefere die Dateien mit `Access-Control-Allow-Origin` aus, damit ein Klick zum Speichern genügt. Während ein Download läuft, ist der Button deaktiviert.
+
+Ein eigener Slot `#controls` erhält `isDownloading` und, nur wenn `show-download` an ist, `onDownload` — rendere einen `DownloadButton`, wenn es vorhanden ist. Der Helfer ist `downloadFile` aus `@reelkit/core`; siehe den [Leitfaden zum Download](/docs/core/guide#download).
+
+### Control-Buttons [#control-buttons]
+
+| Komponente | Props | Beschreibung |
+| --- | --- | --- |
+| `PlayPauseButton` | `PlayPauseButtonProps`: `isPlaying`, `onPress`, `className?` | Schalter für die Diashow (Icon Play/Pause, `aria-pressed` während der Wiedergabe). Wird von den Standard-Controls mit `auto-advance` angezeigt. |
+| `DownloadButton` | `DownloadButtonProps`: `isDownloading`, `onPress`, `className?` | Download-Button, deaktiviert solange `isDownloading`. Wird von den Standard-Controls mit `show-download` angezeigt. |
+
+## API-Referenz [#api-reference]
+
+### Props von LightboxOverlay [#lightboxoverlay-props]
+
+<Signature>LightboxOverlayProps</Signature>
+
+| Prop | Typ | Standard | Beschreibung |
+| --- | --- | --- | --- |
+| `isOpen` | `boolean` | Pflicht | Steuert die Sichtbarkeit; bei false wird das Overlay aus dem DOM entfernt. Bindbar über v-model:is-open. |
+| `items` | `LightboxItem[]` | Pflicht | Array der Elemente (Bilder oder Videos) |
+| `initialIndex` | `number` | 0 | Nullbasierter Index des zuerst sichtbaren Elements |
+| `transitionFn` | `TransitionTransformFn` | slideTransition | Funktion für den Slide-Übergang. Importiere einen eingebauten (slideTransition, flipTransition, lightboxFadeTransition, lightboxZoomTransition) oder übergib einen eigenen. Ohne Angabe gilt slideTransition. |
+| `showInfo` | `boolean` | true | Ob das Info-Overlay mit Titel und Beschreibung gerendert wird |
+| `showControls` | `boolean` | true | Ob die obere Leiste mit Schließen, Zähler und Vollbild gerendert wird |
+| `showNavigation` | `boolean` | true | Ob die Pfeile für zurück und weiter gerendert werden (nur Desktop) |
+| `transitionDuration` | `number` | 300 | Dauer der Slide-Animation in ms |
+| `swipeDistanceFactor` | `number` | 0.12 | Mindestanteil der Wischstrecke (0–1), der einen Slide-Wechsel auslöst |
+| `swipeToCloseDirection` | `'up' \| 'down'` | 'up' | Richtung der Wischgeste zum Schließen auf Mobilgeräten |
+| `loop` | `boolean` | false | Ob der Slider vom letzten Slide zurück zum ersten springt |
+| `enableNavKeys` | `boolean` | true | Aktiviert die Navigation mit den Pfeiltasten |
+| `enableWheel` | `boolean` | true | Aktiviert die Navigation mit dem Mausrad |
+| `wheelDebounceMs` | `number` | 200 | Debounce-Dauer für Mausrad-Events in ms |
+| `autoAdvance` | `boolean` | false | Spielt die Galerie als Diashow ab. Siehe [Automatisches Weiterschalten](#auto-advance). |
+| `autoAdvanceInterval` | `number` | 5000 | Wie lange jedes Bild während einer Diashow stehen bleibt, in ms, gezählt ab dem Laden |
+| `showDownload` | `boolean` | false | Fügt einen Download-Button für das aktive Element hinzu. Siehe [Download](#download). |
+| `ariaLabel` | `string` | 'Image gallery' | Zugängliches Label für den Dialogbereich |
+
+### Props von LightboxUrlOverlay [#lightboxurloverlay-props]
+
+<Signature>LightboxUrlOverlayProps</Signature>
+
+Nimmt jedes Prop für Darstellung und Verhalten von oben außer `is-open` und ersetzt es durch einen `controller`. Es sendet `close`, `slide-change` und `api-ready`, aber kein `update:is-open`. `initial-index` wird hier ignoriert — die Position des Controllers wählt den Slide, also würde ein daneben übergebener Wert bei jedem Öffnen überschrieben.
+
+| Prop | Typ | Standard | Beschreibung |
+| --- | --- | --- | --- |
+| `controller` | `UrlStateController` | Pflicht | Controller aus useOverlayUrlState. Seine Position entscheidet, ob das Overlay offen ist und welchen Slide es zeigt; das Overlay schreibt beim Slide-Wechsel und beim Schließen über ihn zurück. |
+
+### Events von LightboxOverlay [#lightboxoverlay-events]
+
+| Event | Payload | Beschreibung |
+| --- | --- | --- |
+| `close` | `void` | Wird gesendet, wenn die Lightbox geschlossen wird |
+| `slide-change` | `number` | Wird nach einem Wechsel mit dem neuen aktiven Slide-Index gesendet |
+| `api-ready` | `LightboxApi` | Wird einmal gesendet, sobald der Slider bereit ist, und stellt die imperative API bereit |
+| `update:is-open` | `boolean` | Wird beim Schließen gesendet; ermöglicht v-model:is-open |
+
+### LightboxApi [#lightboxapi]
+
+Das Objekt, das `api-ready` sendet, auch über die Template-Ref der Komponente verfügbar. Der Slider existiert nur, solange das Overlay offen ist, also tut jede Slider-Methode im geschlossenen Zustand nichts; `close()` funktioniert immer.
+
+| Methode | Typ | Beschreibung |
+| --- | --- | --- |
+| `next()` | `() => void` | Wechselt animiert zum nächsten Slide. Bleibt auf dem letzten Slide, außer `loop` ist an. |
+| `prev()` | `() => void` | Wechselt animiert zum vorherigen Slide. Bleibt auf dem ersten Slide, außer `loop` ist an. |
+| `goTo(index, animate?)` | `(number, boolean?) => Promise<void>` | Springt zu einem Slide. `index` wird auf die Elemente begrenzt, `animate` ist standardmäßig false. Löst auf, wenn der Wechsel fertig ist. |
+| `adjust()` | `() => void` | Berechnet die Slide-Position nach einer Layout-Änderung neu, die das Overlay selbst nicht bemerkt hat |
+| `observe()` | `() => void` | Hört nach `unobserve()` wieder auf Gesten, Tastatur und Mausrad |
+| `unobserve()` | `() => void` | Hört nicht mehr auf Gesten, Tastatur und Mausrad; die Slides bleiben, wo sie sind |
+| `close()` | `() => void` | Schließt die Lightbox, genau wie der Schließen-Button oder Escape |
+| `play()` | `() => void` | Startet die Diashow und setzt den aktiven Slide dort fort, wo er angehalten hat. Ohne `auto-advance` wirkungslos. |
+| `pause()` | `() => void` | Hält die Diashow an; der aktive Slide behält seinen Fortschritt. Ohne `auto-advance` wirkungslos. |
+
+## Interface LightboxItem [#lightboxitem-interface]
+
+| Feld | Typ | Pflicht | Beschreibung |
+| --- | --- | --- | --- |
+| `src` | `string` | ja | URL des Bildes oder Videos |
+| `type` | `'image' \| 'video'` | nein | Art des Elements. Standard ist 'image' |
+| `poster` | `string` | nein | Vorschaubild für Videos |
+| `title` | `string` | nein | Titel im Info-Overlay |
+| `description` | `string` | nein | Beschreibung unter dem Titel |
+| `width` | `number` | nein | Eigene Bildbreite in Pixeln |
+| `height` | `number` | nein | Eigene Bildhöhe in Pixeln |
+| `downloadUrl` | `string` | nein | Was der Download-Button speichert. Standard ist `src` |
+| `downloadName` | `string` | nein | Dateiname beim Speichern. Standard ist das letzte Segment des URL-Pfads |
+
+## Typen der Slot-Scopes [#slot-scope-types]
+
+| Typ | Felder |
+| --- | --- |
+| `SlideSlotScope` | `{ item, index, size: [number, number], isActive, autoAdvance, onReady, onWaiting, onError, onEnded }` |
+| `ControlsSlotScope` | `{ item, activeIndex, count, isFullscreen, isAutoAdvancing, isDownloading, onClose, onToggleFullscreen, onToggleAutoAdvance?, onDownload? }` |
+| `NavigationSlotScope` | `{ item, activeIndex, count, onPrev, onNext }` |
+| `InfoSlotScope` | `{ item, index }` |
+| `LoadingSlotScope` | `{ item, activeIndex }` |
+| `ErrorSlotScope` | `{ item, activeIndex }` |
+
+## Übergänge [#transitions]
+
+Übergib eine beliebige `TransitionTransformFn` über das Prop `transition-fn`. Importierst du nur den Übergang, den du nutzt, kann der Bundler den Rest per Tree-Shaking entfernen. Ohne Angabe gilt `slideTransition`.
+
+| Funktion | Beschreibung |
+| --- | --- |
+| `slideTransition` | Standard. Horizontale Verschiebung zwischen den Slides; re-exportiert aus @reelkit/vue. |
+| `lightboxFadeTransition` | Überblendung mit einem leichten horizontalen Versatz. Nur in @reelkit/vue-lightbox. |
+| `flipTransition` | 3D-Drehung um die Y-Achse; re-exportiert aus @reelkit/vue. |
+| `lightboxZoomTransition` | Der neue Slide wächst mit Überblendung von 70% auf 100%. Nur in @reelkit/vue-lightbox. |
+
+<CodeBlock code={customTransitionCode} language="vue" />
+
+## Laden von Inhalten und Fehlerbehandlung [#content-loading-error-handling]
+
+Wenn du das Rendern über den Slot `#slide` übernimmst, stehen im Slot-Scope drei Lifecycle-Callbacks bereit, um den Ladezustand zu melden. Die Lightbox verfolgt den Zustand jedes Slides und zeigt entsprechend einen Spinner oder ein Fehlersymbol. Ein Preloader merkt sich defekte URLs, damit ein erneuter Besuch eines fehlgeschlagenen Slides keinen neuen Versuch startet.
+
+### Lifecycle-Callbacks [#lifecycle-callbacks]
+
+| Callback | Typ | Beschreibung |
+| --- | --- | --- |
+| `onReady` | `() => void` | Meldet, dass der Inhalt des Slides erfolgreich geladen ist (zum Beispiel das Bild dekodiert) |
+| `onWaiting` | `() => void` | Meldet, dass der Inhalt des Slides lädt oder puffert (zeigt den Spinner) |
+| `onError` | `() => void` | Meldet, dass der Inhalt des Slides nicht geladen werden konnte (zeigt das Fehlersymbol) |
+
+### Callbacks in #slide verdrahten [#wiring-callbacks-in-slide]
+
+<CodeBlock code={lifecycleSlideCode} language="vue" />
+
+### Eigener Lade-Slot [#custom-loading-slot]
+
+Mit dem Slot `#loading` ersetzt du den Standard-Spinner.
+
+<CodeBlock code={customLoadingCode} language="vue" />
+
+### Eigener Fehler-Slot [#custom-error-slot]
+
+Mit dem Slot `#error` ersetzt du das Standard-Symbol für ein defektes Bild.
+
+<CodeBlock code={customErrorCode} language="vue" />
+
+## CSS-Klassen [#css-classes]
+
+Alle CSS-Klassen sind normal (nicht scoped), also lassen sie sich mit spezifischeren Selektoren in einem Stylesheet ansprechen, das nach `@reelkit/vue-lightbox/styles.css` geladen wird. Für Farben, Größen und z-index nimm lieber die CSS Custom Properties aus dem Abschnitt [Theming](#theming) weiter unten.
+
+| Klasse | Komponente | Beschreibung |
+| --- | --- | --- |
+| `.rk-lightbox-overlay` | Overlay | Wurzel-Container (Hintergrund im Vollbild) |
+| `.rk-lightbox-top-shade` | Overlay | Oberer Verlauf hinter den Controls |
+| `.rk-lightbox-spinner` | Overlay | Standard-Ladespinner |
+| `.rk-lightbox-error` | Overlay | Container für den Fehlerzustand (defektes Bild) |
+| `.rk-lightbox-error-text` | Overlay | Textlabel des Fehlerzustands |
+| `.rk-lightbox-controls-left` | Controls | Container der Controls oben links |
+| `.rk-lightbox-btn` | Controls | Control-Button (Vollbild, Ton und so weiter) |
+| `.rk-lightbox-play-pause` | Controls | Play/Pause-Button der Diashow (mit `.rk-lightbox-btn`) |
+| `.rk-lightbox-download` | Controls | Download-Button (mit `.rk-lightbox-btn`) |
+| `.rk-lightbox-close` | Controls | Schließen-Button |
+| `.rk-lightbox-counter` | Controls | Chip mit dem Bildzähler |
+| `.rk-lightbox-nav` | Navigation | Navigationspfeil (zurück und weiter) |
+| `.rk-lightbox-nav-prev` | Navigation | Pfeil zurück |
+| `.rk-lightbox-nav-next` | Navigation | Pfeil weiter |
+| `.rk-lightbox-info` | Info | Container für Titel und Beschreibung |
+| `.rk-lightbox-info-title` | Info | Bildtitel |
+| `.rk-lightbox-info-description` | Info | Bildbeschreibung |
+| `.rk-lightbox-slide` | Slide | Slide-Container |
+| `.rk-lightbox-img` | Slide | Bildelement |
+| `.rk-lightbox-video-container` | VideoSlide | Container eines Video-Slides (optional) |
+| `.rk-lightbox-video-element` | VideoSlide | Videoelement (optional) |
+| `.rk-lightbox-video-poster` | VideoSlide | Posterbild des Videos (optional) |
+
+## Theming [#theming]
+
+Überschreibe eine beliebige CSS Custom Property `--rk-lightbox-*` auf `:root` (oder einem Vorfahren von `.rk-lightbox-overlay`), um das Aussehen anzupassen. Direkte Deklarationen auf `.rk-lightbox-overlay` würden geerbte Werte überdecken, also setze Überschreibungen auf einem Vorfahren-Selektor.
+
+| Token | Standard | Steuert |
+| --- | --- | --- |
+| `--rk-lightbox-overlay-bg` | `#000` | Farbe des Hintergrunds |
+| `--rk-lightbox-overlay-z` | `9999` | z-index des Overlays |
+| `--rk-lightbox-top-shade-height` | `80px` | Höhe des oberen Verlaufs |
+| `--rk-lightbox-top-shade-bg` | `linear-gradient(rgba(0,0,0,0.6), transparent)` | Verlauf oben |
+| `--rk-lightbox-edge-padding` | `16px` | Randabstand für Schließen, Navigation und Controls |
+| `--rk-lightbox-btn-bg` | `rgba(0, 0, 0, 0.5)` | Standard-Hintergrund für Schließen, Navigation und kleine Buttons |
+| `--rk-lightbox-btn-bg-hover` | `rgba(255, 255, 255, 0.2)` | Hover-Hintergrund für Schließen, Navigation und kleine Buttons |
+| `--rk-lightbox-btn-fg` | `#fff` | Icon-Farbe für Schließen, Navigation und kleine Buttons |
+| `--rk-lightbox-btn-size` | `36px` | Größe der kleinen Buttons (Vollbild-Schalter und so weiter) |
+| `--rk-lightbox-btn-disabled-opacity` | `0.5` | Deckkraft eines deaktivierten kleinen Buttons (Download läuft) |
+| `--rk-lightbox-close-size` | `40px` | Größe des Schließen-Buttons |
+| `--rk-lightbox-nav-size` | `48px` | Größe der Pfeile zurück und weiter |
+| `--rk-lightbox-nav-opacity` | `0.7` | Deckkraft der Pfeile im Ruhezustand |
+| `--rk-lightbox-counter-bg` | `rgba(0, 0, 0, 0.5)` | Hintergrund des Zähler-Chips |
+| `--rk-lightbox-counter-fg` | `#fff` | Textfarbe des Zählers |
+| `--rk-lightbox-info-bg` | `linear-gradient(transparent, rgba(0,0,0,0.8))` | Verlauf hinter der Bildunterschrift |
+| `--rk-lightbox-title-size` | `18px` | Schriftgröße des Titels |
+| `--rk-lightbox-description-size` | `14px` | Schriftgröße der Beschreibung |
+| `--rk-lightbox-video-bg` | `#000` | Hintergrund der Letterbox hinter \<video> |
+
+<CodeBlock code={themingCode} language="css" />
+
+## Barrierefreiheit [#accessibility]
+
+Die Wurzel des Overlays ist ein modaler Dialog (`role="dialog"`, `aria-modal="true"`). Mit dem Prop `aria-label` änderst du die Ansage für Screenreader; Standard ist "Image gallery". Jeder Slide trägt `role="group"`, `aria-roledescription="slide"` und ein aus der Position abgeleitetes `aria-label` (zum Beispiel "Image 2 of 5").
+
+Die Lightbox übernimmt beim Öffnen den Fokus und gibt ihn beim Schließen an den Auslöser zurück. Tab und Shift+Tab wechseln zwischen den fokussierbaren Elementen darin; Fokus, der entwischt (Klick außerhalb, Fokus aus dem Code), wird zurückgeholt. Umgesetzt mit `captureFocusForReturn` und `createFocusTrap` aus `@reelkit/vue`.
+
+## Tastenkürzel [#keyboard-shortcuts]
+
+| Taste | Aktion |
+| --- | --- |
+| `ArrowLeft` | Vorheriges Bild |
+| `ArrowRight` | Nächstes Bild |
+| `Escape` | Lightbox schließen (oder Vollbild verlassen, falls aktiv) |

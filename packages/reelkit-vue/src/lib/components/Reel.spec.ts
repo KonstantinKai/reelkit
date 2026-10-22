@@ -585,6 +585,50 @@ describe('Reel', () => {
         globalThis.window = originalWindow;
       }
     });
+
+    it('renders the same root style on the server as on the client', async () => {
+      const { createSSRApp, h: hh } = await import('vue');
+      const { renderToString } = await import('@vue/server-renderer');
+      const serverRender = async (props: {
+        count: number;
+        size?: [number, number];
+      }) => {
+        const originalWindow = globalThis.window;
+        // @ts-expect-error intentional delete for SSR simulation
+        delete globalThis.window;
+        try {
+          return await renderToString(
+            createSSRApp({ render: () => hh(Reel, props) }),
+          );
+        } finally {
+          globalThis.window = originalWindow;
+        }
+      };
+      const rootStyle = (html: string) =>
+        html.match(/^<div[^>]*style="([^"]*)"/)?.[1] ?? '';
+
+      const autoSized = rootStyle(await serverRender({ count: 3 }));
+      expect(autoSized).toContain('width:100%');
+      expect(autoSized).toContain('height:100%');
+      expect(autoSized).toContain('position:relative');
+      expect(autoSized).toContain('overflow:hidden');
+
+      const sized = rootStyle(
+        await serverRender({ count: 3, size: [390, 844] }),
+      );
+      expect(sized).toContain('width:390px');
+      expect(sized).toContain('height:844px');
+
+      const client = mount(Reel, {
+        props: { count: 3, size: [390, 844] },
+        slots: { item: itemSlot },
+      });
+      const clientStyle = (client.element as HTMLElement).style;
+      expect(clientStyle.width).toBe('390px');
+      expect(clientStyle.height).toBe('844px');
+      expect(clientStyle.position).toBe('relative');
+      expect(clientStyle.overflow).toBe('hidden');
+    });
   });
 
   describe('accessibility', () => {

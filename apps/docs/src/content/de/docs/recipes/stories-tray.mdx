@@ -1,0 +1,71 @@
+---
+title: Stories-Leiste
+description: Eine Reihe von Story-Ringen, die den Stories Player öffnet und sich über Neuladen hinweg merkt, was der Nutzer gesehen hat.
+---
+
+import { StoriesTrayDemo } from '../../../../components/demos/StoriesTrayDemo';
+import reactCode from '../../../snippets/recipes/stories-tray/react.tsx?raw';
+import vueCode from '../../../snippets/recipes/stories-tray/vue.vue?raw';
+import angularCode from '../../../snippets/recipes/stories-tray/angular.ts?raw';
+import apiCode from '../../../snippets/recipes/stories-tray/api.ts?raw';
+
+Die Reihe von Ringen oben in einem Feed: einer pro Person, leuchtend, solange sie etwas Neues hat, gedämpft, sobald der Nutzer alles gesehen hat. Ein Druck auf einen Ring öffnet die Stories bei der ersten, die noch nicht gesehen wurde, und der nächste Besuch weiß noch, wie weit der Nutzer gekommen ist, auch nach einem Neuladen.
+
+## Ausprobieren [#try-it]
+
+Jede Version importiert `./api`, das für dein Backend steht: `groups` sind die Personen, denen ein Nutzer folgt, mit den Stories, die jede gepostet hat, in der Form von `StoriesGroup` des Players. Ersetze es durch deinen eigenen Feed.
+
+<CodeBlock code={apiCode} language="typescript" />
+
+<Callout type="warning" title="Die Beispielmedien funktionieren nur auf reelkit.dev">
+  `cdnUrl` baut Links zu cdn.reelkit.dev, das seine Dateien nur an die Seiten von ReelKit ausliefert. In deiner App laden diese Avatare und Stories nicht, also lass `avatar` und `src` auf deine eigenen Dateien zeigen, bevor du diese Datei kopierst.
+</Callout>
+
+<FrameworkVariant for="react">
+<Sandbox code={reactCode} title="StoriesTray.tsx" height={560}>
+  <StoriesTrayDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+<Sandbox code={vueCode} language="vue" framework="vue" title="StoriesTray.vue" height={560}>
+  <StoriesTrayDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<FrameworkVariant for="angular">
+<Sandbox code={angularCode} language="typescript" framework="angular" title="stories-tray.component.ts" height={560}>
+  <StoriesTrayDemo />
+</Sandbox>
+</FrameworkVariant>
+
+<Caption>Schau dir jemanden bis zum Ende an und schließe den Player: Sein Ring wird gedämpft, der Fokus landet auf der zuletzt angesehenen Person, und beides übersteht ein Neuladen. „Forget what was seen“ fängt von vorn an.</Caption>
+
+## Warum es funktioniert [#why-it-works]
+
+- **Ein Controller merkt sich alles für beide.** `createStoriesViewedStateController` wird einmal erstellt und geht als `viewed` an die Ringliste und den Player. Die Ringe lesen daraus, der Player trägt jede Story ein, die er zeigt, und der Controller hält das in `localStorage` unter `storageKey`, sodass ein Neuladen nichts ändert. Siehe den Abschnitt zum Merken des Gesehenen für [React](/docs/stories-player#remembering-what-was-seen), [Vue](/docs/vue-stories-player#remembering-what-was-seen) und [Angular](/docs/angular-stories-player#remembering-what-was-seen).
+- **Der Player macht dort weiter, wo der Nutzer aufgehört hat.** Mit `viewed` öffnet der Player eine Person bei ihrer ersten noch nicht gesehenen Story oder von vorn, sobald alles gesehen wurde. Das Rezept übergibt nur die Person, nie einen Story-Index; das beantwortet `resumeStoryIndex` des Controllers, siehe [seine Referenz](/docs/stories-core#storiesviewedstatecontroller).
+- **Ein Ring zeigt zwei Zustände.** Leuchtend, solange noch etwas anzuschauen ist, gedämpft, sobald eine Person bis zum Ende angesehen wurde. Den Fortschritt innerhalb einer Person zeigt die Fortschrittsleiste des Players, nicht der Ring. Siehe [StoriesRing](/docs/stories-player#storiesring).
+- **Die Ringfarben folgen der Seite.** Die beiden Zustände sind die Tokens `--rk-stories-ring-active-gradient` und `--rk-stories-ring-viewed-color`, und der gesehene Zustand ist standardmäßig ein blasses Weiß für eine dunkle Seite. Auf einer hellen Seite setzt du ihn auf `.rk-stories-ring-list`, wie diese Demo im hellen Theme, nicht auf `:root`: Das Desktop-Karussell des Players zeichnet Ringe mit denselben Tokens auf seinem dunklen Hintergrund. Die Tokens stehen in der [Theming-Tabelle](/docs/stories-player#theming).
+- **Keine zusätzliche Verdrahtung für den Controller.** Der Player wird immer gerendert und mit `isOpen` geöffnet, also liest er den gespeicherten Zustand selbst, bevor er die erste Story wählt. Mountest du ihn nur, solange er offen ist, muss die Seite den Controller zuerst anhängen, wie [die Referenz des Controllers](/docs/stories-core#storiesviewedstatecontroller) erklärt.
+- **Der Fokus kommt zum richtigen Ring zurück.** Beim Schließen gibt der Player den Fokus an den Ring zurück, der ihn geöffnet hat, wie sein Abschnitt zur [Barrierefreiheit](/docs/stories-player#accessibility) beschreibt. Das passiert erst, nachdem der Close-Handler gelaufen ist, also wartet das Rezept einen Task, scrollt dann den Ring der zuletzt angesehenen Person ins Bild und fokussiert ihn.
+- **Wo es sonst noch gespeichert werden kann.** `storage` nimmt deinen eigenen Adapter, zum Beispiel einen Server, sodass das Gesehene dem Nutzer über Geräte hinweg folgt. Mit `ttlMs` läuft der Eintrag einer Person ab, und `maxTracks` begrenzt, wie viele Personen gespeichert werden. Sie stehen in der [Konfiguration des Controllers](/docs/stories-core#config-storiesviewedstatecontrollerconfig).
+
+<NextSteps
+  items={[
+    {
+      label: 'Endloser Feed',
+      path: '/docs/recipes/infinite-feed',
+      description: 'mehr laden, wenn der Nutzer sich dem Ende eines Feeds nähert',
+    },
+    {
+      label: 'Stories Player',
+      path: {
+        react: '/docs/stories-player',
+        vue: '/docs/vue-stories-player',
+        angular: '/docs/angular-stories-player',
+      },
+      description: 'jedes Prop, jeder Slot und jeder Teil des Players',
+    },
+  ]}
+/>

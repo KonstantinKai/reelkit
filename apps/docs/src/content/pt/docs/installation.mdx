@@ -33,6 +33,11 @@ Instale somente o que você usa:
       <td>Core independente de framework</td>
       <td>Integrações personalizadas</td>
     </tr>
+    <tr>
+      <td>`@reelkit/stories-core`</td>
+      <td>Engine de stories independente de framework</td>
+      <td>Integrações personalizadas de stories</td>
+    </tr>
     <tr data-rk-fw="react">
       <td>`@reelkit/react`</td>
       <td>Componentes React</td>
@@ -56,7 +61,7 @@ Instale somente o que você usa:
     <tr data-rk-fw="angular">
       <td>`@reelkit/angular`</td>
       <td>Componentes standalone do Angular</td>
-      <td>Aplicações Angular 17+</td>
+      <td>Aplicações Angular 19+</td>
     </tr>
     <tr data-rk-fw="angular">
       <td>`@reelkit/angular-reel-player`</td>
@@ -67,6 +72,11 @@ Instale somente o que você usa:
       <td>`@reelkit/angular-lightbox`</td>
       <td>Galeria de imagens em lightbox</td>
       <td>Visualização de imagens em tela cheia</td>
+    </tr>
+    <tr data-rk-fw="angular">
+      <td>`@reelkit/angular-stories-player`</td>
+      <td>Player de stories no estilo Instagram</td>
+      <td>Stories com avanço automático e gestos</td>
     </tr>
     <tr data-rk-fw="vue">
       <td>`@reelkit/vue`</td>
@@ -82,6 +92,11 @@ Instale somente o que você usa:
       <td>`@reelkit/vue-lightbox`</td>
       <td>Galeria de imagens em lightbox</td>
       <td>Visualização de imagens em tela cheia</td>
+    </tr>
+    <tr data-rk-fw="vue">
+      <td>`@reelkit/vue-stories-player`</td>
+      <td>Player de stories no estilo Instagram</td>
+      <td>Stories com avanço automático e gestos</td>
     </tr>
   </tbody>
 </Table>
@@ -195,20 +210,29 @@ Os pacotes de framework declaram peer dependencies que provavelmente já estão 
 
 ### @reelkit/angular [#reelkit-angular]
 
-- `@angular/core` >= 17.0.0
-- `@angular/common` >= 17.0.0
+- `@angular/core` >= 19.0.0
+- `@angular/common` >= 19.0.0
 
 ### @reelkit/angular-reel-player [#reelkit-angular-reel-player]
 
 - `@reelkit/angular`
 - `@angular/core` >= 19.0.0
+- `@angular/common` >= 19.0.0
 - `lucide-angular` >= 0.460.0
 
 ### @reelkit/angular-lightbox [#reelkit-angular-lightbox]
 
 - `@reelkit/angular`
-- `@angular/core` >= 17.0.0
-- `lucide-angular` >= 0.400.0
+- `@angular/core` >= 19.0.0
+- `@angular/common` >= 19.0.0
+- `lucide-angular` >= 0.460.0
+
+### @reelkit/angular-stories-player [#reelkit-angular-stories-player]
+
+- `@reelkit/angular`
+- `@angular/core` >= 19.0.0
+- `@angular/common` >= 19.0.0
+- `lucide-angular` >= 0.460.0
 
 </FrameworkVariant>
 
@@ -218,12 +242,30 @@ Os pacotes de framework declaram peer dependencies que provavelmente já estão 
 
 - `vue` >= 3.0.0
 
+### @reelkit/vue-reel-player [#reelkit-vue-reel-player]
+
+- `@reelkit/vue`
+- `vue` >= 3.3.0
+- `lucide-vue-next` >= 0.400.0
+
+### @reelkit/vue-lightbox [#reelkit-vue-lightbox]
+
+- `@reelkit/vue`
+- `vue` >= 3.0.0
+- `lucide-vue-next` >= 0.400.0
+
+### @reelkit/vue-stories-player [#reelkit-vue-stories-player]
+
+- `@reelkit/vue`
+- `vue` >= 3.3.0
+- `lucide-vue-next` >= 0.400.0
+
 </FrameworkVariant>
 
 <FrameworkVariant for="react">
 
 <Callout type="info">
-  `lucide-react` só é necessário para os ícones padrão dos controles. Se você fornecer seus próprios controles por `renderControls`, pode dispensar a instalação.
+  `lucide-react` só é necessário para os ícones padrão. Se você fornecer seus próprios controles e navegação por `renderControls` e `renderNavigation` (`renderHeader` e `renderNavigation` no player de stories), pode dispensar a instalação.
 </Callout>
 
 </FrameworkVariant>
@@ -231,7 +273,15 @@ Os pacotes de framework declaram peer dependencies que provavelmente já estão 
 <FrameworkVariant for="angular">
 
 <Callout type="info">
-  `lucide-angular` só é necessário para os ícones padrão dos controles. Se você fornecer seus próprios controles por `rkPlayerControls`, pode dispensar a instalação.
+  `lucide-angular` só é necessário para os ícones padrão. Se você fornecer seus próprios controles e navegação pelos slots de template (`rkPlayerControls` e `rkPlayerNavigation`, `rkLightboxControls` e `rkLightboxNavigation`, `rkStoriesHeader` e `rkStoriesNavigation`), pode dispensar a instalação.
+</Callout>
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+<Callout type="info">
+  `lucide-vue-next` só é necessário para os ícones padrão. Se você fornecer seus próprios controles e navegação pelos scoped slots `#controls` e `#navigation` (`#header` e `#navigation` no player de stories), pode dispensar a instalação.
 </Callout>
 
 </FrameworkVariant>

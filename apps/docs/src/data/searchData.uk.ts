@@ -134,7 +134,7 @@ export const ukTitles: Record<string, string> = {
   'Next.js Pages Router': 'Next.js Pages Router',
   'Responsive Size with SSR': 'Реактивний розмір із SSR',
   'Overlay Components': 'Оверлейні компоненти',
-  'Angular Universal / SSR': 'Angular Universal / SSR',
+  'Angular SSR': 'SSR в Angular',
   'Nuxt 3': 'Nuxt 3',
   'Using Core Directly': 'Пряме використання ядра',
   Summary: 'Підсумок',

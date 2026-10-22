@@ -137,7 +137,7 @@ export const ptTitles: Record<string, string> = {
   'Next.js Pages Router': 'Next.js Pages Router',
   'Responsive Size with SSR': 'Tamanho responsivo com SSR',
   'Overlay Components': 'Componentes de overlay',
-  'Angular Universal / SSR': 'Angular Universal / SSR',
+  'Angular SSR': 'SSR com Angular',
   'Nuxt 3': 'Nuxt 3',
   'Using Core Directly': 'Usando o core diretamente',
   Summary: 'Resumo',

@@ -32,6 +32,32 @@ const getSlideContent = (index: number) => ({
 
 const activeIndex = ref(0);
 const sliderRef = ref<ReelExpose | null>(null);
+
+// Each nested slider is reached by the outer slide it sits on, so its arrows
+// move only that slider. Read only from click handlers, so a plain map.
+const nestedSliders = new Map<number, ReelExpose>();
+const setNestedSlider = (index: number, el: unknown) => {
+  if (el) nestedSliders.set(index, el as ReelExpose);
+  else nestedSliders.delete(index);
+};
+
+const nestedArrowStyle = (side: 'left' | 'right') => ({
+  position: 'absolute' as const,
+  top: '50%',
+  [side]: side === 'left' ? '16px' : '40px',
+  transform: 'translateY(-50%)',
+  width: '44px',
+  height: '44px',
+  borderRadius: '50%',
+  border: 'none',
+  backgroundColor: 'rgba(0,0,0,0.5)',
+  color: '#fff',
+  fontSize: '1.2rem',
+  cursor: 'pointer',
+  zIndex: 10,
+  backdropFilter: 'blur(8px)',
+  WebkitBackdropFilter: 'blur(8px)',
+});
 const sizeMode = ref<SizeMode>(
   (localStorage.getItem(SIZE_MODE_KEY) as SizeMode) || 'explicit',
 );
@@ -143,6 +169,7 @@ const pillStyleOff = {
         <!-- Nested horizontal Reel every 3rd slide -->
         <template v-if="index % 3 === 2">
           <Reel
+            :ref="(el) => setNestedSlider(index, el)"
             :count="NESTED_ITEM_COUNT"
             :size="[slideSize[0], slideSize[1]]"
             direction="horizontal"
@@ -173,6 +200,23 @@ const pillStyleOff = {
                 </p>
               </div>
             </template>
+
+            <button
+              aria-label="Previous nested slide"
+              data-testid="nested-prev"
+              :style="nestedArrowStyle('left')"
+              @click="nestedSliders.get(index)?.prev()"
+            >
+              ←
+            </button>
+            <button
+              aria-label="Next nested slide"
+              data-testid="nested-next"
+              :style="nestedArrowStyle('right')"
+              @click="nestedSliders.get(index)?.next()"
+            >
+              →
+            </button>
 
             <!-- Nested horizontal indicator -->
             <div

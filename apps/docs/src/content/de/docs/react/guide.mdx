@@ -1,0 +1,170 @@
+---
+title: React-Leitfaden
+description: Baue Slider mit @reelkit/react. Die Reel-Komponente, das itemBuilder-Muster, Navigation, ReelIndicator, Virtualisierung mit 10000+ Einträgen und Tipps für die Performance.
+---
+
+import { Hand, Keyboard, MousePointer, InfinityIcon, Radio, Navigation, Zap, Layers, Code } from 'lucide-react';
+import reelComponent from '../../../snippets/react-guide/reel-component.tsx?raw';
+import autoSizing from '../../../snippets/react-guide/auto-sizing.tsx?raw';
+import itembuilderPattern from '../../../snippets/react-guide/itembuilder-pattern.tsx?raw';
+import navigation from '../../../snippets/react-guide/navigation.tsx?raw';
+import urlState from '../../../snippets/react-guide/url-state.tsx?raw';
+import reelindicator from '../../../snippets/react-guide/reelindicator.tsx?raw';
+
+So baust du Slider mit `@reelkit/react`.
+
+<FeatureGrid columns={3} items={[
+              {
+                icon: Hand,
+                label: 'Touch zuerst',
+                desc: 'Wischen mit Schwung und Einrasten',
+              },
+              {
+                icon: Keyboard,
+                label: 'Tastatur',
+                desc: 'Pfeiltasten + Escape',
+              },
+              {
+                icon: MousePointer,
+                label: 'Mausrad',
+                desc: 'Optional, mit Debounce',
+              },
+              {
+                icon: InfinityIcon,
+                label: 'Virtualisiert',
+                desc: '10.000+ Einträge, 3 im DOM',
+              },
+              {
+                icon: Radio,
+                label: 'Indikatoren',
+                desc: 'Punkte, die wie bei Instagram mitlaufen',
+              },
+              {
+                icon: Navigation,
+                label: 'API im Code',
+                desc: 'next(), prev(), goTo() über ref',
+              },
+              {
+                icon: Zap,
+                label: 'Loop-Modus',
+                desc: 'Endlose, kreisförmige Navigation',
+              },
+              {
+                icon: Layers,
+                label: 'Richtung',
+                desc: 'Vertikal oder horizontal',
+              },
+              {
+                icon: Code,
+                label: 'Keine Re-Renders',
+                desc: 'Zustandsupdates über Signals',
+              },
+            ]} />
+
+## Reel-Komponente [#reel-component]
+
+Die Komponente `Reel` ist der Hauptcontainer, der den Zustand des Sliders verwaltet und sich um Touch-Gesten, Tastaturnavigation und Animationen kümmert.
+
+Im DOM liegen immer nur drei Slides, der aktuelle und seine Nachbarn, daher kostet eine Liste mit zehntausend Einträgen so viel wie eine mit zehn. Wie das in einem ganzen Feature aussieht, etwa in einem endlosen Feed oder einem Raster, das einen Player öffnet, zeigen die [Rezepte](/docs/recipes).
+
+<CodeBlock code={reelComponent} language="tsx" />
+
+## Automatische Größe [#auto-sizing]
+
+Das Prop `size` ist optional. Lässt du es weg, misst Reel seinen Container per `ResizeObserver` selbst aus und passt sich dem Layout aus dem CSS an. Die Größe des Containers muss dabei vom Elternelement kommen (zum Beispiel Flex, Grid oder feste Maße im CSS).
+
+<CodeBlock code={autoSizing} language="tsx" />
+
+## Das itemBuilder-Muster [#itembuilder-pattern]
+
+Das Prop `itemBuilder` ist eine Funktion, die den Index bekommt und den Inhalt des jeweiligen Slides zurückgibt. Dieses Muster macht die Virtualisierung möglich: Gerendert werden nur die sichtbaren Einträge.
+
+<CodeBlock code={itembuilderPattern} language="tsx" />
+
+## Navigation [#navigation]
+
+Eingebaute Wege der Navigation:
+
+<Bullets marker="dot">
+
+- **Touch/Wischen:** Ziehen mit Schwung und Einrasten
+- **Tastatur:** Pfeiltasten und Escape
+- **Mausrad:** Aktivierst du mit dem Prop `enableWheel`
+- **Im Code:** Über `apiRef` mit `next()`, `prev()`, `goTo()`
+
+</Bullets>
+
+<CodeBlock code={navigation} language="tsx" />
+
+## URL-State [#url-state]
+
+`useOverlayUrlState` baut einen URL-State-Controller für ein Overlay und gibt ihn vollständig zurück. Den übergibst du dann einem `*UrlOverlay` als Prop `controller`. Die URL bestimmt, ob es offen ist, ein gebundenes Overlay öffnet sich also selbst, und ein Link ist der übliche Weg, es zu öffnen. Das erste Schreiben eines noch fehlenden Parameters legt einen Eintrag im Verlauf an, jedes weitere ersetzt ihn, so begräbt das Blättern nie den Zurück-Button. Behalte den Controller, um `value`/`position` zu lesen und ihn im Code zu steuern: `set(position)` öffnet, `set(null)` schließt, und `set` ist derselbe einfache Schreibzugriff, den das Overlay intern beim Slide-Wechsel nutzt.
+
+<CodeBlock code={urlState} language="tsx" />
+
+Das Optionsobjekt nimmt `param`, `codec` und `locator` (alle drei Pflicht) sowie einen optionalen `adapter`. `param` und `adapter` werden beim ersten Render gelesen und bleiben danach fest – zum Ändern musst du neu mounten –, während `codec` und `locator` live gelesen werden, sodass eine Suche nach dem Wachsen oder Umsortieren der Liste die aktuelle Liste sieht. `codec` und `locator` sind ein zusammengehöriges Paar mit demselben `Id` und reisen deshalb gemeinsam – für eine einfache Galerie mit `?photo=3` spreizt du `...urlIndexKey(() => images.length)`, das beide Hälften auf einmal zurückgibt. `urlIndexKey` bildet den Parameter auf einen Slide-Index ab und begrenzt ihn mit der aktuellen Anzahl, die der Getter liefert. Ein veraltetes oder zu großes `?photo=99` wird so abgelehnt und verschwindet von selbst aus der URL, statt einen Slide zu öffnen, den nie jemand gemeint hat. Übergib einen Getter, keine Zahl, damit die Grenze stimmt, während ein Feed mit Paginierung wächst. Es kapselt `createIndexLocator` (die Locator-Hälfte) und kombiniert es mit `indexCodec`. Ein Feed mit Paginierung oder eine Galerie mit Schlüsseln nach Identität bringt stattdessen ein eigenes passendes Paar aus `codec` + `locator` mit. Die vollständige Tabelle der Optionen steht in der [React-API-Referenz](/docs/react/api#useoverlayurlstate).
+
+## ReelIndicator [#reelindicator]
+
+Optionale Komponente, die Fortschrittsindikatoren wie bei Instagram zeigt und damit die aktuelle Position im Slider. Liegt sie in einem `Reel`, verbindet sie sich über den Context selbst mit den Werten `count` und `active` des Elternelements – ganz ohne manuelles Verdrahten von Zustand.
+
+<CodeBlock code={reelindicator} language="tsx" />
+
+## Das Wichtigste [#key-points]
+
+<KeyPoints>
+<KeyPoint title="Prop size">
+  Optionales Tupel \[width, height\]; lass es weg, wenn die Größe aus dem CSS kommen soll
+</KeyPoint>
+<KeyPoint title="itemBuilder">
+  Bekommt den Index und gibt den Inhalt des Slides zurück
+</KeyPoint>
+<KeyPoint title="apiRef">
+  Zugriff auf die Methoden des Controllers für die Navigation
+</KeyPoint>
+<KeyPoint title="afterChange">
+  Verfolgt den aktuellen Index für Updates der UI
+</KeyPoint>
+</KeyPoints>
+
+## Tipps für die Performance [#performance-tips]
+
+<KeyPoints>
+<KeyPoint title="Datenarrays memoisieren">
+  Umschließe dein Array mit Einträgen mit `useMemo`. Eine neue Array-Referenz bei jedem Render löst ein Update von `count` aus und berechnet die sichtbaren Bereiche neu.
+</KeyPoint>
+<KeyPoint title="itemBuilder schlank halten">
+  Er läuft bei jeder Änderung des sichtbaren Bereichs (meist 3 Slides). Vermeide darin aufwendige Berechnungen oder Seiteneffekte.
+</KeyPoint>
+<KeyPoint title="Daten kurz vor dem Ende laden">
+  Erkenne mit `afterChange`, wann sich der Nutzer dem Ende nähert, und lade den nächsten Schwung, bevor ihm die Slides ausgehen (siehe das Rezept [„Endloser Feed“](/docs/recipes/infinite-feed)).
+</KeyPoint>
+<KeyPoint title="Mausrad auf scrollbaren Seiten abschalten">
+  Setze `enableWheel={false}`, wenn der Slider in einem scrollbaren Layout steckt, damit er das Scrollen der Seite nicht abfängt.
+</KeyPoint>
+</KeyPoints>
+
+<NextSteps
+        items={[
+          {
+            label: 'API-Referenz',
+            path: '/docs/react/api',
+            description: 'alle verfügbaren Props',
+          },
+          {
+            label: 'Reel Player',
+            path: '/docs/reel-player',
+            description: 'Videoplayer im Stil von TikTok/Reels',
+          },
+          {
+            label: 'Lightbox',
+            path: '/docs/lightbox',
+            description: 'Galerie für Bilder und Videos',
+          },
+          {
+            label: 'Stories Player',
+            path: '/docs/stories-player',
+            description: 'Stories-Ansicht im Stil von Instagram',
+          },
+        ]}
+      />
