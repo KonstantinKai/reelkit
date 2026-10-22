@@ -1,0 +1,422 @@
+---
+title: Angular Lightbox
+description: Vollbild-Overlay für Bildergalerien in Angular. Das Schema von LightboxItem, Inputs, Outputs, Direktiven für Template-Slots, ein tree-shakable transitionFn, Wischen zum Schließen und Theming, das mit der Lightbox für React geteilt wird.
+---
+
+import { Image, MousePointer, X, Keyboard, Maximize2, Hash, Zap, Volume2, Loader, AlertTriangle, Layers, Link2, Play, Download } from 'lucide-react';
+import installation from '../../snippets/angular-lightbox/installation.sh?raw';
+import installation2 from '../../snippets/angular-lightbox/installation-2.ts?raw';
+import basicUsage from '../../snippets/angular-lightbox/basic-usage.ts?raw';
+import templateSlots from '../../snippets/angular-lightbox/template-slots.ts?raw';
+import videoSupport from '../../snippets/angular-lightbox/video-support.ts?raw';
+import fullscreen from '../../snippets/angular-lightbox/fullscreen.ts?raw';
+import urlState from '../../snippets/angular-lightbox/url-state.ts?raw';
+import urlState2 from '../../snippets/angular-lightbox/url-state-2.ts?raw';
+import urlState3 from '../../snippets/angular-lightbox/url-state-3.ts?raw';
+import urlState4 from '../../snippets/angular-lightbox/url-state-4.ts?raw';
+import urlState5 from '../../snippets/angular-lightbox/url-state-5.ts?raw';
+import transitions from '../../snippets/angular-lightbox/transitions.ts?raw';
+import wiringCallbacksInRklightboxslide from '../../snippets/angular-lightbox/wiring-callbacks-in-rklightboxslide.html?raw';
+import customLoadingTemplate from '../../snippets/angular-lightbox/custom-loading-template.html?raw';
+import customErrorTemplate from '../../snippets/angular-lightbox/custom-error-template.html?raw';
+import theming from '../../snippets/angular-lightbox/theming.css?raw';
+import autoAdvance from '../../snippets/angular-lightbox/auto-advance.ts?raw';
+import download from '../../snippets/angular-lightbox/download.ts?raw';
+
+Lightbox im Vollbild für Bild- und Videogalerien in Angular, gebaut auf `@reelkit/angular-lightbox`.
+
+<DemoLink href="https://angular-demo.reelkit.dev/image-preview?utm_source=docs">Live-Demo ansehen →</DemoLink>
+
+## Funktionen [#features]
+
+<FeatureGrid items={[
+              {
+                icon: Image,
+                label: 'Bilder und Video',
+                desc: 'Eingebaute Unterstützung für Video-Slides',
+              },
+              {
+                icon: MousePointer,
+                label: 'Touch-Gesten',
+                desc: 'Wischen zum Navigieren',
+              },
+              {
+                icon: X,
+                label: 'Wischen zum Schließen',
+                desc: 'Nach oben wischen zum Schließen',
+              },
+              {
+                icon: Keyboard,
+                label: 'Tastaturnavigation',
+                desc: 'Pfeiltasten und Escape',
+              },
+              {
+                icon: Maximize2,
+                label: 'Vollbild',
+                desc: 'Browserübergreifende API',
+              },
+              {
+                icon: Hash,
+                label: 'Übergänge',
+                desc: 'Slide, Fade, Flip, Zoom-in',
+              },
+              {
+                icon: Zap,
+                label: 'Vorladen',
+                desc: 'Benachbarte Bilder werden vorab geladen',
+              },
+              {
+                icon: Volume2,
+                label: 'Ton an/aus',
+                desc: 'Stummschalten pro Slide',
+              },
+              {
+                icon: Loader,
+                label: 'Ladezustände',
+                desc: 'Spinner und eigener Slot',
+              },
+              {
+                icon: AlertTriangle,
+                label: 'Fehlerbehandlung',
+                desc: 'Fehlersymbol und eigener Slot',
+              },
+              {
+                icon: Layers,
+                label: 'Template-Slots',
+                desc: '6 anpassbare Slot-Bereiche',
+              },
+              {
+                icon: Layers,
+                label: 'OnPush',
+                desc: 'Angular-Signals und OnPush',
+              },
+              {
+                icon: Link2,
+                label: 'URL-State',
+                desc: 'Teilbare Links mit Lesezeichen',
+              },
+              {
+                icon: Play,
+                label: 'Diashow',
+                desc: 'Optionales automatisches Weiterschalten mit Play/Pause',
+              },
+              {
+                icon: Download,
+                label: 'Download',
+                desc: 'Optionaler Button, der das aktive Element speichert',
+              },
+            ]} />
+
+## Installation [#installation]
+
+<CodeBlock code={installation} language="bash" />
+
+Registriere das Stylesheet einmal:
+
+<CodeBlock code={installation2} language="typescript" />
+
+<Callout type="info" title="Symbole">
+  Die Standard-Steuerelemente nutzen `lucide-angular` für die Symbole. Wenn du eine andere Symbolbibliothek bevorzugst, nutze die Template-Slots `rkLightboxControls` und `rkLightboxNavigation`, um deine eigenen einzusetzen.
+</Callout>
+
+## Schnellstart [#quick-start]
+
+Importiere die Styles und die Standalone-Komponente `RkLightboxOverlayComponent` in das `imports`-Array deiner Komponente.
+
+<Sandbox code={basicUsage} language="typescript" title="gallery.component.ts" framework="angular" />
+
+<Callout type="info" title="Wo das Overlay gerendert wird">
+  Anders als die Lightboxen für React und Vue, die ihr Overlay ans Ende von `document.body` verschieben, rendert `rk-lightbox-overlay` dort, wo du es platzierst, und bedeckt den Bildschirm mit `position: fixed`. Halte es von jedem Vorfahren mit `transform`, `perspective`, `filter` oder `will-change: transform` fern: Dieser Vorfahr wird zum Containing Block des Overlays, die Lightbox richtet ihre Größe dann nach ihm statt nach dem Viewport und wird von seinem `overflow` abgeschnitten. Ein Vorfahr mit eigenem Stacking Context begrenzt außerdem, wie weit `--rk-lightbox-overlay-z` die Lightbox anheben kann. Im Gegenzug erreichen `--rk-lightbox-*`-Tokens, die auf einem beliebigen Vorfahren gesetzt sind, die Lightbox.
+</Callout>
+
+## Template-Slots [#template-slots]
+
+Mit Direktiven für Template-Slots passt du die Oberfläche des Overlays vollständig an, ohne die Komponente zu forken. Jeder Slot erhält ein streng typisiertes Kontextobjekt.
+
+| Direktive | Kontexttyp | Beschreibung |
+| --- | --- | --- |
+| \[rkLightboxControls\] | `LightboxControlsContext` | Ersetzt die obere Steuerleiste (Schließen-Button, Zähler, Vollbild-Umschalter) |
+| \[rkLightboxNavigation\] | `LightboxNavContext` | Ersetzt die Navigationspfeile für zurück und weiter |
+| \[rkLightboxInfo\] | `LightboxInfoContext` | Ersetzt das untere Verlaufs-Overlay mit Titel und Beschreibung |
+| \[rkLightboxSlide\] | `LightboxSlideContext` | Ersetzt den Inhalt einzelner Slides (für Video-Slides erforderlich) |
+| \[rkLightboxLoading\] | `{ $implicit: activeIndex, item }` | Eigene Ladeanzeige |
+| \[rkLightboxError\] | `{ $implicit: activeIndex, item }` | Eigene Fehleranzeige |
+
+<CodeBlock code={templateSlots} language="typescript" />
+
+## Video-Unterstützung [#video-support]
+
+Video-Slides aktivierst du über den Template-Slot `rkLightboxSlide` und die `RkLightboxVideoSlideComponent`. So landet der Videoplayer nicht im Bundle von Galerien, die nur Bilder brauchen.
+
+Der eingebaute Ton-Button erscheint nur, wenn oberhalb von `<rk-lightbox-overlay>` ein `SoundStateService` bereitgestellt wird – erst diese geteilte Instanz lässt einen Umschalter das Video erreichen, da der Slide aus deinem Template gerendert wird. Ohne sie steuerst du das Element direkt mit `setLightboxVideoMuted`.
+
+<CodeBlock code={videoSupport} language="typescript" />
+
+## Vollbild [#fullscreen]
+
+Nutze `fullscreenSignal`, `requestFullscreen` und `exitFullscreen` aus `@reelkit/angular`, um den Vollbildzustand zu beobachten oder umzuschalten.
+
+<CodeBlock code={fullscreen} language="typescript" />
+
+## URL-State [#url-state]
+
+<DemoLink href="https://angular-demo.reelkit.dev/image-preview-url?utm_source=docs">Live-Demo ansehen →</DemoLink>
+
+`RkLightboxUrlOverlayComponent` ist eine eigene Komponente, deren Öffnungszustand in der Adressleiste liegt. Baue einen Controller mit `createOverlayUrlState` und übergib ihn als `[controller]`: Die Galerie öffnet sich selbst, wenn der Parameter einen Slide benennt, und schließt sich, wenn er verschwindet. Links lassen sich teilen, und die Zurück-Taste schließt die Galerie, statt die Seite zu verlassen.
+
+<Callout type="info" title="Eingebaute Schlüssel">
+  Slides kannst du mit einem eingebauten Schlüssel adressieren – verteile `urlIndexKey` (nach Position) oder `urlStableIdKey` (nach einer stabilen `id`) in den Controller –, beide werden von `@reelkit/angular` re-exportiert. Siehe den [Leitfaden zum URL-State](/docs/core/guide#url-state) und die [Core-API](/docs/core/api#url-state).
+</Callout>
+
+<CodeBlock code={urlState} language="typescript" />
+
+Rufe es in einem Injection Context auf – in einem Feld-Initialisierer oder im Konstruktor. Es hängt sich sofort ein und gibt sich über `DestroyRef` wieder frei, sodass eine Komponente, die bei offener Galerie zerstört wird, keinen Listener zurücklässt. Alle Optionen findest du in der [Angular-API-Referenz](/docs/angular/api#createoverlayurlstate).
+
+- Das Öffnen legt **einen** Eintrag im Verlauf an. Das Blättern durch Slides **ersetzt** ihn, sodass N Schritte keine Einträge hinzufügen und ein Schritt zurück die Galerie immer verlässt.
+- Zurück schließt nur, wenn die Galerie innerhalb der App geöffnet wurde – der Link hat einen Eintrag angelegt. Ein geteilter Link, der direkt in einem neuen Tab geöffnet wird, hat keinen Verlauf hinter sich, daher verlässt die Zurück-Taste des Browsers die Seite; der ✕-Button oder Escape entfernt den Parameter an Ort und Stelle und bleibt auf der Seite.
+- Ein Parameter, der keinen Slide benennt – ein veraltetes Lesezeichen, ein von Hand geänderter Wert –, wird aus der URL entfernt, statt einen Slide zu behaupten, der sich nicht öffnen lässt.
+- Template-Slots funktionieren unverändert: Die URL-Komponente führt die sechs Slot-Abfragen selbst aus und reicht jedes Template an die Galerie weiter, sodass `rkLightboxControls` und seine Geschwister darin genauso sitzen wie in `rk-lightbox-overlay`.
+- In einer Anwendung mit Routing übergibst du einen Adapter, der auf `Router` aufbaut. Wer den Verlauf am Router vorbei schreibt, lässt dessen Location veralten, und seine nächste Navigation verwirft den Parameter.
+
+**In einer App mit Routing übergibst du einen Adapter.** Wer den Verlauf am Router vorbei schreibt, lässt dessen Location veralten, und seine nächste Navigation verwirft den Parameter. Baue daher einen Adapter auf `Router` und übergib ihn als `adapter`:
+
+<CodeBlock code={urlState2} language="typescript" />
+
+**Stabile Links.** Der Index ist positionsbasiert – ein gespeichertes `?photo=3` öffnet ein anderes Bild, sobald die Liste umsortiert wird. `urlStableIdKey` verwendet als Schlüssel die stabile `id` jedes Elements und durchsucht die aktuelle Liste – ein Aufruf deckt den üblichen Fall ab.
+
+<CodeBlock code={urlState3} language="typescript" />
+
+Übergib `hashCodec: base64UrlCodec`, um die id in der URL base64url-kodiert abzulegen – eine umkehrbare Verschleierung, kein kryptografischer Hash.
+
+Willst du nach einem anderen Feld (einem `slug`) adressieren oder einen endlosen Feed mit `locateAsync` nachladen, baust du den `codec` (Format in der URL) und den `locator` (Suche) selbst:
+
+<CodeBlock code={urlState4} language="typescript" />
+
+**Endlose oder seitenweise geladene Galerien.** `locate` ist synchron und antwortet daher nur für bereits geladene Bilder – ein geteilter Link auf Bild 400 eines Feeds, der erst 20 geladen hat, findet nichts. `locateAsync` ist der Ausweg und wird nur aufgerufen, wenn `locate` nichts findet: Lade die nötigen Seiten und gib dann den Index zurück, den die Identität tatsächlich hat. Solange er aussteht, bleibt die Galerie geschlossen und der Parameter unangetastet, sodass der Deep Link das Laden übersteht; `null` oder eine Ablehnung entfernt den Parameter.
+
+<Callout type="info" title="Abkürzung">
+  Ist die `id` des Elements dein Schlüssel? Dann spar dir den selbst geschriebenen Codec und Locator – übergib `locateAsync` direkt an `urlStableIdKey({ items, locateAsync })` (es lädt bei einem Fehltreffer nach und gibt dann den Index zurück). Die ausführlichere Variante unten ist für einen Schlüssel aus einem anderen Feld oder für volle Kontrolle gedacht.
+</Callout>
+
+<CodeBlock code={urlState5} language="typescript" />
+
+## Automatisches Weiterschalten [#auto-advance]
+
+Setze `[autoAdvance]="true"`, damit die Galerie beim Öffnen als Diashow läuft. Standardmäßig ist es aus, sodass eine bestehende Lightbox wie bisher rendert und sich so verhält.
+
+- **Bilder** bleiben `autoAdvanceInterval` lang stehen (standardmäßig 5000 ms), gezählt ab dem Moment, in dem das Bild geladen ist – ein langsames Bild wird also nie übersprungen, bevor es jemand gesehen hat. Bei einem Bild, das nicht lädt, zählt die Zeit ab dem Fehler.
+- **Videos** laufen einmal durch, statt in einer Schleife zu spielen, und schalten weiter, wenn sie enden. Binde in einem `rkLightboxSlide`-Template `[loop]="!autoAdvance"` und `[onEnded]="onEnded"` an `rk-lightbox-video-slide`, wie unter [Video-Unterstützung](#video-support).
+- **Es wartet**, solange die Maus auf einem Steuerelement ruht (einem Button, einem Link oder der Bildunterschrift), während eines Wischens und solange die Seite verborgen ist, und macht dann dort weiter, wo es angehalten hat.
+- **Wer von Hand blättert** (Pfeile, Tasten, Mausrad, Wischen), startet das Intervall des neuen Slides bei null; die Diashow bleibt an.
+- **Auf dem letzten Slide** hält es an, außer `loop` ist gesetzt. Der Play/Pause-Button in den Steuerelementen zeigt den Zustand und lässt den Betrachter ihn umschalten.
+
+Die Diashow läuft außerhalb der Angular-Zone, daher lösen ihre Animation Frames keine Change Detection aus. Ein eigenes `rkLightboxControls`-Template erhält `isAutoAdvancing` und, nur wenn `autoAdvance` an ist, `onToggleAutoAdvance` – rendere `rk-play-pause-button`, wenn es vorhanden ist. Das Timing selbst übernimmt `createSlideshowController` aus `@reelkit/core`; siehe den [Leitfaden zu Autoplay](/docs/core/guide#autoplay) und die [Core-API](/docs/core/api#autoplay).
+
+<CodeBlock code={autoAdvance} language="typescript" />
+
+## Download [#download]
+
+Setze `[showDownload]="true"`, um den Steuerelementen einen Download-Button hinzuzufügen. Er speichert das aktive Element von seiner `downloadUrl`, ersatzweise von `src`, unter seinem `downloadName`, ersatzweise unter dem letzten Segment der URL.
+
+Die Datei wird geladen und gespeichert, denn ein Browser ignoriert das Attribut `download` bei einem Link auf einen anderen Origin und würde die Datei stattdessen öffnen. Schlägt das Laden fehl – meist bei einem Server auf einem anderen Origin, der keine CORS-Header sendet –, öffnet sich die Datei in einem neuen Tab, wo der Betrachter sie trotzdem speichern kann. Liefere die Dateien mit `Access-Control-Allow-Origin` aus, damit ein Klick zum Speichern reicht. Der Button ist deaktiviert, während ein Download läuft.
+
+Ein eigenes `rkLightboxControls`-Template erhält `isDownloading` und, nur wenn `showDownload` an ist, `onDownload` – rendere `rk-download-button`, wenn es vorhanden ist. Die Hilfsfunktion ist `downloadFile` aus `@reelkit/core`; siehe den [Leitfaden zum Download](/docs/core/guide#download).
+
+<CodeBlock code={download} language="typescript" />
+
+### Steuer-Buttons [#control-buttons]
+
+| Komponente | Selektor | Inputs / Outputs | Beschreibung |
+| --- | --- | --- | --- |
+| `RkPlayPauseButtonComponent` | `rk-play-pause-button` | `[playing]`, `(toggled)` | Umschalter für die Diashow (Play/Pause-Symbol, `aria-pressed` während der Wiedergabe). Wird von den Standard-Steuerelementen mit `autoAdvance` angezeigt. |
+| `RkDownloadButtonComponent` | `rk-download-button` | `[downloading]`, `(pressed)` | Download-Button, deaktiviert während `downloading`. Wird von den Standard-Steuerelementen mit `showDownload` angezeigt. |
+
+## Inputs von RkLightboxUrlOverlayComponent [#rklightboxurloverlaycomponent-inputs]
+
+Nimmt jeden Input von `rk-lightbox-overlay` außer `isOpen` an, der durch einen Controller ersetzt wird. Die Outputs sind dieselben `closed` und `slideChange`; das Schließen steuert die URL, daher ist `closed` eine Benachrichtigung und nicht der Mechanismus.
+
+| Input | Typ | Standard | Beschreibung |
+| --- | --- | --- | --- |
+| `controller` | `UrlStateController` | `required` | Controller aus createOverlayUrlState. Seine Position entscheidet, ob die Galerie offen ist und welchen Slide sie zeigt; die Komponente schreibt bei einem Slide-Wechsel und beim Schließen über ihn zurück. |
+
+## Inputs von RkLightboxOverlayComponent [#rklightboxoverlaycomponent-inputs]
+
+| Input | Typ | Standard | Beschreibung |
+| --- | --- | --- | --- |
+| `isOpen` | `boolean` | Pflicht | Steuert die Sichtbarkeit; bei false wird das Overlay aus dem DOM entfernt |
+| `items` | `LightboxItem[]` | Pflicht | Array der Elemente der Lightbox (Bilder oder Videos) |
+| `initialIndex` | `number` | 0 | Nullbasierter Index des zuerst sichtbaren Elements |
+| `transitionFn` | `TransitionTransformFn` | slideTransition | Übergangsfunktion für Slides. Importiere einen eingebauten Übergang (slideTransition, flipTransition, lightboxFadeTransition, lightboxZoomTransition) oder übergib einen eigenen. Ohne Angabe wird slideTransition verwendet. |
+| `showInfo` | `boolean` | true | Ob das Info-Overlay mit Titel und Beschreibung gerendert wird |
+| `showControls` | `boolean` | true | Ob die obere Steuerleiste gerendert wird (Schließen, Zähler, Vollbild) |
+| `showNavigation` | `boolean` | true | Ob die Navigationspfeile für zurück und weiter gerendert werden |
+| `transitionDuration` | `number` | 300 | Dauer der Slide-Animation in ms |
+| `swipeDistanceFactor` | `number` | 0.12 | Mindestanteil der Wischstrecke (0–1), der einen Slide-Wechsel auslöst |
+| `swipeToCloseDirection` | `'up' \| 'down'` | 'up' | Richtung der Wischgeste zum Schließen auf Mobilgeräten |
+| `loop` | `boolean` | false | Ob der Slider vom letzten Slide zurück zum ersten springt |
+| `enableNavKeys` | `boolean` | true | Aktiviert die Navigation mit den Pfeiltasten |
+| `enableWheel` | `boolean` | true | Aktiviert die Navigation mit dem Mausrad |
+| `wheelDebounceMs` | `number` | 200 | Debounce-Dauer für Mausrad-Events in ms |
+| `autoAdvance` | `boolean` | false | Spielt die Galerie als Diashow ab. Siehe [Automatisches Weiterschalten](#auto-advance). |
+| `autoAdvanceInterval` | `number` | 5000 | Wie lange jedes Bild während einer Diashow stehen bleibt, in ms, gezählt ab dem Laden |
+| `showDownload` | `boolean` | false | Fügt einen Download-Button für das aktive Element hinzu. Siehe [Download](#download). |
+| `ariaLabel` | `string` | 'Image gallery' | Barrierefreie Beschriftung für den Dialogbereich |
+
+## Outputs von RkLightboxOverlayComponent [#rklightboxoverlaycomponent-outputs]
+
+| Output | Typ | Beschreibung |
+| --- | --- | --- |
+| `closed` | `EventEmitter<void>` | Wird ausgelöst, wenn der Nutzer die Lightbox schließt |
+| `slideChange` | `EventEmitter<number>` | Wird ausgelöst, wenn sich der Index des aktiven Slides ändert |
+
+## Interface LightboxItem [#lightboxitem-interface]
+
+| Feld | Typ | Erforderlich | Beschreibung |
+| --- | --- | --- | --- |
+| `src` | `string` | ja | URL des Bildes oder Videos |
+| `type` | `'image' \| 'video'` | nein | Typ des Elements. Standard ist 'image' |
+| `poster` | `string` | nein | Vorschaubild für Video-Elemente |
+| `title` | `string` | nein | Titel, der im Info-Overlay angezeigt wird |
+| `description` | `string` | nein | Beschreibung, die unter dem Titel angezeigt wird |
+| `width` | `number` | nein | Natürliche Bildbreite in Pixeln |
+| `height` | `number` | nein | Natürliche Bildhöhe in Pixeln |
+| `downloadUrl` | `string` | nein | Was der Download-Button speichert. Standard ist `src` |
+| `downloadName` | `string` | nein | Dateiname zum Speichern. Standard ist das letzte Segment des URL-Pfads |
+
+## Kontexttypen der Template-Slots [#template-slot-context-types]
+
+| Typ | Felder |
+| --- | --- |
+| `LightboxControlsContext` | `{ item, activeIndex, count, isFullscreen, isAutoAdvancing, isDownloading, onClose, onToggleFullscreen, onToggleAutoAdvance?, onDownload? }` |
+| `LightboxNavContext` | `{ item, onPrev, onNext, activeIndex, count }` |
+| `LightboxInfoContext` | `{ $implicit: LightboxItem, index }` |
+| `LightboxSlideContext` | `{ $implicit: LightboxItem, index, size: [number, number], isActive, autoAdvance, onReady, onWaiting, onError, onEnded }` |
+
+## Übergänge [#transitions]
+
+Übergib eine beliebige `TransitionTransformFn` über den Input `transitionFn`. Importierst du nur den Übergang, den du nutzt, kann der Bundler den Rest per Tree-Shaking entfernen. Ohne Angabe wird `slideTransition` verwendet.
+
+| Funktion | Aus | Beschreibung |
+| --- | --- | --- |
+| `slideTransition` | `@reelkit/angular-lightbox` | Normaler horizontaler Slide (Standard) |
+| `lightboxFadeTransition` | `@reelkit/angular-lightbox` | Überblendung zwischen Bildern |
+| `flipTransition` | `@reelkit/angular-lightbox` | 3D-Effekt einer umgedrehten Karte |
+| `lightboxZoomTransition` | `@reelkit/angular-lightbox` | Zoomt von kleiner auf normale Größe |
+
+<CodeBlock code={transitions} language="typescript" />
+
+## Laden von Inhalten und Fehlerbehandlung [#content-loading-error-handling]
+
+Mit dem Template-Slot `rkLightboxSlide` stehen im Kontext drei Lifecycle-Callbacks bereit, die den Ladezustand melden. Die Lightbox verfolgt den Zustand pro Slide und zeigt entsprechend einen Spinner oder ein Fehlersymbol. Ein Vorlader für Inhalte merkt sich defekte URLs, sodass ein erneuter Besuch eines fehlgeschlagenen Slides den Wiederholungsversuch überspringt.
+
+### Lifecycle-Callbacks [#lifecycle-callbacks]
+
+| Callback | Typ | Beschreibung |
+| --- | --- | --- |
+| `onReady` | `() => void` | Meldet, dass der Inhalt des Slides erfolgreich geladen ist (zum Beispiel ein dekodiertes Bild) |
+| `onWaiting` | `() => void` | Meldet, dass der Inhalt des Slides lädt oder puffert (zeigt den Spinner) |
+| `onError` | `() => void` | Meldet, dass der Inhalt des Slides nicht geladen werden konnte (zeigt das Fehlersymbol) |
+
+### Callbacks in rkLightboxSlide verbinden [#wiring-callbacks-in-rklightboxslide]
+
+<CodeBlock code={wiringCallbacksInRklightboxslide} language="html" />
+
+### Eigenes Lade-Template [#custom-loading-template]
+
+Mit der Direktive `rkLightboxLoading` ersetzt du den Standard-Spinner.
+
+<CodeBlock code={customLoadingTemplate} language="html" />
+
+### Eigenes Fehler-Template [#custom-error-template]
+
+Mit der Direktive `rkLightboxError` ersetzt du das Standard-Fehlersymbol.
+
+<CodeBlock code={customErrorTemplate} language="html" />
+
+## CSS-Klassen [#css-classes]
+
+Alle CSS-Klassen sind einfach (nicht gekapselt), sodass du sie mit spezifischeren Selektoren in einem Stylesheet ansprechen kannst, das nach `@reelkit/angular-lightbox/styles.css` geladen wird. Für Änderungen an Farbe, Größe und z-index nutzt du besser die CSS Custom Properties, die unten im Abschnitt [Theming](#theming) beschrieben sind.
+
+| Klasse | Komponente | Beschreibung |
+| --- | --- | --- |
+| `.rk-lightbox-overlay` | Overlay | Root-Container (Vollbild-Hintergrund) |
+| `.rk-lightbox-top-shade` | Overlay | Oberer Verlauf hinter den Steuerelementen |
+| `.rk-lightbox-spinner` | Overlay | Standard-Ladespinner |
+| `.rk-lightbox-img-error` | Overlay | Container für den Fehlerzustand (defektes Bild) |
+| `.rk-lightbox-img-error-text` | Overlay | Textbeschriftung des Fehlerzustands |
+| `.rk-lightbox-swipe-hint` | Overlay | Wischhinweis auf Mobilgeräten |
+| `.rk-lightbox-empty` | Overlay | Text für den leeren Zustand |
+| `.rk-lightbox-controls-left` | Controls | Container für die Steuerelemente oben links |
+| `.rk-lightbox-btn` | Controls | Steuer-Button (Vollbild und andere) |
+| `.rk-lightbox-play-pause` | Controls | Play/Pause-Button der Diashow (mit `.rk-lightbox-btn`) |
+| `.rk-lightbox-download` | Controls | Download-Button (mit `.rk-lightbox-btn`) |
+| `.rk-lightbox-close` | Controls | Schließen-Button |
+| `.rk-lightbox-counter` | Controls | Chip mit dem Bildzähler |
+| `.rk-lightbox-nav` | Navigation | Navigationspfeil (zurück und weiter) |
+| `.rk-lightbox-nav-prev` | Navigation | Pfeil zurück |
+| `.rk-lightbox-nav-next` | Navigation | Pfeil weiter |
+| `.rk-lightbox-info` | Info | Container für Titel und Beschreibung |
+| `.rk-lightbox-title` | Info | Bildtitel |
+| `.rk-lightbox-description` | Info | Bildbeschreibung |
+| `.rk-lightbox-slide` | Slide | Slide-Container |
+| `.rk-lightbox-img` | Slide | Bildelement |
+| `.rk-lightbox-video-container` | VideoSlide | Container für Video-Slides (optional) |
+| `.rk-lightbox-video-element` | VideoSlide | Videoelement (optional) |
+| `.rk-lightbox-video-poster` | VideoSlide | Posterbild des Videos (optional) |
+| `.rk-lightbox-video-error` | VideoSlide | Container für den Fehlerzustand des Videos |
+
+## Theming [#theming]
+
+Jede Farbe, Größe, jeder z-index und jeder Übergang liegt in einer CSS Custom Property. Überschreibe eine oder mehrere auf `:root` (oder einem beliebigen Vorfahren der Lightbox), um das Aussehen zu ändern, ohne den Quellcode der Komponente anzufassen. Die Tokens entsprechen denen der Lightbox für React, sodass sich Überschreibungen zwischen den Bindings übertragen lassen.
+
+| Token | Standard | Steuert |
+| --- | --- | --- |
+| `--rk-lightbox-overlay-bg` | `#000` | Farbe des Vollbild-Hintergrunds |
+| `--rk-lightbox-overlay-z` | `9999` | z-index des Overlays |
+| `--rk-lightbox-top-shade-height` | `80px` | Höhe des oberen Verlaufs |
+| `--rk-lightbox-top-shade-bg` | `linear-gradient(rgba(0,0,0,0.6), transparent)` | Farbe des oberen Verlaufs |
+| `--rk-lightbox-edge-padding` | `16px` | Randabstand für Schließen, Navigation und Steuerelemente oben links |
+| `--rk-lightbox-controls-gap` | `12px` | Abstand zwischen den Steuerelementen oben links |
+| `--rk-lightbox-transition` | `0.2s` | Dauer des Hover-Übergangs der Buttons |
+| `--rk-lightbox-blur` | `8px` | Radius der Hintergrundunschärfe für Buttons und Chips |
+| `--rk-lightbox-btn-bg` | `rgba(0, 0, 0, 0.5)` | Standardhintergrund für Schließen, Navigation und kleine Buttons |
+| `--rk-lightbox-btn-bg-hover` | `rgba(255, 255, 255, 0.2)` | Hover-Hintergrund für Schließen, Navigation und kleine Buttons |
+| `--rk-lightbox-btn-fg` | `#fff` | Symbolfarbe für Schließen, Navigation und kleine Buttons |
+| `--rk-lightbox-btn-size` | `36px` | Größe der kleinen Buttons (Vollbild-Umschalter und andere) |
+| `--rk-lightbox-btn-disabled-opacity` | `0.5` | Deckkraft eines deaktivierten kleinen Buttons (während eines Downloads) |
+| `--rk-lightbox-close-size` | `40px` | Größe des Schließen-Buttons |
+| `--rk-lightbox-nav-size` | `48px` | Größe der Pfeile für zurück und weiter |
+| `--rk-lightbox-nav-opacity` | `0.7` | Deckkraft der Pfeile im Ruhezustand |
+| `--rk-lightbox-counter-fg` | `#fff` | Textfarbe des Zählers |
+| `--rk-lightbox-counter-bg` | `rgba(0, 0, 0, 0.5)` | Hintergrund des Zähler-Chips |
+| `--rk-lightbox-counter-size` | `14px` | Schriftgröße des Zählers |
+| `--rk-lightbox-counter-padding` | `6px 12px` | Innenabstand des Zähler-Chips |
+| `--rk-lightbox-counter-radius` | `20px` | Eckenradius des Zähler-Chips |
+| `--rk-lightbox-spinner-size` | `28px` | Breite und Höhe des Standard-Spinners |
+| `--rk-lightbox-spinner-duration` | `0.8s` | Rotationsdauer des Spinners |
+| `--rk-lightbox-error-fg` | `rgba(255, 255, 255, 0.4)` | Farbe von Fehlersymbol und Text |
+| `--rk-lightbox-info-bg` | `linear-gradient(transparent, rgba(0,0,0,0.8))` | Verlauf hinter der Bildunterschrift |
+| `--rk-lightbox-info-padding` | `24px` | Innenabstand der Bildunterschrift |
+| `--rk-lightbox-title-size` | `18px` | Schriftgröße des Titels |
+| `--rk-lightbox-description-size` | `14px` | Schriftgröße der Beschreibung |
+| `--rk-lightbox-hint-fg` | `rgba(255, 255, 255, 0.5)` | Textfarbe des Wischhinweises |
+| `--rk-lightbox-hint-bg` | `rgba(0, 0, 0, 0.3)` | Hintergrund des Chips mit dem Wischhinweis |
+| `--rk-lightbox-video-bg` | `#000` | Hintergrund der Letterbox hinter \<video> |
+
+Füge das folgende Snippet in ein Stylesheet ein, das nach `@reelkit/angular-lightbox/styles.css` geladen wird.
+
+<CodeBlock code={theming} language="css" />
+
+## Barrierefreiheit [#accessibility]
+
+Das Root-Element des Overlays ist ein modaler Dialog (`role="dialog"`, `aria-modal="true"`). Setze den Input `ariaLabel`, um die Ansage für Screenreader zu ändern; standardmäßig lautet sie „Image gallery“. Jeder Slide trägt `role="group"`, `aria-roledescription="slide"` und ein `aria-label`, das sich aus dem Bildtitel und der Position ergibt.
+
+Die Lightbox fängt beim Öffnen den Fokus ein und gibt ihn beim Schließen an den Auslöser zurück. Tab und Shift+Tab wechseln zwischen den fokussierbaren Elementen darin; Fokus, der entkommt (Klick außerhalb, programmatischer Fokus), wird zurückgeholt. Umgesetzt mit `captureFocusForReturn` und `createFocusTrap` aus `@reelkit/core`.
+
+## Tastenkürzel [#keyboard-shortcuts]
+
+| Taste | Aktion |
+| --- | --- |
+| `ArrowLeft` | Vorheriges Bild |
+| `ArrowRight` | Nächstes Bild |
+| `Escape` | Schließt die Lightbox (oder beendet den Vollbildmodus, falls aktiv) |

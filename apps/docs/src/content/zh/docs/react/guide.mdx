@@ -137,7 +137,7 @@ DOM 里始终只有三张幻灯片：当前一张和它的前后两张，所以�
   它在每次可见范围变化时都会运行（通常是 3 张幻灯片）。不要在里面做重计算或副作用。
 </KeyPoint>
 <KeyPoint title="临近边缘时加载数据">
-  使用 `afterChange` 来检测用户是否接近末尾，并在幻灯片用完之前取下一批（见上面的可增长列表演示）。
+  使用 `afterChange` 来检测用户是否接近末尾，并在幻灯片用完之前取下一批（见 [无限信息流](/docs/recipes/infinite-feed) 示例）。
 </KeyPoint>
 <KeyPoint title="在可滚动页面里关掉滚轮">
   把 `enableWheel={false}` ，当滑动器嵌在可滚动布局里时，避免抢走页面滚动。

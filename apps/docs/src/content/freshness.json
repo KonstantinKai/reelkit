@@ -8,12 +8,12 @@
     "/docs/installation": {
       "source": "content/en/docs/installation.mdx",
       "translation": "content/uk/docs/installation.mdx",
-      "sha": "d3d9ad2e6d7338ca3d376713eeb2458815ca860c"
+      "sha": "2ee16b8420dea91bc305a455f5beae24bc53654d"
     },
     "/docs/ssr": {
       "source": "content/en/docs/ssr.mdx",
       "translation": "content/uk/docs/ssr.mdx",
-      "sha": "f1e66a2dec0fd180fbaa5bce65914504fd6934e2"
+      "sha": "4472ee79f04eec1a9cdef9d107d83b15b43276b9"
     },
     "/docs/core/guide": {
       "source": "content/en/docs/core/guide.mdx",
@@ -33,7 +33,7 @@
     "/docs/react/guide": {
       "source": "content/en/docs/react/guide.mdx",
       "translation": "content/uk/docs/react/guide.mdx",
-      "sha": "93f4c1eb4fdff551054e6cfcbcd0ace19685be01"
+      "sha": "7eedb8c278400a06fd2e267186841fac07ee6015"
     },
     "/docs/react/api": {
       "source": "content/en/docs/react/api.mdx",
@@ -160,12 +160,12 @@
     "/docs/installation": {
       "source": "content/en/docs/installation.mdx",
       "translation": "content/zh/docs/installation.mdx",
-      "sha": "d3d9ad2e6d7338ca3d376713eeb2458815ca860c"
+      "sha": "2ee16b8420dea91bc305a455f5beae24bc53654d"
     },
     "/docs/ssr": {
       "source": "content/en/docs/ssr.mdx",
       "translation": "content/zh/docs/ssr.mdx",
-      "sha": "f1e66a2dec0fd180fbaa5bce65914504fd6934e2"
+      "sha": "4472ee79f04eec1a9cdef9d107d83b15b43276b9"
     },
     "/docs/core/guide": {
       "source": "content/en/docs/core/guide.mdx",
@@ -185,7 +185,7 @@
     "/docs/react/guide": {
       "source": "content/en/docs/react/guide.mdx",
       "translation": "content/zh/docs/react/guide.mdx",
-      "sha": "93f4c1eb4fdff551054e6cfcbcd0ace19685be01"
+      "sha": "7eedb8c278400a06fd2e267186841fac07ee6015"
     },
     "/docs/react/api": {
       "source": "content/en/docs/react/api.mdx",
@@ -312,12 +312,12 @@
     "/docs/installation": {
       "source": "content/en/docs/installation.mdx",
       "translation": "content/pt/docs/installation.mdx",
-      "sha": "d3d9ad2e6d7338ca3d376713eeb2458815ca860c"
+      "sha": "2ee16b8420dea91bc305a455f5beae24bc53654d"
     },
     "/docs/ssr": {
       "source": "content/en/docs/ssr.mdx",
       "translation": "content/pt/docs/ssr.mdx",
-      "sha": "f1e66a2dec0fd180fbaa5bce65914504fd6934e2"
+      "sha": "4472ee79f04eec1a9cdef9d107d83b15b43276b9"
     },
     "/docs/core/guide": {
       "source": "content/en/docs/core/guide.mdx",
@@ -337,7 +337,7 @@
     "/docs/react/guide": {
       "source": "content/en/docs/react/guide.mdx",
       "translation": "content/pt/docs/react/guide.mdx",
-      "sha": "93f4c1eb4fdff551054e6cfcbcd0ace19685be01"
+      "sha": "7eedb8c278400a06fd2e267186841fac07ee6015"
     },
     "/docs/react/api": {
       "source": "content/en/docs/react/api.mdx",
@@ -464,12 +464,12 @@
     "/docs/installation": {
       "source": "content/en/docs/installation.mdx",
       "translation": "content/ja/docs/installation.mdx",
-      "sha": "d3d9ad2e6d7338ca3d376713eeb2458815ca860c"
+      "sha": "2ee16b8420dea91bc305a455f5beae24bc53654d"
     },
     "/docs/ssr": {
       "source": "content/en/docs/ssr.mdx",
       "translation": "content/ja/docs/ssr.mdx",
-      "sha": "f1e66a2dec0fd180fbaa5bce65914504fd6934e2"
+      "sha": "4472ee79f04eec1a9cdef9d107d83b15b43276b9"
     },
     "/docs/core/guide": {
       "source": "content/en/docs/core/guide.mdx",
@@ -489,7 +489,7 @@
     "/docs/react/guide": {
       "source": "content/en/docs/react/guide.mdx",
       "translation": "content/ja/docs/react/guide.mdx",
-      "sha": "93f4c1eb4fdff551054e6cfcbcd0ace19685be01"
+      "sha": "7eedb8c278400a06fd2e267186841fac07ee6015"
     },
     "/docs/react/api": {
       "source": "content/en/docs/react/api.mdx",
@@ -616,12 +616,12 @@
     "/docs/installation": {
       "source": "content/en/docs/installation.mdx",
       "translation": "content/hi/docs/installation.mdx",
-      "sha": "d3d9ad2e6d7338ca3d376713eeb2458815ca860c"
+      "sha": "2ee16b8420dea91bc305a455f5beae24bc53654d"
     },
     "/docs/ssr": {
       "source": "content/en/docs/ssr.mdx",
       "translation": "content/hi/docs/ssr.mdx",
-      "sha": "f1e66a2dec0fd180fbaa5bce65914504fd6934e2"
+      "sha": "4472ee79f04eec1a9cdef9d107d83b15b43276b9"
     },
     "/docs/core/guide": {
       "source": "content/en/docs/core/guide.mdx",
@@ -641,7 +641,7 @@
     "/docs/react/guide": {
       "source": "content/en/docs/react/guide.mdx",
       "translation": "content/hi/docs/react/guide.mdx",
-      "sha": "93f4c1eb4fdff551054e6cfcbcd0ace19685be01"
+      "sha": "7eedb8c278400a06fd2e267186841fac07ee6015"
     },
     "/docs/react/api": {
       "source": "content/en/docs/react/api.mdx",
@@ -768,12 +768,12 @@
     "/docs/installation": {
       "source": "content/en/docs/installation.mdx",
       "translation": "content/es/docs/installation.mdx",
-      "sha": "d3d9ad2e6d7338ca3d376713eeb2458815ca860c"
+      "sha": "2ee16b8420dea91bc305a455f5beae24bc53654d"
     },
     "/docs/ssr": {
       "source": "content/en/docs/ssr.mdx",
       "translation": "content/es/docs/ssr.mdx",
-      "sha": "f1e66a2dec0fd180fbaa5bce65914504fd6934e2"
+      "sha": "4472ee79f04eec1a9cdef9d107d83b15b43276b9"
     },
     "/docs/core/guide": {
       "source": "content/en/docs/core/guide.mdx",
@@ -793,7 +793,7 @@
     "/docs/react/guide": {
       "source": "content/en/docs/react/guide.mdx",
       "translation": "content/es/docs/react/guide.mdx",
-      "sha": "93f4c1eb4fdff551054e6cfcbcd0ace19685be01"
+      "sha": "7eedb8c278400a06fd2e267186841fac07ee6015"
     },
     "/docs/react/api": {
       "source": "content/en/docs/react/api.mdx",
@@ -908,6 +908,158 @@
     "@home": {
       "source": "i18n/home/en.ts",
       "translation": "i18n/home/es.ts",
+      "sha": "1ab91fbe76b7ee4dc666fde51d5c4a161406f214"
+    }
+  },
+  "de": {
+    "/docs/getting-started": {
+      "source": "content/en/docs/getting-started.mdx",
+      "translation": "content/de/docs/getting-started.mdx",
+      "sha": "ba087e59a141d6b4196bb6b0c78fbd4f41882b5f"
+    },
+    "/docs/installation": {
+      "source": "content/en/docs/installation.mdx",
+      "translation": "content/de/docs/installation.mdx",
+      "sha": "2ee16b8420dea91bc305a455f5beae24bc53654d"
+    },
+    "/docs/ssr": {
+      "source": "content/en/docs/ssr.mdx",
+      "translation": "content/de/docs/ssr.mdx",
+      "sha": "4472ee79f04eec1a9cdef9d107d83b15b43276b9"
+    },
+    "/docs/core/guide": {
+      "source": "content/en/docs/core/guide.mdx",
+      "translation": "content/de/docs/core/guide.mdx",
+      "sha": "5c3a8de85f74a330b7f9ff1c579aaae716498f06"
+    },
+    "/docs/core/api": {
+      "source": "content/en/docs/core/api.mdx",
+      "translation": "content/de/docs/core/api.mdx",
+      "sha": "260257b0abb95ce079e7f155f8c69db3388e9a21"
+    },
+    "/docs/stories-core": {
+      "source": "content/en/docs/stories-core.mdx",
+      "translation": "content/de/docs/stories-core.mdx",
+      "sha": "2fd37e09c35fc236a7cf5b081f836cb8be1384df"
+    },
+    "/docs/react/guide": {
+      "source": "content/en/docs/react/guide.mdx",
+      "translation": "content/de/docs/react/guide.mdx",
+      "sha": "7eedb8c278400a06fd2e267186841fac07ee6015"
+    },
+    "/docs/react/api": {
+      "source": "content/en/docs/react/api.mdx",
+      "translation": "content/de/docs/react/api.mdx",
+      "sha": "f15b2de78173cf0bc2e1f99f26d56d22aa3cd1ab"
+    },
+    "/docs/reel-player": {
+      "source": "content/en/docs/reel-player.mdx",
+      "translation": "content/de/docs/reel-player.mdx",
+      "sha": "0c5d7685a5a94d0c10fe76cdf4aea01e7e5f27c5"
+    },
+    "/docs/lightbox": {
+      "source": "content/en/docs/lightbox.mdx",
+      "translation": "content/de/docs/lightbox.mdx",
+      "sha": "bb88571ef62594f03f5deb3dbd995b7c20bc8903"
+    },
+    "/docs/stories-player": {
+      "source": "content/en/docs/stories-player.mdx",
+      "translation": "content/de/docs/stories-player.mdx",
+      "sha": "6e517803f49644ba9db847e38f35db996cc7ff6b"
+    },
+    "/docs/vue/guide": {
+      "source": "content/en/docs/vue/guide.mdx",
+      "translation": "content/de/docs/vue/guide.mdx",
+      "sha": "e6499c1a2ba063206dbcb9ea68b54dfff353fc5b"
+    },
+    "/docs/vue/api": {
+      "source": "content/en/docs/vue/api.mdx",
+      "translation": "content/de/docs/vue/api.mdx",
+      "sha": "a8271e6433e0e879c83c256538f022dc9d5a8473"
+    },
+    "/docs/vue-reel-player": {
+      "source": "content/en/docs/vue-reel-player.mdx",
+      "translation": "content/de/docs/vue-reel-player.mdx",
+      "sha": "651e87c0475d2f170a127479230c31273c7cf8fd"
+    },
+    "/docs/vue-lightbox": {
+      "source": "content/en/docs/vue-lightbox.mdx",
+      "translation": "content/de/docs/vue-lightbox.mdx",
+      "sha": "d0825f42e7a7be441c8d6dd98b92252e31153204"
+    },
+    "/docs/vue-stories-player": {
+      "source": "content/en/docs/vue-stories-player.mdx",
+      "translation": "content/de/docs/vue-stories-player.mdx",
+      "sha": "f3f1676fa97ede7c79bd5c808ca743f97017dc71"
+    },
+    "/docs/angular/guide": {
+      "source": "content/en/docs/angular/guide.mdx",
+      "translation": "content/de/docs/angular/guide.mdx",
+      "sha": "d80740a067c4f4b5faef91eb2c50e4786700f0b6"
+    },
+    "/docs/angular/api": {
+      "source": "content/en/docs/angular/api.mdx",
+      "translation": "content/de/docs/angular/api.mdx",
+      "sha": "2c1437092938b42c54fee52a06acc7221d71fa9f"
+    },
+    "/docs/angular-reel-player": {
+      "source": "content/en/docs/angular-reel-player.mdx",
+      "translation": "content/de/docs/angular-reel-player.mdx",
+      "sha": "6d1d898c40069f41a98fbc41e5642273c0709de6"
+    },
+    "/docs/angular-lightbox": {
+      "source": "content/en/docs/angular-lightbox.mdx",
+      "translation": "content/de/docs/angular-lightbox.mdx",
+      "sha": "0cff32258c42729cd8951a0b76cd0062c7b31b44"
+    },
+    "/docs/angular-stories-player": {
+      "source": "content/en/docs/angular-stories-player.mdx",
+      "translation": "content/de/docs/angular-stories-player.mdx",
+      "sha": "023c3c7e3ded019d9602c5c116d7e0b97c9762e2"
+    },
+    "/docs/recipes": {
+      "source": "content/en/docs/recipes.mdx",
+      "translation": "content/de/docs/recipes.mdx",
+      "sha": "c6a0e31f7bdc7ad51504f7b336ed3b9c0b6ddb90"
+    },
+    "/docs/recipes/infinite-feed": {
+      "source": "content/en/docs/recipes/infinite-feed.mdx",
+      "translation": "content/de/docs/recipes/infinite-feed.mdx",
+      "sha": "12c4e3417f98ab48118b5c3645dfb17cbfb2ae3e"
+    },
+    "/docs/recipes/grid-to-player": {
+      "source": "content/en/docs/recipes/grid-to-player.mdx",
+      "translation": "content/de/docs/recipes/grid-to-player.mdx",
+      "sha": "4928bf07195a670379dbeaa2e6b8c9ea9e440fec"
+    },
+    "/docs/recipes/gallery-slideshow": {
+      "source": "content/en/docs/recipes/gallery-slideshow.mdx",
+      "translation": "content/de/docs/recipes/gallery-slideshow.mdx",
+      "sha": "3f358238d05607a0059ae8a2bf72174f89c6a065"
+    },
+    "/docs/recipes/stories-tray": {
+      "source": "content/en/docs/recipes/stories-tray.mdx",
+      "translation": "content/de/docs/recipes/stories-tray.mdx",
+      "sha": "c1e788e8e07a75fe72ec545684dd67aef99c1d46"
+    },
+    "/docs/troubleshooting": {
+      "source": "content/en/docs/troubleshooting.mdx",
+      "translation": "content/de/docs/troubleshooting.mdx",
+      "sha": "3cc24b5da3ae6f856c549f6d2943fea2eba1e1d4"
+    },
+    "/docs/llms": {
+      "source": "content/en/docs/llms.mdx",
+      "translation": "content/de/docs/llms.mdx",
+      "sha": "d54e5e03e0fdf1428d4431151d6ac317d81aa89a"
+    },
+    "@chrome": {
+      "source": "i18n/messages/en.ts",
+      "translation": "i18n/messages/de.ts",
+      "sha": "361f5fd1c9f39464195b399f48c312b7be8f5092"
+    },
+    "@home": {
+      "source": "i18n/home/en.ts",
+      "translation": "i18n/home/de.ts",
       "sha": "1ab91fbe76b7ee4dc666fde51d5c4a161406f214"
     }
   }

@@ -1,0 +1,200 @@
+---
+title: Core-Guide
+description: Das Paket @reelkit/core enthält die Slider-Logik unabhängig vom Framework. Nutze es für eigene Integrationen oder um die Architektur darunter zu verstehen.
+---
+
+import createslidercontroller from '../../../snippets/core-guide/createslidercontroller.ts?raw';
+import navigation from '../../../snippets/core-guide/navigation.ts?raw';
+import lifecycle from '../../../snippets/core-guide/lifecycle.ts?raw';
+import stateUpdates from '../../../snippets/core-guide/state-updates.ts?raw';
+import virtualization from '../../../snippets/core-guide/virtualization.ts?raw';
+import signals from '../../../snippets/core-guide/signals.ts?raw';
+import controllerState from '../../../snippets/core-guide/controller-state.ts?raw';
+import timelineController from '../../../snippets/core-guide/timeline-controller.ts?raw';
+import timerExample from '../../../snippets/core-guide/timer-example.ts?raw';
+import slideshowExample from '../../../snippets/core-guide/slideshow-example.ts?raw';
+import howItWorks from '../../../snippets/core-guide/how-it-works.ts?raw';
+import howItWorks2 from '../../../snippets/core-guide/how-it-works-2.ts?raw';
+
+Das Paket `@reelkit/core` enthält die Slider-Logik unabhängig vom Framework. Nutze es für eigene Integrationen oder um die Architektur darunter zu verstehen.
+
+## Architektur im Überblick [#architecture-overview]
+
+Der Core nutzt ein **Controller-Muster** mit Factory-Funktionen. Keine Klassen — nur einfache Objekte, die aus Closures zurückgegeben werden. Keine Abhängigkeiten. Der Core koordiniert:
+
+<Bullets marker="dot">
+
+- **SliderController** — zentrale Zustandsverwaltung und Navigation
+- **GestureController** — Ziehen per Touch und Pointer
+- **KeyboardController** — Pfeiltasten und Escape
+- **WheelController** — Mausrad mit Debounce
+
+</Bullets>
+
+## createSliderController [#createslidercontroller]
+
+Erstellt eine neue Instanz des Slider-Controllers, die den gesamten Zustand und das Verhalten des Sliders verwaltet.
+
+<CodeBlock code={createslidercontroller} language="typescript" />
+
+## Methoden des Controllers [#controller-methods]
+
+### Navigation [#navigation]
+
+<CodeBlock code={navigation} language="typescript" />
+
+### Lebenszyklus [#lifecycle]
+
+<CodeBlock code={lifecycle} language="typescript" />
+
+### Zustand aktualisieren [#state-updates]
+
+<CodeBlock code={stateUpdates} language="typescript" />
+
+## Virtualisierung [#virtualization]
+
+Der Core rendert zu jedem Zeitpunkt nur **3 Slides ins DOM** (den aktuellen, den vorherigen und den nächsten). Der Range-Extractor bestimmt, welche Indizes im gerenderten Fenster enthalten sind:
+
+<CodeBlock code={virtualization} language="typescript" />
+
+<Callout type="info">
+  Das Ergebnis wird immer auf höchstens 3 Indizes begrenzt. Liefert dein Extractor mehr, behält der Core 3 um den aktuellen Slide herum.
+</Callout>
+
+## Signals [#signals]
+
+Für die Reaktivität nutzt der Core ein schlankes Signal-System:
+
+<CodeBlock code={signals} language="typescript" />
+
+## Zustand des Controllers [#controller-state]
+
+Auf den reaktiven Zustand greifst du über `controller.state` zu:
+
+<CodeBlock code={controllerState} language="typescript" />
+
+## Timeline-Controller [#timeline-controller]
+
+Baue eine eigene Zeitleiste zum Spulen für jedes `<video>`-Element. Der Controller stellt reaktive Signals für Dauer, aktuelle Zeit, gepufferte Bereiche und den Spulzustand bereit und verbindet Pointer- und Tastatur-Interaktionen mit einem einzigen Aufruf mit einem beliebigen DOM-Element.
+
+<CodeBlock code={timelineController} language="typescript" />
+
+## URL-State [#url-state]
+
+Lege den Öffnungszustand eines Overlays in die Adresszeile: Der sichtbare Slide bekommt einen Link, der sich teilen, direkt aufrufen und mit der Zurück-Taste schließen lässt. Der Core besitzt das Modell; die Bindings verpacken es in einen Hook (React/Vue `useOverlayUrlState`, Angular `createOverlayUrlState`) und eine Overlay-Komponente, die von der URL gesteuert wird.
+
+### So funktioniert es [#how-it-works]
+
+`createUrlStateController` spiegelt einen Query-Parameter in ein Signal und schreibt Änderungen zurück. Das Öffnen legt **einen** Eintrag im Verlauf an; jede Navigation **ersetzt** ihn — hundert Wischgesten fügen keinen hinzu, also schließt ein Schritt zurück immer. Ein `UrlAdapter` ist die austauschbare Schnittstelle zum Lesen und Schreiben: Der Standard nutzt `history.pushState`, und eine App mit Router übergibt einen Adapter auf Basis des Routers, damit dessen eigene Location nie veraltet.
+
+<CodeBlock code={howItWorks} language="typescript" />
+
+### Codec und Locator — zwei Aufgaben [#codec-and-locator-two-jobs]
+
+Ein Key ist ein passendes Paar `{ codec, locator }`. Eine Identität in die URL zu schreiben und herauszufinden, wo sie gerade steht, sind getrennte Aufgaben, also sind es getrennte Objekte:
+
+- **Codec — das Format in der URL.** `encode` schreibt eine Identität in den Text des Parameters; `decode` liest sie zurück und lehnt einen fehlerhaften Wert ab, sodass sich der Parameter selbst aus der URL entfernt.
+- **Locator — die Suche.** `locate` findet, wo eine decodierte Identität in der aktuellen Sammlung steht (oder `null`, wenn sie fehlt); `identify` liest eine Position für das Schreiben zurück in ihre Identität; das optionale `locateAsync` lädt bei einem Fehltreffer weitere Seiten eines gefensterten oder endlosen Feeds.
+
+Weil beide getrennt sind, kannst du jedes Format mit jeder Suche kombinieren — zum Beispiel einen Codec für stabile IDs mit einem Locator, der Seiten nachlädt.
+
+### Index oder stabile ID als Key [#index-vs-stable-id-keys]
+
+Zwei eingebaute Keys bauen dieses Paar für dich; sie unterscheiden sich nur darin, was die URL benennt:
+
+- `urlIndexKey(() => count)` adressiert über die **Position** (`?photo=3`). Am einfachsten, aber ein Lesezeichen öffnet ein anderes Element, sobald die Liste neu sortiert wird.
+- `urlStableIdKey({ items })` adressiert über die stabile `id` jedes Elements (`?photo=post_42`) und durchsucht die aktuelle Liste — das Lesezeichen benennt dasselbe Element auch nach einer Neusortierung oder fällt sauber weg, wenn es nicht mehr existiert. `hashCodec: base64UrlCodec` verschleiert die ID mit base64url (umkehrbar, kein kryptografischer Hash).
+
+**Ein gefensterter Feed mit Seiten?** Beide eingebauten Keys nehmen ein optionales `locateAsync` — `urlIndexKey(() => count, locateAsync)` und `urlStableIdKey({ items, locateAsync })`. Die synchrone Suche antwortet für das, was schon geladen ist; ein Fehltreffer lädt den Rest nach, sodass ein geteilter Link hinter dem Fenster trotzdem öffnet — ohne selbst geschriebenen Codec oder Locator.
+
+Zwei Achsen? `urlIndexTwoAxisKey` trägt `?p=<outer>.<inner>` für einen Beitrag plus einen inneren Medienindex. Alle Optionen stehen in der [Core-API-Referenz](/docs/core/api#url-state).
+
+## Gesehen-Status [#viewed-state]
+
+Merke dir, wie weit ein Nutzer in einer Galerie gekommen ist, über Neuladen und Tabs hinweg — ein Ring, der zeigt, was gesehen wurde, eine Galerie, die dort wieder öffnet, wo sie verlassen wurde. Es ist dasselbe Modell wie der URL-State, nur auf einen Speicher statt auf die Adresszeile gerichtet, also teilen sich beide einen Key.
+
+### So funktioniert es [#how-it-works]
+
+`createViewedStateController` speichert einen Eintrag als genau den Text, den ein Link mit `?photo=` tragen würde, und liest ihn über denselben Ablauf aus `decode` und dann `locate` zurück. Nichts vertraut einer gespeicherten Position. Übergib einen Key an beide Stellen, und ein Lesezeichen und ein gespeicherter Eintrag sind derselbe String.
+
+<CodeBlock code={howItWorks2} language="typescript" />
+
+### Die Haltbarkeit folgt dem Key [#durability-follows-the-key]
+
+Der Speicher repariert selbst nichts, also entscheidet der Key, den du übergibst, was erhalten bleibt: Ein Key über IDs behält eine Stelle, auch wenn die Sammlung neu sortiert wird, ein Key über Positionen nicht. Ein gespeicherter Eintrag benennt den weitesten erreichten Punkt und keine Zahl von Aufrufen, also verkürzt das Entfernen eines Elements aus der Mitte die Zählung — dieselbe Selbstheilung, die ein geteilter Link bekommt.
+
+Gelesen wird nur synchron. Ein Eintrag, dessen Elemente noch nicht geladen sind, gilt als nicht vorhanden und bleibt unverändert im Speicher, sodass ein gefensterter Feed nie seinen eigenen Verlauf verliert.
+
+### Speicher und Ablauf [#storage-and-expiry]
+
+Standardmäßig steht `localStorage` hinter dem Speicher; `createSessionStorageAdapter()` vergisst beim Schließen des Tabs, und mit einem eigenen `StorageAdapter` liegt er an einem beliebigen synchronen Ort. Bis `attach()` wird nichts gelesen, sodass ein Server-Render und der erste Client-Render übereinstimmen.
+
+Einträge bleiben, bis sie ausdrücklich vergessen werden. Übergib `ttlMs`, damit sie stattdessen ablaufen — pro Track und mit gleitender Uhr, sodass eine Stelle, die noch angeschaut wird, nie neben einer verlassenen veraltet. Das ändert, was geschrieben wird, jeder Eintrag wird zu einem Paar `[wire, timestamp]`, aber das Lesen kommt mit beiden Formen zurecht, egal was die Option sagt, sodass ein Eintrag von vor dem Einschalten als frisch gilt, statt gelöscht zu werden. `maxTracks` begrenzt die Anzahl statt des Alters: Darüber hinaus wird beim nächsten Schreiben der am längsten nicht mehr erfasste Track entfernt, und das Erfassen eines Tracks, selbst an einer schon überholten Position, stellt ihn wieder ans Ende der Reihe. Alle Optionen stehen in der [Core-API-Referenz](/docs/core/api#viewed-state).
+
+## Autoplay [#autoplay]
+
+Timing für alles, was von selbst weitergeht. Die Stories Player lassen jede Story über `createTimerController` laufen; die Lightboxen betreiben ihre Diashow mit `createSlideshowController`, der darauf aufbaut. Beide takten über `requestAnimationFrame`, und jede Pause behält den genauen Fortschritt.
+
+### createTimerController [#createtimercontroller]
+
+Zählt eine Dauer von 0 bis 1 und ruft zurück, wenn sie vorbei ist. `start()` beginnt immer bei 0, optional mit einer anderen Dauer für diesen Lauf; `pause()` und `resume()` behalten die genaue Position.
+
+<CodeBlock code={timerExample} language="typescript" />
+
+### createSlideshowController [#createslideshowcontroller]
+
+Die Zustandsmaschine hinter einer Galerie, die von selbst weitergeht. Sie läuft nur, solange sie eingeschaltet ist, nichts sie anhält und die Seite sichtbar ist; die Sichtbarkeit der Seite beobachtet sie selbst, den Rest lieferst du ihr. Ein Bild zählt sein Intervall ab dem Moment, in dem es geladen ist, sodass ein langsames nie ungesehen übersprungen wird. Ein Video geht weiter, wenn es endet, also muss es einmal abspielen und darf nicht in Schleife laufen. Ein Video, das endet, während etwas die Diashow anhält, geht beim Loslassen weiter.
+
+<CodeBlock code={slideshowExample} language="typescript" />
+
+Alle Konfigurationen, Zustände und Methoden stehen in der [Core-API-Referenz](/docs/core/api#autoplay).
+
+## Download [#download]
+
+`downloadFile(url, filename?)` speichert eine Datei unter `filename`, standardmäßig unter dem letzten Segment des Pfads der URL. Ein `download`-Attribut wird bei einem Link auf einen anderen Origin ignoriert, deshalb holt die Funktion die Datei und speichert stattdessen den Blob. Schlägt der Abruf fehl oder antwortet der Server mit einem Fehler — üblicherweise ein fremder Server ohne CORS-Header —, öffnet sich die URL in einem neuen Tab, sodass der Leser die Datei trotzdem bekommt. Sie lehnt nie ab und tut nichts ohne ein Fenster. Siehe die [Core-API-Referenz](/docs/core/api#download).
+
+<NextSteps
+        items={[
+          {
+            label: 'Core-API-Referenz',
+            path: '/docs/core/api',
+            description: 'alle verfügbaren Props',
+          },
+          {
+            label: 'Framework-Guide',
+            path: {
+              react: '/docs/react/guide',
+              angular: '/docs/angular/guide',
+              vue: '/docs/vue/guide',
+            },
+            description: 'Komponenten, Demos und Integration',
+          },
+          {
+            label: 'Reel Player',
+            path: {
+              react: '/docs/reel-player',
+              angular: '/docs/angular-reel-player',
+              vue: '/docs/vue-reel-player',
+            },
+            description: 'Videoplayer im Stil von TikTok und Reels',
+          },
+          {
+            label: 'Lightbox',
+            path: {
+              react: '/docs/lightbox',
+              angular: '/docs/angular-lightbox',
+              vue: '/docs/vue-lightbox',
+            },
+            description: 'Galerie für Bilder und Videos',
+          },
+          {
+            label: 'Stories Player',
+            path: {
+              react: '/docs/stories-player',
+              angular: '/docs/angular-stories-player',
+              vue: '/docs/vue-stories-player',
+            },
+            description: 'Stories-Viewer im Stil von Instagram',
+          },
+        ]}
+      />

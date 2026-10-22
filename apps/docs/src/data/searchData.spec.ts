@@ -11,6 +11,7 @@ import { ptCategories, ptKeywords, ptTitles } from './searchData.pt';
 import { jaCategories, jaKeywords, jaTitles } from './searchData.ja';
 import { hiCategories, hiKeywords, hiTitles } from './searchData.hi';
 import { esCategories, esKeywords, esTitles } from './searchData.es';
+import { deCategories, deKeywords, deTitles } from './searchData.de';
 import {
   kDefaultLocale,
   kLocales,
@@ -35,6 +36,7 @@ const dictionaries: Record<Exclude<Locale, 'en'>, Dictionary> = {
   ja: { titles: jaTitles, categories: jaCategories, keywords: jaKeywords },
   hi: { titles: hiTitles, categories: hiCategories, keywords: hiKeywords },
   es: { titles: esTitles, categories: esCategories, keywords: esKeywords },
+  de: { titles: deTitles, categories: deCategories, keywords: deKeywords },
 };
 
 const translated = kLocales
@@ -175,6 +177,14 @@ describe('palette matching', () => {
     expect(foldForSearch('Configuração Básica')).toBe('configuracao basica');
   });
 
+  // A keyboard without `ß` spells it `ss`, and text set in capitals may use
+  // either `SS` or the capital `ẞ`, so both must fold the same way.
+  it('finds a German sharp s through its ss spelling', () => {
+    expect(foldForSearch('Größe')).toBe('grosse');
+    expect(foldForSearch('GROẞE')).toBe('grosse');
+    expect(foldForSearch('Übersicht')).toBe('ubersicht');
+  });
+
   // Stripping every combining mark would take the dakuten with it and fold
   // two different kana together, so the fold stays inside the Latin range.
   it('keeps kana that differ only by their mark apart', () => {
@@ -226,6 +236,8 @@ describe('palette matching', () => {
       'इन्स्टॉल',
       'instalación',
       'guía',
+      'einführung',
+      'größe',
     ];
     for (const query of queries) {
       const q = query.toLowerCase().trim();
@@ -269,6 +281,26 @@ describe('palette matching', () => {
     expect(pathsIn('es', 'instalación')).toContain('/es/docs/installation');
     expect(pathsIn('es', 'guia')).toContain('/es/docs/react/guide');
     expect(pathsIn('en', 'espanol')).toEqual([]);
+  });
+
+  // A German keyboard abroad has neither umlauts nor `ß`. The plain spelling
+  // has to reach the same pages as the written one.
+  it('finds a German page without its umlauts or sharp s', () => {
+    const pathsIn = (locale: Locale, query: string) =>
+      searchItemsFor(locale)
+        .filter((item) => matchesSearch(item, query))
+        .map((item) => item.path);
+    for (const [plain, written] of [
+      ['einfuhrung', 'Einführung'],
+      ['grossenerkennung', 'Größenerkennung'],
+      ['ubergange', 'Übergänge'],
+    ]) {
+      const found = pathsIn('de', plain);
+      expect(found, `"${plain}" finds nothing`).not.toEqual([]);
+      expect(found).toEqual(pathsIn('de', written));
+      expect(found.every((path) => path.startsWith('/de/'))).toBe(true);
+    }
+    expect(pathsIn('en', 'grossenerkennung')).toEqual([]);
   });
 
   // A helper is looked up by the name a reader saw in an import or a changelog,

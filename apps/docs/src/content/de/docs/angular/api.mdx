@@ -1,0 +1,195 @@
+---
+title: Angular-API-Referenz
+description: Vollständige Referenz für die Komponenten von @reelkit/angular mit Inputs, Outputs, den bereitgestellten API-Methoden, ReelIndicator, dem Injection-Token RK_REEL_CONTEXT und den Signal-Brücken.
+---
+
+import reelapiInterface from '../../../snippets/angular-api/reelapi-interface.ts?raw';
+import templateContext from '../../../snippets/angular-api/template-context.html?raw';
+import rkReelContext from '../../../snippets/angular-api/rk-reel-context.ts?raw';
+import bodylockservice from '../../../snippets/angular-api/bodylockservice.ts?raw';
+import soundstateservice from '../../../snippets/angular-api/soundstateservice.ts?raw';
+import signalBridgeUtilities from '../../../snippets/angular-api/signal-bridge-utilities.ts?raw';
+import createrouterurladapter from '../../../snippets/angular-api/createrouterurladapter.ts?raw';
+import packageExports from '../../../snippets/angular-api/package-exports.ts?raw';
+
+Vollständige Referenz für die Komponenten, Direktiven, Services und Hilfsfunktionen von `@reelkit/angular`.
+
+## ReelComponent [#reelcomponent]
+
+Selektor: `rk-reel`
+
+### Inputs [#inputs]
+
+| Input | Typ | Standard | Beschreibung |
+| --- | --- | --- | --- |
+| `count` | `number` | Pflicht | Gesamtzahl der Slides |
+| `direction` | `'vertical' \| 'horizontal'` | 'vertical' | Scrollrichtung |
+| `size` | `[number, number] \| undefined` | undefined | Breite und Höhe als \[width, height\]. Fehlt der Wert, misst die Komponente selbst über ResizeObserver |
+| `initialIndex` | `number` | 0 | Index der ersten Slide |
+| `loop` | `boolean` | false | Schaltet die Endlosschleife ein |
+| `transition` | `TransitionTransformFn` | slideTransition | Funktion für den Übergangseffekt. Eingebaut: slideTransition, fadeTransition, flipTransition, cubeTransition, zoomTransition |
+| `transitionDuration` | `number` | 300 | Dauer der Animation in ms |
+| `swipeDistanceFactor` | `number` | 0.12 | Schwelle für das Wischen (0-1) |
+| `enableGestures` | `boolean` | true | Schaltet die Navigation per Touch und Ziehen mit der Maus ein |
+| `enableNavKeys` | `boolean` | true | Schaltet die Navigation mit den Pfeiltasten ein |
+| `enableWheel` | `boolean` | false | Schaltet die Navigation mit dem Mausrad ein |
+| `wheelDebounceMs` | `number` | 200 | Debounce für Mausrad-Ereignisse in ms |
+| `rangeExtractor` | `(index: number, count: number) => number[]` | defaultRangeExtractor | Eigene Funktion, die bestimmt, welche Indizes gerendert werden |
+| `keyExtractor` | `(index: number, indexInRange: number) => string \| number` | index => index | Eigene Schlüsselfunktion für die track-Ausdrücke von @for (nützlich mit loop) |
+| `className` | `string` | '' | CSS-Klasse für das Wurzelelement des Containers |
+| `ariaLabel` | `string` | 'Carousel' | Barrierefreie Bezeichnung für die Region des Karussells |
+
+### Outputs [#outputs]
+
+| Output | Typ | Beschreibung |
+| --- | --- | --- |
+| `afterChange` | `EventEmitter<{ index: number; indexInRange: number }>` | Wird ausgelöst, nachdem der Slide-Übergang abgeschlossen ist |
+| `beforeChange` | `EventEmitter<{ index: number; nextIndex: number; indexInRange: number }>` | Wird ausgelöst, bevor der Slide-Übergang beginnt |
+| `slideDragStart` | `EventEmitter<number>` | Wird ausgelöst, wenn eine Ziehgeste beginnt |
+| `slideDragEnd` | `EventEmitter<number>` | Wird ausgelöst, wenn eine Ziehgeste endet (losgelassen) |
+| `slideDragCanceled` | `EventEmitter<number>` | Wird ausgelöst, wenn eine Ziehgeste abgebrochen wird (Zurückschnappen) |
+| `apiReady` | `EventEmitter<ReelApi>` | Wird einmal nach der Initialisierung der View ausgelöst und stellt die imperative API bereit |
+
+## Das Interface ReelApi [#reelapi-interface]
+
+Du bekommst es über den Output `(apiReady)`:
+
+<CodeBlock code={reelapiInterface} language="typescript" />
+
+| Methode | Typ | Beschreibung |
+| --- | --- | --- |
+| `next()` | `() => void` | Geht zur nächsten Slide |
+| `prev()` | `() => void` | Geht zur vorherigen Slide |
+| `goTo(index, animate?)` | `(number, boolean?) => Promise<void>` | Navigiert zu einem bestimmten Slide-Index |
+| `adjust()` | `() => void` | Berechnet die Positionen der Slides neu (nützlich nach einer Änderung am Layout) |
+| `observe()` | `() => void` | Beginnt, auf Tastatur-Ereignisse zu hören |
+| `unobserve()` | `() => void` | Hört auf, auf Tastatur-Ereignisse zu hören |
+
+## RkReelItemDirective [#rkreelitemdirective]
+
+Selektor: `[rkReelItem]`. Wird auf ein `ng-template` innerhalb von `rk-reel` gesetzt.
+
+### Template-Kontext [#template-context]
+
+<CodeBlock code={templateContext} language="html" />
+
+| Variable | Typ | Beschreibung |
+| --- | --- | --- |
+| `$implicit (let-i)` | `number` | Absoluter Slide-Index (0 bis count-1) |
+| `indexInRange` | `number` | Position im sichtbaren Fenster (0, 1 oder 2) |
+| `size` | `[number, number]` | Aktuelle Maße des Sliders als \[width, height\] in Pixeln |
+
+## ReelIndicatorComponent [#reelindicatorcomponent]
+
+Selektor: `rk-reel-indicator`
+
+### Inputs [#inputs]
+
+| Input | Typ | Standard | Beschreibung |
+| --- | --- | --- | --- |
+| `count` | `number \| undefined` | auto | Gesamtzahl der Elemente. Verbindet sich automatisch mit dem Kontext des umgebenden rk-reel, wenn die Komponente darin steckt; übergib den Wert ausdrücklich, wenn du sie allein nutzt |
+| `active` | `number \| undefined` | auto | Aktuell aktiver Index. Verbindet sich automatisch mit dem Kontext des umgebenden rk-reel, wenn die Komponente darin steckt; übergib den Wert ausdrücklich, wenn du sie allein nutzt |
+| `direction` | `'vertical' \| 'horizontal'` | 'vertical' | Ausrichtung des Indikators |
+| `radius` | `number` | 3 | Radius der Punkte in Pixeln |
+| `visible` | `number` | 5 | Höchstzahl der Punkte in normaler Größe, die gleichzeitig sichtbar sind |
+| `gap` | `number` | 4 | Abstand zwischen den Punkten in Pixeln |
+| `activeColor` | `string` | '#fff' | Farbe des aktiven Punkts |
+| `inactiveColor` | `string` | 'rgba(255,255,255,0.5)' | Farbe der inaktiven Punkte |
+| `edgeScale` | `number` | 0.5 | Skalierung für die Punkte am Rand, die über die Anzahl hinausgehen |
+| `className` | `string` | '' | Eigene CSS-Klasse für den Container des Indikators |
+| `tablistLabel` | `string` | 'Slide navigation' | Barrierefreie Bezeichnung für die Landmark der Tablist |
+
+### Outputs [#outputs]
+
+| Output | Typ | Beschreibung |
+| --- | --- | --- |
+| `dotClick` | `EventEmitter<number>` | Wird beim Klick auf einen Punkt ausgelöst und liefert dessen Index |
+
+## RK_REEL_CONTEXT [#rk-reel-context]
+
+Ein `InjectionToken<ReelContextValue>`, das `rk-reel` für seine Nachfahren bereitstellt. `rk-reel-indicator` nutzt es intern, um sich automatisch zu verbinden. Injiziere es in eigene Komponenten, die den Kontext des Sliders brauchen.
+
+<CodeBlock code={rkReelContext} language="typescript" />
+
+| Eigenschaft | Typ | Beschreibung |
+| --- | --- | --- |
+| `index` | `Signal<number>` | Reaktiver aktueller Slide-Index |
+| `count` | `Signal<number>` | Reaktive Gesamtzahl der Elemente |
+| `goTo` | `(index: number, animate?: boolean) => Promise<void>` | Navigiert im Code zu einer Slide |
+
+## BodyLockService [#bodylockservice]
+
+Scroll-Sperre für den Body mit Referenzzählung. Mehrere gleichzeitige Aufrufer (zum Beispiel eine offene Lightbox und ein offenes Modal) können lock/unlock unabhängig voneinander aufrufen — der Body wird erst wiederhergestellt, wenn der letzte Aufrufer ihn freigibt. Wird im Root bereitgestellt und lässt sich überall injizieren.
+
+<CodeBlock code={bodylockservice} language="typescript" />
+
+| Mitglied | Typ | Beschreibung |
+| --- | --- | --- |
+| `locked` | `boolean (getter)` | Ob der Body gerade gesperrt ist |
+| `lock()` | `() => void` | Sperrt das Scrollen des Body und gleicht die Breite der Scrollbar aus |
+| `unlock()` | `() => void` | Stellt die ursprünglichen Scroll-Styles des Body wieder her |
+
+## SoundStateService [#soundstateservice]
+
+Stumm- und Sperrzustand für ein Overlay, das Medien abspielt, als Angular-Signals. Stelle den Service auf der Komponente bereit, der die Medien gehören, statt im Root, damit jede Instanz des Overlays ihren eigenen Zustand behält. Jedes Angular-Overlay von reelkit nutzt ihn — `@reelkit/angular-reel-player` exportiert dieselbe Klasse erneut, ein bestehender Import von dort funktioniert also weiter.
+
+Die Lightbox ist die Ausnahme: Stelle ihn **oberhalb** von `<rk-lightbox-overlay>` bereit, denn ihre Video-Slide wird aus deinem eigenen Template gerendert und sähe die Instanz im Overlay sonst nie.
+
+<CodeBlock code={soundstateservice} language="typescript" />
+
+| Mitglied | Typ | Beschreibung |
+| --- | --- | --- |
+| `muted()` | `Signal<boolean>` | Ob der Ton gerade stumm ist. Startet stumm |
+| `disabled()` | `Signal<boolean>` | Wahr, solange sich der Ton nicht steuern lässt; der Ton-Button ist dann ausgeblendet. Das Overlay setzt den Wert — `RkReelPlayerOverlayComponent` setzt ihn, solange eine Slide kein Video hat oder mitten im Übergang ist |
+| `controller` | `SoundController (getter)` | Der darunterliegende `SoundController` aus dem Core — übergib ihn an `syncMutedToVideo`, damit ein `<video>` dem Stummzustand folgt |
+| `toggle()` | `() => void` | Schaltet den Stummzustand um |
+| `setDisabled()` | `(value: boolean) => void` | Legt fest, ob sich der Ton gerade steuern lässt |
+| `reset()` | `() => void` | Kehrt zum Startzustand zurück: stumm, nicht gesperrt |
+
+## Hilfsfunktionen für Signal-Brücken [#signal-bridge-utilities]
+
+Hilfsfunktionen, die das Signal-System des Core (`@reelkit/core`) mit der nativen Signal-API von Angular verbinden. `ReelComponent` nutzt sie intern; sie stehen auch für eigene Framework-Integrationen bereit.
+
+| Funktion | Signatur | Beschreibung |
+| --- | --- | --- |
+| `toAngularSignal` | `(source: Subscribable<T>, destroyRef: DestroyRef) => Signal<T>` | Macht aus einem Subscribable des Core ein schreibgeschütztes Angular-Signal |
+| `animatedSignalBridge` | `(source: AnimatedValue, zone: NgZone, cdRef: ChangeDetectorRef, destroyRef: DestroyRef) => Signal<number>` | Macht aus einem animierten Wert des Core ein Angular-Signal, das sich über requestAnimationFrame außerhalb der Zone aktualisiert |
+
+<CodeBlock code={signalBridgeUtilities} language="typescript" />
+
+## createOverlayUrlState [#createoverlayurlstate]
+
+<Signature>OverlayUrlStateOptions</Signature>
+
+Baut einen URL-State-Controller für ein Overlay, den du `<rk-lightbox-url-overlay>` als Input `[controller]` übergibst. Rufe die Funktion in einem Injection-Kontext auf, also in einem Feld-Initialisierer oder im Konstruktor; sie bindet sich sofort an und gibt sich über `DestroyRef` wieder frei. Schritt für Schritt: [URL-State auf der Seite der Lightbox für Angular](/docs/angular-lightbox#url-state).
+
+| Option | Typ | Standard | Beschreibung |
+| --- | --- | --- | --- |
+| `param` | `string` | `required` | Query-Parameter, der die aktive Slide trägt, zum Beispiel photo. |
+| `adapter` | `UrlAdapter` | `History API` | Das Navigationssystem, über das gelesen und geschrieben wird. Übergib in einer App mit Router einen Adapter, der den Router nutzt, damit die Location des Routers nicht veraltet. |
+| `codec` | `UrlCodec<Id>` | `required` | Das Format: Text des Parameters zu einer stabilen Identität. Gehört mit locator als Paar zusammen — setze ...urlIndexKey(() => images().length) für die übliche Galerie mit ?photo=3 ein, oder liefere ein eigenes, damit ein Lesezeichen ein Umsortieren übersteht. |
+| `locator` | `UrlLocator<Id>` | `required` | Ordnet die Identität einer Position zu und entscheidet selbst über ihre Gültigkeit: locate (synchron), locateAsync (asynchroner Ausweg für eine Galerie mit Seiten), identify (Schreiben). |
+
+## createRouterUrlAdapter [#createrouterurladapter]
+
+<Signature>@reelkit/angular/ng-router-url-adapter</Signature>
+
+Ein `UrlAdapter`, der auf dem Angular Router aufbaut. Übergib ihn in einer App mit Router als Option `adapter` an `createOverlayUrlState`, damit der Router die einzige Quelle der Wahrheit für die Navigation bleibt — wer `history.pushState` am Router vorbei schreibt, lässt dessen Location veralten, und seine nächste Navigation verwirft den Parameter. Geschrieben wird nur die Query, der Pfad, das Fragment und wiederholte Schlüssel wie `?tag=a&tag=b` bleiben also unberührt. Jede Änderung meldet, ob der Router auf derselben Seite einen Eintrag angelegt, ersetzt oder sich durch den Verlauf bewegt hat. Eine Galerie, die über einen `routerLink` geöffnet wurde, schließt sich daher mit einem Schritt zurück. Rufe die Funktion in einem Injection-Kontext auf; das Abo auf den Router wird über `DestroyRef` freigegeben.
+
+Er kommt aus einem eigenen Unterpfad, eine App ohne Routing zieht `@angular/router` also nie in ihr Bundle. `@angular/router` ist eine optionale Peer-Abhängigkeit.
+
+<CodeBlock code={createrouterurladapter} language="typescript" />
+
+## Barrierefreiheit [#accessibility]
+
+`<rk-reel>` wird als `role="region"` mit `aria-roledescription="carousel"` gerendert. Setze den Input `ariaLabel`, um der Region einen Namen für Screenreader zu geben. Eine höfliche Live-Region sagt bei jedem Slide-Wechsel „Slide N of M“ an. Inaktive Slides bekommen das Attribut `inert`, damit Fokus und Navigation mit Hilfstechnologien sie überspringen.
+
+`<rk-reel-indicator>` wird als `role="tablist"` mit wanderndem tabindex auf den Punkten gerendert; die Pfeiltasten bewegen den Fokus, und Enter oder die Leertaste aktiviert die Slide.
+
+Du baust ein eigenes Modal um `<rk-reel>`? `captureFocusForReturn`, `createFocusTrap` und `getFocusableElements` werden von `@reelkit/angular` erneut exportiert, für die Rückgabe und das Festhalten des Fokus.
+
+## Exporte des Pakets [#package-exports]
+
+Alle öffentlichen Exporte von `@reelkit/angular`:
+
+<CodeBlock code={packageExports} language="typescript" />

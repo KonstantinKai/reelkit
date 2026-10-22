@@ -1,6 +1,6 @@
 ---
 title: सर्वर साइड रेंडरिंग
-description: reelkit के सभी पैकेज सर्वर पर चलते हैं। Next.js, Remix, Angular Universal, Nuxt 3 या किसी भी SSR सेटअप में import और रेंडर करें।
+description: reelkit के सभी पैकेज सर्वर पर चलते हैं। Next.js, Remix, Angular SSR, Nuxt 3 या किसी भी SSR सेटअप में import और रेंडर करें।
 ---
 
 import nextAppRouter from '../../snippets/ssr/next-app-router.tsx?raw';
@@ -15,13 +15,23 @@ import nuxtFeed from '../../snippets/ssr/nuxt-feed.vue?raw';
 import nuxtAutoSize from '../../snippets/ssr/nuxt-auto-size.vue?raw';
 import coreDirect from '../../snippets/ssr/core-direct.ts?raw';
 
-reelkit के सभी पैकेज सर्वर पर चलते हैं। इन्हें Next.js, Remix, Angular Universal या किसी भी SSR सेटअप में import और रेंडर करें।
+reelkit के सभी पैकेज सर्वर पर चलते हैं। इन्हें Next.js, Remix, Angular SSR, Nuxt 3 या किसी भी SSR सेटअप में import और रेंडर करें।
 
 ## यह कैसे काम करता है [#how-it-works]
 
 core स्लाइडर कंट्रोलर शुद्ध logic है और बनाते समय DOM को नहीं छूता। जेस्चर listeners, कीबोर्ड इवेंट और एनिमेशन सिर्फ़ क्लाइंट साइड के lifecycle hooks में जुड़ते हैं।
 
-SSR के दौरान `Reel` कंपोनेंट शुरू में दिखने वाली स्लाइड (आम तौर पर 3: पिछली, मौजूदा, अगली) के साथ एक स्टैटिक कंटेनर रेंडर करता है। Hydration पर यह जेस्चर, कीबोर्ड और व्हील कंट्रोलर जोड़ता है, जिससे सब कुछ इंटरैक्टिव हो जाता है।
+<FrameworkVariant for="react">
+
+SSR के दौरान React का `Reel`, `size` मिलने पर शुरू में दिखने वाली स्लाइड (आम तौर पर 3: पिछली, मौजूदा, अगली) के साथ एक स्टैटिक कंटेनर रेंडर करता है, और खुद नापने पर एक खाली कंटेनर। Hydration पर यह जेस्चर, कीबोर्ड और व्हील कंट्रोलर जोड़ता है, जिससे सब कुछ इंटरैक्टिव हो जाता है।
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+Vue का `Reel` सर्वर पर एक खाली कंटेनर रेंडर करता है और hydration के बाद स्लाइड बनाता है। `size` देने पर यह कंटेनर क्लाइंट के पहले रेंडर से मेल नहीं खाता, इसलिए Nuxt में इसे `<ClientOnly>` के अंदर रखा जाता है (देखें [Nuxt 3](#nuxt-3))।
+
+</FrameworkVariant>
 
 <Table boxed>
   <thead>
@@ -45,12 +55,12 @@ SSR के दौरान `Reel` कंपोनेंट शुरू मे�
     <tr data-rk-fw="angular">
       <td>`@reelkit/angular`</td>
       <td><Ok>हाँ</Ok></td>
-      <td>Standalone कंपोनेंट, Angular Universal के साथ SSR में काम करते हैं</td>
+      <td>Standalone कंपोनेंट, Angular SSR (`@angular/ssr`) के साथ SSR में काम करते हैं</td>
     </tr>
     <tr data-rk-fw="vue">
       <td>`@reelkit/vue`</td>
       <td><Ok>हाँ</Ok></td>
-      <td>कंपोनेंट और composables, Nuxt 3 के साथ SSR में काम करते हैं</td>
+      <td>सर्वर पर import और रेंडर करना सुरक्षित है; `size` देने पर Nuxt 3 में `Reel` को `<ClientOnly>` के अंदर रखें</td>
     </tr>
     <tr data-rk-fw="react">
       <td>`@reelkit/react-reel-player`</td>
@@ -72,6 +82,16 @@ SSR के दौरान `Reel` कंपोनेंट शुरू मे�
       <td><Ok>हाँ</Ok></td>
       <td>बंद होने पर (`isOpen=false`) कुछ भी रेंडर नहीं करता</td>
     </tr>
+    <tr data-rk-fw="vue">
+      <td>`@reelkit/vue-reel-player`</td>
+      <td><Ok>हाँ</Ok></td>
+      <td>बंद होने पर (`isOpen=false`) कुछ भी रेंडर नहीं करता</td>
+    </tr>
+    <tr data-rk-fw="vue">
+      <td>`@reelkit/vue-lightbox`</td>
+      <td><Ok>हाँ</Ok></td>
+      <td>बंद होने पर (`isOpen=false`) कुछ भी रेंडर नहीं करता</td>
+    </tr>
     <tr>
       <td>`@reelkit/stories-core`</td>
       <td><Ok>हाँ</Ok></td>
@@ -79,6 +99,16 @@ SSR के दौरान `Reel` कंपोनेंट शुरू मे�
     </tr>
     <tr data-rk-fw="react">
       <td>`@reelkit/react-stories-player`</td>
+      <td><Ok>हाँ</Ok></td>
+      <td>बंद होने पर (`isOpen=false`) कुछ भी रेंडर नहीं करता</td>
+    </tr>
+    <tr data-rk-fw="angular">
+      <td>`@reelkit/angular-stories-player`</td>
+      <td><Ok>हाँ</Ok></td>
+      <td>बंद होने पर (`isOpen=false`) कुछ भी रेंडर नहीं करता</td>
+    </tr>
+    <tr data-rk-fw="vue">
+      <td>`@reelkit/vue-stories-player`</td>
       <td><Ok>हाँ</Ok></td>
       <td>बंद होने पर (`isOpen=false`) कुछ भी रेंडर नहीं करता</td>
     </tr>
@@ -125,7 +155,7 @@ Pages Router बिना किसी अतिरिक्त कॉन्फ�
 
 ## Overlay कंपोनेंट [#overlay-components]
 
-`ReelPlayerOverlay` और `LightboxOverlay` `isOpen={false}` होने पर कुछ भी रेंडर नहीं करते, इसलिए ये डिफ़ॉल्ट रूप से SSR के लिए सुरक्षित हैं। ये अपना portal सिर्फ़ खुलने पर mount करते हैं (आम तौर पर क्लाइंट पर यूज़र की किसी क्रिया से):
+`ReelPlayerOverlay`, `LightboxOverlay` और `StoriesOverlay` `isOpen={false}` होने पर कुछ भी रेंडर नहीं करते, इसलिए ये डिफ़ॉल्ट रूप से SSR के लिए सुरक्षित हैं। ये अपना portal सिर्फ़ खुलने पर mount करते हैं (आम तौर पर क्लाइंट पर यूज़र की किसी क्रिया से):
 
 <CodeBlock code={nextOverlay} language="tsx" />
 
@@ -133,9 +163,9 @@ Pages Router बिना किसी अतिरिक्त कॉन्फ�
 
 <FrameworkVariant for="angular">
 
-## Angular Universal / SSR [#angular-universal-ssr]
+## Angular SSR [#angular-universal-ssr]
 
-सभी Angular कंपोनेंट SSR के लिए सुरक्षित हैं। स्लाइडर कंट्रोलर ब्राउज़र API तक पहुँच को `afterRenderEffect` तक टाल देता है। Overlay कंपोनेंट `isOpen=false` होने पर कुछ भी रेंडर नहीं करते, इसलिए सर्वर रेंडरिंग के दौरान कोई markup नहीं बनाते।
+`@angular/ssr` के साथ सभी Angular कंपोनेंट SSR के लिए सुरक्षित हैं। स्लाइडर कंट्रोलर `ngOnInit` में बनता है, और जिस काम के लिए ब्राउज़र चाहिए, जैसे कंटेनर नापना, वह सर्वर पर `isPlatformBrowser` के ज़रिए छोड़ दिया जाता है। Overlay कंपोनेंट `isOpen=false` होने पर कुछ भी रेंडर नहीं करते, इसलिए सर्वर रेंडरिंग के दौरान कोई markup नहीं बनाते।
 
 <CodeBlock code={angularUniversal} language="typescript" />
 
@@ -145,7 +175,7 @@ Pages Router बिना किसी अतिरिक्त कॉन्फ�
 
 ## Nuxt 3 [#nuxt-3]
 
-ReelKit के Vue कंपोनेंट Nuxt 3 के साथ सीधे काम करते हैं। Reel ब्राउज़र API (टच इवेंट, ResizeObserver) इस्तेमाल करता है, इसलिए उसे `<ClientOnly>` कंपोनेंट में लपेटें या `.client.vue` suffix इस्तेमाल करें:
+ReelKit के Vue कंपोनेंट सर्वर पर बिना किसी error के import और रेंडर होते हैं। `Reel` सर्वर से एक खाली कंटेनर भेजता है और hydration के बाद स्लाइड बनाता है। जब `Reel` अपना साइज़ खुद तय करता है, तो `@reelkit/vue` 0.9.1 से यह कंटेनर बिना mismatch के hydrate होता है; पुराने वर्ज़न में इसकी ऊँचाई नहीं बचती थी, इसलिए कोई स्लाइड नहीं दिखती थी। साफ़ `size` देने पर क्लाइंट के पहले रेंडर में ही स्लाइड होती हैं, जिससे hydration में mismatch होता है। ऐसे में, या पुराने वर्ज़न पर, `Reel` को `<ClientOnly>` कंपोनेंट में लपेटें या `.client.vue` suffix इस्तेमाल करें:
 
 <CodeBlock code={nuxtPage} language="vue" />
 
@@ -155,9 +185,13 @@ Feed कंपोनेंट Reel को सामान्य तरीके 
 
 ## SSR के साथ रिस्पॉन्सिव साइज़ [#responsive-size-with-ssr]
 
-अपने-आप माप के लिए `size` prop छोड़ दें। Reel अपने parent के 100% आकार में फ़िट हो जाता है। SSR के दौरान यह खाली कंटेनर रेंडर करता है; hydration पर नापकर स्लाइड रेंडर करता है:
+अपने-आप माप के लिए `size` prop छोड़ दें। Reel अपने parent के 100% आकार में फ़िट हो जाता है, और `@reelkit/vue` 0.9.1 से इसे `<ClientOnly>` की ज़रूरत नहीं: सर्वर पूरे आकार का एक खाली कंटेनर भेजता है, और क्लाइंट उसे नापकर स्लाइड रेंडर करता है। उदाहरण में wrapper रखा गया है, क्योंकि वह पुराने वर्ज़न पर भी काम करता है:
 
 <CodeBlock code={nuxtAutoSize} language="vue" />
+
+## Overlay कंपोनेंट [#overlay-components]
+
+`ReelPlayerOverlay`, `LightboxOverlay` और `StoriesOverlay` `isOpen` false होने पर कुछ भी रेंडर नहीं करते, इसलिए इन्हें `<ClientOnly>` की ज़रूरत नहीं होती और सर्वर रेंडरिंग के दौरान ये कोई markup नहीं बनाते। ये अपनी सामग्री को body में तभी teleport करते हैं जब क्लाइंट पर खोले जाते हैं।
 
 </FrameworkVariant>
 
@@ -178,5 +212,6 @@ Feed कंपोनेंट Reel को सामान्य तरीके 
 
 <Callout type="warning" title="किन बातों का ध्यान रखें">
   - अपने-आप माप के लिए `size` छोड़ दें, या viewport पर आधारित आकार इस्तेमाल करते समय एक डिफ़ॉल्ट दें
+  - Nuxt में `size` देने पर, या 0.9.1 से पहले के `@reelkit/vue` पर, Vue का `Reel` `<ClientOnly>` के अंदर रेंडर करें
   - core को सीधे इस्तेमाल करते समय सर्वर पर `attach()`/`observe()` कॉल न करें
 </Callout>

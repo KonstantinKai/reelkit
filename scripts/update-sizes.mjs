@@ -465,6 +465,7 @@ for (const page of [
   'apps/docs/src/i18n/home/ja.ts',
   'apps/docs/src/i18n/home/hi.ts',
   'apps/docs/src/i18n/home/es.ts',
+  'apps/docs/src/i18n/home/de.ts',
 ]) {
   if (!core) break;
 

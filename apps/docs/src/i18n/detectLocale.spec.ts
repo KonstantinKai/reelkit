@@ -32,8 +32,8 @@ describe('preferred locale from Accept-Language', () => {
     ['zh-CN,zh;q=0.9', 'zh'],
     ['zh-Hant-TW', 'zh'],
     ['en-GB,uk;q=0.8', 'en'],
-    ['de-DE,de;q=0.9,uk;q=0.5', 'uk'],
-    ['de,fr;q=0.8', null],
+    ['fr-FR,fr;q=0.9,uk;q=0.5', 'uk'],
+    ['fr,it;q=0.8', null],
     ['en;q=0.5,zh;q=0.9', 'zh'],
     ['uk;q=0,zh;q=0.4', 'zh'],
     ['*', null],
@@ -74,7 +74,7 @@ describe('language redirect decision', () => {
     expect(detectLocale(request({ acceptLanguage: 'en-US,uk;q=0.8' }))).toBe(
       null,
     );
-    expect(detectLocale(request({ acceptLanguage: 'de-DE' }))).toBe(null);
+    expect(detectLocale(request({ acceptLanguage: 'fr-FR' }))).toBe(null);
     expect(detectLocale(request({ acceptLanguage: null }))).toBe(null);
   });
 
@@ -222,6 +222,29 @@ describe('language redirect decision', () => {
     ).toBe(null);
     expect(
       detectLocale(request({ acceptLanguage: 'es', userAgent: 'curl/8.7.1' })),
+    ).toBe(null);
+  });
+
+  // Austria and Switzerland read the same German pages as Germany.
+  it('sends a German browser from any region to /de', () => {
+    expect(preferredLocale('de-DE,de;q=0.9')).toBe('de');
+    expect(preferredLocale('de-AT')).toBe('de');
+    expect(preferredLocale('de-CH')).toBe('de');
+    expect(preferredLocale('en-US,de;q=0.8')).toBe('en');
+    expect(detectLocale(request({ acceptLanguage: 'de-DE,de;q=0.9' }))).toBe(
+      '/de/docs/ssr',
+    );
+    expect(detectLocale(request({ acceptLanguage: 'en-US,de;q=0.8' }))).toBe(
+      null,
+    );
+    expect(
+      detectLocale(request({ acceptLanguage: 'de', cookie: 'rk-locale=en' })),
+    ).toBe(null);
+    expect(
+      detectLocale(request({ pathname: '/de/docs/ssr', acceptLanguage: 'de' })),
+    ).toBe(null);
+    expect(
+      detectLocale(request({ acceptLanguage: 'de', userAgent: 'curl/8.7.1' })),
     ).toBe(null);
   });
 

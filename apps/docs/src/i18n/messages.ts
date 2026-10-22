@@ -1,5 +1,6 @@
 import type { Locale } from './locale';
 import { en } from './messages/en';
+import { de } from './messages/de';
 import { es } from './messages/es';
 import { hi } from './messages/hi';
 import { ja } from './messages/ja';
@@ -111,4 +112,5 @@ export const messages: Record<Locale, Messages> = {
   ja,
   hi,
   es,
+  de,
 };

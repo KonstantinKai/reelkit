@@ -1,6 +1,6 @@
 ---
 title: サーバーサイドレンダリング
-description: reelkit のすべてのパッケージはサーバーで動作します。Next.js、Remix、Angular Universal、Nuxt 3 など、どの SSR 環境でもインポートして描画できます。
+description: reelkit のすべてのパッケージはサーバーで動作します。Next.js、Remix、Angular SSR、Nuxt 3 など、どの SSR 環境でもインポートして描画できます。
 ---
 
 import nextAppRouter from '../../snippets/ssr/next-app-router.tsx?raw';
@@ -15,13 +15,23 @@ import nuxtFeed from '../../snippets/ssr/nuxt-feed.vue?raw';
 import nuxtAutoSize from '../../snippets/ssr/nuxt-auto-size.vue?raw';
 import coreDirect from '../../snippets/ssr/core-direct.ts?raw';
 
-reelkit のすべてのパッケージはサーバーで動作します。Next.js、Remix、Angular Universal など、どの SSR 環境でもインポートして描画できます。
+reelkit のすべてのパッケージはサーバーで動作します。Next.js、Remix、Angular SSR、Nuxt 3 など、どの SSR 環境でもインポートして描画できます。
 
 ## 仕組み [#how-it-works]
 
 コアのスライダーコントローラーは純粋なロジックで、生成時に DOM へはアクセスしません。ジェスチャーのリスナー、キーボードイベント、アニメーションは、クライアント側のライフサイクルでだけ取り付けられます。
 
-SSR のあいだ、`Reel` コンポーネントは最初に表示されるスライド（通常は前・現在・次の 3 枚）を持つ静的なコンテナーを描画します。ハイドレーション時に、ジェスチャー・キーボード・ホイールのコントローラーを取り付けて、すべてを操作可能にします。
+<FrameworkVariant for="react">
+
+SSR のあいだ、React の `Reel` は `size` があれば最初に表示されるスライド（通常は前・現在・次の 3 枚）を持つ静的なコンテナーを描画し、自分で計測する場合は空のコンテナーを描画します。ハイドレーション時に、ジェスチャー・キーボード・ホイールのコントローラーを取り付けて、すべてを操作可能にします。
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+Vue の `Reel` はサーバーで空のコンテナーを描画し、ハイドレーションの後にスライドを描きます。`size` を渡した場合、そのコンテナーはクライアントが最初に描画する内容と一致しません。そのため Nuxt では `<ClientOnly>` の中に置きます（[Nuxt 3](#nuxt-3) を参照）。
+
+</FrameworkVariant>
 
 <Table boxed>
   <thead>
@@ -45,12 +55,12 @@ SSR のあいだ、`Reel` コンポーネントは最初に表示されるスラ
     <tr data-rk-fw="angular">
       <td>`@reelkit/angular`</td>
       <td><Ok>はい</Ok></td>
-      <td>スタンドアロンコンポーネントで、Angular Universal に対応します</td>
+      <td>スタンドアロンコンポーネントで、Angular SSR（`@angular/ssr`）に対応します</td>
     </tr>
     <tr data-rk-fw="vue">
       <td>`@reelkit/vue`</td>
       <td><Ok>はい</Ok></td>
-      <td>コンポーネントとコンポーザブルで、Nuxt 3 に対応します</td>
+      <td>サーバーでのインポートと描画は安全です。`size` を渡す場合、Nuxt 3 では `Reel` を `<ClientOnly>` の中に置いてください</td>
     </tr>
     <tr data-rk-fw="react">
       <td>`@reelkit/react-reel-player`</td>
@@ -72,6 +82,16 @@ SSR のあいだ、`Reel` コンポーネントは最初に表示されるスラ
       <td><Ok>はい</Ok></td>
       <td>閉じているあいだ（`isOpen=false`）は何も描画しません</td>
     </tr>
+    <tr data-rk-fw="vue">
+      <td>`@reelkit/vue-reel-player`</td>
+      <td><Ok>はい</Ok></td>
+      <td>閉じているあいだ（`isOpen=false`）は何も描画しません</td>
+    </tr>
+    <tr data-rk-fw="vue">
+      <td>`@reelkit/vue-lightbox`</td>
+      <td><Ok>はい</Ok></td>
+      <td>閉じているあいだ（`isOpen=false`）は何も描画しません</td>
+    </tr>
     <tr>
       <td>`@reelkit/stories-core`</td>
       <td><Ok>はい</Ok></td>
@@ -79,6 +99,16 @@ SSR のあいだ、`Reel` コンポーネントは最初に表示されるスラ
     </tr>
     <tr data-rk-fw="react">
       <td>`@reelkit/react-stories-player`</td>
+      <td><Ok>はい</Ok></td>
+      <td>閉じているあいだ（`isOpen=false`）は何も描画しません</td>
+    </tr>
+    <tr data-rk-fw="angular">
+      <td>`@reelkit/angular-stories-player`</td>
+      <td><Ok>はい</Ok></td>
+      <td>閉じているあいだ（`isOpen=false`）は何も描画しません</td>
+    </tr>
+    <tr data-rk-fw="vue">
+      <td>`@reelkit/vue-stories-player`</td>
       <td><Ok>はい</Ok></td>
       <td>閉じているあいだ（`isOpen=false`）は何も描画しません</td>
     </tr>
@@ -125,7 +155,7 @@ Pages Router は追加の設定なしで動作します。コンポーネント�
 
 ## オーバーレイコンポーネント [#overlay-components]
 
-`ReelPlayerOverlay` と `LightboxOverlay` は `isOpen={false}` のとき何も描画しないため、そのままで SSR に安全です。ポータルをマウントするのは開いたとき（通常はクライアントでの操作がきっかけ）だけです：
+`ReelPlayerOverlay`、`LightboxOverlay`、`StoriesOverlay` は `isOpen={false}` のとき何も描画しないため、そのままで SSR に安全です。ポータルをマウントするのは開いたとき（通常はクライアントでの操作がきっかけ）だけです：
 
 <CodeBlock code={nextOverlay} language="tsx" />
 
@@ -133,9 +163,9 @@ Pages Router は追加の設定なしで動作します。コンポーネント�
 
 <FrameworkVariant for="angular">
 
-## Angular Universal / SSR [#angular-universal-ssr]
+## Angular SSR [#angular-universal-ssr]
 
-Angular のコンポーネントはすべて SSR に安全です。スライダーコントローラーはブラウザー API へのアクセスを `afterRenderEffect` まで遅らせます。オーバーレイコンポーネントは `isOpen=false` のとき何も描画しないので、サーバーでのレンダリング中にマークアップを出力しません。
+Angular のコンポーネントはすべて `@angular/ssr` で SSR に安全です。スライダーコントローラーは `ngOnInit` で作成され、コンテナーの計測のようにブラウザーが必要な処理は、サーバーでは `isPlatformBrowser` によってスキップされます。オーバーレイコンポーネントは `isOpen=false` のとき何も描画しないので、サーバーでのレンダリング中にマークアップを出力しません。
 
 <CodeBlock code={angularUniversal} language="typescript" />
 
@@ -145,7 +175,7 @@ Angular のコンポーネントはすべて SSR に安全です。スライダ�
 
 ## Nuxt 3 [#nuxt-3]
 
-ReelKit の Vue コンポーネントは Nuxt 3 でそのまま動作します。Reel はブラウザー API（タッチイベント、ResizeObserver）を使うため、`<ClientOnly>` コンポーネントで囲むか、`.client.vue` サフィックスを使ってください：
+ReelKit の Vue コンポーネントはサーバーでエラーなくインポート・描画できます。`Reel` はサーバーから空のコンテナーを送り、ハイドレーションの後にスライドを描きます。`Reel` が自分でサイズを決める場合、`@reelkit/vue` 0.9.1 以降ではこのコンテナーが不一致なくハイドレーションされます。それより前のバージョンではコンテナーの高さが失われ、スライドが表示されませんでした。`size` を明示すると、クライアントの最初の描画にはすでにスライドが含まれるため、ハイドレーションで不一致が起きます。その場合や以前のバージョンでは、`Reel` を `<ClientOnly>` コンポーネントで囲むか、`.client.vue` サフィックスを使ってください：
 
 <CodeBlock code={nuxtPage} language="vue" />
 
@@ -155,9 +185,13 @@ Feed コンポーネントでは、いつもどおり Reel を使います：
 
 ## SSR でのレスポンシブなサイズ [#responsive-size-with-ssr]
 
-`size` プロップを省略すると自動計測が使われます。Reel は親の 100% に合わせてサイズを決めます。SSR のあいだは空のコンテナーを描画し、ハイドレーション時に計測してスライドを描画します：
+`size` プロップを省略すると自動計測が使われます。Reel は親の 100% に合わせてサイズを決め、`@reelkit/vue` 0.9.1 以降は `<ClientOnly>` が不要です。サーバーは全体サイズの空のコンテナーを送り、クライアントがそれを計測してスライドを描画します。以前のバージョンでも動くように、例ではラッパーを残しています：
 
 <CodeBlock code={nuxtAutoSize} language="vue" />
+
+## オーバーレイコンポーネント [#overlay-components]
+
+`ReelPlayerOverlay`、`LightboxOverlay`、`StoriesOverlay` は `isOpen` が false のとき何も描画しないので、`<ClientOnly>` は不要で、サーバーでのレンダリング中にマークアップを出力しません。中身を body にテレポートするのは、クライアントで開いたときだけです。
 
 </FrameworkVariant>
 
@@ -178,5 +212,6 @@ Feed コンポーネントでは、いつもどおり Reel を使います：
 
 <Callout type="warning" title="注意すること">
   - 自動計測には `size` を省略する。画面サイズに基づく寸法を使う場合はデフォルト値を用意する
+  - Nuxt では、`size` を渡すときや 0.9.1 より前の `@reelkit/vue` では、Vue の `Reel` を `<ClientOnly>` の中で描画する
   - Core を直接使う場合、サーバーでは `attach()`／`observe()` を呼ばない
 </Callout>

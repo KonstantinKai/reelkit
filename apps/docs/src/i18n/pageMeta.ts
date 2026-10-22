@@ -24,6 +24,7 @@ const _kOpenGraphLocales: Record<Locale, string> = {
   ja: 'ja_JP',
   hi: 'hi_IN',
   es: 'es_ES',
+  de: 'de_DE',
 };
 
 /**

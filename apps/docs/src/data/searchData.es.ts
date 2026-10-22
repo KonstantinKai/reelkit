@@ -136,7 +136,7 @@ export const esTitles: Record<string, string> = {
   'Next.js Pages Router': 'Next.js Pages Router',
   'Responsive Size with SSR': 'Tamaño adaptable con SSR',
   'Overlay Components': 'Componentes de overlay',
-  'Angular Universal / SSR': 'Angular Universal / SSR',
+  'Angular SSR': 'SSR en Angular',
   'Nuxt 3': 'Nuxt 3',
   'Using Core Directly': 'Usar el core directamente',
   Summary: 'Resumen',

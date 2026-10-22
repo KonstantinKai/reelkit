@@ -3,33 +3,39 @@ title: Server-Side Rendering
 url: https://reelkit.dev/docs/ssr
 section: Getting started
 order: 3
-desc: All reelkit packages work on the server. Import and render with Next.js, Remix, Angular Universal, Nuxt 3, or any SSR setup.
+desc: All reelkit packages work on the server. Import and render with Next.js, Remix, Angular SSR, Nuxt 3, or any SSR setup.
 ---
 
 # Server-Side Rendering
 
-All reelkit packages work on server. Import + render with Next.js, Remix, Angular Universal, Nuxt 3, any SSR setup.
+All reelkit packages work on server. Import + render with Next.js, Remix, Angular SSR, Nuxt 3, any SSR setup.
 
 ## How It Works
 
 Core slider controller pure logic — no DOM access at construction. Gesture, keyboard, wheel listeners attach only in client lifecycle hooks.
 
-During SSR, `Reel` renders static container with initial visible slides (typically 3: prev, current, next). On hydration, attaches gesture/keyboard/wheel controllers → interactive.
+During SSR, React `Reel` renders static container with initial visible slides (typically 3: prev, current, next) when given `size`, empty container when it measures itself. On hydration, attaches gesture/keyboard/wheel controllers → interactive.
+
+Vue `Reel` renders empty container on server, draws slides after hydration. With `size`, container does not match first client render → in Nuxt put it inside `<ClientOnly>` (see Nuxt 3).
 
 ### SSR Safety Matrix
 
-| Package                         | SSR Safe | Notes                                                        |
-| ------------------------------- | -------- | ------------------------------------------------------------ |
-| `@reelkit/core`                 | yes      | Pure logic, no browser APIs at import or construction        |
-| `@reelkit/react`                | yes      | `Reel` and `ReelIndicator` render valid HTML on server       |
-| `@reelkit/react-reel-player`    | yes      | Renders nothing when `isOpen=false`                          |
-| `@reelkit/react-lightbox`       | yes      | Renders nothing when `isOpen=false`                          |
-| `@reelkit/react-stories-player` | yes      | Renders nothing when `isOpen=false`                          |
-| `@reelkit/angular`              | yes      | Standalone components, SSR compatible with Angular Universal |
-| `@reelkit/angular-reel-player`  | yes      | Renders nothing when `isOpen=false`                          |
-| `@reelkit/angular-lightbox`     | yes      | Renders nothing when `isOpen=false`                          |
-| `@reelkit/vue`                  | yes      | Components and composables, SSR compatible with Nuxt 3       |
-| `@reelkit/stories-core`         | yes      | Framework-agnostic, no DOM access                            |
+| Package                           | SSR Safe | Notes                                                                                      |
+| --------------------------------- | -------- | ------------------------------------------------------------------------------------------ |
+| `@reelkit/core`                   | yes      | Pure logic, no browser APIs at import or construction                                      |
+| `@reelkit/react`                  | yes      | `Reel` and `ReelIndicator` render valid HTML on server                                     |
+| `@reelkit/react-reel-player`      | yes      | Renders nothing when `isOpen=false`                                                        |
+| `@reelkit/react-lightbox`         | yes      | Renders nothing when `isOpen=false`                                                        |
+| `@reelkit/react-stories-player`   | yes      | Renders nothing when `isOpen=false`                                                        |
+| `@reelkit/angular`                | yes      | Standalone components, SSR compatible with Angular SSR (`@angular/ssr`)                    |
+| `@reelkit/angular-reel-player`    | yes      | Renders nothing when `isOpen=false`                                                        |
+| `@reelkit/angular-lightbox`       | yes      | Renders nothing when `isOpen=false`                                                        |
+| `@reelkit/angular-stories-player` | yes      | Renders nothing when `isOpen=false`                                                        |
+| `@reelkit/vue`                    | yes      | Safe to import + render on server; with `size`, put `Reel` inside `<ClientOnly>` in Nuxt 3 |
+| `@reelkit/vue-reel-player`        | yes      | Renders nothing when `isOpen=false`                                                        |
+| `@reelkit/vue-lightbox`           | yes      | Renders nothing when `isOpen=false`                                                        |
+| `@reelkit/vue-stories-player`     | yes      | Renders nothing when `isOpen=false`                                                        |
+| `@reelkit/stories-core`           | yes      | Framework-agnostic, no DOM access                                                          |
 
 ## React
 
@@ -161,7 +167,7 @@ export function FullScreenFeed({ items }: { items: FeedItem[] }) {
 
 ### Overlay Components (React)
 
-`ReelPlayerOverlay` + `LightboxOverlay` render nothing when `isOpen={false}` → SSR-safe by default. Mount portal only when opened (typically from user interaction on client):
+`ReelPlayerOverlay` + `LightboxOverlay` + `StoriesOverlay` render nothing when `isOpen={false}` → SSR-safe by default. Mount portal only when opened (typically from user interaction on client):
 
 ```tsx
 'use client';
@@ -202,9 +208,9 @@ export function VideoFeed({ content }: { content: ContentItem[] }) {
 
 ## Angular
 
-### Angular Universal / SSR
+### Angular SSR
 
-All Angular components SSR-safe. Slider controller defers browser API access to `afterRenderEffect`. Overlay components render nothing when `isOpen=false` → no markup during server render.
+All Angular components SSR-safe with `@angular/ssr`. Slider controller created in `ngOnInit`; browser-only work (measuring container) skipped on server via `isPlatformBrowser`. Overlay components render nothing when `isOpen=false` → no markup during server render.
 
 ```typescript
 import { Component, signal } from '@angular/core';
@@ -234,7 +240,7 @@ export class FeedComponent {
 
 ### Nuxt 3
 
-ReelKit Vue works with Nuxt 3 out of box. `Reel` use browser APIs (touch events, ResizeObserver) → wrap in `<ClientOnly>` or use `.client.vue` suffix:
+ReelKit Vue imports + renders on server without errors. `Reel` sends empty container from server, draws slides after hydration. When `Reel` measures itself, container hydrates cleanly from `@reelkit/vue` 0.9.1; earlier versions kept it at zero height → no slides. With explicit `size`, first client render already has slides → hydration mismatch. Then, or on earlier version, wrap `Reel` in `<ClientOnly>` or use `.client.vue` suffix:
 
 ```vue
 <!-- pages/feed.vue -->
@@ -273,7 +279,7 @@ defineProps<{ items: FeedItem[] }>();
 
 ### Responsive Size with SSR (Vue)
 
-Omit `size` for auto-measurement. Reel auto-sizes to 100% of parent. SSR renders empty container; hydration measures + renders slides:
+Omit `size` for auto-measurement. Reel auto-sizes to 100% of parent; from `@reelkit/vue` 0.9.1 needs no `<ClientOnly>`: server sends empty container at full size, client measures + renders slides. Example keeps wrapper, also works on earlier versions:
 
 ```vue
 <template>
@@ -288,6 +294,10 @@ Omit `size` for auto-measurement. Reel auto-sizes to 100% of parent. SSR renders
   </ClientOnly>
 </template>
 ```
+
+### Overlay Components (Vue)
+
+`ReelPlayerOverlay` + `LightboxOverlay` + `StoriesOverlay` render nothing when `isOpen` false → need no `<ClientOnly>`, no markup during server render. Teleport content to body only once opened on client.
 
 ## Using Core Directly
 
@@ -323,4 +333,5 @@ if (typeof window !== 'undefined') {
 > Keep in mind:
 >
 > - Omit `size` for auto-measurement, or provide default when using viewport-based dimensions
+> - In Nuxt, render Vue `Reel` inside `<ClientOnly>` when it has `size`, or on `@reelkit/vue` before 0.9.1
 > - Don't call `attach()` / `observe()` on server when using core direct

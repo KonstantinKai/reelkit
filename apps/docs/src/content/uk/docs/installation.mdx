@@ -33,6 +33,11 @@ import pnpmVue from '../../snippets/installation/pnpm-vue.sh?raw';
       <td>Ядро без прив’язки до фреймворку</td>
       <td>Власні інтеграції</td>
     </tr>
+    <tr>
+      <td>`@reelkit/stories-core`</td>
+      <td>Рушій історій без прив’язки до фреймворку</td>
+      <td>Власні інтеграції історій</td>
+    </tr>
     <tr data-rk-fw="react">
       <td>`@reelkit/react`</td>
       <td>Компоненти React</td>
@@ -56,7 +61,7 @@ import pnpmVue from '../../snippets/installation/pnpm-vue.sh?raw';
     <tr data-rk-fw="angular">
       <td>`@reelkit/angular`</td>
       <td>Автономні компоненти Angular</td>
-      <td>Застосунки на Angular 17+</td>
+      <td>Застосунки на Angular 19+</td>
     </tr>
     <tr data-rk-fw="angular">
       <td>`@reelkit/angular-reel-player`</td>
@@ -67,6 +72,11 @@ import pnpmVue from '../../snippets/installation/pnpm-vue.sh?raw';
       <td>`@reelkit/angular-lightbox`</td>
       <td>Lightbox-галерея зображень</td>
       <td>Повноекранний перегляд зображень</td>
+    </tr>
+    <tr data-rk-fw="angular">
+      <td>`@reelkit/angular-stories-player`</td>
+      <td>Плеєр історій у стилі Instagram</td>
+      <td>Історії з автопрогортанням і жестами</td>
     </tr>
     <tr data-rk-fw="vue">
       <td>`@reelkit/vue`</td>
@@ -82,6 +92,11 @@ import pnpmVue from '../../snippets/installation/pnpm-vue.sh?raw';
       <td>`@reelkit/vue-lightbox`</td>
       <td>Lightbox-галерея зображень</td>
       <td>Повноекранний перегляд зображень</td>
+    </tr>
+    <tr data-rk-fw="vue">
+      <td>`@reelkit/vue-stories-player`</td>
+      <td>Плеєр історій у стилі Instagram</td>
+      <td>Історії з автопрогортанням і жестами</td>
     </tr>
   </tbody>
 </Table>
@@ -195,20 +210,29 @@ ReelKit тримає в DOM **лише 3 слайди** в будь-який м�
 
 ### @reelkit/angular [#reelkit-angular]
 
-- `@angular/core` >= 17.0.0
-- `@angular/common` >= 17.0.0
+- `@angular/core` >= 19.0.0
+- `@angular/common` >= 19.0.0
 
 ### @reelkit/angular-reel-player [#reelkit-angular-reel-player]
 
 - `@reelkit/angular`
 - `@angular/core` >= 19.0.0
+- `@angular/common` >= 19.0.0
 - `lucide-angular` >= 0.460.0
 
 ### @reelkit/angular-lightbox [#reelkit-angular-lightbox]
 
 - `@reelkit/angular`
-- `@angular/core` >= 17.0.0
-- `lucide-angular` >= 0.400.0
+- `@angular/core` >= 19.0.0
+- `@angular/common` >= 19.0.0
+- `lucide-angular` >= 0.460.0
+
+### @reelkit/angular-stories-player [#reelkit-angular-stories-player]
+
+- `@reelkit/angular`
+- `@angular/core` >= 19.0.0
+- `@angular/common` >= 19.0.0
+- `lucide-angular` >= 0.460.0
 
 </FrameworkVariant>
 
@@ -218,12 +242,30 @@ ReelKit тримає в DOM **лише 3 слайди** в будь-який м�
 
 - `vue` >= 3.0.0
 
+### @reelkit/vue-reel-player [#reelkit-vue-reel-player]
+
+- `@reelkit/vue`
+- `vue` >= 3.3.0
+- `lucide-vue-next` >= 0.400.0
+
+### @reelkit/vue-lightbox [#reelkit-vue-lightbox]
+
+- `@reelkit/vue`
+- `vue` >= 3.0.0
+- `lucide-vue-next` >= 0.400.0
+
+### @reelkit/vue-stories-player [#reelkit-vue-stories-player]
+
+- `@reelkit/vue`
+- `vue` >= 3.3.0
+- `lucide-vue-next` >= 0.400.0
+
 </FrameworkVariant>
 
 <FrameworkVariant for="react">
 
 <Callout type="info">
-  `lucide-react` потрібен лише для стандартних іконок керування. Якщо ви передаєте власні елементи керування через `renderControls`, встановлювати його не потрібно.
+  `lucide-react` потрібен лише для стандартних іконок. Якщо ви передаєте власні елементи керування та навігацію через `renderControls` і `renderNavigation` (`renderHeader` і `renderNavigation` у плеєрі історій), встановлювати його не потрібно.
 </Callout>
 
 </FrameworkVariant>
@@ -231,7 +273,15 @@ ReelKit тримає в DOM **лише 3 слайди** в будь-який м�
 <FrameworkVariant for="angular">
 
 <Callout type="info">
-  `lucide-angular` потрібен лише для стандартних іконок керування. Якщо ви передаєте власні елементи керування через `rkPlayerControls`, встановлювати його не потрібно.
+  `lucide-angular` потрібен лише для стандартних іконок. Якщо ви передаєте власні елементи керування та навігацію через слоти шаблону (`rkPlayerControls` і `rkPlayerNavigation`, `rkLightboxControls` і `rkLightboxNavigation`, `rkStoriesHeader` і `rkStoriesNavigation`), встановлювати його не потрібно.
+</Callout>
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+<Callout type="info">
+  `lucide-vue-next` потрібен лише для стандартних іконок. Якщо ви передаєте власні елементи керування та навігацію через scoped-слоти `#controls` і `#navigation` (`#header` і `#navigation` у плеєрі історій), встановлювати його не потрібно.
 </Callout>
 
 </FrameworkVariant>

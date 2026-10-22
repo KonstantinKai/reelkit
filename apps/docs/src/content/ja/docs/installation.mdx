@@ -33,6 +33,11 @@ reelkit のパッケージをインストールして、プロジェクトを設
       <td>フレームワークに依存しないコア</td>
       <td>独自の組み込み</td>
     </tr>
+    <tr>
+      <td>`@reelkit/stories-core`</td>
+      <td>フレームワークに依存しないストーリーエンジン</td>
+      <td>ストーリーの独自の組み込み</td>
+    </tr>
     <tr data-rk-fw="react">
       <td>`@reelkit/react`</td>
       <td>React コンポーネント</td>
@@ -56,7 +61,7 @@ reelkit のパッケージをインストールして、プロジェクトを設
     <tr data-rk-fw="angular">
       <td>`@reelkit/angular`</td>
       <td>Angular のスタンドアロンコンポーネント</td>
-      <td>Angular 17 以降のアプリケーション</td>
+      <td>Angular 19 以降のアプリケーション</td>
     </tr>
     <tr data-rk-fw="angular">
       <td>`@reelkit/angular-reel-player`</td>
@@ -67,6 +72,11 @@ reelkit のパッケージをインストールして、プロジェクトを設
       <td>`@reelkit/angular-lightbox`</td>
       <td>画像ギャラリーのオーバーレイ</td>
       <td>フルスクリーンでの画像プレビュー</td>
+    </tr>
+    <tr data-rk-fw="angular">
+      <td>`@reelkit/angular-stories-player`</td>
+      <td>Instagram 風のストーリープレイヤー</td>
+      <td>自動送りとジェスチャーのあるストーリー</td>
     </tr>
     <tr data-rk-fw="vue">
       <td>`@reelkit/vue`</td>
@@ -82,6 +92,11 @@ reelkit のパッケージをインストールして、プロジェクトを設
       <td>`@reelkit/vue-lightbox`</td>
       <td>画像ギャラリーのオーバーレイ</td>
       <td>フルスクリーンでの画像プレビュー</td>
+    </tr>
+    <tr data-rk-fw="vue">
+      <td>`@reelkit/vue-stories-player`</td>
+      <td>Instagram 風のストーリープレイヤー</td>
+      <td>自動送りとジェスチャーのあるストーリー</td>
     </tr>
   </tbody>
 </Table>
@@ -195,20 +210,29 @@ ReelKit は常に **DOM に 3 枚のスライド** しか描画せず、10,000 �
 
 ### @reelkit/angular [#reelkit-angular]
 
-- `@angular/core` >= 17.0.0
-- `@angular/common` >= 17.0.0
+- `@angular/core` >= 19.0.0
+- `@angular/common` >= 19.0.0
 
 ### @reelkit/angular-reel-player [#reelkit-angular-reel-player]
 
 - `@reelkit/angular`
 - `@angular/core` >= 19.0.0
+- `@angular/common` >= 19.0.0
 - `lucide-angular` >= 0.460.0
 
 ### @reelkit/angular-lightbox [#reelkit-angular-lightbox]
 
 - `@reelkit/angular`
-- `@angular/core` >= 17.0.0
-- `lucide-angular` >= 0.400.0
+- `@angular/core` >= 19.0.0
+- `@angular/common` >= 19.0.0
+- `lucide-angular` >= 0.460.0
+
+### @reelkit/angular-stories-player [#reelkit-angular-stories-player]
+
+- `@reelkit/angular`
+- `@angular/core` >= 19.0.0
+- `@angular/common` >= 19.0.0
+- `lucide-angular` >= 0.460.0
 
 </FrameworkVariant>
 
@@ -218,12 +242,30 @@ ReelKit は常に **DOM に 3 枚のスライド** しか描画せず、10,000 �
 
 - `vue` >= 3.0.0
 
+### @reelkit/vue-reel-player [#reelkit-vue-reel-player]
+
+- `@reelkit/vue`
+- `vue` >= 3.3.0
+- `lucide-vue-next` >= 0.400.0
+
+### @reelkit/vue-lightbox [#reelkit-vue-lightbox]
+
+- `@reelkit/vue`
+- `vue` >= 3.0.0
+- `lucide-vue-next` >= 0.400.0
+
+### @reelkit/vue-stories-player [#reelkit-vue-stories-player]
+
+- `@reelkit/vue`
+- `vue` >= 3.3.0
+- `lucide-vue-next` >= 0.400.0
+
 </FrameworkVariant>
 
 <FrameworkVariant for="react">
 
 <Callout type="info">
-  `lucide-react` はデフォルトのコントロールのアイコンにだけ使います。`renderControls` で独自のコントロールを渡す場合は、インストールを省けます。
+  `lucide-react` はデフォルトのアイコンにだけ使います。`renderControls` と `renderNavigation`（ストーリープレイヤーでは `renderHeader` と `renderNavigation`）で独自のコントロールとナビゲーションを渡す場合は、インストールを省けます。
 </Callout>
 
 </FrameworkVariant>
@@ -231,7 +273,15 @@ ReelKit は常に **DOM に 3 枚のスライド** しか描画せず、10,000 �
 <FrameworkVariant for="angular">
 
 <Callout type="info">
-  `lucide-angular` はデフォルトのコントロールのアイコンにだけ使います。`rkPlayerControls` で独自のコントロールを渡す場合は、インストールを省けます。
+  `lucide-angular` はデフォルトのアイコンにだけ使います。テンプレートスロット（`rkPlayerControls` と `rkPlayerNavigation`、`rkLightboxControls` と `rkLightboxNavigation`、`rkStoriesHeader` と `rkStoriesNavigation`）で独自のコントロールとナビゲーションを渡す場合は、インストールを省けます。
+</Callout>
+
+</FrameworkVariant>
+
+<FrameworkVariant for="vue">
+
+<Callout type="info">
+  `lucide-vue-next` はデフォルトのアイコンにだけ使います。スコープ付きスロット `#controls` と `#navigation`（ストーリープレイヤーでは `#header` と `#navigation`）で独自のコントロールとナビゲーションを渡す場合は、インストールを省けます。
 </Callout>
 
 </FrameworkVariant>

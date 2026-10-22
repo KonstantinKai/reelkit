@@ -76,6 +76,15 @@ describe('page meta', () => {
     );
   });
 
+  it('stamps the German Open Graph locale for German', () => {
+    expect(
+      contentOf(localePageMeta('de', options), 'property', 'og:locale'),
+    ).toBe('de_DE');
+    expect(contentOf(localePageMeta('de', options), 'property', 'og:url')).toBe(
+      'https://reelkit.dev/de/docs/ssr',
+    );
+  });
+
   it('carries the page title and description into the social tags', () => {
     const meta = localePageMeta('uk', options);
     expect(contentOf(meta, 'property', 'og:title')).toBe(options.title);
