@@ -22,19 +22,19 @@ The framework-agnostic core. One factory builds a controller from a config and o
 
 ### Config Options
 
-| Property              | Type                               | Default                 | Description                                                          |
-| --------------------- | ---------------------------------- | ----------------------- | -------------------------------------------------------------------- |
-| `count`               | `number`                           | required                | Total items                                                          |
-| `initialIndex`        | `number`                           | `0`                     | Start index                                                          |
-| `direction`           | `'vertical' \| 'horizontal'`       | `'vertical'`            | Scroll direction                                                     |
-| `enableGestures`      | `boolean`                          | `true`                  | Enable touch/mouse drag nav. False = no gesture controller attached. |
-| `enableNavKeys`       | `boolean`                          | `true`                  | Enable arrow key nav                                                 |
-| `enableWheel`         | `boolean`                          | `false`                 | Enable mouse wheel                                                   |
-| `wheelDebounceMs`     | `number`                           | `200`                   | Wheel debounce ms                                                    |
-| `loop`                | `boolean`                          | `false`                 | Loop nav                                                             |
-| `transitionDuration`  | `number`                           | `300`                   | Animation ms                                                         |
-| `swipeDistanceFactor` | `number`                           | `0.12`                  | Swipe threshold (0-1)                                                |
-| `rangeExtractor`      | `(index, count, loop) => number[]` | `defaultRangeExtractor` | Custom fn picks rendered indexes                                     |
+| Property              | Type              | Default                 | Description                                                          |
+| --------------------- | ----------------- | ----------------------- | -------------------------------------------------------------------- |
+| `count`               | `number`          | required                | Total items                                                          |
+| `initialIndex`        | `number`          | `0`                     | Start index                                                          |
+| `direction`           | `SliderDirection` | `'vertical'`            | Scroll direction, `'vertical' \| 'horizontal'`                       |
+| `enableGestures`      | `boolean`         | `true`                  | Enable touch/mouse drag nav. False = no gesture controller attached. |
+| `enableNavKeys`       | `boolean`         | `true`                  | Enable arrow key nav                                                 |
+| `enableWheel`         | `boolean`         | `false`                 | Enable mouse wheel                                                   |
+| `wheelDebounceMs`     | `number`          | `200`                   | Wheel debounce ms                                                    |
+| `loop`                | `boolean`         | `false`                 | Loop nav                                                             |
+| `transitionDuration`  | `number`          | `300`                   | Animation ms                                                         |
+| `swipeDistanceFactor` | `number`          | `0.12`                  | Swipe threshold (0-1)                                                |
+| `rangeExtractor`      | `RangeExtractor`  | `defaultRangeExtractor` | Custom fn picks rendered indexes                                     |
 
 ### Callbacks
 
@@ -71,6 +71,8 @@ The framework-agnostic core. One factory builds a controller from a config and o
 
 ## State Properties
 
+Controller `state` field = `SliderState`, the three signals below. Type a value receiving it with `SliderState`.
+
 | Property    | Type                       | Description                        |
 | ----------- | -------------------------- | ---------------------------------- |
 | `index`     | `Signal<number>`           | Current slide index                |
@@ -79,9 +81,10 @@ The framework-agnostic core. One factory builds a controller from a config and o
 
 ## Range Extractor
 
-| Export                  | Type                               | Description                                   |
-| ----------------------- | ---------------------------------- | --------------------------------------------- |
-| `defaultRangeExtractor` | `(index, count, loop) => number[]` | Default: renders 3 items around current index |
+| Export                  | Type                                 | Description                                                   |
+| ----------------------- | ------------------------------------ | ------------------------------------------------------------- |
+| `defaultRangeExtractor` | `RangeExtractor`                     | Default: renders 3 items around current index                 |
+| `RangeExtractor`        | `(current, count, loop) => number[]` | Range extractor signature. Type own `rangeExtractor` with it. |
 
 ## Signal API
 
@@ -96,26 +99,68 @@ Lightweight reactive primitives used throughout core.
 
 ### Factory Functions
 
-| Export           | Type                                                                | Description                                                                        |
-| ---------------- | ------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| `createSignal`   | `<T>(initial: T) => Signal<T>`                                      | Mutable reactive signal                                                            |
-| `createComputed` | `<T>(fn: () => T, deps: () => Subscribable[]) => ComputedSignal<T>` | Derived computed signal. 2nd arg = deps factory returning tracked signals.         |
-| `reaction`       | `(deps: () => Subscribable[], effect: () => void) => () => void`    | Run side effect on dep change; returns disposer. Read signal values inside effect. |
-| `batch`          | `(fn: () => void) => void`                                          | Group signal updates into one notification pass; nests                             |
+| Export           | Type                                                                | Description                                                                                     |
+| ---------------- | ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `createSignal`   | `<T>(initial: T) => Signal<T>`                                      | Mutable reactive signal                                                                         |
+| `createComputed` | `<T>(fn: () => T, deps: () => Subscribable[]) => ComputedSignal<T>` | Derived computed signal. 2nd arg = deps factory returning tracked signals.                      |
+| `reaction`       | `(deps: () => Subscribable[], effect: () => void) => () => void`    | Run side effect on dep change; returns disposer. Read signal values inside effect.              |
+| `batch`          | `(fn: () => void) => void`                                          | Group signal updates into one notification pass; nests                                          |
+| `Listener`       | `() => void`                                                        | Callback `observe` takes. Type a separately declared observer with it.                          |
+| `Dispose`        | `() => void`                                                        | What `observe` + `reaction` return: call to stop listening. Type a stored subscription with it. |
 
 ## Transitions
 
 Built-in transition fns compute per-slide CSS transforms during animated nav. Pass as `transitionTransformFn` prop to framework component.
 
-| Export                  | Type                                             | Description                                                                       |
-| ----------------------- | ------------------------------------------------ | --------------------------------------------------------------------------------- |
-| `TransitionTransformFn` | type                                             | Signature for custom transitions                                                  |
-| `getSlideProgress`      | `(axisValue, slideIndex, primarySize) => number` | Normalized offset (-1 to 1) for slide vs viewport. Use inside custom transitions. |
-| `slideTransition`       | `TransitionTransformFn`                          | Default slide (translateX/Y)                                                      |
-| `fadeTransition`        | `TransitionTransformFn`                          | Crossfade opacity                                                                 |
-| `flipTransition`        | `TransitionTransformFn`                          | 3D card-flip                                                                      |
-| `cubeTransition`        | `TransitionTransformFn`                          | 3D cube rotation                                                                  |
-| `zoomTransition`        | `TransitionTransformFn`                          | Scale/zoom                                                                        |
+| Export                  | Type                                                  | Description                                                                           |
+| ----------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `TransitionTransformFn` | type                                                  | Signature for custom transitions                                                      |
+| `getSlideProgress`      | `(axisValue, slideIndex, primarySize) => number`      | Normalized offset (-1 to 1) for slide vs viewport. Use inside custom transitions.     |
+| `slideTransition`       | `TransitionTransformFn`                               | Default slide (translateX/Y)                                                          |
+| `fadeTransition`        | `TransitionTransformFn`                               | Crossfade opacity                                                                     |
+| `flipTransition`        | `TransitionTransformFn`                               | 3D card-flip                                                                          |
+| `cubeTransition`        | `TransitionTransformFn`                               | 3D cube rotation                                                                      |
+| `zoomTransition`        | `TransitionTransformFn`                               | Scale/zoom                                                                            |
+| `SlideTransformStyle`   | `{ transform?; transformOrigin?; opacity?; zIndex? }` | What a `TransitionTransformFn` returns per slide. Return it from a custom transition. |
+
+## Input Controllers
+
+Slider controller builds these three itself from `enableGestures`, `enableNavKeys`, `enableWheel`. Create one directly for own integration, or for gestures / arrow keys / wheel on an element that is not a slider.
+
+### Gesture Controller
+
+| Export                       | Type                                                                                                                                                                                                                                | Description                                                                                                                                                                                             |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `createGestureController`    | `(config?: GestureControllerConfig, events?: GestureControllerEvents) => GestureController`                                                                                                                                         | Detects tap, double tap, long press, drag on an element; locks each drag to its dominant axis.                                                                                                          |
+| `GestureController`          | `{ attach; detach; observe; unobserve; updateEvents }`                                                                                                                                                                              | Returned by `createGestureController`. `attach(element)` binds, `observe()` adds listeners, `unobserve()` removes them (keeps element), `detach()` removes all; `updateEvents(events)` merges handlers. |
+| `GestureControllerConfig`    | `{ useTouchEventsOnly?; longPressDurationMs?; doubleTapWindowMs? }`                                                                                                                                                                 | Options: ignore mouse (default `false`), long-press time (default `800` ms), double-tap window (default `200` ms).                                                                                      |
+| `GestureControllerEvents`    | `{ onTap?; onDoubleTap?; onTapDown?; onTapUp?; onLongPress?; onLongPressEnd?; onHorizontalDragStart?; onHorizontalDragUpdate?; onHorizontalDragEnd?; onVerticalDragStart?; onVerticalDragUpdate?; onVerticalDragEnd?; onDragEnd? }` | Callbacks. Drag routed to horizontal or vertical handlers by dominant axis; `onDragEnd` fires for both.                                                                                                 |
+| `GestureAxisDragUpdateEvent` | `GestureEvent & { delta; distance; primaryDelta; primaryDistance; cancel }`                                                                                                                                                         | Payload of `onHorizontalDragUpdate` / `onVerticalDragUpdate`: move since last update, total distance, same along dominant axis, `cancel()` snaps back.                                                  |
+| `GestureAxisDragEndEvent`    | update event minus `cancel`, plus `{ velocity; primaryVelocity }`                                                                                                                                                                   | Payload of `onHorizontalDragEnd` / `onVerticalDragEnd`, release speed in px/s.                                                                                                                          |
+| `GestureDragEndEvent`        | `GestureAxisDragEndEvent` minus `primary` fields                                                                                                                                                                                    | Payload of `onDragEnd`, axis-agnostic.                                                                                                                                                                  |
+| `Offset`                     | `[x: number, y: number]`                                                                                                                                                                                                            | Pixel pair for every position, delta, distance, velocity in gesture events.                                                                                                                             |
+| `EventKind`                  | `'touch' \| 'mouse'`                                                                                                                                                                                                                | Input source, `kind` field of `GestureCommonEvent`.                                                                                                                                                     |
+| `DragAxis`                   | `'horizontal' \| 'vertical' \| null`                                                                                                                                                                                                | Dominant drag axis; `null` until first movement decides.                                                                                                                                                |
+
+### Keyboard Controller
+
+| Export                     | Type                                                                                         | Description                                                                                                       |
+| -------------------------- | -------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `createKeyboardController` | `(config: KeyboardControllerConfig, events: KeyboardControllerEvents) => KeyboardController` | Arrow key presses → `NavKey` callbacks.                                                                           |
+| `KeyboardController`       | `{ attach; detach }`                                                                         | Returned by `createKeyboardController`. `attach(target?)` listens `keydown` (default `window`), `detach()` stops. |
+| `KeyboardControllerConfig` | `{ filter?; throttleMs? }`                                                                   | Options: keys to react to (default all four), min time between presses (default `0`, no throttle).                |
+| `KeyboardControllerEvents` | `{ onKeyPress: (key: NavKey, event: KeyboardEvent) => void }`                                | Callback per accepted key press.                                                                                  |
+| `NavKey`                   | `'up' \| 'right' \| 'down' \| 'left'`                                                        | Arrow key pressed, as reported + filtered.                                                                        |
+
+### Wheel Controller
+
+| Export                  | Type                                                                                | Description                                                                                                                           |
+| ----------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `createWheelController` | `(config: WheelControllerConfig, events: WheelControllerEvents) => WheelController` | Mouse wheel → one direction callback per gesture; collapses the burst one scroll produces.                                            |
+| `WheelController`       | `{ attach; detach }`                                                                | Returned by `createWheelController`. `attach(target?)` listens `wheel` (default `window`), `detach()` stops + drops pending callback. |
+| `WheelControllerConfig` | `{ debounceMs?; deltaThreshold? }`                                                  | Options: quiet time ending a gesture (default `200` ms), smallest delta counted (default `10` px).                                    |
+| `WheelControllerEvents` | `{ onWheel: (direction: WheelDirection, event: WheelEvent) => void }`               | Callback once per scroll gesture.                                                                                                     |
+| `WheelDirection`        | `'up' \| 'down' \| 'left' \| 'right'`                                               | Wheel gesture direction.                                                                                                              |
 
 ## Content Loading
 
@@ -188,6 +233,28 @@ Low-level helpers for DOM event management + deterministic cleanup. Used interna
 | `createDisposableList` | `() => DisposableList`                             | Composable list of disposers. `dispose()` runs all.                                                                                                                                                                       |
 | `createBodyLock`       | `() => BodyLock`                                   | Ref-counted body scroll lock. Multiple consumers lock at once; scroll restored when all unlock.                                                                                                                           |
 | `sharedBodyLock`       | `BodyLock`                                         | Module-level singleton. Use when multiple components share one ref counter so nested modals/overlays interleave right. Framework bindings (`@reelkit/react`, `@reelkit/vue`, `@reelkit/angular`) use this under the hood. |
+
+## Utilities
+
+Small helpers the controllers are built from. Framework bindings re-export them → custom slide, transition, integration can use same ones.
+
+| Export             | Type                                                          | Description                                                                                                                                  |
+| ------------------ | ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `first`            | `<T>(arr: readonly T[]) => T`                                 | First element, e.g. x of an `Offset`, width of a size.                                                                                       |
+| `last`             | `<T>(arr: readonly T[]) => T`                                 | Last element, e.g. y of an `Offset`, height of a size.                                                                                       |
+| `generate`         | `<G>(count, generator: (i) => G) => G[]`                      | Array of `count` items from index, e.g. `generate(10, (i) => i)` for demo data.                                                              |
+| `abs`              | `(value: number) => number`                                   | Absolute value.                                                                                                                              |
+| `isNegative`       | `(value: number) => boolean`                                  | Below zero? e.g. backward vs forward drag.                                                                                                   |
+| `clamp`            | `(value, min, max) => number`                                 | Keep number within `min`..`max`, inclusive.                                                                                                  |
+| `lerp`             | `(t, a, b) => number`                                         | Linear interpolation: `a` at `t = 0`, `b` at `t = 1`. Map slide progress to a value in custom transitions.                                   |
+| `extractRange`     | `(count, start, end?, overscan?, loop?) => number[]`          | Indexes `start`..`end` (default `start`) + `overscan` each side (default `1`), wrapped when `loop`. Build a custom `RangeExtractor` with it. |
+| `noop`             | `() => void`                                                  | Does nothing; default callback.                                                                                                              |
+| `createDeferred`   | `<T = void>() => Deferred<T>`                                 | Promise + its `resolve`, bridging callback API to `await`.                                                                                   |
+| `Deferred`         | `{ promise: Promise<T>; resolve: (value?: T) => void }`       | Returned by `createDeferred`.                                                                                                                |
+| `createLruCache`   | `<V>(maxSize, onEvict?: (value, key) => void) => LruCache<V>` | `Map` keeping `maxSize` most recently set entries, dropping oldest. `onEvict` per dropped entry, e.g. `URL.revokeObjectURL`.                 |
+| `LruCache`         | `Map<string, V>`                                              | Returned by `createLruCache`. Real `Map`; only `set` differs.                                                                                |
+| `animate`          | `(options: AnimationOptions) => () => void`                   | Animate number `from` → `to`, ease-in-out, `onUpdate` per frame. Returns cancel fn.                                                          |
+| `AnimationOptions` | `{ from; to; duration; onUpdate; onComplete? }`               | Options of `animate`: start, end, duration ms, per-frame callback, optional finish callback.                                                 |
 
 ## Size Detection
 

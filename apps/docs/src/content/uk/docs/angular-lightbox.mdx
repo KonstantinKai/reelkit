@@ -139,8 +139,8 @@ import download from '../../snippets/angular-lightbox/download.ts?raw';
 | \[rkLightboxNavigation\] | `LightboxNavContext` | Замінює стрілки навігації вперед і назад |
 | \[rkLightboxInfo\] | `LightboxInfoContext` | Замінює нижній градієнтний оверлей із заголовком та описом |
 | \[rkLightboxSlide\] | `LightboxSlideContext` | Замінює вміст окремого слайда (обов’язково для слайдів-відео) |
-| \[rkLightboxLoading\] | `{ $implicit: activeIndex, item }` | Власний індикатор завантаження |
-| \[rkLightboxError\] | `{ $implicit: activeIndex, item }` | Власний індикатор помилки |
+| \[rkLightboxLoading\] | `LightboxLoadingContext` | Власний індикатор завантаження; клас директиви — `RkLightboxLoadingDirective` |
+| \[rkLightboxError\] | `LightboxErrorContext` | Власний індикатор помилки; клас директиви — `RkLightboxErrorDirective` |
 
 <CodeBlock code={templateSlots} language="typescript" />
 
@@ -230,6 +230,7 @@ Pass `hashCodec: base64UrlCodec` щоб закодувати id в URL у base64
 | --- | --- | --- | --- |
 | `RkPlayPauseButtonComponent` | `rk-play-pause-button` | `[playing]`, `(toggled)` | Перемикач слайдшоу (іконка Play або Pause, `aria-pressed` під час відтворення). Стандартні елементи керування показують його з `autoAdvance`. |
 | `RkDownloadButtonComponent` | `rk-download-button` | `[downloading]`, `(pressed)` | Кнопка завантаження, вимкнена, поки `downloading`. Стандартні елементи керування показують її з `showDownload`. |
+| `RkSoundButtonComponent` | `rk-sound-button` | `[muted]`, `(toggled)` | Перемикач звуку для відео-елементів. Стандартні елементи керування показують його на слайді-відео; розмістіть його у власному шаблоні `rkLightboxControls`, щоб зберегти. |
 
 ## Входи RkLightboxUrlOverlayComponent [#rklightboxurloverlaycomponent-inputs]
 
@@ -262,6 +263,8 @@ Pass `hashCodec: base64UrlCodec` щоб закодувати id в URL у base64
 | `showDownload` | `boolean` | false | Додає кнопку завантаження для активного елемента. Див. [Завантаження](#download). |
 | `ariaLabel` | `string` | 'Image gallery' | Доступна назва області діалогу |
 
+Входи слайдера вище (`transitionDuration`, `swipeDistanceFactor`, `loop`, `enableNavKeys`, `enableWheel`, `wheelDebounceMs`) типізує `ReelProxyProps`. Типізуйте ним компонент-обгортку, що передає їх у lightbox.
+
 ## Виходи RkLightboxOverlayComponent [#rklightboxoverlaycomponent-outputs]
 
 | Output | Тип | Опис |
@@ -291,6 +294,8 @@ Pass `hashCodec: base64UrlCodec` щоб закодувати id в URL у base64
 | `LightboxNavContext` | `{ item, onPrev, onNext, activeIndex, count }` |
 | `LightboxInfoContext` | `{ $implicit: LightboxItem, index }` |
 | `LightboxSlideContext` | `{ $implicit: LightboxItem, index, size: [number, number], isActive, autoAdvance, onReady, onWaiting, onError, onEnded }` |
+| `LightboxLoadingContext` | `{ $implicit: activeIndex, item }` — що отримує шаблон `rkLightboxLoading` |
+| `LightboxErrorContext` | `{ $implicit: activeIndex, item }` — що отримує шаблон `rkLightboxError` |
 
 ## Переходи [#transitions]
 

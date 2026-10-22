@@ -139,8 +139,8 @@ styles और standalone `RkLightboxOverlayComponent` कंपोनेंट �
 | \[rkLightboxNavigation\] | `LightboxNavContext` | prev/next नेविगेशन तीर बदलें |
 | \[rkLightboxInfo\] | `LightboxInfoContext` | नीचे का शीर्षक/विवरण gradient overlay बदलें |
 | \[rkLightboxSlide\] | `LightboxSlideContext` | अलग-अलग स्लाइड का कंटेंट बदलें (वीडियो स्लाइड के लिए ज़रूरी) |
-| \[rkLightboxLoading\] | `{ $implicit: activeIndex, item }` | कस्टम लोडिंग इंडिकेटर |
-| \[rkLightboxError\] | `{ $implicit: activeIndex, item }` | कस्टम एरर इंडिकेटर |
+| \[rkLightboxLoading\] | `LightboxLoadingContext` | कस्टम लोडिंग इंडिकेटर; directive class `RkLightboxLoadingDirective` है |
+| \[rkLightboxError\] | `LightboxErrorContext` | कस्टम एरर इंडिकेटर; directive class `RkLightboxErrorDirective` है |
 
 <CodeBlock code={templateSlots} language="typescript" />
 
@@ -230,6 +230,7 @@ URL में id को base64url में encode करने के लिए
 | --- | --- | --- | --- |
 | `RkPlayPauseButtonComponent` | `rk-play-pause-button` | `[playing]`, `(toggled)` | स्लाइडशो टॉगल (Play/Pause आइकन, चलते समय `aria-pressed`)। `autoAdvance` के साथ डिफ़ॉल्ट कंट्रोल इसे दिखाते हैं। |
 | `RkDownloadButtonComponent` | `rk-download-button` | `[downloading]`, `(pressed)` | डाउनलोड बटन, `downloading` के दौरान disabled। `showDownload` के साथ डिफ़ॉल्ट कंट्रोल इसे दिखाते हैं। |
+| `RkSoundButtonComponent` | `rk-sound-button` | `[muted]`, `(toggled)` | वीडियो आइटम के लिए mute टॉगल। वीडियो स्लाइड पर डिफ़ॉल्ट कंट्रोल इसे दिखाते हैं; इसे बनाए रखने के लिए अपने `rkLightboxControls` template में रखें। |
 
 ## RkLightboxUrlOverlayComponent के inputs [#rklightboxurloverlaycomponent-inputs]
 
@@ -262,6 +263,8 @@ URL में id को base64url में encode करने के लिए
 | `showDownload` | `boolean` | false | सक्रिय आइटम के लिए डाउनलोड बटन जोड़ें। [डाउनलोड](#download) देखें। |
 | `ariaLabel` | `string` | 'Image gallery' | dialog क्षेत्र का सुलभ लेबल |
 
+ऊपर के स्लाइडर inputs (`transitionDuration`, `swipeDistanceFactor`, `loop`, `enableNavKeys`, `enableWheel`, `wheelDebounceMs`) `ReelProxyProps` से टाइप होते हैं। इन्हें lightbox तक आगे भेजने वाले wrapper कंपोनेंट को टाइप करने के लिए इसका इस्तेमाल करें।
+
 ## RkLightboxOverlayComponent के outputs [#rklightboxoverlaycomponent-outputs]
 
 | Output | टाइप | विवरण |
@@ -291,6 +294,8 @@ URL में id को base64url में encode करने के लिए
 | `LightboxNavContext` | `{ item, onPrev, onNext, activeIndex, count }` |
 | `LightboxInfoContext` | `{ $implicit: LightboxItem, index }` |
 | `LightboxSlideContext` | `{ $implicit: LightboxItem, index, size: [number, number], isActive, autoAdvance, onReady, onWaiting, onError, onEnded }` |
+| `LightboxLoadingContext` | `{ $implicit: activeIndex, item }` — `rkLightboxLoading` template को जो मिलता है |
+| `LightboxErrorContext` | `{ $implicit: activeIndex, item }` — `rkLightboxError` template को जो मिलता है |
 
 ## ट्रांज़िशन [#transitions]
 

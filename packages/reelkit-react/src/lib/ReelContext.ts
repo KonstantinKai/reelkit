@@ -16,7 +16,11 @@ export interface ReelContextValue {
   goTo: (index: number, animate?: boolean) => Promise<void>;
 }
 
-/** @internal */
+/**
+ * The React context a `Reel` provides to its children. Read it through
+ * {@link useReelContext}; reach for the context object itself only to
+ * provide a value of your own, for example in a test or a custom wrapper.
+ */
 export const ReelContext = createContext<ReelContextValue | null>(null);
 
 /**

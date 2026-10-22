@@ -142,7 +142,7 @@ Mit sechs benannten Scoped Slots lässt sich jede Fläche des Overlays anpassen.
 
 ## Video-Unterstützung [#video-support]
 
-Video-Slides sind optional, damit das Standard-Bundle frei von Audio- und Video-Logik bleibt. Rufe `useVideoSlideRenderer(items)` auf und gib die zurückgegebenen `VideoSlideRenderer` / `VideoControlsRenderer` an die Slots `#slide` und `#controls` des Overlays weiter. Umschließe das Overlay mit dem zurückgegebenen `SoundProvider`, damit der eingebaute Ton-Schalter einen Kontext hat.
+Video-Slides sind optional, damit das Standard-Bundle frei von Audio- und Video-Logik bleibt. Rufe `useVideoSlideRenderer(items)` auf und gib die zurückgegebenen `VideoSlideRenderer` / `VideoControlsRenderer` an die Slots `#slide` und `#controls` des Overlays weiter. Umschließe das Overlay mit dem zurückgegebenen `SoundProvider`, damit der eingebaute Ton-Schalter einen Kontext hat. Das zurückgegebene Objekt hat den Typ `UseVideoSlideRendererResult`: `SoundProvider`, `hasVideo`, `VideoSlideRenderer` und `VideoControlsRenderer`.
 
 <CodeBlock code={videoOptInCode} language="vue" />
 
@@ -233,6 +233,18 @@ Ein eigener Slot `#controls` erhält `isDownloading` und, nur wenn `show-downloa
 | --- | --- | --- |
 | `PlayPauseButton` | `PlayPauseButtonProps`: `isPlaying`, `onPress`, `className?` | Schalter für die Diashow (Icon Play/Pause, `aria-pressed` während der Wiedergabe). Wird von den Standard-Controls mit `auto-advance` angezeigt. |
 | `DownloadButton` | `DownloadButtonProps`: `isDownloading`, `onPress`, `className?` | Download-Button, deaktiviert solange `isDownloading`. Wird von den Standard-Controls mit `show-download` angezeigt. |
+| `CloseButton` | `CloseButtonProps`: `onPress`, `className?` | Standard-Schließen-Button, den die Leiste der Controls rendert; setze ihn in deinen eigenen Slot `#controls`, um das eingebaute Aussehen zu behalten. |
+| `Counter` | `CounterProps`: `currentIndex`, `count`, `className?` | Standardzähler "3 / 10" als Chip; setze ihn in deinen eigenen Slot `#controls`, um das eingebaute Aussehen zu behalten. |
+| `FullscreenButton` | `FullscreenButtonProps`: `isFullscreen`, `onPress`, `className?` | Standard-Schalter für das Vollbild; sein Icon folgt `isFullscreen`. |
+| `SoundButton` | `SoundButtonProps`: `isMuted`, `onPress`, `className?` | Standard-Schalter für den Ton bei Video-Elementen; sein Icon folgt `isMuted`. |
+
+### Teile für Slides und Navigation [#slide-parts]
+
+| Komponente | Props | Beschreibung |
+| --- | --- | --- |
+| `ImageSlide` | `ImageSlideProps`: `src`, `alt?`, `isActive`, `onReady?`, `onLoadError?` | Standard-Bild-Slide, den das Overlay rendert; setze ihn in deinen eigenen Slot `#slide`, um für Bild-Elemente das eingebaute Aussehen zu behalten. |
+| `LightboxVideoSlide` | `LightboxVideoSlideProps`: `src`, `poster?`, `isActive`, `size`, `slideKey`, `loop?`, `onPlaying?`, `onWaiting?`, `onLoadError?` | Standard-Video-Slide, der über das gemeinsame `<video>`-Element abspielt; `useVideoSlideRenderer` rendert ihn für dich. |
+| `LightboxNavigation` | `LightboxNavigationProps`: `activeIndex`, `count`, `loop?`, `onPrev`, `onNext` | Standardpfeile für zurück und weiter; setze sie in deinen eigenen Slot `#navigation`, um das eingebaute Aussehen zu behalten. |
 
 ## API-Referenz [#api-reference]
 

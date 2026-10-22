@@ -6,3 +6,11 @@ export function publicExportNames(src: string): {
   valueNames: string[];
   hasStarExport: boolean;
 };
+export function internalExportNames(
+  indexSrc: string,
+  resolve: (
+    fromDir: string,
+    specifier: string,
+  ) => { src: string; dir: string } | null,
+  indexDir: string,
+): string[];

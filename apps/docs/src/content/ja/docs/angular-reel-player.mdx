@@ -116,17 +116,31 @@ import theming from '../../snippets/angular-reel-player/theming.css?raw';
 
 | ディレクティブ | コンテキストの型 | 説明 |
 | --- | --- | --- |
-| \[rkPlayerControls\] | `PlayerControlsContext<T>` | 独自のグローバルなコントロールバー（閉じる、サウンド切り替えなど） |
-| \[rkPlayerError\] | `{ $implicit: activeIndex, item, innerActiveIndex }` | 独自のエラー表示のテンプレートスロット |
-| \[rkPlayerLoading\] | `{ $implicit: activeIndex, item, innerActiveIndex }` | 独自の読み込み表示のテンプレートスロット |
-| \[rkPlayerNavigation\] | `PlayerNavigationContext` | 独自の前後のナビゲーション矢印 |
-| \[rkPlayerNestedNavigation\] | `PlayerNestedNavigationContext` | 内側の横方向のスライダー用の独自のナビゲーション矢印 |
-| \[rkPlayerNestedSlide\] | `PlayerNestedSlideContext` | 内側の横方向のスライダーの各スライドの独自の内容 |
-| \[rkPlayerSlide\] | `PlayerSlideContext<T>` | デフォルトのメディアスライドを置き換える、完全に独自のスライドの内容 |
-| \[rkPlayerSlideOverlay\] | `PlayerSlideOverlayContext<T>` | スライドごとのオーバーレイ（作者の情報、いいね、説明など） |
-| \[rkPlayerTimeline\] | `PlayerTimelineContext<T>` | 独自の再生タイムラインバー。条件（タイムラインのモードと最小の長さ）がデフォルトのバーを描画する場合だけ描画されます（同じ auto/always/never の判定）。 |
+| \[rkPlayerControls\] | `PlayerControlsContext<T>` | 独自のグローバルなコントロールバー（閉じる、サウンド切り替えなど）。ディレクティブのクラスは `RkPlayerControlsDirective` です |
+| \[rkPlayerError\] | `PlayerErrorContext` | 独自のエラー表示のテンプレートスロット。ディレクティブのクラスは `RkPlayerErrorDirective` です |
+| \[rkPlayerLoading\] | `PlayerLoadingContext` | 独自の読み込み表示のテンプレートスロット。ディレクティブのクラスは `RkPlayerLoadingDirective` です |
+| \[rkPlayerNavigation\] | `PlayerNavigationContext` | 独自の前後のナビゲーション矢印。ディレクティブのクラスは `RkPlayerNavigationDirective` です |
+| \[rkPlayerNestedNavigation\] | `PlayerNestedNavigationContext` | 内側の横方向のスライダー用の独自のナビゲーション矢印。ディレクティブのクラスは `RkPlayerNestedNavigationDirective` です |
+| \[rkPlayerNestedSlide\] | `PlayerNestedSlideContext` | 内側の横方向のスライダーの各スライドの独自の内容。ディレクティブのクラスは `RkPlayerNestedSlideDirective` です |
+| \[rkPlayerSlide\] | `PlayerSlideContext<T>` | デフォルトのメディアスライドを置き換える、完全に独自のスライドの内容。ディレクティブのクラスは `RkPlayerSlideDirective` です |
+| \[rkPlayerSlideOverlay\] | `PlayerSlideOverlayContext<T>` | スライドごとのオーバーレイ（作者の情報、いいね、説明など）。ディレクティブのクラスは `RkPlayerSlideOverlayDirective` です |
+| \[rkPlayerTimeline\] | `PlayerTimelineContext<T>` | 独自の再生タイムラインバー。条件（タイムラインのモードと最小の長さ）がデフォルトのバーを描画する場合だけ描画されます（同じ auto/always/never の判定）。ディレクティブのクラスは `RkPlayerTimelineDirective` です |
+
+`PLAYER_TEMPLATE_SLOT_DIRECTIVES` はこれらのディレクティブをすべてまとめたものなので、コンポーネントの `imports` に一度に展開できます。
 
 <CodeBlock code={templateSlots} language="typescript" />
+
+### デフォルトのスライドコンポーネント [#default-slide-components]
+
+デフォルトのスライドを組み立てている部品です。どれもスタンドアロンのコンポーネントなので、自分のテンプレートの中で使えばデフォルトの見た目の一部を保てます。
+
+| コンポーネント | セレクター | 説明 |
+| --- | --- | --- |
+| `RkMediaSlideComponent` | `rk-media-slide` | デフォルトのスライドです。コンテンツの要素の `media` に応じて `rk-image-slide`、`rk-video-slide`、`rk-nested-slider` を描画します。`rkPlayerSlide` テンプレートで使えば、デフォルトのメディアを保ったまま独自のレイヤーを上に重ねられます。 |
+| `RkImageSlideComponent` | `rk-image-slide` | `object-fit: cover` の画像 1 枚です。読み込むまでは `poster` を表示し、`onReady`、`onWaiting`、`onError` を呼びます。 |
+| `RkVideoSlideComponent` | `rk-video-slide` | 共有の `<video>` 要素で再生する動画 1 本です。オーバーレイが提供する `SoundStateService` が必要なので、プレイヤーの中でだけ描画してください。 |
+| `RkNestedSliderComponent` | `rk-nested-slider` | 複数の `media` を持つコンテンツの要素のための、インジケーターのドット付きの横方向のスライダーです。 |
+| `RkSlideOverlayComponent` | `rk-slide-overlay` | デフォルトの下部のオーバーレイです。`author`、`description`、`likes` の入力から、作者のアバターと名前、説明、いいねを表示します。`rkPlayerSlideOverlay` テンプレートで使えばデフォルトの見た目を保てます。 |
 
 ### 独自のタイムライン [#custom-timeline]
 
@@ -264,7 +278,7 @@ import theming from '../../snippets/angular-reel-player/theming.css?raw';
 | `isOpen` | `boolean` | 必須 | オーバーレイの表示を制御します。false のときオーバーレイは DOM から取り除かれます |
 | `loop` | `boolean` | false | スライド間の無限ループを有効にします |
 | `swipeDistanceFactor` | `number` | 0.12 | スライドを切り替えるのに必要なスワイプ距離の最小の割合 |
-| `timeline` | `'auto' \| 'always' \| 'never'` | 'auto' | 組み込みの再生タイムラインバーの表示条件。'auto' は timelineMinDurationSeconds より長い動画でだけ表示し、'always' はアクティブなスライドに動画があれば常に表示し、'never' は組み込みのバーを無効にします（完全に置き換えるには rkPlayerTimeline のテンプレートスロットを使います）。 |
+| `timeline` | `TimelineMode` (`'auto' \| 'always' \| 'never'`) | 'auto' | 組み込みの再生タイムラインバーの表示条件。'auto' は timelineMinDurationSeconds より長い動画でだけ表示し、'always' はアクティブなスライドに動画があれば常に表示し、'never' は組み込みのバーを無効にします（完全に置き換えるには rkPlayerTimeline のテンプレートスロットを使います）。 |
 | `timelineMinDurationSeconds` | `number` | 30 | timeline='auto' で組み込みのバーを表示する動画の最小の長さ（秒）。これより短いループ動画では表示されません。 |
 | `transitionDuration` | `number` | 300 | スライドのアニメーションの長さ（ms） |
 | `wheelDebounceMs` | `number` | 200 | ホイールイベントのデバウンス時間（ms） |
@@ -291,7 +305,7 @@ import theming from '../../snippets/angular-reel-player/theming.css?raw';
 | フィールド | 型 | 説明 |
 | --- | --- | --- |
 | `id` | `string` | メディアアイテムの一意の識別子 |
-| `type` | `'image' \| 'video'` | メディアの種類 |
+| `type` | `MediaType` | メディアの種類：`'image' \| 'video'` |
 | `src` | `string` | メディアの URL |
 | `poster` | `string?` | 動画アイテムのポスターのサムネイルの URL |
 | `aspectRatio` | `number` | 幅と高さの比。\< 1 は縦長（cover）、> 1 は横長（contain）を表します |
@@ -308,6 +322,9 @@ import theming from '../../snippets/angular-reel-player/theming.css?raw';
 | `PlayerSlideOverlayContext<T>` | `{ $implicit: T, index, isActive }` |
 | `PlayerTimelineContext<T>` | `{ $implicit: T, activeIndex, timelineState: PlayerTimelineState }` |
 | `PlayerTimelineState` | `{ duration(), currentTime(), progress(), bufferedRanges(), isScrubbing(), seek(t), bindInteractions(el) }` |
+| `PlayerBufferedRange` | `{ start, end }`（秒）。`bufferedRanges()` の 1 つの要素 |
+| `PlayerLoadingContext` | `{ $implicit: activeIndex, item, innerActiveIndex }`。`rkPlayerLoading` テンプレートが受け取るもの。ネストしたスライダーの外では `innerActiveIndex` は `null` |
+| `PlayerErrorContext` | `{ $implicit: activeIndex, item, innerActiveIndex }`。`rkPlayerError` テンプレートが受け取るもの |
 
 ## CSS クラス [#css-classes]
 

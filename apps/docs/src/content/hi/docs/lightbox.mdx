@@ -336,7 +336,7 @@ URL में id को base64url में encode करने के लिए
 
 ### Reel के props (आगे भेजे गए) [#reel-props-proxied]
 
-ये props अंदर के [Reel](/docs/react/api#reel-props) कंपोनेंट को आगे भेजे जाते हैं।
+ये props अंदर के [Reel](/docs/react/api#reel-props) कंपोनेंट को आगे भेजे जाते हैं। इनका टाइप `ReelProxyProps` है, Reel props का वह हिस्सा जो overlay आगे भेजता है; इन्हें आगे भेजने वाले wrapper को टाइप करने के लिए इसका इस्तेमाल करें।
 
 | Prop | टाइप | डिफ़ॉल्ट | विवरण |
 | --- | --- | --- | --- |
@@ -376,25 +376,25 @@ URL में id को base64url में encode करने के लिए
 
 ### CloseButton [#closebutton]
 
-डिफ़ॉल्ट X बंद करने का बटन।
+डिफ़ॉल्ट X बंद करने का बटन। Props (`CloseButtonProps`): `onClick`, वैकल्पिक `className` और `style`।
 
 <CodeBlock code={closebutton} language="tsx" />
 
 ### Counter [#counter]
 
-"1 / 3" दिखाने वाली इमेज काउंटर pill।
+"1 / 3" दिखाने वाली इमेज काउंटर pill। Props (`CounterProps`): `currentIndex` (शून्य से शुरू), `count`, वैकल्पिक `className` और `style`।
 
 <CodeBlock code={counter} language="tsx" />
 
 ### FullscreenButton [#fullscreenbutton]
 
-फ़ुलस्क्रीन टॉगल बटन (Maximize/Minimize आइकन)।
+फ़ुलस्क्रीन टॉगल बटन (Maximize/Minimize आइकन)। Props (`FullscreenButtonProps`): `isFullscreen`, `onToggle`, वैकल्पिक `className` और `style`।
 
 <CodeBlock code={fullscreenbutton} language="tsx" />
 
 ### SoundButton [#soundbutton]
 
-वीडियो स्लाइड के लिए mute/unmute टॉगल बटन (Volume2/VolumeX आइकन)। `useVideoSlideRenderer` से मिले `renderControls` में अपने-आप शामिल है। कस्टम कंट्रोल के अंदर अलग से इस्तेमाल के लिए `useSoundState` से साउंड स्टेट तक पहुँचें।
+वीडियो स्लाइड के लिए mute/unmute टॉगल बटन (Volume2/VolumeX आइकन)। `useVideoSlideRenderer` से मिले `renderControls` में अपने-आप शामिल है। कस्टम कंट्रोल के अंदर अलग से इस्तेमाल के लिए `useSoundState` से साउंड स्टेट तक पहुँचें। Props (`SoundButtonProps`): `isMuted`, `onToggle`, वैकल्पिक `className` और `style`।
 
 <CodeBlock code={soundbutton} language="tsx" />
 
@@ -414,7 +414,9 @@ URL में id को base64url में encode करने के लिए
 
 ### useVideoSlideRenderer [#usevideosliderenderer]
 
-opt-in वीडियो सपोर्ट का hook। `renderSlide`, `renderControls` और `SoundProvider` लौटाता है — overlay को SoundProvider में लपेटें और रेंडर फ़ंक्शन पास करें।
+opt-in वीडियो सपोर्ट का hook। `renderSlide`, `renderControls` और `SoundProvider` लौटाता है — overlay को SoundProvider में लपेटें और रेंडर फ़ंक्शन पास करें। लौटाया गया टाइप `UseVideoSlideRendererResult` है, जिसमें `hasVideo` भी है; किसी भी आइटम का `type: 'video'` होने पर यह true होता है।
+
+इसका `renderSlide` वीडियो आइटम `LightboxVideoSlide` से बनाता है, यानी ऐसी वीडियो स्लाइड जो एक साझा `<video>` एलिमेंट से चलती है, ताकि iOS पर साउंड काम करता रहे, और हर वीडियो की स्थिति याद रखती है। इसे ख़ुद सिर्फ़ कस्टम `renderSlide` से रेंडर करें। इसके props (`LightboxVideoSlideProps`) हैं `src`, `poster`, `isActive`, `size`, `slideKey` (सहेजी गई स्थिति और लिए गए फ़्रेम की key), `loop` (डिफ़ॉल्ट true) और `onPlaying`, `onWaiting`, `onError`, `onEnded` callbacks।
 
 <CodeBlock code={usevideosliderenderer} language="typescript" />
 

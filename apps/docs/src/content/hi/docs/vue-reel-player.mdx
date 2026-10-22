@@ -288,6 +288,13 @@ URL में id को base64url में encode करने के लिए
 | `poster` | `string?` | वीडियो आइटम के poster थंबनेल का URL |
 | `aspectRatio` | `number` | चौड़ाई/ऊँचाई अनुपात। \< 1 = वर्टिकल (cover), ≥ 1 = हॉरिज़ॉन्टल (contain)। |
 
+### Unions [#unions]
+
+| टाइप | मान | विवरण |
+| --- | --- | --- |
+| `MediaType` | `'image' \| 'video'` | किसी `MediaItem` का प्रकार; तय करता है कि स्लाइड `ImageSlide` रेंडर करे या `VideoSlide`। |
+| `TimelineMode` | `'auto' \| 'always' \| 'never'` | `timeline` prop का मान: `'auto'` `timelineMinDurationSeconds` से लंबे वीडियो पर बार दिखाता है, `'always'` हर वीडियो पर, `'never'` उसे छिपाता है। |
+
 ## सब-कंपोनेंट [#sub-components]
 
 इन्हें अपने कस्टम `#controls`, `#slide` या `#slideOverlay` templates में डालें। slot scope से आकार और callbacks आगे पास करें, ताकि autoplay, poster कैप्चर और साउंड sync काम करते रहें।
@@ -303,6 +310,14 @@ reel प्लेयर की डिफ़ॉल्ट styling वाला अ
 Mute/unmute टॉगल। इसे `SoundProvider` के अंदर रेंडर करें (`ReelPlayerOverlay` एक देता है)। सक्रिय स्लाइड में वीडियो न हो तो छिपा रहता है।
 
 <CodeBlock code={soundbutton} language="vue" />
+
+### PlayerControls [#playercontrols]
+
+`#controls` slot न दिए जाने पर overlay जो डिफ़ॉल्ट कंट्रोल रेंडर करता है: एक `CloseButton` और, `show-sound` के साथ, एक `SoundButton`। Props: `showSound`, `soundDisabled` (साउंड बटन को धुंधला करता है) और `onClose`। अतिरिक्त बटनों के साथ बिल्ट-इन रूप बनाए रखने के लिए इसे अपने `#controls` slot के अंदर रखें।
+
+### LoadingIndicator और ErrorIndicator [#loading-and-error-indicators]
+
+`LoadingIndicator` मीडिया buffer होते समय दिखने वाला पूरी स्लाइड का wave loader है; `ErrorIndicator` मीडिया लोड न होने पर दिखने वाला डिफ़ॉल्ट संदेश है। कोई भी props नहीं लेता। अतिरिक्त कंटेंट के आसपास बिल्ट-इन रूप बनाए रखने के लिए इन्हें अपने `#loading` या `#error` slot से रेंडर करें।
 
 ### TimelineBar [#timelinebar]
 
@@ -363,6 +378,15 @@ Overlay सक्रिय वीडियो के ऊपर एक बिल�
 <CodeBlock code={timeline} language="vue" />
 
 `--rk-reel-timeline-*` CSS custom properties से थीम करें।
+
+slot के बाहर वही कंट्रोलर एक composable से पढ़ें:
+
+| Export | विवरण |
+| --- | --- |
+| `useTimelineState()` | सबसे पास वाला `TimelineController` लौटाता है; `TimelineProvider` (जिसे overlay लगाता है) के बाहर एरर देता है। |
+| `useTimelineStateOptional()` | `useTimelineState` जैसा ही, पर `TimelineProvider` के बाहर एरर की जगह `null` लौटाता है — उन कंपोनेंट के लिए जो overlay के बाहर भी रेंडर हो सकते हैं। |
+| `RK_TIMELINE_KEY` | injection key, जिसे दोनों composables पढ़ते हैं; अपने कंट्रोलर से `TimelineBar` चलाने के लिए इसे ख़ुद `provide` करें। |
+| `useViewportSize(aspectRatio)` | reactive `[width, height]`, जिससे overlay अपना साइज़ तय करता है: डेस्कटॉप पर दिया गया aspect ratio, 768px या उससे कम चौड़ाई पर पूरा viewport। mount होने तक `[0, 0]` लौटाता है, इसलिए SSR के दौरान सुरक्षित है। |
 
 ## साउंड context [#sound-context]
 

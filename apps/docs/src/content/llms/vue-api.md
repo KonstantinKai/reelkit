@@ -101,6 +101,51 @@ Type: `ReelIndicatorProps`
 | ---------- | ----------------- | ------------------------------- |
 | `dotClick` | `(index: number)` | Dot clicked; provides dot index |
 
+## Observe
+
+`<Observe :signals="[…]">` — re-renders ONLY its default slot when one of the signals changes.
+
+Reading core signal in render/template does not subscribe. `toVueRef` binds signal to whole component → every change re-renders all of it. `Observe` = narrower boundary, region only. Stories player uses it to repaint header + progress bar without redrawing sliders.
+
+| Prop      | Type                      | Notes                                                                      |
+| --------- | ------------------------- | -------------------------------------------------------------------------- |
+| `signals` | `readonly Subscribable[]` | different set → subscription swapped; same set → kept; released on unmount |
+
+Props type exported `ObserveProps`.
+
+```vue
+<template>
+  <Observe :signals="[timer.progress]">
+    <progress :value="timer.progress.value" max="1" />
+  </Observe>
+</template>
+```
+
+Whole component follows signal → `toVueRef`. Only a region → `Observe`.
+
+## SoundProvider
+
+`<SoundProvider>` creates a `SoundController` instance and provides it to descendants via `RK_SOUND_KEY`. Renders its default slot transparently.
+
+```vue
+<script setup lang="ts">
+import { Reel, SoundProvider } from '@reelkit/vue';
+
+const items = [];
+</script>
+
+<template>
+  <SoundProvider>
+    <Reel :count="items.length">
+      <template #item="{ index }">
+        <VideoSlide :index="index" />
+      </template>
+      <MuteButton />
+    </Reel>
+  </SoundProvider>
+</template>
+```
+
 ## useSwipeToClose Props (composable)
 
 For overlay packages dismissed via vertical swipe. The `<SwipeToClose>` component wraps its default slot in a touch-aware container that can be swiped to dismiss.
@@ -183,51 +228,6 @@ const ctx = useReelContext();
 - `useFullscreen(options)` — manages the Fullscreen API with cross-browser support; exits fullscreen automatically on unmount. Takes `UseFullscreenOptions` (`elementRef`) and returns `UseFullscreenReturn`: `isFullscreen` (`Signal<boolean>`), `request()`, `exit()`, `toggle()`.
 - `useSoundState()` — reads the current `SoundController` from context. Must be called inside a `<SoundProvider>`; throws when called outside.
 
-## Observe
-
-`<Observe :signals="[…]">` — re-renders ONLY its default slot when one of the signals changes.
-
-Reading core signal in render/template does not subscribe. `toVueRef` binds signal to whole component → every change re-renders all of it. `Observe` = narrower boundary, region only. Stories player uses it to repaint header + progress bar without redrawing sliders.
-
-| Prop      | Type                      | Notes                                                                      |
-| --------- | ------------------------- | -------------------------------------------------------------------------- |
-| `signals` | `readonly Subscribable[]` | different set → subscription swapped; same set → kept; released on unmount |
-
-Props type exported `ObserveProps`.
-
-```vue
-<template>
-  <Observe :signals="[timer.progress]">
-    <progress :value="timer.progress.value" max="1" />
-  </Observe>
-</template>
-```
-
-Whole component follows signal → `toVueRef`. Only a region → `Observe`.
-
-## SoundProvider
-
-`<SoundProvider>` creates a `SoundController` instance and provides it to descendants via `RK_SOUND_KEY`. Renders its default slot transparently.
-
-```vue
-<script setup lang="ts">
-import { Reel, SoundProvider } from '@reelkit/vue';
-
-const items = [];
-</script>
-
-<template>
-  <SoundProvider>
-    <Reel :count="items.length">
-      <template #item="{ index }">
-        <VideoSlide :index="index" />
-      </template>
-      <MuteButton />
-    </Reel>
-  </SoundProvider>
-</template>
-```
-
 ## asGenericPropKeys
 
 Generic setup-function components (Vue ≥3.3). `defineComponent(<T>(props: Props<T>) => …, options)` keeps `T` only when `options.props` is a list of prop names; a props object makes Vue read types from the object and `T` is lost. `asGenericPropKeys<Props<Base>>(propsObject)` returns the object unchanged, typed as the key list → `T` inferred from the bound prop, runtime defaults / validation / boolean casting kept. Slots + emits cannot use `T` — annotate slot scopes in the template. Used by `ReelPlayerOverlay` and `StoriesOverlay`.
@@ -260,6 +260,10 @@ export const Feed = defineComponent(
   { name: 'Feed', props: asGenericPropKeys<FeedProps<Item>>(feedProps) },
 );
 ```
+
+### hasRenderedNodes
+
+`hasRenderedNodes(nodes)` → `true` when a slot result renders real DOM. For components that fall back to their own rendering when a slot is empty (the overlays do). A false `v-if` in a slot still returns a comment node → length check would wrongly skip the fallback. Unwraps fragments, ignores comments, `false` for `null` / `undefined`. Branch on `hasRenderedNodes(slots.controls?.(scope))`.
 
 ## Helpers re-exported from core
 

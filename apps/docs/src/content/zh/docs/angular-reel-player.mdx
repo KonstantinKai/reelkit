@@ -116,17 +116,31 @@ import theming from '../../snippets/angular-reel-player/theming.css?raw';
 
 | 指令 | 上下文类型 | 说明 |
 | --- | --- | --- |
-| \[rkPlayerControls\] | `PlayerControlsContext<T>` | 自定义全局控件栏（关闭、声音开关等） |
-| \[rkPlayerError\] | `{ $implicit: activeIndex, item, innerActiveIndex }` | 自定义错误提示模板插槽 |
-| \[rkPlayerLoading\] | `{ $implicit: activeIndex, item, innerActiveIndex }` | 自定义加载提示模板插槽 |
-| \[rkPlayerNavigation\] | `PlayerNavigationContext` | 自定义上一张 / 下一张导航箭头 |
-| \[rkPlayerNestedNavigation\] | `PlayerNestedNavigationContext` | 内层横向滑动器的自定义导航箭头 |
-| \[rkPlayerNestedSlide\] | `PlayerNestedSlideContext` | 内层横向滑动器中每张幻灯片的自定义内容 |
-| \[rkPlayerSlide\] | `PlayerSlideContext<T>` | 完全自定义的幻灯片内容，替换默认的媒体幻灯片 |
-| \[rkPlayerSlideOverlay\] | `PlayerSlideOverlayContext<T>` | 逐张幻灯片的浮层（作者信息、点赞、描述等） |
-| \[rkPlayerTimeline\] | `PlayerTimelineContext<T>` | 自定义播放时间轴条。只有在门控（timeline 模式 + 最小时长）会渲染默认条时才渲染（同样是 auto/always/never 的逻辑）。 |
+| \[rkPlayerControls\] | `PlayerControlsContext<T>` | 自定义全局控件栏（关闭、声音开关等）；指令类为 `RkPlayerControlsDirective` |
+| \[rkPlayerError\] | `PlayerErrorContext` | 自定义错误提示模板插槽；指令类为 `RkPlayerErrorDirective` |
+| \[rkPlayerLoading\] | `PlayerLoadingContext` | 自定义加载提示模板插槽；指令类为 `RkPlayerLoadingDirective` |
+| \[rkPlayerNavigation\] | `PlayerNavigationContext` | 自定义上一张 / 下一张导航箭头；指令类为 `RkPlayerNavigationDirective` |
+| \[rkPlayerNestedNavigation\] | `PlayerNestedNavigationContext` | 内层横向滑动器的自定义导航箭头；指令类为 `RkPlayerNestedNavigationDirective` |
+| \[rkPlayerNestedSlide\] | `PlayerNestedSlideContext` | 内层横向滑动器中每张幻灯片的自定义内容；指令类为 `RkPlayerNestedSlideDirective` |
+| \[rkPlayerSlide\] | `PlayerSlideContext<T>` | 完全自定义的幻灯片内容，替换默认的媒体幻灯片；指令类为 `RkPlayerSlideDirective` |
+| \[rkPlayerSlideOverlay\] | `PlayerSlideOverlayContext<T>` | 逐张幻灯片的浮层（作者信息、点赞、描述等）；指令类为 `RkPlayerSlideOverlayDirective` |
+| \[rkPlayerTimeline\] | `PlayerTimelineContext<T>` | 自定义播放时间轴条。只有在门控（timeline 模式 + 最小时长）会渲染默认条时才渲染（同样是 auto/always/never 的逻辑）。指令类为 `RkPlayerTimelineDirective` |
+
+`PLAYER_TEMPLATE_SLOT_DIRECTIVES` 汇集了以上所有指令，组件可以一次性把它们展开到 `imports` 中。
 
 <CodeBlock code={templateSlots} language="typescript" />
+
+### 默认幻灯片组件 [#default-slide-components]
+
+默认幻灯片由这些部件构成。每个都是独立组件；在你自己的模板里使用其中一个，即可保留部分默认外观。
+
+| 组件 | 选择器 | 说明 |
+| --- | --- | --- |
+| `RkMediaSlideComponent` | `rk-media-slide` | 默认幻灯片。根据内容条目的 `media` 渲染 `rk-image-slide`、`rk-video-slide` 或 `rk-nested-slider`；在 `rkPlayerSlide` 模板里使用它，可以保留默认媒体并在上面叠加你自己的图层。 |
+| `RkImageSlideComponent` | `rk-image-slide` | 单张图片，使用 `object-fit: cover`，加载完成前显示其 `poster`，并调用 `onReady`、`onWaiting` 或 `onError`。 |
+| `RkVideoSlideComponent` | `rk-video-slide` | 在共享 `<video>` 元素上播放的单个视频。它需要浮层提供的 `SoundStateService`，所以只能在播放器内部渲染。 |
+| `RkNestedSliderComponent` | `rk-nested-slider` | 带指示圆点的横向滑动器，用于包含多个 `media` 条目的内容条目。 |
+| `RkSlideOverlayComponent` | `rk-slide-overlay` | 默认的底部浮层：根据 `author`、`description` 和 `likes` 输入显示作者头像和名字、描述以及点赞数。在 `rkPlayerSlideOverlay` 模板里使用它，可保留默认外观。 |
 
 ### 自定义时间轴 [#custom-timeline]
 
@@ -264,7 +278,7 @@ When a `ContentItem` 包含多个 `media` 条目时，播放器会把它们渲�
 | `isOpen` | `boolean` | 必填 | 控制浮层显示；为 false 时浮层会从 DOM 中移除 |
 | `loop` | `boolean` | false | 在幻灯片之间启用无限循环 |
 | `swipeDistanceFactor` | `number` | 0.12 | 触发切换所需的最小滑动距离占比 |
-| `timeline` | `'auto' \| 'always' \| 'never'` | 'auto' | 内置播放进度条的显示策略。'auto' 只在视频时长超过 timelineMinDurationSeconds 时渲染；'always' 只要当前幻灯片有视频就渲染；'never' 关闭内置进度条（需要完全自定义时使用 rkPlayerTimeline 模板插槽）。 |
+| `timeline` | `TimelineMode` (`'auto' \| 'always' \| 'never'`) | 'auto' | 内置播放进度条的显示策略。'auto' 只在视频时长超过 timelineMinDurationSeconds 时渲染；'always' 只要当前幻灯片有视频就渲染；'never' 关闭内置进度条（需要完全自定义时使用 rkPlayerTimeline 模板插槽）。 |
 | `timelineMinDurationSeconds` | `number` | 30 | timeline='auto' 时渲染内置进度条所需的最短视频时长（秒）。低于该阈值的循环短片不显示进度条。 |
 | `transitionDuration` | `number` | 300 | 幻灯片动画时长（毫秒） |
 | `wheelDebounceMs` | `number` | 200 | 滚轮事件的防抖时长（毫秒） |
@@ -291,7 +305,7 @@ When a `ContentItem` 包含多个 `media` 条目时，播放器会把它们渲�
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
 | `id` | `string` | 媒体条目的唯一标识 |
-| `type` | `'image' \| 'video'` | 媒体类型 |
+| `type` | `MediaType` | 媒体类型：`'image' \| 'video'` |
 | `src` | `string` | 媒体资源的 URL |
 | `poster` | `string?` | 视频条目的封面缩略图 URL |
 | `aspectRatio` | `number` | 宽高比。小于 1 表示竖向（cover），大于 1 表示横向（contain） |
@@ -308,6 +322,9 @@ When a `ContentItem` 包含多个 `media` 条目时，播放器会把它们渲�
 | `PlayerSlideOverlayContext<T>` | `{ $implicit: T, index, isActive }` |
 | `PlayerTimelineContext<T>` | `{ $implicit: T, activeIndex, timelineState: PlayerTimelineState }` |
 | `PlayerTimelineState` | `{ duration(), currentTime(), progress(), bufferedRanges(), isScrubbing(), seek(t), bindInteractions(el) }` |
+| `PlayerBufferedRange` | `{ start, end }`，单位为秒 —— `bufferedRanges()` 中的一项 |
+| `PlayerLoadingContext` | `{ $implicit: activeIndex, item, innerActiveIndex }` —— `rkPlayerLoading` 模板收到的上下文；不在内层滑动器中时 `innerActiveIndex` 为 `null` |
+| `PlayerErrorContext` | `{ $implicit: activeIndex, item, innerActiveIndex }` —— `rkPlayerError` 模板收到的上下文 |
 
 ## CSS 类名 [#css-classes]
 

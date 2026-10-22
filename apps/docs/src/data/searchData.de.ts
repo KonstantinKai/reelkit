@@ -111,6 +111,7 @@ export const deTitles: Record<string, string> = {
   'Content Loading': 'Laden von Inhalten',
   Sound: 'Ton',
   'DOM & Cleanup Utilities': 'Hilfsmittel für DOM und Aufräumen',
+  'Input Controllers': 'Eingabe-Controller',
   'Size Detection': 'Größenerkennung',
   Autoplay: 'Automatische Wiedergabe',
   Download: 'Download',

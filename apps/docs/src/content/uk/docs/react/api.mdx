@@ -107,6 +107,23 @@ import createdefaultkeyextractorforloop from '../../../snippets/react-api/create
 | `signal` | `Signal<AnimatedValue>` | `required` | Сигнал, що видає \{ value, duration, done? \}. Тривалість більша за 0 інтерполює від поточного значення до нового; 0 переходить одразу. |
 | `children` | `(value: number) => ReactElement` | `required` | Функція рендерингу отримує інтерпольоване значення для поточного кадру, застосоване синхронно, щоб DOM встигав за анімацією. |
 
+## SwipeToClose [#swipetoclose]
+
+`<SwipeToClose>` обгортає дітей у контейнер, що йде за вертикальним свайпом і викликає `onClose`, щойно свайп перейде поріг, — жест закриття Lightbox і Stories Player для вашого власного оверлея. `SwipeToCloseProps` типізує його пропси; `SwipeToCloseDirection` — це `'up' | 'down'`.
+
+| Prop | Тип | Типове значення | Опис |
+| --- | --- | --- | --- |
+| `direction` | `SwipeToCloseDirection` | required | `'up'` закриває, як Lightbox, `'down'` — як Stories Player |
+| `onClose` | `() => void` | required | Викликається, коли свайп перейшов поріг і анімація виходу завершилася |
+| `enabled` | `boolean` | `true` | Вимикає жест без демонтування |
+| `threshold` | `number` | `0.2` | Частка висоти вікна, яку має подолати свайп |
+| `className` | `string` | — | Клас на зовнішньому `<div>` |
+| `children` | `ReactNode` | required | Вміст, що рухається разом зі свайпом |
+
+## SoundProvider [#soundprovider]
+
+`<SoundProvider>` створює один `SoundController`, спершу без звуку, і передає його дітям через `useSoundState`. Оверлеї рендерять його самі; додавайте власний лише навколо власного плеєра, елементи керування якого ділять один стан звуку.
+
 ## Hooks [#hooks]
 
 ### useBodyLock [#usebodylock]
@@ -137,6 +154,31 @@ A `UrlAdapter` на базі React Router. Передайте його як оп
 Постачається з окремого підшляху, тож застосунок без роутера ніколи не тягне `react-router-dom` у свій бандл. `react-router-dom` — необов’язкова peer-залежність.
 
 <CodeBlock code={usereactrouterurladapter} language="tsx" />
+
+### useReelContext [#usereelcontext]
+
+`useReelContext()` читає `ReelContextValue` найближчого батьківського `<Reel>` або повертає `null` поза ним. `<ReelIndicator>` підключається через нього; використовуйте його у власних елементах керування, які рендеряться як діти `<Reel>`, щоб вони йшли за слайдером без пропсів. `ReelContext` — об’єкт контексту за ним; задавайте власне значення лише в тесті чи власній обгортці.
+
+| Властивість | Тип | Опис |
+| --- | --- | --- |
+| `index` | `Signal<number>` | Індекс активного слайда; читайте `.value` всередині `Observe` |
+| `count` | `Signal<number>` | Загальна кількість слайдів |
+| `goTo` | `(index: number, animate?: boolean) => Promise<void>` | Перейти до слайда з анімацією чи без |
+
+### useSoundState [#usesoundstate]
+
+`useSoundState()` читає `SoundController` з найближчого `<SoundProvider>` і кидає помилку поза ним. Reel Player, Lightbox і Stories Player обгортають свій вміст у провайдер, тож власні елементи керування, які ви передаєте через їхні render-пропси, можуть викликати його, щоб прочитати або перемкнути звук.
+
+### useFullscreen [#usefullscreen]
+
+`useFullscreen({ ref })` керує Fullscreen API для елемента в `ref` і виходить із повного екрана, коли компонент демонтується. `UseFullscreenProps` — його аргумент; `UseFullscreenResult` — кортеж, який він повертає.
+
+| Індекс | Тип | Опис |
+| --- | --- | --- |
+| `[0]` | `Signal<boolean>` | Чи сторінка в повноекранному режимі; читайте `.value` всередині `Observe` |
+| `[1]` | `() => Promise<void>` | Запитати повний екран для елемента, спершу вийшовши з повного екрана іншого елемента |
+| `[2]` | `() => Promise<void>` | Вийти з повного екрана |
+| `[3]` | `() => Promise<void>` | Перемкнути між цими двома станами |
 
 ## Accessibility [#accessibility]
 

@@ -107,6 +107,23 @@ import createdefaultkeyextractorforloop from '../../../snippets/react-api/create
 | `signal` | `Signal<AnimatedValue>` | `required` | 发出 \{ value, duration, done? \} 的信号。duration 大于 0 时会从当前值插值过渡到新值；为 0 则直接跳过去。 |
 | `children` | `(value: number) => ReactElement` | `required` | 渲染函数，接收当前帧的插值结果，并同步提交，让 DOM 跟得上动画。 |
 
+## SwipeToClose [#swipetoclose]
+
+`<SwipeToClose>` 把子元素包进一个跟随垂直滑动的容器，滑动超过阈值后调用 `onClose`——这就是 Lightbox 和 Stories Player 的关闭手势，可用于你自己的自定义浮层。`SwipeToCloseProps` 是它的属性类型；`SwipeToCloseDirection` 为 `'up' | 'down'`。
+
+| 属性 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `direction` | `SwipeToCloseDirection` | required | `'up'` 像 Lightbox 那样关闭，`'down'` 像 Stories Player 那样关闭 |
+| `onClose` | `() => void` | required | 滑动超过阈值且退出动画结束后调用 |
+| `enabled` | `boolean` | `true` | 不卸载组件即可关闭手势 |
+| `threshold` | `number` | `0.2` | 滑动需要覆盖的视口高度比例 |
+| `className` | `string` | — | 外层 `<div>` 的 class |
+| `children` | `ReactNode` | required | 随滑动移动的内容 |
+
+## SoundProvider [#soundprovider]
+
+`<SoundProvider>` 创建一个初始为静音的 `SoundController`，并通过 `useSoundState` 交给子元素。浮层会替你渲染一个；只有在自定义播放器的控件需要共享静音状态时，才需要自己包一层。
+
 ## Hooks [#hooks]
 
 ### useBodyLock [#usebodylock]
@@ -137,6 +154,31 @@ A `UrlAdapter` ，底层用 React Router。在带路由的应用里把它作为 
 它从独立的子路径导出，因此没有路由器的应用永远不会把 `react-router-dom` 打进产物。 `react-router-dom` 是可选的同级依赖。
 
 <CodeBlock code={usereactrouterurladapter} language="tsx" />
+
+### useReelContext [#usereelcontext]
+
+`useReelContext()` 读取最近的父级 `<Reel>` 的 `ReelContextValue`，在其外部则返回 `null`。`<ReelIndicator>` 就是靠它自动连接的；在作为 `<Reel>` 子元素渲染的自定义控件里使用它，控件无需属性就能跟随滑块。`ReelContext` 是它背后的 context 对象——只有在测试或自定义包装组件里需要提供自己的值时才直接使用它。
+
+| 属性 | 类型 | 说明 |
+| --- | --- | --- |
+| `index` | `Signal<number>` | 当前幻灯片索引；在 `Observe` 内读取 `.value` |
+| `count` | `Signal<number>` | 幻灯片总数 |
+| `goTo` | `(index: number, animate?: boolean) => Promise<void>` | 切到某张幻灯片，可带动画也可不带 |
+
+### useSoundState [#usesoundstate]
+
+`useSoundState()` 从最近的 `<SoundProvider>` 读取 `SoundController`，在其外部会抛出错误。Reel Player、Lightbox 和 Stories Player 都会用一个 provider 包住内容，所以通过它们的渲染属性传入的自定义控件可以调用它来读取或切换静音。
+
+### useFullscreen [#usefullscreen]
+
+`useFullscreen({ ref })` 为 `ref` 中的元素驱动 Fullscreen API，并在组件卸载时退出全屏。`UseFullscreenProps` 是它的参数；`UseFullscreenResult` 是它返回的元组。
+
+| 索引 | 类型 | 说明 |
+| --- | --- | --- |
+| `[0]` | `Signal<boolean>` | 页面是否处于全屏；在 `Observe` 内读取 `.value` |
+| `[1]` | `() => Promise<void>` | 为该元素请求全屏，如有其他全屏元素会先退出 |
+| `[2]` | `() => Promise<void>` | 退出全屏 |
+| `[3]` | `() => Promise<void>` | 在两者之间切换 |
 
 ## 无障碍 [#accessibility]
 

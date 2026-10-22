@@ -102,6 +102,9 @@ interface ContentItem {
 }
 ```
 
+- `MediaType` — `'image' | 'video'`, the `type` of a `MediaItem`.
+- `BaseContentItem` — minimum item shape (`id`, `media`). Extend it for custom data; the overlay is generic over any `T extends BaseContentItem` (defaults to `ContentItem`).
+
 ## URL State (shareable links, back button)
 
 Live demo: https://react-demo.reelkit.dev/reel-player-url
@@ -243,6 +246,8 @@ Nothing is rendered while pending; the page already owns that loading state, so 
 
 ## ReelPlayerOverlay Props
 
+Type: `ReelPlayerOverlayProps<T>` = `ReelPlayerOverlayBaseProps<T>` (visual/behavior props both overlays share) & `ReelPlayerControlledProps` (`isOpen`, `onClose`). Use the base type for a wrapper rendering either overlay.
+
 | Prop                         | Type                                                     | Default          | Description                                                                                                                                                                                                              |
 | ---------------------------- | -------------------------------------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `isOpen`                     | `boolean`                                                | required         | Control overlay visibility                                                                                                                                                                                               |
@@ -264,9 +269,11 @@ Nothing is rendered while pending; the page already owns that loading state, so 
 | `renderSlideOverlay`         | `(item, index, isActive) => ReactNode`                   | -                | Custom overlay per slide. Replace default SlideOverlay. Return null = hide.                                                                                                                                              |
 | `renderTimeline`             | `(props: TimelineRenderProps) => ReactNode`              | -                | Custom timeline bar. Invoked only when gating rules render default bar (same auto/always/never + `timelineMinDurationSeconds` logic). Use `props.defaultContent` to wrap built-in `<TimelineBar />`. Return null = hide. |
 
+`timeline` type: `TimelineMode` (`'auto' | 'always' | 'never'`). Inside the overlay, `useTimelineState()` returns the `TimelineController` from the nearest `TimelineProvider` (throws outside one); `useTimelineStateOptional()` returns `null` there instead, for components that may render outside the player.
+
 ### Reel-Forwarded Props
 
-Pass through to `<Reel>`:
+Pass through to `<Reel>`. Type: `ReelProxyProps` — subset of Reel props the overlay forwards; type a wrapper that forwards them.
 
 | Prop                  | Type      | Default | Description              |
 | --------------------- | --------- | ------- | ------------------------ |
@@ -281,7 +288,7 @@ Pass through to `<Reel>`:
 
 Type: `ReelPlayerUrlOverlayProps<T>`
 
-Takes every visual/behavior prop above except `isOpen`, replaced by a `controller`. `initialIndex` is ignored — the controller's position picks the slide, so a value passed alongside it is overwritten on every open.
+Takes every visual/behavior prop above except `isOpen`, replaced by a `controller` (= `ReelPlayerOverlayBaseProps<T>` & `ReelPlayerUrlControlledProps`). `initialIndex` is ignored — the controller's position picks the slide, so a value passed alongside it is overwritten on every open.
 
 | Prop         | Type                 | Default  | Description                                                                                                                                                             |
 | ------------ | -------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -299,13 +306,15 @@ Takes every visual/behavior prop above except `isOpen`, replaced by a `controlle
 
 Reusable building blocks exported for composition in custom render props.
 
-| Component          | Description                                                                                                                                                                                            |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `CloseButton`      | Standalone close button with default reel-player styling. Use inside `renderControls`.                                                                                                                 |
-| `SoundButton`      | Standalone sound toggle. Must be inside a `SoundProvider` (automatically provided by `ReelPlayerOverlay`).                                                                                             |
-| `TimelineProvider` | Supplies the timeline state that `TimelineBar` reads. Mounted automatically inside `ReelPlayerOverlay`; mount it yourself to render a `TimelineBar` standalone.                                        |
-| `TimelineBar`      | Default playback scrub bar. Reads the nearest `TimelineProvider` and renders track, buffered ranges, progress fill, and scrub pill. Theme via `--rk-reel-timeline-*`, or replace via `renderTimeline`. |
-| `SlideOverlay`     | Default gradient overlay showing author, description, and likes. Rendered automatically when content has the required fields. Use `renderSlideOverlay` to replace or hide it.                          |
+| Component          | Description                                                                                                                                                                                                                                                                   |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CloseButton`      | Standalone close button with default reel-player styling. Use inside `renderControls`.                                                                                                                                                                                        |
+| `SoundButton`      | Standalone sound toggle. Must be inside a `SoundProvider` (automatically provided by `ReelPlayerOverlay`).                                                                                                                                                                    |
+| `TimelineProvider` | Supplies the timeline state that `TimelineBar` reads. Mounted automatically inside `ReelPlayerOverlay`; mount it yourself to render a `TimelineBar` standalone.                                                                                                               |
+| `TimelineBar`      | Default playback scrub bar. Reads the nearest `TimelineProvider` and renders track, buffered ranges, progress fill, and scrub pill. Theme via `--rk-reel-timeline-*`, or replace via `renderTimeline`.                                                                        |
+| `SlideOverlay`     | Default gradient overlay showing author, description, and likes. Rendered automatically when content has the required fields. Use `renderSlideOverlay` to replace or hide it. `SlideOverlayProps`: `author?`, `description?`, `likes?`.                                       |
+| `ImageSlide`       | Default image slide; embed it from a custom `renderSlide`. `ImageSlideProps`: `src`, `size`, `className?`, `style?`, `imgClassName?`.                                                                                                                                         |
+| `VideoSlide`       | Default video slide on the shared `<video>` element; embed it from a custom `renderSlide`. `VideoSlideProps`: `src`, `poster?`, `aspectRatio`, `size`, `isActive`, `isInnerActive?`, `slideKey`, `className?`, `style?`, `onVideoRef?`, `onReady?`, `onWaiting?`, `onError?`. |
 
 ```ts
 interface CloseButtonProps {

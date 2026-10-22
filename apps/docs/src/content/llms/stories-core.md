@@ -148,6 +148,8 @@ Story timer = `createTimerController` in `@reelkit/core`, shared with lightbox s
 
 ### Methods
 
+`createCanvasProgressRenderer` returns `CanvasProgressRenderer` — type for a field or ref holding the renderer:
+
 | Member                                      | Type                               | Description                                           |
 | ------------------------------------------- | ---------------------------------- | ----------------------------------------------------- |
 | `attach(canvas)`                            | `(HTMLCanvasElement) => void`      | Attach to canvas element; starts watching parent size |

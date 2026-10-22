@@ -107,6 +107,23 @@ core signals को React रेंडरिंग से जोड़ता ह
 | `signal` | `Signal<AnimatedValue>` | `required` | \{ value, duration, done? \} देने वाला signal। 0 से ज़्यादा अवधि मौजूदा मान से नए मान तक बीच के मान निकालती है; 0 सीधे वहीं पहुँचा देता है। |
 | `children` | `(value: number) => ReactElement` | `required` | मौजूदा फ़्रेम का निकाला गया मान लेने वाला रेंडर फ़ंक्शन, जो synchronous रूप से लागू होता है ताकि DOM एनिमेशन के साथ चले। |
 
+## SwipeToClose [#swipetoclose]
+
+`<SwipeToClose>` अपने children को ऐसे कंटेनर में रखता है जो vertical स्वाइप के साथ चलता है और स्वाइप के सीमा पार करते ही `onClose` कॉल करता है — lightbox और stories player का बंद करने वाला जेस्चर, आपके अपने कस्टम overlay के लिए। `SwipeToCloseProps` इसके props को टाइप करता है; `SwipeToCloseDirection` `'up' | 'down'` है।
+
+| Prop | टाइप | डिफ़ॉल्ट | विवरण |
+| --- | --- | --- | --- |
+| `direction` | `SwipeToCloseDirection` | ज़रूरी | `'up'` lightbox की तरह बंद करता है, `'down'` stories player की तरह |
+| `onClose` | `() => void` | ज़रूरी | स्वाइप के सीमा पार करने और बाहर जाने का एनिमेशन ख़त्म होने के बाद कॉल होता है |
+| `enabled` | `boolean` | `true` | unmount किए बिना जेस्चर बंद करता है |
+| `threshold` | `number` | `0.2` | viewport की ऊँचाई का वह हिस्सा जितना स्वाइप को तय करना है |
+| `className` | `string` | — | बाहरी `<div>` पर class |
+| `children` | `ReactNode` | ज़रूरी | स्वाइप के साथ चलने वाला कंटेंट |
+
+## SoundProvider [#soundprovider]
+
+`<SoundProvider>` एक `SoundController` बनाता है, शुरू में muted, और उसे `useSoundState` के ज़रिए अपने children को देता है। overlays एक provider ख़ुद रेंडर करते हैं; अपना सिर्फ़ ऐसे कस्टम प्लेयर के आसपास जोड़ें जिसके कंट्रोल एक ही mute स्टेट साझा करते हों।
+
 ## Hooks [#hooks]
 
 ### useBodyLock [#usebodylock]
@@ -137,6 +154,31 @@ React Router पर आधारित `UrlAdapter`। routing वाले ऐ�
 यह अपने अलग subpath से आता है, इसलिए बिना router वाला ऐप `react-router-dom` को कभी अपने बंडल में नहीं खींचता। `react-router-dom` एक वैकल्पिक peer dependency है।
 
 <CodeBlock code={usereactrouterurladapter} language="tsx" />
+
+### useReelContext [#usereelcontext]
+
+`useReelContext()` सबसे पास वाले पैरेंट `<Reel>` का `ReelContextValue` पढ़ता है, या उसके बाहर `null` लौटाता है। `<ReelIndicator>` ख़ुद को जोड़ने के लिए इसी का इस्तेमाल करता है; इसे `<Reel>` के children के रूप में रेंडर होने वाले अपने कंट्रोल में इस्तेमाल करें, ताकि वे बिना props के स्लाइडर के साथ चलें। `ReelContext` इसके पीछे का context ऑब्जेक्ट है — अपना मान सिर्फ़ किसी टेस्ट या कस्टम wrapper में दें।
+
+| प्रॉपर्टी | टाइप | विवरण |
+| --- | --- | --- |
+| `index` | `Signal<number>` | सक्रिय स्लाइड का index; `.value` को `Observe` के अंदर पढ़ें |
+| `count` | `Signal<number>` | स्लाइडों की कुल संख्या |
+| `goTo` | `(index: number, animate?: boolean) => Promise<void>` | किसी स्लाइड पर जाता है, एनिमेशन के साथ या बिना |
+
+### useSoundState [#usesoundstate]
+
+`useSoundState()` सबसे पास वाले `<SoundProvider>` से `SoundController` पढ़ता है और उसके बाहर एरर देता है। reel player, lightbox और stories player अपना कंटेंट एक provider में रखते हैं, इसलिए उनके render props से दिए गए कस्टम कंट्रोल इसे mute पढ़ने या टॉगल करने के लिए कॉल कर सकते हैं।
+
+### useFullscreen [#usefullscreen]
+
+`useFullscreen({ ref })` `ref` वाले एलिमेंट के लिए Fullscreen API चलाता है, और कंपोनेंट unmount होने पर फ़ुलस्क्रीन से बाहर आता है। `UseFullscreenProps` इसका argument है; `UseFullscreenResult` वह tuple है जो यह लौटाता है।
+
+| Index | टाइप | विवरण |
+| --- | --- | --- |
+| `[0]` | `Signal<boolean>` | पेज फ़ुलस्क्रीन में है या नहीं; `.value` को `Observe` के अंदर पढ़ें |
+| `[1]` | `() => Promise<void>` | एलिमेंट के लिए फ़ुलस्क्रीन माँगता है, पहले किसी दूसरे फ़ुलस्क्रीन एलिमेंट से बाहर आकर |
+| `[2]` | `() => Promise<void>` | फ़ुलस्क्रीन से बाहर आता है |
+| `[3]` | `() => Promise<void>` | दोनों के बीच टॉगल करता है |
 
 ## सुलभता [#accessibility]
 

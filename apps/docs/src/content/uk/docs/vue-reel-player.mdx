@@ -296,6 +296,13 @@ Pass `hashCodec: base64UrlCodec` щоб закодувати id в URL у base64
 | `poster` | `string?` | URL мініатюри-постера для елементів-відео |
 | `aspectRatio` | `number` | співвідношення ширини до висоти. Значення \< 1 — вертикальне (cover), ≥ 1 — горизонтальне (contain). |
 
+### Об’єднання типів [#unions]
+
+| Тип | Значення | Опис |
+| --- | --- | --- |
+| `MediaType` | `'image' \| 'video'` | Різновид `MediaItem`; визначає, чи слайд рендерить `ImageSlide`, чи `VideoSlide`. |
+| `TimelineMode` | `'auto' \| 'always' \| 'never'` | Значення пропса `timeline`: `'auto'` показує смугу для відео, довших за `timelineMinDurationSeconds`, `'always'` — для кожного відео, `'never'` її ховає. |
+
 ## Sub-Components [#sub-components]
 
 Вставляйте їх у власні шаблони `#controls`, `#slide`, or `#slideOverlay` . Передавайте розміри й колбеки з області слота, щоб автовідтворення, знімок постера й синхронізація звуку далі працювали.
@@ -311,6 +318,14 @@ Pass `hashCodec: base64UrlCodec` щоб закодувати id в URL у base64
 Перемикач звуку. Рендерте його всередині `SoundProvider` (`ReelPlayerOverlay` надає його). Ховається, коли на активному слайді немає відео.
 
 <CodeBlock code={soundbutton} language="vue" />
+
+### PlayerControls [#playercontrols]
+
+Стандартні елементи керування, які оверлей рендерить, коли слот `#controls` не задано: `CloseButton`, а з `show-sound` ще й `SoundButton`. Пропси: `showSound`, `soundDisabled` (приглушує кнопку звуку) і `onClose`. Розмістіть його у власному слоті `#controls`, щоб зберегти вбудований вигляд поруч із додатковими кнопками.
+
+### LoadingIndicator і ErrorIndicator [#loading-and-error-indicators]
+
+`LoadingIndicator` — хвильовий індикатор завантаження на весь слайд, поки медіа буферизується; `ErrorIndicator` — стандартне повідомлення, коли медіа не вдалося завантажити. Жоден не приймає пропсів. Рендерте їх із власних слотів `#loading` чи `#error`, щоб зберегти вбудований вигляд поруч із додатковим вмістом.
 
 ### TimelineBar [#timelinebar]
 
@@ -371,6 +386,15 @@ Pass `hashCodec: base64UrlCodec` щоб закодувати id в URL у base64
 <CodeBlock code={timeline} language="vue" />
 
 Тему задавайте через власні властивості CSS `--rk-reel-timeline-*` власними властивостями CSS.
+
+Поза слотом той самий контролер читається композаблом:
+
+| Експорт | Опис |
+| --- | --- |
+| `useTimelineState()` | Повертає найближчий `TimelineController`; кидає помилку поза `TimelineProvider` (оверлей монтує його сам). |
+| `useTimelineStateOptional()` | Те саме, що `useTimelineState`, але поза `TimelineProvider` повертає `null` замість помилки — для компонентів, які можуть рендеритися поза оверлеєм. |
+| `RK_TIMELINE_KEY` | Ключ ін’єкції, який читають обидва композабли; передайте його через `provide` самі, щоб керувати `TimelineBar` власним контролером. |
+| `useViewportSize(aspectRatio)` | Реактивний `[width, height]`, за яким оверлей задає свій розмір: задане співвідношення сторін на десктопі, уся область перегляду на ширині 768px і вужче. До монтування повертає `[0, 0]`, тож безпечний під час SSR. |
 
 ## Контекст звуку [#sound-context]
 

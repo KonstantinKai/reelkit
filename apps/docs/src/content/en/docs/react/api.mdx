@@ -107,6 +107,23 @@ Subscribes to animated value signals and smoothly interpolates using `requestAni
 | `signal` | `Signal<AnimatedValue>` | `required` | Signal emitting \{ value, duration, done? \}. A duration above 0 interpolates from the current value to the new one; 0 jumps straight there. |
 | `children` | `(value: number) => ReactElement` | `required` | Render function receiving the interpolated value for the current frame, committed synchronously so the DOM keeps up with the animation. |
 
+## SwipeToClose [#swipetoclose]
+
+`<SwipeToClose>` wraps its children in a container that follows a vertical swipe and calls `onClose` once the swipe passes the threshold — the dismiss gesture of the lightbox and the stories player, for a custom overlay of your own. `SwipeToCloseProps` types its props; `SwipeToCloseDirection` is `'up' | 'down'`.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `direction` | `SwipeToCloseDirection` | required | `'up'` dismisses like the lightbox, `'down'` like the stories player |
+| `onClose` | `() => void` | required | Called after the swipe passes the threshold and the exit animation ends |
+| `enabled` | `boolean` | `true` | Turns the gesture off without unmounting |
+| `threshold` | `number` | `0.2` | Fraction of the viewport height the swipe has to cover |
+| `className` | `string` | — | Class on the outer `<div>` |
+| `children` | `ReactNode` | required | Content that moves with the swipe |
+
+## SoundProvider [#soundprovider]
+
+`<SoundProvider>` creates one `SoundController`, muted at first, and hands it to its children through `useSoundState`. The overlays render one for you; add your own only around a custom player whose controls share a mute state.
+
 ## Hooks [#hooks]
 
 ### useBodyLock [#usebodylock]
@@ -137,6 +154,31 @@ A `UrlAdapter` backed by React Router. Pass it as the `adapter` option of `useOv
 Ships from its own subpath, so an app without a router never pulls `react-router-dom` into its bundle. `react-router-dom` is an optional peer dependency.
 
 <CodeBlock code={usereactrouterurladapter} language="tsx" />
+
+### useReelContext [#usereelcontext]
+
+`useReelContext()` reads the `ReelContextValue` of the nearest parent `<Reel>`, or returns `null` outside one. `<ReelIndicator>` uses it to connect itself; use it in your own controls rendered as `<Reel>` children, so they follow the slider without props. `ReelContext` is the context object behind it — provide a value of your own only in a test or a custom wrapper.
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `index` | `Signal<number>` | Active slide index; read `.value` inside `Observe` |
+| `count` | `Signal<number>` | Total slide count |
+| `goTo` | `(index: number, animate?: boolean) => Promise<void>` | Move to a slide, animated or not |
+
+### useSoundState [#usesoundstate]
+
+`useSoundState()` reads the `SoundController` from the nearest `<SoundProvider>` and throws outside one. The reel player, lightbox and stories player wrap their content in a provider, so custom controls you pass through their render props can call it to read or toggle mute.
+
+### useFullscreen [#usefullscreen]
+
+`useFullscreen({ ref })` drives the Fullscreen API for the element in `ref`, and exits fullscreen when the component unmounts. `UseFullscreenProps` is its argument; `UseFullscreenResult` is the tuple it returns.
+
+| Index | Type | Description |
+| --- | --- | --- |
+| `[0]` | `Signal<boolean>` | Whether the page is fullscreen; read `.value` inside `Observe` |
+| `[1]` | `() => Promise<void>` | Request fullscreen for the element, leaving another fullscreen element first |
+| `[2]` | `() => Promise<void>` | Exit fullscreen |
+| `[3]` | `() => Promise<void>` | Toggle between the two |
 
 ## Accessibility [#accessibility]
 

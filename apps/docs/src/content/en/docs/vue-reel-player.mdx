@@ -288,6 +288,13 @@ Use `v-model:is-open` to drive the overlay with a single binding. The legacy `:i
 | `poster` | `string?` | Poster thumbnail URL for video items |
 | `aspectRatio` | `number` | width/height ratio. Values \< 1 = vertical (cover), ≥ 1 = horizontal (contain). |
 
+### Unions [#unions]
+
+| Type | Values | Description |
+| --- | --- | --- |
+| `MediaType` | `'image' \| 'video'` | Kind of a `MediaItem`; decides whether the slide renders `ImageSlide` or `VideoSlide`. |
+| `TimelineMode` | `'auto' \| 'always' \| 'never'` | Value of the `timeline` prop: `'auto'` shows the bar for videos longer than `timelineMinDurationSeconds`, `'always'` for every video, `'never'` hides it. |
+
 ## Sub-Components [#sub-components]
 
 Drop these into your custom `#controls`, `#slide`, or `#slideOverlay` templates. Pass the dimensions and callbacks through from the slot scope so autoplay, poster capture, and sound sync keep working.
@@ -303,6 +310,14 @@ Standalone circular close button with default reel-player styling. Use inside `#
 Mute/unmute toggle. Render it inside a `SoundProvider` (`ReelPlayerOverlay` provides one). Hidden when the active slide has no video.
 
 <CodeBlock code={soundbutton} language="vue" />
+
+### PlayerControls [#playercontrols]
+
+Default controls the overlay renders when no `#controls` slot is given: a `CloseButton` plus, with `show-sound`, a `SoundButton`. Props: `showSound`, `soundDisabled` (dims the sound button) and `onClose`. Place it inside your own `#controls` slot to keep the built-in look next to extra buttons.
+
+### LoadingIndicator and ErrorIndicator [#loading-and-error-indicators]
+
+`LoadingIndicator` is the full-slide wave loader shown while media buffers; `ErrorIndicator` is the default message shown when media fails to load. Neither takes props. Render them from your own `#loading` or `#error` slot to keep the built-in look around extra content.
 
 ### TimelineBar [#timelinebar]
 
@@ -363,6 +378,15 @@ The overlay renders a built-in playback timeline bar over the active video. Gate
 <CodeBlock code={timeline} language="vue" />
 
 Theme via the `--rk-reel-timeline-*` CSS custom properties.
+
+Outside the slot, read the same controller with a composable:
+
+| Export | Description |
+| --- | --- |
+| `useTimelineState()` | Returns the nearest `TimelineController`; throws outside a `TimelineProvider` (the overlay mounts one). |
+| `useTimelineStateOptional()` | Same as `useTimelineState`, but returns `null` outside a `TimelineProvider` instead of throwing — for components that may render outside the overlay. |
+| `RK_TIMELINE_KEY` | Injection key both composables read; `provide` it yourself to drive a `TimelineBar` from your own controller. |
+| `useViewportSize(aspectRatio)` | Reactive `[width, height]` the overlay sizes itself with: the given aspect ratio on desktop, the full viewport at 768px wide and narrower. Returns `[0, 0]` until mounted, so it is safe during SSR. |
 
 ## Sound Context [#sound-context]
 

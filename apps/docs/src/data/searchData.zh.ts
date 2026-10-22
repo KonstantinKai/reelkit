@@ -107,6 +107,7 @@ export const zhTitles: Record<string, string> = {
   'Content Loading': '内容加载',
   Sound: '声音',
   'DOM & Cleanup Utilities': 'DOM 与清理工具',
+  'Input Controllers': '输入控制器',
   'Size Detection': '尺寸检测',
   Autoplay: '自动播放',
   Download: '下载',

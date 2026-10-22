@@ -234,6 +234,8 @@ export const PLAYER_TEMPLATE_SLOT_DIRECTIVES = [
   RkPlayerNavigationDirective,
   RkPlayerNestedSlideDirective,
   RkPlayerNestedNavigationDirective,
+  RkPlayerLoadingDirective,
+  RkPlayerErrorDirective,
 ] as const;
 
 export type { MediaItem };

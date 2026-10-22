@@ -140,6 +140,28 @@ Tag: `<SwipeToClose>` — umschließt seinen Default-Slot mit einem Container, d
 | --- | --- |
 | `default` | Inhalt, der mit der Geste zum Wegwischen umschlossen wird |
 
+## Observe [#observe]
+
+Tag: `<Observe :signals="[…]">` — rendert seinen Default-Slot neu, sobald sich eines der Signale ändert, und sonst nichts darum herum.
+
+Das Lesen eines Core-Signals in einer Render-Funktion oder einem Template abonniert es nicht. [`toVueRef`](#tovueref) ist die übliche Antwort, bindet das Signal aber an die Komponente, die es aufruft; ein Signal, das sich oft ändert, rendert also die ganze Komponente neu. `Observe` ist die engere Grenze: Lege es um den Teil, der den Wert zeigt, und der Rest der Komponente bleibt, wie er ist. So zeichnet der Stories Player seinen Header und seinen Fortschrittsbalken neu, ohne einen der beiden Slider neu zu zeichnen.
+
+| Prop | Typ | Beschreibung |
+| --- | --- | --- |
+| `signals` | `readonly Subscribable[]` | Die Signale, denen gefolgt wird. Eine andere Menge tauscht das Abonnement aus, dieselbe Menge behält es. Beim Unmount wird alles freigegeben. |
+
+Der Typ der Props wird als `ObserveProps` exportiert.
+
+<CodeBlock code={observe} language="vue" />
+
+Greif zu `toVueRef`, wenn die ganze Komponente dem Signal folgt, und zu `Observe`, wenn das nur ein Bereich davon tut.
+
+## SoundProvider [#soundprovider]
+
+Tag: `<SoundProvider>` — ein Kontext-Provider, der eine Instanz von `SoundController` erzeugt und sie über `RK_SOUND_KEY` an die Nachfahren weitergibt. Rendert seinen Default-Slot unverändert.
+
+<CodeBlock code={soundprovider} language="vue" />
+
 ## RK_REEL_KEY & useReelContext [#rk-reel-key-usereelcontext]
 
 Ein `InjectionKey<ReelContextValue>`, den `<Reel>` seinen Nachfahren bereitstellt. `<ReelIndicator>` nutzt ihn intern, um sich selbst zu verbinden. Rufe `useReelContext()` in eigenen Komponenten auf, die den Kontext des Sliders brauchen.
@@ -216,28 +238,6 @@ Das Abonnement wird über `onScopeDispose` automatisch aufgeräumt, darum muss e
 
 <CodeBlock code={tovueref} language="typescript" />
 
-## Observe [#observe]
-
-Tag: `<Observe :signals="[…]">` — rendert seinen Default-Slot neu, sobald sich eines der Signale ändert, und sonst nichts darum herum.
-
-Das Lesen eines Core-Signals in einer Render-Funktion oder einem Template abonniert es nicht. [`toVueRef`](#tovueref) ist die übliche Antwort, bindet das Signal aber an die Komponente, die es aufruft; ein Signal, das sich oft ändert, rendert also die ganze Komponente neu. `Observe` ist die engere Grenze: Lege es um den Teil, der den Wert zeigt, und der Rest der Komponente bleibt, wie er ist. So zeichnet der Stories Player seinen Header und seinen Fortschrittsbalken neu, ohne einen der beiden Slider neu zu zeichnen.
-
-| Prop | Typ | Beschreibung |
-| --- | --- | --- |
-| `signals` | `readonly Subscribable[]` | Die Signale, denen gefolgt wird. Eine andere Menge tauscht das Abonnement aus, dieselbe Menge behält es. Beim Unmount wird alles freigegeben. |
-
-Der Typ der Props wird als `ObserveProps` exportiert.
-
-<CodeBlock code={observe} language="vue" />
-
-Greif zu `toVueRef`, wenn die ganze Komponente dem Signal folgt, und zu `Observe`, wenn das nur ein Bereich davon tut.
-
-## SoundProvider [#soundprovider]
-
-Tag: `<SoundProvider>` — ein Kontext-Provider, der eine Instanz von `SoundController` erzeugt und sie über `RK_SOUND_KEY` an die Nachfahren weitergibt. Rendert seinen Default-Slot unverändert.
-
-<CodeBlock code={soundprovider} language="vue" />
-
 ## asGenericPropKeys [#asgenericpropkeys]
 
 Baut eine Komponente, die generisch über die Elemente ist, die sie bekommt, so wie `ReelPlayerOverlay` und `StoriesOverlay`. Vue 3.3 akzeptiert eine Setup-Funktion mit Typparameter, `defineComponent(<T>(props: Props<T>) => …, options)`, behält diesen Parameter aber nur, wenn `options.props` Namen von Props auflistet. Übergibst du ein Props-Objekt, liest Vue die Typen der Props aus dem Objekt zurück, und `T` geht verloren. `asGenericPropKeys` reicht das Props-Objekt unverändert durch, während der Typchecker eine Liste von Namen sieht: `T` wird aus dem abgeleitet, was die Elternkomponente bindet, und Standardwerte, Validierung und die Umwandlung in Boolean greifen zur Laufzeit weiterhin.
@@ -245,6 +245,10 @@ Baut eine Komponente, die generisch über die Elemente ist, die sie bekommt, so 
 Das Typargument ist der Props-Typ mit dem Basiselement, und die Komponente braucht Vue 3.3 oder neuer. Slots und Emits können `T` nicht nutzen: Typisiere einen Slot-Scope, indem du ihn im Template annotierst.
 
 <CodeBlock code={asgenericpropkeys} language="typescript" />
+
+### hasRenderedNodes [#hasrenderednodes]
+
+`hasRenderedNodes(nodes)` sagt, ob ein Slot-Ergebnis etwas auf die Seite bringt, für eine Komponente, die selbst rendert, wenn der Elternteil einen Slot leer lässt, so wie die Overlays. Ein Slot, dessen Inhalt hinter einem falschen `v-if` steht, gibt trotzdem einen Kommentarknoten zurück, sodass eine Prüfung der Arraylänge ihn als gefüllt werten und den Fallback verwerfen würde. `hasRenderedNodes` entpackt Fragmente, ignoriert Kommentarknoten und gibt für `null` oder `undefined` `false` zurück, also ist `hasRenderedNodes(slots.controls?.(scope))` die Prüfung, an der du verzweigst.
 
 ## Barrierefreiheit [#accessibility]
 

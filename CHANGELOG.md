@@ -7,6 +7,7 @@
 - A first visit to an English page from a browser that prefers German, from Germany, Austria or Switzerland, opens the German page; a language picked in the switcher still always wins
 - Search in the command palette finds a word with `ß` when you type `ss`, so `grosse` finds `Größe`
 - The installation page lists `@reelkit/stories-core` and the Angular and Vue stories players, and its peer dependencies now match what the packages require: Angular 19 or later with `@angular/common`, and Vue 3.3 or later for the Vue reel and stories players, each with `lucide-vue-next`
+- Every public export is now documented on its package's reference page in all eight languages: the core gesture, keyboard and wheel controllers and utilities, the React context, sound and fullscreen hooks and SwipeToClose, the lightbox and reel player prop types and slot parts, and the Angular template-slot directives with their context types
 - The SSR page covers every package: the Vue and Angular overlays join the table, Angular is described as Angular SSR (`@angular/ssr`) with what the components actually do on the server, the Vue section explains when `Reel` needs `<ClientOnly>` in Nuxt and that the overlays need no wrapper, and `StoriesOverlay` joins the React overlay section
 
 ## @reelkit/react-stories-player@0.7.0 (2026-10-20)

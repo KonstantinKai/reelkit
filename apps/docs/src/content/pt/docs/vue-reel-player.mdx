@@ -288,6 +288,13 @@ Use `v-model:is-open` para conduzir o overlay com uma única ligação. O padrã
 | `poster` | `string?` | URL da miniatura de pôster, para itens de vídeo |
 | `aspectRatio` | `number` | Proporção entre largura e altura. Valores \< 1 = vertical (cover), ≥ 1 = horizontal (contain). |
 
+### Uniões [#unions]
+
+| Tipo | Valores | Descrição |
+| --- | --- | --- |
+| `MediaType` | `'image' \| 'video'` | Tipo de um `MediaItem`; decide se o slide renderiza `ImageSlide` ou `VideoSlide`. |
+| `TimelineMode` | `'auto' \| 'always' \| 'never'` | Valor da prop `timeline`: `'auto'` mostra a barra para vídeos mais longos que `timelineMinDurationSeconds`, `'always'` para todo vídeo, `'never'` a esconde. |
+
 ## Subcomponentes [#sub-components]
 
 Use-os dentro dos seus templates de `#controls`, `#slide` ou `#slideOverlay`. Repasse as dimensões e os callbacks do escopo do slot para que a reprodução automática, a captura de pôster e a sincronia do som continuem funcionando.
@@ -303,6 +310,14 @@ Botão circular de fechar isolado, já com o estilo do reel player. Use dentro d
 Botão de mudo. Renderize-o dentro de um `SoundProvider` (o `ReelPlayerOverlay` fornece um). Fica escondido quando o slide ativo não tem vídeo.
 
 <CodeBlock code={soundbutton} language="vue" />
+
+### PlayerControls [#playercontrols]
+
+Controles padrão que o overlay renderiza quando nenhum slot `#controls` é passado: um `CloseButton` e, com `show-sound`, um `SoundButton`. Props: `showSound`, `soundDisabled` (esmaece o botão de som) e `onClose`. Coloque-o dentro do seu próprio slot `#controls` para manter o visual embutido ao lado de botões extras.
+
+### LoadingIndicator e ErrorIndicator [#loading-and-error-indicators]
+
+`LoadingIndicator` é o indicador de onda em tela cheia mostrado enquanto a mídia carrega; `ErrorIndicator` é a mensagem padrão mostrada quando a mídia falha. Nenhum dos dois recebe props. Renderize-os a partir do seu próprio slot `#loading` ou `#error` para manter o visual embutido em volta de conteúdo extra.
 
 ### TimelineBar [#timelinebar]
 
@@ -363,6 +378,15 @@ O overlay desenha uma barra de reprodução embutida sobre o vídeo ativo. Liber
 <CodeBlock code={timeline} language="vue" />
 
 Personalize pelas propriedades CSS `--rk-reel-timeline-*`.
+
+Fora do slot, leia o mesmo controlador com um composable:
+
+| Export | Descrição |
+| --- | --- |
+| `useTimelineState()` | Devolve o `TimelineController` mais próximo; lança um erro fora de um `TimelineProvider` (o overlay monta um). |
+| `useTimelineStateOptional()` | Igual a `useTimelineState`, mas devolve `null` fora de um `TimelineProvider` em vez de lançar um erro — para componentes que podem renderizar fora do overlay. |
+| `RK_TIMELINE_KEY` | Chave de injeção que os dois composables leem; faça `provide` dela você mesmo para controlar um `TimelineBar` com o seu próprio controlador. |
+| `useViewportSize(aspectRatio)` | `[width, height]` reativo com que o overlay se dimensiona: a proporção dada no desktop, a viewport inteira com 768px de largura ou menos. Devolve `[0, 0]` até montar, então é seguro durante o SSR. |
 
 ## Contexto de som [#sound-context]
 

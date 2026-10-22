@@ -308,6 +308,8 @@ Outputs are the same `closed` and `slideChange`; the URL drives closing, so `clo
 | `showDownload`          | `boolean`               | `false`           | Download button (see Download)                                                                                                                                               |
 | `ariaLabel`             | `string`                | `'Image gallery'` | Accessible label for dialog region                                                                                                                                           |
 
+Slider inputs (`transitionDuration`, `swipeDistanceFactor`, `loop`, `enableNavKeys`, `enableWheel`, `wheelDebounceMs`) typed by `ReelProxyProps` — use it to type a wrapper that forwards them.
+
 ## Outputs
 
 | Output        | Type                   | Description                                  |
@@ -330,13 +332,14 @@ Outputs are the same `closed` and `slideChange`; the URL drives closing, so `clo
 
 Standalone components to compose inside an `rkLightboxControls` template. Import each into the host component's `imports`.
 
-| Component                     | Selector               | Description                                                               |
-| ----------------------------- | ---------------------- | ------------------------------------------------------------------------- |
-| `RkCloseButtonComponent`      | `rk-close-button`      | Default close button                                                      |
-| `RkCounterComponent`          | `rk-counter`           | Counter chip; takes `[currentIndex]` and `[count]`                        |
-| `RkFullscreenButtonComponent` | `rk-fullscreen-button` | Fullscreen toggle button                                                  |
-| `RkPlayPauseButtonComponent`  | `rk-play-pause-button` | Slideshow toggle; `[playing]`, `(toggled)`; `aria-pressed` while playing  |
-| `RkDownloadButtonComponent`   | `rk-download-button`   | Download button; `[downloading]`, `(pressed)`; disabled while downloading |
+| Component                     | Selector               | Description                                                                                    |
+| ----------------------------- | ---------------------- | ---------------------------------------------------------------------------------------------- |
+| `RkCloseButtonComponent`      | `rk-close-button`      | Default close button                                                                           |
+| `RkCounterComponent`          | `rk-counter`           | Counter chip; takes `[currentIndex]` and `[count]`                                             |
+| `RkFullscreenButtonComponent` | `rk-fullscreen-button` | Fullscreen toggle button                                                                       |
+| `RkPlayPauseButtonComponent`  | `rk-play-pause-button` | Slideshow toggle; `[playing]`, `(toggled)`; `aria-pressed` while playing                       |
+| `RkDownloadButtonComponent`   | `rk-download-button`   | Download button; `[downloading]`, `(pressed)`; disabled while downloading                      |
+| `RkSoundButtonComponent`      | `rk-sound-button`      | Mute toggle for video items; `[muted]`, `(toggled)`; default controls show it on a video slide |
 
 ```html
 <ng-template

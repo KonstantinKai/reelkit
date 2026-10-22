@@ -142,7 +142,7 @@ import downloadCode from '../../snippets/vue-lightbox/download.vue?raw';
 
 ## 视频支持 [#video-support]
 
-视频幻灯片是按需开启的，默认产物里不会掺进音视频相关代码。调用 `useVideoSlideRenderer(items)` 并把返回的 `VideoSlideRenderer` / `VideoControlsRenderer` 接到浮层的 `#slide` 和 `#controls` 插槽上。再把浮层包进返回的 `SoundProvider` 里，内置的声音开关才有上下文。
+视频幻灯片是按需开启的，默认产物里不会掺进音视频相关代码。调用 `useVideoSlideRenderer(items)` 并把返回的 `VideoSlideRenderer` / `VideoControlsRenderer` 接到浮层的 `#slide` 和 `#controls` 插槽上。再把浮层包进返回的 `SoundProvider` 里，内置的声音开关才有上下文。返回的对象类型为 `UseVideoSlideRendererResult`：包含 `SoundProvider`、`hasVideo`、`VideoSlideRenderer` 和 `VideoControlsRenderer`。
 
 <CodeBlock code={videoOptInCode} language="vue" />
 
@@ -233,6 +233,18 @@ import downloadCode from '../../snippets/vue-lightbox/download.vue?raw';
 | --- | --- | --- |
 | `PlayPauseButton` | `PlayPauseButtonProps`: `isPlaying`, `onPress`, `className?` | 幻灯片播放开关（Play/Pause 图标，播放时带 `aria-pressed`）。设置 `auto-advance` 时由默认控件显示。 |
 | `DownloadButton` | `DownloadButtonProps`: `isDownloading`, `onPress`, `className?` | 下载按钮，`isDownloading` 时处于禁用状态。设置 `show-download` 时由默认控件显示。 |
+| `CloseButton` | `CloseButtonProps`: `onPress`, `className?` | 控件栏渲染的默认关闭按钮；放进你自己的 `#controls` 插槽即可保留内置外观。 |
+| `Counter` | `CounterProps`: `currentIndex`, `count`, `className?` | 默认的 "3 / 10" 计数标签；放进你自己的 `#controls` 插槽即可保留内置外观。 |
+| `FullscreenButton` | `FullscreenButtonProps`: `isFullscreen`, `onPress`, `className?` | 默认的全屏开关；图标随 `isFullscreen` 变化。 |
+| `SoundButton` | `SoundButtonProps`: `isMuted`, `onPress`, `className?` | 视频条目的默认静音开关；图标随 `isMuted` 变化。 |
+
+### 幻灯片与导航部件 [#slide-parts]
+
+| 组件 | 属性 | 说明 |
+| --- | --- | --- |
+| `ImageSlide` | `ImageSlideProps`: `src`, `alt?`, `isActive`, `onReady?`, `onLoadError?` | 浮层渲染的默认图片幻灯片；放进你自己的 `#slide` 插槽即可让图片条目保留内置外观。 |
+| `LightboxVideoSlide` | `LightboxVideoSlideProps`: `src`, `poster?`, `isActive`, `size`, `slideKey`, `loop?`, `onPlaying?`, `onWaiting?`, `onLoadError?` | 默认的视频幻灯片，通过共享的 `<video>` 元素播放；`useVideoSlideRenderer` 会替你渲染它。 |
+| `LightboxNavigation` | `LightboxNavigationProps`: `activeIndex`, `count`, `loop?`, `onPrev`, `onNext` | 默认的上一张 / 下一张箭头；放进你自己的 `#navigation` 插槽即可保留内置外观。 |
 
 ## API 参考 [#api-reference]
 

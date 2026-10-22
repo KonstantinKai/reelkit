@@ -14,7 +14,15 @@
 import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
 import { join, dirname, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { publicExportNames } from './lib/publicExports.mjs';
+import {
+  internalExportNames,
+  publicExportNames,
+} from './lib/publicExports.mjs';
+import {
+  componentsAfterHooks,
+  mentionsAsCode,
+  strippedInternals,
+} from './lib/docsRules.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const configPath = join(root, 'scripts', 'docs-check.config.json');
@@ -82,7 +90,42 @@ function publicExports(file) {
     );
   }
 
-  return names;
+  const internal = new Set(internalExports(file));
+  return names.filter((name) => !internal.has(name));
+}
+
+/** The module a relative specifier points at, tried the way the bundler resolves it. */
+function resolveModule(fromDir, specifier) {
+  const base = join(fromDir, specifier);
+  for (const candidate of [
+    `${base}.ts`,
+    `${base}.tsx`,
+    join(base, 'index.ts'),
+  ]) {
+    if (existsSync(join(root, candidate))) {
+      return { src: read(candidate), dir: dirname(candidate) };
+    }
+  }
+  return null;
+}
+
+/** Exports tagged `@internal` at their declaration — outside the docs gate. */
+const internalExports = (file) =>
+  internalExportNames(read(file), resolveModule, dirname(file));
+
+for (const s of config.surfaces) {
+  if (!existsSync(join(root, s.package))) continue;
+  const tsconfig = join(dirname(dirname(s.package)), 'tsconfig.lib.json');
+  if (!existsSync(join(root, tsconfig))) continue;
+  const stripped = strippedInternals(
+    JSON.parse(read(tsconfig)),
+    internalExports(s.package),
+  );
+  for (const name of stripped) {
+    errors.push(
+      `${s.package}: export \`${name}\` is tagged @internal, but ${tsconfig} sets stripInternal, so its type would vanish from the published package — document it instead.`,
+    );
+  }
 }
 
 const mentions = (haystack, symbol) =>
@@ -656,6 +699,52 @@ if (config.localeParity) {
     }
   }
 }
+
+// The row comparison above only sees markdown table rows and `prop:` keys, so
+// a symbol documented in a JSX table or in a sentence can be missing from a
+// translation without anything noticing. Every export the English API page
+// names has to be named on each translated copy of that page as well.
+for (const s of config.surfaces) {
+  if (!existsSync(join(root, s.package))) continue;
+  const { valueNames } = publicExportNames(read(s.package));
+  const translations = (config.localeParity?.locales ?? []).map((locale) =>
+    s.page.replace('/content/en/', `/content/${locale}/`),
+  );
+  for (const file of [s.page, s.mirror, ...translations]) {
+    if (!existsSync(join(root, file))) continue;
+    for (const name of componentsAfterHooks(read(file), valueNames)) {
+      errors.push(
+        `${file}: component \`${name}\` is documented after the hooks section — move it above, with the other components`,
+      );
+    }
+  }
+}
+
+const localeSymbolGaps = [];
+if (config.localeParity) {
+  for (const s of config.surfaces) {
+    if (!existsSync(join(root, s.package)) || !existsSync(join(root, s.page)))
+      continue;
+    const english = pageSource(s.page);
+    const documented = publicExports(s.package).filter((sym) =>
+      mentionsAsCode(english, sym),
+    );
+    for (const locale of config.localeParity.locales) {
+      const sibling = s.page.replace('/content/en/', `/content/${locale}/`);
+      if (sibling === s.page || !existsSync(join(root, sibling))) continue;
+      const translated = pageSource(sibling);
+      const missing = documented.filter(
+        (sym) => !mentionsAsCode(translated, sym),
+      );
+      if (missing.length) {
+        localeSymbolGaps.push(
+          `${sibling}: names none of ${missing.join(', ')}, which ${s.page} documents`,
+        );
+      }
+    }
+  }
+}
+errors.push(...localeSymbolGaps);
 
 if (updateBaseline) {
   config.knownUndocumented = freshBaseline;

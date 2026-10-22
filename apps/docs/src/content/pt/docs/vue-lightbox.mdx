@@ -142,7 +142,7 @@ Seis slots nomeados com escopo permitem personalizar por completo as superfície
 
 ## Suporte a vídeo [#video-support]
 
-Os slides de vídeo são opcionais, para que o bundle padrão fique livre de toda a fiação de áudio e vídeo. Chame `useVideoSlideRenderer(items)` e repasse o `VideoSlideRenderer` / `VideoControlsRenderer` devolvidos aos slots `#slide` e `#controls` do overlay. Envolva o overlay no `SoundProvider` devolvido, para que o botão de som embutido tenha contexto.
+Os slides de vídeo são opcionais, para que o bundle padrão fique livre de toda a fiação de áudio e vídeo. Chame `useVideoSlideRenderer(items)` e repasse o `VideoSlideRenderer` / `VideoControlsRenderer` devolvidos aos slots `#slide` e `#controls` do overlay. Envolva o overlay no `SoundProvider` devolvido, para que o botão de som embutido tenha contexto. O objeto devolvido é tipado como `UseVideoSlideRendererResult`: `SoundProvider`, `hasVideo`, `VideoSlideRenderer` e `VideoControlsRenderer`.
 
 <CodeBlock code={videoOptInCode} language="vue" />
 
@@ -233,6 +233,18 @@ Um slot `#controls` próprio recebe `isDownloading` e, só quando `show-download
 | --- | --- | --- |
 | `PlayPauseButton` | `PlayPauseButtonProps`: `isPlaying`, `onPress`, `className?` | Alternador da apresentação (ícone Play/Pause, `aria-pressed` enquanto toca). Mostrado pelos controles padrão com `auto-advance`. |
 | `DownloadButton` | `DownloadButtonProps`: `isDownloading`, `onPress`, `className?` | Botão de download, desativado enquanto `isDownloading`. Mostrado pelos controles padrão com `show-download`. |
+| `CloseButton` | `CloseButtonProps`: `onPress`, `className?` | Botão de fechar padrão que a barra de controles renderiza; coloque-o dentro do seu próprio slot `#controls` para manter o visual embutido. |
+| `Counter` | `CounterProps`: `currentIndex`, `count`, `className?` | Chip contador "3 / 10" padrão; coloque-o dentro do seu próprio slot `#controls` para manter o visual embutido. |
+| `FullscreenButton` | `FullscreenButtonProps`: `isFullscreen`, `onPress`, `className?` | Botão de tela cheia padrão; o ícone acompanha `isFullscreen`. |
+| `SoundButton` | `SoundButtonProps`: `isMuted`, `onPress`, `className?` | Botão de mudo padrão para itens de vídeo; o ícone acompanha `isMuted`. |
+
+### Peças de slide e de navegação [#slide-parts]
+
+| Componente | Props | Descrição |
+| --- | --- | --- |
+| `ImageSlide` | `ImageSlideProps`: `src`, `alt?`, `isActive`, `onReady?`, `onLoadError?` | Slide de imagem padrão que o overlay renderiza; coloque-o dentro do seu próprio slot `#slide` para manter o visual embutido nos itens de imagem. |
+| `LightboxVideoSlide` | `LightboxVideoSlideProps`: `src`, `poster?`, `isActive`, `size`, `slideKey`, `loop?`, `onPlaying?`, `onWaiting?`, `onLoadError?` | Slide de vídeo padrão, que toca pelo elemento `<video>` compartilhado; `useVideoSlideRenderer` o renderiza para você. |
+| `LightboxNavigation` | `LightboxNavigationProps`: `activeIndex`, `count`, `loop?`, `onPrev`, `onNext` | Setas padrão de anterior e próximo; coloque-o dentro do seu próprio slot `#navigation` para manter o visual embutido. |
 
 ## Referência da API [#api-reference]
 

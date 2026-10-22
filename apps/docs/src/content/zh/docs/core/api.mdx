@@ -23,7 +23,7 @@ import usage from '../../../snippets/core-api/usage.ts?raw';
 | --- | --- | --- | --- |
 | `count` | `number` | required | 条目总数 |
 | `initialIndex` | `number` | 0 | 起始索引 |
-| `direction` | `'vertical' \| 'horizontal'` | 'vertical' | 滚动方向 |
+| `direction` | `SliderDirection` | 'vertical' | 滚动方向，`'vertical' \| 'horizontal'` |
 | `enableGestures` | `boolean` | true | 启用触摸 / 鼠标拖拽导航。为 false 时不挂载手势控制器。 |
 | `enableNavKeys` | `boolean` | true | 启用键盘方向键导航 |
 | `enableWheel` | `boolean` | false | 启用鼠标滚轮 |
@@ -31,7 +31,7 @@ import usage from '../../../snippets/core-api/usage.ts?raw';
 | `loop` | `boolean` | false | 循环导航 |
 | `transitionDuration` | `number` | 300 | 动画时长（毫秒） |
 | `swipeDistanceFactor` | `number` | 0.12 | 滑动阈值（0-1） |
-| `rangeExtractor` | `(index: number, count: number, loop: boolean) => number[]` | defaultRangeExtractor | 自定义函数，决定渲染哪些索引 |
+| `rangeExtractor` | `RangeExtractor` | defaultRangeExtractor | 自定义函数，决定渲染哪些索引 |
 
 ### 回调 [#callbacks]
 
@@ -68,6 +68,8 @@ import usage from '../../../snippets/core-api/usage.ts?raw';
 
 ## 状态属性 [#state-properties]
 
+控制器的 `state` 字段是一个 `SliderState`，即下面这三个信号。需要接收它的值时，用 `SliderState` 标注类型。
+
 | 属性 | 类型 | 说明 |
 | --- | --- | --- |
 | `index` | `Signal<number>` | 当前幻灯片索引 |
@@ -78,7 +80,8 @@ import usage from '../../../snippets/core-api/usage.ts?raw';
 
 | 导出 | 类型 | 说明 |
 | --- | --- | --- |
-| `defaultRangeExtractor` | `(index: number, count: number, loop: boolean) => number[]` | 默认提取器，渲染当前索引周围的 3 个条目 |
+| `defaultRangeExtractor` | `RangeExtractor` | 默认提取器，渲染当前索引周围的 3 个条目 |
+| `RangeExtractor` | `(current: number, count: number, loop: boolean) => number[]` | 范围提取器的签名。用它为你自己的 `rangeExtractor` 标注类型。 |
 
 ## Signal API [#signal-api]
 
@@ -99,6 +102,8 @@ import usage from '../../../snippets/core-api/usage.ts?raw';
 | `createComputed` | `<T>(fn: () => T, deps: () => Subscribable[]) => ComputedSignal<T>` | 创建派生的计算信号。第二个参数是依赖工厂，返回需要追踪的信号。 |
 | `reaction` | `(deps: () => Subscribable[], effect: () => void) => () => void` | 任一依赖信号变化时执行副作用，返回销毁函数。信号的值请在副作用回调里读取。 |
 | `batch` | `(fn: () => void) => void` | 把多次信号更新合并成一次通知，支持嵌套 |
+| `Listener` | `() => void` | `observe` 接收的回调。单独声明信号观察者时用它标注类型。 |
+| `Dispose` | `() => void` | `observe` 和 `reaction` 的返回值：调用它即停止监听。保存订阅时用它标注类型。 |
 
 ## 过渡动画 [#transitions]
 
@@ -113,6 +118,46 @@ import usage from '../../../snippets/core-api/usage.ts?raw';
 | `flipTransition` | `TransitionTransformFn` | 3D 翻卡过渡 |
 | `cubeTransition` | `TransitionTransformFn` | 3D 立方体旋转过渡 |
 | `zoomTransition` | `TransitionTransformFn` | 缩放过渡 |
+| `SlideTransformStyle` | `{ transform?; transformOrigin?; opacity?; zIndex? }` | `TransitionTransformFn` 为单张幻灯片返回的样式。在自定义过渡里返回它。 |
+
+## 输入控制器 [#input-controllers]
+
+滑动控制器会根据 `enableGestures`、`enableNavKeys` 和 `enableWheel` 选项自行创建这三个控制器。编写自己的集成，或需要在非滑块元素上处理手势、方向键或滚轮时，可以直接创建它们。
+
+### 手势控制器 [#gesture-controller]
+
+| 导出 | 类型 | 说明 |
+| --- | --- | --- |
+| `createGestureController` | `(config?: GestureControllerConfig, events?: GestureControllerEvents) => GestureController` | 在元素上识别单击、双击、长按和拖拽，并把每次拖拽锁定在其主方向上。 |
+| `GestureController` | `{ attach; detach; observe; unobserve; updateEvents }` | `createGestureController` 返回的对象。`attach(element)` 绑定元素，`observe()` 添加监听，`unobserve()` 移除监听但保留元素，`detach()` 移除全部；`updateEvents(events)` 合并新的处理器。 |
+| `GestureControllerConfig` | `{ useTouchEventsOnly?; longPressDurationMs?; doubleTapWindowMs? }` | `createGestureController` 的选项：忽略鼠标（默认 `false`）、长按时长（默认 `800` 毫秒）、双击判定窗口（默认 `200` 毫秒）。 |
+| `GestureControllerEvents` | `{ onTap?; onDoubleTap?; onTapDown?; onTapUp?; onLongPress?; onLongPressEnd?; onHorizontalDragStart?; onHorizontalDragUpdate?; onHorizontalDragEnd?; onVerticalDragStart?; onVerticalDragUpdate?; onVerticalDragEnd?; onDragEnd? }` | `createGestureController` 调用的回调。拖拽按主方向交给水平或垂直处理器；`onDragEnd` 两个方向都会触发。 |
+| `GestureAxisDragUpdateEvent` | `GestureEvent & { delta; distance; primaryDelta; primaryDistance; cancel }` | `onHorizontalDragUpdate` 和 `onVerticalDragUpdate` 的载荷：自上次更新以来的位移、总距离、沿主方向的对应值，以及让拖拽回弹的 `cancel()`。 |
+| `GestureAxisDragEndEvent` | `GestureAxisDragUpdateEvent` 去掉 `cancel`，加上 `{ velocity; primaryVelocity }` | `onHorizontalDragEnd` 和 `onVerticalDragEnd` 的载荷，附带松手时的速度（像素 / 秒）。 |
+| `GestureDragEndEvent` | `GestureAxisDragEndEvent` 去掉 `primary` 字段 | `onDragEnd` 的载荷，适合不关心拖拽方向的处理器。 |
+| `Offset` | `[x: number, y: number]` | 一对像素值，手势事件中的位置、位移、距离和速度都用它表示。 |
+| `EventKind` | `'touch' \| 'mouse'` | 手势来自哪种输入，见 `GestureCommonEvent` 的 `kind` 字段。 |
+| `DragAxis` | `'horizontal' \| 'vertical' \| null` | 拖拽的主方向，在第一次移动确定之前为 `null`。 |
+
+### 键盘控制器 [#keyboard-controller]
+
+| 导出 | 类型 | 说明 |
+| --- | --- | --- |
+| `createKeyboardController` | `(config: KeyboardControllerConfig, events: KeyboardControllerEvents) => KeyboardController` | 把方向键按下转换成 `NavKey` 回调。 |
+| `KeyboardController` | `{ attach; detach }` | `createKeyboardController` 返回的对象。`attach(target?)` 在目标上监听 `keydown`（默认 `window`），`detach()` 停止监听。 |
+| `KeyboardControllerConfig` | `{ filter?; throttleMs? }` | `createKeyboardController` 的选项：要响应的按键（默认四个全部）和两次按键之间的最短间隔（默认 `0`，不节流）。 |
+| `KeyboardControllerEvents` | `{ onKeyPress: (key: NavKey, event: KeyboardEvent) => void }` | `createKeyboardController` 对每次被接受的按键调用的回调。 |
+| `NavKey` | `'up' \| 'right' \| 'down' \| 'left'` | 被按下的方向键，键盘控制器以此上报和过滤。 |
+
+### 滚轮控制器 [#wheel-controller]
+
+| 导出 | 类型 | 说明 |
+| --- | --- | --- |
+| `createWheelController` | `(config: WheelControllerConfig, events: WheelControllerEvents) => WheelController` | 把鼠标滚轮滚动转换成每个手势一次的方向回调，把一次滚动产生的一串事件合并为一次。 |
+| `WheelController` | `{ attach; detach }` | `createWheelController` 返回的对象。`attach(target?)` 在目标上监听 `wheel`（默认 `window`），`detach()` 停止监听并丢弃尚未执行的回调。 |
+| `WheelControllerConfig` | `{ debounceMs?; deltaThreshold? }` | `createWheelController` 的选项：结束一个手势所需的静止时间（默认 `200` 毫秒）和计入的最小增量（默认 `10` 像素）。 |
+| `WheelControllerEvents` | `{ onWheel: (direction: WheelDirection, event: WheelEvent) => void }` | `createWheelController` 对每个滚动手势调用一次的回调。 |
+| `WheelDirection` | `'up' \| 'down' \| 'left' \| 'right'` | 滚轮手势的方向。 |
 
 ## 内容加载 [#content-loading]
 
@@ -185,6 +230,28 @@ import usage from '../../../snippets/core-api/usage.ts?raw';
 | `createDisposableList` | `() => DisposableList` | 用来收集销毁函数的可组合列表。调用 dispose() 一次性全部执行。 |
 | `createBodyLock` | `() => BodyLock` | 带引用计数的 body 滚动锁。多个使用方可以同时上锁，全部解锁后才恢复滚动。 |
 | `sharedBodyLock` | `BodyLock` | 模块级的单例实例。当应用里多个组件需要共用同一个引用计数、让嵌套的弹窗 / 浮层正确叠加时使用。各框架绑定（`@reelkit/react`, `@reelkit/vue`, `@reelkit/angular`）内部用的就是它。 |
+
+## 工具 [#utilities]
+
+构成各控制器的小型辅助函数。各框架绑定会重新导出它们，自定义的幻灯片、过渡或集成可以使用同一套函数。
+
+| 导出 | 类型 | 说明 |
+| --- | --- | --- |
+| `first` | `<T>(arr: readonly T[]) => T` | 数组的第一个元素，例如 `Offset` 的 x 或尺寸的宽度。 |
+| `last` | `<T>(arr: readonly T[]) => T` | 数组的最后一个元素，例如 `Offset` 的 y 或尺寸的高度。 |
+| `generate` | `<G>(count: number, generator: (i: number) => G) => G[]` | 根据索引生成 `count` 个条目的数组，例如用 `generate(10, (i) => i)` 生成演示数据。 |
+| `abs` | `(value: number) => number` | 绝对值。 |
+| `isNegative` | `(value: number) => boolean` | 数值是否小于零，例如用来区分向后和向前的拖拽。 |
+| `clamp` | `(value: number, min: number, max: number) => number` | 把数值限制在 `min` 和 `max` 之间（含两端）。 |
+| `lerp` | `(t: number, a: number, b: number) => number` | 线性插值：`t = 0` 时为 `a`，`t = 1` 时为 `b`。在自定义过渡里用它把幻灯片进度映射成数值。 |
+| `extractRange` | `(count, start, end?, overscan?, loop?) => number[]` | 从 `start` 到 `end`（默认 `start`）的索引，两侧各加 `overscan` 个（默认 `1`），`loop` 为 true 时在首尾回绕。用它构建自定义的 `RangeExtractor`。 |
+| `noop` | `() => void` | 什么都不做的函数，用作默认回调。 |
+| `createDeferred` | `<T = void>() => Deferred<T>` | 一个 promise 及其对应的 `resolve`，用于把回调式 API 接到 `await` 上。 |
+| `Deferred` | `{ promise: Promise<T>; resolve: (value?: T) => void }` | `createDeferred` 返回的对象。 |
+| `createLruCache` | `<V>(maxSize: number, onEvict?: (value: V, key: string) => void) => LruCache<V>` | 一个只保留最近写入的 `maxSize` 个条目、超出时丢弃最旧条目的 `Map`。`onEvict` 会对每个被丢弃的条目调用，用于清理，例如 `URL.revokeObjectURL`。 |
+| `LruCache` | `Map<string, V>` | `createLruCache` 返回的对象。它是真正的 `Map`，只有 `set` 不同。 |
+| `animate` | `(options: AnimationOptions) => () => void` | 以缓入缓出曲线把数值从 `from` 动画到 `to`，每帧调用 `onUpdate`。返回一个取消动画的函数。 |
+| `AnimationOptions` | `{ from; to; duration; onUpdate; onComplete? }` | `animate` 的选项：起止值、时长（毫秒）、每帧回调，以及可选的结束回调。 |
 
 ## 尺寸检测 [#size-detection]
 

@@ -23,7 +23,7 @@ import usage from '../../../snippets/core-api/usage.ts?raw';
 | --- | --- | --- | --- |
 | `count` | `number` | required | Загальна кількість елементів |
 | `initialIndex` | `number` | 0 | Початковий індекс |
-| `direction` | `'vertical' \| 'horizontal'` | 'vertical' | Напрямок прокручування |
+| `direction` | `SliderDirection` | 'vertical' | Напрямок прокручування, `'vertical' \| 'horizontal'` |
 | `enableGestures` | `boolean` | true | Вмикає навігацію перетягуванням дотиком або мишею. Якщо false, контролер жестів не підключається. |
 | `enableNavKeys` | `boolean` | true | Вмикає навігацію стрілками клавіатури |
 | `enableWheel` | `boolean` | false | Вмикає колесо миші |
@@ -31,7 +31,7 @@ import usage from '../../../snippets/core-api/usage.ts?raw';
 | `loop` | `boolean` | false | Циклічна навігація |
 | `transitionDuration` | `number` | 300 | Тривалість анімації в мілісекундах |
 | `swipeDistanceFactor` | `number` | 0.12 | Поріг свайпу (0–1) |
-| `rangeExtractor` | `(index: number, count: number, loop: boolean) => number[]` | defaultRangeExtractor | Власна функція, що визначає, які індекси рендеряться |
+| `rangeExtractor` | `RangeExtractor` | defaultRangeExtractor | Власна функція, що визначає, які індекси рендеряться |
 
 ### Колбеки [#callbacks]
 
@@ -68,6 +68,8 @@ import usage from '../../../snippets/core-api/usage.ts?raw';
 
 ## Властивості стану [#state-properties]
 
+Поле `state` контролера має тип `SliderState` — це три сигнали нижче. Типізуйте ним значення, яке його отримує.
+
 | Властивість | Тип | Опис |
 | --- | --- | --- |
 | `index` | `Signal<number>` | Поточний індекс слайда |
@@ -78,7 +80,8 @@ import usage from '../../../snippets/core-api/usage.ts?raw';
 
 | Експорт | Тип | Опис |
 | --- | --- | --- |
-| `defaultRangeExtractor` | `(index: number, count: number, loop: boolean) => number[]` | Стандартний екстрактор, який рендерить 3 елементи навколо поточного індексу |
+| `defaultRangeExtractor` | `RangeExtractor` | Стандартний екстрактор, який рендерить 3 елементи навколо поточного індексу |
+| `RangeExtractor` | `(current: number, count: number, loop: boolean) => number[]` | Сигнатура екстрактора діапазону. Типізуйте нею власний `rangeExtractor`. |
 
 ## Signal API [#signal-api]
 
@@ -99,6 +102,8 @@ import usage from '../../../snippets/core-api/usage.ts?raw';
 | `createComputed` | `<T>(fn: () => T, deps: () => Subscribable[]) => ComputedSignal<T>` | Створює похідний обчислюваний сигнал. Другий аргумент — фабрика залежностей, що повертає сигнали для стеження. |
 | `reaction` | `(deps: () => Subscribable[], effect: () => void) => () => void` | Виконує побічний ефект, коли змінюється будь-який залежний сигнал; повертає функцію звільнення. Значення сигналів читайте всередині колбека ефекту. |
 | `batch` | `(fn: () => void) => void` | Групує кілька оновлень сигналів в одне сповіщення; підтримує вкладеність |
+| `Listener` | `() => void` | Колбек, який приймає `observe`. Типізуйте ним спостерігача сигналу, оголошеного окремо. |
+| `Dispose` | `() => void` | Те, що повертають `observe` і `reaction`: викличте, щоб припинити стеження. Типізуйте ним збережену підписку. |
 
 ## Переходи [#transitions]
 
@@ -113,6 +118,46 @@ import usage from '../../../snippets/core-api/usage.ts?raw';
 | `flipTransition` | `TransitionTransformFn` | 3D-перехід перевертанням картки |
 | `cubeTransition` | `TransitionTransformFn` | 3D-перехід обертанням куба |
 | `zoomTransition` | `TransitionTransformFn` | Перехід масштабуванням |
+| `SlideTransformStyle` | `{ transform?; transformOrigin?; opacity?; zIndex? }` | Те, що `TransitionTransformFn` повертає для одного слайда. Повертайте його з власного переходу. |
+
+## Контролери введення [#input-controllers]
+
+Контролер слайдера сам створює ці три контролери з опцій `enableGestures`, `enableNavKeys` і `enableWheel`. Створюйте їх напряму, коли пишете власну інтеграцію або потребуєте жестів, клавіш-стрілок чи коліщатка миші на елементі, що не є слайдером.
+
+### Контролер жестів [#gesture-controller]
+
+| Експорт | Тип | Опис |
+| --- | --- | --- |
+| `createGestureController` | `(config?: GestureControllerConfig, events?: GestureControllerEvents) => GestureController` | Розпізнає дотики, подвійні дотики, довгі натискання й перетягування на елементі та закріплює кожне перетягування за його домінантною віссю. |
+| `GestureController` | `{ attach; detach; observe; unobserve; updateEvents }` | Об’єкт, який повертає `createGestureController`. `attach(element)` прив’язує елемент, `observe()` додає слухачів, `unobserve()` знімає їх і залишає елемент, `detach()` прибирає все; `updateEvents(events)` додає нові обробники до наявних. |
+| `GestureControllerConfig` | `{ useTouchEventsOnly?; longPressDurationMs?; doubleTapWindowMs? }` | Опції `createGestureController`: ігнорувати мишу (типово `false`), час довгого натискання (типово `800` мс), вікно подвійного дотику (типово `200` мс). |
+| `GestureControllerEvents` | `{ onTap?; onDoubleTap?; onTapDown?; onTapUp?; onLongPress?; onLongPressEnd?; onHorizontalDragStart?; onHorizontalDragUpdate?; onHorizontalDragEnd?; onVerticalDragStart?; onVerticalDragUpdate?; onVerticalDragEnd?; onDragEnd? }` | Колбеки, які викликає `createGestureController`. Перетягування йде до горизонтальних або вертикальних обробників за домінантною віссю; `onDragEnd` спрацьовує для обох. |
+| `GestureAxisDragUpdateEvent` | `GestureEvent & { delta; distance; primaryDelta; primaryDistance; cancel }` | Дані `onHorizontalDragUpdate` і `onVerticalDragUpdate`: зсув від останнього оновлення, загальна відстань, те саме вздовж домінантної осі та `cancel()`, щоб повернути перетягування назад. |
+| `GestureAxisDragEndEvent` | `GestureAxisDragUpdateEvent` без `cancel`, плюс `{ velocity; primaryVelocity }` | Дані `onHorizontalDragEnd` і `onVerticalDragEnd` зі швидкістю відпускання в пікселях за секунду. |
+| `GestureDragEndEvent` | `GestureAxisDragEndEvent` без полів `primary` | Дані `onDragEnd` — для обробника, якому байдуже, за якою віссю йшло перетягування. |
+| `Offset` | `[x: number, y: number]` | Пара пікселів, якою описано кожну позицію, зсув, відстань і швидкість у події жесту. |
+| `EventKind` | `'touch' \| 'mouse'` | Пристрій, від якого надійшов жест, у полі `kind` типу `GestureCommonEvent`. |
+| `DragAxis` | `'horizontal' \| 'vertical' \| null` | Домінантна вісь перетягування; `null`, доки її не визначить перший рух. |
+
+### Контролер клавіатури [#keyboard-controller]
+
+| Експорт | Тип | Опис |
+| --- | --- | --- |
+| `createKeyboardController` | `(config: KeyboardControllerConfig, events: KeyboardControllerEvents) => KeyboardController` | Перетворює натискання клавіш-стрілок на колбеки з `NavKey`. |
+| `KeyboardController` | `{ attach; detach }` | Об’єкт, який повертає `createKeyboardController`. `attach(target?)` слухає `keydown` на цілі (типово `window`), `detach()` припиняє. |
+| `KeyboardControllerConfig` | `{ filter?; throttleMs? }` | Опції `createKeyboardController`: клавіші, на які реагувати (типово всі чотири), і мінімальний час між двома натисканнями (типово `0`, без обмеження). |
+| `KeyboardControllerEvents` | `{ onKeyPress: (key: NavKey, event: KeyboardEvent) => void }` | Колбек, який `createKeyboardController` викликає на кожне прийняте натискання. |
+| `NavKey` | `'up' \| 'right' \| 'down' \| 'left'` | Натиснута клавіша-стрілка, як її повідомляє й фільтрує контролер клавіатури. |
+
+### Контролер коліщатка [#wheel-controller]
+
+| Експорт | Тип | Опис |
+| --- | --- | --- |
+| `createWheelController` | `(config: WheelControllerConfig, events: WheelControllerEvents) => WheelController` | Перетворює прокручування коліщатком миші на один колбек напрямку на жест, згортаючи серію подій одного прокручування. |
+| `WheelController` | `{ attach; detach }` | Об’єкт, який повертає `createWheelController`. `attach(target?)` слухає `wheel` на цілі (типово `window`), `detach()` припиняє й скасовує відкладений колбек. |
+| `WheelControllerConfig` | `{ debounceMs?; deltaThreshold? }` | Опції `createWheelController`: пауза, що завершує жест (типово `200` мс), і найменший зсув, який враховується (типово `10` px). |
+| `WheelControllerEvents` | `{ onWheel: (direction: WheelDirection, event: WheelEvent) => void }` | Колбек, який `createWheelController` викликає один раз на жест прокручування. |
+| `WheelDirection` | `'up' \| 'down' \| 'left' \| 'right'` | Напрямок жесту коліщатка. |
 
 ## Завантаження вмісту [#content-loading]
 
@@ -185,6 +230,28 @@ import usage from '../../../snippets/core-api/usage.ts?raw';
 | `createDisposableList` | `() => DisposableList` | Список для збирання функцій звільнення. Викличте dispose(), щоб виконати їх усі одразу. |
 | `createBodyLock` | `() => BodyLock` | Блокування прокручування body з підрахунком посилань. Кілька споживачів можуть блокувати одночасно; прокручування повертається, коли всі розблокують. |
 | `sharedBodyLock` | `BodyLock` | Синглтон на рівні модуля. Беріть його, коли кілька компонентів застосунку мають ділити один лічильник посилань, щоб вкладені модальні вікна й оверлеї коректно чергувалися. Прив’язки до фреймворків (`@reelkit/react`, `@reelkit/vue`, `@reelkit/angular`) використовують саме його під капотом. |
+
+## Утиліти [#utilities]
+
+Невеликі помічники, з яких складені контролери. Прив’язки до фреймворків реекспортують їх, тож власний слайд, перехід чи інтеграція можуть користуватися тими самими.
+
+| Експорт | Тип | Опис |
+| --- | --- | --- |
+| `first` | `<T>(arr: readonly T[]) => T` | Перший елемент масиву, наприклад x з `Offset` або ширина з розміру. |
+| `last` | `<T>(arr: readonly T[]) => T` | Останній елемент масиву, наприклад y з `Offset` або висота з розміру. |
+| `generate` | `<G>(count: number, generator: (i: number) => G) => G[]` | Будує масив із `count` елементів за їхнім індексом, наприклад `generate(10, (i) => i)` для демонстраційних даних. |
+| `abs` | `(value: number) => number` | Модуль числа. |
+| `isNegative` | `(value: number) => boolean` | Чи число менше за нуль — наприклад, щоб відрізнити перетягування назад від перетягування вперед. |
+| `clamp` | `(value: number, min: number, max: number) => number` | Утримує число в межах від `min` до `max` включно. |
+| `lerp` | `(t: number, a: number, b: number) => number` | Лінійна інтерполяція: `a` при `t = 0`, `b` при `t = 1`. Використовуйте у власному переході, щоб перевести прогрес слайда в значення. |
+| `extractRange` | `(count, start, end?, overscan?, loop?) => number[]` | Індекси від `start` до `end` (типово `start`) плюс `overscan` з кожного боку (типово `1`), загорнуті через краї, коли `loop` дорівнює true. Будуйте з нею власний `RangeExtractor`. |
+| `noop` | `() => void` | Функція, що нічого не робить, — для колбека за замовчуванням. |
+| `createDeferred` | `<T = void>() => Deferred<T>` | Проміс разом із `resolve`, що його виконує, — щоб перевести API на колбеках на `await`. |
+| `Deferred` | `{ promise: Promise<T>; resolve: (value?: T) => void }` | Об’єкт, який повертає `createDeferred`. |
+| `createLruCache` | `<V>(maxSize: number, onEvict?: (value: V, key: string) => void) => LruCache<V>` | `Map`, що зберігає `maxSize` останніх записаних елементів і понад цю межу відкидає найстаріший. `onEvict` викликається для кожного відкинутого запису — для прибирання, як-от `URL.revokeObjectURL`. |
+| `LruCache` | `Map<string, V>` | Об’єкт, який повертає `createLruCache`. Це справжній `Map`; відрізняється лише `set`. |
+| `animate` | `(options: AnimationOptions) => () => void` | Анімує число від `from` до `to` за кривою ease-in-out, викликаючи `onUpdate` на кожному кадрі. Повертає функцію, що скасовує анімацію. |
+| `AnimationOptions` | `{ from; to; duration; onUpdate; onComplete? }` | Опції `animate`: початкове й кінцеве значення, тривалість у мілісекундах, колбек на кожен кадр і необов’язковий колбек після завершення. |
 
 ## Визначення розміру [#size-detection]
 

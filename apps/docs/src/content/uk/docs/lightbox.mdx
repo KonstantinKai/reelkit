@@ -336,7 +336,7 @@ Pass `hashCodec: base64UrlCodec` щоб закодувати id в URL у base64
 
 ### Пропси Reel (передані далі) [#reel-props-proxied]
 
-Ці пропси передаються далі в [Reel](/docs/react/api#reel-props) component.
+Ці пропси передаються далі в компонент [Reel](/docs/react/api#reel-props). Їхній тип — `ReelProxyProps`, підмножина пропсів Reel, яку оверлей передає далі; типізуйте ним обгортку, що їх прокидає.
 
 | Prop | Тип | Типове значення | Опис |
 | --- | --- | --- | --- |
@@ -376,25 +376,25 @@ Pass `hashCodec: base64UrlCodec` щоб закодувати id в URL у base64
 
 ### CloseButton [#closebutton]
 
-Стандартна кнопка закриття у вигляді хрестика.
+Стандартна кнопка закриття у вигляді хрестика. Пропси (`CloseButtonProps`): `onClick`, необов’язкові `className` і `style`.
 
 <CodeBlock code={closebutton} language="tsx" />
 
 ### Counter [#counter]
 
-Значок лічильника зображень на кшталт «1 / 3».
+Значок лічильника зображень на кшталт «1 / 3». Пропси (`CounterProps`): `currentIndex` (від нуля), `count`, необов’язкові `className` і `style`.
 
 <CodeBlock code={counter} language="tsx" />
 
 ### FullscreenButton [#fullscreenbutton]
 
-Кнопка перемикання повного екрана (іконка Maximize або Minimize).
+Кнопка перемикання повного екрана (іконка Maximize або Minimize). Пропси (`FullscreenButtonProps`): `isFullscreen`, `onToggle`, необов’язкові `className` і `style`.
 
 <CodeBlock code={fullscreenbutton} language="tsx" />
 
 ### SoundButton [#soundbutton]
 
-Кнопка перемикання звуку для слайдів-відео (іконка Volume2 або VolumeX). Автоматично входить у `renderControls` from `useVideoSlideRenderer`. Для окремого використання у власних елементах керування доступ до стану звуку — через `useSoundState`.
+Кнопка перемикання звуку для слайдів-відео (іконка Volume2 або VolumeX). Автоматично входить у `renderControls` from `useVideoSlideRenderer`. Для окремого використання у власних елементах керування доступ до стану звуку — через `useSoundState`. Пропси (`SoundButtonProps`): `isMuted`, `onToggle`, необов’язкові `className` і `style`.
 
 <CodeBlock code={soundbutton} language="tsx" />
 
@@ -414,7 +414,9 @@ Pass `hashCodec: base64UrlCodec` щоб закодувати id в URL у base64
 
 ### useVideoSlideRenderer [#usevideosliderenderer]
 
-Хук для підтримки відео за бажанням. Повертає `renderSlide`, `renderControls`, та `SoundProvider` — загорніть оверлей у SoundProvider і передайте функції рендерингу.
+Хук для підтримки відео за бажанням. Повертає `renderSlide`, `renderControls`, та `SoundProvider` — загорніть оверлей у SoundProvider і передайте функції рендерингу. Тип результату — `UseVideoSlideRendererResult`, який також містить `hasVideo`: true, коли хоча б один елемент має `type: 'video'`.
+
+Його `renderSlide` малює відео-елементи через `LightboxVideoSlide` — слайд-відео, що грає через один спільний елемент `<video>`, тож звук працює й на iOS, і запам’ятовує позицію кожного відео. Рендерте його самостійно лише з власного `renderSlide`. Його пропси (`LightboxVideoSlideProps`): `src`, `poster`, `isActive`, `size`, `slideKey` (ключ для збереженої позиції та захопленого кадру), `loop` (типово true) і колбеки `onPlaying`, `onWaiting`, `onError`, `onEnded`.
 
 <CodeBlock code={usevideosliderenderer} language="typescript" />
 

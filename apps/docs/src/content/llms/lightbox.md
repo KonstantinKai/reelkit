@@ -265,6 +265,8 @@ const images: LightboxItem[] = [
 
 ## LightboxOverlay Props
 
+Type: `LightboxOverlayProps`.
+
 | Prop                  | Type                                             | Default           | Description                                                                                                                                                                |
 | --------------------- | ------------------------------------------------ | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `isOpen`              | `boolean`                                        | required          | Control lightbox visibility. For URL-driven open state, use the separate `LightboxUrlOverlay` — see URL State.                                                             |
@@ -285,6 +287,8 @@ const images: LightboxItem[] = [
 
 ### Reel-Forwarded Props
 
+Type: `ReelProxyProps` — subset of Reel props the overlay passes through; type a wrapper that forwards them.
+
 | Prop                    | Type             | Default | Description                        |
 | ----------------------- | ---------------- | ------- | ---------------------------------- |
 | `loop`                  | `boolean`        | `false` | Enable infinite loop               |
@@ -297,7 +301,7 @@ const images: LightboxItem[] = [
 
 ## LightboxUrlOverlay Props
 
-Takes every visual/behavior prop above except `isOpen`, replaced by a `controller`. `initialIndex` is ignored — the controller's position picks the slide, so a value passed alongside it is overwritten on every open.
+Type: `LightboxUrlOverlayProps`. Takes every visual/behavior prop above except `isOpen`, replaced by a `controller`. `initialIndex` is ignored — the controller's position picks the slide, so a value passed alongside it is overwritten on every open.
 
 | Prop         | Type                 | Default  | Description                                                                                                                                                             |
 | ------------ | -------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -314,14 +318,14 @@ Takes every visual/behavior prop above except `isOpen`, replaced by a `controlle
 
 Reusable sub-components for composing custom controls via `renderControls`.
 
-| Component          | Description                                                                                                                                                                                                       |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CloseButton`      | Default X close button.                                                                                                                                                                                           |
-| `Counter`          | Image counter pill showing "1 / 3".                                                                                                                                                                               |
-| `FullscreenButton` | Fullscreen toggle button (Maximize/Minimize icon).                                                                                                                                                                |
-| `SoundButton`      | Mute/unmute toggle for video slides (Volume2/VolumeX icon). Included automatically in the `renderControls` from `useVideoSlideRenderer`. Standalone inside custom controls, read sound state via `useSoundState`. |
-| `PlayPauseButton`  | Slideshow toggle (Play/Pause icon, `aria-pressed` while playing). `PlayPauseButtonProps`: `isPlaying`, `onToggle`, `className?`, `style?`. Default controls show it when `autoAdvance` on.                        |
-| `DownloadButton`   | Download button (Download icon), disabled while downloading. `DownloadButtonProps`: `isDownloading`, `onClick`, `className?`, `style?`. Default controls show it when `showDownload` on.                          |
+| Component          | Description                                                                                                                                                                                                                                                                          |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `CloseButton`      | Default X close button. `CloseButtonProps`: `onClick`, `className?`, `style?`.                                                                                                                                                                                                       |
+| `Counter`          | Image counter pill showing "1 / 3". `CounterProps`: `currentIndex` (zero-based), `count`, `className?`, `style?`.                                                                                                                                                                    |
+| `FullscreenButton` | Fullscreen toggle button (Maximize/Minimize icon). `FullscreenButtonProps`: `isFullscreen`, `onToggle`, `className?`, `style?`.                                                                                                                                                      |
+| `SoundButton`      | Mute/unmute toggle for video slides (Volume2/VolumeX icon). Included automatically in the `renderControls` from `useVideoSlideRenderer`. Standalone inside custom controls, read sound state via `useSoundState`. `SoundButtonProps`: `isMuted`, `onToggle`, `className?`, `style?`. |
+| `PlayPauseButton`  | Slideshow toggle (Play/Pause icon, `aria-pressed` while playing). `PlayPauseButtonProps`: `isPlaying`, `onToggle`, `className?`, `style?`. Default controls show it when `autoAdvance` on.                                                                                           |
+| `DownloadButton`   | Download button (Download icon), disabled while downloading. `DownloadButtonProps`: `isDownloading`, `onClick`, `className?`, `style?`. Default controls show it when `showDownload` on.                                                                                             |
 
 ```tsx
 import {
@@ -361,6 +365,10 @@ const { renderSlide, renderControls, SoundProvider, hasVideo } =
 //                  PlayPauseButton / DownloadButton when those are switched on)
 // hasVideo       — true if items contain at least one video
 ```
+
+Return type: `UseVideoSlideRendererResult`.
+
+`LightboxVideoSlide` — video slide its `renderSlide` draws for video items. Plays through one shared `<video>` element (sound keeps working on iOS), remembers each video's position. Render it yourself only from a custom `renderSlide`. `LightboxVideoSlideProps`: `src`, `poster?`, `isActive`, `size`, `slideKey` (keys saved position + captured frame), `loop?` (default `true`), `onPlaying?`, `onWaiting?`, `onError?`, `onEnded?`.
 
 ## CSS Theming Tokens
 

@@ -116,17 +116,31 @@ Seis diretivas de slot de template permitem personalizar cada parte da interface
 
 | Diretiva | Tipo do contexto | Descrição |
 | --- | --- | --- |
-| \[rkPlayerControls\] | `PlayerControlsContext<T>` | Barra de controles global própria (fechar, botão de som e afins) |
-| \[rkPlayerError\] | `{ $implicit: activeIndex, item, innerActiveIndex }` | Slot de template do indicador de erro próprio |
-| \[rkPlayerLoading\] | `{ $implicit: activeIndex, item, innerActiveIndex }` | Slot de template do indicador de carregamento próprio |
-| \[rkPlayerNavigation\] | `PlayerNavigationContext` | Setas próprias de avançar e voltar |
-| \[rkPlayerNestedNavigation\] | `PlayerNestedNavigationContext` | Setas próprias do slider horizontal interno |
-| \[rkPlayerNestedSlide\] | `PlayerNestedSlideContext` | Conteúdo próprio de cada slide dentro do slider horizontal interno |
-| \[rkPlayerSlide\] | `PlayerSlideContext<T>` | Conteúdo de slide totalmente seu, no lugar do slide de mídia padrão |
-| \[rkPlayerSlideOverlay\] | `PlayerSlideOverlayContext<T>` | Camada de cada slide (dados do autor, curtidas, descrição e afins) |
-| \[rkPlayerTimeline\] | `PlayerTimelineContext<T>` | Barra de reprodução própria. Só é renderizada quando a regra (modo da linha do tempo e duração mínima) renderizaria a barra padrão (a mesma lógica de auto/always/never). |
+| \[rkPlayerControls\] | `PlayerControlsContext<T>` | Barra de controles global própria (fechar, botão de som e afins); a classe da diretiva é `RkPlayerControlsDirective` |
+| \[rkPlayerError\] | `PlayerErrorContext` | Slot de template do indicador de erro próprio; a classe da diretiva é `RkPlayerErrorDirective` |
+| \[rkPlayerLoading\] | `PlayerLoadingContext` | Slot de template do indicador de carregamento próprio; a classe da diretiva é `RkPlayerLoadingDirective` |
+| \[rkPlayerNavigation\] | `PlayerNavigationContext` | Setas próprias de avançar e voltar; a classe da diretiva é `RkPlayerNavigationDirective` |
+| \[rkPlayerNestedNavigation\] | `PlayerNestedNavigationContext` | Setas próprias do slider horizontal interno; a classe da diretiva é `RkPlayerNestedNavigationDirective` |
+| \[rkPlayerNestedSlide\] | `PlayerNestedSlideContext` | Conteúdo próprio de cada slide dentro do slider horizontal interno; a classe da diretiva é `RkPlayerNestedSlideDirective` |
+| \[rkPlayerSlide\] | `PlayerSlideContext<T>` | Conteúdo de slide totalmente seu, no lugar do slide de mídia padrão; a classe da diretiva é `RkPlayerSlideDirective` |
+| \[rkPlayerSlideOverlay\] | `PlayerSlideOverlayContext<T>` | Camada de cada slide (dados do autor, curtidas, descrição e afins); a classe da diretiva é `RkPlayerSlideOverlayDirective` |
+| \[rkPlayerTimeline\] | `PlayerTimelineContext<T>` | Barra de reprodução própria. Só é renderizada quando a regra (modo da linha do tempo e duração mínima) renderizaria a barra padrão (a mesma lógica de auto/always/never). A classe da diretiva é `RkPlayerTimelineDirective` |
+
+`PLAYER_TEMPLATE_SLOT_DIRECTIVES` reúne todas essas diretivas, para que um componente as espalhe no seu `imports` de uma vez.
 
 <CodeBlock code={templateSlots} language="typescript" />
+
+### Componentes de slide padrão [#default-slide-components]
+
+As peças com que o slide padrão é montado. Cada uma é um componente standalone; use uma dentro do seu próprio template para manter parte do visual padrão.
+
+| Componente | Seletor | Descrição |
+| --- | --- | --- |
+| `RkMediaSlideComponent` | `rk-media-slide` | O slide padrão. Renderiza `rk-image-slide`, `rk-video-slide` ou `rk-nested-slider` conforme a `media` do item de conteúdo; use-o num template `rkPlayerSlide` para manter a mídia padrão e acrescentar a sua própria camada por cima. |
+| `RkImageSlideComponent` | `rk-image-slide` | Uma imagem com `object-fit: cover`, que mostra o `poster` até carregar e chama `onReady`, `onWaiting` ou `onError`. |
+| `RkVideoSlideComponent` | `rk-video-slide` | Um vídeo no elemento `<video>` compartilhado. Precisa do `SoundStateService` que o overlay fornece, então renderize-o só dentro do player. |
+| `RkNestedSliderComponent` | `rk-nested-slider` | O slider horizontal, com pontos indicadores, para um item de conteúdo que tem várias entradas em `media`. |
+| `RkSlideOverlayComponent` | `rk-slide-overlay` | A camada inferior padrão: avatar e nome do autor, descrição e curtidas, a partir dos inputs `author`, `description` e `likes`. Use-o num template `rkPlayerSlideOverlay` para manter o visual padrão. |
 
 ### Linha do tempo própria [#custom-timeline]
 
@@ -264,7 +278,7 @@ Estenda `BaseContentItem` para usar o seu próprio modelo de domínio. O compone
 | `isOpen` | `boolean` | obrigatório | Controla a visibilidade do overlay; com false, o overlay sai do DOM |
 | `loop` | `boolean` | false | Liga o ciclo infinito entre os slides |
 | `swipeDistanceFactor` | `number` | 0.12 | Fração mínima da distância de deslize para trocar de slide |
-| `timeline` | `'auto' \| 'always' \| 'never'` | 'auto' | Estratégia que libera a barra de reprodução embutida. 'auto' só renderiza para vídeos mais longos que timelineMinDurationSeconds; 'always' renderiza sempre que o slide ativo tiver vídeo; 'never' desliga a barra embutida (use o slot de template rkPlayerTimeline para substituí-la inteiramente). |
+| `timeline` | `TimelineMode` (`'auto' \| 'always' \| 'never'`) | 'auto' | Estratégia que libera a barra de reprodução embutida. 'auto' só renderiza para vídeos mais longos que timelineMinDurationSeconds; 'always' renderiza sempre que o slide ativo tiver vídeo; 'never' desliga a barra embutida (use o slot de template rkPlayerTimeline para substituí-la inteiramente). |
 | `timelineMinDurationSeconds` | `number` | 30 | Duração mínima do vídeo, em segundos, para que timeline='auto' renderize a barra embutida. Clipes curtos em repetição abaixo desse limite ficam sem barra. |
 | `transitionDuration` | `number` | 300 | Duração da animação do slide em ms |
 | `wheelDebounceMs` | `number` | 200 | Duração do debounce dos eventos de roda em ms |
@@ -291,7 +305,7 @@ Aceita todos os inputs acima, menos `isOpen` e `initialIndex`, substituídos por
 | Campo | Tipo | Descrição |
 | --- | --- | --- |
 | `id` | `string` | Identificador único do item de mídia |
-| `type` | `'image' \| 'video'` | Tipo da mídia |
+| `type` | `MediaType` | Tipo da mídia: `'image' \| 'video'` |
 | `src` | `string` | URL do arquivo de mídia |
 | `poster` | `string?` | URL da miniatura de pôster, para itens de vídeo |
 | `aspectRatio` | `number` | Proporção entre largura e altura. Valores \< 1 indicam vertical (cover), > 1 horizontal (contain) |
@@ -308,6 +322,9 @@ Aceita todos os inputs acima, menos `isOpen` e `initialIndex`, substituídos por
 | `PlayerSlideOverlayContext<T>` | `{ $implicit: T, index, isActive }` |
 | `PlayerTimelineContext<T>` | `{ $implicit: T, activeIndex, timelineState: PlayerTimelineState }` |
 | `PlayerTimelineState` | `{ duration(), currentTime(), progress(), bufferedRanges(), isScrubbing(), seek(t), bindInteractions(el) }` |
+| `PlayerBufferedRange` | `{ start, end }` em segundos — uma entrada de `bufferedRanges()` |
+| `PlayerLoadingContext` | `{ $implicit: activeIndex, item, innerActiveIndex }` — o que o template `rkPlayerLoading` recebe; `innerActiveIndex` é `null` fora de um slider aninhado |
+| `PlayerErrorContext` | `{ $implicit: activeIndex, item, innerActiveIndex }` — o que o template `rkPlayerError` recebe |
 
 ## Classes CSS [#css-classes]
 

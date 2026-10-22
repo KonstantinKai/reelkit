@@ -336,7 +336,7 @@ import downloadbutton from '../../snippets/lightbox/downloadbutton.tsx?raw';
 
 ### Reel の Props（引き継ぎ） [#reel-props-proxied]
 
-これらの props は、内部の [Reel](/docs/react/api#reel-props) コンポーネントに渡されます。
+これらの props は、内部の [Reel](/docs/react/api#reel-props) コンポーネントに渡されます。型は `ReelProxyProps` で、オーバーレイが引き継ぐ Reel の props の一部です。それらを転送するラッパーの型付けに使います。
 
 | Prop | 型 | デフォルト | 説明 |
 | --- | --- | --- | --- |
@@ -376,25 +376,25 @@ import downloadbutton from '../../snippets/lightbox/downloadbutton.tsx?raw';
 
 ### CloseButton [#closebutton]
 
-デフォルトの X の閉じるボタンです。
+デフォルトの X の閉じるボタンです。Props（`CloseButtonProps`）は `onClick`、オプションの `className` と `style` です。
 
 <CodeBlock code={closebutton} language="tsx" />
 
 ### Counter [#counter]
 
-「1 / 3」と表示する画像のカウンターです。
+「1 / 3」と表示する画像のカウンターです。Props（`CounterProps`）は `currentIndex`（0 始まり）、`count`、オプションの `className` と `style` です。
 
 <CodeBlock code={counter} language="tsx" />
 
 ### FullscreenButton [#fullscreenbutton]
 
-フルスクリーンの切り替えボタンです（最大化／最小化のアイコン）。
+フルスクリーンの切り替えボタンです（最大化／最小化のアイコン）。Props（`FullscreenButtonProps`）は `isFullscreen`、`onToggle`、オプションの `className` と `style` です。
 
 <CodeBlock code={fullscreenbutton} language="tsx" />
 
 ### SoundButton [#soundbutton]
 
-動画スライド用のミュート切り替えボタンです（Volume2／VolumeX のアイコン）。`useVideoSlideRenderer` の `renderControls` には自動で含まれます。独自のコントロールの中で単独で使う場合は、`useSoundState` でサウンドの状態にアクセスしてください。
+動画スライド用のミュート切り替えボタンです（Volume2／VolumeX のアイコン）。`useVideoSlideRenderer` の `renderControls` には自動で含まれます。独自のコントロールの中で単独で使う場合は、`useSoundState` でサウンドの状態にアクセスしてください。Props（`SoundButtonProps`）は `isMuted`、`onToggle`、オプションの `className` と `style` です。
 
 <CodeBlock code={soundbutton} language="tsx" />
 
@@ -414,7 +414,9 @@ import downloadbutton from '../../snippets/lightbox/downloadbutton.tsx?raw';
 
 ### useVideoSlideRenderer [#usevideosliderenderer]
 
-オプトインの動画サポートのためのフックです。`renderSlide`、`renderControls`、`SoundProvider` を返します。オーバーレイを SoundProvider で包み、描画関数を渡してください。
+オプトインの動画サポートのためのフックです。`renderSlide`、`renderControls`、`SoundProvider` を返します。オーバーレイを SoundProvider で包み、描画関数を渡してください。戻り値の型は `UseVideoSlideRendererResult` で、どれかの要素が `type: 'video'` のとき true になる `hasVideo` も持っています。
+
+その `renderSlide` は、動画の要素を `LightboxVideoSlide` で描画します。これは共有の `<video>` 要素 1 つで再生する動画スライドで、iOS でも音が鳴り続け、動画ごとの再生位置を覚えています。自分で描画するのは独自の `renderSlide` からだけにしてください。Props（`LightboxVideoSlideProps`）は `src`、`poster`、`isActive`、`size`、`slideKey`（保存した位置とキャプチャしたフレームのキー）、`loop`（デフォルト true）と、`onPlaying`、`onWaiting`、`onError`、`onEnded` のコールバックです。
 
 <CodeBlock code={usevideosliderenderer} language="typescript" />
 

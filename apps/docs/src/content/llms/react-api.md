@@ -130,6 +130,23 @@ import { AnimatedObserve } from '@reelkit/react';
 | `signal`   | `Signal<AnimatedValue>`           | required | Signal emitting `{ value, duration, done? }`. A `duration` above 0 interpolates from the current value; 0 jumps straight there. |
 | `children` | `(value: number) => ReactElement` | required | Render fn receiving the interpolated value for the current frame, committed synchronously so the DOM keeps up.                  |
 
+## SwipeToClose
+
+`<SwipeToClose>` wraps children in container following a vertical swipe; calls `onClose` once swipe passes threshold — dismiss gesture of lightbox + stories player, for own custom overlay. Props type `SwipeToCloseProps`; `SwipeToCloseDirection` = `'up' | 'down'`.
+
+| Prop        | Type                    | Default  | Description                                               |
+| ----------- | ----------------------- | -------- | --------------------------------------------------------- |
+| `direction` | `SwipeToCloseDirection` | required | `'up'` = lightbox dismiss, `'down'` = stories dismiss     |
+| `onClose`   | `() => void`            | required | Called after swipe passes threshold + exit animation ends |
+| `enabled`   | `boolean`               | `true`   | Turn gesture off without unmounting                       |
+| `threshold` | `number`                | `0.2`    | Fraction of viewport height the swipe must cover          |
+| `className` | `string`                | -        | Class on outer `<div>`                                    |
+| `children`  | `ReactNode`             | required | Content moving with the swipe                             |
+
+## SoundProvider
+
+`<SoundProvider>` creates one `SoundController` (muted at first), hands it to children via `useSoundState`. Overlays render one; add own only around a custom player whose controls share mute state.
+
 ## Hooks
 
 ### useBodyLock
@@ -174,6 +191,24 @@ const photo = useOverlayUrlState({
   ...urlIndexKey(() => images.length),
 });
 ```
+
+### useReelContext
+
+`useReelContext()` → `ReelContextValue` of nearest parent `<Reel>`, or `null` outside one. `<ReelIndicator>` uses it to connect itself; use in own controls rendered as `<Reel>` children. `ReelContext` = context object behind it — provide own value only in tests or custom wrappers.
+
+| Property | Type                                                  | Description                                    |
+| -------- | ----------------------------------------------------- | ---------------------------------------------- |
+| `index`  | `Signal<number>`                                      | Active slide index; read `.value` in `Observe` |
+| `count`  | `Signal<number>`                                      | Total slide count                              |
+| `goTo`   | `(index: number, animate?: boolean) => Promise<void>` | Move to a slide, animated or not               |
+
+### useSoundState
+
+`useSoundState()` → `SoundController` from nearest `<SoundProvider>`; throws outside one. Reel player, lightbox, stories player wrap content in a provider → custom controls passed via render props can read / toggle mute.
+
+### useFullscreen
+
+`useFullscreen({ ref })` drives Fullscreen API for element in `ref`; exits on unmount. Argument `UseFullscreenProps`, returns `UseFullscreenResult` tuple: `[0]` `Signal<boolean>` fullscreen state (read in `Observe`), `[1]` request (leaves other fullscreen element first), `[2]` exit, `[3]` toggle — each `() => Promise<void>`.
 
 ## Accessibility
 
