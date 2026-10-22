@@ -20,6 +20,103 @@ const getSlideContent = (index: number) => ({
       : `Item #${index + 1} of ${TOTAL_SLIDES.toLocaleString()}`,
 });
 
+const nestedArrowStyle = (side: 'left' | 'right'): React.CSSProperties => ({
+  position: 'absolute',
+  top: '50%',
+  [side]: side === 'left' ? 16 : 40,
+  transform: 'translateY(-50%)',
+  width: 44,
+  height: 44,
+  borderRadius: '50%',
+  border: 'none',
+  backgroundColor: 'rgba(0,0,0,0.5)',
+  color: '#fff',
+  fontSize: '1.2rem',
+  cursor: 'pointer',
+  zIndex: 10,
+  backdropFilter: 'blur(8px)',
+  WebkitBackdropFilter: 'blur(8px)',
+});
+
+// Each nested slider owns its api, so the arrows move only the slider they
+// sit on; the outer arrows at the bottom keep moving the vertical feed.
+function NestedSlider({
+  index,
+  size,
+  navKeys,
+  wheel,
+}: {
+  index: number;
+  size: [number, number];
+  navKeys: boolean;
+  wheel: boolean;
+}) {
+  const nestedRef = React.useRef<ReelApi>(null);
+
+  return (
+    <Reel
+      count={NESTED_ITEM_COUNT}
+      size={size}
+      direction="horizontal"
+      loop
+      enableNavKeys={navKeys}
+      enableWheel={wheel}
+      apiRef={nestedRef}
+      itemBuilder={(nestedIndex, _, nestedSize) => (
+        <div
+          style={{
+            width: nestedSize[0],
+            height: nestedSize[1],
+            backgroundColor: getSlideColor(
+              index * NESTED_ITEM_COUNT + nestedIndex,
+            ),
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            color: '#000',
+          }}
+        >
+          <h1 style={{ fontSize: '2.5rem', marginBottom: 8 }}>
+            Slide {index + 1}.{nestedIndex + 1}
+          </h1>
+          <p style={{ fontSize: '1.2rem', opacity: 0.7 }}>
+            Swipe left or right
+          </p>
+        </div>
+      )}
+    >
+      <button
+        aria-label="Previous nested slide"
+        data-testid="nested-prev"
+        onClick={() => nestedRef.current?.prev()}
+        style={nestedArrowStyle('left')}
+      >
+        ←
+      </button>
+      <button
+        aria-label="Next nested slide"
+        data-testid="nested-next"
+        onClick={() => nestedRef.current?.next()}
+        style={nestedArrowStyle('right')}
+      >
+        →
+      </button>
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 160,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 10,
+        }}
+      >
+        <ReelIndicator direction="horizontal" visible={4} radius={3} gap={5} />
+      </div>
+    </Reel>
+  );
+}
+
 type SizeMode = 'explicit' | 'auto';
 type IndicatorMode = 'auto' | 'controlled';
 
@@ -114,54 +211,12 @@ function FullPageSlider() {
 
           if (isNested) {
             return (
-              <Reel
-                count={NESTED_ITEM_COUNT}
+              <NestedSlider
+                index={index}
                 size={[itemSize[0], itemSize[1]]}
-                direction="horizontal"
-                loop
-                enableNavKeys={navKeys}
-                enableWheel={wheel}
-                itemBuilder={(nestedIndex, _, nestedSize) => (
-                  <div
-                    style={{
-                      width: nestedSize[0],
-                      height: nestedSize[1],
-                      backgroundColor: getSlideColor(
-                        index * NESTED_ITEM_COUNT + nestedIndex,
-                      ),
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      color: '#000',
-                    }}
-                  >
-                    <h1 style={{ fontSize: '2.5rem', marginBottom: 8 }}>
-                      Slide {index + 1}.{nestedIndex + 1}
-                    </h1>
-                    <p style={{ fontSize: '1.2rem', opacity: 0.7 }}>
-                      Swipe left or right
-                    </p>
-                  </div>
-                )}
-              >
-                <div
-                  style={{
-                    position: 'absolute',
-                    bottom: 160,
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    zIndex: 10,
-                  }}
-                >
-                  <ReelIndicator
-                    direction="horizontal"
-                    visible={4}
-                    radius={3}
-                    gap={5}
-                  />
-                </div>
-              </Reel>
+                navKeys={navKeys}
+                wheel={wheel}
+              />
             );
           }
 

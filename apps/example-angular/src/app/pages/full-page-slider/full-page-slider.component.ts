@@ -73,6 +73,7 @@ const getSlideContent = (
               [loop]="true"
               [enableNavKeys]="navKeys()"
               [enableWheel]="wheel()"
+              (apiReady)="nestedApis.set(index, $event)"
             >
               <ng-template rkReelItem let-nestedIndex let-nestedSize="size">
                 <div
@@ -91,6 +92,24 @@ const getSlideContent = (
                   </p>
                 </div>
               </ng-template>
+              <button
+                aria-label="Previous nested slide"
+                data-testid="nested-prev"
+                style="left: 16px;"
+                [style]="nestedArrowStyle"
+                (click)="nestedApis.get(index)?.prev()"
+              >
+                ←
+              </button>
+              <button
+                aria-label="Next nested slide"
+                data-testid="nested-next"
+                style="right: 40px;"
+                [style]="nestedArrowStyle"
+                (click)="nestedApis.get(index)?.next()"
+              >
+                →
+              </button>
               <div
                 style="
                   position: absolute;
@@ -370,6 +389,25 @@ export class FullPageSliderComponent implements OnInit, OnDestroy {
   );
   protected goToValue = '';
   protected reelApi: ReelApi | null = null;
+  // Keyed by the outer slide a nested slider sits on, so its arrows move only
+  // that slider. A slider rebuilt by virtualization replaces its own entry.
+  protected readonly nestedApis = new Map<number, ReelApi>();
+  protected readonly nestedArrowStyle = {
+    position: 'absolute',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    width: '44px',
+    height: '44px',
+    'border-radius': '50%',
+    border: 'none',
+    'background-color': 'rgba(0,0,0,0.5)',
+    color: '#fff',
+    'font-size': '1.2rem',
+    cursor: 'pointer',
+    'z-index': '10',
+    'backdrop-filter': 'blur(8px)',
+    '-webkit-backdrop-filter': 'blur(8px)',
+  };
 
   protected readonly getSlideColor = getSlideColor;
   protected readonly getSlideContent = getSlideContent;
