@@ -7,6 +7,8 @@ import {
   RkPlayerNavigationDirective,
   RkPlayerNestedSlideDirective,
   RkPlayerNestedNavigationDirective,
+  RkPlayerLoadingDirective,
+  RkPlayerErrorDirective,
   PLAYER_TEMPLATE_SLOT_DIRECTIVES,
 } from './player-template-slots';
 import type {
@@ -368,8 +370,15 @@ describe('Player template slot directives', () => {
   });
 
   describe('PLAYER_TEMPLATE_SLOT_DIRECTIVES', () => {
-    it('exports all 7 slot directives', () => {
-      expect(PLAYER_TEMPLATE_SLOT_DIRECTIVES).toHaveLength(7);
+    it('exports all 9 slot directives', () => {
+      expect(PLAYER_TEMPLATE_SLOT_DIRECTIVES).toHaveLength(9);
+    });
+
+    it('contains the loading and error directives', () => {
+      expect(PLAYER_TEMPLATE_SLOT_DIRECTIVES).toContain(
+        RkPlayerLoadingDirective,
+      );
+      expect(PLAYER_TEMPLATE_SLOT_DIRECTIVES).toContain(RkPlayerErrorDirective);
     });
 
     it('contains RkPlayerSlideDirective', () => {

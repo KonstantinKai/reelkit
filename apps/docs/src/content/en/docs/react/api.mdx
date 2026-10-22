@@ -107,6 +107,23 @@ Subscribes to animated value signals and smoothly interpolates using `requestAni
 | `signal` | `Signal<AnimatedValue>` | `required` | Signal emitting \{ value, duration, done? \}. A duration above 0 interpolates from the current value to the new one; 0 jumps straight there. |
 | `children` | `(value: number) => ReactElement` | `required` | Render function receiving the interpolated value for the current frame, committed synchronously so the DOM keeps up with the animation. |
 
+## SwipeToClose [#swipetoclose]
+
+`<SwipeToClose>` wraps its children in a container that follows a vertical swipe and calls `onClose` once the swipe passes the threshold — the dismiss gesture of the lightbox and the stories player, for a custom overlay of your own. `SwipeToCloseProps` types its props; `SwipeToCloseDirection` is `'up' | 'down'`.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `direction` | `SwipeToCloseDirection` | required | `'up'` dismisses like the lightbox, `'down'` like the stories player |
+| `onClose` | `() => void` | required | Called after the swipe passes the threshold and the exit animation ends |
+| `enabled` | `boolean` | `true` | Turns the gesture off without unmounting |
+| `threshold` | `number` | `0.2` | Fraction of the viewport height the swipe has to cover |
+| `className` | `string` | — | Class on the outer `<div>` |
+| `children` | `ReactNode` | required | Content that moves with the swipe |
+
+## SoundProvider [#soundprovider]
+
+`<SoundProvider>` creates one `SoundController`, muted at first, and hands it to its children through `useSoundState`. The overlays render one for you; add your own only around a custom player whose controls share a mute state.
+
 ## Hooks [#hooks]
 
 ### useBodyLock [#usebodylock]
