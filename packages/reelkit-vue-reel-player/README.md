@@ -79,17 +79,20 @@ const content: ContentItem[] = [
 
 All of the player's UI is customizable via scoped slots:
 
-| Slot               | Scope                                                      |
-| ------------------ | ---------------------------------------------------------- |
-| `slide`            | `item, index, size, isActive, slideKey, defaultContent, …` |
-| `slideOverlay`     | `item, index, isActive`                                    |
-| `controls`         | `item, soundState, activeIndex, content, onClose`          |
-| `navigation`       | `item, activeIndex, count, onPrev, onNext`                 |
-| `nestedSlide`      | `item, media, index, size, isActive, isInnerActive, …`     |
-| `nestedNavigation` | `media, activeIndex, count, onPrev, onNext`                |
-| `timeline`         | `item, activeIndex, timelineState, defaultContent`         |
-| `loading`          | `item, activeIndex`                                        |
-| `error`            | `item, activeIndex`                                        |
+| Slot               | Scope type              | Scope                                                      |
+| ------------------ | ----------------------- | ---------------------------------------------------------- |
+| `slide`            | `SlideSlotScope`        | `item, index, size, isActive, slideKey, defaultContent, …` |
+| `slideOverlay`     | `SlideOverlaySlotScope` | `item, index, isActive`                                    |
+| `controls`         | `ControlsSlotScope`     | `item, soundState, activeIndex, content, onClose`          |
+| `navigation`       | `NavigationSlotScope`   | `item, activeIndex, count, onPrev, onNext`                 |
+| `nestedSlide`      | `NestedSlideSlotScope`  | `item, media, index, size, isActive, isInnerActive, …`     |
+| `nestedNavigation` | `NavigationSlotScope`   | `item, media, activeIndex, count, onPrev, onNext`          |
+| `timeline`         | `TimelineSlotScope`     | `item, activeIndex, timelineState, defaultContent`         |
+| `loading`          | `LoadingSlotScope`      | `item, activeIndex`                                        |
+| `error`            | `LoadingSlotScope`      | `item, activeIndex`                                        |
+
+`nestedNavigation` reuses `NavigationSlotScope`: `media` is set to the active
+inner media item, and `activeIndex` and `count` count the inner carousel.
 
 ## Props
 
@@ -112,12 +115,13 @@ All of the player's UI is customizable via scoped slots:
 
 ## Events
 
-| Event            | Payload         | Description                                  |
-| ---------------- | --------------- | -------------------------------------------- |
-| `close`          | `void`          | Emitted when player closes                   |
-| `slide-change`   | `number`        | Emitted after slide change                   |
-| `api-ready`      | `ReelPlayerApi` | Emitted with the imperative player API       |
-| `update:is-open` | `boolean`       | Emitted on close — enables `v-model:is-open` |
+| Event                | Payload         | Description                                                                                    |
+| -------------------- | --------------- | ---------------------------------------------------------------------------------------------- |
+| `close`              | `void`          | Emitted when player closes                                                                     |
+| `slide-change`       | `number`        | Emitted after slide change                                                                     |
+| `inner-slide-change` | `outer, inner`  | Emitted when the inner media index changes; a single-media post reports `inner` `0` on arrival |
+| `api-ready`          | `ReelPlayerApi` | Emitted with the imperative player API (`ReelExpose` plus `close`)                             |
+| `update:is-open`     | `boolean`       | Emitted on close — enables `v-model:is-open`                                                   |
 
 ### `v-model:is-open`
 
@@ -181,13 +185,20 @@ const items: MyItem[] = [
 
 The same pattern works for every other slot — import the matching scope
 type (`SlideSlotScope`, `ControlsSlotScope`, `NavigationSlotScope`,
-`NestedSlideSlotScope`, `LoadingSlotScope`) and annotate the
-destructure.
+`NestedSlideSlotScope`, `TimelineSlotScope`, `LoadingSlotScope`) and annotate
+the destructure.
 
 ## URL-driven player
 
 `ReelPlayerUrlOverlay` takes the same props except `isOpen` — the address bar
-owns the open state, so a shared link reopens the same post:
+owns the open state, so a shared link reopens the same post — plus one of its
+own:
+
+| Prop         | Type                                                                | Default  | Description                                                                                                         |
+| ------------ | ------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------- |
+| `controller` | `UrlStateController<number> \| UrlStateController<TwoAxisPosition>` | required | From `useOverlayUrlState`; its position opens the player and picks the slide, and the player writes back through it |
+
+It emits the same events except `update:is-open`.
 
 ```vue
 <script setup lang="ts">
@@ -229,12 +240,47 @@ History API is the default.
 
 ## Sub-components
 
-For composing your own controls or slides: `PlayerControls`, `CloseButton`,
-`SoundButton`, `ImageSlide`, `VideoSlide`, `SlideOverlay`, `TimelineBar`,
-`LoadingIndicator`, `ErrorIndicator`, plus `TimelineProvider` with
-`useTimelineState` /
-`useTimelineStateOptional` to read playback state and `useViewportSize` for the
-desktop/mobile split.
+For composing your own controls or slides inside the slots:
+
+| Component          | Props                                                                                                                                                                              | Description                                                                      |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `CloseButton`      | `onClick: () => void` (required), `className` (default `'rk-reel-close-btn'`), `style: CSSProperties`                                                                              | Circular close icon, top right                                                   |
+| `SoundButton`      | `disabled` (default `false`), `className` (default `'rk-reel-sound-btn'`), `style: CSSProperties`                                                                                  | Mute toggle; needs the overlay's `SoundProvider`, hidden while sound is disabled |
+| `PlayerControls`   | `onClose: () => void` (required), `showSound` (default `false`), `soundDisabled` (default `false`)                                                                                 | The default controls: `CloseButton` plus an optional `SoundButton`               |
+| `ImageSlide`       | `src` (required), `size: [number, number]` (required), `onReady`, `onError`                                                                                                        | Image slide, `object-fit: cover`, lazy loaded                                    |
+| `VideoSlide`       | `src`, `aspectRatio`, `size`, `isActive`, `slideKey` (all required), `poster`, `isInnerActive` (default `true`), `containerStyle`, `onVideoRef`, `onReady`, `onWaiting`, `onError` | Video slide on the shared `<video>` element, keeps its playback position         |
+| `SlideOverlay`     | `author: { name, avatar }`, `description`, `likes`                                                                                                                                 | Bottom gradient with author, two-line description and like count                 |
+| `TimelineBar`      | `class`, `style: CSSProperties`                                                                                                                                                    | Scrubbable playback bar; reads the nearest `TimelineProvider`                    |
+| `LoadingIndicator` | -                                                                                                                                                                                  | Default wave loader                                                              |
+| `ErrorIndicator`   | -                                                                                                                                                                                  | Default "Content unavailable" state                                              |
+
+`TimelineBarProps` is exported for typing a wrapper around the bar.
+
+| Export                         | Description                                                                                                  |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| `TimelineProvider`             | Provides a `TimelineController` to its subtree; the overlay already wraps its content in one                 |
+| `useTimelineState()`           | The nearest `TimelineController` (progress, buffered ranges, duration); throws outside a provider            |
+| `useTimelineStateOptional()`   | Same, or `null` outside a provider                                                                           |
+| `RK_TIMELINE_KEY`              | Injection key `TimelineProvider` provides under                                                              |
+| `useViewportSize(aspectRatio)` | Reactive `[width, height]` that keeps the ratio on desktop and fills the viewport at 768px wide and narrower |
+| `urlIndexTwoAxisKey`           | Re-exported from `@reelkit/vue`: a URL key that writes the post and its inner media index (`?reel=3.2`)      |
+
+## Types
+
+| Type                           | Description                                                                               |
+| ------------------------------ | ----------------------------------------------------------------------------------------- |
+| `BaseContentItem`              | `{ id: string; media: MediaItem[] }` — extend it for custom items                         |
+| `ContentItem`                  | `BaseContentItem` plus `author: { name, avatar }`, `likes: number`, `description: string` |
+| `MediaItem`                    | `{ id: string; type: MediaType; src: string; poster?: string; aspectRatio: number }`      |
+| `MediaType`                    | `'image' \| 'video'`                                                                      |
+| `TimelineMode`                 | `'auto' \| 'always' \| 'never'`                                                           |
+| `ReelPlayerApi`                | `ReelExpose & { close: () => void }`                                                      |
+| `ReelPlayerOverlayProps<T>`    | Props of `ReelPlayerOverlay`, with `content: T[]`                                         |
+| `ReelPlayerUrlOverlayProps<T>` | Props of `ReelPlayerUrlOverlay`, with `content: T[]`                                      |
+
+The slot-scope types are listed under [Scoped Slots](#scoped-slots).
+`UrlAdapter`, `UrlCodec`, `UrlLocator` and `TwoAxisPosition` are re-exported
+from `@reelkit/vue`.
 
 ## Keyboard Shortcuts
 
@@ -245,6 +291,54 @@ desktop/mobile split.
 | `ArrowLeft`  | Previous media (nested) |
 | `ArrowRight` | Next media (nested)     |
 | `Escape`     | Close player            |
+
+## CSS Classes
+
+Classes are plain, not scoped, and the same as `@reelkit/react-reel-player`.
+
+| Class                                | Description                                    |
+| ------------------------------------ | ---------------------------------------------- |
+| `.rk-reel-overlay`                   | Overlay background                             |
+| `.rk-reel-container`                 | Player container                               |
+| `.rk-reel-slide-wrapper`             | Slide wrapper                                  |
+| `.rk-reel-button`                    | Shared circular icon button                    |
+| `.rk-reel-nav-arrows`                | Desktop nav arrows container                   |
+| `.rk-reel-nav-button`                | Individual nav arrow button                    |
+| `.rk-reel-close-btn`                 | Close button                                   |
+| `.rk-reel-sound-btn`                 | Sound toggle                                   |
+| `.rk-reel-slide-overlay`             | Per-slide overlay (author, likes)              |
+| `.rk-reel-slide-overlay-author`      | Author row                                     |
+| `.rk-reel-slide-overlay-avatar`      | Author avatar                                  |
+| `.rk-reel-slide-overlay-name`        | Author name                                    |
+| `.rk-reel-slide-overlay-description` | Slide description                              |
+| `.rk-reel-slide-overlay-likes`       | Like count                                     |
+| `.rk-reel-nested-indicator`          | Dot pagination under multi-media slides        |
+| `.rk-reel-nested-nav`                | Nested nav arrows                              |
+| `.rk-reel-nested-nav-prev`           | Nested previous arrow                          |
+| `.rk-reel-nested-nav-next`           | Nested next arrow                              |
+| `.rk-reel-video-container`           | Video slide wrapper                            |
+| `.rk-reel-video-element`             | Video element                                  |
+| `.rk-reel-video-poster`              | Video poster image (`.rk-visible` while shown) |
+| `.rk-reel-timeline`                  | Timeline bar wrapper                           |
+| `.rk-reel-timeline-track`            | Timeline track                                 |
+| `.rk-reel-timeline-buffered`         | Buffered segments                              |
+| `.rk-reel-timeline-fill`             | Played progress                                |
+| `.rk-reel-timeline-cursor`           | Scrub handle                                   |
+| `.rk-reel-media-error`               | Error state container                          |
+| `.rk-reel-media-error-text`          | Error message text                             |
+| `.rk-reel-loader`                    | Wave loading overlay                           |
+
+### Theming via CSS custom properties
+
+Every visual value is exposed as a `--rk-reel-*` custom property with a sensible default. Override at `:root` (or any ancestor of `.rk-reel-overlay`) to retheme without touching component source — see the [Theming docs](https://reelkit.dev/docs/vue-reel-player?framework=vue#theming) for the full token table.
+
+```css
+:root {
+  --rk-reel-button-bg: rgba(0, 0, 0, 0.6);
+  --rk-reel-button-size: 44px;
+  --rk-reel-edge-padding: 20px;
+}
+```
 
 ## Documentation
 

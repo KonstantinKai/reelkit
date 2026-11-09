@@ -63,14 +63,18 @@ const items: LightboxItem[] = [
 
 ## Scoped Slots
 
-| Slot         | Scope                                                                                                                                    |
-| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `slide`      | `item, index, size, isActive, autoAdvance, onReady, onWaiting, onError, onEnded`                                                         |
-| `controls`   | `item, activeIndex, count, isFullscreen, isAutoAdvancing, isDownloading, onClose, onToggleFullscreen, onToggleAutoAdvance?, onDownload?` |
-| `navigation` | `item, activeIndex, count, onPrev, onNext`                                                                                               |
-| `info`       | `item, index`                                                                                                                            |
-| `loading`    | `item, activeIndex`                                                                                                                      |
-| `error`      | `item, activeIndex`                                                                                                                      |
+| Slot         | Scope type            | Scope                                                                                                                                    |
+| ------------ | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `slide`      | `SlideSlotScope`      | `item, index, size, isActive, autoAdvance, onReady, onWaiting, onError, onEnded`                                                         |
+| `controls`   | `ControlsSlotScope`   | `item, activeIndex, count, isFullscreen, isAutoAdvancing, isDownloading, onClose, onToggleFullscreen, onToggleAutoAdvance?, onDownload?` |
+| `navigation` | `NavigationSlotScope` | `item, activeIndex, count, onPrev, onNext`                                                                                               |
+| `info`       | `InfoSlotScope`       | `item, index`                                                                                                                            |
+| `loading`    | `LoadingSlotScope`    | `item, activeIndex`                                                                                                                      |
+| `error`      | `ErrorSlotScope`      | `item, activeIndex`                                                                                                                      |
+
+`onToggleAutoAdvance` is present only with `auto-advance`, and `onDownload`
+only with `show-download`, so a custom slot can show those buttons only when
+they do something.
 
 ## Props
 
@@ -165,6 +169,15 @@ const { VideoSlideRenderer, VideoControlsRenderer, SoundProvider } =
 </template>
 ```
 
+`useVideoSlideRenderer(items)` returns:
+
+| Field                   | Type                   | Description                                                                    |
+| ----------------------- | ---------------------- | ------------------------------------------------------------------------------ |
+| `SoundProvider`         | component              | Wrap the overlay in it; video mute and unmute need its sound context           |
+| `VideoSlideRenderer`    | component              | For `#slide`: `LightboxVideoSlide` for a video item, `ImageSlide` for an image |
+| `VideoControlsRenderer` | component              | For `#controls`: the default controls, plus a sound button on a video slide    |
+| `hasVideo`              | `ComputedRef<boolean>` | `true` when at least one item has `type: 'video'`                              |
+
 ## URL-driven lightbox
 
 `LightboxUrlOverlay` takes the same props except `isOpen` — the address bar owns
@@ -200,14 +213,65 @@ const photo = useOverlayUrlState({
 
 In a vue-router application pass `adapter: useVueRouterUrlAdapter()` from
 `@reelkit/vue/vue-router-url-adapter`, otherwise the router's own location goes
-stale. Swap `urlIndexKey` for `urlStableIdKey({ items: () => props.images })` to
-key the URL by image id.
+stale. To key the URL by image id instead, so a link survives the gallery being
+reordered, give every item an `id` — `LightboxItem` has none of its own, so type
+the list as `(LightboxItem & { id: string })[]` — and swap `urlIndexKey` for
+`urlStableIdKey({ items: () => props.images })`.
+
+| Prop         | Type                 | Default  | Description                                                                                                            |
+| ------------ | -------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `controller` | `UrlStateController` | required | From `useOverlayUrlState`; its position opens the gallery and picks the slide, and the lightbox writes back through it |
+
+`LightboxUrlOverlay` emits `close`, `slide-change` and `api-ready`, but not
+`update:is-open`.
 
 ## Sub-components
 
-For composing your own controls or slides: `CloseButton`, `Counter`,
-`FullscreenButton`, `SoundButton`, `PlayPauseButton`, `DownloadButton`,
-`LightboxNavigation`, `ImageSlide`, `LightboxVideoSlide`.
+For composing your own controls or slides inside the slots. Each exports its
+props type as `<Name>Props`.
+
+| Component            | Props                                                                                                                                                     | Description                                                                                |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `CloseButton`        | `onPress: () => void` (required), `className` (default `'rk-lightbox-close'`)                                                                             | Close button                                                                               |
+| `Counter`            | `currentIndex`, `count` (required), `className` (default `'rk-lightbox-counter'`)                                                                         | "3 / 12" counter chip                                                                      |
+| `FullscreenButton`   | `isFullscreen`, `onPress` (required), `className` (default `'rk-lightbox-btn'`)                                                                           | Fullscreen toggle                                                                          |
+| `SoundButton`        | `isMuted`, `onPress` (required), `className` (default `'rk-lightbox-btn'`)                                                                                | Mute toggle                                                                                |
+| `PlayPauseButton`    | `isPlaying`, `onPress` (required), `className` (default `'rk-lightbox-btn rk-lightbox-play-pause'`)                                                       | Slideshow play and pause                                                                   |
+| `DownloadButton`     | `isDownloading`, `onPress` (required), `className` (default `'rk-lightbox-btn rk-lightbox-download'`)                                                     | Download the active item                                                                   |
+| `LightboxNavigation` | `activeIndex`, `count`, `onPrev`, `onNext` (required), `loop` (default `false`)                                                                           | Prev and next arrows, hidden at the edges unless `loop`                                    |
+| `ImageSlide`         | `src`, `alt`, `isActive`, `onReady`, `onLoadError` (all required)                                                                                         | Image slide; neighbours load lazily                                                        |
+| `LightboxVideoSlide` | `src`, `isActive`, `size: [number, number]`, `slideKey` (required), `poster`, `loop` (default `true`), `onPlaying`, `onWaiting`, `onLoadError`, `onEnded` | Video slide on a shared `<video>` element; usually reached through `useVideoSlideRenderer` |
+
+## Transitions
+
+`slideTransition` (the default) and `flipTransition` are re-exported from
+`@reelkit/vue`; `lightboxFadeTransition` and `lightboxZoomTransition` ship
+here. Pass one as `transition-fn`.
+
+## Types
+
+| Type                          | Description                                                                        |
+| ----------------------------- | ---------------------------------------------------------------------------------- |
+| `LightboxItem`                | One gallery item — fields below                                                    |
+| `LightboxApi`                 | `next`, `prev`, `goTo`, `adjust`, `observe`, `unobserve`, `close`, `play`, `pause` |
+| `LightboxOverlayProps`        | Props of `LightboxOverlay`                                                         |
+| `LightboxUrlOverlayProps`     | Props of `LightboxUrlOverlay`                                                      |
+| `UseVideoSlideRendererResult` | Return type of `useVideoSlideRenderer`                                             |
+
+The slot-scope types are listed under [Scoped Slots](#scoped-slots).
+`UrlAdapter`, `UrlCodec` and `UrlLocator` are re-exported from `@reelkit/vue`.
+
+| `LightboxItem` field | Type                 | Description                                                      |
+| -------------------- | -------------------- | ---------------------------------------------------------------- |
+| `src`                | `string`             | Image or video URL (required)                                    |
+| `type`               | `'image' \| 'video'` | Defaults to `'image'`; video needs `useVideoSlideRenderer`       |
+| `poster`             | `string`             | Poster for a video item                                          |
+| `title`              | `string`             | Shown in the info overlay                                        |
+| `description`        | `string`             | Shown below the title                                            |
+| `width`              | `number`             | Intrinsic width in pixels; currently unused by the layout        |
+| `height`             | `number`             | Intrinsic height in pixels; currently unused by the layout       |
+| `downloadUrl`        | `string`             | What the download button saves when it differs from `src`        |
+| `downloadName`       | `string`             | File name to save under; defaults to the last segment of the URL |
 
 ## Keyboard Shortcuts
 
@@ -216,6 +280,40 @@ For composing your own controls or slides: `CloseButton`, `Counter`,
 | `ArrowLeft`  | Previous slide                                       |
 | `ArrowRight` | Next slide                                           |
 | `Escape`     | Exit fullscreen (if active), then close the lightbox |
+
+## CSS Classes
+
+Classes are plain, not scoped, so a stylesheet loaded after
+`@reelkit/vue-lightbox/styles.css` can override them.
+
+| Class                           | Description                                   |
+| ------------------------------- | --------------------------------------------- |
+| `.rk-lightbox-overlay`          | Root container (full-screen backdrop)         |
+| `.rk-lightbox-top-shade`        | Top gradient scrim behind the controls        |
+| `.rk-lightbox-spinner`          | Default loading spinner                       |
+| `.rk-lightbox-error`            | Error state container                         |
+| `.rk-lightbox-error-text`       | Error state text                              |
+| `.rk-lightbox-controls-left`    | Top-left controls group                       |
+| `.rk-lightbox-btn`              | Control button (fullscreen, sound, and so on) |
+| `.rk-lightbox-play-pause`       | Slideshow play/pause button                   |
+| `.rk-lightbox-download`         | Download button                               |
+| `.rk-lightbox-close`            | Close button                                  |
+| `.rk-lightbox-counter`          | Image counter chip                            |
+| `.rk-lightbox-nav`              | Navigation arrow (both)                       |
+| `.rk-lightbox-nav-prev`         | Previous arrow                                |
+| `.rk-lightbox-nav-next`         | Next arrow                                    |
+| `.rk-lightbox-info`             | Title and description container               |
+| `.rk-lightbox-info-title`       | Image title                                   |
+| `.rk-lightbox-info-description` | Image description                             |
+| `.rk-lightbox-slide`            | Slide container                               |
+| `.rk-lightbox-img`              | Image element                                 |
+| `.rk-lightbox-video-container`  | Video slide container (opt-in)                |
+| `.rk-lightbox-video-element`    | Video element (opt-in)                        |
+| `.rk-lightbox-video-poster`     | Video poster image (opt-in)                   |
+
+### Theming via CSS custom properties
+
+Every visual value is exposed as a `--rk-lightbox-*` custom property with a sensible default. Override at `:root` (or any ancestor of `.rk-lightbox-overlay`) to retheme without touching component source — see the [Theming docs](https://reelkit.dev/docs/vue-lightbox?framework=vue#theming) for the full token table.
 
 ## Documentation
 

@@ -85,28 +85,52 @@ export class AppComponent {
 
 ### rk-reel Inputs
 
-| Input                 | Type                         | Default      | Description                   |
-| --------------------- | ---------------------------- | ------------ | ----------------------------- |
-| `count`               | `number`                     | required     | Number of slides              |
-| `direction`           | `'horizontal' \| 'vertical'` | `'vertical'` | Slide direction               |
-| `size`                | `[number, number]`           | -            | Explicit [width, height]      |
-| `initialIndex`        | `number`                     | `0`          | Starting slide index          |
-| `loop`                | `boolean`                    | `false`      | Enable infinite loop          |
-| `swipeDistanceFactor` | `number`                     | `0.12`       | Swipe threshold (0-1)         |
-| `transitionDuration`  | `number`                     | `300`        | Animation duration in ms      |
-| `enableNavKeys`       | `boolean`                    | `true`       | Enable keyboard navigation    |
-| `enableWheel`         | `boolean`                    | `false`      | Enable mouse wheel navigation |
-| `wheelDebounceMs`     | `number`                     | `200`        | Wheel debounce duration       |
+| Input                 | Type                                                        | Default                 | Description                                                                                                            |
+| --------------------- | ----------------------------------------------------------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `count`               | `number`                                                    | required                | Number of slides                                                                                                       |
+| `direction`           | `'horizontal' \| 'vertical'`                                | `'vertical'`            | Slide direction                                                                                                        |
+| `size`                | `[number, number]`                                          | -                       | Explicit [width, height]; measured with `ResizeObserver` when omitted                                                  |
+| `initialIndex`        | `number`                                                    | `0`                     | Starting slide index                                                                                                   |
+| `loop`                | `boolean`                                                   | `false`                 | Enable infinite loop; with `count` 2, pass `createDefaultKeyExtractorForLoop(count)` as `keyExtractor`                 |
+| `swipeDistanceFactor` | `number`                                                    | `0.12`                  | Swipe threshold (0-1)                                                                                                  |
+| `transitionDuration`  | `number`                                                    | `300`                   | Animation duration in ms                                                                                               |
+| `enableNavKeys`       | `boolean`                                                   | `true`                  | Enable keyboard navigation                                                                                             |
+| `enableWheel`         | `boolean`                                                   | `false`                 | Enable mouse wheel navigation                                                                                          |
+| `wheelDebounceMs`     | `number`                                                    | `200`                   | Wheel debounce duration                                                                                                |
+| `rangeExtractor`      | `RangeExtractor`                                            | `defaultRangeExtractor` | Picks which indexes are rendered                                                                                       |
+| `keyExtractor`        | `(index: number, indexInRange: number) => string \| number` | `(index) => index`      | Track key for each rendered slide                                                                                      |
+| `transition`          | `TransitionTransformFn`                                     | `slideTransition`       | Slide transform: `slideTransition`, `cubeTransition`, `fadeTransition`, `flipTransition`, `zoomTransition` or your own |
+| `enableGestures`      | `boolean`                                                   | `true`                  | Enable touch and mouse drag                                                                                            |
+| `interceptNavKeys`    | `boolean`                                                   | `false`                 | Emit `navKeyPressed` for arrow keys instead of moving a slide; read once, when the slider is built                     |
+| `className`           | `string`                                                    | `''`                    | CSS class on the root container                                                                                        |
+| `ariaLabel`           | `string`                                                    | -                       | Accessible label for the carousel region                                                                               |
 
 ### rk-reel Outputs
 
-| Output           | Type                                        | Description               |
-| ---------------- | ------------------------------------------- | ------------------------- |
-| `afterChange`    | `{ index: number; indexInRange: number }`   | Fired after slide change  |
-| `beforeChange`   | `{ index: number; nextIndex: number; ... }` | Fired before slide change |
-| `apiReady`       | `ReelApi`                                   | Emits the imperative API  |
-| `slideDragStart` | `number`                                    | Drag gesture started      |
-| `slideDragEnd`   | `number`                                    | Drag gesture ended        |
+| Output              | Type                                                         | Description                                     |
+| ------------------- | ------------------------------------------------------------ | ----------------------------------------------- |
+| `afterChange`       | `{ index: number; indexInRange: number }`                    | Fired after slide change                        |
+| `beforeChange`      | `{ index: number; nextIndex: number; indexInRange: number }` | Fired before slide change                       |
+| `apiReady`          | `ReelApi`                                                    | Emits the imperative API                        |
+| `slideDragStart`    | `number`                                                     | Drag gesture started                            |
+| `slideDragEnd`      | `number`                                                     | Drag gesture ended                              |
+| `slideDragCanceled` | `number`                                                     | Drag gesture canceled (snap-back)               |
+| `tapped`            | `GestureCommonEvent`                                         | Tap that did not turn into a drag               |
+| `doubleTapped`      | `GestureCommonEvent`                                         | Second tap inside the double-tap window         |
+| `longPressStarted`  | `GestureCommonEvent`                                         | Press held past the long-press threshold        |
+| `longPressEnded`    | `GestureEvent`                                               | That press released                             |
+| `navKeyPressed`     | `-1 \| 1`                                                    | Arrow key, only while `interceptNavKeys` is set |
+
+### ReelApi
+
+| Member      | Type                                                  | Description                                           |
+| ----------- | ----------------------------------------------------- | ----------------------------------------------------- |
+| `next`      | `() => void`                                          | Go to the next slide                                  |
+| `prev`      | `() => void`                                          | Go to the previous slide                              |
+| `goTo`      | `(index: number, animate?: boolean) => Promise<void>` | Go to a slide, animated when `animate` is `true`      |
+| `adjust`    | `() => void`                                          | Recalculate positions after a resize or layout change |
+| `observe`   | `() => void`                                          | Start listening to gesture, keyboard, wheel           |
+| `unobserve` | `() => void`                                          | Stop listening to gesture, keyboard, wheel            |
 
 ### rkReelItem Template Context
 
@@ -118,15 +142,42 @@ export class AppComponent {
 
 ### ReelIndicator Inputs
 
-| Input           | Type     | Default                      | Description                                      |
-| --------------- | -------- | ---------------------------- | ------------------------------------------------ |
-| `direction`     | `string` | `'vertical'`                 | `'horizontal'` or `'vertical'`                   |
-| `radius`        | `number` | `3`                          | Dot radius in pixels                             |
-| `visible`       | `number` | `5`                          | Full-size dots at once; the rest scale down      |
-| `gap`           | `number` | `4`                          | Gap between dots in pixels                       |
-| `activeColor`   | `string` | `'#fff'`                     | Color of the active dot                          |
-| `inactiveColor` | `string` | `'rgba(255, 255, 255, 0.5)'` | Color of the inactive dots                       |
-| `edgeScale`     | `number` | `0.5`                        | Scale applied to dots outside the visible window |
+| Input           | Type                         | Default                      | Description                                      |
+| --------------- | ---------------------------- | ---------------------------- | ------------------------------------------------ |
+| `count`         | `number`                     | parent reel                  | Number of dots; required outside a `rk-reel`     |
+| `active`        | `number`                     | parent reel                  | Active dot index; required outside a `rk-reel`   |
+| `direction`     | `'horizontal' \| 'vertical'` | `'vertical'`                 | Axis the dots are laid out on                    |
+| `radius`        | `number`                     | `3`                          | Dot radius in pixels                             |
+| `visible`       | `number`                     | `5`                          | Full-size dots at once; the rest scale down      |
+| `gap`           | `number`                     | `4`                          | Gap between dots in pixels                       |
+| `activeColor`   | `string`                     | `'#fff'`                     | Color of the active dot                          |
+| `inactiveColor` | `string`                     | `'rgba(255, 255, 255, 0.5)'` | Color of the inactive dots                       |
+| `edgeScale`     | `number`                     | `0.5`                        | Scale applied to dots outside the visible window |
+| `className`     | `string`                     | `''`                         | CSS class on the indicator container             |
+| `tablistLabel`  | `string`                     | `'Slide navigation'`         | Accessible name of the `tablist` container       |
+
+### ReelIndicator Outputs
+
+| Output     | Type     | Description                                                    |
+| ---------- | -------- | -------------------------------------------------------------- |
+| `dotClick` | `number` | Index of the clicked dot; inside a `rk-reel` it also navigates |
+
+### RkSwipeToCloseDirective
+
+Attribute directive (`[rkSwipeToClose]`) that adds a touch swipe-to-dismiss gesture to its host: the host follows the drag and fades, and is dismissed past 20% of the viewport height.
+
+| Member                    | Kind   | Type             | Default | Description                                              |
+| ------------------------- | ------ | ---------------- | ------- | -------------------------------------------------------- |
+| `rkSwipeToClose`          | input  | `boolean`        | `false` | Turns the gesture on                                     |
+| `rkSwipeToCloseDirection` | input  | `'up' \| 'down'` | `'up'`  | Swipe direction that dismisses (`SwipeToCloseDirection`) |
+| `dismissed`               | output | `void`           | -       | The swipe passed the threshold                           |
+
+### Services
+
+| Service             | Provided      | Members                                                                                                                                               |
+| ------------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `BodyLockService`   | `root`        | `lock()`, `unlock()`, `locked`; reference-counted through core's `sharedBodyLock`, so nested overlays release the body only once the last one unlocks |
+| `SoundStateService` | per component | `muted` and `disabled` (Angular signals), `controller` (core `SoundController`), `toggle()`, `setDisabled(value)`, `reset()`                          |
 
 ## Documentation
 

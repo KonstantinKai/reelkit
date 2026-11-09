@@ -38,7 +38,7 @@
  *
  * <template>
  *   <button @click="isOpen = true">Open</button>
- *   <LightboxOverlay v-model:is-open="isOpen" :images="images" />
+ *   <LightboxOverlay v-model:is-open="isOpen" :items="images" />
  * </template>
  * ```
  *
@@ -69,7 +69,7 @@
  *     <img :src="image.src" alt="" />
  *   </RouterLink>
  *
- *   <LightboxUrlOverlay :controller="photo" :images="images" />
+ *   <LightboxUrlOverlay :controller="photo" :items="images" />
  * </template>
  * ```
  */

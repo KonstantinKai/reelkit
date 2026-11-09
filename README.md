@@ -73,8 +73,8 @@
 
 Every overlay ships its stylesheet separately from the JavaScript — import the
 package CSS once, then theme it with `--rk-*` custom properties. Budget both
-columns: a React lightbox is 3.4 kB of JavaScript plus 1.6 kB of CSS on top of
-the 10.1 kB core.
+columns, plus the core and binding rows an overlay sits on: a React lightbox
+costs its own JavaScript and CSS on top of `@reelkit/core` and `@reelkit/react`.
 
 ## Try It
 
@@ -87,15 +87,14 @@ the 10.1 kB core.
 Two more examples run locally rather than as hosted demos, and show the
 server-rendering setup end to end:
 
-| Package manager     | [Next.js App Router](apps/example-next) | [Nuxt 3](apps/example-nuxt)     |
-| ------------------- | --------------------------------------- | ------------------------------- |
-| pnpm (repo default) | `pnpm exec nx dev example-next`         | `pnpm exec nx dev example-nuxt` |
-| npm                 | `npx nx dev example-next`               | `npx nx dev example-nuxt`       |
-| yarn                | `yarn nx dev example-next`              | `yarn nx dev example-nuxt`      |
+| Example                                 | Command                         |
+| --------------------------------------- | ------------------------------- |
+| [Next.js App Router](apps/example-next) | `pnpm exec nx dev example-next` |
+| [Nuxt 4](apps/example-nuxt)             | `pnpm exec nx dev example-nuxt` |
 
-The repo is pinned to pnpm 11 through `packageManager` in `package.json`, so that
-row is the path contributors take; the others work the same once dependencies are
-installed. See the [SSR guide](https://reelkit.dev/docs/ssr) for what the two
+The repo is pinned to pnpm 11 through `packageManager` in `package.json`; run
+`pnpm install` first, since npm or yarn would write a lockfile the workspace
+does not use. See the [SSR guide](https://reelkit.dev/docs/ssr) for what the two
 examples demonstrate.
 
 ## Quick Start
@@ -105,7 +104,6 @@ npm install @reelkit/react
 ```
 
 ```tsx
-import { useState } from 'react';
 import { Reel, ReelIndicator } from '@reelkit/react';
 
 function App() {
@@ -135,7 +133,7 @@ By default, `Reel` measures its own size from CSS via `ResizeObserver` — no ex
 
 ## Documentation
 
-Full documentation, interactive demos, and API reference at **[reelkit.dev](https://reelkit.dev)**, in English, Ukrainian, Chinese, Portuguese, Japanese, Hindi, and Spanish.
+Full documentation, interactive demos, and API reference at **[reelkit.dev](https://reelkit.dev)**, in English, Ukrainian, Chinese, Portuguese, Japanese, Hindi, Spanish, and German.
 
 Release notes for every package: [CHANGELOG.md](CHANGELOG.md), also published at [reelkit.dev/docs/changelog](https://reelkit.dev/docs/changelog).
 

@@ -18,7 +18,7 @@ Instagram Reels / TikTok-style video player for Angular. Opens as a full-screen 
 ## Installation
 
 ```bash
-npm install @reelkit/angular-reel-player @reelkit/angular
+npm install @reelkit/angular-reel-player @reelkit/angular lucide-angular
 ```
 
 Register the stylesheet once, any of three equivalent ways:
@@ -93,54 +93,97 @@ export class AppComponent {
 
 Customization via `@ContentChild` template directives:
 
-| Directive                  | Description                                    |
-| -------------------------- | ---------------------------------------------- |
-| `rkPlayerSlideOverlay`     | Custom per-slide overlay (author, likes, etc.) |
-| `rkPlayerSlide`            | Fully custom slide content                     |
-| `rkPlayerControls`         | Custom player controls (close, sound)          |
-| `rkPlayerNavigation`       | Custom prev/next navigation arrows             |
-| `rkPlayerNestedSlide`      | Custom nested horizontal slide content         |
-| `rkPlayerNestedNavigation` | Custom arrows for the inner slider             |
-| `rkPlayerTimeline`         | Custom playback timeline bar                   |
-| `rkPlayerLoading`          | Custom loading indicator                       |
-| `rkPlayerError`            | Custom error indicator                         |
+| Directive                  | Class                               | Context                         | Description                                    |
+| -------------------------- | ----------------------------------- | ------------------------------- | ---------------------------------------------- |
+| `rkPlayerSlideOverlay`     | `RkPlayerSlideOverlayDirective`     | `PlayerSlideOverlayContext<T>`  | Custom per-slide overlay (author, likes, etc.) |
+| `rkPlayerSlide`            | `RkPlayerSlideDirective`            | `PlayerSlideContext<T>`         | Fully custom slide content                     |
+| `rkPlayerControls`         | `RkPlayerControlsDirective`         | `PlayerControlsContext<T>`      | Custom player controls (close, sound)          |
+| `rkPlayerNavigation`       | `RkPlayerNavigationDirective`       | `PlayerNavigationContext`       | Custom prev/next navigation arrows             |
+| `rkPlayerNestedSlide`      | `RkPlayerNestedSlideDirective`      | `PlayerNestedSlideContext`      | Custom nested horizontal slide content         |
+| `rkPlayerNestedNavigation` | `RkPlayerNestedNavigationDirective` | `PlayerNestedNavigationContext` | Custom arrows for the inner slider             |
+| `rkPlayerTimeline`         | `RkPlayerTimelineDirective`         | `PlayerTimelineContext<T>`      | Custom playback timeline bar                   |
+| `rkPlayerLoading`          | `RkPlayerLoadingDirective`          | `PlayerLoadingContext`          | Custom loading indicator                       |
+| `rkPlayerError`            | `RkPlayerErrorDirective`            | `PlayerErrorContext`            | Custom error indicator                         |
 
 `PLAYER_TEMPLATE_SLOT_DIRECTIVES` imports all of them at once.
+
+### Template Contexts
+
+| Context                         | Fields                                                                                                                 |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `PlayerSlideContext<T>`         | `$implicit: T`, `index`, `size: [number, number]`, `isActive`, `slideKey`, `onReady()`, `onWaiting()`, `onError()`     |
+| `PlayerSlideOverlayContext<T>`  | `$implicit: T`, `index`, `isActive`                                                                                    |
+| `PlayerControlsContext<T>`      | `$implicit: () => void` (close), `onClose()`, `item: T`, `activeIndex`, `content: T[]`, `soundState: PlayerSoundState` |
+| `PlayerTimelineContext<T>`      | `$implicit: T`, `activeIndex`, `timelineState: PlayerTimelineState`                                                    |
+| `PlayerNavigationContext`       | `$implicit: () => void` (previous), `onPrev()`, `onNext()`, `item: BaseContentItem`, `activeIndex`, `count`            |
+| `PlayerNestedSlideContext`      | `$implicit: MediaItem`, `index`, `size: [number, number]`, `isActive`, `isInnerActive`, `slideKey`                     |
+| `PlayerNestedNavigationContext` | `$implicit: () => void` (previous), `onPrev()`, `onNext()`, `media: MediaItem`, `activeIndex`, `count`                 |
+| `PlayerLoadingContext`          | `$implicit: number` (active index), `item: BaseContentItem`, `innerActiveIndex: number \| null`                        |
+| `PlayerErrorContext`            | `$implicit: number` (active index), `item: BaseContentItem`, `innerActiveIndex: number \| null`                        |
+
+`PlayerSoundState` is `{ muted(): boolean; disabled(): boolean; toggle(): void }`. `PlayerTimelineState` exposes `duration()`, `currentTime()`, `progress()`, `bufferedRanges(): readonly PlayerBufferedRange[]` (`{ start; end }` as 0-1 fractions), `isScrubbing()`, `seek(seconds)` and `bindInteractions(target): () => void` for a custom scrub track.
 
 ## API Reference
 
 ### rk-reel-player-overlay Inputs
 
-| Input                        | Type                            | Default          | Description                                         |
-| ---------------------------- | ------------------------------- | ---------------- | --------------------------------------------------- |
-| `isOpen`                     | `boolean`                       | required         | Controls overlay visibility                         |
-| `content`                    | `ContentItem[]`                 | required         | Content items to display                            |
-| `initialIndex`               | `number`                        | `0`              | Starting slide index                                |
-| `initialInnerIndex`          | `number`                        | -                | Inner media index for the first slide only          |
-| `aspectRatio`                | `number`                        | `9/16`           | Desktop container ratio                             |
-| `ariaLabel`                  | `string`                        | `'Video player'` | Accessible label announced when the overlay opens   |
-| `timeline`                   | `'auto' \| 'always' \| 'never'` | `'auto'`         | When the built-in timeline bar renders              |
-| `timelineMinDurationSeconds` | `number`                        | `30`             | Under `'auto'`, videos shorter than this get no bar |
-| `loop`                       | `boolean`                       | `false`          | Enable infinite loop                                |
-| `enableNavKeys`              | `boolean`                       | `true`           | Enable keyboard navigation                          |
-| `enableWheel`                | `boolean`                       | `true`           | Enable mouse wheel navigation                       |
-| `wheelDebounceMs`            | `number`                        | `200`            | Wheel debounce duration (ms)                        |
-| `transitionDuration`         | `number`                        | `300`            | Transition duration (ms)                            |
-| `swipeDistanceFactor`        | `number`                        | `0.12`           | Swipe threshold (0-1)                               |
+| Input                        | Type                            | Default          | Description                                              |
+| ---------------------------- | ------------------------------- | ---------------- | -------------------------------------------------------- |
+| `isOpen`                     | `boolean`                       | required         | Controls overlay visibility                              |
+| `content`                    | `T[]`                           | required         | Content items; `T extends BaseContentItem = ContentItem` |
+| `initialIndex`               | `number`                        | `0`              | Starting slide index                                     |
+| `initialInnerIndex`          | `number`                        | -                | Inner media index for the first slide only               |
+| `aspectRatio`                | `number`                        | `9/16`           | Desktop container ratio                                  |
+| `ariaLabel`                  | `string`                        | `'Video player'` | Accessible label announced when the overlay opens        |
+| `timeline`                   | `'auto' \| 'always' \| 'never'` | `'auto'`         | When the built-in timeline bar renders                   |
+| `timelineMinDurationSeconds` | `number`                        | `30`             | Under `'auto'`, videos shorter than this get no bar      |
+| `loop`                       | `boolean`                       | `false`          | Enable infinite loop                                     |
+| `enableNavKeys`              | `boolean`                       | `true`           | Enable keyboard navigation                               |
+| `enableWheel`                | `boolean`                       | `true`           | Enable mouse wheel navigation                            |
+| `wheelDebounceMs`            | `number`                        | `200`            | Wheel debounce duration (ms)                             |
+| `transitionDuration`         | `number`                        | `300`            | Transition duration (ms)                                 |
+| `swipeDistanceFactor`        | `number`                        | `0.12`           | Swipe threshold (0-1)                                    |
+
+Each slot also has a template input — `slideTemplate`, `slideOverlayTemplate`, `controlsTemplate`, `timelineTemplate`, `navigationTemplate`, `nestedSlideTemplate`, `nestedNavTemplate`, `loadingTemplate`, `errorTemplate` — taking a `TemplateRef` with the slot's context. An input wins over the projected directive; projecting the directive is the usual way.
 
 ### rk-reel-player-overlay Outputs
 
-| Output        | Type     | Description                |
-| ------------- | -------- | -------------------------- |
-| `closed`      | `void`   | Emitted when player closes |
-| `slideChange` | `number` | Emitted after slide change |
+| Output             | Type                               | Description                                                                    |
+| ------------------ | ---------------------------------- | ------------------------------------------------------------------------------ |
+| `closed`           | `void`                             | Emitted when player closes                                                     |
+| `slideChange`      | `number`                           | Emitted after slide change                                                     |
+| `innerSlideChange` | `{ outer: number; inner: number }` | Active post's inner media index changed, on inner navigation and on activation |
+| `apiReady`         | `ReelApi`                          | Emits the outer slider's imperative API                                        |
+
+### Sub-components
+
+| Component                 | Selector           | Inputs and outputs                                                                                                                                                                           |
+| ------------------------- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `RkCloseButtonComponent`  | `rk-close-button`  | output `clicked`                                                                                                                                                                             |
+| `RkSoundButtonComponent`  | `rk-sound-button`  | `isDisabled` (`false`); reads and toggles the injected `SoundStateService`                                                                                                                   |
+| `RkImageSlideComponent`   | `rk-image-slide`   | `src` (required), `poster`, `alt` (`''`), `isActive`, `width`, `height`, `onReady`, `onWaiting`, `onError`                                                                                   |
+| `RkVideoSlideComponent`   | `rk-video-slide`   | `src`, `aspectRatio`, `slideKey` (all required), `poster`, `ariaLabel` (`''`), `width`, `height`, `isActive`, `isInnerActive` (`true`), `onReady`, `onWaiting`, `onError`; output `videoRef` |
+| `RkSlideOverlayComponent` | `rk-slide-overlay` | `author: { name; avatar }`, `description`, `likes`                                                                                                                                           |
+| `RkTimelineBarComponent`  | `rk-timeline-bar`  | no inputs; renders the injected `TimelineStateService`                                                                                                                                       |
+
+### Services
+
+Both are provided per `rk-reel-player-overlay`, so each player instance has its own state; inject them from inside a slot or a sub-component.
+
+| Service                | Members                                                                                                                                |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `SoundStateService`    | Re-exported from `@reelkit/angular`: `muted`, `disabled` (Angular signals), `toggle()`, `setDisabled()`, `reset()`                     |
+| `TimelineStateService` | `duration`, `currentTime`, `progress`, `bufferedRanges`, `isScrubbing` (Angular signals), `attach(video)`, `detach()`, `seek(seconds)` |
 
 ### Types
 
 ```typescript
-interface ContentItem {
+interface BaseContentItem {
   id: string;
   media: MediaItem[];
+}
+
+interface ContentItem extends BaseContentItem {
   author: {
     name: string;
     avatar: string;
@@ -160,8 +203,21 @@ interface MediaItem {
 
 ## URL-driven player
 
-`<rk-reel-player-url-overlay>` takes the same inputs except `isOpen` — the
-address bar owns the open state, so a shared link reopens the same post:
+`<rk-reel-player-url-overlay>` lets the address bar own the open state, so a
+shared link reopens the same post. Against `<rk-reel-player-overlay>` it adds a
+required `controller` and drops the inputs the URL now decides — `isOpen`,
+`initialIndex`, `initialInnerIndex` — along with the nine `*Template` inputs
+(project the slot directives instead; the wrapper forwards them). It emits only
+`closed` and `slideChange`.
+
+| Input        | Type                                                                | Default  | Description                                                                                                           |
+| ------------ | ------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------- |
+| `controller` | `UrlStateController<number> \| UrlStateController<TwoAxisPosition>` | required | From `createOverlayUrlState`; its position opens the player and picks the slide (and inner media, for a two-axis key) |
+
+`content`, `ariaLabel`, `aspectRatio`, `transitionDuration`,
+`swipeDistanceFactor`, `loop`, `enableNavKeys`, `enableWheel`,
+`wheelDebounceMs`, `timeline` and `timelineMinDurationSeconds` work as on
+`<rk-reel-player-overlay>`:
 
 ```ts
 import { Component } from '@angular/core';
@@ -215,34 +271,40 @@ the History API is the default.
 
 ## CSS Classes
 
-| Class                                | Description                       |
-| ------------------------------------ | --------------------------------- |
-| `.rk-reel-overlay`                   | Overlay background                |
-| `.rk-reel-container`                 | Player container                  |
-| `.rk-reel-slide-wrapper`             | Slide wrapper                     |
-| `.rk-reel-button`                    | Shared circular icon button       |
-| `.rk-reel-nav-arrows`                | Desktop nav arrows container      |
-| `.rk-reel-nav-btn`                   | Individual nav arrow button       |
-| `.rk-reel-close-btn`                 | Close button                      |
-| `.rk-reel-sound-btn`                 | Sound toggle                      |
-| `.rk-reel-slide-overlay`             | Per-slide overlay (author, likes) |
-| `.rk-reel-slide-overlay-author`      | Author row                        |
-| `.rk-reel-slide-overlay-avatar`      | Author avatar                     |
-| `.rk-reel-slide-overlay-name`        | Author name                       |
-| `.rk-reel-slide-overlay-description` | Slide description                 |
-| `.rk-reel-slide-overlay-likes`       | Like count                        |
-| `.rk-reel-nested-slider-inner`       | Nested horizontal slider          |
-| `.rk-reel-nested-nav`                | Nested nav arrows                 |
-| `.rk-reel-nested-nav-prev`           | Nested prev arrow                 |
-| `.rk-reel-nested-nav-next`           | Nested next arrow                 |
-| `.rk-reel-nested-indicator`          | Nested slider dot indicator       |
-| `.rk-reel-video-container`           | Video slide wrapper               |
-| `.rk-reel-video-element`             | Video element                     |
-| `.rk-reel-video-poster`              | Video poster image                |
-| `.rk-reel-video-loader`              | Video loading indicator           |
-| `.rk-reel-media-error`               | Error state overlay               |
-| `.rk-reel-media-error-text`          | Error message text                |
-| `.rk-reel-loader`                    | Wave loading overlay              |
+| Class                                | Description                                    |
+| ------------------------------------ | ---------------------------------------------- |
+| `.rk-reel-overlay`                   | Overlay background                             |
+| `.rk-reel-container`                 | Player container                               |
+| `.rk-reel-slide-wrapper`             | Slide wrapper                                  |
+| `.rk-reel-button`                    | Shared circular icon button                    |
+| `.rk-reel-nav-arrows`                | Desktop nav arrows container                   |
+| `.rk-reel-nav-btn`                   | Individual nav arrow button                    |
+| `.rk-reel-close-btn`                 | Close button                                   |
+| `.rk-reel-sound-btn`                 | Sound toggle                                   |
+| `.rk-reel-slide-overlay`             | Per-slide overlay (author, likes)              |
+| `.rk-reel-slide-overlay-author`      | Author row                                     |
+| `.rk-reel-slide-overlay-avatar`      | Author avatar                                  |
+| `.rk-reel-slide-overlay-name`        | Author name                                    |
+| `.rk-reel-slide-overlay-description` | Slide description                              |
+| `.rk-reel-slide-overlay-likes`       | Like count                                     |
+| `.rk-reel-nested-slider-inner`       | Nested horizontal slider                       |
+| `.rk-reel-nested-active`             | Nested slider of the active post               |
+| `.rk-reel-nested-nav`                | Nested nav arrows                              |
+| `.rk-reel-nested-nav-prev`           | Nested prev arrow                              |
+| `.rk-reel-nested-nav-next`           | Nested next arrow                              |
+| `.rk-reel-nested-indicator`          | Nested slider dot indicator                    |
+| `.rk-reel-video-container`           | Video slide wrapper                            |
+| `.rk-reel-video-element`             | Video element                                  |
+| `.rk-reel-video-poster`              | Video poster image                             |
+| `.rk-reel-video-loader`              | Video loading indicator                        |
+| `.rk-reel-media-error`               | Error state overlay                            |
+| `.rk-reel-media-error-text`          | Error message text                             |
+| `.rk-reel-loader`                    | Wave loading overlay                           |
+| `.rk-reel-timeline`                  | Timeline bar container                         |
+| `.rk-reel-timeline-track`            | Scrub track (`[data-scrubbing]` while dragged) |
+| `.rk-reel-timeline-buffered`         | Buffered range segment                         |
+| `.rk-reel-timeline-fill`             | Played progress fill                           |
+| `.rk-reel-timeline-cursor`           | Scrub handle                                   |
 
 ### Theming via CSS custom properties
 

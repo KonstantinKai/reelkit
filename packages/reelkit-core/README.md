@@ -29,19 +29,19 @@ const slider = createSliderController({
   direction: 'vertical',
 });
 
-// Navigate
-slider.next();
-slider.prev();
-slider.goTo(5);
-
-// Read state via signals
-console.log(slider.currentIndex.value); // 5
-
-// Subscribe to changes
-slider.currentIndex.subscribe((index) => {
-  console.log('Slide changed:', index);
+// Observers take no arguments; read the signal inside
+slider.state.index.observe(() => {
+  console.log('Slide changed:', slider.state.index.value);
 });
+
+// Instant jump: the index is 5 as soon as this returns
+slider.goTo(5);
+console.log(slider.state.index.value); // 5
 ```
+
+`next()`, `prev()` and `goTo(index, true)` animate, and settle only when a
+renderer drives `state.axisValue` to its target — the framework bindings do
+that for you. Until it settles, further navigation calls are ignored.
 
 ## Features
 
@@ -50,7 +50,8 @@ slider.currentIndex.subscribe((index) => {
 - Factory functions over classes — `createSliderController`, `createGestureController`, `createKeyboardController`, `createWheelController`
 - Built-in `Signal`, `ComputedSignal`, and `reaction` primitives for reactive state
 - Touch gestures with momentum and configurable thresholds — tap, double-tap and long press on the same recognizer
-- Keyboard and wheel navigation with debouncing
+- Keyboard navigation with throttling, wheel navigation with debouncing
+- Autoplay — `createTimerController` (a frame-driven timer with progress as a signal) and `createSlideshowController` on top of it
 - Infinite loop mode
 - Optional ResizeObserver-based auto-sizing
 - Transitions — `slideTransition`, `fadeTransition`, `flipTransition`, `cubeTransition`, `zoomTransition`; only the one you import ships

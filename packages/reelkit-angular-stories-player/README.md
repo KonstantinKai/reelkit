@@ -110,6 +110,14 @@ array.
 | `rkStoriesLoading`      | `StoriesLoadingContext`: `$implicit` and `story`, `storyIndex`, `groupIndex`                                                                                                                       | Replaces the spinner shown while a story loads    |
 | `rkStoriesError`        | `StoriesErrorContext`: `$implicit` and `story`, `storyIndex`, `groupIndex`                                                                                                                         | Replaces the "Content unavailable" panel          |
 
+`activeGroupIndex` and `activeStoryIndex` in the slide context, and
+`activeIndex` and `progress` in the progress bar context, are core signals
+(`CoreSignal<number>`) that change without a new context. Hand them straight
+to `rk-video-story-slide` or `rk-canvas-progress-bar`, which take signals, or
+bridge them with `toAngularSignal(signal, destroyRef)` from `@reelkit/angular`
+before reading them in a template: a direct `.value` read there is a one-time
+snapshot and never updates.
+
 Slots render through the player's own injector, so a component drawn inside one
 resolves the player's providers — an `rk-video-story-slide` in a slide template
 finds the same sound state the header button writes.
@@ -158,9 +166,11 @@ that holds the `TemplateRef` itself. A named template beats a projected one.
 
 ### rk-stories-url-overlay Inputs
 
-Takes every `rk-stories-overlay` input and output except the open-state trio —
-`isOpen`, `initialGroupIndex`, `initialStoryIndex` — which come from the
-controller. Its slots are projected `ng-template`s, as on the overlay.
+Against `rk-stories-overlay` it adds a required `controller` and drops the
+open-state trio — `isOpen`, `initialGroupIndex`, `initialStoryIndex` — which
+come from the controller, along with the eight `*Template` inputs: its slots are
+projected `ng-template`s only, which the wrapper forwards. Every other input and
+all nine outputs are the same.
 
 | Input        | Type                                  | Default  | Description                                                                                                                                                                            |
 | ------------ | ------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -179,6 +189,27 @@ then, so the URL, not this output, drives closing.
 | `ringSize` | `number`                       | `64`     | Diameter of each ring in pixels                                                                                                      |
 
 `(selected)` emits the group index of the ring chosen.
+
+### Sub-components
+
+The player builds itself from these; each is exported for a custom slot or a
+layout of your own.
+
+| Component                      | Selector                 | Inputs                                                                                                                                                                                                   | Outputs                                                                       |
+| ------------------------------ | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `RkStoriesRingComponent`       | `rk-stories-ring`        | `author: AuthorInfo`, `totalStories`, `viewedCount` (all required); `size` (`68`), `gradientColors: string[]` (built-in gradient), `viewedColor` (`'rgba(255,255,255,0.25)'`)                            | `clicked`                                                                     |
+| `RkStoryHeaderComponent`       | `rk-story-header`        | `author: AuthorInfo` (required); `createdAt: string \| Date`, `isPaused`, `isMuted`, `isVideo`, `isLoading`, `isError` (all `false`), `visible` (`true`), `showPauseButton`, `showSoundButton` (`false`) | `closed`, `pauseToggled`, `soundToggled`                                      |
+| `RkHeartAnimationComponent`    | `rk-heart-animation`     | none; pops and fades over 800ms                                                                                                                                                                          | `completed`, so the heart can be removed                                      |
+| `RkCanvasProgressBarComponent` | `rk-canvas-progress-bar` | `totalStories`, `activeIndex: CoreSignal<number>`, `progress: CoreSignal<number>` (all required); `gap` (`2`), `barHeight` (`2`), `minSegmentWidth` (`8`), `bgColor`, `fillColor`, `live` (`true`)       | none                                                                          |
+| `RkImageStorySlideComponent`   | `rk-image-story-slide`   | `src` (required), `aspectRatio`                                                                                                                                                                          | `loaded`, `failed`                                                            |
+| `RkVideoStorySlideComponent`   | `rk-video-story-slide`   | `src`, `groupIndex`, `storyIndex`, `activeGroupIndex: CoreSignal<number>`, `activeStoryIndex: CoreSignal<number>` (all required); `poster`                                                               | `durationReady: number`, `playbackStarted`, `buffering`, `finished`, `failed` |
+
+`attachViewedState(viewed)` attaches a `StoriesViewedStateController` for as
+long as the calling component lives — reading the store, following other tabs,
+re-attaching when the controller is swapped. Call it in an injection context
+and pass the `viewed` input signal itself, not its value. The ring list and the
+player already call it; a component of your own that reads viewed state before
+the player opens needs it too.
 
 ### StoriesApi
 
@@ -239,21 +270,52 @@ so nothing beyond this package and `@reelkit/angular` needs installing.
 All UI elements use CSS classes prefixed with `rk-stories-`, identical to the
 React and Vue players, so a stylesheet written for one works for the others.
 
-| Class                       | Description                                      |
-| --------------------------- | ------------------------------------------------ |
-| `.rk-stories-overlay`       | Full-screen root container                       |
-| `.rk-stories-swipe-wrapper` | Swipe-to-close wrapper holding arrows and canvas |
-| `.rk-stories-container`     | Rounded story canvas                             |
-| `.rk-stories-ui-layer`      | Interface layer above the player                 |
-| `.rk-stories-nav-btn`       | Desktop previous/next arrow                      |
-| `.rk-stories-header`        | Header row                                       |
-| `.rk-stories-ring`          | Circular avatar with its gradient ring           |
-| `.rk-stories-ring-list`     | Horizontal row of rings                          |
-| `.rk-stories-carousel`      | Desktop carousel layer                           |
-| `.rk-stories-card`          | One preview card beside the player               |
-| `.rk-stories-heart`         | Double-tap heart                                 |
-| `.rk-stories-image`         | Image story element                              |
-| `.rk-stories-video`         | Video story container                            |
+| Class                             | Description                                                     |
+| --------------------------------- | --------------------------------------------------------------- |
+| `.rk-stories-overlay`             | Full-screen root container                                      |
+| `.rk-stories-overlay--carousel`   | Overlay with the desktop carousel showing                       |
+| `.rk-stories-overlay--sliding`    | Carousel slide running                                          |
+| `.rk-stories-swipe-wrapper`       | Swipe-to-close wrapper holding arrows and canvas                |
+| `.rk-stories-container`           | Rounded story canvas                                            |
+| `.rk-stories-slide-wrapper`       | Slide wrapper                                                   |
+| `.rk-stories-story`               | Single story root                                               |
+| `.rk-stories-ui-layer`            | Interface layer above the player (header, progress)             |
+| `.rk-stories-ui-layer--hidden`    | Interface layer hidden while paused                             |
+| `.rk-stories-progress-bar`        | Canvas progress bar wrapper                                     |
+| `.rk-stories-nav-btn`             | Desktop previous/next arrow                                     |
+| `.rk-stories-header`              | Header row                                                      |
+| `.rk-stories-header--hidden`      | Header hidden (`visible` off)                                   |
+| `.rk-stories-header-avatar`       | Author avatar                                                   |
+| `.rk-stories-header-name`         | Author name                                                     |
+| `.rk-stories-header-verified`     | Verified badge                                                  |
+| `.rk-stories-header-time`         | Relative timestamp                                              |
+| `.rk-stories-header-spinner`      | Loading spinner                                                 |
+| `.rk-stories-header-actions`      | Group of header buttons                                         |
+| `.rk-stories-header-btn`          | Header action button                                            |
+| `.rk-stories-header-btn--desktop` | Header button shown above 768px only (pause)                    |
+| `.rk-stories-heart`               | Double-tap heart                                                |
+| `.rk-stories-error`               | Error state                                                     |
+| `.rk-stories-error-text`          | Error message                                                   |
+| `.rk-stories-image`               | Image story element                                             |
+| `.rk-stories-video`               | Video story container                                           |
+| `.rk-stories-video-element`       | Video element                                                   |
+| `.rk-stories-video-poster`        | Video poster image (`--visible` until playback)                 |
+| `.rk-stories-ring`                | Circular avatar with its ring                                   |
+| `.rk-stories-ring--active`        | Ring with stories left to watch                                 |
+| `.rk-stories-ring-avatar`         | Ring avatar image                                               |
+| `.rk-stories-ring-list`           | Horizontal row of rings                                         |
+| `.rk-stories-ring-list-item`      | Ring list item                                                  |
+| `.rk-stories-ring-list-name`      | Ring author name                                                |
+| `.rk-stories-carousel`            | Desktop carousel layer                                          |
+| `.rk-stories-carousel--instant`   | First frame of a slide, transitions off                         |
+| `.rk-stories-card`                | One preview card beside the player (`--center`, `--hidden`)     |
+| `.rk-stories-card-button`         | Default card content                                            |
+| `.rk-stories-card-image`          | Card preview image                                              |
+| `.rk-stories-card-frame`          | Card drawn from the slide template, for a story with no picture |
+| `.rk-stories-card-scrim`          | Card dimming layer                                              |
+| `.rk-stories-card-info`           | Card ring, name and time                                        |
+| `.rk-stories-card-name`           | Card author name                                                |
+| `.rk-stories-card-time`           | Card time-ago text                                              |
 
 Colors, sizes and durations are `--rk-stories-*` custom properties on `:root` —
 prefer those over overriding a class.

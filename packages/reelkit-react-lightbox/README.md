@@ -137,6 +137,26 @@ interface LightboxItem {
 }
 ```
 
+### Render prop fields
+
+| Type                    | Fields                                                                                                                                                                                                          |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ControlsRenderProps`   | `item`, `activeIndex`, `count`, `isFullscreen`, `isAutoAdvancing`, `isDownloading`, `onClose`, `onToggleFullscreen`; `onToggleAutoAdvance?` (only with `autoAdvance`), `onDownload?` (only with `showDownload`) |
+| `SlideRenderProps`      | `item`, `index`, `size: [number, number]`, `isActive`, `autoAdvance`, `onReady`, `onWaiting`, `onError`, `onEnded`                                                                                              |
+| `NavigationRenderProps` | `item`, `activeIndex`, `count`, `onPrev`, `onNext`                                                                                                                                                              |
+| `InfoRenderProps`       | `item`, `index`                                                                                                                                                                                                 |
+
+| Type                                                                                                                                                      | Description                                                                                                                        |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `LightboxOverlayProps`                                                                                                                                    | Props of `LightboxOverlay`                                                                                                         |
+| `LightboxUrlOverlayProps`                                                                                                                                 | Props of `LightboxUrlOverlay` — see [URL-driven lightbox](#url-driven-lightbox)                                                    |
+| `ReelProxyProps`                                                                                                                                          | The `Reel` props forwarded: `loop`, `enableNavKeys`, `enableWheel`, `wheelDebounceMs`, `transitionDuration`, `swipeDistanceFactor` |
+| `UseVideoSlideRendererResult`                                                                                                                             | What `useVideoSlideRenderer` returns                                                                                               |
+| `CloseButtonProps`, `CounterProps`, `FullscreenButtonProps`, `SoundButtonProps`, `PlayPauseButtonProps`, `DownloadButtonProps`, `LightboxVideoSlideProps` | Sub-component props, below                                                                                                         |
+
+Re-exported from `@reelkit/react`: `slideTransition`, `flipTransition`, and the
+types `UrlAdapter`, `UrlCodec`, `UrlLocator`.
+
 ## Slideshow and download (opt-in)
 
 ```tsx
@@ -220,9 +240,10 @@ function useVideoSlideRenderer(items: LightboxItem[]): {
 };
 ```
 
-The returned `renderControls` already includes the sound button when the gallery
-holds a video. Build your own from the sub-components when you need a different
-layout:
+The returned type is exported as `UseVideoSlideRendererResult`. Its
+`renderControls` shows the sound button while the active slide is a video, and
+hides it on image slides. Build your own from the sub-components when you need
+a different layout:
 
 ```tsx
 renderControls={({ onClose, activeIndex, count }) => (
@@ -234,6 +255,32 @@ renderControls={({ onClose, activeIndex, count }) => (
   </>
 )}
 ```
+
+### CloseButton
+
+| Prop        | Type            | Description                              |
+| ----------- | --------------- | ---------------------------------------- |
+| `onClick`   | `() => void`    | Close callback                           |
+| `className` | `string`        | CSS class (default: `rk-lightbox-close`) |
+| `style`     | `CSSProperties` | Inline styles                            |
+
+### Counter
+
+| Prop           | Type            | Description                                |
+| -------------- | --------------- | ------------------------------------------ |
+| `currentIndex` | `number`        | Zero-based index of the current slide      |
+| `count`        | `number`        | Total number of items                      |
+| `className`    | `string`        | CSS class (default: `rk-lightbox-counter`) |
+| `style`        | `CSSProperties` | Inline styles                              |
+
+### FullscreenButton
+
+| Prop           | Type            | Description                            |
+| -------------- | --------------- | -------------------------------------- |
+| `isFullscreen` | `boolean`       | Current fullscreen state               |
+| `onToggle`     | `() => void`    | Toggle callback                        |
+| `className`    | `string`        | CSS class (default: `rk-lightbox-btn`) |
+| `style`        | `CSSProperties` | Inline styles                          |
 
 ### SoundButton
 
@@ -262,35 +309,82 @@ renderControls={({ onClose, activeIndex, count }) => (
 | `className`     | `string`        | CSS class (default: `rk-lightbox-btn rk-lightbox-download`) |
 | `style`         | `CSSProperties` | Inline styles                                               |
 
+### LightboxVideoSlide
+
+The video slide `useVideoSlideRenderer` renders, for a custom `renderSlide`.
+
+| Prop        | Type               | Description                                                   |
+| ----------- | ------------------ | ------------------------------------------------------------- |
+| `src`       | `string`           | Video URL (required)                                          |
+| `isActive`  | `boolean`          | Whether this is the active slide (required)                   |
+| `size`      | `[number, number]` | `[width, height]` in pixels (required)                        |
+| `slideKey`  | `string`           | Key for remembering playback position (required)              |
+| `poster`    | `string`           | Poster shown while the video loads                            |
+| `loop`      | `boolean`          | Start over at the end (default: `true`); off to get `onEnded` |
+| `onPlaying` | `() => void`       | Playback started                                              |
+| `onWaiting` | `() => void`       | Playback stalled                                              |
+| `onError`   | `() => void`       | Loading or playback failed                                    |
+| `onEnded`   | `() => void`       | A video that does not loop reached its end                    |
+
 ## URL-driven lightbox
 
-`LightboxUrlOverlay` takes the same props except `isOpen` — the address bar owns
-the open state, so a shared link opens the gallery on the right image:
+`LightboxUrlOverlay` takes the same props with these differences — the address
+bar owns the open state, so a shared link opens the gallery on the right image:
+
+| Prop           | Type                 | Description                                                                              |
+| -------------- | -------------------- | ---------------------------------------------------------------------------------------- |
+| `controller`   | `UrlStateController` | Required. From `useOverlayUrlState`; its position opens the lightbox and picks the image |
+| `onClose`      | `() => void`         | Optional. Called after the lightbox closes; the URL drives closing, not this             |
+| `isOpen`       | —                    | Not accepted                                                                             |
+| `initialIndex` | —                    | Ignored; the controller's position supplies it                                           |
 
 ```tsx
 import { useOverlayUrlState, urlIndexKey } from '@reelkit/react';
-import { LightboxUrlOverlay } from '@reelkit/react-lightbox';
+import { LightboxUrlOverlay, type LightboxItem } from '@reelkit/react-lightbox';
 import { Link } from 'react-router-dom';
+
+function Gallery({ images }: { images: LightboxItem[] }) {
+  const photo = useOverlayUrlState({
+    param: 'photo',
+    ...urlIndexKey(() => images.length),
+  });
+
+  // Opening is a link — the overlay reads the URL and opens itself.
+  return (
+    <>
+      {images.map((image, i) => (
+        <Link key={image.src} to={`?photo=${i}`}>
+          <img src={image.src} />
+        </Link>
+      ))}
+      <LightboxUrlOverlay controller={photo} images={images} />
+    </>
+  );
+}
+```
+
+To key the URL by a stable identity instead, so a bookmark survives the gallery
+being reordered, swap `urlIndexKey` for `urlStableIdKey({ items: () => images })`
+— it needs items that carry an `id` (for example `LightboxItem & { id: string }`).
+Without one, pair a codec and locator keyed by `src`:
+
+```tsx
+import { useOverlayUrlState, base64UrlCodec } from '@reelkit/react';
 
 const photo = useOverlayUrlState({
   param: 'photo',
-  ...urlIndexKey(() => images.length),
+  codec: base64UrlCodec,
+  locator: {
+    locate: (src) => {
+      const index = images.findIndex((image) => image.src === src);
+      return index === -1 ? null : index;
+    },
+    identify: (index) => images[index].src,
+  },
 });
-
-// Opening is a link — the overlay reads the URL and opens itself.
-{
-  images.map((image, i) => (
-    <Link key={image.src} to={`?photo=${i}`}>
-      <img src={image.src} />
-    </Link>
-  ));
-}
-
-<LightboxUrlOverlay controller={photo} images={images} />;
 ```
 
-Swap `urlIndexKey` for `urlStableIdKey({ items: () => images })` to key the URL
-by image id, so a bookmark survives the gallery being reordered.
+Call it inside the component, as in the sample above.
 
 ## Keyboard Shortcuts
 
@@ -311,6 +405,7 @@ All UI elements use CSS classes prefixed with `rk-lightbox-` that can be overrid
 | `.rk-lightbox-nav`             | Navigation arrows           |
 | `.rk-lightbox-nav-prev`        | Previous arrow              |
 | `.rk-lightbox-nav-next`        | Next arrow                  |
+| `.rk-lightbox-controls-left`   | Left group of the controls  |
 | `.rk-lightbox-counter`         | Image counter               |
 | `.rk-lightbox-btn`             | Control buttons             |
 | `.rk-lightbox-play-pause`      | Slideshow play/pause button |
@@ -325,6 +420,7 @@ All UI elements use CSS classes prefixed with `rk-lightbox-` that can be overrid
 | `.rk-lightbox-video-poster`    | Video poster image          |
 | `.rk-lightbox-spinner`         | Default loading spinner     |
 | `.rk-lightbox-img-error`       | Error state container       |
+| `.rk-lightbox-img-error-text`  | Error message text          |
 | `.rk-lightbox-swipe-hint`      | Mobile swipe hint chip      |
 
 ### Theming via CSS custom properties

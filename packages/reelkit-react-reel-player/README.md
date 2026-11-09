@@ -24,6 +24,7 @@ npm install @reelkit/react-reel-player @reelkit/react lucide-react
 ## Quick Start
 
 ```tsx
+import { useState } from 'react';
 import {
   ReelPlayerOverlay,
   type ContentItem,
@@ -113,7 +114,8 @@ function App() {
 
 Each one replaces a part of the default UI. Those receiving `defaultContent`
 let you wrap the built-in rendering instead of rebuilding it; returning `null`
-hides that part.
+hides that part — except `renderSlide`, where `null` falls back to the default
+slide.
 
 | Prop                     | Receives                  | Replaces                                           |
 | ------------------------ | ------------------------- | -------------------------------------------------- |
@@ -129,8 +131,15 @@ hides that part.
 
 ### URL-driven player
 
-`ReelPlayerUrlOverlay` takes the same props except `isOpen` — the address bar
-owns the open state, so a shared link reopens the same post:
+`ReelPlayerUrlOverlay` takes the same props with these differences — the
+address bar owns the open state, so a shared link reopens the same post:
+
+| Prop                                | Type                                                                | Description                                                                                 |
+| ----------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `controller`                        | `UrlStateController<number> \| UrlStateController<TwoAxisPosition>` | Required. From `useOverlayUrlState`; its position opens the player and picks the slide      |
+| `onClose`                           | `() => void`                                                        | Optional. Called after the player closes; the URL drives closing, not this                  |
+| `isOpen`                            | —                                                                   | Not accepted                                                                                |
+| `initialIndex`, `initialInnerIndex` | —                                                                   | Ignored; the controller's position supplies both (the inner index only with a two-axis key) |
 
 ```tsx
 import { ReelPlayerUrlOverlay } from '@reelkit/react-reel-player';
@@ -160,14 +169,91 @@ For composing custom controls or slides rather than replacing the whole thing:
 `CloseButton`, `SoundButton`, `ImageSlide`, `VideoSlide`, `SlideOverlay`,
 `TimelineBar`, plus `TimelineProvider` with `useTimelineState` and
 `useTimelineStateOptional` to read playback state (progress, buffered ranges,
-duration) anywhere inside the player.
+duration) anywhere inside the player. `useTimelineState` throws outside a
+provider; `useTimelineStateOptional` returns `null` instead.
+
+**CloseButton**
+
+| Prop        | Type            | Default               | Description                         |
+| ----------- | --------------- | --------------------- | ----------------------------------- |
+| `onClick`   | `() => void`    | required              | Click handler                       |
+| `className` | `string`        | `'rk-reel-close-btn'` | Class, added after `rk-reel-button` |
+| `style`     | `CSSProperties` | -                     | Inline styles                       |
+
+**SoundButton** — reads `useSoundState()`, renders nothing while `disabled.value` is `true`.
+
+| Prop        | Type            | Default               | Description                         |
+| ----------- | --------------- | --------------------- | ----------------------------------- |
+| `disabled`  | `boolean`       | `false`               | Dims the button and ignores clicks  |
+| `className` | `string`        | `'rk-reel-sound-btn'` | Class, added after `rk-reel-button` |
+| `style`     | `CSSProperties` | -                     | Inline styles                       |
+
+**ImageSlide**
+
+| Prop           | Type                                  | Default  | Description                              |
+| -------------- | ------------------------------------- | -------- | ---------------------------------------- |
+| `src`          | `string`                              | required | Image URL                                |
+| `size`         | `[number, number]`                    | required | `[width, height]` in pixels              |
+| `className`    | `string`                              | -        | Class on the root container              |
+| `style`        | `CSSProperties`                       | -        | Inline styles on the root container      |
+| `imgClassName` | `string`                              | -        | Class on the `<img>`                     |
+| `imgStyle`     | `CSSProperties`                       | -        | Inline styles on the `<img>`             |
+| `imageProps`   | `ImgHTMLAttributes<HTMLImageElement>` | -        | Extra attributes spread onto the `<img>` |
+
+**VideoSlide**
+
+| Prop            | Type                                      | Default  | Description                                                  |
+| --------------- | ----------------------------------------- | -------- | ------------------------------------------------------------ |
+| `src`           | `string`                                  | required | Video URL                                                    |
+| `aspectRatio`   | `number`                                  | required | Width / height; below 1 uses `cover`, otherwise `contain`    |
+| `size`          | `[number, number]`                        | required | `[width, height]` in pixels                                  |
+| `isActive`      | `boolean`                                 | required | Whether the parent reel slide is active                      |
+| `slideKey`      | `string`                                  | required | Key for remembering playback position and the captured frame |
+| `poster`        | `string`                                  | -        | Poster shown while the video loads                           |
+| `isInnerActive` | `boolean`                                 | `true`   | Whether this is the active item of a nested slider           |
+| `className`     | `string`                                  | -        | Class on the root container                                  |
+| `style`         | `CSSProperties`                           | -        | Inline styles on the root container                          |
+| `onVideoRef`    | `(ref: HTMLVideoElement \| null) => void` | -        | Reports the shared video element, for drag pause and resume  |
+| `onReady`       | `() => void`                              | -        | Buffering finished                                           |
+| `onWaiting`     | `() => void`                              | -        | Playback stalled                                             |
+| `onError`       | `() => void`                              | -        | Loading or playback failed                                   |
+
+**SlideOverlay** — renders nothing when every prop is omitted.
+
+| Prop          | Type                               | Description                                  |
+| ------------- | ---------------------------------- | -------------------------------------------- |
+| `author`      | `{ name: string; avatar: string }` | Avatar and display name                      |
+| `description` | `string`                           | Description, clamped to two lines            |
+| `likes`       | `number`                           | Like count, formatted compactly (1.2K, 3.5M) |
+
+**TimelineBar** — reads the nearest `TimelineProvider`.
+
+| Prop        | Type            | Description                   |
+| ----------- | --------------- | ----------------------------- |
+| `className` | `string`        | Extra class on the bar root   |
+| `style`     | `CSSProperties` | Inline styles on the bar root |
+
+### Render prop fields
+
+| Type                     | Fields                                                                                                                                                                                                                                               |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ControlsRenderProps<T>` | `item`, `soundState: SoundController`, `activeIndex`, `content: T[]`, `onClose`                                                                                                                                                                      |
+| `SlideRenderProps<T>`    | `item`, `index`, `size`, `isActive`, `slideKey`, `innerSliderRef: MutableRefObject<ReelApi \| null>`, `defaultContent`, `onReady`, `onWaiting`, `onError`; optional `enableWheel`, `onActiveMediaTypeChange`, `renderNestedNavigation`, `onVideoRef` |
+| `NestedSlideRenderProps` | `item: BaseContentItem`, `media: MediaItem`, `index`, `size`, `isActive`, `isInnerActive`, `slideKey`, `defaultContent`; optional (active item only) `onVideoRef`, `onReady`, `onWaiting`, `onError`                                                 |
+| `TimelineRenderProps<T>` | `item`, `activeIndex`, `timelineState: TimelineController`, `defaultContent`                                                                                                                                                                         |
+| `NavigationRenderProps`  | `item: BaseContentItem`, `media?: MediaItem` (nested only), `activeIndex`, `count`, `onPrev`, `onNext`                                                                                                                                               |
 
 ### Types
 
 ```tsx
-interface ContentItem {
+interface BaseContentItem {
   id: string;
   media: MediaItem[];
+}
+
+// The default item; extend BaseContentItem for your own and pass it as
+// the type parameter: <ReelPlayerOverlay<MyItem> content={items} ... />
+interface ContentItem extends BaseContentItem {
   author: {
     name: string;
     avatar: string;
@@ -185,21 +271,50 @@ interface MediaItem {
 }
 
 type MediaType = 'image' | 'video';
+
+type TimelineMode = 'auto' | 'always' | 'never';
 ```
+
+| Type                                                                                                                  | Description                                                                                                                        |
+| --------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `ReelPlayerOverlayProps<T>`                                                                                           | Props of `ReelPlayerOverlay`: the base props plus `isOpen` and `onClose`                                                           |
+| `ReelPlayerUrlOverlayProps<T>`                                                                                        | Props of `ReelPlayerUrlOverlay`: the base props plus `controller` and optional `onClose`                                           |
+| `ReelPlayerOverlayBaseProps<T>`                                                                                       | Everything both overlays share                                                                                                     |
+| `ReelPlayerControlledProps`, `ReelPlayerUrlControlledProps`                                                           | The open-state halves of the two props types                                                                                       |
+| `ReelProxyProps`                                                                                                      | The `Reel` props forwarded: `loop`, `enableNavKeys`, `enableWheel`, `wheelDebounceMs`, `transitionDuration`, `swipeDistanceFactor` |
+| `CloseButtonProps`, `SoundButtonProps`, `ImageSlideProps`, `VideoSlideProps`, `SlideOverlayProps`, `TimelineBarProps` | Sub-component props, as above                                                                                                      |
+
+Re-exported from `@reelkit/react` for the URL-driven player: `urlIndexTwoAxisKey`
+and the types `UrlAdapter`, `UrlCodec`, `UrlLocator`, `TwoAxisPosition`.
 
 ### Sound Context
 
-The sound context ships with `@reelkit/react`, which this package depends on:
+The sound context ships with `@reelkit/react`, which this package depends on.
+`useSoundState()` returns the `SoundController`:
 
 ```tsx
 import { SoundProvider, useSoundState } from '@reelkit/react';
 
-interface SoundState {
-  muted: boolean;
-  disabled: boolean;
+interface SoundController {
+  muted: Signal<boolean>;
+  disabled: Signal<boolean>;
   toggle: () => void;
-  setMuted: (value: boolean) => void;
-  setDisabled: (value: boolean) => void;
+}
+```
+
+Write through `.value` (`sound.muted.value = false`) and read inside `Observe`
+so the change re-renders:
+
+```tsx
+import { Observe, useSoundState } from '@reelkit/react';
+
+function MuteLabel() {
+  const sound = useSoundState();
+  return (
+    <Observe signals={[sound.muted]}>
+      {() => <span>{sound.muted.value ? 'Muted' : 'Sound on'}</span>}
+    </Observe>
+  );
 }
 ```
 
@@ -314,9 +429,17 @@ function Gallery() {
 | `.rk-reel-nested-nav`                | Nested nav arrows                 |
 | `.rk-reel-nested-nav-prev`           | Nested prev arrow                 |
 | `.rk-reel-nested-nav-next`           | Nested next arrow                 |
+| `.rk-reel-nested-indicator`          | Nested slider dot indicator       |
+| `.rk-reel-nested-active`             | Nested slider of the active post  |
+| `.rk-reel-timeline`                  | Timeline bar root                 |
+| `.rk-reel-timeline-track`            | Timeline track, the scrub target  |
+| `.rk-reel-timeline-buffered`         | Buffered range segment            |
+| `.rk-reel-timeline-fill`             | Playback progress fill            |
+| `.rk-reel-timeline-cursor`           | Scrub cursor                      |
 | `.rk-reel-video-container`           | Video slide wrapper               |
 | `.rk-reel-video-element`             | Video element                     |
 | `.rk-reel-video-poster`              | Video poster image                |
+| `.rk-reel-video-poster.rk-visible`   | Poster while it is shown          |
 | `.rk-reel-media-error`               | Error state container             |
 | `.rk-reel-media-error-text`          | Error message text                |
 | `.rk-reel-loader`                    | Wave loading overlay              |

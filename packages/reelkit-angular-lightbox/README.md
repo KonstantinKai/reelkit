@@ -86,7 +86,7 @@ export class GalleryComponent {
 - Video slides (opt-in) — via `rkLightboxSlide` template slot
 - Counter — "1 / 10" indicator
 - Info overlay — title and description with gradient
-- Template slots — `rkLightboxControls`, `rkLightboxNavigation`, `rkLightboxInfo`, `rkLightboxSlide` to override any part
+- Template slots — `rkLightboxControls`, `rkLightboxNavigation`, `rkLightboxInfo`, `rkLightboxSlide`, `rkLightboxLoading`, `rkLightboxError` to override any part
 - Slideshow (opt-in) — `autoAdvance` plays the gallery on its own: images after they load, videos when they end, paused while the mouse is on a control
 - Download (opt-in) — `showDownload` adds a button that saves the active item, from `downloadUrl` when the preview is a resized copy
 - Sub-components — `RkCloseButtonComponent`, `RkCounterComponent`, `RkFullscreenButtonComponent`, `RkSoundButtonComponent`, `RkPlayPauseButtonComponent`, `RkDownloadButtonComponent`, `RkLightboxVideoSlideComponent`
@@ -95,14 +95,25 @@ export class GalleryComponent {
 
 ## Template Slots
 
-| Directive              | Description                                       |
-| ---------------------- | ------------------------------------------------- |
-| `rkLightboxControls`   | Custom controls (close, counter, etc.)            |
-| `rkLightboxNavigation` | Custom prev/next navigation arrows                |
-| `rkLightboxInfo`       | Custom title/description overlay                  |
-| `rkLightboxSlide`      | Custom slide renderer (required for video slides) |
-| `rkLightboxLoading`    | Custom loading indicator                          |
-| `rkLightboxError`      | Custom error indicator                            |
+| Directive              | Class                           | Context                   | Description                                       |
+| ---------------------- | ------------------------------- | ------------------------- | ------------------------------------------------- |
+| `rkLightboxControls`   | `RkLightboxControlsDirective`   | `LightboxControlsContext` | Custom controls (close, counter, etc.)            |
+| `rkLightboxNavigation` | `RkLightboxNavigationDirective` | `LightboxNavContext`      | Custom prev/next navigation arrows                |
+| `rkLightboxInfo`       | `RkLightboxInfoDirective`       | `LightboxInfoContext`     | Custom title/description overlay                  |
+| `rkLightboxSlide`      | `RkLightboxSlideDirective`      | `LightboxSlideContext`    | Custom slide renderer (required for video slides) |
+| `rkLightboxLoading`    | `RkLightboxLoadingDirective`    | `LightboxLoadingContext`  | Custom loading indicator                          |
+| `rkLightboxError`      | `RkLightboxErrorDirective`      | `LightboxErrorContext`    | Custom error indicator                            |
+
+### Template Contexts
+
+| Context                   | Fields                                                                                                                                                                                                                  |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `LightboxControlsContext` | `item`, `activeIndex`, `count`, `isFullscreen`, `isAutoAdvancing`, `isDownloading`, `onClose()`, `onToggleFullscreen()`, `onToggleAutoAdvance?()` (only with `autoAdvance`), `onDownload?()` (only with `showDownload`) |
+| `LightboxNavContext`      | `item`, `activeIndex`, `count`, `onPrev()`, `onNext()`                                                                                                                                                                  |
+| `LightboxInfoContext`     | `$implicit: LightboxItem`, `index`                                                                                                                                                                                      |
+| `LightboxSlideContext`    | `$implicit: LightboxItem`, `index`, `size: [number, number]`, `isActive`, `autoAdvance`, `onReady()`, `onWaiting()`, `onError()`, `onEnded()`                                                                           |
+| `LightboxLoadingContext`  | `$implicit: number` (active index), `item: LightboxItem`                                                                                                                                                                |
+| `LightboxErrorContext`    | `$implicit: number` (active index), `item: LightboxItem`                                                                                                                                                                |
 
 ## API Reference
 
@@ -117,6 +128,8 @@ export class GalleryComponent {
 | `swipeToCloseDirection` | `SwipeToCloseDirection` | `'up'`            | Which way a swipe dismisses the lightbox  |
 | `ariaLabel`             | `string`                | `'Image gallery'` | Dialog `aria-label`                       |
 | `showInfo`              | `boolean`               | `true`            | Show title/description                    |
+| `showControls`          | `boolean`               | `true`            | Show the default controls                 |
+| `showNavigation`        | `boolean`               | `true`            | Show the default prev/next arrows         |
 | `loop`                  | `boolean`               | `false`           | Enable infinite loop                      |
 | `enableNavKeys`         | `boolean`               | `true`            | Enable keyboard navigation                |
 | `enableWheel`           | `boolean`               | `true`            | Enable mouse wheel                        |
@@ -126,6 +139,10 @@ export class GalleryComponent {
 | `autoAdvance`           | `boolean`               | `false`           | Play the gallery as a slideshow           |
 | `autoAdvanceInterval`   | `number`                | `5000`            | Image time in a slideshow (ms), from load |
 | `showDownload`          | `boolean`               | `false`           | Add a download button                     |
+
+Each slot also has a template input — `controlsTemplate`, `navigationTemplate`, `infoTemplate`, `slideTemplate`, `loadingTemplate`, `errorTemplate` — taking a `TemplateRef` with the slot's context. An input wins over the projected directive; projecting the directive is the usual way.
+
+The slider inputs (`transitionDuration`, `swipeDistanceFactor`, `loop`, `enableNavKeys`, `enableWheel`, `wheelDebounceMs`) are typed from the exported `ReelProxyProps` interface, the subset of `rk-reel` configuration the lightbox forwards. Its `enableWheel` documents the slider default `false`; the lightbox sets `true`.
 
 ### rk-lightbox-overlay Outputs
 
@@ -160,14 +177,33 @@ feature is on. The `rkLightboxSlide` context carries `autoAdvance` and
 
 Use these inside custom `rkLightboxControls` templates:
 
-| Component                     | Description                                   |
-| ----------------------------- | --------------------------------------------- |
-| `RkCloseButtonComponent`      | Close button                                  |
-| `RkCounterComponent`          | "1 / 10" counter                              |
-| `RkFullscreenButtonComponent` | Fullscreen toggle                             |
-| `RkSoundButtonComponent`      | Mute/unmute toggle                            |
-| `RkPlayPauseButtonComponent`  | Slideshow toggle; `[playing]`, `(toggled)`    |
-| `RkDownloadButtonComponent`   | Download button; `[downloading]`, `(pressed)` |
+| Component                     | Selector               | Description                                                              |
+| ----------------------------- | ---------------------- | ------------------------------------------------------------------------ |
+| `RkCloseButtonComponent`      | `rk-close-button`      | Close button; `[className]` (default `'rk-lightbox-close'`), `(clicked)` |
+| `RkCounterComponent`          | `rk-counter`           | "1 / 10" counter; `[currentIndex]`, `[count]` (both required)            |
+| `RkFullscreenButtonComponent` | `rk-fullscreen-button` | Fullscreen toggle; `[isFullscreen]` (required), `(toggled)`              |
+| `RkSoundButtonComponent`      | `rk-sound-button`      | Mute/unmute toggle; `[muted]` (required), `(toggled)`                    |
+| `RkPlayPauseButtonComponent`  | `rk-play-pause-button` | Slideshow toggle; `[playing]` (required), `(toggled)`                    |
+| `RkDownloadButtonComponent`   | `rk-download-button`   | Download button; `[downloading]` (required), `(pressed)`                 |
+
+### RkLightboxVideoSlideComponent
+
+`<rk-lightbox-video-slide>` renders a video item inside a custom `rkLightboxSlide` template. Every lightbox video shares one `<video>` element, so sound carries over between slides on iOS.
+
+| Input       | Type               | Default  | Description                                                        |
+| ----------- | ------------------ | -------- | ------------------------------------------------------------------ |
+| `src`       | `string`           | required | Video URL                                                          |
+| `isActive`  | `boolean`          | required | Whether this is the visible slide                                  |
+| `size`      | `[number, number]` | required | `[width, height]` in pixels                                        |
+| `slideKey`  | `string`           | required | Key for remembered playback position and captured frames           |
+| `poster`    | `string`           | -        | Poster shown while the video loads                                 |
+| `loop`      | `boolean`          | `true`   | Start over at the end; bind `!autoAdvance` to get `onEnded`        |
+| `onReady`   | `() => void`       | -        | Pass the context's `onReady`                                       |
+| `onWaiting` | `() => void`       | -        | Pass the context's `onWaiting`                                     |
+| `onError`   | `() => void`       | -        | Pass the context's `onError`                                       |
+| `onEnded`   | `() => void`       | -        | Pass the context's `onEnded`; called when a non-looping video ends |
+
+`setLightboxVideoMuted(muted: boolean)` sets muted on that shared element directly — call it from a custom sound toggle.
 
 ## Slideshow and download (opt-in)
 
@@ -194,14 +230,28 @@ downloads; when the server sends no CORS headers it opens in a new tab instead.
 
 ## URL-driven lightbox
 
-`<rk-lightbox-url-overlay>` takes the same inputs except `isOpen` — the address
-bar owns the open state, so a shared link opens the gallery on the right image:
+`<rk-lightbox-url-overlay>` lets the address bar own the open state, so a shared
+link opens the gallery on the right image. Against `<rk-lightbox-overlay>` it
+adds a required `controller` and drops `isOpen`, `initialIndex` and the six
+`*Template` inputs (project the slot directives instead; the wrapper forwards
+them). Every other input and both outputs are the same.
+
+| Input        | Type                 | Default  | Description                                                                   |
+| ------------ | -------------------- | -------- | ----------------------------------------------------------------------------- |
+| `controller` | `UrlStateController` | required | From `createOverlayUrlState`; its index opens the gallery and picks the slide |
 
 ```ts
 import { Component, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { RkLightboxUrlOverlayComponent } from '@reelkit/angular-lightbox';
+import {
+  RkLightboxUrlOverlayComponent,
+  type LightboxItem,
+} from '@reelkit/angular-lightbox';
 import { createOverlayUrlState, urlIndexKey } from '@reelkit/angular';
+
+const photos: LightboxItem[] = [
+  /* ... */
+];
 
 @Component({
   imports: [RkLightboxUrlOverlayComponent, RouterLink],
@@ -228,8 +278,10 @@ export class GalleryComponent {
 
 In a routed application pass `adapter: createRouterUrlAdapter()` from
 `@reelkit/angular/ng-router-url-adapter`, otherwise the router's own location
-goes stale. Swap `urlIndexKey` for `urlStableIdKey({ items: () => this.images() })`
-to key the URL by image id.
+goes stale. To key the URL by image id instead, give each item an `id`
+(`LightboxItem & { id: string }`) and swap `urlIndexKey` for
+`urlStableIdKey({ items: () => this.images() })` — it accepts only items that
+carry one, and `LightboxItem` has none of its own.
 
 ## Keyboard Shortcuts
 
@@ -243,31 +295,34 @@ to key the URL by image id.
 
 All UI elements use CSS classes prefixed with `rk-lightbox-`:
 
-| Class                          | Description                 |
-| ------------------------------ | --------------------------- |
-| `.rk-lightbox-overlay`         | Root container              |
-| `.rk-lightbox-close`           | Close button                |
-| `.rk-lightbox-nav`             | Navigation arrows           |
-| `.rk-lightbox-nav-prev`        | Previous arrow              |
-| `.rk-lightbox-nav-next`        | Next arrow                  |
-| `.rk-lightbox-counter`         | Image counter               |
-| `.rk-lightbox-btn`             | Control buttons             |
-| `.rk-lightbox-play-pause`      | Slideshow play/pause button |
-| `.rk-lightbox-download`        | Download button             |
-| `.rk-lightbox-info`            | Title/description container |
-| `.rk-lightbox-title`           | Image title                 |
-| `.rk-lightbox-description`     | Image description           |
-| `.rk-lightbox-slide`           | Slide container             |
-| `.rk-lightbox-img`             | Image element               |
-| `.rk-lightbox-video-container` | Video slide wrapper         |
-| `.rk-lightbox-video-element`   | Video element               |
-| `.rk-lightbox-video-poster`    | Video poster image          |
-| `.rk-lightbox-video-error`     | Video error state container |
-| `.rk-lightbox-top-shade`       | Top gradient scrim          |
-| `.rk-lightbox-spinner`         | Default loading spinner     |
-| `.rk-lightbox-img-error`       | Image error state container |
-| `.rk-lightbox-swipe-hint`      | Mobile swipe hint chip      |
-| `.rk-lightbox-empty`           | Empty state text            |
+| Class                           | Description                 |
+| ------------------------------- | --------------------------- |
+| `.rk-lightbox-overlay`          | Root container              |
+| `.rk-lightbox-close`            | Close button                |
+| `.rk-lightbox-nav`              | Navigation arrows           |
+| `.rk-lightbox-nav-prev`         | Previous arrow              |
+| `.rk-lightbox-nav-next`         | Next arrow                  |
+| `.rk-lightbox-controls-left`    | Left group of the controls  |
+| `.rk-lightbox-counter`          | Image counter               |
+| `.rk-lightbox-btn`              | Control buttons             |
+| `.rk-lightbox-play-pause`       | Slideshow play/pause button |
+| `.rk-lightbox-download`         | Download button             |
+| `.rk-lightbox-info`             | Title/description container |
+| `.rk-lightbox-title`            | Image title                 |
+| `.rk-lightbox-description`      | Image description           |
+| `.rk-lightbox-slide`            | Slide container             |
+| `.rk-lightbox-img`              | Image element               |
+| `.rk-lightbox-video-container`  | Video slide wrapper         |
+| `.rk-lightbox-video-element`    | Video element               |
+| `.rk-lightbox-video-poster`     | Video poster image          |
+| `.rk-lightbox-video-error`      | Video error state container |
+| `.rk-lightbox-video-error-text` | Video error message         |
+| `.rk-lightbox-top-shade`        | Top gradient scrim          |
+| `.rk-lightbox-spinner`          | Default loading spinner     |
+| `.rk-lightbox-img-error`        | Image error state container |
+| `.rk-lightbox-img-error-text`   | Image error message         |
+| `.rk-lightbox-swipe-hint`       | Mobile swipe hint chip      |
+| `.rk-lightbox-empty`            | Empty state text            |
 
 ### Theming via CSS custom properties
 

@@ -132,32 +132,60 @@ The same `StoriesApi` (`nextStory`, `prevStory`, `nextGroup`, `prevGroup`, `goTo
 
 ### Scoped Slots
 
-| Slot           | Scope                                                                                                                                 |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `header`       | `author, story, storyIndex, isPaused, isMuted, isVideo, groupIndex, isActive, onToggleSound, onTogglePause, onClose`                  |
-| `footer`       | `author, story, storyIndex`                                                                                                           |
-| `slide`        | `story, index, groupIndex, isActive, size, activeGroupIndex, activeStoryIndex, onDurationReady, onReady, onWaiting, onError, onEnded` |
-| `navigation`   | `onPrevStory, onNextStory, onPrevGroup, onNextGroup`                                                                                  |
-| `progressBar`  | `totalStories, activeIndex, progress, group, groupIndex, isActive`                                                                    |
-| `loading`      | `story, storyIndex, groupIndex`                                                                                                       |
-| `error`        | `story, storyIndex, groupIndex`                                                                                                       |
-| `groupPreview` | `group, groupIndex, story, offset, viewedCount, onOpen`                                                                               |
+| Slot           | Scope type              | Scope                                                                                                                                 |
+| -------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `header`       | `HeaderSlotScope`       | `author, story, storyIndex, isPaused, isMuted, isVideo, groupIndex, isActive, onToggleSound, onTogglePause, onClose`                  |
+| `footer`       | `FooterSlotScope`       | `author, story, storyIndex`                                                                                                           |
+| `slide`        | `SlideSlotScope`        | `story, index, groupIndex, isActive, size, activeGroupIndex, activeStoryIndex, onDurationReady, onReady, onWaiting, onError, onEnded` |
+| `navigation`   | `NavigationSlotScope`   | `onPrevStory, onNextStory, onPrevGroup, onNextGroup`                                                                                  |
+| `progressBar`  | `ProgressBarSlotScope`  | `totalStories, activeIndex, progress, group, groupIndex, isActive`                                                                    |
+| `loading`      | `LoadingSlotScope`      | `story, storyIndex, groupIndex`                                                                                                       |
+| `error`        | `ErrorSlotScope`        | `story, storyIndex, groupIndex`                                                                                                       |
+| `groupPreview` | `GroupPreviewSlotScope` | `group, groupIndex, story, offset, viewedCount, onOpen`                                                                               |
 
 A slot that renders nothing falls back to the default.
 
 ### StoriesUrlOverlay
 
-Takes every `StoriesOverlay` prop except `isOpen`, `initialGroupIndex` and `initialStoryIndex`, plus a `controller` from `useOverlayUrlState` spread with `urlIndexTwoAxisKey(...)`. The `?story=<group>.<story>` parameter opens the player, every story change updates it, and one back step closes.
+Takes every `StoriesOverlay` prop except `isOpen`, `initialGroupIndex` and `initialStoryIndex`, plus a `controller`. The `?story=<group>.<story>` parameter opens the player, every story change updates it, and one back step closes.
+
+| Prop         | Type                                  | Default  | Description                                                                                                        |
+| ------------ | ------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------ |
+| `controller` | `UrlStateController<TwoAxisPosition>` | required | From `useOverlayUrlState` spread with `urlIndexTwoAxisKey(...)`; `outer` is the group, `inner` the story within it |
+
+It emits every `StoriesOverlay` event except `update:is-open` — the URL owns
+the open state, so there is no `v-model:is-open`. `close` is emitted after the
+parameter is cleared.
 
 ### StoriesRingList Props
 
-| Prop       | Type                           | Description                                                          |
-| ---------- | ------------------------------ | -------------------------------------------------------------------- |
-| `groups`   | `StoriesGroup[]`               | Story groups                                                         |
-| `viewed`   | `StoriesViewedStateController` | Rings follow it by themselves; the same controller the overlay takes |
-| `ringSize` | `number`                       | Ring diameter (px)                                                   |
+| Prop       | Type                           | Default  | Description                                                          |
+| ---------- | ------------------------------ | -------- | -------------------------------------------------------------------- |
+| `groups`   | `StoriesGroup[]`               | required | Story groups                                                         |
+| `viewed`   | `StoriesViewedStateController` | -        | Rings follow it by themselves; the same controller the overlay takes |
+| `ringSize` | `number`                       | `64`     | Ring diameter (px)                                                   |
 
 Emits `select` with the group index when a ring is tapped.
+
+### Sub-components
+
+For building your own ring list, header or slides inside the slots. Each with
+props exports its props type as `<Name>Props`.
+
+| Component           | Props                                                                                                                                                                                                                  | Description                                                            |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `StoriesRing`       | `author: AuthorInfo`, `totalStories`, `viewedCount` (required), `size` (default `68`), `gradientColors: string[]`, `viewedColor`                                                                                       | One avatar ring; emits `click`. Watched groups draw a muted ring       |
+| `CanvasProgressBar` | `totalStories`, `activeIndex: Signal<number>`, `progress: Signal<number>` (required), `gap` (default `2`), `barHeight` (default `2`), `minSegmentWidth` (default `8`), `bgColor`, `fillColor`, `live` (default `true`) | Segmented canvas progress bar with a sliding window for long groups    |
+| `StoryHeader`       | `author` and `onClose` (required), `createdAt: string \| Date`, `isPaused`, `isMuted`, `isVideo`, `isLoading`, `isError` (all default `false`), `visible` (default `true`), `onTogglePause`, `onToggleSound`           | Default header: avatar, name, relative time, pause, sound and close    |
+| `HeartAnimation`    | -                                                                                                                                                                                                                      | Double-tap heart; emits `complete` when the animation ends             |
+| `ImageStorySlide`   | `src` (required), `aspectRatio`, `onLoad`, `onError`                                                                                                                                                                   | Cover-fit image story                                                  |
+| `VideoStorySlide`   | `src`, `groupIndex`, `storyIndex`, `activeGroupIndex: Signal<number>`, `activeStoryIndex: Signal<number>` (required), `poster`, `onDurationReady`, `onPlaying`, `onWaiting`, `onEnded`, `onError`                      | Video story on the shared `<video>` element, playing only while active |
+
+`useAttachViewedState(() => viewed)` reads the viewed store and follows other
+tabs while the calling component is mounted. `StoriesOverlay` and
+`StoriesRingList` call it themselves; call it in the page that owns the
+controller when the overlay mounts only once it opens
+(`<StoriesOverlay v-if="open" …>`).
 
 ### Types
 
@@ -190,7 +218,14 @@ interface StoriesGroup<T extends StoryItem = StoryItem> {
   author: AuthorInfo;
   stories: T[];
 }
+
+type MediaType = 'image' | 'video';
+type DesktopLayout = 'single' | 'carousel';
+type ChromePlacement = 'overlay' | 'group';
 ```
+
+The slot-scope types are listed under [Scoped Slots](#scoped-slots). Also
+exported: `StoriesApi`, `StoriesOverlayProps<T>` and `StoriesUrlOverlayProps<T>`.
 
 ## Keyboard Shortcuts
 
