@@ -75,15 +75,18 @@
  * now sits.
  * ```tsx
  * import { LightboxUrlOverlay, type LightboxItem } from '@reelkit/react-lightbox';
- * import { useOverlayUrlState } from '@reelkit/react';
+ * import { useOverlayUrlState, base64UrlCodec } from '@reelkit/react';
  * import '@reelkit/react-lightbox/styles.css';
  *
  * function Gallery({ images }: { images: LightboxItem[] }) {
  *   const photo = useOverlayUrlState({
  *     param: 'photo',
- *     codec: { decode: atob, encode: btoa },
+ *     codec: base64UrlCodec,
  *     locator: {
- *       locate: (id) => images.findIndex((x) => x.src === id),
+ *       locate: (src) => {
+ *         const index = images.findIndex((image) => image.src === src);
+ *         return index === -1 ? null : index;
+ *       },
  *       identify: (index) => images[index].src,
  *     },
  *   });

@@ -67,7 +67,7 @@ export interface ReelProxyProps {
   /** Enable keyboard arrow key navigation. @default true */
   enableNavKeys?: boolean;
 
-  /** Enable mouse wheel navigation. @default false */
+  /** Enable mouse wheel navigation. @default true */
   enableWheel?: boolean;
 
   /** Debounce duration for wheel events in milliseconds. @default 200 */

@@ -142,7 +142,7 @@ export class GalleryComponent {
 
 Each slot also has a template input — `controlsTemplate`, `navigationTemplate`, `infoTemplate`, `slideTemplate`, `loadingTemplate`, `errorTemplate` — taking a `TemplateRef` with the slot's context. An input wins over the projected directive; projecting the directive is the usual way.
 
-The slider inputs (`transitionDuration`, `swipeDistanceFactor`, `loop`, `enableNavKeys`, `enableWheel`, `wheelDebounceMs`) are typed from the exported `ReelProxyProps` interface, the subset of `rk-reel` configuration the lightbox forwards. Its `enableWheel` documents the slider default `false`; the lightbox sets `true`.
+The slider inputs (`transitionDuration`, `swipeDistanceFactor`, `loop`, `enableNavKeys`, `enableWheel`, `wheelDebounceMs`) are typed from the exported `ReelProxyProps` interface, the subset of `rk-reel` configuration the lightbox forwards.
 
 ### rk-lightbox-overlay Outputs
 

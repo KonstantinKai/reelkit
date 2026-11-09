@@ -47,7 +47,7 @@ export interface UseVideoSlideRendererResult {
 
   /**
    * Ready-to-use `renderControls` callback with Counter, FullscreenButton,
-   * SoundButton (when videos exist), and CloseButton.
+   * SoundButton (while the active slide is a video), and CloseButton.
    * Pass directly to `LightboxOverlay`'s `renderControls` prop.
    */
   renderControls: (props: ControlsRenderProps) => ReactNode;
