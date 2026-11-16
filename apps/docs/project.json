@@ -56,16 +56,18 @@
     },
     "serve": {
       "executor": "nx:run-commands",
+      "continuous": true,
       "options": {
-        "command": "npx react-router dev",
+        "command": "pnpm exec react-router dev",
         "cwd": "apps/docs"
       }
     },
     "preview": {
       "executor": "nx:run-commands",
+      "continuous": true,
       "dependsOn": ["build"],
       "options": {
-        "command": "npx serve ../dist/docs -l 4200",
+        "command": "pnpm exec wrangler dev --local --port 4200",
         "cwd": "apps/docs"
       }
     }
