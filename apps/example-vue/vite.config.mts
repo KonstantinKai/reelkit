@@ -1,6 +1,9 @@
 import { defineConfig, type Plugin } from 'vite';
 import vue from '@vitejs/plugin-vue';
-import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
+import tsconfigPaths from 'vite-tsconfig-paths';
+import { nxReadySignal } from '@nx/vite/plugins/nx-ready-signal.plugin';
+
+const _kTsconfigProjects = ['../../tsconfig.base.json'];
 
 // Cloudflare Web Analytics for vue-demo.reelkit.dev, added to the built page
 // only: the dev server, which the e2e suite runs too, never reports to the live
@@ -48,7 +51,12 @@ export default defineConfig({
     port: 4221,
     host: 'localhost',
   },
-  plugins: [vue(), nxViteTsPaths(), cloudflareWebAnalytics()],
+  plugins: [
+    vue(),
+    tsconfigPaths({ projects: _kTsconfigProjects }),
+    cloudflareWebAnalytics(),
+    nxReadySignal(),
+  ],
   build: {
     outDir: './dist',
     emptyOutDir: true,

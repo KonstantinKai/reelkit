@@ -4,8 +4,8 @@ import { join } from 'node:path';
 import { defineConfig, type Plugin } from 'vite';
 import { reactRouter } from '@react-router/dev/vite';
 import react from '@vitejs/plugin-react';
-import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
-import { nxCopyAssetsPlugin } from '@nx/vite/plugins/nx-copy-assets.plugin';
+import tsconfigPaths from 'vite-tsconfig-paths';
+import { nxReadySignal } from '@nx/vite/plugins/nx-ready-signal.plugin';
 import mdx from '@mdx-js/rollup';
 import { kDefaultLocale, kSiteOrigin } from './src/i18n/locale';
 import { kSitePages } from './src/content/manifest';
@@ -268,12 +268,12 @@ export default defineConfig(() => ({
     // fails looking for its own preamble. Component tests get the plain React
     // transform instead.
     ...(_kIsTest ? [react()] : [reactRouter()]),
-    nxViteTsPaths(),
-    nxCopyAssetsPlugin(['*.md']),
+    tsconfigPaths({ projects: ['../../tsconfig.base.json'] }),
+    nxReadySignal(),
   ],
   // Uncomment this if you are using workers.
   // worker: {
-  //   plugins: () => [ nxViteTsPaths() ],
+  //   plugins: () => [ tsconfigPaths({ projects: ['../../tsconfig.base.json'] }) ],
   // },
   build: {
     outDir: '../dist/docs',

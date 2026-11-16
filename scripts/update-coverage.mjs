@@ -27,6 +27,15 @@ const isCheck = process.argv.includes('--check');
 const isDryRun = process.argv.includes('--dry-run');
 const reuse = process.argv.includes('--reuse');
 
+const _kJestConfigNames = [
+  'jest.config.ts',
+  'jest.config.cts',
+  'jest.config.mts',
+  'jest.config.js',
+  'jest.config.cjs',
+  'jest.config.mjs',
+];
+
 /**
  * Every published package that runs tests, with the runner behind its `test`
  * target. The two runners spell the coverage flags differently and cannot be
@@ -42,15 +51,16 @@ function collectPackages() {
     if (manifest.private || !manifest.name) continue;
     if (!existsSync(resolve(root, 'packages', dir, 'README.md'))) continue;
 
-    const projectPath = resolve(root, 'packages', dir, 'project.json');
-    const executor = existsSync(projectPath)
-      ? JSON.parse(readFileSync(projectPath, 'utf8')).targets?.test?.executor
-      : undefined;
+    // The `test` target is inferred by `@nx/jest/plugin` from a Jest config in
+    // the project root, so the config file is what makes a package a Jest one.
+    const usesJest = _kJestConfigNames.some((name) =>
+      existsSync(resolve(root, 'packages', dir, name)),
+    );
 
     found.push({
       name: manifest.name,
       dir,
-      runner: executor === '@nx/jest:jest' ? 'jest' : 'vitest',
+      runner: usesJest ? 'jest' : 'vitest',
     });
   }
   return found.sort((a, b) => a.name.localeCompare(b.name));

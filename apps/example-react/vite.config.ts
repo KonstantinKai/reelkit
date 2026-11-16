@@ -1,5 +1,6 @@
 import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
+import { nxReadySignal } from '@nx/vite/plugins/nx-ready-signal.plugin';
 
 // Cloudflare Web Analytics for react-demo.reelkit.dev, added to the built page
 // only: the dev server, which the e2e suite runs too, never reports to the live
@@ -47,7 +48,7 @@ export default defineConfig({
     port: 4201,
     host: 'localhost',
   },
-  plugins: [react(), cloudflareWebAnalytics()],
+  plugins: [react(), cloudflareWebAnalytics(), nxReadySignal()],
   build: {
     outDir: './dist',
     emptyOutDir: true,

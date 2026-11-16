@@ -104,7 +104,9 @@
       "inputs": [
         "default",
         "^production",
-        { "externalDependencies": ["typescript", "vue-tsc"] }
+        {
+          "externalDependencies": ["typescript", "vue-tsc"]
+        }
       ],
       "outputs": []
     },
@@ -196,5 +198,8 @@
   "analytics": true,
   "migrate": {
     "createCommits": false
+  },
+  "affected": {
+    "legacy": true
   }
 }

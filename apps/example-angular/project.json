@@ -9,6 +9,7 @@
     "build": {
       "executor": "@angular/build:application",
       "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
       "options": {
         "outputPath": "dist/apps/example-angular",
         "browser": "apps/example-angular/src/main.ts",
@@ -53,12 +54,15 @@
           "extractLicenses": false,
           "sourceMap": true
         }
-      },
-      "defaultConfiguration": "production"
+      }
     },
     "serve": {
       "continuous": true,
       "executor": "@angular/build:dev-server",
+      "defaultConfiguration": "development",
+      "readyWhen": {
+        "signal": true
+      },
       "options": {
         "port": 4210,
         "proxyConfig": "apps/example-angular/proxy.conf.mjs"
@@ -74,12 +78,14 @@
           "buildTarget": "example-angular:build:development",
           "port": 4400
         }
-      },
-      "defaultConfiguration": "development"
+      }
     },
     "dev": {
       "continuous": true,
       "executor": "@angular/build:dev-server",
+      "readyWhen": {
+        "signal": true
+      },
       "options": {
         "port": 4210,
         "buildTarget": "example-angular:build:development",
@@ -92,18 +98,6 @@
         "buildTarget": "example-angular:build"
       }
     },
-    "lint": {
-      "executor": "@nx/eslint:lint"
-    },
-    "test": {
-      "executor": "@nx/jest:jest",
-      "cache": true,
-      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
-      "options": {
-        "jestConfig": "apps/example-angular/jest.config.cts",
-        "tsConfig": "apps/example-angular/tsconfig.spec.json"
-      }
-    },
     "serve-static": {
       "continuous": true,
       "executor": "@nx/web:file-server",
@@ -112,7 +106,11 @@
         "port": 4210,
         "staticFilePath": "dist/apps/example-angular/browser",
         "spa": true
-      }
+      },
+      "readyWhen": {
+        "signal": true
+      },
+      "dependsOn": ["build"]
     }
   }
 }

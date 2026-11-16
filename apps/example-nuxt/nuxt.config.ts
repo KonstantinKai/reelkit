@@ -1,4 +1,5 @@
-import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
+import { fileURLToPath } from 'node:url';
+import tsconfigPaths from 'vite-tsconfig-paths';
 import { defineNuxtConfig } from 'nuxt/config';
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
@@ -20,7 +21,14 @@ export default defineNuxtConfig({
   },
   css: ['~/assets/css/styles.css'],
   vite: {
-    plugins: [nxViteTsPaths()],
+    // Absolute, because Nuxt sets the Vite root to the app source directory.
+    plugins: [
+      tsconfigPaths({
+        projects: [
+          fileURLToPath(new URL('../../tsconfig.base.json', import.meta.url)),
+        ],
+      }),
+    ],
     optimizeDeps: {
       include: ['@vue/devtools-core', '@vue/devtools-kit'],
     },
