@@ -1,3 +1,135 @@
+## @reelkit/react-reel-player@0.6.7 (2026-11-20)
+
+### 🩹 Fixes
+
+- Type declarations name their own files with explicit .js extensions, so projects using moduleResolution node16 or nodenext get the real types instead of any
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/react to 0.10.1
+- Updated @reelkit/core to 0.9.1
+
+## @reelkit/vue-reel-player@0.5.3 (2026-11-20)
+
+### 🩹 Fixes
+
+- Type declarations name their own files with explicit .js extensions, so projects using moduleResolution node16 or nodenext get the real types instead of any
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.9.1
+- Updated @reelkit/vue to 0.9.2
+
+## @reelkit/angular-reel-player@0.6.6 (2026-11-20)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/angular to 0.9.1
+- Updated @reelkit/core to 0.9.1
+
+## @reelkit/react-stories-player@0.7.1 (2026-11-20)
+
+### 🩹 Fixes
+
+- Type declarations name their own files with explicit .js extensions, so projects using moduleResolution node16 or nodenext get the real types instead of any
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/stories-core to 0.8.1
+- Updated @reelkit/react to 0.10.1
+- Updated @reelkit/core to 0.9.1
+
+## @reelkit/vue-stories-player@0.4.2 (2026-11-20)
+
+### 🩹 Fixes
+
+- Type declarations name their own files with explicit .js extensions, so projects using moduleResolution node16 or nodenext get the real types instead of any
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/stories-core to 0.8.1
+- Updated @reelkit/core to 0.9.1
+- Updated @reelkit/vue to 0.9.2
+
+## @reelkit/angular-stories-player@0.3.1 (2026-11-20)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/stories-core to 0.8.1
+- Updated @reelkit/angular to 0.9.1
+- Updated @reelkit/core to 0.9.1
+
+## @reelkit/react-lightbox@0.7.1 (2026-11-20)
+
+### 🩹 Fixes
+
+- Type declarations name their own files with explicit .js extensions, so projects using moduleResolution node16 or nodenext get the real types instead of any
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/react to 0.10.1
+- Updated @reelkit/core to 0.9.1
+
+## @reelkit/vue-lightbox@0.4.2 (2026-11-20)
+
+### 🩹 Fixes
+
+- Projects that type-check their dependencies (skipLibCheck: false) no longer get two "Cannot find name" errors from the package's declarations
+- Type declarations name their own files with explicit .js extensions, so projects using moduleResolution node16 or nodenext get the real types instead of any
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/vue to 0.9.2
+
+## @reelkit/angular-lightbox@0.7.1 (2026-11-20)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/angular to 0.9.1
+- Updated @reelkit/core to 0.9.1
+
+## @reelkit/stories-core@0.8.1 (2026-11-20)
+
+### 🩹 Fixes
+
+- Type declarations name their own files with explicit .js extensions, so projects using moduleResolution node16 or nodenext get the real types instead of any
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.9.1
+
+## @reelkit/react@0.10.1 (2026-11-20)
+
+### 🩹 Fixes
+
+- Type declarations name their own files with explicit .js extensions, so projects using moduleResolution node16 or nodenext get the real types instead of any
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.9.1
+
+## @reelkit/vue@0.9.2 (2026-11-20)
+
+### 🩹 Fixes
+
+- Type declarations name their own files with explicit .js extensions, so projects using moduleResolution node16 or nodenext get the real types instead of any
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.9.1
+
+## @reelkit/angular@0.9.1 (2026-11-20)
+
+### 🧱 Updated Dependencies
+
+- Updated @reelkit/core to 0.9.1
+
+## @reelkit/core@0.9.1 (2026-11-20)
+
+### 🩹 Fixes
+
+- Type declarations name their own files with explicit .js extensions, so projects using moduleResolution node16 or nodenext get the real types instead of any
+
 ## Documentation (2026-10-22)
 
 ### 📖 Documentation
