@@ -1,0 +1,7 @@
+{
+  "extends": "./tsconfig.fixture.json",
+  "compilerOptions": {
+    "module": "esnext",
+    "moduleResolution": "bundler"
+  }
+}

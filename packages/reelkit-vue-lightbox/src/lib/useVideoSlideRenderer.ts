@@ -24,8 +24,6 @@ import {
  * Props for {@link VideoSlideRenderer}. Mirrors {@link SlideSlotScope} so
  * the component can be passed `v-bind="scope"` from the overlay's
  * `slide` slot without additional wiring.
- *
- * @internal
  */
 const slideRendererProps = {
   item: {
@@ -82,8 +80,6 @@ export type VideoSlideRendererProps = ExtractPropTypes<
  * Props for {@link VideoControlsRenderer}. Mirrors {@link ControlsSlotScope}
  * so it can be passed `v-bind="scope"` from the overlay's `controls`
  * slot without additional wiring.
- *
- * @internal
  */
 const controlsRendererProps = {
   item: {

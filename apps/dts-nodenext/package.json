@@ -1,0 +1,21 @@
+{
+  "name": "dts-nodenext",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@reelkit/core": "workspace:*",
+    "@reelkit/react": "workspace:*",
+    "@reelkit/react-lightbox": "workspace:*",
+    "@reelkit/react-reel-player": "workspace:*",
+    "@reelkit/react-stories-player": "workspace:*",
+    "@reelkit/stories-core": "workspace:*",
+    "@reelkit/vue": "workspace:*",
+    "@reelkit/vue-lightbox": "workspace:*",
+    "@reelkit/vue-reel-player": "workspace:*",
+    "@reelkit/vue-stories-player": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript-7": "npm:typescript@7.0.2"
+  }
+}

@@ -2,7 +2,18 @@
 import { defineConfig } from 'vite';
 import dts from 'vite-plugin-dts';
 import * as path from 'path';
+import {
+  asBeforeWriteFile,
+  createSpecifierRewriter,
+} from '../../scripts/lib/dtsSpecifiers.mjs';
 import tsconfigPaths from 'vite-tsconfig-paths';
+
+const beforeWriteFile = asBeforeWriteFile(
+  createSpecifierRewriter({
+    outDir: path.join(import.meta.dirname, 'dist'),
+    srcDir: path.join(import.meta.dirname, 'src'),
+  }),
+);
 
 export default defineConfig(() => ({
   root: import.meta.dirname,
@@ -13,6 +24,7 @@ export default defineConfig(() => ({
       entryRoot: 'src',
       tsconfigPath: path.join(import.meta.dirname, 'tsconfig.lib.json'),
       pathsToAliases: false,
+      beforeWriteFile,
     }),
   ],
   // Uncomment this if you are using workers.
