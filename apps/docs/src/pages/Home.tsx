@@ -13,10 +13,7 @@ import {
   Link2,
 } from 'lucide-react';
 import { CodeBlock } from '../components/ui/CodeBlock';
-import {
-  BasicSliderDemo,
-  heroSlidePreloadLinks,
-} from '../components/demos/BasicSliderDemo';
+import { HeroFilm, heroFilmPreloadLinks } from '../components/ui/HeroFilm';
 import { AnimatedLogo } from '../components/ui/AnimatedLogo';
 import { AnimatedWordmark } from '../components/ui/AnimatedWordmark';
 import { GitHubStarButton } from '../components/ui/GitHubStarButton';
@@ -26,7 +23,7 @@ import { homeMessages } from '../i18n/home';
 import { localePageMeta } from '../i18n/pageMeta';
 import { useLocale, useLocalePath } from '../i18n/useLocale';
 
-export const links = heroSlidePreloadLinks;
+export const links = heroFilmPreloadLinks;
 
 /**
  * One page serves every language, so the locale comes from the URL the
@@ -129,7 +126,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section — two columns: text + live demo */}
+      {/* Hero Section — two columns: text + intro film */}
       <section className="relative overflow-hidden border-b border-slate-200 dark:border-slate-800 bg-gradient-to-br from-primary-50 via-white to-accent-50 dark:from-primary-950/30 dark:via-slate-900 dark:to-accent-950/30">
         {/* Decorative blur blobs — soft corner accents, static */}
         <div
@@ -222,73 +219,13 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Right: Live phone demo */}
-            <div className="flex-shrink-0">
-              <div
-                className="relative rounded-[2.5rem] border-[3px] border-slate-300 dark:border-slate-600 bg-black shadow-2xl shadow-slate-900/20 dark:shadow-black/40 overflow-hidden"
-                style={{ width: 260, height: 460 }}
-              >
-                {/* Notch */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-20 h-5 bg-black rounded-b-2xl z-20" />
-                {/* Home indicator */}
-                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-24 h-1 bg-white/30 rounded-full z-20" />
-                {/* Demo */}
-                <div className="w-full h-full rounded-[2.25rem] overflow-hidden">
-                  <BasicSliderDemo priority />
-                </div>
+            {/* Right: intro film */}
+            <div className="w-full max-w-2xl lg:w-[600px] lg:max-w-none flex-shrink-0">
+              <div className="aspect-video overflow-hidden rounded-2xl bg-slate-900 ring-1 ring-slate-900/10 dark:ring-white/10 shadow-2xl shadow-slate-900/20 dark:shadow-black/40">
+                <HeroFilm label={home.hero.filmLabel} />
               </div>
-              <p className="text-center text-xs text-slate-400 dark:text-slate-500 mt-3">
-                {home.hero.demoCaption}
-              </p>
             </div>
           </div>
-        </div>
-      </section>
-
-      <section
-        className="border-b border-slate-200 bg-white py-20 dark:border-slate-800 dark:bg-slate-900"
-        aria-labelledby="virtualization-heading"
-      >
-        <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:gap-20 lg:px-8">
-          <div>
-            <p className="mb-4 text-sm font-semibold uppercase tracking-widest text-primary-600 dark:text-primary-400">
-              {home.virtualization.eyebrow}
-            </p>
-            <h2
-              id="virtualization-heading"
-              className="mb-6 text-3xl font-bold tracking-tight md:text-4xl"
-            >
-              {home.virtualization.headingLead}
-              <br />
-              <span className="bg-gradient-to-r from-primary-500 to-accent-500 bg-clip-text text-transparent">
-                {home.virtualization.headingHighlight}
-              </span>
-            </h2>
-            <p className="mb-8 text-lg leading-relaxed text-slate-600 dark:text-slate-400">
-              {home.virtualization.intro}
-            </p>
-            <ol className="space-y-6">
-              {home.virtualization.steps.map((step, index) => (
-                <li key={step.title} className="flex gap-4">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary-50 font-mono text-sm text-primary-600 dark:bg-primary-950 dark:text-primary-400">
-                    {index + 1}
-                  </span>
-                  <div>
-                    <h3 className="mb-1 font-semibold text-slate-900 dark:text-white">
-                      {step.title}
-                    </h3>
-                    <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-                      {step.description}
-                    </p>
-                  </div>
-                </li>
-              ))}
-            </ol>
-            <p className="mt-8 text-sm text-slate-500 dark:text-slate-400">
-              {home.virtualization.footnote}
-            </p>
-          </div>
-          <VirtualizationDemo />
         </div>
       </section>
 
@@ -345,6 +282,53 @@ export default function Home() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section
+        className="border-b border-slate-200 bg-white py-20 dark:border-slate-800 dark:bg-slate-900"
+        aria-labelledby="virtualization-heading"
+      >
+        <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:gap-20 lg:px-8">
+          <div>
+            <p className="mb-4 text-sm font-semibold uppercase tracking-widest text-primary-600 dark:text-primary-400">
+              {home.virtualization.eyebrow}
+            </p>
+            <h2
+              id="virtualization-heading"
+              className="mb-6 text-3xl font-bold tracking-tight md:text-4xl"
+            >
+              {home.virtualization.headingLead}
+              <br />
+              <span className="bg-gradient-to-r from-primary-500 to-accent-500 bg-clip-text text-transparent">
+                {home.virtualization.headingHighlight}
+              </span>
+            </h2>
+            <p className="mb-8 text-lg leading-relaxed text-slate-600 dark:text-slate-400">
+              {home.virtualization.intro}
+            </p>
+            <ol className="space-y-6">
+              {home.virtualization.steps.map((step, index) => (
+                <li key={step.title} className="flex gap-4">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary-50 font-mono text-sm text-primary-600 dark:bg-primary-950 dark:text-primary-400">
+                    {index + 1}
+                  </span>
+                  <div>
+                    <h3 className="mb-1 font-semibold text-slate-900 dark:text-white">
+                      {step.title}
+                    </h3>
+                    <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+                      {step.description}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+            <p className="mt-8 text-sm text-slate-500 dark:text-slate-400">
+              {home.virtualization.footnote}
+            </p>
+          </div>
+          <VirtualizationDemo />
         </div>
       </section>
 

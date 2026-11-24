@@ -1,19 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { renderToString } from 'react-dom/server';
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
-import { glob } from 'node:fs/promises';
 import { BasicSliderDemo, heroSlidePreloadLinks } from './BasicSliderDemo';
 
-const appDir = join(import.meta.dirname, '../..');
-
 const imagesIn = (html: string) => html.match(/<img[^>]*>/g) ?? [];
-
-async function filesUnder(pattern: string) {
-  const found: string[] = [];
-  for await (const entry of glob(pattern, { cwd: appDir })) found.push(entry);
-  return found.sort();
-}
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -55,17 +44,5 @@ describe('basic slider demo as prerendered', () => {
     expect(heroSlidePreloadLinks()).toEqual([
       { rel: 'preload', as: 'image', href: src, fetchpriority: 'high' },
     ]);
-  });
-});
-
-describe('home page', () => {
-  // One page serves every locale, so the hero preload is declared once and a
-  // reader in any language gets it.
-  it('preloads the hero slide and gives the demo priority', async () => {
-    const homes = await filesUnder('pages/{,*/}Home.tsx');
-    expect(homes).toHaveLength(1);
-    const source = readFileSync(join(appDir, homes[0]), 'utf8');
-    expect(source).toContain('export const links = heroSlidePreloadLinks;');
-    expect(source).toContain('<BasicSliderDemo priority />');
   });
 });

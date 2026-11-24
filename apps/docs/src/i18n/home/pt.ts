@@ -13,7 +13,7 @@ export const pt: HomeMessages = {
     subtitle:
       'Independente de framework, virtualizado, pensado para o toque. Feito para feeds de vídeo vertical, visualizadores de stories e galerias em tela cheia.',
     getStarted: 'Começar',
-    demoCaption: 'Demonstração ao vivo — use as setas',
+    filmLabel: 'ReelKit em 30 segundos: Reels, Stories e Lightbox',
   },
   virtualization: {
     eyebrow: 'Como funciona',

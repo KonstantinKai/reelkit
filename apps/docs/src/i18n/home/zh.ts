@@ -13,7 +13,7 @@ export const zh: HomeMessages = {
     subtitle:
       '与框架无关、虚拟化、触摸优先。专为竖向视频流、Stories 浏览器和全屏画廊而生。',
     getStarted: '开始使用',
-    demoCaption: '在线演示 —— 点箭头试试',
+    filmLabel: '30 秒了解 ReelKit：Reels、Stories 和 Lightbox',
   },
   virtualization: {
     eyebrow: '工作原理',

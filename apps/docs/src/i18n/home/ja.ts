@@ -13,7 +13,7 @@ export const ja: HomeMessages = {
     subtitle:
       'フレームワークに依存せず、仮想化され、タッチを優先します。縦型の動画フィード、ストーリービューアー、フルスクリーンのギャラリーのために作られています。',
     getStarted: 'はじめる',
-    demoCaption: 'ライブデモ — 矢印で操作できます',
+    filmLabel: '30 秒でわかる ReelKit：Reels、Stories、Lightbox',
   },
   virtualization: {
     eyebrow: 'しくみ',

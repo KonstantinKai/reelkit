@@ -13,7 +13,7 @@ export const en: HomeMessages = {
     subtitle:
       'Framework-agnostic, virtualized, touch-first. Built for vertical video feeds, story viewers, and fullscreen galleries.',
     getStarted: 'Get Started',
-    demoCaption: 'Live demo — use the arrows',
+    filmLabel: 'ReelKit in 30 seconds: Reels, Stories and Lightbox',
   },
   virtualization: {
     eyebrow: 'How it works',

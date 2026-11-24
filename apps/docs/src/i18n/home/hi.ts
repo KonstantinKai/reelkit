@@ -13,7 +13,7 @@ export const hi: HomeMessages = {
     subtitle:
       'फ़्रेमवर्क से स्वतंत्र, वर्चुअलाइज़्ड, टच सबसे पहले। वर्टिकल वीडियो फ़ीड, story व्यूअर और फ़ुलस्क्रीन गैलरी के लिए बना।',
     getStarted: 'शुरू करें',
-    demoCaption: 'लाइव डेमो — तीरों से चलाएँ',
+    filmLabel: '30 सेकंड में ReelKit: Reels, Stories और Lightbox',
   },
   virtualization: {
     eyebrow: 'यह कैसे काम करता है',

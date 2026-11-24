@@ -13,7 +13,7 @@ export const uk: HomeMessages = {
     subtitle:
       'Незалежний від фреймворку, віртуалізований, орієнтований на дотик. Створений для вертикальних відеострічок, переглядачів історій і повноекранних галерей.',
     getStarted: 'Почати',
-    demoCaption: 'Демо наживо — гортайте стрілками',
+    filmLabel: 'ReelKit за 30 секунд: Reels, Stories і Lightbox',
   },
   virtualization: {
     eyebrow: 'Як це працює',

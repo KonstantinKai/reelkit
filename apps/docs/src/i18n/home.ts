@@ -25,7 +25,8 @@ export interface HomeMessages {
     taglineTail: string;
     subtitle: string;
     getStarted: string;
-    demoCaption: string;
+    /** Accessible name of the hero film. */
+    filmLabel: string;
   };
   virtualization: {
     eyebrow: string;
