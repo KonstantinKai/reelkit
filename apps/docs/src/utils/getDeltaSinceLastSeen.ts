@@ -1,16 +1,14 @@
-import type { ChangelogEntry } from './parseChangelog';
-
 /**
- * Return entries newer than `lastSeen`. Entries are newest-first in source
+ * Return the ids newer than `lastSeen`. Ids are newest-first in source
  * order; we slice until we hit `lastSeen` (exclusive).
- * When `lastSeen` is `null` or absent from the list → return all entries.
+ * When `lastSeen` is `null` or absent from the list → return all ids.
  */
 export function getDeltaSinceLastSeen(
-  entries: ChangelogEntry[],
+  ids: readonly string[],
   lastSeen: string | null,
-): ChangelogEntry[] {
-  if (!lastSeen) return entries.slice();
-  const idx = entries.findIndex((e) => e.id === lastSeen);
-  if (idx === -1) return entries.slice();
-  return entries.slice(0, idx);
+): string[] {
+  if (!lastSeen) return ids.slice();
+  const index = ids.indexOf(lastSeen);
+  if (index === -1) return ids.slice();
+  return ids.slice(0, index);
 }

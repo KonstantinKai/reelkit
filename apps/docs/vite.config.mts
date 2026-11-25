@@ -9,6 +9,7 @@ import { nxReadySignal } from '@nx/vite/plugins/nx-ready-signal.plugin';
 import mdx from '@mdx-js/rollup';
 import { kDefaultLocale, kSiteOrigin } from './src/i18n/locale';
 import { kSitePages } from './src/content/manifest';
+import { splitChangelog } from './src/content/changelogChunks';
 import { renderSitemap, sitemapEntries } from './src/content/sitePages';
 import {
   loadLlmsEntries,
@@ -224,6 +225,69 @@ function reelkitLlmsTxtPlugin(): Plugin {
   };
 }
 
+/**
+ * Serves the workspace changelog in chunks. `virtual:reelkit-changelog` holds
+ * every entry id and the newest releases, which the changelog page renders
+ * into its prerendered HTML; each older chunk is its own module, so the build
+ * emits it as a separate file that loads only when the page asks for it.
+ */
+function reelkitChangelogPlugin(): Plugin {
+  const virtualId = 'virtual:reelkit-changelog';
+  const resolvedId = '\0' + virtualId;
+  const chunkPrefix = `${virtualId}/`;
+  const changelogPath = join(import.meta.dirname, '../../CHANGELOG.md');
+
+  const split = () => splitChangelog(readFileSync(changelogPath, 'utf8'));
+
+  return {
+    name: 'reelkit-changelog',
+    resolveId(id) {
+      if (id === virtualId || id.startsWith(chunkPrefix)) return '\0' + id;
+      return null;
+    },
+    load(id) {
+      if (id === resolvedId) {
+        const { ids, chunks } = split();
+        const loaders = chunks
+          .slice(1)
+          .map((_, index) => `() => import('${chunkPrefix}${index + 1}')`);
+        return [
+          `export const ids = ${JSON.stringify(ids)};`,
+          `export const head = ${JSON.stringify(chunks[0] ?? '')};`,
+          `export const chunkCount = ${chunks.length};`,
+          `const loaders = [null, ${loaders.join(', ')}];`,
+          'export function loadChunk(index) {',
+          '  const load = loaders[index];',
+          '  if (!load) return Promise.reject(new RangeError(`No changelog chunk ${index}`));',
+          '  return load().then((module) => module.default);',
+          '}',
+        ].join('\n');
+      }
+      if (id.startsWith('\0' + chunkPrefix)) {
+        const index = Number(id.slice(resolvedId.length + 1));
+        const chunk = split().chunks[index];
+        if (index < 1 || chunk === undefined) {
+          this.error(`No changelog chunk ${index}`);
+        }
+        return `export default ${JSON.stringify(chunk)};`;
+      }
+      return null;
+    },
+    configureServer(server) {
+      server.watcher.add(changelogPath);
+      server.watcher.on('change', (path) => {
+        if (path !== changelogPath) return;
+        for (const mod of server.moduleGraph.idToModuleMap.values()) {
+          if (mod.id?.startsWith(resolvedId)) {
+            server.moduleGraph.invalidateModule(mod);
+          }
+        }
+        server.ws.send({ type: 'full-reload' });
+      });
+    },
+  };
+}
+
 const _kIsTest = process.env['VITEST'] === 'true';
 
 export default defineConfig(() => ({
@@ -261,6 +325,7 @@ export default defineConfig(() => ({
     // exports, so the MDX compiler goes first.
     { enforce: 'pre', ...mdx(mdxOptions) },
     reelkitVersionsPlugin(),
+    reelkitChangelogPlugin(),
     reelkitSitemapPlugin(),
     reelkitLlmsTxtPlugin(),
     // The React Router plugin owns the app entry and the route module graph,

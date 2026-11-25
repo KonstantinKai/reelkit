@@ -1,16 +1,27 @@
 import type { ChangelogEntry } from './parseChangelog';
 
+export interface ChangelogSummary {
+  /** Every package entry id, newest first. */
+  ids: readonly string[];
+  /** The newest releases, parsed. Older ones stay on the changelog page. */
+  entries: ChangelogEntry[];
+}
+
 /**
- * The release notes, parsed, loaded on demand. The raw changelog and its
- * markdown renderer are the heaviest things a docs page would otherwise carry
- * on first load, while the what's-new dialog and the sidebar badge only need
- * them once the page has settled.
+ * Every release id plus the newest releases, loaded on demand. The what's-new
+ * dialog and the sidebar badge only need them once the page has settled, and
+ * never the older releases, which load on the changelog page alone.
  */
-export async function loadChangelogEntries(): Promise<ChangelogEntry[]> {
-  const [{ default: raw }, { parseChangelog }] = await Promise.all([
-    // eslint-disable-next-line @nx/enforce-module-boundaries
-    import('../../../../CHANGELOG.md?raw'),
+export async function loadChangelogSummary(): Promise<ChangelogSummary> {
+  const [{ ids, head }, { parseChangelog }] = await Promise.all([
+    import('virtual:reelkit-changelog'),
     import('./parseChangelog'),
   ]);
-  return parseChangelog(raw);
+  return { ids, entries: parseChangelog(head) };
+}
+
+/** Every release id, newest first, loaded on demand. */
+export async function loadChangelogIds(): Promise<readonly string[]> {
+  const { ids } = await import('virtual:reelkit-changelog');
+  return ids;
 }

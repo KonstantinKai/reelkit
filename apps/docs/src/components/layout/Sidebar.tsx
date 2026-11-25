@@ -16,7 +16,7 @@ import {
 import { stripLocaleFromPath } from '../../i18n/locale';
 import { useLocalePath, useMessages } from '../../i18n/useLocale';
 import { FrameworkVariant } from '../ui/FrameworkVariant';
-import { loadChangelogEntries } from '../../utils/loadChangelog';
+import { loadChangelogIds } from '../../utils/loadChangelog';
 import { whenIdle } from '../../utils/whenIdle';
 
 const _kStorageKey = 'rk-docs:changelog:last-seen';
@@ -54,8 +54,8 @@ function useChangelogBadge(): Signal<boolean> {
       // The newest release id comes from the release notes, which load once
       // the page has settled rather than with it.
       whenIdle(() => {
-        void loadChangelogEntries().then((entries) => {
-          if (!cancelled) latest.value = entries[0]?.id ?? null;
+        void loadChangelogIds().then((ids) => {
+          if (!cancelled) latest.value = ids[0] ?? null;
         });
       }),
       reaction(
