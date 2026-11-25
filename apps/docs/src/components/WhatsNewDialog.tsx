@@ -4,8 +4,10 @@ import { createSignal, Observe } from '@reelkit/react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { X, Sparkles } from 'lucide-react';
 import { captureFocusForReturn, createFocusTrap } from '@reelkit/react';
-import type { ChangelogEntry } from '../utils/parseChangelog';
-import { loadChangelogEntries } from '../utils/loadChangelog';
+import {
+  loadChangelogSummary,
+  type ChangelogSummary,
+} from '../utils/loadChangelog';
 import { whenIdle } from '../utils/whenIdle';
 import { getDeltaSinceLastSeen } from '../utils/getDeltaSinceLastSeen';
 import { useLastSeenRelease } from '../hooks/useLastSeenRelease';
@@ -26,13 +28,15 @@ export default function WhatsNewDialog() {
 
   // The release notes load once the page has settled, and never on the pages
   // that show no dialog, so they stay out of every page's first load.
-  const [entries] = useState(() => createSignal<ChangelogEntry[]>([]));
+  const [summary] = useState(() =>
+    createSignal<ChangelogSummary>({ ids: [], entries: [] }),
+  );
   useEffect(() => {
-    if (excluded || entries.value.length > 0) return;
+    if (excluded || summary.value.ids.length > 0) return;
     let cancelled = false;
     const cancelIdle = whenIdle(() => {
-      void loadChangelogEntries().then((parsed) => {
-        if (!cancelled) entries.value = parsed;
+      void loadChangelogSummary().then((loaded) => {
+        if (!cancelled) summary.value = loaded;
       });
     });
     return () => {
@@ -42,17 +46,17 @@ export default function WhatsNewDialog() {
   }, [excluded]);
 
   return (
-    <Observe signals={[entries]}>
-      {() => <ReleaseDialog entries={entries.value} excluded={excluded} />}
+    <Observe signals={[summary]}>
+      {() => <ReleaseDialog summary={summary.value} excluded={excluded} />}
     </Observe>
   );
 }
 
 function ReleaseDialog({
-  entries,
+  summary,
   excluded,
 }: {
-  entries: ChangelogEntry[];
+  summary: ChangelogSummary;
   excluded: boolean;
 }) {
   const navigate = useNavigate();
@@ -60,17 +64,22 @@ function ReleaseDialog({
   const localePath = useLocalePath();
   const dialogRef = useRef<HTMLDivElement | null>(null);
 
-  const newestId = entries[0]?.id ?? null;
+  const newestId = summary.ids[0] ?? null;
 
   const { lastSeen, markSeen } = useLastSeenRelease(newestId);
 
+  // The count comes from every id, so it stays exact when the reader last
+  // looked several releases ago; the bodies shown are the newest, which the
+  // summary always carries.
   const delta = useMemo(
-    () => (excluded ? [] : getDeltaSinceLastSeen(entries, lastSeen)),
-    [entries, lastSeen, excluded],
+    () => (excluded ? [] : getDeltaSinceLastSeen(summary.ids, lastSeen)),
+    [summary, lastSeen, excluded],
   );
   const open = !excluded && lastSeen !== null && delta.length > 0;
 
-  const visible = delta.slice(0, _kMaxEntries);
+  const visible = delta
+    .slice(0, _kMaxEntries)
+    .flatMap((id) => summary.entries.filter((entry) => entry.id === id));
   const hiddenCount = Math.max(0, delta.length - _kMaxEntries);
 
   const handleClose = () => {

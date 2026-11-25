@@ -178,6 +178,22 @@ check(
     );
   }
 
+  // The newest releases are rendered into the changelog page itself, so a
+  // crawler or a reader without JavaScript sees them; older ones load as the
+  // reader scrolls.
+  {
+    const changelog = await get('/docs/changelog');
+    const changelogHtml = changelog.body.toString('utf8');
+    const releases = changelogHtml.match(/<h2[^>]*>@reelkit\//g)?.length ?? 0;
+    check(
+      'changelog page ships its newest releases in the HTML',
+      changelog.status === 200 &&
+        releases > 0 &&
+        !changelogHtml.includes('No changelog entries yet'),
+      `${changelog.status}, ${releases} releases`,
+    );
+  }
+
   const stylesheet = html.match(/href="(\/assets\/[^"]+\.css)"/)?.[1];
   const scripts = [...html.matchAll(/(?:href|src)="(\/assets\/[^"]+\.js)"/g)]
     .map((match) => match[1])

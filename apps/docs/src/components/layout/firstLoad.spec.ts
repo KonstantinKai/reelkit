@@ -52,7 +52,19 @@ describe('first page load', () => {
       expect(source, file).not.toMatch(/^import \{[^}]*parseChangelog[^}]*\}/m);
     }
     expect(read('utils/loadChangelog.ts')).toContain(
-      "import('../../../../CHANGELOG.md?raw')",
+      "import('virtual:reelkit-changelog')",
     );
+  });
+
+  // The whole changelog in one import would land in one file again; the app
+  // reads it only through the chunked virtual modules.
+  it('never imports the whole changelog', () => {
+    const sourceFiles = readdirSync(srcDir, {
+      recursive: true,
+      encoding: 'utf8',
+    }).filter((file) => /\.tsx?$/.test(file) && !/\.spec\.tsx?$/.test(file));
+    for (const file of sourceFiles) {
+      expect(read(file), file).not.toMatch(/CHANGELOG\.md\?raw/);
+    }
   });
 });

@@ -1,4 +1,5 @@
 import { renderChangelog } from './renderChangelog';
+import { changelogEntryId } from '../content/changelogChunks';
 
 export interface ChangelogEntry {
   /** Unique id — `package@version` slice of the `## ` heading (e.g. `@reelkit/core@0.5.0`). */
@@ -11,7 +12,6 @@ export interface ChangelogEntry {
   bodyHtml: string;
 }
 
-const _kIdPattern = /(.+@[\d.]+)/;
 const _kDatePattern = /\((\d{4}-\d{2}-\d{2})\)/;
 
 /**
@@ -28,15 +28,15 @@ export function parseChangelog(md: string): ChangelogEntry[] {
 
   const flush = () => {
     if (currentTitle === null) return;
-    const idMatch = currentTitle.match(_kIdPattern);
-    if (!idMatch) {
+    const id = changelogEntryId(currentTitle);
+    if (!id) {
       currentTitle = null;
       currentBody = [];
       return;
     }
     const dateMatch = currentTitle.match(_kDatePattern);
     entries.push({
-      id: idMatch[1].trim(),
+      id,
       title: currentTitle,
       date: dateMatch ? dateMatch[1] : '',
       bodyHtml: renderChangelog(currentBody.join('\n').trim()),
